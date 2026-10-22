@@ -103,7 +103,7 @@ export const ALTERNATIVES: Alternative[] = [
       },
       {
         label: 'Beyond the deck',
-        us: 'Logos and wireframes in the same document',
+        us: 'Logos, wireframes and photos in the same document',
         them: 'One of several Google Workspace apps',
       },
       { label: 'Self-hostable', us: 'Yes, on your own Cloudflare account', them: 'No' },
@@ -122,7 +122,7 @@ export const ALTERNATIVES: Alternative[] = [
       'Put another tab on a slide, live: a tab window shows it as it is now, so the slide follows every change.',
       'Real-time editing with live cursors, comments and assigned actions, for anyone with the link, no account needed.',
       'An AI assistant connected over MCP can add logo and wireframe pages for you.',
-      '14 templates to start from, from a logo design to app and website wireframes.',
+      '15 templates to start from, from a logo design to app and website wireframes and a photo to edit.',
       'Free, MIT-licensed and self-hostable.',
     ],
     sections: [

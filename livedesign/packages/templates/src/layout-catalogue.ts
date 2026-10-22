@@ -1,7 +1,7 @@
 // Which layouts a page offers (docs/specs/007-editor/pages-mode.md "Layouts",
 // docs/specs/007-editor/logo-pages.md "Logo layouts"): a logo page the logo layouts, a wireframe
-// page its device class's, each by its own categories, a page whose kind is not chosen yet none;
-// and any layout by its id, for placing it.
+// page its device class's, each by its own categories, a photo page or one whose kind is not chosen
+// yet none; and any layout by its id, for placing it.
 import type { Element } from '@livedesign/document';
 import type { LayoutBox } from './page-layout-kit';
 import type { PageLayoutId } from './page-layouts';
@@ -26,7 +26,8 @@ const NONE: LayoutCatalogue = { categories: [], layouts: [] };
 const LOGO: LayoutCatalogue = { categories: LOGO_LAYOUT_CATEGORIES, layouts: LOGO_LAYOUTS };
 
 /** The layouts a page of this kind starts from; a wireframe page its device class's (every
- *  wireframe layout when no class is given). */
+ *  wireframe layout when no class is given). A photo page has none (docs/specs/031-photo/
+ *  photo-pages.md "A photo page"), nor a page whose kind is not chosen yet. */
 export function layoutCatalogueFor(
   kind: PageKind | null,
   deviceClass?: WireframeDeviceClass | null,

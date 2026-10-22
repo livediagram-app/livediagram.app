@@ -20,7 +20,7 @@ import {
   type Point,
 } from '@livedesign/document';
 import { pageExportFrame } from '@/lib/export-page';
-import { framesFirst, ZOOM_MAX, ZOOM_MIN } from '@/lib/canvas';
+import { framesFirst, ZOOM_MIN, zoomMax } from '@/lib/canvas';
 import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-registry';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 import { MovablePanel, type MovablePanelDockProps } from '@/components/primitives/MovablePanel';
@@ -322,7 +322,7 @@ export function Minimap({
     const world = recentreToClient(e.clientX, e.clientY);
     if (!world) return;
     const factor = Math.exp(-e.deltaY / 200);
-    setViewportZoom(Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, viewportZoom * factor)));
+    setViewportZoom(Math.max(ZOOM_MIN, Math.min(zoomMax(), viewportZoom * factor)));
   };
 
   return (

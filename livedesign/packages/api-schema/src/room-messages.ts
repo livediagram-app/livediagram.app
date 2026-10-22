@@ -3,6 +3,7 @@ import type { ElementDelta, RoomElementOp, Tab } from '@livedesign/document';
 import type { ParticipantPresence } from './index';
 import type { DragPreviewPatch } from './drag-preview';
 import type { ChangesetRoomOp } from './changesets';
+import type { PhotoOp } from '@livedesign/photo-engine';
 
 // ---------------------------------------------------------------------
 // Realtime room messages
@@ -49,6 +50,10 @@ export const PRESENCE_OP_KINDS = [
   // The room relays it only from an editor (receivers check too): a viewer must never make others'
   // elements appear to move.
   'drag-preview',
+  // Who is on which layer of a photo page (docs/specs/031-photo/photo-pages.md "Collaboration"): the layer the
+  // sender has active, so the Layers tab shows their avatar on it. Ephemeral, never logged, from any session
+  // (only someone who may edit the photo says one).
+  'photo-presence',
   // Who the sender is following (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"). The room
   // keeps it on the session and is the only one who reads it: it tells each person, on their own socket, who
   // follows them (`followers`). Never relayed, from any session (a viewer follows too).
@@ -65,6 +70,9 @@ export const MUTATION_OP_KINDS = [
   // One checklist tick or comment change on one element (docs/specs/012-collaboration/collab-race-hardening.md).
   'el-delta',
   'document-meta',
+  // One photo page's layers changing, layer by layer (docs/specs/031-photo/photo-store.md "Live
+  // sync"): two people changing different layers both keep their changes.
+  'photo',
 ] as const;
 
 // Op kinds only the WORKER may originate, stamped `from: 'system'` and pushed
@@ -258,6 +266,11 @@ export type RoomOp =
   // whole-element `el` update replaced a peer's copy with the sender's snapshot, so two people pressing the same
   // done check lost a mark.
   | { kind: 'el-delta'; tabId: string; elementId: string; delta: ElementDelta }
+  // A photo page's picture changed (docs/specs/031-photo/photo-store.md "Live sync"): its ops,
+  // applied by layer id, or the whole photo gone (`removed`). `Tab.photos` never rides a `tab-meta`
+  // patch, which would replace every photo wholesale.
+  | { kind: 'photo'; tabId: string; pageId: string; ops: PhotoOp[] }
+  | { kind: 'photo'; tabId: string; pageId: string; removed: true }
   // Document-level metadata changed: rename, tab reorder, tab add /
   // delete. Carries the new ordered list of tab summaries (id + name
   // + order) so receivers can update the TabBar without fetching the
@@ -320,6 +333,9 @@ export type RoomOp =
   // element; `end` says the preview is over, `landed` that it was written (the real change follows as
   // element ops, after the autosave's wait), so receivers keep drawing it until then.
   | { kind: 'drag-preview'; tabId: string; patches?: DragPreviewPatch[]; end?: true; landed?: true }
+  // The layer the sender has active on a photo page (docs/specs/031-photo/photo-pages.md "Collaboration"), or
+  // none (layerId null). Presence: relayed as is, never stored.
+  | { kind: 'photo-presence'; tabId: string; pageId: string; layerId: string | null }
   // The sender's VIEWPORT (docs/specs/012-collaboration/follow-me-viewport.md): where they are looking, so anyone who
   // has chosen to follow them can mirror it. Ephemeral presence exactly like
   // cursor / laser: throttled, never logged, never ordered (no

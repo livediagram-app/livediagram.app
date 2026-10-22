@@ -98,6 +98,9 @@ importers:
       '@livedesign/page-lint':
         specifier: workspace:*
         version: link:../../packages/page-lint
+      '@livedesign/photo-engine':
+        specifier: workspace:*
+        version: link:../../packages/photo-engine
       '@livedesign/render-png':
         specifier: workspace:*
         version: link:../../packages/render-png
@@ -305,6 +308,9 @@ importers:
       '@livedesign/icons':
         specifier: workspace:*
         version: link:../../packages/icons
+      '@livedesign/photo-engine':
+        specifier: workspace:*
+        version: link:../../packages/photo-engine
       '@livedesign/telemetry-client':
         specifier: workspace:*
         version: link:../../packages/telemetry-client
@@ -369,6 +375,9 @@ importers:
       '@vitest/coverage-v8':
         specifier: ^5.0.3
         version: 5.0.5(vitest@5.0.5)
+      esbuild:
+        specifier: ^0.28.1
+        version: 0.28.2
       fake-indexeddb:
         specifier: ^6.2.5
         version: 6.2.6
@@ -603,6 +612,9 @@ importers:
       '@livedesign/oxlint-config':
         specifier: workspace:*
         version: link:../../packages/oxlint-config
+      '@livedesign/photo-engine':
+        specifier: workspace:*
+        version: link:../../packages/photo-engine
       '@livedesign/source-ast':
         specifier: workspace:*
         version: link:../../packages/source-ast
@@ -712,6 +724,9 @@ importers:
       '@livedesign/document':
         specifier: workspace:*
         version: link:../document
+      '@livedesign/photo-engine':
+        specifier: workspace:*
+        version: link:../photo-engine
     devDependencies:
       '@livedesign/oxlint-config':
         specifier: workspace:*
@@ -737,6 +752,9 @@ importers:
       '@livedesign/page-background':
         specifier: workspace:*
         version: link:../page-background
+      '@livedesign/photo-engine':
+        specifier: workspace:*
+        version: link:../photo-engine
       perfect-freehand:
         specifier: ^1.2.3
         version: 1.2.3
@@ -771,6 +789,9 @@ importers:
       '@livedesign/document':
         specifier: workspace:*
         version: link:../document
+      '@livedesign/photo-engine':
+        specifier: workspace:*
+        version: link:../photo-engine
       '@livedesign/templates':
         specifier: workspace:*
         version: link:../templates
@@ -808,6 +829,9 @@ importers:
       '@livedesign/icons':
         specifier: workspace:*
         version: link:../icons
+      '@livedesign/photo-engine':
+        specifier: workspace:*
+        version: link:../photo-engine
       '@livedesign/templates':
         specifier: workspace:*
         version: link:../templates
@@ -1006,6 +1030,30 @@ importers:
       '@livedesign/templates':
         specifier: workspace:*
         version: link:../templates
+      '@livedesign/vitest-config':
+        specifier: workspace:*
+        version: link:../vitest-config
+      '@types/node':
+        specifier: ^26.6.4
+        version: 26.6.5
+      '@vitest/coverage-v8':
+        specifier: ^5.0.3
+        version: 5.0.5(vitest@5.0.5)
+      oxlint:
+        specifier: ^1.88.0
+        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
+  livedesign/packages/photo-engine:
+    devDependencies:
+      '@livedesign/oxlint-config':
+        specifier: workspace:*
+        version: link:../oxlint-config
       '@livedesign/vitest-config':
         specifier: workspace:*
         version: link:../vitest-config

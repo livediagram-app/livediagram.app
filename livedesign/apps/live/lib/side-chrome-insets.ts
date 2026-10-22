@@ -10,9 +10,15 @@ export const NO_SIDE_INSETS: SideInsets = { left: 0, right: 0 };
 /** The screen px the Contents panel covers at the canvas's left or right; none when it is absent,
  *  outside the canvas, or too short to be in the way (a fifth of the canvas's height). */
 export function sideChromeInsets(canvas: HTMLElement): SideInsets {
-  const panel = document.querySelector<HTMLElement>(CONTENTS_SIDEBAR_SELECTOR);
-  if (!panel) return NO_SIDE_INSETS;
-  return sideInsetsOf(canvas.getBoundingClientRect(), restingRect(panel));
+  const c = canvas.getBoundingClientRect();
+  const panels = [CONTENTS_SIDEBAR_SELECTOR]
+    .map((sel) => document.querySelector<HTMLElement>(sel))
+    .filter((el): el is HTMLElement => el !== null);
+  if (!panels.length) return NO_SIDE_INSETS;
+  return panels.reduce<SideInsets>((acc, el) => {
+    const next = sideInsetsOf(c, restingRect(el));
+    return { left: Math.max(acc.left, next.left), right: Math.max(acc.right, next.right) };
+  }, NO_SIDE_INSETS);
 }
 
 /** Where a panel rests, its `translate` left out: dropped on the other side (or docking), the

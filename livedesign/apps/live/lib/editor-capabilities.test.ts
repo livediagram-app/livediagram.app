@@ -29,6 +29,15 @@ describe('resolveEditorCapabilities', () => {
     }
   });
 
+  it('gives photo pages to an Editor, a closer look to a Participant, nothing to a Viewer', () => {
+    const editor = resolveEditorCapabilities({ level: 'edit', adderKey: null });
+    const participant = resolveEditorCapabilities({ level: 'participate', adderKey: ME });
+    const viewer = resolveEditorCapabilities({ level: 'view', adderKey: ME });
+    expect([editor.photoEdit, editor.photoInspect]).toEqual([true, true]);
+    expect([participant.photoEdit, participant.photoInspect]).toEqual([false, true]);
+    expect([viewer.photoEdit, viewer.photoInspect]).toEqual([false, false]);
+  });
+
   it('gives a Viewer nothing', () => {
     const can = resolveEditorCapabilities({ level: 'view', adderKey: ME });
     expect(can.takePart || can.addContent || can.planCards || can.sheetCells).toBe(false);

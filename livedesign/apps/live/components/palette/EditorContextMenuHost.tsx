@@ -251,6 +251,26 @@ export function EditorContextMenuHost() {
       onRemoveIcon={removeIconFromElement}
       onOpenImagePicker={(id) => imageContext?.onOpenPicker?.(id)}
       onRemoveImage={removeImageFromElement}
+      onEditAsPhoto={pagesMode?.photo?.editAsPhoto}
+      onRasterizeIntoLayer={(() => {
+        // Only for an element on the photo page in focus.
+        const photo = pagesMode?.photo;
+        const page = pagesMode?.pages.find((p) => p.id === photo?.session?.pageId);
+        const el =
+          contextMenu.mode === 'element'
+            ? activeTab.elements.find((e) => e.id === contextMenu.elementId)
+            : undefined;
+        if (!photo?.rasterizeElement || !page || !el || !('x' in el) || !('width' in el))
+          return undefined;
+        const cx = el.x + el.width / 2;
+        const cy = el.y + el.height / 2;
+        const on =
+          cx >= page.rect.x &&
+          cx < page.rect.x + page.rect.width &&
+          cy >= page.rect.y &&
+          cy < page.rect.y + page.rect.height;
+        return on ? photo.rasterizeElement : undefined;
+      })()}
       onRemoveLink={() => applyElementLink(null)}
       onSetIconPosition={commitInlineIcon}
       onPreviewIconPosition={previewInlineIcon}

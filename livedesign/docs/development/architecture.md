@@ -24,6 +24,7 @@ packages/
   agent-verbs/    the verbs the CLI routes to: schemas, handlers, compact text, addressing, guides, the skill
   explorer-lens/  the Explorer's filter lens: token grammar, matching, autocomplete, chip view models
   page-background/ a page background's colours, patterns and motions, and their parser (pure)
+  photo-engine/   photo pages: the photo's layer model and the pixel engine: composite, adjustments, filters, selections, paint, PSD (pure)
   edit-operations/ the engine agent changesets run on: edit operations and replace into element ops
   document-views/ read-only text views of a tab (outline, pages, layout, ...) for agents and scripts
   page-lint/      checks a tab's text fits where it is drawn, with a fix each

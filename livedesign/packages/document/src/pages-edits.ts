@@ -10,6 +10,7 @@ import {
   layOutPages,
   MAX_PAGES,
   newLogoPage,
+  newPhotoPage,
   newWireframePage,
   PAGE_NAME_MAX,
   pageHasOrientation,
@@ -29,6 +30,7 @@ import {
   withPageContentReplaced,
 } from './page-content';
 import { pagesInkFor, type InkMemory, type PageInk } from './page-ink';
+import { blankPhoto, photoOfPage, roomForPhotoPage, withPhoto } from './photo-pages';
 import { sameFill, withBackgroundPatch } from './page-paint';
 import {
   WIREFRAME_DEVICES,
@@ -44,6 +46,7 @@ export type PageEditRefusal =
   | 'size_not_offered'
   | 'pattern_not_offered'
   | 'page_limit'
+  | 'photo_limit'
   | 'last_page'
   | 'not_a_wireframe';
 
@@ -202,9 +205,18 @@ export function pageAdded<T extends PagesTab>(
   id: string,
   // A wireframe page's device, chosen as it was added; absent takes the last wireframe page's.
   device?: WireframeDeviceId,
+  // A photo page's picture size (docs/specs/031-photo/photo-pages.md "Making a photo page").
+  photoSize?: { width: number; height: number },
 ): PageEdit<T> {
   const pages = pagesOf(tab);
   if (!room(pages) || pages.some((p) => p.id === id)) return refused('page_limit');
+  if (kind === 'photo') {
+    // A photo page is its picture: never painted, its photo blank until something is put on it.
+    if (!roomForPhotoPage(tab)) return refused('photo_limit');
+    const photo = blankPhoto(photoSize?.width, photoSize?.height);
+    const page = newPhotoPage(id, photo.width, photo.height);
+    return { tab: withPhoto(withPages(tab, [...pages, page]), id, photo) };
+  }
   // The new page wears the background of the page before it (the last), whatever either kind; a
   // logo page takes its fill alone, since it takes no pattern.
   const carried = carriedBackground(pages[pages.length - 1]?.background, kind);
@@ -237,6 +249,11 @@ export function pageAddedLike<T extends PagesTab>(
     // A page whose kind is not chosen yet has no like to add.
     const kind = pageKindOf(source);
     if (!kind) return refused('unknown_page');
+    // A photo page's like is a blank photo of its picture's size.
+    if (kind === 'photo') {
+      const { width, height } = photoOfPage(tab, sourceId);
+      return pageAdded(tab, kind, id, undefined, { width, height });
+    }
     return pageAdded(tab, kind, id);
   }
   if (!room(pages) || pages.some((p) => p.id === id)) return refused('page_limit');
@@ -328,8 +345,14 @@ export function pageDuplicated<T extends PagesTab>(
   id: string,
 ): PageEdit<T> {
   const pages = pagesOf(tab);
-  if (!pages.some((p) => p.id === pageId)) return refused('unknown_page');
+  const target = pages.find((p) => p.id === pageId);
+  if (!target) return refused('unknown_page');
   if (!room(pages) || pages.some((p) => p.id === id)) return refused('page_limit');
+  if (target.kind === 'photo') {
+    if (!roomForPhotoPage(tab)) return refused('photo_limit');
+    // The copy's picture is the same photo: its blobs are the tab's already.
+    return { tab: withPhoto(withDuplicatedPage(tab, pageId, id), id, photoOfPage(tab, pageId)) };
+  }
   return { tab: withDuplicatedPage(tab, pageId, id) };
 }
 

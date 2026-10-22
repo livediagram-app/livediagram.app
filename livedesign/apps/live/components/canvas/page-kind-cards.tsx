@@ -52,6 +52,12 @@ export const PAGE_KINDS: readonly PageKindChoice[] = [
     line: 'A screen to wireframe, framed as a phone, tablet, laptop or browser.',
     hint: 'A phone, tablet or web screen.',
   },
+  {
+    kind: 'photo',
+    name: 'Photo',
+    line: 'A picture to edit: layers, brushes, adjustments and filters.',
+    hint: 'A picture to edit in layers.',
+  },
 ];
 
 export function PageKindCard({
@@ -80,7 +86,13 @@ export function PageKindCard({
           wide ? 'w-[calc(50%-0.25rem)]' : ''
         }`}
       >
-        {choice.kind === 'wireframe' ? <WireframeMiniature /> : <LogoMiniature />}
+        {choice.kind === 'wireframe' ? (
+          <WireframeMiniature />
+        ) : choice.kind === 'photo' ? (
+          <PhotoMiniature />
+        ) : (
+          <LogoMiniature />
+        )}
       </span>
       <span className="px-0.5">
         <span className="block text-sm font-semibold text-slate-900 dark:text-slate-100">
@@ -190,6 +202,29 @@ function WireframeMiniature() {
       <rect x="7" y="40" width="12" height="2.5" rx="1.25" className={bar} />
       <rect x="7" y="45" width="15" height="2.5" rx="1.25" className={bar} />
       <rect x="7" y="55" width="16" height="5" rx="1.5" className="fill-brand-500" />
+    </svg>
+  );
+}
+
+// A photo: a sky, a sun and hills, with the photo's own layer stack in its corner.
+function PhotoMiniature() {
+  return (
+    <svg width="78" height="56" viewBox="0 0 78 56" aria-hidden className="drop-shadow-sm">
+      <defs>
+        <linearGradient id="photo-mini-sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#7dd3fc" />
+          <stop offset="1" stopColor="#e0f2fe" />
+        </linearGradient>
+      </defs>
+      <rect width="78" height="56" rx="3" fill="url(#photo-mini-sky)" />
+      <circle cx="58" cy="15" r="6" className="fill-amber-300" />
+      <path d="M0 44 L20 26 L34 38 L48 24 L78 46 V56 H0 Z" className="fill-emerald-500" />
+      <path d="M0 50 L24 38 L44 50 L78 40 V56 H0 Z" className="fill-emerald-700" />
+      {/* A layer stack, the photo's own. */}
+      <g transform="translate(4 4)">
+        <rect width="18" height="5" rx="1" className="fill-white/90" />
+        <rect y="7" width="18" height="5" rx="1" className="fill-brand-500" />
+      </g>
     </svg>
   );
 }

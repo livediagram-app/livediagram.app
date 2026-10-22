@@ -12,6 +12,7 @@ import { usePublishTabRename } from '@/hooks/editor/active-tab-name-store';
 import { openSearchWithPrefetch } from '@/lib/open-search';
 import { useTourSquare } from '@/hooks/editor/useTourSquare';
 import { useModeDefaultTool } from '@/hooks/editor/useModeDefaultTool';
+import { usePhotoPresence } from '@/hooks/editor/usePhotoPresence';
 import type { View } from '@/lib/viewport-store';
 import { useKeyboardAvoidance } from '@/hooks/canvas/useKeyboardAvoidance';
 import {
@@ -57,6 +58,7 @@ import { useEditorMode } from '@/hooks/editor/useEditorMode';
 import { selectAllIds } from '@/lib/select-all-ids';
 import { currentPageIdNow } from '@/lib/current-page-kind';
 import { usePagesMode } from '@/hooks/editor/usePagesMode';
+import { usePhotoEditor } from '@/hooks/editor/usePhotoEditor';
 import { useLogoEditor } from '@/hooks/editor/useLogoEditor';
 import { useAddCustomColour } from '@/hooks/editor/useAddCustomColour';
 import { useTagColourSetter } from '@/hooks/editor/useTagColourSetter';
@@ -206,6 +208,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     applyRemoteOp,
     undo: tabUndo,
     redo: tabRedo,
+    // The history's place, which a photo page's History reads (docs/specs/031-photo/photo-pages.md).
+    depth: historyDepth,
   } = useDocumentHistory(initialTabs);
   const canHistoryUndo = canTabUndo;
   const canHistoryRedo = canTabRedo;
@@ -947,6 +951,13 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     [setSelectedId, setEditingId, setMultiSelectedIds, toast],
   );
 
+  // Who is on which layer of a photo page (docs/specs/031-photo/photo-pages.md "Collaboration").
+  const photoPresence = usePhotoPresence({
+    activeTabId: activeId,
+    peers: livePresence,
+    send: (op) => roomRef.current?.send({ kind: 'op', op }),
+  });
+
   useRoomConnection({
     onAdderKey: participant.setAdderKey,
     hydrated,
@@ -984,8 +995,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     receiveDocumentTrashed: () => documentTrashed.setDocumentTrashed(true),
     resyncFromServer,
     receiveChangeset: changesetFeed.receiveChangeset,
+    receivePhotoPresence: photoPresence.receive,
     onRoomJoined: () => {
       void changesetFeed.checkSinceLoad();
+      // A rejoined connection has a new presence id, which carries no hold until it is said again.
+      photoPresence.reannounce();
     },
   });
 
@@ -2030,6 +2044,27 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     getZoom: () => zoomRef.current,
   });
   const { canCombine, combineSelected, canTidyUp, tidyUpSelected } = logo;
+  // Photo pages (docs/specs/031-photo/photo-pages.md): the page in focus, its editing session, the
+  // History and the previews. See usePhotoEditor.
+  const photoEditor = usePhotoEditor({
+    pagesModeView: logo.view,
+    pages: pagesMode?.pages ?? null,
+    activeTab,
+    commitTabs,
+    tickTabs,
+    markCheckpoint,
+    cancelToCheckpoint,
+    undo: undoHistory,
+    redo: redoHistory,
+    depth: historyDepth,
+    visibleRect: getViewportCanvasRect,
+    viewport,
+    scope: imageContext ?? null,
+    canEdit: participant.can.photoEdit && !isReadOnly,
+    canInspect: participant.can.photoInspect,
+    presence: photoPresence.presence,
+    toast,
+  });
   const {
     pendingDraw,
     beginDraw,
@@ -2701,7 +2736,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     focusBounds,
     // The person's editor mode on the active tab, for the mode switch and the canvas.
     editorMode,
-    pagesMode: logo.view,
+    pagesMode: photoEditor.view,
     canCombine,
     combineSelected,
     canTidyUp,

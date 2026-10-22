@@ -41,10 +41,11 @@ describe('AddPageButton', () => {
     expect(rows.map((r) => r.querySelector('span.block')?.textContent)).toEqual([
       'Logo',
       'Wireframe',
+      'Photo',
     ]);
     expect(document.activeElement).toBe(rows[0]);
     fireEvent.keyDown(rows[0]!, { key: 'ArrowUp' });
-    expect(document.activeElement).toBe(rows[1]);
+    expect(document.activeElement).toBe(rows[2]);
     fireEvent.click(rows[0]!);
     expect(onAdd).toHaveBeenCalledWith('logo');
 

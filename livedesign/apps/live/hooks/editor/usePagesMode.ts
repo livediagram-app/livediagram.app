@@ -2,6 +2,7 @@
 // laid out in their row, the edits to them (page-edits) and framing one in the view. It
 // also centres the view on the page you were last on (the first, the first time) whenever the
 // tab changes.
+import type { PhotoEditorView } from '@/hooks/editor/usePhotoEditor';
 import type { LogoToolsView } from './useLogoTools';
 import {
   useCallback,
@@ -32,7 +33,7 @@ import { besideSideInsets, computeFitBelow } from '@/lib/viewport';
 const WIREFRAME_FIT_MAX_ZOOM = 2.5;
 import { sideChromeInsets } from '@/lib/side-chrome-insets';
 import { pageInView } from '@/lib/page-contents';
-import { topStripInset } from '@/lib/top-strip-inset';
+import { bottomClusterInset, topStripInset } from '@/lib/top-strip-inset';
 import { debugLog } from '@/lib/debug-log';
 import { track } from '@/lib/telemetry';
 import { getTheme } from '@/lib/themes';
@@ -77,6 +78,9 @@ export type PagesModeView = {
   // A logo page's own tools, each person's (docs/specs/007-editor/logo-pages.md): composed in by
   // the editor.
   logo?: LogoToolsView;
+  // A photo page's editing (docs/specs/031-photo/photo-pages.md): the page in focus, its session and
+  // its tools, composed in by the editor.
+  photo?: PhotoEditorView;
   // Absent where the viewer may not change the pages (a view role, a locked tab).
   edit?: PageEdits;
   // A page's place in the slide deck (PageDeckButton), composed in by the editor; absent
@@ -136,12 +140,12 @@ export function usePagesMode(deps: {
     const canvas = deps.canvasMainRef.current;
     if (!canvas) return null;
     const inset = topStripInset(canvas);
-    const sides = sideChromeInsets(canvas);
+    const sides = { ...sideChromeInsets(canvas), bottom: bottomClusterInset(canvas) };
     return { width: canvas.offsetWidth, height: canvas.offsetHeight, inset, sides };
   };
   const frameFor = (m: NonNullable<ReturnType<typeof measure>>, page?: LaidOutPage) => {
     const { inset, sides } = m;
-    const size = { width: m.width - sides.left - sides.right, height: m.height };
+    const size = { width: m.width - sides.left - sides.right, height: m.height - sides.bottom };
     return besideSideInsets(
       computeFitBelow(
         size,

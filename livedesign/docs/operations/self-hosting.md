@@ -270,6 +270,7 @@ The api worker honours two optional `[vars]` that cap how much one owner can kee
 
 - `IMAGE_MAX_PER_OWNER`: maximum image rows per owner (decimal string).
 - `IMAGE_MAX_BYTES_PER_OWNER`: maximum summed `byte_size` per owner (decimal byte count).
+- `PHOTO_MAX_BYTES_PER_TAB`: maximum bytes of photo page pixels one tab may hold ([Photo store](../specs/031-photo/photo-store.md) "Limits"), answered as a 403 `{ error: "photo_full", limit, current }` on an upload past it. Photo pages store their pixels in the same `IMAGES` bucket, under `photo/`; without the binding they are offered in Offline Mode documents only.
 
 Both default to "no limit" when unset, blank, `0`, or non-numeric, which is the OSS self-host default where the operator runs their own R2 budget. To cap, declare them under `[vars]` in `apps/api/wrangler.toml`, not in the Cloudflare dashboard: every `wrangler deploy` replaces the worker's plain vars with the ones it declares, so a dashboard-only cap is silently gone after the next deploy. The hosted livedesign.app sets them to `100` and `104857600` (100 MB) through its hosted profile, which a fork's deploy does not apply. The worker also honours an early `X-Image-Sha256` dedupe check sent by the live editor: if the header matches an existing row at `(owner, sha256)` the upload short-circuits before the body parse, the cap check, or the R2 write, so re-uploading bytes the user already has costs almost nothing.
 

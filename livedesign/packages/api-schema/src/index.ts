@@ -656,5 +656,7 @@ export * from './oauth-clients';
 export * from './workbench';
 export * from './workbench-messages';
 export * from './pages';
+export * from './photo-frames';
+export * from './photo-blob-batch';
 export * from './pages-summary';
 export * from './mcp-origin';

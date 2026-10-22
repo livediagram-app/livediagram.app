@@ -17,7 +17,7 @@ describe('template categories', () => {
   const ids = TEMPLATE_CATEGORIES.map((c) => c.id);
 
   it('are the job-based categories Pages fills, alphabetical by label, Title Case, with even descriptions', () => {
-    expect(TEMPLATE_CATEGORIES.map((c) => c.label)).toEqual(['Logos', 'Wireframes']);
+    expect(TEMPLATE_CATEGORIES.map((c) => c.label)).toEqual(['Logos', 'Photos', 'Wireframes']);
     const labels = TEMPLATE_CATEGORIES.map((c) => c.label);
     expect(labels).toEqual([...labels].sort((a, b) => a.localeCompare(b, 'en')));
     expect(new Set(ids).size).toBe(ids.length);
@@ -45,6 +45,7 @@ describe('template categories', () => {
     const counts = ids.map((id) => TEMPLATES.filter((t) => templateCategory(t.kind) === id).length);
     expect(Object.fromEntries(ids.map((id, i) => [id, counts[i]]))).toEqual({
       logos: 1,
+      photos: 1,
       wireframes: 5,
     });
   });
@@ -60,6 +61,7 @@ describe('template categories', () => {
     }
     expect(isInTemplateCategory('logo-design', 'logos')).toBe(true);
     expect(isInTemplateCategory('wireframe-mobile-app', 'wireframes')).toBe(true);
+    expect(isInTemplateCategory('photo-edit', 'photos')).toBe(true);
     expect(isInTemplateCategory('blank', 'logos')).toBe(false);
   });
 

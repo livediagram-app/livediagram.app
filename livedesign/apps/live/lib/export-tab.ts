@@ -9,6 +9,7 @@
 // omitted in the visual ones (PNG, PDF) where they have no natural
 // rendering.
 
+import { photoImageKey } from './export-tab-images';
 import {
   arrowLabelFontStack,
   arrowLabelPass,
@@ -546,6 +547,8 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
         transparentPaper: opts.transparentPaper,
         imageHref: (id) => opts.images?.get(id)?.href,
         frameTheme: tabWireframeFrameTheme(tab),
+        // A photo page draws its photo's preview (loadTabImages).
+        photoHref: (pageId) => opts.images?.get(photoImageKey(pageId))?.href,
         overFill: opts.stillBackground ? undefined : pageMotionSvg(opts.page),
       })
     : null;

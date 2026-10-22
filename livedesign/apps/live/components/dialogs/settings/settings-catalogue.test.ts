@@ -132,6 +132,7 @@ describe('settings catalogue', () => {
       ['pagesTourSeen', 'toggle', 'Pages Tours', 'pagesTour'],
       ['pagesTourSeen-wireframe', 'toggle', 'Wireframe Tour', 'pagesTour'],
       ['pagesTourSeen-logo', 'toggle', 'Logo Tour', 'pagesTour'],
+      ['pagesTourSeen-photo', 'toggle', 'Photo Tour', 'pagesTour'],
       // Element tours (docs/specs/007-editor/element-tours.md): one switch over them all, then one per element,
       // linking that element's article.
       ['elementToursSeen', 'toggle', 'Show Me on Every Element', undefined],
@@ -161,6 +162,7 @@ describe('settings catalogue', () => {
         ['PagesTourSeenOff', 'PagesTourSeenOn'],
         ['WireframeTourSeenOff', 'WireframeTourSeenOn'],
         ['LogoTourSeenOff', 'LogoTourSeenOn'],
+        ['PhotoTourSeenOff', 'PhotoTourSeenOn'],
         ['ElementToursSeenOff', 'ElementToursSeenOn'],
         ['SankeyTourSeenOff', 'SankeyTourSeenOn'],
         ['LayerStackTourSeenOff', 'LayerStackTourSeenOn'],
@@ -232,6 +234,7 @@ describe('settings catalogue', () => {
       pagesTourSeen: ['pagesTourSeen', 'pagesTourKinds'],
       'pagesTourSeen-wireframe': ['pagesTourSeen', 'pagesTourKinds'],
       'pagesTourSeen-logo': ['pagesTourSeen', 'pagesTourKinds'],
+      'pagesTourSeen-photo': ['pagesTourSeen', 'pagesTourKinds'],
       elementToursSeen: ['elementToursSeen', 'elementTourKinds'],
       // One element's tour writes the answered list alone (lib/element-tours.ts).
       'elementTour-sankey': ['elementTourKinds'],

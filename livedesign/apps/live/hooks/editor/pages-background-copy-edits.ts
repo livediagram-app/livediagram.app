@@ -29,6 +29,7 @@ export type BackgroundCopyEdits = {
 const KIND_PAGES: Record<PageKind, { one: string; many: string }> = {
   logo: { one: 'logo page', many: 'Logo Pages' },
   wireframe: { one: 'wireframe page', many: 'Wireframe Pages' },
+  photo: { one: 'photo page', many: 'Photo Pages' },
 };
 
 /** The pages of a kind in words; a page whose kind is not chosen yet is a blank page. */

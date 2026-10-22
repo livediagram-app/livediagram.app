@@ -33,9 +33,9 @@ export type FaqCategory = {
 const ICON = 18;
 // Written out rather than read from @livedesign/templates: this module ships in the FAQ's client bundle, and the
 // catalogue is ~15 KB for one number. faq-content.test.tsx pins it to TEMPLATES.length.
-export const TEMPLATE_COUNT = 14;
+export const TEMPLATE_COUNT = 15;
 // The template categories, pinned to TEMPLATE_CATEGORIES.length by faq-content.test.tsx the same way.
-export const TEMPLATE_CATEGORY_COUNT = 2;
+export const TEMPLATE_CATEGORY_COUNT = 3;
 // The logo layouts, pinned the same way.
 export const LOGO_LAYOUT_COUNT = 25;
 
@@ -66,7 +66,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'How do I start my first document?',
-        a: `Press Start and choose what you are making: a logo or a wireframe. Begin from a blank page or one of ${TEMPLATE_COUNT} templates, and a short tour offers to show you round.`,
+        a: `Press Start and choose what you are making: a logo, a wireframe or a photo. Begin from a blank page or one of ${TEMPLATE_COUNT} templates, and a short tour offers to show you round.`,
       },
       {
         q: 'Does it work on my phone or tablet?',
@@ -156,7 +156,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'What can I make with it?',
-        a: 'Logos, wordmarks and brand marks, and wireframes for phone, tablet, watch and web apps and websites, each framed by its device. Pages hold shapes, text, pictures, icons, tables and charts, and every page presents as a slide.',
+        a: 'Logos, wordmarks and brand marks, and wireframes for phone, tablet, watch and web apps and websites, each framed by its device, and photos edited in layers. Pages hold shapes, text, pictures, icons, tables and charts, and every page presents as a slide.',
       },
       {
         q: 'How many templates and themes are there?',

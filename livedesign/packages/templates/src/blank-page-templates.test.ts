@@ -30,10 +30,13 @@ describe('blanks of a page kind', () => {
   });
 
   it('are blanks: in no category, keeping the tab name rules of a blank', () => {
-    for (const kind of KINDS) {
+    // Photo Edit starts on one page of its kind the same way, but is a template of the Photos category.
+    for (const kind of KINDS.filter((k) => k !== 'photo-edit')) {
       expect(isBlankTemplate(kind)).toBe(true);
       expect(templateCategory(kind)).toBeNull();
     }
+    expect(isBlankTemplate('photo-edit')).toBe(false);
+    expect(templateCategory('photo-edit')).toBe('photos');
     expect(untitledNameForTemplate('blank-logo')).toBe('Untitled Logo');
   });
 

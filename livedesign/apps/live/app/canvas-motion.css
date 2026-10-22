@@ -1275,3 +1275,44 @@ html[data-presenting][data-slide-move='pending'] [data-canvas-a11y-root] {
 [data-canvas-root]:has(> [data-canvas-cover]) > [data-animated-pattern] {
   display: none;
 }
+
+/* A photo page's selection, marching ants (docs/specs/031-photo/photo-tools.md "Accessibility"): a
+   black dash over a white line, so it shows on light and dark pixels alike, the dash walking round.
+   Under reduced motion the ants hold still. */
+@keyframes photo-ants {
+  to {
+    stroke-dashoffset: -8;
+  }
+}
+
+.photo-ants {
+  animation: photo-ants 600ms linear infinite;
+}
+
+/* A photo layer's lock shaken once when it refuses a change (docs/specs/031-photo/photo-tools.md
+   "Shared gestures and options"); held still under reduced motion, the toast saying it. */
+@keyframes photo-lock-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20%,
+  60% {
+    transform: translateX(-2px);
+  }
+  40%,
+  80% {
+    transform: translateX(2px);
+  }
+}
+
+.photo-lock-shake {
+  animation: photo-lock-shake 400ms ease-in-out 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .photo-ants,
+  .photo-lock-shake {
+    animation: none;
+  }
+}

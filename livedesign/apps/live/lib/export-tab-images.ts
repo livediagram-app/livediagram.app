@@ -6,8 +6,13 @@
 // onto the export canvas without tainting it — then decode it to an
 // HTMLImageElement for the canvas path. Browser-only (uses Image / FileReader);
 // never reached in the no-DOM test runs.
-import { pageImageIds, type Tab } from '@livedesign/document';
+import { pageImageIds, photosOf, type Tab } from '@livedesign/document';
 import { apiFetchImageDataUrl } from './api/images';
+import { fetchBlob } from './photo-editor/blob-client';
+
+/** The key a photo page's picture is kept under in the map (docs/specs/031-photo/photo-pages.md
+ *  "Exports and other views": a page's export draws its photo's preview). */
+export const photoImageKey = (pageId: string): string => `photo:${pageId}`;
 
 type ExportImageEntry = {
   // base64 data URL — embedded into the SVG export's <image href>.
@@ -50,6 +55,21 @@ export async function loadTabImages(
 ): Promise<ExportImageMap> {
   const ids = tabImageIds(tab);
   const map: ExportImageMap = new Map();
+  // Each photo page's preview (no larger than 2048 px), as its page's picture.
+  const photos = Object.entries(photosOf(tab)).filter(([, p]) => p.preview);
+  await Promise.all(
+    photos.map(async ([pageId, p]) => {
+      try {
+        const blob = await fetchBlob(ctx, tab.id, p.preview!);
+        if (!blob) return;
+        const href = await blobDataUrl(blob);
+        if (!SAFE_INLINE_IMAGE.test(href)) return;
+        map.set(photoImageKey(pageId), { href, image: await decodeImage(href) });
+      } catch {
+        // Skip: the page draws its checkerboard.
+      }
+    }),
+  );
   await Promise.all(
     ids.map(async (id) => {
       try {
@@ -71,6 +91,15 @@ export async function loadTabImages(
     }),
   );
   return map;
+}
+
+function blobDataUrl(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(typeof r.result === 'string' ? r.result : '');
+    r.onerror = () => reject(new Error('read failed'));
+    r.readAsDataURL(blob);
+  });
 }
 
 function decodeImage(src: string): Promise<HTMLImageElement> {

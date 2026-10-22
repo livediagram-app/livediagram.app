@@ -29,6 +29,7 @@ const DESCRIBED_MIN_WIDTH = 520;
 const KIND_NOUN = {
   logo: 'logo',
   wireframe: 'screen',
+  photo: 'photo',
 } as const;
 
 export function EmptyPageLayouts({

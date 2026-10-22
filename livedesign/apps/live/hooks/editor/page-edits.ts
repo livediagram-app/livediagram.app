@@ -73,6 +73,9 @@ export type PageEdits = BackgroundCopyEdits & {
   // Another page like this one after the last (the + beside the last page): its kind and shape, a
   // wireframe page's device and frame too. Absent at the page limit.
   addPageLike?: (pageId: string) => void;
+  // A photo page added after a page (else at the end), of a picture's size, gone to: answers its id
+  // (Edit as Photo, docs/specs/031-photo/photo-pages.md "Making a photo page").
+  addPhotoPage?: (after: string | null, size?: { width: number; height: number }) => string | null;
   // The first page's kind chosen while it is the only page and empty (its own choice cards).
   choosePageKind: (pageId: string, kind: PageKind, device?: WireframeDeviceId) => void;
   // A wireframe page's orientation, frame look or system bars; its device is fixed once made
@@ -116,10 +119,12 @@ const edited = (before: Tab, out: PageEdit<Tab>): Tab | null =>
 const KIND_CHOSEN_EVENT: Record<PageKind, string> = {
   logo: 'PageKindLogo',
   wireframe: 'PageKindWireframe',
+  photo: 'PageKindPhoto',
 };
 const KIND_ADDED_EVENT: Record<PageKind, string> = {
   logo: 'LogoPageAdded',
   wireframe: 'WireframePageAdded',
+  photo: 'PhotoPageAdded',
 };
 
 // Telemetry for a wireframe page's device and frame look (docs/specs/007-editor/wireframe-pages.md).
@@ -363,6 +368,20 @@ export function pageEdits({
     onGoTo(id);
     debugLog('[page] page added like another', { tabId, from: pageId, kind });
   };
+  const addPhotoPage = (after: string | null, size?: { width: number; height: number }) => {
+    if (!takesEdits()) return null;
+    const id = nextPageId(current);
+    const at = after ? unitIndexOf(after) : -1;
+    track('Tab', 'Changed', 'PhotoPageAdded');
+    commitTab((t) => {
+      const added = edited(t, pageAdded(t, 'photo', id, undefined, size));
+      if (!added || at < 0) return added;
+      // Right after the page it came from.
+      return edited(added, pageMovedTo(added, id, at + 1)) ?? added;
+    });
+    onGoTo(id);
+    return id;
+  };
   const duplicatePage = (pageId: string) => {
     if (!takesEdits()) return;
     const target = page(pageId);
@@ -493,6 +512,7 @@ export function pageEdits({
     canMove,
     addPage: room ? addPage : undefined,
     addPageLike: room ? addPageLike : undefined,
+    addPhotoPage: room ? addPhotoPage : undefined,
     choosePageKind,
     setDevice,
     duplicatePage: room ? duplicatePage : undefined,

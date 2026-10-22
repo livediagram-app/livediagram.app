@@ -152,11 +152,17 @@ export function FlyoutHeader({
   title,
   tagline,
   count,
+  aside,
+  wrap = false,
 }: {
   icon: ReactNode;
   title: ReactNode;
   tagline: string;
   count?: number | undefined;
+  // Something at its end in place of the count (a photo tool's Reset).
+  aside?: ReactNode;
+  // The line runs to two lines rather than cutting off (a photo tool's, which says how to use it).
+  wrap?: boolean;
 }) {
   return (
     <header className="flex items-center gap-3 border-b border-slate-100 px-3.5 pb-3 pt-3.5 dark:border-slate-800">
@@ -170,11 +176,14 @@ export function FlyoutHeader({
         <h3 className="truncate text-[14px] font-semibold leading-tight text-slate-900 dark:text-slate-50">
           {title}
         </h3>
-        <p className="truncate text-[12px] leading-snug text-slate-500 dark:text-slate-400">
+        <p
+          className={`${wrap ? 'line-clamp-2' : 'truncate'} text-[12px] leading-snug text-slate-500 dark:text-slate-400`}
+        >
           {tagline}
         </p>
       </div>
       {count ? <CountBadge count={count} className="shrink-0" /> : null}
+      {aside}
     </header>
   );
 }

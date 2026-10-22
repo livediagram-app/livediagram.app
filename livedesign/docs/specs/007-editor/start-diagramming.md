@@ -45,9 +45,9 @@ are, the panel draws them.
 ### Recommended and groups
 
 Recommended is the Popular shelf (`popularKindsFor`, the picks the marketing gallery leads with), **its blank
-first**. The groups (`components/start/start-template-items.ts`), by what each makes: **Logos** and **Wireframes**.
-Each leads with its blank of that page kind (Blank Logo, and the five blank wireframes), one empty page of the kind
-meant.
+first**. The groups (`components/start/start-template-items.ts`), by what each makes: **Logos**, **Photos** and
+**Wireframes**. Each leads with its start of that page kind (Blank Logo, Photo Edit, and the five blank wireframes),
+one empty page of the kind meant.
 
 A template in none of the groups is placed in the last group, so every listed template is reachable. Blank
 Illustration is not offered: closing the panel leaves the same empty tab.

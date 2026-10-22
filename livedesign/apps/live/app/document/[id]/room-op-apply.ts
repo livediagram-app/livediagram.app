@@ -8,6 +8,8 @@ import {
   type ElementOp,
   type Tab,
 } from '@livedesign/document';
+import { applyPhotoOps, isPhotoPageId, parsePhotoOps, type Photo } from '@livedesign/photo-engine';
+import { blankPhoto, pagesOf, photosOf } from '@livedesign/document';
 import type { RoomOp } from '@livedesign/api-schema';
 import { META_SKIP, mergeRemoteTab } from './tab-broadcast-ops';
 
@@ -80,6 +82,30 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp): Tab[] {
         }
         // A peer's patch is untrusted like any incoming tab: its raw-read fields are settled.
         return settleTabFields(merged);
+      });
+    case 'photo':
+      // ONE photo page's layers, applied by layer id (docs/specs/031-photo/photo-store.md "Live
+      // sync"): different layers merge, the later commit wins on the same one.
+      return updateTab(tabs, op.tabId, (tab) => {
+        if (!isPhotoPageId(op.pageId)) return tab;
+        const raw: Record<string, Photo> = tab.photos ?? {};
+        if ('removed' in op) {
+          if (!Object.hasOwn(raw, op.pageId)) return tab;
+          const { [op.pageId]: _gone, ...rest } = raw;
+          void _gone;
+          if (Object.keys(rest).length > 0) return { ...tab, photos: rest };
+          const { photos: _drop, ...noPhotos } = tab;
+          void _drop;
+          return noPhotos;
+        }
+        const ops = parsePhotoOps(op.ops);
+        if (!ops) return tab;
+        // A photo this tab has no page for (deleted while the peer painted) is dropped.
+        if (!pagesOf(tab).some((p) => p.id === op.pageId && p.kind === 'photo')) return tab;
+        const current = photosOf(tab)[op.pageId] ?? blankPhoto();
+        const next = applyPhotoOps(current, ops);
+        if (next === current) return tab;
+        return { ...tab, photos: { ...raw, [op.pageId]: next } };
       });
     case 'document-meta': {
       // Rename / reorder / add / delete. Reorder to match; a new id lands as a

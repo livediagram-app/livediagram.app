@@ -32,7 +32,7 @@ export type {
 //
 // The In-Editor Notifications preference (docs/specs/007-editor/user-preferences.md) gates info, success,
 // offers and action toasts: when it is off they are no-ops. Warnings and errors ignore it, so quieting
-// the chatter never hides a problem. Read fresh per push (a cheap synchronous localStorage read), so a
+// the chatter never hides a problem, and neither does an action toast marked `important`. Read fresh per push (a cheap synchronous localStorage read), so a
 // Settings flip applies at once with no subscription. The stack, its placement, timing and exit live in
 // components/toast; the queue's writes (dedupe, upsert, the four-toast limit) in toast-queue.ts.
 
@@ -73,7 +73,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const upsertAction = useCallback((spec: ToastActionSpec) => {
-    if (quieted()) return;
+    if (!spec.important && quieted()) return;
     setToasts((prev) => upsertActionToast(prev, spec, nextId++));
   }, []);
 

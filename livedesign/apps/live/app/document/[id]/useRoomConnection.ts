@@ -120,6 +120,11 @@ export function useRoomConnection(opts: {
   // An agent's changeset (docs/specs/024-agents/agent-changesets.md "In the editor"), relayed by the
   // worker; useChangesetFeed decides what to do with it.
   receiveChangeset: (op: ChangesetRoomOp) => void;
+  // A peer's active layer on a photo page (docs/specs/031-photo/photo-pages.md "Collaboration"). Presence.
+  receivePhotoPresence: (
+    from: string,
+    op: { tabId: string; pageId: string; layerId: string | null },
+  ) => void;
   // The room has greeted this connection (its first presence list): what was relayed before it
   // joined is caught up through the api (useChangesetFeed's checkSinceLoad).
   onRoomJoined: () => void;
@@ -162,6 +167,7 @@ export function useRoomConnection(opts: {
     receiveDocumentTrashed,
     resyncFromServer,
     receiveChangeset,
+    receivePhotoPresence,
     onRoomJoined,
     onAdderKey,
   } = opts;
@@ -318,11 +324,12 @@ export function useRoomConnection(opts: {
         op.kind === 'el' ||
         op.kind === 'el-delta' ||
         op.kind === 'tab-meta' ||
+        op.kind === 'photo' ||
         op.kind === 'document-meta'
       ) {
         // A document change from a peer: a whole tab, one element (docs/specs/012-collaboration/realtime-conflict-resolution.md),
         // one tick / comment (docs/specs/012-collaboration/collab-race-hardening.md),
-        // non-element tab fields, or the document's name
+        // non-element tab fields, a photo page's layers (docs/specs/031-photo/photo-store.md), or the document's name
         // and tab list. One pure function applies each (room-op-apply.ts),
         // to the tabs on screen AND to the autosave's baseline, so the
         // change is known to be the peer's and is never saved or broadcast
@@ -416,6 +423,8 @@ export function useRoomConnection(opts: {
         // An agent's changeset, applied, outlined and toasted by useChangesetFeed. System-only, like
         // the share ops: the room refuses one from a client socket.
         if (from === 'system') receiveChangeset(op);
+      } else if (op.kind === 'photo-presence') {
+        receivePhotoPresence(from, op);
       } else if (op.kind === 'document-trashed') {
         // The document went to the Trash. System-only, like the share ops:
         // the room refuses it from a client socket.

@@ -322,6 +322,22 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone turned a wireframe page's status bar and home indicator on.",
   'UI|Toggled|WireframeSystemBarsOff':
     "Someone turned a wireframe page's status bar and home indicator off.",
+  'Tab|Changed|PhotoPageAdded': 'Someone added a photo page to a Pages tab.',
+  'UI|Changed|PhotoPixelGrid': "Someone turned a photo page's pixel grid on or off.",
+  'Tab|Changed|PageKindPhoto': "Someone chose Photo for a new Pages tab's first page.",
+  'Tab|Changed|PhotoStartedFromPicture': 'Someone started a photo page from a picture.',
+  'Tab|Changed|PhotoStartedBlank':
+    'Someone started a blank photo page, at a size and fill they chose.',
+  'Tab|Changed|PhotoEditAsPhoto':
+    "Someone made a new photo page from an image's picture (Edit as Photo).",
+  'Tab|Changed|PhotoImageSize': 'Someone resized a photo, every layer resampled (Image Size).',
+  'Tab|Changed|PhotoCanvasSize':
+    "Someone changed a photo's canvas size, its layers kept as they are.",
+  'Tab|Changed|PhotoRotated': 'Someone turned a photo, by a quarter turn or an angle.',
+  'Tab|Changed|PhotoFlipped': 'Someone flipped a photo, horizontally or vertically.',
+  'Tab|Changed|PhotoCropped': 'Someone cropped a photo.',
+  'Tab|Changed|PhotoTrimmed': "Someone trimmed a photo's transparent edges.",
+  'Tab|Imported|PhotoPsd': 'Someone opened a PSD file as a photo page.',
   'Element|Changed|ShapesUnited': 'Someone united shapes on a logo page into one.',
   'Element|Changed|StrokesTidiedUp':
     'Someone tidied up hand-drawn lines on a logo page, making them straight.',

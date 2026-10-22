@@ -539,3 +539,42 @@ describe('wireframe pages', () => {
     expect(out.lines[1]).toContain('(wireframe, Laptop)');
   });
 });
+
+describe('photo pages (docs/specs/031-photo/photo-pages.md "Agents")', () => {
+  it('adds an empty photo of the default size, or of the size given', () => {
+    const out = run(tabOf({ pages: [mark('p1')] }), [
+      { op: 'add', kind: 'photo' },
+      { op: 'add', kind: 'photo', width: 4000, height: 3000, name: 'Shot' },
+    ]);
+    expect(kinds(out.tab)).toEqual(['logo', 'photo', 'photo']);
+    const photos = out.tab.photos!;
+    const [a, b] = out.tab.pages!.slice(1);
+    expect(photos[a!.id]).toEqual({ width: 1920, height: 1080, layers: [] });
+    expect(photos[b!.id]).toEqual({ width: 4000, height: 3000, layers: [] });
+    expect(b).toMatchObject({ name: 'Shot', fit: { width: 2048, height: 1536 } });
+  });
+
+  it('turns a fresh tab’s empty first page into the photo', () => {
+    const out = run(tabOf({ pages: [{ id: 'p1', orientation: 'portrait' }] }), [
+      { op: 'add', kind: 'photo', width: 800, height: 600 },
+    ]);
+    expect(kinds(out.tab)).toEqual(['photo']);
+    expect(out.tab.photos!.p1).toEqual({ width: 800, height: 600, layers: [] });
+  });
+
+  it('refuses a layout on a photo page, and an eleventh photo page', () => {
+    const one = run(tabOf({ pages: [mark('p1')] }), [{ op: 'add', kind: 'photo' }]).tab;
+    expect(refusal(one, [{ op: 'layout', page: 2, layout: 'hero' }]).code).toBe('layout_unknown');
+    expect(refusal(one, [{ op: 'layout', page: 2, layout: 'hero' }]).message).toMatch(
+      /photo page takes no layout/,
+    );
+    // Fresh page ids each run (the test's counters start again per run).
+    const more = applyPageChanges(
+      one,
+      Array.from({ length: 9 }, () => ({ op: 'add' as const, kind: 'photo' as const })),
+    );
+    if ('refusal' in more) throw new Error(more.refusal.message);
+    const over = applyPageChanges(more.tab, [{ op: 'add', kind: 'photo' }]);
+    expect('refusal' in over && over.refusal.code).toBe('photo_limit');
+  });
+});

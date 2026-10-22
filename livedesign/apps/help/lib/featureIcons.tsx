@@ -252,6 +252,15 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M8.5 15h7M8.5 18h4" />
     </Glyph>
   ),
+  // Two stacked layers of a photo, the front one a landscape: a picture made of layers.
+  'photo-pages': (
+    <Glyph>
+      <path d="M7 4.5h12a1.5 1.5 0 011.5 1.5v10" />
+      <rect x="3.5" y="8" width="14" height="12" rx="1.5" />
+      <circle cx="8" cy="12" r="1.5" />
+      <path d="M3.5 18l4.5-4 3 2.5 2.5-2 4 3.5" />
+    </Glyph>
+  ),
   // A page of writing: a title over lines of text, a short last line where a paragraph ends.
   articles: (
     <Glyph>

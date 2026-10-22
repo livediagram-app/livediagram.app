@@ -23,6 +23,7 @@ import { SlidesClusterSegment } from '@/components/canvas/SlidesClusterSegment';
 import { toolbarTopClearancePx } from '@/lib/canvas-chrome';
 import { CONTENTS_SIDEBAR_WIDTH, contentsSidebarClearancePx } from '@/lib/contents-placement';
 import { ContentsClusterSegment } from './ContentsClusterSegment';
+import { PhotoClusterSegment } from './PhotoClusterSegment';
 import { PagesClusterStrip } from './PagesClusterStrip';
 import { PageNavigatorClusterStrip } from './PageNavigatorClusterStrip';
 import { LayersThemeStrip } from '@/components/canvas/LayersThemeStrip';
@@ -43,9 +44,15 @@ import { useSnapHaptic } from '@/hooks/canvas/useSnapHaptic';
 import { CollaborateClusterButton } from './CollaborateClusterButton';
 import { kindCounts } from '@/components/panels/collaborate/collaborate-model';
 import { panelEnabled } from '@/lib/user-preferences';
+import { loadPhotoChrome } from '@/lib/editor-deferred-code';
+import { usePhotoStripTools } from './usePhotoStripTools';
 import { useUiScale } from '@/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
 import { useSnapGuides } from '@/hooks/canvas/useSnapGuideState';
+
+// A photo page's chrome shows only while one is in focus, so its code loads on demand
+// (lib/editor-deferred-code.ts).
+const PhotoChrome = dynamic(loadPhotoChrome, { ssr: false });
 
 // Values the Canvas computes (selection projection + layout/dock/zoom
 // state) and threads into the chrome alongside its own props.
@@ -249,6 +256,12 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // above a strip that needs the whole top row). A read-only visitor has no
   // strip, so it keeps the corner there.
   const menuInStrip = isMobile && paletteShown;
+  const photoStrip = usePhotoStripTools({
+    photo: props.pagesMode?.photo,
+    isMobile,
+    chromeHidden,
+    onSetCanvasTool: props.onSetCanvasTool,
+  });
   // A workspace frame puts its Back in the menu button's place (WB59), held sideways too: it is the frame's way out.
   const { workbenchBack } = props;
   const explorerMenuButton = workbenchBack ? (
@@ -273,6 +286,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
     collaborateEl,
     slidesPopoverEl,
     contentsPopoverEl,
+    photoPanelOffered,
+    photoPopoverEl,
     contentsSidebarEl,
     contentsDocked,
     contentsSide,
@@ -423,6 +438,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {zenMode ? null : slidesPopoverEl}
       {contentsSidebarEl}
       {contentsPopoverEl}
+      {photoPopoverEl}
       {paletteShown ? (
         <ToolbarPalette
           key={readOnly ? 'participant' : 'standard'}
@@ -431,7 +447,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
           // so the chosen category lasts the page load.
           hidden={chromeHidden}
           canvasTool={canvasTool}
-          onSetCanvasTool={props.onSetCanvasTool}
+          onSetCanvasTool={photoStrip.onSetCanvasTool}
+          photoTools={photoStrip.stripTools}
           onToggleZen={onToggleZen}
           canvasEmpty={elements.length === 0}
           {...pickPaletteAddHandlers(props)}
@@ -441,6 +458,18 @@ export function CanvasChrome(props: CanvasChromeProps) {
           tabElements={elements}
         />
       ) : null}
+
+      {/* A photo page's options flyout while it is in focus, and a phone's tools row (PhotoChrome). */}
+      {chromeHidden ? null : (
+        <PhotoChrome
+          photo={props.pagesMode?.photo}
+          scale={toolbarScale}
+          // Beside a Contents sidebar docked on the left, never under it.
+          left={
+            contentsDocked && contentsSide === 'left' ? contentsSidebarClearancePx(panelScale) : 12
+          }
+        />
+      )}
 
       {/* Corner panels (docs/specs/007-editor/panel-docking.md). Distributed into per-corner stack
           containers (with a free layer + snap guides) by `dockedLayer`; in zen they render inline.
@@ -525,6 +554,16 @@ export function CanvasChrome(props: CanvasChromeProps) {
                       onTogglePopover={(button) => handleDockButtonClick('contents', button, true)}
                     />
                   )
+                }
+                photo={
+                  photoPanelOffered ? (
+                    <PhotoClusterSegment
+                      popoverOpen={activeDockPanel === 'photo-panel'}
+                      onTogglePopover={(button) =>
+                        handleDockButtonClick('photo-panel', button, true)
+                      }
+                    />
+                  ) : null
                 }
                 slides={
                   !isMobile && !readOnly && props.slideDeck ? (

@@ -1,6 +1,7 @@
 // The room a page's title bar takes on screen (docs/specs/007-editor/pages-mode.md "Beside the
 // cog", "The label fits its page"): its fixed buttons, named or as icons, and whether they can be
 // named at all, so the page's label and an empty logo page's invite share what is left.
+import { photoTitleBarRoom } from '@/components/photo/photo-title-bar-room';
 import { logoTitleBarRoom } from './LogoTitleBar';
 import { pageBackgroundRoom } from './PageBackgroundButton';
 import { pageLayoutsRoom } from './PageLayoutsButton';
@@ -21,6 +22,8 @@ type TitleBarButtons = {
   // A slide in the deck: its Add Notes.
   notes: boolean;
   logo: boolean;
+  // A photo page's Image, Select and Filter menus.
+  photo?: boolean;
   // A wireframe page's Layout and Background.
   page: boolean;
   // A wireframe page's Device.
@@ -34,6 +37,7 @@ export function titleBarFixedRoom(b: TitleBarButtons, named: boolean): number {
     (b.deck ? pageDeckRoom(named) : 0) +
     (b.notes ? pageNotesRoom(named) : 0) +
     (b.logo ? logoTitleBarRoom(true, named) : 0) +
+    (b.photo ? photoTitleBarRoom(named) : 0) +
     (b.page ? pageLayoutsRoom(named) + pageBackgroundRoom(named) : 0) +
     (b.device ? pageDeviceRoom(named) : 0)
   );

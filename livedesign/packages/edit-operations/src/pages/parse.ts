@@ -19,9 +19,19 @@ import {
   WIREFRAME_DEVICE_IDS,
   WIREFRAME_FRAME_LOOKS,
 } from '@livedesign/document';
+import { PHOTO_MAX_AREA, PHOTO_PIXEL_CAP } from '@livedesign/photo-engine';
 
-const PAGE_KINDS = ['logo', 'wireframe'] as const;
+const PAGE_KINDS = ['logo', 'wireframe', 'photo'] as const;
 const WIREFRAME_KEYS = ['device', 'frameLook', 'systemBars'];
+
+/** A photo page's picture side, px. */
+const photoSide = (v: unknown, field: string, change: number): number => {
+  if (typeof v === 'number' && Number.isInteger(v) && v >= 1 && v <= PHOTO_PIXEL_CAP) return v;
+  return bad(
+    `"${field}" is a photo's size in px: a whole number from 1 to ${PHOTO_PIXEL_CAP}.`,
+    change,
+  );
+};
 
 type Raw = Record<string, unknown>;
 
@@ -151,7 +161,7 @@ function pageChange(v: unknown, i: number): PageChange {
       ? {}
       : { layout: text(v.layout, 'layout', PAGES_REF_MAX, i) };
   switch (op) {
-    case 'add':
+    case 'add': {
       onlyKeys(
         v,
         [
@@ -164,13 +174,27 @@ function pageChange(v: unknown, i: number): PageChange {
           'layout',
           'at',
           ...WIREFRAME_KEYS,
+          'width',
+          'height',
         ],
         'add',
         i,
       );
+      const kind = oneOf(PAGE_KINDS, v.kind, 'kind', i);
+      if ((v.width !== undefined || v.height !== undefined) && kind !== 'photo')
+        bad('"width" and "height" are a photo page\'s alone.', i);
+      let sized: { width?: number; height?: number } = {};
+      if (kind === 'photo' && (v.width !== undefined || v.height !== undefined)) {
+        const width = photoSide(v.width, 'width', i);
+        const height = photoSide(v.height, 'height', i);
+        if (width * height > PHOTO_MAX_AREA)
+          bad(`A photo holds at most ${PHOTO_MAX_AREA.toLocaleString('en')} pixels.`, i);
+        sized = { width, height };
+      }
       return {
         op,
-        kind: oneOf(PAGE_KINDS, v.kind, 'kind', i),
+        kind,
+        ...sized,
         ...size(),
         ...orientation(),
         ...name(),
@@ -179,6 +203,7 @@ function pageChange(v: unknown, i: number): PageChange {
         ...(v.at === undefined ? {} : { at: place(v.at, 'at', i) }),
         ...wireframe(),
       };
+    }
     case 'set': {
       onlyKeys(
         v,

@@ -4,6 +4,7 @@
 import {
   pagesOf,
   newLogoPage,
+  newPhotoPage,
   newWireframePage,
   withPages,
   type Page,
@@ -11,6 +12,7 @@ import {
 } from './page';
 import type { Tab } from './index';
 import type { WireframeDeviceId } from './wireframe-device';
+import { blankPhoto, withPhoto } from './photo-pages';
 
 type PagesTab = Pick<Tab, 'elements'> & {
   pages?: unknown;
@@ -59,8 +61,8 @@ export function offersPageKindChoice(
   return pages.length === 1 && pages[0]!.id === pageId && !pages[0]!.kind && contentCount === 0;
 }
 
-/** The tab with its first page's kind chosen: a logo page (the 1024 artboard) or a wireframe page
- *  (the device). Null when the page no longer offers the choice. */
+/** The tab with its first page's kind chosen: a logo page (the 1024 artboard), a wireframe page
+ *  (the device) or a photo page (a blank photo). Null when the page no longer offers the choice. */
 export function withPageKindChosen<T extends PagesTab>(
   tab: T,
   pageId: string,
@@ -72,6 +74,11 @@ export function withPageKindChosen<T extends PagesTab>(
   const page = pages.find((p) => p.id === pageId);
   if (!page || pages.length !== 1 || page.kind) return null;
   const { name } = page;
+  if (kind === 'photo') {
+    // A photo page keeps the page's name; it is never painted, its picture blank until started.
+    const photoPage = { ...newPhotoPage(page.id), ...(name ? { name } : {}) };
+    return withPhoto(withPages(tab, [photoPage]), page.id, blankPhoto());
+  }
   if (kind === 'logo') {
     // The artboard keeps the page's name and fill; a logo page takes no pattern.
     const fill = page.background?.fill;

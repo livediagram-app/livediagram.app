@@ -2,6 +2,7 @@
   "TELEMETRY_ENABLED": "true",
   "IMAGE_MAX_PER_OWNER": "100",
   "IMAGE_MAX_BYTES_PER_OWNER": "104857600",
+  "PHOTO_MAX_BYTES_PER_TAB": "536870912",
   "environments": {
     "production": {
       "APP_BASE_URL": "https://www.livedesign.app"

@@ -25,6 +25,7 @@ import {
 import { countedVerbs } from '@livedesign/agent-verbs';
 import { MCP_TOOL_VERBS } from '@livedesign/agent-verbs/mcp';
 import { CANVAS_CONTROLS } from './event-vocab';
+import { ADJUSTMENT_IDS, FILTERS, LAYER_ADJUSTMENT_IDS } from '@livedesign/photo-engine';
 
 type ComputedValues = {
   values: readonly (string | null)[];
@@ -34,6 +35,44 @@ type ComputedValues = {
 
 const APPS = resolve(__dirname, '../..');
 const read = (path: string) => readFileSync(resolve(APPS, path), 'utf8');
+
+function tokensAfterBlock(path: string, marker: string, close: string): string[] {
+  const source = read(path);
+  const start = source.indexOf(marker);
+  if (start < 0) return [];
+  const block = source.slice(start, source.indexOf(close, start + marker.length));
+  return [...block.matchAll(/'([A-Za-z0-9-]+)'/g)].map((m) => m[1]!);
+}
+
+const pascalOf = (id: string) => id.replace(/(^|-)(\w)/g, (_m, _d, c: string) => c.toUpperCase());
+
+// The photo tools, as the editor names them (apps/live/lib/photo-editor/tool-state.ts TOOL_NAMES' keys).
+const PHOTO_TOOLS = tokensAfterBlock(
+  'live/lib/photo-editor/tool-state.ts',
+  'export type PhotoToolId',
+  ';',
+);
+// The layer operations photo-actions.ts counts, `PhotoLayer<Operation>`.
+const PHOTO_LAYER_OPS = [
+  'New',
+  'NewGroup',
+  'ViaCopy',
+  'Duplicate',
+  'Delete',
+  'Group',
+  'Ungroup',
+  'MergeDown',
+  'MergeVisible',
+  'Flatten',
+  'Clip',
+  'AddMask',
+  'ApplyMask',
+  'DeleteMask',
+  'ToggleMask',
+  'InvertMask',
+  'Rasterize',
+  'ViaCut',
+];
 
 // Every quoted token in the first block that follows `marker`.
 function tokensAfter(source: string, marker: string, close: string): string[] {
@@ -419,6 +458,44 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: 'titleCaseType(pattern): a background pattern',
   },
   'apps/live/hooks/canvas/useTabTheme.ts Theme·Changed': { values: THEMES, open: THEME_WHY },
+  // A photo page (docs/specs/031-photo/photo-pages.md "Telemetry"): each tool's use, each adjustment and filter
+  // applied, each layer operation, each panel tab and export format, from their catalogues.
+  'apps/live/components/photo/PhotoCanvasOverlays.tsx Element·Used': {
+    values: PHOTO_TOOLS.map((t) => `Photo${pascalOf(t)}`),
+  },
+  'apps/live/components/photo/PhotoAdjustTab.tsx Element·Changed': {
+    values: LAYER_ADJUSTMENT_IDS.map((id) => `PhotoAdjust${pascalOf(id)}`),
+  },
+  'apps/live/components/photo/PhotoApplyDialogs.tsx Element·Changed': {
+    values: [
+      ...Object.keys(FILTERS).map((id) => `PhotoFilter${pascalOf(id)}`),
+      ...ADJUSTMENT_IDS.map((id) => `PhotoAdjust${pascalOf(id)}`),
+    ],
+  },
+  'apps/live/components/photo/PhotoLayerAddMenus.tsx Element·Changed': {
+    values: [
+      ...LAYER_ADJUSTMENT_IDS.map((id) => `PhotoAdjust${pascalOf(id)}`),
+      'PhotoLayerEffectDropShadow',
+      'PhotoLayerEffectOuterGlow',
+      'PhotoLayerEffectStroke',
+      'PhotoLayerEffectColourOverlay',
+    ],
+  },
+  'apps/live/lib/photo-editor/photo-actions.ts Element·Changed': {
+    values: [
+      'PhotoAutoTone',
+      'PhotoAutoContrast',
+      'PhotoAutoColour',
+      ...PHOTO_LAYER_OPS.map((op) => `PhotoLayer${op}`),
+      ...Object.keys(FILTERS).map((id) => `PhotoFilter${pascalOf(id)}`),
+    ],
+  },
+  'apps/live/components/photo/PhotoPanel.tsx UI·Opened': {
+    values: ['PhotoPanelLayers', 'PhotoPanelAdjust', 'PhotoPanelHistory'],
+  },
+  'apps/live/components/photo/PhotoExportPanel.tsx Document·Exported': {
+    values: ['PhotoPng', 'PhotoJpeg', 'PhotoWebp', 'PhotoPsd', 'PhotoLayers'],
+  },
   'apps/live/hooks/editor/useLogoTools.ts UI·Toggled': {
     values: [
       'LogoGuidesOn',

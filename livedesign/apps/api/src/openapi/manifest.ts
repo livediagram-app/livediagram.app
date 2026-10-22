@@ -704,6 +704,75 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     },
     statuses: [200, 403, 404],
   },
+  // ---- Photo blobs (docs/specs/031-photo/photo-store.md "The routes") ----
+  {
+    method: 'POST',
+    path: '/documents/{id}/tabs/{tabId}/photo-blobs-held',
+    segment: 'documents',
+    tag: 'Documents',
+    summary:
+      'Which of the given photo blob ids (`{ ids }`, at most 500) this tab already holds a ref to. Edit access; not for tokens.',
+    auth: 'guest-or-clerk',
+    requestSchema: {
+      type: 'object',
+      properties: { ids: { type: 'array', items: { type: 'string' }, maxItems: 500 } },
+      required: ['ids'],
+    },
+    responseSchema: {
+      type: 'object',
+      properties: { has: { type: 'array', items: { type: 'string' } } },
+    },
+    statuses: [200, 400, 403, 404, 503],
+  },
+  {
+    method: 'POST',
+    path: '/documents/{id}/tabs/{tabId}/photo-blobs',
+    segment: 'documents',
+    tag: 'Documents',
+    summary:
+      "Store a batch of photo blobs (a photo page's tiles, sources and previews) for this tab: a 4-byte length, a JSON index `[{ id, type, size }]`, then the bytes. Each id is checked against its bytes; PNG, JPEG or WebP only. 403 photo_full past the tab's cap. Edit access; not for tokens.",
+    auth: 'guest-or-clerk',
+    requestSchema: { type: 'string', format: 'binary' },
+    responseSchema: {
+      type: 'object',
+      properties: { stored: { type: 'array', items: { type: 'string' } } },
+    },
+    statuses: [200, 400, 403, 404, 413, 415, 503],
+  },
+  {
+    method: 'POST',
+    path: '/documents/{id}/tabs/{tabId}/photo-blobs-adopt',
+    segment: 'documents',
+    tag: 'Documents',
+    summary:
+      'Give this tab refs to the photo blobs another tab holds (`{ fromDocument, fromTab, ids }`), where the caller may read that tab now. For duplicated tabs and layers pasted between tabs. Edit access; not for tokens.',
+    auth: 'guest-or-clerk',
+    requestSchema: {
+      type: 'object',
+      properties: {
+        fromDocument: { type: 'string' },
+        fromTab: { type: 'string' },
+        ids: { type: 'array', items: { type: 'string' }, maxItems: 2000 },
+      },
+      required: ['fromDocument', 'fromTab', 'ids'],
+    },
+    responseSchema: {
+      type: 'object',
+      properties: { adopted: { type: 'array', items: { type: 'string' } } },
+    },
+    statuses: [200, 400, 403, 404, 503],
+  },
+  {
+    method: 'GET',
+    path: '/documents/{id}/tabs/{tabId}/photo-blobs/{blobId}',
+    segment: 'documents',
+    tag: 'Documents',
+    summary:
+      "A photo blob's bytes, through a tab the caller may read that holds a ref to it. Named by content, so cached for good.",
+    auth: 'guest-or-clerk',
+    responseSchema: { type: 'string', format: 'binary' },
+    statuses: [200, 404, 503],
+  },
   {
     method: 'POST',
     path: '/documents/{id}/tabs/{tabId}/link',

@@ -1,7 +1,6 @@
-// The blanks of a page kind: Blank Logo and the
-// blank wireframes, each a tab that opens in Pages on exactly one empty page whose
-// kind is already chosen. The page is made the way the first page's What Is This Page For? makes it
-// (withPageKindChosen on an unchosen page), so a blank of a kind and a chosen Blank Illustration are the same page.
+// The blanks of a page kind: Blank Logo, the blank wireframes and Photo Edit, each a tab that opens in Pages on
+// exactly one empty page whose kind is already chosen. The page is made the way the first page's What Is This Page
+// For? makes it (withPageKindChosen on an unchosen page), so a blank of a kind and a chosen Blank Illustration are the same page.
 // Pure: merged in by templateCanvasOverrides, so every application path (the picker, /new, the MCP worker) lands it.
 import {
   pagesOf,
@@ -20,6 +19,8 @@ export const BLANK_PAGE_TEMPLATE_KINDS = {
   'blank-wireframe-browser': 'wireframe',
   'blank-wireframe-laptop': 'wireframe',
   'blank-wireframe-watch': 'wireframe',
+  // An unstarted photo page: its Start a Photo card asks for a picture or a blank (docs/specs/031-photo/photo-pages.md).
+  'photo-edit': 'photo',
 } as const satisfies Partial<Record<TemplateKind, PageKind>>;
 
 // Each blank wireframe's device (docs/specs/007-editor/wireframe-pages.md "Templates").

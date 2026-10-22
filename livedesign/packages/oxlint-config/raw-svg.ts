@@ -28,6 +28,8 @@ export const ICON_ART_ALLOWLIST = [
   '**/components/palette/context-menu-tiles.tsx',
   '**/components/palette/mind-map-menu-glyphs.tsx',
   '**/components/palette/sankey-menu-glyphs.tsx',
+  // A photo tool's choices drawn as what they do (a selection mode's two shapes, a crop ratio's box).
+  '**/components/photo/option-pictures.tsx',
   '**/components/canvas/quick-style-rows.tsx',
   '**/components/canvas/layout-thumb.tsx',
   '**/components/dialogs/export-format-icons.tsx',

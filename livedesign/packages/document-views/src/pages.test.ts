@@ -109,3 +109,58 @@ describe('the pages view', () => {
     expect((out.json as PagesView).elision).not.toBeNull();
   });
 });
+
+describe('a photo page (docs/specs/031-photo/photo-pages.md "Agents")', () => {
+  it('names its pixel size and lists its layers top first, and offers no layouts', () => {
+    const tab = {
+      id: 'tab-photo',
+      name: 'Photo',
+      opensIn: 'pages',
+      pages: [
+        {
+          id: 'page-ph',
+          orientation: 'landscape',
+          size: 'photo',
+          fit: { width: 2048, height: 1536 },
+          kind: 'photo',
+        },
+      ],
+      elements: [],
+      photos: {
+        'page-ph': {
+          width: 4000,
+          height: 3000,
+          layers: [
+            { id: 'ly-00000001', name: 'Background', layerKind: 'pixel', pixels: { tiles: {} } },
+            {
+              id: 'ly-00000002',
+              name: 'Inside',
+              layerKind: 'pixel',
+              parent: 'ly-00000003',
+              pixels: { tiles: {} },
+              opacity: 0.5,
+            },
+            { id: 'ly-00000003', name: 'Group 1', layerKind: 'group', visible: false },
+            {
+              id: 'ly-00000004',
+              name: 'Levels 1',
+              layerKind: 'adjustment',
+              blend: 'multiply',
+              adjustment: { id: 'levels', params: {} },
+            },
+          ],
+        },
+      },
+    } as unknown as Tab;
+    const out = pagesOf(tab);
+    expect(out.text).toContain('photo 4000x3000 px, 4 layers');
+    const layerLines = out.text.split('\n').filter((l) => l.includes('layer "'));
+    expect(layerLines).toEqual([
+      '  layer "Levels 1" · adjustment · multiply',
+      '  layer "Group 1" · group · hidden',
+      '    layer "Inside" · pixel · 50%',
+      '  layer "Background" · pixel',
+    ]);
+    expect(out.text).not.toMatch(/layouts photo/);
+  });
+});

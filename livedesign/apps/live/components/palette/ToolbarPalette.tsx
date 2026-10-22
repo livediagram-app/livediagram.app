@@ -88,6 +88,9 @@ type Props = Pick<
     // A Participant (docs/specs/013-workspace/share-roles.md): the Participate category alone, its selection
     // modes, and no Search (it would offer every element type).
     participant?: boolean;
+    // A photo page in focus (docs/specs/031-photo/photo-pages.md "The photo tools"): its tools in place of the
+    // categories, their tiles and More, or (a Participant's) added at the strip's end.
+    photoTools?: { node: ReactNode; inPlaceOfCategories: boolean } | null;
   };
 // The strip's card, and the leading card beside it on a phone.
 const CARD_CLASS = `${TOOLBAR_CARD} ${BAND_TINT} ${BAND_STRIP_FLUSH} ${PHONE_TOOLBAR_ITEMS}`;
@@ -137,6 +140,7 @@ function CardWidth({ swipe, children }: { swipe: boolean; children: ReactNode })
 
 export function ToolbarPalette(props: Props) {
   const { canvasTool, themeTint, pendingDraw, leading } = props;
+  const photoInPlace = !!props.photoTools?.inPlaceOfCategories;
   // The phone's row: the strip at the left gutter, beside the menu card when there is one.
   const phoneRow = leading !== undefined;
   const hidden = props.hidden;
@@ -430,7 +434,9 @@ export function ToolbarPalette(props: Props) {
                         {/* A phone's strip runs the two pickers together, sparing the room for tiles. */}
                         {swipe ? null : <Divider />}
                       </>
-                      {categoryBar ? (
+                      {photoInPlace ? (
+                        props.photoTools!.node
+                      ) : categoryBar ? (
                         <CategoryBarButtons
                           bar={bar}
                           categories={barCategories}
@@ -469,10 +475,10 @@ export function ToolbarPalette(props: Props) {
                         </>
                       )}
                       {/* The bar ends on its last category; Search brings its own divider. */}
-                      {categoryBar ? null : <Divider />}
+                      {categoryBar || photoInPlace ? null : <Divider />}
                     </>
                   }
-                  {categoryBar ? null : (
+                  {categoryBar || photoInPlace ? null : (
                     <>
                       <ToolbarStripRail
                         scrollable={swipe}
@@ -515,6 +521,12 @@ export function ToolbarPalette(props: Props) {
                       ) : null}
                     </>
                   )}
+                  {props.photoTools && !photoInPlace ? (
+                    <>
+                      <Divider />
+                      {props.photoTools.node}
+                    </>
+                  ) : null}
                   {/* Search, last: any element type, this mode's and the others' (docs/specs/007-editor/toolbar-layout.md
                   "Search: every element type"). */}
                   {participant ? null : (

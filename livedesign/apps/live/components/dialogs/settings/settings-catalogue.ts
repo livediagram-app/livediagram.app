@@ -443,7 +443,7 @@ const ELEMENT_TOURS_SECTION = 'Show Me';
 
 // One page kind's track of the Pages tour (lib/tour-tracks.ts), as its own row nested under Pages Tours, the switch
 // over every kind (docs/specs/007-editor/user-preferences.md "Tours"). On while the track is owed; off answers it, on
-// forgets its answer. Each track is named for itself ("Slides Tour"). The tour's single seen flag (set by Power user
+// forgets its answer. Each track is named for itself ("Logo Tour"). The tour's single seen flag (set by Power user
 // mode) is folded into the answered list first, so turning one track back on leaves the others as they were.
 function pagesTourTrackSwitch(
   kind: PageKind,
@@ -1135,8 +1135,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         {
           label: 'Pages Tours',
           event: { category: 'UI', on: 'PagesTourSeenOff', off: 'PagesTourSeenOn' },
-          keywords: 'tour walkthrough onboarding tutorial pages wireframe logo all replay',
-          description: 'Every Pages tour at once: wireframes and logos.',
+          keywords: 'tour walkthrough onboarding tutorial pages wireframe logo photo all replay',
+          description: 'Every Pages tour at once: wireframes, logos and photos.',
           helpArticle: 'pagesTour',
         },
       ),
@@ -1152,6 +1152,13 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         event: { category: 'UI', on: 'LogoTourSeenOff', off: 'LogoTourSeenOn' },
         keywords: 'tour walkthrough onboarding tutorial pages logo artboard brand replay',
         description: 'On a logo artboard: layouts, guides, mirroring and combining shapes.',
+        helpArticle: 'pagesTour',
+      }),
+      pagesTourTrackSwitch('photo', {
+        label: 'Photo Tour',
+        event: { category: 'UI', on: 'PhotoTourSeenOff', off: 'PhotoTourSeenOn' },
+        keywords: 'tour walkthrough onboarding tutorial pages photo picture layers filters replay',
+        description: 'On a photo page: the tools, layers, adjustments and filters.',
         helpArticle: 'pagesTour',
       }),
       // Element tours (docs/specs/007-editor/element-tours.md "Settings"): their own closed section, one switch for

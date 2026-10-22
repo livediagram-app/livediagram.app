@@ -4,6 +4,7 @@
 import type { PageKind } from '@livedesign/document';
 import { LOGO_WELCOME, logoTourSteps } from './logo-tour-steps';
 import { WIREFRAME_WELCOME, wireframeTourSteps } from './wireframe-tour-steps';
+import { PHOTO_WELCOME, photoTourSteps } from './photo-tour-steps';
 import type { PageTourApi, PageTourStep } from './page-tour-api';
 import { stepTelemetryType } from './tour-step';
 
@@ -12,12 +13,14 @@ export { resetPageTour, tidyPageTour } from './page-tour-dom';
 
 /** A kind's steps. */
 export function pageTourSteps(kind: PageKind): PageTourStep[] {
+  if (kind === 'photo') return photoTourSteps();
   return kind === 'logo' ? logoTourSteps() : wireframeTourSteps();
 }
 
 const WELCOMES: Record<PageKind, PageTourStep> = {
   logo: LOGO_WELCOME,
   wireframe: WIREFRAME_WELCOME,
+  photo: PHOTO_WELCOME,
 };
 
 /** Whether a step's control is on screen as the tour starts (spec "Filtering"): what it needs to open, else its own

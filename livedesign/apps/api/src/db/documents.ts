@@ -2,6 +2,7 @@
 // timestamps) plus the copy operation. Tab content lives in tabs.ts;
 // the read DTO joins owner display info from participants.
 
+import { copyBlobRefsStatements } from './photo-blobs';
 import { remapTabLinks, type Element } from '@livedesign/document';
 import { rowToTabSummary, type TabRow } from '../tab-row';
 import type { DocumentDTO, DocumentSummary, Env, TabSummaryDTO } from '../types';
@@ -531,6 +532,9 @@ export async function copyDocument(
       ...imageRefAddStatements(env, freshTabId, imageRefIdsFromData(data)),
       // Placement grants (docs/specs/009-elements/images.md): the copy may serve what its source could.
       ...imageGrantCopyStatements(env, sourceId, newId, imageRefIdsFromData(data), now),
+      // Its photos' pixels: the copy may read every blob its source tab held
+      // (docs/specs/031-photo/photo-store.md "Copies, duplicates and links").
+      ...copyBlobRefsStatements(env, row.id, freshTabId, now),
     ];
   });
   await env.DB.batch(inserts);

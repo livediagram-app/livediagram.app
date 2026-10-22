@@ -32,6 +32,7 @@ const SIZE_TILE: Record<PageSizeId, { label: string; hint: string }> = {
   a4: { label: 'A4', hint: 'A4 paper, for print' },
   logo: { label: 'Logo', hint: 'Logo artboard (1024 x 1024)' },
   device: { label: 'Device', hint: 'A wireframe page is its device' },
+  photo: { label: 'Photo', hint: "The picture's own size" },
   fit: { label: 'Fit', hint: 'Sized around the board it was made for' },
 };
 

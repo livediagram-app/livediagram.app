@@ -38,6 +38,8 @@ import {
   servableImageIds,
 } from './db';
 import { imageRefIds } from './image-refs/extract';
+import { photoBlobKey, tabHoldsBlobs } from './db/photo-blobs';
+import { photosOf } from '@livedesign/photo-engine';
 import type { DocumentDTO, Env } from './types';
 
 // Content type for the cached SVG snapshot. Local to this module — the
@@ -231,12 +233,54 @@ async function renderTabBodyToSvg(
         }
       : tab,
   );
+  // A photo page draws its preview (docs/specs/031-photo/photo-store.md "Previews").
+  const photoPreviews =
+    firstPage?.kind === 'photo'
+      ? await loadPhotoPreviews(env, tab, [firstPage.id])
+      : new Map<string, string>();
   const drawWith = {
+    resolvePhotoHref: (pageId: string) => photoPreviews.get(pageId),
     resolveImageHref: (id: string) => images.get(id),
     resolveIconArt: resolveIconExportArt,
     resolveStickerArt,
   };
   return firstPage ? renderPageToSvg(tab, firstPage, drawWith) : renderElementsToSvg(tab, drawWith);
+}
+
+// A photo page's preview (a flattened copy, docs/specs/031-photo/photo-store.md "Previews") as a data
+// URL by page id, for the pages asked for: read from R2 only when the tab holds a ref to it, within
+// the snapshot's embed budget; a missing one leaves the page's checkerboard.
+async function loadPhotoPreviews(
+  env: Env,
+  tab: Tab,
+  pageIds: readonly string[],
+): Promise<Map<string, string>> {
+  const out = new Map<string, string>();
+  if (!env.PHOTO_BLOBS) return out;
+  const photos = photosOf(tab);
+  const wanted = pageIds
+    .map((id) => [id, photos[id]?.preview] as const)
+    .filter((e): e is readonly [string, string] => typeof e[1] === 'string');
+  if (wanted.length === 0) return out;
+  const held = await tabHoldsBlobs(
+    env,
+    tab.id,
+    wanted.map(([, blob]) => blob),
+  );
+  let budget = IMAGE_EMBED_BUDGET_BYTES;
+  for (const [pageId, blob] of wanted) {
+    if (!held.has(blob)) continue;
+    const object = await env.PHOTO_BLOBS.get(photoBlobKey(blob));
+    if (!object) continue;
+    const bytes = new Uint8Array(await object.arrayBuffer());
+    if (bytes.length > budget) continue;
+    budget -= bytes.length;
+    let bin = '';
+    for (let i = 0; i < bytes.length; i += 0x8000)
+      bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+    out.set(pageId, `data:${object.httpMetadata?.contentType ?? 'image/webp'};base64,${btoa(bin)}`);
+  }
+  return out;
 }
 
 // Read each image element's bytes from R2 and return them keyed by imageId

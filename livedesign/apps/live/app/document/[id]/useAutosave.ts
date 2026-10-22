@@ -9,6 +9,7 @@ import {
   type RefObject,
   type SetStateAction,
 } from 'react';
+import { photoUploads } from '@/lib/photo-editor/upload-queue';
 import type { Tab } from '@livedesign/document';
 import {
   apiDeleteTab,
@@ -330,8 +331,11 @@ export function useAutosave(opts: {
               before,
               t,
               () => roomRef.current,
-              () =>
-                apiSaveTab(selfId, documentId, t, sessionShareCode, {
+              async () => {
+                // A photo's pixels go first: the save never names a blob the store lacks
+                // (docs/specs/031-photo/photo-store.md "Committing an edit").
+                if (photoUploads.pending(t.id)) await photoUploads.whenSettled(t.id);
+                return apiSaveTab(selfId, documentId, t, sessionShareCode, {
                   // A loaded tab's content is authoritative, so an empty body is
                   // an intentional clear (reset-canvas / delete-all) the server
                   // backstop should accept; an unloaded placeholder is never in
@@ -340,7 +344,8 @@ export function useAutosave(opts: {
                   roomCursor,
                   // From the same render as `t`, never ahead of it (useChangesetSeen).
                   ...(changesetSeen.has(t.id) ? { changesetSeen: changesetSeen.get(t.id) } : {}),
-                }),
+                });
+              },
               prepared,
             ),
           )

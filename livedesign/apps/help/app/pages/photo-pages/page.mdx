@@ -1,0 +1,82 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { PhotoPagesScene } from '@/components/illustrations/photo-pages';
+
+export const metadata = helpMetadata({
+  title: 'Photo Pages',
+  description:
+    'Edit pictures and photos in a page: layers and masks, brushes, smart selections, healing, adjustments, forty-four filters, and PNG, JPEG, WebP and PSD export.',
+  path: '/help/pages/photo-pages/',
+});
+
+<ArticleLayout
+  title="Photo Pages"
+  description="A picture made of layers, edited with brushes, selections, adjustments and filters, right beside your other pages."
+  categoryTitle="Pages"
+  categorySlug="pages"
+  subArticles={getSubArticles('photo-pages')}
+>
+
+A **photo page** is a kind of page ([Working with Pages](/help/pages/working-with-pages/)) for editing pictures: a photo made of **layers**, edited pixel by pixel with the tools an image editor has. It sits in the row of pages like any other, so a logo, a wireframe and the photos for them can live in one document.
+
+<Figure caption="A photo page at work: the photo tools in the palette with the Brush in hand, its options card open under it, the page's Image, Select and Filter menus, a selection round the sun, and the Photo panel open above its button.">
+  <PhotoPagesScene />
+</Figure>
+
+## Starting a Photo
+
+- Press the **+** after the last page and choose **Photo**, or choose **Photo** when a new tab's first page asks **What Is This Page For?**
+- The new page asks how to start: **Open a Picture** (upload one, pick from your gallery, or search), or a **Blank** canvas in a preset size (HD, 4K, Square, Portrait Post, Story, A4 Print, Icon or your own size), transparent until you paint or fill it.
+- Drop a picture file on the **+**, or on a new photo page, to start from it. Drop one on a photo you've started and it lands as a new layer.
+- Have an image on another page? Right-click it and choose **Edit as Photo**: a new photo page opens with that picture.
+- A photo can be up to 8192 pixels on a side (4096 on a phone or tablet). A larger picture is scaled down to fit.
+
+## The Tools
+
+While a photo page is in focus, the palette at the top of the canvas holds the photo tools in place of its categories, with your colours at the end. The tools you'll use most (Move, Marquee, Brush, Eraser, Crop and Text) have their own buttons; everything else is in **Select**, **Paint**, **Retouch** and **Shapes**. Open one to see its tools, and point at a group like Lasso to see all its tools beside it. Pick up a tool and its main settings (a brush's size, hardness, opacity and flow) appear in a small panel on the left. Press the tool again to open all its options in a card just below it: its tip, paint and other settings laid out in sections, with a line on whatever you point at. Press on the photo to start working and the card tucks away, or press the tool (or Escape) to hide it. Escape steps back one thing at a time: it cancels what you have under way, then clears the selection, then puts the tool down. A click with a marquee also clears the selection. Pick a selection mode at the palette's left to put the photo tool down too, and the categories come back once you leave the page. On a phone the tools are a row at the bottom of the screen.
+
+- **Move** (V): drag a layer, or the selected pixels. Arrow keys nudge it.
+- **Select**: **Rectangle** and **Ellipse** (M), **Lasso**, **Polygon Lasso** and the edge-hugging **Magnetic Lasso** (L), **Quick Select** and **Magic Wand** (W). Hold Shift to add, Alt to take away.
+- **Crop** (C): drag the box, pick a ratio, straighten, and press Enter.
+- **Eyedropper** (I): take a colour from the picture.
+- **Retouch**: **Spot Heal** and **Heal** (J) paint a blemish away from what's around it, **Clone Stamp** (S) copies from one place to another (Alt+press to choose where from), and **Red Eye** fixes a red pupil with one press.
+- **Paint**: **Brush** and **Pencil** (B), **Eraser** and **Background Eraser** (E), **Gradient** and **Paint Bucket** (G). `[` and `]` change the brush size, Shift with them its hardness.
+- **Touch up**: **Blur**, **Sharpen** and **Smudge** (R), **Dodge**, **Burn** and **Sponge** (O).
+- **Text** (T) and **Shapes** (U): type and shapes drawn into the picture. Shapes go on the layer you're working on. With the Text tool, click your text to change it or drag it to move it; with **Move** (V), press on anything to drag it.
+
+Under the tools are your **colours**: the foreground over the background. X swaps them, D resets them to black and white, and a press opens the colour picker.
+
+## Layers
+
+Press **Photo** at the bottom right, joined to **Contents**, to open the **Photo Panel** above it: **Layers**, **Adjust** and **History**, with a histogram and the colour under the pointer above them. It stays open while you work on the photo; press **Photo** again to put it away.
+
+- **Layers** lists the photo top first. Press the eye to hide one (Alt+press to show only it), drag a row to reorder, and double-click a name to rename it. Over the list: the **blend mode** (twenty-seven, from Multiply and Screen to Colour and Luminosity), **Opacity**, and the **locks**.
+- Under the list: **New Layer**, **New Group**, **Add Mask** (paint it black to hide, white to show), **New Fill or Adjustment**, **Effects** (drop shadow, outer glow, stroke and colour overlay) and **Delete**.
+- Right-click a layer for **Duplicate**, **Merge Down**, **Merge Visible**, **Flatten Image**, **Group**, clipping masks, mask actions and more.
+- Layers are yours to manage: the tools never add, merge or remove one on their own. Painting needs a pixel layer; if a text or adjustment layer is selected, you'll be offered **New Layer** instead.
+
+## Adjusting and Filtering
+
+- **Adjust** offers nineteen adjustments, from **Levels**, **Curves** and **Hue/Saturation** to **Black & White**, **Gradient Map** and **White Balance**. Each one you add is an **adjustment layer**: it changes everything under it, and you can change its settings or remove it at any time.
+- To change a layer's pixels for good instead, use the page's **Image** menu: **Adjustments**, **Auto Tone**, **Auto Contrast** and **Auto Colour**, plus **Image Size**, **Canvas Size**, rotate, flip, **Crop to Selection** and **Trim Transparent**.
+- The **Filter** menu holds forty-four filters in nine groups: blurs (Gaussian, motion, radial, lens, tilt-shift and more), sharpening, noise, stylize, pixelate, distort, render (clouds, vignette, lens flare), enhance (clarity, dehaze, grain) and more. Each shows a live preview before you press **OK**.
+- The **Select** menu has **Subject** (finds the main subject for you), **Remove Background** (hides everything else with a mask you can fix), **Colour Range**, and ways to grow, shrink, smooth and feather a selection.
+
+## Working Together
+
+Everyone on the document sees the photo and its layers. When you finish a stroke or a filter, it reaches everyone else about a second later. Two people can work on different layers at once; on the same layer, the last change to land wins. Your tool, colours and selection are your own.
+
+Someone with a view link sees the photo; someone who can take part sees its layers too and can add notes on top, but only editors change the picture.
+
+## Exporting
+
+- Export a photo page like any page, at its full size. Or use **Export › Photo** for **PNG**, **JPEG**, **WebP** or a layered **PSD** that opens in other editors, or **Layers as Files** for each layer as its own PNG.
+- You can open a PSD too: its layers, masks, groups and blend modes come in as layers.
+
+## Good to Know
+
+- Undo and redo cover your last fifty photo edits in this session; the **History** tab lets you jump back to any of them.
+- Text, shapes and stickers placed on a photo page (from the palette's Search, or its categories once you leave the page) stay ordinary elements on top of the picture. Right-click one and choose **Rasterize Into Layer** to paint it into the photo.
+
+</ArticleLayout>

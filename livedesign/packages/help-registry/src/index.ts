@@ -147,8 +147,8 @@ export const categories: Category[] = [
   {
     slug: 'pages',
     title: 'Pages',
-    description: 'Design logos and wireframes on pages, with backgrounds, presenting and exports.',
-    articleCount: 6,
+    description: 'Design logos, wireframes and photos on pages, with backgrounds, presenting and exports.',
+    articleCount: 7,
     kind: 'feature',
     groups: ['Basics', 'Kinds of Page'],
   },
@@ -1280,7 +1280,7 @@ export const articles: Article[] = [
     title: 'Templates',
     description: 'Start a document from a ready-made template instead of a blank page.',
     keywords:
-      'template templates starter scaffold quick start prebuilt blank logo blank tab blank illustration empty page artboard wireframe phone tablet website laptop watch app logo design presentations search find a template start making pages recommended',
+      'template templates starter scaffold quick start prebuilt blank logo blank tab blank illustration empty page artboard wireframe phone tablet website laptop watch app logo design photo edit photo editor picture presentations search find a template start making pages recommended',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Basics',
@@ -1314,6 +1314,17 @@ export const articles: Article[] = [
       'Wireframe a screen inside a phone, tablet, laptop, desktop, browser or watch frame, from ready-made screens.',
     keywords:
       'wireframe wireframes mockup mock up mockups prototype ui ux screen screens app design device frame phone iphone android mobile tablet ipad laptop desktop monitor browser website web page watch smartwatch status bar dynamic island notch home indicator landscape portrait safe area sign in login onboarding dashboard settings profile checkout pricing chat feed landing page button text field input search switch toggle placeholder',
+    category: 'Pages',
+    categorySlug: 'pages',
+    group: 'Kinds of Page',
+  },
+  {
+    slug: 'photo-pages',
+    title: 'Photo Pages',
+    description:
+      'Edit pictures in a page: layers, masks, brushes, smart selections, healing, adjustments, filters and PSD.',
+    keywords:
+      'photo photos picture pictures image images photoshop paint net gimp edit editing editor retouch retouching layer layers mask masks blend blending mode opacity group clipping brush pencil eraser background eraser clone stamp heal healing spot heal red eye blemish remove object content aware fill gradient paint bucket fill blur sharpen smudge dodge burn sponge text shape crop straighten rotate flip resize resample image size canvas size select selection marquee lasso magnetic magic wand quick select subject remove background cutout transparent colour range color range feather adjust adjustment levels curves exposure brightness contrast hue saturation vibrance colour balance color balance white balance temperature black and white monochrome photo filter channel mixer selective colour gradient map invert posterize threshold shadows highlights filter filters gaussian motion radial lens tilt shift bokeh unsharp mask noise grain median emboss oil paint pixelate mosaic halftone distort twirl pinch spherize wave ripple polar clouds vignette lens flare clarity dehaze histogram psd png jpeg jpg webp export layers as files',
     category: 'Pages',
     categorySlug: 'pages',
     group: 'Kinds of Page',

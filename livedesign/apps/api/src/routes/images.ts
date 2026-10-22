@@ -24,21 +24,12 @@ import {
   json,
   notFound,
 } from '../responses';
-import { MAX_IMAGE_BYTES } from '../limits';
+import { MAX_IMAGE_BYTES, parsePositiveCap } from '../limits';
 import { recordImageUploaded } from '../timeline';
 import { gateGrant, requireOwner, type RouteContext } from './context';
 
-// Parse a positive-integer cap from a wrangler.toml [vars] entry.
-// Returns null when the string is missing, blank, non-numeric, or
-// not strictly positive, so callers treat "unset" and "0" and
-// "garbage" identically as "no cap" (the OSS self-host default per
-// docs/specs/009-elements/images.md).
-export function parsePositiveCap(raw: string | undefined): number | null {
-  if (!raw) return null;
-  const n = Number.parseInt(raw, 10);
-  if (!Number.isFinite(n) || n <= 0) return null;
-  return n;
-}
+// The caps' parser lives with the other limits (limits.ts); re-exported for the gallery's callers.
+export { parsePositiveCap } from '../limits';
 
 // The 403 a full gallery answers with, or null when the upload fits.
 function galleryFull(

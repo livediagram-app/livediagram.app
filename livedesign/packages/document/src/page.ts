@@ -23,6 +23,11 @@ import {
   type WireframeDeviceId,
   type WireframeFrameLook,
 } from './wireframe-device';
+import {
+  PHOTO_DEFAULT_HEIGHT,
+  PHOTO_DEFAULT_WIDTH,
+  PHOTO_SHEET_MAX,
+} from '@livedesign/photo-engine';
 
 export type PageOrientation = 'portrait' | 'landscape';
 
@@ -41,8 +46,8 @@ export const MAX_PAGES = 100;
 
 // A page's format (docs/specs/007-editor/pages-mode.md "Sizes"): its short and long side.
 // A4 is the sheet of a page whose kind is not chosen yet; a logo page is the artboard, a wireframe
-// page its device.
-export type PageSizeId = 'a4' | 'logo' | 'device' | 'fit';
+// page its device, a photo page its picture's size.
+export type PageSizeId = 'a4' | 'logo' | 'device' | 'photo' | 'fit';
 
 // A logo page's artboard (docs/specs/007-editor/logo-pages.md "A logo page"): the common
 // app-icon master, square.
@@ -64,6 +69,8 @@ export const PAGE_SIZES: Readonly<
       // A wireframe page's device: its sides are the device's frame (`Page.device`); short and long
       // here are only what a page in it without one is read as (the iPhone).
       deviceOnly?: true;
+      // A photo page's own size: its sides are the page's (`Page.fit`), its picture's shape.
+      photoOnly?: true;
       // Fit to Content: its sides are the page's own (`Page.fit`); short and long here
       // are only what a page in it without them is read as (A4).
       fitOnly?: true;
@@ -85,6 +92,13 @@ export const PAGE_SIZES: Readonly<
     landscape: 'Device',
     deviceOnly: true,
   },
+  photo: {
+    short: 1080,
+    long: 1920,
+    portrait: 'Photo',
+    landscape: 'Photo',
+    photoOnly: true,
+  },
   fit: {
     short: A4_SHORT_SIDE,
     long: A4_LONG_SIDE,
@@ -100,14 +114,17 @@ export const PAGE_SIZE_IDS = Object.keys(PAGE_SIZES) as PageSizeId[];
 const LOGO_PAGE_SIZE_IDS: readonly PageSizeId[] = ['logo'];
 // A wireframe page's one size is its device (docs/specs/007-editor/wireframe-pages.md).
 const WIREFRAME_PAGE_SIZE_IDS: readonly PageSizeId[] = ['device'];
+// A photo page is its picture's size (docs/specs/031-photo/photo-pages.md "A photo page").
+const PHOTO_PAGE_SIZE_IDS: readonly PageSizeId[] = ['photo'];
 // A page not chosen yet is a plain sheet until it is.
 const UNCHOSEN_PAGE_SIZE_IDS: readonly PageSizeId[] = ['a4'];
 
 /** The sizes a page of this kind offers in its panel: a logo page only the artboard, a wireframe
- *  page its device, a page not chosen yet its sheet. */
+ *  page its device, a photo page its picture's size, a page not chosen yet its sheet. */
 export function pageSizesFor(kind: PageKind | null): readonly PageSizeId[] {
   if (kind === 'logo') return LOGO_PAGE_SIZE_IDS;
   if (kind === 'wireframe') return WIREFRAME_PAGE_SIZE_IDS;
+  if (kind === 'photo') return PHOTO_PAGE_SIZE_IDS;
   return UNCHOSEN_PAGE_SIZE_IDS;
 }
 
@@ -147,8 +164,9 @@ export type PageBackground = { fill?: PageFill; pattern?: PagePattern };
 export const PAGE_NAME_MAX = 60;
 
 // What a page is for, fixed once chosen (docs/specs/007-editor/pages-mode.md "Page kinds"): a
-// logo's artboard, or a wireframe's device (docs/specs/007-editor/wireframe-pages.md).
-export type PageKind = 'logo' | 'wireframe';
+// logo's artboard, a wireframe's device (docs/specs/007-editor/wireframe-pages.md), or a photo to
+// edit (docs/specs/031-photo/photo-pages.md).
+export type PageKind = 'logo' | 'wireframe' | 'photo';
 
 export type Page = {
   id: string;
@@ -167,7 +185,8 @@ export type Page = {
   name?: string;
   // Absent is a page nobody has chosen a kind for yet (the first page offers the choice while it
   // is the only page and empty); 'logo' for a logo's artboard, always the `logo` size and never
-  // patterned; 'wireframe' for a device's screen.
+  // patterned; 'wireframe' for a device's screen; 'photo' for a photo, the `photo` size with its
+  // sheet's sides in `fit`, never painted (its picture is `Tab.photos[id]`).
   kind?: PageKind;
   // Locked (docs/specs/007-editor/pages-mode.md "Locking a page"): it and what is on it stay
   // as they are. Absent is unlocked.
@@ -231,7 +250,9 @@ function parsePageFields(v: unknown): Page | undefined {
       ? { kind: 'logo' as const }
       : p.kind === 'wireframe'
         ? { kind: 'wireframe' as const }
-        : {};
+        : p.kind === 'photo'
+          ? { kind: 'photo' as const }
+          : {};
   // A logo page is the artboard, never patterned nor pictured (docs/specs/007-editor/logo-pages.md).
   if (kindFields.kind === 'logo') {
     const fill = background?.fill?.kind === 'image' ? undefined : background?.fill;
@@ -265,6 +286,20 @@ function parsePageFields(v: unknown): Page | undefined {
       ...lock,
     };
   }
+  // A photo page is its picture's size, never painted (docs/specs/031-photo/photo-pages.md "A
+  // photo page"): a stored one without valid sides is read as the default photo's sheet.
+  if (kindFields.kind === 'photo') {
+    const fit = parsePageSides(p.fit) ?? photoSheetSides(PHOTO_DEFAULT_WIDTH, PHOTO_DEFAULT_HEIGHT);
+    return {
+      id: p.id,
+      orientation: fit.width >= fit.height ? 'landscape' : 'portrait',
+      size: 'photo',
+      fit,
+      ...(name ? { name } : {}),
+      kind: 'photo',
+      ...lock,
+    };
+  }
   // A page not chosen yet is its sheet (A4), or Fit to Content with its sides.
   const fit = p.size === 'fit' ? parsePageSides(p.fit) : undefined;
   const ownSize =
@@ -272,6 +307,7 @@ function parsePageFields(v: unknown): Page | undefined {
     p.size !== 'a4' &&
     !PAGE_SIZES[p.size].logoOnly &&
     !PAGE_SIZES[p.size].deviceOnly &&
+    !PAGE_SIZES[p.size].photoOnly &&
     (p.size !== 'fit' || fit !== undefined);
   return {
     id: p.id,
@@ -285,9 +321,39 @@ function parsePageFields(v: unknown): Page | undefined {
   };
 }
 
-/** The page's kind: a logo or a wireframe page, or null for one whose kind is not chosen yet. */
+/** The page's kind: a logo, a wireframe or a photo page, or null for one whose kind is not chosen
+ *  yet. */
 export function pageKindOf(page: Pick<Page, 'kind'>): PageKind | null {
-  return page.kind === 'logo' || page.kind === 'wireframe' ? page.kind : null;
+  return page.kind === 'logo' || page.kind === 'wireframe' || page.kind === 'photo'
+    ? page.kind
+    : null;
+}
+
+/** A photo page's sheet on the canvas for a picture of `width` x `height` px: the picture's shape,
+ *  its longer side at most PHOTO_SHEET_MAX canvas px (never scaled up), whole px, at least 1. */
+export function photoSheetSides(width: number, height: number): PageSides {
+  const scale = Math.min(1, PHOTO_SHEET_MAX / Math.max(width, height));
+  return {
+    width: Math.max(1, Math.round(width * scale)),
+    height: Math.max(1, Math.round(height * scale)),
+  };
+}
+
+/** A new photo page (docs/specs/031-photo/photo-pages.md "Making a photo page"), its sheet the
+ *  picture's shape. */
+export function newPhotoPage(
+  id: string,
+  width = PHOTO_DEFAULT_WIDTH,
+  height = PHOTO_DEFAULT_HEIGHT,
+): Page {
+  const fit = photoSheetSides(width, height);
+  return {
+    id,
+    orientation: fit.width >= fit.height ? 'landscape' : 'portrait',
+    size: 'photo',
+    fit,
+    kind: 'photo',
+  };
 }
 
 /** A new wireframe page (docs/specs/007-editor/wireframe-pages.md "Choosing the device"): the
@@ -357,7 +423,8 @@ export function pageDimensions(
   width: number;
   height: number;
 } {
-  if (page.size === 'fit' && page.fit) return { width: page.fit.width, height: page.fit.height };
+  if ((page.size === 'fit' || page.size === 'photo') && page.fit)
+    return { width: page.fit.width, height: page.fit.height };
   if (page.size === 'device') {
     const g = deviceGeometry(
       page.device ?? DEFAULT_WIREFRAME_DEVICE,
@@ -372,14 +439,15 @@ export function pageDimensions(
 }
 
 /** Whether a page has an orientation to choose (a logo's square artboard has none, nor Fit to
- *  Content; a wireframe page while its device turns). */
+ *  Content nor a photo page, whose picture sets its shape; a wireframe page while its device
+ *  turns). */
 export function pageHasOrientation(
   page: Pick<Page, 'size'> & { device?: WireframeDeviceId },
 ): boolean {
   if (page.size === 'device')
     return WIREFRAME_DEVICES[page.device ?? DEFAULT_WIREFRAME_DEVICE].turns;
-  const { short, long, fitOnly } = PAGE_SIZES[page.size ?? 'a4'];
-  return short !== long && !fitOnly;
+  const { short, long, fitOnly, photoOnly } = PAGE_SIZES[page.size ?? 'a4'];
+  return short !== long && !fitOnly && !photoOnly;
 }
 
 /** The size's name as this page shows it ("A4", "1024 x 1024", a wireframe page's "iPhone"). */
@@ -398,11 +466,16 @@ export function pageLabel(
   page: Pick<Page, 'orientation' | 'size' | 'name' | 'kind' | 'device'>,
   index: number,
   count: number,
+  // A photo page's picture size, which its label names in place of a paper size.
+  photoSize?: { width: number; height: number },
 ): string {
   const parts: string[] = [];
   if (page.name) parts.push(page.name);
   else if (count > 1) parts.push(`Page ${index + 1}`);
-  const sizeLabel = pageSizeLabel(page);
+  const sizeLabel =
+    page.kind === 'photo' && photoSize
+      ? `${photoSize.width} x ${photoSize.height}`
+      : pageSizeLabel(page);
   parts.push(sizeLabel);
   const size = page.size ?? 'a4';
   // The sheet says which way it faces; the artboard is square.
@@ -422,11 +495,13 @@ export function pageLabel(
 const PAGE_KIND_LABEL: Record<PageKind, string> = {
   logo: 'Logo',
   wireframe: 'Wireframe',
+  photo: 'Photo',
 };
 
 /** The page's own margin, in canvas px: what layouts keep clear and snapping offers. */
 export function pageMargin(page: Pick<Page, 'orientation' | 'size' | 'fit'>): number {
   const { width, height } = pageDimensions(page);
+  if (page.size === 'photo') return 0;
   const fraction = page.size === 'logo' ? LOGO_SAFE_FRACTION : PAGE_MARGIN_FRACTION;
   return Math.round(Math.min(width, height) * fraction);
 }
@@ -571,5 +646,22 @@ export function withPages<T extends Pick<Tab, 'elements'>>(
       });
   const { pageOrientation: _legacy, ...rest } = tab;
   void _legacy;
-  return { ...(rest as T), elements, pages: [...next] };
+  return { ...withPhotosKept(rest as T, next), elements, pages: [...next] };
+}
+
+/** The tab without the photos of pages it no longer has (docs/specs/031-photo/photo-store.md "What
+ *  is stored where"). Same tab back when every photo's page is still there. */
+function withPhotosKept<T extends object>(tab: T, pages: readonly Page[]): T {
+  const photos = (tab as { photos?: unknown }).photos;
+  if (!photos || typeof photos !== 'object') return tab;
+  const ids = new Set(pages.map((p) => p.id));
+  const keys = Object.keys(photos);
+  if (keys.every((k) => ids.has(k))) return tab;
+  const kept = Object.fromEntries(
+    Object.entries(photos as Record<string, unknown>).filter(([k]) => ids.has(k)),
+  );
+  const out = { ...tab } as T & { photos?: unknown };
+  if (Object.keys(kept).length > 0) out.photos = kept;
+  else delete out.photos;
+  return out;
 }

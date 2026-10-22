@@ -195,6 +195,16 @@ describe('toast.action', () => {
     );
     expect(screen.queryByRole('status')).toBeNull();
   });
+
+  it('shows an important one with notifications off: it explains why a press did nothing', () => {
+    writeUserPreferences({ ...readUserPreferences(), notificationsEnabled: false });
+    render(
+      <ToastProvider>
+        <Actions spec={{ ...spec('Text 1 is a text layer.'), important: true }} />
+      </ToastProvider>,
+    );
+    expect(screen.getByText('Text 1 is a text layer.')).toBeTruthy();
+  });
 });
 
 // docs/specs/004-interface-design/toasts.md "Tones" and "Timing".
