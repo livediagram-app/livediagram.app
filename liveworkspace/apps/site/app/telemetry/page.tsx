@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import dynamic from 'next/dynamic';
-import { EmptyState } from '@livediagram/ui';
+import { Brand as LivediagramBrand, EmptyState } from '@livediagram/ui';
+import { Brand as LiveplannerBrand } from '@liveplanner/ui';
 import {
   type TelemetryAppFilter,
   type TelemetryDisabled,
@@ -31,6 +32,14 @@ const LiveplannerBody = dynamic(() => import('./liveplanner/Body').then((m) => m
 });
 
 type Loaded = TelemetrySummary | TelemetryDisabled;
+
+// Each app's chip shows its logo as its own site's header does: the prism and the wordmark with
+// "live" in the app's accent. The chip's own `data-app` scopes the accent to it, whichever app is
+// picked around it.
+const APP_LOGOS: Partial<Record<TelemetryAppFilter, typeof LivediagramBrand>> = {
+  'livediagram.app': LivediagramBrand,
+  'liveplanner.app': LiveplannerBrand,
+};
 
 // The liveworkspace telemetry dashboard (liveworkspace/docs/telemetry.md "The dashboard"): every app's
 // anonymous events, all together or one app at a time.
@@ -91,16 +100,26 @@ export default function TelemetryDashboard() {
                 key={choice.key}
                 type="button"
                 role="radio"
+                aria-label={choice.label}
                 aria-checked={app === choice.key}
                 onClick={() => pick(choice.key)}
                 className={
-                  'min-h-11 cursor-pointer rounded-full border px-4 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ' +
+                  'flex min-h-11 cursor-pointer items-center rounded-full border px-4 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ' +
                   (app === choice.key
                     ? 'border-brand-500 bg-brand-50 text-brand-700 dark:border-brand-400 dark:bg-brand-500/15 dark:text-brand-200'
                     : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-600')
                 }
               >
-                {choice.label}
+                {(() => {
+                  const Logo = APP_LOGOS[choice.key];
+                  return Logo ? (
+                    <span data-app={choice.key} className="flex">
+                      <Logo size="sm" />
+                    </span>
+                  ) : (
+                    choice.label
+                  );
+                })()}
               </button>
             ))}
           </div>

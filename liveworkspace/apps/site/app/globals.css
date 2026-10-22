@@ -10,6 +10,9 @@
  * is symlinked. */
 @source '../../../../livediagram/packages/ui/src/SiteSwitcher.tsx';
 @source '../../../../livediagram/packages/ui/src/icons';
+@source '../../../../livediagram/packages/ui/src/Brand.tsx';
+@source '../../../../livediagram/packages/ui/src/appearance';
+@source '../../../../livediagram/packages/ui/src/Tooltip.tsx';
 
 /* The platform's own accent: slate, so no one app's colour stands for all of them. */
 :root {

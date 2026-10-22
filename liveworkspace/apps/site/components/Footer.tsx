@@ -28,9 +28,6 @@ export function Footer() {
           <a href="/telemetry" className={linkClass}>
             Telemetry
           </a>
-          <a href="/sign-in" className={linkClass}>
-            Accounts
-          </a>
         </FooterColumn>
         <FooterColumn title="Privacy">
           {listedApps().map((app) => (

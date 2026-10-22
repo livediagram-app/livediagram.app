@@ -6,6 +6,7 @@ import {
   EMAIL_PATTERN,
   isRegistering,
   nextUrl,
+  returnPath,
   signedOAuthQuery,
   type SignInOptions,
 } from '@/lib/accounts';
@@ -256,6 +257,9 @@ export function SignInFlow({ flow }: { flow: Flow }) {
       return setError('That sign-in has expired. Go back to the app and try again.');
     }
     if (continueTo.current) return window.location.assign(continueTo.current);
+    // Signed in from the site's header: back to the page it was on.
+    const back = returnPath(query);
+    if (back) return window.location.assign(back);
     setTitle("You're signed in");
     setStep('done');
   }

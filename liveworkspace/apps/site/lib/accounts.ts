@@ -68,3 +68,28 @@ export function isRegistering(search: string): boolean {
 }
 
 export const EMAIL_PATTERN = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+
+// Where a sign-in started from the site's header goes back to: the `return` path it carries, if
+// it's a path on this site. Anything else (another origin, `//host`, a backslash trick) is ignored,
+// so the parameter can't send anyone off-site.
+export const RETURN_PARAM = 'return';
+
+export function returnPath(search: string): string | null {
+  const path = new URLSearchParams(search).get(RETURN_PARAM);
+  if (!path || !path.startsWith('/') || path.startsWith('//') || path.includes('\\')) return null;
+  return path;
+}
+
+// The sign-in link for a page: back to that page once signed in.
+export function signInHref(here: string): string {
+  return `/sign-in?${RETURN_PARAM}=${encodeURIComponent(here)}`;
+}
+
+// The name the header shows for a signed-in account.
+export function displayName(user: Record<string, unknown>): string {
+  for (const key of ['givenName', 'name', 'email']) {
+    const value = user[key];
+    if (typeof value === 'string' && value.trim()) return value.trim();
+  }
+  return 'Your account';
+}

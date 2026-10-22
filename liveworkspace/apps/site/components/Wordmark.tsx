@@ -1,27 +1,31 @@
-// The liveworkspace wordmark: a tile of four squares, one in each app's accent and the rest in the
-// platform's slate, beside the name. Drawn here rather than borrowed from an app, whose logo is its own.
+'use client';
 
-import { APP_SITES, PLATFORM_SITE } from '@liveworkspace/sites';
+// The liveworkspace logo: the apps' own prism (@livediagram/ui's BrandMark, as livediagram.app and
+// liveplanner.app draw it in their headers) tinted with the platform's slate accent, beside the name
+// with "live" in that accent, as each app's wordmark has it. Pointing at it turns the prism, as theirs
+// does.
 
-const SQUARES = [
-  ...APP_SITES.map((s) => s.accent),
-  PLATFORM_SITE.accent,
-  PLATFORM_SITE.accent,
-].slice(0, 4);
+import { useState } from 'react';
+import { BrandMark } from '@livediagram/ui';
+import { PLATFORM_SITE } from '@liveworkspace/sites';
 
 export function Wordmark({ className = '' }: { className?: string }) {
+  const [spinning, setSpinning] = useState(false);
   return (
-    <span className={`inline-flex items-center gap-2.5 ${className}`}>
-      <span
-        aria-hidden
-        className="grid size-7 grid-cols-2 gap-0.5 rounded-lg bg-slate-900 p-1 dark:bg-white"
-      >
-        {SQUARES.map((colour, i) => (
-          <span key={i} className="rounded-[3px]" style={{ backgroundColor: colour }} />
-        ))}
-      </span>
-      <span className="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">
-        live<span className="text-slate-500 dark:text-slate-400">workspace</span>
+    <span
+      className={`inline-flex items-center gap-2.5 text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-100 ${className}`}
+      onPointerEnter={(e) => e.pointerType !== 'touch' && setSpinning(true)}
+      onPointerLeave={() => setSpinning(false)}
+    >
+      <BrandMark
+        className="size-7 shrink-0"
+        accentColor={PLATFORM_SITE.accent}
+        spinning={spinning}
+      />
+      {/* A logotype: WCAG 1.4.3 sets text that is part of a logo no contrast minimum, and the
+          contrast audits skip it by this mark. */}
+      <span data-logotype="">
+        <span className="text-slate-500 dark:text-slate-400">live</span>workspace
       </span>
     </span>
   );

@@ -23,8 +23,23 @@ The two APIs are Workers on more specific routes of the same origin, so the page
 
 ## The pages
 
+### The header
+
 Every page has the same header: the liveworkspace wordmark, with the site switcher on hover
-(marked "You're here"), and links to Apps, How it fits, and Telemetry.
+(the current site highlighted), links to Apps, How it fits and Telemetry, the Appearance toggle (Light, Dark, System, as on the
+apps' sites; the boot script applies the choice before paint), and the account control. On a phone the wordmark, the Appearance toggle and the account control show; the footer has
+the rest.
+
+- **Signed out**: **Sign in**, which opens `/sign-in` with the page to come back to
+  (`?return=/telemetry`, say). Once signed in, the page goes back there. Only a path on this site
+  is followed, so the link can't send anyone elsewhere.
+- **Signed in**: the account's first name (or full name, or email) and **Sign out**, which ends
+  the liveworkspace session here. It doesn't sign anyone out of an app: each app holds its own
+  tokens.
+
+The site is static, so the control asks the accounts API (`GET /api/auth/get-session`, on this
+origin, with the session cookie) once the page is up. Until it hears, it keeps its place empty,
+so the bar doesn't jump. The sign-in pages leave it out: they are the sign-in.
 
 ### The front door (`/`)
 
@@ -43,15 +58,14 @@ Every page has the same header: the liveworkspace wordmark, with the site switch
    - **Open about data**: no third-party trackers; the anonymous telemetry is public, for every app
      at once or one at a time.
    - **Free to start**: each app works without paying, and the editors work before you sign in.
-4. **Footer**: every site again, the telemetry dashboard and sign-in, and each app's privacy
+4. **Footer**: every site again, the telemetry dashboard, and each app's privacy
    policy (liveworkspace has no policy of its own yet: see "Not done yet").
-
-No sign-in button in the header: signing in only means something inside an app.
 
 ### Telemetry (`/telemetry`)
 
 The public dashboard for every app's anonymous events, all apps at once or one at a time
-(`?app=livediagram.app`): [telemetry.md](telemetry.md). It reads its numbers from
+(`?app=livediagram.app`): [telemetry.md](telemetry.md). Each app's filter shows that app's logo
+as its own header does, the prism and the wordmark in the app's accent. It reads its numbers from
 `/api/telemetry/summary`. Its styles (and both apps' shared UI, which its views render) are in
 their own stylesheet, `app/telemetry/telemetry.css`, so the other pages don't carry them.
 
@@ -70,8 +84,9 @@ and send no Referer, since the address carries the signed request.
 
 ## Behaviour
 
-- No analytics and no cookies of its own. The front door fetches nothing; the dashboard and the
-  account pages call their APIs on this origin.
+- No analytics. The one cookie is the accounts session, set by the accounts API when someone
+  signs in. Every page asks the accounts API whether someone is signed in; the dashboard and the
+  account pages also call their APIs. All of it is on this origin.
 - Light and dark, following the device (the shared appearance boot script).
 - Works at phone width with a 16px gutter. Tap targets are 44px on touch screens.
 - The front door and the dashboard are indexable: title, description, canonical, Open Graph,

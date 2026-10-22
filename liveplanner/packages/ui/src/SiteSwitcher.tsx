@@ -106,11 +106,6 @@ function SiteRow({ site, current, onPick }: { site: Site; current: SiteId; onPic
       <span className="flex min-w-0 flex-col gap-0.5">
         <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">
           {site.id}
-          {isCurrent ? (
-            <span className="ml-1.5 text-xs font-normal text-slate-500 dark:text-slate-400">
-              You’re here
-            </span>
-          ) : null}
         </span>
         <span className="text-xs text-slate-500 dark:text-slate-400">{site.pitch}</span>
       </span>
