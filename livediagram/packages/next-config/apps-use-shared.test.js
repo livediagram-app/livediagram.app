@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const read = (path) => readFileSync(`${root}${path}`, 'utf8');
-const APPS = ['live', 'marketing', 'help', 'community'];
+const APPS = ['editor', 'marketing', 'help', 'community'];
 const SHARED_KEYS = [
   'output',
   'distDir',
@@ -36,7 +36,7 @@ describe.each(APPS)('apps/%s/next.config.ts', (app) => {
 // The React Compiler runs in the editor alone (docs/specs/016-platform/nextjs.md "One configuration").
 it.each(APPS)('apps/%s asks for the React Compiler only if it is the editor', (app) => {
   const source = read(`apps/${app}/next.config.ts`);
-  expect(/reactCompiler: true/.test(source)).toBe(app === 'live');
+  expect(/reactCompiler: true/.test(source)).toBe(app === 'editor');
 });
 
 describe('shared packages', () => {
