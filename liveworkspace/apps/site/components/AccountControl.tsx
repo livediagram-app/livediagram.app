@@ -1,17 +1,16 @@
 'use client';
 
-import { useEffect, useState, useSyncExternalStore } from 'react';
-import { call, displayName, signInHref } from '@/lib/accounts';
-
-type Session = { state: 'checking' } | { state: 'out' } | { state: 'in'; name: string };
+import { useState, useSyncExternalStore } from 'react';
+import { signInHref } from '@/lib/accounts';
+import { signOut, useSession } from '@/lib/session';
 
 const noChange = () => () => {};
 
 // The header's account control (liveworkspace/docs/site.md "The header"): Sign in, or the signed-in
-// name and Sign out. The site is static, so it asks the accounts API on this origin once the page
-// is up; until it hears, it holds its place without showing either, so nothing jumps.
+// name and Sign out. Until the page knows who is signed in (lib/session.ts), it holds its place
+// without showing either, so nothing jumps.
 export function AccountControl() {
-  const [session, setSession] = useState<Session>({ state: 'checking' });
+  const session = useSession();
   const [leaving, setLeaving] = useState(false);
   // This page, to come back to after signing in.
   const here = useSyncExternalStore(
@@ -20,27 +19,10 @@ export function AccountControl() {
     () => '/',
   );
 
-  useEffect(() => {
-    let cancelled = false;
-    void call('/get-session').then((result) => {
-      if (cancelled) return;
-      const user = result.ok ? result.data.user : null;
-      setSession(
-        user && typeof user === 'object'
-          ? { state: 'in', name: displayName(user as Record<string, unknown>) }
-          : { state: 'out' },
-      );
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  async function signOut() {
+  async function leave() {
     setLeaving(true);
-    const result = await call('/sign-out', {});
+    await signOut();
     setLeaving(false);
-    if (result.ok) setSession({ state: 'out' });
   }
 
   const link =
@@ -54,7 +36,7 @@ export function AccountControl() {
         </span>
         <button
           type="button"
-          onClick={() => void signOut()}
+          onClick={() => void leave()}
           disabled={leaving}
           className={`${link} cursor-pointer`}
         >

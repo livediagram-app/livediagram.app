@@ -1,0 +1,100 @@
+/* The home page's illustrations (liveworkspace/docs/site.md "The front door"): a slow current along
+ * the lines that join the apps, cursors drifting as people work, and the cards settling as the page
+ * opens. Paced as content, not chrome (motion-budget.test.ts lists this file), and all of it stops
+ * for anyone who asks for reduced motion. */
+
+@keyframes lw-flow {
+  to {
+    stroke-dashoffset: -48;
+  }
+}
+
+@keyframes lw-drift-a {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  35% {
+    transform: translate(18px, -10px);
+  }
+  70% {
+    transform: translate(-8px, 12px);
+  }
+}
+
+@keyframes lw-drift-b {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  40% {
+    transform: translate(-16px, 8px);
+  }
+  75% {
+    transform: translate(10px, -12px);
+  }
+}
+
+@keyframes lw-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes lw-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+@keyframes lw-ping {
+  0% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+.lw-flow {
+  stroke-dasharray: 6 10;
+  animation: lw-flow 2.4s linear infinite;
+}
+
+.lw-drift-a {
+  animation: lw-drift-a 9s ease-in-out infinite;
+}
+
+.lw-drift-b {
+  animation: lw-drift-b 11s ease-in-out infinite;
+}
+
+.lw-float {
+  animation: lw-float 6s ease-in-out infinite;
+}
+
+.lw-rise {
+  animation: lw-rise 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.lw-ping {
+  animation: lw-ping 2.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lw-flow,
+  .lw-drift-a,
+  .lw-drift-b,
+  .lw-float,
+  .lw-rise,
+  .lw-ping {
+    animation: none;
+  }
+}

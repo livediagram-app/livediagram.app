@@ -43,23 +43,30 @@ so the bar doesn't jump. The sign-in pages leave it out: they are the sign-in.
 
 ### The front door (`/`)
 
-1. **Hero**: what liveworkspace is in one line: a set of live, real-time apps, each built for one
-   kind of work, under one roof. Two calls to action: see the apps (scrolls to them) and the
-   telemetry dashboard ("see exactly what we measure").
-2. **The apps**: one card per app in `@liveworkspace/sites`, in that order, each with its accent,
-   its pitch, three things it does, and one link to its site. A small drawing on each card shows
-   what the app makes (a diagram; a board of cards). An app is only listed once it's in
-   `@liveworkspace/sites`, and the page's own copy for it (`lib/apps.ts`) is required by a test, so
-   a new app can't ship with an empty card.
-3. **How it fits**: what every app shares:
-   - **Live by default**: everything is real-time and shared by link.
-   - **One account**: signing in goes through liveworkspace.app (email code or Google, no
-     password), so one sign-in covers each app that uses it.
-   - **Open about data**: no third-party trackers; the anonymous telemetry is public, for every app
-     at once or one at a time.
-   - **Free to start**: each app works without paying, and the editors work before you sign in.
-4. **Footer**: every site again, the telemetry dashboard, and each app's privacy
-   policy (liveworkspace has no policy of its own yet: see "Not done yet").
+The glue between the apps: what liveworkspace is, each app in its own colours, how a piece of work
+moves between them, and the one account that joins them.
+
+1. **Hero**: "Everything your team makes, live in one workspace", the apps named in their accents,
+   and two calls to action: **Create your free account** (`/sign-up`, back here after) and
+   **Explore the apps**. Signed in, they become "Welcome back" and a button into each app. Beside
+   it, the platform's prism with each app's logo joined to it by a line in its accent, and what they
+   share (one sign-in, open numbers) on quieter lines, with a collaborator's cursor at each app.
+2. **The apps** (`#apps`): one section per app in `@liveworkspace/sites`, in that order: its own
+   logo, a tagline, its summary, three things it does, a window onto its work with someone in it (a
+   flowchart; a board with a card on the move), **Open <app>** in its deep accent, and "Signs in with
+   your liveworkspace account". The copy is `lib/apps.ts`; a test requires it for every app and that
+   white text on each deep accent passes WCAG AA.
+3. **How it fits together** (`#how-it-fits`): the path a piece of work takes (sketch it in
+   livediagram, plan it in liveplanner, share one link), then what every app shares: one account
+   (the large tile, with Create your account), live by default, share by link, open about data
+   (linking `/telemetry`), yours to keep (closing the account closes it everywhere), free to start.
+4. **Closing call to action**: "One account. Every app. Always live."
+5. **Footer**: every site again, the telemetry dashboard, and each app's privacy policy
+   (liveworkspace has no policy of its own yet: see "Not done yet").
+
+The illustrations are drawn in the page (HTML and SVG with the apps' own logos), not images. Their
+ambient motion (the current along the lines, drifting cursors, the cards settling) is in
+`app/landing-motion.css`, paced as content, and stops for reduced motion.
 
 ### Telemetry (`/telemetry`)
 

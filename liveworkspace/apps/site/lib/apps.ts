@@ -13,6 +13,11 @@ export type AppCopy = {
   art: 'diagram' | 'board';
   // Where its privacy policy lives.
   privacy: string;
+  // The accent's deep shade (its brand-700), for filled buttons and text: white on it, and it on
+  // white, pass WCAG AA, which the brand-500 accent does not.
+  deep: string;
+  // A line naming what the app is for, the heading of its section on the page.
+  tagline: string;
 };
 
 export const APP_COPY: Partial<Record<SiteId, AppCopy>> = {
@@ -21,6 +26,8 @@ export const APP_COPY: Partial<Record<SiteId, AppCopy>> = {
       'A real-time canvas for diagrams, whiteboards, mind maps, infographics and documents, for teams who think visually.',
     highlights: ['Diagrams and whiteboards', 'Mind maps and infographics', 'Pages and slides'],
     art: 'diagram',
+    deep: '#0369a1',
+    tagline: 'Think it through, together.',
     privacy: 'https://livediagram.app/help/policies/privacy-policy/',
   },
   'liveplanner.app': {
@@ -28,6 +35,8 @@ export const APP_COPY: Partial<Record<SiteId, AppCopy>> = {
       'Boards of cards, spreadsheets, dashboards and forms in one project, planned together and shared with one link.',
     highlights: ['Boards of cards', 'Sheets and dashboards', 'Forms that fill the plan'],
     art: 'board',
+    deep: '#6d28d9',
+    tagline: 'Turn it into a plan.',
     privacy: 'https://liveplanner.app/help/policies/privacy-policy/',
   },
 };
