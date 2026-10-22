@@ -27,9 +27,9 @@ export const TRASH_GULP_MS = 250;
 export const TRASH_DROP_COPY = { waiting: 'Drop to Trash', over: 'Let go to trash it' } as const;
 
 const DRAGGING_ROW =
-  'border-dashed border-sky-400 bg-sky-50/70 dark:border-sky-400/60 dark:bg-sky-400/10';
+  'border-dashed border-brand-400 bg-brand-50/70 dark:border-brand-400/60 dark:bg-brand-400/10';
 const OVER_ROW =
-  'border-brand-700 bg-brand-700 shadow-[0_10px_24px_-10px_rgba(3,105,161,0.7)] motion-safe:scale-[1.03] dark:border-brand-600 dark:bg-brand-600';
+  'border-brand-700 bg-brand-700 shadow-[0_10px_24px_-10px_color-mix(in_oklab,var(--color-brand-700)_70%,transparent)] motion-safe:scale-[1.03] dark:border-brand-600 dark:bg-brand-600';
 
 export function TrashSidebarRow() {
   const { selected, go, folders, folderActions, deleteDocument } = useExplorer();
@@ -109,7 +109,7 @@ export function TrashSidebarRow() {
         <>
           <span
             className={
-              over ? 'font-semibold text-white' : target ? 'text-sky-800 dark:text-sky-200' : ''
+              over ? 'font-semibold text-white' : target ? 'text-brand-800 dark:text-brand-200' : ''
             }
           >
             {words}

@@ -29,7 +29,7 @@ export const dynamic = 'force-static';
 // transparent PNGs here would tile badly on iOS).
 //
 // theme_color matches the viewport export in layout.tsx so the
-// installed-app chrome stays brand-blue. background_color paints the
+// installed-app chrome stays brand violet. background_color paints the
 // splash screen behind the icon at launch.
 export default function manifest(): MetadataRoute.Manifest {
   return {
