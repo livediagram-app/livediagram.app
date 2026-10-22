@@ -58,8 +58,9 @@ moves between them, and the one account that joins them.
    its own logo, a tagline, its summary, three things it does, a window onto its work with someone in
    it (a flowchart; a board with a card on the move; an article with its slides; a logo, a wireframe
    and a photo being cropped), **Open <app>** in its deep accent, and "Signs in with your
-   liveworkspace account". livedocuments and livedesign have no UI package in this repo yet, so their
-   logo is the shared prism tinted with their accent (amber, rose) until theirs lands. The copy is
+   liveworkspace account". livedocuments' and livedesign's logos are their own prisms with the wordmark
+   drawn here (`components/landing/AppLogo.tsx`), since their Brand colours "live" with a brand scale
+   this site doesn't have. The copy is
    `lib/apps.ts`; tests require it for every app and that white text on each deep accent passes
    WCAG AA.
 3. **How it fits together** (`#how-it-fits`): the path a piece of work takes, one step per app
@@ -143,6 +144,3 @@ That runs the site's dev server on 3300 and both APIs behind it (accounts on 878
 `/.well-known/*` and `/api/telemetry/*` to them (`next.config.ts`), so the whole site works from
 one origin, as it does in production. Run `corepack pnpm dev:site` for- **The apps' own policies** still live in each app's help centre; they should point here instead.wn site; the
 footer links to none.
-
-- **livedocuments' and livedesign's own logos** replace the tinted prism here when their UI
-  packages land in this repo.

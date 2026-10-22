@@ -5681,6 +5681,9 @@ importers:
 
   liveworkspace/apps/site:
     dependencies:
+      '@livedesign/ui':
+        specifier: workspace:^
+        version: link:../../../livedesign/packages/ui
       '@livediagram/api-schema':
         specifier: workspace:*
         version: link:../../../livediagram/packages/api-schema
@@ -5693,6 +5696,9 @@ importers:
       '@livediagram/ui':
         specifier: workspace:*
         version: link:../../../livediagram/packages/ui
+      '@livedocuments/ui':
+        specifier: workspace:^
+        version: link:../../../livedocuments/packages/ui
       '@liveplanner/api-schema':
         specifier: workspace:*
         version: link:../../../liveplanner/packages/api-schema
