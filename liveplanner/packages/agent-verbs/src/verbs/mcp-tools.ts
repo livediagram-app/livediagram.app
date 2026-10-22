@@ -190,7 +190,7 @@ export const mcpShareProject = mcpTool('share_project', {
   title: 'Share a project',
   description:
     'Create a shareable link to a project so anyone with the URL can open it — no ' +
-    'sign-in required. Choose "participate" (the default: comment, add stickies and vote), ' +
+    'sign-in required. Choose "participate" (the default: comment, vote and work cards and Sheet cells), ' +
     '"view" (read-only) or "edit". Returns the ' +
     'link URL. Use after creating or finding a project to hand it to teammates.',
   inputSchema: shareProjectShape,

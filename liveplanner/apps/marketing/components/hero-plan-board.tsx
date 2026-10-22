@@ -368,7 +368,7 @@ export function PlanBoard({ portrait = false }: { portrait?: boolean }) {
             fontSize={portrait ? 8.5 : 9.5}
             fontWeight="600"
           >
-            {QUICK_TITLE} <tspan className="fill-sky-600 dark:fill-sky-300">@sam</tspan>{' '}
+            {QUICK_TITLE} <tspan className="fill-brand-600 dark:fill-brand-300">@sam</tspan>{' '}
             <tspan className="fill-violet-600 dark:fill-violet-300">#docs</tspan>
           </text>
           <text

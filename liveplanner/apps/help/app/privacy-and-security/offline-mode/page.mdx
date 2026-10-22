@@ -16,7 +16,7 @@ Most projects are saved to liveplanner's servers so you can reach them from any 
 
 Offline Mode is chosen per project, so you can keep normal projects and ones in This Browser side by side.
 
-- **If you haven't signed in**, your new projects start in This Browser. Nothing you try out is sent to our servers until you choose to share it, sync it, or sign in and move it to your account (or use the AI assistant on it). Everything you make from the [New Project](/new) screen, and from the links that create a project straight away (a template from the home page, **Start Blank**), starts in This Browser. Use **Sync Project** on one if you would rather it went to the server now.
+- **If you haven't signed in**, your new projects start in This Browser. Nothing you try out is sent to our servers until you choose to share it, sync it, or sign in and move it to your account. Everything you make from the [New Project](/new) screen, and from the links that create a project straight away (a template from the home page, **Start Blank**), starts in This Browser. Use **Sync Project** on one if you would rather it went to the server now.
 - **Once you've signed in**, new projects go to your account. To keep one only in this browser, choose **Take Offline** from its menu (see below).
 - The project is written to your browser's own storage (IndexedDB) and opens like any other. A **This Browser** badge next to its name in the editor, and the matching **This Browser** pill wherever it is listed (Explorer lists and cards, search results, the Explorer panel and the Trash), mark it so you always know which projects live only in this browser. Hover or focus the pill to read that the project lives only in this browser and that clearing this browser's site data deletes it; click it (in the Explorer lists, the Explorer panel and the Trash) to come back to this guide. The Explorer sidebar's **This Browser** row lists them all.
 
@@ -28,12 +28,10 @@ Offline Mode is chosen per project, so you can keep normal projects and ones in 
 
 ## What's different
 
-A project in This Browser is a normal project: every editor feature works, including shapes, arrows, layers, tabs, themes, undo/redo, and export. Only the features that need the server are unavailable, because there's no server copy to power them:
+A project in This Browser is a normal project: every editor feature works, including boards and cards, sheets, dashboards, forms, tabs, themes, undo/redo, and export. Only the features that need the server are unavailable, because there's no server copy to power them:
 
 - **Sharing** needs a project on the server. Opening **Share** on a project in This Browser tells you so and offers **Sync Project**: press it and the project uploads, and the Share options appear in the same dialog, with no reload. Embeds are unavailable until it is synced, for the same reason.
 - **Live collaboration** and **teams** don't apply; a project in This Browser is yours alone. Comments still work, but only you see them.
-- The AI assistant works while you're online (it reads your current canvas), but not with no connection.
-- Images you add are stored **inside the project**, so it stays fully local.
 - **Add a Tab to Another Project** is unavailable for a project in This Browser in either direction, and **Duplicate** makes another copy in This Browser rather than uploading one.
 - In the Explorer it shows a fixed This Browser picture instead of a thumbnail, because there is no server copy to draw one from.
 

@@ -74,9 +74,7 @@ describe('ProjectThumbnail', () => {
   });
 
   it('asks once a project that was empty has something drawn', async () => {
-    const { rerender } = render(
-      <ProjectThumbnail ownerId="me" projectId="d1" version={1} empty />,
-    );
+    const { rerender } = render(<ProjectThumbnail ownerId="me" projectId="d1" version={1} empty />);
     rerender(<ProjectThumbnail ownerId="me" projectId="d1" version={2} />);
     expect(pending).toHaveLength(1);
     await act(async () => pending[0]!({ url: 'blob:two', backgroundColor: null }));
@@ -116,7 +114,7 @@ describe('ProjectThumbnail', () => {
     render(thumb(1));
     await act(async () => pending[0]!(null));
     expect(loader()).toBeNull();
-    expect(document.body.textContent).toContain('Nothing drawn yet');
+    expect(document.body.textContent).toContain('Nothing here yet');
   });
 
   it('paints a remount straight from the cache without refetching', async () => {

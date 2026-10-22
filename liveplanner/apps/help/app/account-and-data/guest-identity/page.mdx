@@ -9,13 +9,13 @@ export const metadata = helpMetadata({
   path: '/help/account-and-data/guest-identity/',
 });
 
-<ArticleLayout title="How Guest Identity Works" description="The canvas works without signing in. Here is how liveplanner knows which projects are yours when you are a guest." categoryTitle="Account and Data" categorySlug="account-and-data">
+<ArticleLayout title="How Guest Identity Works" description="liveplanner works without signing in. Here is how liveplanner knows which projects are yours when you are a guest." categoryTitle="Account and Data" categorySlug="account-and-data">
 
-The canvas always works without signing in. You can land on [a new project](/new), build something real, and only later decide whether you want an account. To make that possible, liveplanner gives every guest a quiet, per-browser identity that owns whatever you put on the server.
+liveplanner always works without signing in. You can land on [a new project](/new), build something real, and only later decide whether you want an account. To make that possible, liveplanner gives every guest a quiet, per-browser identity that owns whatever you put on the server.
 
 ## Your per-browser id
 
-The first time you visit, liveplanner's server issues a unique guest id and your browser keeps it in `localStorage`. Everything of yours on the server as a guest (projects you share or sync, folders, images) is owned by that id, which is how the app knows which content to show you when you come back. The editor sends it with each request; you never see or type it.
+The first time you visit, liveplanner's server issues a unique guest id and your browser keeps it in `localStorage`. Everything of yours on the server as a guest (projects you share or sync, folders) is owned by that id, which is how the app knows which content to show you when you come back. The editor sends it with each request; you never see or type it.
 
 Where sign-in is available, as on liveplanner.app, new projects you make as a guest start [offline](/help/privacy-and-security/offline-mode/), saved only in this browser, so nothing you try out is sent to our servers until you choose to. To share one, open **Share** and press **Sync Project**: it uploads under your guest id and the Share options appear. A project you create inside a folder goes to the server straight away.
 

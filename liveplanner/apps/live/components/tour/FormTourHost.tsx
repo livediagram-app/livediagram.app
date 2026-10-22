@@ -31,7 +31,7 @@ const OFFER_DELAY_MS = 800;
 
 const FORM_TOUR_COPY = {
   welcomeEyebrow: 'Forms tour',
-  helpHref: '/help/canvas/plan-mode/forms/',
+  helpHref: '/help/plan/forms/',
 };
 
 // The welcome card's picture: a form in the art's light colours.
@@ -45,7 +45,7 @@ const ART_PALETTE = {
   muted: '#64748b',
   warning: '#b45309',
   warningBg: '#fef3c7',
-  focus: '#0284c7',
+  focus: '#7c3aed',
 };
 
 // The example question's wording.

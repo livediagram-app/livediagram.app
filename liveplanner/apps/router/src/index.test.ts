@@ -58,8 +58,8 @@ describe('production dispatch (service bindings)', () => {
     const { env, telemetry, help } = makeEnv();
     await dispatch('/telemetry/data?window=30', env);
     expect(telemetry.urls).toEqual(['https://liveplanner.app/data?window=30']);
-    await dispatch('/help/canvas/themes/', env);
-    expect(help.urls).toEqual(['https://liveplanner.app/canvas/themes/']);
+    await dispatch('/help/user-interface/themes/', env);
+    expect(help.urls).toEqual(['https://liveplanner.app/user-interface/themes/']);
   });
 
   it("puts the prefix back on a stripped app's own redirect, keeping its query", async () => {
@@ -243,7 +243,7 @@ describe('staging noindex header', () => {
 
   it('marks the 308 redirect for a prefix-less help article', async () => {
     const { env } = makeEnv();
-    const res = await dispatch('/canvas/shadows/', staging(env));
+    const res = await dispatch('/plan/boards/', staging(env));
     expect(res.status).toBe(308);
     expect(res.headers.get('X-Robots-Tag')).toBe('noindex, nofollow');
   });

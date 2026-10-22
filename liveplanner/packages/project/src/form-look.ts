@@ -86,9 +86,9 @@ function formCanvas(tab: CanvasTab): FormCanvas | undefined {
   };
 }
 
-// The Default theme leaves its colours to the type defaults; a form on it is drawn in the brand blue of each half. The
-// light half is sky-700, which carries a white label at 5.9:1: sky-600 reached neither white (4.1:1) nor dark (4.4:1).
-const BRAND: FormHalves = { light: '#0369a1', dark: '#38bdf8' };
+// The Default theme leaves its colours to the type defaults; a form on it is drawn in the brand violet of each half.
+// The light half is violet-700, which carries a white label at 7.1:1; the dark half violet-400 carries slate-900.
+const BRAND: FormHalves = { light: '#6d28d9', dark: '#a78bfa' };
 
 // A filled button's label: whichever of white and slate-900 reads better on the accent. A brightness cut-off picked
 // light text on mid-tones it could not carry (Pumpkin's orange and Evergreen's coral, 2.5:1).

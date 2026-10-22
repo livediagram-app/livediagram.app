@@ -361,9 +361,9 @@ Share dialog cards, in `LEVEL_ORDER = ['edit', 'participate', 'view']`:
 
 | Level       | Title / blurb                                                                  | Stub          | Glyph              | Solid (stub)                                 |
 | ----------- | ------------------------------------------------------------------------------ | ------------- | ------------------ | -------------------------------------------- |
-| edit        | **Editor** / "Draws with you in real time."                                    | `EDITOR`      | `lucidePencilLine` | as today                                     |
-| participate | **Participant** / "Adds stickies, writes and votes. Can't reshape the board."  | `PARTICIPANT` | `lucideVote`       | `bg-teal-700 text-white dark:bg-teal-600/60` |
-| view        | **Viewer** / "Watches, pans and zooms. Can't comment, vote or change a thing." | `VIEWER`      | `lucideEye`        | as today                                     |
+| edit        | **Editor** / "Plans with you in real time."                                    | `EDITOR`      | `lucidePencilLine` | as today                                     |
+| participate | **Participant** / "Works cards and cells, comments and votes. Can't reshape a board."  | `PARTICIPANT` | `lucideVote`       | `bg-teal-700 text-white dark:bg-teal-600/60` |
+| view        | **Viewer** / "Watches along. Can't comment, vote or change a thing." | `VIEWER`      | `lucideEye`        | as today                                     |
 
 - Three cards, one per row at every width (SR8); the pass stub widens to fit `PARTICIPANT` (SR7).
 - Arrow keys step through `LEVEL_ORDER`, wrapping; Home and End reach the ends.

@@ -32,8 +32,8 @@ describe('formLook', () => {
     expect(formLook({ finish: 'nope' }).finish).toBe('flexible');
   });
 
-  it('draws the Default theme in the brand blue of each half', () => {
-    expect(formLook({}).accent).toEqual({ light: '#0369a1', dark: '#38bdf8' });
+  it('draws the Default theme in the brand violet of each half', () => {
+    expect(formLook({}).accent).toEqual({ light: '#6d28d9', dark: '#a78bfa' });
   });
 
   it('draws a custom or unknown theme as Default', () => {

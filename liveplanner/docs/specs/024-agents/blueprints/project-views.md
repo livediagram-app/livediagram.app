@@ -186,7 +186,7 @@ An unknown name prints bare when it matches `^[A-Za-z0-9_.:-]+$`, else as a JSON
 ### Containment (`@liveplanner/project`, `containment.ts`)
 
 `deriveContainers(elements) → Map<ElementId, ElementId | null>` assigns each non-arrow element at most one
-container; views, the edit-operations membership reports, the lint and the editor's frame drag (through
+container; views, the edit-operations membership reports and the editor's frame drag (through
 `containerContents`) all read it.
 
 1. **Mind parent first.** A `mind-node` whose `mindParentId` names a `mind-node` in the input nests under it.
@@ -688,7 +688,7 @@ personTagFor(projectId, owner))` with the tab GET's owner, the `mine` selections
 
 Every answered view sends one anonymous event, `reportServerEvent(env, 'Agent', 'Viewed', <type>)`, off the
 response path through `ctx.waitUntil`, with the type the view in title case (`Overview`, `Outline`, `Graph`,
-`Layout`, `Comments`, `Show`, `Find`, `Lint`) (`VW51`). The `Agent` category is the one the changesets add; `Viewed`
+`Layout`, `Comments`, `Show`, `Find`) (`VW51`). The `Agent` category is the one the changesets add; `Viewed`
 joins `TELEMETRY_ACTIONS`.
 
 OpenAPI: `RouteSpec` gains `textResponse?: { description: string }`; `project.ts` projects a 200 with both
@@ -698,7 +698,7 @@ types join `ROOT_TYPES`.
 ### MCP `read_project`
 
 - `readProjectShape` gains, each described: `view` (`z.enum(['outline', 'graph', 'layout', 'comments', 'show',
-'find', 'lint'])`, default `outline`), `budget` (an integer, default `READ_PROJECT_DEFAULT_BUDGET`), `only`, `ref`,
+'find'])`, default `outline`), `budget` (an integer, default `READ_PROJECT_DEFAULT_BUDGET`), `only`, `ref`,
   `q`, `coarse`, `all`, `style`, `format` (`z.enum(['view', 'json'])`, default `view`; `json` returns the elements)
   and `image` (boolean, default false) (`VW59`).
 - The handler fetches `GET /projects/:id`, then the tab's view through `apiText` with `door=mcp` and the arguments as
@@ -710,7 +710,7 @@ types join `ROOT_TYPES`.
   `{ id, name, rev, elements }` and the text block is the structured object, as `textResult` writes it. The PNG
   follows only with `image: true`.
 - The description: "Read one tab as text: by default its outline, one line per element with its ref, label and
-  arrows, about a tenth of the element JSON. view picks another (graph, layout, comments, show, find, lint), budget
+  arrows, about a tenth of the element JSON. view picks another (graph, layout, comments, show, find), budget
   fits it to a token count, format "json" returns the elements, image adds a PNG preview."
 - `apiText(env, token, path) → Promise<{ text, etag }>` goes through the same `@liveplanner/api-client` client as
   `apiJson` (`clientFor(env, token).text`): Bearer token, `ApiError` on
@@ -853,7 +853,7 @@ Every rule maps to a deterministic test; the spec's rules are numbered here.
 | R15 Bare strokes fold into one counted line                          | `freehand-runs.test.ts`, golden `edge-cases.outline.txt`                                                                                 |
 | R16 What the outline leaves out; hidden counted                      | `outline.test.ts`, `header.test.ts`                                                                                                      |
 | R17 Each view holds what the table says                              | `{graph,layout,comments,show,find,diff,overview}.test.ts` and their goldens                                                              |
-| R18 Every view opens with the header and its `rev`                   | `render-view.test.ts` (every served view; `lint` with the lint)                                                                          |
+| R18 Every view opens with the header and its `rev`                   | `render-view.test.ts` (every served view)                                                                                                  |
 | R19 `json` carries the same data; the plain GET is the raw tab       | `render-view.test.ts` (text and JSON agree on refs and counts)                                                                           |
 | R20 Budget ladder, chars ÷ 3; no default budget but the MCP's        | `outline.test.ts` (each ladder state), `fixtures-goldens.test.ts` (300 elements); `apps/mcp/src/read-project.test.ts` (8,000)           |
 | R21 Never silent: one elision line, in the door's syntax             | `outline.test.ts`, `graph.test.ts`, `comments.test.ts`, `overview.test.ts`, `diff.test.ts` (both doors)                                  |

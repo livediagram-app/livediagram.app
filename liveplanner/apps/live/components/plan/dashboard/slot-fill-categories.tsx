@@ -88,7 +88,7 @@ function StackedCards({ palette }: { palette: PlanPalette }) {
 const SLOT_CATEGORY_INFO: Record<SlotCategory, Info> = {
   'This Project’s Tabs': {
     icon: <PanelsGlyph />,
-    description: 'Your boards, sheets and diagrams, live.',
+    description: 'Your boards and sheets, live.',
     picture: (p) => <DiagramPreview palette={p} />,
   },
   'New Board': {

@@ -242,7 +242,7 @@ Mode's second effect off):
 - **Named** after its template (`untitledNameForTemplate`); it is renamed in the editor.
 - **Themed** Default (`brand`); the Theme and canvas controls change it later.
 - **`?q=<words>`** (trimmed, at most 60 characters, `newProjectQuery`) is handed to the new project's Start Planning
-  as its search ([Start Planning](start-diagramming.md) "Search handed over").
+  as its search ([Start Planning](start-panel.md) "Search handed over").
 - **`?via=<Surface>.<Slot>`**: the landing funnel's source ([Landing funnel](../019-marketing/landing-funnel.md)),
   added by a public page's CTA. `useCtaAttribution` reads it once, sends `Cta / Opened / <source>`, and strips it from
   the address bar with `history.replaceState` (keeping the other params), so a reload can't count the arrival twice.

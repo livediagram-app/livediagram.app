@@ -110,8 +110,8 @@ bodies: your board, your sheet, or which), then that track's steps and outro, th
 are **Boards** and **Spreadsheets**; each sends `Selected` · `PlanTourBoards` | `PlanTourSheets`, sets `tourTrack`,
 then `engine.next()` (which sends `Started` · `PlanTour`); the switch lands with the index move to 1, in one
 render. On a single-track offer there are no `welcomeChoices`, so the card's default accept (**Yes**)
-calls `engine.next()`. The outro's help link follows the track (`/help/canvas/plan-mode/` or
-`/help/canvas/plan-mode/sheets/`).
+calls `engine.next()`. The outro's help link follows the track (`/help/plan/planning-basics/` or
+`/help/plan/sheets/`).
 
 Boards steps, each scoped to the board's drawn body `[data-plan-board="<board>"]` (`boardRoot`; never its
 `data-element-id` canvas node, hidden under a maximised or tab-filling body): `board` (no anchor, a centred card; prepare
@@ -212,7 +212,7 @@ Sheets tour** (`ariaPrefix` the same, the chosen track's after a pick), with `Bo
 one column to the next), `SheetsTourArt` (A1 typed into, the selection stepping across and down) or
 `PlanChoiceTourArt` (a two-column board beside a small sheet), all in `TourArtFrame`'s recipe: inline SVG, Tailwind
 classes for light and dark, looping with `infinite`, still under reduced motion. The outro reuses `TourHelpArt`, with
-**Help** linking `/help/canvas/plan-mode` and **Start** (`TOUR_FINISH`).
+**Help** linking `/help/plan/planning-basics` and **Start** (`TOUR_FINISH`).
 
 ## Accessibility
 

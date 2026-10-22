@@ -9,10 +9,3 @@ export function readElementIndicatorStyle(prefs: UserPreferences): ElementIndica
   const stored = prefs.elementIndicatorStyle;
   return stored === 'footer' || stored === 'off' ? stored : 'top';
 }
-
-export function withElementIndicatorStyle(
-  prefs: UserPreferences,
-  style: ElementIndicatorStyle,
-): UserPreferences {
-  return { ...prefs, elementIndicatorStyle: style };
-}

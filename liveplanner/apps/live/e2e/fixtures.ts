@@ -124,7 +124,7 @@ export async function untilHydrated(locator: Locator): Promise<void> {
 
 // The wizard asks only for a mode (docs/specs/007-editor/new-project-route.md "One-step wizard"): choosing one
 // creates the project there and then, and lands on the editor with the mode's start screen over the canvas
-// (docs/specs/007-editor/start-diagramming.md).
+// (docs/specs/007-editor/start-panel.md).
 // Resolves to the new project's id; `url` carries a `/new?folder=` / `?team=` context.
 export async function createInMode(page: Page, mode: string, url = '/new'): Promise<string> {
   await page.goto(url);
@@ -178,7 +178,7 @@ export async function openTeamRetro(page: Page): Promise<void> {
 }
 
 // A blank Diagram project through the wizard: Diagram on the Mode step, Create, then the start screen's × (a blank
-// canvas, docs/specs/007-editor/start-diagramming.md "Bringing it back").
+// canvas, docs/specs/007-editor/start-panel.md "Bringing it back").
 export async function startBlankProject(page: Page): Promise<void> {
   await createInMode(page, 'diagram');
   const start = startScreen(page, /^Start Diagramming$/);

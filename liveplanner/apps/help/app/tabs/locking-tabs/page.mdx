@@ -6,13 +6,13 @@ import { LockedTab } from '@/components/illustrations/tabs';
 export const metadata = helpMetadata({
   title: 'Locking a Tab',
   description:
-    'Lock a tab to make its whole canvas read-only, so its elements cannot be moved, edited, erased, or deleted by accident. Unlock it to edit again.',
+    'Lock a liveplanner tab so it cannot be deleted, cleared or imported over, and a Dashboard keeps its layout. Cards on a board stay editable. Unlock it any time.',
   path: '/help/tabs/locking-tabs/',
 });
 
-<ArticleLayout title="Locking a Tab" description="Make an entire canvas read-only in one step, so a finished tab stays exactly as you left it." categoryTitle="Tabs" categorySlug="tabs" subArticles={getSubArticles("locking-tabs")}>
+<ArticleLayout title="Locking a Tab" description="Protect a finished tab from being deleted, cleared or replaced, and freeze a Dashboard's layout, in one step." categoryTitle="Tabs" categorySlug="tabs" subArticles={getSubArticles("locking-tabs")}>
 
-When a whole canvas is finished, locking the tab protects everything on it at once, rather than locking elements one by one. A locked tab becomes read-only: you can still look at it and switch to it, but nothing on it changes until you unlock it.
+When a tab is set up the way you want it, locking it guards the tab itself: nobody can delete it, clear it or import something over it by accident, and a Dashboard's layout stays exactly as you left it.
 
 <Figure caption="A locked tab shows a padlock before its name in the tab bar.">
   <LockedTab />
@@ -20,30 +20,34 @@ When a whole canvas is finished, locking the tab protects everything on it at on
 
 ## Locking and unlocking a tab
 
-Open the tab's menu (the **⋯** button on the active tab, or right-click the tab) and press the padlock button, **Lock Tab**, in the row of quick actions along the top. The same button reads **Unlock Tab** afterwards (and shows as pressed), so it toggles the tab back to editable. A locked tab shows a small **padlock** before its name in the bar, so you can tell at a glance which boards are frozen.
+Open the tab's menu (the **⋯** button on the active tab, or right-click the tab) and press the padlock button, **Lock Tab**, in the row of quick actions along the top. The same button reads **Unlock Tab** afterwards (and shows as pressed), so it toggles the tab back. A locked tab shows a small **padlock** before its name in the bar, so you can tell at a glance which tabs are locked.
 
 The lock is part of the project, so it applies to everyone who opens it, not just you. Anyone with edit access can unlock it again.
 
 ## What a locked tab protects
 
-While a tab is locked, its whole canvas is read-only:
-
-- Elements **can't be moved, resized, restyled, or edited**, and nothing new can be added or pasted onto the tab.
+- The tab **can't be deleted** until you unlock it.
+- In the tab menu, **Import** (or **Import CSV…**) and **Clear** are greyed out, and an import started from the command palette is refused.
+- A **Dashboard** can't be changed: its rows, slots and what they show stay put, and you see it as a Viewer does, without its settings or editing.
 - The **Undo** and **Redo** buttons are greyed out on the tab.
-- In the tab menu, **Import** and **Clear** are greyed out (an import started from the command palette is refused), the [layout tidiers](/help/tabs/tab-cleanup/) have no effect, and the tab itself **can't be deleted** until you unlock it.
 
-Locking clears your current selection. You can still look around, pan and zoom, follow [links](/help/tabs/linking-tabs/), and **rename**, **duplicate**, or **export** the tab from the same menu. Duplicating gives you an editable copy if you want to keep building from a locked original.
+You can still **rename**, **duplicate** or **export** the tab from the same menu, and move it into a folder. Duplicating gives you an unlocked copy if you want to keep building from a locked original.
+
+## What a lock leaves alone
+
+The cards on a board and the cells of a sheet belong to the project, not to one tab, so a lock doesn't freeze them: people can still add, edit and move cards on a locked Board tab, and type into a locked Sheet. A lock protects the tab, not the work flowing through it.
+
+To stop someone changing anything at all, share a [view-only link](/help/collaboration/sharing/) instead.
 
 ## When to use it
 
-- Freeze a signed-off or presented canvas so a later edit can't disturb it.
-- Protect a reference or template tab you copy from but never change.
-- Hand a project to collaborators with the finished tabs locked, leaving only the working tabs open.
+- Freeze a Dashboard you've set up for a team or a review, so its layout can't be knocked out of place.
+- Protect a tab you rely on from being deleted or cleared by accident.
+- Hand a project to collaborators with its set-up tabs locked, leaving the work on them free to move.
 
 <Tip>
-  To protect just a few elements rather than a whole canvas, lock them individually instead. See
-  [locking elements](/help/canvas/locking/). To stop someone editing anything at all, share a
-  [view-only link](/help/collaboration/sharing/) instead.
+  Need a fresh start from a locked tab? **Duplicate** it from the tab menu: the copy is unlocked and
+  ready to change.
 </Tip>
 
 </ArticleLayout>

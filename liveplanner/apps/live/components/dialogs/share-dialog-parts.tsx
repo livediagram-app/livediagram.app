@@ -60,7 +60,7 @@ export const ROLE_PASS: Record<
   edit: {
     stamp: 'Editor',
     title: 'Editor',
-    blurb: 'Draws with you in real time.',
+    blurb: 'Plans with you in real time.',
     Icon: EditPassIcon,
     solid: 'bg-brand-700 text-white dark:bg-brand-600',
     selected: 'border-brand-500 bg-brand-50/70 dark:border-brand-400 dark:bg-brand-500/10',
@@ -72,7 +72,7 @@ export const ROLE_PASS: Record<
   participate: {
     stamp: 'Participant',
     title: 'Participant',
-    blurb: "Adds stickies, writes and votes. Can't reshape the board.",
+    blurb: "Works cards and cells, comments and votes. Can't reshape a board.",
     Icon: ParticipatePassIcon,
     // teal-700 under the 10 px bold stamp: 5.47:1 (blueprint "Accessibility").
     solid: 'bg-teal-700 text-white dark:bg-teal-600/60',
@@ -85,7 +85,7 @@ export const ROLE_PASS: Record<
   view: {
     stamp: 'Viewer',
     title: 'Viewer',
-    blurb: "Watches, pans and zooms. Can't comment, vote or change a thing.",
+    blurb: "Watches along. Can't comment, vote or change a thing.",
     Icon: ViewPassIcon,
     solid: 'bg-violet-500 text-white dark:bg-violet-500/60',
     selected: 'border-violet-500 bg-violet-50/70 dark:border-violet-400 dark:bg-violet-500/10',

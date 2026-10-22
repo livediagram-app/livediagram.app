@@ -222,8 +222,8 @@ export type UserPreferences = {
   minimalChrome?: boolean;
   // One-way latch: the power user mode offer has been shown to this account.
   powerUserOfferShown?: boolean;
-  // Draw mode's pattern, the person's own (docs/specs/007-editor/editor-modes.md "One look"):
-  // Plain, Dots or Grid. Read through lib/whiteboard-dock-prefs. Missing === Grid.
+  // DEAD: the retired Draw mode's backdrop pattern (docs/specs/007-editor/editor-modes.md "Retired modes").
+  // Nothing reads or writes it; it stays in the type because it may already be stored.
   drawPattern?: 'blank' | 'grid' | 'graph';
 };
 

@@ -237,8 +237,8 @@ function OfflineIllustration() {
   );
 }
 
-// Placeholder shown when there's no snapshot: three nodes and two
-// arrows, the smallest thing that still says "diagram". Scales with the
+// Placeholder shown when there's no snapshot: three columns of dashed
+// cards, the smallest thing that still says "board". Scales with the
 // box like the offline mark, capped so it stays a modest
 // centred sketch in a card. Inlined so the component carries no
 // cross-folder icon dependency (it's imported from both app/ and
@@ -256,20 +256,19 @@ function BlankCanvasIllustration() {
         aria-hidden
         className="h-full max-h-20 w-auto text-slate-300 dark:text-slate-600"
       >
-        {/* Three nodes and two connectors, dashed: a diagram that hasn't
-            been drawn yet rather than a thumbnail of one that has. The
-            box is plain (no canvas dot grid) so the caption under it
-            stays readable. */}
-        <rect x="4" y="14" width="18" height="12" rx="3" strokeDasharray="3 2.5" />
-        <rect x="42" y="3" width="18" height="12" rx="3" strokeDasharray="3 2.5" />
-        <rect x="42" y="25" width="18" height="12" rx="3" strokeDasharray="3 2.5" />
-        <path d="M22 20c8 0 10-11 18-11M22 20c8 0 10 11 18 11" />
-        <path d="M37 6.5l3 2.5-3 2.5M37 28.5l3 2.5-3 2.5" />
+        {/* Three column headings over dashed cards: a board with nothing on
+            it yet rather than a thumbnail of one that has. The box is plain
+            so the caption under it stays readable. */}
+        <path d="M4 4h16M24 4h16M44 4h16" />
+        <rect x="4" y="10" width="16" height="10" rx="2.5" strokeDasharray="3 2.5" />
+        <rect x="4" y="24" width="16" height="10" rx="2.5" strokeDasharray="3 2.5" />
+        <rect x="24" y="10" width="16" height="10" rx="2.5" strokeDasharray="3 2.5" />
+        <rect x="44" y="10" width="16" height="10" rx="2.5" strokeDasharray="3 2.5" />
       </svg>
       {/* Container-queried: only where the box is wide enough to hold
           the words without crowding the sketch (a card, not a row). */}
       <span className="hidden text-[11px] font-medium text-slate-500 dark:text-slate-400 @min-[140px]:block">
-        Nothing drawn yet
+        Nothing here yet
       </span>
     </span>
   );

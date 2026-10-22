@@ -1,7 +1,6 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { EmbeddedProject } from '@/components/illustrations/collaboration';
 import { SharePassesDialog } from '@/components/illustrations/sharing';
 
 export const metadata = helpMetadata({
@@ -30,8 +29,8 @@ The dialog draws every link as a **pass**, a ticket that lets whoever holds it i
 Under **Issue a pass**, press the role card and pick what the pass lets people do from the three roles it unfolds, then press **Create Pass**. The link is created and copied in one go, ready to paste. Each pass carries a role, printed on the coloured band across its top:
 
 - An **Editor** pass lets the visitor change the project with you, live.
-- A **Participant** pass lets them take part without reshaping the board. They add stickies, text and images, grow mind maps with **Tab**, **Enter** or **Add Child** and **Add Sibling**, undo and redo their own changes, write on anything (a table's cells included) except a behaviour element such as a session button, move and resize stickies and images, recolour stickies, swap an image's picture, cast dots, answer [session tools](/help/collaboration/session-tools/), [comment](/help/collaboration/comments/), and work with Plan cards and Sheet cells. They can delete what they added and any mind-map node, nothing else of other people's, and they cannot change the tab's mode, add or remove tabs, move or restyle other people's shapes and frames (mind-map nodes aside), or spin a picker. Their palette has one category, **Participate**, holding just what they can add, and the selection modes they need: Select, Hand, Isometric and Zen. It is the pass to hand a team for a retrospective or a workshop.
-- A **Viewer** pass lets them watch, pan and zoom, and nothing else: no [comments](/help/collaboration/comments/), votes or changes. Hand out a Participant pass to anyone who should chime in.
+- A **Participant** pass lets them take part without reshaping the project. They add cards and edit their fields, move cards between columns, write in Sheet cells (picking from dropdowns and ticking checkboxes too), [comment](/help/collaboration/comments/), cast dots in a [vote](/help/collaboration/session-tools/voting/), and undo and redo their own changes. They cannot change a board's columns, card types or settings, archive or delete cards, format a Sheet or change its rows and columns, or add, rename, reorder or delete tabs. It is the pass to hand a team for a retrospective or a planning session.
+- A **Viewer** pass lets them look and open cards to read them, and nothing else: no [comments](/help/collaboration/comments/), votes or changes. Hand out a Participant pass to anyone who should chime in.
 
 <Figure caption="The Share dialog: choose Editor, Participant or Viewer, set how long the pass is valid, then Create Pass. Live passes are listed below.">
   <SharePassesDialog />
@@ -58,11 +57,7 @@ These are independent: you can use either, both, or neither. They are layered on
 
 ## Embedding a project
 
-An [embed](/help/collaboration/sharing/embeds/) puts a live copy of a project inside another page, like a wiki, a doc, or Notion. The embed honours the link's role: an Editor pass embeds an editable canvas, while a Participant or Viewer pass embeds a read-only one with pan and zoom. Either way it hides the editor chrome and updates as the project is edited. Each pass's **Embed** menu offers **Copy embed URL** for the bare URL and **Copy iframe** for a ready-made snippet to paste.
-
-<Figure caption="A project embedded in another page, alongside the iframe snippet that places it.">
-  <EmbeddedProject />
-</Figure>
+An [embed](/help/collaboration/sharing/embeds/) puts a live copy of a project inside another page, like a wiki, a doc, or Notion. The embed honours the link's role: an Editor pass embeds an editable project, while a Participant or Viewer pass embeds a read-only one. Either way it hides the editor chrome and updates as the project is edited. Each pass's **Embed** menu offers **Copy embed URL** for the bare URL and **Copy iframe** for a ready-made snippet to paste.
 
 Where an `<iframe>` isn't allowed, like a GitHub README, use a [live image](/help/collaboration/sharing/live-image/) from the pass's **Live image** menu instead.
 

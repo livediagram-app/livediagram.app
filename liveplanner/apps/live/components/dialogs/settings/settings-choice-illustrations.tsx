@@ -2,12 +2,10 @@ import type { ReactNode } from 'react';
 import { GAP, H, REM_PER_UNIT, StateFrame, W, pickable } from './settings-illustration-kit';
 
 // One small drawing per OPTION of a pick-one setting, side by side, the one
-// in force ringed. The toggle drawings (settings-illustrations.tsx) show a
-// before and after with an arrow between; a choice has no before, so these
-// are peers in a row with no arrow.
+// in force ringed: peers in a row.
 //
-// Traced off the real editor at 1280x800 like the toggle drawings: a drawing
-// that doesn't match the app is worse than none.
+// Traced off the real editor at 1280x800: a drawing that doesn't match the
+// app is worse than none.
 
 export type ChoiceIllustrationId = 'appearance';
 
@@ -44,7 +42,7 @@ function ModeWindow({ dark }: { dark: boolean }) {
         width="22"
         height="13"
         rx="2"
-        className="fill-sky-500/25 stroke-sky-500"
+        className="fill-brand-500/25 stroke-brand-500"
       />
       <rect
         x="72"
@@ -52,7 +50,7 @@ function ModeWindow({ dark }: { dark: boolean }) {
         width="18"
         height="11"
         rx="2"
-        className="fill-sky-500/25 stroke-sky-500"
+        className="fill-brand-500/25 stroke-brand-500"
       />
     </g>
   );
@@ -101,14 +99,13 @@ export function ChoiceStates({
 }) {
   const drawing = CHOICE_ILLUSTRATIONS[id];
   const n = drawing.states.length;
-  // A tighter gap than the toggle pair's: there is no arrow to fit between.
+  // Half the kit's gap: there is no arrow to fit between.
   const gap = GAP / 2;
   const width = W * n + gap * (n - 1) + 8;
   return (
     <svg
       viewBox={`-4 -4 ${width} ${H + 22}`}
-      // Capped so each frame draws at the toggle pair's size, whatever the
-      // option count: two options stay as small as a toggle's two states.
+      // Capped so each frame draws at the same size, whatever the option count.
       style={{ maxWidth: `${(width * REM_PER_UNIT).toFixed(2)}rem` }}
       className="h-auto w-full"
       fill="none"

@@ -95,8 +95,7 @@ versions briefly serve side by side. The deploy keeps that window short and reco
   so the window is the deploy itself.
 - **deploy-live** waits for **deploy-api**, so a new editor never calls an api that lacks its routes;
   **deploy-router** still waits for the six it binds.
-- The editor serves its old address during the overlap ([Router app](router-app.md#legacy-editor-route)),
-  and a save that fails in the window is retried on its own
+- A save that fails in the window is retried on its own
   ([Per-tab storage](../006-project/per-tab-storage.md#retrying-a-failed-save)).
 - Deploy a renaming migration to **staging first**, and to production at a quiet hour: for a minute or
   so, api calls from open editors can fail and are retried.

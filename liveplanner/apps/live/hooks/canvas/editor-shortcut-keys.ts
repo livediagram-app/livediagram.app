@@ -7,6 +7,8 @@
 
 import type { Selection } from '@/lib/selection-store';
 import type { CanvasTool } from '@/components/palette/palette.types';
+import { isSheetCovering } from '@/hooks/plan/plan-cover-store';
+import { setSheetZoom, stepSheetZoom } from '@/hooks/sheets/sheet-zoom';
 
 // Shape kinds that have a single-key palette shortcut: the common
 // flowchart set. The rest of the ShapeKind union (stadium, project,
@@ -226,20 +228,25 @@ export function runModShortcut(e: KeyboardEvent, live: EditorKeyboardShortcutsDe
   const key = e.key;
   const lower = key.toLowerCase();
   // Zoom: allowed for view-role visitors — doesn't change the project.
-  // + / = zoom in (= is the unshifted + key), - zooms out, 0 resets.
+  // + / = zoom in (= is the unshifted + key), - zooms out, 0 resets. A Sheet covering the canvas takes the zoom
+  // (docs/specs/029-sheets/sheet.md "Zoom"), as the corner zoom controls do: its cells, never the canvas under it.
+  const sheet = isSheetCovering();
   if (key === '=' || key === '+') {
     e.preventDefault();
-    live.onZoomIn();
+    if (sheet) stepSheetZoom(1);
+    else live.onZoomIn();
     return true;
   }
   if (key === '-') {
     e.preventDefault();
-    live.onZoomOut();
+    if (sheet) stepSheetZoom(-1);
+    else live.onZoomOut();
     return true;
   }
   if (key === '0') {
     e.preventDefault();
-    live.onZoomReset();
+    if (sheet) setSheetZoom(1);
+    else live.onZoomReset();
     return true;
   }
   // Cmd/Ctrl+. and Cmd/Ctrl+K: open the global search panel.
@@ -318,25 +325,25 @@ export function runModShortcut(e: KeyboardEvent, live: EditorKeyboardShortcutsDe
 }
 
 // What a key does while a Plan board or view covers the canvas (docs/specs/026-plan/plan-board.md "Nothing under it
-// moves"): `run` leaves the canvas alone (undo, redo, search, zen, Escape) and is handled as usual;
-// `swallow` is a canvas chord the browser would act on in its place (duplicate, select-all, lock, z-order, zoom), so it
-// is prevented and does nothing; `ignore` is every other key, left to the browser and the board (copy and cut of the
-// board's text included), never reaching the canvas.
+// moves"): `run` leaves the canvas alone (undo, redo, search, zen, Escape, and the zoom chords while a Sheet covers it,
+// which zoom the Sheet) and is handled as usual; `swallow` is a canvas chord the browser would act on in its place
+// (duplicate, select-all, lock, z-order, zoom), so it is prevented and does nothing; `ignore` is every other key, left
+// to the browser and the board (copy and cut of the board's text included), never reaching the canvas.
 type CoveredKeyRole = 'run' | 'swallow' | 'ignore';
+const isZoomChordKey = (key: string) => key === '=' || key === '+' || key === '-' || key === '0';
 export function coveredKeyRole(
   e: Pick<KeyboardEvent, 'key' | 'code' | 'metaKey' | 'ctrlKey' | 'shiftKey' | 'altKey'>,
+  sheetCovering: boolean = isSheetCovering(),
 ): CoveredKeyRole {
   const lower = e.key.toLowerCase();
   if (e.metaKey || e.ctrlKey) {
     if (lower === 'z' || lower === 'y' || lower === 'k' || e.key === '.') return 'run';
+    if (sheetCovering && isZoomChordKey(e.key)) return 'run';
     if (
       lower === 'd' ||
       lower === 'a' ||
       (lower === 'l' && e.shiftKey) ||
-      e.key === '=' ||
-      e.key === '+' ||
-      e.key === '-' ||
-      e.key === '0' ||
+      isZoomChordKey(e.key) ||
       (e.shiftKey &&
         (e.code === 'BracketRight' || e.code === 'BracketLeft' || '[]{}'.includes(e.key)))
     )

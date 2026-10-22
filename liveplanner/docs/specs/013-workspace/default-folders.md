@@ -269,7 +269,7 @@ it has no Location step and shows no folder browser.
 
 ### A template picked after creation
 
-The wizard makes the chosen mode's blank, and the template is picked afterwards on the new project's start screen ([Template starts](../007-editor/start-diagramming.md)), so a template's own default can only answer then.
+The wizard makes the chosen mode's blank, and the template is picked afterwards on the new project's start screen ([Start panel](../007-editor/start-panel.md)), so a template's own default can only answer then.
 
 - **The wizard leaves a note** (`lib/placement-defaults/template-pick-handoff.ts`, this browser tab only): the
   project it made, its first tab, and whether the person chose the folder themselves (a `/new?folder=` / `?team=`

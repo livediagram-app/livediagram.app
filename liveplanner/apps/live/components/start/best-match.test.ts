@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { liftBestMatch } from './best-match';
 
-// docs/specs/007-editor/start-diagramming.md "A title match leads".
+// docs/specs/007-editor/start-panel.md "A title match leads".
 const card = (id: string, name: string) => ({ id, name });
 const groups = [
   {

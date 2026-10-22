@@ -4,7 +4,6 @@
 // See docs/specs/016-platform/router-app.md.
 
 import { applyCachePolicy } from './cache-policy';
-import { legacyEditorRedirect, legacyHelpRedirect } from './legacy-editor-route';
 import { LIVE_ROUTE_SEGMENTS } from '@liveplanner/api-schema';
 
 export interface Env {
@@ -46,7 +45,7 @@ const HELP_PATH = '/help';
 const LIVE_ROOT_ASSETS = new Set(['/icon.svg']);
 
 // Help-centre category slugs, which are the first segment of every help
-// article path (`/canvas/shadows/`, `/palette/build/frames/`). The help app
+// article path (`/plan/boards/`, `/collaboration/sharing/embeds/`). The help app
 // serves them all under `/help`, so a bare one is an article URL that lost
 // its prefix — a hand-typed link, an old bookmark, a copy-paste that dropped
 // the first segment. Those 404'd into marketing; they redirect now.
@@ -57,16 +56,14 @@ const LIVE_ROOT_ASSETS = new Set(['/icon.svg']);
 const HELP_CATEGORY_SEGMENTS = new Set([
   'about',
   'account-and-data',
-  'canvas',
   'collaboration',
   'contact',
   'developers',
   'getting-started',
-  'palette',
+  'plan',
   'policies',
   'privacy-and-security',
   'search-panel',
-  'selection-modes',
   'supported-devices',
   'tabs',
   'tips-and-tricks',
@@ -198,15 +195,11 @@ async function route(request: Request, env: Env): Promise<Response> {
     // static app — same prefix-strip as the live app's assets.
     return forward(request, url, env.TELEMETRY, env.TELEMETRY_ORIGIN, TELEMETRY_PATH);
   }
-  const legacyHelp = legacyHelpRedirect(url);
-  if (legacyHelp) return legacyHelp;
   if (hasPrefix(url.pathname, HELP_PATH)) {
     // The help centre (docs/specs/018-help/help-app.md), a basePath:'/help' static app — same
     // prefix-strip as telemetry.
     return forward(request, url, env.HELP, env.HELP_ORIGIN, HELP_PATH);
   }
-  const legacyEditor = legacyEditorRedirect(url);
-  if (legacyEditor) return legacyEditor;
   // Clean live-app page routes (/project, /explorer, /new, ...) and
   // its root-served icon: forwarded AS-IS (no strip — the worker's
   // files are already `/live`-free).

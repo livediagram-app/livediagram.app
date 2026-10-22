@@ -34,7 +34,7 @@
 }
 
 /* A short window, whatever the pointer: a phone held sideways, or a desktop browser zoomed to 200% (720x450). Panels
- * that need their height (the start panel, docs/specs/007-editor/start-diagramming.md "On a short window") trim
+ * that need their height (the start panel, docs/specs/007-editor/start-panel.md "On a short window") trim
  * their clearances here. */
 @custom-variant short-window {
   @media (max-height: 499px) {
@@ -731,7 +731,7 @@
 
 /* A standing message (an empty tab's Show Templates, StartAgainTray) steps aside while a mode's message (an armed
    tool's Cancel, a modifier hint) is up: they take the same place under the strip or the Draw dock, and the mode's
-   says what the next click does (docs/specs/007-editor/start-diagramming.md "Bringing it back"). */
+   says what the next click does (docs/specs/007-editor/start-panel.md "Bringing it back"). */
 body:has([data-mode-message]) [data-yields-to-mode] {
   display: none;
 }

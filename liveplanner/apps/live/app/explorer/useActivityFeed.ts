@@ -61,8 +61,6 @@ function readLocal(owner: string): Promise<OfflineActivity> {
 export type ActivityFeed = {
   /** Open actions (self-assignments included) and open Plan cards on the reader, newest first. */
   assignedToMe: AssignedRow[];
-  /** Open actions the reader assigned to somebody ELSE. */
-  youAssigned: Located<ActivityAction>[];
   /** Unresolved threads the reader is in, on elements and on Plan cards, newest comment first. */
   threads: ThreadRow[];
   /** Forms with responses the reader has not seen (docs/specs/030-forms/forms.md), newest response first. */
@@ -154,13 +152,6 @@ export function useActivityFeed(ownerId: string | null): ActivityFeed {
       ].sort((a, b) => b.updatedAt - a.updatedAt),
     [actions, cards],
   );
-  const youAssigned = useMemo(
-    () =>
-      actions
-        .filter((a) => a.createdByMe && !a.assignedToMe)
-        .sort((a, b) => b.updatedAt - a.updatedAt),
-    [actions],
-  );
 
   const threadRows = useMemo(
     () =>
@@ -171,5 +162,5 @@ export function useActivityFeed(ownerId: string | null): ActivityFeed {
     [threads, cardThreads],
   );
 
-  return { assignedToMe, youAssigned, threads: threadRows, formResponses, loading, error, retry };
+  return { assignedToMe, threads: threadRows, formResponses, loading, error, retry };
 }

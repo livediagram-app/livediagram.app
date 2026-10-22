@@ -13,7 +13,7 @@ interface SeoInput {
   description: string;
   /** Absolute path on the help centre, including the `/help/` prefix and
    *  trailing slash, and matching the page's real route: an article sits at
-   *  `/help/<categorySlug>/<slug>/`, e.g. `/help/canvas/themes/`. A path that
+   *  `/help/<categorySlug>/<slug>/`, e.g. `/help/user-interface/themes/`. A path that
    *  disagrees with the route points the canonical and the OG url at a
    *  different page, which nothing at runtime notices.
    *  (`seo-canonical.test.ts` checks every article page.) */

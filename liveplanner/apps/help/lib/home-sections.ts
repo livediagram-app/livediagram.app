@@ -21,9 +21,7 @@ export const HOME_SECTIONS: HomeSection[] = [
     heading: 'Everything in the editor',
     lede: 'In-depth guides for every part of the editor, grouped by where you find it.',
     categories: [
-      'canvas',
-      'palette',
-      'selection-modes',
+      'plan',
       'tabs',
       'collaboration',
       'explorer',
@@ -61,12 +59,12 @@ export const STILL_STUCK = { category: 'troubleshooting', contact: 'contact' } a
 
 /** The chips under the hero's search: the articles most readers come for, by `categorySlug/slug`. */
 export const POPULAR_TOPICS: { label: string; path: string }[] = [
-  { label: 'Your first diagram', path: 'getting-started/your-first-diagram' },
+  { label: 'Your first project', path: 'getting-started/your-first-project' },
+  { label: 'Boards', path: 'plan/boards' },
+  { label: 'Sheets', path: 'plan/sheets' },
   { label: 'Sharing', path: 'getting-started/sharing-your-project' },
   { label: 'Keyboard shortcuts', path: 'tips-and-tricks/keyboard-shortcuts' },
-  { label: 'Templates', path: 'canvas/templates' },
-  { label: 'Exporting', path: 'account-and-data/exporting-diagrams' },
-  { label: 'Plan mode', path: 'canvas/plan-mode' },
+  { label: 'Exporting', path: 'tabs/export-tabs' },
 ];
 
 /** Every category slug the home page shows, in page order. */

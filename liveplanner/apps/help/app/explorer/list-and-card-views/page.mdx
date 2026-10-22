@@ -16,7 +16,7 @@ export const metadata = helpMetadata({
   categorySlug="explorer"
 >
 
-The Explorer's browse views can render the same folders and projects three ways: a compact **list** of rows, a grid of **cards**, each with a large live preview of the project's canvas, or a **details** table you can sort by any column. Recognising a project by its picture is often faster than reading near-identical names, so the card view shines in folders full of variations on a theme; the list packs more onto the screen when you know exactly what you're looking for.
+The Explorer's browse views can render the same folders and projects three ways: a compact **list** of rows, a grid of **cards**, each with a large live preview of the project's first tab, or a **details** table you can sort by any column. Recognising a project by its picture is often faster than reading near-identical names, so the card view shines in folders full of variations on a theme; the list packs more onto the screen when you know exactly what you're looking for.
 
 ## Switching views
 
@@ -34,7 +34,7 @@ Cards are what you get until you choose otherwise: a project is easiest to recog
 
 Each card carries everything its list row does, arranged around the preview:
 
-- A **live snapshot** of the project's first tab, rendered from the actual canvas and refreshed when the project changes. The preview keeps the project's own background colour, so the card reads like a window onto the canvas.
+- A **live snapshot** of the project's first tab, drawn from its board, Sheet, Dashboard or form and refreshed when the project changes. The preview keeps the tab's own background colour, so the card reads like a window onto the tab.
 - The **name**, the **last-updated** time, the owner where relevant, the **Made by AI** or **This Browser** pill where one applies, and the same visibility badge and **⋯** menu as the list row: **Rename**, **Duplicate**, **Change Folder**, **Favourite**, **Hide from Recent** and **Delete**, among others.
 - A **star** on anything you have favourited: before the name in the list view, so a column of rows lines its stars up in one scannable vertical, and in the meta row on a card. It is amber rather than brand-coloured because it is a personal mark sitting beside badges that describe the project itself.
 - Folders appear as folder cards in the same grid, so navigation doesn't change between views, and a folder card **previews what is inside it**: a small mosaic of up to four tiles, the project snapshots it holds first, then its subfolders. When there are more than four, the last tile becomes a muted **+N** counting the rest. An empty folder keeps the plain folder glyph. This is the card grid only; the list view keeps its count badge, and the editor's [Explorer panel](/help/explorer/explorer-panel/) is unchanged.
@@ -45,8 +45,8 @@ The grid is responsive: one column on a phone, two on a tablet, three on a wide 
 
 The details view is a table, one row per folder or project, much like the details pane of a desktop file manager:
 
-- **Name**: open a project or folder from it. Rest the pointer on a project's row for a moment (or tab to its name) and a **preview** of its canvas appears beside it; move down the rows and each next preview appears at once.
-- **Type**: the mode the project was last worked in (Diagram, Draw, Workshop, Pages or Plan), with its icon. Folders read **Folder**.
+- **Name**: open a project or folder from it. Rest the pointer on a project's row for a moment (or tab to its name) and a **preview** of its first tab appears beside it; move down the rows and each next preview appears at once.
+- **Type**: the kind of thing it is, with its icon: a project reads **Plan**, and a folder reads **Folder**.
 - **Comments**: how many comments the project holds, resolved ones included. Empty when there are none.
 - **Access**: what you may do with it, as the Share dialog's role icon: **Editor** for your own, team and this-browser projects, or the role a shared link gives you.
 - **Size**: how many objects the project holds across its tabs, and how much space it takes, for example **12 objects (34 KB)**. A folder shows how many items it holds.
@@ -63,9 +63,9 @@ You can drag any of your own or your team's project rows onto a folder, here or 
 Snapshot thumbnails also appear in list rows and other Explorer surfaces; the card view just shows them large. A few behaviours worth knowing:
 
 - Previews load **lazily** as you scroll, so a long library doesn't fetch dozens of images up front.
-- A project with an **empty first tab** shows a dashed sketch captioned "Nothing drawn yet" instead of a snapshot, and while a snapshot loads a placeholder fades into it, so the card never jumps in size.
+- A project whose **first tab is still empty** (on **Start Planning**) shows a dashed sketch captioned "Nothing drawn yet" instead of a snapshot, and while a snapshot loads a placeholder fades into it, so the card never jumps in size.
 - Previews are rendered fresh after the project is edited, so what you see stays current without you doing anything.
-- A preview is **vector, not a photo of the canvas**, which is why it is crisp at any size. It is also the very same picture a [live image link](/help/collaboration/sharing/live-image/) serves: one snapshot per project, drawn once and used as a 36px row thumbnail, as this card, and in your README.
+- A preview is **vector, not a screenshot**, which is why it is crisp at any size. It is also the very same picture a [live image link](/help/collaboration/sharing/live-image/) serves: one snapshot per project, drawn once and used as a 36px row thumbnail, as this card, and in your README.
 
 <Tip>
   The [Shared With Me](/help/explorer/shared-with-you/) page keeps its own fixed layout, previews

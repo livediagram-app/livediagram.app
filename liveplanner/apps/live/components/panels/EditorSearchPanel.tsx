@@ -3,14 +3,10 @@
 import dynamic from 'next/dynamic';
 import { searchPanelSources } from '@/components/panels/search-panel-sources';
 
-import { buildPaletteSearchItems } from '@/lib/palette-search';
 import { HELP_SEARCH_ITEMS } from '@/lib/help-search';
 import { SETTINGS_SEARCH_ITEMS } from '@/lib/settings-search-items';
 import { useEditorContext } from '@/app/project/[id]/EditorContext';
 import { useEditorCommands } from '@/hooks/canvas/useEditorCommands';
-import { PALETTE_TILES } from '@/components/palette/palette-tile-defs';
-import { tileHandler } from '@/components/palette/PaletteTileGrid';
-import { useEditorTileActions } from '@/components/palette/useEditorTileActions';
 import { explorerPathFor } from '@/app/explorer/routes';
 import { assignAppLocation } from '@/lib/app-location';
 
@@ -20,7 +16,8 @@ const SearchPanel = dynamic(
 );
 
 // The editor's search panel (docs/specs/008-canvas/canvas-and-palette.md "Search panel" + docs/specs/007-editor/command-palette.md): searches projects, folders, shared +
-// team projects, tabs/elements, and exposes palette adds, commands, and help.
+// team projects, tabs, and exposes commands, settings and help. There is no "Add to canvas" group: a Plan tab's
+// content covers the canvas, so nothing added there would show.
 // Reads everything from EditorContext (commands come from useEditorCommands,
 // itself context-driven), so EditorView just renders <EditorSearchPanel />.
 export function EditorSearchPanel() {
@@ -37,13 +34,10 @@ export function EditorSearchPanel() {
     openProject,
     setActiveId,
     setSelectedId,
-    isReadOnly,
-    addShape,
     setSearchOpen,
     openSettingsAt,
   } = useEditorContext();
-  const { commandItems, runCommand } = useEditorCommands(searchOpen);
-  const tileActions = useEditorTileActions();
+  const { commandItems, runCommand } = useEditorCommands();
 
   if (!searchOpen) return null;
 
@@ -85,23 +79,6 @@ export function EditorSearchPanel() {
         setActiveId(tabId);
         setSelectedId(elementId);
       }}
-      paletteItems={isReadOnly ? undefined : buildPaletteSearchItems()}
-      onAddPaletteItem={
-        isReadOnly
-          ? undefined
-          : (add) => {
-              if (add.type === 'shape')
-                addShape(add.shapeKind, {
-                  session: add.session,
-                  plan: add.plan,
-                  variant: add.variant,
-                });
-              else {
-                const def = PALETTE_TILES.find((t) => t.id === add.tileId);
-                if (def) tileHandler(def, tileActions)();
-              }
-            }
-      }
       commandItems={commandItems}
       onRunCommand={runCommand}
       helpItems={HELP_SEARCH_ITEMS}

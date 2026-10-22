@@ -85,7 +85,8 @@ const CARDS: { kind: Format; title: string; description: string }[] = [
   {
     kind: 'markdown',
     title: 'Markdown',
-    description: "A text outline of this tab's elements and connections. Copy it or save a .md.",
+    description:
+      "A text outline of this tab, such as a board's columns and cards. Copy it or save a .md.",
   },
   {
     kind: 'csv',
@@ -198,9 +199,7 @@ export function ExportTabDialog({
 
   const isSelection = scope === 'selection';
   const suffix = isSelection ? ' - selection' : '';
-  const baseName = sanitizeFilename(
-    `${projectName || 'project'} - ${tab.name || 'tab'}${suffix}`,
-  );
+  const baseName = sanitizeFilename(`${projectName || 'project'} - ${tab.name || 'tab'}${suffix}`);
 
   // A new load (format picked, tab changed) is not ready until it lands;
   // adjusted during render so the panel never shows the previous load as ready.

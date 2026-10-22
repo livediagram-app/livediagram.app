@@ -1,51 +1,45 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { CommentThread } from '@/components/illustrations/collaboration';
 
 export const metadata = helpMetadata({
   title: 'Comments',
   description:
-    'Leave comments on the canvas to give feedback, ask questions, and track decisions, then resolve them once they are handled.',
+    'Comment on a card or a Sheet cell to give feedback, ask questions and record decisions, mention teammates, then resolve the thread once it is handled.',
   path: '/help/collaboration/comments/',
 });
 
-<ArticleLayout title="Comments" description="Drop a comment anywhere on the canvas to ask a question or leave feedback, then resolve it once it has been handled." categoryTitle="Collaboration" categorySlug="collaboration" subArticles={getSubArticles("comments")}>
+<ArticleLayout title="Comments" description="Start a conversation on a card or a Sheet cell, mention a teammate, and resolve it once it has been handled." categoryTitle="Collaboration" categorySlug="collaboration" subArticles={getSubArticles("comments")}>
 
-Comments let you have a conversation on top of the canvas without changing anything on it. Drop one on the canvas where it matters, leave a question or a piece of feedback, and resolve it once it has been dealt with. They are the lightweight way to review work, agree on changes, and keep a record of why something is the way it is.
+Comments let you talk about the work without changing it. Leave a question or a piece of feedback where it belongs, on the card or the cell it is about, and resolve it once it has been dealt with. They are the lightweight way to review work, agree on changes, and keep a record of why something is the way it is.
 
-## Leaving a comment
+There are two places a comment can live: on a **card**, and on a **cell** of a Sheet. Boards, Dashboards and Forms carry no comments of their own: the conversation lives on the cards they show.
 
-A comment is attached to the thing it is about, so the reader sees exactly what you are talking about.
+## Commenting on a card
+
+Every card has a conversation at the end of the **Overview** tab of its card panel, under **Comments**.
 
 <Step n={1}>
-  Right-click the element (or long-press it on a touch screen) and press **Add Comment** in the row
-  of buttons along the top of its menu. Every boxed element can carry a thread; arrows cannot. On a
-  Participant link there is no right-click menu: select the element and press **Add Comment** on its
-  toolbar.
+  Click a card to open its panel. Scroll to **Comments** at the end of the **Overview** tab.
 </Step>
 
 <Step n={2}>
-  Type your note in the **Comments** popover and press **Comment** (or **Ctrl+Enter**, **Cmd+Enter**
-  on a Mac). The element shows a small comment icon with the count near its top (or along its bottom
-  edge, if you chose **Footer** for **Element Indicators** in Settings › Editor; **Off** hides it).
-  See [Element Indicators](/help/canvas/element-indicators/).
+  Type in the **Add a comment…** box and press **Comment** (or **Ctrl+Enter**, **Cmd+Enter** on a
+  Mac). A plain **Enter** starts a new line.
 </Step>
 
 <Step n={3}>
-  Press that icon any time to reopen the thread and read or reply to what is there. **Esc** or the
-  close button shuts the popover.
+  The comment appears in the thread with your name, colour and how long ago it was posted. On the
+  board, the card shows a speech-bubble with the number of comments while its thread is open.
 </Step>
 
-Because a thread lives on the element rather than inside its content, you can leave feedback on a draft without nudging anyone's shapes or arrows out of place. Each comment shows its author's name, colour and how long ago it was posted. While a thread is open, you can delete your own comments with the bin that appears when you hover one; people who can edit the project can delete anyone's.
+You can delete your own comments with the bin that appears when you hover one; people who can edit the project can delete anyone's. See [Cards](/help/plan/cards/) for everything else the card panel holds.
 
-On a Sheet, a comment can be about a single cell: right-click the cell and choose **Insert Comment**. See [Comment on a Cell](/help/canvas/plan-mode/sheets/#comment-on-a-cell).
+## Commenting on a Sheet cell
 
-To comment on a **place** rather than a shape, an empty patch of canvas or the gap between two clusters, use a [comment panel](/help/palette/collaborate/comment-panels/): the same thread as a card on the canvas, joined to whatever it is about by an ordinary arrow.
+On a Sheet, a comment is about a single cell. Right-click the cell and choose **Insert Comment** (or press Ctrl+Alt+M, ⌘⌥M on a Mac), type your note and press **Comment**. The cell shows a small amber triangle in its corner while the thread is open; rest the pointer on the cell to read the first comment, and press the triangle (or **Show Comments** in the cell menu) to open the whole thread. See [Comment on a Cell](/help/plan/sheets/#comment-on-a-cell).
 
-<Figure caption="An element's comment icon opens its Comments popover, with the thread, Resolve and the reply box.">
-  <CommentThread />
-</Figure>
+While a tab has cell comments, a **Collaborate** button appears in the bottom-right cluster with a count of the threads still open. It lists every cell thread on the tab by its Sheet and cell, such as `Budget!B4`; switch to **Resolved** to see the ones that are settled, and press a row to go to its cell.
 
 ## Mentioning a teammate
 
@@ -54,34 +48,33 @@ Type **@** in a comment to tag someone on your team. A list of teammates appears
 A mention does two things for the person you tag:
 
 - The thread appears on their [Inbox](/help/explorer/activity/), marked **Mentioned You**, even if they never commented.
-- They get an email quoting your comment, unless they have turned off **Someone Mentions Me in a Comment** in their [email notifications](/help/account-and-data/email-notifications/).
+- They get an email quoting your comment, unless they have turned off **Someone Mentions Me in a Comment** in their [email notifications](/help/account-and-data/email-notifications/). For a card, the email's button opens that card.
 
 You can mention the members of the team whose library holds the project, as long as you are a member of that team too, including people who have been invited but not joined yet. On a personal project there is nobody to mention; move it into a team library first. You need to be signed in to mention anyone.
 
 ## Resolving comments
 
-Once a comment has been actioned, press **Resolve** at the top of its thread to clear it from the working view while keeping the record. It becomes a green **Resolved** badge, the reply box is hidden, and the element's comment icon goes away. To reopen the thread, find it under **Resolved** in the [Collaborate panel](/help/collaboration/assigned-actions/#the-collaborate-panel) and press **Reopen** beside the badge. Resolving keeps the canvas focused on what still needs attention rather than on questions that are already settled.
-
-Every open thread on a tab is also listed in the [Collaborate panel](/help/collaboration/assigned-actions/#the-collaborate-panel), the **Collaborate** button in the bottom-right corner with a count of what is still open. Its **Resolved** view holds the threads you have resolved. Use comments to:
+Once a comment has been actioned, press **Resolve** at the top of its thread to clear it from the working view while keeping the record. It becomes a green **Resolved** badge and the reply box is hidden; on a card the comment count goes away, and on a cell the amber triangle does. **Reopen** beside the badge opens the thread again, and so does a new comment. Use comments to:
 
 - **Request changes** during a review without editing someone else's work directly.
-- **Ask a question** anchored to the exact element it is about.
-- **Capture a decision** so the reasoning is not lost once the canvas changes.
+- **Ask a question** on the exact card or cell it is about.
+- **Capture a decision** so the reasoning is not lost once the plan changes.
 
 ## Comments and collaboration
 
-The canvas is multiplayer, so comments are part of how a group works on the canvas together. New comments appear for everyone in the project as they are posted. A collaborator can answer a question where it was asked, and a reviewer can leave feedback for the author to pick up later.
+New comments appear for everyone in the project as they are posted. A collaborator can answer a question where it was asked, and a reviewer can leave feedback for the owner to pick up later. Open threads you are part of are gathered on your [Inbox](/help/explorer/activity/), across every project.
 
-Because the canvas works without signing in, a guest you hand a share link to can read and join the conversation too. Commenting needs a **Participant** or **Editor** share link: someone on a **Viewer** link can read the threads but not add to them, resolve them or delete anything.
+Because liveplanner works without signing in, a guest you hand a share link to can read and join the conversation too. Commenting needs a **Participant** or **Editor** share link: someone on a **Viewer** link can read the threads but not add to them, resolve them or delete anything.
 
 A few things to know:
 
 - **Comments aren't part of undo.** Pressing undo never takes back a comment, yours or anyone else's.
 - **Owners can be emailed.** When someone comments on a project you own, you can get an email, controlled by **Someone Comments on My Project** in your [email notifications](/help/account-and-data/email-notifications/).
+- **Comments stay with their card.** A card keeps its thread when it moves between columns or boards. A copy of a Sheet starts without its cell comments.
 
 <Tip>
-  Keep each comment to one point. A marker that asks a single, specific question is far easier to
-  resolve than a long thread covering five unrelated things.
+  Keep each comment to one point. A thread that asks a single, specific question is far easier to
+  resolve than a long one covering five unrelated things.
 </Tip>
 
 </ArticleLayout>

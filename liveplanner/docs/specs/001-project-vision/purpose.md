@@ -20,7 +20,7 @@ A multiplayer planner in the browser. What a person makes is a **project**
 
 Anyone with access to a project can join, see the others' cursors and edits
 live, and work on it at the same time. The output is a plan a team keeps
-running, not a project one person writes and the rest review.
+running, not a report one person writes and the rest review.
 
 The project is the product. Everything else exists because a team planning
 together is usually doing it **with other people in the room**, and what that
@@ -79,7 +79,7 @@ never arrives.
 - **Not a diagram tool or a whiteboard.** liveplanner was forked from livediagram and keeps only its Plan mode;
   shapes, arrows, freehand drawing, pages and workshops are livediagram's, not this product's. The test for a
   new feature is whether it helps a team plan and run work, not whether a canvas could hold it.
-- **Not a project editor or wiki.** A card has a description and a project has comments; long-form prose is
+- **Not a writing tool or wiki.** A card has a description and a project has comments; long-form prose is
   not the goal.
 - **Not a desktop app.** The web, with collaboration, is the product. Offline Mode is a per-project choice, not
   the default posture ([Offline Mode](../006-project/offline-mode.md)).

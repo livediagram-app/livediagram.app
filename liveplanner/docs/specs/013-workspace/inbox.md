@@ -54,7 +54,7 @@ the reader**. The badge always shows, **0** included, so an empty Inbox reads as
 shows nothing only while the Inbox is loading or failed to load, so it never claims a false 0. The
 count only covers work waiting on the reader, not work they handed out.
 
-The pane is a single page of three sections, each a card-list of rows
+The pane is a single page of sections, each a card-list of rows
 (the same container the List view uses), each with a heading and a
 count, and each hidden entirely when empty:
 
@@ -62,13 +62,10 @@ count, and each hidden entirely when empty:
    and open Plan cards ([Items](../026-plan/items.md)) whose Assignee is the reader (§2.4), in
    one list. A self-assignment ([Assigned actions](../012-collaboration/assigned-actions.md): the Myself row, the guest to-do case)
    lands here and only here.
-2. **You Assigned** — open actions the reader assigned to _somebody
-   else_. Self-assignments are excluded so one action never appears
-   twice.
-3. **Form Responses** — forms with responses the reader has not seen, in projects they own or reach through a
+2. **Form Responses** — forms with responses the reader has not seen, in projects they own or reach through a
    team ([Forms](../030-forms/forms.md#hearing-about-responses)): "3 new responses to **Bug Report**", opening the
-   board they land on. Listed between Assigned to You and You Assigned; the Inbox badge does not count them.
-4. **Open Comment Threads** — unresolved threads the reader is in.
+   board they land on. Listed after Assigned to You; the Inbox badge does not count them.
+3. **Open Comment Threads** — unresolved threads the reader is in.
    "In" means one of two things, and the row says which:
    - the reader wrote at least one comment in the thread, or
    - the thread is on a project the reader **owns** (owners are
@@ -87,8 +84,7 @@ over a relative time far right. The detail line is where the row is
 _from_: **element label · tab name**, with a **project chip** naming the
 project (a team project's chip also names the team). An action row's
 title is the action name, its avatar the assignee (brand-tinted when
-that is the reader, labelled "You"); a **You Assigned** row shows the
-assignee's avatar with "Assigned to <name>" on hover. A thread row's
+that is the reader, labelled "You"). A thread row's
 title is the element label, its detail the latest comment's text, its
 avatar the latest author's colour, with the comment count on hover.
 A card row's glyph is its card type's (the built-in type's glyph, else a
@@ -221,15 +217,15 @@ its own batch, all via one helper (`collabIndexStatements` in
 `apps/api/src/db/collab-index.ts`), so a fifth write path cannot forget
 by accident without also forgetting to write the tab:
 
-| Path                                                                                                         | Where                      | How                                          |
-| ------------------------------------------------------------------------------------------------------------ | -------------------------- | -------------------------------------------- |
-| tab autosave `PUT …/tabs/:tabId`                                                                             | `upsertTab`                | statements appended to the tab's batch       |
-| view-role comment `POST …/comments`                                                                          | `upsertTab`                | same                                         |
-| delete-own comment `DELETE …/comments/:id`                                                                   | `upsertTab`                | same                                         |
-| create (`POST /projects`, templates, import)                                                                | `seedTabs`                 | same, per tab                                |
-| duplicate / copy from a share link                                                                           | `copyProject`             | `INSERT … SELECT` from the source tab's rows |
-| MCP `update_project` / `add_tab` ([MCP server](../015-api/mcp-server.md))                                   | goes through the tab `PUT` | covered                                      |
-| tab / project delete, account delete                                                                        | FK cascade from `tabs`     | nothing to do                                |
+| Path                                                                                                     | Where                      | How                                          |
+| -------------------------------------------------------------------------------------------------------- | -------------------------- | -------------------------------------------- |
+| tab autosave `PUT …/tabs/:tabId`                                                                         | `upsertTab`                | statements appended to the tab's batch       |
+| view-role comment `POST …/comments`                                                                      | `upsertTab`                | same                                         |
+| delete-own comment `DELETE …/comments/:id`                                                               | `upsertTab`                | same                                         |
+| create (`POST /projects`, templates, import)                                                             | `seedTabs`                 | same, per tab                                |
+| duplicate / copy from a share link                                                                       | `copyProject`              | `INSERT … SELECT` from the source tab's rows |
+| MCP `update_project` / `add_tab` ([MCP server](../015-api/mcp-server.md))                                | goes through the tab `PUT` | covered                                      |
+| tab / project delete, account delete                                                                     | FK cascade from `tabs`     | nothing to do                                |
 | tab link into another project ([Tab ↔ project many-to-many](../006-project/tab-project-many-to-many.md)) | rows are per tab           | nothing to do                                |
 
 The rows are derived by a pure function over the tab's elements
@@ -339,8 +335,8 @@ holds its status; failing that, an All Cards board; failing that, any
 board in the project; failing that, none (the `#item=` link, §1).
 
 Cards the reader assigned to somebody else are **not** listed: an
-item records who last wrote it, not who assigned it, so "You Assigned"
-stays actions only.
+item records who last wrote it, not who assigned it. The Inbox has no
+"You Assigned" section, since nothing in Plan assigns an action.
 
 The migration also clears `collab_index_state`, so each reader's next
 visit re-runs the §2.3 backfill and indexes the boards saved before

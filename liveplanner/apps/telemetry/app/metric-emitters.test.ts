@@ -116,7 +116,7 @@ describe('the emitter scan', () => {
     expect(
       has('Project', 'Exported', COMPUTED as never) || has('Project', 'Exported', 'PNG'),
     ).toBe(true);
-    expect(has('AI', 'Toggled', 'AiOn')).toBe(true); // Settings catalogue row
+    expect(has('UI', 'Toggled', 'TelemetryOn')).toBe(true); // Settings catalogue row
     expect(has('Tab', 'Moved', 'Folder')).toBe(true); // ternary action
     expect(has('Tab', 'Removed', 'Folder')).toBe(true);
     expect(has('Project', 'Created', 'Offline')).toBe(true); // ternary type
@@ -211,7 +211,7 @@ describe('the Settings tab', () => {
   it('has a chart for every Settings row the editor emits', () => {
     const charts = SETTINGS_STACKS.flatMap((s) => s.members);
     const rows = KNOWN.filter((e) => e.path.endsWith('settings-catalogue.ts'));
-    expect(rows.length).toBeGreaterThan(20);
+    expect(rows.length).toBeGreaterThan(10);
     const missing = rows.filter(
       (e) =>
         typeof e.type === 'string' &&

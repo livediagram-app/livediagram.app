@@ -87,9 +87,16 @@ only small per-browser state, under `liveplanner:*` keys:
 
 ## Next
 
-- **Finish the fork**: trim the element kinds, palette, templates and tours to what Plan uses and drop the modules
-  nothing reaches (including the diagram lint); rename "project" to **project** in code, tables, routes, MCP tools and
-  CLI verbs ([Domain language](../003-system-architecture/domain-language.md)); finish the help centre around Plan.
+- **Finish the fork.** Done: Plan is the one mode; the importers, Drive mirror, community gallery, facilitation
+  tools, diagram lint and diagram tools for agents are gone; the container is a **project** everywhere
+  ([Domain language](../003-system-architecture/domain-language.md)). Still to do:
+  - **The diagram element code.** The element routers carry only Plan's kinds, but the diagram kinds' modules
+    (flowcharts, mind maps, arrows' routing, Sankey, the concept graphics, Mermaid, the unmounted palette strip) are
+    still in `packages/project` and `apps/live`, reached from shared code. Their specs in
+    [Canvas](../008-canvas/README.md), [Elements](../009-elements/README.md), [Palette](../010-palette/README.md) and
+    [Import and export](../020-import-export/README.md) stay until that code goes, and go with it.
+  - **The AI assistant's prompt** is still livediagram's ([AI Assistance](../007-editor/ai-assistance.md)).
+  - **The help centre** around the Plan category, and the brand's remaining sky hexes.
 - **Run and verify**: walk every Plan flow on the local stack, and measure the project page's first-load JS against
   livediagram's.
 - **Launch**: create the Cloudflare resources on the liveplanner account and fill in their ids, set up Clerk, Resend and

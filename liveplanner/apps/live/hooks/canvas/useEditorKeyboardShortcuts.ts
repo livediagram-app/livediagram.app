@@ -257,7 +257,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       // ones. A modified key returns either way: one we don't handle must
       // not fall through to the plain-key table and drop a shape.
       if (mod) {
-        // An empty start search hands undo and redo on (start-diagramming.md): it has no typing of its own to undo.
+        // An empty start search hands undo and redo on (start-panel.md): it has no typing of its own to undo.
         const historyChord = lower === 'z' || lower === 'y';
         if (inText && !(historyChord && passesHistoryChords(target))) return;
         // A Viewer's or Participant's canvas chord it may not run (select-all, duplicate, lock, z-order) is still the

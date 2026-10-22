@@ -24,8 +24,8 @@ export const PAGE_GRADIENT_ANGLE = 160;
 // The pattern's pitch, in px (the dots, grid and lines).
 export const PAGE_PATTERN_PITCH = 24;
 
-// The accent a theme without its own stroke paints in (the brand blue).
-export const FALLBACK_THEME_ACCENT = '#0ea5e9';
+// The accent a theme without its own stroke paints in (the brand violet).
+export const FALLBACK_THEME_ACCENT = '#7c3aed';
 // Mist: the accent tinted this far toward white at the top, and this far at the bottom. Light
 // enough that the default dark ink stays well past AA; the Gradient category's Theme Mist.
 export const MIST_TOP_TINT = 0.95;

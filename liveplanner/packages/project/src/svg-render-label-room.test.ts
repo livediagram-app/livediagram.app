@@ -12,8 +12,7 @@ import { describeBoxedExport } from './svg-render-describe';
 import { defaultPadding } from './colors';
 import { labelBodyInset } from './label-body';
 
-// The headless label measure and the label's room (docs/specs/024-agents/blueprints/diagram-lint.md LN4, LN5):
-// what the lint and every headless render wrap with.
+// The headless label measure and the label's room: what every headless render wraps a label with.
 
 describe('estimatedLabelMeasure', () => {
   it('measures a share of the font size a character', () => {

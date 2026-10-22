@@ -611,8 +611,8 @@ export const shareProjectShape = {
     .enum(['view', 'participate', 'edit'])
     .optional()
     .describe(
-      'What the link grants. "participate" (default): recipients add stickies, write and vote ' +
-        'but cannot reshape it; right for a retro or a workshop. "view": they only look, ' +
+      'What the link grants. "participate" (default): recipients work cards and Sheet cells, comment and vote ' +
+        'but cannot reshape a board; right for a retro or a workshop. "view": they only look, ' +
         'with no comments or votes. "edit": they can change anything. No sign-in is needed to open any.',
     ),
   expiry: z

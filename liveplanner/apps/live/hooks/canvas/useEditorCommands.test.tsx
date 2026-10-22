@@ -1,8 +1,6 @@
 // @vitest-environment jsdom
 
 import { renderHook } from '@testing-library/react';
-import type { ReactNode } from 'react';
-import { act } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 // The search panel's command palette (docs/specs/007-editor/command-palette.md): the catalogue follows
@@ -15,18 +13,8 @@ vi.mock('@/hooks/ui/useIsMobileViewport', () => ({ useIsMobileViewport: () => fa
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 const { useEditorCommands } = await import('./useEditorCommands');
-const { createSelectionStore } = await import('@/lib/selection-store');
-const { SelectionStoreProvider } = await import('./useSelectionStore');
 
-// The commands read the selection from the store while search is open.
-let store = createSelectionStore();
-const wrapper = ({ children }: { children: ReactNode }) => (
-  <SelectionStoreProvider store={store}>{children}</SelectionStoreProvider>
-);
-const run = (open = true) => {
-  store = createSelectionStore();
-  return renderHook(() => useEditorCommands(open), { wrapper });
-};
+const run = () => renderHook(() => useEditorCommands());
 
 function editor(over: Record<string, unknown> = {}) {
   return {
@@ -48,28 +36,13 @@ function editor(over: Record<string, unknown> = {}) {
 const ids = (items: { id: string }[] | undefined) => (items ?? []).map((i) => i.id);
 
 describe('useEditorCommands', () => {
-  it('offers the selection commands once something is selected, while search is open', () => {
-    ctx = editor();
-    const { result } = run();
-    expect(ids(result.current.commandItems)).not.toContain('delete');
-    act(() => store.setMultiSelectedIds(new Set(['a', 'b'])));
-    expect(ids(result.current.commandItems)).toContain('delete');
-  });
-
-  it('does not follow the selection while search is closed', () => {
-    ctx = editor();
-    let renders = 0;
-    store = createSelectionStore();
-    renderHook(
-      () => {
-        renders += 1;
-        return useEditorCommands(false);
-      },
-      { wrapper },
-    );
-    const before = renders;
-    act(() => store.setSelectedId('a'));
-    expect(renders).toBe(before);
+  // A Plan tab's content covers the canvas: no selection, tool or layout command, even with a selection.
+  it('offers no canvas commands', () => {
+    const shape = { id: 's', type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10 };
+    ctx = editor({ activeTab: { id: 't1', elements: [shape] } });
+    const out = ids(run().result.current.commandItems);
+    for (const gone of ['delete', 'fit-to-screen', 'open-canvas', 'auto-layout', 'tool:format'])
+      expect(out).not.toContain(gone);
   });
 
   it('offers Undo only while there is something to undo', () => {
@@ -100,12 +73,5 @@ describe('useEditorCommands', () => {
     result.current.runCommand('undo');
     expect(first).not.toHaveBeenCalled();
     expect(second).toHaveBeenCalledTimes(1);
-  });
-
-  // docs/specs/026-plan/plan-mode.md: Plan has no format painter, even with content to paint.
-  it('never offers the format painter', () => {
-    const shape = { id: 's', type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10 };
-    ctx = editor({ activeTab: { id: 't1', elements: [shape] } });
-    expect(ids(run().result.current.commandItems)).not.toContain('tool:format');
   });
 });

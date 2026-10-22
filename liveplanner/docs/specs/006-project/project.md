@@ -3,48 +3,42 @@
 A **project** is the top-level container a person creates, names, shares,
 files in a folder and deletes. It holds an ordered set of tabs, optionally
 grouped into [tab folders](tab-folders.md). Every tab has a **tab kind**,
-which fixes what that tab is. A general tab is worked on in one of two
-[editor modes](../007-editor/editor-modes.md), Diagram or Draw.
+which fixes what that tab is, and every tab is worked on in Plan, the one
+[editor mode](../007-editor/editor-modes.md).
 
 ## Domain language
 
-| Term            | Means                                                                                            |
-| --------------- | ------------------------------------------------------------------------------------------------ |
-| **project**    | The top-level container: its name, owner, location, share links and tabs.                        |
-| **tab**         | One page of a project, with its own canvas, layers and elements.                                |
-| **tab kind**    | What a tab is for (`TabKind`, `packages/project/src/tab-kind.ts`).                              |
-| **diagram**     | The general tab kind: every element type, worked on in Diagram or Draw mode.                     |
-| **editor mode** | How a general tab is worked on: Diagram or Draw ([Editor modes](../007-editor/editor-modes.md)). |
-| **whiteboard**  | The activity of Draw mode ([Editor modes](../007-editor/editor-modes.md)); not a tab kind.       |
+| Term            | Means                                                                                                   |
+| --------------- | ------------------------------------------------------------------------------------------------------- |
+| **project**     | The top-level container: its name, owner, location, share links and tabs.                               |
+| **tab**         | One page of a project, with its own canvas, layers and elements.                                       |
+| **tab kind**    | What a tab is (`TabKind`, `packages/project/src/tab-kind.ts`): Board, Sheet, Dashboard, Form, or general. |
+| **general tab** | A tab Start Planning has not yet made one of the four; stored as the kind `'diagram'`, livediagram's name. |
+| **editor mode** | How a tab is worked on: always Plan ([Editor mode](../007-editor/editor-modes.md)).                     |
 
-- As a term, "diagram" names the tab kind, never the container. Prose may still say diagram
-  where the text is about drawing ([Choosing the word in prose](#choosing-the-word-in-prose)).
-- "Board" on its own is not a term; say whiteboard, or a Plan board.
-- A tab kind is reserved for a very specific use; anything a mode can serve stays a general tab.
-- Specs, UI copy and code name the container a project.
+- The kind id `'diagram'` is a stored value, never a term: prose says general tab. A tab with no `kind`, or a kind
+  this build no longer has (a stored `'event-storming'` or `'whiteboard'`), reads as a general tab.
+- "Board" on its own names a Board tab or a Plan board on it, never the container.
+- A tab kind is reserved for a specific use with its own content and rules ([Plan tabs](../026-plan/plan-tabs.md),
+  [Forms](../030-forms/forms.md)).
+- Specs, UI copy and code name the container a project ([Domain language](../003-system-architecture/domain-language.md#project)).
 
 ## Choosing the word in prose
 
 Code is strict: the container is always a project. Compound names use
-"project" (`projectId`, `ProjectDTO`); the bare name is `liveDoc` / `LiveDoc`
-(plural `liveDocs` / `LiveDocs`), so it never shadows the browser's `project` and
-`Project`.
+"project" (`projectId`, `ProjectDTO`); a few older modules still call a loaded
+project `liveDoc` / `LiveDoc`, so the bare name never shadows the browser's
+`document`.
 
-Prose follows the context:
-
-- **Project** when the text is about the container: naming, filing, sharing,
-  trashing, opening, or a mix of tab kinds.
-- **Diagram** is fine when the text is about a project that is, in all likelihood, a diagram tab at heart, such as drawing a flowchart in it.
-- **Diagram types** keep their names: a sequence diagram, an ER diagram,
-  an architecture diagram.
-- **Diagramming** and **diagram tool** describe the product and the activity; liveplanner is built for every kind of diagram, and also does whiteboarding and slideshows well.
-- A new tab kind joins the table above; the container keeps its name.
+Prose says **project** for the container, **tab** for one page of it, and the tab's kind (a board, a sheet, a
+dashboard, a form) for what is on it. liveplanner is a planner, not a diagram tool
+([Purpose](../001-project-vision/purpose.md)).
 
 ## What keeps its name
 
 - **liveplanner** stays the product and brand name.
-- A whole project as a file is a `.liveplanner` file of MIME type
-  `application/vnd.liveplanner+json`: both name the app that opens the file, not what is inside it.
+- A tab exported as a file is plain JSON (`.json`), imported back the same way
+  ([Export fidelity](../020-import-export/export-fidelity.md)).
 
 <!-- legacy-names -->
 
@@ -65,9 +59,8 @@ that named it moved in one change:
   preferences (`upgradeLegacyPreferences`), the offline store (moved to the `projects` object
   store on the next visit), and stored names: a project still called "Untitled diagram" counts as
   untitled, exactly as "Untitled project" does.
-- **Addresses people already have** keep working: `/diagram/<id>` and six help articles redirect
-  for good ([Router app](../016-platform/router-app.md#legacy-editor-route)). liveplanner keeps no
-  `/api/diagrams…` routes and no MCP `*_diagram` tools: it has no clients from before the rename.
+- **No old addresses.** liveplanner was never deployed, so nobody holds a `/diagram/<id>` link or an old help
+  address: the router redirects neither, and there are no `/api/diagrams…` routes and no MCP `*_diagram` tools.
 
 Files that hold the old names on purpose are named `legacy-*`.
 <!-- /legacy-names -->

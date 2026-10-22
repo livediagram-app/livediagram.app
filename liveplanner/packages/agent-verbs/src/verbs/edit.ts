@@ -39,7 +39,7 @@ export const changesetApply = defineVerb({
   id: 'changeset.apply',
   summary: 'Apply edit operations from a file',
   description:
-    'Sends a file (or stdin, with -f -) as one changeset: edit operations in the line form or JSON, or elements that replace the tab. All or nothing; prints one result line per element, then the revision, the lint verdict and the revert command.',
+    'Sends a file (or stdin, with -f -) as one changeset: edit operations in the line form or JSON, or elements that replace the tab. All or nothing; prints one result line per element, then the revision and the revert command.',
   behaviour: 'write',
   input: z.object({
     project: projectArg,
@@ -116,7 +116,7 @@ function elementVerb(op: ElementOperation): Verb {
   return defineVerb({
     id: `element.${op}`,
     summary,
-    description: `Sends one \`${op} ${words}\` edit operation as a changeset; the words are the operation's, without quoting the arrow. Prints one result line per element, then the revision, the lint verdict and the revert command.`,
+    description: `Sends one \`${op} ${words}\` edit operation as a changeset; the words are the operation's, without quoting the arrow. Prints one result line per element, then the revision and the revert command.`,
     behaviour: op === 'rm' ? 'destructive' : 'write',
     input: z.object({
       project: projectArg,

@@ -43,12 +43,12 @@ const TOUR_CARD_TITLE = 'Your First Card';
 // "The steps"); the copy after a pick follows the track picked.
 const BOARDS_TOUR_COPY = {
   welcomeEyebrow: 'Boards tour',
-  helpHref: '/help/canvas/plan-mode/',
+  helpHref: '/help/plan/planning-basics/',
 };
 const SHEETS_TOUR_COPY = {
   ...BOARDS_TOUR_COPY,
   welcomeEyebrow: 'Sheets tour',
-  helpHref: '/help/canvas/plan-mode/sheets/',
+  helpHref: '/help/plan/sheets/',
 };
 const TRACK_NAME: Record<BoardSheetTrack, string> = {
   boards: 'Boards tour',

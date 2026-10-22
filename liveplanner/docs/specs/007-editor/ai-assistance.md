@@ -2,11 +2,17 @@
 
 ## Overview
 
-An optional AI assistant panel in the diagram editor. Disabled by default; users opt in
+An optional AI assistant panel in the editor, working on the active tab. Disabled by default; users opt in
 via Settings. Requires a model key (`GOOGLE_AI_STUDIO_API_KEY`, `OPENAI_API_KEY`, or a generic `AI_API_KEY` + `AI_BASE_URL`) in the api worker environment —
 if absent the feature is **hidden entirely** (no UI surface, no API routes respond). A
 deployment without a model key (local development, previews) gets zero AI surface with
 no extra code paths to reason about.
+
+**Not yet reworked for the planner.** The assistant came from livediagram, and its system prompt
+(`apps/api/src/ai-prompt.ts`) and element accept-set still speak of diagrams: shapes, stickies and arrows, and layout
+hints for flowcharts and org charts. Scope keeps AI only where Plan uses it
+([Scope](../002-project-scope/product-scope.md)); until the prompt is rewritten around boards, cards and sheets, this
+spec describes the code as it is.
 
 ## Capability detection
 

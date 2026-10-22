@@ -44,8 +44,8 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
   },
   {
     id: 'meetings',
-    label: 'Workshops',
-    searchWords: 'meetings',
+    label: 'Meetings',
+    searchWords: 'workshops retros',
     description: 'Retros and feedback boards a team runs together.',
   },
 ];
@@ -95,7 +95,7 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'rsvp-form': 'forms',
   'job-application-form': 'forms',
   'contact-form': 'forms',
-  // Workshops: the boards a team runs together.
+  // Meetings: the boards a team runs together.
   'team-retro': 'meetings',
   'feedback-board': 'meetings',
 };

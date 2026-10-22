@@ -1,14 +1,14 @@
-import { Arrow, Label, Shape } from '@/components/illustrations/primitives';
+import { Label } from '@/components/illustrations/primitives';
 import { Card, Stage } from './parts';
 
 const PILLS: { label: string; x: number; w: number; active?: boolean }[] = [
   { label: 'Overview', x: 52, w: 72 },
-  { label: 'Architecture', x: 130, w: 92, active: true },
+  { label: 'Budget', x: 130, w: 92, active: true },
   { label: 'Roadmap', x: 228, w: 70 },
 ];
 
-// Tabs: one project holding several canvases, stacked behind each other, each with its own content: a roadmap
-// at the back, a board in the middle, the architecture diagram in front, and the tab bar to move between them.
+// Tabs: one project holding several tabs, stacked behind each other, each with its own content: a roadmap
+// at the back, a board in the middle, a sheet in front, and the tab bar to move between them.
 export function TabsArt() {
   return (
     <Stage>
@@ -39,25 +39,34 @@ export function TabsArt() {
           strokeWidth={1}
         />
       </Card>
-      {/* Front: the architecture diagram. */}
+      {/* Front: a sheet of figures. */}
       <Card x={30} y={40} w={250} h={124} r={12}>
-        <Shape x={46} y={96} w={58} h={38} label="Web" />
-        <Shape x={128} y={96} w={58} h={38} accent label="API" />
-        <Shape
-          x={208}
-          y={90}
-          w={56}
-          h={50}
-          kind="cylinder"
-          label="DB"
-          fill="fill-emerald-100"
-          stroke="stroke-emerald-400"
-        />
-        <Arrow from={[104, 115]} to={[125, 115]} />
-        <Arrow from={[186, 115]} to={[205, 115]} />
         <Label x={46} y={64} size={10.5} weight={700} tone="strong">
-          System Architecture
+          Budget
         </Label>
+        {[0, 1, 2, 3].map((row) =>
+          [0, 1, 2].map((col) => (
+            <rect
+              key={`${row}-${col}`}
+              x={46 + col * 72}
+              y={76 + row * 18}
+              width={72}
+              height={18}
+              className={
+                row === 0 ? 'fill-slate-100 stroke-slate-200' : 'fill-white stroke-slate-200'
+              }
+              strokeWidth={1}
+            />
+          )),
+        )}
+        <rect
+          x={190}
+          y={130}
+          width={72}
+          height={18}
+          className="fill-transparent stroke-brand-400"
+          strokeWidth={1.5}
+        />
       </Card>
 
       {/* The tab bar. */}

@@ -1,7 +1,15 @@
 # Edit operations
 
 **Status: built.** `@liveplanner/edit-operations` reads both forms and applies every operation below, by ref or
-selector, through the changeset route; the MCP's `ops` mode takes refs, and the [CLI](../015-api/cli.md) is not built.
+selector, through the changeset route; the MCP's `ops` mode takes refs, and the [CLI](../015-api/cli.md)'s `element`
+verbs and `changeset apply` send them.
+
+**In liveplanner** an agent works a project through Plan's own tools first: cards with `change_items` and the
+`item` verbs, boards, card types, sheets and forms with theirs ([Plan for agents](../026-plan/plan-agents.md),
+[Sheet](../029-sheets/sheet.md), [Forms](../030-forms/forms.md#agents)). Edit operations are the layer under them,
+for an element directly: a Board, a Sheet or a Dashboard's view is an element on its tab. The vocabulary below came
+from livediagram and still carries its diagram verbs (`connect`, `rewire`, `insert`, `wrap`, `layout`), which the
+engine still applies to any element a tab holds; the examples below are its diagram examples.
 
 An **edit operation** is one step of a [changeset](agent-changesets.md): a small, closed vocabulary of
 intent-level verbs addressed by ref or selector, compiled by the api into element ops. Building from scratch and
@@ -151,7 +159,7 @@ A changeset answers with what it did, one line per element, the same text for a 
 + arrow  verify→n4 (style of a3)
 » n4 n5 n6 n7 n8  +0,+100 (make room)
 f2  +verify
-rev 41→42 · cs_8k2m4q7d1x · lint clean · revert: liveplanner changeset revert 3f9c2a71-… cs_8k2m4q7d1x
+rev 41→42 · cs_8k2m4q7d1x · revert: liveplanner changeset revert 3f9c2a71-… cs_8k2m4q7d1x
 ```
 
 `+` added, `~` changed (before→after), `-` removed, `»` moved without being named, a container ref followed by its
@@ -205,5 +213,5 @@ One pure engine, `@liveplanner/edit-operations`, on top of `@liveplanner/project
   operations resolved, which the changeset fingerprints and checks for holds; `createdIds` are the elements it
   created.
 - Refs, slug ids, kind words, membership and the content origin come from `@liveplanner/project`, shared with the
-  views and the lint, as do the label cap and the MCP's normalisation.
+  views, as do the label cap and the MCP's normalisation.
 - The api runs it for every changeset; the CLI runs it only to parse and to print.

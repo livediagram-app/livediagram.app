@@ -356,7 +356,7 @@ export function toolbarCategories(
           separatorBefore: true,
           icon: <NumberFormatIcon />,
           text: 'All Functions…',
-          run: () => window.open('/help/canvas/plan-mode/sheet-functions/', '_blank', 'noopener'),
+          run: () => window.open('/help/plan/sheet-functions/', '_blank', 'noopener'),
         },
       ],
     },

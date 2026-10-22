@@ -82,7 +82,7 @@ beforeEach(() => {
 });
 
 describe('useActivityFeed', () => {
-  it('splits one read into assigned-to-you / you-assigned / threads, without double-listing a self-assignment', async () => {
+  it('splits one read into assigned-to-you / threads, without double-listing a self-assignment', async () => {
     apiListActivity.mockResolvedValue({
       actions: [
         action('mine', { assignedToMe: true, createdByMe: false }),
@@ -95,7 +95,6 @@ describe('useActivityFeed', () => {
     const { result } = renderHook(() => useActivityFeed('me'));
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.assignedToMe.map((a) => a.id)).toEqual(['mine', 'self']);
-    expect(result.current.youAssigned.map((a) => a.id)).toEqual(['theirs']);
     expect(result.current.threads).toHaveLength(1);
     expect(result.current.error).toBe(false);
   });
@@ -139,7 +138,6 @@ describe('useActivityFeed', () => {
       ['action', 'older-action'],
       ['card', 'old-card'],
     ]);
-    expect(result.current.youAssigned.map((a) => a.id)).toEqual(['theirs']);
   });
 
   // docs/specs/013-workspace/inbox.md §2.6: this browser's projects in This Browser list among the server's rows,
@@ -165,7 +163,6 @@ describe('useActivityFeed', () => {
       ['local', true],
       ['cloud', false],
     ]);
-    expect(result.current.youAssigned.map((a) => [a.id, a.local])).toEqual([['handed', true]]);
     expect(result.current.threads.map((t) => t.local)).toEqual([true]);
   });
 

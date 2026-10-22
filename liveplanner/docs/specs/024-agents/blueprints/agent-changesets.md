@@ -340,7 +340,6 @@ type RevertResponse = {
   changeset: ChangesetResponse['changeset'];
   reverted: number;
   kept: { id: string; reason: 'changed' | 'gone' | 'present' | 'order' }[];
-  lint: null;
 };
 ```
 
@@ -416,7 +415,7 @@ before)`. Derived by diffing back rather than op by op, so removes, adds and a r
 - No tool does a whole-tab save.
 - `add_tab`: `POST .../tabs/<newTabId>/changesets` with `{ replace: { template | dashboard | elements,
 layout, theme, name } }`, no base; then reads the tab to render the PNG (CS36). Structured output gains
-  `changesetId`, `rev`, `text`, `lint`.
+  `changesetId`, `rev`, `text`.
 - `update_project` `replace`: `{ replace: { elements, layout } }` or `{ replace: { dashboard } }`, no base.
 - `update_project` `ops`: `mcpOpsToEditOperations(args.ops)` in the JSON form: `add` → `add` of the whole element; `update` → `set` with the element's given fields; `remove` → `rm` (pinned arrows go too and are listed). `elementId` is an id or a ref as `read_project` prints it, resolved with `resolveRef` against the loaded tab; the target is that element's always-safe `id:"…"` ref, and a word naming nothing goes as given for the engine to refuse (EO54). Base: `{ rev: args.rev ?? loaded.rev, elements }` with the fingerprints of the elements the ops name, from the tab the tool loads at call time. Input gains optional `rev`, the revision `read_project` returned.
 - `rename_project` with `tabId`: `PUT .../tabs/:tabId/name { name }`.
@@ -558,7 +557,7 @@ rows wait with their project and go with its purge (cascade). A tab unlinked fro
 ## Performance and limits
 
 - Submit, worst case: 5 D1 reads (project, gate, tab, last revision, participant), one room fetch, the engine over
-  500 operations on a tab at the byte cap, one lint, one D1 batch (tab, link, `saved_at`, collaboration index, image
+  500 operations on a tab at the byte cap, one D1 batch (tab, link, `saved_at`, collaboration index, image
   refs, record, three parts), one relay. Twice on a lost race. The route adds no pass over the tab beyond
   fingerprinting the targets (O(targets)).
 - Tab PUT adds one indexed read (`agent_changesets_tab_rev`) that returns nothing in the common case, and the

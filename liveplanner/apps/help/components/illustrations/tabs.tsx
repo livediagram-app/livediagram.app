@@ -6,8 +6,7 @@
 // Composed only from the shared primitives so the house style holds.
 
 import type { ReactNode } from 'react';
-import { Scene, Shape, Arrow, Label, Dialog, Cursor } from './primitives';
-import { Glyph } from './element-indicators';
+import { Scene, Shape, Arrow, Label, Dialog } from './primitives';
 
 // --- Tab-bar building blocks -------------------------------------------------
 
@@ -303,27 +302,6 @@ function FormatCard({
 }
 
 // --- Scenes ------------------------------------------------------------------
-
-/** The tab bar: several tabs, the active one raised with its ⋯ button, then the + button. */
-export function TabBarOverview() {
-  const barY = 158;
-  return (
-    <Scene w={420} h={210}>
-      {/* The active tab's canvas above the bar */}
-      <Shape x={84} y={56} w={92} h={44} kind="rect" accent label="Overview" />
-      <Shape x={256} y={24} w={80} h={40} kind="rect" label="API" />
-      <Shape x={256} y={92} w={80} h={40} kind="rect" label="Web" />
-      <Arrow from={[176, 78]} to={[256, 44]} kind="elbow" tone="muted" />
-      <Arrow from={[176, 78]} to={[256, 112]} kind="elbow" tone="muted" />
-      <TabBar y={barY} w={420} />
-      <TabPill x={14} y={barY + 8} w={98} label="Overview" active />
-      <TabPill x={118} y={barY + 8} w={66} label="Systems" />
-      <TabPill x={190} y={barY + 8} w={56} label="Teams" />
-      <TabPill x={252} y={barY + 8} w={64} label="Scratch" />
-      <AddTabButton x={322} y={barY + 8} />
-    </Scene>
-  );
-}
 
 /** Renaming a tab inline: the tab's name editor open with a text caret. */
 export function RenamingTab() {
@@ -638,47 +616,6 @@ export function AddToFolderMenu() {
           />
         </PickTile>
       </Dialog>
-    </Scene>
-  );
-}
-
-/** A link on one tab jumping to another: the element's Follow link badge, its hover card naming
- *  the destination, and the target tab in the bar. */
-export function CrossTabLink() {
-  const barY = 158;
-  return (
-    <Scene w={420} h={210}>
-      {/* Source element with its link indicator along the top, under the pointer */}
-      <Shape x={30} y={58} w={104} h={52} kind="rect" label="Database" />
-      <Glyph kind="link" cx={120} cy={70} strength={1} />
-      <Cursor x={122} y={74} />
-      {/* The badge's hover card */}
-      <rect
-        x={70}
-        y={8}
-        width={170}
-        height={34}
-        rx={7}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
-      />
-      <Label x={80} y={19} size={10} weight={700} tone="strong">
-        Follow link
-      </Label>
-      <Label x={80} y={33} size={10} tone="muted">
-        Goes to tab &quot;DB internals&quot;
-      </Label>
-
-      {/* The jump */}
-      <Arrow from={[140, 84]} to={[252, 84]} kind="curved" />
-
-      {/* The target tab's content */}
-      <Shape x={258} y={58} w={120} h={52} kind="rect" accent label="DB internals" />
-
-      <TabBar y={barY} w={420} />
-      <TabPill x={14} y={barY + 8} w={70} label="Overview" />
-      <TabPill x={90} y={barY + 8} w={120} label="DB internals" active />
-      <AddTabButton x={216} y={barY + 8} />
     </Scene>
   );
 }

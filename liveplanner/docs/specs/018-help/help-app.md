@@ -242,37 +242,6 @@ a before/after, a spatial relationship), not to every section; reference-only or
 purely conceptual sections stay text. Scenes are reused across articles wherever
 the same surface recurs rather than redrawn.
 
-<!-- legacy-names -->
-
-## Renamed articles
-
-Six articles about the container moved when it became a project ([Project](../006-project/project.md)), **Whiteboards** and **Draw mode** land on **Editor modes** ([Editor modes](../007-editor/editor-modes.md#naming-in-the-interface)), the Highlighter, Shape Recognition and Eraser guides on their categories, the **Activity Panel** category went with the panel on 2026-10-03 (Undo and Redo moved to Canvas; its other articles and the category page land on Undo), **The Welcome Tour** became **The Diagram Tour** when the tour became Diagram mode's alone ([Diagram tour](../007-editor/editor-tour.md)), and **; each old address answers a permanent `308` from the router ([Router app, Legacy editor route](../016-platform/router-app.md#legacy-editor-route)):
-
-| Old address                                            | New address                                             |
-| ------------------------------------------------------ | ------------------------------------------------------- |
-| `/help/tabs/add-to-diagram/`                           | `/help/tabs/add-to-project/`                           |
-| `/help/troubleshooting/diagram-not-loading/`           | `/help/troubleshooting/project-not-loading/`           |
-| `/help/collaboration/teams/team-shared-diagrams/`      | `/help/collaboration/teams/team-shared-projects/`      |
-| `/help/search-panel/the-search-panel/search-diagrams/` | `/help/search-panel/the-search-panel/search-projects/` |
-| `/help/getting-started/sharing-your-diagram/`          | `/help/getting-started/sharing-your-project/`          |
-| `/help/developers/working-with-diagrams/`              | `/help/developers/working-with-projects/`              |
-| `/help/canvas/whiteboards/`                            | `/help/canvas/editor-modes/`                            |
-| `/help/canvas/draw-mode/`                              | `/help/canvas/editor-modes/`                            |
-| `/help/canvas/draw-mode/draw-tour/`                    | `/help/canvas/editor-modes/`                            |
-| `/help/selection-modes/highlighter/`                   | `/help/palette/tools/`                                  |
-| `/help/palette/tools/highlighter/`                     | `/help/palette/tools/`                                  |
-| `/help/palette/tools/drawing/shape-recognition/`       | `/help/palette/tools/drawing/`                          |
-| `/help/selection-modes/eraser/`                        | `/help/selection-modes/`                                |
-| `/help/activity-panel/`                                | `/help/canvas/undo/`                                    |
-| `/help/activity-panel/what-it-is/`                     | `/help/canvas/undo/`                                    |
-| `/help/activity-panel/how-it-works/`                   | `/help/canvas/undo/`                                    |
-| `/help/activity-panel/undo/`                           | `/help/canvas/undo/`                                    |
-| `/help/activity-panel/redo/`                           | `/help/canvas/redo/`                                    |
-| `/help/activity-panel/reverting-changes/`              | `/help/canvas/undo/`                                    |
-| `/help/getting-started/welcome-tour/`                  | `/help/getting-started/diagram-tour/`                   |
-
-"Your First Diagram" and "Exporting Diagrams" keep their addresses: they are about drawing a diagram and getting the drawing out, not about the container.
-<!-- /legacy-names -->
 
 ## Header
 

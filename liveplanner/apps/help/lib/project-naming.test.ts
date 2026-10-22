@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
@@ -8,7 +8,8 @@ import { describe, expect, it } from 'vitest';
 // DOM `document`, the flowchart's document shape, and the search words of the page element and paper icons.
 const ROOT = fileURLToPath(new URL('../../..', import.meta.url));
 
-const SCANNED = /^(apps|packages|docs)\/.*\.(ts|tsx|mts|cts|js|mjs|cjs|md|mdx|json|sql|toml|css|html|txt)$/;
+const SCANNED =
+  /^(apps|packages|docs)\/.*\.(ts|tsx|mts|cts|js|mjs|cjs|md|mdx|json|sql|toml|css|html|txt)$/;
 
 // Files where "document" is something else by design.
 const ALLOWED_FILES: readonly RegExp[] = [
@@ -40,7 +41,8 @@ const DOM_WORDS =
 const RULE = /never "document"/;
 const NAMED = /document/i;
 const misnames = (line: string) =>
-  NAMED.test(line.replace(DOM_WORDS, '')) && !DOM_DOCUMENT.test(line) &&
+  NAMED.test(line.replace(DOM_WORDS, '')) &&
+  !DOM_DOCUMENT.test(line) &&
   !FLOWCHART_DOCUMENT.test(line) &&
   !PAGE_SEARCH_WORDS.test(line) &&
   !RULE.test(line);
@@ -48,7 +50,11 @@ const misnames = (line: string) =>
 function scannedFiles(): string[] {
   return execFileSync('git', ['ls-files'], { cwd: ROOT, encoding: 'utf8' })
     .split('\n')
-    .filter((f) => SCANNED.test(f) && !ALLOWED_FILES.some((re) => re.test(f)));
+    // A file deleted in the working tree but not yet staged is still listed; it is not part of the change.
+    .filter(
+      (f) =>
+        SCANNED.test(f) && !ALLOWED_FILES.some((re) => re.test(f)) && existsSync(`${ROOT}/${f}`),
+    );
 }
 
 describe('a project is never called a document', () => {

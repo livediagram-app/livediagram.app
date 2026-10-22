@@ -16,10 +16,8 @@ type ZoomControlsProps = {
   onIsoOrbit?: (clientX: number, clientY: number) => void;
   onIsoReset?: () => void;
   // Zen / focus mode (docs/specs/007-editor/zen-mode.md). The dock carries the EXIT button, shown
-  // while zen is active (it is the only chrome left in zen). Entering
-  // lives in the canvas-tool dropdown under Isometric; `zenEnterHere`
-  // restores the old enter button for sessions with no palette (view-only
-  // visitors), who'd otherwise have no visible way in.
+  // while zen is active (it is the only chrome left in zen). Zen is entered with Z or the command
+  // palette's Enter zen mode; `zenEnterHere` adds a visible enter button for view-only visitors.
   onToggleZen?: () => void;
   zenActive?: boolean;
   zenEnterHere?: boolean;
@@ -142,11 +140,10 @@ export function ZoomControls({
         </>
       ) : null}
       {zen ? (
-        // Exit-only in normal sessions: entering zen moved to the
-        // canvas-tool dropdown (under Isometric), so outside zen the dock
-        // stays minimal. Inside zen the dock is the only chrome left, so
-        // the exit button lives here. zenEnterHere (palette-less sessions)
-        // keeps the old enter button too.
+        // Exit-only in normal sessions: zen is entered with Z or the command
+        // palette's Enter zen mode, so outside zen the dock stays minimal.
+        // Inside zen the dock is the only chrome left, so the exit button
+        // lives here. zenEnterHere (view-only sessions) adds an enter button.
         <>
           {zoomHidden && !iso ? null : (
             <div className="mx-0.5 h-6 w-px bg-slate-200 dark:bg-slate-700" aria-hidden />
@@ -156,7 +153,7 @@ export function ZoomControls({
             description={
               zenActive
                 ? 'Bring back the toolbars and panels (Z or Esc).'
-                : 'Hide every panel and toolbar to focus on the canvas (Z).'
+                : 'Hide every panel and toolbar to focus on the tab (Z).'
             }
           >
             <IconButton onClick={onToggleZen} label={zenActive ? 'Exit zen mode' : 'Zen mode'}>

@@ -5,18 +5,18 @@ import { AddToProjectMenu } from '@/components/illustrations/tabs';
 export const metadata = helpMetadata({
   title: 'Add a Tab to Another Project',
   description:
-    'Add the active tab to another project you own, straight from the tab menu. Both projects share the same live tab, so an edit in one shows up in the other.',
+    'Add a Dashboard or Form tab to another project you own from the tab menu. Both projects share the same live tab, so an edit in one shows up in the other.',
   path: '/help/tabs/add-to-project/',
 });
 
 <ArticleLayout
   title="Add a Tab to Another Project"
-  description="Reuse a tab elsewhere: add the active tab to another of your projects, and edits made in either place appear in both."
+  description="Reuse a Dashboard or Form tab elsewhere: add it to another of your projects, and edits made in either place appear in both."
   categoryTitle="Tabs"
   categorySlug="tabs"
 >
 
-Sometimes a tab you built in one project belongs in another too: a glossary, a shared timeline, an architecture board two projects both rely on. **Add to Project** adds the active tab to another project you own, without leaving the editor.
+Sometimes a tab you built in one project belongs in another too: a dashboard layout two teams both use, or an intake form two projects share. **Add to Project** adds the active tab to another project you own, without leaving the editor.
 
 ## Adding a tab to another project
 
@@ -24,19 +24,21 @@ Sometimes a tab you built in one project belongs in another too: a glossary, a s
 <Step n={2}>Choose **Add to Project**.</Step>
 <Step n={3}>
   In the **Add to Project** dialog, pick the destination. Each project shows as a tile with a
-  preview of its canvas, and the filter box at the top narrows a long list. A message confirms when
+  preview, and the filter box at the top narrows a long list. A message confirms when
   the tab has been added.
 </Step>
 
-The option is greyed out when there is nowhere to add the tab to: if this is your only project, until you create another, in a [project in This Browser](/help/privacy-and-security/offline-mode/), and on a [Plan](/help/canvas/plan-mode/) tab, whose cards belong to this project's items. It isn't offered to Viewers or Participants, or on a link shared for [one tab](/help/collaboration/sharing/one-tab/).
+The option is greyed out on a **Board** or **Sheet** tab, which work with this project's cards and stay in it. It is also greyed out when there is nowhere to add the tab to: if this is your only project, until you create another, and in a [project in This Browser](/help/privacy-and-security/offline-mode/). It isn't offered to Viewers or Participants, or on a link shared for [one tab](/help/collaboration/sharing/one-tab/).
 
-<Figure caption="Add to Project opens a dialog of your other projects, each with a preview of its canvas, and a filter box to narrow the list.">
+<Figure caption="Add to Project opens a dialog of your other projects, each with a preview, and a filter box to narrow the list.">
   <AddToProjectMenu />
 </Figure>
 
 ## One tab, shared between projects
 
-Add to Project doesn't make a copy: it is the same tab in both places. Edit its elements, restyle it, or rename it from either project and the change lands in the other as well. If the other project is already open in another window, reload it to see the latest edits.
+Add to Project doesn't make a copy: it is the same tab in both places. Change its layout, restyle it, or rename it from either project and the change lands in the other as well. If the other project is already open in another window, reload it to see the latest edits.
+
+A Dashboard slot that shows another of this project's tabs reads as deleted in the other project, since that tab isn't there; clear the slot or fill it again.
 
 Two things stay per-project, so each project can organise the shared tab its own way: the tab's position in the tab bar, and which [tab folder](/help/tabs/tab-folders/) (if any) it sits in.
 

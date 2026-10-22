@@ -71,7 +71,6 @@ const thread = (over: Partial<ActivityThread> = {}): ThreadRow => ({
 
 const feed = (over: Partial<ActivityFeed> = {}): ActivityFeed => ({
   assignedToMe: [],
-  youAssigned: [],
   threads: [],
   formResponses: [],
   loading: false,
@@ -116,16 +115,15 @@ describe('ActivityPane', () => {
     expect(track).toHaveBeenCalledWith('Activity', 'Selected', 'Action');
   });
 
-  it('lists actions you assigned and the threads you are in, with their hints', () => {
+  it('lists the threads you are in, with their hints', () => {
     render(
       <ActivityPane
         feed={feed({
-          youAssigned: [action('a2', false)],
           threads: [thread(), thread({ elementId: 'e8', mentionsYou: true, elementLabel: 'Pay' })],
         })}
       />,
     );
-    expect(screen.getByText('You Assigned')).toBeTruthy();
+    expect(screen.queryByText('You Assigned')).toBeNull();
     expect(screen.getByText('Open Comment Threads')).toBeTruthy();
     expect(screen.getByText('Your project')).toBeTruthy();
     expect(screen.getByText('Mentioned You')).toBeTruthy();

@@ -94,8 +94,8 @@ and moves stay with the owner and joined team members. No level grants any of th
 
 ## Share links
 
-- The Share dialog offers three role cards, in this order: **Editor** ("Draws with you in real time."),
-  **Participant** ("Adds stickies, writes and votes. Can't reshape the board.") and **Viewer** ("Watches, pans and
+- The Share dialog offers three role cards, in this order: **Editor** ("Plans with you in real time."),
+  **Participant** ("Works cards and cells, comments and votes. Can't reshape a board.") and **Viewer** ("Watches, pans and
   zooms. Can't comment, vote or change a thing."). A pass's header band prints `EDITOR`, `PARTICIPANT` or `VIEWER`, each with a
   glyph and a colour that meets WCAG 2.2 AA against its word ([Live app](../007-editor/live-app.md#share-dialog)).
 - `POST /api/projects/:id/share` takes `role: 'view' | 'participate' | 'edit'`; an omitted role is `edit`, as today.

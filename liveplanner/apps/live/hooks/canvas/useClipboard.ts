@@ -291,7 +291,7 @@ export function useClipboard(deps: ClipboardDeps) {
       if (primaryPaste.current?.isPrimarySelectionPaste()) return;
       // A DOM target: `Element` in this file is the diagram element type.
       const target = e.target;
-      // An empty start search hands the editor a paste of canvas content (docs/specs/007-editor/start-diagramming.md
+      // An empty start search hands the editor a paste of canvas content (docs/specs/007-editor/start-panel.md
       // "Undo and redo reach the editor through an empty search"): elements copied from another tab land on this
       // new one rather than their JSON in the search. Text still searches.
       const intoEmptySearch =

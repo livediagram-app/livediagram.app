@@ -23,33 +23,32 @@ describe('HELP_SEARCH_ITEMS', () => {
   it('reports each article under its own telemetry id', () => {
     // Two articles on one id read as one on the dashboard (docs/specs/017-telemetry/telemetry.md).
     expect(new Set(HELP_SEARCH_ITEMS.map((i) => i.leaf)).size).toBe(articles.length);
-    const tips = HELP_SEARCH_ITEMS.find((i) => i.href === '/help/tips-and-tricks/format-painter/');
-    expect(tips?.leaf).toBe('tips-format-painter');
+    const tips = HELP_SEARCH_ITEMS.find((i) => i.href === '/help/tips-and-tricks/command-palette/');
+    expect(tips?.leaf).toBe('tips-command-palette');
   });
 
   it('finds an article by concept when the title is no exact match', () => {
-    // The user-reported case: searching "opacity" must surface the element
-    // opacity article (Layer Order and Opacity) in the editor's search.
+    // Searching "swimlane" must surface the Boards article, whose title says nothing of lanes.
     const out = buildSearchResults({
-      query: 'opacity',
+      query: 'swimlane',
       projects: [],
       folders: [],
       helpItems: HELP_SEARCH_ITEMS,
     });
     const help = out.find((g) => g.key === 'help')!;
     const hrefs = help.items.map((i) => (i.kind === 'help' ? i.href : ''));
-    expect(hrefs).toContain('/help/canvas/layer-order/');
+    expect(hrefs).toContain('/help/plan/boards/');
 
-    // And by pure synonym: "transparency" appears in no title, only keywords.
+    // And by pure synonym: "night" appears in no title, only keywords.
     const bySynonym = buildSearchResults({
-      query: 'transparency',
+      query: 'night',
       projects: [],
       folders: [],
       helpItems: HELP_SEARCH_ITEMS,
     });
     const helpBySynonym = bySynonym.find((g) => g.key === 'help')!;
     expect(
-      helpBySynonym.items.some((i) => i.kind === 'help' && i.href === '/help/canvas/layer-order/'),
+      helpBySynonym.items.some((i) => i.kind === 'help' && i.href === '/help/tools/dark-mode/'),
     ).toBe(true);
   });
 });

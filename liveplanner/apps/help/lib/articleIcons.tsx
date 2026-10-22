@@ -115,24 +115,6 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
       <path d="M12 18.5h.01" />
     </Glyph>
   ),
-  // ---- Tips ----
-  // Two of the same thing plus a plus: another one of these. `shadows` is an
-  // offset FILLED copy and `panel-opacity` is two panels showing through.
-  'duplicating-elements': (
-    <Glyph>
-      <rect x="3" y="3.5" width="11" height="9" rx="1.5" />
-      <rect x="10" y="11.5" width="11" height="9" rx="1.5" />
-      <path d="M15.5 14.5v3M14 16h3" />
-    </Glyph>
-  ),
-  // A clipboard, which is literally what the article is about.
-  'copy-and-paste': (
-    <Glyph>
-      <rect x="4.5" y="4.5" width="15" height="17" rx="2" />
-      <path d="M9 4.5V3.5a1.5 1.5 0 011.5-1.5h3A1.5 1.5 0 0115 3.5v1" />
-      <path d="M8 11h8M8 15h5" />
-    </Glyph>
-  ),
   // ---- Privacy ----
   // A cloud with a line through it: the project never leaves the browser.
   'offline-mode': (
@@ -175,13 +157,6 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
       <path d="M7 13h.01M11 13h.01M15 13h.01" />
     </Glyph>
   ),
-  'fast-theming': (
-    <Glyph>
-      <path d="M12 3.5l1.6 4.4L18 9.5l-4.4 1.6L12 15.5l-1.6-4.4L6 9.5l4.4-1.6z" />
-      <path d="M18 14.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z" />
-    </Glyph>
-  ),
-
   // ---- Account and Data ----
   'guest-identity': (
     <Glyph>
@@ -193,12 +168,6 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
     <Glyph>
       <path d="M15 3h3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-3" />
       <path d="M10 16l4-4-4-4M14 12H3" />
-    </Glyph>
-  ),
-  'exporting-diagrams': (
-    <Glyph>
-      <path d="M12 15V3M8 7l4-4 4 4" />
-      <path d="M4 13v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6" />
     </Glyph>
   ),
   // A bin with an arrow rising out of it: the way back. The plain bin is

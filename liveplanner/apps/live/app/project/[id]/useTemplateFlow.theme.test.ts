@@ -6,7 +6,7 @@ import { templateTabs } from '@liveplanner/templates';
 import { getTheme, recolourElementsForTheme } from '@/lib/themes';
 import { useTemplateFlow } from './useTemplateFlow';
 
-// docs/specs/007-editor/start-diagramming.md "The panel": a template picked from an empty tab's start panel
+// docs/specs/007-editor/start-panel.md "The panel": a template picked from an empty tab's start panel
 // (which picks no theme) lands in the tab's own theme, and leaves the tab's backdrop as it was.
 
 const CENTRE = { x: 0, y: 0 };

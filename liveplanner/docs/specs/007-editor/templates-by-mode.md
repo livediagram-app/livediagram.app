@@ -23,6 +23,14 @@ an empty Sheet that fills it, [Sheet store](../029-sheets/sheet-store.md#templat
 (`blank-form`), then the catalogue's other blanks. A blank (`isBlankTemplate`) is in no category and on no category
 shelf, and leaves the tab's name as it was.
 
+## Hidden templates
+
+A template may be **hidden** (`hidden: true` on its definition in `packages/templates/src/templates.ts`): it never
+appears in a listing (Start Planning's grids and search, the template picker, the MCP's `list_templates`) but stays
+buildable by name through `buildTemplate`, for an entry point that names the kind directly. No template sets it
+today; its last user was the retired guided-tour sample. The flag stays because the listing paths already filter on
+it, and `templates.test.ts` asserts the set is empty. A hidden template ships no preview.
+
 ## Popular
 
 `POPULAR_TEMPLATE_KINDS` (`packages/templates/src/popular.ts`) is a short curated list of Plan's templates, Blank Plan

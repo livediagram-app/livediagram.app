@@ -1,6 +1,5 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { AgentChangeToast } from '@/components/illustrations/agent-changes';
 
 export const metadata = helpMetadata({
   title: "Reviewing and Undoing an Agent's Changes",
@@ -16,17 +15,15 @@ export const metadata = helpMetadata({
   categorySlug="developers"
 >
 
-When an [AI tool](/help/account-and-data/connect-ai-mcp/), the [CLI](/help/developers/cli/) or a script changes one of your tabs, the change lands as a **changeset**: one write to one tab, applied all or nothing, credited to the person whose [API token](/help/account-and-data/api-tokens/) made it, and undoable as one unit. This article covers how to see what a changeset did and how to take it back.
+When an [AI tool](/help/account-and-data/connect-ai-mcp/), the [CLI](/help/developers/cli/) or a script changes one of your tabs (a board's settings, a dashboard's charts, a new tab from a template), the change lands as a **changeset**: one write to one tab, applied all or nothing, credited to the person whose [API token](/help/account-and-data/api-tokens/) made it, and undoable as one unit. This article covers how to see what a changeset did and how to take it back.
+
+Cards, Sheet cells and card types change through their own calls rather than changesets. Those changes arrive live too, credited to the token's owner, but they have no change note and no changeset to revert: to put one back, change it again.
 
 ## In the Editor
 
-If you have the project open when a changeset lands, you see it happen. The change arrives on your canvas straight away, everything it touched is outlined in its author's colour for two seconds, and a note appears at the bottom of the screen:
+If you have the project open when a changeset lands, you see it happen. The change arrives on your tab straight away, everything it touched is outlined in its author's colour for two seconds, and a note appears at the bottom of the screen.
 
-<Figure caption="The change toast: who changed how many elements and why, with Show and Undo.">
-  <AgentChangeToast />
-</Figure>
-
-The note reads _name_ changed _n_ elements, followed by the summary the agent gave the change, when it gave one: "Webber changed 2 elements: add payment service". The name is the person whose token made the change, so an agent working for you shows your own name. Elements added and removed count as changed.
+The note reads _name_ changed _n_ elements, followed by the summary the agent gave the change, when it gave one: "Webber changed 2 elements: swap the calendar for a workload chart". The name is the person whose token made the change, so an agent working for you shows your own name. Elements added and removed count as changed.
 
 - **Show** brings the changed elements into view, switching to their tab if you are on another one.
 - **Undo** reverts the change. Afterwards the note reads **Undone**, or, when some elements were changed again in the meantime, something like **Undone, 2 kept because they changed since** (see [What Undo Keeps](#what-undo-keeps)).
@@ -47,39 +44,39 @@ The editor has no history of changesets. Once you close the note, or if the chan
 `changeset ls` lists a project's recent changesets, newest first, 20 by default:
 
 ```bash
-liveplanner changeset ls "Auth flow"
-liveplanner changeset ls 3f9c --tab Overview --limit 5
+liveplanner changeset ls "Sprint 14"
+liveplanner changeset ls 3f9c --tab Flow --limit 5
 ```
 
 One changeset a line: its id, the tab revision it produced, the tab, who made it (marked `(agent)` when a token did), its summary, how many elements it added, changed and removed, and when (in UTC):
 
 ```text
-cs_8k2m4q7d1x  rev 42  "Overview"  Webber (agent)  "add payment service"  +2 ~0 -0  2026-10-11 09:14
-cs_3h7v2n9c4p  rev 39  "Overview"  Webber (agent)  +0 ~3 -1  2026-10-11 08:52
+cs_8k2m4q7d1x  rev 42  "Flow"  Webber (agent)  "swap the calendar for a workload chart"  +0 ~1 -1  2026-10-11 09:14
+cs_3h7v2n9c4p  rev 39  "Board"  Webber (agent)  +0 ~1 -0  2026-10-11 08:52
 ```
 
 A revert shows as its own line ending in `reverts cs_…`. `changeset show` prints one changeset's line, then what it did, one line per element, the same lines the write printed:
 
 ```bash
-liveplanner changeset show "Auth flow" cs_8k2m4q7d1x
+liveplanner changeset show "Sprint 14" cs_8k2m4q7d1x
 ```
 
 ```text
-cs_8k2m4q7d1x  rev 42  "Overview"  Webber (agent)  "add payment service"  +2 ~0 -0  2026-10-11 09:14
-+ pay  square "Payment service" @520,120 160×64
-+ arrow  n2→pay
-rev 41→42 · cs_8k2m4q7d1x · revert: liveplanner changeset revert abc123 cs_8k2m4q7d1x
+cs_8k2m4q7d1x  rev 42  "Flow"  Webber (agent)  "swap the calendar for a workload chart"  +0 ~1 -1  2026-10-11 09:14
+~ 0a78  planView (changed)
+- 82d4  plan-view
+rev 41→42 · cs_8k2m4q7d1x · revert: liveplanner changeset revert 4cd7082b-… cs_8k2m4q7d1x
 ```
 
 Every write the CLI makes ends with that same footer, so the command that takes it back is printed beside the change. To undo one:
 
 ```bash
-liveplanner changeset revert "Auth flow" cs_8k2m4q7d1x
+liveplanner changeset revert "Sprint 14" cs_8k2m4q7d1x
 ```
 
 ```text
 reverted 1 · rev 44→45 · cs_5m2q8r1t6w
-kept pay (changed)
+kept 0a78 (changed)
 ```
 
 `-q` prints only the new changeset's id, and `--json` gives the whole answer.
@@ -87,15 +84,13 @@ kept pay (changed)
 To see everything that changed in a tab since you last looked, whoever changed it, use `tab diff` with a revision the CLI has read (the CLI keeps a copy of each tab it reads with `tab view`):
 
 ```bash
-liveplanner tab diff "Auth flow" --since 41
+liveplanner tab diff "Sprint 14" --tab Flow --since 41
 ```
 
 ```text
-tab 0b34 "Checkout platform" · since rev 41 · rev 47 · 6 changes
-- arrow 6406 → 0556 [0cee]
-~ square e4a8 label "Payments service" → "Payments"
-~ entity cb02 moved +200,+0
-+ cylinder 7180 "Redis cache" in c991 "Services"
+tab e1b2 "Flow" · since rev 41 · rev 47 · 2 changes
+~ plan-view 0a78 view calendar → workload
+- plan-view 82d4 view=metric:stale
 ```
 
 ## From the API
@@ -113,12 +108,12 @@ Each changeset in the list looks like this:
 ```json
 {
   "id": "cs_8k2m4q7d1x",
-  "tabId": "tab-1",
+  "tabId": "e1b29b87-…",
   "rev": 42,
   "author": { "name": "Webber", "color": "#8b5cf6" },
   "agent": true,
-  "summary": "add payment service",
-  "counts": { "added": 2, "changed": 0, "removed": 0 },
+  "summary": "swap the calendar for a workload chart",
+  "counts": { "added": 0, "changed": 1, "removed": 1 },
   "revertOf": null,
   "createdAt": 1791710040000
 }
@@ -130,17 +125,17 @@ Each changeset in the list looks like this:
 {
   "changeset": {
     "id": "cs_5m2q8r1t6w",
-    "tabId": "tab-1",
+    "tabId": "e1b29b87-…",
     "rev": 45,
     "previousRev": 44,
     "rebasedOver": 0
   },
   "reverted": 1,
-  "kept": [{ "id": "pay", "reason": "changed" }]
+  "kept": [{ "id": "0a78f3c1-…", "reason": "changed" }]
 }
 ```
 
-It also carries `lint`, the [lint report](/help/developers/working-with-projects/) of the tab the revert leaves. `changeset` is `null` when there was nothing to revert.
+`changeset` is `null` when there was nothing to revert.
 
 Reading the history needs read access to the project; reverting needs edit access to the tab. A revert made with a token is refused with `409 elements_held` when somebody has one of its elements selected, as any agent change is; one made from the editor's **Undo** never is. See [Errors and Rate Limits](/help/developers/errors-and-rate-limits/) for the other answers.
 

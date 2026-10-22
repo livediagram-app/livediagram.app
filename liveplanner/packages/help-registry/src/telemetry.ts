@@ -24,11 +24,10 @@ import type { Article } from './index';
  * value: it is the stored series name on the public dashboard.
  */
 export const TELEMETRY_ID_OVERRIDES: Readonly<Record<string, string>> = {
-  'tips-and-tricks/format-painter': 'tips-format-painter',
   'tips-and-tricks/command-palette': 'tips-command-palette',
 };
 
-/** An article's full path under /help, e.g. `selection-modes/format-painter`. */
+/** An article's full path under /help, e.g. `plan/boards`. */
 export function articlePath(article: Pick<Article, 'categorySlug' | 'slug'>): string {
   return `${article.categorySlug}/${article.slug}`;
 }

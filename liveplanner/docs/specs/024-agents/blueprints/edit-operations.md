@@ -693,8 +693,8 @@ Edge cases:
 - **E11** A custom theme the caller did not resolve: the default scheme's slots; `log('[edit-ops] theme-fallback')`.
 - **E12** Hidden layers: elements there resolve and change like any other. Locked elements and layers: they
   resolve (as placement references, `test` targets, ends of a new arrow) but never change (I7).
-- **E17** Make room meeting a locked unit: the unit stays where it is and the rest shift; any overlap is the
-  lint's to report (EO47).
+- **E17** Make room meeting a locked unit: the unit stays where it is and the rest shift; any overlap is left as it
+  falls (EO47).
 - **E13** A tab at `MAX_ELEMENTS_PER_TAB`: an `add` makes it invalid; `invalid_result` names the cap.
 - **E14** `keep-arrows` where both ends were removed: the arrow has two free ends and stays.
 - **E15** A placement reference on a hidden layer: placement uses its box all the same.

@@ -2,6 +2,12 @@
 
 Follow the references below only as needed; never upfront.
 
+**In liveplanner** the element kinds a tab places are Plan's: the board, its cards, plan views, the Sheet and the
+Dashboard's charts and notes ([Plan tabs](../026-plan/plan-tabs.md)). The diagram kinds specified here (flowcharts,
+mind maps, entities, the concept graphics, Sankey and the rest) came from livediagram; no Plan surface places them,
+but their code is still in `packages/project` and `apps/live` and cites these specs, so they stay until it goes
+([Build phase](../005-project-roadmap/prototype-scope.md#next)). The charts stay for good: Dashboards use them.
+
 - ./blueprints/README.md - when implementing or changing an element from its blueprint
 - ./annotations.md - when working on Annotations: Palette marker (themed circle + note glyph): hover to read its note, click to edit
 - ./link-cards.md - when working on Link cards: Bookmark element: URL via the element link, server-side unfurl for title/favicon/OG image

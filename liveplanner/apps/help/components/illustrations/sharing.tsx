@@ -424,21 +424,21 @@ export function SharePassesDialog() {
   const roles: { title: string; blurb: string; tile: string; text: string; on: boolean }[] = [
     {
       title: 'Editor',
-      blurb: 'Draws with you in real time.',
+      blurb: 'Plans with you in real time.',
       tile: 'fill-brand-700',
       text: 'fill-brand-700 dark:fill-brand-300',
       on: true,
     },
     {
       title: 'Participant',
-      blurb: "Adds stickies, writes and votes. Can't reshape the board.",
+      blurb: "Works cards and cells, comments and votes. Can't reshape a board.",
       tile: 'fill-teal-600',
       text: 'fill-teal-800 dark:fill-teal-300',
       on: false,
     },
     {
       title: 'Viewer',
-      blurb: "Watches, pans and zooms. Can't comment, vote or change a thing.",
+      blurb: "Watches along. Can't comment, vote or change a thing.",
       tile: 'fill-violet-500 dark:fill-violet-700',
       text: 'fill-violet-700 dark:fill-violet-300',
       on: false,
@@ -470,7 +470,7 @@ export function SharePassesDialog() {
             Editor
           </Label>
           <Label x={panelX + 50} y={112} size={9} tone="muted">
-            Draws with you in real time.
+            Plans with you in real time.
           </Label>
           <path
             d={`M${panelX + panelW - 30} ${106} l5 -5 l5 5`}

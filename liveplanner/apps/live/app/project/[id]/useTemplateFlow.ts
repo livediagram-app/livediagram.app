@@ -117,7 +117,7 @@ export function useTemplateFlow(opts: {
     const [first, ...rest] = templateTabs(kind);
     const rawElements = first!.build(centre.x, centre.y);
     // Painted in the tab's own theme: a start picks no theme, so the template lands in the colours the tab already
-    // wears (docs/specs/007-editor/start-diagramming.md "The panel"), and the tab's backdrop is left as it is. Sticky
+    // wears (docs/specs/007-editor/start-panel.md "The panel"), and the tab's backdrop is left as it is. Sticky
     // notes keep their own colour, as `addBoxed` does; multi-colour themes tint each branch a different hue
     // (recolourElementsForTheme, docs/specs/011-theme/multicolour-themes.md), the same helper /new's create uses.
     const theme = getTheme(tabs.find((t) => t.id === activeId)?.theme);

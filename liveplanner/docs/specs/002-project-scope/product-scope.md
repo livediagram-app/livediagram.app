@@ -49,6 +49,9 @@ scope change recorded here and in [Purpose](../001-project-vision/purpose.md#bou
 - **Facilitation**: the Q&A board, live polls, quizzes, avatars, laser and spotlight, and presentation mode.
 - **Distribution**: the Google Drive mirror and the community gallery.
 
+The diagram element kinds' code is not all gone yet: no Plan surface places them, but their modules are still in the
+tree and their specs stay until it goes ([Build phase](../005-project-roadmap/prototype-scope.md#next)).
+
 ## Technical constraints
 
 - **Static frontends**: every Next.js app is a static export; server logic lives in Cloudflare Workers

@@ -37,7 +37,7 @@ export type PageMetadataInput = {
   description: string;
   // Canonical path, resolved against the app's metadataBase (SITE_URL), so
   // `/faq` becomes `https://liveplanner.app/faq`. A basePath app includes its
-  // prefix (help passes `/help/canvas/themes/`).
+  // prefix (help passes `/help/user-interface/themes/`).
   path: `/${string}`;
   // The OG siteName. Defaults to SITE_NAME; the help centre names itself.
   siteName?: string;

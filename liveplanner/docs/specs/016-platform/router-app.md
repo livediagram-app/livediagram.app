@@ -81,14 +81,6 @@ The router does **not** count page views. It can't see client-side navigations i
 
 Service bindings target deployed Workers. The downstream apps deploy as their own units; the router stitches them together.
 
-<!-- legacy-names -->
-
-## Legacy editor route
-
-The editor lived at `/diagram/<id>` before the container became a project ([Project](../006-project/project.md)). Every such URL (share links, embeds, bookmarks, `/diagram/shared?s=…`) answers a permanent `308` to the same path under `/project`, query string included, before any worker sees it (`apps/router/src/legacy-editor-route.ts`). A redirect is routing, not business logic, the same as the prefix-less help paths.
-
-The help articles renamed with it ([Help app, Renamed articles](../018-help/help-app.md#renamed-articles)) redirect the same way, from their old `/help/…` address.
-<!-- /legacy-names -->
 
 ## Local development
 

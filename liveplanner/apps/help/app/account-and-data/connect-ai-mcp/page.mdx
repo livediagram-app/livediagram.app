@@ -18,11 +18,11 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles("connect-ai-mcp")}
 >
 
-liveplanner has an [MCP](https://modelcontextprotocol.io) server, so you can connect it to an AI tool you already use, like Claude, and then find, view, create, and edit your projects from inside that tool. Point the AI at a codebase and ask for a control-flow diagram, or ask it to tweak an existing one, and the result is saved to your account.
+liveplanner has an [MCP](https://modelcontextprotocol.io) server, so you can connect it to an AI tool you already use, like Claude, and then find, view, create, and edit your projects from inside that tool. Ask the AI to turn a list of tasks into a board, set up a budget sheet, or move the cards that are done, and the result is saved to your account.
 
 ## You need an account
 
-Connecting an AI tool is a **signed-in-only** feature, the same as [API tokens](/help/account-and-data/api-tokens/) and [teams](/help/collaboration/teams/). The canvas, sharing, and real-time collaboration stay account-free for guests, but driving your projects programmatically is an advanced, opt-in capability that needs an account.
+Connecting an AI tool is a **signed-in-only** feature, the same as [API tokens](/help/account-and-data/api-tokens/) and [teams](/help/collaboration/teams/). The editor, sharing, and real-time collaboration stay account-free for guests, but driving your projects programmatically is an advanced, opt-in capability that needs an account.
 
 ## Connecting
 
@@ -39,29 +39,40 @@ Approving creates an [API token](/help/account-and-data/api-tokens/) behind the 
 
 ## What the AI can do
 
-The connection gives your AI tool these tools:
+The connection gives your AI tool these 25 tools.
 
-- **Find projects**: search your projects by name, across your personal library and the shared libraries of every [team](/help/collaboration/teams/) you belong to.
-- **Read a project**: get a tab's contents as a text outline, and a picture of it when the AI asks for one.
-- **List templates**: browse the same hand-tuned [template library](/help/canvas/templates/) the editor's template starts offer.
-- **Create a project**: turn a request into a new project, with one tab or several. A tab can start from a template: ask for "a kanban board" and the AI can lay down the curated scaffold, then fill in your content.
-- **Add a tab**: add another tab (its own canvas) to an existing project, for example a detail view of one part. Tabs can start from a template too.
-- **Update a project**: rework a whole tab or make a small adjustment.
-- **Share a project**: turn a project into a [share link](/help/collaboration/sharing/) to hand to someone. Unless you ask for another level, the AI makes a **Participant** link: people can add stickies, write and vote, but not reshape the board.
-- **Rename a project** and **Delete a project**: tidy your library from the AI tool, a whole project or a single tab. Deleting a project moves it to the [Trash](/help/account-and-data/trash/); deleting a tab removes it for good.
-- **List the Trash** and **Restore a project**: bring back something deleted by mistake, by you or by the AI.
-- **List items** and **Change items**: read and update the cards on a project's [Plan](/help/canvas/plan-mode/) boards (add a task, move it to another column, change its fields). The AI names things the way your board shows them, so it says "In Progress" or "Bug" or "Severity", and liveplanner refuses a column, card type or field the project doesn't have instead of filing a card where no board shows it.
-- **Add a board** and **Change a board**: put a Plan board on a tab, from a ready-made one (Kanban, Sprint, Bug Triage...) or with the columns you name, and later rename it, change its columns or choose which card types it shows.
-- **List sheets**, **Read a sheet**, **Change a sheet** and **Add a sheet**: work with the [Sheets](/help/canvas/plan-mode/sheets/) on a project's tabs, reading cells by A1 address, setting values and formulas, formatting, sorting, and adding a new sheet from rows or CSV.
-- **Change card types**: add, edit or delete the [card types](/help/canvas/plan-mode/items/) a project's boards hold, with their own fields. Deleting a type moves its cards to the Trash, as it does in the editor.
-- **Add a form**, **Read a form** and **Change a form**: build a [form](/help/canvas/plan-mode/forms/) on a Form tab, from a starter or from the questions you describe, with its responses going to a board or a sheet you name, then read it back or change its questions, sections and settings.
-- **Share a form** and **Try a form**: publish a form's link, close it or delete the link, and fill the form in once as a test, the way the builder's Preview does, to see the card or row a response makes.
+**Projects and tabs**
 
-Beyond plain boxes and arrows, the AI can fill in **sticky notes** (in the sticky colours), **tables**, **code blocks**, **entities** (a titled record with field rows, for data models), **swimlanes**, **bar, line, and pie charts**, and **Sankey diagrams** (from a list of flows: what moves from where to where, and how much). Your AI tool may also surface a few ready-made **prompts** ("Plan this", "Board from tasks" and "Show my project") as quick actions, so you don't have to know the tool names.
+- **Find projects** (`find_projects`): search your projects by name, across your personal library and the shared libraries of every [team](/help/collaboration/teams/) you belong to.
+- **Read a project** (`read_project`): get a tab's contents as a short text outline, and a picture of it when the AI asks for one.
+- **List templates** (`list_templates`): browse the same templates **Start Planning** offers: boards, spreadsheets, forms and dashboards.
+- **Create a project** (`create_project`): turn a request into a new project, with one tab or several. A tab can start from a template: ask for "a kanban board" or "a budget sheet" and the AI starts from the ready-made one, then fills in your content. It can also build a dashboard over the project's other tabs.
+- **Add a tab** (`add_tab`): add another tab to an existing project, from a template or as a dashboard.
+- **Update a project** (`update_project`): rebuild a tab, such as a dashboard, or make a small change to what a tab holds.
+- **Share a project** (`share_project`): turn a project into a [share link](/help/collaboration/sharing/) to hand to someone. Unless you ask for another level, the AI makes a **Participant** link: people can add and move cards, write in Sheet cells, comment and vote, but not change a board's columns or settings.
+- **Rename a project** (`rename_project`) and **Delete a project** (`delete_project`): tidy your library from the AI tool, a whole project or a single tab. Deleting a project moves it to the [Trash](/help/account-and-data/trash/); deleting a tab removes it for good.
+- **List the Trash** (`list_trash`) and **Restore a project** (`restore_project`): bring back something deleted by mistake, by you or by the AI.
 
-When the AI changes a project you have open, you see it happen: the change arrives on your canvas straight away, outlined for a moment in your colour, and a note at the bottom says what changed. **Show** takes you to it and **Undo** puts it back (your own Undo shortcut only ever undoes your own edits). Anything you change at the same time is kept. To review or undo a change after its note has gone, see [Reviewing and Undoing an Agent's Changes](/help/developers/agent-changes/). An element someone else in the project has selected is off limits: a change that touches it is refused, and the AI is told to leave it out or try again later.
+**Boards and cards**
 
-The AI does the thinking; liveplanner validates, lays out, saves, and renders what it produces. The MCP server runs no AI model of its own. New projects an AI creates land at the root of **My Projects** (or your default folder, if you set one), each with a **Made by AI** badge; the **Made by AI** filter lists them all, wherever you file them.
+- **List items** (`list_items`) and **Change items** (`change_items`): read and update the [cards](/help/plan/cards/) on a project's boards (add a task, move it to another column, change its fields). The AI names things the way your board shows them, so it says "In Progress" or "Bug" or "Severity", and liveplanner refuses a column, card type or field the project doesn't have instead of filing a card where no board shows it.
+- **Add a board** (`add_board`) and **Change a board** (`change_board`): put a [board](/help/plan/boards/) on a tab, from a ready-made one (Kanban, Sprint, Bug Triage...) or with the columns you name, and later rename it, change its columns or choose which card types it shows.
+- **Change card types** (`change_card_types`): add, edit or delete the [card types](/help/plan/card-types/) a project's boards hold, with their own fields. Deleting a type moves its cards to the Trash, as it does in the editor.
+
+**Sheets**
+
+- **List sheets** (`list_sheets`), **Read a sheet** (`read_sheet`), **Change a sheet** (`change_sheet`) and **Add a sheet** (`add_sheet`): work with the [Sheets](/help/plan/sheets/) in a project, reading cells by A1 address, setting values and formulas, formatting, sorting, and adding a new sheet from rows or CSV.
+
+**Forms**
+
+- **Add a form** (`add_form`), **Read a form** (`read_form`) and **Change a form** (`change_form`): build a [form](/help/plan/forms/) on a Form tab, from a starter or from the questions you describe, with its responses going to a board or a sheet you name, then read it back or change its questions, sections and settings.
+- **Share a form** (`share_form`) and **Try a form** (`try_form`): publish a form's link, close it or delete the link, and fill the form in once as a test, the way the builder's Preview does, to see the card or row a response makes.
+
+Your AI tool may also surface a few ready-made **prompts** ("Plan this", "Board from tasks" and "Show my project") as quick actions, so you don't have to know the tool names.
+
+When the AI changes a tab you have open, you see it happen: the change arrives straight away, outlined for a moment in your colour, and a note at the bottom says what changed. **Show** takes you to it and **Undo** puts it back (your own Undo shortcut only ever undoes your own edits). Cards, cells and forms it changes arrive live too. Anything you change at the same time is kept. To review or undo a change after its note has gone, see [Reviewing and Undoing an Agent's Changes](/help/developers/agent-changes/). Something someone else in the project has selected is off limits: a change that touches it is refused, and the AI is told to leave it out or try again later.
+
+The AI does the thinking; liveplanner checks, saves and shows what it produces. The MCP server runs no AI model of its own. New projects an AI creates land at the root of **My Projects** (or your default folder, if you set one), each with a **Made by AI** badge; the **Made by AI** filter lists them all, wherever you file them.
 
 ## What a connection can and can't touch
 

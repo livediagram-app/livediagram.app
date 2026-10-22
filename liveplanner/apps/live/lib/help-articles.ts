@@ -8,8 +8,8 @@
 //
 // Each value is the NESTED slug (the path under /help): usually an
 // article's categorySlug/slug (matching its page.mdx path in apps/help),
-// but it may also be a category LANDING path (e.g. `palette` points at the
-// palette overview page.tsx) when the editor links to a whole section
+// but it may also be a category LANDING path (e.g. `plan` points at the
+// Plan overview page.tsx) when the editor links to a whole section
 // rather than one article. A key pointing at a path that resolves to no
 // help page is a bug, the same way an unregistered help article is - keep
 // these in sync with @liveplanner/help-registry.
@@ -22,7 +22,6 @@ export const HELP_ARTICLES = {
   shareLinkExpiry: 'collaboration/sharing/share-link-expiry',
   sharePasswords: 'collaboration/sharing/share-passwords',
   // Palette behaviour
-  autoAttachArrows: 'palette/auto-attach-arrows',
   // Of the elements added in docs/specs/009-elements/youtube-video.md and docs/specs/009-elements/mind-node.md, docs/specs/009-elements/lane.md, docs/specs/009-elements/entity.md, docs/specs/009-elements/embed-providers.md, only the embed has a
   // surface that links its article (the link picker, when it is restricted to
   // a URL). Lanes and entities had keys here and no placement, so they were
@@ -30,54 +29,51 @@ export const HELP_ARTICLES = {
   // Outline dialog links its own sub-article from its header, and the mind
   // map's, the flowchart's and the org chart's element tours (docs/specs/007-editor/element-tours.md) link their
   // articles.
-  embedElements: 'palette/embed-elements',
-  mindMapOutline: 'palette/mind-maps/edit-outline',
-  alignmentGuides: 'palette/alignment-guides',
-  panelOpacity: 'palette/panel-opacity',
-  quickAddOnHover: 'palette/quick-add-on-hover',
-  isometricMode: 'selection-modes/isometric-mode',
+  embedElements: 'tabs/using-tabs',
+  mindMapOutline: 'plan/visualisations',
+  panelOpacity: 'user-interface/settings',
+  isometricMode: 'tabs/export-tabs',
   // One key per tool panel, so every mode's panel can point at the article
   // that explains it (docs/specs/018-help/contextual-help-links.md). Each of these resolves to a real page — a key
   // pointing at nothing is a bug, the same way an unregistered article is.
-  formatPainter: 'selection-modes/format-painter',
+  formatPainter: 'user-interface/themes',
   // AI
-  aiTools: 'tools/ai/ai-tools',
   connectAiTool: 'account-and-data/connect-ai-mcp',
   // Tabs / import-export
-  exportingDiagrams: 'account-and-data/exporting-diagrams',
+  exportingDiagrams: 'tabs/export-tabs',
   apiTokens: 'account-and-data/api-tokens',
   trash: 'account-and-data/trash',
   importTabs: 'tabs/import-tabs',
   tags: 'explorer/tags',
-  linkingTabs: 'tabs/linking-tabs',
+  linkingTabs: 'tabs/using-tabs',
   // Teams
   teamRolesAndInvites: 'collaboration/teams/roles-and-invites',
   // Canvas / themes
-  changingTheBackground: 'canvas/the-canvas/changing-the-background',
-  themes: 'canvas/themes',
-  changingTheme: 'canvas/themes/changing-theme',
-  choosingAFinish: 'canvas/finish',
-  customThemes: 'canvas/themes/custom-themes',
-  choosingFonts: 'canvas/text-and-fonts/choosing-fonts',
+  changingTheBackground: 'user-interface/themes/changing-theme',
+  themes: 'user-interface/themes',
+  changingTheme: 'user-interface/themes/changing-theme',
+  choosingAFinish: 'user-interface/themes/changing-theme',
+  customThemes: 'user-interface/themes/custom-themes',
+  choosingFonts: 'user-interface/themes/changing-theme',
   // Links / activity / comments
   // Plan mode's card types (docs/specs/026-plan/item-types.md).
-  planCardTypes: 'canvas/plan-mode/card-types',
-  planBoards: 'canvas/plan-mode/boards',
-  planCards: 'canvas/plan-mode/cards',
-  planSheets: 'canvas/plan-mode/sheets',
-  planDashboards: 'canvas/plan-mode/dashboards',
-  planForms: 'canvas/plan-mode/forms',
-  planTour: 'canvas/plan-mode/plan-tour',
-  links: 'canvas/links',
+  planCardTypes: 'plan/card-types',
+  planBoards: 'plan/boards',
+  planCards: 'plan/cards',
+  planSheets: 'plan/sheets',
+  planDashboards: 'plan/dashboards',
+  planForms: 'plan/forms',
+  planTour: 'plan/plan-tour',
+  links: 'plan/dashboards',
   comments: 'collaboration/comments',
   livePresence: 'collaboration/live-presence',
-  assignedActions: 'collaboration/assigned-actions',
+  assignedActions: 'plan/cards',
   // Explorer / data
   // Standing panels.
   explorerPanel: 'explorer/explorer-panel',
-  layers: 'canvas/layers',
+  layers: 'user-interface/panel-layout',
   // The Tidy Up popover's tidiers (docs/specs/008-canvas/layout-cleanup.md).
-  minimap: 'user-interface/minimap',
+  minimap: 'user-interface/panel-layout',
   sessionVoting: 'collaboration/session-tools/voting',
   sessionTimer: 'collaboration/session-tools/timer',
   home: 'explorer/home',
@@ -88,12 +84,12 @@ export const HELP_ARTICLES = {
   folders: 'explorer/folders',
   defaultFolders: 'explorer/folders/default-folders',
   explorerFilters: 'explorer/filters',
-  dataElements: 'palette/tools/data-elements',
-  sankeyDiagram: 'palette/build/sankey-diagram',
+  dataElements: 'plan/visualisations',
+  sankeyDiagram: 'plan/visualisations',
   // The round-two element tours' closing cards (docs/specs/007-editor/element-tours.md).
-  lanes: 'palette/lanes',
-  sequenceDiagram: 'palette/sequence-diagrams',
-  palette: 'palette',
+  lanes: 'plan/boards',
+  sequenceDiagram: 'plan/visualisations',
+  palette: 'plan',
   // Settings
   powerUserMode: 'user-interface/power-user-mode',
   whatWeCollect: 'privacy-and-security/what-we-collect',
@@ -155,25 +151,13 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about share passwords',
     description: 'How the optional password gate protects every link.',
   },
-  autoAttachArrows: {
-    title: 'Learn about auto-attach arrows',
-    description: 'How arrows re-pin to shapes as they move.',
-  },
   embedElements: {
     title: 'Learn about embeds',
     description: 'Which services can be embedded, and how they load.',
   },
-  alignmentGuides: {
-    title: 'Learn about alignment guides',
-    description: 'How snap lines help you line elements up.',
-  },
   panelOpacity: {
     title: 'Learn about panel opacity',
     description: 'Make the panels translucent so the canvas shows through.',
-  },
-  quickAddOnHover: {
-    title: 'Learn about quick-add on hover',
-    description: 'Open the element + menu by hovering instead of clicking.',
   },
   isometricMode: {
     title: 'Learn about the isometric view',
@@ -182,10 +166,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   formatPainter: {
     title: 'Learn about the Format Painter',
     description: "Tips for copying one element's look onto others.",
-  },
-  aiTools: {
-    title: 'Learn about the AI tools',
-    description: 'What the Ask and Clean modes do, and how to get the most from them.',
   },
   connectAiTool: {
     title: 'Learn about connecting AI tools',

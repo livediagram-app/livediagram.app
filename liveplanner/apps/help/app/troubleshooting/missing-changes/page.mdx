@@ -1,7 +1,6 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
 import { SaveFailedToast } from '@/components/illustrations/troubleshooting';
-import { UndoStep } from '@/components/illustrations/undo-redo';
 
 export const metadata = helpMetadata({
   title: 'My Changes Are Missing',
@@ -20,7 +19,7 @@ Work in liveplanner is saved automatically as you go, so missing changes are usu
 2. **Check the right project.** It is easy to have two similar projects open. Open [your projects](/explorer/recent) and confirm you are in the one you edited.
 3. **Check the right identity.** Guest work is tied to the browser that made it. If you switched browsers or devices, you are looking at a different guest identity's projects. If you just signed in, your guest projects move into your account; if they have not appeared, reload, and if they still do not show, [contact us](/help/contact/) with the report from **Copy Diagnostics**. See [working as a guest](/help/getting-started/guest-vs-account/).
 4. **Reload the page.** A refresh reloads your saved project and clears any temporary display issue.
-5. **Check the tabs beside a Plan tab.** If a Plan tab's boards and sheets seem to have gone, or it split into several tabs, an older Plan tab was updated to the new layout: each board and sheet moved to a tab of its own, right after it, and the tab became a Dashboard showing them. Your cards are untouched. See [Plan Mode: Good to Know](/help/canvas/plan-mode/#good-to-know).
+5. **Check the tabs beside a Plan tab.** If a Plan tab's boards and sheets seem to have gone, or it split into several tabs, an older Plan tab was updated to the new layout: each board and sheet moved to a tab of its own, right after it, and the tab became a Dashboard showing them. Your cards are untouched. See [Plan Mode: Good to Know](/help/plan/planning-basics/#together).
 
 ## How saving works
 
@@ -41,11 +40,7 @@ When liveplanner is updated while you have a project open, and the update change
 
 ## Recover a recent step
 
-If you have just undone, moved or deleted something by mistake, [Redo](/help/canvas/redo/) and [Undo](/help/canvas/undo/) are your recovery tools.
-
-<Figure caption="Undo steps back your most recent change; redo puts it back.">
-  <UndoStep />
-</Figure>
+If you have just undone, moved or deleted something by mistake, [Redo](/help/user-interface/redo/) and [Undo](/help/user-interface/undo/) are your recovery tools.
 
 1. **Press Undo** (**Cmd/Ctrl+Z**, or the undo button at the bottom-right) to step back your most recent changes, one at a time.
 2. **Press Redo** (**Cmd/Ctrl+Shift+Z**, or **Ctrl+Y**) if you went back too far.
@@ -57,9 +52,9 @@ If an [AI tool](/help/account-and-data/connect-ai-mcp/) or a script changed the 
 
 ## What collaboration does and doesn't protect
 
-**Two people editing different elements on the same tab is safe.** Edits travel as changes to individual elements and merge by element, so your move of one box cannot overwrite somebody's edit to another. That was not always true, and it is the single most common shape of "my change vanished".
+**Two people editing different things on the same tab is safe.** Edits travel as changes to individual cards, cells and elements and merge one by one, so your move of one card cannot overwrite somebody's edit to another. That was not always true, and it is the single most common shape of "my change vanished".
 
-**Two people editing the _same_ element is the case to know about.** There the last edit to arrive wins. In practice the editor heads this off by showing an element as locked while another editor has it selected, so you can see that it is spoken for before you start.
+**Two people editing the _same_ thing is the case to know about.** There the last edit to arrive wins. In practice the editor heads this off by showing something as locked while another editor has it selected, so you can see that it is spoken for before you start.
 
 If a connection drops, the editor **catches up on reconnect** rather than reloading: it asks for what it missed and applies it. Your viewport, your selection and your undo history survive, so a wobbly connection no longer costs you your place. If it has been away too long to catch up, it re-fetches the project, still without a page reload.
 

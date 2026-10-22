@@ -6,8 +6,8 @@ editor's toolbars and panels follow the person to whichever side they work in.
 
 ## Why
 
-Tabs hold related work: the context diagram and the container diagram, the retro board and the
-action plan, the draft and the reference. Comparing two tabs today means flicking between them and
+Tabs hold related work: the backlog board and the sprint board, the retro board and the action
+plan, the budget sheet and the dashboard that charts it. Comparing two tabs today means flicking between them and
 holding one in your head. Side by side puts both on screen, with the gesture people already know
 from browsers and code editors: drag the tab to where you want it.
 

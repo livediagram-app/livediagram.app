@@ -137,7 +137,7 @@ Every Project is a Plan project, so what Plan reads is read from the first load:
     it is for and other names for it, a Sprint found by "scrum", Hiring Pipeline by "recruiting", Budget by
     "expenses"; every word typed must match, case ignored), across every category, the results
     grouped under **Boards**, **Spreadsheets**, **Dashboards** and **Inspiration**, after a **Best Match** of the choices whose name begins
-    with what was typed ([Template starts → A title match leads](../007-editor/start-diagramming.md#the-panel)); the rail shows no choice while a search is typed, and
+    with what was typed ([Start panel → A title match leads](../007-editor/start-panel.md#the-panel)); the rail shows no choice while a search is typed, and
     Escape clears it. It finds Plan's own choices only, never a template of a retired mode. Nothing
     found: the shared empty state, "No boards, sheets or layouts match “<text>”" ("Try another word.").
   - The keyboard reaches everything in reading order; Enter or Space chooses. It is gone once the tab has anything on

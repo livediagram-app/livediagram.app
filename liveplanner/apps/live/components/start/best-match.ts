@@ -1,4 +1,4 @@
-// A start's Best Match (docs/specs/007-editor/start-diagramming.md "A title match leads"): the cards whose name begins
+// A start's Best Match (docs/specs/007-editor/start-panel.md "A title match leads"): the cards whose name begins
 // with what was typed, case, punctuation and hyphens ignored as the search's own, lifted out of their groups to lead the
 // results. An exact name comes first, then a longer one, each otherwise in the order the groups list them. Pure: the
 // panel draws what this returns.

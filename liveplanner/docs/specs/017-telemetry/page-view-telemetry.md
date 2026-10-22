@@ -40,7 +40,7 @@ router stays pure routing.
 
 A page view is an ordinary [Telemetry + public transparency dashboard](telemetry.md) event: **`Page` · `View` · `<path>`**. The
 `type` is the normalised page path, e.g. `/`, `/alternatives/miro`,
-`/help/canvas/the-canvas`, `/explorer/recent`, `/project`.
+`/help/plan`, `/explorer/recent`, `/project`.
 
 Carrying it as an event rather than a new table or endpoint means it rides the
 whole existing pipeline unchanged: the buffered emitter, the page-hide beacon,

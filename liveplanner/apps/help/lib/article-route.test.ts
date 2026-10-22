@@ -39,7 +39,7 @@ const withParent = readdirSync(APP_DIR, { recursive: true })
 
 describe('sub-article parents', () => {
   it('finds the sub-articles (guard against this test going blind)', () => {
-    expect(withParent.length).toBeGreaterThan(50);
+    expect(withParent.length).toBeGreaterThan(20);
   });
 
   it('every sub-article sits directly under a real page', () => {

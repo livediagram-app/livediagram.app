@@ -4,60 +4,55 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Accessibility and Keyboard Navigation',
   description:
-    'Use liveplanner with a keyboard and screen reader: reach and walk the canvas, hear your selection announced and edit with keyboard verbs.',
+    'Use liveplanner with a keyboard and screen reader: move between the parts of the screen, work cards and cells from the keyboard, and hear changes announced.',
   path: '/help/getting-started/accessibility/',
 });
 
 <ArticleLayout
   title="Accessibility and Keyboard Navigation"
-  description="Reach the canvas, walk its elements, and edit with the keyboard, with selection announced to screen readers."
+  description="Move round the editor, work boards and sheets from the keyboard, and hear what changes."
   categoryTitle="Getting Started"
   categorySlug="getting-started"
 >
 
-You can work on the canvas without a mouse. This page covers the keyboard-navigation and screen-reader baseline: reaching the canvas, moving through its elements, and hearing what's selected. For the everyday shortcuts (tools, panning, zen mode), see [Keyboard Essentials](/help/getting-started/keyboard-essentials/).
+You can plan in liveplanner without a mouse. This page covers the keyboard and screen-reader basics: getting round the editor, working a board and a sheet, and hearing what changes. For the everyday shortcuts, see [Keyboard Essentials](/help/getting-started/keyboard-essentials/).
 
-## Reaching the canvas
+## Getting round the editor
 
-The canvas is a focus stop in the normal `Tab` order, labelled **"Canvas"**. Tab to it from the page and you'll see a focus ring (only when navigating by keyboard, so mouse users see nothing new). The [Palette](/help/tips-and-tricks/command-palette/) strip, the [Explorer](/help/explorer/explorer-page/) behind the menu button and the panels such as the [Map](/help/user-interface/minimap/) stay reachable by the keyboard too.
+Every button, tab and field is in the normal **Tab** order, with a focus ring when you navigate by keyboard (mouse users see nothing new). To skip a long run of controls, press **`F6`** to jump to the next part of the screen (the header, the work in the middle, the bottom-right controls and the tab bar) and **`Shift+F6`** to go back. Open dialogs keep focus inside them until you close them with **Escape**.
 
-## Walking the elements
+**`Cmd+K`** (**`Ctrl+K`** on Windows and Linux) opens [search](/help/search-panel/), which reaches projects, tabs, settings and commands from the keyboard.
 
-Once focus is on the canvas:
+## Working a board
 
-- **`Tab`** selects the **next** element, **`Shift`+`Tab`** the **previous**, in the order they're stacked on the canvas. The canvas scrolls each selected shape into view as you go (arrows are selected without scrolling).
-- There's **no wrap and no trap**: pressing `Tab` past the last element (or `Shift`+`Tab` before the first) moves focus out of the canvas to the next thing on the page, so you can always keyboard your way onward.
-- The **selection ring is the focus indicator**: there's one highlighted element, not two competing outlines.
-- Elements **locked by someone else** are skipped, the same as when you click, and so are elements on a hidden or locked [layer](/help/canvas/layers/).
-- On a selected [mind map](/help/palette/mind-maps/) node, `Tab` adds a child node instead, and `Enter` a sibling.
+Tab to a card on a board, then use the **arrow keys** to move between cards. **Enter** opens the card's panel, **Shift** with the arrow keys moves the card to another column or up and down its column, **N** adds a card to its column, and **Delete** moves it to the Trash.
 
-This works even in read-only views, since it's just navigation. It is part of the editor's keyboard shortcuts, so it pauses while a dialog is open, and it is off if you have switched **Keyboard Shortcuts** off in Settings.
+Screen readers hear every move, for example "#12 Fix login moved to In Progress, position 4 of 4", and when a card goes to the Trash. Viewers can move between and open cards, but not change them. See [Boards](/help/plan/boards/).
 
-## Hearing what's selected
+## Working a sheet
 
-Every element carries a name, so a screen reader can describe it, for example `Square "Login"`, `Sticky note`, or `Arrow "yes"`. A polite live region announces changes as they happen:
+A sheet takes the keys of any spreadsheet: the arrow keys move between cells, **Shift** with them selects, **Enter** and **Tab** move down and across, typing replaces a cell, and **F2** edits it. **Alt+Down** opens a cell's dropdown, and the **menu key** (or **Shift+F10**) opens the cell's menu. See [Sheets](/help/plan/sheets/).
 
-- **Selection:** `Selected 'Login'` for a labelled element (or `Selected a Square` when it has no label; arrows, tables and images are always named by their type, such as `Selected an Arrow`), a short summary when several are selected (`Selected 2 Squares & an Arrow`), or `Selection cleared`.
-- **Editing:** deleting an element (`Deleted 'Login'`), **Undo** and **Redo** (`Undid the last change`, `Redid the last change`) are announced too.
+## Undo is announced
 
-These announcements are separate from the on-screen notifications, so you'll hear them even if you've turned notifications off.
-
-## Editing from the keyboard
-
-With an element selected by keyboard, the usual keyboard verbs apply: arrow keys nudge it, `Delete` / `Backspace` removes it, `Space` edits its label, and `⌘`/`Ctrl`+`Z` undoes. The editing verbs are disabled in read-only views and while you're typing in a field. `⌘`/`Ctrl`+`K` opens [search](/help/search-panel/), which reaches projects, tabs, elements and commands from the keyboard. See [Keyboard Essentials](/help/getting-started/keyboard-essentials/) and the full [keyboard shortcuts](/help/tips-and-tricks/keyboard-shortcuts/) reference.
+**Undo** and **Redo** (**`Cmd+Z`** and **`Cmd+Shift+Z`**) work from anywhere in the editor, and each is announced to screen readers ("Undid the last change", "Redid the last change"). These announcements are separate from the on-screen notifications, so you'll hear them even if you've turned notifications off.
 
 ## Reducing motion
 
-If animation is uncomfortable, turn on **Reduce Motion** in [Settings](/help/user-interface/settings/), under **Accessibility**. It turns off the editor's decorative animations and transitions so panels and popovers appear instantly instead of sliding or popping. Your device's own reduce-motion preference is always respected as well, and the setting follows you to your other devices.
+If animation is uncomfortable, turn on **Reduce Motion** in [Settings](/help/user-interface/settings/), under **Accessibility**. It turns off the editor's animations and transitions, so panels and cards appear instantly instead of sliding or fading. Your device's own reduce-motion preference is always respected as well, and the setting follows you to your other devices.
 
 ## Larger controls
 
-If the panels and buttons are too small to read or hit comfortably, **UI Scale** in Settings, under **Appearance**, makes the panels, the toolbar and the bottom-right buttons smaller or bigger (80% to 120%) without zooming the canvas. Under it, **Panel Scale**, **Toolbar Scale** and **Corner Buttons Scale** set each one on its own, and the toolbar goes up to 140%. Desktop only.
+If the panels and buttons are too small to read or hit comfortably, **UI Scale** in Settings, under **Appearance**, makes the panels, the toolbar and the corner buttons smaller or bigger (80% to 120%), with a separate scale for each underneath. Desktop only. On a Sheet tab, the zoom controls in the bottom-right corner make the cells themselves bigger, from 50% to 200%.
+
+## Turning shortcuts off
+
+If you dictate into your browser, or another tool needs the keys, switch off **Keyboard Shortcuts** in Settings, under **Keyboard**. It is saved on this device only.
 
 <Tip>
-  This is a baseline, honest but not exhaustive: keyboard-only users can reach, traverse, and edit
-  the canvas. If something you rely on is hard to reach with the keyboard, [tell
-  us](/help/contact/): it helps us prioritise what to improve next.
+  This is a baseline, honest but not exhaustive. If something you rely on is hard to reach with the
+  keyboard or a screen reader, [tell us](/help/contact/): it helps us prioritise what to improve
+  next.
 </Tip>
 
 </ArticleLayout>

@@ -20,8 +20,8 @@ Views are what an agent reads by default; JSON is what it asks for. The measurem
 - A label is never a ref. Labels are matched by [selectors](edit-operations.md#selectors).
 - Elements an agent adds take a slug of their label as their id unless it gives one (`Redis cache` becomes
   `redis-cache`, `-2` on a clash), so agent-built tabs read cheaply.
-- Refs, slug ids, kind words, containment and the content origin live in `@liveplanner/project`, so views, edit
-  operations and the lint name elements alike.
+- Refs, slug ids, kind words, containment and the content origin live in `@liveplanner/project`, so views and edit
+  operations name elements alike.
 
 ## The outline (default)
 
@@ -41,9 +41,16 @@ table 480a 4x3 Service | p99 latency | Availability
 sticky 0c84 "Payment retries are not idempotent yet!" comments=2 open
 ```
 
-The example is abridged; a real outline prints every element.
+The example is abridged; a real outline prints every element. It is the views' own fixture, a diagram tab from
+livediagram (`packages/project-views/src/__fixtures__/golden/checkout.outline.txt`). On a Plan tab the elements are
+Plan's, each with one content attribute: a board `plan-board columns=Backlog|Doing|Done`, a card `plan-card item=<id>`, a plan view
+`plan-view view=<name>` and a Sheet `plan-sheet sheet=<id>`. The cards themselves, their columns and fields, are read
+with `list_items` or `liveplanner item ls`, the cells with `read_sheet` or `liveplanner sheet get`
+([Plan for agents](../026-plan/plan-agents.md)).
 
-- **Header** names the tab, its counts (boxes, frames, lanes, arrows), the tab kind when it is not a diagram, its mode when not Diagram and its finish when set (`mode=draw · finish=sketch`), elements on hidden layers and elements of unknown kinds, open threads and the revision.
+- **Header** names the tab, its counts (boxes, frames, lanes, arrows), the tab kind when it is not the general tab
+  (`kind=board`; a Form tab reads `kind=form (read_form)`, its content being the form), its finish when set, elements
+  on hidden layers and elements of unknown kinds, open threads and the revision.
 - **Kind** is the shape for shapes (`square`, `cylinder`, `frame`, `lane`, `entity`), else the element type (`text`, `sticky`, `table`, `arrow`, `image`, `freehand`).
 - **Labels and notes** are JSON strings. Labels are cut at 60 characters, notes at 48, both on a word boundary
   with `…`.

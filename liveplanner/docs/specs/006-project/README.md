@@ -2,7 +2,7 @@
 
 Follow the references below only as needed; never upfront.
 
-- ./project.md - when naming things: a project holds tabs; diagram and the Plan tabs are tab kinds; whiteboarding is an editor mode
+- ./project.md - when naming things: a project holds tabs; Board, Sheet, Dashboard and Form are tab kinds; every tab is in Plan
 - ./project-structure.md - when working on Project structure: Projects contain tabs; elements can link across tabs
 - ./per-tab-storage.md - when working on Per-tab storage: Split tabs into their own D1 rows so autosave scope shrinks
 - ./tab-project-many-to-many.md - when working on Tab ↔ project many-to-many: Link table so a tab can live in multiple projects

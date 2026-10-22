@@ -327,7 +327,7 @@ describe('Escape on a just-grown mind node (docs/specs/009-elements/mind-node.md
   });
 });
 
-// docs/specs/007-editor/start-diagramming.md "Undo and redo reach the editor through an empty search".
+// docs/specs/007-editor/start-panel.md "Undo and redo reach the editor through an empty search".
 describe('undo and redo from the start search', () => {
   function pressIn(input: HTMLInputElement, key: string, init: KeyboardEventInit = {}) {
     const e = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...init });

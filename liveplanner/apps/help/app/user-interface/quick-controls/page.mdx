@@ -1,6 +1,5 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { QuickControls } from '@/components/illustrations/user-interface';
 
 export const metadata = helpMetadata({
   title: 'Quick Controls',
@@ -16,22 +15,18 @@ export const metadata = helpMetadata({
   categorySlug="user-interface"
 >
 
-The **quick controls** sit at the right-hand end of the bottom bar, after the [tab bar](/help/user-interface/tab-bar/)'s tabs, and gather the actions you want reachable at any moment, whatever you are doing on the canvas. They stay put while the rest of the interface comes and goes with your selection, and a matching cluster appears at the bottom of the full-page [Explorer](/help/explorer/explorer-page/), so the two screens don't hide their controls in different places.
-
-<Figure caption="The quick controls at the right-hand end of the bottom bar: Search, Settings and the appearance switch.">
-  <QuickControls />
-</Figure>
+The **quick controls** sit at the right-hand end of the bottom bar, after the [tab bar](/help/user-interface/tab-bar/)'s tabs, and gather the actions you want reachable at any moment, whatever you are doing in the project. They stay put whichever tab you are on, and a matching cluster appears at the bottom of the full-page [Explorer](/help/explorer/explorer-page/), so the two screens don't hide their controls in different places.
 
 ## What lives here
 
 Three controls, left to right:
 
-- **Search**: open the [search panel](/help/search-panel/) to jump to any project, tab, or element, to drop something onto the canvas, or to run a command. `⌘K` (Ctrl+K) opens it from the keyboard.
+- **Search**: open the [search panel](/help/search-panel/) to jump to any project or tab, or to run a [command](/help/tips-and-tricks/command-palette/). `⌘K` (Ctrl+K) opens it from the keyboard.
 - **Settings**: the [Settings dialog](/help/user-interface/settings/): the preferences that follow you between devices, plus the **Keyboard** category with the full [shortcut reference](/help/tips-and-tricks/keyboard-shortcuts/) and the switch that turns shortcuts off.
-- **Appearance**: click to step the [interface between Light, Dark, and System](/help/tools/dark-mode/) (System follows your device). This is the app's own chrome, not the diagram's theme, which lives behind the **Theme & canvas** button in the bottom-right corner. In [power user mode](/help/user-interface/power-user-mode/) a click flips straight between light and dark instead.
+- **Appearance**: click to step the [interface between Light, Dark, and System](/help/tools/dark-mode/) (System follows your device). This is the app's own chrome, not the tab's [theme](/help/user-interface/themes/), which lives behind the **Style** button in the bottom-right corner. In [power user mode](/help/user-interface/power-user-mode/) a click flips straight between light and dark instead.
 
 On a computer each control in the editor's bar shows its name beside the icon (the appearance switch names the mode in force: Light, Dark, or System), and hovering one shows what it does. On a phone the bar is tight, so the controls are icons only; with Minimal Chrome on in power user mode they are icons only everywhere.
 
-Because they are fixed in the corner rather than tied to a selection, the quick controls are the dependable starting point when you are not sure where an action lives: search finds both things and commands.
+Because they are always in the same place, the quick controls are the dependable starting point when you are not sure where an action lives: search finds both things and commands.
 
 </ArticleLayout>

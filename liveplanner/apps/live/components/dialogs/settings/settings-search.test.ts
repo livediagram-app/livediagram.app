@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { SETTINGS_CATEGORIES, visibleCategories } from './settings-catalogue';
 import { firstMatchingCategory, searchSettings } from './settings-search';
 
-const ALL = visibleCategories(true, { emailEnabled: true, signedIn: true });
+const ALL = visibleCategories({ emailEnabled: true, signedIn: true });
 
 function keysFor(query: string): string[] {
   return searchSettings(ALL, query).categories.flatMap((c) => c.rows.map((r) => r.key));
@@ -22,7 +22,7 @@ describe('settings search', () => {
   });
 
   it('finds a setting by its label', () => {
-    expect(keysFor('minimap')).toContain('showMinimap');
+    expect(keysFor('panel opacity')).toContain('panelOpacity');
   });
 
   it('finds a setting by a synonym it never displays', () => {
@@ -35,18 +35,17 @@ describe('settings search', () => {
   });
 
   it('finds a setting by its category or section name', () => {
-    // "layers" appears in no layer row's own label.
-    const layerKeys = keysFor('layers');
-    expect(layerKeys).toContain('layersShowPreview');
-    expect(layerKeys).toContain('layersShowCount');
-    expect(layerKeys).toContain('layerHoverPreview');
+    // "offer again" is the Tours section, in no tour row's own text.
+    const tourKeys = keysFor('offer again');
+    expect(tourKeys).toContain('formTourSeen');
+    expect(tourKeys).toContain('planTourSeen-boards');
   });
 
   it('narrows on a second term rather than widening', () => {
-    const one = keysFor('preview');
-    const two = keysFor('preview hover');
+    const one = keysFor('tour');
+    const two = keysFor('tour form');
     expect(two.length).toBeLessThan(one.length);
-    expect(two).toContain('layerHoverPreview');
+    expect(two).toContain('formTourSeen');
   });
 
   it('is case-insensitive', () => {

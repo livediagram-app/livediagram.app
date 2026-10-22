@@ -25,7 +25,7 @@ const ACTIVITY_PANEL_UI_TYPES = new Set([
   'ActivityRevertPreviewOff',
 ]);
 
-// The palette's Favourites (removed 2026-10-03, docs/specs/010-palette/palette-favourites.md): its
+// The palette's Favourites (removed 2026-10-03): its
 // curation (add, remove, reorder or reset, the Edit / Reorder modes), its cross-category search,
 // and its help article (now Popular's, at a new address).
 const PALETTE_FAVOURITES_UI = new Set([

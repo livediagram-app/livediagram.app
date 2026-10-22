@@ -1,16 +1,14 @@
 import type { ComponentType } from 'react';
 import { AboutArt } from './about';
 import { AccountAndDataArt } from './account-and-data';
-import { CanvasArt } from './canvas';
 import { CollaborationArt } from './collaboration';
 import { DevelopersArt } from './developers';
 import { ExplorerArt } from './explorer';
 import { GettingStartedArt } from './getting-started';
-import { PaletteArt } from './palette';
+import { PlanArt } from './plan';
 import { PoliciesArt } from './policies';
 import { PrivacyAndSecurityArt } from './privacy-and-security';
 import { SearchPanelArt } from './search-panel';
-import { SelectionModesArt } from './selection-modes';
 import { SupportedDevicesArt } from './supported-devices';
 import { TabsArt } from './tabs';
 import { TipsAndTricksArt } from './tips-and-tricks';
@@ -23,16 +21,14 @@ import { UserInterfaceArt } from './user-interface';
 export const CATEGORY_ART: Record<string, ComponentType> = {
   about: AboutArt,
   'account-and-data': AccountAndDataArt,
-  canvas: CanvasArt,
   collaboration: CollaborationArt,
   developers: DevelopersArt,
   explorer: ExplorerArt,
   'getting-started': GettingStartedArt,
-  palette: PaletteArt,
+  plan: PlanArt,
   policies: PoliciesArt,
   'privacy-and-security': PrivacyAndSecurityArt,
   'search-panel': SearchPanelArt,
-  'selection-modes': SelectionModesArt,
   'supported-devices': SupportedDevicesArt,
   tabs: TabsArt,
   'tips-and-tricks': TipsAndTricksArt,

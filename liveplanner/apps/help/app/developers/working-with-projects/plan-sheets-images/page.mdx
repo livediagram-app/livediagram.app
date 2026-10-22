@@ -3,21 +3,21 @@ import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 
 export const metadata = helpMetadata({
-  title: 'Plan Items, Sheets and Pages',
+  title: 'Plan Items, Sheets and More',
   description:
-    'liveplanner API examples for Plan items and card types, Sheet cells, pages and articles, SVG renders, copies and themes.',
+    'liveplanner API examples for Plan items and card types, Sheet cells, forms, SVG renders, project copies and custom themes.',
   path: '/help/developers/working-with-projects/plan-sheets-images/',
 });
 
-<ArticleLayout title="Plan Items, Sheets and Pages" description="Worked examples for the rest of a project: Plan cards, Sheets, pages, pictures, copies and your libraries." categoryTitle="Developers" categorySlug="developers/working-with-projects" parentArticle={{ title: "Working with Projects", slug: "working-with-projects" }} subArticles={getSubArticles("working-with-projects").filter((a) => a.slug !== "plan-sheets-images")}>
+<ArticleLayout title="Plan Items, Sheets and More" description="Worked examples for the rest of a project: Plan cards, Sheets, forms, pictures, copies and your themes." categoryTitle="Developers" categorySlug="developers/working-with-projects" parentArticle={{ title: "Working with Projects", slug: "working-with-projects" }} subArticles={getSubArticles("working-with-projects").filter((a) => a.slug !== "plan-sheets-images")}>
 
-A tab's elements change through [changesets](/help/developers/working-with-projects/edit-operations/), but a project holds more than elements: the cards on its Plan boards, the cells of its Sheets, its pages. Each has its own endpoints, shown here with `curl`. The examples assume your [API token](/help/developers/authentication/) is in `$TOKEN` and a project id in `$DOC`; paths are relative to `https://liveplanner.app/api`, and `/api/openapi.json` has every field.
+A tab's elements change through [changesets](/help/developers/working-with-projects/edit-operations/), but most of a project lives elsewhere: the cards on its boards, the cells of its Sheets, the questions of its forms. Each has its own endpoints, shown here with `curl`. The examples assume your [API token](/help/developers/authentication/) is in `$TOKEN` and a project id in `$DOC`; paths are relative to `https://liveplanner.app/api`, and `/api/openapi.json` has every field.
 
 Every write here reaches anyone with the project open straight away, credited to you.
 
 ## Plan Items
 
-A card on a [Plan board](/help/canvas/plan-mode/boards/) is an **item**, kept in the project's item store rather than on a tab, so one card can show on several boards. A board files its cards by **status**: each column has one, such as `in-progress~k3f2`. Read the boards, their statuses and the card types first:
+A card on a [Plan board](/help/plan/boards/) is an **item**, kept in the project's item store rather than on a tab, so one card can show on several boards. A board files its cards by **status**: each column has one, such as `in-progress~k3f2`. Read the boards, their statuses and the card types first:
 
 ```bash
 curl https://liveplanner.app/api/projects/$DOC/plan \
@@ -98,7 +98,7 @@ Refusals are `400` with a code such as `title_required`, `field_value_invalid`, 
 
 ### Card Types
 
-A project's [card types](/help/canvas/plan-mode/card-types/) are stored whole. To change them, send the full catalogue back with the revision you read (`itemTypesRev` from `/plan`):
+A project's [card types](/help/plan/card-types/) are stored whole. To change them, send the full catalogue back with the revision you read (`itemTypesRev` from `/plan`):
 
 ```bash
 curl -X PUT https://liveplanner.app/api/projects/$DOC/item-types \
@@ -167,7 +167,19 @@ It answers with the write as it landed, the sheet's new `rev` and the stored sta
   the MCP server's `change_sheet`, which work out the ids for you.
 </Tip>
 
-A Sheet shows on a tab through a Sheet element, as a board does; start one on a new tab with `add_tab` and the `blank-spreadsheet` or `kanban` template, or place one on any tab. `liveplanner sheet add` (or the MCP server's `add_sheet`) makes the sheet and places its element in one go. Over REST, `POST /projects/$DOC/sheets` with `{ "tabId": "…", "title": "Costs" }` makes the sheet (titles are unique on a tab), and a changeset adds its element: `{ "op": "add", "element": { "type": "shape", "shape": "plan-sheet", "x": 0, "y": 0, "width": 960, "height": 560, "planSheet": { "sheetId": "…" } } }`. See [Sheets](/help/canvas/plan-mode/sheets/) for what people see.
+A Sheet shows on a tab through a Sheet element, as a board does; start one on a new tab with the `blank-spreadsheet` template (or any spreadsheet template, such as `budget-planner`). `liveplanner sheet add` (or the MCP server's `add_sheet`) makes the sheet and places its element in one go. Over REST, `POST /projects/$DOC/sheets` with `{ "tabId": "…", "title": "Costs" }` makes the sheet (titles are unique on a tab), and a changeset adds its element: `{ "op": "add", "element": { "type": "shape", "shape": "plan-sheet", "x": 0, "y": 0, "width": 960, "height": 560, "planSheet": { "sheetId": "…" } } }`. See [Sheets](/help/plan/sheets/) for what people see.
+
+## Forms
+
+A Form tab's [form](/help/plan/forms/) is written whole. Read it from the tab (`GET /projects/$DOC/tabs/$TAB`, its `form`), change it, and send it back with the revision you read:
+
+```bash
+curl -X POST https://liveplanner.app/api/projects/$DOC/tabs/$TAB/form \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{ "form": { … }, "rev": 7 }'
+```
+
+This needs edit access to the tab. To publish the form, `POST /projects/$DOC/tabs/$TAB/form-link` makes its public link; `PUT` on the same path opens or closes it while keeping the link, and `DELETE` removes the link (publishing again makes a new one). The [CLI](/help/developers/cli/#forms)'s `form` commands and the MCP server's `change_form` and `share_form` make these calls by question name, which is easier than writing the form by hand.
 
 ## A Tab as a Picture
 
@@ -183,14 +195,14 @@ The tab drawn by the same renderer the CLI's `tab render` and `pull --svg` use, 
 ```bash
 curl -X POST https://liveplanner.app/api/projects/$DOC/copy \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{ "name": "Service map (2027 draft)" }'
+  -d '{ "name": "Sprint 14 (copy)" }'
 ```
 
 Makes a copy in your own files and answers `201` with the new `project`. Leave out `name` for `Copy of <name>`. Anything you can read can be copied; share links are not copied with it.
 
 ## Custom Themes
 
-Your [custom themes](/help/canvas/themes/custom-themes/) belong to you, not to a project.
+Your [custom themes](/help/user-interface/themes/custom-themes/) belong to you, not to a project.
 
 ```bash
 # A custom theme

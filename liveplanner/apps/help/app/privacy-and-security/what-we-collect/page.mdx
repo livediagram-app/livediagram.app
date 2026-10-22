@@ -16,11 +16,11 @@ liveplanner measures which features get used so the project knows what works, an
 
 ## What an event looks like
 
-When telemetry is enabled, the editor records small product events made of just three fields: a category, an action, and an optional preset type. For example, "a project was created", or "a square element was added". That is the entire shape of an event.
+When telemetry is enabled, the editor records small product events made of just three fields: a category, an action, and an optional preset type. For example, "a project was created", or "a dashboard tab was added". That is the entire shape of an event.
 
 - **No identity.** Events carry no user id, no account, and no IP address.
 - **No content.** They never include a project name, tab name, participant name, element text, share code, or project id.
-- **Only a fixed vocabulary.** The type is always a preset value from a closed list, such as a shape kind or a share role, never anything you typed.
+- **Only a fixed vocabulary.** The type is always a preset value from a closed list, such as a template kind or a share role, never anything you typed.
 
 The server checks this as well. It throws away any event whose category or action is not on its list, and it will only store a type that is a short token (at most 40 characters of letters, digits, spaces, dots, hyphens and underscores), so anything the length of a note, or carrying ordinary punctuation, is refused before it is stored. (A page view's address is checked against an even narrower rule instead: lower-case page names separated by `/`, nothing else.)
 
@@ -46,7 +46,7 @@ A timing is thrown away if the page was in the background at any point while it 
 
 ## Which button brought you in
 
-The buttons on our public pages that open the editor (the header's Choose Template, a template card in the landing page's gallery, a feature page's Start drawing) each carry a short label in their link naming _which button_ it is, like `Home.Header`. When the New Project page opens from one, it counts that arrival, removes the label from the address bar straight away, and counts once more if you go on to create a project. That is how we learn which buttons actually help people get started.
+The buttons on our public pages that open the editor (the header's button, a template card on the landing page, a feature page's Start planning) each carry a short label in their link naming _which button_ it is, like `Home.Header`. When the New Project page opens from one, it counts that arrival, removes the label from the address bar straight away, and counts once more if you go on to create a project. That is how we learn which buttons actually help people get started.
 
 The label comes from a fixed list of our own buttons and says nothing about you or where you were before our page. The two counts aren't linked to each other or to anything else, and the Settings switch below turns them off too.
 

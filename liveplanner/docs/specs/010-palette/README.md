@@ -2,10 +2,13 @@
 
 Follow the references below only as needed; never upfront.
 
+**In liveplanner** Plan shows no palette ([Plan mode](../026-plan/plan-mode.md#no-palette)). The palette's code,
+its catalogues (icons, stickers, technology marks) and presets are still in the tree and cite these specs; they stay
+until that code goes ([Build phase](../005-project-roadmap/prototype-scope.md#next)).
+
 - ./technology-icons.md - when working on Technology icons: Technology palette category: full-colour AWS / Azure / generic-infra brand icons for architecture diagrams
 - ./style-presets.md - when working on Style presets: One-click Presets category: theme colour + border variations for shapes, animated line styles for arrows
 - ./palette-drag-ghost.md - when working on Palette drag ghost + drop preview: Drag-to-add shows a live translucent footprint of the shape at the cursor, replacing the browser drag image
-- ./palette-favourites.md - when you meet a reference to Palette Favourites: removed 2026-10-03, superseded by each editor mode's fixed Popular category; records what went and what stayed
 - ./emoji-icons.md - when working on Emoji section in the Icons tab: Native colour emoji as line-art icon-catalogue entries via a new `text` prim: an Emoji category in the Icons tab (~60 collaboration/status emoji), inheriting search, drag, fold-into-shape, favourites, thumbnails, and MCP render automatically
 - ./palette-category-browse.md - when working on Browsing the palette by category: The Icons and Technology tabs browse by category tile with a breadcrumb, the same drill-in the Tools tab uses, replacing their category / provider filter dropdowns; search always runs over the whole catalogue
 - ./palette-top-level-categories.md - when working on Palette top-level categories and bands: Behaviour and Data leave the Tools tab to become top-level palette categories; the category dropdown groups into Common / Structure / Decorate / Dynamic bands with Favourites full width above them; Behaviour, Data and Components render as rows with a blurb

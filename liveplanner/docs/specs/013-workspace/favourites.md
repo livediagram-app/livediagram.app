@@ -124,8 +124,7 @@ anything captured inside it is unsafe for the outbound request.
 
 ## Spelling
 
-**Favourite**, matching the existing `palette-favourites.ts` and the Palette's
-own "Favourites" tab. The issue said "Favorite"; the codebase is British
+**Favourite**, matching the palette's old "Favourites" tab. The issue said "Favorite"; the codebase is British
 throughout and a split would be worse than either choice.
 
 ## Out of scope

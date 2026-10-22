@@ -12,20 +12,31 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Live Image" description="An image URL that follows your project, so a README or doc always shows the latest version." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Sharing and Embeds", slug: "sharing" }} subArticles={getSubArticles("sharing").filter((a) => a.slug !== "live-image")}>
 
-A live image is a plain image URL for a project that **follows the project as it changes**: the server keeps an SVG snapshot that is redrawn on the first load after each save, so wherever you place the URL shows the current project. It is the companion to an [embed](/help/collaboration/sharing/embeds/): the embed is interactive (pan, zoom, live updates), while a live image is a single static picture, which is exactly what you need somewhere an `<iframe>` is not allowed, like a **GitHub README** or a Markdown file.
+A live image is a plain image URL for one tab of a project that **follows the project as it changes**: the server keeps an SVG snapshot that is redrawn on the first load after each save, so wherever you place the URL shows the current state of the plan. It is the companion to an [embed](/help/collaboration/sharing/embeds/): the embed is interactive (open cards, live updates), while a live image is a single static picture, which is exactly what you need somewhere an `<iframe>` is not allowed, like a **GitHub README** or a Markdown file.
+
+## What the image shows
+
+The image is a flat picture of the tab, drawn from what it holds:
+
+- **A Board** is drawn as its columns with their cards.
+- **A Sheet** is drawn as its cells, showing their worked-out values.
+- **A Form** is drawn as respondents see it, on the form's own look.
+- **A Dashboard** is drawn as its layout: each metric and chart appears as a labelled outline (such as **Metric** or the chart's kind) rather than the live figures. Use an [embed](/help/collaboration/sharing/embeds/) to show a Dashboard's charts.
+
+A tab with nothing on it yet (one still on **Start Planning**) has no image.
 
 ## How it differs from an embed
 
 Both come from a share link and both stay current, but they suit different homes:
 
-- An **embed** is an interactive frame: readers can pan and zoom, and it updates in real time. Best for wikis, Notion, and your own pages.
-- A **live image** is a static SVG served at a URL. It does not pan or zoom, but it drops into anywhere that accepts an image, including places that strip iframes. The server refreshes its snapshot after the project is saved, so the image catches up to your edits on the next load.
+- An **embed** is an interactive frame: readers can scroll the board, open cards, and watch it update in real time. Best for wikis, Notion, and your own pages.
+- A **live image** is a static SVG served at a URL. Nothing in it can be clicked, but it drops into anywhere that accepts an image, including places that strip iframes. The server refreshes its snapshot after the project is saved, so the image catches up to your edits on the next load.
 
 ## Getting a live image
 
 <Step n={1}>Open the **Share** dialog and create or pick a pass for the project.</Step>
 <Step n={2}>Open the pass's **Live image** menu, beside **Embed**, and choose the format you need: **Copy image URL** for the bare link, **Copy Markdown** for a `![liveplanner tab](…)` snippet, or **Copy HTML** for an `<img>` tag.</Step>
-<Step n={3}>Paste it where you want the diagram to appear. A README takes the Markdown; a web page takes the HTML or the raw URL.</Step>
+<Step n={3}>Paste it where you want the tab to appear. A README takes the Markdown; a web page takes the HTML or the raw URL.</Step>
 
 <Figure caption="The Live image menu copies the image as a URL, Markdown or HTML, with a Tab picker on projects with several tabs.">
   <ShareLiveImageMenu />
@@ -35,7 +46,7 @@ The image serves a cached snapshot that is redrawn on the first load after the p
 
 ## Scoping the image to one tab
 
-By default the image shows the project's first tab. When the project has more than one tab, the **Live image** menu also shows a **Tab** dropdown: pick a tab and every copy option (image URL, Markdown, HTML) carries a tab parameter that scopes the image to that tab. That way a README can show the overview tab while a design doc shows the detail tab, each from its own URL. The choice applies to every pass while the dialog is open.
+By default the image shows the project's first tab. When the project has more than one tab, the **Live image** menu also shows a **Tab** dropdown: pick a tab and every copy option (image URL, Markdown, HTML) carries a tab parameter that scopes the image to that tab. That way a README can show the roadmap tab while a team page shows the sprint board, each from its own URL. The choice applies to every pass while the dialog is open.
 
 A pass scoped to [one tab](/help/collaboration/sharing/one-tab/) always shows its own tab, so its menu has no **Tab** dropdown.
 
@@ -50,8 +61,8 @@ A live image also stops working when its share link is revoked or [expires](/hel
 A live image only exposes what its share link exposes, as a flat picture with no editing actions.
 
 <Tip>
-  A live image in your project's README keeps the architecture diagram beside the code and always
-  current, without anyone re-exporting and re-committing a PNG.
+  A live image of your roadmap board in a README keeps the plan beside the code and always
+  current, without anyone re-exporting and re-committing a screenshot.
 </Tip>
 
 </ArticleLayout>

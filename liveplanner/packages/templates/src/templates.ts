@@ -43,8 +43,8 @@ export type TemplateDescriptor = {
   // grids + search, the MCP list_templates catalogue) but stay buildable via
   // buildTemplate, for a dedicated entry point that names the kind directly.
   //
-  // NO template sets it today. Its one user was the docs/specs/007-editor/guided-tour-sample.md guided-tour
-  // sample, retired by docs/specs/007-editor/editor-tour.md's in-editor tour; the flag stays because the
+  // NO template sets it today (docs/specs/007-editor/templates-by-mode.md "Hidden templates"). Its one user was
+  // the guided-tour sample, retired by docs/specs/007-editor/editor-tour.md's in-editor tour; the flag stays because the
   // listing paths already filter on it, so the next such entry point is a
   // one-word change rather than a new concept. `templates.test.ts` asserts
   // the set is empty, so this stays honest.

@@ -155,7 +155,7 @@ export const projectShare = defineVerb({
   id: 'project.share',
   summary: 'Make a share link',
   description:
-    'Creates a share link to a project: view (default) lets people open and read it, participate also lets them comment, add stickies, write and vote without reshaping it, edit lets them change anything; none needs sign-in. Expires never (default), in a week, a month or six months.',
+    'Creates a share link to a project: view (default) lets people open and read it, participate also lets them comment, vote and work cards and Sheet cells without reshaping a board, edit lets them change anything; none needs sign-in. Expires never (default), in a week, a month or six months.',
   behaviour: 'write',
   input: z.object({
     project: projectArg,

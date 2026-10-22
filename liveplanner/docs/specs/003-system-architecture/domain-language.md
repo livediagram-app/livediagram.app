@@ -12,42 +12,36 @@ agents read, and the code: the type (`Project`), its package, tables, API routes
 Three words describe how a project and its tabs differ. They answer different questions and are never
 interchangeable. These are design decisions, taken before any feature that uses them.
 
-| Term         | Answers                        | Values                                                      | Where it lives                                |
-| ------------ | ------------------------------ | ----------------------------------------------------------- | --------------------------------------------- |
-| **mode**     | How is a tab worked on?        | Diagram, Draw, Workshop, Pages, Plan (`EditorMode`)         | Per tab, the same for everyone; `Tab.opensIn` |
-| **kind**     | What is a tab?                 | the general diagram tab, or a Plan tab (`TabKind`)          | `Tab.kind`                                    |
-| **template** | What was a project made from? | a template (`TemplateKind`), grouped into template families | Captured once, at creation                    |
+| Term         | Answers                        | Values                                                      | Where it lives                    |
+| ------------ | ------------------------------ | ----------------------------------------------------------- | --------------------------------- |
+| **mode**     | How is a tab worked on?        | Plan, the one mode (`EditorMode`)                           | Named, never stored on a tab      |
+| **kind**     | What is a tab?                 | the general tab, or a Board, Sheet, Dashboard or Form tab   | `Tab.kind`                        |
+| **template** | What was a project made from?  | a template (`TemplateKind`), grouped into template families | Captured once, at creation        |
 
 ### Mode
 
-- An **editor mode** is how a tab is worked on, by everyone on it: always **Plan**, the one mode (the Editor mode
-  spec in 007-editor). Diagram, Draw, Workshop and Pages were retired.
+- An **editor mode** is how a tab is worked on, by everyone on it: always **Plan**, the one mode
+  ([Editor mode](../007-editor/editor-modes.md)). Diagram, Draw, Workshop and Pages were livediagram's and are retired.
 - A mode is never a type of project or tab. A project's recorded creation intent still names the mode it was made
   in (**opens in**), which is Plan.
-- Whiteboarding is Draw mode. There is no whiteboard tab kind and no whiteboard project type.
-- Running a session (a retro, a town hall) is Workshop mode. A session is an activity, never a tab kind or a
-  stored thing; "Session" and "Collaborate" never name the mode, and neither does its old name, "Facilitate".
-- "Workshop" names the mode; a start's template group is never called Workshops (Workshop mode's is **Ideation**,
-  Draw's **Exercises**). The template catalogue's **Workshops** category
-  stays: it says what a template is for, as **Planning** does beside Plan mode, and most of its templates open in
-  Workshop mode.
+- The template catalogue's **Meetings** category (id `meetings`, once labelled Workshops) says what a template is
+  for, as **Planning** does; it never names a mode.
 
 ### Kind
 
-- A **tab kind** is what a tab is. It is reserved for boards that do not follow the homogeneous environment of the
-  general diagram tab, with their own notation, rules and data.
-- The general diagram tab is the default kind. Plan's tabs are kinds of their own ([Plan tabs](../026-plan/plan-tabs.md): Board, Sheet and Dashboard, and the Form
-  tab of [Forms](../030-forms/forms.md)), each always in Plan.
-- A new kind is added only when no mode can serve the use.
+- A **tab kind** is what a tab is: a **Board**, **Sheet**, **Dashboard** or **Form** tab
+  ([Plan tabs](../026-plan/plan-tabs.md), [Forms](../030-forms/forms.md)), each with its own content and rules.
+- A fresh tab is the general kind (stored as `'diagram'`, livediagram's name for it) until Start Planning makes it
+  one of the four.
 - "Board type" means a kind. It never names a template or a mode.
 
 ### Template
 
-- A **template** is what a project was made from. It shapes the starting content of a general diagram tab and
-  then has no further hold on it.
+- A **template** is what a project was made from. It shapes a tab's starting content (its boards, card types, sheets
+  or form) and then has no further hold on it.
 - Templates group into **template families** where a family is meaningful to people, for example Retrospectives
   (several retrospective formats) and Kanban boards.
-- A template or a template family is never a kind or a type: a retrospective is a general diagram tab made from a
+- A template or a template family is never a kind or a type: a retrospective is a Board tab made from a
   retrospective template.
 
 ### Using the three together

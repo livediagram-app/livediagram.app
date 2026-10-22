@@ -95,7 +95,7 @@ describe('MindOutlineDialog', () => {
   it('links the help article beside the close button', () => {
     open();
     expect(screen.getByRole('link').getAttribute('href')).toContain(
-      'palette/mind-maps/edit-outline',
+      'plan/visualisations',
     );
   });
 

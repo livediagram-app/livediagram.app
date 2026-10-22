@@ -25,7 +25,7 @@ describe('the editor’s first load', () => {
     expect(imports).not.toContain('@/components/plan/PlanSheetsHost');
   });
 
-  // docs/specs/007-editor/start-diagramming.md: the template starts carry every template's preview.
+  // docs/specs/007-editor/start-panel.md: the template starts carry every template's preview.
   it('imports nothing that draws a template preview', () => {
     const imports = editorImports();
     expect(imports).not.toContain('@liveplanner/template-previews');

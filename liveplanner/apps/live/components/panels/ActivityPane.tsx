@@ -1,9 +1,10 @@
 'use client';
 
 // The Explorer's Inbox (docs/specs/013-workspace/inbox.md): card-lists of what
-// is outstanding for the reader — actions and Plan cards assigned to them, actions
-// they assigned, and the comment threads they are in — each hidden
-// when empty, one empty state when all three are.
+// is outstanding for the reader — actions and Plan cards assigned to them, forms with
+// new responses, and the comment threads they are in — each hidden when empty, one
+// empty state when all are. Nothing in Plan assigns an action to someone else, so
+// there is no "You Assigned" section.
 //
 // The data comes in from Explorer state (useActivityFeed) because the
 // sidebar badge reads the same list; this file only owns the section
@@ -34,11 +35,7 @@ export function ActivityPane({ feed, compact = false }: { feed: ActivityFeed; co
 
   if (feed.loading) return <SkeletonRows />;
   if (feed.error) return <ActivityFailedState onRetry={feed.retry} />;
-  const total =
-    feed.assignedToMe.length +
-    feed.youAssigned.length +
-    feed.threads.length +
-    feed.formResponses.length;
+  const total = feed.assignedToMe.length + feed.threads.length + feed.formResponses.length;
   if (total === 0) return <ActivityEmptyState compact={compact} />;
 
   return (
@@ -69,17 +66,6 @@ export function ActivityPane({ feed, compact = false }: { feed: ActivityFeed; co
               key={`form:${f.projectId}:${f.tabId}`}
               form={f}
               onOpen={() => track('Activity', 'Selected', 'FormResponses')}
-            />
-          ))}
-        </ActivitySection>
-      ) : null}
-      {feed.youAssigned.length > 0 ? (
-        <ActivitySection title="You Assigned" count={feed.youAssigned.length}>
-          {feed.youAssigned.map((a) => (
-            <ActivityActionRow
-              key={`${a.tabId}:${a.elementId}:${a.id}`}
-              action={a}
-              onOpen={() => track('Activity', 'Selected', 'Action')}
             />
           ))}
         </ActivitySection>

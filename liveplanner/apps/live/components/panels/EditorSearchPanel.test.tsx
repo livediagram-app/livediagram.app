@@ -33,7 +33,6 @@ vi.mock('@/hooks/canvas/useEditorCommands', () => ({
   useEditorCommands: () => ({ commandItems: [], runCommand: vi.fn() }),
 }));
 vi.mock('@/hooks/ui/useIconCatalogs', () => ({ useIconCatalogs: () => undefined }));
-vi.mock('@/components/palette/useEditorTileActions', () => ({ useEditorTileActions: () => ({}) }));
 
 import { EditorSearchPanel } from './EditorSearchPanel';
 
@@ -49,5 +48,12 @@ describe('EditorSearchPanel', () => {
     expect(onSelectFolder).toBeTypeOf('function');
     onSelectFolder!('f 1');
     expect(assign).toHaveBeenCalledWith('https://example.test/explorer/folder?id=f%201');
+  });
+
+  // A Plan tab's content covers the canvas, so search offers nothing to add to it.
+  it('offers no Add to canvas group', () => {
+    render(<EditorSearchPanel />);
+    expect(panelProps.current?.paletteItems).toBeUndefined();
+    expect(panelProps.current?.onAddPaletteItem).toBeUndefined();
   });
 });

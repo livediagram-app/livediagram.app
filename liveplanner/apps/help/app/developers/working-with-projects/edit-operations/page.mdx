@@ -5,44 +5,78 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Edit Operations Reference',
   description:
-    'Every liveplanner edit operation, selector, placement, flag and lint finding: the changeset vocabulary the API, the CLI and the MCP server share.',
+    'The liveplanner changeset vocabulary: the edit operations, selectors, whole-tab replaces, results and refusals the API, the CLI and the MCP server share.',
   path: '/help/developers/working-with-projects/edit-operations/',
 });
 
-<ArticleLayout title="Edit Operations Reference" description="The changeset vocabulary: operations, selectors, placement, flags, results and lint findings." categoryTitle="Developers" categorySlug="developers/working-with-projects" parentArticle={{ title: "Working with Projects", slug: "working-with-projects" }} subArticles={getSubArticles("working-with-projects").filter((a) => a.slug !== "edit-operations")}>
+<ArticleLayout title="Edit Operations Reference" description="The changeset vocabulary: operations, selectors, replaces, results and refusals." categoryTitle="Developers" categorySlug="developers/working-with-projects" parentArticle={{ title: "Working with Projects", slug: "working-with-projects" }} subArticles={getSubArticles("working-with-projects").filter((a) => a.slug !== "edit-operations")}>
 
-A **changeset** changes a tab with a short list of edit operations, applied together or not at all. This page lists the whole vocabulary: every operation, how to pick the elements it acts on, where new elements go, and what the answer and the lint tell you. [Working with Projects](/help/developers/working-with-projects/#update-a-tab) shows how to send one.
+A **changeset** changes one tab with a short list of edit operations, applied together or not at all. This page lists the vocabulary: the operations, how to pick what they act on, how to rebuild a whole tab, and what the answer tells you. [Working with Projects](/help/developers/working-with-projects/#update-a-tab) shows how to send one.
+
+## What a Changeset Changes
+
+A tab holds a few **elements**, and they are what fill it: a Board tab holds a `plan-board`, a Sheet tab a `plan-sheet`, and a Dashboard tab one `plan-view` per metric, chart or note. A changeset changes those elements, such as a board's settings or which widgets a dashboard shows.
+
+The things inside them have endpoints of their own, which are usually what you want:
+
+- **Cards** live in the project's item store, not on a tab. Add, change and move them with the [item endpoints](/help/developers/working-with-projects/plan-sheets-images/#plan-items).
+- **Sheet cells** are changed with [sheet writes](/help/developers/working-with-projects/plan-sheets-images/#sheets).
+- **A form's questions** are changed with the form endpoints, or the CLI's `form change` and the MCP server's `change_form`.
+- **Comments** have their own [endpoints](/help/developers/agent-comments-presence/). Edit operations never change them.
 
 The same vocabulary reaches a tab three ways:
 
 - **The API**: `POST /projects/{id}/tabs/{tabId}/changesets` with `"operations"` as a string (the line form) or an array of objects (the JSON form).
-- **The CLI**: `liveplanner edit "Auth flow" -f ops.txt` sends a file (or stdin, with `-f -`) as one changeset, and `liveplanner element add|set|rm|move|connect|insert|wrap` sends one operation. `liveplanner guide edit` explains the line form, and `liveplanner schema view sticky` lists the fields a kind takes.
-- **The MCP server**: `update_project` in `ops` mode turns its `add`, `update` and `remove` into `add`, `set` and `rm`, so removing a node removes its arrows too.
+- **The CLI**: `liveplanner edit "Sprint 14" --tab Flow -f ops.txt` sends a file (or stdin, with `-f -`) as one changeset, and `liveplanner element set` or `liveplanner element rm` sends one operation. `liveplanner guide edit` explains the line form.
+- **The MCP server**: `update_project` in `ops` mode turns its `add`, `update` and `remove` into `add`, `set` and `rm`, or takes `edits`, edit operations as text.
+
+## Read the Tab First
+
+Every element has a short **ref**, printed by the tab's outline view:
+
+```bash
+curl "https://liveplanner.app/api/projects/$DOC/tabs/$TAB?view=outline" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+```text
+tab e1b2 "Flow" · 7 elements: 7 boxes · kind=dashboard · rev 1
+plan-view 76eb view=metric:count
+plan-view 8e10 view=metric:progress
+plan-view 82d4 view=metric:stale
+plan-view 768f view=metric:unassigned
+plan-view 653e view=workload
+plan-view 0f0e view=priority-matrix
+plan-view 0a78 view=calendar
+```
+
+`view=show&ref=0a78` prints one element with every stored field, which is where the field names come from:
+
+```text
+plan-view 0a78
+  at 0,0 720x400
+  planView: {"view":"calendar"}
+  textSize: "md"
+```
 
 ## Two Forms
 
-The **line form** is one operation a line, which is what an agent writes most easily. Values with spaces are quoted (`label="Sign in"`), and blank lines and lines starting with `#` are skipped:
+The **line form** is one operation a line, which is what an agent writes most easily. Values with spaces are quoted (`label="Sprint board"`), a value starting with `[` or `{` is read as JSON, and blank lines and lines starting with `#` are skipped:
 
 ```text
-# Rename the API box, add a database under it and join them
-set n2 label="Orders API"
-add cylinder id=db label="Orders DB" below:n2
-connect n2 -> db label=writes
+# Swap the calendar for a workload chart, and drop the stale-cards metric
+test 0a78 planView={"view":"calendar"}
+set 0a78 planView={"view":"workload"}
+rm 82d4
 ```
 
 The **JSON form** is one object an operation, which is what a script produces. Any line of the text form that starts with `{` is read as JSON, so the two mix:
 
 ```json
 [
-  { "op": "set", "target": "n2", "fields": { "label": "Orders API" } },
-  {
-    "op": "add",
-    "kind": "cylinder",
-    "id": "db",
-    "fields": { "label": "Orders DB" },
-    "place": { "rel": "below", "ref": "n2" }
-  },
-  { "op": "connect", "from": "n2", "to": "db", "fields": { "label": "writes" } }
+  { "op": "test", "target": "0a78", "fields": { "planView": { "view": "calendar" } } },
+  { "op": "set", "target": "0a78", "fields": { "planView": { "view": "workload" } } },
+  { "op": "rm", "target": "82d4" }
 ]
 ```
 
@@ -50,128 +84,107 @@ One parser turns the line form into the JSON form, so both are checked the same 
 
 ## Operations
 
-| Operation | Line form                                                                    | What it does                                                                                                                    |
-| --------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `add`     | `add <kind> [id=<id>] key=value… [<placement>]`                              | Creates an element sized for its label                                                                                          |
-| `set`     | `set <selector> key=value… [all]`                                            | Changes only the fields named; `key=` with nothing after it unsets one                                                          |
-| `rm`      | `rm <selector> [all] [keep-arrows]`                                          | Removes elements, and the arrows pinned to them unless `keep-arrows` leaves those with free ends                                |
-| `move`    | `move <selector> <placement> [all]` or `move <selector> by=dx,dy [all]`      | Moves elements; pinned arrows follow, and a frame or lane carries its members                                                   |
-| `connect` | `connect <a> -> <b> [id=<id>] [label=…] [line=…] [again]`                    | Draws an arrow pinned at both ends, anchored on the sides facing each other                                                     |
-| `rewire`  | `rewire <arrow> from=<x> [to=<y>]` or `rewire <arrow> to=<y>`                | Moves one or both ends of an arrow to other elements                                                                            |
-| `insert`  | `insert <kind> [id=<id>] key=value… between <a> <b>`                         | Puts a new element on the arrow from a to b, which becomes two arrows, and makes room for it                                    |
-| `wrap`    | `wrap <selector…> in frame [id=<id>] key=value… [tidy] [absorb] [make-room]` | Draws a frame (or `in lane`, a lane) around the members                                                                         |
-| `unwrap`  | `unwrap <frame>`                                                             | Removes a frame or lane and leaves its members where they are                                                                   |
-| `order`   | `order <selector> front`, `back`, `above=<x>` or `below=<x>`                 | Changes the stacking order; frames and lanes always stay behind their contents                                                  |
-| `layout`  | `layout <selector> [style=flow] [direction=down]`                            | Lays out only the selection, keeping its top-left corner; `style` is `flow`, `tree` or `mindmap`, `direction` `down` or `right` |
-| `test`    | `test <selector> key=value…`                                                 | Refuses the whole changeset unless the element still holds these values                                                         |
+| Operation | Line form                           | What it does                                                                                 |
+| --------- | ----------------------------------- | -------------------------------------------------------------------------------------------- |
+| `set`     | `set <selector> key=value… [all]`   | Changes only the fields named; `key=` with nothing after it unsets one                       |
+| `rm`      | `rm <selector> [all]`               | Removes elements                                                                             |
+| `test`    | `test <selector> key=value…`        | Refuses the whole changeset unless the element still holds these values                     |
+| `add`     | `{ "op": "add", "element": { … } }` | Puts a whole element on the tab, as the JSON form gives it; the answer says where it landed |
 
 A few rules hold for every operation:
 
-- **Kinds.** `add` and `insert` take a shape kind (`square`, `circle`, `diamond`, `cylinder`, `stadium`, `hexagon` and the rest) or `text`, `sticky`, `table`, `annotation` or `link-card`. A shape kind it does not know is turned into the nearest one, with a `shape_coerced` warning. Arrows are made with `connect`; images, videos and drawn strokes are not made by name, but an `add` in the JSON form can carry a whole element (`{ "op": "add", "element": { … } }`), which is how an uploaded image goes on a tab.
-- **Ids.** `id=` names a new element so later operations in the same changeset can use it. It is a short slug: a lowercase letter, then up to 23 lowercase letters, digits, `-` or `_`. Without one, the element takes the slug of its label (or of its kind, as `arrow`, `arrow-2`).
-- **Fields.** `label`, `note`, `shape`, `fill`, `stroke`, `text-color`, `border`, `text` (a size: `sm`, `md`, `lg` or `scale`), `font` and `line` (`straight`, `angled` or `curved`) work on the kinds that have them, beside any stored field of the element. `fill=` takes a colour slot of the tab's theme by name (such as `theme`), which follows a theme change; a hex colour works too, with a `colour_overrides_theme` warning. A sticky takes its own colour names instead. A number, `true` or `false` is read as JSON, and a value starting with `[` or `{` is read as JSON as written.
-- **Comments are not fields.** Comment threads, votes and ideas travel live between people, so edit operations never change them; comments have their own [endpoints](/help/developers/agent-comments-presence/).
-- **Locks.** A changeset on a locked tab, or one that would change a locked element or an element on a locked layer, is refused with `element_locked`.
+- **Fields.** A field is any stored field of the element, by the name `view=show` prints (`planBoard`, `planView`, `planSheet`). A number, `true` or `false` is read as JSON, and so is a value starting with `[` or `{`. A field the element does not have is refused with `unknown_field`, listing the ones it has.
+- **Whole values.** `set` replaces a field's value whole, so send the whole object back with your change in it: read it with `view=show`, change what you need, and set it.
+- **Ids.** An `add`'s element may carry its own `id`, so later operations in the same changeset can name it; without one, it gets a fresh id.
+- **Locks.** A changeset on a [locked tab](/help/tabs/locking-tabs/), or one that would change a locked element, is refused with `element_locked`.
+
+`test` is how you make sure you change what you read: put one before a `set` and the changeset is refused, with nothing applied, if someone changed that element since. Sending the revision you read as `base` (below) does the same for every element at once.
 
 ## Selectors
 
 A selector picks the elements an operation acts on. It is a ref, a quoted label, or `key:value` terms joined by spaces, every one of which must match:
 
-| Selector                     | Matches                                                                           |
-| ---------------------------- | --------------------------------------------------------------------------------- |
-| `n3`, `146b`, `orders`       | The element with that ref, id or unique start of an id                            |
-| `"Orders service"`           | The element whose label is exactly that, ignoring case                            |
-| `label~orders`               | Elements whose label contains `orders`                                            |
-| `type:sticky`                | Elements of that kind, as the outline prints it, or of that element type          |
-| `shape:diamond`              | Shapes of that shape kind                                                         |
-| `in:f2`                      | The members of a frame or lane, at any depth (not arrows)                         |
-| `n3->n4`, `"Sign in"->"Pay"` | The arrow pinned from one element to the other                                    |
-| `from:n3`, `to:n4`           | Arrows pinned from, or to, an element                                             |
-| `downstream:n3`              | Every element reachable from n3 by following arrows forwards (n3 itself left out) |
-| `upstream:n4`                | Every element that reaches n4 by following arrows                                 |
-| `selected`                   | What the token's owner has selected in an editor open on that tab                 |
+| Selector               | Matches                                                              |
+| ---------------------- | -------------------------------------------------------------------- |
+| `0a78`, `0a78f3c1…`    | The element with that ref, id or unique start of an id               |
+| `"Sprint board"`       | The element whose label is exactly that, ignoring case               |
+| `label~sprint`         | Elements whose label contains `sprint`                               |
+| `type:plan-view`       | Elements of that kind, as the outline prints it                      |
+| `selected`             | What the token's owner has selected in an editor open on that tab    |
 
-Terms combine: `type:sticky in:f2` is the stickies inside frame `f2`, and `from:n3 label~retry` is the arrows leaving n3 whose label mentions retry.
-
-- A selector must match **exactly one** element unless the operation takes `all`. Nothing matching is refused as `target_not_found` with the nearest labels; several is refused as `target_ambiguous`, listing them.
-- `wrap` and `layout` act on many by nature. Each ref or quoted label you give names one element, and the other terms together add whatever they match.
+- A selector must match **exactly one** element unless the operation takes `all`. Nothing matching is refused as `target_not_found`; several is refused as `target_ambiguous`, listing them with their refs.
 - `selected` with nothing selected is refused. The owner is whoever the API token belongs to, so an agent can act on "what I have selected" while you point at it.
-- Membership (for `in:`, `wrap` and moving a frame) is the smallest frame or lane holding an element's centre, the same rule the editor uses when you drag a frame.
-- The words `selected`, `all`, `again`, `tidy`, `absorb`, `make-room`, `keep-arrows`, `between`, `in`, `frame`, `lane`, `front` and `back` are always keywords. Reach an element named one of them by its quoted label or a longer ref.
+- The words `selected` and `all` are always keywords. Reach an element named one of them by its quoted label or a longer ref.
 
-## Placement
+## Replace a Whole Tab
 
-`add` and `move` take one placement; `insert` places itself on its arrow.
+To rebuild a tab rather than change it, send `"replace"` instead of `"operations"`, with exactly one of:
 
-| Placement        | Puts the element                                                            |
-| ---------------- | --------------------------------------------------------------------------- |
-| `right-of:<x>`   | To the right of x                                                           |
-| `left-of:<x>`    | To the left of x                                                            |
-| `above:<x>`      | Above x                                                                     |
-| `below:<x>`      | Below x                                                                     |
-| `after:<x>`      | Along the flow of x's outgoing arrows                                       |
-| `inside:<frame>` | In the next free slot inside a frame or lane                                |
-| `align:<x>`      | Sharing x's centre, on the axis the element is already nearer               |
-| `at:x,y`         | At that point, relative to the tab's content origin                         |
-| `gap:<n>`        | Beside a side, `after` or `align` placement: the space to leave, 0 to 2,000 |
+| Source      | Builds                                                                                          |
+| ----------- | ----------------------------------------------------------------------------------------------- |
+| `template`  | The tab a template makes, by its kind from `GET /templates` (such as `kanban`)                  |
+| `dashboard` | A Dashboard tab over the project's Board and Sheet tabs: its `tabs`, `metrics`, `charts`, `notes` |
+| `form`      | A Form tab's form                                                                               |
+| `elements`  | The tab's elements, as the tab JSON gives them                                                  |
 
-Without a placement, a new element goes beside the last one added, or to the right of everything. A spot already taken moves along the placement's direction until it is free. In the JSON form a placement is `{ "rel": "below", "ref": "n2", "gap": 40 }` or `{ "rel": "at", "x": 0, "y": 200 }`, and `by=dx,dy` is `"by": [dx, dy]`.
+A replace may also carry a `name` for the tab. A replace on a tab id the project does not have yet creates that tab, which is how a new tab is added in one write:
 
-What you did not ask to change stays put. `set` moves nothing except a box that grows around its centre to fit a longer label (reported). Only `layout` and a whole-tab `replace` lay out many elements, and only the ones they name.
+```bash
+curl -X POST https://liveplanner.app/api/projects/$DOC/tabs/$(uuidgen)/changesets \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{
+    "replace": {
+      "name": "Overview",
+      "dashboard": {
+        "tabs": [{ "tabId": "'"$BOARD_TAB"'", "of": "board" }],
+        "metrics": ["count", "progress"],
+        "charts": [{ "view": "workload" }]
+      }
+    }
+  }'
+```
 
-## Flags
-
-| Flag          | On                  | Means                                                                                                         |
-| ------------- | ------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `all`         | `set`, `rm`, `move` | Act on every element the selector matches, not only one                                                       |
-| `keep-arrows` | `rm`                | Leave arrows pinned to the removed elements in place, with free ends, instead of removing them                |
-| `again`       | `connect`           | Draw a second arrow from a to b when one already exists (otherwise `arrow_exists`)                            |
-| `tidy`        | `wrap`              | Lay the members out compactly before drawing the frame round them                                             |
-| `absorb`      | `wrap`              | Let the new frame take in elements that are not members but fall inside it                                    |
-| `make-room`   | `wrap`              | Move those bystanders out of the way instead (without one of these two, `wrap` refuses with `frame_captures`) |
-
-In the JSON form, a flag is a member set to `true`: `"all"`, `"keepArrows"`, `"again"`, `"tidy"`, `"absorb"`, `"makeRoom"`.
-
-`insert` always makes room: everything beyond the new element along the flow, within the same frame or lane (or the same connected group, outside them), shifts by its size and the gap, and those moves are reported. A frame holding shifted members grows with them.
+The OpenAPI reference at `/api/openapi.json` lists the metric kinds and chart views a dashboard takes.
 
 ## The Answer
 
 A changeset answers with one line per element, the same for a dry run (`?dryRun=1`, or `--dry-run` on the CLI) and a write:
 
 ```text
-~ n3  label "Login"→"Sign in" · shape square→stadium · widened 140→160
-+ verify  square "Verify email" @45,300 131×120
-~ a3  to n4→verify
-+ arrow  verify→n4 (style of a3)
-» n4 n5 n6  +0,+160 (make room)
-f2  +verify
-rev 41→42 · cs_8k2m4q7d1x · revert: liveplanner changeset revert 3f9c2a71-… cs_8k2m4q7d1x
+~ 0a78  planView (changed)
+- 82d4  plan-view
+rev 1→2 · cs_tbrfqcvm1w · revert: liveplanner changeset revert 4cd7082b-… cs_tbrfqcvm1w
 ```
 
-| Mark          | Means                                                     |
-| ------------- | --------------------------------------------------------- |
-| `+`           | Added                                                     |
-| `~`           | Changed, each field before→after                          |
-| `-`           | Removed, with the reason when it went with another        |
-| `»`           | Moved without being named (made room, carried by a frame) |
-| `f2  +verify` | A frame or lane's membership changed                      |
-| `!`           | A warning                                                 |
+| Mark | Means                                      |
+| ---- | ------------------------------------------ |
+| `+`  | Added                                      |
+| `~`  | Changed, each field before→after           |
+| `-`  | Removed                                    |
+| `!`  | A warning                                  |
 
-The last line carries the tab's new revision, the changeset's id and the command that reverts it. A changeset that changes nothing answers `nothing changed`.
+The last line carries the tab's new revision, the changeset's id and the command that reverts it; a dry run ends `dry run · rev 1 · nothing written` instead. A changeset that changes nothing answers `nothing changed`. The JSON answer carries the same lines as `results`, beside `text`.
 
-**Warnings** do not stop a changeset: `shape_coerced` (an unknown shape kind became a known one), `value_coerced`, `label_capped` (a shape's label over 40 characters kept its heading and moved the full text into the note), `colour_overrides_theme`, `arrows_freed` (from `keep-arrows`), and `no_base` (sent without a `base` revision).
+**Warnings** do not stop a changeset. The one you will see most is `no_base`: the changeset was sent without the revision you read.
+
+## Base Revisions
+
+Every tab read returns the tab's `rev`. Send it back as `"base": { "rev": 7 }` and the changeset is refused with `409 changeset_conflict` if an element it touches changed since you read it, so nothing you didn't see gets overwritten. Add `"strict": true` to refuse it if anything on the tab changed at all (`412 stale_tab`).
+
+An element somebody has selected in the editor is left alone too: the changeset is refused with `409 elements_held`, naming who holds it. The CLI's `--wait-held <seconds>` retries until they let go.
 
 ## Refusals
 
 A refused changeset applies nothing. It names the operation, the code and the way out. Lines that do not parse are all reported together (up to ten), so a batch of typos is fixed in one round:
 
 ```text
-error target_ambiguous · op 2 · set "Pay" fill=green
-  "Pay" matches 3 elements:
-    n7  square "Pay" in f2
-    n9  sticky "Pay"
-    a4  arrow n3→n7 "Pay"
-  hint: use a ref, narrow with type:square, or add all
+error target_ambiguous · op 1
+  "type:plan-view" matches 7 elements:
+    76eb  plan-view
+    8e10  plan-view
+    82d4  plan-view
+    …
+  hint: use a ref, narrow with type:plan-view, or add all
 nothing was applied
 ```
 
@@ -181,15 +194,14 @@ nothing was applied
 | `unknown_operation`  | The first word is not an operation                            |
 | `target_not_found`   | A selector matches nothing                                    |
 | `target_ambiguous`   | A selector matches several without `all`                      |
-| `unknown_field`      | A field the kind does not have; lists the kind's fields       |
+| `unknown_field`      | A field the element does not have; lists its fields           |
 | `invalid_value`      | A value outside what the field takes; lists what it takes     |
-| `id_taken`           | An `id=` already in use; suggests a free one                  |
-| `arrow_exists`       | `connect a -> b` when an a→b arrow exists, without `again`    |
-| `not_connected`      | `insert … between a b` with no a→b arrow                      |
-| `frame_captures`     | `wrap` would take in elements that are not members            |
-| `element_locked`     | The tab, a target or its layer is locked                      |
+| `id_taken`           | An added element's id is already in use                       |
+| `element_locked`     | The tab or a target is locked                                 |
 | `test_failed`        | A `test` does not hold; shows expected and actual             |
 | `changeset_conflict` | A target changed since the `base` revision you sent           |
 | `elements_held`      | Someone has a target selected in the editor                   |
 | `invalid_result`     | The result would not be a valid tab                           |
 | `too_large`          | Over 500 operations, or the tab's size cap                    |
+
+</ArticleLayout>

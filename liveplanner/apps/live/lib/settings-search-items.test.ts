@@ -29,11 +29,11 @@ describe('SETTINGS_SEARCH_ITEMS', () => {
   });
 
   it('carries the category and section into the haystack', () => {
-    // So "layers" finds the layer rows from the canvas search too, not just
-    // from inside the dialog.
-    const thumbnails = SETTINGS_SEARCH_ITEMS.find((i) => i.rowKey === 'layersShowPreview')!;
-    expect(thumbnails.keywords.toLowerCase()).toContain('panels');
-    expect(thumbnails.keywords.toLowerCase()).toContain('layers');
+    // So "collaborate" finds the Collaborate panel's row from the search too,
+    // not just from inside the dialog.
+    const collaborate = SETTINGS_SEARCH_ITEMS.find((i) => i.rowKey === 'collaboratePanelEnabled')!;
+    expect(collaborate.keywords.toLowerCase()).toContain('panels');
+    expect(collaborate.keywords.toLowerCase()).toContain('collaborate');
   });
 
   it('surfaces a Settings group from the shared search builder', () => {

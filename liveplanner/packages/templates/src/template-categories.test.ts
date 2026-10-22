@@ -19,9 +19,9 @@ describe('template categories', () => {
     expect(TEMPLATE_CATEGORIES.map((c) => c.label)).toEqual([
       'Finance',
       'Forms',
+      'Meetings',
       'Planning',
       'Spreadsheets',
-      'Workshops',
     ]);
     const labels = TEMPLATE_CATEGORIES.map((c) => c.label);
     expect(labels).toEqual([...labels].sort((a, b) => a.localeCompare(b, 'en')));

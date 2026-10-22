@@ -1,51 +1,52 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { CanvasOverview } from '@/components/illustrations/canvas';
-import { LiveCursors } from '@/components/illustrations/collaboration';
+import { PlanBoardScene } from '@/components/illustrations/plan';
 
 export const metadata = helpMetadata({
   title: 'What is liveplanner?',
   description:
-    'liveplanner is a free, tracker-free, real-time multiplayer diagram editor that runs in your browser, with no sign-in needed to start.',
+    'liveplanner is a free planner with no trackers: boards, sheets, forms and dashboards, worked on together in real time in your browser. No sign-up to start.',
   path: '/help/about/what-is-liveplanner/',
 });
 
-<ArticleLayout title="What is liveplanner?" description="A free canvas, with no trackers, where teams build diagrams, whiteboards, mind maps, infographics and projects together, in real time, right in the browser." categoryTitle="About liveplanner" categorySlug="about">
+<ArticleLayout title="What is liveplanner?" description="A free planner with no trackers: boards of cards, spreadsheets, forms and dashboards in one project, worked on together in real time, right in the browser." categoryTitle="About liveplanner" categorySlug="about">
 
-liveplanner is a web app where people build **diagrams, whiteboards, mind maps, infographics and projects together in real time**. It is a multiplayer canvas in the browser: anyone with access to a project can join, see other collaborators' cursors and edits live, and contribute at the same time. The result is a shared visual artifact, a flowchart, an architecture diagram, a mind map, or a brainstorm board, that a team builds together rather than one person authoring and the rest reviewing.
+liveplanner is a web app for **planning work together, live**. You make a **project**, and fill its tabs with boards of cards, spreadsheets, forms and dashboards. Share one link and everyone on it sees the same project change as it happens: a card moved to Done, a cell filled in, a new answer to a form.
 
-## A multiplayer canvas
+## One project, four kinds of tab
 
-The heart of liveplanner is the [canvas](/help/canvas/the-canvas/). You drop down shapes, connect them with arrows, drag things around, and the diagram takes shape as you work. When more than one person is in the same project, everyone sees live cursors, who has what selected, and every change as it happens.
+A project holds **tabs**, and each tab is one of four things:
 
-<Figure caption="The editor at a glance: a canvas with shapes and arrows, the shape palette, and your live cursor.">
-  <CanvasOverview />
+- **[Boards](/help/plan/boards/)**: columns of cards you drag from status to status, for a Kanban board, a sprint, a bug triage, a retro or a roadmap.
+- **[Sheets](/help/plan/sheets/)**: spreadsheets with formulas, formatting and charts, for budgets, timesheets, contact lists and anything else that suits a grid.
+- **[Forms](/help/plan/forms/)**: questions you send out, whose answers arrive as cards, ready to sort.
+- **[Dashboards](/help/plan/dashboards/)**: metrics, charts, Gantt charts and calendars drawn from the project's cards, side by side with its boards and sheets.
+
+<Figure caption="A Kanban board: columns of cards, dragged from status to status by everyone on the project.">
+  <PlanBoardScene />
 </Figure>
 
-- **Shapes and arrows** for flowcharts, system diagrams, and process maps. See [Shapes](/help/palette/shapes/) and [Arrows](/help/palette/arrows/).
-- **Mind maps and brainstorms** built from quick, keyboard-driven nodes: Tab adds a child, Enter a sibling. See [Mind Maps](/help/palette/mind-maps/).
-- **Real-time presence** so collaborators rarely overwrite each other: an element someone else has selected is locked for everyone else.
-- **Tabs** to keep related views of one project in a single place. See [Tabs](/help/tabs/using-tabs/).
-- **[Plan](/help/canvas/plan-mode/)**: boards of cards you drag through columns, sheets, dashboards and forms, every tab worked on the same way, for everyone on it.
-- **Templates** for retrospectives, Kanban boards, flowcharts and more, so you rarely start from a blank page. See [Templates](/help/canvas/templates/).
+Every card is an **item** stored with the project, so the same card can sit on a sprint board and a roadmap, and every dashboard counts it wherever it is. [Card types](/help/plan/card-types/) decide what a card holds (a task, a bug, a candidate), with fields of your own. Each new tab opens on **Start Planning**, a picker of ready-made boards, sheets, forms and dashboards, plus whole ways of working set up across several tabs, so you rarely start from a blank page. See [Planning Basics](/help/plan/planning-basics/).
 
-## Built for teams who think visually
+## Built for working together
 
-liveplanner is aimed at people who need to think together, visually: engineering teams sketching architecture and sequence flows, product and design teams mapping journeys and information architecture, and cross-functional groups in workshops, planning sessions, and retrospectives. The unit of value is the team, not the single author.
+- **Real time:** everyone on a project sees changes as they happen, and a card someone is dragging or has open shows their name. See [Live Presence](/help/collaboration/live-presence/).
+- **Share with a link:** an Editor, Participant or Viewer link, with a password or an expiry date if you want one. The person you share with needs no account. See [Sharing Your Project](/help/getting-started/sharing-your-project/).
+- **Comments** on cards and on sheet cells, so the conversation stays beside the work. See [Comments](/help/collaboration/comments/).
+- **Teams** for a shared space with the people you work with. See [Teams](/help/collaboration/teams/).
 
-To make that frictionless, the canvas **always works without signing in**. You can land on a blank diagram, build something real, and hand the link to a colleague who edits it straight away, no account required. See [Sharing your project](/help/getting-started/sharing-your-project/).
+## No sign-up to start
 
-<Figure caption="Everyone in a project sees each other's live cursors and presence at once.">
-  <LiveCursors />
-</Figure>
+liveplanner **always works without signing in**. Open a new project, plan something real, and hand the link to a colleague who joins straight away. An account is there when you want your projects on every device; see [Guest vs Account](/help/getting-started/guest-vs-account/).
 
 ## Free, with no trackers
 
-liveplanner is **free for everyone**. There is no paid tier and no plan to introduce one, and every feature is available to every user. There are no ads and no third-party trackers: the only analytics are anonymous, first-party and easy to turn off. See [What we collect](/help/privacy-and-security/what-we-collect/). See [Why use liveplanner?](/help/about/why-liveplanner/).
+liveplanner is **free for everyone**. There is no paid tier, no trial and no plan to introduce one: every feature is available to every user. There are no ads and no third-party trackers; the only analytics are anonymous, first-party counts that never include your content, and you can turn them off. See [What We Collect](/help/privacy-and-security/what-we-collect/) and [Why Use liveplanner?](/help/about/why-liveplanner/).
 
 <Tip>
-  The fastest way to understand liveplanner is to use it. Open a [new diagram](/new) and drop in a
-  couple of shapes, no sign-up needed.
+  The quickest way to understand liveplanner is to use it. Open a [new project](/new), pick
+  **Kanban** and add a card, no sign-up needed. [Your First Project](/help/getting-started/your-first-project/)
+  walks you through it.
 </Tip>
 
 </ArticleLayout>

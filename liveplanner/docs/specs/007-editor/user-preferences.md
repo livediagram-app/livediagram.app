@@ -237,13 +237,6 @@ type UserPreferences = {
   // sent" email (sent to the team's admins). Defaults to true (notify).
   notifyInviteResponse?: boolean;
 
-  // The Diagram tour's seen-guard (docs/specs/007-editor/editor-tour.md; named for the welcome tour it
-  // was until October 2026, so earlier answers still hold). True once the
-  // tour's welcome offer has been answered (taken, skipped, or declined),
-  // so the offer never re-appears for this user on any device. Surfaced
-  // in Settings as Tours › "Diagram Tour" (inverted); turning it on and closing
-  // Settings replays the tour. Missing / undefined === not seen.
-  tourSeen?: boolean;
   // The Plan tour's seen-guard (docs/specs/026-plan/plan-tour.md): true counts both tracks as seen while Power user
   // mode is on (lib/tour-tracks.ts); set with every track by Power user mode.
   planTourSeen?: boolean;
@@ -253,11 +246,6 @@ type UserPreferences = {
   // The Forms tour's seen-guard (docs/specs/030-forms/forms.md "The Forms tour"), as `planTourSeen`; Show Me Around
   // in the form's cog panel reruns it. Missing / undefined === not seen.
   formTourSeen?: boolean;
-  // Element tours (docs/specs/007-editor/element-tours.md): the toured element kinds whose offer has been answered
-  // (Play or Cancel). Surfaced in Settings as Tours › Show Me, one switch per kind (inverted).
-  elementTourKinds?: ElementTourKind[];
-  // Counts every element tour as answered while Power user mode is on; written by its preset.
-  elementToursSeen?: boolean;
   // DEAD (../004-interface-design/colour-picker.md "Custom colours"): Custom colours are kept with the project's tabs, not per user.
   // Nothing reads or writes this; it stays because it is already stored.
   customSwatches?: string[];
@@ -278,9 +266,8 @@ type UserPreferences = {
   // ('top'), a row along its bottom edge ('footer') or none ('off'). Unset, or anything
   // else, is Top (lib/element-indicator-style).
   elementIndicatorStyle?: 'top' | 'footer' | 'off';
-  // Draw mode's pattern, the person's own (./editor-modes.md "One look"): Plain, Dots
-  // or Grid; never stored on a tab. Unset, or
-  // anything else, is Grid (apps/live/lib/whiteboard-dock-prefs.ts).
+  // DEAD: the retired Draw mode's backdrop pattern (./editor-modes.md "Retired modes"). Nothing reads
+  // or writes it; it stays in the type because it may already be stored.
   drawPattern?: 'blank' | 'grid' | 'graph';
 
   // Power user mode (docs/specs/007-editor/power-user-mode.md). True while the mode is on.
@@ -339,8 +326,6 @@ Missing key === undefined === default behaviour. Concretely:
   alone, each still named in its hover card. A phone shows icons alone
   whatever it says, so its Settings row is desktop only. Emits
   `UI`/`Toggled`/`DockButtonNames{On,Off}`.
-- `drawPattern` undefined → Grid (`graph`) behind every tab the person works
-  on in Draw mode. It changes nothing on the tab.
 - `alignmentGuides` undefined → guides on (the default). Setting it
   to `false` hides the faint guide lines during a move / resize; the
   snap behaviour itself is unchanged.
@@ -683,44 +668,32 @@ and the dialog stays as the one complete, browsable index of them.
   and read as broken. So are the Mouse section's (Quick-Add on Hover, Middle-Mouse
   Pan): a phone has no hover and no middle button.
 
-  **Tours** is a category of its own: one switch per guided tour, **Diagram
-  Tour**, **Plan Tours** (over **Boards Tour**, **Sheets Tour** and **Dashboards Tour**),
-  **Forms Tour** and **Avatar Tour**, each with a line saying where it offers itself and a **Learn more**
-  to its article, under one **Offer Again** section note: each tour offers
-  itself once; switch one back on and close Settings to take it again, straight
-  away if you are in its mode, otherwise the next time you are. (The tours used
-  to be an Onboarding Tutorials grid of five switches inside
-  Accessibility, where nobody looked for them: a tour is not an accessibility
-  setting.) Every switch is inverted: on means "offer me this tour", the
-  preference records "already seen", and its telemetry tokens still describe the
-  PREFERENCE (switching on is `...SeenOff`), so each dashboard series keeps its
-  meaning.
+  **Tours** is a category of its own: one switch per guided tour, **Plan Tours** (over **Boards Tour**,
+  **Sheets Tour** and **Dashboards Tour**) and **Forms Tour**, each with a line saying where it offers itself and a
+  **Learn more** to its article, under one **Offer Again** section note: each tour offers itself once; switch one
+  back on and close Settings to take it again, straight away if you are where it offers itself, otherwise the next
+  time you are. (The tours used to be an Onboarding Tutorials grid of switches inside Accessibility, where nobody
+  looked for them: a tour is not an accessibility setting.) Every switch is inverted: on means "offer me this tour",
+  the preference records "already seen", and its telemetry tokens still describe the PREFERENCE (switching on is
+  `...SeenOff`), so each dashboard series keeps its meaning.
 
-  **Diagram Tour** (the [Diagram tour](editor-tour.md), labelled **Welcome** until October 2026) is inverted
-  against the stored `tourSeen`. Because `tourSeen !== true` is necessary but NOT sufficient for the offer
-  (TourHost also needs the per-tab pending flag, which only `/new` sets), closing the dialog with the switch
-  on **marks that flag**, so its promise is true for a reader who had simply never taken the tour. Turning it
-  on from off additionally relaunches in place on a Diagram tab; on a tab in another mode the offer waits
-  for a Diagram tab. The Plan tour is a
-  tour of several tracks (`apps/live/lib/tour-tracks.ts`): **Plan Tours** is one switch over all of them
-  (`tourTracksSwitch`, key `planTourSeen`: on while any track is owed, off answers every track, on forgets every
-  answer), and each track has its own row nested beneath it (`parent: 'planTourSeen'`), named for itself: **Boards
-  Tour**, **Sheets Tour** and **Dashboards Tour** (`tourTrackSwitch`, keys `planTourSeen-boards`,
+  The Plan tour is a tour of several tracks (`apps/live/lib/tour-tracks.ts`): **Plan Tours** is one switch over all
+  of them (`tourTracksSwitch`, key `planTourSeen`: on while any track is owed, off answers every track, on forgets
+  every answer), and each track has its own row nested beneath it (`parent: 'planTourSeen'`), named for itself:
+  **Boards Tour**, **Sheets Tour** and **Dashboards Tour** (`tourTrackSwitch`, keys `planTourSeen-boards`,
   `planTourSeen-sheets`, `planTourSeen-dashboards`). A track's row is on while its track is owed; off adds its track
   to `planTourTracks`, on removes it alone, and both clear the single `planTourSeen`, folding it into the list first
-  so one track back on leaves the others answered. It needs no handoff flag (the Plan tour offers itself in Plan once
-  a board or Sheet is open, the Dashboards tour on a dashboard), so closing the dialog only reruns it, when a track
-  became owed while it was open ([Plan tour](../026-plan/plan-tour.md)). **Forms Tour** works the same way against
-  `formTourSeen` ([Forms](../030-forms/forms.md) "The Forms tour"). Power user mode's readout lists the Plan tour's switch over all
-  its tracks (**Plan Tours**). The Plan tour's old single flag (`planTourSeen`) counts every track only while Power
-  user mode is on, so an answer given before the tour split offers each track once more.
+  so one track back on leaves the others answered. It needs no handoff flag (the Plan tour offers itself once a board
+  or Sheet is open, the Dashboards tour on a dashboard), so closing the dialog only reruns it, when a track became
+  owed while it was open ([Plan tour](../026-plan/plan-tour.md)). **Forms Tour** works the same way against
+  `formTourSeen` ([Forms](../030-forms/forms.md) "The Forms tour"). Power user mode's readout lists the Plan tour's
+  switch over all its tracks (**Plan Tours**). The Plan tour's old single flag (`planTourSeen`) counts every track
+  only while Power user mode is on, so an answer given before the tour split offers each track once more.
 
-  Below the mode tours, **Show Me** (element tours, named Show Me in the interface) is its own section, a closed
-  accordion naming how many are on ([Element tours](element-tours.md#settings)): **Show Me on Every Element**, built
-  as Plan Tours is (`tourTracksSwitch`) against `elementToursSeen` and `elementTourKinds`, with one switch per toured
-  kind nested under it, named for the element (**Sankey Diagram**). Element tours
-  need no relaunch: the offer shows the next time such an element is selected. A category may mark any section
-  closed this way (`collapsedSections`); Settings opened on one of its rows opens it.
+  The Diagram tour's **Diagram Tour** row, the Avatar tour's row and the **Show Me** section of element tours went
+  with Diagram mode, Workshop mode's avatars and the diagram elements ([Editor tours](editor-tour.md),
+  [Element tours](element-tours.md)); their flags (`tourSeen`, `elementToursSeen`, `elementTourKinds`) are no longer
+  preferences, and a stored value is ignored.
 
   **Button Labels** (Appearance › Interface, `dockButtonNames`, on by default)
   names the editor's bottom buttons beside their icons: the footer bar's Search,
@@ -750,12 +723,11 @@ and the dialog stays as the one complete, browsable index of them.
   row's Minimal Chrome and its preset readout). A child whose parent is not
   among the rows shown (a search match) renders on its own.
 
-  (Element add is a single always-on tap-or-drag gesture with no setting, see
-  [Canvas and palette](../008-canvas/canvas-and-palette.md).) The
-  **Editor** group holds `middleMousePan` (default on): holding the
-  middle mouse button drags the canvas in both axes from anywhere, over
-  empty space or elements, whatever tool is active — off leaves the middle
-  button to the browser. The
+  The **Editor** group holds only Power User Mode and its children. The
+  canvas-era rows (`alignmentGuides`, `autoRebindArrows`, `elementIndicatorStyle`,
+  `quickAddOnHover`, `middleMousePan`), the Layers, Map and Quick Style panels and
+  the AI Tools category are no longer offered in Settings; their stored fields
+  stay in the type because the canvas host still reads them. The
   **Keyboard** group holds the **Keyboard Shortcuts** switch, which is
   per-device (localStorage, not `UserPreferences`) so shortcuts can be on at
   a full keyboard and off on a tablet; it used to sit in Controls, and

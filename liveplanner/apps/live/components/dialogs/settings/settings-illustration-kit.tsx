@@ -1,47 +1,17 @@
 import type { ReactNode } from 'react';
 
-// The drawing kit the Settings illustrations share: the frame size, the
-// colour roles, and the editor-window outline most of them are drawn inside.
-// Split out so the toggle drawings (settings-illustrations.tsx) and the
-// one-per-option choice drawings (settings-choice-illustrations.tsx) are
-// drawn from the same parts and cannot drift into two styles.
+// The drawing kit the Settings illustrations are drawn from: the frame size,
+// the ring and caption every state wears, and click-to-pick.
 
 export const W = 104;
 export const H = 66;
 export const GAP = 18;
 
-// The widest a drawing renders, as rem per viewBox unit. Set by the toggle
-// pair (two frames, the arrow gap, the 4-unit margin each side) at 17rem, so
-// a choice drawing of any option count keeps the same frame size.
+// The widest a drawing renders, as rem per viewBox unit: two frames, a gap
+// and a 4-unit margin each side in 17rem, so a drawing of any option count
+// keeps the same frame size.
 const TOGGLE_MAX_REM = 17;
 export const REM_PER_UNIT = TOGGLE_MAX_REM / (W * 2 + GAP + 8);
-
-export const PAPER = 'fill-white stroke-slate-300 dark:fill-slate-900 dark:stroke-slate-600';
-const CHROME = 'fill-slate-100 stroke-slate-300 dark:fill-slate-800 dark:stroke-slate-600';
-export const PANEL = 'fill-brand-500/20 stroke-brand-500/70';
-export const SHAPE = 'fill-slate-200 stroke-slate-400 dark:fill-slate-700 dark:stroke-slate-500';
-
-// The editor window: the header strip and bottom tab bar every layout keeps.
-// Drawing them is what makes two states read as the same app twice rather
-// than two unrelated boxes.
-export function Window({ children }: { children?: ReactNode }) {
-  return (
-    <g strokeWidth="1">
-      <rect x="0.5" y="0.5" width={W - 1} height={H - 1} rx="3.5" className={PAPER} />
-      <path d={`M0.5 10.5h${W - 1}`} className="stroke-slate-300 dark:stroke-slate-600" />
-      <rect x="0.5" y={H - 9.5} width={W - 1} height="9" className={CHROME} />
-      <rect
-        x="5"
-        y={H - 7}
-        width="16"
-        height="4"
-        rx="1.5"
-        className="fill-brand-500/40 stroke-none"
-      />
-      {children}
-    </g>
-  );
-}
 
 // The ring and caption every state drawing wears, whichever registry it is
 // in. `current` rings it: glance at the picture and you know which way the
