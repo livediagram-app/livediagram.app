@@ -127,8 +127,18 @@ describe('apps', () => {
     expect(s.windows.today.rows).toEqual([
       { category: 'Element', action: 'Added', type: 'Square', count: 5 },
     ]);
-    expect(s.windows.today.byApp).toEqual({ 'livediagram.app': 3, 'liveplanner.app': 2 });
-    expect(s.previousWindows!.last7.byApp).toEqual({ 'livediagram.app': 0, 'liveplanner.app': 1 });
+    expect(s.windows.today.byApp).toEqual({
+      'livediagram.app': 3,
+      'liveplanner.app': 2,
+      'livedocuments.app': 0,
+      'livedesign.app': 0,
+    });
+    expect(s.previousWindows!.last7.byApp).toEqual({
+      'livediagram.app': 0,
+      'liveplanner.app': 1,
+      'livedocuments.app': 0,
+      'livedesign.app': 0,
+    });
     expect(s.daily!.byApp!['liveplanner.app']!.at(-1)).toBe(2);
     expect(s.daily!.byApp!['livediagram.app']!.at(-1)).toBe(3);
   });

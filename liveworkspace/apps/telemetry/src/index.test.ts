@@ -18,7 +18,13 @@ describe('telemetry worker', () => {
         new Request('https://liveworkspace.app/api/telemetry/events', {
           method: 'POST',
           headers: { Origin: 'http://localhost:3000' },
-          body: JSON.stringify({ app, events: [{ category: 'Document', action: 'Created' }] }),
+          body: JSON.stringify({
+            app,
+            // Each app's own word for what it makes: liveplanner's is a project.
+            events: [
+              { category: app === 'liveplanner.app' ? 'Project' : 'Document', action: 'Created' },
+            ],
+          }),
         }),
         env,
         ctx,
@@ -34,7 +40,12 @@ describe('telemetry worker', () => {
     ).json()) as TelemetrySummary;
     expect(all.app).toBe('all');
     expect(all.windows.today.total).toBe(3);
-    expect(all.windows.today.byApp).toEqual({ 'livediagram.app': 1, 'liveplanner.app': 2 });
+    expect(all.windows.today.byApp).toEqual({
+      'livediagram.app': 1,
+      'liveplanner.app': 2,
+      'livedocuments.app': 0,
+      'livedesign.app': 0,
+    });
 
     const one = (await (
       await worker.fetch(get('/api/telemetry/summary?app=liveplanner.app'), env, ctx)

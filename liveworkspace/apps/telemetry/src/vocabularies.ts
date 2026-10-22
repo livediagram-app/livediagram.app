@@ -19,6 +19,11 @@ type Vocabulary = {
   isServerOnly: (event: TelemetryWireEvent) => boolean;
 };
 
+const NOTHING_YET: Vocabulary = {
+  isValid: (_value: unknown): _value is TelemetryWireEvent => false,
+  isServerOnly: () => false,
+};
+
 export const VOCABULARIES: Record<TelemetryApp, Vocabulary> = {
   'livediagram.app': {
     isValid: isLivediagramEvent as Vocabulary['isValid'],
@@ -28,4 +33,8 @@ export const VOCABULARIES: Record<TelemetryApp, Vocabulary> = {
     isValid: isLiveplannerEvent as Vocabulary['isValid'],
     isServerOnly: isLiveplannerServerEvent,
   },
+  // livedocuments and livedesign define their vocabularies in their own api-schema packages, which
+  // aren't in this repo yet. Until they are, the service stores nothing from them.
+  'livedocuments.app': NOTHING_YET,
+  'livedesign.app': NOTHING_YET,
 };

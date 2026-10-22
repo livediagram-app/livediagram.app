@@ -10,6 +10,8 @@ import {
   type TelemetrySummary,
 } from '@liveworkspace/telemetry';
 import { Footer } from '@/components/Footer';
+import { AppLogo } from '@/components/landing/AppLogo';
+import { listedApps } from '@/lib/apps';
 import { Header } from '@/components/Header';
 import { AllApps } from './AllApps';
 import {
@@ -112,13 +114,15 @@ export default function TelemetryDashboard() {
               >
                 {(() => {
                   const Logo = APP_LOGOS[choice.key];
-                  return Logo ? (
-                    <span data-app={choice.key} className="flex">
-                      <Logo size="sm" />
-                    </span>
-                  ) : (
-                    choice.label
-                  );
+                  if (Logo)
+                    return (
+                      <span data-app={choice.key} className="flex">
+                        <Logo size="sm" />
+                      </span>
+                    );
+                  // An app whose UI package isn't in this repo yet: the shared prism in its accent.
+                  const listed = listedApps().find((a) => a.id === choice.key);
+                  return listed ? <AppLogo app={listed} size="sm" /> : choice.label;
                 })()}
               </button>
             ))}
@@ -146,6 +150,14 @@ export default function TelemetryDashboard() {
             <LivediagramBody summary={loaded} />
           ) : app === 'liveplanner.app' ? (
             <LiveplannerBody summary={loaded} />
+          ) : app === 'livedocuments.app' || app === 'livedesign.app' ? (
+            <div className="mt-12">
+              <EmptyState
+                icon={<ActivityGlyph />}
+                title={`No events from ${app} yet`}
+                description="Its dashboard arrives with the app. Until then, there’s nothing to count."
+              />
+            </div>
           ) : (
             <AllApps summary={loaded} onPickApp={pick} />
           )}

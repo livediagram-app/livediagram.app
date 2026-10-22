@@ -11,6 +11,8 @@ const post = (body: unknown, headers: Record<string, string> = {}) =>
 
 const fromPage = (origin: string) => ({ Origin: origin, 'CF-Connecting-IP': '203.0.113.9' });
 const created = { category: 'Document', action: 'Created' };
+// liveplanner calls its document a project, so its vocabulary takes this one instead.
+const projectCreated = { category: 'Project', action: 'Created' };
 
 describe('ingest', () => {
   it('stores a page’s events under the app it names, with a server time', async () => {
@@ -42,7 +44,7 @@ describe('ingest', () => {
     const prod = testEnv({ ENVIRONMENT: 'production' });
     const dev = testEnv();
     const req = () =>
-      post({ app: 'liveplanner.app', events: [created] }, fromPage('http://localhost:3100'));
+      post({ app: 'liveplanner.app', events: [projectCreated] }, fromPage('http://localhost:3100'));
     await handleIngest(req(), prod);
     await handleIngest(req(), dev);
     expect(prod.rows).toHaveLength(0);

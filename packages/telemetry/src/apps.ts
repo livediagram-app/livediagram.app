@@ -2,7 +2,12 @@
 // service, so each event names the app it came from, and the dashboard can show every app at once or
 // filter to one. An app is named by its public site, the way people know it.
 
-export const TELEMETRY_APPS = ['livediagram.app', 'liveplanner.app'] as const;
+export const TELEMETRY_APPS = [
+  'livediagram.app',
+  'liveplanner.app',
+  'livedocuments.app',
+  'livedesign.app',
+] as const;
 
 export type TelemetryApp = (typeof TELEMETRY_APPS)[number];
 
@@ -32,6 +37,16 @@ export const TELEMETRY_APP_ORIGINS: Record<TelemetryApp, readonly string[]> = {
     'https://liveplanner.app',
     'https://www.liveplanner.app',
     'https://staging.liveplanner.app',
+  ],
+  'livedocuments.app': [
+    'https://livedocuments.app',
+    'https://www.livedocuments.app',
+    'https://staging.livedocuments.app',
+  ],
+  'livedesign.app': [
+    'https://livedesign.app',
+    'https://www.livedesign.app',
+    'https://staging.livedesign.app',
   ],
 };
 

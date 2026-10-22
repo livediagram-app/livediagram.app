@@ -21,13 +21,13 @@ the apps' old `events` tables are no longer read or written.
 
 The same three fields as before, plus the app it came from:
 
-| Field      | What it is                                                                |
-| ---------- | ------------------------------------------------------------------------- |
-| `app`      | The app's site: `livediagram.app` or `liveplanner.app` (`TELEMETRY_APPS`) |
-| `category` | The parent, such as `Document` or `Element`                               |
-| `action`   | The verb, such as `Created` or `Added`                                    |
-| `type`     | Optional. One short reference token, such as `Square`; never user content |
-| `ts`       | Stamped by the service when the batch arrives                             |
+| Field      | What it is                                                                                                       |
+| ---------- | ---------------------------------------------------------------------------------------------------------------- |
+| `app`      | The app's site: `livediagram.app`, `liveplanner.app`, `livedocuments.app` or `livedesign.app` (`TELEMETRY_APPS`) |
+| `category` | The parent, such as `Document` or `Element`                                                                      |
+| `action`   | The verb, such as `Created` or `Added`                                                                           |
+| `type`     | Optional. One short reference token, such as `Square`; never user content                                        |
+| `ts`       | Stamped by the service when the batch arrives                                                                    |
 
 There is no identity, IP address, owner id or document id. Each app keeps its own closed vocabulary
 in its own api-schema (`telemetry-schema.ts`), because its editors and its vocabulary change
@@ -85,7 +85,7 @@ explanations. Picking an app on the page updates the link.
 - **One app** shows the dashboard that app had before, unchanged. Each app's catalogue lives in
   `<app>/` in the dashboard's folder, and only loads when that app is picked.
 
-The numbers come from `GET /api/telemetry/summary?app=all|livediagram.app|liveplanner.app`, built from
+The numbers come from `GET /api/telemetry/summary?app=all|<an app in TELEMETRY_APPS>`, built from
 one grouped per-day query over the last 59 days (the last 30, and the 30 before them for the trend
 arrows). Each window carries `byApp`, and the daily series carries `byApp` too. The response is
 cached at the edge for 5 minutes per filter, so a traffic spike on the public page is answered from
@@ -109,6 +109,15 @@ Development accepts events from any `localhost` page. Point an app at it with
 from `.dev.vars`, for its Workers). The dashboard is the site's: `corepack pnpm dev:workspace` from
 the repo root runs the site with this Worker behind it, at http://localhost:3300/telemetry.
 
+## livedocuments and livedesign
+
+Both are in `TELEMETRY_APPS`, so the dashboard lists them in their own colours, but their event
+vocabularies live in their own `api-schema` packages, which aren't in this repo yet. Until they are,
+the service stores nothing from them (`NOTHING_YET` in `apps/telemetry/src/vocabularies.ts`), and
+picking one on the dashboard says there are no events yet. When an app lands: import its
+vocabulary in `vocabularies.ts`, add its dashboard under `apps/site/app/telemetry/<app>/`, and set
+its key.
+
 ## First deploy
 
 1. Create the databases and put their ids in `apps/telemetry/wrangler.toml` (they are
@@ -116,7 +125,8 @@ the repo root runs the site with this Worker behind it, at http://localhost:3300
    `liveworkspace-telemetry-staging`).
 2. Set one key per app, and give each app's api and mcp Workers the same value as `TELEMETRY_KEY`:
    `openssl rand -hex 32`, then `wrangler secret put TELEMETRY_KEY_LIVEDIAGRAM` and
-   `TELEMETRY_KEY_LIVEPLANNER`.
+   `TELEMETRY_KEY_LIVEPLANNER` (and `TELEMETRY_KEY_LIVEDOCUMENTS` and `TELEMETRY_KEY_LIVEDESIGN` once
+   those apps send events).
 3. `corepack pnpm db:migrate:remote`, then `corepack pnpm deploy`. The dashboard ships with the
    site ([site.md](site.md)).
 4. The Worker takes the route `liveworkspace.app/api/telemetry*` only, so the rest of the zone is

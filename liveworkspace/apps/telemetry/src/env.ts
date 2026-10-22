@@ -14,8 +14,19 @@ export interface Env {
   // app's own Workers. Unset means that app's Workers can't send.
   TELEMETRY_KEY_LIVEDIAGRAM?: string;
   TELEMETRY_KEY_LIVEPLANNER?: string;
+  TELEMETRY_KEY_LIVEDOCUMENTS?: string;
+  TELEMETRY_KEY_LIVEDESIGN?: string;
 }
 
+// Each app's own secret, named per app so no app can ever be handed another's.
+const KEYS: Record<TelemetryApp, keyof Env> = {
+  'livediagram.app': 'TELEMETRY_KEY_LIVEDIAGRAM',
+  'liveplanner.app': 'TELEMETRY_KEY_LIVEPLANNER',
+  'livedocuments.app': 'TELEMETRY_KEY_LIVEDOCUMENTS',
+  'livedesign.app': 'TELEMETRY_KEY_LIVEDESIGN',
+};
+
 export function appKey(env: Env, app: TelemetryApp): string | undefined {
-  return app === 'livediagram.app' ? env.TELEMETRY_KEY_LIVEDIAGRAM : env.TELEMETRY_KEY_LIVEPLANNER;
+  const key = env[KEYS[app]];
+  return typeof key === 'string' ? key : undefined;
 }

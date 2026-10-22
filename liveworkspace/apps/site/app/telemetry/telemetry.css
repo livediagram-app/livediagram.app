@@ -15,7 +15,8 @@
 
 /* The telemetry dashboard shows the apps' own numbers in the apps' own accents: livediagram's sky
  * (its tailwind-config's brand scale, which the platform's slate replaced above) for every app and
- * for livediagram, and liveplanner's violet inside a liveplanner dashboard. */
+ * for livediagram, liveplanner's violet, livedocuments' amber and livedesign's rose inside
+ * their own. */
 [data-app] {
   --color-brand-400: #38bdf8;
   --color-brand-500: #0ea5e9;
@@ -33,6 +34,34 @@
   --color-brand-800: #5b21b6;
   --color-brand-900: #4c1d95;
   --color-brand-950: #2e1065;
+}
+
+[data-app='livedocuments.app'] {
+  --color-brand-50: #fffbeb;
+  --color-brand-100: #fef3c7;
+  --color-brand-200: #fde68a;
+  --color-brand-300: #fcd34d;
+  --color-brand-400: #fbbf24;
+  --color-brand-500: #f59e0b;
+  --color-brand-600: #d97706;
+  --color-brand-700: #b45309;
+  --color-brand-800: #92400e;
+  --color-brand-900: #78350f;
+  --color-brand-950: #451a03;
+}
+
+[data-app='livedesign.app'] {
+  --color-brand-50: #fff1f2;
+  --color-brand-100: #ffe4e6;
+  --color-brand-200: #fecdd3;
+  --color-brand-300: #fda4af;
+  --color-brand-400: #fb7185;
+  --color-brand-500: #f43f5e;
+  --color-brand-600: #e11d48;
+  --color-brand-700: #be123c;
+  --color-brand-800: #9f1239;
+  --color-brand-900: #881337;
+  --color-brand-950: #4c0519;
 }
 
 /* The dim behind an open stack's modal (liveworkspace/docs/telemetry.md), fading in with it. */
