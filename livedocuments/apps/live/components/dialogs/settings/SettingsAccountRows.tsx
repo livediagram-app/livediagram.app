@@ -81,7 +81,7 @@ const GUEST_IDENTITY = 'Your documents live in this browser. Sign in to keep the
 // The row still renders for guests, saying why, rather than vanishing, so the
 // answer to "can I delete my data?" is in the panel either way.
 export const DELETE_ACCOUNT_SIGNED_IN =
-  'Permanently removes your livedocuments documents (the Trash included), folders and settings, then signs you out. Your liveworkspace sign-in stays. There is no undo: you type your email to confirm.';
+  'Permanently removes your livedocuments documents (the Trash included), folders and settings, closes your liveworkspace account for every app, then signs you out. There is no undo: you type your email to confirm.';
 export const DELETE_ACCOUNT_GUEST =
   'Available once you sign in: a guest browser has no verified account to delete.';
 

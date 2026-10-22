@@ -337,7 +337,7 @@ export function accountDeletedEmail(env: Env): RenderedEmail {
     html: shell(env, {
       heading: 'Your account has been deleted',
       intro:
-        'This confirms that your livedocuments account and the documents stored under it have been permanently removed, as you requested. There’s nothing left for you to do.',
+        'This confirms that your livedocuments documents and your liveworkspace account have been permanently removed, as you requested. The account is closed for every liveworkspace app. There’s nothing left for you to do.',
       outro:
         'If this wasn’t you, or you change your mind, you’re always welcome back. The canvas is free and needs no account to start.',
       ctaText: 'Start a new diagram',
