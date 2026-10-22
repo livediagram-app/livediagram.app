@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { SITES } from '@liveworkspace/sites';
 import { SiteSwitcher } from './SiteSwitcher';
 
 describe('SiteSwitcher', () => {
@@ -19,11 +20,8 @@ describe('SiteSwitcher', () => {
     const hrefs = [...html.matchAll(/role="menuitem"[^>]*|href="(https:[^"]+)"/g)]
       .map((m) => m[1])
       .filter(Boolean);
-    expect(hrefs).toEqual([
-      'https://liveworkspace.app',
-      'https://livediagram.app',
-      'https://liveplanner.app',
-    ]);
+    expect(hrefs).toEqual(SITES.map((site) => site.url));
+    expect(hrefs[0]).toBe('https://liveworkspace.app');
     expect(html).toMatch(/href="https:\/\/livediagram\.app"[^>]*aria-current="page"/);
     expect(html.match(/aria-current="page"/g)).toHaveLength(1);
   });

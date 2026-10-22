@@ -1,5 +1,4 @@
 import { BrandMark, lucideGlyph } from '@livediagram/ui';
-import { BrandMark as LiveplannerMark } from '@liveplanner/ui';
 import {
   lucideChartLine,
   lucideGift,
@@ -7,8 +6,10 @@ import {
   lucideShieldCheck,
   lucideUsers,
 } from '@livediagram/icons/lucide';
-import { PLATFORM_SITE } from '@liveworkspace/sites';
-import type { ReactNode } from 'react';
+import { PLATFORM_SITE, type SiteId } from '@liveworkspace/sites';
+import type { CSSProperties, ReactNode } from 'react';
+import { listedApps } from '@/lib/apps';
+import { AppMark } from './AppLogo';
 import { Cursor } from './Cursor';
 
 const LinkIcon = lucideGlyph(lucideLink, 20);
@@ -17,33 +18,33 @@ const ShieldIcon = lucideGlyph(lucideShieldCheck, 20);
 const GiftIcon = lucideGlyph(lucideGift, 20);
 const ActivityIcon = lucideGlyph(lucideChartLine, 20);
 
-const STEPS: { mark: ReactNode; app: string; colour: string; title: string; body: string }[] = [
-  {
-    mark: <BrandMark className="size-10" />,
-    app: 'livediagram',
-    colour: 'text-sky-700 dark:text-sky-300',
+// What each app does for a piece of work, in the order work moves through them.
+const STEPS: Partial<Record<SiteId, { title: string; body: string }>> = {
+  'livediagram.app': {
     title: 'Sketch the idea',
     body: 'Draw it out together on one canvas: the flow, the map, the whiteboard mess that finally makes sense.',
   },
-  {
-    mark: <LiveplannerMark className="size-10" />,
-    app: 'liveplanner',
-    colour: 'text-violet-700 dark:text-violet-300',
+  'liveplanner.app': {
     title: 'Plan the work',
     body: 'Turn it into cards, owners and dates. Track it on a board, total it in a sheet, collect it with a form.',
   },
-  {
-    mark: <BrandMark accentColor={PLATFORM_SITE.accent} className="size-10" />,
-    app: 'liveworkspace',
-    colour: 'text-slate-600 dark:text-slate-300',
-    title: 'Share one link',
-    body: 'Anyone you send it to lands in the work itself, live, with you. Same account, whichever app it opens.',
+  'livedocuments.app': {
+    title: 'Write it up',
+    body: 'Tell people what happened and why: an article, a report, or slides to present from the same link.',
   },
-];
+  'livedesign.app': {
+    title: 'Make it look right',
+    body: 'Give it a face: the logo, the wireframe for the site, the photos that go with it.',
+  },
+};
 
 // How it fits together (liveworkspace/docs/site.md "The front door"): the path a piece of work takes
 // across the apps, then what every app shares. The header's "How it fits" lands here.
 export function Journey() {
+  const apps = listedApps().flatMap((app) => {
+    const step = STEPS[app.id];
+    return step ? [{ app, step }] : [];
+  });
   return (
     <section
       id="how-it-fits"
@@ -54,36 +55,72 @@ export function Journey() {
           How it fits together
         </p>
         <h2 className="mt-3 max-w-3xl text-3xl font-semibold tracking-tight text-slate-900 sm:text-5xl dark:text-white">
-          From the first sketch to the finished plan, without starting again.
+          From the first sketch to the final polish, without starting again.
         </h2>
 
-        <ol className="relative mt-14 grid gap-6 md:grid-cols-3">
-          {/* The thread through the three steps, in each app's colour. */}
+        <ol className="relative mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {/* The thread through the steps, in each app's colour. */}
           <span
             aria-hidden
-            className="absolute top-12 right-[16%] left-[16%] hidden h-0.5 rounded-full bg-gradient-to-r from-sky-400 via-violet-400 to-slate-400 md:block"
+            className="absolute top-12 right-[12%] left-[12%] hidden h-0.5 rounded-full lg:block"
+            style={{
+              backgroundImage: `linear-gradient(to right, ${apps.map(({ app }) => app.accent).join(', ')})`,
+            }}
           />
-          {STEPS.map((step, i) => (
+          {apps.map(({ app, step }, i) => (
             <li
-              key={step.title}
-              className="lw-rise relative flex flex-col items-center rounded-3xl border border-slate-200 bg-slate-50/80 p-6 text-center backdrop-blur sm:p-8 dark:border-slate-800 dark:bg-slate-900/80"
-              style={{ animationDelay: `${i * 120}ms` }}
+              key={app.id}
+              className="lw-rise relative"
+              style={{ animationDelay: `${i * 100}ms` }}
             >
-              <span className="flex size-12 items-center justify-center rounded-2xl bg-white shadow-md ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
-                {step.mark}
-              </span>
-              <span
-                className={`mt-5 text-xs font-semibold tracking-[.18em] uppercase ${step.colour}`}
+              <a
+                href={app.url}
+                className="group flex h-full flex-col items-center rounded-3xl border border-slate-200 bg-slate-50/80 p-6 text-center backdrop-blur transition-[translate,box-shadow,border-color] duration-micro ease-out hover:-translate-y-1 hover:border-[var(--lw-accent)] hover:shadow-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--lw-accent)] dark:border-slate-800 dark:bg-slate-900/80"
+                style={
+                  {
+                    '--lw-accent': app.accent,
+                    '--lw-ink': app.deep,
+                    '--lw-ink-dark': app.accent,
+                  } as CSSProperties
+                }
               >
-                {i + 1} · {step.app}
-              </span>
-              <h3 className="mt-2 text-xl font-semibold text-slate-900 dark:text-white">
-                {step.title}
-              </h3>
-              <p className="mt-2 leading-relaxed text-slate-600 dark:text-slate-300">{step.body}</p>
+                <span className="flex size-12 items-center justify-center rounded-2xl bg-white shadow-md ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
+                  <AppMark app={app} className="size-10" />
+                </span>
+                <span className="mt-5 text-xs font-semibold tracking-[.18em] text-[var(--lw-ink)] uppercase dark:text-[var(--lw-ink-dark)]">
+                  {i + 1} · {app.name}
+                </span>
+                <h3 className="mt-2 text-xl font-semibold text-slate-900 dark:text-white">
+                  {step.title}
+                </h3>
+                <p className="mt-2 leading-relaxed text-slate-600 dark:text-slate-300">
+                  {step.body}
+                </p>
+                <span className="mt-auto pt-4 text-sm font-semibold text-[var(--lw-ink)] dark:text-[var(--lw-ink-dark)]">
+                  Open {app.id}{' '}
+                  <span
+                    aria-hidden
+                    className="inline-block transition-transform duration-micro group-hover:translate-x-0.5"
+                  >
+                    →
+                  </span>
+                </span>
+              </a>
             </li>
           ))}
         </ol>
+
+        {/* What joins the steps up. */}
+        <p className="mt-6 flex flex-col items-center gap-3 rounded-3xl border border-dashed border-slate-300 px-6 py-5 text-center text-slate-600 sm:flex-row sm:text-left dark:border-slate-700 dark:text-slate-300">
+          <BrandMark accentColor={PLATFORM_SITE.accent} className="size-8 shrink-0" />
+          <span>
+            <span className="font-semibold text-slate-900 dark:text-white">
+              Then share one link.
+            </span>{' '}
+            Anyone you send it to lands in the work itself, live, with you. One account takes you
+            from each app to the next.
+          </span>
+        </p>
 
         <h3 className="mt-24 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl dark:text-white">
           What every app shares
@@ -208,25 +245,15 @@ function AccountArt() {
         />
       </svg>
       <div className="flex flex-col gap-2.5">
-        {[
-          {
-            mark: <BrandMark className="size-5" />,
-            name: 'livediagram',
-            ink: 'text-sky-700 dark:text-sky-300',
-          },
-          {
-            mark: <LiveplannerMark className="size-5" />,
-            name: 'liveplanner',
-            ink: 'text-violet-700 dark:text-violet-300',
-          },
-        ].map((app) => (
+        {listedApps().map((app) => (
           <div
-            key={app.name}
+            key={app.id}
             className="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold shadow-sm dark:border-slate-700 dark:bg-slate-900"
+            style={{ '--lw-ink': app.deep, '--lw-ink-dark': app.accent } as CSSProperties}
           >
-            {app.mark}
-            <span className={app.ink}>{app.name}</span>
-            <span className="ml-3 rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
+            <AppMark app={app} className="size-5" />
+            <span className="text-[var(--lw-ink)] dark:text-[var(--lw-ink-dark)]">{app.name}</span>
+            <span className="ml-auto rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
               Signed in
             </span>
           </div>

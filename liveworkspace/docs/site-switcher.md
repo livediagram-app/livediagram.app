@@ -29,5 +29,5 @@ liveworkspace.app.
 ## The list
 
 `@liveworkspace/sites` (`packages/sites`) holds the list: each site's name, URL, one-line pitch and
-accent colour. Both apps' switchers read it, so adding an app (livedocuments.app, when it ships) is
-one row there, not an edit in each app.
+accent colour. Every app's switcher reads it, so adding an app is one row there, not an edit in each
+app. It lists livediagram, liveplanner, livedocuments and livedesign.

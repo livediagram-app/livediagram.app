@@ -98,3 +98,9 @@
     animation: none;
   }
 }
+
+/* A card that leads somewhere holds still while it is pointed at or focused. */
+.lw-float:hover,
+.lw-float:focus-visible {
+  animation-play-state: paused;
+}

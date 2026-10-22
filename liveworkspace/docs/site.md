@@ -46,28 +46,26 @@ so the bar doesn't jump. The sign-in pages leave it out: they are the sign-in.
 The glue between the apps: what liveworkspace is, each app in its own colours, how a piece of work
 moves between them, and the one account that joins them.
 
-1. **Hero**: "Everything your team makes, live in one workspace", the apps named in their accents,
-   and two calls to action: **Create your free account** (`/sign-up`, back here after) and
-   **Explore the apps**. Signed in, they become "Welcome back" and a button into each app. Beside
-   it, the platform's prism with each app's logo joined to it by a line in its accent, and what they
-   share (one sign-in, open numbers) on quieter lines, with a collaborator's cursor at each app.
-   The apps on their way sit at the free corners on dashed lines, marked Soon.
-2. **The apps** (`#apps`): one section per app in `@liveworkspace/sites`, in that order, then one
-   for each app on its way (`UPCOMING_APPS` in `lib/apps.ts`: livedocuments, then livedesign). Each
-   has its own
-   logo, a tagline, its summary, three things it does, a window onto its work with someone in it (a
-   flowchart; a board with a card on the move), **Open <app>** in its deep accent, and "Signs in with
-   your liveworkspace account". An app on its way has **Coming soon to <domain>** in place of the
-   button, and its logo is the shared prism tinted with its accent (livedocuments amber, livedesign
-   rose), since its own UI package isn't here yet. It stays out of `@liveworkspace/sites`, so the
-   logo switchers, the footer and the telemetry filters only list it once it ships. The copy is
-   `lib/apps.ts`; tests require it for every app, that white text on each deep accent passes WCAG AA,
-   and that no app on its way is listed as live.
-3. **How it fits together** (`#how-it-fits`): the path a piece of work takes (sketch it in
-   livediagram, plan it in liveplanner, share one link), then what every app shares: one account
-   (the large tile, with Create your account), live by default, share by link, open about data
-   (linking `/telemetry`), yours to keep (closing the account closes it everywhere), completely free (no paywalls or
-   subscriptions).
+1. **Hero**: "Everything your team makes, live in one workspace", one sentence naming each app
+   in its accent and what it is for (sketch, plan, write it up, make it look right), and two calls to
+   action: **Create your free account** (`/sign-up`, back here after) and **Explore the apps**.
+   Signed in, they become "Welcome back" and a button into each app. Beside it, the platform's prism
+   with each app's logo at a corner, joined to it by a line in its accent, read clockwise in the
+   order work moves through them, and a collaborator's cursor at each. Each app there is a link to its
+   site that lifts and rings in its accent on hover, and holds still while pointed at.
+2. **The apps** (`#apps`): one section per app in `@liveworkspace/sites`, in that order, each with
+   its own logo, a tagline, its summary, three things it does, a window onto its work with someone in
+   it (a flowchart; a board with a card on the move; an article with its slides; a logo, a wireframe
+   and a photo being cropped), **Open <app>** in its deep accent, and "Signs in with your
+   liveworkspace account". livedocuments and livedesign have no UI package in this repo yet, so their
+   logo is the shared prism tinted with their accent (amber, rose) until theirs lands. The copy is
+   `lib/apps.ts`; tests require it for every app and that white text on each deep accent passes
+   WCAG AA.
+3. **How it fits together** (`#how-it-fits`): the path a piece of work takes, one step per app
+   (sketch the idea, plan the work, write it up, make it look right), each a link to its app, then
+   "share one link", and what every app shares: one account (the large tile, with Create your
+   account), live by default, share by link, open about data (linking `/telemetry`), yours to keep
+   (closing the account closes it everywhere), completely free (no paywalls or subscriptions).
 4. **Closing call to action**: "One account. Every app. Always live."
 5. **Footer**: Our Apps (each live app's site) and Platform (the telemetry dashboard).
 
@@ -129,7 +127,5 @@ one origin, as it does in production. Run `corepack pnpm dev:site` for the pages
 
 - **A liveworkspace privacy policy and terms.** Each app has its own today, on its own site; the
   footer links to none.
-- **livedocuments.app and livedesign.app** join properly when they ship: a row in
-  `@liveworkspace/sites` (which puts them in every switcher and the footer), their entry moved from
-  `UPCOMING_APPS` to `APP_COPY`, and their own logo package in place of the
-  tinted prism.
+- **livedocuments' and livedesign's own logos** replace the tinted prism here when their UI
+  packages land in this repo.

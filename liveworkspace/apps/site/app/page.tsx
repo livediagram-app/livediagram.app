@@ -1,6 +1,7 @@
 import { BrandMark, lucideGlyph } from '@livediagram/ui';
 import { lucideCheck } from '@livediagram/icons/lucide';
-import { PLATFORM_SITE } from '@liveworkspace/sites';
+import { PLATFORM_SITE, type SiteId } from '@liveworkspace/sites';
+import { type CSSProperties, Fragment } from 'react';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 import { Apps } from '@/components/landing/Apps';
@@ -11,6 +12,14 @@ import { listedApps } from '@/lib/apps';
 import './landing-motion.css';
 
 const CheckIcon = lucideGlyph(lucideCheck, 14);
+
+// What each app is for, in the order work moves through them, for the hero's one sentence.
+const STEPS: Partial<Record<SiteId, string>> = {
+  'livediagram.app': 'Sketch the idea',
+  'liveplanner.app': 'plan the work',
+  'livedocuments.app': 'write it up',
+  'livedesign.app': 'make it look right',
+};
 
 const PROMISES = ['Completely free', 'No sign-up needed', 'No trackers or ads'];
 
@@ -43,25 +52,22 @@ export default function Home() {
                 in one workspace.
               </h1>
               <p className="mt-6 max-w-xl text-lg leading-relaxed text-slate-600 sm:text-xl dark:text-slate-300">
-                liveworkspace is a family of real-time apps. Sketch the idea in{' '}
-                <a
-                  href={apps[0]?.url}
-                  className="font-semibold text-sky-700 underline-offset-4 hover:underline dark:text-sky-300"
-                >
-                  livediagram
-                </a>
-                , plan the work in{' '}
-                <a
-                  href={apps[1]?.url}
-                  className="font-semibold text-violet-700 underline-offset-4 hover:underline dark:text-violet-300"
-                >
-                  liveplanner
-                </a>
-                , and move between them with one account. Every link opens straight into the work,
-                with everyone already in it.{' '}
-                <span className="text-slate-500 dark:text-slate-400">
-                  livedocuments and livedesign are on their way.
-                </span>
+                liveworkspace is a family of real-time apps.{' '}
+                {apps.map((app, i) => (
+                  <Fragment key={app.id}>
+                    {i === 0 ? '' : i === apps.length - 1 ? ', and ' : ', '}
+                    {STEPS[app.id] ?? 'work'} in{' '}
+                    <a
+                      href={app.url}
+                      className="font-semibold text-[var(--lw-ink)] underline-offset-4 hover:underline dark:text-[var(--lw-ink-dark)]"
+                      style={{ '--lw-ink': app.deep, '--lw-ink-dark': app.accent } as CSSProperties}
+                    >
+                      {app.name}
+                    </a>
+                  </Fragment>
+                ))}
+                , all with one account. Every link opens straight into the work, with everyone
+                already in it.
               </p>
               <div className="mt-9">
                 <HeroActions />

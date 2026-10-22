@@ -1,7 +1,12 @@
 // liveworkspace's sites (liveworkspace/docs/site-switcher.md): the platform first, then each app. Every
 // app's logo switcher lists them in this order, so a new app is one row here.
 
-export type SiteId = 'liveworkspace.app' | 'livediagram.app' | 'liveplanner.app';
+export type SiteId =
+  | 'liveworkspace.app'
+  | 'livediagram.app'
+  | 'liveplanner.app'
+  | 'livedocuments.app'
+  | 'livedesign.app';
 
 export type Site = {
   id: SiteId;
@@ -36,6 +41,20 @@ export const APP_SITES: readonly Site[] = [
     url: 'https://liveplanner.app',
     pitch: 'Plan the work together',
     accent: '#8b5cf6',
+  },
+  {
+    id: 'livedocuments.app',
+    name: 'livedocuments',
+    url: 'https://livedocuments.app',
+    pitch: 'Write and present together',
+    accent: '#f59e0b',
+  },
+  {
+    id: 'livedesign.app',
+    name: 'livedesign',
+    url: 'https://livedesign.app',
+    pitch: 'Design logos, wireframes and photos together',
+    accent: '#f43f5e',
   },
 ];
 
