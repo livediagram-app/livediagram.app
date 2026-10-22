@@ -589,16 +589,6 @@ describe('ToolbarPalette', () => {
       expect(openSearch().textContent).toContain('No elements on this tab yet');
     });
 
-    it("picks up Draw mode's markers from the other modes' section", () => {
-      const { h } = show();
-      const popover = openSearch();
-      type(popover, 'marker');
-      fireEvent.click(within(popover).getByRole('button', { name: /Elements From Other Modes/ }));
-      fireEvent.click(within(popover).getByRole('button', { name: 'Marker 2' }));
-      expect(h.onBeginMarker).toHaveBeenCalledWith('second');
-      expect(document.querySelector('[data-toolbar-search]')).toBeNull();
-    });
-
     it('opens on S where it is shown, and leaves S to Select where it is not', () => {
       show();
       act(() => {

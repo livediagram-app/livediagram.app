@@ -195,8 +195,6 @@ const WORKSHOP_TOUR_STEP_SOURCE: string[] = [
         .join('')}`,
   );
 
-// The Draw tour's steps, as drawTourStepTelemetryType makes them (apps/live draw-tour-steps.ts,
-// docs/specs/023-draw-mode/draw-tour.md). The welcome card sends no step view.
 // The Sankey tour (docs/specs/007-editor/element-tours.md): its canvas steps, then the Flows dialog's Show Me steps
 // it runs inside the dialog (each `flows-` prefixed), then its closing card.
 const pascal = (id: string) =>
@@ -256,19 +254,6 @@ export const ELEMENT_TOUR_STEP_SOURCE: string[] = [
   ...conceptTourSteps('DiagramKeyTour', 'diagram-key-tour-steps.ts'),
   ...conceptTourSteps('PortalTour', 'portal-tour-steps.ts'),
 ];
-
-const DRAW_TOUR_STEP_SOURCE: string[] = [
-  ...read('live/components/tour/draw-tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm),
-]
-  .map((m) => m[1]!)
-  .filter((id) => id !== 'welcome')
-  .map(
-    (id) =>
-      `DrawTourStep${id
-        .split('-')
-        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-        .join('')}`,
-  );
 
 // The Forms tour's steps, as formTourStepTelemetryType makes them (apps/live form-tour-steps.ts,
 // docs/specs/030-forms/forms.md "The Forms tour"). Its steps are top-level consts, so their ids sit two spaces in.
@@ -629,7 +614,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/live/components/tour/WorkshopTourHost.tsx UI·View': {
     values: WORKSHOP_TOUR_STEP_SOURCE,
   },
-  'apps/live/components/tour/DrawTourHost.tsx UI·View': { values: DRAW_TOUR_STEP_SOURCE },
   'apps/live/components/tour/FormTourHost.tsx UI·View': { values: FORM_TOUR_STEP_SOURCE },
   'apps/live/components/tour/ElementTourHost.tsx UI·View': { values: ELEMENT_TOUR_STEP_SOURCE },
   'apps/live/components/tour/ElementTourHost.tsx UI·Started': { values: ELEMENT_TOUR_TOKENS },
@@ -647,10 +631,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: PAGES_TOUR_STEP_SOURCE,
   },
   'apps/live/components/tour/TourHost.tsx UI·View': { values: TOUR_STEP_SOURCE },
-  'apps/live/hooks/canvas/commit-freehand.ts Element·Added': {
-    values: ['Square', 'Circle', 'Diamond', 'Triangle'],
-    open: 'the shape the Shape Pen recognised',
-  },
   'apps/live/hooks/canvas/useDebouncedCanvasTelemetry.ts Canvas·Changed': {
     values: Object.keys(CANVAS_CONTROLS),
   },
@@ -719,10 +699,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
   'apps/live/hooks/canvas/useTextStyleSetters.ts Element·Toggled': {
     values: ['Bold', 'Italic', 'Underline', 'Strikethrough'],
-  },
-  'apps/live/hooks/canvas/useWhiteboard.ts Draw·Selected': {
-    values: ['Main', 'Second', 'Third'],
-    open: 'penTelemetryType: the place of the pen in the dock, never its colour',
   },
   'apps/live/hooks/canvas/useWebComponentSetters.ts Element·Changed': {
     values: ['Banner', 'Callout', 'StatRow'],

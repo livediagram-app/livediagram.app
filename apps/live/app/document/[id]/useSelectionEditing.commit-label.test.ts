@@ -38,7 +38,6 @@ function setup(el: Element, tabLocked = false, editingId: string | null = null) 
       documentName: 'My document',
       tabs: [tab],
       activeTab: tab,
-      drawMode: true,
       editingId,
       commit: (fn) => {
         elements = fn(elements);

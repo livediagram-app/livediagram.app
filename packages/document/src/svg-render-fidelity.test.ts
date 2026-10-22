@@ -62,6 +62,11 @@ describe('Behaviour face export', () => {
     expect(svg).toContain('>Laser<');
   });
 
+  it('names a Mode button whose stored mode this build does not know by the default mode', () => {
+    const svg = svgOf(shape('mode-button', { mode: 'eraser' as never, label: '' }));
+    expect(svg).toContain('>Avatar<');
+  });
+
   it('draws a portal as its lit ring when paired, and dim when not', () => {
     expect(svgOf(shape('portal', { portalTarget: 'x' }))).toContain('stop-opacity="0.95"');
     expect(svgOf(shape('portal'))).toContain('stop-opacity="0.35"');
@@ -170,10 +175,10 @@ describe('wrapLabel', () => {
 describe('Mode button glyph (docs/specs/020-import-export/export-fidelity.md)', () => {
   it('draws the mode’s own glyph from the shared data, not a placeholder ring', () => {
     for (const mode of SELECTION_MODES) expect(MODE_GLYPHS[mode], mode).toBeDefined();
-    const el = { ...createShape('mode-button', 0, 0), mode: 'eraser' as const };
+    const el = { ...createShape('mode-button', 0, 0), mode: 'isometric' as const };
     const svg = renderElementsToSvg({ id: 't', name: 'T', elements: [el] });
-    const eraser = MODE_GLYPHS.eraser!.prims[0] as { d: string };
-    expect(svg).toContain(eraser.d);
+    const cube = MODE_GLYPHS.isometric!.prims[0] as { d: string };
+    expect(svg).toContain(cube.d);
   });
 });
 

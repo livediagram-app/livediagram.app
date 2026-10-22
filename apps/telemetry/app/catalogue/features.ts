@@ -212,34 +212,12 @@ export const PHOTO_IMPORT: MetricStack = {
   headline: PHOTOS_IMPORTED,
 };
 
-// Draw mode (docs/specs/023-draw-mode/draw-mode.md): Whiteboard tabs made, and which of the dock's
-// choices people reach for. Headed by the boards made; the rest are settings.
+// Draw mode (docs/specs/007-editor/editor-modes.md): Whiteboard tabs made.
 export const WHITEBOARDS_CREATED = chart(
   'Draw',
   'Created',
   'Whiteboards Created',
   'A whiteboard tab made, from the New Document wizard or as a new tab.',
-);
-
-export const WHITEBOARD_PENS = chart(
-  'Draw',
-  'Selected',
-  'Pens Picked',
-  'A whiteboard pen picked up: the main, second or third pen.',
-);
-
-export const WHITEBOARD_SETTINGS = chart(
-  'Draw',
-  'Changed',
-  'Pens, Eraser and Background',
-  "A whiteboard pen's colour or width, the eraser mode or the board background changed.",
-);
-
-export const WHITEBOARD_RECOGNITION = chart(
-  'Draw',
-  'Toggled',
-  'Shape Recognition',
-  'Shape recognition switched on or off on a whiteboard.',
 );
 
 // Editor modes (docs/specs/007-editor/editor-modes.md): switches between the editor modes.
@@ -536,7 +514,7 @@ export const WHITEBOARDS: MetricStack = {
   stack: true,
   title: 'Draw Mode',
   blurb:
-    'Whiteboard tabs made, mode switches, and the pens, erasers, backgrounds and recognition people use in Draw mode.',
+    'Whiteboard tabs made and mode switches.',
   members: [
     WHITEBOARDS_CREATED,
     EDITOR_MODE_SWITCHES,
@@ -559,9 +537,6 @@ export const WHITEBOARDS: MetricStack = {
     ARTICLE_INSERTS,
     ARTICLE_FORMATTING,
     ARTICLE_LOOKS,
-    WHITEBOARD_PENS,
-    WHITEBOARD_SETTINGS,
-    WHITEBOARD_RECOGNITION,
   ],
   headline: WHITEBOARDS_CREATED,
 };
@@ -927,7 +902,6 @@ export const PALETTE_USE: MetricStack = {
 const MODE_TITLES: Record<string, string> = {
   Laser: 'Laser',
   Spotlight: 'Spotlight',
-  Eraser: 'Eraser',
   FormatPainter: 'Format Painter',
   Isometric: 'Isometric',
   AvatarMode: 'Avatar Mode',
@@ -1097,13 +1071,6 @@ export const WORKSHOP_TOUR_OFFERED = opened(
   'Workshop Tour Offered',
   'The Workshop tour offered, the first time someone works in Workshop mode.',
   (t) => t === 'WorkshopTourOffer',
-);
-
-// The Draw tour's offer (docs/specs/023-draw-mode/draw-tour.md); charted in its funnel on the Visitors tab.
-export const DRAW_TOUR_OFFERED = opened(
-  'Draw Tour Offered',
-  'The Draw tour offered, the first time someone works in Draw mode.',
-  (t) => t === 'DrawTourOffer',
 );
 
 // The Forms tour's offer (docs/specs/030-forms/forms.md "The Forms tour"); charted in its funnel on the Visitors tab.
@@ -1298,16 +1265,6 @@ export const CUSTOM_SWATCHES = chart(
   { types: ['QuickSwatchCustom', 'QuickSwatchReset'], rising: 'neutral' },
 );
 
-// The Highlighter's next-stroke settings (docs/specs/008-canvas/highlighter.md "Settings"), chosen in
-// the quick style panel while its tile is armed. Restyling a drawn highlight is an Element change.
-export const HIGHLIGHTER_SETTINGS = chart(
-  'UI',
-  'Changed',
-  'Highlighter Settings',
-  "The Highlighter's colour or width changed for the next stroke, in the quick style panel.",
-  { types: ['HighlighterColour', 'HighlighterWidth'], rising: 'neutral' },
-);
-
 // The Tab Style popover's Finish filter beside its Looks carousel (docs/specs/011-theme/
 // canvas-and-theme-dialog.md).
 export const LOOKS_FILTERED = chart(
@@ -1332,7 +1289,6 @@ export const LOOK_AND_FEEL: MetricStack = {
     CUSTOM_THEMES,
     CUSTOM_SWATCHES,
     LOOKS_FILTERED,
-    HIGHLIGHTER_SETTINGS,
   ],
   headline: [THEMES_CHOSEN, CANVAS_STYLES_PICKED],
   seeAlso: { section: 'lookfeel', label: 'See Each Preset in Features › Look & Feel' },

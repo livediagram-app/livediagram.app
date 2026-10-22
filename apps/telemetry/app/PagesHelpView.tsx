@@ -4,7 +4,6 @@ import type { TelemetrySummary, TelemetryWindowKey } from '@liveplanner/api-sche
 import { HelpView } from './HelpView';
 import {
   AVATAR_TOUR,
-  DRAW_TOUR,
   ELEMENT_TOURS,
   WORKSHOP_TOUR,
   FORM_TOUR,
@@ -31,7 +30,6 @@ export const TOURS_GROUPS: MetricGroup[] = [
       WELCOME_TOUR,
       PLAN_TOUR,
       WORKSHOP_TOUR,
-      DRAW_TOUR,
       FORM_TOUR,
       AVATAR_TOUR,
       PAGES_TOUR,

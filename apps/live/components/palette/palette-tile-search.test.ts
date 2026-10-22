@@ -14,8 +14,6 @@ import {
 } from './palette-tile-search';
 import { PALETTE_TILES, tileById, type PaletteTileDef } from './palette-tile-defs';
 import { planCardTile } from './palette-plan-tiles';
-import { markerTiles } from './palette-marker-tiles';
-import { DEFAULT_WHITEBOARD_PREFS } from '@/lib/whiteboard-prefs';
 
 const ids = (tiles: PaletteTileDef[]) => tiles.map((t) => t.id);
 
@@ -148,46 +146,6 @@ describe('searchElementTiles', () => {
   });
 });
 
-describe("Draw mode's markers", () => {
-  const drawTiles = markerTiles(DEFAULT_WHITEBOARD_PREFS, 'light');
-
-  it("are found by name, always as another mode's", () => {
-    const { here, elsewhere } = searchElementTiles({
-      query: 'marker',
-      mode: 'diagram',
-      hasImage: true,
-      drawTiles,
-    });
-    expect(ids(here)).not.toContain('draw:marker-main');
-    expect(ids(elsewhere)).toEqual(
-      expect.arrayContaining(['draw:marker-main', 'draw:marker-second', 'draw:marker-third']),
-    );
-  });
-
-  it('name each pen by its place, and say its colour and width', () => {
-    expect(drawTiles.map((t) => t.caption)).toEqual(['Marker 1', 'Marker 2', 'Marker 3']);
-    expect(drawTiles[1]!.description).toContain('Blue, Medium');
-    expect(drawTiles[1]!.action).toEqual({
-      type: 'marker',
-      penId: 'second',
-      colour: 'blue',
-      width: 1.5,
-    });
-  });
-
-  it('give way to the pencil on the tab, a stroke being a stroke', () => {
-    const { here, elsewhere } = searchElementTiles({
-      query: '',
-      mode: 'diagram',
-      hasImage: true,
-      drawTiles,
-      tabElements: [el({ type: 'freehand' })],
-    });
-    expect(ids(here)).toEqual(['tools:pencil']);
-    expect(ids(elsewhere)).toEqual([]);
-  });
-});
-
 describe('tile and element signatures', () => {
   const sigOf = (id: string) => tileSignature(tileById(id)!);
 
@@ -196,9 +154,7 @@ describe('tile and element signatures', () => {
       sigOf('tools:es-domain-event'),
     );
     expect(elementSignature(el({ type: 'sticky' }))).toBe(sigOf('tools:sticky'));
-    expect(elementSignature(el({ type: 'freehand', pen: 'highlighter' }))).not.toBe(
-      sigOf('tools:pencil'),
-    );
+    expect(elementSignature(el({ type: 'freehand' }))).toBe(sigOf('tools:polygon'));
     expect(elementSignature(el({ type: 'arrow', arrowEnds: 'none' }))).toBe(sigOf('tools:line'));
     expect(elementSignature(el({ type: 'arrow' }))).toBe(sigOf('tools:arrow'));
   });

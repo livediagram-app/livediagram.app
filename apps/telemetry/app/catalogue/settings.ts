@@ -352,13 +352,6 @@ export const TOURS_SETTINGS = settingsStack(
     ),
     toggle(
       'UI',
-      'DrawTourSeenOff',
-      'DrawTourSeenOn',
-      'Draw Tour',
-      'The Draw tour switched back on or off.',
-    ),
-    toggle(
-      'UI',
       'AvatarTourSeenOff',
       'AvatarTourSeenOn',
       'Avatar Tour',

@@ -69,7 +69,7 @@ describe('tileDragStart', () => {
   });
 
   it('offers no drag for tools that arm a gesture rather than place an element', () => {
-    for (const type of ['text', 'freehand', 'shape-pen', 'polygon', 'arrow'] as const) {
+    for (const type of ['text', 'polygon', 'arrow'] as const) {
       expect(tileDragStart({ type })).toBeUndefined();
     }
   });

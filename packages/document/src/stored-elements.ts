@@ -15,6 +15,7 @@ import { dropMalformedIds } from './malformed-ids';
 import { dropMalformedStyles } from './malformed-styles';
 import { settleChartRows } from './malformed-chart-rows';
 import { dropUnsafeColours } from './unsafe-colours';
+import { dropRetiredKinds } from './retired-kinds';
 import type { Element } from './index';
 
 export function migrateStoredElements(elements: Element[]): Element[] {
@@ -38,7 +39,9 @@ export function migrateStoredElementsUnsettled(elements: Element[]): Element[] {
                 migrateLegacyGroups(
                   migrateLegacyCallouts(
                     settleChartRows(
-                      dropMalformedBends(dropMalformedIds(dropMalformedStyles(elements))),
+                      dropMalformedBends(
+                        dropMalformedIds(dropMalformedStyles(dropRetiredKinds(elements))),
+                      ),
                     ),
                   ),
                 ),
