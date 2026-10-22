@@ -384,4 +384,3 @@ clean, as one edit:
 - Combining on pages other than logo pages, or outside Pages mode.
 - A brand palette or colour generator; the tab's theme and the colour pickers do this job.
 - An SVG favicon or a web manifest in the kit.
-- A combined shape's holes in an Excalidraw export, which draws its first contour only.

@@ -237,8 +237,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'import-tabs': '#0891b2',
   'shape-libraries': '#7c3aed',
   tags: '#e11d48',
-  'drawio-import': '#ea580c',
-  'microsoft-whiteboard-import': '#0d9488',
   'export-tabs': '#0284c7',
   'tab-cleanup': '#2563eb',
   // Search Panel guides

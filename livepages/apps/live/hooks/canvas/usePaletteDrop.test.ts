@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { LIBRARY_SHAPE_DND_MIME } from '@/lib/shape-library-dnd';
 import { usePaletteDrop } from './usePaletteDrop';
 
-// A file dropped on the canvas (docs/specs/020-import-export/excalidraw-import-export.md "Paste"):
+// A file dropped on the canvas (docs/specs/008-canvas/canvas-and-palette.md):
 // handed over with the canvas point it was released at.
 
 function setup(deps: { onDropFile?: boolean } = {}) {
@@ -41,7 +41,7 @@ function dragEvent(files: File[]) {
 describe('dropping a file on the canvas', () => {
   it('hands the file over with its canvas point', () => {
     const h = setup();
-    const file = new File(['{}'], 'board.excalidraw');
+    const file = new File(['{}'], 'board.png');
     const event = dragEvent([file]);
     h.onDrop(event);
     expect(event.preventDefault).toHaveBeenCalled();
@@ -50,7 +50,7 @@ describe('dropping a file on the canvas', () => {
 
   it('accepts a file drag, so the cursor says it will land', () => {
     const h = setup();
-    const event = dragEvent([new File(['{}'], 'board.excalidraw')]);
+    const event = dragEvent([new File(['{}'], 'board.png')]);
     h.onDragOver(event);
     expect(event.preventDefault).toHaveBeenCalled();
     expect(event.dataTransfer.dropEffect).toBe('copy');
@@ -58,7 +58,7 @@ describe('dropping a file on the canvas', () => {
 
   it('leaves files alone where nothing takes them', () => {
     const h = setup({ onDropFile: false });
-    const event = dragEvent([new File(['{}'], 'board.excalidraw')]);
+    const event = dragEvent([new File(['{}'], 'board.png')]);
     h.onDragOver(event);
     h.onDrop(event);
     expect(event.preventDefault).not.toHaveBeenCalled();

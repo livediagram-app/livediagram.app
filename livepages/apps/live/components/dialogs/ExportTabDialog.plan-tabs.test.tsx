@@ -64,7 +64,7 @@ const cardTitles = () =>
   screen
     .getAllByRole('button')
     .map((b) => b.querySelector('h3, .font-semibold')?.textContent ?? b.textContent ?? '')
-    .filter((t) => /^(JSON|Mermaid|Markdown|CSV|Excalidraw|PNG|SVG|PDF)/.test(t.trim()))
+    .filter((t) => /^(JSON|Markdown|CSV|PNG|SVG|PDF)/.test(t.trim()))
     .map((t) => t.trim().split(/\s/)[0]);
 
 afterEach(cleanup);
@@ -122,15 +122,7 @@ describe('ExportTabDialog on a Plan tab', () => {
   // neither, so it is not offered there: it was, and downloaded an empty file.
   it('draws a plan view on any other tab as its chart, with every format but CSV offered', async () => {
     open({ id: 'c', name: 'Canvas', elements: [view] });
-    expect(cardTitles()).toEqual([
-      'JSON',
-      'Mermaid',
-      'Markdown',
-      'Excalidraw',
-      'PNG',
-      'SVG',
-      'PDF',
-    ]);
+    expect(cardTitles()).toEqual(['JSON', 'Markdown', 'PNG', 'SVG', 'PDF']);
     fireEvent.click(screen.getByRole('button', { name: /PNG/ }));
     await waitFor(() => expect(document.body.innerHTML).toContain('Not Started'));
     expect(screen.queryByText(/Isometric view/)).not.toBeNull();

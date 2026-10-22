@@ -6,29 +6,26 @@ Derived from [Trusted Types](../trusted-types.md).
 
 | Term               | Identifier                                         | Meaning                                                                                                                            |
 | ------------------ | -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| The header value   | `TRUSTED_TYPES_CSP`                                | `require-trusted-types-for 'script'; trusted-types livepages-markup livepages-inert-parse nextjs ProseMirrorClipboard default` |
+| The header value   | `TRUSTED_TYPES_CSP`                                | `require-trusted-types-for 'script'; trusted-types livepages-markup nextjs ProseMirrorClipboard default` |
 | Markup policy      | `MARKUP_POLICY` (`'livepages-markup'`)           | Makes `TrustedHTML` from livepages's own builders' markup                                                                        |
-| Inert-parse policy | `INERT_PARSE_POLICY` (`'livepages-inert-parse'`) | Lets `DOMParser` read a file a person opened                                                                                       |
 | Default policy     | `'default'`                                        | The browser's fallback for a plain string at a sink                                                                                |
 | Boot script        | `trustedTypesBootScript(assetPrefix, origins)`     | Inline, first in each layout's `<head>`: the default policy and the violation log                                                  |
 | Asset prefix       | `''`, `/live`, `/help`, `/telemetry`               | Where an app's own build is served from (`assetPrefix` or `basePath`)                                                              |
 | Markup helper      | `trustedHtml(markup)`                              | `TrustedHTML` in a browser with Trusted Types, else the string itself                                                              |
-| Inert parse        | `parseInert(source, type)`                         | `DOMParser` through the inert-parse policy                                                                                         |
 | Allowed origin     | `trustedScriptOrigins(env)`                        | Third-party script origins the default policy lets through (Clerk's)                                                               |
 
 ## Modules
 
 | File                                                         | Responsibility                                                                                                                                                           |
 | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `packages/ui/src/trusted-types-csp.ts`                       | `TRUSTED_TYPES_CSP`, `MARKUP_POLICY`, `INERT_PARSE_POLICY`; import-free, so `scripts/e2e-stack.mjs` runs it as is                                                        |
-| `packages/ui/src/trusted-types.ts`                           | `trustedHtml`, `parseInert`, `isAllowedScriptUrl`, `trustedScriptOrigins`, `trustedTypesBootScript`; exported from `@livepages/ui` and `@livepages/ui/trusted-types` |
+| `packages/ui/src/trusted-types-csp.ts`                       | `TRUSTED_TYPES_CSP`, `MARKUP_POLICY`; import-free, so `scripts/e2e-stack.mjs` runs it as is                                                        |
+| `packages/ui/src/trusted-types.ts`                           | `trustedHtml`, `isAllowedScriptUrl`, `trustedScriptOrigins`, `trustedTypesBootScript`; exported from `@livepages/ui` and `@livepages/ui/trusted-types` |
 | `apps/*/app/layout.tsx` (all four)                           | `TRUSTED_TYPES_BOOT` (the boot script for the app's prefix and key), first in `<head>`; help and telemetry gain a `<head>` for it                                        |
 | `apps/live/src/worker.ts`                                    | `Content-Security-Policy: TRUSTED_TYPES_CSP` among its security headers                                                                                                  |
 | `apps/{marketing,help,telemetry}/public/_headers`            | The same header on `/*`                                                                                                                                                  |
 | `scripts/e2e-stack.mjs`                                      | Sends the header on every HTML response, as production does                                                                                                              |
 | Every `dangerouslySetInnerHTML` site                         | `__html: trustedHtml(markup)`                                                                                                                                            |
 | Every `innerHTML`, `outerHTML` or `insertAdjacentHTML` write | `el.innerHTML = trustedHtml(markup) as string` (`useFaceFinishPass.ts`, the Marker and Sketch face ink)                                                                  |
-| `apps/live/lib/drawio/{envelope,label,library}.ts`           | `parseInert` in place of `new DOMParser().parseFromString`                                                                                                               |
 
 ## Behaviour and state
 
@@ -78,10 +75,10 @@ refused. Called directly (`trustedTypes.defaultPolicy.createHTML(html)`, no sink
 logs nothing: it is not a violation, and a library that probes the default policy first (ProseMirror) then makes its
 own named policy. The boot script contains no `</script` anywhere (a test holds it), since it is written into one.
 
-### `trustedHtml` and `parseInert`
+### `trustedHtml`
 
 1. In a browser with `trustedTypes`, the first call creates the policy (`createHTML: (s) => s`) and keeps it.
-2. They return the policy's `TrustedHTML` (`parseInert` hands it to `DOMParser`).
+2. It returns the policy's `TrustedHTML`.
 3. Without `trustedTypes` (the prerender, jsdom, a worker scope without enforcement) the string passes through.
 
 ### Third-party origins
@@ -96,9 +93,7 @@ set, else `[]`. The sign-up form holds `<div id="clerk-captcha">` (hidden while 
 ```ts
 export const TRUSTED_TYPES_CSP: string;
 export const MARKUP_POLICY: 'livepages-markup';
-export const INERT_PARSE_POLICY: 'livepages-inert-parse';
 export function trustedHtml(markup: string): TrustedHTML | string;
-export function parseInert(source: string, type: DOMParserSupportedType): Document;
 export function isAllowedScriptUrl(
   url: string,
   pageOrigin: string,
@@ -126,7 +121,7 @@ export function trustedTypesBootScript(assetPrefix: string, origins: readonly st
 ## Security and trust
 
 - `trustedHtml` is the only path to `TrustedHTML` for markup, and its callers are the escaping builders; the sinks
-  test lists every call site. `parseInert` only parses: nothing from the document is inserted as markup.
+  test lists every call site. No file is parsed with `DOMParser`, which no policy lets through.
 - The default policy allows script URLs only: this app's own `/_next/`, named origins, and same-origin `blob:` for a
   worker. `trusted-types` names every policy, so no other code can create one.
 
@@ -148,7 +143,7 @@ export function trustedTypesBootScript(assetPrefix: string, origins: readonly st
 | ---------------------------------------------------- | -------------------------------------------------------------------------- |
 | The URL rule, prefixes and the blob worker           | `packages/ui/src/trusted-types.test.ts`: `isAllowedScriptUrl` cases        |
 | Clerk origin from the key, and its CAPTCHA           | `trusted-types.test.ts`: `trustedScriptOrigins`                            |
-| `trustedHtml` and `parseInert`                       | `trusted-types.test.ts`                                                    |
+| `trustedHtml`                                        | `trusted-types.test.ts`                                                    |
 | The boot script runs the rule and logs               | `trusted-types.test.ts`: `trustedTypesBootScript`                          |
 | Every sink uses a policy, direct DOM writes included | `packages/ui/src/trusted-types-sinks.test.ts` (every app and package)      |
 | Every layout boots first, with its prefix            | `trusted-types-sinks.test.ts` (prefix read from each `next.config.ts`)     |

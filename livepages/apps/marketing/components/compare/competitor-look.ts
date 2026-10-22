@@ -30,7 +30,7 @@ export const COMPETITOR_LOOK: Record<string, CompetitorLook> = {
     icon: lucideGlyph(lucideHighlighter, 22),
     panel: 'from-sky-100 to-indigo-50 dark:from-sky-500/15 dark:to-indigo-500/5',
     glyph: 'text-sky-600 dark:text-sky-300',
-    highlights: ['Imports your boards', 'No Microsoft account', 'Pressure-sensitive ink'],
+    highlights: ['Free for everyone', 'No Microsoft account', 'Pressure-sensitive ink'],
   },
   miro: {
     icon: lucideGlyph(lucideStickyNote, 22),
@@ -48,13 +48,13 @@ export const COMPETITOR_LOOK: Record<string, CompetitorLook> = {
     icon: lucideGlyph(lucidePencil, 22),
     panel: 'from-violet-100 to-fuchsia-50 dark:from-violet-500/15 dark:to-fuchsia-500/5',
     glyph: 'text-violet-600 dark:text-violet-300',
-    highlights: ['Hand-drawn finishes', 'Free presentations', '.excalidraw in and out'],
+    highlights: ['Hand-drawn finishes', 'Free presentations', 'Real-time by default'],
   },
   drawio: {
     icon: lucideGlyph(lucideWorkflow, 22),
     panel: 'from-orange-100 to-amber-50 dark:from-orange-500/15 dark:to-amber-500/5',
     glyph: 'text-orange-600 dark:text-orange-300',
-    highlights: ['Real-time by default', 'Imports .drawio', 'One-click themes'],
+    highlights: ['Real-time by default', 'Mermaid through the API', 'One-click themes'],
   },
   'google-slides': {
     icon: lucideGlyph(lucideAppWindow, 22),

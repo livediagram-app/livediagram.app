@@ -383,8 +383,7 @@ refetches. Presence on cards is a separate ephemeral op, `plan-presence` (`{ tab
 - Markdown export: `tabPlanMarkdown(tab, plan)` appends `## Plan Boards` (`### title`, `#### Column · count`,
   `- #key Title (Type)` per card, `_No cards._` for an empty column) and `## Plan Cards`, shapes in y then x order.
 - Board layout: `planBoardLayout(el, items, types)` (`plan-board-layout.ts`) places the columns and the cards that
-  fit; `svgPlanBoard` and the Excalidraw export (`apps/live/lib/excalidraw-export-plan.ts`, `planBoardParts`,
-  `planCardLabel`) both read it.
+  fit; `svgPlanBoard` reads it.
 
 ## Undo
 
@@ -474,7 +473,6 @@ include `fields` or comment text.
 | Panel thread and card count                    | `apps/live/components/plan/ItemComments.test.tsx`                                                                                                                                     |
 | Tab export: items, catalogue, Markdown, layout | `packages/document/src/export-tab-plan.test.ts`, `apps/live/components/dialogs/ExportTabDialog.plan.test.tsx`                                                                         |
 | Tab import: parse, plan, land, report          | `apps/live/lib/import-tab.test.ts`, `packages/items/src/tab-import.test.ts`, `apps/live/hooks/plan/usePlanTabImport.test.ts`, `apps/live/hooks/persistence/useTabImport.plan.test.ts` |
-| Excalidraw board and card                      | `apps/live/lib/excalidraw-export-plan.test.ts`                                                                                                                                        |
 
 ## Constants and configuration
 

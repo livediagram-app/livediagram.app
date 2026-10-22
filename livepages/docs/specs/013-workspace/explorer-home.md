@@ -127,12 +127,9 @@ Under it, beside the sidebar, Home holds three sections in place of Jump Back In
 - **Popular Templates**: the first eight non-blank templates of the shared Popular list, as large cards with their
   previews, titles and descriptions; activating one makes it at once. A quiet **Browse All Templates** link in the
   heading row opens the wizard (`/new`).
-- **Already Have Work?**: up to two cards side by side.
-  - For a guest on a deployment with sign-in: **Nothing here yet? Sign in**: "If you have used livepages before,
-    sign in and your documents come back with you." with a **Sign In** button. A signed-out person who expected
-    their work finds the way back first.
-  - **Bring It With You**: "Import boards from Miro, draw.io, Excalidraw or Microsoft Whiteboard; each becomes its own
-    document." with the Explorer's own **Import From** control, filing into My Documents as it does there.
+- **Already Have Work?**, for a guest on a deployment with sign-in only: **Nothing here yet? Sign in**: "If you have
+  used livepages before, sign in and your documents come back with you." with a **Sign In** button. A signed-out
+  person who expected their work finds the way back first.
 
 The welcome's previews are loaded only for a person with nothing yet, so everyone else's Home pays nothing for
 them. It follows the share-role rule trivially: it is the person's own Home, with no shared document in reach.
@@ -151,9 +148,8 @@ the **4 most used** and the **4 most recent**, no document twice.
   recent instead.
 - **Not empty on day one**: every day the person edited a document before opens were recorded counts as a day
   they opened it, so Most Used reflects the work they already did.
-- **Making a document is a use**, and a **bulk import is not** ([Making a document](#making-a-document)): what the
-  person just made is in Jump Back In at once, opened or not, while one big import never pushes everything else
-  out of it.
+- **Making a document is a use** ([Making a document](#making-a-document)): what the person just made is in Jump
+  Back In at once, opened or not.
 - Only documents the person can open now: never one in the Trash, nor one whose share link has lapsed or whose
   team they have left.
 - A document stored only in this browser ([Offline Mode](../006-document/offline-mode.md)) takes part with this
@@ -225,25 +221,20 @@ the **4 most used** and the **4 most recent**, no document twice.
 ### Making a document
 
 - **Making a document is a use.** The day a person makes a document is a use day of it, and the moment they make
-  it a use, however they make it: the New Document wizard, an import of one document, a duplicate, a copy of a
+  it a use, however they make it: the New Document wizard, a duplicate, a copy of a
   document shared with them, or one an AI tool or an API client makes for them. So a document made without being
   opened is in Jump Back In at once.
 - **Once a day, as ever.** The wizard opens what it makes: the making and the first open fall on one day, which is
   one use day, not two.
-- **A bulk import is not a use.** An import that makes **more than one document in one go** (a Microsoft
-  Whiteboard export of several boards, several draw.io files, several Excalidraw files) does not mark its
-  documents used, so one big import never pushes everything else out of the recent row. They wait on the Recent
-  page and in their folder until they are opened or edited. The import of a single document counts as any other
-  making does.
 - **The create says so.** Creating a document says whether it counts as a use: `markUsed`, true unless the caller
-  sends `false` ([API](../015-api/api.md), `POST /api/documents`). The editor's bulk imports send `false`; any API
+  sends `false` ([API](../015-api/api.md), `POST /api/documents`). The editor never sends it; any API
   client may, and an AI tool's create may too ([MCP server](../015-api/mcp-server.md), `create_document`).
 - Moving a document is not making it: saving an [Offline Mode](../006-document/offline-mode.md) document to the
   cloud, or taking a cloud one offline, is no use of it.
 - Only makings from when a making began to count are counted: a document made before that joins at its next open
   or edit, as before.
 - A document stored only in this browser counts its making in this browser's record ([Opens](#opens)), by the same
-  rule: a bulk import of local documents marks none of them used.
+  rule.
 
 ## What Happened
 
@@ -332,7 +323,7 @@ An **open** is the editor loading a document for a person to look at.
   them instead**: the editor opening a document stored only here adds the day to that document's own record in
   this browser, by the same once-per-UTC-day rule, keeping the days of the last 90, and moves its last open. Its
   last edit is the record's own save time. Making a document here starts that record with the day and the moment
-  it was made, as an open would, unless it came in a bulk import ([Making a document](#making-a-document)). So
+  it was made, as an open would ([Making a document](#making-a-document)). So
   Jump Back In places it among the rest by the same rule. The record lives and dies with the document's local
   record and never leaves the browser.
 

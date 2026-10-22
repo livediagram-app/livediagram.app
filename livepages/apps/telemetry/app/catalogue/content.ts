@@ -269,7 +269,7 @@ export const EXPORTS: Metric = {
   allTypes: true,
   title: 'Exports',
   blurb:
-    'A tab or selection exported, across every format (PNG, SVG, PDF, JSON, Mermaid, Markdown, Excalidraw). For the text formats, copying to the clipboard counts as an export too.',
+    'A tab or selection exported, across every format (PNG, SVG, PDF, JSON, Markdown). For the text formats, copying to the clipboard counts as an export too.',
 };
 
 // The document + tab lifecycle as stacks (Dashboard). Loaded is the opens
@@ -750,22 +750,15 @@ export const TAB_IMPORTS = chart(
   'Tab',
   'Imported',
   'Tabs Imported',
-  'A tab imported from draw.io, Excalidraw, Mermaid, Markdown or JSON.',
-);
-
-export const PASTES_FROM_EXCALIDRAW = chart(
-  'Element',
-  'Imported',
-  'Pasted from Excalidraw',
-  'Drawings copied in Excalidraw and pasted or dropped onto the canvas.',
+  'A tab imported from a Markdown outline or a livepages JSON export.',
 );
 
 export const EXPORT_AND_IMPORT: MetricStack = {
   stack: true,
   title: 'Export & Import',
   blurb:
-    'Diagrams leaving livepages as files and text, and tabs and drawings coming in from other tools.',
-  members: [EXPORTS, EXPORT_OPTIONS, TAB_IMPORTS, PASTES_FROM_EXCALIDRAW],
+    'Diagrams leaving livepages as files and text, and tabs coming in from Markdown outlines and JSON exports.',
+  members: [EXPORTS, EXPORT_OPTIONS, TAB_IMPORTS],
   seeAlso: { section: 'editing', label: 'See Each Export Format in Features › Editing' },
 };
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createShape, MAX_ELEMENTS_PER_TAB, savableElements, type Element } from './index';
 
-// docs/specs/020-import-export/board-import.md "What lands": an import lands only what the api saves.
+// An import lands only what the api saves.
 describe('savableElements', () => {
   const square = (id: string) => ({ ...createShape('square', 0, 0), id }) as Element;
 

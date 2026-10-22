@@ -32,6 +32,3 @@ exported and clicked always agree.
 - **Diagram tabs:** the context menu's Border category, as before.
 - **Whiteboards:** the quick style panel's **Corners** row (None, Small, Medium, Large), see
   [Quick style panel](quick-style-panel.md); a whiteboard's menu does not offer corners.
-- **Imports:** Excalidraw's rounded rectangles land as **Large**, which through the quarter rule
-  matches Excalidraw's own rounding at every size up to its 32 px cap
-  ([Excalidraw import & export](../020-import-export/excalidraw-import-export.md)).

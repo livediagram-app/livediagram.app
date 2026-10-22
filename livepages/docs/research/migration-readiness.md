@@ -3,9 +3,9 @@
 Research to de-risk three features that let a user bring 100+ boards from other
 tools into livepages and keep them mirrored in their own Google Drive. No
 product code. The decisions below turned the proposals into specs:
-[Board import](../specs/020-import-export/board-import.md),
-[Miro import](../specs/020-import-export/miro-import.md) and
-[Microsoft Whiteboard import](../specs/020-import-export/whiteboard-import.md);
+Board import,
+Miro import and
+Microsoft Whiteboard import;
 the Drive decision amended [Save Locations](../specs/006-document/save-locations.md).
 
 - **Checked:** 2026-09-27, against the official pages listed in [Sources](#sources)
@@ -20,13 +20,13 @@ the Drive decision amended [Save Locations](../specs/006-document/save-locations
 
 Taken by the operator on 2026-09-27, after the first version of this report.
 
-| Question           | Decision                                                                                                                                                      | Recorded in                                                                    |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| Miro route         | **REST API only**; what it cannot read is reported as lost. No clipboard decoding.                                                                            | [Miro import](../specs/020-import-export/miro-import.md)                       |
-| Whiteboard account | The boards are on a **personal** Microsoft account: the exported image is the import route.                                                                   | [Microsoft Whiteboard import](../specs/020-import-export/whiteboard-import.md) |
-| Drive's role       | Drive is a **mirror** of cloud documents, never a save location.                                                                                              | [Save Locations](../specs/006-document/save-locations.md)                      |
-| Drive bin          | Maps to the livepages **Trash**, specified separately (soft delete for 30 days, team Trash, local Trash for Offline Mode, api and MCP deletes go to Trash). | [Trash](../specs/013-workspace/trash.md)                                       |
-| Safari images      | A **WASM WebP encoder**, loaded only when the browser cannot encode WebP.                                                                                     | [Board import](../specs/020-import-export/board-import.md)                     |
+| Question           | Decision                                                                                                                                                      | Recorded in                                               |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| Miro route         | **REST API only**; what it cannot read is reported as lost. No clipboard decoding.                                                                            | Miro import                                               |
+| Whiteboard account | The boards are on a **personal** Microsoft account: the exported image is the import route.                                                                   | Microsoft Whiteboard import                               |
+| Drive's role       | Drive is a **mirror** of cloud documents, never a save location.                                                                                              | [Save Locations](../specs/006-document/save-locations.md) |
+| Drive bin          | Maps to the livepages **Trash**, specified separately (soft delete for 30 days, team Trash, local Trash for Offline Mode, api and MCP deletes go to Trash). | [Trash](../specs/013-workspace/trash.md)                  |
+| Safari images      | A **WASM WebP encoder**, loaded only when the browser cannot encode WebP.                                                                                     | Board import                                              |
 
 ## Headlines
 
@@ -375,8 +375,8 @@ decode [M9]. Unverified by us, but consistent with Miro's own "Unsupported" list
 
 ### B4. Importer
 
-Specified in [Miro import](../specs/020-import-export/miro-import.md), on the
-shared stages of [Board import](../specs/020-import-export/board-import.md).
+Specified in Miro import, on the
+shared stages of Board import.
 
 ## C. Microsoft Whiteboard import
 
@@ -419,7 +419,7 @@ Read from the shipped web app (`whiteboard.cloud.microsoft`, build
 
 ### C4. Import route
 
-Specified in [Microsoft Whiteboard import](../specs/020-import-export/whiteboard-import.md):
+Specified in Microsoft Whiteboard import:
 v1 imports the exported **PNG** as one image. The Full export Zip is the richer
 source (editable ink and notes) but its HTML is Whiteboard's internal markup,
 so its mapping is specified only once real exports exist. Because the boards

@@ -3,9 +3,7 @@
 **Draw mode** is the [editor mode](../007-editor/editor-modes.md) built for
 plain, freehand whiteboarding: pick up a pen and draw, with the simplicity of
 Microsoft Whiteboard. Any general tab can be switched into it from the mode
-switch beside the page switcher, and back to Diagram mode, and it is where
-imported Microsoft Whiteboard boards open
-([Microsoft Whiteboard import](../020-import-export/whiteboard-import.md)).
+switch beside the page switcher, and back to Diagram mode.
 
 Whiteboarding is a mode, not a tab kind: there is no `kind: 'whiteboard'`.
 A stored tab that carries it reads as a general tab that opens in Draw mode
@@ -44,9 +42,6 @@ pen widths, dock spacing) are named constants, tuned in place.
   Draw template by search ([Template starts](../007-editor/start-diagramming.md#found-in-other-modes)).
 - **No theme step.** A new whiteboard starts on the default theme; the tab looks the same in either mode
   ([Appearance](#appearance)).
-- **Import:** a Microsoft Whiteboard import makes each board its own new
-  document with one tab that opens in Draw mode, named and dated after the board, and Excalidraw pasted onto a whiteboard lands as its own
-  marks (see [Imported and pasted content](#imported-and-pasted-content)).
 - **Any empty tab:** the mode switch on its start turns a general tab into a whiteboard before anything is on it,
   and a new tab made from a Draw tab opens in Draw ([Editor modes](../007-editor/editor-modes.md)).
 
@@ -432,8 +427,7 @@ Explorer Home's Jump Back In.
   no explicit colour, so it follows the appearance; a stock colour is recorded
   by name, so it adapts to each viewer's board, and a custom colour as its
   hex, which stays as drawn. A recognised shape or line keeps its pen's colour
-  the same way, and so does imported content ([Imported and pasted
-  content](#imported-and-pasted-content)).
+  the same way.
 
 ## Shapes
 
@@ -532,40 +526,6 @@ box and does not.
   placed with a click fits its words, any other wraps at its width.
 - Existing text boxes keep their size until edited or resized; then they hug.
 - Notes (stickies) keep their fixed note size.
-
-## Imported and pasted content
-
-Boards brought in from elsewhere land as if drawn here, through one shared
-landing ([Board scene](../020-import-export/board-scene.md)): Excalidraw pasted
-or dropped onto a whiteboard, an Excalidraw file imported into one, and every
-Microsoft Whiteboard board ([Microsoft Whiteboard import](../020-import-export/whiteboard-import.md)).
-
-- **What arrives as what:** pen and freedraw ink becomes **marker strokes**,
-  with their pressure where the source recorded it (else a constant width) at
-  the nearest marker width; highlighter ink stays highlighter; shapes become
-  **shapes** (rectangle, ellipse, diamond, triangle) with their border, fill and
-  label; a two-point line becomes a **line**, a longer line or polygon a
-  **path** (corners kept, curves smooth, closed with its fill); arrows become
-  **arrows** attached to the shapes they were bound to; text becomes **text
-  boxes**; notes become **sticky notes** in the nearest sticky colour; images
-  arrive through the image gallery; frames stay **frames**. Groups are dropped.
-- **Adaptive colours:** colour comes across the way the pens store it. A
-  near-black line is the board's **ink** (no colour of its own), so it shows
-  dark on the light board and light on the dark one, whatever board it was
-  drawn on. A colour close to a **stock colour** (Blue, Red, Orange, Yellow,
-  Green, Teal, Violet, Pink) lands by its name and is drawn in the version for each
-  viewer's board. Anything else keeps its exact hex, a custom colour.
-- **Named colours on every mark:** a stock colour is stored by name on a
-  stroke, shape, line, arrow and path (its line colour) and on a text box, a
-  shape's label, a sticky note's text and an arrow's label (its text colour),
-  each drawn in its board's version when no explicit colour overrides it. Text
-  on a fill (a filled shape's label, a sticky note's own text colour) keeps its
-  exact colour instead, since the fill does not adapt.
-- **Text hugs:** every landed text box hugs its text in our fonts, at the size
-  it had (the nearest size times a text scale); hand-drawn fonts land in Caveat.
-- **A paste selects its result**, lands at the pointer (or the middle of the
-  view), and is **one undo step**, images included. A paste that changed or
-  dropped anything says so in a small notice; a lossless paste says nothing.
 
 ## Nothing animates in
 
@@ -881,9 +841,6 @@ Draw mode is built in rounds and tuned with the operator between them.
 - **Still ahead:** the trimmed element menu (colour, width, delete, stacking,
   duplicate, comment); until then a whiteboard element opens the ordinary
   menu.
-- **Imports:** Excalidraw paste and the
-  Microsoft Whiteboard import land through the board scene, and the quick style
-  panel styles mixed selections of everything they bring.
 
 ## Non-goals
 
@@ -893,4 +850,4 @@ Draw mode is built in rounds and tuned with the operator between them.
 
 ## References
 
-[Editor modes](../007-editor/editor-modes.md), [Two pens instead of a pen and a mode](../008-canvas/two-pens.md) (shape recogniser), [Eraser panel](../008-canvas/eraser-panel.md), [Appearance](../004-interface-design/appearance.md), [Microsoft Whiteboard import](../020-import-export/whiteboard-import.md), [Google Drive mirror](../022-drive-mirror/drive-mirror.md).
+[Editor modes](../007-editor/editor-modes.md), [Two pens instead of a pen and a mode](../008-canvas/two-pens.md) (shape recogniser), [Eraser panel](../008-canvas/eraser-panel.md), [Appearance](../004-interface-design/appearance.md), [Google Drive mirror](../022-drive-mirror/drive-mirror.md).

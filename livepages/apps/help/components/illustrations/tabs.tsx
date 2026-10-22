@@ -805,9 +805,7 @@ export function ExportMenu() {
   const dy = 12;
   const cards: [string, string][] = [
     ['JSON', 'json'],
-    ['Mermaid', 'mmd'],
     ['Markdown', 'md'],
-    ['Excalidraw', 'excali'],
     ['PNG', 'png'],
     ['SVG', 'svg'],
     ['PDF', 'pdf'],
@@ -839,10 +837,7 @@ export function ImportWarning() {
   const dy = 10;
   const cards: [string, string][] = [
     ['JSON', 'json'],
-    ['Mermaid', 'mmd'],
     ['Markdown', 'md'],
-    ['Excalidraw', 'excali'],
-    ['draw.io', 'drawio'],
   ];
   return (
     <Scene w={W} h={H}>

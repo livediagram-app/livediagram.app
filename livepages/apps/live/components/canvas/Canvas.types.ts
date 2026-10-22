@@ -335,8 +335,8 @@ export type CanvasProps = {
   onAddAvatar: () => void;
   onAddText: () => void;
   onAddSticky: () => void;
-  // Any other file dropped on the canvas, at its canvas point (an Excalidraw file or export,
-  // docs/specs/020-import-export/excalidraw-import-export.md "Paste"). Absent where files are refused.
+  // Any other file dropped on the canvas, at its canvas point (an image lands there). Absent where files are
+  // refused.
   onDropFile?: (file: File, at: { x: number; y: number }) => void;
   // A shape dragged from My shapes, at its canvas point (docs/specs/013-workspace/shape-libraries.md).
   // Absent where nothing can be placed.

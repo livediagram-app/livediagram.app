@@ -364,8 +364,7 @@ w-[58%] h-40 rotate-[7deg]`, front `left-[20%] top-20 w-[62%] h-44` with a sky s
   `CARD_SURFACE rounded-[18px] p-2 pb-3` with a 96 px `TemplatePicture`, title `text-sm font-semibold`, description
   `line-clamp-2 text-xs`; Popular Templates `grid-cols-2 lg:grid-cols-4 gap-4`, 128 px pictures, title `text-[15px]`,
   Browse All Templates as the section's quiet link; Already Have Work? `grid sm:grid-cols-2 gap-4`: the sign-in card
-  (`bg-[#0b1230] rounded-[20px] p-5`, the prism, a 180 px sky glow, a white `Sign In` button) and the import card
-  (`PANEL_SURFACE rounded-[20px] p-5` round the Explorer's own Import From). The hero, on `heroFirstRun`: static pills
+  (`bg-[#0b1230] rounded-[20px] p-5`, the prism, a 180 px sky glow, a white `Sign In` button). The hero, on `heroFirstRun`: static pills
   (`PILL`, no link), the welcome greeting and lead, `WelcomeSearch` in the hero field's look (`HERO_FIELD_LOOK`),
   `HeroTemplateFan` (`next/dynamic`) in the sheets' places. The remembered answer lives in `localStorage`
   (`livepages:v2:home-has-documents`: `{ ownerId, has }`), written once the lists load.

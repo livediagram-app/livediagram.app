@@ -4,9 +4,7 @@ import { FormatCard } from './FormatCard';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { TextImportPanel } from './TextImportPanel';
 import type { ImportOutcome } from '@/lib/import-tab';
-import type { ImportImageProgress } from '@/lib/import-images';
-import { reportHasLosses } from '@/lib/board-scene/report';
-import { ImportImageReport } from './ImportImageReport';
+import { ImportReport } from './ImportReport';
 import type { ImportFormat as Format } from '@/hooks/persistence/useTabImport';
 import { Glyph, DialogCloseButton, DialogHeader } from '@livepages/ui';
 
@@ -17,17 +15,10 @@ type ImportTabDialogProps = {
   // Runs a file import for the chosen format: opens the file picker,
   // parses, and replaces the active tab. Returns an outcome so this
   // dialog can close / stay open / show an error without throwing.
-  onImportFile: (
-    format: Format,
-    onProgress: (progress: ImportImageProgress) => void,
-  ) => Promise<ImportOutcome>;
+  onImportFile: (format: Format) => Promise<ImportOutcome>;
   // Runs a text import (the paste/write path) for the chosen format,
-  // bypassing the file picker (docs/specs/020-import-export/markdown-import.md + docs/specs/020-import-export/mermaid.md).
-  onImportText: (
-    format: Format,
-    text: string,
-    onProgress: (progress: ImportImageProgress) => void,
-  ) => Promise<ImportOutcome>;
+  // bypassing the file picker (docs/specs/020-import-export/markdown-import.md).
+  onImportText: (format: Format, text: string) => Promise<ImportOutcome>;
   // The formats offered, in catalogue order; absent offers every one. Pages mode and a Dashboard tab offer
   // JSON only (docs/specs/007-editor/pages-mode.md "Import", docs/specs/026-plan/plan-tabs.md "Import and
   // Export of a Dashboard"); a single format opens straight at its panel.
@@ -46,7 +37,7 @@ const FORMATS: {
   // format whose mapping isn't obvious from the placeholder alone. It rides
   // on the format rather than the picker screen so it appears once the
   // reader has actually chosen that format and the answer is relevant.
-  note?: { article: 'markdownImport' | 'importTabs'; label: string };
+  note?: { article: 'markdownImport'; label: string };
 }[] = [
   {
     key: 'json',
@@ -56,13 +47,6 @@ const FORMATS: {
     placeholder: '{\n  "schemaVersion": 1,\n  "kind": "livepages.tab",\n  "tab": { … }\n}',
   },
   {
-    key: 'mermaid',
-    title: 'Mermaid',
-    description:
-      'A Mermaid flowchart, state diagram, or ER diagram. Keeps every connection. Paste it or pick a file.',
-    placeholder: 'flowchart TD\n  A([Start]) --> B{OK?}\n  B -->|yes| C[Ship]\n  B -->|no| A',
-  },
-  {
     key: 'markdown',
     title: 'Markdown',
     description:
@@ -70,39 +54,18 @@ const FORMATS: {
     placeholder: '# Project\n\n- Research\n  - Interviews\n  - Survey\n- Build\n- Launch',
     note: { article: 'markdownImport', label: 'See how a Markdown outline maps to a tree' },
   },
-  {
-    key: 'excalidraw',
-    title: 'Excalidraw',
-    description:
-      'A .excalidraw scene, or a PNG / SVG exported with the scene. Keeps shapes, labels, connections, drawings, and images.',
-    placeholder: '{\n  "type": "excalidraw",\n  "version": 2,\n  "elements": [ … ]\n}',
-  },
-  {
-    key: 'drawio',
-    title: 'draw.io',
-    description:
-      'A .drawio file, or a PNG / SVG with the diagram inside. Keeps shapes, text, connections and pages. Multi-page files add a tab for each further page.',
-    placeholder:
-      '<mxfile>\n  <diagram name="Page-1">\n    <mxGraphModel>…</mxGraphModel>\n  </diagram>\n</mxfile>',
-    note: { article: 'importTabs', label: 'See what carries over from draw.io' },
-  },
 ];
 
 // Counterpart to ExportTabDialog: pick a format to import INTO the current
 // tab. Importing REPLACES the tab's contents (docs/specs/020-import-export/markdown-import.md), so the dialog leads
 // with a warning before the format cards. Every format is text, so each card
-// opens the same two-step panel: paste/write the content, or pick a file
-// (docs/specs/020-import-export/mermaid.md). Errors render inline; on success the dialog closes.
+// opens the same two-step panel: paste/write the content, or pick a file.
+// Errors render inline; on success the dialog closes.
 type DoneOutcome = Extract<ImportOutcome, { status: 'done' }>;
 
-// An import shows its report when it met images, changed or dropped anything, or left a board out.
+// An import shows its report when part of it could not land.
 function needsReport(outcome: DoneOutcome): boolean {
-  return (
-    outcome.images !== undefined ||
-    (outcome.scene !== undefined && reportHasLosses(outcome.scene)) ||
-    (outcome.failures?.length ?? 0) > 0 ||
-    (outcome.documents?.length ?? 0) > 0
-  );
+  return (outcome.failures?.length ?? 0) > 0;
 }
 
 export function ImportTabDialog({
@@ -116,8 +79,8 @@ export function ImportTabDialog({
   // One format offered: no list to pick from, so its panel is the dialog.
   const only = offered.length === 1 ? offered[0]!.key : null;
   const [active, setActive] = useState<Format | null>(only);
-  // Set once an import that met images, or brought a board across with changes, has landed: the
-  // dialog then shows how it came across instead of closing.
+  // Set once an import that left something out has landed: the dialog then shows how it came across instead of
+  // closing.
   const [report, setReport] = useState<DoneOutcome | null>(null);
   const activeFormat = active ? FORMATS.find((f) => f.key === active) : null;
 
@@ -127,11 +90,7 @@ export function ImportTabDialog({
         title="Import to Tab"
         subtitle={
           report
-            ? report.scene
-              ? "Here's how your board came across."
-              : report.images
-                ? "Here's how your images came across."
-                : "Here's how your import came across."
+            ? "Here's how your import came across."
             : activeFormat
               ? `Paste your ${activeFormat.title}, or import a file.`
               : 'Pick a format to import into the current tab.'
@@ -142,13 +101,7 @@ export function ImportTabDialog({
       </DialogHeader>
       <div className="flex-1 overflow-y-auto px-6 py-5">
         {report ? (
-          <ImportImageReport
-            report={report.images}
-            scene={report.scene}
-            failures={report.failures}
-            documents={report.documents}
-            onDone={onClose}
-          />
+          <ImportReport failures={report.failures} onDone={onClose} />
         ) : (
           <ImportChooser
             tabName={tabName}
@@ -218,16 +171,13 @@ function ImportChooser({
               />
             ) : null
           }
-          onImportText={(text, onProgress) => onImportText(activeFormat.key, text, onProgress)}
-          onImportFile={(onProgress) => onImportFile(activeFormat.key, onProgress)}
+          onImportText={(text) => onImportText(activeFormat.key, text)}
+          onImportFile={() => onImportFile(activeFormat.key)}
           onDone={onDone}
           onBack={single ? undefined : () => onPick(null)}
         />
       ) : (
-        <div
-          // Two columns on a phone: three left each card about 110px wide, its description wrapping to eight lines.
-          className="grid grid-cols-2 gap-3 sm:grid-cols-3"
-        >
+        <div className="grid grid-cols-2 gap-3">
           {formats.map((f) => (
             <FormatCard
               key={f.key}
@@ -245,16 +195,7 @@ function ImportChooser({
 }
 
 function FormatIcon({ kind }: { kind: Format }) {
-  const label =
-    kind === 'mermaid'
-      ? 'mmd'
-      : kind === 'markdown'
-        ? 'md'
-        : kind === 'excalidraw'
-          ? 'excali'
-          : kind === 'drawio'
-            ? 'drawio'
-            : 'json';
+  const label = kind === 'markdown' ? 'md' : 'json';
   return (
     <svg width="36" height="20" viewBox="0 0 36 20" aria-hidden>
       <rect

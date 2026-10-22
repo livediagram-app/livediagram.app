@@ -70,7 +70,7 @@ order:
   ([Placement on create](folders.md#placement-on-create)).
 - **Who sends it:**
   - every create that makes something new: the New Document wizard and its bypasses
-    (`/new?blank=1`, `/new?template=`), imports into the account (board and draw.io imports, Google
+    (`/new?blank=1`, `/new?template=`), imports into the account (Google
     Drive **Import a copy**) and the MCP `create_document` tool, which sends the intent of the first
     tab it built and the template it used;
   - **Duplicate**, which sends the source's **recorded** intent unchanged, together with an explicit

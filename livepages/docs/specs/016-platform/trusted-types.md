@@ -9,7 +9,7 @@ injection then needs a policy's help, and every policy is small, named and liste
 ## The header
 
 - **Every HTML response carries** `Content-Security-Policy: require-trusted-types-for 'script'; trusted-types
-livepages-markup livepages-inert-parse nextjs ProseMirrorClipboard default`, enforced from the start, never
+livepages-markup nextjs ProseMirrorClipboard default`, enforced from the start, never
   report-only.
 - **Where it is set**: the editor's worker (`apps/live/src/worker.ts`) beside its other security headers; the four
   static apps (marketing, help, telemetry) in their `public/_headers`. The router adds nothing; it holds no
@@ -19,7 +19,7 @@ livepages-markup livepages-inert-parse nextjs ProseMirrorClipboard default`, enf
 
 ## Our policies
 
-All three come from one shared module, `@livepages/ui`'s `trusted-types`, and nothing else of ours creates a policy.
+Both come from one shared module, `@livepages/ui`'s `trusted-types`, and nothing else of ours creates a policy.
 
 - **`default` is created first**, by an inline script at the top of each layout's `<head>`
   (`trustedTypesBootScript`), before any other script can reach a sink. It is what the browser calls for a sink
@@ -34,9 +34,6 @@ All three come from one shared module, `@livepages/ui`'s `trusted-types`, and no
   sticker and template SVG builders (`@livepages/icons`, `@livepages/templates`), the headless tab renderer's
   thumbnails, the JSON-LD block, and the inline boot scripts in each layout. It does not sanitise; the trust is that
   the markup came from one of those builders, which is why nothing else may call it.
-- **`livepages-inert-parse`** lets `DOMParser` read a file a person opened (a draw.io diagram or library, a
-  draw.io label's HTML) through `parseInert(source, type)`. A parsed document is inert: nothing in it runs, and
-  nothing from it is inserted as markup; only its text and attributes are read.
 - **Outside the browser** (the static prerender, tests without Trusted Types) the helpers pass strings through.
 
 ### Server-rendered markup

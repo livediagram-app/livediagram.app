@@ -37,9 +37,8 @@ reach a deployed artefact, and nothing else.
   one entry of the reviewed **embedded-works table**, which names the libraries inside it with their
   own licence texts: resvg and tiny-skia inside `@resvg/resvg-wasm`, and the Inter font inside the
   mcp worker. The same
-  table covers material vendored into our own source (Lucide and Feather icon geometry, draw.io's
-  view geometry ported into the draw.io importer), triggered by the first-party source file that
-  carries it being bundled.
+  table covers material vendored into our own source (Lucide and Feather icon geometry), triggered by
+  the first-party source file that carries it being bundled.
 
 ## Licence texts
 
@@ -108,7 +107,7 @@ reach a deployed artefact, and nothing else.
   own notices file). Rust crates inside resvg's WASM beyond resvg and tiny-skia are not enumerated;
   it runs only in our mcp worker.
 - `THIRD_PARTY_NOTICES.md` at the repo root stays the notice for material vendored into the source
-  tree (Lucide, Feather, draw.io); the page is the notice for what the deployed apps carry.
+  tree (Lucide, Feather); the page is the notice for what the deployed apps carry.
 
 ## Related
 

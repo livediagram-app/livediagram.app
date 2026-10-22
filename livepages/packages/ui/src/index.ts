@@ -80,7 +80,6 @@ export { clerkPublishableKeyOrNull } from './clerk-key';
 export {
   TRUSTED_TYPES_CSP,
   isAllowedScriptUrl,
-  parseInert,
   trustedHtml,
   trustedScriptOrigins,
   trustedTypesBootScript,

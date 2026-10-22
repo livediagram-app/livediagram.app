@@ -48,10 +48,6 @@ function setup(receiving: Tab) {
   let tabs: Tab[] = [receiving];
   const deps = {
     tabs,
-    ownerId: 'owner-1',
-    documentId: 'doc-1',
-    createTab: (name: string): Tab => ({ id: crypto.randomUUID(), name, elements: [] }),
-    markTabLoaded: vi.fn(),
     activeId: receiving.id,
     commitTabs: vi.fn((f: (ts: Tab[]) => Tab[]) => void (tabs = f(tabs))),
     setSelectedId: vi.fn(),
@@ -59,7 +55,6 @@ function setup(receiving: Tab) {
     setFormatSourceId: vi.fn(),
     setImportError: vi.fn(),
     requestFit: vi.fn(),
-    importScene: vi.fn(),
     importPlanItems: vi.fn(async () => ({ added: 0, skipped: 0, failed: 0 })),
   };
   const { result } = renderHook(() => useTabImport(deps));
@@ -101,13 +96,13 @@ describe('importing into a Dashboard tab', () => {
     expect(landed()).toBe(dashboard);
   });
 
-  it('refuses text that is not JSON, and every other format', async () => {
+  it('refuses text that is not JSON, and Markdown', async () => {
     const { api, deps } = setup(dashboard);
-    expect(await api.importTextIntoActiveTab('json', 'flowchart TD\n A-->B')).toEqual({
+    expect(await api.importTextIntoActiveTab('json', '# Plan\n- A')).toEqual({
       status: 'error',
       error: "File isn't valid JSON.",
     });
-    expect(await api.importTextIntoActiveTab('mermaid', 'flowchart TD\n A-->B')).toEqual({
+    expect(await api.importTextIntoActiveTab('markdown', '# Plan\n- A')).toEqual({
       status: 'error',
       error: NOT_A_DASHBOARD,
     });

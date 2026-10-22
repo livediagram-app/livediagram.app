@@ -113,6 +113,4 @@ The editor has none of these:
   duplicate / clipboard / format-painter paths.
 - Group quick-connect and `pinned-group` endpoints (except the load-time migration above).
 - The Eraser Panel's "whole group" toggle ([Eraser Panel](../008-canvas/eraser-panel.md)).
-- Group membership in Excalidraw files: import does not map `groupIds` (grouped Excalidraw
-  elements import as separate elements), and export writes an empty `groupIds` ([Excalidraw import & export](../020-import-export/excalidraw-import-export.md)).
 - A help article on groups.

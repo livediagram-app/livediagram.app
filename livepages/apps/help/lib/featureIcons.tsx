@@ -1782,21 +1782,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <circle cx="8" cy="8" r="1.5" />
     </Glyph>
   ),
-  // A diagram's box and decision, joined by a bent connector, arriving as a document.
-  'drawio-import': (
-    <Glyph>
-      <rect x="3" y="4" width="8" height="5" rx="1" />
-      <path d="M7 9v6h4" />
-      <path d="M16.5 11.5l3.5 3.5-3.5 3.5-3.5-3.5z" />
-    </Glyph>
-  ),
-  // A board's ink arriving in a tab.
-  'microsoft-whiteboard-import': (
-    <Glyph>
-      <rect x="3" y="5" width="18" height="14" rx="2" />
-      <path d="M6.5 14c1.5-3 3-3 4 0s2.5 3 4 0 2.5-2 3 0" />
-    </Glyph>
-  ),
   'export-tabs': (
     <Glyph>
       <rect x="4" y="4" width="16" height="16" rx="2" />

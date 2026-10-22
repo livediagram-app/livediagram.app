@@ -31,7 +31,6 @@ import {
 import { apiLinkTab } from '@/lib/api-client';
 import { newTabOpening, newTabSeed } from '@/lib/new-tab-seed';
 import { track } from '@/lib/telemetry';
-import { useBoardSceneImport } from './useBoardSceneImport';
 import { remintTabElements, useTabImport } from './useTabImport';
 import { trackTabFolderTransition } from './tab-folder-reporting';
 import type { useConfirm } from '@/hooks/ui/useConfirm';
@@ -49,11 +48,8 @@ type TabActionsDeps = {
   // The owner's document list — read for the destination name when
   // linking a tab into another document.
   documentList: { id: string; name: string }[];
-  // The local participant id (owner of the link request, and of any
-  // images an import stores).
+  // The local participant id (owner of the link request).
   ownerId: string;
-  // The open document: an Offline Mode one embeds imported images.
-  documentId: string | null;
   // Factory for a blank tab (kept in the page because the initial-state
   // initialiser also uses it).
   createTab: (name: string) => Tab;
@@ -95,7 +91,6 @@ export function useTabActions(deps: TabActionsDeps) {
     activeId,
     documentList,
     ownerId,
-    documentId,
     createTab,
     commit,
     commitTabs,
@@ -137,15 +132,10 @@ export function useTabActions(deps: TabActionsDeps) {
     setFormatSourceId(null);
   };
 
-  // Import (id re-mint, content replace, JSON / Markdown / Mermaid parsing)
-  // lives in useTabImport; remintTabElements is shared with the
-  // Duplicate below.
-  const { importIntoActiveTab, importTextIntoActiveTab, replaceActiveTabContent } = useTabImport({
+  // Import (id re-mint, content replace, JSON parsing) lives in useTabImport;
+  // remintTabElements is shared with the Duplicate below.
+  const { importIntoActiveTab, importTextIntoActiveTab } = useTabImport({
     tabs,
-    createTab,
-    markTabLoaded,
-    ownerId,
-    documentId,
     activeId,
     commitTabs,
     setSelectedId,
@@ -153,20 +143,7 @@ export function useTabActions(deps: TabActionsDeps) {
     setFormatSourceId,
     setImportError,
     requestFit,
-    // Declared below; called only once an import runs, after this render has defined it.
-    importScene: (scene, onProgress) => importSceneIntoActiveTab(scene, onProgress),
     importPlanItems: deps.importPlanItems,
-  });
-  // Board scenes from other tools (docs/specs/020-import-export/board-scene.md): replace the
-  // active tab, or open each board as a new whiteboard tab.
-  const { importSceneIntoActiveTab, importScenesAsNewDocuments } = useBoardSceneImport({
-    tabs,
-    activeId,
-    drawMode: deps.editorMode === 'draw',
-    ownerId,
-    documentId,
-    replaceActiveTabContent,
-    onDocumentsCreated: () => refreshDocumentList(ownerId),
   });
 
   const toggleActiveTabLock = () => {
@@ -397,8 +374,6 @@ export function useTabActions(deps: TabActionsDeps) {
     addTab,
     importIntoActiveTab,
     importTextIntoActiveTab,
-    importSceneIntoActiveTab,
-    importScenesAsNewDocuments,
     toggleActiveTabLock,
     renameTab,
     linkActiveTabTo,

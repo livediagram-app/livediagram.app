@@ -131,7 +131,6 @@ for the work.
   one undo step.
 - Export (SVG, PNG, PDF) draws the turned title exactly as the canvas does; screen readers read the
   title as text, unaffected by its turn.
-- The [draw.io import](../020-import-export/drawio-import.md) uses it for every `horizontal=0` lane.
 
 ## Element tour
 

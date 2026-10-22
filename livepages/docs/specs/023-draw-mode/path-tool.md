@@ -174,8 +174,7 @@ corner and handle can be adjusted, by mouse, pen, finger and keyboard.
 - Paths render in the SVG and PNG exports and in thumbnails exactly as on the canvas.
 - Real-time collaboration, history, copy and paste, duplication and the document format carry
   paths like every element.
-- The Excalidraw export writes a path as a `line` element sampled along its curve; import never
-  creates paths.
+- Import never creates paths.
 
 ## Accessibility
 

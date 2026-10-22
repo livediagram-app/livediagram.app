@@ -13,7 +13,6 @@ import {
   buildTabFromMarkdown,
   cleanInline,
   layoutOutline,
-  MARKDOWN_LEFT_OUT_RULE,
   markdownImportOutcome,
   MAX_LIST_DEPTH,
   MAX_MARKDOWN_IMPORT_NODES,
@@ -339,7 +338,7 @@ describe('markdown import node cap', () => {
     const result = buildTabFromMarkdown(listOf(MAX_MARKDOWN_IMPORT_NODES));
     if (!result.ok) throw new Error(result.error);
     expect(result.leftOut).toBe(0);
-    expect(markdownImportOutcome(result.tab, result.leftOut)).toEqual({ status: 'done' });
+    expect(markdownImportOutcome(result.leftOut)).toEqual({ status: 'done' });
   });
 
   it('keeps the first nodes in document order and counts the rest, tables included', () => {
@@ -354,22 +353,21 @@ describe('markdown import node cap', () => {
     expect(kept[kept.length - 1]!.label).toBe(`item ${MAX_MARKDOWN_IMPORT_NODES - 2}`);
   });
 
-  it('reports what was left out, with what landed, and the tab stays valid', () => {
+  it('reports what was left out, and the tab stays valid', () => {
     const result = buildTabFromMarkdown(listOf(MAX_MARKDOWN_IMPORT_NODES + 500));
     if (!result.ok) throw new Error(result.error);
     expect(result.leftOut).toBe(500);
     expect(isValidTab(result.tab)).toBe(true);
-    expect(markdownImportOutcome(result.tab, result.leftOut)).toEqual({
+    expect(markdownImportOutcome(result.leftOut)).toEqual({
       status: 'done',
-      scene: {
-        landed: { shape: MAX_MARKDOWN_IMPORT_NODES, connector: MAX_MARKDOWN_IMPORT_NODES - 1 },
-        degraded: [],
-        skipped: [{ rule: MARKDOWN_LEFT_OUT_RULE, count: 500 }],
-      },
+      failures: [
+        {
+          title: 'Markdown',
+          message:
+            '500 headings, list items, lines and tables beyond the first 2,000 were left out.',
+        },
+      ],
     });
-    expect(MARKDOWN_LEFT_OUT_RULE).toBe(
-      'Headings, list items, lines and tables beyond the first 2,000 were left out',
-    );
   });
 
   // Worst case: a file far past the cap. The cap bounds what is built (above); reading the rest stays

@@ -38,10 +38,6 @@ function setup(failed: number) {
   const order: string[] = [];
   const deps = {
     tabs,
-    ownerId: 'owner-1',
-    documentId: 'doc-1',
-    createTab: (name: string): Tab => ({ id: crypto.randomUUID(), name, elements: [] }),
-    markTabLoaded: vi.fn(),
     activeId: 'a',
     commitTabs: vi.fn(() => void order.push('tab')),
     setSelectedId: vi.fn(),
@@ -49,7 +45,6 @@ function setup(failed: number) {
     setFormatSourceId: vi.fn(),
     setImportError: vi.fn(),
     requestFit: vi.fn(),
-    importScene: vi.fn(),
     importPlanItems: vi.fn(async () => {
       order.push('items');
       return { added: failed ? 0 : 1, skipped: 0, failed };

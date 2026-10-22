@@ -4,16 +4,7 @@ import { tabKindOf, type Tab } from '@livepages/document';
 
 // The Export dialog's format keys ('file' is the livepages .json).
 export type ExportFormatKey =
-  | 'markdown'
-  | 'csv'
-  | 'mermaid'
-  | 'excalidraw'
-  | 'pdf'
-  | 'png'
-  | 'svg'
-  | 'gif'
-  | 'file'
-  | 'logo-kit';
+  'markdown' | 'csv' | 'pdf' | 'png' | 'svg' | 'gif' | 'file' | 'logo-kit';
 
 // A Board tab: its picture, its board's outline (each column and its cards) and its cards as CSV. A Sheet tab: its
 // picture and its cells as CSV. A Dashboard tab: its page's picture, and the JSON its Import reads back.

@@ -1,10 +1,10 @@
-// Trusted Types (docs/specs/016-platform/trusted-types.md): the enforced header, our three policies, and the rule
+// Trusted Types (docs/specs/016-platform/trusted-types.md): the enforced header, our policies, and the rule
 // the `default` policy applies to script URLs. Nothing else of ours creates a policy.
 import { clerkPublishableKeyOrNull } from './clerk-key';
 
-import { INERT_PARSE_POLICY, MARKUP_POLICY } from './trusted-types-csp';
+import { MARKUP_POLICY } from './trusted-types-csp';
 
-export { INERT_PARSE_POLICY, MARKUP_POLICY, TRUSTED_TYPES_CSP } from './trusted-types-csp';
+export { MARKUP_POLICY, TRUSTED_TYPES_CSP } from './trusted-types-csp';
 
 type HtmlPolicy = { createHTML(input: string): TrustedHTML };
 type TrustedTypesFactory = {
@@ -35,12 +35,6 @@ export function resetTrustedTypesForTests(): void {
  */
 export function trustedHtml(markup: string): TrustedHTML | string {
   return htmlPolicy(MARKUP_POLICY)?.createHTML(markup) ?? markup;
-}
-
-/** A file a person opened, read through `DOMParser`. The document is inert: nothing in it runs or is inserted. */
-export function parseInert(source: string, type: DOMParserSupportedType): Document {
-  const policy = htmlPolicy(INERT_PARSE_POLICY);
-  return new DOMParser().parseFromString((policy?.createHTML(source) ?? source) as string, type);
 }
 
 /**

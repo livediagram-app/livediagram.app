@@ -41,9 +41,9 @@ lines used to overflow the stack). A table larger than a table element holds (`M
 `MAX_TABLE_COLS`, `MAX_TABLE_CELLS`, `packages/document`) keeps its first columns, then as many of
 its first rows as fit; the rest is left out. One import keeps at most `MAX_MARKDOWN_IMPORT_NODES`
 (2 000) nodes, headings, list items, prose lines and tables together, the first in document order;
-the rest are counted, never kept, and the Import dialog shows the shared import report with what
-landed and one skipped line, "Headings, list items, lines and tables beyond the first 2,000 were
-left out", with the count. Each node lands as a box and an arrow, so 2 000 nodes at the 120-character
+the rest are counted, never kept, and the Import dialog shows its import report with one line,
+"Markdown · 500 headings, list items, lines and tables beyond the first 2,000 were left out.", with
+the count. Each node lands as a box and an arrow, so 2 000 nodes at the 120-character
 label cap make a tab of about 1.3 MB and 4 000 elements, inside the tab's row and element caps
 (measured; the constant's comment has the numbers).
 
@@ -71,16 +71,14 @@ locked import.
 ## How it's triggered — the Import dialog
 
 The per-tab **"Import…"** action (tab ellipsis menu) opens an **Import
-dialog**, the mirror of the Export dialog. Both lay their format cards out three across, two across on a phone
-(three left each card about 110px wide there). Above the cards a warning says the import replaces the tab and Undo
+dialog**, the mirror of the Export dialog. Its two format cards sit two across. Above the cards a warning says the import replaces the tab and Undo
 brings it back (naming ⌘Z / Ctrl-Z only where there is a keyboard, a fine pointer). The user picks the format:
 
 - **JSON** — a `.json` tab export, restored exactly.
-- **Mermaid** — a flowchart, keeping every connection ([Mermaid import & export](mermaid.md)).
 - **Markdown** — a `.md` outline, built into a themed tree as above.
 
 Every format is text, so each card opens the **same two-step panel**
-(`TextImportPanel`, [Mermaid import & export](mermaid.md)): **paste or write** the
+(`TextImportPanel`): **paste or write** the
 content, or **import a file instead**. The way back to the format grid is the
 shared **`BackBar`** across the top of that step (the same control the placement
 browser uses), carrying the chosen format as its chip -
@@ -107,45 +105,18 @@ and the whole ellipsis menu is hidden for view-only visitors. Emits
 tab — a format picker + an explicit "this overwrites the tab" warning is
 clearer than silently growing the tab list, and Undo makes it safe.)
 
-## Still useful after Mermaid? — yes, both, in distinct roles
+## Markdown export
 
-Mermaid ([Mermaid import & export](mermaid.md)) landed as the connection-preserving
-text format, which raised the question of whether Markdown import/export
-still earns its place. Reviewed against the code, both do — they solve a
-_different_ problem from Mermaid, so they stay:
-
-- **Markdown import — keep.** It ingests an **outline** (headings + nested
-  lists) from tools that emit exactly that (XMind, Obsidian/Logseq,
-  hand-written notes) and lays out the **hierarchy** as a themed tree with
-  parent→child connectors. That hierarchy _is_ preserved — the import is
-  not connectionless. Mermaid doesn't replace it: someone holding a
-  Markdown outline is not going to hand-author flowchart syntax, and a
-  tree-from-indentation is a genuinely different input from a node/edge
-  graph. Different source, different shape → distinct value.
-- **Markdown export — keep, repositioned.** It emits a flat, human-
-  readable **summary** (`## Elements`, the _labelled_ elements, and `## Connections`, every arrow that joins two
-  elements: a labelled one as `- *label*: A → B`, an unlabelled one as `- A → B`, since on a flowchart the
-  unlabelled arrows are the main path; a free line with no label stays out), sorted for reading, to drop into a
-  doc, PR, or notes. It is deliberately **lossy** (no nesting, unlabelled elements omitted) because it's a summary,
-  not a reconstruction. Mermaid is now
-  the **faithful** text export (rebuilds the graph); Markdown is the
-  **readable** one. The two coexist with clear, non-overlapping jobs, and
-  the export dialog + help copy say which is which.
+The export side emits a flat, human-readable **summary** (`## Elements`, the _labelled_ elements, and
+`## Connections`, every arrow that joins two elements: a labelled one as `- *label*: A → B`, an unlabelled one as
+`- A → B`, since on a flowchart the unlabelled arrows are the main path; a free line with no label stays out),
+sorted for reading, to drop into a doc, PR, or notes. It is deliberately **lossy** (no nesting, unlabelled
+elements omitted) because it's a summary, not a reconstruction; the faithful round-trip is the JSON export.
 
 ## Boundaries / future
 
-- **Round-trip:** the faithful, connection-preserving text round-trip is
-  **Mermaid** ([Mermaid import & export](mermaid.md)) — serialise a tab to `flowchart`
-  text and parse it back into the same graph by id. Markdown export
-  stays the human _summary_ (see above), not a byte-for-byte
-  reconstruction. (This role used to belong to the `.lvd` text DSL,
-  the removed text-DSL spec, now removed in favour of Mermaid.)
-- **Not in scope here:** an inline ` ```mermaid ` fenced block _inside_ a
-  Markdown file → an edge graph (Mermaid import is its own format /
-  dialog path today, not a Markdown code-fence pass), and Excalidraw
-  `.excalidraw` JSON (that's JSON, not Markdown; a separate importer). The
-  parser deliberately skips code fences, so a future "Mermaid blocks
-  inside Markdown" pass could claim them.
+- **Not in scope here:** an inline ` ```mermaid ` fenced block _inside_ a Markdown file → an edge graph. The
+  parser deliberately skips code fences.
 
 Implementation: `apps/live/lib/markdown-import.ts` (pure parser + layout +
 `buildTabFromMarkdown`, unit-tested), dynamically imported by

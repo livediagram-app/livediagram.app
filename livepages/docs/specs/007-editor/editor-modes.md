@@ -459,8 +459,6 @@ dashboard ([Telemetry](../017-telemetry/telemetry.md) "Retired features").
 
 - A stored tab with `kind: 'whiteboard'` reads as a general tab that opens in
   Draw mode. Its elements, background and layers are unchanged.
-- Imports that landed on a whiteboard (Excalidraw, Microsoft Whiteboard) land
-  on a general tab in Draw mode.
 - The **Blank Whiteboard** template (kind id `whiteboard`) creates a
   general tab that opens in Draw mode, as the other Draw templates do
   ([Templates by mode](templates-by-mode.md)).

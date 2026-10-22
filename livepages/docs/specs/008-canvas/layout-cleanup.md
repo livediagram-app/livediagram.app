@@ -56,8 +56,8 @@ components, with cycle-breaking for cyclic graphs (when a loop stalls the order 
 waiting node some placed node already feeds, with the fewest predecessors still to come, so a node or group the loop
 does not hold is never ranked ahead of what feeds it); direction is inferred from the elements' current rough
 positions. It can legitimately relocate an element across the
-canvas. This is also the routine importers lean on (Markdown import, a future Mermaid
-import) to place nodes they never drew.
+canvas. This is also the routine Markdown import and the agents' graph input lean on to place nodes they
+never drew.
 
 - **Scope:** the whole active tab. Boxed elements that aren't wired to anything
   (loose stickies / text / images) pass through with their positions untouched;

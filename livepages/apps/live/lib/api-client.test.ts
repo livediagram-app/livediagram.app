@@ -574,13 +574,7 @@ describe('apiCreateDocument placement (docs/specs/013-workspace/folders.md "Plac
     expect(body).not.toHaveProperty('intent');
   });
 
-  it('sends markUsed: false for a making that is no use (docs/specs/015-api/api.md)', async () => {
-    const body = await sentBody({ id: 'd1', name: 'N', markUsed: false });
-    expect(body).toHaveProperty('markUsed', false);
-  });
-
-  it('leaves markUsed out for a making that counts, the server default', async () => {
-    expect(await sentBody({ id: 'd1', name: 'N', markUsed: true })).not.toHaveProperty('markUsed');
+  it('leaves markUsed out: every making in the editor counts, the server default', async () => {
     expect(await sentBody({ id: 'd1', name: 'N' })).not.toHaveProperty('markUsed');
   });
 

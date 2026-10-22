@@ -35,7 +35,6 @@ Scope, by file:
 | `apps/live/app/new/page.tsx` (`createByDefault`)          | The wizard's placement: the `/new?folder=` / `?team=` context, else none                                       |
 | `apps/live/app/new/page.tsx`                              | The wizard and its bypasses send the first tab's intent and the template's family                              |
 | `apps/live/lib/duplicate-document.ts`                     | Duplicate: beside the source, the source's recorded intent, root on refusal                                    |
-| `apps/live/lib/board-scene-import.ts`                     | Every imported document sends its first tab's intent                                                           |
 | `apps/live/lib/drive/livepages-port.ts`                 | `importDocumentCopy`: no placement and an intent with no target; the mirror's place else                       |
 | `apps/mcp/src/tools.ts`, `apps/mcp/src/created-folder.ts` | `create_document` sends the intent; reports the folder it landed in                                            |
 
@@ -256,7 +255,7 @@ owner_id = ?` then `DELETE … WHERE owner_id = <guest>`: the account's row for 
 | Client functions; the create body's absent versus null `folderId`            | `apps/live/lib/api/placement-defaults.test.ts`, `apps/live/lib/api-client.test.ts`               |
 | Wizard placement: the context, else none (server decides)                    | `apps/live/app/new/useNewDocumentLocation.test.tsx`, e2e `apps/live/e2e/default-folders.spec.ts` |
 | Duplicate beside its source, record-only, root on refusal                    | `apps/live/lib/duplicate-document.test.ts`                                                       |
-| Import and Drive copy send the intent                                        | `apps/live/lib/board-scene-import.test.ts`, `apps/live/lib/drive/livepages-port.test.ts`       |
+| A Drive copy sends the intent                                                | `apps/live/lib/drive/livepages-port.test.ts`                                                   |
 | MCP create sends the intent and names the folder                             | `apps/mcp/src/create-document-placement.test.ts`                                                 |
 
 ## Constants and configuration

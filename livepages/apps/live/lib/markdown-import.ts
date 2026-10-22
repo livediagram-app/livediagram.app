@@ -426,27 +426,19 @@ export function buildTabFromMarkdown(
   };
 }
 
-// The report line for nodes past the cap: the count is shown before it ("1,234 · ...").
-export const MARKDOWN_LEFT_OUT_RULE = `Headings, list items, lines and tables beyond the first ${MAX_MARKDOWN_IMPORT_NODES.toLocaleString('en-GB')} were left out`;
+// The report line for nodes past the cap.
+export function markdownLeftOutMessage(leftOut: number): string {
+  return `${leftOut.toLocaleString('en-GB')} headings, list items, lines and tables beyond the first ${MAX_MARKDOWN_IMPORT_NODES.toLocaleString('en-GB')} were left out.`;
+}
 
 /**
- * The Import dialog's outcome for a Markdown import: the shared report (docs/specs/020-import-export/
- * board-scene.md "The report") when the node cap left something out, so nothing is lost silently.
+ * The Import dialog's outcome for a Markdown import: the import report when the node cap left something out, so
+ * nothing is lost silently.
  */
-export function markdownImportOutcome(tab: Tab, leftOut: number): ImportOutcome {
+export function markdownImportOutcome(leftOut: number): ImportOutcome {
   if (leftOut <= 0) return { status: 'done' };
-  let shapes = 0;
-  let connectors = 0;
-  for (const el of tab.elements) {
-    if (el.type === 'arrow') connectors += 1;
-    else shapes += 1;
-  }
   return {
     status: 'done',
-    scene: {
-      landed: { shape: shapes, connector: connectors },
-      degraded: [],
-      skipped: [{ rule: MARKDOWN_LEFT_OUT_RULE, count: leftOut }],
-    },
+    failures: [{ title: 'Markdown', message: markdownLeftOutMessage(leftOut) }],
   };
 }

@@ -1,12 +1,10 @@
-# Mermaid import & export
+# Mermaid input & export
 
-Import and export [Mermaid](https://mermaid.js.org/) **flowchart** text — the
-lingua franca of diagram-as-code, sitting in countless READMEs, issues, and AI
-outputs. Unlike the Markdown outline import ([Markdown import](markdown-import.md)), Mermaid carries the full
-**connection graph** (which node points at what), so a round-trip preserves the
-diagram's structure, not just its labels. This is the format the old `.lvd`
-text DSL (the removed text-DSL spec, now removed) was trying to be, except Mermaid is a real
-standard people already have.
+Agents (the MCP server, the CLI and the public API) can hand livepages [Mermaid](https://mermaid.js.org/)
+text in place of a graph or elements, and the CLI's `export --format mermaid` writes a tab back out as
+**flowchart** text. Mermaid is the lingua franca of diagram-as-code, sitting in countless READMEs, issues, and
+AI outputs, and it carries the full **connection graph** (which node points at what), so a round-trip preserves
+the diagram's structure, not just its labels.
 
 ## Scope: flowcharts, state diagrams, ER diagrams
 
@@ -15,8 +13,8 @@ they map onto livepages's model losslessly: `graphToElements`
 (packages/document, [MCP server](../015-api/mcp-server.md) §4.7) turns a graph into laid-out shapes + pinned
 arrows.
 
-- **Flowcharts** (`graph TD`, `flowchart LR`, …) — full import **and**
-  export. The richest dialect: nodes, edges, node shapes, edge styles,
+- **Flowcharts** (`graph TD`, `flowchart LR`, …) — read **and**
+  written. The richest dialect: nodes, edges, node shapes, edge styles,
   labels, subgraphs, click links, layout direction.
 - **State diagrams** (`stateDiagram` / `stateDiagram-v2`) — **import only**.
   States and transitions are nodes and edges; composite states reuse the
@@ -31,8 +29,7 @@ imported), so exporting back to `stateDiagram` / `erDiagram` would mean
 guessing meaning from geometry — the flowchart export preserves the
 connection graph, which is the part that's real.
 
-Sequence diagrams are drawn by the agents' graph input only (below, [Sequence diagrams](#sequence-diagrams-agents));
-the editor's import does not take them yet. Other non-graph Mermaid types (gantt, pie, journey, timeline, quadrant)
+Sequence diagrams are drawn too (below, [Sequence diagrams](#sequence-diagrams-agents)). Other non-graph Mermaid types (gantt, pie, journey, timeline, quadrant)
 and class diagrams remain out of scope; importing one reports a clear error naming the supported types.
 
 Also deliberately out of scope: `classDef` / `style` / `linkStyle` (the tab
@@ -194,12 +191,10 @@ a `sequenceDiagram` and draws it the way the sequence diagram template does.
 
 ## Layout
 
-The editor's import lays a graph out exactly as an agent's Mermaid is laid out ([MCP server](../015-api/mcp-server.md)
-§4.7, `graphFromMermaid` then `layoutGraph`): the flowchart direction, subgraphs as frames, the template look, and
-lines that bend round the boxes, a line back to an earlier step going round the outside rather than straight behind
-the boxes between. One difference: an import keeps every label **as written** (`layoutGraph`'s `wholeLabels`),
-where an agent's long label is cut to a heading with its full text in the node's note. A front-matter `title:`
-heads the drawing, as it does for an agent. A sequence diagram is still refused by the editor's import (above).
+Mermaid is laid out as an agent's graph is ([MCP server](../015-api/mcp-server.md) §4.7, `graphFromMermaid` then
+`layoutGraph`): the flowchart direction, subgraphs as frames, the template look, and lines that bend round the
+boxes, a line back to an earlier step going round the outside rather than straight behind the boxes between. A long
+label is cut to a heading with its full text in the node's note. A front-matter `title:` heads the drawing.
 
 A loop through a group starts where the Mermaid starts it: the contracted layout takes its blocks in the order the
 graph wrote them (a group where its first member was), so the first-written node leads, not whichever group came
@@ -207,22 +202,22 @@ first.
 
 ## The engine lives in `packages/document`
 
-Pure, tested, reusable (import UI today; the MCP or public API could adopt it):
+Pure, tested, and shared by the MCP server, the CLI and the api's changesets:
 
 - **`parseMermaid(text)`** → `{ ok: true, graph: DiagramGraph, direction }` or
   `{ ok: false, error }`. Detects the diagram type from the header and
   dispatches: flowcharts parse in `mermaid.ts`, state diagrams in
   `mermaid-state.ts`, ER diagrams in `mermaid-er.ts` (shared line/label
   helpers in `mermaid-shared.ts`; every dialect returns the same
-  `DiagramGraph`, so the import path doesn't care which it was).
+  `DiagramGraph`, so the caller doesn't care which it was).
   `DiagramGraph` carries subgraphs / composite states as optional
   `clusters: { id, label, members }[]`; `GraphEdge` carries the edge style
   (`line: solid|dashed|thick`, `ends: to|none|both|from`, `head:
 triangle|circle|cross`); `GraphNode` carries an optional `link` URL —
   all additive, so every existing `graphToElements` caller (the MCP) is
   untouched.
-- **`layoutGraph(graph, { wholeLabels: true })`** (graph-input.ts), over **`graphFromMermaid(text)`**: the
-  import's entry, shared with the MCP ("Layout" above).
+- **`layoutGraph(graph)`** (graph-input.ts), over **`graphFromMermaid(text)`**: the entry every caller
+  shares ("Layout" above).
 - **`layoutClusteredGraph(graph, { direction })`** (auto-layout-clusters.ts) —
   the layered composition point `layoutGraph` builds on. Without clusters it's exactly
   `graphToElements` + `autoLayoutElements({ direction })`. With clusters it
@@ -233,9 +228,9 @@ triangle|circle|cross`); `GraphNode` carries an optional `link` URL —
   the frame element is emitted around them. Edgeless nodes (in a cluster or
   at top level) are swept into rows below the laid-out graph instead of
   piling at the origin.
-- **`mermaidFromTab(tab)`** → a `flowchart TD` string. Boxed nodes become
+- **`mermaidFromTab(tab)`** → a `flowchart TD` string (the CLI's export). Boxed nodes become
   `id["label"]` with the bracket for their shape; a document or a triangle, which have no bracket, is written in the
-  attribute form the import reads (`id@{ shape: doc, label: "…" }`, `tri`), a `}` in its label as `#125;`, so the
+  attribute form the parser reads (`id@{ shape: doc, label: "…" }`, `tri`), a `}` in its label as `#125;`, so the
   shape survives a round trip; frames become `subgraph`
   blocks; arrows become `from --> to` with `|label|`, choosing the operator
   from the arrow's real stroke/ends/head fields (dashed → `-.->`, thick →
@@ -267,64 +262,10 @@ took 2.5 s, and the 14 400 connections of one line `a0&...&a119 --> b0&...&b119`
   more than reading the line.
 - The MCP's `graph` input carries the same caps in its schema and in `resolveGraphInput`
   ([MCP server](../015-api/mcp-server.md) §4.7).
-- draw.io's graph-only JSON export is truncated to the caps rather than refused
-  ([draw.io import](drawio-import.md#the-json-export)).
-
-## Import & export UX — file **or** text
-
-Mermaid introduced a **two-step** panel (pasting/copying text is as common as a
-file for a text format), and that panel is now the shared pattern for **every
-text format** in both dialogs (JSON, Mermaid, Markdown), not just Mermaid:
-
-- **Import → JSON / Mermaid / Markdown** → a panel with a textarea to
-  **paste or write** the content (Import button) **and** an **Import a file
-  instead** button (the format's file picker). Either path runs the format's
-  parser and replaces the active tab (same single-undo-step replace as every
-  import, [Markdown import](markdown-import.md)). Shared component: `TextImportPanel`, driven by
-  `importTextIntoActiveTab(format, text)` which both the paste and file routes
-  call, so they can't diverge.
-- **Export → JSON / Mermaid / Markdown** → a panel with a textarea pre-filled
-  with the tab serialised to that format (`tabToJsonText` / `mermaidFromTab` /
-  `tabToMarkdownText`), editable, with **Copy** and **Download** buttons.
-  **Edits in the textarea never touch the tab** — it's a scratch view for
-  copying, not a round-trip editor. Shared component: `TextExportPanel`.
-
-The **image formats** (PNG / SVG / PDF) get their own second screen too
-(`ImageExportPanel`): the **Isometric view** and **Background pattern** toggles
-that used to sit permanently on the export grid now live behind the format
-card, since they only affect image output — so the main grid is just the six
-format cards, nothing format-specific bleeding onto it.
-
-Naming: the JSON export/import card is titled **"JSON"** (was "File" /
-"livepages file"); the underlying format key stays `file`.
-
-## Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))
-
-`Tab`/`Imported`/`Mermaid` and `Document`/`Exported`/`Mermaid`, added to the
-existing import/export type lists, replacing the removed `Text` type.
-
-## Removed: the `.lvd` text DSL (the removed text-DSL spec)
-
-The text DSL is deleted — `packages/document/src/text-dsl/`, its
-`@livepages/document/text-dsl` subpath export, `export-tab-text`'s DSL branch,
-the Text cards in both dialogs, and the removed text-DSL spec. It was a bespoke format nobody
-outside livepages speaks; Mermaid does the same job (human-editable,
-connection-preserving, round-trip) with a format the world already uses.
-
-## Markdown ([Markdown import](markdown-import.md)) — reassessed
-
-After Mermaid landed, the Markdown import/export was re-evaluated against the
-code. **Decision: keep both** — they solve a different problem from Mermaid.
-Markdown import ingests an _outline_ (headings + nested lists, from XMind /
-Obsidian / notes) and lays out that hierarchy as a themed tree; Markdown export
-is a flat, human-readable _summary_ to paste into a doc. Mermaid is the
-connection-faithful text round-trip; Markdown is the outline-in / readable
-summary-out. Full reasoning in [Markdown import](markdown-import.md) ("Still useful
-after Mermaid?").
 
 ## Node boxes and text
 
-A graph's nodes (a Mermaid import, the MCP's graph input) are sized to their
+A graph's nodes (Mermaid text, the MCP's graph input) are sized to their
 labels and set in one text size for the whole graph (`md`, the templates' size, up to `LOOK_MD_MAX_NODES` nodes;
 `sm` past it, so a large system still fits), not the shape default that
 scales text to fill each box: fitted boxes with scaling text made a short
@@ -333,7 +274,7 @@ The clustered layout **keeps those sizes** rather than stretching each box to
 its widest peer, so one long label no longer inflates every box.
 
 An **unlabelled circle is a dot**: 28 px, solid in the theme's accent through
-the `solid` colour preset (resolved when the import applies the tab's theme).
+the `solid` colour preset (resolved against the tab's theme).
 That is what a state diagram's `[*]` start becomes; drawn at the default
 circle size it read as a large empty box waiting for text. An unlabelled `final-state` is the end's bullseye, 34 px,
 in the same accent.

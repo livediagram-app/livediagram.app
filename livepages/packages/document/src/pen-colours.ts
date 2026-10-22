@@ -48,7 +48,7 @@ export type HuedPenColourName = (typeof PEN_COLOURS)[number]['id'];
 export const INK_PEN_COLOUR = 'ink';
 // Grey (docs/specs/004-interface-design/colour-picker.md "The colours"): a neutral stock colour,
 // tuned per board like the hued ones but with no hue, so it is not in PEN_COLOURS, the list the snap
-// and the board-scene import measure hues against.
+// measures hues against.
 export const GREY_PEN_COLOUR = 'grey';
 const GREY: PenColourSpec = { id: GREY_PEN_COLOUR, label: 'Grey', hue: 0, chroma: 0 };
 export type PenColourName = typeof INK_PEN_COLOUR | typeof GREY_PEN_COLOUR | HuedPenColourName;

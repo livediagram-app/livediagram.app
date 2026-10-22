@@ -558,15 +558,11 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'Can I export my work?',
-        a: 'Yes. Export a diagram or whiteboard tab as PNG, SVG, PDF, Mermaid, Markdown, Excalidraw or a portable JSON file, pages as PNG, SVG, one print-ready PDF or an animated GIF, a logo page as a logo kit, and a Plan board or a Sheet as CSV. Hidden layers stay out of image exports unless you switch them on.',
+        a: 'Yes. Export a diagram or whiteboard tab as PNG, SVG, PDF, Markdown or a portable JSON file, pages as PNG, SVG, one print-ready PDF or an animated GIF, a logo page as a logo kit, and a Plan board or a Sheet as CSV. Hidden layers stay out of image exports unless you switch them on.',
       },
       {
         q: 'Does it work with Mermaid?',
-        a: 'Yes, both ways. Paste or open a Mermaid flowchart, state diagram or ER diagram and livepages lays it out on the canvas with every connection intact. Export a diagram tab back to Mermaid text for your READMEs, issues and AI tools. Other Mermaid types, such as sequence, class, Gantt, pie and mind map, are not supported.',
-      },
-      {
-        q: 'Can I move my boards over from another tool?',
-        a: 'Yes. Import draw.io diagrams (a tab per page, a whole folder at a time if you like), Excalidraw scenes (a .excalidraw file, or a PNG or SVG exported with the scene embedded) and Microsoft Whiteboard boards, and they land as editable content. Markdown and JSON import too, and a CSV file dropped on a Plan tab becomes a Sheet.',
+        a: 'Yes, through the API, the CLI and AI assistants. Hand over a Mermaid flowchart, state diagram, ER diagram or sequence diagram and livepages lays it out on the canvas with every connection intact; the CLI exports a tab back to Mermaid text for your READMEs and issues. Other Mermaid types, such as class, Gantt, pie and mind map, are not supported.',
       },
       {
         q: 'Can I keep a copy in my own Google Drive?',
