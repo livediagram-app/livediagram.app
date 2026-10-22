@@ -2,7 +2,7 @@
 
 The editor's guided tours share one engine: a sequence of anchored popover steps that spotlight one piece of the
 interface at a time, opening the real panels and menus as they go. The tours on it are the
-[Plan tour](../026-plan/plan-tour.md) (its Boards, Sheets and Dashboards tracks), the Forms and Avatar tours, the card
+[Plan tour](../026-plan/plan-tour.md) (its Boards, Sheets and Dashboards tracks), the Forms tour, the card
 type editor's Show Me ([Show me](show-me.md)) and the [element tours](element-tours.md). Each tour's switch is in
 Settings' **Tours** category.
 
@@ -54,7 +54,7 @@ of their steps ask the person to try things.
 
 - **One engine, every tour.** The step runner (`useTourEngine`: prepare, await, heal, glide, Back / Next /
   Skip) and what it draws (`TourStage`: `TourSpotlight`, `TourPopover`) are shared by the
-  [Plan tour](../026-plan/plan-tour.md), the Forms and Avatar tours, the card type editor's Show Me and the
+  [Plan tour](../026-plan/plan-tour.md), the Forms tour, the card type editor's Show Me and the
   [element tours](element-tours.md); each tour's host owns its offer, its steps and what ending means. A step anchors by `data-tour-id`, or by a
   `selector` resolved when it runs (the Plan tour's board and cards), and an anchorless card's `prepare` runs
   too. The bookend cards' words (`TourCardCopy`) and the welcome art are props.

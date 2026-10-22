@@ -62,7 +62,7 @@ describe('carriesWords', () => {
   });
 
   it('is false for shapes whose words are art or drawn by the shape', () => {
-    for (const kind of ['icon', 'sticker', 'chair', 'pie-chart', 'progress-bar'] as const) {
+    for (const kind of ['icon', 'sticker', 'pie-chart', 'progress-bar'] as const) {
       expect(carriesWords(createShape(kind, 0, 0))).toBe(false);
     }
   });

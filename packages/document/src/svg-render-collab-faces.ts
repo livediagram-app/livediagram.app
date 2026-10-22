@@ -8,34 +8,14 @@ import {
   DECISION_STATUS_LABELS,
   DEFAULT_DECISION_STATUS,
 } from './collab-shapes';
-import {
-  QUIZ_CORRECT_GREEN,
-  QUIZ_DEFAULT_SECONDS,
-  QUIZ_DESIGN_SIZE,
-  QUIZ_DISC_RADIUS,
-  QUIZ_OPTION_HEIGHT,
-  QUIZ_OPTION_WIDTH,
-  quizCorrectKeys,
-  QUIZ_OPTION_LONG_TEXT,
-  quizOptionCentres,
-  quizOptionTop,
-  quizTally,
-} from './quiz';
 import { r2, xmlEscape } from './svg-render-primitives';
-import { svgAgenda } from './svg-render-agenda';
-import { svgRollCall } from './svg-render-roll-call';
 import { mixHex } from './svg-render-face-kit';
-import { BODY_GAP, BODY_TOP, roundRect } from './svg-render-collab-parts';
 import { svgTemperature } from './svg-render-temperature';
-import { svgEstimate } from './svg-render-estimate';
-import { svgIdeaBox, svgQaBoard } from './svg-render-qa-idea';
 import {
   checkMark,
-  collabAccent,
   collabCard,
   wrapLines,
   glow,
-  personDisc,
   PAD_X,
   PAD_Y,
   pill,
@@ -43,18 +23,7 @@ import {
   type Face,
 } from './svg-render-face-kit';
 
-// A Quiz answer in the export: its text size and line, its padding, and enough lines for the longest answer
-// (QUIZ_OPTION_MAX_TEXT characters at about 11 a line).
-const QUIZ_EXPORT_TEXT_PX = 12;
-const QUIZ_EXPORT_LINE_PX = 14;
-const QUIZ_EXPORT_PAD_X = 10;
-const QUIZ_EXPORT_PAD_Y = 8;
-const QUIZ_EXPORT_LINES_MAX = 9;
-// The revealed question's lines inside the disc: its width (the disc's chord near the middle) and line height.
-const QUIZ_EXPORT_QUESTION_WIDTH = 180;
-const QUIZ_EXPORT_QUESTION_LINE_PX = 16;
-
-// ── Collaborate panels (docs/specs/012-collaboration/estimate-card.md to /129, /137) ─────────────────────────
+// ── Collaborate panels (docs/specs/012-collaboration/temperature-check.md, decision-record.md) ─────────────
 
 // A decision driver's rhythm (DecisionFace): 11.5px on a snug line, 6px
 // between drivers, and at most this many lines each in an export.
@@ -62,30 +31,11 @@ const DRIVER_LINES = 3;
 const DRIVER_LINE = 15.8;
 const DRIVER_PITCH = 21.8;
 
-export function svgCollabFace(
-  el: Face,
-  label: string,
-  color: string,
-  // The resolved stroke. The quiz reads it only when the element carries its
-  // own (strokeColor), so an unstyled quiz keeps its text-tint rim; the modern
-  // cards take their accent from it (collabAccent), as the canvas does.
-  stroke?: string,
-  // The card's resolved fill, for the accent's text form.
-  fill?: string,
-): string | null {
+export function svgCollabFace(el: Face, label: string, color: string): string | null {
   const title = label.trim();
-  const accent = collabAccent(stroke ?? color, fill ?? '#ffffff', color);
   switch (el.shape) {
-    case 'estimate':
-      return svgEstimate(el, title, color, accent);
     case 'temperature':
       return svgTemperature(el, title, color);
-    case 'idea-box':
-      return svgIdeaBox(el, title, color, accent);
-    case 'qa-board':
-      return svgQaBoard(el, title, color, accent);
-    case 'agenda':
-      return svgAgenda(el, title, color, accent);
     case 'decision': {
       // The card as the face draws it (docs/specs/012-collaboration/decision-record.md "The face"): the status
       // as a badge with its glyph in the status hue, a soft glow of it from the
@@ -181,202 +131,9 @@ export function svgCollabFace(
         );
       });
     }
-    case 'roll-call':
-      return svgRollCall(el, title, color, accent, fill ?? '#ffffff');
-    case 'quiz': {
-      // Quiz (docs/specs/012-collaboration/quiz.md): the disc and its ring of answers. A still image
-      // cannot run a countdown, so an unrevealed card exports as the closed
-      // disc (the question stays hidden, as it is on the canvas) and a revealed
-      // one exports the question with the right answer in green.
-      const scale = Math.min(el.width, el.height) / QUIZ_DESIGN_SIZE;
-      const ox = el.x + (el.width - QUIZ_DESIGN_SIZE * scale) / 2;
-      const oy = el.y + (el.height - QUIZ_DESIGN_SIZE * scale) / 2;
-      const c = QUIZ_DESIGN_SIZE / 2;
-      const revealed = el.quizRevealed === true;
-      const options = el.quizOptions ?? [];
-      const tally = quizTally(el);
-      // The disc is the card's own fill, as on the canvas.
-      const disc =
-        `<circle cx="${c}" cy="${c}" r="${QUIZ_DISC_RADIUS}" fill="${xmlEscape(fill ?? color)}"${fill ? '' : ' opacity="0.07"'}/>` +
-        (el.strokeColor && stroke
-          ? `<circle cx="${c}" cy="${c}" r="${QUIZ_DISC_RADIUS}" fill="none" stroke="${xmlEscape(stroke)}" stroke-width="3"/>`
-          : `<circle cx="${c}" cy="${c}" r="${QUIZ_DISC_RADIUS}" fill="none" stroke="${xmlEscape(color)}" stroke-width="2" opacity="0.3"/>`);
-      // The question over two lines, as the revealed canvas shows it (QuizCentre), the second one ending in an
-      // ellipsis only when it runs on: never cut at a fixed count on one line.
-      const asked = wrapLines(title, QUIZ_EXPORT_QUESTION_WIDTH, 13, 2);
-      const askedTop = c - 6 - ((asked.length - 1) * QUIZ_EXPORT_QUESTION_LINE_PX) / 2;
-      const centre = revealed
-        ? asked
-            .map((line, n) =>
-              text(c, askedTop + n * QUIZ_EXPORT_QUESTION_LINE_PX, line, {
-                size: 13,
-                weight: 600,
-                color,
-                anchor: 'middle',
-              }),
-            )
-            .join('') +
-          text(
-            c,
-            askedTop + (asked.length - 1) * QUIZ_EXPORT_QUESTION_LINE_PX + 22,
-            `${quizCorrectKeys(el).length} of ${(el.responses ?? []).length} correct`,
-            {
-              size: 10,
-              color,
-              anchor: 'middle',
-              opacity: 0.6,
-              uppercase: true,
-            },
-          )
-        : quizClosedCentre(c, el, color);
-      const answers = revealed
-        ? quizOptionCentres(options.length)
-            .map((p, i) => {
-              const right = i === el.quizCorrect;
-              const x = p.x - QUIZ_OPTION_WIDTH / 2;
-              // The whole answer, wrapped, the pill grown away from the disc as the canvas grows it
-              // (docs/specs/012-collaboration/quiz.md "Answers"): never cut short.
-              const body = options[i] ?? '';
-              // A long answer a size smaller, as the canvas sets it.
-              const size = body.length > QUIZ_OPTION_LONG_TEXT ? 11 : QUIZ_EXPORT_TEXT_PX;
-              const lines = wrapLines(
-                body,
-                QUIZ_OPTION_WIDTH - QUIZ_EXPORT_PAD_X * 2,
-                size,
-                QUIZ_EXPORT_LINES_MAX,
-              );
-              const h = Math.max(
-                QUIZ_OPTION_HEIGHT,
-                lines.length * QUIZ_EXPORT_LINE_PX + QUIZ_EXPORT_PAD_Y * 2,
-              );
-              const y = quizOptionTop(p, h);
-              const firstBaseline = y + h / 2 - ((lines.length - 1) * QUIZ_EXPORT_LINE_PX) / 2 + 4;
-              return (
-                `<rect x="${r2(x)}" y="${r2(y)}" width="${QUIZ_OPTION_WIDTH}" height="${r2(h)}" rx="14"` +
-                ` fill="${right ? QUIZ_CORRECT_GREEN : xmlEscape(color)}" opacity="${right ? 1 : 0.1}"/>` +
-                lines
-                  .map((line, n) =>
-                    text(p.x, firstBaseline + n * QUIZ_EXPORT_LINE_PX, line, {
-                      size,
-                      weight: 600,
-                      color: right ? '#ffffff' : color,
-                      anchor: 'middle',
-                    }),
-                  )
-                  .join('') +
-                text(p.x, y + h - 6, String(tally[i] ?? 0), {
-                  size: 9,
-                  color: right ? '#ffffff' : color,
-                  anchor: 'middle',
-                  opacity: 0.7,
-                })
-              );
-            })
-            .join('')
-        : '';
-      return (
-        `<g transform="translate(${r2(ox)} ${r2(oy)}) scale(${r2(scale)})">` +
-        disc +
-        centre +
-        answers +
-        `</g>`
-      );
-    }
-    case 'done-check': {
-      // The card as the face draws it (docs/specs/012-collaboration/done-check.md "Reading the card"): the ring
-      // at the share of marks it holds, the count in it, and the button. An
-      // export has no room to count against, so the ring reads the marks as
-      // the whole: done when there are any, drawn at full.
-      const done = (el.responses ?? []).length;
-      return collabCard(
-        el,
-        title || 'Everyone done?',
-        // done/total, as the canvas reads it; with no room to count against,
-        // the marks are the whole.
-        done ? `${done}/${done}` : undefined,
-        color,
-        (w, h) => {
-          // The canvas's 84px ring (7px stroke), centred in the room above the
-          // button.
-          const r = 38.5;
-          const btnH = 34;
-          const btnY = h - PAD_Y - btnH;
-          const cx = PAD_X + r + 3.5;
-          const cy = (BODY_TOP + btnY - BODY_GAP) / 2;
-          const circ = 2 * Math.PI * r;
-          const arc = done
-            ? `<circle cx="${r2(cx)}" cy="${r2(cy)}" r="${r}" fill="none" stroke="#22c55e" stroke-width="7" stroke-linecap="round" stroke-dasharray="${r2(circ)}" stroke-dashoffset="0" transform="rotate(-90 ${r2(cx)} ${r2(cy)})"/>`
-            : '';
-          return (
-            `<circle cx="${r2(cx)}" cy="${r2(cy)}" r="${r}" fill="none" stroke="${xmlEscape(color)}" stroke-opacity="0.12" stroke-width="7"/>` +
-            arc +
-            (done
-              ? checkMark(cx, cy, 30, '#22c55e', 2.6)
-              : text(cx, cy + 6, '0', { size: 18, weight: 700, color, anchor: 'middle' })) +
-            // Who is done, as the roster: an export has no names for them (a
-            // done check stores an opaque key per mark), so neutral discs,
-            // each wearing the green check.
-            (done
-              ? text(cx + r + 18, cy - 14, 'DONE', { size: 9, weight: 700, color, opacity: 0.6 }) +
-                Array.from({ length: Math.min(done, 6) }, (_, i) => {
-                  const px = cx + r + 30 + i * 26;
-                  return (
-                    personDisc(px, cy + 6, 10, color) +
-                    `<circle cx="${r2(px + 8)}" cy="${r2(cy + 14)}" r="5" fill="#22c55e"/>` +
-                    checkMark(px + 8, cy + 14, 7, '#ffffff', 1.6)
-                  );
-                }).join('') +
-                (done > 6
-                  ? text(cx + r + 30 + 6 * 26, cy + 10, `+${done - 6}`, {
-                      size: 10,
-                      weight: 700,
-                      color,
-                      opacity: 0.6,
-                    })
-                  : '')
-              : text(cx + r + 18, cy + 4, 'Nobody done yet', { size: 11, weight: 600, color })) +
-            // The one act, loud in the accent (DoneButton, before you are done).
-            roundRect(PAD_X, btnY, w - PAD_X * 2, btnH, 12, accent.accent, 1) +
-            checkMark(w / 2 - 34, btnY + btnH / 2, 13, accent.on, 1.8) +
-            text(w / 2 + 6, btnY + 21.5, "I'm done", {
-              size: 12,
-              weight: 600,
-              color: accent.on,
-              anchor: 'middle',
-            })
-          );
-        },
-      );
-    }
     default:
       return null;
   }
-}
-
-/** The closed disc's centre (QuizCentre, setup / ready): the big question
- *  mark, what the round is, and its one act as a loud pill. A running round
- *  shows the same: a still image has no countdown to draw. */
-function quizClosedCentre(c: number, el: Face, color: string): string {
-  const options = (el.quizOptions ?? []).filter((o) => o.trim()).length;
-  const setup = options < 2 || !(el.label ?? '').trim();
-  const meta = setup
-    ? 'Quiz'
-    : `Quiz · ${options} answers · ${el.quizSeconds ?? QUIZ_DEFAULT_SECONDS}s`;
-  const act = setup ? 'Set Up Question' : 'Start';
-  const pillW = act.length * 6.4 + 24;
-  return (
-    text(c, c - 6, '?', { size: 56, weight: 900, color, anchor: 'middle', opacity: 0.8 }) +
-    text(c, c + 17, meta, {
-      size: 10,
-      weight: 600,
-      color,
-      anchor: 'middle',
-      opacity: 0.6,
-      uppercase: true,
-    }) +
-    `<rect x="${r2(c - pillW / 2)}" y="${r2(c + 28)}" width="${r2(pillW)}" height="26" rx="13" fill="${xmlEscape(color)}" fill-opacity="0.16"/>` +
-    text(c, c + 45, act, { size: 11, weight: 600, color, anchor: 'middle' })
-  );
 }
 
 /** The Decision record status glyph (as its badge draws it), centred at (cx, cy). */

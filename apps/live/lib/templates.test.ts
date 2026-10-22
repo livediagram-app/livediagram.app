@@ -24,7 +24,7 @@ import { getTheme } from './themes';
 
 // The catalogue's shape (count + default/extra split + no kind
 // drift) is load-bearing across both the picker and the marketing
-// site. docs/specs/019-marketing/marketing-site.md pins "113 templates (11 default + 102 extra)" and
+// site. docs/specs/019-marketing/marketing-site.md pins "101 templates (11 default + 90 extra)" and
 // docs/specs/008-canvas/canvas-and-palette.md catalogues the picker UX. These tests pin the array so
 // either the spec or the catalogue can't silently drift away from
 // the other.
@@ -65,19 +65,8 @@ describe('TEMPLATES catalogue', () => {
     'raci-matrix',
     'user-story-map',
     'affinity-map',
-    'lean-coffee',
     'brainstorm',
     'workshop-board',
-    'town-hall',
-    'pub-quiz',
-    'icebreaker-questions',
-    'virtual-office',
-    'coworking-space',
-    'team-pod',
-    'all-hands-hall',
-    'two-truths-and-a-lie',
-    'would-you-rather',
-    'people-bingo',
     'business-model-canvas',
     'empathy-map',
     'funnel',
@@ -105,7 +94,6 @@ describe('TEMPLATES catalogue', () => {
     'family-tree',
     'value-stream-map',
     'user-persona',
-    'meeting-agenda',
     'objectives-planner',
     'whiteboard',
     'sketchnote',
@@ -151,21 +139,21 @@ describe('TEMPLATES catalogue', () => {
   ];
 
   // Hidden templates are buildable but never listed, so every user-facing
-  // count (docs/specs/019-marketing/marketing-site.md's "113 templates", the picker grids, the MCP catalogue)
+  // count (docs/specs/019-marketing/marketing-site.md's "101 templates", the picker grids, the MCP catalogue)
   // is over the listed subset. The mechanism is generic; nothing ships
   // hidden today (the docs/specs/007-editor/guided-tour-sample.md guided-tour sample used it until the
   // interactive tour, docs/specs/007-editor/editor-tour.md, superseded it).
   const listed = TEMPLATES.filter((t) => !t.hidden);
 
-  it('lists exactly 113 templates (11 default + 102 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
-    expect(listed).toHaveLength(113);
+  it('lists exactly 101 templates (11 default + 90 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
+    expect(listed).toHaveLength(101);
   });
 
-  it('splits cleanly into 11 default + 102 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
+  it('splits cleanly into 11 default + 90 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
     const defaults = listed.filter((t) => !t.extra);
     const extras = listed.filter((t) => t.extra);
     expect(defaults).toHaveLength(11);
-    expect(extras).toHaveLength(102);
+    expect(extras).toHaveLength(90);
   });
 
   it('ships no hidden templates (the flag is generic; docs/specs/007-editor/guided-tour-sample.md was retired by docs/specs/007-editor/editor-tour.md)', () => {
@@ -418,7 +406,7 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
     // hint + glyph, island + Shout-outs headings. Stickies: title, mood check,
     // agenda, timer + vote, 32 zone notes (8 per zone), 3 shout-outs,
     // checklist, progress bar, clap sticker.
-    sailboat: { names: ['Board', 'Stickies'], scaffold: 61, content: 43 },
+    sailboat: { names: ['Board', 'Stickies'], scaffold: 61, content: 42 },
     // Board: the subtitle, the question's paper and heading, the rail note, 4 column panels with their
     // header, glyph and hint. Stickies: the title, the question, the timer and vote, and 16 ideas.
     brainstorm: { names: ['Board', 'Stickies'], scaffold: 20, content: 20 },
@@ -451,7 +439,7 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
     // frames + number chips, the invite line. Sketches: title + meta, prompt,
     // 2 stickers, timer + vote, done check, sheet name + status, the three
     // sketches and their captions, 5 empty-panel hints.
-    'crazy-eights': { names: ['Sheet', 'Sketches'], scaffold: 35, content: 54 },
+    'crazy-eights': { names: ['Sheet', 'Sketches'], scaffold: 35, content: 53 },
     // Card: how-to, the profile card's chrome, 5 panels of tint, header,
     // glyph and prompt, spectrum poles, channel glyphs, How we help band.
     // Details: title, profile facts, monogram, stat row, tags, quote, 9 notes,
@@ -461,7 +449,6 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
     // rules, the parking bay and hints. Notes: title + sticker, purpose,
     // outcomes checklist, 5 attendees, the agenda, 4 parked stickies, 2
     // decision records, actions checklist, rating gauge, next-sync callout.
-    'meeting-agenda': { names: ['Board', 'Notes'], scaffold: 37, content: 34 },
     // Planner: how-to, 3 phase bands, 3 column heads, why labels, the formula
     // guide + rewrite + SMART check, 3 card frames with section labels, the
     // check-in strip. Objectives: title + sticker, focus, 6 stickies, 2 corner

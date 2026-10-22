@@ -1,9 +1,7 @@
 # Session tools (timer + voting)
 
-Live, facilitator-run **workshop tools** that make the collaborative templates
-(retro, brainstorm, planning) interactive: a per-tab **timer** and per-tab
-**dot-voting**, both driven from the Current Tab settings and synced to every
-participant in real time.
+Live **session tools** that make a shared board interactive: a per-tab **timer** and per-tab
+**dot-voting** (on a Plan board, cast on its cards), both synced to every participant in real time.
 
 ## Why they need no new infrastructure
 
@@ -26,22 +24,21 @@ once — see "Casting a dot" below.
 ## Roles
 
 The realtime room already **drops view-role mutations** ([API app](../015-api/api.md)). So every
-control + every dot cast is naturally **edit-role only** — the facilitator and
+control + every dot cast is naturally **edit-role only** — whoever runs the session and the
 participants share an edit link; **view-role visitors watch** the timer and
 live counts but can't control or vote. No extra gating code.
 
 ## Starting one from the canvas
 
-Both tools can also be started by a [Session button](session-button.md) — a canvas element carrying "5 minute timer" or "vote, 3 dots each" — so a canvas can carry its own facilitation instead of relying on whoever built it. It presses through the same entry points described below, so every rule here still applies, the edit-role gate included.
+Both tools can also be started by a [Session button](session-button.md) — a canvas element carrying "5 minute timer" or "vote, 3 dots each" — so a board can carry its own session instead of relying on whoever built it. It presses through the same entry points described below, so every rule here still applies, the edit-role gate included.
 
 ## The session panes
 
-Each tool has a purpose-built pane (`components/panels/session-studio/`: `TimerPane`, `VotePane`,
-`PollPane`), described under its section below and in [Live poll (ephemeral pulse-check)](live-poll.md)
-for the poll. A pane shows the tool's **set-up** while it is idle and its **live** controls once it
+Each tool has a purpose-built pane (`components/panels/session-studio/`: `TimerPane`, `VotePane`),
+described under its section below. A pane shows the tool's **set-up** while it is idle and its **live** controls once it
 runs. The panes open from the [Session strip](#the-session-strip) in the bottom bar, one popover per
 tool. The tab menu (the tab's ⋯ and the canvas right-click menu) has **no** session tools: its
-Collaborate row, a flyout with a Timer · Vote · Poll switcher (the Session Studio), was removed once
+Collaborate row, a flyout with a Timer · Vote switcher (the Session Studio), was removed once
 the strip gave each tool its own button.
 
 ## One UI per tool, in three places
@@ -51,11 +48,9 @@ popover, in the element's `…` quick menu, and in that element's right-click
 **Session** category. They used to be three separate implementations of the
 same question — a dial in the tab menu's Studio, eight stacked "N minutes" rows in the
 popover, a number field in the context menu — and they drifted exactly as you
-would expect: different controls, different wording, and for polls a different
-answer cap.
+would expect: different controls and different wording.
 
-The bodies are CONTROLLED (`TimerSetupBody`, `VoteSetupBody`,
-`PollComposerBody`), which is what lets one component serve both jobs: in the
+The bodies are CONTROLLED (`TimerSetupBody`, `VoteSetupBody`), which is what lets one component serve both jobs: in the
 strip's popover the value is local state and means "what I am about to start"; on an
 element it is the element's stored config, so setting it configures the button
 AND the Start button runs it now with that value. One number doing both, so no
@@ -68,9 +63,8 @@ elements does not re-render on unrelated state. That is safe because of WHERE
 the bodies mount: `ElementEllipsisMenu` invokes its children only while the
 popover is open, so nothing subscribes until somebody asks to see it.
 
-The element popover matches the strip popover's pane width (`w-72`). Not cosmetic: the
-poll's answer tiles wrap differently at 240px, which is how a label came to be
-truncated in one surface and not the other.
+The element popover matches the strip popover's pane width (`w-72`), so a pane's controls wrap the
+same in both surfaces.
 
 ## Timer
 
@@ -78,9 +72,7 @@ truncated in one surface and not the other.
 
 `startedAt` is the instant the run was started, minted by `startTimer` (which
 returns it) and carried unchanged through pause, resume and extend; Reset and a
-length change from the Timer menu start a new run without it. It lets an
-[Agenda](agenda.md#the-current-segment) segment recognise the countdown it
-started.
+length change from the Timer menu start a new run without it.
 
 - Controlled from the [Session strip](#the-session-strip)'s **Timer** button. Countdown and Stopwatch are one **Timer** tool with a
   mode switch, since a tab runs one timer (the telemetry types stay
@@ -113,8 +105,7 @@ started.
   bottom-right cluster. The button shows the live clock, ticking ~4×/sec while running, with the
   countdown's drain behind it, and it flashes when a countdown hits 0:00. Pressing it opens the
   live Timer pane as a popover above it: the dial, the +30s / +1 min / +5 min extensions and
-  Reset / Pause or Resume / End. View-role visitors, and everyone while somebody else
-  [facilitates](facilitator.md), get the dial alone. There is no timer band at the top of the canvas.
+  Reset / Pause or Resume / End. View-role visitors get the dial alone. There is no timer band at the top of the canvas.
 
 ## Voting (dot-voting)
 
@@ -223,8 +214,7 @@ Ending a vote persists the host's final state. Server-side merge of the map is
 - **Votable targets** (`isVotable`): shapes, sticky notes, and images — **not**
   the `frame` shape (a section backdrop) and not text / freehand / table /
   arrow / annotation. Nor the controls: the Behaviour elements and the
-  collaboration panels (estimate, temperature, done check, idea box, Q&A, agenda,
-  roll call, decision, quiz), whose own presses answer them, so a dot would give
+  collaboration panels (temperature, decision, comment and action panels), whose own presses answer them, so a dot would give
   one tap two meanings.
   Nor the readouts (stat row, pie, bar and line charts, Sankey, progress bar and
   ring, legend, diagram key) or a checklist: a readout shows what the board says
@@ -276,7 +266,7 @@ Ending a vote persists the host's final state. Server-side merge of the map is
   focused pick.
 - **The walkthrough position is SHARED** (`vote.reviewIndex`), and only the
   host moves it. It used to be per-participant local state — "everyone
-  reviews at their own pace" — but that meant a facilitator saying "look at
+  reviews at their own pace" — but that meant a host saying "look at
   this one" had no way to actually put the room on it, which is the whole
   point of walking results together. Followers get the readout and the
   focus; the Previous / Next / Done buttons and the Vote panel's clickable
@@ -287,7 +277,7 @@ Ending a vote persists the host's final state. Server-side merge of the map is
 The running session tools live in **one strip in the bottom-right cluster**, the way Plan mode's
 New Card, Find a Card and Card Types share one strip. It sits **left of Layers** (or of the mode's
 own strip: the Plan strip in Plan mode), right
-after Undo and Redo. **An editor always has all three buttons**, running or not, so a session tool
+after Undo and Redo. **An editor always has both buttons** where the strip shows, running or not, so a session tool
 is one press away. Idle, a button is just its glyph and opens that tool's set-up pane, the same form a session
 button element's menu offers; running, it opens the live tool:
 
@@ -297,37 +287,30 @@ button element's menu offers; running, it opens the live tool:
 - **Vote**: the vote glyph, opening the vote set-up. While the tab has a vote it opens the **Vote
   panel** (below), and the glyph carries your dots left as a count badge while casting is open
   (for anyone who can cast), else a live dot: green, or amber during the results walkthrough.
-- **Poll**: the poll glyph, opening the poll composer. While a poll runs and its results are yours
-  to see (the host, or anyone who has answered, [Live poll](live-poll.md)), the glyph carries a
-  live dot and opens the **Poll panel**. Asking a poll closes the composer: the question is on
-  everyone's screen, and the button carries the results from there.
 
 **A view-role visitor**, who cannot start anything, gets only the buttons of tools that are
 running, and their popovers read-only (the Timer's dial without its controls); with nothing
-running they get no strip. While somebody else [facilitates](facilitator.md), an editor's set-up
-panes are disabled under a note naming them.
+running they get no strip.
 
-**Which tools a mode offers** (`sessionStripTools`): **Workshop** has all three
-([Workshop mode](workshop-mode.md#the-session-strip-per-mode)) and on an event-storming board, a
-workshop that is always Diagram; **Plan** has Timer and
-Vote (cards take the dots, [Voting on Plan cards](#voting-on-plan-cards)) only on a tab with a board made for voting,
-one taking a card type with a **Votes** field (a Retro's Notes and Ideas, or a type someone gave Votes), and never on
-a Dashboard tab, a timer or vote already running keeping its button so it can be stopped; Plan has no Poll. A popover
-whose button leaves closes.
+**Where the strip shows** (`sessionStripTools`): in **Plan**, Timer and Vote (cards take the dots,
+[Voting on Plan cards](#voting-on-plan-cards)) show only on a tab with a board made for voting, one taking a card
+type with a **Votes** field (a Retro's Notes and Ideas, or a type someone gave Votes), and never on a Dashboard tab;
+a timer or vote already running keeps its button so it can be stopped. Elsewhere the strip is absent, even while a
+tool runs (a session button on the canvas still starts one there). A popover whose button leaves (a tab switch)
+closes.
 
-Order, left to right: Timer, Vote, Poll. **On a phone** the strip stays in the cluster's one row, between Undo and Redo and Layers: the cluster's buttons share the row's width, each from 36px up to the usual 44px (always 44px tall to tap), with 6px gaps, so Undo, Redo, the three tools, Layers, the theme brush and Fit fill the row on a 360px screen and up. On a narrower one the cluster wraps from the right, so Undo is never pushed off the screen. Each segment opens its
+Order, left to right: Timer, Vote. **On a phone** the strip stays in the cluster's one row, between Undo and Redo and Layers: the cluster's buttons share the row's width, each from 36px up to the usual 44px (always 44px tall to tap), with 6px gaps, so Undo, Redo, the two tools, Layers, the theme brush and Fit fill the row on a 360px screen and up. On a narrower one the cluster wraps from the right, so Undo is never pushed off the screen. Each segment opens its
 panel as a **popover hanging above it** with an arrow at the button, and a second press closes
-it. **While a vote or poll runs, on a desktop, nothing else closes its popover**: a press on the
-canvas (casting a dot, answering) leaves it up, because a facilitator watches turnout or answers
+it. **While a vote runs, on a desktop, nothing else closes its popover**: a press on the
+canvas (casting a dot) leaves it up, because whoever runs the vote watches turnout
 while the room works. Every popover closes on its own **when the activity ends** (the timer or vote
-is cleared, the poll ended), rather than turning back into the set-up under the pointer. The
+is cleared), rather than turning back into the set-up under the pointer. The
 **Timer**'s popover always closes on a press outside, running or not: its clock is already on the
 button, so there is nothing to watch in it. So do an idle tool's popover and any popover on a
-phone (where it would cover the canvas being voted on). Asking a poll keeps the popover open: it becomes the Poll panel. They share the editor's one open-popover slot with Layers, Collaborate
-and the Explorer. Nothing opens on its own: a vote or poll somebody starts lights its button and
+phone (where it would cover the canvas being voted on). They share the editor's one open-popover slot with Layers, Collaborate
+and the Explorer. Nothing opens on its own: a vote somebody starts lights its button and
 leaves the canvas clear. The strip shows in Zen mode as well, because a session in progress is the one
-piece of chrome a facilitator still needs there; it is hidden only while presenting or in the
-welcome flow, with the rest of the cluster.
+piece of chrome a session still needs there; it is hidden only in the welcome flow, with the rest of the cluster.
 
 ## The Vote panel
 
@@ -356,7 +339,7 @@ on the tab. Two phases, one panel:
 participant id, while the room's presence roster is keyed by a server-random
 per-connection id ([Public API and API tokens](../015-api/public-api-and-tokens.md) §6) — the two never match, so a client has no way
 to turn a voter into a person. For a dot-vote that is a happy accident, and
-the turnout numbers answer the facilitator's actual question without it.
+the turnout numbers answer the host's actual question without it.
 Naming voters would mean writing names alongside the dots, which would make
 every dot trivially attributable in stored data — the opposite of the
 direction "Vote privacy" below takes.
@@ -374,9 +357,7 @@ ever renders after the reveal.
 
 `vote.startedBy` records the participant that started it, and `isVoteHost`
 is the single gate. **Only the host can End / Show results / Clear the vote,
-or move the results focus.** Everyone else casts dots and watches. The
-**facilitator** ([Facilitator](facilitator.md)) counts as a host of every
-vote, whoever started it.
+or move the results focus.** Everyone else casts dots and watches.
 
 Ending is the reason: you can always start another vote, but you cannot get
 the dots back, so an accidental End by a participant costs the room the whole
@@ -384,15 +365,10 @@ round. The same gate covers reveal, clear, and the walkthrough so "whose vote
 is this" has one answer rather than three.
 
 - Enforced in `useTabSession` (the handlers no-op for a non-host) **and** in
-  the UI (the controls aren't rendered for one). This is a facilitation
+  the UI (the controls aren't rendered for one). This is a session
   guard, not a security boundary: the vote is an ordinary tab field, so any
   edit-role peer could still write it directly. That matches the rest of
   [Session tools (timer + voting)](session-tools.md), where roles are the only real gate.
-- The facilitator drives any vote because `startedBy` is the starter's
-  per-browser collab key: a vote started on another device, or before this
-  browser's storage was cleared, matches nobody in the room, and a vote left
-  open over a weekend would otherwise be unendable forever. Taking the baton
-  (free to any editor, and always to the owner) is the way to take it back.
 - `startedBy` is **optional**, and `isVoteHost` treats its absence as "anyone
   may drive". A vote persisted before this shipped would otherwise become
   unendable — nobody matches a missing starter.
@@ -406,7 +382,7 @@ is this" has one answer rather than three.
 
 Dot-voting is only as honest as what participants can see before it closes.
 Two things leak the room's leaning while casting is open: **where everyone's
-pointer is** (peer cursors and laser trails visibly converge on the sticky
+pointer is** (peer cursors visibly converge on the sticky
 they like) and **the running tallies** (a count pill that climbs tells you
 what to pile onto). Two independent switches on the vote address them:
 
@@ -419,7 +395,7 @@ and behaves as it always did (absent = off).
   written into the `TabVote` by `startVote`. There is **no mid-vote toggle**:
   to change them, end the vote and start a new one. That keeps the rule a
   participant can rely on ("cursors were hidden for the whole of this vote")
-  instead of a setting the facilitator can flip once they've seen where
+  instead of a setting the host can flip once they've seen where
   people are pointing.
 - **Room-wide, not per-viewer.** The flags ride `tab.vote`, so every client
   on the tab reads the same values off the synced tab — nobody can opt back
@@ -430,21 +406,14 @@ and behaves as it always did (absent = off).
 
 ### Hide participant cursors (default **on**)
 
-While `vote.active`, peer **cursors**, peer **laser trails**, and peer
-**Avatar-mode characters** ([Avatar mode](../008-canvas/avatar-mode.md)) are neither drawn
-nor sent:
+While `vote.active`, peer **cursors** are neither drawn nor sent:
 
-- **Render:** `usePresenceRows` returns empty `remoteCursorRows` and
-  `remoteAvatarRows` and drops remote laser rows, so nothing reaches the canvas
+- **Render:** `usePresenceRows` returns empty `remoteCursorRows`, so nothing reaches the canvas
   overlays.
-- **Wire:** `useEditorBroadcast` stops emitting `cursor`, `laser`, and `avatar`
-  room ops
-  altogether. Suppressing the send (not just the paint) is the point — a
+- **Wire:** `useEditorBroadcast` stops emitting `cursor` room ops altogether. Suppressing the send (not just the paint) is the point — a
   render-only gate would still put every participant's coordinates on the
   socket for anyone with devtools open. It also drops the room's busiest
   packet stream for the duration of the vote.
-- Your **own** laser trail still draws on your own screen; only what peers
-  send is withheld.
 - **Which switches are in force is shown on the Vote panel** as rule chips
   ("Cursors hidden", "Counts hidden"), phase-aware: cursors come back the
   moment voting closes, counts once the results show.
@@ -469,7 +438,7 @@ the winner rings as usual — the existing reveal step is the natural gate, so
 this switch changes _when_ counts appear rather than adding a new phase.
 
 It defaults **off** because live counts are load-bearing for ordinary
-dot-voting (see "Counts are **live**" above); a facilitator running a blind
+dot-voting (see "Counts are **live**" above); a host running a blind
 vote opts in.
 
 ## Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))

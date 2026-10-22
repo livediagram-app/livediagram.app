@@ -251,24 +251,14 @@ type UserPreferences = {
   // The Plan tour tracks (Boards, Sheets, Dashboards) whose offer has been answered (taken, skipped or declined), so each offers
   // itself once ever. Settings' Boards Tour and Sheets Tour rows each add or remove their own track.
   planTourTracks?: PlanTourTrack[];
-  // The Workshop tour's seen-guard (docs/specs/012-collaboration/workshop-tour.md), as `planTourSeen`.
-  // Surfaced in Settings as Tours › "Workshop Tour" (inverted). Missing / undefined === not seen.
-  workshopTourSeen?: boolean;
-  // The Forms tour's seen-guard (docs/specs/030-forms/forms.md "The Forms tour"), as `workshopTourSeen`; Show Me Around
+  // The Forms tour's seen-guard (docs/specs/030-forms/forms.md "The Forms tour"), as `planTourSeen`; Show Me Around
   // in the form's cog panel reruns it. Missing / undefined === not seen.
   formTourSeen?: boolean;
-  // The Avatar tour's seen-guard (docs/specs/008-canvas/avatar-tour.md), as `workshopTourSeen`.
-  // Surfaced in Settings as Tours › "Avatar Tour" (inverted). Missing / undefined === not seen.
-  avatarTourSeen?: boolean;
   // Element tours (docs/specs/007-editor/element-tours.md): the toured element kinds whose offer has been answered
   // (Play or Cancel). Surfaced in Settings as Tours › Show Me, one switch per kind (inverted).
   elementTourKinds?: ElementTourKind[];
   // Counts every element tour as answered while Power user mode is on; written by its preset.
   elementToursSeen?: boolean;
-  // The presenter settings (docs/specs/012-collaboration/presentation-mode.md "Presenter settings"), as one object,
-  // read through lib/presentation-config. Surfaced in Settings as Editor › Presenting. Missing === what this
-  // browser kept before they followed the account, else the defaults.
-  presentation?: Record<string, unknown>;
   // DEAD (../004-interface-design/colour-picker.md "Custom colours"): Custom colours are kept with the document's tabs, not per user.
   // Nothing reads or writes this; it stays because it is already stored.
   customSwatches?: string[];
@@ -393,6 +383,9 @@ Missing key === undefined === default behaviour. Concretely:
   Document wizard's Location step ([New document route](new-document-route.md#one-step-wizard)): the wizard
   never asks where a document goes, so a stored place is dropped the same way and new documents follow the
   [default folders](../013-workspace/default-folders.md).
+  `workshopTourSeen` (and its older name `facilitateTourSeen`), `avatarTourSeen` and the presenter settings'
+  `presentation` went with Workshop mode's facilitation features (removed 2026-10-22): the Workshop and Avatar
+  tours and Presentation mode are gone, so a stored value is dropped the same way.
 - `quickAddOnHover` undefined / false → click to open an element's quick-add
   `+` menu (the default; hover-open can feel twitchy, so it's opt-in). `true`
   opens it on hover instead, closing a beat after the pointer leaves both the
@@ -472,10 +465,6 @@ and the dialog stays as the one complete, browsable index of them.
   (`MovablePanel`'s `onReset`, shown once the panel has left its default
   corner), which is the only non-preference thing the popovers held.
 
-  The **Slide Deck** popover stays: its contents (auto-advance, speed,
-  transition, slide size, loop, hide pointer) are deck state rather than user
-  preferences, so they have no home in Settings and should not get one.
-
 - **Settings dialog**: `apps/live/components/dialogs/SettingsDialog.tsx`,
   lazy-loaded via `next/dynamic` (matches the other on-demand
   modals: ShareDialog, ExportTabDialog, ImagePicker). Trigger: a
@@ -547,9 +536,7 @@ and the dialog stays as the one complete, browsable index of them.
   **Editor** (a **Canvas** section: alignment guides, auto-attach arrows,
   element indicators; a **Mouse** section: quick-add on hover, middle-mouse
   pan; then **Power User**: power user mode, with Minimal chrome and the preset
-  readout nested under it while the mode is on; with the sub-categories
-  **Presenting** (the presenter settings: Slides, Playback and While Presenting,
-  [Presentation mode](../012-collaboration/presentation-mode.md) "Presenter settings")), **Appearance** (theme, then an **Interface** section:
+  readout nested under it while the mode is on), **Appearance** (theme, then an **Interface** section:
   Button Labels, and UI scale with a slider per part nested under it), **Keyboard**
   (the Keyboard Shortcuts on/off switch, then the full shortcut catalogue as
   collapsible groups), **Panels** (panel opacity; with the
@@ -698,7 +685,7 @@ and the dialog stays as the one complete, browsable index of them.
   Pan): a phone has no hover and no middle button.
 
   **Tours** is a category of its own: one switch per guided tour, **Diagram
-  Tour**, **Plan Tours** (over **Boards Tour**, **Sheets Tour** and **Dashboards Tour**), **Workshop Tour**,
+  Tour**, **Plan Tours** (over **Boards Tour**, **Sheets Tour** and **Dashboards Tour**),
   **Forms Tour** and **Avatar Tour**, each with a line saying where it offers itself and a **Learn more**
   to its article, under one **Offer Again** section note: each tour offers
   itself once; switch one back on and close Settings to take it again, straight
@@ -724,9 +711,8 @@ and the dialog stays as the one complete, browsable index of them.
   to `planTourTracks`, on removes it alone, and both clear the single `planTourSeen`, folding it into the list first
   so one track back on leaves the others answered. It needs no handoff flag (the Plan tour offers itself in Plan once
   a board or Sheet is open, the Dashboards tour on a dashboard), so closing the dialog only reruns it, when a track
-  became owed while it was open ([Plan tour](../026-plan/plan-tour.md)). **Workshop Tour** works the same way against
-  `workshopTourSeen` ([Workshop tour](../012-collaboration/workshop-tour.md)), **Forms Tour** against `formTourSeen` ([Forms](../030-forms/forms.md) "The Forms tour"), and **Avatar Tour** against `avatarTourSeen`
-  ([Avatar tour](../008-canvas/avatar-tour.md)). Power user mode's readout lists the Plan tour's switch over all
+  became owed while it was open ([Plan tour](../026-plan/plan-tour.md)). **Forms Tour** works the same way against
+  `formTourSeen` ([Forms](../030-forms/forms.md) "The Forms tour"). Power user mode's readout lists the Plan tour's switch over all
   its tracks (**Plan Tours**). The Plan tour's old single flag (`planTourSeen`) counts every track only while Power
   user mode is on, so an answer given before the tour split offers each track once more.
 

@@ -7,7 +7,6 @@
 
 import { MODE_GLYPHS } from '@liveplanner/icons/mode-glyphs';
 import {
-  lucideChartColumn,
   lucideCircleCheck,
   lucidePlus,
   lucideSearch,
@@ -51,9 +50,9 @@ function Lucide({
 }
 
 // The extra group a mode adds to the cluster, as CanvasChrome lays it out: Workshop's session
-// tools (timer, votes, poll) and a Plan board's own (delete, add, find, cards).
+// tools (timer, votes) and a Plan board's own (delete, add, find, cards).
 const MODE_GROUP: Partial<Record<HeroMode, Parameters<typeof Prims>[0]['prims'][]>> = {
-  workshop: [lucideTimer, lucideCircleCheck, lucideChartColumn],
+  workshop: [lucideTimer, lucideCircleCheck],
   plan: [lucideTrash2, lucidePlus, lucideSearch],
 };
 

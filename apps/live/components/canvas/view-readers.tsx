@@ -15,7 +15,6 @@ import {
 } from '@/hooks/sheets/sheet-zoom';
 import { useEffect, type ComponentProps } from 'react';
 import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
-import { LaserOverlay } from '@/components/canvas/LaserOverlay';
 import { RemoteCursor } from '@/components/canvas/RemoteCursor';
 import { Minimap } from '@/components/canvas/Minimap';
 import { ZoomControls } from '@/components/chrome/ZoomControls';
@@ -28,10 +27,6 @@ const wholeView = (v: View) => v;
 
 export function ZoomedRemoteCursor(props: Omit<ComponentProps<typeof RemoteCursor>, 'zoom'>) {
   return <RemoteCursor {...props} zoom={useCanvasZoom()} />;
-}
-
-export function ZoomedLaserOverlay(props: Omit<ComponentProps<typeof LaserOverlay>, 'zoom'>) {
-  return <LaserOverlay {...props} zoom={useCanvasZoom()} />;
 }
 
 // The corner zoom controls, showing the zoom from the viewport store; off while a Plan element covers the canvas

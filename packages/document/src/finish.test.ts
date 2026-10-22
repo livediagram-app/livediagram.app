@@ -108,7 +108,7 @@ describe('finishHatches', () => {
 
   // Every box with a body of its own is shaded (docs/specs/008-canvas/finish.md "Fills"): containers and panels too.
   it('shades containers, cards and panels like any box', () => {
-    for (const kind of ['frame', 'lane', 'agenda', 'page', 'card', 'entity'] as const)
+    for (const kind of ['frame', 'lane', 'decision', 'page', 'card', 'entity'] as const)
       expect(finishHatches(createShape(kind, 0, 0), '#ffffff'), kind).toBe(true);
   });
 

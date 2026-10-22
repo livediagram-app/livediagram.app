@@ -23,7 +23,6 @@ type VotePaneProps = Pick<
   | 'onEndVote'
   | 'onRevealVote'
   | 'onClearVote'
-  | 'facilitating'
 > & { selfId: string };
 
 export function VotePane(props: VotePaneProps) {

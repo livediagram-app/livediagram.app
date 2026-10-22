@@ -186,10 +186,7 @@
   }
 }
 
-/* Canvas and collaboration card art, continued: the spotlight's tour of three steps, the laser's travelling streak (--dash
-   long, over a --len path), the expiry ring draining, and the marquee drawn out from its corner. */
-.fa-a-tour,
-.fa-a-streak,
+/* Canvas and collaboration card art, continued: the expiry ring draining, and the marquee drawn out from its corner. */
 .fa-a-drain,
 .fa-a-marquee {
   animation-duration: 6s;
@@ -197,15 +194,6 @@
   animation-timing-function: ease-in-out;
   animation-delay: var(--d, 0s);
   animation-fill-mode: both;
-}
-.fa-a-tour {
-  animation-name: fa-a-tour;
-}
-.fa-a-streak {
-  stroke-dasharray: var(--dash) var(--len);
-  animation-name: fa-a-streak;
-  animation-duration: 3.2s;
-  animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
 }
 .fa-a-drain {
   animation-name: fa-a-drain;
@@ -215,42 +203,6 @@
   transform-box: fill-box;
   transform-origin: left top;
   animation-name: fa-a-marquee;
-}
-@keyframes fa-a-tour {
-  0%,
-  16% {
-    transform: none;
-  }
-  24%,
-  38% {
-    transform: translate(73px, 0);
-  }
-  46%,
-  60% {
-    transform: translate(147px, 0);
-  }
-  68%,
-  86% {
-    transform: translate(221px, 0);
-  }
-  96%,
-  100% {
-    transform: none;
-  }
-}
-@keyframes fa-a-streak {
-  0% {
-    opacity: 1;
-    stroke-dashoffset: var(--dash);
-  }
-  78% {
-    opacity: 1;
-  }
-  92%,
-  100% {
-    opacity: 0;
-    stroke-dashoffset: calc(var(--dash) - var(--len));
-  }
 }
 @keyframes fa-a-drain {
   0% {
@@ -278,7 +230,6 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .fa-a-tour,
   .fa-a-marquee {
     animation: none !important;
     transform: none !important;
@@ -287,11 +238,5 @@
   .fa-a-drain {
     animation: none !important;
     stroke-dashoffset: 8 !important;
-  }
-  /* The laser settles to its trail drawn in full, faint, with no head. */
-  .fa-a-streak {
-    animation: none !important;
-    stroke-dasharray: none !important;
-    opacity: 0.35 !important;
   }
 }

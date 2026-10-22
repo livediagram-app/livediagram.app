@@ -160,7 +160,7 @@ describe('saveOfflineToCloud (offline -> cloud)', () => {
     expect(tagsApi.apiSetDocumentTag).toHaveBeenCalledWith('owner', 'b', 'd1', true);
   });
 
-  it('carries the deck, folder and created date, not just the tabs', async () => {
+  it('carries the folder and created date, not just the tabs', async () => {
     // The local record is deleted straight after, so whatever the create
     // leaves behind is lost.
     vi.mocked(store.offlineGetRecord).mockResolvedValueOnce({
@@ -169,13 +169,11 @@ describe('saveOfflineToCloud (offline -> cloud)', () => {
       tabs: [],
       folderId: 'f1',
       createdAt: 123,
-      presentation: '{"decks":[]}',
     } as never);
     await saveOfflineToCloud('d1', 'owner');
     expect(vi.mocked(apiClient.apiCreateDocument).mock.calls[0]![1]).toMatchObject({
       folderId: 'f1',
       createdAt: 123,
-      presentation: '{"decks":[]}',
     });
   });
 
@@ -293,19 +291,17 @@ describe('saveOfflineToCloud (offline -> cloud)', () => {
 });
 
 describe('takeCloudOffline (cloud -> offline)', () => {
-  it('keeps the deck and personal folder on the offline record', async () => {
+  it('keeps the personal folder on the offline record', async () => {
     vi.mocked(apiClient.apiLoadDocument).mockResolvedValueOnce({
       id: 'd1',
       name: 'Roadmap',
       tabs: [{ id: 't1' }],
       folderId: 'f1',
       teamId: null,
-      presentation: '{"decks":[]}',
     } as never);
     await takeCloudOffline('d1', 'owner');
     expect(vi.mocked(store.offlinePutRecord).mock.calls[0]![0]).toMatchObject({
       folderId: 'f1',
-      presentation: '{"decks":[]}',
     });
   });
 

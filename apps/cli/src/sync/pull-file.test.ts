@@ -31,7 +31,7 @@ const file = (tabs: Tab[] = [tab()]): PullFile => ({
   kind: 'liveplanner.document',
   schemaVersion: 1,
   exportedAt: 1,
-  document: { id: 'd1', name: 'Shop', presentation: null, tabs },
+  document: { id: 'd1', name: 'Shop', tabs },
   liveplannerSync: {
     host: 'https://liveplanner.app',
     pulledAt: 1,

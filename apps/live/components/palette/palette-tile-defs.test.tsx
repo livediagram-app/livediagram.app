@@ -143,14 +143,12 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   components: 12,
   concepts: 8,
   data: 7,
-  // The Collaborate elements, one category per group (docs/specs/012-collaboration/workshop-mode.md
-  // "The palette"): 34 tiles between them.
-  'collab-ask': 7,
-  'collab-tools': 5,
-  'collab-record': 5,
-  'collab-react': 5,
-  'collab-mode': 7,
-  'collab-navigate': 15,
+  // The Collaborate elements, one category per group (docs/specs/010-palette/palette-top-level-categories.md):
+  // 10 tiles between them.
+  'collab-ask': 2,
+  'collab-tools': 3,
+  'collab-record': 3,
+  'collab-navigate': 2,
   // The Event Storming notation (docs/specs/021-event-storming/event-storming.md): one tile per note kind.
   'event-storming': 8,
   // Plan mode's Boards and Cards (docs/specs/026-plan/plan-mode.md "The palette"): nine boards, one

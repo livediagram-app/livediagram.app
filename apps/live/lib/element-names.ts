@@ -18,7 +18,6 @@ const SESSION_TOOL_KIND: Record<SessionTool, string> = {
   timer: 'Timer',
   stopwatch: 'Stopwatch',
   vote: 'Dot vote',
-  poll: 'Poll',
 };
 
 // Display kind for an element — capitalised, no article. Shapes
@@ -40,7 +39,7 @@ export function kindLabel(el: Element): string {
   }
   if (el.type === 'link-card') return 'Link card';
   if (el.type === 'video') return 'Embed';
-  // A session button names the tool it starts ('Timer', 'Poll'), not the generic kind, which said nothing about it.
+  // A session button names the tool it starts ('Timer', 'Dot vote'), not the generic kind, which said nothing about it.
   if (el.type === 'shape' && el.shape === 'session-button')
     return SESSION_TOOL_KIND[el.session?.tool ?? DEFAULT_SESSION_TOOL];
   if (el.type === 'shape') {
@@ -137,21 +136,14 @@ export function elementAriaLabel(el: Element): string {
   return label ? `${kind} "${label}"` : kind;
 }
 
-// The kinds whose face carries controls of its own: a timer's Start, a checklist's ticks, a poll's Ask, a Q&A board's
-// note field, an agenda's items, a quiz's answer, a reaction pad's button, a picker's draw, a reveal, a decision
-// record's settings and a mode button.
+// The kinds whose face carries controls of its own: a timer's Start, a checklist's ticks, a temperature check's
+// readings, a picker's draw and a decision record's settings.
 const CONTROL_FACE_SHAPES: ReadonlySet<string> = new Set<ShapeKind>([
   'session-button',
   'checklist',
   'temperature',
-  'agenda',
-  'qa-board',
-  'reaction-pad',
-  'quiz',
   'picker',
-  'reveal',
   'decision',
-  'mode-button',
 ]);
 
 /** The wrapper's role (docs/specs/004-interface-design/canvas-accessibility.md "Names on elements"): a picture

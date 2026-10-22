@@ -1,4 +1,4 @@
-// Shared primitives for the pages, slides and presenting card art (./infographics, ./present):
+// Shared primitives for the pages and slides card art (./infographics):
 // paper that reads as a page on the canvas in light and dark, an editor panel, a presenting
 // screen, lines of writing, a teammate's cursor. Every colour has its light value as the SVG
 // attribute and its dark value as a dark: utility, so a card is right in both appearances.

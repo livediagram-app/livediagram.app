@@ -6,7 +6,7 @@ import { runModShortcut } from './editor-shortcut-keys';
 // this workspace's node-env vitest doesn't run (see docs/specs/003-system-architecture/testing.md).
 // What we CAN test in node is the pure key -> action mapping: the lookup
 // tables that the effect dispatches through. These assertions pin the
-// standards-aligned remap (V = Select, H = Hand, K = Laser,
+// standards-aligned remap (V = Select, H = Hand,
 // the shape letters, and the Excalidraw number-row aliases) so an
 // accidental swap or a dropped key is caught.
 
@@ -48,19 +48,9 @@ describe('VIEW_TOOL_KEYS (non-mutating tools)', () => {
     expect(VIEW_TOOL_KEYS.p).toBeUndefined();
   });
 
-  it('binds Laser to K (not L)', () => {
-    expect(fired(VIEW_TOOL_KEYS, 'k')).toBe('tool:laser');
-    expect(VIEW_TOOL_KEYS.l).toBeUndefined();
-  });
-
   it('keeps Isometric on I and Zen on Z', () => {
     expect(fired(VIEW_TOOL_KEYS, 'i')).toBe('tool:isometric');
     expect(fired(VIEW_TOOL_KEYS, 'z')).toBe('zen');
-  });
-
-  it('has no key into Avatar mode (a Selection Mode button is its one way in)', () => {
-    expect(VIEW_TOOL_KEYS.w).toBeUndefined();
-    expect(EDIT_KEYS.w).toBeUndefined();
   });
 });
 

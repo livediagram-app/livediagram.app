@@ -1,5 +1,4 @@
-// FLIP reordering for a list (the Q&A board's queue, docs/specs/012-collaboration/qa-board.md; the form builder's
-// questions, docs/specs/030-forms/forms.md "Building a form"): when the order changes, each row slides from where it
+// FLIP reordering for a list (the form builder's questions, docs/specs/030-forms/forms.md "Building a form"): when the order changes, each row slides from where it
 // was to where it now is. A row new to the list can be told (`onEnter`), and one that moved up (`onClimb`), once each.
 // Reduced motion moves nothing.
 //

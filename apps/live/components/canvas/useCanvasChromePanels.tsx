@@ -1,6 +1,5 @@
 'use client';
 
-import { isTypingTarget } from '@/lib/typing-target';
 import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useStableCallbacks } from '@/hooks/ui/useStableCallbacks';
@@ -43,7 +42,7 @@ const CollaboratePanel = dynamic(
 );
 
 // Lazy for the same reason: the Session strip's popovers (docs/specs/012-collaboration/session-tools.md
-// "The Session strip") load on the first press of a Timer, Vote or Poll button.
+// "The Session strip") load on the first press of a Timer or Vote button.
 const SessionPopover = dynamic(() => import('./SessionPopover').then((m) => m.SessionPopover), {
   ssr: false,
 });
@@ -89,10 +88,8 @@ export function useCanvasChromePanels({
   trashPopoverEl: ReactNode;
   newCardPopoverEl: ReactNode;
   cardFinderPopoverEl: ReactNode;
-  // The Session strip's open popover (Timer, Vote or Poll), over its button.
+  // The Session strip's open popover (Timer or Vote), over its button.
   sessionPopoverEl: ReactNode;
-  // The Avatar panel over its button (docs/specs/008-canvas/avatar-mode.md "The Avatar Panel").
-  avatarPopoverEl: ReactNode;
 } {
   const {
     activeDockAnchor,
@@ -110,7 +107,6 @@ export function useCanvasChromePanels({
     onToggleRecentExclusion,
     favouriteIds,
     onToggleFavourite,
-    pollPanel,
     tabVote,
     voteResults,
     onJumpToVoteResult,
@@ -206,42 +202,13 @@ export function useCanvasChromePanels({
     onResetCommentsPanel,
   );
   const aiWiring = aiPanel ? panelWiringFor('ai', aiPanel.position, aiPanel.onReset) : null;
-  // The five tool-config panels (avatar / laser / spotlight / format /
-  // slide deck), see useCanvasToolPanels. They share one contract: on screen
-  // only while their own tool is active.
   // The Card Types popover, and the Plan strip's others, over their buttons.
   const cardTypesOpen = activeDockPanel === 'card-types';
   const trashOpen = activeDockPanel === 'plan-trash';
   const cardFinderOpen = activeDockPanel === 'plan-cards';
   const newCardOpen = activeDockPanel === 'plan-new-card';
-  // The Avatar panel belongs to its button, which belongs to the mode: leaving Avatar mode closes it.
-  const avatarMode = props.canvasTool === 'avatar';
-  const avatarOpen = activeDockPanel === 'avatar' && avatarMode;
-  useEffect(() => {
-    if (activeDockPanel === 'avatar' && !avatarMode) closeDockPanel();
-  }, [activeDockPanel, avatarMode, closeDockPanel]);
-  // Escape closes the Avatar panel and nothing else (docs/specs/008-canvas/avatar-mode.md "The Avatar Panel"):
-  // caught ahead of the editor's shortcuts, where Escape would otherwise leave Avatar mode altogether. A typing
-  // field in the panel (the message view) handles its own Escape first.
-  useEffect(() => {
-    if (!avatarOpen) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape' || e.defaultPrevented || isTypingTarget(e.target)) return;
-      e.preventDefault();
-      e.stopPropagation();
-      closeDockPanel();
-    };
-    window.addEventListener('keydown', onKey, true);
-    return () => window.removeEventListener('keydown', onKey, true);
-  }, [avatarOpen, closeDockPanel]);
-  const { avatarEl, laserEl, spotlightEl, formatEl, slideDeckEl } = useCanvasToolPanels({
-    props,
-    chromeHidden,
-    panelWiringFor,
-    avatarPopover: avatarOpen
-      ? { anchor: activeDockAnchor ?? undefined, onClose: closeDockPanel }
-      : null,
-  });
+  // The Format tool's panel (useCanvasToolPanels): on screen only while the tool is active.
+  const { formatEl } = useCanvasToolPanels({ props, chromeHidden, panelWiringFor });
 
   // Mounted from its first opening on, never before (its code loads then), and kept mounted after so
   // the folders someone expanded stay expanded.
@@ -330,12 +297,10 @@ export function useCanvasChromePanels({
     ) : null;
 
   // The Session strip's popovers (docs/specs/012-collaboration/session-tools.md "The Session strip"). A
-  // segment whose button has gone (a view-role visitor's tool ended, a poll dismissed) closes its
+  // segment whose button has gone (a view-role visitor's tool ended) closes its
   // popover rather than leaving it floating with no button under it.
   const sessionSegment =
-    activeDockPanel === 'session-timer' ||
-    activeDockPanel === 'session-vote' ||
-    activeDockPanel === 'session-poll'
+    activeDockPanel === 'session-timer' || activeDockPanel === 'session-vote'
       ? activeDockPanel
       : null;
   // Only the tools the mode's strip offers (docs/specs/012-collaboration/session-tools.md).
@@ -344,7 +309,7 @@ export function useCanvasChromePanels({
     segment: sessionSegment,
     tools: sessionTools ? stripTools : null,
     readOnly: !!readOnly,
-    running: { timer: !!sessionTools?.timer, vote: !!tabVote, poll: !!pollPanel },
+    running: { timer: !!sessionTools?.timer, vote: !!tabVote },
   });
   useEffect(() => {
     if (sessionButtonGone) closeDockPanel();
@@ -357,9 +322,7 @@ export function useCanvasChromePanels({
       ? !!sessionTools?.timer
       : sessionSegment === 'session-vote'
         ? !!tabVote
-        : sessionSegment === 'session-poll'
-          ? !!sessionTools?.livePoll
-          : false;
+        : false;
   // Per segment: switching from a running tool's popover to an idle one is not an ending.
   const wasRunning = useRef({ segment: sessionSegment, running: sessionRunning });
   useEffect(() => {
@@ -379,7 +342,6 @@ export function useCanvasChromePanels({
         canVote={!readOnly || !!takePart}
         holdOpen={!isMobile}
         voteSelfId={participantKey(selfParticipant)}
-        pollPanel={pollPanel}
         vote={{
           tabVote,
           elements,
@@ -401,9 +363,6 @@ export function useCanvasChromePanels({
     // Collaborate renders outside the corner layer (collaborateEl, below).
     collaborate: null,
     ai: aiEl,
-    laser: laserEl,
-    spotlight: spotlightEl,
-    'slide-deck': slideDeckEl,
     format: formatEl,
   };
   return {
@@ -411,7 +370,6 @@ export function useCanvasChromePanels({
     explorerEl,
     // The cluster popovers, rendered beside the corner layer rather than in it (see panelEls).
     collaborateEl,
-    avatarPopoverEl: avatarEl,
     cardTypesPopoverEl: cardTypesOpen ? (
       <CardTypesPanel
         popoverOpen

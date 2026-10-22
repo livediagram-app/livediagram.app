@@ -97,7 +97,7 @@ export function useBoxedElementGestures({
     // Dot-voting (docs/specs/012-collaboration/session-tools.md): while a vote is open, pressing a votable
     // element casts one of your dots instead of selecting / dragging it.
     // Non-votable elements (text / frame / arrow / …) still select, so
-    // the facilitator can keep arranging the canvas.
+    // the host can keep arranging the canvas.
     if (vote?.active && onCastVote && votableInVote) {
       e.stopPropagation();
       // A Plan card element votes on its card (voteKeyOf).
@@ -228,12 +228,9 @@ export function useBoxedElementGestures({
 
   // Right-click opens on release (see useRightClickRelease).
   //
-  // Deliberately NOT gated on `remotelyLocked` any more: whether a locked
-  // element has a menu now depends on who is asking (docs/specs/012-collaboration/facilitator.md — the
-  // facilitator gets a one-item menu to free it), and this hook does not know
-  // that. The host's `onElementContextMenu` owns the decision and still
-  // refuses for everybody else, so nothing changed for them. `onContextSelect`
-  // calls `onSelect` on the way through, which the lock already no-ops.
+  // Not gated on `remotelyLocked` here: the host's `onElementContextMenu` owns
+  // that decision and refuses a locked element. `onContextSelect` calls
+  // `onSelect` on the way through, which the lock already no-ops.
   const rightClick = useRightClickRelease(() => {
     if (isEditing) return;
     openContextMenuBesideElement();

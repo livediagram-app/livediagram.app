@@ -11,26 +11,9 @@ import {
 import { arrowBetween, shapeAt, strokeAt } from './build';
 
 const STATE_KINDS: [ShapeKind, Record<string, unknown>][] = [
-  ['estimate', { responses: [{ participantId: 'p', value: '5', at: 0 }], responsesRevealed: true }],
   ['temperature', { responses: [] }],
-  ['done-check', { responses: [{ participantId: 'p', value: 'done', at: 0 }] }],
-  ['idea-box', { ideaCards: ['a', 'b'] }],
-  ['qa-board', { qaNotes: [] }],
-  [
-    'agenda',
-    {
-      agendaItems: [
-        { label: 'Intro', minutes: 5 },
-        { label: 'Demo', minutes: 10 },
-      ],
-      agendaCurrent: 1,
-    },
-  ],
   ['decision', { decisionStatus: 'accepted' }],
-  ['roll-call', { rollCall: [] }],
-  ['quiz', { quizStartedAt: 1 }],
   ['picker', { pickerResult: 'Sam' }],
-  ['reveal', { revealed: true }],
   ['stat-row', {}],
   ['process', {}],
   ['site-header', {}],

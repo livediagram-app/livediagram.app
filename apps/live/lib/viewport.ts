@@ -30,12 +30,9 @@ export type Offset = { x: number; y: number };
 // transform `translate(offset) scale(zoom)` applied (scale centred
 // on the wrapper), centring on the viewport centre is `viewport-
 // centre minus bbox-centre`.
-// `maxZoom` exists for presenting (docs/specs/012-collaboration/presentation-mode.md). The editor's own fit caps at
-// 100% (FIT_TO_SCREEN_MAX_AT_FIT), which is right for "fit this canvas": a
-// four-box diagram blown up to 300% looks broken in a workspace. A SLIDE is
-// the opposite case — it is the only thing on a projector, and a slide holding
-// one box should fill the screen rather than sit tiny in the middle of it.
-// `padding` is 0 for a page slide presenting: the page is the slide, edge to edge.
+// The editor's own fit caps at 100% (FIT_TO_SCREEN_MAX_AT_FIT), which is right for
+// "fit this canvas": a four-box diagram blown up to 300% looks broken in a
+// workspace. `maxZoom` and `padding` let a caller frame a rectangle otherwise.
 export function computeFitToScreen(
   rect: ViewportSize,
   bbox: Rect,

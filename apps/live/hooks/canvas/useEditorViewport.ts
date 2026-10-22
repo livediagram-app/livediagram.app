@@ -20,7 +20,6 @@ import {
   computeViewportCanvasRect,
   computeViewportCenter,
 } from '@/lib/viewport';
-import { viewIsCentredOn } from '@/lib/focus-audience';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { glideViewport, type ViewPose } from '@/lib/viewport-glide';
 import { onMapShown } from '@/lib/fit-clear-of-panel';
@@ -88,9 +87,8 @@ type EditorViewportApi = {
   fitToScreen: () => void;
   // Focus: glide to fit an element, or out to the whole tab when it is already fitted.
   focusOn: (bbox: { x: number; y: number; w: number; h: number }, maxZoom?: number) => void;
-  // Frame an ARBITRARY rectangle. Presenting a slide (docs/specs/012-collaboration/presentation-mode.md) needs this:
-  // the deck decides what is on screen, so the box to fit is the slide's
-  // rather than the whole tab's.
+  // Frame an ARBITRARY rectangle: a changeset's Show frames what it touched
+  // rather than the whole tab.
   fitToBounds: (
     bbox: { x: number; y: number; w: number; h: number },
     opts?: { maxZoom?: number; padding?: number },
@@ -112,10 +110,6 @@ type EditorViewportApi = {
     // canvas so a narrow window still has a band to reveal into.
     opts?: { center?: boolean; sideMargin?: number },
   ) => void;
-  // Centre a canvas point, keeping our own zoom (docs/specs/012-collaboration/bring-focus.md).
-  centreOn: (at: { x: number; y: number }) => void;
-  // Is that point already in the middle of this view?
-  isCentredOn: (at: { x: number; y: number }) => boolean;
 };
 
 // How long a Focus glide takes (docs/specs/026-plan/plan-board.md "Focus").
@@ -322,48 +316,6 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
     [depsRef, fitToScreen, zoomRef, viewportOffsetRef],
   );
 
-  // Centre a canvas point at the zoom we already have (docs/specs/012-collaboration/bring-focus.md). Only
-  // the pan moves: the presser's zoom on somebody else's screen size shows a
-  // different amount of canvas, so copying it left the element too big or too
-  // small to read, and the zoom somebody chose for their own screen is theirs.
-  const centreOn = useCallback(
-    (at: { x: number; y: number }) => {
-      const node = canvasMainRef.current;
-      if (!node) return;
-      // offsetWidth/Height rather than the transformed rect, for the reason
-      // fitToBounds gives below.
-      const rect = { width: node.offsetWidth, height: node.offsetHeight };
-      // The offset is in CANVAS units, not screen ones: the zoom is applied
-      // separately about the viewport's own centre, which is why
-      // computeFitToScreen's offset has no zoom factor in it either. Multiplying
-      // by the zoom here put everyone in the top-left corner of the canvas.
-      setViewportOffset({ x: rect.width / 2 - at.x, y: rect.height / 2 - at.y });
-    },
-    [setViewportOffset],
-  );
-
-  // The inverse question: is this view ALREADY the one centreOn would give?
-  // Bring Focus asks it before putting an invitation on screen, so a second
-  // press re-asks the people who said no without pestering the ones who came
-  // (docs/specs/012-collaboration/bring-focus.md).
-  // The rule itself is shared with the presser's side of the press, which asks
-  // the same thing of everyone else's published viewport.
-  const isCentredOn = useCallback(
-    (at: { x: number; y: number }) => {
-      const node = canvasMainRef.current;
-      if (!node) return false;
-      return viewIsCentredOn(
-        {
-          size: { width: node.offsetWidth, height: node.offsetHeight },
-          pan: viewportOffsetRef.current,
-          zoom: zoomRef.current,
-        },
-        at,
-      );
-    },
-    [viewportOffsetRef, zoomRef],
-  );
-
   // The running Focus glide's frame, so a new fit (or another glide) takes over from it.
   const glide = useRef<number | null>(null);
   const stopGlide = useCallback(() => {
@@ -407,10 +359,8 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
     },
     [stopGlide, setViewportOffset, setViewportZoom, zoomRef, viewportOffsetRef],
   );
-  // Frame an ARBITRARY rectangle, which is what presenting a slide needs
-  // (docs/specs/012-collaboration/presentation-mode.md): the deck decides what is on screen, so the box to fit is the
-  // slide's, not the tab's. Same maths as fitToScreen, which is now the
-  // special case "fit everything on this tab".
+  // Frame an ARBITRARY rectangle (a photo draft's notes, a zoom-to-selection): the box to fit is the caller's,
+  // not the tab's. Same maths as fitToScreen, which is the special case "fit everything on this tab".
   const fitToBounds = useCallback(
     (
       bbox: { x: number; y: number; w: number; h: number },
@@ -419,11 +369,8 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
       const node = canvasMainRef.current;
       if (!node || bbox.w <= 0 || bbox.h <= 0) return;
       // offsetWidth/Height, NOT getBoundingClientRect: the latter reports the
-      // TRANSFORMED box, and presenting (docs/specs/012-collaboration/presentation-mode.md) animates the canvas surface
-      // with a scale on entry. Measuring mid-animation therefore fitted the
-      // slide to a shrunken viewport, and it painted off-centre by exactly the
-      // difference once the animation finished. The layout size is what the
-      // slide will actually occupy.
+      // TRANSFORMED box, so measuring while the surface animates would fit to a
+      // shrunken viewport. The layout size is what the box will actually occupy.
       const rect = { width: node.offsetWidth, height: node.offsetHeight };
       const { zoom, offset } = computeFitToScreen(
         rect,
@@ -479,8 +426,6 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
     getViewportCanvasRect,
     fitToScreen,
     fitToBounds,
-    centreOn,
-    isCentredOn,
     scrollIntoView,
   };
 }

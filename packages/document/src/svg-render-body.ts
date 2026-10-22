@@ -43,7 +43,7 @@ import { svgSequencePicture } from './svg-render-sequence';
 import { isConceptShape } from './concept';
 import type { BoxedElement, ShapeKind } from './index';
 import { defaultTextColor, type CanvasSurface } from './colors';
-import type { ResolveEmojiArt, ResolveIconArt } from './svg-render-describe';
+import type { ResolveIconArt } from './svg-render-describe';
 
 /** The kinds whose body these emitters draw, rather than it being a box with a
  *  label. See the module comment: the PNG path reads this. */
@@ -90,8 +90,6 @@ export function svgElementBody(
     surface?: CanvasSurface;
     /** Resolves an icon id to its art, for a card's media glyph. */
     resolveIconArt?: ResolveIconArt;
-    /** Resolves an emoji to its art, for a face that writes one (a reaction pad). */
-    resolveEmojiArt?: ResolveEmojiArt;
     // The tab's tag colours (docs/specs/009-elements/tag-colours.md), for a card's tinted tag chips.
     tagColours?: readonly TagColour[];
     /** The finish the element is drawn in (docs/specs/008-canvas/finish.md), for the faces that draw their own lines. */
@@ -158,11 +156,11 @@ export function svgElementBody(
     });
   if (el.shape === 'page')
     return svgPageMasthead(el, PADDING_PX[el.padding ?? defaultPadding(el)], fontFamily);
-  // The Behaviour + Collaborate faces (docs/specs/009-elements/mode-button.md to /137), which all exported
+  // The Behaviour + Collaborate faces (docs/specs/012-collaboration/session-button.md to /137), which all exported
   // as the same blank labelled box as each other.
   return svgFace(
-    svgBehaviourFace(el, label, labelColor, stroke, o.surface, o.fill, o.resolveEmojiArt) ??
-      svgCollabFace(el, label, labelColor, stroke, o.fill) ??
+    svgBehaviourFace(el, label, labelColor, stroke, o.surface, o.fill) ??
+      svgCollabFace(el, label, labelColor) ??
       '',
     fontFamily,
   );

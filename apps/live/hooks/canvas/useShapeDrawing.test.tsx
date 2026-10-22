@@ -109,10 +109,7 @@ describe('placing a badge preset', () => {
 // An armed draw puts down a tool that acts on a press: a format painter held while A armed the arrow painted what the
 // drag crossed instead of drawing it.
 describe('arming a draw over a press tool', () => {
-  it.each([
-    ['format', 'select'],
-    ['laser', 'pan'],
-  ] as const)('puts the %s down for %s', (tool, next) => {
+  it.each([['format', 'select']] as const)('puts the %s down for %s', (tool, next) => {
     const setCanvasTool = vi.fn();
     const { result, rerender } = setup(vi.fn<Commit>(), setCanvasTool);
     rerender({ tool });

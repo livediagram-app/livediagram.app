@@ -2,7 +2,7 @@
 @import '@liveplanner/tailwind-config';
 @import '@liveplanner/template-previews/preview-art-tile.css';
 @import '@liveplanner/template-previews/preview-motion.css';
-@import './qa-board.css';
+@import './collab-cards.css';
 @import './forms.css';
 @import './canvas-motion.css';
 @import './motion-shape.css';
@@ -177,13 +177,6 @@
   --animate-nudge-down: nudge-down 0.9s ease-in-out infinite;
   --animate-nudge-left: nudge-left 0.9s ease-in-out infinite;
   --animate-nudge-right: nudge-right 0.9s ease-in-out infinite;
-  /* A drink in an Avatar-mode character's hand (docs/specs/009-elements/office.md "Using it"): a sip every
-     8 seconds, and a coffee's steam. Looping; reduced motion stops them. */
-  --animate-avatar-sip: avatar-sip 8s ease-in-out infinite;
-  --animate-avatar-steam: avatar-steam 2.4s ease-out infinite;
-  /* An Away Avatar-mode character's Zz (docs/specs/008-canvas/avatar-mode.md "Status"): rising and fading.
-     Looping; reduced motion stops it. */
-  --animate-avatar-zz: avatar-zz 3s ease-out infinite;
   --animate-pop-out: pop-out var(--transition-duration-micro) cubic-bezier(0.4, 0, 1, 1) forwards;
   /* The template picker's open shelf arriving (docs/specs/008-canvas/canvas-and-palette.md
      "Templates section"): a longer rise than fly-up-in, so opening a tile below
@@ -274,46 +267,6 @@
 }
 
 /* The waiting arrow drifts up and back: about a pixel on screen at 14px. */
-@keyframes avatar-sip {
-  0%,
-  84%,
-  100% {
-    transform: translateY(0);
-  }
-  88%,
-  95% {
-    transform: translateY(-5px);
-  }
-}
-
-@keyframes avatar-steam {
-  0% {
-    transform: translateY(0);
-    opacity: 0;
-  }
-  30% {
-    opacity: 0.8;
-  }
-  100% {
-    transform: translateY(-4px);
-    opacity: 0;
-  }
-}
-
-@keyframes avatar-zz {
-  0% {
-    transform: translateY(4px);
-    opacity: 0;
-  }
-  30% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(-8px);
-    opacity: 0;
-  }
-}
-
 @keyframes sync-rise {
   0%,
   100% {
@@ -562,20 +515,13 @@
   animation: none !important;
 }
 
-/* The direction nudges and a held drink's sip and steam (above) loop, so reduced motion stops them outright
-   rather than freezing a frame. */
+/* The direction nudges (above) loop, so reduced motion stops them outright rather than freezing a frame. */
 @media (prefers-reduced-motion: reduce) {
-  [class*='animate-nudge-'],
-  .animate-avatar-sip,
-  .animate-avatar-steam,
-  .animate-avatar-zz {
+  [class*='animate-nudge-'] {
     animation: none !important;
   }
 }
-:root.reduce-motion [class*='animate-nudge-'],
-:root.reduce-motion .animate-avatar-sip,
-:root.reduce-motion .animate-avatar-steam,
-:root.reduce-motion .animate-avatar-zz {
+:root.reduce-motion [class*='animate-nudge-'] {
   animation: none !important;
 }
 
@@ -684,27 +630,6 @@
 }
 
 /*
- * Spotlight tool cursor (docs/specs/008-canvas/canvas-and-palette.md). The OS cursor is HIDDEN: the glowing dot
- * is drawn by SpotlightOverlay as a DOM element locked to the light's centre
- * (a data-URI SVG cursor renders inconsistently across browsers and silently
- * falls back). Returned as the `cursor-spotlight` class by canvasCursorClass.
- */
-.cursor-spotlight {
-  cursor: none;
-}
-
-/*
- * Hide it over elements too. Arrow hit-bands set `pointer-events: stroke`
- * (re-enabling themselves despite the layer's pointer-events:none) and carry
- * their own hover cursor inline, so without this they'd flip back to a move /
- * pointer cursor mid-spotlight. Scoped to [data-element-id] so floating panels
- * keep theirs.
- */
-.cursor-spotlight [data-element-id],
-.cursor-spotlight [data-element-id] * {
-  cursor: none !important;
-}
-
 /* Sticky-note paper peel (docs/specs/008-canvas/canvas-and-palette.md): the note is glued along its top strip
    and the rest of the sheet lifts ever so slightly off the canvas. The note
    itself never changes — same flat rectangle, same fill — and no mask or
@@ -858,34 +783,6 @@ body:has([data-mode-message]) [data-yields-to-mode] {
 }
 .dark [data-note-surface] {
   --note-link-color: var(--color-brand-200);
-}
-
-/* Presenting a slide deck (docs/specs/012-collaboration/presentation-mode.md).
-
-   The SLIDE is the canvas itself, narrowed to one slide's elements and framed
-   to their bounds by useEditorState. These rules are only the frame around
-   it, driven by the attributes the PresentationHost sets on <html>:
-   `data-presenting` while a deck is running, and `data-slide-move="pending"`
-   while the first slide waits for the screen to settle. The motion itself is a
-   View Transition of the canvas surface (canvas-motion.css): one picture moves,
-   so a hundred-element slide costs what a one-element slide does. */
-
-/* Chrome hiding is NOT done here: presenting reports zenMode, so the editor's
-   own zen treatment (docs/specs/007-editor/zen-mode.md) takes the header, tab bar, palette and panels
-   away through the same path a zen user gets. One way to hide the chrome, not
-   two that can disagree. The zoom cluster is the one survivor zen keeps, and
-   presenting hides it below since a deck has no zoom controls. */
-html[data-presenting] [data-zoom-cluster] {
-  display: none !important;
-}
-
-/* A still cursor left sitting on a projector is a distraction, so it goes
-   away with the HUD. Driven by the same idle state, so the pointer and the
-   controls come back together on the first twitch of the mouse — a hidden
-   cursor you cannot bring back would be a trap. */
-html[data-presenting][data-hide-pointer][data-pointer-idle] [data-canvas-a11y-root],
-html[data-presenting][data-hide-pointer][data-pointer-idle] [data-presentation-surface] {
-  cursor: none;
 }
 
 /* Timeline event colours (docs/specs/013-workspace/timeline.md §2).

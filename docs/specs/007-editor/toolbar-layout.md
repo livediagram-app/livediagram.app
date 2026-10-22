@@ -146,7 +146,6 @@ which moved things under the pointer after every add; it is gone, its stored lis
 - **Devices**: desktop (Browser, Monitor, Laptop) | mobile (Phone, Tablet, Foldable, Watch).
 - **Media**: Image | the embeds | Avatar.
 - **Data**: the charts (Pie, Bar, Line, Legend) | the meters (Progress, Donut, Rating).
-- **Behaviour**: the Selection Mode buttons | everything else.
 - **Event Storming**: the notation | Hotspot.
 
 Popular divides where its tiles' own groups do (after the Diamond), and the Icons / Stickers /
@@ -188,10 +187,10 @@ button's left edge (`computeDockAnchor(..., 'button')`).
 
 Layers and Collaborate open as **popovers over their bottom-row
 buttons** ([Live app](live-app.md)): they are not corner panels. Every
-other panel (AI, the minimap, Poll, Vote and the tool panels) docks in its corner
+other panel (AI, the minimap and the tool panels) docks in its corner
 ([Panel docking](panel-docking.md)). Layers and Collaborate render outside
 the corner layer, since a popover positions against the canvas and a corner stack would move it.
-A popover opening up from a bottom-row button (Layers, the Vote, the Poll) grows no higher than 8 px under a
+A popover opening up from a bottom-row button (Layers, the Vote) grows no higher than 8 px under a
 toolbar across the canvas's top whose span meets its column, the strip (`usePopoverTopClearance`), and
 12 px from the canvas's top otherwise: on a phone the strip spans the width, and a tall panel ran up under it with its
 header hidden.
@@ -267,7 +266,7 @@ their bottom-row buttons. What changes to fit the width:
 ## Layout details
 
 - The strip sits at `top-3`, centred, at `z-toolbar`. The top-centre stack
-  (follow-me pill, timer, vote, [Canvas and palette](../008-canvas/canvas-and-palette.md)) moves
+  (timer, vote, [Canvas and palette](../008-canvas/canvas-and-palette.md)) moves
   down to clear it.
 - **Messages hang from the strip, as its tray.** The messages that tell you what the next press does (the
   mode banners: a tile in hand, "Select the board column you want this card to appear in"; the Format tool and
@@ -358,7 +357,7 @@ their bottom-row buttons. What changes to fit the width:
   (`useStripCrowdsCorners`, re-checked as panels dock and the window
   resizes), the top corner stacks start below the strip, 68px down, exactly
   as they always do on a phone. Otherwise they keep their inset. Without it
-  a docked panel (the Laser panel, say) sat under the strip's right end and
+  a docked panel (the Eraser panel, say) sat under the strip's right end and
   could not be reached.
 - **Undo / Redo stay where they are**, in the bottom-right dock.
 - **A phone's toolbar items keep their size** (`PHONE_TOOLBAR_ITEMS`): 36px, the bottom-right

@@ -56,8 +56,6 @@ export const PLAN_PALETTE: PaletteLayout = {
       id: 'plan-tools',
       tiles: [
         'collab:temperature',
-        'collab:estimate',
-        'collab:idea-box',
         'tools:picker',
         'tools:session-timer',
         'tools:session-stopwatch',
@@ -203,15 +201,5 @@ export function participantPaletteCategories(): ResolvedPaletteCategory[] {
   return [{ ...identity, tiles: participantTiles() }];
 }
 
-// The selection modes a Participant has: look, point and walk around, never an Editor's tools (Format
-// Painter, Slide Deck).
-export const PARTICIPANT_CANVAS_TOOLS: readonly string[] = [
-  'select',
-  'pan',
-  'laser',
-  'spotlight',
-  // Avatar is listed by the picker only while in force (canvas-tool-options), for every role alike.
-  'avatar',
-  'isometric',
-  'zen',
-];
+// The selection modes a Participant has: look around, never an Editor's tools (Format Painter).
+export const PARTICIPANT_CANVAS_TOOLS: readonly string[] = ['select', 'pan', 'isometric', 'zen'];

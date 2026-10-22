@@ -8,7 +8,6 @@ import {
   TEXT_SCALE_MAX,
   TEXT_SCALE_MIN,
 } from './validate';
-import { SELECTION_MODES } from './selection-mode';
 import { IMAGE_CREDIT_TEXT_MAX, IMAGE_CREDIT_URL_MAX } from './image-credit';
 import { MAX_FREEHAND_POINTS, encodeStrokePoints } from './stroke-points';
 
@@ -318,33 +317,6 @@ describe('coerceShapeKind', () => {
     expect(coerceShapeKind('oval')).toBe('square');
     expect(coerceShapeKind(undefined)).toBe('square');
     expect(coerceShapeKind(42)).toBe('square');
-  });
-});
-
-describe('mode button validation (docs/specs/009-elements/mode-button.md)', () => {
-  const button = {
-    id: 'b1',
-    type: 'shape',
-    shape: 'mode-button',
-    x: 0,
-    y: 0,
-    width: 180,
-    height: 44,
-  };
-
-  it('accepts a button with no mode (it falls back to the Avatar default)', () => {
-    expect(isValidElement(button)).toBe(true);
-  });
-
-  it('accepts every selection mode the editor can switch to', () => {
-    for (const mode of SELECTION_MODES) {
-      expect(isValidElement({ ...button, mode })).toBe(true);
-    }
-  });
-
-  it('rejects a mode outside the vocabulary rather than silently rewriting it', () => {
-    expect(isValidElement({ ...button, mode: 'teleport' })).toBe(false);
-    expect(isValidElement({ ...button, mode: 42 })).toBe(false);
   });
 });
 

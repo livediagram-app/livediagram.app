@@ -1,7 +1,7 @@
 // Derived presence rows for the editor render, lifted out of
 // useEditorState. Wraps the pure builders in lib/presence-rows with
 // the memoisation + the live state they join over (usePresenceState
-// values, the local laser trail, the active tab). Pure derivation:
+// values, the active tab). Pure derivation:
 // no handlers, no setters, nothing here mutates state.
 
 import { useCallback, useMemo } from 'react';
@@ -10,22 +10,14 @@ import type { Tab } from '@liveplanner/document';
 import type { Participant } from '@/lib/identity';
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import type { PresenceClock } from './usePresenceState';
-import type { LaserPoint } from '@/lib/laser-buffer';
-import type { LaserConfig } from '@/lib/laser-config';
-import type { AgentPresence, AvatarPresence } from '@liveplanner/api-schema';
+import type { AgentPresence } from '@liveplanner/api-schema';
 import { buildAgentFocusByElement, foldAgentPresence } from '@/lib/agent-presence-rows';
 import {
-  buildLaserTrailRows,
   buildParticipantsByTab,
-  buildRemoteAvatarRows,
   buildRemoteCursorRows,
   buildRemoteSelectionsByElement,
   type RemoteSelection,
 } from '@/lib/presence-rows';
-
-// Stable empty stand-in for the remote laser map while cursors are hidden,
-// so the memo below doesn't rebuild on every render from a fresh literal.
-const EMPTY_LASER_TRAILS: Map<string, { tabId: string; points: LaserPoint[] }> = new Map();
 
 type PresenceRowsDeps = {
   documentShareable: boolean;
@@ -41,19 +33,11 @@ type PresenceRowsDeps = {
   remoteTabFocus: Map<string, string>;
   remoteCursors: Map<string, { tabId: string; x: number; y: number } | null>;
   remoteSelections: Map<string, RemoteSelection>;
-  remoteLaserTrails: Map<string, { tabId: string; points: LaserPoint[] }>;
-  // Peers' Avatar-mode characters (docs/specs/008-canvas/avatar-mode.md), latest snapshot each.
-  remoteAvatars: Map<string, { tabId: string; avatar: AvatarPresence }>;
-  localLaserTrail: LaserPoint[];
-  // The local participant's laser pen (docs/specs/008-canvas/laser-panel.md).
-  selfLaserConfig?: LaserConfig;
   // Vote privacy (docs/specs/012-collaboration/session-tools.md): true while a hide-cursors vote is open on the
-  // active tab. Peer cursors and peer laser trails are withheld from the
-  // render so nobody can watch the room converge on a favourite. Our own
-  // laser trail still shows, and presence / selection badges are untouched
+  // active tab. Peer cursors are withheld from the render so nobody can watch
+  // the room converge on a favourite. Presence / selection badges are untouched
   // — the selection lock needs to keep naming who holds an element.
   // useEditorBroadcast applies the matching gate on the outbound side.
-  // Presenting sets it too, inbound only (docs/specs/012-collaboration/presentation-mode.md).
   cursorsHidden: boolean;
 };
 
@@ -70,12 +54,6 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
     remoteTabFocus,
     remoteCursors,
     remoteSelections,
-    remoteLaserTrails,
-    remoteAvatars,
-    localLaserTrail,
-    // Our own pen (docs/specs/008-canvas/laser-panel.md): peers' arrive with their samples, ours is read
-    // from state so our trail never lags a change we just made.
-    selfLaserConfig,
     cursorsHidden,
   } = deps;
 
@@ -146,45 +124,6 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
         : buildRemoteCursorRows(remoteCursors, livePresenceById, selfParticipant.id, activeId),
     [cursorsHidden, remoteCursors, livePresenceById, selfParticipant.id, activeId],
   );
-  // Laser trails for the LaserOverlay: local first, then any peers
-  // whose latest sample is on the active tab and whose participant
-  // entry is still live. The overlay handles fade + cleanup; we just
-  // assemble per-tab visibility here.
-  const laserTrailRows = useMemo(
-    () =>
-      buildLaserTrailRows({
-        localLaserTrail,
-        // Peers' trails drop out with their cursors; ours stays, so the
-        // laser still works as a pointer on our own screen.
-        remoteLaserTrails: cursorsHidden ? EMPTY_LASER_TRAILS : remoteLaserTrails,
-        livePresenceById,
-        selfId: selfParticipant.id,
-        selfColor: selfParticipant.color,
-        activeId,
-        selfLaserConfig,
-      }),
-    [
-      cursorsHidden,
-      localLaserTrail,
-      remoteLaserTrails,
-      livePresenceById,
-      selfParticipant.id,
-      selfParticipant.color,
-      activeId,
-      selfLaserConfig,
-    ],
-  );
-  // Peer characters for the avatar layer (docs/specs/008-canvas/avatar-mode.md). Gated by the same
-  // hide-cursors vote as cursors: a walking character is a position on the
-  // canvas, so withholding cursors while showing avatars would leak exactly
-  // what the vote hides.
-  const remoteAvatarRows = useMemo(
-    () =>
-      cursorsHidden
-        ? []
-        : buildRemoteAvatarRows(remoteAvatars, livePresenceById, selfParticipant.id, activeId),
-    [cursorsHidden, remoteAvatars, livePresenceById, selfParticipant.id, activeId],
-  );
   const remoteSelectionsByElement = useMemo(
     () =>
       buildRemoteSelectionsByElement(
@@ -222,8 +161,6 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
     livePresenceById,
     participantsByTab,
     remoteCursorRows,
-    remoteAvatarRows,
-    laserTrailRows,
     remoteSelectionsByElement,
     agentFocusByElement,
     lockedByOther,

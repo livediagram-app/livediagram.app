@@ -1,5 +1,4 @@
-import { useMemo, useState } from 'react';
-import type { Participant } from '@/lib/identity';
+import { useMemo } from 'react';
 import { useStableHandlers } from '@/hooks/ui/useStableHandlers';
 import type { CollabApi } from './collab/CollabFaceRouter';
 
@@ -26,29 +25,7 @@ export function idBound<T>(make: (id: string) => T): (id: string) => T {
 // the API that is missing here fails the build rather than slipping past the wrappers.
 const COLLAB_HANDLERS = [
   'respond',
-  'setResponsesRevealed',
-  'chooseEstimateScale',
   'clearResponses',
-  'addIdea',
-  'revealIdeas',
-  'clearIdeas',
-  'scatterIdeas',
-  'pressAgendaItem',
-  'resetAgenda',
-  'takeRoll',
-  'addQaNote',
-  'voteQaNote',
-  'discussQaNote',
-  'closeQaNote',
-  'reopenQaNote',
-  'removeQaNote',
-  'clearQaBoard',
-  'answerQuiz',
-  'startQuiz',
-  'lockQuiz',
-  'revealQuiz',
-  'resetQuiz',
-  'saveQuiz',
 ] as const satisfies readonly CollabHandlerKey[];
 
 type CollabHandlerKey = {
@@ -63,26 +40,12 @@ const ALL_HANDLERS_LISTED: Exclude<CollabHandlerKey, (typeof COLLAB_HANDLERS)[nu
   : never = true;
 void ALL_HANDLERS_LISTED;
 
-// What a collaboration face shows of a participant: the roster is held while these are unchanged, so
-// presence churn (activity timestamps) does not re-render every element.
-const rosterSignature = (participants: readonly Participant[]) =>
-  participants
-    .map((p) => [p.id, p.key, p.name, p.color, p.status, p.role, p.picture].join('\u0001'))
-    .join('\u0002');
-
 // The collab bag the editor mints per render, held while nothing a face shows changes: handlers
-// through stable wrappers (presence kept), the roster by what faces read, the rest by value.
+// through stable wrappers (presence kept), the rest by value.
 export function useStableCollab(collab: CollabApi): CollabApi {
   const handlers = useStableHandlers(
     Object.fromEntries(COLLAB_HANDLERS.map((k) => [k, collab[k]])) as CollabHandlers,
   );
-  const signature = rosterSignature(collab.participants);
-  const [roster, setRoster] = useState({ signature, participants: collab.participants });
-  if (roster.signature !== signature) setRoster({ signature, participants: collab.participants });
-  const participants = roster.signature === signature ? roster.participants : collab.participants;
-  const { selfKey, tabTimer, selfOwnerId, selfName, canArrange } = collab;
-  return useMemo(
-    () => ({ ...handlers, selfKey, participants, tabTimer, selfOwnerId, selfName, canArrange }),
-    [handlers, selfKey, participants, tabTimer, selfOwnerId, selfName, canArrange],
-  );
+  const { selfKey } = collab;
+  return useMemo(() => ({ ...handlers, selfKey }), [handlers, selfKey]);
 }

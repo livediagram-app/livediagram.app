@@ -1,8 +1,7 @@
 // Selection-mode illustrations (docs/specs/018-help/help-app.md): the palette's canvas-tool picker
 // as the editor actually draws it (a trigger at the start of the palette strip that
-// opens a tile grid in three bands), the panels each tool opens while it is
-// active, the pixel character Avatar mode walks, and the isometric orbit
-// button. The per-mode canvas scenes in palette-modes.tsx put PickerTrigger on
+// opens a tile grid in two bands), the panels each tool opens while it is
+// active, and the isometric orbit button. The per-mode canvas scenes in palette-modes.tsx put PickerTrigger on
 // top, so every selection-mode article shows the same picker with its own tool
 // chosen.
 //
@@ -13,15 +12,11 @@
 import type { ReactNode } from 'react';
 import { Scene, Shape, Arrow, Panel, Label, Cursor } from './primitives';
 import {
-  AvatarGlyph,
   HandGlyph,
   IsoCard,
   IsometricGlyph,
-  LaserGlyph,
   PainterGlyph,
   SelectGlyph,
-  SlideDeckGlyph,
-  SpotlightGlyph,
   ZenGlyph,
   iso,
 } from './palette-modes-parts';
@@ -33,17 +28,13 @@ const TOOLS = [
   { key: 'select', label: 'Select', shortcut: 'V', band: 0, Glyph: SelectGlyph },
   { key: 'hand', label: 'Hand', shortcut: 'H', band: 0, Glyph: HandGlyph },
   { key: 'format', label: 'Format', shortcut: undefined, band: 0, Glyph: PainterGlyph },
-  { key: 'laser', label: 'Laser', shortcut: 'K', band: 1, Glyph: LaserGlyph },
-  { key: 'spotlight', label: 'Spotlight', shortcut: undefined, band: 1, Glyph: SpotlightGlyph },
-  { key: 'avatar', label: 'Avatar', shortcut: 'W', band: 1, Glyph: AvatarGlyph },
-  { key: 'slide-deck', label: 'Slide Deck', shortcut: undefined, band: 1, Glyph: SlideDeckGlyph },
-  { key: 'isometric', label: 'Isometric', shortcut: 'I', band: 2, Glyph: IsometricGlyph },
-  { key: 'zen', label: 'Zen', shortcut: 'Z', band: 2, Glyph: ZenGlyph },
+  { key: 'isometric', label: 'Isometric', shortcut: 'I', band: 1, Glyph: IsometricGlyph },
+  { key: 'zen', label: 'Zen', shortcut: 'Z', band: 1, Glyph: ZenGlyph },
 ] as const;
 
 type ToolKey = (typeof TOOLS)[number]['key'];
 
-const BANDS = ['EDIT', 'PRESENT', 'PREVIEW'] as const;
+const BANDS = ['EDIT', 'PREVIEW'] as const;
 
 function Chevron({ x, y }: { x: number; y: number }) {
   return (
@@ -108,7 +99,7 @@ export function PickerTrigger({ x = 24, y = 14, tool }: { x?: number; y?: number
 }
 
 /** The canvas-tool picker opened: the trigger, and the tile grid hanging below
- *  it in its three named bands, with the current tool in its selected tone and
+ *  it in its two named bands, with the current tool in its selected tone and
  *  the shortcut letters in the tiles' corners. */
 export function ToolPicker({ active = 'select' }: { active?: ToolKey }) {
   const mx = 84;
@@ -117,7 +108,7 @@ export function ToolPicker({ active = 'select' }: { active?: ToolKey }) {
   const gap = 4;
   const menuW = 3 * tileW + 2 * gap + 16;
   const rows: { band: number; tools: (typeof TOOLS)[number][] }[] = [];
-  for (const b of [0, 1, 2]) {
+  for (const b of [0, 1]) {
     const inBand = TOOLS.filter((t) => t.band === b);
     for (let i = 0; i < inBand.length; i += 3)
       rows.push({ band: b, tools: inBand.slice(i, i + 3) });
@@ -207,7 +198,7 @@ export function ToolPicker({ active = 'select' }: { active?: ToolKey }) {
 
 type PanelRow = { label: string; value: string; amber?: boolean };
 
-/** A tool's own panel (Format, Laser, Spotlight): a titled panel that
+/** A tool's own panel (Format): a titled panel that
  *  docks top-right while the tool is active, a preview strip at the
  *  top, then one collapsed row per setting naming its current value. */
 function ToolPanel({
@@ -339,221 +330,6 @@ export function FormatPanelScene() {
           { label: 'After painting', value: 'Keep the brush' },
         ]}
       />
-    </Scene>
-  );
-}
-
-/** The Laser panel beside a Glow trail on the canvas. */
-export function LaserPanelScene() {
-  return (
-    <Scene w={420} h={240}>
-      <Shape x={30} y={60} w={96} h={46} label="Gateway" />
-      <Shape x={60} y={160} w={96} h={46} accent label="Service" />
-      <path
-        d="M40 130 q50 -30 110 -6 q30 14 50 0"
-        className="stroke-rose-300/50"
-        strokeWidth={10}
-        fill="none"
-        strokeLinecap="round"
-      />
-      <path
-        d="M40 130 q50 -30 110 -6 q30 14 50 0"
-        className="stroke-rose-400"
-        strokeWidth={3.5}
-        fill="none"
-        strokeLinecap="round"
-      />
-      <circle cx={200} cy={124} r={5} className="fill-rose-500" />
-      <ToolPanel
-        x={230}
-        y={20}
-        title="LASER"
-        preview={
-          <g>
-            <path
-              d="M246 60 q40 -22 80 -4 q20 8 50 -6"
-              className="stroke-rose-300/50"
-              strokeWidth={8}
-              fill="none"
-              strokeLinecap="round"
-            />
-            <path
-              d="M246 60 q40 -22 80 -4 q20 8 50 -6"
-              className="stroke-rose-400"
-              strokeWidth={3}
-              fill="none"
-              strokeLinecap="round"
-            />
-          </g>
-        }
-        rows={[
-          { label: 'Width', value: 'Medium' },
-          { label: 'Colour', value: 'Your colour' },
-          { label: 'Trail', value: 'Normal' },
-          { label: 'Effect', value: 'Glow' },
-        ]}
-      />
-    </Scene>
-  );
-}
-
-/** The Spotlight panel set to a Wide light, with the canvas dimmed around a
- *  broad ellipse that lights one row. */
-export function SpotlightPanelScene() {
-  return (
-    <Scene w={420} h={240}>
-      <defs>
-        <mask id="mtt-spot-wide">
-          <rect x={0} y={0} width={214} height={240} fill="white" />
-          <ellipse cx={108} cy={124} rx={92} ry={30} fill="black" />
-        </mask>
-      </defs>
-      {[60, 106, 152].map((ry, i) => (
-        <g key={ry}>
-          <Shape x={20} y={ry} w={56} h={34} label={['To do', 'Doing', 'Done'][i]} />
-          <Shape x={84} y={ry} w={56} h={34} accent={i === 1} />
-          <Shape x={148} y={ry} w={56} h={34} />
-        </g>
-      ))}
-      <rect
-        x={0}
-        y={0}
-        width={214}
-        height={240}
-        className="fill-slate-900/70"
-        mask="url(#mtt-spot-wide)"
-      />
-      <ToolPanel
-        x={230}
-        y={20}
-        title="SPOTLIGHT"
-        preview={
-          <g>
-            <rect x={238} y={50} width={160} height={44} rx={7} className="fill-slate-800/70" />
-            <ellipse cx={318} cy={72} rx={52} ry={14} className="fill-slate-100" />
-          </g>
-        }
-        rows={[
-          { label: 'Size', value: 'Custom' },
-          { label: 'Dim', value: 'Blackout' },
-          { label: 'Edge', value: 'Soft' },
-          { label: 'Shape', value: 'Wide' },
-        ]}
-      />
-    </Scene>
-  );
-}
-
-/** Spotlight's mode scene: the picker on Spotlight, the canvas dimmed except a
- *  bright circle around the cursor over one shape. */
-export function SpotlightTool() {
-  return (
-    <Scene w={420} h={230}>
-      <defs>
-        {/* The default Soft edge: the light feathers out into the dim. */}
-        <radialGradient id="mtt-spot-soft">
-          <stop offset="0.7" stopColor="black" />
-          <stop offset="1" stopColor="white" />
-        </radialGradient>
-        <mask id="mtt-spot-hole">
-          <rect x={0} y={0} width={420} height={230} fill="white" />
-          <circle cx={234} cy={158} r={62} fill="url(#mtt-spot-soft)" />
-        </mask>
-      </defs>
-      <PickerTrigger tool="spotlight" />
-      <Shape x={80} y={120} w={72} h={42} label="A" />
-      <Shape x={196} y={128} w={72} h={42} accent label="B" />
-      <Shape x={312} y={160} w={72} h={42} kind="circle" label="C" />
-      <rect
-        x={0}
-        y={86}
-        width={420}
-        height={144}
-        className="fill-slate-900/55"
-        mask="url(#mtt-spot-hole)"
-      />
-      {/* The cursor's stand-in, as the app draws it: a sky dot with a white rim and a glow,
-          below B's label so the lit shape still reads. No ring: the light's edge is the shroud. */}
-      <circle cx={234} cy={166} r={8} className="fill-sky-400/30" />
-      <circle cx={234} cy={166} r={4.5} className="fill-sky-400 stroke-white" strokeWidth={1.5} />
-    </Scene>
-  );
-}
-
-// --- Avatar -----------------------------------------------------------------
-
-/** The pixel character Avatar mode walks, standing with its feet at (fx, fy).
- *  `shirt` is the owner's participant colour; `name` draws the chip other
- *  people's characters wear above their heads (your own has none). */
-export function PixelCharacter({
-  fx,
-  fy,
-  px = 3,
-  shirt = 'brand',
-  name,
-  hair = 'fill-amber-900',
-}: {
-  fx: number;
-  fy: number;
-  px?: number;
-  shirt?: 'brand' | 'emerald' | 'violet' | 'rose';
-  name?: string;
-  hair?: string;
-}) {
-  const p = (n: number) => n * px;
-  const shirtCls = {
-    brand: ['fill-brand-500', 'fill-brand-600'],
-    emerald: ['fill-emerald-500', 'fill-emerald-600'],
-    violet: ['fill-violet-500', 'fill-violet-600'],
-    rose: ['fill-rose-500', 'fill-rose-600'],
-  }[shirt];
-  const chipFill = {
-    brand: 'fill-brand-500',
-    emerald: 'fill-emerald-500 dark:fill-emerald-700',
-    violet: 'fill-violet-500 dark:fill-violet-700',
-    rose: 'fill-rose-500 dark:fill-rose-700',
-  }[shirt];
-  return (
-    <g>
-      <g transform={`translate(${fx - p(8)} ${fy - p(23)})`} shapeRendering="crispEdges">
-        <ellipse cx={p(8)} cy={p(23)} rx={p(5)} ry={p(1.2)} className="fill-slate-900/25" />
-        <rect x={p(5)} y={p(15)} width={p(3)} height={p(6)} className="fill-slate-600" />
-        <rect x={p(9)} y={p(15)} width={p(3)} height={p(6)} className="fill-slate-600" />
-        <rect x={p(5)} y={p(21)} width={p(3)} height={p(2)} className="fill-slate-800" />
-        <rect x={p(9)} y={p(21)} width={p(3)} height={p(2)} className="fill-slate-800" />
-        <rect x={p(4)} y={p(9)} width={p(8)} height={p(6)} className={shirtCls[0]} />
-        <rect x={p(2)} y={p(9)} width={p(2)} height={p(4)} className={shirtCls[0]} />
-        <rect x={p(12)} y={p(9)} width={p(2)} height={p(4)} className={shirtCls[1]} />
-        <rect x={p(4)} y={p(1)} width={p(8)} height={p(8)} className="fill-amber-200" />
-        <rect x={p(3)} y={0} width={p(10)} height={p(3)} className={hair} />
-        <rect x={p(6)} y={p(5)} width={px} height={px} className="fill-slate-800" />
-        <rect x={p(9)} y={p(5)} width={px} height={px} className="fill-slate-800" />
-      </g>
-      {name && (
-        <g transform={`translate(${fx - (name.length * 6.5 + 12) / 2} ${fy - p(23) - 22})`}>
-          <rect width={name.length * 6.5 + 12} height={17} rx={5} className={chipFill} />
-          <Label x={6} y={9} tone="onAccent" size={10} weight={600}>
-            {name}
-          </Label>
-        </g>
-      )}
-    </g>
-  );
-}
-
-/** Walking together: your character (no chip) beside two colleagues', each in
- *  their participant colour with a name chip, one of them on the box being
- *  discussed. */
-export function WalkingTogether() {
-  return (
-    <Scene w={420} h={220}>
-      <Shape x={40} y={60} w={96} h={48} label="Sign up" />
-      <Shape x={250} y={60} w={150} h={48} accent label="Payment" />
-      {/* No ring under Priya: only your own character rings what it stands on (Canvas.tsx). */}
-      <Arrow from={[136, 84]} to={[250, 84]} tone="muted" />
-      <PixelCharacter fx={92} fy={196} />
-      <PixelCharacter fx={204} fy={186} shirt="emerald" name="Sam" hair="fill-slate-800" />
-      <PixelCharacter fx={272} fy={112} shirt="violet" name="Priya" hair="fill-slate-900" />
     </Scene>
   );
 }

@@ -58,9 +58,9 @@ The example is abridged; a real outline prints every element.
 - **Order** within a level is reading order: rows top to bottom, then left to right.
 - **Content kinds** say what they hold briefly: an entity its first 8 fields, a table its size and header row, a
   code block its language and line count, a chart its slice or series count, a checklist `done=2/5`.
-- **Live and structured kinds** carry one state attribute: an estimate card `votes=4 revealed`, a decision
+- **Live and structured kinds** carry one state attribute: a temperature check `votes=4`, a decision
   `status=accepted`, a progress bar `progress=40`, and likewise for the rest of the collaboration family, stat rows,
-  process steps, agendas, quizzes, legends, ratings, timelines and pages.
+  process steps, legends, ratings, timelines and pages.
 - **Bare strokes** (freehand with no label, note, comment, link or arrow) that sit next to each other fold into one
   line, `freehand ×12 (3 closed)`; `layout` lists each one with its ref.
 - **Left out**: coordinates, sizes, colours, fonts, anchors and routing (the `layout` view and `--style` have them),

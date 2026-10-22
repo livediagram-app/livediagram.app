@@ -45,7 +45,6 @@ function fullAccount(): UserPreferences {
     customSwatches: Array.from({ length: 150 }, (_, i) => `#${String(i).padStart(6, '0')}`),
     telemetryEnabled: false,
     planTourSeen: true,
-    workshopTourSeen: true,
     uiScale: 1.1,
     panelOpacity: 0.85,
     elementIndicatorStyle: 'footer',

@@ -58,10 +58,10 @@ export type EditorKeyboardShortcutsDeps = {
   undo: () => void;
   redo: () => void;
   copySelection: () => void;
-  // Canvas tool setter. V / H / L cycle through select / pan /
-  // laser. Mirrors the in-canvas tool picker so a keyboard user
+  // Canvas tool setter. V / H / I switch between select / pan /
+  // isometric. Mirrors the in-canvas tool picker so a keyboard user
   // can switch tools without leaving home position. View-role
-  // visitors still get this (panning + lasering doesn't mutate
+  // visitors still get this (panning doesn't mutate
   // anything; selecting is harmless because the popover hides for
   // view-role).
   setCanvasTool: (t: CanvasTool) => void;
@@ -176,10 +176,7 @@ export const VIEW_TOOL_KEYS: Record<string, ShortcutAction> = {
   },
   '1': (l) => l.setCanvasTool('select'),
   h: (l) => l.setCanvasTool('pan'),
-  k: (l) => l.setCanvasTool('laser'),
   i: (l) => l.setCanvasTool('isometric'), // docs/specs/008-canvas/isometric-view.md: pans like Hand, non-mutating
-  // No key enters Avatar mode (docs/specs/008-canvas/avatar-mode.md "Where it lives"): a Selection Mode button on
-  // the board is its one way in. In the mode, W is the Wave (avatar-action-keys).
   z: (l) => l.onToggleZen(), // docs/specs/007-editor/zen-mode.md focus mode
 };
 

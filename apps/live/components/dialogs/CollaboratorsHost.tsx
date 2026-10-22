@@ -11,9 +11,8 @@ const CollaboratorsDialog = dynamic(
 );
 
 // Mounts the Collaborators modal (docs/specs/012-collaboration/collaborator-enhancements.md) from EditorContext, so EditorView
-// only drops <CollaboratorsHost /> in. Going to a tab or starting a follow
-// closes the modal: both are "take me there", and the modal would sit over
-// exactly what you asked to see.
+// only drops <CollaboratorsHost /> in. Going to a tab closes the modal: it is
+// "take me there", and the modal would sit over exactly what you asked to see.
 export function CollaboratorsHost() {
   const {
     collaborators,
@@ -23,9 +22,6 @@ export function CollaboratorsHost() {
     activeId,
     selfParticipant,
     sessionRole,
-    followMe,
-    facilitator,
-    isOwner,
   } = useEditorContext();
   const selectTab = useSelectTab();
   if (!collaborators) return null;
@@ -37,22 +33,10 @@ export function CollaboratorsHost() {
       selfId={selfParticipant.id}
       selfRole={sessionRole}
       focusId={collaborators.focusId}
-      followingId={followMe.followingId}
       onGoToTab={(tabId) => {
         selectTab(tabId);
         closeCollaborators();
       }}
-      onFollow={(id) => {
-        followMe.startFollowing(id);
-        closeCollaborators();
-      }}
-      onStopFollowing={followMe.stopFollowing}
-      facilitatorId={facilitator.facilitatorId}
-      isFacilitator={facilitator.isFacilitator}
-      isOwner={isOwner}
-      onMakeFacilitator={facilitator.grantFacilitator}
-      onTakeFacilitation={facilitator.claimFacilitator}
-      onStepDown={facilitator.releaseFacilitator}
       onClose={closeCollaborators}
     />
   );

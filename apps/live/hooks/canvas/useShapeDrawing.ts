@@ -75,11 +75,9 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
   // last one you had selected" behaviour through the combined gesture.
   const inheritSizeRef = useRef<Element | null>(null);
 
-  // The canvas tool an armed draw cannot share the pointer with: laser goes to pan (it swallows pointer-down to paint
-  // trail dots and would block the draw), and the format painter to select.
+  // The canvas tool an armed draw cannot share the pointer with: the format painter goes to select.
   const putDownPressTool = () => {
-    if (canvasTool === 'laser') setCanvasTool('pan');
-    else if (canvasTool === 'format') setCanvasTool('select');
+    if (canvasTool === 'format') setCanvasTool('select');
   };
 
   // Shared "arm draw mode" path for every palette add. Tap-to-drop and

@@ -1,7 +1,5 @@
-// Wrap a palette tile-action bundle so every add runs a preamble first
-// (docs/specs/008-canvas/avatar-mode.md): picking any tile while Avatar mode is active leaves the mode, so
-// the element actually lands instead of the click being swallowed by a
-// read-only canvas.
+// Wrap a palette tile-action bundle so every add runs a preamble first: picking a tile while a Plan element is
+// maximised gives the canvas back, so the element actually lands where it can be seen.
 //
 // Done as one wrapper over the whole bundle rather than per handler, so tiles
 // added later inherit it for free. Non-function entries (the `hasImage` flag)

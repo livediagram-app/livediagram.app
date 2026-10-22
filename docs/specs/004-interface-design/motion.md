@@ -47,7 +47,7 @@ Every duration in the codebase belongs to exactly one kind. The budget applies t
 | ------------------------ | ------------------------------------------------------------------------------------------------------ | ----------------------------------------- |
 | **Chrome transition**    | A chrome surface changing state: entering, leaving, opening, resizing, hovering                        | 250ms, or 150ms for hovers                |
 | **Cascade**              | Chrome items entering one beat apart                                                                   | 250ms for the whole cascade               |
-| **Canvas animation**     | Motion of or on the canvas. Element entry and animations, arrow flow, slide transitions, collab boards | Its own spec                              |
+| **Canvas animation**     | Motion of or on the canvas. Element entry and animations, arrow flow, collab boards                    | Its own spec                              |
 | **Content illustration** | Marketing illustrations and template-preview stories: a picture that moves, not a control              | Its own spec                              |
 | **Content reveal**       | Content drawn in for reading: the marketing page entrance, telemetry data-viz reveals                  | About half its original length, see below |
 | **Ambient indicator**    | Looping status. Spinners, skeleton pulses, live dots, empty-state float, attention pulses that repeat  | Exempt; not a transition                  |
@@ -91,7 +91,7 @@ motion is stricter still.
 A state change that swaps a whole surface animates as a React View Transition
 ([React state and effects](../003-system-architecture/react-state-and-effects.md) "Animating a state change").
 
-- **Its pace follows its surface.** A chrome surface runs within the ceiling on a motion token; a canvas surface (a slide move) follows its own spec.
+- **Its pace follows its surface.** A chrome surface runs within the ceiling on a motion token; a canvas surface follows its own spec.
 - **Only the named surface moves.** The document root takes no part (`view-transition-name: none` on `<html>`), so
   the rest of the page neither cross-fades nor freezes into a picture.
 - **Its animation classes** live beside the surface's other motion: the canvas's in `canvas-motion.css`, chrome's in

@@ -22,7 +22,6 @@ who re-renders when it changes.
 | `apps/live/components/canvas/selection-aware-views.tsx`    | `SelectableBoxedView`, `SelectableArrowView`, `FreeArrowFrame`                      |
 | `apps/live/components/canvas/LayerSelectionChrome.tsx`     | Next-note buttons, quick-connect pluses, union resize box                           |
 | `apps/live/hooks/canvas/useCanvasSelectionView.ts`         | `useCanvasSelectionView`, `CanvasSelectionInput`                                    |
-| `apps/live/components/panels/SlideDeckPanel.tsx`           | Reads the selection it slides from the store                                        |
 | `apps/live/lib/canvas-selection.ts`                        | `deriveCanvasSelection` unchanged; `elementSelectionFlags` added                    |
 
 ## Domain and naming
@@ -84,8 +83,8 @@ multiSelectedIds.size === 0`. Element views compare the three booleans.
 - `useStableEventProps(props)`: every own property whose
   key matches `/^on[A-Z]/` and whose value is a function becomes one forwarder per key for the boundary's
   lifetime, calling the newest value. An `undefined` handler stays `undefined` (children branch on
-  presence). Every other prop, including functions not named `on…` (`chairSitters`,
-  `previewDrawnArrow`, the viewport setters), passes through untouched: those are read in render.
+  presence). Every other prop, including functions not named `on…`
+  (`previewDrawnArrow`, the viewport setters), passes through untouched: those are read in render.
 - No `on…` prop is called during render; the audit in the plan confirms it, and any found is renamed
   out of the convention rather than wrapped.
 - Object props built in the host per render (`esBoardControls`, `slideDeck`) pass through
@@ -111,8 +110,6 @@ multiSelectedIds.size === 0`. Element views compare the three booleans.
     `useCanvasSelectHandlers`);
   - `useQuickRing(store)` closes an open ring on a change of the selected element through a store
     subscription;
-  - `SlideDeckPanel` reads `selectionIds(selectedId, multiSelectedIds)` from the store (compared
-    with `sameMembers`); `useSlideDeck` no longer returns `selectionCount` / `currentSelectionIds`.
 
 ### Above the canvas
 

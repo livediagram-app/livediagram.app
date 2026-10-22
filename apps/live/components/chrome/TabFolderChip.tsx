@@ -37,9 +37,7 @@ type TabFolderChipProps = {
   participantsByTab: Map<string, Participant[]>;
   selfId: string;
   selfRole: AccessLevel;
-  // Same as the pill's stack: follow ring + the Collaborators modal (docs/specs/012-collaboration/collaborator-enhancements.md).
-  followingId?: string | null;
-  followerCount?: number;
+  // Same as the pill's stack: the Collaborators modal (docs/specs/012-collaboration/collaborator-enhancements.md).
   onOpenCollaborators?: (participantId: string | null) => void;
 };
 
@@ -54,8 +52,6 @@ export function TabFolderChip({
   participantsByTab,
   selfId,
   selfRole,
-  followingId,
-  followerCount,
   onOpenCollaborators,
 }: TabFolderChipProps) {
   const [open, setOpen] = useState(false);
@@ -190,8 +186,6 @@ export function TabFolderChip({
           participants={folderParticipants}
           selfId={selfId}
           selfRole={selfRole}
-          followingId={followingId}
-          followerCount={followerCount}
           onOpenCollaborators={onOpenCollaborators}
         />
       ) : null}

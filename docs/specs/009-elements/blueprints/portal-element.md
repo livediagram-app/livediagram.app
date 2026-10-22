@@ -11,10 +11,8 @@ Scope, by file:
 | `packages/document/src/shape-factory.ts`             | 72x112, transparent, `#38bdf8` energy, `aspectLocked`, unlabelled |
 | `packages/document/src/validate.ts`                  | `portalTarget` must be a non-empty string                         |
 | `packages/document/src/svg-render-faces.ts`          | The export ring (`'portal'`)                                      |
-| `apps/live/lib/portals.ts`                           | Names, sites, resolution, exit point, camera centring             |
+| `apps/live/lib/portals.ts`                           | Names, sites, resolution, camera centring                         |
 | `apps/live/components/canvas/portal-travel.ts`       | `usePortalTravel`: `enterPortal` and `resolvePortal`, no state    |
-| `apps/live/components/canvas/useCanvasAvatar.tsx`    | Calls `usePortalTravel`; walk-in through `enterPortalRef`         |
-| `apps/live/hooks/canvas/useAvatarWalk.ts`            | Arrival hook, `teleportTo`, the ignored exit portal               |
 | `apps/live/components/canvas/PortalFace.tsx`         | The ring, lit / dead states, the press, hover cards               |
 | `apps/live/components/canvas/ElementFaceRouter.tsx`  | Renders the face while not editing                                |
 | `apps/live/components/palette/PortalMenuSection.tsx` | Name, Leads to, Create Portal                                     |
@@ -23,19 +21,17 @@ Scope, by file:
 
 ## Domain and naming
 
-| Term           | Identifier                                        | Meaning                                                |
-| -------------- | ------------------------------------------------- | ------------------------------------------------------ |
-| Portal         | shape kind `'portal'`                             | The element                                            |
-| Target         | `ShapeElement.portalTarget: ElementId`            | The id of the portal this one leads to                 |
-| Link           | a pair of `portalTarget`s                         | Two portals pointing at each other                     |
-| Incoming link  | another portal's `portalTarget === this.id`       | Honoured when this portal's own target fails           |
-| Site           | `PortalSite = { tabId, tabName, portal }`         | A portal with the tab it lives on                      |
-| Destination    | `PortalDestination = { portal, tabId, elements }` | The far portal, its tab and that tab's elements        |
-| Unlinked       | `resolvePortalDestination(...) === null`          | Dead ring, inert                                       |
-| Portal name    | `portalName(elements, portal)`                    | Trimmed label, else `Portal <n>` (per tab) [QF11]      |
-| Travel         | `enterPortal(from)` (`usePortalTravel`)           | Switch tab, centre camera, place the character         |
-| Exit point     | `portalExitPoint(portal)`                         | Bottom centre of the far portal (the avatar's feet)    |
-| Arrived portal | `arrivedPortalRef` in `useAvatarWalk`             | The exit portal, ignored until the character steps off |
+| Term          | Identifier                                        | Meaning                                           |
+| ------------- | ------------------------------------------------- | ------------------------------------------------- |
+| Portal        | shape kind `'portal'`                             | The element                                       |
+| Target        | `ShapeElement.portalTarget: ElementId`            | The id of the portal this one leads to            |
+| Link          | a pair of `portalTarget`s                         | Two portals pointing at each other                |
+| Incoming link | another portal's `portalTarget === this.id`       | Honoured when this portal's own target fails      |
+| Site          | `PortalSite = { tabId, tabName, portal }`         | A portal with the tab it lives on                 |
+| Destination   | `PortalDestination = { portal, tabId, elements }` | The far portal, its tab and that tab's elements   |
+| Unlinked      | `resolvePortalDestination(...) === null`          | Dead ring, inert                                  |
+| Portal name   | `portalName(elements, portal)`                    | Trimmed label, else `Portal <n>` (per tab) [QF11] |
+| Travel        | `enterPortal(from)` (`usePortalTravel`)           | Switch tab, centre camera                         |
 
 Banned synonyms: "door" (it survives only as the persisted palette tile id `tools:door`), "pair id",
 "teleporter", "warp".
@@ -58,23 +54,12 @@ Banned synonyms: "door" (it survives only as the persisted palette tile id `tool
 2. If `to.tabId !== activeTabId`, call `onFollowLink({ kind: 'tab', tabId })`.
 3. Measure the viewport (`mainRef.current.getBoundingClientRect()`); if present, set the offset to
    `viewportOffsetCentredOn(to.portal, size, zoom)`. A callback ref has no rect and skips this.
-4. `teleportTo(portalExitPoint(to.portal), to.portal.id)`: clears the walk target and held keys,
-   places the feet, sets `arrivedPortalRef` and `lastUnderFeetRef` to the exit portal.
 
-### Triggers
+### Trigger
 
 - **Click.** `PortalFace` wraps a `<button>` in `usePressWithoutDrag(onEnter)`; `onEnter` is
-  `resolvePortal(element).travel`, absent when unlinked.
-- **Walk-in.** The `useAvatarWalk` effect on `[active, standingOnId]`, which hands the lookup to
-  the `arriveOn` effect event (so `elements` is read, never a trigger):
-  1. Inactive: clear both refs.
-  2. `standingOnId === null`: clear `arrivedPortalRef` (D115).
-  3. Same as last frame, or equal to `arrivedPortalRef`: ignore.
-  4. A `portal` under the feet: call `onWalkIntoPortal`, which is `enterPortalRef.current`.
-- Both triggers run the same `enterPortal`. `usePortalTravel` owns no state and builds both actions
-  from the render's values; `Canvas` holds the latest `enterPortal` in `enterPortalRef`
-  (`useLatest`), because the walk hook needs travel and travel needs the walk hook's
-  `teleportTo`.
+  `resolvePortal(element).travel`, absent when unlinked. `usePortalTravel` owns no state and builds
+  the action from the render's values.
 
 ### Linking (`usePortalSetters`)
 
@@ -92,9 +77,6 @@ Invariants:
 
 - **I1:** resolution never returns `from` itself and never throws.
 - **I2:** after any setter, no two portals claim the same end (exclusivity on every tab) [QF10].
-- **I3:** a walk-in fires once per arrival, and never for the exit portal until the feet reach
-  bare canvas.
-- **I4:** click and walk-in run one function.
 
 ## Interfaces and contracts
 
@@ -112,7 +94,6 @@ export function resolvePortalSite(tabs: Tab[], portal: ShapeElement): PortalSite
 export function resolvePortalTarget(elements: Element[], portal: ShapeElement): ShapeElement | null;
 export function resolvePortalDestination(from: ShapeElement,
   ctx: { elements: Element[]; tabs?: Tab[]; activeTabId?: string }): PortalDestination | null;
-export function portalExitPoint(portal: PortalBox): { x: number; y: number };
 export function viewportOffsetCentredOn(portal: PortalBox,
   size: { width: number; height: number }, zoom: number): { x: number; y: number };
 export function usePortalTravel(deps: PortalTravelDeps): {
@@ -132,28 +113,25 @@ export function usePortalTravel(deps: PortalTravelDeps): {
 
 - **Persisted:** `portalTarget`, `label` (the name), colours. No tab id is stored: element ids are
   unique across the document.
-- **Derived, never stored:** positional names, destinations, the arrived portal.
+- **Derived, never stored:** positional names, destinations.
 - **Undo:** link, unlink, rename and create are ordinary `commitTabs` writes.
 - **Migration:** none; a one-sided link from an import or the API resolves through the incoming
   rule.
 
 ## Errors and edge cases
 
-| #   | Case                                      | Handling                                              |
-| --- | ----------------------------------------- | ----------------------------------------------------- |
-| E1  | Target deleted                            | Unlinked, unless an incoming link exists              |
-| E2  | Target re-pointed at a non-portal         | Unlinked                                              |
-| E3  | Self-target                               | Unlinked                                              |
-| E4  | One-sided link                            | Resolves both ways                                    |
-| E5  | Own target and an incoming link disagree  | Own target wins                                       |
-| E6  | Far portal on another tab                 | Tab switch first, then camera and character           |
-| E7  | Unlinked press                            | Face inert; hover card explains                       |
-| E8  | Drag on the ring                          | Moves, never travels                                  |
-| E9  | Arrive on the exit portal                 | Ignored until bare canvas (D115)                      |
-| E10 | Exit portal overlaps another element      | Stepping onto that element does not clear the ignore  |
-| E11 | Click travel outside Avatar mode          | Camera moves; the remembered character position moves |
-| E12 | Create with a third portal on another tab | Released on every tab [QF10]                          |
-| E13 | Multi-selection linked to one target      | Last source takes the return link (D114)              |
+| #   | Case                                      | Handling                                 |
+| --- | ----------------------------------------- | ---------------------------------------- |
+| E1  | Target deleted                            | Unlinked, unless an incoming link exists |
+| E2  | Target re-pointed at a non-portal         | Unlinked                                 |
+| E3  | Self-target                               | Unlinked                                 |
+| E4  | One-sided link                            | Resolves both ways                       |
+| E5  | Own target and an incoming link disagree  | Own target wins                          |
+| E6  | Far portal on another tab                 | Tab switch first, then camera            |
+| E7  | Unlinked press                            | Face inert; hover card explains          |
+| E8  | Drag on the ring                          | Moves, never travels                     |
+| E12 | Create with a third portal on another tab | Released on every tab [QF10]             |
+| E13 | Multi-selection linked to one target      | Last source takes the return link (D114) |
 
 ## Security and trust
 
@@ -179,8 +157,7 @@ export function usePortalTravel(deps: PortalTravelDeps): {
 - **Palette:** tile `tools:door` ("Add Portal") in the **Navigate** accordion
   (`tileGroup: 'move'`) of the Behaviours category.
 - **Hover cards** (`HoverCard`, wrapping the whole face): linked: title "Go to <far name>",
-  description "Click to travel, or walk your Avatar-mode character into it. The link works both
-  ways." Unlinked: title "Portal (not linked)", description "Right-click the portal and open
+  description "Click to travel. The link works both ways." Unlinked: title "Portal (not linked)", description "Right-click the portal and open
   Portal to pick the one it leads to."
 - **Menu:** accordion **Portal**: **Name** field (placeholder = own positional name, commit on blur
   / Enter, re-seeded by `useFollowingDraft` on another portal or a changed label); **Leads to**
@@ -209,7 +186,7 @@ No log exists today. Proposed fingerprints (gap, see the report):
 | O1  | `enterPortal`      | `console.debug` | `[portal] travel from=<id> to=<id> tab=<tabId> via=<via>` |
 | O2  | `enterPortal` null | `console.warn`  | `[portal] unresolved id=<id> target=<portalTarget>`       |
 
-`<via>` is `click` or `walk`.
+`<via>` is `click`.
 
 ## Testing
 
@@ -220,13 +197,11 @@ No log exists today. Proposed fingerprints (gap, see the report):
 | Every broken link resolves to unlinked (E1-E3)         | `resolvePortalTarget` block                     | `apps/live/lib/portals.test.ts`                     |
 | Incoming link and precedence (E4, E5)                  | "leads back down an INCOMING link", "prefers …" | `apps/live/lib/portals.test.ts`                     |
 | Cross-tab resolution (E6)                              | `resolvePortalDestination` block                | `apps/live/lib/portals.test.ts`                     |
-| Exit point, camera centring with zoom                  | `portalExitPoint`, `viewportOffsetCentredOn`    | `apps/live/lib/portals.test.ts`                     |
-| Travel order, ignored exit, unlinked inert (I4)        | `usePortalTravel` block                         | `apps/live/components/canvas/portal-travel.test.ts` |
+| Travel order, unlinked inert                           | `usePortalTravel` block                         | `apps/live/components/canvas/portal-travel.test.ts` |
 | Not votable                                            | "rejects the interactive Behaviour shapes"      | `packages/document/src/session.test.ts`             |
 | Export draws a ring                                    | "draws more than a box and a label"             | `packages/document/src/export-consistency.test.ts`  |
 | Export ring lit when linked, dim when not              | "draws a portal as its lit ring when paired, …" | `packages/document/src/svg-render-fidelity.test.ts` |
 | Two-way link, release, unlink, create, rename (I2)     | none                                            | (gap) [QF9] [QF10]                                  |
-| Walk-in once, exit ignored (I3)                        | none                                            | (gap)                                               |
 | Drag never travels                                     | none                                            | (gap)                                               |
 
 ## Constants and configuration

@@ -32,7 +32,6 @@ const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
   'palette/tools/drawing/shape-recognition': 'palette/tools/drawing',
   'selection-modes/eraser': 'selection-modes',
   'canvas/facilitate-mode': 'canvas/workshop-mode',
-  'canvas/facilitate-mode/facilitate-tour': 'canvas/workshop-mode/workshop-tour',
   'selection-modes/highlighter': 'palette/tools',
   'activity-panel': 'canvas/undo',
   'activity-panel/what-it-is': 'canvas/undo',

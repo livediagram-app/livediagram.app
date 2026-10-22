@@ -746,13 +746,11 @@ heads, border style and radius, font) with its values, bold and italic, `colorPr
 `iconId` (from `search_icons`) and `note`. Before, these were discoverable only by reading a template's JSON, and
 an agent hand-placing a dashboard guessed `textAlign` and `textSize: "xl"`.
 
-**Facilitation kinds.** The format also names what the session kinds hold: a `session-button`'s `session` (a timer
-with `minutes`, a stopwatch, a vote with `dots`, a poll with `question` and `options`), an agenda's `agendaItems`,
-a checklist's `checklistItems`, a stat row's `stats`, a callout's `pageTitle` over its `label` body, a banner's
+**Session kinds.** The format also names what the session kinds hold: a `session-button`'s `session` (a timer
+with `minutes`, a stopwatch, a vote with `dots`), a checklist's `checklistItems`, a stat row's `stats`, a callout's `pageTitle` over its `label` body, a banner's
 `pageTitle` and `pageSubtitle`, and a sticker's `stickerId`. A bare `text` is centred in its box unless it sets
-`textAlignX`. The entries of a Q&A board, an idea box and a temperature check are the people's, never an edit's,
-so starter questions go on stickies beside them. An agenda written with segments grows to draw every one
-([Agenda](../012-collaboration/agenda.md) "The face").
+`textAlignX`. The entries of a temperature check are the people's, never an edit's,
+so starter questions go on stickies beside it.
 
 **Hand-drawn strokes.** A `freehand` element is written with `points` as canvas coordinates, `[[x, y], ...]` in
 drawing order, `closed` to close and fill it, and a `penColour` (ink, grey or a hued pen). The stored form is a box
@@ -1156,7 +1154,7 @@ name>: ...`).
 The output literals that named the container changed with it: `renamed`, `deleted` and `restored` report `document` where they reported `diagram`.
 <!-- /legacy-names -->
 
-- **Previews**: an emoji icon, sticker or reaction pad, which needs a colour-emoji font a Worker lacks,
+- **Previews**: an emoji icon or sticker, which needs a colour-emoji font a Worker lacks,
   draws from its Twemoji SVG (release 15.1.0 on jsDelivr, CC-BY 4.0, in `THIRD_PARTY_NOTICES.md`), fetched by its
   code points when the preview is made (`preview-emoji.ts`: at most `PREVIEW_EMOJI_MAX` (40) a preview, within
   `PREVIEW_EMOJI_TIMEOUT_MS` (2.5 s), each file at most 64 kB and kept in the Cache API, alongside the fonts). One

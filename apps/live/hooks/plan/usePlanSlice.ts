@@ -70,7 +70,6 @@ export function usePlanSlice(opts: {
   commitTabs?: (mapTabs: (tabs: Tab[]) => Tab[]) => void;
   select: (elementId: string | null) => void;
   announce: (message: string) => void;
-  addItemSlide?: (itemId: string) => void;
   statusNames: ReadonlyMap<string, string>;
   // The phase the tab's boards give each status (the plan views).
   statusPhases?: ReadonlyMap<string, StatusPhase>;
@@ -96,7 +95,6 @@ export function usePlanSlice(opts: {
   const selectRef = useLatest(opts.select);
   const announceRef = useLatest(opts.announce);
   const publishRef = useLatest(opts.publishPresence);
-  const slideRef = useLatest(opts.addItemSlide);
   const commit = useCallback(
     (mapElements: (els: Element[]) => Element[]) => commitRef.current(mapElements),
     [commitRef],
@@ -128,8 +126,6 @@ export function usePlanSlice(opts: {
     (itemId: string | null, state: 'drag' | 'view') => publishRef.current?.(itemId, state),
     [publishRef],
   );
-  const hasSlides = !!opts.addItemSlide;
-  const addItemSlide = useCallback((itemId: string) => slideRef.current?.(itemId), [slideRef]);
   const [openItemId, setOpenItemId] = useState<string | null>(null);
   // The card this person just made and opened (openNewItem): its panel selects its title so typing names it.
   const [freshItemId, setFreshItemId] = useState<string | null>(null);
@@ -549,7 +545,6 @@ export function usePlanSlice(opts: {
       statusPhases: opts.statusPhases ?? NO_PHASES,
       statusTypes: opts.statusTypes ?? NO_STATUS_TYPES,
       statusBoards: opts.statusBoards ?? NO_STATUS_BOARDS,
-      ...(hasSlides ? { addItemSlide } : {}),
     }),
     [
       planItems.items,
@@ -591,8 +586,6 @@ export function usePlanSlice(opts: {
       patchItems,
       restoreItem,
       emptyTrash,
-      addItemSlide,
-      hasSlides,
       opts.statusNames,
       opts.statusPhases,
       opts.statusTypes,

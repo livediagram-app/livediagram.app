@@ -41,7 +41,6 @@ import {
   type TextAlignX,
   type TextAlignY,
   type TextSize,
-  isSeatingShape,
 } from '@liveplanner/document';
 import { ContextMenuDivider } from '@/components/palette/ContextMenu';
 import {
@@ -131,25 +130,15 @@ export function ElementAppearanceSections({
   const isMind = isMindNode(target);
   const isChecklist = target.type === 'shape' && isChecklistShape(target.shape);
   const isEntity = target.type === 'shape' && target.shape === 'entity';
-  // Mode button (docs/specs/009-elements/mode-button.md): its one setting is which mode it hands out.
-  const isModeButton = target.type === 'shape' && target.shape === 'mode-button';
   // Portal (docs/specs/009-elements/portal-element.md): its one setting is which portal it leads to.
   const isPortal = target.type === 'shape' && target.shape === 'portal';
-  // The other Behaviour kinds with settings (docs/specs/012-collaboration/session-button.md, /106, /107).
-  // Both are the facilitator's while somebody holds the baton (docs/specs/012-collaboration/facilitator.md): no handler, no section.
+  // The other Behaviour kinds with settings (docs/specs/012-collaboration/session-button.md, picker.md).
+  // No handler, no section.
   const isSessionButton =
     target.type === 'shape' && target.shape === 'session-button' && !!props.onSetSession;
-  const isReveal = target.type === 'shape' && target.shape === 'reveal' && !!props.onSetRevealed;
   const isPicker = target.type === 'shape' && target.shape === 'picker';
-  const isReactionPad = target.type === 'shape' && target.shape === 'reaction-pad';
-  // The collaboration elements that carry settings (docs/specs/012-collaboration/estimate-card.md, 127, 128, 130).
-  const isEstimate = target.type === 'shape' && target.shape === 'estimate';
-  const isAgenda = target.type === 'shape' && target.shape === 'agenda';
+  // The collaboration element that carries settings (docs/specs/012-collaboration/decision-record.md).
   const isDecision = target.type === 'shape' && target.shape === 'decision';
-  // A desk and a sofa share the chair's facing section (docs/specs/009-elements/chair.md "Desk and sofa").
-  // The meeting table does not turn (docs/specs/009-elements/office.md), so it has no facing section.
-  const isChair =
-    target.type === 'shape' && isSeatingShape(target.shape) && target.shape !== 'meeting-table';
   // The Text band (docs/specs/008-canvas/canvas-and-palette.md): Markers + Alignment. Markers are regular-shape
   // only (self-drawing shapes have no label slot); Alignment applies to any
   // boxed element with a text slot.
@@ -244,16 +233,10 @@ export function ElementAppearanceSections({
         isMindNode={isMind}
         isChecklist={isChecklist}
         isEntity={isEntity}
-        isModeButton={isModeButton}
         isPortal={isPortal}
         isSessionButton={isSessionButton}
-        isReveal={isReveal}
         isPicker={isPicker}
-        isReactionPad={isReactionPad}
-        isEstimate={isEstimate}
-        isAgenda={isAgenda}
         isDecision={isDecision}
-        isChair={isChair}
         sectionProps={sectionProps}
         flyoutProps={flyoutProps}
       />

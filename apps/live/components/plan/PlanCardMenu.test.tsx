@@ -78,7 +78,6 @@ describe('PlanCardMenu', () => {
           onArchive={vi.fn()}
           onFlag={vi.fn()}
           onEditType={vi.fn()}
-          onAddSlide={vi.fn()}
           onClose={vi.fn()}
         />,
       );

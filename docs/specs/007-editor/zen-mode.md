@@ -17,8 +17,8 @@ When zen mode is on, the editor hides:
 
 What stays:
 
-- the **canvas and its content** (elements, alignment guides, laser
-  trails, remote cursors, selection — interaction is unaffected),
+- the **canvas and its content** (elements, alignment guides,
+  remote cursors, selection — interaction is unaffected),
 - the **zoom controls** (bottom-right), so the user can still zoom / fit,
 - an **exit-zen button on the zoom controls**, shown only while zen is
   active, so there's always a visible way out.
@@ -62,7 +62,7 @@ toggle.
   welcome flow — each `welcomeOpen ? null` / `welcomeOpen || readOnly`
   guard in `CanvasChrome` also checks `zenMode`. The header + tab bar are
   hidden in `EditorView`.
-- Not a `CanvasTool` (Select / Hand / Laser are mutually-exclusive cursor
+- Not a `CanvasTool` (Select / Hand / Eraser are mutually-exclusive cursor
   modes); zen mode is an orthogonal visibility flag, so it sits beside
   the tool row rather than inside the tool group.
 

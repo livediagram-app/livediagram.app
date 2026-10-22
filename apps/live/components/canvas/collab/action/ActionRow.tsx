@@ -8,7 +8,7 @@ import { GlyphDisc } from '@liveplanner/ui';
 import { initialsOf } from '@/lib/identity';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { tint } from '../collab-chrome';
-import { CheckGlyph, QA_ACCENT, QA_ON_ACCENT, stopPointer } from '../qa/qa-parts';
+import { CheckGlyph, COLLAB_ACCENT, COLLAB_ON_ACCENT, stopPointer } from '../collab-parts';
 import { SlashGlyph } from './action-parts';
 
 export function ActionRow({
@@ -36,7 +36,7 @@ export function ActionRow({
   const who = action.assignee.name?.trim() || 'Teammate';
   return (
     <li
-      className={`flex items-start gap-2.5 rounded-xl px-2 py-2 transition-colors ${fresh ? 'qa-enter' : ''}`}
+      className={`flex items-start gap-2.5 rounded-xl px-2 py-2 transition-colors ${fresh ? 'collab-enter' : ''}`}
       style={{ backgroundColor: tint(textColor, mine && !closed ? 0.07 : 0.04) }}
     >
       <button
@@ -52,15 +52,15 @@ export function ActionRow({
             ? { borderColor: ACTION_DONE, backgroundColor: ACTION_DONE, color: '#ffffff' }
             : wontDo
               ? { borderColor: tint(textColor, 0.35), color: tint(textColor, 0.5) }
-              : { borderColor: tint(QA_ACCENT, 0.6), color: QA_ACCENT }
+              : { borderColor: tint(COLLAB_ACCENT, 0.6), color: COLLAB_ACCENT }
         }
       >
         {done ? (
-          <span key="done" className="qa-pop inline-flex">
+          <span key="done" className="collab-pop inline-flex">
             <CheckGlyph size={12} />
           </span>
         ) : wontDo ? (
-          <span key="wont-do" className="qa-pop inline-flex" data-testid="action-wont-do-mark">
+          <span key="wont-do" className="collab-pop inline-flex" data-testid="action-wont-do-mark">
             <SlashGlyph size={12} />
           </span>
         ) : null}
@@ -96,7 +96,7 @@ export function ActionRow({
                 ? { color: '#ffffff', backgroundColor: ACTION_DONE }
                 : wontDo
                   ? { color: '#ffffff', backgroundColor: tint(textColor, 0.45) }
-                  : { color: QA_ON_ACCENT, backgroundColor: QA_ACCENT }
+                  : { color: COLLAB_ON_ACCENT, backgroundColor: COLLAB_ACCENT }
             }
           >
             {initialsOf(who)}

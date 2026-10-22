@@ -531,22 +531,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "AgendaItem": {
-    "additionalProperties": false,
-    "properties": {
-      "label": {
-        "type": "string"
-      },
-      "minutes": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "label",
-      "minutes"
-    ],
-    "type": "object"
-  },
   "AgentPresenceResult": {
     "additionalProperties": false,
     "properties": {
@@ -1651,15 +1635,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     ]
   },
-  "ChairFacing": {
-    "enum": [
-      "n",
-      "e",
-      "s",
-      "w"
-    ],
-    "type": "string"
-  },
   "ChangesetAuthor": {
     "additionalProperties": false,
     "properties": {
@@ -2550,36 +2525,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
-          "agenda": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "avatar-pad": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
           "badge": {
             "additionalProperties": false,
             "properties": {
@@ -2611,21 +2556,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "object"
           },
           "bar-chart": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "bookshelf": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -2686,21 +2616,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "object"
           },
           "card": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "chair": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -2790,21 +2705,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
-          "coffee-machine": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
           "comment-pin": {
             "additionalProperties": false,
             "properties": {
@@ -2865,21 +2765,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
-          "desk": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
           "diagram-key": {
             "additionalProperties": false,
             "properties": {
@@ -2925,21 +2810,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
-          "done-check": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
           "entity": {
             "additionalProperties": false,
             "properties": {
@@ -2955,52 +2825,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
-          "estimate": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "fence": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
           "final-state": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "focus-button": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -3090,21 +2915,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
-          "idea-box": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
           "lane": {
             "additionalProperties": false,
             "properties": {
@@ -3180,37 +2990,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
-          "meeting-table": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
           "mind-node": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "mode-button": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -3390,21 +3170,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
-          "plant": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
           "pointer-note": {
             "additionalProperties": false,
             "properties": {
@@ -3495,112 +3260,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
-          "qa-board": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "quiz": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
           "rating": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "reaction-pad": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "reveal": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "roll-call": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "room": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "rug": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -3676,21 +3336,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "object"
           },
           "smartwatch": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "sofa": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -3901,21 +3546,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "object"
           },
           "triangle": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "water-cooler": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -4492,12 +4122,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "null"
         ]
       },
-      "presentation": {
-        "type": [
-          "string",
-          "null"
-        ]
-      },
       "savedAt": {
         "type": "number"
       },
@@ -4562,7 +4186,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "ownerColor",
       "ownerId",
       "ownerName",
-      "presentation",
       "savedAt",
       "shareCode",
       "shareable",
@@ -5277,14 +4900,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "fk",
       "pk-fk",
       "uk"
-    ],
-    "type": "string"
-  },
-  "EstimateScale": {
-    "enum": [
-      "fibonacci",
-      "tshirt",
-      "powers"
     ],
     "type": "string"
   },
@@ -9764,17 +9379,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
-  "PollStyle": {
-    "enum": [
-      "yesNo",
-      "yesNoAbstain",
-      "choice",
-      "collaborators",
-      "rating",
-      "text"
-    ],
-    "type": "string"
-  },
   "ProgressAnim": {
     "enum": [
       "fill",
@@ -9969,62 +9573,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
-  "QaNote": {
-    "additionalProperties": false,
-    "properties": {
-      "at": {
-        "type": "number"
-      },
-      "author": {
-        "additionalProperties": false,
-        "properties": {
-          "color": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "name",
-          "color"
-        ],
-        "type": "object"
-      },
-      "doneAt": {
-        "type": "number"
-      },
-      "id": {
-        "type": "string"
-      },
-      "state": {
-        "$ref": "#/components/schemas/QaNoteState"
-      },
-      "text": {
-        "type": "string"
-      },
-      "voters": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      }
-    },
-    "required": [
-      "id",
-      "text",
-      "at",
-      "voters"
-    ],
-    "type": "object"
-  },
-  "QaNoteState": {
-    "enum": [
-      "discussing",
-      "done"
-    ],
-    "type": "string"
-  },
   "QuestionType": {
     "enum": [
       "short",
@@ -10085,16 +9633,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "twinkle",
       "pulse",
       "rock"
-    ],
-    "type": "string"
-  },
-  "Reaction": {
-    "enum": [
-      "confetti",
-      "sparkles",
-      "hearts",
-      "applause",
-      "fireworks"
     ],
     "type": "string"
   },
@@ -10480,36 +10018,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "RollCallEntry": {
-    "additionalProperties": false,
-    "properties": {
-      "at": {
-        "type": "number"
-      },
-      "color": {
-        "type": "string"
-      },
-      "name": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "name",
-      "color",
-      "at"
-    ],
-    "type": "object"
-  },
-  "RoomDoor": {
-    "enum": [
-      "n",
-      "e",
-      "s",
-      "w",
-      "none"
-    ],
-    "type": "string"
-  },
   "RunHeading": {
     "enum": [
       1,
@@ -10658,18 +10166,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "SelectionMode": {
-    "enum": [
-      "select",
-      "pan",
-      "laser",
-      "spotlight",
-      "avatar",
-      "format",
-      "isometric"
-    ],
-    "type": "string"
-  },
   "SequenceElementMessage": {
     "additionalProperties": false,
     "properties": {
@@ -10730,18 +10226,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "minutes": {
         "type": "number"
       },
-      "options": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "question": {
-        "type": "string"
-      },
-      "style": {
-        "$ref": "#/components/schemas/PollStyle"
-      },
       "tool": {
         "$ref": "#/components/schemas/SessionTool"
       }
@@ -10755,8 +10239,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "enum": [
       "timer",
       "stopwatch",
-      "vote",
-      "poll"
+      "vote"
     ],
     "type": "string"
   },
@@ -10798,18 +10281,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
-      "agendaCurrent": {
-        "type": "number"
-      },
-      "agendaItems": {
-        "items": {
-          "$ref": "#/components/schemas/AgendaItem"
-        },
-        "type": "array"
-      },
-      "agendaTimerStartedAt": {
-        "type": "number"
-      },
       "animation": {
         "$ref": "#/components/schemas/ElementAnimation"
       },
@@ -10842,9 +10313,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "cellComments": {
         "$ref": "#/components/schemas/CellCommentThreads"
-      },
-      "chairFacing": {
-        "$ref": "#/components/schemas/ChairFacing"
       },
       "chartAxis": {
         "type": "boolean"
@@ -10930,9 +10398,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
-      "estimateScale": {
-        "$ref": "#/components/schemas/EstimateScale"
-      },
       "fillColor": {
         "type": "string"
       },
@@ -10993,21 +10458,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "id": {
         "$ref": "#/components/schemas/ElementId"
       },
-      "ideaCardIds": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "ideaCards": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "ideasRevealed": {
-        "type": "boolean"
-      },
       "keyMeanings": {
         "additionalProperties": {
           "type": "string"
@@ -11067,9 +10517,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "mindSpacing": {
         "$ref": "#/components/schemas/MindSpacing"
-      },
-      "mode": {
-        "$ref": "#/components/schemas/SelectionMode"
       },
       "navLinks": {
         "items": {
@@ -11183,36 +10630,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "pyramidVariant": {
         "$ref": "#/components/schemas/PyramidVariant"
       },
-      "qaNotes": {
-        "items": {
-          "$ref": "#/components/schemas/QaNote"
-        },
-        "type": "array"
-      },
-      "qaRev": {
-        "type": "number"
-      },
-      "quizCorrect": {
-        "type": "number"
-      },
-      "quizLockedAt": {
-        "type": "number"
-      },
-      "quizOptions": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "quizRevealed": {
-        "type": "boolean"
-      },
-      "quizSeconds": {
-        "type": "number"
-      },
-      "quizStartedAt": {
-        "type": "number"
-      },
       "railCount": {
         "type": "number"
       },
@@ -11234,35 +10651,17 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "ratingAnimSpeed": {
         "$ref": "#/components/schemas/AnimationSpeed"
       },
-      "reaction": {
-        "$ref": "#/components/schemas/Reaction"
-      },
       "responses": {
         "items": {
           "$ref": "#/components/schemas/ParticipantResponse"
         },
         "type": "array"
       },
-      "responsesRevealed": {
-        "type": "boolean"
-      },
-      "revealed": {
-        "type": "boolean"
-      },
       "richText": {
         "items": {
           "$ref": "#/components/schemas/TextRun"
         },
         "type": "array"
-      },
-      "rollCall": {
-        "items": {
-          "$ref": "#/components/schemas/RollCallEntry"
-        },
-        "type": "array"
-      },
-      "roomDoor": {
-        "$ref": "#/components/schemas/RoomDoor"
       },
       "rotation": {
         "type": "number"
@@ -11488,36 +10887,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "stat-row",
       "process",
       "site-header",
-      "mode-button",
       "portal",
       "tab-window",
       "session-button",
-      "reveal",
       "picker",
-      "reaction-pad",
       "comment-pin",
       "action-card",
-      "done-check",
-      "chair",
-      "fence",
-      "avatar-pad",
-      "desk",
-      "sofa",
-      "room",
-      "meeting-table",
-      "plant",
-      "bookshelf",
-      "water-cooler",
-      "coffee-machine",
-      "rug",
-      "estimate",
       "temperature",
-      "idea-box",
-      "qa-board",
-      "agenda",
       "decision",
-      "roll-call",
-      "quiz",
       "stadium",
       "actor",
       "final-state",
@@ -11545,7 +10922,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "checklist",
       "legend",
       "sankey",
-      "focus-button",
       "icon",
       "sticker",
       "plan-board",
@@ -13600,7 +12976,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Folder",
       "Layer",
       "Session",
-      "Facilitator",
       "AI",
       "Team",
       "Participant",

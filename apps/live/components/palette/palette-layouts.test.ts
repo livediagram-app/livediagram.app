@@ -64,8 +64,6 @@ describe('palette layouts', () => {
     ]);
     expect(tileIds('plan-tools')).toEqual([
       'collab:temperature',
-      'collab:estimate',
-      'collab:idea-box',
       'tools:picker',
       'tools:session-timer',
       'tools:session-stopwatch',

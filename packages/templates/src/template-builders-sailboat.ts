@@ -5,8 +5,8 @@
 // back), Rocks breaking the surface ahead (risks we can see coming) and an
 // Island on the horizon (the goal we are sailing to). Each zone is a softly
 // tinted card with a glyph, a prompt and notes in its hue, placed where the
-// metaphor puts it. The shared opening rail sits to the left (with the
-// voyage's running order as an agenda) and Action items close it on the right.
+// metaphor puts it. The shared opening rail sits to the left and Action items
+// close it on the right.
 //
 // Pure: takes a centre (cx, cy), returns a fresh Element[].
 
@@ -174,15 +174,6 @@ const SAIL_ACTIONS = [
   'One debt ticket every sprint · Leo · Tue',
 ];
 
-const VOYAGE = [
-  { label: 'Check last voyage’s actions', minutes: 5 },
-  { label: 'Name the island', minutes: 5 },
-  { label: 'Wind', minutes: 8 },
-  { label: 'Anchors', minutes: 8 },
-  { label: 'Rocks', minutes: 8 },
-  { label: 'Vote and act', minutes: 11 },
-];
-
 // A drawn anchor, the Anchors zone's glyph: ring, shank, stock and arms.
 function anchorGlyph(x: number, y: number, size: number, color: string): Element[] {
   const u = size / 24;
@@ -242,11 +233,9 @@ export function buildSailboat(cx: number, cy: number): Element[] {
   const sx = x0 + railW + gap;
   const sy = top;
 
-  // Rail: the mood, the voyage's running order, the tools, then a note.
+  // Rail: the mood, the tools, then a note.
   const tempH = 340;
-  const agendaY = top + tempH + 20;
-  const agendaH = 340;
-  const buttonsY = agendaY + agendaH + 20;
+  const buttonsY = top + tempH + 20;
   const noteY = buttonsY + buttonH + 20;
   const elements: Element[] = [
     ...retroHeading(
@@ -257,14 +246,6 @@ export function buildSailboat(cx: number, cy: number): Element[] {
       'Name the island first, then work round the boat: the wind, the anchors, the rocks. Vote on what to lift or steer round.',
     ),
     moodCheck(x0, top, railW, tempH, 'How’s the voyage feeling?'),
-    {
-      ...createShape('agenda', x0, agendaY),
-      width: railW,
-      height: agendaH,
-      label: 'The voyage',
-      agendaItems: VOYAGE.map((item) => ({ ...item })),
-      ...CONTENT,
-    },
     ...sessionButtons(x0, buttonsY, railW, { minutes: 8, dots: 3 }),
     railNote(
       x0,

@@ -221,7 +221,7 @@ board, so it opens on **Start Planning**.
   vote on the cards, so a retro needs nothing
   beyond the board and the tab's Vote.
 - **No participant cursors on any tab but a Dashboard**: a Board tab, a Sheet tab, or any other tab shows no one
-  else's cursor (or laser): the board or Sheet covers the canvas a cursor would point at, and
+  else's cursor: the board or Sheet covers the canvas a cursor would point at, and
   presence there is the avatars and each card's editing ring. A Dashboard (a Visualisation tab included) shows them,
   as a diagram does (`planHidesCursors`).
 

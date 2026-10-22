@@ -65,13 +65,101 @@ const LOCATION_STEP_AND_QUICK_START_UI = new Set([
   'Toggled|TemplateModePlan',
 ]);
 
+// Workshop mode's facilitation features (removed 2026-10-21, docs/specs/017-telemetry/telemetry.md "Retired
+// features"): the facilitator role, live polls, the Laser, Spotlight and Avatar modes and their panels, follow-me,
+// presentations and the slide deck, the Workshop and Avatar tours, and the Behaviour and Collaborate elements that
+// went with them. The timer, the dot vote, session buttons, pickers, temperature checks and decision records carry on.
+const WORKSHOP_CANVAS_TYPES = new Set([
+  'Laser',
+  'Spotlight',
+  'AvatarMode',
+  'AvatarMessage',
+  'AvatarMessagePanel',
+  'AvatarPadArrival',
+  'FollowMe',
+  'WaterCooler',
+  'CoffeeMachine',
+]);
+const WORKSHOP_ELEMENT_TYPES = new Set([
+  'Agenda',
+  'AvatarPad',
+  'Avatar-pad',
+  'Bookshelf',
+  'BringFocus',
+  'Chair',
+  'CoffeeMachine',
+  'Coffee-machine',
+  'Desk',
+  'DoneCheck',
+  'Done-check',
+  'Estimate',
+  'Fence',
+  'FocusButton',
+  'Focus-button',
+  'IdeaBox',
+  'Idea-box',
+  'MeetingTable',
+  'Meeting-table',
+  'ModeButton',
+  'Mode-button',
+  'Plant',
+  'PollResult',
+  'QaBoard',
+  'Qa-board',
+  'Quiz',
+  'ReactionPad',
+  'Reaction-pad',
+  'Reveal',
+  'RollCall',
+  'Roll-call',
+  'Room',
+  'Rug',
+  'Sofa',
+  'WaterCooler',
+  'Water-cooler',
+]);
+const WORKSHOP_UI = new Set([
+  'Opened|SessionPoll',
+  'Opened|SlideDeck',
+  'Opened|PresentationSettings',
+  'Opened|PresenterNotes',
+  'Opened|SlideElementDetail',
+  'Opened|HeaderPresent',
+  'Opened|AvatarPanel',
+  'Started|Presentation',
+  'Closed|Presentation',
+  'Added|Slide',
+  'Added|PageSlide',
+  'Added|ItemSlide',
+  'Added|BoardSlide',
+  'Added|AllPageSlides',
+  'Removed|Slide',
+  'Moved|Slide',
+  'Toggled|SlideShown',
+  'Toggled|SlideHidden',
+  'Changed|SlideNotes',
+  'Selected|WorkshopTourFromWelcome',
+]);
+// The UI types the removed features sent under a prefix: a mode's options, a costume, a presenter setting, a tour.
+const WORKSHOP_UI_PREFIXES = ['Laser', 'Spotlight', 'Avatar', 'Presentation-', 'WorkshopTour'];
+
+function isRetiredWorkshopEvent(category: string, action: string, type: string | null): boolean {
+  const t = type ?? '';
+  if (category === 'Facilitator') return true;
+  if (category === 'Canvas') return action === 'Used' && WORKSHOP_CANVAS_TYPES.has(t);
+  if (category === 'Element') return WORKSHOP_ELEMENT_TYPES.has(t);
+  if (category === 'Tab') return t === 'Poll';
+  if (category !== 'UI') return false;
+  return WORKSHOP_UI.has(`${action}|${t}`) || WORKSHOP_UI_PREFIXES.some((p) => t.startsWith(p));
+}
+
 // The New Document wizard itself (removed 2026-10-21, docs/specs/007-editor/new-document-route.md "Creating on
 // arrival"): its Escape / X back-out and the Start Blank link that skipped it. /new asks nothing now; a template link
 // carries on (UI·Used·TemplateLink).
 const NEW_DOCUMENT_WIZARD_UI = new Set(['Closed|NewDocument', 'Used|JustDraw']);
 // Pages mode (removed 2026-10-22, docs/specs/017-telemetry/telemetry.md "Retired features"): its pages, slide pages,
 // articles, logos, wireframes and infographics, their exports, tours and settings, and the agent tools that wrote
-// them. Presentations, Plan's item and board slides, a form cover's moving background and Tab Windows carry on.
+// them. A form cover's moving background and Tab Windows carry on.
 const PAGES_MODE_EVENTS = new Set([
   'Agent|Viewed|Pages',
   'Cli|Used|PageLs',
@@ -215,6 +303,7 @@ function isRetiredEditorModeEvent(category: string, action: string, type: string
 }
 
 export function isRetiredEvent(category: string, action: string, type: string | null): boolean {
+  if (isRetiredWorkshopEvent(category, action, type)) return true;
   if (category === 'Document' && action === 'Reverted') return true;
   if (isPagesModeEvent(`${category}|${action}|${type ?? ''}`)) return true;
   if (isRetiredEditorModeEvent(category, action, type)) return true;

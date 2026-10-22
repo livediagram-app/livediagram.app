@@ -1,6 +1,6 @@
 // Per-participant responses (docs/specs/012-collaboration/participant-responses.md): the shared element field that records
-// ONE value per participant, persistently — the primitive under the estimate
-// card (docs/specs/012-collaboration/estimate-card.md) and the temperature check (docs/specs/012-collaboration/temperature-check.md).
+// ONE value per participant, persistently — the primitive under the temperature check
+// (docs/specs/012-collaboration/temperature-check.md).
 //
 // A LEAF module (types only, like data-shapes.ts) because factories.ts needs
 // these constants at module-init time, and importing them from './index' would
@@ -10,8 +10,8 @@
 // people by (docs/specs/014-identity/auth-and-guest-access.md); `at` is epoch ms, for ordering and for "who answered
 // first" without a second clock.
 //
-// `value` is a STRING because the consumers disagree about what an answer is:
-// '8', 'XL' and '?' are all valid estimates. Consumers parse what they need.
+// `value` is a STRING so a consumer is free to decide what an answer is.
+// Consumers parse what they need.
 export type ParticipantResponse = { participantId: string; value: string; at: number };
 
 // Bound for validate.ts. One entry per participant, so this is really a cap on
@@ -32,8 +32,7 @@ export function setResponse(
   at: number,
 ): ParticipantResponse[] {
   const rest = (responses ?? []).filter((r) => r.participantId !== participantId);
-  // Appended, so the list stays in "order people answered" — which is what
-  // the estimate card's avatar row reads.
+  // Appended, so the list stays in "order people answered".
   return [...rest, { participantId, value, at }];
 }
 
@@ -54,7 +53,7 @@ export function responseOf(
 }
 
 // Summary of a numeric response set — the temperature check's whole readout
-// (docs/specs/012-collaboration/temperature-check.md) and the estimate card's spread (docs/specs/012-collaboration/estimate-card.md).
+// (docs/specs/012-collaboration/temperature-check.md).
 //
 // Non-numeric answers ('?', 'XL') are counted in `count` but excluded from
 // `average` / `min` / `max`: someone who cannot size a story has still
@@ -106,60 +105,4 @@ export function responseTally(
   values: readonly string[],
 ): number[] {
   return values.map((v) => (responses ?? []).filter((r) => r.value === v).length);
-}
-
-// --- Done check (docs/specs/012-collaboration/done-check.md) -------------------------------------------------
-//
-// Built on the same per-participant `responses` field as the estimate card and
-// the temperature check, with one fixed value: being done is not a scale, it
-// is a flag. Pressing again withdraws it (`clearResponse`), so nobody is stuck
-// marked finished on a card they misread.
-
-/** The only value a done-check response ever holds. */
-export const DONE_VALUE = 'done';
-
-export function isDone(
-  responses: ParticipantResponse[] | undefined,
-  participantId: string,
-): boolean {
-  return responseOf(responses, participantId) === DONE_VALUE;
-}
-
-/**
- * Split the CURRENT ROOM into who has marked themselves done and who has not.
- *
- * Live by design. The waiting-on list is derived from the people actually in
- * the room, not from everyone who was ever in it, so somebody who closed the
- * tab stops holding the card open — the alternative is a card that never
- * completes because it is waiting on a person who went home.
- *
- * The flip side is that responses from people who have since left are ignored
- * here rather than deleted: they come back if the person rejoins, which is
- * what a reconnect should do.
- */
-export function doneSplit(
-  responses: ParticipantResponse[] | undefined,
-  participantIds: readonly string[],
-): { done: string[]; waiting: string[] } {
-  const done: string[] = [];
-  const waiting: string[] = [];
-  for (const id of participantIds) {
-    if (isDone(responses, id)) done.push(id);
-    else waiting.push(id);
-  }
-  return { done, waiting };
-}
-
-/**
- * Is the whole room done?
- *
- * An EMPTY room is not done: with nobody present there is nothing to have
- * finished, and a card that flashed "everyone is done" at an empty canvas would
- * be celebrating the absence of people.
- */
-export function allDone(
-  responses: ParticipantResponse[] | undefined,
-  participantIds: readonly string[],
-): boolean {
-  return participantIds.length > 0 && participantIds.every((id) => isDone(responses, id));
 }

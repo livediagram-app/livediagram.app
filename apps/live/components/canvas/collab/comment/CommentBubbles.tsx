@@ -9,7 +9,7 @@ import { AuthorDisc } from '@/components/primitives/AuthorDisc';
 import { relativeSince } from '@/lib/relative-time';
 import { MentionText } from '@/components/primitives/MentionText';
 import { tint } from '../collab-chrome';
-import { QA_ACCENT, stopPointer } from '../qa/qa-parts';
+import { COLLAB_ACCENT, stopPointer } from '../collab-parts';
 
 const CrossGlyph = () => (
   <Glyph size={8} units={16}>
@@ -91,20 +91,20 @@ export function CommentBubbles({
                     key={c.id}
                     className={`group/bubble relative max-w-full whitespace-pre-wrap break-words px-2.5 py-1.5 text-[11.5px] leading-snug ${
                       mine ? 'rounded-2xl rounded-tr-md' : 'rounded-2xl rounded-tl-md'
-                    } ${fresh ? 'qa-enter' : ''}`}
+                    } ${fresh ? 'collab-enter' : ''}`}
                     style={{
                       color: textColor,
-                      backgroundColor: mine ? tint(QA_ACCENT, 0.16) : tint(textColor, 0.06),
+                      backgroundColor: mine ? tint(COLLAB_ACCENT, 0.16) : tint(textColor, 0.06),
                     }}
                   >
                     <MentionText
                       text={c.text}
                       mentions={c.mentions}
                       // Falls back to the text colour where no card accent is in
-                      // scope (the presentation popover reuses these bubbles).
+                      // scope.
                       chipStyle={{
-                        color: `var(--qa-accent-ink, ${textColor})`,
-                        backgroundColor: tint(`var(--qa-accent, ${textColor})`, 0.16),
+                        color: `var(--collab-accent-ink, ${textColor})`,
+                        backgroundColor: tint(`var(--collab-accent, ${textColor})`, 0.16),
                       }}
                     />
                     {/* Your own comments only: the rule the popover applies,

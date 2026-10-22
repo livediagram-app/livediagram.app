@@ -9,10 +9,6 @@
 // editor knows"), and it is a hand-kept list beside the hand-kept key maps in
 // hooks/canvas/editor-shortcut-keys.ts. The test pins the two together.
 
-import { REACTION_LABEL, REACTIONS } from '@liveplanner/document';
-import { AVATAR_BEHAVIOUR_KEYS, AVATAR_BURST_KEYS } from '@/lib/avatar-action-keys';
-import { AVATAR_REACTIONS } from '@/lib/avatar-reactions';
-
 export type ShortcutRow = {
   keys: string[];
   label: string;
@@ -46,7 +42,6 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
       { keys: ['V'], label: 'Select Tool  (or 1)' },
       { keys: ['S'], label: 'Search Elements  (Select where there is no strip)' },
       { keys: ['H'], label: 'Hand Tool' },
-      { keys: ['K'], label: 'Laser Pointer' },
       { keys: ['I'], label: 'Isometric View' },
       { keys: ['⇧', 'drag'], label: 'Rotate Isometric Camera' },
       { keys: ['Z'], label: 'Zen Mode (focus)' },
@@ -98,36 +93,6 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
       { keys: ['Type'], label: 'Replace label of selected element' },
       { keys: ['Escape'], label: 'Cancel current mode, or clear selection' },
       { keys: ['⌘', 'hold'], label: 'Show shortcut badges on palette' },
-    ],
-  },
-  {
-    // Only live while a deck is running (docs/specs/012-collaboration/presentation-mode.md), which is why they are their
-    // own section rather than mixed into Navigate & select: none of them do
-    // anything in the editor.
-    heading: 'While presenting',
-    rows: [
-      { keys: ['→'], label: 'Next slide  (or Space / Page Down / click)' },
-      { keys: ['←'], label: 'Previous slide  (or Page Up)' },
-      { keys: ['Home'], label: 'First slide' },
-      { keys: ['End'], label: 'Last slide' },
-      { keys: ['G'], label: 'Jump to any slide' },
-      { keys: ['N'], label: 'Presenter notes for this slide' },
-      { keys: ['L'], label: 'Laser pointer over the slide' },
-      { keys: ['S'], label: 'Spotlight over the slide' },
-      { keys: ['Click'], label: 'On an element: its note, comments and actions' },
-      { keys: ['Escape'], label: 'Exit the presentation' },
-    ],
-  },
-  {
-    // Only live in Avatar mode (docs/specs/008-canvas/avatar-mode.md "Keyboard actions"), bound by the walk's own
-    // listeners rather than the editor's maps, and built from the action-key maps so a key cannot drift from its row.
-    heading: 'While walking (Avatar mode)',
-    rows: [
-      { keys: ['←', '↑', '→', '↓'], label: 'Walk' },
-      { keys: ['Space'], label: 'Hop and wave a flag' },
-      { keys: ['Enter'], label: 'Send a message' },
-      ...AVATAR_REACTIONS.map((r) => ({ keys: [AVATAR_BEHAVIOUR_KEYS[r.id]], label: r.label })),
-      ...REACTIONS.map((r) => ({ keys: [AVATAR_BURST_KEYS[r]], label: REACTION_LABEL[r] })),
     ],
   },
 ];

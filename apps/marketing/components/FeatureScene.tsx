@@ -17,27 +17,23 @@ import { heroSceneData, type HeroSceneKey } from './hero-scene-data';
 // scenes' SVG stays out of the page's HTML (about 18 KB gzipped on the home page).
 
 // Each scene's board, loaded on its own: a feature page shows one scene, and importing the hero's
-// whole set put all ten boards in its JavaScript. The board is drawn only once the window plays
+// whole set put all nine boards in its JavaScript. The board is drawn only once the window plays
 // (below), and its code is fetched as the window mounts, well before that.
 const BOARD_LOADERS: Record<HeroSceneKey, () => Promise<ComponentType>> = {
   diagram: () => import('./hero-diagram-board').then((m) => m.DiagramBoard),
   draw: () => import('./hero-draw-board').then((m) => m.DrawBoard),
   mindmap: () => import('./hero-mindmap-board').then((m) => m.MindMapBoard),
-  slides: () => import('./hero-slides-board').then((m) => m.SlidesBoard),
   plan: () => import('./hero-plan-board').then((m) => m.PlanBoard),
   sheet: () => import('./hero-sheet-board').then((m) => m.SheetBoard),
   form: () => import('./hero-form-board').then((m) => m.FormBoard),
-  townhall: () => import('./hero-townhall-board').then((m) => m.TownHallBoard),
 };
 const BOARDS: Record<HeroSceneKey, ComponentType> = {
   diagram: dynamic(BOARD_LOADERS.diagram, { ssr: false }),
   draw: dynamic(BOARD_LOADERS.draw, { ssr: false }),
   mindmap: dynamic(BOARD_LOADERS.mindmap, { ssr: false }),
-  slides: dynamic(BOARD_LOADERS.slides, { ssr: false }),
   plan: dynamic(BOARD_LOADERS.plan, { ssr: false }),
   sheet: dynamic(BOARD_LOADERS.sheet, { ssr: false }),
   form: dynamic(BOARD_LOADERS.form, { ssr: false }),
-  townhall: dynamic(BOARD_LOADERS.townhall, { ssr: false }),
 };
 
 // The hero's build cycle (HeroIllustration.tsx CYCLE_MS): the scene's keyframes and its closing

@@ -7,12 +7,10 @@ import {
   ApiArt,
   ArrowsArt,
   AssignedActionsArt,
-  AvatarModeArt,
   BoardCsvArt,
   BoardImportArt,
   BoardWidgetsArt,
   BorderStyleArt,
-  BringFocusArt,
   CanvasBackdropArt,
   CanvasChartsArt,
   CardCommentsArt,
@@ -33,11 +31,8 @@ import {
   EventStormingArt,
   ExpiryArt,
   ExportArt,
-  WorkshopModeArt,
-  FacilitatorArt,
   FindCardArt,
   FlowingArrowsArt,
-  FollowAlongArt,
   FontsArt,
   FormAlertsArt,
   FormBuilderArt,
@@ -45,13 +40,11 @@ import {
   FormSectionsArt,
   FormShareArt,
   FormatPainterArt,
-  FullScreenSlideArt,
   HiddenVotesArt,
   IconsArt,
   ImagesArt,
   IsometricArt,
   LanesArt,
-  LaserArt,
   LayersArt,
   LinkCardArt,
   LiveImageArt,
@@ -70,8 +63,6 @@ import {
   PlanBoardArt,
   PlanViewsArt,
   PresenceArt,
-  PresentLocallyArt,
-  PresenterNotesArt,
   PressureArt,
   RealtimeArt,
   RevokeArt,
@@ -89,9 +80,6 @@ import {
   SheetsArt,
   ShortcutsArt,
   SideBySideArt,
-  SlideDeckArt,
-  SlideTimingArt,
-  SpotlightArt,
   StickyPhotoArt,
   TabCopyArt,
   TabFoldersArt,
@@ -104,7 +92,6 @@ import {
   TimelineFeedArt,
   UndoRedoArt,
   UnlimitedTabsArt,
-  ZenModeArt,
 } from '@/components/FeatureArt';
 import type { FeatureProps } from '@/components/Section';
 
@@ -137,21 +124,21 @@ export type LandingSection = {
 
 /**
  * The feature categories, in the order the landing page tells them: collaborate,
- * then each way of working on a tab (Diagram, Draw, slide decks, Plan's boards, then its sheets and
- * forms). `page.tsx` renders one beat per entry and
+ * then each way of working on a tab (Diagram, Draw, Plan's boards, then its sheets and forms). `page.tsx`
+ * renders one beat per entry and
  * alternates its background by index; `/features/<id>` renders each one's cards.
  */
 export const LANDING_SECTIONS: LandingSection[] = [
   {
     id: 'collaboration',
     label: 'Collaborate',
-    scene: 'townhall',
+    scene: 'mindmap',
     cta: 'Explore collaboration',
     title: 'Work on it together, live',
     description:
-      'Share a link and your team is on the canvas with you: live cursors, comments on any element, actions handed to teammates, and Workshop, a mode for running a workshop, with timers, votes and a spotlight on the thing you mean.',
+      'Share a link and your team is on the canvas with you: live cursors, comments on any element, actions handed to teammates, and timers and votes for running a session together.',
     metaDescription:
-      'Share a link and your team is on the canvas with you: live cursors, comments, assigned actions and workshop tools, from timers and votes to polls.',
+      'Share a link and your team is on the canvas with you: live cursors, comments, assigned actions, timers and dot votes.',
     highlights: [
       'Live presence',
       'Comments on any element',
@@ -226,90 +213,18 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <SessionToolsArt />,
         href: '/help/collaboration/session-tools/',
-        group: 'Present & workshop',
+        group: 'Run a session',
         title: 'Run the session: timer + voting',
         description:
-          'Run the room from the canvas. In Workshop, Timer, Vote and Poll sit in the Session strip at the foot of the canvas: start a countdown or stopwatch the whole room sees, its time on the button, or drop a timer onto the canvas as a session button so a template carries its own running order. Then open dot-voting to surface the group’s priorities. Everyone votes with a budget of dots; results tally in real time, and revealing them starts a guided walkthrough: each top pick lights up and centres on screen while you step through with Next and Previous. Perfect for retros, workshops, and timeboxed planning.',
-      },
-      {
-        art: <WorkshopModeArt />,
-        href: '/help/canvas/workshop-mode/',
-        group: 'Present & workshop',
-        title: 'A mode for running the room',
-        description:
-          'Switch a tab to Workshop and it brings the session to hand: stickies, timers, votes, polls, reveals, quizzes and the Q&A board on its palette, and the Session strip at the foot of the canvas. Retrospectives, Lean Coffee and town halls open there, and Diagram stays about diagrams.',
-      },
-      {
-        art: <FacilitatorArt />,
-        href: '/help/collaboration/facilitator/',
-        group: 'Present & workshop',
-        title: 'One person runs the room',
-        description:
-          'Hand someone the facilitator baton and the tools that run the session answer to them alone: the timer, the votes, the polls, the reveals. No two people starting timers over each other. Nobody holds it by default, anybody can be given it, and the owner can always take it back.',
+          'Run the room from the canvas. Timer and Vote sit in the Session strip at the foot of the canvas: start a countdown or stopwatch the whole room sees, its time on the button, or drop a timer onto the canvas as a session button so a template carries its own running order. Then open dot-voting to surface the group’s priorities. Everyone votes with a budget of dots; results tally in real time, and revealing them starts a guided walkthrough: each top pick lights up and centres on screen while you step through with Next and Previous. Perfect for retros, workshops, and timeboxed planning.',
       },
       {
         art: <SessionToolsArt />,
-        href: '/help/palette/behaviour/',
-        group: 'Present & workshop',
-        title: 'Ask the room if they are done',
-        description:
-          'Drop a Done check and everyone marks themselves finished. The card shows who has and who it is still waiting on, built from whoever is actually in the room, and flashes when the last person marks. Reset it for the next round from its own menu.',
-      },
-      {
-        art: <BringFocusArt />,
-        href: '/help/palette/behaviour/bring-focus/',
-        group: 'Present & workshop',
-        title: 'Ask the room to look here',
-        description:
-          'Drop a Bring Focus element, press it, and everyone else is offered a jump to it: your tab, the thing you mean, centred on their screen. It asks rather than drags, so nobody loses the place they were working in.',
-      },
-      {
-        art: <FacilitatorArt />,
-        href: '/help/palette/collaborate/agendas/',
-        group: 'Present & workshop',
+        href: '/help/palette/collaborate/decision-records/',
+        group: 'Run a session',
         title: 'Keep the record of the meeting',
         description:
-          'An agenda holds the run of the session, and pressing a segment starts the timer for it. A roll call freezes who was in the room, a picker chooses someone at random so nobody has to volunteer, and a decision record keeps what was decided, why and when, beside the thing it decided.',
-      },
-      {
-        art: <SpotlightArt />,
-        href: '/help/selection-modes/spotlight/',
-        group: 'Present & workshop',
-        title: 'Spotlight the room on one thing',
-        description:
-          'Switch on Spotlight and the canvas dims under a soft shroud, with only a circle of light around your cursor. Walk the room through a busy canvas one piece at a time. Left-click grows the light, right-click shrinks it, and it is a local view aid, so it never gets in a viewer’s way.',
-      },
-      {
-        art: <LaserArt />,
-        href: '/help/selection-modes/laser/',
-        group: 'Present & workshop',
-        title: 'Laser pointer for presenting',
-        description:
-          'Switch to the laser tool and your cursor leaves a glowing trail everyone can see. Point at the thing you mean while you talk it through. Trails fade on their own.',
-      },
-      {
-        art: <FollowAlongArt />,
-        href: '/help/canvas/follow-along/',
-        group: 'Present & workshop',
-        title: 'Follow someone\u2019s view',
-        description:
-          'Press Follow beside a teammate and your canvas goes where theirs goes: their tab, their pan, their exact zoom. A pill says who you are following, and the moment you move the canvas yourself, you have your own view back. Anyone can follow anyone, even on a view-only link.',
-      },
-      {
-        art: <AvatarModeArt />,
-        href: '/help/selection-modes/avatar-mode/',
-        group: 'Present & workshop',
-        title: 'Walk a character across your canvas',
-        description:
-          'Avatar mode drops a little pixel character onto the canvas. Click to walk it to whatever you are talking about, steer with the arrow keys, and press Space to hop and wave a flag. Dress it how you like (gender, clothing, hair and size, remembered in your browser), and the box it stands on gets a ring. The canvas is read-only while you walk, and on a shared document everyone sees everyone else walking about in their own colour.',
-      },
-      {
-        art: <AvatarModeArt />,
-        href: '/help/palette/behaviour/',
-        group: 'Present & workshop',
-        title: 'Celebrate on the canvas',
-        description:
-          'Reaction pads throw confetti, sparkles, hearts, applause or fireworks over the canvas for everyone in the room. Press one, or walk an Avatar-mode character onto it. Nothing is saved: a reaction is a moment, not a mark on the canvas. For a mark that stays, drop one of around 190 emoji stickers or 32 word badges like APPROVED and BLOCKED.',
+          'A picker chooses someone at random so nobody has to volunteer, a temperature check reads the room, and a decision record keeps what was decided, why and when, beside the thing it decided.',
       },
       {
         art: <ShareLinksArt />,
@@ -536,7 +451,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Templates & themes',
         title: 'A hundred and fifty starter templates',
         description:
-          'Start from a board that already makes sense: flowcharts and mind maps, retrospectives and Kanban, roadmaps and org charts, meeting agendas and risk matrices, pub quizzes and icebreakers, budgets and invoices, wireframes, architecture and UML, even a to-scale floor plan. Browse them by the job to be done in the picker, edit one, or start blank.',
+          'Start from a board that already makes sense: flowcharts and mind maps, retrospectives and Kanban, roadmaps and org charts, risk matrices, budgets and invoices, wireframes, architecture and UML, even a to-scale floor plan. Browse them by the job to be done in the picker, edit one, or start blank.',
       },
       {
         art: <ThemesArt />,
@@ -648,7 +563,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Neat without trying',
         title: 'Find or run anything with \u2318K',
         description:
-          'One box finds your documents, tabs and elements, even text inside table cells, and runs commands by name: type \u201ctidy\u201d for Auto Layout or \u201claser\u201d for the pointer. It adds a shape or icon by name, jumps to a setting, and opens the help article for whatever you just searched.',
+          'One box finds your documents, tabs and elements, even text inside table cells, and runs commands by name: type \u201ctidy\u201d for Auto Layout or \u201ceraser\u201d for the eraser. It adds a shape or icon by name, jumps to a setting, and opens the help article for whatever you just searched.',
       },
       {
         art: <UnlimitedTabsArt />,
@@ -860,67 +775,6 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'A board in light or dark',
         description:
           'Put Plain, Dots or Grid behind your ink, a choice that is yours alone. Ink and the stock marker colours adjust so they read on a light board and a dark one.',
-      },
-    ],
-  },
-  {
-    id: 'slides',
-    label: 'Slide decks',
-    scene: 'slides',
-    cta: 'Explore slide decks',
-    title: 'Build the deck, then present it',
-    description:
-      'Make a slide from what you drew, then present the deck full screen on your screen alone, your notes behind a button. Slides reference your diagram, so they never drift from it.',
-    metaDescription:
-      'Slide decks made from what you drew, presented full screen with private notes. Slides stay in step with your diagram.',
-    highlights: [
-      'Slides made from what you drew',
-      'One deck across every tab',
-      'Notes only you open',
-      'Your screen, not everyone else’s',
-    ],
-    items: [
-      {
-        art: <SlideDeckArt />,
-        href: '/help/selection-modes/slide-deck/',
-        title: 'Slides made from what you drew',
-        description:
-          'A slide is simply the elements you picked, from one tab. Select a cluster on the canvas and make it a slide; the arrows between them come along on their own. Slides reference your elements rather than copying them, so editing a shape updates every slide it appears on and the deck can never drift from the diagram.',
-      },
-      {
-        art: <FullScreenSlideArt />,
-        href: '/help/selection-modes/slide-deck/',
-        title: 'One deck across every tab',
-        description:
-          'Slide one can come from your architecture tab and slide two from the roadmap. Order them however you like in the Slide Deck panel: drag to rearrange, rename, duplicate, or hide a slide you might want next week without deleting it. The deck is saved with the document, so a teammate opens it and sees the same talk.',
-      },
-      {
-        art: <PresenterNotesArt />,
-        href: '/help/selection-modes/slide-deck/',
-        title: 'Notes only you open',
-        description:
-          'Write what you mean to say over each slide. During the presentation they sit behind a button in the corner, so nothing about your script is on screen until you ask for it. Clicking any element shows its note, comments and assigned action too, for the question you did not plan for.',
-      },
-      {
-        art: <SlideTimingArt />,
-        href: '/help/selection-modes/slide-deck/presenter-controls/',
-        title: 'Keep the talk on time',
-        description:
-          'Give each slide a few minutes when you build the deck. While you present, an elapsed clock counts up and the slide\u2019s budget turns amber when you run over, on your screen only. Both are off until you want them, and running over never moves the deck on for you.',
-      },
-      {
-        art: <PresentLocallyArt />,
-        href: '/help/selection-modes/slide-deck/',
-        title: 'Your screen, not everyone else’s',
-        description:
-          'Presenting shows the deck on your screen and nowhere else. Nobody is dragged into your slide, nobody’s view moves, and collaborators with the document open carry on working. You share your screen the way you already do. Nothing on a slide can be changed by a stray click, so a projector is safe. To leave a deck running on a screen, set it to advance every 5 to 60 seconds and loop back to the start.',
-      },
-      {
-        art: <ZenModeArt />,
-        href: '/help/tools/zen-mode/',
-        title: 'Zen mode for focus',
-        description:
-          'Hit Z, or the zen button by the laser pointer, and every toolbar, panel, and tab bar drops away, leaving just your canvas. Only the zoom controls stay, with an exit button right beside them. Press Z or Esc to bring it all back.',
       },
     ],
   },

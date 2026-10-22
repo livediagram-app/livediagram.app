@@ -11,17 +11,7 @@ import { toGallery, type GalleryTemplate } from '@/lib/template-gallery';
 export const SECTION_TEMPLATES_MAX = 9;
 
 export const SECTION_TEMPLATE_KINDS: Readonly<Record<string, readonly TemplateKind[]>> = {
-  collaboration: [
-    'retrospective',
-    'brainstorm',
-    'workshop-board',
-    'meeting-agenda',
-    'town-hall',
-    'lean-coffee',
-    'affinity-map',
-    'crazy-eights',
-    'virtual-office',
-  ],
+  collaboration: ['retrospective', 'brainstorm', 'workshop-board', 'affinity-map', 'crazy-eights'],
   diagrams: [
     'flowchart',
     'system-architecture',

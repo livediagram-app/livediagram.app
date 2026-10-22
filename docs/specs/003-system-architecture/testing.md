@@ -262,7 +262,7 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     layer mutations, auto-layout (clusters, styles, lanes, crossings), mind maps,
     Mermaid import/export (flowchart, state, ER), graph authoring, freehand
     strokes, rich text, tables, comments + mentions, element ops and
-    deltas, sessions (Q&A, polls, quizzes), slide decks, tab kinds and the
+    deltas, sessions (timer, votes), tab kinds and the
     event-storming lanes + photo placement, names, themes, element shadows,
     the headless SVG renderer's fidelity and coverage, validation.
   - `apps/live`: the lib layer's helpers (api client + Offline Mode store,

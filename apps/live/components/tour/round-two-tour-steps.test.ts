@@ -119,7 +119,6 @@ describe('portalTourSteps', () => {
       'portal',
       'travel',
       'menu',
-      'walk',
       'outro',
     ]);
     const dim = portalTourSteps({ ...env, linked: false, touch: true });

@@ -56,14 +56,11 @@ export function tileHandler(
   }
   switch (a.type) {
     case 'shape':
-      // The creation-time choice rides along, so "Add poll" places a poll and
-      // a confetti tile places a confetti pad (docs/specs/012-collaboration/session-button.md, docs/specs/009-elements/reaction-pad.md).
+      // The creation-time choice rides along, so "Add Dot Vote" places a vote
+      // (docs/specs/012-collaboration/session-button.md).
       return () =>
         actions.addShape(a.kind, {
           session: a.session,
-          reaction: a.reaction,
-          mode: a.mode,
-          estimateScale: a.estimateScale,
           plan: a.plan,
           variant: a.variant,
           name: tileCaption(def.label, def.caption),
@@ -114,15 +111,12 @@ export function tileActive(
   const a = def.action;
   switch (a.type) {
     case 'shape':
-      // Matched on the CHOICE too, or all five reaction tiles would light up
+      // Matched on the CHOICE too, or every session tile would light up
       // together while one of them was armed.
       return (
         pendingDraw.type === 'shape' &&
         pendingDraw.kind === a.kind &&
         pendingDraw.session === a.session &&
-        pendingDraw.reaction === a.reaction &&
-        pendingDraw.mode === a.mode &&
-        pendingDraw.estimateScale === a.estimateScale &&
         pendingDraw.plan === a.plan &&
         pendingDraw.variant === a.variant
       );
@@ -205,11 +199,7 @@ function TileButton({
       description={def.description}
       onClick={onClick}
       dragKind={a.type === 'shape' ? a.kind : undefined}
-      dragChoice={
-        a.type === 'shape'
-          ? (a.session ?? a.reaction ?? a.mode ?? a.estimateScale ?? a.plan ?? a.variant)
-          : undefined
-      }
+      dragChoice={a.type === 'shape' ? (a.session ?? a.plan ?? a.variant) : undefined}
       draggable={otherDrag !== undefined || undefined}
       onDragStart={otherDrag}
       filled={def.filled}

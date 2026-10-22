@@ -18,9 +18,7 @@ import { useCapabilities } from '@/hooks/persistence/useCapabilities';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { PLAN_TOUR_TRACKS, planTrackSeen, requestPlanTourRelaunch } from '@/lib/plan-tour';
-import { requestWorkshopTourRelaunch } from '@/lib/workshop-tour';
 import { requestFormTourRelaunch } from '@/lib/form-tour';
-import { requestAvatarTourRelaunch } from '@/lib/avatar-tour';
 import { track } from '@/lib/telemetry';
 import {
   visibleCategories,
@@ -165,20 +163,12 @@ export function SettingsDialog({
   // Plan tour offers itself on entering Plan; turning a track's row on from off reruns it in place.
   const planOwed = PLAN_TOUR_TRACKS.filter((t) => !planTrackSeen(settings, t));
   const planOwedAtOpen = useRef(planOwed);
-  // Tours › "Workshop Tour" (docs/specs/012-collaboration/workshop-tour.md): as the Plan tour's.
-  const workshopTourSeen = settings.workshopTourSeen === true;
-  const workshopTourSeenAtOpen = useRef(workshopTourSeen);
   // Tours › "Forms Tour" (docs/specs/030-forms/forms.md "The Forms tour"): as the Plan tour's.
   const formTourSeen = settings.formTourSeen === true;
   const formTourSeenAtOpen = useRef(formTourSeen);
-  // Tours › "Avatar Tour" (docs/specs/008-canvas/avatar-tour.md): as the Plan tour's.
-  const avatarTourSeen = settings.avatarTourSeen === true;
-  const avatarTourSeenAtOpen = useRef(avatarTourSeen);
   const close = () => {
     if (planOwed.some((t) => !planOwedAtOpen.current.includes(t))) requestPlanTourRelaunch();
-    if (!workshopTourSeen && workshopTourSeenAtOpen.current) requestWorkshopTourRelaunch();
     if (!formTourSeen && formTourSeenAtOpen.current) requestFormTourRelaunch();
-    if (!avatarTourSeen && avatarTourSeenAtOpen.current) requestAvatarTourRelaunch();
     onClose();
   };
 

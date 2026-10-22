@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// docs/specs/012-collaboration/session-tools.md "The Session strip": Timer, Vote and Poll in one strip,
+// docs/specs/012-collaboration/session-tools.md "The Session strip": Timer and Vote in one strip,
 // always there for an editor, only the running ones for a view-role visitor, and the Timer showing
 // its clock while a timer runs.
 
@@ -29,7 +29,6 @@ function strip(overrides: Partial<Parameters<typeof SessionClusterStrip>[0]> = {
     <SessionClusterStrip
       timer={null}
       voteRunning={false}
-      pollRunning={false}
       canStart
       open={null}
       onToggle={onToggle}
@@ -40,11 +39,10 @@ function strip(overrides: Partial<Parameters<typeof SessionClusterStrip>[0]> = {
 }
 
 describe('SessionClusterStrip', () => {
-  it('gives an editor all three tools while nothing runs, as icons', () => {
+  it('gives an editor both tools while nothing runs, as icons', () => {
     strip();
     expect(screen.getByRole('button', { name: 'Open Timer' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Start a Vote' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Start a Poll' })).toBeTruthy();
     expect(screen.queryByText(/\d:\d\d/)).toBeNull();
   });
 
@@ -53,7 +51,6 @@ describe('SessionClusterStrip', () => {
       <SessionClusterStrip
         timer={null}
         voteRunning={false}
-        pollRunning={false}
         canStart={false}
         open={null}
         onToggle={() => {}}
@@ -66,7 +63,6 @@ describe('SessionClusterStrip', () => {
     strip({ canStart: false, timer: paused, voteRunning: true });
     expect(screen.getByRole('button', { name: /^Timer / })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Open Vote' })).toBeTruthy();
-    expect(screen.queryByRole('button', { name: /Poll/ })).toBeNull();
   });
 
   it('shows the running timer clock on its button', () => {
@@ -89,9 +85,6 @@ describe('SessionClusterStrip', () => {
     const timer = screen.getByRole('button', { name: /^Timer / });
     fireEvent.click(timer);
     expect(onToggle).toHaveBeenCalledWith('session-timer', timer);
-    const poll = screen.getByRole('button', { name: 'Start a Poll' });
-    fireEvent.click(poll);
-    expect(onToggle).toHaveBeenCalledWith('session-poll', poll);
   });
 
   it('carries your dots left on the Vote button while casting is open', () => {
@@ -99,50 +92,16 @@ describe('SessionClusterStrip', () => {
     const vote = screen.getByRole('button', { name: 'Open Vote (2 dots left)' });
     expect(vote.textContent).toContain('2');
   });
-
-  it('leaves Poll out where the mode does not offer it', () => {
-    strip({ offersPoll: false, pollRunning: true });
-    expect(screen.queryByRole('button', { name: /Poll/ })).toBeNull();
-    expect(screen.getByRole('button', { name: 'Open Timer' })).toBeTruthy();
-  });
-});
-
-describe('a running Vote or Poll only', () => {
-  // A strip that starts nothing and offers no Timer.
-  const runningOnly = { canStart: false, offersTimer: false } as const;
-
-  it('shows nothing while nothing runs, even to an editor', () => {
-    strip(runningOnly);
-    expect(screen.queryByRole('button')).toBeNull();
-  });
-
-  it('shows the running vote and poll so they can be controlled', () => {
-    strip({ ...runningOnly, voteRunning: true, pollRunning: true });
-    expect(screen.getByRole('button', { name: 'Open Vote' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Open Poll' })).toBeTruthy();
-    expect(screen.queryByRole('button', { name: /Timer/ })).toBeNull();
-  });
-
-  it('shows only the one that runs', () => {
-    strip({ ...runningOnly, pollRunning: true });
-    expect(screen.getByRole('button', { name: 'Open Poll' })).toBeTruthy();
-    expect(screen.queryByRole('button', { name: /Vote/ })).toBeNull();
-  });
-
-  it('never shows a Timer, running or not', () => {
-    strip({ ...runningOnly, timer: paused });
-    expect(screen.queryByRole('button')).toBeNull();
-  });
 });
 
 describe('sessionStripTools', () => {
-  it('offers Timer and Vote on a Plan tab, none where Plan voting is off', () => {
-    expect(sessionStripTools()).toEqual({ timer: true, vote: true, poll: false });
+  it('offers Timer and Vote where cards take the dots, none where voting is off', () => {
+    expect(sessionStripTools()).toEqual({ timer: true, vote: true });
     expect(sessionStripTools(false, false)).toBeNull();
   });
 
-  it('keeps all three on an event-storming board', () => {
-    expect(sessionStripTools(true)).toEqual({ timer: true, vote: true, poll: true });
+  it('keeps both on an event-storming board', () => {
+    expect(sessionStripTools(true, false)).toEqual({ timer: true, vote: true });
   });
 });
 
@@ -154,9 +113,9 @@ describe('stripCanStart', () => {
 });
 
 describe('stripSegmentGone', () => {
-  const idle = { timer: false, vote: false, poll: false };
-  const all = { timer: true, vote: true, poll: true };
-  const board = sessionStripTools(true);
+  const idle = { timer: false, vote: false };
+  const all = { timer: true, vote: true };
+  const tools = sessionStripTools();
 
   it('keeps nothing open when no popover is', () => {
     expect(stripSegmentGone({ segment: null, tools: null, readOnly: false, running: idle })).toBe(
@@ -164,23 +123,19 @@ describe('stripSegmentGone', () => {
     );
   });
 
-  it('closes when the strip or that tool leaves', () => {
-    const at = { readOnly: false, running: all };
-    expect(stripSegmentGone({ ...at, segment: 'session-vote', tools: null })).toBe(true);
-    expect(stripSegmentGone({ ...at, segment: 'session-poll', tools: sessionStripTools() })).toBe(
-      true,
-    );
+  it('closes when the strip leaves', () => {
+    expect(
+      stripSegmentGone({ segment: 'session-vote', tools: null, readOnly: false, running: all }),
+    ).toBe(true);
   });
 
   it("keeps an editor's idle popover open where the strip offers starting one", () => {
-    for (const segment of ['session-timer', 'session-vote', 'session-poll'] as const)
-      expect(stripSegmentGone({ segment, tools: board, readOnly: false, running: idle })).toBe(
-        false,
-      );
+    for (const segment of ['session-timer', 'session-vote'] as const)
+      expect(stripSegmentGone({ segment, tools, readOnly: false, running: idle })).toBe(false);
   });
 
   it("closes a view role's popover when its tool ends", () => {
-    const at = { tools: board, readOnly: true };
+    const at = { tools, readOnly: true };
     expect(stripSegmentGone({ ...at, segment: 'session-timer', running: all })).toBe(false);
     expect(stripSegmentGone({ ...at, segment: 'session-timer', running: idle })).toBe(true);
   });

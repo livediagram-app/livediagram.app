@@ -36,7 +36,6 @@ function liveDoc(over: Partial<DocumentDTO> = {}): DocumentDTO {
     shareable: false,
     shareCode: null,
     folderId: null,
-    presentation: null,
     teamId: null,
     source: null,
     savedAt: 1000,

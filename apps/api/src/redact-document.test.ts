@@ -74,7 +74,7 @@ describe('redactDocumentForScope', () => {
     { id: 't1', documentId: 'd1', name: 'Pricing', orderIndex: 0, updatedAt: 5, folder: 'Money' },
     { id: 't2', documentId: 'd1', name: 'Roadmap', orderIndex: 1, updatedAt: 6 },
   ];
-  const full = { ...liveDoc, tabs, presentation: '{"slides":[]}' } as DocumentDTO;
+  const full = { ...liveDoc, tabs } as DocumentDTO;
 
   it('marks every tab outside the scope out of scope, keeping only id and position', () => {
     const out = redactDocumentForScope(full, 't2');
@@ -90,10 +90,6 @@ describe('redactDocumentForScope', () => {
 
   it('leaves the scoped tab as it is', () => {
     expect(redactDocumentForScope(full, 't2').tabs[1]).toEqual(tabs[1]);
-  });
-
-  it('drops the slide deck, which spans tabs', () => {
-    expect(redactDocumentForScope(full, 't2').presentation).toBeNull();
   });
 
   it('hands an unscoped reader the document untouched', () => {

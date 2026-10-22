@@ -59,7 +59,7 @@ export async function enableDebugLogs(context: BrowserContext): Promise<void> {
   );
 }
 
-// The Plan, Avatar, Forms and element tours (docs/specs/008-canvas/avatar-tour.md,
+// The Plan, Forms and element tours (-tour.md,
 // docs/specs/030-forms/forms.md) offer themselves 800 ms into their modes and their overlays would take the presses of every spec there; they have
 // their own unit tests. Marked seen for every page of the context.
 async function markModeToursSeen(context: BrowserContext): Promise<void> {
@@ -68,7 +68,6 @@ async function markModeToursSeen(context: BrowserContext): Promise<void> {
     try {
       const prefs = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, unknown>;
       if (
-        prefs.avatarTourSeen !== true ||
         prefs.formTourSeen !== true ||
         prefs.planTourSeen !== true ||
         !Array.isArray(prefs.elementTourKinds)
@@ -77,7 +76,6 @@ async function markModeToursSeen(context: BrowserContext): Promise<void> {
           key,
           JSON.stringify({
             ...prefs,
-            avatarTourSeen: true,
             formTourSeen: true,
             // The Plan tour is mounted on every tab now that Plan is the one mode.
             planTourSeen: true,
@@ -259,21 +257,9 @@ export async function openStartBlank(page: Page): Promise<void> {
 }
 
 // A blank tab in Workshop mode straight away: /new?template=blank-session creates it with no wizard
-// (docs/specs/012-collaboration/workshop-mode.md "Templates"). Where the session kit lives: the
+// (docs/specs/012-collaboration/session-tools.md). Where the session kit lives: the
 // Collaborate and Stickers categories and the Session strip.
 export async function openBlankSession(page: Page): Promise<void> {
-  // The Workshop tour offers itself 800 ms into Workshop (WorkshopTourHost OFFER_DELAY_MS) and its
-  // overlay would take these specs' presses; it has its own unit tests.
-  await page.addInitScript(() => {
-    const key = 'liveplanner:user-preferences:v1';
-    try {
-      const prefs = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, unknown>;
-      if (prefs.workshopTourSeen !== true)
-        localStorage.setItem(key, JSON.stringify({ ...prefs, workshopTourSeen: true }));
-    } catch {
-      // No storage: nothing to mark.
-    }
-  });
   await page.goto('/new?template=blank-session');
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
   await dismissQuickTour(page);

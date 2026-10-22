@@ -31,7 +31,6 @@ const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
   Folder: '#a855f7',
   Layer: '#7c3aed',
   Session: '#64748b',
-  Facilitator: '#a855f7',
   AI: '#eab308',
   Team: '#2563eb',
   Participant: '#dc2626',

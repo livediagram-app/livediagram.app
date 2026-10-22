@@ -62,7 +62,7 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('UI', 'Opened', 'SettingsAi')).toBe(false);
   });
 
-  it('retires Pages mode, not the presentations, slides and backgrounds that outlive it', () => {
+  it('retires Pages mode, not the backgrounds and windows that outlive it', () => {
     expect(isRetiredEvent('Tab', 'Changed', 'PageAdded')).toBe(true);
     expect(isRetiredEvent('Tab', 'Changed', 'PageKindLogo')).toBe(true);
     expect(isRetiredEvent('Tab', 'Changed', 'WireframeDeviceIphone')).toBe(true);
@@ -78,8 +78,6 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('UI', 'Added', 'PageSlide')).toBe(true);
     expect(isRetiredEvent('Mcp', 'Used', 'WriteArticle')).toBe(true);
     expect(isRetiredEvent('Cli', 'Used', 'PageSet')).toBe(true);
-    expect(isRetiredEvent('UI', 'Added', 'Slide')).toBe(false);
-    expect(isRetiredEvent('UI', 'Added', 'BoardSlide')).toBe(false);
     expect(isRetiredEvent('Tab', 'Changed', 'PageBackgroundAnimated')).toBe(false);
     expect(isRetiredEvent('UI', 'Used', 'TabWindowOpen')).toBe(false);
     expect(isRetiredEvent('UI', 'Started', 'PlanTour')).toBe(false);
@@ -141,6 +139,24 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('UI', 'View', 'PlanTourStepBoard')).toBe(false);
     expect(isRetiredEvent('UI', 'View', 'SankeyTourStepOutro')).toBe(false);
     expect(isRetiredEvent('UI', 'Toggled', 'PlanTourSeenOff')).toBe(false);
+  });
+
+  it("retires Workshop mode's facilitation features, not the session tools Plan keeps", () => {
+    expect(isRetiredEvent('Facilitator', 'Started', 'Claimed')).toBe(true);
+    expect(isRetiredEvent('Tab', 'Started', 'Poll')).toBe(true);
+    expect(isRetiredEvent('Canvas', 'Used', 'Laser')).toBe(true);
+    expect(isRetiredEvent('Canvas', 'Used', 'FollowMe')).toBe(true);
+    expect(isRetiredEvent('Element', 'Added', 'Quiz')).toBe(true);
+    expect(isRetiredEvent('Element', 'Used', 'ReactionPad')).toBe(true);
+    expect(isRetiredEvent('UI', 'Started', 'Presentation')).toBe(true);
+    expect(isRetiredEvent('UI', 'Changed', 'AvatarClothing')).toBe(true);
+    expect(isRetiredEvent('UI', 'View', 'WorkshopTourStepOutro')).toBe(true);
+    expect(isRetiredEvent('Tab', 'Started', 'Vote')).toBe(false);
+    expect(isRetiredEvent('Tab', 'Started', 'CountdownTimer')).toBe(false);
+    expect(isRetiredEvent('Canvas', 'Used', 'Isometric')).toBe(false);
+    expect(isRetiredEvent('Element', 'Added', 'Temperature')).toBe(false);
+    expect(isRetiredEvent('Element', 'Added', 'Picker')).toBe(false);
+    expect(isRetiredEvent('UI', 'Opened', 'SessionVote')).toBe(false);
   });
 
   it('keeps everything that still exists', () => {

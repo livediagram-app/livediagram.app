@@ -18,8 +18,7 @@ export type TemplateCategory =
   | 'hierarchies'
   | 'design'
   | 'presentations'
-  | 'technical'
-  | 'games';
+  | 'technical';
 
 // Declared in any order: TEMPLATE_CATEGORIES below sorts them by label, so a new category lands in place. Descriptions are kept to a similar length (40 to 50 characters) so the folded
 // category tiles read as an even set. Ids survive where the meaning did (links, tests and the agents' catalogue name
@@ -60,7 +59,7 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
     id: 'meetings',
     label: 'Workshops',
     searchWords: 'meetings',
-    description: 'Agendas, retros, Q&A and workshop formats.',
+    description: 'Retros, brainstorms and workshop formats.',
   },
   {
     id: 'mindmaps',
@@ -107,12 +106,6 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
     id: 'technical',
     label: 'Technical',
     description: 'Architecture, schema and sequence diagrams.',
-  },
-  {
-    id: 'games',
-    label: 'Quizzes & Games',
-    searchWords: 'quiz trivia icebreaker icebreakers warm up energiser fun team building',
-    description: 'Quizzes, icebreakers and games for the room.',
   },
 ];
 
@@ -162,12 +155,9 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'rsvp-form': 'forms',
   'job-application-form': 'forms',
   'contact-form': 'forms',
-  // Meetings and Workshops: agendas, retros, live Q&A and the boards a team runs together.
-  'meeting-agenda': 'meetings',
-  'lean-coffee': 'meetings',
+  // Meetings and Workshops: retros and the boards a team runs together.
   brainstorm: 'meetings',
   'workshop-board': 'meetings',
-  'town-hall': 'meetings',
   retrospective: 'meetings',
   'start-stop-continue': 'meetings',
   'mad-sad-glad': 'meetings',
@@ -176,11 +166,6 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'team-retro': 'meetings',
   'pre-mortem': 'meetings',
   'feedback-board': 'meetings',
-  // The spaces to walk round in Avatar mode (docs/specs/012-collaboration/virtual-office-template.md).
-  'virtual-office': 'meetings',
-  'coworking-space': 'meetings',
-  'team-pod': 'meetings',
-  'all-hands-hall': 'meetings',
   // Brainstorm: getting ideas out of heads.
   mindmap: 'mindmaps',
   'mindmap-tree': 'mindmaps',
@@ -248,12 +233,6 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'incident-postmortem': 'technical',
   'threat-model': 'technical',
   'value-stream-map': 'technical',
-  // Quizzes and Games: the lighter end of running a room.
-  'pub-quiz': 'games',
-  'icebreaker-questions': 'games',
-  'two-truths-and-a-lie': 'games',
-  'would-you-rather': 'games',
-  'people-bingo': 'games',
 };
 
 // Cross-listing: the other categories a template is also shown in, where someone would genuinely look for it there.
@@ -287,7 +266,7 @@ export const TEMPLATE_ALSO_IN: Readonly<
   'prioritization-matrix': ['planning'],
   // Workshop formats.
   'crazy-eights': ['meetings', 'design'],
-  'doodle-warmup': ['meetings', 'games'],
+  'doodle-warmup': ['meetings'],
   'event-storming': ['meetings'],
   'incident-postmortem': ['meetings'],
   // Research synthesis and site structure are design work too.

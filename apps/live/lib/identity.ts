@@ -21,7 +21,7 @@ export const OFFLINE_AFTER_MS = 60 * 60 * 1000;
 export type Participant = {
   id: string;
   // The id this person writes into the DOCUMENT for anything recorded
-  // per participant — a done check's mark, an estimate, a temperature
+  // per participant — a temperature reading or a dot
   // (docs/specs/012-collaboration/participant-responses.md). Separate from `id` because `id` cannot do that job: for
   // ourselves it is the owner id, which must never be published, and for
   // a peer it is the room's per-socket presence id, which changes on
@@ -85,7 +85,7 @@ export function uniqueParticipants(participants: readonly Participant[]): Partic
 
 // Ourselves as a row of the room, carrying our own level as every peer's row carries theirs (the room stamps a
 // peer's server-verified role on presence; our own row is local and had none). Without it a Viewer's own screen
-// counted the Viewer among those who can answer, so its Done check waited on it forever.
+// counted the Viewer among those who can answer, so a vote's turnout waited on it forever.
 export function selfInRoom(self: Participant, level: AccessLevel): Participant {
   return { ...self, role: level };
 }
@@ -93,7 +93,7 @@ export function selfInRoom(self: Participant, level: AccessLevel): Participant {
 // The keys of everyone in the room who CAN answer a per-participant card
 // (docs/specs/012-collaboration/participant-responses.md "Who counts"): one per
 // person, leaving out view-link guests (who can't write) and agent rows (never
-// counted as a person). What a Done check waits on and an Estimate counts.
+// counted as a person). What a vote's turnout counts.
 export function answeringKeys(participants: readonly Participant[]): string[] {
   return uniqueParticipants(participants)
     .filter((p) => p.role !== 'view' && !p.agent)

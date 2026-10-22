@@ -34,7 +34,7 @@ felt inconsistent and janky.
 A picker shows up to three groups, always in this order, each under a small heading:
 
 1. **Theme Palette**, in every picker in the editor, whatever the mode or surface (an element, a Plan card, card type
-   or column, a form cover, the laser): the active tab's theme colours, as the
+   or column, a form cover): the active tab's theme colours, as the
    theme derives them ([Canvas and palette](../008-canvas/canvas-and-palette.md#colours)), each named by a
    colour word, never two alike ("Blue", "Light blue", "Deep blue"). A Quick Style row's More colours shows the
    row's own colours here instead ([Quick Style Panel](../008-canvas/quick-style-panel.md#colours)). Outside
@@ -53,7 +53,7 @@ A picker shows up to three groups, always in this order, each under a small head
    | Blue        | Blue      |
    | Violet      | Violet    |
    | Pink        | Pink      |
-   - The **strong tone** is for lines, text, markers, accents, card types, columns, the laser and chart
+   - The **strong tone** is for lines, text, markers, accents, card types, columns and chart
      slices. It is the stock set (Ink and eight hues, stored by name, [Stroke points](../006-document/stroke-points.md)
      for the strokes that carry it) plus Grey: each colour is tuned for the surface it is drawn on, darker on light paper and lighter on dark, so
      it is at least 4.5:1 on that surface.
@@ -65,7 +65,7 @@ A picker shows up to three groups, always in this order, each under a small head
 3. **Custom Colours**: the colours picked with **Add a custom colour** in this document, newest first, at most twelve, then **Add a custom colour** (four coloured dots).
 
 **Leading options** go first in the first group: **no colour** where a surface can have none (No ... colour,
-None, No colour, Default colour, No highlight, Paper), and the surface's own named defaults (the laser's Your colour).
+None, No colour, Default colour, No highlight, Paper), and the surface's own named defaults (the ).
 
 ## Custom colours
 
@@ -113,7 +113,6 @@ exactly as it did:
   `penTextColour`), as Ink and the stock colours already are, and drawn in its version for the canvas. An
   element with no name field (a table, a note's border) stores the colour's light-paper hex. A fill stores
   its `#rrggbb`; a theme colour stores what it stored before.
-- The laser stores a standard colour by name, Your colour as `presence`, or a custom `#rrggbb`.
 - Off the canvas (Plan, form covers, charts, themes), a standard colour stores its
   `#rrggbb` for light paper. A Plan card type and a card's own Colour accept any `#rrggbb`.
 

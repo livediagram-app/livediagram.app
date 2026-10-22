@@ -114,8 +114,8 @@ opens nothing.
   arrangement, and a fourth option would break the row rhythm.
 - **Text alignment** is the horizontal axis only. Vertical alignment is the less-used half and stays
   in the menu's 3×3 grid. It shows only where it moves something: not on self-drawing kinds (no
-  label) and not on kinds with their own face (the collab panels such as the Q&A board and agenda,
-  the session tools, the chair, the comment and action panels, the portal), whose label is a fixed
+  label) and not on kinds with their own face (the collab panels such as the temperature check and
+  decision record, the session tools, the comment and action panels, the portal), whose label is a fixed
   title, and not on icons or stickers (a glyph, at most a short caption). One predicate, `supportsTextAlign` in `@liveplanner/document`, gates both this panel and the
   context menu's Text Alignment section, so the two can't disagree. The panel also waits for words:
   a shape whose label is empty (or only whitespace) shows no Text alignment row, since there is

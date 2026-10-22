@@ -16,7 +16,7 @@ import {
 const card = (over: Partial<ShapeElement> = {}): ShapeElement => ({
   id: 'card',
   type: 'shape',
-  shape: 'done-check',
+  shape: 'temperature',
   x: 0,
   y: 0,
   width: 100,
@@ -37,7 +37,7 @@ const delta = (d: Record<string, unknown>, elementId = 'card') => ({
   elementId,
   delta: d,
 });
-const done = (participantId: string, value: string | null = 'done') =>
+const done = (participantId: string, value: string | null = '5') =>
   delta({ kind: 'response', participantId, value, at: 1 });
 
 // Record ops in order the way the room does, one seq each.
@@ -64,7 +64,7 @@ describe('collab ledger (docs/specs/012-collaboration/collab-race-hardening.md p
   // without it.
   it("puts back an answer the saver hadn't seen", () => {
     const ledger = ledgerOf([done('a'), done('b')]);
-    const staleSave = tab([card({ responses: [{ participantId: 'a', value: 'done', at: 1 }] })]);
+    const staleSave = tab([card({ responses: [{ participantId: 'a', value: '5', at: 1 }] })]);
     // The saver had seen seq 1 (its own cast), not seq 2.
     expect(who(mergeLedgerIntoTab(staleSave, ledger, 1))).toEqual(['a', 'b']);
   });
@@ -78,7 +78,7 @@ describe('collab ledger (docs/specs/012-collaboration/collab-race-hardening.md p
 
   it('applies a withdraw it had not seen', () => {
     const ledger = ledgerOf([done('a'), done('a', null)]);
-    const stale = tab([card({ responses: [{ participantId: 'a', value: 'done', at: 1 }] })]);
+    const stale = tab([card({ responses: [{ participantId: 'a', value: '5', at: 1 }] })]);
     expect(who(mergeLedgerIntoTab(stale, ledger, 1))).toEqual([]);
   });
 
@@ -86,17 +86,6 @@ describe('collab ledger (docs/specs/012-collaboration/collab-race-hardening.md p
     const ledger = ledgerOf([done('a')]);
     const cleared = tab([card({ collabRound: 'r2', responses: [] })]);
     expect(who(mergeLedgerIntoTab(cleared, ledger, 0))).toEqual([]);
-  });
-
-  it('appends ideas the snapshot is missing, without duplicating ones it has', () => {
-    const box = (ideaCards: string[]) => tab([card({ shape: 'idea-box', ideaCards })]);
-    const ledger = ledgerOf([
-      delta({ kind: 'idea', text: 'coffee' }),
-      delta({ kind: 'idea', text: 'tea' }),
-      delta({ kind: 'idea', text: 'coffee' }),
-    ]);
-    const merged = mergeLedgerIntoTab(box(['coffee']), ledger, 0);
-    expect((merged.elements[0] as ShapeElement).ideaCards).toEqual(['coffee', 'tea', 'coffee']);
   });
 
   it("re-sets a tick the saver hadn't seen", () => {
@@ -141,7 +130,7 @@ describe('collab ledger (docs/specs/012-collaboration/collab-race-hardening.md p
   // A late op naming a round the room has moved past used to flip the entry
   // back to that round, dropping the current round's answers and dots.
   it('drops a late answer naming a retired round', () => {
-    const inRound = (participantId: string, round: string, value: string | null = 'done') =>
+    const inRound = (participantId: string, round: string, value: string | null = '5') =>
       delta({ kind: 'response', participantId, value, at: 1, round });
     const ledger = ledgerOf([inRound('a', 'r1'), inRound('b', 'r2'), inRound('a', 'r1', null)]);
     expect(ledger.elements.card?.round).toBe('r2');
@@ -153,14 +142,16 @@ describe('collab ledger (docs/specs/012-collaboration/collab-race-hardening.md p
     expect(Object.keys(fromNone.elements.card?.responses ?? {})).toEqual(['b']);
   });
 
-  it('drops a late idea naming a retired round, keeping ticks across rounds', () => {
+  it('drops a late answer naming a retired round, keeping ticks across rounds', () => {
+    const answer = (participantId: string, round: string) =>
+      delta({ kind: 'response', participantId, value: '3', at: 1, round });
     const ledger = ledgerOf([
       delta({ kind: 'check', index: 0, text: 'one', done: true }),
-      delta({ kind: 'idea', text: 'old', round: 'r1' }),
-      delta({ kind: 'idea', text: 'new', round: 'r2' }),
-      delta({ kind: 'idea', text: 'late', round: 'r1' }),
+      answer('a', 'r1'),
+      answer('b', 'r2'),
+      answer('c', 'r1'),
     ]);
-    expect(ledger.elements.card?.ideas).toEqual(['new']);
+    expect(Object.keys(ledger.elements.card?.responses ?? {})).toEqual(['b']);
     expect(Object.keys(ledger.elements.card?.ticks ?? {})).toHaveLength(1);
   });
 
@@ -179,7 +170,7 @@ describe('collab ledger (docs/specs/012-collaboration/collab-race-hardening.md p
 
   it(`remembers at most ${RETIRED_ROUNDS_MAX} retired rounds`, () => {
     const ops = Array.from({ length: RETIRED_ROUNDS_MAX + 5 }, (_, i) =>
-      delta({ kind: 'idea', text: 'x', round: `r${i}` }),
+      delta({ kind: 'response', participantId: 'a', value: '3', at: 1, round: `r${i}` }),
     );
     const retired = ledgerOf(ops).elements.card?.retired ?? [];
     expect(retired).toHaveLength(RETIRED_ROUNDS_MAX);
@@ -347,7 +338,7 @@ describe('mergeLedgerAnswersIntoTab (docs/specs/013-workspace/share-roles.md "In
     round: 'r1',
   });
 
-  it('writes every answer, idea and dot the room holds into the stored tab, once', () => {
+  it('writes every answer and dot the room holds into the stored tab, once', () => {
     const ledger = ledgerOf([done('a'), done('b'), dot('a')]);
     const vote = { active: true, revealed: false, votesPerPerson: 3, votes: {}, round: 'r1' };
     const stored = tab([card()], { vote });

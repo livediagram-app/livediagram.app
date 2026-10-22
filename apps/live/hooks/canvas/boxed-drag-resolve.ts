@@ -378,7 +378,7 @@ export function resolveBoxedResize({
     if (!isBoxed(el)) continue;
     const start = startBounds.get(el.id);
     if (!start) continue;
-    // Fixed-size kinds (docs/specs/009-elements/mode-button.md) ride along with the union's MOVE but keep
+    // Fixed-size kinds (docs/specs/012-collaboration/session-button.md) ride along with the union's MOVE but keep
     // their own width / height, so scaling a selection can't quietly resize a
     // control that has no resize handles of its own.
     if (isFixedSizeElement(el)) {

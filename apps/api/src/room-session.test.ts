@@ -9,12 +9,10 @@ describe('verifiedSessionOf', () => {
     const v = verifiedSessionOf(
       upgrade({
         'X-Verified-Role': 'participate',
-        'X-Verified-Owner': '1',
         'X-Verified-Tab-Scope': 't1',
         'X-Verified-Share-Code': '',
         'X-Verified-Account': '1',
         'X-Verified-Person': 'p',
-        'X-Verified-Network': 'n',
         'X-Verified-Workbench-Pairing': 'w',
         'X-Verified-Adder': 'a',
         'X-Verified-Document': 'd',
@@ -22,12 +20,10 @@ describe('verifiedSessionOf', () => {
     );
     expect(v).toEqual({
       verifiedRole: 'participate',
-      isOwner: true,
       tabScope: 't1',
       shareCode: null,
       account: true,
       personTag: 'p',
-      networkTag: 'n',
       workbenchPairing: 'w',
       adderKey: 'a',
       documentId: 'd',
@@ -44,12 +40,10 @@ describe('newSessionAttachment', () => {
     const long = 'x'.repeat(500);
     const a = newSessionAttachment(
       {
-        isOwner: false,
         tabScope: null,
         shareCode: null,
         account: false,
         personTag: long,
-        networkTag: long,
         workbenchPairing: long,
         adderKey: long,
         documentId: long,
@@ -59,10 +53,8 @@ describe('newSessionAttachment', () => {
     expect(a.presenceId).toBe('presence-1');
     expect(a.presence).toBeNull();
     expect(
-      [a.personTag, a.networkTag, a.workbenchPairing, a.adderKey, a.documentId].map(
-        (s) => s?.length,
-      ),
-    ).toEqual([64, 32, 36, 32, 64]);
+      [a.personTag, a.workbenchPairing, a.adderKey, a.documentId].map((s) => s?.length),
+    ).toEqual([64, 36, 32, 64]);
   });
 });
 

@@ -89,10 +89,6 @@ describe('legacyHelpRedirect', () => {
       ['/help/selection-modes/eraser/', '/help/selection-modes/'],
       // Facilitate mode became Workshop mode (docs/specs/007-editor/editor-modes.md "Naming in the interface").
       ['/help/canvas/facilitate-mode/', '/help/canvas/workshop-mode/'],
-      [
-        '/help/canvas/facilitate-mode/facilitate-tour/',
-        '/help/canvas/workshop-mode/workshop-tour/',
-      ],
       // The Highlighter became a Draw tile, then was retired.
       ['/help/selection-modes/highlighter/', '/help/palette/tools/'],
       ['/help/palette/tools/highlighter/', '/help/palette/tools/'],

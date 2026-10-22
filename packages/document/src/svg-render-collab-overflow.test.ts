@@ -2,12 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { renderElementsToSvg } from './svg-render';
 import { createShape } from './factories';
 import { fitLine, wrapLines } from './svg-render-face-kit';
-import type { QaNote, ShapeElement } from './index';
+import type { ShapeElement } from './index';
 
 // Collaborate cards export without text running off the card
-// (docs/specs/020-import-export/export-fidelity.md): a long title, a long
-// driver, a long roll-call name; and a board whose notes are all discussed
-// shows its Discussed drawer, not "No notes yet".
+// (docs/specs/020-import-export/export-fidelity.md): a long title, a long driver.
 
 const svgOf = (el: ShapeElement) => renderElementsToSvg({ id: 't', name: 'Tab', elements: [el] });
 // Each <text>'s content, by splitting rather than a backtracking regex (linear in the SVG's length).
@@ -34,37 +32,17 @@ describe('fitLine', () => {
 
 describe('collab card title', () => {
   it('takes one line, cut short of the aside', () => {
-    const long = 'A very long done check title that would run under the count and off the card';
+    const long =
+      'A very long temperature check title that would run under the count and off the card';
     const el = {
-      ...createShape('estimate', 0, 0),
+      ...createShape('temperature', 0, 0),
       label: long,
-      estimateScale: 'fibonacci',
       responses: [{ participantId: 'a', value: '3', at: 1 }],
     } as ShapeElement;
     const all = texts(svgOf(el));
     expect(all).not.toContain(long);
     const title = all.find((t) => t.startsWith('A very long'))!;
     expect(title.endsWith('…')).toBe(true);
-  });
-});
-
-describe('Q&A board with every note discussed', () => {
-  it('shows the Discussed drawer, not the empty state', () => {
-    const note = (i: number): QaNote => ({
-      id: `n${i}`,
-      text: `Note ${i}`,
-      voters: [],
-      at: 1,
-      state: 'done',
-      doneAt: i,
-    });
-    const el = {
-      ...createShape('qa-board', 0, 0),
-      qaNotes: [note(1), note(2)],
-    } as ShapeElement;
-    const all = texts(svgOf(el));
-    expect(all).not.toContain('No notes yet');
-    expect(all).toContain('DISCUSSED · 2');
   });
 });
 
@@ -97,18 +75,5 @@ describe('decision drivers', () => {
     expect(all).toContain('Cheap');
     expect(all).toContain('Fast');
     expect(all.some((t) => t.endsWith(' more'))).toBe(false);
-  });
-});
-
-describe('roll call chips', () => {
-  it('cuts a long name to its chip', () => {
-    const name = 'Bartholomew Maximilian Featherstonehaugh-Cholmondeley the Third of Somewhere';
-    const el = {
-      ...createShape('roll-call', 0, 0),
-      rollCall: [{ name, color: '#2563eb', at: 1_700_000_000_000 }],
-    } as ShapeElement;
-    const all = texts(svgOf(el));
-    expect(all).not.toContain(name);
-    expect(all.some((t) => t.startsWith('Bartholomew') && t.endsWith('…'))).toBe(true);
   });
 });

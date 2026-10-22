@@ -33,46 +33,22 @@ import {
   chartTypeOf,
   PIE_DEFAULT_SLICES,
   RATING_DEFAULT,
-  DEFAULT_BUTTON_MODE,
-  SELECTION_MODES,
   type ChecklistItem,
   type EntityField,
   type LegendItem,
   type PieSlice,
 } from '@liveplanner/document';
-import {
-  AvatarModeIcon,
-  FormatPainterIcon,
-  IsometricIcon,
-  LaserIcon,
-  PanIcon,
-  SelectIcon,
-  SpotlightIcon,
-} from '@/components/palette/palette-icons';
-import { MODE_LABEL } from '@/components/canvas/ModeButtonFace';
 import { ProgressMenuGlyph, ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { MindMapMenuSections } from './MindMapMenuSections';
 import { FlowchartMenuSections } from '@/components/flowchart/FlowchartMenuSections';
 import { AnimationSections } from '@/components/palette/AnimationSections';
 import { useCoversCanvas } from '@/hooks/plan/plan-cover-store';
-import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { LegendTextSize } from '@/components/palette/TypographySections';
 import { PortalMenuSection } from '@/components/palette/PortalMenuSection';
-import {
-  AgendaMenuSection,
-  ChairMenuSection,
-  RoomMenuSection,
-  DecisionMenuSection,
-  EstimateMenuSection,
-} from '@/components/palette/CollabMenuSections';
-import {
-  PickerMenuSection,
-  ReactionMenuSection,
-  RevealMenuSection,
-  SessionMenuSection,
-} from '@/components/palette/BehaviourMenuSections';
+import { DecisionMenuSection } from '@/components/palette/CollabMenuSections';
+import { PickerMenuSection, SessionMenuSection } from '@/components/palette/BehaviourMenuSections';
 
 import { LegendPositionTiles } from '@/components/palette/context-menu-tiles';
 import { ChartAxisRows } from '@/components/palette/ChartAxisRows';
@@ -150,19 +126,12 @@ type ElementDataSectionsProps = {
   isSankey: boolean;
   isMindNode: boolean;
   isEntity: boolean;
-  isModeButton: boolean;
   isPortal: boolean;
   isSessionButton: boolean;
-  isReveal: boolean;
   isPicker: boolean;
-  isReactionPad: boolean;
-  // The collaboration elements that carry settings (docs/specs/012-collaboration/estimate-card.md, 127, 128, 130).
-  // The temperature check, idea box and roll call have none — they are entirely
-  // driven from their own faces — so they get no flag.
-  isEstimate: boolean;
-  isAgenda: boolean;
+  // The collaboration element that carries settings (docs/specs/012-collaboration/decision-record.md).
+  // The temperature check has none — it is entirely driven from its own face — so it gets no flag.
   isDecision: boolean;
-  isChair: boolean;
   sectionProps: Scaffold['sectionProps'];
   flyoutProps: Scaffold['flyoutProps'];
 };
@@ -173,18 +142,6 @@ const DEFAULT_PIE_ROWS: PieSlice[] = PIE_DEFAULT_SLICES.map((s) => ({ ...s }));
 const NO_ENTITY_FIELDS: EntityField[] = [];
 const NO_CHECKLIST_ITEMS: ChecklistItem[] = [];
 const NO_LEGEND_ITEMS: LegendItem[] = [];
-
-// The mode tiles' glyphs — the palette picker's own icons, so a button's
-// configured mode is recognisable from the same artwork everywhere (docs/specs/009-elements/mode-button.md).
-const MODE_TILE_ICON: Record<(typeof SELECTION_MODES)[number], React.ReactNode> = {
-  select: <SelectIcon />,
-  pan: <PanIcon />,
-  laser: <LaserIcon />,
-  spotlight: <SpotlightIcon />,
-  avatar: <AvatarModeIcon />,
-  format: <FormatPainterIcon />,
-  isometric: <IsometricIcon />,
-};
 
 export function ElementDataSections({
   props,
@@ -199,16 +156,10 @@ export function ElementDataSections({
   isSankey,
   isMindNode,
   isEntity,
-  isModeButton,
   isPortal,
   isSessionButton,
-  isReveal,
   isPicker,
-  isReactionPad,
-  isEstimate,
-  isAgenda,
   isDecision,
-  isChair,
   sectionProps,
   flyoutProps,
 }: ElementDataSectionsProps) {
@@ -241,17 +192,10 @@ export function ElementDataSections({
     isSankey ||
     isMindNode ||
     isEntity ||
-    isModeButton ||
     isPortal ||
     isSessionButton ||
-    isReveal ||
     isPicker ||
-    isReactionPad ||
-    isEstimate ||
-    isAgenda ||
     isDecision ||
-    isChair ||
-    shapeTarget?.shape === 'room' ||
     // Its Tab Window section (Shows, Open) lives in Tools: without this the menu never offered another tab.
     shapeTarget?.shape === 'tab-window' ||
     !!props.flowchart;
@@ -369,22 +313,8 @@ export function ElementDataSections({
               />
             </MenuAccordionSection>
           ) : null}
-          {/* The collaboration elements' settings (docs/specs/012-collaboration/estimate-card.md, 127, 128, 130).
-            Each is a small form of its own — see CollabMenuSections. */}
-          {isEstimate ? (
-            <EstimateMenuSection
-              target={shapeTarget ?? undefined}
-              sectionProps={sectionProps}
-              onSetScale={props.onSetEstimateScale}
-            />
-          ) : null}
-          {isAgenda ? (
-            <AgendaMenuSection
-              target={shapeTarget ?? undefined}
-              sectionProps={sectionProps}
-              onSetItems={props.onSetAgendaItems}
-            />
-          ) : null}
+          {/* The decision record's settings (docs/specs/012-collaboration/decision-record.md), a small form of its
+            own — see CollabMenuSections. */}
           {isDecision ? (
             <DecisionMenuSection
               target={shapeTarget ?? undefined}
@@ -392,20 +322,6 @@ export function ElementDataSections({
               onSetStatus={props.onSetDecisionStatus}
               onSetDate={props.onSetDecisionDate}
               onSetDrivers={props.onSetDecisionDrivers}
-            />
-          ) : null}
-          {shapeTarget?.shape === 'room' ? (
-            <RoomMenuSection
-              target={shapeTarget}
-              sectionProps={sectionProps}
-              onSetDoor={props.onSetRoomDoor}
-            />
-          ) : null}
-          {isChair ? (
-            <ChairMenuSection
-              target={shapeTarget ?? undefined}
-              sectionProps={sectionProps}
-              onSetFacing={props.onSetChairFacing}
             />
           ) : null}
           {/* Web components (docs/specs/009-elements/web-components-and-no-groups.md) — a stat row's cards, a process's
@@ -596,33 +512,6 @@ export function ElementDataSections({
               flyoutProps={flyoutProps('flowchart')}
             />
           ) : null}
-          {/* Mode button (docs/specs/009-elements/mode-button.md) — which selection mode pressing it hands
-            whoever clicked. Tiles rather than a list so the icons match the
-            palette's own mode picker. */}
-          {isModeButton ? (
-            <MenuAccordionSection
-              title="Button"
-              icon={<ToolsMenuGlyph />}
-              {...sectionProps('button-mode')}
-            >
-              <p className="px-3 pt-1 text-[10px] font-medium text-slate-500 dark:text-slate-400">
-                Switches the presser to
-              </p>
-              <MenuTileGrid cols={3}>
-                {SELECTION_MODES.map((mode) => (
-                  <MenuTile
-                    key={mode}
-                    icon={MODE_TILE_ICON[mode]}
-                    label={MODE_LABEL[mode]}
-                    active={
-                      (shapeTarget?.mode ?? DEFAULT_BUTTON_MODE) === mode
-                    }
-                    onClick={() => props.onSetButtonMode(mode)}
-                  />
-                ))}
-              </MenuTileGrid>
-            </MenuAccordionSection>
-          ) : null}
           {/* Portal (docs/specs/009-elements/portal-element.md) — its name, where it leads (any tab), and a
             shortcut to create the far end. See PortalMenuSection. */}
           {isPortal && shapeTarget ? (
@@ -645,14 +534,6 @@ export function ElementDataSections({
               sectionProps={sectionProps('session')}
             />
           ) : null}
-          {/* Reveal zone (docs/specs/009-elements/reveal-zone.md) — off for everyone, or back on. */}
-          {isReveal && shapeTarget && props.onSetRevealed ? (
-            <RevealMenuSection
-              element={shapeTarget}
-              onSetRevealed={props.onSetRevealed}
-              sectionProps={sectionProps('reveal')}
-            />
-          ) : null}
           {/* Picker (docs/specs/012-collaboration/picker.md) — where it draws candidates from. */}
           {isPicker && shapeTarget ? (
             <PickerMenuSection
@@ -660,14 +541,6 @@ export function ElementDataSections({
               onSetPickerSource={props.onSetPickerSource}
               onSetPickerOptions={props.onSetPickerOptions}
               sectionProps={sectionProps('picker')}
-            />
-          ) : null}
-          {/* Reaction pad (docs/specs/009-elements/reaction-pad.md) — which burst it throws. */}
-          {isReactionPad && shapeTarget ? (
-            <ReactionMenuSection
-              element={shapeTarget}
-              onSetReaction={props.onSetReaction}
-              sectionProps={sectionProps('reaction')}
             />
           ) : null}
           {/* Chart (docs/specs/009-elements/pie-chart.md) — display options. Legend placement: Off + 4 sides. */}

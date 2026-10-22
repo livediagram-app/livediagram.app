@@ -15,10 +15,10 @@
 // hover card says why. A portal that silently swallows a click is worse than one
 // that admits it isn't wired up.
 //
-// Interaction rules match the Selection Mode button (docs/specs/009-elements/mode-button.md): a real <button>
+// Interaction rules match the Session button (docs/specs/012-collaboration/session-button.md): a real <button>
 // so a click travels rather than only selecting, `pointer-events: auto` so it
-// works inside the pointer-inert Avatar / Spotlight / Isometric layers, and
-// pointer-down left alone so dragging still moves it.
+// works inside the pointer-inert Isometric layer, and pointer-down left alone so
+// dragging still moves it.
 
 import { useId } from 'react';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
@@ -144,7 +144,7 @@ export function PortalFace({
       block
       className="h-full w-full"
       title={`Go to ${targetName ?? 'the linked portal'}`}
-      description="Click to travel, or walk your Avatar-mode character into it. The link works both ways."
+      description="Click to travel. The link works both ways."
     >
       <button
         type="button"

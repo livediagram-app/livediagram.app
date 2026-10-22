@@ -8,7 +8,7 @@
 // far apart the two are on screen. That is the whole hazard this file guards:
 // the panel looks detached and behaves attached.
 //
-// It bit on double-click. The poll's panel is a form with text inputs, so
+// It bit on double-click. A panel can be a form with text inputs, so
 // double-clicking to select a word in a choice reached the element underneath,
 // put it into text-edit mode, and the re-render took the panel away — the
 // gesture for editing a choice was the gesture that closed the editor.
@@ -33,7 +33,7 @@ function mountInFace(handlers: {
       onDoubleClick={handlers.onDoubleClick}
       onContextMenu={handlers.onContextMenu}
     >
-      <ElementEllipsisMenu label="Poll options" kind="control">
+      <ElementEllipsisMenu label="Vote options" kind="control">
         {(close) => (
           <>
             <input aria-label="Choice" defaultValue="Ariel" />
@@ -46,8 +46,8 @@ function mountInFace(handlers: {
 }
 
 function openMenu() {
-  fireEvent.click(screen.getByRole('button', { name: 'Poll options' }));
-  return screen.getByRole('dialog', { name: 'Poll options' });
+  fireEvent.click(screen.getByRole('button', { name: 'Vote options' }));
+  return screen.getByRole('dialog', { name: 'Vote options' });
 }
 
 describe('ElementEllipsisMenu event containment', () => {
@@ -68,7 +68,7 @@ describe('ElementEllipsisMenu event containment', () => {
     fireEvent.doubleClick(screen.getByLabelText('Choice'));
     expect(onDoubleClick).not.toHaveBeenCalled();
     // And the panel is still open, which is the half the user actually feels.
-    expect(screen.getByRole('dialog', { name: 'Poll options' })).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: 'Vote options' })).toBeTruthy();
   });
 
   it('does not leak a right-click in a field, and leaves the browser menu alone', () => {
@@ -105,11 +105,11 @@ describe('ElementEllipsisMenu event containment', () => {
 describe('ElementEllipsisMenu kinds', () => {
   it('is a menu of menu items for verbs, focused on open and closed by Escape', () => {
     render(
-      <ElementEllipsisMenu label="Q&A board options" kind="command">
+      <ElementEllipsisMenu label="Board options" kind="command">
         {(close) => <ElementMenuItem onPress={close}>Empty the Board</ElementMenuItem>}
       </ElementEllipsisMenu>,
     );
-    const trigger = screen.getByRole('button', { name: 'Q&A board options' });
+    const trigger = screen.getByRole('button', { name: 'Board options' });
     expect(trigger.getAttribute('aria-haspopup')).toBe('menu');
     trigger.focus();
     fireEvent.click(trigger);
@@ -122,7 +122,7 @@ describe('ElementEllipsisMenu kinds', () => {
 
   it('is a named dialog for settings', () => {
     mountInFace({});
-    expect(screen.getByRole('button', { name: 'Poll options' }).getAttribute('aria-haspopup')).toBe(
+    expect(screen.getByRole('button', { name: 'Vote options' }).getAttribute('aria-haspopup')).toBe(
       'dialog',
     );
     openMenu();

@@ -2,12 +2,11 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { LiveCursors, PresenceSelection } from '@/components/illustrations/collaboration';
-import { ReleaseHold } from '@/components/illustrations/release-hold';
 
 export const metadata = helpMetadata({
   title: 'Live Presence',
   description:
-    "See who is in a document with you in real time: live cursors with names, each person's selection, who is on which tab, agents at work and laser pointers.",
+    "See who is in a document with you in real time: live cursors with names, each person's selection, who is on which tab and agents at work.",
   path: '/help/collaboration/live-presence/',
 });
 
@@ -46,34 +45,14 @@ Click any avatar on a tab, or the **+N** badge when a tab is busy, to open **Col
 
 - Your own tab is marked **You're Here**. Every other tab has a **Go to Tab** button that takes you straight there.
 - Each person shows their name, their role when it is known, whether they are online, away or offline, and how long ago they were last active.
-- **Follow** beside someone makes your view follow theirs (it changes to **Stop Following** while you do). See [Following someone](/help/canvas/follow-along/) for how it works.
-- The buttons to hand out the [facilitator](/help/collaboration/facilitator/) role live here too, on each person's row.
 
 ## Seeing what others have selected
 
-When someone selects an element, a small disc with their initials appears on its top-left corner, so you always know what a teammate is working on. While an Editor or Participant has it selected, that element is gently locked for everyone else, so two people can't fight over the same shape at once. A Viewer's selection only shows the disc. It frees up again the moment they click away. When you zoom far out, the discs hide until you zoom back in.
+When someone selects an element, a small disc with their initials appears on its top-left corner, so you always know what a teammate is working on. While an Editor or Participant has it selected, that element is gently locked for everyone else, so two people can't fight over the same shape at once. A Viewer's selection only shows the disc. It frees up again the moment they click away, switch tab or leave. When you zoom far out, the discs hide until you zoom back in.
 
 <Figure caption="A teammate's selection is badged with their initials and gently locked to them while they edit.">
   <PresenceSelection />
 </Figure>
-
-## Freeing an element someone left selected
-
-The lock clears by itself when the person clicks away, switches tab or leaves. What it can't fix on its own is someone who is still connected but has wandered off with something selected, leaving an element nobody else can touch. When that happens, it can be freed:
-
-<Step n={1}>Right-click the locked element.</Step>
-<Step n={2}>
-  A small **In use** menu opens, with one row per person holding it, such as "Release Jae's Hold".
-</Step>
-<Step n={3}>Choose that row. The element frees up for everyone straight away.</Step>
-
-<Figure caption="Right-clicking an element a teammate is holding opens the In use menu, naming whose hold you would release.">
-  <ReleaseHold />
-</Figure>
-
-**Who can do it.** While someone is the [facilitator](/help/collaboration/facilitator/), only they can. While nobody is facilitating, any Editor can. Participants and Viewers can't free a hold: for them, right-clicking a locked element opens nothing, as it does for an Editor while somebody else is facilitating.
-
-**What the holder sees.** As the menu says: "They keep their work; it just stops being theirs to edit." Their selection is dropped, and if they were typing into the element, that editing ends too, but the element itself is not changed. A short notification tells them "The facilitator freed an element you were holding", so it doesn't look like a glitch. Nobody else in the room is told anything; the element simply stops looking locked.
 
 ## Agents at work
 
@@ -83,11 +62,7 @@ An AI agent or a script working on a document with an [API token](/help/account-
 - **What it is looking at** is outlined with a thin ring in its owner's colour. The ring never locks anything: you can keep working on those elements.
 - **It leaves on its own** a little while after it stops working, so a finished or stopped agent never lingers.
 
-Agents are listed in Collaborators, but they are not counted as people, can't be followed, and never hold the facilitator role.
-
-## Shared laser pointer
-
-The [Laser Pointer](/help/selection-modes/laser/) is built for presenting together: when you draw with it, everyone on the same tab sees your glowing trail in real time, then it fades away. It is perfect for "look over here" without changing anything on the canvas.
+Agents are listed in Collaborators, but they are not counted as people.
 
 ## Who can see presence
 

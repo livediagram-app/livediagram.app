@@ -38,10 +38,8 @@ export type TabPillCtx = {
   // True for a tab outside a tab-scoped share session's scope
   // (docs/specs/013-workspace/tab-scoped-share-links.md); such a tab renders as a "Not shared" pill.
   isOutOfScope?: (tabId: string) => boolean;
-  // Threaded to the presence stack: the follow ring (docs/specs/012-collaboration/follow-me-viewport.md) and the
-  // Collaborators modal an avatar click opens (docs/specs/012-collaboration/collaborator-enhancements.md).
-  followingId?: string | null;
-  followerCount?: number;
+  // Threaded to the presence stack: the Collaborators modal an avatar click opens
+  // (docs/specs/012-collaboration/collaborator-enhancements.md).
   onOpenCollaborators?: (participantId: string | null) => void;
   canvasActions?: CanvasMenuActions;
   // The shared tab-menu callback bundle (see TabBar.tabMenuProps): the
@@ -74,8 +72,6 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
     participantsByTab,
     selfId,
     selfRole,
-    followingId,
-    followerCount,
     onOpenCollaborators,
     canvasActions,
     tabMenuProps,
@@ -195,8 +191,6 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
         participants={participantsByTab.get(tab.id) ?? []}
         selfId={selfId}
         selfRole={selfRole}
-        followingId={followingId}
-        followerCount={followerCount}
         onOpenCollaborators={onOpenCollaborators}
       />
       {isActive && !isEditing && !readOnly ? (

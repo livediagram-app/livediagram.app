@@ -58,7 +58,6 @@ import { PHONE_TOOLBAR_ITEMS } from '@/components/chrome/phone-toolbar-items';
 import { PHONE_CLUSTER_BUTTON_WIDTH } from '@/components/chrome/phone-toolbar-items';
 import { useSnapHaptic } from '@/hooks/canvas/useSnapHaptic';
 import { CollaborateClusterButton } from './CollaborateClusterButton';
-import { AvatarClusterButton } from './AvatarClusterButton';
 import { kindCounts } from '@/components/panels/collaborate/collaborate-model';
 import { panelEnabled } from '@/lib/user-preferences';
 import { useUiScale } from '@/components/providers/ui-scale';
@@ -100,54 +99,6 @@ type ChromeExtras = {
   // Reset the isometric camera to its default angle (wired to
   // `isoCamera.reset`) — fired when the dock orbit button is clicked.
   onIsoReset: () => void;
-  // Avatar mode (docs/specs/008-canvas/avatar-mode.md): the character's customisation, owned by
-  // useAvatarConfig in Canvas (it persists per browser, so it lives with the
-  // sprite rather than in the editor's document state) and edited by the
-  // Avatar Panel down in the chrome.
-  avatarConfig: import('@/lib/avatar-config').AvatarConfig;
-  onChangeAvatarField: <K extends keyof import('@/lib/avatar-config').AvatarConfig>(
-    field: K,
-    value: import('@/lib/avatar-config').AvatarConfig[K],
-  ) => void;
-  // Roll a whole new character, and play one of the panel's reactions.
-  onRandomiseAvatar: () => void;
-  onAvatarReaction: (kind: import('@/lib/avatar-reactions').AvatarReactionKind) => void;
-  // Throw one of the Reaction Pad's bursts (docs/specs/009-elements/reaction-pad.md) around the character.
-  onAvatarBurst?: (reaction: import('@liveplanner/document').Reaction) => void;
-  // Say something from the Avatar panel (docs/specs/008-canvas/avatar-mode.md "The message popover"): absent for
-  // a Viewer, who may not speak. Answers whether the message went; `avatarSpeechCooling` holds Send meanwhile.
-  onSendAvatarMessage?: (text: string) => boolean;
-  // Your status (docs/specs/008-canvas/avatar-mode.md "Status"), set from the Avatar panel.
-  avatarStatus?: import('@/lib/avatar-status').AvatarStatus | null;
-  onSetAvatarStatus?: (status: import('@/lib/avatar-status').AvatarStatus | null) => void;
-  avatarSpeechCooling?: boolean;
-  // Laser Panel (docs/specs/008-canvas/laser-panel.md): the pen, owned by useLaserConfig in Canvas (it
-  // persists per browser, like the avatar's costume) and edited down here.
-  laserConfig?: import('@/lib/laser-config').LaserConfig;
-  onChangeLaserField?: <K extends keyof import('@/lib/laser-config').LaserConfig>(
-    field: K,
-    value: import('@/lib/laser-config').LaserConfig[K],
-  ) => void;
-  laserPanelPosition?: { x: number; y: number } | null;
-  onMoveLaserPanel?: (x: number, y: number) => void;
-  onResetLaserPanel?: () => void;
-  // Spotlight Panel (docs/specs/008-canvas/spotlight-panel.md): the light's look, owned by useSpotlightConfig
-  // in Canvas, plus the live radius the canvas clicks also change.
-  spotlightConfig?: import('@/lib/spotlight-config').SpotlightConfig;
-  onChangeSpotlightField?: <K extends keyof import('@/lib/spotlight-config').SpotlightConfig>(
-    field: K,
-    value: import('@/lib/spotlight-config').SpotlightConfig[K],
-  ) => void;
-  spotlightRadius?: number;
-  onSetSpotlightRadius?: (radius: number) => void;
-  spotlightPanelPosition?: { x: number; y: number } | null;
-  onMoveSpotlightPanel?: (x: number, y: number) => void;
-  onResetSpotlightPanel?: () => void;
-  // Slide Deck panel (docs/specs/012-collaboration/presentation-mode.md): the sixth tool panel.
-  slideDeckPanelPosition?: { x: number; y: number } | null;
-  onMoveSlideDeckPanel?: (x: number, y: number) => void;
-  onResetSlideDeckPanel?: () => void;
-  slideDeck?: import('@/app/document/[id]/useSlideDeck').SlideDeckState;
   // Format Panel (docs/specs/008-canvas/format-panel.md): what the painter copies, owned in editor state
   // (the paint lives there), plus a description of the loaded element.
   formatConfig?: import('@/lib/format-config').FormatConfig;
@@ -329,7 +280,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
     newCardPopoverEl,
     cardFinderPopoverEl,
     sessionPopoverEl,
-    avatarPopoverEl,
   } = useCanvasChromePanels({
     props,
     stripTools,
@@ -391,8 +341,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
   return (
     <>
       {/* The empty-canvas hint is now a dismissible bottom banner
-          (EmptyCanvasBanner), rendered by EditorView alongside the sign-in /
-          theme banners rather than a centre-of-canvas card. */}
+        (EmptyCanvasBanner), rendered by EditorView alongside the sign-in /
+        theme banners rather than a centre-of-canvas card. */}
 
       {showIdentityPrompt ? (
         <IdentityPrompt
@@ -405,10 +355,10 @@ export function CanvasChrome(props: CanvasChromeProps) {
       ) : null}
 
       {/* Timeline lanes (docs/specs/021-event-storming/event-storming.md Phase 6): the lane a dragged note is
-          landing on, lit for the duration of the drag. Beside the guide
-          overlay because it is the same kind of thing — help BEFORE the
-          drop — and it publishes through its own store, so it costs nothing
-          on every other tab. */}
+        landing on, lit for the duration of the drag. Beside the guide
+        overlay because it is the same kind of thing — help BEFORE the
+        drop — and it publishes through its own store, so it costs nothing
+        on every other tab. */}
       <TimelineLanesOverlay
         timeline={props.esBoard === true ? ES_LANES : null}
         tabThemeId={tabThemeId}
@@ -438,12 +388,12 @@ export function CanvasChrome(props: CanvasChromeProps) {
       />
 
       {/* Top-of-canvas floating chrome (docs/specs/008-canvas/canvas-and-palette.md): owner / role badge, the
-          active editor-mode banner, multi-selection toolbar, session timer
-          and vote banner — laid out as one non-overlapping stack. */}
+        active editor-mode banner, multi-selection toolbar, session timer
+        and vote banner — laid out as one non-overlapping stack. */}
       <TopCenterChrome {...props} hasPlanBoard={hasPlanBoard} />
 
       {/* The menu button (docs/specs/007-editor/toolbar-layout.md) opens the Explorer as a popover
-          (zen hides it, the welcome flow doesn't). */}
+        (zen hides it, the welcome flow doesn't). */}
       {!zenMode ? (
         <>
           {explorerMenuButton}
@@ -451,20 +401,19 @@ export function CanvasChrome(props: CanvasChromeProps) {
         </>
       ) : null}
       {/* The Collaborate popover (docs/specs/012-collaboration/assigned-actions.md §5): it positions
-          against the canvas, so it renders outside the corner layer. */}
+        against the canvas, so it renders outside the corner layer. */}
       {zenMode ? null : collaborateEl}
       {zenMode ? null : cardTypesPopoverEl}
       {zenMode ? null : trashPopoverEl}
       {zenMode ? null : newCardPopoverEl}
       {zenMode ? null : cardFinderPopoverEl}
-      {avatarPopoverEl}
       {/* The Session strip's popover, in Zen too, as its strip is (docs/specs/012-collaboration/session-tools.md). */}
       {sessionPopoverEl}
 
       {/* Corner panels (docs/specs/007-editor/panel-docking.md). Distributed into per-corner stack
-          containers (with a free layer + snap guides) by `dockedLayer`; in zen they render inline.
-          Each element carries its own visibility gate, so the welcome-flow / read-only / zen
-          suppression is unchanged. */}
+        containers (with a free layer + snap guides) by `dockedLayer`; in zen they render inline.
+        Each element carries its own visibility gate, so the welcome-flow / read-only / zen
+        suppression is unchanged. */}
       {dockingActive ? (
         dockedLayer
       ) : (
@@ -472,22 +421,17 @@ export function CanvasChrome(props: CanvasChromeProps) {
           {panelEls.collaborate}
           {panelEls.ai}
           {panelEls.minimap}
-          {panelEls.laser}
-          {panelEls.spotlight}
           {panelEls.format}
-          {panelEls['slide-deck']}
         </>
       )}
 
       {/* Bottom-right cluster. Order, left to right: the Undo / Redo
-          strip, the Session strip (Timer, Vote, Poll), the mode's own strip (Slides, Plan), the
-          Collaborate button (only while the tab has a thread or an action), the Layers and
-          Theme & Canvas strip, then the Zoom controls. The buttons open their panels as popovers
-          above them (docs/specs/007-editor/live-app.md). */}
+        strip, the Session strip (Timer, Vote), the mode's own strip (Contents, Plan), the
+        Collaborate button (only while the tab has a thread or an action), the Layers and
+        Theme & Canvas strip, then the Zoom controls. The buttons open their panels as popovers
+        above them (docs/specs/007-editor/live-app.md). */}
       <div
-        // Presenting hides this cluster (docs/specs/012-collaboration/presentation-mode.md): zen keeps the zoom controls
-        // as its one way back out, and a deck has its own way out plus no
-        // zoom to offer.
+        // Zen keeps the zoom controls as its one way back out.
         data-zoom-cluster=""
         data-region="controls"
         // Drawn at the UI scale, still 16px from the corner, or clear of a landscape notch.
@@ -517,7 +461,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           <>
             {offscreenContent ? <OffscreenContentHint onBringBack={onFitToScreen} /> : null}
             {/* Undo / Redo: see UndoRedoClusterStrip. A Participant undoes its own changes too
-                (docs/specs/013-workspace/share-roles.md). */}
+              (docs/specs/013-workspace/share-roles.md). */}
             {!zenMode && (!readOnly || !!props.participantPalette) ? (
               <UndoRedoClusterStrip
                 onUndo={onUndo}
@@ -526,19 +470,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 canRedo={canRedo}
               />
             ) : null}
-            {/* Avatar (docs/specs/008-canvas/avatar-mode.md "The Avatar Panel"): beside Undo / Redo while the mode
-                is on, for every role, Zen included: it is the mode's one piece of chrome. */}
-            {props.canvasTool === 'avatar' ? (
-              <AvatarClusterButton
-                popoverOpen={activeDockPanel === 'avatar'}
-                onTogglePopover={(button) => handleDockButtonClick('avatar', button, true)}
-                canSpeak={!!props.onSendAvatarMessage}
-              />
-            ) : null}
             {/* The Session strip (docs/specs/012-collaboration/session-tools.md "The Session strip"): left of
-                Layers, or of the mode's own strip. Kept in Zen: a running session is the one piece of
-                chrome a facilitator still needs there. Workshop has all three, Plan its Timer and
-                Vote; Diagram and Draw keep their bottom bar to their own tools. */}
+              Layers, or of the mode's own strip. Kept in Zen: a running session is the one piece of
+              chrome a facilitator still needs there: its Timer and Vote. */}
             {props.sessionTools && stripTools ? (
               <div className="contents">
                 <SessionClusterStrip
@@ -556,14 +490,10 @@ export function CanvasChrome(props: CanvasChromeProps) {
                   }
                   voteReviewing={!!props.voteReview}
                   voteButtonRef={voteButtonRef}
-                  pollRunning={!!props.pollPanel}
                   canStart={stripCanStart(!!readOnly)}
                   offersTimer={stripTools.timer}
-                  offersPoll={stripTools.poll}
                   open={
-                    activeDockPanel === 'session-timer' ||
-                    activeDockPanel === 'session-vote' ||
-                    activeDockPanel === 'session-poll'
+                    activeDockPanel === 'session-timer' || activeDockPanel === 'session-vote'
                       ? activeDockPanel
                       : null
                   }
@@ -572,7 +502,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
               </div>
             ) : null}
             {/* Find a Card and Card Types (docs/specs/026-plan/items.md "Finding a card", item-types.md): one strip,
-                while the tab has something that shows cards ("The Plan strip"). */}
+              while the tab has something that shows cards ("The Plan strip"). */}
             {!zenMode && tabShowsCards ? (
               <PlanCardsClusterStrip
                 finderOpen={activeDockPanel === 'plan-cards'}
@@ -601,8 +531,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
               />
             ) : null}
             {/* Collaborate (docs/specs/012-collaboration/assigned-actions.md §5): before Layers, only while
-                the tab has a comment thread or an action. A view-role visitor
-                gets it too: they read threads and answer them. */}
+              the tab has a comment thread or an action. A view-role visitor
+              gets it too: they read threads and answer them. */}
             {!zenMode &&
             panelsOn.collaborate &&
             (commentRows.length > 0 || actionRows.length > 0) ? (
@@ -613,8 +543,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
               />
             ) : null}
             {/* Layers (docs/specs/006-document/layers.md) and the Theme & Canvas brush
-                (docs/specs/011-theme/canvas-and-theme-dialog.md, its one entry point; read-only sessions
-                pass no handler), one strip in every mode: see LayersThemeStrip. */}
+              (docs/specs/011-theme/canvas-and-theme-dialog.md, its one entry point; read-only sessions
+              pass no handler), one strip in every mode: see LayersThemeStrip. */}
             {!zenMode ? <LayersThemeStrip onOpenTheme={onOpenCanvasTheme} /> : null}
             <ViewZoomControls
               onZoomIn={handleZoomIn}

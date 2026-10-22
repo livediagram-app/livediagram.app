@@ -69,9 +69,6 @@ export type CommandContext = {
   // content, so they disable on an empty canvas exactly as the palette's
   // tool dropdown disables them.
   canvasEmpty: boolean;
-  // Spotlight is desktop-only (hover + click-to-resize don't map to touch),
-  // so it is withheld on a phone the same way the dropdown omits it.
-  isMobile: boolean;
   // Event storming (docs/specs/021-event-storming/event-storming.md): the board-level verbs are offered only on one
   // of those boards, where they mean something.
   esBoard: boolean;
@@ -132,8 +129,8 @@ export type CommandHandlers = {
 // the whole point is that a tool the palette offers is also typeable, and a
 // stale id would hand the setter a tool that does not exist.
 //
-// Only the id + the words are restated. The gating (empty canvas, mobile,
-// read-only) is expressed once, below.
+// Only the id + the words are restated. The gating (empty canvas, read-only)
+// is expressed once, below.
 export const CANVAS_TOOLS: {
   id: string;
   name: string;
@@ -144,7 +141,6 @@ export const CANVAS_TOOLS: {
   mutates?: boolean;
   // Edits the tab's elements: Plan leaves it out (docs/specs/026-plan/plan-mode.md "The tools"), as the dropdown does.
   editsElements?: boolean;
-  desktopOnly?: boolean;
 }[] = [
   { id: 'select', name: 'Select Tool', keywords: 'select pointer arrow cursor pick v' },
   { id: 'pan', name: 'Hand Tool', keywords: 'hand pan grab drag move canvas scroll h' },
@@ -155,33 +151,6 @@ export const CANVAS_TOOLS: {
     needsContent: true,
     mutates: true,
     editsElements: true,
-  },
-  {
-    id: 'laser',
-    name: 'Laser Pointer',
-    keywords: 'laser pointer present point highlight temporary trail k',
-    needsContent: true,
-  },
-  {
-    id: 'spotlight',
-    name: 'Spotlight',
-    keywords: 'spotlight focus dim darken present attention',
-    needsContent: true,
-    desktopOnly: true,
-  },
-
-  {
-    // Slide Deck (docs/specs/012-collaboration/presentation-mode.md). A presenter tool like the Laser and Spotlight,
-    // so it needs content for the same reason: there is nothing to put on a
-    // slide on an empty canvas. Picking it opens the panel; Start presents.
-    // Desktop-only: the deck workbench has no room beside a phone's canvas.
-    id: 'slide-deck',
-    name: 'Slide Deck',
-    keywords: 'slide deck present presentation slideshow slides talk demo walkthrough',
-    needsContent: true,
-    desktopOnly: true,
-    // Building and presenting a deck is an Editor's (docs/specs/013-workspace/share-roles.md).
-    mutates: true,
   },
   {
     id: 'isometric',
@@ -201,7 +170,6 @@ function toolCommands(ctx: CommandContext, h: CommandHandlers): EditorCommand[] 
     (t) =>
       t.id !== ctx.canvasTool &&
       !(t.needsContent && ctx.canvasEmpty) &&
-      !(t.desktopOnly && ctx.isMobile) &&
       !(t.mutates && ctx.isReadOnly) &&
       !t.editsElements,
   ).map((t) => ({
@@ -243,7 +211,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
       id: 'collaborators',
       name: 'Collaborators',
       keywords:
-        'collaborators people who is here participants presence roster online avatars following follow session',
+        'collaborators people who is here participants presence roster online avatars session',
       run: h.openCollaborators,
     },
     ...toolCommands(ctx, h),

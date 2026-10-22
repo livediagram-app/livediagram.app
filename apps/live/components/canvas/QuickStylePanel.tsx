@@ -148,7 +148,7 @@ export function QuickStylePanel({
   showTitles,
 }: {
   quickStyle: QuickStyleApi;
-  // Zen, embeds, presenting, or a context menu open: the panel stands down.
+  // Zen, embeds, or a context menu open: the panel stands down.
   hidden: boolean;
   // Section titles; on unless a caller turns them off. The rows keep their
   // names either way.

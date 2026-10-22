@@ -36,12 +36,7 @@ export function tileSignature(tile: PaletteTileDef): string | null {
       if (a.kind === 'icon' || a.kind === 'sticker') return null;
       return shapeSig(
         a.kind,
-        a.session ??
-          a.reaction ??
-          a.mode ??
-          a.estimateScale ??
-          a.variant ??
-          (a.kind === 'plan-view' ? a.plan : undefined),
+        a.session ?? a.variant ?? (a.kind === 'plan-view' ? a.plan : undefined),
       );
     case 'component': {
       const kind = componentShapeKind(a.kind);
@@ -71,10 +66,7 @@ export function tileSignature(tile: PaletteTileDef): string | null {
 export function elementSignature(el: Element): string {
   switch (el.type) {
     case 'shape':
-      return shapeSig(
-        el.shape,
-        el.session?.tool ?? el.reaction ?? el.mode ?? el.estimateScale ?? el.planView?.view,
-      );
+      return shapeSig(el.shape, el.session?.tool ?? el.planView?.view);
     case 'sticky':
       return `sticky:${el.esKind ?? ''}`;
     case 'freehand':

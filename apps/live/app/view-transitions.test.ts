@@ -19,14 +19,9 @@ describe('View Transitions', () => {
     expect(globals).toMatch(/html\s*\{\s*view-transition-name:\s*none;\s*\}/);
   });
 
-  it('keep the slide moves with the canvas, and none with the chrome', () => {
+  it('keep, and none with the chrome', () => {
     expect([...classesIn(globals)]).toEqual([]);
-    expect([...classesIn(canvasMotion)].sort()).toEqual([
-      'slide-back',
-      'slide-fade',
-      'slide-forward',
-      'slide-in',
-    ]);
+    expect([...classesIn(canvasMotion)]).toEqual([]);
   });
 
   it('are started only through React, never document.startViewTransition', () => {

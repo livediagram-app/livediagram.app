@@ -233,7 +233,6 @@ describe('DocumentRoom: a Participant adds and writes', () => {
         elementId: 'col',
         delta: { kind: 'check', index: 0, text: 'a', done: true },
       },
-      { kind: 'poll-start', poll: {} },
       { kind: 'drag-preview', tabId: 't1', ids: ['col'] },
     ]) {
       await send(room, part, op);

@@ -109,9 +109,6 @@ export function EditorSearchPanel() {
               if (add.type === 'shape')
                 addShape(add.shapeKind, {
                   session: add.session,
-                  reaction: add.reaction,
-                  mode: add.mode,
-                  estimateScale: add.estimateScale,
                   plan: add.plan,
                   variant: add.variant,
                 });

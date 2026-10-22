@@ -85,7 +85,6 @@ export function useIdentityBootstrap(opts: {
     setActiveId: SetState<string>;
     setDocumentId: SetState<string | null>;
     setDocumentName: SetState<string>;
-    setDocumentPresentation: SetState<string | null>;
     setDocumentItemTypes: SetState<SavedItemTypes>;
     setDocumentNotFound: SetState<boolean>;
     setLoadError: SetState<boolean>;
@@ -164,7 +163,6 @@ export function useIdentityBootstrap(opts: {
       setActiveId,
       setDocumentId,
       setDocumentName,
-      setDocumentPresentation,
       setDocumentItemTypes,
       setDocumentNotFound,
       setLoadError,
@@ -206,7 +204,6 @@ export function useIdentityBootstrap(opts: {
       noteChangesetSeen,
       setActiveId,
       setDocumentName,
-      setDocumentPresentation,
       setDocumentItemTypes,
       setDocumentOwnerColor,
       setDocumentOwnerId,

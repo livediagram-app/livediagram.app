@@ -145,7 +145,7 @@ export function admitFrame(
 }
 
 // A Participant answers only as itself (docs/specs/013-workspace/share-roles.md "Integrity"): a dot names its voter
-// and a response its participant, and both must be the key its own hello published. An idea names nobody. The key
+// and a response its participant, and both must be the key its own hello published. The key
 // is still the one the session claimed at hello (server-derived keys are Later), so this stops a Participant voting
 // in someone else's name in the same room, not one that claimed another's key from the start.
 export function answersAsSelf(op: unknown, key: string | undefined): boolean {
@@ -154,7 +154,6 @@ export function answersAsSelf(op: unknown, key: string | undefined): boolean {
   if (o.kind === 'vote') return key !== undefined && o.voter === key;
   if (o.kind !== 'el-delta' || typeof o.delta !== 'object' || o.delta === null) return false;
   const d = o.delta as { kind?: unknown; participantId?: unknown };
-  if (d.kind === 'idea') return true;
   if (d.kind === 'response') return key !== undefined && d.participantId === key;
   return false;
 }

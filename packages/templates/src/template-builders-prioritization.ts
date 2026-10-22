@@ -261,11 +261,12 @@ export function buildPrioritizationMatrix(cx: number, cy: number): Element[] {
   const sizeY = voteY + 40 + 96 + 24;
   const estimateH = 220;
   elements.push(step(sizeY, '2. Size the effort together'), {
-    ...createShape('estimate', railX, sizeY + 40),
+    ...createSticky(railX, sizeY + 40),
     width: railW,
     height: estimateH,
-    label: 'How big is the guided tour?',
-    estimateScale: 'tshirt',
+    label:
+      'How big is the guided tour?\n\nXS · S · M · L · XL: agree one size and write it on the note.',
+    textSize: 'sm',
     ...content,
   });
   const commitY = sizeY + 40 + estimateH + 24;

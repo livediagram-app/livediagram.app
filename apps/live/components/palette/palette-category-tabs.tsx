@@ -161,8 +161,6 @@ export function paletteCategoryTabs(
       case 'collab-ask':
       case 'collab-tools':
       case 'collab-record':
-      case 'collab-react':
-      case 'collab-mode':
       case 'collab-navigate':
         return <PaletteCollaborateTab {...tab} tiles={tiles} />;
       // Plan mode's cards follow the document's item types

@@ -27,7 +27,6 @@ import {
   PALETTE_USE,
   PANELS_OPENED,
   PLAN_BOARDS,
-  PRESENTATIONS,
   RETURNING_VISITORS,
   SHARING_AND_JOINING,
   SHEETS,
@@ -95,7 +94,7 @@ export const GROUPS: MetricGroup[] = [
   // so read them against it.
   {
     title: 'Collaboration',
-    metrics: [LIVE_TOGETHER, SHARING_AND_JOINING, TIMELINE_AND_ACTIVITY, PRESENTATIONS, VOTING],
+    metrics: [LIVE_TOGETHER, SHARING_AND_JOINING, TIMELINE_AND_ACTIVITY, VOTING],
   },
   {
     title: 'Connections',

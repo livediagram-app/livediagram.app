@@ -848,7 +848,7 @@ export function PlanCardPanelScene() {
   );
 }
 
-/** Right-clicking a card: Open, Duplicate, Add to Slides, Edit Card Type, a Move to row per column, Flag,
+/** Right-clicking a card: Open, Duplicate, Edit Card Type, a Move to row per column, Flag,
  *  Archive, Trash. */
 export function PlanCardMenuScene() {
   return (
@@ -877,7 +877,6 @@ export function PlanCardMenuScene() {
           'Write docs',
           'Open',
           'Duplicate',
-          'Add to Slides',
           'Edit Card Type',
           'Move to In Progress',
           'Move to Review',

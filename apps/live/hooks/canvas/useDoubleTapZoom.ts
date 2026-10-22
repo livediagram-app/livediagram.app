@@ -57,7 +57,7 @@ export function useDoubleTapZoom(
         track('Canvas', 'Zoomed', 'DoubleTapFit');
         return;
       }
-      // offsetWidth/Height, the canvas's own size, as centreOn reads it (hooks/canvas/useEditorViewport).
+      // offsetWidth/Height, the canvas's own size, as the fit reads it (hooks/canvas/useEditorViewport).
       glide(doubleTapZoomView(at, zoom, { width: node.offsetWidth, height: node.offsetHeight }));
       zoomedInOn.current = id;
       track('Canvas', 'Zoomed', 'DoubleTap');

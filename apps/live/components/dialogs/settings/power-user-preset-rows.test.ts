@@ -8,9 +8,7 @@ const ALL = new Set([
   'alignmentGuides',
   'autoRebindArrows',
   'planTourSeen',
-  'workshopTourSeen',
   'formTourSeen',
-  'avatarTourSeen',
   'elementToursSeen',
   'aiSuggestedPrompts',
 ]);
@@ -23,9 +21,7 @@ describe('presetSummaryLines', () => {
       ['Alignment Guides', 'On', 'Editor'],
       ['Auto-Attach Arrows', 'On', 'Editor'],
       ['Plan Tours', 'Off', 'Tours'],
-      ['Workshop Tour', 'Off', 'Tours'],
       ['Forms Tour', 'Off', 'Tours'],
-      ['Avatar Tour', 'Off', 'Tours'],
       ['Show Me on Every Element', 'Off', 'Tours'],
       ['Suggested Prompts', 'Off', 'AI Tools'],
     ]);

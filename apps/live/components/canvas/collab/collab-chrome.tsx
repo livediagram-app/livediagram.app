@@ -1,14 +1,13 @@
-// Shared chrome for the collaboration panels (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md): the card
-// title, the small press targets, and the empty-state line.
+// Shared chrome for the collaboration panels (docs/specs/012-collaboration/temperature-check.md,
+// comment-pin.md, action-panel.md): the card title, the small press targets, and the empty-state line.
 //
-// Five faces render the same card — a title over a body over a control row —
+// Several faces render the same card — a title over a body over a control row —
 // so the frame lives here once. Without it each face re-types the same four
 // class strings and they drift the first time one is tweaked.
 
 import { createContext, useContext } from 'react';
 import { SHAPE_DEFAULT_SIZE, type ShapeElement } from '@liveplanner/document';
 import { tint } from '@/lib/element-tint';
-import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 // Re-exported: every collab face already reaches for it through this module,
 // and the kit it now also feeds lives one level up (see lib/element-tint.ts).
 export { tint };
@@ -27,11 +26,11 @@ import { useTouchScrollBody } from '@/hooks/ui/useTouchScrollBody';
 // composed against. Along the OTHER axis the inner box is stretched to cover
 // the whole element (in design units), so a card taller or wider than its
 // default still paints its backdrop edge to edge: a centred design-sized box
-// left the agenda's ruling and crease floating in a band in the middle of a
-// tall element, with bare card above and below.
+// left its backdrop floating in a band in the middle of a tall element, with
+// bare card above and below.
 //
-// A card whose content is a LIST that grows (the Q&A board, docs/specs/012-collaboration/qa-board.md) opts out
-// with `reflow`: there, resizing is how you make room for more notes, and
+// A card whose content is a LIST that grows (the Comment panel, docs/specs/012-collaboration/comment-pin.md) opts
+// out with `reflow`: there, resizing is how you make room for more rows, and
 // scaling would spend the new space on bigger type instead.
 function CollabScale({
   element,
@@ -93,7 +92,7 @@ export function CollabPanel({
   reflow,
 }: {
   // The element, for its box. A Collaborate card SCALES to the space it is
-  // given rather than laying out into it: resizing one is how a facilitator
+  // given rather than laying out into it: resizing one is how a host
   // makes it readable from the back of the room, and a card that only grew its
   // padding did nothing for them. See the wrapper below.
   element: ShapeElement;
@@ -111,12 +110,11 @@ export function CollabPanel({
   aside?: React.ReactNode;
   children: React.ReactNode;
   footer?: React.ReactNode;
-  // Extra class on the card body. Used by the Done check (docs/specs/012-collaboration/done-check.md) for its
-  // all-done flash, which is a class rather than an inline style so the
+  // Extra class on the card body: a class rather than an inline style so the
   // reduced-motion override in globals.css can reach it.
   className?: string;
-  // The card's own `…` menu, which LEADS the title (the Done check's, the Q&A
-  // board's, the Idea box's). A card that draws none gets the shared settings
+  // The card's own `…` menu, which LEADS the title (the Temperature check's).
+  // A card that draws none gets the shared settings
   // `…` there instead, from CollabSettingsSlot.
   headerExtra?: React.ReactNode;
   // The paper kit (docs/specs/012-collaboration/participant-responses.md): the textures that make this card a particular
@@ -198,7 +196,7 @@ export function CollabPanel({
             </span>
           </div>
           {/* The body scrolls rather than overflowing the element box: a card with
-          twelve agenda rows on it is a normal card, and clipping the last few
+          twelve rows on it is a normal card, and clipping the last few
           with no way to reach them is the bug that would report.
 
           The negative margin + matching padding buys 4px of interior room
@@ -223,43 +221,6 @@ export function CollabPanel({
         {overlay}
       </div>
     </CollabScale>
-  );
-}
-
-// A small pill button, for a control that sits inside a card's own layout
-// rather than as its one action (the Quiz's Start inside its disc). `tone`
-// picks the weight: 'quiet' for the secondary act, 'loud' for the one the
-// card is for. No hover card: a card button's label says what it does.
-export function CollabButton({
-  children,
-  onPress,
-  disabled,
-  tone = 'quiet',
-  textColor,
-  label,
-}: {
-  children: React.ReactNode;
-  onPress?: () => void;
-  disabled?: boolean;
-  tone?: 'quiet' | 'loud';
-  textColor: string;
-  // Accessible name where the visible text is a glyph or too terse.
-  label?: string;
-}) {
-  // The canvas-wide press guard: a press that turns into a drag moves the
-  // element instead of firing (every other on-canvas control uses it).
-  const press = usePressWithoutDrag(() => onPress?.());
-  return (
-    <button
-      type="button"
-      {...press}
-      disabled={disabled || !onPress}
-      aria-label={label}
-      className="pointer-events-auto shrink-0 cursor-pointer rounded-full px-3 py-1.5 text-[11px] font-semibold transition hover:brightness-95 disabled:cursor-default disabled:opacity-45"
-      style={{ color: textColor, backgroundColor: tint(textColor, tone === 'loud' ? 0.16 : 0.08) }}
-    >
-      {children}
-    </button>
   );
 }
 

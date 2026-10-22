@@ -23,11 +23,8 @@ export * from './feature-art/content';
 export * from './feature-art/content-tech';
 export * from './feature-art/structure';
 export * from './feature-art/embeds-timeline';
-// Presentation mode (docs/specs/012-collaboration/presentation-mode.md): decks, the full-screen slide, notes, and the
-// fact that presenting is yours alone.
-export * from './feature-art/present';
+// The isometric view.
 export * from './feature-art/room';
-export * from './feature-art/workshop';
 // The mode categories (docs/specs/019-marketing/marketing-site.md "Story beats"): Draw's markers and
 // erasers, and Plan's boards.
 export * from './feature-art/whiteboard';
@@ -41,8 +38,8 @@ export * from './feature-art/sheet';
 export * from './feature-art/forms';
 export * from './feature-art/side-by-side';
 export * from './feature-art/imports';
-// Event storming boards and their photo import; the sequence diagram, charts and code blocks; search,
-// follow along and live images.
+// Event storming boards and their photo import; the sequence diagram, charts and code blocks; search
+// and live images.
 export * from './feature-art/storming';
 export * from './feature-art/canvas-data';
 export * from './feature-art/reach';

@@ -68,12 +68,6 @@ export class TabTooLargeError extends Error {
 // NAME_MAX_LENGTH instead (names.ts, docs/specs/006-document/name-length.md).
 export const MAX_NAME_LEN = 500;
 
-// A document's slide deck (docs/specs/012-collaboration/presentation-mode.md). Slides hold element REFERENCES, never
-// element copies, so a deck stays tiny however large the document is: a few
-// hundred bytes per slide. 256KB is roughly a thousand slides and exists to
-// bound a hostile payload, not to constrain any real deck.
-export const MAX_DECK_LEN = 256 * 1024;
-
 // A custom theme's JSON definition (palette + per-shape colours).
 export const MAX_THEME_DEF_BYTES = 256 * 1024;
 

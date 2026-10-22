@@ -58,7 +58,7 @@ const RAW_COLOURS: ReadonlySet<string> = new Set(['fillColor', 'strokeColor', 't
 const FORMER_FIELDS: Readonly<Partial<Record<Element['type'], readonly string[]>>> = {
   freehand: ['points', 'pressures'],
 };
-const LIVE_HINT = "comments go through the comment commands; responses and ideas are people's";
+const LIVE_HINT = "comments go through the comment commands; responses are people's";
 
 const hasField = (el: Element, field: string) => isElementFieldName(el.type, field);
 

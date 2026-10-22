@@ -27,7 +27,6 @@ describe('LANDING_SECTIONS', () => {
       'collaboration',
       'diagrams',
       'whiteboard',
-      'slides',
       'plan',
       'sheets',
       'forms',

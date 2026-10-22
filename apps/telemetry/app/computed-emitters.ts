@@ -1,9 +1,8 @@
 // Test support for metric-emitters.test.ts: the values each COMPUTED emitter
 // can send. The emitter scan (emitter-scan.ts) knows a computed emit site
 // exists but not what its type will be, and "some chart counts this
-// category·action" is not enough: `UI·Changed·Presentation-<field>` sat on
-// no chart at all, and the photo import's `AI·Used·Photo*` inflated a card
-// about the AI panel, both unseen because a chart existed on the pair.
+// category·action" is not enough: the photo import's `AI·Used·Photo*` inflated
+// a card about the AI panel, unseen because a chart existed on the pair.
 //
 // So every computed site is declared here by `<path> <Category>·<Action>`,
 // with the values it can send. Where the set is closed and written down
@@ -87,42 +86,6 @@ const TRASH_TYPES = tokensAfter(read('live/lib/trash-groups.ts'), 'telemetryType
 
 // One closed value per default folder key (placementDefaultTelemetryType).
 const DEFAULT_FOLDER_TYPES = PLACEMENT_DEFAULT_KEYS.map(placementDefaultTelemetryType);
-
-// The presenter settings: `Presentation-<field>` per PresentationConfig key.
-const PRESENTATION_FIELDS = (() => {
-  const source = read('live/lib/presentation-config.ts');
-  const start = source.indexOf('export type PresentationConfig = {');
-  const block = source.slice(start, source.indexOf('\n};', start));
-  return [...block.matchAll(/^ {2}([a-zA-Z]+)\??:/gm)].map((m) => `Presentation-${m[1]}`);
-})();
-
-// The Settings dialog's presenter rows (settings-catalogue.ts presentingToggle / presentingChoice): a toggle sends
-// `Presentation-<field>On|Off` for each boolean field, a choice `Presentation-<field><Option>` (choiceTelemetryType).
-const PRESENTATION_SETTINGS = (() => {
-  const source = read('live/lib/presentation-config.ts');
-  const start = source.indexOf('export type PresentationConfig = {');
-  const block = source.slice(start, source.indexOf('\n};', start));
-  const fields = [...block.matchAll(/^ {2}([a-zA-Z]+)\??: ([A-Za-z]+);/gm)].map(
-    (m) => [m[1]!, m[2]!] as const,
-  );
-  const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-  const unionOf = (type: string) => {
-    const m = new RegExp(`export type ${type} = ([^;]+);`).exec(source);
-    return m ? [...m[1]!.matchAll(/'([^']+)'/g)].map((x) => x[1]!) : [];
-  };
-  const seconds = [...source.matchAll(/\{ seconds: (\d+),/g)].map((m) => m[1]!);
-  return {
-    toggled: fields
-      .filter(([, type]) => type === 'boolean')
-      .flatMap(([f]) => [`Presentation-${f}On`, `Presentation-${f}Off`]),
-    changed: [
-      ...fields
-        .filter(([, type]) => type !== 'boolean' && type !== 'number')
-        .flatMap(([f, type]) => unionOf(type).map((o) => `Presentation-${f}${cap(o)}`)),
-      ...seconds.map((n) => `Presentation-autoAdvanceSeconds${n}`),
-    ],
-  };
-})();
 
 // The photo import's detector tokens (apps/live photo-model/telemetry.ts):
 // PhotoDetectHybrid<Backend> or PhotoDetectClassical<Reason>.
@@ -241,21 +204,6 @@ const FORM_TOUR_STEP_SOURCE: string[] = [
         .join('')}`,
   );
 
-// The Avatar tour's steps, as avatarTourStepTelemetryType makes them (apps/live avatar-tour-steps.ts,
-// docs/specs/008-canvas/avatar-tour.md). The welcome card sends no step view.
-const AVATAR_TOUR_STEP_SOURCE: string[] = [
-  ...read('live/components/tour/avatar-tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm),
-]
-  .map((m) => m[1]!)
-  .filter((id) => id !== 'welcome')
-  .map(
-    (id) =>
-      `AvatarTourStep${id
-        .split('-')
-        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-        .join('')}`,
-  );
-
 // Plan items name their type (titleCaseType of an item type id); set-up changes name the part.
 const PLAN_ITEM_TYPES = ['Task', 'Story', 'Bug', 'Epic', 'Note', 'Idea', 'Action', 'Risk'];
 const PLAN_TYPE_WHY = "titleCaseType(type): an item type's id, or a later type an agent made";
@@ -363,13 +311,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/live/app/document/[id]/useElementCreation.ts Element·Added': {
     values: ELEMENT_KINDS,
     open: ELEMENT_WHY,
-  },
-  'apps/live/app/document/[id]/useSlideDeck.ts UI·Changed': { values: PRESENTATION_FIELDS },
-  'apps/live/components/dialogs/settings/settings-catalogue.ts UI·Toggled': {
-    values: PRESENTATION_SETTINGS.toggled,
-  },
-  'apps/live/components/dialogs/settings/settings-catalogue.ts UI·Changed': {
-    values: PRESENTATION_SETTINGS.changed,
   },
   'apps/live/app/document/[id]/useTemplateFlow.ts Template·Used': {
     values: TEMPLATES,
@@ -568,7 +509,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/live/components/tour/ElementTourHost.tsx UI·Closed': {
     values: ELEMENT_TOUR_TOKENS.map((t) => `${t}Offer`),
   },
-  'apps/live/components/tour/AvatarTourHost.tsx UI·View': { values: AVATAR_TOUR_STEP_SOURCE },
   'apps/live/hooks/canvas/useDebouncedCanvasTelemetry.ts Canvas·Changed': {
     values: Object.keys(CANVAS_CONTROLS),
   },

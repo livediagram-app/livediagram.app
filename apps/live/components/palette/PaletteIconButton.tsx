@@ -162,8 +162,8 @@ export function IconButton({
   const effectiveDragStart = dragKind
     ? (e: React.DragEvent) => {
         // `kind` alone, or `kind|choice` where the tile carries a
-        // creation-time one (docs/specs/009-elements/mode-button.md, /105, /123, /135). Without it a
-        // dragged Poll tile dropped a timer, because every session tile is
+        // creation-time one (docs/specs/012-collaboration/session-button.md). Without it a
+        // dragged Dot Vote tile dropped a timer, because every session tile is
         // the same shape kind and the choice lived only on the click path.
         e.dataTransfer.setData(
           PALETTE_DND_MIME,

@@ -31,7 +31,6 @@ Scope, by file:
 | `apps/live/components/canvas/RichTextToolbar.tsx`            | The label toolbar hosting the same picker                                        |
 | `apps/live/components/canvas/useRichTextSession.ts`          | Label session (`collapsedScope: 'all'`)                                          |
 | `apps/live/components/canvas/label-style.ts`                 | `effectiveRunStyle`: label headings in `em`                                      |
-| `apps/live/components/canvas/PresentationElementPopover.tsx` | Third read-only surface for a note, in presentation mode [QD7]                   |
 | `apps/live/lib/url-safety.ts`                                | `normaliseUrl` (store) and `isSafeFollowUrl` (follow)                            |
 
 ## Domain and naming
@@ -216,7 +215,7 @@ response.
   normal tab sync.
 - **Never persisted:** `noteOpenId`, the popover position, the link field's draft, `ActiveFormat`.
 - **Readers of the mirror:** the note indicator's has-a-note test (`buildIndicatorItems`), the menu's Add / Edit Note
-  label, `hasReadableDetail` in presentation mode, JSON export, and the MCP and API payloads. Search
+  label, JSON export, and the MCP and API payloads. Search
   and the Excalidraw round-trip do not carry a note [QD1].
 - **Snapshot / restore:** history snapshots carry both fields; undo restores the pair together.
 - **Migration:** none. A note without `noteRich` renders as one plain run through `noteRuns`.

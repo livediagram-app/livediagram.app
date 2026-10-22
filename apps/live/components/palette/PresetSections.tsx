@@ -47,10 +47,9 @@ export function shapeSupportsPresets(el: Element): el is ShapeElement {
   // tile did nothing, because this list had never heard of stickers.
   if (!supportsColours(el)) return false;
   // The ones that DO take colours but still can't show a preset: an icon is
-  // line art with no fill, a chart paints its series from its own palette,
-  // and a reveal (docs/specs/009-elements/reveal-zone.md) is an opaque cover whose whole job is to be
-  // unreadable — every preset tile changed nothing a viewer could see.
-  return el.shape !== 'icon' && el.shape !== 'reveal' && !takesChartPalette(el.shape);
+  // line art with no fill, and a chart paints its series from its own palette:
+  // every preset tile changed nothing a viewer could see.
+  return el.shape !== 'icon' && !takesChartPalette(el.shape);
 }
 
 // Presets (docs/specs/010-palette/style-presets.md) — one-click theme-colour + border looks for a shape, plus a

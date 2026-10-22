@@ -107,22 +107,7 @@ export function animationSectionOf(
 }
 
 // Shapes that keep their words still: their caption is part of the art or drawn by the shape.
-const WORDLESS_SHAPES = new Set<string>([
-  'icon',
-  'chair',
-  'desk',
-  'sofa',
-  'fence',
-  'avatar-pad',
-  'sticker',
-  // The office pieces (docs/specs/009-elements/office.md) but the room, whose label is its name plate.
-  'meeting-table',
-  'plant',
-  'bookshelf',
-  'water-cooler',
-  'coffee-machine',
-  'rug',
-]);
+const WORDLESS_SHAPES = new Set<string>(['icon', 'sticker']);
 
 /** Whether the element carries words the Text set can animate. */
 export function carriesWords(el: Element): boolean {

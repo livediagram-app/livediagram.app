@@ -185,7 +185,7 @@ another document is kept. Nothing writes a record any more.
 | The subject is deleted mid-tour                   | The tour ends as skipped                            |
 | The person switches tab or leaves Plan mid-tour   | The tour ends as skipped; the card panel is closed  |
 | A Sheet's toolbar or cog not shown to this person | Its step finds no target and is skipped             |
-| Diagram or Workshop tour on screen                | The Plan tour waits for `activeTour()` to clear     |
+| Diagram tour on screen                            | The Plan tour waits for `activeTour()` to clear     |
 | Locked tab                                        | No offer                                            |
 | A leftover record from the old tour               | Swept on the next visit to that document, as before |
 

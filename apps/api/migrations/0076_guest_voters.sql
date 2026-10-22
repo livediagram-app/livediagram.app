@@ -1,4 +1,4 @@
--- Guest voters per network per document (docs/specs/012-collaboration/vote-integrity.md).
+-- Guest voters per network per document.
 --
 -- A guest id costs nothing to make, so a guest's vote is admitted against a cap of distinct guest voters per network
 -- per document. One row per guest voter per network: `network_tag` is a SHA-256 of the document id and the caller's

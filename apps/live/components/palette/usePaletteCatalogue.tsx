@@ -1,6 +1,5 @@
 import type { EmbedProvider, EventStormingNoteKind } from '@liveplanner/document';
-import { useEffect, useState } from 'react';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { useState } from 'react';
 import type { PaletteTileActions } from '@/components/palette/PaletteTileGrid';
 import { getLineArtIconCatalog } from '@/lib/icons';
 import { searchStickers } from '@/lib/stickers';
@@ -38,7 +37,6 @@ type Deps = Pick<
   PaletteProps,
   | 'canvasTool'
   | 'onSetCanvasTool'
-  | 'onExitAvatarMode'
   | 'onToggleZen'
   | 'canvasEmpty'
   | 'pendingDraw'
@@ -53,9 +51,7 @@ type Deps = Pick<
   };
 
 export function usePaletteCatalogue({
-  canvasTool,
   onSetCanvasTool,
-  onExitAvatarMode,
   onToggleZen,
   canvasEmpty,
   onAddShape,
@@ -87,27 +83,13 @@ export function usePaletteCatalogue({
   onTileUsed,
   participant = false,
 }: Deps) {
-  // Spotlight (docs/specs/008-canvas/canvas-and-palette.md) is desktop-only: it relies on hover-tracking the
-  // cursor and on left/right-click to resize the light, none of which map to
-  // touch — so drop it from the tool picker on mobile viewports. Reactive
-  // (the shared useIsMobileViewport, as MovablePanel uses) so the option
-  // appears / disappears as the viewport crosses the breakpoint; a client
-  // mount reads it synchronously, so there's no flicker.
   const { libraries } = useShapeLibraries();
-  const isMobile = useIsMobileViewport();
-  // If the viewport shrinks into mobile while Spotlight is active (desktop ->
-  // resize / rotate), revert to Select: the option has just left the picker,
-  // so leaving the tool on spotlight would strand it (the trigger would
-  // mislabel as Select while the canvas stayed shrouded).
-  useEffect(() => {
-    if (isMobile && canvasTool === 'spotlight') onSetCanvasTool('select');
-  }, [isMobile, canvasTool, onSetCanvasTool]);
   // Close a popover palette after adding a shape / tool so the user can draw
   // immediately without dismissing it manually.
   // `opts` is the creation-time choice for the kinds that have one: which
-  // session tool, which reaction (docs/specs/012-collaboration/session-button.md, docs/specs/009-elements/reaction-pad.md). It has to be forwarded
+  // session tool (docs/specs/012-collaboration/session-button.md). It has to be forwarded
   // rather than dropped — this adapter silently swallowing it is what made
-  // every session tile place a timer and every reaction tile place confetti.
+  // every session tile place a timer.
   const armed = (fn: () => void) => () => {
     fn();
     onTileUsed?.();
@@ -151,11 +133,8 @@ export function usePaletteCatalogue({
   };
   // The add-handler bundle every catalogue-driven tile grid consumes
   // (palette-tile-defs). All handlers above already wrap the mobile-close /
-  // draw-armed behaviour, so a tile behaves the same from any tab.
-  // Avatar mode (docs/specs/008-canvas/avatar-mode.md) is read-only, so reaching for a tile means the user
-  // wants to edit again: every add leaves the mode first (back to whichever
-  // tool preceded it) and then drops as normal. Wrapping the bundle covers
-  // every tile, including ones added later.
+  // draw-armed behaviour, so a tile behaves the same from any tab. Wrapping the
+  // bundle covers every tile, including ones added later.
   const tileActions: PaletteTileActions = withTileActionPreamble<PaletteTileActions>(
     {
       addShape,
@@ -176,7 +155,6 @@ export function usePaletteCatalogue({
       hasImage: !!onAddImage,
     },
     (action, args) => {
-      if (canvasTool === 'avatar') onExitAvatarMode?.();
       // A maximised board, view or Sheet gives the canvas back for anything but a card (docs/specs/026-plan/
       // plan-board.md "The palette follows what fills the screen"), so the tool is ready where it lands.
       if (getMaximisedPlanId() !== null && restoresMaximised(action, args)) restorePlanElement();
@@ -265,9 +243,7 @@ export function usePaletteCatalogue({
   // tool selected (see canvas-tool-options).
   const allCanvasToolOptions = buildCanvasToolOptions({
     canvasEmpty,
-    isMobile,
     includeZen: !!onToggleZen,
-    currentTool: canvasTool,
   });
   const canvasToolOptions = participant
     ? allCanvasToolOptions.filter((o) => PARTICIPANT_CANVAS_TOOLS.includes(o.id))

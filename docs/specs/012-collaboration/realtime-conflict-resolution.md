@@ -82,7 +82,7 @@ The room stamps every **mutation** op with a monotonic `seq` inside an `epoch`
 and rebroadcasts
 `{ op, seq, epoch }`. Because every mutation passes through one single-threaded
 DO that assigns a total order, all peers converge. Ephemeral presence ops
-(cursor / select / laser / tab-focus) stay unordered.
+(cursor / select / tab-focus) stay unordered.
 
 **Which an op is has one definition.** `PRESENCE_OP_KINDS`,
 `MUTATION_OP_KINDS` and `SYSTEM_OP_KINDS` live in `@liveplanner/api-schema`
@@ -95,17 +95,16 @@ to the editor's op shapes.
 It used to live in the room worker while the editor kept its own list of the
 kinds it sends and handles, in another app, with nothing comparing them — and
 the mutation branch is the FALL-THROUGH, so a presence kind nobody classified
-became a logged, ordered, replayed mutation. That is how `viewport` ([Follow-me viewport](follow-me-viewport.md))
+became a logged, ordered, replayed mutation. That is how a viewport presence op once
 shipped: published on every pan at 10 Hz, roughly 26 seconds of one person
 scrolling filled all 256 log slots with camera positions and pushed the replay
 floor past every real mutation, so the next peer whose socket blipped was told to
-`resync` and re-hydrate every tab. A view-only visitor also could not be
-followed, since the role gate drops non-presence ops. Two tests now bracket it:
+`resync` and re-hydrate every tab. Two tests now bracket it:
 the room's suite compares the presence and mutation lists directly (a mutation
 kind in the presence set hands read-only visitors a write path), and
 `room-op-vocabulary.test.ts` in the editor checks the third list — every kind the
 editor actually sends or handles — against the schema, which is the direction
-that let `viewport` through.
+that let the viewport op through.
 
 - The DO keeps a bounded in-memory op log. On reconnect a client sends
   `{ epoch, lastSeq }`; the DO replays the delta or answers `resync: true` when
@@ -149,11 +148,10 @@ that let `viewport` through.
 
 **D1 stays the system of record.** Tab content is persisted by clients (each
 editor PUTs its whole copy of a changed tab); the op log is a warm catch-up
-cache, not a second writer. Two later additions put the room on the
+cache, not a second writer. One later addition puts the room on the
 persistence path without making it hold the document: the tab PUT merges the
 room's collaboration ledger in before writing
-([Collaboration race hardening](collab-race-hardening.md) phase 3), and Q&A board writes are performed
-by the room itself, one at a time ([Q&A board](qa-board.md)).
+([Collaboration race hardening](collab-race-hardening.md) phase 3).
 
 ### A malformed op
 
@@ -194,8 +192,7 @@ the editor until a reload, and nothing says so. The client therefore checks its 
    tab they added, and the resulting element ops are broadcast as yours. A
    resync's re-read content replaces only what is on screen.
 2. **D1 is the system of record.** The room holds ordering and collaboration
-   state (epoch + seq, the op log, the collaboration ledger, the live poll, the
-   facilitator baton), never a copy of the document. REST reads, exports, and
+   state (epoch + seq, the op log, the collaboration ledger), never a copy of the document. REST reads, exports, and
    offline durability read D1.
 3. **The selection lock stays advisory.** The [Live app](../007-editor/live-app.md) lock soft-locks a
    selected element for peers on the client. It makes same-element concurrent
@@ -247,9 +244,7 @@ verified end-to-end and turned on properly, not carried as dormant code.
   `sync` → `catchup` handler (`resolveCatchup` in `document-room-rules.ts`). It
   rewrites comment authors in every mutation it relays and keeps collaboration
   state in Durable Object storage: the per-element ledger
-  (`room-ledger-store.ts`), the live poll (`room-live-poll.ts`) and the
-  facilitator baton (`facilitator.ts`). It writes D1 for Q&A boards
-  (`handleQaWrite` → `qa-board-write.ts`). The full description is
+  (`room-ledger-store.ts`). The full description is
   [API app → Realtime model](../015-api/api.md#realtime-model).
 - `apps/api/src/room-client.ts` — the worker's calls into the room: the ledger
   merge on a tab PUT (`fetchRoomLedger` + `applyRoomLedger`, driven by `X-Room-Cursor`), the

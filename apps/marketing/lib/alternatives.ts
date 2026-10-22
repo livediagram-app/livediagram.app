@@ -102,7 +102,7 @@ export const ALTERNATIVES: Alternative[] = [
       },
       {
         label: 'Beyond the whiteboard',
-        us: 'Structured diagrams, templates, tabs and folders, Presentation mode',
+        us: 'Structured diagrams, templates, tabs and folders, Plan boards',
         them: 'A freeform board inside the Microsoft 365 suite',
       },
       { label: 'Self-hostable', us: 'Yes, on your own Cloudflare account', them: 'No' },
@@ -116,13 +116,12 @@ export const ALTERNATIVES: Alternative[] = [
       'Your boards outlive the retirement: import a board export and each board becomes a document of its own, named and dated as the board, with pen strokes, colours, sticky notes, text, shapes and images all editable.',
       'No Microsoft account, no sign-up, no install: open a link and start drawing.',
       'Draw mode is a plain whiteboard: three pressure-sensitive markers, text, an eraser and shapes on a plain, dotted or grid board, light or dark.',
-      'Real-time multiplayer with live cursors, comments and a laser pointer, for anyone with the link.',
+      'Real-time multiplayer with live cursors and comments, for anyone with the link.',
       'Three kinds of link: Editor, Participant (add stickies, write and vote without reshaping the board, handy for a class) or view-only.',
-      'For a class: quizzes with a countdown and a reveal of who got it right, live polls, an anonymous idea box and a shared timer.',
-      'Run the lesson on the board: an agenda that starts the timer for each segment, a roll call, and a picker that chooses someone at random so nobody has to volunteer.',
+      'Run the lesson on the board: a shared timer, dot votes, a temperature check and a picker that chooses someone at random so nobody has to volunteer.',
       'Around 190 emoji stickers and 32 word badges like APPROVED and WIP, for reacting to work and marking it.',
       'Switch the same tab to Diagram mode when a sketch needs to become a tidy flowchart, org chart or plan, and draw it in the Marker finish so it still looks like it came off the whiteboard.',
-      '113 templates, including retrospectives, Lean Coffee, town hall Q&A and event storming boards.',
+      '101 templates, including retrospectives, brainstorms and event storming boards.',
       'Free and MIT-licensed, so no future retirement can take your boards away: you can always run your own copy.',
     ],
     sections: [
@@ -143,8 +142,8 @@ export const ALTERNATIVES: Alternative[] = [
       {
         heading: 'A whiteboard that grows into more',
         paragraphs: [
-          'Draw mode is a plain whiteboard, close to what Whiteboard users are used to: pick a marker, draw, erase, add text and shapes. But the same tab can switch to Diagram mode when a sketch needs structure, with shapes and arrows that stay attached as you move things, and the Marker or Sketch finish keeps that structure looking hand-drawn. A document holds as many tabs as you need, grouped into folders, and Presentation mode turns elements from any tab into a slide deck, or Pages makes slides from ready-made layouts.',
-          'For sessions, switch a tab to Workshop, the mode for running a room: there are templates for retrospectives, Lean Coffee and town hall Q&A, and a facilitator can run a shared timer, votes, polls and quizzes for the room, with the right answer revealed when the time is up.',
+          'Draw mode is a plain whiteboard, close to what Whiteboard users are used to: pick a marker, draw, erase, add text and shapes. But the same tab can switch to Diagram mode when a sketch needs structure, with shapes and arrows that stay attached as you move things, and the Marker or Sketch finish keeps that structure looking hand-drawn. A document holds as many tabs as you need, grouped into folders, and Pages makes slides from ready-made layouts.',
+          'For sessions, switch a tab to Workshop, the mode for running a room: there are templates for retrospectives and brainstorms, and whoever runs the room has a shared timer and dot votes.',
         ],
       },
       {
@@ -225,21 +224,19 @@ export const ALTERNATIVES: Alternative[] = [
       'Four ways to work one tab: Diagram for structure, Draw for freehand whiteboarding, Workshop for running a session with your team, and Plan for boards of cards, spreadsheets, forms and dashboards.',
       'Participant links let a workshop add stickies, write and vote without being able to reshape the board.',
       'Assign action items to teammates on the canvas itself, tracked beside comments in the Collaborate panel.',
-      'Workshop tools built in: Workshop mode, a facilitator role, a shared timer, dot-voting, live polls, planning-poker estimate cards, temperature checks, quizzes, an anonymous idea box and a Q&A board.',
-      'Run the meeting itself on the board: an agenda that starts the timer for each segment, a roll call, a random picker, reveal zones that cover work until the room is ready, and decision records that keep what was agreed.',
-      '113 templates, 24 one-click whole-canvas themes and ready-made looks turn a blank canvas into a polished diagram fast, drawn clean, crisp and Professional, or by hand in Sketch or Marker.',
+      'Session tools built in: a shared timer, dot-voting and temperature checks.',
+      'Run the meeting itself on the board: a random picker and decision records that keep what was agreed.',
+      '101 templates, 24 one-click whole-canvas themes and ready-made looks turn a blank canvas into a polished diagram fast, drawn clean, crisp and Professional, or by hand in Sketch or Marker.',
       'Forms built in: share a link, and every response lands as a card on a board or a row in a Sheet.',
-      'Meet on the board: everyone walks an avatar round a virtual office or team space, with speech bubbles and a status.',
-      'Present a document as a slide deck built from its own elements, with a laser pointer and spotlight, no export needed.',
       'Bring boards across from Excalidraw, draw.io and Microsoft Whiteboard; export PNG, SVG, PDF, Mermaid or Excalidraw.',
     ],
     sections: [
       {
         heading: 'One workspace, five ways to work',
         paragraphs: [
-          'Miro grew into a broad workspace: boards, workshops, docs, tables, video walkthroughs and a marketplace of apps. liveplanner covers the same ground in one document with tabs, and each tab works in one of four modes. Diagram for structure, with arrows that stay attached and re-route as you move things. Draw for freehand whiteboarding with pressure-sensitive markers. Workshop for running the session itself: timers, dot votes, polls and reveals. Plan for boards of cards with WIP limits and swimlanes, beside Sheets with real formulas that can read the cards, forms whose responses arrive as cards or rows, and dashboards that bring them together.',
+          'Miro grew into a broad workspace: boards, workshops, docs, tables, video walkthroughs and a marketplace of apps. liveplanner covers the same ground in one document with tabs, and each tab works in one of four modes. Diagram for structure, with arrows that stay attached and re-route as you move things. Draw for freehand whiteboarding with pressure-sensitive markers. Workshop for running the session itself: timers and dot votes. Plan for boards of cards with WIP limits and swimlanes, beside Sheets with real formulas that can read the cards, forms whose responses arrive as cards or rows, and dashboards that bring them together.',
           'Every tab also has a finish, the way it is drawn: Flexible by default, Professional for crisp, print-ready work, Sketch for pencil on paper and Marker for felt-tip on a whiteboard. A look sets the theme, finish, font and canvas pattern in one click, and switching it never changes the content underneath.',
-          'Workshops are built in rather than bolted on. A facilitator can run the room with a shared timer, dot-voting, live polls, planning-poker estimate cards, quizzes, a Q&A board and responses kept hidden until the reveal, and templates cover retrospectives, Lean Coffee, town hall Q&A and event storming, including turning a photo of a sticky-note wall into notes. When the session ends, the actions it produced are assigned on the board and the plan picks up on the next tab.',
+          'Workshops are built in rather than bolted on. Whoever runs the room has a shared timer, dot-voting and temperature checks, and templates cover retrospectives, brainstorms and event storming, including turning a photo of a sticky-note wall into notes. When the session ends, the actions it produced are assigned on the board and the plan picks up on the next tab.',
         ],
       },
       {
@@ -279,7 +276,7 @@ export const ALTERNATIVES: Alternative[] = [
       },
       {
         q: 'Can liveplanner run workshops the way Miro does?',
-        a: 'Sessions like retros, brainstorms, estimation and planning work well: switch a tab to Workshop and a facilitator can run a shared timer, dot-voting, live polls, a Q&A board and hidden responses that are revealed together, estimate cards run planning poker on the board, everyone can follow the facilitator’s view, and the document keeps the comments and assigned actions that came out of it. What liveplanner does not have is Miro’s large-scale facilitation ecosystem (breakout-style sessions, a meeting-app marketplace), so for big multi-team workshops Miro is still the deeper toolkit.',
+        a: 'Sessions like retros, brainstorms, estimation and planning work well: switch a tab to Workshop and run a shared timer and dot-voting, a temperature check reads the room, and the document keeps the comments and assigned actions that came out of it. What liveplanner does not have is Miro’s large-scale facilitation ecosystem (breakout-style sessions, a meeting-app marketplace), so for big multi-team workshops Miro is still the deeper toolkit.',
       },
       {
         q: 'Can I self-host liveplanner?',
@@ -346,7 +343,7 @@ export const ALTERNATIVES: Alternative[] = [
       'Nothing to install: open a link in any browser and start.',
       'Bring existing maps across: export Markdown from XMind and import it as a themed diagram.',
       'Sketch with the Freehand pen, or the Shape Pen to have a rough shape tidied into a clean one.',
-      '113 templates (three mind-map styles among them), 24 one-click themes and ready-made looks make a map look polished instantly, clean or hand-drawn in the Sketch and Marker finishes.',
+      '101 templates (three mind-map styles among them), 24 one-click themes and ready-made looks make a map look polished instantly, clean or hand-drawn in the Sketch and Marker finishes.',
       'Free, open source, and self-hostable.',
     ],
     sections: [
@@ -402,9 +399,9 @@ export const ALTERNATIVES: Alternative[] = [
     name: 'Excalidraw',
     title: 'Excalidraw alternative · liveplanner',
     description:
-      'A more structured Excalidraw alternative: the same free, open-source, no-sign-up spirit, a hand-drawn Sketch finish, templates, tabs and free presentations.',
+      'A more structured Excalidraw alternative: the same free, open-source, no-sign-up spirit, a hand-drawn Sketch finish, templates, tabs and Plan boards.',
     h1: 'A more structured Excalidraw alternative',
-    lede: 'Excalidraw is a much-loved open-source whiteboard with a hand-drawn feel. liveplanner shares the open-source, free, no-sign-up spirit, and can be drawn by hand too, in its Sketch and Marker finishes, but leans structured: start from a template, theme the whole canvas, split work across tabs, keep documents in folders and present them as slides, with a freehand Draw mode when you just want to sketch.',
+    lede: 'Excalidraw is a much-loved open-source whiteboard with a hand-drawn feel. liveplanner shares the open-source, free, no-sign-up spirit, and can be drawn by hand too, in its Sketch and Marker finishes, but leans structured: start from a template, theme the whole canvas, split work across tabs, keep documents in folders, with a freehand Draw mode when you just want to sketch.',
     rows: [
       { label: 'Open source', us: 'Yes, MIT-licensed', them: 'Yes, MIT-licensed' },
       {
@@ -423,11 +420,6 @@ export const ALTERNATIVES: Alternative[] = [
         label: 'Structure',
         us: 'Templates, tabs, folders, layers, themes, five editor modes',
         them: 'A freeform canvas (Excalidraw+ adds workspaces and presentations)',
-      },
-      {
-        label: 'Presentations',
-        us: 'Free: slides from your canvas, presenter notes, transitions',
-        them: 'On the Excalidraw+ hosted plan, with a presenter view',
       },
       {
         label: 'Import + export',
@@ -449,7 +441,6 @@ export const ALTERNATIVES: Alternative[] = [
       'Draw mode is a plain whiteboard: pressure-sensitive markers, an eraser and shapes on a plain, dotted or grid board, light or dark.',
       'Sketching tools beyond the marker: a Path tool for clean curves, optional shape recognition, an eraser that takes a whole stroke or just part of one, and Draw templates such as Sketchnote, Rich Picture and Comic Strip.',
       'Paste an Excalidraw copy straight onto a tab, or import .excalidraw files as documents of their own.',
-      'Presentations free for everyone: build a deck from elements on any tab, then present with notes, time budgets, transitions, a laser pointer and a spotlight.',
       'Animate a drawing so it draws itself on.',
       'Built-in charts, an icon library, comments and assigned actions, without add-ons.',
       'Smart alignment guides and snapping line everything up as you drag.',
@@ -475,13 +466,6 @@ export const ALTERNATIVES: Alternative[] = [
         paragraphs: [
           'An Excalidraw copy pasted onto a tab, or a file dropped on it, lands as whiteboard-native content in Draw mode. A .excalidraw file (or a PNG or SVG exported with the scene embedded) imports with shapes, arrows, text and connections intact, and the Explorer can import Excalidraw files as documents of their own. Each import ends with a report of anything that changed on the way in.',
           'Excalidraw’s wobble and hatched fills are a matter of look, so an import draws its shapes in the tab’s own finish: switch the tab to Sketch to keep the hand-drawn feel. Export goes the other way too: any diagram or whiteboard tab saves back out as a .excalidraw file. Excalidraw has fewer element types, so richer liveplanner elements simplify on the way out.',
-        ],
-      },
-      {
-        heading: 'Presentations, free',
-        paragraphs: [
-          'Presenting is one of the things Excalidraw+ adds on its paid plan. In liveplanner it is part of the free product. Pick elements on any tab and make them a slide, so the deck points at the real diagram and changes when it does.',
-          'Present full screen with presenter notes, a time budget per slide, Slide or Fade transitions, auto-advance and loop, a laser pointer and a spotlight. Animate an element so a drawing draws itself on or a title types itself in.',
         ],
       },
       {
@@ -512,12 +496,8 @@ export const ALTERNATIVES: Alternative[] = [
         a: 'Yes. Paste an Excalidraw copy onto a tab, or import a .excalidraw file (the format excalidraw.com’s "Save to disk" produces), or a PNG or SVG exported with the scene embedded. Shapes, arrows, text, images and connections come across; groups are not kept, since liveplanner has no groups, and the import report says so. You can also export a tab back to a .excalidraw file; since Excalidraw has fewer element types, richer liveplanner elements simplify on the way out.',
       },
       {
-        q: 'Can I present from liveplanner, like Excalidraw+?',
-        a: 'Yes, for free. Build a slide deck from elements on any tab, then present full screen with presenter notes, per-slide time budgets, transitions, auto-advance, a laser pointer and a spotlight. Slides made from the canvas point at the real elements, so the deck changes when the diagram does.',
-      },
-      {
         q: 'When should I pick Excalidraw instead?',
-        a: "When you want one fast, freeform board in Excalidraw's own hand-drawn style and nothing else around it. liveplanner earns its keep when the work has structure: multiple tabs, folders, templates, themes, a deck to present, and a team sharing it.",
+        a: "When you want one fast, freeform board in Excalidraw's own hand-drawn style and nothing else around it. liveplanner earns its keep when the work has structure: multiple tabs, folders, templates, themes, and a team sharing it.",
       },
     ],
   },
@@ -567,14 +547,14 @@ export const ALTERNATIVES: Alternative[] = [
     usBest: [
       'Real-time co-editing with live cursors and presence on every document, wherever it is stored.',
       'A modern, fast canvas with nothing to set up: open a link and go.',
-      '113 templates and 24 themes for good-looking diagrams in minutes, not blank-canvas fiddling.',
+      '101 templates and 24 themes for good-looking diagrams in minutes, not blank-canvas fiddling.',
       'Diagrams stay tidy on their own: arrows re-route as shapes move, with collision avoidance, alignment guides and snapping.',
       'Full-colour technology icons (AWS, Azure, Kubernetes, databases…) for architecture diagrams.',
       'Tidy Up lays out a tangle of shapes and arrows as a flowchart, tree or mind map, and the UML theme colours each shape by its meaning.',
       'Four finishes per tab: Professional for crisp, print-ready diagrams with square corners and thin lines, Sketch or Marker for a hand-drawn review, switched without touching the diagram.',
       'Database schemas with keys and field-to-field relationships, sequence diagrams, Sankey flows, and an Isometric view that tilts an architecture diagram into 3D blocks for a deck.',
       'Bring your diagrams with you: .drawio files import page by page, whole folders import as documents, and draw.io libraries become shape libraries.',
-      'Charts, icons, freehand sketching, comments and a slide-deck Presentation mode, all built in.',
+      'Charts, icons, freehand sketching and comments, all built in.',
       'Free, MIT-licensed, and self-hostable on your own Cloudflare account.',
     ],
     sections: [
@@ -582,7 +562,7 @@ export const ALTERNATIVES: Alternative[] = [
         heading: 'Real-time by default',
         paragraphs: [
           'draw.io is built around a diagram file. It does support real-time co-editing, with shared cursors, when that file lives in Google Drive, OneDrive, Confluence Cloud or Nextcloud; otherwise working together means passing the file around. liveplanner is multiplayer on every document from the ground up: share a link and everyone is on the same canvas at once, with live cursors, presence, and a selection lock that shows when someone is already editing an element.',
-          'The collaboration layer goes further than co-editing: comments attach to elements, action items can be assigned to a teammate (tracked in the Collaborate panel, with optional email notification), and a facilitator can run a shared timer, dot-voting and live polls when a diagram review turns into a workshop.',
+          'The collaboration layer goes further than co-editing: comments attach to elements, action items can be assigned to a teammate (tracked in the Collaborate panel, with optional email notification), and a shared timer and dot-voting are there when a diagram review turns into a workshop.',
         ],
       },
       {
@@ -626,123 +606,11 @@ export const ALTERNATIVES: Alternative[] = [
     ],
   },
   {
-    slug: 'google-slides',
-    name: 'Google Slides',
-    title: 'Google Slides alternative · liveplanner',
-    description:
-      'A free, open-source Google Slides alternative: decks built from your canvas, notes, timing and transitions.',
-    h1: 'A free, open-source Google Slides alternative',
-    lede: 'Google Slides is the presentation tool most people already have open. liveplanner makes decks differently: build slides straight from the work on your canvas, so the deck and the plan behind it live in one document that your team edits together.',
-    rows: [
-      { label: 'Price', us: 'Free, every feature', them: 'Free with a Google account' },
-      { label: 'Open source', us: 'Yes, MIT-licensed', them: 'No, proprietary' },
-      {
-        label: 'Start without an account',
-        us: 'Yes, create and edit as a guest',
-        them: 'A Google account to create decks',
-      },
-      { label: 'Real-time multiplayer', us: 'Yes, live cursors and comments', them: 'Yes' },
-      {
-        label: 'Designed slides',
-        us: 'Slides built from the elements and boards on your canvas',
-        them: 'Themes, layouts and a large template gallery',
-      },
-      {
-        label: 'Slides from your work',
-        us: 'Pick elements or a Plan board on any tab and it becomes a slide that stays in step',
-        them: 'Paste or link charts and images in',
-      },
-      {
-        label: 'Presenting',
-        us: 'Presenter notes, per-slide time budgets, transitions, auto-advance and loop, laser and spotlight',
-        them: 'Speaker notes, presenter view, audience Q&A, animations and transitions',
-      },
-      {
-        label: 'Export',
-        us: 'PDF, PNG, SVG and an animated GIF of the deck',
-        them: 'PowerPoint, PDF and images',
-      },
-      {
-        label: 'Beyond the deck',
-        us: 'Diagrams, whiteboards, Plan boards and spreadsheets in the same document',
-        them: 'One of several Google Workspace apps',
-      },
-      { label: 'Self-hostable', us: 'Yes, on your own Cloudflare account', them: 'No' },
-    ],
-    themBest: [
-      'Everyone in your organisation already lives in Google Workspace, with Drive, Meet and Docs around the deck.',
-      'A full presentation suite: click-by-click builds within a slide, a presenter view, audience Q&A and a large template gallery.',
-      'PowerPoint import and export, for decks that travel between organisations.',
-      'Gemini in Slides drafts a whole, editable deck from a prompt, styled from your files, on eligible Workspace and Google AI plans.',
-    ],
-    usBest: [
-      'Slides straight from the work: select elements or a Plan board on any tab and present it, and editing a shape updates every slide it is on.',
-      'One document for the whole story: the diagram, the plan and the spreadsheet beside the deck that presents them.',
-      'Present with presenter notes, a time budget per slide, Slide or Fade transitions, a laser pointer and a spotlight; your screen moves, nobody else’s.',
-      'Leave a deck running on a screen: auto-advance every 5 to 60 seconds and loop back to the start.',
-      'Animate any element: a title that types itself in, words that cascade, a drawing that draws itself, or a reveal that plays once and stays, over an animated page background if you like.',
-      'Put another tab on a slide, live: a Tab Window shows the diagram or board as it is now, so the slide follows every change.',
-      'Export the deck as an animated GIF, transitions and motion included, for a chat, an email or a README.',
-      'Real-time editing with live cursors, comments and assigned actions, for anyone with the link, no account needed.',
-      'Free, MIT-licensed and self-hostable.',
-    ],
-    sections: [
-      {
-        heading: 'Two ways to make a deck',
-        paragraphs: [
-          'In Google Slides a deck is its own file, built slide by slide. liveplanner builds slides from what is already on your canvas: select a cluster of elements, or a Plan board, and make it a slide.',
-          'Slides made from the canvas point at the real elements rather than copying them, so the deck can never drift from the work: change a shape, a card or a label and every slide it is on changes with it. The slides sit in one deck, ordered in the Slide Deck panel, saved with the document.',
-        ],
-      },
-      {
-        heading: 'Presenting, built for the room',
-        paragraphs: [
-          'Presenting runs full screen on your screen alone: nobody is dragged into your slide, and collaborators with the document open carry on working. Each slide carries its own presenter notes behind a button, and an optional time budget the HUD tracks as you talk. Transitions are Slide, Fade or None, at the speed you pick, and a laser pointer and spotlight guide the room.',
-          'Nothing on a slide can be changed by a stray click, but everything can be read: click an element mid-talk to show its note, comments and assigned action, for the question you did not plan for.',
-        ],
-      },
-      {
-        heading: 'The deck and everything behind it',
-        paragraphs: [
-          'A deck is usually the last step of something: a plan, an architecture, a retro. In Workspace those live in Docs, Sheets and Slides as separate files. In liveplanner they are tabs of one document: keep the plan on a Plan board with a Sheet beside it, sketch on a whiteboard, and present from all of it. Everyone edits live, with comments and assigned actions on the elements themselves.',
-        ],
-      },
-      {
-        heading: 'Free, open and no account needed',
-        paragraphs: [
-          'Slides is free with a Google account. liveplanner needs no account at all: open the editor and start, and a guest’s document stays in their browser until they press Share, which syncs it in one step. The whole product is MIT-licensed with no paid tier, and you can run your own copy on your own Cloudflare account. Export any page as a PNG, SVG or a print-ready PDF when a deck has to travel, or the whole deck as an animated GIF.',
-        ],
-      },
-    ],
-    faqs: [
-      {
-        q: 'Can liveplanner replace Google Slides?',
-        a: 'For many decks, yes: slides built from your canvas, presenter notes, time budgets, transitions, a laser pointer and a spotlight, all edited live with your team. If you need click-by-click builds within a slide, PowerPoint files or audience Q&A, Google Slides is still the deeper presentation suite.',
-      },
-      {
-        q: 'Can I import or export PowerPoint files?',
-        a: 'No. liveplanner does not read or write .pptx. You can export each page as a PNG or SVG, every page as one PDF, or the deck as an animated GIF, and drop those into another deck.',
-      },
-      {
-        q: 'Do my audience or co-editors need an account?',
-        a: 'No account of any kind. Share a link and anyone who opens it can view or edit in real time. Signing in (email code or Google) is optional and mainly adds cross-device sync and teams.',
-      },
-      {
-        q: 'Can I keep my slides in step with a diagram or a plan?',
-        a: 'Yes. A slide made from the canvas references the elements, or the Plan board, it shows, so editing them updates every slide they appear on. The deck can never drift from the work it presents.',
-      },
-      {
-        q: 'Is liveplanner free?',
-        a: 'Yes. It is MIT-licensed open source with a free hosted version, every feature included, and no paid tier. You can even use it without creating an account at all.',
-      },
-    ],
-  },
-  {
     slug: 'figjam',
     name: 'FigJam',
     title: 'FigJam alternative · liveplanner',
     description:
-      'A free, open-source FigJam alternative: a real-time whiteboard with workshop tools, no account needed, 113 templates, Mermaid, an API and an MCP server.',
+      'A free, open-source FigJam alternative: a real-time whiteboard with workshop tools, no account needed, 101 templates, Mermaid, an API and an MCP server.',
     h1: 'The free, open-source FigJam alternative',
     lede: 'FigJam is a polished, playful whiteboard that lives inside Figma. liveplanner covers the same ground, brainstorms, workshops and diagrams with your team in real time, as free, open-source software that anyone can open from a link, no account or Figma seat needed.',
     rows: [
@@ -784,13 +652,12 @@ export const ALTERNATIVES: Alternative[] = [
     usBest: [
       'Free with no file limits and no seats: every feature, for everyone.',
       'Open a link and start, no account needed, even to create a document.',
-      'Structured diagrams that stay tidy: shapes and arrows that stay attached, alignment guides, 24 one-click themes and 113 templates.',
+      'Structured diagrams that stay tidy: shapes and arrows that stay attached, alignment guides, 24 one-click themes and 101 templates.',
       'Four ways to work one tab: Diagram for structure, Draw for freehand whiteboarding, Workshop for running a session with your team, and Plan for boards of cards, Sheets and forms.',
       'Diagrams with a whiteboard feel: the Sketch and Marker finishes draw any tab by hand, and ready-made looks set theme, finish, font and pattern in one click.',
-      'Meet on the board: everyone walks an avatar round a virtual office or team space, with speech bubbles and a status.',
-      'Workshop tools built in: Workshop mode, a facilitator role, a shared timer, dot-voting, live polls, planning-poker estimate cards, temperature checks, quizzes, an anonymous idea box and a Q&A board.',
+      'Session tools built in: a shared timer, dot-voting and temperature checks.',
       'Participant links: the room adds stickies, writes and votes, and nobody can reshape the board by accident.',
-      'Run the meeting on the board: an agenda that starts the timer for each segment, a roll call, a random picker and decision records, plus around 190 emoji stickers and 32 word badges.',
+      'Run the meeting on the board: a random picker and decision records, plus around 190 emoji stickers and 32 word badges.',
       'Diagrams as code: Mermaid flowcharts import as editable diagrams and export back out.',
       'A free REST API and an MCP server, so scripts and AI assistants can read and edit your documents.',
       'MIT-licensed and self-hostable, so your boards never depend on one vendor.',
@@ -806,13 +673,13 @@ export const ALTERNATIVES: Alternative[] = [
         heading: 'A whiteboard that keeps going',
         paragraphs: [
           'FigJam is excellent for loose, freeform boards. liveplanner’s Draw mode is a plain whiteboard too, with pressure-sensitive markers, sticky notes, text and shapes, but the same document carries on after the brainstorm. Switch a tab to Diagram when a sketch needs structure, with arrows that stay attached, themes that restyle the whole canvas in one click and a Marker or Sketch finish that keeps it looking hand-drawn; to Plan when the ideas become cards on a board, with a Sheet beside it and a form to gather more; or to Pages for the write-up and the slides.',
-          'Start from one of 113 templates, from retrospectives and story maps to flowcharts and system architecture, and split larger work across tabs, folders and layers.',
+          'Start from one of 101 templates, from retrospectives and story maps to flowcharts and system architecture, and split larger work across tabs, folders and layers.',
         ],
       },
       {
         heading: 'Workshops built in',
         paragraphs: [
-          'Running a session needs more than sticky notes. liveplanner gives sessions a mode of their own, Workshop, and one person the facilitator role, and with it a shared timer, dot-voting, live polls, a Q&A board and responses kept hidden until the reveal. Estimate cards run planning poker, a temperature check shows how the room feels, a quiz asks what it knows, and an idea box collects anonymous ideas until the reveal. There are templates for retrospectives in five formats, Lean Coffee, town hall Q&A and event storming, and comments and assigned actions keep the follow-ups with the board.',
+          'Running a session needs more than sticky notes. liveplanner gives sessions a mode of their own, Workshop, and with it a shared timer and dot-voting, and a temperature check shows how the room feels. There are templates for retrospectives in five formats, brainstorms and event storming, and comments and assigned actions keep the follow-ups with the board.',
         ],
       },
       {
@@ -830,7 +697,7 @@ export const ALTERNATIVES: Alternative[] = [
       },
       {
         q: 'Can I import my FigJam boards?',
-        a: 'Not directly: there is no FigJam importer. You can bring a board across as a picture by exporting it from FigJam as a PNG and adding it to a tab as an image. For new work, start from one of the 113 templates.',
+        a: 'Not directly: there is no FigJam importer. You can bring a board across as a picture by exporting it from FigJam as a PNG and adding it to a tab as an image. For new work, start from one of the 101 templates.',
       },
       {
         q: 'Does liveplanner work with Figma?',
@@ -889,8 +756,8 @@ export const ALTERNATIVES: Alternative[] = [
     usBest: [
       'Free with no plan limits on documents or shapes, and no paid tier.',
       'Open a link and start, no account needed, even to create a document.',
-      '113 templates, from flowcharts, org charts and swimlanes to system and cloud architecture, database schemas and sequence, class and state diagrams.',
-      'Real-time multiplayer with live cursors, comments, assigned actions and a laser pointer for presenting.',
+      '101 templates, from flowcharts, org charts and swimlanes to system and cloud architecture, database schemas and sequence, class and state diagrams.',
+      'Real-time multiplayer with live cursors, comments and assigned actions.',
       '24 one-click themes restyle the whole canvas, shapes and arrows, and the Professional finish draws it crisp and print-ready: square corners, thin lines, Inter lettering, no default shadows.',
       'Mermaid in and out: flowcharts import as editable diagrams and export back to text.',
       'Diagrams that tidy themselves: a new arrow curves around shapes in its way, Tidy Up lays a graph out as a flowchart or tree, and the UML theme colours each shape by its meaning.',
@@ -908,8 +775,8 @@ export const ALTERNATIVES: Alternative[] = [
       {
         heading: 'The diagrams you need, ready to go',
         paragraphs: [
-          'liveplanner ships 113 templates, including flowcharts in four styles, swimlanes, org charts, mind maps, data-flow diagrams, system and cloud architecture, database schemas, Sankey flows, and sequence, class and state diagrams. Shapes and arrows stay attached and re-route as you move things, alignment guides and snapping keep layouts tidy, and themes restyle the whole canvas in one click. A finish sets how it is drawn: Professional for crisp, print-ready work, or Sketch and Marker when a review should feel like a whiteboard.',
-          'Bigger work splits across tabs inside one document, grouped into folders, with Photoshop-style layers on each tab. Presentation mode turns elements from any tab into a slide deck, so you can walk a room through a diagram without exporting it.',
+          'liveplanner ships 101 templates, including flowcharts in four styles, swimlanes, org charts, mind maps, data-flow diagrams, system and cloud architecture, database schemas, Sankey flows, and sequence, class and state diagrams. Shapes and arrows stay attached and re-route as you move things, alignment guides and snapping keep layouts tidy, and themes restyle the whole canvas in one click. A finish sets how it is drawn: Professional for crisp, print-ready work, or Sketch and Marker when a review should feel like a whiteboard.',
+          'Bigger work splits across tabs inside one document, grouped into folders, with Photoshop-style layers on each tab.',
         ],
       },
       {

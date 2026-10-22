@@ -106,30 +106,15 @@ export type CanvasProps = {
   onSelectMarquee: (ids: Set<string>) => void;
   canvasTool: CanvasTool;
   onSetCanvasTool: (tool: CanvasTool) => void;
-  // Press a Mode Button element (docs/specs/009-elements/mode-button.md): hands the LOCAL participant the
-  // mode the element carries. Optional — the read-only embed has no tool picker
-  // to drive, so its buttons render inert.
-  onPressModeButton?: (element: import('@liveplanner/document').ShapeElement) => void;
-  // Bring Focus (docs/specs/012-collaboration/bring-focus.md): ask everyone else in the room to come and look at
-  // this element. Absent on a surface with nobody to ask (an export, a solo
-  // canvas), which renders the face inert.
-  onPressFocusButton?: (element: import('@liveplanner/document').ShapeElement) => void;
   // Session button (docs/specs/012-collaboration/session-button.md): starts the tool the pressed element carries.
   onPressSessionButton?: (element: import('@liveplanner/document').ShapeElement) => void;
   // True when this viewer can't start session tools (view role): the button
   // renders inert and says why instead of failing silently on press.
   sessionStartBlocked?: boolean;
-  // Who is running the session when it is somebody else (docs/specs/012-collaboration/facilitator.md), so a blocked
-  // face names the person to ask; null when nobody else holds the baton.
-  sessionRunBy?: string | null;
   // The tab timer's state for the session button's face (docs/specs/012-collaboration/session-button.md).
   timerState?: import('@/components/canvas/SessionButtonFace').TimerState;
-  // Reveal zones (docs/specs/009-elements/reveal-zone.md) this viewer has lifted for themselves. Ephemeral
-  // and local — the shared state is `revealed` on the element.
-  revealedIds?: ReadonlySet<string>;
-  onToggleReveal?: (elementId: string) => void;
   // Per-element session settings from the element's own `…` menu (docs/specs/012-collaboration/session-button.md):
-  // the timer's length, the vote's dots, the poll's question and answers.
+  // the timer's length, the vote's dots.
   // Absent on a read-only surface, which renders the menu's trigger not at all.
   // Comment panel (docs/specs/012-collaboration/comment-pin.md): who I am, plus the thread mutators, so a panel
   // shows and edits its thread in place. All keyed by element id, which is how
@@ -169,53 +154,15 @@ export type CanvasProps = {
     shared: boolean;
     roll: () => import('@/lib/picker').PickerCandidate | null;
   };
-  // The collaboration elements (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md): the viewer's identity,
-  // the room, and the writes they may make — one prop for all five faces.
+  // The collaboration elements (docs/specs/012-collaboration/temperature-check.md): the viewer's identity and
+  // the writes they may make — one prop for their faces.
   collab?: import('@/components/canvas/collab/CollabFaceRouter').CollabApi;
-  // Follow-me (docs/specs/012-collaboration/follow-me-viewport.md): the name of whoever we are following, for the pill,
-  // and the way out of it. Null / absent = not following anybody.
-  followingName?: string | null;
-  onStopFollowing?: () => void;
-  // Chair (docs/specs/009-elements/chair.md): who presence says is seated on a given chair.
-  chairSitters?: (
-    elementId: string,
-  ) => import('@/components/canvas/collab/FurnitureView').ChairSitter[];
   // Portal (docs/specs/009-elements/portal-element.md): resolve a portal's pairing — the paired portal's name and, when
   // it has one, the action that travels there.
   onEnterPortal?: (element: import('@liveplanner/document').ShapeElement) => {
     targetName: string | null;
     travel?: () => void;
   };
-  // Reaction pad (docs/specs/009-elements/reaction-pad.md): set one off. Absent on a read-only surface, which
-  // renders the pad inert rather than hiding it.
-  onFireReaction?: (element: import('@liveplanner/document').ShapeElement) => void;
-  // The bursts currently playing, keyed by the pad's element id, plus the way
-  // to retire one when its animation ends. Ephemeral: never document state.
-  reactionBursts?: Map<
-    string,
-    { reaction: import('@liveplanner/document').Reaction; seed: number }
-  >;
-  onReactionBurstDone?: (elementId: string) => void;
-  // Leaves Avatar mode (docs/specs/008-canvas/avatar-mode.md) for the tool that preceded it. Wired to the
-  // palette (any tile pick) and to a palette drag-drop, both of which are
-  // edits the read-only mode would otherwise swallow.
-  onExitAvatarMode?: () => void;
-  // The laser pen (docs/specs/008-canvas/spotlight-panel.md). Owned in editor state, not here: the broadcaster
-  // stamps it onto every sample and the trail rows carry it, both of which sit
-  // above Canvas — so Canvas forwards it to the panel rather than owning it.
-  laserConfig?: import('@/lib/laser-config').LaserConfig;
-  onChangeLaserField?: <K extends keyof import('@/lib/laser-config').LaserConfig>(
-    field: K,
-    value: import('@/lib/laser-config').LaserConfig[K],
-  ) => void;
-  // Laser Panel (docs/specs/008-canvas/spotlight-panel.md): where it sits, same as the avatar's above.
-  laserPanelPosition?: { x: number; y: number } | null;
-  onMoveLaserPanel?: (x: number, y: number) => void;
-  onResetLaserPanel?: () => void;
-  // Spotlight Panel (docs/specs/008-canvas/spotlight-panel.md): where it sits.
-  spotlightPanelPosition?: { x: number; y: number } | null;
-  onMoveSpotlightPanel?: (x: number, y: number) => void;
-  onResetSpotlightPanel?: () => void;
   // The format painter's settings (docs/specs/008-canvas/format-panel.md) and what its brush holds. Owned
   // in editor state, where the paint happens; Canvas forwards them.
   formatConfig?: import('@/lib/format-config').FormatConfig;
@@ -225,12 +172,6 @@ export type CanvasProps = {
   formatPanelPosition?: { x: number; y: number } | null;
   onMoveFormatPanel?: (x: number, y: number) => void;
   onResetFormatPanel?: () => void;
-  // Slide Deck panel (docs/specs/012-collaboration/presentation-mode.md): the deck builder, present only while its tool
-  // is picked. The deck itself rides `slideDeck`.
-  slideDeckPanelPosition?: { x: number; y: number } | null;
-  onMoveSlideDeckPanel?: (x: number, y: number) => void;
-  onResetSlideDeckPanel?: () => void;
-  slideDeck?: import('@/app/document/[id]/useSlideDeck').SlideDeckState;
   // Map of elementId -> remote participants currently focused on that
   // element. Drives a small badge ring on each element so participants
   // can see in real time what others are working on.
@@ -239,35 +180,6 @@ export type CanvasProps = {
   // participant identity. Rendered inside the transformed wrapper so
   // they pan and zoom with the canvas.
   remoteCursors: { id: string; name: string; color: string; x: number; y: number }[];
-  // Peers' Avatar-mode characters (docs/specs/008-canvas/avatar-mode.md) on the active tab, with their
-  // name + presence colour. Rendered inside the transformed wrapper beside the
-  // local character, so everyone sees everyone walking around.
-  remoteAvatars: {
-    id: string;
-    name: string;
-    color: string;
-    avatar: import('@liveplanner/api-schema').AvatarPresence;
-  }[];
-  // Publishes the local character to the room (null when leaving the mode).
-  // Optional: a private, un-shared document has no room to publish to.
-  onAvatarPresence?: (avatar: import('@liveplanner/api-schema').AvatarPresence | null) => void;
-  // Shove a peer's character (docs/specs/008-canvas/avatar-mode.md): sent when our character finishes
-  // walking up to the one we clicked. Optional — no room, no push.
-  onAvatarPush?: (targetId: string, dx: number, dy: number) => void;
-  // Say something (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): sends one message to the room.
-  // Optional: with no room the bubble is still drawn for you.
-  onAvatarSay?: (say: { id: string; text: string; x: number; y: number }) => void;
-  // A shove somebody sent US, as a direction plus a sequence number so the same
-  // push isn't replayed on every render. Null until someone pushes.
-  avatarShove?: { dx: number; dy: number; seq: number } | null;
-  // Laser-pointer trails for the LaserOverlay — local user first
-  // followed by any peers laser-pointing on the active tab. The
-  // overlay handles fading and cleanup; Canvas just renders.
-  laserTrails: {
-    participantId: string;
-    color: string;
-    points: { x: number; y: number; t: number }[];
-  }[];
   // `target` is what the pointer is over, so a paste can tell the canvas from
   // a floating panel lying on top of it (lib/canvas-pointer.ts).
   onCanvasPointerMove: (
@@ -425,18 +337,6 @@ export type CanvasProps = {
   // The session tools for the Session strip (docs/specs/012-collaboration/session-tools.md "The Session
   // strip"): the same bundle the tab menu's Session Studio drives. Absent on a surface without one.
   sessionTools?: import('@/components/chrome/session-tools-props').SessionToolsProps;
-  // Live poll (docs/specs/012-collaboration/live-poll.md). The panel exists only while a poll is running
-  // and its results are yours to see, so null means the Poll button opens the composer instead.
-  pollPanel: {
-    poll: import('@liveplanner/api-schema').LivePoll;
-    answers: Map<string, string | null>;
-    isHost: boolean;
-    onEnd: () => void;
-    // Keep the tallies so far on the canvas as a chart, without ending the
-    // poll (docs/specs/012-collaboration/poll-result-capture.md). Absent for a viewer who can't add elements.
-    onKeepResults?: () => void;
-    onDismiss: () => void;
-  } | null;
   // Live vote panel (docs/specs/012-collaboration/session-tools.md): turnout while casting is open, then the
   // clickable ranked results. Null when no vote is running on this tab.
   // Per-user preferences (docs/specs/007-editor/user-preferences.md) + the Recent exclusion toggle
@@ -680,7 +580,7 @@ export type CanvasProps = {
   // canvas, where the user is editing the tab anyway. Optional so
   // welcome-flow surfaces with no tab loaded yet can omit them.
   // Live session tools (docs/specs/012-collaboration/session-tools.md): the active tab's timer / vote state +
-  // the facilitator controls (Tab Settings) and the per-element dot
+  // the host's controls (Tab Settings) and the per-element dot
   // cast/retract used by the canvas vote interaction. State is read off
   // the tab; handlers no-op when edits are blocked.
   tabTimer?: import('@liveplanner/document').TabTimer;

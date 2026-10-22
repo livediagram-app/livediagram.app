@@ -44,8 +44,7 @@ type PanState = {
   startOffsetX: number;
   startOffsetY: number;
   movedRef: { current: boolean };
-  // What a press that never moved does instead of deselecting: a tap that walks the Avatar
-  // (docs/specs/008-canvas/avatar-mode.md "Walking"), or selects an element too big to drag on a phone
+  // What a press that never moved does instead of deselecting: a tap that selects an element too big to drag on a phone
   // (docs/specs/008-canvas/canvas-and-palette.md "Touch (iOS / iPad)").
   onTap?: () => void;
 };

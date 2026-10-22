@@ -90,17 +90,6 @@ describe('settings catalogue', () => {
     expect(sheets.read(next)).toBe(false);
   });
 
-  it('inverts the Workshop tour row the same way, after the Plan tour row', () => {
-    // docs/specs/012-collaboration/workshop-tour.md "Where it appears".
-    const row = SWITCHES.find((r) => r.key === 'workshopTourSeen')!;
-    expect(row.read({ workshopTourSeen: true })).toBe(false);
-    expect(row.read({})).toBe(true);
-    expect(row.write({}, true).workshopTourSeen).toBe(false);
-    expect(row.write({}, false).workshopTourSeen).toBe(true);
-    expect(row.event.on).toBe('WorkshopTourSeenOff');
-    expect(row.event.off).toBe('WorkshopTourSeenOn');
-  });
-
   // docs/specs/007-editor/user-preferences.md "Tours": a category of its own, one switch per tour in
   // the order the tours come.
   it('gives the tours a category of their own, a switch each with its own article', () => {
@@ -111,9 +100,7 @@ describe('settings catalogue', () => {
       ['planTourSeen-boards', 'toggle', 'Boards Tour', 'planTour'],
       ['planTourSeen-sheets', 'toggle', 'Sheets Tour', 'planTour'],
       ['planTourSeen-dashboards', 'toggle', 'Dashboards Tour', 'planDashboards'],
-      ['workshopTourSeen', 'toggle', 'Workshop Tour', 'workshopTour'],
       ['formTourSeen', 'toggle', 'Forms Tour', 'planForms'],
-      ['avatarTourSeen', 'toggle', 'Avatar Tour', 'avatarTour'],
       // Element tours (docs/specs/007-editor/element-tours.md): one switch over them all, then one per element,
       // linking that element's article.
       ['elementToursSeen', 'toggle', 'Show Me on Every Element', undefined],
@@ -153,9 +140,7 @@ describe('settings catalogue', () => {
         ['BoardsTourSeenOff', 'BoardsTourSeenOn'],
         ['SheetsTourSeenOff', 'SheetsTourSeenOn'],
         ['DashboardsTourSeenOff', 'DashboardsTourSeenOn'],
-        ['WorkshopTourSeenOff', 'WorkshopTourSeenOn'],
         ['FormTourSeenOff', 'FormTourSeenOn'],
-        ['AvatarTourSeenOff', 'AvatarTourSeenOn'],
         ['ElementToursSeenOff', 'ElementToursSeenOn'],
         ['SankeyTourSeenOff', 'SankeyTourSeenOn'],
         ['LayerStackTourSeenOff', 'LayerStackTourSeenOn'],
@@ -258,9 +243,7 @@ describe('settings catalogue', () => {
       const changed = Object.keys({ ...before, ...after }).filter(
         (k) => before[k as keyof UserPreferences] !== after[k as keyof UserPreferences],
       );
-      // A presenter switch writes the one `presentation` object (lib/presentation-config).
-      const presenting = row.key.startsWith('presentation-') ? ['presentation'] : undefined;
-      expect(changed, row.key).toEqual(own[row.key] ?? presenting ?? [row.key]);
+      expect(changed, row.key).toEqual(own[row.key] ?? [row.key]);
     }
   });
 
@@ -421,14 +404,10 @@ describe('settings catalogue', () => {
   });
 });
 
-// Editor and Panels hold sub-categories (docs/specs/007-editor/user-preferences.md), each its own pane.
+// Panels holds sub-categories (docs/specs/007-editor/user-preferences.md), each its own pane.
 describe('settings sub-categories', () => {
-  it('nests Presenting under Editor', () => {
-    const ids = SETTINGS_CATEGORIES.map((c) => c.id);
-    const children = SETTINGS_CATEGORIES.filter((c) => c.parent === 'editor').map((c) => c.id);
-    expect(children).toEqual(['presenting']);
-    const at = ids.indexOf('editor');
-    expect(ids.slice(at + 1, at + 1 + children.length)).toEqual(children);
+  it('gives Editor no sub-categories', () => {
+    expect(SETTINGS_CATEGORIES.filter((c) => c.parent === 'editor')).toEqual([]);
   });
 
   it('keeps every setting that acts in both modes on Editor itself', () => {

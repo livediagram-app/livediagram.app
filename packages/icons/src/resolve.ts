@@ -85,10 +85,8 @@ export function emojiArtOf(svg: string): EmojiArt | null {
 export function previewResolvers(emoji: ReadonlyMap<string, EmojiArt> = new Map()): {
   resolveIconArt: (iconId: string) => IconExportArt | undefined;
   resolveStickerArt: (stickerId: string) => StickerArt | undefined;
-  resolveEmojiArt: (glyph: string) => EmojiArt | undefined;
 } {
   return {
-    resolveEmojiArt: (glyph) => emoji.get(glyph),
     resolveIconArt: (iconId) => {
       const glyph = iconEmojiGlyph(iconId);
       if (glyph === undefined) return resolveIconExportArt(iconId);

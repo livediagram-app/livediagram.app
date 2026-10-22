@@ -57,24 +57,24 @@ Sources: [Team shared documents](../../specs/013-workspace/team-shared-documents
 
 ### What each link role can do today
 
-| Capability                                                           | Path                                                                            | view | edit |
-| -------------------------------------------------------------------- | ------------------------------------------------------------------------------- | ---- | ---- |
-| Open, read every admitted tab, pan, zoom, follow, be seen            | `gateRead`; presence ops                                                        | yes  | yes  |
-| Cursor, select, laser, avatar, reaction, viewport, Bring Focus       | presence ops (`PRESENCE_OP_KINDS`)                                              | yes  | yes  |
-| Answer a live poll                                                   | `poll-answer`, classed as **presence**                                          | yes  | yes  |
-| Add a comment (also how one replies), delete one's own               | REST, `gateRead`, author stamped server-side                                    | yes  | yes  |
-| Add to and upvote a Q&A board                                        | REST `POST .../qa`, `gateRead`; the room writes D1                              | yes  | yes  |
-| Resolve, reopen, delete others' comments                             | room `el-delta` or tab `PUT`                                                    | no   | yes  |
-| Dots, estimates, temperature checks, Done check, quiz answers, ideas | room `vote` / `el-delta` (mutation)                                             | no   | yes  |
-| Change elements, tabs, document                                      | room mutations, tab `PUT`                                                       | no   | yes  |
-| Run session tools, hold the facilitator baton                        | `canHold` is edit-only ([facilitator.ts](../../../apps/api/src/facilitator.ts)) | no   | yes  |
+| Capability                                                           | Path                                               | view | edit |
+| -------------------------------------------------------------------- | -------------------------------------------------- | ---- | ---- |
+| Open, read every admitted tab, pan, zoom, follow, be seen            | `gateRead`; presence ops                           | yes  | yes  |
+| Cursor, select, laser, avatar, reaction, viewport, Bring Focus       | presence ops (`PRESENCE_OP_KINDS`)                 | yes  | yes  |
+| Answer a live poll                                                   | `poll-answer`, classed as **presence**             | yes  | yes  |
+| Add a comment (also how one replies), delete one's own               | REST, `gateRead`, author stamped server-side       | yes  | yes  |
+| Add to and upvote a Q&A board                                        | REST `POST .../qa`, `gateRead`; the room writes D1 | yes  | yes  |
+| Resolve, reopen, delete others' comments                             | room `el-delta` or tab `PUT`                       | no   | yes  |
+| Dots, estimates, temperature checks, Done check, quiz answers, ideas | room `vote` / `el-delta` (mutation)                | no   | yes  |
+| Change elements, tabs, document                                      | room mutations, tab `PUT`                          | no   | yes  |
+| Run session tools, hold the facilitator baton                        | `canHold` is edit-only (facilitator.ts)            | no   | yes  |
 
 Sources: [room-messages.ts](../../../packages/api-schema/src/room-messages.ts) (op classes),
 [document-room.ts](../../../apps/api/src/document-room.ts) (`sender.role !== 'edit' && !isPresenceOp`),
 [API app](../../specs/015-api/api.md) (comment and Q&A rows),
 [Per-participant responses](../../specs/012-collaboration/participant-responses.md) ("Edit-role only"),
 [Session tools](../../specs/012-collaboration/session-tools.md) ("the facilitator and participants share an edit link"),
-[Quiz](../../specs/012-collaboration/quiz.md) ("View-role visitors cannot answer").
+Quiz ("View-role visitors cannot answer").
 
 The consequence: **a retrospective today needs an edit link for everybody who votes**, which is the
 problem a Participant level solves.
@@ -145,7 +145,7 @@ or opens a hole; "should" is a strong preference.
 - **C12. The baton is edit-only and the owner bit is narrow.** `canHold` requires edit because
   "everything it governs writes to the document"; timers and vote rounds ride ordinary `tab` /
   `tab-meta` ops, which the room deliberately does not inspect
-  ([Facilitator](../../specs/012-collaboration/facilitator.md)). Granting facilitation to a non-editor
+  (Facilitator). Granting facilitation to a non-editor
   needs payload-level classification of those ops. Separately, the upgrade sets `X-Verified-Owner: 1`
   only on the bare-`o` path, which `isPersonalOwner` restricts to personal documents
   ([document-room-routes.ts](../../../apps/api/src/routes/document-room-routes.ts)); on a team
@@ -166,7 +166,7 @@ or opens a hole; "should" is a strong preference.
   pattern (REST endpoint writes D1, then relays the delta through `/mutation`) and the Q&A pattern
   (the room serialises writes and writes D1 itself with compare-and-swap). The worktree blueprint
   leaves this open (Open A5).
-- **C15. Poll answers are ephemeral by design** ([Live poll](../../specs/012-collaboration/live-poll.md));
+- **C15. Poll answers are ephemeral by design** (Live poll);
   they need no persistence path, only a role gate.
 
 ### API tokens and agents
@@ -332,7 +332,7 @@ ideas.
   which the room does not inspect (C12). A non-editor facilitator therefore needs payload-level
   classification of `tab-meta` (or new op kinds), plus REST Q&A running actions gated on the
   capability rather than `gateEdit`. Persistence of facilitator writes then joins C14.
-- **Risks.** Large room change for a case the [Facilitator](../../specs/012-collaboration/facilitator.md)
+- **Risks.** Large room change for a case the Facilitator
   spec explicitly scoped out ("who is driving, not who is allowed"). Worth keeping as a later layer
   over (2), not a prerequisite.
 

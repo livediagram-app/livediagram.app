@@ -44,7 +44,6 @@ const EditorContextMenu = dynamic(
 export function EditorContextMenuHost() {
   const {
     contextMenu,
-    facilitator,
     userPreferences,
     activeTab,
     isReadOnly,
@@ -152,21 +151,14 @@ export function EditorContextMenuHost() {
     setEntityFieldsSelected,
     setWebRowsSelected,
     setHeroCaptionSelected,
-    setEstimateScaleSelected,
-    setAgendaItemsSelected,
     setDecisionStatusSelected,
     setDecisionDateSelected,
     setDecisionDriversSelected,
-    setChairFacingSelected,
-    setRoomDoorSelected,
-    setButtonModeSelected,
     setPortalTargetSelected,
     setPortalNameSelected,
     createLinkedPortal,
     setSessionConfigSelected,
-    setRevealedSelected,
     setPickerSourceSelected,
-    setReactionSelected,
     setPickerOptionsSelected,
     tabs,
     commitShapeColorPreset,
@@ -448,21 +440,14 @@ export function EditorContextMenuHost() {
       onSetEntityFields={setEntityFieldsSelected}
       onSetWebRows={setWebRowsSelected}
       onSetHeroCaption={setHeroCaptionSelected}
-      onSetEstimateScale={setEstimateScaleSelected}
-      onSetAgendaItems={setAgendaItemsSelected}
       onSetDecisionStatus={setDecisionStatusSelected}
       onSetDecisionDate={setDecisionDateSelected}
       onSetDecisionDrivers={setDecisionDriversSelected}
-      onSetChairFacing={setChairFacingSelected}
-      onSetRoomDoor={setRoomDoorSelected}
-      onSetButtonMode={setButtonModeSelected}
       onSetPortalTarget={setPortalTargetSelected}
       onSetPortalName={setPortalNameSelected}
       onCreateLinkedPortal={createLinkedPortal}
-      onSetSession={facilitator.sessionToolsBlocked ? undefined : setSessionConfigSelected}
-      onSetRevealed={facilitator.sessionToolsBlocked ? undefined : setRevealedSelected}
+      onSetSession={setSessionConfigSelected}
       onSetPickerSource={setPickerSourceSelected}
-      onSetReaction={setReactionSelected}
       onSetPickerOptions={setPickerOptionsSelected}
       tabs={tabs}
       activeTabId={activeTab.id}

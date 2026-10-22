@@ -588,13 +588,13 @@ export async function reorderTabs(
     .run();
 }
 
-// Compare-and-swap one tab's `data` blob (docs/specs/012-collaboration/qa-board.md). Writes `nextData` only
-// if the row still holds exactly `expectedData`, the string the caller read,
-// and reports whether it did. The Q&A board's endpoint loops on this so a
-// room voting in the same second can't lose a vote to the read-modify-write
+// Compare-and-swap one tab's `data` blob (docs/specs/013-workspace/share-roles.md "Integrity"). Writes `nextData`
+// only if the row still holds exactly `expectedData`, the string the caller read,
+// and reports whether it did. A Participant's write loops on this so a room
+// answering in the same second can't lose an answer to the read-modify-write
 // race a plain upsert would have.
 //
-// Only `data` and `updated_at` move: a board write never renames, reorders or
+// Only `data` and `updated_at` move: a participant write never renames, reorders or
 // relinks the tab, and it touches no action or thread, so the collaboration
 // index (docs/specs/013-workspace/inbox.md) has nothing to mirror. The
 // image reference index is only ever ADDED to here: the swap can lose to a

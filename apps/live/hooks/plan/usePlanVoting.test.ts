@@ -28,12 +28,8 @@ describe('a board made for voting', () => {
 });
 
 describe('the Session strip in Plan', () => {
-  it('offers Timer and Vote only while Plan votes, and never a Poll', () => {
-    expect(sessionStripTools(false, true)).toEqual({
-      timer: true,
-      vote: true,
-      poll: false,
-    });
+  it('offers Timer and Vote only while Plan votes', () => {
+    expect(sessionStripTools(false, true)).toEqual({ timer: true, vote: true });
     expect(sessionStripTools(false, false)).toBeNull();
   });
 });

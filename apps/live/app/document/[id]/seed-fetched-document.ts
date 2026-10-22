@@ -30,8 +30,6 @@ export function makeSeedFetchedDocument(deps: {
   noteChangesetSeen: (tabId: string, rev: number) => void;
   setActiveId: SetState<string>;
   setDocumentName: SetState<string>;
-  // The stored slide deck (docs/specs/012-collaboration/presentation-mode.md), handed on for useSlideDeck to parse.
-  setDocumentPresentation: SetState<string | null>;
   // The type catalogue (docs/specs/026-plan/item-types.md), null for the default types, and its revision.
   setDocumentItemTypes: SetState<SavedItemTypes>;
   setDocumentOwnerColor: SetState<string | null>;
@@ -53,7 +51,6 @@ export function makeSeedFetchedDocument(deps: {
     noteChangesetSeen,
     setActiveId,
     setDocumentName,
-    setDocumentPresentation,
     setDocumentItemTypes,
     setDocumentOwnerColor,
     setDocumentOwnerId,
@@ -116,7 +113,6 @@ export function makeSeedFetchedDocument(deps: {
     lastSavedTabsRef.current = placeholderTabs;
     lastSavedNameRef.current = fetched.name;
     setDocumentName(fetched.name);
-    setDocumentPresentation(fetched.presentation ?? null);
     setDocumentItemTypes({
       itemTypes: readItemTypeCatalogue(fetched.itemTypes ?? null),
       itemTypesRev: fetched.itemTypesRev ?? 0,

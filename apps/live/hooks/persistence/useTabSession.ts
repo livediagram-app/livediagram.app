@@ -1,4 +1,4 @@
-// Per-tab live session tools (docs/specs/012-collaboration/session-tools.md): the facilitator-run TIMER
+// Per-tab live session tools (docs/specs/012-collaboration/session-tools.md): the TIMER
 // (countdown / stopwatch) and dot-VOTING handlers. State lives on the
 // Tab (`timer`, `vote`) so it rides the normal tab sync + persistence +
 // late-joiner replay; the realtime room already drops view-role
@@ -21,13 +21,9 @@ import { track } from '@/lib/telemetry';
 
 type TabSessionDeps = {
   editsBlocked: boolean;
-  // Somebody else is facilitating (docs/specs/012-collaboration/facilitator.md), so the lifecycle verbs below are
-  // theirs for now. Casting and retracting a dot stay open: answering is what
-  // the room is for, and a vote only the facilitator can vote in is not a vote.
-  sessionToolsBlocked: boolean;
-  // We hold the facilitator baton, so we may drive a vote somebody else
-  // started (docs/specs/012-collaboration/session-tools.md, "Who runs a vote").
-  isFacilitator: boolean;
+  // Running a session (start, end, reveal, clear, pace) is an Editor's (docs/specs/013-workspace/share-roles.md).
+  // Casting and retracting a dot stay open to whoever may edit: answering is what the room is for.
+  runsBlocked: boolean;
   activeId: string;
   activeTab: Tab;
   // Tab mutator that does NOT push undo history (same one the appearance
@@ -51,16 +47,15 @@ export function useTabSession(deps: TabSessionDeps) {
   const { editsBlocked, activeId, commitTabs, selfId, emitVote } = deps;
   // One flag for every verb that runs the room, so a new one cannot be added
   // without deciding which side of the line it is on.
-  const runBlocked = deps.editsBlocked || deps.sessionToolsBlocked;
+  const runBlocked = editsBlocked || deps.runsBlocked;
 
   const patchActive = (patch: (t: Tab) => Tab) =>
     commitTabs((ts) => ts.map((t) => (t.id === activeId ? patch(t) : t)));
 
   // --- Timer ---------------------------------------------------------------
 
-  // Returns the run's `startedAt`, so a caller that started it (an Agenda
-  // segment, docs/specs/012-collaboration/agenda.md) can recognise it later;
-  // undefined when nothing started.
+  // Returns the run's `startedAt`, so a caller that started it can recognise
+  // it later; undefined when nothing started.
   const startTimer = (mode: TimerMode, durationMs?: number): number | undefined => {
     if (runBlocked) return undefined;
     const now = Date.now();
@@ -113,7 +108,7 @@ export function useTabSession(deps: TabSessionDeps) {
   // wants: the remaining time would be a number from the old length shown
   // against the new one. So it goes back to the top.
   //
-  // The RUNNING state is preserved. A facilitator who extends a running timer
+  // The RUNNING state is preserved. A host who extends a running timer
   // is asking for more time, not for the session to stop; one who extends a
   // paused timer is setting up the next round.
   const setTimerDuration = (durationMs: number) => {
@@ -237,7 +232,7 @@ export function useTabSession(deps: TabSessionDeps) {
     // vote but every dot is lost — so a participant can't do it by
     // accident. Re-checked here as well as hidden in the UI, since the
     // handler is reachable from more than one surface.
-    if (!isVoteHost(deps.activeTab.vote, selfId, deps.isFacilitator)) return false;
+    if (!isVoteHost(deps.activeTab.vote, selfId)) return false;
     const open = !!deps.activeTab.vote?.active;
     patchActive((t) => (t.vote ? { ...t, vote: { ...t.vote, active: false } } : t));
     track('Tab', 'Ended', 'Vote');
@@ -246,7 +241,7 @@ export function useTabSession(deps: TabSessionDeps) {
 
   const revealVote = () => {
     if (runBlocked) return;
-    if (!isVoteHost(deps.activeTab.vote, selfId, deps.isFacilitator)) return;
+    if (!isVoteHost(deps.activeTab.vote, selfId)) return;
     // Revealing also seats the shared walkthrough on the top pick, so
     // every participant lands on the same element as the host.
     patchActive((t) =>
@@ -257,7 +252,7 @@ export function useTabSession(deps: TabSessionDeps) {
 
   const clearVote = () => {
     if (runBlocked) return;
-    if (!isVoteHost(deps.activeTab.vote, selfId, deps.isFacilitator)) return;
+    if (!isVoteHost(deps.activeTab.vote, selfId)) return;
     if (!deps.activeTab.vote) return;
     patchActive((t) => {
       if (!t.vote) return t;
@@ -299,7 +294,7 @@ export function useTabSession(deps: TabSessionDeps) {
   // wandering the list on their own screen (docs/specs/012-collaboration/session-tools.md).
   const setVoteReviewIndex = (index: number) => {
     if (runBlocked) return;
-    if (!isVoteHost(deps.activeTab.vote, selfId, deps.isFacilitator)) return;
+    if (!isVoteHost(deps.activeTab.vote, selfId)) return;
     patchActive((t) => (t.vote ? { ...t, vote: { ...t.vote, reviewIndex: index } } : t));
   };
 

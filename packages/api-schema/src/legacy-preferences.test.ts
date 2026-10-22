@@ -33,17 +33,16 @@ describe('upgradeLegacyPreferences', () => {
     ).toEqual({ theme: 'dark' });
   });
 
-  // docs/specs/007-editor/editor-modes.md "Naming in the interface": Facilitate mode became Workshop mode.
-  it("carries the Facilitate tour's seen-guard to the Workshop name", () => {
-    expect(upgradeLegacyPreferences({ facilitateTourSeen: true, theme: 'dark' })).toEqual({
-      workshopTourSeen: true,
-      theme: 'dark',
-    });
-    expect(upgradeLegacyPreferences({ facilitateTourSeen: true, workshopTourSeen: false })).toEqual(
-      {
-        workshopTourSeen: false,
-      },
-    );
+  it('drops the retired tour guards and presenter settings', () => {
+    expect(
+      upgradeLegacyPreferences({
+        facilitateTourSeen: true,
+        workshopTourSeen: true,
+        avatarTourSeen: true,
+        presentation: { loop: true },
+        theme: 'dark',
+      }),
+    ).toEqual({ theme: 'dark' });
   });
 
   it('drops the retired mode switches under every name', () => {

@@ -51,16 +51,4 @@ describe('TabPresenceStack', () => {
     expect(view.container.querySelectorAll('.animate-pop-out')).toHaveLength(0);
     expect(view.container.querySelectorAll('.animate-pop-in')).toHaveLength(2);
   });
-
-  // docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom": a count on our own avatar only.
-  it('shows how many follow us on our own avatar, and nowhere else', () => {
-    const me = person('me', 'Me');
-    const view = render(
-      <TabPresenceStack participants={[me, ada]} selfId="me" selfRole="edit" followerCount={2} />,
-    );
-    const counts = view.container.querySelectorAll('[aria-label="2 following you"]');
-    expect(counts).toHaveLength(1);
-    view.rerender(<TabPresenceStack participants={[me, ada]} selfId="me" selfRole="edit" />);
-    expect(view.container.querySelector('[aria-label$="following you"]')).toBeNull();
-  });
 });

@@ -45,7 +45,6 @@ const db = vi.hoisted(() => ({
   generateShareCode: vi.fn(() => 'CODE2345'),
   getShareLinkIncludingExpired: vi.fn(),
   extendShareLink: vi.fn(),
-  setDocumentPresentation: vi.fn(),
   reorderTabs: vi.fn(),
   countDocumentsByOwner: vi.fn(async () => 1),
   copyDocument: vi.fn(),

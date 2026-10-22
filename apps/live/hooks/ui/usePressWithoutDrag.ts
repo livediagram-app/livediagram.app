@@ -1,5 +1,5 @@
-// Press handling for the INTERACTIVE element faces (docs/specs/009-elements/mode-button.md's Selection Mode
-// button, docs/specs/009-elements/portal-element.md's Portal): fire on a click, stay silent on a drag.
+// Press handling for the INTERACTIVE element faces (docs/specs/009-elements/portal-element.md's Portal, a Plan
+// card): fire on a click, stay silent on a drag.
 //
 // Both are real elements as well as controls, so the same gesture has to do two
 // jobs — a tap presses them, a drag moves them. The browser doesn't help: a
@@ -10,9 +10,8 @@
 // Deliberately NOT a pointerdown-swallow: capturing the press would stop the
 // element being dragged at all, which is the thing we're protecting.
 //
-// `requireDouble` makes it a double-press instead — used by the Reveal zone
-// (docs/specs/009-elements/reveal-zone.md), where a stray single click would undo the element's entire
-// purpose. Detected from two clicks in a window rather than the DOM's own
+// `requireDouble` makes it a double-press instead — used by a Plan card, where a single click selects it.
+// Detected from two clicks in a window rather than the DOM's own
 // `dblclick`, because that event is unreliable on touch (it competes with
 // double-tap-to-zoom) and this way a tap and a click behave identically.
 

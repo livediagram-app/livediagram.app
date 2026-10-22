@@ -190,13 +190,6 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
       <path d="M18 14.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z" />
     </Glyph>
   ),
-  'presenting-well': (
-    <Glyph>
-      <rect x="3" y="4" width="18" height="12" rx="1.5" />
-      <path d="M12 16v4M8.5 20h7" />
-      <path d="M10 8.5l4 2.5-4 2.5z" />
-    </Glyph>
-  ),
 
   // ---- Account and Data ----
   'guest-identity': (

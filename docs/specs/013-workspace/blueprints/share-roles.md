@@ -2,8 +2,7 @@
 
 Derived from [Share roles](../share-roles.md), with the room of
 [Realtime conflict resolution](../../012-collaboration/realtime-conflict-resolution.md) and
-[Collab race hardening](../../012-collaboration/collab-race-hardening.md), the queued tab write of the
-[Q&A board](../../012-collaboration/qa-board.md), the baton of [Facilitator](../../012-collaboration/facilitator.md),
+[Collab race hardening](../../012-collaboration/collab-race-hardening.md),
 the pass and pill of [Live app](../../007-editor/live-app.md#share-dialog), [Embeds](../embeds.md), the Plan item
 and Sheet doors of [Plan board](../../026-plan/plan-board.md) and [Sheet store](../../029-sheets/sheet-store.md), and the share
 types of [Telemetry](../../017-telemetry/telemetry.md). The code sites it answers are catalogued in
@@ -23,7 +22,7 @@ socket, the answers route, a look-only Viewer) are not derived here; their earli
 | `packages/api-schema/src/room-messages.ts`                                                                   | `PARTICIPATION_OP_KINDS`, `PARTICIPATION_DELTA_KINDS`, `isParticipationOp`                     |
 | `packages/document/src/participant-content.ts` (new)                                                         | The participant content rule: `applyParticipantOp`, `PARTICIPANT_ADDABLE_TYPES`, field sets    |
 | `packages/document/src/element-types.ts`, `validate.ts`                                                      | `addedBy?: string` on `StickyElement` and `TextElement`; validated                             |
-| `packages/document/src/collab-ledger.ts`                                                                     | `mergeLedgerAnswersIntoTab`: votes, responses and ideas only                                   |
+| `packages/document/src/collab-ledger.ts`                                                                     | `mergeLedgerAnswersIntoTab`: votes and responses only                                          |
 | `apps/api/migrations/0080_participate_links.sql` (new)                                                       | A `level` column on `share_links` and `shared_with`; `ws_tickets.adder_key`                    |
 | `apps/api/src/share-link-row.ts`, `db/ws-tickets.ts`, `db/shared.ts`                                         | Readers through `parseStoredLevel`; the ticket's `adderKey`                                    |
 | `apps/api/src/auth/document-access.ts`                                                                       | Gates compare levels; `canParticipateDocument`                                                 |
@@ -49,8 +48,8 @@ socket, the answers route, a look-only Viewer) are not derived here; their earli
 | Access level        | `AccessLevel`, `ACCESS_LEVELS` (ascending); wire and column field `role` (SR1)    | What a link or embed admits                                                   |
 | Viewer              | `'view'`; card **Viewer**, stub `VIEWER`, pill **Viewing**                        | Looks only; writes nothing                                                    |
 | Participant         | `'participate'`; card **Participant**, stub `PARTICIPANT`, pill **Participating** | Takes part and changes content                                                |
-| Editor              | `'edit'`; card **Editor**, stub `EDITOR`, pill **Editing**                        | Changes anything; may hold the baton                                          |
-| Participation act   | `PARTICIPATION_OP_KINDS`, `PARTICIPATION_DELTA_KINDS`                             | A dot, a response or an idea                                                  |
+| Editor              | `'edit'`; card **Editor**, stub `EDITOR`, pill **Editing**                        | Changes anything                                                              |
+| Participation act   | `PARTICIPATION_OP_KINDS`, `PARTICIPATION_DELTA_KINDS`                             | A dot or a response                                                           |
 | Participant content | `applyParticipantOp`                                                              | The rule a Participant's element change is applied under                      |
 | Adder               | `addedBy` (element), `adderKeyFor`, `adderKey` (ticket), `X-Verified-Adder`       | Who added an element, as a server-derived key; only stamped for a Participant |
 | Capabilities        | `EditorCapabilities` (`can`)                                                      | The editor's per-level flags; render only, never the rule                     |
@@ -68,24 +67,22 @@ Doors by level (server):
 | Door                                                                                       | Needs                             |
 | ------------------------------------------------------------------------------------------ | --------------------------------- |
 | Reads (document, tabs, images, comment threads, the Timeline); share resolve; make a copy  | view                              |
-| Room: presence (cursor, select, laser, follow, focus); never `poll-answer` or `reaction`   | view                              |
+| Room: presence (cursor, select, tab-focus, plan and sheet presence)                        | view                              |
 | Comments: add, reply, resolve, reopen, delete own; card comments                           | participate (`deniedParticipate`) |
-| Q&A: add a note, upvote; room `poll-answer` and `reaction`                                 | participate                       |
-| Room: `vote`; `el-delta` `response` or `idea`                                              | participate                       |
+| Room: `vote`; `el-delta` `response`                                                        | participate                       |
 | Room: `el` (`add`, `update`, `remove`) through the participant rule                        | participate                       |
 | Items: create, patch, move, patches                                                        | participate (`gateParticipate`)   |
 | Sheets: `writes` of kind `cells`                                                           | participate                       |
 | Tab PUT, tab DELETE, document PUT; room `tab`, `tab-meta`, `document-meta`, `el` `reorder` | edit                              |
-| Room: `el-delta` `check`, `board`, `comment-*`; `poll-start`, `poll-end`; `drag-preview`   | edit                              |
+| Room: `el-delta` `check`, `board`, `comment-*`; `drag-preview`                             | edit                              |
 | Items: bulk, delete, tally; item types; Sheets: create, delete, `layout`, `title`          | edit                              |
-| Facilitator baton                                                                          | edit (`canHold`, unchanged)       |
 
 An Editor's `el` op is relayed as today. A Participant's `el` op takes the participant path:
 
 1. **Gate.** The session's level is `participate`, the op's tab passes the tab-scope check, and the op kind is `add`,
    `update` or `remove`. A `reorder` is dropped.
-2. **Queue.** The op joins the room's tab write queue (`tabWriteQueue`, the Q&A board's queue renamed, SR2), so
-   participant writes and Q&A writes on a document run one at a time.
+2. **Queue.** The op joins the room's tab write queue (`tabWriteQueue`, SR2), so participant writes on a
+   document run one at a time.
 3. **Write.** `writeParticipantOps(env, { documentId, tabId, ops: [op], adderKey })` reads the stored tab, runs
    `applyParticipantOp` and compare-and-swaps the result (up to `TAB_CAS_MAX_ATTEMPTS`).
 4. **Relay.** An `applied` op is sequenced from the sender to everyone but the sender when it equals what the sender
@@ -129,9 +126,9 @@ element's update must leave it `addableOn` the tab, else `refused` (`not-holdabl
   `locked`.
 
 Answers as self: a Participant's `vote` must name `voter` equal to its session's presence `key`, a `response`
-delta `participantId` equal to it (`answersAsSelf`); an `idea` names nobody. Anything else is dropped.
+delta `participantId` equal to it (`answersAsSelf`). Anything else is dropped.
 
-Answers persistence: after the room sequences a Participant's `vote`, `response` or `idea`, it schedules one
+Answers persistence: after the room sequences a Participant's `vote` or `response`, it schedules one
 `writeParticipantAnswers` for that tab `ANSWERS_FLUSH_MS` later (coalesced per tab), which reads the stored tab,
 applies `mergeLedgerAnswersIntoTab(tab, ledger)` and compare-and-swaps it, through the same queue. An Editor's
 answers persist as today, through its own save.
@@ -172,7 +169,7 @@ Editor state:
 A Participant's commit: `editsBlocked` is false for a Participant (its gestures open through `can`), so every commit
 passes `guardCommit`, which runs `participantTabChange(before, after, adderKey)`: the change lands, with `addedBy`
 stamped on what it adds, only when the rule would take it unchanged; anything the room would refuse or trim is
-held back. Running a session stays shut through `sessionToolsBlocked` (the baton's block, or `isReadOnly`).
+held back. Running a session stays shut through `sessionToolsBlocked` (`isReadOnly`).
 
 A Participant's save: the autosave runs for a Participant, but takes the participant branch
 (`relayParticipantChanges`): the ops are `diffToElementOps(before, after)` without `reorder`, sent over the socket as
@@ -201,7 +198,6 @@ Invariants:
 - **I3** A Participant's content change reaches D1 and peers only through `applyParticipantOp`.
 - **I4** `addedBy` is written only by `applyParticipantOp`, from the room's verified adder key; an Editor's save
   keeps whatever the stored element carries.
-- **I5** The baton is held only at edit.
 - **I6** The server enforces every level; `can` only decides what renders.
 
 ## Interfaces and contracts
@@ -328,7 +324,7 @@ lands in a new document, where no adder key matches it.
 - **E8** The write loses the compare-and-swap `TAB_CAS_MAX_ATTEMPTS` times, the tab is gone, or the tab is over its
   cap: the sender gets `catchup { resync: true }`; nothing is relayed.
 - **E9** A Participant socket without an adder key adds a sticky: refused `no-adder`.
-- **E10** A Participant socket sends `tab`, `tab-meta`, `reorder`, `check`, `board`, `poll-start` or `drag-preview`:
+- **E10** A Participant socket sends `tab`, `tab-meta`, `reorder`, `check`, `board` or `drag-preview`:
   dropped.
 - **E11** A tab-scoped Participant link: its ops on another tab are dropped by the scope check first.
 - **E12** An embed of a Participant link: renders as a Viewer (SR6).
@@ -380,11 +376,10 @@ Share dialog cards, in `LEVEL_ORDER = ['edit', 'participate', 'view']`:
 - Three cards, one per row at every width (SR8); the pass stub widens to fit `PARTICIPANT` (SR7).
 - Arrow keys step through `LEVEL_ORDER`, wrapping; Home and End reach the ends.
 - Pill: **Participating**, `bg-teal-100 text-teal-800 dark:bg-teal-500/15 dark:text-teal-200`, the vote glyph; static.
-- A Participant's palette strip: the selection-mode dropdown (Select, Hand, Laser, Spotlight, Avatar, Isometric,
-  Zen), the category picker holding **Participate** alone (ballot glyph, "Add stickies and text to the board."),
+- A Participant's palette strip: the selection-mode dropdown (Select, Hand, Isometric, Zen), the category picker holding **Participate** alone (ballot glyph, "Add stickies and text to the board."),
   and its tiles; tab add, rename and delete and context menus' structural rows are absent.
-- A Viewer sees no comment composer, resolve or delete (`CommentThreadPopover canComment`), no poll prompt, no Q&A
-  add or upvote, no card votes or comments, no reactions. Its selection holds nothing
+- A Viewer sees no comment composer, resolve or delete (`CommentThreadPopover canComment`), no card votes or
+  comments. Its selection holds nothing
   (`RemoteSelector.holds`, `lockedByOther`).
 - Badges: "Editor", "Participant", "Viewer". Shared-with-you chip: "Edit", "Participate", "View".
 
@@ -438,7 +433,7 @@ The Share dialog is a lazy chunk; a third card adds no request. A Participant's 
 | `DEFAULT_MCP_SHARE_LEVEL`   | `'participate'`                                 | Spec                                           | fixed               |
 | `LEVEL_ORDER`               | `['edit', 'participate', 'view']`               | Spec's card order                              | fixed               |
 | `PARTICIPANT_ADDABLE_TYPES` | `['sticky', 'text', 'image', 'shape', 'arrow']` | Spec (shape and arrow narrowed by `addableOn`) | grows with the spec |
-| `TAB_CAS_MAX_ATTEMPTS`      | 8                                               | The Q&A write's existing bound                 | 3 to 20             |
+| `TAB_CAS_MAX_ATTEMPTS`      | 8                                               | A bound on lost swaps                          | 3 to 20             |
 | `ADDER_KEY_LENGTH`          | 32                                              | 128 bits of hex (SR4)                          | 16 to 64            |
 | `ANSWERS_FLUSH_MS`          | 1500                                            | SR9                                            | 250 to 10000        |
 | `PARTICIPANT_PENDING_MAX`   | 64                                              | SR12                                           | 8 to 512            |

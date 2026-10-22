@@ -74,7 +74,6 @@ async function upload(rec: OfflineDocumentRecord, ownerId: string): Promise<Map<
         tabs,
         folderId,
         createdAt: rec.createdAt,
-        presentation: rec.presentation ?? null,
         // The item store, in each column's order (docs/specs/026-plan/items.md "Offline documents").
         items: storeAsCreates(rec.items ?? []),
         // And its type catalogue (docs/specs/026-plan/item-types.md "Storage and sync").

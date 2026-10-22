@@ -12,7 +12,6 @@ import {
   elementFontId,
   resolveFontStack,
   resolveFinish,
-  isSelectionMode,
   alignmentCoordinates,
   buildElementIndex,
   layerBands,
@@ -40,7 +39,7 @@ import { LayerSelectionChrome } from '@/components/canvas/LayerSelectionChrome';
 import { useSheetChartRenderer, type BoxedShared } from '@/components/canvas/sheet-chart-renderer';
 import type { CanvasSelectionInput } from '@/hooks/canvas/useCanvasSelectionView';
 import { usePhotoDraftView } from '@/lib/photo-draft-preview';
-import { ZoomedLaserOverlay, ZoomedRemoteCursor } from '@/components/canvas/view-readers';
+import { ZoomedRemoteCursor } from '@/components/canvas/view-readers';
 import { useInsertShift } from '@/hooks/canvas/useInsertShift';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { CardVoteProvider, type CardVote } from '@/components/plan/CardVoteContext';
@@ -78,7 +77,7 @@ export type CanvasElementsLayerProps = CanvasProps & ElementsExtras;
 
 // The element-rendering layer of the canvas: the shared arrow defs, every
 // element (arrows + boxed views interleaved in z-order), remote cursors,
-// the laser overlay, and the grips layer on top of them all: the union resize
+// and the grips layer on top of them all: the union resize
 // handles, the quick-connect plus buttons, and every element's own grips,
 // portalled in (SelectionGripsLayer). Rendered inside Canvas's
 // viewport-transformed wrapper.
@@ -97,7 +96,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     drawDrag,
     imageContext,
     isPaintMode,
-    laserTrails,
     onBeginArrowCurveDrag,
     onBeginArrowCurvePointDrag,
     onBeginArrowBend,
@@ -128,11 +126,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onSpawnConnect,
     onStartArrow,
     onFollowLink,
-    onPressModeButton,
-    onPressFocusButton,
     onPressSessionButton,
     sessionStartBlocked,
-    sessionRunBy,
     timerState,
     // The tab's live timer plus the handlers that drive it, so a Timer
     // session element can BE the timer (docs/specs/012-collaboration/session-button.md) rather than a button that
@@ -150,11 +145,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onResetTimer,
     onClearTimer,
     onSetTimerDuration,
-    revealedIds,
-    onToggleReveal,
     onRollPicker,
     collab,
-    chairSitters,
     onOpenComments,
     onOpenAction,
     onOpenNote,
@@ -172,11 +164,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     canMove,
     canWriteText,
     canResize,
-    canvasTool,
     onEnterPortal,
-    onFireReaction,
-    reactionBursts,
-    onReactionBurstDone,
     remoteCursors,
     remoteSelectionsByElement,
     shiftDupGhostIds,
@@ -246,10 +234,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onSetPointerTip: readOnly ? undefined : onSetPointerTip,
     onSetHeroCaptionLine: readOnly ? undefined : onSetHeroCaptionLine,
     onFollowLink,
-    onPressModeButton,
-    onPressFocusButton,
     onPressSessionButton,
-    onToggleReveal,
     onRollPicker,
     onOpenComments,
     onOpenAction,
@@ -262,8 +247,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onSetSessionConfig,
     onOpenElementSettings,
     onEnterPortal,
-    onFireReaction,
-    onReactionBurstDone,
     onPauseTimer,
     onResumeTimer,
     onResetTimer,
@@ -280,8 +263,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   });
   // One timer bag and one comment / action bag per element, built from the stable wrappers above, so
   // a view's memo holds across editor renders (docs/specs/008-canvas/canvas-performance.md).
-  // Running the timer is the session's runner's (docs/specs/013-workspace/share-roles.md, facilitator.md): a
-  // Participant, a Viewer and anyone but the facilitator see the face without its controls.
+  // Running the timer is an Editor's (docs/specs/013-workspace/share-roles.md): a Participant and a Viewer see the
+  // face without its controls.
   const timerControls = useMemo(
     () =>
       sessionStartBlocked
@@ -415,11 +398,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       chartPalette: stablePalette,
       onCancelEdit: h.onCancelEdit,
       onFollowLink: h.onFollowLink,
-      onPressModeButton: h.onPressModeButton,
-      onPressFocusButton: h.onPressFocusButton,
       onPressSessionButton: h.onPressSessionButton,
       sessionStartBlocked,
-      sessionRunBy,
       timerState,
       tabTimer: tabTimer ?? null,
       onSetSessionConfig: h.onSetSessionConfig,
@@ -427,17 +407,9 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       commentSelfId,
       actionSelfId,
       timerControls,
-      onToggleReveal: h.onToggleReveal,
       onRollPicker: h.onRollPicker,
       collab,
-      chairSitters,
-      // Mode Buttons light up for the mode they hand out, and the canvas-tool union is WIDER than the mode
-      // vocabulary: Slide Deck (docs/specs/012-collaboration/presentation-mode.md) has no Mode Button, so it is not a
-      // SelectionMode. Narrow rather than widen: a "Switch to Slide Deck" button is exactly what that spec rules out.
-      activeMode: isSelectionMode(canvasTool) ? canvasTool : undefined,
       onEnterPortal: h.onEnterPortal,
-      onFireReaction: h.onFireReaction,
-      onReactionBurstDone: h.onReactionBurstDone,
       onOpenComments: h.onOpenComments,
       onOpenAction: h.onOpenAction,
       onOpenNote: h.onOpenNote,
@@ -460,15 +432,12 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       voteReview,
       stablePalette,
       sessionStartBlocked,
-      sessionRunBy,
       timerState,
       tabTimer,
       commentSelfId,
       actionSelfId,
       timerControls,
       collab,
-      chairSitters,
-      canvasTool,
       imageContext,
     ],
   );
@@ -602,8 +571,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             voteReview={voteReview}
             commentActionsFor={commentActionsFor}
             actionActionsFor={actionActionsFor}
-            revealedIds={revealedIds}
-            reactionBursts={reactionBursts}
             tabFont={tabFont}
             tabFinish={tabFinish}
             fontEpoch={fontEpoch}
@@ -638,12 +605,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             {remoteCursors.map((c) => (
               <ZoomedRemoteCursor key={c.id} cursor={c} />
             ))}
-
-            {/* Laser overlay sits inside the viewport-transformed wrapper
-            so trail coordinates (canvas-space) pan + zoom with
-            elements. The overlay component owns its own RAF loop
-            and only runs while there's at least one active trail. */}
-            <ZoomedLaserOverlay trails={laserTrails} />
 
             {/* What a relayed changeset touched (docs/specs/024-agents/agent-changesets.md "In the editor"):
           above the elements, below the selection chrome. */}

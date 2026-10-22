@@ -101,16 +101,13 @@ type ElementItem = {
 // this back so the editor routes it to the matching add handler (which arms
 // the same tap-to-drop / drag-to-size placement the palette uses).
 export type PaletteAdd =
-  // `session` / `reaction` are the creation-time choice for the two kinds
-  // that have one (docs/specs/012-collaboration/session-button.md, docs/specs/009-elements/reaction-pad.md). The palette offers a tile per choice,
-  // so search has to as well: typing "poll" should place a poll, not a timer.
+  // `session` is the creation-time choice for the kind that has one
+  // (docs/specs/012-collaboration/session-button.md). The palette offers a tile per choice, so search has to
+  // as well: typing "vote" should place a vote, not a timer.
   | {
       type: 'shape';
       shapeKind: ShapeKind;
       session?: import('@liveplanner/document').SessionTool;
-      reaction?: import('@liveplanner/document').Reaction;
-      mode?: import('@liveplanner/document').SelectionMode;
-      estimateScale?: import('@liveplanner/document').EstimateScale;
       plan?: string;
       variant?: string;
     }

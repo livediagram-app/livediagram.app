@@ -296,8 +296,7 @@ Share dialog gate, Share Form's, and the move prompt after signing in).
   the returned R2 id, so the cloud copy carries real gallery images instead of
   bloated tab JSON. A failed transfer keeps the data URI (it still renders
   anywhere); the per-tab byte cap surfaces a hard failure to the caller.
-- **Everything on the record travels**, not just tabs: the slide deck
-  ([Presentation mode](../012-collaboration/presentation-mode.md)), the created date, the folder (kept only when it is one of the
+- **Everything on the record travels**, not just tabs: the created date, the folder (kept only when it is one of the
   caller's own personal folders, else the root of My Documents) and the star ([Favourite documents](../013-workspace/favourites.md)). The
   local copy is deleted next, so anything the create leaves behind is gone.
 - **A refused folder lands at the root, on the sync's say-so.** The create carries the folder as

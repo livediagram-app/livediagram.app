@@ -4,7 +4,6 @@ import {
   mergeIncomingElement,
   mergeIncomingVote,
   planBoardPatch,
-  preferNewerQa,
   type Tab,
 } from '@liveplanner/document';
 import type { RoomOp } from '@liveplanner/api-schema';
@@ -180,9 +179,8 @@ export function mergeRemoteTab(local: Tab, incoming: Tab): Tab {
   const localById = new Map(local.elements.map((e) => [e.id, e]));
   const elements = incoming.elements.map((el) => {
     const mine = localById.get(el.id);
-    // Delta-carried fields stay ours (docs/specs/012-collaboration/collab-race-hardening.md); a Q&A board keeps the newer
-    // rev's notes (docs/specs/012-collaboration/qa-board.md), the same rule as an `el` op.
-    return mine ? preferNewerQa(mine, mergeIncomingElement(mine, el)) : el;
+    // Delta-carried fields stay ours (docs/specs/012-collaboration/collab-race-hardening.md).
+    return mine ? mergeIncomingElement(mine, el) : el;
   });
   return {
     ...rest,

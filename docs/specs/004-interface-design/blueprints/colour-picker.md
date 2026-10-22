@@ -13,7 +13,7 @@ Derived from [Colour picker](../colour-picker.md). Engineering detail only; desi
 | theme colours        | the host's `ColourOption[]` passed as `theme`, named by `colourWords` (`packages/document/src/quick-swatches.ts`)                                                                               |
 | Custom colours       | `Tab.customColours`, `customColoursOf` / `withCustomColour` (`packages/document`), `documentColours(...)` (`apps/live/lib/document-colours.ts`), `useDocumentColours()` (`apps/live/hooks/ui/`) |
 | custom colour editor | `CustomColourEditor` (`apps/live/components/colour/CustomColourEditor.tsx`)                                                                                                                     |
-| skins                | inline `ColourPicker`; row (`ColourRow`, `LaserColourRow`); `ColourField`; `ColourSwatchButton`, `useColourWell`; all popovers are `ColourPopover`                                              |
+| skins                | inline `ColourPicker`; row (`ColourRow`); `ColourField`; `ColourSwatchButton`, `useColourWell`; all popovers are `ColourPopover`                                                                |
 | no colour            | a leading `ColourOption` with `none: true` (`noColour(id, label)`)                                                                                                                              |
 
 Grey is a **neutral stock colour**: `GREY_PEN_COLOUR = 'grey'`, `PenColourName = 'ink' | 'grey' | HuedPenColourName`.
@@ -91,7 +91,6 @@ ColourPicker({
 | Plan card Colour               | `ColourSelect` (same file, a `ColourField`)                                                                  | None                        | strong light hex                                                                                                                                 | hex / undefined                                                            |
 | Plan column                    | `components/plan/PlanColumnPopover.tsx`                                                                      | No colour                   | strong light hex; column colours as `extra`                                                                                                      | hex / null                                                                 |
 | Form cover background          | `components/canvas/page-background-section.tsx`, `page-background-custom.tsx` (`PAGE_COLOUR_GROUPS`)         | Paper                       | soft "Light" + strong "Dark", light hex                                                                                                          | `PageFill` / undefined                                                     |
-| Laser                          | `components/panels/LaserColourRow.tsx`                                                                       | Your colour (`presence`)    | strong by name for the canvas                                                                                                                    | `presence` / name / hex                                                    |
 | Canvas, pattern, theme builder | `components/palette/palette-controls.tsx` (`useColourWell`, `ColorSwatch`), `custom-theme-builder-parts.tsx` | none                        | soft + strong ("Soft colours", "Strong colours") by hex for the canvas; pattern strong only                                                      | hex                                                                        |
 | Rich-text colour               | `components/canvas/RichTextToolbar.tsx`                                                                      | none                        | strong hex for the canvas                                                                                                                        | hex                                                                        |
 | Pie and legend rows            | `components/palette/context-menu-data-editors.tsx`                                                           | none                        | strong light hex                                                                                                                                 | hex                                                                        |
@@ -117,8 +116,6 @@ ColourPicker({
   light hex; Ink leaves a nameless element unchanged.
 - `customSwatches` and `whiteboardYourColours` stay in the `UserPreferences` type, marked dead, so stored blobs load;
   nothing reads or writes them.
-- Laser config (`apps/live/lib/laser-config.ts`): colour is `presence`, a standard name, or `#rrggbb`; legacy `cyan`
-  reads as `teal`, `white` as `ink`, anything else as `presence`. The room message carries it as a string.
 - `Tab.customColours?: string[]` (`packages/document/src/index.ts`), read with `customColoursOf(tab)` (lower-case
   `#rrggbb`, deduped, anything else dropped, at most `CUSTOM_COLOURS_MAX` = 12) and written with
   `withCustomColour(tab, hex)` (moves `hex` to the front, caps; returns the tab itself when nothing changes), both in
@@ -200,7 +197,7 @@ Picks are reported by each surface's own write path (`track('Element', 'Changed'
 | Quick Style rows, More colours, keys                      | `components/canvas/QuickStylePanel.test.tsx`, `hooks/canvas/useQuickStyle.test.tsx`                                                         |
 | Plan surfaces                                             | `ColourSwatches.test.tsx`, `ItemFieldEditor.colour.test.tsx`, `PlanColumnPopover.colour.test.tsx`, `packages/items/src/item-colour.test.ts` |
 | form cover background                                     | `page-background-section.test.tsx`                                                                                                          |
-| laser and colour wells                                    | `LaserColourRow.test.tsx`, `lib/laser-config.test.ts`, `components/palette/colour-wells.test.tsx`                                           |
+| colour wells                                              | `components/palette/colour-wells.test.tsx`                                                                                                  |
 | rows fit, e2e                                             | `e2e/quick-style-swatch-rows.spec.ts`, `quick-style-panel.spec.ts`                                                                          |
 
 ## Constants and configuration

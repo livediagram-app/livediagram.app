@@ -1,10 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Participant } from './identity';
-import type { AvatarPresence } from '@liveplanner/api-schema';
 import {
-  buildLaserTrailRows,
   buildParticipantsByTab,
-  buildRemoteAvatarRows,
   buildRemoteCursorRows,
   buildRemoteSelectionsByElement,
   resolveOwnerBadge,
@@ -202,61 +199,6 @@ describe('buildRemoteCursorRows', () => {
     ]);
     const rows = buildRemoteCursorRows(cursors, byId(self, a, p('c')), 'me', 't1');
     expect(rows).toEqual([{ id: 'a', name: 'A', color: '#123456', x: 5, y: 6 }]);
-  });
-});
-
-describe('buildRemoteAvatarRows', () => {
-  const walker: AvatarPresence = {
-    x: 10,
-    y: 20,
-    facing: 'left',
-    config: { gender: 'female', clothing: 'dress', hair: 'long', size: 'regular' },
-    walking: true,
-    stepFrame: 1,
-    lift: 0,
-    wave: null,
-  };
-  const entry = (tabId: string) => ({ tabId, avatar: walker });
-
-  it('joins each peer character with their live name + colour', () => {
-    const peer = p('peer', { name: 'Ada', color: '#ff0000' });
-    const rows = buildRemoteAvatarRows(new Map([['peer', entry('t1')]]), byId(peer), 'me', 't1');
-    expect(rows).toEqual([{ id: 'peer', name: 'Ada', color: '#ff0000', avatar: walker }]);
-  });
-
-  it('drops self, other tabs, and participants who have left the room', () => {
-    const peer = p('peer');
-    const rows = buildRemoteAvatarRows(
-      new Map([
-        ['me', entry('t1')],
-        ['peer', entry('t2')],
-        ['ghost', entry('t1')],
-      ]),
-      byId(peer),
-      'me',
-      't1',
-    );
-    expect(rows).toEqual([]);
-  });
-});
-
-describe('buildLaserTrailRows', () => {
-  it('puts the local trail first, then active-tab present peers', () => {
-    const self = p('me', { color: '#fff' });
-    const a = p('a', { color: '#aaa' });
-    const rows = buildLaserTrailRows({
-      localLaserTrail: [{ x: 0, y: 0, t: 1 }],
-      remoteLaserTrails: new Map([
-        ['a', { tabId: 't1', points: [{ x: 1, y: 1, t: 2 }] }],
-        ['b', { tabId: 't2', points: [{ x: 2, y: 2, t: 3 }] }], // other tab -> dropped
-      ]),
-      livePresenceById: byId(self, a),
-      selfId: 'me',
-      selfColor: '#fff',
-      activeId: 't1',
-    });
-    expect(rows.map((r) => r.participantId)).toEqual(['me', 'a']);
-    expect(rows[0]!.color).toBe('#fff');
   });
 });
 

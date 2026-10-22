@@ -33,7 +33,7 @@ person's, and comments are how people and agents talk on the canvas when nobody 
   characters), `focus` (up to 20 element ids, shown with a ring in the owner's colour) and `ttl` (up to
   `AGENT_PRESENCE_MAX_TTL_MS`). `DELETE` on the same path clears it. The agent holds no socket.
 - The room keeps agent presence entries beside people's and expires them on their ttl. An agent's presence never
-  holds an element, and never counts in a session's head count, the Done check or a roll call.
+  holds an element, and never counts in a session's head count or a card that counts the room.
 
 ## Comments
 

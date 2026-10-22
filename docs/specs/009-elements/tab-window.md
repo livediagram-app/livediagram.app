@@ -23,8 +23,8 @@ showing it is up to date.
   opacity), as the editor paints them for that tab in its mode, at the drawing's zoom and lined up with it, filling
   the window edge to edge, so the window reads as that tab and not as a picture on a blank card. A Plan tab is drawn
   as laid out, as its image export draws it: its cards, its Sheets' cells and its plan views' pictures. A **Form** tab is drawn as its form on its tab's look, as respondents see it (the picture its
-  thumbnail and an agent's preview draw). Every mode is drawn: Diagram, Draw, Workshop (its timer and vote are live
-  session tools, never drawn), Event Storming and Plan. It follows every change to the tab (an edit, a
+  thumbnail and an agent's preview draw). Every mode is drawn: Diagram, Draw, Event Storming, Pages and Plan (a tab's timer and vote are live
+  session tools, never drawn). It follows every change to the tab (an edit, a
   collaborator's) at a deferred priority, so a burst of edits never competes with the canvas.
 - **Moving**: the drawing moves as the tab does on the canvas. Each shown element's animation plays in the window
   with its own Speed and Repeat, by the same motion the canvas draws: the Shape set's motions (Blink, Heartbeat,
@@ -91,7 +91,7 @@ fetches every tab a window shows, a Plan tab included. A Form tab draws as its f
 screen. A Board or Dashboard tab draws laid out, as on screen; a Sheet's cells and a Dashboard's figures from Sheets
 are not read for a window in an export, so a Sheet draws its frame and headers alone and a figure its placeholder. A window inside a shown tab is drawn as its frame (no recursion). Ids inside a shown tab's
 drawing are prefixed per window, so its gradients, patterns and markers never collide with the page's. Thumbnails
-(the Slide Deck's among them) and the API's tab render draw the frame, named for its tab where the caller
+('s among them) and the API's tab render draw the frame, named for its tab where the caller
 knows it, else "Tab Window".
 
 ## Palette

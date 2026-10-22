@@ -6,8 +6,6 @@
 // materialises these directly (docs/specs/015-api/mcp-server.md §4.5).
 
 import { isFormTemplateKind } from './form-templates';
-import { buildVirtualOffice } from './template-builders-office';
-import { buildAllHandsHall, buildCoworkingSpace, buildTeamPod } from './template-builders-spaces';
 import { settleChips, type Element, type Tab } from '@liveplanner/document';
 import type { TemplateKind } from './templates';
 import { buildPlanTemplate, isPlanTemplateKind, planTemplateTabs } from './template-builders-plan';
@@ -36,13 +34,6 @@ import { buildStateMachine } from './template-builders-state-machine';
 import { buildEventStorming } from './template-builders-eventstorming';
 import { buildBusinessModelCanvas, buildEmpathyMap } from './template-builders-canvases';
 import { buildAffinityMap, buildUserStoryMap } from './template-builders-workshops';
-import { buildLeanCoffee, buildTownHall } from './template-builders-sessions';
-import { buildIcebreakerQuestions, buildPubQuiz } from './template-builders-quiz-games';
-import {
-  buildPeopleBingo,
-  buildTwoTruthsAndALie,
-  buildWouldYouRather,
-} from './template-builders-party-games';
 import { buildBrainstorm, buildWorkshopBoard } from './template-builders-workshop-boards';
 import { buildOkrTree, buildSitemap } from './template-builders-hierarchies';
 import { buildFunnel } from './template-builders-funnel';
@@ -81,7 +72,6 @@ import { buildOpportunitySolutionTree } from './template-builders-opportunity-tr
 import { buildStakeholderMap } from './template-builders-stakeholders';
 import { buildCrazyEights } from './template-builders-crazy-eights';
 import { buildUserPersona } from './template-builders-persona';
-import { buildMeetingAgenda } from './template-builders-meeting';
 import { buildObjectivesPlanner } from './template-builders-objectives';
 import { buildWardleyMap } from './template-builders-wardley';
 import { buildThreatModel } from './template-builders-threat-model';
@@ -203,8 +193,6 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
       return buildCrazyEights(cx, cy);
     case 'user-persona':
       return buildUserPersona(cx, cy);
-    case 'meeting-agenda':
-      return buildMeetingAgenda(cx, cy);
     case 'objectives-planner':
       return buildObjectivesPlanner(cx, cy);
     case 'wardley-map':
@@ -229,32 +217,10 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
       return buildUserStoryMap(cx, cy);
     case 'affinity-map':
       return buildAffinityMap(cx, cy);
-    case 'lean-coffee':
-      return buildLeanCoffee(cx, cy);
     case 'brainstorm':
       return buildBrainstorm(cx, cy);
     case 'workshop-board':
       return buildWorkshopBoard(cx, cy);
-    case 'town-hall':
-      return buildTownHall(cx, cy);
-    case 'pub-quiz':
-      return buildPubQuiz(cx, cy);
-    case 'icebreaker-questions':
-      return buildIcebreakerQuestions(cx, cy);
-    case 'virtual-office':
-      return buildVirtualOffice(cx, cy);
-    case 'coworking-space':
-      return buildCoworkingSpace(cx, cy);
-    case 'team-pod':
-      return buildTeamPod(cx, cy);
-    case 'all-hands-hall':
-      return buildAllHandsHall(cx, cy);
-    case 'two-truths-and-a-lie':
-      return buildTwoTruthsAndALie(cx, cy);
-    case 'would-you-rather':
-      return buildWouldYouRather(cx, cy);
-    case 'people-bingo':
-      return buildPeopleBingo(cx, cy);
     case 'business-model-canvas':
       return buildBusinessModelCanvas(cx, cy);
     case 'empathy-map':

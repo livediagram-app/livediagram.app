@@ -1,8 +1,7 @@
 // @vitest-environment jsdom
 
 // docs/specs/012-collaboration/session-tools.md "The Session strip": what each button opens. Set-up
-// while idle, the live panel while running, the dial alone for a view-role visitor, and the
-// facilitator lock.
+// while idle, the live panel while running, and the dial alone for a view-role visitor.
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -33,10 +32,6 @@ function session(overrides: Partial<SessionToolsProps> = {}): SessionToolsProps 
     onEndVote: vi.fn(),
     onRevealVote: vi.fn(),
     onClearVote: vi.fn(),
-    livePoll: null,
-    pollCollaborators: [],
-    pollHasAudience: true,
-    onStartPoll: vi.fn(),
     voteLayers: [],
     activeLayerId: 'l1',
     ...overrides,
@@ -52,7 +47,6 @@ function popover(overrides: Partial<SessionPopoverProps> = {}) {
     canVote: true,
     holdOpen: true,
     voteSelfId: 'me',
-    pollPanel: null,
     vote: {
       tabVote: undefined,
       elements: [],
@@ -123,41 +117,6 @@ describe('SessionPopover', () => {
     expect(q.session.onEndVote).toHaveBeenCalled();
   });
 
-  it('opens the poll composer while idle, and stays open once the poll starts', () => {
-    const p = popover({ segment: 'session-poll' });
-    fireEvent.change(screen.getByLabelText('Poll question'), { target: { value: 'Lunch?' } });
-    fireEvent.click(screen.getByRole('radio', { name: /Choices/ }));
-    fireEvent.change(screen.getByLabelText('Answer 1'), { target: { value: 'Pizza' } });
-    fireEvent.change(screen.getByLabelText('Answer 2'), { target: { value: 'Tacos' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Ask everyone' }));
-    expect(p.session.onStartPoll).toHaveBeenCalled();
-    // Asking keeps the popover: it becomes the Poll panel once the poll runs.
-    expect(p.onClose).not.toHaveBeenCalled();
-  });
-
-  it('opens the Poll panel while a poll runs, and a Dismiss closes it', () => {
-    const onDismiss = vi.fn();
-    const p = popover({
-      segment: 'session-poll',
-      pollPanel: {
-        poll: {
-          id: 'p1',
-          question: 'Lunch?',
-          style: 'choice',
-          options: ['Pizza', 'Tacos'],
-        } as never,
-        answers: new Map(),
-        isHost: false,
-        onEnd: vi.fn(),
-        onDismiss,
-      },
-    });
-    expect(screen.getByText('Lunch?')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Dismiss' }));
-    expect(onDismiss).toHaveBeenCalled();
-    expect(p.onClose).toHaveBeenCalled();
-  });
-
   it('offers a view-role visitor nothing for an idle tool', () => {
     const { container } = render(
       <SessionPopover
@@ -168,7 +127,6 @@ describe('SessionPopover', () => {
         canVote={false}
         holdOpen
         voteSelfId="me"
-        pollPanel={null}
         vote={{
           tabVote: undefined,
           elements: [],
@@ -185,13 +143,6 @@ describe('SessionPopover', () => {
       />,
     );
     expect(container.innerHTML).toBe('');
-  });
-
-  it('locks the set-up under the facilitator note while somebody else runs the session', () => {
-    popover({ session: session({ facilitatedBy: 'Sam' }) });
-    expect(screen.getByText('Sam')).toBeTruthy();
-    const start = screen.getByRole('button', { name: /Start 5 min countdown/ });
-    expect(start.closest('fieldset')?.disabled).toBe(true);
   });
 
   it('leads the Vote panel with your dots left while casting is open', () => {

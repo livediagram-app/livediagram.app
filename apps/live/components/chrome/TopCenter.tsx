@@ -4,7 +4,6 @@ import type {
   PointerEvent as ReactPointerEvent,
   ReactNode,
 } from 'react';
-import { SOLID_BRAND_DARK } from '@liveplanner/ui';
 
 // Shared top-centre overlay region (docs/specs/008-canvas/canvas-and-palette.md). Every floating status pill
 // that belongs at the top middle of the canvas — the owner / role badge,
@@ -19,17 +18,13 @@ import { SOLID_BRAND_DARK } from '@liveplanner/ui';
 // "alongside, or under on mobile" behaviour the timer needs next to a
 // banner.
 
-type BannerTone = 'neutral' | 'brand' | 'live' | 'danger';
+type BannerTone = 'neutral' | 'brand' | 'danger';
 
 const TONE_CLASS: Record<BannerTone, string> = {
   neutral:
     'border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100',
   brand:
     'border-brand-200 bg-brand-50 text-brand-800 dark:border-brand-500/40 dark:bg-brand-500/15 dark:text-brand-100',
-  // Solid, for a pill that reports something HAPPENING to your view right now
-  // (being followed along, docs/specs/012-collaboration/follow-me-viewport.md) rather than a mode you turned on. It is
-  // meant to be the loudest thing on the canvas until you stop it.
-  live: `border-brand-700 bg-brand-700 text-white ${SOLID_BRAND_DARK}`,
   danger:
     'border-rose-300 bg-rose-50 text-rose-700 dark:border-rose-500/40 dark:bg-rose-500/15 dark:text-rose-200',
 };

@@ -41,14 +41,6 @@ export const CATEGORY_ICONS: Record<string, Icon> = {
       <path d="M2 14c1.5-1 3-1 4.5 0s3 1 4.5 0" />
     </>,
   ),
-  // Slide decks: a slide on its stand, a play mark on it.
-  slides: glyph(
-    <>
-      <rect x="1.5" y="2.5" width="13" height="8.5" rx="1" />
-      <path d="M7 5l3 1.75L7 8.5z" />
-      <path d="M8 11v2.5M5.5 14h5" />
-    </>,
-  ),
   // Plans and boards: three columns of cards.
   plan: glyph(
     <>

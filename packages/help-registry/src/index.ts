@@ -83,7 +83,7 @@ export const categories: Category[] = [
     title: 'Tips and Tricks',
     description:
       'Work faster with the shortcuts, hidden features, and small habits experienced users rely on.',
-    articleCount: 7,
+    articleCount: 6,
   },
   {
     slug: 'account-and-data',
@@ -165,8 +165,8 @@ export const categories: Category[] = [
     slug: 'selection-modes',
     title: 'Selection Modes',
     description:
-      'The pointer modes at the top of the palette: Select, Hand, Format Painter, Laser, Spotlight, Avatar, Slide Deck, and Isometric.',
-    articleCount: 9,
+      'The pointer modes at the top of the palette: Select, Hand, Format Painter and Isometric.',
+    articleCount: 4,
     kind: 'feature',
   },
   {
@@ -174,7 +174,7 @@ export const categories: Category[] = [
     title: 'Palette',
     description:
       'Your launchpad for everything on the canvas: every element and palette setting explained.',
-    articleCount: 36,
+    articleCount: 32,
     kind: 'feature',
     groups: ['Everyday Elements', 'Diagram Kits', 'Workshop Kits', 'Palette Settings'],
   },
@@ -206,7 +206,7 @@ export const categories: Category[] = [
     title: 'Collaboration',
     description:
       'Work together in real time: comments, assigned actions, live presence, teams, sharing, and session tools.',
-    articleCount: 7,
+    articleCount: 6,
     kind: 'feature',
   },
   {
@@ -473,14 +473,6 @@ export const articles: Article[] = [
     title: 'Restyle a Diagram Fast',
     description: 'Restyle an entire diagram in seconds with themes and presets.',
     keywords: 'restyle recolour recolor colors colours presets quick style scheme',
-    category: 'Tips and Tricks',
-    categorySlug: 'tips-and-tricks',
-  },
-  {
-    slug: 'presenting-well',
-    title: 'Presenting from the Canvas',
-    description: 'Get the most out of Presentation mode and Zen mode.',
-    keywords: 'presentation slideshow demo present fullscreen slides meeting',
     category: 'Tips and Tricks',
     categorySlug: 'tips-and-tricks',
   },
@@ -918,94 +910,6 @@ export const articles: Article[] = [
     categorySlug: 'selection-modes',
   },
   {
-    slug: 'laser',
-    title: 'Laser Pointer',
-    description: 'A temporary laser trail for drawing attention while presenting.',
-    keywords: 'presentation highlight trail point attention presenting red pointer pen glow comet',
-    category: 'Selection Modes',
-    categorySlug: 'selection-modes',
-  },
-  {
-    slug: 'spotlight',
-    title: 'Spotlight',
-    description: 'Dim the canvas around a circle of light that follows your cursor.',
-    keywords: 'dim focus highlight presentation emphasis attention darken',
-    category: 'Selection Modes',
-    categorySlug: 'selection-modes',
-  },
-  {
-    slug: 'avatar-mode',
-    title: 'Avatar Mode',
-    description: 'Walk a pixel character around the canvas while you talk through it.',
-    keywords:
-      'walk walking character habbo person figure sprite avatar presentation present tour narrate arrow keys steer jump hop flag wave space male female right-click read-only customise customize panel gender clothing hair size outfit hoodie suit dress ponytail bald tall small speech bubble message say talk chat enter send words float avatar button status available focusing busy meeting away headphones do not disturb',
-    category: 'Selection Modes',
-    categorySlug: 'selection-modes',
-  },
-  {
-    slug: 'avatar-tour',
-    title: 'The Avatar Tour',
-    description:
-      'A short, optional walkthrough of Avatar mode, offered the first time you walk as an avatar and replayable from Settings.',
-    keywords:
-      'avatar tour walkthrough onboarding intro introduction getting started guide tutorial first time learn character walk dress outfit hair behaviour reactions speech bubble message say talk chat push shove replay rerun settings',
-    category: 'Selection Modes',
-    categorySlug: 'selection-modes/avatar-mode',
-    parentSlug: 'avatar-mode',
-  },
-  {
-    slug: 'walking-together',
-    title: 'Walking Together',
-    description: "Everyone on a shared document sees everyone else's walking character.",
-    keywords:
-      'multiplayer together shared collaborate collaboration peers others everyone realtime real-time avatars characters names colour color presence',
-    category: 'Selection Modes',
-    categorySlug: 'selection-modes',
-    parentSlug: 'avatar-mode',
-  },
-  {
-    slug: 'slide-deck',
-    title: 'Slide Deck',
-    description:
-      'Build slides from what is on your canvas and present them full screen, with notes, transitions and auto-advance.',
-    keywords:
-      'presentation presenting present presentation mode slideshow slide show slides slide deck talk demo walkthrough narrate projector screen share screenshare speaker notes presenter notes script full screen fullscreen next previous advance start deck build slides element set spans tabs',
-    category: 'Selection Modes',
-    categorySlug: 'selection-modes',
-  },
-  {
-    slug: 'building-a-deck',
-    title: 'Building a Deck',
-    description: 'Edit, hide, reorder and annotate the slides before you present them.',
-    keywords:
-      'build deck new slide add remove elements selection membership rename duplicate copy slide delete confirm hide hidden slide skip struck through eye reorder drag order presenter notes script speaker notes budget minutes timing per slide pace slide menu ellipsis',
-    category: 'Selection Modes',
-    categorySlug: 'selection-modes/slide-deck',
-    parentSlug: 'slide-deck',
-  },
-  {
-    slug: 'presenting',
-    title: 'Presenting',
-    description:
-      'What a running deck does: framing, transitions, moving through it, and what a click does.',
-    keywords:
-      'present full screen fullscreen start presenting framing frame fit padding backdrop transition travel slide fade reduce motion advance next previous arrow keys space page down home end escape exit laser spotlight point read only popover note comment action wake lock screen awake announce screen reader shortcuts dead',
-    category: 'Selection Modes',
-    categorySlug: 'selection-modes/slide-deck',
-    parentSlug: 'slide-deck',
-  },
-  {
-    slug: 'presenter-controls',
-    title: "The Presenter's Controls",
-    description:
-      'The strip in the corner of a running deck, and the eleven settings behind its cog.',
-    keywords:
-      'hud controls strip corner position counter slide name jump to slide list grid notes button popover elapsed time clock budget minutes over amber pacing settings cog transition speed auto advance autoadvance loop click to advance fill screen actual size show position keep controls visible hide pointer cursor kiosk unattended',
-    category: 'Selection Modes',
-    categorySlug: 'selection-modes/slide-deck',
-    parentSlug: 'slide-deck',
-  },
-  {
     slug: 'isometric-mode',
     title: 'Isometric Mode',
     description: 'Look at the tab as a tilted 3D scene, orbit it, and export it that way.',
@@ -1139,50 +1043,9 @@ export const articles: Article[] = [
     slug: 'collaborate',
     title: 'Collaborate elements',
     description:
-      'The Collaborate categories (Ask and Record) that collect what the room thinks: comment panels, action panels, estimates, quizzes, temperature checks, idea boxes, Q&A boards, agendas, decisions and roll calls.',
+      'The Collaborate categories (Ask and Record) that collect what the room thinks: comment panels, action panels, temperature checks and decision records.',
     keywords:
-      'collaborate collaboration comment panel action panel task assign card pin pinned remark note thread reply discuss feedback annotate sticky question estimate estimation planning poker story points fibonacci tshirt t-shirt temperature check fist of five pulse mood vote idea box anonymous brainstorm brainwriting retro retrospective q&a qa slido upvote questions agenda run of show timebox segments decision record adr architecture decision roll call attendance register present room team workshop facilitation powers of two',
-    category: 'Palette',
-    categorySlug: 'palette',
-    group: 'Workshop Kits',
-  },
-  {
-    slug: 'chairs',
-    title: 'Chairs',
-    description: 'Chairs, desks and sofas for Avatar mode: walk a character in and it sits down.',
-    keywords:
-      'chair chairs seat seating sit sitting sat furniture avatar character walk stand table room seating plan attendance behaviour navigate facing up desk desks computer monitor screen office workstation sofa sofas couch settee loveseat two seater',
-    category: 'Palette',
-    categorySlug: 'palette',
-    group: 'Workshop Kits',
-  },
-  {
-    slug: 'fences',
-    title: 'Fences',
-    description: 'A barrier for Avatar mode: characters cannot walk through a fence.',
-    keywords:
-      'fence fences barrier wall block blocked keep out enclosure boundary pen gate avatar character walk collision no entry area navigate behaviour',
-    category: 'Palette',
-    categorySlug: 'palette',
-    group: 'Workshop Kits',
-  },
-  {
-    slug: 'avatar-pads',
-    title: 'Avatar Pads',
-    description: 'Where everyone starts in Avatar mode: characters beam in on the pad.',
-    keywords:
-      'avatar pad pads spawn start starting point entrance arrive arrival teleport teleporter beam lobby welcome where do people appear avatar character walk navigate behaviour',
-    category: 'Palette',
-    categorySlug: 'palette',
-    group: 'Workshop Kits',
-  },
-  {
-    slug: 'virtual-office',
-    title: 'Virtual Office',
-    description:
-      'Rooms with doorways, a meeting table, plants, shelves, a water cooler, a coffee machine and rugs for Avatar mode.',
-    keywords:
-      'virtual office room rooms walls door doorway meeting table conference plant bookshelf books water cooler coffee machine drink cup rug carpet kitchen lounge reception team avatar walk sit navigate',
+      'collaborate collaboration comment panel action panel task assign card pin pinned remark note thread reply discuss feedback annotate sticky question temperature check fist of five pulse mood vote retro retrospective decision record adr architecture decision team',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Workshop Kits',
@@ -1324,9 +1187,9 @@ export const articles: Article[] = [
     slug: 'behaviour',
     title: 'Collaborate',
     description:
-      'Every element that comes alive with the room, as six palette categories in Workshop mode: comment and action panels, estimates, quizzes, temperature checks, idea boxes, Q&A boards, Done checks, pickers, session buttons (timer, stopwatch, vote, poll), agendas, decisions, roll calls, reactions, mode buttons, portals and Bring Focus.',
+      'Every element that comes alive with the room, in the Collaborate palette categories: comment and action panels, temperature checks, pickers, session buttons (timer, stopwatch, vote), decisions and portals.',
     keywords:
-      'behaviour behavior behaviours behaviors interactive button portal session timer stopwatch countdown count up elapsed vote poll reveal hide cover picker random spinner control mode switch chair seat desk sofa couch fence barrier link card bookmark preview url bring focus look here attention gather reaction pad confetti celebrate sparkles hearts applause fireworks emoji burst done check finished ready waiting who progress everyone mark complete collaborate collaboration estimate quiz trivia question temperature idea box agenda decision roll call ask the room keep a record run the room workshop facilitation runtime live tools record react navigate selection mode',
+      'behaviour behavior behaviours behaviors interactive button portal session timer stopwatch countdown count up elapsed vote picker random spinner control link card bookmark preview url collaborate collaboration temperature decision ask the room keep a record run the room live tools record navigate',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Workshop Kits',
@@ -1438,16 +1301,6 @@ export const articles: Article[] = [
     group: 'Text and Notes',
   },
   {
-    slug: 'follow-along',
-    title: 'Following Someone',
-    description: "Pin your pan, zoom and tab to a collaborator's until you move the canvas.",
-    keywords:
-      'follow following follow me follow along presenter presentation present audience viewport view camera pan zoom tab sync synchronise synchronize mirror watch spectate lead guide tour walkthrough demo',
-    category: 'Canvas',
-    categorySlug: 'canvas',
-    group: 'Basics',
-  },
-  {
     slug: 'themes',
     title: 'Themes',
     description: 'Restyle a whole tab, including multi-colour and custom themes.',
@@ -1481,9 +1334,9 @@ export const articles: Article[] = [
     slug: 'workshop-mode',
     title: 'Workshop Mode',
     description:
-      'Run a session on any tab: retros, town halls and workshops, with timers, votes, polls and reveals.',
+      'Run a session on any tab: retros, brainstorms and workshops, with timers and votes.',
     keywords:
-      'pub quiz trivia icebreaker questions two truths and a lie would you rather people bingo games workshop mode facilitate facilitate mode facilitation facilitator session sessions run a session workshop meeting team meeting retro retrospective town hall all hands lean coffee crazy eights brainstorm board workshop board kickoff ground rules icebreaker q&a questions agenda timer countdown stopwatch vote dot vote voting poll survey pulse check reveal hide estimate planning poker quiz temperature check fist of five idea box anonymous picker random spin reactions confetti stickers emoji sticker badge collaborate category session strip blank session editor mode switch shift+d where did the timer go where are stickers missing tools moved',
+      'workshop mode facilitate facilitate mode session sessions run a session workshop meeting team meeting retro retrospective crazy eights brainstorm board workshop board kickoff timer countdown stopwatch vote dot vote voting temperature check fist of five picker random spin stickers emoji sticker badge collaborate category session strip blank session editor mode switch shift+d where did the timer go where are stickers missing tools moved',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Modes and Boards',
@@ -1530,17 +1383,6 @@ export const articles: Article[] = [
     category: 'Canvas',
     categorySlug: 'canvas/plan-mode',
     parentSlug: 'plan-mode',
-  },
-  {
-    slug: 'workshop-tour',
-    title: 'The Workshop Tour',
-    description:
-      'A short, optional walkthrough of Workshop mode, offered once after the welcome tour and replayable from Settings.',
-    keywords:
-      'workshop tour facilitate tour tour walkthrough onboarding intro introduction show me around getting started guide tutorial first time learn workshop mode session retro workshop timer vote poll session strip collaborate share participant replay rerun settings accessibility',
-    category: 'Canvas',
-    categorySlug: 'canvas/workshop-mode',
-    parentSlug: 'workshop-mode',
   },
   {
     slug: 'plan-tour',
@@ -1703,15 +1545,6 @@ export const articles: Article[] = [
     title: 'Comments',
     description: 'Leave threaded comments on the canvas and resolve them.',
     keywords: 'thread feedback reply resolve discussion note annotate mention',
-    category: 'Collaboration',
-    categorySlug: 'collaboration',
-  },
-  {
-    slug: 'facilitator',
-    title: 'Facilitator',
-    description: 'Give one person the timer, votes and polls for a live session.',
-    keywords:
-      'facilitator workshop host run the room session lead moderator driver baton timer vote poll control handover take over step down chair meeting workshop',
     category: 'Collaboration',
     categorySlug: 'collaboration',
   },
@@ -2005,9 +1838,8 @@ export const articles: Article[] = [
   {
     slug: 'session-tools',
     title: 'Session Tools',
-    description: 'A shared countdown or stopwatch, live dot-voting, and polls.',
-    keywords:
-      'timer voting workshop meeting facilitation retro countdown poll polls survey pulse check',
+    description: 'A shared countdown or stopwatch and live dot-voting.',
+    keywords: 'timer voting workshop meeting facilitation retro countdown stopwatch dots',
     category: 'Collaboration',
     categorySlug: 'collaboration',
   },
@@ -2382,61 +2214,11 @@ export const articles: Article[] = [
 
   // ---- Sub-articles: Behaviour ----
   {
-    slug: 'bring-focus',
-    title: 'Bring Focus',
-    description: 'Ask everyone else in the room to come and look at one spot.',
-    keywords:
-      'bring focus look here attention everyone jump navigate gather point show spotlight presenter workshop big board find lost viewport zoom same view',
-    category: 'Palette',
-    categorySlug: 'palette/behaviour',
-    parentSlug: 'behaviour',
-  },
-  {
-    slug: 'mode-buttons',
-    title: 'Selection Mode Buttons',
-    description: 'A button that hands whoever presses it a selection mode.',
-    keywords:
-      'mode button selection mode switch tool avatar select hand pan laser spotlight format painter isometric control bar press leave walkthrough read-only',
-    category: 'Palette',
-    categorySlug: 'palette/behaviour',
-    parentSlug: 'behaviour',
-  },
-  {
     slug: 'session-buttons',
     title: 'Session Buttons',
-    description: 'Start a timer, a stopwatch, a dot vote or a poll for the room from the canvas.',
+    description: 'Start a timer, a stopwatch or a dot vote for the room from the canvas.',
     keywords:
-      'session button timer countdown minutes dot vote dots poll question answers answer style choices options yes no abstain rating free text start room facilitation running order agenda clock pause resume reset remove edit access view only stopwatch count up facilitator',
-    category: 'Palette',
-    categorySlug: 'palette/behaviour',
-    parentSlug: 'behaviour',
-  },
-  {
-    slug: 'done-checks',
-    title: 'Done Checks',
-    description: 'Ask the room to say when they have finished, and see who you are waiting on.',
-    keywords:
-      'done check finished ready waiting who progress everyone mark complete im done not done clear my mark reset everyone silent writing roster room presence flash',
-    category: 'Palette',
-    categorySlug: 'palette/behaviour',
-    parentSlug: 'behaviour',
-  },
-  {
-    slug: 'reaction-pads',
-    title: 'Reaction Pads',
-    description: 'A pad the room can press to throw a burst over the canvas.',
-    keywords:
-      'reaction pad confetti celebrate sparkles hearts applause clap fireworks emoji burst cheer thanks avatar walk onto ephemeral moment nothing saved',
-    category: 'Palette',
-    categorySlug: 'palette/behaviour',
-    parentSlug: 'behaviour',
-  },
-  {
-    slug: 'reveal-zones',
-    title: 'Reveal Zones',
-    description: 'Cover part of the canvas until the room is ready to see it.',
-    keywords:
-      'reveal zone hide cover conceal spoiler answers estimates blackout double click double tap hide pill reveal for all hide for all not private not secure',
+      'session button timer countdown minutes dot vote dots start room running order clock pause resume reset remove edit access view only stopwatch count up',
     category: 'Palette',
     categorySlug: 'palette/behaviour',
     parentSlug: 'behaviour',
@@ -2474,26 +2256,6 @@ export const articles: Article[] = [
     parentSlug: 'collaborate',
   },
   {
-    slug: 'estimate-cards',
-    title: 'Estimate Cards',
-    description: 'Planning poker: everyone picks privately, one Reveal shows the lot.',
-    keywords:
-      'estimate estimation planning poker story points sizing fibonacci tshirt t-shirt shirt powers of two scale reveal spread unanimous clear anchor private pick withdraw',
-    category: 'Palette',
-    categorySlug: 'palette/collaborate',
-    parentSlug: 'collaborate',
-  },
-  {
-    slug: 'quizzes',
-    title: 'Quizzes',
-    description: 'One timed question with a right answer, revealed to the room at once.',
-    keywords:
-      'quiz quizzes question trivia test kahoot multiple choice answer answers correct right wrong timed timer countdown lock reveal green who got it score facilitator run again',
-    category: 'Palette',
-    categorySlug: 'palette/collaborate',
-    parentSlug: 'collaborate',
-  },
-  {
     slug: 'temperature-checks',
     title: 'Temperature Checks',
     description: 'A fist-of-five gauge that shows the shape of the room.',
@@ -2504,51 +2266,11 @@ export const articles: Article[] = [
     parentSlug: 'collaborate',
   },
   {
-    slug: 'idea-boxes',
-    title: 'Idea Boxes',
-    description: 'Anonymous submissions, held until you open the box.',
-    keywords:
-      'idea box anonymous anonymity brainstorm brainwriting suggestion submissions count hidden open the box scatter to stickies sticky notes retro pre-mortem safety',
-    category: 'Palette',
-    categorySlug: 'palette/collaborate',
-    parentSlug: 'collaborate',
-  },
-  {
-    slug: 'qa-boards',
-    title: 'Q&A Boards',
-    description: 'Notes the room upvotes, with the most wanted always on top.',
-    keywords:
-      'q&a qa question questions ask slido upvote vote voting rank ranked queue audience ama panel town hall all hands anonymous spotlight discuss discussing discussed facilitator moderate',
-    category: 'Palette',
-    categorySlug: 'palette/collaborate',
-    parentSlug: 'collaborate',
-  },
-  {
-    slug: 'agendas',
-    title: 'Agendas',
-    description: 'The run of the session, with minutes against each segment.',
-    keywords:
-      'agenda run of show running order segments timebox minutes total schedule plan meeting workshop timer remaining struck through reorder',
-    category: 'Palette',
-    categorySlug: 'palette/collaborate',
-    parentSlug: 'collaborate',
-  },
-  {
     slug: 'decision-records',
     title: 'Decision Records',
     description: 'What was decided, why, when, and whether it still stands.',
     keywords:
       'decision record adr architecture decision record status proposed accepted rejected superseded drivers rationale date why chose choice log',
-    category: 'Palette',
-    categorySlug: 'palette/collaborate',
-    parentSlug: 'collaborate',
-  },
-  {
-    slug: 'roll-calls',
-    title: 'Roll Calls',
-    description: 'Who was in the room, frozen into the document.',
-    keywords:
-      'roll call attendance register present participants who was here minutes snapshot take roll take again latecomers record',
     category: 'Palette',
     categorySlug: 'palette/collaborate',
     parentSlug: 'collaborate',
@@ -2719,22 +2441,11 @@ export const articles: Article[] = [
     parentSlug: 'session-tools',
   },
   {
-    slug: 'polls',
-    title: 'Polls',
-    description:
-      'Ask the room a question, tally the answers live, and keep the results if you want them.',
-    keywords:
-      'poll polls survey question vote pulse check sentiment anonymous ephemeral rating scale yes no abstain multiple choice free text audience presenter keep results chart collaborators people',
-    category: 'Collaboration',
-    categorySlug: 'collaboration/session-tools',
-    parentSlug: 'session-tools',
-  },
-  {
     slug: 'voting',
     title: 'Dot Voting',
     description: 'Let everyone vote live, privately if you want, and tally the results.',
     keywords:
-      'vote poll tally decide prioritise prioritize dots anonymous private privacy secret blind hide hidden cursors pointers counts totals dot vote',
+      'vote tally decide prioritise prioritize dots anonymous private privacy secret blind hide hidden cursors pointers counts totals dot vote',
     category: 'Collaboration',
     categorySlug: 'collaboration/session-tools',
     parentSlug: 'session-tools',
@@ -2766,7 +2477,7 @@ export const articles: Article[] = [
     title: 'Private Voting',
     description: 'Hide cursors and hide the running counts for a blind vote.',
     keywords:
-      'private privacy secret blind anonymous hide cursors pointers laser hide running counts totals tallies pile on bandwagon switches fixed',
+      'private privacy secret blind anonymous hide cursors pointers hide running counts totals tallies pile on bandwagon switches fixed',
     category: 'Collaboration',
     categorySlug: 'collaboration/session-tools/voting',
     parentSlug: 'voting',
