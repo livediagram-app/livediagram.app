@@ -138,8 +138,8 @@ export function Journey() {
           />
           <Tile
             icon={<GiftIcon />}
-            title="Free to start"
-            body="Each app works without paying, and you can make something before you sign in."
+            title="Completely free"
+            body="Every app, every feature, for everyone. No paywalls, no subscriptions, and you can start before you sign in."
           />
         </div>
       </div>

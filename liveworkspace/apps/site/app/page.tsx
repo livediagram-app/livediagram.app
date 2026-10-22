@@ -12,7 +12,7 @@ import './landing-motion.css';
 
 const CheckIcon = lucideGlyph(lucideCheck, 14);
 
-const PROMISES = ['Free to start', 'No password', 'No trackers or ads'];
+const PROMISES = ['Completely free', 'No password', 'No trackers or ads'];
 
 // liveworkspace.app's front door (liveworkspace/docs/site.md "The front door"): what liveworkspace
 // is, the apps in it and how they join up, and the one account that ties them together.
