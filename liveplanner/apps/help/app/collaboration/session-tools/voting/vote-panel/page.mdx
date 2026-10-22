@@ -19,7 +19,7 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles('voting').filter((a) => a.slug !== 'vote-panel')}
 >
 
-While a [vote](/help/collaboration/session-tools/voting/) is running, press the **Vote** button in the bottom bar to open the **Vote** panel above it. While casting is open the button counts the dots you have left; after that a dot on it means the vote is still on (amber during the results walkthrough). On a desktop the panel stays open while you vote on the canvas: press the button again to put it away, and it closes by itself when the vote is cleared.
+While a [vote](/help/collaboration/session-tools/voting/) is running, press the **Vote** button in the bottom-right cluster to open the **Vote** panel above it. While casting is open the button counts the dots you have left; after that a dot on it means the vote is still on (amber during the results walkthrough). On a desktop the panel stays open while you vote on the cards: press the button again to put it away, and it closes by itself when the vote is cleared.
 
 For an Editor, the top of the panel shows your own dots, like "2 of 3 dots left".
 
@@ -31,7 +31,7 @@ It shows how far the room has got: how many people have finished ("2 of 5 finish
   <VotePanelProgress />
 </Figure>
 
-The tally pills on the canvas tell you what is winning; this tells you whether anyone is still deciding, which is the thing that decides when to press **End vote**.
+The counters on the cards tell you what is winning; this tells you whether anyone is still deciding, which is the thing that decides when to press **End vote**.
 
 The buttons at the bottom follow the vote along: **End vote** while it is open, then **Show results** or **Clear** once it has ended, then **Clear vote** after the reveal. They are only there for whoever started the vote; everyone else sees "Only the person who started this vote can end it." in their place.
 

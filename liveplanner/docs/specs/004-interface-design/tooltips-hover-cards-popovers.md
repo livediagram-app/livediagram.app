@@ -46,7 +46,7 @@ A control has at most one hint. If a hover card is present, it carries the name 
   towards the control. It reads apart from the white hover card, so the two are never confused.
 - **Never the only carrier of meaning.** The control keeps an accessible name, from its visible text
   or its `aria-label`, and the tooltip says the same words. On non-interactive text, such as a clipped
-  name or a figure, the same words are in the document as visually hidden text.
+  name or a figure, the same words are in the project as visually hidden text.
 
 ## Hover card
 
@@ -80,7 +80,7 @@ name.
 
 ## Preview
 
-- **A picture of what the control opens**, for a row whose own text does not show it: a document's
+- **A picture of what the control opens**, for a row whose own text does not show it: a project's
   snapshot in the Explorer's [Details view](../013-workspace/explorer-details-view.md). The picture and
   a caption naming it, nothing to press.
 - **Opens after a 600 ms hover**, longer than a tooltip: a pointer moving down a table passes many
@@ -172,7 +172,7 @@ Tooltip or a hover card.
 
 - `<iframe title>`: the frame's accessible name, required by WCAG 4.1.2.
 - `<abbr title>`: the expansion of an abbreviation.
-- SVG `<title>` inside exported or standalone SVG documents: the image's accessible name.
+- SVG `<title>` inside exported or standalone SVG projects: the image's accessible name.
 
 A lint rule rejects `title` on any other element, so the exceptions stay the exceptions.
 

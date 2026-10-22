@@ -1,13 +1,13 @@
 // Telemetry wire-format (docs/specs/017-telemetry/telemetry.md): the closed category/action vocabulary,
-// the TelemetryEvent shape + validator, and the dashboard summary/window
-// types. Self-contained (no document deps); split out of the schema barrel.
+// the TelemetryEvent shape + validator, and the shared summary/window types
+// re-exported from @liveworkspace/telemetry. No project deps; split out of the schema barrel.
 
 // ---------------------------------------------------------------------
 // Telemetry (docs/specs/017-telemetry/telemetry.md)
 // ---------------------------------------------------------------------
 //
 // Anonymous, first-party product events. Each event is three small
-// fields: a `category` (the parent: Document, Element, …), an `action`
+// fields: a `category` (the parent: Project, Element, …), an `action`
 // (the verb: Created, Added, …), and an optional `type` (one
 // app-defined reference value: 'Square', 'Edit', a template id …).
 // NEVER carries user-generated content — no names, ids, or element
@@ -18,9 +18,24 @@
 import { isCtaSource } from './cta-sources';
 import { isValidPageViewPath } from './page-views';
 import { isTimingType } from './timing-telemetry';
+import { TELEMETRY_TYPE_PATTERN } from '@liveworkspace/telemetry';
+
+// The generic half of telemetry (the type-token bound, the dashboard's windows and summary) is
+// liveworkspace's, shared by every app (liveworkspace/docs/telemetry.md); re-exported so liveplanner
+// code keeps one import. The vocabulary below stays liveplanner's own.
+export {
+  metricKey,
+  TELEMETRY_TYPE_PATTERN,
+  TELEMETRY_WINDOW_DAYS,
+  type TelemetryCount,
+  type TelemetryDaily,
+  type TelemetrySummary,
+  type TelemetryWindow,
+  type TelemetryWindowKey,
+} from '@liveworkspace/telemetry';
 
 export const TELEMETRY_CATEGORIES = [
-  'Document',
+  'Project',
   'Element',
   'Tab',
   'Theme',
@@ -36,7 +51,7 @@ export const TELEMETRY_CATEGORIES = [
   'Search',
   'UI',
   'Folder',
-  // Layers (docs/specs/006-document/layers.md): panel + layer lifecycle. 'Added'/'Deleted'/'Renamed'/
+  // Layers (docs/specs/006-project/layers.md): panel + layer lifecycle. 'Added'/'Deleted'/'Renamed'/
   // 'Reordered' for the layer rows, 'Toggled' with `type`
   // 'Hidden'/'Shown'/'Locked'/'Unlocked' for the eye + padlock,
   // 'Selected' for an active-layer switch, 'Moved' for move-selection-
@@ -61,7 +76,7 @@ export const TELEMETRY_CATEGORIES = [
   // via the consent screen, which mints a token under the hood).
   'Token',
   // MCP server tool calls (apps/mcp, docs/specs/015-api/mcp-server.md): 'Used' with `type` the tool
-  // name (CreateDocument, ReadDocument, ...). Emitted by the MCP worker, the
+  // name (CreateProject, ReadProject, ...). Emitted by the MCP worker, the
   // third app that reports telemetry, so usage shows up distinctly from the
   // in-editor AI panel.
   'Mcp',
@@ -82,48 +97,48 @@ export const TELEMETRY_CATEGORIES = [
   // 'Uncaught', 'UnhandledRejection', 'AiQuota.BrowserReader') — never a
   // message, stack, or URL.
   'Error',
-  // Timeline (docs/specs/013-workspace/timeline.md): the scoped feeds, a document's History and a
+  // Timeline (docs/specs/013-workspace/timeline.md): the scoped feeds, a project's History and a
   // team's Activity. 'Opened'/'Stack' counts stacked-run expansions, which is how we learn whether
   // the stacking thresholds are right. 'Changed' carries the view mode, 'Selected' a filter chip's
   // source type, and 'Loaded' 'More' | 'Retry' — the second being a read that failed hard enough
   // that the reader pressed Try again (docs/specs/013-workspace/timeline.md §2.4), which is the
-  // only signal we get for a feed nobody could load. Never a document name, team name, or comment
+  // only signal we get for a feed nobody could load. Never a project name, team name, or comment
   // text.
   'Timeline',
   // Explorer Home (docs/specs/013-workspace/explorer-home.md): the landing view. 'Opened' with
   // `type` 'Landing' | 'Nav' (the page the Explorer opened on, or a later visit) and 'Group' (a
   // What happened summary expanded); 'Selected' with 'JumpBackIn.MostUsed' | 'JumpBackIn.Recent'
-  // (a document opened from Jump back in, by the half it belongs to), 'JumpBackIn.SeeMore' (See
-  // more followed to the Recent page) | 'WhatHappened' | 'Hero.Documents' | 'Hero.Inbox' (a hero
-  // status pill followed) | 'Hero.NewDocument' (the hero's New document) | 'Welcome.Blank' | 'Welcome.Template' |
+  // (a project opened from Jump back in, by the half it belongs to), 'JumpBackIn.SeeMore' (See
+  // more followed to the Recent page) | 'WhatHappened' | 'Hero.Projects' | 'Hero.Inbox' (a hero
+  // status pill followed) | 'Hero.NewProject' (the hero's New project) | 'Welcome.Blank' | 'Welcome.Template' |
   // 'Welcome.AllTemplates' | 'Welcome.Search' | 'Welcome.StartBlank' | 'Welcome.SignIn' (a start taken from the
   // first-run Home); 'Opened' with 'Welcome' (the first-run Home shown); 'Loaded' with 'Retry' (a failed read
-  // retried). Never a document name or a person.
+  // retried). Never a project name or a person.
   'Home',
-  // Inbox (docs/specs/013-workspace/inbox.md): the Explorer's cross-document inbox of open
+  // Inbox (docs/specs/013-workspace/inbox.md): the Explorer's cross-project inbox of open
   // actions, Plan cards + comment threads. 'Opened' once per visit; 'Selected' with
   // `type` 'Action' | 'Thread' | 'Card' on a row click (which kind of row sends
-  // people back into a document); 'Loaded'/'Retry' when a failed read is
-  // retried. Never an action name, comment text, or document name.
+  // people back into a project); 'Loaded'/'Retry' when a failed read is
+  // retried. Never an action name, comment text, or project name.
   'Activity',
   // Page views (docs/specs/017-telemetry/page-view-telemetry.md): 'View' with `type` the normalised page path
-  // ('/help/canvas/the-canvas', '/document'), reported by every
+  // ('/help/canvas/the-canvas', '/project'), reported by every
   // frontend on each path change. The one category whose `type` is a path,
   // so it validates against PAGE_VIEW_PATH_PATTERN instead of the token
   // pattern, and only ever pairs with 'View'.
   'Page',
   // Landing funnel (docs/specs/019-marketing/landing-funnel.md): a call to action on a public page brought
-  // somebody to /new ('Opened'), and that visit created a document
+  // somebody to /new ('Opened'), and that visit created a project
   // ('Created'). `type` is the CTA's source from the closed CTA_SOURCES
   // table ('Home.Hero', 'Feature.Closing'), never a visitor or a URL; the
   // editor sends both, the marketing site still sends only page views.
   'Cta',
   // Trash (docs/specs/013-workspace/trash.md): the quiet backstop behind every
-  // document delete. 'Opened' with `type` 'Settings' (its one way in);
+  // project delete. 'Opened' with `type` 'Settings' (its one way in);
   // 'Restored' / 'Deleted' (for good) / 'Cleared' (Empty
   // Trash) with `type` the Trash it happened in ('Personal' | 'Team' |
-  // 'Local'). Whether people ever come back for a deleted document is the
-  // question; never a document or team name.
+  // 'Local'). Whether people ever come back for a deleted project is the
+  // question; never a project or team name.
   'Trash',
   // Draw mode (docs/specs/007-editor/editor-modes.md), named 'Whiteboard' until its stored
   // history was rewritten: a Whiteboard tab 'Created' (`type` how:
@@ -141,7 +156,7 @@ export const TELEMETRY_CATEGORIES = [
   // Agent changesets (docs/specs/024-agents/agent-changesets.md "Observability and telemetry"):
   // 'Applied', 'Conflicted' and 'Held' for an agent's changeset, 'Reverted' for a revert of one,
   // typed by the front door ('Mcp' | 'Cli' | 'Api' | 'Editor'); 'Opened'·'Toast' when a person asks to
-  // see what changed; 'Viewed' for a document view the api answered, typed by the view. Never
+  // see what changed; 'Viewed' for a project view the api answered, typed by the view. Never
   // content, never an id.
   'Agent',
   // Plan mode (docs/specs/026-plan/plan-mode.md "Telemetry"): items made, moved, opened, voted on and
@@ -156,8 +171,8 @@ export const TELEMETRY_CATEGORIES = [
   // server-side; 'Preview' for a builder Preview's card) or reported (its reason). Never a form's words.
   'Form',
   // Timings (docs/specs/017-telemetry/timing-telemetry.md): how long a key moment of the experience took
-  // (a document opening, a tab switch, a save, the live room connecting, a page's Web Vitals). Only ever
-  // 'Measured', `type` the metric and the bucket its value fell in ('DocumentLoad.Under1000ms'), checked
+  // (a project opening, a tab switch, a save, the live room connecting, a page's Web Vitals). Only ever
+  // 'Measured', `type` the metric and the bucket its value fell in ('ProjectLoad.Under1000ms'), checked
   // against the closed list in timing-telemetry.ts. Never a raw number, never an id.
   'Timing',
 ] as const;
@@ -200,7 +215,7 @@ export const TELEMETRY_ACTIONS = [
   'Undone',
   'Redone',
   'Cleared',
-  // Document / Tab (docs/specs/017-telemetry/telemetry.md): an existing document was opened, or a tab's
+  // Project / Tab (docs/specs/017-telemetry/telemetry.md): an existing project was opened, or a tab's
   // content was fetched for viewing (incl. switching to it). Fires on
   // every open, the counterpart to 'Created' — an engagement/opens signal.
   'Loaded',
@@ -231,7 +246,7 @@ export const TELEMETRY_ACTIONS = [
   // later UTC day. Paired with 'Participant'/'Created', gated once per
   // UTC day client-side; type is 'Anonymous' | 'Authenticated'.
   'Returned',
-  // Trash (docs/specs/013-workspace/trash.md): a deleted document was brought
+  // Trash (docs/specs/013-workspace/trash.md): a deleted project was brought
   // back from the Trash.
   'Restored',
   // Agent changesets (docs/specs/024-agents/agent-changesets.md): a changeset applied.
@@ -242,8 +257,8 @@ export const TELEMETRY_ACTIONS = [
   // An agent's presence on a tab created by an explicit set (docs/specs/024-agents/agent-presence.md "Observability").
   'Present',
   'Held',
-  // Document views (docs/specs/024-agents/document-views.md): a view the api answered, typed by the
-  // view ('Overview' | 'Outline' | 'Graph' | 'Layout' | 'Comments' | 'Show' | 'Find' | 'Lint').
+  // Project views (docs/specs/024-agents/project-views.md): a view the api answered, typed by the
+  // view ('Overview' | 'Outline' | 'Graph' | 'Layout' | 'Comments' | 'Show' | 'Find'; 'Lint' until 2026-10-22).
   'Viewed',
   // Email (docs/specs/014-identity/transactional-email.md): a transactional / lifecycle email left the worker for
   // the provider. Only ever paired with the 'Email' category.
@@ -274,11 +289,6 @@ export type TelemetryEvent = {
   type?: string | null;
 };
 
-// Defence-in-depth bound on `type`: a short token of safe characters,
-// not a fixed enum (so adding a new shape / template / theme doesn't
-// touch this file). Rejects anything that looks like free text / UGC.
-export const TELEMETRY_TYPE_PATTERN = /^[A-Za-z0-9 ._-]{1,40}$/;
-
 // Validate one event against the closed vocabulary. The worker filters
 // the ingest batch through this so only known, safe rows ever land in
 // D1 / the public dashboard.
@@ -299,61 +309,6 @@ export function isValidTelemetryEvent(value: unknown): value is TelemetryEvent {
   if (e.category === 'Timing') return e.action === 'Measured' && isTimingType(e.type);
   if (e.type === undefined || e.type === null) return true;
   return typeof e.type === 'string' && TELEMETRY_TYPE_PATTERN.test(e.type);
-}
-
-// The fixed dashboard windows (docs/specs/017-telemetry/telemetry.md): no custom ranges, so queries
-// stay simple and the summary response is cacheable.
-export type TelemetryWindowKey = 'today' | 'last7' | 'last30';
-
-// How many UTC calendar days each window spans, ending with today (so
-// `last7` is today plus the six days before it, each from UTC midnight).
-// Shared by the api, which counts each window over exactly these days, and
-// the dashboard, which highlights the same span of the 30-day trend line:
-// one definition, so the number on a card and the line under it agree.
-export const TELEMETRY_WINDOW_DAYS: Record<TelemetryWindowKey, number> = {
-  today: 1,
-  last7: 7,
-  last30: 30,
-};
-
-export type TelemetryCount = {
-  category: string;
-  action: string;
-  type: string | null;
-  count: number;
-};
-
-export type TelemetryWindow = {
-  total: number;
-  rows: TelemetryCount[];
-};
-
-// ---------------------------------------------------------------------
-// AI Assistance (docs/specs/007-editor/ai-assistance.md)
-// ---------------------------------------------------------------------
-
-// Two modes (docs/specs/007-editor/ai-assistance.md): 'ask' is read-only Q&A; 'clean' tidies the existing tab.
-// The old 'generate' (Build) + 'review' modes were removed — the calling model
-// in an external AI tool (docs/specs/015-api/mcp-server.md) does generation far better.
-
-// `byMetric` is the per-event version of `byCategory`: one 30-day
-// series per distinct event, keyed by `metricKey(category, action,
-// type)` (= `category|action|type`, empty string for a null type).
-// Drives the Search view's single-metric trend line (docs/specs/017-telemetry/telemetry.md).
-export type TelemetryDaily = {
-  days: number[];
-  totals: number[];
-  byCategory: Record<string, number[]>;
-  byMetric: Record<string, number[]>;
-};
-
-// Stable key for a single (category, action, type) event, used as the
-// `TelemetryDaily.byMetric` map key. Defined here so the api worker
-// that builds the map and the dashboard that reads it can't drift.
-// `type` is null for type-less events; we collapse it to '' so the key
-// is always a 3-part `a|b|c` string.
-export function metricKey(category: string, action: string, type: string | null): string {
-  return `${category}|${action}|${type ?? ''}`;
 }
 
 // The `Element·Added` type tokens that correspond to a PALETTE item, in
@@ -511,20 +466,6 @@ export const SHEET_CHANGE_KINDS = [
   'ConditionalFormat',
 ] as const;
 export type SheetChangeKind = (typeof SHEET_CHANGE_KINDS)[number];
-
-export type TelemetrySummary = {
-  enabled: boolean;
-  generatedAt: number;
-  windows: Record<TelemetryWindowKey, TelemetryWindow>;
-  // Each window's counts over the same number of days just before it (the
-  // day before today, the 7 days before the last 7, the 30 before the last
-  // 30), for the dashboard's trend arrows. Optional so a client talking to an
-  // older api still parses; it falls back to what the daily series can reach.
-  previousWindows?: Record<TelemetryWindowKey, TelemetryWindow>;
-  // Optional so older clients (and the disabled-state response) still
-  // parse. Present whenever `enabled` is true.
-  daily?: TelemetryDaily;
-};
 
 // -----
 // Unfurl (docs/specs/009-elements/link-cards.md) — link-card preview metadata extracted server-side by

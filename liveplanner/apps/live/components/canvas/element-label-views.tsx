@@ -12,7 +12,7 @@ import {
   type TextRun,
   labelFontPx,
   type TextSize,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import {
   ALIGN_ITEMS,
   effectiveRunStyle,

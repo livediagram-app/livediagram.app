@@ -9,8 +9,8 @@ import type { UserPreferences } from '@/lib/user-preferences';
 import { setPowerUserMode } from '@/lib/power-user-mode';
 
 // Who is reading: a guest unless a test signs in.
-const clerk = vi.hoisted(() => ({ clerkUserId: null as string | null, isSignedIn: false }));
-vi.mock('@/hooks/persistence/useClerkApiBootstrap', () => ({ useClerkApiBootstrap: () => clerk }));
+const clerk = vi.hoisted(() => ({ accountUserId: null as string | null, isSignedIn: false }));
+vi.mock('@/hooks/persistence/useAccountBootstrap', () => ({ useAccountBootstrap: () => clerk }));
 
 // The dialog takes BOTH iOS Settings shapes, one per viewport (docs/specs/007-editor/user-preferences.md): the
 // iPad split view on desktop, the iPhone push navigation on a phone. Which
@@ -34,16 +34,15 @@ function renderDialog(overrides: Partial<UserPreferences> = {}) {
       settings={overrides as UserPreferences}
       onChange={onChange}
       onClose={onClose}
-      aiCapable
     />,
   );
   return { onChange, onClose };
 }
 
-const FIRST_CATEGORY = visibleCategories(true, { emailEnabled: true, signedIn: false })[0]!;
+const FIRST_CATEGORY = visibleCategories({ emailEnabled: true, signedIn: false })[0]!;
 
 afterEach(() => {
-  clerk.clerkUserId = null;
+  clerk.accountUserId = null;
   clerk.isSignedIn = false;
   cleanup();
   sessionStorage.clear();
@@ -56,10 +55,10 @@ describe('SettingsDialog', () => {
     setViewport(false);
     Element.prototype.scrollIntoView = vi.fn();
     renderDialog(setPowerUserMode({}, true).prefs);
-    fireEvent.click(screen.getByRole('button', { name: 'Change Alignment Guides in Editor' }));
-    // Editor is open, with the Alignment Guides row ringed.
-    expect(screen.getByRole('switch', { name: /Alignment Guides/ })).toBeTruthy();
-    const ringed = document.querySelector('[data-settings-row="alignmentGuides"]');
+    fireEvent.click(screen.getByRole('button', { name: 'Change Forms Tour in Tours' }));
+    // Tours is open, with the Forms Tour row ringed.
+    expect(screen.getByRole('switch', { name: /Forms Tour/ })).toBeTruthy();
+    const ringed = document.querySelector('[data-settings-row="formTourSeen"]');
     expect(ringed?.className).toContain('ring-2');
   });
 
@@ -70,7 +69,7 @@ describe('SettingsDialog', () => {
     fireEvent.click(screen.getByRole('switch', { name: 'Power User Mode' }));
     const next = onChange.mock.calls[0]![0] as UserPreferences;
     expect(next.powerUserMode).toBe(true);
-    expect(next.alignmentGuides).toBe(true);
+    expect(next.formTourSeen).toBe(true);
     cleanup();
     renderDialog(next);
     expect(screen.getByRole('switch', { name: 'Minimal Chrome' })).toBeTruthy();
@@ -104,7 +103,7 @@ describe('SettingsDialog', () => {
     renderDialog();
     fireEvent.click(screen.getByRole('button', { name: 'Privacy' }));
     expect(screen.getByRole('switch', { name: 'Send Anonymous Usage Events' })).toBeTruthy();
-    expect(screen.queryByRole('switch', { name: 'Quick-Add on Hover' })).toBeNull();
+    expect(screen.queryByRole('switch', { name: 'Power User Mode' })).toBeNull();
     expect(screen.getByRole('button', { name: 'Editor' })).toBeTruthy();
   });
 
@@ -112,7 +111,7 @@ describe('SettingsDialog', () => {
     setViewport(true);
     renderDialog();
     expect(screen.getByRole('button', { name: 'Editor' })).toBeTruthy();
-    expect(screen.queryByRole('switch', { name: 'Quick-Add on Hover' })).toBeNull();
+    expect(screen.queryByRole('switch', { name: 'Power User Mode' })).toBeNull();
   });
 
   it('opens on a named category when one is asked for', () => {
@@ -123,7 +122,6 @@ describe('SettingsDialog', () => {
         settings={{}}
         onChange={() => {}}
         onClose={() => {}}
-        aiCapable
         initialCategoryId="privacy"
       />,
     );
@@ -134,13 +132,13 @@ describe('SettingsDialog', () => {
     setViewport(true);
     renderDialog();
     fireEvent.click(screen.getByRole('button', { name: 'Editor' }));
-    expect(screen.getByRole('switch', { name: 'Quick-Add on Hover' })).toBeTruthy();
+    expect(screen.getByRole('switch', { name: 'Power User Mode' })).toBeTruthy();
     // The rail is gone: a phone shows one screen at a time.
     expect(screen.queryByRole('button', { name: 'Privacy' })).toBeNull();
 
     fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
     expect(screen.getByRole('button', { name: 'Privacy' })).toBeTruthy();
-    expect(screen.queryByRole('switch', { name: 'Quick-Add on Hover' })).toBeNull();
+    expect(screen.queryByRole('switch', { name: 'Power User Mode' })).toBeNull();
   });
 
   it('reaches the Panels sub-categories on a phone through the Panels pane', () => {
@@ -151,14 +149,11 @@ describe('SettingsDialog', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Panels' }));
     const links = screen.getByRole('navigation', { name: 'Panels sub-categories' });
     expect(Array.from(links.querySelectorAll('button')).map((b) => b.textContent)).toEqual([
-      'Layers',
-      'Map',
       'Collaborate',
-      'Quick Style',
     ]);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Layers' }));
-    expect(screen.getByRole('heading', { name: 'Layers' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Collaborate' }));
+    expect(screen.getByRole('heading', { name: 'Collaborate' })).toBeTruthy();
     expect(screen.queryByRole('navigation', { name: 'Panels sub-categories' })).toBeNull();
 
     fireEvent.click(screen.getByRole('button', { name: 'Panels' }));
@@ -171,8 +166,8 @@ describe('SettingsDialog', () => {
     setViewport(false);
     const { onChange } = renderDialog();
     fireEvent.click(screen.getByRole('button', { name: 'Editor' }));
-    fireEvent.click(screen.getByRole('switch', { name: 'Quick-Add on Hover' }));
-    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ quickAddOnHover: true }));
+    fireEvent.click(screen.getByRole('switch', { name: 'Power User Mode' }));
+    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ powerUserMode: true }));
   });
 
   describe('reopening where it was left', () => {
@@ -195,11 +190,10 @@ describe('SettingsDialog', () => {
           settings={{}}
           onChange={() => {}}
           onClose={() => {}}
-          aiCapable
           initialCategoryId="editor"
         />,
       );
-      expect(screen.getByRole('switch', { name: 'Quick-Add on Hover' })).toBeTruthy();
+      expect(screen.getByRole('switch', { name: 'Power User Mode' })).toBeTruthy();
     });
 
     it('reopens a phone on the pushed pane it was closed on', () => {
@@ -243,11 +237,14 @@ describe('SettingsDialog', () => {
         const top = 100 + index * 150 - pane.scrollTop;
         return { top, bottom: top + 120 } as DOMRect;
       });
-      const rows = FIRST_CATEGORY.rows;
+      const category = visibleCategories({ emailEnabled: true, signedIn: false }).find(
+        (c) => c.rows.length > 1,
+      )!;
+      const rows = category.rows;
       const rowIndex = rows.length - 1;
       expect(rowIndex).toBeGreaterThan(0);
       writeSettingsView({
-        categoryId: FIRST_CATEGORY.id,
+        categoryId: category.id,
         anchor: { rowKey: rows[rowIndex]!.key, offset: 20 },
       });
 
@@ -271,10 +268,10 @@ describe('SettingsDialog', () => {
     setViewport(false);
     renderDialog();
     fireEvent.click(screen.getByRole('button', { name: 'Editor' }));
-    const sw = screen.getByRole('switch', { name: 'Alignment Guides' });
+    const sw = screen.getByRole('switch', { name: 'Power User Mode' });
     const describedBy = sw.getAttribute('aria-describedby');
     expect(describedBy).toBeTruthy();
-    expect(document.getElementById(describedBy!)?.textContent).toMatch(/snap lines/i);
+    expect(document.getElementById(describedBy!)?.textContent).toMatch(/recommended settings/i);
   });
 });
 
@@ -288,7 +285,7 @@ describe('SettingsDialog footer', () => {
   });
 
   it('tells a signed-in person their settings follow their account', () => {
-    clerk.clerkUserId = 'user_1';
+    clerk.accountUserId = 'user_1';
     clerk.isSignedIn = true;
     setViewport(false);
     renderDialog();

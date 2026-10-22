@@ -26,18 +26,16 @@ function makeEnv() {
   const marketing = mockFetcher();
   const live = mockFetcher();
   const api = mockFetcher();
-  const telemetry = mockFetcher();
   const help = mockFetcher();
   const community = mockFetcher();
   const env: Env = {
     MARKETING: marketing.fetcher,
     LIVE: live.fetcher,
     API: api.fetcher,
-    TELEMETRY: telemetry.fetcher,
     HELP: help.fetcher,
     COMMUNITY: community.fetcher,
   };
-  return { env, marketing, live, api, telemetry, help, community };
+  return { env, marketing, live, api, help, community };
 }
 
 const dispatch = (path: string, env: Env) =>
@@ -56,10 +54,8 @@ describe('production dispatch (service bindings)', () => {
     expect(live.urls).toEqual(['https://livediagram.app/_next/static/chunk.js']);
   });
 
-  it('strips the basePath for telemetry and help, keeping the query', async () => {
-    const { env, telemetry, help } = makeEnv();
-    await dispatch('/telemetry/data?window=30', env);
-    expect(telemetry.urls).toEqual(['https://livediagram.app/data?window=30']);
+  it('strips the basePath for help, keeping the query', async () => {
+    const { env, help } = makeEnv();
     await dispatch('/help/canvas/themes/', env);
     expect(help.urls).toEqual(['https://livediagram.app/canvas/themes/']);
   });
@@ -99,9 +95,26 @@ describe('production dispatch (service bindings)', () => {
   });
 
   it('a bare stripped prefix forwards as the root path', async () => {
-    const { env, telemetry } = makeEnv();
-    await dispatch('/telemetry', env);
-    expect(telemetry.urls).toEqual(['https://livediagram.app/']);
+    const { env, help } = makeEnv();
+    await dispatch('/help', env);
+    expect(help.urls).toEqual(['https://livediagram.app/']);
+  });
+
+  // docs/specs/017-telemetry/telemetry.md: the dashboard is liveworkspace's, filtered to this app.
+  it('sends /telemetry and everything under it to the liveworkspace dashboard', async () => {
+    const { env, marketing } = makeEnv();
+    for (const path of ['/telemetry', '/telemetry/', '/telemetry/_next/x.js?v=1']) {
+      const res = await dispatch(path, env);
+      expect(res.status, path).toBe(301);
+      expect(res.headers.get('Location'), path).toBe(
+        'https://liveworkspace.app/telemetry?app=livediagram.app',
+      );
+    }
+    expect(marketing.urls).toEqual([]);
+    const staging = await dispatch('/telemetry', { ...env, DEPLOY_ENV: 'staging' });
+    expect(staging.headers.get('Location')).toBe(
+      'https://staging.liveworkspace.app/telemetry?app=livediagram.app',
+    );
   });
 
   it('forwards the clean live page routes UNstripped', async () => {
@@ -146,10 +159,10 @@ describe('local-dev dispatch (origin proxy)', () => {
     const fetchMock = vi.fn((_req: Request) => Promise.resolve(new Response('ok')));
     vi.stubGlobal('fetch', fetchMock);
     try {
-      await dispatch('/telemetry/data', { TELEMETRY_ORIGIN: 'http://localhost:3003' });
+      await dispatch('/help/data', { HELP_ORIGIN: 'http://localhost:3004' });
       const req = fetchMock.mock.calls[0]![0];
       // Dev servers serve their own basePath, so no strip on this path.
-      expect(req.url).toBe('http://localhost:3003/telemetry/data');
+      expect(req.url).toBe('http://localhost:3004/help/data');
     } finally {
       vi.unstubAllGlobals();
     }
@@ -305,10 +318,9 @@ describe('the caching rules', () => {
       MARKETING: answering('<html></html>', html),
       LIVE: answering('<html></html>', html),
       HELP: answering('<html></html>', html),
-      TELEMETRY: answering('<html></html>', html),
       COMMUNITY: answering('<html></html>', html),
     };
-    for (const page of ['/', '/explorer/unsorted', '/help/canvas/', '/telemetry', '/community']) {
+    for (const page of ['/', '/explorer/unsorted', '/help/canvas/', '/community']) {
       expect((await dispatch(page, env)).headers.get('Cache-Control'), page).toBe('no-store');
     }
     const assets: Env = {

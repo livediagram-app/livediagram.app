@@ -1,0 +1,120 @@
+// @vitest-environment jsdom
+import { cleanup, renderHook } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { createSelectionStore } from '@/lib/selection-store';
+import type { Element } from '@livedesign/document';
+import { useCanvasA11y } from './useCanvasA11y';
+
+// Tab means two things on a focused canvas: walk to the next element
+// (docs/specs/004-interface-design/canvas-accessibility.md) and, on a selected mind node, grow a child (docs/specs/009-elements/mind-node.md). Both
+// listeners sit on window, and this one is mounted first, so the traversal
+// silently ate every Tab: pressing it on a mind node cycled the tab's
+// elements instead of adding a node, which is exactly what got reported.
+//
+// These pin the hand-off rather than the growth itself, because the growth
+// lives in the shortcuts hub and only ever runs if traversal declines first.
+
+const NODE = (id: string): Element => ({
+  id,
+  type: 'shape',
+  shape: 'square',
+  x: 0,
+  y: 0,
+  width: 10,
+  height: 10,
+});
+
+const ELEMENTS = [NODE('a'), NODE('b'), NODE('c')];
+
+function storeWith(selectedId: string, multi: string[]) {
+  const store = createSelectionStore();
+  store.setSelection({ selectedId, multiSelectedIds: new Set(multi) });
+  return store;
+}
+
+function harness(over: Partial<Parameters<typeof useCanvasA11y>[0]> = {}) {
+  const selectElement = vi.fn();
+  // Traversal only engages while the canvas surface itself holds focus.
+  const root = document.createElement('div');
+  root.tabIndex = 0;
+  root.dataset.canvasA11yRoot = '';
+  document.body.append(root);
+  root.focus();
+  renderHook(() =>
+    useCanvasA11y({
+      enabled: true,
+      elements: ELEMENTS,
+      selection: storeWith('b', []),
+      editingId: null,
+      selectElement,
+      lockedByOther: () => false,
+      layerInertIds: new Set<string>(),
+      scrollIntoView: () => {},
+      ownsTabKey: () => false,
+      ...over,
+    }),
+  );
+  return { selectElement };
+}
+
+function pressTab(shiftKey = false) {
+  const e = new KeyboardEvent('keydown', { key: 'Tab', shiftKey, cancelable: true });
+  window.dispatchEvent(e);
+  return e;
+}
+
+afterEach(() => {
+  cleanup();
+  document.body.innerHTML = '';
+});
+
+describe('useCanvasA11y Tab ownership', () => {
+  it('walks to the next element when the selection does not claim Tab', () => {
+    const h = harness();
+    const e = pressTab();
+    expect(h.selectElement).toHaveBeenCalledWith('c');
+    expect(e.defaultPrevented).toBe(true);
+  });
+
+  it('stands aside when the selected element claims Tab', () => {
+    // Left unprevented as well as unhandled, so the shortcuts hub still sees
+    // the keystroke it is going to grow a mind node from.
+    const h = harness({ ownsTabKey: (id) => id === 'b' });
+    const e = pressTab();
+    expect(h.selectElement).not.toHaveBeenCalled();
+    expect(e.defaultPrevented).toBe(false);
+  });
+
+  it('keeps Shift+Tab as traversal, which nothing else binds', () => {
+    const h = harness({ ownsTabKey: () => true });
+    pressTab(true);
+    expect(h.selectElement).toHaveBeenCalledWith('a');
+  });
+
+  it('still traverses when several elements are selected', () => {
+    // Growth needs one node to grow from, so a multi-selection has no claim.
+    const h = harness({ ownsTabKey: () => true, selection: storeWith('b', ['a', 'b']) });
+    pressTab();
+    expect(h.selectElement).toHaveBeenCalledWith('c');
+  });
+
+  it('walks on from a node the walk itself landed on, so a keyboard user is never trapped growing it', () => {
+    // A flowchart step or mind node reached by Tab: growing it on the next Tab added a step per press and
+    // focus never left the canvas. Growth stays one pointer press (or an edit) away.
+    const selection = storeWith('a', []);
+    const selectElement = vi.fn((id: string) =>
+      selection.setSelection({ selectedId: id, multiSelectedIds: new Set() }),
+    );
+    harness({ selection, selectElement, ownsTabKey: (id) => id !== 'a' });
+    pressTab();
+    expect(selectElement).toHaveBeenLastCalledWith('b');
+    const onward = pressTab();
+    expect(selectElement).toHaveBeenLastCalledWith('c');
+    expect(onward.defaultPrevented).toBe(true);
+    // A pointer press on the node gives Tab back to growth.
+    window.dispatchEvent(new Event('pointerdown'));
+    const grow = pressTab();
+    expect(selectElement).toHaveBeenCalledTimes(2);
+    expect(grow.defaultPrevented).toBe(false);
+  });
+});

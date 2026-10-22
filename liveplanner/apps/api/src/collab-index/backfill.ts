@@ -10,7 +10,7 @@
 // the newer blob in its own batch, so the backfill's older rows for that
 // tab are skipped rather than written over it.
 
-import type { Element } from '@liveplanner/document';
+import type { Element } from '@liveplanner/project';
 import {
   collabIndexStatements,
   listCollabTabsToBackfill,

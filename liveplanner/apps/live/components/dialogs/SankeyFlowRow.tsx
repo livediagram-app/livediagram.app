@@ -5,7 +5,7 @@
 // row that cannot be drawn is outlined in amber, with its reason beneath it for eyes and screen readers alike.
 
 import type { InputHTMLAttributes, Ref } from 'react';
-import { SANKEY_NAME_MAX } from '@liveplanner/document';
+import { SANKEY_NAME_MAX } from '@liveplanner/project';
 import { lucideGlyph, Tooltip } from '@liveplanner/ui';
 import { lucideArrowRight, lucidePlus, lucideX } from '@liveplanner/icons/lucide';
 

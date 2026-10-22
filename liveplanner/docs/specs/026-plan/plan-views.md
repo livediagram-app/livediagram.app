@@ -1,6 +1,6 @@
 # Plan views
 
-A **plan view** is an element that reads the document's cards and shows them a way a board cannot: a live
+A **plan view** is an element that reads the project's cards and shows them a way a board cannot: a live
 figure on its own (a **metric**), or a chart of every card (a **visualisation**). Plan views sit
 anywhere on the canvas, beside the boards, and change as the cards do. They hold no cards and take none:
 a card is never dropped into one.
@@ -9,7 +9,7 @@ a card is never dropped into one.
 
 | Term              | Meaning                                                                       | Not                   |
 | ----------------- | ----------------------------------------------------------------------------- | --------------------- |
-| **plan view**     | The element: one view of the document's cards, of one view kind               | chart, report         |
+| **plan view**     | The element: one view of the project's cards, of one view kind               | chart, report         |
 | **view kind**     | What a plan view shows (Completion, Gantt Chart, ...)                         | view type             |
 | **metric**        | A plan view that is a board widget kind, free on the canvas                   | board widget (header) |
 | **visualisation** | A plan view that charts the cards (Gantt, calendar, workload, status, matrix) | dashboard             |
@@ -17,9 +17,9 @@ a card is never dropped into one.
 
 ## What a plan view reads
 
-- **Every live card in the document**: not archived, not in the Trash, whatever board (or none) it is on,
+- **Every live card in the project**: not archived, not in the Trash, whatever board (or none) it is on,
   as an All Cards board sees them.
-- **Status phases** come from the document's boards, the open tab's first and then every other tab's in tab
+- **Status phases** come from the project's boards, the open tab's first and then every other tab's in tab
   order (not All Cards or Archive boards), so a dashboard tab with no board reads the phases of the boards
   beside it ([Plan templates](plan-templates.md#hand-offs)): a board's first column is
   Not Started, its done column and every column after it are Done, and the columns between are In Progress.
@@ -73,7 +73,7 @@ The **Visualisations** palette category charts the cards. Each is resizable (720
   Visualisations (searching "status" or "breakdown" finds Cards by Field), a Dashboard slot's choices, the
   suggested dashboards (Sprint Health and Triage chart Priority by Status or Cards by Field in its place, a board's
   Summary Cards by Field) and the templates; a new view element starts as Cards by Field. One already placed in a
-  document still draws, as it did, so no one's document changes under them: the id stays valid and nothing
+  project still draws, as it did, so no one's project changes under them: the id stays valid and nothing
   rewrites it.
 
 ### Settings
@@ -106,7 +106,7 @@ The **Visualisations** palette category charts the cards. Each is resizable (720
   ids, 1 to 64, each a status id up to 40 characters, no repeats); absent, they count every card. While statuses are
   named, a card with no status is left out.
 - Chart Settings has **Statuses**: an info note ("The statuses this chart counts; a card in any other is left
-  out."), then a row per status some card of the chart's card types holds, in the order the document's boards name
+  out."), then a row per status some card of the chart's card types holds, in the order the project's boards name
   them, then any other, each with a dot in its phase's colour and its name as a column calls it, ticked while the
   chart counts it (all ticked by default). A press toggles one; the last one ticked cannot be let go. Ticking every
   listed status drops the setting (whatever else it named), so the chart counts every status again, one added later
@@ -325,7 +325,7 @@ The **Visualisations** palette category charts the cards. Each is resizable (720
 
 ### Status Breakdown (retired)
 
-- Drawn only where one was placed before it was retired. A donut of every live card by status, in the order the document's boards name them (the open tab's first), then any other status, then
+- Drawn only where one was placed before it was retired. A donut of every live card by status, in the order the project's boards name them (the open tab's first), then any other status, then
   **No status**; the legend gives each status its name (as a column calls it), colour and count. The donut's
   middle holds the total.
 - The statuses take the tab theme's chart colours in turn, as a pie chart's slices do
@@ -342,7 +342,7 @@ The **Visualisations** palette category charts the cards. Each is resizable (720
 
 ### Card Search
 
-- A filter bar along its top, then the matching cards in the document's order, each drawn as a board draws it at
+- A filter bar along its top, then the matching cards in the project's order, each drawn as a board draws it at
   **Detailed** size, in a grid of as many columns at least 240 px wide as fit, 12 px apart, scrolling down. In a slot
   too narrow for a 240 px column, or under 260 px tall, the cards are **Compact** (columns at least 200 px wide).
   A done card is faded, as on a board. At most 200 are drawn, then "Showing 200 of 340. Add a filter to narrow the

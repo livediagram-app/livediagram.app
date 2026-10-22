@@ -27,7 +27,7 @@ function call(
           token: { id: caller.tokenId },
         }
       : caller.kind === 'clerk'
-        ? { owner: caller.userId, clerkUserId: caller.userId }
+        ? { owner: caller.userId, accountUserId: caller.userId }
         : {};
   return handleWorkbench(
     makeTestRouteContext(method, `/api/workbench/${path}`, {
@@ -82,7 +82,7 @@ describe('workbench pairing routes', () => {
 
     it('reuses the request a mint opened, taking the name', async () => {
       const db = await workbenchDb();
-      await call(db, 'POST', 'tickets', TOKEN, { documentId: 'doc1', origin: ORIGIN });
+      await call(db, 'POST', 'tickets', TOKEN, { projectId: 'doc1', origin: ORIGIN });
 
       const pending = await ask(db, 'Acme Editor');
 
@@ -104,7 +104,7 @@ describe('workbench pairing routes', () => {
           tokenId: 'tok1',
           origin: ORIGIN,
           name: 'Acme Editor',
-          scope: 'document',
+          scope: 'project',
           pairedAt: NOW,
         },
       });
@@ -163,7 +163,7 @@ describe('workbench pairing routes', () => {
           origin: ORIGIN,
           name: 'Acme Editor',
           tokenName: 'liveplanner CLI',
-          scope: 'document',
+          scope: 'project',
           expiresAt: NOW + WORKBENCH_PAIRING_TTL_MS,
           status: 'pending',
         },
@@ -186,7 +186,7 @@ describe('workbench pairing routes', () => {
           tokenId: 'tok1',
           origin: ORIGIN,
           name: 'Acme Editor',
-          scope: 'document',
+          scope: 'project',
           pairedAt: NOW,
         },
       });
@@ -198,7 +198,7 @@ describe('workbench pairing routes', () => {
       expect(console.log).toHaveBeenCalledWith('[workbench] paired', {
         tokenId: 'tok1',
         pairingId: expect.any(String),
-        scope: 'document',
+        scope: 'project',
       });
     });
 
@@ -220,7 +220,7 @@ describe('workbench pairing routes', () => {
       expect(rows(db, 'SELECT * FROM workbench_pairings')).toEqual([]);
       expect(console.log).toHaveBeenCalledWith('[workbench] pairing-declined', {
         tokenId: 'tok1',
-        scope: 'document',
+        scope: 'project',
       });
     });
 
@@ -271,7 +271,7 @@ describe('workbench pairing routes', () => {
             tokenId: 'tok1',
             origin: ORIGIN,
             name: 'Acme Editor',
-            scope: 'document',
+            scope: 'project',
             pairedAt: NOW,
           },
         ],
@@ -338,7 +338,7 @@ describe('workbench pairing routes, workspace scope', () => {
     return { status: res.status, body: await res.json<Record<string, unknown>>() };
   };
 
-  it('asks anew when the origin is paired for the document scope only', async () => {
+  it('asks anew when the origin is paired for the project scope only', async () => {
     const db = await workbenchDb();
     pairToken(db);
 

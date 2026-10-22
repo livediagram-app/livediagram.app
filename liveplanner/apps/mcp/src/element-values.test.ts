@@ -2,45 +2,45 @@ import { describe, expect, it } from 'vitest';
 import { buildTemplateTabs, validTemplateKinds, type TemplateKind } from '@liveplanner/templates';
 import { elementsIssue } from './element-values';
 
-const box = (extra: Record<string, unknown>) => ({
-  id: 'b1',
+const view = (extra: Record<string, unknown>) => ({
+  id: 'v1',
   type: 'shape',
-  shape: 'square',
+  shape: 'plan-view',
   x: 0,
   y: 0,
-  width: 100,
-  height: 60,
+  width: 500,
+  height: 360,
+  planView: { view: 'gantt' },
   ...extra,
 });
 
 describe('elementsIssue', () => {
   it('passes well-formed elements', () => {
-    expect(elementsIssue([box({ label: 'A', textSize: 'lg', iconId: 'database' })])).toBeNull();
+    expect(elementsIssue([view({ label: 'Plan', textSize: 'lg' })])).toBeNull();
+  });
+
+  it('refuses an element no liveplanner tab holds', () => {
+    expect(elementsIssue([view({ shape: 'square' })])).toBe(
+      'element "v1": shape "square" is not an element a liveplanner tab holds; read liveplanner://schema/elements.',
+    );
+    expect(elementsIssue([{ id: 'a', type: 'arrow' }])).toMatch(
+      /^element "a": type "arrow" is not/,
+    );
+    expect(elementsIssue([view({ shape: 'bar-chart', planView: undefined })])).toMatch(
+      /a bar-chart reads a Sheet's cells/,
+    );
   });
 
   it('refuses a field the type does not have, naming fields like it', () => {
-    expect(elementsIssue([box({ icon: 'database' })])).toMatch(
-      /^element "b1": "icon" is not a field of a shape; fields like it: .*iconId/,
+    expect(elementsIssue([view({ planview: 1 })])).toMatch(
+      /^element "v1": "planview" is not a field of a shape; fields like it: .*planView/,
     );
   });
 
   it('refuses a text size off the scale', () => {
-    expect(elementsIssue([box({ textSize: 'xl' })])).toBe(
-      'element "b1": textSize "xl" is not one of sm, md, lg, scale.',
+    expect(elementsIssue([view({ textSize: 'xl' })])).toBe(
+      'element "v1": textSize "xl" is not one of sm, md, lg, scale.',
     );
-  });
-
-  it('refuses an icon id that names no icon, pointing at icons like it or the search', () => {
-    expect(elementsIssue([box({ iconId: 'database-' })])).toMatch(
-      /^element "b1": iconId "database-" is not an icon; icons like it: database/,
-    );
-    expect(elementsIssue([box({ iconId: 'zzqx' })])).toBe(
-      'element "b1": iconId "zzqx" is not an icon.',
-    );
-  });
-
-  it('leaves an unknown type to the validator', () => {
-    expect(elementsIssue([{ id: 'x', type: 'blob', icon: 1 }])).toBeNull();
   });
 
   // A template read back with format "json" and sent again must always pass.

@@ -4,8 +4,8 @@ import { describe, expect, it } from 'vitest';
 import { offlineBackend } from './offline-backend';
 import { testRecord as rec, testTab as tab } from './offline-test-utils';
 
-// The IndexedDB backend's read-modify-write (docs/specs/006-document/offline-mode.md "Where
-// offline documents live"): the read and the write share one transaction, so a write from
+// The IndexedDB backend's read-modify-write (docs/specs/006-project/offline-mode.md "Where
+// offline projects live"): the read and the write share one transaction, so a write from
 // another browser tab (which shares the store but not this tab's write chain) cannot land
 // between them and be overwritten.
 

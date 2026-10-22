@@ -13,6 +13,6 @@ describe('LoadRecoveryCard', () => {
     expect(screen.getByRole('button', { name: /copy diagnostics/i })).toBeTruthy();
     expect(screen.getByRole('button', { name: /repair this browser/i })).toBeTruthy();
     const link = screen.getByRole('link', { name: /troubleshooting steps/i });
-    expect(link.getAttribute('href')).toContain('/help/troubleshooting/document-not-loading/');
+    expect(link.getAttribute('href')).toContain('/help/troubleshooting/project-not-loading/');
   });
 });

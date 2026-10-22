@@ -2,32 +2,32 @@
 
 import { createContext, useContext } from 'react';
 import type { TeamFolderHandlers } from '../Explorer.types';
-import type { PaneDocument } from '@/app/explorer/views';
+import type { PaneProject } from '@/app/explorer/views';
 import type { DefaultFolderMenus } from '@/hooks/persistence/useDefaultFolderMenus';
 
 // What every row of the floating Explorer panel's tree can reach
 // (docs/specs/013-workspace/explorer-structure.md#the-floating-explorer-panel): the panel's
-// expansion, the open document, and the verbs the host wired. Handed down once by
+// expansion, the open project, and the verbs the host wired. Handed down once by
 // PanelExplorerTree rather than threaded through every level of the recursion.
 export type PanelTree = {
   // The VIEWER's owner id, for thumbnails and Offline Mode conversions in the menus.
   ownerId: string | null;
-  currentDocumentId: string | null;
+  currentProjectId: string | null;
   // Ids mid slide-out after a delete (useExplorerRowDelete).
-  exitingDocumentIds: Set<string>;
+  exitingProjectIds: Set<string>;
   expanded: Record<string, boolean>;
   onToggle: (key: string) => void;
-  // Any document the reader can reach, by id: the pane's views (Home) give it its menu.
-  documentById?: (id: string) => PaneDocument | undefined;
-  // Opens a folder in the pane (its subfolders, then its documents, under a breadcrumb).
+  // Any project the reader can reach, by id: the pane's views (Home) give it its menu.
+  projectById?: (id: string) => PaneProject | undefined;
+  // Opens a folder in the pane (its subfolders, then its projects, under a breadcrumb).
   onOpenFolder?: (folderId: string) => void;
-  onOpenDocument: (id: string, shareCode?: string) => void;
-  onDeleteDocument?: (id: string, anchor: HTMLElement | null) => void;
-  onDuplicateDocument?: (id: string) => void;
-  onMoveDocumentRequest?: (id: string) => void;
-  onMoveTeamDocumentRequest?: (id: string, teamId: string) => void;
-  // Present = the reader's own rows drag onto personal folders and My Documents.
-  onMoveDocumentToFolder?: (documentId: string, folderId: string | null) => void;
+  onOpenProject: (id: string, shareCode?: string) => void;
+  onDeleteProject?: (id: string, anchor: HTMLElement | null) => void;
+  onDuplicateProject?: (id: string) => void;
+  onMoveProjectRequest?: (id: string) => void;
+  onMoveTeamProjectRequest?: (id: string, teamId: string) => void;
+  // Present = the reader's own rows drag onto personal folders and My Projects.
+  onMoveProjectToFolder?: (projectId: string, folderId: string | null) => void;
   onDismissShared?: (id: string) => void;
   favouriteIds?: Set<string>;
   onToggleFavourite?: (id: string) => void;

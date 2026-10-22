@@ -11,7 +11,7 @@ export interface Tab {
   form?: Record<string, unknown>;
 }
 export interface Snapshot {
-  documents: {
+  projects: {
     id: string;
     name?: string;
     missing?: boolean;

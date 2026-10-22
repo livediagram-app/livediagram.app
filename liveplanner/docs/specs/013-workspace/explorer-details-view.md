@@ -3,14 +3,14 @@
 Status: shipped
 
 The Explorer's third way to show a folder: a dense table in the manner of a desktop file manager's
-details pane, one row per folder or document, with the facts that tell documents apart at a glance
+details pane, one row per folder or project, with the facts that tell projects apart at a glance
 (how much talk is on it, what the reader may do with it, how big it
 is, and when it was made and last changed). No categories and no grouping: one flat list, sorted
 by any column.
 
 ## The view toggle
 
-- The browse views' toggle ([List / card view](../006-document/document-snapshots.md#list--card-view))
+- The browse views' toggle ([List / card view](../006-project/project-snapshots.md#list--card-view))
   holds three choices, in this order: **List**, **Cards**, **Details**. The choice is device-local
   and shared by every browse view and the team library, as before.
 - Each button is icon-only with a hover card: Details reads "Details view" over "A sortable table:
@@ -19,15 +19,15 @@ by any column.
 
 ## Columns
 
-| Column   | A document shows                                                                   | A folder shows                          |
-| -------- | ---------------------------------------------------------------------------------- | --------------------------------------- |
-| Name     | Its name (a link that opens it), favourite star, This Browser and Made by AI pills | Its name (opens it), default marker     |
-| Type     | A document: Plan's icon (every tab is in Plan)                                     | The folder icon                         |
-| Comments | A speech bubble holding how many comments its tabs hold; empty for none            | Empty                                   |
-| Access   | The reader's level as a small, muted role icon: Editor, Participant or Viewer      | Empty                                   |
-| Size     | "N objects (S)": elements across all its tabs, and the stored size of those tabs   | "N items": its subfolders and documents |
-| Created  | Date and time it was created                                                       | Date and time it was created            |
-| Updated  | Date and time it was last saved                                                    | Date and time it was last changed       |
+| Column   | A project shows                                                                    | A folder shows                         |
+| -------- | ---------------------------------------------------------------------------------- | -------------------------------------- |
+| Name     | Its name (a link that opens it), favourite star, This Browser and Made by AI pills | Its name (opens it), default marker    |
+| Type     | A project: Plan's icon (every tab is in Plan)                                      | The folder icon                        |
+| Comments | A speech bubble holding how many comments its tabs hold; empty for none            | Empty                                  |
+| Access   | The reader's level as a small, muted role icon: Editor, Participant or Viewer      | Empty                                  |
+| Size     | "N objects (S)": elements across all its tabs, and the stored size of those tabs   | "N items": its subfolders and projects |
+| Created  | Date and time it was created                                                       | Date and time it was created           |
+| Updated  | Date and time it was last saved                                                    | Date and time it was last changed      |
 
 - **Icon columns.** Type, Comments and Access are narrow columns of one icon each, with no words: their
   headers show the column's icon (shapes, a speech bubble, a key) in place of a title, still sortable,
@@ -36,25 +36,25 @@ by any column.
 - **Comments** show the count inside the bubble, up to 99, then "99+", centred on the bubble's body
   (not its tail). The bubble's outline is faint and the number in full contrast: the count is what
   matters.
-- **Type** tells a document from a folder: a document shows Plan's icon and name, the one editor mode
+- **Type** tells a project from a folder: a project shows Plan's icon and name, the one editor mode
   ([Editor mode](../007-editor/editor-modes.md)); a stored stats row of a retired mode reads as Plan.
-- **Access** is the reader's own level ([Share roles](share-roles.md)): their own documents, team
-  documents and documents in this browser are Editor; a document shared with them is the role their
+- **Access** is the reader's own level ([Share roles](share-roles.md)): their own projects, team
+  projects and projects in this browser are Editor; a project shared with them is the role their
   link grants. The icon is the Share dialog's role icon, small and muted rather than in the role's
   colour: most rows are the reader's own, so it is a quiet fact, not a signal.
 - **Size** counts objects (`1 object`, `12 objects`) and shows the stored size in kilobytes
   (`0.4 KB`, `12 KB`), or megabytes from 1 MB (`1.2 MB`): one decimal below 10, whole numbers above.
 - **Created** and **Updated** show date and time in the reader's locale, medium date and short time
   ("10 Oct 2026, 16:02").
-- **Not yet counted.** A document whose tabs are not all counted yet (see "Where the numbers come
-  from") shows **–** in Type, Comments and Size, with the tooltip "Not counted yet". So does a document
-  with no tabs, and a document shared with the reader, whose library is not the reader's.
-- **Documents in this browser** are counted in the browser from their own tabs, by the same rule.
-- A Created date the list does not carry (a document shared with the reader) shows **–** with the
+- **Not yet counted.** A project whose tabs are not all counted yet (see "Where the numbers come
+  from") shows **–** in Type, Comments and Size, with the tooltip "Not counted yet". So does a project
+  with no tabs, and a project shared with the reader, whose library is not the reader's.
+- **Projects in this browser** are counted in the browser from their own tabs, by the same rule.
+- A Created date the list does not carry (a project shared with the reader) shows **–** with the
   tooltip "Not known".
 - A `⋯` ends every row, shown on hover or keyboard focus (always on touch), opening the same menu
   as the list and card views; a right-click opens it too.
-- The table is named "Folders and documents" for assistive technology.
+- The table is named "Folders and projects" for assistive technology.
 
 ## Dense rows
 
@@ -68,8 +68,8 @@ by any column.
   Updated newest first. Pressing the sorted column again reverses it.
 - The sorted header carries `aria-sort` (`ascending` / `descending`) and an arrow; the others carry
   none.
-- **Default:** Updated, newest first, the order every other view lists documents in.
-- **Folders first.** Folders always sit above documents, sorted among themselves by the same column
+- **Default:** Updated, newest first, the order every other view lists projects in.
+- **Folders first.** Folders always sit above projects, sorted among themselves by the same column
   where they have it (Name, Size by item count, Created, Updated) and by name otherwise.
 - Ties keep the name order (A to Z), then the id, so the order is stable.
 - The sort is device-local, like the view choice, and the same for every folder.
@@ -77,27 +77,27 @@ by any column.
 
 ## Preview on a resting hover
 
-- Resting the pointer on a document row for **600 ms** shows a **preview**: the document's snapshot
+- Resting the pointer on a project row for **600 ms** shows a **preview**: the project's snapshot
   at card size with its name beneath, beside the row. It is a hint
   ([Tooltips, hover cards and popovers](../004-interface-design/tooltips-hover-cards-popovers.md#preview)):
   not interactive, dismissed by Escape, closed by moving away or pressing, one at a time, opening at
   once on keyboard focus of the row's name.
 - **Preloaded.** Each row asks for its snapshot as it nears the viewport (the thumbnails' own rule,
-  [Document SVG snapshots](../006-document/document-snapshots.md)), so the preview paints at once from
+  [Project SVG snapshots](../006-project/project-snapshots.md)), so the preview paints at once from
   the page's snapshot cache. Rows show no thumbnail themselves.
 - Once a preview has opened, moving to the next row shows its preview without the wait, for as long
   as the pointer arrives within 500 ms of the last one closing.
-- A folder row has no preview. An empty document previews its undrawn sketch, like its card.
+- A folder row has no preview. An empty project previews its undrawn sketch, like its card.
 
 ## Drag and drop
 
-- Document rows drag onto folders exactly as list rows and cards do; folder rows take dropped
-  documents ([Folders: standalone page](folders.md#standalone-explorer-page)).
+- Project rows drag onto folders exactly as list rows and cards do; folder rows take dropped
+  projects ([Folders: standalone page](folders.md#standalone-explorer-page)).
 
 ## Narrow screens
 
 - A phone never shows the table: List and Details are for larger screens, so a phone always shows
-  cards and the toggle is hidden there ([List / card view](../006-document/document-snapshots.md#list--card-view)).
+  cards and the toggle is hidden there ([List / card view](../006-project/project-snapshots.md#list--card-view)).
 - Below `md` the table drops Comments, Access and Created; below `sm` it also drops Type and Size,
   leaving Name, Updated and the `⋯` (a guard only, since a screen that narrow is a phone).
 - The header row stays visible and sortable at every width.
@@ -109,9 +109,9 @@ by any column.
   as the tab, by every write (a save, a changeset, a seeded create, a participant or Q&A write, a
   duplicate's copied tab), so it never drifts from the tab it describes. It lives apart from the tab
   body so a list reads the numbers without reading any body.
-- **A document's stats** are summed over the tabs it links: elements, comments and bytes added, the
-  mode taken from the tab written last. `GET /api/documents` and each team library carry them on every
-  row as `stats` (`{ mode, elements, comments, bytes }`), or `null` when the document has no tabs or one
+- **A project's stats** are summed over the tabs it links: elements, comments and bytes added, the
+  mode taken from the tab written last. `GET /api/projects` and each team library carry them on every
+  row as `stats` (`{ mode, elements, comments, bytes }`), or `null` when the project has no tabs or one
   of its tabs has no record yet.
 - **Counting the existing tabs.** Tabs written before the stats existed are counted by the daily
   cron, a bounded number per run, each dated by the tab's own last write so a counted old tab never
@@ -123,4 +123,4 @@ by any column.
 
 - Grouping and categories (by type, by date): the view is one flat list.
 - Choosing, ordering or resizing columns.
-- Counting documents shared with the reader.
+- Counting projects shared with the reader.

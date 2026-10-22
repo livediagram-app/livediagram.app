@@ -119,7 +119,7 @@ async function resolveSignedGuestIdentity(): Promise<GuestIdentity> {
     }
     if (upgraded === 'refused') {
       // A refusal is final: the old id's server data is unreachable under enforcement already, and
-      // keeping the id would lock this browser out. Offline documents carry no guest id, so none
+      // keeping the id would lock this browser out. Offline projects carry no guest id, so none
       // are lost. Typically an id minted locally when the first mint never landed.
       console.warn('[guest-identity] the worker refused the upgrade; adopting the signed id');
     }

@@ -1,5 +1,5 @@
 import { useMemo, type Ref } from 'react';
-import { isBoxed, unionBoxedBounds, type Element } from '@liveplanner/document';
+import { isBoxed, unionBoxedBounds, type Element } from '@liveplanner/project';
 import { isContentOffScreen } from '@/lib/viewport';
 import { useObservedSize } from '@/hooks/canvas/useObservedSize';
 

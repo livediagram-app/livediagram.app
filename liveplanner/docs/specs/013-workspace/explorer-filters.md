@@ -18,40 +18,40 @@ One string means the lens fits a URL as it is, and a saved view later is that st
 
 Two different things narrow a list, and they never mix:
 
-- The **scope** is where you are: a folder, a team, My Documents. It is the **breadcrumb**, never a chip and never a
+- The **scope** is where you are: a folder, a team, My Projects. It is the **breadcrumb**, never a chip and never a
   token. A scoped view lists what lives in its scope.
 - The **lens** narrows whatever the current view lists.
 
-An **aggregate view** lists documents from every place at once: **Recent**, **Favourites**, **Search results** and
+An **aggregate view** lists projects from every place at once: **Recent**, **Favourites**, **Search results** and
 **Shared With Me**. Only aggregate views have no scope to narrow by, so only they show the **Space** chip and apply the
-`space:` token. Every other document view is a **scoped view**.
+`space:` token. Every other project view is a **scoped view**.
 
 ## Views
 
 | View                                                     | Route                                                                              | Lens                              |
 | -------------------------------------------------------- | ---------------------------------------------------------------------------------- | --------------------------------- |
-| My Documents, and each of its folders                    | `/explorer/all`, `/explorer/folder?id=<id>`                                        | Scoped                            |
+| My Projects, and each of its folders                     | `/explorer/all`, `/explorer/folder?id=<id>`                                        | Scoped                            |
 | A team, at its root or in one of its folders             | `/explorer/team?id=<id>`                                                           | Scoped                            |
 | This Browser                                             | `/explorer/offline`                                                                | Scoped                            |
 | Recent, Favourites, Search results, Shared With Me       | `/explorer/recent`, `/explorer/favourites`, `/explorer/search`, `/explorer/shared` | Aggregate                         |
 | Home, Inbox, Timeline, the Library pages, Trash, Invites | Their own                                                                          | None: typing opens Search results |
 
-- **Search results** (`/explorer/search`) lists every document the reader can open: their own (My Documents and this
+- **Search results** (`/explorer/search`) lists every project the reader can open: their own (My Projects and this
   browser), every team's they have joined, and Shared With Me, newest first, with no cap. It has no sidebar row; its
   page title is **Search results**.
-- A view that lists no documents has no lens of its own. Typing into the field there takes the reader to Search
+- A view that lists no projects has no lens of its own. Typing into the field there takes the reader to Search
   results with what they typed, the field keeping focus; the view they left keeps no `q`.
 - **A scoped lens reaches the whole scope.** While a lens is set on a scoped view, the list holds every matching
-  document in the scope, its subfolders at any depth included, as one flat list, newest first. Folder rows step
+  project in the scope, its subfolders at any depth included, as one flat list, newest first. Folder rows step
   aside while the lens is set and return when it is cleared. A row from a subfolder names its folder (the
   [Recent folder chip](recent-folder-chip.md)).
-- **Recent** lists the 12 newest documents that match.
-- **This Browser**'s documents are the reader's own: they read as Space `mine` and People `me`, and keep their
-  **This Browser** pill ([Explorer structure](explorer-structure.md#documents-in-this-browser)).
+- **Recent** lists the 12 newest projects that match.
+- **This Browser**'s projects are the reader's own: they read as Space `mine` and People `me`, and keep their
+  **This Browser** pill ([Explorer structure](explorer-structure.md#projects-in-this-browser)).
 
 ## The chip row
 
-Every document view shows one row of chips under its page header and breadcrumb:
+Every project view shows one row of chips under its page header and breadcrumb:
 
 - One chip per dimension, in dimension order (Opens in, Template, Made by AI, Edited, People), then **Space**
   on aggregate views only. The folder or team the reader is in is the breadcrumb, never a chip.
@@ -68,28 +68,28 @@ Each dimension is a closed list of values. The interface says what a value means
 kind or a template family a "type", and it keeps "board type" for what it means elsewhere: a board that leaves the
 general diagram tab's environment.
 
-| Dimension | Key        | Chip label  | Values and their labels                                                                                         |
-| --------- | ---------- | ----------- | --------------------------------------------------------------------------------------------------------------- |
-| Text      | (none)     | (the field) | Free words                                                                                                      |
-| Opens in  | `opens-in` | Opens in    | `plan` Plan: the editor mode the document was created in (a retired mode's id, `opens-in:draw`, reads as Plan)  |
-| Template  | `template` | Template    | `retrospective` Retrospective, `kanban` Kanban: the template family the document was made from                  |
-| Made by   | `made-by`  | Made by AI  | `ai` Made by AI: the document's `source` is the AI assistant or an AI tool through the MCP server (not the CLI) |
-| Edited    | `edited`   | Edited      | `today` Today, `7d` Last 7 days, `30d` Last 30 days, `12m` Last 12 months, `this-year` This year                |
-| People    | `people`   | People      | `me` Me, `others` Others: the owner of a document; the actor of a Timeline event                                |
-| Space     | `space`    | Space       | `mine` My Documents, `shared` Shared With Me, `team:<id>` the team's name. Aggregate views only                 |
+| Dimension | Key        | Chip label  | Values and their labels                                                                                       |
+| --------- | ---------- | ----------- | ------------------------------------------------------------------------------------------------------------- |
+| Text      | (none)     | (the field) | Free words                                                                                                    |
+| Opens in  | `opens-in` | Opens in    | `plan` Plan: the editor mode the project was created in (a retired mode's id, `opens-in:draw`, reads as Plan) |
+| Template  | `template` | Template    | `retrospective` Retrospective, `kanban` Kanban: the template family the project was made from                 |
+| Made by   | `made-by`  | Made by AI  | `ai` Made by AI: the project's `source` is an AI tool through the MCP server (not the CLI)                    |
+| Edited    | `edited`   | Edited      | `today` Today, `7d` Last 7 days, `30d` Last 30 days, `12m` Last 12 months, `this-year` This year              |
+| People    | `people`   | People      | `me` Me, `others` Others: the owner of a project; the actor of a Timeline event                               |
+| Space     | `space`    | Space       | `mine` My Projects, `shared` Shared With Me, `team:<id>` the team's name. Aggregate views only                |
 
-- **Opens in** and **Template** read the creation intent recorded on the document (Default folders: `opensIn`, `templateFamily` on the document summary). Opens in offers one value per editor mode (`EDITOR_MODES`: Plan alone); Kind offers the specific tab kinds, every creatable kind but the general diagram tab; Template offers the template families (`TEMPLATE_FAMILIES`). A document whose recorded value is unknown (made before the intent was recorded) matches no value of that dimension; it shows whenever that dimension is not set. A general diagram tab matches no Kind value, and a document made from no family matches no Template value.
-- **Made by AI is a filter, not a place.** AI-made documents are no bucket of their own: they live at the root of
-  their space or in a folder like any other document, and `made-by:ai` finds them anywhere. Every row and card of an
-  AI-made document carries a **Made by AI** badge (a sparkle and the words), so what the filter reads is visible. The
+- **Opens in** and **Template** read the creation intent recorded on the project (Default folders: `opensIn`, `templateFamily` on the project summary). Opens in offers one value per editor mode (`EDITOR_MODES`: Plan alone); Kind offers the specific tab kinds, every creatable kind but the general diagram tab; Template offers the template families (`TEMPLATE_FAMILIES`). A project whose recorded value is unknown (made before the intent was recorded) matches no value of that dimension; it shows whenever that dimension is not set. A general diagram tab matches no Kind value, and a project made from no family matches no Template value.
+- **Made by AI is a filter, not a place.** AI-made projects are no bucket of their own: they live at the root of
+  their space or in a folder like any other project, and `made-by:ai` finds them anywhere. Every row and card of an
+  AI-made project carries a **Made by AI** badge (a sparkle and the words), so what the filter reads is visible. The
   old Generated view's address, `/explorer/generated`, opens Search results filtered by `made-by:ai`.
-- **Edited** reads the document's last save, in local time. Today starts at midnight; Last 7 days and Last 30 days count
+- **Edited** reads the project's last save, in local time. Today starts at midnight; Last 7 days and Last 30 days count
   back that many days from now; Last 12 months counts back 12 calendar months from now; This year starts at midnight on
   1 January. A save in the future (a skewed clock) counts as edited.
-- **People** on a document is its owner: `me` when the reader owns it, `others` otherwise. Every row of Shared With Me
+- **People** on a project is its owner: `me` when the reader owns it, `others` otherwise. Every row of Shared With Me
   is `others`.
-- **Space** on a document is `mine` for one in My Documents or in this browser ([Offline Mode](../006-document/offline-mode.md),
-  the documents the sidebar marks "This Browser"), `team:<id>` for one in a team, `shared` for a row of Shared With Me. A
+- **Space** on a project is `mine` for one in My Projects or in this browser ([Offline Mode](../006-project/offline-mode.md),
+  the projects the sidebar marks "This Browser"), `team:<id>` for one in a team, `shared` for a row of Shared With Me. A
   token names a team by id; every label shows the team's **name**, never the id.
 - A row that cannot answer a dimension (a Shared With Me row carries no provenance, mode, kind or family) matches no
   value of it.
@@ -99,7 +99,7 @@ general diagram tab's environment.
 
 - A dimension may hold **several values**: they combine with **or** (`template:retrospective,kanban` lists both
   families). Dimensions combine with **and**.
-- Text matches the document's **name**: every word must appear in it, ignoring case and accents.
+- Text matches the project's **name**: every word must appear in it, ignoring case and accents.
 - The empty lens matches everything.
 
 ## Token grammar
@@ -134,7 +134,7 @@ The string is words separated by whitespace.
 
 The **canonical** string writes **one token per dimension, its values as a comma list**: the tokens in dimension order
 (Opens in, Template, Made by, Edited, People, Space), each list in its dimension's value order (teams after My
-documents and Shared With Me, by id), then the text words, single spaces between. Parsing accepts both spellings;
+projects and Shared With Me, by id), then the text words, single spaces between. Parsing accepts both spellings;
 writing produces only this one. Writing a chip edits the string in place: the dimension's tokens merge into one,
 written where the first stood, or added after the last token; clearing a chip removes every token of its dimension.
 
@@ -144,9 +144,9 @@ The top-bar search is the lens field on every Explorer view. It sits in the Expl
 control; on a desktop (`lg` and up) the header is three columns and the field is **centred** between the brand and
 the account, on every page (each side column grows to its content first, so a narrow desktop never overlaps them);
 below the `sm` breakpoint it takes its own full-width row under the header. Its placeholder reads "Search or
-filter documents". The app-wide search panel (documents, folders, help, settings) stays on the bottom bar's Search.
+filter projects". The app-wide search panel (projects, folders, help, settings) stays on the bottom bar's Search.
 
-On Home the field moves into the [hero](explorer-home.md#the-hero), drawn large with New document inside its end,
+On Home the field moves into the [hero](explorer-home.md#the-hero), drawn large with New project inside its end,
 and the header draws none. With the hero hidden ([Hiding the banner](explorer-home.md#hiding-the-banner)), Home
 draws the header's field like every other page. It is the same field: the same lens, pills, suggestions and keyboard. Typing in it opens
 Search results; the header's field there takes the focus with the caret after the typed words.
@@ -184,12 +184,12 @@ Keyboard:
 
 - The field follows the WAI-ARIA **combobox** pattern: the input has `role="combobox"`, `aria-autocomplete="list"`,
   `aria-expanded`, `aria-controls` naming the suggestion `listbox`, and `aria-activedescendant` naming the active
-  option. Its label is "Filter documents".
+  option. Its label is "Filter projects".
 - Each option's name is its label and dimension, plus "no matches" when marked: "Last 7 days, Edited, no matches".
 - Each pill has an accessible name ("Filter Template: Retrospective, Kanban", plus "not applied: <reason>" when muted)
   and a **remove** button named "Remove filter Template: Retrospective, Kanban", in the tab order.
-- After the lens changes, a polite **live region** announces the count once typing settles: "12 of 40 documents",
-  "40 documents", or "No documents match".
+- After the lens changes, a polite **live region** announces the count once typing settles: "12 of 40 projects",
+  "40 projects", or "No projects match".
 - Chips sit in a `group` named "Filters". A chip is **multi-select**: a button with `aria-haspopup="listbox"` and
   `aria-expanded`, named "Template: Retrospective, Kanban" when set and "Template, any" when not, opening a listbox with
   `aria-multiselectable="true"`. Its options are `option`s with `aria-selected`; choosing one toggles it, and the
@@ -211,17 +211,17 @@ Keyboard:
 
 ## States
 
-| State          | Shows                                                                                                  |
-| -------------- | ------------------------------------------------------------------------------------------------------ |
-| Empty          | The view's own empty copy, unchanged: there is nothing here at all                                     |
-| Filtered empty | "No documents match these filters", the reported reasons under it, and **Clear Filters** (empties `q`) |
-| Failed         | "Couldn’t load documents" and **Try again**; the lens stays as it was                                  |
+| State          | Shows                                                                                                 |
+| -------------- | ----------------------------------------------------------------------------------------------------- |
+| Empty          | The view's own empty copy, unchanged: there is nothing here at all                                    |
+| Filtered empty | "No projects match these filters", the reported reasons under it, and **Clear Filters** (empties `q`) |
+| Failed         | "Couldn’t load projects" and **Try again**; the lens stays as it was                                  |
 
-- **Failed** replaces the list when the view's last read failed: the reader's own documents for their own views,
+- **Failed** replaces the list when the view's last read failed: the reader's own projects for their own views,
   Recent, Favourites and Search results; the shared list for Shared With Me. A failed read never reads as Empty.
-  When only the shared list failed, the other views still list what loaded, and a notice says the documents shared
+  When only the shared list failed, the other views still list what loaded, and a notice says the projects shared
   with the reader could not load.
-- The live region speaks only on document views, and only after the lens changes.
+- The live region speaks only on project views, and only after the lens changes.
 
 ## Telemetry
 
@@ -233,5 +233,5 @@ the reader's own change does.
 
 ## Help
 
-The help centre's [Search and filter documents](../../../apps/help/app/explorer/filters/page.mdx) article describes the
+The help centre's [Search and filter projects](../../../apps/help/app/explorer/filters/page.mdx) article describes the
 field, the chips and the typed filters; Search results opens it from its Help button.

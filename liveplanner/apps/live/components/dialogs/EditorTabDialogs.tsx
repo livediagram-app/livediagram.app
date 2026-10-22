@@ -5,8 +5,8 @@ import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import { EMPTY_SELECTION, type Selection } from '@/lib/selection-store';
 import dynamic from 'next/dynamic';
 
-import { useEditorContext } from '@/app/document/[id]/EditorContext';
-import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
+import { useEditorContext } from '@/app/project/[id]/EditorContext';
+import { useIsOfflineProject } from '@/hooks/persistence/useIsOfflineProject';
 import { tabAsSeen } from '@/lib/export-as-seen';
 import { panelEnabled } from '@/lib/user-preferences';
 
@@ -23,10 +23,10 @@ const ShareDialog = dynamic(
   { ssr: false },
 );
 
-// Tab-scoped export / import dialogs + the document share dialog. Each is
+// Tab-scoped export / import dialogs + the project share dialog. Each is
 // gated on its own open flag and reads everything from EditorContext, so
 // EditorView just renders <EditorTabDialogs />. Grouped because all three
-// are "act on this tab / document as a whole" modals launched from the
+// are "act on this tab / project as a whole" modals launched from the
 // header, distinct from the global editor modals in EditorModals.
 export function EditorTabDialogs() {
   const {
@@ -35,8 +35,7 @@ export function EditorTabDialogs() {
     exportScope,
     activeTab,
     tabs,
-    loadAllTabs,
-    documentName,
+    projectName,
     setExportOpen,
     importOpen,
     importIntoActiveTab,
@@ -47,16 +46,16 @@ export function EditorTabDialogs() {
     shareLinks,
     sharePasswordSet,
     shareUrlFor,
-    clerkUserId,
-    clerkDisplayName,
-    documentId,
-    documentTeamId,
+    accountUserId,
+    accountDisplayName,
+    projectId,
+    projectTeamId,
     updateParticipantName,
     createShareLink,
     revokeShareLink,
     extendShareLink,
     rescopeShareLink,
-    setDocumentSharePassword,
+    setProjectSharePassword,
     setShareDialogOpen,
     syncToCloud,
   } = useEditorContext();
@@ -71,11 +70,11 @@ export function EditorTabDialogs() {
     ),
   );
 
-  // Offline documents (docs/specs/006-document/offline-mode.md) can't be shared until they're synced to the
-  // owner's account; the Share dialog says so and offers Sync Document, which converts the open document
+  // Offline projects (docs/specs/006-project/offline-mode.md) can't be shared until they're synced to the
+  // owner's account; the Share dialog says so and offers Sync Project, which converts the open project
   // in place ("Syncing in place"), and then shows the share options. Never as the 'self' placeholder an
   // early open runs under: the gate waits for the reader (`syncReady`).
-  const isOffline = useIsOfflineDocument(documentId);
+  const isOffline = useIsOfflineProject(projectId);
   const readerKnown = selfParticipant.id !== 'self';
 
   return (
@@ -94,10 +93,9 @@ export function EditorTabDialogs() {
               : {}),
           })}
           scope={exportScope}
-          documentName={documentName}
+          projectName={projectName}
           // A Dashboard's slots that show another tab draw it (docs/specs/026-plan/plan-tabs.md "Export").
-          documentTabs={tabs}
-          loadTabs={loadAllTabs}
+          projectTabs={tabs}
           offerHiddenLayers={panelEnabled(userPreferences, 'layersPanelEnabled')}
           onClose={() => setExportOpen(false)}
         />
@@ -117,20 +115,20 @@ export function EditorTabDialogs() {
           sharePasswordSet={sharePasswordSet}
           shareUrlFor={shareUrlFor}
           tabs={tabs}
-          // Signed-in via Clerk → name is locked to the account
+          // Signed-in to an account → name is locked to the account
           // display name (same rule as the welcome modal, docs/specs/014-identity/auth-and-guest-access.md).
           // Guests pass undefined so the input + shuffle stay live.
-          lockedName={clerkUserId ? clerkDisplayName : null}
+          lockedName={accountUserId ? accountDisplayName : null}
           onSaveName={updateParticipantName}
           onCreateLink={createShareLink}
           onRevokeLink={revokeShareLink}
           onRescopeLink={rescopeShareLink}
           onExtendLink={extendShareLink}
-          onSetPassword={setDocumentSharePassword}
+          onSetPassword={setProjectSharePassword}
           offline={isOffline}
           onSyncToCloud={syncToCloud}
           syncReady={readerKnown}
-          teamDocument={!!documentTeamId}
+          teamProject={!!projectTeamId}
           onClose={() => setShareDialogOpen(false)}
         />
       ) : null}

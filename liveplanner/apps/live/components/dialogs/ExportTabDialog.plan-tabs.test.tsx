@@ -6,7 +6,7 @@
 
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createShape, type BoxedElement, type Tab } from '@liveplanner/document';
+import { createShape, type BoxedElement, type Tab } from '@liveplanner/project';
 import { ITEM_TYPES, presetSetup, type Item } from '@liveplanner/items';
 import { PlanProvider, type PlanContextValue } from '@/components/plan/PlanContext';
 import { ExportTabDialog } from './ExportTabDialog';
@@ -48,14 +48,14 @@ const plan = {
   statusNames: new Map([['todo', 'To Do']]),
 } as unknown as PlanContextValue;
 
-const open = (tab: Tab, documentTabs?: Tab[]) =>
+const open = (tab: Tab, projectTabs?: Tab[]) =>
   render(
     <PlanProvider value={plan}>
       <ExportTabDialog
         tab={tab}
-        documentName="Doc"
+        projectName="Doc"
         onClose={vi.fn()}
-        {...(documentTabs ? { documentTabs } : {})}
+        {...(projectTabs ? { projectTabs } : {})}
       />
     </PlanProvider>,
   );

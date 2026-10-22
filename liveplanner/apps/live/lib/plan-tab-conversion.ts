@@ -10,7 +10,7 @@ import {
   type DashboardContent,
   type Element,
   type Tab,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 
 const PLAN_SHAPES = new Set(['plan-board', 'plan-sheet', 'plan-view']);
 

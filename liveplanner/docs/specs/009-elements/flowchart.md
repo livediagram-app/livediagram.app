@@ -39,7 +39,7 @@ The classic flowchart vocabulary (ISO 5807 / ANSI), drawn with shapes the palett
 | Process        | `square`        | 200 × 72  | A step someone or something does        |
 | Decision       | `diamond`       | 200 × 120 | A question with labelled exits          |
 | Input / Output | `parallelogram` | 220 × 72  | Data entering or leaving the flow       |
-| Document       | `document`      | 200 × 84  | A document the flow produces or reads   |
+| Project       | `project`      | 200 × 84  | A project the flow produces or reads   |
 | Database       | `cylinder`      | 160 × 96  | Stored data                             |
 | Preparation    | `hexagon`       | 200 × 72  | Setting up before a step                |
 | Connector      | `circle`        | 56 × 56   | An on-page jump, labelled with a letter |

@@ -106,7 +106,7 @@ export function StartPanel<C extends string>({
   // Where the tab bar stands, for the phone and short-window sheet to stand on (useChromeFloor, as toasts do).
   const tabBarFloor = useChromeFloor(true, 0, TAB_BAR_SELECTOR);
   const searching = query.trim().length > 0;
-  // A title match leads, under Best Match, lifted out of its group (start-diagramming.md "A title match leads").
+  // A title match leads, under Best Match, lifted out of its group (start-panel.md "A title match leads").
   const { best, groups: results } = searching
     ? liftBestMatch<StartPanelCard, StartPanelResult<C>>(search(query), query)
     : { best: [], groups: [] };
@@ -223,7 +223,7 @@ export function StartPanel<C extends string>({
     // indicator, the one place it still meets the bottom edge.
     <div
       // While a palette popover hangs from the strip the start steps aside, mounted so its search and group are
-      // kept (start-diagramming.md "When it shows"). On its own root, never a wrapper: the start's View Transition
+      // kept (start-panel.md "When it shows"). On its own root, never a wrapper: the start's View Transition
       // names this element, and a `display: contents` wrapper has no box to picture.
       data-start-stepped-aside={paletteOpen || undefined}
       className={`${paletteOpen ? 'hidden' : 'flex'} pointer-events-none absolute inset-0 z-[var(--z-panel)] items-center justify-center p-4 pb-28 pt-[8.5rem] max-sm:z-[var(--z-overlay)] max-sm:items-end max-sm:px-0 max-sm:pb-[calc(var(--start-floor)-8px)] max-sm:pt-20 short-window:z-[var(--z-overlay)] short-window:pb-[var(--start-floor)] short-window:pt-16`}

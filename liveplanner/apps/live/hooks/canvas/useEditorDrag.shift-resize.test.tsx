@@ -16,7 +16,7 @@ import {
   type Element,
   type Tab,
   type TabKind,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import type { DragMode } from '@/lib/canvas';
 import { applyOverlay, localPreview, resetDragPreviewForTests } from '@/lib/drag-preview';
 import { useEditorDrag } from './useEditorDrag';
@@ -98,7 +98,7 @@ function harness(element: Element, kind: TabKind = 'diagram') {
     alignmentGuidesRef: { current: false },
     isPinchingRef: { current: false },
   } as unknown as EditorDragDeps;
-  // The board as drawn: the document with the gesture's preview over it (docs/specs/008-canvas/drag-preview.md).
+  // The board as drawn: the project with the gesture's preview over it (docs/specs/008-canvas/drag-preview.md).
   const shown = () => {
     const o = localPreview();
     return o ? applyOverlay(elements, o) : elements;

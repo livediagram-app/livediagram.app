@@ -46,7 +46,7 @@ const TAB_ACTIVE =
 export function EditorWindow({
   title,
   tabs,
-  document: liveDoc,
+  project: liveDoc,
   viewBox = LANDSCAPE_VIEWBOX,
   playing,
   veil,
@@ -58,7 +58,7 @@ export function EditorWindow({
 }: {
   title: string;
   tabs: TabDef[];
-  document: ReactNode;
+  project: ReactNode;
   // The scene's viewBox: the wide landscape one, or a phone's portrait one for a portrait layout.
   viewBox?: string;
   playing: boolean;

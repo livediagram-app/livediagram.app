@@ -1,5 +1,5 @@
 // The item verbs (docs/specs/026-plan/plan-mode.md "Agents"): list, add, set, move and remove the items a
-// document's Plan boards show, through the item store's routes (docs/specs/026-plan/items.md). An item is
+// project's Plan boards show, through the item store's routes (docs/specs/026-plan/items.md). An item is
 // named by its key ("#12") or an id prefix (resolveItemRef), as people say it.
 
 import { z } from 'zod';
@@ -16,9 +16,9 @@ import { applyItemChanges, type ItemChange } from '../plan/item-changes';
 import { FIELD_HINT } from '../plan/api-refusal';
 import { planListing, resolveListingFilter } from '../plan/plan-listing';
 import { readPlanState, type PlanState } from '../plan/plan-state';
-import { columns, documentOf } from './shared';
+import { columns, projectOf } from './shared';
 
-const docArg = z.string().describe('A name, id prefix or liveplanner URL');
+const projectArg = z.string().describe('A name, id prefix or liveplanner URL');
 const itemArg = z.string().describe('The item, by its number (#12) or an id prefix');
 
 const itemOut = z.object({
@@ -41,23 +41,23 @@ const outOf = (item: Item) => ({
 
 async function planOf(
   ctx: VerbContext,
-  doc: string,
-): Promise<{ documentId: string; state: PlanState }> {
-  const document = await documentOf(ctx, doc);
-  return { documentId: document.id, state: await readPlanState(ctx.api, document.id) };
+  projectRef: string,
+): Promise<{ projectId: string; state: PlanState }> {
+  const project = await projectOf(ctx, projectRef);
+  return { projectId: project.id, state: await readPlanState(ctx.api, project.id) };
 }
 
 // One change through the Plan engine (docs/specs/026-plan/plan-agents.md): names resolved as the MCP resolves
 // them, a refusal as the verb's.
-async function changeOne(ctx: VerbContext, doc: string, change: ItemChange): Promise<Item> {
-  const { documentId, state } = await planOf(ctx, doc);
-  const result = await applyItemChanges(ctx.api, documentId, [change], state);
+async function changeOne(ctx: VerbContext, projectRef: string, change: ItemChange): Promise<Item> {
+  const { projectId, state } = await planOf(ctx, projectRef);
+  const result = await applyItemChanges(ctx.api, projectId, [change], state);
   if (result.refusal)
     throw new VerbRefusal({
       status: 400,
       code: result.refusal.code,
       message: result.refusal.message,
-      hint: 'list the columns, card types and fields with: liveplanner item ls <doc>',
+      hint: 'list the columns, card types and fields with: liveplanner item ls <project>',
     });
   // An add, set or move that was not refused always answers its item.
   return result.touched[0]!;
@@ -94,26 +94,26 @@ const lineOut = z.object({ item: itemOut, text: z.string() });
 
 export const itemLs = defineVerb({
   id: 'item.ls',
-  summary: 'The items of a document',
+  summary: 'The items of a project',
   description:
     'Lists the items Plan boards show: number, type, status and title, narrowed by type or status.',
   behaviour: 'read',
   input: z.object({
-    doc: docArg,
+    project: projectArg,
     type: z.string().optional().describe('Only items of this type (task, note, project...)'),
     status: z.string().optional().describe('Only items with this status (a column)'),
   }),
   output: z.object({ items: z.array(itemOut), boards: z.array(z.string()) }),
   listKey: 'items',
   run: async (ctx, input) => {
-    const { state } = await planOf(ctx, input.doc);
+    const { state } = await planOf(ctx, input.project);
     const filter = resolveListingFilter(state, input);
     if (!filter.ok)
       throw new VerbRefusal({
         status: 400,
         code: filter.code,
         message: filter.message,
-        hint: 'list the columns and card types with: liveplanner item ls <doc>',
+        hint: 'list the columns and card types with: liveplanner item ls <project>',
       });
     const listing = planListing(state, filter);
     const keys = new Map(state.items.map((i) => [i.id, i.key]));
@@ -139,7 +139,7 @@ export const itemLs = defineVerb({
   ],
   quiet: ({ items }) => items.map((i) => `#${i.key}`),
   cli: {
-    positionals: ['doc'],
+    positionals: ['project'],
     examples: [
       'liveplanner item ls "Sprint 14"',
       'liveplanner item ls 3f9c --type task --status new',
@@ -152,21 +152,21 @@ export const itemAdd = defineVerb({
   id: 'item.add',
   summary: 'Add an item',
   description:
-    'Makes an item in a document, at the end of its status column: a title, a type and any fields as key=value.',
+    'Makes an item in a project, at the end of its status column: a title, a type and any fields as key=value.',
   behaviour: 'write',
   input: z.object({
-    doc: docArg,
+    project: projectArg,
     title: z.string().min(1).describe('The title'),
     type: z
       .string()
       .default('task')
-      .describe('project, task, note, idea, action, or a type the document adds'),
+      .describe('project, task, note, idea, action, or a type the project adds'),
     status: z.string().optional().describe('The column it starts in'),
     fields: z.array(z.string()).default([]).describe('More fields, as key=value'),
   }),
   output: lineOut,
   run: async (ctx, input) => {
-    const item = await changeOne(ctx, input.doc, {
+    const item = await changeOne(ctx, input.project, {
       op: 'add',
       title: input.title,
       type: input.type,
@@ -178,7 +178,7 @@ export const itemAdd = defineVerb({
   text: ({ text }) => [text],
   quiet: ({ item }) => [`#${item.key}`],
   cli: {
-    positionals: ['doc', 'title'],
+    positionals: ['project', 'title'],
     examples: [
       'liveplanner item add "Sprint 14" "Fix login" --type task --status todo --fields labels=bug',
       'liveplanner item add 3f9c "Write the brief" --fields priority=high labels=docs',
@@ -193,7 +193,7 @@ export const itemSet = defineVerb({
   description: 'Sets fields of an item as key=value, clears fields by name, or changes its type.',
   behaviour: 'write',
   input: z.object({
-    doc: docArg,
+    project: projectArg,
     item: itemArg,
     fields: z.array(z.string()).default([]).describe('Fields to set, as key=value'),
     clear: z.array(z.string()).default([]).describe('Fields to clear, by name'),
@@ -201,7 +201,7 @@ export const itemSet = defineVerb({
   }),
   output: lineOut,
   run: async (ctx, input) => {
-    const item = await changeOne(ctx, input.doc, {
+    const item = await changeOne(ctx, input.project, {
       op: 'set',
       item: input.item,
       fields: fieldsFromPairs(input.fields),
@@ -213,7 +213,7 @@ export const itemSet = defineVerb({
   text: ({ text }) => [text],
   quiet: ({ item }) => [`#${item.key}`],
   cli: {
-    positionals: ['doc', 'item'],
+    positionals: ['project', 'item'],
     examples: [
       'liveplanner item set "Sprint 14" "#12" --fields priority=urgent',
       'liveplanner item set 3f9c 12 --clear due --type project',
@@ -229,14 +229,14 @@ export const itemMove = defineVerb({
     "Moves an item to a status (a board's column), at the end of it or before another item.",
   behaviour: 'write',
   input: z.object({
-    doc: docArg,
+    project: projectArg,
     item: itemArg,
     status: z.string().describe('The status (column) it moves to'),
     before: z.string().optional().describe('The item it lands before, by number or id prefix'),
   }),
   output: lineOut,
   run: async (ctx, input) => {
-    const item = await changeOne(ctx, input.doc, {
+    const item = await changeOne(ctx, input.project, {
       op: 'move',
       item: input.item,
       status: input.status,
@@ -247,7 +247,7 @@ export const itemMove = defineVerb({
   text: ({ text }) => [text],
   quiet: ({ item }) => [`#${item.key}`],
   cli: {
-    positionals: ['doc', 'item', 'status'],
+    positionals: ['project', 'item', 'status'],
     examples: [
       'liveplanner item move "Sprint 14" "#12" done',
       'liveplanner item move 3f9c 12 doing --before 9',
@@ -259,35 +259,35 @@ export const itemMove = defineVerb({
 export const itemRm = defineVerb({
   id: 'item.rm',
   summary: 'Delete an item',
-  description: 'Deletes an item from the document; its number is not used again.',
+  description: 'Deletes an item from the project; its number is not used again.',
   behaviour: 'destructive',
-  input: z.object({ doc: docArg, item: itemArg }),
+  input: z.object({ project: projectArg, item: itemArg }),
   output: z.object({ id: z.string(), text: z.string() }),
   run: async (ctx, input) => {
-    const { documentId, state } = await planOf(ctx, input.doc);
+    const { projectId, state } = await planOf(ctx, input.project);
     const target = resolveItem(input.item, state.items);
     if (!target.ok)
       throw new VerbRefusal({
         status: 404,
         code: target.code,
         message: target.message,
-        hint: 'list them with: liveplanner item ls <doc>',
+        hint: 'list them with: liveplanner item ls <project>',
       });
     const id = target.item.id;
-    const result = await applyItemChanges(ctx.api, documentId, [{ op: 'delete', item: id }], state);
+    const result = await applyItemChanges(ctx.api, projectId, [{ op: 'delete', item: id }], state);
     if (result.refusal)
       throw new VerbRefusal({
         status: 400,
         code: result.refusal.code,
         message: result.refusal.message,
-        hint: 'list them with: liveplanner item ls <doc>',
+        hint: 'list them with: liveplanner item ls <project>',
       });
     return { id, text: `- ${itemSummary(target.item)}` };
   },
   text: ({ text }) => [text],
   quiet: ({ id }) => [id],
   cli: {
-    positionals: ['doc', 'item'],
+    positionals: ['project', 'item'],
     examples: ['liveplanner item rm "Sprint 14" "#12"', 'liveplanner item rm 3f9c 12'],
     prints: '- #<number> [<type>] <title>',
   },

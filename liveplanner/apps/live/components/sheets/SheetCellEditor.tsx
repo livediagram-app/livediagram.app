@@ -9,7 +9,7 @@ import { FUNCTION_DOCS, formatA1 } from '@liveplanner/sheets';
 import { argumentAt, argumentSlot, refSpans } from './formula-assist';
 import { useSheetController } from './sheet-controller';
 import { cellBox, mergeAt } from './sheet-geometry';
-import { cellColours, isLightColor, resolveFontStack } from '@liveplanner/document';
+import { cellColours, isLightColor, resolveFontStack } from '@liveplanner/project';
 import { fontPx } from './SheetCells';
 import type { FormulaInput } from './useFormulaInput';
 

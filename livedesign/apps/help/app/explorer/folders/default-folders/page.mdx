@@ -1,0 +1,69 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { UseAsDefaultScene } from '@/components/illustrations/explorer-structure';
+
+export const metadata = helpMetadata({
+  title: 'Default Folders',
+  description:
+    'Send new diagrams, whiteboards, Pages documents, Plan, retro and Kanban boards to a folder you choose, set from menus or Settings.',
+  path: '/help/explorer/folders/default-folders/',
+});
+
+<ArticleLayout
+  title="Default Folders"
+  description="Choose where each kind of new document lands when you create it without picking a place."
+  categoryTitle="Explorer"
+  categorySlug="explorer"
+  parentArticle={{ title: 'Folders', slug: 'folders' }}
+  subArticles={getSubArticles('folders').filter((a) => a.slug !== 'default-folders')}
+>
+
+A **default folder** is where your new documents go when you create one without choosing a place. You can keep one for each of these, listed under **New documents that open as**:
+
+- **Diagrams**: documents that open in Diagram mode.
+- **Whiteboards**: documents that open in Draw mode.
+- **Sessions**: documents that open in Workshop mode.
+- **Pages documents**: documents that open in Pages mode.
+- **Plan boards**: documents that open in Plan mode.
+- **Retrospectives**: documents made from any retrospective template.
+- **Kanban boards**: documents made from the Kanban template.
+
+A document goes to the most specific default that fits it: a retrospective's or a Kanban board's first, then the one for the mode it opens in. So a retrospective goes to your Retrospectives folder even if you also have one for Diagrams. With none set, it lands in My Documents. Your defaults are your own: teammates choose theirs. Default folders are stored with your account or guest identity, not in the browser.
+
+## Setting a default from a folder
+
+Open a folder's menu (its **⋯** button, or right-click the folder) and choose **Use as Default for**. Under **New documents that open as**, tick the kinds of document that should land there; the list stays open so you can tick several in one go. Each kind points at one folder, so ticking it here moves it from wherever it was; unticking it sends those documents back to My Documents.
+
+<Figure caption="Use as Default for, in a folder's menu: tick each kind of new document that should land in this folder.">
+  <UseAsDefaultScene />
+</Figure>
+
+**My Documents** has the same menu: a ticked entry there means those documents land in My Documents. Choosing an unticked one clears its default folder.
+
+You can use a team's folders too, as long as you are a member of the team. A team's own top level cannot be a default: create inside the team to put a document there.
+
+## Seeing your defaults
+
+A folder that is one of your defaults shows a small mark after its name, in the sidebar, the Explorer's lists and cards, and the editor's Explorer panel: the icon of each kind it receives (two at most, then **+N**). Hover it to read, for example, "Default folder for new whiteboards".
+
+## When you create a document
+
+The New Document wizard never asks where a document goes: choose what you are making, and the document is filed in your default folder for it, or in My Documents when you have none. Pick a template on its start afterwards, and a document made a moment ago moves to that template's default folder, if it has one (a toast says so).
+
+- Starting from inside a folder or a team keeps you there: that folder wins over your default.
+- To file one document somewhere else, use **Change Folder** on it afterwards.
+- While you try things out as a guest, new documents are saved in this browser instead, so they have no folder until you move them to your account.
+
+## In Settings
+
+**Settings > Documents > Default Folders** lists every kind with the folder it goes to, or My Documents. **Change** picks a folder; **Clear** sends that kind back to My Documents.
+
+If a default folder has been deleted, or belongs to a team you have left, the row says so, for example "Workshops (deleted), using My Documents", and new documents go to the next default that fits, or My Documents. Deleting a folder that is one of your defaults warns you first.
+
+<Tip>
+  Defaults only decide where a new document starts. Moving a document later, or changing a default,
+  never moves documents you already have.
+</Tip>
+
+</ArticleLayout>

@@ -1,20 +1,20 @@
-// A pull file read as a document, offline and read-only (docs/specs/015-api/blueprints/cli.md "Addressing", CLI70):
-// `document view`, `tab ls` and `tab view` render it with the views the api renders, with each tab's pulled revision;
+// A pull file read as a project, offline and read-only (docs/specs/015-api/blueprints/cli.md "Addressing", CLI70):
+// `project view`, `tab ls` and `tab view` render it with the views the api renders, with each tab's pulled revision;
 // any other verb given one exits 2. No host, profile or credential is read.
 
 import { resolveTab, tabListOf, type Verb } from '@liveplanner/agent-verbs';
 import { ApiError } from '@liveplanner/api-client';
-import { headerFactsOf, overviewView, renderView } from '@liveplanner/document-views';
+import { headerFactsOf, overviewView, renderView } from '@liveplanner/project-views';
 import { INVALID_VIEW_VALUE_ERROR, TAB_VIEW_NAMES, VIEW_REQUIRED } from '@liveplanner/api-schema';
 import type { CliIo } from '../io';
 import { CliError } from '../output/cli-error';
 import { EXIT } from '../output/exit-codes';
 import { parsePullFile, PULL_FILE_SUFFIX, type PullFile } from '../sync/pull-file';
 
-const READABLE = ['document.view', 'tab.ls', 'tab.view'];
+const READABLE = ['project.view', 'tab.ls', 'tab.view'];
 
 export type ViewInput = {
-  doc: string;
+  project: string;
   tab?: string;
   // Defaulted to the outline by the verb's input.
   view: (typeof TAB_VIEW_NAMES)[number];
@@ -22,36 +22,35 @@ export type ViewInput = {
   text?: string;
   budget?: number;
   only?: string;
-  coarse?: boolean;
   style?: boolean;
   all?: boolean;
   json?: boolean;
   raw?: boolean;
 };
 
-// The pull file a verb's `<doc>` names, or null when it names none (a name, a prefix, a link).
+// The pull file a verb's `<project>` names, or null when it names none (a name, a prefix, a link).
 export async function pullFileOf(
   io: CliIo,
   input: Record<string, unknown>,
 ): Promise<{ path: string; file: PullFile } | null> {
-  const doc = input.doc;
-  if (typeof doc !== 'string' || !doc.endsWith(PULL_FILE_SUFFIX)) return null;
-  const text = await io.files.read(doc);
+  const ref = input.project;
+  if (typeof ref !== 'string' || !ref.endsWith(PULL_FILE_SUFFIX)) return null;
+  const text = await io.files.read(ref);
   if (text === null) return null;
   const parsed = parsePullFile(text);
   if (!parsed.ok)
     throw new CliError({
       exit: EXIT.rejected,
       code: 'invalid_pull_file',
-      message: `${doc}: ${parsed.message}`,
+      message: `${ref}: ${parsed.message}`,
     });
-  return { path: doc, file: parsed.file };
+  return { path: ref, file: parsed.file };
 }
 
-const tabIdsOf = (file: PullFile) => file.document.tabs.map((t) => t.id);
+const tabIdsOf = (file: PullFile) => file.project.tabs.map((t) => t.id);
 
 const summariesOf = (file: PullFile) =>
-  file.document.tabs.map((t, orderIndex) => ({ id: t.id, name: t.name, orderIndex }));
+  file.project.tabs.map((t, orderIndex) => ({ id: t.id, name: t.name, orderIndex }));
 
 export function pullFileView(
   verb: Verb,
@@ -64,21 +63,21 @@ export function pullFileView(
     throw new CliError({
       exit: EXIT.usage,
       code: 'usage',
-      message: `${path} is a pull file: only document view, tab ls and tab view read it`,
-      hint: `name the document instead of the file: ${file.document.id}`,
+      message: `${path} is a pull file: only project view, tab ls and tab view read it`,
+      hint: `name the project instead of the file: ${file.project.id}`,
     });
-  log(`address document file ${path}`);
-  const { document, liveplannerSync: sync } = file;
+  log(`address project file ${path}`);
+  const { project, liveplannerSync: sync } = file;
   if (verb.id === 'tab.ls') return { tabs: tabListOf(summariesOf(file)) };
   const tabIds = tabIdsOf(file);
-  if (verb.id === 'document.view') {
-    const tabs = document.tabs.map((tab) => ({
+  if (verb.id === 'project.view') {
+    const tabs = project.tabs.map((tab) => ({
       id: tab.id,
       outOfScope: false as const,
       facts: headerFactsOf(tab, { rev: sync.tabs[tab.id]?.rev, tabIds }),
     }));
     const result = overviewView(
-      { id: document.id, name: document.name, savedAt: sync.pulledAt },
+      { id: project.id, name: project.name, savedAt: sync.pulledAt },
       tabs,
       {
         now,
@@ -87,8 +86,8 @@ export function pullFileView(
     );
     return { text: result.text };
   }
-  const summary = resolveTab(summariesOf(file), input.tab, input.doc, log);
-  const tab = document.tabs.find((t) => t.id === summary.id)!;
+  const summary = resolveTab(summariesOf(file), input.tab, input.project, log);
+  const tab = project.tabs.find((t) => t.id === summary.id)!;
   if (input.raw) return { json: tab };
   const { view } = input;
   // The api refuses a view without the value it needs before it renders; so does this.
@@ -109,7 +108,6 @@ export function pullFileView(
       ...(input.only === undefined ? {} : { only: input.only }),
       ...(input.ref === undefined ? {} : { ref: input.ref }),
       ...(input.text === undefined ? {} : { q: input.text }),
-      ...(input.coarse ? { coarse: true } : {}),
       ...(input.style ? { style: true } : {}),
       ...(input.all ? { all: true } : {}),
     },

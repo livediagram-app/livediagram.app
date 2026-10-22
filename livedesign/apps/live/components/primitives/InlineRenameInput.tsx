@@ -1,0 +1,107 @@
+'use client';
+
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { NAME_MAX_LENGTH } from '@livedesign/document';
+import { useLatest } from '@/hooks/ui/useLatest';
+import { refocusAfterField } from './refocus-after-field';
+
+// Shared inline-rename input used by every "click rename, type a
+// new name, press Enter or click away" interaction in the app
+// (sidebar folder tree, list-view folder row, list-view document
+// row, floating Explorer's folder + document renames). Three near-
+// identical copies of this used to exist; they drifted on focus
+// management and the most fragile copy (the standalone /explorer
+// page) was the one that exposed the focus-bounce bug. Living
+// once, in one file, with one behaviour.
+//
+// Why click-outside instead of blur:
+//
+// The rename usually starts on a click that also unmounts a
+// PortalMenu (the "Rename" option in an ellipsis menu). When the
+// portal unmounts, the focused MenuItem disappears and focus
+// transiently bounces to document.body. In some browsers a blur
+// fires on the newly-mounted input before the user has done
+// anything, the rename commits with the original name, and the
+// input vanishes within one or two frames. That's the "input
+// appears for a split second and disappears" bug.
+//
+// mousedown-outside sidesteps focus entirely: as long as the
+// input is in the DOM, the user can type into it, and the rename
+// ends only on Enter, Escape, or a mousedown outside the input.
+// Focus (via useLayoutEffect, synchronous before paint) is just a
+// UX nicety so the user can type immediately.
+export function InlineRenameInput({
+  initial,
+  onCommit,
+  onCancel,
+  ariaLabel,
+  className,
+}: {
+  initial: string;
+  onCommit: (name: string) => void;
+  onCancel: () => void;
+  // The field's name, as the rows name it ("Rename Q4 Plans"): the label it replaced has gone, and without one
+  // a screen reader heard only "edit text" and the old name. Required, so no row forgets it.
+  ariaLabel: string;
+  className?: string;
+}) {
+  const ref = useRef<HTMLInputElement>(null);
+  const [draft, setDraft] = useState(initial);
+  // draftRef holds the latest draft for the document-level click
+  // handler. That handler is attached once and can't re-close
+  // over a fresh draft on every keystroke without re-binding.
+  const draftRef = useLatest(draft);
+  // Same idea for onCommit: the parent rebuilds it every render
+  // (it closes over the row id / state), and we don't want to
+  // thrash document listeners chasing that identity.
+  const commitRef = useLatest(onCommit);
+
+  useLayoutEffect(() => {
+    const node = ref.current;
+    if (!node) return;
+    node.focus();
+    node.select();
+  }, []);
+
+  useEffect(() => {
+    const handle = (e: MouseEvent) => {
+      const node = ref.current;
+      if (!node) return;
+      if (e.target instanceof Node && !node.contains(e.target)) {
+        commitRef.current(draftRef.current);
+      }
+    };
+    document.addEventListener('mousedown', handle);
+    return () => document.removeEventListener('mousedown', handle);
+  }, [commitRef, draftRef]);
+
+  return (
+    <input
+      ref={ref}
+      value={draft}
+      // Names are capped (docs/specs/006-document/name-length.md). Enforced on the input too, not only on
+      // commit, so the limit is visible as you type rather than silently
+      // eating the end of what you wrote.
+      maxLength={NAME_MAX_LENGTH}
+      aria-label={ariaLabel}
+      onChange={(e) => setDraft(e.target.value)}
+      // A click in the field is for the field. Rows that stay clickable
+      // behind an open rename (the Layers panel keeps its select-on-click
+      // live) would otherwise treat placing the caret as a row click.
+      onClick={(e) => e.stopPropagation()}
+      onKeyDown={(e) => {
+        e.stopPropagation();
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          refocusAfterField(e.currentTarget);
+          onCommit(draft);
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          refocusAfterField(e.currentTarget);
+          onCancel();
+        }
+      }}
+      className={`outline-none focus:border-brand-500 ${className ?? ''}`}
+    />
+  );
+}

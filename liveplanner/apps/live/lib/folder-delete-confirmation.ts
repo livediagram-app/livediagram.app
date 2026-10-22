@@ -16,11 +16,11 @@ type FolderDeleteInput = {
 
 function destination({ parentName, scope }: FolderDeleteInput): string {
   if (parentName !== null) return `"${parentName}"`;
-  return scope === 'team' ? "the team's root" : 'My Documents';
+  return scope === 'team' ? "the team's root" : 'My Projects';
 }
 
 function folderDeleteMessage(input: FolderDeleteInput): string {
-  const lines = [`Its documents and subfolders move to ${destination(input)}.`];
+  const lines = [`Its projects and subfolders move to ${destination(input)}.`];
   const keys = inListOrder(input.defaultKeys ?? []);
   if (keys.length > 0) {
     const nouns = joinNouns(keys.map((k) => defaultKeyEntry(k).noun));

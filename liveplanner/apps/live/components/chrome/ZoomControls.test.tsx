@@ -1,12 +1,9 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ZOOM_OFF_REASON, ZoomControls } from './ZoomControls';
+import { ZoomControls } from './ZoomControls';
 
-const touch = vi.hoisted(() => ({ coarse: false }));
-vi.mock('@/hooks/ui/useCoarsePointer', () => ({ useCoarsePointer: () => touch.coarse }));
-
-// docs/specs/026-plan/plan-board.md "Maximised board", "Zoom stands down": the controls stay, disabled, saying why.
+// docs/specs/029-sheets/sheet.md "Zoom": only a Sheet zooms; elsewhere the zoom buttons are hidden.
 
 afterEach(cleanup);
 
@@ -18,7 +15,7 @@ const handlers = () => ({
 });
 
 describe('ZoomControls', () => {
-  it('zooms while nothing covers the canvas', () => {
+  it('zooms while zoom is shown', () => {
     const h = handlers();
     render(<ZoomControls zoom={1} {...h} />);
     fireEvent.click(screen.getByRole('button', { name: 'Zoom in' }));
@@ -27,45 +24,19 @@ describe('ZoomControls', () => {
     expect(h.onZoomOut).toHaveBeenCalled();
   });
 
-  it('stays in place, disabled, while a Plan element covers the canvas', () => {
-    const h = handlers();
-    render(<ZoomControls zoom={0.94} {...h} zoomOff />);
-    const buttons = screen.getAllByRole('button');
-    // Zoom out, the level, Zoom in and a phone's Fit: all there, all off.
-    expect(buttons.map((b) => b.getAttribute('aria-label'))).toEqual([
-      'Zoom out',
-      'Fit to screen',
-      'Zoom in',
-      'Fit to screen',
+  it('goes entirely when zoom is hidden and there is no Isometric or Zen to offer', () => {
+    const { container } = render(<ZoomControls zoom={1} {...handlers()} zoomHidden />);
+    expect(container.querySelector('[data-zoom-controls]')).toBeNull();
+  });
+
+  it('keeps only Zen, with no leading divider, when zoom is hidden', () => {
+    const { container } = render(
+      <ZoomControls zoom={1} {...handlers()} zoomHidden onToggleZen={vi.fn()} zenActive />,
+    );
+    expect(screen.getAllByRole('button').map((b) => b.getAttribute('aria-label'))).toEqual([
+      'Exit zen mode',
     ]);
-    for (const b of buttons) expect((b as HTMLButtonElement).disabled).toBe(true);
-    expect(screen.getByText('94%')).toBeTruthy();
-    for (const b of buttons) fireEvent.click(b);
-    expect(h.onZoomIn).not.toHaveBeenCalled();
-    expect(h.onFitToScreen).not.toHaveBeenCalled();
-    expect(ZOOM_OFF_REASON).toMatch(/^Zoom is off while/);
-  });
-
-  // docs/specs/026-plan/plan-tabs.md "On a phone": with pinch zoom and zoom off, nothing is left to offer.
-  it('goes on a touch screen while zoom is off, and stays while it is on', () => {
-    const h = handlers();
-    const { container, rerender } = render(<ZoomControls zoom={1} {...h} pinchOnly zoomOff />);
-    expect(container.querySelector('[data-zoom-controls]')).toBeNull();
-    rerender(<ZoomControls zoom={1} {...h} pinchOnly />);
-    expect(screen.getAllByRole('button', { name: 'Fit to screen' }).length).toBeGreaterThan(0);
-  });
-
-  // A tablet is a touch screen too: wide, so the zoom buttons show, but with zoom off it has nothing to offer either.
-  it('goes on a tablet while zoom is off, and stays under a mouse', () => {
-    const h = handlers();
-    touch.coarse = true;
-    const { container, rerender } = render(<ZoomControls zoom={1} {...h} zoomOff />);
-    expect(container.querySelector('[data-zoom-controls]')).toBeNull();
-    rerender(<ZoomControls zoom={1} {...h} />);
-    expect(container.querySelector('[data-zoom-controls]')).not.toBeNull();
-    touch.coarse = false;
-    rerender(<ZoomControls zoom={1} {...h} zoomOff />);
-    expect(container.querySelector('[data-zoom-controls]')).not.toBeNull();
+    expect(container.querySelector('div[aria-hidden]')).toBeNull();
   });
 });
 

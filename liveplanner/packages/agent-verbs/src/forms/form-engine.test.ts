@@ -30,10 +30,10 @@ function api(
     return Response.json(answer);
   };
   const routes: Record<string, unknown> = {
-    '/documents/doc/plan': formPlan(),
-    '/documents/doc/tabs/form': { tab: formTabBody() },
-    '/documents/doc/item-types': record({ ok: true }),
-    '/documents/doc/tabs/form/form-link': link
+    '/projects/doc/plan': formPlan(),
+    '/projects/doc/tabs/form': { tab: formTabBody() },
+    '/projects/doc/item-types': record({ ok: true }),
+    '/projects/doc/tabs/form/form-link': link
       ? record(link)
       : async (r: Request) =>
           r.method === 'GET'
@@ -45,8 +45,8 @@ function api(
                 canPublish: true,
               })
             : record(LINK)(r),
-    '/documents/doc/tabs/form/form': record({ tabId: 'form', rev: 8, name: 'Bug Report' }),
-    '/documents': record({ document: { id: 'new' } }),
+    '/projects/doc/tabs/form/form': record({ tabId: 'form', rev: 8, name: 'Bug Report' }),
+    '/projects': record({ project: { id: 'new' } }),
     ...extra,
   };
   const client = fakeApi(
@@ -76,13 +76,13 @@ describe('readForm', () => {
   });
 
   it('reads the plan, the Form tab and its link, never the other tabs', async () => {
-    // The per-token read limit is 120 a minute: a read whose cost grew with the document's tabs ran into it.
+    // The per-token read limit is 120 a minute: a read whose cost grew with the project's tabs ran into it.
     const { client } = api(LINK);
     await readForm(client, 'doc');
     expect([...client.calls].sort()).toEqual([
-      '/documents/doc/plan',
-      '/documents/doc/tabs/form',
-      '/documents/doc/tabs/form/form-link',
+      '/projects/doc/plan',
+      '/projects/doc/tabs/form',
+      '/projects/doc/tabs/form/form-link',
     ]);
   });
 });
@@ -93,7 +93,7 @@ describe('addForm', () => {
     const r = await addForm(
       client,
       {
-        documentId: 'doc',
+        projectId: 'doc',
         name: 'Lunch Order',
         questions: [{ type: 'single', prompt: 'Main', options: ['Soup', 'Salad'], goesTo: 'Main' }],
         respondsTo: { to: 'board' },
@@ -102,9 +102,9 @@ describe('addForm', () => {
     );
     expect(r.ok).toBe(true);
     expect(writes.map((w) => `${w.method} ${w.path.replace(/tabs\/[^/]+/, 'tabs/:id')}`)).toEqual([
-      'PUT /documents/doc/item-types',
-      'POST /documents/doc/tabs/:id/changesets',
-      'POST /documents/doc/tabs/:id/changesets',
+      'PUT /projects/doc/item-types',
+      'POST /projects/doc/tabs/:id/changesets',
+      'POST /projects/doc/tabs/:id/changesets',
     ]);
     type Body = {
       expectedRev?: number;
@@ -122,7 +122,7 @@ describe('addForm', () => {
     });
   });
 
-  it('makes a document of its own in one request when none is named', async () => {
+  it('makes a project of its own in one request when none is named', async () => {
     const { client, writes } = api();
     const r = await addForm(client, { starter: 'rsvp', name: 'Summer Party' }, 'cli');
     expect(r.ok).toBe(true);
@@ -143,12 +143,12 @@ describe('addForm', () => {
     const { client, writes } = api();
     const r = await addForm(
       client,
-      { documentId: 'doc', questions: [{ type: 'short', prompt: '' }] },
+      { projectId: 'doc', questions: [{ type: 'short', prompt: '' }] },
       'mcp',
     );
     expect(r).toMatchObject({ ok: false, code: 'prompt_empty' });
     expect(
-      await addForm(client, { documentId: 'doc', starter: 'rsvp', questions: [] }, 'mcp'),
+      await addForm(client, { projectId: 'doc', starter: 'rsvp', questions: [] }, 'mcp'),
     ).toMatchObject({
       code: 'starter_and_questions',
     });
@@ -170,7 +170,7 @@ describe('changeForm', () => {
     expect(writes).toEqual([
       {
         method: 'POST',
-        path: '/documents/doc/tabs/form/form',
+        path: '/projects/doc/tabs/form/form',
         body: expect.objectContaining({ rev: 7 }),
       },
     ]);
@@ -205,7 +205,7 @@ describe('changeForm', () => {
 
   it('reads the api’s refusal in agents’ words', async () => {
     const { client } = api(null, {
-      '/documents/doc/tabs/form/form': () =>
+      '/projects/doc/tabs/form/form': () =>
         Response.json({ error: 'form_changed', rev: 9 }, { status: 409 }),
     });
     const r = await changeForm(client, 'doc', undefined, [{ op: 'settings', limit: 20 }], 'mcp');
@@ -234,7 +234,7 @@ describe('shareForm', () => {
       heading: 'Empty',
       sections: [{ id: 's', title: '', questions: [] }],
     });
-    const { client, writes } = api(null, { '/documents/doc/tabs/form': { tab: empty } });
+    const { client, writes } = api(null, { '/projects/doc/tabs/form': { tab: empty } });
     const r = await shareForm(client, 'doc', undefined, 'publish');
     expect(r).toMatchObject({ ok: false, code: 'form_not_ready' });
     expect(!r.ok && r.message).toContain('Add a question');
@@ -254,8 +254,8 @@ describe('a sheet form’s sheet', () => {
     const { client } = api(
       null,
       {
-        '/documents/doc/tabs/form': { tab: formTabBody(sheetForm) },
-        '/documents/doc/tabs/budget': {
+        '/projects/doc/tabs/form': { tab: formTabBody(sheetForm) },
+        '/projects/doc/tabs/budget': {
           tab: { id: 'budget', kind: 'sheet', elements: [], rev: 1 },
         },
       },
@@ -282,7 +282,7 @@ describe('a sheet form’s sheet', () => {
 
   it('is not read when no question is new to it', async () => {
     const sheetForm = { ...bugForm(), sheet: { tabId: 'budget', sheetId: 'sheet_budget' } };
-    const { client } = api(null, { '/documents/doc/tabs/form': { tab: formTabBody(sheetForm) } });
+    const { client } = api(null, { '/projects/doc/tabs/form': { tab: formTabBody(sheetForm) } });
     await changeForm(client, 'doc', undefined, [{ op: 'settings', limit: 10 }], 'mcp');
     expect(client.calls.some((c) => c.includes('/sheets'))).toBe(false);
   });
@@ -300,19 +300,19 @@ describe('the calls’ every path', () => {
     planBoard: { ...presetSetup('bug-triage'), addTypes: ['bug'] },
   });
   const boardRoutes = {
-    '/documents/doc/items': { items: [], rev: 0 },
-    '/documents/doc/tabs/bugs': {
+    '/projects/doc/items': { items: [], rev: 0 },
+    '/projects/doc/tabs/bugs': {
       tab: { id: 'bugs', name: 'Bugs', kind: 'board', rev: 4, elements: [triage()] },
     },
   };
 
-  it('refuses a document with no such Form tab, and a Form tab with no form', async () => {
+  it('refuses a project with no such Form tab, and a Form tab with no form', async () => {
     expect(await readForm(api().client, 'doc', 'Nope')).toMatchObject({
       ok: false,
       code: 'form_tab_unknown',
     });
     const empty = api(null, {
-      '/documents/doc/tabs/form': {
+      '/projects/doc/tabs/form': {
         tab: { id: 'form', name: 'Bug Report', kind: 'form', elements: [], rev: 1 },
       },
     });
@@ -327,7 +327,7 @@ describe('the calls’ every path', () => {
   });
 
   it('lets an api failure past the refusals throw', async () => {
-    const down = api(null, { '/documents/doc/plan': () => new Response('boom', { status: 500 }) });
+    const down = api(null, { '/projects/doc/plan': () => new Response('boom', { status: 500 }) });
     await expect(readForm(down.client, 'doc')).rejects.toThrow();
   });
 
@@ -342,7 +342,7 @@ describe('the calls’ every path', () => {
       code: 'action_unknown',
     });
     expect(
-      await addForm(client, { documentId: 'doc', starter: 'nope' as never }, 'mcp'),
+      await addForm(client, { projectId: 'doc', starter: 'nope' as never }, 'mcp'),
     ).toMatchObject({ code: 'starter_unknown' });
     expect(
       await changeForm(
@@ -358,7 +358,7 @@ describe('the calls’ every path', () => {
   it('builds again from a fresh read when another change to the card types landed first', async () => {
     let tries = 0;
     const { client, writes } = api(null, {
-      '/documents/doc/item-types': () => {
+      '/projects/doc/item-types': () => {
         tries += 1;
         return tries === 1
           ? Response.json({ error: 'item_types_stale' }, { status: 409 })
@@ -367,7 +367,7 @@ describe('the calls’ every path', () => {
     });
     const r = await addForm(
       client,
-      { documentId: 'doc', name: 'Lunch', questions: [{ type: 'short', prompt: 'Main' }] },
+      { projectId: 'doc', name: 'Lunch', questions: [{ type: 'short', prompt: 'Main' }] },
       'mcp',
     );
     expect(r.ok).toBe(true);
@@ -390,7 +390,7 @@ describe('the calls’ every path', () => {
 
   it('refuses a card types save the api refuses', async () => {
     const { client } = api(null, {
-      '/documents/doc/item-types': () =>
+      '/projects/doc/item-types': () =>
         Response.json({ error: 'item_types_invalid' }, { status: 400 }),
     });
     const r = await changeForm(
@@ -407,13 +407,13 @@ describe('the calls’ every path', () => {
     const { client, writes } = api(null, boardRoutes);
     const bug = await addForm(
       client,
-      { documentId: 'doc', starter: 'bug-report', respondsTo: { to: 'board', board: 'Bugs' } },
+      { projectId: 'doc', starter: 'bug-report', respondsTo: { to: 'board', board: 'Bugs' } },
       'mcp',
     );
     expect(bug.ok && bug.reading.respondsTo).toMatchObject({ board: 'Bugs', cardType: 'Bug' });
     const blank = await addForm(
       client,
-      { documentId: 'doc', starter: 'blank', theme: 'forest' },
+      { projectId: 'doc', starter: 'blank', theme: 'forest' },
       'mcp',
     );
     expect(blank.ok && blank.reading.respondsTo).toEqual({ to: 'nowhere' });
@@ -422,7 +422,7 @@ describe('the calls’ every path', () => {
     const feature = await addForm(
       client,
       {
-        documentId: 'doc',
+        projectId: 'doc',
         starter: 'feature-request',
         respondsTo: { to: 'board', board: 'Bugs', cardType: 'Bug' },
       },
@@ -432,7 +432,7 @@ describe('the calls’ every path', () => {
     expect(
       await addForm(
         client,
-        { documentId: 'doc', starter: 'contact', respondsTo: { to: 'board', board: 'Nope' } },
+        { projectId: 'doc', starter: 'contact', respondsTo: { to: 'board', board: 'Nope' } },
         'mcp',
       ),
     ).toMatchObject({ code: 'board_unknown' });
@@ -443,7 +443,7 @@ describe('the calls’ every path', () => {
     const r = await addForm(
       ok.client,
       {
-        documentId: 'doc',
+        projectId: 'doc',
         name: 'RSVP',
         questions: [{ type: 'short', prompt: 'Name' }],
         respondsTo: { to: 'board', board: 'Bugs', cardType: 'Task' },
@@ -455,7 +455,7 @@ describe('the calls’ every path', () => {
     const f = await addForm(
       failing.client,
       {
-        documentId: 'doc',
+        projectId: 'doc',
         name: 'RSVP',
         questions: [{ type: 'short', prompt: 'Name' }],
         respondsTo: { to: 'board', board: 'Bugs', cardType: 'Task' },
@@ -470,7 +470,7 @@ describe('the calls’ every path', () => {
     const r = await addForm(
       client,
       {
-        documentId: 'doc',
+        projectId: 'doc',
         name: 'Hiring',
         description: 'Apply here',
         sections: [
@@ -502,7 +502,7 @@ describe('the calls’ every path', () => {
     const firstOnly = await addForm(
       client,
       {
-        documentId: 'doc',
+        projectId: 'doc',
         sections: [{ description: 'Hello', questions: [{ type: 'short', prompt: 'Q' }] }],
       },
       'mcp',
@@ -511,7 +511,7 @@ describe('the calls’ every path', () => {
     const afterQuestions = await addForm(
       client,
       {
-        documentId: 'doc',
+        projectId: 'doc',
         questions: [{ type: 'short', prompt: 'Q' }],
         sections: [{ questions: [{ type: 'short', prompt: 'R' }] }],
       },
@@ -539,13 +539,13 @@ describe('the calls’ every path', () => {
       },
     ];
     for (const input of bad)
-      expect(await addForm(client, { documentId: 'doc', ...input }, 'mcp')).toMatchObject({
+      expect(await addForm(client, { projectId: 'doc', ...input }, 'mcp')).toMatchObject({
         ok: false,
       });
     expect(writes).toEqual([]);
   });
 
-  it('makes a new document with no card types to bring when its form needs none', async () => {
+  it('makes a new project with no card types to bring when its form needs none', async () => {
     const { client, writes } = api();
     const r = await addForm(client, { name: 'Blank', starter: 'blank' }, 'mcp');
     expect(r.ok).toBe(true);
@@ -592,7 +592,7 @@ describe('the calls’ every path', () => {
 
   it('refuses a publish the api refuses, in its words', async () => {
     const { client } = api(null, {
-      '/documents/doc/tabs/form/form-link': (r: Request) =>
+      '/projects/doc/tabs/form/form-link': (r: Request) =>
         r.method === 'GET'
           ? Response.json({
               link: null,
@@ -611,8 +611,8 @@ describe('the calls’ every path', () => {
 describe('the last paths', () => {
   const sheetForm = { ...bugForm(), sheet: { tabId: 'budget', sheetId: 'sheet_budget' } };
   const routesFor = (form = sheetForm) => ({
-    '/documents/doc/tabs/form': { tab: formTabBody(form) },
-    '/documents/doc/tabs/budget': { tab: { id: 'budget', kind: 'sheet', elements: [], rev: 1 } },
+    '/projects/doc/tabs/form': { tab: formTabBody(form) },
+    '/projects/doc/tabs/budget': { tab: { id: 'budget', kind: 'sheet', elements: [], rev: 1 } },
   });
 
   it('adds one column, said as one, and nothing to a sheet that has every header', async () => {
@@ -654,12 +654,12 @@ describe('the last paths', () => {
     expect(r.ok && r.made).toEqual(["the sheet's new columns are written by the first response"]);
   });
 
-  it('keeps a first section’s description that matches the form’s, and a new document’s card types', async () => {
+  it('keeps a first section’s description that matches the form’s, and a new project’s card types', async () => {
     const { client, writes } = api();
     const same = await addForm(
       client,
       {
-        documentId: 'doc',
+        projectId: 'doc',
         description: 'Hi',
         sections: [{ description: 'Hi', questions: [{ type: 'short', prompt: 'Q' }] }],
       },
@@ -673,7 +673,7 @@ describe('the last paths', () => {
   it('builds a change again when the card types moved first', async () => {
     let tries = 0;
     const { client } = api(null, {
-      '/documents/doc/item-types': () => {
+      '/projects/doc/item-types': () => {
         tries += 1;
         return tries === 1
           ? Response.json({ error: 'item_types_stale' }, { status: 409 })
@@ -700,7 +700,7 @@ describe('a sheet the form makes or switches to', () => {
       ]),
     ]);
     // A Sheet tab's changeset makes its sheet, as the api does for a marked Sheet element.
-    const newTab = /^\/documents\/doc\/tabs\/[0-9a-f-]{36}$/;
+    const newTab = /^\/projects\/doc\/tabs\/[0-9a-f-]{36}$/;
     const routes = new Proxy(server.routes, {
       has: (t, k: string) => k in t || k.endsWith('/changesets') || newTab.test(k),
       get: (t, k: string) =>
@@ -723,7 +723,7 @@ describe('a sheet the form makes or switches to', () => {
     const { client } = api(
       null,
       {
-        '/documents/doc/tabs/budget': {
+        '/projects/doc/tabs/budget': {
           tab: { id: 'budget', kind: 'sheet', elements: [], rev: 1 },
         },
       },

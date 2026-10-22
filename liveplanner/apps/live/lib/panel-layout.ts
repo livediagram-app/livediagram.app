@@ -23,7 +23,6 @@ export type PanelCorner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-rig
 // unknown id.
 export type PanelId =
   | 'collaborate'
-  | 'ai'
   | 'minimap'
   // Format Panel (docs/specs/008-canvas/format-panel.md): what the painter copies, present only while the Format
   // tool is.
@@ -36,7 +35,7 @@ export const PANEL_CORNERS: readonly PanelCorner[] = [
   'bottom-right',
 ];
 
-export const PANEL_IDS: readonly PanelId[] = ['collaborate', 'ai', 'minimap', 'format'];
+export const PANEL_IDS: readonly PanelId[] = ['collaborate', 'minimap', 'format'];
 
 // Internal: a free panel's pixel position. Not exported — callers pass
 // plain { x, y } object literals to freePanel().
@@ -58,7 +57,6 @@ export const DEFAULT_PANEL_CORNER: Record<PanelId, PanelCorner> = {
   // Collaborate (docs/specs/012-collaboration/assigned-actions.md §5): a popover over its cluster
   // button, so its corner is only where a stored layout falls back to.
   collaborate: 'bottom-right',
-  ai: 'bottom-right',
   minimap: 'bottom-left',
   // The tool panels: bottom-right, above the bottom cluster. Each exists only while its tool does, so it joins and
   // leaves its corner stack.
@@ -79,7 +77,7 @@ export function defaultPanelLayout(): PanelLayout {
   // Order within a corner matters (it's the stack order); list them in
   // the order they stacked historically rather than PANEL_IDS order.
   corners['bottom-left'] = ['minimap'];
-  corners['bottom-right'] = ['collaborate', 'ai'];
+  corners['bottom-right'] = ['collaborate'];
   return { corners, free: {} };
 }
 

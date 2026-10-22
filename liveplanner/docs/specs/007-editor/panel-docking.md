@@ -1,6 +1,6 @@
 # Panel corner docking
 
-The editor's corner panels (AI, Minimap and the tool panels) each
+The editor's corner panels (Minimap and the tool panels) each
 ship pinned to a fixed corner (see [Canvas and palette](../008-canvas/canvas-and-palette.md)). This spec lets
 the user **choose which corner each panel sits in**, drag a panel between corners with a
 **snap-to-corner** affordance, **stack** more than one panel in the same corner, and have
@@ -8,7 +8,7 @@ that layout **persist in the browser** so a reload restores their arrangement.
 
 ## Why
 
-Without docking, corners are fixed: the AI panel is always in one corner, the Minimap always
+Without docking, corners are fixed: the Format panel is always in one corner, the Minimap always
 bottom-left. A left-handed user, or one whose content lives on the right, can drag a panel away but it
 snaps back on reload and there is no guidance toward a tidy resting spot. Letting people
 park each panel where it suits them — and remembering it — makes the chrome feel like
@@ -25,7 +25,7 @@ theirs without adding a settings screen.
   back to the button; Escape elsewhere (the canvas, deselecting) leaves it open, as a companion to the canvas. Until
   then Escape did nothing in them, so a keyboard user in Find a Card's field could not leave it. **Zen mode** ([Zen mode](zen-mode.md)) still hides
   all chrome; while it is on the docking system is inert.
-- **Participating panels:** AI, Minimap, and the tool panels (Format), every corner panel
+- **Participating panels:** Minimap and the tool panels (Format), every corner panel
   built on the shared `MovablePanel`.
 - **Zoom controls stay fixed** bottom-right (they are not a `MovablePanel`; zen mode and
   the body-height measurement both rely on that pin). They are not dockable, and the
@@ -49,14 +49,14 @@ the corner. No manual re-measuring — the layout falls out of the flexbox.
 
 When the user has never arranged panels, the corners match today's defaults:
 
-| Corner         | Panels (top → bottom)                                         |
-| -------------- | ------------------------------------------------------------- |
-| `top-left`     | _(empty; the menu button)_                                    |
-| `top-right`    | _(empty; the palette strip's end)_                            |
-| `bottom-left`  | Minimap                                                       |
-| `bottom-right` | AI, tool panels, above the bottom cluster (zoom controls pin) |
+| Corner         | Panels (top → bottom)                                     |
+| -------------- | --------------------------------------------------------- |
+| `top-left`     | _(empty; the menu button)_                                |
+| `top-right`    | _(empty; the palette strip's end)_                        |
+| `bottom-left`  | Minimap                                                   |
+| `bottom-right` | tool panels, above the bottom cluster (zoom controls pin) |
 
-The AI panel and the tool panels (Format) open bottom-right, stacked
+The tool panels (Format) open bottom-right, stacked
 upwards from just above the bottom cluster, where the controls they set sit within reach of the canvas they
 act on, not top-right under the palette strip, where they hid its end and opened over a template's title. A panel
 the user has docked or placed keeps its spot; only the home moves.
@@ -103,7 +103,7 @@ publishing only the constant would have left that split in place.
 
 ## Collapse to banner
 
-A collapsible corner panel (the Map, the AI panel, the tool panels) has a **collapse button** in its
+A collapsible corner panel (the Map, the tool panels) has a **collapse button** in its
 header. It hides the body and leaves the title row in place as a banner, so the way back is always
 in view. Its glyph flips between a dash (collapse) and a plus (expand). A panel starts expanded on
 a desktop and collapsed on a phone, and stays as set until pressed again. A panel that is not
@@ -127,7 +127,7 @@ type PanelCorner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 // layout naming it is read like any unknown id. One panel is NOT always available — it exists only while
 // its mode is running, so it joins and leaves its
 // corner stack rather than sitting in it: 'format' (docs/specs/008-canvas/format-panel.md, what the painter copies).
-type PanelId = 'collaborate' | 'ai' | 'minimap' | 'format';
+type PanelId = 'collaborate' | 'minimap' | 'format';
 
 type PanelLayout = {
   // Ordered stack per corner. Order is top→bottom (top corners) /

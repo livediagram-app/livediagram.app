@@ -10,7 +10,7 @@ import { FEATURE_ICONS } from './featureIcons';
 //
 // `ArticleCard` resolves a glyph in three steps: the article's own entry in
 // SUPPORT_ARTICLE_ICONS, then any FEATURE_ICONS entry sharing its slug, then one
-// generic document glyph. That last step is why this needs a test — 13 of the 40
+// generic project glyph. That last step is why this needs a test — 13 of the 40
 // icon-showing support cards sat on it, a third of the grid drawing the same
 // picture, and nothing at runtime can tell the difference between "no icon yet"
 // and "icon on purpose". A card added tomorrow lands there silently.
@@ -61,7 +61,7 @@ describe('support card icons', () => {
     expect(supportCards.length).toBeGreaterThan(20);
   });
 
-  it('gives every support card a glyph of its own, not the generic document', () => {
+  it('gives every support card a glyph of its own, not the generic project', () => {
     // Either map satisfies this, because either one satisfies ArticleCard: a
     // handful of slugs exist in both halves of the help centre and the feature
     // glyph is the right drawing for them.

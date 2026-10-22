@@ -1,5 +1,5 @@
 // Plan cards as formulas read them (docs/specs/029-sheets/formulas.md "Plan cards"). Structural, so the engine never
-// imports the items package: the editor, the api and MCP build a CardSource from the document's items and types.
+// imports the items package: the editor, the api and MCP build a CardSource from the project's items and types.
 import type { Scalar } from './formula/values';
 
 export type CardRow = { key: number };

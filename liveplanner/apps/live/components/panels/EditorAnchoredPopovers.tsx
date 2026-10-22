@@ -2,13 +2,13 @@
 
 import { useCloseVanishedDialogs } from '@/components/dialogs/useCloseVanishedDialogs';
 import dynamic from 'next/dynamic';
-import { apiSetDocumentFolder } from '@/lib/api-client';
-import { elementActions, isBoxed, threadAt } from '@liveplanner/document';
+import { apiSetProjectFolder } from '@/lib/api-client';
+import { elementActions, isBoxed, threadAt } from '@liveplanner/project';
 
 import { track } from '@/lib/telemetry';
 import { canonicalNote, noteFieldsEqual } from '@/lib/note-value';
 import { commentPersisters } from '@/lib/comment-persistence';
-import { useEditorContext } from '@/app/document/[id]/EditorContext';
+import { useEditorContext } from '@/app/project/[id]/EditorContext';
 import { cellCommentAnchorSelector } from '@/hooks/sheets/sheet-comments-context';
 
 const CommentThreadPopover = dynamic(
@@ -41,7 +41,7 @@ export function EditorAnchoredPopovers() {
     addComment,
     isReadOnly,
     can,
-    documentId,
+    projectId,
     selfParticipant,
     sessionShareCode,
     deleteComment,
@@ -64,22 +64,22 @@ export function EditorAnchoredPopovers() {
     linkedActions,
     deleteAction,
     teams,
-    clerkUserId,
-    setDocumentTeamId,
-    clerkDisplayName,
-    documentTeamId,
+    accountUserId,
+    setProjectTeamId,
+    accountDisplayName,
+    projectTeamId,
     emailEnabled,
   } = useEditorContext();
 
-  // The assigner/viewer identity for actions (docs/specs/012-collaboration/assigned-actions.md): the Clerk
+  // The assigner/viewer identity for actions (docs/specs/012-collaboration/assigned-actions.md): the
   // account, or the guest participant identity — guests can self-assign.
-  const actionSelfId = clerkUserId ?? selfParticipant.id;
-  const actionSelfName = clerkDisplayName ?? selfParticipant.name;
+  const actionSelfId = accountUserId ?? selfParticipant.id;
+  const actionSelfName = accountDisplayName ?? selfParticipant.name;
   // A read-only session has no autosave, so its comment changes go through the comment endpoints; an editor's ride
   // the room and its save (lib/comment-persistence.ts, shared with the Comment panel).
   const persist = commentPersisters({
     readOnly: isReadOnly,
-    documentId,
+    projectId,
     tabId: activeTab.id,
     selfId: selfParticipant.id,
     shareCode: sessionShareCode,
@@ -211,25 +211,25 @@ export function EditorAnchoredPopovers() {
                 // A card's title names the LIST, not each action on it.
                 elementLabel={cardTarget ? null : targetLabel || null}
                 teams={teams}
-                ownerId={clerkUserId ?? null}
+                ownerId={accountUserId ?? null}
                 selfUserId={actionSelfId}
                 selfName={actionSelfName}
-                documentId={documentId}
-                documentTeamId={documentTeamId}
+                projectId={projectId}
+                projectTeamId={projectTeamId}
                 emailEnabled={emailEnabled}
-                // Inline personal-document fix (docs/specs/012-collaboration/assigned-actions.md §2): file the document
+                // Inline personal-project fix (docs/specs/012-collaboration/assigned-actions.md §2): file the project
                 // into the picked team's library root so the picker can offer
                 // that team's members without an Explorer round-trip. The
-                // server enforces the docs/specs/013-workspace/team-shared-documents.md placement rules; on success the
+                // server enforces the docs/specs/013-workspace/team-shared-projects.md placement rules; on success the
                 // local team id flips and the member fetch re-runs.
                 onMoveToTeam={async (teamId) => {
-                  if (!clerkUserId || !documentId) return false;
+                  if (!accountUserId || !projectId) return false;
                   try {
-                    await apiSetDocumentFolder(clerkUserId, documentId, null, teamId);
+                    await apiSetProjectFolder(accountUserId, projectId, null, teamId);
                   } catch {
                     return false;
                   }
-                  setDocumentTeamId(teamId);
+                  setProjectTeamId(teamId);
                   return true;
                 }}
                 onSubmit={(input) => saveAction(target.id, input, assignActionId)}

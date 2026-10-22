@@ -2,7 +2,7 @@
 //
 // The guest `X-Owner-Id` header is a bearer value that leaks to collaborators
 // (presence frames, comment authors), and the REST path trusted it with no
-// proof — so a harvested id (a guest UUID, OR a signed-up user's Clerk `sub`
+// proof — so a harvested id (a guest UUID, OR a signed-up user's account `sub`
 // presented via the header fallback) could be used to act as that owner. The
 // fix: on owner-scoped routes, a presented `X-Owner-Id` must carry a valid
 // HMAC signature (`X-Owner-Sig`, verified against `GUEST_ID_HMAC_SECRET` via
@@ -44,26 +44,26 @@ export function isLegacyGuestEra(
 // is on. Public / auth-bootstrap routes are deliberately excluded: `guest-id`
 // (mints the id), `share` (share-code gated), `migrate` (verifies its own
 // signature), `events` / `telemetry` / `capabilities` / `unfurl` (no owner),
-// and the Clerk-only `account` / `teams` / `tokens`.
+// and the signed-in only `account` / `teams` / `tokens`.
 export const OWNER_SCOPED_SEGMENTS = new Set([
-  'documents',
+  'projects',
   'folders',
   'custom-themes',
   'participants',
   'preferences',
   'shared',
-  // A document's History and Home's unread count are keyed on the resolved owner and return
-  // document names + comment text, so a harvested guest id must not read them.
+  // A project's History and Home's unread count are keyed on the resolved owner and return
+  // project names + comment text, so a harvested guest id must not read them.
   'timeline',
   // Same shape as the timeline: actions + comment threads (names, text)
-  // keyed on the resolved owner, and the owner's starred documents.
+  // keyed on the resolved owner, and the owner's starred projects.
   'activity',
   'favourites',
   // A person's tags and what they put them on (docs/specs/013-workspace/tags.md).
   'tags',
   // Explorer Home: the person's opens, own history and others' actions, keyed on the owner.
   'home',
-  // The Trash lists deleted documents' names and restores / purges them.
+  // The Trash lists deleted projects' names and restores / purges them.
   'trash',
   // A person's default folders (docs/specs/013-workspace/default-folders.md).
   'placement-defaults',

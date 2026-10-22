@@ -1,44 +1,37 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { EmbeddedDocument } from '@/components/illustrations/collaboration';
 import { ShareEmbedMenu } from '@/components/illustrations/sharing';
 
 export const metadata = helpMetadata({
   title: 'Embeds',
   description:
-    'Embed a live view of a document in a wiki, doc, or any page with a copy-paste iframe snippet, read-only or editable depending on the link.',
+    'Embed a live view of a project in a wiki, doc, or any page with a copy-paste iframe snippet, read-only or editable depending on the link.',
   path: '/help/collaboration/sharing/embeds/',
 });
 
-<ArticleLayout title="Embeds" description="Put a live document inside another page with a ready-made embed snippet." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Sharing and Embeds", slug: "sharing" }} subArticles={getSubArticles("sharing").filter((a) => a.slug !== "embeds")}>
+<ArticleLayout title="Embeds" description="Put a live project inside another page with a ready-made embed snippet." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Sharing and Embeds", slug: "sharing" }} subArticles={getSubArticles("sharing").filter((a) => a.slug !== "embeds")}>
 
-An embed places a live copy of a document inside another page, like a wiki, a doc, Notion, or your own site. It shows the canvas, hides the editor chrome, and stays up to date as the document is edited. It is the simplest way to keep a document visible where your readers already are.
-
-<Figure caption="A document sits inside a host page, with the copy-paste iframe snippet that embeds it.">
-  <EmbeddedDocument />
-</Figure>
+An embed places a live copy of a project inside another page, like a wiki, a doc, Notion, or your own site. It shows the tab's board, Sheet, Dashboard or Form, hides the editor chrome, and stays up to date as the project is edited. It is the simplest way to keep a plan visible where your readers already are.
 
 ## What an embed shows
 
-The embed is built from a share link, and it **honours that link's role**: a **Viewer** or **Participant** pass embeds a read-only canvas, while an **Editor** pass embeds an editable one, so readers of the host page can change the document right there. Pick the pass to match: a Viewer pass when the page is for an audience, an Editor pass when it is for collaborators.
+The embed is built from a share link, and it **honours that link's role**: a **Viewer** or **Participant** pass embeds a read-only project, while an **Editor** pass embeds an editable one, so readers of the host page can move cards and edit cells right there. Pick the pass to match: a Viewer pass when the page is for an audience, an Editor pass when it is for collaborators.
 
 Inside the frame, the embed:
 
-- shows the canvas with pan, zoom, and pinch,
-- hides the header, tab bar, palette and every floating panel, leaving a clean view with just the zoom controls in the bottom-right corner,
-- defaults to the hand (pan) tool, so a drag pans the view; an editable embed still selects and edits on click, and right-click menus work,
+- shows the tab as it is in the editor: a board's columns and cards, a Sheet's cells, a Dashboard's charts and metrics, or a Form,
+- hides the header, the tab bar and the bottom-right buttons (Undo, Trash, New, Find, Types and Style), leaving a clean view; a Sheet tab keeps its zoom controls,
+- opens a card's panel when you click the card, to read it, or to edit it on an Editor pass,
 - keeps a small **Open in liveplanner** badge in the bottom-left corner that opens the full share view in a new tab,
-- shows a compact tab switcher beside the badge when the document has more than one tab: it shows the current tab's name and opens a list of the tabs,
+- shows a compact tab switcher beside the badge when the project has more than one tab: it shows the current tab's name and opens a list of the tabs,
 - skips the "what's your name" prompt: readers join under a random guest name.
 
-An embed draws no [element indicators](/help/canvas/element-indicators/) (the small link, note, action and comment icons on elements): they are editor chrome, so the picture stays clean.
-
-Because the embed joins the same realtime room as any viewer, it **live-updates**: when the document changes, the embedded view follows along.
+Because the embed joins the same realtime room as any viewer, it **live-updates**: when a card moves or a cell changes, the embedded view follows along.
 
 ## Adding an embed to a page
 
-<Step n={1}>Open the **Share** dialog and create or pick a pass for the document.</Step>
+<Step n={1}>Open the **Share** dialog and create or pick a pass for the project.</Step>
 <Step n={2}>Open the pass's **Embed** menu, under its link, and choose **Copy iframe** for a ready-made `<iframe>` snippet, or **Copy embed URL** for the bare URL.</Step>
 <Step n={3}>Paste it into your page, wiki, or doc: the iframe snippet drops in directly, while the embed URL suits tools that turn a pasted link into an embed themselves.</Step>
 
@@ -46,19 +39,19 @@ Because the embed joins the same realtime room as any viewer, it **live-updates*
   <ShareEmbedMenu />
 </Figure>
 
-The snippet is 800 by 500 pixels with a hairline border and rounded corners, which you can adjust in the markup. If the document has a [share password](/help/collaboration/sharing/share-passwords/), readers are prompted for it inside the embed frame (the **Password Protection** switch notes that embeds are included). A link scoped to [one tab](/help/collaboration/sharing/one-tab/) embeds that tab only.
+The snippet is 800 by 500 pixels with a hairline border and rounded corners, which you can adjust in the markup. If the project has a [share password](/help/collaboration/sharing/share-passwords/), readers are prompted for it inside the embed frame (the **Password Protection** switch notes that embeds are included). A link scoped to [one tab](/help/collaboration/sharing/one-tab/) embeds that tab only.
 
 ## When an embed stops working
 
-An embed lives exactly as long as its share link. If you revoke the link, or it [expires](/help/collaboration/sharing/share-link-expiry/), the frame shows a small not-found message instead of the document. Create a new pass and paste its snippet to bring it back.
+An embed lives exactly as long as its share link. If you revoke the link, or it [expires](/help/collaboration/sharing/share-link-expiry/), the frame shows a small not-found message instead of the project. Create a new pass and paste its snippet to bring it back.
 
 ## Privacy
 
-An embed only exposes what the share link exposes: a Viewer or Participant pass's embed is a read-only view (an embed has no way to put a name on what someone adds), and only an Editor pass's embed can change the document. Anyone who can read the host page's source can also see the embed URL, so treat an editable embed like handing out the edit link itself.
+An embed only exposes what the share link exposes: a Viewer or Participant pass's embed is a read-only view (an embed has no way to put a name on what someone adds), and only an Editor pass's embed can change the project. Anyone who can read the host page's source can also see the embed URL, so treat an editable embed like handing out the edit link itself.
 
 <Tip>
-  Embedding several documents across a wiki is a tidy way to keep architecture and flow diagrams
-  beside the docs that reference them, always showing the latest version.
+  Embedding a roadmap board or a status Dashboard in your team wiki keeps the plan beside the pages
+  that reference it, always showing the latest version.
 </Tip>
 
 </ArticleLayout>

@@ -1,0 +1,46 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { GuestIdentity } from '@/components/illustrations/account';
+
+export const metadata = helpMetadata({
+  title: 'How Guest Identity Works',
+  description:
+    'Understand how livedesign identifies you as a guest with a per-browser id, and what that means for your documents.',
+  path: '/help/account-and-data/guest-identity/',
+});
+
+<ArticleLayout title="How Guest Identity Works" description="The canvas works without signing in. Here is how livedesign knows which documents are yours when you are a guest." categoryTitle="Account and Data" categorySlug="account-and-data">
+
+The canvas always works without signing in. You can land on [a new document](/new), build something real, and only later decide whether you want an account. To make that possible, livedesign gives every guest a quiet, per-browser identity that owns whatever you put on the server.
+
+## Your per-browser id
+
+The first time you visit, livedesign's server issues a unique guest id and your browser keeps it in `localStorage`. Everything of yours on the server as a guest (documents you share or sync, folders, images) is owned by that id, which is how the app knows which content to show you when you come back. The editor sends it with each request; you never see or type it.
+
+Where sign-in is available, as on livedesign.app, new documents you make as a guest start [offline](/help/privacy-and-security/offline-mode/), saved only in this browser, so nothing you try out is sent to our servers until you choose to. To share one, open **Share** and press **Sync Document**: it uploads under your guest id and the Share options appear. A document you create inside a folder goes to the server straight away, and on a self-hosted deployment without sign-in, new documents start on the server.
+
+<Figure caption="A per-browser guest id owns the documents you sync or share, with no sign-in required.">
+  <GuestIdentity />
+</Figure>
+
+Two things follow from this:
+
+- **It is per browser, not per person.** The id lives in one browser on one device. Open livedesign in a different browser or on another device and you get a fresh guest id, so your earlier documents will not appear there.
+- **It is not cross-device.** Guest content does not sync between devices, because there is no account tying them together yet.
+
+As a guest you still get the core of livedesign: saving, share links and real-time collaboration all work, once a document is synced. A few things need an address or an account to attach to, so they ask you to sign in: [teams](/help/collaboration/teams/), [API tokens](/help/account-and-data/api-tokens/), [connecting an AI tool](/help/account-and-data/connect-ai-mcp/) and [email notifications](/help/account-and-data/email-notifications/).
+
+## What this means for your data
+
+Because your guest content is tied to a single browser, clearing that browser's storage, or using private browsing that discards it, deletes your documents in This Browser and means the app can no longer recognise you as the owner of the ones on the server. Those are still there, but nothing in a fresh browser can claim them back. Treat your guest documents as living in that browser.
+
+Share links are the exception: anyone holding one, including you in another browser, can still open that document with the link's role. They just won't be its owner there.
+
+If you want your documents to follow you across browsers and devices, [signing in](/help/account-and-data/signing-in/) is the answer. When you sign in, whether to a new account or an existing one, the documents of yours on the server move into it automatically, and we offer to move the ones in This Browser too, so you do not lose the work you have already done.
+
+<Tip>
+  Doing serious work as a guest? Create an account before clearing your browser data, and move your
+  documents in This Browser across when we offer, so nothing is left behind.
+</Tip>
+
+</ArticleLayout>

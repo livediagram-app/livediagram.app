@@ -2,7 +2,7 @@ import { createLocalJWKSet, exportJWK, generateKeyPair, SignJWT } from 'jose';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { createVerifier } from './verify';
 
-const ISSUER = 'https://accounts.liveworkspace.app/api/auth';
+const ISSUER = 'https://liveworkspace.app/api/auth';
 const AUDIENCE = 'https://livediagram.app/api';
 
 let privateKey: CryptoKey;
@@ -45,6 +45,21 @@ describe('createVerifier', () => {
       email: 'ada@example.com',
       emailVerified: true,
       scopes: ['openid', 'email'],
+      teams: null,
+    });
+  });
+
+  it('reads the teams the token carries, dropping malformed entries', async () => {
+    const jwt = await token({
+      sub: 'user_2abc',
+      teams: [
+        { id: 't1', name: 'Design', role: 'admin' },
+        { id: 't2', name: 'Ops', role: 'owner' },
+        'nonsense',
+      ],
+    });
+    await expect(verify(jwt)).resolves.toMatchObject({
+      teams: [{ id: 't1', name: 'Design', role: 'admin' }],
     });
   });
 

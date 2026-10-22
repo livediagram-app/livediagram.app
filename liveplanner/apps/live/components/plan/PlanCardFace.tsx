@@ -30,7 +30,7 @@ import {
   type CardSlot,
   isCustomCardField,
 } from '@liveplanner/items';
-import { finishFaceShadows } from '@liveplanner/document';
+import { finishFaceShadows } from '@liveplanner/project';
 import { useFaceFinish } from '@/components/canvas/CanvasFinishContext';
 import { usePlan, type PlanCardPresence } from './PlanContext';
 import { customFieldText } from './custom-field-text';

@@ -54,7 +54,7 @@ A picker shows up to three groups, always in this order, each under a small head
    | Violet      | Violet    |
    | Pink        | Pink      |
    - The **strong tone** is for lines, text, markers, accents, card types, columns and chart
-     slices. It is the stock set (Ink and eight hues, stored by name, [Stroke points](../006-document/stroke-points.md)
+     slices. It is the stock set (Ink and eight hues, stored by name, [Stroke points](../006-project/stroke-points.md)
      for the strokes that carry it) plus Grey: each colour is tuned for the surface it is drawn on, darker on light paper and lighter on dark, so
      it is at least 4.5:1 on that surface.
    - The **soft tone** is for backgrounds, fills and highlights: the same hues as washes, pale on light paper
@@ -62,17 +62,17 @@ A picker shows up to three groups, always in this order, each under a small head
    - A surface that offers free colours shows a soft row headed "Light", then a strong row headed "Dark": an
      Page's background, the canvas colour and the custom theme builder.
 
-3. **Custom Colours**: the colours picked with **Add a custom colour** in this document, newest first, at most twelve, then **Add a custom colour** (four coloured dots).
+3. **Custom Colours**: the colours picked with **Add a custom colour** in this project, newest first, at most twelve, then **Add a custom colour** (four coloured dots).
 
 **Leading options** go first in the first group: **no colour** where a surface can have none (No ... colour,
 None, No colour, Default colour, No highlight, Paper), and the surface's own named defaults (the ).
 
 ## Custom colours
 
-Custom colours are **the colours someone picked with +** in this document. Pressing **Use** in the custom
+Custom colours are **the colours someone picked with +** in this project. Pressing **Use** in the custom
 colour editor keeps the colour with the tab it was picked on (newest first, at most twelve a tab), so:
 
-- It appears in Custom Colours in every picker of the document, for every collaborator, as soon as it is
+- It appears in Custom Colours in every picker of the project, for every collaborator, as soon as it is
   picked, the current tab's first, then the other tabs' in tab order.
 - Nothing else adds to them. A template's or a theme's colours written onto elements, a Plan column's colour,
   a colour pasted in: none is anyone's pick, so none shows here. A colour picked again moves to the front.
@@ -82,7 +82,7 @@ colour editor keeps the colour with the tab it was picked on (newest first, at m
 - A colour already offered (the Theme Palette's, a standard colour) is not shown again as a custom colour.
 - The custom colour in force always shows, as the first of Custom Colours, picked, even when no one picked it
   with **Add a custom colour** (an older Plan colour, a page's earlier preset, a template's colour).
-- While a picker is open, Custom Colours hold their order. Hovering a swatch previews it on the document, which
+- While a picker is open, Custom Colours hold their order. Hovering a swatch previews it on the project, which
   must not slide the swatches under the pointer, so a colour already shown keeps its place and only a colour
   new to the list, such as one just picked with **Add a custom colour**, joins at the front. The order is worked out afresh each
   time the picker opens.
@@ -106,7 +106,7 @@ one, and **Use**. Use (or Enter in the hex field) applies the colour and keeps i
 
 ## What a picker stores
 
-The picker changes how a colour is chosen, not the shape of what is saved, so every existing document looks
+The picker changes how a colour is chosen, not the shape of what is saved, so every existing project looks
 exactly as it did:
 
 - On the canvas, a strong standard colour on a line or text is stored **by name** (`penColour`,

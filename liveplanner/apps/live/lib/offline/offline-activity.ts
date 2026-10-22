@@ -1,4 +1,4 @@
-// The Inbox's read of documents in This Browser (docs/specs/013-workspace/inbox.md §2.6). They never reach the
+// The Inbox's read of projects in This Browser (docs/specs/013-workspace/inbox.md §2.6). They never reach the
 // worker, so the server's collaboration index never holds them; this finds their open actions, Plan cards and
 // comment threads in the browser's offline store, with the same derivation the index uses
 // (collabIndexRowsFromElements, planBoardRowsFromElements) and the same rules the server read applies, the reader
@@ -16,7 +16,7 @@ import {
   collabIndexRowsFromElements,
   planBoardRowsFromElements,
   type Comment,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import {
   ARCHIVED_FIELD,
   itemAssignee,
@@ -27,7 +27,7 @@ import {
 } from '@liveplanner/items';
 import { offlineBackend } from './offline-backend';
 import { offlineIdCount } from './offline-ids';
-import type { OfflineDocumentRecord } from './offline-store';
+import type { OfflineProjectRecord } from './offline-store';
 
 export type OfflineActivity = {
   actions: ActivityAction[];
@@ -47,7 +47,7 @@ export async function offlineReader(ids: readonly (string | null)[]): Promise<Of
   return { ids: distinct, personIds: await Promise.all(distinct.map((id) => itemPersonId(id))) };
 }
 
-// Reads every live record in This Browser and lists what is waiting on the reader. A browser with no documents in This Browser
+// Reads every live record in This Browser and lists what is waiting on the reader. A browser with no projects in This Browser
 // reads no records: the id index answers first, and is cached for the page load.
 export async function readOfflineActivity(
   ids: readonly (string | null)[],
@@ -55,8 +55,8 @@ export async function readOfflineActivity(
   if ((await offlineIdCount()) === 0) return EMPTY;
   const [records, reader] = await Promise.all([offlineBackend().all(), offlineReader(ids)]);
   const collect = collector(reader);
-  // A browser holding many large documents would otherwise read them in one long task: hand the main thread
-  // back between documents once a slice has run (measured: 200 documents of 1,500 elements, ~250ms in one go).
+  // A browser holding many large projects would otherwise read them in one long task: hand the main thread
+  // back between projects once a slice has run (measured: 200 projects of 1,500 elements, ~250ms in one go).
   let sliceStart = performance.now();
   for (const rec of records) {
     if (performance.now() - sliceStart > OFFLINE_ACTIVITY_SLICE_MS) {
@@ -71,10 +71,10 @@ export async function readOfflineActivity(
 // How long the read runs before yielding: half a 60fps frame, so a click during it still answers promptly.
 const OFFLINE_ACTIVITY_SLICE_MS = 8;
 
-type Place = Pick<ActivityCard, 'documentId' | 'documentName' | 'teamId' | 'via' | 'shareCode'>;
+type Place = Pick<ActivityCard, 'projectId' | 'projectName' | 'teamId' | 'via' | 'shareCode'>;
 
-function placeOf(rec: OfflineDocumentRecord): Place {
-  return { documentId: rec.id, documentName: rec.name, teamId: null, via: 'own', shareCode: null };
+function placeOf(rec: OfflineProjectRecord): Place {
+  return { projectId: rec.id, projectName: rec.name, teamId: null, via: 'own', shareCode: null };
 }
 
 type Thread = { comments?: Comment[]; resolved?: boolean };
@@ -94,7 +94,7 @@ const newest = <T>(rows: T[], at: (row: T) => number): T[] =>
 
 // Pure: the records in, the Inbox's four lists out, each newest first and capped like the server read.
 export function offlineActivityFromRecords(
-  records: readonly OfflineDocumentRecord[],
+  records: readonly OfflineProjectRecord[],
   reader: OfflineReader,
 ): OfflineActivity {
   const collect = collector(reader);
@@ -107,8 +107,8 @@ function collector(reader: OfflineReader) {
   const me = new Set(reader.ids);
   const myPersonIds = new Set(reader.personIds);
   const out: OfflineActivity = { actions: [], threads: [], cards: [], cardThreads: [] };
-  const add = (rec: OfflineDocumentRecord): void => {
-    // A document in the local Trash waits there; the server read skips trashed documents the same way.
+  const add = (rec: OfflineProjectRecord): void => {
+    // A project in the local Trash waits there; the server read skips trashed projects the same way.
     if (rec.trashedAt !== undefined) return;
     const place = placeOf(rec);
     const boards: (ReturnType<typeof planBoardRowsFromElements>[number] & {
@@ -155,8 +155,8 @@ function collector(reader: OfflineReader) {
           },
           firstAt: t.firstAt,
           youCommented: t.participantIds.some((id) => me.has(id)),
-          // The reader owns every document in This Browser.
-          onYourDocument: true,
+          // The reader owns every project in This Browser.
+          onYourProject: true,
           mentionsYou: t.mentionedIds.some((id) => me.has(id)),
         });
       }
@@ -194,7 +194,7 @@ function collector(reader: OfflineReader) {
     for (const item of items) {
       if (!isLive(item)) continue;
       const status = itemStatus(item);
-      // Placed only once listed: most cards in a document are someone else's.
+      // Placed only once listed: most cards in a project are someone else's.
       const card = () => ({
         ...place,
         board: boardFor(status),
@@ -228,7 +228,7 @@ function collector(reader: OfflineReader) {
           },
           firstAt: comments[0]!.createdAt ?? 0,
           youCommented: comments.some((c) => !!c.authorId && me.has(c.authorId)),
-          onYourDocument: true,
+          onYourProject: true,
           mentionsYou: comments.some((c) =>
             (c.mentions ?? []).some((m) => !!m.userId && me.has(m.userId)),
           ),

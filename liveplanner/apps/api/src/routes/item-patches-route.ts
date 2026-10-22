@@ -48,8 +48,8 @@ function readPatches(raw: unknown): ItemPatchOf[] | Response {
   return out;
 }
 
-export async function patches(ctx: RouteContext, documentId: string): Promise<Response> {
-  const caller = await itemCaller(ctx, documentId, 'participate');
+export async function patches(ctx: RouteContext, projectId: string): Promise<Response> {
+  const caller = await itemCaller(ctx, projectId, 'participate');
   if (caller instanceof Response) return caller;
   const body = await readBody(ctx);
   if (body instanceof Response) return body;
@@ -62,7 +62,7 @@ export async function patches(ctx: RouteContext, documentId: string): Promise<Re
   const result = await writeItemsWithRetry(
     ctx,
     caller,
-    documentId,
+    projectId,
     wanted,
     async (pending, stored, read) => {
       // On the first read, a missing item refuses the request; a retried one deleted meanwhile is left out.
@@ -84,7 +84,7 @@ export async function patches(ctx: RouteContext, documentId: string): Promise<Re
     },
   );
   if (result instanceof Response) return result;
-  console.info('[items] patched', { documentId, count: result.done.size });
+  console.info('[items] patched', { projectId, count: result.done.size });
   const answer: ItemsResponse = {
     items: forCaller(caller, [...result.done.values()]),
     rev: result.rev,

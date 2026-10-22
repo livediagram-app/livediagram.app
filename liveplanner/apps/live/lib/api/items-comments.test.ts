@@ -7,7 +7,7 @@ import { writeItemComment } from './items';
 // A card's comment writes against the api (docs/specs/026-plan/items.md "Comments", blueprint item-store.md
 // "Comments"): the path and method for each change, a 204 for a resolve that changed nothing, and refusals.
 
-const scope = { ownerId: 'owner-me', documentId: 'doc-cloud', shareCode: null, tabId: 't1' };
+const scope = { ownerId: 'owner-me', projectId: 'doc-cloud', shareCode: null, tabId: 't1' };
 const who = { ownerId: 'owner-me', by: { id: 'p-me', name: 'Me', color: '#2563eb' } };
 const item = { id: 'item-one', rev: 4 };
 
@@ -40,7 +40,7 @@ describe('writeItemComment', () => {
     );
     expect(answer).toEqual({ upserts: [item], removed: [], rev: 9, commentId: 'c-new' });
     const { url, init } = sent(fetch);
-    expect(url.pathname).toBe('/api/documents/doc-cloud/items/item-one/comments');
+    expect(url.pathname).toBe('/api/projects/doc-cloud/items/item-one/comments');
     expect(url.searchParams.get('tabId')).toBe('t1');
     expect(init.method).toBe('POST');
     expect(sentJson(init)).toEqual({ text: 'Hi @ann', mentions: [mention] });
@@ -52,7 +52,7 @@ describe('writeItemComment', () => {
     const fetch = stub(async () => Response.json({ item, rev: 10 }));
     await writeItemComment(scope, 'item-one', { kind: 'delete', commentId: 'c/1' }, who);
     expect(sent(fetch).init.method).toBe('DELETE');
-    expect(sent(fetch).url.pathname).toBe('/api/documents/doc-cloud/items/item-one/comments/c%2F1');
+    expect(sent(fetch).url.pathname).toBe('/api/projects/doc-cloud/items/item-one/comments/c%2F1');
     await writeItemComment(scope, 'item-one', { kind: 'resolve', resolved: true }, who);
     expect(sent(fetch, 1).url.pathname).toMatch(/\/comments\/resolve$/);
     await writeItemComment(scope, 'item-one', { kind: 'resolve', resolved: false }, who);

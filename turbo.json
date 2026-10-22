@@ -12,6 +12,7 @@
     "tsconfig.base.json",
     "livediagram/tsconfig.base.json",
     "liveplanner/tsconfig.base.json",
+    "livedesign/tsconfig.base.json",
     "livedocuments/tsconfig.base.json"
   ],
   "tasks": {
@@ -32,7 +33,6 @@
         "^build",
         "@livediagram/live#build",
         "@livediagram/help#build",
-        "@livediagram/telemetry#build",
         "@livediagram/community#build",
         "@livediagram/api#build",
         "@livediagram/mcp#build",
@@ -127,7 +127,6 @@
         "^build",
         "@liveplanner/live#build",
         "@liveplanner/help#build",
-        "@liveplanner/telemetry#build",
         "@liveplanner/api#build",
         "@liveplanner/mcp#build",
         "@liveplanner/router#build"
@@ -151,18 +150,10 @@
         "!$TURBO_ROOT$/liveplanner/apps/marketing/generated/**",
         "!$TURBO_ROOT$/liveplanner/apps/marketing/public/licences/**"
       ],
-      "outputs": [
-        ".next/**",
-        "!.next/cache/**",
-        "out/**",
-        "generated/**",
-        "public/licences/**"
-      ]
+      "outputs": [".next/**", "!.next/cache/**", "out/**", "generated/**", "public/licences/**"]
     },
     "@liveplanner/help#test": {
-      "dependsOn": [
-        "^build"
-      ],
+      "dependsOn": ["^build"],
       "inputs": [
         "$TURBO_DEFAULT$",
         "$TURBO_ROOT$/liveplanner/**",
@@ -179,15 +170,79 @@
       ]
     },
     "@liveplanner/help#test:coverage": {
-      "dependsOn": [
-        "^build"
-      ],
-      "outputs": [
-        "coverage/**"
-      ],
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"],
       "inputs": [
         "$TURBO_DEFAULT$",
         "$TURBO_ROOT$/liveplanner/**",
+        "!$TURBO_ROOT$/**/node_modules/**",
+        "!$TURBO_ROOT$/**/.next*/**",
+        "!$TURBO_ROOT$/**/out/**",
+        "!$TURBO_ROOT$/**/dist/**",
+        "!$TURBO_ROOT$/**/coverage/**",
+        "!$TURBO_ROOT$/**/.turbo/**",
+        "!$TURBO_ROOT$/**/.wrangler/**",
+        "!$TURBO_ROOT$/**/test-results*/**",
+        "!$TURBO_ROOT$/**/playwright-report*/**",
+        "!$TURBO_ROOT$/.git/**"
+      ]
+    },
+    // livedesign: the same per-package rules as livediagram above, on its own paths.
+    "@livedesign/marketing#build": {
+      "dependsOn": [
+        "^build",
+        "@livedesign/live#build",
+        "@livedesign/help#build",
+        "@livedesign/telemetry#build",
+        "@livedesign/api#build",
+        "@livedesign/mcp#build",
+        "@livedesign/router#build"
+      ],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        ".env*",
+        "$TURBO_ROOT$/pnpm-lock.yaml",
+        "$TURBO_ROOT$/livedesign/apps/**",
+        "$TURBO_ROOT$/livedesign/packages/**",
+        // Explicit root globs ignore .gitignore: keep build output out.
+        "!$TURBO_ROOT$/**/node_modules/**",
+        "!$TURBO_ROOT$/**/.next*/**",
+        "!$TURBO_ROOT$/**/out/**",
+        "!$TURBO_ROOT$/**/dist/**",
+        "!$TURBO_ROOT$/**/coverage/**",
+        "!$TURBO_ROOT$/**/.turbo/**",
+        "!$TURBO_ROOT$/**/.wrangler/**",
+        "!$TURBO_ROOT$/**/test-results/**",
+        "!$TURBO_ROOT$/**/playwright-report/**",
+        "!$TURBO_ROOT$/**/next-env.d.ts",
+        "!$TURBO_ROOT$/livedesign/apps/marketing/generated/**",
+        "!$TURBO_ROOT$/livedesign/apps/marketing/public/licences/**"
+      ],
+      "outputs": [".next/**", "!.next/cache/**", "out/**", "generated/**", "public/licences/**"]
+    },
+    "@livedesign/help#test": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/livedesign/**",
+        "!$TURBO_ROOT$/**/node_modules/**",
+        "!$TURBO_ROOT$/**/.next*/**",
+        "!$TURBO_ROOT$/**/out/**",
+        "!$TURBO_ROOT$/**/dist/**",
+        "!$TURBO_ROOT$/**/coverage/**",
+        "!$TURBO_ROOT$/**/.turbo/**",
+        "!$TURBO_ROOT$/**/.wrangler/**",
+        "!$TURBO_ROOT$/**/test-results*/**",
+        "!$TURBO_ROOT$/**/playwright-report*/**",
+        "!$TURBO_ROOT$/.git/**"
+      ]
+    },
+    "@livedesign/help#test:coverage": {
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/livedesign/**",
         "!$TURBO_ROOT$/**/node_modules/**",
         "!$TURBO_ROOT$/**/.next*/**",
         "!$TURBO_ROOT$/**/out/**",

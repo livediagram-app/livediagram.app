@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FONTS, MARKER_FONT_ID, SKETCH_FONT_ID } from '@liveplanner/document';
+import { FONTS, MARKER_FONT_ID, SKETCH_FONT_ID } from '@liveplanner/project';
 import { PLAN_HANDWRITING_EX, planFontStyle } from './plan-font';
 
 describe('planFontStyle', () => {

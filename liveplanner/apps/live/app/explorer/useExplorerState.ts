@@ -4,12 +4,11 @@ import { use, useCallback, useDeferredValue, useEffect, useMemo, useState } from
 import { browser } from 'react-dom';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useAppNavigation } from '@/hooks/navigation/useAppNavigation';
-import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
-import { usePublishPicture } from '@/hooks/persistence/usePublishedPicture';
+import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import {
-  apiListDocuments,
+  apiListProjects,
   apiListSharedWith,
-  type DocumentListItem,
+  type ProjectListItem,
   type Folder,
   type SharedWithItem,
 } from '@/lib/api-client';
@@ -26,9 +25,8 @@ import { useFavourites } from '@/hooks/persistence/useFavourites';
 import { useFolders } from '@/hooks/persistence/useFolders';
 import { useTeamLibrariesSweep } from '@/hooks/persistence/useTeamLibrariesSweep';
 import { useTeams } from '@/hooks/persistence/useTeams';
-import { useTokens } from '@/hooks/persistence/useTokens';
 import { useConfirm } from '@/hooks/ui/useConfirm';
-import { useDocumentListActions } from '@/hooks/persistence/useDocumentListActions';
+import { useProjectListActions } from '@/hooks/persistence/useProjectListActions';
 import { useToast } from '@/hooks/ui/useToast';
 import { useDeleteUndoHandoff } from '@/hooks/persistence/useDeleteUndoHandoff';
 import { explorerPathFor, selectedFromRoute } from './routes';
@@ -42,7 +40,7 @@ import { useActivityFeed } from './useActivityFeed';
 import { useExplorerMoves } from './useExplorerMoves';
 import { useExplorerPane } from './useExplorerPane';
 import { useSidebarExpansion } from './sidebar/useSidebarExpansion';
-import { MY_DOCUMENTS_EXPAND_KEY } from './sidebar/sidebar-structure';
+import { MY_PROJECTS_EXPAND_KEY } from './sidebar/sidebar-structure';
 import type { SelectedNode } from './views';
 import { indexFolders, folderBreadcrumb, folderDescendants } from '@/lib/folder-tree';
 import { useOpenSettingsRequests } from '@/hooks/ui/useOpenSettingsRequests';
@@ -57,7 +55,7 @@ import { useDefaultFolderMenus } from '@/hooks/persistence/useDefaultFolderMenus
 // navigates, so back/forward and deep links work for free.
 //
 // Open to both guests and signed-in users (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/013-workspace/folders.md): the
-// owner id resolves to the Clerk userId when signed in, otherwise to
+// owner id resolves to the account id when signed in, otherwise to
 // the `liveplanner:v2:self-id` localStorage UUID.
 
 export function useExplorerState() {
@@ -76,11 +74,9 @@ export function useExplorerState() {
       : selectedFromRoute(pathname ?? '/explorer', searchParams);
   }, [pathname, searchParams]);
 
-  const { authLoaded, clerkUserId, clerkDisplayName, isSignedIn } = useClerkApiBootstrap();
+  const { authLoaded, accountUserId, accountDisplayName, isSignedIn } = useAccountBootstrap();
   // In a workspace frame the Explorer drops the app's surroundings and the account (explorer-surface.ts).
   const surface = explorerSurfaceFlags(useExplorerSurface());
-  // Keep the participant record's profile picture current (docs/specs/014-identity/profile-picture.md §6).
-  usePublishPicture(surface.publishPicture ? clerkUserId : null);
 
   // Synced user preferences (docs/specs/007-editor/user-preferences.md). Owned HERE rather than in
   // ExplorerShell because the pane needs them too (Recent honours the
@@ -96,14 +92,14 @@ export function useExplorerState() {
   // device's state are read from the first render on.
   use(browser());
   // Owner id resolution mirrors new/page.tsx + editor-page.tsx: a
-  // signed-in user is keyed by Clerk userId, a guest is keyed by the
-  // localStorage UUID (minted on first visit). Null until Clerk has
+  // signed-in user is keyed by account id, a guest is keyed by the
+  // localStorage UUID (minted on first visit). Null until auth has
   // settled so a signed-in user never momentarily reads a guest id.
   // For a guest, the SIGNED id (useSignedGuestId; docs/specs/014-identity/auth-and-guest-access.md
   // "Signed guest ids"), so the lists' first calls carry the `X-Owner-Sig` the api may require. Null
   // until it resolves (the lists are autoLoad:false off ownerId).
-  const guestId = useSignedGuestId(authLoaded, clerkUserId);
-  const ownerId: string | null = !authLoaded ? null : (clerkUserId ?? guestId);
+  const guestId = useSignedGuestId(authLoaded, accountUserId);
+  const ownerId: string | null = !authLoaded ? null : (accountUserId ?? guestId);
   // Daily-active-returns signal (docs/specs/017-telemetry/telemetry.md): the Explorer is an app-open
   // surface too, so count a returning visitor here. Gated once per
   // browser per UTC day inside the helper (shared with the editor +
@@ -111,9 +107,9 @@ export function useExplorerState() {
   // once. Runs once auth has settled so guest vs signed-in is known.
   useEffect(() => {
     if (!authLoaded) return;
-    trackDailyReturn(!!clerkUserId);
-  }, [authLoaded, clerkUserId]);
-  const [liveDocs, setDocuments] = useState<DocumentListItem[]>([]);
+    trackDailyReturn(!!accountUserId);
+  }, [authLoaded, accountUserId]);
+  const [liveDocs, setProjects] = useState<ProjectListItem[]>([]);
   const {
     folders,
     createFolder: hookCreateFolder,
@@ -123,18 +119,17 @@ export function useExplorerState() {
   } = useFolders(ownerId, { autoLoad: false });
   const [shared, setShared] = useState<SharedWithItem[]>([]);
   // Teams (docs/specs/013-workspace/teams.md): signed-in only. Guests get a sign-in prompt in
-  // the sidebar section instead of rows; Clerk-disabled deployment
+  // the sidebar section instead of rows; sign-in-disabled deployment
   // deployments hide the section entirely.
-  const teamsEnabled = Boolean(isSignedIn && clerkUserId);
+  const teamsEnabled = Boolean(isSignedIn && accountUserId);
   const {
     teams,
     invites,
-    createTeam: hookCreateTeam,
     acceptInvite,
     declineInvite,
     refresh: refreshTeams,
   } = useTeams(ownerId, { enabled: teamsEnabled, invites: surface.administration });
-  // The lens (docs/specs/013-workspace/explorer-filters.md): one string narrowing every document
+  // The lens (docs/specs/013-workspace/explorer-filters.md): one string narrowing every project
   // view, kept in step with `q` in the address bar.
   const lens = useExplorerLens({
     selected,
@@ -142,19 +137,14 @@ export function useExplorerState() {
     search: searchParams?.toString() ?? '',
     router,
   });
-  // API tokens (docs/specs/015-api/public-api-and-tokens.md): signed-in only, same gate as teams. Loaded here for
-  // the timeline's token-card menus, which offer Revoke for a token that is
-  // still live. Managing them is the Settings API Tokens category.
-  const tokens = useTokens(ownerId, { enabled: teamsEnabled && surface.administration });
-  const [teamModalOpen, setTeamModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   // Which list read failed last, so a view says Failed rather than Empty.
-  const [failedReads, setFailedReads] = useState({ documents: false, shared: false });
+  const [failedReads, setFailedReads] = useState({ projects: false, shared: false });
   // Folder id mid-rename so the tree / list row swaps to an input
   // until the user commits or escapes.
   const [renamingFolderId, setRenamingFolderId] = useState<string | null>(null);
-  // Document id mid-rename. Same pattern as folders.
-  const [renamingDocumentId, setRenamingDocumentId] = useState<string | null>(null);
+  // Project id mid-rename. Same pattern as folders.
+  const [renamingProjectId, setRenamingProjectId] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   // Settings lives here rather than in ExplorerShell because the sidebar's
   // account button opens it too, now that the profile page it used to open
@@ -201,21 +191,21 @@ export function useExplorerState() {
       setSettingsOpen(true);
     }
   }
-  // Which sidebar rows are open: folders, teams, My Documents and Library
+  // Which sidebar rows are open: folders, teams, My Projects and Library
   // (docs/specs/013-workspace/explorer-structure.md#expansion).
   const { expanded, expand, toggleExpand } = useSidebarExpansion(selected);
-  // Team libraries swept lazily (docs/specs/013-workspace/team-shared-documents.md) for the four consumers: the
+  // Team libraries swept lazily (docs/specs/013-workspace/team-shared-projects.md) for the four consumers: the
   // search panel's Folders group, the move modal's team destinations,
   // the Recent list's team rows, and the sidebar's team subtrees.
   // Recent is the landing section, so signed-in members effectively
   // sweep on arrival; guests (no teams) never fetch.
   const {
     teamFolders,
-    teamDocuments,
+    teamProjects,
     refresh: refreshTeamLibraries,
   } = useTeamLibrariesSweep(ownerId, teams, {
     // The sidebar renders every team as a collapsible folder tree on
-    // EVERY explorer route (docs/specs/013-workspace/team-shared-documents.md), so it needs each team's folders to
+    // EVERY explorer route (docs/specs/013-workspace/team-shared-projects.md), so it needs each team's folders to
     // know whether to show the expand chevron — not just on Recent /
     // search / move. Gating on the route (e.g. `selected.kind === 'recent'`)
     // meant a hard navigation onto a team folder (which the sidebar opens
@@ -255,21 +245,21 @@ export function useExplorerState() {
   const load = useCallback(
     (ownerId: string) =>
       Promise.all([
-        apiListDocuments(ownerId).catch(() => null),
+        apiListProjects(ownerId).catch(() => null),
         apiListSharedWith(ownerId).catch(() => null),
         refreshFolders(),
       ]).then(([list, sharedList]) => {
         // A failed load must not masquerade as an empty account: set only what actually came
         // back (a failed list keeps its prior value), and the views that read a failed list
-        // show Failed rather than "you have no documents" (explorer-filters.md "States").
-        if (list !== null) setDocuments(list);
+        // show Failed rather than "you have no projects" (explorer-filters.md "States").
+        if (list !== null) setProjects(list);
         if (sharedList !== null) setShared(sharedList);
-        setFailedReads({ documents: list === null, shared: sharedList === null });
-        if (list === null) console.warn('[explorer] list read failed list=documents');
+        setFailedReads({ projects: list === null, shared: sharedList === null });
+        if (list === null) console.warn('[explorer] list read failed list=projects');
         if (sharedList === null) console.warn('[explorer] list read failed list=shared');
         // Only the shared read failed: the other views still list their rows, so say what is missing.
         if (list !== null && sharedList === null) {
-          toast.error('Couldn’t load documents shared with you. Try again soon.');
+          toast.error('Couldn’t load projects shared with you. Try again soon.');
         }
         setLoading(false);
       }),
@@ -286,7 +276,7 @@ export function useExplorerState() {
 
   // A guest's ownerId resolves asynchronously now (ensureSignedGuestIdentity
   // above), so it lags `authLoaded` by a tick. Keep the skeleton rather than
-  // flashing an empty state — ownerId always resolves (signed-in → Clerk id;
+  // flashing an empty state — ownerId always resolves (signed-in → account id;
   // guest → minted id), so this never stalls. A new owner is loading from its
   // first render.
   const loadOwner = authLoaded ? ownerId : null;
@@ -298,7 +288,7 @@ export function useExplorerState() {
   useEffect(() => {
     if (loadOwner) void load(loadOwner);
   }, [loadOwner, load]);
-  // The open document deleted from the editor: its Undo, offered here on arrival.
+  // The open project deleted from the editor: its Undo, offered here on arrival.
   useDeleteUndoHandoff(loadOwner, () => {
     if (loadOwner) void load(loadOwner);
     refreshTeamLibraries();
@@ -344,8 +334,8 @@ export function useExplorerState() {
     const created = await hookCreateFolder({ parentId });
     if (created) {
       setRenamingFolderId(created.id);
-      // Reveal the new row so its rename field shows: its parent, or My Documents for a root folder.
-      expand(parentId ?? MY_DOCUMENTS_EXPAND_KEY);
+      // Reveal the new row so its rename field shows: its parent, or My Projects for a root folder.
+      expand(parentId ?? MY_PROJECTS_EXPAND_KEY);
     }
   };
 
@@ -354,22 +344,22 @@ export function useExplorerState() {
     renameFolder(id, name);
   };
 
-  // Document-row + Shared-row mutations come from the shared
-  // useDocumentListActions hook (the same behaviours behind the
+  // Project-row + Shared-row mutations come from the shared
+  // useProjectListActions hook (the same behaviours behind the
   // editor's Explorer panel and /new), so the optimistic updates,
   // API calls, telemetry, and confirm copy stay single-sourced. The
   // hook wraps the rename to also clear its inline-rename state.
   const {
-    renameDocument: listRenameDocument,
-    deleteDocument: listDeleteDocument,
+    renameProject: listRenameProject,
+    deleteProject: listDeleteProject,
     deleteFolder: deleteFolderWithCascade,
-    moveDocumentToFolder,
-    duplicateDocument: listDuplicateDocument,
-    dismissSharedDocument: dismissShared,
-  } = useDocumentListActions({
+    moveProjectToFolder,
+    duplicateProject: listDuplicateProject,
+    dismissSharedProject: dismissShared,
+  } = useProjectListActions({
     ownerId,
-    documentList: liveDocs,
-    setDocumentList: setDocuments,
+    projectList: liveDocs,
+    setProjectList: setProjects,
     confirm,
     toast,
     deleteFolderFromHook: deleteFolder,
@@ -378,79 +368,79 @@ export function useExplorerState() {
     // so the copy's row appears.
     afterDuplicate: async () => {
       if (!ownerId) return;
-      const list = await apiListDocuments(ownerId).catch(() => null);
-      if (list) setDocuments(list);
+      const list = await apiListProjects(ownerId).catch(() => null);
+      if (list) setProjects(list);
     },
-    sharedDocuments: shared,
-    setSharedDocuments: setShared,
+    sharedProjects: shared,
+    setSharedProjects: setShared,
   });
 
   // Rename / delete / duplicate also re-sweep the team libraries:
   // these actions are wired against the personal `liveDocs` list, so a
-  // team document in Recent (which lives in the sweep, not `liveDocs`)
-  // wouldn't otherwise repaint after the action lands (docs/specs/013-workspace/team-shared-documents.md).
-  // Only for a team document: the sweep is a request per team, and a personal
-  // document's action changes no team library.
-  const refreshIfTeamDocument = (id: string) => {
-    if (teamDocuments.some((d) => d.id === id)) refreshTeamLibraries();
+  // team project in Recent (which lives in the sweep, not `liveDocs`)
+  // wouldn't otherwise repaint after the action lands (docs/specs/013-workspace/team-shared-projects.md).
+  // Only for a team project: the sweep is a request per team, and a personal
+  // project's action changes no team library.
+  const refreshIfTeamProject = (id: string) => {
+    if (teamProjects.some((d) => d.id === id)) refreshTeamLibraries();
   };
-  const renameDocument = (id: string, name: string) => {
-    setRenamingDocumentId(null);
-    listRenameDocument(id, name);
-    refreshIfTeamDocument(id);
+  const renameProject = (id: string, name: string) => {
+    setRenamingProjectId(null);
+    listRenameProject(id, name);
+    refreshIfTeamProject(id);
   };
 
-  const deleteDocument = async (
+  const deleteProject = async (
     id: string,
     beforeRemove?: () => Promise<void> | void,
     opts?: { onRestored?: () => void; name?: string },
   ) => {
-    // A team document is not in the personal list, so its name for the toast comes from the team sweep.
-    const name = opts?.name ?? teamDocuments.find((d) => d.id === id)?.name;
-    await listDeleteDocument(id, beforeRemove, { ...opts, name });
-    refreshIfTeamDocument(id);
+    // A team project is not in the personal list, so its name for the toast comes from the team sweep.
+    const name = opts?.name ?? teamProjects.find((d) => d.id === id)?.name;
+    await listDeleteProject(id, beforeRemove, { ...opts, name });
+    refreshIfTeamProject(id);
   };
 
-  const duplicateDocument = async (id: string) => {
-    await listDuplicateDocument(id);
-    refreshIfTeamDocument(id);
+  const duplicateProject = async (id: string) => {
+    await listDuplicateProject(id);
+    refreshIfTeamProject(id);
   };
 
   // The unified move picker's state, handlers, and destination trees
-  // (docs/specs/013-workspace/team-shared-documents.md) live in useExplorerMoves.
+  // (docs/specs/013-workspace/team-shared-projects.md) live in useExplorerMoves.
   const {
     moveTarget,
     setMoveTarget,
     moveAnchorRef,
     moveFolderToParent,
     createMoveFolder,
-    moveDocumentToTeam,
-    moveTeamDocumentToFolder,
-    moveTeamDocumentOut,
-    moveDocumentTo,
-    openMovePickerForDocument,
+    moveProjectToTeam,
+    moveTeamProjectToFolder,
+    moveTeamProjectOut,
+    moveProjectTo,
+    openMovePickerForProject,
     openMovePickerForFolder,
     movePersonalFolders,
     moveTeamDests,
   } = useExplorerMoves({
     ownerId,
-    documents: liveDocs,
-    setDocuments,
+    projects: liveDocs,
+    setProjects,
     folders,
     teams,
     teamFolders,
-    teamDocuments,
+    teamProjects,
     descendantSet,
     refreshFolders,
     refreshTeamLibraries,
     refreshPersonal: refresh,
-    moveDocumentToFolder,
+    moveProjectToFolder,
     toast,
   });
 
   // Right-pane derivations (buckets, synthetic folders, pane content /
   // title / crumbs, Recent badge) live in useExplorerPane.
-  // Per-user document stars (docs/specs/013-workspace/favourites.md). Its own D1 table rather than the
+  // Per-user project stars (docs/specs/013-workspace/favourites.md). Its own D1 table rather than the
   // preferences blob, which is 4 KB-capped; favourites are unlimited.
   const { favouriteIds, toggleFavourite } = useFavourites(ownerId);
 
@@ -465,8 +455,8 @@ export function useExplorerState() {
   // keystroke held up the field itself on a long list. React drops the stale pass when typing continues.
   const shownLens = useDeferredValue(lens.parsed.lens);
   const {
-    documentsByFolder,
-    offlineDocuments,
+    projectsByFolder,
+    offlineProjects,
     paneContent,
     lensResult,
     recentCount,
@@ -474,8 +464,8 @@ export function useExplorerState() {
     paneCrumbs,
   } = useExplorerPane({
     selected,
-    documents: liveDocs,
-    teamDocuments,
+    projects: liveDocs,
+    teamProjects,
     shared,
     childrenByParent,
     folderById,
@@ -494,14 +484,14 @@ export function useExplorerState() {
     if (ownerId) void fetchUserPreferences(ownerId);
   }, [ownerId]);
 
-  // Hide / show a document in Recent (docs/specs/013-workspace/hide-from-recent.md). Read-modify-writes from the
+  // Hide / show a project in Recent (docs/specs/013-workspace/hide-from-recent.md). Read-modify-writes from the
   // CACHE rather than the React snapshot: the PUT sends the whole blob, so
   // a stale snapshot would clobber sibling flags written by another tab.
   const toggleRecentExclusion = useCallback(
-    (documentId: string) => {
+    (projectId: string) => {
       const latest = readUserPreferences();
       writeUserPreferences(
-        { ...latest, recentExcludedIds: toggleRecentExcluded(latest, documentId) },
+        { ...latest, recentExcludedIds: toggleRecentExcluded(latest, projectId) },
         ownerId ?? undefined,
       );
     },
@@ -523,7 +513,7 @@ export function useExplorerState() {
     newSubfolder: () => void createFolder(f.id),
     move: () => openMovePickerForFolder(f.id, anchor),
     delete: async () => {
-      // Confirm + document-side cascade + useFolders delete, all in the
+      // Confirm + project-side cascade + useFolders delete, all in the
       // shared hook. Only bounce off the route if the deleted folder
       // itself was focused: descendants survive the delete (they're
       // now root folders), so a B-was-selected, delete-A flow should
@@ -540,32 +530,31 @@ export function useExplorerState() {
   return {
     // Identity / auth
     authLoaded,
-    clerkUserId,
-    clerkDisplayName,
+    accountUserId,
+    accountDisplayName,
     ownerId,
     teamsEnabled,
     // Route
     selected,
     go,
     // Data
-    documents: liveDocs,
+    projects: liveDocs,
     folders,
     shared,
     teams,
     teamFolders,
-    teamDocuments,
-    // My Documents' own menu: "Use as Default for" only.
+    teamProjects,
+    // My Projects' own menu: "Use as Default for" only.
     rootDefaults: defaultFolders.forRoot,
     invites,
-    tokens,
     loading,
-    // Re-read the owner's lists (after an import made documents).
+    // Re-read the owner's lists (after an import made projects).
     refreshPersonal: refresh,
     folderById,
     childrenByParent,
     rootFolders,
-    documentsByFolder,
-    offlineDocuments,
+    projectsByFolder,
+    offlineProjects,
     paneContent,
     // The lens and what it did to the current view (docs/specs/013-workspace/explorer-filters.md).
     lens,
@@ -577,7 +566,7 @@ export function useExplorerState() {
     // What's outstanding for the reader (docs/specs/013-workspace/inbox.md): the Activity pane's
     // lists + the sidebar badge's count.
     activity,
-    // Per-user document stars (docs/specs/013-workspace/favourites.md).
+    // Per-user project stars (docs/specs/013-workspace/favourites.md).
     favouriteIds,
     toggleFavourite,
     // Preferences (docs/specs/007-editor/user-preferences.md) + the Recent exclusion toggle (docs/specs/013-workspace/hide-from-recent.md).
@@ -601,25 +590,25 @@ export function useExplorerState() {
     settingsSection,
     setSettingsSection,
     openSettingsOn,
-    // Folder + document actions
+    // Folder + project actions
     folderActions,
     createFolder,
     commitRenameFolder,
     renamingFolderId,
     setRenamingFolderId,
-    renamingDocumentId,
-    setRenamingDocumentId,
-    renameDocument,
-    deleteDocument,
-    duplicateDocument,
-    moveDocumentToFolder,
-    moveDocumentToTeam,
-    moveTeamDocumentToFolder,
-    moveTeamDocumentOut,
-    moveDocumentTo,
+    renamingProjectId,
+    setRenamingProjectId,
+    renameProject,
+    deleteProject,
+    duplicateProject,
+    moveProjectToFolder,
+    moveProjectToTeam,
+    moveTeamProjectToFolder,
+    moveTeamProjectOut,
+    moveProjectTo,
     moveFolderToParent,
     createMoveFolder,
-    openMovePickerForDocument,
+    openMovePickerForProject,
     moveTarget,
     setMoveTarget,
     moveAnchorRef,
@@ -627,25 +616,22 @@ export function useExplorerState() {
     moveTeamDests,
     dismissShared,
     // Teams
-    hookCreateTeam,
     acceptInvite,
     declineInvite,
     refreshTeams,
     // After a restore from the Trash (docs/specs/013-workspace/trash.md): the
-    // document is back in a personal or team list.
+    // project is back in a personal or team list.
     refreshLibraries: () => {
       if (ownerId) void refresh(ownerId);
       refreshTeamLibraries();
     },
-    // A team page changed a library (docs/specs/013-workspace/team-shared-documents.md): its own team's, or, from its
-    // move picker, My Documents' folders or another team's. The sidebar, the search panel and every move picker read
+    // A team page changed a library (docs/specs/013-workspace/team-shared-projects.md): its own team's, or, from its
+    // move picker, My Projects' folders or another team's. The sidebar, the search panel and every move picker read
     // the Explorer's lists, which never heard of it until a reload.
     refreshAfterTeamPage: (teamId: string | null) => {
       if (teamId) refreshTeamLibraries();
       else void refreshFolders();
     },
-    teamModalOpen,
-    setTeamModalOpen,
   };
 }
 

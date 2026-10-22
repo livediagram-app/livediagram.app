@@ -44,10 +44,10 @@ async function selfHeaders(id: string): Promise<HeadersInit> {
 
 const loadSelfOnce = dedupeInFlight(_apiLoadSelf, (id) => id);
 
-// The participant this page last loaded or saved, briefly. /new hands the new document to the
-// editor IN PLACE (docs/specs/007-editor/new-document-route.md), so the editor's identity bootstrap
+// The participant this page last loaded or saved, briefly. /new hands the new project to the
+// editor IN PLACE (docs/specs/007-editor/new-project-route.md), so the editor's identity bootstrap
 // asked again for the participant /new had just read and written: one wasted round trip on every
-// new document. A reload is a new page and starts empty, and presence carries any live change.
+// new project. A reload is a new page and starts empty, and presence carries any live change.
 const RECENT_SELF_MS = 30_000;
 let recentSelf: { participant: Participant; at: number } | null = null;
 function rememberSelf(participant: Participant) {
@@ -63,51 +63,52 @@ export async function apiLoadSelf(id: string): Promise<Participant | null> {
   return loaded;
 }
 
-// Account self-deletion (Clerk-only). Wipes the caller's documents,
-// folders, and participant row server-side; the caller is expected
-// to follow up with Clerk's `user.delete()` to drop the Clerk
-// account itself. Order matters — backend first, then Clerk — so a
-// Clerk-side failure doesn't leave the user without an account but
-// with orphaned data. Returns the change counts on success or null
-// on any non-2xx so the caller can decide whether to proceed with
-// the Clerk delete.
-export async function apiDeleteAccount(): Promise<{
-  documents: number;
-  folders: number;
-} | null> {
+// Account self-deletion (signed-in only). Wipes the caller's projects,
+// folders, and participant row server-side, and closes the liveworkspace
+// account; the caller then ends the session.
+// Deletes the person's liveplanner data, then closes their liveworkspace account. Resolves to what
+// was deleted, `'account_not_closed'` when the data went but closing the account failed (asking
+// again finishes it), or null when nothing was deleted.
+export async function apiDeleteAccount(): Promise<
+  { projects: number; folders: number } | 'account_not_closed' | null
+> {
   // ownerId arg is unused server-side for this endpoint (the
-  // resolved Clerk id wins), but apiHeaders' signature wants
+  // resolved account id wins), but apiHeaders' signature wants
   // something — pass an empty string. The registered token
   // provider attaches the Bearer; the endpoint refuses if absent.
   const res = await apiFetch(`${API_BASE}/account`, {
     method: 'DELETE',
     headers: await apiHeaders(''),
   });
+  if (res.status === 502) {
+    const failed = (await res.json().catch(() => null)) as { error?: string } | null;
+    if (failed?.error === 'account_not_closed') return 'account_not_closed';
+  }
   if (!res.ok) return null;
-  const body = (await res.json()) as { deleted: { documents: number; folders: number } };
+  const body = (await res.json()) as { deleted: { projects: number; folders: number } };
   return body.deleted;
 }
 
 // Guest → authed ownership migration. Called once on first sign-in
 // from editor-page.tsx + new/page.tsx when both conditions hold:
-//   - the Clerk session is active (a Bearer token will be sent)
+//   - the signed-in session is active (a Bearer token will be sent)
 //   - `liveplanner:v2:self-id` is still in localStorage
 // On success the caller clears the localStorage id so subsequent
-// loads use only the Clerk userId.
+// loads use only the account id.
 //
 // The api worker (`POST /api/migrate` in `apps/api/src/index.ts`)
 // requires a verified Bearer token: there is no `X-Owner-Id`
 // fallback, because the whole point is to bind orphan guest data
-// to a Clerk account. Returns
-// `{ migrated: { documents, folders, shared } }`.
+// to an account. Returns
+// `{ migrated: { projects, folders, shared } }`.
 export async function apiMigrateGuestData(
   guestOwnerId: string,
   guestSignature: string | null,
-): Promise<{ documents: number; folders: number; shared: number } | null> {
+): Promise<{ projects: number; folders: number; shared: number } | null> {
   const res = await apiFetch(`${API_BASE}/migrate`, {
     method: 'POST',
-    // `apiHeaders` reads the registered token provider; the Clerk
-    // Bearer will be on every call from the editor / new-document
+    // `apiHeaders` reads the registered token provider; the
+    // Bearer will be on every call from the editor / new-project
     // pages after they've set the provider. ownerId is unused
     // server-side for this endpoint but the helper still expects
     // it; pass the guest id to keep signatures uniform.
@@ -120,7 +121,7 @@ export async function apiMigrateGuestData(
   });
   if (!res.ok) return null;
   const body = (await res.json()) as {
-    migrated: { documents: number; folders: number; shared: number };
+    migrated: { projects: number; folders: number; shared: number };
   };
   return body.migrated;
 }
@@ -150,7 +151,7 @@ export async function apiMintGuestId(): Promise<{
 
 // Legacy upgrade: move an existing unsigned guest's data onto a freshly
 // minted signed id (docs/specs/014-identity/auth-and-guest-access.md migrate flow 2). Authenticated by the OLD id
-// as X-Owner-Id (the guest bearer credential, present because no Clerk
+// as X-Owner-Id (the guest bearer credential, present because no account
 // token is registered for a guest); the NEW id is proven by its
 // signature. 'moved' on success; 'refused' when the worker says no for good (403: under enforcement
 // only a pre-signing id may upgrade unsigned); 'failed' for anything worth trying again (network, 5xx).
@@ -178,7 +179,7 @@ export async function apiSaveSelf(p: Participant): Promise<void> {
   // The api worker requires the caller's resolved owner to match the
   // participant id being mutated — for both modes that's the same
   // value as `p.id` (a guest's localStorage UUID is also their
-  // X-Owner-Id; a signed-in user's Clerk userId is also their
+  // X-Owner-Id; a signed-in user's account id is also their
   // participant id, see editor-page.tsx identity bootstrap).
   const res = await apiFetch(`${API_BASE}/participants/${p.id}`, {
     method: 'PUT',
@@ -187,16 +188,4 @@ export async function apiSaveSelf(p: Participant): Promise<void> {
   });
   await expectOkVoid(res, 'save self');
   rememberSelf({ id: p.id, name: p.name, color: p.color, status: 'online' });
-}
-
-// Publish or clear this account's profile picture (docs/specs/014-identity/profile-picture.md §6).
-// Clerk-only server-side. Returns the status so the caller can tell "no participant row yet" (404)
-// from a real failure.
-export async function apiSetProfilePicture(id: string, pictureUrl: string | null): Promise<number> {
-  const res = await apiFetch(`${API_BASE}/participants/${id}/picture`, {
-    method: 'PUT',
-    headers: await apiHeaders(id, { body: true }),
-    body: JSON.stringify({ pictureUrl }),
-  });
-  return res.status;
 }

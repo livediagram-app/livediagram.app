@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@liveplanner/document';
+import type { Element } from '@liveplanner/project';
 import { templateTabName } from './template-tab-name';
 
 // docs/specs/007-editor/templates-by-mode.md "The tab's name".
 describe('the name a template gives its tab', () => {
-  it('is the template’s title for any template, diagrams included', () => {
-    expect(templateTabName('flowchart', { name: 'Tab 1', elements: [] })).toBe('Flowchart');
+  it('is the template’s title for a template with no board or Sheet', () => {
+    expect(templateTabName('rsvp-form', { name: 'Tab 1', elements: [] })).toBe('Event RSVP Form');
   });
 
   it('is none for a blank template', () => {

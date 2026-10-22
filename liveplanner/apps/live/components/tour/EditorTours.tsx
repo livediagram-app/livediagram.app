@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useEditorContext } from '@/app/document/[id]/EditorContext';
+import { useEditorContext } from '@/app/project/[id]/EditorContext';
 import { PendingFormStart } from '@/components/forms/PendingFormStart';
 import { useEverTrue } from '@/hooks/ui/useEverTrue';
 
@@ -13,12 +13,6 @@ const PlanTourHost = dynamic(
 // The Forms tour (docs/specs/030-forms/forms.md "The Forms tour"): the first time an Editor opens a Form tab.
 const FormTourHost = dynamic(
   () => import('@/components/tour/FormTourHost').then((m) => m.FormTourHost),
-  { ssr: false },
-);
-// Element tours (docs/specs/007-editor/element-tours.md): offered beside the selection toolbar of a toured element
-// kind, so mounted with the editor; its chunk stays out of the first load.
-const ElementTourHost = dynamic(
-  () => import('@/components/tour/ElementTourHost').then((m) => m.ElementTourHost),
   { ssr: false },
 );
 
@@ -35,7 +29,6 @@ export function EditorTours() {
       {mountFormTour ? <FormTourHost /> : null}
       {/* A form template's form, started once its tab opens (lib/pending-form-start.ts). */}
       <PendingFormStart />
-      <ElementTourHost />
     </>
   );
 }

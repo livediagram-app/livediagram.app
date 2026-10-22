@@ -133,13 +133,13 @@ export function ContextMenu({
     // release opens replaces it — nothing can stack. Listening for
     // `contextmenu` here used to close it on the PRESS (X11 fires that event
     // on mouse-down), and an element's stopPropagation can't prevent it:
-    // Next's App Router hydrates on `document`, so React's listeners are
-    // document-level siblings of this one and both run regardless.
+    // Next's App Router hydrates on `project`, so React's listeners are
+    // project-level siblings of this one and both run regardless.
     // pointerdown carries pointerType, so a mouse click can dismiss the
     // menu the instant it opens while a touch long-press keeps its grace.
     // CAPTURE phase: an element's own pointerdown handler calls
     // stopPropagation, and React's root listener would swallow the event
-    // before it ever reached document — capture runs first, so the click
+    // before it ever reached project — capture runs first, so the click
     // that selects is also the click that dismisses.
     document.addEventListener('pointerdown', onPointer, true);
     return () => document.removeEventListener('pointerdown', onPointer, true);

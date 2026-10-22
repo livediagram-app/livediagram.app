@@ -1,5 +1,5 @@
-// /api/documents/:id/tabs/:tabId/form-link and .../form-seen (docs/specs/030-forms/forms.md "Publishing and the form
-// link", "Who may do what"): a Form tab's link, as its document's people see and change it. Anyone who may read the
+// /api/projects/:id/tabs/:tabId/form-link and .../form-seen (docs/specs/030-forms/forms.md "Publishing and the form
+// link", "Who may do what"): a Form tab's link, as its project's people see and change it. Anyone who may read the
 // tab sees the response count; only an Editor sees the code and publishes, opens, closes or deletes the link.
 import type { FormLinkResponse } from '@liveplanner/api-schema';
 import { FORM_SUSPENSIONS_MAX, destinationType, publishProblems } from '@liveplanner/forms';
@@ -8,7 +8,7 @@ import {
   countSuspendedFormLinks,
   createFormLink,
   deleteFormLink,
-  getDocument,
+  getProject,
   getLiveFormLink,
   getSuspendedFormLink,
   markFormSeen,
@@ -22,7 +22,7 @@ import { conflict, forbidden, json, methodNotAllowed, notFound } from '../respon
 import {
   gateEdit,
   gateRead,
-  missingDocument,
+  missingProject,
   readBody,
   requireOwner,
   type RouteContext,
@@ -30,15 +30,15 @@ import {
 
 async function answer(
   ctx: RouteContext,
-  documentId: string,
+  projectId: string,
   tabId: string,
   owner: string,
   editor: boolean,
 ): Promise<Response> {
   const [live, suspended, suspensions] = await Promise.all([
-    getLiveFormLink(ctx.env, documentId, tabId),
-    getSuspendedFormLink(ctx.env, documentId, tabId),
-    countSuspendedFormLinks(ctx.env, documentId),
+    getLiveFormLink(ctx.env, projectId, tabId),
+    getSuspendedFormLink(ctx.env, projectId, tabId),
+    countSuspendedFormLinks(ctx.env, projectId),
   ]);
   const body: FormLinkResponse = {
     link:
@@ -59,14 +59,14 @@ async function answer(
 // to go (409 form_destination_missing), or not ready to fill in (409 form_not_ready, with the problems). Null: it may.
 async function notReadyToOpen(
   ctx: RouteContext,
-  documentId: string,
+  projectId: string,
   tabId: string,
   types: ReturnType<typeof typesOf>,
 ): Promise<Response | null> {
-  const formTab = await readFormTab(ctx.env, documentId, tabId);
+  const formTab = await readFormTab(ctx.env, projectId, tabId);
   if (!formTab) return notFound();
   const { form } = formTab;
-  if (await responsesProblem(ctx.env, documentId, form, types))
+  if (await responsesProblem(ctx.env, projectId, form, types))
     return conflict('form_destination_missing');
   const problems = publishProblems(
     form,
@@ -83,20 +83,20 @@ export async function handleFormLinkRoutes(ctx: RouteContext): Promise<Response 
     (segments[5] === 'form-link' || segments[5] === 'form-seen' || segments[5] === 'form-preview')
   ))
     return null;
-  const documentId = segments[2]!;
+  const projectId = segments[2]!;
   const tabId = segments[4]!;
   const owner = requireOwner(ctx);
   if (owner instanceof Response) return owner;
-  const doc = await getDocument(env, documentId);
-  if (!doc) return missingDocument(ctx, documentId);
-  if (!(await gateRead(ctx, documentId, doc.ownerId, doc.teamId, tabId))) return forbidden();
-  const editor = await gateEdit(ctx, documentId, doc.ownerId, doc.teamId, tabId);
+  const doc = await getProject(env, projectId);
+  if (!doc) return missingProject(ctx, projectId);
+  if (!(await gateRead(ctx, projectId, doc.ownerId, doc.teamId, tabId))) return forbidden();
+  const editor = await gateEdit(ctx, projectId, doc.ownerId, doc.teamId, tabId);
 
   if (segments[5] === 'form-seen') {
     if (request.method !== 'POST') return methodNotAllowed();
-    const live = await getLiveFormLink(env, documentId, tabId);
+    const live = await getLiveFormLink(env, projectId, tabId);
     if (live) await markFormSeen(env, live.code, owner);
-    return answer(ctx, documentId, tabId, owner, editor);
+    return answer(ctx, projectId, tabId, owner, editor);
   }
 
   // An Editor's Preview of a published form (docs/specs/030-forms/forms.md "Preview"): a counted response. A previewer
@@ -105,10 +105,10 @@ export async function handleFormLinkRoutes(ctx: RouteContext): Promise<Response 
   if (segments[5] === 'form-preview') {
     if (request.method !== 'POST') return methodNotAllowed();
     if (!editor) return forbidden();
-    const live = await getLiveFormLink(env, documentId, tabId);
+    const live = await getLiveFormLink(env, projectId, tabId);
     if (!live) {
       // A sheet's preview is written here, unnumbered; a board's card the editor makes itself.
-      const formTab = await readFormTab(env, documentId, tabId);
+      const formTab = await readFormTab(env, projectId, tabId);
       if (formTab?.form.sheet)
         return previewToSheet(ctx, doc, formTab.form, await writer(ctx, owner));
       return json({ error: 'form_not_published' }, { status: 404 });
@@ -119,22 +119,22 @@ export async function handleFormLinkRoutes(ctx: RouteContext): Promise<Response 
     return sent;
   }
 
-  if (request.method === 'GET') return answer(ctx, documentId, tabId, owner, editor);
+  if (request.method === 'GET') return answer(ctx, projectId, tabId, owner, editor);
   if (!editor) return forbidden();
-  const live = await getLiveFormLink(env, documentId, tabId);
+  const live = await getLiveFormLink(env, projectId, tabId);
 
   if (request.method === 'POST') {
     if (live) return conflict('form_already_published');
-    const refused = await notReadyToOpen(ctx, documentId, tabId, typesOf(doc.itemTypes));
+    const refused = await notReadyToOpen(ctx, projectId, tabId, typesOf(doc.itemTypes));
     if (refused) return refused;
-    if ((await countSuspendedFormLinks(env, documentId)) >= FORM_SUSPENSIONS_MAX)
+    if ((await countSuspendedFormLinks(env, projectId)) >= FORM_SUSPENSIONS_MAX)
       return forbidden('form_suspensions');
-    const made = await createFormLink(env, documentId, tabId, Date.now());
+    const made = await createFormLink(env, projectId, tabId, Date.now());
     if (!made) return conflict('form_already_published');
     // The publisher has seen every response so far (none, or the suspended link's).
     await markFormSeen(env, made.code, owner);
-    console.info('[forms] form.published', { documentId });
-    return answer(ctx, documentId, tabId, owner, editor);
+    console.info('[forms] form.published', { projectId });
+    return answer(ctx, projectId, tabId, owner, editor);
   }
   if (!live) return notFound();
   if (request.method === 'PUT') {
@@ -144,17 +144,17 @@ export async function handleFormLinkRoutes(ctx: RouteContext): Promise<Response 
     // Opening is publishing again (docs/specs/030-forms/forms.md "Publishing and the form link"): a form with nowhere
     // for responses to go, or not ready to fill in, stays closed, its link kept.
     if (body['open']) {
-      const refused = await notReadyToOpen(ctx, documentId, tabId, typesOf(doc.itemTypes));
+      const refused = await notReadyToOpen(ctx, projectId, tabId, typesOf(doc.itemTypes));
       if (refused) return refused;
     }
     await setFormLinkOpen(env, live.code, body['open']);
-    console.info(body['open'] ? '[forms] form.reopened' : '[forms] form.closed', { documentId });
-    return answer(ctx, documentId, tabId, owner, editor);
+    console.info(body['open'] ? '[forms] form.reopened' : '[forms] form.closed', { projectId });
+    return answer(ctx, projectId, tabId, owner, editor);
   }
   if (request.method === 'DELETE') {
     await deleteFormLink(env, live.code, Date.now());
-    console.info('[forms] form.deleted', { documentId });
-    return answer(ctx, documentId, tabId, owner, editor);
+    console.info('[forms] form.deleted', { projectId });
+    return answer(ctx, projectId, tabId, owner, editor);
   }
   return methodNotAllowed();
 }

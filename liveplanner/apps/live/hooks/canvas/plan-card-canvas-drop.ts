@@ -2,7 +2,7 @@
 // "Working on a board"): the column, and the board holding it, are read from the board's own DOM under the
 // pointer. Null for a press that did not travel, a dragged element that is not a Plan card, or a release over
 // no column.
-import type { Element } from '@liveplanner/document';
+import type { Element } from '@liveplanner/project';
 
 // How far the pointer travels before a release counts as a drop rather than a click.
 const PLAN_CARD_DROP_TRAVEL_PX = 4;

@@ -5,7 +5,7 @@
 // on `main`; this is for what covers the canvas (a form, a dashboard, a board filling its tab: CanvasCover) and the form
 // link's page, so a tab's style reads the same wherever it is drawn. Pointer-transparent, and still under reduced
 // motion as the canvas's is.
-import { isAnimatedPattern, type BackgroundPattern } from '@liveplanner/document';
+import { isAnimatedPattern, type BackgroundPattern } from '@liveplanner/project';
 import { tabBackgroundStyle } from '@/lib/canvas-backgrounds';
 import { AnimatedCanvasBackground } from './AnimatedCanvasBackground';
 

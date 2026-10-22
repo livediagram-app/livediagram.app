@@ -1,11 +1,11 @@
-import type { Layer, TabTimer, TabVote, TimerMode, VoteSetup } from '@liveplanner/document';
+import type { Layer, TabTimer, TabVote, TimerMode, VoteSetup } from '@liveplanner/project';
 
 // The session-tools bundle (docs/specs/012-collaboration/session-tools.md, docs/specs/012-collaboration/vote-layer-scope.md): the running timer, the
 // dot vote, and every verb that drives them.
 //
 // One bundle, read once (useSessionTools) for the bottom bar's Session strip and handed to its
 // popovers' panes (docs/specs/012-collaboration/session-tools.md "The Session strip"). Both tools are Tab
-// FIELDS, so they persist with the document.
+// FIELDS, so they persist with the project.
 export type SessionToolsProps = {
   timer: TabTimer | null;
   vote: TabVote | null;

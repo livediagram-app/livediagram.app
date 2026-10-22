@@ -46,7 +46,7 @@ describe('PickerFace', () => {
   afterEach(() => {
     // Explicit: this workspace runs vitest without `globals`, so
     // @testing-library's auto-cleanup afterEach is never registered and each
-    // render would otherwise stack another face onto the same document.
+    // render would otherwise stack another face onto the same project.
     cleanup();
     vi.useRealTimers();
   });
@@ -135,7 +135,7 @@ describe('PickerFace', () => {
   });
 
   it('shows a result that was already there without spinning', () => {
-    // Joining a document somebody already rolled on is not a roll happening.
+    // Joining a project somebody already rolled on is not a roll happening.
     render(
       <PickerFace label="Who demos?" result="Priya" candidates={CANDIDATES} textColor="#000" />,
     );

@@ -9,7 +9,7 @@ import {
   type ArrowThickness,
   type BorderStyle,
   type Element,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { applyArrowPresetToEl } from '@/lib/style-presets';
 import { track } from '@/lib/telemetry';
 

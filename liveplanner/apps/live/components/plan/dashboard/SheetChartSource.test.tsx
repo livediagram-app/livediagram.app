@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { ShapeElement, Tab } from '@liveplanner/document';
+import type { ShapeElement, Tab } from '@liveplanner/project';
 import { DashboardContext, type DashboardContextValue } from './dashboard-context';
 import { SheetChartSource } from './SheetChartSource';
 import type { SheetRead } from './useSheetReader';
@@ -71,19 +71,17 @@ function show(
 }
 
 describe('Choose a Chart', () => {
-  it('fetches every tab and says when the document has no sheets', () => {
+  it('fetches every tab and says when the project has no sheets', () => {
     const { loadAllTabs } = show([]);
     expect(loadAllTabs).toHaveBeenCalled();
-    expect(screen.getByText('No sheets in this document yet.')).toBeTruthy();
+    expect(screen.getByText('No sheets in this project yet.')).toBeTruthy();
   });
 
   it('says when the tabs failed to load, with a Retry, rather than finding for ever', () => {
     const other = { id: 'x', name: 'Other', elements: [] } as unknown as Tab;
     const { loadAllTabs } = show([other], '', () => 'failed');
-    expect(screen.queryByText('Finding this document’s sheets…')).toBeNull();
-    expect(screen.getByRole('alert').textContent).toContain(
-      'Couldn’t load this document’s sheets.',
-    );
+    expect(screen.queryByText('Finding this project’s sheets…')).toBeNull();
+    expect(screen.getByRole('alert').textContent).toContain('Couldn’t load this project’s sheets.');
     loadAllTabs.mockClear();
     fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
     expect(loadAllTabs).toHaveBeenCalled();

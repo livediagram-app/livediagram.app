@@ -1,7 +1,7 @@
-// The Cards panel's search (docs/specs/026-plan/items.md "Finding a card"): the document's cards that are
+// The Cards panel's search (docs/specs/026-plan/items.md "Finding a card"): the project's cards that are
 // neither archived nor trashed, of every card type the catalogue has (custom ones included) and of none,
 // matched on number, title, description and type name, newest change first. "Not on a board" narrows them to
-// the cards no board shows: whose status no column of the document's boards holds, or whose type every board
+// the cards no board shows: whose status no column of the project's boards holds, or whose type every board
 // naming that status leaves out (its Card Types); a set of card types narrows them to those types.
 import { isArchived, isTrashed } from './board';
 import { itemStatus, itemTitle, type Item } from './item';
@@ -31,7 +31,7 @@ export function cardMatches(item: Item, query: string, typeLabel?: string): bool
   return haystackOf(item).includes(q);
 }
 
-// The statuses the document's boards name, each with the card types those boards show under it: 'all' when
+// The statuses the project's boards name, each with the card types those boards show under it: 'all' when
 // any board naming it shows every type, else the union of their Card Types (an empty set shows none).
 export type BoardStatusTypes = ReadonlyMap<string, 'all' | ReadonlySet<string>>;
 

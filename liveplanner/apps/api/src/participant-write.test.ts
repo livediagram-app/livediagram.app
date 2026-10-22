@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { TabLedger } from '@liveplanner/document';
+import type { TabLedger } from '@liveplanner/project';
 
 // A Participant's writes (docs/specs/013-workspace/share-roles.md "Integrity"): the participant content rule
 // applied to what D1 holds, and a compare-and-swap that re-reads when another writer got to the row first.
@@ -26,7 +26,7 @@ const sticky = (id: string, extra: Record<string, unknown> = {}) => ({
   label: 'x',
   ...extra,
 });
-const req = (op: unknown) => ({ documentId: 'd1', tabId: 't1', op: op as never, adderKey: ME });
+const req = (op: unknown) => ({ projectId: 'd1', tabId: 't1', op: op as never, adderKey: ME });
 
 beforeEach(() => {
   db.getTabData.mockReset();
@@ -44,8 +44,8 @@ describe('writeParticipantOp', () => {
     );
     expect(out).toMatchObject({ ok: true, outcome: { result: 'applied', changed: true } });
     const swap: unknown[] = db.swapTabData.mock.calls[0]!;
-    const [, documentId, tabId, expected, next, stats] = swap;
-    expect([documentId, tabId, expected]).toEqual(['d1', 't1', before]);
+    const [, projectId, tabId, expected, next, stats] = swap;
+    expect([projectId, tabId, expected]).toEqual(['d1', 't1', before]);
     // The stats handed over are the next body's, counted as every write counts them.
     expect(stats).toEqual(tabStatsOfData(next as string).stats);
     expect(stats).toMatchObject({ elementCount: 2 });
@@ -100,7 +100,7 @@ describe('writeParticipantAnswers', () => {
   it("folds the room's dots into the stored tab", async () => {
     db.getTabData.mockResolvedValue(stored([sticky('s1')], { vote }));
     expect(
-      await writeParticipantAnswers({} as never, { documentId: 'd1', tabId: 't1', ledger }),
+      await writeParticipantAnswers({} as never, { projectId: 'd1', tabId: 't1', ledger }),
     ).toEqual({ ok: true, changed: true });
     expect(JSON.parse(db.swapTabData.mock.calls[0]![4] as string)).toHaveProperty('vote.votes', {
       s1: ['k1'],
@@ -112,7 +112,7 @@ describe('writeParticipantAnswers', () => {
       stored([sticky('s1')], { vote: { ...vote, votes: { s1: ['k1'] } } }),
     );
     expect(
-      await writeParticipantAnswers({} as never, { documentId: 'd1', tabId: 't1', ledger }),
+      await writeParticipantAnswers({} as never, { projectId: 'd1', tabId: 't1', ledger }),
     ).toEqual({ ok: true, changed: false });
     expect(db.swapTabData).not.toHaveBeenCalled();
   });

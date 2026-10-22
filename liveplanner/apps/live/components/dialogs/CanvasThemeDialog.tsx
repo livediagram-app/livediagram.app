@@ -11,14 +11,14 @@
 //
 // The tabs render shared components (CanvasStyleControls,
 // ThemeCategoryBrowser) so they're identical to the palette accordion and the
-// New-document picker respectively. Follows the standard modal contract
+// New-project picker respectively. Follows the standard modal contract
 // (Portal + backdrop + Escape) used by SettingsDialog.
 
 import { useUiScale } from '@/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
 import { use, useRef, useState } from 'react';
 import { browser } from 'react-dom';
-import { resolveFinish, type BackgroundPattern, type Finish } from '@liveplanner/document';
+import { resolveFinish, type BackgroundPattern, type Finish } from '@liveplanner/project';
 import {
   useEscape,
   useFocusTrap,
@@ -32,13 +32,8 @@ import { CanvasStyleControls } from '@/components/canvas/CanvasStyleControls';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { BackBar } from '@/components/primitives/BackBar';
 import { AnimatedHeightBox } from '@/components/primitives/AnimatedHeightBox';
-import {
-  TabStyleShowMeButton,
-  TabStyleTourStage,
-  useTabStyleTour,
-} from '@/components/tour/TabStyleTour';
 import { CustomThemePicker } from '@/components/palette/CustomThemePicker';
-import type { TextSize } from '@liveplanner/document';
+import type { TextSize } from '@liveplanner/project';
 import { useModalGuard } from '@/hooks/ui/useModalGuard';
 import { FinishTab } from './FinishTab';
 import { TextTab } from './TextTab';
@@ -157,15 +152,7 @@ export function CanvasThemeDialog({
   const panelScale = useUiScale('panels');
   // On a phone it is a bottom sheet, its grab handle dragging it taller or down to close (BottomSheet's).
   const sheet = useSheetDrag(onClose);
-  // Show Me: the tour of the home, run on this dialog (docs/specs/011-theme/canvas-and-theme-dialog.md "Show Me").
-  const tour = useTabStyleTour({
-    showHome: () => (tab === 'looks' ? undefined : go('looks')),
-    showFinish: () => (tab === 'finish' ? undefined : go('finish')),
-    finish: () => resolveFinish(finish, undefined),
-    setFinish: eased(onSetFinish),
-  });
-  // While Show Me runs, Escape is the tour's, never the dialog's.
-  useEscape(onClose, { enabled: !tour.active });
+  useEscape(onClose);
 
   return (
     <Portal>
@@ -229,7 +216,6 @@ export function CanvasThemeDialog({
               {/* Help sits with the close button, where the other editor
                   dialogs keep their window controls, not beside the title. */}
               <div className="flex items-center gap-1">
-                <TabStyleShowMeButton tour={tour} />
                 <HelpArticleLink
                   size="md"
                   article={
@@ -323,7 +309,6 @@ export function CanvasThemeDialog({
           </div>
         </div>
       </div>
-      <TabStyleTourStage tour={tour} />
     </Portal>
   );
 }

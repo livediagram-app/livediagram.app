@@ -1,7 +1,7 @@
 // One session's state in the room (docs/specs/015-api/api.md, Realtime model): what the room pins on each
 // socket's serialized attachment at the upgrade, read from the headers only the api worker can set.
 import { isAccessLevel, type AccessLevel } from '@liveplanner/api-schema';
-import { ADDER_KEY_LENGTH } from '@liveplanner/document';
+import { ADDER_KEY_LENGTH } from '@liveplanner/project';
 import type { ParticipantPresence } from './types';
 
 // Everything the room knows about one session, persisted in the socket's
@@ -32,7 +32,7 @@ export type SessionAttachment = {
   verifiedRole?: AccessLevel;
   presence: ParticipantPresence | null;
   //   - `multiplayer`: this session belongs to a multiplayer session the
-  //     room has already counted (Document·Used·Multiplayer, docs/specs/017-telemetry/telemetry.md). See
+  //     room has already counted (Project·Used·Multiplayer, docs/specs/017-telemetry/telemetry.md). See
   //     room-multiplayer.ts for why the mark lives here.
   multiplayer?: boolean;
   //   - `tabScope`: the one tab this session is confined to
@@ -41,11 +41,7 @@ export type SessionAttachment = {
   //     so revoking or rescoping that code can close exactly its sockets.
   tabScope?: string | null;
   shareCode?: string | null;
-  //   - `account`: a verified Clerk account holds this session, from X-Verified-Account
-  //     (docs/specs/014-identity/profile-picture.md §6). Only such a session may put a picture on the
-  //     roster, and only such a session receives the pictures on it.
-  account?: boolean;
-  //   - `personTag`: the verified account's per-document person tag, from X-Verified-Person
+  //   - `personTag`: the verified account's per-project person tag, from X-Verified-Person
   //     (docs/specs/024-agents/agent-changesets.md "Held elements", CS39): how the room tells an
   //     agent's owner's own sessions apart without holding an owner id. 64 hex characters.
   personTag?: string | null;
@@ -54,34 +50,33 @@ export type SessionAttachment = {
   workbenchPairing?: string | null;
   //   - `adderKey`: a Participant's adder key, from X-Verified-Adder (docs/specs/013-workspace/share-roles.md
   //     "Integrity"): what the room stamps on the stickies and text it adds. 32 hex characters.
-  //   - `documentId`: the document this room serves, from X-Verified-Document, so a Participant's write knows its
+  //   - `projectId`: the project this room serves, from X-Verified-Project, so a Participant's write knows its
   //     row. The room is named after it, so every session carries the same value.
   adderKey?: string | null;
-  documentId?: string | null;
+  projectId?: string | null;
 };
 
 // A person tag is a SHA-256 hex digest; the clamp keeps a forged header from bloating the attachment.
 const MAX_PERSON_TAG_LEN = 64;
 // A workbench pairing id is a UUID.
 const MAX_PAIRING_ID_LEN = 36;
-// A document id is a UUID; the clamp keeps a forged header from bloating the attachment.
-const MAX_DOCUMENT_ID_LEN = 64;
+// A project id is a UUID; the clamp keeps a forged header from bloating the attachment.
+const MAX_PROJECT_ID_LEN = 64;
 
 /** The server-verified facts an upgrade carries, as the api worker set them (empty header = none). */
 type VerifiedSession = {
   verifiedRole?: AccessLevel;
   tabScope: string | null;
   shareCode: string | null;
-  account: boolean;
   personTag: string | null;
   workbenchPairing: string | null;
   adderKey: string | null;
-  documentId: string | null;
+  projectId: string | null;
 };
 
 /**
  * Read the upgrade's verified headers. The room trusts them because only the worker can set them:
- * clients reach the DO via env.DOCUMENT_ROOM.get(...).fetch, never directly. The role is pinned into
+ * clients reach the DO via env.PROJECT_ROOM.get(...).fetch, never directly. The role is pinned into
  * the attachment so the hello handler can re-stamp it onto the broadcast presence even after a
  * hibernation cycle, defeating a crafted client that lies in its own hello payload.
  */
@@ -92,11 +87,10 @@ export function verifiedSessionOf(request: Request): VerifiedSession {
     verifiedRole: isAccessLevel(role) ? role : undefined,
     tabScope: header('X-Verified-Tab-Scope'),
     shareCode: header('X-Verified-Share-Code'),
-    account: request.headers.get('X-Verified-Account') === '1',
     personTag: header('X-Verified-Person'),
     workbenchPairing: header('X-Verified-Workbench-Pairing'),
     adderKey: header('X-Verified-Adder'),
-    documentId: header('X-Verified-Document'),
+    projectId: header('X-Verified-Project'),
   };
 }
 
@@ -116,11 +110,10 @@ export function newSessionAttachment(v: VerifiedSession, presenceId: string): Se
     presence: null,
     tabScope: v.tabScope,
     shareCode: v.shareCode,
-    account: v.account,
     personTag: v.personTag?.slice(0, MAX_PERSON_TAG_LEN) ?? null,
     workbenchPairing: v.workbenchPairing?.slice(0, MAX_PAIRING_ID_LEN) ?? null,
     adderKey: v.adderKey?.slice(0, ADDER_KEY_LENGTH) ?? null,
-    documentId: v.documentId?.slice(0, MAX_DOCUMENT_ID_LEN) ?? null,
+    projectId: v.projectId?.slice(0, MAX_PROJECT_ID_LEN) ?? null,
   };
 }
 

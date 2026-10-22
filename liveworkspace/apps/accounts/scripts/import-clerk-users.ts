@@ -14,6 +14,8 @@ import { parseCsv } from './csv.ts';
 export interface ClerkUser {
   id: string;
   email: string;
+  givenName: string;
+  familyName: string;
   name: string;
   verified: boolean;
   // ISO 8601, the way Better Auth stores dates in SQLite.
@@ -43,13 +45,16 @@ export function clerkUsersFromCsv(csv: string): { users: ClerkUser[]; skipped: s
       if (id) skipped.push(id);
       continue;
     }
-    const name = [row[firstAt] ?? '', row[lastAt] ?? ''].join(' ').trim();
+    const givenName = row[firstAt]?.trim() ?? '';
+    const familyName = row[lastAt]?.trim() ?? '';
     const verifiedList = (row[verifiedAt] ?? '').toLowerCase();
     const created = Date.parse(row[createdAt] ?? '');
     users.push({
       id,
       email,
-      name,
+      givenName,
+      familyName,
+      name: [givenName, familyName].filter(Boolean).join(' '),
       // Clerk only lets an address be primary once it is verified, so a missing column
       // counts as verified; a present one is checked.
       verified: verifiedAt < 0 || verifiedList.includes(email),
@@ -68,8 +73,8 @@ export function importSql(users: ClerkUser[]): string {
   return users
     .map(
       (u) =>
-        `INSERT OR IGNORE INTO "user" ("id", "name", "email", "emailVerified", "image", "createdAt", "updatedAt") ` +
-        `VALUES (${sqlString(u.id)}, ${sqlString(u.name)}, ${sqlString(u.email)}, ${u.verified ? 1 : 0}, NULL, ${sqlString(u.createdAt)}, ${sqlString(now)});`,
+        `INSERT OR IGNORE INTO "user" ("id", "name", "givenName", "familyName", "email", "emailVerified", "image", "createdAt", "updatedAt") ` +
+        `VALUES (${sqlString(u.id)}, ${sqlString(u.name)}, ${sqlString(u.givenName)}, ${sqlString(u.familyName)}, ${sqlString(u.email)}, ${u.verified ? 1 : 0}, NULL, ${sqlString(u.createdAt)}, ${sqlString(now)});`,
     )
     .join('\n');
 }

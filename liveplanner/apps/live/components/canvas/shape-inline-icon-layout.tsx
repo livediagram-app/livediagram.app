@@ -10,7 +10,7 @@ import {
   type TextAlignY,
   type TextSize,
   type TextSizePreset,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import {
   ALIGN_ITEMS,
   effectiveRunStyle,
@@ -206,6 +206,6 @@ const X_ALIGN_FLEX: Record<TextAlignX, 'flex-start' | 'center' | 'flex-end'> = {
   right: 'flex-end',
 };
 
-// The metrics live with the export's inline icon (packages/document svg-render-inline-icon), so the canvas, the
+// The metrics live with the export's inline icon (packages/project svg-render-inline-icon), so the canvas, the
 // element indicators and every export agree on where the icon is.
-export { inlineIconGap, inlineIconMetrics } from '@liveplanner/document';
+export { inlineIconGap, inlineIconMetrics } from '@liveplanner/project';

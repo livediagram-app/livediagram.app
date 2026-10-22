@@ -174,7 +174,7 @@
   }
 }
 
-/* Whiteboard, Plan and documents card art, continued: the other half of fa-f-out, hidden at the start and shown mid-cycle (a
+/* Whiteboard, Plan and projects card art, continued: the other half of fa-f-out, hidden at the start and shown mid-cycle (a
    count that ticks over as a card lands). Reduced motion shows it, as the finished frame. */
 @keyframes fa-f-on {
   0%,

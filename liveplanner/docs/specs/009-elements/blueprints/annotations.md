@@ -9,17 +9,17 @@ Scope, by file:
 
 | File                                                     | Role                                                                |
 | -------------------------------------------------------- | ------------------------------------------------------------------- |
-| `packages/document/src/element-types.ts`                 | `AnnotationElement`                                                 |
-| `packages/document/src/index.ts`                         | `isBoxed` and the `BoxedElement` union include `'annotation'`       |
-| `packages/document/src/factories.ts`                     | `createAnnotation`, `ANNOTATION_SIZE`                               |
-| `packages/document/src/colors.ts`                        | Per-type colour and padding defaults; `DARK_INK`; `supportsColours` |
-| `packages/document/src/themes.ts`                        | `THEME_COLOUR_FIELDS.annotation`: fill + stroke                     |
-| `packages/document/src/svg-render-describe.ts`           | Export shape: an ellipse                                            |
+| `packages/project/src/element-types.ts`                 | `AnnotationElement`                                                 |
+| `packages/project/src/index.ts`                         | `isBoxed` and the `BoxedElement` union include `'annotation'`       |
+| `packages/project/src/factories.ts`                     | `createAnnotation`, `ANNOTATION_SIZE`                               |
+| `packages/project/src/colors.ts`                        | Per-type colour and padding defaults; `DARK_INK`; `supportsColours` |
+| `packages/project/src/themes.ts`                        | `THEME_COLOUR_FIELDS.annotation`: fill + stroke                     |
+| `packages/project/src/svg-render-describe.ts`           | Export shape: an ellipse                                            |
 | `apps/live/lib/canvas.ts`                                | `inheritedSizeFor` keeps the marker size                            |
 | `apps/live/lib/canvas-selection.ts`                      | No quick-connect plus on an annotation                              |
 | `apps/live/lib/themes.ts`                                | `deriveNewBoxedColours` treats an annotation like a shape           |
 | `apps/live/lib/draw-mode.ts`                             | Annotation is absent from draw-to-size                              |
-| `apps/live/app/document/[id]/useElementCreation.ts`      | `addAnnotation`: viewport-centre drop + telemetry                   |
+| `apps/live/app/project/[id]/useElementCreation.ts`      | `addAnnotation`: viewport-centre drop + telemetry                   |
 | `apps/live/components/palette/palette-tile-defs.tsx`     | Tile `tools:annotation`, `toolGroup: 'write'`                       |
 | `apps/live/components/palette/PaletteTileGrid.tsx`       | Routes the tile to `addAnnotation`, never arms a draw               |
 | `apps/live/components/canvas/element-variant.ts`         | The round, bordered wrapper style                                   |
@@ -29,7 +29,7 @@ Scope, by file:
 | `apps/live/components/canvas/useBoxedElementGestures.ts` | Double-click opens the note [QD9]                                   |
 | `apps/live/components/canvas/element-parts.tsx`          | `SelectionChromeLayer`: resize handles for a selected marker [QD8]  |
 | `apps/live/components/palette/EditorContextMenu.tsx`     | Size section shown, Rotation hidden for an annotation [QD8]         |
-| `packages/document/src/export-tab-text.ts`               | Markdown outline [QD11]                                             |
+| `packages/project/src/export-tab-text.ts`               | Markdown outline [QD11]                                             |
 
 ## Domain and naming
 
@@ -79,7 +79,7 @@ States per marker: `hovering` (local `useState`), `isSelected`, `isEditing`.
 - A selected annotation shows corner resize handles and keeps its aspect lock, so it stays round
   [QD8].
 - The Size section (width, height, aspect lock) applies; Rotation is hidden for annotations [QD8]:
-  `supportsRotation` (`packages/document/src/rotation.ts`) gates the Rotation category, the Rotate
+  `supportsRotation` (`packages/project/src/rotation.ts`) gates the Rotation category, the Rotate
   commands and `applyRotationToEl`.
 - Shape morph grid and Border are hidden: both gate on `type === 'shape'` / `supportsBorder`.
 
@@ -99,7 +99,7 @@ Invariants:
 ## Interfaces and contracts
 
 ```ts
-// packages/document/src/element-types.ts (abridged)
+// packages/project/src/element-types.ts (abridged)
 export type AnnotationElement = {
   id: ElementId;
   type: 'annotation';
@@ -123,7 +123,7 @@ export type AnnotationElement = {
   // …remaining shared boxed fields, declared for the union paths
 };
 
-// packages/document/src/factories.ts
+// packages/project/src/factories.ts
 export function createAnnotation(x: number, y: number): AnnotationElement;
 
 // apps/live/components/canvas/AnnotationMarker.tsx
@@ -215,14 +215,14 @@ Telemetry: `Element` / `Added` / `Annotation`; opening reuses `Note` / `Opened`.
 
 | Rule                                           | Test                                           | File                                                           |
 | ---------------------------------------------- | ---------------------------------------------- | -------------------------------------------------------------- |
-| New marker is 44 × 44, no note                 | `createAnnotation is a 44x44 boxed marker`     | `packages/document/src/factories.test.ts`                      |
+| New marker is 44 × 44, no note                 | `createAnnotation is a 44x44 boxed marker`     | `packages/project/src/factories.test.ts`                      |
 | Keeps marker size regardless of selection (I2) | `keeps an annotation at its fixed marker size` | `apps/live/lib/canvas.test.ts`                                 |
 | No quick-connect plus                          | `showPlus` false for an annotation             | `apps/live/lib/canvas-selection.test.ts`                       |
 | Telemetry token `Annotation`                   | `elementTelemetryType`                         | `apps/live/lib/element-telemetry.test.ts`                      |
 | Tile routes to an action                       | palette telemetry coverage                     | `apps/live/lib/palette-telemetry-coverage.test.ts`             |
-| No inline text (I1)                            | `elementHasText` false for annotation          | `packages/document/src/element-has-text.test.ts`               |
-| No shadow; arrows do not hide behind it        | shadow / arrow-behind exclusions               | `packages/document/src/shadow.test.ts`, `arrow-behind.test.ts` |
-| Dark fill a shade above the shape fill (D89)   | lifts an annotation marker a shade above ...   | `packages/document/src/canvas-ink.test.ts`                     |
+| No inline text (I1)                            | `elementHasText` false for annotation          | `packages/project/src/element-has-text.test.ts`               |
+| No shadow; arrows do not hide behind it        | shadow / arrow-behind exclusions               | `packages/project/src/shadow.test.ts`, `arrow-behind.test.ts` |
+| Dark fill a shade above the shape fill (D89)   | lifts an annotation marker a shade above ...   | `packages/project/src/canvas-ink.test.ts`                     |
 | Themes fill + stroke, not text                 | none                                           | (GD7)                                                          |
 | Glyph and ring at 3:1 in both appearances      | none                                           | (GD16) [QD18]                                                  |
 | `supportsColours` true                         | none                                           | (GD7)                                                          |

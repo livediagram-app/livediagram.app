@@ -61,7 +61,7 @@ describe('focusablesOf', () => {
 });
 
 describe('tabbableNeighbour', () => {
-  it('finds the next and previous tabbable in document order, skipping an excluded subtree', () => {
+  it('finds the next and previous tabbable in project order, skipping an excluded subtree', () => {
     html(`
       <button id="before">Before</button>
       <button id="trigger">Trigger</button>

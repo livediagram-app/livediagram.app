@@ -4,7 +4,7 @@ import {
   dismissQuickTour,
   expectNoPageErrors,
   openTeamRetro,
-  startBlankDocument,
+  startBlankProject,
   paletteTile,
 } from './fixtures';
 
@@ -13,10 +13,10 @@ import {
 // tests can't reach. Every test also fails on any uncaught page error
 // (the `pageErrors` fixture).
 
-test('the new-document wizard renders', async ({ page, pageErrors }) => {
+test('the new-project wizard renders', async ({ page, pageErrors }) => {
   await page.goto('/new');
-  await expect(page.getByText('New Document', { exact: false })).toBeVisible();
-  // The Mode step is the client-rendered heart of the wizard (docs/specs/007-editor/new-document-route.md
+  await expect(page.getByText('New Project', { exact: false })).toBeVisible();
+  // The Mode step is the client-rendered heart of the wizard (docs/specs/007-editor/new-project-route.md
   // "Choosing a mode"); its five mode cards prove the picker mounted, not just the shell.
   const modes = page.getByRole('group', { name: 'What are you making?' });
   await expect(modes).toBeVisible();
@@ -24,9 +24,9 @@ test('the new-document wizard renders', async ({ page, pageErrors }) => {
   expectNoPageErrors(pageErrors);
 });
 
-// The editor header carries no apps menu over the new-document wizard: the product's links live in the Explorer
+// The editor header carries no apps menu over the new-project wizard: the product's links live in the Explorer
 // panel's footer (docs/specs/013-workspace/explorer-structure.md "Layout").
-test('the new-document wizard shows with no apps menu in the header', async ({
+test('the new-project wizard shows with no apps menu in the header', async ({
   page,
   pageErrors,
 }) => {
@@ -45,13 +45,13 @@ test('the explorer renders for a guest', async ({ page, pageErrors }) => {
   expectNoPageErrors(pageErrors);
 });
 
-test('create a blank document, add a shape, and it survives a reload', async ({
+test('create a blank project, add a shape, and it survives a reload', async ({
   page,
   pageErrors,
 }) => {
-  await startBlankDocument(page);
-  // The wizard created a real document and routed to it.
-  await expect(page).toHaveURL(/\/document\/[0-9a-f-]{36}/);
+  await startBlankProject(page);
+  // The wizard created a real project and routed to it.
+  await expect(page).toHaveURL(/\/project\/[0-9a-f-]{36}/);
   // The tour offer opens 800 ms after the editor is ready and its backdrop takes every click
   // (TourHost): answer it first, or a slow runner's canvas click lands on the backdrop.
   await dismissQuickTour(page);

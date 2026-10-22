@@ -5,14 +5,14 @@ import {
   dashboardFromPreset,
   setDashboardContent,
   type DashboardLayout,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import type { PlanTabActions } from '@/hooks/plan/usePlanTabActions';
 import { track } from '@/lib/telemetry';
 import { DashboardSettings } from '@/components/plan/dashboard/DashboardSettings';
 import { dashboardTourSteps } from './dashboard-tour-steps';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
-// jsdom lays nothing out, so "on screen" is just "in the document" here.
+// jsdom lays nothing out, so "on screen" is just "in the project" here.
 vi.mock('./tour-dom', async (actual) => ({
   ...(await actual<typeof import('./tour-dom')>()),
   waitForSelector: async (selector: string) => document.querySelector<HTMLElement>(selector),
@@ -101,7 +101,7 @@ describe('Dashboard Show Me', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Dashboard Settings' }));
     expect(screen.getByRole('button', { name: 'Show Me' })).toBeTruthy();
     expect(screen.getByRole('link', { name: /dashboards/i }).getAttribute('href')).toBe(
-      '/help/canvas/plan-mode/dashboards/',
+      '/help/plan/dashboards/',
     );
   });
 

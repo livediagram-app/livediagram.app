@@ -11,7 +11,7 @@ import {
   LABEL_FONT_PX,
   NOTE_FONT_PX,
   type TextSize,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import {
   presetPxFor,
   TEXT_SIZE_TICKS,

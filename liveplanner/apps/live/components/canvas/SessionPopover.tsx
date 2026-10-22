@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import type { Element, TabVote } from '@liveplanner/document';
+import type { Element, TabVote } from '@liveplanner/project';
 import type { DockAnchor } from '@/lib/canvas-chrome';
 import type { VoteReview } from '@/hooks/canvas/useVoteReview';
 import type { HelpArticleKey } from '@/lib/help-articles';

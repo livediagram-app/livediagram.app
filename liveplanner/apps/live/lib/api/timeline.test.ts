@@ -7,7 +7,7 @@ import { apiListTimeline } from './timeline';
 // yet" at people whose history was intact on the server, and only a
 // browser refresh proved otherwise. Null is the third answer.
 
-const SCOPE = { scope: { scopeType: 'document', scopeId: 'doc-1' } } as const;
+const SCOPE = { scope: { scopeType: 'project', scopeId: 'doc-1' } } as const;
 
 function stubFetch(impl: () => Promise<Response>) {
   vi.stubGlobal('fetch', vi.fn(impl));
@@ -24,7 +24,7 @@ describe('apiListTimeline', () => {
   it('asks for the scope it reads', async () => {
     await apiListTimeline('owner-1', SCOPE);
     const url = vi.mocked(fetch).mock.calls[0]![0] as string;
-    expect(new URL(url, 'http://x').searchParams.get('scope')).toBe('document:doc-1');
+    expect(new URL(url, 'http://x').searchParams.get('scope')).toBe('project:doc-1');
   });
 
   it('returns the page on a successful read', async () => {

@@ -6,7 +6,7 @@
 // (useTextHug).
 
 import { useCallback, useState } from 'react';
-import { isMindNode, type BoxedElement } from '@liveplanner/document';
+import { isMindNode, type BoxedElement } from '@liveplanner/project';
 import { mindLabelFontPx, mindLabelHeight } from '@/lib/mind-label-fit';
 import { measureLabelBlock } from './text-hug-measure';
 

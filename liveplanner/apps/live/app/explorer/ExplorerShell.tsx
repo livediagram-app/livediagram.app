@@ -5,15 +5,14 @@ import dynamic from 'next/dynamic';
 import { dropSettingsLink } from '@/lib/settings-link';
 import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
-import { Brand, ProductNav } from '@liveplanner/ui';
+import { Brand, SITE_ID, SiteSwitcher } from '@liveplanner/ui';
 import { AuthControls } from '@/components/chrome/AuthControls';
 import { LensField } from './lens/LensField';
 import { LensAnnouncer } from './lens/LensStates';
 import { ChromeControls } from '@/components/chrome/ChromeControls';
-import { TeamFormModal } from '@/components/dialogs/TeamFormModal';
 import { SignInBanner, SIGNIN_BANNER_DISMISS_KEY } from '@/components/chrome/SignInBanner';
 import { useAccessEndedToast } from './useAccessEndedToast';
-import { clerkEnabled } from '@/lib/clerk-config';
+import { signInEnabled } from '@/lib/auth-config';
 import { HELP_SEARCH_ITEMS } from '@/lib/help-search';
 import { SETTINGS_SEARCH_ITEMS } from '@/lib/settings-search-items';
 import { commitUserPreferences } from '@/lib/user-preferences';
@@ -21,7 +20,7 @@ import { isPowerUserMode } from '@/lib/power-user-mode';
 import { useDismissibleBanner } from '@/hooks/ui/useDismissibleBanner';
 import { useSearchShortcut } from '@/hooks/ui/useSearchShortcut';
 import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider';
-import { DocumentTagsProvider } from '@/components/tags/DocumentTagsProvider';
+import { ProjectTagsProvider } from '@/components/tags/ProjectTagsProvider';
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { ExplorerProvider, useExplorer } from './ExplorerContext';
 import { ExplorerSidebar } from './sidebar/ExplorerSidebar';
@@ -73,9 +72,9 @@ export function ExplorerShell({ children }: { children: ReactNode }) {
   const surface = explorerSurfaceFlags(useExplorerSurface());
   // Dark mode's Midnight palette, before the first paint (docs/specs/004-interface-design/color-scheme.md).
   useMidnightPalette();
-  // Wait for Clerk to settle so a signed-in user never momentarily
+  // Wait for auth to settle so a signed-in user never momentarily
   // reads the localStorage guest id and refreshes against the wrong
-  // owner. After this gate, `ownerId` is either the Clerk userId or
+  // owner. After this gate, `ownerId` is either the account id or
   // the guest UUID (never null in practice).
   if (!state.authLoaded) return null;
   return (
@@ -85,12 +84,12 @@ export function ExplorerShell({ children }: { children: ReactNode }) {
           the rest of the Explorer uses. */}
       <CustomThemeProvider ownerId={state.ownerId}>
         {/* The reader's tags (docs/specs/013-workspace/tags.md): the sidebar's Tags rows, the Tags page, every
-            row's chips and every document menu's Tags read the one list. */}
-        <DocumentTagsProvider ownerId={state.ownerId}>
+            row's chips and every project menu's Tags read the one list. */}
+        <ProjectTagsProvider ownerId={state.ownerId}>
           <ShellChrome>{children}</ShellChrome>
-        </DocumentTagsProvider>
+        </ProjectTagsProvider>
       </CustomThemeProvider>
-      {/* Moving this browser's documents in This Browser after signing in
+      {/* Moving this browser's projects in This Browser after signing in
           (docs/specs/014-identity/auth-and-guest-access.md). */}
       {surface.guestPrompts ? <LocalMovePrompt /> : null}
     </ExplorerProvider>
@@ -99,12 +98,12 @@ export function ExplorerShell({ children }: { children: ReactNode }) {
 
 function ShellChrome({ children }: { children: ReactNode }) {
   const {
-    documents: liveDocs,
+    projects: liveDocs,
     folders,
     shared,
     teams,
     teamFolders,
-    teamDocuments,
+    teamProjects,
     go,
     mobileNavOpen,
     setMobileNavOpen,
@@ -123,14 +122,10 @@ function ShellChrome({ children }: { children: ReactNode }) {
     setMoveTarget,
     movePersonalFolders,
     moveTeamDests,
-    moveDocumentTo,
+    moveProjectTo,
     moveFolderToParent,
     createMoveFolder,
-    teamsEnabled,
-    teamModalOpen,
-    setTeamModalOpen,
-    hookCreateTeam,
-    clerkUserId,
+    accountUserId,
     ownerId,
     prefs,
     lens,
@@ -154,15 +149,16 @@ function ShellChrome({ children }: { children: ReactNode }) {
   // hidden-from-Recent list, docs/specs/013-workspace/hide-from-recent.md), and a second useState here would
   // drift the moment either wrote.
 
-  // Guest sign-in nudge (docs/specs/014-identity/sign-in-encouragement.md): only when Clerk is actually wired
+  // Guest sign-in nudge (docs/specs/014-identity/sign-in-encouragement.md): only when sign-in is actually wired
   // up for this deployment, the visitor isn't signed in (a guest owner
   // id doesn't count), and they haven't dismissed it. When shown, the
   // pane reserves extra bottom space so the last row clears the
   // floating card.
   const { dismissed: bannerDismissed, dismiss: dismissBanner } =
     useDismissibleBanner(SIGNIN_BANNER_DISMISS_KEY);
-  const showSignInBanner = surface.guestPrompts && clerkEnabled && !clerkUserId && !bannerDismissed;
-  // Arrived here because a pass was revoked under an open document: say so (lib/access-notice.ts).
+  const showSignInBanner =
+    surface.guestPrompts && signInEnabled && !accountUserId && !bannerDismissed;
+  // Arrived here because a pass was revoked under an open project: say so (lib/access-notice.ts).
   useAccessEndedToast();
 
   return (
@@ -178,8 +174,10 @@ function ShellChrome({ children }: { children: ReactNode }) {
       {surface.appHeader ? (
         <header className="sticky top-0 z-[var(--z-chrome)] flex shrink-0 flex-wrap items-center justify-between gap-x-4 border-y border-slate-200 bg-white/85 pl-4 pr-0 backdrop-blur sm:h-14 sm:flex-nowrap lg:grid lg:grid-cols-[minmax(max-content,1fr)_auto_minmax(max-content,1fr)] dark:border-slate-700 dark:bg-slate-900/85">
           <div className="flex h-14 items-center gap-3 lg:col-start-1">
-            <Brand href="/" size="md" />
-            <ProductNav current="explorer" showOnMobile />
+            {/* Hover the logo for liveworkspace's other sites (liveworkspace/docs/site-switcher.md). */}
+            <SiteSwitcher current={SITE_ID}>
+              <Brand href="/" size="md" />
+            </SiteSwitcher>
           </div>
           {/* While Home shows its hero the field sits there instead (docs/specs/013-workspace/explorer-filters.md "The
               field"). */}
@@ -299,21 +297,21 @@ function ShellChrome({ children }: { children: ReactNode }) {
         )}
       </div>
 
-      {/* Move-destination modal (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-documents.md): the shared
-          placement browser (docs/specs/006-document/offline-mode.md's Save In UI) for every document
+      {/* Move-destination modal (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-projects.md): the shared
+          placement browser (docs/specs/006-project/offline-mode.md's Save In UI) for every project
           (personal or team) and for folder re-parenting. It offers
-          "My Documents" plus each team as a space (for document moves);
-          `moveDocumentTo` routes the pick from the subject's current
+          "My Projects" plus each team as a space (for project moves);
+          `moveProjectTo` routes the pick from the subject's current
           placement. Folder moves are personal-only, so they pass no
           teams. The New Folder tile creates in the picked scope. */}
       {moveTarget
         ? (() => {
             const teamRow =
-              moveTarget.kind === 'document'
-                ? teamDocuments.find((d) => d.id === moveTarget.id)
+              moveTarget.kind === 'project'
+                ? teamProjects.find((d) => d.id === moveTarget.id)
                 : undefined;
             const personalRow =
-              moveTarget.kind === 'document'
+              moveTarget.kind === 'project'
                 ? liveDocs.find((d) => d.id === moveTarget.id)
                 : undefined;
             const folderRow =
@@ -331,52 +329,30 @@ function ShellChrome({ children }: { children: ReactNode }) {
                 subjectName={subjectName}
                 subjectKind={moveTarget.kind}
                 personalFolders={movePersonalFolders}
-                teams={moveTarget.kind === 'document' ? moveTeamDests : undefined}
+                teams={moveTarget.kind === 'project' ? moveTeamDests : undefined}
                 currentTeamId={currentTeamId}
                 currentFolderId={currentFolderId}
                 onCreateFolder={createMoveFolder}
-                // A document can be moved into a team made on the spot;
-                // folder moves stay personal, and guests have no teams.
-                onCreateTeam={
-                  teamsEnabled && moveTarget.kind === 'document'
-                    ? async (name) => {
-                        const team = await hookCreateTeam({ name });
-                        return team ? { id: team.id, name: team.name } : null;
-                      }
-                    : undefined
-                }
                 onPick={(dest) => {
                   if (moveTarget.kind === 'folder')
                     moveFolderToParent(moveTarget.id, dest.folderId);
-                  else moveDocumentTo(moveTarget.id, dest);
+                  else moveProjectTo(moveTarget.id, dest);
                 }}
                 onClose={() => setMoveTarget(null)}
               />
             );
           })()
         : null}
-      <TeamFormModal
-        open={surface.administration && teamModalOpen}
-        title="New Team"
-        submitLabel="Create Team"
-        onSubmit={(values) => {
-          setTeamModalOpen(false);
-          void hookCreateTeam(values).then((team) => {
-            if (team) go({ kind: 'team', id: team.id });
-          });
-        }}
-        onCancel={() => setTeamModalOpen(false)}
-      />
       {searchOpen ? (
         <SearchPanel
-          {...searchPanelSources({ documents: liveDocs, folders, shared, teams, teamDocuments })}
+          {...searchPanelSources({ projects: liveDocs, folders, shared, teams, teamProjects })}
           teamFolders={teamFolders}
-          onSelectDocument={(id) => {
-            assignAppLocation(`/document/${id}`);
+          onSelectProject={(id) => {
+            assignAppLocation(`/project/${id}`);
           }}
           onSelectShared={(id, shareCode) => {
-            // Non-owners can only open the document on the visitor URL.
-            assignAppLocation(`/document/${id}?s=${encodeURIComponent(shareCode)}`);
+            // Non-owners can only open the project on the visitor URL.
+            assignAppLocation(`/project/${id}?s=${encodeURIComponent(shareCode)}`);
           }}
           onSelectFolder={(id) => {
             go({ kind: 'folder', id });
@@ -388,7 +364,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
           }}
           onSelectTeamFolder={(teamId, folderId) => {
             // Full load rather than go(): the team page reads the
-            // folder deep-link param at mount (docs/specs/013-workspace/team-shared-documents.md).
+            // folder deep-link param at mount (docs/specs/013-workspace/team-shared-projects.md).
             assignAppLocation(teamFolderPath(teamId, folderId));
           }}
           helpItems={HELP_SEARCH_ITEMS}

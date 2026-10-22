@@ -36,9 +36,9 @@ Derived from [Plan tour](../plan-tour.md). The engine, popover and DOM helpers a
 Also touched: `ClusterPopoverButton` (a `dataTourId` prop; Card Types passes `card-types`), the Settings catalogue
 and dialog, `power-user-mode.ts`, `help-articles.ts`, the help article
 `apps/help/app/canvas/plan-mode/plan-tour/page.mdx` with its registry entry, icon and colour, and the telemetry
-dashboard (`apps/telemetry/app/catalogue/features.ts`, `apps/telemetry/app/catalogue/visitors.ts`,
-`apps/telemetry/app/catalogue/settings.ts`, `apps/telemetry/app/DashboardView.tsx`,
-`apps/telemetry/app/computed-emitters.ts`, `apps/telemetry/app/event-explanations.ts`).
+dashboard (liveworkspace/apps/site/app/telemetry/livediagram/catalogue/features.ts, liveworkspace/apps/site/app/telemetry/livediagram/catalogue/visitors.ts,
+liveworkspace/apps/site/app/telemetry/livediagram/catalogue/settings.ts, liveworkspace/apps/site/app/telemetry/livediagram/DashboardView.tsx,
+liveworkspace/apps/site/app/telemetry/livediagram/computed-emitters.ts, liveworkspace/apps/site/app/telemetry/livediagram/event-explanations.ts).
 
 Wiring: `useEditorState` composes `usePlanTourLeftovers` (it returns nothing); `EditorView` mounts `<PlanTourHost />` beside `<TourHost />` in the same
 `AreaErrorBoundary`. `usePlanSlice` returns `showItem(id | null)`, setting the open item without `Plan` ·

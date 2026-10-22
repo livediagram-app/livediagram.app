@@ -18,14 +18,14 @@ const WRITE_METHODS = new Set(['POST', 'PUT', 'DELETE', 'PATCH']);
 function isViewExempt(method: string, segments: readonly string[]): boolean {
   const path = segments.slice(1).join('/');
   if (method === 'DELETE' && path === 'workbench/sessions/current') return true;
-  return method === 'POST' && segments[1] === 'documents' && segments[3] === 'room-ticket';
+  return method === 'POST' && segments[1] === 'projects' && segments[3] === 'room-ticket';
 }
 
 // The share-link list carries every code, edit links included: a view session never reads it (WB54).
 const isShareLinkList = (method: string, segments: readonly string[]) =>
   method === 'GET' &&
   segments.length === 4 &&
-  segments[1] === 'documents' &&
+  segments[1] === 'projects' &&
   segments[3] === 'share';
 
 export function workbenchRefusal(
@@ -42,7 +42,7 @@ export function workbenchRefusal(
     return forbidden('workbench_confined');
   }
   const verdict = workbenchRouteVerdict(method, segments, workbench);
-  if (verdict === 'other-document') return notFound();
+  if (verdict === 'other-project') return notFound();
   if (verdict === 'confined') {
     console.warn('[workbench] confined', { scope, method, route, sessionPrefix });
     return forbidden('workbench_confined');

@@ -2,13 +2,13 @@
 
 // The editor's side of the sheet store (blueprint sheet-store.md "Editor slice"): the one piece of the Sheet that
 // lives in the main bundle. It hands the lazily loaded sheet chunk what it needs from the editor (who is writing,
-// the document's scope, undo, toasts, presence) and routes the room's `sheets` and `sheet-presence` ops to the
+// the project's scope, undo, toasts, presence) and routes the room's `sheets` and `sheet-presence` ops to the
 // chunk once it has attached. Before any Sheet is drawn nothing attaches and every op is dropped: the store
 // fetches what it needs when it loads.
 import { createContext, useCallback, useContext, useMemo, useRef } from 'react';
 import type { RoomOp, SheetPresenceOp, SheetsRoomOp } from '@liveplanner/api-schema';
 import type { SheetPerson } from '@liveplanner/sheets';
-import type { BoxedElement, Element } from '@liveplanner/document';
+import type { BoxedElement, Element } from '@liveplanner/project';
 import type { SheetsScope } from '@/lib/api/sheets';
 import type { ItemUndoStep } from '@/hooks/plan/item-undo-journal';
 import { useLatest } from '@/hooks/ui/useLatest';
@@ -70,7 +70,7 @@ export function useSheetsBridgeContext(): SheetsBridge | null {
 }
 
 export function useSheetsBridge(opts: {
-  documentId: string;
+  projectId: string;
   ownerId: string;
   shareCode: string | null;
   tabScope: string | null;
@@ -106,11 +106,11 @@ export function useSheetsBridge(opts: {
       if (handlers.current === h) handlers.current = null;
     };
   }, []);
-  const { documentId, ownerId, shareCode, tabScope, self, canEdit, peers, activeTabId } = opts;
+  const { projectId, ownerId, shareCode, tabScope, self, canEdit, peers, activeTabId } = opts;
   const canShape = opts.canShape ?? canEdit;
   const bridge = useMemo<SheetsBridge>(
     () => ({
-      scope: { documentId, ownerId, shareCode, tabId: tabScope },
+      scope: { projectId, ownerId, shareCode, tabId: tabScope },
       activeTabId,
       self,
       canEdit,
@@ -129,7 +129,7 @@ export function useSheetsBridge(opts: {
       attach,
     }),
     [
-      documentId,
+      projectId,
       ownerId,
       shareCode,
       tabScope,

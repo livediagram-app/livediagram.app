@@ -1,4 +1,4 @@
-import { canCastVote, voteHidesTallies, type TabVote, plural } from '@liveplanner/document';
+import { canCastVote, voteHidesTallies, type TabVote, plural } from '@liveplanner/project';
 import { HoverCard, SOLID_BRAND_DARK, GlyphDisc } from '@liveplanner/ui';
 import { CounterScaled } from '@/components/canvas/CanvasZoomContext';
 

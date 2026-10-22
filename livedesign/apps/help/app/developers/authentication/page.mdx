@@ -1,0 +1,69 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Authentication',
+  description:
+    'Authenticate livedesign API requests with a bearer API token. How to create one, how to send it, and how token access differs from the guest path.',
+  path: '/help/developers/authentication/',
+});
+
+<ArticleLayout
+  title="Authentication"
+  description="Authenticate API requests with a bearer token, and how that differs from the in-app guest path."
+  categoryTitle="Developers"
+  categorySlug="developers"
+>
+
+External API calls authenticate with an **API token**: a long-lived, revocable credential that acts as your account.
+
+## Get a token
+
+Tokens are created from the editor, not the API. Open **Settings**, choose **Account**, then **API Tokens** beneath it, and create one. The secret is shown **once** at creation; copy it then, because it is never displayed again. See [API Tokens](/help/account-and-data/api-tokens/) for the full walkthrough, including the six-month lifetime and the ten-token limit.
+
+Tokens have the form `lvd_` followed by a random string, so they are easy to spot in logs and secret scanners.
+
+[The livedesign CLI](/help/developers/cli/) can create its own token for you: `livedesign auth login` signs in through the browser or a device code, then sends that token on every request.
+
+## Send the token
+
+Pass the token in the `Authorization` header as a bearer credential on **every** request. There is no separate login or session step.
+
+```bash
+curl https://livedesign.app/api/documents \
+  -H "Authorization: Bearer lvd_your_token_here"
+```
+
+Every request authenticated this way acts as your account, with the same access to your documents, folders and content that you have in the editor. Account administration (managing teams, creating or listing tokens, deleting the account) needs a signed-in session and is refused to a token. A read-only token (one you created when [connecting an AI tool](/help/account-and-data/connect-ai-mcp/) with **Read-only access** on) can read (except a document's share-link list, which would hand it edit links), and every write is refused except revoking itself and opening or pairing a (view-only) workbench.
+
+## Check or retire the token you are using
+
+`GET /tokens/current` describes the token the request presented: its account, name, whether it is read-only, and when it expires. It is a cheap way for a script to confirm its credential works. `DELETE /tokens/current` revokes that same token, so a script can clean up after itself without you opening Settings.
+
+```bash
+curl https://livedesign.app/api/tokens/current \
+  -H "Authorization: Bearer lvd_your_token_here"
+```
+
+## You need an account
+
+API tokens are a **signed-in-only** feature. The canvas, sharing, and real-time collaboration all stay account-free for guests, but programmatic API access requires [signing in](/help/account-and-data/signing-in/), the same as [teams](/help/collaboration/teams/). On a self-hosted instance that has not enabled accounts, tokens are not available at all.
+
+## Tokens versus the guest path
+
+The editor itself does not use a token. When you are not signed in, the app identifies you with a per-browser [guest id](/help/account-and-data/guest-identity/) sent in an `X-Owner-Id` header, with a server signature alongside it. That path is for the first-party app only: it is not a credential you should build integrations on, and it is not used like a token. For anything outside the editor, use a bearer token.
+
+## Keep tokens safe
+
+<Note>
+  A token has your account's full read and write access to your documents. Treat it like a password:
+  keep it out of source control and shared logs, and never put it in client-side code that ships to
+  a browser. If a token might have leaked, revoke it from the **API Tokens** category in Settings
+  and create a replacement.
+</Note>
+
+## Errors
+
+A request with no credential, or a bearer that is not an API token, is refused with `400 bad_request` (its message begins `authentication required`); an `lvd_` token that is unknown, expired, or revoked is refused with `401 invalid_token`. See [Errors and Rate Limits](/help/developers/errors-and-rate-limits/) for the status codes and the error response shape.
+
+</ArticleLayout>

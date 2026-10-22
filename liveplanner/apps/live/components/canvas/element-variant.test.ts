@@ -1,4 +1,4 @@
-import type { BoxedElement } from '@liveplanner/document';
+import type { BoxedElement } from '@liveplanner/project';
 import { describe, expect, it } from 'vitest';
 import { describeVariant } from '@/components/canvas/element-variant';
 

@@ -12,7 +12,7 @@ export default defineProject({
   // Consumers compile this package's JSX with the automatic runtime (Next's
   // default, no React import in scope), so a test that renders a component
   // has to be transformed the same way or it throws "React is not defined".
-  esbuild: { jsx: 'automatic' },
+  oxc: { jsx: { runtime: 'automatic' } },
   test: {
     // Unmount rendered trees after each test. `globals: false` stops React
     // Testing Library registering its own cleanup, and a tree left mounted

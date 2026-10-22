@@ -14,7 +14,7 @@ afterEach(() => localStorage.clear());
 
 describe('the leftover record', () => {
   it('round-trips, and clears', () => {
-    const content = { documentId: 'doc', elementId: 'b', itemIds: ['a', 'b'] };
+    const content = { projectId: 'doc', elementId: 'b', itemIds: ['a', 'b'] };
     writeLeftover(content);
     expect(readLeftover()).toEqual(content);
     writeLeftover(null);
@@ -22,7 +22,7 @@ describe('the leftover record', () => {
   });
 
   it("keeps the example sheet's sheet id", () => {
-    const content = { documentId: 'doc', elementId: 'e', sheetId: 's', itemIds: [] };
+    const content = { projectId: 'doc', elementId: 'e', sheetId: 's', itemIds: [] };
     writeLeftover(content);
     expect(readLeftover()).toEqual(content);
   });
@@ -30,18 +30,18 @@ describe('the leftover record', () => {
   it('reads a record written before the Sheets track as its element', () => {
     localStorage.setItem(
       PLAN_TOUR_CONTENT_KEY,
-      JSON.stringify({ documentId: 'doc', boardId: 'b', itemIds: ['i'] }),
+      JSON.stringify({ projectId: 'doc', boardId: 'b', itemIds: ['i'] }),
     );
-    expect(readLeftover()).toEqual({ documentId: 'doc', elementId: 'b', itemIds: ['i'] });
+    expect(readLeftover()).toEqual({ projectId: 'doc', elementId: 'b', itemIds: ['i'] });
   });
 
   it('drops a malformed value instead of throwing', () => {
-    localStorage.setItem(PLAN_TOUR_CONTENT_KEY, '{"documentId":1}');
+    localStorage.setItem(PLAN_TOUR_CONTENT_KEY, '{"projectId":1}');
     expect(readLeftover()).toBeNull();
     expect(localStorage.getItem(PLAN_TOUR_CONTENT_KEY)).toBeNull();
     localStorage.setItem(
       PLAN_TOUR_CONTENT_KEY,
-      JSON.stringify({ documentId: 'd', elementId: 'e', sheetId: 4, itemIds: [] }),
+      JSON.stringify({ projectId: 'd', elementId: 'e', sheetId: 4, itemIds: [] }),
     );
     expect(readLeftover()).toBeNull();
     localStorage.setItem(PLAN_TOUR_CONTENT_KEY, 'not json');
@@ -56,7 +56,7 @@ describe('the leftover record', () => {
       throw new Error('blocked');
     });
     expect(readLeftover()).toBeNull();
-    expect(() => writeLeftover({ documentId: 'd', elementId: 'b', itemIds: [] })).not.toThrow();
+    expect(() => writeLeftover({ projectId: 'd', elementId: 'b', itemIds: [] })).not.toThrow();
     get.mockRestore();
     set.mockRestore();
   });

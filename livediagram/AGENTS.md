@@ -196,7 +196,6 @@ See [Domain language](docs/specs/003-system-architecture/domain-language.md).
 apps/
   marketing/    # static marketing site (Next.js, /)
   live/         # the diagram editor app (Next.js, clean routes)
-  telemetry/    # public anonymous-events dashboard (Next.js, /telemetry)
   help/         # help centre (Next.js export + MDX, /help)
   community/    # public gallery of shared boards (Next.js export, /community)
   api/          # Cloudflare Worker REST + WebSocket API (D1 + Durable Objects, /api)
@@ -225,7 +224,7 @@ packages/
   render-png/     # SVG to PNG with resvg (wasm) + Inter, for MCP previews, share cards and the CLI's renders
   sticky-vision/  # finds sticky notes in a wall photo (classical CV, no DOM) for the event-storming photo import
   sticky-model/   # the learned sticky-boundary model's browser-safe parts (cues, decode) + its training scripts
-  telemetry-client/ # shared browser telemetry emitter (buffer/flush/beacon engine)
+  telemetry-client/ # shared browser telemetry emitter (buffer/flush/beacon engine), sending to liveworkspace's telemetry service
   licences/     # build-time generator of the /licences page from what each app bundles
   fake-google/  # in-memory Google Drive + OAuth, for tests only
   source-ast/   # parses the repo's own TypeScript with TypeScript 7, for the static guards that read code

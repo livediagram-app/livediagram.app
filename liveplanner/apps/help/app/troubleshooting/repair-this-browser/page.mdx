@@ -5,13 +5,13 @@ import { BrowserRepairTool } from '@/components/BrowserRepairTool';
 export const metadata = helpMetadata({
   title: 'Repair This Browser',
   description:
-    'Clear the settings and caches liveplanner keeps in this browser when a document is stuck loading, without losing your documents or identity.',
+    'Clear the settings and caches liveplanner keeps in this browser when a project is stuck loading, without losing your projects or identity.',
   path: '/help/troubleshooting/repair-this-browser/',
 });
 
-<ArticleLayout title="Repair This Browser" description="Clear stuck settings and caches in this browser, keeping your documents and identity." categoryTitle="Troubleshooting" categorySlug="troubleshooting">
+<ArticleLayout title="Repair This Browser" description="Clear stuck settings and caches in this browser, keeping your projects and identity." categoryTitle="Troubleshooting" categorySlug="troubleshooting">
 
-If a document opens for a colleague but not for you, something saved in your browser may be in the way. A repair clears the settings and caches liveplanner keeps in this browser, then you open the document again. It works from this page even when the editor itself will not start.
+If a project opens for a colleague but not for you, something saved in your browser may be in the way. A repair clears the settings and caches liveplanner keeps in this browser, then you open the project again. It works from this page even when the editor itself will not start.
 
 <BrowserRepairTool />
 
@@ -19,24 +19,24 @@ If a document opens for a colleague but not for you, something saved in your bro
 
 - Settings kept only in this browser, such as panel positions and light or dark appearance. Preferences saved to your account, such as panel opacity, come back on the next load.
 - Tips and banners you dismissed in this browser, which may show again once.
-- The cached list of recent documents, which reloads from the server.
+- The cached list of recent projects, which reloads from the server.
 - Saved share-link passwords, so a protected link asks for its password again.
 
 ## What a repair always keeps
 
-- **Your documents.** Documents are stored on the server, and a repair never touches them.
-- **Your guest identity.** If you use liveplanner without an account, the documents you made belong to an identity saved in this browser. A repair keeps it, so your documents stay in your list.
-- **Offline Mode documents.** These exist only in this browser, so a repair leaves them alone.
+- **Your projects.** Projects are stored on the server, and a repair never touches them.
+- **Your guest identity.** If you use liveplanner without an account, the projects you made belong to an identity saved in this browser. A repair keeps it, so your projects stay in your list.
+- **Offline Mode projects.** These exist only in this browser, so a repair leaves them alone.
 - **Your sign-in.** A repair never signs you out.
 
 ## Copy Diagnostics
 
-**Copy Diagnostics** copies a short report about this browser: whether storage and cookies work, whether the browser's database opens, and whether the browser is up to date. Paste it into a message to [support](/help/contact/) so we can see what is going on. It never includes what is in your documents, and it carries only the start of a guest id. From the editor it also includes the document's address and, if you are signed in, your account id.
+**Copy Diagnostics** copies a short report about this browser: whether storage and cookies work, whether the browser's database opens, and whether the browser is up to date. Paste it into a message to [support](/help/contact/) so we can see what is going on. It never includes what is in your projects, and it carries only the start of a guest id. From the editor it also includes the project's address and, if you are signed in, your account id.
 
-When a document fails to load, the editor offers the same two buttons on its error screen while you are online, and its report also says how far the load got.
+When a project fails to load, the editor offers the same two buttons on its error screen while you are online, and its report also says how far the load got.
 
 ## If it still does not load
 
-Work through [A Document Will Not Load](/help/troubleshooting/document-not-loading/). If you are a guest, [signing in](/help/getting-started/guest-vs-account/) moves your documents to an account, which also rules out anything saved in this browser.
+Work through [A Project Will Not Load](/help/troubleshooting/project-not-loading/). If you are a guest, [signing in](/help/getting-started/guest-vs-account/) moves your projects to an account, which also rules out anything saved in this browser.
 
 </ArticleLayout>

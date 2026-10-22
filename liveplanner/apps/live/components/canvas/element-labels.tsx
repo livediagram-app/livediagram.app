@@ -21,7 +21,7 @@ import {
   type TextAlignY,
   type TextRun,
   type TextSize,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { RichTextEditor } from '@/components/canvas/RichTextEditor';
 import { fitMultilineFontPx } from '@/lib/fit-multiline-text';
 import { FixedSizeLabel, MultilineLabel, RichLabel, ScalingLabel } from './element-label-views';

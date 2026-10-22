@@ -7,7 +7,7 @@ import {
   type ShapeElement,
   type StickyElement,
   type TextElement,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { describe, expect, it } from 'vitest';
 import {
   applyQuickFill,

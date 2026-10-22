@@ -23,7 +23,7 @@ export type FormBuilderValue = {
   // The question to take focus once drawn (one just added), cleared once taken.
   focusId: string | null;
   clearFocus: () => void;
-  // The destination's card type, when it resolves; the document's types.
+  // The destination's card type, when it resolves; the project's types.
   type: ItemTypeDef | undefined;
   types: readonly ItemTypeDef[];
   // Opens the status bar's cog on a section (Answer Goes To's "choose where responses go" opens Responses Go To).

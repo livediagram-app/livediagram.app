@@ -5,12 +5,8 @@ import { debugLog } from '@/lib/debug-log';
 // written once when the mode switches on. Switching off puts back the values
 // the preset replaced, for every setting still holding what the preset wrote.
 export const POWER_USER_PRESET = {
-  alignmentGuides: { alignmentGuides: true },
-  autoRebindArrows: { autoRebindArrows: true },
   planTourSeen: { planTourSeen: true },
   formTourSeen: { formTourSeen: true },
-  elementToursSeen: { elementToursSeen: true },
-  aiSuggestedPrompts: { aiSuggestedPrompts: false },
   minimalChrome: { minimalChrome: true },
 } as const satisfies Record<string, Partial<UserPreferences>>;
 

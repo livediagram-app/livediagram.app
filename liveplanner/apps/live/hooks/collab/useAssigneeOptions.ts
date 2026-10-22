@@ -1,19 +1,19 @@
 'use client';
 
 import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
-import type { ElementAction } from '@liveplanner/document';
+import type { ElementAction } from '@liveplanner/project';
 import { apiCheckAssigneeAccess, apiGetTeam, type TeamListItem } from '@/lib/api-client';
 import { teamMemberRows } from './team-member-rows';
 import type { PickableMember } from '@/components/dialogs/AssignActionAssigneePicker';
 
 // The Assign Action dialog's assignee dataset (docs/specs/012-collaboration/assigned-actions.md §2 + §4), lifted
-// out of AssignActionDialog: the pinned Myself row, the document team's
+// out of AssignActionDialog: the pinned Myself row, the project team's
 // member list (joined AND invited), the preselect-on-edit resolution,
 // the per-pick server access check, and the by-team grouping the picker
 // renders. The dialog keeps the `assignee` selection state itself (and
 // seeds it on open, alongside the name / description fields)
 // and passes it through.
-// Whether the picked teammate can actually open this document
+// Whether the picked teammate can actually open this project
 // (docs/specs/012-collaboration/assigned-actions.md §4), asked of the server per selection. 'error'
 // falls back to the picked-team heuristic with hedged wording.
 type Access = 'unknown' | 'yes' | 'no' | 'error' | 'invited';
@@ -22,7 +22,7 @@ type Access = 'unknown' | 'yes' | 'no' | 'error' | 'invited';
 type CheckedAccess = {
   assignee: PickableMember;
   ownerId: string;
-  documentId: string;
+  projectId: string;
   access: Access;
 };
 
@@ -34,7 +34,7 @@ const NO_MEMBERS: PickableMember[] = [];
 // The answer knowable without the server, or null when it must be asked.
 function localAccess(
   assignee: PickableMember,
-  ids: { ownerId: string | null; selfUserId: string | null; documentId: string | null },
+  ids: { ownerId: string | null; selfUserId: string | null; projectId: string | null },
 ): Access | null {
   // Self-assignment is a yes: the assigner is right here, editing it.
   if (assignee.userId !== null && assignee.userId === ids.selfUserId) return 'yes';
@@ -42,7 +42,7 @@ function localAccess(
   // answer is knowable without the server — they get access when they
   // accept the invite. The hint says exactly that.
   if (assignee.pending) return 'invited';
-  if (!ids.ownerId || !ids.documentId || !assignee.teamId || !assignee.userId) return 'error';
+  if (!ids.ownerId || !ids.projectId || !assignee.teamId || !assignee.userId) return 'error';
   return null;
 }
 
@@ -53,8 +53,8 @@ export function useAssigneeOptions({
   ownerId,
   selfUserId,
   selfName,
-  documentId,
-  documentTeamId,
+  projectId,
+  projectTeamId,
   assignee,
   setAssignee,
 }: {
@@ -64,8 +64,8 @@ export function useAssigneeOptions({
   ownerId: string | null;
   selfUserId: string | null;
   selfName: string | null;
-  documentId: string | null;
-  documentTeamId: string | null;
+  projectId: string | null;
+  projectTeamId: string | null;
   assignee: PickableMember | null;
   setAssignee: Dispatch<SetStateAction<PickableMember | null>>;
 }) {
@@ -82,7 +82,7 @@ export function useAssigneeOptions({
   }
 
   // The pinned Myself row: every session has one once identity has
-  // hydrated (Clerk account or guest participant id).
+  // hydrated (account or guest participant id).
   const selfRow = useMemo<PickableMember | null>(
     () =>
       selfUserId
@@ -97,16 +97,16 @@ export function useAssigneeOptions({
     [selfUserId, selfName],
   );
 
-  // Only the team whose shared library holds this document is pickable
+  // Only the team whose shared library holds this project is pickable
   // (docs/specs/012-collaboration/assigned-actions.md §2): members of the user's other teams almost certainly
-  // can't open the document to complete the action, so offering them
-  // just manufactures the access warning. Empty for a personal document
+  // can't open the project to complete the action, so offering them
+  // just manufactures the access warning. Empty for a personal project
   // and for a share-link editor who isn't a member of the team.
   const pickableTeams = useMemo(
-    () => teams.filter((t) => t.id === documentTeamId),
-    [teams, documentTeamId],
+    () => teams.filter((t) => t.id === projectTeamId),
+    [teams, projectTeamId],
   );
-  const memberOfDocumentTeam = pickableTeams.length > 0;
+  const memberOfProjectTeam = pickableTeams.length > 0;
   // Null while loading. A guest picker is Myself alone.
   const members = !ownerId
     ? NO_MEMBERS
@@ -114,7 +114,7 @@ export function useAssigneeOptions({
       ? loaded.members
       : null;
 
-  // Load the document team's joined members once per open (signed-in
+  // Load the project team's joined members once per open (signed-in
   // only; a guest picker is Myself alone). One GET per pickable team
   // (zero or one); a failure just leaves its members out.
   useEffect(() => {
@@ -167,37 +167,36 @@ export function useAssigneeOptions({
     );
   }, [open, existing, members, selfRow, setAssignee]);
 
-  // Ask the server whether the picked teammate can open this document,
+  // Ask the server whether the picked teammate can open this project,
   // unless the answer is knowable without it (localAccess). Stale responses
   // are ignored via the cancelled flag.
-  const local =
-    open && assignee ? localAccess(assignee, { ownerId, selfUserId, documentId }) : null;
+  const local = open && assignee ? localAccess(assignee, { ownerId, selfUserId, projectId }) : null;
   const askServer = open && assignee !== null && local === null;
   useEffect(() => {
-    if (!askServer || !assignee?.teamId || !assignee.userId || !ownerId || !documentId) return;
+    if (!askServer || !assignee?.teamId || !assignee.userId || !ownerId || !projectId) return;
     let cancelled = false;
     void apiCheckAssigneeAccess(ownerId, assignee.teamId, {
       assigneeUserId: assignee.userId,
-      documentId,
+      projectId,
     }).then((canAccess) => {
       if (cancelled) return;
       setChecked({
         assignee,
         ownerId,
-        documentId,
+        projectId,
         access: canAccess === null ? 'error' : canAccess ? 'yes' : 'no',
       });
     });
     return () => {
       cancelled = true;
     };
-  }, [askServer, assignee, ownerId, documentId]);
+  }, [askServer, assignee, ownerId, projectId]);
   // 'unknown' while in flight (show nothing).
   const assigneeAccess: Access =
     local ??
     (checked?.assignee === assignee &&
     checked.ownerId === ownerId &&
-    checked.documentId === documentId
+    checked.projectId === projectId
       ? checked.access
       : 'unknown');
 
@@ -212,5 +211,5 @@ export function useAssigneeOptions({
     return [...byTeam.entries()];
   }, [members]);
 
-  return { selfRow, members, grouped, memberOfDocumentTeam, assigneeAccess };
+  return { selfRow, members, grouped, memberOfProjectTeam, assigneeAccess };
 }

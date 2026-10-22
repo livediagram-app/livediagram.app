@@ -2,7 +2,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createShape, type ShapeElement } from '@liveplanner/document';
+import { createShape, type ShapeElement } from '@liveplanner/project';
 import { ITEM_TYPES, presetSetup } from '@liveplanner/items';
 import {
   PlanBoardMenuSections,

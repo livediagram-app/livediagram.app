@@ -3,7 +3,7 @@
 
 import type { z } from 'zod';
 
-// A list is a flag given once per value (`--doc a --doc b`).
+// A list is a flag given once per value (`--tab a --tab b`).
 export type FieldKind = 'string' | 'number' | 'boolean' | 'enum' | 'list';
 
 export type Field = {

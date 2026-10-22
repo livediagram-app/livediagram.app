@@ -1,7 +1,7 @@
 // "More colours" (docs/specs/004-interface-design/colour-picker.md "Skins"): four of the standard colours (Red,
 // Orange, Green, Blue), in their order, as dots in a dashed 20px square. The glyph of every trigger that opens the
 // full picker from a quick row (Quick Style's rows, a Sheet's Text and Fill Colour), never a +.
-import { standardColours } from '@liveplanner/document';
+import { standardColours } from '@liveplanner/project';
 
 const GLYPH_DOTS = [2, 3, 5, 7].map((i) => standardColours('strong', 'light')[i]!.hex);
 

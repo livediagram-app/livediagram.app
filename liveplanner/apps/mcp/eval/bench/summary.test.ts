@@ -47,7 +47,7 @@ const results = {
     run('Q1', 'haiku', 1, [true, false], [err('a')]),
     run('Q1', 'haiku', 2, [true, false], [err('b'), err('c')]),
     run('Q1', 'sonnet', 1, [true, true]),
-    run('D1', 'sonnet', 1, [false, true], [{ tool: 'create_document', error: 'once only' }]),
+    run('D1', 'sonnet', 1, [false, true], [{ tool: 'create_project', error: 'once only' }]),
   ],
 };
 

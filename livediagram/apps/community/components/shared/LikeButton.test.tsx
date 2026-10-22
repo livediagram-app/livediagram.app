@@ -52,7 +52,10 @@ describe('LikeButton', () => {
     expect(button().getAttribute('aria-pressed')).toBe('true');
     expect(button().getAttribute('aria-label')).toBe('Like (5 likes)');
     const [url, init] = fetchMock.mock.calls[0]!;
-    expect(url).toBe('/api/community/posts/post123456/like');
+    // The Community service's, for this app's posts.
+    expect(url).toBe(
+      'https://liveworkspace.app/api/community/posts/post123456/like?app=livediagram.app',
+    );
     expect(init?.method).toBe('PUT');
     expect((init?.headers as Record<string, string> | undefined)?.['X-Community-Key']).toMatch(
       /^[0-9a-f-]{36}$/,

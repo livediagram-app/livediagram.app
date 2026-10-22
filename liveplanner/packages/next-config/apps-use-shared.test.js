@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const read = (path) => readFileSync(`${root}${path}`, 'utf8');
-const APPS = ['live', 'marketing', 'help', 'telemetry'];
+const APPS = ['live', 'marketing', 'help'];
 const SHARED_KEYS = [
   'output',
   'distDir',

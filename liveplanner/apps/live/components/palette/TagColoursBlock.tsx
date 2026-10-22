@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { tagColourOf, type ShapeElement, type TagColour } from '@liveplanner/document';
+import { tagColourOf, type ShapeElement, type TagColour } from '@liveplanner/project';
 import { ColourRow, type ColourPalette } from '@/components/palette/context-menu-input-rows';
 import { MenuActionButton } from '@/components/primitives/PortalMenu';
 

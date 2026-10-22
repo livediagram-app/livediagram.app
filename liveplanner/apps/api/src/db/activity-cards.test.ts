@@ -1,14 +1,14 @@
 // Plan cards on the Inbox (docs/specs/013-workspace/inbox.md §2.4, §4), against the real
 // migrations: the hashed-assignee match, what counts as open, where a row opens the card, and the library
-// scope that keeps a card off the page of someone who cannot open its document.
+// scope that keeps a card off the page of someone who cannot open its project.
 
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 import { itemPersonId } from '@liveplanner/items';
 import type { DatabaseSync } from 'node:sqlite';
 import { describe, expect, it } from 'vitest';
 import { sqliteD1 } from '../test-sqlite-d1';
 import { CARDS_SQL, readActivity } from './collab-index';
-import { copyDocument } from './documents';
+import { copyProject } from './projects';
 import { seedTabs, upsertTab } from './tabs';
 
 const T0 = 1_700_000_000_000;
@@ -62,7 +62,7 @@ async function setUp(opts: { team?: string | null; owner?: string } = {}) {
       created_at: T0,
       updated_at: T0,
     });
-  insert(db.sql, 'documents', {
+  insert(db.sql, 'projects', {
     id: 'D',
     owner_id: opts.owner ?? 'owner',
     name: 'Roadmap',
@@ -92,7 +92,7 @@ async function setUp(opts: { team?: string | null; owner?: string } = {}) {
             },
           };
     insert(db.sql, 'items', {
-      document_id: 'D',
+      project_id: 'D',
       id,
       type: 'task',
       item_key: key++,
@@ -115,8 +115,8 @@ describe('Activity: Plan cards assigned to the reader', () => {
     await card('c1', { title: 'Write the brief' });
     expect(await read()).toEqual([
       {
-        documentId: 'D',
-        documentName: 'Roadmap',
+        projectId: 'D',
+        projectName: 'Roadmap',
         teamId: 'tm',
         via: 'team',
         shareCode: null,
@@ -209,14 +209,14 @@ describe('Activity: Plan cards assigned to the reader', () => {
     ]);
   });
 
-  it('lists a card in a document with no board, with nowhere to land', async () => {
+  it('lists a card in a project with no board, with nowhere to land', async () => {
     const { env, card, read } = await setUp();
     await upsertTab(env, 'D', tab('t-plan', 'Plan', []), 1);
     await card('loose', {});
     expect((await read()).map((c) => [c.id, c.board])).toEqual([['loose', null]]);
   });
 
-  it('never surfaces a document the reader cannot open', async () => {
+  it('never surfaces a project the reader cannot open', async () => {
     const { card, read } = await setUp({ team: null });
     await card('c1', {});
     expect(await read()).toEqual([]);
@@ -226,9 +226,9 @@ describe('Activity: Plan cards assigned to the reader', () => {
     const { card, read, sql } = await setUp({ team: null });
     await card('on-plan', { status: 'todo' });
     await card('stray', { status: 'blocked' });
-    sql.exec(`INSERT INTO share_links (code, document_id, role, tab_id, created_at)
+    sql.exec(`INSERT INTO share_links (code, project_id, role, tab_id, created_at)
               VALUES ('code-plan', 'D', 'edit', 't-plan', 1), ('code-notes', 'D', 'edit', 't-notes', 1)`);
-    sql.exec(`INSERT INTO shared_with (owner_id, document_id, role, tab_id, last_seen)
+    sql.exec(`INSERT INTO shared_with (owner_id, project_id, role, tab_id, last_seen)
               VALUES ('reader', 'D', 'edit', 't-plan', 1)`);
     const rows = await read();
     expect(rows.map((c) => [c.id, c.via, c.shareCode, c.board?.tabId])).toEqual([
@@ -238,17 +238,17 @@ describe('Activity: Plan cards assigned to the reader', () => {
     expect(await read()).toEqual([]);
   });
 
-  it('copies the board index with a duplicated document', async () => {
+  it('copies the board index with a duplicated project', async () => {
     const { env, sql, read } = await setUp({ owner: 'reader' });
-    await copyDocument(env, 'D', 'D2', 'reader', 'Copy');
+    await copyProject(env, 'D', 'D2', 'reader', 'Copy');
     const boards = sql
       .prepare(
-        `SELECT dt.document_id, pb.element_id FROM plan_board_statuses pb
-           JOIN document_tabs dt ON dt.tab_id = pb.tab_id WHERE pb.status = 'todo'`,
+        `SELECT dt.project_id, pb.element_id FROM plan_board_statuses pb
+           JOIN project_tabs dt ON dt.tab_id = pb.tab_id WHERE pb.status = 'todo'`,
       )
       .all();
     expect(boards).toHaveLength(2);
-    expect(boards.map((b) => b['document_id']).sort()).toEqual(['D', 'D2']);
+    expect(boards.map((b) => b['project_id']).sort()).toEqual(['D', 'D2']);
     expect(await read()).toEqual([]);
   });
 

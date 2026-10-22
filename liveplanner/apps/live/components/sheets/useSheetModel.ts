@@ -1,6 +1,6 @@
 'use client';
 
-// One Sheet element's view of the sheet store (blueprint sheet-store.md "Editor slice"): the store of its document
+// One Sheet element's view of the sheet store (blueprint sheet-store.md "Editor slice"): the store of its project
 // (attached to the room through the bridge once), its tab loaded, its sheet made when it was just placed or copied,
 // and the Plan cards handed to formulas that read them. Re-renders when the store moves on.
 import { useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
@@ -20,7 +20,7 @@ import {
 } from '@liveplanner/sheets';
 import { cardSourceOf } from '@liveplanner/items';
 import { templateChartElements } from '@liveplanner/templates/template-sheets';
-import { chartsInSheet, type ShapeElement } from '@liveplanner/document';
+import { chartsInSheet, type ShapeElement } from '@liveplanner/project';
 import type { SheetsBridge } from '@/hooks/sheets/useSheetsBridge';
 import {
   registerSheetSource,
@@ -95,7 +95,7 @@ function setUpNow(
 }
 
 export const SHEET_TOO_BIG_TO_PASTE =
-  'Too big to paste into another document. Download it as CSV instead.';
+  'Too big to paste into another project. Download it as CSV instead.';
 
 export function useSheetModel(
   element: ShapeElement,
@@ -104,7 +104,7 @@ export function useSheetModel(
 ): SheetModel {
   const store = sheetStoreOf(bridge);
   const dark = useCanvasSurface() === 'dark';
-  // The room reaches this document's store once, whichever Sheet draws first.
+  // The room reaches this project's store once, whichever Sheet draws first.
   useEffect(() => {
     const held = ATTACHED.get(store);
     if (held) {
@@ -239,8 +239,8 @@ export function useSheetModel(
         { ...seed, id: sheetId, tabId, title, rev: 0 },
       );
     } else {
-      // The source is in this document but on a tab not loaded: the server copies it. Not there (a paste from
-      // another document of a sheet too big to travel on the clipboard): the paste is refused.
+      // The source is in this project but on a tab not loaded: the server copies it. Not there (a paste from
+      // another project of a sheet too big to travel on the clipboard): the paste is refused.
       store.create({ id: sheetId, tabId, title, copyOf: from }, undefined, {
         onRefused: (code) => {
           if (code !== 'sheet_not_found') return false;
@@ -280,7 +280,7 @@ export function useSheetModel(
 
   // A Sheet tab and its sheet share one name (docs/specs/026-plan/plan-tabs.md "Names"): when the title changes while
   // drawn (renamed here, by a collaborator or an agent, or undone), the tab it fills follows. Not on first sight, so
-  // opening a document never rewrites a tab; only someone who may shape the Sheet.
+  // opening a project never rewrites a tab; only someone who may shape the Sheet.
   const title = sheet?.title;
   const seenTitle = useRef(title);
   useEffect(() => {

@@ -78,9 +78,9 @@ export async function callApi(
   if (!API_METHODS.includes(method))
     throw usage(`${input.method} is not one of ${API_METHODS.join(', ')}`);
   if (/^[a-z]+:/i.test(input.path) || input.path.startsWith('//'))
-    throw usage(`${input.path} is a URL; give a path under /api, such as /documents`);
+    throw usage(`${input.path} is a URL; give a path under /api, such as /projects`);
   const path = `/${input.path.replace(/^\/+/, '').replace(/^api\//, '')}`;
-  if (method === 'PUT' && /^\/documents\/[^/]*\/tabs\/[^/]*\/?$/.test(path.split('?')[0]!))
+  if (method === 'PUT' && /^\/projects\/[^/]*\/tabs\/[^/]*\/?$/.test(path.split('?')[0]!))
     throw usage(
       'the CLI never saves a whole tab; change a tab with a changeset',
       'liveplanner guide edit',
@@ -90,7 +90,7 @@ export async function callApi(
   return { text: await res.text(), status: res.status };
 }
 
-// A token from stdin (`--with-token`): never read from a terminal, and only an lvd_ token.
+// A token from stdin (`--with-token`): never read from a terminal, and only an lwt_ token.
 async function tokenFromStdin(io: CliIo): Promise<string> {
   if (io.stdinIsTTY)
     throw new CliError({
@@ -104,7 +104,7 @@ async function tokenFromStdin(io: CliIo): Promise<string> {
     throw new CliError({
       exit: EXIT.rejected,
       code: 'invalid_value',
-      message: 'that is not an API token (lvd_…)',
+      message: 'that is not an API token (lwt_…)',
     });
   return token;
 }

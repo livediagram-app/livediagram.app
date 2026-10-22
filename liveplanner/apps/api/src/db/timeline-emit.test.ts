@@ -7,13 +7,13 @@ import { emitTimelineEvent } from './timeline';
 
 const draft = (description: string) => ({
   actorId: 'ada',
-  sourceType: 'document' as const,
+  sourceType: 'project' as const,
   sourceId: 'd1',
-  eventType: 'document_edited' as const,
+  eventType: 'project_edited' as const,
   dedupeKey: 'ada:2026-10-11',
   title: 'Edited',
   description,
-  snapshot: { documentId: 'd1' },
+  snapshot: { projectId: 'd1' },
 });
 
 describe('emitTimelineEvent', () => {
@@ -23,7 +23,7 @@ describe('emitTimelineEvent', () => {
     await emitTimelineEvent(env, draft('First'), [{ scopeType: 'user', scopeId: 'ada' }]);
     await emitTimelineEvent(env, draft('Renamed'), [
       { scopeType: 'user', scopeId: 'ada' },
-      { scopeType: 'document', scopeId: 'd1' },
+      { scopeType: 'project', scopeId: 'd1' },
     ]);
     expect(batch).toHaveBeenCalledTimes(2);
     const events = sql.prepare('SELECT id, description FROM timeline_events').all();
@@ -36,7 +36,7 @@ describe('emitTimelineEvent', () => {
       .all()
       .map((r) => [r['event_id'], r['scope_type'], r['scope_id']]);
     expect(scopes).toEqual([
-      [events[0]!['id'], 'document', 'd1'],
+      [events[0]!['id'], 'project', 'd1'],
       [events[0]!['id'], 'user', 'ada'],
     ]);
   });

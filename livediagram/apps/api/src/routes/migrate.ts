@@ -4,6 +4,7 @@
 import { isClerkIdShape } from '@livediagram/api-schema';
 import { guestSignatureEnforced, isLegacyGuestEra } from '../auth/guest-rest';
 import { verifyOwnerId } from '../auth/owner-signature';
+import { mergeCommunityCopier } from '../community-service';
 import { getParticipant, migrateOwnerId } from '../db';
 import { badRequest, forbidden, json, missingAuth, notFound } from '../responses';
 import { readOptionalBody, type RouteContext } from './context';
@@ -60,6 +61,8 @@ export async function handleMigrate(ctx: RouteContext): Promise<Response> {
       return forbidden();
     }
     const migrated = await migrateOwnerId(env, fromOwnerId, clerkUserId);
+    // docs/specs/025-community/community.md "Likes": the guest's Community copies are the account's.
+    ctx.waitUntil?.(mergeCommunityCopier(env, fromOwnerId, clerkUserId));
     return json({ migrated });
   }
 
@@ -93,6 +96,7 @@ export async function handleMigrate(ctx: RouteContext): Promise<Response> {
   if (fromOwnerId === toOwnerId) return json({ migrated: ZERO });
   if (!(await verifyOwnerId(secret, toOwnerId, stringOrNull(body.toSignature)))) return forbidden();
   const migrated = await migrateOwnerId(env, fromOwnerId, toOwnerId);
+  ctx.waitUntil?.(mergeCommunityCopier(env, fromOwnerId, toOwnerId));
   return json({ migrated });
 }
 

@@ -6,7 +6,7 @@ import {
   createSticky,
   createText,
   type Element,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import {
   describeMany,
   describeOne,

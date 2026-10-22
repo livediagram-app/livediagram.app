@@ -5,7 +5,7 @@
 import { act, render, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { SheetPresenceOp, SheetsRoomOp } from '@liveplanner/api-schema';
-import type { Element } from '@liveplanner/document';
+import type { Element } from '@liveplanner/project';
 import {
   SheetsBridgeContext,
   useSheetsBridge,
@@ -17,7 +17,7 @@ type Opts = Parameters<typeof useSheetsBridge>[0];
 
 function opts(over: Partial<Opts> = {}): Opts {
   return {
-    documentId: 'd1',
+    projectId: 'd1',
     ownerId: 'o1',
     shareCode: null,
     tabScope: null,
@@ -69,7 +69,7 @@ describe('useSheetsBridge', () => {
       useSheetsBridge(opts({ shareCode: 'sc', tabScope: 'tX', canEdit: false })),
     );
     const b = result.current.bridge;
-    expect(b.scope).toEqual({ documentId: 'd1', ownerId: 'o1', shareCode: 'sc', tabId: 'tX' });
+    expect(b.scope).toEqual({ projectId: 'd1', ownerId: 'o1', shareCode: 'sc', tabId: 'tX' });
     expect(b.activeTabId).toBe('t1');
     expect(b.self).toEqual({ id: 'me', name: 'Me', color: '#000000' });
     expect(b.canEdit).toBe(false);

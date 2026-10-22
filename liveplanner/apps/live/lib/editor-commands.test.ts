@@ -5,36 +5,20 @@ import { buildEditorCommands, type CommandContext, type CommandHandlers } from '
 // handler it claims to.
 function handlers(): CommandHandlers {
   return {
-    deleteSelection: vi.fn(),
-    duplicateSelection: vi.fn(),
-    toggleLockSelection: vi.fn(),
-    bringToFront: vi.fn(),
-    sendToBack: vi.fn(),
-    rotate: vi.fn(),
-    clearAnimation: vi.fn(),
-    renumberSteps: vi.fn(),
-    setMarker: vi.fn(),
-    addComment: vi.fn(),
-    editNote: vi.fn(),
     createTab: vi.fn(),
-    renameDocument: vi.fn(),
-    deleteDocument: vi.fn(),
+    renameProject: vi.fn(),
+    deleteProject: vi.fn(),
     renameTab: vi.fn(),
     openTheme: vi.fn(),
-    openCanvasOptions: vi.fn(),
     openShare: vi.fn(),
     openCollaborators: vi.fn(),
     undo: vi.fn(),
     redo: vi.fn(),
     toggleZen: vi.fn(),
-    fitToScreen: vi.fn(),
-    autoLayout: vi.fn(),
-    autoAlign: vi.fn(),
     openExport: vi.fn(),
     openImport: vi.fn(),
     openSettings: vi.fn(),
     openShortcuts: vi.fn(),
-    setTool: vi.fn(),
   };
 }
 
@@ -43,32 +27,21 @@ const base: CommandContext = {
   canUndo: false,
   canRedo: false,
   zenMode: false,
-  selectionCount: 0,
-  singleIsBoxed: false,
-  singleRotates: false,
-  singleIsShape: false,
-  hasAnimation: false,
-  marker: null,
   canShare: true,
   isOffline: false,
-  // A drawn-on desktop canvas in Select, which is where most of these
-  // assertions live; the tool commands have their own describe block.
-  canvasTool: 'select',
-  canvasEmpty: false,
 };
 
 const ids = (ctx: CommandContext) => buildEditorCommands(ctx, handlers()).map((c) => c.id);
 
-describe('buildEditorCommands — document/tab commands', () => {
-  it('always offers the in-document commands regardless of selection', () => {
+describe('buildEditorCommands — project/tab commands', () => {
+  it('always offers the in-project commands', () => {
     expect(ids(base)).toEqual(
       expect.arrayContaining([
         'create-tab',
         'rename-tab',
-        'rename-document',
-        'delete-document',
+        'rename-project',
+        'delete-project',
         'open-theme',
-        'open-canvas',
         'share',
       ]),
     );
@@ -78,168 +51,67 @@ describe('buildEditorCommands — document/tab commands', () => {
     expect(ids({ ...base, canShare: false })).not.toContain('share');
   });
 
-  it('hides Share for offline documents (docs/specs/006-document/offline-mode.md)', () => {
+  it('hides Share for offline projects (docs/specs/006-project/offline-mode.md)', () => {
     expect(ids({ ...base, isOffline: true })).not.toContain('share');
-  });
-
-  it('offers no selection commands when nothing is selected', () => {
-    const out = ids(base);
-    expect(out).not.toContain('delete');
-    expect(out).not.toContain('bring-to-front');
-    expect(out).not.toContain('rotate-90');
   });
 });
 
 // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table).
 describe('buildEditorCommands — in a workbench', () => {
-  it('offers neither Share nor Delete document, and keeps the rest', () => {
+  it('offers neither Share nor Delete project, and keeps the rest', () => {
     const inWorkbench = ids({ ...base, canShare: true, workbench: true });
     expect(inWorkbench).not.toContain('share');
-    expect(inWorkbench).not.toContain('delete-document');
-    expect(inWorkbench).toContain('rename-document');
+    expect(inWorkbench).not.toContain('delete-project');
+    expect(inWorkbench).toContain('rename-project');
     expect(ids({ ...base, canShare: true })).toEqual(
-      expect.arrayContaining(['share', 'delete-document']),
+      expect.arrayContaining(['share', 'delete-project']),
     );
   });
 });
 
-describe('buildEditorCommands — selection commands', () => {
-  it('offers delete/duplicate/lock/reorder for any selection (incl. multi)', () => {
-    const out = ids({ ...base, selectionCount: 3 });
-    expect(out).toEqual(
-      expect.arrayContaining(['delete', 'duplicate', 'lock', 'bring-to-front', 'send-to-back']),
-    );
-    // Single-only commands stay hidden for a multi-selection.
-    expect(out).not.toContain('rotate-90');
-    expect(out).not.toContain('note');
-  });
-
-  it('ranks selection commands ahead of the document/tab commands', () => {
-    const out = ids({ ...base, selectionCount: 1, singleIsBoxed: true });
-    expect(out.indexOf('delete')).toBeLessThan(out.indexOf('create-tab'));
-  });
-
-  it('offers rotate/note/comment for a single boxed element', () => {
-    const out = ids({ ...base, selectionCount: 1, singleIsBoxed: true, singleRotates: true });
-    expect(out).toEqual(
-      expect.arrayContaining([
-        'rotate-90',
-        'rotate-180',
-        'rotate-270',
-        'rotate-0',
-        'note',
-        'comment',
-      ]),
-    );
-  });
-
-  // docs/specs/009-elements/blueprints/annotations.md [QD8]: an annotation marker never rotates.
-  it('offers note and comment but no Rotate for an annotation marker', () => {
-    const out = ids({ ...base, selectionCount: 1, singleIsBoxed: true, singleRotates: false });
-    expect(out).toEqual(expect.arrayContaining(['note', 'comment']));
-    expect(out).not.toContain('rotate-90');
-    expect(out).not.toContain('rotate-0');
-  });
-
-  // docs/specs/026-plan/plan-mode.md "Nothing attached to Plan items".
-  it('offers no note or comment for a Plan item', () => {
-    const out = ids({
-      ...base,
-      selectionCount: 1,
-      singleIsBoxed: true,
-      singleTakesAttachments: false,
-    });
-    expect(out).not.toContain('note');
-    expect(out).not.toContain('comment');
-  });
-
-  it('does not offer boxed-only commands for a single arrow (not boxed)', () => {
-    const out = ids({ ...base, selectionCount: 1, singleIsBoxed: false });
-    expect(out).not.toContain('rotate-90');
-    expect(out).not.toContain('note');
-  });
-
-  it('offers Clear animation only when the element is animated', () => {
-    expect(ids({ ...base, selectionCount: 1, singleIsBoxed: true })).not.toContain(
-      'clear-animation',
-    );
-    expect(ids({ ...base, selectionCount: 1, singleIsBoxed: true, hasAnimation: true })).toContain(
-      'clear-animation',
-    );
-  });
-});
-
-describe('buildEditorCommands — markers (shape only)', () => {
-  const shape = { ...base, selectionCount: 1, singleIsBoxed: true, singleIsShape: true };
-
-  it('offers the marker catalogue and no Clear marker when none is set', () => {
-    const out = ids(shape);
-    expect(out).not.toContain('clear-marker');
-    expect(out).toContain('marker-green-circle');
-    expect(out).toContain('marker-checkbox-checked');
-  });
-
-  it('offers Clear marker and hides the current marker when one is set', () => {
-    const out = ids({ ...shape, marker: 'green-circle' });
-    expect(out).toContain('clear-marker');
-    expect(out).not.toContain('marker-green-circle');
-    expect(out).toContain('marker-red-circle');
-  });
-
-  it('does not offer markers for a non-shape boxed element', () => {
-    const out = ids({ ...base, selectionCount: 1, singleIsBoxed: true, singleIsShape: false });
-    expect(out.some((id) => id.startsWith('marker-'))).toBe(false);
-  });
-});
-
-describe('buildEditorCommands — dispatch', () => {
-  it('runs the matching handler, including the rotation angle', () => {
-    const h = handlers();
-    const cmds = buildEditorCommands(
-      { ...base, selectionCount: 1, singleIsBoxed: true, singleRotates: true },
-      h,
-    );
-    cmds.find((c) => c.id === 'rotate-180')!.run();
-    expect(h.rotate).toHaveBeenCalledWith(180);
-
-    cmds.find((c) => c.id === 'delete')!.run();
-    expect(h.deleteSelection).toHaveBeenCalledOnce();
-  });
-
-  it('Clear marker dispatches setMarker(null)', () => {
-    const h = handlers();
-    const cmds = buildEditorCommands(
-      {
-        ...base,
-        selectionCount: 1,
-        singleIsBoxed: true,
-        singleIsShape: true,
-        marker: 'red-circle',
-      },
-      h,
-    );
-    cmds.find((c) => c.id === 'clear-marker')!.run();
-    expect(h.setMarker).toHaveBeenCalledWith(null);
-  });
-});
-
-// docs/specs/007-editor/command-palette.md: the app-level command palette expansion.
-describe('buildEditorCommands — app-level commands (docs/specs/007-editor/command-palette.md)', () => {
-  it('offers view / cleanup / dialog commands for editors', () => {
-    expect(ids(base)).toEqual(
-      expect.arrayContaining([
-        'zen',
-        'fit-to-screen',
-        'export',
-        'auto-layout',
-        'auto-align',
+// A Plan tab's content covers the canvas, so the diagram editor's canvas verbs would do nothing there.
+describe('buildEditorCommands — Plan tabs', () => {
+  it('offers exactly the commands that act on a Board, Sheet, Dashboard or Form tab', () => {
+    expect(ids({ ...base, canUndo: true, canRedo: true }).sort()).toEqual(
+      [
+        'undo',
+        'redo',
+        'create-tab',
+        'rename-tab',
+        'rename-project',
+        'delete-project',
+        'open-theme',
+        'share',
         'import',
         'settings',
         'shortcuts',
-      ]),
+        'zen',
+        'export',
+        'collaborators',
+      ].sort(),
     );
   });
 
+  it('offers no canvas, selection, tool or layout command', () => {
+    const out = ids({ ...base, canUndo: true, canRedo: true });
+    for (const gone of [
+      'delete',
+      'duplicate',
+      'lock',
+      'fit-to-screen',
+      'open-canvas',
+      'auto-layout',
+      'auto-align',
+      'renumber-steps',
+      'tool:select',
+      'tool:isometric',
+    ])
+      expect(out).not.toContain(gone);
+    expect(out.some((id) => id.startsWith('auto-layout') || id.startsWith('tool:'))).toBe(false);
+  });
+});
+
+describe('buildEditorCommands — app-level commands (docs/specs/007-editor/command-palette.md)', () => {
   it('offers Undo / Redo only when there is history to walk', () => {
     expect(ids(base)).not.toContain('undo');
     expect(ids(base)).not.toContain('redo');
@@ -248,24 +120,11 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
   });
 
   it('read-only sessions get exactly the view-safe subset', () => {
-    // The three view verbs plus the tools that only change how you LOOK at
-    // the canvas. Nothing here writes to the document, which is the property
-    // this test exists to hold: the format painter is
-    // withheld, and so is every command below the read-only return.
-    expect(ids({ ...base, isReadOnly: true })).toEqual([
-      'zen',
-      'fit-to-screen',
-      'export',
-      // Reads the room, writes nothing — a viewer may ask who else is here.
-      'collaborators',
-      'tool:pan',
-      'tool:isometric',
-    ]);
+    // Nothing here writes to the project, which is the property this test exists to hold.
+    expect(ids({ ...base, isReadOnly: true })).toEqual(['zen', 'export', 'collaborators']);
   });
 
   it('offers Collaborators to everyone, shared or not, owner or not', () => {
-    // The panel answers "who is in this document" — a question that is just as
-    // valid alone, on someone else's link, or on an offline document.
     for (const over of [
       {},
       { canShare: false },
@@ -276,14 +135,6 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
     }
   });
 
-  it('runs the collaborators handler', () => {
-    const h = handlers();
-    buildEditorCommands(base, h)
-      .find((c) => c.id === 'collaborators')!
-      .run();
-    expect(h.openCollaborators).toHaveBeenCalledOnce();
-  });
-
   it('names the zen command by its direction', () => {
     const name = (zen: boolean) =>
       buildEditorCommands({ ...base, zenMode: zen }, handlers()).find((c) => c.id === 'zen')!.name;
@@ -291,109 +142,17 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
     expect(name(true)).toBe('Exit zen mode');
   });
 
-  it('dispatches the app-level handlers', () => {
+  it('dispatches the handlers', () => {
     const h = handlers();
     const cmds = buildEditorCommands({ ...base, canUndo: true, canRedo: true }, h);
-    cmds.find((c) => c.id === 'undo')!.run();
-    cmds.find((c) => c.id === 'auto-layout')!.run();
-    cmds.find((c) => c.id === 'export')!.run();
+    const run = (id: string) => cmds.find((c) => c.id === id)!.run();
+    run('undo');
+    run('export');
+    run('collaborators');
+    run('shortcuts');
     expect(h.undo).toHaveBeenCalledOnce();
-    expect(h.autoLayout).toHaveBeenCalledOnce();
     expect(h.openExport).toHaveBeenCalledOnce();
-  });
-
-  // docs/specs/008-canvas/layout-cleanup.md "Layout styles": one command per explicit style, each passing
-  // its choice through to the shared autoLayout handler.
-  it('offers a command per layout style and passes the choice through', () => {
-    const h = handlers();
-    const cmds = buildEditorCommands(base, h);
-    for (const styleId of ['flow-down', 'flow-right', 'tree', 'mindmap'] as const) {
-      cmds.find((c) => c.id === `auto-layout-${styleId}`)!.run();
-      expect(h.autoLayout).toHaveBeenLastCalledWith(styleId);
-    }
-    // The plain command stays the smart default (no explicit choice).
-    cmds.find((c) => c.id === 'auto-layout')!.run();
-    expect(h.autoLayout).toHaveBeenLastCalledWith();
-  });
-
-  it('withholds the layout style commands from read-only sessions', () => {
-    expect(ids({ ...base, isReadOnly: true })).not.toContain('auto-layout-mindmap');
-  });
-});
-
-// Canvas-tool switches (docs/specs/008-canvas/canvas-and-palette.md "Search panel"). The palette's tool dropdown
-// was the only way to reach Hand / Laser / Spotlight / Avatar /
-// Isometric; the search panel offered none of them.
-describe('canvas tool commands', () => {
-  it('offers every tool but the one already in force', () => {
-    const got = ids(base).filter((id) => id.startsWith('tool:'));
-    expect(got).toEqual(['tool:pan', 'tool:isometric']);
-    // Select is the current tool, so it is not offered.
-    expect(got).not.toContain('tool:select');
-    // ...and it comes back once you are somewhere else.
-    expect(ids({ ...base, canvasTool: 'pan' })).toContain('tool:select');
-  });
-
-  it('runs the tool setter with the tool id', () => {
-    const h = handlers();
-    buildEditorCommands(base, h)
-      .find((c) => c.id === 'tool:isometric')!
-      .run();
-    expect(h.setTool).toHaveBeenCalledWith('isometric');
-  });
-
-  it('drops the content-dependent tools on an empty canvas', () => {
-    const got = ids({ ...base, canvasEmpty: true }).filter((id) => id.startsWith('tool:'));
-    // Only Hand survives: Select is current, and everything else acts on
-    // existing content, the same gating the tool dropdown applies.
-    expect(got).toEqual(['tool:pan']);
-  });
-
-  it('gives a read-only visitor the viewing tools but not the editing ones', () => {
-    const got = ids({ ...base, isReadOnly: true }).filter((id) => id.startsWith('tool:'));
-    expect(got).toContain('tool:isometric');
-    expect(got).not.toContain('tool:format');
-  });
-});
-
-describe('tool commands', () => {
-  it('offers no format painter', () => {
-    expect(ids(base)).not.toContain('tool:format');
-  });
-});
-
-// docs/specs/009-elements/step-number.md: Renumber Steps in the command palette, for an editor on a tab with steps.
-describe('buildEditorCommands — Renumber Steps', () => {
-  it('offers it only when the tab holds a step, and never read-only or on a locked tab', () => {
-    expect(ids(base)).not.toContain('renumber-steps');
-    expect(ids({ ...base, tabHasSteps: true })).toContain('renumber-steps');
-    expect(ids({ ...base, tabHasSteps: true, isReadOnly: true })).not.toContain('renumber-steps');
-    expect(ids({ ...base, tabHasSteps: true, tabLocked: true })).not.toContain('renumber-steps');
-  });
-});
-
-// docs/specs/008-canvas/canvas-and-palette.md "Locking": a locked tab refuses every element edit, so search
-// offers none; docs/specs/026-plan/plan-mode.md: Plan mode has no Format, in search as in the dropdown.
-describe('buildEditorCommands — locked tab and Plan mode', () => {
-  it('offers no element edits, layout cleanup or Format on a locked tab', () => {
-    const got = ids({ ...base, tabLocked: true, selectionCount: 1, singleIsBoxed: true });
-    expect(got).not.toContain('delete');
-    expect(got).not.toContain('duplicate');
-    expect(got.some((id) => id.startsWith('auto-layout'))).toBe(false);
-    expect(got).not.toContain('auto-align');
-    expect(got).not.toContain('tool:format');
-    // The document and the view stay workable.
-    expect(got).toEqual(expect.arrayContaining(['create-tab', 'rename-document', 'fit-to-screen']));
-  });
-
-  it('keeps the element edits on an unlocked tab', () => {
-    const got = ids({ ...base, selectionCount: 1, singleIsBoxed: true });
-    expect(got).toEqual(expect.arrayContaining(['delete', 'duplicate', 'auto-align']));
-  });
-
-  it('leaves Format out', () => {
-    const got = ids(base);
-    expect(got).not.toContain('tool:format');
-    expect(got).toContain('tool:isometric');
+    expect(h.openCollaborators).toHaveBeenCalledOnce();
+    expect(h.openShortcuts).toHaveBeenCalledOnce();
   });
 });

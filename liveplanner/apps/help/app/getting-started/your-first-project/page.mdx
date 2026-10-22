@@ -1,0 +1,91 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { PlanBoardScene } from '@/components/illustrations/plan';
+
+export const metadata = helpMetadata({
+  title: 'Your First Project',
+  description:
+    'A first walk through liveplanner: open a Kanban board, add and move cards, add a Sheet tab, and share the project.',
+  path: '/help/getting-started/your-first-project/',
+});
+
+<ArticleLayout
+  title="Your First Project"
+  description="Start a project, pick how to run the work, and share it."
+  categoryTitle="Getting Started"
+  categorySlug="getting-started"
+>
+
+This walk-through takes a few minutes and needs no account. By the end you will have a project with a board of cards, a second tab beside it, and a link you can send to someone so you can plan together.
+
+## Open liveplanner
+
+Open a [new project](/new). There is no sign-up and nothing to install: you start straight away as a guest, and your work is saved in this browser as you go. You can sign in later to keep it on every device; see [Guest vs Account](/help/getting-started/guest-vs-account/).
+
+A project holds **tabs**, listed along the bottom of the screen. Each tab is one **Board**, **Sheet**, **Form** or **Dashboard**. Your new project has one empty tab, so it opens on **Start Planning**.
+
+## Pick how to run the work
+
+**Start Planning** lists ready-made starts down its left side: **Recommended**, **Boards**, **Spreadsheets**, **Forms**, **Visualisations**, **Dashboards** and **Inspiration** (whole ways of working set up across several tabs, such as a Hiring Pipeline or a Content Calendar). Or type in the search box to find a board, sheet, form or layout by name.
+
+<Step n={1}>
+  Under **Recommended**, pick **Kanban**. The tab becomes a board with the columns **Backlog**, **To
+  Do**, **In Progress**, **Review** and **Done**, and limits on how many cards the busy columns
+  should hold at once.
+</Step>
+
+<Step n={2}>
+  If liveplanner offers you the **Boards tour**, press **Yes** for a quick look round your board. It
+  adds an example card to show you, and takes it away after.
+</Step>
+
+The project takes the board's name ("Untitled Kanban"). To call it something else, click the name at the top of the screen, type, and press **Enter**.
+
+## Add and move cards
+
+<Figure caption="A Kanban board: columns of cards, with a card being dragged into another column.">
+  <PlanBoardScene />
+</Figure>
+
+- **Add a card:** press **Add your first card** (or **Add card**) at the top of a column, pick the kind of card, and type its title.
+- **Open a card:** click it to see its details: who it's assigned to, its priority, dates, a description and comments. Every change saves as you make it.
+- **Move a card:** drag it to another column as the work moves on, or up and down its column to put it in order. With the keyboard, focus a card and press **Shift** with the arrow keys.
+- **Undo a slip:** the **Undo** and **Redo** buttons sit in the bottom-right corner, or press **Ctrl+Z** (**Cmd+Z** on a Mac).
+
+The buttons beside them help as the board grows: **New** adds a card, **Find** finds any card in the project, **Types** sets up the kinds of card you use and their fields, and **Trash** keeps what you delete until you restore it. More in [Boards](/help/plan/boards/) and [Cards](/help/plan/cards/).
+
+## Add another tab
+
+Press **+** at the end of the tab bar. The new tab opens on **Start Planning** too, so you can put something different beside your board:
+
+- **A Sheet:** under **Spreadsheets**, pick **Empty Sheet** for a blank grid with formulas, or a ready-made one such as a budget. See [Sheets](/help/plan/sheets/).
+- **A Dashboard:** under **Dashboards**, pick one such as **Overview** to see metrics and charts drawn from the project's cards. Because every card lives in the project, the dashboard keeps up as cards move on your board. See [Dashboards](/help/plan/dashboards/).
+- **A Form:** under **Forms**, pick one such as **Feedback**. Each answer someone sends becomes a card. See [Forms](/help/plan/forms/).
+
+Click a tab to switch to it. Its **⋯** menu renames, duplicates, locks or deletes it; see [Using Tabs](/help/tabs/using-tabs/).
+
+## Share it
+
+<Step n={1}>Press **Share** at the top right.</Step>
+
+<Step n={2}>
+  Choose what the person can do: **Editor** (changes anything, with you), **Participant** (adds and
+  moves cards and fills in cells, without changing how the project is set up) or **Viewer** (looks
+  only).
+</Step>
+
+<Step n={3}>
+  Press **Create Pass**. The link is copied for you: paste it into a message. Whoever opens it joins
+  the same project, with no account needed, and you see each other's changes as they happen.
+</Step>
+
+More in [Sharing Your Project](/help/getting-started/sharing-your-project/), including passwords and links that expire.
+
+## Where next
+
+- [Planning Basics](/help/plan/planning-basics/) covers boards, cards and templates in more depth.
+- The [Plan Tour](/help/plan/plan-tour/) walks you round your own board or sheet in about a minute.
+- [Card Types](/help/plan/card-types/) shows how to make cards with the fields your work needs.
+- [Keyboard Essentials](/help/getting-started/keyboard-essentials/) lists the shortcuts worth learning first.
+
+</ArticleLayout>

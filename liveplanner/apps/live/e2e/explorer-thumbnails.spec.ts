@@ -1,11 +1,11 @@
-import { apiBase, darkVisitor, seedDocument } from './audit-screens';
+import { apiBase, darkVisitor, seedProject } from './audit-screens';
 import { expect, expectNoPageErrors, mintSignedGuest, ownerHeaders, test } from './fixtures';
 
-// The Explorer asks only for snapshots that exist (docs/specs/006-document/document-snapshots.md, "An
-// empty document is never asked for"): the list says which documents are empty, so their cards show
+// The Explorer asks only for snapshots that exist (docs/specs/006-project/project-snapshots.md, "An
+// empty project is never asked for"): the list says which projects are empty, so their cards show
 // the undrawn sketch at once and no thumbnail request (and no 404) reaches the console.
 
-test('an empty document is never asked for its thumbnail; a drawn one is', async ({
+test('an empty project is never asked for its thumbnail; a drawn one is', async ({
   page,
   pageErrors,
   baseURL,
@@ -13,9 +13,9 @@ test('an empty document is never asked for its thumbnail; a drawn one is', async
   const owner = await mintSignedGuest(page.request);
   await darkVisitor(page, owner);
   const origin = new URL(baseURL!).origin;
-  const drawn = await seedDocument(page, owner, origin);
+  const drawn = await seedProject(page, owner, origin);
   const empty = crypto.randomUUID();
-  const created = await page.request.post(`${apiBase}/documents`, {
+  const created = await page.request.post(`${apiBase}/projects`, {
     headers: ownerHeaders(owner, { Origin: origin }),
     data: {
       id: empty,

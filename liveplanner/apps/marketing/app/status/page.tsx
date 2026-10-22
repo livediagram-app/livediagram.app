@@ -5,7 +5,7 @@ import { CONTACT_FORM_URL, pageMetadata } from '@liveplanner/ui';
 
 const STATUS_TITLE = 'Status · liveplanner';
 const STATUS_DESCRIPTION =
-  'Operational status of the liveplanner services: editor, API, realtime room, marketing site, telemetry dashboard, help centre, and database.';
+  'Operational status of the liveplanner services: editor, API, realtime room, marketing site, help centre, and database.';
 
 export const metadata = pageMetadata({
   title: STATUS_TITLE,
@@ -41,7 +41,7 @@ const COMPONENTS: Component[] = [
   {
     name: 'Telemetry dashboard',
     description:
-      'The public anonymous-events dashboard at https://liveplanner.app/telemetry. Static export served by a Cloudflare Worker.',
+      'The public anonymous-events dashboard at https://liveworkspace.app/telemetry, shared by every liveworkspace app. Served by liveworkspace’s telemetry Worker.',
   },
   {
     name: 'Help centre',

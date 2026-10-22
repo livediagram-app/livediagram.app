@@ -131,7 +131,7 @@ describe('missingBoardStatuses', () => {
     ]);
   });
 
-  it('stays linear on a large document', () => {
+  it('stays linear on a large project', () => {
     const many = new Map(
       Array.from({ length: 200 }, (_, i) => [`s${i}`, `Status ${i}`] as [string, string]),
     );

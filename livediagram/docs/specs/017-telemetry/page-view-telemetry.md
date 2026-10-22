@@ -118,8 +118,8 @@ preferences key.
 - **editor** (`apps/live`) and **help centre** (`apps/help`): already emitting.
 - **Community** (`apps/community`): page views through the shared `PageViewBoot`, alongside its own
   [Community](../025-community/community.md) events.
-- **marketing** (`apps/marketing`) and **the dashboard** (`apps/telemetry`):
-  new emitters. Their _only_ event is the page view: they mount the shared
+- **marketing** (`apps/marketing`) and, until it moved to liveworkspace in October 2026,
+  **the dashboard**: new emitters. Their _only_ event is the page view: they mount the shared
   `PageViewBoot` and nothing else, and deliberately no error tracking (the
   privacy policy promises page views only). The landing funnel
   ([Landing funnel](../019-marketing/landing-funnel.md)) measures what those pages lead to
@@ -161,7 +161,7 @@ last 7 days against the 7 before), and the **All pages** list of every page
 pages were briefly a stack opening into the per-app lists; a set of rankings
 read side by side on the page is not a stack.
 
-The page-view helpers live in `apps/telemetry/app/page-views.ts`, pure and
+The page-view helpers live in liveworkspace/apps/site/app/telemetry/livediagram/page-views.ts, pure and
 tested apart from the view.
 
 Page views are events, so they also count toward the window totals and Search

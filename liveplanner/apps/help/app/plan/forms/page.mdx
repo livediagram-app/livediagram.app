@@ -1,0 +1,97 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Forms',
+  description:
+    'Build a form on a tab and share its link: every response becomes a card on your board. Questions, where answers go, publishing and reports.',
+  path: '/help/plan/forms/',
+});
+
+<ArticleLayout
+  title="Forms"
+  description="A form anyone can fill in from a link, whose every response lands as a card on your board."
+  categoryTitle="Plan"
+  categorySlug="plan"
+>
+
+A **Form** is a tab of your project that holds one form (see [Planning Basics](/help/plan/planning-basics/)). You build it in place, share its link, and anyone can fill it in without an account. Each response becomes a card on a [board](/help/plan/boards/) in the same project, already in the column you chose, so collecting answers leads straight into working on them.
+
+## Start a Form
+
+On a new tab, choose **Forms** in **Start Planning**'s rail, then a starter:
+
+- **Blank Form**: one question to start from.
+- **Bug Report**: a summary, what happened, severity and an email, landing on a triage board as Bugs.
+- **Feedback**: a star rating and comments.
+- **Feature Request**: an idea and how important it is, as Ideas your team can vote on.
+- **Event RSVP**: who is coming and what they need.
+- **Job Application**: two sections, about the person and their experience, as Candidates.
+- **Contact**: a message you can assign and close, as a Request.
+
+A starter picks where responses go: your first board that takes its kind of card, or a new **Responses** board made after the form with **New**, **In Progress** and **Done** columns. The fields its questions fill are added to the card type for you.
+
+New to forms? The first time you have a Form tab open, a **Getting started with Forms?** banner at the bottom of the screen offers a short tour: building the form in place, adding questions, its responses and Preview, where responses go and **Share Form**. **Show Me Around**, at the foot of the panel the cog opens, runs it again whenever you like, as does **Forms Tour** under **Settings**, **Tours**.
+
+## Build the form
+
+The tab shows the form as people will see it. Click a question (or Tab to it and press Enter) to edit it: type its question, a description under it, and its options, and choose its type. Its footer has **Answer goes to**, **Move Up**, **Move Down**, **Duplicate**, **Delete** and **Required**. Escape lets go of it.
+
+- **Add a question** with the bar under the selected question: it adds one of the same type, or pick another type from its arrow.
+- **Add Section** splits the form after the selected question, so people answer it one page at a time with **Next** and **Back** and a progress bar.
+- **Drag** a question by the handle at its top to move it, into another section too.
+- **Options**: press Enter for the next one, Backspace in an empty one to remove it, Alt with the arrow keys to move it, and paste several lines to add one option per line. **Add “Other”** lets people type their own answer.
+- **The cover**: hover the top of the form and choose **Add Cover** for a colour band, plain, as a gradient or dotted.
+- **Show a section only sometimes**: under a later section's description, the badge reading **Always shown** opens its rule. Choose **Only when an earlier answer is…**, then the question and the answers that show the section, such as showing "Dietary Needs" only to people who answered **Yes** to "Are you coming?". People who answer otherwise skip it.
+- **The look**: a form wears its tab's style, in the editor and on its link alike. Change it with **Style**: the theme gives the form its colour and backdrop, the tab font its lettering, and the finish its boxes (square under Professional, drawn by hand under Sketch, in bold marker under Marker).
+
+### Question types
+
+**Short Answer**, **Paragraph**, **Number** (with a minimum, a maximum and whole numbers only), **Email**, **Link**, **Date**, **Single Choice** (shown as a dropdown past seven options, or always), **Multiple Choice** (with the fewest and most picks), **Rating** (stars, or numbers from 1 to between 3 and 10 with a label at each end) and **Checkbox** (one box to tick, such as agreeing to terms).
+
+## Where answers go
+
+Everything is edited in the form itself. Select a question to change its type, its own settings (shown inside it) and **Required**; the **Answer goes to** badge at its foot opens **Answer Goes To**.
+
+The cog at the end of the bar above the form opens two more:
+
+- **Responses Go To**: the board, the card type and the column every response is made in.
+- **Settings**: **Accepting Responses**, **Close On**, **Response Limit**, and the message people see after sending and once the form has closed.
+
+You can also start a form from a board: open the board's cog and choose **New Form**. Its responses go to that board.
+
+Responses can be **Cards on a Board** or **Rows in a Sheet**. A sheet needs no mapping: each response becomes a row, with a column for every question, headed by its wording. Choose **+ New Sheet** to make one.
+
+**Answer Goes To** decides where each answer is kept on the card:
+
+- **Description**, the default: written into the card's description under its question.
+- **Title**: the card's name on the board. One question at most. With none, cards are named after the form and numbered, such as **Bug Report #14**.
+- **A field** of the card type that fits the answer, or **New Field**, which adds one named after the question. A choice question mapped to a Choice or Multiple Choice field keeps its options in step with the field.
+
+**Preview** at the top right shows the form exactly as people will, working. Submit in Preview makes a real card on your board, titled **Preview:** and then its title, so you can check every answer lands where you expect. Once the form is published, a preview counts as a response; delete its card when you're done.
+
+## Share it
+
+Press **Share Form** (in the header, where Share is on other tabs) and then **Publish Form**. You get a link to copy or open; anyone with it can fill in the form, and they never see your project. The same dialog has **Accepting Responses**, to close the form for a while without losing its link, and **Delete Link**. Publishing again makes a new link.
+
+While a form is taking responses it is locked, so nobody fills in a form that changes under them. Press **Edit Form** on the strip above it to stop taking responses while you edit; the link stays the same, and turning **Accepting Responses** back on opens it again once Share Form lists no problems. Deleting the board or sheet a form sends to pauses it the same way.
+
+Forms are published from projects saved to liveplanner. On a project kept on this device only, Share Form offers **Sync Project** first; once it is synced, the same dialog carries on to **Publish Form**.
+
+## Responses
+
+Each response becomes one card in the column you chose, made by the form (its **Created by** names it) and showing **New** until you open it. The card's panel shows its response number and when it came. A count of responses, with how many are new to you, sits at the top of the Form tab with **View on** its board, and the Explorer's **Inbox** lists forms with new responses. The project's owner also gets an email, at most one every 15 minutes per form; turn it off under **Someone Fills In My Form** in Settings.
+
+If its board, column or card type is removed, the form pauses and asks you to choose where responses go.
+
+Whenever a published form isn't taking responses, a red **Not Taking Responses** sits beside the count, so you never miss it: hover it to see why (its link is switched off, it reached its Close On or Response Limit, its responses have nowhere to go, or its link was suspended) and press it to open where you fix that.
+
+## Who can do what
+
+Editors build, publish, open and close forms. Participants and Viewers see the form as people filling it in do, with how many responses it has, but not its link.
+
+## Safety
+
+People can report a form they were sent from **Report This Form** under it. Reports from three different places suspend its link for good, and the owner is told by email. Forms never ask for passwords: don't use them to collect any.
+
+</ArticleLayout>

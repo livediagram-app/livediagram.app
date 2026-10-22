@@ -38,7 +38,7 @@ import {
   type IconWeight,
   type RunBoolKey,
   type TextRun,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 
 type BoxedKind = BoxedElement['type'];
 

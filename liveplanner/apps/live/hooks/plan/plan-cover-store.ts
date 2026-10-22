@@ -6,7 +6,7 @@
 // maximised-plan.ts: the open tab's board filling it, published by usePlanCoverWiring; the
 // maximised element comes from maximised-plan.ts.
 import { useSyncExternalStore } from 'react';
-import type { PlanTabKind } from '@liveplanner/document';
+import type { PlanTabKind } from '@liveplanner/project';
 import { getMaximisedPlanId, getMaximisedPlanKind, subscribeMaximisedPlan } from './maximised-plan';
 import { createListeners } from '@/lib/listeners';
 

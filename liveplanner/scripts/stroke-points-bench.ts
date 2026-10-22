@@ -1,4 +1,4 @@
-// The stroke points bench (docs/specs/006-document/stroke-points.md "Measured wins"): a synthesised
+// The stroke points bench (docs/specs/006-project/stroke-points.md "Measured wins"): a synthesised
 // whiteboard shaped like the largest real board measured (3,300 pen strokes, 66,000 points, a
 // pressure on every point), stored the former way (`{ nx, ny }` objects and a pressure list, full
 // doubles) and packed, compared on tab bytes, parse time, objects allocated at load, first-draw
@@ -16,8 +16,8 @@ import {
   penStrokeSvg,
   type Element,
   type FreehandElement,
-} from '../packages/document/src/index';
-import { clearStrokePointsCache } from '../packages/document/src/stroke-points-cache';
+} from '../packages/project/src/index';
+import { clearStrokePointsCache } from '../packages/project/src/stroke-points-cache';
 
 const STROKES = 3_300;
 const POINTS = 66_000;
@@ -177,7 +177,7 @@ function drawFormer(text: string, visibleOnly: boolean): number {
   return length;
 }
 
-// A freshly loaded tab: the decode cache starts empty, as it does when a document opens.
+// A freshly loaded tab: the decode cache starts empty, as it does when a project opens.
 function drawPacked(text: string, visibleOnly: boolean): number {
   clearStrokePointsCache();
   const tab = JSON.parse(text) as { elements: FreehandElement[] };

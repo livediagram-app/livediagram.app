@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
-import { ClerkProvider } from '@/components/providers/ClerkProvider';
+import { AuthProvider } from '@/components/providers/AuthProvider';
 import { ErrorTelemetryBoot } from '@/components/providers/ErrorTelemetryBoot';
 import { PageViewBoot } from '@/components/providers/PageViewBoot';
 import { TimingTelemetryBoot } from '@/components/providers/TimingTelemetryBoot';
@@ -8,7 +8,7 @@ import { StaleBuildBoot } from '@/components/providers/StaleBuildBoot';
 import { KeyboardAvoidanceBoot } from '@/components/providers/KeyboardAvoidanceBoot';
 import { ConfirmProvider } from '@/hooks/ui/useConfirm';
 import { ToastProvider } from '@/hooks/ui/useToast';
-import { googleFontsHref } from '@liveplanner/document';
+import { googleFontsHref } from '@liveplanner/project';
 import { BRAND_OG_IMAGE, BRAND_TWITTER_IMAGE } from '@liveplanner/ui/seo';
 import { SITE_NAME, sentencePitch } from '@liveplanner/ui/site';
 import {
@@ -17,7 +17,6 @@ import {
   DARK_READER_LOCK,
   RANDOM_UUID_BOOT_SCRIPT,
   trustedHtml,
-  trustedScriptOrigins,
   trustedTypesBootScript,
 } from '@liveplanner/ui';
 import {
@@ -36,14 +35,8 @@ import './globals.css';
 // `noindex, nofollow` at the root layout cascades through every
 // nested page in the static export. See docs/specs/007-editor/live-app.md "SEO and indexing".
 // Trusted Types before anything else (docs/specs/016-platform/trusted-types.md): the default policy and the
-// violation log, this app's own scripts under its asset prefix, and the Clerk origin read from this build's key
-// (Next inlines only the literal expression).
-const TRUSTED_TYPES_BOOT = trustedTypesBootScript(
-  '/live',
-  trustedScriptOrigins({
-    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
-  }),
-);
+// violation log, and this app's own scripts under its asset prefix.
+const TRUSTED_TYPES_BOOT = trustedTypesBootScript('/live');
 
 const TITLE = 'liveplanner';
 const DESCRIPTION = sentencePitch();
@@ -53,7 +46,7 @@ export const metadata: Metadata = {
   description: DESCRIPTION,
   // Link previews (docs/specs/013-workspace/share-link-previews.md): every editor address previews with the brand
   // card rather than an empty box, and the live worker (src/share-page.ts) rewrites these same tags to name the
-  // document on a share link's page, so they must stay declared here.
+  // project on a share link's page, so they must stay declared here.
   openGraph: {
     type: 'website',
     siteName: SITE_NAME,
@@ -98,15 +91,15 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-// ClerkProvider wraps everything so `useAuth` / `useSignIn` / `useSignUp`
-// work in every page — including the editor. Per docs/specs/014-identity/auth-and-guest-access.md this is NOT a
+// AuthProvider wraps everything so the signed-in session (useDeferredAuth)
+// reaches every page — including the editor. Per docs/specs/014-identity/auth-and-guest-access.md this is NOT a
 // route gate: the editor stays open to guests forever. Auth is purely
 // additive (signed-in users get per-account persistence; guests keep
 // the localStorage participant id).
 //
-// The existing app/not-found.tsx → EditorPage mechanism (docs/specs/007-editor/new-document-route.md, fixes
+// The existing app/not-found.tsx → EditorPage mechanism (docs/specs/007-editor/new-project-route.md, fixes
 // the static-export dynamic-segment 404) is unaffected by the provider
-// — ClerkProvider doesn't touch the route tree.
+// — AuthProvider doesn't touch the route tree.
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     // suppressHydrationWarning: the pre-paint inline scripts below add the
@@ -164,11 +157,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <PageViewBoot />
         <TimingTelemetryBoot />
         <KeyboardAvoidanceBoot />
-        <ClerkProvider>
+        <AuthProvider>
           <ToastProvider>
             <ConfirmProvider>{children}</ConfirmProvider>
           </ToastProvider>
-        </ClerkProvider>
+        </AuthProvider>
       </body>
     </html>
   );

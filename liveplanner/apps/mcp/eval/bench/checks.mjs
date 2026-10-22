@@ -16,8 +16,8 @@ function asRegex(word) {
 // ---- diagrams -----------------------------------------------------------------------------------------------
 
 export function tabsOf(snap) {
-  return (snap.documents ?? []).flatMap((d) =>
-    (d.tabs ?? []).map((t) => ({ ...t, documentId: d.id })),
+  return (snap.projects ?? []).flatMap((d) =>
+    (d.tabs ?? []).map((t) => ({ ...t, projectId: d.id })),
   );
 }
 
@@ -117,7 +117,7 @@ function sheetText(sheet) {
 // One lowercase string of every word the run made, wherever it sits (elements, cards, sheets, forms).
 function allText(snap) {
   const out = [];
-  for (const d of snap.documents ?? []) {
+  for (const d of snap.projects ?? []) {
     out.push(d.name);
     for (const t of d.tabs ?? []) {
       out.push(t.name, ...t.elements.map(wordsOf));
@@ -140,15 +140,15 @@ export function mentions(snap, ...words) {
 // ---- plan ---------------------------------------------------------------------------------------------------------
 
 export function itemsOf(snap) {
-  return (snap.documents ?? []).flatMap((d) => d.items?.items ?? []);
+  return (snap.projects ?? []).flatMap((d) => d.items?.items ?? []);
 }
 
 export function boardsOf(snap) {
-  return (snap.documents ?? []).flatMap((d) => d.items?.boards ?? []);
+  return (snap.projects ?? []).flatMap((d) => d.items?.boards ?? []);
 }
 
 export function typesOf(snap) {
-  return (snap.documents ?? []).flatMap((d) => d.items?.types ?? []);
+  return (snap.projects ?? []).flatMap((d) => d.items?.types ?? []);
 }
 
 // A card type, by name.
@@ -181,7 +181,7 @@ export function columnNames(board) {
 // ---- sheets -------------------------------------------------------------------------------------------------------
 
 export function sheetsOf(snap) {
-  return (snap.documents ?? []).flatMap((d) => d.sheets ?? []);
+  return (snap.projects ?? []).flatMap((d) => d.sheets ?? []);
 }
 
 // A sheet's cells as read_sheet answers them: [{at: "B4", input, value, display}].
@@ -307,7 +307,7 @@ export function replied(run, word) {
 
 // Every task's first check: the run made or changed something, and ended with a reply.
 const BASE_CHECKS = [
-  ['made something', ({ snap }) => (snap.documents ?? []).some((d) => !d.missing)],
+  ['made something', ({ snap }) => (snap.projects ?? []).some((d) => !d.missing)],
   ['replied', ({ run }) => (run.finalText ?? '').trim().length > 0],
 ];
 

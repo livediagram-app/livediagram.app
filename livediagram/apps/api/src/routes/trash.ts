@@ -17,6 +17,7 @@ import {
   restoreDocument,
   trashIdsFor,
 } from '../db';
+import { syncCommunity } from '../community-service';
 import { json, noContent, notFound } from '../responses';
 import { redactDocumentForReader } from '../redact-document';
 import { mayDeleteDocument, requireOwner, type RouteContext } from './context';
@@ -36,6 +37,7 @@ export async function handleTrash(ctx: RouteContext): Promise<Response> {
       if (teamId !== null && !(await joined(ctx, teamId))) return notFound();
       const ids = await trashIdsFor(env, teamId !== null ? { teamId } : { owner });
       const purged = await purgeDocuments(env, ids);
+      ctx.waitUntil?.(syncCommunity(env));
       console.info('[trash] emptied', teamId !== null ? `team:${teamId}` : 'personal', purged);
       return json({ purged });
     }
@@ -53,12 +55,15 @@ export async function handleTrash(ctx: RouteContext): Promise<Response> {
 
   if (restore) {
     await restoreDocument(env, id, Date.now());
+    // docs/specs/025-community/community.md "Keeping in step": a restored document's post is listed again.
+    ctx.waitUntil?.(syncCommunity(env, id));
     const liveDoc = await getDocument(env, id);
     console.info('[trash] restored', id);
     return json({ document: liveDoc ? redactDocumentForReader(liveDoc, owner) : null });
   }
 
   await purgeDocuments(env, [id]);
+  ctx.waitUntil?.(syncCommunity(env, id));
   console.info('[trash] purged from the Trash', id);
   return noContent();
 }

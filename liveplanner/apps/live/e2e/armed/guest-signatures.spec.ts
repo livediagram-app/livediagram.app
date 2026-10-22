@@ -1,10 +1,10 @@
 import type { Page } from '@playwright/test';
-import { expect, expectNoPageErrors, startBlankDocument, test } from '../fixtures';
+import { expect, expectNoPageErrors, startBlankProject, test } from '../fixtures';
 
 // Armed guest signatures (docs/specs/003-system-architecture/e2e-smoke.md "Armed guest signatures";
 // docs/specs/014-identity/auth-and-guest-access.md "Signed guest ids"): with enforcement on, as
 // production runs it once armed, a first-time guest on any entry path gets a signed id before its
-// first owner-scoped call, creates a document and sees the canvas. Run with `pnpm test:e2e:armed`.
+// first owner-scoped call, creates a project and sees the canvas. Run with `pnpm test:e2e:armed`.
 
 // Every api answer the page got, as `METHOD status /path`.
 function recordApi(page: Page): string[] {
@@ -17,36 +17,36 @@ function recordApi(page: Page): string[] {
 }
 
 async function expectSignedGuestCreated(page: Page, api: string[]): Promise<void> {
-  await expect(page).toHaveURL(/\/document\/[^/?]+/);
+  await expect(page).toHaveURL(/\/project\/[^/?]+/);
   await expect(page.locator('[data-canvas-a11y-root]')).toBeAttached();
-  expect(api).toContain('POST 201 /api/documents');
+  expect(api).toContain('POST 201 /api/projects');
   expect(api.filter((line) => / 401 /.test(line))).toEqual([]);
   expect(await page.evaluate(() => localStorage.getItem('liveplanner:v2:self-sig'))).toBeTruthy();
 }
 
 test.describe('a first-time guest with signatures enforced', () => {
-  test('creates a document from /new', async ({ page, pageErrors }) => {
+  test('creates a project from /new', async ({ page, pageErrors }) => {
     const api = recordApi(page);
-    await startBlankDocument(page);
+    await startBlankProject(page);
     await expectSignedGuestCreated(page, api);
     expectNoPageErrors(pageErrors);
   });
 
-  test('creates a document after arriving on /', async ({ page, pageErrors }) => {
+  test('creates a project after arriving on /', async ({ page, pageErrors }) => {
     const api = recordApi(page);
     await page.goto('/');
     await page.waitForURL(/\/new/);
-    await page.getByText('New Document', { exact: false }).waitFor();
+    await page.getByText('New Project', { exact: false }).waitFor();
     // Landing signs the guest before anything else; the wizard then starts from that page's identity.
     await expect
       .poll(() => page.evaluate(() => localStorage.getItem('liveplanner:v2:self-sig')))
       .toBeTruthy();
-    await startBlankDocument(page);
+    await startBlankProject(page);
     await expectSignedGuestCreated(page, api);
     expectNoPageErrors(pageErrors);
   });
 
-  test('creates a blank document straight away', async ({ page, pageErrors }) => {
+  test('creates a blank project straight away', async ({ page, pageErrors }) => {
     const api = recordApi(page);
     await page.goto('/new?blank=1');
     await page.locator('[data-canvas-a11y-root]').waitFor();
@@ -54,13 +54,13 @@ test.describe('a first-time guest with signatures enforced', () => {
     expectNoPageErrors(pageErrors);
   });
 
-  test('creates a document after opening the Explorer first', async ({ page, pageErrors }) => {
+  test('creates a project after opening the Explorer first', async ({ page, pageErrors }) => {
     const api = recordApi(page);
     await page.goto('/explorer');
     await expect
       .poll(() => page.evaluate(() => localStorage.getItem('liveplanner:v2:self-sig')))
       .toBeTruthy();
-    await startBlankDocument(page);
+    await startBlankProject(page);
     await expectSignedGuestCreated(page, api);
     expectNoPageErrors(pageErrors);
   });
@@ -79,7 +79,7 @@ test.describe('a first-time guest with signatures enforced', () => {
     expect(await page.evaluate(() => localStorage.getItem('liveplanner:v2:self-sig'))).toBeNull();
     // That page is unsigned under enforcement, so its create is refused; it settles on the failure
     // card before the next load, so none of its answers land in the next load's record.
-    await page.getByText('Couldn’t create the document').waitFor();
+    await page.getByText('Couldn’t create the project').waitFor();
 
     const api = recordApi(page);
     await page.goto('/new?blank=1');

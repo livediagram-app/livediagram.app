@@ -2,7 +2,7 @@ import { expect, expectNoPageErrors, test } from './fixtures';
 
 // Pasting into an article (docs/specs/016-platform/trusted-types.md, "ProseMirror (the article editor)"): the editor
 // parses the clipboard's HTML through its own ProseMirrorClipboard policy. It used to ask the page's `default` policy
-// first, which refuses HTML, so a rich paste from anywhere (a web page, a document, another article) pasted nothing
+// first, which refuses HTML, so a rich paste from anywhere (a web page, a project, another article) pasted nothing
 // and logged a refusal. Only a real page with the enforced header shows it, hence an end-to-end test.
 test('a rich paste into an article keeps its text and formatting', async ({ page, pageErrors }) => {
   await page.goto('/new?template=article');

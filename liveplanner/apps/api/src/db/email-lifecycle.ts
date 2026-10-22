@@ -25,7 +25,7 @@ export const MAX_SEND_ATTEMPTS = 3;
 // First authenticated sighting. INSERT OR IGNORE keyed on the owner id; returns
 // true only when a NEW row was created, which the caller treats as sign-up
 // (send the welcome immediately). A returning owner's row then takes the
-// address from this verified token, so a changed Clerk primary email is where
+// address from this verified token, so a changed account email is where
 // the next notification goes. The empty-string suppression rows (the backfill
 // in docs/specs/014-identity/transactional-email.md §4) keep their sentinel, and an unchanged address writes
 // nothing. A new address starts with a clean failure count (MAX_SEND_ATTEMPTS).
@@ -80,7 +80,7 @@ export async function markStageSent(
 }
 
 // The verified address stored for an authenticated owner at first sighting.
-// The only server-trusted way to reach a Clerk owner by email outside the
+// The only server-trusted way to reach a signed-in owner by email outside the
 // request that carried their token (docs/specs/014-identity/profile-and-email-notifications.md notifications fire on someone
 // else's request). Returns null for a guest owner, an owner with no
 // lifecycle row (email off when they signed in), or a backfilled
@@ -94,8 +94,8 @@ export async function getOwnerEmail(env: Env, ownerId: string): Promise<string |
 }
 
 // docs/specs/014-identity/transactional-email.md (#4): owners who signed up at or before `cutoff`, still have ZERO
-// documents, and haven't yet been nudged or reached week 1. The NOT EXISTS
-// subquery is the "never drew anything" test (guest documents migrate in on
+// projects, and haven't yet been nudged or reached week 1. The NOT EXISTS
+// subquery is the "never drew anything" test (guest projects migrate in on
 // sign-up, so a real account that drew anything is excluded). Soonest-first.
 export async function dueForActivation(
   env: Env,
@@ -106,7 +106,7 @@ export async function dueForActivation(
     `SELECT el.owner_id, el.email FROM email_lifecycle el
      WHERE el.created_at <= ? AND el.activation_sent_at IS NULL AND el.week1_sent_at IS NULL
        AND el.email <> '' AND el.send_attempts < ?
-       AND NOT EXISTS (SELECT 1 FROM documents d WHERE d.owner_id = el.owner_id)
+       AND NOT EXISTS (SELECT 1 FROM projects d WHERE d.owner_id = el.owner_id)
      ORDER BY el.created_at ASC LIMIT ?`,
   )
     .bind(cutoff, MAX_SEND_ATTEMPTS, limit)
@@ -122,9 +122,9 @@ export async function markActivationSent(env: Env, ownerId: string): Promise<voi
     .run();
 }
 
-// docs/specs/014-identity/transactional-email.md (#5): owners whose most recent document activity was at or before
+// docs/specs/014-identity/transactional-email.md (#5): owners whose most recent project activity was at or before
 // `cutoff` (active once, now quiet), not yet win-backed. MAX(saved_at) is NULL
-// for a zero-document owner and NULL <= ? is false, so they're excluded (the
+// for a zero-project owner and NULL <= ? is false, so they're excluded (the
 // activation nudge handles those). Quietest-longest first.
 export async function dueForWinback(
   env: Env,
@@ -134,7 +134,7 @@ export async function dueForWinback(
   const { results } = await env.DB.prepare(
     `SELECT el.owner_id, el.email FROM email_lifecycle el
      WHERE el.winback_sent_at IS NULL AND el.email <> '' AND el.send_attempts < ?
-       AND (SELECT MAX(d.saved_at) FROM documents d WHERE d.owner_id = el.owner_id) <= ?
+       AND (SELECT MAX(d.saved_at) FROM projects d WHERE d.owner_id = el.owner_id) <= ?
      ORDER BY el.created_at ASC LIMIT ?`,
   )
     .bind(MAX_SEND_ATTEMPTS, cutoff, limit)

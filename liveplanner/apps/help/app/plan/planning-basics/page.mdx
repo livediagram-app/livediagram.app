@@ -1,0 +1,130 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { PlanBoardScene } from '@/components/illustrations/plan';
+
+export const metadata = helpMetadata({
+  title: 'Planning Basics',
+  description:
+    'How planning works in liveplanner: a project of Board, Sheet, Dashboard and Form tabs, Start Planning, cards your team moves together, and Plan templates.',
+  path: '/help/plan/planning-basics/',
+});
+
+<ArticleLayout
+  title="Planning Basics"
+  description="A project of boards, sheets, dashboards and forms, with cards your team moves through the work together."
+  categoryTitle="Plan"
+  categorySlug="plan"
+>
+
+liveplanner is for running work together: a Kanban board, a sprint, a bug triage, a retro, a roadmap, a budget or a launch. What you make is a **project**, and a project holds **tabs** along the bottom of the screen. Each tab is one of four kinds:
+
+- **Board**: columns of cards your team drags through the work. See [Boards](/help/plan/boards/).
+- **Sheet**: a spreadsheet with formulas, formatting and charts, which can also count and add up your cards. See [Sheets](/help/plan/sheets/).
+- **Dashboard**: rows of slots showing your boards, sheets, metrics and charts side by side, or one chart filling the tab, such as a Gantt chart or a due calendar. See [Dashboards](/help/plan/dashboards/) and [Charts of Your Cards](/help/plan/visualisations/).
+- **Form**: questions anyone can answer from a link, each response becoming a card on a board. See [Forms](/help/plan/forms/).
+
+The work itself is **cards**. Each card is an [item](/help/plan/items/) (a task, a bug, a note or an idea) stored with the project rather than with one board, so moving a card changes it for everyone at once, and the same card can show on two boards (a sprint board and a roadmap) and move on both. What fields a card has comes from its [card type](/help/plan/card-types/).
+
+## Start Planning
+
+A new project, and every tab you add with the **+** in the tab bar, opens on **Start Planning**: a picker in the middle of the screen. Its rail on the left lists:
+
+- **Recommended**: the quickest ways to start, such as a Roadmap, a Kanban board, a To-do List, an Overview dashboard, an Empty Sheet and a Feedback form.
+- **Boards**: every board type, from a Blank board to Kanban, Sprint, Retro, Roadmap and Bug Triage.
+- **Spreadsheets**: an Empty Sheet, a table of your cards, and ready-made sheets such as a Budget, an Invoice or a Timesheet.
+- **Forms**: form starters, such as a Bug Report, Feedback or an Event RSVP.
+- **Visualisations**: one chart of your cards filling the tab, such as a Gantt chart or a due calendar.
+- **Dashboards**: layouts of slots, and dashboards built from the boards and sheets your project already has.
+- **Inspiration**: ready-made ways to run real work, such as a Hiring Pipeline or a Content Calendar, set up across several tabs (see [Plan Templates](#plan-templates)).
+
+Type in the search box (**Find a board, sheet, form or layout**) to look across all of them at once, by name, what it's for or the card types a board takes. Pick one and the tab becomes that kind. Only people who can edit the project see Start Planning.
+
+**Each board** takes the card types its work is made of: a Sprint board takes Stories, Tasks and Bugs; a Bug Triage board, Bugs. The first board in a new project brings just those card types (a **Blank** board lets you choose), and later boards add any your project doesn't have yet.
+
+## The Bottom-Right Corner
+
+Once a tab has a board, a sheet or a chart of your cards, the bottom-right corner holds:
+
+- **Undo** and **Redo**. See [Undo](/help/user-interface/undo/) and [Redo](/help/user-interface/redo/).
+- One strip with the **Trash** (for editors, and not on a phone), **New** (a new card of any type), **Find** (any card in the project, with a search) and **Types** (the project's [card types](/help/plan/card-types/)).
+- **Style**, which opens the tab's style: its theme, colours and font. See [Themes](/help/user-interface/themes/).
+- On a **Sheet** tab only, zoom controls, which zoom the sheet's cells from 50% to 200%. Boards, dashboards and forms don't zoom.
+
+On an empty tab, showing Start Planning, only Undo, Redo and Style are there.
+
+## Plan Templates
+
+The templates under **Inspiration** set up a way of working across several tabs: each board on a Board tab of its own, set up for the job (columns, rows, card fields and widgets), and the charts and metrics that watch the work gathered on a Dashboard.
+
+| Template             | Tabs                                                                                   | Card types                       |
+| -------------------- | -------------------------------------------------------------------------------------- | -------------------------------- |
+| **Project Planner**  | **Roadmap** (projects on Now, Next, Later), **Backlog**, **Sprint**, **Daily Standup** | Project, Story, Task, Bug        |
+| **Kanban Board**     | **Board** (with WIP limits), **Requests**, **Flow** (charts of where the work stands)  | Task, Request                    |
+| **Bug Tracker**      | **Triage** (a row per priority), **Fixing**, **Health**                                | Bug                              |
+| **Team Retro**       | **Retro** (notes hidden until you reveal them, then a vote), **Actions**, **Archive**  | Note, Idea, Action               |
+| **Weekly Planner**   | **This Week**, **Inbox**, **Calendar**                                                 | Task, Action, Note               |
+| **Content Calendar** | **Ideas** (voted on), **Production**, **Calendar**                                     | Content, Task                    |
+| **Hiring Pipeline**  | **Roles**, **Pipeline** (a row per role), **Onboarding** (a row per new starter)       | Role, Candidate, Onboarding Task |
+| **OKRs**             | **Objectives**, **Key Results** (on track, at risk or off track)                       | Objective, Key Result            |
+| **Product Launch**   | **Timeline**, **Checklist** (a row per workstream), **Launch Day** (go or no-go)       | Project, Task, Launch Check      |
+| **Feedback Board**   | **Feedback** (voted on), **Delivery**                                                  | Request, Task                    |
+
+- **Cards move between tabs.** Boards on different tabs share some columns: move a task to **This Sprint** on the Project Planner's **Backlog** and it is on the **Sprint** board too. A card's **Status** in its panel lists the columns of every tab, so you can send it anywhere.
+- **Each board takes only its own kinds of card, and the project has only those.** A template brings just the card types its boards need, with the fields the work needs: a **Candidate** names its **Role** (so the Pipeline has a row per role), a **Key Result** has a **Baseline**, **Target** and **Current**, a **Request** says who it is **Requested By**. They are your project's [card types](/help/plan/card-types/), to change like any other; **Add Default Types** there adds Project, Task, Note, Idea and Action if you want them too.
+- **Charts read every card**, whichever tab its board is on.
+- Picking a template on a new tab fills that tab and adds the rest straight after it.
+- **Every board opens on a worked example**: a small team's cards (Maya, Sam, Priya, Leo and Ana's), dated from today, so the boards, charts and calendar show how the template runs. They are ordinary cards: move them, change them, or delete them as you start on your own work.
+
+Some templates are a spreadsheet instead of boards: a [Sheet](/help/plan/sheets/) already filled in from one of the [Sheet templates](/help/plan/sheets/#templates), such as a **Budget**, a **Timesheet** or **Contacts**, with no cards and no card types. **Task Tracker** adds an Overview dashboard with a how-to note after its sheet.
+
+## Working on a Board
+
+<Figure caption="A Kanban board: widgets in the header, a column over its WIP limit, and a card being dragged into the gap it opens.">
+  <PlanBoardScene />
+</Figure>
+
+- **Add a card:** every column ends in **+ Add card**. Press a type (**Task**, **Bug**, **Note** or any your board takes) and the new card opens straight away with its title selected, so just type to name it. See [Cards](/help/plan/cards/).
+- **Move a card:** drag it to another column, or up and down its column. On a board with rows (by assignee, priority, type, project or any field), dropping it in a row also sets that field: drop it in Sam's row to give it to Sam.
+- **Open a card:** click it. Its panel opens with the title and the card's tabs on the left and **Details** (status, assignee, priority and the rest) on the right. Every change saves as you make it. On a phone the panel rises from the bottom, with Details as its first tab.
+- **Assign a card:** pick yourself or a teammate as its **Assignee**. Until it is done, the card shows up on that person's [Inbox](/help/explorer/activity/) in the Explorer, under **Assigned to You**. They need to be able to open the project, so assign cards on a team project or one shared with them.
+- **Trash a card:** drag it onto the **Trash** button in the bottom-right corner, choose **Trash** from its menu, or press **Delete** with it focused. Open the Trash to restore a card or delete it for good.
+- **Undo:** **Ctrl+Z** (**Cmd+Z** on a Mac) undoes your card changes in order: a moved card goes back, a trashed card comes back. Votes and comments are not undone.
+
+How to set up columns, swimlanes, WIP limits and the header's widgets is in [Boards](/help/plan/boards/).
+
+### With the Keyboard
+
+Tab to a card, then:
+
+- **Arrow keys** move between cards.
+- **Enter** opens the card.
+- **Shift+Left** and **Shift+Right** move the card to the previous or next column; **Shift+Up** and **Shift+Down** move it within its column.
+- **N** opens **Add a Card** for the card's column.
+- **Delete** moves the card to the Trash, where you can restore it.
+
+Screen readers hear every move ("#12 Fix login moved to In Progress, position 4 of 4").
+
+### On a Phone or Tablet
+
+A finger on a card picks the card up, and holding it still opens the card's menu. A finger on the board's empty space (between cards, or a column's background) scrolls the board.
+
+## Together
+
+Everyone with the project open sees cards move, appear and change as they happen. A card someone is dragging or has open shows their colour and name. Voting and hidden writing are part of the board, so a retro needs no other tools: write, reveal, vote, then turn the top votes into actions. See [Voting and Hidden Writing](/help/plan/boards/#voting-and-hidden-writing).
+
+- **Editors** do everything on these pages.
+- **Participants** can add, move and change cards, type into sheets and comment, but don't change how a board, sheet or dashboard is set up.
+- **View-only visitors** can open cards to read them, and cannot drag, add or change anything. They don't see Start Planning.
+
+A tab with boards or cards on it can't be added to another project with the tab menu's **Add to Project**, because its cards belong to this project.
+
+## Where to Go Next
+
+- [Boards](/help/plan/boards/), [Cards](/help/plan/cards/) and [Card Types](/help/plan/card-types/) for the day-to-day work.
+- [Items](/help/plan/items/) for how cards are stored, numbered and kept in sync.
+- [Sheets](/help/plan/sheets/) and [Sheet Functions](/help/plan/sheet-functions/) for spreadsheets.
+- [Dashboards](/help/plan/dashboards/) and [Charts of Your Cards](/help/plan/visualisations/) to watch the work.
+- [Forms](/help/plan/forms/) to collect requests and feedback as cards.
+- The [Plan Tour](/help/plan/plan-tour/) walks you around your own board or sheet in about a minute.
+
+</ArticleLayout>

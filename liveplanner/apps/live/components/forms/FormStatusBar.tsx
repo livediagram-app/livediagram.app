@@ -32,7 +32,7 @@ export function FormStatusBar({
   problem: DestinationProblem | null;
   // Switched on but past its Close On or at its Response Limit (closedBySettings): it reads Closed.
   closedBy?: 'closes_at' | 'limit' | null;
-  // The document holds as many cards as it can: responses are refused until some go.
+  // The project holds as many cards as it can: responses are refused until some go.
   full?: boolean;
   canEdit: boolean;
   onFix: () => void;
@@ -162,7 +162,7 @@ export function FormStatusBar({
           role="status"
           className="rounded-xl bg-amber-50 px-4 py-2.5 text-[13px] text-amber-900 dark:bg-amber-500/10 dark:text-amber-100"
         >
-          Responses are paused: this document holds as many cards as it can.
+          Responses are paused: this project holds as many cards as it can.
         </div>
       ) : null}
       {data?.suspendedAt && !live ? (

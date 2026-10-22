@@ -11,7 +11,7 @@ import {
   type ArrowElement,
   type Element,
   type Endpoint,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import {
   ALIGN_SNAP_THRESHOLD,
   ARROW_SNAP_REVEAL_PX,

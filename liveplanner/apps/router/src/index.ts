@@ -4,26 +4,27 @@
 // See docs/specs/016-platform/router-app.md.
 
 import { applyCachePolicy } from './cache-policy';
-import { legacyEditorRedirect, legacyHelpRedirect } from './legacy-editor-route';
 import { LIVE_ROUTE_SEGMENTS } from '@liveplanner/api-schema';
+import { TELEMETRY_DASHBOARD_URL } from '@liveworkspace/telemetry';
 
 export interface Env {
   // Production service bindings (absent in the `local` env).
   MARKETING?: Fetcher;
   LIVE?: Fetcher;
   API?: Fetcher;
-  TELEMETRY?: Fetcher;
   HELP?: Fetcher;
   // Local-dev origins (absent in production).
   MARKETING_ORIGIN?: string;
   LIVE_ORIGIN?: string;
   API_ORIGIN?: string;
-  TELEMETRY_ORIGIN?: string;
   HELP_ORIGIN?: string;
   // Set to "staging" on the staging router only (docs/specs/016-platform/staging-environment.md). Marks every
   // response noindex so the public staging mirror can't compete with
   // production in search results. Absent in production and in local dev.
   DEPLOY_ENV?: string;
+  // The central telemetry dashboard /telemetry redirects to (liveworkspace/docs/telemetry.md): unset means
+  // production's, staging and local dev name their own.
+  TELEMETRY_DASHBOARD_URL?: string;
 }
 
 const LIVE_PATH = '/live';
@@ -46,7 +47,7 @@ const HELP_PATH = '/help';
 const LIVE_ROOT_ASSETS = new Set(['/icon.svg']);
 
 // Help-centre category slugs, which are the first segment of every help
-// article path (`/canvas/shadows/`, `/palette/build/frames/`). The help app
+// article path (`/plan/boards/`, `/collaboration/sharing/embeds/`). The help app
 // serves them all under `/help`, so a bare one is an article URL that lost
 // its prefix — a hand-typed link, an old bookmark, a copy-paste that dropped
 // the first segment. Those 404'd into marketing; they redirect now.
@@ -57,16 +58,14 @@ const LIVE_ROOT_ASSETS = new Set(['/icon.svg']);
 const HELP_CATEGORY_SEGMENTS = new Set([
   'about',
   'account-and-data',
-  'canvas',
   'collaboration',
   'contact',
   'developers',
   'getting-started',
-  'palette',
+  'plan',
   'policies',
   'privacy-and-security',
   'search-panel',
-  'selection-modes',
   'supported-devices',
   'tabs',
   'tips-and-tricks',
@@ -146,7 +145,7 @@ function forward(
 // api's JSON included.
 //
 // A 101 is returned UNTOUCHED. The realtime room answers
-// `/api/documents/<id>/ws` with a WebSocket upgrade, and a Response carrying a
+// `/api/projects/<id>/ws` with a WebSocket upgrade, and a Response carrying a
 // `webSocket` cannot be reconstructed — `new Response(body, res)` drops the
 // socket and takes realtime collab down on staging alone, on one path, which
 // is precisely the sort of breakage that survives a smoke test. Crawlers do
@@ -194,20 +193,16 @@ async function route(request: Request, env: Env): Promise<Response> {
     return forward(request, url, env.LIVE, env.LIVE_ORIGIN, LIVE_PATH);
   }
   if (hasPrefix(url.pathname, TELEMETRY_PATH)) {
-    // The public transparency dashboard (docs/specs/017-telemetry/telemetry.md), a basePath:'/telemetry'
-    // static app — same prefix-strip as the live app's assets.
-    return forward(request, url, env.TELEMETRY, env.TELEMETRY_ORIGIN, TELEMETRY_PATH);
+    // The public transparency dashboard (docs/specs/017-telemetry/telemetry.md) is liveworkspace's now, one
+    // for every app: an old link lands on it with liveplanner picked.
+    return telemetryRedirect(env);
   }
-  const legacyHelp = legacyHelpRedirect(url);
-  if (legacyHelp) return legacyHelp;
   if (hasPrefix(url.pathname, HELP_PATH)) {
     // The help centre (docs/specs/018-help/help-app.md), a basePath:'/help' static app — same
     // prefix-strip as telemetry.
     return forward(request, url, env.HELP, env.HELP_ORIGIN, HELP_PATH);
   }
-  const legacyEditor = legacyEditorRedirect(url);
-  if (legacyEditor) return legacyEditor;
-  // Clean live-app page routes (/document, /explorer, /new, ...) and
+  // Clean live-app page routes (/project, /explorer, /new, ...) and
   // its root-served icon: forwarded AS-IS (no strip — the worker's
   // files are already `/live`-free).
   if (isLivePageRoute(url.pathname)) {
@@ -221,4 +216,12 @@ async function route(request: Request, env: Env): Promise<Response> {
     return Response.redirect(url.toString(), 308);
   }
   return forward(request, url, env.MARKETING, env.MARKETING_ORIGIN);
+}
+
+// Where /telemetry and everything under it now lives: the central dashboard, filtered to liveplanner.
+export function telemetryRedirect(env: Env): Response {
+  const target = new URL(env.TELEMETRY_DASHBOARD_URL || TELEMETRY_DASHBOARD_URL);
+  target.searchParams.set('app', 'liveplanner.app');
+  // Built by hand: Response.redirect's headers are immutable, and the caching rules still stamp this one.
+  return new Response(null, { status: 301, headers: { Location: target.toString() } });
 }

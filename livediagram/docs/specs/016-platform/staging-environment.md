@@ -165,12 +165,12 @@ first deploy it returns `{"aiEnabled":false,"emailEnabled":false}` on staging ag
 Production's secrets are untouched. Staging adds a `_STAGING`-suffixed twin for each
 value the deploy workflow syncs, plus the Clerk publishable key:
 
-| GitHub secret                               | Synced to                       | Notes                                                                                                                            |
-| ------------------------------------------- | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_STAGING` | build step                      | `pk_test_*` from the Clerk test tenant.                                                                                          |
-| `CLERK_JWKS_URL_STAGING`                    | staging api                     | Test tenant's JWKS URL.                                                                                                          |
-| `GUEST_ID_HMAC_SECRET_STAGING`              | staging api                     | Own value — `openssl rand -hex 32`. Never production's.                                                                          |
-| `INTERNAL_EVENTS_KEY_STAGING`               | staging api **and** staging mcp | Same value on both or telemetry silently throttles ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)). |
+| GitHub secret                               | Synced to                       | Notes                                                                                                                                                                                                              |
+| ------------------------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_STAGING` | build step                      | `pk_test_*` from the Clerk test tenant.                                                                                                                                                                            |
+| `CLERK_JWKS_URL_STAGING`                    | staging api                     | Test tenant's JWKS URL.                                                                                                                                                                                            |
+| `GUEST_ID_HMAC_SECRET_STAGING`              | staging api                     | Own value — `openssl rand -hex 32`. Never production's.                                                                                                                                                            |
+| `TELEMETRY_KEY_STAGING`                     | staging api **and** staging mcp | livediagram's key on the staging telemetry service; same value on both and on the service, or server-side counts silently go missing ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)). |
 
 `CF_API_TOKEN` and `CF_ACCOUNT_ID` are shared — same account.
 

@@ -40,7 +40,7 @@ export const FORM_NOT_TAKING: Record<
     telemetry: 'NotTakingLimit',
   },
   full: {
-    text: 'This document holds as many cards as it can. Remove some to take responses again.',
+    text: 'This project holds as many cards as it can. Remove some to take responses again.',
     fix: 'responses',
     telemetry: 'NotTakingFull',
   },
@@ -49,7 +49,7 @@ export const FORM_NOT_TAKING: Record<
 /**
  * Why a form that has been published takes no responses, or null while it takes them (or was never published, or
  * is a Draft with no server). Suspension first (the link is gone), then a broken destination (reopening waits on
- * it), the switch, the Close On and Response Limit, and a full document.
+ * it), the switch, the Close On and Response Limit, and a full project.
  */
 export function formNotTakingReason(input: {
   link: FormLinkResponse | null;

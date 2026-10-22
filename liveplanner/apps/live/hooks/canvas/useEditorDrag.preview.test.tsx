@@ -1,14 +1,14 @@
 // @vitest-environment jsdom
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Element, Tab } from '@liveplanner/document';
+import type { Element, Tab } from '@liveplanner/project';
 import { localPreview, resetDragPreviewForTests } from '@/lib/drag-preview';
 import { useEditorDrag } from './useEditorDrag';
 import type { EditorDragDeps } from './useEditorDrag.types';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
-// docs/specs/008-canvas/drag-preview.md: a gesture draws from a preview and writes the document once,
+// docs/specs/008-canvas/drag-preview.md: a gesture draws from a preview and writes the project once,
 // on release; a cancelled gesture writes nothing.
 
 const BOX = (id: string, x: number): Element => ({
@@ -163,7 +163,7 @@ describe('a drag draws from a preview', () => {
 
 // A quick-connect arrow (drag a box's plus to another box): its end lands where it was dropped. The
 // collision bow a fresh arrow gets is folded into the one write on release; written afterwards
-// through `commit`, which reads the document as last rendered, it put the end back at the start.
+// through `commit`, which reads the project as last rendered, it put the end back at the start.
 describe('drawing a quick-connect arrow', () => {
   it('lands its end where it was dropped, in the one write on release', () => {
     const h = harness();

@@ -12,7 +12,7 @@ const statuses = [
   { status: 'done~a1', name: 'Done' },
 ];
 
-// A document with the default types, as one made before card types started empty reads.
+// A project with the default types, as one made before card types started empty reads.
 const DEFAULTS = defaultCatalogue();
 
 const ok = (r: ReturnType<typeof applyCardTypeChanges>) => {
@@ -293,7 +293,7 @@ describe('applyCardTypeChanges: set, delete, restore', () => {
   });
 
   // docs/specs/026-plan/plan-agents.md "Changing card types": Add Default Types adds what is missing, changes nothing.
-  it('adds the default types the document lacks, after its own, changing none it has', () => {
+  it('adds the default types the project lacks, after its own, changing none it has', () => {
     const edited = ok(
       applyCardTypeChanges(
         withBug,
@@ -321,7 +321,7 @@ describe('applyCardTypeChanges: set, delete, restore', () => {
     );
   });
 
-  it('stores the default types for a document whose card types are not chosen, nothing when none are left', () => {
+  it('stores the default types for a project whose card types are not chosen, nothing when none are left', () => {
     const added = ok(applyCardTypeChanges(null, [{ op: 'add_default_types' }], statuses));
     expect(added.catalogue?.types.map((t) => t.id)).toEqual(ITEM_TYPES.map((t) => t.id));
     const none = ok(

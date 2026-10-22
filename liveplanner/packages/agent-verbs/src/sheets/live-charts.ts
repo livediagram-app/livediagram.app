@@ -2,7 +2,7 @@
 // a chart's data is read live; docs/specs/015-api/mcp-server.md §5): each chart element linked to a sheet given here
 // takes the values its range holds now, rather than those it was saved with, so a preview after a change to its cells
 // shows the change. Pure.
-import { chartFieldsFromTable, type Element, type ShapeElement } from '@liveplanner/document';
+import { chartFieldsFromTable, type Element, type ShapeElement } from '@liveplanner/project';
 import {
   AGENT_LOCALE,
   Workbook,

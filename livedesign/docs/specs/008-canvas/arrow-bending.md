@@ -1,0 +1,121 @@
+# Bending arrows and the double-press rule
+
+Status: shipped
+
+An arrow bends where you grab it. Pressing on the line and dragging reshapes the arrow at that
+point, so there is no separate "+" target to find, and nothing sits in the middle of the line to be
+hit by accident. A quick double-click anywhere on an arrow always edits its label, however fast it
+is made.
+
+## Terms
+
+- **Line press**: a primary-button press on an arrow's hit band (not on a handle, not on its label).
+- **Drag travel**: movement past the shared press tolerance (`isDragTravel`). Below it a press is a
+  click.
+- **Double-press**: two presses on the same element within the double-press window
+  (`DOUBLE_PRESS_MS`) and close together. Detected by counting presses, not from the browser's
+  `dblclick`, so touch and mouse behave the same.
+- **Echo press**: a press that lands on a handle which only appeared because the previous press
+  selected its element, and that together with that previous press forms a double-press.
+
+## Drag to bend
+
+A line press followed by drag travel bends the arrow. It works on an unselected arrow too: the press
+selects it and the same drag bends it. A press without drag travel only selects. One drag is one
+undo step.
+
+- **Straight arrow**: becomes a curved arrow with one smooth bow that passes through the pointer,
+  at the point along the line where it was grabbed. The bow is stored as `curveOffset`, the same
+  field the curve handle writes.
+- **Curved arrow with a single bow**: grabbing the line **adds a point**. The bow becomes a bend
+  point at its apex (where the curve passes at its middle) and a second bend point is inserted
+  where the line was grabbed, before or after the apex, and dragged; the bow's `curveOffset` goes.
+  From then on it is a curved arrow with bend points (below), so each grab adds another. The bow's
+  own curve handle still reshapes the single bow, without adding a point. (Grabbing the line only
+  reshaped the bow, so a curved arrow could never gain a second bend.)
+- **Curved arrow with bend points** (`curvePoints`): grabbing a bend point's handle drags that point,
+  as before. Grabbing the line elsewhere inserts a bend point where it was grabbed, in the segment
+  it was grabbed on, and drags it.
+- **Angled arrow**: the grabbed segment slides sideways, keeping its direction. When the grabbed
+  segment touches an endpoint, a short connecting segment is inserted so the endpoint stays where it
+  is. The result is stored as angled bend points (`curvePoints`).
+
+The grabbed point is held a little way in from each end, so grabbing right beside an arrowhead does
+not produce a violent bow.
+
+The curve and elbow handles stay: they are the precise controls. The "+" add-point handles are
+removed. Right-clicking a bend point still deletes it, and deleting the last one still reverts the
+arrow to a straight line.
+
+## Stored bends
+
+An arrow keeps its bends as deltas: `curveOffset` (a curved arrow's one bow), `elbowOffset` (an
+angled arrow's moved elbow), each a finite `dx` and `dy`, and `curvePoints`, a list of at most
+`MAX_CURVE_POINTS` (5,000, a path's node limit) such deltas. A write whose bends are not that shape
+is refused by validation; one that arrives malformed anyway (stored before, a peer's op, a file) has
+that field dropped on the way in, and the arrow draws with its default bend.
+
+## Angled legs stay square
+
+An angled arrow's bend points are stored as deltas from its chord midpoint, so moving an end
+(snapping it onto an anchor, the fan, the box it is pinned to moving) shifts every corner by half
+that move. The leg into a box then slanted and its head pointed in at an angle. So wherever an
+angled arrow's corners are worked out (`angledCornerPoints`: the drawn path, its handles, the
+export, hit-testing), the corner next to each **pinned** end is lined up with that end on the leg's
+axis: an end on a top or bottom edge leaves vertically, one on a side horizontally. Only that one
+coordinate moves, so the next segment keeps its direction. A free end's leg is drawn as stored.
+
+## Bends line up
+
+A dragged bend snaps to **other arrows' bends**, so a set of angled arrows can turn on the same line:
+an angled arrow's corners and a curve's bend points (`arrowBendVertices`) are alignment targets,
+beside the element edges and centres and the arrow's own neighbouring points that a bend already
+snapped to, within the usual threshold (`ALIGN_SNAP_THRESHOLD`) and with the usual guide.
+
+- **A bend or elbow handle** dragged: its x and y each snap to the nearest such line.
+- **An angled segment slid** by its line: the segment's sideways position snaps (a horizontal
+  segment to a y, a vertical one to an x), and only that axis's guide shows. It never moves along
+  itself.
+- Holding the no-snap modifier, or alignment guides switched off, behaves as for every other snap.
+
+## Moving and scaling a free arrow
+
+An arrow whose two ends are both free (attached to nothing) no longer moves by dragging its line,
+because dragging the line bends it. When selected, a free arrow wears a box's selection: the same
+brand ring round its drawn extent (padded clear of its endpoint grips), and the same corner and edge
+handles.
+
+- Dragging the ring moves the whole arrow. Its interior is not a drag target, so elements inside it
+  stay clickable.
+- Dragging a handle scales the arrow the way it would resize a box: the opposite corner or edge
+  stays put, and the ends and bends stretch to follow. Shift on a corner keeps the proportions. An
+  arrow never flips or collapses through itself.
+- An axis with no extent (a perfectly horizontal or vertical arrow) shows no edge handles for it,
+  since there is nothing to scale.
+- **The frame stands down while a handle reshapes the arrow** (a bend, curve, elbow or endpoint
+  drag) and comes back when the drag ends: it grew with every bend and read as a selection box
+  being dragged out. Nor does any focus outline show: a handle focused by the press (whose node
+  React may reuse as a plain group mid-drag) shows no ring unless focused from the keyboard
+  (`svg :focus:not(:focus-visible)`), where it drew a dark box round the whole arrow.
+- Arrow keys still nudge a selected free arrow. Arrows with an attached end have no frame, as
+  before, since they follow their elements.
+
+## The double-press rule
+
+A fast double-click on an element must mean "edit this element", never "operate whatever appeared
+under the pointer after the first click". So:
+
+- An echo press never starts its handle's gesture (no endpoint drag, no curve drag, no elbow drag, no
+  move-frame drag). It is treated as the second press of a double-press on the element the handle
+  belongs to, which opens that element's label editor where the element has one.
+- The second press of any double-press never starts a drag, even if the pointer wobbles past the
+  drag tolerance between the two presses.
+- A handle that was already visible before the first press is not an echo target: a deliberate
+  press on a handle of an already-selected arrow works immediately.
+
+This applies to arrows and to the selection handles of boxed elements alike.
+
+One exception goes before the editor: a finger's double-press on an element too small on the screen to work on
+frames the element instead of editing it ([Double-tap to zoom](./canvas-and-palette.md#double-tap-to-zoom)); the
+canvas catches that second press ahead of the element (`hooks/canvas/useSmallElementDoubleTap.ts`), and the next
+double-press edits.

@@ -19,7 +19,7 @@ export function FormNotTakingWarning({
   onFix,
 }: {
   reason: FormNotTakingReason;
-  // Opens where the reason is fixed; absent (a full document with no responses tab), the warning only says.
+  // Opens where the reason is fixed; absent (a full project with no responses tab), the warning only says.
   onFix?: ((fix: FormNotTakingFix) => void) | null;
 }) {
   const { text, fix, telemetry } = FORM_NOT_TAKING[reason];

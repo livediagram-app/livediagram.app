@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { DOCUMENT_FORMAT } from '@liveplanner/api-schema';
-import { noteServerDocumentFormat, resetServerReleaseForTests } from '@/lib/server-release';
+import { PROJECT_FORMAT } from '@liveplanner/api-schema';
+import { noteServerProjectFormat, resetServerReleaseForTests } from '@/lib/server-release';
 import { RELOAD_SAVE_WAIT_MS } from '@/lib/reload-when-saved';
 
 const track = vi.fn<typeof import('@/lib/telemetry').track>();
@@ -22,14 +22,14 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-const newer = () => act(() => noteServerDocumentFormat(DOCUMENT_FORMAT + 1));
+const newer = () => act(() => noteServerProjectFormat(PROJECT_FORMAT + 1));
 
 describe('NewVersionPrompt', () => {
   it('shows nothing while the server is not ahead', () => {
     const { container } = render(
       <NewVersionPrompt hasUnsavedChanges={() => false} reload={vi.fn()} />,
     );
-    act(() => noteServerDocumentFormat(DOCUMENT_FORMAT));
+    act(() => noteServerProjectFormat(PROJECT_FORMAT));
     expect(container.innerHTML).toBe('');
   });
 
@@ -45,7 +45,7 @@ describe('NewVersionPrompt', () => {
   });
 
   it('shows at once when the newer number arrived before it mounted', () => {
-    noteServerDocumentFormat(DOCUMENT_FORMAT + 1);
+    noteServerProjectFormat(PROJECT_FORMAT + 1);
     render(<NewVersionPrompt hasUnsavedChanges={() => false} reload={vi.fn()} />);
     expect(screen.getByRole('status')).toBeTruthy();
   });
@@ -92,9 +92,9 @@ describe('NewVersionPrompt', () => {
     newer();
     fireEvent.click(screen.getByRole('button', { name: 'Not now' }));
     expect(screen.queryByRole('status')).toBeNull();
-    act(() => noteServerDocumentFormat(DOCUMENT_FORMAT + 1));
+    act(() => noteServerProjectFormat(PROJECT_FORMAT + 1));
     expect(screen.queryByRole('status')).toBeNull();
-    act(() => noteServerDocumentFormat(DOCUMENT_FORMAT + 2));
+    act(() => noteServerProjectFormat(PROJECT_FORMAT + 2));
     expect(screen.getByRole('status')).toBeTruthy();
   });
 });

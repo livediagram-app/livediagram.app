@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { createShape, type ShapeElement } from '@liveplanner/document';
+import { createShape, type ShapeElement } from '@liveplanner/project';
 import { ITEM_TYPES, type Item, type PlanViewId } from '@liveplanner/items';
 import { PlanProvider, type PlanContextValue } from '../PlanContext';
 import { PlanViewView } from './PlanViewView';

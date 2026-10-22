@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { fakeD1, type D1Response } from '../test-d1';
+import { captureTelemetry, TELEMETRY_ON } from '../test-telemetry';
 import type { Env } from '../types';
 import type { ClerkIdentity } from './clerk';
 import { FRESH_SIGN_IN_MINUTES, noteAuthSighting, reportAuthSighting } from './session-telemetry';
@@ -10,7 +11,7 @@ import { FRESH_SIGN_IN_MINUTES, noteAuthSighting, reportAuthSighting } from './s
 // session id is one event; a new account makes it SignedUp and never also
 // SignedIn; a seen session, a stale one, or telemetry off counts nothing.
 
-const ON = { TELEMETRY_ENABLED: 'true' } as Partial<Env>;
+const ON = TELEMETRY_ON as Partial<Env>;
 
 function identity(over: Partial<ClerkIdentity> = {}): ClerkIdentity {
   return {
@@ -22,17 +23,18 @@ function identity(over: Partial<ClerkIdentity> = {}): ClerkIdentity {
   };
 }
 
-// A D1 where the session / account inserts report whether they created a row.
+// A D1 where the session / account inserts report whether they created a row, beside the
+// events posted to the telemetry service.
 function db(opts: { newSession: boolean; newAccount: boolean }, env: Partial<Env> = ON) {
-  return fakeD1(({ sql }): D1Response | undefined => {
+  const d = fakeD1(({ sql }): D1Response | undefined => {
     if (sql.includes('INTO auth_sessions')) return { changes: opts.newSession ? 1 : 0 };
     if (sql.includes('INTO auth_accounts')) return { changes: opts.newAccount ? 1 : 0 };
     return undefined;
   }, env);
+  return Object.assign(d, { sent: captureTelemetry() });
 }
 
-const counted = (d: ReturnType<typeof fakeD1>) =>
-  d.matching('INSERT INTO events').map((c) => c.bindings.slice(0, 3));
+const counted = (d: ReturnType<typeof db>) => d.sent.map((e) => [e.category, e.action, e.type]);
 
 describe('reportAuthSighting (docs/specs/017-telemetry/telemetry.md sign-up / sign-in count)', () => {
   it('counts a new session on a new account as SignedUp only', async () => {

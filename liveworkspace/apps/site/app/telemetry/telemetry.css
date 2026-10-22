@@ -1,0 +1,75 @@
+@import 'tailwindcss/theme' layer(theme);
+@import 'tailwindcss/utilities' layer(utilities) source(none);
+@import '@livediagram/tailwind-config';
+@import './dataviz-motion.css';
+
+/* The telemetry dashboard's own stylesheet, loaded only on /telemetry (app/telemetry/layout.tsx), so
+ * the rest of the site doesn't carry both apps' UI. The site's own stylesheet comes first with the
+ * base styles; this one adds the theme values and utilities the dashboard uses, repeating the few
+ * both use, which is harmless. Tailwind v4 skips node_modules, where the
+ * workspace packages are symlinked, so both apps' shared UI packages are named. */
+@source './';
+@source '../../components';
+@source '../../../../../livediagram/packages/ui/src';
+@source '../../../../../liveplanner/packages/ui/src';
+
+/* The telemetry dashboard shows the apps' own numbers in the apps' own accents: livediagram's sky
+ * (its tailwind-config's brand scale, which the platform's slate replaced above) for every app and
+ * for livediagram, liveplanner's violet, livedocuments' amber and livedesign's rose inside
+ * their own. */
+[data-app] {
+  --color-brand-400: #38bdf8;
+  --color-brand-500: #0ea5e9;
+}
+
+[data-app='liveplanner.app'] {
+  --color-brand-50: #f5f3ff;
+  --color-brand-100: #ede9fe;
+  --color-brand-200: #ddd6fe;
+  --color-brand-300: #c4b5fd;
+  --color-brand-400: #a78bfa;
+  --color-brand-500: #8b5cf6;
+  --color-brand-600: #7c3aed;
+  --color-brand-700: #6d28d9;
+  --color-brand-800: #5b21b6;
+  --color-brand-900: #4c1d95;
+  --color-brand-950: #2e1065;
+}
+
+[data-app='livedocuments.app'] {
+  --color-brand-50: #fffbeb;
+  --color-brand-100: #fef3c7;
+  --color-brand-200: #fde68a;
+  --color-brand-300: #fcd34d;
+  --color-brand-400: #fbbf24;
+  --color-brand-500: #f59e0b;
+  --color-brand-600: #d97706;
+  --color-brand-700: #b45309;
+  --color-brand-800: #92400e;
+  --color-brand-900: #78350f;
+  --color-brand-950: #451a03;
+}
+
+[data-app='livedesign.app'] {
+  --color-brand-50: #fff1f2;
+  --color-brand-100: #ffe4e6;
+  --color-brand-200: #fecdd3;
+  --color-brand-300: #fda4af;
+  --color-brand-400: #fb7185;
+  --color-brand-500: #f43f5e;
+  --color-brand-600: #e11d48;
+  --color-brand-700: #be123c;
+  --color-brand-800: #9f1239;
+  --color-brand-900: #881337;
+  --color-brand-950: #4c0519;
+}
+
+/* The dim behind an open stack's modal (liveworkspace/docs/telemetry.md), fading in with it. */
+.stack-dim {
+  background: rgb(15 23 42 / 0.45);
+  animation: fade-in var(--transition-duration-micro) ease-out;
+}
+
+.dark .stack-dim {
+  background: rgb(2 6 23 / 0.65);
+}

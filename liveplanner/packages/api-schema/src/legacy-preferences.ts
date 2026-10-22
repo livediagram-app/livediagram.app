@@ -1,9 +1,9 @@
 // Preference keys renamed (docs/specs/007-editor/user-preferences.md): `notifyDiagramJoin` when the
-// container became a document (stored rows migrated in D1). This upgrades a copy that
+// container became a project (stored rows migrated in D1). This upgrades a copy that
 // can still arrive from elsewhere (a browser's localStorage cache, a row written by an old client
 // during the deploy). An opt-out must never be lost on the way.
 const RENAMED: Readonly<Record<string, string>> = {
-  notifyDiagramJoin: 'notifyDocumentJoin',
+  notifyDiagramJoin: 'notifyProjectJoin',
   // Facilitate mode became Workshop mode: a lost seen-guard would offer the tour again.
 };
 
@@ -28,8 +28,8 @@ const RETIRED: ReadonlySet<string> = new Set([
   'logoGuidesHidden',
   'logoGuideStrength',
   'contentsPlacement',
-  // "Always save new documents in <place> and skip this step": the New Document wizard has no Location step to skip
-  // (docs/specs/007-editor/new-document-route.md "One-step wizard").
+  // "Always save new projects in <place> and skip this step": the New Project wizard has no Location step to skip
+  // (docs/specs/007-editor/new-project-route.md "One-step wizard").
   'skipLocationStep',
   // The Workshop and Avatar tours' seen-guards (the Workshop tour was the Facilitate tour) and the presenter
   // settings, gone with Workshop mode's facilitation features (docs/specs/012-collaboration/session-tools.md).

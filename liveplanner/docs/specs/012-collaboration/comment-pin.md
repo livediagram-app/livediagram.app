@@ -6,7 +6,7 @@ rather than opened.
 
 (Filed as 136-comment-pin.md, and the shape kind is still `comment-pin`, from
 the marker this started as. "Why not the pin" below has the reason it changed;
-the id stays so saved documents keep loading.)
+the id stays so saved projects keep loading.)
 
 ## Why an element at all
 
@@ -98,7 +98,7 @@ The first version was a standalone marker: a dot with a leader line that opened
 the ordinary anchored popover. It was replaced because a popover is **one
 reader's transient view**. A panel connected to what it is about sits on the
 canvas, in the export, and in everyone's session, which is what makes a remark
-part of the document rather than a note somebody left.
+part of the project rather than a note somebody left.
 
 It also means the shape is no longer self-painting: as a 40px bubble it drew
 itself, and as a card it wants the fill, border and rounded corners every other

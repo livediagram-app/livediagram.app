@@ -1,0 +1,218 @@
+// /api/projects/<id>/room-ticket + /ws — realtime-room admission
+// (docs/specs/015-api/api.md), split out of projects.ts the same way the share family
+// owns project-share-routes.ts: the one-time WS ticket mint and the
+// Durable Object WebSocket upgrade with its role / password trust
+// boundary.
+
+import {
+  capWorkbenchRole,
+  isAccountIdShape,
+  type AccessLevel,
+  type RoomTicketResponse,
+} from '@liveplanner/api-schema';
+import { adderKeyFor } from '../adder-key';
+import { guestSignatureEnforced } from '../auth/guest-rest';
+import { verifyOwnerId } from '../auth/owner-signature';
+import { isPersonalOwner, shareLinkForProject, sharePasswordOk } from '../auth/share-access';
+import { clientRateKey } from '../client-ip';
+import { consumeWsTicket, createWsTicket, getProjectMeta } from '../db';
+import { noteWorkbenchSessionRoom } from '../db/workbench';
+import { forbidden, json, notFound } from '../responses';
+import { gateGrant, missingProject, type RouteContext } from './context';
+import { personTagFor } from '../person-tag';
+
+// Returns null when the request isn't a room route.
+export async function handleProjectRoomRoutes(ctx: RouteContext): Promise<Response | null> {
+  const { request, env, url, segments } = ctx;
+  // /api/projects/<id>/ws — Durable Object WebSocket. Resolve
+  // the visitor's role server-side before handing the request
+  // to the DO so peer avatars can show "Editor" / "Viewer"
+  // badges that the client can't lie about: clients sending a
+  // crafted `hello` frame still get their role re-stamped from
+  // the X-Verified-Role header below. Falls through to no role
+  // when we can't resolve (e.g. owner request with no share
+  // code and no auth) — the DO leaves role undefined and the
+  // UI hides the badge for that peer.
+  // POST /api/projects/<id>/room-ticket — mint a one-time WS room ticket
+  // (docs/specs/015-api/api.md). The WS upgrade can't carry the Bearer token, so identified
+  // callers (team members above all: membership MUST be checked against
+  // the VERIFIED account id, docs/specs/013-workspace/team-shared-projects.md) prove their access here over normal
+  // authenticated REST and hand the resulting short-lived ticket to the
+  // upgrade as `?t=`. gateGrant runs the exact same access policy
+  // as every REST read/write, including the share-password gate.
+  if (segments.length === 4 && segments[3] === 'room-ticket' && request.method === 'POST') {
+    const id = segments[2]!;
+    // Gate-only projection — 1 query instead of getProject's 3; this
+    // runs on every room join.
+    const liveDoc = await getProjectMeta(env, id);
+    if (!liveDoc) return missingProject(ctx, id);
+    // The grant carries the role, a tab-scoped link's scope and the code that
+    // granted it (docs/specs/013-workspace/tab-scoped-share-links.md); the ticket takes all three to the room.
+    const grant = await gateGrant(ctx, id, liveDoc.ownerId, liveDoc.teamId);
+    if (!grant) return notFound();
+    // The person is a verified session's account (not an API token, not a guest header).
+    // A workbench session (docs/specs/013-workspace/workbench-embeds.md) joins as its owner: an account session
+    // carrying the owner's person tag, so their agent's `selected` reads its selection, at most at its level, and
+    // tagged with its pairing so unpairing closes exactly its sockets.
+    const workbench = ctx.workbench ?? null;
+    const personId = ctx.accountUserId ?? workbench?.ownerId ?? null;
+    const role = workbench ? capWorkbenchRole(grant.role, workbench.level) : grant.role;
+    // A Participant's adder key (docs/specs/013-workspace/share-roles.md "Integrity"): what the room stamps on the
+    // stickies and text it adds. Only a Participant needs one; no identity, no key (it may then edit, never add).
+    const caller = ctx.resolveOwner();
+    const adderKey = role === 'participate' && caller ? await adderKeyFor(id, caller) : null;
+    const ticket = await createWsTicket(env, id, {
+      role,
+      tabScope: grant.tabScope,
+      shareCode: grant.shareCode,
+      // A verified session carries its person tag, so the room can tell this owner's
+      // sessions from everyone else's without holding the owner id
+      // (docs/specs/024-agents/agent-changesets.md "Held elements").
+      personTag: personId === null ? null : await personTagFor(id, personId),
+      workbenchPairing: workbench?.pairingId ?? null,
+      adderKey,
+    });
+    // A workspace session joins many rooms; each is recorded so ending its access closes them all (WB55).
+    if (workbench?.scope === 'workspace')
+      await noteWorkbenchSessionRoom(env, workbench.sessionId, id);
+    // The caller's own adder key comes back with its ticket, so its editor knows which stickies are its own
+    // to delete (docs/specs/013-workspace/share-roles.md). It says nothing about anybody else.
+    const answer: RoomTicketResponse = adderKey ? { ticket, adderKey } : { ticket };
+    return json(answer);
+  }
+
+  if (segments.length === 4 && segments[3] === 'ws') {
+    const id = segments[2]!;
+    const stub = env.PROJECT_ROOM.get(env.PROJECT_ROOM.idFromName(id));
+    // Browsers can't put custom headers on a WebSocket upgrade,
+    // so the client passes a one-time ticket / share code / owner id
+    // as query params (`?t=...&s=...&o=...`). We resolve role here and
+    // forward it to the Durable Object via X-Verified-Role; the DO
+    // ignores any role the client might set in its own hello
+    // payload, so this header is the trust boundary.
+    let role: AccessLevel | null = null;
+    // A tab-scoped link's tab, and the code that admitted a share visitor
+    // (docs/specs/013-workspace/tab-scoped-share-links.md). Null for the owner and a team member.
+    let tabScope: string | null = null;
+    let shareCode: string | null = null;
+    // Only a ticket carries a person tag; every other leg has none.
+    let personTag: string | null = null;
+    // Only a workbench session's ticket carries its pairing; every other leg has none.
+    let workbenchPairing: string | null = null;
+    // Only a Participant's ticket carries an adder key; every other leg has none.
+    let adderKey: string | null = null;
+    const claimedOwnerId = url.searchParams.get('o');
+    // Gate-only projection — the upgrade uses only ownerId/teamId. A project
+    // in the Trash (docs/specs/013-workspace/trash.md) reads as missing, so no
+    // leg below can admit anyone: not a ticket minted before the delete, not
+    // a share code, not the owner.
+    const liveDoc = await getProjectMeta(env, id);
+    if (!liveDoc) return notFound();
+    // One-time ticket (docs/specs/015-api/api.md): minted seconds ago over authenticated
+    // REST, single-use and project-scoped, carrying the server-resolved
+    // role. This is the ONLY leg that can admit a team member — the old
+    // fallback that granted edit to any `?o=` matching a JOINED member id
+    // trusted an unverified, teammate-visible value, so a removed member
+    // (or anyone who learned a member id) could keep joining the room.
+    const ticket = url.searchParams.get('t');
+    const admission = ticket ? await consumeWsTicket(env, ticket, id) : null;
+    const ticketRole = admission?.role ?? null;
+    // The bare-`o` owner match is PERSONAL projects only, mirroring the
+    // REST access rule (auth/project-access.ts): a TEAM project's owner
+    // id is an account id deliberately visible to every teammate, so a
+    // removed member could present it here — the exact hole the ticket
+    // closed for the membership leg. Team owners come in via the ticket
+    // (its mint admits them through the verified callerId === ownerId
+    // leg); a personal guest owner's id stays an unguessable UUID. An ACCOUNT id is
+    // refused here outright for the same reason REST refuses it as `X-Owner-Id`
+    // (docs/specs/015-api/public-api-and-tokens.md §4.1): teammates can read it, so
+    // it proves nothing. A signed-in owner of a personal project comes in through
+    // the ticket like a team owner.
+    const accountIdClaimed = !!claimedOwnerId && isAccountIdShape(claimedOwnerId);
+    if (accountIdClaimed)
+      console.warn('[room-upgrade] account id refused as ?o=', { projectId: id });
+    // The guest owner id is the same bearer value REST carries as X-Owner-Id,
+    // so once the guest signature gate is armed (auth/guest-rest.ts) this leg
+    // needs the same proof, on `os`; otherwise a harvested guest id would
+    // still seat its holder as the owner, password gate bypassed.
+    const ownerSigOk =
+      !guestSignatureEnforced(env, Date.now()) ||
+      (!!claimedOwnerId &&
+        (await verifyOwnerId(
+          env.GUEST_ID_HMAC_SECRET,
+          claimedOwnerId,
+          url.searchParams.get('os'),
+        )));
+    const isOwnerUpgrade =
+      !accountIdClaimed &&
+      ownerSigOk &&
+      isPersonalOwner(claimedOwnerId, liveDoc.ownerId, liveDoc.teamId);
+    if (admission) {
+      ({ role, tabScope, shareCode, personTag, workbenchPairing, adderKey } = admission);
+    } else if (isOwnerUpgrade) {
+      role = 'edit';
+      // The legacy legs put credentials in the URL (docs/specs/015-api/api.md "Realtime model"); every editor
+      // now rides a ticket, so this counts what is left before they are retired.
+      console.info('[room-upgrade] legacy leg admitted', { leg: 'owner', projectId: id });
+    } else {
+      const link = await shareLinkForProject(env, url.searchParams.get('s'), id);
+      if (link) {
+        role = link.role;
+        tabScope = link.tabId;
+        shareCode = link.code;
+        console.info('[room-upgrade] legacy leg admitted', { leg: 'share', projectId: id });
+      }
+    }
+    // Refuse the upgrade unless the caller is the owner or holds a valid
+    // share code for THIS project. Without this, a project with no share
+    // password forwarded every upgrade (role === null) to the room, so
+    // anyone who learned the project id could read live ops; and the DO
+    // additionally drops op frames from non-edit sessions.
+    if (!role) return forbidden();
+    // Password gate (docs/specs/013-workspace/share-password.md): a non-owner joining the realtime room of
+    // a password-protected project must carry the matching password on
+    // the `p` query param (WS upgrades can't set headers). Owners
+    // bypass, and so do ticket holders — the mint already ran the full
+    // REST access policy, including this same password gate for
+    // share-code visitors (owners / team members read without it over
+    // REST, so the room matches). A bad / missing password refuses the
+    // upgrade outright so the room never even sees the peer.
+    if (!isOwnerUpgrade && !ticketRole) {
+      const p = url.searchParams.get('p');
+      const attempt = p === null ? null : { value: p, rateKey: clientRateKey(request) };
+      if (!(await sharePasswordOk(env, id, attempt))) return forbidden();
+    }
+    // Presence identity is no longer forwarded: the DO assigns each session a
+    // fresh ephemeral id for its broadcast presence / cursor (docs/specs/015-api/public-api-and-tokens.md §6), so
+    // the real owner id never reaches the room and a joiner can't spoof
+    // another peer's presence (there's no real id to claim). Only the
+    // server-resolved role is forwarded; it still gates edit vs view ops.
+    const forwarded = new Request(request);
+    // Every trust header is stamped UNCONDITIONALLY, because `new Request`
+    // copies the client's own headers and the DO believes whatever arrives
+    // under these names. `set` on every path is what makes that belief true:
+    // a conditional `set` would let a non-browser client (websocat, curl:
+    // browsers can't put headers on an upgrade) send the header itself.
+    forwarded.headers.set('X-Verified-Role', role);
+    // The session's tab scope and admitting code, set on every path for the
+    // same reason as the role: the room believes these names. Empty =
+    // none (docs/specs/013-workspace/tab-scoped-share-links.md).
+    forwarded.headers.set('X-Verified-Tab-Scope', tabScope ?? '');
+    forwarded.headers.set('X-Verified-Share-Code', shareCode ?? '');
+    // The person tag (docs/specs/024-agents/agent-changesets.md, CS39), set on every path for the
+    // same reason as the headers above. Empty = none.
+    forwarded.headers.set('X-Verified-Person', personTag ?? '');
+    // The workbench pairing that opened the session (docs/specs/013-workspace/workbench-embeds.md), set on every
+    // path for the same reason as the headers above. Empty = none.
+    forwarded.headers.set('X-Verified-Workbench-Pairing', workbenchPairing ?? '');
+    // A Participant's adder key (docs/specs/013-workspace/share-roles.md "Integrity"), set on every path for the
+    // same reason as the headers above. Empty = none.
+    forwarded.headers.set('X-Verified-Adder', adderKey ?? '');
+    // The project this room serves, so a Participant's write knows its row; the room is named after it, and the
+    // header is set on every path for the same reason as the headers above.
+    forwarded.headers.set('X-Verified-Project', id);
+    return stub.fetch(forwarded);
+  }
+
+  return null;
+}

@@ -55,7 +55,7 @@ describe('runTabStatsBackfill', () => {
     expect(log).toHaveBeenCalledWith('tab-stats: backfilled n=2 left=none');
   });
 
-  // A document's Type is the mode of its newest `written_at`: a backfilled old tab dated by the
+  // A project's Type is the mode of its newest `written_at`: a backfilled old tab dated by the
   // run would outrank a tab edited since.
   it("dates each row by the tab's own last write, not the run", async () => {
     tabWithoutStats('old', '{"elements":[]}');

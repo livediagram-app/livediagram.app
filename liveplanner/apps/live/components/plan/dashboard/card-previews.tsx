@@ -3,7 +3,7 @@
 // Add to Slot's pictures of the written cards (docs/specs/026-plan/plan-tabs.md "Cards"), in slot-previews.tsx's
 // style and the tab's colours: a Title bare on the page, a Status as its light and line, a Checklist as ticked rows, a
 // Key Date as its count, Links as labelled rows. Decorative: the card's name says what it is.
-import type { FormMetricKind, SheetMetricKind } from '@liveplanner/document';
+import type { FormMetricKind, SheetMetricKind } from '@liveplanner/project';
 import type { DashboardCardKind } from '@/hooks/plan/dashboard-drop';
 import { AMBER, Bar, BLUE, Frame, GREEN, RED, type P } from './slot-previews';
 
@@ -103,23 +103,6 @@ function LinksPreview({ palette }: P) {
           <Bar w={`${w}%`} c={BLUE} h={3} o={0.55} />
         </span>
       ))}
-    </Frame>
-  );
-}
-
-// A Diagram tab: boxes joined by arrows, as a small flow.
-export function DiagramPreview({ palette }: P) {
-  return (
-    <Frame palette={palette}>
-      <svg aria-hidden viewBox="0 0 120 64" className="h-full w-full">
-        <g fill="none" stroke={palette.muted} strokeWidth={1.2} strokeOpacity={0.7}>
-          <path d="M34 20h18M34 20v0M70 20h14M60 28v10M60 38h-26" />
-        </g>
-        <rect x={6} y={12} width={28} height={16} rx={3} fill={BLUE} fillOpacity={0.85} />
-        <rect x={52} y={12} width={18} height={16} rx={3} fill={GREEN} fillOpacity={0.85} />
-        <rect x={84} y={12} width={30} height={16} rx={3} fill={AMBER} fillOpacity={0.85} />
-        <rect x={10} y={38} width={26} height={16} rx={8} fill={palette.muted} fillOpacity={0.35} />
-      </svg>
     </Frame>
   );
 }

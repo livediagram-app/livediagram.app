@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { pageIsDark, sameFill } from '@liveplanner/document';
+import { pageIsDark, sameFill } from '@liveplanner/project';
 import {
   fillCss,
   gradientFill,

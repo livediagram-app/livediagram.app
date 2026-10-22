@@ -1,5 +1,5 @@
 // A form template's starter, waiting for the editor (docs/specs/030-forms/forms.md "Starting a form"): /new makes the
-// document with an empty Plan tab and leaves the starter here under the tab's id; the editor starts the form on that tab
+// project with an empty Plan tab and leaves the starter here under the tab's id; the editor starts the form on that tab
 // once it can (PendingFormStart). Kept in sessionStorage, as /new hands over to the editor with a page load; a memory
 // copy covers storage refused.
 import type { StarterId } from '@liveplanner/forms';

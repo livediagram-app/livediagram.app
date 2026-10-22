@@ -24,7 +24,7 @@ packages/items/src/plan-view-gantt.ts   ganttModel, ganttAt, GANTT_* constants
 packages/items/src/plan-view-charts.ts  calendarModel, workloadModel, statusMixModel,
                                         priorityMatrixModel
 packages/items/src/calendar-move.ts     CalendarField, calendarFieldOf, calendarMove
-packages/document/src/svg-render-plan.ts svgPlanView (a labelled box)
+packages/project/src/svg-render-plan.ts svgPlanView (a labelled box)
 apps/live/hooks/plan/usePlanStatusNames.ts usePlanStatusPhases -> PlanContext.statusPhases
 apps/live/components/plan/views/        PlanViewView (router), view-frame (ViewFrame, openProps, viewState,
                                         PhaseLegend, PHASE_COLOURS), MetricView, GanttView, CalendarView,
@@ -181,7 +181,7 @@ rowIds, laneIds, id, toIndex)` returns the next full order: `id` taken out of th
 
 ## Performance and limits
 
-- Each model is linear in the document's items (capped by the item store), memoised on the items map, the phases
+- Each model is linear in the project's items (capped by the item store), memoised on the items map, the phases
   and (calendar) the month; the Gantt recomputes once a day. No timers; a calendar drag adds four window listeners
   only while it runs, one state update per pointer move (the ghost and target ring), and no write until the drop.
 
@@ -194,7 +194,7 @@ rowIds, laneIds, id, toIndex)` returns the next full order: `id` taken out of th
 | Calendar, workload, status, priority models    | packages/items/src/plan-view-charts.test.ts               |
 | Calendar moves, Start Calendar model           | packages/items/src/calendar-move.test.ts                  |
 | Calendar drag, keyboard move, roles, Start Cal | apps/live/components/plan/views/CalendarView.test.tsx     |
-| Element seed, validation, export box           | packages/document/src/plan-shapes.test.ts                 |
+| Element seed, validation, export box           | packages/project/src/plan-shapes.test.ts                 |
 | Rendering, empty and loading, opening, metrics | apps/live/components/plan/views/PlanViewView.test.tsx     |
 | Gantt window pin, pan, slop, cleanup           | apps/live/components/plan/views/useGanttWindow.test.ts    |
 | Gantt View flyout (card types, swimlanes)      | apps/live/components/palette/PlanViewMenuSection.test.tsx |

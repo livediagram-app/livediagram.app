@@ -1,6 +1,6 @@
-// Removing a document for good removes what its realtime room kept too (docs/specs/015-api/api.md "Purging a
+// Removing a project for good removes what its realtime room kept too (docs/specs/015-api/api.md "Purging a
 // room"): the collaboration ledger holds the text of every comment, idea and answer the room sequenced, which
-// outlived the document in DO storage before this. Best-effort, like the other room calls: the D1 removal before
+// outlived the project in DO storage before this. Best-effort, like the other room calls: the D1 removal before
 // it is the delete, so a room that can't be reached is logged rather than failing the request or the cron.
 
 import { roomFetch } from './room-client';
@@ -13,11 +13,11 @@ export const ROOM_PURGE_CONCURRENCY = 10;
 
 export async function purgeRooms(
   env: Env,
-  documentIds: readonly string[],
+  projectIds: readonly string[],
 ): Promise<{ rooms: number; unreached: number }> {
   let unreached = 0;
-  for (let i = 0; i < documentIds.length; i += ROOM_PURGE_CONCURRENCY) {
-    const batch = documentIds.slice(i, i + ROOM_PURGE_CONCURRENCY);
+  for (let i = 0; i < projectIds.length; i += ROOM_PURGE_CONCURRENCY) {
+    const batch = projectIds.slice(i, i + ROOM_PURGE_CONCURRENCY);
     const reached = await Promise.all(
       batch.map(async (id) => {
         try {
@@ -26,7 +26,7 @@ export async function purgeRooms(
           return true;
         } catch (err) {
           console.warn('[room-purge] did not reach the room', {
-            documentId: id,
+            projectId: id,
             error: String(err),
           });
           return false;
@@ -35,8 +35,8 @@ export async function purgeRooms(
     );
     unreached += reached.filter((ok) => !ok).length;
   }
-  if (documentIds.length > 0) {
-    console.info('[room-purge] purged', { rooms: documentIds.length, unreached });
+  if (projectIds.length > 0) {
+    console.info('[room-purge] purged', { rooms: projectIds.length, unreached });
   }
-  return { rooms: documentIds.length, unreached };
+  return { rooms: projectIds.length, unreached };
 }

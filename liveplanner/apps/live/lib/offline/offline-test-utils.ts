@@ -1,7 +1,7 @@
 // Shared test helpers for the offline modules: an in-memory OfflineBackend
 // (swapped in via __setOfflineBackend) and record/tab factories.
-import type { Tab } from '@liveplanner/document';
-import type { OfflineBackend, OfflineDocumentRecord } from './offline-store';
+import type { Tab } from '@liveplanner/project';
+import type { OfflineBackend, OfflineProjectRecord } from './offline-store';
 
 export const testTab = (id: string, over: Partial<Tab> = {}): Tab => ({
   id,
@@ -10,7 +10,7 @@ export const testTab = (id: string, over: Partial<Tab> = {}): Tab => ({
   ...over,
 });
 
-export const testRecord = (over: Partial<OfflineDocumentRecord> = {}): OfflineDocumentRecord => ({
+export const testRecord = (over: Partial<OfflineProjectRecord> = {}): OfflineProjectRecord => ({
   id: 'd1',
   name: 'Doc',
   folderId: null,
@@ -21,7 +21,7 @@ export const testRecord = (over: Partial<OfflineDocumentRecord> = {}): OfflineDo
 });
 
 export function memBackend(): OfflineBackend {
-  const map = new Map<string, OfflineDocumentRecord>();
+  const map = new Map<string, OfflineProjectRecord>();
   return {
     get: async (id) => map.get(id),
     put: async (r) => void map.set(r.id, r),

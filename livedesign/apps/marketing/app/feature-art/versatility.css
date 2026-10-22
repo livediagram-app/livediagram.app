@@ -1,0 +1,197 @@
+/* The versatility cards (components/feature-art/versatility.tsx). Prefixed fa-c- so they
+   never collide with another card set. Six-second loops unless a card sets its own duration.
+   Reduced motion settles each to its finished frame: the clean shape, the tidy layout, the first
+   option of a cycle, the text typed. */
+
+/* A stroke drawn by hand (pathLength="1" on the path), then lifted away as it snaps to shape. */
+@keyframes fa-c-draw {
+  0% {
+    stroke-dashoffset: 1;
+    opacity: 1;
+  }
+  32%,
+  44% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  52%,
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+.fa-c-draw {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: fa-c-draw 6s ease-in-out infinite;
+}
+
+/* The clean shape it snaps to: lands as the rough stroke lifts, holds, then clears for the next pass. */
+@keyframes fa-c-snap {
+  0%,
+  44% {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  52% {
+    opacity: 1;
+    transform: scale(1.03);
+  }
+  58%,
+  90% {
+    opacity: 1;
+    transform: none;
+  }
+  97%,
+  100% {
+    opacity: 0;
+    transform: none;
+  }
+}
+.fa-c-snap {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: fa-c-snap 6s ease-out infinite;
+}
+
+/* The before and after of one change (messy to tidy): before holds, then hands over to after. */
+@keyframes fa-c-before {
+  0%,
+  40% {
+    opacity: 1;
+  }
+  48%,
+  94% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes fa-c-after {
+  0%,
+  40% {
+    opacity: 0;
+  }
+  48%,
+  94% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.fa-c-before {
+  animation: fa-c-before 6s ease-in-out infinite;
+}
+.fa-c-after {
+  opacity: 0;
+  animation: fa-c-after 6s ease-in-out infinite;
+}
+
+/* One option of three (or four) shown at a time: stagger the members by a third (or a quarter) of
+   the loop with animation-delay. */
+@keyframes fa-c-third {
+  0%,
+  30% {
+    opacity: 1;
+  }
+  34%,
+  96% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+.fa-c-third {
+  opacity: 0;
+  animation: fa-c-third 6s ease-in-out infinite;
+}
+@keyframes fa-c-quarter {
+  0%,
+  22% {
+    opacity: 1;
+  }
+  26%,
+  97% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+.fa-c-quarter {
+  opacity: 0;
+  animation: fa-c-quarter 8s ease-in-out infinite;
+}
+
+/* A shape dragged into line: it travels from off its mark to the mark, rests, and goes back. */
+@keyframes fa-c-drag {
+  0%,
+  8% {
+    transform: translate(16px, 9px);
+  }
+  42%,
+  86% {
+    transform: none;
+  }
+  100% {
+    transform: translate(16px, 9px);
+  }
+}
+.fa-c-drag {
+  animation: fa-c-drag 6s cubic-bezier(0.45, 0, 0.2, 1) infinite;
+}
+
+/* What appears once the drag lands (the guides, the spacing marks). */
+@keyframes fa-c-arrive {
+  0%,
+  40% {
+    opacity: 0;
+  }
+  46%,
+  84% {
+    opacity: 1;
+  }
+  90%,
+  100% {
+    opacity: 0;
+  }
+}
+.fa-c-arrive {
+  opacity: 0;
+  animation: fa-c-arrive 6s ease-out infinite;
+}
+
+/* A prompt typed into a field: the text is revealed left to right, then holds. */
+
+@media (prefers-reduced-motion: reduce) {
+  .fa-c-draw,
+  .fa-c-before {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+  .fa-c-snap,
+  .fa-c-after,
+  .fa-c-arrive {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .fa-c-third,
+  .fa-c-quarter {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+  .fa-c-third.fa-c-first,
+  .fa-c-quarter.fa-c-first {
+    opacity: 1 !important;
+  }
+  .fa-c-drag {
+    animation: none !important;
+    transform: none !important;
+    clip-path: none !important;
+  }
+}

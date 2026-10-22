@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { DocumentCommentsResponse } from '@liveplanner/api-schema';
-import type { Comment, Element } from '@liveplanner/document';
+import type { ProjectCommentsResponse } from '@liveplanner/api-schema';
+import type { Comment, Element } from '@liveplanner/project';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import * as db from '../db';
 import { makeTestRouteContext } from './test-route-context';
-import { handleDocuments } from './documents';
+import { handleProjects } from './projects';
 
 // Cell comments on the comment endpoints (docs/specs/029-sheets/sheet.md "Cell comments"): add with a cell, reply,
 // resolve, reopen and delete-own find the cell's thread, the room hears the cell, and the listing gives each cell
@@ -45,8 +45,8 @@ function seed(elements: unknown[]) {
 }
 
 function call(method: string, path: string, body?: unknown, owner = 'owner', code?: string) {
-  return handleDocuments(
-    makeTestRouteContext(method, `/api/documents/d1${path}`, {
+  return handleProjects(
+    makeTestRouteContext(method, `/api/projects/d1${path}`, {
       env: sql.env,
       owner,
       ...(code ? { headers: { 'X-Share-Code': code } } : {}),
@@ -67,14 +67,14 @@ beforeEach(() => {
   sql = sqliteD1();
   pending = [];
   sql.sql.exec(`
-    INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at)
+    INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at)
       VALUES ('d1', 'owner', 'Payments', 1, 1, 1);
     INSERT INTO participants (id, name, color, created_at) VALUES ('owner', 'Webber', '#3b82f6', 1);
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('t1', 'Main', '{"elements":[]}', 1);
-    INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1);
-    INSERT INTO share_links (code, document_id, role, level, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', 'participate', NULL, 1);
-    INSERT INTO share_links (code, document_id, role, tab_id, created_at) VALUES ('LOOK', 'd1', 'view', NULL, 1);
-    INSERT INTO sheets (document_id, id, tab_id, title, layout, rev, created_at, updated_at, updated_by)
+    INSERT INTO project_tabs (project_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1);
+    INSERT INTO share_links (code, project_id, role, level, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', 'participate', NULL, 1);
+    INSERT INTO share_links (code, project_id, role, tab_id, created_at) VALUES ('LOOK', 'd1', 'view', NULL, 1);
+    INSERT INTO sheets (project_id, id, tab_id, title, layout, rev, created_at, updated_at, updated_by)
       VALUES ('d1', 'sheet01', 't1', 'Budget',
         '{"rows":["row001","row002","row003","row004"],"cols":["cola01","colb01"]}', 0, 1, 1, '{}');
   `);
@@ -175,7 +175,7 @@ describe('cell comments over the comment endpoints', () => {
       }),
     ]);
     const res = await call('GET', '/comments?status=open');
-    const { threads } = (await res.json()) as DocumentCommentsResponse;
+    const { threads } = (await res.json()) as ProjectCommentsResponse;
     expect(threads.map((t) => [t.cell ?? null, t.cellRef ?? null])).toEqual([
       [null, null],
       [B4, 'B4'],

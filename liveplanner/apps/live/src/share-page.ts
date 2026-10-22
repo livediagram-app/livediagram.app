@@ -1,6 +1,6 @@
-// The share page's head (docs/specs/013-workspace/share-link-previews.md). `/document/shared?s=<code>` is the same
-// static shell as every document, so a link preview, whose crawler never runs the page's script, saw "liveplanner"
-// over an empty box. For a link whose preview may name its document, the api answers its name, and the shell's head
+// The share page's head (docs/specs/013-workspace/share-link-previews.md). `/project/shared?s=<code>` is the same
+// static shell as every project, so a link preview, whose crawler never runs the page's script, saw "liveplanner"
+// over an empty box. For a link whose preview may name its project, the api answers its name, and the shell's head
 // is rewritten to carry it and the share card before it is sent.
 //
 // Without the API binding (a deployment that leaves it out), or when the api is slow or says no, the shell goes out as
@@ -36,13 +36,13 @@ export const SHARE_PITCH = `Open it in liveplanner: ${SITE_PITCH}.`;
 const NAME_MAX = 200;
 
 export function isSharePagePath(pathname: string): boolean {
-  return /^\/(?:document|diagram)\/shared\/?$/.test(pathname);
+  return /^\/(?:project|diagram)\/shared\/?$/.test(pathname);
 }
 
 type ShareHead = { title: string; description: string; image: string; imageAlt: string };
 
 export function shareHead(name: string, code: string, origin: string): ShareHead {
-  const title = name.replace(/\s+/g, ' ').trim().slice(0, NAME_MAX) || 'Untitled document';
+  const title = name.replace(/\s+/g, ' ').trim().slice(0, NAME_MAX) || 'Untitled project';
   return {
     title,
     description: SHARE_PITCH,
@@ -80,7 +80,7 @@ async function sharePreviewName(
   }
 }
 
-// The shell's head, rewritten to name the document. The selectors match what app/layout.tsx's metadata emits.
+// The shell's head, rewritten to name the project. The selectors match what app/layout.tsx's metadata emits.
 function withShareHead(shell: Response, head: ShareHead): Response {
   const set = (value: string) => ({
     element(el: RewriterElement) {
@@ -100,8 +100,8 @@ function withShareHead(shell: Response, head: ShareHead): Response {
     .transform(shell);
 }
 
-// The share page: the shell, its head naming the document when the api allows it. `shell` is the placeholder
-// request the editor route serves for every document address.
+// The share page: the shell, its head naming the project when the api allows it. `shell` is the placeholder
+// request the editor route serves for every project address.
 export async function sharePage(
   request: Request,
   api: Fetcher | undefined,

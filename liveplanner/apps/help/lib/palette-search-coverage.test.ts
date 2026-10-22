@@ -46,9 +46,9 @@ function paletteNames(): string[] {
 
 describe('the help centre can be searched for what the palette calls things', () => {
   it('reads real palette names (guard against this test going blind)', () => {
-    // 75 when this landed (62 captions plus the shape labels). A collapse toward zero would make the assertion
-    // below pass without checking anything.
-    expect(paletteNames().length).toBeGreaterThan(40);
+    // 75 when this landed (62 captions plus the shape labels); 6 once liveplanner's palette held only what Plan
+    // places beside its boards. A collapse to zero would make the assertion below pass without checking anything.
+    expect(paletteNames().length).toBeGreaterThanOrEqual(5);
   });
 
   it('does not simply match everything', () => {

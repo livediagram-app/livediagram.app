@@ -1,8 +1,8 @@
-# How agents edit existing structured documents: an editing model for the liveplanner CLI
+# How agents edit existing structured projects: an editing model for the liveplanner CLI
 
-Research for the `liveplanner <resource> <verb>` CLI, angle: **editing existing documents**. It asks how
+Research for the `liveplanner <resource> <verb>` CLI, angle: **editing existing projects**. It asks how
 an AI agent (a coding agent in a repo, or a chat agent changing a diagram while a person talks to it)
-reliably changes a spatial, structured document it did not author, and ends with a recommended
+reliably changes a spatial, structured project it did not author, and ends with a recommended
 editing model, an op format, layout and concurrency rules, and three mock sessions.
 
 Sources were read on the date of writing; external claims carry a link in [Sources](#sources). Claims
@@ -27,7 +27,7 @@ about liveplanner cite the file they come from. Where a claim is an estimate or 
   batch instead carries fingerprints of the elements it touches and rebases over unrelated changes
   (git rebase, Google Docs `targetRevisionId`). A strict tab-level mode exists for scripts.
 - **The biggest finding is in our own API**: a REST tab `PUT` is not relayed to the realtime room,
-  so today an agent edit to a document a person has open is invisible to them and is **overwritten
+  so today an agent edit to a project a person has open is invisible to them and is **overwritten
   by their next autosave** ([API app](../../specs/015-api/api.md) "The persistence boundary"). A CLI
   built on the existing tab `PUT` would ship this data loss to every chat-agent session. The
   recommendation needs one server change: an ops endpoint whose result is relayed to the room as
@@ -39,9 +39,9 @@ about liveplanner cite the file they come from. Where a claim is an estimate or 
 
 ## 2. What liveplanner has today
 
-### 2.1 The MCP `update_document` ops mode
+### 2.1 The MCP `update_project` ops mode
 
-`apps/mcp/src/tools.ts` (`update_document`, mode `ops`): an ordered list of
+`apps/mcp/src/tools.ts` (`update_project`, mode `ops`): an ordered list of
 `{ op: 'add' | 'update' | 'remove', element?, elementId? }`. The tool reads the tab, applies the ops
 to an id map, normalises touched elements, runs `isValidTab`, and `PUT`s the whole tab. No
 auto-layout runs, so positions are kept ([MCP server §4.4](../../specs/015-api/mcp-server.md)).
@@ -50,7 +50,7 @@ What works well and should carry over:
 
 - Id-addressed, ordered, atomic (one `PUT`, so all or nothing).
 - Positions preserved; only touched elements are normalised (`normaliseElement`).
-- `update` is a shallow merge (`mergeElementUpdate` in `packages/document/src/element-normalise.ts`), close
+- `update` is a shallow merge (`mergeElementUpdate` in `packages/project/src/element-normalise.ts`), close
   to JSON Merge Patch at the top level.
 - Off-vocabulary shape kinds are coerced; lanes are kept painting behind (`lanesToFront`).
 
@@ -65,12 +65,12 @@ Gaps an agent will hit, each verified in the code:
 | Absolute geometry only on `add`        | `add` takes a full element                                                                                                       | The model must compute `x/y/width/height` and anchors for every insertion        |
 | Shallow merge only                     | Nested fields (`from`, `to`, `entityFields`) replace wholesale; no way to unset a field                                          | Easy to drop an arrow's anchor or styling by sending a partial endpoint          |
 | No preconditions                       | Read-modify-write against D1, no revision check                                                                                  | A stale read silently overwrites newer work                                      |
-| Not relayed to the room                | Tab `PUT` route (`apps/api/src/routes/document-subresource-routes.ts`) merges the room ledger in but never broadcasts            | Live editors don't see the change, and their next autosave erases it             |
+| Not relayed to the room                | Tab `PUT` route (`apps/api/src/routes/project-subresource-routes.ts`) merges the room ledger in but never broadcasts            | Live editors don't see the change, and their next autosave erases it             |
 | No changeset, no inverse               | Returns `{ id, tabId, url }` plus a PNG                                                                                          | The model cannot confirm what changed in text, and there is no undo              |
 
 ### 2.2 The realtime op model
 
-- `packages/document/src/element-ops.ts`: `ElementOp` is `add` (with z-index `at`), `update` (whole
+- `packages/project/src/element-ops.ts`: `ElementOp` is `add` (with z-index `at`), `update` (whole
   element by id), `remove`, `reorder` (full id order). `diffToElementOps(before, after)` derives
   them; `applyElementOp` applies by id, and an op for a removed id is a safe no-op.
 - Element-level last-writer-wins in room order; different elements merge
@@ -88,7 +88,7 @@ Gaps an agent will hit, each verified in the code:
 - Precedent for compare-and-swap: Q&A board writes use `UPDATE tabs SET data = ? … WHERE id = ? AND
 data = ?` (`apps/api/src/db/tabs.ts:422`). `tabs.updated_at` exists for a cheap revision.
 
-### 2.3 Facts about the document that shape the editing model
+### 2.3 Facts about the project that shape the editing model
 
 - **Ids are arbitrary strings.** The editor mints UUIDs (`crypto.randomUUID()`), but graph input
   keeps the model's own node ids (`graphToElements` in `graph-authoring.ts`). So a CLI may let the
@@ -129,7 +129,7 @@ format must add the loud failure.
 ### 3.2 Patch and op vocabularies
 
 - **JSON Patch (RFC 6902)**: `add`, `remove`, `replace`, `move`, `copy`, `test`, addressed by JSON
-  Pointer (RFC 6901). Atomic per document. Its `test` op is a precondition inside the batch, which
+  Pointer (RFC 6901). Atomic per project. Its `test` op is a precondition inside the batch, which
   we keep. Its pointers address arrays **by index** (`/elements/17/label`), which breaks under any
   concurrent insert or reorder and forces the model to count. Rejected as the agent-facing format.
 - **JSON Merge Patch (RFC 7386)**: send the fields you change, `null` deletes, arrays replace
@@ -142,7 +142,7 @@ format must add the loud failure.
   liveplanner consciously stopped at **per element** LWW. A short-lived CLI should not run a CRDT;
   it should submit ops that the server turns into the room's existing `el` ops.
 
-### 3.3 Diagram and document APIs
+### 3.3 Diagram and project APIs
 
 | System                                                                                                            | Edit model                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Take                                                                                                            |
 | ----------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
@@ -152,7 +152,7 @@ format must add the loud failure.
 | [Miro REST v2](https://developers.miro.com/reference/create-items)                                                | One item per call, plus **bulk create of up to 20 items, transactional** (one failure, none created); connectors are items with start/end item; items carry a `parent` frame                                                                                                                                                                                                                                                                                                                                           | Atomic batch, explicit parent                                                                                   |
 | [Google Slides batchUpdate](https://developers.google.com/slides/api/reference/rest/v1/presentations/batchUpdate) | Ordered requests, **each validated, any invalid fails all**; replies in request order; client-chosen `objectId`s so later requests reference earlier ones; `writeControl.requiredRevisionId` rejects a stale write; Google Docs adds `targetRevisionId`, which **transforms the batch over collaborators' changes** instead                                                                                                                                                                                            | The batch shape, client ids, and the two concurrency modes we adopt                                             |
 | [Notion block API](https://developers.notion.com/reference/patch-block-children)                                  | Append children with an `after` block id; patch a block; archive                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Relative insertion by reference, not by index                                                                   |
-| [Lucid Standard Import](https://developer.lucid.co/docs/standard-import)                                          | Whole-document JSON import                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Whole-document replace only; no surgical edit                                                                   |
+| [Lucid Standard Import](https://developer.lucid.co/docs/standard-import)                                          | Whole-project JSON import                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Whole-project replace only; no surgical edit                                                                   |
 | [Excalidraw MCP (yctimlin)](https://github.com/yctimlin/mcp_excalidraw)                                           | Element CRUD, `query` with typed filters, `describe` (plain-text scene), screenshot, align/distribute, named **snapshots** for rollback; also a CLI with JSON on stdout and exit codes 0/1/2/3/4. Its changelog records a fix where unknown element fields were dropped on update                                                                                                                                                                                                                                      | Plain-text describe, snapshots, exit codes; **never drop fields the agent didn't mention**                      |
 | [draw.io MCP (lgazo)](https://github.com/lgazo/drawio-mcp-server)                                                 | Drives a live editor: `get-selected-cell`, `list-paged-model` (paged reads), `add-edge`, `edit-cell`, `set-cell-parent`, layers, pages                                                                                                                                                                                                                                                                                                                                                                                 | Paging for big diagrams, the live selection as a target                                                         |
 | [Penpot MCP](https://github.com/penpot/penpot-mcp)                                                                | Lets the model run code against the plugin API                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | "Code mode": a CLI that reads ops from stdin is already scriptable                                              |
@@ -206,7 +206,7 @@ Derived from the above, in the order they bite:
              │  resolve selectors against its last read (cache)
              │  dry-run: apply locally with @liveplanner/edit-ops, print plan, optional PNG
              ▼
-           POST /api/documents/:id/tabs/:tabId/edits   { base, ops, options }
+           POST /api/projects/:id/tabs/:tabId/edits   { base, ops, options }
              │  api: load tab from D1, check base fingerprints, apply the same pure engine,
              │  validate, write (compare-and-swap), relay resulting ElementOps to the room
              ▼
@@ -215,8 +215,8 @@ Derived from the above, in the order they bite:
 
 - **One pure engine**, `applyEditBatch(tab, ops, options) → { tab, changes, inverse, warnings } |
 { errors }`, in a new package (working name `@liveplanner/edit-ops`, depending on
-  `@liveplanner/document` for layout, anchors, validation and normalisation). Consumers: the CLI
-  (dry-run, local preview), the api (authoritative apply), and the MCP's `update_document` ops mode,
+  `@liveplanner/project` for layout, anchors, validation and normalisation). Consumers: the CLI
+  (dry-run, local preview), the api (authoritative apply), and the MCP's `update_project` ops mode,
   which becomes a thin wrapper so the two agent surfaces cannot drift (reuse principle).
 - **One server change**: an edits endpoint that applies the batch server-side and relays it to the
   room. The room's `/mutation` widens from `el-delta` to also accept `el` ops. This fixes the REST
@@ -231,20 +231,20 @@ reading angle and are referenced where editing depends on them.
 
 | Command                                                       | Purpose                                                                                    |
 | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| `liveplanner edit <doc> [--tab T] [-f FILE \| -]`             | Apply a batch of ops (line form or JSON lines). The core verb                              |
+| `liveplanner edit <project> [--tab T] [-f FILE \| -]`             | Apply a batch of ops (line form or JSON lines). The core verb                              |
 | `liveplanner edit … --dry-run [--png FILE]`                   | Print the plan (and render it) without writing                                             |
-| `liveplanner el set <doc> <sel> k=v…`                         | One-op sugar for `set`; every op has such a verb so `--help` teaches the vocabulary        |
-| `liveplanner el add <doc> <kind> k=v… [placement]`            | Sugar for `add`                                                                            |
-| `liveplanner el rm <doc> <sel>`                               | Sugar for `rm` (cascades arrows; says so)                                                  |
-| `liveplanner el move <doc> <sel> <placement>`                 | Sugar for `move`                                                                           |
-| `liveplanner el connect <doc> <a> <b> [label=…]`              | Sugar for `connect`                                                                        |
-| `liveplanner el insert <doc> <kind> k=v… between <a> <b>`     | Sugar for `insert`                                                                         |
-| `liveplanner el wrap <doc> <sel> in frame\|lane k=v…`         | Sugar for `wrap`                                                                           |
-| `liveplanner tab layout <doc> [<sel>] [--style flow\|tree…]`  | Explicit relayout of a selection, a frame, or the tab                                      |
-| `liveplanner tab replace <doc> --graph F \| --mermaid F`      | Declarative rebuild (the MCP's graph-first path), as a batch so it previews and undoes too |
-| `liveplanner tab pull <doc> > f` / `tab push <doc> f`         | Outline round trip with a three-way base (section 5.9); secondary path                     |
-| `liveplanner comment add\|reply\|resolve\|list <doc> <sel> …` | Comments via the existing comment endpoints (author stamping, relay), not via element ops  |
-| `liveplanner undo <doc> [<batch>]`                            | Apply the journalled inverse of the agent's own batch                                      |
+| `liveplanner el set <project> <sel> k=v…`                         | One-op sugar for `set`; every op has such a verb so `--help` teaches the vocabulary        |
+| `liveplanner el add <project> <kind> k=v… [placement]`            | Sugar for `add`                                                                            |
+| `liveplanner el rm <project> <sel>`                               | Sugar for `rm` (cascades arrows; says so)                                                  |
+| `liveplanner el move <project> <sel> <placement>`                 | Sugar for `move`                                                                           |
+| `liveplanner el connect <project> <a> <b> [label=…]`              | Sugar for `connect`                                                                        |
+| `liveplanner el insert <project> <kind> k=v… between <a> <b>`     | Sugar for `insert`                                                                         |
+| `liveplanner el wrap <project> <sel> in frame\|lane k=v…`         | Sugar for `wrap`                                                                           |
+| `liveplanner tab layout <project> [<sel>] [--style flow\|tree…]`  | Explicit relayout of a selection, a frame, or the tab                                      |
+| `liveplanner tab replace <project> --graph F \| --mermaid F`      | Declarative rebuild (the MCP's graph-first path), as a batch so it previews and undoes too |
+| `liveplanner tab pull <project> > f` / `tab push <project> f`         | Outline round trip with a three-way base (section 5.9); secondary path                     |
+| `liveplanner comment add\|reply\|resolve\|list <project> <sel> …` | Comments via the existing comment endpoints (author stamping, relay), not via element ops  |
+| `liveplanner undo <project> [<batch>]`                            | Apply the journalled inverse of the agent's own batch                                      |
 
 ### 5.3 Addressing: handles and selectors
 
@@ -292,7 +292,7 @@ Closed and small. Each op is one line; values with spaces are quoted; JSON form 
 | `layout`  | `layout <sel> [style=flow\|tree\|mindmap] [direction=down\|right]`       | Relayout only the selection, keeping its bounding box's top-left; the batch's one way to move many things at once                                |
 | `test`    | `test <sel> k=v …`                                                       | Precondition (JSON Patch `test`): fails the batch if the element's field differs                                                                 |
 
-Field values speak the document's vocabulary, never raw internals: `shape=stadium` (coerced like the
+Field values speak the project's vocabulary, never raw internals: `shape=stadium` (coerced like the
 MCP), `fill=accent` (a theme slot; a hex value is accepted with `W_COLOUR_OVERRIDES_THEME`, stickies
 excepted), `text=sm`, `note="…"`, `line=angled`. A `label` longer than 40 characters is split into a
 heading and a `note`, as the MCP's graph input does (`GRAPH_LABEL_MAX`), and reported as a warning.
@@ -345,8 +345,8 @@ outside every frame next to a frame it probably belongs to, an orphaned node.
 
 ### 5.6 Concurrency: element-scoped optimistic concurrency, relayed live
 
-**Read gives a base.** Every read the CLI performs is cached per document and tab
-(`$XDG_CACHE_HOME/liveplanner/<doc>/<tab>.json`): the tab revision and the elements. The tab
+**Read gives a base.** Every read the CLI performs is cached per project and tab
+(`$XDG_CACHE_HOME/liveplanner/<project>/<tab>.json`): the tab revision and the elements. The tab
 revision is an ETag from `tabs.updated_at` (or a content hash), returned on `GET`.
 
 **A batch carries the base it was planned on**: the revision, and a short fingerprint (hash) of every
@@ -440,8 +440,8 @@ the code without parsing text.
 
 - Every applied batch returns its inverse: the before-image of each touched element and the removal
   of each added one, as ops. The CLI appends it to a local journal
-  (`$XDG_STATE_HOME/liveplanner/journal/<doc>.jsonl`), keyed by batch id.
-- `liveplanner undo <doc> [<batch>]` submits the inverse with fingerprints of the **after-images**
+  (`$XDG_STATE_HOME/liveplanner/journal/<project>.jsonl`), keyed by batch id.
+- `liveplanner undo <project> [<batch>]` submits the inverse with fingerprints of the **after-images**
   as its base. If a person has since changed one of those elements, that element conflicts and is
   reported; `--partial` undoes the rest. Undo never reverts a human's edit, matching the locked
   decision that undo is local and affects only one's own changes
@@ -471,7 +471,7 @@ costs the tab. These are estimates from the element shapes, not measurements.
 
 ## 6. Mock sessions
 
-The document is `d_8f2k`, a checkout flow on one tab. The outline view is abbreviated here; its
+The project is `d_8f2k`, a checkout flow on one tab. The outline view is abbreviated here; its
 exact format belongs to the reading angle.
 
 ```bash
@@ -600,7 +600,7 @@ These are genuine choices for the spec, not defaults the research could pick:
 3. **Line form and JSON form.** Two input syntaxes for one op model. Recommended: both, with the line
    form parsed into the JSON form by one parser, because heredoc line ops are what agents emit most
    cheaply and JSON is what scripts produce.
-4. **Where the engine lives.** A new `@liveplanner/edit-ops` package vs files in `@liveplanner/document`.
+4. **Where the engine lives.** A new `@liveplanner/edit-ops` package vs files in `@liveplanner/project`.
    Recommended: a new package, because it is one cohesive concern with three consumers.
 5. **Make-room scope.** Shift within the containing frame or component (recommended) vs the whole tab
    beyond the midline.
@@ -612,7 +612,7 @@ When this becomes a spec, the deltas are:
 
 - [API app](../../specs/015-api/api.md): the edits endpoint, the tab ETag, and the room's `/mutation`
   accepting `el` ops; "The persistence boundary" changes because REST element edits reach the room.
-- [MCP server §4.4](../../specs/015-api/mcp-server.md): `update_document` ops mode delegates to the
+- [MCP server §4.4](../../specs/015-api/mcp-server.md): `update_project` ops mode delegates to the
   shared engine and gains the error codes, changeset and the vocabulary above.
 - [Realtime conflict resolution](../../specs/012-collaboration/realtime-conflict-resolution.md):
   REST writers become sequenced peers; the residual same-element window is restated.
@@ -638,7 +638,7 @@ When this becomes a spec, the deltas are:
 - Framelink Figma MCP: <https://github.com/GLips/Figma-Context-MCP>
 - Miro REST, create items in bulk: <https://developers.miro.com/reference/create-items>
 - Google Slides `batchUpdate`: <https://developers.google.com/slides/api/reference/rest/v1/presentations/batchUpdate>
-- Google Docs `WriteControl` (`targetRevisionId`): <https://developers.google.com/docs/api/reference/rest/v1/documents/batchUpdate>
+- Google Docs `WriteControl` (`targetRevisionId`): <https://developers.google.com/docs/api/reference/rest/v1/projects/batchUpdate>
 - Notion, append block children (`after`): <https://developers.notion.com/reference/patch-block-children>
 - Lucid Standard Import: <https://developer.lucid.co/docs/standard-import>
 - Excalidraw MCP and CLI (yctimlin): <https://github.com/yctimlin/mcp_excalidraw>
@@ -646,10 +646,10 @@ When this becomes a spec, the deltas are:
 - Penpot MCP: <https://github.com/penpot/penpot-mcp>
 - VS Code `WorkspaceEdit`: <https://code.visualstudio.com/api/references/vscode-api#WorkspaceEdit>
 - Kubernetes declarative management, three-way merge: <https://kubernetes.io/docs/tasks/manage-kubernetes-objects/declarative-config/>
-- liveplanner: `apps/mcp/src/tools.ts`, `packages/document/src/element-normalise.ts`, `packages/agent-verbs/src/mcp/schema.ts`,
-  `packages/document/src/element-ops.ts`, `element-deltas.ts`, `collab-ledger.ts`, `validate.ts`,
+- liveplanner: `apps/mcp/src/tools.ts`, `packages/project/src/element-normalise.ts`, `packages/agent-verbs/src/mcp/schema.ts`,
+  `packages/project/src/element-ops.ts`, `element-deltas.ts`, `collab-ledger.ts`, `validate.ts`,
   `mermaid-serialise.ts`, `arrow-rebind.ts`, `anchor-choice.ts`, `graph-authoring.ts`,
-  `apps/api/src/routes/document-subresource-routes.ts`, `apps/api/src/db/tabs.ts`,
+  `apps/api/src/routes/project-subresource-routes.ts`, `apps/api/src/db/tabs.ts`,
   [API app](../../specs/015-api/api.md), [MCP server](../../specs/015-api/mcp-server.md),
   [Realtime conflict resolution](../../specs/012-collaboration/realtime-conflict-resolution.md),
   [Arrow anchors](../../specs/008-canvas/arrow-anchors.md), [Layout cleanup](../../specs/008-canvas/layout-cleanup.md)

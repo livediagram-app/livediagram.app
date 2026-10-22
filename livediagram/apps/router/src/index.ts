@@ -12,14 +12,12 @@ export interface Env {
   MARKETING?: Fetcher;
   LIVE?: Fetcher;
   API?: Fetcher;
-  TELEMETRY?: Fetcher;
   HELP?: Fetcher;
   COMMUNITY?: Fetcher;
   // Local-dev origins (absent in production).
   MARKETING_ORIGIN?: string;
   LIVE_ORIGIN?: string;
   API_ORIGIN?: string;
-  TELEMETRY_ORIGIN?: string;
   HELP_ORIGIN?: string;
   COMMUNITY_ORIGIN?: string;
   // Set to "staging" on the staging router only (docs/specs/016-platform/staging-environment.md). Marks every
@@ -31,6 +29,19 @@ export interface Env {
 const LIVE_PATH = '/live';
 const API_PATH = '/api';
 const TELEMETRY_PATH = '/telemetry';
+
+// The public telemetry dashboard is liveworkspace's now, shared by every app
+// (docs/specs/017-telemetry/telemetry.md, liveworkspace/docs/telemetry.md), so
+// livediagram.app/telemetry, and every link to it, moves there, filtered to this app.
+export function telemetryDashboardUrl(env: Pick<Env, 'DEPLOY_ENV'>): string {
+  const base =
+    env.DEPLOY_ENV === 'staging'
+      ? 'https://staging.liveworkspace.app/telemetry'
+      : env.DEPLOY_ENV === 'local'
+        ? 'http://localhost:3300/telemetry'
+        : 'https://liveworkspace.app/telemetry';
+  return `${base}?app=livediagram.app`;
+}
 const HELP_PATH = '/help';
 const COMMUNITY_PATH = '/community';
 
@@ -198,20 +209,18 @@ async function route(request: Request, env: Env): Promise<Response> {
     return forward(request, url, env.LIVE, env.LIVE_ORIGIN, LIVE_PATH);
   }
   if (hasPrefix(url.pathname, TELEMETRY_PATH)) {
-    // The public transparency dashboard (docs/specs/017-telemetry/telemetry.md), a basePath:'/telemetry'
-    // static app — same prefix-strip as the live app's assets.
-    return forward(request, url, env.TELEMETRY, env.TELEMETRY_ORIGIN, TELEMETRY_PATH);
+    return Response.redirect(telemetryDashboardUrl(env), 301);
   }
   if (hasPrefix(url.pathname, COMMUNITY_PATH)) {
     // Community (docs/specs/025-community/community.md), a basePath:'/community' static app: the same prefix-strip
-    // as telemetry and help.
+    // as help.
     return forward(request, url, env.COMMUNITY, env.COMMUNITY_ORIGIN, COMMUNITY_PATH);
   }
   const legacyHelp = legacyHelpRedirect(url);
   if (legacyHelp) return legacyHelp;
   if (hasPrefix(url.pathname, HELP_PATH)) {
     // The help centre (docs/specs/018-help/help-app.md), a basePath:'/help' static app — same
-    // prefix-strip as telemetry.
+    // prefix-strip as the live app's assets.
     return forward(request, url, env.HELP, env.HELP_ORIGIN, HELP_PATH);
   }
   const legacyEditor = legacyEditorRedirect(url);

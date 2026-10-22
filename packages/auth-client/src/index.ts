@@ -1,6 +1,7 @@
 export { createVerifier, type AccountClaims, type VerifierOptions } from './verify';
 export {
   authorizeUrl,
+  closeAccount,
   createPkcePair,
   exchangeCode,
   randomState,
@@ -10,3 +11,22 @@ export {
   type PkcePair,
   type TokenSet,
 } from './oauth';
+export {
+  createTokenChecker,
+  fetchTeamChanges,
+  liveTokenIds,
+  MAX_LIVE_TOKEN_IDS,
+  mintAccountToken,
+  readTeamsClaim,
+  revokeAccountToken,
+  TOKEN_INVALID_FOR_MS,
+  TOKEN_VALID_FOR_MS,
+  type MemberChange,
+  type MintedToken,
+  type TeamChange,
+  type TeamChanges,
+  type TeamClaim,
+  type TeamRole,
+  type TokenAccount,
+  type TokenCheckerOptions,
+} from './account';

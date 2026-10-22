@@ -20,7 +20,6 @@ import { PointerNoteMenuSection } from '@/components/palette/PointerNoteMenuSect
 import { TagColoursBlock } from '@/components/palette/TagColoursBlock';
 import { StackMenuSection } from '@/components/palette/StackMenuSection';
 import { BoundaryMenuSection } from '@/components/palette/BoundaryMenuSection';
-import { TabWindowMenuSection } from '@/components/palette/TabWindowMenuSection';
 import { ConceptMenuSection } from '@/components/palette/ConceptMenuSection';
 import { SequenceMenuSection } from '@/components/palette/SequenceMenuSection';
 import {
@@ -37,7 +36,7 @@ import {
   type EntityField,
   type LegendItem,
   type PieSlice,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { ProgressMenuGlyph, ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { MindMapMenuSections } from './MindMapMenuSections';
@@ -77,7 +76,7 @@ import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import { useContextMenuScaffold } from './useContextMenuScaffold';
 import { ChartPalettePresets } from './StylePresets';
 
-// Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a document without
+// Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a project without
 // Plan pays nothing for it.
 // A Sankey's sections (docs/specs/009-elements/sankey.md "The menu") load only when a Sankey's menu opens.
 const SankeyMenuSections = dynamic(
@@ -196,8 +195,6 @@ export function ElementDataSections({
     isSessionButton ||
     isPicker ||
     isDecision ||
-    // Its Tab Window section (Shows, Open) lives in Tools: without this the menu never offered another tab.
-    shapeTarget?.shape === 'tab-window' ||
     !!props.flowchart;
   return (
     <>
@@ -330,14 +327,6 @@ export function ElementDataSections({
           {shapeTarget && isConceptShape(shapeTarget.shape) ? (
             <ConceptMenuSection
               target={shapeTarget as ShapeElement & { shape: ConceptShape }}
-              ops={props.elementStyle}
-              sectionProps={sectionProps}
-            />
-          ) : null}
-          {/* A tab window's tab, and opening it (docs/specs/009-elements/tab-window.md). */}
-          {shapeTarget?.shape === 'tab-window' ? (
-            <TabWindowMenuSection
-              target={shapeTarget}
               ops={props.elementStyle}
               sectionProps={sectionProps}
             />

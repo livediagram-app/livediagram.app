@@ -185,7 +185,7 @@ describe('stores across systems and logins', () => {
 
   it('signs in again when the old token has gone from the keychain, saying it could not revoke it', async () => {
     const { io, kept } = system('linux');
-    const NEW = `lvd_${'c'.repeat(43)}`;
+    const NEW = `lwt_${'c'.repeat(43)}`;
     io.readStdin = async () => NEW;
     const route = (_request: Request, url: URL) =>
       url.pathname === '/api/capabilities'

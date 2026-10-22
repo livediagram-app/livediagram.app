@@ -6,7 +6,7 @@ import {
   flowchartStepTypeOf,
   type Element,
   type ShapeElement,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import type { FlowchartActions } from '@/hooks/canvas/useFlowchartSetters';
 import type { FlowchartStepToolbar } from '@/components/flowchart/FlowchartStepButtons';
 

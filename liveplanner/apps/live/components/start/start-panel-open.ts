@@ -1,5 +1,5 @@
 // Whether a template start panel (Start Diagramming, Start a Workshop) is on screen
-// (docs/specs/007-editor/start-diagramming.md "The tours wait"): the Diagram and Workshop tours hold their offer
+// (docs/specs/007-editor/start-panel.md "The tours wait"): the Diagram and Workshop tours hold their offer
 // until it has gone, so the welcome card never lands over the panel. One panel shows at a time (the active tab's).
 import { useSyncExternalStore } from 'react';
 import { createListeners } from '@/lib/listeners';

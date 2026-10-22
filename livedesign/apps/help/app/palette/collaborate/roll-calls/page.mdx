@@ -1,0 +1,38 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { RollCallCard } from '@/components/illustrations/palette-collaborate';
+
+export const metadata = helpMetadata({
+  title: 'Roll Calls',
+  description:
+    'Freeze who was in the room into the document: minutes rather than a live list, so it still means something tomorrow.',
+  path: '/help/palette/collaborate/roll-calls/',
+});
+
+<ArticleLayout
+  title="Roll Calls"
+  description="Who was in the room, frozen into the document."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  parentArticle={{ title: 'Collaborate elements', slug: 'collaborate' }}
+  subArticles={getSubArticles('collaborate').filter((a) => a.slug !== 'roll-calls')}
+>
+
+A roll call records who was in the room, frozen into the document. It sits in the **Record** group of the palette's **Session** category, one of Workshop mode's [Collaborate](/help/palette/collaborate/) categories. Its label is the card's title; double-click to name the session it records.
+
+## Taking the roll
+
+Press **Take Roll** at the foot of the card and it records everyone present at that moment, you included, and keeps them after they leave. The card shows how many were present, a stack of their avatars, the time it was taken (and the date, if it wasn't today), and everyone as a chip with their name.
+
+<Figure caption="The roll is a snapshot with its own timestamp, not a live list of who is here.">
+  <RollCallCard />
+</Figure>
+
+It is minutes, not a live list, which is why it still means something tomorrow. Names are copied in as they were at that moment, so somebody who later renames themselves or leaves the team still appears under the name they had in the room. Guests count like anyone else, under whatever name they were using.
+
+Taking the roll again (the button then reads **Take Again**) replaces the list rather than adding to it, which is what you want when latecomers arrive.
+
+Taking the roll belongs to the [facilitator](/help/collaboration/facilitator/) while somebody holds that role, and to any editor otherwise. View-only visitors see the roll but can't take it.
+
+</ArticleLayout>

@@ -3,7 +3,7 @@ import {
   expect,
   expectNoPageErrors,
   seedTab,
-  startBlankDocument,
+  startBlankProject,
   test,
   paletteTile,
 } from './fixtures';
@@ -34,7 +34,7 @@ test.describe('Icon weight', () => {
     pageErrors,
   }) => {
     await page.emulateMedia({ colorScheme: 'dark' });
-    await startBlankDocument(page);
+    await startBlankProject(page);
     await seedTab(page, [ICON]);
 
     await expect.poll(() => glyphStroke(page)).toBe('1.25');
@@ -60,7 +60,7 @@ test.describe('Chrome glyph weight', () => {
     pageErrors,
   }) => {
     await page.emulateMedia({ colorScheme: 'dark' });
-    await startBlankDocument(page);
+    await startBlankProject(page);
     const glyph = (await paletteTile(page, 'Add Square')).locator('svg.lvd-glyph').first();
     await expect(glyph).toHaveAttribute('stroke-width', '1.25');
     const child = glyph.locator('> *').first();

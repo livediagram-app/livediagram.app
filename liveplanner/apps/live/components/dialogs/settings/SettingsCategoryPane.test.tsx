@@ -1,8 +1,6 @@
 // @vitest-environment jsdom
-// Desktop-only choice options on a phone (docs/specs/007-editor/toolbar-layout.md): Floating is shown but
-// can't be picked, and a note says why. Toolbar works on a phone too. The
-// drawing under a choice row picks an option when clicked, the same rules.
-// A pick is tracked with the option in the type (docs/specs/017-telemetry/telemetry.md).
+// Desktop-only rows on a phone are shown greyed with a note that says why. A choice pick is
+// tracked with the option in the type (docs/specs/017-telemetry/telemetry.md).
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -13,7 +11,7 @@ vi.mock('@/hooks/ui/useIsMobileViewport', () => ({
 const track = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/telemetry', () => ({ track }));
 
-import { SETTINGS_CATEGORIES } from './settings-catalogue';
+import { SETTINGS_CATEGORIES, type SettingsChoiceRowSpec } from './settings-catalogue';
 import { SettingsCategoryPane } from './SettingsCategoryPane';
 
 afterEach(() => {
@@ -29,56 +27,57 @@ function show(onChange = vi.fn(), category = PANELS) {
   return onChange;
 }
 
-// A whole desktop-only row (the minimap's, docs/specs/008-canvas/minimap.md):
-// a phone never draws the minimap, so its rows are greyed and inert there,
-// with a note, rather than flipping to no visible effect.
+// A whole desktop-only row (Button Labels, docs/specs/007-editor/live-app.md): a phone always
+// shows those buttons as icons, so the row is greyed and inert there, with a note, rather than
+// flipping to no visible effect.
 describe('SettingsCategoryPane desktop-only rows', () => {
-  const MAP = SETTINGS_CATEGORIES.find((c) => c.id === 'map')!;
-  const mapSwitch = () => screen.getByRole('switch', { name: /Enable Map/ });
+  const APPEARANCE = SETTINGS_CATEGORIES.find((c) => c.id === 'appearance')!;
+  const labelsSwitch = () => screen.getByRole('switch', { name: /Button Labels/ });
 
-  it('greys out Enable Map on a phone, says why, and ignores a tap', () => {
+  it('greys out Button Labels on a phone, says why, and ignores a tap', () => {
     mobile.value = true;
-    const onChange = show(vi.fn(), MAP);
-    expect((mapSwitch() as HTMLButtonElement).disabled).toBe(true);
-    expect(mapSwitch().getAttribute('aria-checked')).toBe('true');
+    const onChange = show(vi.fn(), APPEARANCE);
+    expect((labelsSwitch() as HTMLButtonElement).disabled).toBe(true);
+    expect(labelsSwitch().getAttribute('aria-checked')).toBe('true');
     expect(
-      screen.getAllByRole('note').some((n) => /Map is desktop only/.test(n.textContent ?? '')),
+      screen
+        .getAllByRole('note')
+        .some((n) => /Phones always show these buttons/.test(n.textContent ?? '')),
     ).toBe(true);
-    fireEvent.click(mapSwitch());
+    fireEvent.click(labelsSwitch());
     expect(onChange).not.toHaveBeenCalled();
   });
 
-  it('locks the other Map rows on a phone too', () => {
-    mobile.value = true;
-    render(<SettingsCategoryPane category={MAP} settings={{}} onChange={vi.fn()} />);
-    const dim = screen.getByRole('switch', { name: /Dim Outside the View/ }) as HTMLButtonElement;
-    expect(dim.disabled).toBe(true);
-    const sizes = screen
-      .getByRole('radiogroup', { name: 'Map Size' })
-      .querySelectorAll<HTMLButtonElement>('[role="radio"]');
-    expect([...sizes].every((b) => b.disabled)).toBe(true);
-  });
-
-  it('leaves Enable Map working on desktop, with no note', () => {
-    const onChange = show(vi.fn(), MAP);
-    expect((mapSwitch() as HTMLButtonElement).disabled).toBe(false);
-    fireEvent.click(mapSwitch());
-    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ showMinimap: false }));
+  it('leaves Button Labels working on desktop', () => {
+    const onChange = show(vi.fn(), APPEARANCE);
+    expect((labelsSwitch() as HTMLButtonElement).disabled).toBe(false);
+    fireEvent.click(labelsSwitch());
+    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ dockButtonNames: false }));
   });
 });
 
 describe('SettingsCategoryPane telemetry', () => {
   // A choice row names the option picked (docs/specs/017-telemetry/telemetry.md).
   it('tracks which option was picked, not just that it changed', () => {
-    const category = SETTINGS_CATEGORIES.find((c) =>
-      c.rows.some((r) => r.key === 'elementIndicatorStyle'),
-    )!;
-    show(vi.fn(), category);
-    const footer = screen
-      .getByRole('radiogroup', { name: 'Element Indicators' })
+    const choice: SettingsChoiceRowSpec = {
+      kind: 'choice',
+      key: 'sampleChoice',
+      label: 'Sample Size',
+      description: 'A choice row, for the test.',
+      options: [
+        { id: 'short', label: 'Short' },
+        { id: 'tall', label: 'Tall' },
+      ],
+      read: () => 'short',
+      write: (p) => p,
+      event: { category: 'UI', changed: 'SampleSize' },
+    };
+    show(vi.fn(), { id: 'panels', label: 'Panels', rows: [choice] });
+    const tall = screen
+      .getByRole('radiogroup', { name: 'Sample Size' })
       .querySelector('[role="radio"]:nth-child(2)') as HTMLButtonElement;
-    fireEvent.click(footer);
-    expect(track).toHaveBeenCalledWith('UI', 'Changed', 'ElementIndicatorsFooter');
+    fireEvent.click(tall);
+    expect(track).toHaveBeenCalledWith('UI', 'Changed', 'SampleSizeTall');
   });
 });
 
@@ -108,18 +107,18 @@ describe('SettingsCategoryPane: targeting a section', () => {
 
 describe('SettingsCategoryPane link rows', () => {
   it('opens the linked category in place', () => {
-    const ai = SETTINGS_CATEGORIES.find((c) => c.id === 'ai')!;
+    const accessibility = SETTINGS_CATEGORIES.find((c) => c.id === 'accessibility')!;
     const onOpenCategory = vi.fn();
     render(
       <SettingsCategoryPane
-        category={{ ...ai, rows: ai.rows.filter((r) => r.kind === 'link') }}
+        category={{ ...accessibility, rows: accessibility.rows.filter((r) => r.kind === 'link') }}
         settings={{}}
         onChange={vi.fn()}
         onOpenCategory={onOpenCategory}
       />,
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Manage API Tokens' }));
-    expect(onOpenCategory).toHaveBeenCalledWith('tokens');
+    fireEvent.click(screen.getByRole('button', { name: 'Open Appearance' }));
+    expect(onOpenCategory).toHaveBeenCalledWith('appearance');
   });
 });
 

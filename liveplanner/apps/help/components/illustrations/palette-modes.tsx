@@ -3,77 +3,11 @@
 // settings (Auto-Attach Arrows, Alignment Guides, Panel Opacity). Composed only from the shared primitives so the house style
 // holds.
 
-import { Scene, Shape, Arrow, SelectionBox, Panel } from './primitives';
+import { Scene } from './primitives';
 import { IsoCard, iso } from './palette-modes-parts';
 import { PickerTrigger } from './selection-modes';
 
 // --- Mode scenes ------------------------------------------------------------
-
-/** Select mode: the picker set to Select and a shape selected with handles. */
-export function SelectMode() {
-  return (
-    <Scene w={420} h={230}>
-      <PickerTrigger tool="select" />
-      <Shape x={140} y={132} w={120} h={56} kind="rect" label="Step one" labelTone="strong" />
-      <SelectionBox x={140} y={132} w={120} h={56} />
-    </Scene>
-  );
-}
-
-/** Hand mode: the picker set to Hand and a grabbing-hand cursor panning the
- *  canvas (a faint drag trail behind it). */
-export function HandMode() {
-  return (
-    <Scene w={420} h={230}>
-      <PickerTrigger tool="hand" />
-      <Shape x={84} y={108} w={72} h={42} label="A" />
-      <Shape x={252} y={150} w={72} h={42} accent label="B" />
-      <Arrow from={[156, 129]} to={[252, 171]} kind="elbow" tone="muted" />
-      {/* Drag trail */}
-      <path
-        d="M120 188 q40 -16 88 -8"
-        className="stroke-slate-300"
-        strokeWidth={2}
-        fill="none"
-        strokeDasharray="5 5"
-        strokeLinecap="round"
-      />
-      {/* Grabbing-hand cursor */}
-      <g transform="translate(196 150)">
-        <path
-          d="M0 6 v-8 a3 3 0 0 1 6 0 v6 m0 -2 a3 3 0 0 1 6 0 v3 m0 -1 a3 3 0 0 1 6 0 v5 a10 10 0 0 1 -10 10 h-2 a10 10 0 0 1 -9 -7 l-3 -7 a3 3 0 0 1 5 -3 l1 2"
-          className="fill-white stroke-slate-500"
-          strokeWidth={2}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </g>
-    </Scene>
-  );
-}
-
-/** Format Painter mode: the picker set to Format, copying one shape's style
- *  onto another via a brush cursor. */
-export function FormatPainterMode() {
-  return (
-    <Scene w={420} h={220}>
-      <PickerTrigger tool="format" />
-      <Shape x={48} y={120} w={88} h={52} accent label="Source" />
-      <Arrow from={[140, 146]} to={[252, 146]} kind="curved" tone="muted" dashed />
-      <Shape x={262} y={120} w={88} h={52} accent label="Painted" />
-      {/* Brush cursor */}
-      <g transform="translate(196 166)">
-        <rect x={-9} y={-9} width={18} height={11} rx={2} className="fill-brand-500" />
-        <path d="M0 2 v8" className="stroke-slate-500" strokeWidth={2} />
-        <path
-          d="M-4 10 h8 v6 h-8 Z"
-          className="fill-brand-300 stroke-slate-500"
-          strokeWidth={1.5}
-        />
-      </g>
-    </Scene>
-  );
-}
 
 /** Isometric mode: the picker set to Isometric and the same shapes tilted into an
  *  isometric, three-dimensional view. */
@@ -93,57 +27,6 @@ export function IsometricMode() {
       />
       <IsoCard cx={-70} cy={-30} label="A" />
       <IsoCard cx={70} cy={30} accent label="B" />
-    </Scene>
-  );
-}
-
-/** Panel opacity: a corner panel rendered translucent so the canvas content
- *  behind it stays visible. Pairs with the settings popover illustration to
- *  show what the slider does. */
-export function PanelOpacity() {
-  return (
-    <Scene w={400} h={240}>
-      {/* Canvas content the panel floats over. */}
-      <Shape x={54} y={104} w={86} h={52} accent label="A" />
-      <Shape x={54} y={170} w={86} h={52} kind="circle" label="B" />
-      {/* C sits wholly under the panel, in the space below its tiles. */}
-      <Shape x={226} y={140} w={96} h={46} label="C" />
-      {/* The panel at ~60% opacity: the shape behind it stays
-          visible through it. */}
-      <g opacity={0.6}>
-        <Panel x={196} y={42} w={156} h={150} title="AI ASSISTANT">
-          <rect x={210} y={78} width={128} height={10} rx={5} className="fill-slate-200" />
-          <rect x={210} y={100} width={36} height={32} rx={6} className="fill-slate-100" />
-          <rect x={252} y={100} width={36} height={32} rx={6} className="fill-slate-100" />
-          <rect x={294} y={100} width={36} height={32} rx={6} className="fill-slate-100" />
-        </Panel>
-      </g>
-    </Scene>
-  );
-}
-
-/** Auto-attach arrows: the target is dragged from the right of the source to
- *  its left. Kept where they were, the ends would run the line through the
- *  source, so both move to the sides that now face each other. */
-export function AutoAttachArrows() {
-  return (
-    <Scene w={420} h={220}>
-      <Shape x={166} y={86} w={88} h={48} label="Source" />
-      {/* Old position (ghost) and the arrow as it was */}
-      <Shape x={320} y={86} w={88} h={48} dashed fill="fill-slate-50" stroke="stroke-slate-300" />
-      <Arrow from={[254, 110]} to={[320, 110]} tone="muted" dashed />
-      {/* Moved shape; both ends now on the facing sides */}
-      <Shape x={12} y={86} w={88} h={48} accent label="Target" />
-      <Arrow from={[166, 110]} to={[100, 110]} tone="accent" />
-      {/* Move trail, over the top */}
-      <path
-        d="M364 80 Q210 -10 56 80"
-        className="stroke-slate-300"
-        strokeWidth={2}
-        fill="none"
-        strokeDasharray="5 5"
-        strokeLinecap="round"
-      />
     </Scene>
   );
 }

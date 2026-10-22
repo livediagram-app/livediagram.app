@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { isStartCardKey, nextCardIndex } from './start-card-keys';
 
-// docs/specs/007-editor/start-diagramming.md "Keyboard": a grid of three columns, two rows and a lone card below.
+// docs/specs/007-editor/start-panel.md "Keyboard": a grid of three columns, two rows and a lone card below.
 const box = (col: number, row: number) => ({
   left: col * 100,
   top: row * 50,

@@ -3,8 +3,8 @@
 // How a workspace frame moves (docs/specs/013-workspace/blueprints/workbench-embeds.md "The workspace frame", WB57,
 // WB58, WB59): it takes every navigation the Explorer and the editor make (the app's interceptor and a capture of
 // same-origin link clicks), and moves itself with the History API, which the App Router hears; the browser's own
-// back and forward walk the same entries. An Explorer or document href becomes a frame path; the wizard becomes New
-// document in place; anything else opens in a new tab. The frame never loads another page, so its session, held
+// back and forward walk the same entries. An Explorer or project href becomes a frame path; the wizard becomes New
+// project in place; anything else opens in a new tab. The frame never loads another page, so its session, held
 // in memory only, lives on.
 import { useCallback, useLayoutEffect, type RefObject } from 'react';
 import { useLatest } from '@/hooks/ui/useLatest';
@@ -12,30 +12,30 @@ import { setAppNavigationInterceptor } from '@/lib/app-location';
 import { debugLog } from '@/lib/debug-log';
 import {
   framePathOfAppHref,
-  isNewDocumentHref,
+  isNewProjectHref,
   workspaceFramePath,
   workspacePlaceOf,
   type WorkspacePlace,
 } from '@/lib/workbench/workspace-place';
-import { createDocumentInPlace, createInPlaceOf } from './create-in-place';
+import { createProjectInPlace, createInPlaceOf } from './create-in-place';
 
-// The history entry of a document the frame opened carries where it was opened from, so Back returns there.
+// The history entry of a project the frame opened carries where it was opened from, so Back returns there.
 type FrameEntryState = { workbenchFrom?: string };
 
 const currentPath = (win: Window) => `${win.location.pathname}${win.location.search}`;
-const isDocumentPath = (path: string) => path.startsWith('/embed/workbench/document/');
+const isProjectPath = (path: string) => path.startsWith('/embed/workbench/project/');
 
 export type WorkspaceNavigation = {
   // Moves the frame to a place.
   go: (place: WorkspacePlace) => void;
-  // Back to where the open document was opened from, else Home.
+  // Back to where the open project was opened from, else Home.
   back: () => void;
 };
 
 export function useWorkspaceNavigation(opts: {
   rootRef: RefObject<HTMLElement | null>;
   ownerId: string;
-  // The place the frame shows now, for New document's defaults.
+  // The place the frame shows now, for New project's defaults.
   place: WorkspacePlace;
   onCreateFailed: () => void;
   win?: Window;
@@ -49,7 +49,7 @@ export function useWorkspaceNavigation(opts: {
       const from = currentPath(win);
       if (path === from) return;
       const state: FrameEntryState =
-        isDocumentPath(path) && !isDocumentPath(from) ? { workbenchFrom: from } : {};
+        isProjectPath(path) && !isProjectPath(from) ? { workbenchFrom: from } : {};
       if (replace) win.history.replaceState(state, '', path);
       else win.history.pushState(state, '', path);
     },
@@ -59,10 +59,10 @@ export function useWorkspaceNavigation(opts: {
   const createInPlace = useCallback(
     (href: string) => {
       const request = createInPlaceOf(href, win.location.origin, placeRef.current);
-      void createDocumentInPlace(ownerId, request).then(
-        (documentId) =>
+      void createProjectInPlace(ownerId, request).then(
+        (projectId) =>
           move(
-            workspaceFramePath({ kind: 'document', documentId, tabId: null, shareCode: null }),
+            workspaceFramePath({ kind: 'project', projectId, tabId: null, shareCode: null }),
             false,
           ),
         (err: unknown) => {
@@ -80,7 +80,7 @@ export function useWorkspaceNavigation(opts: {
   const navigate = useCallback(
     (href: string, replace: boolean): boolean => {
       const origin = win.location.origin;
-      if (isNewDocumentHref(href, origin)) {
+      if (isNewProjectHref(href, origin)) {
         createInPlace(href);
         return true;
       }

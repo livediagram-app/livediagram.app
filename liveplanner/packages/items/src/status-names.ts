@@ -15,7 +15,7 @@ export function statusKey(name: string): string {
     .replace(/[^\p{L}\p{N}]+/gu, '');
 }
 
-// The status already named `name` among `names` (status id to name, in the document's order), or undefined.
+// The status already named `name` among `names` (status id to name, in the project's order), or undefined.
 export function statusNamed(
   name: string,
   names: Iterable<readonly [string, string]>,
@@ -27,8 +27,8 @@ export function statusNamed(
 }
 
 // The states that share a name (as names compare) with an earlier one, each mapped to that earliest one: what a
-// document merges (docs/specs/026-plan/plan-board.md "One name, one state"). `names` is status id to name in
-// document order (tab order, then board and column order), so every client picks the same state to keep.
+// project merges (docs/specs/026-plan/plan-board.md "One name, one state"). `names` is status id to name in
+// project order (tab order, then board and column order), so every client picks the same state to keep.
 export function duplicateStatuses(names: Iterable<readonly [string, string]>): Map<string, string> {
   const first = new Map<string, string>();
   const merged = new Map<string, string>();

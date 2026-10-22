@@ -4,7 +4,7 @@
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createShape, type Element, type ShapeElement } from '@liveplanner/document';
+import { createShape, type Element, type ShapeElement } from '@liveplanner/project';
 import { BoundaryMenuSection } from './BoundaryMenuSection';
 import type { ElementStyleOps } from '@/lib/element-style-ops';
 

@@ -7,7 +7,7 @@
 import type { CSSProperties } from 'react';
 import { lucideSparkles } from '@liveplanner/icons/lucide';
 import { lucideGlyph } from '@liveplanner/ui';
-import type { PageColourFill } from '@liveplanner/document';
+import type { PageColourFill } from '@liveplanner/project';
 import { fillCss, type BackgroundCategory } from '@/lib/page-paint';
 import { tileClass } from './page-panel-sections';
 

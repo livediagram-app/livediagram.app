@@ -4,7 +4,7 @@
 // tab, drawn at the slot's size and read live from its Sheet (SheetLinkedChart), its last read while the sheet loads
 // or once it is gone. Showing it asks for the sheet's tab, so the read finds it. An Editor changes it from Change
 // Chart in the slot's cog (SlotSection); anyone may look.
-import { CHART_TYPE_LABELS, chartTypeOf, type ShapeElement } from '@liveplanner/document';
+import { CHART_TYPE_LABELS, chartTypeOf, type ShapeElement } from '@liveplanner/project';
 import { DataChartView } from '@/components/canvas/DataChartView';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { SheetLinkedChart } from '@/components/sheets/SheetLinkedChart';

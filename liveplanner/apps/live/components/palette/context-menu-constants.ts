@@ -1,4 +1,4 @@
-import type { BorderRadius, BorderStroke, BorderStyle, ShapeKind } from '@liveplanner/document';
+import type { BorderRadius, BorderStroke, BorderStyle, ShapeKind } from '@liveplanner/project';
 
 // Curated subset of the most common shapes offered for in-place morphing in
 // the context menu's Shape category (the full set lived in the old panel).

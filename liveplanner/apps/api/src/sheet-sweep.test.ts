@@ -18,7 +18,7 @@ const old = now - SHEET_UNREFERENCED_DAYS * DAY - 1;
 const sheetRow = (id: string, since: number | null, cells = 0) =>
   sql.sql
     .prepare(
-      `INSERT INTO sheets (document_id, id, tab_id, title, layout, rev, cell_count, unreferenced_since, created_at, updated_at, updated_by)
+      `INSERT INTO sheets (project_id, id, tab_id, title, layout, rev, cell_count, unreferenced_since, created_at, updated_at, updated_by)
        VALUES ('d1', ?, 't1', ?, '{"rows":[],"cols":[]}', 0, ?, ?, 1, 1, '{}')`,
     )
     .run(id, id, cells, since);
@@ -28,7 +28,7 @@ const ids = () =>
 beforeEach(() => {
   sql = sqliteD1();
   sql.sql.exec(
-    `INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at) VALUES ('d1', 'o', 'D', 0, 1, 1);`,
+    `INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at) VALUES ('d1', 'o', 'D', 0, 1, 1);`,
   );
 });
 
@@ -38,7 +38,7 @@ describe('the sheet expiry', () => {
     sheetRow('recent00', now - DAY);
     sheetRow('expired0', old, 1);
     sql.sql.exec(
-      `INSERT INTO sheet_cells (document_id, sheet_id, row_id, col_id, input) VALUES ('d1', 'expired0', 'r', 'c', '1')`,
+      `INSERT INTO sheet_cells (project_id, sheet_id, row_id, col_id, input) VALUES ('d1', 'expired0', 'r', 'c', '1')`,
     );
     expect(await runSheetExpiry(sql.env, now)).toEqual({ sheets: 1, cells: 1, more: false });
     expect(ids()).toEqual(['kept0000', 'recent00']);

@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import { type BackgroundPattern, type SeasonalBackgroundPattern } from '@liveplanner/document';
+import { type BackgroundPattern, type SeasonalBackgroundPattern } from '@liveplanner/project';
 import {
   BackgroundAuroraIcon,
   BackgroundBlankIcon,

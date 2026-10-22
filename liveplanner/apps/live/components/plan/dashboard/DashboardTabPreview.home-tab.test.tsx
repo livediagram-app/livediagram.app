@@ -2,7 +2,7 @@
 import { cleanup, render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 import { useSheetHomeTab } from '@/components/sheets/sheet-home-tab';
 import { DashboardContext, type DashboardContextValue } from './dashboard-context';
 import { DashboardTabPreview } from './DashboardTabPreview';
@@ -43,8 +43,8 @@ describe('a Sheet tab shown in a slot', () => {
   });
 });
 
-// A Board tab's content arriving after the slot first drew (a dashboard opened afresh: the tab reads as a Diagram
-// until its content and kind arrive) still draws the board.
+// A Board tab's content arriving after the slot first drew (a dashboard opened afresh: the tab has no kind
+// until its content arrives) still draws the board.
 describe('a Board tab whose content arrives after the slot drew', () => {
   it('draws the board once it is there', () => {
     const value = (tab: Tab) =>

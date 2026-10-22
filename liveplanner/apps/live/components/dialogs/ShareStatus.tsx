@@ -1,5 +1,5 @@
 // The Share dialog's status line (docs/specs/007-editor/live-app.md "Layout, top to bottom"): the
-// document's exposure in one phrase, with a dot that is slate while only the
+// project's exposure in one phrase, with a dot that is slate while only the
 // owner can get in, and emerald once any pass is live or it sits in a team library.
 export function ShareStatus({
   passes,
@@ -9,7 +9,7 @@ export function ShareStatus({
   passes: number;
   password: boolean;
   // In a team library: every member can open it, so it is never "only you" (docs/specs/013-workspace/
-  // team-shared-documents.md).
+  // team-shared-projects.md).
   team?: boolean;
 }) {
   const open = passes > 0 || team;

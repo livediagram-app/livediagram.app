@@ -1,59 +1,60 @@
 import { describe, expect, it } from 'vitest';
-import { ELEMENT_FIELD_NAMES } from '@liveplanner/document';
-import { estimateTokens } from '@liveplanner/document-views';
+import { ELEMENT_FIELD_NAMES } from '@liveplanner/project';
+import { estimateTokens } from '@liveplanner/project-views';
 import {
   addableKinds,
   elementFormatText,
   elementKindsText,
   SCHEMA_KIND_MAX_TOKENS,
-  SHAPE_COMMON_FIELDS,
-  SHAPE_KIND_FIELDS,
 } from './element-format';
+import { PLAN_COMMON_FIELDS, PLAN_KIND_FIELDS } from './plan-elements';
 import { parseEditOperations } from './parse';
 
 describe('the element format', () => {
-  it('lists every kind add makes, the arrow, and what only the editor makes', () => {
+  it('lists the kinds a Plan tab holds, and no diagram kind', () => {
     const text = elementKindsText();
-    for (const kind of addableKinds()) expect(text).toContain(kind);
-    expect(text).toContain('arrow: connect <a> -> <b>');
-    expect(text).toContain('image, video, freehand, path: made in the editor');
+    expect(addableKinds()).toEqual([
+      'plan-board',
+      'plan-sheet',
+      'plan-view',
+      'bar-chart',
+      'line-chart',
+      'pie-chart',
+    ]);
+    for (const kind of addableKinds()) expect(text).toContain(`  ${kind}: `);
+    for (const word of ['sticky', 'arrow', 'sankey', 'square', 'connect'])
+      expect(text).not.toContain(word);
   });
 
   it('keeps every kind within its budget', () => {
-    for (const kind of [...addableKinds(), 'arrow'])
+    for (const kind of addableKinds())
       expect(estimateTokens(elementFormatText(kind)!), kind).toBeLessThanOrEqual(
         SCHEMA_KIND_MAX_TOKENS,
       );
   });
 
-  it('gives a kind its add form, first size, aliases with their values, and its own fields', () => {
-    const code = elementFormatText('code-block')!;
-    expect(code).toMatch(
-      /^code-block: a shape\. add code-block \[id=<id>\] key=value… \[<placement>\]\nSize: \d+×\d+ at first/,
-    );
-    expect(code).toContain('fill=theme|');
-    expect(code).toContain('codeLanguage');
-    expect(code).toContain('Any other stored field by name');
-    const sticky = elementFormatText('sticky')!;
-    expect(sticky).toContain('fill=classic|');
-    expect(sticky).not.toContain('Any other stored field');
-    expect(elementFormatText('arrow')).toContain('line=straight|angled|curved');
-    expect(elementFormatText('arrow')).not.toContain('Size:');
+  it("gives a kind its add form and its own fields, a closed field's values included", () => {
+    const view = elementFormatText('plan-view')!;
+    expect(view).toMatch(/^plan-view: a Dashboard's metric or chart/);
+    expect(view).toContain('{"op":"add","element":{"type":"shape","shape":"plan-view",…}}');
+    expect(view).toContain('planView textSize (sm|md|lg');
+    expect(view).toContain('x y width height label locked');
+    expect(elementFormatText('bar-chart')).toContain('chartSource { "sheetId", "range" }');
   });
 
-  it('knows nothing of a kind the engine does not make', () => {
-    expect(elementFormatText('rectangle')).toBeNull();
-    expect(elementFormatText('image')).toBeNull();
+  it('knows nothing of a kind no tab holds', () => {
+    for (const kind of ['rectangle', 'square', 'sticky', 'arrow', 'sankey'])
+      expect(elementFormatText(kind)).toBeNull();
   });
 
-  it('names only stored shape fields, so the map cannot drift', () => {
+  it('names only stored shape fields, so the lists cannot drift', () => {
     const stored = new Set<string>(ELEMENT_FIELD_NAMES.shape);
-    for (const field of [...SHAPE_COMMON_FIELDS, ...Object.values(SHAPE_KIND_FIELDS).flat()])
+    for (const field of [...PLAN_COMMON_FIELDS, ...Object.values(PLAN_KIND_FIELDS).flat()])
       expect(stored.has(field), field).toBe(true);
-    for (const kind of Object.keys(SHAPE_KIND_FIELDS)) expect(addableKinds()).toContain(kind);
   });
 
   it('teaches an add form the parser reads', () => {
-    expect(parseEditOperations('add code-block id=c code="x = 1"')).toHaveProperty('operations');
+    const line = '{"op":"add","element":{"type":"shape","shape":"plan-view"}}';
+    expect(parseEditOperations(line)).toHaveProperty('operations');
   });
 });

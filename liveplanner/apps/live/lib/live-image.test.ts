@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { liveImageHtml, liveImageMarkdown, liveImageUrlFor } from './live-image';
 
-describe('live-image builders (docs/specs/013-workspace/live-image-share.md + docs/specs/006-document/document-snapshots.md)', () => {
+describe('live-image builders (docs/specs/013-workspace/live-image-share.md + docs/specs/006-project/project-snapshots.md)', () => {
   const origin = 'https://liveplanner.app';
 
   it('builds the same-origin /api share-image URL', () => {

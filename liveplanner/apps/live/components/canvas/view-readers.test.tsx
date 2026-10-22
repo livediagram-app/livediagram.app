@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 // docs/specs/029-sheets/sheet.md "Zoom": while a Sheet covers the canvas the corner zoom controls zoom its cells, Fit
-// back to 100%; a board or view covering it turns them off; nothing covering, they zoom the canvas.
+// back to 100%; on any other tab there are no zoom buttons.
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ViewZoomControls } from './view-readers';
@@ -24,12 +24,11 @@ const handlers = () => ({
 });
 
 describe('ViewZoomControls', () => {
-  it('zooms the canvas when nothing covers it', () => {
-    const h = handlers();
-    render(<ViewZoomControls {...h} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Zoom in' }));
-    expect(h.onZoomIn).toHaveBeenCalled();
-    expect(getSheetZoom()).toBe(1);
+  it('shows no zoom buttons off a Sheet', () => {
+    render(<ViewZoomControls {...handlers()} />);
+    expect(screen.queryByRole('button', { name: 'Zoom in' })).toBeNull();
+    act(() => setPlanCover({ fillTabId: 'b', fillTabKind: 'Board' }));
+    expect(screen.queryByRole('button', { name: 'Zoom in' })).toBeNull();
   });
 
   it('zooms a covering Sheet’s cells instead, Fit putting it back to 100%', () => {
@@ -51,7 +50,7 @@ describe('ViewZoomControls', () => {
     act(() => setSheetZoom(1.5));
     act(() => setPlanCover({ fillTabId: 'b', fillTabKind: 'Board' }));
     expect(getSheetZoom()).toBe(1);
-    // A board covering it: off.
-    expect(screen.getByRole('button', { name: 'Zoom in' })).toHaveProperty('disabled', true);
+    // A board covering it: no zoom buttons.
+    expect(screen.queryByRole('button', { name: 'Zoom in' })).toBeNull();
   });
 });

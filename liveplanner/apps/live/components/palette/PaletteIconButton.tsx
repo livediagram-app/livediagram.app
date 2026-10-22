@@ -1,4 +1,4 @@
-import { SHAPE_DEFAULT_SIZE, type ShapeKind } from '@liveplanner/document';
+import { SHAPE_DEFAULT_SIZE, type ShapeKind } from '@liveplanner/project';
 import { planViewSize } from '@liveplanner/items';
 import { PALETTE_DND_MIME } from '@/lib/icons';
 import { setPaletteDragPreview, suppressNativeDragImage } from '@/lib/palette-drag-preview';
@@ -326,7 +326,7 @@ export function useTileGlyph({
         ...(tintFill ? { '--tile-fill': tintFill } : {}),
       }
     : undefined;
-  const finishClass = finishAction ? paletteFinishClass(tabFinish, finishAction) : '';
+  const finishClass = finishAction ? paletteFinishClass(tabFinish) : '';
   const glyphClass = `${tintFill ? 'palette-tile-filled ' : ''}${finishClass ? `${finishClass} ` : ''}`;
   return { glyphStyle, glyphClass };
 }

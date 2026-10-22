@@ -1,13 +1,13 @@
 // Live app worker. Wraps the static-export assets binding with a
-// single path rewrite: any `/document/<anything>` request serves the
+// single path rewrite: any `/project/<anything>` request serves the
 // single placeholder HTML built by Next.js, and the client extracts
-// the real document id from `window.location.pathname`. See docs/specs/007-editor/new-document-route.md
+// the real project id from `window.location.pathname`. See docs/specs/007-editor/new-project-route.md
 // for why we can't enumerate user-minted ids at build time.
 
 import { TRUSTED_TYPES_CSP } from '@liveplanner/ui/trusted-types';
 
 type AssetsBinding = { fetch: (request: Request) => Promise<Response> };
-// API is optional: the share page's link preview (./share-page.ts) asks it for the document's name, and without it
+// API is optional: the share page's link preview (./share-page.ts) asks it for the project's name, and without it
 // the page is served as built.
 type Env = { ASSETS: AssetsBinding; API?: Fetcher };
 
@@ -19,7 +19,7 @@ type Env = { ASSETS: AssetsBinding; API?: Fetcher };
 //   - X-Content-Type-Options nosniff: stop the browser sniffing a
 //     mistyped response into an executable type.
 //   - Referrer-Policy strict-origin-when-cross-origin: URLs carry
-//     document ids in the path; don't leak full paths to third-party
+//     project ids in the path; don't leak full paths to third-party
 //     sites the user might click out to.
 //   - Permissions-Policy: deny every powerful feature the editor
 //     doesn't use (camera / mic / geolocation / payment / USB) so a
@@ -35,7 +35,7 @@ type Env = { ASSETS: AssetsBinding; API?: Fetcher };
 //
 //   - Content-Security-Policy: Trusted Types alone, enforced
 //     (docs/specs/016-platform/trusted-types.md). The rest of a CSP
-//     (script-src for Clerk's external script, the api / R2 origins)
+//     (script-src, the api / R2 origins)
 //     is out of that spec's scope.
 const SECURITY_HEADERS: Record<string, string> = {
   'Content-Security-Policy': TRUSTED_TYPES_CSP,
@@ -80,18 +80,18 @@ export default {
     if (url.pathname === '/explorer' || url.pathname === '/explorer/') {
       return Response.redirect(`${url.origin}${EXPLORER_LANDING_PATH}`, 302);
     }
-    // `/document` (and the editor's address before the rename, see ../lib/legacy-editor-path) shares one HTML file. We
+    // `/project` (and the editor's address before the rename, see ../lib/legacy-editor-path) shares one HTML file. We
     // rewrite the request rather than redirect so the browser URL
-    // stays `/document/<id>` (that's the whole point of the path
+    // stays `/project/<id>` (that's the whole point of the path
     // scheme).
     if (isEditorPath(url.pathname)) {
       // Skip if the request already points at the placeholder asset
       // (otherwise we'd loop). Static Assets resolves the extension.
-      if (url.pathname !== '/document/placeholder') {
+      if (url.pathname !== '/project/placeholder') {
         const rewritten = new URL(request.url);
-        rewritten.pathname = '/document/placeholder';
+        rewritten.pathname = '/project/placeholder';
         const shell = () => env.ASSETS.fetch(new Request(rewritten.toString(), request));
-        // A share link's page names its document for link previews (docs/specs/013-workspace/share-link-previews.md).
+        // A share link's page names its project for link previews (docs/specs/013-workspace/share-link-previews.md).
         if (isSharePagePath(url.pathname)) {
           return withSecurityHeaders(await sharePage(request, env.API, shell));
         }
@@ -99,7 +99,7 @@ export default {
       }
     }
     // A form link's page (docs/specs/030-forms/forms.md): one placeholder file backs every /form/<code>, as
-    // /document/<id> is backed above.
+    // /project/<id> is backed above.
     if (isFormPath(url.pathname) && url.pathname !== FORM_PLACEHOLDER_PATH) {
       const rewritten = new URL(request.url);
       rewritten.pathname = FORM_PLACEHOLDER_PATH;

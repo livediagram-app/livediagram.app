@@ -1,6 +1,6 @@
 // Team + invite events (docs/specs/013-workspace/timeline.md §4.4).
 //
-// Teams are Clerk-only (docs/specs/013-workspace/teams.md), so nothing here ever reaches a guest
+// Teams are signed-in only (docs/specs/013-workspace/teams.md), so nothing here ever reaches a guest
 // scope. Team events go to the whole joined team rather than just the
 // actor: "who is in this with me" is the question these answer, and it
 // is a question every member has.
@@ -281,7 +281,7 @@ export async function recordTeamDeleted(
       title: 'Team Deleted',
       description: team.name,
       // No teamId, so the row can't link at a team that no longer
-      // exists — the same structural guard the document tombstone uses.
+      // exists — the same structural guard the project tombstone uses.
       snapshot: { teamName: team.name },
     },
     audience,

@@ -34,5 +34,5 @@ A web worker has no `localStorage`, so in a production build its own trace lines
 
 The end-to-end suite runs the production build, so its fixture sets the debug flag (`*`) on every
 page of every browser context it creates. Specs that wait for a trace line (the arrow rebind's
-`[arrow-rebind] trigger`, the photo reader's `[photo-…]`) see it exactly as before, while a real
+`[arrow-rebind] trigger`) see it exactly as before, while a real
 production page never writes it.

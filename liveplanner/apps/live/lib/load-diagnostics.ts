@@ -1,9 +1,9 @@
 // The diagnostics report a person copies from the load-error screen (docs/specs/007-editor/load-recovery.md
-// "Diagnostics"). Identifiers and states only, never document content. Two credentials are kept out on
+// "Diagnostics"). Identifiers and states only, never project content. Two credentials are kept out on
 // purpose: a share code (the path's `?s=` is reported as "share link: yes") and a full guest id (an
 // `X-Owner-Id` credential; @liveplanner/ui's identity lines carry only its first 8 characters).
 
-import { isClerkIdShape } from '@liveplanner/api-schema';
+import { isAccountIdShape } from '@liveplanner/api-schema';
 import {
   formatBrowserChecks,
   formatBrowserIdentity,
@@ -26,10 +26,10 @@ export type DiagnosticsInput = {
   identity: BrowserIdentity;
 };
 
-// The shared identity lines, with the account the editor resolved: a Clerk-shaped owner id is the
+// The shared identity lines, with the account the editor resolved: a account-shaped owner id is the
 // signed-in account (not a credential on its own), anything else is the guest the lines already cover.
 function identityLines(input: DiagnosticsInput): string[] {
-  const account = input.ownerId && isClerkIdShape(input.ownerId) ? input.ownerId : null;
+  const account = input.ownerId && isAccountIdShape(input.ownerId) ? input.ownerId : null;
   return formatBrowserIdentity(input.identity, account);
 }
 

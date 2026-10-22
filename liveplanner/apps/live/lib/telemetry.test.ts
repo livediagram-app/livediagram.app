@@ -24,7 +24,7 @@ import { titleCaseType } from './telemetry';
 const mockedReadPrefs = vi.mocked(readUserPreferences);
 
 // Capture fetch + sendBeacon so we can assert (or not assert) that
-// they fire. window + document + navigator are stubbed per test so
+// they fire. window + project + navigator are stubbed per test so
 // the module's "is the browser there?" guards see what we want.
 const fetchMock = vi.fn();
 const sendBeaconMock = vi.fn();
@@ -155,10 +155,11 @@ describe('track gate', () => {
     await vi.runAllTimersAsync();
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(fetchMock).toHaveBeenCalledWith(
-      '/api/events',
+      'https://liveworkspace.app/api/telemetry/events',
       expect.objectContaining({
         method: 'POST',
         body: JSON.stringify({
+          app: 'liveplanner.app',
           events: [{ category: 'Element', action: 'Added', type: 'Square' }],
         }),
       }),
@@ -185,9 +186,10 @@ describe('track gate', () => {
     vi.advanceTimersByTime(10_001);
     await vi.runAllTimersAsync();
     expect(fetchMock).toHaveBeenCalledWith(
-      '/api/events',
+      'https://liveworkspace.app/api/telemetry/events',
       expect.objectContaining({
         body: JSON.stringify({
+          app: 'liveplanner.app',
           events: [{ category: 'Session', action: 'Joined', type: null }],
         }),
       }),

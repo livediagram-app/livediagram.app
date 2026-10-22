@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { ShareStatus } from './ShareStatus';
 
-// docs/specs/007-editor/live-app.md "Layout, top to bottom": the status line states the document's exposure.
+// docs/specs/007-editor/live-app.md "Layout, top to bottom": the status line states the project's exposure.
 describe('ShareStatus', () => {
   const line = () => screen.getByRole('status').textContent;
 
@@ -19,7 +19,7 @@ describe('ShareStatus', () => {
     );
   });
 
-  it('never calls a team document private: every member can open it', () => {
+  it('never calls a team project private: every member can open it', () => {
     const { rerender } = render(<ShareStatus passes={0} password={false} team />);
     expect(line()).toBe('Team: every member of the team can open it.');
     rerender(<ShareStatus passes={1} password={false} team />);

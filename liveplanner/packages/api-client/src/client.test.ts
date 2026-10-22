@@ -23,11 +23,11 @@ describe('createApiClient', () => {
     const api = createApiClient({
       baseUrl: base,
       fetch,
-      headers: () => ({ Authorization: 'Bearer lvd_x' }),
+      headers: () => ({ Authorization: 'Bearer lwt_x' }),
     });
-    expect(await api.json('/documents', { method: 'POST', body: '{}' })).toEqual({ ok: 1 });
-    expect(seen[0]!.url).toBe(`${base}/documents`);
-    expect(seen[0]!.headers.get('Authorization')).toBe('Bearer lvd_x');
+    expect(await api.json('/projects', { method: 'POST', body: '{}' })).toEqual({ ok: 1 });
+    expect(seen[0]!.url).toBe(`${base}/projects`);
+    expect(seen[0]!.headers.get('Authorization')).toBe('Bearer lwt_x');
     expect(seen[0]!.headers.get('Content-Type')).toBe('application/json');
     await api.fetch('/plain', {
       method: 'PUT',

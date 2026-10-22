@@ -1,30 +1,30 @@
-// Offline Mode's storage backend (docs/specs/006-document/offline-mode.md): one IndexedDB object
-// store of document records, behind a small interface so tests swap in an in-memory map. The
+// Offline Mode's storage backend (docs/specs/006-project/offline-mode.md): one IndexedDB object
+// store of project records, behind a small interface so tests swap in an in-memory map. The
 // record shape and every operation on it live in ./offline-store.ts.
 
 import { upgradeStores } from './legacy-offline-store';
 import { INDEXED_DB_PROBE_TIMEOUT_MS } from '@liveplanner/ui';
-import type { OfflineDocumentRecord } from './offline-store';
+import type { OfflineProjectRecord } from './offline-store';
 
 const DB_NAME = 'liveplanner-offline';
-// Version 2 renamed the object store (docs/specs/006-document/offline-mode.md);
+// Version 2 renamed the object store (docs/specs/006-project/offline-mode.md);
 // ./legacy-offline-store moves every record across.
 const DB_VERSION = 2;
-const STORE = 'documents';
+const STORE = 'projects';
 
 // What a read-modify-write gets: the stored record (undefined when there is none), and what it
 // answers: the record to store, 'delete' to remove it, or undefined to write nothing. Synchronous, because IndexedDB
 // commits a transaction the moment it is left with no pending request; a throw writes nothing
 // and rejects the update with the thrown error.
 export type OfflineRecordChange = (
-  rec: OfflineDocumentRecord | undefined,
-) => OfflineDocumentRecord | 'delete' | undefined;
+  rec: OfflineProjectRecord | undefined,
+) => OfflineProjectRecord | 'delete' | undefined;
 
 export type OfflineBackend = {
-  get(id: string): Promise<OfflineDocumentRecord | undefined>;
-  put(rec: OfflineDocumentRecord): Promise<void>;
+  get(id: string): Promise<OfflineProjectRecord | undefined>;
+  put(rec: OfflineProjectRecord): Promise<void>;
   delete(id: string): Promise<void>;
-  all(): Promise<OfflineDocumentRecord[]>;
+  all(): Promise<OfflineProjectRecord[]>;
   // The read and the write in ONE transaction, so another browser tab's write cannot land between
   // them and be overwritten (two transactions let it: the module's write chain only orders this tab).
   update(id: string, change: OfflineRecordChange): Promise<void>;
@@ -38,7 +38,7 @@ function idbRequest<T>(req: IDBRequest<T>): Promise<T> {
 }
 
 // How long opening the store may take (docs/specs/007-editor/load-recovery.md "The load always ends").
-// Every document load asks the store first, so a browser whose IndexedDB never answers `open` used to
+// Every project load asks the store first, so a browser whose IndexedDB never answers `open` used to
 // hold the load on the opening screen forever. Shared with the browser checks' probe so the
 // diagnostics report the same limit the load uses.
 export const OFFLINE_STORE_OPEN_TIMEOUT_MS = INDEXED_DB_PROBE_TIMEOUT_MS;
@@ -106,7 +106,7 @@ async function idbUpdate(id: string, change: OfflineRecordChange): Promise<void>
       const tx = db.transaction(STORE, 'readwrite');
       const store = tx.objectStore(STORE);
       let thrown: { err: unknown } | null = null;
-      const read = store.get(id) as IDBRequest<OfflineDocumentRecord | undefined>;
+      const read = store.get(id) as IDBRequest<OfflineProjectRecord | undefined>;
       read.onsuccess = () => {
         try {
           const next = change(read.result);
@@ -127,10 +127,10 @@ async function idbUpdate(id: string, change: OfflineRecordChange): Promise<void>
 }
 
 const indexedDbBackend: OfflineBackend = {
-  get: (id) => run('readonly', (s) => s.get(id) as IDBRequest<OfflineDocumentRecord | undefined>),
+  get: (id) => run('readonly', (s) => s.get(id) as IDBRequest<OfflineProjectRecord | undefined>),
   put: (rec) => run('readwrite', (s) => s.put(rec)).then(() => undefined),
   delete: (id) => run('readwrite', (s) => s.delete(id)).then(() => undefined),
-  all: () => run('readonly', (s) => s.getAll() as IDBRequest<OfflineDocumentRecord[]>),
+  all: () => run('readonly', (s) => s.getAll() as IDBRequest<OfflineProjectRecord[]>),
   update: idbUpdate,
 };
 

@@ -1,4 +1,4 @@
-import { contrastRatio } from '@liveplanner/document';
+import { contrastRatio } from '@liveplanner/project';
 import { describe, expect, it } from 'vitest';
 import { PARTICIPANT_COLORS } from './identity';
 import { IDENTITY_FILL, identityDeep, identityVars } from '@liveplanner/ui';

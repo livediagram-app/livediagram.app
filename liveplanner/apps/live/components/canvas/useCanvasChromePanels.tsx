@@ -6,14 +6,13 @@ import { useStableCallbacks } from '@/hooks/ui/useStableCallbacks';
 import { participantKey } from '@/lib/identity';
 import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import type { PanelId } from '@/lib/panel-layout';
-import { CanvasAiPanel } from './CanvasAiPanel';
 import { LazyExplorer } from '@/components/panels/LazyExplorer';
 import type { CanvasChromeProps } from './CanvasChrome';
 import { useCanvasToolPanels } from './useCanvasToolPanels';
 import { stripSegmentGone, type SessionStripTools } from './SessionClusterStrip';
 import { useWithheldExplorerCloses } from './useWithheldExplorerCloses';
 
-// Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a document without
+// Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a project without
 // Plan pays nothing for it.
 const CardFinderPanel = dynamic(
   () => import('@/components/plan/CardFinderPanel').then((m) => m.CardFinderPanel),
@@ -33,7 +32,7 @@ const CardTypesPanel = dynamic(
 
 // Lazy-load CommentsPanel: only mounts when the active tab has at
 // least one element with comments. It stacks below the Palette (the
-// top-right panel). Most documents never accumulate comments, so deferring
+// top-right panel). Most projects never accumulate comments, so deferring
 // the 164-line panel + its relative-time formatting
 // dependencies keeps the editor's initial chunk lean.
 const CollaboratePanel = dynamic(
@@ -94,13 +93,12 @@ export function useCanvasChromePanels({
   const {
     activeDockAnchor,
     activeDockPanel,
-    aiPanel,
     actionRows,
     commentRows,
     commentsPanelPosition,
-    currentDocumentId,
-    documentList,
-    documentListLoading,
+    currentProjectId,
+    projectList,
+    projectListLoading,
     elements,
     folders,
     userPreferences,
@@ -117,20 +115,20 @@ export function useCanvasChromePanels({
     onPrevVoteResult,
     onDoneVoteReview,
     onCreateFolder,
-    onDeleteDocument,
+    onDeleteProject,
     onDeleteFolder,
     onDismissShared,
-    onDuplicateDocument,
+    onDuplicateProject,
     onMoveCommentsPanel,
-    onMoveDocumentToFolder,
-    onMoveDocumentTo,
+    onMoveProjectToFolder,
+    onMoveProjectTo,
     onLibraryChanged,
-    onNewDocument,
+    onNewProject,
     explorerMenuActions,
     onOpenActionForElement,
     onToggleActionDone,
     onOpenCommentsForElement,
-    onOpenDocument,
+    onOpenProject,
     onRenameCurrent,
     onRenameFolder,
     onTeamFolders,
@@ -140,10 +138,8 @@ export function useCanvasChromePanels({
     selfParticipant,
     setActiveDockAnchor,
     setActiveDockPanel,
-    settings,
-    sharedDocuments,
-    tabName,
-    teamDocuments,
+    sharedProjects,
+    teamProjects,
     teamFolders,
     teams,
     zenMode,
@@ -156,16 +152,16 @@ export function useCanvasChromePanels({
   // mid-drag, and EditorView memoises the `teams` array.)
   const explorerHandlers = useStableCallbacks({
     onDismissShared,
-    onOpenDocument,
-    onNewDocument,
+    onOpenProject,
+    onNewProject,
     onRenameCurrent,
-    onDeleteDocument,
-    onDuplicateDocument,
+    onDeleteProject,
+    onDuplicateProject,
     onCreateFolder,
     onRenameFolder,
     onDeleteFolder,
-    onMoveDocumentToFolder,
-    onMoveDocumentTo,
+    onMoveProjectToFolder,
+    onMoveProjectTo,
     onLibraryChanged,
     onMenuShare: explorerMenuActions?.onShare,
     onMenuExport: explorerMenuActions?.onExport,
@@ -201,7 +197,6 @@ export function useCanvasChromePanels({
     commentsPanelPosition,
     onResetCommentsPanel,
   );
-  const aiWiring = aiPanel ? panelWiringFor('ai', aiPanel.position, aiPanel.onReset) : null;
   // The Card Types popover, and the Plan strip's others, over their buttons.
   const cardTypesOpen = activeDockPanel === 'card-types';
   const trashOpen = activeDockPanel === 'plan-trash';
@@ -227,30 +222,30 @@ export function useCanvasChromePanels({
         onToggleFavourite={onToggleFavourite}
         // A popover under the menu button (docs/specs/007-editor/toolbar-layout.md): never placed or dragged.
         position={null}
-        documents={documentList}
+        projects={projectList}
         ownerId={selfParticipant?.id ?? null}
         folders={folders}
-        loading={documentListLoading}
-        shared={sharedDocuments}
+        loading={projectListLoading}
+        shared={sharedProjects}
         teams={teams}
         teamFolders={teamFolders}
-        teamDocuments={teamDocuments}
+        teamProjects={teamProjects}
         onDismissShared={explorerHandlers.onDismissShared}
-        currentDocumentId={currentDocumentId}
+        currentProjectId={currentProjectId}
         onMoveTo={NO_MOVE}
-        onOpenDocument={explorerHandlers.onOpenDocument}
-        onNewDocument={explorerHandlers.onNewDocument}
+        onOpenProject={explorerHandlers.onOpenProject}
+        onNewProject={explorerHandlers.onNewProject}
         menuActions={explorerMenu}
         onRenameCurrent={explorerHandlers.onRenameCurrent}
-        onDeleteDocument={explorerHandlers.onDeleteDocument}
+        onDeleteProject={explorerHandlers.onDeleteProject}
         onLibraryChanged={explorerHandlers.onLibraryChanged}
-        onDuplicateDocument={explorerHandlers.onDuplicateDocument}
+        onDuplicateProject={explorerHandlers.onDuplicateProject}
         onCreateFolder={explorerHandlers.onCreateFolder}
         onRenameFolder={explorerHandlers.onRenameFolder}
         onDeleteFolder={explorerHandlers.onDeleteFolder}
         onTeamFolders={onTeamFolders}
-        onMoveDocumentToFolder={explorerHandlers.onMoveDocumentToFolder}
-        onMoveDocumentTo={onMoveDocumentTo ? explorerHandlers.onMoveDocumentTo : undefined}
+        onMoveProjectToFolder={explorerHandlers.onMoveProjectToFolder}
+        onMoveProjectTo={onMoveProjectTo ? explorerHandlers.onMoveProjectTo : undefined}
         popoverOpen={explorerOpen}
         popoverAnchor={activeDockAnchor ?? undefined}
         asPopover
@@ -289,11 +284,6 @@ export function useCanvasChromePanels({
         dismissOnOutside
         onPopoverClose={closeDockPanel}
       />
-    ) : null;
-
-  const aiEl =
-    !chromeHidden && aiPanel && aiWiring ? (
-      <CanvasAiPanel aiPanel={aiPanel} wiring={aiWiring} tabName={tabName} settings={settings} />
     ) : null;
 
   // The Session strip's popovers (docs/specs/012-collaboration/session-tools.md "The Session strip"). A
@@ -362,7 +352,6 @@ export function useCanvasChromePanels({
   const panelEls: Partial<Record<PanelId, ReactNode>> = {
     // Collaborate renders outside the corner layer (collaborateEl, below).
     collaborate: null,
-    ai: aiEl,
     format: formatEl,
   };
   return {

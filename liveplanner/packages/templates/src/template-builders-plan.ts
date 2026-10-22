@@ -11,7 +11,7 @@ import {
   type Element,
   type ShapeElement,
   type Tab,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { CARD_FIELDS, presetSetup, type PlanBoardSetup } from '@liveplanner/items';
 import { dashboardLayoutOf, dashboardViewElements } from './dashboard-builder';
 import {

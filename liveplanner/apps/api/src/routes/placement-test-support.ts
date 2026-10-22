@@ -7,10 +7,10 @@ import type { SqliteD1 } from '../test-sqlite-d1';
 
 const PLACEMENT_T0 = 1_700_000_000_000;
 
-/** A signed-in caller: the hybrid owner and the verified id are the same Clerk id. */
-export const asUser = (userId: string) => ({ owner: userId, clerkUserId: userId });
+/** A signed-in caller: the hybrid owner and the verified id are the same account id. */
+export const asUser = (userId: string) => ({ owner: userId, accountUserId: userId });
 /** A guest: only the X-Owner-Id identity, nothing verified. */
-export const asGuest = (guestId: string) => ({ owner: guestId, clerkUserId: null });
+export const asGuest = (guestId: string) => ({ owner: guestId, accountUserId: null });
 
 export function seedTeam(
   db: SqliteD1,
@@ -44,10 +44,10 @@ export function seedFolder(
     .run(id, ownerId, teamId, `Folder ${id}`, PLACEMENT_T0, PLACEMENT_T0);
 }
 
-/** Where a document was filed, or undefined when nothing was written. */
+/** Where a project was filed, or undefined when nothing was written. */
 export function storedPlacement(db: SqliteD1, id = 'd1') {
   return db.sql
-    .prepare('SELECT owner_id, folder_id, team_id FROM documents WHERE id = ?')
+    .prepare('SELECT owner_id, folder_id, team_id FROM projects WHERE id = ?')
     .get(id) as { owner_id: string; folder_id: string | null; team_id: string | null } | undefined;
 }
 

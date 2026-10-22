@@ -14,7 +14,7 @@ Every product studied treats **running a session** as a separate axis from the a
 on (Lucid's facilitator, Parabol's facilitator, Miro's "who can start collaboration tools"), not a rung on the
 ladder. **Taking part** is where they diverge. Canvas tools either demand edit access to vote (FigJam, Miro's
 estimation app) or let every board user vote, viewers included (Miro voting). Audience tools (Mentimeter, Slido,
-Kahoot, Miro Engage) let anyone holding a code take part with no document access at all, and put their abuse
+Kahoot, Miro Engage) let anyone holding a code take part with no project access at all, and put their abuse
 controls on the **session** (passcode, sign-in, one response per device, a rotating join pattern) rather than on a
 role. liveplanner today sits awkwardly between the two: a view link can answer a poll, post and upvote on the Q&A
 board, comment and react, but cannot place a dot, estimate, take a temperature, drop an idea, mark itself done or
@@ -37,7 +37,7 @@ own** answer, which today nothing enforces.
 | **Parabol**                  | Any team Member can "start and facilitate a meeting" ([Roles on Parabol](https://www.parabol.co/support/roles-on-parabol/)); "anyone can press the Start Meeting button and take the facilitator role", and rotating it is recommended ([Sprint poker meetings](https://www.parabol.co/resources/sprint-poker-meetings/)).                                                                                                                                                                  | Team members.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Not related.                                                                                                                                                                                                                                                                                                                                               |
 | **Google Drive**             | No sessions.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | No sessions.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | The reference ladder: Viewer, Commenter, Editor, and **Owner** as a separate row (only the owner changes permissions unconditionally) ([Share files from Google Drive](https://support.google.com/docs/answer/2494822?hl=en-GB)).                                                                                                                          |
 | **Mentimeter**               | Presenters and editors.                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | The audience, by code. "Anonymous by default, identified by choice"; "by default, your participants can only respond once per device" ([Identity settings](https://help.mentimeter.com/en/articles/10774022-choosing-participant-identity-settings-for-your-use-case), [Once per device](https://help.mentimeter.com/en/articles/465597-can-i-let-the-audience-respond-several-times-per-device)). Required login "prevents double-voting" while keeping names hidden.                                                                  | Not related.                                                                                                                                                                                                                                                                                                                                               |
-| **Slido**                    | Hosts, co-hosts and moderators.                                                                                                                                                                                                                                                                                                                                                                                                                                                             | The audience, by code. Optional passcode, required name or email, Google or SAML sign-in ([Secure your slido](https://community.slido.com/setting-up-a-slido-82/secure-your-slido-491), [Participant SSO](https://community.slido.com/authentication-identity-management-241/how-to-set-up-participant-sso-6356)); anonymous or named by default, set by the host ([Participant privacy](https://community.slido.com/setting-up-a-slido-event-82/participant-privacy-set-anonymous-or-named-questions-and-poll-votes-by-default-1609)). | Q&A **is** the participation; there is no document to comment on.                                                                                                                                                                                                                                                                                          |
+| **Slido**                    | Hosts, co-hosts and moderators.                                                                                                                                                                                                                                                                                                                                                                                                                                                             | The audience, by code. Optional passcode, required name or email, Google or SAML sign-in ([Secure your slido](https://community.slido.com/setting-up-a-slido-82/secure-your-slido-491), [Participant SSO](https://community.slido.com/authentication-identity-management-241/how-to-set-up-participant-sso-6356)); anonymous or named by default, set by the host ([Participant privacy](https://community.slido.com/setting-up-a-slido-event-82/participant-privacy-set-anonymous-or-named-questions-and-poll-votes-by-default-1609)). | Q&A **is** the participation; there is no project to comment on.                                                                                                                                                                                                                                                                                          |
 | **Kahoot**                   | The host.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | Anyone with the game PIN. Against a leaked PIN the host can enable **2-Step Join**, a pattern that changes every few seconds on the host's screen; the host can remove a player; a nickname generator and a filter curb abusive names ([Inappropriate nicknames](https://support.kahoot.com/hc/en-us/articles/115002201267-How-to-handle-inappropriate-nicknames)).                                                                                                                                                                     | Not related.                                                                                                                                                                                                                                                                                                                                               |
 
 Not verified, and so not claimed: **Mural** (its help centre renders client-side and could not be retrieved, nor
@@ -52,9 +52,9 @@ with a browser could fill these in; nothing below depends on them.
    member take it; Miro lets the owner narrow who may start tools, while everyone may use them. Nobody models the
    facilitator as a fourth access level. liveplanner's baton
    (Facilitator) is already this pattern.
-2. **Two families answer "who takes part" differently.** Canvas tools tie it to the document role, and when they
+2. **Two families answer "who takes part" differently.** Canvas tools tie it to the project role, and when they
    want an audience they **widen the role temporarily** (FigJam's open session). Audience tools detach it from the
-   document altogether: a code gets you into the activity, not the board (Mentimeter, Slido, Kahoot, Miro Engage).
+   project altogether: a code gets you into the activity, not the board (Mentimeter, Slido, Kahoot, Miro Engage).
 3. **Viewers voting is normal; viewers commenting is not.** Miro lets viewers vote but not comment; FigJam lets
    open-session visitors vote but not comment. So the industry does **not** treat voting as a kind of commenting;
    it treats a vote as the lighter act, a bounded answer to a question someone else asked, whereas a comment is an
@@ -75,7 +75,7 @@ write, and they disagree in effect though each is coherent on its own:
 - **Presence-class ops** relay from any role (`PRESENCE_OP_KINDS`, `packages/api-schema/src/room-messages.ts`).
   `poll-answer` was placed there on purpose, because "audiences are usually on view links"
   (Live poll).
-- **Mutation-class ops** relay only from `edit` (`apps/api/src/document-room.ts:663`). A dot (`vote`) and every
+- **Mutation-class ops** relay only from `edit` (`apps/api/src/project-room.ts:663`). A dot (`vote`) and every
   `el-delta` (estimate, temperature, Done check, quiz pick, idea) are mutations, so a viewer cannot cast them
   ([Session tools](../../specs/012-collaboration/session-tools.md#roles),
   [Per-participant responses](../../specs/012-collaboration/participant-responses.md)).
@@ -152,7 +152,7 @@ Widening participation to a level beneath Editor changes who can reach each of t
 holds today and what a Participant level would expose.
 
 1. **A participant writes somebody else's answer.** The `response` delta carries a client-supplied `participantId`
-   (`packages/document/src/element-deltas.ts:45`), and the `vote` op a client-supplied `voter`. Collab keys are
+   (`packages/project/src/element-deltas.ts:45`), and the `vote` op a client-supplied `voter`. Collab keys are
    published on the roster on purpose ([Per-participant responses](../../specs/012-collaboration/participant-responses.md)).
    Today only editors can send either, and an editor can rewrite the whole element anyway, so nothing is lost. A
    Participant cannot rewrite the element, so for them the claimed id **is** the boundary: without a check they
@@ -214,7 +214,7 @@ it. A Viewer then means exactly what the word says, which is the one thing the c
    deletion and the baton's last word, as Google Drive's separate Owner row does
    ([Share files from Google Drive](https://support.google.com/docs/answer/2494822?hl=en-GB)). Team members stay
    editors.
-2. **Call the middle level Participant, not Commenter.** In a live document the dominant act is answering; a
+2. **Call the middle level Participant, not Commenter.** In a live project the dominant act is answering; a
    comment is one way of saying something. The share card copy can read "Comments, votes and takes part. Can't change
    the drawing."
 3. **Viewer looks only.** Presence, pointing, following, reactions, local picker rolls and presenting stay open;
@@ -228,7 +228,7 @@ it. A Viewer then means exactly what the word says, which is the one thing the c
    `vote`, `response` delta or `poll-answer` naming another key from a non-editor. Without this, a Participant can
    rewrite a colleague's answer.
 7. **Give participant answers a D1 path that needs no editor**, following the Q&A board: the room writes the delta
-   itself, or the room's ledger is flushed on an alarm. Otherwise answers on a participant-only document live only
+   itself, or the room's ledger is flushed on an alarm. Otherwise answers on a participant-only project live only
    in the Durable Object.
 8. **Keep agents out of sessions.** A token's middle level grants comments and presence, never session answers; the
    Q&A participant actions refuse token callers. An agent that votes is ballot stuffing with good manners.
@@ -253,11 +253,11 @@ it. A Viewer then means exactly what the word says, which is the one thing the c
    - **One level plus a facilitator switch** that closes a tool to participants
 4. **May a Participant hold the facilitator baton?**
    - **Never**: facilitating stays an editor's hat (R)
-   - **When the owner allows it**, a per-document setting
+   - **When the owner allows it**, a per-project setting
    - **Always**: anyone in the session may run it, as in Parabol
 5. **How hard should "one answer per person" be?**
    - **Pin the collab key per socket** and refuse mismatches (R)
-   - **Accept per-browser limits** and document them
+   - **Accept per-browser limits** and project them
    - **Optional sign-in per session**, as Mentimeter and Slido offer
 6. **What may an API token at the middle level do in a session?**
    - **Comments only**, never answers (R)

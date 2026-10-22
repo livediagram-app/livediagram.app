@@ -140,7 +140,7 @@ export const EDITOR_MODE_ICONS: Record<EditorMode, IconComponent>; // key type d
 
 - Telemetry: `Editor·Changed·ModeWorkshop`, `UI·Toggled·TemplateModeWorkshop`,
   `Folder·Changed|Cleared·DefaultModeWorkshop` (derived), each with an explanation sentence in
-  `apps/telemetry/app/event-explanations.ts`.
+  liveworkspace/apps/site/app/telemetry/livediagram/event-explanations.ts.
 
 ## Testing
 

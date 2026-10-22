@@ -49,7 +49,7 @@ describe('duplicating a card type', () => {
     }));
     panel({ types: many });
     const full = screen.getAllByRole('button', {
-      name: 'The document has the most card types it can hold',
+      name: 'The project has the most card types it can hold',
     })[0]!;
     fireEvent.click(full);
     expect(plan['editType']).not.toHaveBeenCalled();

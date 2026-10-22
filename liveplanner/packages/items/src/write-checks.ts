@@ -1,7 +1,7 @@
 // The checks every item write passes (blueprint item-store.md "Interfaces and contracts"): a create, patch or move
 // read as the api reads its body, and the items it leaves checked against their card types and the size bounds.
-// The api reads request bodies with them; an offline document runs the same checks on its own writes, so it never
-// holds what a Sync to Cloud would refuse (docs/specs/026-plan/items.md "Offline documents").
+// The api reads request bodies with them; an offline project runs the same checks on its own writes, so it never
+// holds what a Sync to Cloud would refuse (docs/specs/026-plan/items.md "Offline projects").
 
 import type { Item, ItemCreate, ItemMove, ItemPatch, ItemPlace } from './item';
 import { isMoveSettable, itemStatus } from './item';
@@ -40,7 +40,7 @@ export function readItemPlace(raw: unknown): ItemPlace | ItemRejection {
 }
 
 // A create as the api reads it, but for its comment thread, which the api checks itself (it keeps author ids on
-// the caller's own comments only) and an offline document keeps as it is.
+// the caller's own comments only) and an offline project keeps as it is.
 export function readItemCreate(raw: unknown): Omit<ItemCreate, 'comments'> | ItemRejection {
   if (!isObj(raw)) return 'field_value_invalid';
   if (!isValidItemType(raw.type)) return 'type_invalid';

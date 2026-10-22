@@ -61,7 +61,7 @@ If you're deploying via GitHub Actions (the default workflow), set two repo secr
 - `CF_API_TOKEN`: the token from the step above.
 - `CF_ACCOUNT_ID`: your Cloudflare account id.
 
-Those two are the only **required** ones — the deploy workflow uses raw `pnpm exec wrangler deploy` against them. Optionally, it also syncs three worker secrets from repo secrets of the same name, each skipped when unset: `CLERK_JWKS_URL`, `GUEST_ID_HMAC_SECRET`, and `INTERNAL_EVENTS_KEY`. Setting them here rather than by hand means they rotate by editing the GitHub secret — and, for `INTERNAL_EVENTS_KEY`, that the api and mcp workers can't drift apart. See [Secrets policy](../specs/002-project-scope/secrets-policy.md) for the full table.
+Those two are the only **required** ones — the deploy workflow uses raw `pnpm exec wrangler deploy` against them. Optionally, it also syncs three worker secrets from repo secrets of the same name, each skipped when unset: `CLERK_JWKS_URL`, `GUEST_ID_HMAC_SECRET`, and `TELEMETRY_KEY`. Setting them here rather than by hand means they rotate by editing the GitHub secret — and, for `TELEMETRY_KEY`, that the api and mcp workers can't drift apart. See [Secrets policy](../specs/002-project-scope/secrets-policy.md) for the full table.
 
 ## Optional Clerk auth
 
@@ -186,7 +186,7 @@ nothing. To run it:
    are ordinary `lvd_` API tokens — they appear in the API Tokens category of
    Settings and are revocable there.
 
-4. **Only if you've turned telemetry on:** set the same `INTERNAL_EVENTS_KEY` on
+4. **Only if you've turned telemetry on:** set the same `TELEMETRY_KEY` on
    both workers — see [Telemetry](#telemetry-off-by-default-for-self-hosters)
    below. Skip it otherwise; it affects nothing else.
 
@@ -195,11 +195,9 @@ tool does the thinking. See [MCP server](../specs/015-api/mcp-server.md).
 
 ## Telemetry: off by default for self-hosters
 
-The api worker's telemetry ingest (`/api/events`) is off unless you set `TELEMETRY_ENABLED = "true"` under `[vars]` in `apps/api/wrangler.toml`. OSS forks ingest nothing by default: the committed config leaves it unset, and the deploy workflow only adds it (with the rest of the hosted profile in `apps/api/hosted-vars.json`) when it runs in livediagram.app's own repository ([Deployment](../specs/016-platform/deployment.md) "Hosted profile"). If you DO turn it on, the public `/telemetry` dashboard renders aggregate counts from your own D1; there's no third-party analytics involved. See [Telemetry + public transparency dashboard](../specs/017-telemetry/telemetry.md).
+Telemetry is off unless you set `TELEMETRY_ENABLED = "true"` under `[vars]` in `apps/api/wrangler.toml`. OSS forks send nothing by default: the committed config leaves it unset, and the deploy workflow only adds it (with the rest of the hosted profile in `apps/api/hosted-vars.json`) when it runs in livediagram.app's own repository ([Deployment](../specs/016-platform/deployment.md) "Hosted profile"). See [Telemetry + public transparency dashboard](../specs/017-telemetry/telemetry.md).
 
-Turning telemetry on end-to-end takes BOTH the server gate above AND a build-time gate on the frontends. The api flag is the authoritative gate (ingest + summary refuse to serve without it), but every emitting frontend (the editor, the help centre, the Community, and the page-view counters on marketing and the dashboard, [Page view telemetry](../specs/017-telemetry/page-view-telemetry.md)) also reads `NEXT_PUBLIC_TELEMETRY_ENABLED` at build time and skips emission entirely when it isn't `"true"`. So a fork that only flips the api flag will see "ingest on" but no events flow. To turn it fully on, set `NEXT_PUBLIC_TELEMETRY_ENABLED=true` in your CI build env (or each frontend's `.env.production`) alongside the api flag. The `/telemetry` dashboard's data has no client-side gate of its own: it just reads `/api/telemetry/summary`, and the api worker returns an empty `enabled: false` payload until you flip `TELEMETRY_ENABLED` (the build flag only governs its own page-view count). Per-user opt-out via the Settings dialog ([User preferences](../specs/007-editor/user-preferences.md)) still overrides every app's emission when off, since they share one origin and one preferences key.
-
-If you also deploy the MCP worker, set the **same** `INTERNAL_EVENTS_KEY` secret on both `apps/api` and `apps/mcp` (`wrangler secret put INTERNAL_EVENTS_KEY` in each). The MCP worker reaches the api over a service binding, which carries no `CF-Connecting-IP`, so without a matching key its telemetry lands in the anonymous per-IP rate-limit bucket and throttles itself. Leaving it unset is safe and needs no configuration — you just get the shared-bucket behaviour.
+livediagram.app's events go to liveworkspace's telemetry service, which stores them and serves the public dashboard; this repository no longer holds an ingest or a dashboard of its own. That service only takes livediagram.app's own pages and key, so turning telemetry on for a fork also means running a service of your own that takes the same batches, and pointing the fork at it: `TELEMETRY_URL` and the `TELEMETRY_KEY` secret on the api and mcp workers, and `NEXT_PUBLIC_TELEMETRY_URL` plus `NEXT_PUBLIC_TELEMETRY_ENABLED=true` on every frontend build. Without that, nothing is stored anywhere. Per-user opt-out via the Settings dialog ([User preferences](../specs/007-editor/user-preferences.md)) still overrides every app's emission when off, since they share one origin and one preferences key.
 
 ## AI assistance: off by default, needs a model key
 
@@ -326,12 +324,15 @@ Add a custom-domain route to the router worker (`apps/router/wrangler.toml`) and
 
 - `/` → marketing
 - `/document/*`, `/explorer/*`, `/new`, `/join`, `/sign-in`, `/get-started`, `/embed`, `/sso-callback` → live editor (clean routes; `/live/*` carries only its `_next` assets)
-- `/telemetry` → telemetry dashboard
+- `/telemetry` → a redirect to liveworkspace's telemetry dashboard (edit `telemetryDashboardUrl` in the router to point it elsewhere, or drop it)
 - `/help` → help centre
 - `/community` → Community, the public gallery of shared documents
 - `/api/*` → api worker
 
-The Community is on by default and needs nothing. To switch it off, set the api worker's `COMMUNITY_ENABLED` to
+The Community's listings live in liveworkspace's Community service
+([liveworkspace/docs/community.md](../../../liveworkspace/docs/community.md)). Without a `COMMUNITY_KEY` secret the api
+reports the Community off; to have one, run that service (or use liveworkspace.app's with a key it gives you), set
+the api's `COMMUNITY_URL` and `COMMUNITY_KEY`, and build the pages with `NEXT_PUBLIC_COMMUNITY_API`. To switch it off, set the api worker's `COMMUNITY_ENABLED` to
 `false` (a `[vars]` entry or `wrangler secret put COMMUNITY_ENABLED`): every Community route and link closes and it
 disappears from every app, with nothing deleted ([Community](../specs/025-community/community.md#turning-the-community-off)).
 

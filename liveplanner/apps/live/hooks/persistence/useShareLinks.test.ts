@@ -25,7 +25,7 @@ const { useShareLinks } = await import('./useShareLinks');
 
 const link = (over: Partial<ShareLink> = {}): ShareLink => ({
   code: 'CODE2345',
-  documentId: 'd1',
+  projectId: 'd1',
   role: 'view',
   createdAt: 1,
   expiry: 'never',
@@ -41,14 +41,14 @@ function setup(links: ShareLink[] = [], setSharePasswordSet = vi.fn()) {
   });
   const { result } = renderHook(() =>
     useShareLinks({
-      documentId: 'd1',
+      projectId: 'd1',
       selfParticipant: { id: 'me', name: 'Ada', color: '#0ea5e9', status: 'online' },
       setSelfParticipant: vi.fn(),
       setShareLinks,
       setSharePasswordSet,
-      setDocumentShareable: vi.fn(),
-      setDocumentShareCode: vi.fn(),
-      documentShareCode: null,
+      setProjectShareable: vi.fn(),
+      setProjectShareCode: vi.fn(),
+      projectShareCode: null,
       confirmName: vi.fn(),
     }),
   );
@@ -67,14 +67,14 @@ describe('useShareLinks scope', () => {
     await result.current.createShareLink('view', 'never', 't2');
     expect(api.apiCreateShareLink).toHaveBeenCalledWith('me', 'd1', 'view', 'never', 't2');
     expect(links()).toEqual([link({ tabId: 't2' })]);
-    expect(track).toHaveBeenCalledWith('Document', 'Shared', 'TabScoped');
+    expect(track).toHaveBeenCalledWith('Project', 'Shared', 'TabScoped');
   });
 
   it('does not count an All-tabs link as scoped', async () => {
     api.apiCreateShareLink.mockResolvedValue(link());
     const { result } = setup();
     await result.current.createShareLink('view', 'never', null);
-    expect(track).not.toHaveBeenCalledWith('Document', 'Shared', 'TabScoped');
+    expect(track).not.toHaveBeenCalledWith('Project', 'Shared', 'TabScoped');
   });
 
   it('rescopes a link in place and counts it', async () => {
@@ -86,7 +86,7 @@ describe('useShareLinks scope', () => {
       ['CODE2345', 't2'],
       ['OTHER234', null],
     ]);
-    expect(track).toHaveBeenCalledWith('Document', 'Shared', 'Rescoped');
+    expect(track).toHaveBeenCalledWith('Project', 'Shared', 'Rescoped');
   });
 
   it('leaves the link as it was when the rescope fails', async () => {
@@ -105,19 +105,19 @@ describe('useShareLinks share password', () => {
     api.apiSetSharePassword.mockResolvedValue(true);
     const setSharePasswordSet = vi.fn();
     const { result } = setup([], setSharePasswordSet);
-    expect(await result.current.setDocumentSharePassword('hunter2')).toBe(true);
+    expect(await result.current.setProjectSharePassword('hunter2')).toBe(true);
     expect(api.apiSetSharePassword).toHaveBeenCalledWith('me', 'd1', 'hunter2');
     expect(setSharePasswordSet).toHaveBeenCalledWith(true);
-    expect(track).toHaveBeenCalledWith('Document', 'Shared', 'PasswordSet');
+    expect(track).toHaveBeenCalledWith('Project', 'Shared', 'PasswordSet');
   });
 
   it('clears on a whitespace-only value, and counts the clear', async () => {
     api.apiSetSharePassword.mockResolvedValue(false);
     const setSharePasswordSet = vi.fn();
     const { result } = setup([], setSharePasswordSet);
-    expect(await result.current.setDocumentSharePassword('   ')).toBe(false);
+    expect(await result.current.setProjectSharePassword('   ')).toBe(false);
     expect(api.apiSetSharePassword).toHaveBeenCalledWith('me', 'd1', null);
     expect(setSharePasswordSet).toHaveBeenCalledWith(false);
-    expect(track).toHaveBeenCalledWith('Document', 'Shared', 'PasswordCleared');
+    expect(track).toHaveBeenCalledWith('Project', 'Shared', 'PasswordCleared');
   });
 });

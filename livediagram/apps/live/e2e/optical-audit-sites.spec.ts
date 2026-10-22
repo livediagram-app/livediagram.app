@@ -3,10 +3,10 @@ import { expect, expectNoPageErrors, test } from './fixtures';
 import { auditOptical, OPTICAL_TOLERANCE_PX } from './optical';
 
 // Optical alignment audit on the other sites (docs/specs/004-interface-design/optical-alignment.md): the
-// help centre, the telemetry dashboard, the Community and the marketing site. The e2e stack serves their
-// static builds (help, telemetry and the Community under their basePath on this origin, marketing on its
-// own port); against a dev stack, point E2E_HELP_URL / E2E_TELEMETRY_URL / E2E_COMMUNITY_URL /
-// E2E_MARKETING_URL at the dev servers.
+// help centre, the Community and the marketing site. The e2e stack serves their static builds (help and
+// the Community under their basePath on this origin, marketing on its own port); against a dev stack,
+// point E2E_HELP_URL / E2E_COMMUNITY_URL / E2E_MARKETING_URL at the dev servers. The telemetry dashboard
+// is liveworkspace's now (docs/specs/017-telemetry/telemetry.md), audited there.
 
 test.use({
   colorScheme: 'dark',
@@ -16,10 +16,9 @@ test.use({
 });
 
 const marketingPort = process.env.E2E_MARKETING_PORT ?? '3013';
-const site = (name: 'help' | 'telemetry' | 'community' | 'marketing', baseURL: string) =>
+const site = (name: 'help' | 'community' | 'marketing', baseURL: string) =>
   ({
     help: process.env.E2E_HELP_URL ?? `${baseURL}/help`,
-    telemetry: process.env.E2E_TELEMETRY_URL ?? `${baseURL}/telemetry`,
     community: process.env.E2E_COMMUNITY_URL ?? `${baseURL}/community`,
     marketing: process.env.E2E_MARKETING_URL ?? `http://localhost:${marketingPort}`,
   })[name];
@@ -56,12 +55,6 @@ test.describe('Optical alignment audit, other sites', () => {
     await article.click();
     await page.waitForLoadState('networkidle');
     await expectCentred(page, 'help article');
-    expectNoPageErrors(pageErrors);
-  });
-
-  test('the telemetry dashboard', async ({ page, pageErrors, baseURL }) => {
-    await open(page, `${site('telemetry', baseURL!)}/`, 'telemetry');
-    await expectCentred(page, 'telemetry dashboard');
     expectNoPageErrors(pageErrors);
   });
 

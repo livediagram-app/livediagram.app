@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { elementFingerprint, type Element, type ElementOp, type Tab } from '@liveplanner/document';
+import { elementFingerprint, type Element, type ElementOp, type Tab } from '@liveplanner/project';
 import type { ChangesetFingerprints, MergeEntry } from '../db/changesets';
 import { mergeChangesetsIntoSave } from './merge-on-save';
 
@@ -27,7 +27,7 @@ function entry(ops: ElementOp[], fingerprints: ChangesetFingerprints, rev = 2): 
   return {
     record: {
       id: `cs_${String(rev).padStart(10, '0')}`,
-      documentId: 'D',
+      projectId: 'D',
       tabId: 't1',
       rev,
       baseRev: null,

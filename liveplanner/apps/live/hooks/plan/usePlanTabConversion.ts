@@ -1,11 +1,11 @@
 'use client';
 
 // Old Plan tabs to the Plan kinds (docs/specs/026-plan/plan-tabs.md "Converting old Plan tabs"): when someone who may
-// reshape the document opens a Plan tab of the general kind holding only Plan elements, once its content has loaded,
+// reshape the project opens a Plan tab of the general kind holding only Plan elements, once its content has loaded,
 // it converts (lib/plan-tab-conversion.ts) in one change, one undo step, and a toast says so. Once a session per tab:
-// an undo keeps it as it was until the document is next opened.
+// an undo keeps it as it was until the project is next opened.
 import { useEffect, useRef } from 'react';
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 import { convertPlanTab, isConvertiblePlanTab } from '@/lib/plan-tab-conversion';
 import { useToast } from '@/hooks/ui/useToast';
 import { track } from '@/lib/telemetry';
@@ -23,7 +23,7 @@ export function usePlanTabConversion({
   activeTab: Tab;
   // The tab's content is in place (never convert a placeholder).
   loaded: boolean;
-  // An Editor of the whole document.
+  // An Editor of the whole project.
   canReshape: boolean;
   commitTabs: (map: (ts: Tab[]) => Tab[]) => void;
   createTab: (name: string) => Tab;

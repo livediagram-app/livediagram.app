@@ -1,28 +1,28 @@
 'use client';
 
-import { truncateName } from '@liveplanner/document';
+import { truncateName } from '@liveplanner/project';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { DocumentSummary, Folder } from '@liveplanner/api-schema';
+import type { ProjectSummary, Folder } from '@liveplanner/api-schema';
 import {
   apiCreateFolder,
-  apiDeleteDocument,
+  apiDeleteProject,
   apiDeleteFolder,
   apiGetTeamLibrary,
-  apiSaveDocumentMeta,
-  apiSetDocumentFolder,
+  apiSaveProjectMeta,
+  apiSetProjectFolder,
   apiUpdateFolder,
 } from '@/lib/api-client';
-import { duplicateDocument as duplicateDocumentApi } from '@/lib/duplicate-document';
+import { duplicateProject as duplicateProjectApi } from '@/lib/duplicate-project';
 import { accepted } from '@/lib/accepted';
 import { track } from '@/lib/telemetry';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { useToast } from '@/hooks/ui/useToast';
 import { logMoveFailure } from '@/lib/move-failure';
-import { DOCUMENT_FAILURE, FOLDER_FAILURE } from '@/lib/write-failure-copy';
-import { indexFolders, folderBreadcrumb, groupDocumentsByFolder } from '@/lib/folder-tree';
+import { PROJECT_FAILURE, FOLDER_FAILURE } from '@/lib/write-failure-copy';
+import { indexFolders, folderBreadcrumb, groupProjectsByFolder } from '@/lib/folder-tree';
 
-// One team's shared library (docs/specs/013-workspace/team-shared-documents.md): the folder tree + documents the
-// "Shared documents" section on the team page renders, plus the
+// One team's shared library (docs/specs/013-workspace/team-shared-projects.md): the folder tree + projects the
+// "Shared projects" section on the team page renders, plus the
 // mutations every joined member may perform. Mirrors useFolders +
 // useExplorerState's derived shapes, scoped to a single team. All
 // mutations refetch — the library is shared, so optimistic local
@@ -46,7 +46,7 @@ export function useTeamLibrary(
     [toast],
   );
   const [folders, setFolders] = useState<Folder[]>([]);
-  const [liveDocs, setDocuments] = useState<DocumentSummary[]>([]);
+  const [liveDocs, setProjects] = useState<ProjectSummary[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Sets state only from the response callbacks, so the load effect below
@@ -57,7 +57,7 @@ export function useTeamLibrary(
       .then(
         (lib) => {
           setFolders(lib.folders);
-          setDocuments(lib.documents);
+          setProjects(lib.projects);
         },
         () => {
           // Transient failure: keep whatever is on screen, next refresh
@@ -74,7 +74,7 @@ export function useTeamLibrary(
   if (libraryKey !== loadedKey) {
     setLoadedKey(libraryKey);
     setFolders([]);
-    setDocuments([]);
+    setProjects([]);
     setLoading(true);
   }
 
@@ -86,7 +86,7 @@ export function useTeamLibrary(
     return indexFolders(folders);
   }, [folders]);
 
-  const documentsByFolder = useMemo(() => groupDocumentsByFolder(liveDocs), [liveDocs]);
+  const projectsByFolder = useMemo(() => groupProjectsByFolder(liveDocs), [liveDocs]);
 
   // Breadcrumb chain root → folderId, tolerant of dangling parents
   // mid-refresh (same shape as the personal explorer's).
@@ -167,17 +167,17 @@ export function useTeamLibrary(
     [ownerId, folders, refresh, onChange, fail],
   );
 
-  // Re-folder a document WITHIN the team (folderId null = the team's
+  // Re-folder a project WITHIN the team (folderId null = the team's
   // root).
-  const moveDocument = useCallback(
-    async (documentId: string, folderId: string | null) => {
+  const moveProject = useCallback(
+    async (projectId: string, folderId: string | null) => {
       if (!ownerId) return;
       try {
-        await apiSetDocumentFolder(ownerId, documentId, folderId, teamId);
-        track('Team', 'Moved', 'Document');
+        await apiSetProjectFolder(ownerId, projectId, folderId, teamId);
+        track('Team', 'Moved', 'Project');
       } catch (err) {
-        logMoveFailure('team-document', ` document=${documentId}`, err);
-        toast.error(DOCUMENT_FAILURE.move(liveDocs.find((d) => d.id === documentId)?.name));
+        logMoveFailure('team-project', ` project=${projectId}`, err);
+        toast.error(PROJECT_FAILURE.move(liveDocs.find((d) => d.id === projectId)?.name));
       }
       await refresh();
       onChange.current?.();
@@ -185,14 +185,14 @@ export function useTeamLibrary(
     [ownerId, teamId, liveDocs, refresh, onChange, toast],
   );
 
-  // Delete a team document, to the team's Trash. Any joined member may delete it
-  // (docs/specs/013-workspace/team-shared-documents.md), gated server-side by the team-member delete check.
+  // Delete a team project, to the team's Trash. Any joined member may delete it
+  // (docs/specs/013-workspace/team-shared-projects.md), gated server-side by the team-member delete check.
   // Whether the delete landed, so the caller offers its Undo only then.
-  const deleteDocument = useCallback(
-    async (documentId: string): Promise<boolean> => {
+  const deleteProject = useCallback(
+    async (projectId: string): Promise<boolean> => {
       if (!ownerId) return false;
-      const ok = await accepted(apiDeleteDocument(ownerId, documentId));
-      if (ok) track('Document', 'Deleted');
+      const ok = await accepted(apiDeleteProject(ownerId, projectId));
+      if (ok) track('Project', 'Deleted');
       await refresh();
       onChange.current?.();
       return ok;
@@ -200,21 +200,21 @@ export function useTeamLibrary(
     [ownerId, refresh, onChange],
   );
 
-  // Rename a team document in place. Any joined member may edit it
-  // (docs/specs/013-workspace/team-shared-documents.md), gated server-side by canEditDocument.
-  const renameDocument = useCallback(
-    async (documentId: string, name: string) => {
+  // Rename a team project in place. Any joined member may edit it
+  // (docs/specs/013-workspace/team-shared-projects.md), gated server-side by canEditProject.
+  const renameProject = useCallback(
+    async (projectId: string, name: string) => {
       if (!ownerId) return;
-      // docs/specs/006-document/name-length.md.
+      // docs/specs/006-project/name-length.md.
       const trimmed = truncateName(name);
       if (!trimmed) return;
       try {
-        await apiSaveDocumentMeta(ownerId, { id: documentId, name: trimmed });
-        track('Document', 'Renamed');
+        await apiSaveProjectMeta(ownerId, { id: projectId, name: trimmed });
+        track('Project', 'Renamed');
       } catch (err) {
         fail(
-          'rename-document',
-          DOCUMENT_FAILURE.rename(liveDocs.find((d) => d.id === documentId)?.name),
+          'rename-project',
+          PROJECT_FAILURE.rename(liveDocs.find((d) => d.id === projectId)?.name),
           err,
         );
       }
@@ -224,24 +224,24 @@ export function useTeamLibrary(
     [ownerId, liveDocs, refresh, onChange, fail],
   );
 
-  // Duplicate a team document, keeping the copy IN the team alongside
+  // Duplicate a team project, keeping the copy IN the team alongside
   // the original (same folder), filed by the create itself
-  // (docs/specs/013-workspace/team-shared-documents.md).
-  const duplicateDocument = useCallback(
-    async (documentId: string) => {
+  // (docs/specs/013-workspace/team-shared-projects.md).
+  const duplicateProject = useCallback(
+    async (projectId: string) => {
       if (!ownerId) return;
-      const source = liveDocs.find((d) => d.id === documentId);
+      const source = liveDocs.find((d) => d.id === projectId);
       const sourceFolderId = source?.folderId ?? null;
-      const newId = await duplicateDocumentApi(ownerId, documentId, {
+      const newId = await duplicateProjectApi(ownerId, projectId, {
         teamId,
         folderId: sourceFolderId,
       });
       if (!newId) {
-        console.warn('[team-library] duplicate-document failed', { document: documentId });
-        toast.error(DOCUMENT_FAILURE.duplicate(source?.name));
+        console.warn('[team-library] duplicate-project failed', { project: projectId });
+        toast.error(PROJECT_FAILURE.duplicate(source?.name));
         return;
       }
-      track('Document', 'Duplicated');
+      track('Project', 'Duplicated');
       await refresh();
       onChange.current?.();
     },
@@ -250,21 +250,21 @@ export function useTeamLibrary(
 
   return {
     folders,
-    documents: liveDocs,
+    projects: liveDocs,
     loading,
     refresh,
     folderById,
     childrenByParent,
     rootFolders,
-    documentsByFolder,
+    projectsByFolder,
     breadcrumb,
     createFolder,
     renameFolder,
     moveFolder,
     deleteFolder,
-    moveDocument,
-    deleteDocument,
-    renameDocument,
-    duplicateDocument,
+    moveProject,
+    deleteProject,
+    renameProject,
+    duplicateProject,
   };
 }

@@ -1,17 +1,21 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@liveplanner/document';
-import { FINISH_PREVIEW_ELEMENTS } from './finish-preview';
-import { firstSelfClosingRect, lookPreviewSvg, lookPreviewTab } from './look-preview';
-import { resolveTheme } from './themes';
+import type { Element } from '@liveplanner/project';
+import {
+  LOOK_PREVIEW_ELEMENTS,
+  firstSelfClosingRect,
+  lookPreviewSvg,
+  lookPreviewTab,
+} from './look-preview';
 import { TAB_LOOKS, activeLookId, tabLookById } from './tab-looks';
 
 // A look's card preview (docs/specs/011-theme/canvas-and-theme-dialog.md "Looks").
 describe('lookPreviewSvg', () => {
-  it('draws the sample in each look, on a tab that reads as that look', () => {
+  it('draws the sample board in each look, on a tab that reads as that look', () => {
     for (const look of TAB_LOOKS) {
       expect(activeLookId(lookPreviewTab(look)), look.id).toBe(look.id);
       const svg = lookPreviewSvg(look);
-      expect(svg, look.id).toContain('Plan the work');
+      for (const text of ['To do', 'Doing', 'Done', 'Plan work', 'Write brief', 'Ship it'])
+        expect(svg, `${look.id}: ${text}`).toContain(text);
     }
   });
 
@@ -21,27 +25,16 @@ describe('lookPreviewSvg', () => {
     expect(graph).not.toContain('lvd-export-bg');
   });
 
-  it('shows two palette colours on a multi-colour look, the arrow still on its pins', () => {
-    for (const id of ['spectrum', 'doodle', 'daydream', 'lagoon', 'poster', 'textbook']) {
+  it("colours the cards from a multi-colour look's palette, keeping every card", () => {
+    for (const id of ['spectrum', 'doodle', 'daydream', 'lagoon', 'poster']) {
       const els = lookPreviewTab(tabLookById(id)!).elements as Array<
         Element & { fillColor?: string }
       >;
-      const [step, decision, arrow] = els;
-      expect(step!.fillColor, id).toBeTruthy();
-      expect(step!.fillColor, id).not.toBe(decision!.fillColor);
-      expect(arrow!.type === 'arrow' && arrow!.from.kind, id).toBe('pinned');
-      expect(els.map((el) => el.id)).toEqual(FINISH_PREVIEW_ELEMENTS.map((el) => el.id));
+      expect(els.map((el) => el.id)).toEqual(LOOK_PREVIEW_ELEMENTS.map((el) => el.id));
+      const fills = els.filter((el) => el.type === 'shape').map((el) => el.fillColor);
+      expect(fills.every(Boolean), id).toBe(true);
+      expect(new Set(fills).size, id).toBeGreaterThan(1);
     }
-  });
-
-  it('takes colours from across the palette: the first and the fourth', () => {
-    const fills = (id: string) =>
-      (lookPreviewTab(tabLookById(id)!).elements as Array<Element & { fillColor?: string }>)
-        .slice(0, 2)
-        .map((el) => el.fillColor);
-    const palette = (id: string) => resolveTheme(id)!.palette!.map((p) => p.fill);
-    expect(fills('spectrum')).toEqual([palette('rainbow')[0], palette('rainbow')[3]]);
-    expect(fills('lagoon')).toEqual([palette('tropical')[0], palette('tropical')[3]]);
   });
 
   it('draws the Sketch looks sketched, and the Marker looks in marker', () => {

@@ -2,7 +2,7 @@
 
 import { renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createArrow, createShape, type Element } from '@liveplanner/document';
+import { createArrow, createShape, type Element } from '@liveplanner/project';
 import { useOffscreenContent } from './useOffscreenContent';
 
 beforeEach(() =>

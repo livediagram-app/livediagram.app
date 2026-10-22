@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { ProductNav } from '../ProductNav';
+import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
+import { ProductNavLinks } from '../ProductNav';
 import { SiteFooter } from '../SiteFooter';
 import { renderHook } from '@testing-library/react';
 import {
@@ -50,47 +50,29 @@ describe('fetchCommunityEnabled', () => {
   });
 });
 
-// Renders the menu and footer, waits for the answer, and opens the menu so its links are there to count.
-async function renderOpened(fetchMock: ReturnType<typeof stubCapabilities>) {
-  render(
-    <>
-      <ProductNav current="home" />
-      <SiteFooter />
-    </>,
-  );
+// Renders the Explorer's footer links, and waits for the answer.
+async function renderLinks(fetchMock: ReturnType<typeof stubCapabilities>) {
+  render(<ProductNavLinks current="editor" />);
   await waitFor(() => expect(fetchMock).toHaveBeenCalled());
   await new Promise((resolve) => setTimeout(resolve, 0));
-  fireEvent.click(screen.getByRole('button', { name: /currently Home/ }));
 }
 
-describe('the apps menu and footer', () => {
-  it('drop their Community links while it is switched off', async () => {
-    await renderOpened(stubCapabilities(async () => Response.json({ communityEnabled: false })));
-    expect(screen.getByRole('menuitem', { name: /Explorer/ })).toBeTruthy();
-    // The menu asks once opened; its answer lands a moment later.
+describe('the Explorer footer links', () => {
+  it('drop their Community link while it is switched off', async () => {
+    await renderLinks(stubCapabilities(async () => Response.json({ communityEnabled: false })));
+    expect(screen.getByRole('link', { name: /Explorer/ })).toBeTruthy();
     await waitFor(() =>
-      expect(screen.queryAllByRole('menuitem', { name: /Community/ })).toHaveLength(0),
+      expect(screen.queryAllByRole('link', { name: /Community/ })).toHaveLength(0),
     );
-    expect(screen.queryAllByRole('link', { name: 'Community' })).toHaveLength(0);
   });
 
-  it('keep them while it is on', async () => {
-    await renderOpened(stubCapabilities(async () => Response.json({ communityEnabled: true })));
-    expect(screen.getAllByRole('menuitem', { name: /Community/ })).toHaveLength(1);
-    expect(screen.getAllByRole('link', { name: 'Community' })).toHaveLength(1);
+  it('keep it while it is on', async () => {
+    await renderLinks(stubCapabilities(async () => Response.json({ communityEnabled: true })));
+    await waitFor(() => expect(screen.getAllByRole('link', { name: /Community/ })).toHaveLength(1));
   });
 });
 
 describe('asking only when it matters', () => {
-  it('leaves the apps menu unasked until someone reaches for it', async () => {
-    const fetchMock = stubCapabilities(async () => Response.json({ communityEnabled: true }));
-    render(<ProductNav current="home" />);
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(fetchMock).not.toHaveBeenCalled();
-    fireEvent.pointerEnter(screen.getByRole('button', { name: /currently Home/ }).parentElement!);
-    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
-  });
-
   it('leaves the footer link unasked until the footer comes near', async () => {
     const observers: { callback: IntersectionObserverCallback }[] = [];
     vi.stubGlobal(

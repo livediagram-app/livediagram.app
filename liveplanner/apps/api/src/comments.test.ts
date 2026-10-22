@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Comment, Element, ShapeElement } from '@liveplanner/document';
+import type { Comment, Element, ShapeElement } from '@liveplanner/project';
 import {
   findCommentHost,
   hasNewComments,
@@ -45,7 +45,6 @@ const writer: ParticipantDTO = {
   name: 'Server Writer',
   color: '#0ea5e9',
   createdAt: 0,
-  pictureUrl: null,
 };
 
 describe('rewriteCommentAuthors', () => {

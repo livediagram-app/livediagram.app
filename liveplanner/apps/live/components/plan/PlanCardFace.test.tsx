@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import type { Item, ItemFields } from '@liveplanner/items';
 import { PlanCardFace } from './PlanCardFace';
 import { dueState, keyTextOn } from './plan-card-parts';
-import { contrastRatio } from '@liveplanner/document';
+import { contrastRatio } from '@liveplanner/project';
 import { ITEM_TYPES, PLAN_TYPE_COLOURS } from '@liveplanner/items';
 import { planPalette } from './plan-palette';
 import { PlanProvider, type PlanContextValue } from './PlanContext';

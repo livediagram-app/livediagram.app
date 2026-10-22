@@ -1,5 +1,5 @@
 // Explorer feed illustrations (docs/specs/018-help/help-app.md): Home (Jump Back In and What
-// happened), a document's History feed and its stacking, the Inbox, Recent, Shared With Me,
+// happened), a project's History feed and its stacking, the Inbox, Recent, Shared With Me,
 // and the Spaces group of the sidebar with its teams. Drawn from the real labels in apps/live
 // (sidebar-structure.ts, home-copy.ts, ActivityPane.tsx, views.tsx, the @liveplanner/ui timeline).
 // Composed from the shared primitives plus the Explorer parts, so the house style holds.
@@ -42,7 +42,7 @@ function SectionHeading({ y, title, link }: { y: number; title: string; link?: s
   );
 }
 
-/** A small document snapshot: a box or two joined by a line, on a pale well. */
+/** A small project snapshot: a box or two joined by a line, on a pale well. */
 function Snapshot({
   x,
   y,
@@ -192,7 +192,7 @@ function FeedCard({
   reason: string;
   meta?: string;
   tone: Tone;
-  /** A document snapshot motif, or a glyph drawn on the tone's tint. */
+  /** A project snapshot motif, or a glyph drawn on the tone's tint. */
   preview: { motif: number } | { glyph: ReactNode };
   isNew?: boolean;
   /** A card with nothing left to open (a deleted folder) is dimmed. */
@@ -271,120 +271,7 @@ function BigGlyph({ kind, tone }: { kind: 'team' | 'folder' | 'pencil'; tone: To
   );
 }
 
-/** The row of the Inbox: kind glyph, title (and hint), the document chip and where, the person. */
-function InboxRow({
-  y,
-  kind,
-  title,
-  hint,
-  chip,
-  where,
-  who,
-  colour,
-  time,
-}: {
-  y: number;
-  kind: 'action' | 'comment' | 'card';
-  title: string;
-  hint?: string;
-  chip: string;
-  where: string;
-  who: string;
-  colour: 'brand' | 'emerald' | 'violet' | 'amber';
-  time: string;
-}) {
-  const chipW = chip.length * 5.6 + 12;
-  return (
-    <g>
-      <rect
-        x={32}
-        y={y}
-        width={356}
-        height={34}
-        rx={6}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1}
-      />
-      <g
-        transform={`translate(46 ${y + 12})`}
-        className="stroke-slate-400"
-        strokeWidth={1.5}
-        fill="none"
-        strokeLinejoin="round"
-      >
-        {kind === 'action' && (
-          <g>
-            <rect x={-5} y={-6} width={10} height={12} rx={1.5} />
-            <path d="M-2 -6 V-8 H2 V-6 M-2.5 0 L-0.5 2 L2.5 -1.5" />
-          </g>
-        )}
-        {kind === 'comment' && <path d="M-6 -5 H6 V3 H-1 L-4 6 V3 H-6 Z" />}
-        {kind === 'card' && <rect x={-5} y={-5} width={10} height={10} rx={2} />}
-      </g>
-      <Label x={60} y={y + 11} size={10.5} weight={600} tone="strong">
-        {title}
-      </Label>
-      {hint && (
-        <g>
-          <rect
-            x={60 + title.length * 5.9 + 6}
-            y={y + 4}
-            width={hint.length * 6.2 + 10}
-            height={14}
-            rx={7}
-            className="fill-amber-50 stroke-amber-400"
-            strokeWidth={1}
-          />
-          <Label
-            x={60 + title.length * 5.9 + 11}
-            y={y + 11}
-            size={10}
-            weight={600}
-            className="fill-amber-600 dark:fill-amber-300"
-          >
-            {hint}
-          </Label>
-        </g>
-      )}
-      <rect x={60} y={y + 19} width={chipW} height={12} rx={6} className="fill-slate-100" />
-      <Label x={66} y={y + 25.5} size={10} weight={600} tone="body">
-        {chip}
-      </Label>
-      <Label x={60 + chipW + 6} y={y + 25.5} size={10} tone="muted">
-        {where}
-      </Label>
-      <Avatar cx={372} cy={y + 13} r={8} initial={who} colour={colour} />
-      <Label x={358} y={y + 13} size={10} tone="muted" anchor="end">
-        {time}
-      </Label>
-    </g>
-  );
-}
-
-/** A section heading of the Inbox with its count. */
-function InboxSectionTitle({ y, title, count }: { y: number; title: string; count: number }) {
-  const w = title.length * 7;
-  return (
-    <g>
-      <Label x={34} y={y} size={10} weight={700} tone="muted">
-        {title}
-      </Label>
-      <rect
-        x={34 + w + 4}
-        y={y - 7}
-        width={16}
-        height={14}
-        rx={7}
-        className="fill-slate-200 dark:fill-(--help-art-slate-800)"
-      />
-      <Label x={34 + w + 12} y={y} anchor="middle" size={10} weight={700} tone="muted">
-        {count}
-      </Label>
-    </g>
-  );
-}
-
-/** A small folder chip beside a document's name on Recent. */
+/** A small folder chip beside a project's name on Recent. */
 function FolderChip({ x, y, label }: { x: number; y: number; label: string }) {
   const w = label.length * 5.6 + 24;
   return (
@@ -448,7 +335,7 @@ export function HomeOverview() {
   );
 }
 
-/** A document's History: the header's Cards / Calendar switch and Filter, the day rail, and one day's
+/** A project's History: the header's Cards / Calendar switch and Filter, the day rail, and one day's
  *  cards, each coloured by what happened (green made, amber changed, red removed). */
 export function TimelineFeed() {
   return (
@@ -546,7 +433,7 @@ export function TimelineStack() {
         x={x}
         y={y}
         w={w}
-        subject="Documents Updated"
+        subject="Projects Updated"
         reason="5 events · click to expand"
         tone="create"
         preview={{ glyph: <BigGlyph kind="pencil" tone="create" /> }}
@@ -577,68 +464,11 @@ export function TimelineStack() {
   );
 }
 
-/** The Inbox: Assigned to You, You Assigned, then Open Comment Threads, each with a count. */
-export function InboxSections() {
-  return (
-    <Scene w={420} h={274} bg="plain">
-      <Pane h={250} />
-      <Label x={32} y={30} size={12} weight={700} tone="strong">
-        Inbox
-      </Label>
-      <line x1={16} y1={42} x2={404} y2={42} className="stroke-slate-200" strokeWidth={1.5} />
-      <InboxSectionTitle y={56} title="ASSIGNED TO YOU" count={2} />
-      <InboxRow
-        y={64}
-        kind="action"
-        title="Confirm the retry budget"
-        chip="Payments"
-        where="Checkout · Flow"
-        who="Y"
-        colour="brand"
-        time="2h"
-      />
-      <InboxRow
-        y={102}
-        kind="card"
-        title="#12 Add the audit table"
-        chip="Ledger"
-        where="Sprint board · Plan"
-        who="Y"
-        colour="brand"
-        time="1d"
-      />
-      <InboxSectionTitle y={152} title="YOU ASSIGNED" count={1} />
-      <InboxRow
-        y={160}
-        kind="action"
-        title="Draft the rollout note"
-        chip="Payments"
-        where="Release · Plan"
-        who="S"
-        colour="emerald"
-        time="3d"
-      />
-      <InboxSectionTitle y={208} title="OPEN COMMENT THREADS" count={1} />
-      <InboxRow
-        y={216}
-        kind="comment"
-        title="Checkout"
-        hint="Mentioned You"
-        chip="Payments"
-        where="Checkout · Flow"
-        who="P"
-        colour="violet"
-        time="5m"
-      />
-    </Scene>
-  );
-}
-
-/** Recent: Home › Recent, newest first, each row naming where the document lives. */
+/** Recent: Home › Recent, newest first, each row naming where the project lives. */
 export function RecentView() {
   const rows: { name: string; chip?: string; meta: string }[] = [
     { name: 'Q3 roadmap', chip: 'Planning', meta: '4m ago' },
-    { name: 'Onboarding flow', chip: 'My Documents', meta: '1h ago' },
+    { name: 'Onboarding flow', chip: 'My Projects', meta: '1h ago' },
     { name: 'Incident runbook', chip: 'Platform team', meta: 'yesterday' },
     { name: 'Hiring plan', meta: '2 days ago' },
   ];
@@ -774,7 +604,7 @@ export function SharedWithMeTable() {
   );
 }
 
-/** The sidebar's Spaces group when signed in: My Documents, each team (expandable to its shared
+/** The sidebar's Spaces group when signed in: My Projects, each team (expandable to its shared
  *  folders, with a member count), Invites while one waits, and New Team. */
 export function TeamSpacesSidebar() {
   const x = 100;
@@ -804,7 +634,7 @@ export function TeamSpacesSidebar() {
         SPACES
       </Label>
       {chevron(x + w - 18, 49, false)}
-      <SidebarRow x={x} y={38} w={w - 20} label="My Documents" glyph="folder" />
+      <SidebarRow x={x} y={38} w={w - 20} label="My Projects" glyph="folder" />
       {chevron(x + w - 18, 73, true)}
       <SidebarRow x={x} y={62} w={w - 20} label="Platform team" glyph="team" count={5} active />
       <SidebarRow x={x} y={86} w={w - 20} label="Roadmaps" glyph="folder" indent={16} />

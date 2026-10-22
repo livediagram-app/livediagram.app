@@ -5,7 +5,7 @@
 
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { ShapeElement, Tab } from '@liveplanner/document';
+import type { ShapeElement, Tab } from '@liveplanner/project';
 
 import type { Participant } from '@/lib/identity';
 import { useCollabElements } from './useCollabElements';

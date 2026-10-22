@@ -1,0 +1,39 @@
+{
+  "name": "@livedesign/telemetry",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node ../../scripts/next-dev.mjs --port 3303",
+    "build": "next build",
+    "lint": "oxlint",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf .next .next-analyze out node_modules .turbo"
+  },
+  "dependencies": {
+    "@livedesign/api-schema": "workspace:*",
+    "@livedesign/forms": "workspace:*",
+    "@livedesign/icons": "workspace:*",
+    "@livedesign/ui": "workspace:*",
+    "next": "^16.4.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@livedesign/agent-verbs": "workspace:*",
+    "@livedesign/next-config": "workspace:*",
+    "@livedesign/oxlint-config": "workspace:*",
+    "@livedesign/source-ast": "workspace:*",
+    "@livedesign/tailwind-config": "workspace:*",
+    "@livedesign/vitest-config": "workspace:*",
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/node": "^26.6.4",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "oxlint": "^1.88.0",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
+  }
+}

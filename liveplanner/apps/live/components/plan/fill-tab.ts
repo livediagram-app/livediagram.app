@@ -1,6 +1,6 @@
 // Fill Tab (docs/specs/026-plan/plan-board.md "Fill Tab"): which board, Sheet or view fills a tab, and the tab once a
 // board fills it. Pure.
-import { readDashboard, type DashboardLayout, type Element } from '@liveplanner/document';
+import { readDashboard, type DashboardLayout, type Element } from '@liveplanner/project';
 
 const isBoard = (el: Element) => el.type === 'shape' && el.shape === 'plan-board';
 

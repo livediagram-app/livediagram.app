@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 
-// The card the New Document wizard and the visitor name prompt sit in (docs/specs/007-editor/new-document-route.md
+// The card the New Project wizard and the visitor name prompt sit in (docs/specs/007-editor/new-project-route.md
 // "Responsive layout"): centred and floating from `sm` up (rounded, bordered, shadowed, `width` wide), edge to edge on a
 // phone, with no backdrop, on the `canvas-modal` rung so the header's menus still open in front of it. The body scrolls
 // inside it while its header and footer stay put.

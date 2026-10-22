@@ -28,7 +28,7 @@
 // ticks. Keeping that rule in one file makes the policy auditable.
 
 import { useState } from 'react';
-import { createComment, type CommentMention } from '@liveplanner/document';
+import { createComment, type CommentMention } from '@liveplanner/project';
 import { track } from '@/lib/telemetry';
 import type { ApplyElementDelta } from '@/hooks/collab/useElementDeltas';
 
@@ -44,7 +44,7 @@ type EditorCommentsDeps = {
   // than anonymous bubbles. The id is stamped as the comment's
   // authorId so the optimistic local copy already qualifies for the
   // delete-own affordance (it equals the server `owner` the API
-  // stamps, for guests and Clerk users alike).
+  // stamps, for guests and account alike).
   selfParticipant: { id: string; name: string; color: string };
   // A comment with @-mentions just landed (docs/specs/012-collaboration/comment-mentions.md): count it and
   // ask the api to email the people named. Absent where nobody can be named.

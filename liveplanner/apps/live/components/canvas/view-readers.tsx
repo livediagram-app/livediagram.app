@@ -29,14 +29,12 @@ export function ZoomedRemoteCursor(props: Omit<ComponentProps<typeof RemoteCurso
   return <RemoteCursor {...props} zoom={useCanvasZoom()} />;
 }
 
-// The corner zoom controls, showing the zoom from the viewport store; off while a Plan element covers the canvas
-// (docs/specs/026-plan/plan-board.md "Maximised board": the canvas cannot zoom then), except a Sheet, whose cells they
-// zoom instead (docs/specs/029-sheets/sheet.md "Zoom"), Fit putting it back to 100%.
+// The corner zoom controls. Only a Sheet zooms (docs/specs/029-sheets/sheet.md "Zoom"), its cells, Fit putting it back
+// to 100%; on a Board, Dashboard or Form tab the zoom buttons are hidden, leaving Isometric and Zen when they apply.
 export function ViewZoomControls(
-  props: Omit<ComponentProps<typeof ZoomControls>, 'zoom' | 'zoomOff'>,
+  props: Omit<ComponentProps<typeof ZoomControls>, 'zoom' | 'zoomHidden'>,
 ) {
   const canvasZoom = useViewportOf(zoomOf);
-  const covered = useCanvasCovered();
   const sheet = useSheetCovering();
   const sheetZoom = useSheetZoom();
   // Back to 100% once no Sheet covers the canvas, so the next one opens at its own size.
@@ -56,7 +54,7 @@ export function ViewZoomControls(
         zoomRange={SHEET_ZOOM_RANGE}
       />
     );
-  return <ZoomControls {...props} zoom={canvasZoom} zoomOff={covered} />;
+  return <ZoomControls {...props} zoom={canvasZoom} zoomHidden />;
 }
 
 // The Map, its view box following the view (its picture is memoised and does not redraw for it). Hidden while a Plan

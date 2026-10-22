@@ -12,19 +12,19 @@ import { HelpMarkIcon, openHelpArticle } from '@/components/primitives/HelpArtic
 import { useMinimalChrome } from '@/components/providers/minimal-chrome';
 import { assignAppLocation } from '@/lib/app-location';
 
-// The Explorer panel header's ⋯ menu (docs/specs/013-workspace/folders.md): the document-level verbs that
+// The Explorer panel header's ⋯ menu (docs/specs/013-workspace/folders.md): the project-level verbs that
 // used to be split between a "+ New" chip here and the editor's bottom bar.
-// Three bands, new/open, then this document (share / export), then the app
+// Three bands, new/open, then this project (share / export), then the app
 // (search / Licences / settings). Each row renders only when its handler is
 // wired, and a band left empty takes its separator with it, so the Explorer
-// behind an error screen (no document, so no share / export) still reads
+// behind an error screen (no project, so no share / export) still reads
 // cleanly. Rows, not tiles: a ⋯ menu that IS the list (docs/specs/013-workspace/folders.md).
 export function ExplorerHeaderMenu({
-  onNewDocument,
+  onNewProject,
   actions = {},
   helpArticle,
 }: {
-  onNewDocument?: () => void;
+  onNewProject?: () => void;
   actions?: ExplorerMenuActions;
   // The panel's article. Minimal chrome hides the header's `?`, so Help moves
   // here (docs/specs/007-editor/power-user-mode.md).
@@ -40,15 +40,15 @@ export function ExplorerHeaderMenu({
 
   const bands: { key: string; rows: ReactNode[] }[] = [
     {
-      key: 'documents',
+      key: 'projects',
       rows: [
-        onNewDocument ? (
+        onNewProject ? (
           <MenuActionRow
             key="new"
             plain
             icon={<PlusIcon />}
-            label="New Document"
-            onClick={run(onNewDocument)}
+            label="New Project"
+            onClick={run(onNewProject)}
           />
         ) : null,
         <MenuActionRow
@@ -63,7 +63,7 @@ export function ExplorerHeaderMenu({
       ],
     },
     {
-      key: 'document',
+      key: 'project',
       rows: [
         actions.onShare ? (
           <MenuActionRow
@@ -107,7 +107,7 @@ export function ExplorerHeaderMenu({
           />
         ) : null,
         // Third-party licences (docs/specs/002-project-scope/third-party-licences.md),
-        // in a new tab so the open document stays put.
+        // in a new tab so the open project stays put.
         <MenuActionRow
           key="licences"
           plain

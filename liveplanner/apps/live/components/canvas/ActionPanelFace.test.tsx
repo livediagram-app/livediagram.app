@@ -14,7 +14,7 @@ import {
   isOpenAction,
   isVotable,
   type ShapeElement,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 
 import { ActionPanelFace } from './ActionPanelFace';
 
@@ -148,7 +148,7 @@ describe('ActionPanelFace (docs/specs/012-collaboration/action-panel.md "The car
     expect(onComplete).not.toHaveBeenCalled();
   });
 
-  it('offers the Actions board from its header once it holds actions and the document has one', () => {
+  it('offers the Actions board from its header once it holds actions and the project has one', () => {
     const onOpenBoard = vi.fn();
     const { rerender } = render(
       <ActionPanelFace element={card()} textColor="#000" selfId={null} onOpenBoard={onOpenBoard} />,

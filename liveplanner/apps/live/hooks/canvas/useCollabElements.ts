@@ -3,7 +3,7 @@
 //
 // Sibling of useBehaviourElements, and the same shape: a press resolves what
 // to do from the element, then calls something that already exists. It is its
-// own hook because these write to the DOCUMENT (the behaviour elements mostly
+// own hook because these write to the PROJECT (the behaviour elements mostly
 // don't) and because they share one rule the rest of the editor doesn't — see
 // `patchElement` below.
 
@@ -13,7 +13,7 @@ import {
   type Element,
   type ShapeElement,
   type Tab,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { participantKey, type Participant } from '@/lib/identity';
 import { track } from '@/lib/telemetry';
 import type { ApplyElementDelta } from '@/hooks/collab/useElementDeltas';
@@ -64,7 +64,7 @@ export function useCollabElements({
   // is no second control to find.
   //
   // Keyed on `participantKey`, NOT on `selfParticipant.id`. The id is our
-  // OWNER id: writing it into a shared document publishes an `X-Owner-Id`
+  // OWNER id: writing it into a shared project publishes an `X-Owner-Id`
   // credential to every co-viewer, and it is also unjoinable — peers see us
   // under the room's per-socket presence id (docs/specs/015-api/public-api-and-tokens.md §6), never under this.
   const respond = (element: ShapeElement, value: string) => {

@@ -82,7 +82,7 @@ export function resolveAppearance(setting: AppearanceSetting): Appearance {
   return darkMedia()?.matches ? 'dark' : 'light';
 }
 
-// The DOM half. Guarded for the server, where there is no document and the
+// The DOM half. Guarded for the server, where there is no project and the
 // pre-hydration script has already done this job.
 export function applyAppearance(appearance: Appearance): void {
   if (typeof document === 'undefined') return;

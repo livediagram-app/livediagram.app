@@ -1,6 +1,6 @@
 # Gate a feature by share role
 
-Every feature that a shared document can reach decides what an **Editor**, a **Participant** and a **Viewer** may do
+Every feature that a shared project can reach decides what an **Editor**, a **Participant** and a **Viewer** may do
 with it ([Share roles](../specs/013-workspace/share-roles.md)). Do this while specifying, not after: a feature built
 for Editors alone either leaks to a Participant (who is `isReadOnly` but still commits) or tells a Viewer to do
 something it cannot.
@@ -14,7 +14,7 @@ something it cannot.
 3. **Pick the server gate.** A REST write uses `gateEdit`, or `gateParticipate` for a Participant's write; a room op
    is presence (anyone, checked for level), participation (`PARTICIPATION_OP_KINDS`, answers as self), or an
    Editor's. A Participant's element change goes through `applyParticipantOp` in
-   `packages/document/src/participant-content.ts`: a new field a Participant may write is added to that file's lists
+   `packages/project/src/participant-content.ts`: a new field a Participant may write is added to that file's lists
    and to the leak test's table (`participant-content.leak.test.ts`) in the same change.
 4. **Pick the editor gate.** Never gate on `isReadOnly` alone: it is true for a Participant too. Use the session's
    `can` (`apps/live/lib/editor-capabilities.ts`): `can.takePart` for taking part, `can.addContent`, `can.move`,
@@ -29,6 +29,6 @@ something it cannot.
 7. **Lock it with tests.** At least: the server refuses the forbidden write for a Participant and a Viewer; the
    editor capability (or gate) is false for a Viewer and right for a Participant. The role tests that must keep
    passing: `participant-content.leak.test.ts`, `editor-capabilities.test.ts`, `participant-palette.test.ts`,
-   `document-room-participant.test.ts`.
-8. **Look at it as each role.** Open the board through a Participant link and a Viewer link (`/document/shared?s=`)
+   `project-room-participant.test.ts`.
+8. **Look at it as each role.** Open the board through a Participant link and a Viewer link (`/project/shared?s=`)
    and try the feature; a guest browser profile per role keeps the identities apart.

@@ -1,7 +1,7 @@
 import type { EditLog } from '@liveplanner/edit-operations';
 
 // The changeset log lines (docs/specs/024-agents/blueprints/agent-changesets.md "Observability"):
-// one recognisable fingerprint each, with the document, the tab, the changeset id and counts, never
+// one recognisable fingerprint each, with the project, the tab, the changeset id and counts, never
 // content.
 
 type LogFields = Readonly<Record<string, string | number | boolean | null>>;
@@ -12,6 +12,6 @@ export function changesetLog(level: 'info' | 'warn', fingerprint: string, fields
 }
 
 // The engine's own lines (`[edit-ops] …`), prefixed with where they happened.
-export function engineLog(where: { documentId: string; tabId: string }): EditLog {
+export function engineLog(where: { projectId: string; tabId: string }): EditLog {
   return (fingerprint, fields) => console.info(fingerprint, { ...where, ...fields });
 }

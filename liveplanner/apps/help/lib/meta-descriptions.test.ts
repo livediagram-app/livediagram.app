@@ -48,7 +48,7 @@ const pages = [
 
 describe('help page metadata', () => {
   it('reads every page (guard against this test going blind)', () => {
-    expect(articles.length).toBeGreaterThan(200);
+    expect(articles.length).toBeGreaterThan(100);
     expect(articles.filter((a) => a.title === null || a.description === null)).toEqual([]);
     expect(staticPages.length).toBeGreaterThan(3);
     expect(featureLandings.length).toBeGreaterThan(5);

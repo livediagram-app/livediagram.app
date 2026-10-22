@@ -8,10 +8,10 @@ import {
   BUILD_ID_HEADER,
   CHANGESET_SEEN_HEADER,
   CLIENT_HEADER,
-  DOCUMENT_CONVERSION_HEADER,
-  DOCUMENT_FORMAT_HEADER,
-  DOCUMENT_OPEN_HEADER,
-  DOCUMENT_TRASHED_ERROR,
+  PROJECT_CONVERSION_HEADER,
+  PROJECT_FORMAT_HEADER,
+  PROJECT_OPEN_HEADER,
+  PROJECT_TRASHED_ERROR,
 } from '@liveplanner/api-schema';
 
 // CORS for the browser. Live app runs at the same hostname as the
@@ -21,7 +21,7 @@ import {
 export const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  // `Authorization` carries the Clerk Bearer token (Stage 2 hybrid
+  // `Authorization` carries the account access token (Stage 2 hybrid
   // auth, docs/specs/014-identity/auth-and-guest-access.md, docs/specs/015-api/api.md). Without it in the allow-list every
   // signed-in cross-origin request fails the preflight and surfaces
   // to JS as "Failed to fetch", which was hiding behind DELETE
@@ -30,13 +30,13 @@ export const CORS_HEADERS = {
   // The browser rejects a preflight if any header the client sends isn't
   // in this list, which surfaces as "Failed to fetch" with no other
   // signal, so each new header has to land here too. Take Offline and Sync
-  // Diagram declare themselves with DOCUMENT_CONVERSION_HEADER.
-  'Access-Control-Allow-Headers': `Authorization, Content-Type, X-Owner-Id, X-Owner-Sig, X-Share-Code, X-Share-Password, X-Allow-Empty, X-Room-Cursor, ${DOCUMENT_CONVERSION_HEADER}, ${DOCUMENT_OPEN_HEADER}, ${CHANGESET_SEEN_HEADER}, ${CLIENT_HEADER}`,
+  // Diagram declare themselves with PROJECT_CONVERSION_HEADER.
+  'Access-Control-Allow-Headers': `Authorization, Content-Type, X-Owner-Id, X-Owner-Sig, X-Share-Code, X-Share-Password, X-Allow-Empty, X-Room-Cursor, ${PROJECT_CONVERSION_HEADER}, ${PROJECT_OPEN_HEADER}, ${CHANGESET_SEEN_HEADER}, ${CLIENT_HEADER}`,
   'Access-Control-Max-Age': '86400',
   // The server release signal (docs/specs/016-platform/new-version-prompt.md, stale-builds.md), readable
   // by an editor on another origin (local dev, a deployment with a separate api host).
   // The tab revision as an ETag (docs/specs/024-agents/agent-changesets.md).
-  'Access-Control-Expose-Headers': `${DOCUMENT_FORMAT_HEADER}, ${BUILD_ID_HEADER}, ETag`,
+  'Access-Control-Expose-Headers': `${PROJECT_FORMAT_HEADER}, ${BUILD_ID_HEADER}, ETag`,
 };
 
 // An answer is the caller's live state, so a browser asks again before reusing it unless the route
@@ -51,8 +51,8 @@ export function json(body: unknown, init: ResponseInit = {}): Response {
   return new Response(JSON.stringify(body), { ...init, headers });
 }
 
-// A text body with the JSON helper's CORS and caching (docs/specs/024-agents/document-views.md): a
-// document view, which an agent reads as plain text.
+// A text body with the JSON helper's CORS and caching (docs/specs/024-agents/project-views.md): a
+// project view, which an agent reads as plain text.
 export function textPlain(body: string, init: ResponseInit = {}): Response {
   const headers = new Headers(init.headers);
   headers.set('Content-Type', 'text/plain; charset=utf-8');
@@ -65,7 +65,7 @@ export function notFound(): Response {
   return json({ error: 'not_found' }, { status: 404 });
 }
 
-// An SVG image body (docs/specs/006-document/document-snapshots.md document snapshots). Same CORS treatment as
+// An SVG image body (docs/specs/006-project/project-snapshots.md project snapshots). Same CORS treatment as
 // `json` so the live app's blob-URL fetch works cross-origin in dev; the
 // caller picks the `Cache-Control` (private + long for the owner
 // thumbnail, public + short for the live share image).
@@ -77,7 +77,7 @@ export function svgImage(body: string, cacheControl: string): Response {
   const headers = new Headers(CORS_HEADERS);
   headers.set('Content-Type', 'image/svg+xml; charset=utf-8');
   headers.set('Cache-Control', cacheControl);
-  // Served on the app's own origin, so opened directly an SVG is a document
+  // Served on the app's own origin, so opened directly an SVG is a project
   // that could run script. The renderer escapes everything it writes; this
   // keeps a future slip there from becoming stored XSS. Fonts and inline
   // data images (what a snapshot actually uses) still load.
@@ -126,36 +126,29 @@ export function methodNotAllowed(): Response {
 
 // 413 for a body over a route's size cap. Canonical home for the
 // `{ error: 'payload_too_large' }` literal the body gate in index.ts and the
-// per-field / per-tab caps in the document, tab, and custom-theme routes share.
+// per-field / per-tab caps in the project, tab, and custom-theme routes share.
 export function payloadTooLarge(): Response {
   return json({ error: 'payload_too_large' }, { status: 413 });
-}
-
-// 502 when the upstream AI provider fails or returns something unusable
-// (docs/specs/007-editor/ai-assistance.md). One token for every failure mode so the client shows a single
-// "try again" state; the specific cause goes to the worker log instead.
-export function aiError(): Response {
-  return json({ error: 'ai_error' }, { status: 502 });
 }
 
 export function rateLimited(): Response {
   return json({ error: 'rate_limited' }, { status: 429 });
 }
 
-// Clerk-only surfaces (teams, docs/specs/013-workspace/teams.md). Unlike missingAuth() below —
+// signed-in only surfaces (teams, docs/specs/013-workspace/teams.md). Unlike missingAuth() below —
 // which names both identity sources because either is acceptable —
 // this is for endpoints where the guest X-Owner-Id path is
-// structurally insufficient (membership is keyed by Clerk user id +
+// structurally insufficient (membership is keyed by account id +
 // verified email), so the only fix is signing in. 401 rather than 400
 // so the client can branch to its "sign in to use teams" surface.
 export function signInRequired(): Response {
   return json({ error: 'sign_in_required' }, { status: 401 });
 }
 
-// A document in the Trash (docs/specs/013-workspace/trash.md), answered only to a
+// A project in the Trash (docs/specs/013-workspace/trash.md), answered only to a
 // caller who could have opened it: the deleted state, not a not-found.
-export function documentTrashed(): Response {
-  return json({ error: DOCUMENT_TRASHED_ERROR }, { status: 410 });
+export function projectTrashed(): Response {
+  return json({ error: PROJECT_TRASHED_ERROR }, { status: 410 });
 }
 
 // A write that collides with existing state (duplicate invite email,
@@ -172,13 +165,13 @@ export function conflict(reason: string): Response {
 //   1. Pure-guest path with no `X-Owner-Id` header sent.
 //   2. A Bearer token was sent but verification failed silently
 //      (expired, invalid signature, JWKS unreachable, etc.):
-//      `getClerkIdentity` returns null on any error so the guest path
+//      `getAccountIdentity` returns null on any error so the guest path
 //      still serves.
 //
-// Pre-Clerk this used to be a flat "missing X-Owner-Id" message,
+// Before sign-in existed this was a flat "missing X-Owner-Id" message,
 // which now misdirects signed-in users debugging an auth failure to
 // look at the wrong header. The new message names both legitimate
 // identity sources so the caller can tell which one they're missing.
 export function missingAuth(): Response {
-  return badRequest('authentication required: send a valid Clerk Bearer token or X-Owner-Id');
+  return badRequest('authentication required: send a valid account access token or X-Owner-Id');
 }

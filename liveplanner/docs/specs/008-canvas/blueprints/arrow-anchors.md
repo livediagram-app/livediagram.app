@@ -9,31 +9,30 @@ Scope, by file:
 
 | File                                                          | Role                                                                                               |
 | ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| `packages/document/src/arrow-types.ts`                        | `Anchor` (16 ids), `ALL_ANCHORS`, `Endpoint`                                                       |
-| `packages/document/src/anchors.ts`                            | The anchor table: side, position class, box fraction, outward vector                               |
-| `packages/document/src/shape-outline.ts`                      | Anchoring outlines, outline projection, point-inside test                                          |
-| `packages/document/src/svg-path-outline.ts`                   | `sampleSvgPath`: an outline polygon from a drawn path (cloud, document)                            |
-| `packages/document/src/anchor-layouts.ts`                     | `anchorLayoutPoint`: face-placed anchors of triangle, hexagon, parallelogram, trapezoid            |
-| `packages/document/src/shape-geometry.ts`                     | `ACTOR_HULL`, the actor's anchoring hull (D8)                                                      |
-| `packages/document/src/geometry.ts`                           | `anchorPosition`                                                                                   |
-| `packages/document/src/anchor-choice.ts`                      | `exitSideTowards`, `facingSideTowards`, `anchorAimPoint`, `bestAnchorTowards`                      |
-| `packages/document/src/arrow-path.ts`                         | `arrowPathPolyline` (exported centreline), side-aware curve/elbow rules                            |
-| `packages/document/src/arrow-path-hits.ts`                    | `arrowPolyline`, `pathPassesThrough`, `pathsCross`, `pinnedBoxedElement`, `passesThroughOwnShapes` |
-| `packages/document/src/arrow-rebind.ts`                       | `rebindArrowAnchorsAfterMove`, `arrowReferencesAny`                                                |
-| `packages/document/src/arrow-rebind-swap.ts`                  | `swapCrossingEnds`                                                                                 |
-| `packages/document/src/arrow-endpoint-spread.ts`              | Quarter fans                                                                                       |
-| `packages/document/src/validate.ts`                           | `ANCHORS` derived from `ALL_ANCHORS`                                                               |
-| `packages/document/src/legacy-groups.ts`                      | Legacy group anchors resolved through the table                                                    |
-| `packages/document/src/duplicate.ts`                          | Endpoint copy without `manual`                                                                     |
+| `packages/project/src/arrow-types.ts`                        | `Anchor` (16 ids), `ALL_ANCHORS`, `Endpoint`                                                       |
+| `packages/project/src/anchors.ts`                            | The anchor table: side, position class, box fraction, outward vector                               |
+| `packages/project/src/shape-outline.ts`                      | Anchoring outlines, outline projection, point-inside test                                          |
+| `packages/project/src/svg-path-outline.ts`                   | `sampleSvgPath`: an outline polygon from a drawn path (cloud, project)                            |
+| `packages/project/src/anchor-layouts.ts`                     | `anchorLayoutPoint`: face-placed anchors of triangle, hexagon, parallelogram, trapezoid            |
+| `packages/project/src/shape-geometry.ts`                     | `ACTOR_HULL`, the actor's anchoring hull (D8)                                                      |
+| `packages/project/src/geometry.ts`                           | `anchorPosition`                                                                                   |
+| `packages/project/src/anchor-choice.ts`                      | `exitSideTowards`, `facingSideTowards`, `anchorAimPoint`, `bestAnchorTowards`                      |
+| `packages/project/src/arrow-path.ts`                         | `arrowPathPolyline` (exported centreline), side-aware curve/elbow rules                            |
+| `packages/project/src/arrow-path-hits.ts`                    | `arrowPolyline`, `pathPassesThrough`, `pathsCross`, `pinnedBoxedElement`, `passesThroughOwnShapes` |
+| `packages/project/src/arrow-rebind.ts`                       | `rebindArrowAnchorsAfterMove`, `arrowReferencesAny`                                                |
+| `packages/project/src/arrow-rebind-swap.ts`                  | `swapCrossingEnds`                                                                                 |
+| `packages/project/src/arrow-endpoint-spread.ts`              | Quarter fans                                                                                       |
+| `packages/project/src/validate.ts`                           | `ANCHORS` derived from `ALL_ANCHORS`                                                               |
+| `packages/project/src/legacy-groups.ts`                      | Legacy group anchors resolved through the table                                                    |
+| `packages/project/src/duplicate.ts`                          | Endpoint copy without `manual`                                                                     |
 | `apps/live/lib/user-preferences.ts`                           | `autoRebindArrowsEnabled`: on unless `false`                                                       |
 | `apps/live/hooks/canvas/useEditorDrag.ts`                     | Live rebind per drag frame                                                                         |
 | `apps/live/hooks/canvas/useNudgeSelection.ts`                 | Rebind per nudge                                                                                   |
-| `apps/live/app/document/[id]/useArrowConnect.ts`              | Click-to-connect: creation anchors only, no rebind                                                 |
+| `apps/live/app/project/[id]/useArrowConnect.ts`              | Click-to-connect: creation anchors only, no rebind                                                 |
 | `apps/live/hooks/canvas/arrow-endpoint-resolve.ts`            | Stops writing `manual`                                                                             |
 | `apps/live/hooks/canvas/useBoxedDragHandlers.ts`              | Quick-connect pins `nearestOfferedAnchor`; tap-placed arrow direction from `anchorOutward`         |
 | `apps/live/components/dialogs/settings/settings-catalogue.ts` | Setting copy                                                                                       |
 | `apps/help/app/palette/auto-attach-arrows/page.mdx`           | Help article                                                                                       |
-| `apps/api/src/ai-prompt.ts`                                   | Anchor list for the AI                                                                             |
 | `apps/api/src/openapi/schemas.generated.ts`                   | Regenerated `Anchor` enum and pinned endpoint schema                                               |
 
 ## Domain and naming
@@ -98,7 +97,7 @@ One `Record<Anchor, AnchorInfo>`; every helper reads it.
 - `OFFERED`: `Partial<Record<ShapeKind, readonly Anchor[]>>`, in table order:
   - `circle`, `diamond`, `actor`: the corners and middles (`COMPASS_ANCHORS`);
   - `triangle`: `ene e ese sse s ssw wsw w wnw`;
-  - `document`: all sixteen but `se` and `sw`.
+  - `project`: all sixteen but `se` and `sw`.
 - `offeredAnchors(el)`: `OFFERED[el.shape]` for a shape, else `ALL_ANCHORS`.
 - `sideOffered(el, side)`: some offered anchor lies on `side`.
 - `offeredOnSide(el, side, cls)`: the offered anchors of `cls` on `side`; when none, of the
@@ -151,7 +150,7 @@ from `shapePolygonVertices(kind)` (D15). `mid(a, b)` is the midpoint, `lerp(a, b
 | `cylinder`                                                     | Body with half-ellipse top (centre y 15, ry 12) and bottom (centre y 85, ry 12), each `ARC_SEGMENTS` segments, in the 0..100 box |
 | `stadium`                                                      | Capsule polygon: `r = min(w, h)/2`, two half circles of `ARC_SEGMENTS` segments on the short axis ends (D8)                      |
 | `actor`                                                        | `ACTOR_HULL` (viewBox 90 × 130) fitted "meet": `k = min(w/90, h/130)`, centred (D8)                                              |
-| `cloud`, `document`                                            | `sampleSvgPath(d)` of the kind's single main path in the shape-geometry table, mapped from 0..100 to the box                     |
+| `cloud`, `project`                                            | `sampleSvgPath(d)` of the kind's single main path in the shape-geometry table, mapped from 0..100 to the box                     |
 | anything else                                                  | `null`: the connector box is the outline                                                                                         |
 
 `pointInsideOutline(el, p, inset): boolean`:
@@ -216,10 +215,10 @@ State lives only inside one call. Steps:
 
 1. **Index.** `index = buildElementIndex(elements)`; `held` counts every pinned end of every arrow
    by element and anchor.
-2. **Considered.** In document order, an arrow is considered when a pinned end's element id is in
+2. **Considered.** In project order, an arrow is considered when a pinned end's element id is in
    `movingIds`, and it is neither a self-loop (both ends pinned to one element) nor rigid (both
    ends pinned, both element ids in `movingIds`).
-3. **Trigger.** For each considered arrow in document order (D7), with its current state:
+3. **Trigger.** For each considered arrow in project order (D7), with its current state:
    `path = arrowPolyline(arrow, index)`; `shapes` = the boxed elements of its pinned ends;
    triggered when `pathPassesThrough(path, s)` for some `s` in `shapes`. Not triggered: next arrow.
 4. **Re-evaluate** `from`, then `to` (D7). For an end pinned to boxed element `el` with anchor `a`:
@@ -256,10 +255,10 @@ Invariants, each asserted by a test:
 `swapCrossingEnds(elements, considered, index, changed): void`:
 
 1. Collect pinned ends of every arrow that is not a self-loop, grouped by element id.
-2. For each element in document order that holds an end of a considered arrow, repeat passes until
+2. For each element in project order that holds an end of a considered arrow, repeat passes until
    one makes no swap, at most `SWAP_MAX_PASSES` passes (D5). A group with more than
    `SWAP_MAX_ENDS_PER_SIDE` ends on one side skips that side and logs O3 (D5).
-3. In a pass, for each pair `i < j` in document order (arrow order, `from` before `to`):
+3. In a pass, for each pair `i < j` in project order (arrow order, `from` before `to`):
    - skip unless the anchors differ, share a side, and at least one arrow is considered;
    - skip unless `pathsCross(pathA, pathB)`;
    - build both arrows with the anchors traded; skip when `pathsCross` still holds, or either
@@ -387,7 +386,7 @@ existing validator). The api, the MCP tools and every import path validate throu
 
 ## Data and persistence
 
-- **Persisted.** `Endpoint.anchor` in element JSON: D1 tab storage, IndexedDB offline documents,
+- **Persisted.** `Endpoint.anchor` in element JSON: D1 tab storage, IndexedDB offline projects,
   JSON export, templates. The eight old ids keep their meaning; the eight new ones are additive.
   No migration.
 - **`manual`.** Removed from the type. No code writes it. Stored `manual: true` flags are inert,
@@ -444,7 +443,7 @@ PATH_MAX_SAMPLES_PER_SEGMENT)` samples × 2 shapes × outline edges (≤ 61, the
 - **Budget.** The run stays under 4 ms for 100 considered arrows, inside a 16 ms drag frame.
   Measured (node 24, one hub with 100 arrows, a quarter of them curved, 60 drag frames): median
   1.0 ms, p95 3.4 ms with boxes and circles; median 2.2 ms, p95 3.9 ms with outlined kinds
-  (triangle, hexagon, cylinder, cloud, parallelogram, document, stadium). The first frame pays JIT
+  (triangle, hexagon, cylinder, cloud, parallelogram, project, stadium). The first frame pays JIT
   warm-up.
 - **Cap.** `MAX_ELEMENTS_PER_TAB` (10,000) bounds everything else.
 
@@ -490,14 +489,14 @@ swaps log, plus the anchor fallbacks (O5, O6, prefix `[arrow-anchors]`); never a
 | -------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
 | 16 anchors, clockwise, old 8 kept                                                                        | ids, order, uniqueness                                                                    | `anchors.test.ts`                                                |
 | Class, sides, primary side, `anchorsOf`                                                                  | whole table                                                                               | `anchors.test.ts`                                                |
-| Offered anchors per kind, I7, class fallback on a side                                                   | circle / diamond / actor 8, triangle 9, document 14, square 16; triangle corner → quarter | `anchors.test.ts`                                                |
+| Offered anchors per kind, I7, class fallback on a side                                                   | circle / diamond / actor 8, triangle 9, project 14, square 16; triangle corner → quarter | `anchors.test.ts`                                                |
 | Snapping and markers honour the offer (I8)                                                               | no quarter snap on a circle; 8 markers                                                    | `anchor-geometry.test.ts`, `apps/live/lib/drag-geometry.test.ts` |
 | Face-placed anchors                                                                                      | parallelogram, trapezoid, hexagon, triangle points; star on its box; cylinder on its caps | `anchor-geometry.test.ts`                                        |
 | A side without anchors                                                                                   | triangle target above: facing side falls to w / e; creation anchor never `n`              | `anchor-geometry.test.ts`, `arrow-rebind.test.ts`                |
 | Fallback logs O1, O5, O6                                                                                 | triangle side fallback, circle class fallback, remap, creation; silent otherwise          | `arrow-rebind.test.ts`, `anchor-geometry.test.ts`                |
 | Quick-connect from a side without anchors                                                                | `nearestOfferedAnchor(triangle, n)`                                                       | `anchor-geometry.test.ts`                                        |
 | A quarter on a circle re-anchors to a corner                                                             | morphed-circle end flips side                                                             | `arrow-rebind.test.ts`                                           |
-| Cloud and document outlines, path sampler, O4                                                            | anchors on the outline; unsupported command → null + warn                                 | `anchor-geometry.test.ts`                                        |
+| Cloud and project outlines, path sampler, O4                                                            | anchors on the outline; unsupported command → null + warn                                 | `anchor-geometry.test.ts`                                        |
 | Box positions                                                                                            | all 16 on a box                                                                           | `anchor-geometry.test.ts`                                        |
 | Outline projection incl. quarters                                                                        | circle, diamond, star, stadium, actor points lie on the outline                           | `anchor-geometry.test.ts`                                        |
 | Rotation                                                                                                 | a quarter on a 90° element                                                                | `anchor-geometry.test.ts`                                        |

@@ -89,7 +89,7 @@ function Glyph({ kind, active = false }: { kind: GlyphKind; active?: boolean }) 
   }
 }
 
-/** A small uppercase group title (Overview, Spaces, More, Current Document). */
+/** A small uppercase group title (Overview, Spaces, More, Current Project). */
 function GroupTitle({ x, y, children }: { x: number; y: number; children: string }) {
   return (
     <Label x={x} y={y} size={10} weight={700} tone="muted">
@@ -281,7 +281,7 @@ function Star({ x, y }: { x: number; y: number }) {
   );
 }
 
-/** A document card: the preview above the name and a meta line. */
+/** A project card: the preview above the name and a meta line. */
 function DocCard({
   x,
   y,
@@ -540,7 +540,7 @@ function ListRow({
 
 // --- Scenes ------------------------------------------------------------------
 
-/** The full-page Explorer: the sidebar's three groups, and My Documents in the card view with the
+/** The full-page Explorer: the sidebar's three groups, and My Projects in the card view with the
  *  pane header's Create button and List / Card toggle. */
 export function ExplorerPageLayout() {
   const sx = 16;
@@ -565,7 +565,7 @@ export function ExplorerPageLayout() {
       <GroupTitle x={sx + 12} y={126}>
         SPACES
       </GroupTitle>
-      <TreeRow x={sx} y={134} w={sw} label="My Documents" glyph="folder" active chevron="open" />
+      <TreeRow x={sx} y={134} w={sw} label="My Projects" glyph="folder" active chevron="open" />
       <TreeRow x={sx} y={152} w={sw} label="Projects" glyph="folder" level={1} chevron="closed" />
       <TreeRow x={sx} y={170} w={sw} label="Design" glyph="team" chevron="closed" />
       <TreeRow x={sx} y={188} w={sw} label="New Team" glyph="plus" />
@@ -586,7 +586,7 @@ export function ExplorerPageLayout() {
         strokeWidth={1.5}
       />
       <Label x={184} y={36} size={12} weight={700} tone="strong">
-        My Documents
+        My Projects
       </Label>
       <Button x={278} y={25} w={46} h={22} label="Create" />
       <ViewToggle x={328} y={25} />
@@ -598,11 +598,11 @@ export function ExplorerPageLayout() {
   );
 }
 
-/** The editor's Explorer, open under the menu button in the top-left card: the Current Document
- *  card, then Overview, Spaces and More, with My Documents opened in place to a folder and a
- *  document. */
-/** The editor's Explorer panel open under the menu button: the Current Document card (its name to rename, its
- *  visibility badge at the right), the rail of sections beside the pane showing the picked one (My Documents), and
+/** The editor's Explorer, open under the menu button in the top-left card: the Current Project
+ *  card, then Overview, Spaces and More, with My Projects opened in place to a folder and a
+ *  project. */
+/** The editor's Explorer panel open under the menu button: the Current Project card (its name to rename, its
+ *  visibility badge at the right), the rail of sections beside the pane showing the picked one (My Projects), and
  *  the product's links along the foot. */
 export function ExplorerPanelLayout() {
   const px = 16;
@@ -642,7 +642,7 @@ export function ExplorerPanelLayout() {
           <circle cx={px + pw - 10} cy={31} r={1.5} />
         </g>
 
-        {/* Current Document: thumbnail, label, the name (click to rename), the badge at the right. */}
+        {/* Current Project: thumbnail, label, the name (click to rename), the badge at the right. */}
         <rect x={px + 10} y={48} width={pw - 20} height={58} rx={9} className="fill-slate-50" />
         <rect
           x={px + 18}
@@ -655,7 +655,7 @@ export function ExplorerPanelLayout() {
         />
         <Thumb x={px + 18} y={56} w={62} h={42} kind={1} />
         <GroupTitle x={px + 92} y={66}>
-          CURRENT DOCUMENT
+          CURRENT PROJECT
         </GroupTitle>
         <rect
           x={px + 88}
@@ -713,7 +713,7 @@ export function ExplorerPanelLayout() {
         <GroupTitle x={px + 14} y={224}>
           SPACES
         </GroupTitle>
-        <TreeRow x={px + 2} y={230} w={railW - 6} label="My Documents" glyph="folder" active />
+        <TreeRow x={px + 2} y={230} w={railW - 6} label="My Projects" glyph="folder" active />
         <GroupTitle x={px + 14} y={262}>
           MORE
         </GroupTitle>
@@ -722,7 +722,7 @@ export function ExplorerPanelLayout() {
 
         {/* The pane: the picked section, its Open Page, its rows. */}
         <Label x={paneX + 14} y={134} size={12} weight={700} tone="strong">
-          My Documents
+          My Projects
         </Label>
         <rect
           x={paneX + paneW - 80}
@@ -784,7 +784,7 @@ export function ExplorerPanelLayout() {
 }
 
 /** Search results narrowed by a typed Made by AI filter and a word: the pill in the field, the lit
- *  chip in the row (Space included, as on every gathered list), and the documents that match. */
+ *  chip in the row (Space included, as on every gathered list), and the projects that match. */
 export function FilterSearchResults() {
   const chips: { w: number; label: string; set?: boolean }[] = [
     { w: 54, label: 'Opens in' },
@@ -848,13 +848,13 @@ export function FilterSearchResults() {
       </Label>
 
       <ListRow x={14} y={108} w={412} title="AI payment flow" note="Projects" ai />
-      <ListRow x={14} y={146} w={412} title="Payment architecture" note="My Documents" ai />
+      <ListRow x={14} y={146} w={412} title="Payment architecture" note="My Projects" ai />
     </Scene>
   );
 }
 
 /** The card view inside a folder: the List / Card / Details toggle set to cards, a subfolder's preview mosaic
- *  with its +N tile, and document cards with a favourite star. */
+ *  with its +N tile, and project cards with a favourite star. */
 export function CardViewGrid() {
   return (
     <Scene w={420} h={200} bg="plain">
@@ -862,7 +862,7 @@ export function CardViewGrid() {
         Projects
       </Label>
       <Label x={16} y={46} size={10} tone="muted">
-        My Documents › Projects
+        My Projects › Projects
       </Label>
       <Button x={268} y={15} w={66} h={22} label="Create" />
       <ViewToggle x={340} y={15} />
@@ -931,7 +931,7 @@ export function MoveToFolderScene() {
         strokeWidth={1.5}
       />
       <Label x={x + 16} y={y + 64} size={10} weight={600} tone="accent">
-        ‹ My Documents
+        ‹ My Projects
       </Label>
       {row(y + 76, 'Projects', { selected: true })}
       {row(y + 104, 'Workshops')}
@@ -950,8 +950,8 @@ export function MoveToFolderScene() {
   );
 }
 
-/** A folder's menu with Use as Default for open: the "New documents that open as" list, one
- *  checkable entry per kind of new document. */
+/** A folder's menu with Use as Default for open: the "New projects that open as" list, one
+ *  checkable entry per kind of new project. */
 export function UseAsDefaultScene() {
   const mx = 16;
   const my = 16;
@@ -1033,7 +1033,7 @@ export function UseAsDefaultScene() {
         strokeWidth={1.5}
       />
       <Label x={fx + 12} y={fy + 15} size={10} weight={700} tone="muted">
-        New documents that open as
+        New projects that open as
       </Label>
       {kinds.map((k, i) => {
         const ry = fy + 26 + i * 20;

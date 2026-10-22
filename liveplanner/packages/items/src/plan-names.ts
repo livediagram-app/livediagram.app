@@ -41,7 +41,7 @@ const refuse = (code: NameRefusalCode, message: string): { ok: false } & NameRef
   message,
 });
 
-// A column name or a status id, against the statuses the document's boards name.
+// A column name or a status id, against the statuses the project's boards name.
 export function resolveStatus(
   input: string,
   statuses: readonly PlanStatusName[],
@@ -54,7 +54,7 @@ export function resolveStatus(
   if (statuses.length === 0)
     return refuse(
       'status_unknown',
-      `No column "${input}": the document has no Plan board yet. Add one with add_board, or leave status out ` +
+      `No column "${input}": the project has no Plan board yet. Add one with add_board, or leave status out ` +
         'to make the card off every board.',
     );
   return refuse(
@@ -93,7 +93,7 @@ export function resolveItem(input: string, items: readonly Item[]): Named<{ item
   );
 }
 
-// The people already assigned on the document, once each by id.
+// The people already assigned on the project, once each by id.
 export function assignedPeople(items: readonly Item[]): ItemPerson[] {
   const seen = new Map<string, ItemPerson>();
   for (const it of items) {
@@ -103,9 +103,9 @@ export function assignedPeople(items: readonly Item[]): ItemPerson[] {
   return [...seen.values()];
 }
 
-// A person by name: one already assigned on the document, else a named person whose id comes from the name, so the
+// A person by name: one already assigned on the project, else a named person whose id comes from the name, so the
 // same name is the same person on every card. A new person's colour starts from the name and steps on past any
-// colour someone on the document already has, so two people never share one while colours remain.
+// colour someone on the project already has, so two people never share one while colours remain.
 export function personNamed(name: string, people: readonly ItemPerson[]): ItemPerson {
   const key = statusKey(name);
   const known = people.find((p) => statusKey(p.name) === key);

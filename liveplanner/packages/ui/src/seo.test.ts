@@ -14,7 +14,7 @@ import { breadcrumbJsonLd, pageMetadata } from './seo';
 describe('pageMetadata', () => {
   it("uses a page's own card for both Open Graph and Twitter when it has one", () => {
     const image = { url: 'https://liveplanner.app/help/og/canvas/themes.png', alt: 'Themes' };
-    const md = pageMetadata({ title: 't', description: 'd', path: '/help/canvas/themes/', image });
+    const md = pageMetadata({ title: 't', description: 'd', path: '/help/user-interface/themes/', image });
     expect(md.openGraph?.images).toEqual([{ ...image, width: 1200, height: 630 }]);
     expect(md.twitter?.images).toEqual([image.url]);
   });
@@ -165,7 +165,7 @@ describe('pageMetadata siteName', () => {
     const md = pageMetadata({
       title: 'Themes',
       description: 'd',
-      path: '/help/canvas/themes/',
+      path: '/help/user-interface/themes/',
       siteName: 'liveplanner Help',
     });
     expect(md.title).toBe('Themes');

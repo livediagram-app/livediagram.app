@@ -18,15 +18,10 @@ import {
 // dispatch (docs/specs/015-api/api-documentation.md "Drift test"). See dispatch-probe.ts
 // for how the worker is probed; what each case below proves is stated on it.
 
-// Probe as a signed-in caller, so the Clerk-only surfaces (teams, tokens,
+// Probe as a signed-in caller, so the signed-in-only surfaces (teams, tokens,
 // OAuth exchange) route instead of answering 401 for every path under them.
-vi.mock('../auth/clerk', () => ({
-  getClerkIdentity: async () => ({
-    userId: 'user_probe',
-    email: null,
-    sessionId: null,
-    firstFactorAgeMinutes: null,
-  }),
+vi.mock('../auth/accounts', () => ({
+  getAccountIdentity: async () => ({ userId: 'user_probe', email: null }),
 }));
 
 const vocabulary = routeVocabulary();
@@ -48,13 +43,13 @@ beforeAll(async () => {
   for (const [segment, byPosition] of vocabulary) {
     // One level deeper than the deepest literal or documented template, so a
     // handler that serves an extension of a known path is caught too.
-    const documentedDepth = Math.max(
+    const projectedDepth = Math.max(
       0,
       ...ROUTE_MANIFEST.filter((r) => r.segment === segment).map(
         (r) => templateSegments(r.path).length,
       ),
     );
-    const maxLength = Math.max(documentedDepth, ...byPosition.keys()) + 1;
+    const maxLength = Math.max(projectedDepth, ...byPosition.keys()) + 1;
     candidates.push(...candidatePaths(segment, byPosition, maxLength));
   }
   results = await probeDispatch(candidates);
@@ -85,7 +80,7 @@ describe('OpenAPI manifest ↔ dispatch (method, path-template) parity', () => {
     expect(phantom, `documented but not dispatched: ${phantom.join(', ')}`).toEqual([]);
   });
 
-  it('documents every path the dispatch serves', () => {
+  it('projects every path the dispatch serves', () => {
     const undocumented = [
       ...new Set(
         results
@@ -97,7 +92,7 @@ describe('OpenAPI manifest ↔ dispatch (method, path-template) parity', () => {
     expect(undocumented, `dispatched but not documented: ${undocumented.join(', ')}`).toEqual([]);
   });
 
-  it('documents every method a handler answers before touching storage', () => {
+  it('projects every method a handler answers before touching storage', () => {
     // A `routed` outcome is definitive about the method as well as the path.
     // A `storage` outcome is not (the handler loaded something before
     // branching on the verb), which is what the per-segment verb check in
@@ -114,7 +109,7 @@ describe('OpenAPI manifest ↔ dispatch (method, path-template) parity', () => {
     expect(undocumented, `answered but not documented: ${undocumented.join(', ')}`).toEqual([]);
   });
 
-  it('documents every literal the dispatch discriminates on, at its position', () => {
+  it('projects every literal the dispatch discriminates on, at its position', () => {
     // A literal route shadowed by a parameter sibling (`/teams/stats` next to
     // `/teams/{id}`) matches the parameter's template above and would pass.
     // The route code comparing `segments[k] === 'stats'` is what gives it

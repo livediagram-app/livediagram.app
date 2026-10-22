@@ -48,7 +48,7 @@ which is never us.
 ## Nothing loads until asked
 
 As in [More than YouTube](embed-providers.md), and load-bearing: the iframe is not mounted until the
-user presses **Load embed**. Opening a document containing five website embeds
+user presses **Load embed**. Opening a project containing five website embeds
 must not fetch five third-party pages, and liveplanner ([Business model + licence](../002-project-scope/business-model-and-licence.md): no trackers) should not
 be silently shipping its users anywhere on page load.
 
@@ -71,7 +71,7 @@ Measured in Chrome, bbc.co.uk (which sends both headers) against example.com
 | `contentWindow.length`   | 0           | 0         |
 | resource-timing entry    | present     | present   |
 
-Chrome serves its refusal page as a cross-origin document, so the familiar
+Chrome serves its refusal page as a cross-origin project, so the familiar
 "read `location.href`, see `about:blank`" trick reports success for both. With
 a timeout behind it, that trick fires the timeout on every website embed: a
 "won't load" notice eight seconds after loading perfectly.

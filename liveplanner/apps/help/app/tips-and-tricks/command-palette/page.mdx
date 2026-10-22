@@ -1,45 +1,34 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { CommandPalette } from '@/components/illustrations/tips';
+import { SearchCreateTab } from '@/components/illustrations/search-panel';
 
 export const metadata = helpMetadata({
-  title: 'The Palette',
+  title: 'Run Commands with ⌘K',
   description:
-    'Learn the liveplanner palette: pick a selection mode, add shapes, text, icons and more, and see how its dropdowns, categories and placing work.',
+    'Press Cmd/Ctrl+K in liveplanner and type what you want: add or rename a tab, export, share, open settings or switch on Zen mode, all from the keyboard.',
   path: '/help/tips-and-tricks/command-palette/',
 });
 
-<ArticleLayout title="The Palette" description="Pick tools and drop new elements onto the canvas from the palette strip across the top of your diagram." categoryTitle="Tips and Tricks" categorySlug="tips-and-tricks">
+<ArticleLayout title="Run Commands with ⌘K" description="One shortcut reaches almost everything: press Cmd/Ctrl+K, type what you want to do, and press Enter." categoryTitle="Tips and Tricks" categorySlug="tips-and-tricks">
 
-The palette is the strip across the top of the canvas. It holds the canvas tools and every category of thing you can add to a diagram, so it is your main launchpad while you build.
+You don't need to remember where every button lives. Press `⌘K` (Ctrl+K on Windows and Linux) in any project, type a few letters of what you want, and pick it. The same box finds projects, tabs, settings and help, and runs commands too.
 
-## The two dropdowns
+## A few to try
 
-The **menu button** and the tab's name sit just left of the strip. The strip itself starts with the selection mode, then the categories:
+- `new` and **Create New Tab** adds a tab and opens **Start Planning** on it, ready for a board, sheet, dashboard or form.
+- `rename` offers **Rename Tab** and **Rename Project**.
+- `export` opens the tab's **Export…**, for a CSV, an image, a PDF or JSON.
+- `share` opens **Share Project**.
+- `zen` hides the editor's chrome so only your board or sheet is on screen; `Z` or `Escape` brings it back.
+- `keyboard` opens Settings on its **Keyboard** category, where you can switch shortcuts off.
+- `dark` finds the **Theme** setting, so you can switch between light and dark.
 
-- On the left, the **selection mode** (what your pointer does), shown as a grid in two groups. **Edit**: **Select** (`V`), **Hand** (`H`) and the [Format](/help/tips-and-tricks/format-painter/) painter. **Preview**: **Isometric** (`I`) and **Zen** (`Z`). Plan mode leaves Format out, and most of these stay greyed out until the canvas has something on it. See [Selection Modes](/help/selection-modes/).
-- Then the **categories**, by name. Rest the pointer on one, or click it, and its elements open in a panel underneath, in named groups; click one to add it or drag it onto the canvas. In Diagram mode they are **Shapes**, **Write** (text, notes and comments), **Draw** (the pens and arrows), **Diagrams** (mind maps, flowcharts, tables and more), **Concepts**, **Layout** (lanes, frames, cards and badges), **Icons**, **Tech** (full-colour technology marks) and **Media**.
-
-  Workshop mode has no Diagrams, Concepts or Tech: after **Layout** come **Ask** and **Session**, the interactive elements for workshops, then Icons, **Stickers**, Media and **Data**.
-
-**Search** (the magnifier, or `S`) finds any element by name. Each mode has its own set: [Plan mode](/help/canvas/plan-mode/) has no palette at all: its boards, sheets and dashboards carry their own tools. See [where each one lives](/help/palette/tools/).
-
-<Figure caption="The palette strip: the selection mode, the categories by name and Search, with the menu button and the tab's name to its left.">
-  <CommandPalette />
+<Figure caption="Type what you want: a matching tab keeps the first slot, and Create New Tab waits just below it.">
+  <SearchCreateTab />
 </Figure>
 
-## Adding elements
+Commands sit below the places that match, so `Enter` on its own goes to the first match. Arrow down to the command when you want to run it instead.
 
-Pick a tile and it arms a **tap-or-drag** gesture: click the canvas to drop the element at its natural size, or drag on the canvas to size it as you place it. You can also drag a tile straight onto the canvas. An annotation is the exception: it drops at the centre of the visible canvas, ready to move.
-
-If a boxed element is already selected when you click to drop another, the new one inherits its width and height, so you can chain similarly-sized nodes quickly. (A circle or diamond takes a square the size of the larger side, and a selected frame or lane never passes its size on.)
-
-A tile with a keyboard shortcut shows its key in the corner on the strip; in the More and Search grids, hold `⌘` (Ctrl on Windows and Linux) to show them. See [Keyboard Shortcuts](/help/tips-and-tricks/keyboard-shortcuts/).
-
-## More about the strip
-
-The strip stays pinned to the top of the canvas on every device; on a phone its categories swipe sideways. It steps aside in Zen mode and on a view-only link. See [Toolbar Layout](/help/palette/toolbar-layout/) for the categories, Search and the order of the tiles, and [Panel Layout](/help/user-interface/panel-layout/) for where everything else sits.
-
-Looking for commands rather than elements? `⌘K` opens search with its actions; see [the Command Palette](/help/search-panel/the-search-panel/command-palette/).
+See [The Command Palette](/help/search-panel/the-search-panel/command-palette/) for every command it offers, and [Keyboard Shortcuts](/help/tips-and-tricks/keyboard-shortcuts/) for the keys that work without it.
 
 </ArticleLayout>

@@ -1,0 +1,370 @@
+import type { Dispatch, PointerEvent as ReactPointerEvent, RefObject, SetStateAction } from 'react';
+import {
+  angledCornerPoints,
+  angledElbow,
+  arrowLabelAnchor,
+  arrowStyleOf,
+  curveAnchorPoints,
+  curveControlPoint,
+  endpointPosition,
+  finishMindConnectorRoute,
+  arrowRoutePoints,
+  planArrowBend,
+  resolveFinish,
+  type ArrowElement,
+  type FrameHandle,
+} from '@livedesign/document';
+import { track } from '@/lib/telemetry';
+import { pointerToCanvas, type ArrowEnd, type DragState } from '@/lib/canvas';
+import type { EditorDragDeps } from './useEditorDrag.types';
+
+type ArrowDragHandlerDeps = {
+  depsRef: RefObject<EditorDragDeps>;
+  setDrag: Dispatch<SetStateAction<DragState | null>>;
+  checkpointPendingRef: RefObject<boolean>;
+  arrowConnectTrackedRef: RefObject<boolean>;
+};
+
+// The arrow-specific drag gesture starters (translate / endpoint / curve /
+// curve-point / elbow / label / bend-by-the-line) plus the curve-point delete.
+// Each resolves the live arrow off depsRef, arms a history checkpoint, and
+// sets the drag state the shared move effect in useEditorDrag then advances.
+// Split out of useEditorDrag to keep that hook focused on the move loop.
+export function useArrowDragHandlers({
+  depsRef,
+  setDrag,
+  checkpointPendingRef,
+  arrowConnectTrackedRef,
+}: ArrowDragHandlerDeps) {
+  const resolveArrowDrag = (arrowId: string) => {
+    const d = depsRef.current;
+    if (d.formatSourceId !== null || d.formatToolActive) return null;
+    const arrow = d.activeTab.elements.find((el) => el.id === arrowId);
+    if (!arrow || arrow.type !== 'arrow') return null;
+    return { d, arrow };
+  };
+
+  const beginArrowTranslate = (arrowId: string, e: ReactPointerEvent) => {
+    const r = resolveArrowDrag(arrowId);
+    if (!r) return;
+    const { d, arrow } = r;
+    if (arrow.locked === true || d.layerInertIds.has(arrowId) || d.isReadOnly) return;
+    if (arrow.from.kind !== 'free' || arrow.to.kind !== 'free') return;
+    d.setSelectedId(arrowId);
+    // Arm a checkpoint; it is taken on the first real mutation (tick).
+    checkpointPendingRef.current = true;
+    setDrag({
+      kind: 'arrow-translate',
+      arrowId,
+      startClientX: e.clientX,
+      startClientY: e.clientY,
+      startFromX: arrow.from.x,
+      startFromY: arrow.from.y,
+      startToX: arrow.to.x,
+      startToY: arrow.to.y,
+    });
+  };
+
+  // Where a shift-drag fork's tail sits on the trunk (docs/specs/008-canvas/arrow-to-arrow.md): far enough
+  // along that the shared trunk dominates and the fork reads as a Y near the
+  // head, not a second arrow from the source.
+  const FORK_T = 0.7;
+
+  const beginEndpointDrag = (arrowId: string, end: ArrowEnd, e: ReactPointerEvent) => {
+    const r = resolveArrowDrag(arrowId);
+    if (!r) return;
+    const { d, arrow } = r;
+    d.setSelectedId(arrowId);
+    if (arrow.locked === true || d.layerInertIds.has(arrowId) || d.isReadOnly) return;
+    const start = endpointPosition(end === 'from' ? arrow.from : arrow.to, d.activeTab.elements);
+    // Shift-drag on the HEAD forks a branch (docs/specs/008-canvas/arrow-to-arrow.md): the arrow itself
+    // stays put; a NEW arrow starts with its tail connected on this line
+    // (~70% along) and its head following the drag — one trunk pointing at
+    // several targets instead of parallel near-duplicate arrows. The branch
+    // inherits the trunk's line look so the fork reads as one connector.
+    if (e.shiftKey && end === 'to') {
+      const branch: ArrowElement = {
+        id: crypto.randomUUID(),
+        type: 'arrow',
+        from: { kind: 'on-arrow', arrowId, t: FORK_T },
+        to: { kind: 'free', x: start.x, y: start.y },
+        ...(arrow.strokeColor ? { strokeColor: arrow.strokeColor } : {}),
+        ...(arrow.strokeWidth !== undefined ? { strokeWidth: arrow.strokeWidth } : {}),
+        ...(arrow.strokeStyle ? { strokeStyle: arrow.strokeStyle } : {}),
+      };
+      d.commit((els) => [...els, branch]);
+      d.setSelectedId(branch.id);
+      track('Element', 'Added', 'Arrow');
+      arrowConnectTrackedRef.current = false;
+      setDrag({
+        kind: 'arrow-endpoint',
+        arrowId: branch.id,
+        end: 'to',
+        startClientX: e.clientX,
+        startClientY: e.clientY,
+        startCanvasX: start.x,
+        startCanvasY: start.y,
+      });
+      return;
+    }
+    // Arm a checkpoint; it is taken on the first real mutation (tick).
+    checkpointPendingRef.current = true;
+    arrowConnectTrackedRef.current = false;
+    setDrag({
+      kind: 'arrow-endpoint',
+      arrowId,
+      end,
+      startClientX: e.clientX,
+      startClientY: e.clientY,
+      startCanvasX: start.x,
+      startCanvasY: start.y,
+      // Repositioning an existing endpoint, not drawing a new arrow.
+      reposition: true,
+    });
+  };
+
+  const beginArrowCurveDrag = (arrowId: string, e: ReactPointerEvent) => {
+    const r = resolveArrowDrag(arrowId);
+    if (!r) return;
+    const { d, arrow } = r;
+    if (arrowStyleOf(arrow) !== 'curved') return;
+    d.setSelectedId(arrowId);
+    if (arrow.locked === true || d.layerInertIds.has(arrowId) || d.isReadOnly) return;
+    const from = endpointPosition(arrow.from, d.activeTab.elements);
+    const to = endpointPosition(arrow.to, d.activeTab.elements);
+    const control = curveControlPoint(from, to, arrow.curveOffset, arrow.from, arrow.to);
+    // Arm a checkpoint; it is taken on the first real mutation (tick).
+    checkpointPendingRef.current = true;
+    setDrag({
+      kind: 'arrow-curve',
+      arrowId,
+      startClientX: e.clientX,
+      startClientY: e.clientY,
+      startMidX: (from.x + to.x) / 2,
+      startMidY: (from.y + to.y) / 2,
+      // The cursor isn't always exactly on the control point at
+      // grab time (the SVG handle has a 10px hit area). Storing the
+      // cursor-to-control delta lets the move handler keep the
+      // handle anchored to where the user originally clicked,
+      // matching native drag UX.
+      grabDx: control.x - (from.x + to.x) / 2,
+      grabDy: control.y - (from.y + to.y) / 2,
+    });
+  };
+
+  // Drag one control point of a multi-bend curve (curvePoints[index]). Same
+  // gesture as beginArrowCurveDrag but anchored to that point + tagged with
+  // its index so the tick writes back into the array slot.
+  const beginArrowCurvePointDrag = (arrowId: string, index: number, e: ReactPointerEvent) => {
+    const r = resolveArrowDrag(arrowId);
+    if (!r) return;
+    const { d, arrow } = r;
+    // Any arrow carrying an explicit point at `index` can have it dragged —
+    // curved (smooth spline) or angled (polyline bend) alike. The point's
+    // existence is the gate; the style no longer is.
+    if (!arrow.curvePoints?.[index]) return;
+    d.setSelectedId(arrowId);
+    if (arrow.locked === true || d.layerInertIds.has(arrowId) || d.isReadOnly) return;
+    const from = endpointPosition(arrow.from, d.activeTab.elements);
+    const to = endpointPosition(arrow.to, d.activeTab.elements);
+    // Where the handle shows: an angled arrow's corners are squared to its ends.
+    const anchor = (
+      arrowStyleOf(arrow) === 'angled'
+        ? angledCornerPoints(from, to, arrow.curvePoints, arrow.from, arrow.to)
+        : curveAnchorPoints(from, to, arrow.curvePoints)
+    )[index]!;
+    checkpointPendingRef.current = true;
+    setDrag({
+      kind: 'arrow-curve',
+      arrowId,
+      pointIndex: index,
+      startClientX: e.clientX,
+      startClientY: e.clientY,
+      startMidX: (from.x + to.x) / 2,
+      startMidY: (from.y + to.y) / 2,
+      grabDx: anchor.x - (from.x + to.x) / 2,
+      grabDy: anchor.y - (from.y + to.y) / 2,
+    });
+  };
+
+  // Snap a dragged arrow control point against its polyline neighbours + the
+  // nearby element edges/centres, so a bend squares up to a right angle or
+  // lines up with a shape instead of landing at an arbitrary spot. `pointIndex`
+  // selects a multi-bend slot; null is the single bow / the elbow (which line
+  // up to the endpoints). The pinned-endpoint elements are excluded so the
+  // bend doesn't cling to the box the arrow connects to. Returns the snapped
+  // point + the guide lines now in effect (for the alignment overlay).
+
+  // Bend an arrow by dragging its line (docs/specs/008-canvas/arrow-bending.md). The press plans the
+  // bend from the arrow as it stands; nothing changes until the pointer
+  // travels (useEditorDrag's engage threshold), so a click only selects.
+  const beginArrowBend = (arrowId: string, e: ReactPointerEvent<SVGElement>) => {
+    const r = resolveArrowDrag(arrowId);
+    if (!r) return;
+    const { d, arrow } = r;
+    if (arrow.locked === true || d.layerInertIds.has(arrowId) || d.isReadOnly) return;
+    // A mind connector the finish routes through corners is the map's shape, not the arrow's: there is no
+    // stored bend to drag (docs/specs/009-elements/mind-node.md "Connectors"). A bubble map's straight spoke
+    // can still be bowed: the bow is then picked on it, and a pick wins in every finish.
+    const finish = resolveFinish(arrow.finish, d.activeTab.finish);
+    if (finishMindConnectorRoute(arrow, d.activeTab.elements, finish)?.style === 'angled') return;
+    // The arrow's <svg> spans the transformed canvas wrapper, so its rect maps
+    // the pointer into canvas coordinates exactly as the wrapper's does.
+    const svg = e.currentTarget.ownerSVGElement;
+    if (!svg) return;
+    const grab = pointerToCanvas(
+      e.clientX,
+      e.clientY,
+      svg.getBoundingClientRect(),
+      d.zoomRef.current,
+    );
+    checkpointPendingRef.current = true;
+    setDrag({
+      kind: 'arrow-bend',
+      arrowId,
+      startClientX: e.clientX,
+      startClientY: e.clientY,
+      plan: planArrowBend(arrow, d.activeTab.elements, grab),
+    });
+  };
+
+  // Scale a selected free arrow from its frame (docs/specs/008-canvas/arrow-bending.md). The box is
+  // the drawn route's bounds at the press; each move rescales from it.
+  const beginArrowScale = (arrowId: string, handle: FrameHandle, e: ReactPointerEvent) => {
+    const r = resolveArrowDrag(arrowId);
+    if (!r) return;
+    const { d, arrow } = r;
+    if (arrow.locked === true || d.layerInertIds.has(arrowId) || d.isReadOnly) return;
+    if (arrow.from.kind !== 'free' || arrow.to.kind !== 'free') return;
+    const pts = arrowRoutePoints(arrow, d.activeTab.elements);
+    const xs = pts.map((p) => p.x);
+    const ys = pts.map((p) => p.y);
+    const x = Math.min(...xs);
+    const y = Math.min(...ys);
+    checkpointPendingRef.current = true;
+    setDrag({
+      kind: 'arrow-scale',
+      arrowId,
+      handle,
+      startClientX: e.clientX,
+      startClientY: e.clientY,
+      box: { x, y, width: Math.max(...xs) - x, height: Math.max(...ys) - y },
+      start: arrow,
+    });
+  };
+
+  // Remove a control point (right-click a point handle). Drops the slot from
+  // curvePoints; clearing it back to undefined when the last one goes, so the
+  // arrow falls back to its default single bend / straight line.
+  const deleteCurvePoint = (arrowId: string, index: number) => {
+    const r = resolveArrowDrag(arrowId);
+    if (!r) return;
+    const { d, arrow } = r;
+    if (
+      arrow.locked === true ||
+      d.layerInertIds.has(arrowId) ||
+      d.isReadOnly ||
+      !arrow.curvePoints?.[index]
+    )
+      return;
+    const remaining = arrow.curvePoints.filter((_, i) => i !== index);
+    d.commit((all) =>
+      all.map((el) => {
+        if (el.id !== arrowId || el.type !== 'arrow') return el;
+        if (remaining.length > 0) return { ...el, curvePoints: remaining };
+        // Deleting the last bend point leaves nothing to curve through, so the
+        // arrow becomes a plain straight line: drop the points AND the curve /
+        // elbow bow + the curved/angled style, rather than snapping back to a
+        // single-handle bow the user didn't ask for.
+        return {
+          ...el,
+          curvePoints: undefined,
+          curveOffset: undefined,
+          elbowOffset: undefined,
+          arrowStyle: 'straight' as const,
+        };
+      }),
+    );
+    d.setSelectedId(arrowId);
+  };
+
+  // Elbow-handle drag for angled arrows. Same gesture shape as
+  // beginArrowCurveDrag but stores the auto-elbow (the corner the
+  // angled-arrow renderer would draw without offset) as the
+  // baseline. On move we compute a fresh elbowOffset as
+  // `(currentElbow - startBase)`, so the elbow lands wherever the
+  // cursor goes and the value is preserved when endpoints later
+  // move.
+  const beginArrowElbowDrag = (arrowId: string, e: ReactPointerEvent) => {
+    const r = resolveArrowDrag(arrowId);
+    if (!r) return;
+    const { d, arrow } = r;
+    if (arrowStyleOf(arrow) !== 'angled') return;
+    d.setSelectedId(arrowId);
+    if (arrow.locked === true || d.layerInertIds.has(arrowId) || d.isReadOnly) return;
+    const from = endpointPosition(arrow.from, d.activeTab.elements);
+    const to = endpointPosition(arrow.to, d.activeTab.elements);
+    const baseElbow = angledElbow(from, to, arrow.from, arrow.to);
+    const currentElbow = angledElbow(from, to, arrow.from, arrow.to, arrow.elbowOffset);
+    // Arm a checkpoint; it is taken on the first real mutation (tick).
+    checkpointPendingRef.current = true;
+    setDrag({
+      kind: 'arrow-elbow',
+      arrowId,
+      startClientX: e.clientX,
+      startClientY: e.clientY,
+      startBaseX: baseElbow.x,
+      startBaseY: baseElbow.y,
+      // Pointer-to-elbow offset at grab time, same trick as
+      // beginArrowCurveDrag so the handle tracks the cursor cleanly.
+      grabDx: currentElbow.x - baseElbow.x,
+      grabDy: currentElbow.y - baseElbow.y,
+    });
+  };
+
+  // Label drag: the user grabbed an arrow's text label and is sliding
+  // it along the line / to either side. We capture the label's current
+  // anchor point so the move handler tracks `anchor + pointer delta`
+  // and projects it back onto the line into a {t, offset} placement.
+  const beginArrowLabelDrag = (arrowId: string, e: ReactPointerEvent) => {
+    const r = resolveArrowDrag(arrowId);
+    if (!r) return;
+    const { d, arrow } = r;
+    d.setSelectedId(arrowId);
+    if (arrow.locked === true || d.layerInertIds.has(arrowId) || d.isReadOnly) return;
+    const from = endpointPosition(arrow.from, d.activeTab.elements);
+    const to = endpointPosition(arrow.to, d.activeTab.elements);
+    const anchor = arrowLabelAnchor(
+      arrowStyleOf(arrow),
+      from,
+      to,
+      arrow.from,
+      arrow.to,
+      arrow.curveOffset,
+      arrow.elbowOffset,
+      arrow.labelOffset,
+      arrow.curvePoints,
+    );
+    checkpointPendingRef.current = true;
+    setDrag({
+      kind: 'arrow-label',
+      arrowId,
+      startClientX: e.clientX,
+      startClientY: e.clientY,
+      startAnchorX: anchor.x,
+      startAnchorY: anchor.y,
+    });
+  };
+
+  return {
+    beginArrowTranslate,
+    beginEndpointDrag,
+    beginArrowCurveDrag,
+    beginArrowCurvePointDrag,
+    beginArrowBend,
+    beginArrowScale,
+    deleteCurvePoint,
+    beginArrowElbowDrag,
+    beginArrowLabelDrag,
+  };
+}

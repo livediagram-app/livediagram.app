@@ -111,7 +111,7 @@ describe('DateInput', () => {
   });
 
   it('keeps the Escape that undoes typing from a listener on the node React listens on', () => {
-    // Under Next, React's root is `document`, where a Dialog listens for Escape too.
+    // Under Next, React's root is `project`, where a Dialog listens for Escape too.
     const { container } = render(
       <DateInput aria-label="Due" value="2026-10-30" onCommit={vi.fn()} />,
     );

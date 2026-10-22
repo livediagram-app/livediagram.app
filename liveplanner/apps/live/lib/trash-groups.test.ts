@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TRASH_RETENTION_MS, type TrashedDocument } from '@liveplanner/api-schema';
+import { TRASH_RETENTION_MS, type TrashedProject } from '@liveplanner/api-schema';
 import {
   daysLeftLabel,
   trashGroups,
@@ -15,7 +15,7 @@ import {
 const T0 = 1_700_000_000_000;
 const DAY = 24 * 60 * 60 * 1000;
 
-const row = (id: string, team: [string, string] | null = null): TrashedDocument => ({
+const row = (id: string, team: [string, string] | null = null): TrashedProject => ({
   id,
   name: id,
   teamId: team?.[0] ?? null,
@@ -37,7 +37,7 @@ describe('trashGroups', () => {
       local: [row('l1')],
     });
     expect(groups.map((g) => [g.title, g.scope, g.rows.map((r) => r.id)])).toEqual([
-      ['Your documents', { kind: 'personal' }, ['p1']],
+      ['Your projects', { kind: 'personal' }, ['p1']],
       ['Alpha', { kind: 'team', teamId: 'a' }, ['t1']],
       ['Beta', { kind: 'team', teamId: 'b' }, ['t2', 't3']],
       ['This Browser only', { kind: 'local' }, ['l1']],
@@ -70,7 +70,7 @@ describe('daysLeftLabel', () => {
 });
 
 describe('trashedOnLabel', () => {
-  // docs/specs/013-workspace/empty-document-cleanup.md "In the Trash": a row the
+  // docs/specs/013-workspace/empty-project-cleanup.md "In the Trash": a row the
   // clean-up moved says why. The date is locale-formatted, so match around it.
   it('says a person deleted it, or that it was moved for being empty', () => {
     expect(trashedOnLabel({ trashedAt: T0, reason: 'deleted' })).toMatch(/^Deleted \S.*$/);
@@ -92,15 +92,15 @@ describe('trashedCardLead', () => {
 });
 
 describe('trashedCardHeading', () => {
-  it('says a swept document is in the Trash, since no one deleted it', () => {
+  it('says a swept project is in the Trash, since no one deleted it', () => {
     expect(trashedCardHeading({ reason: 'empty' })).toEqual({
       label: 'In the Trash',
-      title: 'This document is in the Trash',
+      title: 'This project is in the Trash',
     });
   });
 
-  it('says deleted for a deleted document, and to anyone who learns no reason', () => {
-    expect(trashedCardHeading({ reason: 'deleted' }).title).toBe('This document was deleted');
-    expect(trashedCardHeading(null).title).toBe('This document was deleted');
+  it('says deleted for a deleted project, and to anyone who learns no reason', () => {
+    expect(trashedCardHeading({ reason: 'deleted' }).title).toBe('This project was deleted');
+    expect(trashedCardHeading(null).title).toBe('This project was deleted');
   });
 });

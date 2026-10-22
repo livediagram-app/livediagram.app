@@ -10,7 +10,7 @@ import {
   type Element,
   type ShapeElement,
   type Tab,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { useFlowchartSetters } from './useFlowchartSetters';
 
 // docs/specs/009-elements/flowchart.md: the Flowchart menu section's and step toolbar's actions, each one commit.

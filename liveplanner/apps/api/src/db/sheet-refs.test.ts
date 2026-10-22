@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import type { Element, Tab } from '@liveplanner/document';
+import type { Element, Tab } from '@liveplanner/project';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
-import { copyDocument } from './documents';
+import { copyProject } from './projects';
 import { sheetRefIds } from './sheet-refs';
 import { deleteTabRow, upsertTab } from './tabs';
 
 // The sheet reference index (docs/specs/029-sheets/sheet-store.md "Deleting a sheet"): every tab write keeps it, a
-// copy not yet made keeps its source, references count only within their document, and the document's sheets
+// copy not yet made keeps its source, references count only within their project, and the project's sheets
 // settle on every write.
 
 let sql: SqliteD1;
@@ -27,14 +27,14 @@ const tab = (id: string, elements: Element[]): Tab => ({ id, name: id, elements 
 
 const sheetRow = (doc: string, id: string, tabId: string, extra = '') =>
   sql.sql.exec(
-    `INSERT INTO sheets (document_id, id, tab_id, title, layout, rev, created_at, updated_at, updated_by${extra ? ', delete_when_unreferenced' : ''})
+    `INSERT INTO sheets (project_id, id, tab_id, title, layout, rev, created_at, updated_at, updated_by${extra ? ', delete_when_unreferenced' : ''})
      VALUES ('${doc}', '${id}', '${tabId}', '${id}', '{"rows":[],"cols":[]}', 0, 1, 1, '{}'${extra ? `, ${extra}` : ''})`,
   );
 
 const state = (doc: string, id: string) =>
   sql.sql
     .prepare(
-      'SELECT unreferenced_since AS since, delete_when_unreferenced AS del FROM sheets WHERE document_id = ? AND id = ?',
+      'SELECT unreferenced_since AS since, delete_when_unreferenced AS del FROM sheets WHERE project_id = ? AND id = ?',
     )
     .get(doc, id) as { since: number | null; del: number | null } | undefined;
 
@@ -48,8 +48,8 @@ const refs = (tabId: string) =>
 beforeEach(() => {
   sql = sqliteD1();
   sql.sql.exec(`
-    INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at) VALUES ('d1', 'o', 'D', 0, 1, 1);
-    INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at) VALUES ('d2', 'o', 'E', 0, 1, 1);
+    INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at) VALUES ('d1', 'o', 'D', 0, 1, 1);
+    INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at) VALUES ('d2', 'o', 'E', 0, 1, 1);
   `);
 });
 
@@ -100,7 +100,7 @@ describe('the reference index on tab writes', () => {
   it('deletes a sheet deleted with its element once its last reference goes, and only then', async () => {
     sheetRow('d1', 'sheetA00', 't1', '1');
     sql.sql.exec(
-      `INSERT INTO sheet_cells (document_id, sheet_id, row_id, col_id, input) VALUES ('d1', 'sheetA00', 'r', 'c', '1')`,
+      `INSERT INTO sheet_cells (project_id, sheet_id, row_id, col_id, input) VALUES ('d1', 'sheetA00', 'r', 'c', '1')`,
     );
     await upsertTab(sql.env, 'd1', tab('t1', [sheetEl('e1', 'sheetA00')]), 0);
     await upsertTab(sql.env, 'd1', tab('t2', [sheetEl('e2', 'sheetA00')]), 1);
@@ -111,7 +111,7 @@ describe('the reference index on tab writes', () => {
     expect(sql.sql.prepare('SELECT COUNT(*) AS n FROM sheet_cells').get()).toEqual({ n: 0 });
   });
 
-  it('counts references only within the sheet’s own document', async () => {
+  it('counts references only within the sheet’s own project', async () => {
     sheetRow('d1', 'sheetA00', 't1');
     sheetRow('d2', 'sheetA00', 'u1');
     await upsertTab(sql.env, 'd1', tab('t1', [sheetEl('e1', 'sheetA00')]), 0);
@@ -129,12 +129,12 @@ describe('the reference index on tab writes', () => {
     expect(state('d1', 'sheetA00')!.since).toEqual(expect.any(Number));
   });
 
-  it('carries the references to a copied document’s tabs', async () => {
+  it('carries the references to a copied project’s tabs', async () => {
     sheetRow('d1', 'sheetA00', 't1');
     await upsertTab(sql.env, 'd1', tab('t1', [sheetEl('e1', 'sheetA00')]), 0);
-    await copyDocument(sql.env, 'd1', 'd3', 'o', 'Copy');
+    await copyProject(sql.env, 'd1', 'd3', 'o', 'Copy');
     const copied = sql.sql
-      .prepare(`SELECT tab_id FROM document_tabs WHERE document_id = 'd3'`)
+      .prepare(`SELECT tab_id FROM project_tabs WHERE project_id = 'd3'`)
       .get() as { tab_id: string };
     expect(refs(copied.tab_id)).toEqual(['sheetA00']);
     expect(state('d3', 'sheetA00')!.since).toBeNull();

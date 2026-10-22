@@ -1,5 +1,5 @@
 // Plan views (docs/specs/026-plan/plan-views.md): the view kinds a 'plan-view' element shows, the size each
-// starts at, and what every view reads: the document's live cards and the phase each status sits in. Pure;
+// starts at, and what every view reads: the project's live cards and the phase each status sits in. Pure;
 // the charts' own models are plan-view-gantt.ts and plan-view-charts.ts.
 import type { Item } from './item';
 import { itemStatus } from './item';
@@ -290,7 +290,7 @@ export function phaseOf(item: Item, phases: ReadonlyMap<string, StatusPhase>): S
 
 // The board a metric reads (docs/specs/026-plan/plan-views.md "Metrics"): every live card on
 // one of three columns by its phase, the Done one the board's done column when any status is Done, so the
-// header widgets' own rules read the whole document.
+// header widgets' own rules read the whole project.
 const PHASE_STATUS = (p: StatusPhase) => `phase-${p}`;
 
 export function metricBoard(

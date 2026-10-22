@@ -16,7 +16,6 @@ type CursorRow = {
   color: string;
   x: number;
   y: number;
-  picture?: string;
 };
 // `holds`: whether the selection locks the element against editing (docs/specs/013-workspace/share-roles.md): a
 // Viewer only looks, so its selection shows its badge and holds nothing. A peer with no role (an older room) holds.
@@ -27,7 +26,7 @@ export type RemoteSelector = { id: string; name: string; color: string; holds: b
 // their active tab; remote peers without a tab-focus op yet default to the
 // first tab. Status is per-viewer (on my tab -> online, elsewhere -> away)
 // unless idle has dragged them to away/offline. Returns an empty map for
-// private (unshared) documents.
+// private (unshared) projects.
 //
 // One person, one avatar (docs/specs/012-collaboration/collaborator-enhancements.md): the room mints an id per socket, so the
 // same browser open in two tabs arrives as two peers. Every tab in a browser
@@ -36,11 +35,11 @@ export type RemoteSelector = { id: string; name: string; color: string; holds: b
 // a peer with several keeps only their most recently active connection,
 // which is the tab they are actually looking at.
 export function buildParticipantsByTab(input: {
-  documentShareable: boolean;
-  // A team document (docs/specs/013-workspace/team-shared-documents.md) is collaborative for its members even
+  projectShareable: boolean;
+  // A team project (docs/specs/013-workspace/team-shared-projects.md) is collaborative for its members even
   // with no share link, so tab presence shows there too.
-  documentTeamId: string | null;
-  // An agent is present (docs/specs/024-agents/agent-presence.md): a personal document's stack shows too, so its
+  projectTeamId: string | null;
+  // An agent is present (docs/specs/024-agents/agent-presence.md): a personal project's stack shows too, so its
   // owner sees their agent.
   agentsPresent?: boolean;
   activeId: string;
@@ -57,8 +56,8 @@ export function buildParticipantsByTab(input: {
   now: number;
 }): Map<string, Participant[]> {
   const {
-    documentShareable,
-    documentTeamId,
+    projectShareable,
+    projectTeamId,
     agentsPresent = false,
     activeId,
     selfParticipant,
@@ -72,7 +71,7 @@ export function buildParticipantsByTab(input: {
     now,
   } = input;
   const map = new Map<string, Participant[]>();
-  if (!documentShareable && !documentTeamId && !agentsPresent) return map;
+  if (!projectShareable && !projectTeamId && !agentsPresent) return map;
   map.set(activeId, [{ ...selfParticipant, status: 'online', lastActiveAt: now }]);
   if (selfBesideTabId && selfBesideTabId !== activeId)
     map.set(selfBesideTabId, [{ ...selfParticipant, status: 'online', lastActiveAt: now }]);
@@ -146,14 +145,7 @@ export function buildRemoteCursorRows(
     if (pos.tabId !== activeId) continue;
     const p = livePresenceById.get(id);
     if (!p) continue;
-    rows.push({
-      id,
-      name: p.name,
-      color: p.color,
-      x: pos.x,
-      y: pos.y,
-      ...(p.picture ? { picture: p.picture } : {}),
-    });
+    rows.push({ id, name: p.name, color: p.color, x: pos.x, y: pos.y });
   }
   return rows;
 }
@@ -165,7 +157,7 @@ export function buildRemoteCursorRows(
 //      the avatar (and its online dot) matches what visitors see in
 //      the TabBar.
 //   3. Owner is offline -> fall back to the joined name + colour we
-//      got from the document fetch (api worker LEFT JOINs participants
+//      got from the project fetch (api worker LEFT JOINs participants
 //      on owner_id).
 // Returns null only when the owner truly has no participant record on
 // the server.
@@ -173,17 +165,17 @@ export function resolveOwnerBadge(input: {
   isOwner: boolean;
   selfParticipant: Participant;
   livePresence: Participant[];
-  documentOwnerId: string | null;
-  documentOwnerName: string | null;
-  documentOwnerColor: string | null;
+  projectOwnerId: string | null;
+  projectOwnerName: string | null;
+  projectOwnerColor: string | null;
 }): Participant | null {
   const {
     isOwner,
     selfParticipant,
     livePresence,
-    documentOwnerId,
-    documentOwnerName,
-    documentOwnerColor,
+    projectOwnerId,
+    projectOwnerName,
+    projectOwnerColor,
   } = input;
   if (isOwner) return selfParticipant;
   // The share endpoint redacts ownerId to '' for visitors (so an
@@ -194,18 +186,18 @@ export function resolveOwnerBadge(input: {
   // which is the same identity the fetch already trusts. Without
   // this, an online owner always resolved to the offline branch
   // below and showed a red (offline) dot to viewers.
-  const live = documentOwnerId
-    ? livePresence.find((p) => p.id === documentOwnerId)
-    : livePresence.find((p) => p.name === documentOwnerName && p.color === documentOwnerColor);
+  const live = projectOwnerId
+    ? livePresence.find((p) => p.id === projectOwnerId)
+    : livePresence.find((p) => p.name === projectOwnerName && p.color === projectOwnerColor);
   if (live) return live;
   // Owner not in the room: key the badge off the NAME, not the
   // (blanked) id, or viewers never get the badge at all. The id
   // here is display-only, so a synthetic fallback is fine.
-  if (documentOwnerName) {
+  if (projectOwnerName) {
     return {
-      id: documentOwnerId || 'owner',
-      name: documentOwnerName,
-      color: documentOwnerColor ?? '#94a3b8',
+      id: projectOwnerId || 'owner',
+      name: projectOwnerName,
+      color: projectOwnerColor ?? '#94a3b8',
       status: 'offline' as const,
     };
   }
@@ -221,7 +213,7 @@ export type RemoteSelection = { elementId: string | null; tabId?: string };
 // Per-element map of which remote participants have it selected (for the
 // on-element badges). Drops self + null (deselected) entries, and — like
 // cursors — entries scoped to a DIFFERENT tab: element ids
-// aren't unique across tabs in older documents (tab duplication used to
+// aren't unique across tabs in older projects (tab duplication used to
 // copy them verbatim), so an unscoped badge also LOCKED the same-id
 // element on other tabs via the docs/specs/007-editor/live-app.md selection lock.
 export function buildRemoteSelectionsByElement(

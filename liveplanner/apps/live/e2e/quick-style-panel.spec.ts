@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import type { StoredDocument, StoredTab } from './stored';
+import type { StoredProject, StoredTab } from './stored';
 import { expect, expectNoPageErrors, test, openStartBlank, pageOwnerHeaders } from './fixtures';
 
 // The quick style panel and style memory, end to end (docs/specs/008-canvas/quick-style-panel.md). Unit
@@ -14,18 +14,18 @@ async function openBoard(page: Page): Promise<void> {
   await openStartBlank(page);
 }
 
-// The saved elements of the document's first tab, read through the api.
+// The saved elements of the project's first tab, read through the api.
 async function savedElements(page: Page): Promise<El[]> {
   const headers = await pageOwnerHeaders(page);
   return page.evaluate(async (headers) => {
     const id = location.pathname.split('/').filter(Boolean).pop()!;
     const liveDoc = (await (
-      await fetch(`/api/documents/${id}`, { headers })
-    ).json()) as StoredDocument;
-    const tabId = liveDoc.document?.tabs?.[0]?.id;
+      await fetch(`/api/projects/${id}`, { headers })
+    ).json()) as StoredProject;
+    const tabId = liveDoc.project?.tabs?.[0]?.id;
     if (!tabId) return [];
     const got = (await (
-      await fetch(`/api/documents/${id}/tabs/${tabId}`, { headers })
+      await fetch(`/api/projects/${id}/tabs/${tabId}`, { headers })
     ).json()) as StoredTab<El>;
     return got.tab?.elements ?? [];
   }, headers);

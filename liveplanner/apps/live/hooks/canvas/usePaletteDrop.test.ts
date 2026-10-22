@@ -65,7 +65,7 @@ describe('dropping a file on the canvas', () => {
 });
 
 describe('a drag a panel inside the canvas already took', () => {
-  // docs/specs/013-workspace/folders.md "Drag-and-drop": a document dragged onto a folder in the Explorer panel,
+  // docs/specs/013-workspace/folders.md "Drag-and-drop": a project dragged onto a folder in the Explorer panel,
   // which floats over the canvas. The folder accepts it first; the canvas must not cancel that.
   function panelDrag() {
     const panel = document.createElement('div');

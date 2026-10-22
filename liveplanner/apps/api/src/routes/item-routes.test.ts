@@ -5,7 +5,7 @@ import { itemPersonId, presetSetup, type Item } from '@liveplanner/items';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import * as db from '../db';
 import { makeTestRouteContext } from './test-route-context';
-import { handleDocuments } from './documents';
+import { handleProjects } from './projects';
 
 // The item store's endpoints (docs/specs/026-plan/items.md, blueprint item-store.md): gates incl.
 // tab-scoped links, every rejection, keys never reused, rev guards, votes, the relay, copies.
@@ -31,14 +31,14 @@ async function call<T = unknown>({
   doc = 'd1',
 }: Call) {
   const pending: Promise<unknown>[] = [];
-  const ctx = makeTestRouteContext(method, `/api/documents/${doc}${path}`, {
+  const ctx = makeTestRouteContext(method, `/api/projects/${doc}${path}`, {
     env: sql.env,
     owner,
     ...(code ? { headers: { 'X-Share-Code': code } } : {}),
     ...(body === undefined ? {} : { body }),
     waitUntil: (p) => void pending.push(p),
   });
-  const res = await handleDocuments(ctx);
+  const res = await handleProjects(ctx);
   await Promise.all(pending);
   const text = await res.text();
   return { status: res.status, body: (text ? JSON.parse(text) : null) as T };
@@ -51,7 +51,7 @@ beforeEach(() => {
   sql = sqliteD1();
   relayed = [];
   // The room stub records each broadcast body.
-  (sql.env as unknown as { DOCUMENT_ROOM: unknown }).DOCUMENT_ROOM = {
+  (sql.env as unknown as { PROJECT_ROOM: unknown }).PROJECT_ROOM = {
     idFromName: (n: string) => n,
     get: () => ({
       fetch: async (_url: string, init: RequestInit) => {
@@ -71,7 +71,7 @@ beforeEach(() => {
     planBoard: presetSetup('bug-triage'),
   };
   sql.sql.exec(`
-    INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at)
+    INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at)
       VALUES ('d1', 'owner', 'Plan', 1, 1, 1);
   `);
   sql.sql
@@ -80,12 +80,12 @@ beforeEach(() => {
   sql.sql.exec(`
     INSERT INTO participants (id, name, color, created_at) VALUES ('owner', 'Webber', '#3b82f6', 1);
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('t2', 'Other', '{"elements":[]}', 1);
-    INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1);
-    INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('d1', 't2', 1, 1);
-    INSERT INTO share_links (code, document_id, role, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', NULL, 1);
-    INSERT INTO share_links (code, document_id, role, level, tab_id, created_at) VALUES ('PART', 'd1', 'view', 'participate', NULL, 1);
-    INSERT INTO share_links (code, document_id, role, tab_id, created_at) VALUES ('EDIT', 'd1', 'edit', NULL, 1);
-    INSERT INTO share_links (code, document_id, role, tab_id, created_at) VALUES ('TAB1', 'd1', 'edit', 't1', 1);
+    INSERT INTO project_tabs (project_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1);
+    INSERT INTO project_tabs (project_id, tab_id, order_index, added_at) VALUES ('d1', 't2', 1, 1);
+    INSERT INTO share_links (code, project_id, role, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', NULL, 1);
+    INSERT INTO share_links (code, project_id, role, level, tab_id, created_at) VALUES ('PART', 'd1', 'view', 'participate', NULL, 1);
+    INSERT INTO share_links (code, project_id, role, tab_id, created_at) VALUES ('EDIT', 'd1', 'edit', NULL, 1);
+    INSERT INTO share_links (code, project_id, role, tab_id, created_at) VALUES ('TAB1', 'd1', 'edit', 't1', 1);
   `);
 });
 
@@ -214,16 +214,16 @@ describe('creating items', () => {
   });
 
   it('caps the store', async () => {
-    sql.sql.exec('UPDATE documents SET items_next_key = 2001');
+    sql.sql.exec('UPDATE projects SET items_next_key = 2001');
     const insert = sql.sql.prepare(
-      `INSERT INTO items (document_id, id, type, item_key, rank, fields, rev, created_at, updated_at, created_by, updated_by)
+      `INSERT INTO items (project_id, id, type, item_key, rank, fields, rev, created_at, updated_at, created_by, updated_by)
        VALUES ('d1', ?, 'task', ?, 'i', '{"title":"x"}', 1, 0, 0, '{}', '{}')`,
     );
     for (let i = 1; i <= 2000; i++) insert.run(`seed${String(i).padStart(4, '0')}`, i);
     expect((await add({ title: 'one too many' })).body).toMatchObject({ error: 'items_full' });
   });
 
-  it('bulk creates for the whole document only', async () => {
+  it('bulk creates for the whole project only', async () => {
     const res = await call<ItemsResponse>({
       path: '/items/bulk',
       body: {
@@ -550,19 +550,19 @@ describe('who may do what', () => {
   });
 });
 
-describe('documents and items', () => {
+describe('projects and items', () => {
   it('seeds items on a genuine create only, refusing bad ones before writing', async () => {
-    // POST /api/documents is the collection route.
+    // POST /api/projects is the collection route.
     const ctx = (id: string, items: unknown) =>
-      handleDocuments(
-        makeTestRouteContext('POST', '/api/documents', {
+      handleProjects(
+        makeTestRouteContext('POST', '/api/projects', {
           env: sql.env,
           owner: 'owner',
           body: { id, name: 'New', items },
         }),
       );
     expect((await ctx('d2', [{ type: 'task', fields: {} }])).status).toBe(400);
-    expect(await db.getDocument(sql.env, 'd2')).toBeNull();
+    expect(await db.getProject(sql.env, 'd2')).toBeNull();
     expect(
       (await ctx('d2', [{ type: 'task', fields: { title: 'Seed', status: 'todo' } }])).status,
     ).toBe(201);
@@ -571,23 +571,23 @@ describe('documents and items', () => {
     expect(await db.listItems(sql.env, 'd2')).toHaveLength(1);
   });
 
-  it('copies items with a document and cascades them on delete', async () => {
+  it('copies items with a project and cascades them on delete', async () => {
     await add({ title: 'A' });
     await call({
       path: '/items',
       body: { type: 'task', fields: { title: 'B', status: 'new', labels: ['bug'] } },
     });
-    await db.copyDocument(sql.env, 'd1', 'd3', 'owner', 'Copy');
+    await db.copyProject(sql.env, 'd1', 'd3', 'owner', 'Copy');
     const copied = await db.listItems(sql.env, 'd3');
     expect(copied.map((i) => i.key).sort()).toEqual([1, 2]);
     expect((await db.getItemStoreHead(sql.env, 'd3')).nextKey).toBe(3);
-    await db.copyDocument(sql.env, 'd1', 'd4', 'owner', 'Tab copy', 't1');
+    await db.copyProject(sql.env, 'd1', 'd4', 'owner', 'Tab copy', 't1');
     // The tab has a board, so it shows (and its copy takes) every item.
     expect((await db.listItems(sql.env, 'd4')).map((i) => i.fields['title']).sort()).toEqual([
       'A',
       'B',
     ]);
-    sql.sql.exec("DELETE FROM documents WHERE id = 'd1'");
+    sql.sql.exec("DELETE FROM projects WHERE id = 'd1'");
     expect(await db.listItems(sql.env, 'd1')).toEqual([]);
   });
 });
@@ -747,7 +747,7 @@ describe('the type catalogue', () => {
       ...extra,
     });
 
-  it('stores a catalogue normalised, relays it, and the document carries it', async () => {
+  it('stores a catalogue normalised, relays it, and the project carries it', async () => {
     const res = await put(catalogue);
     expect(res.status).toBe(200);
     const stored = (res.body.itemTypes as { types: { fields: string[]; newTitle: string }[] })
@@ -757,13 +757,13 @@ describe('the type catalogue', () => {
     expect(relayed).toEqual([
       { op: { kind: 'item-types', itemTypes: res.body.itemTypes, itemTypesRev: 1 }, ordered: true },
     ]);
-    expect((await db.getDocument(sql.env, 'd1'))?.itemTypes).toEqual(res.body.itemTypes);
+    expect((await db.getProject(sql.env, 'd1'))?.itemTypes).toEqual(res.body.itemTypes);
   });
 
   it('goes back to the built-in types on null', async () => {
     await put(catalogue);
     expect((await put(null)).body).toEqual({ itemTypes: null, itemTypesRev: 2 });
-    expect((await db.getDocument(sql.env, 'd1'))?.itemTypes).toBeNull();
+    expect((await db.getProject(sql.env, 'd1'))?.itemTypes).toBeNull();
   });
 
   it('refuses a catalogue by name and keeps the last good one', async () => {
@@ -772,10 +772,10 @@ describe('the type catalogue', () => {
     expect(bad.status).toBe(400);
     expect(bad.body).toEqual({ error: 'item_types_invalid', reason: 'types[0].glyph' });
     expect((await put(undefined)).status).toBe(400);
-    expect((await db.getDocument(sql.env, 'd1'))?.itemTypes?.types[0]?.id).toBe('customer-call');
+    expect((await db.getProject(sql.env, 'd1'))?.itemTypes?.types[0]?.id).toBe('customer-call');
   });
 
-  it('needs edit access to the whole document', async () => {
+  it('needs edit access to the whole project', async () => {
     expect((await put(catalogue, { owner: 'v', code: 'VIEW' })).status).toBe(403);
     expect((await put(catalogue, { owner: 'v', code: 'TAB1' })).status).toBe(403);
     expect((await put(catalogue, { owner: 'v', code: 'EDIT' })).status).toBe(200);
@@ -785,7 +785,7 @@ describe('the type catalogue', () => {
   // Two editors saving at once (docs/specs/026-plan/item-types.md "Storage and sync"): the one that changed an older
   // catalogue is refused with what is stored, never overwriting the other's change.
   it('refuses a write made to a revision that has moved on, answering with the stored one', async () => {
-    expect((await db.getDocument(sql.env, 'd1'))?.itemTypesRev).toBe(0);
+    expect((await db.getProject(sql.env, 'd1'))?.itemTypesRev).toBe(0);
     const first = await call<{ itemTypesRev: number }>({
       method: 'PUT',
       path: '/item-types',
@@ -805,7 +805,7 @@ describe('the type catalogue', () => {
       'customer-call',
     );
     expect(relayed).toEqual([]);
-    expect((await db.getDocument(sql.env, 'd1'))?.itemTypes?.types[0]?.id).toBe('customer-call');
+    expect((await db.getProject(sql.env, 'd1'))?.itemTypes?.types[0]?.id).toBe('customer-call');
     const retried = await call({
       method: 'PUT',
       path: '/item-types',
@@ -825,14 +825,14 @@ describe('the type catalogue', () => {
 
   it('travels with a copy', async () => {
     await put(catalogue);
-    await db.copyDocument(sql.env, 'd1', 'd5', 'owner', 'Copy');
-    expect((await db.getDocument(sql.env, 'd5'))?.itemTypes?.types[0]?.id).toBe('customer-call');
+    await db.copyProject(sql.env, 'd1', 'd5', 'owner', 'Copy');
+    expect((await db.getProject(sql.env, 'd5'))?.itemTypes?.types[0]?.id).toBe('customer-call');
   });
 });
 
 describe('a create carrying a type catalogue', () => {
   const create = (itemTypes: unknown) =>
-    makeTestRouteContext('POST', '/api/documents', {
+    makeTestRouteContext('POST', '/api/projects', {
       env: sql.env,
       owner: 'owner',
       body: { id: 'd9', name: 'Synced', tabs: [], itemTypes },
@@ -843,9 +843,9 @@ describe('a create carrying a type catalogue', () => {
   };
 
   it('keeps a valid one and refuses a bad one by name', async () => {
-    expect((await handleDocuments(create({ ...types, version: 9 }))).status).toBe(400);
-    expect((await handleDocuments(create(types))).status).toBeLessThan(300);
-    expect((await db.getDocument(sql.env, 'd9'))?.itemTypes?.types[0]?.fields).toEqual([
+    expect((await handleProjects(create({ ...types, version: 9 }))).status).toBe(400);
+    expect((await handleProjects(create(types))).status).toBeLessThan(300);
+    expect((await db.getProject(sql.env, 'd9'))?.itemTypes?.types[0]?.fields).toEqual([
       'title',
       'status',
     ]);

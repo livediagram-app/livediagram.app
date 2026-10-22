@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { PageColourFill } from '@liveplanner/document';
+import type { PageColourFill } from '@liveplanner/project';
 import { BackgroundKinds, kindPreview } from './page-background-kinds';
 
 // docs/specs/030-forms/forms.md "The form card, top to bottom", Cover: the kinds are tiles, each picturing what it

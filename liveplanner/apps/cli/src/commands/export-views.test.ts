@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
-  DOCUMENT_ENVELOPE_KIND,
+  PROJECT_ENVELOPE_KIND,
   type ArrowElement,
   type ShapeElement,
   type Tab,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { run } from '../main';
 import { pullFileText, type PullFile } from '../sync/pull-file';
 import { fakeIo, NOW, TOKEN, type FakeIo, type Route } from '../testing/fake-io';
@@ -31,15 +31,15 @@ function host(docs: Record<string, HostDoc>, options: { limited?: number } = {})
   const route: Route = (_request, url) => {
     const path = url.pathname;
     if (path === '/api/capabilities')
-      return Response.json({ apiBase: `${HOST}/api`, authEnabled: true, documentFormat: 2 });
+      return Response.json({ apiBase: `${HOST}/api`, authEnabled: true, projectFormat: 2 });
     if (path === '/api/teams') return Response.json({ teams: [] });
-    if (path === '/api/documents') {
+    if (path === '/api/projects') {
       if (limited > 0) {
         limited -= 1;
         return Response.json({ error: 'rate_limited' }, { status: 429 });
       }
       return Response.json({
-        documents: Object.entries(docs).map(([id, d]) => ({
+        projects: Object.entries(docs).map(([id, d]) => ({
           id,
           name: d.name,
           savedAt: NOW,
@@ -47,13 +47,13 @@ function host(docs: Record<string, HostDoc>, options: { limited?: number } = {})
         })),
       });
     }
-    const m = /^\/api\/documents\/([^/]+)(?:\/tabs\/([^/]+)(\/render\.svg)?)?$/.exec(path);
+    const m = /^\/api\/projects\/([^/]+)(?:\/tabs\/([^/]+)(\/render\.svg)?)?$/.exec(path);
     const doc = m ? docs[m[1]!] : undefined;
     if (!m || !doc) return undefined;
     if (doc.status) return Response.json({ error: 'forbidden' }, { status: doc.status });
     if (!m[2])
       return Response.json({
-        document: {
+        project: {
           id: m[1],
           name: doc.name,
           tabs: doc.tabs.map((t, i) => ({
@@ -104,20 +104,20 @@ const docs: Record<string, HostDoc> = {
 };
 
 describe('export --all', () => {
-  it('writes every document as the editor’s envelope by default, telling apart documents of one name', async () => {
+  it('writes every project as the editor’s envelope by default, telling apart projects of one name', async () => {
     const { code, out, io } = await cli(['export', '--all', '--to', 'backup'], host(docs));
     expect(code).toBe(0);
     expect(out.trim().split('\n')).toEqual([
       'backup/shop-aaaa0001.liveplanner.json',
       'backup/shop-bbbb0002.liveplanner.json',
       'backup/notes.liveplanner.json',
-      '3 documents · 3 files',
+      '3 projects · 3 files',
     ]);
     const envelope = JSON.parse(
       io.fileMap.get('backup/shop-aaaa0001.liveplanner.json')!.data,
     ) as PullFile;
-    expect(envelope.kind).toBe(DOCUMENT_ENVELOPE_KIND);
-    expect(envelope.document.tabs[0]).toMatchObject({ id: 'flow-0001', folder: 'Core' });
+    expect(envelope.kind).toBe(PROJECT_ENVELOPE_KIND);
+    expect(envelope.project.tabs[0]).toMatchObject({ id: 'flow-0001', folder: 'Core' });
     expect(envelope).not.toHaveProperty('liveplannerSync');
   });
 
@@ -132,7 +132,7 @@ describe('export --all', () => {
       'out/shop/flow-flow-0001.md',
       'out/shop/flow-flow-0002.svg',
       'out/shop/flow-flow-0002.md',
-      '1 document · 4 files',
+      '1 project · 4 files',
     ]);
     expect(io.fileMap.get('out/shop/flow-flow-0001.md')!.data).toContain('Web app');
   });
@@ -147,7 +147,7 @@ describe('export --all', () => {
     expect((await cli(['export', '--all', '--to', 'b'], host(docs, { limited: 4 }))).code).toBe(6);
   });
 
-  it('reports a document it cannot read and exports the rest, exiting with the failure', async () => {
+  it('reports a project it cannot read and exports the rest, exiting with the failure', async () => {
     const { code, out, err } = await cli(
       ['export', '--all', '--to', 'b'],
       host({
@@ -157,7 +157,7 @@ describe('export --all', () => {
       }),
     );
     expect(code).toBe(4);
-    expect(out).toContain('3 documents · 3 files');
+    expect(out).toContain('3 projects · 3 files');
     expect(err).toContain('"Locked":');
   });
 
@@ -172,10 +172,10 @@ describe('export --all', () => {
 
 describe('a pull file read offline', () => {
   const file: PullFile = {
-    kind: 'liveplanner.document',
+    kind: 'liveplanner.project',
     schemaVersion: 1,
     exportedAt: NOW,
-    document: {
+    project: {
       id: 'aaaa0001-doc',
       name: 'Shop',
       tabs: [flow, { id: 'other-01', name: 'Other', elements: [] }],
@@ -196,7 +196,7 @@ describe('a pull file read offline', () => {
     const ls = await offline(['tab', 'ls', 'shop.liveplanner.json']);
     expect(ls.code).toBe(0);
     expect(ls.out).toContain('"Flow"');
-    const overview = await offline(['document', 'view', 'shop.liveplanner.json']);
+    const overview = await offline(['project', 'view', 'shop.liveplanner.json']);
     expect(overview.code).toBe(0);
     expect(overview.out).toContain('Shop');
     expect(overview.out).toContain('rev 9');
@@ -212,8 +212,7 @@ describe('a pull file read offline', () => {
       'view',
       'shop.liveplanner.json',
       '--view',
-      'layout',
-      '--coarse',
+      'comments',
       '--json',
     ]);
     expect(JSON.parse(json.out)).toHaveProperty('header');
@@ -272,17 +271,17 @@ describe('a pull file read offline', () => {
     const write = await offline(['element', 'rm', 'shop.liveplanner.json', 'web']);
     expect([write.code, write.err]).toEqual([
       2,
-      expect.stringContaining('is a pull file: only document view, tab ls and tab view read it'),
+      expect.stringContaining('is a pull file: only project view, tab ls and tab view read it'),
     ]);
   });
 
-  it('names a file that is not a pull file, and treats a missing one as a document name', async () => {
+  it('names a file that is not a pull file, and treats a missing one as a project name', async () => {
     const broken = await offline(['tab', 'ls', 'shop.liveplanner.json'], '{');
     expect([broken.code, broken.err]).toEqual([
       1,
       expect.stringContaining('shop.liveplanner.json: not JSON'),
     ]);
-    // A path that names no file is a document name, looked up on the host.
+    // A path that names no file is a project name, looked up on the host.
     const absent = await offline(['tab', 'ls', 'gone.liveplanner.json']);
     expect(absent.io.requests.length).toBeGreaterThan(0);
   });

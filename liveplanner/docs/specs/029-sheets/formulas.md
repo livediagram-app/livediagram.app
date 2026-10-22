@@ -1,7 +1,7 @@
 # Formulas
 
 A [sheet](sheet.md)'s cells hold **inputs**; what they show are **values**. A formula is an input that starts with
-`=` and works its value out from other cells, other sheets on the tab and the document's Plan cards. The language
+`=` and works its value out from other cells, other sheets on the tab and the project's Plan cards. The language
 is the one people already write in Google Sheets and Excel: the same operators, references and function names, so
 a formula pasted from either works here when it uses what this page lists.
 
@@ -82,7 +82,7 @@ as what it means, never as the text typed, so everyone reads it the same whateve
 - Renaming a sheet rewrites every formula on the tab that names it; a reference to a title no sheet on the tab has
   (deleted, or never there) is `#REF!` until a sheet of that title is there again.
 - Inserting or deleting rows and columns in a sheet rewrites references to it in every sheet on the tab.
-- Sheets on other tabs and other documents are out of reach.
+- Sheets on other tabs and other projects are out of reach.
 
 ### Named ranges
 
@@ -97,7 +97,7 @@ as what it means, never as the text typed, so everyone reads it the same whateve
 
 ### Plan cards
 
-Four functions read the document's [items](../026-plan/items.md) (its cards), every live card (not archived, not in
+Four functions read the project's [items](../026-plan/items.md) (its cards), every live card (not archived, not in
 the Trash), whatever board they are on, as a [plan view](../026-plan/plan-views.md) reads them:
 
 | Function                                | Gives                                                                              |
@@ -114,7 +114,7 @@ the Trash), whatever board they are on, as a [plan view](../026-plan/plan-views.
 - Values read as: State by its column name, Assignee by the person's name, Labels joined with `, `, dates as date
   numbers, Type by the card type's name, Number as the number.
 - An unknown field is `#NAME?` (hovering names it); a card number no card has is `#N/A`.
-- A sheet using these functions loads the document's items, as a board does; until they arrive the cells show
+- A sheet using these functions loads the project's items, as a board does; until they arrive the cells show
   **Loading…**. They recalculate as cards change, live for everyone.
 - Outside the editor (exports, images, agents), they read the items the api reads.
 
@@ -219,7 +219,7 @@ optional. Each behaves as its Google Sheets namesake; where Sheets and Excel dif
 ## Recalculation
 
 - A change recalculates only the cells that depend on it (directly or through others), plus volatile ones.
-- A sheet's values are worked out the first time it is drawn, and kept while its document is open.
+- A sheet's values are worked out the first time it is drawn, and kept while its project is open.
 - A recalculation that would take longer than a frame is done in parts, values filling in as they are ready; cells
   waiting show their last value, faded.
 - The engine bounds its work: a formula reading more than 1,000,000 cells, or a recalculation of more than

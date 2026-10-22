@@ -64,7 +64,7 @@ team, not the individual.
 - Agents: AI tools can read and change boards, cards, sheets and forms over
   MCP, the API or the CLI.
 - Hybrid auth: guests get the full feature set keyed to a per-browser id;
-  signed-in users (Clerk) add cross-device sync, teams and account self-delete.
+  signed-in users (a liveworkspace account) add cross-device sync, teams and account self-delete.
 - Anonymous first-party telemetry. No third-party analytics, no identifiers on
   the wire. Off in any deployment unless configured.
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formLook } from '@liveplanner/document';
+import { formLook } from '@liveplanner/project';
 import { QUESTION_TYPES, blankQuestion, type FormDefinition } from '@liveplanner/forms';
 import { FORM_ART_HEIGHT_MAX, FORM_ART_WIDTH, formArt } from './form-art';
 

@@ -25,12 +25,12 @@ import {
   type Element,
   type PlanTabKind,
   type Tab,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import type { PlanVisualisation } from '@liveplanner/items';
 import { track } from '@/lib/telemetry';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { placedSheetTitle } from '@/lib/sheet-seeds';
-import { insertTabsAfter } from '@/app/document/[id]/template-tab-set';
+import { insertTabsAfter } from '@/app/project/[id]/template-tab-set';
 import {
   dashboardElement,
   dashboardViewElement,
@@ -54,7 +54,7 @@ export type PlanTabActions = {
   startDashboard: (presetId?: string) => void;
   // A tab of one visualisation filling the page (a full-screen Gantt chart): a Dashboard of one row that fills it.
   startVisualisationTab: (view: PlanVisualisation, name: string) => void;
-  // A Dashboard built from the document's own work (suggested-dashboards.ts): its rows, its views made as elements.
+  // A Dashboard built from the project's own work (suggested-dashboards.ts): its rows, its views made as elements.
   startSuggestedDashboard: (suggestion: SuggestedDashboard) => void;
   // A layout change; nothing when it returns the same layout. `prune`: the slots' elements the new layout no longer
   // holds leave the tab with it (Clear Dashboard, Start Over From a Layout).
@@ -354,7 +354,7 @@ export function usePlanTabActions({
           });
           return ts.map((t) => (t.id === activeId ? next : t));
         }
-        // A figure from a form: the document's first form, changed in the slot when it has more (DashboardFormMetric).
+        // A figure from a form: the project's first form, changed in the slot when it has more (DashboardFormMetric).
         if (item.kind === 'form-metric') {
           const next = withSlotContent(base, target, {
             type: 'form-metric',

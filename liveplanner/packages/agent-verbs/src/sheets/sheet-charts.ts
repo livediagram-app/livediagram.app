@@ -12,7 +12,7 @@ import {
   type ChartPaletteId,
   type ChartType,
   type ShapeElement,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import {
   SHEET_ACCENTS,
   accentChartPalette,

@@ -1,12 +1,12 @@
 // What each default key is called (docs/specs/013-workspace/default-folders.md "Entry names"): the
-// label "New documents that open as" lists, and the plural a sentence uses. Typed per dimension, so
+// label "New projects that open as" lists, and the plural a sentence uses. Typed per dimension, so
 // a new or template family does not compile until it is named here.
 import {
   PLACEMENT_DEFAULT_KEYS,
   type PlacementDefaultKey,
   type TemplateFamily,
 } from '@liveplanner/api-schema';
-import type { EditorMode } from '@liveplanner/document';
+import type { EditorMode } from '@liveplanner/project';
 
 type DefaultKeyEntry = { key: PlacementDefaultKey; label: string; noun: string };
 

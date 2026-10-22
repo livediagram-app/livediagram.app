@@ -62,8 +62,8 @@ import {
 import { documentDates, isDocumentSource } from '@livediagram/api-schema';
 import { clientIp } from '../client-ip';
 import { documentImageSvg } from '../document-image';
-import { countCommunityCopy } from '../community-copy';
-import { getCommunityPostByShareCode } from '../db/community';
+import { countCommunityCopy } from '../community-service';
+import { getCommunityLinkByShareCode } from '../db/community-links';
 import {
   redactDocumentForCommunity,
   redactDocumentForReader,
@@ -583,7 +583,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       // "Making a copy"): its title is what the visitor chose, and the author's own document name was never published.
       const post =
         !requested && scope.community && scope.shareCode
-          ? await getCommunityPostByShareCode(env, scope.shareCode)
+          ? await getCommunityLinkByShareCode(env, scope.shareCode)
           : null;
       const newName =
         requested ||
@@ -604,7 +604,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       // A copy through a Community post's link counts toward its copy count, once per person
       // (docs/specs/025-community/community.md).
       if (scope.community && scope.shareCode && owner !== source.ownerId) {
-        ctx.waitUntil?.(countCommunityCopy(env, scope.shareCode, owner, clientIp(request)));
+        ctx.waitUntil?.(countCommunityCopy(env, id, owner, clientIp(request)));
       }
       // A copy is one document made on purpose: always a use (docs/specs/015-api/api.md "Marking a
       // document used").

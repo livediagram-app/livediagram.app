@@ -1,10 +1,10 @@
 // HMAC-SHA256 signature over a guest owner-id.
 //
 // Why: a guest's owner-id (the `X-Owner-Id` UUID) is a bearer value that
-// leaks — it rides in document DTOs and realtime presence frames. Without
+// leaks — it rides in project DTOs and realtime presence frames. Without
 // a signature, /api/migrate trusted a body-supplied `guestOwnerId` with no
 // proof of possession, so anyone who *observed* a victim's id could claim
-// all of that guest's documents into their own account. The fix is to bind
+// all of that guest's projects into their own account. The fix is to bind
 // possession to a secret the observer can't have:
 //
 //   - The signature is minted server-side at POST /api/guest-id, where the
@@ -17,8 +17,8 @@
 //
 // When `GUEST_ID_HMAC_SECRET` is unset (a deployment that hasn't
 // configured it), signing degrades to disabled — `signOwnerId` returns
-// null and migrate skips the check — mirroring how `CLERK_JWKS_URL` makes
-// auth optional. Production sets the secret and is protected.
+// null and migrate skips the check — mirroring how an unset `ACCOUNTS_URL`
+// makes sign-in optional. Production sets the secret and is protected.
 
 import { bytesToBase64Url } from '@liveplanner/api-schema';
 import { timingSafeEqual } from './timing-safe';

@@ -3,9 +3,9 @@ import { sentJson } from '@liveplanner/vitest-config/sent-request';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import type { Env } from '../types';
 import { makeTestRouteContext } from './test-route-context';
-import { handleDocuments } from './documents';
+import { handleProjects } from './projects';
 
-// PUT /api/documents/:id/tabs/:tabId/name (docs/specs/024-agents/agent-changesets.md "Whole-tab
+// PUT /api/projects/:id/tabs/:tabId/name (docs/specs/024-agents/agent-changesets.md "Whole-tab
 // saves and tab renames"): the name only, advancing the tab's revision, relayed to the room as the
 // tab-meta an editor's own rename sends.
 
@@ -31,11 +31,11 @@ const call = (
   owner = 'user_o',
   token = false,
 ) =>
-  handleDocuments(
+  handleProjects(
     makeTestRouteContext(method, path, {
       env: db.env,
       owner,
-      clerkUserId: token ? null : owner,
+      accountUserId: token ? null : owner,
       verifiedUserId: owner,
       body,
       token: token ? { id: 'tok_1' } : null,
@@ -44,8 +44,8 @@ const call = (
 
 async function setUp() {
   const room = roomRecorder();
-  const db = sqliteD1({ DOCUMENT_ROOM: room.binding } as unknown as Partial<Env>);
-  await call(db, 'POST', '/api/documents', {
+  const db = sqliteD1({ PROJECT_ROOM: room.binding } as unknown as Partial<Env>);
+  await call(db, 'POST', '/api/projects', {
     id: 'D',
     name: 'Doc',
     tabs: [{ id: 't1', name: 'Board', elements: [] }],
@@ -62,14 +62,14 @@ describe('the tab rename route', () => {
     const res = await call(
       db,
       'PUT',
-      '/api/documents/D/tabs/t1/name',
+      '/api/projects/D/tabs/t1/name',
       { name: 'Payments' },
       'user_o',
       true,
     );
     expect(res.status).toBe(200);
     expect(await res.json()).toMatchObject({
-      tab: { id: 't1', name: 'Payments', documentId: 'D' },
+      tab: { id: 't1', name: 'Payments', projectId: 'D' },
     });
     expect(db.sql.prepare("SELECT name, rev FROM tabs WHERE id = 't1'").get()).toEqual({
       name: 'Payments',
@@ -79,7 +79,7 @@ describe('the tab rename route', () => {
       op: { kind: 'tab-meta', tabId: 't1', patch: { name: 'Payments' } },
     });
     expect(info).toHaveBeenCalledWith('[changeset] tab-renamed', {
-      documentId: 'D',
+      projectId: 'D',
       tabId: 't1',
       rev: 2,
     });
@@ -88,23 +88,23 @@ describe('the tab rename route', () => {
   it('caps an over-long name', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const { db } = await setUp();
-    const res = await call(db, 'PUT', '/api/documents/D/tabs/t1/name', { name: 'x'.repeat(500) });
+    const res = await call(db, 'PUT', '/api/projects/D/tabs/t1/name', { name: 'x'.repeat(500) });
     const { tab } = (await res.json()) as { tab: { name: string } };
     expect(tab.name.length).toBeLessThan(500);
   });
 
-  it('refuses a missing or blank name, a tab the document lacks, and a stranger', async () => {
+  it('refuses a missing or blank name, a tab the project lacks, and a stranger', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const { db } = await setUp();
-    expect((await call(db, 'PUT', '/api/documents/D/tabs/t1/name', { name: '  ' })).status).toBe(
+    expect((await call(db, 'PUT', '/api/projects/D/tabs/t1/name', { name: '  ' })).status).toBe(
       400,
     );
-    expect((await call(db, 'PUT', '/api/documents/D/tabs/t1/name', {})).status).toBe(400);
-    expect((await call(db, 'PUT', '/api/documents/D/tabs/nope/name', { name: 'A' })).status).toBe(
+    expect((await call(db, 'PUT', '/api/projects/D/tabs/t1/name', {})).status).toBe(400);
+    expect((await call(db, 'PUT', '/api/projects/D/tabs/nope/name', { name: 'A' })).status).toBe(
       404,
     );
     expect(
-      (await call(db, 'PUT', '/api/documents/D/tabs/t1/name', { name: 'A' }, 'user_x')).status,
+      (await call(db, 'PUT', '/api/projects/D/tabs/t1/name', { name: 'A' }, 'user_x')).status,
     ).toBe(403);
   });
 });

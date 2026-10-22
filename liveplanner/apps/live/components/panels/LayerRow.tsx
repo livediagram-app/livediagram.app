@@ -1,5 +1,5 @@
 import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react';
-import { isLayerLocked, isLayerVisible, layerOpacityOf, type Layer } from '@liveplanner/document';
+import { isLayerLocked, isLayerVisible, layerOpacityOf, type Layer } from '@liveplanner/project';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { onMouseHover } from '@/components/primitives/hover-preview';
 import {
@@ -12,7 +12,7 @@ import {
 } from '@/components/panels/layers-panel-icons';
 import { HoverCard, trustedHtml } from '@liveplanner/ui';
 
-// ONE ROW OF THE LAYERS PANEL (docs/specs/006-document/layers.md "The Layers panel"): grip ·
+// ONE ROW OF THE LAYERS PANEL (docs/specs/006-project/layers.md "The Layers panel"): grip ·
 // preview · name over a meta line · lock · eye · options.
 //
 // Split out of LayersPanel because it is the part that grows: the panel around it is a header, a

@@ -12,7 +12,7 @@ import {
   MIND_SPACING_LABEL,
   type MindFlow,
   type MindSpacing,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { lucideGlyph } from '@liveplanner/ui';
 import {
   lucideBetweenHorizontalStart,

@@ -1,8 +1,8 @@
 // Share-link previews (docs/specs/013-workspace/share-link-previews.md): what the api tells the live app's worker
-// about a share link, so a link pasted into a chat previews with the document's name and picture, and the paths both
+// about a share link, so a link pasted into a chat previews with the project's name and picture, and the paths both
 // sides build. Shared so the worker and the api cannot drift on the URL shape.
 
-// `GET /api/share/<code>/card`: answered only for a link whose preview names its document (a working, open share
+// `GET /api/share/<code>/card`: answered only for a link whose preview names its project (a working, open share
 // link with no share password); every other link is a 404.
 export type SharePreviewResponse = { name: string };
 

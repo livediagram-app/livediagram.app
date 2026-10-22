@@ -60,7 +60,7 @@ export function RatingInput({
     pick(next);
   };
   const tabStop = value && value >= 1 && value <= scale ? value : 1;
-  const colour = accent ?? 'var(--color-brand-600, #0284c7)';
+  const colour = accent ?? 'var(--color-brand-600, #7c3aed)';
   const starPx = size === 'lg' ? 32 : size === 'sm' ? 16 : 22;
   const items = Array.from({ length: scale }, (_, i) => i + 1);
   return (

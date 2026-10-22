@@ -32,7 +32,7 @@ describe('the starters', () => {
     },
   );
 
-  it('uses the ready-made type, the document’s own copy first', () => {
+  it('uses the ready-made type, the project’s own copy first', () => {
     const bug = FORM_STARTERS.find((s) => s.id === 'bug-report')!;
     expect(starterBaseType(bug, [], 'x')).toBe(READY_MADE_CARD_TYPES.find((t) => t.id === 'bug'));
     const own = { ...READY_MADE_CARD_TYPES.find((t) => t.id === 'bug')!, label: 'Defect' };

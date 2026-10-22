@@ -6,7 +6,7 @@ import { ITEM_BUSY_RETRIES, writeItem } from './items';
 // docs/specs/026-plan/items.md "Changing items": a write the store answers `item_busy` (nothing written) is sent
 // again, so a quick run of new cards keeps every one; any other refusal is not.
 
-const scope = { ownerId: 'owner-me', documentId: 'doc-cloud', shareCode: null, tabId: null };
+const scope = { ownerId: 'owner-me', projectId: 'doc-cloud', shareCode: null, tabId: null };
 const by = { id: 'p-me', name: 'Me', color: '#2563eb' };
 const create = { kind: 'create' as const, creates: [{ id: 'i1', type: 'task', title: 'A' }] };
 const busy = () =>

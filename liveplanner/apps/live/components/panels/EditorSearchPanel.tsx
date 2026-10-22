@@ -1,80 +1,75 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import { useMemo } from 'react';
 import { searchPanelSources } from '@/components/panels/search-panel-sources';
 
-import { buildPaletteSearchItems } from '@/lib/palette-search';
 import { HELP_SEARCH_ITEMS } from '@/lib/help-search';
 import { SETTINGS_SEARCH_ITEMS } from '@/lib/settings-search-items';
-import { useEditorContext } from '@/app/document/[id]/EditorContext';
+import { useEditorContext } from '@/app/project/[id]/EditorContext';
 import { useEditorCommands } from '@/hooks/canvas/useEditorCommands';
-import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
-import { PALETTE_TILES } from '@/components/palette/palette-tile-defs';
-import { tileHandler } from '@/components/palette/PaletteTileGrid';
-import { useEditorTileActions } from '@/components/palette/useEditorTileActions';
 import { explorerPathFor } from '@/app/explorer/routes';
 import { assignAppLocation } from '@/lib/app-location';
+import { cardTabResolver, type CardSearchSource } from '@/lib/search-plan';
 
 const SearchPanel = dynamic(
   () => import('@/components/panels/SearchPanel').then((m) => m.SearchPanel),
   { ssr: false },
 );
 
-// The editor's search panel (docs/specs/008-canvas/canvas-and-palette.md "Search panel" + docs/specs/007-editor/command-palette.md): searches documents, folders, shared +
-// team documents, tabs/elements, and exposes palette adds, commands, and help.
+// The editor's search panel (docs/specs/008-canvas/canvas-and-palette.md "Search panel" + docs/specs/007-editor/command-palette.md): searches projects, folders, shared +
+// team projects, tabs, boards and cards, and exposes commands, settings and help. A card picked opens in its panel, on
+// the tab whose board shows it, as Find opens one. There is no "Add to canvas" group: a Plan tab's
+// content covers the canvas, so nothing added there would show.
 // Reads everything from EditorContext (commands come from useEditorCommands,
 // itself context-driven), so EditorView just renders <EditorSearchPanel />.
 export function EditorSearchPanel() {
   const {
     searchOpen,
-    documentList,
+    projectList,
     folders,
-    sharedDocuments,
+    sharedProjects,
     teams,
     teamFolders,
-    teamDocuments,
+    teamProjects,
     tabs,
     activeId,
-    openDocument,
+    openProject,
     setActiveId,
     setSelectedId,
-    isReadOnly,
-    addShape,
-    addIcon,
-    addSticker,
-    addTechIcon,
     setSearchOpen,
     openSettingsAt,
+    plan,
   } = useEditorContext();
-  const { commandItems, runCommand } = useEditorCommands(searchOpen);
-  const tileActions = useEditorTileActions();
-  // The icon catalogues load async (lib/icon-registry.ts); subscribing here
-  // re-renders the panel — and rebuilds the palette items below — the moment
-  // they land, so "Add to canvas" results go from shapes-only to the full
-  // shapes + icons + tech list without a reopen. (In practice the editor page
-  // kicked the load at mount, so by the time anyone opens search the data is
-  // almost always already in.)
-  const cataloguesLoaded = useIconCatalogs();
+  const { commandItems, runCommand } = useEditorCommands();
+  const items = plan?.context.items;
+  const types = plan?.context.types;
+  // The cards to search, and the tab each shows on (worked out for the few listed); kept while the cards, types and
+  // tabs are, so typing reuses them.
+  const cards = useMemo<CardSearchSource | undefined>(
+    () => (items ? { items, tabOf: cardTabResolver(tabs, types) } : undefined),
+    [items, types, tabs],
+  );
 
   if (!searchOpen) return null;
 
   return (
     <SearchPanel
       {...searchPanelSources({
-        documents: documentList,
+        projects: projectList,
         folders,
-        shared: sharedDocuments,
+        shared: sharedProjects,
         teams,
-        teamDocuments,
+        teamProjects,
       })}
       teamFolders={teamFolders}
       tabs={tabs}
       currentTabId={activeId}
-      onSelectDocument={(id) => {
-        openDocument(id);
+      onSelectProject={(id) => {
+        openProject(id);
       }}
       onSelectShared={(id, shareCode) => {
-        openDocument(id, shareCode);
+        openProject(id, shareCode);
       }}
       onSelectFolder={(id) => {
         // A personal folder opens on the Explorer page, as picking it there does.
@@ -92,31 +87,18 @@ export function EditorSearchPanel() {
         setActiveId(tabId);
         setSelectedId(null);
       }}
+      cards={cards}
+      onSelectCard={(itemId, tabId) => {
+        if (tabId && tabId !== activeId) {
+          setActiveId(tabId);
+          setSelectedId(null);
+        }
+        plan?.context.openItem(itemId);
+      }}
       onSelectElement={(tabId, elementId) => {
         setActiveId(tabId);
         setSelectedId(elementId);
       }}
-      paletteItems={
-        isReadOnly ? undefined : buildPaletteSearchItems({ catalogues: cataloguesLoaded })
-      }
-      onAddPaletteItem={
-        isReadOnly
-          ? undefined
-          : (add) => {
-              if (add.type === 'shape')
-                addShape(add.shapeKind, {
-                  session: add.session,
-                  plan: add.plan,
-                  variant: add.variant,
-                });
-              else if (add.type === 'icon') addIcon(add.iconId);
-              else if (add.type === 'sticker') addSticker(add.stickerId);
-              else if (add.type === 'tile') {
-                const def = PALETTE_TILES.find((t) => t.id === add.tileId);
-                if (def) tileHandler(def, tileActions)();
-              } else addTechIcon(add.iconId);
-            }
-      }
       commandItems={commandItems}
       onRunCommand={runCommand}
       helpItems={HELP_SEARCH_ITEMS}

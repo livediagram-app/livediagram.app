@@ -13,7 +13,7 @@ import {
   type ChartPaletteId,
   type SheetAnchor,
   type ShapeElement,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import {
   posRangeOf,
   regionAround,

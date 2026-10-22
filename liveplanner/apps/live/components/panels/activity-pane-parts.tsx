@@ -100,12 +100,12 @@ export function ActivityActionRow({
 // direct reason, so it wins (docs/specs/012-collaboration/comment-mentions.md "The Inbox").
 type ThreadFacts = Pick<
   ActivityThread,
-  'mentionsYou' | 'onYourDocument' | 'youCommented' | 'commentCount' | 'latest'
+  'mentionsYou' | 'onYourProject' | 'youCommented' | 'commentCount' | 'latest'
 >;
 
 function threadHint(t: ThreadFacts): string | null {
   if (t.mentionsYou) return 'Mentioned You';
-  return t.onYourDocument && !t.youCommented ? 'Your document' : null;
+  return t.onYourProject && !t.youCommented ? 'Your project' : null;
 }
 
 function threadAvatar(t: ThreadFacts) {
@@ -143,7 +143,7 @@ export function ActivityThreadRow({
 
 // A Plan card on the reader (docs/specs/013-workspace/inbox.md §1, §2.4): its type's glyph, its
 // number and title, where it sits, and the reader as its assignee. A custom type, whose name lives in its
-// document's catalogue, reads as a plain card.
+// project's catalogue, reads as a plain card.
 export function ActivityCardRow({
   card,
   onOpen,
@@ -237,7 +237,7 @@ function ActivityRowShell({
   at,
 }: {
   href: string;
-  place: DocumentPlace;
+  place: ProjectPlace;
   // The line under the title; an element's row defaults to "element label · tab name".
   where?: string;
   onOpen: () => void;
@@ -304,25 +304,25 @@ function ActivityRowShell({
   );
 }
 
-// What every row knows of its document: an element's full place, or a card's; `local` when the document is
+// What every row knows of its project: an element's full place, or a card's; `local` when the project is
 // saved only in this browser (docs/specs/013-workspace/inbox.md §2.6).
-type DocumentPlace = Located<
+type ProjectPlace = Located<
   ActivityPlace | ActivityCard | ActivityCardThread | ActivityFormResponses
 >;
 
-// Which document the row is from; a team document's chip leads with the
-// team glyph so the source of the work reads at a glance. When the document is in This Browser, the chip is followed by
-// the This Browser pill, as a label since the whole row is a link (docs/specs/006-document/offline-mode.md#this-browser-pill).
-function PlaceChip({ place }: { place: DocumentPlace }) {
+// Which project the row is from; a team project's chip leads with the
+// team glyph so the source of the work reads at a glance. When the project is in This Browser, the chip is followed by
+// the This Browser pill, as a label since the whole row is a link (docs/specs/006-project/offline-mode.md#this-browser-pill).
+function PlaceChip({ place }: { place: ProjectPlace }) {
   return (
     <>
-      <DocumentChip place={place} />
+      <ProjectChip place={place} />
       {place.local ? <ThisBrowserPill asLabel /> : null}
     </>
   );
 }
 
-function DocumentChip({ place }: { place: DocumentPlace }) {
+function ProjectChip({ place }: { place: ProjectPlace }) {
   return (
     <span className="inline-flex max-w-[14rem] shrink-0 items-center gap-1 rounded-full bg-slate-100 px-1.5 py-0.5 font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">
       {place.via === 'team' ? (
@@ -330,12 +330,12 @@ function DocumentChip({ place }: { place: DocumentPlace }) {
           <TeamIcon />
         </span>
       ) : null}
-      <span className="truncate">{place.documentName}</span>
+      <span className="truncate">{place.projectName}</span>
     </span>
   );
 }
 
-// Nothing outstanding anywhere. No New Document CTA: a new document puts
+// Nothing outstanding anywhere. No New Project CTA: a new project puts
 // nothing on this page; assigning an action or commenting does.
 export function ActivityEmptyState({ compact = false }: { compact?: boolean } = {}) {
   return (
@@ -343,7 +343,7 @@ export function ActivityEmptyState({ compact = false }: { compact?: boolean } = 
       compact={compact}
       icon={<InboxIcon />}
       title="Nothing waiting on you"
-      description="Open actions and Plan cards assigned to you, actions you assigned, and comment threads you're in, collect here across every document."
+      description="Open actions and Plan cards assigned to you, actions you assigned, and comment threads you're in, collect here across every project."
     >
       <a
         href={helpArticleHref('assignedActions')}

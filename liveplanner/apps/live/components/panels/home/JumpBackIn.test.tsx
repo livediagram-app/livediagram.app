@@ -6,13 +6,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 // Jump Back In (docs/specs/013-workspace/explorer-home.md "Jump Back In"): on a desktop or tablet the
 // Most Used cards then the Recent cards, each group under its label, each card saying why it is
 // there, See More in the heading row; on a phone a strip that alternates, labels neither group and
-// ends in a See More tile. A local document carries the This Browser pill.
+// ends in a See More tile. A local project carries the This Browser pill.
 
 const { track, wide } = vi.hoisted(() => ({ track: vi.fn(), wide: { value: true } }));
 vi.mock('@/lib/telemetry', () => ({ track }));
-vi.mock('@/components/panels/DocumentThumbnail', () => ({
-  DocumentThumbnail: (p: { documentId: string; offline?: boolean }) => (
-    <span data-testid={`thumb-${p.documentId}`} data-offline={String(Boolean(p.offline))} />
+vi.mock('@/components/panels/ProjectThumbnail', () => ({
+  ProjectThumbnail: (p: { projectId: string; offline?: boolean }) => (
+    <span data-testid={`thumb-${p.projectId}`} data-offline={String(Boolean(p.offline))} />
   ),
 }));
 vi.mock('@liveplanner/ui', async (importOriginal) => ({
@@ -70,12 +70,12 @@ describe('JumpBackIn, desktop and tablet', () => {
     ]);
     expect(screen.getByRole('heading', { level: 3, name: 'Most Used' })).toBeTruthy();
     const first = within(used).getAllByRole('link')[0]!;
-    expect(first.getAttribute('href')).toBe('/document/m1');
+    expect(first.getAttribute('href')).toBe('/project/m1');
     expect(first.dataset.jumpBackInCard).toBe('large');
     expect(within(recent).getAllByRole('link')[0]!.dataset.jumpBackInCard).toBe('compact');
   });
 
-  it("says why each document is there, as the card's description", () => {
+  it("says why each project is there, as the card's description", () => {
     const now = Date.now();
     renderIt({
       mostUsed: [item('m1', { useDays: 1 }), item('m2', { useDays: 14 })],
@@ -90,7 +90,7 @@ describe('JumpBackIn, desktop and tablet', () => {
     expect(line('Doc r1')).toBe('Used 2 hours ago');
   });
 
-  it('draws neither label nor list for a group with no document', () => {
+  it('draws neither label nor list for a group with no project', () => {
     renderIt(set([], ['r1', 'r2']));
     expect(screen.queryByText('Most Used')).toBeNull();
     expect(screen.queryByRole('list', { name: 'Most Used' })).toBeNull();
@@ -114,7 +114,7 @@ describe('JumpBackIn, desktop and tablet', () => {
     expect(box.className).toContain('lg:min-h-[20.625rem]');
   });
 
-  it('tracks which half a document was opened from', () => {
+  it('tracks which half a project was opened from', () => {
     renderIt(set(['m1'], ['r1']));
     fireEvent.click(screen.getByRole('link', { name: 'Doc m1' }));
     expect(track).toHaveBeenLastCalledWith('Home', 'Selected', 'JumpBackIn.MostUsed');
@@ -141,7 +141,7 @@ describe('JumpBackIn, desktop and tablet', () => {
     expect(screen.queryByRole('link', { name: 'See More' })).toBeNull();
   });
 
-  it('marks a document stored only in this browser', () => {
+  it('marks a project stored only in this browser', () => {
     renderIt({ mostUsed: [item('l', { localOnly: true })], recent: [] });
     const link = screen.getByRole('link', { name: 'Doc l, This Browser' });
     expect(within(link).getByText('This Browser')).toBeTruthy();
@@ -150,13 +150,13 @@ describe('JumpBackIn, desktop and tablet', () => {
 
   it('says what will gather here when there is nothing yet', () => {
     renderIt(set([], []));
-    expect(screen.getByText('No documents yet')).toBeTruthy();
-    expect(screen.getByText('The documents you use most and last will gather here.')).toBeTruthy();
+    expect(screen.getByText('No projects yet')).toBeTruthy();
+    expect(screen.getByText('The projects you use most and last will gather here.')).toBeTruthy();
     expect(screen.queryByRole('list')).toBeNull();
     // Nothing to see more of.
     expect(screen.queryByRole('link', { name: 'See More' })).toBeNull();
     // In place of one most used card: its size, in the first column, no group labels.
-    const slot = screen.getByText('No documents yet').closest('[data-empty-state]')!.parentElement!;
+    const slot = screen.getByText('No projects yet').closest('[data-empty-state]')!.parentElement!;
     expect(slot.className).toContain('h-[12.5rem]');
     expect(slot.className).toContain('border-dashed');
     expect(slot.parentElement!.className).toContain('lg:grid-cols-4');
@@ -212,7 +212,7 @@ describe('JumpBackIn, phone', () => {
 
   it('shows no See More tile beside the empty state', () => {
     renderIt(set([], []));
-    expect(screen.getByText('No documents yet')).toBeTruthy();
+    expect(screen.getByText('No projects yet')).toBeTruthy();
     expect(screen.queryByRole('link', { name: 'See More' })).toBeNull();
   });
 });

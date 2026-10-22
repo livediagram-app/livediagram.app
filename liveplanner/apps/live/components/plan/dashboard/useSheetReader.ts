@@ -1,19 +1,19 @@
 'use client';
 
-// A Dashboard slot's way into the document's Sheets (docs/specs/026-plan/plan-tabs.md "Figures from a Sheet"): which
-// Sheets the document holds (by the tabs whose elements place one), and one sheet with its tab's workbook, kept
+// A Dashboard slot's way into the project's Sheets (docs/specs/026-plan/plan-tabs.md "Figures from a Sheet"): which
+// Sheets the project holds (by the tabs whose elements place one), and one sheet with its tab's workbook, kept
 // current as the sheet store moves on (an edit, a collaborator's op). Its tab's sheets are fetched as it is asked for.
 import { useEffect, useMemo, useSyncExternalStore } from 'react';
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 import type { Sheet, Workbook } from '@liveplanner/sheets';
 import { useSheetsBridgeContext } from '@/hooks/sheets/useSheetsBridge';
 import { sheetStoreOf, type SheetStore } from '@/components/sheets/sheet-store-client';
 import type { TabsState } from './dashboard-context';
 
-type DocumentSheet = { sheetId: string; tabId: string; tabName: string };
+type ProjectSheet = { sheetId: string; tabId: string; tabName: string };
 
-// Every Sheet the document's tabs place, in tab order.
-export function documentSheets(tabs: readonly Tab[]): DocumentSheet[] {
+// Every Sheet the project's tabs place, in tab order.
+export function projectSheets(tabs: readonly Tab[]): ProjectSheet[] {
   return tabs.flatMap((t) =>
     t.elements.flatMap((el) =>
       el.type === 'shape' && el.shape === 'plan-sheet' && el.planSheet?.sheetId
@@ -26,7 +26,7 @@ export function documentSheets(tabs: readonly Tab[]): DocumentSheet[] {
 const noop = () => () => {};
 const zero = () => 0;
 
-// The document's sheet store (null outside the editor's sheets bridge), its version, and the locale figures read in.
+// The project's sheet store (null outside the editor's sheets bridge), its version, and the locale figures read in.
 export function useSheetStore(): { store: SheetStore | null; version: number; locale: string } {
   const bridge = useSheetsBridgeContext();
   const store = useMemo(() => (bridge ? sheetStoreOf(bridge) : null), [bridge]);
@@ -42,7 +42,7 @@ export type SheetRead =
   | { state: 'failed'; name: string; retry: () => void }
   | { state: 'ready'; sheet: Sheet; wb: Workbook; locale: string; version: number };
 
-// One sheet, read live: its tab's sheets fetched as it is first asked for. `tabsState`: where the document's tabs are
+// One sheet, read live: its tab's sheets fetched as it is first asked for. `tabsState`: where the project's tabs are
 // (tabsStateOf); once every one has arrived a sheet no tab places is gone rather than on its way, and once they have
 // settled with some failed it may be on one of those, so the read failed too (`retryTabs` fetches them again).
 export function useSheetRead(
@@ -53,7 +53,7 @@ export function useSheetRead(
 ): SheetRead {
   const { store, version, locale } = useSheetStore();
   const placed = useMemo(
-    () => (sheetId ? documentSheets(tabs).find((s) => s.sheetId === sheetId) : undefined),
+    () => (sheetId ? projectSheets(tabs).find((s) => s.sheetId === sheetId) : undefined),
     [sheetId, tabs],
   );
   const tabId = placed?.tabId ?? null;

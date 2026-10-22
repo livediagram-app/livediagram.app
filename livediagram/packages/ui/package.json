@@ -45,6 +45,7 @@
     "@livediagram/icons": "workspace:^",
     "@livediagram/items": "workspace:*",
     "@livediagram/tailwind-config": "workspace:*",
-    "@livediagram/telemetry-client": "workspace:*"
+    "@livediagram/telemetry-client": "workspace:*",
+    "@liveworkspace/sites": "workspace:*"
   }
 }

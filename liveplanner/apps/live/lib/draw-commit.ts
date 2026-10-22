@@ -8,7 +8,7 @@ import {
   planBoardWidthFor,
   planViewSize,
 } from '@liveplanner/items';
-import { defaultSessionConfig, isFixedSizeShape } from '@liveplanner/document';
+import { defaultSessionConfig, isFixedSizeShape } from '@liveplanner/project';
 import { ARROW_SNAP_THRESHOLD_PX, inheritedSizeFor } from '@/lib/canvas';
 import {
   createComponent,
@@ -27,9 +27,9 @@ import {
   type Element,
   type Endpoint,
   type Tab,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { deriveNewBoxedColours } from '@/lib/themes';
-import type { ThemeDefinition } from '@liveplanner/document';
+import type { ThemeDefinition } from '@liveplanner/project';
 import { isTechIconId } from '@/lib/tech-icons';
 import { getSticker, stickerDropSize } from '@/lib/stickers';
 import type { PendingDraw } from '@/lib/draw-mode';

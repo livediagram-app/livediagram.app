@@ -4,16 +4,16 @@ import { upgradeLegacyPreferences } from './legacy-preferences';
 describe('upgradeLegacyPreferences', () => {
   it('carries an opt-out stored under the old key to the new one', () => {
     expect(upgradeLegacyPreferences({ notifyDiagramJoin: false, theme: 'dark' })).toEqual({
-      notifyDocumentJoin: false,
+      notifyProjectJoin: false,
       theme: 'dark',
     });
   });
 
   it('lets the new key win when both are present', () => {
     expect(
-      upgradeLegacyPreferences({ notifyDiagramJoin: false, notifyDocumentJoin: true }),
+      upgradeLegacyPreferences({ notifyDiagramJoin: false, notifyProjectJoin: true }),
     ).toEqual({
-      notifyDocumentJoin: true,
+      notifyProjectJoin: true,
     });
   });
 
@@ -65,9 +65,9 @@ describe('upgradeLegacyPreferences', () => {
     ).toEqual({ theme: 'dark' });
   });
 
-  // docs/specs/007-editor/user-preferences.md "Retired keys": the New Document wizard has no Location step to skip.
+  // docs/specs/007-editor/user-preferences.md "Retired keys": the New Project wizard has no Location step to skip.
   it('drops the retired skip-the-Location-step place, set or cleared', () => {
-    const place = { saveLocation: 'liveplanner', placement: 'unsorted', placeName: 'My documents' };
+    const place = { saveLocation: 'liveplanner', placement: 'unsorted', placeName: 'My projects' };
     expect(upgradeLegacyPreferences({ skipLocationStep: place, theme: 'dark' })).toEqual({
       theme: 'dark',
     });
@@ -75,7 +75,7 @@ describe('upgradeLegacyPreferences', () => {
   });
 
   it('returns the same object when there is nothing to upgrade', () => {
-    const prefs = { notifyDocumentJoin: false };
+    const prefs = { notifyProjectJoin: false };
     expect(upgradeLegacyPreferences(prefs)).toBe(prefs);
   });
 });

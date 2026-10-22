@@ -1,5 +1,5 @@
 // The pull file (docs/specs/015-api/blueprints/cli.md "The pull file", CLI27, CLI28): the editor's
-// `liveplanner.document` envelope, so "Import a copy" reads it, plus `liveplannerSync`, which the envelope parser
+// `liveplanner.project` envelope, so "Import a copy" reads it, plus `liveplannerSync`, which the envelope parser
 // ignores: the host it came from and each tab's revision and hashes. `hash` covers a tab's elements, which push sends;
 // `settingsHash` covers everything else, which push names as not pushed.
 
@@ -7,15 +7,15 @@ import {
   canonicalJson,
   isRecord,
   isValidTab,
-  parseDocumentEnvelope,
-  type DocumentEnvelope,
+  parseProjectEnvelope,
+  type ProjectEnvelope,
   type Tab,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { sha256Hex } from '@liveplanner/api-schema';
 
 export type PulledTab = { rev: number; hash: string; settingsHash: string };
 export type PullSync = { host: string; pulledAt: number; tabs: Record<string, PulledTab> };
-export type PullFile = DocumentEnvelope & { liveplannerSync: PullSync };
+export type PullFile = ProjectEnvelope & { liveplannerSync: PullSync };
 
 export const PULL_FILE_SUFFIX = '.liveplanner.json';
 const SLUG_MAX = 60;
@@ -87,21 +87,21 @@ function syncOf(value: unknown): PullSync | null {
 
 const FAILURES = {
   not_json: 'not JSON',
-  wrong_kind: 'not a liveplanner document',
+  wrong_kind: 'not a liveplanner project',
   unsupported_version: 'written by a newer liveplanner',
-  malformed: 'its document is malformed',
+  malformed: 'its project is malformed',
 } as const;
 
 // A pull file read back, or why it is not one; a tab edited into something the editor would refuse is named (E20).
 export function parsePullFile(
   text: string,
 ): { ok: true; file: PullFile } | { ok: false; message: string } {
-  const parsed = parseDocumentEnvelope(text);
+  const parsed = parseProjectEnvelope(text);
   if (!parsed.ok) return { ok: false, message: FAILURES[parsed.failure] };
   // The envelope parse has already proved the text is a JSON object.
   const sync = syncOf(Reflect.get(Object(JSON.parse(text)), 'liveplannerSync'));
   if (!sync) return { ok: false, message: 'not pulled by the CLI (no liveplannerSync)' };
-  const { tabs } = parsed.envelope.document;
+  const { tabs } = parsed.envelope.project;
   const invalid = tabs.findIndex((tab: unknown) => !isValidTab(tab));
   if (invalid >= 0)
     return { ok: false, message: `tab ${JSON.stringify(tabs[invalid]!.name)} is not a valid tab` };

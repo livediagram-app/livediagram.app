@@ -28,7 +28,7 @@ describe('claimFormEmail', () => {
   it('sends one email per window, then counts what it held', async () => {
     const { env, sql } = sqliteD1();
     sql.exec(
-      `INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at) VALUES ('d', 'o', 'D', 0, 1, 1)`,
+      `INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at) VALUES ('d', 'o', 'D', 0, 1, 1)`,
     );
     const link = await createFormLink(env, 'd', 't', 1);
     const code = link!.code;
@@ -43,7 +43,7 @@ describe('claimFormEmail', () => {
 });
 
 describe('the Inbox read (docs/specs/030-forms/forms.md "Hearing about responses")', () => {
-  it("lists forms with unseen responses on the reader's own documents only", async () => {
+  it("lists forms with unseen responses on the reader's own projects only", async () => {
     const { env, sql } = sqliteD1();
     const tab = (id: string, doc: string) => {
       sql.prepare('INSERT INTO tabs (id, name, data, updated_at) VALUES (?, ?, ?, 1)').run(
@@ -56,13 +56,13 @@ describe('the Inbox read (docs/specs/030-forms/forms.md "Hearing about responses
       );
       sql
         .prepare(
-          'INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES (?, ?, 0, 1)',
+          'INSERT INTO project_tabs (project_id, tab_id, order_index, added_at) VALUES (?, ?, 0, 1)',
         )
         .run(doc, id);
     };
     sql.exec(`
-      INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at) VALUES ('mine', 'me', 'Ops', 0, 1, 1);
-      INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at) VALUES ('theirs', 'other', 'X', 0, 1, 1);
+      INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at) VALUES ('mine', 'me', 'Ops', 0, 1, 1);
+      INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at) VALUES ('theirs', 'other', 'X', 0, 1, 1);
     `);
     tab('t1', 'mine');
     tab('t2', 'theirs');
@@ -73,8 +73,8 @@ describe('the Inbox read (docs/specs/030-forms/forms.md "Hearing about responses
     let read = await readActivity(env, 'me', { limit: 10 });
     expect(read.formResponses).toEqual([
       {
-        documentId: 'mine',
-        documentName: 'Ops',
+        projectId: 'mine',
+        projectName: 'Ops',
         teamId: null,
         via: 'own',
         tabId: 't1',
@@ -94,7 +94,7 @@ describe('claimResponseNumber and deleteFormLink (docs/specs/030-forms/forms.md 
   const setup = () => {
     const { env, sql } = sqliteD1();
     sql.exec(
-      `INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at) VALUES ('d', 'o', 'D', 0, 1, 1)`,
+      `INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at) VALUES ('d', 'o', 'D', 0, 1, 1)`,
     );
     return env;
   };

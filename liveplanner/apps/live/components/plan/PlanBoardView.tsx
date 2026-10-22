@@ -1,13 +1,13 @@
 'use client';
 
 // The Plan board's body on the canvas (docs/specs/026-plan/plan-board.md, blueprint plan-board.md):
-// its set-up projected over the document's items into columns, rows and cards. In Plan mode cards
+// its set-up projected over the project's items into columns, rows and cards. In Plan mode cards
 // take the pointer and the keyboard; in the other modes the board is an element like any other and a
 // double-click opens a card. Everything the board changes goes through PlanContext.
 import { planFontStyle } from '@/lib/plan-font';
 import { useSlotSettings } from '@/components/plan/dashboard/slot-menu';
 import { SlotBoardCog } from './SlotBoardCog';
-import { isCardVotableInVote } from '@liveplanner/document';
+import { isCardVotableInVote } from '@liveplanner/project';
 import { useCardVote } from './CardVoteContext';
 import { useViewportStoreIfAny } from '@/hooks/canvas/useViewportStore';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
@@ -16,7 +16,7 @@ import { markPanThrough } from '@/hooks/canvas/pan-through';
 import { mayCreateCardType } from './may-create-card-type';
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { cornerRadiusPx, type ShapeElement } from '@liveplanner/document';
+import { cornerRadiusPx, type ShapeElement } from '@liveplanner/project';
 import {
   CARD_FIELDS,
   ITEM_TYPES,

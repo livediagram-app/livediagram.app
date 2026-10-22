@@ -10,9 +10,9 @@
 // read is the Inbox's one query per kind.
 
 import { FORM_RESPONSES_SQL, formResponsesFromRows, type FormResponsesRow } from './activity-forms';
-import { collabIndexRowsFromElements, type Element } from '@liveplanner/document';
+import { collabIndexRowsFromElements, type Element } from '@liveplanner/project';
 import type { ActivityAction, ActivityReadResult, ActivityThread } from '@liveplanner/api-schema';
-import { VISIBLE_DOCUMENTS_CTES } from './document-visibility';
+import { VISIBLE_PROJECTS_CTES } from './project-visibility';
 import {
   CARDS_CTES,
   CARDS_SELECT,
@@ -108,8 +108,8 @@ export function collabIndexStatements(
   return stmts;
 }
 
-// A duplicated document copies its tab rows in SQL without parsing them
-// (copyDocument), so the index rows are copied the same way, under the
+// A duplicated project copies its tab rows in SQL without parsing them
+// (copyProject), so the index rows are copied the same way, under the
 // fresh tab id.
 export function collabIndexCopyStatements(
   env: Env,
@@ -148,13 +148,13 @@ export function collabIndexCopyStatements(
 // sets the Explorer's Recent merges — own, joined-team, shared-with-you
 // (live share only) — with how each is reached and, for a share, the
 // code the client needs to open it. Scoping by library FIRST is the
-// security boundary: an id inside a blob can never surface a document
+// security boundary: an id inside a blob can never surface a project
 // the reader can no longer open. A share also carries the tab it is
 // scoped to (docs/specs/013-workspace/tab-scoped-share-links.md): the code picked has exactly that scope,
 // and the reads keep only that tab's rows.
 //
 // Binds: ?1 = ownerId, ?2 = now (share-link expiry), ?3 = limit. `visible` (and `my_teams`)
-// come from the one shared definition (db/document-visibility.ts), which Explorer Home reads too.
+// come from the one shared definition (db/project-visibility.ts), which Explorer Home reads too.
 const SCOPE_CTES = `
   WITH me(id) AS (
     SELECT ?1
@@ -164,15 +164,15 @@ const SCOPE_CTES = `
   my_members(id) AS (
     SELECT id FROM team_members WHERE user_id = ?1
   ),
-  ${VISIBLE_DOCUMENTS_CTES}`;
+  ${VISIBLE_PROJECTS_CTES}`;
 
 type PlaceRow = {
   tab_id: string;
   element_id: string;
   element_label: string;
-  document_id: string;
-  document_name: string;
-  document_team_id: string | null;
+  project_id: string;
+  project_name: string;
+  project_team_id: string | null;
   via: 'own' | 'team' | 'shared';
   share_code: string | null;
   tab_name: string;
@@ -200,7 +200,7 @@ type ThreadRow = PlaceRow & {
   first_at: number;
   latest_at: number;
   you_commented: number;
-  on_your_document: number;
+  on_your_project: number;
   mentions_you: number;
 };
 
@@ -208,14 +208,14 @@ const ACTIONS_SQL = `${SCOPE_CTES}
   SELECT ca.tab_id, ca.element_id, ca.element_label, ca.action_id, ca.name, ca.description,
          ca.assignee_user_id, ca.assignee_name, ca.assigner_id, ca.assigner_name,
          ca.created_at, ca.updated_at,
-         v.id AS document_id, v.name AS document_name, v.team_id AS document_team_id,
+         v.id AS project_id, v.name AS project_name, v.team_id AS project_team_id,
          v.via, v.share_code, t.name AS tab_name,
          CASE WHEN ca.assignee_user_id IN (SELECT id FROM me)
                 OR ca.assignee_member_id IN (SELECT id FROM my_members) THEN 1 ELSE 0 END AS assigned_to_me,
          CASE WHEN ca.assigner_id IN (SELECT id FROM me) THEN 1 ELSE 0 END AS created_by_me
     FROM collab_actions ca
-    JOIN document_tabs dt ON dt.tab_id = ca.tab_id
-    JOIN visible v ON v.id = dt.document_id
+    JOIN project_tabs dt ON dt.tab_id = ca.tab_id
+    JOIN visible v ON v.id = dt.project_id
     JOIN tabs t ON t.id = ca.tab_id
    WHERE ca.status = 'open'
      AND (v.scope_tab_id IS NULL OR v.scope_tab_id = ca.tab_id)
@@ -235,19 +235,19 @@ export const CARD_THREADS_SQL = `${SCOPE_CTES}${CARD_THREADS_CTES}${CARD_THREADS
 export const THREADS_SQL = `${SCOPE_CTES}
   SELECT ct.tab_id, ct.element_id, ct.element_label, ct.comment_count,
          ct.latest_text, ct.latest_author_name, ct.latest_author_color, ct.first_at, ct.latest_at,
-         v.id AS document_id, v.name AS document_name, v.team_id AS document_team_id,
+         v.id AS project_id, v.name AS project_name, v.team_id AS project_team_id,
          v.via, v.share_code, t.name AS tab_name,
          CASE WHEN EXISTS (SELECT 1 FROM json_each(ct.participant_ids) je
                             WHERE je.value IN (SELECT id FROM me)) THEN 1 ELSE 0 END AS you_commented,
-         CASE WHEN v.owner_id = ?1 THEN 1 ELSE 0 END AS on_your_document,
+         CASE WHEN v.owner_id = ?1 THEN 1 ELSE 0 END AS on_your_project,
          CASE WHEN EXISTS (SELECT 1 FROM json_each(ct.mentioned_ids) jm
                             WHERE jm.value IN (SELECT id FROM me)
                                OR jm.value IN (SELECT id FROM my_members)) THEN 1 ELSE 0 END
            AS mentions_you
-    -- From the reader's documents to their tabs' threads, in that order (CROSS JOIN fixes it): led by
+    -- From the reader's projects to their tabs' threads, in that order (CROSS JOIN fixes it): led by
     -- the open-threads index instead, the read walked every open thread in the database.
     FROM visible v
-    CROSS JOIN document_tabs dt ON dt.document_id = v.id
+    CROSS JOIN project_tabs dt ON dt.project_id = v.id
     CROSS JOIN collab_threads ct ON ct.tab_id = dt.tab_id
     JOIN tabs t ON t.id = ct.tab_id
    WHERE ct.resolved = 0
@@ -261,8 +261,8 @@ export const THREADS_SQL = `${SCOPE_CTES}
    ORDER BY ct.latest_at DESC
    LIMIT ?3`;
 
-// A tab linked into two visible documents (docs/specs/006-document/tab-document-many-to-many.md) lists once per
-// document; keep the one the reader reaches most directly. A 'shared'
+// A tab linked into two visible projects (docs/specs/006-project/tab-project-many-to-many.md) lists once per
+// project; keep the one the reader reaches most directly. A 'shared'
 // row whose link has lapsed has nowhere to go and is dropped, the way
 // Shared with You drops it.
 const VIA_RANK = { own: 0, team: 1, shared: 2 } as const;
@@ -282,9 +282,9 @@ function dedupePlaces<R extends PlaceRow>(rows: R[]): R[] {
 
 function placeOf(row: PlaceRow) {
   return {
-    documentId: row.document_id,
-    documentName: row.document_name,
-    teamId: row.document_team_id,
+    projectId: row.project_id,
+    projectName: row.project_name,
+    teamId: row.project_team_id,
     via: row.via,
     shareCode: row.via === 'shared' ? row.share_code : null,
     tabId: row.tab_id,
@@ -335,7 +335,7 @@ export async function readActivity(
       },
       firstAt: r.first_at,
       youCommented: r.you_commented === 1,
-      onYourDocument: r.on_your_document === 1,
+      onYourProject: r.on_your_project === 1,
       mentionsYou: r.mentions_you === 1,
     }),
   );
@@ -368,7 +368,7 @@ export async function markCollabIndexBackfilled(env: Env, ownerId: string): Prom
     .run();
 }
 
-// The tabs the backfill has to parse: every tab of every document the
+// The tabs the backfill has to parse: every tab of every project the
 // reader can see whose JSON even mentions a thread, an action or a Plan board. The
 // LIKE pre-filter runs in SQLite so the (usually large) majority of tabs
 // with neither never leave the database. Newest first, capped.
@@ -380,9 +380,9 @@ export async function listCollabTabsToBackfill(
   const res = await env.DB.prepare(
     `SELECT DISTINCT t.id, t.data, t.rev, t.updated_at
        FROM tabs t
-       JOIN document_tabs dt ON dt.tab_id = t.id
-       JOIN documents d ON d.id = dt.document_id
-       LEFT JOIN shared_with s ON s.document_id = d.id AND s.owner_id = ?1
+       JOIN project_tabs dt ON dt.tab_id = t.id
+       JOIN projects d ON d.id = dt.project_id
+       LEFT JOIN shared_with s ON s.project_id = d.id AND s.owner_id = ?1
       WHERE (d.owner_id = ?1
              OR d.team_id IN (SELECT team_id FROM team_members WHERE user_id = ?1 AND status = 'joined')
              OR s.owner_id IS NOT NULL)
@@ -422,7 +422,7 @@ export async function recordOwnerAlias(env: Env, ownerId: string, aliasId: strin
 }
 
 // Account deletion: no identity row outlives the account. The index rows
-// themselves cascade with the documents' tabs.
+// themselves cascade with the projects' tabs.
 export async function deleteCollabIndexForOwner(env: Env, ownerId: string): Promise<void> {
   // Sequential like the rest of deleteAccount's sweep (each statement
   // is independently idempotent, so there is nothing a batch would

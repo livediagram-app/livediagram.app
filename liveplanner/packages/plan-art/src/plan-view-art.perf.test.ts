@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import type { ShapeElement } from '@liveplanner/document';
+import type { ShapeElement } from '@liveplanner/project';
 import { PLAN_VIEW_IDS } from '@liveplanner/items';
 import { planViewArt } from './plan-view-art';
 import { artData, card, shape } from './test-fixtures';
 
 // docs/specs/026-plan/plan-tabs.md "Export" and "Limits": the worst Dashboard image (12 rows of 4 views, each over a
-// document's 2,000 cards) draws its pictures well inside a second, so the preview never stalls the dialog.
+// project's 2,000 cards) draws its pictures well inside a second, so the preview never stalls the dialog.
 describe('plan view pictures at the limits', () => {
   it('draws 48 views over 2,000 cards within budget', () => {
     const statuses = ['todo', 'doing', 'done'];

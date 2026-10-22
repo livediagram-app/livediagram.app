@@ -133,7 +133,7 @@ rounded-full leading-none [&>svg]:block`, `width` / `height` from `size` when gi
   `<span class="text-optical-line">`; elements pass through. Anchors styled with `buttonClassName` wrap
   their children in `ButtonContent` (help header and contact, `SiteHeader`, marketing `CtaLink` / `Hero`,
   the editor's toasts, sign-in prompts, team invites).
-- `optical-edges` sits on `buttonClassName`'s base, `Chip`, the section switch (`ProductNav`), the
+- `optical-edges` sits on `buttonClassName`'s base, `Chip`, the
   timeline's view and filter buttons, and the help `CountPill`.
 - Invariant: a host with `optical-edges` holds its text in elements, never bare text nodes. CSS
   `:first-child` ignores text, so `Next<svg/>` would make the arrow both first and last child.
@@ -155,7 +155,6 @@ rounded-full leading-none [&>svg]:block`, `width` / `height` from `size` when gi
 
 ## Controls that keep their height
 
-- The section switch (`ProductNav`) pins `h-[34px]`; its label is `text-optical-centre max-sm:hidden`.
 - The tab pill's button pins `h-7`; the name sits in `text-optical-centre`; the active tab with its
   ellipsis menu pads `pl-2.5 pr-1`, so the ellipsis button's own padding balances the dot's side.
 - The share-state chip (`SharedBadge`) and the timeline's day badges pin `height={19}`, their probed
@@ -270,7 +269,7 @@ size is unchanged except where a header slot grew to 20px.
 | Numeral / letter discs    | `VotePane`, `TimerSetupBody`, `ElementVoteOverlay`, `BoxEditControls`, canvas `CalloutFace` / `SiteHeaderFace`, help `ArticleCard` / `ArticleShell` / `TableOfContents`, marketing `StoryBeat`, `feature-art/canvas`, `hero-illustration-glyphs`                                                                                                                                                                                                                 |
 | Icons as glyphs           | telemetry `MetricPicker` (the text "✕" is the shared `CloseIcon`)                                                                                                                                                                                                                                                                                                                                                                                                |
 | Chips                     | `SharedBadge`, `RoleIndicator`, `document-badges`, `ActiveSharePass`, `ExpiredSharePass`, `LinkPickerDialog`, `FloatingTitle`, `TabPill`, `LayerRow`, `ThisBrowserPill`, `PaletteDropdown`, `PaletteIconButton`, `PaletteToolRows`, `CollabMenuSections`, `CustomThemeBuilder`, `DecisionFace`, `QaNoteRow`, `paper-kit`, `VideoView`, `RichTextEditor`, `TimelineCard`, `TimelineGroup`, help `CountPill`, marketing `hero-editor-window` and feature-art chips |
-| Controls                  | `Button` and every `buttonClassName` link, `ProductNav`, `TimelineControls`, `SettingsCategoryList`                                                                                                                                                                                                                                                                                                                                                              |
+| Controls                  | `Button` and every `buttonClassName` link, `TimelineControls`, `SettingsCategoryList`                                                                                                                                                                                                                                                                                                                                                                            |
 | Stack rows                | `EditorHeader` + `AuthControls`                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | SVG text in shapes        | `ProcessFace` + `svg-render-web` (steps, callout, monogram), `svg-render-data` + `ProgressView`, `sticker-markup`                                                                                                                                                                                                                                                                                                                                                |
 

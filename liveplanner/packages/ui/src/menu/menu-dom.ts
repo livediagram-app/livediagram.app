@@ -41,7 +41,7 @@ const isRendered = (el: HTMLElement): boolean =>
     : true;
 
 /**
- * The tabbable control after (or before) `from` in document order, outside `exclude` (the closing
+ * The tabbable control after (or before) `from` in project order, outside `exclude` (the closing
  * menu); null at the end of the page. Where Tab goes when it closes a menu (D53).
  */
 export function tabbableNeighbour(
@@ -127,7 +127,7 @@ export function isTextEditFocused(): boolean {
 
 /**
  * Whether the keyboard opened what is opening now: the last interaction was a key press, not a
- * pointer press (D51). Tracked on the document, because the control that opened a menu may be gone
+ * pointer press (D51). Tracked on the project, because the control that opened a menu may be gone
  * by the time the menu mounts.
  */
 export function openedFromKeyboard(): boolean {

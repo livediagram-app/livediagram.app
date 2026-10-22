@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 import { Button, DialogHeader, DialogCloseButton } from '@liveplanner/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
@@ -18,7 +18,7 @@ import { useRelativeNow } from '@/lib/relative-time';
 import { legibleTabAccent } from '@/lib/tab-accent';
 import type { AccessLevel } from '@liveplanner/api-schema';
 
-// The Collaborators modal (docs/specs/012-collaboration/collaborator-enhancements.md): everyone in the document, grouped by
+// The Collaborators modal (docs/specs/012-collaboration/collaborator-enhancements.md): everyone in the project, grouped by
 // the tab they are on, opened by clicking any avatar in a tab's presence
 // stack. Each other tab gets a Go to Tab. The person whose avatar was
 // clicked is highlighted and scrolled into view.

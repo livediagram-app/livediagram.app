@@ -24,7 +24,7 @@ const same = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLow
 const quoted = (names: readonly string[]) =>
   names.length ? names.map((n) => `"${n}"`).join(', ') : 'none';
 
-// The Form tab named (by id or name), else the document's first.
+// The Form tab named (by id or name), else the project's first.
 export function resolveFormTab(
   tabs: readonly TabRef[],
   ref: string | undefined,
@@ -35,7 +35,7 @@ export function resolveFormTab(
     : forms[0];
   if (!tab) {
     if (!forms.length)
-      return refuse('form_tab_none', 'That document has no Form tab. Make one with add_form.');
+      return refuse('form_tab_none', 'That project has no Form tab. Make one with add_form.');
     return refuse(
       'form_tab_unknown',
       `No tab "${ref}". Form tabs: ${quoted(forms.map((t) => `${t.name} (${t.id})`))}.`,

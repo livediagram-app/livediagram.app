@@ -1,7 +1,7 @@
 // A Form tab and its form (docs/specs/030-forms/forms.md "The Form tab"): the tab and the form share one name, so a
 // rename or a duplicate's name is the form's heading too.
 import { readForm, FORM_HEADING_MAX, type FormDefinition } from '@liveplanner/forms';
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 
 // The tab's form, read safely; null on any other tab.
 function formOfTab(tab: Pick<Tab, 'kind' | 'form'> | undefined): FormDefinition | null {

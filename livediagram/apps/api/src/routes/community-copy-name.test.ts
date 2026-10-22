@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { sqliteD1 } from '../test-sqlite-d1';
-import { createCommunityPost, createShareLink, getCommunityPostForDocument } from '../db';
+import { createShareLink, saveNewCommunityLink } from '../db';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocuments } from './documents';
 
@@ -13,15 +13,15 @@ async function arrange() {
     INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at)
       VALUES ('d1', 'user_author', 'Untitled Mind Map', 1, 1, 1);
   `);
-  await createCommunityPost(db.env, 'd1', 'user_author', {
+  await saveNewCommunityLink(db.env, {
+    shareCode: 'COMMUNITY23456',
+    documentId: 'd1',
+    authorId: 'user_author',
+    postId: 'post1',
     title: 'Team offsite mind map',
-    description: 'Five branches for a two-day offsite.',
-    category: 'mindmaps',
-    tags: [],
     anonymous: true,
   });
-  const post = (await getCommunityPostForDocument(db.env, 'd1'))!;
-  return { db, code: post.share_code };
+  return { db, code: 'COMMUNITY23456' };
 }
 
 function copy(db: Awaited<ReturnType<typeof arrange>>['db'], code: string, body: unknown = {}) {

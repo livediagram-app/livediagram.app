@@ -1,4 +1,4 @@
-// A document for the form verb suites (docs/specs/030-forms/forms.md "Agents"): a Board tab "Bugs" whose board takes
+// A project for the form verb suites (docs/specs/030-forms/forms.md "Agents"): a Board tab "Bugs" whose board takes
 // only Bug cards, a Sheet tab "Budget", and a Form tab "Bug Report" sending Bug cards to New, its Severity a field.
 import type { PlanResponse } from '@liveplanner/api-schema';
 import type { FormDefinition } from '@liveplanner/forms';
@@ -44,7 +44,7 @@ export const bugForm = (): FormDefinition => ({
   destination: { tabId: 'bugs', typeId: 'bug', status: firstStatus() },
 });
 
-// The document's plan as the api answers it.
+// The project's plan as the api answers it.
 export function formPlan(): PlanResponse {
   return {
     boards: [

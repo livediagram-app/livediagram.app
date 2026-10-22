@@ -33,7 +33,7 @@ describe('the view transition guard', () => {
   });
 
   it('skips it into the editor, the help centre and the dashboard, and says so', () => {
-    for (const path of ['/new?via=Home.Hero', '/explorer', '/help/tabs', '/telemetry']) {
+    for (const path of ['/new?via=Home.Hero', '/project/abc123', '/explorer', '/help/tabs', '/telemetry']) {
       const { skipTransition, debug } = swapTo(`${ORIGIN}${path}`);
       expect(skipTransition).toHaveBeenCalledTimes(1);
       expect(debug).toHaveBeenCalledWith(

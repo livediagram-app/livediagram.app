@@ -1,7 +1,7 @@
 // Add New Card Type from a board's Add a Card menu (docs/specs/026-plan/plan-board.md "Add New Card Type"): the type
 // editor opens on a new type with only that board's statuses on, and saving it adds it to the board's card types.
 import { useCallback, useState } from 'react';
-import type { Element } from '@liveplanner/document';
+import type { Element } from '@liveplanner/project';
 import {
   NEW_ITEM_TYPE,
   normaliseBoardSetup,
@@ -18,14 +18,14 @@ type TypeForBoard = {
   fields?: readonly CardField[];
 };
 
-// A new type's starting point: for a board, every status of the document but the board's turned off; with fields,
+// A new type's starting point: for a board, every status of the project but the board's turned off; with fields,
 // those fields on beside the new type's own.
 export function newTypeForBoard(
   forBoard: TypeForBoard,
-  documentStatuses: Iterable<string>,
+  projectStatuses: Iterable<string>,
 ): ItemTypeDef {
   const on = new Set(forBoard.statuses ?? []);
-  const off = forBoard.statuses ? [...documentStatuses].filter((s) => !on.has(s)) : [];
+  const off = forBoard.statuses ? [...projectStatuses].filter((s) => !on.has(s)) : [];
   const fields = [...NEW_ITEM_TYPE.fields];
   for (const f of forBoard.fields ?? []) if (!fields.includes(f)) fields.push(f);
   return {

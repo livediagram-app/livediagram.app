@@ -1,6 +1,6 @@
 # Sheet store
 
-A document's **sheet store** holds every [sheet](sheet.md) of the document: its title, its rows and columns, and
+A project's **sheet store** holds every [sheet](sheet.md) of the project: its title, its rows and columns, and
 its cells' inputs and formats. Like the [item store](../026-plan/items.md), it lives apart from the canvas: a Sheet
 element on a tab only names its sheet, so a sheet of tens of thousands of cells never weighs on the tab's
 elements, its snapshots, its changesets or its room.
@@ -9,18 +9,18 @@ elements, its snapshots, its changesets or its room.
 
 | Term                      | Means                                                                          | Never called              |
 | ------------------------- | ------------------------------------------------------------------------------ | ------------------------- |
-| **sheet store**           | Every sheet of one document                                                    | workbook, database        |
+| **sheet store**           | Every sheet of one project                                                    | workbook, database        |
 | **sheet id**              | A sheet's internal id, named by its Sheet element                              | key                       |
 | **row id**, **column id** | A row's or column's own id, kept for life whatever its place                   | index (that is its place) |
 | **layout**                | A sheet's rows and columns in order, with their sizes, hidden flags and freeze | structure, shape          |
 | **cell write**            | A change to cells' inputs and/or formats                                       | update, edit              |
 | **layout write**          | A change to rows or columns: insert, delete, move, resize, hide, freeze        | structural change         |
 | **sheet rev**             | The sheet's revision, raised by one on every write to it                       | version                   |
-| **referenced**            | Named by an element of its document: a Sheet's `sheetId` or a copy's `copyOf`  | used, linked              |
+| **referenced**            | Named by an element of its project: a Sheet's `sheetId` or a copy's `copyOf`  | used, linked              |
 
 ## What a sheet is
 
-- **`id`**: a short random id, unique in its document. A copied document keeps every sheet id, so its Sheet
+- **`id`**: a short random id, unique in its project. A copied project keeps every sheet id, so its Sheet
   elements still frame the right sheets.
 - **`tabId`**: the tab it was made on. A sheet belongs to one tab for life: its references to other sheets are
   that tab's, and a tab-scoped link reads only its tab's sheets.
@@ -89,18 +89,18 @@ element naming its **start** (`start`, a template start's id: `budget-planner`, 
 - Whatever makes the tabs makes each such sheet from its template at once: titled with the template's name, set up
   in the Banded look, its header frozen, tints for the tab's canvas, light or dark, dates reckoned from that moment;
   the template's chart is added to the tab as a chart element anchored in the Sheet, carrying its first read. The element's `start` is then dropped, so a template's tabs are never
-  stored with it: the document is created with the sheets beside the tabs, or a start screen and `add_tab` make the
+  stored with it: the project is created with the sheets beside the tabs, or a start screen and `add_tab` make the
   sheets right after the tabs.
 - An element still carrying `start` with no sheet behind it (a path that missed it) is made from the start by the
   first editor to draw it, as a copy not yet made is, and the mark dropped quietly at once; until then it shows its
-  loader, never "no longer in this document". The template's chart is added beside it, quietly, once the server takes
+  loader, never "no longer in this project". The template's chart is added beside it, quietly, once the server takes
   that editor's sheet. A second editor drawing it at the same moment finds it made (the server refuses their copy) and
   loads it, adding no chart, so the chart is never added twice.
 - `start` counts as nothing referenced: the sheet is referenced by its `sheetId` once made.
 
 ## Deleting a sheet
 
-A sheet is **referenced** by every element in its document that names it: a Sheet element showing it
+A sheet is **referenced** by every element in its project that names it: a Sheet element showing it
 (`sheetId`), and a copy not yet made (`copyOf`: a duplicated Sheet, a pasted one, or one on a duplicated tab, which
 is made from it when first drawn). A sheet nothing references is **unreferenced**.
 
@@ -120,19 +120,19 @@ is made from it when first drawn). A sheet nothing references is **unreferenced*
 - A sheet unreferenced for 30 days is deleted for good. The api notes the moment a sheet becomes unreferenced (or
   referenced again) as the tabs that reference it are saved, and deletes, once a day, the sheets unreferenced for
   longer.
-- Deleting a document for good deletes its sheets with it.
+- Deleting a project for good deletes its sheets with it.
 
 ## Who may do what
 
-Sheets follow the document's access ([Auth and guest access](../014-identity/auth-and-guest-access.md)):
+Sheets follow the project's access ([Auth and guest access](../014-identity/auth-and-guest-access.md)):
 
-- **Read** with any access to the document. A visitor on a **tab-scoped** link reads only that tab's sheets.
+- **Read** with any access to the project. A visitor on a **tab-scoped** link reads only that tab's sheets.
 - **Create, write, rename, delete** with edit access (a tab-scoped edit link: only its tab's sheets).
 - An agent token acts as its person; a read-only token reads only.
 
 ## Live for everyone
 
-- Every write is pushed to everyone in the document's room at once, in order, with the sheet rev: the changed
+- Every write is pushed to everyone in the project's room at once, in order, with the sheet rev: the changed
   cells, and the new layout if it changed.
 - A client that sees a gap in a sheet's revs, or reconnects, fetches that sheet again.
 - Nothing a browser sends over the room changes a sheet: sheets change only through the api. Presence on a sheet
@@ -142,7 +142,7 @@ Sheets follow the document's access ([Auth and guest access](../014-identity/aut
 
 - A sheet's cells are fetched when its Sheet element is first drawn on the open tab, together with the other
   sheets on that tab (one request for the tab's sheets), and kept for the session.
-- A document with no Sheet element on its open tab fetches nothing.
+- A project with no Sheet element on its open tab fetches nothing.
 
 ## Undo
 
@@ -156,16 +156,16 @@ Sheets follow the document's access ([Auth and guest access](../014-identity/aut
   a merge or a name made), and a merge, filter or name someone changed after the deletion is theirs, not put back.
 - Like canvas undo, an undo writes the old value back even over a later change someone else made to that cell.
 
-## Offline documents
+## Offline projects
 
-- An [offline document](../006-document/offline-mode.md) keeps its sheet store inside its own record, as a
+- An [offline project](../006-project/offline-mode.md) keeps its sheet store inside its own record, as a
   `sheets` array beside its tabs and items. Every rule above holds, minus the room.
-- **Sync to cloud** sends the sheets with the document; **Take offline** fetches every sheet first, all or
+- **Sync to cloud** sends the sheets with the project; **Take offline** fetches every sheet first, all or
   nothing.
 
 ## Copies and exports
 
-- **Duplicate** copies the sheet store with the document (same ids).
+- **Duplicate** copies the sheet store with the project (same ids).
 - **Duplicate Tab** copies the tab's sheets as new sheets on the new tab (new ids, `(copy)` titles kept unique
   per tab), and the new tab's Sheet elements frame the copies.
 - Images, thumbnails, PDFs and api or MCP renders draw Sheet elements from the store.
@@ -174,15 +174,15 @@ Sheets follow the document's access ([Auth and guest access](../014-identity/aut
 
 - Agents read and write sheets through the api, the CLI and MCP ([Agents](../024-agents/README.md)), by sheet
   title (or id) and A1 references, never ids of rows and columns:
-  - MCP **`list_sheets`** (a document's sheets: title, tab, size, filled range, the Sheet element framing it),
+  - MCP **`list_sheets`** (a project's sheets: title, tab, size, filled range, the Sheet element framing it),
     **`read_sheet`** (a range's non-empty cells by A1: input, value and what it shows; plus freeze, merges and
     filter, validation rules and format rules), **`change_sheet`** (changes in order: set cells by A1 from rows of
     inputs; clear or format a range; insert or delete rows and columns; sort; freeze; rename; set or clear validation
     rules and format rules) and **`add_sheet`** (place a Sheet element on a tab, optionally filled from rows or CSV
     text: the tab named, else the first tab holding a sheet, else the first tab;
     [Plan tabs](../026-plan/plan-tabs.md#only-in-plan)).
-  - CLI: `sheet ls <doc>`, `sheet get <doc> <sheet> [range]`, `sheet set <doc> <sheet> <A1> <value…>` (or `--csv`
-    from a file or stdin), `sheet add <doc> [--tab] [--title] [--csv]`, `sheet insert-rows`, `sheet insert-cols`,
+  - CLI: `sheet ls <project>`, `sheet get <project> <sheet> [range]`, `sheet set <project> <sheet> <A1> <value…>` (or `--csv`
+    from a file or stdin), `sheet add <project> [--tab] [--title] [--csv]`, `sheet insert-rows`, `sheet insert-cols`,
     `sheet rm-rows`, `sheet rm-cols`.
 - **Shaping a sheet**: `change_sheet` also resizes columns and rows (`resize`: px, or `fit` to what the cells show),
   merges and unmerges cells, draws borders (`border`: all, outer, inner, a side, or none), turns the filter on over a
@@ -208,21 +208,21 @@ Sheets follow the document's access ([Auth and guest access](../014-identity/aut
   cell and why), never stored as `#ERROR!`.
 - Values an agent reads are worked out by the same engine the editor uses.
 - An agent's change goes to the api in parts of at most 5,000 cells, so it is checked whole against the sheet's and
-  the document's caps first: one that would pass them is refused with nothing written. If a later part is still
+  the project's caps first: one that would pass them is refused with nothing written. If a later part is still
   refused (the sheet busy, a person filling it meanwhile), the answer says how many cells of that change landed.
   `add_sheet` checks its first cells the same way before making the sheet, and deletes the sheet it made when
-  filling or placing it fails, so a failed call leaves no unplaced sheet spending the document's cells.
+  filling or placing it fails, so a failed call leaves no unplaced sheet spending the project's cells.
 - A delete of rows or columns says which it deleted: as far as the sheet goes, and never the last one (a sheet keeps
   one row and one column, and the answer names the one it kept).
 
 ## Limits
 
-- Up to 200 sheets per document; a create past it is refused (`sheets_full`).
+- Up to 200 sheets per project; a create past it is refused (`sheets_full`).
 - A sheet has up to 10,000 rows and 200 columns (A to GR); a write past either is refused (`sheet_too_large`); a
   paste or import is cut at it and says so.
 - Up to 50,000 cells with an input or a format per sheet, and 4 MB of stored cells; past either, a write is
   refused (`sheet_full`, "This sheet holds the most cells it can").
-- Up to 200,000 such cells per document across its sheets (`sheets_full`).
+- Up to 200,000 such cells per project across its sheets (`sheets_full`).
 - An input is up to 10,000 characters; a formula up to 8,000 (`input_too_long`).
 - Up to 1,000 merged ranges and 5,000 rows or columns with their own size per sheet; up to 200 validation rules and
   100 format rules per sheet.

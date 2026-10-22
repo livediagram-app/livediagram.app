@@ -1,5 +1,5 @@
-// Offline documents were kept in the `diagrams` object store before the container became a
-// document (docs/specs/006-document/offline-mode.md). Version 2 of the database moves every
+// Offline projects were kept in the `diagrams` object store before the container became a
+// project (docs/specs/006-project/offline-mode.md). Version 2 of the database moves every
 // record into the current store. Runs inside the version-change transaction, so a reader
 // never sees a half-moved store.
 
@@ -21,6 +21,6 @@ export function upgradeStores(db: IDBDatabase, tx: IDBTransaction, store: string
       return;
     }
     db.deleteObjectStore(LEGACY_STORE);
-    debugLog('[offline-store] moved', moved, 'offline documents to the', store, 'store');
+    debugLog('[offline-store] moved', moved, 'offline projects to the', store, 'store');
   };
 }

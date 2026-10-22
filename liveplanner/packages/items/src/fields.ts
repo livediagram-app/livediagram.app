@@ -239,7 +239,7 @@ export function validateFields(input: unknown, mode: 'create' | 'patch'): Fields
     }
     const value = kind ? normaliseKnown(kind, v) : normaliseUnknown(v);
     // `color` was a free key before it was a field: an item made from older data (offline sync, a duplicated
-    // document, a seed) may hold any value there. Making one drops a value that is not a swatch rather than
+    // project, a seed) may hold any value there. Making one drops a value that is not a swatch rather than
     // refusing the whole item; setting one still has to be a swatch.
     if (value === undefined && kind === 'colour' && mode === 'create') continue;
     if (value === undefined) return { ok: false, error: 'field_value_invalid', field: key };

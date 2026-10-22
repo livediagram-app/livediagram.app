@@ -1,7 +1,7 @@
 'use client';
 
 // What Happened (docs/specs/013-workspace/explorer-home.md "What Happened"): what other people did
-// to documents the person can open, under day headings, with no filter controls and no link of its own.
+// to projects the person can open, under day headings, with no filter controls and no link of its own.
 
 import { useMemo } from 'react';
 import { isNewEvent } from '@liveplanner/ui';

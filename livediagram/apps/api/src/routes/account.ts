@@ -1,5 +1,6 @@
 // /api/account — account self-deletion.
 
+import { forgetCommunityCopier, syncCommunity } from '../community-service';
 import { deleteAccount } from '../db';
 import { emailEnabled, sendEmail } from '../email/client';
 import { accountDeletedEmail } from '../email/templates';
@@ -22,6 +23,9 @@ export async function handleAccount(ctx: RouteContext): Promise<Response> {
   if (request.method === 'DELETE') {
     if (!clerkUserId) return missingAuth();
     const deleted = await deleteAccount(env, clerkUserId);
+    // docs/specs/025-community/community.md: the copies they took stop counting, and their posts go.
+    ctx.waitUntil?.(forgetCommunityCopier(env, clerkUserId));
+    ctx.waitUntil?.(syncCommunity(env));
     // docs/specs/014-identity/transactional-email.md: a parting confirmation (best-effort, after the rows are gone).
     if (clerkEmail && emailEnabled(env)) {
       ctx.waitUntil?.(sendEmail(env, { to: clerkEmail, ...accountDeletedEmail(env) }));

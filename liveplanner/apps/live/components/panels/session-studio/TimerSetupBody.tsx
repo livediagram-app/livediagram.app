@@ -13,7 +13,7 @@
 // pressing Start also runs it now. Those are the same number, which is why one
 // component can do both without a mode flag.
 
-import { formatTimerClock, type TimerMode } from '@liveplanner/document';
+import { formatTimerClock, type TimerMode } from '@liveplanner/project';
 import {
   DIAL_LAP_MINUTES,
   clampTimerMinutes,

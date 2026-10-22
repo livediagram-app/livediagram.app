@@ -7,10 +7,10 @@ import {
   type LegendItem,
   type LineSeries,
   type PieSlice,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { standardGroup } from '@/components/colour/colour-options';
-import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
+import { useProjectColours } from '@/hooks/ui/useProjectColours';
 import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';
 import { useFollowingDraft } from '@/hooks/ui/useFollowingDraft';
 import { MENU_ADD_ROW_BUTTON, MENU_CELL_INPUT } from './menu-editor-classes';
@@ -32,7 +32,7 @@ function DataColour({
   shape: string;
   onPick: (color: string) => void;
 }) {
-  const yours = useDocumentColours();
+  const yours = useProjectColours();
   return (
     <ColourSwatchButton
       label={label}

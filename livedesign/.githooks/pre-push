@@ -1,0 +1,3 @@
+#!/bin/sh
+# docs/specs/003-system-architecture/testing.md "Before a push"; installed by `pnpm install`.
+exec node scripts/git-hooks/pre-push.mjs

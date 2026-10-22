@@ -11,7 +11,6 @@
     ".": "./src/index.ts",
     "./site": "./src/site.ts",
     "./seo": "./src/seo.ts",
-    "./clerk-key": "./src/clerk-key.ts",
     "./relative-time": "./src/relative-time.ts",
     "./trusted-types": "./src/trusted-types.ts",
     "./hero-band.css": "./hero-band.css"
@@ -41,11 +40,12 @@
   },
   "dependencies": {
     "@liveplanner/api-schema": "workspace:*",
-    "@liveplanner/document": "workspace:*",
+    "@liveplanner/project": "workspace:*",
     "@liveplanner/help-registry": "workspace:*",
     "@liveplanner/icons": "workspace:^",
     "@liveplanner/items": "workspace:*",
     "@liveplanner/tailwind-config": "workspace:*",
-    "@liveplanner/telemetry-client": "workspace:*"
+    "@liveplanner/telemetry-client": "workspace:*",
+    "@liveworkspace/sites": "workspace:*"
   }
 }

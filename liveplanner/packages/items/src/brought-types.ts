@@ -1,7 +1,7 @@
 // Ready-made card types (docs/specs/026-plan/plan-templates.md "Ready-made card types"): the card types a board brings
-// into a document when it is made. The five default types live in item-types.ts; these are the ten more a template or
+// into a project when it is made. The five default types live in item-types.ts; these are the ten more a template or
 // preset uses where none of the five fits the work: a Bug Triage board takes Bugs, a Hiring Pipeline's Pipeline board
-// Candidates. Making a board chooses or adds the document's card types (catalogueWithBoardTypes); a document that
+// Candidates. Making a board chooses or adds the project's card types (catalogueWithBoardTypes); a project that
 // already has a type (by id) keeps its own. Pure data, one catalogue the board presets and the Plan templates share.
 import type { CardField } from './board';
 import { ITEM_TYPES, PARENT_FIELD, type CustomFieldDef, type ItemTypeDef } from './item-types';
@@ -256,8 +256,8 @@ export const READY_MADE_CARD_TYPES: readonly ItemTypeDef[] = [...ITEM_TYPES, ...
 
 const DEFAULT_TYPE_IDS: readonly string[] = ITEM_TYPES.map((t) => t.id);
 
-// The ready-made types named (ids, in order) that the document lacks, each once. One whose name a type of the
-// document already has (one renamed "Task", say) is left out: names are unique within a catalogue.
+// The ready-made types named (ids, in order) that the project lacks, each once. One whose name a type of the
+// project already has (one renamed "Task", say) is left out: names are unique within a catalogue.
 export function broughtTypesToAdd(
   named: readonly string[] | undefined,
   types: readonly ItemTypeDef[],
@@ -275,7 +275,7 @@ export function broughtTypesToAdd(
   return out;
 }
 
-// The default types the document lacks (Add Default Types), in their order, as many as there is room for.
+// The default types the project lacks (Add Default Types), in their order, as many as there is room for.
 export function defaultTypesToAdd(types: readonly ItemTypeDef[]): ItemTypeDef[] {
   return broughtTypesToAdd(DEFAULT_TYPE_IDS, types).slice(
     0,
@@ -286,7 +286,7 @@ export function defaultTypesToAdd(types: readonly ItemTypeDef[]): ItemTypeDef[] 
 type BoardLike = { type?: unknown; shape?: unknown; planBoard?: unknown; planView?: unknown };
 
 // What a Gantt chart brings (docs/specs/026-plan/plan-views.md "Gantt Chart"): the types it names, else Project, so a
-// document whose first Plan tab is a Gantt chart has a type to add cards of.
+// project whose first Plan tab is a Gantt chart has a type to add cards of.
 const GANTT_BRINGS: readonly string[] = ['project'];
 
 // The card type ids the Plan boards among `elements` bring, in board order (docs/specs/026-plan/item-types.md
@@ -312,7 +312,7 @@ export function boardTypeIdsOf(elements: readonly BoardLike[]): string[] {
   return named;
 }
 
-// The ready-made types the Plan boards among `elements` bring that the document lacks, in board order.
+// The ready-made types the Plan boards among `elements` bring that the project lacks, in board order.
 export function boardTypesToAdd(
   elements: readonly BoardLike[],
   types: readonly ItemTypeDef[],
@@ -320,10 +320,10 @@ export function boardTypesToAdd(
   return broughtTypesToAdd(boardTypeIdsOf(elements), types);
 }
 
-// The catalogue a document holds once the boards among `elements` are made in it (docs/specs/026-plan/item-types.md
+// The catalogue a project holds once the boards among `elements` are made in it (docs/specs/026-plan/item-types.md
 // "The type catalogue"), or null when that is what it holds already: its types (none while not chosen) with the
 // ready-made types the boards bring that it lacks after them, at most ITEM_TYPES_MAX in all. The first boards in a
-// fresh document so choose its card types, exactly the ones they bring.
+// fresh project so choose its card types, exactly the ones they bring.
 export function catalogueWithBoardTypes(
   stored: ItemTypeCatalogue | null,
   elements: readonly BoardLike[],

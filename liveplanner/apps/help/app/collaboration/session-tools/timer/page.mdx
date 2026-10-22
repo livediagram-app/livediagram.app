@@ -9,15 +9,13 @@ export const metadata = helpMetadata({
   path: '/help/collaboration/session-tools/timer/',
 });
 
-<ArticleLayout title="The Timer" description="Time-box a workshop activity with a shared countdown or stopwatch, synced to everyone." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Session Tools", slug: "session-tools" }} subArticles={getSubArticles("session-tools").filter((a) => a.slug !== "timer")}>
+<ArticleLayout title="The Timer" description="Time-box an activity with a shared countdown or stopwatch, synced to everyone." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Session Tools", slug: "session-tools" }} subArticles={getSubArticles("session-tools").filter((a) => a.slug !== "timer")}>
 
 The timer time-boxes an activity for the whole room. Set it going and the **Timer** button in the bottom bar shows the clock for every participant, ticking in sync. It comes in two flavours: a **countdown** for "you have five minutes", and a **stopwatch** for "let us see how long this takes".
 
 ## Setting it up
 
-Press the **Timer** button in the bottom bar (in Plan mode) to open the set-up above it. You need edit access to run it.
-
-You can also put the timer **on the canvas**: a [session button](/help/palette/behaviour/session-buttons/) set to Timer counts down where it sits, carrying its own pause, resume and reset. It is the same timer as the **Timer** button's, not a second one, which is what lets a template ship its own running order.
+Press the **Timer** button in the bottom-right cluster to open the set-up above it. It shows on a tab whose board is made for voting, such as a retro board (see [Session Tools](/help/collaboration/session-tools/#where-to-find-them)). You need edit access to run it.
 
 <Figure caption="Drag round the dial to set a countdown's length, or tap a preset. One lap of the dial is an hour.">
   <TimerControl />
@@ -54,7 +52,7 @@ Rather than sending a tick across the network every second, each participant's c
 
 <Note>
   The clock is shared but not second-perfect across machines: tiny differences in device clocks are
-  fine for a workshop timer. It is there to keep the room roughly together, not to referee a
+  fine for a session timer. It is there to keep the room roughly together, not to referee a
   stopwatch race.
 </Note>
 

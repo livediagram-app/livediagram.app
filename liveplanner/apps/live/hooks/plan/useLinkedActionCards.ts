@@ -1,12 +1,12 @@
 'use client';
 
-// The Actions board in the editor (docs/specs/026-plan/linked-boards.md): every action in the document has a card on
+// The Actions board in the editor (docs/specs/026-plan/linked-boards.md): every action in the project has a card on
 // it, and the two stay one thing. The board is made the first time someone adds an action; after that an Editor's
 // editor heals what it can see a moment after things settle (healLinkedCards); a card a person trashes takes its
 // action off the canvas (and an undo or Restore this session puts it back); an action that goes leaves its card on the
 // board as a card of its own (and an undo links them again).
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { ElementActionAssignee, Tab } from '@liveplanner/document';
+import type { ElementActionAssignee, Tab } from '@liveplanner/project';
 import {
   ITEM_BULK_MAX,
   cardLink,
@@ -54,7 +54,7 @@ function assigneeKey(a: ElementActionAssignee): string | null {
 
 export type LinkedActions = {
   board: CollectingBoard | null;
-  // The editor added an action on `tabId`: make the Actions board when the document has none.
+  // The editor added an action on `tabId`: make the Actions board when the project has none.
   noteActionAdded: (tabId: string) => void;
   // A person's own item write, before it applies: a linked card sent to the Trash takes its action with it.
   noteOwnWrite: (write: ItemWrite, before: ItemStoreState) => void;
@@ -69,7 +69,7 @@ export type LinkedActions = {
 export function useLinkedActionCards(deps: {
   tabs: Tab[];
   loadedTabIds: ReadonlySet<string>;
-  // The document's Actions board (actionsBoardIn), worked out once by the editor.
+  // The project's Actions board (actionsBoardIn), worked out once by the editor.
   board: CollectingBoard | null;
   items: Pick<PlanItems, 'store' | 'items' | 'status' | 'writeQuiet'>;
   // An Editor's editor heals; only an Editor who may add tabs makes the board.
@@ -79,7 +79,7 @@ export function useLinkedActionCards(deps: {
   commitTabs: (fn: (ts: Tab[]) => Tab[]) => void;
   tickTabs: (fn: (ts: Tab[]) => Tab[]) => void;
   markTabLoaded: (id: string) => void;
-  // Brings the card types a new board names into the document's catalogue (usePresetCardTypes): the Action type.
+  // Brings the card types a new board names into the project's catalogue (usePresetCardTypes): the Action type.
   bringCardTypes: (elements: Tab['elements']) => void;
   loadTabs: (only?: readonly string[]) => Promise<unknown>;
   arrive: (link: CollabDeepLink) => void;
@@ -113,8 +113,8 @@ export function useLinkedActionCards(deps: {
     };
   }, [placed, people]);
 
-  // A document with actions reads its other tabs once, so an Actions board on a tab nobody opened is found (and its
-  // cards' items loaded). Bounded as the Plan sweep is (usePlanTabSweep): a longer document finds its board when the
+  // A project with actions reads its other tabs once, so an Actions board on a tab nobody opened is found (and its
+  // cards' items loaded). Bounded as the Plan sweep is (usePlanTabSweep): a longer project finds its board when the
   // board's tab is opened, or when someone adds an action (noteActionAdded reads every tab first).
   const tabsAsked = useRef(false);
   useEffect(() => {
@@ -232,7 +232,7 @@ export function useLinkedActionCards(deps: {
             itemId: null,
           }),
         );
-        // Every action already in the document gets its card as its tab loads: a document with a board sweeps its
+        // Every action already in the project gets its card as its tab loads: a project with a board sweeps its
         // tabs in once (usePlanTabSweep, bounded), and the heal reads each as it lands.
       } finally {
         making.current = false;

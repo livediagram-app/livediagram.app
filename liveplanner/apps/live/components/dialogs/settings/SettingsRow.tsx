@@ -31,13 +31,11 @@ export function SettingsRow({
       row={row}
       interactive={!disabled}
       dimmed={disabled}
-      illustrationActive={checked}
-      onIllustrationToggle={disabled ? undefined : onChange}
       notice={notice}
       control={
         // The one control: role=switch, named by the label and described by the description. Its
         // ::after stretches over the whole cell, so a click anywhere on the row flips it, while the
-        // help link and the illustration sit above that layer and keep their own clicks.
+        // help link sits above that layer and keeps its own click.
         // `presentational` only stops the ToggleSwitch being a <button>; it still exposes
         // role="switch", so the aria-hidden wrapper keeps a screen reader to one switch.
         <button

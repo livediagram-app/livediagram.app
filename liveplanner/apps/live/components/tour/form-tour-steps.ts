@@ -104,7 +104,7 @@ const SHARE: FormTourStep = opensFrom(
   {
     id: 'share',
     title: 'Share It',
-    body: 'Publish for a link anyone can fill in. They see only the form, never your document.',
+    body: 'Publish for a link anyone can fill in. They see only the form, never your project.',
     target: 'share-form',
     mobileSkip: true,
   },

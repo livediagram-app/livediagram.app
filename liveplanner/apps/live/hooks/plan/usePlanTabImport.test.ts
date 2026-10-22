@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// A JSON tab export's Plan items joining the document (docs/specs/026-plan/items.md "Copies and exports").
+// A JSON tab export's Plan items joining the project (docs/specs/026-plan/items.md "Copies and exports").
 
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
@@ -60,7 +60,7 @@ describe('usePlanTabImport', () => {
     expect(result).toEqual({ added: 1, skipped: 1, failed: 0 });
   });
 
-  it('writes nothing when the document already holds every card', async () => {
+  it('writes nothing when the project already holds every card', async () => {
     const { run, addTypes, write } = setup([item('a')]);
     expect(await run({ items: [item('a')], itemTypes: null })).toEqual({
       added: 0,
@@ -94,7 +94,7 @@ describe('usePlanTabImport', () => {
   });
 
   it('waits for a store that loads after the import began, and reads it as loaded', async () => {
-    // A document with no Plan content: the imported board starts the load, which settles mid-import.
+    // A project with no Plan content: the imported board starts the load, which settles mid-import.
     const { run, write, become } = setup([], true, 'loading');
     const pending = run({ items: [item('a'), item('b')], itemTypes: null });
     act(() => become({ status: 'ready', items: new Map([['a', item('a')]]) }));

@@ -54,7 +54,7 @@ test.describe('Viewport on add', () => {
         return page.evaluate(async (headers) => {
           const id = location.pathname.split('/').filter(Boolean).pop();
           const tabId = new URLSearchParams(location.hash.slice(1)).get('t');
-          const res = await fetch(`/api/documents/${id}/tabs/${tabId}`, { headers });
+          const res = await fetch(`/api/projects/${id}/tabs/${tabId}`, { headers });
           if (!res.ok) return 0;
           const got = (await res.json()) as { tab?: { elements?: unknown[] } };
           return got.tab?.elements?.length ?? 0;

@@ -10,7 +10,7 @@
 import { useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
 import { SOLID_BRAND_DARK_CONTROL, Tooltip, lucideGlyph } from '@liveplanner/ui';
 import { lucideTriangleAlert } from '@liveplanner/icons/lucide';
-import { penColourHardToSee, readablePenColour } from '@liveplanner/document';
+import { penColourHardToSee, readablePenColour } from '@liveplanner/project';
 import { hexToHsv, hsvToHex, type Hsv } from '@/lib/hsv';
 import { normaliseHex } from '@/lib/swatch-overrides';
 import { useEyeDropper } from '@/hooks/ui/useEyeDropper';

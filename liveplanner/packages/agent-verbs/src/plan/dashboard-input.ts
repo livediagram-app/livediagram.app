@@ -1,6 +1,6 @@
 // A Dashboard as an agent names it (docs/specs/026-plan/plan-agents.md "Making a dashboard") resolved to what the
 // builder takes: tabs by name to their ids and what each holds, a chart's card types by name to ids, its grouping by
-// name. A name the document lacks is refused naming those there are.
+// name. A name the project lacks is refused naming those there are.
 import {
   resolveType,
   statusKey,
@@ -39,7 +39,7 @@ export function resolveDashboardInput(
             `No Board or Sheet tab "${name}". ` +
             (shown.length
               ? `Tabs it can show: ${shown.map((t) => t.name).join(', ')}.`
-              : 'The document has none.'),
+              : 'The project has none.'),
         };
       picked.push({ tabId: tab.id, of: tab.of });
     }

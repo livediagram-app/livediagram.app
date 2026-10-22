@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Element, StickyElement } from '@liveplanner/document';
+import type { Element, StickyElement } from '@liveplanner/project';
 import { serialiseElements } from '@/lib/clipboard-payload';
 import { useClipboard } from './useClipboard';
 
@@ -141,7 +141,7 @@ describe('pasting copied elements into a note open for typing', () => {
   });
 });
 
-// docs/specs/007-editor/start-diagramming.md "Undo and redo reach the editor through an empty search": a new tab's
+// docs/specs/007-editor/start-panel.md "Undo and redo reach the editor through an empty search": a new tab's
 // start has its search focused, and elements copied from another tab used to land in it as JSON.
 describe('pasting into an empty start search', () => {
   function search(value: string): HTMLInputElement {

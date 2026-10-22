@@ -4,7 +4,7 @@ Every tab is worked on in one **editor mode**, **Plan** ([Plan mode](../026-plan
 Sheets, Dashboards and Forms, with the canvas under them. There is nothing to choose and nothing to switch: a tab
 never changes mode, a new tab and a new Project open in Plan, and an empty tab opens on **Start Planning**
 ([Plan mode](../026-plan/plan-mode.md#starting-a-board)). This spec keeps what the editor mode still means to the
-document model, to stored data and to the look every tab shares; how Plan works is [Plan mode](../026-plan/plan-mode.md).
+project model, to stored data and to the look every tab shares; how Plan works is [Plan mode](../026-plan/plan-mode.md).
 
 Until October 2026 a tab had one of five modes (Diagram, Draw, Workshop, Pages and Plan) and a switch on an empty
 tab's start. The other four, the switch and everything that existed only for them are gone (see "Retired modes").
@@ -13,20 +13,20 @@ tab's start. The other four, the switch and everything that existed only for the
 
 | Term            | Means                                                                                                                    |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| **tab kind**    | What a tab **is** ([Document](../006-document/document.md)): the general tab, or a Board, Sheet, Dashboard or Form.      |
-| **editor mode** | How a tab is worked on: always `plan` (`EditorMode`, `EDITOR_MODE_CATALOGUE` in `packages/document/src/editor-mode.ts`). |
+| **tab kind**    | What a tab **is** ([Project](../006-project/project.md)): the general tab, or a Board, Sheet, Dashboard or Form.      |
+| **editor mode** | How a tab is worked on: always `plan` (`EditorMode`, `EDITOR_MODE_CATALOGUE` in `packages/project/src/editor-mode.ts`). |
 
 - "Mode" on its own is ambiguous (Zen mode, Presentation mode, Power user mode); in specs and code say **editor
-  mode**. The interface says **Plan** where it names the mode at all (a document's Type in the Explorer's Details
-  view, the "New documents that open as" default-folder list).
+  mode**. The interface says **Plan** where it names the mode at all (a project's Type in the Explorer's Details
+  view, the "New projects that open as" default-folder list).
 
 ## Where the mode is named
 
-The mode is no longer stored on a tab, but it is still named wherever a document's mode is recorded or sent, so it
+The mode is no longer stored on a tab, but it is still named wherever a project's mode is recorded or sent, so it
 stays declared once (`EDITOR_MODE_CATALOGUE`, `EditorMode`, `EDITOR_MODES`, `editorModeLabel`, `isEditorMode`):
 
-- **A document's recorded creation intent** (`intent.mode`, the `opens_in` column, `DocumentSummary.opensIn`;
-  [Default folders](../013-workspace/default-folders.md) "Recorded intent"): `plan` for every new document.
+- **A project's recorded creation intent** (`intent.mode`, the `opens_in` column, `ProjectSummary.opensIn`;
+  [Default folders](../013-workspace/default-folders.md) "Recorded intent"): `plan` for every new project.
 - **Tab stats** (`TabStats.mode`, the `tab_stats.mode` column; [Explorer details view](../013-workspace/explorer-details-view.md)):
   `plan` for every tab.
 - **The default-folder key `mode:plan`** ([Default folders](../013-workspace/default-folders.md)): the fallback key
@@ -53,7 +53,7 @@ Stored data keeps the old ids, and every reader takes them safely:
   `mode:illustrate`, `mode:infographic`, `mode:facilitate`) is no longer in force: it is left out of the person's
   defaults and never answers a create; the row stays until it is cleared. A request naming one is refused as an
   unknown key (`default_key_invalid`).
-- **A `/new?mode=` link** is ignored: `/new` makes a blank Project ([New document route](new-document-route.md)).
+- **A `/new?mode=` link** is ignored: `/new` makes a blank Project ([New project route](new-project-route.md)).
 - **A remembered mode** in a browser (`liveplanner:v2:editor-mode:<tab>`) was already unread and stays so.
 - Elements a retired mode made (pen strokes, pages, articles, workshop tools) are not converted; what is still an
   element kind draws as it always did.
@@ -112,5 +112,5 @@ picked from another mode (`UI` · `Used` · `StartOtherMode`) went with the swit
 
 ## References
 
-[Plan mode](../026-plan/plan-mode.md), [Plan tabs](../026-plan/plan-tabs.md), [Document](../006-document/document.md),
-[Default folders](../013-workspace/default-folders.md), [New document route](new-document-route.md).
+[Plan mode](../026-plan/plan-mode.md), [Plan tabs](../026-plan/plan-tabs.md), [Project](../006-project/project.md),
+[Default folders](../013-workspace/default-folders.md), [New project route](new-project-route.md).

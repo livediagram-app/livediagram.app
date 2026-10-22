@@ -20,19 +20,22 @@ describe('panel-layout', () => {
     // The top-left holds the menu button, not a panel (docs/specs/007-editor/toolbar-layout.md).
     expect(layout.corners['top-left']).toEqual([]);
     // Vote and Poll open over the Session strip (docs/specs/012-collaboration/session-tools.md), not here.
-    // The AI panel and the tool panels home bottom-right (docs/specs/007-editor/panel-docking.md "Default layout").
+    // The tool panels home bottom-right (docs/specs/007-editor/panel-docking.md "Default layout").
     expect(layout.corners['top-right']).toEqual([]);
     expect(layout.corners['bottom-left']).toEqual(['minimap']);
-    expect(layout.corners['bottom-right']).toEqual(['collaborate', 'ai']);
+    expect(layout.corners['bottom-right']).toEqual(['collaborate']);
     expect(layout.free).toEqual({});
   });
 
   it('docks a panel to the bottom of a corner stack, removing it from its old spot', () => {
-    const next = dockPanel(defaultPanelLayout(), 'ai', 'top-right');
+    const next = dockPanel(defaultPanelLayout(), 'minimap', 'top-right');
     // Left its old corner...
-    expect(next.corners['bottom-right']).toEqual(['collaborate']);
+    expect(next.corners['bottom-left']).toEqual([]);
     // ...and joined below whatever is in the target corner.
-    expect(dockPanel(next, 'format', 'top-right').corners['top-right']).toEqual(['ai', 'format']);
+    expect(dockPanel(next, 'format', 'top-right').corners['top-right']).toEqual([
+      'minimap',
+      'format',
+    ]);
   });
 
   it('a panel lives in exactly one place (free clears its corner)', () => {
@@ -58,45 +61,44 @@ describe('panel-layout', () => {
   it('reflow: removing a stacked panel shifts the rest up', () => {
     // Stack two in the bottom-right, then move the first away; the second leads the stack.
     const stacked = dockPanel(defaultPanelLayout(), 'format', 'bottom-right');
-    expect(stacked.corners['bottom-right']).toEqual(['collaborate', 'ai', 'format']);
-    const next = dockPanel(stacked, 'ai', 'top-left');
-    expect(next.corners['bottom-right']).toEqual(['collaborate', 'format']);
+    expect(stacked.corners['bottom-right']).toEqual(['collaborate', 'format']);
+    const next = dockPanel(stacked, 'collaborate', 'top-left');
+    expect(next.corners['bottom-right']).toEqual(['format']);
   });
 
   it('resolves an unmentioned panel to its default corner', () => {
     const layout: PanelLayout = { corners: normalizePanelLayout({}).corners, free: {} };
-    expect(resolvePlacement(layout, 'ai')).toEqual({
+    expect(resolvePlacement(layout, 'format')).toEqual({
       mode: 'corner',
       corner: 'bottom-right',
     });
   });
 
-  it('homes every tool panel and the AI panel bottom-right', () => {
-    for (const id of ['ai', 'format'] as const)
-      expect(DEFAULT_PANEL_CORNER[id]).toBe('bottom-right');
+  it('homes every tool panel bottom-right', () => {
+    expect(DEFAULT_PANEL_CORNER.format).toBe('bottom-right');
   });
 
   describe('normalize', () => {
     it('drops unknown ids and dedupes a panel appearing twice', () => {
       const layout = normalizePanelLayout({
         corners: {
-          'top-left': ['ai', 'bogus', 'ai'],
-          'top-right': ['ai', 'format'],
+          'top-left': ['minimap', 'bogus', 'minimap'],
+          'top-right': ['minimap', 'format'],
         },
         free: {},
       });
-      expect(layout.corners['top-left']).toEqual(['ai']);
-      // ai already seen in top-left, so top-right keeps only format.
+      expect(layout.corners['top-left']).toEqual(['minimap']);
+      // minimap already seen in top-left, so top-right keeps only format.
       expect(layout.corners['top-right']).toEqual(['format']);
     });
 
     // Panels a stored layout may still name, which are corner panels no longer.
     it('ignores retired panels in a stored layout', () => {
       const layout = normalizePanelLayout({
-        corners: { 'top-right': ['vote', 'poll', 'ai'] },
-        free: { poll: { x: 1, y: 2 } },
+        corners: { 'top-right': ['vote', 'poll', 'ai', 'format'] },
+        free: { poll: { x: 1, y: 2 }, ai: { x: 3, y: 4 } },
       });
-      expect(layout.corners['top-right']).toEqual(['ai']);
+      expect(layout.corners['top-right']).toEqual(['format']);
       expect(layout.free).toEqual({});
     });
 
@@ -105,13 +107,13 @@ describe('panel-layout', () => {
       const layout = normalizePanelLayout({
         corners: {
           'top-left': ['explorer'],
-          'top-right': ['palette', 'ai'],
+          'top-right': ['palette', 'format'],
           'bottom-right': ['layers'],
         },
         free: { palette: { x: 1, y: 2 } },
       });
       expect(layout.corners['top-left']).toEqual([]);
-      expect(layout.corners['top-right']).toEqual(['ai']);
+      expect(layout.corners['top-right']).toEqual(['format']);
       expect(layout.corners['bottom-right']).toEqual([]);
       expect(layout.free).toEqual({});
     });
@@ -119,9 +121,9 @@ describe('panel-layout', () => {
     it('keeps a valid free position but ignores a malformed one', () => {
       const layout = normalizePanelLayout({
         corners: {},
-        free: { ai: { x: 5, y: 6 }, collaborate: { x: 'nope' } },
+        free: { format: { x: 5, y: 6 }, collaborate: { x: 'nope' } },
       });
-      expect(layout.free.ai).toEqual({ x: 5, y: 6 });
+      expect(layout.free.format).toEqual({ x: 5, y: 6 });
       expect(layout.free.collaborate).toBeUndefined();
     });
 

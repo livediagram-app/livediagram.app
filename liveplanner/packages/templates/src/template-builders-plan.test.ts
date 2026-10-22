@@ -5,7 +5,7 @@ import {
   normaliseBoardSetup,
   presetSetup,
 } from '@liveplanner/items';
-import { isValidElement, type Element } from '@liveplanner/document';
+import { isValidElement, type Element } from '@liveplanner/project';
 import { describe, expect, it } from 'vitest';
 import {
   PLAN_TEMPLATE_KINDS,
@@ -323,7 +323,7 @@ describe('plan templates', () => {
       'Key Results',
       'Overview',
     ]);
-    expect(templateTabs('swot').map((t) => t.name)).toEqual([null]);
+    expect(templateTabs('blank').map((t) => t.name)).toEqual([null]);
     // The first tab is what buildTemplate makes.
     expect(boardsOf(templateTabs('kanban')[0]!.build(0, 0))).toEqual(
       boardsOf(buildPlanTemplate('kanban', 0, 0)),

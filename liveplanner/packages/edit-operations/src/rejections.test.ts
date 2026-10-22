@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CHANGESET_MAX_OPERATIONS } from '@liveplanner/api-schema';
-import { checkoutFlow } from './fixtures/checkout-flow';
+import { sprintDashboard } from './fixtures/sprint-dashboard';
 import {
   elementLocked,
   formatRejections,
@@ -14,7 +14,7 @@ import {
   unknownOperation,
 } from './rejections';
 
-const elements = checkoutFlow().elements;
+const elements = sprintDashboard().elements;
 const byId = (id: string) => elements.find((el) => el.id === id)!;
 
 describe('formatRejections', () => {
@@ -23,24 +23,24 @@ describe('formatRejections', () => {
       {
         code: 'target_ambiguous',
         operation: 2,
-        op: 'set "Pay" fill=green',
+        op: 'set type:plan-view textSize=lg',
         details: [
-          '"Pay" matches 3 elements:',
-          '  n7  square "Pay" in f2',
-          '  n9  sticky "Pay"',
-          '  a4  arrow n3→n7 "Pay"',
+          '"type:plan-view" matches 3 elements:',
+          '  76eb  plan-view',
+          '  8e10  plan-view',
+          '  82d4  plan-view',
         ],
-        hint: 'use a ref, narrow with type:square, or add all',
+        hint: 'use a ref, narrow with type:plan-view, or add all',
       },
     ]);
     expect(text.join('\n')).toBe(
       [
-        'error target_ambiguous · op 2 · set "Pay" fill=green',
-        '  "Pay" matches 3 elements:',
-        '    n7  square "Pay" in f2',
-        '    n9  sticky "Pay"',
-        '    a4  arrow n3→n7 "Pay"',
-        '  hint: use a ref, narrow with type:square, or add all',
+        'error target_ambiguous · op 2 · set type:plan-view textSize=lg',
+        '  "type:plan-view" matches 3 elements:',
+        '    76eb  plan-view',
+        '    8e10  plan-view',
+        '    82d4  plan-view',
+        '  hint: use a ref, narrow with type:plan-view, or add all',
         'nothing was applied',
       ].join('\n'),
     );
@@ -80,10 +80,7 @@ describe('rejection builders', () => {
     expect(unknownOperation('sett', 1)).toEqual({
       code: 'unknown_operation',
       operation: 1,
-      details: [
-        '"sett" is not an operation',
-        'operations: add set rm move connect rewire insert wrap unwrap order layout test',
-      ],
+      details: ['"sett" is not an operation', 'operations: add set rm test'],
       hint: 'did you mean set?',
     });
     expect(unknownOperation('paint', 1).hint).toBeUndefined();
@@ -98,14 +95,14 @@ describe('rejection builders', () => {
   });
 
   it('unknown_field names the kind, its fields and the nearest one', () => {
-    const rejection = unknownField(1, 'arrow', 'labl', ['id', 'label', 'from']);
+    const rejection = unknownField(1, 'plan-view', 'labl', ['x', 'label', 'planView']);
     expect(rejection).toEqual({
       code: 'unknown_field',
       operation: 1,
-      details: ['arrow has no field "labl"', 'fields: id label from'],
+      details: ['plan-view has no field "labl"', 'fields: x label planView'],
       hint: 'did you mean label?',
     });
-    expect(unknownField(1, 'arrow', 'zzzz', ['id']).hint).toBeUndefined();
+    expect(unknownField(1, 'plan-view', 'zzzz', ['x']).hint).toBeUndefined();
   });
 
   it('invalid_value names the key, value and rule', () => {
@@ -122,14 +119,14 @@ describe('rejection builders', () => {
   });
 
   it('id_taken names the holder and a free id', () => {
-    const taken = new Set(['n3', 'n3-2']);
-    expect(idTaken(1, byId('n3'), taken)).toEqual({
+    const taken = new Set(['w1', 'w1-2']);
+    expect(idTaken(1, byId('w1'), taken)).toEqual({
       code: 'id_taken',
       operation: 1,
-      details: ['id "n3" is taken by square "Login"'],
-      hint: 'use id n3-3',
+      details: ['id "w1" is taken by plan-view "Workload"'],
+      hint: 'use id w1-3',
     });
-    expect(idTaken(1, byId('a1'), taken).details).toEqual(['id "a1" is taken by arrow']);
+    expect(idTaken(1, byId('m3'), taken).details).toEqual(['id "m3" is taken by plan-view']);
   });
 
   it('element_locked names the tab, or each element and why', () => {
@@ -138,20 +135,20 @@ describe('rejection builders', () => {
       details: ['the tab is locked'],
       hint: 'unlock it in the editor, or leave it out of the changeset',
     });
-    expect(elementLocked(2, byId('n3'), { scope: 'layer', layer: 'Base' }).details).toEqual([
+    expect(elementLocked(2, byId('w1'), { scope: 'layer', layer: 'Base' }).details).toEqual([
       'locked:',
-      '  n3  square "Login" (layer "Base")',
+      '  w1  plan-view "Workload" (layer "Base")',
     ]);
-    expect(elementLocked(2, byId('n3'), { scope: 'element' }).details[1]).toBe(
-      '  n3  square "Login" (element)',
+    expect(elementLocked(2, byId('w1'), { scope: 'element' }).details[1]).toBe(
+      '  w1  plan-view "Workload" (element)',
     );
   });
 
   it('invalid_result names the element, field and rule', () => {
-    expect(invalidResult('x', 'shape', { field: 'x', rule: 'a finite number' })).toEqual({
+    expect(invalidResult('x', 'plan-view', { field: 'x', rule: 'a finite number' })).toEqual({
       code: 'invalid_result',
       details: ['x x: a finite number'],
-      hint: 'see the format: liveplanner schema shape',
+      hint: 'see the format: liveplanner schema plan-view',
     });
     expect(invalidResult('the tab', undefined, { field: 'elements', rule: 'unique ids' })).toEqual({
       code: 'invalid_result',

@@ -14,7 +14,7 @@ import {
   type SequenceElementMessage,
   type SequenceElementParticipant,
   type SequenceMessageKindName,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { CompactEmptyState, lucideGlyph, Select, Tooltip } from '@liveplanner/ui';
 import { lucideChevronDown, lucideChevronUp, lucidePlus, lucideX } from '@liveplanner/icons/lucide';
 

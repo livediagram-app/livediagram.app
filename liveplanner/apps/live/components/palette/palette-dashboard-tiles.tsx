@@ -12,7 +12,6 @@ import {
   lucideClipboardList,
   lucideHash,
   lucideLink,
-  lucideWorkflow,
 } from '@liveplanner/icons/lucide';
 import { SheetArt } from '@/components/sheets/sheet-art';
 import {
@@ -20,7 +19,7 @@ import {
   SHEET_METRICS,
   type FormMetricKind,
   type SheetMetricKind,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { FORM_METRIC_LINES, FORM_METRIC_NAMES, SHEET_METRIC_NAMES } from '@liveplanner/plan-art';
 import {
   DASHBOARD_CARD_KINDS,
@@ -140,7 +139,6 @@ function ChecklistGlyph() {
 }
 
 const KeyDateGlyph = lucideGlyph(lucideCalendar, 18);
-const DiagramGlyph = lucideGlyph(lucideWorkflow, 18);
 const LinksGlyph = lucideGlyph(lucideLink, 18);
 
 // What each written card is called (the banner of a pressed tile, the picker, the slot menu).
@@ -171,13 +169,13 @@ const CARD_TILE_INFO: Record<DashboardCardKind, { description: string; icon: Rea
   },
   links: {
     description:
-      'A short list of labelled links: the repo, the spec, the design, or this document’s tabs.',
+      'A short list of labelled links: the repo, the spec, the design, or this project’s tabs.',
     icon: <LinksGlyph />,
   },
 };
 
 // The cards a Dashboard takes besides a note (docs/specs/026-plan/plan-tabs.md "Cards"): written on the page itself
-// rather than read from the document's work. The Title also sits in Layout, as a section's heading.
+// rather than read from the project's work. The Title also sits in Layout, as a section's heading.
 export const DASHBOARD_CARD_TILES: PaletteTileDef[] = DASHBOARD_CARD_KINDS.map((card) => ({
   id: `dashboard:card-${card}`,
   section: card === 'title' ? 'dashboard-layout' : 'dashboard-cards',
@@ -190,7 +188,7 @@ export const DASHBOARD_CARD_TILES: PaletteTileDef[] = DASHBOARD_CARD_KINDS.map((
 }));
 
 // Add to Slot's From a Sheet (docs/specs/026-plan/plan-tabs.md "Figures from a Sheet"): a figure read live from one of
-// the document's Sheets. Not in any palette category (Plan shows none): Add to Slot reads them.
+// the project's Sheets. Not in any palette category (Plan shows none): Add to Slot reads them.
 // Each figure's name, shared with its picture in an image export.
 export { FORM_METRIC_NAMES, SHEET_METRIC_NAMES };
 const SHEET_METRIC_LINES: Record<SheetMetricKind, string> = {
@@ -253,7 +251,7 @@ export const DASHBOARD_SHEET_TILES: PaletteTileDef[] = [
   },
 ];
 
-// Add to Slot's Form Metrics (docs/specs/026-plan/plan-tabs.md "Form Metrics"): a figure from one of the document's
+// Add to Slot's Form Metrics (docs/specs/026-plan/plan-tabs.md "Form Metrics"): a figure from one of the project's
 // forms, offered only while it has one. Not in any palette category: Add to Slot reads them.
 const ResponsesGlyph = lucideGlyph(lucideClipboardList, 18);
 const FormStatusGlyph = lucideGlyph(lucideCircleCheck, 18);
@@ -298,7 +296,7 @@ export const DASHBOARD_FORM_TILES: PaletteTileDef[] = FORM_METRICS.map(
   }),
 );
 
-// The Tabs category's tiles (docs/specs/026-plan/plan-tabs.md "The Tabs category"): one per Board, Sheet or Diagram tab, named
+// The Tabs category's tiles (docs/specs/026-plan/plan-tabs.md "The Tabs category"): one per Board or Sheet tab, named
 // for it, that shows the tab in a slot, live (a `tab:` choice, which only a Dashboard takes).
 export function dashboardTabTiles(tabs: readonly PlanTabEntry[]): PaletteTileDef[] {
   return tabs.map((t) => ({
@@ -307,20 +305,11 @@ export function dashboardTabTiles(tabs: readonly PlanTabEntry[]): PaletteTileDef
     label: `Show ${t.name}`,
     caption: t.name,
     description:
-      t.of === 'board'
-        ? `The ${t.name} tab’s board, live in a slot: its cards worked on right here.`
-        : t.of === 'sheet'
-          ? `The ${t.name} tab’s sheet, live in a slot: its cells edited right here.`
-          : `The ${t.name} tab’s drawing, live in a slot: press it to open the tab.`,
+      t.of === 'sheet'
+        ? `The ${t.name} tab’s sheet, live in a slot: its cells edited right here.`
+        : `The ${t.name} tab’s board, live in a slot: its cards worked on right here.`,
     noTint: true,
     action: { type: 'shape', kind: 'plan-view', plan: dashboardTabChoice(t.of, t.id) },
-    icon:
-      t.of === 'board' ? (
-        <PlanIcon size={18} />
-      ) : t.of === 'sheet' ? (
-        <SheetArt size={18} />
-      ) : (
-        <DiagramGlyph />
-      ),
+    icon: t.of === 'sheet' ? <SheetArt size={18} /> : <PlanIcon size={18} />,
   }));
 }

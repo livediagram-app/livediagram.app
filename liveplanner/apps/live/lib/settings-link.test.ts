@@ -13,12 +13,8 @@ describe('the Settings deep link', () => {
   });
 
   it('leaves the URL once Settings closes, keeping the rest', () => {
-    window.history.replaceState(
-      null,
-      '',
-      '/document/a?view=1&settings=account&section=your-data#t',
-    );
+    window.history.replaceState(null, '', '/project/a?view=1&settings=account&section=your-data#t');
     dropSettingsLink();
-    expect(`${location.pathname}${location.search}${location.hash}`).toBe('/document/a?view=1#t');
+    expect(`${location.pathname}${location.search}${location.hash}`).toBe('/project/a?view=1#t');
   });
 });

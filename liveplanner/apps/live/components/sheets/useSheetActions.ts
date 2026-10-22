@@ -5,7 +5,7 @@
 // through the controller's write. One place, so a toolbar button and its shortcut can never differ.
 import { chartRangeOf, chartSizeOf, newChartAnchor, NOTHING_TO_CHART } from './sheet-charts';
 import { useMemo } from 'react';
-import type { ChartType } from '@liveplanner/document';
+import type { ChartType } from '@liveplanner/project';
 import {
   PARSE_FAILURE_COPY,
   appendAxis,

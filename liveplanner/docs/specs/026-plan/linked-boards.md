@@ -1,7 +1,7 @@
 # Linked boards
 
 A **linked board** is a Board tab that collects a kind of record people make on the canvas, so the record and its
-card are one thing seen in two places. The **Actions board** collects every assigned action in the document
+card are one thing seen in two places. The **Actions board** collects every assigned action in the project
 ([Assigned actions](../012-collaboration/assigned-actions.md), [The Action Panel](../012-collaboration/action-panel.md)):
 add an action anywhere and its card is on the board; move the card to Done and the action on the canvas is ticked.
 
@@ -22,7 +22,7 @@ action, so nobody re-types it and neither place lies.
 | Term              | Means                                                                                         | Never called              |
 | ----------------- | --------------------------------------------------------------------------------------------- | ------------------------- |
 | **linked board**  | A board whose setup `collects` a kind of canvas record                                        | synced board, auto board  |
-| **Actions board** | The linked board that collects actions: the document's first board with `collects: 'actions'` | action list, to-do board  |
+| **Actions board** | The linked board that collects actions: the project's first board with `collects: 'actions'` | action list, to-do board  |
 | **linked card**   | A card made for one canvas record, carrying its **link**                                      | mirror, copy, shadow card |
 | **link**          | The card's `linked` field: which record it is for, and where that record was last seen        | source, reference, ref    |
 | **Won't Do**      | An action's third status: decided against, closed without being done                          | cancelled, rejected       |
@@ -33,27 +33,27 @@ action, so nobody re-types it and neither place lies.
   **Done** (the done column) and **Won't Do**. Its cards are **Compact**, showing the card number, who has it and when
   it is due; it takes the **Action** card type only, and its header shows the Completion and Due Soon widgets.
 - It is in the theme of the tab the first action was made on.
-- Columns reuse the document's states of the same name ([One name, one state](plan-board.md#one-name-one-state)), so
-  a document that already has a Done keeps one Done.
+- Columns reuse the project's states of the same name ([One name, one state](plan-board.md#one-name-one-state)), so
+  a project that already has a Done keeps one Done.
 - It is an ordinary board in every other way: its columns can be renamed, added, removed and reordered; cards can be
   given due dates, checklists, labels and comments; it can be filtered and laned. A column someone adds before Done
   is another open column; one after Done closes the action as Won't Do.
 
 ### When it appears
 
-- The **first time an action is added** to a document that has no Actions board, the Actions board tab is made after
+- The **first time an action is added** to a project that has no Actions board, the Actions board tab is made after
   the last tab, and the person who added the action sees one notice: **Added to Your Actions Board** with **Open
   Board**. Its making is one undo step.
-- Before deciding there is none, the editor reads the document's tabs it has not opened yet (a document's summary does
+- Before deciding there is none, the editor reads the project's tabs it has not opened yet (a project's summary does
   not say which tabs are Board tabs), so a board on a tab nobody opened this session is found, never doubled.
-- Making the board brings the **Action** card type into the document's types, as placing any board brings the types
+- Making the board brings the **Action** card type into the project's types, as placing any board brings the types
   it takes ([Item types](item-types.md)).
-- Every action already in the document gets its card as its tab loads: a document with a board reads its tabs once
+- Every action already in the project gets its card as its tab loads: a project with a board reads its tabs once
   (the Plan sweep, up to 12 tabs), and a longer one fills in as tabs are opened.
 - It is made once. Every later action, on any tab, goes to the same board.
 - Deleting the Actions board tab stops nothing permanently: the next action added makes it again. Undo of that
   delete brings the tab back with its cards, which were never removed (cards outlive their boards).
-- A document with no actions has no Actions board. Nothing is made by opening a document.
+- A project with no actions has no Actions board. Nothing is made by opening a project.
 
 ## The link
 
@@ -118,7 +118,7 @@ Each action has exactly one linked card, made of the **Action** type:
 - **The action popover** offers **Won't Do** beside Complete; a closed action offers **Reopen**. Editing an action in
   the **Assign Action dialog** shows a **Status** row (Open, Done, Won't Do, a segmented choice) between Description
   and Assignee, saved with the rest: the way an Action panel's action, which has no popover, is closed as Won't Do.
-- **Where it went**: an Action panel holding actions, on a document with an Actions board, shows a small **Board ↗**
+- **Where it went**: an Action panel holding actions, on a project with an Actions board, shows a small **Board ↗**
   chip in its header beside its count (the board's glyph; named "Open the Actions board" for assistive technology). The
   popover shows **View on Board**, which opens the board on the action's card; the chip opens the board.
 
@@ -148,7 +148,7 @@ assignee lanes work.
 ## Agents
 
 An agent sees linked cards as ordinary cards (`list_items`) carrying their `linked` field, and actions as ever
-(`read_document`). Changing either through the tools is healed into the other by the next Editor's editor.
+(`read_project`). Changing either through the tools is healed into the other by the next Editor's editor.
 
 ## Telemetry
 
@@ -161,4 +161,4 @@ An agent sees linked cards as ordinary cards (`list_items`) carrying their `link
 
 - Picking which board collects actions, or more than one Actions board. The first one collects.
 - Assigning from the card. Choosing an assignee needs the action's team picker and email toggle.
-- Offline Mode documents link the same way while the editor is open; nothing more is promised for them.
+- Offline Mode projects link the same way while the editor is open; nothing more is promised for them.

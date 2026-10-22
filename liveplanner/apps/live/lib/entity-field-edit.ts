@@ -4,8 +4,8 @@ import { useSyncExternalStore } from 'react';
 import { createListeners } from '@/lib/listeners';
 
 // The entity field being edited in place (docs/specs/009-elements/entity.md "Editing on the canvas"): which
-// entity and which of its fields. Editor-local and never in the document, like the lane preview: the
-// field's text reaches the document only when the row is saved.
+// entity and which of its fields. Editor-local and never in the project, like the lane preview: the
+// field's text reaches the project only when the row is saved.
 //
 // A module store because it has publishers outside the entity's own view (the quick-connect ring's Add
 // Field, Add Related Entity) that need to open a row on an element they did not render. Only the selected,

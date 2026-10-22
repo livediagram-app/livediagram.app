@@ -1,26 +1,26 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@liveplanner/document';
-import type { OfflineDocumentRecord } from './offline-store';
+import type { Tab } from '@liveplanner/project';
+import type { OfflineProjectRecord } from './offline-store';
 import {
   __setOfflineBackend,
   applyMeta,
   isOfflineId,
   isOfflineIdSync,
-  offlineCreateDocument,
+  offlineCreateProject,
   offlineDeleteIfUnchanged,
   offlineGetRecord,
   offlinePutRecord,
-  offlineDeleteDocument,
+  offlineDeleteProject,
   offlineDeleteTab,
   offlineIdCount,
-  offlineListDocuments,
-  offlineLoadDocument,
+  offlineListProjects,
+  offlineLoadProject,
   offlineLoadTab,
-  offlineSaveDocumentMeta,
+  offlineSaveProjectMeta,
   offlineSaveTab,
-  offlineSetDocumentFolder,
+  offlineSetProjectFolder,
   OFFLINE_OWNER_ID,
-  recordToDocument,
+  recordToProject,
   removeTab,
   tabToSummary,
   upsertTab,
@@ -31,8 +31,8 @@ import { nextLocalOpens } from './offline-opens';
 afterEach(() => __setOfflineBackend(null));
 
 describe('offline transforms', () => {
-  it('projects a record into a valid, unshared document', () => {
-    const d = recordToDocument(rec({ tabs: [tab('t1', { folder: 'A' })] }));
+  it('projects a record into a valid, unshared project', () => {
+    const d = recordToProject(rec({ tabs: [tab('t1', { folder: 'A' })] }));
     expect(d).toMatchObject({
       id: 'd1',
       ownerId: OFFLINE_OWNER_ID,
@@ -42,14 +42,14 @@ describe('offline transforms', () => {
       source: null,
     });
     expect(d.tabs).toEqual([
-      { id: 't1', documentId: 'd1', name: 't1', orderIndex: 0, updatedAt: 100, folder: 'A' },
+      { id: 't1', projectId: 'd1', name: 't1', orderIndex: 0, updatedAt: 100, folder: 'A' },
     ]);
   });
 
   it('tabToSummary omits folder when absent', () => {
     expect(tabToSummary(tab('t1'), 'd1', 2, 5)).toEqual({
       id: 't1',
-      documentId: 'd1',
+      projectId: 'd1',
       name: 't1',
       orderIndex: 2,
       updatedAt: 5,
@@ -84,23 +84,23 @@ describe('offline transforms', () => {
 describe('offline store ops (in-memory backend)', () => {
   it('create → load → list → isOfflineId → delete round-trip', async () => {
     __setOfflineBackend(memBackend());
-    await offlineCreateDocument({ id: 'd1', name: 'Doc', tabs: [tab('t1')] }, 100);
+    await offlineCreateProject({ id: 'd1', name: 'Doc', tabs: [tab('t1')] }, 100);
 
     expect(await isOfflineId('d1')).toBe(true);
     expect(await isOfflineId('other')).toBe(false);
-    expect((await offlineLoadDocument('d1'))?.name).toBe('Doc');
-    expect((await offlineListDocuments()).map((s) => s.id)).toEqual(['d1']);
+    expect((await offlineLoadProject('d1'))?.name).toBe('Doc');
+    expect((await offlineListProjects()).map((s) => s.id)).toEqual(['d1']);
 
-    await offlineDeleteDocument('d1');
+    await offlineDeleteProject('d1');
     expect(await isOfflineId('d1')).toBe(false);
-    expect(await offlineLoadDocument('d1')).toBeNull();
+    expect(await offlineLoadProject('d1')).toBeNull();
   });
 
   it('starts the record of uses with its making (docs/specs/013-workspace/explorer-home.md)', async () => {
     const backend = memBackend();
     __setOfflineBackend(backend);
     const now = Date.UTC(2026, 9, 3, 18);
-    await offlineCreateDocument({ id: 'd1', name: 'Doc' }, now);
+    await offlineCreateProject({ id: 'd1', name: 'Doc' }, now);
     expect((await backend.get('d1'))?.opens).toEqual(nextLocalOpens(undefined, now));
     expect((await backend.get('d1'))?.opens).toEqual({ days: ['2026-10-03'], lastOpenedAt: now });
   });
@@ -113,7 +113,7 @@ describe('offline store ops (in-memory backend)', () => {
       backgroundColor: '#2b2b33',
       patternColor: '#636373',
     });
-    await offlineCreateDocument({ id: 'd1', name: 'Doc', tabs: [charcoal] }, 100);
+    await offlineCreateProject({ id: 'd1', name: 'Doc', tabs: [charcoal] }, 100);
     expect(await offlineLoadTab('d1', 't1')).toMatchObject({
       theme: 'brand',
       backgroundColor: '#0d121a',
@@ -122,7 +122,7 @@ describe('offline store ops (in-memory backend)', () => {
 
   it('saves + loads + deletes individual tabs', async () => {
     __setOfflineBackend(memBackend());
-    await offlineCreateDocument({ id: 'd1', name: 'Doc', tabs: [] }, 100);
+    await offlineCreateProject({ id: 'd1', name: 'Doc', tabs: [] }, 100);
 
     await offlineSaveTab('d1', tab('t1', { name: 'First' }), 150);
     expect((await offlineLoadTab('d1', 't1'))?.name).toBe('First');
@@ -134,34 +134,34 @@ describe('offline store ops (in-memory backend)', () => {
     expect(await offlineLoadTab('d1', 't1')).toBeNull();
   });
 
-  it('setDocumentFolder updates the personal-tree placement', async () => {
+  it('setProjectFolder updates the personal-tree placement', async () => {
     __setOfflineBackend(memBackend());
-    await offlineCreateDocument({ id: 'd1', name: 'Doc', tabs: [] }, 100);
-    await offlineSetDocumentFolder('d1', 'f1', 200);
-    expect((await offlineListDocuments())[0]?.folderId).toBe('f1');
+    await offlineCreateProject({ id: 'd1', name: 'Doc', tabs: [] }, 100);
+    await offlineSetProjectFolder('d1', 'f1', 200);
+    expect((await offlineListProjects())[0]?.folderId).toBe('f1');
     // No creation intent is recorded in the browser (docs/specs/013-workspace/default-folders.md).
-    expect((await offlineListDocuments())[0]).toMatchObject({
+    expect((await offlineListProjects())[0]).toMatchObject({
       opensIn: null,
       tabKind: null,
       templateFamily: null,
     });
-    await offlineSetDocumentFolder('d1', null, 300);
-    expect((await offlineListDocuments())[0]?.folderId).toBeNull();
+    await offlineSetProjectFolder('d1', null, 300);
+    expect((await offlineListProjects())[0]?.folderId).toBeNull();
   });
 
-  it('saveDocumentMeta renames without touching tabs', async () => {
+  it('saveProjectMeta renames without touching tabs', async () => {
     __setOfflineBackend(memBackend());
-    await offlineCreateDocument({ id: 'd1', name: 'Doc', tabs: [tab('t1')] }, 100);
-    await offlineSaveDocumentMeta('d1', { name: 'Renamed' }, 200);
-    expect((await offlineLoadDocument('d1'))?.name).toBe('Renamed');
+    await offlineCreateProject({ id: 'd1', name: 'Doc', tabs: [tab('t1')] }, 100);
+    await offlineSaveProjectMeta('d1', { name: 'Renamed' }, 200);
+    expect((await offlineLoadProject('d1'))?.name).toBe('Renamed');
   });
 });
 
 // Both stores must agree on what a tab IS. An offline board that lost its
-// kind would come back from a Sync Document as an ordinary diagram — the
+// kind would come back from a Sync Project as an ordinary diagram — the
 // cloud copy would then be wrong too, and nothing could tell.
 describe('upsertTab — tab kind', () => {
-  const rec = (): OfflineDocumentRecord =>
+  const rec = (): OfflineProjectRecord =>
     ({
       id: 'off:1',
       name: 'D',
@@ -169,7 +169,7 @@ describe('upsertTab — tab kind', () => {
       createdAt: 1,
       savedAt: 1,
       tabs: [],
-    }) satisfies OfflineDocumentRecord;
+    }) satisfies OfflineProjectRecord;
   const tab = (over: Partial<Tab> = {}): Tab => ({ id: 't', name: 'T', elements: [], ...over });
 
   it('stamps the ordinary kind on the way in', () => {
@@ -181,7 +181,7 @@ describe('upsertTab — tab kind', () => {
   });
 });
 
-describe('offlineDeleteIfUnchanged (Sync Document, docs/specs/006-document/offline-mode.md)', () => {
+describe('offlineDeleteIfUnchanged (Sync Project, docs/specs/006-project/offline-mode.md)', () => {
   it('removes the record and forgets the id when it still matches', async () => {
     __setOfflineBackend(memBackend());
     await offlinePutRecord(rec({ id: 'd1', savedAt: 5 }));
@@ -207,14 +207,14 @@ describe('offlineDeleteIfUnchanged (Sync Document, docs/specs/006-document/offli
   });
 });
 
-// The move prompt's cheap gate (docs/specs/014-identity/auth-and-guest-access.md "Moving documents in This Browser
+// The move prompt's cheap gate (docs/specs/014-identity/auth-and-guest-access.md "Moving projects in This Browser
 // after signing in"): a count off the cached index, never a full read.
 describe('offlineIdCount', () => {
-  it('counts the documents this browser holds', async () => {
+  it('counts the projects this browser holds', async () => {
     __setOfflineBackend(memBackend());
     expect(await offlineIdCount()).toBe(0);
-    await offlineCreateDocument({ id: 'a', name: 'A' }, 1);
-    await offlineCreateDocument({ id: 'b', name: 'B' }, 2);
+    await offlineCreateProject({ id: 'a', name: 'A' }, 1);
+    await offlineCreateProject({ id: 'b', name: 'B' }, 2);
     expect(await offlineIdCount()).toBe(2);
   });
 });

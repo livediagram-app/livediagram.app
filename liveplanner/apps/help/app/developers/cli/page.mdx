@@ -5,18 +5,18 @@ import { CliDeviceSignIn, CliConsent } from '@/components/illustrations/cli';
 export const metadata = helpMetadata({
   title: 'The liveplanner CLI',
   description:
-    'Install the liveplanner CLI from npm, sign in by browser, device code or API token, then read, build, edit and export documents from a terminal or agent.',
+    'Install the liveplanner CLI from npm, sign in by browser, device code or API token, then read, build, edit and export projects from a terminal or agent.',
   path: '/help/developers/cli/',
 });
 
 <ArticleLayout
   title="The liveplanner CLI"
-  description="Read, build, edit and discuss documents from a terminal: install, sign in, the commands, and profiles."
+  description="Read, build, edit and discuss projects from a terminal: install, sign in, the commands, and profiles."
   categoryTitle="Developers"
   categorySlug="developers"
 >
 
-`liveplanner` is a command line for the liveplanner API. It is built first for **coding agents** (an agent working in your repository, or one changing a diagram while you talk to it) and second for **scripts**: finding documents, reading a tab as text, changing it with edit operations, answering comments, and syncing documents to files.
+`liveplanner` is a command line for the liveplanner API. It is built first for **coding agents** (an agent working in your repository, or one updating your board while you talk to it) and second for **scripts**: finding projects, reading a tab as text, adding and moving cards, filling in Sheets, answering comments, and syncing projects to files.
 
 It sits beside the [MCP server](/help/account-and-data/connect-ai-mcp/), not in place of it. Both call the same [API](/help/developers/api-overview/) with an [API token](/help/account-and-data/api-tokens/), and the API owns every change, so an older copy of the CLI never writes the old way.
 
@@ -47,7 +47,7 @@ You need a liveplanner account: the CLI acts as you, through an API token, and n
 liveplanner auth login
 ```
 
-The CLI opens a sign-in page in your browser (and prints its address, in case the browser does not open). Sign in if you are not already, and you reach an approval card, **Connect liveplanner CLI**. Leave **Read-only access** off to let the CLI change documents, or switch it on so it can find and view documents but not create, edit, delete or share them. The card also says where the access goes: your own computer, `127.0.0.1` and a port number. Choose **Connect**, and the page says **You're signed in**: return to your terminal.
+The CLI opens a sign-in page in your browser (and prints its address, in case the browser does not open). Sign in if you are not already, and you reach an approval card, **Connect liveplanner CLI**. Leave **Read-only access** off to let the CLI change projects, or switch it on so it can find and view projects but not create, edit, delete or share them. The card also says where the access goes: your own computer, `127.0.0.1` and a port number. Choose **Connect**, and the page says **You're signed in**: return to your terminal.
 
 <Figure
   caption="The approval card: an optional Read-only access switch, where the access goes, then Connect."
@@ -77,7 +77,7 @@ A code lasts **ten minutes**. If the page says it couldn't find the code, check 
 For CI, sandboxes and agents, [create a token](/help/account-and-data/api-tokens/) in **Settings**, under **Account**, then **API Tokens**, and either set it for the commands you run:
 
 ```bash
-export LIVEPLANNER_TOKEN=lvd_your_token_here
+export LIVEPLANNER_TOKEN=lwt_your_token_here
 ```
 
 or store it for this machine, reading it from stdin:
@@ -103,70 +103,80 @@ The browser and device sign-ins create an ordinary API token named **liveplanner
 
 A stored token goes in your operating system's own secret store: the macOS Keychain, the Secret Service on Linux (through `secret-tool`), or on Windows the token sealed to your user account by Windows' own data protection. Where that store is unavailable, the token is kept in `~/.config/liveplanner/credentials.json`, readable only by you, and the CLI tells you so when it stores it there. If it finds that file readable by others, it tightens it and warns you.
 
-## Find and Read Documents
+## Find and Read Projects
 
-Commands are a resource, then a verb. `doc` and `el` are short for `document` and `element`.
+Commands are a resource, then a verb.
 
 ```bash
-liveplanner document ls auth                  # documents whose name contains "auth"
-liveplanner tab ls "Auth flow"                # the document's tabs
-liveplanner tab view "Auth flow"              # the first tab, as an outline
-liveplanner tab view "Auth flow" --tab Flow --view graph
-liveplanner tab lint "Auth flow"              # what is wrong with how it is drawn
-liveplanner tab render "Auth flow" --png auth.png
+liveplanner project ls sprint                 # projects whose name contains "sprint"
+liveplanner project view "Sprint 14"          # one line per tab
+liveplanner tab view "Sprint 14"              # the first tab, as an outline
+liveplanner tab view "Sprint 14" --tab Flow --view show --ref 0a78
+liveplanner tab render "Sprint 14" --png sprint.png
 ```
 
-`document ls` covers your personal library and every team you have joined, newest first. Wherever a command takes a document, you can give its **name**, the start of its **id**, or a pasted **liveplanner link**; a share link acts through that link. A name that matches more than one document is refused with the candidates, rather than guessed. `--tab` takes a tab name or the start of its id, and the first tab is used when you leave it out.
+`project ls` covers your personal library and every team you have joined, newest first. Wherever a command takes a project, you can give its **name**, the start of its **id**, or a pasted **liveplanner link**; a share link acts through that link. A name that matches more than one project is refused with the candidates, rather than guessed. `--tab` takes a tab name or the start of its id, and the first tab is used when you leave it out.
 
-`tab view` reads a tab as text, the outline by default; `--view` picks `graph`, `layout`, `comments`, `show` (one element, with `--ref`) or `find` (with `--text`), and `--budget` fits it to about that many tokens. `tab render` writes a PNG or SVG preview and prints its path and size, never image bytes.
+`tab view` reads a tab as text, the outline by default; `--view` picks `comments`, `show` (one element, with `--ref`) or `find` (with `--text`), and `--budget` fits it to about that many tokens. `tab render` writes a PNG or SVG preview and prints its path and size, never image bytes.
 
-A few commands read liveplanner's catalogues rather than your documents, which helps before writing anything:
+A few commands read liveplanner's catalogues rather than your projects, which helps before writing anything:
 
 ```bash
-liveplanner template ls                       # the templates a document or tab can start from
+liveplanner template ls                       # the templates a project or tab can start from
 liveplanner template view kanban              # one template, as the outline of the tab it builds
-liveplanner schema sticky                     # the element kinds, or one kind's fields and values
 ```
 
-## Change a Diagram
+## Build and Change Projects
 
 ```bash
-liveplanner document create "Shop" -f elements.json       # from an elements file
-liveplanner document create "Retro" --template start-stop-continue
-liveplanner element set "Auth flow" n3 label="Sign in" shape=stadium
-liveplanner edit "Auth flow" -f ops.txt                     # many edit operations at once
-liveplanner changeset revert "Auth flow" cs_8k2m4q7d1x
-liveplanner tab add "Auth flow" Details --template kanban  # a new tab, empty, from a file or --template
-liveplanner tab rm "Auth flow" Scratch                      # delete one tab; the others stay
+liveplanner project create "Sprint 14" --template kanban
+liveplanner project create "Budget 2027" --template budget-planner
+liveplanner tab add "Sprint 14" Roadmap --template project-planner   # a new tab, empty or from a template
+liveplanner tab rename "Sprint 14" Roadmap "Roadmap 2027"
+liveplanner tab rm "Sprint 14" Scratch                                # delete one tab; the others stay
+liveplanner edit "Sprint 14" --tab Flow -f ops.txt                    # edit operations on a tab
+liveplanner changeset revert "Sprint 14" cs_tbrfqcvm1w
 ```
 
-Every change is **one changeset**, applied all or nothing and checked against the version of the tab you last read, so the CLI never silently overwrites someone else's work. Each write prints what changed, the new revision, a lint summary and the command that reverts it. Add `--dry-run` to see the plan without writing anything, and `--summary` to say what the change is for. `liveplanner guide edit` explains how edit operations read.
+A change to a tab is **one changeset**, applied all or nothing and checked against the version of the tab you last read, so the CLI never silently overwrites someone else's work. Each write prints what changed, the new revision and the command that reverts it. Add `--dry-run` to see the plan without writing anything, and `--summary` to say what the change is for. `liveplanner guide edit` explains how [edit operations](/help/developers/working-with-projects/edit-operations/) read; for cards, boards, sheets and forms, the commands below are simpler.
 
-`document rm` moves a document to the [Trash](/help/account-and-data/trash/) for 30 days, and `document restore` brings it back to its folder (or the top level, when that folder is gone); the CLI has no permanent delete.
+`project rm` moves a project to the [Trash](/help/account-and-data/trash/) for 30 days, and `project restore` brings it back to its folder (or the top level, when that folder is gone); the CLI has no permanent delete.
 
-## Comments, Items and Waiting
+## Cards, Boards and Sheets
 
 ```bash
-liveplanner comment ls "Shop"
-liveplanner comment add "Shop" api "Should this be idempotent?"
-liveplanner item ls "Shop"                       # Plan boards and their items, by number such as #12
-liveplanner item add "Shop" "Fix login" --status "In Progress" --type Bug
-liveplanner board add "Shop" --columns "Ideas,Doing,Shipped"
-liveplanner sheet get "Shop" Costs A1:D20          # a sheet's cells by A1, formulas worked out
-liveplanner sheet set "Shop" Costs B2 1200 =B2*12
-liveplanner type ls "Shop"                       # card types and their fields
-liveplanner wait "Shop" --for comment --timeout 600
-liveplanner watch "Shop"                         # stream changes until you stop it
+liveplanner item ls "Sprint 14"                      # the cards, by number such as #12
+liveplanner item add "Sprint 14" "Fix login" --type task --status "To Do" --fields priority=high
+liveplanner item move "Sprint 14" "#12" "In Progress"
+liveplanner item set "Sprint 14" "#12" --fields assignee=Sam --clear due
+liveplanner board add "Sprint 14" --preset sprint
+liveplanner board set "Sprint 14" Kanban --columns "To Do,Doing,Review,Done"
+liveplanner type ls "Sprint 14"                      # card types and their fields
+liveplanner type apply "Sprint 14" -f types.json     # add, change or delete card types
+liveplanner sheet add "Budget 2027" --title Costs --csv costs.csv
+liveplanner sheet get "Budget 2027" Costs A1:D20     # a sheet's cells by A1, formulas worked out
+liveplanner sheet set "Budget 2027" Costs B2 1200 =B2*12
 ```
 
-`wait` blocks until someone comments or the document changes (a burst of edits counts as one change), prints it and exits, which lets an agent respond to the people working beside it. Comments the CLI adds are yours.
+Cards, boards and sheets are named the way the editor shows them: a column by its name, a card by its number, a sheet by its title. These writes are not changesets: each lands at once, for everyone with the project open.
+
+## Comments and Waiting
+
+```bash
+liveplanner comment ls "Sprint 14"
+liveplanner comment add "Sprint 14" 0933 "Can we drop the Review column?"
+liveplanner wait "Sprint 14" --for comment --timeout 600
+liveplanner watch "Sprint 14"                        # stream changes until you stop it
+```
+
+`wait` blocks until someone comments or the project changes (a burst of edits counts as one change), prints it and exits, which lets an agent respond to the people working beside it. Comments the CLI adds are yours.
 
 ## Forms
 
-A [form](/help/canvas/plan-mode/forms/) on a Form tab has its own commands, so an agent can build one, publish it and check where its answers land:
+A [form](/help/plan/forms/) on a Form tab has its own commands, so an agent can build one, publish it and check where its answers land:
 
 ```bash
-liveplanner form add --starter rsvp --name "Summer Party"   # a new document with a Form tab
+liveplanner form add --starter rsvp --name "Summer Party"   # a new project with a Form tab
 liveplanner form get "Summer Party"                         # its questions, where responses go, its link
 liveplanner form change "Summer Party" changes.json         # up to 50 changes, all or nothing
 liveplanner form share "Summer Party" publish               # or close, or delete-link
@@ -178,14 +188,14 @@ A test response makes a card (or sheet row) titled **Preview:**, so you can see 
 ## Files, Exports and Pictures
 
 ```bash
-liveplanner pull "Shop" --to docs --svg            # docs/shop.liveplanner.json, plus an SVG per tab
-liveplanner push docs/shop.liveplanner.json        # send back each tab whose elements changed
+liveplanner pull "Sprint 14" --to backup --svg     # backup/sprint-14.liveplanner.json, plus an SVG per tab
+liveplanner push backup/sprint-14.liveplanner.json # send back each tab whose elements changed
 liveplanner export --all --to backup --format json,svg,md
 ```
 
-To draw beside your agent inside a developer tool, see [Diagrams in Your Developer Tools](/help/developers/workbenches/).
+To work in a project beside your agent inside a developer tool, see [liveplanner in Your Developer Tools](/help/developers/workbenches/).
 
-`pull` writes the document in the format the editor imports, and never overwrites a file holding changes you have not pushed yet (add `--force` to drop them). `push` sends each changed tab as a changeset; a tab that changed on liveplanner since you pulled it is refused and named, so pull again. Only elements travel: each changed tab's elements are replaced by the file's, so an element you removed from the file is removed from the tab, and a tab the document lacks is created. Changes to a tab's name, theme or background are not sent (a tab a push creates goes up with its name), and no tab or document is ever deleted by a push. `export --all` writes every document you can read, for backups and docs.
+`pull` writes the project in the format the editor imports, and never overwrites a file holding changes you have not pushed yet (add `--force` to drop them). `push` sends each changed tab as a changeset; a tab that changed on liveplanner since you pulled it is refused and named, so pull again. Only elements travel: each changed tab's elements are replaced by the file's, so an element you removed from the file is removed from the tab, and a tab the project lacks is created. Changes to a tab's name, theme or background are not sent (a tab a push creates goes up with its name), and no tab or project is ever deleted by a push. Cards travel with the project's item store, not with a tab, so a push never changes them. `export --all` writes every project you can read, for backups and docs.
 
 ## Help, Guides and the Agent Skill
 
@@ -198,7 +208,7 @@ liveplanner skill install --to ~/.claude/skills
 liveplanner skill print > SKILL.md
 ```
 
-Help is kept short so an agent pays only for what it asks. `skill install` writes a `SKILL.md` that tells a coding agent when to reach for the CLI; without `--to` it lists the usual skills folders (such as `~/.claude/skills` for Claude Code). `skill print` writes the same file to stdout, for agents that keep their skills somewhere else. `liveplanner api GET /documents` calls any API path with your sign-in, as an escape hatch.
+Help is kept short so an agent pays only for what it asks. `skill install` writes a `SKILL.md` that tells a coding agent when to reach for the CLI; without `--to` it lists the usual skills folders (such as `~/.claude/skills` for Claude Code). `skill print` writes the same file to stdout, for agents that keep their skills somewhere else. `liveplanner api GET /projects` calls any API path with your sign-in, as an escape hatch.
 
 ## Output and Exit Codes
 
@@ -209,7 +219,7 @@ The CLI never prompts when its input or output is not a terminal, so it is safe 
 | `0`       | Done                                                       |
 | `1`       | Refused: the input was understood but not accepted         |
 | `2`       | Usage: the command line does not parse                     |
-| `3`       | Not found, or ambiguous: a document, tab or element        |
+| `3`       | Not found, or ambiguous: a project, tab or element         |
 | `4`       | Not signed in, or not allowed (a read-only token's writes) |
 | `5`       | Conflict: the tab changed since you read it; read, retry   |
 | `6`       | Rate limited                                               |
@@ -219,13 +229,13 @@ Every error names what was wrong and suggests one command that fixes it. Set `LI
 
 ## Hosts and Profiles
 
-The CLI talks to `https://liveplanner.app` unless you point it at another liveplanner host. For one command, add `--host https://diagrams.example.com`; for a shell, set `LIVEPLANNER_HOST`. To keep several, name them as profiles in `~/.config/liveplanner/config.toml` and choose one with `--profile` or `LIVEPLANNER_PROFILE`:
+The CLI talks to `https://liveplanner.app` unless you point it at another liveplanner host. For one command, add `--host https://planner.example.com`; for a shell, set `LIVEPLANNER_HOST`. To keep several, name them as profiles in `~/.config/liveplanner/config.toml` and choose one with `--profile` or `LIVEPLANNER_PROFILE`:
 
 ```toml
 default_profile = "work"
 
 [profiles.work]
-host = "https://diagrams.example.com"
+host = "https://planner.example.com"
 ```
 
 Each profile keeps its own sign-in, and a profile for another host never contacts liveplanner.app. `LIVEPLANNER_TOKEN` goes to whichever host is active, so set `LIVEPLANNER_HOST` beside it. A host without accounts has no tokens, so the CLI cannot act there and says so; one without the sign-in server offers no browser or device sign-in, so use `--with-token`. If an instance needs a newer CLI for writes, the CLI refuses them and names the version to install.
@@ -236,7 +246,7 @@ The CLI is subject to the same limits as any API client, per token: on the hoste
 
 ## Usage Counts
 
-The CLI counts which commands succeed, and which fail because of the server or the network, by the command's name only (never its arguments, your documents or the host), and sends the count to the host it talks to, as anonymous [telemetry](/help/privacy-and-security/what-we-collect/). The first time it counts one, it says so. Turn it off with `liveplanner telemetry off`, `LIVEPLANNER_TELEMETRY=0` or `DO_NOT_TRACK=1`.
+The CLI counts which commands succeed, and which fail because of the server or the network, by the command's name only (never its arguments, your projects or the host), and sends the count to the host it talks to, as anonymous [telemetry](/help/privacy-and-security/what-we-collect/). The first time it counts one, it says so. Turn it off with `liveplanner telemetry off`, `LIVEPLANNER_TELEMETRY=0` or `DO_NOT_TRACK=1`.
 
 ## Keep It Safe
 

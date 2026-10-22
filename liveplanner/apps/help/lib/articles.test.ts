@@ -122,18 +122,15 @@ describe('searchArticles', () => {
   });
 
   it('finds an article holding every word of a query, wherever they sit', () => {
-    const titles = searchArticles('export png').map((a) => a.title);
-    expect(titles).toContain('Exporting Diagrams');
+    const titles = searchArticles('export csv').map((a) => a.title);
+    expect(titles).toContain('Exporting a Tab');
     // Every word must be there: a word no article holds finds nothing.
     expect(searchArticles('export zzqqxx')).toEqual([]);
   });
 
   it('finds articles by keyword synonym, not just title (the "opacity" report)', () => {
-    // "transparency" appears in no title or description; keywords carry it to
-    // both opacity articles.
-    const slugs = searchArticles('transparency').map((a) => a.slug);
-    expect(slugs).toContain('layer-order');
-    expect(slugs).toContain('panel-opacity');
+    // "night" appears in no title or description; keywords carry it to the appearance article.
+    expect(searchArticles('night').map((a) => a.slug)).toContain('dark-mode');
     // "hotkey" -> the keyboard-shortcuts article.
     expect(searchArticles('hotkey').map((a) => a.slug)).toContain('keyboard-shortcuts');
   });

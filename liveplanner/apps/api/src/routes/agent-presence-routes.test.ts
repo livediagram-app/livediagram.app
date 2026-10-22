@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } fr
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import * as roomClient from '../room-client';
 import { makeTestRouteContext } from './test-route-context';
-import { handleDocuments } from './documents';
+import { handleProjects } from './projects';
 
 // `PUT` / `DELETE .../tabs/:tabId/presence` (docs/specs/024-agents/agent-presence.md "Presence", blueprint "REST",
 // E1 to E6): token callers only, through the participation gate; focus resolved against the tab's refs; the room
@@ -30,8 +30,8 @@ function call({
   owner = 'owner',
   raw,
 }: Call = {}) {
-  return handleDocuments(
-    makeTestRouteContext(method, `/api/documents/d1/tabs/${tab}/presence`, {
+  return handleProjects(
+    makeTestRouteContext(method, `/api/projects/d1/tabs/${tab}/presence`, {
       env: sql.env,
       owner,
       token,
@@ -45,10 +45,10 @@ beforeEach(() => {
   sql = sqliteD1();
   pending = [];
   sql.sql.exec(`
-    INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at) VALUES ('d1', 'owner', 'Shop', 0, 1, 1);
+    INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at) VALUES ('d1', 'owner', 'Shop', 0, 1, 1);
     INSERT INTO participants (id, name, color, created_at) VALUES ('owner', 'Webber', '#3b82f6', 1);
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('t1', 'Main', '{"elements":[{"id":"web-app","type":"shape","shape":"square","x":0,"y":0,"width":100,"height":60,"label":"Web app"},{"id":"web-api","type":"shape","shape":"square","x":200,"y":0,"width":100,"height":60,"label":"Web API"}]}', 1);
-    INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1);
+    INSERT INTO project_tabs (project_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1);
   `);
   put = vi
     .spyOn(roomClient, 'putAgentPresence')
@@ -72,7 +72,7 @@ describe('PUT presence', () => {
     expect(put).toHaveBeenCalledWith(
       sql.env,
       expect.objectContaining({
-        documentId: 'd1',
+        projectId: 'd1',
         tokenId: 'tok_1',
         tabId: 't1',
         name: 'Webber',
@@ -117,7 +117,7 @@ describe('PUT presence', () => {
         .map((c): unknown => c[1]),
     ).toEqual([
       {
-        documentId: 'd1',
+        projectId: 'd1',
         tabId: 't1',
         method: 'PUT',
         tokenId: null,

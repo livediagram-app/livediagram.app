@@ -15,7 +15,7 @@ import {
   type ArrowStyle,
   type ArrowThickness,
   type BorderStyle,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { SizeButton, ToggleSwitch } from '@/components/palette/palette-controls';
 import {
   ArrowEndsIcon,

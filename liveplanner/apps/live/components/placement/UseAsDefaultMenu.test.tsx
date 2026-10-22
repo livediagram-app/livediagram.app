@@ -6,7 +6,7 @@ import { PortalMenu } from '@/components/primitives/PortalMenu';
 import { UseAsDefaultMenu } from './UseAsDefaultMenu';
 
 // The submenu (docs/specs/013-workspace/default-folders.md "Use as Default for"): the four entries
-// as checkable items under "New documents that open as".
+// as checkable items under "New projects that open as".
 
 beforeAll(() => {
   // jsdom has no ResizeObserver; the flyout's measuring is not under test here.
@@ -40,14 +40,14 @@ function open(menu: Parameters<typeof UseAsDefaultMenu>[0]['menu']) {
 describe('UseAsDefaultMenu', () => {
   it('is a submenu named by its header, reached and left by the arrow keys', () => {
     open({ isChecked: () => false, isDisabled: () => false, toggle: () => {} });
-    const sub = screen.getByRole('menu', { name: 'New documents that open as' });
+    const sub = screen.getByRole('menu', { name: 'New projects that open as' });
     const trigger = screen.getByRole('menuitem', { name: /use as default for/i });
     expect(trigger.getAttribute('aria-controls')).toBe(sub.id);
     expect(document.activeElement?.textContent).toBe('Projects');
     fireEvent.keyDown(document.activeElement!, { key: 'ArrowDown' });
     expect(document.activeElement?.textContent).toBe('Retrospectives');
     fireEvent.keyDown(document.activeElement!, { key: 'ArrowLeft' });
-    expect(screen.queryByRole('menu', { name: 'New documents that open as' })).toBeNull();
+    expect(screen.queryByRole('menu', { name: 'New projects that open as' })).toBeNull();
     expect(document.activeElement).toBe(trigger);
   });
 
@@ -57,7 +57,7 @@ describe('UseAsDefaultMenu', () => {
       isDisabled: () => false,
       toggle: () => {},
     });
-    expect(screen.getByText('New documents that open as')).toBeTruthy();
+    expect(screen.getByText('New projects that open as')).toBeTruthy();
     const items = screen.getAllByRole('menuitemcheckbox');
     expect(items.map((i) => i.textContent)).toEqual([
       // Plan's mode, then the template families.

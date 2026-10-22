@@ -13,6 +13,8 @@ describe('clerkUsersFromCsv', () => {
       {
         id: 'user_2abc',
         email: 'ada@example.com',
+        givenName: 'Ada',
+        familyName: 'Lovelace',
         name: 'Ada Lovelace',
         verified: true,
         createdAt: '2024-03-01T10:00:00.000Z',
@@ -24,7 +26,11 @@ describe('clerkUsersFromCsv', () => {
     const { users } = clerkUsersFromCsv(
       `${HEADER}\r\nuser_2q,"O""Brien","Smith,\nJr",o@example.com,o@example.com,\r\n`,
     );
-    expect(users[0]?.name).toBe('O"Brien Smith,\nJr');
+    expect(users[0]).toMatchObject({
+      givenName: 'O"Brien',
+      familyName: 'Smith,\nJr',
+      name: 'O"Brien Smith,\nJr',
+    });
   });
 
   it('skips rows without an email or a Clerk id', () => {
@@ -51,12 +57,16 @@ describe('importSql', () => {
       {
         id: 'user_2x',
         email: "o'neil@example.com",
+        givenName: "O'Neil",
+        familyName: '',
         name: "O'Neil",
         verified: false,
         createdAt: '2024-01-01T00:00:00.000Z',
       },
     ]);
     expect(sql).toMatch(/^INSERT OR IGNORE INTO "user"/);
-    expect(sql).toContain("'O''Neil', 'o''neil@example.com', 0, NULL, '2024-01-01T00:00:00.000Z'");
+    expect(sql).toContain(
+      "'O''Neil', 'O''Neil', '', 'o''neil@example.com', 0, NULL, '2024-01-01T00:00:00.000Z'",
+    );
   });
 });

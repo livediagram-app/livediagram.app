@@ -1,31 +1,35 @@
 # Live app
 
-The diagram editor — where users actually build diagrams and mindmaps.
+The planner: the Explorer and the project editor, where a team works a project's Board, Sheet, Dashboard and Form
+tabs together ([Plan mode](../026-plan/plan-mode.md), [Plan tabs](../026-plan/plan-tabs.md)). Every tab is in Plan,
+the one editor mode ([Editor mode](editor-modes.md)). Under a tab is the canvas host (viewport, selection, history and
+element sync): a Board or a Sheet is a canvas element that fills its tab, so the canvas machinery stays even though no
+one draws on it.
 
 - **Workspace:** `apps/live` (`@liveplanner/live`).
-- **Public URL:** `https://liveplanner.app` — the app serves at **clean routes** (`/document/...`, `/explorer/...`, `/new`, ...); the [router app](../016-platform/router-app.md) selects it by route. There's no `/live` URL prefix.
-- **Tech:** Next.js (static export), React, TypeScript, Tailwind. No `basePath` (pages serve at clean root paths). A prod-only `assetPrefix: '/live'` keeps the bundled `_next` assets from colliding with marketing's `/_next`; the router strips `/live` from those asset requests (see [08-router-app.md](../016-platform/router-app.md)). Dev runs standalone with clean asset paths.
+- **Public URL:** `https://liveplanner.app` — the app serves at **clean routes** (`/project/...`, `/explorer/...`, `/new`, ...); the [router app](../016-platform/router-app.md) selects it by route. There's no `/live` URL prefix.
+- **Tech:** Next.js (static export), React, TypeScript, Tailwind. No `basePath` (pages serve at clean root paths). A prod-only `assetPrefix: '/live'` keeps the bundled `_next` assets from colliding with marketing's `/_next`; the router strips `/live` from those asset requests (see [Router app](../016-platform/router-app.md)). Dev runs standalone with clean asset paths.
 
 ## Always available without sign-in
 
-A guest can open `/new`, create a document, and use the full canvas without an account. See [04-auth-and-guest-access.md](../014-identity/auth-and-guest-access.md).
+A guest can open `/new`, create a project, and use the whole planner without an account. See [Auth + guest access](../014-identity/auth-and-guest-access.md).
 
 ## Routes
 
-- `/new` — welcome / template-picker flow for creating a new document (the app's entry point). See [New document route](new-document-route.md).
-- `/document/<id>` — the editor itself, scoped to one document id. Static-exports a single `/document/placeholder` page; the live worker rewrites all `/document/<id>` paths to it at the edge, and the client reads the real id from the path.
-- `/explorer/*`, `/sign-in`, `/get-started`, `/sso-callback`, `/embed` — the library, auth, and read-only embed surfaces.
+- `/new` — welcome / template-picker flow for creating a new project (the app's entry point). See [New project route](new-project-route.md).
+- `/project/<id>` — the editor itself, scoped to one project id. Static-exports a single `/project/placeholder` page; the live worker rewrites all `/project/<id>` paths to it at the edge, and the client reads the real id from the path.
+- `/explorer/*`, `/sign-in`, `/get-started`, `/embed` — the library, auth, and read-only embed surfaces. `/sign-in` and `/get-started` hand off to the liveworkspace accounts site ([Auth + guest access → Signing in](../014-identity/auth-and-guest-access.md#signing-in)).
 - `/form/<code>` — a published form's page ([Forms](../030-forms/forms.md#filling-in-a-form)): one placeholder page
-  backs every code (the live worker rewrites `/form/<code>` to `/form/placeholder`, as it does `/document/<id>`), with
+  backs every code (the live worker rewrites `/form/<code>` to `/form/placeholder`, as it does `/project/<id>`), with
   none of the editor's chrome or code.
 
 ## Persistence
 
-The editor talks to the Cloudflare Worker API documented in [11-api.md](../015-api/api.md). `apps/live/lib/api-client.ts` is the single boundary — the editor never reads or writes document state to `localStorage`. D1 holds the durable snapshot; per-tab content is split into its own rows (see [13-per-tab-storage.md](../006-document/per-tab-storage.md)) so autosave scope shrinks to the tab being edited.
+The editor talks to the Cloudflare Worker API documented in [API](../015-api/api.md). `apps/live/lib/api-client.ts` is the single boundary — the editor never reads or writes project state to `localStorage`. D1 holds the durable snapshot; per-tab content is split into its own rows (see [Per-tab storage](../006-project/per-tab-storage.md)) so autosave scope shrinks to the tab being edited.
 
 `localStorage` is still used for **identity bootstrap only** — a `crypto.randomUUID()` participant id under `liveplanner:v2:self-id`, plus a `liveplanner:v2:name-confirmed` flag once the user has named themselves. Everything else flows through the API.
 
-The document shape follows [Document structure](../006-document/document-structure.md) — a document has tabs, and elements can link across tabs.
+The project shape follows [Project structure](../006-project/project-structure.md) — a project has tabs, and elements can link across tabs.
 
 ## Layout
 
@@ -33,42 +37,42 @@ Three regions stacked vertically, filling the viewport:
 
 ```
 ┌────────────────────────────────────────────────────┐
-│ Header — brand + document name + Share              │
+│ Header — brand + project name + Share              │
 ├────────────────────────────────────────────────────┤
 │                                                    │
-│   Canvas area — viewport with zoom + pan + the     │
-│   Palette strip, corner panels, popovers   │
-│   and selection chrome on top.                     │
+│   Tab area — the tab's board, sheet, dashboard     │
+│   or form on the canvas host, with corner panels,  │
+│   popovers and the bottom-right cluster on top.    │
 │                                                    │
 ├────────────────────────────────────────────────────┤
 │  [ Tab 1 ] [ Tab 2 ] [ + ]            Tab bar      │
 └────────────────────────────────────────────────────┘
 ```
 
-- **Header:** brand wordmark (a link to the Explorer home, [Brand mark](../004-interface-design/brand-mark.md#links)), document-name field (click to rename), and the Share button. The private/shared/team badge sits next to the title (Team when the document lives in a team library and has no share links, [Team shared documents](../013-workspace/team-shared-documents.md)), followed by the [role pill](#role-pill). (The full-page `/explorer` library is reached from the AuthControls menu and the **Explorer** link in the marketing site header, and the header logo opens its Home.) The editor header carries no product menu: the product's surfaces (Home, Explorer, Help) are links in the Explorer panel's footer ([The editor's Explorer](../013-workspace/explorer-structure.md#the-editors-explorer)); the other apps' headers keep the menu.
-- **Canvas:** owns most of the viewport. See [09-canvas-and-palette.md](../008-canvas/canvas-and-palette.md) for the full surface — shapes, arrows, marquee, multi-select, the Palette strip, plus the context panels.
+- **Header:** brand wordmark (a link to the Explorer home, [Brand mark](../004-interface-design/brand-mark.md#links)), project-name field (click to rename), and the Share button. The private/shared/team badge sits next to the title (Team when the project lives in a team library and has no share links, [Team shared projects](../013-workspace/team-shared-projects.md)), followed by the [role pill](#role-pill). (The full-page `/explorer` library is reached from the AuthControls menu and the **Explorer** link in the marketing site header, and the header logo opens its Home.) The editor header carries no product menu: the product's surfaces (Home, Explorer, Help) are links in the Explorer panel's footer ([The editor's Explorer](../013-workspace/explorer-structure.md#the-editors-explorer)); the other apps' headers keep the menu.
+- **Tab area:** owns most of the viewport. A Board, Sheet, Dashboard or Form fills it ([Plan tabs](../026-plan/plan-tabs.md)); an empty tab shows Start Planning ([Start panel](start-panel.md)). Plan shows no palette ([Plan mode](../026-plan/plan-mode.md#no-palette)). The canvas host underneath is [Canvas and palette](../008-canvas/canvas-and-palette.md).
 - **Tab bar (status bar):** horizontal row of tabs with `+` to add. Click to switch, double-click to rename, drag to reorder. When the tabs run past the bar it scrolls sideways, the edge with more tabs beyond it fading out (`scroll-edge-fade`, as the strip's rails do) rather than clipping a label mid-word, and **the active tab is always in view**: switching to a tab, or adding one, scrolls the row the least distance that shows all of it, and **Add tab** with it when it is the last tab (smoothly, or at once under reduced motion). Its right-hand cluster (`ChromeControls`, shared with the Explorer's bottom bar) holds **Search**, **Settings**, and the appearance toggle. In the editor each shows a text label beside its icon from `sm` up ("Search", "Settings", and the appearance in force: "Light" / "Dark" / "System") and is icon-only on a phone; the Explorer's bar stays icon-only. **Button Labels** in Settings › Appearance (`dockButtonNames`, on by default) turns those labels off on a desktop too, as Minimal chrome does; a phone never shows them, whatever it says. There is no keyboard-shortcuts button: the shortcut reference and the per-device on/off switch live in Settings' **Keyboard** category ([User preferences](user-preferences.md)), which the "Keyboard shortcuts" search command opens directly.
 
 ## Role pill
 
-The **role pill** says whether you are editing, participating in or viewing this document. Everyone sees it, owner included.
+The **role pill** says whether you are editing, participating in or viewing this project. Everyone sees it, owner included.
 
 - **Where.** In the title bar, after the visibility badge. From `sm` up, like the visibility badge: a phone's title
   bar has no room. Under [Minimal chrome](power-user-mode.md#minimal-chrome) it becomes an icon at the start of the
   status bar instead.
 - **What it reads.** "Editing" (emerald), "Participating" (teal) or "Viewing" (amber).
 - **Level with the visibility badge.** Both are 19 px pills centred on the title's line: neither sits higher or lower.
-- **Who owns the document** is disclosed progressively: a Tooltip on the pill reads "Owned by <name>" ("Owned by you"
+- **Who owns the project** is disclosed progressively: a Tooltip on the pill reads "Owned by <name>" ("Owned by you"
   for the owner), and the pill's accessible name carries the same words after its role. There is no separate owner
   badge. With no known owner (the owner has never joined the room), the pill has no Tooltip.
 - **A toggle when your role allows editing.** For the owner, and equally for a visitor whose link grants edit, the pill is a
-  button: each click steps **Editing**, then **Participating**, a preview of the document as a Participant sees and
+  button: each click steps **Editing**, then **Participating**, a preview of the project as a Participant sees and
   works it ([Share roles](../013-workspace/share-roles.md)), then **Viewing**, a read-only preview as a view-link
   visitor sees it, then back to Editing. The preview is local to this tab and this visit: it changes no one's role on
   the server, nothing other participants see of you, and a reload returns to Editing. Participating works as a
-  Participant does: the Participate palette and its limits, adding stickies and text, and moving, rewriting and
-  deleting only what you added while previewing. An Editor has no adder key from the room, so the preview stamps
-  what it adds with its own (`preview-<participant id>`); what you add stays in the document, and no real
+  Participant does: working cards as a Participant's share role allows, and moving, rewriting and deleting only
+  what you added while previewing. An Editor has no adder key from the room, so the preview stamps
+  what it adds with its own (`preview-<participant id>`); what you add stays in the project, and no real
   Participant's key matches it. The pill's accessible description says what a click does ("Switch to participating
   (as a Participant sees it)" / "Switch to viewing (read-only)" / "Switch to editing").
 - **Not a toggle when your role is view.** A view-link visitor's pill is static text, focusable so its Tooltip
@@ -77,12 +81,14 @@ The **role pill** says whether you are editing, participating in or viewing this
 
 ## What the editor supports today
 
-- Boxed elements (shape, text, sticky), arrows (straight / curved / angled, optional label, configurable line thickness + arrowhead size), groups, multi-select via marquee + plain-click + shift-click.
-- Per-element format painter, lock, link-to-tab, comment threads.
-- Real-time presence + selection + cursor broadcast via the per-document Durable Object room (see [11-api.md](../015-api/api.md)).
+- Board, Sheet, Dashboard and Form tabs, started from Start Planning or a Plan template ([Plan mode](../026-plan/plan-mode.md)).
+- Cards and their card types, plan views, sheets with formulas, dashboards, and forms whose responses become cards
+  ([Plan board](../026-plan/plan-board.md), [Sheet](../029-sheets/sheet.md), [Forms](../030-forms/forms.md)).
+- Comment threads, mentions and assigned actions ([Collaboration](../012-collaboration/README.md)).
+- Real-time presence + selection + cursor broadcast via the per-project Durable Object room (see [API](../015-api/api.md)).
 - Undo and redo (snapshot-based, personal to each editor; the per-tab Activity panel was removed on 2026-10-03, see [Collaboration](../012-collaboration/README.md#removed-the-activity-panel)).
-- Folders in the Explorer (see [15-folders.md](../013-workspace/folders.md)).
-- Themed templates (chosen on the new-document route).
+- Folders in the Explorer (see [Folders](../013-workspace/folders.md)).
+- Themed templates (picked on Start Planning; [Templates](templates-by-mode.md)).
 
 ## Concurrent-selection lock
 
@@ -102,44 +108,44 @@ To cut down on two people fighting over the same element, an element another par
 
 The live app is the product, not a content surface. Every page the live app serves is one of:
 
-- A signed-in workspace (`/explorer`, `/document/[id]`) carrying private user data that must not appear in search results.
-- An auth flow (`/sign-in`, `/get-started`, `/sso-callback`) that's worthless to crawlers and pointless to index.
-- The new-document welcome flow (`/new`) that needs the user's runtime identity to mean anything.
+- A signed-in workspace (`/explorer`, `/project/[id]`) carrying private user data that must not appear in search results.
+- An auth flow (`/sign-in`, `/get-started`) that's worthless to crawlers and pointless to index.
+- The new-project welcome flow (`/new`) that needs the user's runtime identity to mean anything.
 
 `apps/live/app/layout.tsx` declares `robots: { index: false, follow: false }` in the root metadata so every live-app route inherits the directive. Cascades correctly through the static-export pages: each rendered HTML head carries `<meta name="robots" content="noindex,nofollow">`.
 
-This complements the marketing site's SEO policy (see [16-marketing-site.md](../019-marketing/marketing-site.md)): marketing is the indexable surface, the live app is explicitly off-limits to crawlers. The two policies meet at the router worker, which serves them on the same hostname but distinct paths.
+This complements the marketing site's SEO policy (see [Marketing site](../019-marketing/marketing-site.md)): marketing is the indexable surface, the live app is explicitly off-limits to crawlers. The two policies meet at the router worker, which serves them on the same hostname but distinct paths.
 
 ## Appearance (light / dark / system)
 
-The editor ships with an **Appearance** control, distinct from the per-tab **themes** (`apps/live/lib/themes.ts`, see [Canvas and palette](../008-canvas/canvas-and-palette.md)). A theme recolours CANVAS content (background, element fill / stroke / text) and is stored in the document, so every viewer sees it; Appearance recolours the editor CHROME (tab bar, editor header, panels, body backdrop) around it and lives only in this browser. A Pink-schemed document still sits on dark chrome when the control is flipped.
+The editor ships with an **Appearance** control, distinct from the per-tab **themes** (`apps/live/lib/themes.ts`, see [Canvas and palette](../008-canvas/canvas-and-palette.md)). A theme recolours CANVAS content (background, element fill / stroke / text) and is stored in the project, so every viewer sees it; Appearance recolours the editor CHROME (tab bar, editor header, panels, body backdrop) around it and lives only in this browser. A Pink-schemed project still sits on dark chrome when the control is flipped.
 
-Two words, two owners, and the naming is deliberate: **Appearance** is yours, a **theme** is the document's. The stored names stay `theme` (`Tab.theme`, the MCP parameter, the `Theme` telemetry category, and the `liveplanner:v2:ui-mode` localStorage key) because they are data on the wire — renaming them would need a migration and would break saved documents and existing MCP callers for no user-visible gain.
+Two words, two owners, and the naming is deliberate: **Appearance** is yours, a **theme** is the project's. The stored names stay `theme` (`Tab.theme`, the MCP parameter, the `Theme` telemetry category, and the `liveplanner:v2:ui-mode` localStorage key) because they are data on the wire — renaming them would need a migration and would break saved projects and existing MCP callers for no user-visible gain.
 
 - **Three settings, one button.** The control lives on the right edge of the TabBar and CYCLES Light → Dark → System (`AppearanceToggle`). The glyph shows the CURRENT setting (sun / moon / monitor), not the next one: as a two-state toggle it could get away with showing the target, but with three states — one of them deferring to the OS — the only readable thing is where you are, so the hover card and `aria-label` carry where the next click goes.
 - **System follows the OS, live.** `system` resolves through `matchMedia('(prefers-color-scheme: dark)')`, and that query is WATCHED: a machine that turns dark at sunset takes the editor with it without a reload. An explicit Light / Dark ignores the OS entirely and never even reads the query.
 - **System is the default.** A first-time visitor gets the chrome their device asks for, and `DEFAULT_APPEARANCE_SETTING` is the one line that says so; an unreadable or older-build value falls back to it too. The editor was light-by-default for as long as the control was a two-state toggle, on the reasoning that going dark should be asked for — but that reasoning only held while there was no way to say "follow my device". Now there is, and a reader whose machine is dark has already said it. An explicit Light or Dark still outranks the device: System is where the choice STARTS, not a rule.
 - **Dark is its own palette.** The dark chrome is the blue-slate **Steel** palette ([Colour scheme](../004-interface-design/color-scheme.md#dark-palette-steel)), and the Default scheme's dark half is the canvas of the same hue ([Canvas and palette](../008-canvas/canvas-and-palette.md#default-scheme-dark-half)). Light mode's colours are not touched by it.
-- **The Default theme follows it** ([Canvas and palette](../008-canvas/canvas-and-palette.md)). Default has hand-made light and dark halves, resolved per viewer at render time: nothing is written to the document when the appearance changes, so a colleague in light chrome reads the light half of the same tab. Every other theme derives its other half the same way ([Light and dark halves](../011-theme/light-and-dark.md)).
+- **The Default theme follows it** ([Canvas and palette](../008-canvas/canvas-and-palette.md)). Default has hand-made light and dark halves, resolved per viewer at render time: nothing is written to the project when the appearance changes, so a colleague in light chrome reads the light half of the same tab. Every other theme derives its other half the same way ([Light and dark halves](../011-theme/light-and-dark.md)).
 - **Unpainted elements take the canvas's ink.** An element carrying no colour of its own is drawn from `defaultStrokeColor` / `defaultFillColor` / `defaultTextColor`, which take a `CanvasSurface` (`'light' | 'dark'`, derived from the resolved backdrop by `canvasSurface`). That is what lets the Default scheme paint nothing onto elements and still read correctly on a charcoal canvas — and it fixes every dark scheme's unpainted elements as a side effect. The surface reaches the views through `CanvasSurfaceContext` rather than props, because the element views are `React.memo`'d and memo blocks a parent re-render but not a context update; the element MENUS read the same context, so a swatch can't show a light-canvas blue beside a grey shape. Exports derive it from the paper they are exporting onto, so what you export is what you see.
 - **No match nudge.** Every theme has a light and a dark half ([Light and dark halves](../011-theme/light-and-dark.md)), so a tab never needs the viewer to switch appearance; the floating prompt that used to offer it (`ThemeModeBanner`) and the theme browser's inline switch are gone.
 - **One setting for the whole origin** ([Appearance](../004-interface-design/appearance.md)). Stored in `localStorage` under `liveplanner:v2:ui-mode`. The value, its storage, the OS watch, the pre-paint script and the public-site toggle live in `@liveplanner/ui` (`packages/ui/src/appearance/`), shared with marketing, help and the dashboard, so a pick made on any of them holds in the editor. The shared `useAppearance` returns both the `setting` (what the user picked, what a control renders) and the resolved `appearance` (what the chrome is painted as, what a colour decision reads). The editor wraps it in `hooks/ui/useAppearance.ts` only to add its `UI / Toggled` telemetry, and `AppearanceToggle` draws the shared `AppearanceIcon`.
 - The choice is applied on **every** route by a tiny inline script in the root layout (`app/layout.tsx`) that runs before first paint. This matters for two reasons. React mounts after first paint, so ANY hook-based application flashes light before it lands. And the hook is not mounted everywhere anyway — the TabBar, the appearance toggle and the scheme browser render it, but the standalone `/new` route renders none of them, so without the layout script it would paint light over a dark body and stay that way. The snippet is the shared `APPEARANCE_BOOT_SCRIPT`, a string a test EXECUTES against stub globals: what matters about it is not its text but which stored value ends up dark before first paint, and a string assertion happily passed while `system` painted light on a dark machine.
 - **Dark Reader stands down.** The root layout declares `<meta name="darkreader-lock">` (through `metadata.other`), the opt-out the Dark Reader extension honours. The editor already paints its own dark chrome, so a reader running the extension gets that instead of a filter over it: without the lock, Dark Reader re-darkens the already dark chrome, muddies the template preview art, and rewrites inline SVG attributes before React hydrates, which React reports as a hydration mismatch. Every app paints its own dark appearance, so every root layout carries the lock (`DARK_READER_LOCK` in `@liveplanner/ui`). The meta carries a non-empty `content`, because Next drops a meta whose content is empty; Dark Reader keys on the name alone.
 - The `@custom-variant dark (&:where(.dark, .dark *))` declaration in `packages/tailwind-config/theme.css` configures Tailwind v4's `dark:` variant to use the class selector rather than the media query.
-- **Surfaces covered:** body backdrop, TabBar, EditorHeader, the TemplatePicker modal (the welcome / "New Document" / "Pick a template" flow) and the `/new` backdrop. Template **preview tiles** and the export-format glyphs are light-canvas art (white fills, slate rules, dark ink). They used to keep a LIGHT plate in dark chrome so they stayed legible, which left the New Document screen reading as a grid of bright white cards on a near-black dialog. They are now re-lit instead of redrawn: `.preview-art-tile` (shipped by `@liveplanner/template-previews`) inverts lightness and spins the hue back under `.dark`, so the art lands on dark paper with its hues intact (a blue node stays blue, an amber sticky stays amber) and new previews inherit it for free. The paper it lands on is the dark canvas colour: the tile's plate and every white fill are clamped to `#f3faff` before the filter (`invert(0.95) hue-rotate(180deg)`, with a `mix-blend-mode: darken` veil), which the filter maps to `#0d1318`, the nearest it can reach to the canvas `#0d121a`. A thumbnail therefore previews the canvas you will get. The marketing template gallery uses the same rule. Colour-scheme swatches are deliberately EXCLUDED — those show a scheme's actual colours, so re-lighting them would be a lie. The **loading screen** (`DocumentLoading`) is dark-aware for the same reason: it is a whole screen between the click and the editor, and a white flash there is the appearance failing at the one moment the user is waiting. Panel chromes (`MovablePanel`) carry the effect on the outer frame; per-panel content (Palette, Context, Explorer) lights up incrementally as the `dark:` variants get added to each accordion / row. Until that's done, an open panel reads light over a dark backdrop — usable, not yet polished.
+- **Surfaces covered:** body backdrop, TabBar, EditorHeader, the TemplatePicker modal (the welcome / "New Project" / "Pick a template" flow) and the `/new` backdrop. Template **preview tiles** and the export-format glyphs are light-canvas art (white fills, slate rules, dark ink). They used to keep a LIGHT plate in dark chrome so they stayed legible, which left the New Project screen reading as a grid of bright white cards on a near-black dialog. They are now re-lit instead of redrawn: `.preview-art-tile` (shipped by `@liveplanner/template-previews`) inverts lightness and spins the hue back under `.dark`, so the art lands on dark paper with its hues intact (a blue node stays blue, an amber sticky stays amber) and new previews inherit it for free. The paper it lands on is the dark canvas colour: the tile's plate and every white fill are clamped to `#f3faff` before the filter (`invert(0.95) hue-rotate(180deg)`, with a `mix-blend-mode: darken` veil), which the filter maps to `#0d1318`, the nearest it can reach to the canvas `#0d121a`. A thumbnail therefore previews the canvas you will get. The marketing template gallery uses the same rule. Colour-scheme swatches are deliberately EXCLUDED — those show a scheme's actual colours, so re-lighting them would be a lie. The **loading screen** (`ProjectLoading`) is dark-aware for the same reason: it is a whole screen between the click and the editor, and a white flash there is the appearance failing at the one moment the user is waiting. Panel chromes (`MovablePanel`) carry the effect on the outer frame; per-panel content (Palette, Context, Explorer) lights up incrementally as the `dark:` variants get added to each accordion / row. Until that's done, an open panel reads light over a dark backdrop — usable, not yet polished.
 
 ## Header actions
 
-A long document name truncates with an ellipsis; it never pushes the actions: they keep their full width at every screen size, a phone included, and the name takes what is left.
+A long project name truncates with an ellipsis; it never pushes the actions: they keep their full width at every screen size, a phone included, and the name takes what is left.
 
-The right edge of the header holds Share (owner), Copy (visitor), and Sign in or the account control as full-height, edge-flush actions, each an icon stacked over a small label (`HEADER_ACTION_BTN` in `apps/live/components/chrome/header-action.tsx`); Share fills brand while the document is shared. Pill, gradient, bordered and ink-button restyles were tried and dropped in favour of this simpler look.
+The right edge of the header holds Share (owner), Copy (visitor), and Sign in or the account control as full-height, edge-flush actions, each an icon stacked over a small label (`HEADER_ACTION_BTN` in `apps/live/components/chrome/header-action.tsx`); Share fills brand while the project is shared. Pill, gradient, bordered and ink-button restyles were tried and dropped in favour of this simpler look.
 
 The account menu's **Account** item opens the host page's own Settings dialog on the Account category, in place (the editor via `openSettingsOn('account')`, the Explorer via its settings state); it navigates to `/explorer?settings=account` only when the host passes no handler.
 
 ## Share dialog
 
-The "Share This Document" modal (`apps/live/components/dialogs/ShareDialog.tsx`, opened from the header Share button, for the owner and, on a team document, every joined member: [Team shared documents](../013-workspace/team-shared-documents.md)) follows the same dialog conventions as Settings / Export: a dimmed blurred backdrop (`bg-slate-900/40 backdrop-blur-sm`, click-to-close, Esc closes), a centred panel with dark-mode styling, and a scrollable body capped to the viewport.
+The "Share This Project" modal (`apps/live/components/dialogs/ShareDialog.tsx`, opened from the header Share button, for the owner and, on a team project, every joined member: [Team shared projects](../013-workspace/team-shared-projects.md)) follows the same dialog conventions as Settings / Export: a dimmed blurred backdrop (`bg-slate-900/40 backdrop-blur-sm`, click-to-close, Esc closes), a centred panel with dark-mode styling, and a scrollable body capped to the viewport.
 
 ### The pass metaphor
 
@@ -150,7 +156,7 @@ A pass is a card headed by a solid role-coloured band (a stub down the left edge
 - **Header band** (full width): the role's glyph beside its word, `EDITOR`, `PARTICIPANT` or `VIEWER`, on a solid role colour: brand for edit, teal for participate, violet for view ([Share roles](../013-workspace/share-roles.md)). The colour is the role at a glance across the whole list.
 - **Body** (below), three lines, the second and third sharing one row from `sm` up (a phone stacks them):
   1. The link, in a monospaced read-only field (select-on-focus for a manual copy) with the pass's copy button **inside** its right edge: a quiet icon button, the grey copy glyph with no word or fill (brand on hover) (the field is the thing being copied, so the action lives in it), named and tooltipped "Copy link"; for a beat after copying it becomes an emerald check and reads "Copied".
-  2. What it is printed with: **Opens** the tabs it admits (the rescope picker, [Tab-scoped share links](../013-workspace/tab-scoped-share-links.md), shown only on a multi-tab document; on a single-tab document every pass opens every tab, so the term is left off), **Valid** for how long ("Forever" or the countdown, [Share-link expiry](../013-workspace/share-link-expiry.md)), and a **Password** tag while the document has a share password.
+  2. What it is printed with: **Opens** the tabs it admits (the rescope picker, [Tab-scoped share links](../013-workspace/tab-scoped-share-links.md), shown only on a multi-tab project; on a single-tab project every pass opens every tab, so the term is left off), **Valid** for how long ("Forever" or the countdown, [Share-link expiry](../013-workspace/share-link-expiry.md)), and a **Password** tag while the project has a share password.
   3. The other ways to hand it over, **Embed** ([Read-only embeds](../013-workspace/embeds.md)) and **Live image** ([Live image](../013-workspace/live-image-share.md), hidden while a password is set), with **Revoke** at the far edge.
 
 Passes are listed newest first. Files: `ShareDialog.tsx` (orchestration), `ShareStatus.tsx`, `ShareComposer.tsx`, `SharePassTicket.tsx` (the ticket shell), `ActiveSharePass.tsx`, `ExpiredSharePass.tsx`, `SharePasswordSection.tsx`, `ShareIdentity.tsx`, with the role catalogue (`ROLE_PASS`) in `share-dialog-parts.tsx`.
@@ -163,12 +169,12 @@ Passes never appear or vanish in one frame. A **new pass opens its own space**: 
 
 ### Layout, top to bottom
 
-1. **Header**: the title and a **status line** (`ShareStatus`, `role="status"`) that states the document's exposure in one phrase, with a dot: "Private: only you can open it." (slate) when no active pass exists and the document is not in a team library, "Team: every member of the team can open it." (emerald) for a team library document with no pass (with passes, "Shared: every member of the team can open it, and anyone holding ..."), otherwise "Shared: anyone holding the pass / one of the N passes can get in" (a pinging emerald live dot, an ambient indicator per [Motion](../004-interface-design/motion.md)), ending ", with the password." when a password is set. This replaces the static explanation of roles, which the role cards below now carry. The title row ends with **Show Me** (below), **Help** (the labelled Help link, to the Sharing article) and the close cross.
-2. **Issue a pass** (the primary action), one tinted panel holding the role and the fine print. The **role picker** (`ShareRolePicker`) is one compact card naming the chosen role, its glyph and blurb, with a caret; pressing it (a click, never a hover) or Down on it unfolds the three roles beneath it in place (easing open, a radio group inside: arrow keys wrap, Home and End reach the ends, Escape folds it), **Editor** ("Draws with you in real time."), **Participant** ("Adds stickies, writes and votes. Can't reshape the board.") and **Viewer** ("Watches, pans and zooms. Can't comment, vote or change a thing."), each in its own colour (glyph tile, title, hover tint, a ring once chosen: brand, teal, violet); choosing one folds it again. It unfolds in place rather than floating, so the dialog's scroll never clips it. Then the pass's **fine print**, one labelled row per term with the labels in one column (stacked above their controls below `sm`): **Valid**, a four-way segmented control (a radio group, arrow keys wrap) reading Forever / 1 week / 1 month / 6 months, whose selected segment takes the chosen role's colour; and **Opens**, the tabs select, only on a multi-tab document. Then **Create Pass**, filled in the chosen role's colour like the selected lifetime. Creating copies the new link to the clipboard straight away (a toast confirms "Pass created and copied"; if the clipboard refuses, the toast says the pass was created and to copy it from the card), and the new pass arrives with its copy button showing "Copied".
-3. **Passes** (active, newest first), set off from the composer by a hairline rule, its count in a `CountBadge` beside the caption (the Expired caption carries one too). Revoking a pass asks first in a `ConfirmPopover` beside the bin ("Revoke this pass? The link stops working at once for everyone holding it." / **Revoke**), per [Destructive actions](#destructive-actions). Empty state: a dashed ghost ticket reading "No passes yet. Only you can open this document." When every pass has expired it reads "Every pass has expired. Extend one below or issue a new one."
+1. **Header**: the title and a **status line** (`ShareStatus`, `role="status"`) that states the project's exposure in one phrase, with a dot: "Private: only you can open it." (slate) when no active pass exists and the project is not in a team library, "Team: every member of the team can open it." (emerald) for a team library project with no pass (with passes, "Shared: every member of the team can open it, and anyone holding ..."), otherwise "Shared: anyone holding the pass / one of the N passes can get in" (a pinging emerald live dot, an ambient indicator per [Motion](../004-interface-design/motion.md)), ending ", with the password." when a password is set. This replaces the static explanation of roles, which the role cards below now carry. The title row ends with **Show Me** (below), **Help** (the labelled Help link, to the Sharing article) and the close cross.
+2. **Issue a pass** (the primary action), one tinted panel holding the role and the fine print. The **role picker** (`ShareRolePicker`) is one compact card naming the chosen role, its glyph and blurb, with a caret; pressing it (a click, never a hover) or Down on it unfolds the three roles beneath it in place (easing open, a radio group inside: arrow keys wrap, Home and End reach the ends, Escape folds it), **Editor** ("Plans with you in real time."), **Participant** ("Works cards and cells, comments and votes. Can't reshape a board.") and **Viewer** ("Watches along. Can't comment, vote or change a thing."), each in its own colour (glyph tile, title, hover tint, a ring once chosen: brand, teal, violet); choosing one folds it again. It unfolds in place rather than floating, so the dialog's scroll never clips it. Then the pass's **fine print**, one labelled row per term with the labels in one column (stacked above their controls below `sm`): **Valid**, a four-way segmented control (a radio group, arrow keys wrap) reading Forever / 1 week / 1 month / 6 months, whose selected segment takes the chosen role's colour; and **Opens**, the tabs select, only on a multi-tab project. Then **Create Pass**, filled in the chosen role's colour like the selected lifetime. Creating copies the new link to the clipboard straight away (a toast confirms "Pass created and copied"; if the clipboard refuses, the toast says the pass was created and to copy it from the card), and the new pass arrives with its copy button showing "Copied".
+3. **Passes** (active, newest first), set off from the composer by a hairline rule, its count in a `CountBadge` beside the caption (the Expired caption carries one too). Revoking a pass asks first in a `ConfirmPopover` beside the bin ("Revoke this pass? The link stops working at once for everyone holding it." / **Revoke**), per [Destructive actions](#destructive-actions). Empty state: a dashed ghost ticket reading "No passes yet. Only you can open this project." When every pass has expired it reads "Every pass has expired. Extend one below or issue a new one."
 4. **Expired passes** ([Share-link expiry](../013-workspace/share-link-expiry.md)), only when non-empty.
 5. **Password** ([Share password](../013-workspace/share-password.md)): a switch row (the shared `SettingsToggleRow`), "Password Protection", with the hint "Everyone opening a pass must enter it first, embeds included." Switching it on reveals the field with **Save**. Once saved, the field gives way to a **Password Set** line with **Replace** (an empty field with **Save** and **Cancel**) and **Remove**: only a hash is stored, so the password cannot be shown again. Switching it off removes it too. A password cannot be switched off without removing it, so the switch never disagrees with what the server enforces.
-6. **Footer**: for guests only, **Sharing as**: the identity avatar, then under the caption the shuffle button hard against the left of an inline name field (next to the name it changes, not out by Done). This is the name peers see on cursors and comments. It sits in the footer so it is always visible without leading the dialog with a form; it is saved when a pass is created (as before) and whenever the dialog closes (Done, the close button, Esc, or the backdrop). Signed-in users' names come from their Clerk account, so the identity hides. **Done** closes.
+6. **Footer**: for guests only, **Sharing as**: the identity avatar, then under the caption the shuffle button hard against the left of an inline name field (next to the name it changes, not out by Done). This is the name peers see on cursors and comments. It sits in the footer so it is always visible without leading the dialog with a form; it is saved when a pass is created (as before) and whenever the dialog closes (Done, the close button, Esc, or the backdrop). Signed-in users' names come from their liveworkspace account, so the identity hides. **Done** closes.
 
 ### Show Me
 
@@ -177,7 +183,7 @@ dialog itself; it is never offered or started on its own, and the offline gate h
 control into view; the control stays
 usable, so the owner can pick a role, set a lifetime or create a pass while the step is up, and what they do is
 kept. The steps: **Choose What They Can Do** (the role picker), **Choose Which Tabs It Opens** (the Opens select,
-only on a multi-tab document), **Set How Long It Lasts** (Valid), **Create the Pass** (Create Pass), **Your Passes**
+only on a multi-tab project), **Set How Long It Lasts** (Valid), **Create the Pass** (Create Pass), **Your Passes**
 (the Passes section), **Add a Password** (the Password section), then a closing card, **That Is Sharing**, with a
 link to the Sharing article. While it runs, Escape belongs to the tour (it never closes the dialog). Only the owner
 opens the dialog, so only the owner sees Show Me. Telemetry: `UI` · `Started` · `ShareTour`, and `UI` · `Ended` ·
@@ -185,7 +191,7 @@ opens the dialog, so only the owner sees Show Me. Telemetry: `UI` · `Started` �
 
 ## Destructive actions
 
-Every irreversible flow (delete a folder) is gated by a branded confirmation. Deleting a document is not one: it goes to the Trash with an Undo ([Trash](../013-workspace/trash.md)). Nor is deleting a tab: one commit, so undo brings it back, and the tab menu asks first only when deleting does what an undo cannot take back (a Form tab's link, the forms sending their responses to a board or sheet; `deleteTabWarning`). Two forms:
+Every irreversible flow (delete a folder) is gated by a branded confirmation. Deleting a project is not one: it goes to the Trash with an Undo ([Trash](../013-workspace/trash.md)). Nor is deleting a tab: one commit, so undo brings it back, and the tab menu asks first only when deleting does what an undo cannot take back (a Form tab's link, the forms sending their responses to a board or sheet; `deleteTabWarning`). Two forms:
 
 - **Centre modal** — `apps/live/components/dialogs/ConfirmDialog.tsx`, wired in through the `useConfirm` hook (`apps/live/hooks/ui/useConfirm.tsx`). The provider mounts once at the live root layout so any descendant can `await confirm({ title, message, confirmLabel })` and receive a boolean. Used where the action has no tight on-screen anchor.
 - **Anchored popover** — `apps/live/components/primitives/ConfirmPopover.tsx`: a small popover beside the trigger with an arrow pointing back at it, so you confirm right where you clicked rather than being yanked to the screen centre. Portal-rendered (its `position: fixed` must escape transformed ancestors like the tab menu) and tagged `data-confirm-popover` so a host menu's outside-click handler can ignore it. Used by the tab menu's Delete row when it warns (`deleteTab` performs the delete directly). Esc cancels, Enter confirms.
@@ -219,7 +225,7 @@ Toasts are NOT used for:
 - Autosave progress / failures: the EditorHeader already carries a dedicated save-status pill.
 - In-context errors that have a sensible place to live near the action (a dialog's own inline error line).
 
-They ARE used for actions that finish off-surface from the gesture: clicking "Add to another document", duplicating a document, or any future flow whose UI has already navigated away by the time the network call resolves.
+They ARE used for actions that finish off-surface from the gesture: clicking "Add to another project", duplicating a project, or any future flow whose UI has already navigated away by the time the network call resolves.
 
 ## Mobile chrome
 
@@ -229,7 +235,7 @@ On a phone-sized viewport the editor's chrome would crowd the canvas. It tighten
 
   **Layers and Collaborate are buttons in the bottom-right cluster**, beside Undo and Redo. Left to right: Undo / Redo, the [Session strip](../012-collaboration/session-tools.md#the-session-strip) (Timer, Vote), the mode's own strip (Slides, Plan), Collaborate, then **Layers and the Theme & Canvas brush as one strip** (in every mode; a mode or session without one of the two keeps the other; in Diagram mode an Editor's strip starts with [Tidy Up](../008-canvas/layout-cleanup.md#the-tidy-up-button), left of Layers), then Zoom (Collaborate only while the tab has a comment thread or an action, [Assigned actions](../012-collaboration/assigned-actions.md) §5). Each button opens its panel as a **popover hanging above it** (`computeDockAnchor(..., 'above')`: from the button's left edge, kept on the canvas, arrow on the popover's bottom edge pointing at the button), and a second press closes it, as does a press anywhere outside it such as the canvas (`dismissOnOutside`; its own portalled menus and confirms count as inside). The popovers share one open-at-a-time slot with the Explorer popover, so opening one closes the others. **Named on a wide desktop** (1440 px and up, `useDockNames`): Contents, Slides, Timer, Vote, Poll, Layers, Tidy Up and the Plan strip's Trash, New Card, Find a Card and Card Types show their name beside their icon, and the Theme & Canvas brush is named **Style**, unless **Button Labels** in Settings › Appearance is off (`dockButtonNames`; `DockNamesProvider` in the editor, on outside one); narrower (a laptop at 1280 px, a tablet, a phone) they are icons alone, since the named strips would take the canvas's lower middle (at 1280 px they reach x 446). **A phone's zoom controls drop − and +** (`pinchOnly`): the cluster carries Undo, Redo and Layers, and pinch zooms. Fit stays.
 
-- **EditorHeader** drops the `liveplanner` wordmark on mobile via the Brand component's new `wordmarkClassName` prop (set to `hidden sm:inline`). The mark stays for orientation. The header's reserved width shrinks accordingly so the document title centres correctly.
+- **EditorHeader** drops the `liveplanner` wordmark on mobile via the Brand component's new `wordmarkClassName` prop (set to `hidden sm:inline`). The mark stays for orientation. The header's reserved width shrinks accordingly so the project title centres correctly.
 - **TabBar** hides the leading `Tabs` label below `sm` and drops the right-hand cluster's text labels to icons only. Tabs themselves, the +-add, Search, Settings and the dark-mode toggle stay. (There is no shortcuts button to hide: the shortcut reference lives in Settings' Keyboard category, [User preferences](user-preferences.md).)
 
 ### A phone held sideways
@@ -262,15 +268,15 @@ upright phone whose layout shrinks for its keyboard (an older Android) from fold
   **Show Header and Tabs**. Pressing it brings both bars back where they always are: the canvas
   shrinks to make room again, so nothing covers it or the chrome on it. The button, now under the
   header, turns into **Hide Header and Tabs** (`aria-expanded` says which) and folds them again. So
-  what lives in the bars stays one press away: Share or Make a Copy, the document's name and
+  what lives in the bars stays one press away: Share or Make a Copy, the project's name and
   badges, the role pill, the tabs and their menus, Add Tab, Search, Settings and the appearance
   toggle. The strip's row keeps the handle's 54px clear on its right (`LANDSCAPE_HANDLE_ROOM`: the
   46px card and the row's 8px gap), so a long strip scrolls short of it rather than under it. The
-  choice lasts while the document is open in that window: not saved, not synced, and a
+  choice lasts while the project is open in that window: not saved, not synced, and a
   fresh load starts folded.
 - **The bars come back on their own** when something needs them: a rename asked for elsewhere (the
-  Rename Document and Rename Tab search commands) shows them first, so the name field takes the
-  focus; a tour on screen (any of them: the Diagram tour's Tabs step points at the tab bar) keeps
+  Rename Project and Rename Tab search commands) shows them first, so the name field takes the
+  focus; a tour on screen (any of them: a tour may point at the tab bar) keeps
   them shown; and a bar never folds while focus is inside it, so a layout that changes while a
   name is typed there (the on-screen keyboard resizing it) cannot fold the field away. Pressing
   Hide takes the focus to the handle, which ends a rename as any press outside it does.
@@ -281,7 +287,7 @@ upright phone whose layout shrinks for its keyboard (an older Android) from fold
 - **Not drawn** where the bars are not there to fold: zen mode (it hides them already and keeps its
   own way out, [Zen mode](zen-mode.md)), embeds and the workbench frame, and the welcome flow.
 - **Every share role** gets the fold and the handle alike, Editor, Participant and Viewer: it is a
-  view of the editor, never of the document, and what is inside each bar keeps its own role gates.
+  view of the editor, never of the project, and what is inside each bar keeps its own role gates.
 - **Telemetry:** the handle sends `UI / Toggled / LandscapeBarsOn` when it shows the bars and
   `LandscapeBarsOff` when it folds them ([Telemetry](../017-telemetry/telemetry.md)); the automatic
   fold and unfold send nothing.
@@ -290,9 +296,9 @@ Implementation: `useLandscapeBars` (the shown flag, the rename and tour reveals,
 `LandscapeBarFold` (the wrapper round each bar) and `LandscapeBarsHandle`
 (`components/chrome/LandscapeBars.tsx`), wired in `EditorView`.
 
-These don't change desktop layout. The strip and the popovers are what resolve the old "panels overlap when all four open" case on a phone: the Palette is one strip and the Explorer, Layers and Collaborate are one-at-a-time popovers. The mobile picker ([Dedicated route for new-document creation](new-document-route.md) responsive section) covers the template / identity surface the same way.
+These don't change desktop layout. The strip and the popovers are what resolve the old "panels overlap when all four open" case on a phone: the Palette is one strip and the Explorer, Layers and Collaborate are one-at-a-time popovers. The mobile picker ([Dedicated route for new-project creation](new-project-route.md) responsive section) covers the template / identity surface the same way.
 
-The routes that draw the canvas (`/document/<id>`, `/new`, which opens the editor in place, `/embed` and `/embed/workbench`) export `EDITOR_VIEWPORT` (`apps/live/lib/page-viewport.ts`), which pins the page at `initialScale: 1` with `maximumScale: 1` + `userScalable: false`, so mobile browsers don't auto-zoom on top of the editor's own canvas zoom. The two paths this blocks: pinch-zoom on the whole page, and iOS Safari's automatic focus-zoom when a focused input's effective font-size is under 16px (every TabBar / Explorer / Palette field is well under). Without this, focusing a text input on iOS zooms the page in and leaves the chrome misaligned with the canvas-transform coordinate space the cursor / selection-ring math expects. The canvas zoom (pinch on the canvas surface, or the bottom-right zoom buttons) is the only zoom the editor wants users to drive.
+The routes that draw the canvas (`/project/<id>`, `/new`, which opens the editor in place, `/embed` and `/embed/workbench`) export `EDITOR_VIEWPORT` (`apps/live/lib/page-viewport.ts`), which pins the page at `initialScale: 1` with `maximumScale: 1` + `userScalable: false`, so mobile browsers don't auto-zoom on top of the editor's own canvas zoom. The two paths this blocks: pinch-zoom on the whole page, and iOS Safari's automatic focus-zoom when a focused input's effective font-size is under 16px (every TabBar / Explorer / Palette field is well under). Without this, focusing a text input on iOS zooms the page in and leaves the chrome misaligned with the canvas-transform coordinate space the cursor / selection-ring math expects. The canvas zoom (pinch on the canvas surface, or the bottom-right zoom buttons) is the only zoom the editor wants users to drive.
 
 That lock stays. Lifting it was tested (2026-10-03): with page zoom allowed, a pinch on the canvas
 zoomed the whole page (Chromium, 1.5x) instead of the canvas, which breaks the editor's core
@@ -369,8 +375,8 @@ the day it goes edge to edge.
 
 ## Out of scope (next iterations)
 
-- **Comments inbox / mentions** — comment threads exist per-element but there's no aggregated view yet. A cross-document inbox is sketched for assigned actions in [Assigned actions](../012-collaboration/assigned-actions.md) and not built either.
-- **Per-user grants** — a document is private, shared via a per-link role, or in a team's shared library. Teams shipped ([Teams](../013-workspace/teams.md) + [Team shared documents](../013-workspace/team-shared-documents.md)), but every member can edit every team document; there are no per-document per-user grants.
+- **Comments inbox / mentions** — comment threads exist per-element but there's no aggregated view yet. A cross-project inbox is sketched for assigned actions in [Assigned actions](../012-collaboration/assigned-actions.md) and not built either.
+- **Per-user grants** — a project is private, shared via a per-link role, or in a team's shared library. Teams shipped ([Teams](../013-workspace/teams.md) + [Team shared projects](../013-workspace/team-shared-projects.md)), but every member can edit every team project; there are no per-project per-user grants.
 
 (Four earlier bullets here have shipped. Auth UI landed per [Auth + guest access](../014-identity/auth-and-guest-access.md); the active tab exports as JSON / Markdown / PNG / SVG / PDF via `ExportTabDialog`; transactional + lifecycle email ships through the api worker per [Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md); and realtime is no longer whole-tab LWW: [Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md) merges concurrent edits to different elements. A field-level CRDT for two people editing the SAME element was scoped and deliberately dropped; the advisory selection lock above makes that case rare, and when it happens it stays last-writer-wins.)
 

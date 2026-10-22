@@ -16,7 +16,7 @@ been reorganised into the buckets below.
   (`useFolders.ts`, `useTeams.ts`).
 
 The blessed counter-example already in the tree is `apps/live/lib/api/*`,
-which is split by domain (`documents.ts`, `tabs.ts`, `share.ts`, …). A new
+which is split by domain (`projects.ts`, `tabs.ts`, `share.ts`, …). A new
 engineer can find the persistence boundary instantly; finding "the
 canvas components" means scrolling 157 alphabetised entries. This is the
 flat-directory half of the consistency review (item #9); it complements
@@ -34,7 +34,7 @@ exhaustive — each file lands in the bucket that owns its concern):
 - `dialogs/` — modal surfaces (`Dialog`, `ConfirmDialog`, `ShareDialog`,
   `ImportTabDialog`, `ExportTabDialog`, `SettingsDialog`, `TeamFormModal`).
 - `panels/` — side/floating panels (`CollaboratePanel`,
-  `AiPanel`, Explorer surfaces).
+  Explorer surfaces).
 - `palette/` — palette + context-menu tiles/rows.
 - `chrome/` — header, toolbars, docks, tab bar.
 - `toast/`: the toast stack, card, queue, timer and floor ([Toasts](../004-interface-design/toasts.md)); `useToast` stays in `hooks/ui/`.

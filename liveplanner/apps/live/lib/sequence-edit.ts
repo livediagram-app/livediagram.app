@@ -1,4 +1,4 @@
-import type { Element } from '@liveplanner/document';
+import type { Element } from '@liveplanner/project';
 import type { EditorCapabilities } from '@/lib/editor-capabilities';
 import { canEditSankey } from '@/lib/sankey-edit';
 

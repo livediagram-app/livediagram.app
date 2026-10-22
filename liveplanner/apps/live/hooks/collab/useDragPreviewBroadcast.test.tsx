@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createPinnedArrow, createShape, type Element } from '@liveplanner/document';
+import { createPinnedArrow, createShape, type Element } from '@liveplanner/project';
 import { DRAG_PREVIEW_MAX_ELEMENTS } from '@liveplanner/api-schema';
 import { clearLocalPreview, resetDragPreviewForTests, setLocalPreview } from '@/lib/drag-preview';
 import { DRAG_PREVIEW_SEND_MS, useDragPreviewBroadcast } from './useDragPreviewBroadcast';
@@ -66,7 +66,7 @@ describe('useDragPreviewBroadcast', () => {
     ]);
   });
 
-  it('sends nothing for a gesture too large to preview, nor in a document nobody shares', () => {
+  it('sends nothing for a gesture too large to preview, nor in a project nobody shares', () => {
     const many = Array.from({ length: DRAG_PREVIEW_MAX_ELEMENTS + 1 }, (_, i) => ({
       ...createShape('square', i, 0),
       id: `e${i}`,

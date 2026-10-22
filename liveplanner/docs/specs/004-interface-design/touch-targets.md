@@ -36,7 +36,7 @@ floor at 24px; the editor aims past it, because a diagram editor is used with a 
   without aiming for the pill. A pad cannot reach above it, where the sheet's edge clips it.
 - **Padding where a pad would be clipped.** A `truncate` box or a horizontal scroller clips its own
   `::before`, so there the control grows by padding instead (`pointer-coarse:py-*`, with a matching
-  negative margin where the line must not move): the document title in the editor header, the
+  negative margin where the line must not move): the project title in the editor header, the
   breadcrumb links, and the telemetry view tabs and their arrows.
 - **A list's rows abut at 44px.** Where links or rows stack closer than 44px, a pad would overlap the
   next row's, so on a touch screen each row is 44px tall and the list drops its gap: the Explorer tree
@@ -56,7 +56,7 @@ floor at 24px; the editor aims past it, because a diagram editor is used with a 
   leaves it zoomed, so a search box drawn at 14 or 15px reads at 16px under `pointer: coarse` (the
   landing page's template search).
 - **The public sites follow the same rules** (marketing, help, telemetry): the shared header's
-  brand, apps menu and primary CTA pad vertically; the hero's example dots are 44px tall and 24px wide
+  brand, site switcher chevron and primary CTA pad vertically; the hero's example dots are 44px tall and 24px wide
   and its arrows padded; the template carousel arrows and the telemetry window pills are padded.
 - **A scroller holding padded controls scrolls on its own axis only.** The pad is an absolutely
   positioned box, so it counts toward its scroll container's overflow; a container that sets

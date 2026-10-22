@@ -6,7 +6,7 @@ import { handTemplatePick, readTemplatePick, takeTemplatePick } from './template
 afterEach(() => sessionStorage.clear());
 
 describe('the template pick handoff', () => {
-  const handoff = { documentId: 'd', tabId: 't', placementChosen: false };
+  const handoff = { projectId: 'd', tabId: 't', placementChosen: false };
 
   it('is read back as written, and cleared by null', () => {
     handTemplatePick(handoff);
@@ -15,7 +15,7 @@ describe('the template pick handoff', () => {
     expect(readTemplatePick()).toBeNull();
   });
 
-  it('is taken once, for its own document and first tab', () => {
+  it('is taken once, for its own project and first tab', () => {
     handTemplatePick(handoff);
     expect(takeTemplatePick('other', 't')).toBeNull();
     expect(readTemplatePick()).toEqual(handoff);
@@ -23,14 +23,14 @@ describe('the template pick handoff', () => {
     expect(takeTemplatePick('d', 't')).toBeNull();
   });
 
-  it('is spent by a pick on another tab of its document', () => {
+  it('is spent by a pick on another tab of its project', () => {
     handTemplatePick(handoff);
     expect(takeTemplatePick('d', 'second-tab')).toBeNull();
     expect(readTemplatePick()).toBeNull();
   });
 
   it('reads junk as none', () => {
-    sessionStorage.setItem('liveplanner:v2:template-pick-handoff', '{"documentId":3}');
+    sessionStorage.setItem('liveplanner:v2:template-pick-handoff', '{"projectId":3}');
     expect(readTemplatePick()).toBeNull();
     sessionStorage.setItem('liveplanner:v2:template-pick-handoff', 'nope');
     expect(readTemplatePick()).toBeNull();

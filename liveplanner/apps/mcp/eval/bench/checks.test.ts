@@ -32,7 +32,7 @@ const arrow = (from: string, to: string) => ({
 });
 
 const diagram = {
-  documents: [
+  projects: [
     {
       id: 'd1',
       name: 'Flow',
@@ -102,7 +102,7 @@ describe('diagram readers', () => {
   });
 
   it('reads a sketch finish from the tab header', () => {
-    expect(sketched(diagram.documents[0].tabs[0])).toBe(true);
+    expect(sketched(diagram.projects[0].tabs[0])).toBe(true);
   });
 });
 
@@ -145,7 +145,7 @@ describe('runChecks', () => {
       { name: 'throws', pass: false, detail: 'check threw: boom' },
     ]);
     expect(
-      runChecks({ checks: [] }, { snap: { documents: [] }, run: { finalText: ' ' } }).map(
+      runChecks({ checks: [] }, { snap: { projects: [] }, run: { finalText: ' ' } }).map(
         (c: { pass: boolean }) => c.pass,
       ),
     ).toEqual([false, false]);

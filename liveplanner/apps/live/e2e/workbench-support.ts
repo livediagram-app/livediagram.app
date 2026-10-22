@@ -1,6 +1,6 @@
 // Support for the workbench embed e2e (docs/specs/013-workspace/blueprints/workbench-embeds.md,
 // "Testing"): the fake workbench served from its own loopback origin, the signed-in person the e2e
-// stack mints (E2E_WORKBENCH=1 makes it act as Clerk), and the api calls the CLI would make.
+// stack mints (E2E_WORKBENCH=1 makes it act as the accounts Worker), and the api calls the CLI would make.
 
 import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
@@ -101,17 +101,17 @@ export async function apiJson<T>(
   return { status: res.status(), body: (text ? JSON.parse(text) : null) as T };
 }
 
-export type Seeded = { documentId: string; tabId: string; token: string };
+export type Seeded = { projectId: string; tabId: string; token: string };
 
-// A document of the person's with one labelled square, and an API token, as the CLI holds.
-export async function seedDocumentAndToken(
+// A project of the person's with one labelled square, and an API token, as the CLI holds.
+export async function seedProjectAndToken(
   request: APIRequestContext,
   person: Person,
 ): Promise<Seeded> {
-  const documentId = `wb-doc-${randomUUID()}`;
+  const projectId = `wb-doc-${randomUUID()}`;
   const tabId = `wb-tab-${randomUUID()}`;
-  const created = await apiJson(request, 'POST', '/documents', person.jwt, {
-    id: documentId,
+  const created = await apiJson(request, 'POST', '/projects', person.jwt, {
+    id: projectId,
     name: 'Home screen',
     tabs: [
       {
@@ -132,12 +132,12 @@ export async function seedDocumentAndToken(
       },
     ],
   });
-  if (created.status >= 300) throw new Error(`creating the document failed: ${created.status}`);
+  if (created.status >= 300) throw new Error(`creating the project failed: ${created.status}`);
   const token = await apiJson<{ token: string }>(request, 'POST', '/tokens', person.jwt, {
     name: 'liveplanner CLI',
   });
   if (token.status >= 300) throw new Error(`creating the token failed: ${token.status}`);
-  return { documentId, tabId, token: token.body.token };
+  return { projectId, tabId, token: token.body.token };
 }
 
 // `liveplanner workbench open`: POST /api/workbench/tickets with the token.
@@ -147,7 +147,7 @@ export function mintTicket(
   origin: string,
 ): Promise<{ status: number; body: { url?: string; pairingUrl?: string } }> {
   return apiJson(request, 'POST', '/workbench/tickets', seeded.token, {
-    documentId: seeded.documentId,
+    projectId: seeded.projectId,
     origin,
   });
 }
@@ -178,7 +178,7 @@ export function mintWorkspaceTicket(
   });
 }
 
-// A folder of the person's, at the top of My Documents, as `liveplanner folder create` makes it.
+// A folder of the person's, at the top of My Projects, as `liveplanner folder create` makes it.
 export async function createFolder(
   request: APIRequestContext,
   person: Person,

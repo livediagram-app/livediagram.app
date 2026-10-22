@@ -1,10 +1,10 @@
-// The app side of signing in through accounts.liveworkspace.app: an authorization-code
-// flow with PKCE. The redirect leaves the app's domain on purpose. livediagram.app,
-// liveplanner.app and liveworkspace.app are separate sites, so the accounts cookie can
-// only be read on a full-page visit to accounts.liveworkspace.app, never from a fetch or
-// an iframe inside another app (Safari blocks those third-party cookies outright).
+// The app side of signing in through liveworkspace.app: an authorization-code flow with
+// PKCE. The redirect leaves the app's domain on purpose. livediagram.app, liveplanner.app
+// and liveworkspace.app are separate sites, so the accounts cookie can only be read on a
+// full-page visit to liveworkspace.app, never from a fetch or an iframe inside another app
+// (Safari blocks those third-party cookies outright).
 //
-// exchangeCode and refreshTokens send the client secret, so they run in the app's
+// exchangeCode, refreshTokens and closeAccount send the client secret, so they run in the app's
 // Worker. authorizeUrl and createPkcePair are safe anywhere.
 
 const AUTH_PATH = '/api/auth/oauth2';
@@ -15,7 +15,7 @@ export interface PkcePair {
 }
 
 export interface ClientCredentials {
-  // e.g. `https://accounts.liveworkspace.app`
+  // e.g. `https://liveworkspace.app`
   accountsUrl: string;
   clientId: string;
   clientSecret: string;
@@ -30,6 +30,8 @@ export interface AuthorizeUrlOptions {
   // The app's API resource; it becomes the access token's audience.
   resource: string;
   scope?: string;
+  // `create` opens the accounts site's registration page instead of sign-in.
+  prompt?: 'create' | 'login';
 }
 
 export interface TokenSet {
@@ -72,8 +74,13 @@ export function authorizeUrl(options: AuthorizeUrlOptions): string {
     code_challenge: options.codeChallenge,
     code_challenge_method: 'S256',
     resource: options.resource,
+    ...(options.prompt && { prompt: options.prompt }),
   }).toString();
   return url.toString();
+}
+
+function basicAuthorization(credentials: ClientCredentials): string {
+  return `Basic ${btoa(`${encodeURIComponent(credentials.clientId)}:${encodeURIComponent(credentials.clientSecret)}`)}`;
 }
 
 async function requestTokens(
@@ -86,7 +93,7 @@ async function requestTokens(
     headers: {
       'content-type': 'application/x-www-form-urlencoded',
       accept: 'application/json',
-      authorization: `Basic ${btoa(`${encodeURIComponent(credentials.clientId)}:${encodeURIComponent(credentials.clientSecret)}`)}`,
+      authorization: basicAuthorization(credentials),
     },
     body: new URLSearchParams(params).toString(),
   });
@@ -134,4 +141,27 @@ export function refreshTokens(
     { grant_type: 'refresh_token', refresh_token: input.refreshToken, resource: input.resource },
     fetchImpl,
   );
+}
+
+// Closes the person's liveworkspace account, everywhere, when they delete their account in the
+// app. Sends the client secret, so it runs in the app's Worker, with the access token the person
+// signed in to the app with. Resolves once the account is gone.
+export async function closeAccount(
+  credentials: ClientCredentials,
+  accessToken: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<void> {
+  const response = await fetchImpl(new URL('/api/auth/delete-account', credentials.accountsUrl), {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      accept: 'application/json',
+      authorization: basicAuthorization(credentials),
+    },
+    body: JSON.stringify({ token: accessToken }),
+  });
+  if (!response.ok) {
+    const detail = await response.text().catch(() => '');
+    throw new Error(`closing the account failed (${response.status}): ${detail.slice(0, 200)}`);
+  }
 }

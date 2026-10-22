@@ -9,11 +9,11 @@ import { WorkbenchBackButton, WorkbenchOpenLink, WorkbenchReconnectLine } from '
 // "Accessibility"): Open in liveplanner in the tab bar, and the Reconnect line once the session ended.
 
 describe('WorkbenchOpenLink', () => {
-  it('links to the document in a new tab, named as such', () => {
-    render(<WorkbenchOpenLink href="/document/doc%201" labelled />);
+  it('links to the project in a new tab, named as such', () => {
+    render(<WorkbenchOpenLink href="/project/doc%201" labelled />);
 
     const link = screen.getByRole('link', { name: 'Open in liveplanner (opens in a new tab)' });
-    expect(link.getAttribute('href')).toBe('/document/doc%201');
+    expect(link.getAttribute('href')).toBe('/project/doc%201');
     expect(link.getAttribute('target')).toBe('_blank');
     expect(link.getAttribute('rel')).toBe('noopener noreferrer');
     expect(link.textContent).toBe('Open in liveplanner');
@@ -21,7 +21,7 @@ describe('WorkbenchOpenLink', () => {
   });
 
   it('is an icon alone where the bar has no room for words', () => {
-    render(<WorkbenchOpenLink href="/document/d" labelled={false} />);
+    render(<WorkbenchOpenLink href="/project/d" labelled={false} />);
 
     const link = screen.getByRole('link', { name: 'Open in liveplanner (opens in a new tab)' });
     expect(link.textContent).toBe('');
@@ -59,7 +59,7 @@ describe('WorkbenchReconnectLine', () => {
     );
   });
 
-  it('leaves a trashed document to the deleted card', () => {
+  it('leaves a trashed project to the deleted card', () => {
     render(<WorkbenchReconnectLine workbenchName="Acme Editor" ended="trashed" />);
 
     expect(screen.getByRole('status').textContent).toBe('');

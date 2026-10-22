@@ -12,13 +12,13 @@ const glyphOf = (type: KnownTimelineEventType) => EVENT_GLYPH_PATHS[type] ?? '';
 const VERB_PATHS: Readonly<Record<HomeVerb, string>> = {
   commented: glyphOf('comment_added'),
   // The Timeline's curved back-arrow, read here as "reply".
-  replied: glyphOf('team_document_removed'),
+  replied: glyphOf('team_project_removed'),
   resolved: glyphOf('comment_resolved'),
-  edited: glyphOf('document_edited'),
+  edited: glyphOf('project_edited'),
   assigned_you: glyphOf('action_assigned'),
   assigned: glyphOf('action_assigned'),
   completed: glyphOf('action_completed'),
-  shared: glyphOf('team_document_added'),
+  shared: glyphOf('team_project_added'),
 };
 
 export function VerbGlyph({ verb, size = 14 }: { verb: HomeVerb; size?: number }) {

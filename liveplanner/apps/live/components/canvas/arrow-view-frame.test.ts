@@ -5,7 +5,7 @@ import {
   createPinnedArrow,
   createShape,
   MIND_CONNECTOR_LOOK,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import {
   arrowViewGeometry,
   deriveArrowViewFrame,

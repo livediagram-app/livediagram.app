@@ -5,7 +5,7 @@
 // finds the reader's open cards straight from the item store through the `items_assignee` expression index,
 // using the table only to drop cards a board marks Done and to pick a board to open each one on.
 
-import { planBoardRowsFromElements, type Element } from '@liveplanner/document';
+import { planBoardRowsFromElements, type Element } from '@liveplanner/project';
 import type { ActivityCard } from '@liveplanner/api-schema';
 import { itemPersonId } from '@liveplanner/items';
 import { revGuardAnd, revGuardBinds, revGuardValues, type TabRevGuard } from './tab-rev-guard';
@@ -72,7 +72,7 @@ export async function readerPersonIds(env: Env, ownerId: string): Promise<string
   return Promise.all(ids.map((id) => itemPersonId(id)));
 }
 
-// Placing items on the Inbox (§2.4, §2.5): a `cards` CTE of the matching items in documents the reader can
+// Placing items on the Inbox (§2.4, §2.5): a `cards` CTE of the matching items in projects the reader can
 // open, `top` the newest ?3 of them by `order` (only rows passing `keep`), and `placed` each with the board that
 // shows it. `match` filters the items (it may read `i`, `v` and the read's own CTEs); `cols` adds columns to
 // `cards`. A tab-scoped share sees only what its tab's boards show, so there a board on that tab must hold the
@@ -87,10 +87,10 @@ export function itemPlacementCtes(spec: {
 }): string {
   return `,
   cards AS (
-    SELECT i.document_id, i.id, i.item_key, i.type, i.updated_at,
+    SELECT i.project_id, i.id, i.item_key, i.type, i.updated_at,
            json_extract(i.fields, '$.title') AS title,
            json_extract(i.fields, '$.status') AS status,
-           v.name AS document_name, v.team_id AS document_team_id, v.via, v.share_code,
+           v.name AS project_name, v.team_id AS project_team_id, v.via, v.share_code,
            v.scope_tab_id${
              spec.cols
                ? `,
@@ -98,7 +98,7 @@ export function itemPlacementCtes(spec: {
                : ''
            }
       FROM items i
-      JOIN visible v ON v.id = i.document_id
+      JOIN visible v ON v.id = i.project_id
      WHERE ${spec.match}
        AND (v.scope_tab_id IS NULL
             OR EXISTS (
@@ -115,10 +115,10 @@ export function itemPlacementCtes(spec: {
                            CASE WHEN pb.status = c.status THEN 0 WHEN pb.status = '*' THEN 1 ELSE 2 END
                              AS fit,
                            dt.order_index, pb.board_order, pb.position
-                      FROM document_tabs dt
+                      FROM project_tabs dt
                       JOIN plan_board_statuses pb ON pb.tab_id = dt.tab_id
                       JOIN tabs t ON t.id = pb.tab_id
-                     WHERE dt.document_id = c.document_id
+                     WHERE dt.project_id = c.project_id
                        AND (c.scope_tab_id IS NULL
                             OR (pb.tab_id = c.scope_tab_id
                                 AND (pb.status = c.status OR pb.status = '*')))) p
@@ -141,40 +141,40 @@ export const CARDS_CTES = `,
        -- A linked card's action is listed already (docs/specs/026-plan/linked-boards.md "The Inbox").
        AND json_extract(i.fields, '$.linked') IS NULL
        AND NOT EXISTS (
-         SELECT 1 FROM document_tabs dt
+         SELECT 1 FROM project_tabs dt
            JOIN plan_board_statuses pb
              ON pb.tab_id = dt.tab_id AND pb.status = json_extract(i.fields, '$.status')
-          WHERE dt.document_id = i.document_id AND pb.done = 1)`,
+          WHERE dt.project_id = i.project_id AND pb.done = 1)`,
     order: 'updated_at',
   })}`;
 
 export const CARDS_SELECT = `
-  SELECT document_id, id, item_key, type, updated_at, title, status,
-         document_name, document_team_id, via, share_code, board
+  SELECT project_id, id, item_key, type, updated_at, title, status,
+         project_name, project_team_id, via, share_code, board
     FROM placed
    ORDER BY updated_at DESC`;
 
 export type CardRow = {
-  document_id: string;
+  project_id: string;
   id: string;
   item_key: number;
   type: string;
   updated_at: number;
   title: string | null;
   status: string | null;
-  document_name: string;
-  document_team_id: string | null;
+  project_name: string;
+  project_team_id: string | null;
   via: 'own' | 'team' | 'shared';
   share_code: string | null;
   board: string | null;
 };
 
-// A 'shared' row whose link has lapsed never arrives: `visible` (document-visibility.ts) drops it.
+// A 'shared' row whose link has lapsed never arrives: `visible` (project-visibility.ts) drops it.
 export function cardsFromRows(rows: readonly CardRow[]): ActivityCard[] {
   return rows.map((r) => ({
-    documentId: r.document_id,
-    documentName: r.document_name,
-    teamId: r.document_team_id,
+    projectId: r.project_id,
+    projectName: r.project_name,
+    teamId: r.project_team_id,
     via: r.via,
     shareCode: r.via === 'shared' ? r.share_code : null,
     board: r.board ? (JSON.parse(r.board) as ActivityCard['board']) : null,

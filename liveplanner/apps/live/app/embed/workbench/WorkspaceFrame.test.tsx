@@ -11,8 +11,8 @@ import {
 import type { WorkbenchPort } from '@/lib/workbench/workbench-port';
 
 // The workspace frame (docs/specs/013-workspace/blueprints/workbench-embeds.md "The workspace frame", "Workspace
-// messages"): the Explorer on its place, a document's editor with Back, `ready` once, `place` on every move,
-// `open` from the workbench, and a trashed document back to the Explorer.
+// messages"): the Explorer on its place, a project's editor with Back, `ready` once, `place` on every move,
+// `open` from the workbench, and a trashed project back to the Explorer.
 
 // The App Router follows the History API; here the hooks read the address the same way.
 const subscribe = (fn: () => void) => {
@@ -44,7 +44,7 @@ type FakeExplorer = {
   selected: { kind: string; id?: string };
   loading: boolean;
   folderById: Map<string, { id: string; name: string }>;
-  documentsByFolder: Map<string | null, unknown[]>;
+  projectsByFolder: Map<string | null, unknown[]>;
   teamFolders: { id: string; teamId: string }[];
 };
 const explorer = vi.hoisted(() => {
@@ -52,7 +52,7 @@ const explorer = vi.hoisted(() => {
     selected: { kind: 'home' },
     loading: false,
     folderById: new Map([['f1', { id: 'f1', name: 'Minigames' }]]),
-    documentsByFolder: new Map([['f1', []]]),
+    projectsByFolder: new Map([['f1', []]]),
     teamFolders: [{ id: 'tf1', teamId: 'team1' }],
   };
   return { state };
@@ -70,7 +70,7 @@ vi.mock('next/dynamic', () => ({
       return (
         <div>
           <p>
-            editor {surface} on {session?.documentId} by {session?.shareCode ?? 'owner'}
+            editor {surface} on {session?.projectId} by {session?.shareCode ?? 'owner'}
           </p>
           <button type="button" onClick={() => session?.frame?.back()}>
             {session?.frame?.backTitle}
@@ -81,9 +81,9 @@ vi.mock('next/dynamic', () => ({
           <button
             type="button"
             onClick={() =>
-              session?.frame?.reportDocumentPlace({
-                documentId: session.documentId!,
-                documentName: 'Home screen',
+              session?.frame?.reportProjectPlace({
+                projectId: session.projectId!,
+                projectName: 'Home screen',
                 tabId: 't1',
                 tabName: 'Wireframe',
                 role: 'edit',
@@ -109,13 +109,13 @@ function sessionOf(): WorkbenchSession {
   return {
     scope: 'workspace',
     secret: `lvw_${'a'.repeat(43)}`,
-    documentId: null,
+    projectId: null,
     tabId: null,
     shareCode: null,
     origin: 'https://127.0.0.1:5175',
     level: 'edit',
     expiresAt: Date.now() + 60_000,
-    person: { id: 'user_1', name: 'Webber', color: '#0ea5e9', pictureUrl: null },
+    person: { id: 'user_1', name: 'Webber', color: '#0ea5e9' },
     workbenchName: 'Acme Editor',
     port,
     ended: null,
@@ -175,9 +175,9 @@ describe('WorkspaceFrame', () => {
         view: 'home',
         folderId: null,
         folderName: null,
-        documentCount: null,
-        documentId: null,
-        documentName: null,
+        projectCount: null,
+        projectId: null,
+        projectName: null,
         tabId: null,
         tabName: null,
         role: 'edit',
@@ -186,7 +186,7 @@ describe('WorkspaceFrame', () => {
     expect(track).toHaveBeenCalledWith('Session', 'Opened', 'WorkbenchWorkspace');
   });
 
-  it('names the folder shown and its own documents, once the lists are in', () => {
+  it('names the folder shown and its own projects, once the lists are in', () => {
     explorer.state.selected = { kind: 'folder', id: 'f1' };
     explorer.state.loading = true;
     const { rerender } = mount();
@@ -200,25 +200,25 @@ describe('WorkspaceFrame', () => {
     );
 
     expect(sent('liveplanner:place')).toMatchObject([
-      { view: 'folder', folderId: 'f1', folderName: 'Minigames', documentCount: 0 },
+      { view: 'folder', folderId: 'f1', folderName: 'Minigames', projectCount: 0 },
     ]);
   });
 
-  it('opens a document the workbench asks for in the frame, with Back to where it was', () => {
+  it('opens a project the workbench asks for in the frame, with Back to where it was', () => {
     mount();
 
     act(() =>
-      listeners.forEach((l) => l({ type: 'liveplanner:open', v: 1, to: { documentId: 'doc-1' } })),
+      listeners.forEach((l) => l({ type: 'liveplanner:open', v: 1, to: { projectId: 'doc-1' } })),
     );
 
-    expect(window.location.pathname).toBe('/embed/workbench/document/doc-1');
+    expect(window.location.pathname).toBe('/embed/workbench/project/doc-1');
     expect(screen.getByText('editor workbench on doc-1 by owner')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Home' })).toBeTruthy();
     expect(screen.queryByText(/explorer/)).toBeNull();
   });
 
-  it('tells the workbench the open document, and returns to the Explorer when it is trashed', () => {
-    window.history.replaceState(null, '', '/embed/workbench/document/doc-2?s=CODE2345');
+  it('tells the workbench the open project, and returns to the Explorer when it is trashed', () => {
+    window.history.replaceState(null, '', '/embed/workbench/project/doc-2?s=CODE2345');
     mount();
     expect(screen.getByText('editor workbench on doc-2 by CODE2345')).toBeTruthy();
 
@@ -226,12 +226,12 @@ describe('WorkspaceFrame', () => {
     expect(sent('liveplanner:place').at(-1)).toEqual({
       type: 'liveplanner:place',
       v: 1,
-      view: 'document',
+      view: 'project',
       folderId: null,
       folderName: null,
-      documentCount: null,
-      documentId: 'doc-2',
-      documentName: 'Home screen',
+      projectCount: null,
+      projectId: 'doc-2',
+      projectName: 'Home screen',
       tabId: 't1',
       tabName: 'Wireframe',
       role: 'edit',

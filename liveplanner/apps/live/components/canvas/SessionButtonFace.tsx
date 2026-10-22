@@ -13,7 +13,7 @@ import {
   type SessionButtonConfig,
   type TimerState,
   type SessionPlan,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { SessionSettingsMenu } from '@/components/canvas/SessionSettingsMenu';
 import { StopwatchIcon, TimerIcon, VoteIcon } from '@/components/palette/palette-icons';
@@ -25,9 +25,9 @@ const TOOL_ICON: Record<SessionPlan['tool'], React.ReactNode> = {
   vote: <VoteIcon />,
 };
 
-// What the face says when the author hasn't written their own label (@liveplanner/document, shared with the
+// What the face says when the author hasn't written their own label (@liveplanner/project, shared with the
 // headless render).
-export { sessionButtonText, type TimerState } from '@liveplanner/document';
+export { sessionButtonText, type TimerState } from '@liveplanner/project';
 
 const TOOL_BLURB: Record<SessionPlan['tool'], string> = {
   timer: 'Starts a countdown everyone in the room can see.',

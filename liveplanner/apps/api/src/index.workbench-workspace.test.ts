@@ -3,8 +3,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 // A workspace session at the front door (docs/specs/013-workspace/blueprints/workbench-embeds.md "The choke point
 // by scope"): every route class the Explorer uses reaches its route as the person, and every account class is
 // refused before any route runs. Each route module is a stub that answers 204, so reaching it is the proof.
-vi.mock('./auth/clerk', () => ({ getClerkIdentity: async () => null }));
-vi.mock('./db', () => ({ resolveApiToken: vi.fn(), deleteOldEvents: async () => {} }));
+vi.mock('./auth/accounts', () => ({ getAccountIdentity: async () => null }));
+vi.mock('./db', () => ({ resolveApiToken: vi.fn() }));
 
 // One stub per route module the dispatch names: it records the context it was handed and answers 204.
 const { resolveWorkbenchSessionMock, reached, stub } = vi.hoisted(() => {
@@ -26,11 +26,10 @@ vi.mock('./auth/workbench-session', async (original) => ({
 }));
 
 vi.mock('./routes/account', () => stub('handleAccount'));
-vi.mock('./routes/ai', () => stub('handleAi'));
 vi.mock('./routes/catalogues', () => stub('handleCatalogues'));
 vi.mock('./routes/capabilities', () => stub('handleCapabilities'));
 vi.mock('./routes/custom-themes', () => stub('handleCustomThemes'));
-vi.mock('./routes/documents', () => stub('handleDocuments'));
+vi.mock('./routes/projects', () => stub('handleProjects'));
 vi.mock('./routes/folders', () => stub('handleFolders'));
 vi.mock('./routes/forms', () => stub('handleForms'));
 vi.mock('./routes/migrate', () => stub('handleMigrate'));
@@ -46,7 +45,6 @@ vi.mock('./routes/preferences', () => stub('handlePreferences'));
 vi.mock('./routes/share', () => stub('handleShare'));
 vi.mock('./routes/teams', () => stub('handleTeams'));
 vi.mock('./routes/shared', () => stub('handleShared'));
-vi.mock('./routes/telemetry', () => stub('handleTelemetry'));
 vi.mock('./routes/trash', () => stub('handleTrash'));
 vi.mock('./routes/tokens', () => stub('handleTokens'));
 vi.mock('./routes/oauth', () => stub('handleOauthExchange'));
@@ -63,7 +61,7 @@ const SESSION: WorkbenchContext = {
   tokenId: 'tok1',
   pairingId: 'pair1',
   scope: 'workspace',
-  documentId: null,
+  projectId: null,
   folderId: null,
   tabId: null,
   origin: 'https://w.example',
@@ -94,15 +92,15 @@ describe('a workspace session at the front door', () => {
     ['GET', 'preferences', 'handlePreferences'],
     ['GET', 'participants/user_1', 'handleParticipants'],
     ['GET', 'share/CODE2345', 'handleShare'],
-    ['GET', 'documents', 'handleDocuments'],
-    ['POST', 'documents', 'handleDocuments'],
-    ['GET', 'documents/any-doc', 'handleDocuments'],
-    ['PUT', 'documents/any-doc/tabs/t1', 'handleDocuments'],
-    ['PUT', 'documents/any-doc/folder', 'handleDocuments'],
-    ['POST', 'documents/any-doc/copy', 'handleDocuments'],
-    ['POST', 'documents/any-doc/share', 'handleDocuments'],
-    ['DELETE', 'documents/any-doc', 'handleDocuments'],
-    ['POST', 'documents/any-doc/room-ticket', 'handleDocuments'],
+    ['GET', 'projects', 'handleProjects'],
+    ['POST', 'projects', 'handleProjects'],
+    ['GET', 'projects/any-doc', 'handleProjects'],
+    ['PUT', 'projects/any-doc/tabs/t1', 'handleProjects'],
+    ['PUT', 'projects/any-doc/folder', 'handleProjects'],
+    ['POST', 'projects/any-doc/copy', 'handleProjects'],
+    ['POST', 'projects/any-doc/share', 'handleProjects'],
+    ['DELETE', 'projects/any-doc', 'handleProjects'],
+    ['POST', 'projects/any-doc/room-ticket', 'handleProjects'],
     ['GET', 'folders', 'handleFolders'],
     ['POST', 'folders', 'handleFolders'],
     ['DELETE', 'folders/f1', 'handleFolders'],
@@ -126,7 +124,7 @@ describe('a workspace session at the front door', () => {
     expect(reached).toHaveBeenCalledWith(handler, expect.anything());
     const ctx = reached.mock.calls[0]![1] as RouteContext;
     expect(ctx.workbench).toEqual(SESSION);
-    expect(ctx.clerkUserId).toBeNull();
+    expect(ctx.accountUserId).toBeNull();
     expect(ctx.token).toBeNull();
     expect(ctx.resolveOwner()).toBe('user_1');
     expect(ctx.verifiedUserId).toBe('user_1');
@@ -146,14 +144,13 @@ describe('a workspace session at the front door', () => {
     ['PUT', 'preferences'],
     ['PUT', 'participants/user_1'],
     ['GET', 'participants/user_2'],
-    ['POST', 'ai'],
     ['POST', 'oauth'],
     ['POST', 'teams'],
     ['GET', 'teams/invites'],
     ['POST', 'teams/team1/members'],
     ['DELETE', 'teams/team1/members/user_2'],
     ['GET', 'teams/team1/invite-link'],
-    ['PUT', 'documents/any-doc/tabs/t1/presence'],
+    ['PUT', 'projects/any-doc/tabs/t1/presence'],
     ['GET', 'forms/abc'],
   ])('refuses %s %s as workbench_confined before any route runs', async (method, path) => {
     const res = await call(method, path);
@@ -164,8 +161,8 @@ describe('a workspace session at the front door', () => {
   });
 
   it('refuses the guest header but lets a share link reach the route', async () => {
-    const guest = await call('GET', 'documents/any-doc', { 'X-Owner-Id': 'guest-1' });
-    const link = await call('GET', 'documents/any-doc', { 'X-Share-Code': 'CODE2345' });
+    const guest = await call('GET', 'projects/any-doc', { 'X-Owner-Id': 'guest-1' });
+    const link = await call('GET', 'projects/any-doc', { 'X-Share-Code': 'CODE2345' });
 
     expect(guest.status).toBe(403);
     expect(link.status).toBe(204);
@@ -178,8 +175,8 @@ describe('a workspace session at the front door', () => {
     });
 
     const write = await call('POST', 'folders');
-    const list = await call('GET', 'documents/any-doc/share');
-    const read = await call('GET', 'documents');
+    const list = await call('GET', 'projects/any-doc/share');
+    const read = await call('GET', 'projects');
 
     expect([write.status, list.status, read.status]).toEqual([403, 403, 204]);
     expect(await write.json()).toEqual({ error: 'workbench_read_only' });

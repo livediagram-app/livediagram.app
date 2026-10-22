@@ -1,9 +1,9 @@
-import { DARK_CANVAS_BACKGROUND_COLOR, DEFAULT_BACKGROUND_COLOR } from '@liveplanner/document';
+import { DARK_CANVAS_BACKGROUND_COLOR, DEFAULT_BACKGROUND_COLOR } from '@liveplanner/project';
 import { expect, test, dismissQuickTour, expectNoPageErrors, paletteTile } from './fixtures';
 
 // Appearance (docs/specs/007-editor/live-app.md) end to end: the three settings on the real control, and
 // the thing the merge was for — a tab on the Default theme repainting
-// with the viewer, canvas AND elements, without writing to the document.
+// with the viewer, canvas AND elements, without writing to the project.
 //
 // Unit tests can only say the store resolves and the helpers return the right
 // hex. Whether the canvas a reader is looking at actually changes needs the
@@ -11,7 +11,7 @@ import { expect, test, dismissQuickTour, expectNoPageErrors, paletteTile } from 
 
 const CANVAS = '[data-canvas-a11y-root]';
 
-// The wizard's Skip path (docs/specs/007-editor/new-document-route.md): a blank document on the Default colour
+// The wizard's Skip path (docs/specs/007-editor/new-project-route.md): a blank project on the Default colour
 // scheme, in one click. What this suite needs is a default tab, not the wizard.
 async function startBlank(page: import('@playwright/test').Page): Promise<void> {
   // Straight to a blank canvas: the /new?blank=1 bypass (Start Blank).
@@ -107,7 +107,7 @@ test.describe('Appearance', () => {
     expectNoPageErrors(pageErrors);
   });
 
-  test('changing the appearance never writes to the document', async ({ page, pageErrors }) => {
+  test('changing the appearance never writes to the project', async ({ page, pageErrors }) => {
     // The whole reason Default resolves per viewer instead of baking a half at
     // pick time: switching chrome is not an edit. If it were, one reader's
     // appearance would travel to everyone else on the tab.
@@ -127,8 +127,8 @@ test.describe('Appearance', () => {
     await page.waitForTimeout(2000); // well past the autosave debounce
 
     // A preference write is fine (it is the user's own setting); a write to the
-    // document or its tabs is not.
-    expect(writes.filter((w) => /\/api\/documents/.test(w))).toEqual([]);
+    // project or its tabs is not.
+    expect(writes.filter((w) => /\/api\/projects/.test(w))).toEqual([]);
     expectNoPageErrors(pageErrors);
   });
 

@@ -30,21 +30,21 @@ const formLinkUrl = (env: Pick<Env, 'CONSENT_BASE_URL'>, code: string) =>
 
 async function answer(env: Env, token: string, result: FormCallResult, image: boolean) {
   if (!result.ok) return errorResult(result.message);
-  const { reading, documentId, lines, made } = result;
+  const { reading, projectId, lines, made } = result;
   const { code, ...rest } = reading;
   const value = {
-    documentId,
+    projectId,
     ...rest,
     link: code ? formLinkUrl(env, code) : null,
     ...(lines.length ? { lines } : {}),
     ...(made.length ? { made } : {}),
-    url: deepLink(env, documentId),
+    url: deepLink(env, projectId),
   };
   if (!image) return textResult(value);
   const { tab } = await apiJson<TabResponse>(
     env,
     token,
-    `/documents/${encodeURIComponent(documentId)}/tabs/${encodeURIComponent(reading.tabId)}`,
+    `/projects/${encodeURIComponent(projectId)}/tabs/${encodeURIComponent(reading.tabId)}`,
   );
   return imageResult(value, tab);
 }
@@ -52,7 +52,7 @@ async function answer(env: Env, token: string, result: FormCallResult, image: bo
 export function registerFormTools(server: McpServer, env: Env): void {
   registerTool(server, env, mcpReadForm, async (args, extra) => {
     const token = requireToken(extra);
-    const result = await readForm(clientFor(env, token), args.documentId, args.tab);
+    const result = await readForm(clientFor(env, token), args.projectId, args.tab);
     return answer(env, token, result, !!args.image);
   });
 
@@ -66,7 +66,7 @@ export function registerFormTools(server: McpServer, env: Env): void {
     const token = requireToken(extra);
     const result = await changeForm(
       clientFor(env, token),
-      args.documentId,
+      args.projectId,
       args.tab,
       args.changes,
       'mcp',
@@ -76,15 +76,15 @@ export function registerFormTools(server: McpServer, env: Env): void {
 
   registerTool(server, env, mcpShareForm, async (args, extra) => {
     const token = requireToken(extra);
-    const result = await shareForm(clientFor(env, token), args.documentId, args.tab, args.action);
+    const result = await shareForm(clientFor(env, token), args.projectId, args.tab, args.action);
     return answer(env, token, result, false);
   });
 
   registerTool(server, env, mcpTryForm, async (args, extra) => {
     const token = requireToken(extra);
-    const result = await tryForm(clientFor(env, token), args.documentId, args.tab, args.answers);
+    const result = await tryForm(clientFor(env, token), args.projectId, args.tab, args.answers);
     if (!result.ok) return errorResult(result.message);
     const { ok: _ok, ...value } = result;
-    return textResult({ ...value, url: deepLink(env, result.documentId) });
+    return textResult({ ...value, url: deepLink(env, result.projectId) });
   });
 }

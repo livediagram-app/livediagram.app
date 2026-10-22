@@ -1,10 +1,10 @@
 'use client';
 
 // Jump Back In (docs/specs/013-workspace/explorer-home.md "Jump Back In"): the person's Within reach
-// set of documents. On a desktop or tablet the Most Used cards then the Recent cards, each group under its label,
+// set of projects. On a desktop or tablet the Most Used cards then the Recent cards, each group under its label,
 // with See More in the heading row; on a phone the alternating strip that ends in its See More tile, which
-// interleaves the groups and so labels neither. Each document carries its Explorer ⋯ menu when the Explorer has it,
-// and a document that leaves the Explorer's lists (moved to the Trash, taken off Shared With Me) leaves at once.
+// interleaves the groups and so labels neither. Each project carries its Explorer ⋯ menu when the Explorer has it,
+// and a project that leaves the Explorer's lists (moved to the Trash, taken off Shared With Me) leaves at once.
 
 import { useId, useMemo } from 'react';
 import { CompactEmptyState, useMediaQuery } from '@liveplanner/ui';
@@ -12,7 +12,7 @@ import { track } from '@/lib/telemetry';
 import { useRelativeNow } from '@/lib/relative-time';
 import { HOME_COPY } from '@/app/explorer/home/home-copy';
 import type { JumpBackInGroup, JumpBackInSet } from '@/app/explorer/home/home-model';
-import type { DocumentEntryFor } from '@/app/explorer/useDocumentEntryFor';
+import type { ProjectEntryFor } from '@/app/explorer/useProjectEntryFor';
 import { HomeSection } from './HomeSection';
 import { GridSkeleton, StripSkeleton } from './HomeSkeletons';
 import { JumpBackInStrip } from './JumpBackInStrip';
@@ -41,7 +41,7 @@ export function JumpBackIn({
   loading,
   recentHref,
   onSeeMore,
-  documentMenus,
+  projectMenus,
 }: {
   ownerId: string;
   set: JumpBackInSet;
@@ -50,17 +50,16 @@ export function JumpBackIn({
   recentHref: string;
   /** In-app navigation to the Recent page. */
   onSeeMore: () => void;
-  /** The Explorer's document menus (useDocumentEntryFor); omitted outside the Explorer, no card has one. */
-  documentMenus?: DocumentEntryFor;
+  /** The Explorer's project menus (useProjectEntryFor); omitted outside the Explorer, no card has one. */
+  projectMenus?: ProjectEntryFor;
 }) {
   const wide = useMediaQuery(HOME_WIDE_QUERY);
   const set = useMemo(() => {
-    if (!documentMenus) return fullSet;
-    const here = (item: JumpBackInSet['mostUsed'][number]) =>
-      !documentMenus.isGone(item.documentId);
+    if (!projectMenus) return fullSet;
+    const here = (item: JumpBackInSet['mostUsed'][number]) => !projectMenus.isGone(item.projectId);
     return { mostUsed: fullSet.mostUsed.filter(here), recent: fullSet.recent.filter(here) };
-  }, [fullSet, documentMenus]);
-  const menuFor = documentMenus?.entryFor;
+  }, [fullSet, projectMenus]);
+  const menuFor = projectMenus?.entryFor;
   const empty = set.mostUsed.length === 0 && set.recent.length === 0;
   return (
     <HomeSection
@@ -117,7 +116,7 @@ export function JumpBackIn({
   );
 }
 
-/** One labelled group of cards; a group with no document draws nothing, label included. */
+/** One labelled group of cards; a group with no project draws nothing, label included. */
 function CardGroup({
   ownerId,
   group,
@@ -139,13 +138,13 @@ function CardGroup({
       </h3>
       <ul aria-labelledby={labelId} className={group === 'mostUsed' ? MOST_USED_GRID : RECENT_GRID}>
         {items.map((item) => (
-          <li key={item.documentId} className="min-w-0">
+          <li key={item.projectId} className="min-w-0">
             <JumpBackInCard
               ownerId={ownerId}
               item={item}
               group={group}
               now={now}
-              entry={menuFor?.(item.documentId) ?? null}
+              entry={menuFor?.(item.projectId) ?? null}
             />
           </li>
         ))}

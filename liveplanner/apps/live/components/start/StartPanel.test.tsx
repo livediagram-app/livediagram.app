@@ -16,7 +16,7 @@ function startPlanning() {
   return { search };
 }
 
-// docs/specs/007-editor/start-diagramming.md "A title match leads" and "Keyboard": a template named as typed leads the
+// docs/specs/007-editor/start-panel.md "A title match leads" and "Keyboard": a template named as typed leads the
 // results, under Best Match, and the arrow keys move between the cards.
 describe('a start search, best match first', () => {
   it('leads Start Planning with a title match', () => {
@@ -39,7 +39,7 @@ describe('a start search, best match first', () => {
   });
 });
 
-// docs/specs/007-editor/start-diagramming.md "On a short window": a window under 500px tall (a phone held sideways, a
+// docs/specs/007-editor/start-panel.md "On a short window": a window under 500px tall (a phone held sideways, a
 // desktop zoomed to 200%) keeps the cards room. jsdom does no layout, so this holds the classes.
 describe('the start panel on a short window', () => {
   it('clears only the strip and lies over the bottom cluster, whatever the pointer', () => {

@@ -82,7 +82,7 @@ export function ToolbarExplorerButton({
     >
       {/* No hover card while open: it would sit over the panel it names. Disabled, not unwrapped, so the
           button keeps its focus as the panel opens. */}
-      <HoverCard title="Explorer" description="Your documents, folders and teams." disabled={open}>
+      <HoverCard title="Explorer" description="Your projects, folders and teams." disabled={open}>
         {button}
       </HoverCard>
       {/* A maximised or tab-filling element's name, while its header holds the top row (menu-name-slot). */}

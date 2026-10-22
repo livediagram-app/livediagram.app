@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { contrastRatio, mixHex } from '@liveplanner/document';
+import { contrastRatio, mixHex } from '@liveplanner/project';
 import { LABEL_COLOURS, labelColour } from './label-colour';
 
 // A label chip in the card panel (components/primitives/ChipField.tsx `chipColour`): a 12% tint of the swatch, inked

@@ -5,18 +5,15 @@ import { TEMPLATES, templateFamilyOf } from '@liveplanner/templates';
 // intent"): the one map that routes a new retrospective or Kanban board to its default folder.
 
 describe('templateFamilyOf', () => {
-  it.each(['retrospective', 'start-stop-continue', 'mad-sad-glad', 'four-ls', 'sailboat'] as const)(
-    'reads the %s retro format as a retrospective',
-    (kind) => {
-      expect(templateFamilyOf(kind)).toBe('retrospective');
-    },
-  );
+  it('reads the Team Retro as a retrospective', () => {
+    expect(templateFamilyOf('team-retro')).toBe('retrospective');
+  });
 
   it('reads the Kanban template as a Kanban board', () => {
     expect(templateFamilyOf('kanban')).toBe('kanban');
   });
 
-  it.each(['incident-postmortem', 'brainstorm'] as const)('reads %s as no family', (kind) => {
+  it.each(['bug-triage', 'invoice'] as const)('reads %s as no family', (kind) => {
     expect(templateFamilyOf(kind)).toBeNull();
   });
 
@@ -24,20 +21,9 @@ describe('templateFamilyOf', () => {
     expect(templateFamilyOf(null)).toBeNull();
   });
 
-  it('gives a family to the retro formats and the Kanban boards only', () => {
+  it('gives a family to the retro and the Kanban boards only', () => {
     const members = TEMPLATES.filter((t) => templateFamilyOf(t.kind) !== null).map((t) => t.kind);
-    expect(members.sort()).toEqual(
-      [
-        'four-ls',
-        'kanban',
-        'mad-sad-glad',
-        'retrospective',
-        'sailboat',
-        'start-stop-continue',
-        // The Plan templates in a family (docs/specs/026-plan/plan-templates.md).
-        'project-planner',
-        'team-retro',
-      ].sort(),
-    );
+    // docs/specs/026-plan/plan-templates.md: the Project Planner runs its sprints on a Kanban board.
+    expect(members.sort()).toEqual(['kanban', 'project-planner', 'team-retro']);
   });
 });

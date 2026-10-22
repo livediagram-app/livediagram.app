@@ -17,13 +17,11 @@ function storage(entries: Record<string, string>): Storage {
 const GUEST = '6f1c2d3e-aaaa-bbbb-cccc-123456789abc';
 
 describe('signedInFromCookie', () => {
-  it('reads the sign-in cookie, suffixed or not', () => {
-    expect(signedInFromCookie('a=1; __client_uat=1759800000')).toBe(true);
-    expect(signedInFromCookie('__client_uat=0')).toBe(false);
-    expect(signedInFromCookie('__client_uat_Ab12-x=1759800000; __client_uat=0')).toBe(true);
+  it('reads the signed-in hint cookie', () => {
+    expect(signedInFromCookie('a=1; lp_signed_in=1')).toBe(true);
+    expect(signedInFromCookie('lp_signed_in=0')).toBe(false);
     expect(signedInFromCookie('theme=dark')).toBeNull();
     expect(signedInFromCookie('')).toBeNull();
-    expect(signedInFromCookie('__client_uat=junk')).toBe(false);
   });
 });
 
@@ -34,7 +32,7 @@ describe('readBrowserIdentity', () => {
         'liveplanner:v2:self-id': GUEST,
         'liveplanner:v2:self-sig': 'sig',
       }),
-      document: { cookie: '__client_uat=0' },
+      document: { cookie: 'lp_signed_in=0' },
     });
     expect(id).toEqual({
       signedIn: false,
@@ -80,12 +78,12 @@ describe('formatBrowserIdentity', () => {
     ]);
   });
 
-  it('names the account when the caller knows it, and flags guest documents not yet moved', () => {
+  it('names the account when the caller knows it, and flags guest projects not yet moved', () => {
     expect(formatBrowserIdentity(guest, 'user_2abc')).toEqual([
       'Signed in: yes (user_2abc)',
       'Guest id in this browser: 6f1c2d3e… (signed: yes)',
       'Identity upgrade pending: no',
-      'Guest documents moved to the account: NOT YET (guest id still present)',
+      'Guest projects moved to the account: NOT YET (guest id still present)',
     ]);
   });
 

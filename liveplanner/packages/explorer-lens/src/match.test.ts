@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   applyLens,
-  documentSubject,
+  projectSubject,
   editedCutoff,
   foldText,
   matchesLens,
@@ -28,7 +28,7 @@ const subject = (overrides: Partial<LensSubject> = {}): LensSubject => ({
   ...overrides,
 });
 
-describe('documentSubject', () => {
+describe('projectSubject', () => {
   const summary = {
     name: 'Storm',
     savedAt: 5,
@@ -39,8 +39,8 @@ describe('documentSubject', () => {
     templateFamily: 'retrospective',
   };
 
-  it('reads a personal document of the reader, this browser’s included', () => {
-    expect(documentSubject(summary, 'me-id')).toEqual({
+  it('reads a personal project of the reader, this browser’s included', () => {
+    expect(projectSubject(summary, 'me-id')).toEqual({
       name: 'Storm',
       savedAt: 5,
       space: 'mine',
@@ -51,16 +51,16 @@ describe('documentSubject', () => {
     });
   });
 
-  it('reads a team document someone else made with AI', () => {
-    expect(documentSubject({ ...summary, teamId: 'T1', source: 'mcp' }, 'other')).toMatchObject({
+  it('reads a team project someone else made with AI', () => {
+    expect(projectSubject({ ...summary, teamId: 'T1', source: 'mcp' }, 'other')).toMatchObject({
       space: 'team:T1',
       people: 'others',
       madeByAi: true,
     });
   });
 
-  it('reads a document the CLI made as made by a person, not by AI', () => {
-    expect(documentSubject({ ...summary, source: 'cli' }, 'me-id').madeByAi).toBe(false);
+  it('reads a project the CLI made as made by a person, not by AI', () => {
+    expect(projectSubject({ ...summary, source: 'cli' }, 'me-id').madeByAi).toBe(false);
   });
 
   it('reads an unrecorded or retired intent as unknown', () => {
@@ -69,7 +69,7 @@ describe('documentSubject', () => {
       opensIn: undefined,
       templateFamily: undefined,
     };
-    expect(documentSubject(unrecorded, 'me-id')).toMatchObject({
+    expect(projectSubject(unrecorded, 'me-id')).toMatchObject({
       opensIn: null,
       template: null,
     });
@@ -78,7 +78,7 @@ describe('documentSubject', () => {
       opensIn: 'whiteboard',
       templateFamily: 'swot',
     };
-    expect(documentSubject(retired, 'me-id')).toMatchObject({
+    expect(projectSubject(retired, 'me-id')).toMatchObject({
       opensIn: null,
       template: null,
     });

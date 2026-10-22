@@ -5,7 +5,7 @@
 // grid its element's cell threads. Two small contexts so neither the sheets bridge nor the controller carries
 // comments, and a grid drawn outside the editor (an export, a test) simply draws no markers.
 import { createContext, useContext, useMemo, type ReactNode } from 'react';
-import type { CellCommentThreads } from '@liveplanner/document';
+import type { CellCommentThreads } from '@liveplanner/project';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { SheetsBridgeContext, type SheetsBridge } from './useSheetsBridge';
 

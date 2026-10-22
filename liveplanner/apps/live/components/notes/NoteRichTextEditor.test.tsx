@@ -6,7 +6,7 @@
 
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { TextRun } from '@liveplanner/document';
+import type { TextRun } from '@liveplanner/project';
 import { NoteRichTextEditor } from './NoteRichTextEditor';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));

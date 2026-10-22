@@ -4,7 +4,7 @@ How to check what the Export dialog really produces for a tab (a new tab kind, a
 renderer), in the browser, without saving files to the Downloads folder. Specs: [Plan tabs](../specs/026-plan/plan-tabs.md#export)
 for Plan tabs, [Export fidelity](../specs/020-import-export/export-fidelity.md) for what an image draws.
 
-1. Use the running dev server and a document of your own (never someone's real document). Make it from `/new`
+1. Use the running dev server and a project of your own (never someone's real project). Make it from `/new`
    with a template that has the kind you are checking (Project Planner has Board tabs and a Dashboard; Start Planning
    on a new tab adds a Sheet tab from Budget).
 2. Put real content in first: a couple of cards on a board, a template's sheet, a dashboard with views and notes.

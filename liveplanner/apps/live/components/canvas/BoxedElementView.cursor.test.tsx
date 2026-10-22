@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { render } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { createShape, type BoxedElement } from '@liveplanner/document';
+import { createShape, type BoxedElement } from '@liveplanner/project';
 import { BoxedElementView } from '@/components/canvas/BoxedElementView';
 
 // docs/specs/013-workspace/share-roles.md: a Participant moves stickies and what it added, nothing else, so the
@@ -25,7 +25,6 @@ function wrapperFor(props: {
       onBeginDrag={vi.fn()}
       onBeginEdit={vi.fn()}
       onCommitLabel={vi.fn()}
-      onCommitTable={vi.fn()}
       onCancelEdit={vi.fn()}
       onFollowLink={vi.fn()}
       onOpenComments={vi.fn()}

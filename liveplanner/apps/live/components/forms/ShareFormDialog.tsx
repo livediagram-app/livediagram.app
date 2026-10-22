@@ -1,14 +1,14 @@
 'use client';
 
-// Share Form (docs/specs/030-forms/forms.md "Publishing and the form link"), separate from the document's Share
-// dialog: a form link grants nothing on the document. Unpublished, it explains and offers Publish Form (held back,
+// Share Form (docs/specs/030-forms/forms.md "Publishing and the form link"), separate from the project's Share
+// dialog: a form link grants nothing on the project. Unpublished, it explains and offers Publish Form (held back,
 // with the reason, while responses have nowhere to go or the form is not ready: each problem listed with Show). Published, it shows the link to copy or open, Accepting
-// Responses, and Delete Link, which asks first. On a document in This Browser it offers Sync Document first (the document
-// Share dialog's prompt), then carries straight on to publishing as the document stops being offline.
+// Responses, and Delete Link, which asks first. On a project in This Browser it offers Sync Project first (the project
+// Share dialog's prompt), then carries straight on to publishing as the project stops being offline.
 import { useId, useState } from 'react';
 import { Button, DialogCloseButton, DialogHeader } from '@liveplanner/ui';
 import type { DestinationProblem, PublishProblem } from '@liveplanner/forms';
-import { SyncDocumentPrompt } from '@/components/dialogs/SyncDocumentPrompt';
+import { SyncProjectPrompt } from '@/components/dialogs/SyncProjectPrompt';
 // The editor's Dialog, so the modal guard counts it (shortcuts behind it go quiet, and the tours wait for it).
 import { Dialog } from '@/components/dialogs/Dialog';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
@@ -40,7 +40,7 @@ export function ShareFormDialog({
   onShow?: (problem: PublishProblem) => void;
   // Responses go to a sheet (a row each) rather than a board.
   toSheet?: boolean;
-  // A document in This Browser: syncs it in place (useSyncInPlace), once the reader is known (`syncReady`).
+  // A project in This Browser: syncs it in place (useSyncInPlace), once the reader is known (`syncReady`).
   onSyncToCloud?: () => Promise<void>;
   syncReady?: boolean;
 }) {
@@ -51,7 +51,7 @@ export function ShareFormDialog({
   const url = live?.code ? formUrlFor(window.location.origin, live.code) : null;
   const suspended = !live && link.link?.suspendedAt;
   const canPublish = link.link?.canPublish !== false;
-  // A document in This Browser syncs first; the publish view follows once it is on liveplanner.
+  // A project in This Browser syncs first; the publish view follows once it is on liveplanner.
   const syncFirst = link.status === 'offline' && !!onSyncToCloud;
   return (
     <Dialog open={open} onClose={onClose} titleId={titleId} size="md" phoneSheet>
@@ -60,12 +60,12 @@ export function ShareFormDialog({
       </div>
       <DialogHeader
         title="Share Form"
-        subtitle="Anyone with the link can fill in this form. They won’t see your document."
+        subtitle="Anyone with the link can fill in this form. They won’t see your project."
       >
         <DialogCloseButton onClick={onClose} />
       </DialogHeader>
       {syncFirst && onSyncToCloud ? (
-        <SyncDocumentPrompt
+        <SyncProjectPrompt
           onSyncToCloud={() => {
             track('Form', 'Moved', 'SyncedToShare');
             return onSyncToCloud();
@@ -77,7 +77,7 @@ export function ShareFormDialog({
         <div className="flex flex-col gap-4 px-6 pb-6 pt-4">
           {link.status === 'offline' ? (
             <p className="text-[14px] text-slate-600 dark:text-slate-300">
-              Forms are published from documents saved to liveplanner. This one is kept on this
+              Forms are published from projects saved to liveplanner. This one is kept on this
               device only.
             </p>
           ) : live && url ? (
@@ -153,7 +153,7 @@ export function ShareFormDialog({
               ) : null}
               {!canPublish ? (
                 <p className="rounded-lg bg-red-50 px-3 py-2 text-[13px] text-red-900 dark:bg-red-500/10 dark:text-red-100">
-                  This document can’t publish more forms: its form links were suspended after
+                  This project can’t publish more forms: its form links were suspended after
                   reports.
                 </p>
               ) : formProblemCount(problem, notReady) ? (

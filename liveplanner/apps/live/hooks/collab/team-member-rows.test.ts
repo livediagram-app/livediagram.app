@@ -16,7 +16,6 @@ const member = (
   role: 'member',
   status,
   name: null,
-  pictureUrl: null,
   createdAt: 0,
   updatedAt: 0,
 });

@@ -8,13 +8,13 @@ The editor is friction-free and discoverable, but there's no place that explains
 
 ## Shape
 
-A new Next.js app, `apps/help`, deployed as the `liveplanner-help` Worker and stitched in by the router under `/help` — the same pattern as `apps/telemetry` (see [Router app](../016-platform/router-app.md), [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)):
+A new Next.js app, `apps/help`, deployed as the `liveplanner-help` Worker and stitched in by the router under `/help` — the same pattern as the live app's assets (see [Router app](../016-platform/router-app.md), [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)):
 
 - `output: 'export'`, `basePath: '/help'`, `assetPrefix: '/help'`. Static only, no SSR (see [hard constraints](../../../AGENTS.md)).
 - The router strips `/help` and forwards to the worker, which serves `./out`.
 - Content is **MDX** (`@next/mdx`) plus a TypeScript article index (`lib/articles.ts`). Navigation/index pages are TSX.
 
-It started as a copy of the Manager Toolkit help centre and has since been redesigned in the marketing site's language; what each page looks like (the home page's sections, category art, grouped category pages, article navigation, search keys) is [Help pages](help-pages.md). The building blocks below stay: hero + client-side search, category cards, article pages with an auto-generated table of contents, breadcrumbs, "Was this helpful?" feedback, reading time, related-guide sidebar, and a back-to-top button. An article's sections (the tinted bands between its `##` headings) are grouped while it renders, so the static HTML already has them, and the reading-time row holds its height before the time is counted: nothing moves after the page appears. The difference is the categories/content (liveplanner's) and the **brand**: liveplanner is violet (`brand-500`, see [Theme](../004-interface-design/color-scheme.md)) on light or dark chrome ([Appearance](../004-interface-design/appearance.md)), not MT's dark purple, so every surface uses the shared `@liveplanner/tailwind-config` brand ramp and slate neutrals to match `apps/marketing` and `apps/telemetry`.
+It started as a copy of the Manager Toolkit help centre and has since been redesigned in the marketing site's language; what each page looks like (the home page's sections, category art, grouped category pages, article navigation, search keys) is [Help pages](help-pages.md). The building blocks below stay: hero + client-side search, category cards, article pages with an auto-generated table of contents, breadcrumbs, "Was this helpful?" feedback, reading time, related-guide sidebar, and a back-to-top button. An article's sections (the tinted bands between its `##` headings) are grouped while it renders, so the static HTML already has them, and the reading-time row holds its height before the time is counted: nothing moves after the page appears. The difference is the categories/content (liveplanner's) and the **brand**: liveplanner is violet (`brand-500`, see [Theme](../004-interface-design/color-scheme.md)) on light or dark chrome ([Appearance](../004-interface-design/appearance.md)), not MT's dark purple, so every surface uses the shared `@liveplanner/tailwind-config` brand ramp and slate neutrals to match `apps/marketing` and `liveworkspace/apps/site/app/telemetry`.
 
 ### No paid tier
 
@@ -30,7 +30,7 @@ The **`@liveplanner/help-registry` package** is the single source of truth for c
 
 Categories fall into two kinds. The **support** categories carry standalone articles; the **feature** categories (`kind: 'feature'`) carry the in-depth feature guides and are grouped under a separate "Editor Guides" heading on the home page and listed on the `/features` index. Each feature category has a card-grid index page at `/help/<slug>/` (shared `FeatureCategoryIndex` component), and within it each feature has its own landing page plus optional sub-articles.
 
-**Developers.** A support category for the public REST API ([Public API and API tokens](../015-api/public-api-and-tokens.md)). Standalone articles — _The liveplanner API_ (overview + base URL), _Authentication_ (bearer API tokens vs the guest path), _Working with Documents_ (worked `curl` examples), and _Errors and Rate Limits_ — that tell an integrator how to call the API a token unlocks. The human-facing companion to the machine-readable `GET /api/openapi.json` ([API documentation (OpenAPI)](../015-api/api-documentation.md)), which the articles link out to rather than duplicate.
+**Developers.** A support category for the public REST API ([Public API and API tokens](../015-api/public-api-and-tokens.md)). Standalone articles — _The liveplanner API_ (overview + base URL), _Authentication_ (bearer API tokens vs the guest path), _Working with Projects_ (worked `curl` examples), and _Errors and Rate Limits_ — that tell an integrator how to call the API a token unlocks. The human-facing companion to the machine-readable `GET /api/openapi.json` ([API documentation (OpenAPI)](../015-api/api-documentation.md)), which the articles link out to rather than duplicate.
 
 **Policies.** A support category, not a feature one. It is the home for the hosted service's legal pages: the **Terms of Service**, the **Privacy Policy** and **Reporting a Vulnerability** (the vulnerability disclosure policy, [Vulnerability disclosure](../002-project-scope/vulnerability-disclosure.md), which the marketing `/security` route, `/.well-known/security.txt` and the repo's `SECURITY.md` all point at). The Terms and Privacy Policy govern the hosted service at liveplanner.app. These were standalone marketing routes (`/terms`, `/privacy`); they now live as help articles under `/help/policies/`, and the old marketing routes stay alive as thin client redirects so historical links keep resolving. (The Privacy Policy previously sat in `privacy-and-security`; it moved here so the two policies sit together, and the old help URL redirects to the new one.)
 
@@ -44,7 +44,7 @@ Categories fall into two kinds. The **support** categories carry standalone arti
 | `developers`           | Developers           | code      | support |
 | `troubleshooting`      | Troubleshooting      | wrench    | support |
 | `supported-devices`    | Supported Devices    | devices   | support |
-| `policies`             | Policies             | document  | support |
+| `policies`             | Policies             | project   | support |
 | `contact`              | Contact              | mail      | support |
 | `explorer`             | Explorer             | folder    | feature |
 | `palette`              | Palette              | palette   | feature |
@@ -56,13 +56,13 @@ Categories fall into two kinds. The **support** categories carry standalone arti
 
 The feature categories group the feature guides by area:
 
-- **Explorer** — the document library (explorer/14, teams/32+35): The Explorer overview, Home, Recent, Shared With Me, My Documents and folders, Team Spaces, and Saved Themes, one guide per sidebar row.
+- **Explorer** — the project library (explorer/14, teams/32+35): The Explorer overview, Home, Recent, Shared With Me, My Projects and folders, Team Spaces, and Saved Themes, one guide per sidebar row.
 - **Palette** — the palette strip, in three sub-categories grouped on the index (see "Sub-category grouping" below): **Selection Modes** (one guide per tool-picker mode: Select, Hand, Format Painter, Isometric), **Elements** (one guide per palette tab: Shapes (+ shape markers, style presets 48), Arrows (+ arrow styles, curve/elbow handles, arrow-to-arrow), Tools (+ drawing, images, data elements 46+51+52+53), Components, Devices, Icons, Technology 41), and **Palette Settings** (one guide per palette setting: Auto-Attach Arrows, Alignment Guides, Panel Opacity, Quick-add on Hover, Toolbar Layout).
 - **Canvas** — the infinite canvas (09), selecting many elements (multi-select), links and link cards (40), annotations (38), themes (29+42+44), templates, text and fonts (28), Undo and Redo.
-- **Tabs** — multiple canvases (13+17+30): Tabs, Tab Folders, Linking Across Tabs, Add a Tab to Another Document, Importing (27), Exporting, and Cleanup (47), one guide per tab-menu action.
+- **Tabs** — multiple canvases (13+17+30): Tabs, Tab Folders, Linking Across Tabs, Add a Tab to Another Project, Importing (27), Exporting, and Cleanup (47), one guide per tab-menu action.
 - **Collaboration** — comments, live presence (07: live cursors / selections / per-tab presence), teams (32+35), sharing and embeds (24+33+34), session tools (39).
-- **Tools** — AI assistance (25), zen mode (26), appearance / light-dark-system (07), layout cleanup (47).
-- **Search Panel** — the global search (09): an overview landing plus sub-articles for each thing search does, finding documents/folders, teams, tabs and elements, adding palette items to the canvas, and the Create-new-tab action.
+- **Tools** — zen mode (26), appearance / light-dark-system (07), layout cleanup (47).
+- **Search Panel** — the global search (09): an overview landing plus sub-articles for each thing search does, finding projects/folders, teams, tabs, boards and cards, adding palette items to the canvas, and the Create-new-tab action.
 
 Where a feature's name would equal its category slug, the landing slug is distinguished (`the-canvas`, `the-explorer`, `using-tabs`) so a feature slug never equals a category slug (which would break the breadcrumb's parent link).
 
@@ -103,7 +103,7 @@ it arrives with its own registry entry.
 The **support** categories work the same way one level simpler. Their cards render
 through `ArticleCard`, which takes its glyph from `SUPPORT_ARTICLE_ICONS`
 (`lib/articleIcons.tsx`) and its tone from the brand, so there is no paired hue
-map to keep in step — and it falls back to a generic document glyph rather than a
+map to keep in step — and it falls back to a generic project glyph rather than a
 per-category one. That fallback had 13 of the 40 icon-showing support cards on it,
 a third of them identical, so those are drawn too. (Getting Started is the
 exception by design: its cards lead with a numbered step badge instead of an
@@ -130,7 +130,7 @@ a category at a time: a batch that shares a family reads as a set. And **look at
 them rendered before shipping** — valid path geometry is not the same as a
 legible 24px glyph. Three of the Palette thirteen had to be redrawn only after
 seeing them: a chair that read as a table, a button whose pointer swallowed it,
-and a sticker using the folded corner that already means a document here. The
+and a sticker using the folded corner that already means a project here. The
 Canvas batch cost two more, both from colliding with a glyph already in the set —
 a magnet drawn as a shield, and a drop shadow that read first as "duplicate" and
 then, hatched, as the motion lines on `animations`. `shadows` is the one glyph
@@ -156,7 +156,7 @@ triangle, the tick, the burst, the mosaic and the die.
 
 Applied up front, that rule is also what made the Search Panel's six the first
 batch to need no redraw at all: six articles about one control, and not one of
-them draws a magnifier. They draw what you find — documents in a folder, a team,
+them draws a magnifier. They draw what you find — projects in a folder, a team,
 a tab and the element inside it, a shape landing on the canvas, a new tab.
 
 The Explorer's five raised the mirror-image problem and it is worth naming: a
@@ -224,7 +224,7 @@ The system has three layers, all under `apps/help`:
   their subject, never after the batch of work that produced them.
 - **`components/illustrations/<area>-parts.tsx`** — an area's own building
   blocks, when it grows enough of them to interleave with its scenes (the
-  Explorer's sidebar row and document card; the palette's per-mode glyphs and
+  Explorer's sidebar row and project card; the palette's per-mode glyphs and
   shared mode-row). Distinct from `primitives.tsx`, which is the house style
   every area shares: these are wanted by one area only. The split exists so an
   `<area>.tsx` reads as a uniform list of complete scenes rather than
@@ -242,50 +242,18 @@ a before/after, a spatial relationship), not to every section; reference-only or
 purely conceptual sections stay text. Scenes are reused across articles wherever
 the same surface recurs rather than redrawn.
 
-<!-- legacy-names -->
-
-## Renamed articles
-
-Six articles about the container moved when it became a document ([Document](../006-document/document.md)), **Whiteboards** and **Draw mode** land on **Editor modes** ([Editor modes](../007-editor/editor-modes.md#naming-in-the-interface)), the Highlighter, Shape Recognition and Eraser guides on their categories, the **Activity Panel** category went with the panel on 2026-10-03 (Undo and Redo moved to Canvas; its other articles and the category page land on Undo), **The Welcome Tour** became **The Diagram Tour** when the tour became Diagram mode's alone ([Diagram tour](../007-editor/editor-tour.md)), and **; each old address answers a permanent `308` from the router ([Router app, Legacy editor route](../016-platform/router-app.md#legacy-editor-route)):
-
-| Old address                                            | New address                                             |
-| ------------------------------------------------------ | ------------------------------------------------------- |
-| `/help/tabs/add-to-diagram/`                           | `/help/tabs/add-to-document/`                           |
-| `/help/troubleshooting/diagram-not-loading/`           | `/help/troubleshooting/document-not-loading/`           |
-| `/help/collaboration/teams/team-shared-diagrams/`      | `/help/collaboration/teams/team-shared-documents/`      |
-| `/help/search-panel/the-search-panel/search-diagrams/` | `/help/search-panel/the-search-panel/search-documents/` |
-| `/help/getting-started/sharing-your-diagram/`          | `/help/getting-started/sharing-your-document/`          |
-| `/help/developers/working-with-diagrams/`              | `/help/developers/working-with-documents/`              |
-| `/help/canvas/whiteboards/`                            | `/help/canvas/editor-modes/`                            |
-| `/help/canvas/draw-mode/`                              | `/help/canvas/editor-modes/`                            |
-| `/help/canvas/draw-mode/draw-tour/`                    | `/help/canvas/editor-modes/`                            |
-| `/help/selection-modes/highlighter/`                   | `/help/palette/tools/`                                  |
-| `/help/palette/tools/highlighter/`                     | `/help/palette/tools/`                                  |
-| `/help/palette/tools/drawing/shape-recognition/`       | `/help/palette/tools/drawing/`                          |
-| `/help/selection-modes/eraser/`                        | `/help/selection-modes/`                                |
-| `/help/activity-panel/`                                | `/help/canvas/undo/`                                    |
-| `/help/activity-panel/what-it-is/`                     | `/help/canvas/undo/`                                    |
-| `/help/activity-panel/how-it-works/`                   | `/help/canvas/undo/`                                    |
-| `/help/activity-panel/undo/`                           | `/help/canvas/undo/`                                    |
-| `/help/activity-panel/redo/`                           | `/help/canvas/redo/`                                    |
-| `/help/activity-panel/reverting-changes/`              | `/help/canvas/undo/`                                    |
-| `/help/getting-started/welcome-tour/`                  | `/help/getting-started/diagram-tour/`                   |
-
-"Your First Diagram" and "Exporting Diagrams" keep their addresses: they are about drawing a diagram and getting the drawing out, not about the container.
-<!-- /legacy-names -->
-
 ## Header
 
-The help centre's header is the shared `SiteHeader` from `@liveplanner/ui`, the same bar marketing and the telemetry dashboard render, so the three read as one product: Brand + the apps menu (keyed to Help) on the left, the article search (`SearchInput`) in the header's centre slot from `sm` up, and on the right the same **Start Blank** and **Choose Template** CTA pair the landing page shows (`ctaSurface="Help"`, so its links carry `Help.HeaderBlank` and `Help.Header` for the [Landing funnel](../019-marketing/landing-funnel.md)), Start Blank hidden below `md` (rather than `sm`, as on pages without a centre slot) so the search box keeps room on a small tablet. It leaves the page-edge ShareRail off: the rail sits in the gutter beside a `max-w-6xl` page, and help's pages run `max-w-7xl`, so on an `xl` screen it would cover the article sidebar. It passes `wide`, which gives the bar help's own `max-w-7xl` / `md:px-8` column, so the logo lines up with the breadcrumb and article content below. The bar is a fixed 72px (`h-18`) at every breakpoint, which the sticky breadcrumb bar (`top-18`) and the article sidebar's sticky offset rely on.
+The help centre's header is the shared `SiteHeader` from `@liveplanner/ui`, the same bar marketing and the telemetry dashboard render, so the three read as one product: Brand (hover it for liveworkspace's other sites, the [site switcher](../../../../liveworkspace/docs/site-switcher.md)) on the left, the article search (`SearchInput`) in the header's centre slot from `sm` up, and on the right the same **Start Blank** and **Choose Template** CTA pair the landing page shows (`ctaSurface="Help"`, so its links carry `Help.HeaderBlank` and `Help.Header` for the [Landing funnel](../019-marketing/landing-funnel.md)), Start Blank hidden below `md` (rather than `sm`, as on pages without a centre slot) so the search box keeps room on a small tablet. It leaves the page-edge ShareRail off: the rail sits in the gutter beside a `max-w-6xl` page, and help's pages run `max-w-7xl`, so on an `xl` screen it would cover the article sidebar. It passes `wide`, which gives the bar help's own `max-w-7xl` / `md:px-8` column, so the logo lines up with the breadcrumb and article content below. The bar is a fixed 72px (`h-18`) at every breakpoint, which the sticky breadcrumb bar (`top-18`) and the article sidebar's sticky offset rely on.
 
 ## SEO
 
 One rule for every public page, shared with the marketing site ([Marketing site](../019-marketing/marketing-site.md) "SEO and metadata"): per-page metadata comes from `pageMetadata` in `@liveplanner/ui`, which help wraps as `helpMetadata({ title, description, path })` only to name itself (`siteName: 'liveplanner Help'`).
 
-- **The title passes through as given.** Link previews (`og:title`, `twitter:title`) carry the bare article title, with the site name beside it. The document `<title>` still reads "<Title> | liveplanner": the root layout's `title.template` adds the suffix to every child segment, and the help home (the root index, which the template doesn't reach) spells it out as `Help | liveplanner`.
+- **The title passes through as given.** Link previews (`og:title`, `twitter:title`) carry the bare article title, with the site name beside it. The project `<title>` still reads "<Title> | liveplanner": the root layout's `title.template` adds the suffix to every child segment, and the help home (the root index, which the template doesn't reach) spells it out as `Help | liveplanner`.
 - **Canonical and `og:url` are the page's path**, `/help/<categorySlug>/<slug>/`, resolved against the shared origin; `seo-canonical.test.ts` checks every article's path matches its route.
 - **Every article and category landing has its own card**: `og:type` article, Twitter `summary_large_image`, with a 1200x630 PNG at `/help/og/<route>.png` (`lib/help-cards.ts`, rendered at build time by `app/og/[...card]/route.tsx` through the shared `renderSocialCard` in `@liveplanner/ui`, the one marketing's cards use). The card shows the top category as its kicker (Help Topic on a landing), the title, the registry's card description through `cardSubtitle` (two lines, ending on a whole word) and "Help Centre" in its footer beside the liveplanner.app pill. Pages outside the registry (the home, the features index) carry the brand card marketing generates (`/opengraph-image`, `/twitter-image`).
-- **The sitemap dates each page by its last commit** (`lib/article-dates.ts`): one `git log` pass over `app/` at build time, page files only, and a landing dated by its newest article. A shallow clone, or no git, leaves `lastModified` out rather than claim every page changed today; the deploy build fetches full history without file contents (`fetch-depth: 0`, `filter: blob:none`) for this.
+- **The sitemap dates each page by its last commit** (`lib/article-dates.ts`): one `git log` pass over `app/` at build time, along the first-parent line with merges diffed against it (liveplanner arrives in the workspace through subtree merges, which a plain log lists no files for), page files only, and a landing dated by its newest article. A shallow clone, or no git, leaves `lastModified` out rather than claim every page changed today; the deploy build fetches full history without file contents (`fetch-depth: 0`, `filter: blob:none`) for this.
 - **Category landings carry `CollectionPage` structured data** whose `ItemList` names the articles the landing lists, in order (`collectionJsonLd`, rendered by `FeatureCategoryIndex` and by `BrowsePage` given a `listing`). The home carries the `WebSite` node. There is no `SearchAction`: Google retired the sitelinks search box it fed, and help search is not addressable by URL.
 - **Breadcrumb structured data** is a `BreadcrumbList` rooted at the help home, built by the shared `breadcrumbJsonLd` (the one marketing's `BreadcrumbJsonLd` uses) and rendered through `JsonLd` from the `Breadcrumb` component.
 - **A sub-article's parent crumb and its `TechArticle` url come from its route.** Sub-articles nest under their parent's folder, so the parent is the route one level up and the article's own URL is its route (`lib/article-route.ts`), never rebuilt from the page's `categorySlug` prop, which names the top category on some pages and the parent's path on others. `article-route.test.ts` checks every sub-article sits directly under a real page.
@@ -319,7 +287,7 @@ The help centre emits through the first-party pipeline ([Telemetry + public tran
 
 ## Deployment
 
-A `deploy-help` job in `.github/workflows/deploy.yml` mirrors `deploy-telemetry` (build artifact → `wrangler deploy`). The router's `deploy-router` job already depends on the static apps; it gains a dependency on `deploy-help`, and `apps/router/wrangler.toml` gains a `HELP` service binding to `liveplanner-help`.
+A `deploy-help` job in `.github/workflows/deploy.yml` mirrors `deploy-marketing` (build artifact → `wrangler deploy`). The router's `deploy-router` job already depends on the static apps; it gains a dependency on `deploy-help`, and `apps/router/wrangler.toml` gains a `HELP` service binding to `liveplanner-help`.
 
 ## Out of scope (for now)
 

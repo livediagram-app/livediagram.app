@@ -8,7 +8,8 @@ export {
 } from './social-card';
 export { brandLogoSvg } from './brand-logo-svg';
 export { PRISM_PALETTES, prismPalette, type PrismPalette, type PrismScheme } from './brand-prism';
-export { ProductNav, ProductNavLinks, type ProductNavKey } from './ProductNav';
+export { ProductNavLinks, type ProductNavKey } from './ProductNav';
+export { SiteSwitcher } from './SiteSwitcher';
 export { START_BLANK_HREF, StartBlankLink } from './StartBlankLink';
 export { SiteHeader } from './SiteHeader';
 export { RAIL_CLEAR_PADDING } from './share-rail-clearance';
@@ -73,17 +74,15 @@ export {
 } from './brand-classes';
 export * from './timeline';
 export * from './icons';
-export { PictureDisc } from './PictureDisc';
-export { clerkPublishableKeyOrNull } from './clerk-key';
 export {
   TRUSTED_TYPES_CSP,
   isAllowedScriptUrl,
   trustedHtml,
-  trustedScriptOrigins,
   trustedTypesBootScript,
 } from './trusted-types';
 export { IDENTITY_FILL, identityDeep, identityVars } from './identity-fill';
 export {
+  SITE_ID,
   SITE_URL,
   SITE_NAME,
   CONTACT_FORM_URL,

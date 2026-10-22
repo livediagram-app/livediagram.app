@@ -1,24 +1,36 @@
 name = "liveworkspace-accounts"
+# The liveworkspace Cloudflare account, so a deploy can never land on another one.
+account_id = "851be7d244b76a6557bcbe6c4ded80f5"
 main = "src/index.ts"
 compatibility_date = "2026-05-29"
 # Better Auth reads AsyncLocalStorage from node:async_hooks.
 compatibility_flags = ["nodejs_compat"]
-routes = [{ pattern = "accounts.liveworkspace.app", custom_domain = true }]
+# The accounts API on liveworkspace.app: /api/auth/*, /api/account/* and the two discovery documents. Every other
+# path is the static site's (apps/site), and /api/telemetry/* the telemetry Worker's. Each route is
+# more specific than the site's liveworkspace.app/*, so it wins.
+routes = [
+  { pattern = "liveworkspace.app/api/auth/*", zone_name = "liveworkspace.app" },
+  { pattern = "liveworkspace.app/api/account/*", zone_name = "liveworkspace.app" },
+  { pattern = "liveworkspace.app/.well-known/openid-configuration*", zone_name = "liveworkspace.app" },
+  { pattern = "liveworkspace.app/.well-known/oauth-authorization-server*", zone_name = "liveworkspace.app" },
+]
 
 # Secrets (wrangler secret put, or .dev.vars locally; see .dev.vars.example):
 #   BETTER_AUTH_SECRET    signs cookies and the OAuth query; 32+ random bytes
 #   TURNSTILE_SECRET_KEY  Turnstile on "send code"
-#   ADMIN_TOKEN           guards POST /internal/clients (registering an app)
+#   ADMIN_TOKEN           guards POST /api/auth/internal/clients (registering an app)
+#   GOOGLE_CLIENT_ID      "Continue with Google"; optional, the button only shows with both
+#   GOOGLE_CLIENT_SECRET
 [vars]
 ENVIRONMENT = "production"
-BASE_URL = "https://accounts.liveworkspace.app"
+BASE_URL = "https://liveworkspace.app"
 EMAIL_FROM = "sign-in@liveworkspace.app"
 TURNSTILE_SITE_KEY = ""
 
 [[d1_databases]]
 binding = "AUTH_DB"
 database_name = "liveworkspace-accounts"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "b682a5c0-519b-4085-93c7-7708985acb30"
 migrations_dir = "migrations"
 
 [[send_email]]
@@ -38,18 +50,23 @@ simple = { limit = 3, period = 60 }
 
 [env.staging]
 name = "liveworkspace-accounts-staging"
-routes = [{ pattern = "accounts-staging.liveworkspace.app", custom_domain = true }]
+routes = [
+  { pattern = "staging.liveworkspace.app/api/auth/*", zone_name = "liveworkspace.app" },
+  { pattern = "staging.liveworkspace.app/api/account/*", zone_name = "liveworkspace.app" },
+  { pattern = "staging.liveworkspace.app/.well-known/openid-configuration*", zone_name = "liveworkspace.app" },
+  { pattern = "staging.liveworkspace.app/.well-known/oauth-authorization-server*", zone_name = "liveworkspace.app" },
+]
 
 [env.staging.vars]
 ENVIRONMENT = "staging"
-BASE_URL = "https://accounts-staging.liveworkspace.app"
+BASE_URL = "https://staging.liveworkspace.app"
 EMAIL_FROM = "sign-in@liveworkspace.app"
 TURNSTILE_SITE_KEY = ""
 
 [[env.staging.d1_databases]]
 binding = "AUTH_DB"
 database_name = "liveworkspace-accounts-staging"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "e008f4dd-67de-4bef-994f-930a7ab341aa"
 migrations_dir = "migrations"
 
 [[env.staging.send_email]]

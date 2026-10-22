@@ -104,7 +104,7 @@ is where free placement leaves it, reads as a list hanging off a box.
 
 So growth first asks whether the map **is** tidy: whether every node already
 sits where the tidy layout (`layoutMindTree` in
-`packages/document/src/mind-layout.ts`) would put it, to within a pixel. If it
+`packages/project/src/mind-layout.ts`) would put it, to within a pixel. If it
 is, the new node joins the layout and the map is re-laid out around it:
 siblings slide to make room, parents re-centre, and the node lands in its slot.
 The root never moves. A map grown by Tab and Enter from a single node, or from
@@ -337,7 +337,7 @@ Resizing a node resizes only that node.
 The arrangement a keyboard-driven outline wants is a child to the right,
 siblings stacked down it. That is a **tree**, and it is only one of the shapes
 people draw. There are six (`MindFlow` in
-`packages/document/src/mind-flow.ts`), picked from **Branching** in the **Mind
+`packages/project/src/mind-flow.ts`), picked from **Branching** in the **Mind
 Map** menu of a selected node's menu (see "The Mind Map menu"):
 
 - **Tree**: branches right, siblings stacked down. The default, so every map
@@ -386,7 +386,7 @@ the next sibling's slot.
 ## Spacing
 
 How far apart a map's nodes sit is the map's **spacing** (`MindSpacing` in
-`packages/document/src/mind-flow.ts`), picked from **Spacing** in the Mind Map
+`packages/project/src/mind-flow.ts`), picked from **Spacing** in the Mind Map
 menu. It scales both gaps the layout uses, parent to child along the flow and
 sibling to sibling across it, by one factor:
 
@@ -466,7 +466,7 @@ outline is the whole map, and the root is where a map begins. Not for a viewer, 
 node on a hidden or locked layer.
 
 **The dialog**, titled **Edit Outline**, is an outline editor: the map as a list of rows, one
-row per node, the way a list is edited in a document. Structure is never typed as spaces: a row's
+row per node, the way a list is edited in a project. Structure is never typed as spaces: a row's
 level is a property of the row, changed with keys or buttons, so it cannot be misaligned.
 
 ```

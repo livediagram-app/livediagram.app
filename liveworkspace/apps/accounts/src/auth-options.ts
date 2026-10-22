@@ -11,13 +11,21 @@ export const AUTH_BASE_PATH = '/api/auth';
 export const SEND_CODE_PATH = '/email-otp/send-verification-otp';
 export const SIGN_IN_CODE_PATH = '/sign-in/email-otp';
 
+// Longer names are cut to this on the way in; it keeps a name from swamping the apps' layouts.
+export const NAME_MAX_LENGTH = 80;
+
 export interface AuthConfig {
   baseUrl: string;
   secret: string;
   resources: string[];
   turnstileSecretKey: string;
   adminToken: string;
+  // "Continue with Google", when the Worker has a Google OAuth client.
+  google: { clientId: string; clientSecret: string } | null;
   sendCode: (email: string, code: string) => Promise<void>;
+  // The teams an account is in, for its access tokens (teams.ts teamsClaim). Left out where there is
+  // no database to ask, as when generating the schema.
+  teamsFor?: (userId: string) => Promise<{ id: string; name: string; role: string }[]>;
 }
 
 export function authOptions(config: AuthConfig, database: BetterAuthOptions['database']) {
@@ -33,6 +41,41 @@ export function authOptions(config: AuthConfig, database: BetterAuthOptions['dat
     // The Worker's CODE_*_LIMITER bindings do this job (src/index.ts). Better Auth's
     // limiter keeps its counts in isolate memory here, which an attacker spreads across.
     rateLimit: { enabled: false },
+    // First and last name, as the registration page asks for them. `name` stays the two
+    // joined, so anything reading Better Auth's own field shows the whole name.
+    user: {
+      additionalFields: {
+        givenName: { type: 'string', required: false, input: true },
+        familyName: { type: 'string', required: false, input: true },
+      },
+    },
+    ...(config.google && {
+      socialProviders: {
+        google: {
+          clientId: config.google.clientId,
+          clientSecret: config.google.clientSecret,
+          // Someone signed in to several Google accounts picks one rather than getting whichever
+          // the browser last used.
+          prompt: 'select_account' as const,
+          // Google's first and last name fill the account's; its picture is left behind, since
+          // the apps show initials.
+          mapProfileToUser: (profile) => ({
+            givenName: profile.given_name,
+            familyName: profile.family_name,
+            image: undefined,
+          }),
+        },
+      },
+    }),
+    // Google verifies the address it hands over, so signing in with Google on an address that
+    // already has an account (made with an email code) joins that account rather than failing.
+    account: { accountLinking: { enabled: true, trustedProviders: ['google'] } },
+    databaseHooks: {
+      user: {
+        create: { before: async (user) => ({ data: withNames(user) }) },
+        update: { before: async (user) => ({ data: withNames(user) }) },
+      },
+    },
     advanced: {
       ipAddress: { ipAddressHeaders: ['cf-connecting-ip'] },
       database: {
@@ -60,6 +103,8 @@ export function authOptions(config: AuthConfig, database: BetterAuthOptions['dat
       jwt(),
       oauthProvider({
         loginPage: '/sign-in',
+        // An app sends `prompt=create` from its "Create account" button.
+        signup: { page: '/sign-up' },
         consentPage: '/consent',
         scopes: ['openid', 'profile', 'email', 'offline_access'],
         resources: config.resources,
@@ -70,7 +115,7 @@ export function authOptions(config: AuthConfig, database: BetterAuthOptions['dat
         // The apps' Teams features match invites against a verified email, and every
         // request carries the access token, so the email rides in it rather than costing
         // a /userinfo call.
-        // Only our own apps are clients, registered through POST /internal/clients. Left at
+        // Only our own apps are clients, registered through POST /api/auth/internal/clients. Left at
         // the default, any signed-in account could register an OAuth client of its own (with
         // its own redirect URIs) through /oauth2/create-client, so every client and resource
         // action needs the admin token.
@@ -79,8 +124,19 @@ export function authOptions(config: AuthConfig, database: BetterAuthOptions['dat
         // Clients belong to liveworkspace, not to whichever account registered them, so
         // deleting an account never takes an app's client with it.
         clientReference: () => 'liveworkspace',
-        customAccessTokenClaims: ({ user }) =>
-          user ? { email: user.email, email_verified: user.emailVerified } : {},
+        // The account's teams ride in the token too (liveworkspace/docs/accounts.md "Teams"): an app
+        // compares them with its own copy and catches up when they differ, at no cost per request.
+        customAccessTokenClaims: async ({ user }) =>
+          user
+            ? {
+                email: user.email,
+                email_verified: user.emailVerified,
+                ...(config.teamsFor && { teams: await config.teamsFor(user.id) }),
+              }
+            : {},
+        // The provider sends profile and email claims only from /userinfo. The apps read who
+        // signed in from the ID token they already have, so the claims go in it as well.
+        customIdTokenClaims: ({ user, scopes }) => idTokenClaims(user, scopes),
       }),
     ],
   } satisfies BetterAuthOptions;
@@ -89,4 +145,40 @@ export function authOptions(config: AuthConfig, database: BetterAuthOptions['dat
 async function isAdmin(headers: Headers, adminToken: string): Promise<boolean> {
   const sent = headers.get(ADMIN_HEADER);
   return Boolean(adminToken && sent && (await sameSecret(sent, adminToken)));
+}
+
+type NamedUser = { name?: string | null; givenName?: unknown; familyName?: unknown };
+
+const cleanName = (value: unknown): string | undefined =>
+  typeof value === 'string' ? value.trim().slice(0, NAME_MAX_LENGTH) : undefined;
+
+// Trims and caps the names. An update carries only the fields it changes, so `name` is
+// rebuilt from the two halves only when both are there.
+export function withNames<T extends NamedUser>(user: T): T {
+  const givenName = cleanName(user.givenName);
+  const familyName = cleanName(user.familyName);
+  const name =
+    givenName !== undefined && familyName !== undefined
+      ? [givenName, familyName].filter(Boolean).join(' ')
+      : cleanName(user.name);
+  return {
+    ...user,
+    ...(givenName !== undefined && { givenName }),
+    ...(familyName !== undefined && { familyName }),
+    ...(name !== undefined && { name }),
+  };
+}
+
+type ClaimUser = NamedUser & { email: string; emailVerified: boolean };
+
+export function idTokenClaims(user: ClaimUser, scopes: string[]): Record<string, unknown> {
+  const text = (value: unknown) => (typeof value === 'string' && value ? value : undefined);
+  return {
+    ...(scopes.includes('profile') && {
+      name: text(user.name),
+      given_name: text(user.givenName),
+      family_name: text(user.familyName),
+    }),
+    ...(scopes.includes('email') && { email: user.email, email_verified: user.emailVerified }),
+  };
 }

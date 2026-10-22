@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi, type Mock } from 'vitest';
-import { createShape, type MindOutlineSummary, type ShapeElement } from '@liveplanner/document';
+import { createShape, type MindOutlineSummary, type ShapeElement } from '@liveplanner/project';
 import type { ComponentProps } from 'react';
 import { MindOutlineDialog } from './MindOutlineDialog';
 
@@ -94,9 +94,7 @@ describe('MindOutlineDialog', () => {
 
   it('links the help article beside the close button', () => {
     open();
-    expect(screen.getByRole('link').getAttribute('href')).toContain(
-      'palette/mind-maps/edit-outline',
-    );
+    expect(screen.getByRole('link').getAttribute('href')).toContain('plan/visualisations');
   });
 
   it('cannot save without a root', () => {

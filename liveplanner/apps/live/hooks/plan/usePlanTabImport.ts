@@ -1,7 +1,7 @@
 'use client';
 
 // Importing a tab's JSON export brings its Plan items with it (docs/specs/026-plan/items.md "Copies and exports"):
-// the file's types its new cards use, then the cards the document does not already hold, each its own undo step.
+// the file's types its new cards use, then the cards the project does not already hold, each its own undo step.
 // The tab's content lands first (useTabImport); this adds what its boards and cards draw from.
 import {
   planTabItemsImport,
@@ -15,15 +15,15 @@ import { useLatest } from '@/hooks/ui/useLatest';
 import type { PlanItemsStatus } from './usePlanItems';
 import { debugLog } from '@/lib/debug-log';
 
-// How long an import waits for the item store (blueprint DEFAULTS): a document with no Plan content until the
+// How long an import waits for the item store (blueprint DEFAULTS): a project with no Plan content until the
 // import starts loading it only once the imported board lands, which is a fetch away.
 const PLAN_IMPORT_READY_WAIT_MS = 10_000;
 
-// What landed: the cards made, those the document already had, and those the store refused.
+// What landed: the cards made, those the project already had, and those the store refused.
 export type PlanTabImportResult = { added: number; skipped: number; failed: number };
 
 export function usePlanTabImport(opts: {
-  // Only a loaded store says which cards the document already holds: before it every card in the file would look
+  // Only a loaded store says which cards the project already holds: before it every card in the file would look
   // new and be made again. The import waits for it (the imported board is what starts the load); a store that
   // fails or never loads adds none, and the import says so.
   status: PlanItemsStatus;

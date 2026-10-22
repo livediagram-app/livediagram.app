@@ -2,7 +2,7 @@
 
 // The Inbox's data (docs/specs/013-workspace/inbox.md §1, §5): one read, split into the
 // three sections the pane shows, plus the count the sidebar badge draws. Assigned to You holds actions and
-// Plan cards (§2.4) in one list. The read is the server's and, beside it, this browser's documents in This Browser
+// Plan cards (§2.4) in one list. The read is the server's and, beside it, this browser's projects in This Browser
 // (§2.6), whose rows are marked `local` so they show the This Browser pill.
 //
 // Held in Explorer state (like favourites) rather than gated to the
@@ -25,7 +25,7 @@ import { readOfflineActivity, type OfflineActivity } from '@/lib/offline/offline
 import { useReturnToTab } from '@/hooks/ui/useReturnToTab';
 import { track } from '@/lib/telemetry';
 
-/** A row, marked `local` when it comes from a document saved only in this browser (§2.6). */
+/** A row, marked `local` when it comes from a project saved only in this browser (§2.6). */
 export type Located<T> = T & { local?: true };
 
 /** One Assigned to You row: an action or a Plan card, told apart by `kind`. */
@@ -41,7 +41,7 @@ const NO_LOCAL: OfflineActivity = { actions: [], threads: [], cards: [], cardThr
 const markLocal = <T extends object>(rows: T[]): Located<T>[] =>
   rows.map((r) => ({ ...r, local: true as const }));
 
-// This Browser's documents in This Browser (§2.6), read beside the server's index. The store failing lists nothing
+// This Browser's projects in This Browser (§2.6), read beside the server's index. The store failing lists nothing
 // local, never the page's failed state: that is the server read's to report.
 function readLocal(owner: string): Promise<OfflineActivity> {
   return readOfflineActivity([owner, getGuestSelfId()]).then(
@@ -61,8 +61,6 @@ function readLocal(owner: string): Promise<OfflineActivity> {
 export type ActivityFeed = {
   /** Open actions (self-assignments included) and open Plan cards on the reader, newest first. */
   assignedToMe: AssignedRow[];
-  /** Open actions the reader assigned to somebody ELSE. */
-  youAssigned: Located<ActivityAction>[];
   /** Unresolved threads the reader is in, on elements and on Plan cards, newest comment first. */
   threads: ThreadRow[];
   /** Forms with responses the reader has not seen (docs/specs/030-forms/forms.md), newest response first. */
@@ -154,13 +152,6 @@ export function useActivityFeed(ownerId: string | null): ActivityFeed {
       ].sort((a, b) => b.updatedAt - a.updatedAt),
     [actions, cards],
   );
-  const youAssigned = useMemo(
-    () =>
-      actions
-        .filter((a) => a.createdByMe && !a.assignedToMe)
-        .sort((a, b) => b.updatedAt - a.updatedAt),
-    [actions],
-  );
 
   const threadRows = useMemo(
     () =>
@@ -171,5 +162,5 @@ export function useActivityFeed(ownerId: string | null): ActivityFeed {
     [threads, cardThreads],
   );
 
-  return { assignedToMe, youAssigned, threads: threadRows, formResponses, loading, error, retry };
+  return { assignedToMe, threads: threadRows, formResponses, loading, error, retry };
 }

@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
-// Every plain key the editor binds must appear in the Keyboard Shortcuts
+// Every plain key that does something on a Plan tab must appear in the Keyboard Shortcuts
 // article.
 //
 // The registry sells that article as "The full shortcut reference". It had
@@ -23,31 +23,22 @@ import { describe, expect, it } from 'vitest';
 // writes `A` as an example letter would fail a reverse check. A guard that
 // fails a correct edit is a guard people delete.
 const ROOT = fileURLToPath(new URL('../../..', import.meta.url));
-const KEYS_SRC = `${ROOT}/apps/live/hooks/canvas/editor-shortcut-keys.ts`;
 const SECTIONS_SRC = `${ROOT}/apps/live/components/dialogs/shortcut-sections.ts`;
 const ARTICLE = `${ROOT}/apps/help/app/tips-and-tricks/keyboard-shortcuts/page.mdx`;
 
-// The two lookup tables are the editor's own catalogue of plain-key shortcuts:
-// VIEW_TOOL_KEYS (allowed for a view-role visitor) and EDIT_KEYS (editors
-// only). Modifier chords live in an if-ladder elsewhere in the same file and
-// are NOT part of this, which is why the tables are parsed rather than the file.
+// The plain keys a Plan tab answers, as the Shortcuts dialog lists them: rows whose one key is a single letter or
+// digit (Z for Zen, N for a new card). The editor's canvas tables (VIEW_TOOL_KEYS, EDIT_KEYS) are not read: a Board,
+// Sheet, Dashboard or Form covers the canvas, so those keys do nothing there. shortcut-sections.test.ts pins the
+// dialog's rows to what the handlers answer on a Plan tab, so this reaches them transitively.
 function boundKeys(): Set<string> {
-  const src = readFileSync(KEYS_SRC, 'utf8');
-  const keys = new Set<string>();
-  for (const table of ['VIEW_TOOL_KEYS', 'EDIT_KEYS']) {
-    const body = new RegExp(
-      `${table}: Record<string, ShortcutAction> = \\{([\\s\\S]*?)\\n\\};`,
-    ).exec(src);
-    if (!body) continue;
-    for (const m of body[1]!.matchAll(/^\s*'?([a-z0-9])'?: \(l\) =>/gm)) {
-      keys.add(m[1]!.toUpperCase());
-    }
-  }
-  return keys;
+  const src = readFileSync(SECTIONS_SRC, 'utf8');
+  return new Set(
+    [...src.matchAll(/keys: \['([A-Za-z0-9])'\], label:/g)].map((m) => m[1]!.toUpperCase()),
+  );
 }
 
-// Keys the article documents, as single-character inline code: `V`, `7`.
-function documentedKeys(): Set<string> {
+// Keys the article projects, as single-character inline code: `V`, `7`.
+function projectedKeys(): Set<string> {
   const src = readFileSync(ARTICLE, 'utf8');
   return new Set([...src.matchAll(/`([A-Z0-9])`/g)].map((m) => m[1]!));
 }
@@ -74,19 +65,19 @@ function chords(): string[] {
 
 describe('the Keyboard Shortcuts article covers what the editor binds', () => {
   it('parses real tables (guard against this test going blind)', () => {
-    // Twenty-eight bindings when this landed, twenty once Plan was the only mode. A collapse toward zero means
-    // the table shape changed and every assertion below passes vacuously.
-    expect(boundKeys().size).toBeGreaterThan(15);
-    expect(documentedKeys().size).toBeGreaterThan(15);
+    // Twenty-eight canvas bindings when this landed; on a Plan tab, Z (Zen) and N (a new card). A collapse to zero
+    // means the dialog's shape changed and every assertion below passes vacuously.
+    expect(boundKeys().size).toBeGreaterThanOrEqual(2);
+    expect(projectedKeys().size).toBeGreaterThanOrEqual(2);
   });
 
-  it('documents every plain key in the lookup tables', () => {
-    const documented = documentedKeys();
+  it('projects every plain key a Plan tab answers', () => {
+    const documented = projectedKeys();
     const missing = [...boundKeys()].filter((k) => !documented.has(k)).sort();
     expect(missing).toEqual([]);
   });
 
-  it('documents every modifier chord the shortcuts dialog lists', () => {
+  it('projects every modifier chord the shortcuts dialog lists', () => {
     // The article claimed to be "the full shortcut reference" while naming no
     // chord at all: undo, copy, paste, group and zoom were in the product and
     // in the dialog, and nowhere in the help centre.

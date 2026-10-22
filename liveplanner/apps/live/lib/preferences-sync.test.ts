@@ -31,7 +31,7 @@ const mockedPut = vi.mocked(apiPutPreferences);
 
 const uuid = (i: number) => `00000000-0000-4000-8000-${String(i).padStart(12, '0')}`;
 
-// A full account: 60 hidden documents and the usual flags, with stored older-client colours padding it past the
+// A full account: 60 hidden projects and the usual flags, with stored older-client colours padding it past the
 // api's cap, after which every save was refused.
 function fullAccount(): UserPreferences {
   return {

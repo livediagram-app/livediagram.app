@@ -1,9 +1,10 @@
 'use client';
 
-import { InviteIcon, MyDocumentsIcon, PlusIcon } from '@/components/primitives/explorer-icons';
+import { InviteIcon, MyProjectsIcon, PlusIcon } from '@/components/primitives/explorer-icons';
+import { manageTeamsUrl } from '@/lib/auth-config';
 import { useExplorer } from '../ExplorerContext';
 import {
-  MY_DOCUMENTS_EXPAND_KEY,
+  MY_PROJECTS_EXPAND_KEY,
   SIDEBAR_LABELS,
   type SidebarDivider,
   type SidebarRowKind,
@@ -14,10 +15,10 @@ import { SidebarGroup } from './SidebarGroup';
 import { SidebarRow } from './SidebarRow';
 import { SidebarSignInNudge } from './SidebarSignInNudge';
 import { TeamRows } from './TeamRows';
-import { useMyDocumentsMenu } from './useMyDocumentsMenu';
+import { useMyProjectsMenu } from './useMyProjectsMenu';
 import { useExplorerDropTarget } from '../useExplorerDropTarget';
 
-// Spaces (docs/specs/013-workspace/explorer-structure.md): My Documents and each team as
+// Spaces (docs/specs/013-workspace/explorer-structure.md): My Projects and each team as
 // root folders, then Invites and New Team, or the guest's sign-in nudge.
 // `rows` (from sidebarGroups) decides which show.
 export function SpacesGroup({
@@ -41,17 +42,15 @@ export function SpacesGroup({
     setRenamingFolderId,
     folderActions,
     invites,
-    setTeamModalOpen,
-    setMobileNavOpen,
     rootDefaults,
   } = useExplorer();
-  const myDocumentsMenu = useMyDocumentsMenu(rootDefaults, { reveal: true });
+  const myProjectsMenu = useMyProjectsMenu(rootDefaults, { reveal: true });
   const has = (row: SidebarRowKind) => rows.includes(row);
-  // A document dropped here files at the root; resting on it opens or closes the root folders.
+  // A project dropped here files at the root; resting on it opens or closes the root folders.
   const drop = useExplorerDropTarget(
     { teamId: null, folderId: null },
     {
-      onLongHover: rootFolders.length > 0 ? () => toggleExpand(MY_DOCUMENTS_EXPAND_KEY) : undefined,
+      onLongHover: rootFolders.length > 0 ? () => toggleExpand(MY_PROJECTS_EXPAND_KEY) : undefined,
     },
   );
   return (
@@ -62,21 +61,21 @@ export function SpacesGroup({
       after={has('signInNudge') ? <SidebarSignInNudge /> : null}
     >
       <SidebarRow
-        icon={<MyDocumentsIcon />}
+        icon={<MyProjectsIcon />}
         tone="sky"
-        label={SIDEBAR_LABELS.myDocuments}
-        textLabel={SIDEBAR_LABELS.myDocuments}
+        label={SIDEBAR_LABELS.myProjects}
+        textLabel={SIDEBAR_LABELS.myProjects}
         selected={selected.kind === 'all'}
         onActivate={() => {
-          trackSidebar('MyDocuments');
+          trackSidebar('MyProjects');
           go({ kind: 'all' });
         }}
         depth={0}
         expandable={rootFolders.length > 0}
-        expanded={expanded.has(MY_DOCUMENTS_EXPAND_KEY)}
-        onToggleExpand={() => toggleExpand(MY_DOCUMENTS_EXPAND_KEY)}
-        onContextMenu={myDocumentsMenu.onContextMenu}
-        trailing={myDocumentsMenu.trailing}
+        expanded={expanded.has(MY_PROJECTS_EXPAND_KEY)}
+        onToggleExpand={() => toggleExpand(MY_PROJECTS_EXPAND_KEY)}
+        onContextMenu={myProjectsMenu.onContextMenu}
+        trailing={myProjectsMenu.trailing}
         rowProps={drop.handlers}
         highlighted={drop.isDragOver}
       >
@@ -119,10 +118,11 @@ export function SpacesGroup({
           label={SIDEBAR_LABELS.newTeam}
           textLabel={SIDEBAR_LABELS.newTeam}
           selected={false}
+          // Teams are made on liveworkspace.app, the same team in every app
+          // (liveworkspace/docs/accounts.md "Teams").
           onActivate={() => {
             trackSidebar('NewTeam');
-            setTeamModalOpen(true);
-            setMobileNavOpen(false);
+            window.location.assign(manageTeamsUrl);
           }}
           depth={0}
         />

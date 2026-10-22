@@ -5,7 +5,7 @@
 // Field, Priority by Status), Swimlanes and Row Order (a Gantt chart). The same changes as its element menu's View
 // flyout (planViewSettingsModel), so either does.
 import { useState, type ReactNode } from 'react';
-import type { PlanViewRef } from '@liveplanner/document';
+import type { PlanViewRef } from '@liveplanner/project';
 import { CompactEmptyState, lucideGlyph } from '@liveplanner/ui';
 import {
   lucideCalendar,

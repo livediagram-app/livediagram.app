@@ -4,14 +4,14 @@ import { describe, expect, it } from 'vitest';
 import { PaneHeader } from './PaneHeader';
 
 // Help and Create always sit right of the List / Card / Details toggle
-// (docs/specs/006-document/document-snapshots.md).
+// (docs/specs/006-project/project-snapshots.md).
 describe('PaneHeader', () => {
   it('puts Help and Create after the view toggle', () => {
     const { container } = render(
       <PaneHeader
-        title="My Documents"
+        title="My Projects"
         crumbs={[]}
-        onCreateDocument={() => {}}
+        onCreateProject={() => {}}
         onCreateFolder={() => {}}
         folderLabel="New folder"
         helpArticle="sharing"

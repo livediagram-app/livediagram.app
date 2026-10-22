@@ -4,7 +4,7 @@
 // colours"): the active tab's theme colours, named by colour words. The same colours the element menu's colour
 // rows offer (useColourPalette), so a Plan card, a Draw marker and a shape all open on one Theme Palette.
 import { useContext, useMemo } from 'react';
-import { EditorContext } from '@/app/document/[id]/EditorContext';
+import { EditorContext } from '@/app/project/[id]/EditorContext';
 import { getTheme, themePresetColors } from '@/lib/themes';
 import { themeOptions, type ColourOption } from './colour-options';
 

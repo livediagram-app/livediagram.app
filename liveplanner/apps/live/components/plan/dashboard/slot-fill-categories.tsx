@@ -16,12 +16,7 @@ import {
 import type { PlanPalette } from '../plan-palette';
 import { BoardPreview, SHEET_TILES, SheetPreview } from '../PlanBoardPicker';
 import { MetricPreview, VisualisationPreview } from './slot-previews';
-import {
-  CardPreview,
-  DiagramPreview,
-  FormMetricPreview,
-  SheetMetricPreview,
-} from './card-previews';
+import { CardPreview, FormMetricPreview, SheetMetricPreview } from './card-previews';
 
 // A gauge: a half ring and its needle.
 function GaugeGlyph() {
@@ -60,7 +55,7 @@ const FormGlyph = lucideGlyph(lucideClipboardList, 16);
  *  the picker said "Card Metrics" where the art was filed under "Metrics", and that card showed no picture, glyph or
  *  description. */
 export const SLOT_CATEGORIES = [
-  'This Document’s Tabs',
+  'This Project’s Tabs',
   'New Board',
   'New Sheet',
   'Card Metrics',
@@ -86,10 +81,11 @@ function StackedCards({ palette }: { palette: PlanPalette }) {
 }
 
 const SLOT_CATEGORY_INFO: Record<SlotCategory, Info> = {
-  'This Document’s Tabs': {
+  'This Project’s Tabs': {
     icon: <PanelsGlyph />,
-    description: 'Your boards, sheets and diagrams, live.',
-    picture: (p) => <DiagramPreview palette={p} />,
+    description: 'Your boards and sheets, live.',
+    // A board of the project's own, set apart from New Board's Kanban.
+    picture: (p) => <BoardPreview preset="sprint" palette={p} />,
   },
   'New Board': {
     icon: <BoardGlyph />,

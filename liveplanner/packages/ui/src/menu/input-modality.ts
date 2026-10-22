@@ -1,5 +1,5 @@
 // How the person last interacted, and what last held focus, read by the menu hooks
-// (docs/specs/004-interface-design/menus.md; D51). Two capture listeners on the document, installed
+// (docs/specs/004-interface-design/menus.md; D51). Two capture listeners on the project, installed
 // once when this module first loads in a browser.
 //
 // Read at a menu's mount, both answer for the moment it was opened, even when the control that

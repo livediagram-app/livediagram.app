@@ -1,6 +1,6 @@
 // Barrel for the liveplanner HTTP/WS client. The implementation is split
-// by domain under lib/api/* (core plumbing + documents / tabs / share /
-// folders / self / room / preferences / ai); this
+// by domain under lib/api/* (core plumbing + projects / tabs / share /
+// folders / self / room / preferences / capabilities); this
 // file re-exports the public surface so existing `@/lib/api-client`
 // imports keep working unchanged.
 
@@ -31,7 +31,7 @@ export { ApiError, SessionTokenUnavailableError } from './api/core';
 export { reportSaveFailure, setApiErrorReporter, setApiWarningReporter } from './api/error-report';
 export {
   API_BASE,
-  DOCUMENT_LIST_LOAD_SAFETY_MS,
+  PROJECT_LIST_LOAD_SAFETY_MS,
   setTokenProvider,
   registerTokenProvider,
   setSessionSharePassword,
@@ -40,7 +40,7 @@ export {
   writeCachedSharePassword,
 } from './api/core';
 
-export * from './api/documents';
+export * from './api/projects';
 export * from './api/tabs';
 export * from './api/changesets';
 export * from './api/share';
@@ -57,7 +57,7 @@ export * from './api/timeline';
 export * from './api/activity';
 export * from './api/home';
 export * from './api/preferences';
-export * from './api/ai';
+export * from './api/capabilities';
 export * from './api/unfurl';
 export * from './api/trash';
 // Workbench embeds (docs/specs/013-workspace/workbench-embeds.md).

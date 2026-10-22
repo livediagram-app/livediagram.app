@@ -1,10 +1,10 @@
-// The shapes placement on create works with (docs/specs/013-workspace/blueprints/document-placement.md,
+// The shapes placement on create works with (docs/specs/013-workspace/blueprints/project-placement.md,
 // docs/specs/013-workspace/blueprints/default-folders.md), shared by the resolver, its steps, the
 // lookups and the log.
 
 import type {
   CreationIntent,
-  DocumentPlacement,
+  ProjectPlacement,
   PlacementDefaultKey,
   PlacementRejection,
 } from '@liveplanner/api-schema';
@@ -12,7 +12,7 @@ import type {
 /** The placement a create body asks for. `chosen` is whether the caller chose a place at all: a
  *  team, or the `folderId` key present (null being the space's root, chosen on purpose). A body
  *  with neither is no choice, where a default folder may answer. */
-export type RequestedPlacement = DocumentPlacement & { chosen: boolean };
+export type RequestedPlacement = ProjectPlacement & { chosen: boolean };
 
 /** Who is creating: the hybrid owner (guest or account) and the verified account id, if any. Team
  *  membership is only ever read against `verifiedUserId`, never the guest header. */
@@ -40,12 +40,12 @@ export type PlacementDecision =
 
 /** What one folder step answers: a placement, a refusal, or null to pass to the next step. */
 export type FolderStepAnswer =
-  | ({ ok: true; placement: DocumentPlacement } & PlacementDecision)
+  | ({ ok: true; placement: ProjectPlacement } & PlacementDecision)
   | { ok: false; rejection: PlacementRejection };
 
 /** The resolver's answer. A placement carries every default skipped on the way to it. */
 export type PlacementOutcome =
-  | ({ ok: true; placement: DocumentPlacement; skipped: DefaultSkip[] } & PlacementDecision)
+  | ({ ok: true; placement: ProjectPlacement; skipped: DefaultSkip[] } & PlacementDecision)
   | { ok: false; rejection: PlacementRejection };
 
 export type FolderStepInput = {

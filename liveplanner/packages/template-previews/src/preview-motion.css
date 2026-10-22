@@ -8,7 +8,7 @@
 
    Two layers:
    1. Every preview REPLAYS ITS BUILD: each drawn shape pops in after the one
-      before, in document order, so the diagram assembles itself. Works for
+      before, in project order, so the diagram assembles itself. Works for
       all ~48 previews with no per-template work, including ones nobody has
       drawn yet.
    2. Some previews then TELL A STORY with their own classes: `pv-new` shapes

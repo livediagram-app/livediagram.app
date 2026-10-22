@@ -2,61 +2,7 @@
 // the palette strip as a quick-add launchpad, and Zen mode. Format-painter and theme scenes are reused
 // from canvas.tsx, not redrawn. Composed only from the shared primitives.
 
-import { Scene, Shape, Arrow, Panel, Label, TextBar } from './primitives';
-import { MenuCard, Strip } from './toolbar-layout';
-
-/** A single key cap, sized to its glyph, drawn like a physical keyboard key. */
-function KeyCap({ x, y, w = 24, label }: { x: number; y: number; w?: number; label: string }) {
-  const h = 24;
-  return (
-    <g>
-      <rect
-        x={x}
-        y={y}
-        width={w}
-        height={h}
-        rx={5}
-        className="fill-white stroke-slate-300"
-        strokeWidth={1.5}
-      />
-      <rect x={x + 2} y={y + h - 5} width={w - 4} height={3} rx={1.5} className="fill-slate-200" />
-      <Label x={x + w / 2} y={y + h / 2} anchor="middle" size={11} weight={700} tone="strong">
-        {label}
-      </Label>
-    </g>
-  );
-}
-
-/** The shortcut reference in Settings › Keyboard: the All Shortcuts list,
- *  its Tools group open, each label as the editor words it with its key cap at the right. */
-export function KeyboardShortcuts() {
-  const rows: [string, string][] = [
-    ['V', 'Select Tool (or 1)'],
-    ['H', 'Hand Tool'],
-    ['I', 'Isometric View'],
-    ['Z', 'Zen Mode (focus)'],
-  ];
-  return (
-    <Scene w={420} h={236} bg="plain">
-      <Panel x={80} y={14} w={260} h={208} title="ALL SHORTCUTS">
-        <Label x={96} y={50} size={9} weight={700} tone="muted">
-          TOOLS
-        </Label>
-        {rows.map(([key, action], i) => {
-          const ry = 62 + i * 30;
-          return (
-            <g key={key}>
-              <Label x={96} y={ry + 12} size={10} tone="body">
-                {action}
-              </Label>
-              <KeyCap x={300} y={ry} label={key} />
-            </g>
-          );
-        })}
-      </Panel>
-    </Scene>
-  );
-}
+import { Scene, Panel, Label, TextBar } from './primitives';
 
 /** Settings › Keyboard: the Keyboard Shortcuts switch, turned off, above the
  *  All Shortcuts reference it gates. */
@@ -76,58 +22,6 @@ export function ShortcutsToggle() {
           All Shortcuts
         </Label>
         <TextBar x={102} y={148} w={120} tone="faint" />
-      </Panel>
-    </Scene>
-  );
-}
-
-/** The palette strip across the top of the canvas, Diagram's category bar, with the menu button and
- *  the tab's name in their card to its left. */
-export function CommandPalette() {
-  return (
-    <Scene w={420} h={190}>
-      <MenuCard x={8} y={16} />
-      <Strip x={78} y={16} />
-      <Shape x={60} y={104} w={84} h={46} kind="rect" label="Start" />
-      <Shape x={268} y={104} w={84} h={46} kind="rect" accent label="Ship" />
-      <Arrow from={[144, 127]} to={[268, 127]} />
-    </Scene>
-  );
-}
-
-/** Zen mode: a clean full-screen view with only the canvas and the zoom
- *  controls, every other panel hidden. */
-export function ZenMode() {
-  return (
-    <Scene w={420} h={236}>
-      <Shape x={56} y={84} w={84} h={48} kind="rect" label="Plan" />
-      <Shape x={184} y={44} w={84} h={48} kind="diamond" />
-      <Shape x={184} y={140} w={84} h={48} kind="rect" accent label="Ship" />
-      <Shape x={314} y={84} w={84} h={48} kind="circle" label="Done" />
-      <Arrow from={[140, 108]} to={[184, 68]} kind="elbow" />
-      <Arrow from={[226, 92]} to={[226, 140]} />
-      <Arrow from={[268, 164]} to={[314, 108]} kind="curved" />
-      {/* Zoom controls, bottom-right, the one chrome Zen mode keeps, with Exit zen mode at the
-          right end of the same pill, behind a divider (ZoomControls). */}
-      <Panel x={276} y={194} w={128} h={30}>
-        <Label x={292} y={210} size={13} weight={700} tone="muted">
-          −
-        </Label>
-        <Label x={324} y={210} size={10} weight={600} tone="body" anchor="middle">
-          100%
-        </Label>
-        <Label x={354} y={210} size={13} weight={700} tone="muted">
-          +
-        </Label>
-        <line x1={370} y1={200} x2={370} y2={218} className="stroke-slate-200" strokeWidth={1} />
-        <path
-          d="M378 203 l4 4 M378 207 h4 v-4 M394 215 l-4 -4 M394 211 h-4 v4"
-          className="stroke-brand-500"
-          strokeWidth={1.6}
-          fill="none"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
       </Panel>
     </Scene>
   );

@@ -9,7 +9,7 @@ import { repairBrowserStorage } from './repair';
 // the help centre"): Copy Diagnostics and Repair This Browser, one component for the editor's
 // load-error screen and the help centre's Repair page so the copy and the confirm read the same.
 // The repair asks first, inline, listing what is kept: a person who has lost a load is the person
-// most worried about losing their documents.
+// most worried about losing their projects.
 
 /** How long "Copied" shows before the button reads Copy Diagnostics again. */
 const COPIED_FOR_MS = 2_000;
@@ -139,7 +139,7 @@ export function BrowserRepairPanel({
             This clears liveplanner&rsquo;s saved settings and caches in this browser.
           </p>
           <p className="mt-1 text-slate-600 dark:text-slate-300">
-            Your documents, your guest identity, Offline Mode documents and your sign-in are kept.
+            Your projects, your guest identity, Offline Mode projects and your sign-in are kept.
             Settings such as panel layout and dismissed tips go back to their defaults.
           </p>
           <div className="mt-3 flex flex-wrap gap-2">

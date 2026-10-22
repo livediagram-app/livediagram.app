@@ -7,7 +7,7 @@ import {
   withBoundaryStyle,
   type BoundaryStyle,
   type ShapeElement,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { Glyph } from '@liveplanner/ui';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { DataMenuGlyph } from '@/components/palette/context-menu-data-rows';

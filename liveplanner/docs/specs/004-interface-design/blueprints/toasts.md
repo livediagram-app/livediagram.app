@@ -20,7 +20,7 @@ Derived from [Toasts](../toasts.md). Implementation detail only; the spec decide
 - **Plain**, **action** and **offer** toasts as in the spec. A toast **has answers** when it is an offer, or an action
   toast with at least one action (`toastAnswers(entry)`). Every toast **times out**: `toastTimeout(entry)` is
   `TOAST_ANSWER_TIMEOUT_MS` for one with answers, else `TOAST_TIMEOUT_MS[tone]`.
-- **Toast name**: a document, folder or tab name as a toast shows it, `toastName(name)` in
+- **Toast name**: a project, folder or tab name as a toast shows it, `toastName(name)` in
   `apps/live/lib/toast-name.ts`: whitespace collapsed, trimmed, cut by code point to `TOAST_NAME_MAX` with the last
   kept character an ellipsis (trailing spaces before it dropped), wrapped in `“` `”`; `null` for a blank name, and
   the caller substitutes its generic word.
@@ -103,12 +103,12 @@ hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-
 
 - At most `TOAST_LIMIT` (3) non-leaving entries, plus the few leaving ones for 150ms: the list is bounded.
 - The floor is measured only while the stack shows a toast: on mount, on a window `resize`, on a `ResizeObserver`
-  callback for the obstacles found, on a document `animationend` (a banner that flew into place), and when the
+  callback for the obstacles found, on a project `animationend` (a banner that flew into place), and when the
   toast count changes. Each measure is one `querySelectorAll` and one `getBoundingClientRect` per obstacle (four or
   five elements), and sets state only when the floor changes.
 - One timer per toast, never more than `TOAST_LIMIT`; a paused toast holds no timeout.
 - `toastName` is linear in the name's length (one regex pass, one code-point split); names are capped by
-  `docs/specs/006-document/name-length.md`, and it runs once per toast push, never on a hot path.
+  `docs/specs/006-project/name-length.md`, and it runs once per toast push, never on a hot path.
 
 ## Constants and configuration
 

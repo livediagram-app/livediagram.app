@@ -698,10 +698,10 @@ export * from './document-source';
 export * from './catalogues';
 export * from './comment-threads';
 export * from './agent-presence';
-export * from './community';
-export * from './community-authors';
+// The Community's shared contract is liveworkspace's (liveworkspace/docs/community.md); re-exported so the
+// editor, the Community pages and the api read it from here as before.
+export * from '@liveworkspace/community';
 export * from './community-paths';
-export * from './community-query';
 export * from './document-paths';
 // Share-link previews (docs/specs/013-workspace/share-link-previews.md).
 export * from './share-preview';

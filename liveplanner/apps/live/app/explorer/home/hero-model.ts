@@ -23,7 +23,7 @@ export function heroGreeting(hour: number): string {
 export const HERO_COPY = {
   question: 'what are you planning today?',
   lead: 'Jump back into what you use most, or see what changed while you were away.',
-  newDocument: 'New Document',
+  newProject: 'New Project',
   // The page header's words for the same drawer button.
   openNav: 'Browse sections',
   // The banner's close (explorer-home.md "Hiding the banner"), and its Settings switch.
@@ -32,19 +32,19 @@ export const HERO_COPY = {
   featuresLabel: 'What a project can hold',
 } as const;
 
-export type HeroPill = { id: 'documents' | 'inbox'; label: string; tone: 'emerald' | 'sky' };
+export type HeroPill = { id: 'projects' | 'inbox'; label: string; tone: 'emerald' | 'sky' };
 
-/** The status pills, each only once its count is known: never "0 documents" while the lists load, nor a clear Inbox
+/** The status pills, each only once its count is known: never "0 projects" while the lists load, nor a clear Inbox
  *  that was never read. */
 export function heroPills(input: {
-  documents: number | undefined;
+  projects: number | undefined;
   inbox: number | undefined;
 }): HeroPill[] {
   const pills: HeroPill[] = [];
-  if (input.documents !== undefined) {
+  if (input.projects !== undefined) {
     pills.push({
-      id: 'documents',
-      label: input.documents === 1 ? '1 document' : `${input.documents} documents`,
+      id: 'projects',
+      label: input.projects === 1 ? '1 project' : `${input.projects} projects`,
       tone: 'emerald',
     });
   }

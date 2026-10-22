@@ -89,7 +89,7 @@ describe('FormStatusBar, Not Taking Responses', () => {
     expect(screen.getByRole('button', { name: /suspended after reports/ })).toBeTruthy();
   });
 
-  it('only says, with nothing to open, for a full document with no responses tab', () => {
+  it('only says, with nothing to open, for a full project with no responses tab', () => {
     render(
       <FormStatusBar
         link={state({ link: { code: 'c', open: true, createdAt: 0 } })}

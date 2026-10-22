@@ -10,7 +10,7 @@ import {
   type FlowchartDirection,
   type FlowchartStepType,
   type Tab,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { lockedElementIds } from '@/lib/tab-cleanup';
 import { track } from '@/lib/telemetry';
 import { debugLog } from '@/lib/debug-log';

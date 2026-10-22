@@ -1,4 +1,4 @@
-// The comment verbs (docs/specs/015-api/cli.md "Commands"; agent-presence "Comments"): the threads of a document, and
+// The comment verbs (docs/specs/015-api/cli.md "Commands"; agent-presence "Comments"): the threads of a project, and
 // adding, replying to, resolving and reopening one, through the same endpoints the editor uses. A thread is named by
 // its element's ref, resolved over the plain tab (CLI78).
 
@@ -7,7 +7,7 @@ import { ApiError } from '@liveplanner/api-client';
 import {
   COMMENT_LIST_STATUSES,
   type CommentListStatus,
-  type DocumentCommentsResponse,
+  type ProjectCommentsResponse,
 } from '@liveplanner/api-schema';
 import {
   computeRefs,
@@ -15,15 +15,15 @@ import {
   takesCellThreads,
   threadAt,
   type Tab,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { parseA1 } from '@liveplanner/sheets';
-import { threadListingLines } from '@liveplanner/document-views';
+import { threadListingLines } from '@liveplanner/project-views';
 import { resolveTab } from '../addressing';
 import { defineVerb, VerbRefusal, type VerbContext } from '../define';
 import { readSheets } from '../sheets/sheet-state';
-import { documentOf, tabOf, tabPath } from './shared';
+import { projectOf, tabOf, tabPath } from './shared';
 
-const docArg = z.string().describe('A name, id prefix or liveplanner URL');
+const projectArg = z.string().describe('A name, id prefix or liveplanner URL');
 const tabFlag = z
   .string()
   .optional()
@@ -60,12 +60,12 @@ const EMPTY: Record<CommentListStatus, string> = {
 
 export const commentLs = defineVerb({
   id: 'comment.ls',
-  summary: 'The comment threads of a document, open by default',
+  summary: 'The comment threads of a project, open by default',
   description:
-    'Lists the comment threads of a document, or of one tab, in the outline\u2019s order: each element\u2019s ref, label, state and comments in full.',
+    'Lists the comment threads of a project, or of one tab, in the outline\u2019s order: each element\u2019s ref, label, state and comments in full.',
   behaviour: 'read',
   input: z.object({
-    doc: docArg,
+    project: projectArg,
     tab: z.string().optional().describe('A tab name or id prefix; every tab when omitted'),
     status: z
       .enum(COMMENT_LIST_STATUSES)
@@ -74,11 +74,11 @@ export const commentLs = defineVerb({
   }),
   output: z.object({ status: z.enum(COMMENT_LIST_STATUSES), threads: z.array(threadOutput) }),
   listKey: 'threads',
-  run: async (ctx, { doc, tab, status }) => {
-    const document = await documentOf(ctx, doc);
-    const tabId = tab === undefined ? null : resolveTab(document.tabs, tab, doc, ctx.log).id;
-    const { threads } = await ctx.api.json<DocumentCommentsResponse>(
-      `/documents/${encodeURIComponent(document.id)}/comments?status=${status}`,
+  run: async (ctx, { project: projectRef, tab, status }) => {
+    const project = await projectOf(ctx, projectRef);
+    const tabId = tab === undefined ? null : resolveTab(project.tabs, tab, projectRef, ctx.log).id;
+    const { threads } = await ctx.api.json<ProjectCommentsResponse>(
+      `/projects/${encodeURIComponent(project.id)}/comments?status=${status}`,
     );
     const shown = tabId === null ? threads : threads.filter((t) => t.tabId === tabId);
     ctx.log(`comments ${shown.length} of ${threads.length} threads`);
@@ -106,14 +106,14 @@ export const commentLs = defineVerb({
     threads.length ? threads.flatMap((t) => threadListingLines(t)) : [EMPTY[status]],
   quiet: ({ threads }) => threads.map((t) => t.ref),
   cli: {
-    positionals: ['doc'],
+    positionals: ['project'],
     examples: ['liveplanner comment ls "Shop"', 'liveplanner comment ls "Shop" --status all'],
     prints: 'each thread: its ref, label, state and tab, then its comments',
   },
 });
 
 type Target = {
-  documentId: string;
+  projectId: string;
   tabId: string;
   tabName: string;
   elementId: string;
@@ -123,9 +123,14 @@ type Target = {
 };
 
 // The element a ref names on the tab, over every element of the plain tab (VW2), refused as the views refuse it.
-async function targetOf(ctx: VerbContext, doc: string, tab: string | undefined, ref: string) {
-  const { document, tab: summary } = await tabOf(ctx, doc, tab);
-  const { tab: plain } = await ctx.api.json<{ tab: Tab }>(tabPath(document.id, summary.id));
+async function targetOf(
+  ctx: VerbContext,
+  projectRef: string,
+  tab: string | undefined,
+  ref: string,
+) {
+  const { project, tab: summary } = await tabOf(ctx, projectRef, tab);
+  const { tab: plain } = await ctx.api.json<{ tab: Tab }>(tabPath(project.id, summary.id));
   const table = computeRefs(plain.elements.map((el) => el.id));
   const found = resolveRef(ref, table);
   const where = `on tab ${JSON.stringify(summary.name)}`;
@@ -135,7 +140,7 @@ async function targetOf(ctx: VerbContext, doc: string, tab: string | undefined, 
       code: 'ref_not_found',
       message: `no element ${ref} ${where}`,
       lines: found.nearest.map((near) => `  ${near}`),
-      hint: `the refs are in: liveplanner tab view ${JSON.stringify(doc)}`,
+      hint: `the refs are in: liveplanner tab view ${JSON.stringify(projectRef)}`,
     });
   if (found.kind === 'ambiguous')
     throw new VerbRefusal({
@@ -146,7 +151,7 @@ async function targetOf(ctx: VerbContext, doc: string, tab: string | undefined, 
       hint: 'give more of the ref',
     });
   return {
-    documentId: document.id,
+    projectId: project.id,
     tabId: summary.id,
     tabName: summary.name,
     elementId: found.id,
@@ -165,7 +170,7 @@ function lastCommentOf(target: Target, ref: string): string {
       status: 404,
       code: 'no_thread',
       message: `no thread on ${where}`,
-      hint: `start one: liveplanner comment add <doc> ${ref} "<text>"`,
+      hint: `start one: liveplanner comment add <project> ${ref} "<text>"`,
     });
   return last.id;
 }
@@ -184,7 +189,7 @@ async function withCell(ctx: VerbContext, target: Target, ref: string, a1: strin
       hint: 'name a Sheet element, or leave out --cell',
     });
   const pos = parseA1(a1);
-  const sheet = (await readSheets(ctx.api, target.documentId, target.tabId)).find(
+  const sheet = (await readSheets(ctx.api, target.projectId, target.tabId)).find(
     (s) => s.id === sheetId,
   );
   const row = pos && sheet ? sheet.layout.rows[pos.r] : undefined;
@@ -199,7 +204,7 @@ async function withCell(ctx: VerbContext, target: Target, ref: string, a1: strin
   return { ...target, cell: `${row}:${col}` } satisfies Target;
 }
 
-const commentsPath = (t: Target) => `${tabPath(t.documentId, t.tabId)}/comments`;
+const commentsPath = (t: Target) => `${tabPath(t.projectId, t.tabId)}/comments`;
 
 const lineOutput = z.object({ text: z.string(), id: z.string() });
 const lineText = ({ text }: { text: string }) => [text];
@@ -211,10 +216,10 @@ export const commentAdd = defineVerb({
   description:
     'Adds a comment to an element\u2019s thread, starting one if it has none (a resolved thread reopens). The comment is the token owner\u2019s.',
   behaviour: 'write',
-  input: z.object({ doc: docArg, tab: tabFlag, ref: refArg, text: textArg, cell: cellArg }),
+  input: z.object({ project: projectArg, tab: tabFlag, ref: refArg, text: textArg, cell: cellArg }),
   output: lineOutput,
-  run: async (ctx, { doc, tab, ref, text, cell }) => {
-    const target = await withCell(ctx, await targetOf(ctx, doc, tab, ref), ref, cell);
+  run: async (ctx, { project: projectRef, tab, ref, text, cell }) => {
+    const target = await withCell(ctx, await targetOf(ctx, projectRef, tab, ref), ref, cell);
     const { comment } = await ctx.api.json<{ comment: { id: string } }>(commentsPath(target), {
       method: 'POST',
       body: JSON.stringify({
@@ -228,7 +233,7 @@ export const commentAdd = defineVerb({
   text: lineText,
   quiet: quietId,
   cli: {
-    positionals: ['doc', 'ref', 'text'],
+    positionals: ['project', 'ref', 'text'],
     examples: [
       'liveplanner comment add "Shop" api "Should this be idempotent?"',
       'liveplanner comment add "Shop" --tab Flow 146b "Missing a retry"',
@@ -242,10 +247,10 @@ export const commentReply = defineVerb({
   summary: 'Reply to the thread on an element',
   description: 'Adds a reply to the thread on an element; an element with no thread is refused.',
   behaviour: 'write',
-  input: z.object({ doc: docArg, tab: tabFlag, ref: refArg, text: textArg, cell: cellArg }),
+  input: z.object({ project: projectArg, tab: tabFlag, ref: refArg, text: textArg, cell: cellArg }),
   output: lineOutput,
-  run: async (ctx, { doc, tab, ref, text, cell }) => {
-    const target = await withCell(ctx, await targetOf(ctx, doc, tab, ref), ref, cell);
+  run: async (ctx, { project: projectRef, tab, ref, text, cell }) => {
+    const target = await withCell(ctx, await targetOf(ctx, projectRef, tab, ref), ref, cell);
     const last = lastCommentOf(target, ref);
     const { comment } = await ctx.api.json<{ comment: { id: string } }>(
       `${commentsPath(target)}/${encodeURIComponent(last)}/reply`,
@@ -256,7 +261,7 @@ export const commentReply = defineVerb({
   text: lineText,
   quiet: quietId,
   cli: {
-    positionals: ['doc', 'ref', 'text'],
+    positionals: ['project', 'ref', 'text'],
     examples: [
       'liveplanner comment reply "Shop" api "Yes, keyed by order id"',
       'liveplanner comment reply 3f9c --tab Flow 146b "Done"',
@@ -273,10 +278,10 @@ function threadStateVerb(verb: 'resolve' | 'reopen') {
       verb === 'resolve' ? 'Resolve the thread on an element' : 'Reopen the thread on an element',
     description: `Marks the thread on an element ${state}; it already being so changes nothing.`,
     behaviour: 'write',
-    input: z.object({ doc: docArg, tab: tabFlag, ref: refArg, cell: cellArg }),
+    input: z.object({ project: projectArg, tab: tabFlag, ref: refArg, cell: cellArg }),
     output: lineOutput,
-    run: async (ctx, { doc, tab, ref, cell }) => {
-      const target = await withCell(ctx, await targetOf(ctx, doc, tab, ref), ref, cell);
+    run: async (ctx, { project: projectRef, tab, ref, cell }) => {
+      const target = await withCell(ctx, await targetOf(ctx, projectRef, tab, ref), ref, cell);
       const last = lastCommentOf(target, ref);
       const res = await ctx.api.fetch(
         `${commentsPath(target)}/${encodeURIComponent(last)}/${verb}`,
@@ -290,7 +295,7 @@ function threadStateVerb(verb: 'resolve' | 'reopen') {
     text: lineText,
     quiet: quietId,
     cli: {
-      positionals: ['doc', 'ref'],
+      positionals: ['project', 'ref'],
       examples: [
         `liveplanner comment ${verb} "Shop" api`,
         `liveplanner comment ${verb} 3f9c --tab Flow 146b`,

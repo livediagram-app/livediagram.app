@@ -1,10 +1,10 @@
-// The CLI's listening socket on a document's room (docs/specs/015-api/blueprints/cli.md "The room stream", CLI32):
+// The CLI's listening socket on a project's room (docs/specs/015-api/blueprints/cli.md "The room stream", CLI32):
 // a one-time ticket over REST, then a socket that never sends a frame, so it is no session in anyone's roster.
 // A dropped socket reconnects with a fresh ticket, backing off from ROOM_RECONNECT_MIN_MS doubling to
-// ROOM_RECONNECT_MAX_MS; a document moved to the Trash ends the stream.
+// ROOM_RECONNECT_MAX_MS; a project moved to the Trash ends the stream.
 
 import { ApiError, type ApiClient } from '@liveplanner/api-client';
-import { DOCUMENT_TRASHED_CLOSE } from '@liveplanner/api-schema';
+import { PROJECT_TRASHED_CLOSE } from '@liveplanner/api-schema';
 import type { CliIo, RoomSocket } from '../io';
 
 export const ROOM_RECONNECT_MIN_MS = 1_000;
@@ -24,7 +24,7 @@ type Deps = {
   api: ApiClient;
   // The api base the token talks to, e.g. https://www.liveplanner.app/api.
   apiBase: string;
-  documentId: string;
+  projectId: string;
   log: (line: string) => void;
   // A line for the person running the command (stderr).
   notice: (line: string) => void;
@@ -34,15 +34,15 @@ type Deps = {
   onReconnected: () => void;
 };
 
-const socketUrl = (apiBase: string, documentId: string, ticket: string) =>
-  `${apiBase.replace(/^http/, 'ws')}/documents/${encodeURIComponent(documentId)}/ws?t=${encodeURIComponent(ticket)}`;
+const socketUrl = (apiBase: string, projectId: string, ticket: string) =>
+  `${apiBase.replace(/^http/, 'ws')}/projects/${encodeURIComponent(projectId)}/ws?t=${encodeURIComponent(ticket)}`;
 
-// A refusal of the ticket is final (the document is gone, or the token may not read it); anything else is the
+// A refusal of the ticket is final (the project is gone, or the token may not read it); anything else is the
 // network, and is retried. A 429 is the host asking for patience, never a refusal.
 const isFinal = (err: unknown) => err instanceof ApiError && err.status < 500 && err.status !== 429;
 
 export function openRoomStream(deps: Deps): RoomStream {
-  const { io, api, documentId, log } = deps;
+  const { io, api, projectId, log } = deps;
   let socket: RoomSocket | null = null;
   let stopped = false;
   let backoff = ROOM_RECONNECT_MIN_MS;
@@ -70,7 +70,7 @@ export function openRoomStream(deps: Deps): RoomStream {
     let ticket: string;
     try {
       ({ ticket } = await api.json<{ ticket: string }>(
-        `/documents/${encodeURIComponent(documentId)}/room-ticket`,
+        `/projects/${encodeURIComponent(projectId)}/room-ticket`,
         { method: 'POST' },
       ));
     } catch (err) {
@@ -80,7 +80,7 @@ export function openRoomStream(deps: Deps): RoomStream {
       return retry();
     }
     if (stopped) return;
-    const ws = io.openSocket(socketUrl(deps.apiBase, documentId, ticket));
+    const ws = io.openSocket(socketUrl(deps.apiBase, projectId, ticket));
     socket = ws;
     ws.onOpen(() => {
       log('room open');
@@ -109,7 +109,7 @@ export function openRoomStream(deps: Deps): RoomStream {
       log(`room closed ${code}`);
       socket = null;
       if (stopped) return;
-      if (code === DOCUMENT_TRASHED_CLOSE) {
+      if (code === PROJECT_TRASHED_CLOSE) {
         stopped = true;
         return settle('trashed');
       }

@@ -1,6 +1,6 @@
 // An item's description formatting (docs/specs/026-plan/items.md "Fields"): `descriptionRich`, runs of
 // text with the editor's marks, beside `description`, its plain-text mirror. The run shape matches
-// @liveplanner/document's TextRun, checked here because the item store sits below that package.
+// @liveplanner/project's TextRun, checked here because the item store sits below that package.
 import type { ItemFieldValue } from './item';
 import { ITEM_DESCRIPTION_MAX } from './limits';
 import { HEX_COLOUR } from './validate';

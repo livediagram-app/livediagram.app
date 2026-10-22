@@ -21,7 +21,7 @@ const GROUPED_ROWS = [
   {
     words: ['pull', 'push'],
     after: 'workbench',
-    summary: 'one document to a file and back; export --all',
+    summary: 'one project to a file and back; export --all',
   },
 ] as const;
 const NAMED_ONLY = [
@@ -56,7 +56,7 @@ export function topHelp(): string {
   );
   const pad = (s: string) => s.padEnd(width + 2);
   return [
-    'liveplanner: read, build, edit and discuss documents.',
+    'liveplanner: read, build, edit and discuss projects.',
     'Usage: liveplanner <resource> <verb> [args] [flags]',
     '',
     ...rows.flatMap((r) => [
@@ -67,14 +67,13 @@ export function topHelp(): string {
     ]),
     `  ${NAMED_ONLY.join(', ')}`,
     '',
-    '<doc> is a name, id prefix or link; --tab a tab name or id prefix (first by default).',
+    '<project> is a name, id prefix or link; --tab a tab name or id prefix (first by default).',
     'stdout is data, hints stderr; --json (=a,b picks fields), -q refs only.',
     'Exit 0 done, 1 refused, 2 usage, 3 not found, 4 auth, 5 conflict, 6 rate limit, 7 network.',
     '',
     'Start',
-    '  liveplanner document ls auth        find a document',
+    '  liveplanner project ls auth        find a project',
     '  liveplanner tab view "Auth flow"    its first tab, as an outline',
-    '  liveplanner tab lint "Auth flow"    what is wrong with how it is drawn',
     '  liveplanner guide edit              change a tab with edit operations',
     '',
     'Sign in: LIVEPLANNER_TOKEN, or auth login --with-token. Never prompts.',

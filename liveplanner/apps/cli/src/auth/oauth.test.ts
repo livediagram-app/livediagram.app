@@ -9,7 +9,7 @@ import { LOGIN_TIMEOUT_MS } from './oauth';
 
 const HOST = 'https://liveplanner.app';
 const ISSUER = 'https://mcp.liveplanner.app';
-const NEW = `lvd_${'b'.repeat(43)}`;
+const NEW = `lwt_${'b'.repeat(43)}`;
 
 type Script = {
   tokenAnswers?: Record<string, unknown>[];
@@ -27,7 +27,7 @@ function host(script: Script = {}) {
       return Response.json({
         apiBase: `${HOST}/api`,
         authEnabled: true,
-        documentFormat: 2,
+        projectFormat: 2,
         ...(script.noIssuer ? {} : { oauthIssuer: ISSUER }),
       });
     if (url.href === `${ISSUER}/.well-known/oauth-authorization-server`)

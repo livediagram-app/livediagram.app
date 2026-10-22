@@ -1,0 +1,111 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Privacy Policy',
+  description:
+    'The privacy policy for the hosted livedesign service: what it does, and does not do, with your data.',
+  path: '/help/policies/privacy-policy/',
+});
+
+<ArticleLayout title="Privacy Policy" description="What the hosted livedesign service does, and does not do, with your data." categoryTitle="Policies" categorySlug="policies">
+
+_Last updated: 18 October 2026._
+
+livedesign is built to need as little of your data as possible, and the whole codebase is public so you can check that for yourself. This policy explains what the hosted service at **livedesign.app** does with your data. It sits alongside our [Terms of Service](/help/policies/terms/). If you self-host livedesign, you are responsible for your own deployment and this policy does not apply to it.
+
+## What we store
+
+- **Your documents.** The content you create is saved so it is there when you come back, and so the people you share it with can see it. It is stored in our database on Cloudflare. A document you create in [Offline Mode](/help/privacy-and-security/offline-mode/) is the exception: it stays in your browser and never reaches our servers, unless you ask the AI assistant about it, read sticky notes from a photo (see **AI features**), or add a web link to it (our server fetches the link's preview).
+- **Images you upload.** Images placed in a document are kept in Cloudflare object storage and served back through the same API. Before a JPEG is stored, identifying metadata such as GPS location and camera details is stripped from it, so it never reaches anyone you share the document with.
+- **A browser id.** If you use livedesign without an account, we keep a random identifier in your browser's local storage to link documents to your browser. It is not tied to your name or email.
+- **Your display name and colour.** The name and cursor colour collaborators see are stored on our server against your browser id or account.
+- **Account details, if you sign in.** Sign-in is handled by our authentication provider, Clerk. If you create an account we receive your email address, and, if you choose Google sign-in, basic profile details from Google. We use these to identify your account and to send you the account and onboarding emails described under **Emails we send** below.
+- **Your profile picture's address, if you sign in.** Your profile picture is a picture you uploaded to your account, or your Google picture. We store only its web address (hosted by Clerk), never the image, so we can show it to the people you collaborate with who are signed in: on your presence avatar, your cursor, your comments and your team's member list. People who open your share links without signing in always see your initials. Turn it off in **Settings > Account > Show My Profile Picture**; it is removed when you delete your account.
+- **API tokens, if you create them.** If you create an [API token](/help/account-and-data/api-tokens/) to call the API from your own scripts, we store a one-way hash of it (never the token itself), its name, and a last-used timestamp, so the token can be verified and you can see when it was last active. Tokens are a signed-in-only feature, expire after six months, and are deleted when you delete your account.
+- **Connecting an AI tool, if you do.** If you connect an AI tool via our [MCP server](/help/account-and-data/connect-ai-mcp/), we store the app's registration (its name and redirect address, kept for 30 days), short-lived authorization sessions and codes that expire within minutes, and, for an hour, a count of registrations from your IP address to stop abuse. The connection itself is an API token, covered above, and you can revoke it any time.
+- **Team invitations.** If a teammate invites you by email, we store that address with the team, send you the invitation (and up to three reminders while nobody has answered it, each with a link to decline it), and may send you action and mention emails at that address before you create an account.
+- **Form responses.** If you publish a [form](/help/canvas/plan-mode/forms/), each response someone sends is stored in your document as a card or a sheet row, holding only what they typed into the form. People filling in a form need no account, and we store no name, account or browser id for them. A report about a form stores its reason, the optional note, a random key kept in the reporter's browser and a one-way hash of their network.
+- **Votes from guests.** To stop one person voting many times, a guest's vote stores a one-way hash of their network address combined with the document's id. It is deleted with the document.
+- **Document activity.** Your [Timeline](/help/explorer/timeline/) records what happened to your documents (created, renamed, shared, commented on) and which ones you opened, so the Explorer can show you. These records are kept for a year.
+- **Basic operational logs.** Our host, Cloudflare, keeps standard request logs that help us run the service securely.
+
+## AI features
+
+The AI features run only when you use them, and only on a deployment that has an AI provider configured.
+
+- **The AI assistant.** When you ask the assistant something, your prompt, the tab's name, the elements on the current tab (their text, shapes and positions) and your last few messages in that conversation are sent through our API to **OpenAI**, which writes the answer. Nothing is sent until you ask, and the assistant is off until you turn it on in Settings.
+- **Connected AI tools.** If you [connect an AI tool](/help/account-and-data/connect-ai-mcp/) such as Claude, that tool reads and changes your documents through our API using the token you approved. What the tool does with what it reads is governed by that tool's own terms and privacy policy, not this one.
+
+We do not use your documents to train AI models. The providers above process what is sent to them under their own API terms.
+
+## What we do not do
+
+We do not use tracking pixels, advertising, or third-party analytics SDKs. We do not sell your data, and we do not build advertising profiles. The repository is public, so what runs is what you can read.
+
+## Anonymous product analytics
+
+To understand which features actually help, we record anonymous, first-party product events, for example "a document was created" or "a square was added". Each event is just three fixed labels: a category, an action, and an optional type like "Square" or "Edit". They never include anything that identifies you or your work: no names, no document or element content, no account id, no IP address. Page views are counted the same way: which page was opened, with ids and anything after a `?` or `#` removed in your browser before it is sent. When one of our own buttons opens the New Document page, we count which button it was (from a fixed list, like the landing page's hero) and whether a document followed; the label is removed from the address straight away. Error health is counted the same way too: a failed request or a browser-side exception is recorded only as a generic status or kind, never a message or stack trace. How long key moments take (a document opening, a save, a page loading) is counted the same way: only the range it fell in, like "under one second", never the exact time. Events are deleted after 60 days.
+
+To count sign-ups and sign-ins once each, our server also remembers which sign-in sessions it has already counted, for 90 days, and that an account has been seen before (deleted when you delete your account). These records are never published; only the totals are.
+
+We collect this ourselves, store it in our own database, and use no third-party analytics vendors. The data is never sold or shared, and the only place it goes beyond our own use is our public [telemetry dashboard](/telemetry), where you can see exactly the same anonymous totals we do. You can turn off the events your browser sends at any time from Settings (see [What We Collect](/help/privacy-and-security/what-we-collect/)). A few anonymous totals are counted by our server and can't be turned off: sign-ups and sign-ins, first visits to a share link, multiplayer sessions, emails sent, and server errors.
+
+## Cookies and local storage
+
+We use local storage to keep your browser id, and your preferences (also saved to our database so they follow you). Clerk's sign-in script loads in the editor for every visitor and sets cookies to remember whether you are signed in, and to keep you signed in. We do not use advertising or tracking cookies.
+
+## Emails we send
+
+If you have an account, we use your email address to send you a small number of emails:
+
+- **Account and service emails**: an invitation when someone invites you to a team (with up to three reminders while it is unanswered), a confirmation when you delete your account, a one-time reminder a week before an API token expires, and a note if one of your forms is suspended after reports.
+- **Notifications about your work**: when someone opens a document you shared for the first time, comments on a document you own, fills in one of your forms, responds to a team invite you sent, assigns you an action, or mentions you in a comment. A mention email quotes the comment (up to about 280 characters) and an assigned-action email includes the action's name and the start of its description; the others name the document but not its contents.
+- **A short onboarding series**: a welcome message, a few tips during your first two weeks, a nudge if you have not made a document after a few days or have been away for about four weeks, and the occasional milestone.
+
+You can turn off every notification, tip and milestone email in **Settings**, under **Account**, then **Notifications**, or from the link at the bottom of each one (see [Email Notifications](/help/account-and-data/email-notifications/)). We do not send advertising or marketing beyond these, and we never share your address other than with our email provider for the sole purpose of delivering them. Apart from team invitations and the emails that follow from them, people who use livedesign without an account are never emailed.
+
+## Service providers
+
+We rely on a small number of providers to run the service:
+
+- **Cloudflare**, for hosting, database storage, and image storage.
+- **Clerk**, for authentication (its script loads for every visitor; it holds account data only if you sign in).
+- **Resend**, for delivering the emails described above (to account holders, and to addresses a teammate invites).
+- **OpenAI**, for the AI assistant (only when you use it; see **AI features** above).
+
+These providers process data on our behalf so that we can run the service.
+
+One more service is involved only when you use it: **Openverse**, run by the WordPress Foundation, answers searches in the image picker's Search tab. Your browser sends your search words to Openverse directly, so Openverse sees them and your IP address under its own privacy policy; our servers never see the search. A picture you pick is downloaded from its original host and then stored like any image you upload.
+
+Your browser also loads the editor's fonts from **Google Fonts**. A YouTube video's poster image, and a link card's icon and image, load from the provider when a document is viewed; other embeds (Vimeo, Loom, Figma, Google Docs, any website) load only when a viewer presses Load. Either way the provider sees the viewer's IP address. Link previews are fetched by our server from the linked site.
+
+## Sharing and visibility
+
+Anything you put in a document you share becomes visible to people who have the share link. You can protect a link with a password or give it an expiry, and revoking a link stops further access through it. See [Share Link Security](/help/privacy-and-security/share-link-security/).
+
+## Keeping and deleting your data
+
+You can delete any document you own at any time. A deleted document waits in the [Trash](/help/account-and-data/trash/) for 30 days, so you can restore it, and is then removed for good; you can also delete it permanently from the Trash sooner. Comments, answers, ideas and votes that passed through a live collaboration session are also kept in that session's own storage on Cloudflare, and that copy is removed with the document. A document left empty and untouched for 30 days moves to the Trash on its own.
+
+You can delete your account, and the data associated with it, yourself: open **Settings**, then **Account**, then **Delete Account**. This removes your documents (the Trash and their collaboration-session copies included), folders, images, themes, preferences and API tokens straight away, and deletes your account at Clerk. Documents in a team's shared library pass to another member of that team rather than being deleted. See [Deleting Your Data](/help/account-and-data/deleting-your-data/).
+
+Other things are kept only as long as they are useful: anonymous product events for 60 days, Timeline activity for a year, changes made by connected AI tools for 30 days (so they can be undone), and an uploaded image that no document uses is removed once it is more than 30 days old. A guest's documents have no account to delete: remove them from the Explorer, or ask us.
+
+## Security
+
+We protect your data with authentication and access controls on every request, and the code is public so the controls can be checked. If you find a security vulnerability, please report it privately as described in [Reporting a Vulnerability](/help/policies/report-a-vulnerability/).
+
+## Children
+
+livedesign is not directed at children, and we do not knowingly collect data from children.
+
+## Changes
+
+We may update this policy from time to time. The date at the top of this article reflects the latest version.
+
+## Contact
+
+For privacy questions or requests, reach us through our [contact form](https://www.livedesign.app/form/90Bgj5sY9eTpVrjhx9tTZj).
+
+</ArticleLayout>

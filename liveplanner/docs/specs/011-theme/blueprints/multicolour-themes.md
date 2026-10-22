@@ -8,10 +8,10 @@ Scope, by file:
 
 | File                                              | Role                                                              |
 | ------------------------------------------------- | ----------------------------------------------------------------- |
-| `packages/document/src/hierarchy.ts`              | The branch walk: `assignBranches`, `branchOfArrow`, `ROOT_BRANCH` |
-| `packages/document/src/theme-graph.ts`            | The four wrappers and the per-element branch resolution           |
-| `packages/document/src/themes-data.ts`            | The five built-in multi-colour themes                             |
-| `packages/document/src/colors.ts`                 | `contrastRatio`, the WCAG contrast helper (D3)                    |
+| `packages/project/src/hierarchy.ts`              | The branch walk: `assignBranches`, `branchOfArrow`, `ROOT_BRANCH` |
+| `packages/project/src/theme-graph.ts`            | The four wrappers and the per-element branch resolution           |
+| `packages/project/src/themes-data.ts`            | The five built-in multi-colour themes                             |
+| `packages/project/src/colors.ts`                 | `contrastRatio`, the WCAG contrast helper (D3)                    |
 | `apps/api/src/routes/custom-themes.ts`            | The empty-palette rejection                                       |
 | `apps/live/components/primitives/ThemeSwatch.tsx` | The card preview                                                  |
 
@@ -43,21 +43,21 @@ The walk holds no state between calls. It is a pure function of the element list
 ### `assignBranches(elements)`
 
 1. **Boxed set.** Collect the ids of every element for which `isBoxed(el)` holds.
-2. **Edges.** For each arrow, in document order, add the edge `from.elementId → to.elementId`
+2. **Edges.** For each arrow, in project order, add the edge `from.elementId → to.elementId`
    only if all of these hold. Otherwise skip the arrow.
    - Both endpoints have `kind === 'pinned'`.
    - The two ids differ (a self-loop adds nothing).
    - Both ids are in the boxed set.
 3. **Graph sets.** `children` maps a parent to its children in edge order. `hasParent` holds every
    child. `inGraph` holds both ends of every edge.
-4. **Roots.** Walk the elements in document order. A boxed element in `inGraph` but not in
+4. **Roots.** Walk the elements in project order. A boxed element in `inGraph` but not in
    `hasParent` is a root:
    - It gets `ROOT_BRANCH` and is marked visited.
    - Each of its children that isn't yet visited seeds the next branch index. The whole reachable
      subtree is painted with that index, and then the counter increments.
 5. **Paint.** Walk the subtree depth first with an explicit stack, never recursion (D4). An already
    visited node is skipped, so a shared or diamond descendant keeps the first index that reached it.
-6. **Loose.** Walk the elements again in document order. A boxed element not in `inGraph` and not
+6. **Loose.** Walk the elements again in project order. A boxed element not in `inGraph` and not
    yet in the map takes the next index from the same counter. It's shared with step 4, so hues may
    repeat, as the spec accepts.
 7. **Rootless.** Every id in `inGraph` still missing from the map gets `ROOT_BRANCH`.
@@ -115,7 +115,7 @@ export function resetThemeElementsToTheme(elements: Element[], theme: ThemeDefin
 export function resetArrowsToTheme(elements: Element[], theme: ThemeDefinition): Element[];
 ```
 
-New, in `packages/document/src/colors.ts` (D3):
+New, in `packages/project/src/colors.ts` (D3):
 
 ```ts
 // WCAG 2.2 contrast ratio of two #rrggbb colours, in [1, 21]; order-independent.
@@ -139,7 +139,7 @@ call before any database write.
 ## Data and persistence
 
 - **Static data.** The `palette` and `rootColor` of built-in themes live in
-  `packages/document/src/themes-data.ts` and ship in the bundle.
+  `packages/project/src/themes-data.ts` and ship in the bundle.
 - **Persisted.** The `palette` and `rootColor` of a custom theme live in `custom_themes.definition`
   (D1, JSON text).
 - **Never persisted.** The branch map is derived on every apply and never stored. An element stores
@@ -228,7 +228,7 @@ Each spec rule maps to one test, and every test is deterministic.
 | Rule                                                     | Test                                                            | File                                        |
 | -------------------------------------------------------- | --------------------------------------------------------------- | ------------------------------------------- |
 | Box-to-box edges only (E1–E3)                            | free endpoint; arrow-to-arrow and dangling pins; self-loop      | `hierarchy.test.ts`                         |
-| Roots seed branches in document order                    | root with three children                                        | `hierarchy.test.ts` (exists)                |
+| Roots seed branches in project order                    | root with three children                                        | `hierarchy.test.ts` (exists)                |
 | Subtree shares one index                                 | deep subtree                                                    | `hierarchy.test.ts` (exists)                |
 | Diamond keeps first index (E11)                          | two parents                                                     | `hierarchy.test.ts` (exists)                |
 | Loose elements continue the counter (E10)                | root + 2 branches + loose ⇒ index 2                             | `hierarchy.test.ts`                         |

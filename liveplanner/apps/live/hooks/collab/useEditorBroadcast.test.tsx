@@ -13,9 +13,9 @@ function setup(overrides: Partial<Deps> = {}) {
   const deps: Deps = {
     roomRef: { current: { send: (m: RoomOutgoing) => void sent.push(m) } },
     hydrated: true,
-    documentId: 'd1',
-    documentShareable: true,
-    documentTeamId: null,
+    projectId: 'd1',
+    projectShareable: true,
+    projectTeamId: null,
     activeId: 'tab1',
     cursorsHidden: false,
     ...overrides,

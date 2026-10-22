@@ -16,7 +16,7 @@ export type AgentPresenceRecord = {
   id: string;
   tokenId: string;
   tabId: string;
-  // The owner's per-document person tag; never leaves the room (I4).
+  // The owner's per-project person tag; never leaves the room (I4).
   personTag: string | null;
   // The share code the token was admitted by, so revoking it clears the entry (PR15).
   shareCode: string | null;
@@ -120,7 +120,7 @@ export class RoomAgentPresence {
     return true;
   }
 
-  // Every entry, or those admitted by one share code: a trashed document, a revoked or rescoped link (PR15).
+  // Every entry, or those admitted by one share code: a trashed project, a revoked or rescoped link (PR15).
   async clearWhere(match: (r: AgentPresenceRecord) => boolean): Promise<AgentPresenceRecord[]> {
     const gone = [...this.entries].filter(([, r]) => match(r));
     for (const [key] of gone) {
@@ -215,7 +215,7 @@ function agentPresenceWriteOf(body: unknown): AgentPresenceWrite | null {
   return ok ? (b as AgentPresenceWrite) : null;
 }
 
-// `[agent-presence] <event>` with the tab and token (blueprint "Observability"); the room knows no document id.
+// `[agent-presence] <event>` with the tab and token (blueprint "Observability"); the room knows no project id.
 export function agentPresenceLog(
   event: 'set' | 'cleared' | 'expired',
   r: { tabId: string; tokenId: string },
@@ -252,7 +252,7 @@ export async function answerAgentPresence(
   return Response.json({ expiresAt: result.expiresAt, created: result.created });
 }
 
-// A trashed document clears every entry; a revoked or rescoped link those its code admitted (PR15).
+// A trashed project clears every entry; a revoked or rescoped link those its code admitted (PR15).
 export async function clearAgentsForOp(
   store: RoomAgentPresence,
   op: unknown,
@@ -260,7 +260,7 @@ export async function clearAgentsForOp(
 ): Promise<void> {
   const { kind, code } = (op ?? {}) as { kind?: unknown; code?: unknown };
   const match =
-    kind === 'document-trashed'
+    kind === 'project-trashed'
       ? () => true
       : (kind === 'share-revoked' || kind === 'share-rescoped') && typeof code === 'string'
         ? (r: AgentPresenceRecord) => r.shareCode === code

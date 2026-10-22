@@ -1,4 +1,4 @@
-// The arrow keys among a start's cards (docs/specs/007-editor/start-diagramming.md "Keyboard"): Left and Right to the
+// The arrow keys among a start's cards (docs/specs/007-editor/start-panel.md "Keyboard"): Left and Right to the
 // card before and after in reading order (across a section's end into the next), Up and Down to the nearest card in the
 // row above and below, Home and End to the first and last. Pure over the cards' boxes, so the grid's column count (one
 // on a phone, three on a wide panel) never needs knowing.

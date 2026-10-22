@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 import {
   clampRightWidth,
   fractionFor,
@@ -50,12 +50,12 @@ export type SplitView = {
 
 // The side by side state (docs/specs/007-editor/split-view.md): which tab is on which side and how
 // the screen is shared. The editor itself is always on the active tab, so this hook never touches
-// the document; it steers `selectTab` and keeps the pair consistent as tabs come and go.
+// the project; it steers `selectTab` and keeps the pair consistent as tabs come and go.
 export function useSplitView({
   tabs,
   activeId,
   selectTab,
-  documentId,
+  projectId,
   hydrated,
   loadedTabIds,
   loadTabs,
@@ -64,8 +64,8 @@ export function useSplitView({
   tabs: readonly Tab[];
   activeId: string;
   selectTab: (tabId: string) => void;
-  documentId: string | null;
-  // The document's tabs are the real ones (not the pre-load placeholder), so a stored split can be
+  projectId: string | null;
+  // The project's tabs are the real ones (not the pre-load placeholder), so a stored split can be
   // matched against them.
   hydrated: boolean;
   loadedTabIds: ReadonlySet<string>;
@@ -110,11 +110,11 @@ export function useSplitView({
     setState(current);
   }
 
-  // Restore the document's split on arrival, once its tabs are known.
+  // Restore the project's split on arrival, once its tabs are known.
   const [restoredFor, setRestoredFor] = useState<string | null>(null);
-  if (hydrated && documentId && restoredFor !== documentId && tabIds.length > 0) {
-    setRestoredFor(documentId);
-    const restored = restoredPair(readStoredPair(documentId), activeId, tabIds);
+  if (hydrated && projectId && restoredFor !== projectId && tabIds.length > 0) {
+    setRestoredFor(projectId);
+    const restored = restoredPair(readStoredPair(projectId), activeId, tabIds);
     if (restored) {
       current = { pair: restored, seenActive: activeId };
       setState(current);
@@ -125,9 +125,9 @@ export function useSplitView({
   const leftId = pair?.leftId ?? null;
   const rightId = pair?.rightId ?? null;
   useEffect(() => {
-    if (documentId && restoredFor === documentId)
-      writeStoredPair(documentId, leftId && rightId ? { leftId, rightId } : null);
-  }, [documentId, restoredFor, leftId, rightId]);
+    if (projectId && restoredFor === projectId)
+      writeStoredPair(projectId, leftId && rightId ? { leftId, rightId } : null);
+  }, [projectId, restoredFor, leftId, rightId]);
 
   // The pane not holding the editor draws its tab: fetch a never-opened tab's content for it.
   const staticId = pair ? (pair.leftId === activeId ? pair.rightId : pair.leftId) : null;

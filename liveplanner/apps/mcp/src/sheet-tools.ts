@@ -17,26 +17,26 @@ import { deepLink, errorResult, requireToken, stopped, textResult } from './tool
 export function registerSheetTools(server: McpServer, env: Env): void {
   registerTool(server, env, mcpListSheets, async (args, extra) => {
     const api = clientFor(env, requireToken(extra));
-    const { sheets } = await listSheets(api, args.documentId, args.tabId);
-    return textResult({ sheets, url: deepLink(env, args.documentId) });
+    const { sheets } = await listSheets(api, args.projectId, args.tabId);
+    return textResult({ sheets, url: deepLink(env, args.projectId) });
   });
 
   registerTool(server, env, mcpReadSheet, async (args, extra) => {
     const api = clientFor(env, requireToken(extra));
-    const read = await readSheet(api, args.documentId, {
+    const read = await readSheet(api, args.projectId, {
       sheet: args.sheet,
       ...(args.range ? { range: args.range } : {}),
     });
     if (!read.ok) return errorResult(read.message);
     const { ok: _ok, ...result } = read;
-    return textResult({ ...result, url: deepLink(env, args.documentId) });
+    return textResult({ ...result, url: deepLink(env, args.projectId) });
   });
 
   registerTool(server, env, mcpChangeSheet, async (args, extra) => {
     const api = clientFor(env, requireToken(extra));
     const result = await changeSheet(
       api,
-      args.documentId,
+      args.projectId,
       { sheet: args.sheet, changes: args.changes },
       'mcp',
     );
@@ -46,18 +46,18 @@ export function registerSheetTools(server: McpServer, env: Env): void {
       title: result.title,
       applied: result.applied,
       rev: result.rev,
-      url: deepLink(env, args.documentId),
+      url: deepLink(env, args.projectId),
     });
   });
 
   registerTool(server, env, mcpAddSheet, async (args, extra) => {
     const api = clientFor(env, requireToken(extra));
-    const { documentId, ...input } = args;
+    const { projectId, ...input } = args;
     if ([input.rows, input.csv, input.design].filter((x) => x !== undefined).length > 1)
       return errorResult('Give the first cells as rows, csv or a design, one of them.');
-    const result = await addSheet(api, documentId, input, 'mcp');
+    const result = await addSheet(api, projectId, input, 'mcp');
     if (!result.ok) return errorResult(result.message);
     const { ok: _ok, ...sheet } = result;
-    return textResult({ ...sheet, url: deepLink(env, documentId) });
+    return textResult({ ...sheet, url: deepLink(env, projectId) });
   });
 }

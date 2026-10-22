@@ -1,5 +1,6 @@
 import {
   COMMUNITY_KEY_HEADER,
+  communityServiceUrl,
   communityImagePath,
   communityQueryParams,
   type CommunityFacetsResponse,
@@ -12,11 +13,14 @@ import {
   readErrorCode,
 } from '@livediagram/api-schema';
 import { getCommunityKey } from './community-key';
-import { API_BASE } from './config';
+import { API_BASE, COMMUNITY_API } from './config';
 
 // The Community app's api client (blueprint §4 routes, §5 "Community app"), typed with the shared
-// api-schema DTOs. Every request carries the community key so lists and posts come back with `liked`
-// filled in. Nothing here ever sends `X-Owner-Id`, and only My Shares sends a session token (blueprint §7).
+// api-schema DTOs. The gallery, posts, likes and reports are the liveworkspace Community service's
+// (liveworkspace/docs/community.md), asked for this app's posts only; My Shares is this app's api, which
+// alone knows who is signed in. Every request carries the community key so lists and posts come back
+// with `liked` filled in. Nothing here ever sends `X-Owner-Id`, and only My Shares sends a session token
+// (blueprint §7).
 
 export class CommunityApiError extends Error {
   readonly status: number;
@@ -36,7 +40,7 @@ function headers(extra?: Record<string, string>): Record<string, string> {
 }
 
 async function request(path: string, init: RequestInit = {}): Promise<Response> {
-  const res = await fetch(`${API_BASE}${path}`, {
+  const res = await fetch(path, {
     ...init,
     headers: headers(init.headers as Record<string, string> | undefined),
   });
@@ -48,14 +52,17 @@ async function json<T>(path: string, init?: RequestInit): Promise<T> {
   return (await (await request(path, init)).json()) as T;
 }
 
-const postPath = (id: string) => `/community/posts/${encodeURIComponent(id)}`;
+// A path on the Community service, for this app's posts. `search` is the rest of the query.
+const service = (path: string, search?: string) =>
+  communityServiceUrl('livediagram.app', path, { base: COMMUNITY_API, search });
+
+const postPath = (id: string) => `/posts/${encodeURIComponent(id)}`;
 
 export function fetchPosts(
   query: CommunityListQuery,
   signal?: AbortSignal,
 ): Promise<CommunityListResponse> {
-  const search = communityQueryParams(query).toString();
-  return json(`/community/posts${search ? `?${search}` : ''}`, { signal });
+  return json(service('/posts', communityQueryParams(query).toString()), { signal });
 }
 
 // My Shares: the signed-in author's own posts under the same search words, with their totals.
@@ -65,14 +72,14 @@ export function fetchMine(
   signal?: AbortSignal,
 ): Promise<CommunityMineResponse> {
   const search = communityQueryParams(query).toString();
-  return json(`/community/mine${search ? `?${search}` : ''}`, {
+  return json(`${API_BASE}/community/mine${search ? `?${search}` : ''}`, {
     signal,
     headers: { Authorization: `Bearer ${token}` },
   });
 }
 
 export function fetchFacets(signal?: AbortSignal): Promise<CommunityFacetsResponse> {
-  return json('/community/facets', { signal });
+  return json(service('/facets'), { signal });
 }
 
 // A missing, hidden or trashed post answers 404, which the post page shows as not-found.
@@ -81,7 +88,7 @@ export async function fetchPost(
   signal?: AbortSignal,
 ): Promise<CommunityPostResponse | null> {
   try {
-    return await json<CommunityPostResponse>(postPath(id), { signal });
+    return await json<CommunityPostResponse>(service(postPath(id)), { signal });
   } catch (err) {
     if (err instanceof CommunityApiError && err.status === 404) return null;
     throw err;
@@ -89,16 +96,16 @@ export async function fetchPost(
 }
 
 export function likePost(id: string): Promise<CommunityLikeResponse> {
-  return json(`${postPath(id)}/like`, { method: 'PUT' });
+  return json(service(`${postPath(id)}/like`), { method: 'PUT' });
 }
 
 export function unlikePost(id: string): Promise<CommunityLikeResponse> {
-  return json(`${postPath(id)}/like`, { method: 'DELETE' });
+  return json(service(`${postPath(id)}/like`), { method: 'DELETE' });
 }
 
 // 204 on success, also for a repeat report from this browser.
 export async function reportPost(id: string, input: CommunityReportInput): Promise<void> {
-  await request(`${postPath(id)}/report`, {
+  await request(service(`${postPath(id)}/report`), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(input),

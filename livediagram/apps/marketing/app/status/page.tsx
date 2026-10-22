@@ -5,7 +5,7 @@ import { CONTACT_FORM_URL, pageMetadata, REPO_URL } from '@livediagram/ui';
 
 const STATUS_TITLE = 'Status · livediagram';
 const STATUS_DESCRIPTION =
-  'Operational status of the livediagram services: editor, API, realtime room, marketing site, telemetry dashboard, help centre, Community, and database.';
+  'Operational status of the livediagram services: editor, API, realtime room, marketing site, help centre, Community, and database.';
 
 export const metadata = pageMetadata({
   title: STATUS_TITLE,
@@ -37,11 +37,6 @@ const COMPONENTS: Component[] = [
     name: 'Editor (live app)',
     description:
       'The diagram editor at https://livediagram.app/new. Static export served by a Cloudflare Worker.',
-  },
-  {
-    name: 'Telemetry dashboard',
-    description:
-      'The public anonymous-events dashboard at https://livediagram.app/telemetry. Static export served by a Cloudflare Worker.',
   },
   {
     name: 'Help centre',

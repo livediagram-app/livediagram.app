@@ -10,7 +10,7 @@ import {
   type ConceptShape,
   type Element,
   type ShapeElement,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { ConceptAnimTiles, SequenceAnimTiles } from './ElementAnimationTiles';
 import type { ElementStyleOps } from '@/lib/element-style-ops';
 

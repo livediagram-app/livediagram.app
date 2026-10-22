@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 // deleted, so a cancelled reverification leaves the account and its data as they were.
 const calls: string[] = [];
 const auth = vi.hoisted(() => ({ confirmed: true }));
+const server = vi.hoisted(() => ({ result: { deleted: {} } as unknown }));
 vi.mock('@/components/providers/deferred-auth', () => ({
   useDeferredAuth: () => ({
     user: { email: 'a@example.com' },
@@ -13,13 +14,13 @@ vi.mock('@/components/providers/deferred-auth', () => ({
       calls.push('confirm');
       return auth.confirmed;
     },
-    deleteAccount: async () => void calls.push('clerk'),
+    deleteAccount: async () => void calls.push('session'),
   }),
 }));
 vi.mock('@/lib/api-client', () => ({
   apiDeleteAccount: async () => {
     calls.push('server');
-    return { deleted: {} };
+    return server.result;
   },
 }));
 vi.mock('@/lib/telemetry', () => ({ track: () => {} }));
@@ -52,6 +53,16 @@ describe('DeleteAccountDialog', () => {
     auth.confirmed = true;
     const onDeleted = confirmDelete();
     await waitFor(() => expect(onDeleted).toHaveBeenCalled());
-    expect(calls).toEqual(['confirm', 'server', 'clerk']);
+    expect(calls).toEqual(['confirm', 'server', 'session']);
+  });
+
+  it('keeps the session and says so when the data went but the account did not close', async () => {
+    auth.confirmed = true;
+    server.result = 'account_not_closed';
+    const onDeleted = confirmDelete();
+    await screen.findByText(/closing your liveworkspace account failed/);
+    expect(calls).toEqual(['confirm', 'server']);
+    expect(onDeleted).not.toHaveBeenCalled();
+    server.result = { deleted: {} };
   });
 });

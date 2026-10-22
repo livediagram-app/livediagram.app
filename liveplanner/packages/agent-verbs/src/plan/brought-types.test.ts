@@ -17,15 +17,15 @@ function api(
 ) {
   const calls: string[] = [];
   const fake = fakeApi({
-    [`/documents/${D}`]: (r: Request) => {
-      calls.push(`${r.method} document`);
-      return Response.json({ document: { id: D, tabs: [], itemTypes: doc.itemTypes } });
+    [`/projects/${D}`]: (r: Request) => {
+      calls.push(`${r.method} project`);
+      return Response.json({ project: { id: D, tabs: [], itemTypes: doc.itemTypes } });
     },
-    [`/documents/${D}/items`]: (r: Request) => {
+    [`/projects/${D}/items`]: (r: Request) => {
       calls.push(`${r.method} items`);
       return Response.json({ items: doc.items, rev: 1 });
     },
-    [`/documents/${D}/item-types`]: (r: Request) => {
+    [`/projects/${D}/item-types`]: (r: Request) => {
       calls.push(`${r.method} item-types`);
       return put(r);
     },
@@ -43,7 +43,7 @@ describe('bringBoardCardTypes', () => {
     expect(calls).toEqual([]);
   });
 
-  it('chooses a fresh document’s card types: exactly the board’s', async () => {
+  it('chooses a fresh project’s card types: exactly the board’s', async () => {
     let saved: string[] = [];
     const { api: a, calls } = api(async (r) => {
       saved = await savedIds(r);
@@ -51,10 +51,10 @@ describe('bringBoardCardTypes', () => {
     });
     expect(await bringBoardCardTypes(a, D, [board('kanban')])).toEqual(['task', 'action']);
     expect(saved).toEqual(['task', 'action']);
-    expect(calls.sort()).toEqual(['GET document', 'PUT item-types']);
+    expect(calls.sort()).toEqual(['GET project', 'PUT item-types']);
   });
 
-  it('adds only what is missing, after the types the document has', async () => {
+  it('adds only what is missing, after the types the project has', async () => {
     let saved: string[] = [];
     const { api: a } = api(
       async (r) => {
@@ -92,10 +92,10 @@ describe('bringBoardCardTypes', () => {
     let rev = 2;
     const sent: unknown[] = [];
     const fake = fakeApi({
-      [`/documents/${D}`]: () =>
-        Response.json({ document: { id: D, tabs: [], itemTypes: null, itemTypesRev: rev } }),
-      [`/documents/${D}/items`]: () => Response.json({ items: [], rev: 1 }),
-      [`/documents/${D}/item-types`]: async (r: Request) => {
+      [`/projects/${D}`]: () =>
+        Response.json({ project: { id: D, tabs: [], itemTypes: null, itemTypesRev: rev } }),
+      [`/projects/${D}/items`]: () => Response.json({ items: [], rev: 1 }),
+      [`/projects/${D}/item-types`]: async (r: Request) => {
         sent.push(((await r.json()) as { expectedRev?: number }).expectedRev);
         if (sent.length === 1) {
           rev = 3;

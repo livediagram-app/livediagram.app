@@ -1,7 +1,7 @@
 // A session vote's tally for its Plan cards (docs/specs/026-plan/items.md "Tally"): each card's dots, counted per
 // voter, each voter as a pseudonymous person id (itemPersonId of their collab key: never the key itself, which the
 // room broadcasts). Element dots are not cards and are left out.
-import { itemIdOfVoteKey, type TabVote } from '@liveplanner/document';
+import { itemIdOfVoteKey, type TabVote } from '@liveplanner/project';
 import { itemPersonId, type ItemTally } from '@liveplanner/items';
 
 export async function voteTallies(vote: TabVote): Promise<ItemTally[]> {

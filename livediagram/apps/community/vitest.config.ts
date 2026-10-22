@@ -5,7 +5,7 @@ import { defineProject } from '@livediagram/vitest-config';
 // `@vitest-environment jsdom` docblock. Next compiles JSX with the automatic runtime, so tests that
 // render .tsx transform it the same way. The alias mirrors tsconfig's `"@/*": ["./*"]`.
 export default defineProject({
-  esbuild: { jsx: 'automatic' },
+  oxc: { jsx: { runtime: 'automatic' } },
   resolve: { alias: { '@': fileURLToPath(new URL('.', import.meta.url)) } },
   test: {
     coverage: { include: ['{app,components,lib,worker}/**/*.{ts,tsx}'] },

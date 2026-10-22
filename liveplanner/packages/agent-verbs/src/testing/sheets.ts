@@ -54,15 +54,15 @@ export type SheetServer = {
   routes: Record<string, unknown>;
 };
 
-// The sheet routes of one document (list, create, delete, write). `refuse` answers a write with that error instead
+// The sheet routes of one project (list, create, delete, write). `refuse` answers a write with that error instead
 // (a 400, or `status`), from the write after the first `refuseAfter` (every write when absent).
 export function sheetServer(
-  documentId: string,
+  projectId: string,
   sheets: SheetJson[],
   opts: { refuse?: string; status?: number; refuseAfter?: number } = {},
 ): SheetServer {
   const server: SheetServer = { sheets, writes: [], creates: [], deletes: [], routes: {} };
-  const base = `/documents/${documentId}/sheets`;
+  const base = `/projects/${projectId}/sheets`;
   server.routes[base] = async (r: Request) => {
     if (r.method === 'POST') {
       const body = (await r.json()) as SheetJson;

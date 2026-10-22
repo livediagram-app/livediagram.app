@@ -8,7 +8,7 @@ import { FolderActionsMenu } from './folder-actions-menu';
 import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
 import type { FolderActionBundle } from './explorer-view-props';
 import { DefaultFolderMarker } from '@/components/placement/DefaultFolderMarker';
-import { DROP_TARGET_RING } from '@/components/panels/useDocumentDropTarget';
+import { DROP_TARGET_RING } from '@/components/panels/useProjectDropTarget';
 import { folderDragProps } from '@/components/panels/explorer-drag-mime';
 import { useExplorerDropTarget } from './useExplorerDropTarget';
 
@@ -35,7 +35,7 @@ export function FolderRow({
   getActionsForAnchor: (anchor: HTMLElement | null) => FolderActionBundle;
 }) {
   const menu = useRowMenu({ disabled: renaming });
-  // A document dragged onto the row files into this folder (docs/specs/013-workspace/folders.md).
+  // A project dragged onto the row files into this folder (docs/specs/013-workspace/folders.md).
   const drop = useExplorerDropTarget({ teamId: folder.teamId ?? null, folderId: folder.id });
 
   // When renaming, the label area is a plain div so the <input>

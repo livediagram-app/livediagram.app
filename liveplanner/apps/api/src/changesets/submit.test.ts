@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Element } from '@liveplanner/document';
-import { getDocument } from '../db';
+import type { Element } from '@liveplanner/project';
+import { getProject } from '../db';
 import { seedTabs } from '../db/tabs';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import type { Env } from '../types';
@@ -35,8 +35,8 @@ function roomThat(relay: 'ok' | 'throws') {
 }
 
 async function setUp(relay: 'ok' | 'throws' = 'ok'): Promise<SqliteD1> {
-  const db = sqliteD1({ DOCUMENT_ROOM: roomThat(relay) } as unknown as Partial<Env>);
-  db.sql.exec(`INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at)
+  const db = sqliteD1({ PROJECT_ROOM: roomThat(relay) } as unknown as Partial<Env>);
+  db.sql.exec(`INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at)
                VALUES ('D', 'user_o', 'Doc', 0, 1, 1)`);
   await seedTabs(db.env, 'D', [{ id: 't1', name: 'T', elements: [box('a'), box('b')] }]);
   return db;
@@ -47,7 +47,7 @@ async function submit(db: SqliteD1, operations: unknown[]) {
   if (!parsed.ok) throw new Error('bad request');
   return submitChangeset({
     env: db.env,
-    document: (await getDocument(db.env, 'D'))!,
+    project: (await getProject(db.env, 'D'))!,
     tabId: 't1',
     request: parsed.value,
     dryRun: false,
@@ -122,7 +122,7 @@ describe('submitChangeset', () => {
     expect(db.sql.prepare('SELECT COUNT(*) AS n FROM agent_changesets').get()!.n).toBe(1);
     expect(warn).toHaveBeenCalledWith(
       '[changeset] relay-failed',
-      expect.objectContaining({ documentId: 'D' }),
+      expect.objectContaining({ projectId: 'D' }),
     );
   });
 });
@@ -137,7 +137,7 @@ describe('a template’s Sheets', () => {
     if (!parsed.ok) throw new Error('bad request');
     const res = await submitChangeset({
       env: db.env,
-      document: (await getDocument(db.env, 'D'))!,
+      project: (await getProject(db.env, 'D'))!,
       // A new tab: the template makes it a Sheet tab.
       tabId: 't-sheet',
       request: parsed.value,
@@ -148,7 +148,7 @@ describe('a template’s Sheets', () => {
     });
     expect(res.status).toBeLessThan(300);
     const sheets = db.sql
-      .prepare("SELECT id, tab_id, title FROM sheets WHERE document_id = 'D'")
+      .prepare("SELECT id, tab_id, title FROM sheets WHERE project_id = 'D'")
       .all() as {
       id: string;
       tab_id: string;

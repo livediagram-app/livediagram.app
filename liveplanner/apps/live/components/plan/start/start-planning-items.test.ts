@@ -157,7 +157,7 @@ describe('Inspiration and the template pickers show the same Plan templates', ()
   });
 });
 
-// docs/specs/007-editor/start-diagramming.md "There is no way out to a bigger picker": every Plan template is on Start
+// docs/specs/007-editor/start-panel.md "There is no way out to a bigger picker": every Plan template is on Start
 // Planning, as itself (Inspiration), as the sheet it makes (Spreadsheets) or as the form it starts (Forms), but its blank,
 // which is the empty Plan tab itself, and Blank Spreadsheet, which Start Planning's Empty Sheet stands for
 // (templates-by-mode.md).

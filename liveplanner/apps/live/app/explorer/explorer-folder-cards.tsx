@@ -1,6 +1,6 @@
 'use client';
 
-// The Explorer card grid's folder cards (docs/specs/006-document/document-snapshots.md), split out of
+// The Explorer card grid's folder cards (docs/specs/006-project/project-snapshots.md), split out of
 // CardView: the FolderCard (rename / menu / child count). The card shell + preview classes
 // every card shares live in @liveplanner/ui, where the History feed's cards
 // use them too (docs/specs/013-workspace/timeline.md §2).
@@ -17,7 +17,7 @@ import type { Folder } from '@/lib/api-client';
 import type { FolderActionBundle } from './explorer-view-props';
 import { menuHandlers } from './folder-row';
 import { DefaultFolderMarker } from '@/components/placement/DefaultFolderMarker';
-import { DROP_TARGET_RING } from '@/components/panels/useDocumentDropTarget';
+import { DROP_TARGET_RING } from '@/components/panels/useProjectDropTarget';
 import { folderDragProps } from '@/components/panels/explorer-drag-mime';
 import { useExplorerDropTarget } from './useExplorerDropTarget';
 
@@ -56,7 +56,7 @@ export function FolderCard({
   getActions: (anchor: HTMLElement | null) => FolderActionBundle;
 }) {
   const menu = useRowMenu({ disabled: renaming });
-  // A document dragged onto the card files into this folder (docs/specs/013-workspace/folders.md).
+  // A project dragged onto the card files into this folder (docs/specs/013-workspace/folders.md).
   const drop = useExplorerDropTarget({ teamId: folder.teamId ?? null, folderId: folder.id });
   return (
     <div

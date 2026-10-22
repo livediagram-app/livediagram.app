@@ -11,7 +11,7 @@ import {
   type TableCellStyle,
   type TableElement,
   plural,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { isMobileViewportSync } from '@/lib/responsive';
 import { nearestCssBorderStyle } from '@/components/canvas/border-css';
 import {
@@ -64,7 +64,7 @@ export function TableView({
   // A Participant (docs/specs/013-workspace/share-roles.md): its cells' words may be written, never its rows,
   // columns or styles, so the structure controls and the cell menu stay away.
   cellsOnly?: boolean;
-  // This document's tabs (id + name), so a linked cell's hover card can
+  // This project's tabs (id + name), so a linked cell's hover card can
   // name the tab/element it points at (docs/specs/008-canvas/canvas-and-palette.md).
   tabSummaries: { id: string; name: string }[];
   // Resolved CSS font-family for the table's text (docs/specs/004-interface-design/fonts.md). Set on the
@@ -81,7 +81,7 @@ export function TableView({
   // Open the shared link picker for a cell (docs/specs/008-canvas/canvas-and-palette.md). Undefined for
   // read-only viewers (no editing).
   onLinkCell?: (tableId: string, r: number, c: number) => void;
-  // Follow a cell's link when its badge is clicked (tab / document / url).
+  // Follow a cell's link when its badge is clicked (tab / project / url).
   onFollowLink?: (link: ElementLink) => void;
   // Canvas zoom, so the floating UI (per-cell toolbar + column / row header
   // controls) can counter-scale (1/zoom) and stay a fixed on-screen size like

@@ -4,7 +4,7 @@ import {
   type ArrowLabelLayout,
   type Element,
   type ElementIndex,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import type { ArrowLabelRender } from '@/hooks/canvas/useArrowLabelLayouts';
 import { ArrowDefs } from '@/components/canvas/arrow-defs';
 import { ArrowView } from '@/components/canvas/ArrowView';

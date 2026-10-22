@@ -9,19 +9,19 @@ import type { FormChange } from '../forms/form-changes';
 import { tryForm } from '../forms/form-try';
 import type { FormReading } from '../forms/form-read';
 import type { QuestionInput } from '../forms/form-question';
-import { documentOf } from './shared';
+import { projectOf } from './shared';
 
-const docArg = z.string().describe('A name, id prefix or liveplanner URL');
+const projectArg = z.string().describe('A name, id prefix or liveplanner URL');
 const tabFlag = z
   .string()
   .optional()
   .describe('The Form tab, by name or id; the first when omitted');
-const HINT = 'read the form with: liveplanner form get <doc>';
-// A document with no Form tab has no form to read: the hint makes one instead.
-const NO_FORM_HINT = 'make one with: liveplanner form add <doc> --starter contact';
+const HINT = 'read the form with: liveplanner form get <project>';
+// A project with no Form tab has no form to read: the hint makes one instead.
+const NO_FORM_HINT = 'make one with: liveplanner form add <project> --starter contact';
 
 const readingOutput = z.object({
-  documentId: z.string(),
+  projectId: z.string(),
   tabId: z.string(),
   heading: z.string(),
   state: z.string(),
@@ -45,7 +45,7 @@ function outputOf(ctx: VerbContext, result: FormCallResult): ReadingOutput {
     });
   const r: FormReading = result.reading;
   return {
-    documentId: result.documentId,
+    projectId: result.projectId,
     tabId: r.tabId,
     heading: r.heading,
     state: r.state,
@@ -100,16 +100,16 @@ export const formGet = defineVerb({
   description:
     "Prints a Form tab's form: its state, link and response count, where responses go, each section and question with its id and where its answer goes, and anything stopping it being published.",
   behaviour: 'read',
-  input: z.object({ doc: docArg, tab: tabFlag }),
+  input: z.object({ project: projectArg, tab: tabFlag }),
   output: readingOutput,
   run: async (ctx, input) => {
-    const document = await documentOf(ctx, input.doc);
-    return outputOf(ctx, await readForm(ctx.api, document.id, input.tab));
+    const project = await projectOf(ctx, input.project);
+    return outputOf(ctx, await readForm(ctx.api, project.id, input.tab));
   },
   text: textOf,
   quiet: (o) => (o.link ? [o.link] : []),
   cli: {
-    positionals: ['doc'],
+    positionals: ['project'],
     examples: ['liveplanner form get "Team offsite"', 'liveplanner form get 3f9c --tab RSVP'],
     prints:
       'the form: state and link, where responses go, each question with its id, then any problems',
@@ -120,10 +120,10 @@ export const formAdd = defineVerb({
   id: 'form.add',
   summary: 'Add a form',
   description:
-    'Adds a Form tab from a starter (bug-report, feedback, feature-request, rsvp, job-application, contact) or from add_form input in a JSON file (or stdin); without a document, makes one of its own.',
+    'Adds a Form tab from a starter (bug-report, feedback, feature-request, rsvp, job-application, contact) or from add_form input in a JSON file (or stdin); without a project, makes one of its own.',
   behaviour: 'write',
   input: z.object({
-    doc: z.string().optional().describe('The document; a new one when omitted'),
+    project: z.string().optional().describe('The project; a new one when omitted'),
     starter: z
       .enum(STARTER_IDS.filter((s) => s !== 'blank') as [StarterId, ...StarterId[]])
       .optional()
@@ -142,12 +142,12 @@ export const formAdd = defineVerb({
       input.from !== undefined
         ? await jsonFrom<Record<string, unknown>>(ctx, input.from, 'the form')
         : {};
-    const documentId = input.doc ? (await documentOf(ctx, input.doc)).id : undefined;
+    const projectId = input.project ? (await projectOf(ctx, input.project)).id : undefined;
     const result = await addForm(
       ctx.api,
       {
         ...(given as { questions?: QuestionInput[] }),
-        ...(documentId ? { documentId } : {}),
+        ...(projectId ? { projectId } : {}),
         ...(input.starter ? { starter: input.starter } : {}),
         ...(input.name ? { name: input.name } : {}),
       },
@@ -158,7 +158,7 @@ export const formAdd = defineVerb({
   text: textOf,
   quiet: (o) => [o.tabId],
   cli: {
-    positionals: ['doc'],
+    positionals: ['project'],
     examples: [
       'liveplanner form add --starter rsvp --name "Summer Party"',
       'liveplanner form add "Ops" --from survey.json',
@@ -174,20 +174,20 @@ export const formChange = defineVerb({
     "Applies change_form's changes from a JSON file (or stdin), in order, as one write: questions, sections and their rules, the heading and cover, settings and where responses go.",
   behaviour: 'destructive',
   input: z.object({
-    doc: docArg,
+    project: projectArg,
     changes: z.string().describe('A JSON file of changes, or - for stdin'),
     tab: tabFlag,
   }),
   output: readingOutput,
   run: async (ctx, input) => {
-    const document = await documentOf(ctx, input.doc);
+    const project = await projectOf(ctx, input.project);
     const changes = await jsonFrom<FormChange[]>(ctx, input.changes, 'the changes');
-    return outputOf(ctx, await changeForm(ctx.api, document.id, input.tab, changes, 'cli'));
+    return outputOf(ctx, await changeForm(ctx.api, project.id, input.tab, changes, 'cli'));
   },
   text: textOf,
   quiet: (o) => [o.tabId],
   cli: {
-    positionals: ['doc', 'changes'],
+    positionals: ['project', 'changes'],
     examples: [
       'liveplanner form change "Team offsite" changes.json',
       'cat changes.json | liveplanner form change 3f9c -',
@@ -203,19 +203,19 @@ export const formShare = defineVerb({
     'Publishes a form (its link anyone can fill it in at), closes it (the link kept), or deletes its link. A form with problems is refused with what to fix.',
   behaviour: 'write',
   input: z.object({
-    doc: docArg,
+    project: projectArg,
     action: z.enum(['publish', 'close', 'delete_link']).describe('publish, close or delete_link'),
     tab: tabFlag,
   }),
   output: readingOutput,
   run: async (ctx, input) => {
-    const document = await documentOf(ctx, input.doc);
-    return outputOf(ctx, await shareForm(ctx.api, document.id, input.tab, input.action));
+    const project = await projectOf(ctx, input.project);
+    return outputOf(ctx, await shareForm(ctx.api, project.id, input.tab, input.action));
   },
   text: textOf,
   quiet: (o) => (o.link ? [o.link] : []),
   cli: {
-    positionals: ['doc', 'action'],
+    positionals: ['project', 'action'],
     examples: [
       'liveplanner form share "Team offsite" publish',
       'liveplanner form share 3f9c close',
@@ -225,7 +225,7 @@ export const formShare = defineVerb({
 });
 
 const tryOutput = z.object({
-  documentId: z.string(),
+  projectId: z.string(),
   tabId: z.string(),
   made: z.enum(['card', 'row']),
   number: z.number().nullable(),
@@ -242,15 +242,15 @@ export const formTry = defineVerb({
     'Fills in a form as a respondent would, from a JSON file (or stdin) of answers by question id or prompt, as the builder’s Preview does: the answers are checked first, then make a card or row titled "Preview: …". A published form counts it as a response.',
   behaviour: 'write',
   input: z.object({
-    doc: docArg,
+    project: projectArg,
     answers: z.string().describe('A JSON file of answers by question id or prompt, or - for stdin'),
     tab: tabFlag,
   }),
   output: tryOutput,
   run: async (ctx, input) => {
-    const document = await documentOf(ctx, input.doc);
+    const project = await projectOf(ctx, input.project);
     const answers = await jsonFrom<Record<string, unknown>>(ctx, input.answers, 'the answers');
-    const result = await tryForm(ctx.api, document.id, input.tab, answers);
+    const result = await tryForm(ctx.api, project.id, input.tab, answers);
     if (!result.ok)
       throw new VerbRefusal({
         status: result.code.endsWith('_unknown') || result.code === 'form_tab_none' ? 404 : 400,
@@ -267,7 +267,7 @@ export const formTry = defineVerb({
   ],
   quiet: (o) => (o.itemId ? [o.itemId] : []),
   cli: {
-    positionals: ['doc', 'answers'],
+    positionals: ['project', 'answers'],
     examples: [
       'liveplanner form try "Team offsite" answers.json',
       'echo \'{"Your name": "Ada"}\' | liveplanner form try 3f9c -',

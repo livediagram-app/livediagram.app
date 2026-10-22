@@ -50,7 +50,6 @@ vi.mock('./routes/preferences', () => stub('handlePreferences'));
 vi.mock('./routes/share', () => stub('handleShare'));
 vi.mock('./routes/teams', () => stub('handleTeams'));
 vi.mock('./routes/shared', () => stub('handleShared'));
-vi.mock('./routes/telemetry', () => stub('handleTelemetry'));
 vi.mock('./routes/trash', () => stub('handleTrash'));
 vi.mock('./routes/drive', () => stub('handleDrive'));
 vi.mock('./routes/tokens', () => stub('handleTokens'));

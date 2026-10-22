@@ -1,0 +1,46 @@
+name = "liveworkspace-community"
+# The liveworkspace Cloudflare account, so a deploy can never land on another one.
+account_id = "851be7d244b76a6557bcbe6c4ded80f5"
+main = "src/index.ts"
+compatibility_date = "2026-05-29"
+# Only its API, /api/community, on liveworkspace.app (liveworkspace/docs/community.md). liveworkspace.app
+# hosts no Community pages: each app serves its own, which read from here.
+routes = [{ pattern = "liveworkspace.app/api/community*", zone_name = "liveworkspace.app" }]
+
+# Secrets (wrangler secret put): each app's Worker key, sent as a bearer token on the app routes.
+#   COMMUNITY_KEY_LIVEDIAGRAM   shared with livediagram's api Worker as COMMUNITY_KEY
+#   COMMUNITY_KEY_LIVEPLANNER   shared with liveplanner's api Worker as COMMUNITY_KEY
+[vars]
+ENVIRONMENT = "production"
+
+# Its own database, apart from accounts, telemetry and every app's own data.
+[[d1_databases]]
+binding = "COMMUNITY_DB"
+database_name = "liveworkspace-community"
+database_id = "3547c10c-39db-4b76-85b9-65ca47362166"
+migrations_dir = "migrations"
+
+# Per-network budget for likes and reports, whose callers are anonymous: counted at Cloudflare's edge, so
+# it holds across isolates.
+[[ratelimits]]
+name = "COMMUNITY_RATE_LIMITER"
+namespace_id = "1102"
+simple = { limit = 30, period = 60 }
+
+[env.staging]
+name = "liveworkspace-community-staging"
+routes = [{ pattern = "staging.liveworkspace.app/api/community*", zone_name = "liveworkspace.app" }]
+
+[env.staging.vars]
+ENVIRONMENT = "staging"
+
+[[env.staging.d1_databases]]
+binding = "COMMUNITY_DB"
+database_name = "liveworkspace-community-staging"
+database_id = "9cc861ac-3986-44c2-be30-777261832307"
+migrations_dir = "migrations"
+
+[[env.staging.ratelimits]]
+name = "COMMUNITY_RATE_LIMITER"
+namespace_id = "2102"
+simple = { limit = 30, period = 60 }

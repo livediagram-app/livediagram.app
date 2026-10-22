@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Element } from '@liveplanner/document';
+import type { Element } from '@liveplanner/project';
 import { boundsOfElements, createRevealStore } from './changeset-reveals';
 
 describe('createRevealStore', () => {

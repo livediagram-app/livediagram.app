@@ -1,0 +1,87 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import {
+  PlanGanttSwimlanesScene,
+  PlanVisualisationsPickerScene,
+} from '@/components/illustrations/plan-visualisations';
+
+export const metadata = helpMetadata({
+  title: 'Charts of Your Cards',
+  description:
+    'Chart your Plan cards on visualisation tabs: a Gantt chart, due and start calendars, Cards by Field, Priority by Status and Card Search, all live.',
+  path: '/help/plan/visualisations/',
+});
+
+<ArticleLayout
+  title="Charts of Your Cards"
+  description="A Gantt chart, calendars and more, each filling a tab and drawn live from every card in the project."
+  categoryTitle="Plan"
+  categorySlug="plan"
+>
+
+A **Visualisation tab** is a tab of your project given over to one chart of your cards (see [Planning Basics](/help/plan/planning-basics/)): a Gantt chart of what runs when, a calendar of what is due, or a breakdown of who has what. The chart reads every card in the project, whichever board it sits on, and changes as the cards do, for everyone at once. The same charts can also sit in the slots of a [Dashboard](/help/plan/dashboards/), beside your boards and sheets.
+
+## Start a Visualisation Tab
+
+On a new tab, **Start Planning** shows in the middle. Choose **Visualisations** in its rail ("One chart filling the tab, read live from every card"), then press a chart's card. The tab becomes a Visualisation tab of that chart, and a tab still on its default name takes the chart's name. Typing a chart's name in the search box finds it too.
+
+<Figure caption="Start Planning on its Visualisations category: one card per chart, each with a small picture of how it looks.">
+  <PlanVisualisationsPickerScene />
+</Figure>
+
+Only people who can edit the project see **Start Planning**. To get a new tab, press the **+** in the tab bar.
+
+## The Charts
+
+- **Gantt Chart**: a row per card with a **Start** and a **Due** date, drawn as a bar from one to the other in the card's colour (or its type's colour), filled to the share of its child cards that are done, with a line for today. A card with only a due date is a diamond. Pick **Month**, **Quarter** or **Year** in its header, step with the arrows, and press **Today** to come back to now. Drag either end of a bar to change that date, or the middle to move both, and press **Add Card** under the last row for a new card that starts today and is due a week on.
+- **Due Calendar**: this month, each day listing the cards due then. Step through months with the arrows. Drag a card to another day to change its due date, or focus it and press **Alt+←** and **Alt+→** to move it a day, **Alt+↑** and **Alt+↓** a week.
+- **Start Calendar**: the same month, each day listing the cards that start then. Moving a card here changes its start date.
+- **Cards by Field**: a bar per person to start with, each split Not Started, In Progress and Done. Group it by a priority, a type, a state or any field of your own instead; its heading says which ("Cards by Assignee", "Cards by Severity").
+- **Priority by Status** (its card in Start Planning is **Priority Matrix**): how many cards of each priority are not started, in progress and done.
+- **Card Search**: the cards that match the filters along its top, such as **Card Type: Project** or **Assignee: No assignee**, laid out as a board draws them. **Add Filter** offers only fields and values some of the remaining cards hold, so a filter never leaves you with nothing. The filters are saved with the chart, so everyone sees the same search.
+
+A card counts as done when its status is a board's done column. Press a row, bar or entry to open its card. On a Visualisation tab the chart fills the tab, and its name sits in the menu box at the top left: an editor can click it to rename the chart and the tab together.
+
+## Change What a Chart Shows
+
+Press the cog at the end of the chart's header to open **Chart Settings**. Its sections open one at a time:
+
+- **Card Types**: which card types the chart shows. Only types with the fields it reads are listed (a **Due** field for the Due Calendar, both **Start** and **Due** for the Gantt Chart), and at least one stays picked. Add those fields to a type in [Card Types](/help/plan/card-types/) to bring it onto the chart.
+- **Group By** (Cards by Field): the field it gives a bar to each value of.
+- **Statuses** (Cards by Field and Priority by Status): untick a status to leave its cards out.
+- **Swimlanes** (Gantt Chart): group the rows by **Assignee**, **Type**, **Priority**, **Status** or any field your card types have, or **None**. Each lane has a header with its name and count; click it to fold the lane away (just for you).
+- **Row Order** (Gantt Chart): rows run by start date until you drag them. Once you have, **Sort by Date** puts them back in date order.
+
+When a chart sits in a Dashboard slot, its cog holds the same settings, with the slot's own settings after them.
+
+<Figure caption="A Gantt chart in swimlanes by Assignee, a row's grip showing Drag to Reorder, and Chart Settings open on Swimlanes.">
+  <PlanGanttSwimlanesScene />
+</Figure>
+
+## Reorder the Gantt Rows
+
+Hover a row's name to show a six-dot grip at its left edge (**Drag to Reorder**). Drag the grip up or down: a line marks where the row will land, and letting go puts it there for everyone. Press Escape mid-drag to leave it where it was. With a row's name focused, **Alt+↑** and **Alt+↓** move it one place. In swimlanes, a row moves only within its own lane. A new card joins at the end, in date order.
+
+## Maximise a Chart
+
+A chart in a Dashboard slot has **Maximise View** in its header, beside the cog. It fills the screen with the chart, laid out at that size, and everything works as before: the Gantt's scale and date drags, the calendar's months, opening a card. Press **Restore View** in the same place, or Escape, to put it back. Maximising is just for you and nothing is saved. A Visualisation tab has no Maximise, since its chart already fills the tab.
+
+## In a Dashboard
+
+Every chart here can be one slot of a [Dashboard](/help/plan/dashboards/): press **Add to Slot** in an empty slot and choose **Visualisations**. In a slot the chart sizes its bars, cells and cards to the room it has, and its cog holds the slot's own settings after the chart's. The [suggested dashboards](/help/plan/dashboards/#dashboards-made-from-your-work) Start Planning makes from your boards come with charts already in place.
+
+## Who Can Do What
+
+- **Editors** change a chart's settings, rename it, reorder Gantt rows, drag Gantt bars, set Card Search filters, and do everything a Participant can.
+- **Participants** can open cards, move cards on the Due and Start Calendars, and add cards with the Gantt's **Add Card**. They see no cog.
+- **Viewers** see the charts live, step through months and scales, and open cards to read them, but change nothing.
+
+Stepping through months, picking a Gantt scale, folding a lane and maximising are your own view, so they never change anyone else's.
+
+## Good to Know
+
+- Exported images of a Visualisation tab, or of a Dashboard with a chart on it, draw the chart as it looks. See [Exporting tabs](/help/tabs/export-tabs/#formats-for-each-kind-of-tab).
+- Archived cards and cards in the Trash are left out of every chart.
+- A **Status Breakdown** chart (a donut of cards by status) placed in the past still draws as it did, but nothing offers a new one; use **Cards by Field** grouped by **Status** instead.
+
+</ArticleLayout>

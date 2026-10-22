@@ -86,7 +86,7 @@ A gesture's cost scales with what it changes and what is on screen, never with t
   (alignment and distribution snapping, the endpoint spread, the arrow label pass) makes one
   linear pass per frame at most, shared by everything that reads it.
 - **A move re-renders what moved.** A move, resize or reshape draws from a preview and writes the
-  document once, on release ([Drag preview](drag-preview.md)): the moved elements and the arrows
+  project once, on release ([Drag preview](drag-preview.md)): the moved elements and the arrows
   that depend on them re-render each frame, and nothing derived from the rest of the board is
   recomputed. A preview frame renders neither the canvas nor the element layer: each element view
   reads its own part of the preview, so a frame's work follows what moved, not the board, and only

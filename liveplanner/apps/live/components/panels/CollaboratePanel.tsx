@@ -7,7 +7,7 @@ import {
   elementThreads,
   type BoxedElement,
   type ElementActionStatus,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import type {
   MovablePanelPlacementProps,

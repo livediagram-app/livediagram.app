@@ -11,7 +11,7 @@ import {
   type FieldRemap,
   type RelatedSide,
   type Tab,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import type { Selection } from '@/lib/selection-store';
 import { setEntityFieldEdit } from '@/lib/entity-field-edit';
 import { track } from '@/lib/telemetry';

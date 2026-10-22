@@ -26,11 +26,11 @@ const OUTPUT = resolve(here, '../src/openapi/schemas.generated.ts');
 // that references a type missing here fails the drift test's reference check;
 // add the type below and regenerate.
 export const ROOT_TYPES = [
-  'LiveDoc',
-  'DocumentSummary',
+  'Project',
+  'ProjectSummary',
   'SharedTabsSummary',
-  'TrashedDocument',
-  'DocumentSource',
+  'TrashedProject',
+  'ProjectSource',
   'TabSummary',
   'Tab',
   'TabRecord',
@@ -62,8 +62,6 @@ export const ROOT_TYPES = [
   'ChangesetDetail',
   'RevertResponse',
   'OutlineView',
-  'GraphView',
-  'LayoutView',
   'CommentsView',
   'ShowView',
   'ShowSelectedView',
@@ -105,27 +103,22 @@ export const ROOT_TYPES = [
   'TeamInviteLink',
   'TeamInviteLinkInfo',
   'TeamInviteDecline',
-  'TelemetryEvent',
-  'TelemetrySummary',
-  'AiRequest',
   'CapabilitiesResponse',
   'CurrentTokenResponse',
-  'DocumentCommentThread',
+  'ProjectCommentThread',
   'AgentPresenceResult',
   'TemplateCatalogueResponse',
   'UnfurlResult',
 ];
 
-// Code names that differ from the published component name. The document's TypeScript type is
-// `LiveDoc` so it never shadows the DOM's `Document` (docs/specs/006-document/document.md);
-// the API publishes it as `Document`.
-export const PUBLIC_NAMES = { LiveDoc: 'Document' };
+// Code names that differ from the published component name (none today: the project's type is `Project`).
+export const PUBLIC_NAMES = {};
 
 const publicName = (name) => PUBLIC_NAMES[name] ?? name;
 
 // Recursively rewrite the generator's draft-07 `#/definitions/<Name>` refs to
 // OpenAPI's `#/components/schemas/<Name>`, and drop the per-schema `$schema`
-// dialect marker (the document declares the dialect once at the top level).
+// dialect marker (the project declares the dialect once at the top level).
 function toOpenApiRefs(value) {
   if (Array.isArray(value)) return value.map(toOpenApiRefs);
   if (value && typeof value === 'object') {

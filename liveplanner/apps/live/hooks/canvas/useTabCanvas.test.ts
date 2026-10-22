@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
-import type { Element, Tab } from '@liveplanner/document';
+import type { Element, Tab } from '@liveplanner/project';
 import { rollMashup } from '@/lib/look-mashup';
 import { useTabCanvas } from './useTabCanvas';
 import { loadTidyEngine } from '@/lib/tidy-engine';

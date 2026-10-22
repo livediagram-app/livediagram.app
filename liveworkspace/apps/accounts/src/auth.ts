@@ -3,6 +3,7 @@ import { authOptions } from './auth-options.ts';
 import { sendCodeEmail } from './email.ts';
 import type { Env } from './env.ts';
 import { RESOURCES } from './resources.ts';
+import { teamsClaim } from './teams.ts';
 
 function build(env: Env) {
   return betterAuth(
@@ -13,7 +14,12 @@ function build(env: Env) {
         resources: RESOURCES[env.ENVIRONMENT],
         turnstileSecretKey: env.TURNSTILE_SECRET_KEY,
         adminToken: env.ADMIN_TOKEN,
+        google:
+          env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET
+            ? { clientId: env.GOOGLE_CLIENT_ID, clientSecret: env.GOOGLE_CLIENT_SECRET }
+            : null,
         sendCode: (email, code) => sendCodeEmail(env, email, code),
+        teamsFor: (userId) => teamsClaim(env.AUTH_DB, userId),
       },
       env.AUTH_DB,
     ),

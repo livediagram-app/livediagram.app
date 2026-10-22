@@ -5,11 +5,17 @@
 ```
 liveworkspace/                 git root, one pnpm workspace, one lockfile, one turbo.json
 ├─ packages/                   shared by every product (@liveworkspace/*)
-│  └─ auth-client              sign-in redirect, code swap, refresh, token check
+│  ├─ auth-client              sign-in redirect, code swap, refresh, token check
+│  ├─ community                the Community contract: apps, vocabulary, limits, wire shapes
+│  ├─ sites                    liveworkspace's sites, for every logo's site switcher
+│  └─ telemetry                the telemetry contract: apps, batch format, dashboard summary
 ├─ liveworkspace/              the platform's own apps
-│  └─ apps/accounts            accounts.liveworkspace.app: sign-in for every product
+│  ├─ apps/site                liveworkspace.app, one static site: the front door, /telemetry, /sign-in
+│  ├─ apps/accounts            liveworkspace.app/api/auth: sign-in for every product
+│  ├─ apps/community           liveworkspace.app/api/community: every app's listings, own D1
+│  └─ apps/telemetry           liveworkspace.app/api/telemetry: every product's events, own D1
 ├─ livediagram/                imported with full history (main at 82e6ed79a)
-│  ├─ apps/                    live, api, mcp, cli, marketing, help, community, telemetry, router
+│  ├─ apps/                    live, api, mcp, cli, marketing, help, community, router
 │  └─ packages/                @livediagram/*
 ├─ liveplanner/                imported with full history (main at d5c8bed2)
 │  ├─ apps/                    the same set minus community
@@ -25,15 +31,15 @@ and cut down to Pages mode (livedocuments/plans/0001-livedocuments-fork.md); Pha
 liveplanner was forked from livediagram on 2026-10-21, so today most of it is a renamed copy.
 I compared each file with the product name ignored, and these counts are from that:
 
-| | identical | changed | only in one |
-|---|---|---|---|
-| `apps/live` (the editor) | 2,718 | 1,248 | ~1,080 |
-| `packages/document` | 474 | 169 | 110 |
-| `packages/ui` | 168 | 42 | 23 |
-| `packages/templates` | 142 | 95 | 21 |
-| `packages/items` | 100 | 6 | 6 |
-| `packages/sheets` | 108 | 20 | 5 |
-| `api-client`, `oxlint-config`, `prettier-config`, `render-png`, `source-ast`, `telemetry-client` | all | 0 | 0 |
+|                                                                                                  | identical | changed | only in one |
+| ------------------------------------------------------------------------------------------------ | --------- | ------- | ----------- |
+| `apps/live` (the editor)                                                                         | 2,718     | 1,248   | ~1,080      |
+| `packages/document`                                                                              | 474       | 169     | 110         |
+| `packages/ui`                                                                                    | 168       | 42      | 23          |
+| `packages/templates`                                                                             | 142       | 95      | 21          |
+| `packages/items`                                                                                 | 100       | 6       | 6           |
+| `packages/sheets`                                                                                | 108       | 20      | 5           |
+| `api-client`, `oxlint-config`, `prettier-config`, `render-png`, `source-ast`, `telemetry-client` | all       | 0       | 0           |
 
 Every day both products change separately, so these numbers get worse. That's the case for
 sharing now rather than later.
@@ -61,6 +67,8 @@ liveworkspace/
 │                                  teams, tokens, trash) that each product's API Worker mounts
 ├─ liveworkspace/apps/
 │  ├─ accounts                     sign-in
+│  ├─ telemetry (+ -dashboard)     every product's anonymous events (docs/telemetry.md there)
+│  ├─ community                    every product's Community listings (docs/community.md there)
 │  └─ home (later)                 one place for all your documents across products
 ├─ livediagram/
 │  ├─ apps/live                    thin: workbench + mode-draw (+ mode-plan for now)
@@ -74,7 +82,7 @@ liveworkspace/
 ```
 
 Tabs are the example you gave. The tab strip, tab state, opening, reordering and splitting all
-live in `workbench`. What's *inside* a tab is a tab kind that a mode registers: a canvas from
+live in `workbench`. What's _inside_ a tab is a tab kind that a mode registers: a canvas from
 `mode-draw`, a board or sheet from `mode-plan`. livediagram registers both, as it does today.
 liveplanner registers only Plan's.
 

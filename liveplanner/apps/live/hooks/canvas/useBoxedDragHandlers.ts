@@ -11,7 +11,7 @@ import {
   withMindSubtrees,
   type Anchor,
   type ArrowElement,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { getTheme } from '@/lib/themes';
 import { track } from '@/lib/telemetry';
 import { type DragMode, type DragState, type ShapeBounds } from '@/lib/canvas';
@@ -62,7 +62,7 @@ export function useBoxedDragHandlers({
     if (d.editingId === elementId) return;
     const element = d.activeTab.elements.find((el) => el.id === elementId);
     if (!element || !isBoxed(element)) return;
-    // A hidden / locked LAYER makes its elements fully inert (docs/specs/006-document/layers.md):
+    // A hidden / locked LAYER makes its elements fully inert (docs/specs/006-project/layers.md):
     // unlike per-element `locked` (selectable to inspect, below), a
     // press on one doesn't even land a selection.
     if (d.layerInertIds.has(elementId)) return;

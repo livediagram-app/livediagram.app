@@ -147,15 +147,17 @@ describe('reporting', () => {
     const send = within(dialog).getByRole('button', { name: 'Send Report' }) as HTMLButtonElement;
     expect(send.disabled).toBe(true);
     answer = (url) =>
-      url.endsWith('/report')
+      new URL(url).pathname.endsWith('/report')
         ? new Response(null, { status: 204 })
         : Response.json({ post, related: [] });
     fireEvent.click(within(dialog).getByRole('radio', { name: 'Spam' }));
     fireEvent.change(within(dialog).getByRole('textbox'), { target: { value: '  buy now  ' } });
     fireEvent.click(send);
     expect(await within(dialog).findByText(/When enough people report a document/)).toBeTruthy();
-    const sent = calls.find((c) => c.url.endsWith('/report'))!;
-    expect(sent.url).toBe('/api/community/posts/post1/report');
+    const sent = calls.find((c) => new URL(c.url).pathname.endsWith('/report'))!;
+    expect(sent.url).toBe(
+      'https://liveworkspace.app/api/community/posts/post1/report?app=livediagram.app',
+    );
     expect(sentJson(sent.init)).toEqual({ reason: 'spam', note: 'buy now' });
     expect(h.telemetry.reported).toHaveBeenCalledWith('Spam');
   });
@@ -164,7 +166,7 @@ describe('reporting', () => {
     const dialog = await openReport();
     let release!: (res: Response) => void;
     answer = (url) =>
-      url.endsWith('/report')
+      new URL(url).pathname.endsWith('/report')
         ? new Promise<Response>((resolve) => (release = resolve))
         : Response.json({ post, related: [] });
     fireEvent.click(within(dialog).getByRole('radio', { name: 'Spam' }));
@@ -181,7 +183,7 @@ describe('reporting', () => {
   it('says so when sending fails, and closes on Escape', async () => {
     const dialog = await openReport();
     answer = (url) =>
-      url.endsWith('/report')
+      new URL(url).pathname.endsWith('/report')
         ? new Response(null, { status: 500 })
         : Response.json({ post, related: [] });
     fireEvent.click(within(dialog).getByRole('radio', { name: 'Offensive' }));

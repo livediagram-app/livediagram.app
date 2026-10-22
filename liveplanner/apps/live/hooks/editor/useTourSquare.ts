@@ -1,12 +1,12 @@
 'use client';
 
 import { useCallback, useRef } from 'react';
-import type { Element, Tab } from '@liveplanner/document';
+import type { Element, Tab } from '@liveplanner/project';
 import { useLatest } from '@/hooks/ui/useLatest';
 
 // A tour's demonstration elements (docs/specs/007-editor/editor-tour.md "The steps", Element context menu; the Logo
 // tour's Combine): the Diagram tour's square to open the element menu on, the Logo tour's two shapes and what they
-// combine into. Taken away when the tour ends, however it ends, so the document is left as it was. Placed, swapped and
+// combine into. Taken away when the tour ends, however it ends, so the project is left as it was. Placed, swapped and
 // removed with no history (tickTabs), like the Plan tour's example card, so Undo never brings them back.
 export function useTourSquare(opts: {
   activeId: string;

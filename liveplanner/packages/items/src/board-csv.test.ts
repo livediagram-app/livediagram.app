@@ -351,7 +351,7 @@ describe('boardCsvImport', () => {
     expect((f['description'] as string).length).toBe(ITEM_DESCRIPTION_MAX);
   });
 
-  it('adds no more than the document has room for', () => {
+  it('adds no more than the project has room for', () => {
     const rows = [['Title'], ...Array.from({ length: 5 }, (_, i) => [`Card ${i}`])];
     const r = boardCsvImport(rows, { ...ctx, room: 3 });
     expect(r.creates).toHaveLength(3);

@@ -23,7 +23,7 @@ export const DESTINATION_PROBLEM_TEXT: Readonly<Record<DestinationProblem, strin
 };
 
 // A Sheet destination's problem (docs/specs/030-forms/forms.md "Responses to a Sheet"): its sheet no longer on its tab.
-// `sheets`: the document's sheets, each with its tab.
+// `sheets`: the project's sheets, each with its tab.
 export function sheetDestinationProblem(
   sheet: FormSheetDestination,
   sheets: readonly FormSheetDestination[],

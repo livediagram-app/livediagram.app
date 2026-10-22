@@ -1,0 +1,282 @@
+// Shared chrome for the collaboration panels (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md): the card
+// title, the small press targets, and the empty-state line.
+//
+// Five faces render the same card — a title over a body over a control row —
+// so the frame lives here once. Without it each face re-types the same four
+// class strings and they drift the first time one is tweaked.
+
+import { createContext, useContext } from 'react';
+import { SHAPE_DEFAULT_SIZE, type ShapeElement } from '@livedesign/document';
+import { tint } from '@/lib/element-tint';
+import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
+// Re-exported: every collab face already reaches for it through this module,
+// and the kit it now also feeds lives one level up (see lib/element-tint.ts).
+export { tint };
+import { useTouchScrollBody } from '@/hooks/ui/useTouchScrollBody';
+
+// Scales a Collaborate card's contents to the element's box (docs/specs/012-collaboration/participant-responses.md).
+//
+// The face is laid out at the kind's default size and then scaled, rather
+// than reflowed. That is the difference between "the card gets bigger" and
+// "the card gets more padding": a fist-of-five stretched to fill a wide box
+// still has 13px type and 6px bars, which is exactly what you cannot read from
+// across a room.
+//
+// Uniform scale on the smaller axis, so nothing distorts and nothing spills.
+// The design box is the shape's default size, which is what every face was
+// composed against. Along the OTHER axis the inner box is stretched to cover
+// the whole element (in design units), so a card taller or wider than its
+// default still paints its backdrop edge to edge: a centred design-sized box
+// left the agenda's ruling and crease floating in a band in the middle of a
+// tall element, with bare card above and below.
+//
+// A card whose content is a LIST that grows (the Q&A board, docs/specs/012-collaboration/qa-board.md) opts out
+// with `reflow`: there, resizing is how you make room for more notes, and
+// scaling would spend the new space on bigger type instead.
+function CollabScale({
+  element,
+  reflow,
+  children,
+}: {
+  element: ShapeElement;
+  reflow?: boolean;
+  children: React.ReactNode;
+}) {
+  const design = SHAPE_DEFAULT_SIZE[element.shape];
+  const scale = reflow ? 1 : Math.min(element.width / design.width, element.height / design.height);
+  return (
+    // Pinned with `absolute inset-0` rather than `h-full w-full`: `h-full`
+    // plus padding only stays inside the box under border-box sizing, and when
+    // it does not the footer buttons paint OUTSIDE the element.
+    <div className="absolute inset-0 overflow-hidden rounded-[inherit]">
+      <div
+        style={{
+          // The element's box in design units: one axis is exactly the design
+          // size, the other is whatever the element has, so the transform maps
+          // the inner box onto the real one with nothing left over.
+          width: element.width / scale,
+          height: element.height / scale,
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          transform: `scale(${scale})`,
+          transformOrigin: 'top left',
+        }}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// The shared settings `…` (docs/specs/008-canvas/canvas-and-palette.md "Every Behaviours element carries a
+// `…`"), handed down by ElementFaceRouter so a collaboration panel can put it
+// before its title instead of the element's top-right corner, without every
+// face threading it through. A card's own headerExtra wins over it.
+export const CollabSettingsSlot = createContext<React.ReactNode>(null);
+
+export function CollabPanel({
+  element,
+  title,
+  textColor,
+  aside,
+  titleLines = 1,
+  titleSize = 13,
+  titleStruck = false,
+  children,
+  footer,
+  className,
+  headerExtra,
+  backdrop,
+  overlay,
+  inset,
+  reflow,
+}: {
+  // The element, for its box. A Collaborate card SCALES to the space it is
+  // given rather than laying out into it: resizing one is how a facilitator
+  // makes it readable from the back of the room, and a card that only grew its
+  // padding did nothing for them. See the wrapper below.
+  element: ShapeElement;
+  // The element's own label — the question, the prompt, the session name.
+  title: string;
+  // How many lines the title may take before it clamps. One for a caption-ish
+  // prompt; more where the label is a sentence (a decision statement).
+  titleLines?: number;
+  // The title's size in px; a Decision record sets its statement larger.
+  titleSize?: number;
+  // Struck through and muted: an Action panel whose action is done.
+  titleStruck?: boolean;
+  textColor: string;
+  // Small right-aligned status beside the title ("4 of 6 in", "1h 5m").
+  aside?: React.ReactNode;
+  children: React.ReactNode;
+  footer?: React.ReactNode;
+  // Extra class on the card body. Used by the Done check (docs/specs/012-collaboration/done-check.md) for its
+  // all-done flash, which is a class rather than an inline style so the
+  // reduced-motion override in globals.css can reach it.
+  className?: string;
+  // The card's own `…` menu, which LEADS the title (the Done check's, the Q&A
+  // board's, the Idea box's). A card that draws none gets the shared settings
+  // `…` there instead, from CollabSettingsSlot.
+  headerExtra?: React.ReactNode;
+  // The paper kit (docs/specs/012-collaboration/participant-responses.md): the textures that make this card a particular
+  // OBJECT rather than a generic rounded rectangle. `backdrop` prints UNDER
+  // the content — rules, a halftone screen, a punched margin — and `overlay`
+  // over it, for the pieces that have to sit on top of everything: a folded
+  // corner, a strip of tape, a torn edge.
+  //
+  // Two slots rather than one because the layering is the effect. Rules under
+  // the words read as a page they are written on; the same rules over them
+  // read as a cage.
+  backdrop?: React.ReactNode;
+  overlay?: React.ReactNode;
+  // Extra room reserved at the edges for whatever the two slots draw, so a
+  // punched margin does not print through the title and a torn edge does not
+  // eat the footer.
+  inset?: { left?: number; bottom?: number; top?: number };
+  // Lay out into the box at a fixed size instead of scaling to it (see
+  // CollabScale).
+  reflow?: boolean;
+}) {
+  const touchScroll = useTouchScrollBody<HTMLDivElement>();
+  const slot = useContext(CollabSettingsSlot);
+  const lead = headerExtra ?? slot;
+  return (
+    // Pinned with `absolute inset-0` rather than sized with `h-full w-full`,
+    // and clipped to the element's own corner radius.
+    //
+    // `h-full` + padding only stays inside the box under border-box sizing, and
+    // when it doesn't the footer buttons paint OUTSIDE the element — half a
+    // "Add" pill hanging over the border. `inset-0` pins to the box whatever
+    // the sizing model, and `overflow-hidden` makes it impossible for any
+    // future child to escape the element it belongs to.
+    <CollabScale element={element} reflow={reflow}>
+      <div className="relative h-full w-full overflow-hidden rounded-[inherit]">
+        {backdrop}
+        <div
+          className={`relative flex h-full w-full flex-col gap-2.5 overflow-hidden rounded-[inherit] px-4 py-3.5 ${className ?? ''}`}
+          style={{
+            paddingLeft: inset?.left !== undefined ? 16 + inset.left : undefined,
+            paddingBottom: inset?.bottom !== undefined ? 14 + inset.bottom : undefined,
+            paddingTop: inset?.top !== undefined ? 14 + inset.top : undefined,
+          }}
+        >
+          <div className="flex min-w-0 shrink-0 items-center justify-between gap-3">
+            {/* The element's menu leads the title rather than floating at the
+                far corner: it belongs to the thing named, and a control
+                stranded in the top right read as random. */}
+            <span className="flex min-w-0 items-center gap-1.5">
+              {lead ? <span className="-ml-1 shrink-0">{lead}</span> : null}
+              <span
+                className="min-w-0 font-semibold leading-snug"
+                style={{
+                  color: textColor,
+                  fontSize: titleSize,
+                  textDecoration: titleStruck ? 'line-through' : undefined,
+                  opacity: titleStruck ? 0.55 : undefined,
+                  // A clamp rather than a truncate: the overflow has to be bounded
+                  // (the header is shrink-0, so an unbounded title would push the
+                  // body out of the card) but a one-line decision statement is
+                  // useless.
+                  display: '-webkit-box',
+                  WebkitBoxOrient: 'vertical',
+                  WebkitLineClamp: titleLines,
+                  overflow: 'hidden',
+                }}
+              >
+                {title.trim()}
+              </span>
+            </span>
+            <span className="flex shrink-0 items-center gap-1.5">
+              {/* A plain caption ("3 notes") takes the quiet caps style; a node
+                  (the Decision record's status badge) is drawn as given. */}
+              {typeof aside === 'string' ? (
+                <CollabCaption textColor={textColor}>{aside}</CollabCaption>
+              ) : (
+                (aside ?? null)
+              )}
+            </span>
+          </div>
+          {/* The body scrolls rather than overflowing the element box: a card with
+          twelve agenda rows on it is a normal card, and clipping the last few
+          with no way to reach them is the bug that would report.
+
+          The negative margin + matching padding buys 4px of interior room
+          before the scroller clips, without moving anything: a participant
+          avatar draws its presence ring as a box-shadow OUTSIDE its own box,
+          and `overflow` clipped a slice off every ring.
+
+          `touch-none` because a scroller resets touch-action: the element
+          wrapper's touch-none stops at it, so without its own a finger on the
+          body was claimed by the browser as a scroll (pointercancel) and the
+          card couldn't be dragged on a phone. useTouchScrollBody puts finger
+          scrolling back for a finger that lands on the cards inside; one on
+          the body's padding or gaps, or the header / footer, still drags. */}
+          <div
+            {...touchScroll}
+            className="-mx-1 -my-1 flex min-h-0 flex-1 touch-none flex-col gap-2.5 overflow-y-auto px-1 py-1"
+          >
+            {children}
+          </div>
+          {footer ? <div className="flex shrink-0 flex-wrap gap-2 pt-0.5">{footer}</div> : null}
+        </div>
+        {overlay}
+      </div>
+    </CollabScale>
+  );
+}
+
+// A small pill button, for a control that sits inside a card's own layout
+// rather than as its one action (the Quiz's Start inside its disc). `tone`
+// picks the weight: 'quiet' for the secondary act, 'loud' for the one the
+// card is for. No hover card: a card button's label says what it does.
+export function CollabButton({
+  children,
+  onPress,
+  disabled,
+  tone = 'quiet',
+  textColor,
+  label,
+}: {
+  children: React.ReactNode;
+  onPress?: () => void;
+  disabled?: boolean;
+  tone?: 'quiet' | 'loud';
+  textColor: string;
+  // Accessible name where the visible text is a glyph or too terse.
+  label?: string;
+}) {
+  // The canvas-wide press guard: a press that turns into a drag moves the
+  // element instead of firing (every other on-canvas control uses it).
+  const press = usePressWithoutDrag(() => onPress?.());
+  return (
+    <button
+      type="button"
+      {...press}
+      disabled={disabled || !onPress}
+      aria-label={label}
+      className="pointer-events-auto shrink-0 cursor-pointer rounded-full px-3 py-1.5 text-[11px] font-semibold transition hover:brightness-95 disabled:cursor-default disabled:opacity-45"
+      style={{ color: textColor, backgroundColor: tint(textColor, tone === 'loud' ? 0.16 : 0.08) }}
+    >
+      {children}
+    </button>
+  );
+}
+
+// A panel header's plain caption ("3 notes"), in the quiet caps style.
+export function CollabCaption({
+  textColor,
+  children,
+}: {
+  textColor: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <span
+      className="text-[10px] font-medium uppercase tracking-[0.06em] opacity-55"
+      style={{ color: textColor }}
+    >
+      {children}
+    </span>
+  );
+}

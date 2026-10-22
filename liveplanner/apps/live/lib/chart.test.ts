@@ -1,4 +1,4 @@
-import { PIE_DEFAULT_SLICES, type ShapeElement } from '@liveplanner/document';
+import { PIE_DEFAULT_SLICES, type ShapeElement } from '@liveplanner/project';
 import { describe, expect, it } from 'vitest';
 import { chartFrame } from './chart';
 

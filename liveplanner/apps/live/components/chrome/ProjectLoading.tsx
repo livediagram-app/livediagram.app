@@ -1,0 +1,128 @@
+'use client';
+
+import { useEffect, useState, useSyncExternalStore } from 'react';
+import { Button, DiagramBuildAnimation, LoadingSweep, RefreshIcon } from '@liveplanner/ui';
+import { getLoadProgress, subscribeLoadProgress } from '@/lib/load-progress';
+import { track } from '@/lib/telemetry';
+import { useOnline } from '@/hooks/ui/useOnline';
+
+// The opening screen (docs/specs/007-editor/new-project-route.md): the one
+// full-height screen between a click and the editor. /new renders it at the
+// "creating" stage while the project is persisted, the editor renders it at
+// the "opening" stage while the project loads, and because /new hands off to
+// the editor in place the two read as one continuous screen: only the label
+// changes, and DiagramBuildAnimation keeps its phase across the remount.
+//
+// Dark-aware on purpose: it is a whole SCREEN, not a panel, so it honours
+// the appearance like every other route (docs/specs/007-editor/live-app.md).
+// If the wait passes 10 seconds, it offers a Refresh as a way out. When the
+// load's watchdog runs its self-healing reload (docs/specs/007-editor/load-recovery.md),
+// the screen says so for the moment before the page reloads.
+
+type ProjectLoadingStage = 'creating' | 'opening';
+
+const COPY: Record<ProjectLoadingStage, { title: string; detail: string }> = {
+  creating: { title: 'Creating your project', detail: 'Setting up a fresh project' },
+  opening: { title: 'Opening your project', detail: 'Getting everything in place' },
+};
+
+const SLOW_AFTER_MS = 10_000;
+
+// Glow drift and the label's entrance (the progress sweep is LoadingSweep's). Motion only when
+// the user allows it; reduced motion keeps the screen still.
+const CSS = `
+@media (prefers-reduced-motion: no-preference) {
+  .ldl-glow-a { animation: ldl-drift-a 14s ease-in-out infinite alternate; }
+  .ldl-glow-b { animation: ldl-drift-b 18s ease-in-out infinite alternate; }
+  .ldl-enter { animation: ldl-enter 250ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+}
+@keyframes ldl-drift-a {
+  from { transform: translate(-12%, -8%) scale(1); }
+  to { transform: translate(10%, 6%) scale(1.15); }
+}
+@keyframes ldl-drift-b {
+  from { transform: translate(10%, 10%) scale(1.1); }
+  to { transform: translate(-8%, -6%) scale(0.95); }
+}
+@keyframes ldl-enter {
+  from { opacity: 0; transform: translateY(6px); filter: blur(2px); }
+  to { opacity: 1; transform: none; filter: none; }
+}`;
+
+export function ProjectLoading({ stage = 'opening' }: { stage?: ProjectLoadingStage }) {
+  const [slow, setSlow] = useState(false);
+  useEffect(() => {
+    const id = window.setTimeout(() => {
+      setSlow(true);
+      if (stage === 'opening') track('Error', 'Warning', 'ProjectLoad.Slow');
+    }, SLOW_AFTER_MS);
+    return () => window.clearTimeout(id);
+  }, [stage]);
+  // Offline wins over both (docs/specs/007-editor/load-recovery.md "Offline"): a Refresh would only
+  // swap in the browser's own error page.
+  const online = useOnline();
+  const healing = useSyncExternalStore(
+    subscribeLoadProgress,
+    () => getLoadProgress().healing,
+    () => false,
+  );
+  const copy = COPY[stage];
+
+  return (
+    <div className="relative flex h-dvh flex-col items-center justify-center overflow-hidden bg-slate-50 px-6 dark:bg-slate-950">
+      {/* Backdrop: two soft brand-tinted glows behind the centre and the
+          editor's dot grid, fading out towards the edges. Decorative. */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+        <div className="ldl-glow-a absolute top-1/2 left-1/2 -mt-72 -ml-80 size-[36rem] rounded-full bg-brand-300/30 blur-3xl dark:bg-brand-500/15" />
+        <div className="ldl-glow-b absolute top-1/2 left-1/2 -mt-40 -ml-24 size-[30rem] rounded-full bg-violet-300/25 blur-3xl dark:bg-violet-500/12" />
+        <div
+          className="absolute inset-0 text-slate-300 dark:text-slate-800"
+          style={{
+            backgroundImage: 'radial-gradient(currentColor 1.2px, transparent 1.2px)',
+            backgroundSize: '22px 22px',
+            maskImage: 'radial-gradient(ellipse 60% 55% at 50% 50%, black 20%, transparent 100%)',
+            WebkitMaskImage:
+              'radial-gradient(ellipse 60% 55% at 50% 50%, black 20%, transparent 100%)',
+          }}
+        />
+      </div>
+
+      <div className="relative flex w-full max-w-sm flex-col items-center">
+        <DiagramBuildAnimation className="max-w-[360px]" />
+
+        <div role="status" aria-live="polite" className="mt-8 flex flex-col items-center">
+          {/* Keyed on the stage so the label re-enters when "Creating"
+              gives way to "Opening". */}
+          <div key={stage} className="ldl-enter flex flex-col items-center gap-1 text-center">
+            <p className="text-base font-semibold tracking-tight text-slate-800 dark:text-slate-100">
+              {copy.title}
+            </p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">{copy.detail}</p>
+          </div>
+          <LoadingSweep className="mt-5 w-40" />
+        </div>
+
+        {!online ? (
+          <p className="ldl-enter mt-6 text-xs text-slate-500 dark:text-slate-400">
+            You&rsquo;re offline. Waiting for the connection&hellip;
+          </p>
+        ) : healing ? (
+          <p className="ldl-enter mt-6 text-xs text-slate-500 dark:text-slate-400">
+            Still working on it. Trying a fresh start.
+          </p>
+        ) : slow ? (
+          <div className="ldl-enter mt-6 flex flex-col items-center gap-2">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              This is taking longer than usual.
+            </p>
+            <Button variant="secondary" size="xs" onClick={() => window.location.reload()}>
+              <RefreshIcon size={13} />
+              Refresh
+            </Button>
+          </div>
+        ) : null}
+      </div>
+      <style>{CSS}</style>
+    </div>
+  );
+}

@@ -6,7 +6,7 @@
 // what they do to this selection. Someone who may only view gets
 // the header and Copy alone.
 import { Fragment, useState } from 'react';
-import { CHART_TYPE_LABELS, CHART_TYPES } from '@liveplanner/document';
+import { CHART_TYPE_LABELS, CHART_TYPES } from '@liveplanner/project';
 import { posRangeOf, unmergeRange } from '@liveplanner/sheets';
 import { ContextMenu } from '@/components/palette/ContextMenu';
 import {

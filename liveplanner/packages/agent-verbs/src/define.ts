@@ -19,7 +19,7 @@ export type VerbContext = {
   // A line for the person or agent running the command, beside the output (stderr in the CLI).
   notice: (line: string) => void;
   now: () => number;
-  // A new document or tab id (crypto.randomUUID in the CLI).
+  // A new project or tab id (crypto.randomUUID in the CLI).
   newId: () => string;
   sleep: (ms: number) => Promise<void>;
   // A file's text, or stdin's for `-`.
@@ -74,7 +74,7 @@ export type Verb<I extends z.ZodObject = z.ZodObject, O extends z.ZodType = z.Zo
   local?: true;
   // Needs no host: no profile, credential or api (guides, the skill); never counted.
   offline?: true;
-  // Reads or writes document files on disk, in the bundled document format: refused against a host that stores a
+  // Reads or writes project files on disk, in the bundled project format: refused against a host that stores a
   // newer one (blueprint "One command" step 6).
   files?: true;
   run?: (ctx: VerbContext, input: z.infer<I>) => Promise<z.infer<O>>;
@@ -84,7 +84,7 @@ export type Verb<I extends z.ZodObject = z.ZodObject, O extends z.ZodType = z.Zo
   json?: (output: z.infer<O>) => unknown;
   // `-q`: refs or ids.
   quiet?: (output: z.infer<O>) => string[];
-  // A non-zero exit for an output that is not an error (the lint's error findings exit 1).
+  // A non-zero exit for an output that is not an error.
   exitCode?: (output: z.infer<O>) => number;
   // The array a list verb returns, for `--json` fields and the footer.
   listKey?: string;
