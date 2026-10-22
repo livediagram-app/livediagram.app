@@ -1,0 +1,8 @@
+# Copy to .dev.vars for `pnpm dev`. The Turnstile keys are Cloudflare's always-pass test keys.
+ENVIRONMENT=development
+BASE_URL=http://localhost:8787
+BETTER_AUTH_SECRET=change-me-to-32-or-more-random-characters
+TURNSTILE_SITE_KEY=1x00000000000000000000AA
+TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA
+ADMIN_TOKEN=local-admin-token
+EMAIL_FROM=sign-in@liveworkspace.app

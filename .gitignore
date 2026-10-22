@@ -1,3 +1,10 @@
+# Each product keeps its own .gitignore for what's particular to it.
 node_modules/
 .turbo/
+.wrangler/
+dist/
+coverage/
+.dev.vars*
+!.dev.vars.example
+*.tsbuildinfo
 .DS_Store

@@ -1,0 +1,128 @@
+# Integrating an app
+
+What an app (livediagram, liveplanner, …) needs once it's registered (README "Adding an app").
+It's written against livediagram's shape: a browser app sends `Authorization: Bearer <token>`
+to an API Worker. With Clerk, that token came from Clerk's `getToken()`. Now it comes from the
+app's own Worker.
+
+## Secrets and config on the app's Worker
+
+| Name                              | Example                                                                                             |
+| --------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `ACCOUNTS_URL`                    | `https://accounts.liveworkspace.app`                                                                |
+| `ACCOUNTS_ISSUER`                 | `https://accounts.liveworkspace.app/api/auth` (the `issuer` in `/.well-known/openid-configuration`) |
+| `ACCOUNTS_CLIENT_ID`              | from `register-client.ts`                                                                           |
+| `ACCOUNTS_CLIENT_SECRET` (secret) | from `register-client.ts`                                                                           |
+| `API_RESOURCE`                    | `https://livediagram.app/api`                                                                       |
+
+## Three routes on the app's Worker
+
+The refresh token lives in an `HttpOnly` cookie on the app's own domain. The browser never sees
+it. It only ever holds a short-lived access token in memory.
+
+```ts
+import {
+  authorizeUrl,
+  createPkcePair,
+  exchangeCode,
+  randomState,
+  refreshTokens,
+} from '@liveworkspace/auth-client';
+
+const credentials = (env: Env) => ({
+  accountsUrl: env.ACCOUNTS_URL,
+  clientId: env.ACCOUNTS_CLIENT_ID,
+  clientSecret: env.ACCOUNTS_CLIENT_SECRET,
+});
+const callbackUrl = (request: Request) => new URL('/auth/callback', request.url).toString();
+
+// GET /auth/sign-in → the accounts site
+async function signIn(request: Request, env: Env) {
+  const { verifier, challenge } = await createPkcePair();
+  const state = randomState();
+  const to = authorizeUrl({
+    accountsUrl: env.ACCOUNTS_URL,
+    clientId: env.ACCOUNTS_CLIENT_ID,
+    redirectUri: callbackUrl(request),
+    state,
+    codeChallenge: challenge,
+    resource: env.API_RESOURCE,
+  });
+  return new Response(null, {
+    status: 302,
+    headers: {
+      location: to,
+      'set-cookie': `lw_pkce=${state}.${verifier}; Path=/auth; HttpOnly; Secure; SameSite=Lax; Max-Age=600`,
+    },
+  });
+}
+
+// GET /auth/callback?code=…&state=… → back in the app, signed in
+async function callback(request: Request, env: Env) {
+  const url = new URL(request.url);
+  const [state, verifier] = cookie(request, 'lw_pkce')?.split('.') ?? [];
+  if (!state || state !== url.searchParams.get('state'))
+    return new Response('Bad state', { status: 400 });
+  const tokens = await exchangeCode(credentials(env), {
+    code: url.searchParams.get('code') ?? '',
+    redirectUri: callbackUrl(request),
+    codeVerifier: verifier!,
+    resource: env.API_RESOURCE,
+  });
+  const headers = new Headers({ location: '/' });
+  headers.append('set-cookie', 'lw_pkce=; Path=/auth; Max-Age=0');
+  headers.append('set-cookie', refreshCookie(tokens.refreshToken!));
+  return new Response(null, { status: 302, headers });
+}
+
+// POST /auth/token → { accessToken, expiresAt } for the browser to send as Bearer
+async function token(request: Request, env: Env) {
+  const refreshToken = cookie(request, 'lw_refresh');
+  if (!refreshToken) return Response.json({ signedIn: false }, { status: 401 });
+  const tokens = await refreshTokens(credentials(env), {
+    refreshToken,
+    resource: env.API_RESOURCE,
+  });
+  return Response.json(
+    { accessToken: tokens.accessToken, expiresAt: tokens.expiresAt },
+    { headers: { 'set-cookie': refreshCookie(tokens.refreshToken!), 'cache-control': 'no-store' } },
+  );
+}
+
+const refreshCookie = (value: string) =>
+  `lw_refresh=${value}; Path=/auth; HttpOnly; Secure; SameSite=Strict; Max-Age=${30 * 24 * 3600}`;
+```
+
+(`cookie(request, name)` is whatever cookie reader the app already has.)
+
+In the browser, keep the access token in memory. Call `POST /auth/token` on load and again a
+minute before `expiresAt`, then send the token as `Authorization: Bearer …` exactly as with Clerk.
+Refresh tokens rotate, and two tabs refreshing at once is fine: the accounts Worker replays the
+same answer for 30 seconds.
+
+## Checking the token in the API Worker
+
+This replaces the `CLERK_JWKS_URL` check. Build the verifier once at module scope so the key set
+stays cached for the life of the isolate:
+
+```ts
+import { createVerifier } from '@liveworkspace/auth-client';
+
+let verify: ReturnType<typeof createVerifier> | undefined;
+
+export async function accountOf(request: Request, env: Env) {
+  verify ??= createVerifier({ issuer: env.ACCOUNTS_ISSUER, audience: env.API_RESOURCE });
+  const token = bearerTokenOf(request.headers.get('authorization'));
+  return token ? verify(token) : null; // { userId, email, emailVerified, scopes } | null
+}
+```
+
+`userId` is the same value Clerk's `sub` was, so everything keyed on it (owner ids, team
+members, API tokens) keeps working. `email` + `emailVerified` stand in for the custom Clerk
+session-token claim that Teams invites needed.
+
+## Installing the package
+
+It isn't published yet. Until it is, copy `packages/auth-client/src` into the app's own
+`packages/`. It's two files that depend only on `jose`, which livediagram already uses. When a
+second app needs it, publish it to GitHub Packages, or move this repo into the apps' workspace.

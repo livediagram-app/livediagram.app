@@ -1,0 +1,12 @@
+packages:
+  # Shared by every product.
+  - 'packages/*'
+  # liveworkspace itself: accounts (sign-in for every app).
+  - 'liveworkspace/apps/*'
+  # Each product's own root is a package too, so its scripts and root configs keep working.
+  - 'livediagram'
+  - 'livediagram/apps/*'
+  - 'livediagram/packages/*'
+  - 'liveplanner'
+  - 'liveplanner/apps/*'
+  - 'liveplanner/packages/*'

@@ -1,0 +1,66 @@
+name = "liveworkspace-accounts"
+main = "src/index.ts"
+compatibility_date = "2026-05-29"
+# Better Auth reads AsyncLocalStorage from node:async_hooks.
+compatibility_flags = ["nodejs_compat"]
+routes = [{ pattern = "accounts.liveworkspace.app", custom_domain = true }]
+
+# Secrets (wrangler secret put, or .dev.vars locally; see .dev.vars.example):
+#   BETTER_AUTH_SECRET    signs cookies and the OAuth query; 32+ random bytes
+#   TURNSTILE_SECRET_KEY  Turnstile on "send code"
+#   ADMIN_TOKEN           guards POST /internal/clients (registering an app)
+[vars]
+ENVIRONMENT = "production"
+BASE_URL = "https://accounts.liveworkspace.app"
+EMAIL_FROM = "sign-in@liveworkspace.app"
+TURNSTILE_SITE_KEY = ""
+
+[[d1_databases]]
+binding = "AUTH_DB"
+database_name = "liveworkspace-accounts"
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "migrations"
+
+[[send_email]]
+name = "EMAIL"
+
+# Workers Rate Limiting: counted at Cloudflare's edge, so it holds across isolates, unlike
+# Better Auth's built-in limiter, which on Workers would only count per isolate.
+[[ratelimits]]
+name = "CODE_IP_LIMITER"
+namespace_id = "1001"
+simple = { limit = 10, period = 60 }
+
+[[ratelimits]]
+name = "CODE_EMAIL_LIMITER"
+namespace_id = "1002"
+simple = { limit = 3, period = 60 }
+
+[env.staging]
+name = "liveworkspace-accounts-staging"
+routes = [{ pattern = "accounts-staging.liveworkspace.app", custom_domain = true }]
+
+[env.staging.vars]
+ENVIRONMENT = "staging"
+BASE_URL = "https://accounts-staging.liveworkspace.app"
+EMAIL_FROM = "sign-in@liveworkspace.app"
+TURNSTILE_SITE_KEY = ""
+
+[[env.staging.d1_databases]]
+binding = "AUTH_DB"
+database_name = "liveworkspace-accounts-staging"
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "migrations"
+
+[[env.staging.send_email]]
+name = "EMAIL"
+
+[[env.staging.ratelimits]]
+name = "CODE_IP_LIMITER"
+namespace_id = "2001"
+simple = { limit = 10, period = 60 }
+
+[[env.staging.ratelimits]]
+name = "CODE_EMAIL_LIMITER"
+namespace_id = "2002"
+simple = { limit = 3, period = 60 }
