@@ -12,7 +12,6 @@ describe('VIEW_TITLES', () => {
     expect(VIEW_TITLES.shared).toBe(SIDEBAR_LABELS.shared);
     expect(VIEW_TITLES.all).toBe(SIDEBAR_LABELS.myDocuments);
     expect(VIEW_TITLES.offline).toBe(SIDEBAR_LABELS.thisBrowser);
-    expect(VIEW_TITLES.gallery).toBe(SIDEBAR_LABELS.gallery);
     expect(VIEW_TITLES.themes).toBe(SIDEBAR_LABELS.themes);
     expect(VIEW_TITLES.trash).toBe(SIDEBAR_LABELS.trash);
     expect(VIEW_TITLES.invites).toBe(SIDEBAR_LABELS.invites);

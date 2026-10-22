@@ -55,7 +55,6 @@ export type PendingDraw =
     }
   | { type: 'text' }
   | { type: 'sticky' }
-  | { type: 'image' }
   // Table (docs/specs/008-canvas/canvas-and-palette.md), link card (docs/specs/009-elements/link-cards.md), and the embeds (docs/specs/009-elements/youtube-video.md, docs/specs/009-elements/embed-providers.md)
   // are their own element types rather than ShapeKinds, so each needs its own
   // intent to ride the same gesture. They used to drop at the viewport centre
@@ -240,8 +239,6 @@ export function drawBannerMessage(
       return 'Tap to drop or drag to place text';
     case 'sticky':
       return 'Tap to drop or drag to draw a sticky note';
-    case 'image':
-      return 'Tap to drop or drag to draw image bounds';
     case 'table':
       return 'Tap to drop or drag to draw a table';
     case 'link-card':
@@ -335,11 +332,6 @@ export function drawIntentCursor(intent: PendingDraw): string {
   if (intent.type === 'sticky') {
     return drawCursorFromGlyph(
       `<path d="M13 13 H21 L24 16 V23 H13 Z M21 13 V16 H24" stroke="black" stroke-width="1.4" stroke-linejoin="round" fill="none" />`,
-    );
-  }
-  if (intent.type === 'image') {
-    return drawCursorFromGlyph(
-      `<rect x="13" y="14" width="11" height="9" rx="1" fill="none" stroke="black" stroke-width="1.4" /><circle cx="15.5" cy="16.5" r="0.9" fill="black" /><path d="M13 21 L16 18.5 L18.5 20.5 L21 18 L24 20" stroke="black" stroke-width="1.2" stroke-linejoin="round" fill="none" />`,
     );
   }
   if (intent.type === 'table') {

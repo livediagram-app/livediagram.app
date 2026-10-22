@@ -36,7 +36,6 @@ export function useBoxedElementGestures({
   onEditLink,
   onOpenEditDialog,
   onOpenNote,
-  imageContext,
   onContextSelect,
 }: Pick<
   BoxedElementViewProps,
@@ -53,7 +52,6 @@ export function useBoxedElementGestures({
   | 'onEditLink'
   | 'onOpenEditDialog'
   | 'onOpenNote'
-  | 'imageContext'
   | 'onContextSelect'
 > & {
   wrapperRef: RefObject<HTMLDivElement | null>;
@@ -167,15 +165,8 @@ export function useBoxedElementGestures({
     if (isEditing) return;
     // Can't edit an element another participant holds.
     if (remotelyLocked) return;
-    // Image elements double-click to open the image picker (swap /
-    // upload). They have no inline label to edit, so the editor's
-    // beginEdit branch doesn't apply. A single click stays the
-    // selection / drag gesture so the user can move + resize the
-    // placeholder freely without the picker popping up.
-    if (element.type === 'image' && imageContext?.onOpenPicker) {
-      imageContext.onOpenPicker(element.id);
-      return;
-    }
+    // An image element has no inline label to edit (and no picture to pick).
+    if (element.type === 'image') return;
     // Tables edit per-cell (TableView handles the cell double-click),
     // so the element-level label editor never applies.
     if (element.type === 'table') return;

@@ -40,7 +40,7 @@ describe('the editor Explorer sections', () => {
   it('opens each section on its Explorer page', () => {
     expect(sectionPage({ kind: 'mine' })).toEqual({ kind: 'all' });
     expect(sectionPage({ kind: 'browser' })).toEqual({ kind: 'offline' });
-    expect(sectionPage({ kind: 'library' })).toEqual({ kind: 'gallery' });
+    expect(sectionPage({ kind: 'library' })).toEqual({ kind: 'themes' });
     expect(sectionPage({ kind: 'tags' })).toEqual({ kind: 'tags' });
     expect(sectionLabel({ kind: 'tags' })).toBe('Tags');
     expect(sectionPage({ kind: 'team', id: 't1' })).toEqual({ kind: 'team', id: 't1' });

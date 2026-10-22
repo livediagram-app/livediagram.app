@@ -27,7 +27,6 @@ describe('paneHeaderActions', () => {
     for (const kind of [
       'inbox',
       'shared',
-      'gallery',
       'themes',
       'trash',
       'team',

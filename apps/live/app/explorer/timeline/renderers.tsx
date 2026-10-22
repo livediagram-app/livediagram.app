@@ -235,14 +235,6 @@ const accountRenderer: TimelineRenderer = (event) => {
     }
     case 'folder_deleted':
       return { ...base, subject: folder };
-    case 'image_uploaded': {
-      const count = typeof event.snapshot.count === 'number' ? event.snapshot.count : 1;
-      return {
-        ...base,
-        subject: count === 1 ? '1 image' : `${count} images`,
-        onClick: () => assignAppLocation('/explorer/images'),
-      };
-    }
     default:
       return base;
   }

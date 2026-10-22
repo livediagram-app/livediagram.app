@@ -18,7 +18,7 @@ import type { PendingDraw } from '@/lib/draw-mode';
 import type { PaletteTileDef } from './palette-tile-defs';
 import { tileCaption } from './tile-caption';
 import { tileDragStart } from './palette-tile-drag';
-import { tileActive, tileHandler, visibleTiles, type PaletteTileActions } from './PaletteTileGrid';
+import { tileActive, tileHandler, type PaletteTileActions } from './PaletteTileGrid';
 import { PointerWords } from './PointerWords';
 
 export function PaletteToolRow({
@@ -131,7 +131,7 @@ export function PaletteToolRows({
   // Prefix for the per-row DOM ids the caller points aria-activedescendant at.
   optionIdPrefix?: string;
 }) {
-  const defs = visibleTiles(tiles, actions.hasImage);
+  const defs = tiles;
   return (
     <div className="flex flex-col gap-0.5" role={optionIdPrefix ? 'listbox' : undefined}>
       {defs.map((def, i) => (

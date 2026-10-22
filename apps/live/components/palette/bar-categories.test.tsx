@@ -25,7 +25,6 @@ describe('the category bar’s categories', () => {
       'layout',
       'icons',
       'technology',
-      'media',
     ]);
   });
 
@@ -73,7 +72,6 @@ describe('the category bar’s categories', () => {
       SESSION_CATEGORY_ID,
       'icons',
       'stickers',
-      'media',
       'data',
     ]);
     const session = cats.find((c) => c.id === SESSION_CATEGORY_ID)!;

@@ -108,7 +108,7 @@ export function sectionPage(s: PanelSection): SelectedNode {
     case 'browser':
       return { kind: 'offline' };
     case 'library':
-      return { kind: 'gallery' };
+      return { kind: 'themes' };
     default:
       return { kind: s.kind };
   }

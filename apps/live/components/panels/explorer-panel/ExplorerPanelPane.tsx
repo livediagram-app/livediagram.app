@@ -4,8 +4,6 @@
 // Open Page to its Explorer page and its own action, over its content. Sections with documents are the tree's rows;
 // the others are the Explorer page's own views, each loaded only when its section is first shown.
 import dynamic from 'next/dynamic';
-import { useState } from 'react';
-import type { LibraryKind } from './PanelViews';
 import type { ReactNode } from 'react';
 import { explorerPathFor } from '@/app/explorer/routes';
 import { PaneSkeleton } from './pane-parts';
@@ -72,8 +70,6 @@ export function ExplorerPanelPane({
   footer?: ReactNode;
 }) {
   const title = sectionLabel(section, teamName);
-  // The Library's tab, held here so Open Page goes to the page shown.
-  const [libraryTab, setLibraryTab] = useState<LibraryKind>('gallery');
   const body =
     section.kind === 'home' ? (
       ownerId ? (
@@ -98,7 +94,7 @@ export function ExplorerPanelPane({
       ) : null
     ) : section.kind === 'library' ? (
       ownerId ? (
-        <LibrarySection ownerId={ownerId} tab={libraryTab} setTab={setLibraryTab} />
+        <LibrarySection />
       ) : null
     ) : (
       tree
@@ -118,12 +114,7 @@ export function ExplorerPanelPane({
             </span>
           </button>
         ) : null}
-        <a
-          href={explorerPathFor(
-            section.kind === 'library' ? { kind: libraryTab } : sectionPage(section),
-          )}
-          className={HEADER_BUTTON}
-        >
+        <a href={explorerPathFor(sectionPage(section))} className={HEADER_BUTTON}>
           <span className={narrow ? 'sr-only' : 'max-sm:sr-only'}>Open Page</span>
           <OpenIcon />
         </a>

@@ -55,7 +55,6 @@ import {
   lucideDiamond,
   lucideFileText,
   lucideGlobe,
-  lucideImage,
   lucideAppWindow,
   lucideMoveRight,
   lucidePanelTop,
@@ -182,7 +181,6 @@ type PaletteTileAction =
   | { type: 'arrow'; ends?: import('@liveplanner/document').ArrowEnds }
   | { type: 'sticky' }
   | { type: 'table' }
-  | { type: 'image' }
   | { type: 'annotation' }
   | { type: 'link-card' }
   | { type: 'component'; kind: ComponentKind }
@@ -274,9 +272,6 @@ export type PaletteTileDef = {
   // theme's element fill; `noTint` tiles keep fixed colours.
   filled?: boolean;
   noTint?: boolean;
-  // Tile only renders when the editor supplies onAddImage (image uploads
-  // available) — the Image / Avatar / Hero / Header tiles.
-  needsImage?: boolean;
   // Greyed out with its reason (no press, no drag, the reason in its hover card). A card tile no board on the tab
   // takes gets one at render (usePlanCardTileDisabled, docs/specs/026-plan/plan-mode.md "The palette").
   disabled?: { reason: string };
@@ -1500,22 +1495,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
-    id: 'tools:image',
-    blurb: 'Place an uploaded picture',
-    section: 'media',
-    label: 'Add Image',
-    description: 'Drop an image placeholder + pick / upload a file.',
-    shortcut: '9',
-    noTint: true,
-    needsImage: true,
-    action: { type: 'image' },
-    icon: (
-      <Glyph size={TILE_GLYPH_PX} units={24}>
-        <Prims prims={lucideImage} />
-      </Glyph>
-    ),
-  },
-  {
     // The tab window (docs/specs/009-elements/tab-window.md): another tab of the document, live, fitted inside it.
     id: 'media:tab-window',
     blurb: 'Another tab, live',
@@ -1610,24 +1589,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     icon: (
       <Glyph size={TILE_GLYPH_PX} units={24}>
         <Prims prims={lucideGlobe} />
-      </Glyph>
-    ),
-  },
-  {
-    id: 'tools:avatar',
-    blurb: 'A circular photo of a person',
-    section: 'media',
-    label: 'Add Avatar',
-    description:
-      'Avatar. A circular image. Tap to drop or drag to size; double-click it to pick / upload a photo.',
-    noTint: true,
-    needsImage: true,
-    action: { type: 'component', kind: 'avatar' },
-    icon: (
-      <Glyph size={18} units={24}>
-        <circle cx="12" cy="12" r="9" />
-        <circle cx="12" cy="9.5" r="3" />
-        <path d="M6.5 19a6 6 0 0 1 11 0" />
       </Glyph>
     ),
   },
@@ -2218,26 +2179,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
         <circle cx="12" cy="12" r="3" />
         <circle cx="19" cy="12" r="3" />
         <path d="M8 12h1M15 12h1" />
-      </Glyph>
-    ),
-  },
-  {
-    id: 'components:hero',
-    tileGroup: 'web',
-    blurb: 'A big image with a title card',
-    caption: 'Hero',
-    section: 'components',
-    label: 'Add Hero',
-    description:
-      'Hero. A large image with a title and supporting line on a themed caption card. Tap to drop or drag to size; double-click the image to set it, click the caption to edit it.',
-    noTint: true,
-    needsImage: true,
-    action: { type: 'component', kind: 'hero' },
-    icon: (
-      <Glyph size={18} units={24}>
-        <rect x="2.5" y="3.5" width="19" height="17" rx="2" />
-        <path d="M2.5 14l5-4 4 3 3-2.5 7 5.5" />
-        <path d="M7 17.5h10" strokeWidth="2.2" />
       </Glyph>
     ),
   },

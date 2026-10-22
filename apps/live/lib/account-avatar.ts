@@ -18,8 +18,7 @@ const CLERK_STORAGE_HOST = 'images.clerk.dev';
 
 /**
  * The source a Clerk image URL encodes in its first path segment, a base64url JSON object. Any
- * URL that does not decode cleanly is `'unknown'`, never `'upload'`, so a format change at Clerk
- * can only make an upload lose to the Google picture, not the other way round.
+ * URL that does not decode cleanly is `'unknown'`, never `'upload'`.
  */
 export function clerkImageSource(url: string): ClerkImageSource {
   try {
@@ -41,18 +40,17 @@ export function clerkImageSource(url: string): ClerkImageSource {
 }
 
 /**
- * The profile picture URL, or null for the initials avatar (spec §2): a manual upload over the
- * Google picture, the Google picture over Clerk's copy of it, and never Clerk's generated default.
- * Only https URLs on Clerk's image host count.
+ * The profile picture URL, or null for the initials avatar (spec §2): the Google picture, else
+ * Clerk's own image unless it is a manual upload (pictures are never uploaded here), and never
+ * Clerk's generated default. Only https URLs on Clerk's image host count.
  */
 export function resolveProfilePicture(user: ClerkPictureSource): string | null {
-  const own = user.hasImage && isProfilePictureUrl(user.imageUrl) ? user.imageUrl : null;
-  if (own && clerkImageSource(own) === 'upload') return own;
   const google = user.externalAccounts.find(
     (a) => a.provider === 'google' && isProfilePictureUrl(a.imageUrl),
   );
   if (google) return google.imageUrl;
-  return own;
+  const own = user.hasImage && isProfilePictureUrl(user.imageUrl) ? user.imageUrl : null;
+  return own && clerkImageSource(own) !== 'upload' ? own : null;
 }
 
 /** The letter on the initials avatar: first name, else username, else '?'. */

@@ -10,7 +10,6 @@ import {
   lucideChartColumn,
   lucideCode,
   lucideFileText,
-  lucideImage,
   lucideIndentDecrease,
   lucideIndentIncrease,
   lucideList,
@@ -59,7 +58,6 @@ const PanelIcons = {
   quote: I(lucideTextQuote),
   codeBlock: I(lucideSquareCode),
   pageBreak: I(lucidePilcrow),
-  image: I(lucideImage),
   table: I(lucideTable),
   chart: I(lucideChartColumn),
 };
@@ -386,7 +384,7 @@ export function MorePanel({
 }
 
 export type BlockInsert = 'divider' | 'pageBreak' | 'quote' | 'code';
-export type ObjectInsert = 'image' | 'table' | 'chart' | 'drawing';
+export type ObjectInsert = 'table' | 'chart' | 'drawing';
 
 // The Insert menu, dressed as the palette's rows (a glyph chip, the name, a line on what it is,
 // the slash menu's own: lib/article/article-slash-items.ts): the objects, then the blocks.
@@ -396,7 +394,6 @@ const INSERT_OBJECTS: readonly {
   blurb: string;
   icon: ReactNode;
 }[] = [
-  { id: 'image', label: 'Image', blurb: 'A picture in the text', icon: <PanelIcons.image /> },
   { id: 'table', label: 'Table', blurb: 'Rows and columns', icon: <PanelIcons.table /> },
   {
     id: 'chart',

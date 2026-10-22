@@ -44,7 +44,6 @@ function harness(tab: Partial<Tab>) {
   const { result } = renderHook(() =>
     useClipboard({
       isReadOnly: false,
-      embedMode: false,
       readSelection: () => ({ selectedId: null, multiSelectedIds: new Set<string>() }),
       editingId: null,
       setEditingId: () => {},
@@ -54,8 +53,6 @@ function harness(tab: Partial<Tab>) {
       },
       setSelectedId: () => {},
       setMultiSelectedIds: () => {},
-      ownerId: 'me',
-      documentId: 'd',
       toast: toast as never,
     }),
   );

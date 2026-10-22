@@ -4,7 +4,7 @@ import { useState, type ReactNode } from 'react';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { BehaviourTabIcon } from '@liveplanner/ui';
 import { PaletteCategoryBrowser } from './PaletteCategoryBrowser';
-import { tileHandler, visibleTiles, type PaletteTileActions } from './PaletteTileGrid';
+import { tileHandler, type PaletteTileActions } from './PaletteTileGrid';
 import { rankTiles } from './palette-tile-search';
 import { CardList } from './category-flyout-items';
 import { flyoutTagline } from './category-flyout-groups';
@@ -70,7 +70,7 @@ export function SessionBrowse({
     label: g.label,
     icon: g.icon,
     description: flyoutTagline(g.id, g.description),
-    items: visibleTiles([...(g.tiles ?? [])], actions.hasImage),
+    items: [...(g.tiles ?? [])],
   }));
   const all = browse.flatMap((g) => g.items);
   const renderItems = (items: PaletteTileDef[]) => (

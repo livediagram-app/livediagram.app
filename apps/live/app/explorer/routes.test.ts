@@ -19,7 +19,7 @@ const STATIC_NODES: SelectedNode[] = [
   { kind: 'search' },
   { kind: 'offline' },
   { kind: 'shared' },
-  { kind: 'gallery' },
+  { kind: 'themes' },
   { kind: 'invites' },
 ];
 
@@ -79,8 +79,8 @@ describe('explorer route mapping', () => {
   });
 
   it('tolerates the static-export trailing slash', () => {
-    expect(selectedFromRoute('/explorer/images/', new URLSearchParams())).toEqual({
-      kind: 'gallery',
+    expect(selectedFromRoute('/explorer/themes/', new URLSearchParams())).toEqual({
+      kind: 'themes',
     });
   });
 

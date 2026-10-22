@@ -28,7 +28,6 @@ export type PaletteTileActions = {
   addArrow: (ends?: import('@liveplanner/document').ArrowEnds) => void;
   addSticky: () => void;
   addTable: () => void;
-  addImage: () => void;
   addAnnotation: () => void;
   addLinkCard: () => void;
   addVideo: (provider?: EmbedProvider) => void;
@@ -42,10 +41,6 @@ export type PaletteTileActions = {
   beginMarker: (penId: WhiteboardPenId, once?: boolean) => void;
   // Puts the armed tool down (its tile pressed again).
   cancelDraw?: () => void;
-  // Whether image uploads are available (the editor supplied onAddImage);
-  // gates the `needsImage` tiles exactly as the Tools / Components tabs
-  // always have.
-  hasImage: boolean;
 };
 
 // A tile pressed: places or arms its tool; pressed again while armed (`pendingDraw`), puts it down
@@ -92,8 +87,6 @@ export function tileHandler(
       return () => actions.addSticky();
     case 'table':
       return actions.addTable;
-    case 'image':
-      return actions.addImage;
     case 'annotation':
       return actions.addAnnotation;
     case 'link-card':
@@ -177,10 +170,6 @@ export function tileActive(
     default:
       return pendingDraw.type === a.type;
   }
-}
-
-export function visibleTiles(defs: PaletteTileDef[], hasImage: boolean): PaletteTileDef[] {
-  return defs.filter((d) => !d.needsImage || hasImage);
 }
 
 // One catalogue tile, rendered exactly as its home tab renders it. `compact` is the
@@ -278,7 +267,7 @@ export function PaletteTileGrid({
   actions: PaletteTileActions;
   pendingDraw: PendingDraw | null | undefined;
 }) {
-  const defs = visibleTiles(tiles, actions.hasImage);
+  const defs = tiles;
   return (
     // 3-column grid of fixed tiles (matching the Icons catalogue) so tiles
     // pack into even rows; overflow-x-hidden absorbs the few-px slack when

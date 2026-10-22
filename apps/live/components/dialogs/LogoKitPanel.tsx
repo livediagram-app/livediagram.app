@@ -2,28 +2,24 @@
 
 // The Export dialog's Logo Kit panel (docs/specs/007-editor/logo-pages.md "Export"): which logo
 // page (when the tab has several), the page as it will export (see-through paper shown over a
-// checkerboard), what the kit holds, and the download. It owns the kit's making; the dialog hands
-// it the images it has loaded for previews.
+// checkerboard), what the kit holds, and the download. It owns the kit's making; the dialog says
+// when the icon catalogues its previews need have loaded.
 import { useState } from 'react';
 import type { LaidOutPage, Tab } from '@liveplanner/document';
 import { Button, Select } from '@liveplanner/ui';
 import { BackBar } from '@/components/primitives/BackBar';
 import { exportLogoKit, LOGO_KIT_PNG_SIZES, logoKitFileName } from '@/lib/export-logo-kit';
 import { exportPageLabel } from '@/lib/export-pages';
-import { downloadBlob, loadTabImages, renderTabToSvg } from '@/lib/export-tab';
+import { downloadBlob, renderTabToSvg } from '@/lib/export-tab';
 import { ensureIconCatalogs } from '@/lib/icon-registry';
 import { track } from '@/lib/telemetry';
 import { PREVIEW_CHECKER } from './ImageExportPanel';
-
-type Images = Awaited<ReturnType<typeof loadTabImages>>;
 
 export function LogoKitPanel({
   tab,
   pages,
   documentName,
-  images,
-  imagesReady,
-  imageContext,
+  ready,
   onDone,
   onBack,
 }: {
@@ -31,10 +27,8 @@ export function LogoKitPanel({
   // The tab's pages, every kind: the kit is of one of its logo pages.
   pages: readonly LaidOutPage[];
   documentName: string;
-  // The images the dialog loaded for its previews, once ready.
-  images: Images | undefined;
-  imagesReady: boolean;
-  imageContext?: Parameters<typeof loadTabImages>[1];
+  // Whether the icon catalogues the dialog loads for its previews have landed.
+  ready: boolean;
   onDone: () => void;
   onBack: () => void;
 }) {
@@ -44,9 +38,8 @@ export function LogoKitPanel({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // Drawn on each render of the panel (a page draws in under a millisecond), which re-renders only
-  // as its own choice, state or images change.
-  const previewSvg =
-    page && imagesReady ? renderTabToSvg(tab, { images, page, transparentPaper: true }) : null;
+  // as its own choice, state or the catalogues change.
+  const previewSvg = page && ready ? renderTabToSvg(tab, { page, transparentPaper: true }) : null;
   if (!page) return null;
 
   const download = async () => {
@@ -55,12 +48,7 @@ export function LogoKitPanel({
     setError(null);
     try {
       await ensureIconCatalogs();
-      const loaded = imagesReady
-        ? images
-        : imageContext
-          ? await loadTabImages(tab, imageContext)
-          : undefined;
-      const blob = await exportLogoKit(tab, page, { images: loaded });
+      const blob = await exportLogoKit(tab, page, {});
       downloadBlob(blob, logoKitFileName(documentName, page, pages.length));
       track('Document', 'Exported', 'LogoKit');
       onDone();

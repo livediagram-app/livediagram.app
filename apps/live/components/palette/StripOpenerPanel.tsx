@@ -3,7 +3,7 @@
 import type { PendingDraw } from '@/lib/draw-mode';
 import { setPaletteDragPreview } from '@/lib/palette-drag-preview';
 import { tileDisplayName, type PaletteTileDef } from './palette-tile-defs';
-import { tileHandler, visibleTiles, type PaletteTileActions } from './PaletteTileGrid';
+import { tileHandler, type PaletteTileActions } from './PaletteTileGrid';
 import { tileDragStart } from './palette-tile-drag';
 import { PointerWords } from './PointerWords';
 
@@ -34,7 +34,7 @@ export function StripOpenerPanel({
         </p>
       </div>
       <ul className="grid grid-cols-2 gap-1">
-        {visibleTiles([...tiles], actions.hasImage).map((def) => (
+        {[...tiles].map((def) => (
           <li key={def.id} className="flex">
             <OpenerCard def={def} actions={actions} pendingDraw={pendingDraw} />
           </li>

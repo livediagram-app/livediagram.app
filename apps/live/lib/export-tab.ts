@@ -70,7 +70,6 @@ import {
 import { drawBoxed, drawBoxedExtrusion } from './export-tab-canvas-draw';
 import { EXPORT_PAPER, pageExportFrame } from './export-page';
 import { pageScreenRect, tabWireframeFrameTheme, withinPageFrame } from '@liveplanner/document';
-import type { ExportImageMap } from './export-tab-images';
 import { exportChartInk } from './export-chart-ink';
 import { motionFrameHref, paintMotionFrame, type MotionFrameCache } from './page-motion-canvas';
 
@@ -78,16 +77,18 @@ import { motionFrameHref, paintMotionFrame, type MotionFrameCache } from './page
 // the rendered scene into the editor's isometric projection (docs/specs/008-canvas/isometric-view.md / 48),
 // off by default. `pattern` paints the tab's backdrop pattern (grid / dots /
 // …); on by default, the user can switch it off in the Export dialog.
-// `images` carries pre-loaded bitmaps (keyed by imageId) so image / avatar
-// elements embed their photo instead of a placeholder; absent ids (or no map)
-// fall back to the placeholder. Build it with loadTabImages (export-tab-images).
+// Image elements export as their empty placeholder (pictures are never uploaded); only an inline picture (a
+// layout tile's sample art, a `data:` id) draws, through inlineImageHref.
 // `hiddenLayers` INCLUDES layers the user has hidden (docs/specs/006-document/layers.md); off by default
 // so the export matches what the canvas shows.
+// An image id that is itself the picture (a `data:` URL) draws as it is; any other id has no bytes to show.
+const inlineImageHref = (id: string): string | undefined =>
+  id.startsWith('data:') ? id : undefined;
+
 export type ImageExportOpts = {
   isometric?: boolean;
   pattern?: boolean;
   hiddenLayers?: boolean;
-  images?: ExportImageMap;
   // Embedded @font-face rules for the faces this tab uses (docs/specs/004-interface-design/fonts.md), from
   // embeddedFontFaceCss. Absent = the SVG falls back to declaring the
   // Google stylesheet by @import, which only a browser opening the file
@@ -135,10 +136,6 @@ export type ImageExportOpts = {
 export type SvgMotion = {
   arrowLine: (el: ArrowElement) => ArrowLineMotion | undefined;
 };
-
-// Re-export so callers (the export dialog) get the loader from the same
-// `@/lib/export-tab` barrel they already import the exporters from.
-export { loadTabImages } from './export-tab-images';
 
 // Webfont embedding for downloads (docs/specs/004-interface-design/fonts.md) — the bytes travel with the file.
 import { embeddedFontFaceCss } from './export-fonts';
@@ -248,9 +245,9 @@ export async function renderTabToCanvas(
 ): Promise<HTMLCanvasElement> {
   const frame = opts.page
     ? pageExportFrame(opts.page, {
+        imageHref: inlineImageHref,
         ruling: pageRulingOf(tab, opts.page),
         transparentPaper: opts.transparentPaper,
-        imageHref: (id) => opts.images?.get(id)?.href,
         frameTheme: tabWireframeFrameTheme(tab),
       })
     : null;
@@ -377,7 +374,6 @@ export async function renderTabToCanvas(
   }
   // `ordered` keeps frame sections behind their contents
   // (docs/specs/008-canvas/canvas-and-palette.md).
-  const resolveImage = opts.images ? (id: string) => opts.images!.get(id)?.image : undefined;
   // Elements the canvas drawers can't reproduce (tables, freehand, shape
   // silhouettes, rotation, icon glyphs — boxedNeedsSvgRaster) rasterise via
   // the SAME svg markup the SVG export emits, so the PNG/PDF output can't
@@ -422,11 +418,9 @@ export async function renderTabToCanvas(
       `<svg xmlns="http://www.w3.org/2000/svg" width="${r2(w * scale)}" height="${r2(h * scale)}"` +
       ` viewBox="${r2(el.x - pad)} ${r2(el.y - pad)} ${r2(w)} ${r2(h)}">` +
       `${fontDefs}${svgShadowDefs([el])}${svgBoxed(el, {
+        resolveImageHref: inlineImageHref,
         resolveIconArt: resolveIconArtLoaded,
         resolveStickerArt: resolveStickerArtLoaded,
-        // An image drawn this way (a shadow, a turn, an accent edge, a finish) embeds its bytes
-        // like the SVG export, not the empty-image placeholder.
-        resolveImageHref: (id) => opts.images?.get(id)?.href,
         tabFont,
         tabFinish: tab.finish,
         sketchBackdrop: backdrops.has(el.id),
@@ -525,7 +519,7 @@ export async function renderTabToCanvas(
       c.globalAlpha = 1;
       return;
     }
-    drawBoxed(c, el, resolveImage, alpha, tabFont, surface);
+    drawBoxed(c, el, undefined, alpha, tabFont, surface);
   }
 }
 
@@ -611,9 +605,9 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   // renderer above; each band wraps in a <g opacity> when dimmed.
   const frame = opts.page
     ? pageExportFrame(opts.page, {
+        imageHref: inlineImageHref,
         ruling: pageRulingOf(tab, opts.page),
         transparentPaper: opts.transparentPaper,
-        imageHref: (id) => opts.images?.get(id)?.href,
         frameTheme: tabWireframeFrameTheme(tab),
         overFill: opts.stillBackground ? undefined : pageMotionSvg(opts.page),
       })
@@ -713,7 +707,6 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   // Within each band: boxed elements first, then arrows on top (same
   // z-order as the canvas); bands stack bottom -> top with frame
   // sections behind their band-mates (docs/specs/006-document/layers.md + docs/specs/008-canvas/canvas-and-palette.md).
-  const resolveImageHref = opts.images ? (id: string) => opts.images!.get(id)?.href : undefined;
   // A wireframe page's elements are cut to its screen, its system bars over them (withinPageFrame).
   const bandsStart = parts.length;
   for (const band of bands) {
@@ -724,7 +717,7 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
           svgZoneClipped(
             el.id,
             svgBoxed(el, {
-              resolveImageHref,
+              resolveImageHref: inlineImageHref,
               resolveIconArt: resolveIconArtLoaded,
               resolveStickerArt: resolveStickerArtLoaded,
               tabFont: tab.font,

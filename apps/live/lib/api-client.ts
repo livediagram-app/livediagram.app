@@ -1,6 +1,6 @@
 // Barrel for the liveplanner HTTP/WS client. The implementation is split
 // by domain under lib/api/* (core plumbing + documents / tabs / share /
-// folders / self / room / images / preferences / ai); this
+// folders / self / room / preferences / ai); this
 // file re-exports the public surface so existing `@/lib/api-client`
 // imports keep working unchanged.
 
@@ -10,7 +10,6 @@
 // and per-type rationale.
 export type {
   Folder,
-  ImageSummary,
   ShareLink,
   ShareLinkExpiry,
   ShareRole,
@@ -53,7 +52,6 @@ export * from './api/tokens';
 export * from './api/oauth';
 export * from './api/self';
 export * from './api/room';
-export * from './api/images';
 export * from './api/favourites';
 export * from './api/placement-defaults';
 export * from './api/timeline';

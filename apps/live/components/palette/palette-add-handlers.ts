@@ -23,7 +23,6 @@ export const PALETTE_ADD_HANDLER_KEYS = [
   'onAddProcess',
   'onAddFlowchart',
   'onAddAvatar',
-  'onAddImage',
   'onAddArrow',
   'onBeginFreehand',
   'onBeginHighlighter',

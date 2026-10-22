@@ -5,7 +5,7 @@ import type { EditorMode } from '@liveplanner/document';
 import { CountBadge } from '@liveplanner/ui';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { PaletteTileDef } from './palette-tile-defs';
-import { tileHandler, visibleTiles, type PaletteTileActions } from './PaletteTileGrid';
+import { tileHandler, type PaletteTileActions } from './PaletteTileGrid';
 import {
   flyoutCardColumns,
   flyoutColumns,
@@ -75,7 +75,7 @@ export function CategoryFlyout({
   // The tile under the pointer or the focus, which the footer describes.
   const [hovered, setHovered] = useState<PaletteTileDef | null>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
-  const tiles = category.tiles ? visibleTiles([...category.tiles], actions.hasImage) : null;
+  const tiles = category.tiles ? [...category.tiles] : null;
 
   // Keyboard entry focuses the first tile, so the arrows carry on from there.
   useLayoutEffect(() => {

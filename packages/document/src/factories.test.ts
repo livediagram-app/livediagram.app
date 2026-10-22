@@ -60,7 +60,7 @@ describe('boxed-element factories', () => {
   });
 
   it('createImage drops a 200x150 placeholder with null imageId and aspect-lock on', () => {
-    // docs/specs/009-elements/images.md contract: the canvas drops an image element with no
+    // The placeholder contract: the canvas drops an image element with no
     // bytes attached, the picker fills imageId in afterwards. The
     // empty-state thumbnail renders while imageId is null, then the
     // aspectLocked default kicks in so resizing once a real image

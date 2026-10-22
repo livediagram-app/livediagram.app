@@ -57,7 +57,6 @@ function copied(opts?: { cut: boolean }): string[] {
   const { result } = renderHook(() =>
     useClipboard({
       isReadOnly: false,
-      embedMode: false,
       readSelection: () => ({ selectedId: 'a', multiSelectedIds: new Set() }),
       editingId: null,
       setEditingId: () => {},
@@ -65,8 +64,6 @@ function copied(opts?: { cut: boolean }): string[] {
       commit: () => {},
       setSelectedId: () => {},
       setMultiSelectedIds: () => {},
-      ownerId: 'me',
-      documentId: 'd',
       toast: { error: vi.fn(), info: vi.fn() } as never,
     }),
   );

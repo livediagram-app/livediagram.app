@@ -31,7 +31,6 @@ import { PageMotionLayer } from './PageMotionLayer';
 import { buildPageLayoutOver } from '@liveplanner/templates';
 import { useCanvasChartPalette, useCanvasSurface } from './CanvasSurfaceContext';
 import { WireframeDeviceSheet } from './WireframeDeviceSheet';
-import { useImageSources } from './page-image-access';
 
 export function InfographicLayoutPreview({
   page,
@@ -86,13 +85,11 @@ export function InfographicLayoutPreview({
     // oxlint-disable-next-line react/exhaustive-deps
     [layout, rect.x, rect.y, rect.width, rect.height, elements, pages],
   );
-  // The carried pictures, fetched while the preview shows them (inline bytes paint as they are).
-  const imageIds = els.flatMap((el) => (el.type === 'image' && el.imageId ? [el.imageId] : []));
-  const imageSource = useImageSources(imageIds);
   const markup = useMemo(() => {
     const labels = arrowLabelPass(els, { fontFamilyOf: (a) => arrowLabelFontStack(a, tabFont) });
     const opts = {
-      resolveImageHref: (id: string) => (id.startsWith('data:') ? id : imageSource(id)),
+      // Only inline pictures (a layout tile's sample art) paint; no picture is ever uploaded.
+      resolveImageHref: (id: string) => (id.startsWith('data:') ? id : undefined),
       resolveIconArt: resolveIconArtLoaded,
       resolveStickerArt: resolveStickerArtLoaded,
       tabFont,
@@ -110,7 +107,7 @@ export function InfographicLayoutPreview({
       ? `<defs><clipPath id="lvd-layout-screen"><path d="${device.screen}"/></clipPath></defs>` +
           `<g clip-path="url(#lvd-layout-screen)">${drawn}</g>${device.over}`
       : drawn;
-  }, [els, surface, chartPalette, tabFont, imageSource, device]);
+  }, [els, surface, chartPalette, tabFont, device]);
   return (
     <div
       aria-hidden

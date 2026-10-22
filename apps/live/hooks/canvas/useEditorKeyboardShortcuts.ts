@@ -430,14 +430,6 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       // already ran, so V / H / K / I / Z remain the way out.
       if (live.canvasTool === 'avatar') return;
 
-      // Image (`9`): separate from EDIT_KEYS because its callback is
-      // nullable on guest deploys without an api worker.
-      if (lower === '9' && live.onAddImage) {
-        e.preventDefault();
-        live.onAddImage();
-        return;
-      }
-
       // Mutating tools / element adds (Eraser / Pencil / shapes / Text /
       // Note / Arrow), editors only.
       const editAction = EDIT_KEYS[lower];

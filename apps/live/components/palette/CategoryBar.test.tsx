@@ -210,9 +210,12 @@ describe('the keyboard', () => {
     fireEvent.keyDown(button('Write'), { key: 'ArrowLeft' });
     fireEvent.keyDown(button('Shapes'), { key: 'ArrowLeft' });
     // Wraps round to the last.
-    expect(document.activeElement).toBe(button('Media'));
-    fireEvent.keyDown(button('Media'), { key: 'ArrowDown' });
-    expect(heading()).toBe('Media');
+    expect(document.activeElement).toBe(button('Tech'));
+    // Back past the catalogues (Tech, Icons) to Layout, whose tiles are at hand at once.
+    fireEvent.keyDown(button('Tech'), { key: 'ArrowLeft' });
+    fireEvent.keyDown(button('Icons'), { key: 'ArrowLeft' });
+    fireEvent.keyDown(button('Layout'), { key: 'ArrowDown' });
+    expect(heading()).toBe('Layout');
     expect(document.activeElement?.hasAttribute('data-flyout-item')).toBe(true);
   });
 

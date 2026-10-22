@@ -227,7 +227,6 @@ describe('copying and pasting a Sheet', () => {
     const { result } = renderHook(() =>
       useClipboard({
         isReadOnly: false,
-        embedMode: false,
         readSelection: () => ({ selectedId: 'sheet', multiSelectedIds: new Set() }),
         editingId: null,
         setEditingId: () => {},
@@ -238,8 +237,6 @@ describe('copying and pasting a Sheet', () => {
         },
         setSelectedId,
         setMultiSelectedIds: () => {},
-        ownerId: 'me',
-        documentId: 'd',
         toast: { error: vi.fn(), info: vi.fn() } as never,
       }),
     );

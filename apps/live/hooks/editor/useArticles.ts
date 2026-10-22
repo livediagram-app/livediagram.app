@@ -94,7 +94,6 @@ export type ArticlesView = {
 
 // What each insert places at the caret (the writing then takes it into a zone).
 const PLACE_INTENT = {
-  image: { type: 'image' },
   table: { type: 'table' },
   chart: { type: 'shape', kind: 'bar-chart' },
   pie: { type: 'shape', kind: 'pie-chart' },
@@ -106,7 +105,6 @@ const PLACE_INTENT = {
 
 // Telemetry (docs/specs/007-editor/article-pages.md "Telemetry"): what was inserted, which look.
 const INSERT_EVENT = {
-  image: 'ArticleImage',
   table: 'ArticleTable',
   chart: 'ArticleChart',
   pie: 'ArticleChart',
@@ -125,8 +123,7 @@ const LOOK_EVENT = {
 
 export type ArticleStyleChange = { look: ArticleLookId } | { patch: Partial<ArticleStyle> };
 
-export type ArticleInsert =
-  'image' | 'table' | 'chart' | 'pie' | 'line' | 'callout' | 'sticky' | 'drawing';
+export type ArticleInsert = 'table' | 'chart' | 'pie' | 'line' | 'callout' | 'sticky' | 'drawing';
 export type ZoneAction =
   | { wrap: ArticleZoneWrap }
   | { align: ArticleZoneAlign }

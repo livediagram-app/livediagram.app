@@ -35,7 +35,6 @@ type ElementContentSectionsProps = {
   props: EditorContextMenuProps;
   target: Element;
   onClose: () => void;
-  hasImage: boolean;
   hasLink: boolean;
   sectionProps: Scaffold['sectionProps'];
   colorProps: Scaffold['colorProps'];
@@ -47,7 +46,6 @@ export function ElementContentSections({
   props,
   target,
   onClose,
-  hasImage,
   hasLink,
   sectionProps,
   colorProps,
@@ -134,42 +132,10 @@ export function ElementContentSections({
           ) : null}
         </MenuAccordionSection>
       ) : null}
-      {/* Image — pick / change / clear the bitmap (docs/specs/009-elements/images.md). */}
+      {/* Image — its caption card (there is no picture to pick). */}
       {target.type === 'image' ? (
         <MenuAccordionSection title="Image" icon={<ImageGlyph />} {...sectionProps('image')}>
-          {hasImage ? (
-            <MenuTileGrid cols={2}>
-              <MenuTile
-                icon={<ImageGlyph />}
-                label="Change Image"
-                onClick={() => {
-                  props.onOpenImagePicker(target.id);
-                  onClose();
-                }}
-              />
-              <MenuTile
-                icon={<RemoveIconGlyph />}
-                label="Remove Image"
-                onClick={() => {
-                  props.onRemoveImage(target.id);
-                  onClose();
-                }}
-              />
-            </MenuTileGrid>
-          ) : (
-            <div className="px-2 py-1.5">
-              <MenuTile
-                icon={<ImageGlyph />}
-                label="Select Image"
-                onClick={() => {
-                  props.onOpenImagePicker(target.id);
-                  onClose();
-                }}
-              />
-            </div>
-          )}
           {/* The hero's caption card (docs/specs/009-elements/web-components-and-no-groups.md): any image can carry one. */}
-          <ContextMenuDivider />
           <MenuToggleRow
             label="Caption Card"
             description="A title and a line of text over the image."

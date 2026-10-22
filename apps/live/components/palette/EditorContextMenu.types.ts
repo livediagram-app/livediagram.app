@@ -86,10 +86,6 @@ export type EditorContextMenuProps = {
   // Remove an inline icon from the element. Only surfaced when the
   // clicked element actually carries one (a non-'icon' shape with iconId).
   onRemoveIcon: (elementId: string) => void;
-  // Image element actions (docs/specs/009-elements/images.md): open the picker (select / change) and
-  // clear the picked image back to a placeholder.
-  onOpenImagePicker: (elementId: string) => void;
-  onRemoveImage: (elementId: string) => void;
   // Clear the link off the selected element (docs/specs/009-elements/link-cards.md link-card "Remove Link").
   onRemoveLink: () => void;
   onBringToFront: () => void;

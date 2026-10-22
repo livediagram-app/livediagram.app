@@ -48,7 +48,6 @@ import {
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { useLogoPaletteSwitch } from '@/hooks/canvas/useLogoPaletteSwitch';
 import { pageSheetStyle } from '@/lib/page-paint';
-import { usePageImageSources } from './page-image-access';
 import { PagePanel, type PagePanelTab } from './PagePanel';
 import {
   PAGE_TOUR_HELP,
@@ -156,8 +155,6 @@ export function CanvasPages({
   // A background hovered in a page's panel: a shared preview (page-background-preview), so the
   // writing and the elements on the page take its ink too.
   const preview = usePageBackgroundPreview();
-  // The pages' pictures, each fetched once (Image backgrounds).
-  const pictureOf = usePageImageSources(pages);
   const setPreview = (next: Parameters<typeof setPageBackgroundPreview>[0]) => {
     setPageBackgroundPreview(next);
     edit?.previewInk(next);
@@ -336,14 +333,13 @@ export function CanvasPages({
                 : device
                   ? undefined
                   : '0 1px 3px rgb(15 23 42 / 0.14), 0 12px 32px rgb(15 23 42 / 0.12)',
-              ...(device ? {} : pageSheetStyle(background, rulingOf(page), pictureOf)),
+              ...(device ? {} : pageSheetStyle(background, rulingOf(page))),
             }}
           >
             {device ? (
               <WireframeDeviceSheet
                 page={page}
                 background={background}
-                resolveImage={pictureOf}
                 frameTheme={view.frameTheme}
               >
                 {/* Its screen's animated background, sized to the screen. */}

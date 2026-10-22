@@ -94,7 +94,6 @@ export const HELP_ARTICLES = {
   sessionPolls: 'collaboration/session-tools/polls',
   sessionVoting: 'collaboration/session-tools/voting',
   sessionTimer: 'collaboration/session-tools/timer',
-  imageGallery: 'explorer/image-gallery',
   timeline: 'explorer/timeline',
   // The Inbox's article keeps the slug it had as Activity, so links already out there keep working.
   inbox: 'explorer/activity',
@@ -360,10 +359,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   sessionTimer: {
     title: 'Learn about the timer',
     description: 'Tips for keeping a session to time with a countdown or a stopwatch.',
-  },
-  imageGallery: {
-    title: 'Learn about the Image Gallery',
-    description: 'How uploaded images are stored and reused across documents.',
   },
   timeline: {
     title: 'Learn about Home and the Timeline',

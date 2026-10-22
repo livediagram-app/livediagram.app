@@ -293,14 +293,12 @@ export function ToolbarPalette(props: Props) {
   const categoryTiles =
     category?.id === 'plan-cards' && planCardTiles ? planCardTiles : category?.tiles;
   const fitted = stripTilesFor(category?.id ?? defaultId, {
-    hasImage: tileActions.hasImage,
     limit: stripLimit,
     // The category's tiles in this mode's layout (palette-layouts).
     tiles: categoryTiles,
   });
   const { tiles, dividersAfter } = swipe
     ? stripTilesFor(category?.id ?? defaultId, {
-        hasImage: tileActions.hasImage,
         limit: tileLimit,
         tiles: categoryTiles,
       })
@@ -357,7 +355,6 @@ export function ToolbarPalette(props: Props) {
   const leavingGroups = leavingId ? catalogueStripGroups(leavingId) : null;
   const leaving = leavingId
     ? stripTilesFor(leavingId, {
-        hasImage: tileActions.hasImage,
         limit: tileLimit,
         tiles: tabs.find((t) => t.id === leavingId)?.tiles,
       })

@@ -95,10 +95,10 @@ test.describe('explorer sidebar', () => {
     await page.keyboard.press('ArrowRight');
     await expect(row(page, 'Tags')).toBeFocused();
     await page.keyboard.press('ArrowDown');
-    await expect(row(page, 'Image Gallery')).toBeFocused();
+    await expect(row(page, 'Themes')).toBeFocused();
     await page.keyboard.press('Enter');
-    await expect(page).toHaveURL(/\/explorer\/images\/?$/);
-    await expect(row(page, 'Image Gallery')).toHaveAttribute('aria-selected', 'true');
+    await expect(page).toHaveURL(/\/explorer\/themes\/?$/);
+    await expect(row(page, 'Themes')).toHaveAttribute('aria-selected', 'true');
     // Only one row is in the tab order.
     expect(await nav(page).locator('[role="treeitem"][tabindex="0"]').count()).toBe(1);
     expectNoPageErrors(pageErrors);

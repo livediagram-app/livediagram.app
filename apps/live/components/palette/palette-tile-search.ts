@@ -88,7 +88,6 @@ export function tileSignature(tile: PaletteTileDef): string | null {
       return `video:${a.provider ?? ''}`;
     case 'text':
     case 'table':
-    case 'image':
     case 'annotation':
     case 'link-card':
       return a.type;
@@ -206,28 +205,24 @@ export function mergeByName(
 }
 
 /** Every element tile, split: the ones the mode's palette offers (layout order), the ones only
- *  another mode's does, and the ones bound to another mode's own tools. Image-upload tiles are left
- *  out without image support, as in every grid. */
+ *  another mode's does, and the ones bound to another mode's own tools. */
 export function elementTileSections({
   mode,
-  hasImage,
   planCardTiles,
   drawTiles = [],
 }: {
   mode: EditorMode;
-  hasImage: boolean;
   planCardTiles?: readonly PaletteTileDef[];
   // Draw mode's markers (palette-marker-tiles): Draw has no palette layout, and the strip that
   // searches is never shown in Draw, so they are always another mode's.
   drawTiles?: readonly PaletteTileDef[];
 }): ElementTileSearch {
-  const visible = (t: PaletteTileDef) => hasImage || !t.needsImage;
-  const here = modeElementTiles(mode, planCardTiles).filter(visible);
+  const here = modeElementTiles(mode, planCardTiles);
   const hereIds = new Set(here.map((t) => t.id));
   const elsewhere: PaletteTileDef[] = [];
   const unavailable: PaletteTileDef[] = [];
   for (const t of allElementTiles()) {
-    if (!visible(t) || hereIds.has(t.id)) continue;
+    if (hereIds.has(t.id)) continue;
     // A document's own card types replace the default ones in Plan: a default type it dropped is
     // not "elsewhere", it is gone.
     if (planCardTiles && t.section === 'plan-cards') continue;
@@ -249,7 +244,6 @@ export function searchElementTiles({
   // The tab's elements: an empty query lists the tiles of the element types on it.
   tabElements?: readonly Element[];
   mode: EditorMode;
-  hasImage: boolean;
   planCardTiles?: readonly PaletteTileDef[];
   drawTiles?: readonly PaletteTileDef[];
 }): ElementTileSearch {

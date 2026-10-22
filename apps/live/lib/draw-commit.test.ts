@@ -247,7 +247,7 @@ describe('buildDrawnBoxed', () => {
   });
 
   it('leaves every other kind anchored at the drawn top-left, uncentred', () => {
-    const out = buildDrawnBoxed({ type: 'image' }, 40, 60, 240, 160, null, tab());
+    const out = buildDrawnBoxed({ type: 'link-card' }, 40, 60, 240, 160, null, tab());
     expect({ x: out.x, y: out.y, width: out.width, height: out.height }).toEqual({
       x: 40,
       y: 60,

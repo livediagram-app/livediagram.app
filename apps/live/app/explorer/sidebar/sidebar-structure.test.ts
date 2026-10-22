@@ -127,8 +127,8 @@ describe('sidebarDivider', () => {
 });
 
 describe('isLibraryView', () => {
-  it('recognises the two Library pages', () => {
-    expect(['gallery', 'themes'].every((k) => isLibraryView(k as never))).toBe(true);
+  it('recognises the Library page', () => {
+    expect(isLibraryView('themes')).toBe(true);
   });
 
   it('rejects every other view', () => {

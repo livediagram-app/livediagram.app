@@ -72,9 +72,6 @@ export type PaletteProps = {
   onAddLinkCard: () => void;
   onAddVideo: (provider?: EmbedProvider) => void;
   // Composite "Components" (docs/specs/008-canvas/canvas-and-palette.md): each arms the tap-or-drag draw gesture.
-  // Banner / Callout / Stat row / Process need no image and always show; Hero
-  // / Header (and the Tools-tab Avatar) carry an image, so they're gated on
-  // image upload being available (onAddImage present).
   onAddBanner: () => void;
   onAddHero: () => void;
   onAddHeader: () => void;
@@ -83,11 +80,6 @@ export type PaletteProps = {
   onAddProcess: () => void;
   onAddFlowchart: () => void;
   onAddAvatar: () => void;
-  // Spawn an image placeholder + open the picker. Optional so
-  // deployments without R2 (or view-role visitors) can omit it; the
-  // Image palette entry hides when the handler is missing. See
-  // docs/specs/009-elements/images.md.
-  onAddImage?: () => void;
   // Drops a horizontal arrow at the viewport centre with no pointers
   // on either end by default (i.e. a plain line). Users can flip the
   // arrowEnds afterwards via the Pointer accordion.

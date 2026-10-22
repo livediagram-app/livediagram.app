@@ -20,14 +20,14 @@
 // clipboard — which is the newer of the two whenever they disagree, because
 // it is the one another window could have written since.
 //
-// Three sources compete on paste, in this order: an image file (a screenshot
-// on the system clipboard), our own serialised elements, then the in-app
-// buffer. Ordinary text is left to the browser.
+// Three sources compete on paste, in this order: a file (a screenshot on the
+// system clipboard, refused with a notice: pictures are never uploaded), our
+// own serialised elements, then the in-app buffer. Ordinary text is left to
+// the browser.
 //
 // Only `copySelection` is returned — it's wired into the keyboard
 // shortcut hook. Paste is driven entirely by the native `paste` event
-// the hook registers, so `pasteFromClipboard` / `pasteImageFile` stay
-// internal.
+// the hook registers, so `pasteFromClipboard` stays internal.
 
 import type { Selection } from '@/lib/selection-store';
 import { useEffect, useRef, useState } from 'react';
@@ -55,14 +55,13 @@ import {
   stripIdentity,
 } from '@/lib/clipboard-payload';
 import { pasteTranslation } from '@/lib/paste-placement';
-import { addImageFileForDocument } from '@/lib/upload-image';
 import { debugLog } from '@/lib/debug-log';
 import { track } from '@/lib/telemetry';
 import { trackDuplicated } from '@/lib/element-telemetry';
 import type { useToast } from '@/hooks/ui/useToast';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { isTypingTarget, passesHistoryChords } from '@/lib/typing-target';
-import { DROP_NOT_AN_IMAGE, dropImportHint } from '@/lib/drop-import-hint';
+import { FILE_NOT_TAKEN, dropImportHint } from '@/lib/drop-import-hint';
 import { CANVAS_ROOT_SELECTOR } from '@/lib/canvas-selectors';
 
 // Whether a paste carries something for the canvas rather than words: a file, or elements copied here (their JSON or
@@ -74,13 +73,6 @@ function pasteHoldsCanvasContent(data: DataTransfer | null): boolean {
   return parseElementsPayload(text) !== null || inAppCopyIdOf(text) !== null;
 }
 
-type ImageDescriptor = {
-  id: string;
-  width: number;
-  height: number;
-  originalName?: string;
-};
-
 type ClipboardDeps = {
   isReadOnly: boolean;
   // True while new elements can't land: edits are blocked, or the active layer
@@ -91,9 +83,6 @@ type ClipboardDeps = {
   // A paste is a deliberate keystroke with nothing on screen to show it was
   // ignored, so unlike the palette gates it explains itself every time.
   explainCreateBlocked?: () => void;
-  // Editable embeds (docs/specs/013-workspace/embeds.md) still don't paste-upload images — see
-  // pasteImageFile.
-  embedMode: boolean;
   // Read when a copy runs (docs/specs/008-canvas/blueprints/selection-store.md).
   readSelection: () => Selection;
   editingId: string | null;
@@ -104,15 +93,6 @@ type ClipboardDeps = {
   commit: (mapElements: (els: Element[]) => Element[]) => void;
   setSelectedId: (id: string | null) => void;
   setMultiSelectedIds: (ids: Set<string>) => void;
-  // Drops a new image element pre-filled with an uploaded image. From
-  // useEditorImages; undefined when image support is unavailable (no
-  // document id / read-only), in which case image paste is a no-op.
-  addImageFromGallery?: (image: ImageDescriptor, at?: { x: number; y: number }) => void;
-  // The local participant id — owner of uploaded paste images.
-  ownerId: string;
-  // The current document id (null before hydration). Offline documents embed
-  // pasted images locally instead of uploading (docs/specs/006-document/offline-mode.md).
-  documentId: string | null;
   toast: ReturnType<typeof useToast>;
   // The canvas-coord rectangle on screen; a paste whose usual spot is outside
   // it lands in its middle (docs/specs/008-canvas/canvas-and-palette.md Clipboard).
@@ -124,7 +104,6 @@ export function useClipboard(deps: ClipboardDeps) {
     isReadOnly,
     createBlocked = false,
     explainCreateBlocked,
-    embedMode,
     readSelection,
     editingId,
     setEditingId,
@@ -132,9 +111,6 @@ export function useClipboard(deps: ClipboardDeps) {
     commit,
     setSelectedId,
     setMultiSelectedIds,
-    addImageFromGallery,
-    ownerId,
-    documentId,
     toast,
     getViewportCanvasRect,
   } = deps;
@@ -271,54 +247,13 @@ export function useClipboard(deps: ClipboardDeps) {
     trackDuplicated(newElements);
   };
 
-  // Paste a file (typically a clipboard image) by routing it through
-  // the same upload pipeline as the picker: validate + hash, POST to
-  // /api/images, then drop a new image element on the canvas
-  // pre-filled with the uploaded image's id + natural dimensions.
-  // The OS clipboard hand off doesn't carry a filename for inline
-  // images (screenshots etc.), so we synthesise one from the MIME
-  // suffix so the gallery has something to render in the title slot.
-  const pasteImageFile = async (file: File, at?: { x: number; y: number }) => {
-    if (!addImageFromGallery) return;
-    // Embeds never upload (docs/specs/013-workspace/embeds.md): the upload endpoint authorises by owner
-    // identity, which inside a partitioned iframe is a throwaway guest.
-    if (embedMode) return;
-    if (refuseCreate()) return;
-    // Browsers hand inline screenshots over with file.name === ""
-    // or "image.png"; synthesise a clearer name so the gallery row
-    // doesn't read as "image.png" for everything pasted.
-    const named =
-      file.name && file.name !== 'image.png'
-        ? file
-        : new File([file], `pasted-${Date.now()}.${file.type.split('/')[1] ?? 'png'}`, {
-            type: file.type,
-          });
-    try {
-      // Cloud documents upload; offline documents embed the paste locally
-      // as a data URI (docs/specs/006-document/offline-mode.md) so no server copy is created.
-      const { image } = await addImageFileForDocument(ownerId, documentId, named);
-      addImageFromGallery(
-        {
-          id: image.id,
-          width: image.width,
-          height: image.height,
-          originalName: image.originalName,
-        },
-        at,
-      );
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Could not paste the image.');
-    }
-  };
-  // A file dropped on the canvas, at its canvas point: an image lands as an image element there, as a pasted one
-  // does; a file Import reads is pointed at Import; anything else is not something the canvas takes, and says so.
-  const dropBoardFile = (file: File, at: { x: number; y: number }) => {
+  // A file dropped on the canvas: a file Import reads is pointed at Import; the canvas takes no other file (pictures
+  // are never uploaded), and says so.
+  const dropBoardFile = (file: File) => {
     if (isReadOnly) return;
     // A JSON export replaces the tab through Import, and is told so.
     const importHint = dropImportHint(file);
-    if (importHint) return toast.info(importHint);
-    if (file.type.startsWith('image/')) return void pasteImageFile(file, at);
-    toast.info(DROP_NOT_AN_IMAGE);
+    toast.info(importHint ?? FILE_NOT_TAKEN);
   };
 
   // Single mutable ref holding the latest paste functions. The paste
@@ -335,7 +270,7 @@ export function useClipboard(deps: ClipboardDeps) {
   const pasteRef = useLatest({
     pasteFromClipboard,
     pasteInAppCopy,
-    pasteImageFile,
+    refuseFile: () => toast.info(FILE_NOT_TAKEN),
   });
 
   // A middle-button release pastes the Linux primary selection. It is never a
@@ -354,12 +289,10 @@ export function useClipboard(deps: ClipboardDeps) {
 
   // System-clipboard paste handler. Cmd/Ctrl+V triggers the browser's
   // native `paste` event, which carries whatever the OS clipboard
-  // holds (text, files, images). When the user has an image on
-  // their clipboard (a screenshot, a copy-image-from-browser, etc.),
-  // route it to the image-upload path so a new image element lands
-  // on the canvas pre-filled with the bytes. When the clipboard has
-  // no image, fall back to the in-app element clipboard so pasting
-  // copied canvas elements still works as before. Text-input focus
+  // holds (text, files, images). A file on the clipboard (a
+  // screenshot, a copy-image-from-browser, etc.) is refused with a
+  // notice: pictures are never uploaded. Otherwise our own copied
+  // elements paste, falling back to the in-app element clipboard. Text-input focus
   // is left to the browser's default (let users paste text into a
   // label / comment composer the normal way).
   useEffect(() => {
@@ -391,59 +324,20 @@ export function useClipboard(deps: ClipboardDeps) {
       }
       if (isReadOnly) return;
       if (editingId !== null) return;
-      // Prefer the typed `files` list over iterating `items`: some
-      // browsers / OS clipboards report an image as a `file` item
-      // with an empty or generic MIME type (e.g.
-      // `application/octet-stream` for a Finder copy), which the
-      // old image/* check missed and dropped through to the in-app
-      // clipboard, pasting the user's previously-copied canvas
-      // elements alongside the expected image. `dataTransfer.files`
-      // is the authoritative file list and works the same way for
-      // every browser.
+      // A file on the clipboard (a screenshot, an image copied from a browser) is claimed and refused, so it never
+      // falls through to pasting previously copied elements in its place. `files` is the authoritative list; the
+      // items catch Safari's file item with an empty `files`.
       const files = e.clipboardData?.files;
-      if (files && files.length > 0) {
-        // Pick the first image file, or the first file overall when
-        // none declare an image MIME (some clipboards strip the type
-        // hint). pasteImageFile validates the bytes via the upload
-        // pipeline, so a non-image file just produces a toast and a
-        // no-op without polluting the canvas.
-        let chosen: File | null = null;
-        for (const file of Array.from(files)) {
-          if (file.type.startsWith('image/')) {
-            chosen = file;
-            break;
-          }
-        }
-        if (!chosen) chosen = files[0] ?? null;
-        if (chosen) {
-          e.preventDefault();
-          const file = chosen;
-          const asImage = () => {
-            void pasteRef.current.pasteImageFile(file);
-          };
-          asImage();
-          return;
-        }
-      }
-      // Belt-and-braces: also check items in case `files` is empty
-      // but an image item is present (Safari edge case). Same early
-      // return so we never fall through to pasteFromClipboard when
-      // the system clipboard had image content the user expected.
       const items = e.clipboardData?.items;
-      if (items) {
-        for (let i = 0; i < items.length; i++) {
-          const item = items[i]!;
-          if (item.kind === 'file' && item.type.startsWith('image/')) {
-            const file = item.getAsFile();
-            if (file) {
-              e.preventDefault();
-              void pasteRef.current.pasteImageFile(file);
-              return;
-            }
-          }
-        }
+      const hasFile =
+        (files && files.length > 0) ||
+        (items && Array.from(items).some((item) => item.kind === 'file'));
+      if (hasFile) {
+        e.preventDefault();
+        pasteRef.current.refuseFile();
+        return;
       }
-      // No image on the system clipboard. Our own serialised elements next
+      // No file on the system clipboard. Our own serialised elements next
       // (written by Cmd+C, here or in another window), then the in-app buffer.
       //
       // Read from the EVENT rather than navigator.clipboard.readText(): the

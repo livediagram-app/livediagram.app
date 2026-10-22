@@ -20,7 +20,7 @@ describe('useSidebarExpansion', () => {
       ({ selected }: { selected: SelectedNode }) => useSidebarExpansion(selected),
       { initialProps: { selected: { kind: 'timeline' } as SelectedNode } },
     );
-    rerender({ selected: { kind: 'gallery' } });
+    rerender({ selected: { kind: 'themes' } });
     expect(result.current.expanded.has(LIBRARY_EXPAND_KEY)).toBe(true);
   });
 

@@ -3,7 +3,6 @@ import { searchStickers } from '@/lib/stickers';
 import { searchTechIcons } from '@/lib/tech-icons';
 import { tilesForCategory, type PaletteTileDef } from './palette-tile-defs';
 import { iconTileDef, stickerTileDef, techTileDef } from './palette-dynamic-tiles';
-import { visibleTiles } from './PaletteTileGrid';
 
 // Which tiles the Toolbar layout's strip shows for a category (docs/specs/007-editor/toolbar-layout.md):
 // the first STRIP_TILE_LIMIT of it, in the category's own order, and whether a More button is
@@ -118,17 +117,15 @@ const DIVIDER_TILES = 0.2;
 export function stripTilesFor(
   categoryId: string,
   {
-    hasImage,
     limit = STRIP_TILE_LIMIT,
     tiles,
   }: {
-    hasImage: boolean;
     limit?: number;
     // The category's tiles in the palette's mode (palette-layouts); its default tiles when absent.
     tiles?: readonly PaletteTileDef[] | null;
-  },
+  } = {},
 ): { tiles: PaletteTileDef[]; hasMore: boolean; dividersAfter: ReadonlySet<string> } {
-  const all = visibleTiles(allTilesFor(categoryId, tiles), hasImage);
+  const all = allTilesFor(categoryId, tiles);
   const between = (tiles: PaletteTileDef[]) => tiles.slice(0, -1).filter((t) => t.dividerAfter);
   const cost = (tiles: PaletteTileDef[]) => tiles.length + DIVIDER_TILES * between(tiles).length;
   // The whole category with its dividers, when it all fits.

@@ -99,11 +99,11 @@ export async function apiDeleteAccount(): Promise<{
 // requires a verified Bearer token: there is no `X-Owner-Id`
 // fallback, because the whole point is to bind orphan guest data
 // to a Clerk account. Returns
-// `{ migrated: { documents, folders, shared, images } }`.
+// `{ migrated: { documents, folders, shared } }`.
 export async function apiMigrateGuestData(
   guestOwnerId: string,
   guestSignature: string | null,
-): Promise<{ documents: number; folders: number; shared: number; images: number } | null> {
+): Promise<{ documents: number; folders: number; shared: number } | null> {
   const res = await apiFetch(`${API_BASE}/migrate`, {
     method: 'POST',
     // `apiHeaders` reads the registered token provider; the Clerk
@@ -120,7 +120,7 @@ export async function apiMigrateGuestData(
   });
   if (!res.ok) return null;
   const body = (await res.json()) as {
-    migrated: { documents: number; folders: number; shared: number; images: number };
+    migrated: { documents: number; folders: number; shared: number };
   };
   return body.migrated;
 }

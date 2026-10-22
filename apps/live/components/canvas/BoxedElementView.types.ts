@@ -195,17 +195,6 @@ export type BoxedElementViewProps = {
   // view-role visitors) may open the popover, so this is not optional the
   // way onOpenNote is — mutations are gated inside the popover instead.
   onOpenAction: (id: string) => void;
-  // Image element context: the editor passes these so the inner
-  // ImageElementView can fetch the bitmap with the right
-  // owner / share / document identity (the bytes are auth-gated by
-  // the API, see docs/specs/009-elements/images.md). View-role visitors are still allowed to
-  // see images; they just can't upload new ones via the picker.
-  imageContext?: {
-    ownerId: string;
-    documentId: string;
-    shareCode: string | null;
-    onOpenPicker?: (elementId: string) => void;
-  };
   // Open the per-element note popover. Optional so read-only viewers
   // (who shouldn't see a clickable badge) can omit it. When omitted
   // the note badge does not render.

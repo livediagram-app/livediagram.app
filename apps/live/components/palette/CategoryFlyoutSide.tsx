@@ -4,7 +4,7 @@ import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { uiUnscaleStyle } from '@/lib/ui-scale';
 import { tileDisplayName, type PaletteTileDef } from './palette-tile-defs';
-import { visibleTiles, tileHandler, type PaletteTileActions } from './PaletteTileGrid';
+import { tileHandler, type PaletteTileActions } from './PaletteTileGrid';
 import { CardList, InfoFooter } from './category-flyout-items';
 import { FlyoutHeader, onFlyoutArrowKey } from './CategoryFlyout';
 
@@ -83,7 +83,7 @@ export function CategoryFlyoutSide({
     setLift(over > 0 ? Math.min(over, side.top) : 0);
   }, [side.top]);
   const a = def.action;
-  const variants = def.variants?.length ? visibleTiles([...def.variants], actions.hasImage) : null;
+  const variants = def.variants?.length ? [...def.variants] : null;
   return (
     <div
       data-category-flyout-side=""

@@ -49,10 +49,11 @@ describe('clerkImageSource', () => {
 describe('resolveProfilePicture', () => {
   const google = [{ provider: 'google', imageUrl: GOOGLE }];
 
-  it('puts a picture the person uploaded over the Google one', () => {
+  it('shows the Google picture, never one the person uploaded to Clerk', () => {
     expect(
       resolveProfilePicture(user({ hasImage: true, imageUrl: UPLOADED, externalAccounts: google })),
-    ).toBe(UPLOADED);
+    ).toBe(GOOGLE);
+    expect(resolveProfilePicture(user({ hasImage: true, imageUrl: UPLOADED }))).toBeNull();
   });
 
   it("prefers the Google account's picture over Clerk's copy of it", () => {

@@ -7,7 +7,7 @@
 //   search   → /explorer/search          shared  → /explorer/shared
 //   favourites → /explorer/favourites
 //   tags     → /explorer/tags            one tag → /explorer/tags?id=<id>
-//   gallery  → /explorer/images          invites → /explorer/invites
+//   themes   → /explorer/themes          invites → /explorer/invites
 //   folder   → /explorer/folder?id=<id>  team    → /explorer/team?id=<id>
 //   trash    → /explorer/trash (Library sidebar row + Settings › Account)
 //
@@ -44,8 +44,6 @@ export function explorerPathFor(node: SelectedNode): string {
       return '/explorer/search';
     case 'shared':
       return '/explorer/shared';
-    case 'gallery':
-      return '/explorer/images';
     case 'themes':
       return '/explorer/themes';
     case 'trash':
@@ -110,8 +108,6 @@ export function selectedFromRoute(pathname: string, search: URLSearchParams): Se
       return { kind: 'offline' };
     case '/explorer/shared':
       return { kind: 'shared' };
-    case '/explorer/images':
-      return { kind: 'gallery' };
     case '/explorer/themes':
       return { kind: 'themes' };
     case '/explorer/trash':

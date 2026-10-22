@@ -61,7 +61,6 @@ function harness(start: Element[]) {
   const { result } = renderHook(() =>
     useClipboard({
       isReadOnly: false,
-      embedMode: false,
       readSelection: () => ({
         selectedId: null,
         multiSelectedIds: new Set(start.map((el) => el.id)),
@@ -74,8 +73,6 @@ function harness(start: Element[]) {
       },
       setSelectedId: () => {},
       setMultiSelectedIds: () => {},
-      ownerId: 'me',
-      documentId: 'd',
       toast: toast as never,
     }),
   );

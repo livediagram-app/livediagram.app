@@ -9,7 +9,7 @@ export type SlashAction =
   | { kind: 'block'; block: 'divider' | 'pageBreak' }
   | {
       kind: 'insert';
-      what: 'image' | 'table' | 'chart' | 'pie' | 'line' | 'drawing' | 'callout' | 'sticky';
+      what: 'table' | 'chart' | 'pie' | 'line' | 'drawing' | 'callout' | 'sticky';
     };
 
 export type SlashItem = {
@@ -125,14 +125,6 @@ const SLASH_ITEMS: readonly SlashItem[] = [
     keywords: 'new page next',
     hint: 'Start the next page',
     action: { kind: 'block', block: 'pageBreak' },
-  },
-  {
-    id: 'image',
-    label: 'Image',
-    group: 'Insert',
-    keywords: 'picture photo upload',
-    hint: 'A picture in the text',
-    action: { kind: 'insert', what: 'image' },
   },
   {
     id: 'table',

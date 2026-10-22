@@ -164,7 +164,6 @@ function BoxedElementViewImpl({
   onRetractVote,
   onDropIcon,
   onLinkCell,
-  imageContext,
   onContextSelect,
   remoteSelectors,
   tabLocked,
@@ -285,7 +284,6 @@ function BoxedElementViewImpl({
       onEditLink,
       onOpenEditDialog,
       onOpenNote,
-      imageContext,
       onContextSelect,
     });
 
@@ -716,7 +714,6 @@ function BoxedElementViewImpl({
             actionSelfId={actionSelfId}
             actionActions={actionActions}
             commentSelfId={commentSelfId}
-            imageContext={imageContext}
             tabSummaries={tabSummaries}
             tabTimer={tabTimer}
             timerControls={timerControls}

@@ -119,7 +119,6 @@ import type { CanvasTool } from '@/components/palette/palette.types';
 import { useCellLinkPicker } from '@/hooks/canvas/useCellLinkPicker';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { usePublishPicture } from '@/hooks/persistence/usePublishedPicture';
-import { useCommentPicturesLoader } from '@/lib/comment-pictures';
 import { useClipboard } from '@/hooks/canvas/useClipboard';
 import { useDocumentActions } from '@/hooks/canvas/useDocumentActions';
 import { useEditorContextMenu } from '@/hooks/canvas/useEditorContextMenu';
@@ -150,7 +149,6 @@ import { useFavourites } from '@/hooks/persistence/useFavourites';
 import { useShortcutsEnabled } from '@/hooks/ui/useShortcutsEnabled';
 import { useEditorComments } from '@/hooks/collab/useEditorComments';
 import { useEditorDrag } from '@/hooks/canvas/useEditorDrag';
-import { useEditorImages } from '@/hooks/canvas/useEditorImages';
 import { useEditorNotes } from '@/hooks/canvas/useEditorNotes';
 import { useElementLinks } from '@/hooks/canvas/useElementLinks';
 import { useElementSelectionActions } from '@/hooks/canvas/useElementSelectionActions';
@@ -936,8 +934,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     documentId,
     ownerId: selfParticipant.id,
     hasUnsavedChanges,
-    resetTabs,
-    lastSavedTabsRef,
     setDocumentServerStored: realtime.setDocumentServerStored,
     refreshDocumentList,
   });
@@ -1400,9 +1396,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     debugLog('[plan] palette card not placed', { outcome: result.outcome });
     toast.info(result.message);
   };
-  // Comment authors' pictures for the open tab (docs/specs/014-identity/profile-picture.md §5).
-  useCommentPicturesLoader(documentId, activeTab?.id, activeTab?.elements, sessionShareCode);
-
   // Vote privacy (docs/specs/012-collaboration/session-tools.md): while a hide-cursors vote is open on this tab,
   // peer cursors + laser trails are neither sent nor drawn. Derived here so
   // the outbound gate (useEditorBroadcast) and the render gate
@@ -2771,37 +2764,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     track('Element', 'Added', 'PollResult');
   };
 
-  // Image domain (picker state, recent-images list, placement + fill
-  // handlers). Lives in its own hook so the page no longer carries
-  // that state or its six handlers — see useEditorImages + docs/specs/009-elements/images.md.
-  const {
-    imagePickerOpenFor,
-    imageContext,
-    addImageFromGallery,
-    applyImageToElement,
-    removeImageFromElement,
-    refreshRecentImages,
-    closeImagePicker,
-  } = useEditorImages({
-    // A Participant places images and swaps their pictures (docs/specs/013-workspace/share-roles.md).
-    editsBlocked: contentAddBlocked({
-      participating: participant.participating,
-      canAddContent: participant.can.addContent,
-      blocked: editsBlocked,
-      structureBlocked,
-    }),
-    isReadOnly: isReadOnly && !(participant.participating && participant.can.addContent),
-    embedMode,
-    // Upload only in a workbench: no gallery read.
-    galleryHidden: workbenchMode,
-    getViewportCenter,
-    commit,
-    setSelectedId,
-    documentId,
-    ownerId: selfParticipant.id,
-    sessionShareCode,
-  });
-
   // Per-element note popover (single plain-text paragraph; see
   // packages/document BoxedElement.note). State + handlers in
   // useEditorNotes.
@@ -2919,7 +2881,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     addAnnotation,
     addLinkCard,
     addVideo,
-    addImage,
     addBanner,
     addHero,
     addHeader,
@@ -2939,7 +2900,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     cancelConnect,
   } = useElementCreation({
     editsBlocked: createBlocked,
-    imagesBlocked: embedMode,
     activeId,
     activeTab,
     readSelection,
@@ -3563,7 +3523,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     isReadOnly,
     createBlocked,
     explainCreateBlocked: layersState.explainCreateBlocked,
-    embedMode,
     readSelection,
     editingId,
     setEditingId,
@@ -3571,9 +3530,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     commit,
     setSelectedId,
     setMultiSelectedIds,
-    addImageFromGallery,
-    ownerId: selfParticipant.id,
-    documentId,
     toast,
     getViewportCanvasRect,
   });
@@ -3620,7 +3576,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     addText,
     addSticky,
     addArrow,
-    onAddImage: addImage ?? null,
     onBeginFreehand: beginFreehand,
     canGrowMindNode,
     onGrowMindNode: growMindNode,
@@ -3852,8 +3807,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     cancelConnect,
     dropIconOnElement,
     removeIconFromElement,
-    addImage,
-    addImageFromGallery,
     addShape,
     addSticky,
     addTable,
@@ -3876,7 +3829,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     aiCapable,
     anyWelcomeOpen,
     applyAiElements,
-    applyImageToElement,
     autoAlignTab,
     autoLayoutTab,
     previewCleanup,
@@ -3950,7 +3902,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     clerkUserId,
     closeComments,
     closeContextMenu,
-    closeImagePicker,
     closeNote,
     commentRows,
     commentThreadOpenId,
@@ -3995,8 +3946,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     handleCanvasDoubleClick,
     hydrated,
     identityOnlyScreenOpen,
-    imageContext,
-    imagePickerOpenFor,
     importIntoActiveTab,
     importTextIntoActiveTab,
     isPinchingRef,
@@ -4057,11 +4006,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     pendingDraw,
     pollCollaborators,
     redo,
-    refreshRecentImages,
     remoteAvatarRows,
     remoteCursorRows,
     remoteSelectionsByElement,
-    removeImageFromElement,
     renameFolder,
     renameTab,
     renameTabFolder,

@@ -78,7 +78,6 @@ export function usePaletteCatalogue({
   onAddProcess,
   onAddFlowchart,
   onAddAvatar,
-  onAddImage,
   onAddArrow,
   onBeginFreehand,
   onBeginHighlighter,
@@ -143,7 +142,6 @@ export function usePaletteCatalogue({
   const beginShapePen = armed(onBeginShapePen);
   const beginPolygon = armed(onBeginPolygon);
   const beginPath = armed(onBeginPath);
-  const addImage = armed(() => onAddImage?.());
   // One handler per composite-component kind, so the tile catalogue can
   // address them by kind (see PaletteTileGrid).
   const addComponent = (kind: import('@liveplanner/document').ComponentKind) => {
@@ -179,7 +177,6 @@ export function usePaletteCatalogue({
       addArrow,
       addSticky,
       addTable,
-      addImage,
       addAnnotation,
       addLinkCard,
       addVideo,
@@ -188,7 +185,6 @@ export function usePaletteCatalogue({
       addIcon,
       addTechIcon,
       cancelDraw: onCancelDraw,
-      hasImage: !!onAddImage,
     },
     (action, args) => {
       if (canvasTool === 'avatar') onExitAvatarMode?.();

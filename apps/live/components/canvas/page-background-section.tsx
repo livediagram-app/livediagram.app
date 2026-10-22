@@ -1,8 +1,8 @@
 'use client';
 
 // The page panel's Background section (docs/specs/007-editor/pages-mode.md "Backgrounds"), for
-// every page kind: the kinds as tiles (page-background-kinds: Solid, Gradient, and Image but on a logo page,
-// page-background-image, and Animated on a slide page, page-background-animated) over that
+// every page kind: the kinds as tiles (page-background-kinds: Solid, Gradient, and Animated on a slide page,
+// page-background-animated; no picture, as pictures are never uploaded) over that
 // category's choices: Solid is the
 // one colour picker (docs/specs/004-interface-design/colour-picker.md), Paper leading the theme's
 // colours, then the soft and the strong standard colours and Custom colours with +; Gradient is the
@@ -39,7 +39,6 @@ import { PanelSection, tileClass } from './page-panel-sections';
 import { CustomGradientEditor, PAGE_COLOUR_GROUPS, RAINBOW } from './page-background-custom';
 import { AnimatedBackgroundChoices } from './page-background-animated';
 import { BackgroundKinds } from './page-background-kinds';
-import { ImageBackgroundChoices } from './page-background-image';
 import { ColourPicker } from '@/components/colour/ColourPicker';
 import { noColour, type ColourOption } from '@/components/colour/colour-options';
 import { useThemeColours } from '@/components/colour/useThemeColours';
@@ -142,7 +141,7 @@ export function BackgroundSection({
   motionNote,
 }: {
   page: Page;
-  // The categories offered, narrowing the page kind's own (a form's cover takes no picture).
+  // The categories offered, narrowing the page kind's own.
   only?: readonly BackgroundCategory[];
   // The Animated category's note on when it moves, for something that is not a slide.
   motionNote?: string;
@@ -153,16 +152,13 @@ export function BackgroundSection({
 }) {
   const fill = page.background?.fill;
   const pattern = page.background?.pattern;
-  // A logo page takes no picture (docs/specs/007-editor/logo-pages.md "A logo page").
   // A slide page and a wireframe page's screen move (docs/specs/007-editor/pages-mode.md "Animated
   // backgrounds", wireframe-pages.md "The screen").
   const kind = pageKindOf(page);
   const offered: BackgroundCategory[] =
-    kind === 'logo'
-      ? ['solid', 'gradient']
-      : kind === 'slide' || kind === 'wireframe'
-        ? ['solid', 'gradient', 'image', 'animated']
-        : ['solid', 'gradient', 'image'];
+    kind === 'slide' || kind === 'wireframe'
+      ? ['solid', 'gradient', 'animated']
+      : ['solid', 'gradient'];
   const categories = only ? offered.filter((c) => only.includes(c)) : offered;
   // Opens on the current fill's category; choosing another changes nothing on the page.
   const [chosen, setChosen] = useState<BackgroundCategory | null>(null);
@@ -224,13 +220,6 @@ export function BackgroundSection({
             onPick={pick}
             onPreview={preview}
             {...(motionNote ? { note: motionNote } : {})}
-          />
-        ) : category === 'image' ? (
-          <ImageBackgroundChoices
-            page={page}
-            accent={themePresetAccent(themePresets)}
-            onPick={pick}
-            onPreview={(f) => (f === null ? onPreview(null) : preview(f))}
           />
         ) : category === 'solid' ? (
           <ColourPicker

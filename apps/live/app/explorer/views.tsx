@@ -88,7 +88,6 @@ export type SelectedNode =
   | { kind: 'tags'; id?: string }
   | { kind: 'offline' }
   | { kind: 'shared' }
-  | { kind: 'gallery' }
   | { kind: 'themes' }
   // The Trash (docs/specs/013-workspace/trash.md): a route with no sidebar row,
   // reached from Settings.

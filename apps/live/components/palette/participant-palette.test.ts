@@ -12,11 +12,10 @@ describe('participantTiles', () => {
   const content = (t: { action: { type: string } }) =>
     t.action.type === 'sticky' || t.action.type === 'text';
 
-  it('offers the Sticky and Text tiles, then Image', () => {
+  it('offers the Sticky and Text tiles only', () => {
     const tiles = participantTiles();
-    expect(tiles.slice(0, -1).every(content)).toBe(true);
-    expect(tiles.map((t) => t.action.type)).toContain('sticky');
-    expect(tiles.at(-1)?.id).toBe('tools:image');
+    expect(tiles.every(content)).toBe(true);
+    expect(tiles.map((t) => t.action.type)).toEqual(['sticky', 'text']);
   });
 });
 

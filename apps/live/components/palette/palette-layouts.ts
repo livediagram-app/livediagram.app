@@ -54,16 +54,6 @@ function tilesExcept(categoryId: string, ...drop: string[]): readonly string[] {
   return out;
 }
 
-// Media's embed providers (the Embed group).
-const EMBED_TILES = [
-  'media:embed-youtube',
-  'media:embed-vimeo',
-  'media:embed-loom',
-  'media:embed-figma',
-  'media:embed-gdocs',
-  'media:embed-website',
-];
-
 // Write's own tiles and the Callout (a headed note, as much a diagram's as a page's), then the Comment
 // panel and the Action card as their own group: comments and assigned actions belong to every mode, so Diagram
 // keeps them though their Collaborate category is Workshop's.
@@ -112,9 +102,6 @@ const WORKSHOP_LAYOUT_TILES = [
 // The concept graphics, then the Sankey (Diagram's and Pages mode's Concepts).
 const CONCEPTS_WITH_SANKEY = [...tilesForCategory('concepts').map((t) => t.id), 'tools:sankey'];
 
-// Image and Avatar; no embedded pages, and no Tab Window (a Pages element, docs/specs/009-elements/tab-window.md).
-const MEDIA_WITHOUT_EMBEDS = tilesExcept('media', ...EMBED_TILES, 'media:tab-window');
-
 // Diagram mode: Popular, then every category but the mock-up kit (Components, Devices), the charts
 // (Data) and the session kit (Stickers, Collaborate: Workshop's, docs/specs/012-collaboration/
 // workshop-mode.md), each with its own tiles but Media's embeds.
@@ -155,14 +142,12 @@ const DIAGRAM: PaletteLayout = {
     { id: 'layout', tiles: LAYOUT_TILES },
     { id: 'icons' },
     { id: 'technology' },
-    { id: 'media', tiles: MEDIA_WITHOUT_EMBEDS },
   ],
 };
 
-// Pages mode's Components: Layout first (what a page is laid out with: the Hero, Header and Banner, and the Stack that
+// Pages mode's Components: Layout first (what a page is laid out with: the Header and Banner, and the Stack that
 // lines blocks up), then the web blocks, then Code and the Checklist; no data-model Entity.
 const PAGES_COMPONENTS = [
-  'components:hero',
   'components:header',
   'components:banner',
   'tools:stack',
@@ -187,15 +172,14 @@ const PAGES: PaletteLayout = {
   landing: 'popular',
   categories: [
     {
-      // Twelve tiles an infographic is most often built from, in the order they are reached for:
-      // words and simple marks, a picture and a speech bubble, the charts, then the ready-made
+      // Eleven tiles an infographic is most often built from, in the order they are reached for:
+      // words and simple marks, a speech bubble, the charts, then the ready-made
       // blocks. Each is also in one of the categories below.
       id: 'popular',
       tiles: [
         'tools:text',
         'shapes:square',
         'shapes:circle',
-        'tools:image',
         'shapes:speech-bubble',
         'data:pie',
         'data:bar',
@@ -237,10 +221,9 @@ const PAGES_SLIDE: PaletteLayout = {
   categories: [
     {
       id: 'popular',
-      description: 'What a slide is most often made of: a title, a picture, a chart and a point.',
+      description: 'What a slide is most often made of: a title, a shape, a chart and a point.',
       tiles: [
         'tools:text',
-        'tools:image',
         'shapes:square',
         'shapes:circle',
         'shapes:speech-bubble',
@@ -348,8 +331,6 @@ const PAGES_LOGO: PaletteLayout = {
     // Text for a wordmark, and a sticky note for a comment on the design.
     { id: 'write', tiles: ['tools:text', DIVIDE, 'tools:sticky'] },
     { id: 'icons' },
-    // A picture to trace or to set the mark beside.
-    { id: 'media', tiles: ['tools:image'] },
   ],
 };
 
@@ -380,7 +361,6 @@ const WORKSHOP: PaletteLayout = {
         'tools:text',
         'tools:frame',
         'tools:arrow',
-        'tools:image',
         DIVIDE,
         'open:collab-ask',
         'open:collab-tools',
@@ -417,7 +397,6 @@ const WORKSHOP: PaletteLayout = {
     // which a session does not stop to draw.
     { id: 'icons' },
     { id: 'stickers' },
-    { id: 'media', tiles: MEDIA_WITHOUT_EMBEDS },
     // The charts and meters: a session reads results and sets targets as often as a page reports them.
     { id: 'data' },
   ],
@@ -436,7 +415,7 @@ const PLAN: PaletteLayout = {
     { id: 'plan-metrics' },
     { id: 'plan-visualisations' },
     { id: 'plan-sheets' },
-    { id: 'plan-content', tiles: ['tools:sticky', 'tools:text', 'tools:image', 'tools:page'] },
+    { id: 'plan-content', tiles: ['tools:sticky', 'tools:text', 'tools:page'] },
     {
       id: 'plan-tools',
       tiles: [
@@ -596,14 +575,11 @@ export function paletteLandingCategory(mode: EditorMode, hasPlanBoard = true): s
 
 // A Participant's palette (docs/specs/013-workspace/share-roles.md "What a Participant changes"): one category,
 // Participate, holding only what it may add, as the full palette's own tiles: the Sticky and Text tiles (whatever a
-// mode's Popular holds), then the Image tile. Mind-map branches grow from a node (Tab, Enter), not from a tile.
+// mode's Popular holds). Mind-map branches grow from a node (Tab, Enter), not from a tile.
 const PARTICIPANT_TILES = ['tools:sticky', 'tools:text'] as const;
-const PARTICIPANT_IMAGE_TILE = 'tools:image';
 
 export function participantTiles(): PaletteTileDef[] {
-  const base = PARTICIPANT_TILES.map(tileById).filter((t): t is PaletteTileDef => t !== undefined);
-  const image = tileById(PARTICIPANT_IMAGE_TILE);
-  return image ? [...base, image] : base;
+  return PARTICIPANT_TILES.map(tileById).filter((t): t is PaletteTileDef => t !== undefined);
 }
 
 export function participantPaletteCategories(): ResolvedPaletteCategory[] {

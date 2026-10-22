@@ -29,11 +29,11 @@ describe('elementTileSections', () => {
     expect(new Set(ids(tiles)).size).toBe(tiles.length);
     // Popular leads, so its square comes first.
     expect(tiles[0]?.id).toBe('shapes:square');
-    expect(ids(elementTileSections({ mode: 'diagram', hasImage: true }).here)).toEqual(ids(tiles));
+    expect(ids(elementTileSections({ mode: 'diagram' }).here)).toEqual(ids(tiles));
   });
 
   it('puts the tiles only another mode offers in the other section, never in both', () => {
-    const { here, elsewhere } = elementTileSections({ mode: 'diagram', hasImage: true });
+    const { here, elsewhere } = elementTileSections({ mode: 'diagram' });
     // Charts and devices are Pages mode's.
     expect(ids(elsewhere)).toEqual(expect.arrayContaining(['data:pie', 'devices:phone']));
     expect(ids(here)).not.toContain('data:pie');
@@ -42,29 +42,23 @@ describe('elementTileSections', () => {
   });
 
   it('flips with the mode', () => {
-    const { here, elsewhere } = elementTileSections({ mode: 'pages', hasImage: true });
+    const { here, elsewhere } = elementTileSections({ mode: 'pages' });
     expect(ids(here)).toContain('data:pie');
     expect(ids(elsewhere)).not.toContain('data:pie');
   });
 
   it('covers every tile of every mode between its two sections', () => {
-    const { here, elsewhere } = elementTileSections({ mode: 'plan', hasImage: true });
+    const { here, elsewhere } = elementTileSections({ mode: 'plan' });
     const all = new Set([...ids(here), ...ids(elsewhere)]);
     for (const mode of ['diagram', 'pages', 'plan'] as const) {
       for (const t of modeElementTiles(mode)) expect(all.has(t.id), t.id).toBe(true);
     }
   });
 
-  it('leaves out the image-upload tiles where the editor has none', () => {
-    const { here, elsewhere } = elementTileSections({ mode: 'diagram', hasImage: false });
-    const needsImage = PALETTE_TILES.filter((t) => t.needsImage).map((t) => t.id);
-    expect([...ids(here), ...ids(elsewhere)].filter((id) => needsImage.includes(id))).toEqual([]);
-  });
-
   it("keeps Plan's own tiles out of other modes, greyed out with the reason", () => {
     const planOwn = (t: { section: string }) => t.section.startsWith('plan-');
     for (const mode of ['diagram', 'pages', 'workshop'] as const) {
-      const { here, elsewhere, unavailable } = elementTileSections({ mode, hasImage: true });
+      const { here, elsewhere, unavailable } = elementTileSections({ mode });
       expect([...here, ...elsewhere].filter(planOwn), mode).toEqual([]);
       expect(ids(unavailable), mode).toEqual(
         expect.arrayContaining(['plan:board-kanban', 'plan:view-gantt', 'plan:sheet']),
@@ -77,28 +71,25 @@ describe('elementTileSections', () => {
   });
 
   it('has nothing unavailable in Plan itself', () => {
-    expect(elementTileSections({ mode: 'plan', hasImage: true }).unavailable).toEqual([]);
+    expect(elementTileSections({ mode: 'plan' }).unavailable).toEqual([]);
   });
 
   it("uses the document's own card types in Plan, and keeps the built-in ones out of elsewhere", () => {
     const own = [{ ...ITEM_TYPES[0], id: 'custom', label: 'Custom' }];
     const { here, elsewhere } = elementTileSections({
       mode: 'plan',
-      hasImage: true,
       planCardTiles: own.map(planCardTile),
     });
     expect(ids(here)).toContain('plan:card-custom');
     expect(ids(here)).not.toContain(`plan:card-${ITEM_TYPES[0].id}`);
     expect(elsewhere.filter((t) => t.section === 'plan-cards')).toEqual([]);
-    expect(
-      elementTileSections({ mode: 'plan', hasImage: true, planCardTiles: [] }).unavailable,
-    ).toEqual([]);
+    expect(elementTileSections({ mode: 'plan', planCardTiles: [] }).unavailable).toEqual([]);
   });
 });
 
 describe('searchElementTiles', () => {
   it('finds a tile by a synonym', () => {
-    const { here } = searchElementTiles({ query: 'database', mode: 'diagram', hasImage: true });
+    const { here } = searchElementTiles({ query: 'database', mode: 'diagram' });
     expect(ids(here)).toContain('shapes:cylinder');
   });
 
@@ -106,14 +97,13 @@ describe('searchElementTiles', () => {
     const { here, elsewhere } = searchElementTiles({
       query: 'pie',
       mode: 'diagram',
-      hasImage: true,
     });
     expect(ids(here)).toEqual([]);
     expect(ids(elsewhere)).toEqual(['data:pie']);
   });
 
   it('finds nothing for nonsense, in either section', () => {
-    expect(searchElementTiles({ query: 'zzqqxx', mode: 'diagram', hasImage: true })).toEqual({
+    expect(searchElementTiles({ query: 'zzqqxx', mode: 'diagram' })).toEqual({
       here: [],
       elsewhere: [],
       unavailable: [],
@@ -124,7 +114,6 @@ describe('searchElementTiles', () => {
     const { here, elsewhere } = searchElementTiles({
       query: '  ',
       mode: 'diagram',
-      hasImage: true,
       tabElements: [
         el({ type: 'shape', shape: 'circle' }),
         el({ type: 'shape', shape: 'circle' }),
@@ -138,7 +127,7 @@ describe('searchElementTiles', () => {
   });
 
   it('lists nothing before typing on an empty tab', () => {
-    expect(searchElementTiles({ query: '', mode: 'diagram', hasImage: true })).toEqual({
+    expect(searchElementTiles({ query: '', mode: 'diagram' })).toEqual({
       here: [],
       elsewhere: [],
       unavailable: [],
@@ -153,7 +142,6 @@ describe("Draw mode's markers", () => {
     const { here, elsewhere } = searchElementTiles({
       query: 'marker',
       mode: 'diagram',
-      hasImage: true,
       drawTiles,
     });
     expect(ids(here)).not.toContain('draw:marker-main');
@@ -177,7 +165,6 @@ describe("Draw mode's markers", () => {
     const { here, elsewhere } = searchElementTiles({
       query: '',
       mode: 'diagram',
-      hasImage: true,
       drawTiles,
       tabElements: [el({ type: 'freehand' })],
     });
@@ -248,8 +235,7 @@ describe('rankTiles', () => {
 describe('a worst-case query', () => {
   it('ranks every tile of every mode well inside a keystroke budget', () => {
     const start = performance.now();
-    for (let i = 0; i < 50; i++)
-      searchElementTiles({ query: 'e', mode: 'diagram', hasImage: true });
+    for (let i = 0; i < 50; i++) searchElementTiles({ query: 'e', mode: 'diagram' });
     // 50 searches matching most of the catalogue; a keystroke runs one.
     expect((performance.now() - start) / 50).toBeLessThan(16);
   });
@@ -259,17 +245,17 @@ describe('a worst-case query', () => {
 // Collaborate tiles leave Diagram's palette but Search still finds them, with the other modes'.
 describe('the session kit from Diagram', () => {
   it("lists Collaborate tiles in Diagram's other-modes section and Workshop's own", () => {
-    const diagram = elementTileSections({ mode: 'diagram', hasImage: true });
+    const diagram = elementTileSections({ mode: 'diagram' });
     expect(ids(diagram.here)).not.toContain('tools:session-timer');
     expect(ids(diagram.elsewhere)).toContain('tools:session-timer');
     expect(ids(diagram.elsewhere)).toContain('collab:quiz');
-    const workshop = elementTileSections({ mode: 'workshop', hasImage: true });
+    const workshop = elementTileSections({ mode: 'workshop' });
     expect(ids(workshop.here)).toContain('tools:session-timer');
     expect(ids(workshop.here)).toContain('collab:quiz');
   });
 
   it("keeps the Comment panel and the Action card in Diagram's own section", () => {
-    const here = ids(elementTileSections({ mode: 'diagram', hasImage: true }).here);
+    const here = ids(elementTileSections({ mode: 'diagram' }).here);
     expect(here).toContain('collab:comment-pin');
     expect(here).toContain('collab:action-card');
   });

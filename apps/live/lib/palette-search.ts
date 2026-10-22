@@ -89,9 +89,9 @@ const OTHER_TILES = PALETTE_TILES.filter(
     t.action.type !== 'sticker',
 );
 
-// Every non-shape tile, as a search item; image tiles only when the editor takes images.
-function otherTileItems(hasImage: boolean): PaletteSearchItem[] {
-  return OTHER_TILES.filter((t) => !t.needsImage || hasImage).map((tile) => ({
+// Every non-shape tile, as a search item.
+function otherTileItems(): PaletteSearchItem[] {
+  return OTHER_TILES.map((tile) => ({
     id: `tile:${tile.id}`,
     name: tileDisplayName(tile),
     keywords: tileKeywords(tile),
@@ -107,21 +107,17 @@ function otherTileItems(hasImage: boolean): PaletteSearchItem[] {
 // on load (a re-render alone would not: the React Compiler memoises the call on
 // its arguments); the build is a few hundred tiny objects, cheap enough to run
 // per open-panel render without memoisation.
-// `hasImage` hides the tiles that need image uploads (Image, Avatar, Hero)
-// when the editor has none, as the palette's own grids do (visibleTiles).
 export function buildPaletteSearchItems({
-  hasImage = true,
   catalogues = true,
 }: {
-  hasImage?: boolean;
   // Whether the icon catalogues have loaded (useIconCatalogs): a component passes the subscription's value so the
   // React Compiler re-runs this when they land. Before then they hold nothing to add.
   catalogues?: boolean;
 } = {}): PaletteSearchItem[] {
-  if (!catalogues) return [...SHAPE_TILES.map(shapeTileSearchItem), ...otherTileItems(hasImage)];
+  if (!catalogues) return [...SHAPE_TILES.map(shapeTileSearchItem), ...otherTileItems()];
   return [
     ...SHAPE_TILES.map(shapeTileSearchItem),
-    ...otherTileItems(hasImage),
+    ...otherTileItems(),
     // Line art only. The catalogue still carries the legacy emoji entries so
     // elements from before docs/specs/010-palette/stickers.md keep rendering, but offering them here would add
     // a second way to place something that is a sticker now.

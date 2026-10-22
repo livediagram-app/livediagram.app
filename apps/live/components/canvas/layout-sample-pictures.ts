@@ -32,23 +32,14 @@ function art([skyTop, skyBottom, sun, far, near]: readonly string[]): string {
 
 const ARTS = PALETTES.map(art);
 
-// The ids a tile's pictures are given: never one an upload takes (those are server ids).
-const SAMPLE_ID = 'layout-sample:';
-
-/** The layout's elements with each empty picture given a sample, and the pictures to draw them
- *  with (id to href), for the tile's render. Elements already holding a picture keep it. */
-export function withSamplePictures(elements: readonly Element[]): {
-  elements: Element[];
-  pictures: Map<string, { href: string }>;
-} {
-  const pictures = new Map<string, { href: string }>();
+/** The layout's elements with each empty picture given a sample, inline (its `data:` URL is its
+ *  id, which the tile's render draws as it is). Elements already holding a picture keep it. */
+export function withSamplePictures(elements: readonly Element[]): Element[] {
   let n = 0;
-  const out = elements.map((el) => {
+  return elements.map((el) => {
     if (el.type !== 'image' || el.imageId) return el;
-    const id = `${SAMPLE_ID}${n % ARTS.length}`;
-    pictures.set(id, { href: ARTS[n % ARTS.length]! });
+    const imageId = ARTS[n % ARTS.length]!;
     n += 1;
-    return { ...el, imageId: id, objectFit: 'cover' as const };
+    return { ...el, imageId, objectFit: 'cover' as const };
   });
-  return { elements: out, pictures };
 }

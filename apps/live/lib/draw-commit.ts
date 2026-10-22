@@ -12,7 +12,6 @@ import { defaultSessionConfig, isFixedSizeShape, REACTION_PAD_LABEL } from '@liv
 import { ARROW_SNAP_THRESHOLD_PX, inheritedSizeFor } from '@/lib/canvas';
 import {
   createComponent,
-  createImage,
   createLinkCard,
   applyShapeVariant,
   createShape,
@@ -43,7 +42,7 @@ import { placeNewSheet, sheetTitleForTab } from '@/lib/sheet-seeds';
 // raw start + end canvas points for its intent kind (box vs line vs
 // composite) and returns the minted element(s). The hook stays the
 // owner of everything stateful — the functional commit, selection,
-// telemetry, and the image-picker follow-up.
+// and telemetry.
 
 // Stroke for a new arrow when the active theme has no explicit
 // `elementStroke` (the Brand theme). brand-500 — matches the shape
@@ -193,7 +192,7 @@ export function buildDrawnComponent(
   };
 }
 
-// Boxed branch (shape / text / sticky / image / table / link card / embed).
+// Boxed branch (shape / text / sticky / table / link card / embed).
 // A tap drops the element centred on the tap at its inherited size (the
 // armed-time selection's size, else the factory default; circle/diamond stay
 // square); a real drag sizes it to the dragged box (16px floor). Mirrors the
@@ -201,7 +200,7 @@ export function buildDrawnComponent(
 export function buildDrawnBoxed(
   intent: Extract<
     PendingDraw,
-    { type: 'shape' | 'text' | 'sticky' | 'image' | 'table' | 'link-card' | 'video' }
+    { type: 'shape' | 'text' | 'sticky' | 'table' | 'link-card' | 'video' }
   >,
   startX: number,
   startY: number,
@@ -224,12 +223,10 @@ export function buildDrawnBoxed(
             ? createTable(startX, startY)
             : intent.type === 'link-card'
               ? createLinkCard(startX, startY)
-              : intent.type === 'video'
-                ? // The Media tab has a tile per service (docs/specs/009-elements/embed-providers.md), so the
-                  // choice arrives on the intent and lands on the element
-                  // here rather than leaving a bare embed to re-point.
-                  createVideo(startX, startY, intent.provider)
-                : createImage(startX, startY);
+              : // The Media tab has a tile per service (docs/specs/009-elements/embed-providers.md), so the
+                // choice arrives on the intent and lands on the element
+                // here rather than leaving a bare embed to re-point.
+                createVideo(startX, startY, intent.provider);
   const tapSize = inheritedSizeFor(base, inheritFrom);
   // A fixed-size kind (docs/specs/009-elements/mode-button.md) ignores the drag entirely: dragging one out
   // still places it, at the one size it is meant to be.

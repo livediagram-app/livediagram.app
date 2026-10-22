@@ -58,14 +58,9 @@ export function layoutRenderSvg(
       : 'light'
     : appearance;
   const map = themeViewMap(tab.theme, surface);
-  const { elements, pictures } = withSamplePictures(
-    placed.map((el) => elementAsSeen(el, surface, map)),
-  );
+  const elements = withSamplePictures(placed.map((el) => elementAsSeen(el, surface, map)));
   // A tile is a thumbnail: an animated background is drawn still (export-tab's `stillBackground`).
-  return renderTabToSvg(
-    { ...tab, elements },
-    { page: seen, stillBackground: true, images: pictures },
-  );
+  return renderTabToSvg({ ...tab, elements }, { page: seen, stillBackground: true });
 }
 
 /** The tile, drawn with `tab`'s theme and font. */

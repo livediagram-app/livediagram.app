@@ -52,7 +52,7 @@ async function pngBytes(canvas: HTMLCanvasElement): Promise<Uint8Array> {
   return new Uint8Array(await blob.arrayBuffer());
 }
 
-/** The logo page's kit as a zip. `opts` carries the tab's images and embedded fonts. */
+/** The logo page's kit as a zip. `opts` carries the tab's embedded fonts. */
 export async function exportLogoKit(
   tab: Tab,
   page: LaidOutPage,

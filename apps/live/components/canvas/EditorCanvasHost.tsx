@@ -123,7 +123,6 @@ export function EditorCanvasHost() {
     addHero,
     addIcon,
     addSticker,
-    addImage,
     addLinkCard,
     addVideo,
     addProcess,
@@ -231,7 +230,6 @@ export function EditorCanvasHost() {
     handleCanvasDoubleClick,
     hydrated,
     identityOnlyScreenOpen,
-    imageContext,
     isOwner,
     canShareDocument,
     setSearchOpen,
@@ -852,7 +850,6 @@ export function EditorCanvasHost() {
               onAddText={addText}
               onAddSticky={addSticky}
               onDropFile={isReadOnly ? undefined : dropBoardFile}
-              onAddImage={addImage}
               onAddArrow={addArrow}
               reshapingArrowId={reshapingArrowId}
               onBeginFreehand={beginFreehand}
@@ -1222,7 +1219,6 @@ export function EditorCanvasHost() {
               onOpenNote={openNote}
               onEditLink={isReadOnly ? undefined : setLinkPickerOpenForId}
               onOpenEditDialog={isReadOnly ? undefined : openEditDialog}
-              imageContext={imageContext}
               // The visitor name prompt shows for EVERYONE, view-role visitors included: it only writes their own
               // participant row, so there's no 403, and they should set a name before others see them in presence.
               showIdentityPrompt={identityOnlyScreenOpen}

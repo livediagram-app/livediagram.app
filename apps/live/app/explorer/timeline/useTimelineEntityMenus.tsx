@@ -9,7 +9,6 @@
 //   team    Open Team · Edit Team (admin) · Leave Team · Delete Team (admin)
 //   invite  Open Invites · Accept · Decline
 //   theme   Open Themes · Edit Theme · Delete Theme (confirmed)
-//   image   Open Images
 //   document the Explorer can't resolve (a team document the sidebar
 //           hasn't loaded): Open Document
 //
@@ -27,7 +26,6 @@ import { CloseIcon } from '@liveplanner/ui';
 import {
   CheckIcon,
   DocumentIcon,
-  ImageIcon,
   InviteIcon,
   KeyIcon,
   PaletteIcon,
@@ -338,17 +336,6 @@ export function useTimelineEntityMenus(): {
             );
           }
           return { subject: theme?.name, items };
-        }
-        if (eventType === 'image_uploaded') {
-          return {
-            items: [
-              {
-                label: 'Open Images',
-                icon: <ImageIcon />,
-                onClick: () => assignAppLocation('/explorer/images'),
-              },
-            ],
-          };
         }
       }
       return null;

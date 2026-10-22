@@ -62,17 +62,6 @@ vi.mock('../api/sheets', () => ({
   fetchCloudSheets: vi.fn(async () => []),
   sheetAsCreate: (s: unknown) => s,
 }));
-vi.mock('./offline-images', () => ({
-  embedTabImages: vi.fn(async (tabs: unknown) => tabs),
-  uploadEmbeddedImages: vi.fn(async (_owner: string, tabs: unknown) => ({
-    tabs,
-    imageIds: new Map(),
-  })),
-  isDataImageId: (id: string) => id.startsWith('data:'),
-  tabImageIds: (t: { elements: { type: string; imageId?: string | null }[] }) =>
-    t.elements.flatMap((el) => (el.type === 'image' && el.imageId ? [el.imageId] : [])),
-}));
-
 // The successive states the record is in when a sync goes to remove it (a write landing during
 // the upload); once used up, it is the record the sync read.
 const states: unknown[] = [];
@@ -98,7 +87,6 @@ vi.mock('./offline-store', () => ({
 
 const apiClient = await import('@/lib/api-client');
 const core = await import('@/lib/api/core');
-const images = await import('./offline-images');
 const items = await import('../api/items');
 const sheets = await import('../api/sheets');
 const store = await import('./offline-store');
@@ -347,26 +335,6 @@ describe('takeCloudOffline (cloud -> offline)', () => {
   it('writes the local copy before deleting the server one', async () => {
     await takeCloudOffline('d1', 'owner');
     expect(calls).toEqual(['offlinePutRecord', 'apiDelete']);
-  });
-
-  it('embeds images before the server delete, never after', async () => {
-    // Once the document row is gone its images count as unused, and the api's
-    // 30-day reaper deletes the bytes the offline copy still points at.
-    await takeCloudOffline('d1', 'owner');
-    const embedOrder = vi.mocked(images.embedTabImages).mock.invocationCallOrder[0]!;
-    const deleteOrder = vi.mocked(core.apiDelete).mock.invocationCallOrder[0]!;
-    expect(embedOrder).toBeLessThan(deleteOrder);
-  });
-
-  it('aborts before the delete if any image failed to embed', async () => {
-    // Best-effort embedding is fine; signing the stragglers up for the reaper
-    // is not. The server copy and its images must survive.
-    vi.mocked(images.embedTabImages).mockResolvedValueOnce([
-      { id: 't1', elements: [{ type: 'image', imageId: 'r2-abc' }] },
-    ] as never);
-    await expect(takeCloudOffline('d1', 'owner')).rejects.toThrow(/embed incomplete/i);
-    expect(core.apiDelete).not.toHaveBeenCalled();
-    expect(store.offlinePutRecord).not.toHaveBeenCalled();
   });
 
   it('rolls the local copy back when the server delete fails', async () => {

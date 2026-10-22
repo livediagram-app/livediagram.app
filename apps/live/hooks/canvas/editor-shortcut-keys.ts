@@ -71,17 +71,13 @@ export type EditorKeyboardShortcutsDeps = {
   // persistent Format tool (back to Select) from either phase.
   canvasTool: CanvasTool;
   // Element-add callbacks. R / O / D / C / H / G fire addShape with the
-  // matching ShortcutShape; T / N / A fire the dedicated handlers; I opens
-  // the image picker. All five mirror their palette counterparts so
-  // the keyboard route reaches the same code path as the click route.
-  // onAddImage is nullable: pure-guest deploys without an api worker
-  // hide the palette button + null this prop, and the shortcut goes
-  // dormant to match.
+  // matching ShortcutShape; T / N / A fire the dedicated handlers. All
+  // mirror their palette counterparts so the keyboard route reaches the
+  // same code path as the click route.
   addShape: (kind: ShortcutShape) => void;
   addText: () => void;
   addSticky: () => void;
   addArrow: (ends?: import('@liveplanner/document').ArrowEnds) => void;
-  onAddImage: (() => void) | null;
   // F enters the one-shot pencil (freehand) draw mode, mirroring the
   // palette's Pencil button. Distinct from the element-add shortcuts
   // above because the pencil is gestural (no element drops without a
@@ -245,7 +241,6 @@ export const PARTICIPANT_KEYS: Record<string, ShortcutAction> = {
   n: (l) => l.addSticky(),
   t: (l) => l.addText(),
   '8': (l) => l.addText(),
-  '9': (l) => l.onAddImage?.(),
 };
 
 // Cmd / Ctrl modified shortcuts. Returns true when it consumed the event.

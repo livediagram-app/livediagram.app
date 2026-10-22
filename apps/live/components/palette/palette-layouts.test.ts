@@ -49,7 +49,6 @@ describe('palette layouts', () => {
       'layout',
       'icons',
       'technology',
-      'media',
     ]);
   });
 
@@ -93,7 +92,6 @@ describe('palette layouts', () => {
       'collab-navigate',
       'icons',
       'stickers',
-      'media',
       'data',
     ]);
     expect(paletteLandingCategory('workshop')).toBe('popular');
@@ -107,31 +105,17 @@ describe('palette layouts', () => {
       'tools:text',
       'tools:frame',
       'tools:arrow',
-      'tools:image',
       'open:collab-ask',
       'open:collab-tools',
       'open:collab-record',
       'open:collab-react',
     ]);
     // A divider of its own between the tiles and the openers, here only.
-    expect(popular.tiles!.filter((t) => t.dividerAfter).map((t) => t.id)).toContain('tools:image');
+    expect(popular.tiles!.filter((t) => t.dividerAfter).map((t) => t.id)).toContain('tools:arrow');
     // Each opens a category Workshop offers.
     const offered = new Set(paletteCategoriesFor('workshop').map((c) => c.id));
     for (const t of popular.tiles!)
       if (t.action.type === 'open') expect(offered.has(t.action.category), t.id).toBe(true);
-  });
-
-  // A layout that drops a group's last tile keeps the group's end: Diagram and Workshop leave out the Tab Window,
-  // which ends Media's first group, and Image ends it there instead.
-  it("keeps Media's divider after Image where the Tab Window is left out", () => {
-    for (const mode of ['diagram', 'workshop'] as const) {
-      const media = paletteCategoriesFor(mode).find((c) => c.id === 'media')!;
-      const ids = media.tiles!.map((t) => t.id);
-      expect(ids, mode).not.toContain('media:tab-window');
-      expect(media.tiles!.find((t) => t.id === 'tools:image')?.dividerAfter, mode).toBe(true);
-      // Never one at the very end.
-      expect(media.tiles!.at(-1)?.dividerAfter, mode).toBeFalsy();
-    }
   });
 
   it('holds every Collaborate tile in Workshop, across its six categories', () => {
@@ -175,12 +159,8 @@ describe('palette layouts', () => {
     ]);
   });
 
-  it('gives a Workshop Participant Sticky and Text, and an image', () => {
-    expect(participantTiles().map((t) => t.id)).toEqual([
-      'tools:sticky',
-      'tools:text',
-      'tools:image',
-    ]);
+  it('gives a Workshop Participant Sticky and Text', () => {
+    expect(participantTiles().map((t) => t.id)).toEqual(['tools:sticky', 'tools:text']);
   });
 
   it('narrows Pages to the categories a visual page is made of', () => {
@@ -243,9 +223,8 @@ describe('palette layouts', () => {
     }
     // No Build: its three page tiles sit in Components and Data.
     expect(ids('pages')).not.toContain('build');
-    // Components leads with its Layout group: the Hero, Header and Banner, then the Stack.
-    expect(tileIds('pages', 'components').slice(0, 4)).toEqual([
-      'components:hero',
+    // Components leads with its Layout group: the Header and Banner, then the Stack.
+    expect(tileIds('pages', 'components').slice(0, 3)).toEqual([
       'components:header',
       'components:banner',
       'tools:stack',
@@ -254,8 +233,8 @@ describe('palette layouts', () => {
     expect(tileIds('diagram', 'write')).toContain('tools:annotation');
   });
 
-  it("leaves Media's embeds out of Diagram, keeping its own two", () => {
-    expect(tileIds('diagram', 'media')).toEqual(['tools:image', 'tools:avatar']);
+  it('leaves Media out of Diagram, keeping its embeds in Pages', () => {
+    expect(ids('diagram')).not.toContain('media');
     expect(tileIds('pages', 'media')).toContain('media:embed-youtube');
   });
 
@@ -280,9 +259,9 @@ describe('palette layouts', () => {
     ]);
   });
 
-  it('picks twelve Popular tiles, each reachable from another Pages category', () => {
+  it('picks eleven Popular tiles, each reachable from another Pages category', () => {
     const popular = tileIds('pages', 'popular');
-    expect(popular).toHaveLength(12);
+    expect(popular).toHaveLength(11);
     const reachable = new Set(
       paletteCategoriesFor('pages')
         .filter((c) => c.id !== 'popular')
@@ -302,12 +281,7 @@ describe('palette layouts', () => {
       'plan-content',
       'plan-tools',
     ]);
-    expect(tileIds('plan', 'plan-content')).toEqual([
-      'tools:sticky',
-      'tools:text',
-      'tools:image',
-      'tools:page',
-    ]);
+    expect(tileIds('plan', 'plan-content')).toEqual(['tools:sticky', 'tools:text', 'tools:page']);
     expect(tileIds('plan', 'plan-tools')).toEqual([
       'collab:temperature',
       'collab:estimate',
@@ -356,9 +330,9 @@ describe('palette layouts', () => {
     }
   });
 
-  it('gives a logo page its own palette: Draw, Shapes, Write, Icons, Library, Media (logo-pages.md)', () => {
+  it('gives a logo page its own palette: Draw, Shapes, Write, Icons (logo-pages.md)', () => {
     const logo = paletteCategoriesFor('pages', { pagesKind: 'logo' });
-    expect(logo.map((c) => c.id)).toEqual(['popular', 'draw', 'shapes', 'write', 'icons', 'media']);
+    expect(logo.map((c) => c.id)).toEqual(['popular', 'draw', 'shapes', 'write', 'icons']);
     const tilesOf = (id: string) => logo.find((c) => c.id === id)!.tiles!.map((t) => t.id);
     expect(tilesOf('draw')).toEqual([
       'logo:pen',
@@ -367,7 +341,6 @@ describe('palette layouts', () => {
       'tools:polygon',
     ]);
     expect(tilesOf('write')).toEqual(['tools:text', 'tools:sticky']);
-    expect(tilesOf('media')).toEqual(['tools:image']);
     // No Logo category anywhere: its tools are Draw's.
     for (const kind of ['design', 'slide', 'wireframe', 'logo'] as const)
       expect(paletteCategoriesFor('pages', { pagesKind: kind }).map((c) => c.id)).not.toContain(

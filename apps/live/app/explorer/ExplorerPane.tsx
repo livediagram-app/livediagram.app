@@ -29,7 +29,7 @@ import { assignAppLocation } from '@/lib/app-location';
 const VIEW_COMPONENTS = { list: ListView, card: CardView, details: DetailsView } as const;
 
 // The browse sections that render a folders + documents grid the List/Card
-// toggle (docs/specs/006-document/document-snapshots.md) can swap. Other sections (gallery, themes,
+// toggle (docs/specs/006-document/document-snapshots.md) can swap. Other sections (themes,
 // profile, team, invites, shared) have their own fixed layout.
 const BROWSE_KINDS = new Set([
   'recent',
@@ -52,7 +52,6 @@ const SECTION_HELP: Partial<Record<string, HelpArticleKey>> = {
   inbox: 'inbox',
   recent: 'recentDocuments',
   shared: 'sharedWithYou',
-  gallery: 'imageGallery',
   themes: 'customThemes',
   trash: 'trash',
   offline: 'offlineMode',
@@ -64,10 +63,6 @@ const SECTION_HELP: Partial<Record<string, HelpArticleKey>> = {
 
 // Lazy-load the heavier panes — each is only mounted on its own
 // route, so none of them sit in the shared explorer chunk.
-const GalleryPane = dynamic(
-  () => import('@/components/panels/GalleryPane').then((m) => m.GalleryPane),
-  { ssr: false },
-);
 const TrashSection = dynamic(() => import('./TrashSection').then((m) => m.TrashSection), {
   ssr: false,
 });
@@ -371,10 +366,6 @@ export function ExplorerPane() {
               clear: () => lens.setInput(''),
             }}
           />
-        ) : null
-      ) : selected.kind === 'gallery' ? (
-        ownerId ? (
-          <GalleryPane ownerId={ownerId} />
         ) : null
       ) : selected.kind === 'themes' ? (
         <ThemesPane />

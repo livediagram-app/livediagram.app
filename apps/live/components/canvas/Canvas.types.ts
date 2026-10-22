@@ -324,13 +324,9 @@ export type CanvasProps = {
   onAddAvatar: () => void;
   onAddText: () => void;
   onAddSticky: () => void;
-  // Any other file dropped on the canvas, at its canvas point (an image lands there). Absent where files are
-  // refused.
+  // Any other file dropped on the canvas, at its canvas point (refused with a notice: the canvas takes no files).
+  // Absent where files are refused silently.
   onDropFile?: (file: File, at: { x: number; y: number }) => void;
-  // Spawn an empty image placeholder + open the picker. Optional so
-  // view-role visitors / no-R2 deployments can simply omit it; the
-  // Palette's Image entry hides when missing (docs/specs/009-elements/images.md).
-  onAddImage?: () => void;
   // `ends`: the Arrow tool's pointer at its end by default, `'none'` for the Line tool.
   onAddArrow: (ends?: import('@liveplanner/document').ArrowEnds) => void;
   // The arrow whose shape a handle drag is changing (a bend, curve, elbow or endpoint): its
@@ -681,16 +677,6 @@ export type CanvasProps = {
   // Open an element's own edit dialog on double-click: a code block's code (docs/specs/009-elements/code-block.md),
   // a Sankey's flows (docs/specs/009-elements/sankey.md). Omitted for read-only viewers.
   onOpenEditDialog?: (id: string) => void;
-  // Per-render context for image elements: identity + auth bits the
-  // ImageElementView needs to fetch bitmap bytes. Optional so the
-  // welcome / new-document surface (where Canvas mounts before
-  // identity / share-code are settled) can omit it.
-  imageContext?: {
-    ownerId: string;
-    documentId: string;
-    shareCode: string | null;
-    onOpenPicker?: (elementId: string) => void;
-  };
   // Touch-friendly fallback for right-click: a SelectionPopover
   // ellipsis button opens the same context menu under the cursor.
   onOpenElementContextMenu?: (elementId: string, screenX: number, screenY: number) => void;
@@ -765,8 +751,6 @@ export type CanvasProps = {
     // contamination).
     tabId: string;
   };
-  // Recent-images list for the Current Tab "Images" accordion (docs/specs/009-elements/images.md).
-  // Forwarded through to TabSection unchanged.
   onToggleAspectLock: () => void;
   // Quick add + connect (docs/specs/008-canvas/canvas-and-palette.md). The radial ring on each element edge
   // spawns a connected element (Duplicate / Square / Circle), starts an

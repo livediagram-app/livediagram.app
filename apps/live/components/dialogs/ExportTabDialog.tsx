@@ -17,13 +17,7 @@ import {
   tabToMarkdownText,
   type TabPlanData,
 } from '@liveplanner/document';
-import {
-  downloadBlob,
-  exportTabAsPng,
-  exportTabAsSvg,
-  loadTabImages,
-  renderTabToSvg,
-} from '@/lib/export-tab';
+import { downloadBlob, exportTabAsPng, exportTabAsSvg, renderTabToSvg } from '@/lib/export-tab';
 import { exportTabAsPdf } from '@/lib/export-tab-pdf';
 import {
   DEFAULT_PAGE_SCOPE,
@@ -97,11 +91,6 @@ type ExportTabDialogProps = {
   // flag only drives the copy, filename suffix, and telemetry so the dialog
   // stays a dumb renderer over whatever Tab it's given.
   scope?: 'tab' | 'selection';
-  // Owner / document / share context for fetching image bytes so PNG / SVG /
-  // PDF embed image + avatar elements (the bitmaps live behind an
-  // authenticated endpoint). Absent (e.g. no document id) → images export as
-  // their placeholder, same as before.
-  imageContext?: { ownerId: string; documentId: string; shareCode: string | null };
   // False while the Layers panel is off in Settings (docs/specs/007-editor/user-preferences.md): the
   // image options then leave out "Hidden layers", and hidden layers stay out
   // of the export as they stay off the canvas.
@@ -217,7 +206,6 @@ export function ExportTabDialog({
   documentName,
   onClose,
   scope = 'tab',
-  imageContext,
   offerHiddenLayers = true,
   pages,
   documentTabs,
@@ -249,13 +237,8 @@ export function ExportTabDialog({
   const [active, setActive] = useState<Format | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // Image / avatar bitmaps + icon catalogues loaded for the image-format
-  // preview (docs/specs/010-palette/style-presets.md). Loaded once when an image format is picked, then
-  // reused for both the live preview and the actual export so nothing is
-  // fetched twice. `ready` gates the preview on the (async) load.
-  const [previewImages, setPreviewImages] = useState<
-    Awaited<ReturnType<typeof loadTabImages>> | undefined
-  >(undefined);
+  // Icon catalogues loaded for the image-format preview (docs/specs/010-palette/style-presets.md), once an
+  // image format is picked. `ready` gates the preview on the (async) load.
   const [previewReady, setPreviewReady] = useState(false);
   // The page One page exports (and every preview shows), by its place in the row.
   const [pageIndex, setPageIndex] = useState(0);
@@ -284,34 +267,28 @@ export function ExportTabDialog({
     `${documentName || 'document'} - ${tab.name || 'tab'}${suffix}`,
   );
 
-  // A new image load (format picked, tab or image context changed) is not ready until it lands;
+  // A new load (format picked, tab changed) is not ready until it lands;
   // adjusted during render so the panel never shows the previous load as ready.
-  const [loadInputs, setLoadInputs] = useState({ active, tab, imageContext });
-  if (
-    loadInputs.active !== active ||
-    loadInputs.tab !== tab ||
-    loadInputs.imageContext !== imageContext
-  ) {
-    setLoadInputs({ active, tab, imageContext });
+  const [loadInputs, setLoadInputs] = useState({ active, tab });
+  if (loadInputs.active !== active || loadInputs.tab !== tab) {
+    setLoadInputs({ active, tab });
     if (active && !isTextFormat(active)) setPreviewReady(false);
   }
 
-  // When an image format is picked, load the icon catalogues + image bitmaps
+  // When an image format is picked, load the icon catalogues
   // so the preview (and export) renders the real glyphs, not placeholders.
   useEffect(() => {
     if (!active || isTextFormat(active)) return;
     let cancelled = false;
     void (async () => {
       await ensureIconCatalogs();
-      const images = imageContext ? await loadTabImages(imageTab, imageContext) : undefined;
       if (cancelled) return;
-      setPreviewImages(images);
       setPreviewReady(true);
     })();
     return () => {
       cancelled = true;
     };
-  }, [active, imageTab, imageContext]);
+  }, [active, imageTab]);
 
   // The open text format's text, built once per format, tab and item change rather than on every render: a JSON
   // export with a full item store is up to 2,000 cards. The panel reads it only as its starting text.
@@ -334,7 +311,6 @@ export function ExportTabDialog({
     tab: imageTab,
     tabs: documentTabs ?? NO_DOCUMENT_TABS,
     loadTabs,
-    imageContext,
     active: !!active && !isTextFormat(active),
     items: planOpts,
   });
@@ -352,14 +328,13 @@ export function ExportTabDialog({
     (opts: { isometric: boolean; pattern: boolean; hiddenLayers: boolean }) =>
       renderTabToSvg(imageTab, {
         ...(plain ? PLAIN_IMAGE : opts),
-        images: previewImages,
         page,
         ...(seeThrough ? { transparentPaper: true } : {}),
         ...planOpts,
         ...planExtras,
         ...windowOpts,
       }),
-    [imageTab, plain, previewImages, page, seeThrough, planOpts, planExtras, windowOpts],
+    [imageTab, plain, page, seeThrough, planOpts, planExtras, windowOpts],
   );
 
   // Render + download an image format with the chosen options (docs/specs/010-palette/style-presets.md).
@@ -371,17 +346,10 @@ export function ExportTabDialog({
     setBusy(true);
     setError(null);
     try {
-      // Reuse the images already loaded for the preview when they're ready;
-      // otherwise load them now (icon glyphs come from the async catalogues).
+      // Icon glyphs come from the async catalogues.
       await ensureIconCatalogs();
-      const images = previewReady
-        ? previewImages
-        : imageContext
-          ? await loadTabImages(imageTab, imageContext)
-          : undefined;
       const renderOpts = {
         ...(plain ? PLAIN_IMAGE : opts),
-        images,
         page,
         ...planOpts,
         ...planExtras,
@@ -470,9 +438,7 @@ export function ExportTabDialog({
             tab={tab}
             pages={pages}
             documentName={documentName}
-            images={previewImages}
-            imagesReady={previewReady}
-            imageContext={imageContext}
+            ready={previewReady}
             onDone={onClose}
             onBack={() => setActive(null)}
           />

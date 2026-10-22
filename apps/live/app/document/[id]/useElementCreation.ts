@@ -57,9 +57,6 @@ function planViewPlacement(view: string | undefined) {
 
 export function useElementCreation(opts: {
   editsBlocked: boolean;
-  // Whether image placement is unavailable (embed chrome — see
-  // useEditorImages for why uploads stay off there). Gates addImage only.
-  imagesBlocked: boolean;
   activeId: string;
   activeTab: Tab;
   // The single-selected element id, so "add an icon" can drop it INSIDE
@@ -92,7 +89,6 @@ export function useElementCreation(opts: {
 }) {
   const {
     editsBlocked,
-    imagesBlocked,
     activeId,
     activeTab,
     readSelection,
@@ -232,18 +228,6 @@ export function useElementCreation(opts: {
   const addVideo = (provider?: EmbedProvider) => {
     if (editsBlocked) return;
     beginDraw({ type: 'video', ...(provider ? { provider } : {}) });
-  };
-
-  // An empty image placeholder (docs/specs/009-elements/images.md), drawn to size. Lives here rather
-  // than in useEditorImages (which owns the picker, the gallery, and the
-  // fill/clear mutators) because arming a draw needs `beginDraw`, and that
-  // hook runs before useShapeDrawing. The picker opens on commit, once the
-  // user has already said where the image goes and how big it is.
-  // `imagesBlocked` covers the embed case: uploads authorise by owner, and a
-  // partitioned third-party iframe is a throwaway guest (see useEditorImages).
-  const addImage = () => {
-    if (editsBlocked || imagesBlocked) return;
-    beginDraw({ type: 'image' });
   };
 
   // Components (docs/specs/008-canvas/canvas-and-palette.md) arm the combined tap-or-drag draw gesture, exactly
@@ -471,7 +455,7 @@ export function useElementCreation(opts: {
   // an article page's Insert (docs/specs/007-editor/article-pages.md "The page toolbar") places
   // a table, a chart or an image at the caret, and the writing takes it into a zone.
   const placeIntentAt = (
-    intent: Extract<PendingDraw, { type: 'shape' | 'table' | 'image' | 'sticky' }>,
+    intent: Extract<PendingDraw, { type: 'shape' | 'table' | 'sticky' }>,
     x: number,
     y: number,
   ) => {
@@ -491,7 +475,6 @@ export function useElementCreation(opts: {
     addAnnotation,
     addLinkCard,
     addVideo,
-    addImage,
     addBanner,
     addHero,
     addHeader,

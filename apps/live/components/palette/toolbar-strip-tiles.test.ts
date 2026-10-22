@@ -13,7 +13,7 @@ import {
   stripTilesFor,
 } from './toolbar-strip-tiles';
 
-const NONE = { hasImage: true };
+const NONE = {};
 // Diagram mode's Popular, as its palette layout fills it.
 const diagramPopular = paletteCategoriesFor('diagram').find((c) => c.id === 'popular')!.tiles!;
 
@@ -50,7 +50,7 @@ describe('stripTilesFor', () => {
 
   it("shows the tiles a mode's layout hands it, in the layout's order", () => {
     const [a, b] = tilesForCategory('shapes');
-    const strip = stripTilesFor('popular', { hasImage: true, tiles: [b!, a!] });
+    const strip = stripTilesFor('popular', { tiles: [b!, a!] });
     expect(strip.tiles.map((t) => t.id)).toEqual([b!.id, a!.id]);
     expect(strip.hasMore).toBe(false);
   });
@@ -115,16 +115,6 @@ describe('stripTilesFor', () => {
       expect(tilesForCategory(c.id).filter((t) => t.dividerAfter).length, c.id).toBeLessThanOrEqual(
         2,
       );
-    }
-  });
-
-  it('drops image tiles when uploads are unavailable', () => {
-    for (const c of PALETTE_CATEGORIES) {
-      const strip = stripTilesFor(c.id, { hasImage: false });
-      expect(
-        strip.tiles.some((t) => t.needsImage),
-        c.id,
-      ).toBe(false);
     }
   });
 });

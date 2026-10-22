@@ -16,7 +16,6 @@ describe('slash menu telemetry', () => {
   });
 
   it('leaves text styles, lists and object inserts to their own counts', () => {
-    for (const id of ['text', 'h1', 'bullet', 'todo', 'image', 'drawing'])
-      expect(eventOf(id)).toBeNull();
+    for (const id of ['text', 'h1', 'bullet', 'todo', 'drawing']) expect(eventOf(id)).toBeNull();
   });
 });

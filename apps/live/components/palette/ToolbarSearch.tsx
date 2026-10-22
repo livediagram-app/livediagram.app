@@ -90,7 +90,6 @@ export function ToolbarSearchPanel({
   const elements = searchElementTiles({
     query,
     mode,
-    hasImage: actions.hasImage,
     planCardTiles,
     tabElements,
     drawTiles: markerTiles(pens, surface),

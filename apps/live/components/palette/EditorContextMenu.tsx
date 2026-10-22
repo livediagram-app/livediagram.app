@@ -118,7 +118,6 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
     if (!target) return null;
     const boxed = isBoxed(target);
     const isIcon = target.type === 'shape' && target.shape === 'icon';
-    const hasImage = target.type === 'image' && target.imageId != null;
     const hasLink = target.link != null;
     // Regular shapes (not the dedicated icon glyph, not a frame container, not
     // a self-drawing data shape which carries its own data) can morph to
@@ -346,7 +345,6 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
           props={props}
           target={target}
           onClose={onClose}
-          hasImage={hasImage}
           hasLink={hasLink}
           sectionProps={sectionProps}
           colorProps={colorProps}

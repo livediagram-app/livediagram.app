@@ -4,7 +4,7 @@
 // read-only canvas.
 //
 // Done as one wrapper over the whole bundle rather than per handler, so tiles
-// added later inherit it for free. Non-function entries (the `hasImage` flag)
+// added later inherit it for free. Non-function entries
 // pass through untouched.
 
 export function withTileActionPreamble<T extends Record<string, unknown>>(

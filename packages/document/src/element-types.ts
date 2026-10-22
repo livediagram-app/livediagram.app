@@ -868,12 +868,9 @@ export type StickyElement = {
 
 // --- Images ---------------------------------------------------------------
 
-// See docs/specs/009-elements/images.md. A boxed element that renders user-uploaded
-// image bytes inside its bounding box. The bytes themselves live in
-// R2 (server-side); the element carries only the opaque id the API
-// resolves to a `GET /api/images/<id>` URL, so the document payload
-// stays small + a future "delete from gallery" can break the
-// reference without rewriting every document.
+// An empty picture placeholder used by diagram and Pages templates. liveplanner keeps no uploaded
+// pictures, so `imageId` is never resolved to bytes and the element always draws its empty face;
+// the kind goes with the other diagram kinds.
 export type ImageElement = {
   id: ElementId;
   type: 'image';

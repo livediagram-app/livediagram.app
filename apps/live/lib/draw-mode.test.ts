@@ -30,7 +30,6 @@ const INTENT_SAMPLES: Record<PendingDraw['type'], PendingDraw[]> = {
   shape: [{ type: 'shape', kind: 'square' }],
   text: [{ type: 'text' }],
   sticky: [{ type: 'sticky' }],
-  image: [{ type: 'image' }],
   table: [{ type: 'table' }],
   'link-card': [{ type: 'link-card' }],
   // Every provider, plus the no-provider case the empty state falls back on.
@@ -83,9 +82,6 @@ describe('drawBannerMessage', () => {
     expect(drawBannerMessage({ type: 'text' }, false)).toBe('Tap to drop or drag to place text');
     expect(drawBannerMessage({ type: 'sticky' }, false)).toBe(
       'Tap to drop or drag to draw a sticky note',
-    );
-    expect(drawBannerMessage({ type: 'image' }, false)).toBe(
-      'Tap to drop or drag to draw image bounds',
     );
     expect(drawBannerMessage({ type: 'arrow' }, false)).toBe(
       'Tap to drop or drag to draw an arrow',

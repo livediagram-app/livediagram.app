@@ -129,23 +129,6 @@ describe('useShapeDrawing marker', () => {
   });
 });
 
-// docs/specs/009-elements/images.md "Placeholder rendering": an image lands as its empty placeholder,
-// selected, and no picker opens on its own (the placeholder's Select Image button opens it).
-describe('useShapeDrawing image', () => {
-  it('drops the empty placeholder and selects it, opening nothing', () => {
-    const commit = vi.fn<Commit>();
-    const { result, rerender } = setup(commit);
-    act(() => result.current.drawing.commitDraw({ type: 'image' }, 0, 0, 200, 150));
-    // The selection store does not re-render the hook on its own.
-    rerender({ tool: 'select' });
-    const placed = commit.mock.calls[0]![0]([])[0]!;
-    expect(placed).toMatchObject({ type: 'image', imageId: null });
-    expect(result.current.selectedId).toBe(placed.id);
-    expect(result.current.editingId).not.toBe(placed.id);
-    expect(result.current.drawing.pendingDraw).toBeNull();
-  });
-});
-
 // docs/specs/009-elements/badge.md "Badge presets": the Warning badge is rose on any tab, whatever the theme or the
 // style the board remembers for badges.
 describe('placing a badge preset', () => {

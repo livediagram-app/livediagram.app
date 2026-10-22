@@ -94,7 +94,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     hasArrows,
     arrowLabels,
     drawDrag,
-    imageContext,
     isPaintMode,
     laserTrails,
     onBeginArrowCurveDrag,
@@ -439,7 +438,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       onOpenEditDialog: h.onOpenEditDialog,
       onDropIcon: h.onDropIcon,
       onLinkCell: h.onLinkCell,
-      imageContext,
       onContextSelect: h.handleElementContextSelect,
     }),
     [
@@ -463,7 +461,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       collab,
       chairSitters,
       canvasTool,
-      imageContext,
     ],
   );
   const renderChart = useSheetChartRenderer(boxedShared, tabFontStack);

@@ -265,7 +265,6 @@ function CommentRow({
     >
       <span className="mt-0.5 inline-flex">
         <AuthorDisc
-          commentId={comment.id}
           authorId={comment.authorId}
           size={comfortable ? 28 : 24}
           as="div"

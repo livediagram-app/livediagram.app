@@ -54,8 +54,6 @@ export function EditorContextMenuHost() {
     closeContextMenu,
     openLinkPicker,
     removeIconFromElement,
-    imageContext,
-    removeImageFromElement,
     applyElementLink,
     commitInlineIcon,
     previewInlineIcon,
@@ -330,8 +328,6 @@ export function EditorContextMenuHost() {
       onClose={closeContextMenu}
       onLinkElement={openLinkPicker}
       onRemoveIcon={removeIconFromElement}
-      onOpenImagePicker={(id) => imageContext?.onOpenPicker?.(id)}
-      onRemoveImage={removeImageFromElement}
       onRemoveLink={() => applyElementLink(null)}
       onSetIconPosition={commitInlineIcon}
       onPreviewIconPosition={previewInlineIcon}
