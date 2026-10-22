@@ -14,6 +14,6 @@ import { defineProject } from '@liveplanner/vitest-config';
 // The alias mirrors tsconfig's `"@/*": ["./*"]`, so a suite can import the modules the pages use (the category
 // scenes, the home page's sections) as the pages do.
 export default defineProject({
-  esbuild: { jsx: 'automatic' },
+  oxc: { jsx: { runtime: 'automatic' } },
   resolve: { alias: { '@': fileURLToPath(new URL('.', import.meta.url)) } },
 });
