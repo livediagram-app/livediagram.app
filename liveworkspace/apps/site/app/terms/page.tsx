@@ -134,11 +134,12 @@ const SECTIONS: LegalSection[] = [
     body: (
       <>
         <p>
-          You can create API tokens to use the apps programmatically. A token acts as your account,
-          so keep it secret and revoke any that might have been exposed. You are responsible for
-          what is done with your tokens. We may apply rate limits to keep the Service healthy. If
-          you connect a third-party or AI tool, you authorise it to act for you with that access,
-          until you revoke its token.
+          You can create API tokens on liveworkspace.app to use the apps programmatically. A token
+          acts as your account in every app and its MCP server (or only reads, if you make it
+          read-only), so keep it secret and revoke any that might have been exposed. You are
+          responsible for what is done with your tokens. We may apply rate limits to keep the
+          Service healthy. If you connect a third-party or AI tool, you authorise it to act for you
+          with that access, until you revoke its token.
         </p>
       </>
     ),

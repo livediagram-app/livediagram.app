@@ -71,6 +71,21 @@ const SECTIONS: LegalSection[] = [
             again.
           </li>
           <li>
+            <strong>Your teams.</strong> Each team&rsquo;s name, and for each member their account,
+            email address and role. If you invite someone, we store the address you typed and email
+            them the invitation; it waits on liveworkspace.app until they accept or decline it. The
+            token an app gets when you sign in also lists the teams you are in, and each app keeps a
+            copy of the teams its people are in, with their members, so it can show them and decide
+            who may open a team&rsquo;s work.
+          </li>
+          <li>
+            <strong>API tokens, if you create them.</strong> We store a one-way hash of each token
+            (never the token itself), its name, whether it is read-only, and when it was last used.
+            A token works in every app, expires after six months and is deleted with your account.
+            An app that a token is used with keeps a note of that token (never the secret) and of
+            anything paired through it, such as a workbench.
+          </li>
+          <li>
             <strong>Keeping abuse out.</strong> The sign-in pages use Cloudflare Turnstile to check
             you are a person, and we count code requests per network address and per email address
             for a minute at a time, so nobody can flood an inbox. Codes expire after 10 minutes and
@@ -105,9 +120,10 @@ const SECTIONS: LegalSection[] = [
           browser id or account.
         </li>
         <li>
-          <strong>API tokens, if you create them.</strong> We store a one-way hash of each token
-          (never the token itself), its name and when it was last used. Tokens expire after six
-          months and are deleted with your account.
+          <strong>livediagram&rsquo;s own API tokens.</strong> livediagram still makes API tokens in
+          its own Settings, apart from the liveworkspace ones above. For those it stores a one-way
+          hash of each token (never the token itself), its name and when it was last used. They
+          expire after six months and are deleted with your account.
         </li>
         <li>
           <strong>Connected AI tools, if you connect one.</strong> If you connect a tool through an
@@ -116,10 +132,11 @@ const SECTIONS: LegalSection[] = [
           an hour a count of registrations from your network address, to stop abuse.
         </li>
         <li>
-          <strong>Team invitations.</strong> If a teammate invites you by email, we store that
-          address with the team, send you the invitation (and up to three reminders while nobody has
-          answered it), and may email you about actions and mentions at that address before you
-          create an account.
+          <strong>livediagram&rsquo;s own team invitations.</strong> livediagram still runs its own
+          teams while it moves to liveworkspace teams. If a teammate invites you there by email, it
+          stores that address with the team, sends you the invitation (and up to three reminders
+          while nobody has answered it), and may email you about actions and mentions at that
+          address before you create an account.
         </li>
         <li>
           <strong>Form responses.</strong> Each response to a form you publish is stored in your
@@ -262,8 +279,9 @@ const SECTIONS: LegalSection[] = [
             <strong>Sign-in codes</strong>, from liveworkspace.app, when you ask for one.
           </li>
           <li>
-            <strong>Account and service emails</strong>: team invitations (with up to three
-            reminders), a confirmation when you delete your account, a reminder a week before an API
+            <strong>Account and service emails</strong>: team invitations from liveworkspace.app
+            (and, for livediagram&rsquo;s own teams, from livediagram with up to three reminders), a
+            confirmation when you delete your account, a reminder a week before a livediagram API
             token expires, and a note if one of your forms is suspended after reports.
           </li>
           <li>
@@ -340,10 +358,12 @@ const SECTIONS: LegalSection[] = [
           You can delete your account yourself from <strong>Settings</strong>, then{' '}
           <strong>Account</strong>, then <strong>Delete Account</strong>, in any app. That app
           deletes your documents, folders, images, preferences and API tokens straight away, and
-          your liveworkspace account closes, for every app at once: your account details, sessions
-          and every app&rsquo;s sign-in records are deleted. Documents in a team&rsquo;s shared
-          library pass to another member of the team. What you made in the other apps stays there
-          until you delete it in each one, or ask us to and we will.
+          your liveworkspace account closes, for every app at once: your account details, sessions,
+          API tokens and every app&rsquo;s sign-in records are deleted, and you leave every team (a
+          team you ran alone goes; one you were the only admin of passes to its longest-standing
+          member). Documents in a team&rsquo;s shared library pass to another member of the team.
+          What you made in the other apps stays there until you delete it in each one, or ask us to
+          and we will.
         </p>
         <p>
           Other things are kept only as long as they are useful: anonymous product events for 60
