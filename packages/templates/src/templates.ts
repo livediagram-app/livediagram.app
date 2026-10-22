@@ -190,7 +190,7 @@ export type TemplateKind =
   // Personal objectives, written with a sentence formula and a SMART check,
   // balanced across life areas, with key results and a check-in rhythm.
   | 'objectives-planner'
-  // Whiteboard (docs/specs/023-draw-mode/draw-mode.md): a blank tab of the whiteboard KIND, drawn on
+  // Whiteboard (docs/specs/007-editor/editor-modes.md): a blank tab of the whiteboard KIND, drawn on
   // with a dock of pens rather than the palette. Shown beside Blank as a
   // quick-pick, never inside a category grid.
   | 'whiteboard'

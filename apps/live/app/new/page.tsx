@@ -394,7 +394,7 @@ export default function NewDocumentPage() {
     track('Document', 'Created', offline ? 'Offline' : 'Cloud');
     track('Theme', 'Changed', themeTelemetryLabel(themeId));
     if (templateKind) track('Template', 'Used', titleCaseType(templateKind));
-    // A whiteboard tab born from the wizard (docs/specs/023-draw-mode/draw-mode.md "Telemetry").
+    // A whiteboard tab born from the wizard (docs/specs/007-editor/editor-modes.md).
     if (templateKind === 'whiteboard') track('Draw', 'Created', 'Template');
     cta.trackCreated();
     // Created straight into a team library: the same Team·Added·Document an Explorer move into a

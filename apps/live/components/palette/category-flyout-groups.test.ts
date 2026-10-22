@@ -75,7 +75,6 @@ describe('a flyout’s groups', () => {
       'More Shapes',
     ]);
     expect(flyoutGroups('draw', tiles('diagram', 'draw')).map((g) => g.title)).toEqual([
-      'Pens',
       'Outlines',
       'Connectors',
     ]);

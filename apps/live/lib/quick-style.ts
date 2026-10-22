@@ -66,10 +66,7 @@ export type QuickStyleView = {
 
 // An unlocked shape, arrow or text element: the only elements the panel styles.
 export function isQuickStyleTarget(el: Element): el is QuickStyleTarget {
-  return (
-    (el.type === 'shape' || el.type === 'arrow' || el.type === 'text') &&
-    el.locked !== true
-  );
+  return (el.type === 'shape' || el.type === 'arrow' || el.type === 'text') && el.locked !== true;
 }
 
 export function supportsQuickSection(el: QuickStyleTarget, section: QuickSectionId): boolean {
@@ -87,10 +84,7 @@ export function supportsQuickSection(el: QuickStyleTarget, section: QuickSection
       return el.type === 'text';
     case 'width':
     case 'style':
-      return (
-        el.type === 'arrow' ||
-        (el.type === 'shape' && supportsBorderControls(el))
-      );
+      return el.type === 'arrow' || (el.type === 'shape' && supportsBorderControls(el));
     case 'textAlign':
       // Only once the shape has words to align: an empty label has nothing to move.
       return el.type === 'shape' && supportsTextAlign(el.shape) && !!el.label?.trim();
@@ -311,7 +305,7 @@ export function applyQuickFill(
     return el;
   if (slot === QUICK_TRANSPARENT) {
     const { fillSwatch: _bound, ...rest } = el;
-    return { ...rest, fillColor: QUICK_TRANSPARENT, colorPreset: undefined } as Element;
+    return { ...rest, fillColor: QUICK_TRANSPARENT, colorPreset: undefined };
   }
   const { colour, bind } = pickFor(theme, 'fill', slot, overrides);
   return { ...el, fillColor: colour, fillSwatch: bind, colorPreset: undefined };
@@ -340,8 +334,7 @@ export function applyQuickWidth(el: Element, width: QuickWidth): Element {
 
 export function applyQuickStrokeStyle(el: Element, style: QuickStrokeStyle): Element {
   if (!isLinedTarget(el, 'style')) return el;
-  if (el.type === 'shape')
-    return { ...el, strokeStyle: style === 'flowing' ? 'dashed' : style };
+  if (el.type === 'shape') return { ...el, strokeStyle: style === 'flowing' ? 'dashed' : style };
   if (style === 'flowing') {
     return {
       ...el,

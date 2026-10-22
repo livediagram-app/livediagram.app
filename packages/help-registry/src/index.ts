@@ -165,8 +165,8 @@ export const categories: Category[] = [
     slug: 'selection-modes',
     title: 'Selection Modes',
     description:
-      'The pointer modes at the top of the palette: Select, Hand, Eraser, Format Painter, Laser, Spotlight, Avatar, Slide Deck, and Isometric.',
-    articleCount: 10,
+      'The pointer modes at the top of the palette: Select, Hand, Format Painter, Laser, Spotlight, Avatar, Slide Deck, and Isometric.',
+    articleCount: 9,
     kind: 'feature',
   },
   {
@@ -183,7 +183,7 @@ export const categories: Category[] = [
     title: 'Canvas',
     description:
       'Master the infinite canvas: place, select, link, annotate, layer, rotate, animate, lock and theme elements, undo changes, and start from templates.',
-    articleCount: 31,
+    articleCount: 30,
     kind: 'feature',
     groups: [
       'Basics',
@@ -920,14 +920,6 @@ export const articles: Article[] = [
     categorySlug: 'selection-modes',
   },
   {
-    slug: 'eraser',
-    title: 'Eraser',
-    description: 'Click or drag across elements to delete them quickly.',
-    keywords: 'delete remove rub out erase clear wipe brush size filter drawings arrows sweep tap',
-    category: 'Selection Modes',
-    categorySlug: 'selection-modes',
-  },
-  {
     slug: 'format-painter',
     title: 'Format Painter',
     description: "Copy one element's style and paint it onto others.",
@@ -1056,7 +1048,7 @@ export const articles: Article[] = [
     title: 'Where each tool lives',
     description: 'A map of the palette categories and which elements are in each.',
     keywords:
-      'tools tab category where find text pencil pen table frame chart sticky note image draw write build structure mind node lane timeline components media behaviour collaborate data moved',
+      'tools tab category where find text polygon table frame chart sticky note image draw write build structure mind node lane timeline components media behaviour collaborate data moved',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Everyday Elements',
@@ -1496,17 +1488,6 @@ export const articles: Article[] = [
     group: 'Modes and Boards',
   },
   {
-    slug: 'draw-mode',
-    title: 'Draw Mode',
-    description:
-      'Freehand drawing on any tab: switch modes, then a dock of pens, a Path tool, erasers and shapes.',
-    keywords:
-      'draw mode drawing mode diagram mode editor mode switch modes mode switch toggle shift+d shift d opens in open in default mode per tab whiteboards whiteboard white board chalkboard blackboard sketch draw drawing freehand hand drawn ink pen pens marker stylus apple pencil surface pen touch finger palm rejection pinch zoom dock toolbar eraser rubber partial erase stroke erase sticky text shapes shape recognition recognise recognize snap clean up background plain dots dotted grid graph microsoft whiteboard dark mode chalk colour color width thickness path tool vector pen tool bezier curve curves anchor point points node nodes handle handles edit points corner smooth mirrored aligned illustrator figma undo redo settings cog more shapes shape search find a shape flowchart pin pinned unpin favourite shapes frequent most used simple mode dock mode colour picker color picker custom colour hex eyedropper eye dropper your colours remove colour contrast dock position top bottom move the dock tablet ipad snap colours snap to stock colours stock colors custom colors convert colours adaptive nearest colour',
-    category: 'Canvas',
-    categorySlug: 'canvas',
-    group: 'Modes and Boards',
-  },
-  {
     slug: 'plan-mode',
     title: 'Plan Mode',
     description:
@@ -1570,17 +1551,6 @@ export const articles: Article[] = [
     category: 'Canvas',
     categorySlug: 'canvas/plan-mode',
     parentSlug: 'plan-mode',
-  },
-  {
-    slug: 'draw-tour',
-    title: 'The Draw Tour',
-    description:
-      "A short, optional walkthrough of Draw mode's dock, offered the first time you work in Draw and replayable from Settings.",
-    keywords:
-      'draw tour tour walkthrough onboarding intro introduction getting started guide tutorial first time learn draw mode whiteboard sketch pen pens marker markers highlighter eraser path tool shapes sticky dock settings background cursor shape recognition replay rerun settings accessibility',
-    category: 'Canvas',
-    categorySlug: 'canvas/draw-mode',
-    parentSlug: 'draw-mode',
   },
   {
     slug: 'workshop-tour',
@@ -2280,7 +2250,7 @@ export const articles: Article[] = [
     title: 'Quick Style Panel',
     description: 'Restyle a selection in one click; the next shape of that kind remembers it.',
     keywords:
-      'quick style panel colour color stroke background fill width thickness dashed dotted flowing animated arrow align alignment icon remember memory next shape clear styles reset format custom swatch override picker hex brand highlighter highlight marker corners ink turn off disable settings',
+      'quick style panel colour color stroke background fill width thickness dashed dotted flowing animated arrow align alignment icon remember memory next shape clear styles reset format custom swatch override picker hex brand ink turn off disable settings',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Styling Elements',
@@ -2431,20 +2401,9 @@ export const articles: Article[] = [
   // ---- Sub-articles: Tools ----
   {
     slug: 'drawing',
-    title: 'Drawing and Sketch',
-    description: 'The Freehand and Shape Pen and the Polygon tool, plus shape recognition.',
-    keywords:
-      'pencil freehand sketch draw doodle pen scribble ink polygon polyline vertex points outline zone region shape recognition',
-    category: 'Palette',
-    categorySlug: 'palette/tools',
-    parentSlug: 'tools',
-  },
-  {
-    slug: 'highlighter',
-    title: 'Highlighter',
-    description: 'Lay a wide, translucent marker stroke from the Draw category, in five colours.',
-    keywords:
-      'highlighter highlight marker mark up markup annotate emphasise emphasize pen draw attention translucent transparent yellow green pink blue orange colour color width thin medium bold strength quick style review workshop underline circle',
+    title: 'Polygon',
+    description: 'Place clean, point-by-point outlines and polylines with the Polygon tool.',
+    keywords: 'polygon polyline vertex points outline zone region draw straight edges corners',
     category: 'Palette',
     categorySlug: 'palette/tools',
     parentSlug: 'tools',
@@ -2527,15 +2486,6 @@ export const articles: Article[] = [
     categorySlug: 'palette/tools',
     parentSlug: 'tools',
   },
-  {
-    slug: 'shape-recognition',
-    title: 'Shape Recognition',
-    description: 'Let the Shape Pen snap rough sketches into clean shapes.',
-    keywords: 'shape pen pencil auto detect convert sketch clean up smart drawing snap',
-    category: 'Palette',
-    categorySlug: 'palette/tools/drawing',
-    parentSlug: 'drawing',
-  },
 
   // ---- Sub-articles: Behaviour ----
   {
@@ -2553,7 +2503,7 @@ export const articles: Article[] = [
     title: 'Selection Mode Buttons',
     description: 'A button that hands whoever presses it a selection mode.',
     keywords:
-      'mode button selection mode switch tool avatar select hand pan laser spotlight eraser format painter isometric control bar press leave walkthrough read-only',
+      'mode button selection mode switch tool avatar select hand pan laser spotlight format painter isometric control bar press leave walkthrough read-only',
     category: 'Palette',
     categorySlug: 'palette/behaviour',
     parentSlug: 'behaviour',

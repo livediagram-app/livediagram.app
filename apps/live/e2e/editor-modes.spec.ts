@@ -36,13 +36,11 @@ async function savedOpensIn(page: Page): Promise<unknown> {
   );
 }
 
-const dock = (page: Page) => page.locator('[data-whiteboard-dock]');
 // The open tab's editor mode, as the editor marks it.
 const mode = (page: Page) => page.locator('[data-editor-mode]');
 // The start's own switch, the one place a tab's mode is chosen.
 const startSwitch = (page: Page) => page.getByRole('button', { name: /^Tab mode: / });
 const boards = (page: Page) => page.locator('[data-plan-board]');
-const sketches = (page: Page) => page.locator(CANVAS).getByRole('img', { name: /^Sketch/ });
 
 // A new document in a mode, on its start, in dark mode at a desktop size.
 async function openInMode(page: Page, name: 'diagram' | 'draw' | 'plan') {
@@ -88,15 +86,6 @@ async function closeStart(page: Page) {
   await start.waitFor({ state: 'detached' });
 }
 
-async function drawWave(page: Page, from: { x: number; y: number }) {
-  await page.mouse.move(from.x, from.y);
-  await page.mouse.down();
-  for (let i = 1; i <= 40; i++) {
-    await page.mouse.move(from.x + i * 10, from.y + Math.sin(i / 5) * 50);
-  }
-  await page.mouse.up();
-}
-
 test.describe('editor modes', () => {
   // docs/specs/007-editor/editor-modes.md "The mode switch": only an empty tab's start offers one.
   test('a tab offers no mode switch beside the menu button or in its tab menu', async ({
@@ -113,33 +102,6 @@ test.describe('editor modes', () => {
     await expect(page.getByRole('button', { name: 'Add to Folder' })).toBeVisible();
     await expect(page.getByRole('button', { name: /^Mode/ })).toHaveCount(0);
     await expect(page.getByRole('group', { name: 'Mode' })).toHaveCount(0);
-    expectNoPageErrors(pageErrors);
-  });
-
-  test("the start's switch turns an empty tab to Draw, and once drawn on the tab keeps its mode", async ({
-    page,
-    pageErrors,
-  }) => {
-    await openInMode(page, 'diagram');
-    await chooseOnStart(page, 'Draw');
-    await expect(mode(page)).toHaveAttribute('data-editor-mode', 'draw');
-    await expect(dock(page)).toBeVisible();
-    await closeStart(page);
-
-    await page.keyboard.press('1');
-    await drawWave(page, { x: 500, y: 600 });
-    await expect(sketches(page)).toHaveCount(1);
-
-    // A tab with content keeps its mode: Shift+D does nothing.
-    await page.keyboard.press('Escape');
-    await page.keyboard.press('Shift+D');
-    await expect(mode(page)).toHaveAttribute('data-editor-mode', 'draw');
-
-    await expect.poll(() => savedOpensIn(page), { timeout: 15_000 }).toBe('draw');
-    await page.reload();
-    await page.locator(CANVAS).waitFor();
-    await expect(mode(page)).toHaveAttribute('data-editor-mode', 'draw');
-    await expect(sketches(page)).toHaveCount(1);
     expectNoPageErrors(pageErrors);
   });
 

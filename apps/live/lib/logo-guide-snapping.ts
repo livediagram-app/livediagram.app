@@ -88,4 +88,3 @@ export function snapNewStrokes(
   });
   return changed ? out : next;
 }
-

@@ -82,4 +82,3 @@ describe('snapNewStrokes', () => {
     expect(snapNewStrokes([near], [near], snap, 1)[0]).toBe(near);
   });
 });
-

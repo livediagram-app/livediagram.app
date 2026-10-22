@@ -12,12 +12,7 @@ type CanvasDrawToolsInput = {
   viewportZoom: number;
 } & Pick<
   CanvasProps,
-  | 'pendingDraw'
-  | 'elements'
-  | 'canvasTool'
-  | 'isPinchingRef'
-  | 'onCommitDraw'
-  | 'onCommitPolygon'
+  'pendingDraw' | 'elements' | 'canvasTool' | 'isPinchingRef' | 'onCommitDraw' | 'onCommitPolygon'
 >;
 
 // The canvas's drawing gestures, composed in their order of precedence: a polygon's click-to-place

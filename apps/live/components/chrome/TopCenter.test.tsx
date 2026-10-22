@@ -24,5 +24,4 @@ describe('TopCenterStack', () => {
     expect(cls).toContain('top-[4.25rem]');
     expect(cls).not.toContain('sm:top-3');
   });
-
 });

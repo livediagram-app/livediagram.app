@@ -371,7 +371,7 @@ const PAGES_BY_KIND: Readonly<Record<PaletteKind, PaletteLayout>> = {
 };
 
 // Workshop mode (docs/specs/012-collaboration/workshop-mode.md "The palette"): running a session
-// with a team. Popular, the drawing basics a session uses (no Page or Annotation, no Shape Pen or
+// with a team. Popular, the drawing basics a session uses (no Page or Annotation, no
 // Polygon), Diagram's Layout, the Collaborate elements as six categories, one per group, ahead of the
 // decorations a room reaches for and the charts; no tech icons, mock-up kit or workshop notation.
 const WORKSHOP: PaletteLayout = {
@@ -638,7 +638,7 @@ export function participantPaletteCategories(
   return [{ ...identity, tiles: participantTiles(mode, esBoard) }];
 }
 
-// The selection modes a Participant has: look, point and walk around, never an Editor's tools (Eraser, Format
+// The selection modes a Participant has: look, point and walk around, never an Editor's tools (Format
 // Painter, Slide Deck).
 export const PARTICIPANT_CANVAS_TOOLS: readonly string[] = [
   'select',

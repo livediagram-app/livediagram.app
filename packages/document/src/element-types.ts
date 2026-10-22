@@ -182,11 +182,11 @@ export type ShapeElement = {
   finish?: Finish;
   fillColor?: string;
   strokeColor?: string;
-  // A whiteboard marker's named colour (docs/specs/023-draw-mode/draw-mode.md "The colour picker"):
+  // A whiteboard marker's named colour (docs/specs/004-interface-design/colour-picker.md):
   // drawn in the version tuned for the viewer's board (penColourHex) when `strokeColor` is unset.
   penColour?: PenColourName;
   textColor?: string;
-  // A whiteboard stock colour for the label's text (docs/specs/023-draw-mode/draw-mode.md
+  // A whiteboard stock colour for the label's text (docs/specs/007-editor/editor-modes.md
   // "Imported and pasted content"): drawn in the version tuned for the viewer's board when
   // `textColor` is unset.
   penTextColour?: PenColourName;
@@ -619,7 +619,7 @@ export type TextElement = {
   fillColor?: string;
   strokeColor?: string;
   textColor?: string;
-  // A whiteboard stock colour for the text (docs/specs/023-draw-mode/draw-mode.md "Imported and
+  // A whiteboard stock colour for the text (docs/specs/007-editor/editor-modes.md "Imported and
   // pasted content"): drawn in the version tuned for the viewer's board when `textColor` is unset.
   penTextColour?: PenColourName;
   // Quick-swatch binding (docs/specs/008-canvas/quick-style-panel.md): the slot (1-6) the text
@@ -682,7 +682,7 @@ export type TextElement = {
   // editor modes and for everyone.
   sizing?: TextSizing;
   // Multiplier on the label size, set by a Shift resize of a whiteboard text box
-  // (docs/specs/023-draw-mode/draw-mode.md "Text boxes"). Absent = 1.
+  // (docs/specs/007-editor/editor-modes.md "A text box's sizing"). Absent = 1.
   textScale?: number;
   // Wordmark type (docs/specs/007-editor/logo-pages.md "Wordmark type"), drawn wherever the text
   // is. Tracking: em added between letters, -0.2 to 1; absent is none.
@@ -890,7 +890,7 @@ export type StickyElement = {
   fillColor?: string;
   strokeColor?: string;
   textColor?: string;
-  // A whiteboard stock colour for the note's text (docs/specs/023-draw-mode/draw-mode.md
+  // A whiteboard stock colour for the note's text (docs/specs/007-editor/editor-modes.md
   // "Imported and pasted content"), drawn in its board's version when `textColor` is unset.
   penTextColour?: PenColourName;
   // Fill for an element's HEADING area, where it has one distinct from its
@@ -1077,19 +1077,19 @@ export type FreehandElement = {
   // True when the path auto-closes (release-near-start). The
   // renderer adds `Z` + a fill; open paths render stroke-only.
   closed: boolean;
-  // Highlighter strokes (docs/specs/008-canvas/highlighter.md): the renderers swap the border
+  // Highlighter strokes (docs/specs/006-document/stroke-points.md): the renderers swap the border
   // presets for the marker recipe — a wide round stroke, translucent
   // multiply blend, never filled. The stroke colour stays
   // user-overridable; the recipe owns translucency.
   pen?: 'highlighter';
-  // Marker stroke width in px (docs/specs/008-canvas/highlighter.md), chosen from the highlighter
+  // Marker stroke width in px (docs/specs/006-document/stroke-points.md), chosen from the highlighter
   // banner's strength control at draw time. Absent = the default 14.
   penWidth?: number;
-  // A whiteboard pen stroke's perfect-freehand streamline (docs/specs/023-draw-mode/draw-mode.md
+  // A whiteboard pen stroke's perfect-freehand streamline (docs/specs/007-editor/editor-modes.md
   // "Pens"; absent: a stroke stored before it was recorded, drawn with none). Its pressures, when
   // the pen reported them, ride in `packedPoints`. A pen stroke's points are its raw samples.
   streamline?: number;
-  // A whiteboard marker's named colour (docs/specs/023-draw-mode/draw-mode.md "The colour picker"):
+  // A whiteboard marker's named colour (docs/specs/004-interface-design/colour-picker.md):
   // drawn in the version tuned for the viewer's board (penColourHex) when `strokeColor` is unset.
   penColour?: PenColourName;
   // Polygon-tool paths (docs/specs/008-canvas/polygon-tool.md): the canvas renderer draws straight

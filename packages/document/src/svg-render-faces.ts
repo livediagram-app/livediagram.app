@@ -43,7 +43,7 @@ import { REACTION_EMOJI, REACTION_HUES, reactionOf } from './data-shapes';
 import { r2, xmlEscape } from './svg-render-primitives';
 import { formatTimerClock } from './session';
 import {
-  buttonModeOf,
+  DEFAULT_BUTTON_MODE,
   SELECTION_MODE_LABEL,
   sessionButtonPlan,
   type SessionButtonConfig,
@@ -163,11 +163,11 @@ export function svgBehaviourFace(
       // glyph is the SAME drawing the canvas uses (MODE_GLYPHS).
       const derived = !title;
       const chipY = cy - (derived ? 16 : 11.5);
-      const mode = SELECTION_MODE_LABEL[buttonModeOf(el)];
+      const mode = SELECTION_MODE_LABEL[el.mode ?? DEFAULT_BUTTON_MODE];
       return (
         keycapEdge(el, color) +
         `<circle cx="${r2(cx)}" cy="${r2(chipY)}" r="17.5" fill="${xmlEscape(color)}" fill-opacity="0.055" stroke="${xmlEscape(color)}" stroke-opacity="0.07"/>` +
-        modeGlyph(buttonModeOf(el), cx, chipY, color) +
+        modeGlyph(el.mode ?? DEFAULT_BUTTON_MODE, cx, chipY, color) +
         (derived
           ? text(cx, cy + 18, 'Switch to', {
               size: 9,

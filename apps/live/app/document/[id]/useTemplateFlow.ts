@@ -49,7 +49,7 @@ export function useTemplateFlow(opts: {
   setIdentityPromptOpen: SetState<boolean>;
   // Frames the tab once the template's elements have rendered (useTabEntryEffects).
   requestFit: () => void;
-  // Puts down whatever tool is in hand, for Select (docs/specs/023-draw-mode/draw-mode.md "Opening tool"): a
+  // Puts down whatever tool is in hand, for Select (docs/specs/007-editor/editor-modes.md): a
   // template's content makes the tab one with content, and such a tab opens on Select.
   putToolDown: () => void;
   // A tab a template adds has no server row to fetch yet (useEditorState's markTabLoaded).
@@ -99,7 +99,7 @@ export function useTemplateFlow(opts: {
     if ((tabs.find((t) => t.id === activeId)?.elements.length ?? 0) > 0) return;
     // Telemetry (docs/specs/017-telemetry/telemetry.md): a template was applied; `type` is the kind.
     track('Template', 'Used', titleCaseType(kind));
-    // A start on a tab is the new-tab entry (docs/specs/023-draw-mode/draw-mode.md "Telemetry").
+    // A start on a tab is the new-tab entry (docs/specs/007-editor/editor-modes.md).
     if (kind === 'whiteboard') track('Draw', 'Created', 'NewTab');
     confirmName();
     // Dynamic-import the heavy builders module only when the user

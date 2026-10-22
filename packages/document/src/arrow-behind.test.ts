@@ -182,7 +182,6 @@ describe('routeBehindHoles', () => {
     const outline = box('o', 200, 0, { fillColor: 'transparent' });
     expect(routeBehindHoles(arrow(), from, to, [outline])).toEqual([]);
   });
-
 });
 
 // docs/specs/008-canvas/canvas-performance.md: an arrow asks the element grid for its neighbours.

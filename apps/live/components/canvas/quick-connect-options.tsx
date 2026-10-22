@@ -1,10 +1,6 @@
 import type { ReactNode } from 'react';
 import type { QuickConnectKind } from '@/lib/canvas';
-import {
-  DuplicateIcon as SharedDuplicateIcon,
-  Glyph,
-  Prims,
-} from '@liveplanner/ui';
+import { DuplicateIcon as SharedDuplicateIcon, Glyph, Prims } from '@liveplanner/ui';
 import {
   lucideArrowUpRight,
   lucideBetweenHorizontalEnd,

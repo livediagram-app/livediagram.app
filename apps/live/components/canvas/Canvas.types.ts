@@ -90,8 +90,7 @@ export type CanvasProps = {
   // The tab’s tab kind (docs/specs/021-event-storming/event-storming.md), which decides whether this canvas
   // presents as an event-storming board.
   tabKind?: TabKind;
-  // The viewer's editor mode on the tab (docs/specs/007-editor/editor-modes.md): Draw trades the
-  // palette, the strip and the tool panels for the dock, and keeps the canvas still.
+  // The viewer's editor mode on the tab (docs/specs/007-editor/editor-modes.md).
   editorMode?: EditorMode;
   // Pages mode's A4 pages and their edits (docs/specs/007-editor/editor-modes.md "The
   // pages"), present only in that mode.

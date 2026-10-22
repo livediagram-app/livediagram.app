@@ -353,7 +353,7 @@ export function PaletteDropdown({
               // Use the trigger width as a FLOOR (so the menu reads as one
               // continuous column with it) but let it grow to fit the option
               // labels — clamping to the trigger width truncated names like
-              // "Eraser" to "Er...".
+              // "Spotlight" to "Spo...".
               ...(connected && coords ? { minWidth: coords.width } : {}),
             }}
           >

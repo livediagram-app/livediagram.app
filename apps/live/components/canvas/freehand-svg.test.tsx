@@ -23,7 +23,7 @@ const stroke = (over: Partial<FreehandElement> = {}): FreehandElement => ({
 
 describe('FreehandSvg', () => {
   it('draws a pen stroke as its filled pressure outline in canvas px, zooming with the board', () => {
-    // docs/specs/023-draw-mode/draw-mode.md "Pens": ink on the board, drawn by perfect-freehand.
+    // docs/specs/006-document/stroke-points.md: ink on the board, drawn by perfect-freehand.
     const el = stroke({
       penWidth: 2.5,
       streamline: 0.2,
@@ -52,5 +52,4 @@ describe('FreehandSvg', () => {
       'non-scaling-stroke',
     );
   });
-
 });

@@ -336,7 +336,7 @@ export function describeBoxedExport(
   // smaller at every preset. The canvas decides that the same way (its
   // `multiline` flag is `type === 'sticky'`).
   const multiline = el.type === 'sticky';
-  // A Shift-resized text box draws its text scaled (docs/specs/023-draw-mode/draw-mode.md).
+  // A Shift-resized text box draws its text scaled (docs/specs/007-editor/editor-modes.md).
   const textScale = el.type === 'text' ? (el.textScale ?? 1) : 1;
   const baseSize = fontSizeFor(el.textSize, multiline) * textScale;
   const richText = (el as { richText?: TextRun[] }).richText;

@@ -16,10 +16,15 @@ const button = (over: Record<string, unknown> = {}) =>
     ...over,
   }) as Element;
 
-// docs/specs/008-canvas/highlighter.md "Not a selection mode": the marker is a Draw tile now.
+// docs/specs/009-elements/mode-button.md: the Highlighter and the Eraser are no selection modes.
 describe('migrateLegacyModeButtons', () => {
   it('drops a stored Highlighter mode, leaving a default-mode button', () => {
     const [out] = migrateLegacyModeButtons([button({ mode: 'highlighter' })]);
+    expect(out).toEqual(button());
+  });
+
+  it('drops a stored Eraser mode the same way', () => {
+    const [out] = migrateLegacyModeButtons([button({ mode: 'eraser' })]);
     expect(out).toEqual(button());
   });
 

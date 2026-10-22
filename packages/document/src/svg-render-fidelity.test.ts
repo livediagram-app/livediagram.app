@@ -62,11 +62,6 @@ describe('Behaviour face export', () => {
     expect(svg).toContain('>Laser<');
   });
 
-  it('names a Mode button whose stored mode this build does not know by the default mode', () => {
-    const svg = svgOf(shape('mode-button', { mode: 'eraser' as never, label: '' }));
-    expect(svg).toContain('>Avatar<');
-  });
-
   it('draws a portal as its lit ring when paired, and dim when not', () => {
     expect(svgOf(shape('portal', { portalTarget: 'x' }))).toContain('stop-opacity="0.95"');
     expect(svgOf(shape('portal'))).toContain('stop-opacity="0.35"');
@@ -182,7 +177,7 @@ describe('Mode button glyph (docs/specs/020-import-export/export-fidelity.md)', 
   });
 });
 
-// docs/specs/023-draw-mode/draw-mode.md "Text boxes": a Shift-resized text box draws its text
+// docs/specs/007-editor/editor-modes.md "A text box's sizing": a Shift-resized text box draws its text
 // scaled, and exports that way too.
 describe('Scaled text box export', () => {
   it('draws the label at its size times its scale', () => {

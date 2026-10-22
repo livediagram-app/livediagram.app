@@ -8,9 +8,9 @@ import {
 import { bodySetClass } from '@/lib/animation-classes';
 
 // The Drawing animation set (docs/specs/028-animation/element-animations.md "Drawing") for freehand
-// strokes and paths. Three kinds of line are drawn three ways: a whiteboard pen stroke is a FILLED
-// outline in canvas coordinates; any other freehand stroke is a stroked line in a 100-unit view box
-// with a non-scaling stroke; a path is a stroked line in its own px box. So every effect works
+// strokes. Two kinds of line are drawn two ways: a pen stroke is a FILLED outline in canvas
+// coordinates; any other freehand stroke is a stroked line in a 100-unit view box with a
+// non-scaling stroke. So every effect works
 // from the stroke's CENTRE LINE, in two spaces:
 //
 // - in the drawing's own svg, a mask (Draw, and Dash on pen ink) or a filter (Boil) on the main

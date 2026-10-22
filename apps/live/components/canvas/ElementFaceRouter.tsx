@@ -5,7 +5,7 @@ import { TabWindowFace } from './tab-window/TabWindowFace';
 import type { CSSProperties, ReactNode } from 'react';
 import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE } from '@liveplanner/document';
 import {
-  buttonModeOf,
+  DEFAULT_BUTTON_MODE,
   PADDING_PX,
   reactionOf,
   defaultFillColor,
@@ -226,14 +226,14 @@ export function ElementFaceRouter({
           any other shape's. */}
       {element.type === 'shape' && element.shape === 'mode-button' && !isEditing ? (
         <ModeButtonFace
-          mode={buttonModeOf(element)}
+          mode={element.mode ?? DEFAULT_BUTTON_MODE}
           label={label}
           activeMode={activeMode}
           textColor={textColor}
-          // A mode a read-only session lacks (the Eraser, Format Painter) draws an inert face for it.
+          // A mode a read-only session lacks (the Format Painter) draws an inert face for it.
           onPress={
             onPressModeButton &&
-            (!readOnly || PARTICIPANT_CANVAS_TOOLS.includes(buttonModeOf(element)))
+            (!readOnly || PARTICIPANT_CANVAS_TOOLS.includes(element.mode ?? DEFAULT_BUTTON_MODE))
               ? () => onPressModeButton(element)
               : undefined
           }

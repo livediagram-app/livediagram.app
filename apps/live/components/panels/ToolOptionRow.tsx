@@ -4,11 +4,11 @@ import { AccordionSection } from '@/components/primitives/AccordionSection';
 import { HoverCard } from '@liveplanner/ui';
 
 // One collapsible row of mutually-exclusive choices, the shape every
-// tool-config panel is built from (docs/specs/008-canvas/avatar-mode.md, docs/specs/008-canvas/laser-panel.md, docs/specs/008-canvas/spotlight-panel.md, docs/specs/008-canvas/eraser-panel.md):
+// tool-config panel is built from (docs/specs/008-canvas/avatar-mode.md, docs/specs/008-canvas/laser-panel.md, docs/specs/008-canvas/spotlight-panel.md):
 // an uppercase title, the current value still readable while collapsed, and a
 // wrap of radio pills once open.
 //
-// Avatar, Eraser, Laser and Spotlight each carried their own copy of this,
+// Avatar, Laser and Spotlight each carried their own copy of this,
 // under two different names (OptionSection / OptionRow), identical down to the
 // four AccordionSection class strings. They had not gone wrong yet, but they
 // had started to diverge: three grew per-option HoverCard hints, one grew a

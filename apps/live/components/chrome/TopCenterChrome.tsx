@@ -111,9 +111,7 @@ export function TopCenterChrome({
         ) : null}
 
         {/* The banner belongs to a one-shot ARM: "you picked a square, now
-            drag one out", with a Cancel because the intent is transient. A
-            held pen (a whiteboard pen, the Path tool) is excluded: a tool in
-            the hand does not need telling you it is on every time you look up. */}
+            drag one out", with a Cancel because the intent is transient. */}
         {pendingDraw && drawBanner && !covered ? (
           <ModeBanner
             icon={<DrawIcon />}

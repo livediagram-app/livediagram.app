@@ -16,11 +16,7 @@ import {
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import { useLogoTools } from '@/hooks/editor/useLogoTools';
 import { useAssignRef, useLatest } from '@/hooks/ui/useLatest';
-import {
-  logoGuideSnapper,
-  snapNewStrokes,
-  type GuideSnap,
-} from '@/lib/logo-guide-snapping';
+import { logoGuideSnapper, snapNewStrokes, type GuideSnap } from '@/lib/logo-guide-snapping';
 import { withMirrorTwins } from '@/lib/mirror-commit';
 import { commitUserPreferences, type UserPreferences } from '@/lib/user-preferences';
 

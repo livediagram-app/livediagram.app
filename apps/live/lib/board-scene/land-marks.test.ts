@@ -274,4 +274,3 @@ describe('landLine', () => {
     expect((el as { rotation?: number }).rotation).toBeUndefined();
   });
 });
-

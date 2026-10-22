@@ -50,7 +50,7 @@ function boundToMode(tile: PaletteTileDef, mode: EditorMode): PaletteTileDef {
 const shapeSig = (kind: string, choice?: string) => `shape:${kind}:${choice ?? ''}`;
 
 /** The signature a tile places, or null for a tile that places no one element type (the icon,
- *  sticker and tech catalogue tiles, the shape pen's recognised shapes, a board's header widget,
+ *  sticker and tech catalogue tiles, a board's header widget,
  *  the hero and avatar composites). */
 export function tileSignature(tile: PaletteTileDef): string | null {
   const a = tile.action;

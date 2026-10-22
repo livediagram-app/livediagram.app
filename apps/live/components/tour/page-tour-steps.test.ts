@@ -53,9 +53,6 @@ describe('the tracks', () => {
       'layouts',
       'guides',
       'mirror',
-      'combine',
-      'combine-menu',
-      'combine-unite',
       'outro',
     ]);
   });

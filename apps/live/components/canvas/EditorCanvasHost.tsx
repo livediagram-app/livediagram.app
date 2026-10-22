@@ -11,7 +11,7 @@ import { describeOne } from '@/lib/element-names';
 import {
   canvasSurface,
   DEFAULT_BACKGROUND_COLOR,
-  buttonModeOf,
+  DEFAULT_BUTTON_MODE,
 } from '@liveplanner/document';
 import { createStockColourProjector } from '@/lib/stock-colour-projector';
 import { usePageView } from '@/hooks/canvas/usePageView';
@@ -723,7 +723,7 @@ export function EditorCanvasHost() {
               // A read-only session presses only the modes it has (PARTICIPANT_CANVAS_TOOLS): a button set to the
               // Format Painter does nothing for it (docs/specs/013-workspace/share-roles.md).
               onPressModeButton={(element) => {
-                const mode = buttonModeOf(element);
+                const mode = element.mode ?? DEFAULT_BUTTON_MODE;
                 if (isReadOnly && !PARTICIPANT_CANVAS_TOOLS.includes(mode)) return;
                 pressModeButton(mode);
               }}

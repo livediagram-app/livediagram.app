@@ -1,4 +1,3 @@
-import type { PaletteTileDef } from './palette-tile-defs';
 import { usePaletteKind } from '@/lib/palette-kind';
 import {
   DEFAULT_EDITOR_MODE,
@@ -254,8 +253,7 @@ export function usePaletteCatalogue({
         : paletteCategoriesFor(editorMode, {
             esBoard: !!esBoard,
             ...(pages ? { pagesKind: paletteKind } : {}),
-          })
-            .filter((c) => hasLibraryShapes || c.id !== 'my-shapes');
+          }).filter((c) => hasLibraryShapes || c.id !== 'my-shapes');
   const tabs = paletteCategoryTabs({
     categories,
     pendingDraw,

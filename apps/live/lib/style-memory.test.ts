@@ -230,4 +230,3 @@ describe('text elements', () => {
     expect(parseStyleMemory(JSON.stringify(memory))).toEqual(memory);
   });
 });
-

@@ -67,7 +67,7 @@ describe('stripTilesFor', () => {
   it.each([
     ['shapes', ['shapes:diamond', 'shapes:stadium']],
     ['write', ['tools:text']],
-    ['draw', ['tools:highlighter', 'tools:polygon']],
+    ['draw', ['tools:polygon']],
     ['devices', ['devices:laptop']],
     ['media', ['media:tab-window', 'media:embed-website']],
     ['data', ['data:legend']],

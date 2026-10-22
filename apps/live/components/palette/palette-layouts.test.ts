@@ -148,7 +148,7 @@ describe('palette layouts', () => {
     );
   });
 
-  it("leaves Page, Annotation, Shape Pen and Polygon out of Workshop's Write and Draw, and gives it Diagram's Layout", () => {
+  it("leaves Page, Annotation and Polygon out of Workshop's Write and Draw, and gives it Diagram's Layout", () => {
     const tilesOf = (id: string) =>
       paletteCategoriesFor('workshop')
         .find((c) => c.id === id)!
@@ -170,12 +170,7 @@ describe('palette layouts', () => {
       'tools:timeline',
       ...layout.slice(layout.indexOf('tools:boundary') + 1),
     ]);
-    expect(tilesOf('draw')).toEqual([
-      'tools:pencil',
-      'tools:highlighter',
-      'tools:arrow',
-      'tools:line',
-    ]);
+    expect(tilesOf('draw')).toEqual(['tools:arrow', 'tools:line']);
   });
 
   it('gives a Workshop Participant Sticky and Text, and an image', () => {
@@ -379,12 +374,7 @@ describe('palette layouts', () => {
       'media',
     ]);
     const tilesOf = (id: string) => logo.find((c) => c.id === id)!.tiles!.map((t) => t.id);
-    expect(tilesOf('draw')).toEqual([
-      'logo:pen',
-      'tools:pencil',
-      'tools:shape-pen',
-      'tools:polygon',
-    ]);
+    expect(tilesOf('draw')).toEqual(['tools:polygon']);
     expect(tilesOf('write')).toEqual(['tools:text', 'tools:sticky']);
     expect(tilesOf('media')).toEqual(['tools:image']);
     // No Logo category anywhere: its tools are Draw's.

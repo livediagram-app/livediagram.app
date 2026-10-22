@@ -48,12 +48,6 @@ export function isSelectionMode(value: unknown): value is SelectionMode {
   return typeof value === 'string' && (SELECTION_MODES as readonly string[]).includes(value);
 }
 
-/** The mode a Mode Button switches to: its own, or the default when it carries none, or one this
- *  build no longer has (a button stored while a mode existed). */
-export function buttonModeOf(el: { mode?: unknown }): SelectionMode {
-  return isSelectionMode(el.mode) ? el.mode : DEFAULT_BUTTON_MODE;
-}
-
 // Shape kinds that are a FIXED SIZE: a control, not a box you draw. They get no
 // resize handles, ignore a drag-to-draw's size, and are left alone when a
 // multi-selection is scaled — a button that is 40px on one canvas and 400 on

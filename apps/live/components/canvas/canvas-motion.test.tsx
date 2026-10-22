@@ -92,5 +92,4 @@ describe('the board a tab opens with', () => {
     rerender(createElement(Board, { tabId: 't2', ids: ['c', 'd', 'e'], seen }));
     expect(seen.get('e')).toBe('animate-element-pop-in');
   });
-
 });

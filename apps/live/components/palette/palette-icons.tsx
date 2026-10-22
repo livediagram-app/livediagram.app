@@ -75,7 +75,6 @@ export function PanIcon({ size = 14 }: IconSizeProps = {}) {
   return <ModeGlyphIcon mode="pan" size={size} />;
 }
 
-
 export function SelectIcon({ size = 14 }: IconSizeProps = {}) {
   return <ModeGlyphIcon mode="select" size={size} />;
 }

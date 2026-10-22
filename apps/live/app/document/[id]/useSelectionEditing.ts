@@ -279,7 +279,7 @@ export function useSelectionEditing(opts: {
     seeded.current = null;
     setEditingId(null);
     // An empty text box that hugs its text goes when Escape leaves it, as when a click leaves it
-    // (docs/specs/023-draw-mode/draw-mode.md "Text boxes"): nothing would show where it stands.
+    // (docs/specs/007-editor/editor-modes.md "A text box's sizing"): nothing would show where it stands.
     const left = opts.editingId
       ? activeTab.elements.find((e) => e.id === opts.editingId)
       : undefined;

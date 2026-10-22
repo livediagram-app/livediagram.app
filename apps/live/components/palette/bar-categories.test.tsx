@@ -38,7 +38,7 @@ describe('the category bar’s categories', () => {
       expect(draw.label).toBe('Draw');
       for (const id of draw.tiles!.map((t) => t.id))
         expect(id, `${mode} ${id}`).toMatch(
-          /^tools:(pencil|shape-pen|highlighter|polygon|arrow|line)$/,
+          /^tools:(polygon|arrow|line)$/,
         );
     }
   });
@@ -60,7 +60,7 @@ describe('the category bar’s categories', () => {
     const groups = (id: string) =>
       flyoutGroups(id, bar('diagram').find((c) => c.id === id)!.tiles!).map((g) => g.title);
     expect(groups('write')).toEqual(['Text', 'Notes', 'Comments']);
-    expect(groups('draw')).toEqual(['Pens', 'Outlines', 'Connectors']);
+    expect(groups('draw')).toEqual(['Outlines', 'Connectors']);
     expect(groups('layout')).toEqual(['Containers', 'Parts']);
   });
 

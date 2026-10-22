@@ -14,7 +14,7 @@ import {
   measureTextHug,
 } from './text-hug-measure';
 
-// The DOM measure behind a whiteboard text box's hug (docs/specs/023-draw-mode/draw-mode.md
+// The DOM measure behind a whiteboard text box's hug (docs/specs/007-editor/editor-modes.md
 // "Text boxes"). jsdom lays nothing out, so these pin what the measurer lays in and how it is
 // sized; the real numbers are proven in a browser.
 const measurer = () => document.querySelector<HTMLElement>('[data-text-hug-measurer]')!;

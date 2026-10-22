@@ -87,7 +87,7 @@ describe('isValidElement', () => {
 
   it('accepts the freehand pen + straightEdges flags, rejects junk values', () => {
     const freehand = { id: 'f', type: 'freehand', closed: false, packedPoints: 'AQA=', ...box };
-    // Highlighter recipe (docs/specs/008-canvas/highlighter.md) + polygon straight edges (docs/specs/008-canvas/polygon-tool.md).
+    // Highlighter recipe (docs/specs/006-document/stroke-points.md) + polygon straight edges (docs/specs/008-canvas/polygon-tool.md).
     expect(isValidElement({ ...freehand, pen: 'highlighter' })).toBe(true);
     expect(isValidElement({ ...freehand, straightEdges: true })).toBe(true);
     expect(isValidElement({ ...freehand, pen: 'marker' })).toBe(false);
@@ -98,7 +98,7 @@ describe('isValidElement', () => {
   });
 
   it('accepts a whiteboard pen stroke\u2019s packed pressures and streamline, rejects junk', () => {
-    // docs/specs/023-draw-mode/draw-mode.md "Pens": a pressure per point, 0 to 1, packed.
+    // docs/specs/006-document/stroke-points.md: a pressure per point, 0 to 1, packed.
     const points = [
       { nx: 0, ny: 0 },
       { nx: 1, ny: 1 },
@@ -111,7 +111,7 @@ describe('isValidElement', () => {
   });
 
   it('accepts a marker\u2019s named colour on a stroke, a shape or a line, rejects any other', () => {
-    // docs/specs/023-draw-mode/draw-mode.md "The colour picker": stored by name.
+    // docs/specs/004-interface-design/colour-picker.md: stored by name.
     const packedPoints = encodeStrokePoints([
       { nx: 0, ny: 0 },
       { nx: 1, ny: 1 },
@@ -131,7 +131,7 @@ describe('isValidElement', () => {
     }
   });
 
-  // docs/specs/023-draw-mode/draw-mode.md "Imported and pasted content": a text box's and a
+  // docs/specs/004-interface-design/colour-picker.md: a text box's and a
   // shape label's stock colour, stored by name.
   it('accepts a named text colour and rejects anything else in its place', () => {
     const text = { id: 't', type: 'text', label: 'Hi', ...box };

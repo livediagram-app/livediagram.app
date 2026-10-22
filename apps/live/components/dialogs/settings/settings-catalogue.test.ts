@@ -56,28 +56,6 @@ describe('settings catalogue', () => {
     }
   });
 
-  it('offers the Draw mode dock position in the Editor › Draw sub-category', () => {
-    // docs/specs/023-draw-mode/draw-mode.md "Where the dock sits": top by default, bottom by choice;
-    // the sub-category says Draw, as the mode switch does (docs/specs/007-editor/editor-modes.md
-    // "Naming in the interface").
-    const draw = SETTINGS_CATEGORIES.find((c) => c.id === 'draw')!;
-    expect(settingsCategoryPath(draw)).toBe('Editor › Draw');
-    const row = draw.rows.find((r) => r.key === 'whiteboardDockPosition');
-    if (row?.kind !== 'choice') throw new Error('no Dock Position choice row');
-    expect(row.section).toBeUndefined();
-    expect(row.keywords).toContain('draw mode');
-    expect(row.keywords).toContain('whiteboard');
-    expect(row.helpArticle).toBe('drawMode');
-    expect(row.label).toBe('Dock Position');
-    expect(row.options.map((o) => [o.id, o.label])).toEqual([
-      ['top', 'Top'],
-      ['bottom', 'Bottom'],
-    ]);
-    expect(row.read({})).toBe('top');
-    expect(row.write({}, 'bottom')).toEqual({ whiteboardDockPosition: 'bottom' });
-    expect(row.event).toEqual({ category: 'UI', changed: 'WhiteboardDockPosition' });
-  });
-
   it("offers where Pages mode's Contents sits, the sidebar until chosen otherwise", () => {
     // docs/specs/007-editor/pages-mode.md "Contents": the sidebar by default, the button by choice.
     const pages = SETTINGS_CATEGORIES.find((c) => c.id === 'pages')!;
@@ -184,7 +162,6 @@ describe('settings catalogue', () => {
       ['planTourSeen-sheets', 'toggle', 'Sheets Tour', 'planTour'],
       ['planTourSeen-dashboards', 'toggle', 'Dashboards Tour', 'planDashboards'],
       ['workshopTourSeen', 'toggle', 'Workshop Tour', 'workshopTour'],
-      ['drawTourSeen', 'toggle', 'Draw Tour', 'drawTour'],
       ['formTourSeen', 'toggle', 'Forms Tour', 'planForms'],
       ['avatarTourSeen', 'toggle', 'Avatar Tour', 'avatarTour'],
       ['pagesTourSeen', 'toggle', 'Pages Tours', 'pagesTour'],
@@ -233,7 +210,6 @@ describe('settings catalogue', () => {
         ['SheetsTourSeenOff', 'SheetsTourSeenOn'],
         ['DashboardsTourSeenOff', 'DashboardsTourSeenOn'],
         ['WorkshopTourSeenOff', 'WorkshopTourSeenOn'],
-        ['DrawTourSeenOff', 'DrawTourSeenOn'],
         ['FormTourSeenOff', 'FormTourSeenOn'],
         ['AvatarTourSeenOff', 'AvatarTourSeenOn'],
         ['PagesTourSeenOff', 'PagesTourSeenOn'],
@@ -539,10 +515,10 @@ describe('settings catalogue', () => {
 
 // Editor and Panels hold sub-categories (docs/specs/007-editor/user-preferences.md), each its own pane.
 describe('settings sub-categories', () => {
-  it('nests one sub-category per mode with settings of its own under Editor (Draw, Pages; no Diagram yet), then Presenting', () => {
+  it('nests one sub-category per mode with settings of its own under Editor (Pages; no Diagram yet), then Presenting', () => {
     const ids = SETTINGS_CATEGORIES.map((c) => c.id);
     const children = SETTINGS_CATEGORIES.filter((c) => c.parent === 'editor').map((c) => c.id);
-    expect(children).toEqual(['draw', 'pages', 'presenting']);
+    expect(children).toEqual(['pages', 'presenting']);
     const at = ids.indexOf('editor');
     expect(ids.slice(at + 1, at + 1 + children.length)).toEqual(children);
   });

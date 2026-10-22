@@ -6,7 +6,7 @@ import { useByValue } from '@/hooks/ui/useByValue';
 import { sameSitters, sittersByChair } from '@/lib/chair-sitters';
 import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import {
-  buttonModeOf,
+  DEFAULT_BUTTON_MODE,
   isBoxed,
   type ShapeElement,
   visibleLayerElements,
@@ -74,7 +74,7 @@ export function useCanvasAvatar({
   const avatarSpawnRef = useRef<AvatarPoint | null>(null);
   const pressModeButton = (element: ShapeElement) => {
     // Feet just below the button, centred on it, and only for a press that enters the mode.
-    const spawn = avatarSpawnFromButton(element, buttonModeOf(element), canvasTool);
+    const spawn = avatarSpawnFromButton(element, element.mode ?? DEFAULT_BUTTON_MODE, canvasTool);
     if (spawn) avatarSpawnRef.current = spawn;
     props.onPressModeButton?.(element);
   };

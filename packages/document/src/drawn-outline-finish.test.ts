@@ -74,4 +74,3 @@ describe('a polygon drawn by hand', () => {
     expect(svgBoxed(polygon(), { tabFinish: 'professional' })).toContain('stroke-width="1"');
   });
 });
-

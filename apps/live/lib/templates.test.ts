@@ -234,7 +234,7 @@ describe('TEMPLATES catalogue', () => {
     for (const kind of ALL_KINDS) {
       const tab = buildTemplatedTab(kind, 'brand', `tab-${kind}`, 'name');
       // 'blank' and 'whiteboard' are intentionally empty (docs/specs/007-editor/new-document-route.md,
-      // docs/specs/023-draw-mode/draw-mode.md); every other kind seeds content. Either way the
+      // docs/specs/007-editor/editor-modes.md); every other kind seeds content. Either way the
       // switch must handle the union member.
       // An article's writing is tab data, not elements (templateCanvasOverrides).
       // A blank illustration is its one empty page, which asks what it is for.

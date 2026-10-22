@@ -513,7 +513,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // on exit. Wraps the tracked selectCanvasTool so every entry point (palette
   // dropdown, keyboard) routes through it; internal auto-switches keep using
   // the raw setCanvasTool and are unaffected.
-  // Plan mode leaves Eraser and Format out (useModeDefaultTool); set once the mode is known, below.
+  // Plan mode leaves Format out (useModeDefaultTool); set once the mode is known, below.
   const planModeRef = useRef(false);
   const pickCanvasTool = (tool: CanvasTool) => {
     if (planModeRef.current && PLAN_LEFT_OUT_TOOLS.has(tool)) return;
@@ -1403,8 +1403,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     canEdit,
   });
   const drawMode = editorMode.mode === 'draw';
-  // The tool a mode starts with: Select, or Hand in Plan and on a phone; Plan leaves Eraser and Format
-  // out (docs/specs/007-editor/editor-modes.md).
+  // The tool a mode starts with: Select, or Hand in Plan and on a phone; Plan leaves Format out
+  // (docs/specs/007-editor/editor-modes.md).
   useModeDefaultTool(editorMode.mode, canvasTool, setCanvasTool, embedMode);
   useAssignRef(planModeRef, editorMode.mode === 'plan');
   // A palette card goes into the board column at the point, or nowhere (docs/specs/026-plan/plan-mode.md
@@ -2941,26 +2941,20 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     readOnly: isReadOnly,
     getZoom: () => zoomRef.current,
   });
-  const {
-    pendingDraw,
-    beginDraw,
-    commitDraw,
-    cancelDrawShape,
-    beginPolygon,
-    commitPolygon,
-  } = useShapeDrawing({
-    editsBlocked: createBlocked,
-    readSelection,
-    canvasTool,
-    setCanvasTool,
-    activeTab,
-    commit: logo.drawCommit,
-    setSelectedId,
-    setMultiSelectedIds,
-    setEditingId,
-    styleNewElement: styleMemory.styleNewElement,
-    onPlanCardPlace: placePaletteCard,
-  });
+  const { pendingDraw, beginDraw, commitDraw, cancelDrawShape, beginPolygon, commitPolygon } =
+    useShapeDrawing({
+      editsBlocked: createBlocked,
+      readSelection,
+      canvasTool,
+      setCanvasTool,
+      activeTab,
+      commit: logo.drawCommit,
+      setSelectedId,
+      setMultiSelectedIds,
+      setEditingId,
+      styleNewElement: styleMemory.styleNewElement,
+      onPlanCardPlace: placePaletteCard,
+    });
   useEffect(() => {
     putToolDownRef.current = () => {
       cancelDrawShape();

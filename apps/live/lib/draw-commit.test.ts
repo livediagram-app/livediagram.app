@@ -41,15 +41,7 @@ describe('buildDressedDrawnArrow', () => {
   const board = { elements: [] as Element[], theme: themed };
 
   it('paints a diagram arrow in the theme stroke, then dresses it', () => {
-    const out = buildDressedDrawnArrow(
-      { type: 'arrow' },
-      0,
-      0,
-      100,
-      0,
-      board,
-      thick,
-    );
+    const out = buildDressedDrawnArrow({ type: 'arrow' }, 0, 0, 100, 0, board, thick);
     expect(out.strokeColor).toBe('#123456');
     expect(out.strokeWidth).toBe(6);
     expect(out.arrowEnds).toBe('none');

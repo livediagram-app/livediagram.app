@@ -59,7 +59,6 @@ const arrow = (over: Partial<ArrowElement> = {}): ArrowElement => ({
 });
 
 describe('resolveStockColours', () => {
-
   it('draws a named line colour in its version for the canvas surface', () => {
     const el = shape({ penColour: 'blue' });
     expect(resolveStockColours(el, 'light').strokeColor).toBe(penColourHex('blue', 'light'));

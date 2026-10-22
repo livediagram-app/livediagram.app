@@ -54,7 +54,7 @@ export type { ElementValidationIssue } from './validate-primitives';
 
 // Bounds. Generous vs any real document, tight vs an abuse payload.
 export const MAX_ELEMENTS_PER_TAB = 10_000;
-// A Shift-resized text box's scale on its label (docs/specs/023-draw-mode/draw-mode.md "Text boxes"):
+// A Shift-resized text box's scale on its label (docs/specs/007-editor/editor-modes.md "A text box's sizing"):
 // a 14 px label reads from 1.4 px to 560 px, past any real board, short of an abuse payload.
 export const TEXT_SCALE_MIN = 0.1;
 export const TEXT_SCALE_MAX = 40;
@@ -226,7 +226,7 @@ const COMMON_FIELD_CHECKS: readonly FieldCheck[] = [
   { field: 'fillSwatch', valid: isQuickSwatchSlot, rule: 'a quick-swatch slot 1 to 6' },
   { field: 'textSwatch', valid: isQuickSwatchSlot, rule: 'a quick-swatch slot 1 to 6' },
   // A marker's named colour, and a text's or label's stock colour
-  // (docs/specs/023-draw-mode/draw-mode.md "The colour picker", "Imported and pasted content").
+  // (docs/specs/004-interface-design/colour-picker.md).
   { field: 'penColour', valid: isPenColourName, rule: 'a pen colour name' },
   { field: 'penTextColour', valid: isPenColourName, rule: 'a pen colour name' },
   // Catalogue keys (docs/specs/010-palette/technology-icons.md): looked up as text everywhere.
@@ -344,7 +344,7 @@ function imageIssue(el: Record<string, unknown>): ElementValidationIssue | null 
   return firstFieldIssue(el, IMAGE_FIELD_CHECKS);
 }
 
-// Optional pen recipe (docs/specs/008-canvas/highlighter.md) and straight-edge flag
+// Optional pen recipe (docs/specs/006-document/stroke-points.md) and straight-edge flag
 // (docs/specs/008-canvas/polygon-tool.md).
 const FREEHAND_FIELD_CHECKS: readonly FieldCheck[] = [
   { field: 'pen', valid: (v) => v === 'highlighter', rule: oneOfRule(['highlighter']) },

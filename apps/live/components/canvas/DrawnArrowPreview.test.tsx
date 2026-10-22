@@ -5,7 +5,7 @@ import { arrowheadShapeOf, arrowheadSizeOf, type ArrowElement } from '@liveplann
 import { arrowheadMarkerId } from './arrow-defs';
 import { DrawnArrowPreview } from './DrawnArrowPreview';
 
-// docs/specs/023-draw-mode/draw-mode.md "Shapes": a line or an arrow previews as exactly the one
+// docs/specs/007-editor/editor-modes.md: a line or an arrow previews as exactly the one
 // that lands, drawn by the same arrow renderer in the canvas layer.
 
 const arrow = (over: Partial<ArrowElement> = {}): ArrowElement => ({

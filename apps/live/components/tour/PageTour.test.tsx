@@ -294,7 +294,7 @@ describe('a logo page’s Show Me', () => {
     await showMe();
     expect(track).toHaveBeenCalledWith('UI', 'Started', 'LogoTour');
     await shows(() =>
-      expect(stepDialog(/^Show Me step 1 of 4: Start From a Logo Layout/)).toBeTruthy(),
+      expect(stepDialog(/^Show Me step 1 of 3: Start From a Logo Layout/)).toBeTruthy(),
     );
     expect(screen.getByRole('button', { name: 'Layouts' }).getAttribute('aria-pressed')).toBe(
       'true',

@@ -513,8 +513,7 @@ export const ARTICLE_LOOKS = chart(
 export const WHITEBOARDS: MetricStack = {
   stack: true,
   title: 'Draw Mode',
-  blurb:
-    'Whiteboard tabs made and mode switches.',
+  blurb: 'Whiteboard tabs made and mode switches.',
   members: [
     WHITEBOARDS_CREATED,
     EDITOR_MODE_SWITCHES,

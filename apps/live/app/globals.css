@@ -698,7 +698,7 @@
  * (re-enabling themselves despite the layer's pointer-events:none) and carry
  * their own hover cursor inline, so without this they'd flip back to a move /
  * pointer cursor mid-spotlight. Scoped to [data-element-id] so floating panels
- * keep theirs (mirrors cursor-eraser).
+ * keep theirs.
  */
 .cursor-spotlight [data-element-id],
 .cursor-spotlight [data-element-id] * {
@@ -938,15 +938,6 @@ html[data-presenting][data-hide-pointer][data-pointer-idle] [data-presentation-s
    elements passes through on purpose (the rule below matches the plane too). */
 [data-element-plane] {
   cursor: auto;
-}
-
-/* A whiteboard pen in hand draws wherever it presses (docs/specs/023-draw-mode/draw-mode.md "Pens"):
-   elements, handles and labels under it keep the pen cursor instead of their own. A path in its
-   edit mode owns the cursor the same way (docs/specs/023-draw-mode/path-tool.md "Cursors in edit
-   mode"): no label, element or overlay underneath lends its own, a text cursor least of all. */
-[data-pen-in-hand] *,
-[data-path-cursor] * {
-  cursor: inherit !important;
 }
 
 /*

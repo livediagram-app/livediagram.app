@@ -59,7 +59,7 @@ function buildAll(
     // only Select + Hand stay available until something's drawn.
     // Format painter as a persistent tool: pick a base element,
     // then tap any number of targets to paint its style. No
-    // keyboard shortcut (F is the Pencil/freehand key).
+    // keyboard shortcut (F is the Frame key).
     {
       id: 'format',
       label: 'Format',

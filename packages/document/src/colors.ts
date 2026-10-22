@@ -516,9 +516,7 @@ export function supportsColours(element: Element): boolean {
 // distinct from ArrowElement's `strokeWidth: number` (raw px). A
 // non-narrowing predicate would let setters that write a BorderStroke
 // land on arrows, which TS would (correctly) reject.
-export function supportsBorder(
-  element: Element,
-): element is ShapeElement | FreehandElement {
+export function supportsBorder(element: Element): element is ShapeElement | FreehandElement {
   return element.type === 'shape' || element.type === 'freehand';
 }
 

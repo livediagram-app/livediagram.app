@@ -596,51 +596,51 @@ function CanvasView(props: CanvasProps) {
                   elements={elements}
                 />
               ) : null}
-                <CanvasArrivalProvider
-                  tabId={props.activeTabId ?? ''}
-                  loaded={props.activeTabLoaded ?? true}
-                >
-                  {/* The zoom reaches only the counter-scaled parts of each element
+              <CanvasArrivalProvider
+                tabId={props.activeTabId ?? ''}
+                loaded={props.activeTabLoaded ?? true}
+              >
+                {/* The zoom reaches only the counter-scaled parts of each element
               (docs/specs/008-canvas/canvas-performance.md). */}
-                  <CanvasZoomProvider zoom={viewportZoom}>
-                    <MindGrowProvider value={mindGrow}>
-                      <MindOutlineProvider value={mindOutlineBadges}>
-                        <ElementIndicatorStyleProvider
-                          style={readElementIndicatorStyle(props.settings)}
-                        >
-                          <CanvasElementsLayer
-                            {...props}
-                            // Portal travel is resolved HERE (Canvas owns the viewport + the avatar),
-                            // so the prop from the host is overridden with the local resolver.
-                            onEnterPortal={resolvePortal}
-                            onFireReaction={props.onFireReaction}
-                            reactionBursts={props.reactionBursts}
-                            onReactionBurstDone={props.onReactionBurstDone}
-                            // Chair (docs/specs/009-elements/chair.md): occupancy resolved here, where peer presence
-                            // lives, rather than threaded from the page.
-                            chairSitters={sittersOf}
-                            // Pressing a Selection Mode button that hands out Avatar mode drops
-                            // the character at THAT button (see avatarSpawn), not the viewport
-                            // centre: you pressed a thing on the canvas, so the character should
-                            // appear where you pressed it.
-                            onPressModeButton={pressModeButton}
-                            onPressFocusButton={props.onPressFocusButton}
-                            hasArrows={hasArrows}
-                            arrowLabels={arrowLabels}
-                            selectionInput={selectionInput}
-                            isPaintMode={isPaintMode}
-                            handleArrowSelect={handleArrowSelect}
-                            handleElementClick={handleElementClick}
-                            handleElementContextSelect={handleElementContextSelect}
-                            quickRingOpen={quickRingOpen}
-                            setQuickRingOpen={setQuickRingOpen}
-                            drawDrag={drawDrag}
-                          />
-                        </ElementIndicatorStyleProvider>
-                      </MindOutlineProvider>
-                    </MindGrowProvider>
-                  </CanvasZoomProvider>
-                </CanvasArrivalProvider>
+                <CanvasZoomProvider zoom={viewportZoom}>
+                  <MindGrowProvider value={mindGrow}>
+                    <MindOutlineProvider value={mindOutlineBadges}>
+                      <ElementIndicatorStyleProvider
+                        style={readElementIndicatorStyle(props.settings)}
+                      >
+                        <CanvasElementsLayer
+                          {...props}
+                          // Portal travel is resolved HERE (Canvas owns the viewport + the avatar),
+                          // so the prop from the host is overridden with the local resolver.
+                          onEnterPortal={resolvePortal}
+                          onFireReaction={props.onFireReaction}
+                          reactionBursts={props.reactionBursts}
+                          onReactionBurstDone={props.onReactionBurstDone}
+                          // Chair (docs/specs/009-elements/chair.md): occupancy resolved here, where peer presence
+                          // lives, rather than threaded from the page.
+                          chairSitters={sittersOf}
+                          // Pressing a Selection Mode button that hands out Avatar mode drops
+                          // the character at THAT button (see avatarSpawn), not the viewport
+                          // centre: you pressed a thing on the canvas, so the character should
+                          // appear where you pressed it.
+                          onPressModeButton={pressModeButton}
+                          onPressFocusButton={props.onPressFocusButton}
+                          hasArrows={hasArrows}
+                          arrowLabels={arrowLabels}
+                          selectionInput={selectionInput}
+                          isPaintMode={isPaintMode}
+                          handleArrowSelect={handleArrowSelect}
+                          handleElementClick={handleElementClick}
+                          handleElementContextSelect={handleElementContextSelect}
+                          quickRingOpen={quickRingOpen}
+                          setQuickRingOpen={setQuickRingOpen}
+                          drawDrag={drawDrag}
+                        />
+                      </ElementIndicatorStyleProvider>
+                    </MindOutlineProvider>
+                  </MindGrowProvider>
+                </CanvasZoomProvider>
+              </CanvasArrivalProvider>
               {/* Drafts, the logo page's guides and the avatars: editor-only, left out of an animated GIF
             (GifOmit). */}
               <GifOmit>

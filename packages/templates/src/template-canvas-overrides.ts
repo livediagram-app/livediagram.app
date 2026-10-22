@@ -134,7 +134,7 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'empathy-map': 'grid',
   funnel: 'blank',
   sankey: 'blank',
-  // A new whiteboard starts on Grid (docs/specs/023-draw-mode/draw-mode.md "Board background").
+  // A new whiteboard starts on Grid (docs/specs/007-editor/editor-modes.md).
   whiteboard: WHITEBOARD_DEFAULT_PATTERN,
   // The Draw templates start on the whiteboard's board too.
   sketchnote: WHITEBOARD_DEFAULT_PATTERN,
@@ -238,7 +238,7 @@ export function templateCanvasOverrides(kind: TemplateKind): Partial<Tab> {
   // louder the pattern, the further it steps back (TEMPLATE_PATTERN_OPACITY);
   // a few radial / stage layouts soften further still, and the lower of the
   // two wins.
-  // A whiteboard draws its own quiet board pattern (docs/specs/023-draw-mode/draw-mode.md "Board
+  // A whiteboard draws its own quiet board pattern (docs/specs/007-editor/editor-modes.md "Board
   // background"), so it never takes a template's dimming.
   const mode = templateEditorMode(kind);
   const quiet = pattern && mode !== 'draw' ? TEMPLATE_PATTERN_OPACITY[pattern] : undefined;

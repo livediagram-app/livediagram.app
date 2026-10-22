@@ -158,5 +158,4 @@ describe('useCanvasDrawGesture gesture', () => {
     pointer('pointerup');
     expect(canvasGestureNow()).toBe('idle');
   });
-
 });

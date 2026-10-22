@@ -349,4 +349,3 @@ describe('QuickStylePanel: the Ink swatch', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 });
-

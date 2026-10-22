@@ -231,9 +231,7 @@ async function targets(page: Page): Promise<{ shape: Point; bare: Point }> {
         return (
           !!hit &&
           !!hit.closest('[data-canvas-a11y-root]') &&
-          !hit.closest(
-            '[data-element-id], [data-floating-panel], [data-whiteboard-dock], header, nav',
-          )
+          !hit.closest('[data-element-id], [data-floating-panel], header, nav')
         );
       };
       for (let y = 220; y < h - 260; y += 37)
@@ -311,7 +309,7 @@ async function measureZoom(
   tab: Tab,
   zoom: Measurement['zoom'],
 ): Promise<Measurement[]> {
-  // Fit first, which centres the board; 100% then zooms in on that centre (Mod+0; a bare 0 is the eraser).
+  // Fit first, which centres the board; 100% then zooms in on that centre (Mod+0).
   const setView = async () => {
     await page.keyboard.press('Escape');
     await page.keyboard.press('v');

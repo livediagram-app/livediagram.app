@@ -19,7 +19,7 @@ function setup(tab: Tab, selection: string[]) {
       editsBlocked: false,
       liveElements: () => elements,
       commit,
-      memory: memory as never,
+      memory,
       swatchOverrides: { overrides: {}, setOverride: vi.fn(), clearOverride: vi.fn() },
     }),
   );

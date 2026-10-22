@@ -1,6 +1,6 @@
 // Whether the empty-canvas card shows (docs/specs/007-editor/new-document-route.md "The empty-canvas hint"): while
 // the active tab has no elements, outside zen and embed, with no draw tool armed, in Diagram or
-// Workshop. Draw's dock is its own hint (docs/specs/023-draw-mode/draw-mode.md), an empty infographic page invites
+// Workshop. Draw's dock is its own hint (docs/specs/007-editor/editor-modes.md), an empty infographic page invites
 // a layout in its own title bar (docs/specs/007-editor/pages-mode.md) and Plan offers its boards in the middle
 // (docs/specs/026-plan/plan-mode.md "Starting a board"). The sign-in nudge has no say: it sits at the foot of the
 // canvas, clear of the card.
