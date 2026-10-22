@@ -63,16 +63,16 @@ sticker classes a kept Shape value still draws.
 
 `bodyAnimationSetOf(el)`:
 
-| Element                                                                | Set                  |
-| ---------------------------------------------------------------------- | -------------------- |
-| `sticky`                                                               | `sticky`             |
-| `freehand`, `path`                                                     | `drawing`            |
-| `image`, `video`                                                       | `media`              |
-| `table`                                                                | `table`              |
-| `text`                                                                 | undefined            |
-| `shape` that is an icon, chart, progress or rating                     | undefined (own sets) |
-| `shape` that is a concept graphic or a sequence diagram (words: Text)  | undefined (own sets) |
-| any other `shape` (stickers and chairs too), `annotation`, `link-card` | `shape`              |
+| Element                                                               | Set                  |
+| --------------------------------------------------------------------- | -------------------- |
+| `sticky`                                                              | `sticky`             |
+| `freehand`, `path`                                                    | `drawing`            |
+| `image`, `video`                                                      | `media`              |
+| `table`                                                               | `table`              |
+| `text`                                                                | undefined            |
+| `shape` that is an icon, chart, progress or rating                    | undefined (own sets) |
+| `shape` that is a concept graphic or a sequence diagram (words: Text) | undefined (own sets) |
+| any other `shape` (stickers too), `annotation`, `link-card`           | `shape`              |
 
 `takesShapeMotions(el)` is true for `sticky`, `freehand`, `path`, `image`, `video`, `table`, and a `shape` with a set
 of its own (`hasOwnShapeSet` or `hasOwnBodySet`) other than `icon`. `inAnimationSet('shape', el)` is
@@ -85,7 +85,7 @@ has no body set and no `hasOwnBodySet` (a chart's older Shape value, shown as th
 `bodyAnimationSetOf(el)`.
 
 `carriesWords(el)`: `text`, `sticky` and `table` are true; a `shape` is true when `takesTypedLabel(el)`, not
-`selfLabelled(el)`, not icon / chart / progress / rating, and not `chair` or `sticker`; everything else is false.
+`selfLabelled(el)`, not icon / chart / progress / rating, and not `sticker`; everything else is false.
 
 `animationCategoriesOf(elements)` adds each element's own category (`ownCategoryOf`: icon, chart, sankey, progress,
 rating, concept, sequence, arrow) to `animationSetsOf` and orders all by
@@ -141,9 +141,9 @@ trio onto a target without words.
 `wrapperShapeAnimation(el)` is the Shape value the wrapper draws: a Shape member's own value; on a sticky or table
 the shared Pulse / Glow / Highlight (a note and a table are rectangles); a kept value (a motion among them) on any set;
 on a concept graphic or sequence a motion only; and a text
-element's legacy value unless it has a `textAnimation`. Annotations, stickers and chairs draw Pulse,
-Glow, Trace and Gradient on their silhouette (the `lvd-anim-text-*` / sticker classes: on the art for a sticker or
-chair, on the element for a pin or rail); shapes ShapeSvgOverlay really draws (`drawsShapeSvgOverlay`: SVG-rendered
+element's legacy value unless it has a `textAnimation`. Annotations and stickers draw Pulse,
+Glow, Trace and Gradient on their silhouette (the `lvd-anim-text-*` / sticker classes: on the art for a sticker, on
+the element for a pin or rail); shapes ShapeSvgOverlay really draws (`drawsShapeSvgOverlay`: SVG-rendered
 and not claimed by a face of its own) in the overlay; every other element on `AnimationLayer`, rendered after its
 face so an opaque face (a plan board, a code block) cannot hide it. Gradient's band multiplies over the face.
 

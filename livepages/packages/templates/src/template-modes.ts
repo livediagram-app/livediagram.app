@@ -97,10 +97,6 @@ const TEMPLATE_MODES: Partial<Record<TemplateKind, EditorMode>> = {
   'meeting-agenda': 'workshop',
   // Games (docs/specs/012-collaboration/game-templates.md): run on pickers.
   'icebreaker-questions': 'workshop',
-  'virtual-office': 'workshop',
-  'coworking-space': 'workshop',
-  'team-pod': 'workshop',
-  'all-hands-hall': 'workshop',
   'people-bingo': 'workshop',
   // Boards that ship a dot vote: only Workshop's Session strip can watch, end and keep a vote.
   'affinity-map': 'workshop',

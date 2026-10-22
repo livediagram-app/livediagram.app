@@ -7,7 +7,6 @@ import {
   lucideCpu,
   lucideFilePlus,
   lucideFolder,
-  lucideFootprints,
   lucideGitCommitHorizontal,
   lucideLayoutGrid,
   lucideLightbulb,
@@ -91,22 +90,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     </Glyph>
   ),
   // Palette → Selection Modes.
-  // Selection-mode guides. Two of these are people, and the set already has five
-  // person glyphs (`chairs`, `roll-calls`, `search-teams`, `profile`,
-  // `done-checks`) — every one of them a head-and-shoulders bust. So these two are
-  // whole figures mid-stride, which is also what the feature is: walking.
-  'avatar-mode': (
-    <Glyph>
-      <Prims prims={lucideFootprints} />
-    </Glyph>
-  ),
-  // Two figures, same construction as one. A trail between them read as stray
-  // debris under their feet at this size, so the pairing is left to the label.
-  'walking-together': (
-    <Glyph>
-      <Prims prims={lucideUsers} />
-    </Glyph>
-  ),
   // The deck: the slide you are on, and the ones behind it.
   'slide-deck': (
     <Glyph>
@@ -213,39 +196,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     <Glyph>
       <path d="M3 6.5A1.5 1.5 0 014.5 5h9A1.5 1.5 0 0115 6.5v4A1.5 1.5 0 0113.5 12H8l-3 3v-3H4.5A1.5 1.5 0 013 10.5z" />
       <path d="M18 9h1.5A1.5 1.5 0 0121 10.5v4A1.5 1.5 0 0119.5 16H19v3l-3-3h-3" />
-    </Glyph>
-  ),
-  // A chair in profile: back, seat, two legs. Drawn side-on because a front-on
-  // chair is a rectangle on sticks, which reads as a table.
-  chairs: (
-    <Glyph>
-      <rect x="7" y="3.5" width="10" height="9" rx="2" />
-      <path d="M5 15h14" />
-      <path d="M8 15v5.5M16 15v5.5" />
-    </Glyph>
-  ),
-  // Three pointed pickets on two rails: a fence, not a grid.
-  fences: (
-    <Glyph>
-      <path d="M5 20V7l1.5-2.5L8 7v13M11 20V7l1.5-2.5L14 7v13M17 20V7l1.5-2.5L20 7v13" />
-      <path d="M3 10.5h18M3 15.5h18" />
-    </Glyph>
-  ),
-  // A round platform with a beam rising out of it: where a character arrives.
-  'avatar-pads': (
-    <Glyph>
-      <ellipse cx="12" cy="17" rx="8.5" ry="3" />
-      <path d="M3.5 17v1.5c0 1.7 3.8 3 8.5 3s8.5-1.3 8.5-3V17" />
-      <path d="M8.5 14V6.5M15.5 14V6.5" opacity="0.55" />
-      <path d="M12 14.5V3" />
-    </Glyph>
-  ),
-  // A room's walls with a doorway, a little table and a plant: an office floor plan.
-  'virtual-office': (
-    <Glyph>
-      <path d="M10 21H3V3h18v18h-7" />
-      <rect x="7" y="8" width="7" height="4" rx="1" />
-      <path d="M17.5 13v-3M16 10h3" />
     </Glyph>
   ),
   lanes: (
@@ -454,15 +404,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M4 17c2-3 4 1 6-2s3-4 5-1" />
       <path d="M15 4l5 5-7 7h-5v-5z" />
       <circle cx="12" cy="12" r="9" strokeDasharray="1.6 1.4" />
-    </Glyph>
-  ),
-  // A speech bubble over a little figure, under a dashed spotlight ring: a guided look at Avatar mode.
-  'avatar-tour': (
-    <Glyph>
-      <path d="M8 6h8a2 2 0 012 2v2a2 2 0 01-2 2h-3l-1 2-1-2H8a2 2 0 01-2-2V8a2 2 0 012-2z" />
-      <circle cx="12" cy="16" r="1.4" />
-      <path d="M10 20c0-1.2.9-2 2-2s2 .8 2 2" />
-      <circle cx="12" cy="12" r="10" strokeDasharray="1.6 1.4" />
     </Glyph>
   ),
   // A page with its colour band under a dashed spotlight ring: a guided look at Pages.

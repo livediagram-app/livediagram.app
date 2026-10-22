@@ -2167,15 +2167,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     ]
   },
-  "ChairFacing": {
-    "enum": [
-      "n",
-      "e",
-      "s",
-      "w"
-    ],
-    "type": "string"
-  },
   "ChangesetAuthor": {
     "additionalProperties": false,
     "properties": {
@@ -3078,21 +3069,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
-          "avatar-pad": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
           "badge": {
             "additionalProperties": false,
             "properties": {
@@ -3124,21 +3100,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "object"
           },
           "bar-chart": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "bookshelf": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -3199,21 +3160,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "object"
           },
           "card": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "chair": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -3303,21 +3249,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
-          "coffee-machine": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
           "comment-pin": {
             "additionalProperties": false,
             "properties": {
@@ -3364,21 +3295,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "object"
           },
           "decision": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "desk": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -3469,21 +3385,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "object"
           },
           "estimate": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "fence": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -3693,21 +3594,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
-          "meeting-table": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
           "mind-node": {
             "additionalProperties": false,
             "properties": {
@@ -3903,21 +3789,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
-          "plant": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
           "pointer-note": {
             "additionalProperties": false,
             "properties": {
@@ -4068,36 +3939,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
-          "room": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "rug": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
           "sankey": {
             "additionalProperties": false,
             "properties": {
@@ -4159,21 +4000,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "object"
           },
           "smartwatch": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "sofa": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -4384,21 +4210,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "object"
           },
           "triangle": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "water-cooler": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -11937,16 +11748,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "RoomDoor": {
-    "enum": [
-      "n",
-      "e",
-      "s",
-      "w",
-      "none"
-    ],
-    "type": "string"
-  },
   "RowAt": {
     "additionalProperties": false,
     "properties": {
@@ -12117,7 +11918,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "pan",
       "laser",
       "spotlight",
-      "avatar",
       "eraser",
       "format",
       "isometric"
@@ -12283,9 +12083,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "cellComments": {
         "$ref": "#/components/schemas/CellCommentThreads"
-      },
-      "chairFacing": {
-        "$ref": "#/components/schemas/ChairFacing"
       },
       "chartAxis": {
         "type": "boolean"
@@ -12672,9 +12469,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
-      "roomDoor": {
-        "$ref": "#/components/schemas/RoomDoor"
-      },
       "rotation": {
         "type": "number"
       },
@@ -12909,18 +12703,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "comment-pin",
       "action-card",
       "done-check",
-      "chair",
-      "fence",
-      "avatar-pad",
-      "desk",
-      "sofa",
-      "room",
-      "meeting-table",
-      "plant",
-      "bookshelf",
-      "water-cooler",
-      "coffee-machine",
-      "rug",
       "estimate",
       "temperature",
       "idea-box",

@@ -103,10 +103,6 @@ describe('Behaviour face export', () => {
     expect(svg).toMatch(/rx="4" fill="#/);
   });
 
-  it('prints a chair label under the seat', () => {
-    expect(svgOf(shape('chair', { label: 'Scribe' }))).toContain('>Scribe<');
-  });
-
   it('shades a Picker at both lips and offers Again once something landed', () => {
     const svg = svgOf(shape('picker', { label: 'Who?', pickerResult: 'Sam' }));
     expect(svg).toContain('linearGradient id="reel-el-picker"');

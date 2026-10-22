@@ -10,14 +10,11 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import {
   BROWSER_CHROME,
-  CHAIR_ART,
   SHAPE_GEOMETRY_KINDS,
   shapeGeometry,
-  type ShapeElement,
   type ShapeKind,
 } from '@livepages/document';
 import { BrowserChrome } from './boxed-element-overlays';
-import { FurnitureView } from './collab/FurnitureView';
 import { ShapeSvgOverlay } from './shape-svg-overlay';
 
 afterEach(cleanup);
@@ -84,40 +81,5 @@ describe('the fixed-pixel drawings read the table too', () => {
   it('BrowserChrome draws the table nav glyphs', () => {
     const { container } = render(<BrowserChrome stroke="#000" />);
     expect(marks(container.querySelector('svg')!)).toEqual([...BROWSER_CHROME.nav.paths]);
-  });
-
-  it('FurnitureView draws the table chair, upright at every facing', () => {
-    const chair = (chairFacing: 'n' | 'e' | 's' | 'w') =>
-      ({
-        id: 'c',
-        type: 'shape',
-        shape: 'chair',
-        x: 0,
-        y: 0,
-        width: 76,
-        height: 84,
-        chairFacing,
-      }) as ShapeElement;
-    const draw = (facing: 'n' | 'e' | 's' | 'w') => {
-      const { container, unmount } = render(
-        <FurnitureView element={chair(facing)} stroke="#94a3b8" sitters={[]} />,
-      );
-      const svg = container.querySelector('svg')!;
-      const out = { svg: svg.outerHTML, viewBox: svg.getAttribute('viewBox'), paths: marks(svg) };
-      unmount();
-      return out;
-    };
-    const front = draw('n');
-    expect(front.viewBox).toBe('0 0 64 72');
-    expect(front.paths).toEqual(
-      CHAIR_ART.front.parts.flatMap((p) => (p.tag === 'path' ? [p.d] : [])),
-    );
-    expect(draw('s').paths).toEqual(
-      CHAIR_ART.back.parts.flatMap((p) => (p.tag === 'path' ? [p.d] : [])),
-    );
-    // Never rotated; facing right mirrors the side drawing.
-    for (const f of ['n', 'e', 's', 'w'] as const) expect(draw(f).svg).not.toMatch(/rotate/);
-    expect(draw('w').svg).toContain('scale(-1 1)');
-    expect(draw('n').svg).toContain('Empty chair');
   });
 });

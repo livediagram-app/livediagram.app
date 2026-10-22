@@ -41,7 +41,6 @@ import {
   type PieSlice,
 } from '@livepages/document';
 import {
-  AvatarModeIcon,
   EraserIcon,
   FormatPainterIcon,
   IsometricIcon,
@@ -63,8 +62,6 @@ import { LegendTextSize } from '@/components/palette/TypographySections';
 import { PortalMenuSection } from '@/components/palette/PortalMenuSection';
 import {
   AgendaMenuSection,
-  ChairMenuSection,
-  RoomMenuSection,
   DecisionMenuSection,
   EstimateMenuSection,
 } from '@/components/palette/CollabMenuSections';
@@ -163,7 +160,6 @@ type ElementDataSectionsProps = {
   isEstimate: boolean;
   isAgenda: boolean;
   isDecision: boolean;
-  isChair: boolean;
   sectionProps: Scaffold['sectionProps'];
   flyoutProps: Scaffold['flyoutProps'];
 };
@@ -182,7 +178,6 @@ const MODE_TILE_ICON: Record<(typeof SELECTION_MODES)[number], React.ReactNode> 
   pan: <PanIcon />,
   laser: <LaserIcon />,
   spotlight: <SpotlightIcon />,
-  avatar: <AvatarModeIcon />,
   eraser: <EraserIcon />,
   format: <FormatPainterIcon />,
   isometric: <IsometricIcon />,
@@ -210,7 +205,6 @@ export function ElementDataSections({
   isEstimate,
   isAgenda,
   isDecision,
-  isChair,
   sectionProps,
   flyoutProps,
 }: ElementDataSectionsProps) {
@@ -252,8 +246,6 @@ export function ElementDataSections({
     isEstimate ||
     isAgenda ||
     isDecision ||
-    isChair ||
-    shapeTarget?.shape === 'room' ||
     // Its Tab Window section (Shows, Open) lives in Tools: without this the menu never offered another tab.
     shapeTarget?.shape === 'tab-window' ||
     !!props.flowchart;
@@ -394,20 +386,6 @@ export function ElementDataSections({
               onSetStatus={props.onSetDecisionStatus}
               onSetDate={props.onSetDecisionDate}
               onSetDrivers={props.onSetDecisionDrivers}
-            />
-          ) : null}
-          {shapeTarget?.shape === 'room' ? (
-            <RoomMenuSection
-              target={shapeTarget}
-              sectionProps={sectionProps}
-              onSetDoor={props.onSetRoomDoor}
-            />
-          ) : null}
-          {isChair ? (
-            <ChairMenuSection
-              target={shapeTarget ?? undefined}
-              sectionProps={sectionProps}
-              onSetFacing={props.onSetChairFacing}
             />
           ) : null}
           {/* Web components (docs/specs/009-elements/web-components-and-no-groups.md) — a stat row's cards, a process's

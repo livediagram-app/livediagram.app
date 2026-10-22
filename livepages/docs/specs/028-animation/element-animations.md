@@ -28,7 +28,7 @@ belongs to exactly one **body set**, which animates the element itself. An eleme
 
 A standalone **text element** has no body set: its words are the whole element, so it shows only Text Animation.
 
-A shape **carries words** when its kind takes a label. Icons, charts, progress, rating, stickers and chairs keep
+A shape **carries words** when its kind takes a label. Icons, charts, progress, rating and stickers keep
 their own sets (below) and take no Text set; nor do badges and step numbers, whose few characters are part of their
 body, or the concept graphics, which animate their rows with the Concept set. A Shape animation stored on a concept graphic or a sequence
 before they had sets of their own plays only when it is one of the [Shape motions](#shape-motions): their Shape section

@@ -189,14 +189,14 @@ arguably a Collaborate element by this spec's own rule, and said so.
 What is left is one honest test for the category: **does this element's content
 arrive at runtime rather than being drawn by the author?**
 
-| Group              | Holds                                                                                                                             |
-| ------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
-| **Ask**            | the three estimate scales, Temperature, Idea box, Dot vote                                                                        |
-| **Tools**          | Reveal, Done, Picker, Timer                                                                                                       |
-| **Record**         | Comment panel, Agenda, Decision record, Roll call                                                                                 |
-| **Reactions**      | the five pads                                                                                                                     |
-| **Selection Mode** | one button per mode (8)                                                                                                           |
-| **Navigate**       | Portal, Chair, Desk, Sofa, Fence, Avatar Pad, Link card, Room, Meeting Table, Plant, Bookshelf, Water Cooler, Coffee Machine, Rug |
+| Group              | Holds                                                      |
+| ------------------ | ---------------------------------------------------------- |
+| **Ask**            | the three estimate scales, Temperature, Idea box, Dot vote |
+| **Tools**          | Reveal, Done, Picker, Timer                                |
+| **Record**         | Comment panel, Agenda, Decision record, Roll call          |
+| **Reactions**      | the five pads                                              |
+| **Selection Mode** | one button per mode (7)                                    |
+| **Navigate**       | Portal, Bring focus, Link card                             |
 
 **There is no Session group.** It held the Timer and the Dot vote —
 a group named after the machinery that runs them rather than the job they do.
@@ -226,8 +226,8 @@ tab body needed no special case and the `'collaborate'` section is gone.
 
 The grouping is by **what the element does with the room**, not by what it
 looks like. That is the same rule that produced the Build category ([The Build palette category](build-category.md)),
-and it is why Portal sits with Chair and the Link card (all three take you
-somewhere — another tab, a seat, the page itself) rather than with Reveal
+and it is why Portal sits with Bring focus and the Link card (all three take you
+somewhere — another tab, one spot on the canvas, the page itself) rather than with Reveal
 (which the facilitator drives). The Link card came here from Components, which
 groups by what a thing looks like: a ready-made composite you recolour and
 retitle. A link card is neither composite nor decoration, so it read as filler

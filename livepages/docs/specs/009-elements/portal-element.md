@@ -1,10 +1,10 @@
 # Portal element
 
-A **Portal**: a standing ring of energy on the canvas, linked to another one. Click it — or walk an [Avatar-mode](../008-canvas/avatar-mode.md) character into it — and you come out of the portal it is linked to, on this tab or another.
+A **Portal**: a standing ring of energy on the canvas, linked to another one. Click it and you come out of the portal it is linked to, on this tab or another.
 
 ## Why
 
-A big canvas is a place, and places have shortcuts. Two portals turn "scroll across the canvas hunting for the other half of this flow" into one click, and they make an Avatar-mode walkthrough feel like moving between rooms rather than panning a plane. It is the cheapest possible in-canvas navigation: no minimap coordinates, no bookmarks UI, just a thing you step into.
+A big canvas is a place, and places have shortcuts. Two portals turn "scroll across the canvas hunting for the other half of this flow" into one click, and they make a walkthrough feel like moving between rooms rather than panning a plane. It is the cheapest possible in-canvas navigation: no minimap coordinates, no bookmarks UI, just a thing you step into.
 
 ## The element
 
@@ -31,16 +31,10 @@ Right-click a portal → **Portal**:
 
 ## Travelling
 
-Pressing a linked portal does up to three things:
+Pressing a linked portal does up to two things:
 
 1. **Switches tab**, when the far portal is on another one — through the same path a tab link takes, so selection / edit state is cleaned up identically.
 2. **Centres the camera** on the far portal.
-3. **An Avatar-mode character steps out of it**, at the far portal's base (centred, bottom edge — the avatar's position is its feet).
-
-**Walking into a portal does the same thing.** The walk hook already knows which element the character is standing on; arriving on a portal fires the same travel. Two rules stop that becoming a trap:
-
-- It fires **once on arrival**, not every frame the character stands there.
-- The portal it just came OUT of is **ignored until the character steps off it**. Without that, a pair bounces the traveller back and forth forever.
 
 **Dragging a portal never travels.** The press fires on a click and stays silent once the pointer has moved further than a wobble (`usePressWithoutDrag`), because a portal is an element as well as a control.
 
@@ -58,11 +52,11 @@ Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md): 
 
 ## Implementation shape
 
-- **`apps/live/lib/portals.ts`** — the pure half: `portalsOnTab`, `portalName`, `portalSites` + `resolvePortalSite` (the cross-tab pair), `resolvePortalTarget`, `resolvePortalDestination`, `portalExitPoint`, and `viewportOffsetCentredOn`. Unit-tested, including every way a link can be broken.
+- **`apps/live/lib/portals.ts`** — the pure half: `portalsOnTab`, `portalName`, `portalSites` + `resolvePortalSite` (the cross-tab pair), `resolvePortalTarget`, `resolvePortalDestination`, and `viewportOffsetCentredOn`. Unit-tested, including every way a link can be broken.
 - **`apps/live/components/canvas/PortalFace.tsx`** — the ring, its lit / dead states, and the press.
 - **`apps/live/components/palette/PortalMenuSection.tsx`** — name, candidates, create.
 - **`apps/live/hooks/canvas/usePortalSetters.ts`** — the setters, off the style hook because they commit across tabs.
-- **`apps/live/components/canvas/portal-travel.ts`**: `usePortalTravel`, a hook that owns no state, builds `enterPortal`; **`useCanvasAvatar.tsx`** (composed into `Canvas.tsx`) calls it (it has the viewport, the tabs, and the avatar hook) and hands the same action to both the portal's click and the walk-in, so the two can never drift. The walk hook exposes `teleportTo` and an on-arrival portal callback; the two meet through a ref, because each needs the other.
+- **`apps/live/components/canvas/portal-travel.ts`**: `usePortalTravel`, a hook that owns no state, builds `enterPortal`; `Canvas.tsx` calls it (it has the viewport and the tabs) and hands each portal face its travel action through `resolvePortal`.
 - Wiring: the `portal` kind in `packages/document` (union, `SHAPE_KINDS`, default size, factory, `portalTarget` validation), the self-painted render path, the palette tile in **Behaviour**, and the telemetry token.
 
 ## Out of scope

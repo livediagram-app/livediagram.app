@@ -273,9 +273,6 @@ type UserPreferences = {
   // The Forms tour's seen-guard (docs/specs/030-forms/forms.md "The Forms tour"), as `drawTourSeen`; Show Me Around
   // in the form's cog panel reruns it. Missing / undefined === not seen.
   formTourSeen?: boolean;
-  // The Avatar tour's seen-guard (docs/specs/008-canvas/avatar-tour.md), as `drawTourSeen`.
-  // Surfaced in Settings as Tours › "Avatar Tour" (inverted). Missing / undefined === not seen.
-  avatarTourSeen?: boolean;
   // The Pages tour's seen-guard (docs/specs/007-editor/pages-tour.md), as `planTourSeen`: true counts every
   // page kind's track as seen while Power user mode is on. Set with every kind by Power user mode.
   pagesTourSeen?: boolean;
@@ -767,7 +764,7 @@ and the dialog stays as the one complete, browsable index of them.
 
   **Tours** is a category of its own: one switch per guided tour, **Diagram
   Tour**, **Plan Tours** (over **Boards Tour**, **Sheets Tour** and **Dashboards Tour**), **Workshop Tour**,
-  **Draw Tour**, **Forms Tour**, **Avatar Tour** and **Pages Tours** (over **Slides Tour**, **Infographic Tour**,
+  **Draw Tour**, **Forms Tour** and **Pages Tours** (over **Slides Tour**, **Infographic Tour**,
   **Article Tour** and **Logo Tour**), each with a line saying where it offers itself and a **Learn more**
   to its article, under one **Offer Again** section note: each tour offers
   itself once; switch one back on and close Settings to take it again, straight
@@ -795,8 +792,7 @@ and the dialog stays as the one complete, browsable index of them.
   a board or Sheet is open, the Dashboards tour on a dashboard), so closing the dialog only reruns it, when a track
   became owed while it was open ([Plan tour](../026-plan/plan-tour.md)). **Workshop Tour** works the same way against
   `workshopTourSeen` ([Workshop tour](../012-collaboration/workshop-tour.md)), **Draw Tour** against
-  `drawTourSeen` ([Draw tour](../023-draw-mode/draw-tour.md)), **Forms Tour** against `formTourSeen` ([Forms](../030-forms/forms.md) "The Forms tour"), **Avatar Tour** against `avatarTourSeen`
-  ([Avatar tour](../008-canvas/avatar-tour.md)), and the Pages tour is built as the Plan tour's
+  `drawTourSeen` ([Draw tour](../023-draw-mode/draw-tour.md)), **Forms Tour** against `formTourSeen` ([Forms](../030-forms/forms.md) "The Forms tour"), and the Pages tour is built as the Plan tour's
   rows are ([Pages tour](pages-tour.md)): **Pages Tours** over one row per page kind (**Slides Tour**,
   **Infographic Tour**, **Article Tour**, **Logo Tour**); `pagesTourKinds` lists the kinds answered. Power user
   mode's readout lists each tour's switch over all its tracks (**Plan Tours**, **Pages Tours**).

@@ -116,11 +116,6 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   brainstorm: 'grid',
   'workshop-board': 'grid',
   'icebreaker-questions': 'grid',
-  // Grid: an office's floor plan reads as one on gridded paper, the rooms carrying their own floors.
-  'virtual-office': 'grid',
-  'coworking-space': 'grid',
-  'team-pod': 'grid',
-  'all-hands-hall': 'grid',
   'people-bingo': 'grid',
   'empathy-map': 'grid',
   funnel: 'blank',

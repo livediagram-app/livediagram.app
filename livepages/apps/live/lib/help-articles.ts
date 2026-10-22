@@ -42,7 +42,6 @@ export const HELP_ARTICLES = {
   // One key per tool panel, so every mode's panel can point at the article
   // that explains it (docs/specs/018-help/contextual-help-links.md). Each of these resolves to a real page — a key
   // pointing at nothing is a bug, the same way an unregistered article is.
-  avatarMode: 'selection-modes/avatar-mode',
   laser: 'selection-modes/laser',
   spotlight: 'selection-modes/spotlight',
   eraser: 'selection-modes/eraser',
@@ -79,7 +78,6 @@ export const HELP_ARTICLES = {
   planTour: 'canvas/plan-mode/plan-tour',
   workshopTour: 'canvas/workshop-mode/workshop-tour',
   drawTour: 'canvas/draw-mode/draw-tour',
-  avatarTour: 'selection-modes/avatar-mode/avatar-tour',
   pagesTour: 'canvas/pages-mode/pages-tour',
   links: 'canvas/links',
   comments: 'collaboration/comments',
@@ -183,10 +181,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about the Draw Tour',
     description: 'What the tour shows you and how replaying works.',
   },
-  avatarTour: {
-    title: 'Learn about the Avatar Tour',
-    description: 'What the tour shows you and how replaying works.',
-  },
   pagesTour: {
     title: 'Learn about the Pages Tour',
     description: 'What the tour shows you and how replaying works.',
@@ -226,10 +220,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   isometricMode: {
     title: 'Learn about the isometric view',
     description: 'How the isometric projection works and when to use it.',
-  },
-  avatarMode: {
-    title: 'Learn about Avatar mode',
-    description: 'Tips for walking the canvas as an avatar and leading a session.',
   },
   laser: {
     title: 'Learn about the Laser',

@@ -1,11 +1,11 @@
 // Palette-category illustrations (docs/specs/018-help/help-app.md): the mode picker (Select, Hand,
-// Eraser, Format Painter, Laser, Spotlight, Avatar, Isometric) and the palette
+// Eraser, Format Painter, Laser, Spotlight, Isometric) and the palette
 // settings (Auto-Attach Arrows, Alignment Guides, Panel Opacity). Composed only from the shared primitives so the house style
-// holds — except the Avatar sprite, which is deliberately pixel art.
+// holds.
 
 import { Scene, Shape, Arrow, SelectionBox, Panel } from './primitives';
 import { IsoCard, iso } from './palette-modes-parts';
-import { PickerTrigger, PixelCharacter } from './selection-modes';
+import { PickerTrigger } from './selection-modes';
 
 // --- Mode scenes ------------------------------------------------------------
 
@@ -150,41 +150,6 @@ export function LaserMode() {
       {/* Bright head dot, pointing at B */}
       <circle cx={250} cy={171} r={5} className="fill-rose-500" />
       <circle cx={250} cy={171} r={9} className="fill-rose-400/30" />
-    </Scene>
-  );
-}
-
-/** Avatar mode: the picker set to Avatar, the pixel character standing on the
- *  shape being talked about (its feet inside it, which is what rings it), to the
- *  side of the label so both read, at the end of the dashed path it walked. */
-export function AvatarMode() {
-  return (
-    <Scene w={420} h={230}>
-      <PickerTrigger tool="avatar" />
-      <Shape x={68} y={150} w={76} h={44} label="A" />
-      <Shape x={226} y={128} w={140} h={54} label="B" />
-      {/* Walked path + the click that started it */}
-      <path
-        d="M150 178 q76 26 172 2"
-        className="stroke-brand-300"
-        strokeWidth={2}
-        fill="none"
-        strokeDasharray="4 5"
-        strokeLinecap="round"
-      />
-      <circle cx={150} cy={178} r={4} className="fill-brand-300/60" />
-      {/* "You are here" ring on the shape the avatar arrived at */}
-      <rect
-        x={222}
-        y={124}
-        width={148}
-        height={62}
-        rx={8}
-        className="fill-none stroke-brand-400"
-        strokeWidth={2}
-      />
-      {/* The character, feet inside the ringed shape where the path ends */}
-      <PixelCharacter fx={334} fy={178} />
     </Scene>
   );
 }

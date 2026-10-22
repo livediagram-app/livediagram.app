@@ -22,7 +22,6 @@ const STAMPED_SKINS: Partial<Record<ShapeKind, Skin>> = {
   'session-button': MODE_BUTTON_SKIN,
   picker: MODE_BUTTON_SKIN,
   reveal: { stroke: '#94a3b8', text: '#0f172a' },
-  chair: { stroke: '#94a3b8', text: '#0f172a' },
 };
 
 function wearsStampedSkin(el: BoxedElement): boolean {

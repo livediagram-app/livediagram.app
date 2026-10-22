@@ -9,11 +9,6 @@ import type { PresentationOverlay as PresentationOverlayComponent } from '@/comp
 // - Surfaces someone opens (the Explorer, search, layers, the style panel, tool panels, presenting): fetched
 //   once the opened document has rendered and the page is idle, so a first open does not wait.
 
-// Speech bubbles and the composer (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): fetched once someone who
-// may speak enters Avatar mode, or when a bubble first arrives.
-export const loadAvatarSpeechLayer = () =>
-  import('@/components/canvas/AvatarSpeechLayer').then((m) => m.AvatarSpeechLayer);
-
 export const loadCanvasPages = () =>
   import('@/components/canvas/CanvasPages').then((m) => m.CanvasPages);
 export const loadArticleFlows = () =>

@@ -368,9 +368,8 @@ export class DocumentRoom implements DurableObject {
   // without the runtime noticing yet, so we just shed its rate entry — the
   // runtime reaps the socket itself.
   // Deliver to the ONE session holding `presenceId`, skipping the sender.
-  // Used by the addressed presence ops (the Avatar-mode shove, docs/specs/008-canvas/avatar-mode.md):
-  // everyone else has no use for the packet, and fanning it out would leak who
-  // is being pushed to the whole room.
+  // Used by what is meant for one person (a released selection, who follows them): everyone else has no use for
+  // the packet, and fanning it out would tell the whole room.
   sendToPresence(presenceId: string, payload: ServerMessage, except?: WebSocket): void {
     const serialized = JSON.stringify(payload);
     for (const ws of this.state.getWebSockets()) {
@@ -662,19 +661,6 @@ export class DocumentRoom implements DurableObject {
       // ops get a monotonic seq within the epoch and land in the catch-up
       // log so a reconnecting peer can replay the delta (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1).
       if (isPresenceOp) {
-        // A shove (docs/specs/008-canvas/avatar-mode.md) is ADDRESSED, not broadcast: it asks one peer to
-        // step aside, and only the room knows which socket that is. Presence
-        // ids are server-minted precisely so a client never learns another
-        // peer's real owner id (docs/specs/015-api/public-api-and-tokens.md §6) — which also means a receiver can't
-        // recognise its own id in the packet. So the routing happens here, and
-        // a client acts on any avatar-push that reaches it.
-        if (opKind === 'avatar-push') {
-          const targetId = (msg.op as { targetId?: unknown }).targetId;
-          if (typeof targetId === 'string') {
-            this.sendToPresence(targetId, { kind: 'op', from: sender.id, op: msg.op }, ws);
-          }
-          return;
-        }
         this.broadcast({ kind: 'op', from: sender.id, op: msg.op }, ws);
       } else {
         // No comment author id leaves the room, whatever a client sent: it is

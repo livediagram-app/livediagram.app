@@ -18,7 +18,7 @@ export const SECTION_TEMPLATE_KINDS: Readonly<Record<string, readonly TemplateKi
     'meeting-agenda',
     'affinity-map',
     'crazy-eights',
-    'virtual-office',
+    'icebreaker-questions',
   ],
   diagrams: [
     'flowchart',

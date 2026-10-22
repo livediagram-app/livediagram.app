@@ -58,43 +58,6 @@ describe('useEditorBroadcast hidden cursors', () => {
   });
 });
 
-// docs/specs/008-canvas/avatar-mode.md "Status": a change is told at once, never lost to the throttle.
-describe('useEditorBroadcast avatar packets', () => {
-  const packet = (status: 'focus' | 'meeting') =>
-    ({
-      x: 0,
-      y: 0,
-      facing: 'down',
-      walking: false,
-      stepFrame: 0,
-      lift: 0,
-      wave: null,
-      status,
-    }) as never;
-
-  it('sends the packet a throttle window held back once the window ends', () => {
-    vi.useFakeTimers();
-    try {
-      const { hook, sent } = setup({ canvasTool: 'avatar' });
-      act(() => {
-        hook.result.current.broadcastAvatar(packet('focus'));
-        // Picked again inside the window: held, not dropped.
-        hook.result.current.broadcastAvatar(packet('meeting'));
-      });
-      act(() => {
-        vi.advanceTimersByTime(100);
-      });
-      const statuses = sent
-        .filter((m) => m.kind === 'op' && m.op.kind === 'avatar')
-        .map((m) => (m.kind === 'op' && m.op.kind === 'avatar' ? m.op.avatar?.status : null));
-      // The last word reaches the room, however the window fell.
-      expect(statuses.at(-1)).toBe('meeting');
-    } finally {
-      vi.useRealTimers();
-    }
-  });
-});
-
 // docs/specs/015-api/api.md `cursor`: peers see the cursor where it stopped.
 describe('useEditorBroadcast cursor', () => {
   it('sends the last position a throttle window held back once the window ends', () => {

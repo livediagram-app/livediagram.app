@@ -56,7 +56,7 @@ export async function enableDebugLogs(context: BrowserContext): Promise<void> {
   );
 }
 
-// The Draw, Avatar, Forms, Pages and element tours (docs/specs/023-draw-mode/draw-tour.md, docs/specs/008-canvas/avatar-tour.md,
+// The Draw, Forms, Pages and element tours (docs/specs/023-draw-mode/draw-tour.md,
 // docs/specs/030-forms/forms.md, docs/specs/007-editor/pages-tour.md) offer themselves 800 ms into their modes and their overlays would take the presses of every spec there; they have
 // their own unit tests. Marked seen for every page of the context.
 async function markModeToursSeen(context: BrowserContext): Promise<void> {
@@ -67,7 +67,6 @@ async function markModeToursSeen(context: BrowserContext): Promise<void> {
       // The Pages tour offers each page kind once (lib/tour-tracks.ts): every kind answered.
       if (
         prefs.drawTourSeen !== true ||
-        prefs.avatarTourSeen !== true ||
         prefs.formTourSeen !== true ||
         !Array.isArray(prefs.pagesTourKinds) ||
         !Array.isArray(prefs.elementTourKinds)
@@ -77,7 +76,6 @@ async function markModeToursSeen(context: BrowserContext): Promise<void> {
           JSON.stringify({
             ...prefs,
             drawTourSeen: true,
-            avatarTourSeen: true,
             formTourSeen: true,
             pagesTourSeen: true,
             pagesTourKinds: ['slide', 'infographic', 'article', 'logo'],

@@ -10,27 +10,27 @@ describe('ModeButtonFace', () => {
   it('shows its own label while it switches you in', () => {
     render(
       <ModeButtonFace
-        mode="avatar"
-        label="Walk In"
+        mode="laser"
+        label="Point It Out"
         activeMode="select"
         textColor="#0f172a"
         onPress={() => {}}
       />,
     );
-    expect(screen.getByText('Walk In')).toBeTruthy();
+    expect(screen.getByText('Point It Out')).toBeTruthy();
   });
 
   it('reads Leave once you are in its mode, whatever its own label', () => {
     render(
       <ModeButtonFace
-        mode="avatar"
-        label="Walk In"
-        activeMode="avatar"
+        mode="laser"
+        label="Point It Out"
+        activeMode="laser"
         textColor="#0f172a"
         onPress={() => {}}
       />,
     );
-    expect(screen.queryByText('Walk In')).toBeNull();
+    expect(screen.queryByText('Point It Out')).toBeNull();
     expect(screen.getByText('Leave')).toBeTruthy();
   });
 });

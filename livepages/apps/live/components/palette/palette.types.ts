@@ -8,8 +8,6 @@ export type CanvasTool =
   | 'select'
   | 'laser'
   | 'spotlight'
-  // Avatar mode (docs/specs/008-canvas/avatar-mode.md): a walking pixel character, read-only canvas.
-  | 'avatar'
   | 'eraser'
   | 'format'
   | 'isometric'
@@ -25,10 +23,6 @@ export type CanvasTool =
 export type PaletteProps = {
   canvasTool: CanvasTool;
   onSetCanvasTool: (tool: CanvasTool) => void;
-  // Leaves Avatar mode (docs/specs/008-canvas/avatar-mode.md) for whichever tool preceded it. Fired when
-  // the user picks any palette tile while walking, so the add lands instead of
-  // being swallowed by the read-only canvas. Omit outside the editor.
-  onExitAvatarMode?: () => void;
   // Enter zen mode (docs/specs/007-editor/zen-mode.md), offered as a Zen entry in the canvas-tool
   // dropdown under Isometric. An action, not a tool: firing it leaves the
   // current tool selected. Omit to hide the entry; exit stays on the zoom

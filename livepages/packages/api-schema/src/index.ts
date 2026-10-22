@@ -18,8 +18,6 @@ import type { BackgroundPattern, EditorMode, ShapeKind, Tab } from '@livepages/d
 import type { CreationTabKind, TemplateFamily } from './placement-defaults';
 import type { ItemTypeCatalogue } from '@livepages/items';
 
-export type { AvatarClothing, AvatarConfig, AvatarGender, AvatarHair, AvatarSize } from './avatar';
-
 // ---------------------------------------------------------------------
 // Documents
 // ---------------------------------------------------------------------
@@ -647,7 +645,6 @@ export * from './placement-defaults';
 export * from './home';
 export * from './drag-preview';
 export * from './article-caret';
-export * from './avatar-say';
 // Within reach: N most used plus N recent (docs/specs/004-interface-design/within-reach.md).
 export * from './within-reach';
 // Making a document is a use, a bulk import is not (docs/specs/013-workspace/explorer-home.md).

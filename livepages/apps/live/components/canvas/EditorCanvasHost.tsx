@@ -158,10 +158,6 @@ export function EditorCanvasHost() {
     beginShapePen,
     beginPolygon,
     beginPath,
-    broadcastAvatar,
-    broadcastAvatarPush,
-    broadcastAvatarSay,
-    avatarShove,
     fireReaction,
     pressFocusButton,
     reactionBursts,
@@ -262,7 +258,6 @@ export function EditorCanvasHost() {
     pauseTimer,
     pendingDraw,
     redo,
-    remoteAvatarRows,
     remoteCursorRows,
     remoteSelectionsByElement,
     renameFolder,
@@ -282,7 +277,6 @@ export function EditorCanvasHost() {
     selfParticipant,
     sessionShareCode,
     setAiPanelPosition,
-    exitAvatarTool,
     pressModeButton,
     pressSessionButton,
     revealedIds,
@@ -641,13 +635,6 @@ export function EditorCanvasHost() {
               snapGuideStore={snapGuideStore}
               remoteSelectionsByElement={remoteSelectionsByElement}
               remoteCursors={remoteCursorRows}
-              remoteAvatars={remoteAvatarRows}
-              onAvatarPresence={broadcastAvatar}
-              // Avatar mode (docs/specs/008-canvas/avatar-mode.md): clicking a peer's character walks over and
-              // shoves it; their own client decides what to do with the request.
-              onAvatarPush={broadcastAvatarPush}
-              onAvatarSay={broadcastAvatarSay}
-              avatarShove={avatarShove}
               onFireReaction={can.takePart ? fireReaction : undefined}
               // Bring Focus (docs/specs/012-collaboration/bring-focus.md) is live for view-role visitors too: it mutates
               // nothing, which makes it the same read-only act as following somebody,
@@ -676,7 +663,6 @@ export function EditorCanvasHost() {
               onSelectMarquee={selectMarquee}
               canvasTool={canvasTool}
               onSetCanvasTool={setCanvasTool}
-              onExitAvatarMode={exitAvatarTool}
               // Mode button (docs/specs/009-elements/mode-button.md): pressing one is exactly picking that mode from
               // the palette, so it goes through the same setter — telemetry, the
               // selection clear, and the empty-canvas guard all included. Pressing it

@@ -66,7 +66,7 @@ boards.
   Diagram does not offer listed with the other modes' tiles: a timer or a sticker picked there in
   Diagram is placed in Diagram, without switching mode.
 - **The element menus are unchanged.** A session element's own menu sections (Session, Reveal,
-  Picker, Scale, Segments, Decision, Chair) and every element's Collaborate section (Assign
+  Picker, Scale, Segments, Decision) and every element's Collaborate section (Assign
   Action, Comments) follow the element, not the mode.
 
 ## What stays in every mode
@@ -116,7 +116,7 @@ stop to draw):
   - **Record**: Comment panel, Action card, Agenda, Decision record, Roll call.
   - **React**: the five reaction pads.
   - **Selection Mode**: one button per selection mode.
-  - **Navigate**: Portal, Bring focus, Chair, Desk, Sofa, Fence, Link card.
+  - **Navigate**: Portal, Bring focus, Link card.
 - **On the strip, the category bar** ([Toolbar layout](../007-editor/toolbar-layout.md#the-category-bar)) shows the
   layout as **Shapes, Write, Draw · Layout · Ask, Session · Icons, Stickers, Media · Data**: no Popular; and Tools, Record, React, Selection Mode
   and Navigate gathered into **Session**, browsed in two panes (the groups down the side, a search across all of
@@ -165,9 +165,7 @@ Session templates open in Workshop, as the Draw templates open in Draw
   `objectives-planner`, `roadmap`, `raci-matrix`, `user-story-map`, `swot`, `business-model-canvas`,
   `stakeholder-map` and `opportunity-solution-tree` (grouped in Start a Workshop under Retrospectives, Workshops, Planning
   and Strategy, [Templates by mode](../007-editor/templates-by-mode.md#workshop-templates));
-- the games, `icebreaker-questions` and `people-bingo` ([Game templates](game-templates.md));
-- the spaces to walk round in Avatar mode, `virtual-office`, `coworking-space`, `team-pod` and `all-hands-hall`
-  ([Virtual Office template](virtual-office-template.md)).
+- the games, `icebreaker-questions` and `people-bingo` ([Game templates](game-templates.md)).
 
 Brainstorm mind maps stay in Diagram and the drawn warm-ups (`doodle-warmup`, `pre-mortem`,
 `idea-garden`) stay in Draw.

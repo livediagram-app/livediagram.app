@@ -349,8 +349,7 @@ export const PALETTE_CATEGORIES: {
     id: 'collab-navigate',
     label: 'Navigate',
     group: 6,
-    description:
-      'Take people somewhere and build an office: a portal, a bring-focus button, a chair, desk or sofa, a fence, an avatar pad, a link card, rooms, a meeting table, plants, shelves, a water cooler, a coffee machine and rugs.',
+    description: 'Take people somewhere: a portal, a bring-focus button and a link card.',
     icon: <MoveGroupIcon />,
   },
 ];

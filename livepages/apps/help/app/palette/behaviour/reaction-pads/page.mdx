@@ -6,20 +6,20 @@ import { ReactionPads } from '@/components/illustrations/palette-behaviour';
 export const metadata = helpMetadata({
   title: 'Reaction Pads',
   description:
-    'A pad that throws confetti, sparkles, hearts, applause or fireworks over itself when somebody presses it or walks a character onto it.',
+    'A pad that throws confetti, sparkles, hearts, applause or fireworks over itself when somebody presses it.',
   path: '/help/palette/behaviour/reaction-pads/',
 });
 
 <ArticleLayout
   title="Reaction Pads"
-  description="A pad the room can press, or walk onto, to throw a burst over the canvas."
+  description="A pad the room can press to throw a burst over the canvas."
   categoryTitle="Palette"
   categorySlug="palette"
   parentArticle={{ title: 'Collaborate', slug: 'behaviour' }}
   subArticles={getSubArticles('behaviour').filter((a) => a.slug !== 'reaction-pads')}
 >
 
-A **Reaction pad** throws a burst over itself when somebody presses it, or walks an [Avatar-mode](/help/selection-modes/avatar-mode/) character onto it, which is the same act.
+A **Reaction pad** throws a burst over itself when somebody presses it.
 
 ## Adding one
 
@@ -43,7 +43,7 @@ To switch an existing pad to another reaction, right-click it and pick one from 
 
 Everyone in the room sees the burst, and nothing is saved: a reaction is a moment, not a mark on the canvas, so there is nothing to undo and nothing for a latecomer to find.
 
-Pressing a pad again while it is still bursting starts the burst over rather than piling another on top. Standing on a pad in Avatar mode throws one burst; step off and back on for another.
+Pressing a pad again while it is still bursting starts the burst over rather than piling another on top.
 
 On a view-only link the pad shows but does not fire. With reduced motion on, the pad stops bobbing and the burst appears as a single still picture at its widest instead of animating, so you still see the moment.
 

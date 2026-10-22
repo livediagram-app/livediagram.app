@@ -359,13 +359,6 @@ export const TOURS_SETTINGS = settingsStack(
     ),
     toggle(
       'UI',
-      'AvatarTourSeenOff',
-      'AvatarTourSeenOn',
-      'Avatar Tour',
-      'The Avatar tour switched back on or off.',
-    ),
-    toggle(
-      'UI',
       'PagesTourSeenOff',
       'PagesTourSeenOn',
       'Pages Tours',

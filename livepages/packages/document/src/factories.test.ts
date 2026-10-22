@@ -442,9 +442,9 @@ describe('createShape (mode button, docs/specs/009-elements/mode-button.md)', ()
     expect(button.shadow).toBeTruthy();
     expect(button.borderRadius).toBe('lg');
     expect(button.textBold).toBe(true);
-    // Avatar is the default because walkthroughs are what the element is for.
+    // The Laser is the default: the mode a presenter hands the room.
     expect(button.mode).toBe(DEFAULT_BUTTON_MODE);
-    expect(button.mode).toBe('avatar');
+    expect(button.mode).toBe('laser');
   });
 
   it('carries no label, so the face can say "Switch to <Mode>" instead', () => {

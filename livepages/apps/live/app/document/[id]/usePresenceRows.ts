@@ -12,12 +12,11 @@ import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import type { PresenceClock } from './usePresenceState';
 import type { LaserPoint } from '@/lib/laser-buffer';
 import type { LaserConfig } from '@/lib/laser-config';
-import type { AgentPresence, AvatarPresence } from '@livepages/api-schema';
+import type { AgentPresence } from '@livepages/api-schema';
 import { buildAgentFocusByElement, foldAgentPresence } from '@/lib/agent-presence-rows';
 import {
   buildLaserTrailRows,
   buildParticipantsByTab,
-  buildRemoteAvatarRows,
   buildRemoteCursorRows,
   buildRemoteSelectionsByElement,
   type RemoteSelection,
@@ -42,8 +41,6 @@ type PresenceRowsDeps = {
   remoteCursors: Map<string, { tabId: string; x: number; y: number } | null>;
   remoteSelections: Map<string, RemoteSelection>;
   remoteLaserTrails: Map<string, { tabId: string; points: LaserPoint[] }>;
-  // Peers' Avatar-mode characters (docs/specs/008-canvas/avatar-mode.md), latest snapshot each.
-  remoteAvatars: Map<string, { tabId: string; avatar: AvatarPresence }>;
   localLaserTrail: LaserPoint[];
   // The local participant's laser pen (docs/specs/008-canvas/laser-panel.md).
   selfLaserConfig?: LaserConfig;
@@ -71,7 +68,6 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
     remoteCursors,
     remoteSelections,
     remoteLaserTrails,
-    remoteAvatars,
     localLaserTrail,
     // Our own pen (docs/specs/008-canvas/laser-panel.md): peers' arrive with their samples, ours is read
     // from state so our trail never lags a change we just made.
@@ -174,17 +170,6 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
       selfLaserConfig,
     ],
   );
-  // Peer characters for the avatar layer (docs/specs/008-canvas/avatar-mode.md). Gated by the same
-  // hide-cursors vote as cursors: a walking character is a position on the
-  // canvas, so withholding cursors while showing avatars would leak exactly
-  // what the vote hides.
-  const remoteAvatarRows = useMemo(
-    () =>
-      cursorsHidden
-        ? []
-        : buildRemoteAvatarRows(remoteAvatars, livePresenceById, selfParticipant.id, activeId),
-    [cursorsHidden, remoteAvatars, livePresenceById, selfParticipant.id, activeId],
-  );
   const remoteSelectionsByElement = useMemo(
     () =>
       buildRemoteSelectionsByElement(
@@ -222,7 +207,6 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
     livePresenceById,
     participantsByTab,
     remoteCursorRows,
-    remoteAvatarRows,
     laserTrailRows,
     remoteSelectionsByElement,
     agentFocusByElement,

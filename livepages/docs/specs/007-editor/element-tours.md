@@ -446,8 +446,7 @@ On a selected portal, from `portal-tour-steps.ts`.
    a drag only moves it. An unlinked portal instead has **Not Linked Yet**: a dim ring leads nowhere until linked.
 3. **Link It**: the menu step. Portal: Name, Leads To (a link works both ways), Create Portal (a linked partner
    beside it).
-4. **Walk Into It**: rings the portal; an Avatar-mode character walking in steps out of the other.
-5. **That Is a Portal**: the closing card, with **Portals Help**.
+4. **That Is a Portal**: the closing card, with **Portals Help**.
 
 ## Share roles
 
@@ -493,7 +492,7 @@ Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour
   `LaneTourStepLane`, `...Gutter`, `...Seam`, `...Carry`, `...Menu` and `...Outro`; the Boundary's
   `BoundaryTourStepZone`, `...Title`, `...Meta`, `...Menu` and `...Outro`; the Diagram Key's `DiagramKeyTourStepKey`,
   `...Meaning`, `...Empty`, `...Title` and `...Outro`; the Portal's `PortalTourStepPortal`, `...Travel`,
-  `...Unlinked`, `...Menu`, `...Walk` and `...Outro`.
+  `...Unlinked`, `...Menu` and `...Outro`.
 - **End**: `UI` · `Ended` · `<Kind>TourCompleted` | `<Kind>TourSkipped`.
 - **Settings row**: `UI` · `Toggled` · `<Kind>TourSeenOn` | `<Kind>TourSeenOff`; the switch over them all
   `ElementToursSeenOn` | `ElementToursSeenOff`.

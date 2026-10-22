@@ -12,7 +12,6 @@ type ActiveTour =
   | 'workshop'
   | 'draw'
   | 'pages'
-  | 'avatar'
   | 'form'
   | 'element'
   // Any Show Me running (ShowMeStage): an offer never comes up beside one.

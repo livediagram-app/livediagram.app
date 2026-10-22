@@ -12,7 +12,6 @@ export const SELECTION_MODES = [
   'pan',
   'laser',
   'spotlight',
-  'avatar',
   'eraser',
   'format',
   'isometric',
@@ -20,19 +19,23 @@ export const SELECTION_MODES = [
 
 export type SelectionMode = (typeof SELECTION_MODES)[number];
 
-// The mode a Mode Button switches to when it carries none — the reason the
-// element exists (docs/specs/008-canvas/avatar-mode.md walkthroughs), so it is the default rather than
-// Select.
-export const DEFAULT_BUTTON_MODE: SelectionMode = 'avatar';
+// The mode a Mode Button switches to when it carries none: the Laser, the one a
+// presenter hands the room, rather than Select.
+export const DEFAULT_BUTTON_MODE: SelectionMode = 'laser';
 
-// What each mode is called on a Mode Button's face ("Switch to Avatar"): the
+// The mode a Mode Button switches to. One from livediagram can name a mode livepages does not have (Avatar); it
+// presses to the default, as one with none does.
+export function buttonMode(mode: unknown): SelectionMode {
+  return isSelectionMode(mode) ? mode : DEFAULT_BUTTON_MODE;
+}
+
+// What each mode is called on a Mode Button's face ("Switch to Laser"): the
 // canvas face and the export both name the destination from here.
 export const SELECTION_MODE_LABEL: Record<SelectionMode, string> = {
   select: 'Select',
   pan: 'Hand',
   laser: 'Laser',
   spotlight: 'Spotlight',
-  avatar: 'Avatar',
   eraser: 'Eraser',
   format: 'Format',
   isometric: 'Isometric',

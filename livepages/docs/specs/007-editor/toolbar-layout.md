@@ -26,7 +26,7 @@ and one category's tiles:
   workbench frame, which has no Explorer button, the card holds **Back** instead
   ([Workbench embeds](../013-workspace/workbench-embeds.md#what-renders)).
 - **Left: the selection mode.** The canvas-tool picker (Select / Hand /
-  Eraser / Format / Laser / Spotlight / Isometric / Zen (Avatar only while in it), [Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md))
+  Eraser / Format / Laser / Spotlight / Isometric / Zen, [Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md))
   as a compact icon trigger, opening the banded tile grid.
 - **Then, in Diagram, Workshop and Pages, the category bar** ("The category bar").
 - **Then, in Plan, the category picker.** The same banded category grid ([Palette top-level categories and bands](../010-palette/palette-top-level-categories.md)),

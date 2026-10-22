@@ -68,14 +68,6 @@ export const FACILITATOR_RELEASED = chart(
   'The facilitator handed the role back.',
 );
 
-export const AVATARS_CUSTOMISED = chart(
-  'UI',
-  'Changed',
-  'Avatars Customised',
-  'Someone changed their avatar: randomised, clothing, or figure.',
-  { typeIn: (t) => (t ?? '').startsWith('Avatar') },
-);
-
 export const FEED_RETRIES = chart(
   'Activity',
   'Loaded',
@@ -487,7 +479,6 @@ export const LIVE_TOGETHER: MetricStack = {
     VIEWPORTS_FOLLOWED,
     FACILITATOR_CLAIMED,
     FACILITATOR_RELEASED,
-    AVATARS_CUSTOMISED,
     FACILITATOR_CONTROLS,
   ],
   headline: MULTIPLAYER_SESSIONS,

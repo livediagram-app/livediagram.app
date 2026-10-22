@@ -33,7 +33,7 @@ export type FaqCategory = {
 const ICON = 18;
 // Written out rather than read from @livepages/templates: this module ships in the FAQ's client bundle, and the
 // catalogue is ~15 KB for one number. faq-content.test.tsx pins it to TEMPLATES.length.
-export const TEMPLATE_COUNT = 141;
+export const TEMPLATE_COUNT = 137;
 // The template categories, pinned to TEMPLATE_CATEGORIES.length by faq-content.test.tsx the same way.
 export const TEMPLATE_CATEGORY_COUNT = 14;
 // Pages mode's slide layouts, pinned to the catalogue by faq-content.test.tsx like the template count.
@@ -395,20 +395,6 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           'Yes. Open Collaborators from the avatars on the tab bar and press Follow beside a teammate: your view goes wherever theirs goes, until you move away yourself. See following along.',
       },
       {
-        q: 'Can we walk around a board together?',
-        a: (
-          <>
-            Yes. Put an Avatar button on a board and everyone who presses it walks a little pixel
-            character around the canvas, with speech bubbles, a status and reactions. The Virtual
-            Office, Coworking Space and All-Hands Hall templates turn a tab into rooms, desks and a
-            coffee machine to meet at. See{' '}
-            <a href="/help/selection-modes/avatar-mode/">Avatar mode</a>.
-          </>
-        ),
-        aText:
-          'Yes. Put an Avatar button on a board and everyone who presses it walks a little pixel character around the canvas, with speech bubbles, a status and reactions. The Virtual Office, Coworking Space and All-Hands Hall templates turn a tab into rooms, desks and a coffee machine to meet at. See Avatar mode.',
-      },
-      {
         q: 'Can I stop a finished tab being changed?',
         a: (
           <>
@@ -440,7 +426,8 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
             Very. Switch a tab to Workshop, the mode for running a session, or start from a
             retrospective template, which opens there. Whoever holds the facilitator role runs the
             room’s timer, votes and reveals. Estimate cards run planning poker, a temperature check
-            shows how the room feels, and an idea box collects anonymous ideas. See <a href="/help/canvas/workshop-mode/">Workshop mode</a>.
+            shows how the room feels, and an idea box collects anonymous ideas. See{' '}
+            <a href="/help/canvas/workshop-mode/">Workshop mode</a>.
           </>
         ),
         aText:

@@ -272,21 +272,6 @@ const FORM_TOUR_STEP_SOURCE: string[] = [
         .join('')}`,
   );
 
-// The Avatar tour's steps, as avatarTourStepTelemetryType makes them (apps/live avatar-tour-steps.ts,
-// docs/specs/008-canvas/avatar-tour.md). The welcome card sends no step view.
-const AVATAR_TOUR_STEP_SOURCE: string[] = [
-  ...read('live/components/tour/avatar-tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm),
-]
-  .map((m) => m[1]!)
-  .filter((id) => id !== 'welcome')
-  .map(
-    (id) =>
-      `AvatarTourStep${id
-        .split('-')
-        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-        .join('')}`,
-  );
-
 // The Pages tour's steps, as pagesTourStepTelemetryType makes them (apps/live PagesTourHost.tsx,
 // docs/specs/007-editor/pages-tour.md): each page kind's track names its kind before the step. The welcome card
 // sends no step view.
@@ -628,7 +613,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/live/components/tour/ElementTourHost.tsx UI·Closed': {
     values: ELEMENT_TOUR_TOKENS.map((t) => `${t}Offer`),
   },
-  'apps/live/components/tour/AvatarTourHost.tsx UI·View': { values: AVATAR_TOUR_STEP_SOURCE },
   'apps/live/components/tour/PagesTourHost.tsx UI·View': {
     values: PAGES_TOUR_STEP_SOURCE,
   },

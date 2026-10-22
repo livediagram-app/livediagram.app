@@ -110,13 +110,13 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   concepts: 8,
   data: 7,
   // The Collaborate elements, one category per group (docs/specs/012-collaboration/workshop-mode.md
-  // "The palette"): 34 tiles between them.
+  // "The palette"): 29 tiles between them.
   'collab-ask': 4,
   'collab-tools': 5,
   'collab-record': 5,
   'collab-react': 5,
-  'collab-mode': 8,
-  'collab-navigate': 15,
+  'collab-mode': 7,
+  'collab-navigate': 3,
   // Plan mode's Boards and Cards (docs/specs/026-plan/plan-mode.md "The palette"): nine boards, one
   // card per item type.
   'plan-boards': 10,

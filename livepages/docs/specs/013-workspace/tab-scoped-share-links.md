@@ -68,7 +68,7 @@ The upgrade forwards the resolved scope to the room with the role (`X-Verified-T
 
 For a scoped session:
 
-- **Outbound**: the room doesn't send it any op carrying a different `tabId`: element, tab, cursor, selection, avatar, reaction, viewport and focus ops. A `select` without a `tabId` is dropped, as is a `log` op whose entry is on another tab. `document-meta` is redacted the same way the REST document is. Catch-up replay applies the same filter. Its `seq` can lag because of filtered ops, which is harmless: every op on its own tab still reaches it, and the ledger merge is per tab.
+- **Outbound**: the room doesn't send it any op carrying a different `tabId`: element, tab, cursor, selection, reaction, viewport and focus ops. A `select` without a `tabId` is dropped, as is a `log` op whose entry is on another tab. `document-meta` is redacted the same way the REST document is. Catch-up replay applies the same filter. Its `seq` can lag because of filtered ops, which is harmless: every op on its own tab still reaches it, and the ledger merge is per tab.
 - **Inbound**: the room drops any op from it that carries a different `tabId` (presence included, so a `tab-focus` elsewhere too), a `select` with no `tabId`, and `document-meta` outright (and the retired `log` / `log-remove` ops of the removed Activity panel). Anything else fails closed.
 - Presence entries still carry each peer's tab id, so avatars can stack on "Not shared" pills. An id is not content.
 

@@ -1,10 +1,9 @@
 // Selection-mode illustrations (docs/specs/018-help/help-app.md): the palette's canvas-tool picker
 // as the editor actually draws it (a trigger at the start of the palette strip that
 // opens a tile grid in three bands), the panels each tool opens while it is
-// active, the pixel character Avatar mode walks, and the isometric orbit
-// button. The per-mode canvas scenes in palette-modes.tsx put PickerTrigger on
-// top, so every selection-mode article shows the same picker with its own tool
-// chosen.
+// active, and the isometric orbit button. The per-mode canvas scenes in
+// palette-modes.tsx put PickerTrigger on top, so every selection-mode article
+// shows the same picker with its own tool chosen.
 //
 // Labels are lifted from apps/live: canvas-tool-options.tsx (tool names,
 // shortcuts, bands), the *-config.ts catalogues (panel rows and values), and
@@ -13,7 +12,6 @@
 import type { ReactNode } from 'react';
 import { Scene, Shape, Arrow, Panel, Label, Cursor } from './primitives';
 import {
-  AvatarGlyph,
   EraserGlyph,
   HandGlyph,
   IsoCard,
@@ -37,7 +35,6 @@ const TOOLS = [
   { key: 'format', label: 'Format', shortcut: undefined, band: 0, Glyph: PainterGlyph },
   { key: 'laser', label: 'Laser', shortcut: 'K', band: 1, Glyph: LaserGlyph },
   { key: 'spotlight', label: 'Spotlight', shortcut: undefined, band: 1, Glyph: SpotlightGlyph },
-  { key: 'avatar', label: 'Avatar', shortcut: 'W', band: 1, Glyph: AvatarGlyph },
   { key: 'slide-deck', label: 'Slide Deck', shortcut: undefined, band: 1, Glyph: SlideDeckGlyph },
   { key: 'isometric', label: 'Isometric', shortcut: 'I', band: 2, Glyph: IsometricGlyph },
   { key: 'zen', label: 'Zen', shortcut: 'Z', band: 2, Glyph: ZenGlyph },
@@ -537,84 +534,6 @@ export function SpotlightTool() {
           below B's label so the lit shape still reads. No ring: the light's edge is the shroud. */}
       <circle cx={234} cy={166} r={8} className="fill-sky-400/30" />
       <circle cx={234} cy={166} r={4.5} className="fill-sky-400 stroke-white" strokeWidth={1.5} />
-    </Scene>
-  );
-}
-
-// --- Avatar -----------------------------------------------------------------
-
-/** The pixel character Avatar mode walks, standing with its feet at (fx, fy).
- *  `shirt` is the owner's participant colour; `name` draws the chip other
- *  people's characters wear above their heads (your own has none). */
-export function PixelCharacter({
-  fx,
-  fy,
-  px = 3,
-  shirt = 'brand',
-  name,
-  hair = 'fill-amber-900',
-}: {
-  fx: number;
-  fy: number;
-  px?: number;
-  shirt?: 'brand' | 'emerald' | 'violet' | 'rose';
-  name?: string;
-  hair?: string;
-}) {
-  const p = (n: number) => n * px;
-  const shirtCls = {
-    brand: ['fill-brand-500', 'fill-brand-600'],
-    emerald: ['fill-emerald-500', 'fill-emerald-600'],
-    violet: ['fill-violet-500', 'fill-violet-600'],
-    rose: ['fill-rose-500', 'fill-rose-600'],
-  }[shirt];
-  const chipFill = {
-    brand: 'fill-brand-500',
-    emerald: 'fill-emerald-500 dark:fill-emerald-700',
-    violet: 'fill-violet-500 dark:fill-violet-700',
-    rose: 'fill-rose-500 dark:fill-rose-700',
-  }[shirt];
-  return (
-    <g>
-      <g transform={`translate(${fx - p(8)} ${fy - p(23)})`} shapeRendering="crispEdges">
-        <ellipse cx={p(8)} cy={p(23)} rx={p(5)} ry={p(1.2)} className="fill-slate-900/25" />
-        <rect x={p(5)} y={p(15)} width={p(3)} height={p(6)} className="fill-slate-600" />
-        <rect x={p(9)} y={p(15)} width={p(3)} height={p(6)} className="fill-slate-600" />
-        <rect x={p(5)} y={p(21)} width={p(3)} height={p(2)} className="fill-slate-800" />
-        <rect x={p(9)} y={p(21)} width={p(3)} height={p(2)} className="fill-slate-800" />
-        <rect x={p(4)} y={p(9)} width={p(8)} height={p(6)} className={shirtCls[0]} />
-        <rect x={p(2)} y={p(9)} width={p(2)} height={p(4)} className={shirtCls[0]} />
-        <rect x={p(12)} y={p(9)} width={p(2)} height={p(4)} className={shirtCls[1]} />
-        <rect x={p(4)} y={p(1)} width={p(8)} height={p(8)} className="fill-amber-200" />
-        <rect x={p(3)} y={0} width={p(10)} height={p(3)} className={hair} />
-        <rect x={p(6)} y={p(5)} width={px} height={px} className="fill-slate-800" />
-        <rect x={p(9)} y={p(5)} width={px} height={px} className="fill-slate-800" />
-      </g>
-      {name && (
-        <g transform={`translate(${fx - (name.length * 6.5 + 12) / 2} ${fy - p(23) - 22})`}>
-          <rect width={name.length * 6.5 + 12} height={17} rx={5} className={chipFill} />
-          <Label x={6} y={9} tone="onAccent" size={10} weight={600}>
-            {name}
-          </Label>
-        </g>
-      )}
-    </g>
-  );
-}
-
-/** Walking together: your character (no chip) beside two colleagues', each in
- *  their participant colour with a name chip, one of them on the box being
- *  discussed. */
-export function WalkingTogether() {
-  return (
-    <Scene w={420} h={220}>
-      <Shape x={40} y={60} w={96} h={48} label="Sign up" />
-      <Shape x={250} y={60} w={150} h={48} accent label="Payment" />
-      {/* No ring under Priya: only your own character rings what it stands on (Canvas.tsx). */}
-      <Arrow from={[136, 84]} to={[250, 84]} tone="muted" />
-      <PixelCharacter fx={92} fy={196} />
-      <PixelCharacter fx={204} fy={186} shirt="emerald" name="Sam" hair="fill-slate-800" />
-      <PixelCharacter fx={272} fy={112} shirt="violet" name="Priya" hair="fill-slate-900" />
     </Scene>
   );
 }

@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buttonMode,
+  DEFAULT_BUTTON_MODE,
   DEFAULT_SESSION_TOOL,
   DEFAULT_TIMER_MINUTES,
   DEFAULT_VOTE_DOTS,
@@ -24,6 +26,15 @@ describe('fixed-size shapes', () => {
     expect(isFixedSizeShape('rectangle')).toBe(false);
     expect(isFixedSizeElement({ type: 'shape', shape: 'done-check' })).toBe(true);
     expect(isFixedSizeElement({ type: 'shape', shape: 'rectangle' })).toBe(false);
+  });
+});
+
+describe('buttonMode', () => {
+  it('reads the mode a button carries, and the default for none or one livepages lacks', () => {
+    expect(buttonMode('spotlight')).toBe('spotlight');
+    expect(buttonMode(undefined)).toBe(DEFAULT_BUTTON_MODE);
+    // A button from livediagram can carry Avatar, which livepages does not have.
+    expect(buttonMode('avatar')).toBe(DEFAULT_BUTTON_MODE);
   });
 });
 

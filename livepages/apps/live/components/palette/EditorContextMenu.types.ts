@@ -18,7 +18,6 @@ import type {
   EntityField,
   FieldRemap,
   AgendaItem,
-  ChairFacing,
   DecisionStatus,
   EstimateScale,
   Element,
@@ -260,9 +259,6 @@ export type EditorContextMenuProps = {
   onSetDecisionStatus: (status: DecisionStatus) => void;
   onSetDecisionDate: (date: string | undefined) => void;
   onSetDecisionDrivers: (drivers: string[]) => void;
-  onSetChairFacing: (facing: ChairFacing) => void;
-  // Room (docs/specs/009-elements/office.md): which wall its doorway is in.
-  onSetRoomDoor: (door: import('@livepages/document').RoomDoor) => void;
   // Every tab, because a portal link can cross tabs, plus which one is active
   // so the picker can mark the off-tab candidates.
   tabs: import('@livepages/document').Tab[];

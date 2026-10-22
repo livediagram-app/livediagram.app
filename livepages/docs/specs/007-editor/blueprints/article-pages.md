@@ -269,7 +269,7 @@ caretOf(state))` (editable only), and `setActiveArticle({ handle, pageId, select
   `onWritingPress` (the canvas selection clears); the paper layer (`[data-article-paper]`, one per
   shown page, editable and interactive only) calls `focusAt(clientX, clientY)`: into the pressed
   page's column, then `posAtCoords`, else the end.
-- `interactive` is false while a draw is pending or the spotlight or avatar tool is in hand
+- `interactive` is false while a draw is pending or the spotlight tool is in hand
   (`Canvas`); `data-inert` then drops the writing's pointer events.
 
 ### Keys, rules, slash menu
@@ -748,13 +748,13 @@ ended`, `articles turned into pages`. Page-level edits log `[page] …` (Pages
 
 ## Assets and external resources
 
-| Asset                           | Source / licence                                                                                                                                                                                                          | Path                                                             |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| Asset                           | Source / licence                                                                                                                                                                                                        | Path                                                             |
+| ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
 | ProseMirror                     | npm `prosemirror-model` 1.25, `-state` 1.4, `-view` 1.42, `-commands` 1.7, `-keymap` 1.2, `-inputrules` 1.5, `-gapcursor` 1.4 (`-transform` comes in through them), MIT; listed on `/licences` by `@livepages/licences` | `apps/live/package.json`; lazy chunk with `ArticleEditor`        |
-| Writing stylesheet              | Own                                                                                                                                                                                                                       | `apps/live/app/article-pages.css` (imported by `globals.css`)    |
-| Fonts                           | The font catalogue ([Fonts](../../004-interface-design/fonts.md)), Roboto Mono for code                                                                                                                                   | `resolveFontStack`; embedded in SVG by `svgFontDefs`             |
+| Writing stylesheet              | Own                                                                                                                                                                                                                     | `apps/live/app/article-pages.css` (imported by `globals.css`)    |
+| Fonts                           | The font catalogue ([Fonts](../../004-interface-design/fonts.md)), Roboto Mono for code                                                                                                                                 | `resolveFontStack`; embedded in SVG by `svgFontDefs`             |
 | Toolbar, zone bar glyphs        | Lucide (ISC AND MIT, vendored geometry), via `@livepages/icons/lucide`; listed on `/licences`                                                                                                                           | `packages/icons/lucide-manifest.json`, `src/lucide.generated.ts` |
-| Page kind miniatures, note face | Own inline SVG                                                                                                                                                                                                            | `page-kind-cards.tsx`, `ArticleNoteFace.tsx`                     |
+| Page kind miniatures, note face | Own inline SVG                                                                                                                                                                                                          | `page-kind-cards.tsx`, `ArticleNoteFace.tsx`                     |
 
 ## Defaults ledger
 

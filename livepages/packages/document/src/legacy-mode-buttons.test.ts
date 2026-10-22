@@ -23,6 +23,12 @@ describe('migrateLegacyModeButtons', () => {
     expect(out).toEqual(button());
   });
 
+  it('drops a stored Avatar mode the same way', () => {
+    const [out] = migrateLegacyModeButtons([button({ mode: 'avatar' })]);
+    expect(out).toEqual(button());
+    expect(isValidElement(migrateIncomingElements([button({ mode: 'avatar' })])[0])).toBe(true);
+  });
+
   it('keeps every other mode', () => {
     const els = [button({ mode: 'laser' }), button({ id: 'c' })];
     expect(migrateLegacyModeButtons(els)).toBe(els);

@@ -66,9 +66,6 @@
   /* The layout gallery's Surprise Me: its dice tumble once as it picks. */
   --animate-dice-roll: dice-roll var(--transition-duration-long) cubic-bezier(0.34, 1.56, 0.64, 1);
   --animate-fly-up-in: fly-up-in var(--transition-duration-long) cubic-bezier(0.16, 1, 0.3, 1);
-  /* An Avatar-mode speech bubble opening above a character's head (docs/specs/008-canvas/avatar-mode.md "Speech
-   * bubbles"): it pops, growing from 60% with a little overshoot. Long motion token. */
-  --animate-speech-pop: speech-pop var(--transition-duration-long) cubic-bezier(0.34, 1.56, 0.64, 1);
   --animate-sheet-up: sheet-up var(--transition-duration-long) cubic-bezier(0.16, 1, 0.3, 1);
   /* A toast arriving and leaving (docs/specs/004-interface-design/toasts.md "Motion"): it rises 8px and fades in
    * from 98% over short, and leaves over micro, fading and dropping 4px. `forwards` holds the last frame until the
@@ -138,16 +135,6 @@
   }
   to {
     transform: translateY(0) scale(1);
-  }
-}
-
-@keyframes speech-pop {
-  from {
-    transform: scale(0.6);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
   }
 }
 
@@ -483,9 +470,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  /* A dialog only fades in: no rise, no scale. So does a speech bubble (no pop) and a tour's step card (no rise). */
+  /* A dialog only fades in: no rise, no scale. So does a tour's step card (no rise). */
   .animate-dialog-in,
-  .animate-speech-pop,
   .animate-tour-card-in {
     animation-name: fade-in;
   }

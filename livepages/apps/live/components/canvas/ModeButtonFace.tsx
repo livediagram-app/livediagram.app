@@ -8,9 +8,8 @@
 //     is left alone rather than swallowed, so dragging the button still moves
 //     it — a click is a click, a drag is a drag.
 //  2. It keeps `pointer-events: auto` even inside a pointer-inert canvas
-//     layer, which is what makes a button still work while someone is walking
-//     around in Avatar mode. A control bar of these is useless if the mode it
-//     hands out is a one-way portal.
+//     layer, which is what makes a button still work in a read-only mode. A
+//     control bar of these is useless if the mode it hands out is a one-way portal.
 //  3. It carries the affordances a button needs to look pressable: the glyph
 //     over the label (the toolbar-button shape), a hover lift, and a press that
 //     scales and sinks. Hover is desktop-only — a touch device has no hover, and
@@ -20,7 +19,6 @@ import { SELECTION_MODE_LABEL, type SelectionMode } from '@livepages/document';
 import { keycapEdge } from '@/components/canvas/paper-kit';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import {
-  AvatarModeIcon,
   EraserIcon,
   FormatPainterIcon,
   IsometricIcon,
@@ -37,7 +35,6 @@ const MODE_ICON: Record<SelectionMode, React.ReactNode> = {
   pan: <PanIcon />,
   laser: <LaserIcon />,
   spotlight: <SpotlightIcon />,
-  avatar: <AvatarModeIcon />,
   eraser: <EraserIcon />,
   format: <FormatPainterIcon />,
   isometric: <IsometricIcon />,

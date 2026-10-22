@@ -36,7 +36,7 @@ Categories fall into two kinds. The **support** categories carry standalone arti
 
 | slug                   | title                | icon      | kind    |
 | ---------------------- | -------------------- | --------- | ------- |
-| `about`                | About livepages    | info      | support |
+| `about`                | About livepages      | info      | support |
 | `getting-started`      | Getting Started      | rocket    | support |
 | `tips-and-tricks`      | Tips and Tricks      | lightbulb | support |
 | `account-and-data`     | Account and Data     | user      | support |
@@ -188,10 +188,7 @@ drag, the obstacle, and the other arrow. The Sharing guides ran into it a third
 way: the obvious drawing for each was already spoken for somewhere else in the
 set — a padlock is `locking`, a chain is `links`, a picture is `images` — so they
 draw the password field, the deadline, the page the diagram sits inside, and the
-refresh. Avatar Mode and Walking Together met it a fourth way: the set already
-had five person glyphs and every one was a head-and-shoulders bust, so these two
-are whole figures mid-stride — which happens to be exactly what the feature is.
-And Changing the Theme is the plainest collision of the lot: a wheel of hues
+refresh. And Changing the Theme is the plainest collision of the lot: a wheel of hues
 rendered as the `pie-chart` glyph exactly, while `themes` already owned the paint
 palette and `custom-themes` owned swatches-with-a-plus, so what was left to draw
 was the browsing itself. By the Collaboration batch every one of the six had its

@@ -78,7 +78,7 @@ Available to everyone, including view-only visitors (looking is read-only).
 
 - **Tool dropdown** in the palette (its own isometric-cube icon).
   The picker is grouped with menu dividers: editing tools (Select / Hand /
-  Eraser / Format), then presenter tools (Laser / Spotlight / Avatar / Slide
+  Eraser / Format), then presenter tools (Laser / Spotlight / Slide
   Deck), then the view modes (Isometric, then Zen) at the end. Selecting it switches the cursor mode the same way Select /
   Hand / Laser do.
 - **Keyboard:** `I` selects it (free letter; `V` / `H` / `K` are the

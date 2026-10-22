@@ -12,7 +12,7 @@ Putting the tools ON the canvas makes the canvas self-facilitating. A retro temp
 
 ## The element
 
-- A **shape kind**, `session-button`, sharing the Selection Mode button's face and rules: a fixed-size tile, the tool's glyph in a chip over the action's name, a light button surface, pressable inside the pointer-inert Avatar / Spotlight / Isometric layers.
+- A **shape kind**, `session-button`, sharing the Selection Mode button's face and rules: a fixed-size tile, the tool's glyph in a chip over the action's name, a light button surface, pressable inside the pointer-inert Spotlight / Isometric layers.
 - What it starts lives in **`ShapeElement.session`**, one small object rather than a scatter of fields:
   - `{ tool: 'timer', minutes }` — a countdown of that many minutes (default 5).
   - `{ tool: 'vote', dots }` — a dot vote with that many dots each (default 3).

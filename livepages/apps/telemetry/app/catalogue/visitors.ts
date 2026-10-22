@@ -12,7 +12,6 @@ import {
   WORKSHOP_TOUR_OFFERED,
   DRAW_TOUR_OFFERED,
   FORM_TOUR_OFFERED,
-  AVATAR_TOUR_OFFERED,
   PAGES_TOUR_OFFERED,
   ELEMENT_TOURS_OFFERED,
   POWER_USER_OFFERED,
@@ -450,63 +449,6 @@ export const FORM_TOUR: MetricStack = {
   headline: FORM_TOURS_STARTED,
 };
 
-// The Avatar tour (docs/specs/008-canvas/avatar-tour.md): its own funnel, beside the Draw tour's.
-export const AVATAR_TOUR_DECLINED = chart(
-  'UI',
-  'Closed',
-  'Avatar Tours Declined',
-  'The Avatar tour turned down on its welcome card, before it started.',
-  { types: ['AvatarTourOffer'], rising: 'neutral' },
-);
-
-export const AVATAR_TOURS_STARTED = chart(
-  'UI',
-  'Started',
-  'Avatar Tours Started',
-  'The Avatar tour started.',
-  { types: ['AvatarTour'] },
-);
-
-export const AVATAR_TOUR_STEPS_VIEWED = chart(
-  'UI',
-  'View',
-  'Avatar Tour Steps Viewed',
-  'A step of the Avatar tour shown.',
-  { typeIn: (t) => (t ?? '').startsWith('AvatarTourStep') },
-);
-
-export const AVATAR_TOURS_COMPLETED = chart(
-  'UI',
-  'Ended',
-  'Avatar Tours Completed',
-  'The Avatar tour run to its last step.',
-  { types: ['AvatarTourCompleted'] },
-);
-
-export const AVATAR_TOURS_SKIPPED = chart(
-  'UI',
-  'Ended',
-  'Avatar Tours Skipped',
-  'The Avatar tour closed before its end.',
-  { types: ['AvatarTourSkipped'], rising: 'neutral' },
-);
-
-export const AVATAR_TOUR: MetricStack = {
-  stack: true,
-  title: 'Avatar Tour',
-  blurb:
-    'The first time in Avatar mode: the Avatar tour offered, stepped through, finished or skipped.',
-  members: [
-    AVATAR_TOUR_OFFERED,
-    AVATAR_TOUR_DECLINED,
-    AVATAR_TOURS_STARTED,
-    AVATAR_TOUR_STEPS_VIEWED,
-    AVATAR_TOURS_COMPLETED,
-    AVATAR_TOURS_SKIPPED,
-  ],
-  headline: AVATAR_TOURS_STARTED,
-};
-
 // The Pages tour (docs/specs/007-editor/pages-tour.md): its own funnel, beside the Pages tour's.
 export const PAGES_TOUR_DECLINED = chart(
   'UI',
@@ -711,7 +653,6 @@ export const ONBOARDING_TOURS: MetricStack = {
     WORKSHOP_TOURS_STARTED,
     DRAW_TOURS_STARTED,
     FORM_TOURS_STARTED,
-    AVATAR_TOURS_STARTED,
     PAGES_TOURS_STARTED,
     ELEMENT_TOURS_STARTED,
     SHOW_ME_TOURS_STARTED,

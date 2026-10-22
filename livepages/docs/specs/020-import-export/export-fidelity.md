@@ -140,8 +140,7 @@ Mode button is a keycap with its glyph chip over the label, or "Switch to" and
 the mode's name (`SELECTION_MODE_LABEL`) when it has none; a Portal is its
 bloom, mouth and lit rim (dim when unpaired); a Reaction pad is its soft wash,
 the emoji on its glowing spot and the label chip; a Reveal cover carries the
-lock disc and the gesture chip; a Picker shows its reel window; a chair prints
-its label under the seat. A Page draws its masthead inside the border, starts
+lock disc and the gesture chip; a Picker shows its reel window. A Page draws its masthead inside the border, starts
 its body label under the rule, and turns back its bottom-right corner over the
 paper. A box label breaks a word wider than its line between characters, as
 the canvas's `break-words` does; an icon caption keeps the word whole.

@@ -17,7 +17,6 @@
 //   - detail:  thin solid chrome (bezels, keys, creases), no fill
 //   - limb:    an unfilled round-capped line (the actor's body)
 //   - head:    a limb that takes the element's fill (the actor's head)
-import { colorWash } from './color-wash';
 import type { ShapeKind } from './shape-kind';
 
 export type ShapePartRole = 'main' | 'outline' | 'detail' | 'limb' | 'head';
@@ -295,11 +294,4 @@ export function browserChromeLayout(): { dotX: number[]; navX: number; pillX: nu
   const dotX = [0, 1, 2].map((i) => c.padXPx + i * (c.dotPx + c.dotGapPx));
   const navX = c.padXPx + 3 * c.dotPx + 2 * c.dotGapPx + c.groupGapPx;
   return { dotX, navX, pillX: navX + c.nav.widthPx + c.groupGapPx };
-}
-
-/** A chair's seat colour: its own fill, or with none (the default is
- *  `transparent`) a wash of its stroke, so it follows the tab theme rather
- *  than staying a fixed light grey on a dark canvas. */
-export function chairSeatFill(fillColor: string | undefined, stroke: string): string {
-  return fillColor && fillColor !== 'transparent' ? fillColor : colorWash(stroke, 0.32);
 }

@@ -22,7 +22,6 @@ Scope, by file:
 | `apps/live/app/document/[id]/useEditorState.ts`          | `fireReaction`: play, broadcast, track                            |
 | `apps/live/hooks/collab/useEditorBroadcast.ts`           | `broadcastReaction` and its gate                                  |
 | `apps/live/app/document/[id]/useRoomConnection.ts`       | Receives the op                                                   |
-| `apps/live/components/canvas/useCanvasAvatar.tsx`        | `onWalkIntoReactionPad` runs `onFireReaction`                     |
 | `apps/live/components/canvas/BoxedElementView.tsx`       | Mounts `ReactionBurst` beside the label stack                     |
 | `apps/live/components/palette/palette-tile-defs.tsx`     | `tools:reaction-<reaction>`, `tileGroup: 'reaction'`              |
 | `apps/live/components/palette/BehaviourMenuSections.tsx` | `ReactionMenuSection`                                             |
@@ -34,7 +33,7 @@ Scope, by file:
 | ------------- | -------------------------------------------------- | ---------------------------------------------------------------- |
 | Reaction pad  | shape kind `'reaction-pad'`                        | The element                                                      |
 | Reaction      | `Reaction`, `ShapeElement.reaction`                | One of `confetti`, `sparkles`, `hearts`, `applause`, `fireworks` |
-| Fire          | `fireReaction(element)`                            | Press or walk-on: play locally, then broadcast                   |
+| Fire          | `fireReaction(element)`                            | Press: play locally, then broadcast                              |
 | Burst         | `ActiveBurst = { reaction, seed }`                 | One playing animation, keyed by element id                       |
 | Seed          | `seq` in `useReactionBursts`                       | Per-client monotonic number; restarts and seeds a burst          |
 | Particle      | `Particle`                                         | One drawn mote with its own physics                              |
@@ -42,7 +41,7 @@ Scope, by file:
 | Reaction op   | `{ kind: 'reaction', tabId, elementId, reaction }` | The presence message                                             |
 | Pad label     | `REACTION_PAD_LABEL[reaction]`                     | The caption a placed pad takes                                   |
 | Hues          | `REACTION_HUES[reaction]`                          | The fixed `[from, to]` pair behind the glow, spot and ring       |
-| Spot          | the ellipse under the emoji                        | Where a character stands; the press ring starts there            |
+| Spot          | the ellipse under the emoji                        | The glow under the emoji; the press ring starts there            |
 
 Banned synonyms: "emoji burst", "celebration", "effect", "button" for the pad (it is a pad),
 "vote".
@@ -60,14 +59,12 @@ Banned synonyms: "emoji burst", "celebration", "effect", "button" for the pad (i
 ### Firing
 
 1. **Press:** `ReactionPadFace` wraps a `<button>` in `usePressWithoutDrag(onFire)`.
-2. **Walk-on:** the `useAvatarWalk` arrival effect calls `onWalkIntoReactionPad` once per arrival;
-   `Canvas` forwards it to `props.onFireReaction`.
-3. `fireReaction(element)`: `played = reactions.play(element.id, element.reaction)`, then
+2. `fireReaction(element)`: `played = reactions.play(element.id, element.reaction)`, then
    `broadcastReaction(element.id, played)`, then `track('Element', 'Used', 'ReactionPad')` [QF19].
-4. `play` uses `reaction ?? REACTION_DEFAULT` [QF21] and starts the burst.
-5. `broadcastReaction` sends nothing when cursors are hidden, the document is not hydrated, or it is
+3. `play` uses `reaction ?? REACTION_DEFAULT` [QF21] and starts the burst.
+4. `broadcastReaction` sends nothing when cursors are hidden, the document is not hydrated, or it is
    neither shareable nor in a team (D130).
-6. Read-only surfaces pass no `onFireReaction`: the pad is inert and walk-ons do nothing [QF20].
+5. Read-only surfaces pass no `onFireReaction`: the pad is inert [QF20].
 
 ### Receiving
 
@@ -159,19 +156,18 @@ export function drawParticle(ctx: CanvasRenderingContext2D, p: Particle): void;
 
 ## Errors and edge cases
 
-| #   | Case                           | Handling                                             |
-| --- | ------------------------------ | ---------------------------------------------------- |
-| E1  | Hammering a pad                | Restarts the burst (I2)                              |
-| E2  | Peer on a newer build          | Unknown reaction plays confetti                      |
-| E3  | Pad moved by a peer mid-burst  | The burst follows the element, not coordinates       |
-| E4  | Pad deleted mid-burst          | Its view unmounts; the map entry stays until reused  |
-| E5  | Burst for a pad on another tab | Stored, never drawn (D132, gap GF9)                  |
-| E6  | Backgrounded tab resumes       | `dt` clamped to 50 ms                                |
-| E7  | Standing on a pad              | One burst per arrival; step off and on to fire again |
-| E8  | Drag across the pad            | Moves, never fires                                   |
-| E9  | Broadcast gate closed          | Local burst only (D130)                              |
-| E10 | View-role visitor              | Inert [QF20]                                         |
-| E11 | Reduced motion                 | One still frame for 900 ms                           |
+| #   | Case                           | Handling                                            |
+| --- | ------------------------------ | --------------------------------------------------- |
+| E1  | Hammering a pad                | Restarts the burst (I2)                             |
+| E2  | Peer on a newer build          | Unknown reaction plays confetti                     |
+| E3  | Pad moved by a peer mid-burst  | The burst follows the element, not coordinates      |
+| E4  | Pad deleted mid-burst          | Its view unmounts; the map entry stays until reused |
+| E5  | Burst for a pad on another tab | Stored, never drawn (D132, gap GF9)                 |
+| E6  | Backgrounded tab resumes       | `dt` clamped to 50 ms                               |
+| E7  | Drag across the pad            | Moves, never fires                                  |
+| E8  | Broadcast gate closed          | Local burst only (D130)                             |
+| E9  | View-role visitor              | Inert [QF20]                                        |
+| E10 | Reduced motion                 | One still frame for 900 ms                          |
 
 ## Security and trust
 
@@ -209,7 +205,7 @@ export function drawParticle(ctx: CanvasRenderingContext2D, p: Particle): void;
 - **Palette:** a **React** group (`BEHAVIOUR_GROUPS` in `palette-create-tabs.tsx`) in Collaborate, one tile per
   reaction with its emoji [QF22].
 - **Menu:** accordion **Reaction** (icon: current emoji), three-column tiles, hint line
-  `"<hint>. Press the pad, or walk a character onto it in Avatar mode."`.
+  `"<hint>. Press the pad to set it off."`.
 - **Inert:** read-only surfaces render the same face without a button.
 
 ## Accessibility
@@ -237,7 +233,7 @@ No log exists today. Proposed fingerprints (gap, see the report):
 | O2  | `receive` fallback    | `console.warn`  | `[reaction] unknown reaction=<name>, playing confetti` |
 | O3  | broadcast gate closed | `console.debug` | `[reaction] local-only id=<id> reason=<reason>`        |
 
-`<via>` is `press` or `walk`.
+`<via>` is `press`.
 
 ## Testing
 
@@ -258,7 +254,6 @@ No log exists today. Proposed fingerprints (gap, see the report):
 | Export draws the label in its chip                     | "puts a Reaction pad label in its chip"                 | `packages/document/src/svg-render-fidelity.test.ts` |
 | One burst per pad, restart on re-fire (I2)             | none                                                    | (gap)                                               |
 | Local-first then broadcast                             | none                                                    | (gap)                                               |
-| Walk-on fires once per arrival                         | none                                                    | (gap)                                               |
 | Reduced motion, `dt` clamp, DPR cap, unmount (I4)      | none                                                    | (gap)                                               |
 | Unknown element `reaction` rejected                    | none                                                    | (gap) [QF21]                                        |
 

@@ -111,7 +111,6 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
     `useStableHandlers` (presence kept; `COLLAB_HANDLERS` is checked against `CollabApi` at compile
     time), `participants` held while what a face reads of them (`id`, `key`, `name`, `color`,
     `status`, `role`, `picture`; not `lastActiveAt`) is unchanged, the rest by value.
-  - `chairSitters`: a `useCallback` over the sitters map in `Canvas`.
 - `zoom` leaves `BoxedElementView`'s props. `CanvasZoomProvider` (in `Canvas`, around the element
   layer) carries it; every child that sizes by zoom reads `useCanvasZoom()`: `LaneGutter`, `ShapeHitOutline`,
   `RemoteSelectorsStrip`, `ElementIndicators`, `LockBadge`, `ElementVoteOverlay`, `SelectionChromeLayer`,
@@ -226,9 +225,6 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
 - On mount the deferral has an initial value: `useDeferredValue(settled, NO_ELEMENTS)`. The first
   render draws no picture (a server render shows it: `Minimap.test.tsx`), so opening a board mounts
   the board in its first task and the Map's picture is built in a background render after it.
-- `Canvas` keeps the chair sitters by value (`useByValue(sittersByChair(...), sameSitters)`,
-  `lib/chair-sitters.ts`): presence rebuilds the peers' list after opening, and a new map handed every
-  element view a new `chairSitters` and rendered all of them again.
 
 ### Opening animates nothing across the board
 

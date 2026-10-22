@@ -183,7 +183,7 @@ export function ReactionMenuSection({
         ))}
       </MenuTileGrid>
       <p className="px-3 pb-1.5 pt-1 text-[10px] leading-snug text-slate-500 dark:text-slate-400">
-        {REACTION_HINT[current]}. Press the pad, or walk a character onto it in Avatar mode.
+        {REACTION_HINT[current]}. Press the pad to set it off.
       </p>
     </MenuAccordionSection>
   );

@@ -655,19 +655,11 @@ export * from './chart-values';
 export * from './chart-source';
 export * from './plan-only';
 // Per-participant responses (docs/specs/012-collaboration/participant-responses.md) + the collaboration element family
-// (docs/specs/012-collaboration/estimate-card.md to docs/specs/009-elements/chair.md). Both leaf modules, for the factories cycle.
+// (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md). Both leaf modules, for the factories cycle.
 export * from './responses';
 export * from './collab-shapes';
 export * from './agenda-current';
 export * from './shape-geometry';
-// Fence (docs/specs/009-elements/fence.md): the run, its posts and the line it blocks.
-export * from './fence';
-// The avatar sprite's palette and the Avatar Pad drawn in it (docs/specs/009-elements/avatar-pad.md).
-export * from './avatar-palette';
-export * from './avatar-pad';
-// Seating (docs/specs/009-elements/chair.md): the chair, desk and sofa drawings and every seat's feet point.
-export * from './seating';
-export * from './office';
 export * from './actor-figure';
 export * from './color-wash';
 export { labelOn } from './readable-colour';

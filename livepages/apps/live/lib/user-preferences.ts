@@ -223,9 +223,6 @@ export type UserPreferences = {
   // The Forms tour's seen-guard (docs/specs/030-forms/forms.md "The Forms tour"), as `drawTourSeen`; Show Me in the
   // form's cog panel reruns it. Missing / undefined === not seen.
   formTourSeen?: boolean;
-  // The Avatar tour's seen-guard (docs/specs/008-canvas/avatar-tour.md), as `drawTourSeen`.
-  // Surfaced in Settings as Tours › "Avatar Tour" (inverted). Missing / undefined === not seen.
-  avatarTourSeen?: boolean;
   // The Pages tour's seen-guard (docs/specs/007-editor/pages-tour.md), as `planTourSeen`: true counts every
   // page kind's track as seen while Power user mode is on. Set with every kind by Power user mode.
   pagesTourSeen?: boolean;

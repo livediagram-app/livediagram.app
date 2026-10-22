@@ -1,7 +1,6 @@
 // The collaboration element family: the estimate card (docs/specs/012-collaboration/estimate-card.md), the
 // temperature check (docs/specs/012-collaboration/temperature-check.md), the idea box (docs/specs/012-collaboration/idea-box.md), the agenda
-// (docs/specs/012-collaboration/agenda.md), the decision record (docs/specs/012-collaboration/decision-record.md), the roll call (docs/specs/012-collaboration/roll-call.md) and the
-// chair (docs/specs/009-elements/chair.md) — their kind predicates, closed enums, bounds and defaults.
+// (docs/specs/012-collaboration/agenda.md), the decision record (docs/specs/012-collaboration/decision-record.md) and the roll call (docs/specs/012-collaboration/roll-call.md) — their kind predicates, closed enums, bounds and defaults.
 //
 // A LEAF module (types only) for the same reason data-shapes.ts is one:
 // factories.ts reads these at module-init time, and importing them from
@@ -266,38 +265,6 @@ function isRollCallShape(kind: ShapeKind): boolean {
   return kind === 'roll-call';
 }
 
-// --- Chair (docs/specs/009-elements/chair.md) ------------------------------------------------------
-
-// Which way the seat points. 'n' = the chair's back is at the top, so the
-// sitter faces down the canvas toward the reader.
-export type ChairFacing = 'n' | 'e' | 's' | 'w';
-export const CHAIR_FACINGS: readonly ChairFacing[] = ['n', 'e', 's', 'w'];
-export const DEFAULT_CHAIR_FACING: ChairFacing = 'n';
-
-export const CHAIR_FACING_LABELS: Record<ChairFacing, string> = {
-  n: 'Facing down',
-  e: 'Facing left',
-  s: 'Facing up',
-  w: 'Facing right',
-};
-
-export function isChairFacing(value: unknown): value is ChairFacing {
-  return (CHAIR_FACINGS as readonly string[]).includes(value as string);
-}
-
-// Which way somebody sitting in the chair looks, in the avatar's own facing
-// vocabulary (the same four words CHAIR_FACING_LABELS prints). The seat points
-// AWAY from the back, so a chair with its back at the top ('n') faces its
-// sitter down the canvas.
-export type ChairSitterFacing = 'down' | 'left' | 'up' | 'right';
-
-export const CHAIR_SITTER_FACING: Record<ChairFacing, ChairSitterFacing> = {
-  n: 'down',
-  e: 'left',
-  s: 'up',
-  w: 'right',
-};
-
 // --- The family ------------------------------------------------------------
 
 // Every collaboration kind that draws a PRESSABLE FACE in place of the plain
@@ -310,9 +277,7 @@ export const CHAIR_SITTER_FACING: Record<ChairFacing, ChairSitterFacing> = {
 // its whole layout for the same reason: its label is a SENTENCE, and a
 // free-flowing label sized to the box ran under the status chip and over the
 // drivers. Drawing the card itself is what makes the collision impossible.
-//
-// The chair is NOT here — it renders furniture under an ordinary label, the
-// way the record box (docs/specs/009-elements/entity.md) renders its rows under its title.
+
 // Done check (docs/specs/012-collaboration/done-check.md): a room-response card like the rest of this family,
 // so it takes the same panel chrome and the same viewer context.
 function isDoneCheckShape(kind: ShapeKind): boolean {
@@ -332,7 +297,7 @@ export function isCollabPanelShape(kind: ShapeKind): boolean {
 }
 
 // Kinds whose resting face draws its own layout and shows the label as a
-// plain title (the collab panels, the session tools, the chair, the comment
+// plain title (the collab panels, the session tools, the comment
 // and action panels, the portal): the editor's ElementFaceRouter hands them
 // the label string, never the aligned label node, so text alignment has
 // nothing to move on them. Kept here, beside the kind predicates, so the
@@ -340,9 +305,6 @@ export function isCollabPanelShape(kind: ShapeKind): boolean {
 export function hasOwnFace(kind: ShapeKind): boolean {
   return (
     isCollabPanelShape(kind) ||
-    kind === 'chair' ||
-    kind === 'desk' ||
-    kind === 'sofa' ||
     kind === 'mode-button' ||
     kind === 'session-button' ||
     kind === 'focus-button' ||

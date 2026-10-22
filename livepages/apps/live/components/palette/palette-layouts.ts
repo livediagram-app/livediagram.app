@@ -611,15 +611,13 @@ export function participantPaletteCategories(): ResolvedPaletteCategory[] {
   return [{ ...identity, tiles: participantTiles() }];
 }
 
-// The selection modes a Participant has: look, point and walk around, never an Editor's tools (Eraser, Format
+// The selection modes a Participant has: look and point, never an Editor's tools (Eraser, Format
 // Painter, Slide Deck).
 export const PARTICIPANT_CANVAS_TOOLS: readonly string[] = [
   'select',
   'pan',
   'laser',
   'spotlight',
-  // Avatar is listed by the picker only while in force (canvas-tool-options), for every role alike.
-  'avatar',
   'isometric',
   'zen',
 ];

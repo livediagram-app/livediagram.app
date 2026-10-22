@@ -90,12 +90,6 @@ export type TemplateKind =
   // Games (docs/specs/012-collaboration/game-templates.md): icebreakers spun on Pickers, and a
   // bingo card run on a timer and a reaction pad.
   | 'icebreaker-questions'
-  // A whole office to walk round in Avatar mode (docs/specs/012-collaboration/virtual-office-template.md).
-  | 'virtual-office'
-  // Its siblings, the spaces to walk round together (docs/specs/012-collaboration/virtual-office-template.md "Spaces").
-  | 'coworking-space'
-  | 'team-pod'
-  | 'all-hands-hall'
   | 'people-bingo'
   // The classic nine-block Business Model Canvas, coloured by area,
   // numbered in fill order and seeded with worked sticky notes.
@@ -778,34 +772,6 @@ export const TEMPLATES: TemplateDescriptor[] = [
     title: 'Icebreaker Questions',
     description:
       'Spin a question and a person, two minutes each on the clock, then everyone says hello on the wall.',
-    extra: true,
-  },
-  {
-    kind: 'virtual-office',
-    title: 'Virtual Office',
-    description:
-      'Rooms to walk round in Avatar mode: a reception, desks, a meeting room, a kitchen with coffee, a lounge and a focus room.',
-    extra: true,
-  },
-  {
-    kind: 'coworking-space',
-    title: 'Coworking Space',
-    description:
-      'An open floor to walk round in Avatar mode: hot desks, two phone booths, a coffee bar and a lounge.',
-    extra: true,
-  },
-  {
-    kind: 'team-pod',
-    title: 'Team Pod',
-    description:
-      'A small team’s corner in Avatar mode: four desks together, a table for the stand-up and a team board.',
-    extra: true,
-  },
-  {
-    kind: 'all-hands-hall',
-    title: 'All-Hands Hall',
-    description:
-      'A hall for town halls and demos in Avatar mode: a stage, rows of seats facing it and Bring Focus.',
     extra: true,
   },
   {

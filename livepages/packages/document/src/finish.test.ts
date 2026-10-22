@@ -165,7 +165,6 @@ describe('finishSplitsFace (docs/specs/008-canvas/finish.md "Every other face is
       'sankey',
       'badge',
       'card',
-      'desk',
       'plan-board',
       'entity',
     ]) {

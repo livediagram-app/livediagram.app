@@ -7,13 +7,10 @@ import { pointerToCanvas } from '@/lib/canvas';
 import { isDoubleTapZoomPointer } from '@/lib/double-tap-zoom';
 import { createEraseFrameReader } from '@/lib/erase-frame';
 import { useLatest } from '@/hooks/ui/useLatest';
-import { peerPushTarget } from '@/lib/avatar-walk';
-import { avatarScale, parseAvatarConfig } from '@/lib/avatar-config';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import type { useCanvasPanAndMarquee } from '@/hooks/canvas/useCanvasPanAndMarquee';
 import type { useIsometricCamera } from '@/hooks/canvas/useIsometricCamera';
 import type { useSpotlight } from '@/hooks/canvas/useSpotlight';
-import type { useAvatarWalk } from '@/hooks/canvas/useAvatarWalk';
 import { useLongPress } from '@/hooks/ui/useLongPress';
 import { useRightClickRelease } from '@/hooks/canvas/useRightClickRelease';
 import { isHeldPenIntent } from '@/lib/draw-mode';
@@ -53,9 +50,6 @@ export function useCanvasSurfaceGestures({
   setPan,
   setMarquee,
   spotlight,
-  avatar,
-  peerAvatars,
-  onPushPeer,
   isoCamera,
   beginPendingDrawGesture,
   interceptPress,
@@ -78,11 +72,6 @@ export function useCanvasSurfaceGestures({
   setPan: PanAndMarquee['setPan'];
   setMarquee: PanAndMarquee['setMarquee'];
   spotlight: ReturnType<typeof useSpotlight>;
-  avatar: ReturnType<typeof useAvatarWalk>;
-  // Peers' characters on this tab (docs/specs/008-canvas/avatar-mode.md), so a click can land on one.
-  peerAvatars: CanvasProps['remoteAvatars'];
-  // Shove a peer: fired once our character has walked up to theirs.
-  onPushPeer?: (targetId: string, dx: number, dy: number) => void;
   isoCamera: ReturnType<typeof useIsometricCamera>;
   // Starts the queued draw-to-size / freehand gesture; true when it
   // claimed the press (see useCanvasDrawGesture).
@@ -102,21 +91,6 @@ export function useCanvasSurfaceGestures({
   // The live view, for an erase sweep's frame reader (lib/erase-frame): read per sample, after
   // any pan or zoom since the press.
   const viewRef = useLatest({ offset: viewportOffset, zoom: viewportZoom });
-  // Which peer's character a click landed on, plus where to stand and which way
-  // to shove. The decision itself is pure (see peerPushTarget); this only feeds
-  // it the peers as the presence packets describe them.
-  const peerAvatarAt = (point: { x: number; y: number }) =>
-    peerPushTarget(
-      peerAvatars.map((peer) => ({
-        id: peer.id,
-        feet: { x: peer.avatar.x, y: peer.avatar.y },
-        lift: peer.avatar.lift,
-        scale: avatarScale(parseAvatarConfig(peer.avatar.config).size),
-      })),
-      point,
-      avatar.pos,
-    );
-
   const focusCanvas = () => {
     const node = mainRef && 'current' in mainRef ? mainRef.current : null;
     node?.focus({ preventScroll: true });
@@ -195,10 +169,8 @@ export function useCanvasSurfaceGestures({
     // dropdown, a context menu, a dialog. React routes events through the
     // component tree rather than the DOM tree, so a click inside a portal whose
     // owner lives under <main> still reaches this handler, and the guard above
-    // can't see it: the portal's DOM is elsewhere entirely. In Avatar mode that
-    // meant picking a palette category walked the character off behind the
-    // palette. If the press didn't land inside <main>, it isn't a canvas
-    // gesture.
+    // can't see it: the portal's DOM is elsewhere entirely. If the press didn't
+    // land inside <main>, it isn't a canvas gesture.
     const surface = mainRef && 'current' in mainRef ? mainRef.current : null;
     if (surface && e.target instanceof Node && !surface.contains(e.target)) return;
     // Whiteboard (docs/specs/023-draw-mode/draw-mode.md "Touch and pen input"): once a pen has been
@@ -248,49 +220,6 @@ export function useCanvasSurfaceGestures({
       e.preventDefault();
       e.stopPropagation();
       if (e.button === 0) spotlight.grow();
-      return;
-    }
-    // Avatar mode (docs/specs/008-canvas/avatar-mode.md): a non-editing presenter mode where a primary
-    // click means "walk over there". Handled in the capture phase for the
-    // same reason as Spotlight: the canvas layer is pointer-inert, but arrow
-    // hit-bands re-enable themselves via `pointer-events: stroke` and select
-    // on ANY button, so we swallow the secondary button too. Middle-mouse
-    // (pan) and held-Space (temporary pan) fall through untouched.
-    if (canvasTool === 'avatar' && !spaceHeldRef.current && e.button !== 1) {
-      focusCanvas();
-      e.preventDefault();
-      e.stopPropagation();
-      const rect = wrapperRef.current?.getBoundingClientRect();
-      const point = rect ? pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom) : null;
-      if (!point) return;
-      // Left-click walks there; right-click ON the character changes who it
-      // is (male / female), and a right-click anywhere else is swallowed —
-      // the context menu stays shut in this mode either way.
-      if (e.button === 0) {
-        const detail = e.detail;
-        const walk = () => {
-          // Seated (docs/specs/009-elements/chair.md): a double-click is one of the two deliberate ways
-          // out of a chair. A single click deliberately does nothing — walkTo
-          // refuses while seated, so you cannot be dragged out by a stray click
-          // — which left no pointer-only way out at all until this.
-          if (avatar.seatedOn && detail >= 2) {
-            avatar.standUp();
-            return;
-          }
-          // Clicking someone ELSE's character walks over and pushes them
-          // (docs/specs/008-canvas/avatar-mode.md), rather than walking to the spot they're standing on.
-          const peer = peerAvatarAt(point);
-          if (peer) {
-            avatar.walkTo(peer.standAt, () => onPushPeer?.(peer.id, peer.dx, peer.dy));
-          } else {
-            avatar.walkTo(point);
-          }
-        };
-        // A finger has no middle button or Space to pan with (docs/specs/008-canvas/avatar-mode.md "Walking"):
-        // its drag pans, and only a press that never moved, a tap, walks.
-        if (e.pointerType === 'touch') startPan(e, walk);
-        else walk();
-      } else if (e.button === 2) avatar.toggleLookAt(point);
       return;
     }
     // Eraser tool (docs/specs/008-canvas/canvas-and-palette.md): a primary-button press deletes whatever
@@ -428,9 +357,8 @@ export function useCanvasSurfaceGestures({
     // shrink gesture, handled in onContextMenuCapture). Isometric
     // (docs/specs/008-canvas/isometric-view.md) likewise: right-click-drag orbits the camera, so the
     // canvas / tab menu must never open in that tool or it interrupts
-    // the orbit gesture. Avatar mode (docs/specs/008-canvas/avatar-mode.md) is read-only and mid-
-    // narration: a menu popping open would interrupt the tour.
-    if (canvasTool === 'spotlight' || canvasTool === 'isometric' || canvasTool === 'avatar') return;
+    // the orbit gesture.
+    if (canvasTool === 'spotlight' || canvasTool === 'isometric') return;
     // A macOS Ctrl+click is a context click on the PRIMARY button, so its
     // pointerdown already armed a marquee (or pan) whose release would
     // deselect, and deselecting closes the menu this click is opening.
@@ -550,10 +478,10 @@ export function useCanvasSurfaceGestures({
   // The bare surface around the content layer: the layer is scaled with the zoom, so zoomed out (a phone's usual
   // view) most of the empty canvas is <main> itself. Only a finger's double-tap means anything there: it zooms
   // (docs/specs/008-canvas/canvas-and-palette.md "Double-tap to zoom"). The tools that make the layer inert
-  // (Spotlight, Isometric, Avatar) give every press on <main> a meaning of their own.
+  // (Spotlight, Isometric) give every press on <main> a meaning of their own.
   const onSurfaceDoubleClick = (e: ReactMouseEvent) => {
     if (e.target !== e.currentTarget || !pressedByFinger()) return;
-    if (canvasTool === 'spotlight' || canvasTool === 'isometric' || canvasTool === 'avatar') return;
+    if (canvasTool === 'spotlight' || canvasTool === 'isometric') return;
     const at = doublePressAt(e);
     if (at) onCanvasDoubleClick(at.x, at.y, true);
   };

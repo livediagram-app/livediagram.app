@@ -9,14 +9,7 @@
 // editor knows"), and it is a hand-kept list beside the hand-kept key maps in
 // hooks/canvas/editor-shortcut-keys.ts. The test pins the two together.
 
-import {
-  editorModeLabel,
-  modesBesidePlanRule,
-  REACTION_LABEL,
-  REACTIONS,
-} from '@livepages/document';
-import { AVATAR_BEHAVIOUR_KEYS, AVATAR_BURST_KEYS } from '@/lib/avatar-action-keys';
-import { AVATAR_REACTIONS } from '@/lib/avatar-reactions';
+import { editorModeLabel, modesBesidePlanRule } from '@livepages/document';
 
 // The mode key's row names the modes it moves through, from the mode catalogue so a new mode cannot go missing.
 const CYCLED_MODES = modesBesidePlanRule('diagram').map(editorModeLabel).join(', ');
@@ -128,18 +121,6 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
       { keys: ['S'], label: 'Spotlight over the slide' },
       { keys: ['Click'], label: 'On an element: its note, comments and actions' },
       { keys: ['Escape'], label: 'Exit the presentation' },
-    ],
-  },
-  {
-    // Only live in Avatar mode (docs/specs/008-canvas/avatar-mode.md "Keyboard actions"), bound by the walk's own
-    // listeners rather than the editor's maps, and built from the action-key maps so a key cannot drift from its row.
-    heading: 'While walking (Avatar mode)',
-    rows: [
-      { keys: ['←', '↑', '→', '↓'], label: 'Walk' },
-      { keys: ['Space'], label: 'Hop and wave a flag' },
-      { keys: ['Enter'], label: 'Send a message' },
-      ...AVATAR_REACTIONS.map((r) => ({ keys: [AVATAR_BEHAVIOUR_KEYS[r.id]], label: r.label })),
-      ...REACTIONS.map((r) => ({ keys: [AVATAR_BURST_KEYS[r]], label: REACTION_LABEL[r] })),
     ],
   },
 ];

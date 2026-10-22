@@ -6,8 +6,6 @@ import {
   defaultFillColor,
   defaultStrokeColor,
   hasOwnBodySet,
-  isOfficeShape,
-  isSeatingShape,
   keptAnimation,
   SHAPE_MOTIONS,
   type BoxedElement,
@@ -99,10 +97,6 @@ export function useBoxedElementAnimation(element: BoxedElement, textColor: strin
   // drop the class on the assumption ShapeSvgOverlay would paint it — and the
   // overlay never renders for a sticker, so glow and pulse did nothing at all.
   // Routing it down this same filter path is what makes them appear.
-  //
-  // A CHAIR (docs/specs/009-elements/chair.md) is the same case again: furniture drawn edge to edge in
-  // its own svg over a transparent box, so the box-shadow versions ringed and
-  // filled an invisible rectangle around it.
   const silhouetteAnim =
     animation === 'glow' ||
     animation === 'pulse' ||
@@ -110,14 +104,7 @@ export function useBoxedElementAnimation(element: BoxedElement, textColor: strin
     animation === 'gradient';
   // An ANNOTATION is a drawn pin in a transparent box, the same case again.
   const isDrawnArt =
-    element.type === 'annotation' ||
-    (element.type === 'shape' &&
-      (element.shape === 'sticker' ||
-        isSeatingShape(element.shape) ||
-        element.shape === 'fence' ||
-        element.shape === 'avatar-pad' ||
-        // An office's furniture, rooms and rugs (docs/specs/009-elements/office.md), drawn as a chair is.
-        isOfficeShape(element.shape)));
+    element.type === 'annotation' || (element.type === 'shape' && element.shape === 'sticker');
   const isTextNativeAnim = (element.type === 'text' || isDrawnArt) && silhouetteAnim;
   // `gradient` is a background clipped to the glyphs, which drawn art has
   // nothing to clip to, so it gets a hue cycle over its own colours instead,
@@ -128,19 +115,11 @@ export function useBoxedElementAnimation(element: BoxedElement, textColor: strin
       ? 'lvd-anim-sticker-gradient'
       : `lvd-anim-text-${animation}`;
   // Text wears it on its glyphs; drawn art wears it on the drawing, which the
-  // art's own view mounts (StickerView, FurnitureView), not on the label under it.
-  // A sticker and a chair mount it on their art (StickerView, FurnitureView); an annotation pin and a
+  // art's own view mounts (StickerView), not on the label under it.
+  // A sticker mounts it on its art (StickerView); an annotation pin and a
   // timeline rail have no art view to mount it, so it sits on the element itself, where a
   // drop-shadow follows the drawing's silhouette just the same over its transparent box.
-  const hasArtView =
-    element.type === 'shape' &&
-    (element.shape === 'sticker' ||
-      isSeatingShape(element.shape) ||
-      element.shape === 'fence' ||
-      // AvatarPadView mounts it on its pixels (docs/specs/009-elements/avatar-pad.md).
-      element.shape === 'avatar-pad' ||
-      // FurnitureView and RoomView mount it on their art.
-      isOfficeShape(element.shape));
+  const hasArtView = element.type === 'shape' && element.shape === 'sticker';
   const labelAnimClass = isDrawnArt ? undefined : silhouetteAnimClass;
   const artAnimClass = isDrawnArt && hasArtView ? silhouetteAnimClass : undefined;
   const ownAnimClass = isDrawnArt && !hasArtView ? silhouetteAnimClass : undefined;

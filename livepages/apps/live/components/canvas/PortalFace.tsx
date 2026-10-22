@@ -144,7 +144,7 @@ export function PortalFace({
       block
       className="h-full w-full"
       title={`Go to ${targetName ?? 'the linked portal'}`}
-      description="Click to travel, or walk your Avatar-mode character into it. The link works both ways."
+      description="Click to travel. The link works both ways."
     >
       <button
         type="button"

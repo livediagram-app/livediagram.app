@@ -12,7 +12,6 @@ import type { EditorMode, Tab } from '@livepages/document';
 import {
   parseArticleCaret,
   type AgentPresence,
-  type AvatarPresence,
   type ChangesetRoomOp,
   type ItemsRoomOp,
   type ItemTypesRoomOp,
@@ -47,7 +46,6 @@ import {
   receivePeerDragPreview,
 } from '@/hooks/collab/peer-drag-previews';
 import { joinRefusedBecauseTrashed } from './room-refusal';
-import { receivePeerSay, resetSpeechBubbles } from '@/lib/avatar-speech-store';
 import {
   receiveArticleCaret,
   resetArticlePeers,
@@ -114,10 +112,6 @@ export function useRoomConnection(opts: {
   setRemoteCursors: Dispatch<SetStateAction<Map<string, CursorPos>>>;
   setRemoteTabFocus: Dispatch<SetStateAction<Map<string, string>>>;
   setRemoteLaserTrails: Dispatch<SetStateAction<Map<string, LaserTrail>>>;
-  // Avatar mode (docs/specs/008-canvas/avatar-mode.md): peers' walking characters, latest snapshot each.
-  setRemoteAvatars: Dispatch<
-    SetStateAction<Map<string, { tabId: string; avatar: AvatarPresence }>>
-  >;
   // Follow-me (docs/specs/012-collaboration/follow-me-viewport.md): where each peer is looking, latest sample each.
   // Only read while somebody is being followed; kept for everyone because the
   // op is unsolicited (see the RoomOp comment).
@@ -126,8 +120,6 @@ export function useRoomConnection(opts: {
   setSelfParticipant: Dispatch<SetStateAction<Participant>>;
   // Inbound handlers are stable (useCallback with no changing deps) so they don't reopen the socket — the
   // effect's dep list stays [hydrated, documentId, documentServerStored].
-  // Avatar mode (docs/specs/008-canvas/avatar-mode.md): somebody pushed our character.
-  receiveAvatarPush: (dx: number, dy: number) => void;
   // A peer set off a reaction pad (docs/specs/009-elements/reaction-pad.md). Purely visual: nothing is
   // written, so there is nothing here to persist, order, or undo.
   receiveReaction: (elementId: string, reaction: string) => void;
@@ -212,11 +204,9 @@ export function useRoomConnection(opts: {
     setRemoteCursors,
     setRemoteTabFocus,
     setRemoteLaserTrails,
-    setRemoteAvatars,
     setRemoteViewports,
     setDocumentName,
     setSelfParticipant,
-    receiveAvatarPush,
     receiveReaction,
     receiveFocusHere,
     receiveFacilitator,
@@ -375,9 +365,6 @@ export function useRoomConnection(opts: {
       syncRemoteBesideTabs(participants, selfId);
       setRemoteSelections((prev) => pruneMapToPresent(prev, present));
       setRemoteCursors((prev) => pruneMapToPresent(prev, present));
-      // A peer who disconnects takes their character with them (docs/specs/008-canvas/avatar-mode.md),
-      // so a closed tab can't leave someone standing on the canvas forever.
-      setRemoteAvatars((prev) => pruneMapToPresent(prev, present));
       // Same for the lastSeen idle tracker (a plain ref, not state):
       // drop departed peers so it can't grow unbounded over a
       // long-lived room with people joining / leaving via share links.
@@ -394,7 +381,7 @@ export function useRoomConnection(opts: {
       presence: PresenceCoalescer,
     ) => {
       // Any op from a peer counts as "they're still here". Bumps
-      // the idle timer used by the avatar's away/offline status
+      // the idle timer used by the away/offline status
       // derivation. Cursor packets are the most frequent so this
       // doubles as a perfectly fine activity heartbeat.
       markSeen(from);
@@ -480,12 +467,8 @@ export function useRoomConnection(opts: {
       } else if (op.kind === 'drag-preview') {
         // A collaborator mid-drag (docs/specs/008-canvas/drag-preview.md): drawn, never written.
         receivePeerDragPreview(from, op, (id) => roleByPresenceRef.current.get(id));
-      } else if (op.kind === 'avatar') {
-        // Latest-wins per peer (no accumulation, unlike laser points): the
-        // character has one position at a time.
-        presence.avatar(from, op.avatar ? { tabId: op.tabId, avatar: op.avatar } : null);
       } else if (op.kind === 'viewport') {
-        // Latest-wins per peer, like the avatar: a camera has one position.
+        // Latest-wins per peer: a camera has one position.
         // Applied straight through rather than batched with the presence
         // flush — a follower's view should track the presenter's hand, and a
         // 10 Hz stream needs no coalescing.
@@ -494,19 +477,6 @@ export function useRoomConnection(opts: {
           next.set(from, { tabId: op.tabId, pan: op.pan, zoom: op.zoom, size: op.size });
           return next;
         });
-      } else if (op.kind === 'avatar-push') {
-        // A shove is ADDRESSED: the room delivers it to the named session and
-        // nobody else, so anything that arrives here was aimed at us. We
-        // can't check that ourselves — peers are identified by server-minted
-        // presence ids precisely so nobody learns anyone's real owner id
-        // (docs/specs/015-api/public-api-and-tokens.md §6), and that includes not recognising our own. Nothing is
-        // written to the document either way: our client decides what to do
-        // with the request, and does nothing if we've left the mode.
-        receiveAvatarPush(op.dx, op.dy);
-      } else if (op.kind === 'avatar-say') {
-        // A peer said something (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): parsed, deduped and
-        // drawn by the speech layer, never written.
-        receivePeerSay(from, op);
       } else if (op.kind === 'reaction') {
         // No tab check here, unlike the laser: a burst is keyed to the
         // ELEMENT, and only the active tab's elements are rendered, so a
@@ -626,13 +596,12 @@ export function useRoomConnection(opts: {
       return;
     }
     joinedRef.current = false;
-    // Batched cursor / laser / avatar presence, committed one Map update
+    // Batched cursor / laser presence, committed one Map update
     // per animation frame instead of one per packet — see the coalescer.
     // Created per effect run, so a reconnect starts with empty buffers.
     const presence = createPresenceCoalescer({
       setRemoteCursors,
       setRemoteLaserTrails,
-      setRemoteAvatars,
     });
 
     const handlers: RoomHandlers = {
@@ -691,8 +660,6 @@ export function useRoomConnection(opts: {
     return () => {
       presence.cancel();
       resetArticlePeers();
-      // Nobody's words outlive the room they were said in.
-      resetSpeechBubbles();
       openedRoom.close();
       roomRef.current = null;
     };
@@ -708,6 +675,5 @@ export function useRoomConnection(opts: {
     setRemoteSelections,
     setRemoteCursors,
     setRemoteLaserTrails,
-    setRemoteAvatars,
   ]);
 }

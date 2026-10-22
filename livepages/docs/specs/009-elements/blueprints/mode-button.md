@@ -19,11 +19,10 @@ Scope, by file:
 | `apps/live/components/canvas/BoxedElementView.tsx`      | Resolves `textColor` through `ownColours` and `defaultTextColor`    |
 | `apps/live/hooks/ui/usePressWithoutDrag.ts`             | Click presses, drag stays silent                                    |
 | `apps/live/lib/press-gestures.ts`                       | `isDragTravel`, `PRESS_DRAG_SLOP_PX`                                |
-| `apps/live/components/canvas/useCanvasAvatar.tsx`       | `pressModeButton`: records the Avatar spawn point                   |
 | `apps/live/app/document/[id]/useEditorState.ts`         | `pressModeButton`: Leave, else `pickCanvasTool`                     |
 | `apps/live/hooks/canvas/useCanvasTool.ts`               | `selectCanvasTool` telemetry, `toolBeforeCurrent`                   |
 | `apps/live/components/canvas/EditorCanvasHost.tsx`      | Threads the press; `mode ?? DEFAULT_BUTTON_MODE`                    |
-| `apps/live/components/palette/palette-tile-defs.tsx`    | Nine `tools:mode-<mode>` tiles, `tileGroup: 'mode'` [QF6]           |
+| `apps/live/components/palette/palette-tile-defs.tsx`    | Seven `tools:mode-<mode>` tiles, `tileGroup: 'mode'` [QF6]          |
 | `apps/live/components/palette/ElementDataSections.tsx`  | The **Button** menu section                                         |
 | `apps/live/hooks/canvas/useDataShapeSetters.ts`         | `setButtonModeSelected`                                             |
 | `apps/live/lib/draw-commit.ts`, `useElementCreation.ts` | Apply the tile's `mode` at commit / drop                            |
@@ -35,7 +34,7 @@ Scope, by file:
 | ---------------- | ---------------------------------------- | --------------------------------------------------- |
 | Selection Mode   | shape kind `'mode-button'`               | The element; "Selection Mode" in every UI label     |
 | Mode             | `SelectionMode`, `ShapeElement.mode`     | Which canvas tool a press hands out                 |
-| Default mode     | `DEFAULT_BUTTON_MODE` (`'avatar'`)       | The mode of a button with no `mode`                 |
+| Default mode     | `DEFAULT_BUTTON_MODE` (`'laser'`)        | The mode of a button with no `mode`                 |
 | Current mode     | `activeMode` (the viewer's `canvasTool`) | The presser's own tool right now                    |
 | Derived text     | `` `${kicker} ${MODE_LABEL[mode]}` ``    | Face text when the label is empty                   |
 | Mode name        | `SELECTION_MODE_LABEL` (`MODE_LABEL`)    | One table for the face, the menu and the export     |
@@ -85,18 +84,15 @@ The element holds one field, `mode`. Everything else is per-viewer and never per
 
 1. `usePressWithoutDrag(onPress)`: `pointerdown` records the screen point; `click` stops
    propagation, then returns without pressing when `isDragTravel(dx, dy)` (D108).
-2. `Canvas.pressModeButton`: if the button's mode is `avatar`, set `avatarSpawnRef` to
-   `(x + width / 2, y + height + AVATAR_SPAWN_GAP)` (D110). Then call the host's handler.
+2. `Canvas.pressModeButton` calls the host's handler.
 3. `useEditorState.pressModeButton(mode)`:
    `pickCanvasTool(canvasTool === mode ? toolBeforeCurrent() : mode)` (D109).
-4. `pickCanvasTool` applies the palette's rules unchanged: entering `spotlight` or `avatar`
-   clears the selection; `selectCanvasTool` records the prior tool and emits the palette picker's
+4. `pickCanvasTool` applies the palette's rules unchanged: entering `spotlight` clears the
+   selection; `selectCanvasTool` records the prior tool and emits the palette picker's
    own event for that mode, none for Select and Hand [QF7]. The empty-canvas guard (refusing
-   `eraser`, `format`, `laser`, `spotlight`, `avatar`, `isometric` on an empty tab) is on the path
+   `eraser`, `format`, `laser`, `spotlight`, `isometric` on an empty tab) is on the path
    but never fires for a button pressed on the active tab, which the button itself makes
    non-empty.
-5. On entry to Avatar mode, `useAvatarWalk` consumes `avatarSpawnRef` once and places the feet
-   there, facing down.
 
 ### Configuring
 
@@ -115,10 +111,11 @@ Invariants:
 ## Interfaces and contracts
 
 ```ts
-export const SELECTION_MODES = ['select', 'pan', 'laser', 'spotlight', 'avatar', 'eraser',
-  'format', 'isometric'] as const;
+export const SELECTION_MODES = ['select', 'pan', 'laser', 'spotlight', 'eraser', 'format',
+  'isometric'] as const;
 export type SelectionMode = (typeof SELECTION_MODES)[number];
-export const DEFAULT_BUTTON_MODE: SelectionMode = 'avatar';
+export const DEFAULT_BUTTON_MODE: SelectionMode = 'laser';
+export function buttonMode(mode: unknown): SelectionMode; // unknown -> DEFAULT_BUTTON_MODE
 export function isSelectionMode(value: unknown): value is SelectionMode;
 export function isFixedSizeShape(kind: string): boolean;
 export const SELECTION_MODE_LABEL: Record<SelectionMode, string>;
@@ -146,14 +143,15 @@ onPressModeButton?: (element: ShapeElement) => void; // Canvas.types, BoxedEleme
 
 ## Data and persistence
 
-- **Persisted:** `mode`, plus the ordinary shape fields. Absent means Avatar.
+- **Persisted:** `mode`, plus the ordinary shape fields. Absent means Laser.
 - **Migration:** `migrateLegacyModeButtons` (`packages/document/src/legacy-mode-buttons.ts`, run by
   `migrateStoredElements`) drops a retired `mode` (`'highlighter'`, a mode until the Highlighter
-  became a Draw tile, [Highlighter](../../008-canvas/highlighter.md)), so the button loads as an
-  Avatar button rather than failing I4.
+  became a Draw tile, [Highlighter](../../008-canvas/highlighter.md); `'avatar'`, a mode until Avatar
+  mode was removed, and still carried by livediagram documents), so the button loads as a Laser
+  button rather than failing I4.
 - **Not persisted by default:** colours. A fresh button stores none; an author's pick or a themed
   tab's projection is stored and wins.
-- **Never persisted:** the viewer's tool, the prior tool, the spawn point, the Leave state.
+- **Never persisted:** the viewer's tool, the prior tool, the Leave state.
 - **Undo:** changing `mode` is an ordinary commit.
 - **Stamped skins:** stored colours are never rewritten; `ownColours` drops a stamped skin at
   render time only, on the canvas and in exports.
@@ -167,8 +165,8 @@ onPressModeButton?: (element: ShapeElement) => void; // Canvas.types, BoxedEleme
 | E3  | Press while already in the mode                | Leave to `toolBeforeCurrent()`                       |
 | E4  | Prior tool equals the current one (stale ref)  | Leave to `select`                                    |
 | E5  | Drag that ends on the chip                     | Click swallowed (I2)                                 |
-| E6  | Press inside Avatar, Spotlight or Isometric    | Chip keeps `pointer-events: auto`, press works       |
-| E7  | Right-click in Avatar or Isometric             | Element menu opens [QF5]                             |
+| E6  | Press inside Spotlight or Isometric            | Chip keeps `pointer-events: auto`, press works       |
+| E7  | Right-click in Isometric                       | Element menu opens [QF5]                             |
 | E8  | Right-click in Spotlight                       | Shrinks the light; no menu [QF5]                     |
 | E9  | Read-only embed                                | Face inert, no `<button>` [QF4]                      |
 | E10 | Author's label typed, then cleared             | Derived text returns                                 |
@@ -232,14 +230,14 @@ No log exists today. Proposed fingerprints (gap, see the report):
 
 | Rule                                                 | Test                                                      | File                                                |
 | ---------------------------------------------------- | --------------------------------------------------------- | --------------------------------------------------- |
-| Defaults: 104x96-ish, Avatar, no label, skin, shadow | `createShape (mode button, …)` block                      | `packages/document/src/factories.test.ts`           |
+| Defaults: 104x96-ish, Laser, no label, skin, shadow  | `createShape (mode button, …)` block                      | `packages/document/src/factories.test.ts`           |
 | Legacy skin is unset, not a choice                   | "treats the pre-redesign button skin as unset"            | `packages/document/src/factories.test.ts`           |
 | Created with no stored colour                        | "are created with no stored colour"                       | `packages/document/src/behaviour-skin.test.ts`      |
 | Skin follows the paper                               | "resolve light ink on dark paper and dark ink …"          | `packages/document/src/behaviour-skin.test.ts`      |
 | A stamped skin reads as unset; a pick is kept        | "treat the skin …", "keep a colour the author picked"     | `packages/document/src/behaviour-skin.test.ts`      |
 | Drag tolerance is 4 px, radial (D108)                | `isDragTravel` block                                      | `apps/live/lib/press-gestures.test.ts`              |
 | Unknown `mode` rejected, every mode accepted (I4)    | `mode button validation` block                            | `packages/document/src/validate.test.ts`            |
-| A stored Highlighter mode migrates to the default    | `migrateLegacyModeButtons` block                          | `packages/document/src/legacy-mode-buttons.test.ts` |
+| A stored retired mode migrates to the default        | `migrateLegacyModeButtons` block                          | `packages/document/src/legacy-mode-buttons.test.ts` |
 | Fixed size                                           | "names the controls that never take resize handles"       | `packages/document/src/selection-mode.test.ts`      |
 | No resize handles on fixed-size elements             | fixed-size block                                          | `apps/live/lib/canvas-selection.test.ts`            |
 | Shared settings `…` on the face                      | "gives the shared menu to a kind with settings behind it" | `packages/document/src/behaviour-shapes.test.ts`    |
@@ -250,7 +248,6 @@ No log exists today. Proposed fingerprints (gap, see the report):
 | Export names an unlabelled button by its mode        | "names an unlabelled Mode button by its destination"      | `packages/document/src/svg-render-fidelity.test.ts` |
 | Drag never presses (I2)                              | none (`usePressWithoutDrag`)                              | (gap)                                               |
 | Leave returns to the prior tool (I3)                 | none                                                      | (gap)                                               |
-| Avatar spawns below the button                       | none                                                      | (gap)                                               |
 | Press works in pointer-inert modes; right-click menu | none                                                      | (gap, e2e) [QF5]                                    |
 | Embed face inert                                     | none                                                      | (gap) [QF4]                                         |
 
@@ -259,10 +256,9 @@ No log exists today. Proposed fingerprints (gap, see the report):
 | Name                                | Value                                                     | Provenance / safe range                     |
 | ----------------------------------- | --------------------------------------------------------- | ------------------------------------------- |
 | `SHAPE_DEFAULT_SIZE['mode-button']` | `{ width: 104, height: 96 }`                              | Toolbar-button tile; thumb-sized, ≥ 72 each |
-| `DEFAULT_BUTTON_MODE`               | `'avatar'`                                                | The walkthrough case; any `SelectionMode`   |
+| `DEFAULT_BUTTON_MODE`               | `'laser'`                                                 | The presenter's case; any `SelectionMode`   |
 | `MODE_BUTTON_SKIN`                  | `{ fill: '#ffffff', stroke: '#cbd5e1', text: '#0f172a' }` | Light-paper skin; text ≥ 4.5:1 (D147)       |
 | `CONTROL_SKIN_DARK` (private)       | `{ fill: '#1e293b', stroke: '#475569', text: '#f1f5f9' }` | Dark-paper skin; text ≥ 4.5:1 (D147)        |
 | `LEGACY_BUTTON_SKIN` (private)      | `{ fill: '#0ea5e9', stroke: '#0284c7', text: '#ffffff' }` | The first stamped skin; fixed forever       |
 | `PRESS_DRAG_SLOP_PX`                | `4`                                                       | Shared press tolerance, screen px; 3 to 6   |
-| `AVATAR_SPAWN_GAP`                  | `12`                                                      | Canvas px below the button; 8 to 24         |
 | `FIXED_SIZE_SHAPES`                 | `mode-button`, `session-button`, `done-check`             | Controls laid out for their own content     |

@@ -55,9 +55,7 @@ export type DockPanel =
   | 'session-timer'
   | 'session-vote'
   // Diagram mode's Tidy Up popover (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button").
-  | 'tidy-up'
-  // Avatar mode's character sheet (docs/specs/008-canvas/avatar-mode.md "The Avatar Panel").
-  | 'avatar';
+  | 'tidy-up';
 
 export type { DockAnchor };
 
@@ -75,7 +73,6 @@ function trackDockPanelOpened(id: DockPanel): void {
   else if (id === 'session-timer') track('UI', 'Opened', 'SessionTimer');
   else if (id === 'session-vote') track('UI', 'Opened', 'SessionVote');
   else if (id === 'tidy-up') track('UI', 'Opened', 'TidyUp');
-  else if (id === 'avatar') track('UI', 'Opened', 'AvatarPanel');
 }
 
 export function useDockPopovers(mainRef: Ref<HTMLElement>) {

@@ -165,8 +165,8 @@ export const categories: Category[] = [
     slug: 'selection-modes',
     title: 'Selection Modes',
     description:
-      'The pointer modes at the top of the palette: Select, Hand, Eraser, Format Painter, Laser, Spotlight, Avatar, Slide Deck, and Isometric.',
-    articleCount: 10,
+      'The pointer modes at the top of the palette: Select, Hand, Eraser, Format Painter, Laser, Spotlight, Slide Deck, and Isometric.',
+    articleCount: 8,
     kind: 'feature',
   },
   {
@@ -174,7 +174,7 @@ export const categories: Category[] = [
     title: 'Palette',
     description:
       'Your launchpad for everything on the canvas: every element and palette setting explained.',
-    articleCount: 35,
+    articleCount: 31,
     kind: 'feature',
     groups: ['Everyday Elements', 'Diagram Kits', 'Workshop Kits', 'Palette Settings'],
   },
@@ -952,36 +952,6 @@ export const articles: Article[] = [
     categorySlug: 'selection-modes',
   },
   {
-    slug: 'avatar-mode',
-    title: 'Avatar Mode',
-    description: 'Walk a pixel character around the canvas while you talk through it.',
-    keywords:
-      'walk walking character habbo person figure sprite avatar presentation present tour narrate arrow keys steer jump hop flag wave space male female right-click read-only customise customize panel gender clothing hair size outfit hoodie suit dress ponytail bald tall small speech bubble message say talk chat enter send words float avatar button status available focusing busy meeting away headphones do not disturb',
-    category: 'Selection Modes',
-    categorySlug: 'selection-modes',
-  },
-  {
-    slug: 'avatar-tour',
-    title: 'The Avatar Tour',
-    description:
-      'A short, optional walkthrough of Avatar mode, offered the first time you walk as an avatar and replayable from Settings.',
-    keywords:
-      'avatar tour walkthrough onboarding intro introduction getting started guide tutorial first time learn character walk dress outfit hair behaviour reactions speech bubble message say talk chat push shove replay rerun settings',
-    category: 'Selection Modes',
-    categorySlug: 'selection-modes/avatar-mode',
-    parentSlug: 'avatar-mode',
-  },
-  {
-    slug: 'walking-together',
-    title: 'Walking Together',
-    description: "Everyone on a shared document sees everyone else's walking character.",
-    keywords:
-      'multiplayer together shared collaborate collaboration peers others everyone realtime real-time avatars characters names colour color presence',
-    category: 'Selection Modes',
-    categorySlug: 'selection-modes',
-    parentSlug: 'avatar-mode',
-  },
-  {
     slug: 'slide-deck',
     title: 'Slide Deck',
     description:
@@ -1155,47 +1125,6 @@ export const articles: Article[] = [
     group: 'Workshop Kits',
   },
   {
-    slug: 'chairs',
-    title: 'Chairs',
-    description: 'Chairs, desks and sofas for Avatar mode: walk a character in and it sits down.',
-    keywords:
-      'chair chairs seat seating sit sitting sat furniture avatar character walk stand table room seating plan attendance behaviour navigate facing up desk desks computer monitor screen office workstation sofa sofas couch settee loveseat two seater',
-    category: 'Palette',
-    categorySlug: 'palette',
-    group: 'Workshop Kits',
-  },
-  {
-    slug: 'fences',
-    title: 'Fences',
-    description: 'A barrier for Avatar mode: characters cannot walk through a fence.',
-    keywords:
-      'fence fences barrier wall block blocked keep out enclosure boundary pen gate avatar character walk collision no entry area navigate behaviour',
-    category: 'Palette',
-    categorySlug: 'palette',
-    group: 'Workshop Kits',
-  },
-  {
-    slug: 'avatar-pads',
-    title: 'Avatar Pads',
-    description: 'Where everyone starts in Avatar mode: characters beam in on the pad.',
-    keywords:
-      'avatar pad pads spawn start starting point entrance arrive arrival teleport teleporter beam lobby welcome where do people appear avatar character walk navigate behaviour',
-    category: 'Palette',
-    categorySlug: 'palette',
-    group: 'Workshop Kits',
-  },
-  {
-    slug: 'virtual-office',
-    title: 'Virtual Office',
-    description:
-      'Rooms with doorways, a meeting table, plants, shelves, a water cooler, a coffee machine and rugs for Avatar mode.',
-    keywords:
-      'virtual office room rooms walls door doorway meeting table conference plant bookshelf books water cooler coffee machine drink cup rug carpet kitchen lounge reception team avatar walk sit navigate',
-    category: 'Palette',
-    categorySlug: 'palette',
-    group: 'Workshop Kits',
-  },
-  {
     slug: 'cards-and-callouts',
     title: 'Cards and Callouts',
     description: 'One node with a title, a meta line, a body, an icon and tags, plus accent edges.',
@@ -1332,9 +1261,9 @@ export const articles: Article[] = [
     slug: 'behaviour',
     title: 'Collaborate',
     description:
-      'Every element that comes alive with the room, as six palette categories in Workshop mode: comment and action panels, estimates, temperature checks, idea boxes, Done checks, pickers, session buttons (timer, stopwatch, vote), agendas, decisions, roll calls, reactions, mode buttons, portals and Bring Focus.',
+      'Every element that comes alive with the room, as six palette categories in Workshop mode: comment and action panels, estimates, temperature checks, idea boxes, Done checks, pickers, session buttons (timer, stopwatch, vote), agendas, decisions, roll calls, reactions, seven selection mode buttons, and the Navigate trio: a portal, Bring Focus and a link card.',
     keywords:
-      'behaviour behavior behaviours behaviors interactive button portal session timer stopwatch countdown count up elapsed vote reveal hide cover picker random spinner control mode switch chair seat desk sofa couch fence barrier link card bookmark preview url bring focus look here attention gather reaction pad confetti celebrate sparkles hearts applause fireworks emoji burst done check finished ready waiting who progress everyone mark complete collaborate collaboration estimate question temperature idea box agenda decision roll call ask the room keep a record run the room workshop facilitation runtime live tools record react navigate selection mode',
+      'behaviour behavior behaviours behaviors interactive button portal session timer stopwatch countdown count up elapsed vote reveal hide cover picker random spinner control mode switch link card bookmark preview url bring focus look here attention gather reaction pad confetti celebrate sparkles hearts applause fireworks emoji burst done check finished ready waiting who progress everyone mark complete collaborate collaboration estimate question temperature idea box agenda decision roll call ask the room keep a record run the room workshop facilitation runtime live tools record react navigate selection mode',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Workshop Kits',
@@ -1469,7 +1398,7 @@ export const articles: Article[] = [
     title: 'Templates',
     description: 'Start from a ready-made template instead of a blank canvas.',
     keywords:
-      'wardley map value chain evolution threat model threat modelling stride security trust boundary threat register service blueprint frontstage backstage line of visibility metric tree north star kpi tree driver model what if value proposition canvas jobs pains gains working backwards pr faq press release amazon family tree genealogy ancestry value stream map vsm lead time flow efficiency kaizen virtual office office rooms coworking cowork team pod all hands auditorium icebreaker icebreakers bingo find someone who games starter blank slide deck blank article blank infographic blank logo empty slide empty page artboard kanban flowchart swot gantt sankey flow diagram wireframe prebuilt scaffold quick start retro sailboat postmortem risk stakeholder persona agenda objectives crazy 8s opportunity tree article brief document write writing standup stand-up hiring pipeline recruiting content calendar editorial project planner bug tracker okrs key results product launch go no-go feedback board feature requests onboarding new wizard mode filter draw pages plan popular blank category categories finance budget invoice expense report loan calculator mortgage sales pipeline crm spreadsheet sheet inventory guest list rsvp grade book habit tracker meetings workshops presentations timelines roadmaps search words blank spreadsheet empty sheet blank slate',
+      'wardley map value chain evolution threat model threat modelling stride security trust boundary threat register service blueprint frontstage backstage line of visibility metric tree north star kpi tree driver model what if value proposition canvas jobs pains gains working backwards pr faq press release amazon family tree genealogy ancestry value stream map vsm lead time flow efficiency kaizen icebreaker icebreakers bingo find someone who games starter blank slide deck blank article blank infographic blank logo empty slide empty page artboard kanban flowchart swot gantt sankey flow diagram wireframe prebuilt scaffold quick start retro sailboat postmortem risk stakeholder persona agenda objectives crazy 8s opportunity tree article brief document write writing standup stand-up hiring pipeline recruiting content calendar editorial project planner bug tracker okrs key results product launch go no-go feedback board feature requests onboarding new wizard mode filter draw pages plan popular blank category categories finance budget invoice expense report loan calculator mortgage sales pipeline crm spreadsheet sheet inventory guest list rsvp grade book habit tracker meetings workshops presentations timelines roadmaps search words blank spreadsheet empty sheet blank slate',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Basics',
@@ -2454,9 +2383,9 @@ export const articles: Article[] = [
   {
     slug: 'portals',
     title: 'Portals',
-    description: 'Link two rings of energy and jump, or walk, between them, across tabs too.',
+    description: 'Link two rings of energy and jump between them, across tabs too.',
     keywords:
-      'portal door teleport jump travel warp link pair navigate shortcut across tabs walk through',
+      'portal door teleport jump travel warp link pair navigate shortcut across tabs step through',
     category: 'Palette',
     categorySlug: 'palette/tools',
     parentSlug: 'tools',
@@ -2497,7 +2426,7 @@ export const articles: Article[] = [
     title: 'Selection Mode Buttons',
     description: 'A button that hands whoever presses it a selection mode.',
     keywords:
-      'mode button selection mode switch tool avatar select hand pan laser spotlight eraser format painter isometric control bar press leave walkthrough read-only',
+      'mode button selection mode switch tool select hand pan laser spotlight eraser format painter isometric control bar press leave walkthrough read-only',
     category: 'Palette',
     categorySlug: 'palette/behaviour',
     parentSlug: 'behaviour',
@@ -2527,7 +2456,7 @@ export const articles: Article[] = [
     title: 'Reaction Pads',
     description: 'A pad the room can press to throw a burst over the canvas.',
     keywords:
-      'reaction pad confetti celebrate sparkles hearts applause clap fireworks emoji burst cheer thanks avatar walk onto ephemeral moment nothing saved',
+      'reaction pad confetti celebrate sparkles hearts applause clap fireworks emoji burst cheer thanks press ephemeral moment nothing saved',
     category: 'Palette',
     categorySlug: 'palette/behaviour',
     parentSlug: 'behaviour',

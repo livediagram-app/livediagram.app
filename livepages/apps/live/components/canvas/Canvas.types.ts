@@ -179,10 +179,6 @@ export type CanvasProps = {
   // and the way out of it. Null / absent = not following anybody.
   followingName?: string | null;
   onStopFollowing?: () => void;
-  // Chair (docs/specs/009-elements/chair.md): who presence says is seated on a given chair.
-  chairSitters?: (
-    elementId: string,
-  ) => import('@/components/canvas/collab/FurnitureView').ChairSitter[];
   // Portal (docs/specs/009-elements/portal-element.md): resolve a portal's pairing — the paired portal's name and, when
   // it has one, the action that travels there.
   onEnterPortal?: (element: import('@livepages/document').ShapeElement) => {
@@ -199,10 +195,6 @@ export type CanvasProps = {
     { reaction: import('@livepages/document').Reaction; seed: number }
   >;
   onReactionBurstDone?: (elementId: string) => void;
-  // Leaves Avatar mode (docs/specs/008-canvas/avatar-mode.md) for the tool that preceded it. Wired to the
-  // palette (any tile pick) and to a palette drag-drop, both of which are
-  // edits the read-only mode would otherwise swallow.
-  onExitAvatarMode?: () => void;
   // The laser pen (docs/specs/008-canvas/spotlight-panel.md). Owned in editor state, not here: the broadcaster
   // stamps it onto every sample and the trail rows carry it, both of which sit
   // above Canvas — so Canvas forwards it to the panel rather than owning it.
@@ -211,7 +203,7 @@ export type CanvasProps = {
     field: K,
     value: import('@/lib/laser-config').LaserConfig[K],
   ) => void;
-  // Laser Panel (docs/specs/008-canvas/spotlight-panel.md): where it sits, same as the avatar's above.
+  // Laser Panel (docs/specs/008-canvas/spotlight-panel.md): where it sits.
   laserPanelPosition?: { x: number; y: number } | null;
   onMoveLaserPanel?: (x: number, y: number) => void;
   onResetLaserPanel?: () => void;
@@ -253,27 +245,6 @@ export type CanvasProps = {
   // participant identity. Rendered inside the transformed wrapper so
   // they pan and zoom with the canvas.
   remoteCursors: { id: string; name: string; color: string; x: number; y: number }[];
-  // Peers' Avatar-mode characters (docs/specs/008-canvas/avatar-mode.md) on the active tab, with their
-  // name + presence colour. Rendered inside the transformed wrapper beside the
-  // local character, so everyone sees everyone walking around.
-  remoteAvatars: {
-    id: string;
-    name: string;
-    color: string;
-    avatar: import('@livepages/api-schema').AvatarPresence;
-  }[];
-  // Publishes the local character to the room (null when leaving the mode).
-  // Optional: a private, un-shared document has no room to publish to.
-  onAvatarPresence?: (avatar: import('@livepages/api-schema').AvatarPresence | null) => void;
-  // Shove a peer's character (docs/specs/008-canvas/avatar-mode.md): sent when our character finishes
-  // walking up to the one we clicked. Optional — no room, no push.
-  onAvatarPush?: (targetId: string, dx: number, dy: number) => void;
-  // Say something (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): sends one message to the room.
-  // Optional: with no room the bubble is still drawn for you.
-  onAvatarSay?: (say: { id: string; text: string; x: number; y: number }) => void;
-  // A shove somebody sent US, as a direction plus a sequence number so the same
-  // push isn't replayed on every render. Null until someone pushes.
-  avatarShove?: { dx: number; dy: number; seq: number } | null;
   // Laser-pointer trails for the LaserOverlay — local user first
   // followed by any peers laser-pointing on the active tab. The
   // overlay handles fading and cleanup; Canvas just renders.

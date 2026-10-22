@@ -151,23 +151,6 @@ export const SHAPE_KINDS = new Set<string>([
   'action-card',
   // Done check (docs/specs/012-collaboration/done-check.md).
   'done-check',
-  // Chair (docs/specs/009-elements/chair.md): an Avatar-mode character sits down in one.
-  'chair',
-  // Fence (docs/specs/009-elements/fence.md): Avatar-mode characters cannot walk through one.
-  'fence',
-  // Avatar Pad (docs/specs/009-elements/avatar-pad.md): where Avatar-mode characters start.
-  'avatar-pad',
-  // Desk and sofa (docs/specs/009-elements/chair.md "Desk and sofa").
-  'desk',
-  'sofa',
-  // The virtual office (docs/specs/009-elements/office.md).
-  'room',
-  'meeting-table',
-  'plant',
-  'bookshelf',
-  'water-cooler',
-  'coffee-machine',
-  'rug',
   // The collaboration family (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md).
   'estimate',
   'temperature',

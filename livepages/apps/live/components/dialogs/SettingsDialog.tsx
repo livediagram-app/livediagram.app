@@ -22,7 +22,6 @@ import { PLAN_TOUR_TRACKS, planTrackSeen, requestPlanTourRelaunch } from '@/lib/
 import { requestWorkshopTourRelaunch } from '@/lib/workshop-tour';
 import { requestFormTourRelaunch } from '@/lib/form-tour';
 import { requestDrawTourRelaunch } from '@/lib/draw-tour';
-import { requestAvatarTourRelaunch } from '@/lib/avatar-tour';
 import { PAGES_TOUR_KINDS, pagesKindSeen, requestPagesTourRelaunch } from '@/lib/pages-tour';
 import { track } from '@/lib/telemetry';
 import {
@@ -189,9 +188,6 @@ export function SettingsDialog({
   // Tours › "Forms Tour" (docs/specs/030-forms/forms.md "The Forms tour"): as the Plan tour's.
   const formTourSeen = settings.formTourSeen === true;
   const formTourSeenAtOpen = useRef(formTourSeen);
-  // Tours › "Avatar Tour" (docs/specs/008-canvas/avatar-tour.md): as the Plan tour's.
-  const avatarTourSeen = settings.avatarTourSeen === true;
-  const avatarTourSeenAtOpen = useRef(avatarTourSeen);
   // Tours › "Slides Tour", "Infographic Tour", "Article Tour", "Logo Tour" (docs/specs/007-editor/pages-tour.md): as
   // the Plan tour's.
   const pagesOwed = PAGES_TOUR_KINDS.filter((k) => !pagesKindSeen(settings, k));
@@ -205,7 +201,6 @@ export function SettingsDialog({
     if (!workshopTourSeen && workshopTourSeenAtOpen.current) requestWorkshopTourRelaunch();
     if (!drawTourSeen && drawTourSeenAtOpen.current) requestDrawTourRelaunch();
     if (!formTourSeen && formTourSeenAtOpen.current) requestFormTourRelaunch();
-    if (!avatarTourSeen && avatarTourSeenAtOpen.current) requestAvatarTourRelaunch();
     if (pagesOwed.some((k) => !pagesOwedAtOpen.current.includes(k))) requestPagesTourRelaunch();
     onClose();
   };

@@ -15,19 +15,6 @@ import type {
 } from '@livepages/document';
 import {
   AgendaIcon,
-  AvatarModeIcon,
-  ChairIcon,
-  DeskIcon,
-  FenceIcon,
-  AvatarPadIcon,
-  RoomIcon,
-  MeetingTableIcon,
-  PlantIcon,
-  BookshelfIcon,
-  WaterCoolerIcon,
-  CoffeeMachineIcon,
-  RugIcon,
-  SofaIcon,
   DecisionIcon,
   EraserIcon,
   EstimateIcon,
@@ -751,23 +738,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     // Selection Mode buttons (docs/specs/009-elements/mode-button.md): one tile per mode, grouped, so the
     // button lands pointed at the mode you wanted rather than at the default
     // you then have to change.
-    id: 'tools:mode-avatar',
-    tileGroup: 'mode',
-    blurb: 'Walk a character around the canvas',
-    caption: 'Avatar',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Avatar Mode Button',
-    description:
-      'A button that switches whoever presses it into Avatar mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
-    filled: true,
-    action: { type: 'shape', kind: 'mode-button', mode: 'avatar' },
-    // The mode's OWN glyph, the one the canvas-tool popover shows for it
-    // (buildCanvasToolOptions): eight identical pointers told the reader
-    // nothing about which mode a row would hand out.
-    icon: <AvatarModeIcon size={TILE_GLYPH_PX} />,
-  },
-  {
     id: 'tools:mode-select',
     tileGroup: 'mode',
     blurb: 'The ordinary pointer',
@@ -1006,7 +976,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     toolGroup: 'behaviour',
     label: 'Add Confetti Pad',
     description:
-      'Press it, or walk a character onto it in Avatar mode, and confetti bursts up and falls for everyone in the room. A result worth celebrating.',
+      'Press it and confetti bursts up and falls for everyone in the room. A result worth celebrating.',
     filled: true,
     action: { type: 'shape', kind: 'reaction-pad', reaction: 'confetti' },
     icon: <span className="text-[15px] leading-none">{REACTION_EMOJI['confetti']}</span>,
@@ -1020,7 +990,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     toolGroup: 'behaviour',
     label: 'Add Sparkles Pad',
     description:
-      'Press it, or walk a character onto it in Avatar mode, and a slow twinkle around the pad for everyone in the room. A good idea, nicely done.',
+      'Press it and a slow twinkle around the pad for everyone in the room. A good idea, nicely done.',
     filled: true,
     action: { type: 'shape', kind: 'reaction-pad', reaction: 'sparkles' },
     icon: <span className="text-[15px] leading-none">{REACTION_EMOJI['sparkles']}</span>,
@@ -1034,7 +1004,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     toolGroup: 'behaviour',
     label: 'Add Hearts Pad',
     description:
-      'Press it, or walk a character onto it in Avatar mode, and hearts rise and drift for everyone in the room. Warmth for a person, not a result.',
+      'Press it and hearts rise and drift for everyone in the room. Warmth for a person, not a result.',
     filled: true,
     action: { type: 'shape', kind: 'reaction-pad', reaction: 'hearts' },
     icon: <span className="text-[15px] leading-none">{REACTION_EMOJI['hearts']}</span>,
@@ -1048,7 +1018,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     toolGroup: 'behaviour',
     label: 'Add Applause Pad',
     description:
-      'Press it, or walk a character onto it in Avatar mode, and rings of sound spread out for everyone in the room. Thanks for the talk or the demo.',
+      'Press it and rings of sound spread out for everyone in the room. Thanks for the talk or the demo.',
     filled: true,
     action: { type: 'shape', kind: 'reaction-pad', reaction: 'applause' },
     icon: <span className="text-[15px] leading-none">{REACTION_EMOJI['applause']}</span>,
@@ -1062,7 +1032,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     toolGroup: 'behaviour',
     label: 'Add Fireworks Pad',
     description:
-      'Press it, or walk a character onto it in Avatar mode, and shells burst one after another for everyone in the room. It shipped.',
+      'Press it and shells burst one after another for everyone in the room. It shipped.',
     filled: true,
     action: { type: 'shape', kind: 'reaction-pad', reaction: 'fireworks' },
     icon: <span className="text-[15px] leading-none">{REACTION_EMOJI['fireworks']}</span>,
@@ -1083,8 +1053,8 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     icon: <PickerIcon size={TILE_GLYPH_PX} />,
   },
   {
-    // Bring Focus (docs/specs/012-collaboration/bring-focus.md): Navigate, beside Portal and Chair, because all
-    // three take somebody somewhere. This is the one that takes everybody.
+    // Bring Focus (docs/specs/012-collaboration/bring-focus.md): Navigate, beside Portal, because both take
+    // somebody somewhere. This is the one that takes everybody.
     id: 'tools:focus-button',
     tileGroup: 'move',
     blurb: 'Ask everyone to look here',
@@ -1103,189 +1073,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
         <path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3" />
       </Glyph>
     ),
-  },
-  {
-    // Chair (docs/specs/009-elements/chair.md): Behaviour, because what it does only happens when
-    // somebody interacts with it — here by walking an Avatar-mode character
-    // into it rather than by pressing it.
-    id: 'tools:chair',
-    tileGroup: 'move',
-    blurb: 'A chair for Avatars to sit in',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Chair',
-    caption: 'Chair',
-    description:
-      'Furniture for Avatar mode: walk your character into one and it sits down. Give the room a seating plan.',
-    filled: true,
-    action: { type: 'shape', kind: 'chair' },
-    icon: <ChairIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    // Desk (docs/specs/009-elements/chair.md "Desk and sofa"): a chair pulled up to a desk with a
-    // computer on it; whoever sits faces the screen.
-    id: 'tools:desk',
-    tileGroup: 'move',
-    blurb: 'A desk with a computer for an Avatar to sit at',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Desk',
-    caption: 'Desk',
-    description:
-      'A desk with a computer and a chair for Avatar mode: walk your character in and it sits down facing the screen.',
-    filled: true,
-    action: { type: 'shape', kind: 'desk' },
-    icon: <DeskIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    // Sofa (docs/specs/009-elements/chair.md "Desk and sofa"): two seats side by side.
-    id: 'tools:sofa',
-    tileGroup: 'move',
-    blurb: 'A two-seater sofa for Avatars',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Sofa',
-    caption: 'Sofa',
-    description:
-      'A two-seater sofa for Avatar mode: walk your character in and it sits on the nearer cushion, room for two.',
-    filled: true,
-    action: { type: 'shape', kind: 'sofa' },
-    icon: <SofaIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    // Fence (docs/specs/009-elements/fence.md): Avatar-mode characters cannot walk through one.
-    id: 'tools:fence',
-    tileGroup: 'move',
-    blurb: 'A barrier Avatars cannot walk through',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Fence',
-    caption: 'Fence',
-    description:
-      'A fence Avatar-mode characters cannot cross. Join fences end to end to wall off an area: people can walk round it, not into it.',
-    filled: true,
-    action: { type: 'shape', kind: 'fence' },
-    icon: <FenceIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    // Avatar Pad (docs/specs/009-elements/avatar-pad.md): where everyone entering Avatar mode starts.
-    id: 'tools:avatar-pad',
-    tileGroup: 'move',
-    blurb: 'Where Avatars arrive',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Avatar Pad',
-    caption: 'Avatar Pad',
-    description:
-      "The board's entrance for Avatar mode: everyone who starts walking appears on the pad, beamed in, rather than wherever they were looking.",
-    filled: true,
-    action: { type: 'shape', kind: 'avatar-pad' },
-    icon: <AvatarPadIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    // Room (docs/specs/009-elements/office.md).
-    id: 'tools:room',
-    tileGroup: 'move',
-    blurb: 'A room with walls and a doorway',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Room',
-    caption: 'Room',
-    description:
-      'A room for a virtual office: walls Avatar-mode characters walk round, a doorway they walk through, and its name on the back wall. It goes in behind everything, so furniture stands on its floor.',
-    filled: true,
-    action: { type: 'shape', kind: 'room' },
-    icon: <RoomIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    // Meeting Table (docs/specs/009-elements/office.md).
-    id: 'tools:meeting-table',
-    tileGroup: 'move',
-    blurb: 'A table with six seats round it',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Meeting Table',
-    caption: 'Meeting Table',
-    description:
-      'A meeting table with six chairs for Avatar mode: walk your character in and it sits on the nearest seat, facing the table.',
-    filled: true,
-    action: { type: 'shape', kind: 'meeting-table' },
-    icon: <MeetingTableIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    // Plant (docs/specs/009-elements/office.md).
-    id: 'tools:plant',
-    tileGroup: 'move',
-    blurb: 'A potted plant Avatars walk round',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Plant',
-    caption: 'Plant',
-    description:
-      'A potted plant to make an office feel lived in. Avatar-mode characters walk round its pot.',
-    filled: true,
-    action: { type: 'shape', kind: 'plant' },
-    icon: <PlantIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    // Bookshelf (docs/specs/009-elements/office.md).
-    id: 'tools:bookshelf',
-    tileGroup: 'move',
-    blurb: 'Shelves of books Avatars walk round',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Bookshelf',
-    caption: 'Bookshelf',
-    description:
-      'A bookshelf to stand against a wall. Avatar-mode characters walk along in front of it, not through it.',
-    filled: true,
-    action: { type: 'shape', kind: 'bookshelf' },
-    icon: <BookshelfIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    // Water Cooler (docs/specs/009-elements/office.md).
-    id: 'tools:water-cooler',
-    tileGroup: 'move',
-    blurb: 'Walk up for a cup of water',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Water Cooler',
-    caption: 'Water Cooler',
-    description:
-      'A water cooler for Avatar mode: walk your character up to it and it gets a cup of water, sipping it for a minute where everyone can see.',
-    filled: true,
-    action: { type: 'shape', kind: 'water-cooler' },
-    icon: <WaterCoolerIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    // Coffee Machine (docs/specs/009-elements/office.md).
-    id: 'tools:coffee-machine',
-    tileGroup: 'move',
-    blurb: 'Walk up for a coffee',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Coffee Machine',
-    caption: 'Coffee Machine',
-    description:
-      'A coffee machine for Avatar mode: walk your character up to it and it gets a steaming coffee, sipping it for a minute where everyone can see.',
-    filled: true,
-    action: { type: 'shape', kind: 'coffee-machine' },
-    icon: <CoffeeMachineIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    // Rug (docs/specs/009-elements/office.md).
-    id: 'tools:rug',
-    tileGroup: 'move',
-    blurb: 'A rug on the floor',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Rug',
-    caption: 'Rug',
-    description:
-      'A rug that lies on the floor under the furniture, to mark out a lounge or a reception.',
-    filled: true,
-    action: { type: 'shape', kind: 'rug' },
-    icon: <RugIcon size={TILE_GLYPH_PX} />,
   },
   // --- Collaborate (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md) ----------------------------------
   // Elements that collect what the ROOM thinks. Rows with a blurb, like
@@ -1925,10 +1712,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'tools:link-card',
     blurb: 'A clickable preview of a link',
-    // Navigate (docs/specs/010-palette/palette-top-level-categories.md), beside Portal and Chair: the group is what an
-    // element DOES, and all three take you somewhere. A portal moves you to
-    // another tab, a chair seats your character, a link card sends you out to
-    // the page. It sat under Components, which groups by what a thing looks
+    // Navigate (docs/specs/010-palette/palette-top-level-categories.md), beside Portal: the group is what an
+    // element DOES, and both take you somewhere. A portal moves you to
+    // another tab, a link card sends you out to the page. It sat under Components, which groups by what a thing looks
     // like — a ready-made composite you recolour — and a link card is neither
     // composite nor decoration.
     section: 'tools',

@@ -503,7 +503,6 @@ type TourSeenKey =
   | 'workshopTourSeen'
   | 'drawTourSeen'
   | 'formTourSeen'
-  | 'avatarTourSeen'
   | 'pagesTourSeen'
   | 'elementToursSeen';
 
@@ -1244,14 +1243,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'tour walkthrough onboarding tutorial form survey questions responses replay',
         description: 'The first time you open a Form tab.',
         helpArticle: 'planForms',
-      }),
-      tourSwitch('avatarTourSeen', {
-        label: 'Avatar Tour',
-        event: { category: 'UI', on: 'AvatarTourSeenOff', off: 'AvatarTourSeenOn' },
-        keywords:
-          'tour walkthrough onboarding tutorial avatar character walk speech message push replay',
-        description: 'The first time you walk as an avatar.',
-        helpArticle: 'avatarTour',
       }),
       // The Pages tour: one switch over every kind of page, then each kind's own row beneath it
       // (docs/specs/007-editor/pages-tour.md).

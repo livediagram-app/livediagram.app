@@ -450,10 +450,4 @@ describe('buildEditorCommands — locked tab and Plan mode', () => {
     expect(got).not.toContain('tool:format');
     expect(got).toContain('tool:laser');
   });
-
-  it('never offers Avatar Mode (docs/specs/008-canvas/avatar-mode.md "Where it lives")', () => {
-    expect(ids(base)).not.toContain('tool:avatar');
-    expect(ids({ ...base, isReadOnly: true })).not.toContain('tool:avatar');
-    expect(ids({ ...base, canvasTool: 'avatar' })).not.toContain('tool:avatar');
-  });
 });

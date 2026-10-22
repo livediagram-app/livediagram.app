@@ -34,7 +34,6 @@ describe('drawsStandardLabel', () => {
   it('is true for ordinary shapes and stickies', () => {
     expect(drawsStandardLabel(shape('square'))).toBe(true);
     expect(drawsStandardLabel(createSticky(0, 0))).toBe(true);
-    expect(drawsStandardLabel(shape('chair'))).toBe(true);
   });
 
   it('is false for elements that draw their own text', () => {

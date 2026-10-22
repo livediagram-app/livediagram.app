@@ -7,8 +7,6 @@
 
 import { buildWireframeFlow } from './template-builders-wireframe-flows';
 import { isFormTemplateKind } from './form-templates';
-import { buildVirtualOffice } from './template-builders-office';
-import { buildAllHandsHall, buildCoworkingSpace, buildTeamPod } from './template-builders-spaces';
 import { settleChips, type Element, type Tab } from '@livepages/document';
 import type { TemplateKind } from './templates';
 import { buildSlideDeck } from './template-builders-slides';
@@ -251,14 +249,6 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
       return buildWorkshopBoard(cx, cy);
     case 'icebreaker-questions':
       return buildIcebreakerQuestions(cx, cy);
-    case 'virtual-office':
-      return buildVirtualOffice(cx, cy);
-    case 'coworking-space':
-      return buildCoworkingSpace(cx, cy);
-    case 'team-pod':
-      return buildTeamPod(cx, cy);
-    case 'all-hands-hall':
-      return buildAllHandsHall(cx, cy);
     case 'people-bingo':
       return buildPeopleBingo(cx, cy);
     case 'business-model-canvas':

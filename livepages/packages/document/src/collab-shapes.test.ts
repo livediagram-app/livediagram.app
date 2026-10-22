@@ -11,12 +11,8 @@ import {
   AGENDA_MAX_MINUTES,
   ESTIMATE_SCALE_VALUES,
   agendaTotalMinutes,
-  CHAIR_FACINGS,
-  CHAIR_FACING_LABELS,
-  CHAIR_SITTER_FACING,
   clampAgendaMinutes,
   estimateValues,
-  isChairFacing,
   isCollabPanelShape,
   isDecisionDate,
   isDecisionStatus,
@@ -82,20 +78,6 @@ describe('decision record', () => {
   });
 });
 
-describe('chair', () => {
-  it('accepts only the four facings', () => {
-    expect(isChairFacing('n')).toBe(true);
-    expect(isChairFacing('ne')).toBe(false);
-  });
-
-  it('turns the sitter the way the seat points', () => {
-    for (const facing of CHAIR_FACINGS) {
-      // The menu label and the sitter's pose must say the same thing.
-      expect(CHAIR_FACING_LABELS[facing]).toBe(`Facing ${CHAIR_SITTER_FACING[facing]}`);
-    }
-  });
-});
-
 describe('isCollabPanelShape', () => {
   it('covers every kind that draws its own card', () => {
     for (const kind of [
@@ -112,22 +94,10 @@ describe('isCollabPanelShape', () => {
       expect(isCollabPanelShape(kind)).toBe(true);
     }
   });
-
-  it('excludes the chair, which keeps a plain label (docs/specs/009-elements/chair.md)', () => {
-    expect(isCollabPanelShape('chair')).toBe(false);
-  });
 });
 
 describe('the new kinds create and validate', () => {
-  const kinds = [
-    'estimate',
-    'temperature',
-    'idea-box',
-    'agenda',
-    'decision',
-    'roll-call',
-    'chair',
-  ] as const;
+  const kinds = ['estimate', 'temperature', 'idea-box', 'agenda', 'decision', 'roll-call'] as const;
 
   it.each(kinds)('%s creates a valid element', (kind) => {
     const el = createShape(kind, 10, 20);
@@ -204,10 +174,6 @@ describe('validation bounds', () => {
     expect(isValidElement(withFields({ decisionDate: '2026-01-05' }))).toBe(true);
   });
 
-  it('rejects an off-vocabulary chair facing', () => {
-    expect(isValidElement(withFields({ chairFacing: 'up' }))).toBe(false);
-  });
-
   it('accepts an out-of-range agenda duration, because it clamps on read', () => {
     expect(isValidElement(withFields({ agendaItems: [{ label: 'x', minutes: 9_999 }] }))).toBe(
       true,
@@ -222,9 +188,8 @@ describe('validation bounds', () => {
   });
 });
 
-describe('the shared settings ellipsis (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/009-elements/chair.md)', () => {
-  it('is on every Behaviours card except the chair and the ones with their own', () => {
-    expect(carriesSharedSettingsMenu('chair')).toBe(false);
+describe('the shared settings ellipsis (docs/specs/008-canvas/canvas-and-palette.md)', () => {
+  it('is on every Behaviours card except the ones with their own', () => {
     expect(carriesSharedSettingsMenu('done-check')).toBe(false);
     expect(carriesSharedSettingsMenu('comment-pin')).toBe(false);
     expect(carriesSharedSettingsMenu('action-card')).toBe(false);
@@ -241,7 +206,6 @@ describe('supportsTextAlign', () => {
       'agenda',
       'decision',
       'roll-call',
-      'chair',
       'session-button',
       'focus-button',
       'reveal',

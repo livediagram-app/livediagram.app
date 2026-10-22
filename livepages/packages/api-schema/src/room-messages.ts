@@ -1,8 +1,6 @@
 import type { AgentPresence } from './agent-presence';
 import type { ArticleOp, ElementDelta, RoomElementOp, Tab } from '@livepages/document';
 import type { ParticipantPresence } from './index';
-import type { AvatarConfig } from './avatar';
-import type { AvatarSayOp } from './avatar-say';
 import type { DragPreviewPatch } from './drag-preview';
 import type { ChangesetRoomOp } from './changesets';
 import type { ItemsRoomOp, ItemTypesRoomOp } from './items';
@@ -12,66 +10,8 @@ import type { SheetsRoomOp } from './sheets';
 // Realtime room messages
 // ---------------------------------------------------------------------
 
-// One participant's Avatar-mode character (docs/specs/008-canvas/avatar-mode.md), as it travels over the
-// presence channel. Position is the character's FEET in canvas coords; the
-// animation inputs and the costume ride along so a peer draws the same
-// character, walk cycle, hop, and flag wave the sender sees. Deliberately
-// small — this goes out at cursor rates.
-
-// The statuses a character can show in Avatar mode (docs/specs/008-canvas/avatar-mode.md "Status"), the one list both
-// ends of the wire read: the editor's picker and labels are keyed to it, so a status can never be sent that a
-// receiver's type does not name.
-export const AVATAR_STATUS_IDS = ['available', 'focus', 'meeting', 'away'] as const;
-export type AvatarStatus = (typeof AVATAR_STATUS_IDS)[number];
-
-export type AvatarPresence = {
-  x: number;
-  y: number;
-  facing: 'down' | 'up' | 'left' | 'right';
-  // The sender's costume (docs/specs/008-canvas/avatar-mode.md): gender / clothing / hair / size, each a
-  // preset token from a closed set. Optional so a packet from an older client
-  // still parses — the receiver falls back to the default character. Purely
-  // cosmetic, and never an identity claim.
-  config?: AvatarConfig;
-  // A reaction in progress (docs/specs/008-canvas/avatar-mode.md): which one, and how far into it the
-  // sender is. The pose is derived from these two by a pure function on both
-  // ends, so the wire carries a kind and a clock rather than a pose.
-  reaction?: {
-    kind: 'jumping-jacks' | 'wave' | 'spin' | 'cheer' | 'dance';
-    elapsedMs: number;
-  };
-  walking: boolean;
-  // Two-frame leg swing (0 | 1).
-  stepFrame: number;
-  // Height above the ground mid-hop, in canvas px (0 = standing).
-  lift: number;
-  // Flag-wave frame, or null when the flag is down.
-  wave: number | null;
-  // Chair (docs/specs/009-elements/chair.md): the element id of the chair this character is sitting
-  // on, or null / absent when standing.
-  //
-  // Occupancy rides HERE, on ephemeral presence, and is deliberately never
-  // written to the document: a chair therefore cannot be left permanently
-  // occupied by somebody who closed their laptop, cannot conflict between two
-  // clients, and reaches D1 and undo not at all. Optional so a
-  // packet from an older client still parses as "standing".
-  seatedOn?: string | null;
-  // A drink in the hand (docs/specs/009-elements/office.md "Using it"), from a water cooler or a coffee machine,
-  // or none. Presence like the seat: put down after a minute or on leaving the mode, never in the document.
-  // Optional so an older client's packet parses as empty-handed; anything else draws nothing.
-  holding?: 'water' | 'coffee' | null;
-  // How the person is (docs/specs/008-canvas/avatar-mode.md "Status"), or none. Presence for the session only;
-  // a receiver draws only a status it knows. Optional so an older client's packet parses as no status.
-  status?: AvatarStatus | null;
-};
-
 // Room op kinds that are ephemeral signals: they mutate no document state,
 // so they relay unordered (no seq) and from any role.
-//
-// `avatar` (docs/specs/008-canvas/avatar-mode.md) is presence in the plainest sense: someone's walking
-// character, at cursor rates, mutating nothing. View-role senders included —
-// an audience member walking around a document they were shown a link to is
-// the same kind of harmless as their cursor.
 // This classification used to live inside the room worker while the editor kept
 // its own list of the kinds it sends and handles, in another app, with nothing
 // comparing them. That is how `viewport` shipped absent from here (see its note
@@ -86,20 +26,13 @@ export const PRESENCE_OP_KINDS = [
   'select',
   'laser',
   'tab-focus',
-  'avatar',
-  // A shove (docs/specs/008-canvas/avatar-mode.md) moves nothing on the server and nothing in the
-  // document — it asks one peer to step aside. Same trust level as `avatar`.
-  'avatar-push',
-  // A character saying something (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): a message that floats
-  // away in seconds, so nothing to order, log or replay. The room relays it from an Editor or a Participant only.
-  'avatar-say',
   // A reaction burst (docs/specs/009-elements/reaction-pad.md) is pure theatre: nothing on the server,
   // nothing in the document, and nothing worth replaying to somebody who
   // arrives after it finished.
   'reaction',
   // Where the sender is looking, for anyone following them (docs/specs/012-collaboration/follow-me-viewport.md). Its
   // own wire contract calls it "ephemeral presence exactly like cursor /
-  // laser / avatar: throttled, never logged, never ordered (no `seq`), never
+  // laser: throttled, never logged, never ordered (no `seq`), never
   // replayed to a reconnecting client" — and while it was missing from this
   // set it was all four of those things, because the mutation branch is the
   // fall-through.
@@ -535,24 +468,8 @@ export type RoomOp =
         effect: 'beam' | 'glow' | 'comet' | 'spark';
       };
     }
-  // The sender's Avatar-mode character (docs/specs/008-canvas/avatar-mode.md), so everyone in the room
-  // sees everyone else walking around. Ephemeral presence exactly like
-  // cursor / laser: throttled to ~30 Hz, never logged, never replayed to a
-  // reconnecting client, and `avatar: null` means "I left the mode, drop my
-  // character". The tab id scopes rendering to peers looking at the same tab.
-  | { kind: 'avatar'; tabId: string; avatar: AvatarPresence | null }
-  // One character SHOVES another (docs/specs/008-canvas/avatar-mode.md). Sent by the pusher when their
-  // character reaches the person they clicked; only the participant named in
-  // `targetId` acts on it, by sliding their own character a short way along
-  // (`dx`, `dy`) — a unit vector. Everyone's character stays authoritative on
-  // its owner's machine, so a push is a request, never a remote write, and a
-  // peer who has left the mode simply ignores it.
-  | { kind: 'avatar-push'; tabId: string; targetId: string; dx: number; dy: number }
-  // A character SAYS something (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): `id` names the bubble,
-  // `x, y` the canvas point above the speaker's head it rises from. Parsed by `parseAvatarSay` at both ends.
-  | AvatarSayOp
   // Somebody set off a REACTION PAD (docs/specs/009-elements/reaction-pad.md). Ephemeral exactly like cursor
-  // / laser / avatar: never logged, never ordered, never replayed to a
+  // / laser: never logged, never ordered, never replayed to a
   // reconnecting client — a burst you missed is a burst that is over.
   //
   // Carries the pad's id rather than coordinates: the burst is drawn around
@@ -578,7 +495,7 @@ export type RoomOp =
     }
   // The sender's VIEWPORT (docs/specs/012-collaboration/follow-me-viewport.md): where they are looking, so anyone who
   // has chosen to follow them can mirror it. Ephemeral presence exactly like
-  // cursor / laser / avatar: throttled, never logged, never ordered (no
+  // cursor / laser: throttled, never logged, never ordered (no
   // `seq`), never replayed to a reconnecting client.
   //
   // Sent by everyone on change rather than on request. The alternative — a

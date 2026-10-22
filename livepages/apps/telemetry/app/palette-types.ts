@@ -43,5 +43,4 @@ export const SELECTION_MODES: readonly string[] = [
   'Eraser',
   'FormatPainter',
   'Isometric',
-  'AvatarMode',
 ];

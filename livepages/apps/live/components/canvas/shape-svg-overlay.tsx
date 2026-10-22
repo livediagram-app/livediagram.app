@@ -101,14 +101,6 @@ export function isSvgRenderedShape(kind: ShapeKind): boolean {
     // content on top, and the rest paint their own surfaces (they are
     // self-painting, so the box path gives them a bare wrapper).
     !isWebComponentShape(kind) &&
-    // A chair (docs/specs/009-elements/chair.md) draws its own furniture and wants no box behind it.
-    kind !== 'chair' &&
-    // A fence, a desk and a sofa (docs/specs/009-elements/fence.md, chair.md) draw themselves too.
-    kind !== 'fence' &&
-    // An Avatar Pad (docs/specs/009-elements/avatar-pad.md) paints its own pixels.
-    kind !== 'avatar-pad' &&
-    kind !== 'desk' &&
-    kind !== 'sofa' &&
     // The Plan board, card and view (docs/specs/026-plan/plan-board.md, plan-views.md) paint their own surfaces.
     kind !== 'plan-board' &&
     kind !== 'plan-card' &&

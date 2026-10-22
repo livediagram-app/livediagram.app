@@ -60,7 +60,6 @@ describe('every kind with a body draws one', () => {
     'page',
     'lane',
     'browser',
-    'chair',
     'portal',
     'reveal',
     'picker',

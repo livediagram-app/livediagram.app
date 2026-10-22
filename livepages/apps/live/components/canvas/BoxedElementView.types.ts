@@ -172,13 +172,6 @@ export type BoxedElementViewProps = {
   // faces — see CollabFaceRouter. Absent on a surface with no session behind
   // it, which renders them readable but inert.
   collab?: import('@/components/canvas/collab/CollabFaceRouter').CollabApi;
-  // Chair (docs/specs/009-elements/chair.md): who peer presence says is seated on this chair right
-  // now. A function of the element id rather than a map prop so the common
-  // case (no chairs on the tab) costs nothing. Occupancy is never in the
-  // document, so a disconnected sitter vacates for free.
-  chairSitters?: (
-    elementId: string,
-  ) => import('@/components/canvas/collab/FurnitureView').ChairSitter[];
   // The viewer's current mode, so a Selection Mode button offering it renders
   // disabled (docs/specs/009-elements/mode-button.md).
   activeMode?: import('@livepages/document').SelectionMode;

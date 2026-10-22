@@ -34,11 +34,6 @@ const ElementTourHost = dynamic(
   () => import('@/components/tour/ElementTourHost').then((m) => m.ElementTourHost),
   { ssr: false },
 );
-// The Avatar tour (docs/specs/008-canvas/avatar-tour.md): the same, the first time the person walks as an avatar.
-const AvatarTourHost = dynamic(
-  () => import('@/components/tour/AvatarTourHost').then((m) => m.AvatarTourHost),
-  { ssr: false },
-);
 // The Pages tour (docs/specs/007-editor/pages-tour.md): the same, the first time the person enters
 // Pages.
 const PagesTourHost = dynamic(
@@ -49,12 +44,11 @@ const PagesTourHost = dynamic(
 // The editor's tours (docs/specs/007-editor/editor-tour.md), each mounted the first time its mode or kind is
 // worked in and kept mounted after, so leaving mid-tour still runs its clean-up.
 export function EditorTours() {
-  const { editorMode, activeTab, canvasTool } = useEditorContext();
+  const { editorMode, activeTab } = useEditorContext();
   const mountPlanTour = useEverTrue(editorMode.mode === 'plan');
   const mountWorkshopTour = useEverTrue(editorMode.mode === 'workshop');
   const mountDrawTour = useEverTrue(editorMode.mode === 'draw');
   const mountFormTour = useEverTrue(activeTab.kind === 'form');
-  const mountAvatarTour = useEverTrue(canvasTool === 'avatar');
   const mountPagesTour = useEverTrue(editorMode.mode === 'pages');
   return (
     <>
@@ -68,8 +62,6 @@ export function EditorTours() {
       {mountFormTour ? <FormTourHost /> : null}
       {/* A form template's form, started once its tab opens (lib/pending-form-start.ts). */}
       <PendingFormStart />
-      {/* The Avatar tour (docs/specs/008-canvas/avatar-tour.md): the first time a person walks as an avatar. */}
-      {mountAvatarTour ? <AvatarTourHost /> : null}
       {mountPagesTour ? <PagesTourHost /> : null}
       <ElementTourHost />
     </>

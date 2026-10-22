@@ -46,10 +46,6 @@ import { useTextHug } from '@/components/canvas/useTextHug';
 import { useMindLabelFit } from '@/components/canvas/useMindLabelFit';
 import { PageCornerFold } from '@/components/canvas/PageCornerFold';
 import { ReactionBurst } from '@/components/canvas/ReactionBurst';
-import { FenceView } from '@/components/canvas/collab/FenceView';
-import { AvatarPadView } from '@/components/canvas/collab/AvatarPadView';
-import { FurnitureView, isFurnitureViewShape } from '@/components/canvas/collab/FurnitureView';
-import { RoomView } from '@/components/canvas/collab/RoomView';
 import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
 import { describeVariant, editingLook } from '@/components/canvas/element-variant';
 import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
@@ -146,7 +142,6 @@ function BoxedElementViewImpl({
   onToggleReveal,
   onRollPicker,
   collab,
-  chairSitters,
   onEnterPortal,
   onFireReaction,
   reactionBurst,
@@ -639,39 +634,6 @@ function BoxedElementViewImpl({
                   : undefined
               }
             />
-          ) : null}
-          {/* A chair, a desk or a sofa (docs/specs/009-elements/chair.md "Facing"): the furniture itself,
-          drawn for its facing, plus whoever presence says is sitting in it. */}
-          {element.type === 'shape' && isFurnitureViewShape(element.shape) ? (
-            <FurnitureView
-              element={element}
-              stroke={own.stroke ?? defaultStrokeColor(element, surface)}
-              fill={own.fill ?? defaultFillColor(element, surface)}
-              sitters={chairSitters?.(element.id) ?? []}
-              animClass={artAnimClass}
-            />
-          ) : null}
-          {/* A room (docs/specs/009-elements/office.md "Room"): its floor, walls and doorway, its name on the
-          back wall (the ordinary label, which sits there). */}
-          {element.type === 'shape' && element.shape === 'room' ? (
-            <RoomView
-              element={element}
-              stroke={own.stroke ?? defaultStrokeColor(element, surface)}
-              floor={own.fill ?? defaultFillColor(element, surface)}
-              animClass={artAnimClass}
-            />
-          ) : null}
-          {/* A fence (docs/specs/009-elements/fence.md): posts and rails. */}
-          {element.type === 'shape' && element.shape === 'fence' ? (
-            <FenceView
-              element={element}
-              stroke={own.stroke ?? defaultStrokeColor(element, surface)}
-              animClass={artAnimClass}
-            />
-          ) : null}
-          {/* An Avatar Pad (docs/specs/009-elements/avatar-pad.md): the pixel platform characters start on. */}
-          {element.type === 'shape' && element.shape === 'avatar-pad' ? (
-            <AvatarPadView animClass={artAnimClass} />
           ) : null}
           {/* A Lane's title gutter (docs/specs/009-elements/lane.md), behind the label. */}
           {element.type === 'shape' && element.shape === 'lane' ? (

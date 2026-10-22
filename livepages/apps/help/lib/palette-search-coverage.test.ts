@@ -21,7 +21,7 @@ import { searchArticles } from './articles';
 // contributes its label with the "Add " stripped.
 //
 // Other sections' labels are deliberately NOT checked. Theirs are phrases
-// ("Add Avatar Mode Button"), nobody searches a whole sentence, and requiring
+// ("Add Laser Mode Button"), nobody searches a whole sentence, and requiring
 // them would push noise into the keywords rather than find real gaps. The
 // first version of this guard checked captions alone and would have passed
 // while "hexagon" returned nothing, which is what prompted the split.

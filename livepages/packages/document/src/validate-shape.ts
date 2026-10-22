@@ -3,7 +3,6 @@
 // check names its field and rule, so a refusal says which value to fix.
 
 import { isChartCategory, isChartSeries, isChartSlice } from './malformed-chart-rows';
-import { isRoomDoor } from './office';
 import { isPlanViewSettings, isValidItemId, normaliseBoardSetup } from '@livepages/items';
 import { isPlanSheetRef } from './element-types';
 import { isFlowchartDirection } from './flowchart';
@@ -24,7 +23,6 @@ import {
   IDEA_MAX_TEXT,
   ROLL_CALL_MAX,
   ROLL_CALL_MAX_TEXT,
-  isChairFacing,
   isDecisionDate,
   isDecisionStatus,
   isEstimateScale,
@@ -411,8 +409,6 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
     valid: rowsOf(NAV_LINKS_MAX, isBoundedStr),
     rule: arrayRule(NAV_LINKS_MAX, `strings of ${WEB_TEXT_MAX} characters`),
   },
-  { field: 'chairFacing', valid: isChairFacing, rule: 'a chair facing' },
-  { field: 'roomDoor', valid: isRoomDoor, rule: 'a room doorway (n, e, s, w or none)' },
   {
     field: 'responses',
     valid: rowsOf(RESPONSES_MAX, isResponse),

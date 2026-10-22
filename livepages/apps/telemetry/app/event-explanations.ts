@@ -111,18 +111,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone clicked a form's row in the Explorer's Inbox (its new responses), jumping to the board they land on.",
   'Activity|Selected|Thread':
     "Someone clicked a comment-thread row in the Explorer's Inbox, jumping to the element it's on.",
-  'Canvas|Used|WaterCooler':
-    'Someone walked their Avatar-mode character up to a water cooler and took a cup of water.',
-  'Canvas|Used|CoffeeMachine':
-    'Someone walked their Avatar-mode character up to a coffee machine and took a coffee.',
-  'Canvas|Used|AvatarMessage':
-    'Someone said something in Avatar mode, typing a message in the bubble above their character (Enter). Never the words.',
-  'Canvas|Used|AvatarMessagePanel':
-    "Someone said something in Avatar mode from the Avatar panel's Send a Message. Never the words.",
-  'Canvas|Used|AvatarPadArrival':
-    'Someone went into Avatar mode on a board with an Avatar Pad, so their character beamed in on the pad.',
-  'Canvas|Used|AvatarMode':
-    'Someone switched to Avatar mode, steering a small walking character around the canvas instead of the usual pointer.',
   'Canvas|Used|Eraser':
     "Someone picked up the Eraser tool, which deletes whatever it's dragged over.",
   'Canvas|Used|FollowMe':
@@ -274,12 +262,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|BorderStroke': "Someone changed a selected element's border weight.",
   'Element|Changed|BorderStyle':
     "Someone changed a selected element's border pattern: solid, dashed, or dotted.",
-  'Element|Changed|Chair':
-    'Someone changed which way a Chair element faces, on a meeting-room layout board.',
-  'Element|Changed|Room': "Someone moved a Room element's doorway to another wall, or closed it.",
-  'Element|Changed|Desk':
-    'Someone changed which way a Desk element faces, so whoever sits at it looks another way.',
-  'Element|Changed|Sofa': 'Someone changed which way a Sofa element faces.',
   'Element|Changed|ChartAnim':
     'Someone gave a selected chart a looping reveal animation, changed its speed, or turned it off.',
   'Element|Changed|ChartData': "Someone edited a chart element's underlying data.",
@@ -1080,16 +1062,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone added a tile to their Favourites in the shape palette. No longer recorded: the palette opens on Popular, a fixed pick.',
   'UI|Added|Slide':
     'Someone added a slide to the Slide Deck: either a fresh slide built from the current selection, or a duplicate of an existing one.',
-  'UI|Changed|AvatarClothing':
-    "Someone changed the Avatar-mode character's clothing, in the Avatar panel.",
-  'UI|Changed|AvatarGender':
-    "Someone changed the Avatar-mode character's gender, in the Avatar panel.",
-  'UI|Changed|AvatarHair': "Someone changed the Avatar-mode character's hair, in the Avatar panel.",
-  'UI|Changed|AvatarStatus':
-    'Someone set or cleared their status in Avatar mode (Available, Focusing, In a Meeting or Away). Never which.',
-  'UI|Changed|AvatarRandomised':
-    'Someone clicked the dice button in the Avatar panel to roll a new random character, keeping their chosen size.',
-  'UI|Changed|AvatarSize': "Someone changed the Avatar-mode character's size, in the Avatar panel.",
   'UI|Changed|EraserMode': "Someone changed the eraser's mode, in the Eraser panel.",
   'UI|Changed|EraserSize': "Someone changed the eraser's size, in the Eraser panel.",
   'UI|Changed|EraserTarget':
@@ -1184,7 +1156,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Closed|TourOffer':
     "Someone dismissed the Diagram tour's offer card (the welcome tour's, until October 2026) without starting it.",
   'UI|Closed|PagesTourOffer': 'Someone turned the Pages tour down with No on its own card.',
-  'UI|Closed|AvatarTourOffer': 'Someone turned the Avatar tour down with No on its own card.',
   'UI|Closed|DrawTourOffer': 'Someone turned the Draw tour down with No on its own card.',
   'UI|Closed|WorkshopTourOffer':
     'Someone turned the Workshop tour down with No thanks on its own card (until October 2026, also by finishing the welcome tour without pressing Show me Workshop).',
@@ -1325,9 +1296,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Ended|PagesTourCompleted':
     "Someone reached the end of the Pages tour, or a step's target never appeared and the tour finished early.",
   'UI|Ended|PagesTourSkipped': 'Someone closed the Pages tour before its end.',
-  'UI|Ended|AvatarTourCompleted':
-    "Someone reached the end of the Avatar tour, or a step's target never appeared and the tour finished early.",
-  'UI|Ended|AvatarTourSkipped': 'Someone closed the Avatar tour before its end.',
   'UI|Ended|DrawTourCompleted':
     "Someone reached the end of the Draw tour, or a step's target never appeared and the tour finished early.",
   'UI|Ended|DrawTourSkipped': 'Someone closed the Draw tour before its end.',
@@ -1432,10 +1400,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Diagram tour\'s offer card was shown on a Diagram tab, either automatically on a first document or replayed from Settings\' Tours › "Diagram Tour" ("Welcome", when it was the welcome tour, until October 2026).',
   'UI|Opened|PagesTourOffer':
     'The Pages tour was offered: as its own card the first time someone worked in Pages mode, or replayed from Settings\' Tours › "Pages Tour".',
-  'UI|Opened|AvatarTourOffer':
-    'The Avatar tour was offered: as its own card the first time someone walked as an avatar, or replayed from Settings\' Tours › "Avatar Tour".',
-  'UI|Opened|AvatarPanel':
-    'Someone opened the Avatar panel from its button beside Undo and Redo, in Avatar mode.',
   'UI|Opened|LayerStackTourOffer':
     'The Layer Stack tour was offered, as a small Tour toolbar beside a selected layer stack (counted once per visit).',
   'UI|Opened|PyramidTourOffer':
@@ -1602,8 +1566,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone pressed Show Me in the Share dialog, starting its tour of issuing and managing passes.',
   'UI|Started|PagesTour':
     "Someone pressed Yes on the Pages tour's first card, beginning its walkthrough of the pages.",
-  'UI|Started|AvatarTour':
-    "Someone pressed Yes on the Avatar tour's first card, beginning its walkthrough of Avatar mode.",
   'UI|Started|DrawTour':
     "Someone pressed Yes on the Draw tour's first card, beginning its walkthrough of the dock.",
   'UI|Started|FormTour':
@@ -1781,10 +1743,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone switched on Tours › "Logo Tour" in Settings, so the Pages tour\'s logo track is offered again.',
   'UI|Toggled|LogoTourSeenOn':
     'Someone switched off Tours › "Logo Tour" in Settings, marking the Pages tour\'s logo track as answered.',
-  'UI|Toggled|AvatarTourSeenOff':
-    'Someone switched on Tours › "Avatar Tour" in Settings, marking the Avatar tour as not yet seen.',
-  'UI|Toggled|AvatarTourSeenOn':
-    'Someone switched off Tours › "Avatar Tour" in Settings, marking the Avatar tour as seen.',
   'UI|Toggled|ElementToursSeenOff':
     'Someone switched on Tours › Element Tours in Settings, so every element tour is offered again.',
   'UI|Toggled|ElementToursSeenOn':
@@ -1975,17 +1933,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Pages tour\'s logo track reached its "Combine Shapes" step.',
   'UI|View|PagesTourStepLogoOutro':
     'The Pages tour\'s logo track reached its closing "That Is a Logo Page" card.',
-  'UI|View|AvatarTourStepAvatarButton':
-    'The Avatar tour reached its "Your Avatar" step, on the Avatar button.',
-  'UI|View|AvatarTourStepCharacter':
-    'The Avatar tour reached its "Make It Yours" step, on the character sheet.',
-  'UI|View|AvatarTourStepActions': 'The Avatar tour reached its "Behaviour and Reactions" step.',
-  'UI|View|AvatarTourStepMessage':
-    'The Avatar tour reached its "Say Something" step, on Send a Message.',
-  'UI|View|AvatarTourStepPush':
-    'The Avatar tour reached its "Give Someone a Push" step, on the person\'s own character.',
-  'UI|View|AvatarTourStepOutro':
-    'The Avatar tour reached its closing "You\'re Ready to Roam" card.',
   'UI|View|LayerStackTourStepLayers':
     'The Layer Stack tour reached its "One Element, Many Layers" step, on the whole stack.',
   'UI|View|LayerStackTourStepEdit':
@@ -2224,8 +2171,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|View|PortalTourStepTravel': 'The Portal tour reached its step on stepping through it.',
   'UI|View|PortalTourStepUnlinked': 'The Portal tour reached its step on an unlinked portal.',
   'UI|View|PortalTourStepMenu': 'The Portal tour reached its step on linking it from its menu.',
-  'UI|View|PortalTourStepWalk':
-    'The Portal tour reached its step on walking an Avatar-mode character in.',
   'UI|View|PortalTourStepOutro': 'The Portal tour reached its closing card.',
   'UI|View|SankeyTourStepBands':
     'The Sankey tour reached its "Bands Carry Amounts" step, lifting the widest band of the diagram.',
@@ -2595,7 +2540,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Token|Removed': 'Someone revoked an API token.',
   'UI|Added': 'Someone added something in the editor, such as a slide.',
   'UI|Changed':
-    "Someone changed a setting or a control's value somewhere in the editor: a tool panel's option (Avatar, Eraser, Laser, Spotlight, Format Painter), a Settings dialog row, or a palette/toolbar choice.",
+    "Someone changed a setting or a control's value somewhere in the editor: a tool panel's option (Eraser, Laser, Spotlight, Format Painter), a Settings dialog row, or a palette/toolbar choice.",
   'UI|Cleared':
     "Someone cleared livepages's saved settings and caches in their browser (Repair This Browser); the value says where from.",
   'UI|Closed':

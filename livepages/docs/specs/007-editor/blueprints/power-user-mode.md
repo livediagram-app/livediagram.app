@@ -91,7 +91,6 @@ const POWER_USER_PRESET = {
   workshopTourSeen: { workshopTourSeen: true },
   drawTourSeen: { drawTourSeen: true },
   formTourSeen: { formTourSeen: true },
-  avatarTourSeen: { avatarTourSeen: true },
   pagesTourSeen: { pagesTourSeen: true },
   elementToursSeen: { elementToursSeen: true },
   aiSuggestedPrompts: { aiSuggestedPrompts: false },
@@ -394,12 +393,12 @@ export function AppearanceToggle(props: { labelled?: boolean; quick?: boolean })
 
 ## Constants and configuration
 
-| Constant                     | Value                             | Provenance               | Safe range |
-| ---------------------------- | --------------------------------- | ------------------------ | ---------- |
-| `POWER_USER_OFFER_DAYS`      | 20                                | Operator decision (spec) | 5..60      |
-| `POWER_USER_OFFER_SHORTCUTS` | 50                                | Operator decision (spec) | 20..500    |
+| Constant                     | Value                           | Provenance               | Safe range |
+| ---------------------------- | ------------------------------- | ------------------------ | ---------- |
+| `POWER_USER_OFFER_DAYS`      | 20                              | Operator decision (spec) | 5..60      |
+| `POWER_USER_OFFER_SHORTCUTS` | 50                              | Operator decision (spec) | 20..500    |
 | `OFFER_COUNTERS_KEY`         | `livepages:power-user-offer:v1` | House key scheme         | fixed      |
-| `POWER_USER_PRESET`          | see Behaviour                     | Operator decision (spec) | fixed      |
+| `POWER_USER_PRESET`          | see Behaviour                   | Operator decision (spec) | fixed      |
 
 ## Defaults ledger
 

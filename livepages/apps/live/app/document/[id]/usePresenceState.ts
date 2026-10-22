@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { AgentPresence, AvatarPresence } from '@livepages/api-schema';
+import type { AgentPresence } from '@livepages/api-schema';
 import type { RemoteSelection } from '@/lib/presence-rows';
 import { AWAY_AFTER_MS, type Participant } from '@/lib/identity';
 import { RELATIVE_TICK_MS } from '@/lib/relative-time';
@@ -11,9 +11,9 @@ import type { RemoteViewport } from '@/hooks/collab/useFollowMe';
 
 // Realtime presence state for the document room: who's connected, each
 // peer's last-seen timestamp, and their tab focus / selection / cursor /
-// laser trail / walking character (docs/specs/008-canvas/avatar-mode.md). useRoomConnection writes these through the returned
+// laser trail. useRoomConnection writes these through the returned
 // setters; useEditorState reads them (via lib/presence-rows) to build the
-// avatar / cursor / laser / selection rows the editor renders.
+// cursor / laser / selection rows the editor renders.
 export function usePresenceState() {
   // Live presence: the participants connected to this document's
   // Durable Object room right now. Includes ourselves once our `hello`
@@ -100,16 +100,9 @@ export function usePresenceState() {
   const [remoteLaserTrails, setRemoteLaserTrails] = useState<
     Map<string, { tabId: string; points: LaserPoint[] }>
   >(new Map());
-  // Per-participant Avatar-mode characters (docs/specs/008-canvas/avatar-mode.md), keyed by participant
-  // id: the latest presence snapshot each peer published, or absent once they
-  // leave the mode (an `avatar: null` op deletes the entry). Scoped per tab in
-  // the op itself, like cursors.
   // Follow-me (docs/specs/012-collaboration/follow-me-viewport.md): where each peer is looking. Unsolicited, so it is
   // collected for everyone and read only while somebody is being followed.
   const [remoteViewports, setRemoteViewports] = useState<Map<string, RemoteViewport>>(new Map());
-  const [remoteAvatars, setRemoteAvatars] = useState<
-    Map<string, { tabId: string; avatar: AvatarPresence }>
-  >(new Map());
   // Who follows us (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"), by presence id, as the
   // room tells this socket alone.
   const [followerIds, setFollowerIds] = useState<readonly string[]>([]);
@@ -130,10 +123,8 @@ export function usePresenceState() {
     setRemoteCursors,
     remoteLaserTrails,
     setRemoteLaserTrails,
-    remoteAvatars,
     remoteViewports,
     setRemoteViewports,
-    setRemoteAvatars,
     followerIds,
     setFollowerIds,
   };

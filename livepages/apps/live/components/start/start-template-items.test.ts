@@ -61,7 +61,6 @@ describe('Start a Workshop', () => {
       'recommended',
       'retrospectives',
       'meetings',
-      'spaces',
       'games',
       'ideation',
       'planning',

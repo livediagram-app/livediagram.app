@@ -208,8 +208,6 @@ export const VIEW_TOOL_KEYS: Record<string, ShortcutAction> = {
   h: (l) => l.setCanvasTool('pan'),
   k: (l) => l.setCanvasTool('laser'),
   i: (l) => l.setCanvasTool('isometric'), // docs/specs/008-canvas/isometric-view.md: pans like Hand, non-mutating
-  // No key enters Avatar mode (docs/specs/008-canvas/avatar-mode.md "Where it lives"): a Selection Mode button on
-  // the board is its one way in. In the mode, W is the Wave (avatar-action-keys).
   z: (l) => l.onToggleZen(), // docs/specs/007-editor/zen-mode.md focus mode
 };
 

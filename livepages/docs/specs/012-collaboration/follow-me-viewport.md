@@ -9,8 +9,7 @@ take the canvas back.
 
 "Look at this" is the most common sentence spoken over a shared canvas, and the
 canvas answers it worst. The tools that exist all point AT something from where
-the speaker already is — the laser ([Laser Panel](../008-canvas/laser-panel.md)), the spotlight ([Spotlight Panel](../008-canvas/spotlight-panel.md)), a
-walked-to avatar ([Avatar mode](../008-canvas/avatar-mode.md)) — and every one of them is useless to the person
+the speaker already is — the laser ([Laser Panel](../008-canvas/laser-panel.md)), the spotlight ([Spotlight Panel](../008-canvas/spotlight-panel.md)) — and every one of them is useless to the person
 who is scrolled somewhere else entirely. Presentation mode ([Presentation mode](presentation-mode.md)) is still
 draft and solves a different problem: an authored sequence, not a live one.
 
@@ -21,7 +20,7 @@ move the audience to the pointer.
 
 A new **`viewport` RoomOp**: `{ kind: 'viewport', tabId, pan: {x, y}, zoom, size?: {width, height} }`. `size` is the sender's canvas, read by [Bring Focus](bring-focus.md) to judge whether a peer is already looking at a point; Follow Me does not use it.
 
-Ephemeral presence exactly like `cursor` / `laser` / `avatar`: throttled, never
+Ephemeral presence exactly like `cursor` / `laser`: throttled, never
 logged, never ordered (no `seq`), never replayed to a reconnecting client.
 
 - **Sent on change only**, throttled to ~10 Hz. A camera is not a pointer;

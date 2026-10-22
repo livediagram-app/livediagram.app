@@ -892,7 +892,6 @@ const MODE_TITLES: Record<string, string> = {
   Eraser: 'Eraser',
   FormatPainter: 'Format Painter',
   Isometric: 'Isometric',
-  AvatarMode: 'Avatar Mode',
 };
 
 export const MODE_METRICS: readonly Metric[] = SELECTION_MODES.map((mode) =>
@@ -905,40 +904,11 @@ export const MODE_METRICS: readonly Metric[] = SELECTION_MODES.map((mode) =>
   ),
 );
 
-// The office's machines (docs/specs/009-elements/office.md "Using it"): a drink taken in Avatar mode.
-export const OFFICE_DRINKS = chart(
-  'Canvas',
-  'Used',
-  'Office Drinks',
-  'A drink taken at a water cooler or a coffee machine in Avatar mode.',
-  { types: ['WaterCooler', 'CoffeeMachine'] },
-);
-
-// Avatar Pad arrivals (docs/specs/009-elements/avatar-pad.md "Telemetry"): an entry into Avatar mode that started on a
-// pad, once per entry, never per peer seen arriving.
-export const AVATAR_PAD_ARRIVALS = chart(
-  'Canvas',
-  'Used',
-  'Avatar Pad Arrivals',
-  'An entry into Avatar mode that started on an Avatar Pad, the character beamed in.',
-  { types: ['AvatarPadArrival'] },
-);
-
-// Avatar-mode speech bubbles (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): that somebody spoke, by
-// either door, never what they said.
-export const AVATAR_MESSAGES = chart(
-  'Canvas',
-  'Used',
-  'Avatar Messages',
-  'A message said in a speech bubble in Avatar mode, typed above the character or sent from the Avatar panel.',
-  { types: ['AvatarMessage', 'AvatarMessagePanel'] },
-);
-
 export const CANVAS_MODES: MetricStack = {
   stack: true,
   title: 'Canvas Modes',
   blurb: 'Ways of working on the canvas picked from the palette, and the options set inside them.',
-  members: [...MODE_METRICS, OFFICE_DRINKS, AVATAR_PAD_ARRIVALS, AVATAR_MESSAGES, MODE_OPTIONS],
+  members: [...MODE_METRICS, MODE_OPTIONS],
   // Modes switched into; tweaking an option inside one is not another use.
   headline: [...MODE_METRICS],
   seeAlso: { section: 'modes', label: 'See Each Mode in Features › Modes' },
@@ -1073,13 +1043,6 @@ export const FORM_TOUR_OFFERED = opened(
   'Forms Tour Offered',
   'The Forms tour offered, the first time an Editor opens a Form tab.',
   (t) => t === 'FormTourOffer',
-);
-
-// The Avatar tour's offer (docs/specs/008-canvas/avatar-tour.md); charted in its funnel on the Visitors tab.
-export const AVATAR_TOUR_OFFERED = opened(
-  'Avatar Tour Offered',
-  'The Avatar tour offered, the first time someone walks as an avatar.',
-  (t) => t === 'AvatarTourOffer',
 );
 
 // The Pages tour's offer (docs/specs/007-editor/pages-tour.md); charted in its funnel on the Visitors tab.

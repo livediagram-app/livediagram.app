@@ -3,7 +3,6 @@
 import type { TelemetrySummary, TelemetryWindowKey } from '@livepages/api-schema';
 import { HelpView } from './HelpView';
 import {
-  AVATAR_TOUR,
   DRAW_TOUR,
   ELEMENT_TOURS,
   WORKSHOP_TOUR,
@@ -33,7 +32,6 @@ export const TOURS_GROUPS: MetricGroup[] = [
       WORKSHOP_TOUR,
       DRAW_TOUR,
       FORM_TOUR,
-      AVATAR_TOUR,
       PAGES_TOUR,
       ELEMENT_TOURS,
       SHOW_ME_TOURS,

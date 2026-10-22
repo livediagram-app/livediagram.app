@@ -20,7 +20,6 @@ import {
   ON_CANVAS,
   Panel,
   Pill,
-  PixelWalker,
   Pointer,
   RULE,
   SAM,
@@ -466,8 +465,8 @@ export function LaserArt() {
   );
 }
 
-/** Avatar mode: your character walks to the step you are talking about, and the room celebrates. */
-export function AvatarModeArt() {
+/** A reaction pad: your pointer presses Celebrate under the launch, and confetti bursts over it. */
+export function CelebrateArt() {
   const confetti: [number, number, string][] = [
     [-16, -6, '#f43f5e'],
     [-8, -14, '#f59e0b'],
@@ -512,12 +511,10 @@ export function AvatarModeArt() {
           />
         ))}
       </g>
-      {/* Jordan, waving their flag by the plan. */}
-      <PixelWalker x={54} y={86} shirt={JORDAN} flag />
-      {/* You, walking over to the launch. */}
-      <g className="fa-a-move" style={from(-96, 0, 0)}>
-        <PixelWalker x={246} y={86} shirt={YOU} />
-      </g>
+      {/* The Celebrate pad below the launch. */}
+      <Box x={218} y={62} w={66} h={22} label="Celebrate" />
+      {/* You, moving over to press it. */}
+      <Pointer x={258} y={74} color={YOU} className="fa-a-move" style={from(-150, 0, 0)} />
     </Scene>
   );
 }

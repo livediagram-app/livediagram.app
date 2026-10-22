@@ -82,13 +82,7 @@ import { usePaletteKind } from '@/lib/palette-kind';
 
 type Props = Pick<
   PaletteProps,
-  | 'canvasTool'
-  | 'onSetCanvasTool'
-  | 'onExitAvatarMode'
-  | 'onToggleZen'
-  | 'canvasEmpty'
-  | 'pendingDraw'
-  | 'themeTint'
+  'canvasTool' | 'onSetCanvasTool' | 'onToggleZen' | 'canvasEmpty' | 'pendingDraw' | 'themeTint'
 > &
   PaletteAddHandlers & {
     // The chrome is hidden (zen, the welcome flow). Hidden rather than

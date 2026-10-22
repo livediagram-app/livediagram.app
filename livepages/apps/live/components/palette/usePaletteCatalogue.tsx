@@ -40,13 +40,7 @@ import { useEditorModeState } from '@/components/chrome/editor-mode/editor-mode-
 // from any category and any surface.
 type Deps = Pick<
   PaletteProps,
-  | 'canvasTool'
-  | 'onSetCanvasTool'
-  | 'onExitAvatarMode'
-  | 'onToggleZen'
-  | 'canvasEmpty'
-  | 'pendingDraw'
-  | 'onTileUsed'
+  'canvasTool' | 'onSetCanvasTool' | 'onToggleZen' | 'canvasEmpty' | 'pendingDraw' | 'onTileUsed'
 > &
   PaletteAddHandlers & {
     // A Participant (docs/specs/013-workspace/share-roles.md): the Participate category alone, and its selection
@@ -57,7 +51,6 @@ type Deps = Pick<
 export function usePaletteCatalogue({
   canvasTool,
   onSetCanvasTool,
-  onExitAvatarMode,
   onToggleZen,
   canvasEmpty,
   onAddShape,
@@ -162,10 +155,7 @@ export function usePaletteCatalogue({
   // The add-handler bundle every catalogue-driven tile grid consumes
   // (palette-tile-defs). All handlers above already wrap the mobile-close /
   // draw-armed behaviour, so a tile behaves the same from any tab.
-  // Avatar mode (docs/specs/008-canvas/avatar-mode.md) is read-only, so reaching for a tile means the user
-  // wants to edit again: every add leaves the mode first (back to whichever
-  // tool preceded it) and then drops as normal. Wrapping the bundle covers
-  // every tile, including ones added later.
+  // Wrapping the bundle runs the preamble before every add, including tiles added later.
   const tileActions: PaletteTileActions = withTileActionPreamble<PaletteTileActions>(
     {
       addShape,
@@ -191,7 +181,6 @@ export function usePaletteCatalogue({
       hasImage: !!onAddImage,
     },
     (action, args) => {
-      if (canvasTool === 'avatar') onExitAvatarMode?.();
       // A maximised board, view or Sheet gives the canvas back for anything but a card (docs/specs/026-plan/
       // plan-board.md "The palette follows what fills the screen"), so the tool is ready where it lands.
       if (getMaximisedPlanId() !== null && restoresMaximised(action, args)) restorePlanElement();
@@ -288,7 +277,6 @@ export function usePaletteCatalogue({
     isMobile,
     includeZen: !!onToggleZen,
     planMode: editorMode === 'plan',
-    currentTool: canvasTool,
   });
   const canvasToolOptions = participant
     ? allCanvasToolOptions.filter((o) => PARTICIPANT_CANVAS_TOOLS.includes(o.id))

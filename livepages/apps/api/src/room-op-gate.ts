@@ -4,7 +4,6 @@ import {
   isParticipationOp,
   isPresenceOpKind,
   isSystemOpKind,
-  parseAvatarSay,
   parseStoredLevel,
 } from '@livepages/api-schema';
 import { answersAsSelf } from './document-room-rules';
@@ -54,9 +53,6 @@ export function gateClientOp(op: unknown, sender: GateSender): OpGate {
   // A Viewer only looks (docs/specs/013-workspace/share-roles.md): of the presence class, a reaction is taking
   // part, so it needs a Participant.
   if (level === 'view' && opKind === 'reaction') return DROP;
-  // Speaking is taking part too (docs/specs/008-canvas/avatar-mode.md "Who may speak"), and a message is held to
-  // the limits here as every receiver holds it, so a malformed one reaches nobody.
-  if (opKind === 'avatar-say' && (level === 'view' || !parseAvatarSay(op))) return DROP;
   // Bring Focus moves everyone's view (docs/specs/012-collaboration/bring-focus.md): running the session, so an
   // Editor's alone.
   if (opKind === 'focus-here' && level !== 'edit') return DROP;

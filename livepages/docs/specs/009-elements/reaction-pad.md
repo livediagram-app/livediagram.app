@@ -1,7 +1,6 @@
 # The Reaction Pad
 
-A **Behaviour** element ([Selection Mode button](mode-button.md) to [Picker](../012-collaboration/picker.md)'s family). Press it, or walk an
-Avatar-mode character onto it, and a burst of reaction plays over the pad for
+A **Behaviour** element ([Selection Mode button](mode-button.md) to [Picker](../012-collaboration/picker.md)'s family). Press it and a burst of reaction plays over the pad for
 everyone in the room.
 
 ## The five reactions
@@ -35,19 +34,12 @@ is picking on. The hint line under the grid says what the current one is for,
 because "confetti or fireworks?" is a real question and both answers look like
 celebration.
 
-## Two triggers, one act
+## Pressing it
 
 - **Press it.** A real `<button>`, so the click travels rather than only
   selecting, with `pointer-events: auto` so it works inside the pointer-inert
-  Avatar / Spotlight / Isometric layers, and pointer-down left alone so
+  Spotlight / Isometric layers, and pointer-down left alone so
   dragging still moves the element. Same rules as the mode button and portal.
-- **Walk onto it** in Avatar mode. Rides the SAME arrival hook the portal
-  ([Portal element](portal-element.md)) and the chair ([Chair](chair.md)) use, so a pad costs no third mechanism.
-  Fires on **arrival**, so standing on a pad throws one burst rather than one
-  per frame; stepping off and back on is a deliberate second press.
-
-The pad is drawn as something you can stand on, not a button, because a thing
-you can walk onto has to look like one.
 
 ## The look
 
@@ -62,9 +54,9 @@ around the emoji.
   theme's, for the same reason the Temperature check's are: the reaction's
   feeling is its identity, and five pads recoloured by a theme would read as
   five of the same thing.
-- **A spotlight to stand on.** Under the emoji, a glowing ellipse in the
-  reaction's colour, the modern version of the floor plate: it says "stand
-  here" to an Avatar-mode character without drawing hardware.
+- **A spotlight under it.** Under the emoji, a glowing ellipse in the
+  reaction's colour, the modern version of the floor plate: it says "press
+  here" without drawing hardware.
 - **Alive, not busy.** The emoji bobs gently (an ambient loop), lifts and
   brightens under the pointer, and on a press squashes and throws a ring out
   from the spot. All of it stops under reduced motion; the burst itself is
@@ -76,7 +68,7 @@ around the emoji.
 
 Nothing about a burst is stored. It is not in the document, not undoable, and
 not replayed to somebody who joins after it finished. The `reaction` room op
-sits in the never-logged set beside `cursor` / `laser` / `avatar`: a burst you
+sits in the never-logged set beside `cursor` / `laser`: a burst you
 missed is a burst that is over.
 
 It is **local-first** — the presser's own machine plays it immediately and then
