@@ -22,13 +22,10 @@ const counter = (prefix: string) => {
 };
 const ids = () => ({ page: counter('pg'), flow: counter('art') });
 
-const tabOf = (extra: Partial<Tab> = {}): Tab => ({
-  id: 't',
-  name: 'T',
-  elements: [],
-  opensIn: 'pages',
-  ...extra,
-});
+// A stored tab of the retired Pages mode still carries `opensIn: 'pages'`, read by the pages code.
+type StoredTab = Tab & { opensIn?: string };
+const tabOf = (extra: Partial<StoredTab> = {}): Tab =>
+  ({ id: 't', name: 'T', elements: [], opensIn: 'pages', ...extra }) as Tab;
 const page = (id: string, extra: Partial<Page> = {}): Page => ({
   id,
   orientation: 'portrait',

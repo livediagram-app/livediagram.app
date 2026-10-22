@@ -95,7 +95,7 @@ const PAGE_DRAWINGS: Element[][] = [
 describe('tab fixes', () => {
   const findings = [
     ...DRAWINGS.map((elements): Tab => ({ id: 't', name: 'T', theme: 'ocean', elements })),
-    ...PAGE_DRAWINGS.map((elements): Tab => ({
+    ...PAGE_DRAWINGS.map((elements): Tab & { opensIn?: string } => ({
       id: 't',
       name: 'T',
       opensIn: 'pages',

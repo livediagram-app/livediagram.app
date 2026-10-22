@@ -87,7 +87,9 @@ describe('SettingsPlacementDefaultRow', () => {
     render(<SettingsPlacementDefaultRow row={rowFor('template:kanban')} lists={lists()} />);
     expect(screen.getByText('Sprints · Design')).toBeTruthy();
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Clear default folder for Kanban boards' }));
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Clear default folder for Kanban boards' }),
+      );
     });
     expect(api.apiClearPlacementDefault).toHaveBeenCalledWith('owner', 'template:kanban');
     expect(screen.getByText('My Documents')).toBeTruthy();
@@ -118,7 +120,10 @@ describe('SettingsPlacementDefaultRow', () => {
   it('waits for the folders before judging, and says when it cannot read them', async () => {
     await withDefaults([{ key: 'template:kanban', folderId: 'w' }]);
     const { rerender } = render(
-      <SettingsPlacementDefaultRow row={rowFor('template:kanban')} lists={lists({ ready: false })} />,
+      <SettingsPlacementDefaultRow
+        row={rowFor('template:kanban')}
+        lists={lists({ ready: false })}
+      />,
     );
     expect(screen.getByText('Loading…')).toBeTruthy();
     rerender(

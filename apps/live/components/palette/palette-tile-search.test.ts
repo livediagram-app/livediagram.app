@@ -230,8 +230,7 @@ describe('rankTiles', () => {
 describe('a worst-case query', () => {
   it('ranks every tile well inside a keystroke budget', () => {
     const start = performance.now();
-    for (let i = 0; i < 50; i++)
-      searchElementTiles({ query: 'e', hasImage: true });
+    for (let i = 0; i < 50; i++) searchElementTiles({ query: 'e', hasImage: true });
     // 50 searches matching most of the catalogue; a keystroke runs one.
     expect((performance.now() - start) / 50).toBeLessThan(16);
   });

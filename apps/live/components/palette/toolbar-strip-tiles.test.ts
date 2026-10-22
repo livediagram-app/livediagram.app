@@ -2,7 +2,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { PALETTE_CATEGORIES } from './palette-categories';
-import { tileById, tilesForCategory } from './palette-tile-defs';
+import { tileById, tilesForCategory, type PaletteTileDef } from './palette-tile-defs';
 import {
   STRIP_TILE_LIMIT,
   desktopStripTileLimit,
@@ -21,7 +21,7 @@ const dividedPopular = [
   'tools:text',
   'tools:arrow',
   'tools:frame',
-].map((id) => ({ ...tileById(id)!, dividerAfter: id === 'shapes:diamond' }));
+].map((id) => ({ ...tileById(id)!, dividerAfter: id === 'shapes:diamond' }) as PaletteTileDef);
 
 describe('stripTilesFor', () => {
   it('never shows more than the limit', () => {

@@ -56,5 +56,4 @@ describe('ToolbarExplorerButton', () => {
       screen.getByRole('button', { name: 'Explorer' }).closest('[data-floating-panel]'),
     ).not.toBeNull();
   });
-
 });

@@ -20,12 +20,8 @@ const doc = (id: string, over: Partial<PaneDocument> = {}): PaneDocument => ({
   ownerId: 'me',
   ...over,
 });
-const stats = (
-  mode: 'plan',
-  elements: number,
-  comments: number,
-  bytes: number,
-) => ({ mode, elements, comments, bytes }) as const;
+const stats = (mode: 'plan', elements: number, comments: number, bytes: number) =>
+  ({ mode, elements, comments, bytes }) as const;
 const folder = (id: string, over: Partial<Folder> = {}): Folder =>
   ({ id, name: id, parentId: null, createdAt: 0, updatedAt: 0, teamId: null, ...over }) as Folder;
 

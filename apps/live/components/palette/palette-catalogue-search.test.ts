@@ -39,9 +39,7 @@ describe('searchCatalogueTiles', () => {
     }
     const first = getLineArtIconCatalog()[0]!;
     // An exact name ranks first.
-    expect(ids(searchCatalogueTiles({ query: first.label }).elsewhere)[0]).toBe(
-      `icon:${first.id}`,
-    );
+    expect(ids(searchCatalogueTiles({ query: first.label }).elsewhere)[0]).toBe(`icon:${first.id}`);
   });
 
   it('lists the entries on the tab before anything is typed', () => {

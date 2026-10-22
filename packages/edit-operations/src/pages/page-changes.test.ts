@@ -32,13 +32,10 @@ const box = (id: string, x: number, y: number): Element => ({
   height: 40,
 });
 
-const tabOf = (extra: Partial<Tab> = {}): Tab => ({
-  id: 't',
-  name: 'T',
-  elements: [],
-  opensIn: 'pages',
-  ...extra,
-});
+// A stored tab of the retired Pages mode still carries `opensIn: 'pages'`, read by the pages code.
+type StoredTab = Tab & { opensIn?: string };
+const tabOf = (extra: Partial<StoredTab> = {}): Tab =>
+  ({ id: 't', name: 'T', elements: [], opensIn: 'pages', ...extra }) as Tab;
 
 const page = (id: string, extra: Partial<Page> = {}): Page => ({
   id,
@@ -85,7 +82,7 @@ describe('which tab', () => {
   it('switches a diagram tab into Pages, saying so', () => {
     const out = run(tabOf({ opensIn: undefined }), [{ op: 'add', kind: 'slide' }]);
     expect(out.switched).toBe(true);
-    expect(out.tab.opensIn).toBe('pages');
+    expect((out.tab as StoredTab).opensIn).toBe('pages');
     expect(out.lines[0]).toBe('Switched the tab to Pages.');
   });
 
