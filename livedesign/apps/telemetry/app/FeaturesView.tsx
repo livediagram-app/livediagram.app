@@ -8,7 +8,6 @@ import {
   API_TOKEN_ACTIVITY,
   COUNTDOWNS,
   DISCUSSION,
-  DRIVE_MIRROR,
   POLLS,
   STOPWATCHES,
   TEAM_ACTIVITY,
@@ -32,7 +31,7 @@ export const FACILITATION_GROUPS: MetricGroup[] = [
 ];
 
 export const CONNECTIONS_GROUPS: MetricGroup[] = [
-  { title: 'Connections', metrics: [API_TOKEN_ACTIVITY, AGENT_CHANGESETS, DRIVE_MIRROR] },
+  { title: 'Connections', metrics: [API_TOKEN_ACTIVITY, AGENT_CHANGESETS] },
 ];
 
 type Props = { summary: TelemetrySummary; active: TelemetryWindowKey };
@@ -90,7 +89,7 @@ export function FeaturesView({ summary, active, focus }: Props & { focus?: Secti
           content: (
             <>
               <GroupsIntro
-                text="API tokens, agent changes and the Google Drive mirror, beside the MCP and CLI on the Dashboard"
+                text="API tokens and agent changes, beside the MCP and CLI on the Dashboard"
                 active={active}
               />
               <MetricGroups groups={CONNECTIONS_GROUPS} summary={summary} active={active} />

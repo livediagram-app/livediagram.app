@@ -175,8 +175,7 @@ the `folder_id` column.
 - Documents in the [Trash](trash.md) that were in the folder move with
   the rest, so a later restore lands in the parent.
 - **One transaction.** `DELETE /api/folders/:id` re-parents the
-  subfolders, re-files the documents, drops the folder's
-  [Drive mirror](../022-drive-mirror/drive-mirror.md) row and deletes
+  subfolders, re-files the documents and deletes
   the folder in one D1 batch: either all of it happens or none of it.
   The parent is read inside the batch, so a concurrent move of the
   folder cannot strand its contents under a parent it has left.

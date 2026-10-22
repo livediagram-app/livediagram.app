@@ -1,5 +1,5 @@
 // The editor's one logger for trace lines (docs/specs/003-system-architecture/console-logging.md):
-// every decision point still logs its fingerprinted line (`[drive-mirror] pass-end`), but a
+// every decision point still logs its fingerprinted line (`[room] malformed op dropped`), but a
 // production build writes it only when the browser's debug flag asks for it, so a real user's
 // console stays clean. Warnings and errors are not trace lines: they use console.warn / .error.
 

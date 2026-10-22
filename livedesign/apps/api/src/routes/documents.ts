@@ -183,7 +183,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       // Validate any seeded tabs up front (structure + per-tab byte cap) so a
       // create can't smuggle a malformed / oversized tab past the tab gate.
       if (Array.isArray(body.tabs)) {
-        // Former stored shapes (a Google Drive copy, an offline sync, an API-token script) are
+        // Former stored shapes (an offline sync, an API-token script) are
         // migrated before validation, as every tab read migrates them (docs/specs/015-api/api.md).
         body.tabs = body.tabs.map((tab) => migrateIncomingTab(tab) as Tab);
         for (const tab of body.tabs) {
@@ -256,7 +256,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       if (typeof body.presentation === 'string' && body.presentation.length > MAX_DECK_LEN) {
         return badRequest('presentation too large');
       }
-      // A type catalogue a copy, a sync or a Drive import carries (docs/specs/026-plan/item-types.md
+      // A type catalogue a copy or a sync carries (docs/specs/026-plan/item-types.md
       // "Storage and sync"), validated as the item-types route does; a bad one refuses the create.
       let itemTypes: ItemTypeCatalogue | null = null;
       if (body.itemTypes !== undefined && body.itemTypes !== null) {

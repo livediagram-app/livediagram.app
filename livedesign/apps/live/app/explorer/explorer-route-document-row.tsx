@@ -13,15 +13,7 @@ import {
   hrefForDocument,
   ownerLabelFor,
 } from './document-row-shared';
-import {
-  FavouriteMarker,
-  FolderChip,
-  VisibilityBadge,
-  isMirrorable,
-  useIconOnlyBadges,
-} from './document-badges';
-import { DriveNoticeMarker } from '@/components/drive/DriveNoticeMarker';
-import { DocumentSyncMark } from '@/components/drive/DocumentSyncMark';
+import { FavouriteMarker, FolderChip, VisibilityBadge, useIconOnlyBadges } from './document-badges';
 import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
 import { ThisBrowserPill } from '@/components/primitives/ThisBrowserPill';
 import { MadeByAiPill, isMadeByAi } from '@/components/primitives/MadeByAiPill';
@@ -92,7 +84,6 @@ export function DocumentRow(props: DocumentEntryProps) {
             vertical line you can scan rather than at ragged name-end
             positions (docs/specs/013-workspace/favourites.md). */}
         {favourite ? <FavouriteMarker /> : null}
-        <DriveNoticeMarker documentId={liveDoc.id} />
         {titleNode}
         {/* The reader's tags (docs/specs/013-workspace/tags.md "Where tags show"), right after the name. */}
         <DocumentRowTags documentId={liveDoc.id} compactOnPhone />
@@ -114,16 +105,8 @@ export function DocumentRow(props: DocumentEntryProps) {
       <span className="hidden sm:flex sm:items-center">
         {showVisibility ? <VisibilityBadge document={liveDoc} iconOnly={iconOnlyBadges} /> : null}
       </span>
-      {/* The sync mark at the column's right edge, so the marks line up. */}
-      <span className="flex min-w-0 items-center justify-between gap-1.5">
-        <span className="flex min-w-0 items-center">
-          <RelativeTimeChip at={liveDoc.savedAt} />
-        </span>
-        <DocumentSyncMark
-          documentId={liveDoc.id}
-          savedAt={liveDoc.savedAt}
-          mirrorable={isMirrorable(liveDoc)}
-        />
+      <span className="flex min-w-0 items-center">
+        <RelativeTimeChip at={liveDoc.savedAt} />
       </span>
       {renaming ? (
         <span />

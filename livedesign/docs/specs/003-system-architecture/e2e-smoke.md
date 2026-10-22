@@ -216,7 +216,7 @@ the page logs `[trusted-types] violation` as an error ([Trusted Types](../016-pl
 
 The same `test` sets the editor's debug flag (`livedesign:debug` = `*`) on its browser
 context before any page loads, so the production build the suite drives writes its trace lines
-([Console logging](console-logging.md)) and a spec may wait for one (`[drive-mirror] pass-end`).
+([Console logging](console-logging.md)) and a spec may wait for one (`[arrow-rebind] trigger`).
 A spec that opens its own context with `browser.newContext()` sets it there with
 `enableDebugLogs(context)`.
 

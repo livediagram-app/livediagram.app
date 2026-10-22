@@ -160,61 +160,6 @@ export const MCP_TOOL_CALLS: MetricStack = {
   members: [...MCP_TOOL_METRICS],
 };
 
-// The Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md, "Telemetry"):
-// who connects it, whether it stays connected, and what flows back from Drive.
-export const DRIVE_CONNECTED = chart(
-  'Drive',
-  'Linked',
-  'Drive Connected',
-  'Someone connected Google Drive to mirror My Documents.',
-);
-
-export const DRIVE_DISCONNECTED = chart(
-  'Drive',
-  'Unlinked',
-  'Drive Disconnected',
-  'Someone disconnected Google Drive. Their files stay in Drive.',
-  { rising: 'neutral' },
-);
-
-export const DRIVE_NEEDS_RECONNECT = chart(
-  'Drive',
-  'Changed',
-  'Drive Needs Reconnecting',
-  'Google stopped accepting a mirror’s access (revoked, or unused for six months).',
-  { types: ['NeedsReconnect'], rising: 'bad' },
-);
-
-export const DRIVE_ACCOUNT_SWITCH = chart(
-  'Drive',
-  'Changed',
-  'Drive Account Switches',
-  'Someone reconnected Drive with a different Google account: switched the mirror to it, or kept the current one.',
-  { types: ['AccountSwitched', 'AccountKept'], rising: 'neutral' },
-);
-
-export const DRIVE_FIRST_MIRROR = chart(
-  'Drive',
-  'Created',
-  'First Mirrors Finished',
-  'A newly connected mirror finished copying every document in My Documents into Drive.',
-  { types: ['FirstMirror'] },
-);
-
-export const DRIVE_CHANGES_APPLIED = chart(
-  'Drive',
-  'Applied',
-  'Changes From Drive',
-  'A rename, move, bin, restore or permanent delete made in Google Drive, applied here.',
-);
-
-export const DRIVE_OPEN_WITH = chart(
-  'Drive',
-  'Opened',
-  'Opened From Drive',
-  'A file opened with livedesign from Google Drive: opened, offered as a copy, or unreadable.',
-);
-
 // Agent changesets (docs/specs/024-agents/agent-changesets.md "Observability and telemetry"):
 // how agents change documents, how often they meet a person's work, and how often people undo it.
 export const AGENT_APPLIED = chart(
@@ -284,21 +229,5 @@ export const AGENT_CHANGESETS: MetricStack = {
     AGENT_REVERTED,
     AGENT_TOAST_SHOW,
     AGENT_PRESENT,
-  ],
-};
-
-export const DRIVE_MIRROR: MetricStack = {
-  stack: true,
-  title: 'Google Drive',
-  blurb: 'My Documents mirrored to Google Drive, and what comes back from Drive.',
-  headline: DRIVE_CONNECTED,
-  members: [
-    DRIVE_CONNECTED,
-    DRIVE_FIRST_MIRROR,
-    DRIVE_CHANGES_APPLIED,
-    DRIVE_OPEN_WITH,
-    DRIVE_NEEDS_RECONNECT,
-    DRIVE_ACCOUNT_SWITCH,
-    DRIVE_DISCONNECTED,
   ],
 };

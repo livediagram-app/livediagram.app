@@ -15,7 +15,7 @@ design decision.
 | The recovery card         | `LoadRecoveryCard` (`apps/live/components/chrome/`), inside `ApiErrorPage`             |
 | The recovery actions      | `BrowserRepairPanel` (`packages/ui/src/browser-repair/`)                               |
 | A repair                  | `repairBrowserStorage(win)` → `{ cleared }`                                            |
-| Kept / clearable          | `REPAIR_KEPT_KEYS`, `REPAIR_KEPT_PREFIXES`, `isRepairClearable(key)`                   |
+| Kept / clearable          | `REPAIR_KEPT_KEYS`, `isRepairClearable(key)`                                           |
 | The browser checks        | `runBrowserChecks(win)`, `formatBrowserChecks(checks)`, `probeIndexedDb`               |
 | The identity lines        | `readBrowserIdentity(win)`, `formatBrowserIdentity(id, account)`, `signedInFromCookie` |
 | The guest identity's keys | `GUEST_IDENTITY_KEYS` (`packages/ui/src/browser-repair/kept-keys.ts`)                  |

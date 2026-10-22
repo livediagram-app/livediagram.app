@@ -217,13 +217,6 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
       <path d="M4 13v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6" />
     </Glyph>
   ),
-  // A folder with a two-way arrow across it: the mirror kept in step.
-  'google-drive': (
-    <Glyph>
-      <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z" />
-      <path d="M8 12h8M14 10l2 2-2 2M10 16l-2-2 2-2" />
-    </Glyph>
-  ),
   // A bin with an arrow rising out of it: the way back. The plain bin is
   // `deleting-your-data`.
   trash: (
@@ -409,13 +402,14 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
       <circle cx="19" cy="7.5" r="1.2" />
     </Glyph>
   ),
-  'drive-and-mcp': (
+  // A server with a plug beneath it: the MCP Worker a deployment runs.
+  'mcp-server': (
     <Glyph>
-      <path d="M3 6.5A1.5 1.5 0 0 1 4.5 5H8l2 2h5.5A1.5 1.5 0 0 1 17 8.5V11" />
-      <path d="M3 6.5V17a1.5 1.5 0 0 0 1.5 1.5H11" />
-      <path d="M15.5 13v2.5M19.5 13v2.5" />
-      <path d="M14 15.5h7v1.5a3.5 3.5 0 0 1-7 0z" />
-      <path d="M17.5 20.5v1.5" />
+      <rect x="3" y="3" width="18" height="7" rx="1.5" />
+      <path d="M7 6.5h.01" />
+      <path d="M10 13v2.5M14 13v2.5" />
+      <path d="M8.5 15.5h7v1.5a3.5 3.5 0 0 1-7 0z" />
+      <path d="M12 20.5v1.5" />
     </Glyph>
   ),
 };

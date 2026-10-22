@@ -49,7 +49,6 @@ vi.mock('./routes/teams', () => stub('handleTeams'));
 vi.mock('./routes/shared', () => stub('handleShared'));
 vi.mock('./routes/telemetry', () => stub('handleTelemetry'));
 vi.mock('./routes/trash', () => stub('handleTrash'));
-vi.mock('./routes/drive', () => stub('handleDrive'));
 vi.mock('./routes/tokens', () => stub('handleTokens'));
 vi.mock('./routes/oauth', () => stub('handleOauthExchange'));
 vi.mock('./routes/workbench', () => stub('handleWorkbench'));
@@ -152,7 +151,6 @@ describe('a workspace session at the front door', () => {
     ['GET', 'participants/user_2'],
     ['POST', 'ai'],
     ['POST', 'oauth'],
-    ['GET', 'drive'],
     ['POST', 'teams'],
     ['GET', 'teams/invites'],
     ['POST', 'teams/team1/members'],

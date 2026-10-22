@@ -89,8 +89,8 @@ export const categories: Category[] = [
     slug: 'account-and-data',
     title: 'Account and Data',
     description:
-      'Stay in control of your work: how guest access, signing in, syncing, exporting, deletion, API tokens, connecting AI tools, the Google Drive mirror, and email notifications work.',
-    articleCount: 9,
+      'Stay in control of your work: how guest access, signing in, syncing, exporting, deletion, API tokens, connecting AI tools, and email notifications work.',
+    articleCount: 8,
   },
   {
     slug: 'privacy-and-security',
@@ -568,15 +568,6 @@ export const articles: Article[] = [
     parentSlug: 'connect-ai-mcp',
   },
   {
-    slug: 'google-drive',
-    title: 'Google Drive',
-    description: 'Sync My documents to your own Google Drive, both ways.',
-    keywords:
-      'google drive mirror sync backup copy cloud storage open with livedesign file folders',
-    category: 'Account and Data',
-    categorySlug: 'account-and-data',
-  },
-  {
     slug: 'email-notifications',
     title: 'Email Notifications',
     description: 'The optional emails we send, and how to turn each kind off in Settings.',
@@ -805,17 +796,17 @@ export const articles: Article[] = [
     title: 'Configuration and Optional Auth',
     description: 'Environment variables, optional Clerk auth, and guest-only mode.',
     keywords:
-      'env vars environment clerk setup secrets settings configure resend email ai openai google drive mcp telemetry r2',
+      'env vars environment clerk setup secrets settings configure resend email ai openai google mcp telemetry r2',
     category: 'Self-Hosting',
     categorySlug: 'self-hosting',
     parentSlug: 'self-hosting',
   },
   {
-    slug: 'drive-and-mcp',
-    title: 'Google Drive and MCP on a Self-Hosted Instance',
-    description: 'Set up the Drive mirror and the MCP server on your own deployment.',
+    slug: 'mcp-server',
+    title: 'The MCP Server on a Self-Hosted Instance',
+    description: 'Set up the MCP server for AI tools on your own deployment.',
     keywords:
-      'google drive mirror oauth client id secret picker api key drive token key mcp server worker kv namespace consent base url oauth issuer mcp origin self host ai claude connector',
+      'mcp server worker kv namespace consent base url oauth issuer mcp origin self host ai claude connector',
     category: 'Self-Hosting',
     categorySlug: 'self-hosting/configuration',
     parentSlug: 'configuration',

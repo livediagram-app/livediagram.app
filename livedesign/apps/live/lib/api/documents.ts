@@ -171,7 +171,7 @@ export async function apiCreateDocument(
     folderId?: string | null;
     // What the new document opens as (docs/specs/013-workspace/default-folders.md): with no place
     // chosen, the server files it in the person's default folder for it. Left out by a create that
-    // keeps a place the document already has (duplicate, an Offline Mode sync, a Drive mirror copy).
+    // keeps a place the document already has (duplicate, an Offline Mode sync).
     intent?: CreationIntent;
     createdAt?: number;
     savedAt?: number;

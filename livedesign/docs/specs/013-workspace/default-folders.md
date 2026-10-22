@@ -76,9 +76,7 @@ order:
   - **Duplicate**, which sends the source's **recorded** intent unchanged, together with an explicit
     placement, so it is recorded and never routed ([Duplicate](#duplicate)).
 - **Who does not:** a create that keeps a place the document already has and has no recorded intent
-  to carry. An Offline Mode sync keeps the folder it had in the browser and records unknown; a
-  Google Drive copy of a mirrored file follows the mirror; a Drive restore puts back what it
-  restores. A create without an intent never consults defaults.
+  to carry. An Offline Mode sync keeps the folder it had in the browser and records unknown. A create without an intent never consults defaults.
 - An intent that is present but malformed (no known `mode`, a `tabKind` or `templateFamily` outside
   its list) refuses the create, `intent_invalid` (400), before anything is written.
 
@@ -94,7 +92,7 @@ never re-derived or rewritten afterwards:
 | `template_family` | `templateFamily` | The template family it was made from, or null  |
 
 - **Null `opensIn` means unknown**, never Diagram: the document was made before intents were
-  recorded, or by a create that carries none (an Offline Mode sync, a Drive mirror copy, an API
+  recorded, or by a create that carries none (an Offline Mode sync, an API
   script, the Duplicate of a document whose own intent is unknown). Its `tabKind` and
   `templateFamily` are then unknown too.
 - **With a known `opensIn`**, `tabKind` is always known, and a null `templateFamily` means made from
@@ -157,8 +155,7 @@ A create's place is decided in this order; the first that answers wins:
   binned, may no longer be the person's to see, or may be in a team the person has left.
 - A dangling default is **skipped**: resolution falls through to the next level of the precedence.
   It never fails a create.
-- A dangling default is **kept**. There is no foreign key and no cascade, so a Google Drive restore
-  that recreates the same folder id revives it. It goes when the person clears it or sets that key
+- A dangling default is **kept**. There is no foreign key and no cascade. It goes when the person clears it or sets that key
   to another folder, or with the account.
 
 ## Guests and accounts

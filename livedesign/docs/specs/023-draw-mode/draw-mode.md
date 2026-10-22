@@ -10,9 +10,8 @@ A stored tab that carries it reads as a general tab that opens in Draw mode
 ([Existing whiteboards](../007-editor/editor-modes.md#existing-whiteboards)).
 The mode tunes **tools and rules**; it does not fork the document model.
 Strokes are `freehand` elements, notes are stickies, text is `text`, shapes
-are shapes. So realtime, comments, layers, export, share links, Offline Mode
-and the [Google Drive mirror](../022-drive-mirror/drive-mirror.md) work in Draw
-mode without Draw-specific code.
+are shapes. So realtime, comments, layers, export, share links and Offline Mode
+work in Draw mode without Draw-specific code.
 
 In the rest of this spec, **a whiteboard** means a general tab in Draw mode.
 
@@ -850,4 +849,4 @@ Draw mode is built in rounds and tuned with the operator between them.
 
 ## References
 
-[Editor modes](../007-editor/editor-modes.md), [Two pens instead of a pen and a mode](../008-canvas/two-pens.md) (shape recogniser), [Eraser panel](../008-canvas/eraser-panel.md), [Appearance](../004-interface-design/appearance.md), [Google Drive mirror](../022-drive-mirror/drive-mirror.md).
+[Editor modes](../007-editor/editor-modes.md), [Two pens instead of a pen and a mode](../008-canvas/two-pens.md) (shape recogniser), [Eraser panel](../008-canvas/eraser-panel.md), [Appearance](../004-interface-design/appearance.md).

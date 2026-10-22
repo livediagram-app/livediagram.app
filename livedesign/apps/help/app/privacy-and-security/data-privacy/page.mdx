@@ -26,7 +26,6 @@ Documents are saved through a single Cloudflare Worker API that holds the databa
 The hosted version runs on Cloudflare, and a self-hoster runs the same stack on their own account. Your document content goes to another company only when you use a feature that needs one:
 
 - **The AI assistant** sends your prompt and the elements on the current tab to the AI provider the deployment uses (OpenAI on livedesign.app) to get an answer. Nothing is sent until you use it, and a deployment without an AI key has no AI assistant.
-- **[Google Drive](/help/account-and-data/google-drive/)**, if you connect it, gets a copy of your documents in your own Drive, written straight from your browser.
 - **Emails** about your work go through the email provider. They name the document, and a mention or an assigned action quotes a little of the comment or action (see [Email Notifications](/help/account-and-data/email-notifications/)).
 
 <Figure caption="Your edits travel through one API to Cloudflare storage, never straight from the browser to the database.">

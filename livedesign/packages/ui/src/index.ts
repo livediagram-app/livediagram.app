@@ -44,7 +44,6 @@ export {
 export { Select, type SelectProps, type SelectVariant, type SelectSize } from './Select';
 export { Tooltip, type TooltipProps } from './Tooltip';
 export { placeHint, type HintLayout, type HintPlacement } from './hint/place-hint';
-export { StableLabel } from './StableLabel';
 export { HoverCard, type HoverCardProps } from './HoverCard';
 export { useRowPreview, type RowPreview } from './useRowPreview';
 export { SnapCarousel } from './SnapCarousel';

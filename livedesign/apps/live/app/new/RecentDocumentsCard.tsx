@@ -2,7 +2,6 @@
 
 import { useEffect, useEffectEvent, useState } from 'react';
 import { apiListDocumentsWithTeamRecent } from '@/lib/api-client';
-import { useAfterDriveChange } from '@/hooks/persistence/useAfterDriveChange';
 import { relativeSince, useRelativeNow } from '@/lib/relative-time';
 import { Glyph, TeamIcon } from '@livedesign/ui';
 import type { DocumentSummary } from '@livedesign/api-schema';
@@ -31,11 +30,6 @@ export function RecentDocumentsCard({
   const now = useRelativeNow();
   // Reported to the newest callback; a fresh one never refetches.
   const reportCount = useEffectEvent((n: number) => onCount?.(n));
-
-  // Bumped when a change made in Google Drive lands, to re-read the list
-  // (docs/specs/022-drive-mirror/drive-mirror.md, "Other views follow").
-  const [driveVersion, setDriveVersion] = useState(0);
-  useAfterDriveChange(() => setDriveVersion((v) => v + 1), !!ownerId);
 
   useEffect(() => {
     if (!ownerId) return;
@@ -67,7 +61,7 @@ export function RecentDocumentsCard({
     return () => {
       cancelled = true;
     };
-  }, [ownerId, driveVersion]);
+  }, [ownerId]);
 
   if (!recent || recent.length === 0) return null;
 

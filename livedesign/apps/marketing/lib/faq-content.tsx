@@ -551,10 +551,6 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Does it work with Mermaid?',
         a: 'Yes, through the API, the CLI and AI assistants. Hand over a Mermaid flowchart, state diagram, ER diagram or sequence diagram and livedesign lays it out on the canvas with every connection intact; the CLI exports a tab back to Mermaid text for your READMEs and issues. Other Mermaid types, such as class, Gantt, pie and mind map, are not supported.',
       },
-      {
-        q: 'Can I keep a copy in my own Google Drive?',
-        a: 'Yes, once you sign in. Switch on the Google Drive mirror and the documents in My documents are kept in step with matching files and folders in your own Drive, so you always hold a copy.',
-      },
     ],
   },
   {
@@ -646,7 +642,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Do I need sign-in or an AI key to self-host?',
-        a: 'No. Without sign-in configured, your copy runs in guest mode with persistence, sharing and real-time collaboration all working. AI assistance switches on when you add an AI key (photo import works without one, reading the notes in the browser), and email and the Google Drive mirror once sign-in and their own keys are set up.',
+        a: 'No. Without sign-in configured, your copy runs in guest mode with persistence, sharing and real-time collaboration all working. AI assistance switches on when you add an AI key (photo import works without one, reading the notes in the browser), and email once sign-in and its own key are set up.',
       },
     ],
   },

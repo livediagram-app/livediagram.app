@@ -1,8 +1,7 @@
 'use client';
 
 // One centred card on a bare page, for the top-level landings that sit
-// outside the Explorer chrome: the team invite link (/join) and the Google
-// Drive routes (/drive/connected, /drive/open).
+// outside the Explorer chrome: the team invite link (/join).
 
 import type { ReactNode } from 'react';
 import { Brand, buttonClassName, ButtonContent } from '@livedesign/ui';

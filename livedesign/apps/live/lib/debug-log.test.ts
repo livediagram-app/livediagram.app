@@ -7,9 +7,9 @@ afterEach(() => vi.unstubAllEnvs());
 
 describe('debugScopeOf', () => {
   it('reads the bracketed fingerprint, or the word before a colon', () => {
-    expect(debugScopeOf('[drive-mirror] pass-end')).toBe('drive-mirror');
+    expect(debugScopeOf('[room] malformed op dropped')).toBe('room');
     expect(debugScopeOf('[import] dropped unsavable elements')).toBe('import');
-    expect(debugScopeOf('drive: start-token moved=1')).toBe('drive');
+    expect(debugScopeOf('home: start moved=1')).toBe('home');
     expect(debugScopeOf('no scope here')).toBe('');
   });
 });
@@ -20,14 +20,14 @@ describe('debugLogEnabled', () => {
   });
 
   it('is on outside a production build', () => {
-    expect(debugLogEnabled('drive-mirror', 'development', flag(null))).toBe(true);
-    expect(debugLogEnabled('drive-mirror', 'test', null)).toBe(true);
+    expect(debugLogEnabled('room', 'development', flag(null))).toBe(true);
+    expect(debugLogEnabled('room', 'test', null)).toBe(true);
   });
 
   it('is off in production without the flag, and when storage is missing', () => {
-    expect(debugLogEnabled('drive-mirror', 'production', flag(null))).toBe(false);
-    expect(debugLogEnabled('drive-mirror', 'production', null)).toBe(false);
-    expect(debugLogEnabled('drive-mirror', 'production', flag(''))).toBe(false);
+    expect(debugLogEnabled('room', 'production', flag(null))).toBe(false);
+    expect(debugLogEnabled('room', 'production', null)).toBe(false);
+    expect(debugLogEnabled('room', 'production', flag(''))).toBe(false);
   });
 
   it('follows the flag in production: everything, or the scopes it names', () => {
@@ -44,7 +44,7 @@ describe('debugLogEnabled', () => {
         throw new Error('denied');
       },
     };
-    expect(debugLogEnabled('drive-mirror', 'production', throwing)).toBe(false);
+    expect(debugLogEnabled('room', 'production', throwing)).toBe(false);
   });
 });
 

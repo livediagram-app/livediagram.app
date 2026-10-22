@@ -75,8 +75,7 @@ pen's pressure at each point when it reported one. It replaces the former `point
   their extent first, so no point moves by more than the precision guarantee. A pressure list
   whose length differs from the points is dropped, and the stroke draws at the middle pressure.
 - The former shape is accepted **only as migration input**, at every place a stored or foreign
-  element arrives: the api's tab writes (create and save, which also serve API-token scripts and
-  the Google Drive mirror's copies), the MCP server's own validation of what a model writes, realtime element operations from peers, clipboard pastes,
+  element arrives: the api's tab writes (create and save, which also serve API-token scripts), the MCP server's own validation of what a model writes, realtime element operations from peers, clipboard pastes,
   and tab file imports. Each runs the same migration
   before validation, so nothing downstream ever sees the former shape.
 - The migration is idempotent: a stroke already carrying `packedPoints` is returned unchanged.
@@ -84,9 +83,8 @@ pen's pressure at each point when it reported one. It replaces the former `point
   browser reads both directly: a version 1 file or payload imports through the migration, and an
   older editor refuses a version 2 one (a file with its existing "update the editor" message)
   rather than pasting strokes it cannot draw.
-- The document file (the Google Drive mirror's format) stays at version 1: it is only ever read
-  into the api's document create, which migrates, so bumping it would only make the mirror
-  rewrite every file once.
+- The document file (`livedesign.document`) stays at version 1: it is only ever read
+  into the api's document create, which migrates.
 
 ## The wire
 

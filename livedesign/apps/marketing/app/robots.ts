@@ -43,7 +43,6 @@ export default function robots(): MetadataRoute.Robots {
         '/get-started',
         '/sso-callback',
         '/embed',
-        '/drive/',
         '/api/',
       ],
     },

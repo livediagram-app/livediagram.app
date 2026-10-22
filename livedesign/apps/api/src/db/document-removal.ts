@@ -43,12 +43,6 @@ export function documentRemovalStatements(
     // Placement grants are keyed by document, also without an FK
     // (docs/specs/009-elements/images.md, "Placement grants").
     imageGrantRemovalStatement(env, doomed, [value]),
-    // The Google Drive mirror's rows (docs/specs/022-drive-mirror/drive-mirror.md, "Data"):
-    // a removed document is no longer mirrored. The browser finishes the Drive
-    // side from its own memory of the rows it saw.
-    env.DB.prepare(
-      `DELETE FROM drive_items WHERE item_kind = 'document' AND ld_id IN (${doomed})`,
-    ).bind(value),
     // Before the documents DELETE: its cascade takes the links this reads.
     env.DB.prepare(
       `DELETE FROM tabs

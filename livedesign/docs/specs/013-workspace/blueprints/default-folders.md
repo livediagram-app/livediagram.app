@@ -35,7 +35,6 @@ Scope, by file:
 | `apps/live/app/new/page.tsx` (`createByDefault`)          | The wizard's placement: the `/new?folder=` / `?team=` context, else none                                       |
 | `apps/live/app/new/page.tsx`                              | The wizard and its bypasses send the first tab's intent and the template's family                              |
 | `apps/live/lib/duplicate-document.ts`                     | Duplicate: beside the source, the source's recorded intent, root on refusal                                    |
-| `apps/live/lib/drive/livedesign-port.ts`                 | `importDocumentCopy`: no placement and an intent with no target; the mirror's place else                       |
 | `apps/mcp/src/tools.ts`, `apps/mcp/src/created-folder.ts` | `create_document` sends the intent; reports the folder it landed in                                            |
 
 ## Domain and naming
@@ -68,7 +67,7 @@ kind in an intent (a whiteboard is `mode: 'draw'`, `tabKind: 'diagram'`).
 2. `templateFamily`: the argument, left out when null.
 
 Callers pass `templateFamilyOf(templateKind)` where a template made the document (the wizard and its
-bypasses, MCP template tabs) and nothing otherwise (imports, Drive copies, MCP element or graph tabs).
+bypasses, MCP template tabs) and nothing otherwise (imports, MCP element or graph tabs).
 
 `templateFamilyOf` reads a `Record<TemplateKind, TemplateFamily | null>`, so a new template kind that is
 not mapped fails the typecheck. Its non-null rows:
@@ -311,7 +310,6 @@ section is silent are `D105` to `D120` and `D123` to `D125`.
 | `apps/live/components/dialogs/settings/SettingsPlacementDefaultRow.tsx`                                                                 | One Settings row                                                                                                                                          |
 | `apps/live/components/dialogs/settings/settings-catalogue.ts`, `settings-icons.tsx`                                                     | The `documents` category (its folder glyph on a lime tile), one `placementDefault` row per key                                                            |
 | `apps/live/components/dialogs/SettingsDialog.tsx`, `apps/live/components/dialogs/settings/SettingsCategoryPane.tsx`                     | `ownerId` loads the defaults; the pane fetches the folder lists only for a pane with Documents rows                                                       |
-| `apps/live/lib/drive/snapshot.ts`, `plan-inbound.ts`, `engine.ts`                                                                       | `deletedFolders`: a folder deleted here is never restored by its own stale create ([drive blueprint](../../022-drive-mirror/blueprints/drive-mirror.md))  |
 | `apps/live/app/explorer/useExplorerState.ts` (settings link)                                                                            | The `?settings=` deep link is read once hydrated                                                                                                          |
 | `apps/live/hooks/persistence/useDocumentListActions.ts`, `useFolders.ts`, `hooks/ui/useTeamFolderActions.ts`, `TeamSharedDocuments.tsx` | One confirmation; optimistic move-up                                                                                                                      |
 
@@ -478,7 +476,6 @@ dark:text-slate-400`, then `+N` at 10px semibold; after the count badge; in a tr
 | Marker icons, +N, words                                      | `apps/live/components/placement/DefaultFolderMarker.test.tsx`                                    |
 | The browser opens at the selected folder's level, then pins  | `apps/live/components/placement/placement-view.test.ts`, `PlacementBrowser.test.tsx`             |
 | Lists ready or failed                                        | `apps/live/hooks/persistence/usePlacementOptions.test.tsx`                                       |
-| A folder deleted here never restored by its stale create     | `apps/live/lib/drive/plan-inbound.test.ts`, `engine.outbound.test.ts`                            |
 | Settings row states                                          | `apps/live/components/dialogs/settings/SettingsPlacementDefaultRow.test.tsx`                     |
 | End to end, guest and signed in, desktop and phone           | `apps/live/e2e/default-folders.spec.ts`, `apps/live/e2e/clerk-stub/default-folders-team.spec.ts` |
 
