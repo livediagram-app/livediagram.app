@@ -10,7 +10,7 @@ import { CheckIcon, ChevronRightIcon } from '@liveplanner/ui';
 // the link into the editor reports as its Closing slot.
 
 // Three things true today, each a promise the page has already made.
-const CHECKS = ['Free for everyone', 'Open source', 'Works offline'];
+const CHECKS = ['Free for everyone', 'No trackers', 'Works offline'];
 
 export function StartPlanningCta({ surface }: { surface: 'Home' | 'Feature' }) {
   const source = `${surface}.Closing` as const;

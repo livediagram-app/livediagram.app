@@ -8,7 +8,6 @@ import {
   JsonLd,
   PageViewBoot,
   PUBLIC_VIEWPORT,
-  REPO_URL,
   SITE_NAME,
   SITE_URL,
   WebVitalsBoot,
@@ -94,17 +93,15 @@ const LOGO_URL = `${SITE_URL}/liveplanner-icon-512.png`;
 const JSON_LD = {
   '@context': 'https://schema.org',
   '@graph': [
-    // Organization anchors the brand entity: name + logo + the same
-    // GitHub sameAs the app node carries, so Google can resolve
-    // "liveplanner" to one thing across the site, the repo, and social
-    // mentions. publisher/url on the other nodes point back at this @id.
+    // Organization anchors the brand entity: name + logo, so Google can
+    // resolve "liveplanner" to one thing across the site. publisher/url
+    // on the other nodes point back at this @id.
     {
       '@type': 'Organization',
       '@id': `${SITE_URL}/#org`,
       name: SITE_NAME,
       url: SITE_URL,
       logo: LOGO_URL,
-      sameAs: [REPO_URL],
     },
     {
       '@type': 'WebSite',
@@ -126,12 +123,6 @@ const JSON_LD = {
       operatingSystem: 'Web',
       inLanguage: 'en-GB',
       image: OG_IMAGE,
-      // Links the brand entity to the open-source codebase Google
-      // already indexes. Connecting the two helps the Knowledge
-      // Graph recognise "liveplanner" as a single thing across the
-      // public marketing site, the GitHub repo, and the social
-      // mentions that cite either.
-      sameAs: [REPO_URL],
       publisher: { '@id': `${SITE_URL}/#org` },
       offers: {
         '@type': 'Offer',

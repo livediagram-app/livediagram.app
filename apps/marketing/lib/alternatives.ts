@@ -61,7 +61,7 @@ export type Alternative = {
   // Shipped liveplanner differentiators for this comparison.
   usBest: string[];
   // Deep-dive prose: competitor-specific sections expanding the key
-  // value themes (collaboration model, open-source story, structure,
+  // value themes (collaboration model, the free-and-private story, structure,
   // interop). This is where the page earns its depth.
   sections: DeepDiveSection[];
   // Competitor-specific questions, rendered on-page and emitted as
@@ -77,8 +77,8 @@ const SHARE_LINKS =
   'A share link is an Editor, Participant or view-only link (a Participant can work on cards and cells, comment and vote without changing how the project is set up), and it can carry a password or an expiry date.';
 const AGENTS =
   'An MCP server, a REST API with personal tokens and a command-line tool let scripts and AI agents read the plan and add, edit and move cards, sheets and forms, with their changes shown live.';
-const OPEN =
-  'liveplanner is MIT-licensed and its whole codebase is public. The hosted version is free with no paid tier, and you can deploy the same code to your own Cloudflare account.';
+const FREE =
+  'liveplanner is free for everyone, with no paid tier, no ads and no third-party trackers. A board exports as CSV, an image, a PDF or a Markdown outline and a sheet as CSV, so your work is never locked in.';
 const CSV_IN =
   'A board imports a CSV or TSV file: each row becomes a card, landing in the column its Status names and with the person its Assignee names. Only a title is required, and one undo takes the whole import back.';
 
@@ -88,12 +88,11 @@ export const ALTERNATIVES: Alternative[] = [
     name: 'Trello',
     title: 'Trello alternative · liveplanner',
     description:
-      'A free, open-source Trello alternative: kanban boards with WIP limits, your own card types, Sheets, Dashboards and Forms, with no sign-up to start.',
-    h1: 'The open-source Trello alternative',
-    lede: 'Trello made the kanban board familiar to everyone: lists, cards, drag and drop. liveplanner keeps that simplicity and puts more beside it in one project: Sheets with real formulas, Dashboards of live slots and Forms whose answers arrive as cards, all free, open source and ready without an account.',
+      'A free Trello alternative: kanban boards with WIP limits, your own card types, Sheets, Dashboards and Forms, with no sign-up to start.',
+    h1: 'The free Trello alternative',
+    lede: 'Trello made the kanban board familiar to everyone: lists, cards, drag and drop. liveplanner keeps that simplicity and puts more beside it in one project: Sheets with real formulas, Dashboards of live slots and Forms whose answers arrive as cards, all free and ready without an account.',
     rows: [
       { label: 'Price', us: 'Free, every feature', them: 'Free plan, then paid plans' },
-      { label: 'Open source', us: 'Yes, MIT-licensed', them: 'No, proprietary' },
       {
         label: 'Start without an account',
         us: 'Yes, create and edit as a guest',
@@ -110,7 +109,6 @@ export const ALTERNATIVES: Alternative[] = [
         us: 'Sheets, Dashboards, Forms and Gantt and calendar charts in the same project',
         them: 'Further views and Power-Ups for integrations',
       },
-      { label: 'Self-hostable', us: 'Yes, on your own Cloudflare account', them: 'No' },
     ],
     themBest: [
       'You want the most widely known kanban board, with polished mobile apps your team already uses.',
@@ -124,7 +122,7 @@ export const ALTERNATIVES: Alternative[] = [
       'A Sheet tab with over 150 functions next to the board, reading its cards or listing them as rows that stay linked both ways.',
       'Forms on a public link: each answer becomes a card on the board, ready to move along, and no account is needed to answer.',
       'Dashboards that bring boards, sheets, charts and notes onto one page, all live.',
-      'Free and MIT-licensed, with no sign-up to start.',
+      'Free, with no ads, no trackers and no sign-up to start.',
     ],
     sections: [
       {
@@ -141,14 +139,14 @@ export const ALTERNATIVES: Alternative[] = [
         ],
       },
       {
-        heading: 'Free, open, and yours to keep',
-        paragraphs: [`${GUEST_START} ${SHARE_LINKS}`, OPEN, `Coming from Trello? ${CSV_IN}`],
+        heading: 'Free, private, and yours to keep',
+        paragraphs: [`${GUEST_START} ${SHARE_LINKS}`, FREE, `Coming from Trello? ${CSV_IN}`],
       },
     ],
     faqs: [
       {
         q: 'Is liveplanner a free alternative to Trello?',
-        a: 'Yes. Every feature is free for everyone, with no paid tier, and the code is MIT-licensed, so you can also run your own copy.',
+        a: 'Yes. Every feature is free for everyone, with no paid tier.',
       },
       {
         q: 'Can I move my Trello boards across?',
@@ -169,12 +167,11 @@ export const ALTERNATIVES: Alternative[] = [
     name: 'Asana',
     title: 'Asana alternative · liveplanner',
     description:
-      'A free, open-source Asana alternative: boards of cards, Gantt and calendar charts, Sheets, Dashboards and Forms, with no seats and no sign-up to start.',
-    h1: 'A free, open-source Asana alternative',
-    lede: 'Asana is a mature work-management platform, built for organisations coordinating many teams and goals. liveplanner is a lighter, open-source place to plan: boards of cards, live charts of them, sheets, dashboards and forms in one project, free for everyone and ready without an account.',
+      'A free Asana alternative: boards of cards, Gantt and calendar charts, Sheets, Dashboards and Forms, with no seats and no sign-up to start.',
+    h1: 'A free Asana alternative',
+    lede: 'Asana is a mature work-management platform, built for organisations coordinating many teams and goals. liveplanner is a lighter place to plan: boards of cards, live charts of them, sheets, dashboards and forms in one project, free for everyone and ready without an account.',
     rows: [
       { label: 'Price', us: 'Free, every feature', them: 'Free plan, then paid plans per seat' },
-      { label: 'Open source', us: 'Yes, MIT-licensed', them: 'No, proprietary' },
       {
         label: 'Start without an account',
         us: 'Yes, create and edit as a guest',
@@ -195,7 +192,6 @@ export const ALTERNATIVES: Alternative[] = [
         us: 'Public forms whose answers become cards or rows',
         them: 'Forms that create tasks',
       },
-      { label: 'Self-hostable', us: 'Yes, on your own Cloudflare account', them: 'No' },
     ],
     themBest: [
       'You need portfolio and goal tracking across many teams, with workload and reporting built for managers.',
@@ -225,14 +221,14 @@ export const ALTERNATIVES: Alternative[] = [
         ],
       },
       {
-        heading: 'Free, open, and yours to keep',
-        paragraphs: [`${GUEST_START} ${SHARE_LINKS}`, OPEN],
+        heading: 'Free, private, and yours to keep',
+        paragraphs: [`${GUEST_START} ${SHARE_LINKS}`, FREE],
       },
     ],
     faqs: [
       {
         q: 'Is liveplanner a free alternative to Asana?',
-        a: 'Yes. There are no seats, plans or paid tiers: every feature is free for everyone, and the code is MIT-licensed.',
+        a: 'Yes. There are no seats, plans or paid tiers: every feature is free for everyone.',
       },
       {
         q: 'Can I import my Asana projects?',
@@ -253,12 +249,11 @@ export const ALTERNATIVES: Alternative[] = [
     name: 'Monday.com',
     title: 'Monday.com alternative · liveplanner',
     description:
-      'A free, open-source Monday.com alternative: boards with your own card types and fields, Sheets, Dashboards and Forms, with no seats to buy.',
-    h1: 'A free, open-source Monday.com alternative',
-    lede: 'Monday.com is a flexible, colourful work platform with boards of items, many column types and a deep set of automations. liveplanner covers the everyday core of that, boards with fields of your own, dashboards and forms, in free, open-source software you can start without an account.',
+      'A free Monday.com alternative: boards with your own card types and fields, Sheets, Dashboards and Forms, with no seats to buy.',
+    h1: 'A free Monday.com alternative',
+    lede: 'Monday.com is a flexible, colourful work platform with boards of items, many column types and a deep set of automations. liveplanner covers the everyday core of that, boards with fields of your own, dashboards and forms, in a free planner you can start without an account.',
     rows: [
       { label: 'Price', us: 'Free, every feature', them: 'Paid plans per seat, with a free plan' },
-      { label: 'Open source', us: 'Yes, MIT-licensed', them: 'No, proprietary' },
       {
         label: 'Start without an account',
         us: 'Yes, create and edit as a guest',
@@ -279,7 +274,6 @@ export const ALTERNATIVES: Alternative[] = [
         us: 'API, MCP and CLI for scripts and AI agents',
         them: 'Built-in automation recipes and integrations',
       },
-      { label: 'Self-hostable', us: 'Yes, on your own Cloudflare account', them: 'No' },
     ],
     themBest: [
       'You want built-in automation recipes and a broad marketplace of integrations, set up without code.',
@@ -309,14 +303,14 @@ export const ALTERNATIVES: Alternative[] = [
         ],
       },
       {
-        heading: 'Free, open, and yours to keep',
-        paragraphs: [OPEN, CSV_IN],
+        heading: 'Free, private, and yours to keep',
+        paragraphs: [FREE, CSV_IN],
       },
     ],
     faqs: [
       {
         q: 'Is liveplanner a free alternative to Monday.com?',
-        a: 'Yes. Every feature is free for everyone, with no seats or plans, and the code is MIT-licensed so you can run your own copy.',
+        a: 'Yes. Every feature is free for everyone, with no seats or plans.',
       },
       {
         q: 'Can I bring my Monday.com boards across?',
@@ -337,12 +331,11 @@ export const ALTERNATIVES: Alternative[] = [
     name: 'Notion',
     title: 'Notion alternative for boards and planning · liveplanner',
     description:
-      'A free, open-source alternative to Notion’s boards and databases: kanban boards, Sheets with formulas, Dashboards and Forms that fill your board.',
-    h1: 'An open-source alternative to Notion for planning',
-    lede: 'Notion is a flexible workspace of pages and databases, loved for wikis, notes and docs, and its databases can be shown as boards, tables and timelines. liveplanner focuses on the planning side: boards of cards, real spreadsheets, dashboards and forms, live for everyone, free and open source.',
+      'A free alternative to Notion’s boards and databases: kanban boards, Sheets with formulas, Dashboards and Forms that fill your board.',
+    h1: 'A free alternative to Notion for planning',
+    lede: 'Notion is a flexible workspace of pages and databases, loved for wikis, notes and docs, and its databases can be shown as boards, tables and timelines. liveplanner focuses on the planning side: boards of cards, real spreadsheets, dashboards and forms, live for everyone and free to use.',
     rows: [
       { label: 'Price', us: 'Free, every feature', them: 'Free plan, then paid plans' },
-      { label: 'Open source', us: 'Yes, MIT-licensed', them: 'No, proprietary' },
       {
         label: 'Start without an account',
         us: 'Yes, create and edit as a guest',
@@ -363,7 +356,6 @@ export const ALTERNATIVES: Alternative[] = [
         us: 'Rich-text card descriptions and notes on dashboards',
         them: 'Its core strength',
       },
-      { label: 'Self-hostable', us: 'Yes, on your own Cloudflare account', them: 'No' },
     ],
     themBest: [
       'You want one home for docs, wikis and notes as well as plans, with databases woven through the pages.',
@@ -376,7 +368,7 @@ export const ALTERNATIVES: Alternative[] = [
       'Gantt and calendar charts you can drag cards across, drawn live from the cards.',
       'Forms on a public link whose answers land as cards on a board or rows in a sheet.',
       'Real-time editing with live cursors and each person’s selection in their colour, cell by cell in a Sheet.',
-      'Free and MIT-licensed, with no sign-up to start.',
+      'Free, with no ads, no trackers and no sign-up to start.',
     ],
     sections: [
       {
@@ -392,8 +384,8 @@ export const ALTERNATIVES: Alternative[] = [
         ],
       },
       {
-        heading: 'Free, open, and yours to keep',
-        paragraphs: [`${GUEST_START} ${SHARE_LINKS}`, OPEN],
+        heading: 'Free, private, and yours to keep',
+        paragraphs: [`${GUEST_START} ${SHARE_LINKS}`, FREE],
       },
     ],
     faqs: [
@@ -411,7 +403,7 @@ export const ALTERNATIVES: Alternative[] = [
       },
       {
         q: 'Is it free?',
-        a: 'Yes. Every feature is free for everyone, there is no paid tier, and the code is MIT-licensed.',
+        a: 'Yes. Every feature is free for everyone, there is no paid tier.',
       },
     ],
   },
@@ -420,12 +412,11 @@ export const ALTERNATIVES: Alternative[] = [
     name: 'Jira',
     title: 'Jira alternative for lighter planning · liveplanner',
     description:
-      'A free, open-source alternative to Jira for lighter planning: kanban boards, bug triage and your own card types, ready without an account.',
-    h1: 'A lighter, open-source alternative to Jira',
+      'A free alternative to Jira for lighter planning: kanban boards, bug triage and your own card types, ready without an account.',
+    h1: 'A lighter, free alternative to Jira',
     lede: 'Jira is the established issue tracker for software teams, with sprints, backlogs, workflows and deep links into development tools. liveplanner is a lighter place to plan: kanban boards with WIP limits, a bug triage template and your own card types, alongside sheets, dashboards and forms, free and ready without an account.',
     rows: [
       { label: 'Price', us: 'Free, every feature', them: 'Free for small teams, then paid plans' },
-      { label: 'Open source', us: 'Yes, MIT-licensed', them: 'No, proprietary' },
       {
         label: 'Start without an account',
         us: 'Yes, create and edit as a guest',
@@ -446,11 +437,6 @@ export const ALTERNATIVES: Alternative[] = [
         us: 'REST API, MCP server and CLI',
         them: 'Deep links to code, builds and deployments',
       },
-      {
-        label: 'Self-hostable',
-        us: 'Yes, on your own Cloudflare account',
-        them: 'Data Center editions',
-      },
     ],
     themBest: [
       'You run scrum with sprints, backlogs, story points and velocity reporting.',
@@ -463,7 +449,7 @@ export const ALTERNATIVES: Alternative[] = [
       'Card types such as Bug or Task with the fields your team tracks, and a Cards list that filters by any of them.',
       'Boards, sheets, dashboards and forms in one project, so the plan, the numbers and the intake sit together.',
       AGENTS,
-      'Free and MIT-licensed, with no seats.',
+      'Free, with no seats, no ads and no trackers.',
     ],
     sections: [
       {
@@ -479,8 +465,8 @@ export const ALTERNATIVES: Alternative[] = [
         ],
       },
       {
-        heading: 'Free, open, and scriptable',
-        paragraphs: [OPEN, AGENTS],
+        heading: 'Free, private, and scriptable',
+        paragraphs: [FREE, AGENTS],
       },
     ],
     faqs: [
@@ -498,7 +484,7 @@ export const ALTERNATIVES: Alternative[] = [
       },
       {
         q: 'Is it free?',
-        a: 'Yes. Every feature is free for everyone, with no seats or paid tier, and the code is MIT-licensed.',
+        a: 'Yes. Every feature is free for everyone, with no seats or paid tier.',
       },
     ],
   },
@@ -507,12 +493,11 @@ export const ALTERNATIVES: Alternative[] = [
     name: 'ClickUp',
     title: 'ClickUp alternative · liveplanner',
     description:
-      'A free, open-source ClickUp alternative: a simpler planner of boards, Sheets, Dashboards and Forms, with no seats and no sign-up to start.',
-    h1: 'A simpler, open-source ClickUp alternative',
+      'A free ClickUp alternative: a simpler planner of boards, Sheets, Dashboards and Forms, with no seats and no sign-up to start.',
+    h1: 'A simpler, free ClickUp alternative',
     lede: 'ClickUp aims to be an everything app for work, with tasks, docs, goals, chat and a long list of views and settings. liveplanner is deliberately smaller: boards of cards, sheets, dashboards and forms in one project, each built well for its job, free for everyone and ready without an account.',
     rows: [
       { label: 'Price', us: 'Free, every feature', them: 'Free plan, then paid plans' },
-      { label: 'Open source', us: 'Yes, MIT-licensed', them: 'No, proprietary' },
       {
         label: 'Start without an account',
         us: 'Yes, create and edit as a guest',
@@ -529,7 +514,6 @@ export const ALTERNATIVES: Alternative[] = [
         them: 'Custom fields and task types',
       },
       { label: 'Real-time multiplayer', us: 'Yes, live cursors on every tab', them: 'Yes' },
-      { label: 'Self-hostable', us: 'Yes, on your own Cloudflare account', them: 'No' },
     ],
     themBest: [
       'You want tasks, docs, goals, time tracking and chat in one product, and are happy to configure it.',
@@ -542,7 +526,7 @@ export const ALTERNATIVES: Alternative[] = [
       'Card types with fields of your own, and one card on as many boards as need it.',
       'A Gantt chart and due and start calendars you can drag cards across.',
       'Forms whose answers arrive as cards or rows, with no account needed to answer.',
-      'Free and MIT-licensed, with no sign-up to start.',
+      'Free, with no ads, no trackers and no sign-up to start.',
     ],
     sections: [
       {
@@ -558,14 +542,14 @@ export const ALTERNATIVES: Alternative[] = [
         ],
       },
       {
-        heading: 'Free, open, and yours to keep',
-        paragraphs: [`${GUEST_START} ${SHARE_LINKS}`, OPEN],
+        heading: 'Free, private, and yours to keep',
+        paragraphs: [`${GUEST_START} ${SHARE_LINKS}`, FREE],
       },
     ],
     faqs: [
       {
         q: 'Is liveplanner a free alternative to ClickUp?',
-        a: 'Yes. Every feature is free for everyone, with no paid tier, and the code is MIT-licensed.',
+        a: 'Yes. Every feature is free for everyone, with no paid tier.',
       },
       {
         q: 'Does liveplanner have docs, goals and time tracking?',
@@ -586,12 +570,11 @@ export const ALTERNATIVES: Alternative[] = [
     name: 'Airtable',
     title: 'Airtable alternative · liveplanner',
     description:
-      'A free, open-source Airtable alternative: Sheets with real formulas, boards of cards linked to rows, Dashboards and Forms, no sign-up to start.',
-    h1: 'A free, open-source Airtable alternative',
-    lede: 'Airtable blends a spreadsheet with a database: typed fields, linked records and many views of the same base. liveplanner comes at the same work from a planner’s side, with boards of cards, real spreadsheets that can list those cards as rows, dashboards and forms, free and open source.',
+      'A free Airtable alternative: Sheets with real formulas, boards of cards linked to rows, Dashboards and Forms, no sign-up to start.',
+    h1: 'A free Airtable alternative',
+    lede: 'Airtable blends a spreadsheet with a database: typed fields, linked records and many views of the same base. liveplanner comes at the same work from a planner’s side, with boards of cards, real spreadsheets that can list those cards as rows, dashboards and forms, free to use.',
     rows: [
       { label: 'Price', us: 'Free, every feature', them: 'Free plan, then paid plans per seat' },
-      { label: 'Open source', us: 'Yes, MIT-licensed', them: 'No, proprietary' },
       {
         label: 'Start without an account',
         us: 'Yes, create and edit as a guest',
@@ -612,7 +595,6 @@ export const ALTERNATIVES: Alternative[] = [
         us: 'Public forms whose answers become cards or rows',
         them: 'Form views that add records',
       },
-      { label: 'Self-hostable', us: 'Yes, on your own Cloudflare account', them: 'No' },
     ],
     themBest: [
       'Your work is a true relational database, with many linked tables and lookups between them.',
@@ -625,7 +607,7 @@ export const ALTERNATIVES: Alternative[] = [
       'Boards with WIP limits and swimlanes, and Gantt and calendar charts drawn from the same cards.',
       'Dashboards of live slots, with a board, a sheet, a chart and a figure like a column total side by side.',
       'Forms on a public link, with sections, a cover and your tab’s look.',
-      'Free for everyone, MIT-licensed, and ready without an account.',
+      'Free for everyone, with no trackers, and ready without an account.',
     ],
     sections: [
       {
@@ -642,14 +624,14 @@ export const ALTERNATIVES: Alternative[] = [
         ],
       },
       {
-        heading: 'Free, open, and yours to keep',
-        paragraphs: [`${GUEST_START} ${SHARE_LINKS}`, OPEN],
+        heading: 'Free, private, and yours to keep',
+        paragraphs: [`${GUEST_START} ${SHARE_LINKS}`, FREE],
       },
     ],
     faqs: [
       {
         q: 'Is liveplanner a free alternative to Airtable?',
-        a: 'Yes. Every feature is free for everyone, with no seats or paid tier, and the code is MIT-licensed.',
+        a: 'Yes. Every feature is free for everyone, with no seats or paid tier.',
       },
       {
         q: 'Can I bring my Airtable data across?',
@@ -670,12 +652,11 @@ export const ALTERNATIVES: Alternative[] = [
     name: 'Smartsheet',
     title: 'Smartsheet alternative · liveplanner',
     description:
-      'A free, open-source Smartsheet alternative: Sheets with real formulas, Gantt charts of your cards, live Dashboards and Forms, with no seats.',
-    h1: 'A free, open-source Smartsheet alternative',
-    lede: 'Smartsheet brings spreadsheet-style work management to large organisations, with grid, Gantt, card and calendar views, reports and dashboards. liveplanner offers the everyday parts of that, sheets, boards, a Gantt chart of the cards, live dashboards and forms, as free, open-source software you can start without an account.',
+      'A free Smartsheet alternative: Sheets with real formulas, Gantt charts of your cards, live Dashboards and Forms, with no seats.',
+    h1: 'A free Smartsheet alternative',
+    lede: 'Smartsheet brings spreadsheet-style work management to large organisations, with grid, Gantt, card and calendar views, reports and dashboards. liveplanner offers the everyday parts of that, sheets, boards, a Gantt chart of the cards, live dashboards and forms, in a free planner you can start without an account.',
     rows: [
       { label: 'Price', us: 'Free, every feature', them: 'Commercial, priced by plan' },
-      { label: 'Open source', us: 'Yes, MIT-licensed', them: 'No, proprietary' },
       {
         label: 'Start without an account',
         us: 'Yes, create and edit as a guest',
@@ -696,7 +677,6 @@ export const ALTERNATIVES: Alternative[] = [
         us: 'Dashboard tabs of live boards, sheets, charts and notes',
         them: 'Dashboards and cross-sheet reports',
       },
-      { label: 'Self-hostable', us: 'Yes, on your own Cloudflare account', them: 'No' },
     ],
     themBest: [
       'You manage large programmes with cross-sheet reports, resource management and portfolio views.',
@@ -725,14 +705,14 @@ export const ALTERNATIVES: Alternative[] = [
         ],
       },
       {
-        heading: 'Free, open, and yours to keep',
-        paragraphs: [`${GUEST_START} ${SHARE_LINKS}`, OPEN],
+        heading: 'Free, private, and yours to keep',
+        paragraphs: [`${GUEST_START} ${SHARE_LINKS}`, FREE],
       },
     ],
     faqs: [
       {
         q: 'Is liveplanner a free alternative to Smartsheet?',
-        a: 'Yes. Every feature is free for everyone, there is no paid tier, and the code is MIT-licensed.',
+        a: 'Yes. Every feature is free for everyone, there is no paid tier.',
       },
       {
         q: 'Can I bring my Smartsheet sheets across?',

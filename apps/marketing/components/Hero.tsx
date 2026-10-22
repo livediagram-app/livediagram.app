@@ -19,12 +19,12 @@ export function Hero() {
       <div className="relative mx-auto flex w-full max-w-6xl flex-col px-4 max-sm:flex-1 max-sm:justify-center pt-16 text-center sm:px-6 sm:pt-36 lg:pt-44">
         {/* An arrow drawn on load from the end of the question down onto the search. */}
         <HeroConnectors />
-        {/* Two promises, each its own badge and each true today (free, MIT, no account needed). A
+        {/* Two promises, each its own badge and each true today (free with no trackers, no account needed). A
             phone keeps the first only, so the row stays one line. */}
         <ul aria-label="Our promises" className="flex justify-center gap-2.5">
           <li className={BADGE}>
             <span aria-hidden className="h-2 w-2 rounded-full bg-emerald-500" />
-            Free and open source
+            Free, no trackers
           </li>
           <li className={`${BADGE} max-sm:hidden`}>
             <span aria-hidden className="h-2 w-2 rounded-full bg-brand-500" />

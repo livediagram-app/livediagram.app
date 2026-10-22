@@ -36,7 +36,8 @@ marketing/
   shares; inside it are Board, Sheet, Dashboard and Form tabs.
 - **Don't overclaim.** Realtime editing is last-writer-wins, not CRDT (see
   "Not yet shipped" in the fact sheet). Never imply otherwise.
-- **Free means free.** MIT-licensed, self-hostable, no paid tier, no plan for
-  one. Say so where the format allows.
+- **Free means free.** No paid tier, no plan for one, no ads and no
+  third-party trackers. Say so where the format allows. The source is not
+  public: never suggest anyone can read it or run their own copy.
 - **Brand colour** is violet, `#8B5CF6` ("liveplanner violet"). See
   [Theme](../docs/specs/004-interface-design/color-scheme.md).
