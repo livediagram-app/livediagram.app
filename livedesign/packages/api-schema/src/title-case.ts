@@ -1,6 +1,6 @@
 // Shared display-casing helper. Raises the first letter of each word
 // WITHOUT lowering the rest, so a lowercased preset value (theme names
-// like `mint`, template ids like `kanban`) renders as Title Case
+// like `mint`, template ids like `logo-design`) renders as Title Case
 // while an acronym or PascalCase value (`PNG`, `JSON`, `ER`, `UML`,
 // `FormatPainter`, `ShareLink`) is left intact.
 //

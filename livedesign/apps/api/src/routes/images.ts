@@ -284,7 +284,7 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
         // image's owner owns `d`, or `d` holds a placement grant
         // (a teammate's or collaborator's upload, or a copy).
         // The owner and team are all the gate needs: one row, not the full document load (its
-        // participants and tab summary), which ran once for every image a visitor's board shows.
+        // participants and tab summary), which ran once for every image a visitor's page shows.
         const liveDoc = await getDocumentMeta(env, d);
         if (liveDoc) {
           // canReadDocument (owner OR any valid share code

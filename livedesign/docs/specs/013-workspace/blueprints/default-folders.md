@@ -57,12 +57,11 @@ anything, "fallback" for a skipped default, "preference" for a default folder.
 
 ## Behaviour and state
 
-`creationIntentOf(tab)` over `{ opensIn?: string } | undefined`: `mode` is `parseEditorMode(tab.opensIn)`, else
-`DEFAULT_EDITOR_MODE` (`pages`), so whatever mode livediagram stored reads as Pages; `tabKind` is the general tab.
+`creationIntentOf(tab)`: `{ mode: DEFAULT_EDITOR_MODE, tabKind: DEFAULT_TAB_KIND }`, Pages and the general tab,
+the only mode and tab kind livedesign has. `readCreationIntent` refuses any other mode.
 
-`PLACEMENT_DEFAULT_KEYS` is generated in list order: one `mode:<m>` per `EDITOR_MODES` entry. A key stored under a
-retired mode name (`mode:illustrate`, `mode:infographic`) reads as `mode:pages` (`parsePlacementDefaultKey`), and
-clearing a key clears its retired names too (`legacyPlacementDefaultKeys`).
+`PLACEMENT_DEFAULT_KEYS` is generated in list order: one `mode:<m>` per `EDITOR_MODES` entry. A stored key outside
+the list (`isPlacementDefaultKey`) is left out of the list and refused on a write.
 
 `defaultKeysFor(intent)`: `[mode:<mode>]`.
 

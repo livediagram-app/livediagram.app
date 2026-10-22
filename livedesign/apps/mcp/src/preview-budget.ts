@@ -5,8 +5,8 @@
 // (0.19 MB on disk) 461 MB. A Worker has 128 MB in all, so a preview past the budget would fail the tool call after
 // its write was saved. Time is the smaller cost: 0.02 to 0.15 s a megapixel.
 
-// The longest side an inline preview is drawn at: 2048 px holds a large board legibly, while a raw
-// render sized to the board's bounds (8000 px measured 586 MB) would exceed a Worker's 128 MB and fail
+// The longest side an inline preview is drawn at: 2048 px holds a row of pages legibly, while a raw
+// render sized to the tab's bounds (8000 px measured 586 MB) would exceed a Worker's 128 MB and fail
 // the tool call after its write was saved. Safe range: 1024 to 4096.
 export const PREVIEW_MAX_SIDE_PX = 2048;
 

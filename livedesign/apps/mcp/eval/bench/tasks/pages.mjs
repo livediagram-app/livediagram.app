@@ -1,6 +1,6 @@
 // The pages tasks of the benchmark (docs/instructions/evaluate-mcp-output.md). Each prompt is what a user would type;
 // `checks` judge what the run made from the prompt's own requirements (see checks.mjs).
-import { atLeast, elementsOf, find, mentionsAll, pagesOf } from '../checks.mjs';
+import { atLeast, elementsOf, mentionsAll, pagesOf } from '../checks.mjs';
 
 const pagesOfKind = (snap, kind) => pagesOf(snap).filter((p) => p.kind === kind);
 // The pictures placed, and the gallery the run started with (its `gallery`, seeded before the run).
@@ -53,34 +53,6 @@ export default [
     ],
   },
   {
-    id: 'I2',
-    level: 'medium',
-    prompt: 'An infographic explaining how coffee goes from farm to cup in 6 steps.',
-    checks: [
-      [
-        'an infographic page',
-        ({ snap }) => atLeast(1, pagesOfKind(snap, 'infographic').length, 'infographic pages'),
-      ],
-      [
-        '6 steps',
-        ({ snap }) =>
-          atLeast(
-            6,
-            find(
-              snap,
-              /^\s*(step\s*)?[1-6]\b|farm|grow|harvest|pick|process|dry|roast|grind|brew|ship|export|cup/i,
-            ).length,
-            'step elements',
-          ),
-      ],
-      [
-        'from farm to cup',
-        ({ snap }) =>
-          mentionsAll(snap, [/farm|grow|plant/i, /harvest|pick/i, /roast/i, /brew|cup/i]),
-      ],
-    ],
-  },
-  {
     id: 'I3',
     level: 'easy',
     prompt: 'Wireframe the sign-in screen of a mobile banking app.',
@@ -120,39 +92,6 @@ export default [
     ],
   },
   {
-    id: 'I5',
-    level: 'hard',
-    prompt: 'A 5-panel LinkedIn carousel on 5 tips for better code review.',
-    checks: [
-      [
-        '5 panels',
-        ({ snap }) => ({
-          pass: pagesOf(snap).length === 5,
-          detail: `${pagesOf(snap).length} pages`,
-        }),
-      ],
-      [
-        'square panels for LinkedIn',
-        ({ snap }) => ({
-          pass:
-            pagesOf(snap).length > 0 &&
-            pagesOf(snap).every((p) => /square|1:1|4:5|portrait|carousel|linkedin/i.test(p.format)),
-          detail: [...new Set(pagesOf(snap).map((p) => p.format))].join(', '),
-        }),
-      ],
-      ['5 tips on code review', ({ snap }) => mentionsAll(snap, [/code review/i, /tip/i])],
-      [
-        'every panel has content',
-        ({ snap }) =>
-          atLeast(
-            5,
-            pagesOf(snap).filter((p) => (p.elements ?? 0) >= 2).length,
-            'panels with 2+ elements',
-          ),
-      ],
-    ],
-  },
-  {
     id: 'I6',
     level: 'medium',
     // The user's own screenshots, uploaded in the editor under the names a screenshot tool gives: which is which
@@ -163,11 +102,11 @@ export default [
       { file: 'form.png', name: 'Screenshot 2026-10-14 at 10.15.52.png' },
     ],
     prompt:
-      'Make an infographic about our product using the three screenshots I uploaded to livedesign: the planning board, the sales sheet and the RSVP form. Give each one a short caption saying what it shows.',
+      'Wireframe a landing page for our product that shows the three screenshots I uploaded to livedesign: the planning board, the sales sheet and the RSVP form. Give each one a short caption saying what it shows.',
     checks: [
       [
-        'an infographic page',
-        ({ snap }) => atLeast(1, pagesOfKind(snap, 'infographic').length, 'infographic pages'),
+        'a wireframe page',
+        ({ snap }) => atLeast(1, pagesOfKind(snap, 'wireframe').length, 'wireframe pages'),
       ],
       [
         'every screenshot is placed',

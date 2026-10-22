@@ -4732,17 +4732,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "LintCode": {
     "enum": [
-      "box-overlap",
-      "arrow-dangling",
-      "arrow-behind-box",
-      "edge-crossings",
-      "label-collision",
       "label-overflow",
-      "node-isolated",
-      "group-escape",
-      "group-split-edges",
-      "duplicate-label",
-      "flow-backwards",
       "text-overflow"
     ],
     "type": "string"
@@ -4781,20 +4771,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "LintMeasures": {
     "additionalProperties": false,
     "properties": {
-      "arrows": {
-        "type": "number"
-      },
-      "behind": {
-        "type": "number"
-      },
       "boxes": {
         "type": "number"
-      },
-      "crossings": {
-        "type": [
-          "number",
-          "null"
-        ]
       },
       "extent": {
         "anyOf": [
@@ -4819,17 +4797,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           }
         ]
       },
-      "overlaps": {
+      "texts": {
         "type": "number"
       }
     },
     "required": [
-      "crossings",
-      "behind",
-      "overlaps",
       "extent",
-      "arrows",
-      "boxes"
+      "boxes",
+      "texts"
     ],
     "type": "object"
   },
@@ -4864,25 +4839,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "measures": {
         "$ref": "#/components/schemas/LintMeasures"
-      },
-      "skipped": {
-        "additionalProperties": false,
-        "properties": {
-          "crossings": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "crossings"
-        ],
-        "type": "object"
       }
     },
     "required": [
       "measures",
       "findings",
-      "counts",
-      "skipped"
+      "counts"
     ],
     "type": "object"
   },
@@ -5065,9 +5027,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           },
           "hidden": {
             "type": "number"
-          },
-          "mode": {
-            "$ref": "#/components/schemas/EditorMode"
           },
           "outOfScope": {
             "const": false,
@@ -9580,9 +9539,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "hidden": {
         "type": "number"
-      },
-      "mode": {
-        "$ref": "#/components/schemas/EditorMode"
       },
       "pages": {
         "additionalProperties": false,

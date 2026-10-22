@@ -1,6 +1,6 @@
 # Document views
 
-**Status: built**, the `lint` view answered by the [diagram lint](diagram-lint.md); the CLI reads a pulled file's views
+**Status: built**, the `lint` view answered by the [page lint](page-lint.md); the CLI reads a pulled file's views
 offline and computes `diff` from its read copies.
 
 A **view** is a read-only text projection of a tab, each answering one kind of question at the lowest token cost.
@@ -72,7 +72,7 @@ The example is abridged; a real outline prints every element.
 | `comments`     | What are people saying?         | Open threads with their element's ref and label, every comment in full                                                                                         |
 | `show <ref>`   | Everything about one element    | Every field, plus its arrows in and out and its container; or `selected`                                                                                       |
 | `find <text>`  | Where is this?                  | Matching elements with their containers                                                                                                                        |
-| `lint`         | Is the drawing sound?           | The [lint](diagram-lint.md) findings, refs first                                                                                                               |
+| `lint`         | Does the text fit?              | The [lint](page-lint.md) findings, refs first                                                                                                                  |
 | `diff --since` | What changed since I last read? | Added, removed, changed and moved elements since a revision                                                                                                    |
 | `pages`        | What pages does this tab have?  | Its pages and the layouts on offer ([Pages for agents](pages-for-agents.md#reading-the-pages-view))                                                            |
 

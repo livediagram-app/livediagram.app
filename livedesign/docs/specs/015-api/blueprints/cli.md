@@ -9,7 +9,7 @@ agent presence are other blueprints' and are consumed through the interfaces the
 [Agent changesets](../../024-agents/blueprints/agent-changesets.md),
 [Edit operations](../../024-agents/blueprints/edit-operations.md),
 [Document views](../../024-agents/blueprints/document-views.md),
-[Diagram lint](../../024-agents/blueprints/diagram-lint.md) and
+[Page lint](../../024-agents/blueprints/page-lint.md) and
 [Agent presence](../../024-agents/blueprints/agent-presence.md). The spec decides; this file only adds engineering
 precision. Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as
 `CLIn`.

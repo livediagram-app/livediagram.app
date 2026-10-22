@@ -114,8 +114,8 @@ export const documentCreate = defineVerb({
     positionals: ['name'],
     flags: { file: { short: 'f' } },
     examples: [
-      'livedesign document create "Shop" -f arch.json',
-      'livedesign document create "Pitch" --template slide-deck',
+      'livedesign document create "Shop" -f screens.json',
+      'livedesign document create "Crumb & Co" --template logo-design',
     ],
     prints: '+ document <ref> "<name>" · <n> tabs · <link>',
   },
@@ -155,7 +155,7 @@ export const documentShare = defineVerb({
   id: 'document.share',
   summary: 'Make a share link',
   description:
-    'Creates a share link to a document: view (default) lets people open and read it, participate also lets them comment, add stickies, write and vote without reshaping it, edit lets them change anything; none needs sign-in. Expires never (default), in a week, a month or six months.',
+    'Creates a share link to a document: view (default) lets people open and read it, participate also lets them comment, react and add stickies and text without reshaping it, edit lets them change anything; none needs sign-in. Expires never (default), in a week, a month or six months.',
   behaviour: 'write',
   input: z.object({
     doc: docArg,

@@ -21,16 +21,8 @@ describe('the task bank', () => {
 
   it('selects all, an area or ids', () => {
     expect(selectTasks('all')).toHaveLength(TASKS.length);
-    expect(selectTasks('pages').map((t) => t.id)).toEqual(['I1', 'I2', 'I3', 'I4', 'I5', 'I6']);
-    expect(selectTasks('pages,D2,I1').map((t) => t.id)).toEqual([
-      'I1',
-      'I2',
-      'I3',
-      'I4',
-      'I5',
-      'I6',
-      'D2',
-    ]);
+    expect(selectTasks('pages').map((t) => t.id)).toEqual(['I1', 'I3', 'I4', 'I6']);
+    expect(selectTasks('I4,pages').map((t) => t.id)).toEqual(['I4', 'I1', 'I3', 'I6']);
     expect(() => selectTasks('Z9')).toThrow('No task Z9');
   });
 });

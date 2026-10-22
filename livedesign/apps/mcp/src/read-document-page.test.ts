@@ -9,7 +9,6 @@ const page = (id: string, name?: string) => ({
   id,
   orientation: 'portrait',
   size: 'a4',
-  kind: 'infographic',
   ...(name ? { name } : {}),
 });
 const pages = {

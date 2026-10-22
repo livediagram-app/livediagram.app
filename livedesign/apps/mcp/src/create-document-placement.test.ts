@@ -35,7 +35,7 @@ function harness(created: Created, lookups: Record<string, unknown> = {}, lint?:
           posted.push(await request.json<Record<string, unknown>>());
           return Response.json(created ? { document: { id: 'd', ...created } } : {});
         }
-        // The lint summary of each created tab (docs/specs/024-agents/diagram-lint.md LN24).
+        // The lint summary of each created tab (docs/specs/024-agents/page-lint.md LN24).
         if (new URL(request.url).searchParams.get('view') === 'lint')
           return lint ? Response.json(lint) : new Response('down', { status: 503 });
         const answer = lookups[path];
@@ -121,25 +121,17 @@ describe('create_document folder', () => {
 
 describe('create_document lint', () => {
   const report = {
-    measures: {
-      crossings: 0,
-      behind: 0,
-      overlaps: 0,
-      extent: { width: 120, height: 60 },
-      arrows: 0,
-      boxes: 1,
-    },
+    measures: { extent: { width: 120, height: 60 }, boxes: 1, texts: 0 },
     findings: [],
     counts: { error: 0, warning: 0, info: 0 },
-    skipped: { crossings: false },
   };
 
   it('carries one summary line per created tab', async () => {
     const { run } = harness(undefined, {}, report);
     const result = await run([elements, elements]);
     expect(result.structuredContent.lint).toEqual([
-      '0 crossings · 0 behind · 0 overlaps · 120×60 → clean',
-      '0 crossings · 0 behind · 0 overlaps · 120×60 → clean',
+      '120×60 · 1 box · 0 texts → clean',
+      '120×60 · 1 box · 0 texts → clean',
     ]);
   });
 

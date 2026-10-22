@@ -3,7 +3,7 @@
 
 import { z } from 'zod';
 import type { ChangesetDetail, ChangesetSummary, RevertResponse } from '@livedesign/api-schema';
-import { lintFooterPart } from '@livedesign/diagram-lint';
+import { lintFooterPart } from '@livedesign/page-lint';
 import { resolveTab } from '../addressing';
 import { defineVerb } from '../define';
 import { documentOf, LIST_DEFAULT_LIMIT, LIST_MAX_LIMIT, minute } from './shared';

@@ -5,7 +5,6 @@
 // that blob, used by the api worker to decide whether to send a transactional
 // notification email (docs/specs/014-identity/transactional-email.md) on someone else's request.
 
-import { upgradeLegacyPreferences } from '@livedesign/api-schema';
 import type { Env } from '../types';
 
 // Both flags default to true: a missing key / row / corrupt blob means
@@ -42,7 +41,7 @@ export async function getNotificationPrefs(env: Env, ownerId: string): Promise<N
   try {
     const parsed: unknown = JSON.parse(row.prefs);
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return DEFAULTS;
-    const blob = upgradeLegacyPreferences(parsed as Record<string, unknown>);
+    const blob = parsed as Record<string, unknown>;
     return {
       // Only an explicit `false` opts out; anything else (missing,
       // true, or a non-boolean a misbehaving client wrote) means notify.

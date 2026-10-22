@@ -85,7 +85,7 @@ export async function dropVisitsThroughLinks(
 }
 
 // List documents shared with this owner, newest interaction first.
-// Joins through `diagrams` for the name + owner-side savedAt; also
+// Joins through `documents` for the name + owner-side savedAt; also
 // surfaces a still-live `shareCode` for each row so the client can
 // build a `/live/document/<id>?s=<code>` URL the visitor can actually
 // open. Without the code the Shared list link would land on the

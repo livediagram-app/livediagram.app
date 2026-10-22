@@ -4,7 +4,7 @@ import type {
   EditRejection,
   LintReport,
 } from '@livedesign/api-schema';
-import { lintFooterPart } from '@livedesign/diagram-lint';
+import { lintFooterPart } from '@livedesign/page-lint';
 import { migrateIncomingTab, type Tab } from '@livedesign/document';
 import {
   applyEditOperations,

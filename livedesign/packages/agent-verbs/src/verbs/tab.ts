@@ -3,7 +3,7 @@
 
 import { z } from 'zod';
 import { revOfEtag, TAB_VIEW_NAMES, type LintReport } from '@livedesign/api-schema';
-import { formatLintReport } from '@livedesign/diagram-lint';
+import { formatLintReport } from '@livedesign/page-lint';
 import { readPlainTab, recordCopy, type ReadCopy } from '../copies';
 import { defineVerb, type VerbContext } from '../define';
 import { shortestUniquePrefixes } from '../refs';
@@ -147,9 +147,9 @@ export const tabView = defineVerb({
 
 export const tabLint = defineVerb({
   id: 'tab.lint',
-  summary: 'The diagram lint: what is wrong with how the tab is drawn',
+  summary: 'The page lint: text that does not fit where it is drawn',
   description:
-    'Prints the diagram lint of a tab: a summary line, then one finding a line, each ending with a fix as edit operations. Exits 1 when a finding is an error.',
+    'Prints the page lint of a tab: a summary line, then one finding a line (a label or text that needs more room than its box, or text printed over other text), each ending with a fix as edit operations. Exits 1 when a finding is an error.',
   behaviour: 'read',
   input: z.object({
     doc: z.string().describe('A name, id prefix or livedesign URL'),

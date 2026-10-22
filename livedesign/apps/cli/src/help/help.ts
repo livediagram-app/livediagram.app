@@ -73,7 +73,7 @@ export function topHelp(): string {
     'Start',
     '  livedesign document ls auth        find a document',
     '  livedesign tab view "Auth flow"    its first tab, as an outline',
-    '  livedesign tab lint "Auth flow"    what is wrong with how it is drawn',
+    '  livedesign tab lint "Auth flow"    text that does not fit where it is drawn',
     '  livedesign guide edit              change a tab with edit operations',
     '',
     'Sign in: LIVEDESIGN_TOKEN, or auth login --with-token. Never prompts.',

@@ -36,7 +36,7 @@ const run = (
 
 const err = (id: string) => ({
   tool: 'change_pages',
-  error: `Page "Slide ${id}" (p-${id}) needs 2 columns, has 1`,
+  error: `Page "Screen ${id}" (p-${id}) needs 2 columns, has 1`,
 });
 
 const results = {

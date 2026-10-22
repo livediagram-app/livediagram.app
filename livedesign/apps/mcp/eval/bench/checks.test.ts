@@ -1,60 +1,39 @@
 import { describe, expect, it } from 'vitest';
-import {
-  allLinked,
-  elementsFor,
-  flows,
-  inside,
-  linked,
-  mentionsAll,
-  pagesOf,
-  runChecks,
-  sketched,
-} from './checks.mjs';
+import { atLeast, find, mentionsAll, pagesOf, runChecks } from './checks.mjs';
 import { parseTabHeader } from './snapshot.mjs';
 
-const box = (id: string, label: string, x = 0, y = 0) => ({
+const text = (id: string, label: string) => ({
   id,
-  type: 'shape',
-  shape: 'square',
+  type: 'text',
   label,
-  x,
-  y,
+  x: 0,
+  y: 0,
   width: 100,
   height: 40,
 });
-const arrow = (from: string, to: string) => ({
-  id: `${from}-${to}`,
-  type: 'arrow',
-  from: { kind: 'pinned', elementId: from },
-  to: { kind: 'pinned', elementId: to },
-});
 
-const diagram = {
+const screens = {
   documents: [
     {
       id: 'd1',
-      name: 'Flow',
+      name: 'Coffee app',
       tabs: [
         {
           id: 't1',
-          name: 'Tab',
-          outline: 'tab t1 "Tab" · 4 elements · finish=sketch · rev 1',
+          name: 'Onboarding',
           elements: [
+            text('a', 'Welcome'),
+            text('b', 'Pick your roast'),
             {
-              id: 'g',
+              id: 'c',
               type: 'shape',
-              shape: 'frame',
-              label: 'Notifications',
+              shape: 'square',
+              label: 'Sign up',
               x: 0,
-              y: 200,
-              width: 400,
-              height: 200,
+              y: 60,
+              width: 120,
+              height: 40,
             },
-            box('a', 'Cart'),
-            box('b', 'Pay'),
-            box('c', 'Email receipt', 20, 220),
-            arrow('a', 'b'),
-            arrow('b', 'c'),
           ],
         },
       ],
@@ -62,31 +41,18 @@ const diagram = {
   ],
 };
 
-describe('diagram readers', () => {
-  it('finds arrows either way round, or only forwards with flows', () => {
-    expect(linked(diagram, /pay/i, /cart/i)).toBe(true);
-    expect(flows(diagram, /pay/i, /cart/i)).toBe(false);
-    expect(flows(diagram, /cart/i, /pay/i)).toBe(true);
+describe('readers', () => {
+  it('finds the elements whose words match', () => {
+    expect(find(screens, /roast/i).map((e: { id: string }) => e.id)).toEqual(['b']);
   });
 
-  it('names what is missing', () => {
-    expect(elementsFor(diagram, [/cart/i, /refund/i])).toEqual({
+  it('names what is missing, and counts against a floor', () => {
+    expect(mentionsAll(screens, [/welcome/i, /payment/i])).toEqual({
       pass: false,
-      detail: 'no element for: refund',
+      detail: 'missing: payment',
     });
-    expect(allLinked(diagram, [[/cart/i, /receipt/i]], { directed: true }).detail).toBe(
-      'not joined: cart → receipt',
-    );
-    expect(mentionsAll(diagram, [/flow/i, /receipt/i]).pass).toBe(true);
-  });
-
-  it('sees a box inside a frame by its bounds', () => {
-    expect(inside(diagram, /receipt/i, /notifications/i)).toBe(true);
-    expect(inside(diagram, /cart/i, /notifications/i)).toBe(false);
-  });
-
-  it('reads a sketch finish from the tab header', () => {
-    expect(sketched(diagram.documents[0].tabs[0])).toBe(true);
+    expect(mentionsAll(screens, [/coffee/i, /sign up/i]).pass).toBe(true);
+    expect(atLeast(5, 3, 'screens')).toEqual({ pass: false, detail: '3 screens, wanted 5+' });
   });
 });
 
@@ -94,7 +60,7 @@ describe('pagesOf', () => {
   it('reads every kind of page line', () => {
     const pages = [
       'page 1 page-1 · wireframe iPhone · at -960,-540 1920x1080 · 3 elements',
-      'page 2 "Tip 2" page-99 · infographic Square · at 636,-540 1080x1080 · 16 elements',
+      'page 2 "Tip 2" page-99 · blank A4 · at 636,-540 794x1123 · 16 elements',
       'page 3 "Badge" page-3 · logo 1024 x 1024 · at -512,-512 1024x1024 · background #fdf3e3 · 5 elements',
     ].join('\n');
     const snap = { documents: [{ id: 'd', tabs: [{ id: 't', elements: [], pages }] }] };
@@ -115,12 +81,12 @@ describe('pagesOf', () => {
         tabId: 't',
         n: 2,
         name: 'Tip 2',
-        kind: 'infographic',
-        format: 'Square',
+        kind: 'blank',
+        format: 'A4',
         x: 636,
         y: -540,
-        width: 1080,
-        height: 1080,
+        width: 794,
+        height: 1123,
         elements: 16,
       },
       {
@@ -156,7 +122,7 @@ describe('runChecks', () => {
   it('adds the base checks, keeps a reason and fails a check that throws', () => {
     const task = {
       checks: [
-        ['has cart', ({ snap }: { snap: typeof diagram }) => elementsFor(snap, [/cart/i])],
+        ['has a welcome', ({ snap }: { snap: typeof screens }) => mentionsAll(snap, [/welcome/i])],
         [
           'throws',
           () => {
@@ -165,10 +131,10 @@ describe('runChecks', () => {
         ],
       ],
     };
-    expect(runChecks(task, { snap: diagram, run: { finalText: 'Done' } })).toEqual([
+    expect(runChecks(task, { snap: screens, run: { finalText: 'Done' } })).toEqual([
       { name: 'made something', pass: true, detail: null },
       { name: 'replied', pass: true, detail: null },
-      { name: 'has cart', pass: true, detail: null },
+      { name: 'has a welcome', pass: true, detail: null },
       { name: 'throws', pass: false, detail: 'check threw: boom' },
     ]);
     expect(

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('@livedesign/diagram-lint', () => ({
+vi.mock('@livedesign/page-lint', () => ({
   lintTab: () => {
     throw new Error('boom');
   },
@@ -8,7 +8,7 @@ vi.mock('@livedesign/diagram-lint', () => ({
 
 const { lintResult } = await import('./lint');
 
-// A lint that throws never fails the write (diagram-lint LN23).
+// A lint that throws never fails the write (page-lint LN23).
 describe('lintResult when the lint fails', () => {
   it('answers null and logs the failure', () => {
     const errors: unknown[][] = [];

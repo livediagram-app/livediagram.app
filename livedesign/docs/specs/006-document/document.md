@@ -58,17 +58,11 @@ that named it moved in one change:
   `renamed_classes` migration (tag `v2`), which keeps every room's storage; the room ops are
   `document-meta` and `document-trashed`.
 - **Copies from elsewhere** are upgraded where they arrive: element links in exported files and
-  offline documents (`upgradeLegacyLinks`, run by `migrateStoredTab`), the browser's cached
-  preferences (`upgradeLegacyPreferences`), the offline store (moved to the `documents` object
-  store on the next visit), and stored names: a document still called "Untitled diagram" counts as
-  untitled, exactly as "Untitled document" does.
-- **Addresses people already have** keep working: the public API's
-  `/api/diagrams…` routes and the MCP `*_diagram` tools stay as deprecated aliases until 30 April
-  2027 ([Public API and API tokens §3.8](../015-api/public-api-and-tokens.md#38-deprecated-diagram-routes),
-  [MCP server §4.18](../015-api/mcp-server.md#418-deprecated-tool-names)).
-- **An editor left open across the deploy** runs the old code, which has no hook to reload it: it
-  keeps saving and connecting through the aliases, but stops seeing live name and tab-list
-  changes from others until it reloads.
+  offline documents (`upgradeLegacyLinks`, run by `migrateStoredTab`), the offline store (moved to
+  the `documents` object store on the next visit), and stored names: a document still called
+  "Untitled diagram" counts as untitled, exactly as "Untitled document" does.
+- livedesign was never deployed under the old names, so the api serves no `/api/diagrams…` aliases
+  and the MCP registers no `*_diagram` tools.
 
 Files that hold the old names on purpose are named `legacy-*`.
 <!-- /legacy-names -->

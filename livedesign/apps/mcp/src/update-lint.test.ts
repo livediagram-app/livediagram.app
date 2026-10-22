@@ -3,7 +3,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { LintReport } from '@livedesign/api-schema';
 import type { Env } from './env';
 
-// update_document's lint when an edit changed nothing (docs/specs/024-agents/diagram-lint.md "Where it runs"): no
+// update_document's lint when an edit changed nothing (docs/specs/024-agents/page-lint.md "Where it runs"): no
 // changeset was recorded, so the tab's own lint is read and answered, never "lint unavailable".
 
 const shown: { result: Record<string, unknown>; notes: string[] }[] = [];
@@ -18,14 +18,7 @@ import { registerTools } from './tools';
 
 const TAB = { id: 't_1', name: 'Tab 1', rev: 3, elements: [] };
 const REPORT: LintReport = {
-  measures: {
-    crossings: 0,
-    behind: 0,
-    overlaps: 0,
-    extent: { width: 800, height: 600 },
-    arrows: 0,
-    boxes: 2,
-  },
+  measures: { extent: { width: 800, height: 600 }, boxes: 2, texts: 1 },
   findings: [
     {
       code: 'text-overflow',
@@ -36,7 +29,6 @@ const REPORT: LintReport = {
     },
   ],
   counts: { error: 0, warning: 1, info: 0 },
-  skipped: { crossings: false },
 };
 
 function updateDocument(changed: boolean) {

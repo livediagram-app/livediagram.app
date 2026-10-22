@@ -142,7 +142,7 @@ async function runJob(job) {
   const started = Date.now();
   try {
     const client = await connect({ url: MCP_URL, token });
-    // An edit task starts from what its first task's prompt takes for granted too ("our launch deck").
+    // An edit task starts from what its first task's prompt takes for granted too ("our onboarding screens").
     const setup = task.setup ?? (task.after ? taskById(task.after).setup : undefined);
     const touched = new Set(setup ? await setup(client) : []);
     // The pictures the prompt says the user has uploaded, seeded into this run's own gallery before the round.

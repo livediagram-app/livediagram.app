@@ -95,7 +95,7 @@ const CONTENT_KINDS =
   'the difference to a "Leftover" end node; hide: it does not), "sankeyLeftoverName" (that ' +
   "node's name; do not write leftover flows yourself). Make it " +
   'wide (about 2:1); it draws no title. ' +
-  // The diagram-building kinds (docs/specs/015-api/mcp-server.md §4.7a).
+  // The building kinds (docs/specs/015-api/mcp-server.md §4.7a).
   'shape "card": a node with a title, meta line and body; "pageTitle" is the title, "pageSubtitle" ' +
   'the meta (a product or runtime), "label" the body, "cardMedia" + "iconId" the glyph (a badge disc, a ' +
   `tile or an initial), "cardHeader" true for a coloured header band, "tags" up to ${CARD_TAGS_MAX} short ` +
@@ -186,7 +186,7 @@ ${types}
 Boxed elements (shape, text, sticky, table, image, annotation) carry:
   id, type, x, y, width, height, and an optional "label" (string).
   - "shape" is the element for a NODE — a labelled box, the default building
-    block of almost every diagram. It also needs "shape": one of
+    block of almost every page. It also needs "shape": one of
     ${shapeKinds}. The default box / process step is "square" (a rounded
     rectangle that fills its width × height) — there is NO "rectangle" kind.
     Use "diamond" for a decision, "cylinder" for a datastore, "stadium" for a
@@ -195,7 +195,7 @@ Boxed elements (shape, text, sticky, table, image, annotation) carry:
   - "text" is BARE text with no box, fill, or border. Use it ONLY for a
     free-standing title, caption, legend, or note — NEVER for a node. A node
     that has a label is a "shape" with a "label" (use shape: "square"), not a
-    "text". Defaulting to "text" for nodes makes a diagram of floating words
+    "text". Defaulting to "text" for nodes makes a page of floating words
     with no boxes; reach for "shape" unless you specifically want loose text.
 
 ## Content-carrying kinds
@@ -237,12 +237,12 @@ different hue) = rainbow / pastel / tropical / autumn / jewel; uml = standard
 UML notation colours. Pick one that fits the subject; one scheme applies to all
 tabs in a create_document call.
 
-## Design rules (diagrams that read well)
+## Design rules (pages that read well)
 - Nodes are SHAPES, not text. Use type "shape" (shape: "square" by default,
-  "diamond" for a decision, "cylinder" for a datastore) for every box in the
-  diagram. Reserve type "text" for stand-alone titles / captions.
+  "diamond" for a decision, "cylinder" for a datastore) for every box on the
+  page. Reserve type "text" for stand-alone titles, captions and running copy.
 - Do NOT set colours. The theme owns fill / stroke / text colour; omit them and
-  the diagram inherits a coherent palette. A sticky is the exception: it is not
+  the page inherits a coherent palette. A sticky is the exception: it is not
   themed, so its own fillColor / textColor are kept.
 - Size sibling nodes consistently (e.g. every box 160x64).
 - Prefer pinned arrows (node -> node) so they track their shapes when moved.
@@ -441,7 +441,7 @@ export const createDocumentShape = {
     .optional()
     .describe(
       'One or more tabs, each with its own pages. Preferred — pass several to create a multi-tab ' +
-        'document in one call (e.g. a deck plus an article that goes with it).',
+        'document in one call (e.g. a logo and the wireframes that use it).',
     ),
   // The alias is checked against the tab shape by the tool, not listed here a second time: the shape carries the
   // whole element format, and a definition twice its size is one a client's tool search ranks out of sight.
@@ -549,9 +549,9 @@ export const shareDocumentShape = {
     .enum(['view', 'participate', 'edit'])
     .optional()
     .describe(
-      'What the link grants. "participate" (default): recipients add stickies, write and vote ' +
-        'but cannot reshape it; right for a retro or a workshop. "view": they only look, ' +
-        'with no comments or votes. "edit": they can change anything. No sign-in is needed to open any.',
+      'What the link grants. "participate" (default): recipients comment, react, and add stickies and text, ' +
+        'but cannot reshape it; right for feedback on a design. "view": they only look, ' +
+        'with no comments. "edit": they can change anything. No sign-in is needed to open any.',
     ),
   expiry: z
     .enum(['never', 'week', 'month', 'sixMonths'])

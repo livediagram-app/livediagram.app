@@ -8,7 +8,7 @@ import type { Env } from '../types';
 // The counting itself is the document model's, shared with the browser's own documents.
 export { tabStatsOf, type TabStats };
 
-// A stored body's stats, parsing it. A body that is not a JSON object counts as an empty Diagram
+// A stored body's stats, parsing it. A body that is not a JSON object counts as an empty
 // tab, its bytes still measured, and says so (`corrupt`), so a caller can log it and never retry.
 export function tabStatsOfData(data: string): { stats: TabStats; corrupt: boolean } {
   try {

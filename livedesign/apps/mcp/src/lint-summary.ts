@@ -1,10 +1,10 @@
-// The diagram lint on the MCP's write tools (docs/specs/024-agents/diagram-lint.md "Where it runs", LN24): the
+// The page lint on the MCP's write tools (docs/specs/024-agents/page-lint.md "Where it runs", LN24): the
 // summary line in the structured result, and the summary with every finding (refs first, the fix last) as a text
 // block, so the model can act on each one. From a changeset's report, or read per created tab through
 // `?view=lint&json=1`. A lint that is missing or fails reads `lint unavailable` and never fails the tool.
 
 import type { LintReport } from '@livedesign/api-schema';
-import { formatLintReport, lintSummaryLine } from '@livedesign/diagram-lint';
+import { formatLintReport, lintSummaryLine } from '@livedesign/page-lint';
 import { apiJson } from './api';
 import type { Env } from './env';
 

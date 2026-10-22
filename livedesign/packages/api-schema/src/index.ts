@@ -597,10 +597,9 @@ export * from './timeline';
 export * from './activity';
 export * from './responses';
 export * from './trash';
-export { upgradeLegacyPreferences } from './legacy-preferences';
 export * from './profile-picture';
 // A document's own dates on create (docs/specs/015-api/api.md "Document dates"): the worker's
-// check, and the editor's before it sends an imported board's dates.
+// check, and the editor's before it sends an imported document's dates.
 export * from './document-dates';
 // A tab's size cap, D1's row cap less headroom (docs/specs/015-api/api.md "Tab size"): the worker
 // enforces it, the editor checks it before sending.
@@ -627,7 +626,7 @@ export * from './within-reach';
 export * from './creation-use';
 // Document views and ref refusals (docs/specs/024-agents/document-views.md).
 export * from './document-views';
-// The diagram lint's report (docs/specs/024-agents/diagram-lint.md).
+// The page lint's report (docs/specs/024-agents/page-lint.md).
 export * from './lint';
 export * from './ref-errors';
 // Returning visitor (docs/specs/019-marketing/returning-visitor.md).

@@ -1,10 +1,6 @@
-// Request forms an old client can still send outside the /api/diagrams alias, accepted until the
-// sunset (docs/specs/015-api/public-api-and-tokens.md §3.8): the timeline's `diagram:<id>` scope
-// and a `diagramId` in the team notification bodies.
-
-export function upgradeLegacyScope(raw: string): string {
-  return raw.startsWith('diagram:') ? `document:${raw.slice('diagram:'.length)}` : raw;
-}
+// A `diagramId` an old client can still send in the team notification bodies, accepted until the sunset
+// (docs/specs/015-api/public-api-and-tokens.md §3.8). Kept only because the team routes that read it belong to
+// another change; it goes with them.
 
 export function legacyDocumentIdOf(body: unknown): string {
   const value =

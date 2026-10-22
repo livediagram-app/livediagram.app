@@ -10,7 +10,7 @@ import {
   DEFAULT_EDITOR_MODE,
   DEFAULT_TAB_KIND,
   EDITOR_MODES,
-  parseEditorMode,
+  isEditorMode,
   type EditorMode,
   type TabKind,
 } from '@livedesign/document';
@@ -53,26 +53,6 @@ export function isPlacementDefaultKey(value: unknown): value is PlacementDefault
   return isMember(PLACEMENT_DEFAULT_KEYS, value);
 }
 
-// Keys stored under a name since retired: Pages mode was Illustrate mode, and Infographic mode before.
-const LEGACY_PLACEMENT_DEFAULT_KEYS: Readonly<Record<string, PlacementDefaultKey>> = {
-  'mode:illustrate': 'mode:pages',
-  'mode:infographic': 'mode:pages',
-};
-
-/** A stored or requested key as today's key: a current key as it is, a retired one renamed,
- *  anything else null. */
-export function parsePlacementDefaultKey(value: unknown): PlacementDefaultKey | null {
-  if (isPlacementDefaultKey(value)) return value;
-  return typeof value === 'string' ? (LEGACY_PLACEMENT_DEFAULT_KEYS[value] ?? null) : null;
-}
-
-/** The retired names a key may still be stored under, so clearing it clears them too. */
-export function legacyPlacementDefaultKeys(key: PlacementDefaultKey): string[] {
-  return Object.keys(LEGACY_PLACEMENT_DEFAULT_KEYS).filter(
-    (k) => LEGACY_PLACEMENT_DEFAULT_KEYS[k] === key,
-  );
-}
-
 export function isCreationTabKind(value: unknown): value is CreationTabKind {
   return isMember(CREATION_TAB_KINDS, value);
 }
@@ -90,8 +70,8 @@ export function placementDefaultTelemetryType(key: PlacementDefaultKey): string 
 }
 
 /** The creation intent of a new document, from its first tab. Every tab opens in Pages. */
-export function creationIntentOf(tab: { opensIn?: string } | undefined): CreationIntent {
-  return { mode: parseEditorMode(tab?.opensIn) ?? DEFAULT_EDITOR_MODE, tabKind: 'diagram' };
+export function creationIntentOf(_tab: { opensIn?: string } | undefined): CreationIntent {
+  return { mode: DEFAULT_EDITOR_MODE, tabKind: DEFAULT_TAB_KIND };
 }
 
 /** A create body's `intent`: none when absent or null, refused (`intent_invalid`) when malformed.
@@ -102,12 +82,10 @@ export function readCreationIntent(
   if (value === undefined || value === null) return { ok: true, intent: null };
   if (typeof value !== 'object' || Array.isArray(value)) return { ok: false };
   const { mode, tabKind } = value as { mode?: unknown; tabKind?: unknown };
-  // A create from a client from before a mode's rename still names it `illustrate` or `infographic`.
-  const parsedMode = parseEditorMode(mode);
-  if (!parsedMode) return { ok: false };
+  if (!isEditorMode(mode)) return { ok: false };
   const kind = tabKind ?? DEFAULT_TAB_KIND;
   if (!isCreationTabKind(kind)) return { ok: false };
-  return { ok: true, intent: { mode: parsedMode, tabKind: kind } };
+  return { ok: true, intent: { mode, tabKind: kind } };
 }
 
 /** The keys a create with this intent tries: its mode's. */

@@ -1,4 +1,4 @@
-// diagrams — metadata row (name, owner, sharing flag, folder,
+// documents — metadata row (name, owner, sharing flag, folder,
 // timestamps) plus the copy operation. Tab content lives in tabs.ts;
 // the read DTO joins owner display info from participants.
 

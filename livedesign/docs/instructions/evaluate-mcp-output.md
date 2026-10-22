@@ -8,13 +8,13 @@ finding earns a fix only when it recurs; the same benchmark then shows whether t
 
 The kit lives in `apps/mcp/eval/`:
 
-- `bench/tasks/*.mjs`: the task bank, one file per area (`I` pages: articles, slides, infographics, logos and
+- `bench/tasks/*.mjs`: the task bank, one file per area (`I` pages: logos and
   wireframes). Each task is a prompt as a user would type it, its checks, an optional `after`
   (an edit, run as a second turn of the same session), an optional `setup` (what the prompt takes for granted,
   made in the run's empty library) and an optional `gallery` (pictures from `bench/fixtures/` the user has uploaded,
   seeded into the run's image gallery before the round starts, under the names the prompt's user would have). Ids are stable: rounds compare on the ids they share.
-- `apps/mcp/eval/bench/checks.mjs`: the readers checks are written with (boxes, arrows, cards,
-  pages, articles, the reply), each answering yes or no, with a reason on a no.
+- `apps/mcp/eval/bench/checks.mjs`: the readers checks are written with (tabs, elements, words,
+  pages, the reply), each answering yes or no, with a reason on a no.
 - `apps/mcp/eval/bench/run.mjs`: runs a round. `apps/mcp/eval/bench/score.mjs`: scores one, offline. `apps/mcp/eval/bench/summary.mjs`: the report.
 - `mcp-call.mjs`: calls one tool by hand, to replay a call from a transcript.
 - `token.env`, `tokens.env` and `runs/` are gitignored.

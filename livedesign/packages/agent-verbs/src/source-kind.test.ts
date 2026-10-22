@@ -3,9 +3,9 @@ import { classifySource } from './source-kind';
 
 describe('classifySource', () => {
   it('reads whole-text JSON: a replace, one operation, operations, elements', () => {
-    expect(classifySource('{"replace":{"template":"kanban"}}')).toEqual({
+    expect(classifySource('{"replace":{"template":"logo-design"}}')).toEqual({
       kind: 'replace',
-      body: { replace: { template: 'kanban' } },
+      body: { replace: { template: 'logo-design' } },
     });
     expect(classifySource('{"op":"rm","target":"n3"}')).toEqual({
       kind: 'operations',

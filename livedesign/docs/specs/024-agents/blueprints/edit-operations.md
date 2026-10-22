@@ -2,7 +2,7 @@
 
 Derived from [Edit operations](../edit-operations.md), with the changeset body and limits of
 [Agent changesets](../agent-changesets.md), the refs and containment of [Document views](../document-views.md),
-the lint summary of [Diagram lint](../diagram-lint.md), the `replace` inputs and normalisation of
+the lint summary of [Page lint](../page-lint.md), the `replace` inputs and normalisation of
 [MCP server](../../015-api/mcp-server.md) §4.4, §4.7 and §4.7a, and the token style of
 [Explorer filters](../../013-workspace/explorer-filters.md). The spec decides; this file only adds engineering
 precision. Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as

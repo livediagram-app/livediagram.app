@@ -1,7 +1,7 @@
 # Agent changesets
 
 **Status: built.** Closed livedesign-app/livedesign.app#343. Operations are the full
-[edit operations](edit-operations.md), in the line form or JSON, plus `replace`. Every answer carries the [lint](diagram-lint.md) of the tab it leaves; the
+[edit operations](edit-operations.md), in the line form or JSON, plus `replace`. Every answer carries the [lint](page-lint.md) of the tab it leaves; the
 [agent presence](agent-presence.md) refresh is not built yet.
 
 Every agent write to a tab is a **changeset**: one atomic write, applied by the api, sequenced by the document's

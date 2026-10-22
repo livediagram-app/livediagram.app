@@ -1,5 +1,5 @@
 // A document's own dates on create (docs/specs/015-api/api.md "Document dates"): an Offline Mode
-// sync carries its record's created date, an imported board its own created and last-modified
+// sync carries its record's created date, an imported document its own created and last-modified
 // dates. Untrusted input, so each is checked: a whole number of ms since the epoch, from
 // DOCUMENT_DATE_MIN to now plus DOCUMENT_DATE_SKEW_MS, created no later than modified.
 

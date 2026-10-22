@@ -89,7 +89,7 @@ export function parseRecentDiagrams(raw: string | null): RecentDiagram[] {
         id: d.id,
         name: d.name,
         savedAt: d.savedAt,
-        // A note written before a mode's rename keeps its old id (`facilitate`): read as today's.
+        // The mode as parseEditorMode reads it; one it does not know reads as none.
         mode: parseEditorMode(d.mode) ?? null,
         // A note written before teams joined it has none: your own.
         teamName: typeof d.teamName === 'string' && d.teamName.length > 0 ? d.teamName : null,
