@@ -215,6 +215,8 @@ export const PAGES = chart(
       'WireframePageAdded',
       'PageKindWireframe',
       'PageAddedLikeLast',
+      'PhotoPageAdded',
+      'PageKindPhoto',
     ],
   },
 );
@@ -261,6 +263,54 @@ export const LOGO_TOOLS = chart(
   'Logo Tools Used',
   'On a logo page: shapes combined (Unite, Subtract, Intersect, Exclude), a Mirror Copy, and wordmark type (tracking, weight, case, arc) set on a text.',
   { types: [...LOGO_TOOL_TYPES] },
+);
+
+// Photo pages (docs/specs/031-photo/photo-pages.md "Telemetry"): photos started and their size changed.
+export const PHOTO_PAGES = chart(
+  'Tab',
+  'Changed',
+  'Photos Started and Resized',
+  'A photo page started from a picture or blank, made from an image (Edit as Photo), resized, its canvas changed, turned, flipped, cropped or trimmed.',
+  {
+    types: [
+      'PhotoStartedFromPicture',
+      'PhotoStartedBlank',
+      'PhotoEditAsPhoto',
+      'PhotoImageSize',
+      'PhotoCanvasSize',
+      'PhotoRotated',
+      'PhotoFlipped',
+      'PhotoCropped',
+      'PhotoTrimmed',
+    ],
+  },
+);
+
+// Each use of a photo tool: a stroke, a fill, a selection, a press.
+export const PHOTO_TOOLS = chart(
+  'Element',
+  'Used',
+  'Photo Tools Used',
+  'Each use of a tool on a photo page: a brush stroke, a selection, a fill, a crop, a press of the Eyedropper.',
+  { typeIn: (type) => !!type && type.startsWith('Photo') },
+);
+
+// Adjustments, filters and layer operations on a photo page.
+export const PHOTO_EDITS = chart(
+  'Element',
+  'Changed',
+  'Photo Edits',
+  'On a photo page: an adjustment or a filter applied, and each layer operation (a new layer, a merge, a mask, an effect).',
+  { typeIn: (type) => !!type && type.startsWith('Photo') },
+);
+
+// How someone views a photo page: the pixel grid toggled.
+export const PHOTO_VIEW = chart(
+  'UI',
+  'Changed',
+  'Photo View',
+  'On a photo page: the pixel grid, shown past eight screen pixels a photo pixel, turned on or off.',
+  { types: ['PhotoPixelGrid'] },
 );
 
 // Drawing with Mirror on: each drawing that got its reflected twin.
@@ -405,6 +455,10 @@ export const PAGE_WORK: MetricStack = {
     LOGO_MIRROR_SETTINGS,
     WIREFRAME_DEVICES_CHOSEN,
     WIREFRAME_SYSTEM_BARS,
+    PHOTO_PAGES,
+    PHOTO_TOOLS,
+    PHOTO_EDITS,
+    PHOTO_VIEW,
     EMPTY_PAGE_LAYOUTS_HIDDEN,
     WHITEBOARD_SETTINGS,
     WHITEBOARD_RECOGNITION,

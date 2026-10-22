@@ -29,6 +29,8 @@ import {
   pageDeviceClass,
   pageUnits,
   withPageKindChosen,
+  withPhoto,
+  blankPhoto,
   type Page,
   type PageBackground,
   type PageEdit,
@@ -50,6 +52,7 @@ const CODE: Record<PageEditRefusal, PagesRefusal['code']> = {
   size_not_offered: 'size_not_offered',
   pattern_not_offered: 'pattern_not_offered',
   page_limit: 'page_limit',
+  photo_limit: 'photo_limit',
   last_page: 'last_page',
   not_a_wireframe: 'not_a_wireframe',
 };
@@ -105,6 +108,7 @@ function messageFor(why: PageEditRefusal, tab: Tab, page: Pick<Page, 'kind'> | u
     size_not_offered: `${aKind} page takes the sizes ${pageSizesFor(kind).join(', ')}.`,
     pattern_not_offered: 'A logo page takes no pattern; give it a color or gradient.',
     page_limit: 'A tab holds at most 100 pages: delete one first.',
+    photo_limit: 'A tab holds at most 10 photo pages: delete one first.',
     last_page: "That is the tab's only page: add another before deleting it.",
     not_a_wireframe: `${aKind} page has no device: device, frameLook and systemBars are a wireframe page's.`,
   };
@@ -161,9 +165,11 @@ export function applyPageChanges(
         if (!found)
           stop(
             'layout_unknown',
-            offered.length
-              ? `A ${kindWord(kind)} page takes the layouts ${offered.map((l) => l.id).join(', ')}.`
-              : 'A blank page takes no layouts: add a logo or wireframe page for one.',
+            kind === 'photo'
+              ? 'A photo page takes no layout: its picture is edited in the editor.'
+              : offered.length
+                ? `A ${kindWord(kind)} page takes the layouts ${offered.map((l) => l.id).join(', ')}.`
+                : 'A blank page takes no layouts: add a logo or wireframe page for one.',
           );
         const laid = layOutPages(pages()).find((p) => p.id === page.id)!;
         const replaced = onPage(page.id);
@@ -226,6 +232,8 @@ export function applyPageChanges(
           if (offersPageKindChoice(ps, first.id, onPage(first.id))) {
             // The fresh tab's empty, unchosen first page becomes the page asked for.
             current = withPageKindChosen(current, first.id, change.kind, change.device)!;
+            if (change.kind === 'photo')
+              current = withPhoto(current, first.id, blankPhoto(change.width, change.height));
             page = pages()[0]!;
             tookBlank.set(page.id, i + 1);
           } else if (
@@ -241,7 +249,11 @@ export function applyPageChanges(
             tookBlank.set(page.id, i + 1);
           } else {
             const id = newPageId();
-            current = take(pageAdded(current, change.kind, id, change.device));
+            const photoSize =
+              change.kind === 'photo' && change.width && change.height
+                ? { width: change.width, height: change.height }
+                : undefined;
+            current = take(pageAdded(current, change.kind, id, change.device, photoSize));
             page = pages().find((p) => p.id === id)!;
           }
           madeHere.add(page.id);

@@ -8,7 +8,7 @@ The marketing app (`apps/marketing`) is the public landing site served at `/` (e
 
 - If a feature is not built (teams/permissions, true concurrent/CRDT editing, see [02-prototype-scope](../005-project-roadmap/prototype-scope.md)), it does **not** appear on the landing page, even softened.
 - When the editor gains or loses a feature, update the landing page in the same change. Drift between the page and the product is a bug.
-- Counts (templates, themes, shapes) must match the source of truth ([Canvas and palette](../008-canvas/canvas-and-palette.md), `packages/templates/src/templates.ts`, `apps/live/lib/themes.ts`). The copy never states a count the code does not produce; a count that changes changes the copy in the same change. The templates are the Pages templates: the blanks of each page kind (Blank Logo and the wireframe devices) and ready-made logos and wireframe flows.
+- Counts (templates, themes, shapes) must match the source of truth ([Canvas and palette](../008-canvas/canvas-and-palette.md), `packages/templates/src/templates.ts`, `apps/live/lib/themes.ts`). The copy never states a count the code does not produce; a count that changes changes the copy in the same change. The templates are the Pages templates: the blanks of each page kind (Blank Logo and the wireframe devices), ready-made logos and wireframe flows, and Photo Edit, one photo page to start.
 - Be honest about trade-offs where it builds trust: realtime is **last-write-wins**, not CRDT, say so rather than implying conflict-free merging.
 
 ## Structure

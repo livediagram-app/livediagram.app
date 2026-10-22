@@ -678,7 +678,7 @@ and the dialog stays as the one complete, browsable index of them.
   and read as broken. So are the Mouse section's (Quick-Add on Hover, Middle-Mouse
   Pan): a phone has no hover and no middle button.
 
-  **Tours** is a category of its own: **Pages Tours** (over **Wireframe Tour** and **Logo Tour**), with a line saying where it offers itself and a **Learn more** to its article, under
+  **Tours** is a category of its own: **Pages Tours** (over **Wireframe Tour**, **Logo Tour** and **Photo Tour**), with a line saying where it offers itself and a **Learn more** to its article, under
   one **Offer Again** section note: each tour offers itself once; switch one back on and close Settings to take it
   again. (The tours used to be an Onboarding Tutorials grid of switches inside Accessibility, where nobody looked
   for them: a tour is not an accessibility setting.) Every switch is inverted: on means "offer me this tour", the

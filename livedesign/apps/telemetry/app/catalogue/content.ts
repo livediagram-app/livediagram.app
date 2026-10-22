@@ -469,9 +469,9 @@ export const ELEMENTS_CHANGED = chart(
   'Changed',
   'Elements Changed',
   'Restyled or edited: colour, text, arrow ends, size, presets, the format painter and more.',
-  // A logo page's tools are their own card (Logo Tools Used).
+  // A logo page's tools are their own card (Logo Tools Used), as are a photo page's edits (Photo Edits).
   {
-    typeIn: (t) => !LOGO_TOOL_TYPES.includes(t ?? ''),
+    typeIn: (t) => !LOGO_TOOL_TYPES.includes(t ?? '') && !/^Photo[A-Z]/.test(t ?? ''),
   },
 );
 
@@ -534,8 +534,8 @@ export const ELEMENT_ACTIONS_USED = chart(
   'Used',
   'Element Actions Used',
   'Using an element in place: playing a video, or filling an image placeholder.',
-  // Image search picks have their own chart below.
-  { typeIn: (type) => type !== 'ImageSearch' },
+  // Image search picks have their own chart below, and a photo page's tools theirs (Photo Tools Used).
+  { typeIn: (type) => type !== 'ImageSearch' && !/^Photo[A-Z]/.test(type ?? '') },
 );
 
 // Image search (docs/specs/009-elements/image-search.md): searches run in the

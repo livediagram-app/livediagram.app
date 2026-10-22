@@ -2,8 +2,9 @@
 
 // The first page's own choice (docs/specs/007-editor/pages-mode.md "Page kinds"): while a tab's
 // only page is unchosen and empty, it offers the kinds of page inside itself, the same cards as the
-// add-a-page popover. Logo turns it into the 1024 artboard; Wireframe asks for its device. Held at one
-// screen size, centred on the page.
+// add-a-page popover. Logo turns it into the 1024 artboard; Wireframe asks for its device; Photo makes
+// it a photo page, its Start a Photo card asking for a picture. Held at one screen size, centred on
+// the page.
 import type { PageKind, WireframeDeviceId } from '@livedesign/document';
 import { useRef, useState } from 'react';
 import { rememberWireframeDevice } from '@/lib/wireframe-device-memory';
@@ -21,7 +22,7 @@ export function FirstPageChoice({
   // Wireframe turns the choice to Choose a Device (docs/specs/007-editor/wireframe-pages.md).
   const [choosingDevice, setChoosingDevice] = useState(false);
   return (
-    <div className="absolute inset-0 flex items-center justify-center">
+    <div className="absolute inset-0 z-10 flex items-center justify-center">
       <div
         role="group"
         aria-labelledby="first-page-choice-title"

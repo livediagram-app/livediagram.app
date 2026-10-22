@@ -22,6 +22,7 @@ import { DOCUMENT_OPEN_HEADER, readDocumentOpen, tabEtag } from '@livedesign/api
 import { recordDocumentOpen } from '../home/record-open';
 import { handleDocumentShareRoutes } from './document-share-routes';
 import { handleCommentPicturesRoute } from './comment-pictures-routes';
+import { handlePhotoBlobRoutes } from './photo-blob-routes';
 import { handleTabPut, refuseTokenTabPut } from './tab-put-route';
 import { handleTabRename } from './tab-name-route';
 import { handleTabPages } from './tab-pages-route';
@@ -52,6 +53,9 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
   // /api/documents/<id>/tabs/<tabId>/comment-pictures (docs/specs/014-identity/profile-picture.md §6).
   const commentPictures = await handleCommentPicturesRoute(ctx);
   if (commentPictures) return commentPictures;
+  // /api/documents/<id>/tabs/<tabId>/photo-blobs[-held|-adopt][/<blob>] (docs/specs/031-photo/photo-store.md "The routes").
+  const photoBlobs = await handlePhotoBlobRoutes(ctx);
+  if (photoBlobs) return photoBlobs;
   // /api/documents/<id>/tabs/<tabId>
   //   GET    — full tab payload. READ access: owner or ANY valid
   //            share code (view OR edit) for this document, so

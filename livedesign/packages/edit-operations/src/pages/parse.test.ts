@@ -159,3 +159,23 @@ describe('wireframe fields', () => {
     expect('refusal' in out).toBe(false);
   });
 });
+
+describe('photo pages', () => {
+  it('reads a photo page’s size and refuses it elsewhere or out of bounds', () => {
+    const ok = parsePagesRequest({ pages: [{ op: 'add', kind: 'photo', width: 100, height: 50 }] });
+    expect(ok).toEqual({ pages: [{ op: 'add', kind: 'photo', width: 100, height: 50 }] });
+    const refusedOf = (v: unknown) => {
+      const r = parsePagesRequest(v);
+      return 'refusal' in r ? r.refusal.message : 'ok';
+    };
+    expect(refusedOf({ pages: [{ op: 'add', kind: 'logo', width: 100, height: 50 }] })).toMatch(
+      /photo page/,
+    );
+    expect(refusedOf({ pages: [{ op: 'add', kind: 'photo', width: 9000, height: 50 }] })).toMatch(
+      /1 to 8192/,
+    );
+    expect(refusedOf({ pages: [{ op: 'add', kind: 'photo', width: 8000, height: 8000 }] })).toMatch(
+      /at most/,
+    );
+  });
+});

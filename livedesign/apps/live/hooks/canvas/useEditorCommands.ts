@@ -285,24 +285,34 @@ export function useEditorCommands(open: boolean): {
     setTool: (tool) => setCanvasTool(tool as CanvasTool),
   };
 
+  // A photo page in focus adds its own commands (docs/specs/031-photo/photo-pages.md "The title bar").
+  // They come with the photo editor's lazily loaded runtime, there whenever a session is.
+  const photoRuntime =
+    pagesMode?.photo?.session && pagesMode.photo.canEdit ? pagesMode.photo.runtime : null;
   // The searchable catalogue changes only with the gating inputs.
   const commandItems = useMemo(() => {
-    const commands = buildEditorCommands(cmdCtx, INERT_HANDLERS);
-    return commands.length
-      ? commands.map(({ id, name, keywords }) => ({ id, name, keywords }))
-      : undefined;
-  }, [cmdCtx]);
+    const commands = buildEditorCommands(cmdCtx, INERT_HANDLERS).map(({ id, name, keywords }) => ({
+      id,
+      name,
+      keywords,
+    }));
+    const all = photoRuntime ? [...commands, ...photoRuntime.photoCommandItems()] : commands;
+    return all.length ? all : undefined;
+  }, [cmdCtx, photoRuntime]);
+  const livePhoto = useLatest(pagesMode?.photo);
 
   // Running one builds the commands from the context and handlers as they are now.
   const liveCtx = useLatest(cmdCtx);
   const liveHandlers = useLatest(handlers);
   const runCommand = useCallback(
     (id: string) => {
+      const photo = livePhoto.current;
+      if (photo?.runtime?.runPhotoCommand(id, photo)) return;
       buildEditorCommands(liveCtx.current, liveHandlers.current)
         .find((c) => c.id === id)
         ?.run();
     },
-    [liveCtx, liveHandlers],
+    [liveCtx, liveHandlers, livePhoto],
   );
 
   return { commandItems, runCommand };

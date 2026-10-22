@@ -10,6 +10,7 @@ import {
   type Element,
   type PageKind,
 } from '@livedesign/document';
+import { listedLayers, photosOf } from '@livedesign/photo-engine';
 import { layoutCatalogueFor } from '@livedesign/templates';
 import { fitLines, fitOf, type ViewLine, type ViewResult } from './budget';
 import { headerLine, viewHeader } from './header';
@@ -26,7 +27,8 @@ const PAGE = { one: 'page line', many: 'page lines' };
 const LAYOUTS = { one: 'layout line', many: 'layout lines' };
 const ELEMENT = { one: 'element line', many: 'element lines' };
 
-const KIND_ORDER: readonly PageKind[] = ['logo', 'wireframe'];
+const KIND_ORDER: readonly PageKind[] = ['logo', 'wireframe', 'photo'];
+const PHOTO_LAYER = { one: 'layer line', many: 'layer lines' };
 
 const sizeName = (size: keyof typeof PAGE_SIZES, orientation: 'portrait' | 'landscape' | null) => {
   const s = PAGE_SIZES[size];
@@ -77,7 +79,9 @@ export function pagesView(model: ViewModel, options: PagesOptions = {}): ViewRes
       .filter((id) => printed.has(id))
       .map((id) => model.refs.refOf(id)),
   }));
-  const kinds = KIND_ORDER.filter((k) => pages.some((p) => p.kind === k));
+  // Kinds that take layouts: not a photo (its picture).
+  const kinds = KIND_ORDER.filter((k) => k !== 'photo' && pages.some((p) => p.kind === k));
+  const photos = photosOf(tab);
   const layouts = kinds.map((kind) => ({
     kind,
     layouts: layoutCatalogueFor(kind).layouts.map((l) => ({ id: l.id, label: l.label })),
@@ -90,8 +94,11 @@ export function pagesView(model: ViewModel, options: PagesOptions = {}): ViewRes
     const { x, y, width, height } = p.rect;
     const on = new Set(p.refs);
     const nodes = reading.filter((node) => on.has(model.refs.refOf(node.el.id)));
+    const photo = p.kind === 'photo' ? photos[p.id] : undefined;
     const facts = [
-      `${p.kind ?? 'blank'} ${sizeName(p.size, p.orientation)}`,
+      photo
+        ? `photo ${photo.width}x${photo.height} px, ${photo.layers.length} layer${photo.layers.length === 1 ? '' : 's'}`
+        : `${p.kind ?? 'blank'} ${sizeName(p.size, p.orientation)}`,
       `at ${x},${y} ${width}x${height}`,
       ...(p.background ? [`background ${p.background}`] : []),
       ...(p.locked ? ['locked'] : []),
@@ -101,6 +108,14 @@ export function pagesView(model: ViewModel, options: PagesOptions = {}): ViewRes
       text: `page ${p.place}${p.name ? ` ${jsonString(p.name)}` : ''} ${p.id} · ${facts.join(' · ')}`,
       noun: PAGE,
     });
+    // A photo's layers, top first, as the Layers tab lists them (docs/specs/031-photo/photo-pages.md
+    // "Agents"): name, kind, visibility, opacity and blend mode.
+    if (photo)
+      for (const { layer, depth } of listedLayers(photo.layers))
+        lines.push({
+          text: `${'  '.repeat(depth + 1)}layer ${jsonString(layer.name)} · ${layer.layerKind}${layer.visible === false ? ' · hidden' : ''}${layer.opacity !== undefined && layer.opacity < 1 ? ` · ${Math.round(layer.opacity * 100)}%` : ''}${layer.blend ? ` · ${layer.blend}` : ''}`,
+          noun: PHOTO_LAYER,
+        });
     // What is on it, one outline line each: the refs and text a layout's sample is replaced by.
     for (const node of nodes) {
       lines.push({ text: outlineLine(model, node, 1), noun: ELEMENT });

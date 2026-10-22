@@ -132,7 +132,7 @@ nothing moves under reduced motion.
 
 ## Page kinds
 
-A page is one of three kinds (`Page.kind`), chosen when it is made and never changed
+A page is one of four kinds (`Page.kind`), chosen when it is made and never changed
 afterwards (the one exception: the first page's own choice, below):
 
 - **Infographic** (`kind: 'infographic'`, or absent: unchosen, and every page from before kinds):
@@ -146,6 +146,9 @@ afterwards (the one exception: the first page's own choice, below):
   like an infographic page on the device's screen, starting from the wireframe layouts
   ([Wireframe pages](wireframe-pages.md)). Everything in this spec for infographic pages applies to
   it except where [Wireframe pages](wireframe-pages.md) says otherwise.
+- **Photo** (`kind: 'photo'`): a picture to edit, its sheet the photo's own shape, with layers, brushes,
+  selections, adjustments and filters ([Photo pages](../031-photo/photo-pages.md)). It has no background, no
+  margin and no layouts; elements may sit on top of it as on any page.
 
 **Adding a page**: two buttons sit after the last page, one above the other (centred in the gap
 after it, level with its middle, or, zoomed out so far that the gap is narrower than them, kept 12
@@ -155,7 +158,7 @@ screen px clear of the page), held at one screen size:
   page's size and orientation, the logo artboard), and a wireframe page's device, frame look, orientation and system bars too
   ([Wireframe pages](wireframe-pages.md)). It carries the last page's background as every new page
   does, never its content. Its tooltip and name say what it adds: **Add Another Infographic
-  Page**, **Add Another Logo Page**, **Add Another iPhone Screen** (a browser's **Browser Page**, a watch's **Watch Face**).
+  Page**, **Add Another Logo Page**, **Add Another Photo Page** (an unstarted photo page), **Add Another iPhone Screen** (a browser's **Browser Page**, a watch's **Watch Face**).
 - **The button under it** (a grid, tooltip **Add a Page of Any Kind**) opens **Add a Page**: a
   compact list, one row per kind, its glyph, its name and a short line, so it stays small however
   many kinds there are:
@@ -164,6 +167,7 @@ screen px clear of the page), held at one screen size:
   - **Wireframe**: "A phone, tablet or web screen.", with a chevron: it turns the list to
     **Choose a Device**, a row per device (its miniature, name and screen size) under its family,
     the device last chosen in this browser ringed and focused, and **Back**.
+  - **Photo**: "A picture to edit in layers."
 
   The list hangs beside the button (right of it while there is room, else left), level with it,
   scrolling inside the window when it cannot fit. Up and Down (Home, End) move between the rows,
@@ -190,13 +194,14 @@ a phone (a bottom sheet). The + already adds another of the last page's kind, so
 
 A tab with no pages stored starts with one page, its kind unchosen.
 
-**The first page's choice**: while a tab's only page is unchosen and empty, it offers the three kinds
+**The first page's choice**: while a tab's only page is unchosen and empty, it offers the four kinds
 inside itself, for someone who may edit: a card centred on the page, held at one screen size,
-**What Is This Page For?** ("Choose now: a page keeps its kind once you start."), over the same three
+**What Is This Page For?** ("Choose now: a page keeps its kind once you start."), over the same four
 cards as the popover. **Infographic** keeps the page, now chosen (`kind: 'infographic'`), and the
 choice goes; **Logo** turns it into the artboard (`kind: 'logo'`), its logo layouts inviting; **Wireframe** turns
 the card to Choose a Device, and the device chosen turns it into that device's screen
-(`kind: 'wireframe'`, [Wireframe pages](wireframe-pages.md)). One edit each. Anything put on the page first (a layout, an element) is choosing Infographic by doing: the
+(`kind: 'wireframe'`, [Wireframe pages](wireframe-pages.md)); **Photo** turns it into an unstarted photo page
+(`kind: 'photo'`), its Start a Photo card showing ([Photo pages](../031-photo/photo-pages.md)). One edit each. Anything put on the page first (a layout, an element) is choosing Infographic by doing: the
 offer goes while the page has content, and comes back if it is emptied while still unchosen. The
 empty page's layout invitation waits until the choice is made. Not offered in zen or isometric
 view, nor on a second page (a page added from the + is chosen in the popover).
@@ -1341,8 +1346,9 @@ is while the rest of the tab is worked on.
 ## Getting around the pages
 
 - **A page's label zooms to it**: a press on the label fits that page in the view, as landing on
-  the tab fits the page you were on: the page itself fills the view (below the Toolbar strip), whatever its
-  shape, not a square around it.
+  the tab fits the page you were on: the page itself fills the view (below the Toolbar strip and above the
+  bottom-right controls, 12 px clear of them, so a wide page never runs under them), whatever its shape, not a square
+  around it.
 - **The Map shows the pages**: each page's sheet in its own background (a picture as its tone) with a crisp outline,
   under the content, counted in the Map's bounds (so a tab of empty pages still has a Map), and
   each element inked for its page.
@@ -1547,6 +1553,8 @@ SlideHidden / SlideShown`).
   outside press closes it; the button shows pressed while open). A design is likely to be
   presented, so its deck is one press away. Desktop only, as the Slide Deck itself is. Shown whenever the tab has pages, as every page is in the deck. Its hover card
   reads "Order, hide and present your pages." Telemetry: `UI · Opened · SlideDeck`.
+- **Photo button**: while a photo page is in focus, a **Photo** button joins the same frame right after Contents and
+  opens the Photo panel as a popover above it ([Photo pages](../031-photo/photo-pages.md) "The Photo panel").
 - **No Layers**: the Layers button and panel are not offered (a page is arranged by its pages, not
   layers); a tab's stored layers are left untouched.
 

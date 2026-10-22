@@ -59,12 +59,18 @@ import { useCanvasSurfaceGestures } from '@/hooks/canvas/useCanvasSurfaceGesture
 import { useCanvasSelectHandlers } from '@/hooks/canvas/useCanvasSelectHandlers';
 import { useArrowLabelLayouts } from '@/hooks/canvas/useArrowLabelLayouts';
 import { useFontEpoch } from '@/components/canvas/useFontEpoch';
-import { loadCanvasPages } from '@/lib/editor-deferred-code';
+import {
+  loadCanvasPages,
+  loadPhotoCanvasOverlays,
+  loadPhotoPagesLayer,
+} from '@/lib/editor-deferred-code';
 import { SLIDE_VIEW_TRANSITION_UPDATE } from './slide-transition';
 import { useStickyPeelVars } from '@/lib/sticky-peel-image';
 
 // Pages mode's pages draw only on a tab that has pages, so their code loads on demand
 // (lib/editor-deferred-code.ts fetches it as the editor mounts).
+const PhotoPagesLayer = dynamic(loadPhotoPagesLayer, { ssr: false });
+const PhotoCanvasOverlays = dynamic(loadPhotoCanvasOverlays, { ssr: false });
 const CanvasPages = dynamic(loadCanvasPages, { ssr: false });
 
 // The canvas boundary (docs/specs/008-canvas/canvas-performance.md "The canvas re-renders only for what it
@@ -515,6 +521,16 @@ function CanvasView(props: CanvasProps) {
                   />
                 </PageImageAccessProvider>
               ) : null}
+              {/* Photo pages' pictures on their sheets: the page in focus live, the rest their
+            previews (PhotoPagesLayer). */}
+              {props.pagesMode?.photo ? (
+                <PhotoPagesLayer
+                  pages={props.pagesMode.pages}
+                  photo={props.pagesMode.photo}
+                  zoom={viewportZoom}
+                  viewKey={viewportOffset}
+                />
+              ) : null}
               <CanvasArrivalProvider
                 tabId={props.activeTabId ?? ''}
                 loaded={props.activeTabLoaded ?? true}
@@ -566,6 +582,16 @@ function CanvasView(props: CanvasProps) {
                     ink={props.whiteboardInk ?? 'currentColor'}
                     wrapperRef={wrapperRef}
                     zoom={viewportZoom}
+                  />
+                ) : null}
+                {/* A photo page's tools: the press, the ants, the crop box, floating pixels and
+            the text being typed (PhotoCanvasOverlays). */}
+                {props.pagesMode?.photo ? (
+                  <PhotoCanvasOverlays
+                    pages={props.pagesMode.pages}
+                    photo={props.pagesMode.photo}
+                    zoom={viewportZoom}
+                    spaceHeld={spaceHeld}
                   />
                 ) : null}
                 {pathTool.editView ? <PathEditLayer {...pathTool.editView} /> : null}

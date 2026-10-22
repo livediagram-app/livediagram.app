@@ -51,6 +51,7 @@ function show(
   props: {
     hidden?: boolean;
     tabElements?: Element[];
+    photoTools?: { node: ReactNode; inPlaceOfCategories: boolean } | null;
   } = {},
 ) {
   const h = handlers();
@@ -106,6 +107,21 @@ describe('ToolbarPalette', () => {
     ]);
     // No tiles of their own on the strip: they are in the flyouts.
     expect(within(strip()).queryByRole('button', { name: 'Add Square' })).toBeNull();
+  });
+
+  it('holds a photo page’s tools in place of the categories, the selection mode and Search kept', () => {
+    // docs/specs/031-photo/photo-pages.md "The photo tools".
+    show({ photoTools: { node: <div data-testid="photo-tools" />, inPlaceOfCategories: true } });
+    expect(screen.getByTestId('photo-tools')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Selection mode' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Search elements' })).toBeTruthy();
+    expect(barNames()).toEqual([]);
+  });
+
+  it('adds a photo page’s tools at the strip’s end when they do not stand in for the categories', () => {
+    show({ photoTools: { node: <div data-testid="photo-tools" />, inPlaceOfCategories: false } });
+    expect(screen.getByTestId('photo-tools')).toBeTruthy();
+    expect(barNames()).toContain('Shapes');
   });
 
   it("reaches the same add-handler as the Palette from a category's flyout, and closes it", () => {

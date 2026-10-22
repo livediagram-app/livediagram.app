@@ -119,6 +119,38 @@ function patternTile(pattern: string, ink: string): string {
   return `<rect y="${p - 1}" width="${p}" height="1" ${fill}/>`;
 }
 
+/** A photo page's composite filling its sheet. */
+function photoImageSvg(
+  r: { x: number; y: number; width: number; height: number },
+  href: string,
+): string {
+  return `<image x="${r2(r.x)}" y="${r2(r.y)}" width="${r2(r.width)}" height="${r2(r.height)}" preserveAspectRatio="none" href="${xmlEscape(href)}"/>`;
+}
+
+// The transparency checkerboard's squares and colours where a photo's picture is not to hand.
+const PHOTO_CHECKER = 16;
+const PHOTO_CHECKER_LIGHT = '#ffffff';
+const PHOTO_CHECKER_DARK = '#e2e8f0';
+
+/** A photo page whose picture is not to hand: the checkerboard and a picture glyph at its centre. */
+function photoPlaceholderSvg(
+  r: { x: number; y: number; width: number; height: number },
+  id: string,
+): string {
+  const c = PHOTO_CHECKER;
+  const glyph = Math.max(24, Math.min(r.width, r.height) * 0.12);
+  const gx = r.x + r.width / 2 - glyph / 2;
+  const gy = r.y + r.height / 2 - glyph / 2;
+  return (
+    `<defs><pattern id="${id}-checker" patternUnits="userSpaceOnUse" x="${r2(r.x)}" y="${r2(r.y)}" width="${c * 2}" height="${c * 2}">` +
+    `<rect width="${c * 2}" height="${c * 2}" fill="${PHOTO_CHECKER_LIGHT}"/><rect width="${c}" height="${c}" fill="${PHOTO_CHECKER_DARK}"/>` +
+    `<rect x="${c}" y="${c}" width="${c}" height="${c}" fill="${PHOTO_CHECKER_DARK}"/></pattern></defs>` +
+    `<rect x="${r2(r.x)}" y="${r2(r.y)}" width="${r2(r.width)}" height="${r2(r.height)}" fill="url(#${id}-checker)"/>` +
+    `<g transform="translate(${r2(gx)} ${r2(gy)}) scale(${r2(glyph / 24)})" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">` +
+    `<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></g>`
+  );
+}
+
 export function pageExportFrame(
   page: LaidOutPage,
   {
@@ -126,6 +158,7 @@ export function pageExportFrame(
     idPrefix = 'lvd-page',
     transparentPaper = false,
     imageHref,
+    photoHref,
     overFill,
     frameTheme,
   }: {
@@ -140,6 +173,10 @@ export function pageExportFrame(
     // A page picture's bytes by gallery id (a data URL, export-tab-images), to embed. Without them
     // (the Map, slide thumbnails) the page is painted in the picture's tone under its overlay.
     imageHref?: (imageId: string) => string | undefined;
+    // A photo page's composite (its preview, or an export's own rendering) by page id
+    // (docs/specs/031-photo/photo-pages.md "Exports and other views"); absent draws its
+    // transparency checkerboard and a picture glyph.
+    photoHref?: (pageId: string) => string | undefined;
     // Markup laid over the fill and under its pattern: a slide's animated background as it stands when the
     // slide opens (docs/specs/007-editor/pages-mode.md "Animated backgrounds"). The SVG's is an opaque
     // picture of the gradient with the motion painted in, so it takes the fill's place; laid over the pattern it
@@ -161,8 +198,13 @@ export function pageExportFrame(
   const rect = (paint: string) =>
     `<rect x="${r2(r.x)}" y="${r2(r.y)}" width="${r2(r.width)}" height="${r2(r.height)}" fill="${paint}"/>`;
   const parts: string[] = [];
-  const transparent = !!device || (transparentPaper && page.kind === 'logo' && !fill);
-  if (fill?.kind === 'gradient') {
+  // A photo page is its picture: transparent where the photo is, in every export.
+  const transparent =
+    !!device || (transparentPaper && page.kind === 'logo' && !fill) || page.kind === 'photo';
+  if (page.kind === 'photo') {
+    const href = photoHref?.(page.id);
+    parts.push(href ? photoImageSvg(r, href) : photoPlaceholderSvg(r, id));
+  } else if (fill?.kind === 'gradient') {
     const l = pageGradientLine(fill, r);
     parts.push(
       `<defs><linearGradient id="${id}-fill" gradientUnits="userSpaceOnUse" x1="${r2(l.x1)}" y1="${r2(l.y1)}" x2="${r2(l.x2)}" y2="${r2(l.y2)}">` +

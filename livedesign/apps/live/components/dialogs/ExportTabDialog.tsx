@@ -6,6 +6,7 @@ import { FormatIcon } from './export-format-icons';
 import { TextExportPanel } from './TextExportPanel';
 import { ImageExportPanel } from './ImageExportPanel';
 import { LogoKitPanel } from './LogoKitPanel';
+import { PhotoExportPanel } from '@/components/photo/PhotoExportPanel';
 import {
   isLayerVisible,
   tabLayers,
@@ -42,6 +43,8 @@ const EXPORT_LABEL: Record<Format, string> = {
   svg: 'SVG',
   pdf: 'PDF',
   'logo-kit': 'LogoKit',
+  // The Photo card's own telemetry names each file it writes (PhotoExportPanel).
+  photo: 'Photo',
 };
 
 // A text format taken (downloaded or copied) counts as the document's export.
@@ -103,8 +106,9 @@ type ExportTabDialogProps = {
 const NO_DOCUMENT_TABS: readonly Tab[] = [];
 
 // The format keys ('file' is the livedesign .json): 'logo-kit' is a logo page's kit
-// (docs/specs/007-editor/logo-pages.md "Export"), while the tab has one.
-export type Format = 'pdf' | 'png' | 'svg' | 'file' | 'logo-kit';
+// (docs/specs/007-editor/logo-pages.md "Export"), while the tab has one; 'photo' a photo page's
+// files (docs/specs/031-photo/photo-pages.md "Exports and other views"), while the tab has one.
+export type Format = 'pdf' | 'png' | 'svg' | 'file' | 'logo-kit' | 'photo';
 
 // The two text formats each open a view/edit/copy panel; the three image
 // formats each open an options-and-download panel (docs/specs/010-palette/style-presets.md / 73).
@@ -138,6 +142,11 @@ const CARDS: { kind: Format; title: string; description: string }[] = [
     kind: 'logo-kit',
     title: 'Logo Kit',
     description: 'An SVG, PNGs from 16 to 1024 px and a favicon.ico, in one .zip.',
+  },
+  {
+    kind: 'photo',
+    title: 'Photo',
+    description: 'A photo page as PNG, JPEG, WebP or PSD, or each layer as a file.',
   },
 ];
 
@@ -199,13 +208,19 @@ export function ExportTabDialog({
   const scopeOf = (format: ImageFormat) => scopes[format] ?? DEFAULT_PAGE_SCOPE[format];
   // The Logo Kit card shows while the tab has a logo page (docs/specs/007-editor/logo-pages.md).
   const hasLogoPage = !!pages?.some((p) => p.kind === 'logo');
+  // The Photo card shows while the tab has a photo page (docs/specs/031-photo/photo-pages.md).
+  const hasPhotoPage = !!pages?.some((p) => p.kind === 'photo');
   const cards = pages
-    ? [...PAGES_FORMATS, ...(hasLogoPage ? (['logo-kit'] as const) : [])].map((kind) => {
+    ? [
+        ...PAGES_FORMATS,
+        ...(hasLogoPage ? (['logo-kit'] as const) : []),
+        ...(hasPhotoPage ? (['photo'] as const) : []),
+      ].map((kind) => {
         const card = CARDS.find((c) => c.kind === kind)!;
         return { ...card, description: PAGES_CARD_COPY[kind] ?? card.description };
       })
-    : // A selection has no pages, so no logo page: never the Logo Kit.
-      CARDS.filter((c) => c.kind !== 'logo-kit');
+    : // A selection has no pages, so no logo or photo page: never the Logo Kit nor the Photo card.
+      CARDS.filter((c) => c.kind !== 'logo-kit' && c.kind !== 'photo');
 
   const isSelection = scope === 'selection';
   const suffix = isSelection ? ' - selection' : '';
@@ -389,6 +404,15 @@ export function ExportTabDialog({
             documentName={documentName}
             images={previewImages}
             imagesReady={previewReady}
+            imageContext={imageContext}
+            onDone={onClose}
+            onBack={() => setActive(null)}
+          />
+        ) : active === 'photo' && pages ? (
+          <PhotoExportPanel
+            tab={tab}
+            pages={pages}
+            documentName={documentName}
             imageContext={imageContext}
             onDone={onClose}
             onBack={() => setActive(null)}

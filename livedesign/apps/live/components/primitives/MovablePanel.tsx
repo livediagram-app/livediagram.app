@@ -247,7 +247,9 @@ export function MovablePanel({
           <div
             // A sheet starts at the canvas's edge, so the arrow is measured from there.
             style={{ left: px((sheet ? anchor.left : 0) + anchor.arrowOffset) - 7 }}
-            className={`absolute h-3.5 w-3.5 rotate-45 border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 ${
+            // Under the panel's contents (over its own background): a positioned arrow otherwise paints over
+            // whatever sits at the panel's edge, as the Photo panel's New Layer button did.
+            className={`pointer-events-none absolute -z-10 h-3.5 w-3.5 rotate-45 border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 ${
               anchor.bottom !== undefined
                 ? '-bottom-[7px] rounded-br-sm border-b border-r'
                 : '-top-[7px] rounded-tl-sm border-l border-t'

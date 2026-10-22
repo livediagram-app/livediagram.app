@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react
 import { useStableCallbacks } from '@/hooks/ui/useStableCallbacks';
 import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import type { PanelId } from '@/lib/panel-layout';
-import { loadLayersPanel } from '@/lib/editor-deferred-code';
+import { loadLayersPanel, loadPhotoPanel } from '@/lib/editor-deferred-code';
 import { visibleLayerElements } from '@livedesign/document';
 import { CanvasAiPanel } from './CanvasAiPanel';
 import { LazyExplorer } from '@/components/panels/LazyExplorer';
@@ -19,6 +19,8 @@ import { useWithheldExplorerCloses } from './useWithheldExplorerCloses';
 // Layers is a popover most visits never open: mounted from its first opening on (its code fetched once the
 // editor is idle, lib/editor-deferred-code.ts), and kept mounted after.
 const LayersPanel = dynamic(loadLayersPanel, { ssr: false });
+// A photo page's panel, fetched once a tab has a photo page.
+const PhotoPanel = dynamic(loadPhotoPanel, { ssr: false });
 
 // Lazy-load CommentsPanel: only mounts when the active tab has at
 // least one element with comments. It stacks below the Palette (the
@@ -66,6 +68,9 @@ export function useCanvasChromePanels({
   layersEl: ReactNode;
   collaborateEl: ReactNode;
   slidesPopoverEl: ReactNode;
+  // A photo page's Photo panel over its button in the pages strip, and whether that button is offered.
+  photoPanelOffered: boolean;
+  photoPopoverEl: ReactNode;
   // Pages mode's Contents (docs/specs/007-editor/pages-mode.md "Contents"): the popover,
   // or docked as the sidebar (useContentsChrome).
   contentsPopoverEl: ReactNode;
@@ -376,6 +381,28 @@ export function useCanvasChromePanels({
       />
     ) : null;
 
+  // The Photo panel (docs/specs/031-photo/photo-pages.md "The Photo panel"): offered while a photo page is in
+  // focus, for an Editor and (read-only) a Participant, as a popover over its button in the pages strip. On a phone it
+  // is a bottom sheet off the tools row's Layers button instead (PhotoChrome). It belongs to the page: focus moving
+  // off it closes the panel.
+  const photoView = props.pagesMode?.photo;
+  const photoPanelOffered =
+    !chromeHidden &&
+    !isMobile &&
+    !!photoView?.session &&
+    (photoView.canEdit || photoView.canInspect);
+  useEffect(() => {
+    if (activeDockPanel === 'photo-panel' && !photoPanelOffered) closeDockPanel();
+  }, [activeDockPanel, photoPanelOffered, closeDockPanel]);
+  const photoPopoverEl =
+    photoPanelOffered && activeDockPanel === 'photo-panel' ? (
+      <PhotoPanel
+        photo={photoView}
+        popoverAnchor={activeDockAnchor ?? undefined}
+        onPopoverClose={closeDockPanel}
+      />
+    ) : null;
+
   // Map of panel id → element for the docked-layout distribution.
   const panelEls: Partial<Record<PanelId, ReactNode>> = {
     // Collaborate renders outside the corner layer (collaborateEl, below).
@@ -396,6 +423,8 @@ export function useCanvasChromePanels({
     collaborateEl,
     slidesPopoverEl: slidesOpen ? slideDeckEl : null,
     contentsPopoverEl,
+    photoPanelOffered,
+    photoPopoverEl,
     contentsSidebarEl,
     contentsDocked,
     contentsSide,

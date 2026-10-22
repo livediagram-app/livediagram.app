@@ -601,3 +601,22 @@ CREATE TABLE events (
   ts       INTEGER NOT NULL
 );
 CREATE INDEX events_ts_idx ON events (ts);
+
+-- The photo blob store (docs/specs/031-photo/photo-store.md): a photo page's tiles, sources and
+-- previews, stored once by content (R2 key photo/<id> in PHOTO_BLOBS), and the tabs that may read each.
+CREATE TABLE photo_blobs (
+  id           TEXT PRIMARY KEY,   -- the first 16 bytes of the SHA-256 of the bytes, base64url
+  content_type TEXT NOT NULL,      -- image/png, image/jpeg or image/webp, sniffed on upload
+  byte_size    INTEGER NOT NULL,
+  created_at   INTEGER NOT NULL
+);
+
+-- A tab may read a blob it holds a ref to: it uploaded the bytes, or a copy carried them.
+CREATE TABLE photo_blob_refs (
+  tab_id     TEXT NOT NULL,
+  blob_id    TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  PRIMARY KEY (tab_id, blob_id)
+) WITHOUT ROWID;
+CREATE INDEX photo_blob_refs_blob_idx ON photo_blob_refs (blob_id);
+CREATE INDEX photo_blob_refs_created_idx ON photo_blob_refs (created_at);

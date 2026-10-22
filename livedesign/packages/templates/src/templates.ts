@@ -17,6 +17,8 @@ export type TemplateKind =
   | 'blank-wireframe-browser'
   | 'blank-wireframe-laptop'
   | 'blank-wireframe-watch'
+  // One unstarted photo page (docs/specs/031-photo/photo-pages.md "Making a photo page").
+  | 'photo-edit'
   // Logo-design exploration: six labelled artboards (horizontal / stacked lockups with and without a tagline, the
   // mark as an app icon, a one-colour version) plus the brand palette, so a designer picks the composition that
   // fits, deletes the rest, and iterates.
@@ -60,6 +62,14 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'blank-logo',
     title: 'Blank Logo',
     description: 'One empty square artboard for a mark, a wordmark or a lockup.',
+    extra: true,
+  },
+  {
+    // docs/specs/031-photo/photo-pages.md "Making a photo page" Templates.
+    kind: 'photo-edit',
+    title: 'Photo Edit',
+    description:
+      'One photo page to start: open a picture or make a blank one, then edit it with layers, brushes, adjustments and filters.',
     extra: true,
   },
   {

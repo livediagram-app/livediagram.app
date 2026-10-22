@@ -83,6 +83,12 @@ export type EditorContextMenuProps = {
   // clear the picked image back to a placeholder.
   onOpenImagePicker: (elementId: string) => void;
   onRemoveImage: (elementId: string) => void;
+  // Edit as Photo (docs/specs/031-photo/photo-pages.md "Making a photo page"): a new photo page
+  // started from the image's picture. Present in Pages mode for someone who may add pages.
+  onEditAsPhoto?: (imageId: string, at: { x: number; y: number }) => void;
+  // Rasterize Into Layer: the element drawn into a new layer of the photo it sits on, and removed.
+  // Present for an element on the photo page in focus, for someone who may edit it.
+  onRasterizeIntoLayer?: (elementId: string) => void;
   // Clear the link off the selected element (docs/specs/009-elements/link-cards.md link-card "Remove Link").
   onRemoveLink: () => void;
   onBringToFront: () => void;

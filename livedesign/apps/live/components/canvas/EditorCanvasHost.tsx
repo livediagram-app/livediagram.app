@@ -462,7 +462,9 @@ export function EditorCanvasHost() {
               editorMode={editorMode.mode}
               // No page while Start Making Pages is open (docs/specs/007-editor/start-diagramming.md "Start Making Pages"):
               // the tab's first page is drawn only once a template is picked or the panel closed, so nothing waits behind it.
-              pagesMode={startPanelOpen ? null : presentedPages(pagesMode, presentingPageId)}
+              pagesMode={
+                startPanelOpen || !pagesMode ? null : presentedPages(pagesMode, presentingPageId)
+              }
               whiteboardInk={PEN_INK[surface]}
               previewDrawnArrow={(intent, startX, startY, endX, endY) =>
                 drawnArrowAsShown(intent, startX, startY, endX, endY, {

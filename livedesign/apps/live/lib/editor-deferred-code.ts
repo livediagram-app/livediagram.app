@@ -11,6 +11,18 @@ import type { PresentationOverlay as PresentationOverlayComponent } from '@/comp
 
 export const loadCanvasPages = () =>
   import('@/components/canvas/CanvasPages').then((m) => m.CanvasPages);
+// A photo page's surfaces (docs/specs/031-photo/photo-pages.md): its pictures on the sheets, its tools on the
+// canvas, its chrome and its panel, fetched once a tab has a photo page.
+export const loadPhotoPagesLayer = () =>
+  import('@/components/photo/PhotoPagesLayer').then((m) => m.PhotoPagesLayer);
+export const loadPhotoCanvasOverlays = () =>
+  import('@/components/photo/PhotoCanvasOverlays').then((m) => m.PhotoCanvasOverlays);
+export const loadPhotoChrome = () =>
+  import('@/components/photo/PhotoChrome').then((m) => m.PhotoChrome);
+export const loadPhotoTools = () =>
+  import('@/components/photo/PhotoToolsRail').then((m) => m.PhotoToolsRail);
+export const loadPhotoPanel = () =>
+  import('@/components/photo/PhotoPanel').then((m) => m.PhotoPanel);
 export const loadTableView = () => import('@/components/canvas/TableView').then((m) => m.TableView);
 
 export const loadExplorerPanel = () => import('@/components/panels/Explorer');

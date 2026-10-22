@@ -7,6 +7,26 @@ import type { Format } from './ExportTabDialog';
 
 export function FormatIcon({ kind }: { kind: Format }) {
   switch (kind) {
+    case 'photo':
+      // A picture: hills under a sun, a layer stack in its corner.
+      return (
+        <svg width="32" height="24" viewBox="0 0 32 24" aria-hidden>
+          <rect
+            x="1"
+            y="1"
+            width="30"
+            height="22"
+            rx="2.5"
+            fill="rgb(224 242 254)"
+            stroke="rgb(56 189 248)"
+            strokeWidth="1.25"
+          />
+          <circle cx="23" cy="7.5" r="2.6" fill="rgb(252 211 77)" />
+          <path d="M2 19 L10 11 L16 16 L21 12 L30 19 V22 H2 Z" fill="rgb(16 185 129)" />
+          <rect x="4" y="4" width="8" height="2.2" rx="0.8" fill="rgb(255 255 255)" />
+          <rect x="4" y="7" width="8" height="2.2" rx="0.8" fill="rgb(14 165 233)" />
+        </svg>
+      );
     case 'logo-kit':
       // A square artboard with a mark on it, and the .zip it comes in.
       return (

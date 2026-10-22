@@ -103,6 +103,7 @@ export function PageShowMeButton({
 export const PAGE_TOUR_HELP: Record<PageKind, { article: HelpArticleKey }> = {
   logo: { article: 'logoPages' },
   wireframe: { article: 'wireframePages' },
+  photo: { article: 'photoPages' },
 };
 
 export function PageTourStage({ tour, kind }: { tour: TourEngine<PageTourApi>; kind: PageKind }) {

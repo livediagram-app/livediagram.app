@@ -20,6 +20,7 @@
     "@livedesign/api-schema": "workspace:*",
     "@livedesign/document": "workspace:*",
     "@livedesign/icons": "workspace:*",
+    "@livedesign/photo-engine": "workspace:*",
     "@livedesign/templates": "workspace:*"
   },
   "devDependencies": {

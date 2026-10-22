@@ -29,6 +29,7 @@ const ALL_KINDS = [
   'blank-wireframe-browser',
   'blank-wireframe-laptop',
   'blank-wireframe-watch',
+  'photo-edit',
   'logo-design',
   'wireframe-mobile-app',
   'wireframe-website',

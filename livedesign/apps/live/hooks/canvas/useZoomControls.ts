@@ -7,10 +7,10 @@
 
 import { useMemo, type Dispatch, type SetStateAction } from 'react';
 import { track } from '@/lib/telemetry';
-import { ZOOM_MIN, ZOOM_MAX } from '@/lib/canvas';
+import { ZOOM_MIN, zoomMax } from '@/lib/canvas';
 
 const ZOOM_STEP = 0.1;
-const clampZoom = (z: number) => Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, z));
+const clampZoom = (z: number) => Math.max(ZOOM_MIN, Math.min(zoomMax(), z));
 
 // Steps are updaters, applied to the zoom as it is when pressed: the handlers depend on no zoom value,
 // so they keep their identity across zooms (docs/specs/008-canvas/blueprints/viewport-store.md).

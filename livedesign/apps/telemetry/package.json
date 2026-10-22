@@ -21,6 +21,7 @@
   },
   "devDependencies": {
     "@livedesign/agent-verbs": "workspace:*",
+    "@livedesign/photo-engine": "workspace:*",
     "@livedesign/next-config": "workspace:*",
     "@livedesign/oxlint-config": "workspace:*",
     "@livedesign/source-ast": "workspace:*",

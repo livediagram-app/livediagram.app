@@ -41,6 +41,7 @@ describe('TEMPLATES catalogue', () => {
     'blank-wireframe-browser',
     'blank-wireframe-laptop',
     'blank-wireframe-watch',
+    'photo-edit',
     'logo-design',
     'wireframe-mobile-app',
     'wireframe-website',
@@ -54,15 +55,15 @@ describe('TEMPLATES catalogue', () => {
   // The mechanism is generic; nothing ships hidden today.
   const listed = TEMPLATES.filter((t) => !t.hidden);
 
-  it('lists exactly 14 templates (1 default + 13 extra)', () => {
-    expect(listed).toHaveLength(14);
+  it('lists exactly 15 templates (1 default + 14 extra)', () => {
+    expect(listed).toHaveLength(15);
   });
 
-  it('splits cleanly into 1 default + 13 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
+  it('splits cleanly into 1 default + 14 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
     const defaults = listed.filter((t) => !t.extra);
     const extras = listed.filter((t) => t.extra);
     expect(defaults).toHaveLength(1);
-    expect(extras).toHaveLength(13);
+    expect(extras).toHaveLength(14);
   });
 
   it('ships no hidden templates', () => {
@@ -96,8 +97,9 @@ describe('TEMPLATES catalogue', () => {
       const tab = buildTemplatedTab(kind, 'brand', `tab-${kind}`, 'name');
       // The blanks are intentionally empty (docs/specs/007-editor/new-document-route.md): Blank Tab and Blank
       // Illustration are one empty page that asks what it is for, a blank of a page kind one empty page of its kind.
-      // Every other kind seeds content. Either way the switch must handle the union member.
-      const empty = isBlankTemplate(kind);
+      // Photo Edit is one unstarted photo page (docs/specs/031-photo/photo-pages.md). Every other kind seeds
+      // content. Either way the switch must handle the union member.
+      const empty = isBlankTemplate(kind) || kind === 'photo-edit';
       expect(tab.elements.length).toBeGreaterThan(empty ? -1 : 0);
     }
   });

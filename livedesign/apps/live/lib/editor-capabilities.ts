@@ -24,6 +24,10 @@ export type EditorCapabilities = {
   // Plan cards (add, edit, move) and Sheet cells.
   planCards: boolean;
   sheetCells: boolean;
+  // Photo pages (docs/specs/031-photo/photo-pages.md "Share roles"): every tool and layer change is an
+  // Editor's; a Participant may look closer (the read-only Layers tab, the Eyedropper, the info line).
+  photoEdit: boolean;
+  photoInspect: boolean;
 };
 
 const never = () => false;
@@ -50,6 +54,8 @@ export function resolveEditorCapabilities(input: {
       remove: always,
       planCards: true,
       sheetCells: true,
+      photoEdit: true,
+      photoInspect: true,
     };
   }
   if (level === 'view') {
@@ -64,6 +70,8 @@ export function resolveEditorCapabilities(input: {
       remove: never,
       planCards: false,
       sheetCells: false,
+      photoEdit: false,
+      photoInspect: false,
     };
   }
   const own = (el: Element) => addedByAdder(el, adderKey);
@@ -80,6 +88,8 @@ export function resolveEditorCapabilities(input: {
     remove: (el) => !isLocked(el) && own(el),
     planCards: true,
     sheetCells: true,
+    photoEdit: false,
+    photoInspect: true,
   };
 }
 

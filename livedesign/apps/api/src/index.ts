@@ -8,6 +8,7 @@ import { runTeamInviteSweep } from './email/team-invite-reminders';
 import { NOTIFY_EMAIL_DEDUPE_MS } from './email/notifications';
 import { runTimelineExpirySweep } from './timeline';
 import { runImageRetention } from './image-refs/retention';
+import { runPhotoSweep } from './photo-sweep';
 import {
   deleteOldEvents,
   deleteOldChangesets,
@@ -42,6 +43,7 @@ import { insertTelemetryEvents } from './db/telemetry';
 import { deleteOldDocumentOpens } from './db/document-opens';
 import { clientIp, clientNetwork, clientRateKey } from './client-ip';
 import { MAX_BODY_BYTES, MAX_IMAGE_BYTES } from './limits';
+import { PHOTO_BATCH_BYTES } from '@livedesign/photo-engine';
 import { handleAccount } from './routes/account';
 import { handleAi } from './routes/ai';
 import { handleCatalogues } from './routes/catalogues';
@@ -301,7 +303,11 @@ async function routeApiRequest(
     const len = Number(request.headers.get('content-length'));
     // Image uploads carry raw bytes with their own, larger cap (docs/specs/009-elements/images.md);
     // the route re-checks it and answers with file_too_large + limitBytes.
-    const cap = segments[1] === 'images' ? MAX_IMAGE_BYTES : MAX_BODY_BYTES;
+    // A photo blob batch has its own, larger cap (docs/specs/031-photo/photo-store.md "Limits").
+    const photoBatch =
+      segments[1] === 'documents' && segments.length === 6 && segments[5] === 'photo-blobs';
+    const cap =
+      segments[1] === 'images' ? MAX_IMAGE_BYTES : photoBatch ? PHOTO_BATCH_BYTES : MAX_BODY_BYTES;
     if (Number.isFinite(len) && len > cap) {
       return payloadTooLarge();
     }
@@ -585,6 +591,9 @@ const worker = {
       // docs/specs/009-elements/images.md "Retention": advance the reference-index backfill,
       // then reap unused images. runImageRetention logs its own outcome.
       ctx.waitUntil(runImageRetention(env, now));
+      // docs/specs/031-photo/photo-store.md "Retention": photo blobs no tab names any more. Logs its
+      // own outcome.
+      ctx.waitUntil(runPhotoSweep(env, now));
       // docs/specs/013-workspace/explorer-details-view.md "Counting the existing tabs": count the
       // tabs written before tab stats existed, a bounded number a run. Logs its own outcome.
       ctx.waitUntil(

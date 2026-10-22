@@ -247,6 +247,78 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "AdjustmentId": {
+    "enum": [
+      "brightness",
+      "levels",
+      "curves",
+      "exposure",
+      "vibrance",
+      "hue-saturation",
+      "colour-balance",
+      "white-balance",
+      "black-white",
+      "photo-filter",
+      "channel-mixer",
+      "selective-colour",
+      "gradient-map",
+      "invert",
+      "posterize",
+      "threshold",
+      "shadows-highlights",
+      "desaturate",
+      "equalize"
+    ],
+    "type": "string"
+  },
+  "AdjustmentLayer": {
+    "additionalProperties": false,
+    "properties": {
+      "adjustment": {
+        "$ref": "#/components/schemas/PhotoAdjustment"
+      },
+      "blend": {
+        "$ref": "#/components/schemas/BlendMode"
+      },
+      "clip": {
+        "const": true,
+        "type": "boolean"
+      },
+      "id": {
+        "type": "string"
+      },
+      "layerKind": {
+        "const": "adjustment",
+        "type": "string"
+      },
+      "locks": {
+        "$ref": "#/components/schemas/LayerLocks"
+      },
+      "mask": {
+        "$ref": "#/components/schemas/LayerMask"
+      },
+      "name": {
+        "type": "string"
+      },
+      "opacity": {
+        "type": "number"
+      },
+      "parent": {
+        "type": "string"
+      },
+      "visible": {
+        "const": false,
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "adjustment",
+      "id",
+      "layerKind",
+      "name"
+    ],
+    "type": "object"
+  },
   "AgentPresenceResult": {
     "additionalProperties": false,
     "properties": {
@@ -822,6 +894,43 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "BlendMode": {
+    "enum": [
+      "normal",
+      "dissolve",
+      "darken",
+      "multiply",
+      "colour-burn",
+      "linear-burn",
+      "darker-colour",
+      "lighten",
+      "screen",
+      "colour-dodge",
+      "linear-dodge",
+      "lighter-colour",
+      "overlay",
+      "soft-light",
+      "hard-light",
+      "vivid-light",
+      "linear-light",
+      "pin-light",
+      "hard-mix",
+      "difference",
+      "exclusion",
+      "subtract",
+      "divide",
+      "hue",
+      "saturation",
+      "colour",
+      "luminosity",
+      "pass-through"
+    ],
+    "type": "string"
+  },
+  "BlobId": {
+    "description": "A blob's name: the first 16 bytes of the SHA-256 of its bytes, base64url (22 characters).",
+    "type": "string"
+  },
   "BorderRadius": {
     "enum": [
       "none",
@@ -1286,6 +1395,22 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "parchment"
     ],
     "type": "string"
+  },
+  "ColourStop": {
+    "additionalProperties": false,
+    "properties": {
+      "at": {
+        "type": "number"
+      },
+      "colour": {
+        "$ref": "#/components/schemas/Hex"
+      }
+    },
+    "required": [
+      "at",
+      "colour"
+    ],
+    "type": "object"
   },
   "Comment": {
     "additionalProperties": false,
@@ -3272,6 +3397,61 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "FillLayer": {
+    "additionalProperties": false,
+    "properties": {
+      "blend": {
+        "$ref": "#/components/schemas/BlendMode"
+      },
+      "clip": {
+        "const": true,
+        "type": "boolean"
+      },
+      "fill": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/SolidFill"
+          },
+          {
+            "$ref": "#/components/schemas/GradientFill"
+          }
+        ]
+      },
+      "id": {
+        "type": "string"
+      },
+      "layerKind": {
+        "const": "fill",
+        "type": "string"
+      },
+      "locks": {
+        "$ref": "#/components/schemas/LayerLocks"
+      },
+      "mask": {
+        "$ref": "#/components/schemas/LayerMask"
+      },
+      "name": {
+        "type": "string"
+      },
+      "opacity": {
+        "type": "number"
+      },
+      "parent": {
+        "type": "string"
+      },
+      "visible": {
+        "const": false,
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "fill",
+      "id",
+      "layerKind",
+      "name"
+    ],
+    "type": "object"
+  },
   "FindField": {
     "enum": [
       "label",
@@ -3570,6 +3750,99 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "GlowEffect": {
+    "additionalProperties": false,
+    "properties": {
+      "colour": {
+        "$ref": "#/components/schemas/Hex"
+      },
+      "enabled": {
+        "const": false,
+        "type": "boolean"
+      },
+      "opacity": {
+        "type": "number"
+      },
+      "size": {
+        "type": "number"
+      },
+      "spread": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "colour",
+      "opacity",
+      "size",
+      "spread"
+    ],
+    "type": "object"
+  },
+  "Gradient": {
+    "additionalProperties": false,
+    "properties": {
+      "colours": {
+        "items": {
+          "$ref": "#/components/schemas/ColourStop"
+        },
+        "type": "array"
+      },
+      "opacities": {
+        "items": {
+          "$ref": "#/components/schemas/OpacityStop"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "colours",
+      "opacities"
+    ],
+    "type": "object"
+  },
+  "GradientFill": {
+    "additionalProperties": false,
+    "properties": {
+      "angle": {
+        "type": "number"
+      },
+      "gradient": {
+        "$ref": "#/components/schemas/Gradient"
+      },
+      "kind": {
+        "const": "gradient",
+        "type": "string"
+      },
+      "reverse": {
+        "const": true,
+        "type": "boolean"
+      },
+      "scale": {
+        "type": "number"
+      },
+      "style": {
+        "$ref": "#/components/schemas/GradientStyle"
+      }
+    },
+    "required": [
+      "kind",
+      "gradient",
+      "style",
+      "angle",
+      "scale"
+    ],
+    "type": "object"
+  },
+  "GradientStyle": {
+    "enum": [
+      "linear",
+      "radial",
+      "angle",
+      "reflected",
+      "diamond"
+    ],
+    "type": "string"
+  },
   "GraphView": {
     "additionalProperties": false,
     "properties": {
@@ -3624,6 +3897,54 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "GroupLayer": {
+    "additionalProperties": false,
+    "properties": {
+      "blend": {
+        "$ref": "#/components/schemas/BlendMode"
+      },
+      "clip": {
+        "const": true,
+        "type": "boolean"
+      },
+      "collapsed": {
+        "const": true,
+        "type": "boolean"
+      },
+      "id": {
+        "type": "string"
+      },
+      "layerKind": {
+        "const": "group",
+        "type": "string"
+      },
+      "locks": {
+        "$ref": "#/components/schemas/LayerLocks"
+      },
+      "mask": {
+        "$ref": "#/components/schemas/LayerMask"
+      },
+      "name": {
+        "type": "string"
+      },
+      "opacity": {
+        "type": "number"
+      },
+      "parent": {
+        "type": "string"
+      },
+      "visible": {
+        "const": false,
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "id",
+      "layerKind",
+      "name"
+    ],
+    "type": "object"
+  },
   "HeroCaption": {
     "additionalProperties": false,
     "properties": {
@@ -3639,6 +3960,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "subtitle"
     ],
     "type": "object"
+  },
+  "Hex": {
+    "description": "A colour as `#rrggbb`.",
+    "type": "string"
   },
   "HomeAction": {
     "additionalProperties": false,
@@ -4412,6 +4737,84 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "LayerEffects": {
+    "additionalProperties": false,
+    "properties": {
+      "glow": {
+        "$ref": "#/components/schemas/GlowEffect"
+      },
+      "overlay": {
+        "$ref": "#/components/schemas/OverlayEffect"
+      },
+      "shadow": {
+        "$ref": "#/components/schemas/ShadowEffect"
+      },
+      "stroke": {
+        "$ref": "#/components/schemas/StrokeEffect"
+      }
+    },
+    "type": "object"
+  },
+  "LayerLocks": {
+    "additionalProperties": false,
+    "properties": {
+      "all": {
+        "const": true,
+        "type": "boolean"
+      },
+      "pixels": {
+        "const": true,
+        "type": "boolean"
+      },
+      "position": {
+        "const": true,
+        "type": "boolean"
+      },
+      "transparency": {
+        "const": true,
+        "type": "boolean"
+      }
+    },
+    "type": "object"
+  },
+  "LayerMask": {
+    "additionalProperties": false,
+    "properties": {
+      "enabled": {
+        "const": false,
+        "type": "boolean"
+      },
+      "linked": {
+        "const": false,
+        "type": "boolean"
+      },
+      "offset": {
+        "$ref": "#/components/schemas/Point"
+      },
+      "pixels": {
+        "$ref": "#/components/schemas/LayerPixels"
+      }
+    },
+    "required": [
+      "pixels"
+    ],
+    "type": "object"
+  },
+  "LayerPixels": {
+    "additionalProperties": false,
+    "properties": {
+      "source": {
+        "$ref": "#/components/schemas/PixelSource"
+      },
+      "tiles": {
+        "$ref": "#/components/schemas/TileMap"
+      }
+    },
+    "required": [
+      "tiles"
+    ],
+    "type": "object"
+  },
   "LayoutView": {
     "additionalProperties": false,
     "properties": {
@@ -4870,6 +5273,22 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "OpacityStop": {
+    "additionalProperties": false,
+    "properties": {
+      "at": {
+        "type": "number"
+      },
+      "opacity": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "at",
+      "opacity"
+    ],
+    "type": "object"
+  },
   "OutlineNode": {
     "additionalProperties": false,
     "properties": {
@@ -4977,6 +5396,30 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "OverlayEffect": {
+    "additionalProperties": false,
+    "properties": {
+      "blend": {
+        "$ref": "#/components/schemas/BlendMode"
+      },
+      "colour": {
+        "$ref": "#/components/schemas/Hex"
+      },
+      "enabled": {
+        "const": false,
+        "type": "boolean"
+      },
+      "opacity": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "colour",
+      "opacity",
+      "blend"
+    ],
+    "type": "object"
+  },
   "OverviewTab": {
     "anyOf": [
       {
@@ -5039,6 +5482,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
                 "additionalProperties": false,
                 "properties": {
                   "logo": {
+                    "type": "number"
+                  },
+                  "photo": {
                     "type": "number"
                   },
                   "wireframe": {
@@ -5294,6 +5740,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "frameLook": {
             "$ref": "#/components/schemas/WireframeFrameLook"
           },
+          "height": {
+            "type": "number"
+          },
           "kind": {
             "$ref": "#/components/schemas/PageKind"
           },
@@ -5315,6 +5764,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           },
           "systemBars": {
             "type": "boolean"
+          },
+          "width": {
+            "type": "number"
           }
         },
         "required": [
@@ -5588,7 +6040,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "PageKind": {
     "enum": [
       "logo",
-      "wireframe"
+      "wireframe",
+      "photo"
     ],
     "type": "string"
   },
@@ -5687,6 +6140,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "a4",
       "logo",
       "device",
+      "photo",
       "fit"
     ],
     "type": "string"
@@ -6236,6 +6690,72 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     ]
   },
+  "Photo": {
+    "additionalProperties": false,
+    "properties": {
+      "height": {
+        "type": "number"
+      },
+      "layers": {
+        "items": {
+          "$ref": "#/components/schemas/PhotoLayer"
+        },
+        "type": "array"
+      },
+      "preview": {
+        "$ref": "#/components/schemas/BlobId"
+      },
+      "rev": {
+        "type": "number"
+      },
+      "width": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "width",
+      "height",
+      "layers"
+    ],
+    "type": "object"
+  },
+  "PhotoAdjustment": {
+    "additionalProperties": false,
+    "description": "An adjustment and its settings; the settings' shape is the catalogue's (adjust/catalogue.ts).",
+    "properties": {
+      "id": {
+        "$ref": "#/components/schemas/AdjustmentId"
+      },
+      "params": {
+        "additionalProperties": {},
+        "type": "object"
+      }
+    },
+    "required": [
+      "id",
+      "params"
+    ],
+    "type": "object"
+  },
+  "PhotoLayer": {
+    "anyOf": [
+      {
+        "$ref": "#/components/schemas/PixelLayer"
+      },
+      {
+        "$ref": "#/components/schemas/AdjustmentLayer"
+      },
+      {
+        "$ref": "#/components/schemas/FillLayer"
+      },
+      {
+        "$ref": "#/components/schemas/TextLayer"
+      },
+      {
+        "$ref": "#/components/schemas/GroupLayer"
+      }
+    ]
+  },
   "PieAnim": {
     "enum": [
       "grow",
@@ -6261,6 +6781,97 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "required": [
       "label",
       "value"
+    ],
+    "type": "object"
+  },
+  "PixelLayer": {
+    "additionalProperties": false,
+    "properties": {
+      "blend": {
+        "$ref": "#/components/schemas/BlendMode"
+      },
+      "clip": {
+        "const": true,
+        "type": "boolean"
+      },
+      "effects": {
+        "$ref": "#/components/schemas/LayerEffects"
+      },
+      "id": {
+        "type": "string"
+      },
+      "layerKind": {
+        "const": "pixel",
+        "type": "string"
+      },
+      "locks": {
+        "$ref": "#/components/schemas/LayerLocks"
+      },
+      "mask": {
+        "$ref": "#/components/schemas/LayerMask"
+      },
+      "name": {
+        "type": "string"
+      },
+      "offset": {
+        "$ref": "#/components/schemas/Point"
+      },
+      "opacity": {
+        "type": "number"
+      },
+      "parent": {
+        "type": "string"
+      },
+      "pixels": {
+        "$ref": "#/components/schemas/LayerPixels"
+      },
+      "visible": {
+        "const": false,
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "id",
+      "layerKind",
+      "name",
+      "pixels"
+    ],
+    "type": "object"
+  },
+  "PixelSource": {
+    "additionalProperties": false,
+    "description": "A whole picture under a layer's tiles (the picture a photo was opened from).",
+    "properties": {
+      "blob": {
+        "$ref": "#/components/schemas/BlobId"
+      },
+      "height": {
+        "type": "number"
+      },
+      "width": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "blob",
+      "width",
+      "height"
+    ],
+    "type": "object"
+  },
+  "Point": {
+    "additionalProperties": false,
+    "properties": {
+      "x": {
+        "type": "number"
+      },
+      "y": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "x",
+      "y"
     ],
     "type": "object"
   },
@@ -6769,6 +7380,42 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "none"
     ],
     "type": "string"
+  },
+  "ShadowEffect": {
+    "additionalProperties": false,
+    "properties": {
+      "angle": {
+        "type": "number"
+      },
+      "colour": {
+        "$ref": "#/components/schemas/Hex"
+      },
+      "distance": {
+        "type": "number"
+      },
+      "enabled": {
+        "const": false,
+        "type": "boolean"
+      },
+      "opacity": {
+        "type": "number"
+      },
+      "size": {
+        "type": "number"
+      },
+      "spread": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "colour",
+      "opacity",
+      "angle",
+      "distance",
+      "size",
+      "spread"
+    ],
+    "type": "object"
   },
   "ShapeAnimation": {
     "enum": [
@@ -7604,6 +8251,23 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "SolidFill": {
+    "additionalProperties": false,
+    "properties": {
+      "colour": {
+        "$ref": "#/components/schemas/Hex"
+      },
+      "kind": {
+        "const": "solid",
+        "type": "string"
+      }
+    },
+    "required": [
+      "kind",
+      "colour"
+    ],
+    "type": "object"
+  },
   "StackAlign": {
     "enum": [
       "start",
@@ -7798,6 +8462,35 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "StrokeEffect": {
+    "additionalProperties": false,
+    "properties": {
+      "colour": {
+        "$ref": "#/components/schemas/Hex"
+      },
+      "enabled": {
+        "const": false,
+        "type": "boolean"
+      },
+      "position": {
+        "enum": [
+          "outside",
+          "inside",
+          "centre"
+        ],
+        "type": "string"
+      },
+      "size": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "colour",
+      "size",
+      "position"
+    ],
+    "type": "object"
+  },
   "Tab": {
     "additionalProperties": false,
     "properties": {
@@ -7872,6 +8565,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "patternColor": {
         "type": "string"
+      },
+      "photos": {
+        "additionalProperties": {
+          "$ref": "#/components/schemas/Photo"
+        },
+        "type": "object"
       },
       "tagColours": {
         "items": {
@@ -7980,6 +8679,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "patternColor": {
         "type": "string"
+      },
+      "photos": {
+        "additionalProperties": {
+          "$ref": "#/components/schemas/Photo"
+        },
+        "type": "object"
       },
       "rev": {
         "type": "number"
@@ -8852,6 +9557,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "TextAlign": {
+    "enum": [
+      "left",
+      "centre",
+      "right"
+    ],
+    "type": "string"
+  },
   "TextAlignX": {
     "enum": [
       "left",
@@ -9058,6 +9771,57 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "TextLayer": {
+    "additionalProperties": false,
+    "properties": {
+      "blend": {
+        "$ref": "#/components/schemas/BlendMode"
+      },
+      "clip": {
+        "const": true,
+        "type": "boolean"
+      },
+      "effects": {
+        "$ref": "#/components/schemas/LayerEffects"
+      },
+      "id": {
+        "type": "string"
+      },
+      "layerKind": {
+        "const": "text",
+        "type": "string"
+      },
+      "locks": {
+        "$ref": "#/components/schemas/LayerLocks"
+      },
+      "mask": {
+        "$ref": "#/components/schemas/LayerMask"
+      },
+      "name": {
+        "type": "string"
+      },
+      "opacity": {
+        "type": "number"
+      },
+      "parent": {
+        "type": "string"
+      },
+      "text": {
+        "$ref": "#/components/schemas/TextSpec"
+      },
+      "visible": {
+        "const": false,
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "id",
+      "layerKind",
+      "name",
+      "text"
+    ],
+    "type": "object"
+  },
   "TextRun": {
     "additionalProperties": false,
     "properties": {
@@ -9122,6 +9886,70 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "wrap"
     ],
     "type": "string"
+  },
+  "TextSpec": {
+    "additionalProperties": false,
+    "properties": {
+      "align": {
+        "$ref": "#/components/schemas/TextAlign"
+      },
+      "at": {
+        "$ref": "#/components/schemas/Point"
+      },
+      "boxWidth": {
+        "type": "number"
+      },
+      "colour": {
+        "$ref": "#/components/schemas/Hex"
+      },
+      "font": {
+        "type": "string"
+      },
+      "italic": {
+        "const": true,
+        "type": "boolean"
+      },
+      "lineHeight": {
+        "type": "number"
+      },
+      "size": {
+        "type": "number"
+      },
+      "text": {
+        "type": "string"
+      },
+      "tracking": {
+        "type": "number"
+      },
+      "weight": {
+        "enum": [
+          400,
+          500,
+          700
+        ],
+        "type": "number"
+      }
+    },
+    "required": [
+      "text",
+      "font",
+      "size",
+      "weight",
+      "colour",
+      "align",
+      "at"
+    ],
+    "type": "object"
+  },
+  "TileMap": {
+    "additionalProperties": {
+      "$ref": "#/components/schemas/BlobId"
+    },
+    "description": "A layer's or a mask's tiles by place; an empty string is a cleared tile (transparent; a mask's black).",
+    "propertyNames": {
+      "description": "A tile's place in its layer: `\"col.row\"`, each counted in tiles from the layer's origin."
+    },
+    "type": "object"
   },
   "TimelineEvent": {
     "additionalProperties": false,
@@ -9547,6 +10375,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "additionalProperties": false,
             "properties": {
               "logo": {
+                "type": "number"
+              },
+              "photo": {
                 "type": "number"
               },
               "wireframe": {

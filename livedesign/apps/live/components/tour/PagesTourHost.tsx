@@ -39,6 +39,7 @@ export function pagesTourStepTelemetryType(kind: PageKind, stepId: string): stri
 const EYEBROW: Record<PageKind, string> = {
   logo: 'Logo tour',
   wireframe: 'Wireframe tour',
+  photo: 'Photo tour',
 };
 
 // Orchestrates the Pages tour (docs/specs/007-editor/pages-tour.md). Mounted once in EditorView beside

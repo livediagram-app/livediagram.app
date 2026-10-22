@@ -6,6 +6,7 @@ import { pageKindOf, WIREFRAME_DEVICES, type Page, type PageKind } from '@livede
 const KIND_NOUN: Record<PageKind, string> = {
   logo: 'Logo Page',
   wireframe: 'Screen',
+  photo: 'Photo Page',
 };
 
 /** The page a press of the + adds, in words: its kind, a wireframe page's device with it. */

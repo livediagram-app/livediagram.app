@@ -46,6 +46,12 @@ const OWN_GROUPS: Readonly<Record<EditorMode, readonly OwnGroup[]>> = {
       kinds: ['blank-logo', 'logo-design'],
     },
     {
+      id: 'photos',
+      name: 'Photos',
+      line: 'A picture to edit: layers, brushes, adjustments and filters.',
+      kinds: ['photo-edit'],
+    },
+    {
       id: 'wireframes',
       name: 'Wireframes',
       line: 'Screens in their device: a phone, a tablet, a laptop, a browser or a watch.',

@@ -38,17 +38,22 @@ describe('the Pages template start', () => {
 });
 
 describe('Start Making Pages', () => {
-  it('groups by what is made: Logos, Wireframes', () => {
+  it('groups by what is made: Logos, Photos, Wireframes', () => {
     expect(TEMPLATE_STARTS.pages.groups.map((g) => g.name)).toEqual([
       'Recommended',
       'Logos',
+      'Photos',
       'Wireframes',
     ]);
   });
 
-  it('leads Logos and Wireframes with their blank of a page kind', () => {
+  it('leads each group with its page kind: Blank Logo, Photo Edit, a blank wireframe', () => {
     const first = Object.fromEntries(TEMPLATE_STARTS.pages.groups.map((g) => [g.id, g.kinds[0]]));
-    expect(first).toMatchObject({ logos: 'blank-logo', wireframes: 'blank-wireframe-phone' });
+    expect(first).toMatchObject({
+      logos: 'blank-logo',
+      photos: 'photo-edit',
+      wireframes: 'blank-wireframe-phone',
+    });
     // Blank Logo stays in its group alone.
     expect(TEMPLATE_STARTS.pages.groups[0]!.kinds).not.toContain('blank-logo');
     expect(TEMPLATE_STARTS.pages.groups.filter((g) => g.kinds.includes('blank-logo'))).toHaveLength(

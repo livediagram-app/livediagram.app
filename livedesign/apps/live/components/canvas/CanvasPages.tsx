@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useRef, useState, type CSSProperties } from 'react';
+import dynamic from 'next/dynamic';
 import { lucidePanelsTopLeft, lucideSettings } from '@livedesign/icons/lucide';
 import { FirstPageChoice } from './FirstPageChoice';
 import { layoutCardShows, layoutInviteShows, type LayoutCardContext } from './page-layout-card';
@@ -69,6 +70,12 @@ const steady = (zoom: number, origin: string): CSSProperties => ({
   transform: `scale(${1 / zoom})`,
   transformOrigin: origin,
 });
+
+// A photo page's menus: the photo editor's code, fetched only for a tab with a photo page.
+const PhotoTitleBar = dynamic(
+  () => import('@/components/photo/PhotoTitleBar').then((m) => m.PhotoTitleBar),
+  { ssr: false },
+);
 
 // Pages mode's pages (docs/specs/007-editor/pages-mode.md): sheets in a row, painted
 // in canvas space under every element so they pan and zoom with them, on the tab's own canvas,
@@ -178,8 +185,10 @@ export function CanvasPages({
     <>
       {pages.map((page) => {
         const background = previewedBackground(page, preview);
-        // No "Page n": the page navigator under the page says which it is.
-        const label = pageLabel(page, page.index, 1);
+        // No "Page n": the page navigator under the page says which it is. A photo page names its
+        // pixel size (docs/specs/031-photo/photo-pages.md "A photo page").
+        const photoSize = page.kind === 'photo' ? view.photo?.photos[page.id] : undefined;
+        const label = pageLabel(page, page.index, 1, photoSize);
         // The label fits the page's on-screen width, less the title bar's buttons; too narrow, it
         // hides. The title bar's room on screen: the page's width at this zoom. The cog takes its
         // corner; an empty logo page's layout invite sits beside it, with its words while there is
@@ -208,6 +217,8 @@ export function CanvasPages({
         // Add Notes beside it once the deck has a slide of the page (PageNotesButton).
         const notesButton = deckButton && !!view.deck!.slideOf(page.id);
         const logoButtons = !!edit && page.kind === 'logo' && !!view.logo;
+        // A photo page's Image, Select and Filter menus (PhotoTitleBar), for someone who may edit it.
+        const photoButtons = !!edit && !locked && page.kind === 'photo' && !!view.photo?.canEdit;
         // The title bar's fixed buttons (the cog, the lock, the deck button, a logo page's own and
         // a wireframe page's): the invite and the label share what they leave.
         const buttons = {
@@ -216,6 +227,7 @@ export function CanvasPages({
           deck: deckButton,
           notes: notesButton,
           logo: logoButtons,
+          photo: photoButtons,
           page: pageButtons,
           device: deviceButton,
         };
@@ -348,6 +360,10 @@ export function CanvasPages({
                 {/* A logo page's Tidy Up, Mirror and Guides (LogoTitleBar). */}
                 {logoButtons && view.logo ? (
                   <LogoTitleBar pageId={page.id} tools={view.logo} labelled={labelled} />
+                ) : null}
+                {/* A photo page's Image, Select and Filter menus (PhotoTitleBar). */}
+                {photoButtons && view.photo ? (
+                  <PhotoTitleBar pageId={page.id} photo={view.photo} labelled={labelled} />
                 ) : null}
                 {/* First, left of Layout and Background: this slide's place in the deck, and its
                     notes once it is in it. */}

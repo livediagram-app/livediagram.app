@@ -135,6 +135,21 @@ export function ElementContentSections({
           ) : null}
         </MenuAccordionSection>
       ) : null}
+      {/* Photo: the element painted into the photo it sits on (docs/specs/031-photo/photo-pages.md). */}
+      {props.onRasterizeIntoLayer ? (
+        <MenuAccordionSection title="Photo" icon={<ImageGlyph />} {...sectionProps('photo')}>
+          <div className="px-2 py-1.5">
+            <MenuTile
+              icon={<ImageGlyph />}
+              label="Rasterize Into Layer"
+              onClick={() => {
+                props.onRasterizeIntoLayer!(target.id);
+                onClose();
+              }}
+            />
+          </div>
+        </MenuAccordionSection>
+      ) : null}
       {/* Image — pick / change / clear the bitmap (docs/specs/009-elements/images.md). */}
       {target.type === 'image' ? (
         <MenuAccordionSection title="Image" icon={<ImageGlyph />} {...sectionProps('image')}>
@@ -156,6 +171,19 @@ export function ElementContentSections({
                   onClose();
                 }}
               />
+              {props.onEditAsPhoto && target.imageId ? (
+                <MenuTile
+                  icon={<ImageGlyph />}
+                  label="Edit as Photo"
+                  onClick={() => {
+                    props.onEditAsPhoto!(target.imageId!, {
+                      x: target.x + target.width / 2,
+                      y: target.y + target.height / 2,
+                    });
+                    onClose();
+                  }}
+                />
+              ) : null}
             </MenuTileGrid>
           ) : (
             <div className="px-2 py-1.5">

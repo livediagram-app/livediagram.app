@@ -98,8 +98,10 @@ const pageChange = z
       .object({
         op: z.literal('add').describe('Add a page.'),
         kind: z
-          .enum(['logo', 'wireframe'])
-          .describe('What the page is for (wireframe: a screen framed as a device).'),
+          .enum(['logo', 'wireframe', 'photo'])
+          .describe(
+            'What the page is for (wireframe: a screen framed as a device; photo: an empty picture, edited in the editor).',
+          ),
         size: size.optional(),
         orientation: orientation.optional(),
         name: name.optional(),
@@ -109,6 +111,20 @@ const pageChange = z
         device: device.optional(),
         frameLook: frameLook.optional(),
         systemBars: systemBars.optional(),
+        width: z
+          .number()
+          .int()
+          .min(1)
+          .max(8192)
+          .optional()
+          .describe('A photo page’s width in px (default 1920).'),
+        height: z
+          .number()
+          .int()
+          .min(1)
+          .max(8192)
+          .optional()
+          .describe('A photo page’s height in px (default 1080).'),
       })
       .describe('A new page; on a fresh tab its empty first page becomes it.'),
     z
@@ -175,7 +191,7 @@ const pageOut = z
     kind: z
       .string()
       .nullable()
-      .describe('logo or wireframe; null for a blank page whose kind is not chosen yet.'),
+      .describe('logo, wireframe or photo; null for a blank page whose kind is not chosen yet.'),
     size: z.string().describe('Its size id.'),
     orientation: z.string().nullable().describe('portrait, landscape, or null for none.'),
     rect: canvasRect.describe(

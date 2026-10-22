@@ -35,6 +35,7 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
     case 'blank-wireframe-browser':
     case 'blank-wireframe-laptop':
     case 'blank-wireframe-watch':
+    case 'photo-edit':
       return [];
     case 'wireframe-mobile-app':
     case 'wireframe-website':

@@ -124,6 +124,21 @@ the place it lives (the Explorer's This Browser section, beside My Work and the 
 mark it, and where a new guest's documents start. A document is **in This Browser**; it is never "Local Only",
 "Local Browser" or "offline" in copy. "Offline Mode" stays the name of the feature, and code may say `offline`.
 
+## Photo pages
+
+A **photo page** is a page of kind `photo`, never a mode, a tab kind or a template ([Photo pages](../031-photo/photo-pages.md)
+"Domain language" holds the full table). Its words, kept apart from the canvas's:
+
+- A **photo** is a photo page's picture: its pixel size and its layer stack. A **picture** is a file brought in (opened,
+  dropped, pasted); an **image** is the canvas's image element. **Edit as Photo** turns an image into a photo page.
+- A **layer** of a photo is one entry of its stack (pixel, adjustment, fill, text or group). The canvas's own
+  [layers](../006-document/layers.md) are its element layers; where both could be meant, say **photo layer**.
+- A **selection** on a photo is a soft mask of its pixels, each person's own; selecting elements on the canvas stays a
+  **selection of elements**.
+- **Composite** is the layers drawn together; it is never called "flattened" except by **Flatten Image**, which makes
+  it the one layer.
+- In code the editor's side is `photo-editor` and the pure engine `photo-engine`.
+
 ## Names in a sentence
 
 Copy that builds a phrase around a name (a page kind, a template, a chart type, an element type in an agent's

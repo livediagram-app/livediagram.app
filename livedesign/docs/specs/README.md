@@ -31,6 +31,7 @@ Specs live in numbered category folders: the reserved `001`–`005` first (visio
 - ./023-draw-mode/README.md - when working on the drawing tools logo pages use: the markers, shape recognition while drawing, and the Pen (the Path tool)
 - ./024-agents/README.md - when an agent reads, writes or comments on documents: changesets, presence, views, edit operations, lint
 - ./028-animation/README.md - when working on element animations: the animation set each element takes (Shape, Text, Sticky, Drawing, Media, Table), the per-set menu categories, reveals, loops and the quality bar
+- ./031-photo/README.md - when working on photo pages: the layer stack, the photo tools, adjustments and filters, and the photo blob store
 
 ## Workflow
 

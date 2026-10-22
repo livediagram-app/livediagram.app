@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { parsePositiveCap } from './routes/images';
+import { parsePositiveCap } from './limits';
 
 // The hosted profile (docs/specs/016-platform/deployment.md "Hosted profile"):
 // the vars livedesign.app's deploys add, and a fork's do not. Two promises
@@ -67,6 +67,7 @@ describe('hosted profile', () => {
     // unguarded while this file looked right.
     expect(parsePositiveCap(vars.IMAGE_MAX_PER_OWNER)).toBe(100);
     expect(parsePositiveCap(vars.IMAGE_MAX_BYTES_PER_OWNER)).toBe(100 * 1024 * 1024);
+    expect(parsePositiveCap(vars.PHOTO_MAX_BYTES_PER_TAB)).toBe(512 * 1024 * 1024);
   });
 
   it('names only vars the worker reads', async () => {

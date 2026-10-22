@@ -24,6 +24,7 @@
     "@livedesign/document-views": "workspace:*",
     "@livedesign/edit-operations": "workspace:*",
     "@livedesign/icons": "workspace:*",
+    "@livedesign/photo-engine": "workspace:*",
     "@livedesign/render-png": "workspace:*",
     "@livedesign/templates": "workspace:*",
     "jose": "^6.2.12"

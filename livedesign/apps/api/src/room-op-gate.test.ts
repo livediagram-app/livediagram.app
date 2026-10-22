@@ -23,6 +23,15 @@ describe('gateClientOp', () => {
     expect(gateClientOp({ kind: 'tab', tabId: 't' }, as('admin'))).toEqual(DROP);
   });
 
+  it('relays a photo page\'s layer changes from an editor alone (docs/specs/031-photo/photo-pages.md "Share roles")', () => {
+    const op = { kind: 'photo', tabId: 't', pageId: 'p', ops: [] };
+    expect(gateClientOp(op, as('edit'))).toEqual(relay(false));
+    expect(gateClientOp(op, as('participate'))).toEqual(DROP);
+    expect(gateClientOp(op, as('view'))).toEqual(DROP);
+    expect(gateClientOp(op, as('edit', { tabScope: 'other' }))).toEqual(DROP);
+    expect(gateClientOp(op, as('edit', { tabScope: 't' }))).toEqual(relay(false));
+  });
+
   it("routes a participant's element op through the content rule, and drops its other mutations", () => {
     expect(gateClientOp({ kind: 'el', tabId: 't' }, as('participate'))).toEqual({
       kind: 'participant-content',

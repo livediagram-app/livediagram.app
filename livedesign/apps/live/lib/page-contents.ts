@@ -32,6 +32,7 @@ export const CONTENTS_FIND_AFTER = 6;
 const KIND_NAME = {
   logo: 'Logo',
   wireframe: 'Wireframe',
+  photo: 'Photo',
 } as const;
 
 export function contentsRows(pages: readonly LaidOutPage[]): ContentsRow[] {

@@ -75,6 +75,9 @@ export type Env = {
   // api worker: when unbound, the image endpoints all return 503
   // and the live app hides the Image palette entry.
   IMAGES?: R2Bucket;
+  // R2 bucket holding photo pages' blobs (docs/specs/031-photo/photo-store.md "The photo blob store"),
+  // apart from IMAGES. Unbound, every photo blob route answers 503 photos_unavailable.
+  PHOTO_BLOBS?: R2Bucket;
   // Cloudflare Workers Rate Limiting API binding. Caps per-owner
   // writes (POST / PUT / DELETE) at the configured limit/period in
   // wrangler.toml. Optional so self-host deployments without the
@@ -193,4 +196,8 @@ export type Env = {
   // Unset or non-positive = no limit. Hosted livedesign.app sets
   // this to "104857600" (100 MB).
   IMAGE_MAX_BYTES_PER_OWNER?: string;
+  // The most bytes of photo blobs one tab may hold (docs/specs/031-photo/photo-store.md "Limits").
+  // Unset, blank or non-positive = no limit (the self-host default). Hosted livedesign.app sets
+  // "536870912" (512 MB).
+  PHOTO_MAX_BYTES_PER_TAB?: string;
 };

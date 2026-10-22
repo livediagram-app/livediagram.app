@@ -158,7 +158,7 @@ export function SettingsDialog({
     track('UI', 'Opened', `Settings${id.charAt(0).toUpperCase()}${id.slice(1)}`);
   };
 
-  // Tours › "Wireframe Tour" and "Logo Tour" (docs/specs/007-editor/pages-tour.md): no handoff flag to arm, as the
+  // Tours › "Wireframe Tour", "Logo Tour" and "Photo Tour" (docs/specs/007-editor/pages-tour.md): no handoff flag to arm, as the
   // Pages tour offers itself on working with each kind of page; turning a kind's row on from off reruns it in place.
   const pagesOwed = PAGES_TOUR_KINDS.filter((k) => !pagesKindSeen(settings, k));
   const pagesOwedAtOpen = useRef(pagesOwed);

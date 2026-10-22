@@ -92,6 +92,7 @@ export const HELP_ARTICLES = {
   templates: 'canvas/templates',
   logoPages: 'pages/logo-pages',
   wireframePages: 'pages/wireframe-pages',
+  photoPages: 'pages/photo-pages',
   // Each page kind's Show Me links its own article (docs/specs/007-editor/pages-tour.md).
   keyboardShortcuts: 'tips-and-tricks/keyboard-shortcuts',
   guestVsAccount: 'getting-started/guest-vs-account',
@@ -329,6 +330,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   wireframePages: {
     title: 'Learn about wireframe pages',
     description: 'Device frames, ready-made screens, the Elements palette and mockup export.',
+  },
+  photoPages: {
+    title: 'Learn about photo pages',
+    description: 'Layers, brushes, selections, adjustments, filters and photo export.',
   },
 
   livePresence: {

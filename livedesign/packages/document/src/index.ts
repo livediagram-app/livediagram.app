@@ -11,6 +11,7 @@ import { isSelfDrawingShape } from './data-shapes';
 import type { TabKind } from './tab-kind';
 import type { EditorMode } from './editor-mode';
 import type { Page, PageOrientation } from './page';
+import type { Photo } from '@livedesign/photo-engine';
 
 // Layer type used by the `Tab.layers` field below (docs/specs/006-document/layers.md). Type-only
 // import (erased at build) so the index <-> layers circular reference is fine; the runtime layer
@@ -332,6 +333,10 @@ export type Tab = {
   // in row order, each portrait or landscape, that everyone lays the tab out on. Absent = one page
   // (read via `pagesOf`).
   pages?: Page[];
+  // The pictures of the tab's photo pages, by page id (docs/specs/031-photo/photo-store.md): each
+  // photo's size and layer stack, its pixels named by blob id. Read via `photosOf`; synced layer by
+  // layer (the `photo` room op), never in a `tab-meta` patch.
+  photos?: Record<string, Photo>;
   // Legacy: a single page's orientation, from before multiple pages. Read as one page when `pages`
   // is absent; dropped the first time the pages change (`withPages`).
   pageOrientation?: PageOrientation;
@@ -448,6 +453,7 @@ export * from './page-units';
 export * from './page-paint';
 export * from './page-default-background';
 export * from './pages-edits';
+export * from './photo-pages';
 export * from './pages-background-copy';
 export * from './tab-window';
 export * from './tab-has-drawing';

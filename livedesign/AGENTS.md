@@ -211,6 +211,7 @@ packages/
   help-registry/  # help-centre article/category registry + keywords (help app + editor search)
   explorer-lens/  # the Explorer filter lens: parse, match and autocomplete filter tokens (pure)
   page-background/ # a page background's colours, patterns and motions + their parser (pure)
+  photo-engine/   # photo pages: the layer model + the pixel engine (composite, adjustments, filters, selections, paint, PSD) (pure)
   document-views/ # read-only text views of a tab (outline, pages, layout, ...) for agents and scripts
   api-schema/     # wire-format DTOs the api worker emits + the live editor consumes
   api-client/     # the api client the MCP server and the CLI share (fetch, timeouts, ApiError)

@@ -152,9 +152,56 @@ function LogoTourArt() {
   );
 }
 
+/** Photo: a picture with a brush stroke painting across it and a layer lifting off it. */
+function PhotoTourArt() {
+  return (
+    <TourArtFrame css={PHOTO_CSS}>
+      <rect x="92" y="8" width="120" height="88" rx="3" className={ART.paper} strokeWidth="1.5" />
+      <path
+        d="M96 84 L128 52 L148 70 L166 56 L208 88 Z"
+        className="fill-brand-300/70 dark:fill-brand-500/50"
+      />
+      <circle cx="184" cy="30" r="8" className="fill-amber-300/90 dark:fill-amber-400/80" />
+      <rect
+        x="104"
+        y="18"
+        width="48"
+        height="34"
+        rx="2"
+        className="tour-art-el photo-art-layer fill-sky-400/70 dark:fill-sky-500/70"
+      />
+      <path
+        d="M100 40 C130 28 150 60 200 44"
+        strokeWidth="5"
+        strokeLinecap="round"
+        fill="none"
+        className="tour-art-el photo-art-stroke stroke-brand-600 dark:stroke-brand-400"
+        pathLength="1"
+      />
+    </TourArtFrame>
+  );
+}
+
+const PHOTO_CSS = `
+  @keyframes photo-art-stroke {
+    0%, 15% { stroke-dashoffset: 1; }
+    55%, 100% { stroke-dashoffset: 0; }
+  }
+  @keyframes photo-art-layer {
+    0%, 40% { transform: translate(0, 0); }
+    70%, 100% { transform: translate(6px, -6px); }
+  }
+  .photo-art-stroke { stroke-dasharray: 1; animation: photo-art-stroke 4.6s ease-in-out infinite; }
+  .photo-art-layer { animation: photo-art-layer 4.6s ease-in-out infinite; }
+  @media (prefers-reduced-motion: reduce) {
+    .photo-art-stroke, .photo-art-layer { animation: none; stroke-dashoffset: 0; }
+  }
+`;
+
 const BY_KIND: Record<PageKind, () => ReactNode> = {
   logo: LogoTourArt,
   wireframe: LayoutTourArt,
+  photo: PhotoTourArt,
 };
 
 /** The welcome card's hero for a page kind's track. */

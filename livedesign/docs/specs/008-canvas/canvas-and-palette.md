@@ -594,6 +594,7 @@ Every template opens on pages of its own. `templateCanvasOverrides(kind)` ships 
 | --------------- | ------------------------------------------------------------------------------------------------------------------------ |
 | Logo design     | Logo pages, one per lockup (the App Icon on Crema), then the Palette.                                                    |
 | Wireframe flows | One wireframe page per screen of the flow (mobile app, website, dashboard, tablet app, watch app), at its device's size. |
+| Photo edit      | One unstarted photo page, showing its Start a Photo card ([Photo pages](../031-photo/photo-pages.md)).                   |
 
 ## Modifier hint banner
 

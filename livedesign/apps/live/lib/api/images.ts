@@ -149,6 +149,17 @@ export async function apiFetchImageDataUrl(
   return blobToDataUrl(await res.blob());
 }
 
+// The original bytes of one image (a photo page opens a picture whole, docs/specs/031-photo/
+// photo-pages.md "Making a photo page"), or null on any non-ok status.
+export async function apiFetchImageBlob(
+  ownerId: string,
+  imageId: string,
+  opts: { documentId?: string; shareCode?: string | null } = {},
+): Promise<Blob | null> {
+  const res = await fetchImage(ownerId, imageId, opts);
+  return res ? res.blob() : null;
+}
+
 // Shared authenticated GET for one image's bytes. Returns the ok Response, or
 // null on any non-ok status (the callers map that to a broken / placeholder
 // state). Native `<img src>` can't send auth headers, so every read goes

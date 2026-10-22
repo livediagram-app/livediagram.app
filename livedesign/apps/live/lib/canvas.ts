@@ -176,6 +176,27 @@ export const ARROW_SNAP_THRESHOLD_PX = 12;
 export const ZOOM_MIN = 0.1;
 export const ZOOM_MAX = 5;
 
+// While a photo page is in focus the ceiling rises (docs/specs/031-photo/photo-pages.md "Navigating"):
+// its sheet can be a quarter of its pixels across, so ZOOM_MAX alone could leave a photo pixel under two
+// screen px. Raised to what puts PHOTO_PIXEL_ZOOM_MAX screen px on a photo px, by the photo editor.
+export const PHOTO_PIXEL_ZOOM_MAX = 32;
+let raisedCeiling: number | null = null;
+
+/** How far the canvas may zoom in now. */
+export function zoomMax(): number {
+  return raisedCeiling === null ? ZOOM_MAX : Math.max(ZOOM_MAX, raisedCeiling);
+}
+
+/** Whether a photo page has raised the ceiling (Alt and the wheel zoom there too). */
+export function zoomCeilingRaised(): boolean {
+  return raisedCeiling !== null;
+}
+
+/** The ceiling raised (a photo page in focus), or back to ZOOM_MAX with null. */
+export function raiseZoomCeiling(next: number | null): void {
+  raisedCeiling = next;
+}
+
 // Discriminated union covering every in-flight drag the canvas can be
 // holding. Each variant carries the start-of-gesture state the
 // pointer-move handler needs to project the current cursor delta into

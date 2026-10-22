@@ -3,7 +3,7 @@
 import type { ViewportStore } from '@/lib/viewport-store';
 import { useEffect, useRef, type RefObject } from 'react';
 import { clamp } from '@livedesign/document';
-import { ZOOM_MIN, ZOOM_MAX } from '@/lib/canvas';
+import { ZOOM_MIN, zoomCeilingRaised, zoomMax } from '@/lib/canvas';
 import { WHEEL_SETTLE_MS, beginCanvasGesture } from '@/lib/canvas-gesture';
 import { useLatest } from '@/hooks/ui/useLatest';
 
@@ -84,7 +84,7 @@ export function useCanvasPinchZoom(deps: Deps): Api {
       fromZoom: number,
       fromOffset: { x: number; y: number },
     ) => {
-      const clamped = clamp(newZoom, ZOOM_MIN, ZOOM_MAX);
+      const clamped = clamp(newZoom, ZOOM_MIN, zoomMax());
       const { wCX, wCY } = wrapperCenter();
       const k = 1 / clamped - 1 / fromZoom;
       // One change of the view: zoom and offset together.
@@ -142,7 +142,7 @@ export function useCanvasPinchZoom(deps: Deps): Api {
       const at = pendingPinch;
       pendingPinch = null;
       if (!pinch || !at) return;
-      const zoom = clamp(pinch.startZoom * (at.dist / pinch.startDist), ZOOM_MIN, ZOOM_MAX);
+      const zoom = clamp(pinch.startZoom * (at.dist / pinch.startDist), ZOOM_MIN, zoomMax());
       depsRef.current.viewport.setView({
         zoom,
         offset: pinchOffset(pinch, zoom, at.midX, at.midY),
@@ -216,13 +216,14 @@ export function useCanvasPinchZoom(deps: Deps): Api {
       // Ctrl covers trackpad pinch (synthesised ctrlKey) and the Windows /
       // Linux zoom modifier; Cmd (metaKey) is the Mac mouse-wheel modifier. Checked before the scrollable
       // bail below: a Ctrl or Cmd wheel never scrolls an element, so it zooms the canvas wherever the cursor is.
-      if (e.ctrlKey || e.metaKey) {
+      // Alt and the wheel zoom too while a photo page is in focus (photo-pages.md "Navigating").
+      if (e.ctrlKey || e.metaKey || (e.altKey && zoomCeilingRaised())) {
         e.preventDefault();
         noteWheel('zoom');
         const { zoom: viewportZoom, offset: viewportOffset } = depsRef.current.viewport.get();
         // deltaY > 0 = pinch-close / scroll-down = zoom out; < 0 = zoom in.
         const factor = Math.exp(-e.deltaY / 200);
-        const newZoom = clamp(viewportZoom * factor, ZOOM_MIN, ZOOM_MAX);
+        const newZoom = clamp(viewportZoom * factor, ZOOM_MIN, zoomMax());
         zoomAtFocal(newZoom, e.clientX, e.clientY, viewportZoom, viewportOffset);
         return;
       }

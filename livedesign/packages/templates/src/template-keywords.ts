@@ -47,6 +47,7 @@ const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
     'screen',
     'mockup',
   ],
+  'photo-edit': ['photo', 'picture', 'image', 'edit', 'retouch', 'layers', 'filter', 'photoshop'],
   'wireframe-mobile-app': [
     'wireframe',
     'mobile',

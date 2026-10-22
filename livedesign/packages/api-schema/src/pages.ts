@@ -51,6 +51,10 @@ export type PageChange =
       layout?: string;
       // The 1-based place it goes to; absent is the end.
       at?: number;
+      // A photo page's picture size, px (docs/specs/031-photo/photo-pages.md "Agents"); absent is
+      // 1920 x 1080.
+      width?: number;
+      height?: number;
     } & WireframeFields)
   | ({
       op: 'set';
@@ -124,6 +128,7 @@ const PAGES_REFUSAL_CODES = [
   'layout_unknown',
   'page_locked',
   'page_limit',
+  'photo_limit',
   'last_page',
 ] as const;
 

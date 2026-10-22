@@ -101,6 +101,15 @@ migrations_dir = "migrations"
 binding = "IMAGES"
 bucket_name = "livedesign-images"
 
+# R2 bucket holding photo pages' pixels: tiles, sources and previews, by content
+# (docs/specs/031-photo/photo-store.md "The photo blob store"). Its own bucket, not IMAGES: the
+# gallery's images may move to liveworkspace's media service, and photo blobs are a tab's working
+# data, not someone's pictures. Create with `wrangler r2 bucket create livedesign-photo-blobs`.
+# Absent, every photo blob route answers 503 photos_unavailable.
+[[r2_buckets]]
+binding = "PHOTO_BLOBS"
+bucket_name = "livedesign-photo-blobs"
+
 # Per-owner rate limiter (Cloudflare Workers Rate Limiting API).
 # Caps writes at 300 / 60s per owner: a generous ceiling for normal
 # editing (autosave + comment posts + log appends) but well below
@@ -265,6 +274,8 @@ simple = { limit = 20, period = 60 }
 #     may keep in the gallery. Hosted: "100".
 #   - IMAGE_MAX_BYTES_PER_OWNER: maximum total byte_size summed
 #     across one owner's images. Hosted: "104857600" (100 MB).
+#   - PHOTO_MAX_BYTES_PER_TAB: maximum bytes of photo blobs one tab may hold
+#     (docs/specs/031-photo/photo-store.md "Limits"). Hosted: "536870912" (512 MB).
 #
 # Plain vars; values are decimal strings parsed via parseInt at request time.
 # Unset, blank, "0", or non-numeric values all read as "no limit". A self-host
@@ -404,6 +415,11 @@ migrations_dir = "migrations"
 [[env.staging.r2_buckets]]
 binding = "IMAGES"
 bucket_name = "livedesign-images-staging"
+
+# Own bucket for the same reason: `wrangler r2 bucket create livedesign-photo-blobs-staging`.
+[[env.staging.r2_buckets]]
+binding = "PHOTO_BLOBS"
+bucket_name = "livedesign-photo-blobs-staging"
 
 # Rate limiters. Namespace ids deliberately MATCH production's: Cloudflare
 # scopes a namespace per script, and `livedesign-api-staging` is a different

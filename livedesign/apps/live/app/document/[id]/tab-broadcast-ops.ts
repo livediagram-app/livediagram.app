@@ -4,7 +4,7 @@ import {
   mergeIncomingElement,
   type Tab,
 } from '@livedesign/document';
-import type { RoomOp } from '@livedesign/api-schema';
+import { tabPhotoOps, type RoomOp } from '@livedesign/api-schema';
 
 // Turn the before/after of an autosaved tab into the realtime ops to
 // broadcast (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 0). The room used to send the whole `Tab` on
@@ -21,13 +21,22 @@ import type { RoomOp } from '@livedesign/api-schema';
 export const EL_OP_BROADCAST_LIMIT = 20;
 
 // Tab keys that never ride a `tab-meta` patch: `id` is immutable, `elements`
-// travels as `el` ops, and `folder` is owned by the document-meta op (docs/specs/006-document/tab-folders.md)
+// travels as `el` ops, `photos` as `photo` ops, and `folder` is owned by the document-meta op (docs/specs/006-document/tab-folders.md)
 // so a content/meta edit can't clobber a concurrent folder move.
-export const META_SKIP: ReadonlySet<string> = new Set(['id', 'elements', 'folder']);
+export const META_SKIP: ReadonlySet<string> = new Set([
+  'id',
+  'elements',
+  // Photos travel as `photo` ops, layer by layer (docs/specs/031-photo/photo-store.md "Live sync").
+  'photos',
+  'folder',
+]);
 
-// A whole tab as one op.
+// A whole tab as one op, without its photos: those always travel as `photo` ops, and a receiver
+// keeps its own through the merge (mergeRemoteTab).
 function wholeTabOp(tab: Tab): RoomOp {
-  return { kind: 'tab', tabId: tab.id, tab };
+  const { photos: _photos, ...rest } = tab;
+  void _photos;
+  return { kind: 'tab', tabId: tab.id, tab: rest };
 }
 
 function tabMetaPatch(before: Tab, after: Tab): Partial<Omit<Tab, 'elements'>> {
@@ -54,7 +63,7 @@ function tabMetaPatch(before: Tab, after: Tab): Partial<Omit<Tab, 'elements'>> {
 //   - otherwise → a `tab-meta` patch (only if meta changed) followed by one
 //     `el` op per changed element, in the diff's order.
 export function tabBroadcastOps(before: Tab | undefined, after: Tab): RoomOp[] {
-  if (!before) return [wholeTabOp(after)];
+  if (!before) return [wholeTabOp(after), ...tabPhotoOps({ id: after.id }, after)];
 
   // An element whose only change rode a delta (a tick, a comment:
   // docs/specs/012-collaboration/collab-race-hardening.md) has already been said; a whole-element update on top
@@ -66,7 +75,7 @@ export function tabBroadcastOps(before: Tab | undefined, after: Tab): RoomOp[] {
     return !prev || !elementChangeIsDeltaOnly(prev, op.element);
   });
   if (elOps.length > EL_OP_BROADCAST_LIMIT) {
-    return [wholeTabOp(after)];
+    return [wholeTabOp(after), ...tabPhotoOps(before, after)];
   }
 
   const ops: RoomOp[] = [];
@@ -87,6 +96,7 @@ export function tabBroadcastOps(before: Tab | undefined, after: Tab): RoomOp[] {
     });
   }
   for (const op of elOps) ops.push({ kind: 'el', tabId: after.id, op });
+  ops.push(...tabPhotoOps(before, after));
   return ops;
 }
 
@@ -110,5 +120,7 @@ export function mergeRemoteTab(local: Tab, incoming: Tab): Tab {
     ...incoming,
     elements,
     folder: local.folder,
+    // Photos are the `photo` ops' alone (wholeTabOp): ours stay through a whole-tab merge.
+    ...(local.photos !== undefined ? { photos: local.photos } : {}),
   };
 }

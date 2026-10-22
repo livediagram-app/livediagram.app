@@ -22,7 +22,13 @@ export type ToastAction = {
   onSelect: () => void;
   disabled?: boolean;
 };
-export type ToastActionSpec = { key: string; message: string; actions: ToastAction[] };
+export type ToastActionSpec = {
+  key: string;
+  message: string;
+  actions: ToastAction[];
+  // Shown even with In-Editor Notifications off: it explains why something the person did had no effect.
+  important?: boolean;
+};
 
 export type ToastEntry = {
   id: number;

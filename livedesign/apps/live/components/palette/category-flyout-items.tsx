@@ -92,42 +92,70 @@ export const FLYOUT_FOOTER_HEIGHT = 16 * 3 + 10 * 2 + 1;
 /** What the pointed-at tile does, and its key: the hover card's job, without the wait. */
 export function InfoFooter({ def }: { def: PaletteTileDef | null }) {
   return (
+    <FlyoutFooter
+      item={
+        def
+          ? {
+              name: tileDisplayName(def),
+              text: def.variants?.length ? (
+                'Choose a preset to start from.'
+              ) : def.action.type === 'open' ? (
+                `Browse ${def.label}.`
+              ) : (
+                <PointerWords text={def.description} />
+              ),
+              shortcut: def.shortcut,
+            }
+          : null
+      }
+      hint={DEFAULT_HINT}
+      touchHint={TOUCH_HINT}
+    />
+  );
+}
+
+/** A flyout's footer (the category flyout's, a photo option's popover): the pointed-at item's name, what it does and
+ *  its key, or the hint while nothing is pointed at. One fixed height (FLYOUT_FOOTER_HEIGHT). */
+export function FlyoutFooter({
+  item,
+  hint,
+  touchHint = hint,
+}: {
+  item: { name: string; text: ReactNode; shortcut?: string | undefined } | null;
+  hint: ReactNode;
+  touchHint?: ReactNode;
+}) {
+  return (
     <footer
       aria-live="polite"
       data-flyout-footer
       style={{ height: FLYOUT_FOOTER_HEIGHT }}
       className="flex shrink-0 items-center gap-3 overflow-hidden rounded-b-xl border-t border-slate-100 bg-slate-50/80 px-3.5 dark:border-slate-800 dark:bg-slate-950/40"
     >
-      {def ? (
+      {item ? (
         <>
           <div className="flex min-w-0 flex-1 flex-col">
             <span className="truncate text-[12px] leading-4 font-semibold text-slate-800 dark:text-slate-100">
-              {tileDisplayName(def)}
+              {item.name}
             </span>
             <span className="line-clamp-2 text-[11.5px] leading-4 text-slate-500 dark:text-slate-400">
-              {def.variants?.length ? (
-                'Choose a preset to start from.'
-              ) : def.action.type === 'open' ? (
-                `Browse ${def.label}.`
-              ) : (
-                <PointerWords text={def.description} />
-              )}
+              {item.text}
             </span>
           </div>
-          {def.shortcut ? (
+          {item.shortcut ? (
             <span className="flex shrink-0 items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
               Press
-              <Kbd>{def.shortcut}</Kbd>
+              <Kbd>{item.shortcut}</Kbd>
             </span>
           ) : null}
         </>
       ) : (
         <>
           <span className="text-[11.5px] text-slate-500 pointer-coarse:hidden dark:text-slate-400">
-            {DEFAULT_HINT}
+            {hint}
           </span>
           <span className="hidden text-[11.5px] text-slate-500 pointer-coarse:inline dark:text-slate-400">
-            {TOUCH_HINT}
+            {touchHint}
           </span>
         </>
       )}
@@ -221,24 +249,24 @@ export function CardList({
   );
 }
 
+/** A flyout card row's look (the category flyout's, a photo tool category's): its state ring, and its glyph plate. */
+export const flyoutCardClass = (active: boolean, disabled: boolean): string =>
+  `group flex w-full items-center gap-2.5 rounded-xl px-2 py-1.5 text-left ring-1 transition focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-500 ${
+    disabled
+      ? 'cursor-not-allowed opacity-50 ring-transparent'
+      : active
+        ? 'bg-brand-50 ring-brand-300 dark:bg-brand-500/20 dark:ring-brand-500/50'
+        : 'ring-transparent hover:bg-slate-50 hover:ring-slate-200 dark:hover:bg-slate-800/70 dark:hover:ring-slate-700'
+  }`;
+export const FLYOUT_CARD_PLATE =
+  'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-50 text-slate-700 ring-1 ring-slate-200/80 transition group-hover:bg-white group-hover:shadow-sm dark:bg-slate-800 dark:text-slate-100 dark:ring-slate-700 dark:group-hover:bg-slate-900';
+
 function Card(item: ItemProps) {
   const { def } = item;
   const { props, glyph, active, disabled, side } = useFlyoutItem(item);
   return (
-    <button
-      {...props}
-      className={`group flex w-full items-center gap-2.5 rounded-xl px-2 py-1.5 text-left ring-1 transition focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-500 ${
-        disabled
-          ? 'cursor-not-allowed opacity-50 ring-transparent'
-          : active
-            ? 'bg-brand-50 ring-brand-300 dark:bg-brand-500/20 dark:ring-brand-500/50'
-            : 'ring-transparent hover:bg-slate-50 hover:ring-slate-200 dark:hover:bg-slate-800/70 dark:hover:ring-slate-700'
-      }`}
-    >
-      <span
-        aria-hidden
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-50 text-slate-700 ring-1 ring-slate-200/80 transition group-hover:bg-white group-hover:shadow-sm dark:bg-slate-800 dark:text-slate-100 dark:ring-slate-700 dark:group-hover:bg-slate-900"
-      >
+    <button {...props} className={flyoutCardClass(active, disabled)}>
+      <span aria-hidden className={FLYOUT_CARD_PLATE}>
         <span
           style={glyph.glyphStyle}
           className={`${glyph.glyphClass}flex items-center justify-center transition-transform duration-micro group-hover:scale-110 [&>svg]:h-5 [&>svg]:w-5`}

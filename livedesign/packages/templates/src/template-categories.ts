@@ -1,11 +1,11 @@
-// The template catalogue's categories (docs/specs/008-canvas/canvas-and-palette.md "Template categories"): two,
+// The template catalogue's categories (docs/specs/008-canvas/canvas-and-palette.md "Template categories"): three,
 // grouped by the job a person is getting done rather than the artefact a template is. Every template but the
 // blanks has exactly one primary category and may be cross-listed in others where people would genuinely look for it.
 // Read by the template step (Quick Start and /new), the marketing gallery and the agents' catalogue. Pure data plus
 // three lookups; a Record over every non-blank kind, so a new template does not compile until it has a home.
 import type { TemplateKind } from './templates';
 
-export type TemplateCategory = 'logos' | 'wireframes';
+export type TemplateCategory = 'logos' | 'photos' | 'wireframes';
 
 // Declared in any order: TEMPLATE_CATEGORIES below sorts them by label, so a new category lands in place. Descriptions
 // are kept to a similar length (40 to 50 characters) so the folded category tiles read as an even set.
@@ -23,6 +23,12 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
     label: 'Logos',
     searchWords: 'brand mark wordmark identity',
     description: 'Logo designs, wordmarks and brand marks.',
+  },
+  {
+    id: 'photos',
+    label: 'Photos',
+    searchWords: 'picture image edit retouch',
+    description: 'Photo edits, retouches and layered pictures.',
   },
   {
     id: 'wireframes',
@@ -58,6 +64,8 @@ type BlankKind =
 const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCategory> = {
   // Logos: a brand's mark.
   'logo-design': 'logos',
+  // Photos: a picture to edit (docs/specs/031-photo/photo-pages.md "Making a photo page").
+  'photo-edit': 'photos',
   // Wireframes: screens and the spaces people move through.
   'wireframe-mobile-app': 'wireframes',
   'wireframe-website': 'wireframes',
@@ -67,7 +75,7 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
 };
 
 // Cross-listing: the other categories a template is also shown in, where someone would genuinely look for it there.
-// Never its primary, never a category twice (the categories test pins both). None today: with two categories, each
+// Never its primary, never a category twice (the categories test pins both). None today: with three categories, each
 // Pages template is found in one.
 export const TEMPLATE_ALSO_IN: Readonly<
   Partial<Record<TemplateKind, readonly TemplateCategory[]>>

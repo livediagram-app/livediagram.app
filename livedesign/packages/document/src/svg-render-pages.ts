@@ -10,7 +10,10 @@ import { r2, xmlEscape } from './svg-render-primitives';
 import { renderElementsToSvg } from './svg-render';
 import type { Tab } from './index';
 
-type RenderOpts = Omit<NonNullable<Parameters<typeof renderElementsToSvg>[1]>, 'frame'>;
+type RenderOpts = Omit<NonNullable<Parameters<typeof renderElementsToSvg>[1]>, 'frame'> & {
+  // A photo page's composite by page id (docs/specs/031-photo/photo-pages.md "Exports and other views").
+  resolvePhotoHref?: (pageId: string) => string | undefined;
+};
 
 // The gap between pages in the grid, and the backdrop it shows (a neutral desk under the sheets).
 const PAGES_GRID_GAP_PX = 48;
@@ -33,13 +36,15 @@ export function pagesPerRow(pages: readonly LaidOutPage[]): number {
 
 // One page as an export draws it: its sheet, its background and the elements reaching onto it.
 export function renderPageToSvg(tab: Tab, page: LaidOutPage, opts: RenderOpts = {}): string {
+  const { resolvePhotoHref, ...rest } = opts;
   // The page's own picture too, from the same resolver as its image elements.
   const frame = pageExportFrame(page, {
     frameTheme: tabWireframeFrameTheme(tab),
     idPrefix: `pg-${page.index}`,
     imageHref: opts.resolveImageHref,
+    ...(resolvePhotoHref ? { photoHref: resolvePhotoHref } : {}),
   });
-  return renderElementsToSvg(tab, { ...opts, frame });
+  return renderElementsToSvg(tab, { ...rest, frame });
 }
 
 // Every page of the tab, each drawn as `renderPageToSvg` draws it, in rows of `pagesPerRow` on a neutral backdrop

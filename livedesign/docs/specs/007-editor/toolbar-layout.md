@@ -199,6 +199,11 @@ without them drops them before any tile; one that overflows shows as many tiles 
 dividers between them, so a divider costs a tile only when the strip's spare part-tile can't hold
 it.
 
+**A photo page in focus** swaps the strip's middle: for someone who may edit it, the categories, their tiles and
+More give way to the photo tools ([Photo pages](../031-photo/photo-pages.md) "The photo tools"), the selection
+mode picker first and Search last as ever; a Participant keeps their strip with the Eyedropper and the colours at its
+end. Picking a selection mode puts the photo tool down. Focus leaving the page brings the category back.
+
 The chosen category lasts the page load: the strip is hidden rather than
 unmounted while zen or the welcome flow hides the chrome. Nothing is stored,
 so a new page load starts on the page kind's landing.

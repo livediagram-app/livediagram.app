@@ -3,7 +3,7 @@
 // an element too small to work on frames it before it edits. Pure, so the views it lands on are tested without a
 // canvas.
 
-import { ZOOM_MAX } from './canvas';
+import { zoomMax } from './canvas';
 import { computeFitToScreen, FIT_TO_SCREEN_PADDING } from './viewport';
 import type { ViewPose } from './viewport-glide';
 
@@ -28,7 +28,10 @@ export function doubleTapZoomView(
   zoom: number,
   size: { width: number; height: number },
 ): ViewPose {
-  const next = Math.min(ZOOM_MAX, Math.max(zoom, zoom * DOUBLE_TAP_ZOOM_STEP, DOUBLE_TAP_MIN_ZOOM));
+  const next = Math.min(
+    zoomMax(),
+    Math.max(zoom, zoom * DOUBLE_TAP_ZOOM_STEP, DOUBLE_TAP_MIN_ZOOM),
+  );
   return { zoom: next, offset: { x: size.width / 2 - at.x, y: size.height / 2 - at.y } };
 }
 
