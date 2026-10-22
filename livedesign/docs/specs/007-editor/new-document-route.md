@@ -355,13 +355,11 @@ document"**; everything else stays put.
   (`slate-50` / `slate-950`) with the editor's dot grid faded out towards the
   edges and two slowly drifting, blurred brand-tinted glows behind the
   centre. Dark-aware like every screen ([Live app](live-app.md)).
-- **Centrepiece:** the shared `DiagramBuildAnimation`, a small live diagram
-  being drawn by a collaborator cursor labelled "You": the cursor places a
-  card, drags a connector that draws under it to the next card, and so on
-  until three cards are wired; a pulse of light then runs along each
-  connector before the whole diagram dissolves and the loop restarts. The
-  cards are white (dark: slate) with a coloured accent each, and the
-  connectors blend from their source colour to their target colour.
+- **Centrepiece:** the shared `DesignBuildAnimation`: on an artboard the
+  collaborator cursor labelled "You" draws a mark with the pen, its anchors
+  and handles showing; the path closes and fills, a cut-out lands, the
+  cursor scales it by a corner with smart guides and picks a new colour from
+  the swatches, then a sparkle and the loop restarts.
 - **Continuity:** the loop's phase is measured from the first time the
   animation mounts in the document, so a remount (the creating stage giving
   way to the editor's load) continues the drawing where it was instead of
@@ -373,7 +371,7 @@ document"**; everything else stays put.
   screen with its recovery card ([Load recovery](load-recovery.md)).
 - **Reduced motion:** the drawing sits finished, the cursor, pulses, glows
   and bar are still.
-- `DiagramBuildAnimation` stays a bare illustration (no surface of its own),
+- `DesignBuildAnimation` stays a bare illustration (no surface of its own),
   so the sso-callback and OAuth consent cards keep composing it inside their
   own card.
 - The bar is the shared `LoadingSweep`.

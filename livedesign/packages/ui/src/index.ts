@@ -47,8 +47,7 @@ export { placeHint, type HintLayout, type HintPlacement } from './hint/place-hin
 export { HoverCard, type HoverCardProps } from './HoverCard';
 export { useRowPreview, type RowPreview } from './useRowPreview';
 export { SnapCarousel } from './SnapCarousel';
-export { DiagramBuildAnimation } from './DiagramBuildAnimation';
-export { SheetBuildAnimation } from './SheetBuildAnimation';
+export { DesignBuildAnimation } from './DesignBuildAnimation';
 export { LoadingSweep } from './LoadingSweep';
 export { EmptyState, EmptyStateArt } from './EmptyState';
 export { PageNotFound } from './PageNotFound';

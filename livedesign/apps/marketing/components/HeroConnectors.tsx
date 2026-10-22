@@ -2,8 +2,8 @@
 
 // The hero's connector (docs/specs/019-marketing/marketing-site.md "Hero"): on load, an arrow draws
 // from the end of the headline's question down to the template search, the gesture of the editor's
-// loading animation (DiagramBuildAnimation in apps/live: a gradient connector draws, its head lands,
-// the target flashes a selection ring, a pulse of light runs along it). The question is wired to
+// loading animations: a gradient connector draws, its head lands, the target flashes a selection
+// ring, a pulse of light runs along it). The question is wired to
 // where it is answered, as a diagram would wire them.
 //
 // The geometry is the page's own, so it is measured, not drawn to a fixed picture: the headline's

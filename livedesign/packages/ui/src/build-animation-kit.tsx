@@ -1,7 +1,7 @@
 'use client';
 
-// What the build loaders share (DiagramBuildAnimation, SheetBuildAnimation): the eased clock, the "You" collaborator
-// cursor and the loop's phase, so every loader moves, looks and resumes alike.
+// What the build loader (DesignBuildAnimation) is made of: the eased clock, the "You" collaborator cursor and the
+// loop's phase, so it moves, looks and resumes alike wherever it is shown.
 import { useLayoutEffect, type RefObject } from 'react';
 
 export type Point = [number, number];

@@ -27,7 +27,7 @@ import {
   POST_AUTH_SIGNIN_DEFAULT,
   ssoCallbackDestination,
 } from '@/components/chrome/auth-shared';
-import { DiagramBuildAnimation } from '@livedesign/ui';
+import { DesignBuildAnimation } from '@livedesign/ui';
 import { clerkEnabled } from '@/lib/clerk-config';
 
 // The sign-in / get-started pages forward their `?redirect_url` onto this
@@ -52,7 +52,7 @@ function SSOCallbackPageInner() {
   if (!clerkEnabled) return <AuthDisabledNotice />;
   return (
     <AuthCard title="Signing you in" subtitle="Completing sign in…" error="" pitch={false}>
-      <DiagramBuildAnimation />
+      <DesignBuildAnimation />
       <Suspense fallback={null}>
         <SSOCallbackContent />
       </Suspense>

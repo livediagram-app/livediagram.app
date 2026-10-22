@@ -12,7 +12,7 @@ Status: shipped
 
 ## The page, top to bottom
 
-1. **Hero.** Eyebrow "Build with AI", headline "Your AI, building in livedesign", a lede saying it works with the AI tool you already use, then the **address card**: `https://mcp.livedesign.app/mcp` in a monospace field with a Copy button (the one thing every tool needs). Beside it on wide screens, a chat illustration (`AiChatArt`): a request bubble, a tool-call chip naming the livedesign tool, and the shared `DiagramBuildAnimation` drawing the result with its cursor labelled "AI". Reduced motion shows the finished picture.
+1. **Hero.** Eyebrow "Build with AI", headline "Your AI, building in livedesign", a lede saying it works with the AI tool you already use, then the **address card**: `https://mcp.livedesign.app/mcp` in a monospace field with a Copy button (the one thing every tool needs). Beside it on wide screens, a chat illustration (`AiChatArt`): a request bubble, a tool-call chip naming the livedesign tool, and the first page building itself from a layout. Reduced motion shows the finished picture.
 2. **Three steps** (`#how-it-works`), one row: **Add livedesign** (paste the address into your tool), **Approve** (a livedesign page opens: sign in or create a free account, check where access goes, Connect), **Ask** (request a diagram, board, sheet or deck; it lands in your account).
 3. **Pick your tool** (`#connect`): a tab list of clients, grouped Chat apps, Coding agents, Editors, Anything else. Selecting one shows its steps. The choice is mirrored into the URL hash (`/ai#cursor`) with `history.replaceState`, and a hash on arrival selects that client, so a link can open straight onto one tool. Every panel is in the HTML (inactive ones `hidden`), so the instructions are indexable and work before hydration (the first client shows until then).
 4. **Try it** (`#prompts`): starter prompts, each a card with a Copy button, each mapped to a shipped MCP tool.
@@ -58,4 +58,4 @@ The page is public marketing, outside any document, so Editor, Participant and V
 
 ## Performance
 
-The page's script is its client components: the picker, and each copy button outside it (the address and the prompts); the rest is static. No new dependency. The chat art reuses `DiagramBuildAnimation` (CSS keyframes, no JS tick).
+The page's script is its client components: the picker, and each copy button outside it (the address and the prompts); the rest is static. No new dependency. The chat art is CSS keyframes only, with no JS tick.
