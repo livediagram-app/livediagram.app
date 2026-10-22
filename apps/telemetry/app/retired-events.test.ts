@@ -45,8 +45,13 @@ describe('isRetiredEvent', () => {
     ])
       expect(isRetiredEvent('UI', 'Toggled', type)).toBe(true);
     expect(isRetiredEvent('UI', 'Used', 'StartOtherMode')).toBe(false);
-    expect(isRetiredEvent('UI', 'Closed', 'NewDocument')).toBe(false);
     expect(isRetiredEvent('Template', 'Used', 'Kanban')).toBe(false);
+  });
+
+  it('retires the New Document wizard, not the template link', () => {
+    expect(isRetiredEvent('UI', 'Closed', 'NewDocument')).toBe(true);
+    expect(isRetiredEvent('UI', 'Used', 'JustDraw')).toBe(true);
+    expect(isRetiredEvent('UI', 'Used', 'TemplateLink')).toBe(false);
   });
 
   it('retires Settings › Experimental and its mode switches, not the modes', () => {

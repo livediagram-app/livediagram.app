@@ -6,7 +6,7 @@ import { isPlacementRejection, type PlacementRejection } from '@liveplanner/api-
 import { ApiError } from '@/lib/api-client';
 
 export type CreateFailure = {
-  // `retry` re-runs the same create; `choose` reopens /new without the refused placement.
+  // `retry` re-runs the same create; `choose` makes it again without the refused placement.
   action: 'retry' | 'choose';
   eyebrow: string;
   title: string;
@@ -39,7 +39,7 @@ export function createFailureCopy(error: unknown): CreateFailure {
     eyebrow: 'Placement refused',
     title: 'Couldn’t file the document there',
     message: PLACEMENT_MESSAGES[code],
-    actionLabel: 'Choose another place',
+    actionLabel: 'Use the default place',
   };
 }
 
