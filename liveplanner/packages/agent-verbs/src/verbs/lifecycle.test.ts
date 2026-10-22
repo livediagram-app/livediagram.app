@@ -225,7 +225,12 @@ describe('tab add, rename and rm', () => {
     });
     const out = await tabAdd.run!(
       contextOf(api),
-      tabAdd.input.parse({ project: 'Auth flow', name: 'Board', template: 'kanban', summary: 'Board' }),
+      tabAdd.input.parse({
+        project: 'Auth flow',
+        name: 'Board',
+        template: 'kanban',
+        summary: 'Board',
+      }),
     );
     expect(seen[0]!.body).toEqual({
       replace: { template: 'kanban', name: 'Board' },

@@ -113,7 +113,7 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 - `zoom` leaves `BoxedElementView`'s props. `CanvasZoomProvider` (in `Canvas`, around the element
   layer) carries it; every child that sizes by zoom reads `useCanvasZoom()`: `LaneGutter`,
   `RemoteSelectorsStrip`, `ElementIndicators`, `LockBadge`, `ElementVoteOverlay`, `SelectionChromeLayer`,
-  `PhotoDraftRing` and `PhotoMatchedBadge` (`photo-badges.tsx`), `RichTextEditor` (mounted only
+  `RichTextEditor` (mounted only
   while editing), `HeroCaptionCard`, `TableView`, `PageMasthead` and the web faces. A freehand
   stroke is picked by its box, so a zoom re-renders no ink. `BrowserChrome` takes no zoom.
 - `ArrowView` takes `frame: ArrowViewFrame` and `holes: Rect[]` in place of `elementIndex` and

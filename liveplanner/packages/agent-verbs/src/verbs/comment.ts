@@ -123,7 +123,12 @@ type Target = {
 };
 
 // The element a ref names on the tab, over every element of the plain tab (VW2), refused as the views refuse it.
-async function targetOf(ctx: VerbContext, projectRef: string, tab: string | undefined, ref: string) {
+async function targetOf(
+  ctx: VerbContext,
+  projectRef: string,
+  tab: string | undefined,
+  ref: string,
+) {
   const { project, tab: summary } = await tabOf(ctx, projectRef, tab);
   const { tab: plain } = await ctx.api.json<{ tab: Tab }>(tabPath(project.id, summary.id));
   const table = computeRefs(plain.elements.map((el) => el.id));

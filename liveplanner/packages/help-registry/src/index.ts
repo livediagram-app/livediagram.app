@@ -1280,8 +1280,8 @@ export const articles: Article[] = [
     slug: 'search-tabs-and-elements',
     title: 'Finding Tabs and Cards',
     description:
-      "Inside a project, jump to any tab by name; use Find to search the project's cards.",
-    keywords: 'find jump locate tab name card find a card board lookup',
+      'Inside a project, jump to any tab or board by name, and open a card by its number or title.',
+    keywords: 'find jump locate tab name card number board title lookup open card',
     category: 'Search Panel',
     categorySlug: 'search-panel/the-search-panel',
     parentSlug: 'the-search-panel',

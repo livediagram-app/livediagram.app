@@ -10,13 +10,13 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Privacy Policy" description="What the hosted liveplanner service does, and does not do, with your data." categoryTitle="Policies" categorySlug="policies">
 
-_Last updated: 21 October 2026._
+_Last updated: 22 October 2026._
 
 liveplanner is built to need as little of your data as possible. This policy explains what the hosted service at **liveplanner.app** does with your data. It sits alongside our [Terms of Service](/help/policies/terms/).
 
 ## What we store
 
-- **Your projects.** The content you create is saved so it is there when you come back, and so the people you share it with can see it. It is stored in our database on Cloudflare. A project you create in [Offline Mode](/help/privacy-and-security/offline-mode/) is the exception: it stays in your browser and never reaches our servers, unless you ask the AI assistant about it, read sticky notes from a photo (see **AI features**), or add a web link to it (our server fetches the link's preview).
+- **Your projects.** The content you create is saved so it is there when you come back, and so the people you share it with can see it. It is stored in our database on Cloudflare. A project you create in [Offline Mode](/help/privacy-and-security/offline-mode/) is the exception: it stays in your browser and never reaches our servers.
 - **A browser id.** If you use liveplanner without an account, we keep a random identifier in your browser's local storage to link projects to your browser. It is not tied to your name or email.
 - **Your display name and colour.** The name and cursor colour collaborators see are stored on our server against your browser id or account.
 - **Account details, if you sign in.** Sign-in is handled by our authentication provider, Clerk. If you create an account we receive your email address, and, if you choose Google sign-in, basic profile details from Google. We use these to identify your account and to send you the account and onboarding emails described under **Emails we send** below.
@@ -29,14 +29,11 @@ liveplanner is built to need as little of your data as possible. This policy exp
 - **Project activity.** liveplanner records what happened to your projects (created, renamed, shared, commented on) and which ones you opened, so [Home](/help/explorer/home/) and each project's History can show you. These records are kept for a year.
 - **Basic operational logs.** Our host, Cloudflare, keeps standard request logs that help us run the service securely.
 
-## AI features
+## Connected AI tools
 
-The AI features run only when you use them, and only on a deployment that has an AI provider configured.
+If you [connect an AI tool](/help/account-and-data/connect-ai-mcp/) such as Claude, that tool reads and changes your projects through our API using the token you approved. What the tool does with what it reads is governed by that tool's own terms and privacy policy, not this one.
 
-- **The AI assistant.** When you ask the assistant something, your prompt, the tab's name, the elements on the current tab (their text, shapes and positions) and your last few messages in that conversation are sent through our API to **OpenAI**, which writes the answer. Nothing is sent until you ask, and the assistant is off until you turn it on in Settings.
-- **Connected AI tools.** If you [connect an AI tool](/help/account-and-data/connect-ai-mcp/) such as Claude, that tool reads and changes your projects through our API using the token you approved. What the tool does with what it reads is governed by that tool's own terms and privacy policy, not this one.
-
-We do not use your projects to train AI models. The providers above process what is sent to them under their own API terms.
+We do not use your projects to train AI models.
 
 ## What we do not do
 
@@ -71,11 +68,10 @@ We rely on a small number of providers to run the service:
 - **Cloudflare**, for hosting, database storage, and image storage.
 - **Clerk**, for authentication (its script loads for every visitor; it holds account data only if you sign in).
 - **Resend**, for delivering the emails described above (to account holders, and to addresses a teammate invites).
-- **OpenAI**, for the AI assistant (only when you use it; see **AI features** above).
 
 These providers process data on our behalf so that we can run the service.
 
-Your browser also loads the editor's fonts from **Google Fonts**. A YouTube video's poster image, and a link card's icon and image, load from the provider when a project is viewed; other embeds (Vimeo, Loom, Figma, Google Docs, any website) load only when a viewer presses Load. Either way the provider sees the viewer's IP address. Link previews are fetched by our server from the linked site.
+Your browser also loads the editor's fonts from **Google Fonts**.
 
 ## Sharing and visibility
 
@@ -85,7 +81,7 @@ Anything you put in a project you share becomes visible to people who have the s
 
 You can delete any project you own at any time. A deleted project waits in the [Trash](/help/account-and-data/trash/) for 30 days, so you can restore it, and is then removed for good; you can also delete it permanently from the Trash sooner. Comments, answers, ideas and votes that passed through a live collaboration session are also kept in that session's own storage on Cloudflare, and that copy is removed with the project. A project left empty and untouched for 30 days moves to the Trash on its own.
 
-You can delete your account, and the data associated with it, yourself: open **Settings**, then **Account**, then **Delete Account**. This removes your projects (the Trash and their collaboration-session copies included), folders, images, themes, preferences and API tokens straight away, and deletes your account at Clerk. Projects in a team's shared library pass to another member of that team rather than being deleted. See [Deleting Your Data](/help/account-and-data/deleting-your-data/).
+You can delete your account, and the data associated with it, yourself: open **Settings**, then **Account**, then **Delete Account**. This removes your projects (the Trash and their collaboration-session copies included), folders, themes, preferences and API tokens straight away, and deletes your account at Clerk. Projects in a team's shared library pass to another member of that team rather than being deleted. See [Deleting Your Data](/help/account-and-data/deleting-your-data/).
 
 Other things are kept only as long as they are useful: anonymous product events for 60 days, project activity for a year, and changes made by connected AI tools for 30 days (so they can be undone). A guest's projects have no account to delete: remove them from the Explorer, or ask us.
 

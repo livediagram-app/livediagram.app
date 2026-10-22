@@ -110,6 +110,31 @@ export async function tabBodiesInOrder(
   return results.map(rowToTab);
 }
 
+// The tabs a Dashboard's image draws from (docs/specs/013-workspace/live-image-share.md "A Dashboard"): those its slots
+// show (`slotTabIds`) and those holding a Plan board (whose columns name the statuses its charts count by), in tab
+// order, at most `limit` of them. One query, bodies included.
+export async function dashboardSourceTabs(
+  env: Env,
+  projectId: string,
+  slotTabIds: readonly string[],
+  limit: number,
+): Promise<TabDTO[]> {
+  const shown = slotTabIds.length
+    ? ` OR dt.tab_id IN (${slotTabIds.map(() => '?').join(', ')})`
+    : '';
+  const { results } = await env.DB.prepare(
+    `SELECT t.id, dt.project_id, t.name, dt.order_index, t.data, t.updated_at, t.rev, dt.folder
+       FROM tabs t
+       JOIN project_tabs dt ON dt.tab_id = t.id
+      WHERE dt.project_id = ? AND (instr(t.data, '"plan-board"') > 0${shown})
+      ORDER BY dt.order_index, t.id
+      LIMIT ?`,
+  )
+    .bind(projectId, ...slotTabIds, limit)
+    .all<TabRow>();
+  return results.map(rowToTab);
+}
+
 // The raw `tabs.data` JSON for a project's first tab (lowest
 // order_index in the project_tabs link), or null when the project has
 // no tabs. Used by the SVG snapshot render-cache (docs/specs/006-project/project-snapshots.md), which needs
@@ -357,10 +382,7 @@ export async function seedTabs(
     ];
   });
   stmts.push(
-    env.DB.prepare('UPDATE projects SET saved_at = ? WHERE id = ?').bind(
-      savedAt ?? now,
-      projectId,
-    ),
+    env.DB.prepare('UPDATE projects SET saved_at = ? WHERE id = ?').bind(savedAt ?? now, projectId),
   );
   // Index rows for every seeded tab (docs/specs/013-workspace/inbox.md §2.1): a JSON import or a
   // copy from a share link can carry actions and threads in on create.
@@ -443,9 +465,7 @@ export async function linkTabToProject(
     .bind(projectId, tabId)
     .first<{ present: number }>();
   if (existing) return false;
-  const count = await env.DB.prepare(
-    'SELECT COUNT(*) AS n FROM project_tabs WHERE project_id = ?',
-  )
+  const count = await env.DB.prepare('SELECT COUNT(*) AS n FROM project_tabs WHERE project_id = ?')
     .bind(projectId)
     .first<{ n: number }>();
   const orderIndex = count?.n ?? 0;
@@ -457,9 +477,7 @@ export async function linkTabToProject(
   )
     .bind(projectId, tabId, orderIndex, now)
     .run();
-  await env.DB.prepare('UPDATE projects SET saved_at = ? WHERE id = ?')
-    .bind(now, projectId)
-    .run();
+  await env.DB.prepare('UPDATE projects SET saved_at = ? WHERE id = ?').bind(now, projectId).run();
   return true;
 }
 
@@ -562,9 +580,7 @@ export async function reorderTabs(
     ).bind(idx, folder, projectId, tabId);
   });
   if (batch.length > 0) await env.DB.batch(batch);
-  await env.DB.prepare('UPDATE projects SET saved_at = ? WHERE id = ?')
-    .bind(now, projectId)
-    .run();
+  await env.DB.prepare('UPDATE projects SET saved_at = ? WHERE id = ?').bind(now, projectId).run();
 }
 
 // Compare-and-swap one tab's `data` blob (docs/specs/013-workspace/share-roles.md "Integrity"). Writes `nextData`
@@ -596,9 +612,7 @@ export async function swapTabData(
     tabStatsStatement(env, tabId, nextStats, now, nextData),
   ]);
   if ((res?.meta?.changes ?? 0) === 0) return false;
-  await env.DB.prepare('UPDATE projects SET saved_at = ? WHERE id = ?')
-    .bind(now, projectId)
-    .run();
+  await env.DB.prepare('UPDATE projects SET saved_at = ? WHERE id = ?').bind(now, projectId).run();
   return true;
 }
 

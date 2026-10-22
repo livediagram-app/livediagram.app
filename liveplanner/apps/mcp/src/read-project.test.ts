@@ -87,25 +87,23 @@ describe('readProject', () => {
     await readProject(env, 'tok', {
       projectId: 'd1',
       tabId: 't2',
-      view: 'layout',
+      view: 'outline',
       budget: 500,
       only: 'c991',
       ref: 'x',
       q: 'pay',
-      coarse: true,
       all: false,
       style: true,
     });
     const view = requests.find((r) => r.searchParams.has('view'))!;
     expect(view.pathname).toBe('/api/projects/d1/tabs/t2');
     expect(Object.fromEntries(view.searchParams)).toEqual({
-      view: 'layout',
+      view: 'outline',
       door: 'mcp',
       budget: '500',
       only: 'c991',
       ref: 'x',
       q: 'pay',
-      coarse: '1',
       style: '1',
     });
   });

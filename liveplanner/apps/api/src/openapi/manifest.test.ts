@@ -290,9 +290,7 @@ describe('buildOpenApiProject', () => {
       );
     }
     const tabQuery = doc.paths['/projects/{id}/tabs/{tabId}']!.get!.parameters.map((p) => p.name);
-    expect(tabQuery).toEqual(
-      expect.arrayContaining(['only', 'coarse', 'style', 'ref', 'q', 'all']),
-    );
+    expect(tabQuery).toEqual(expect.arrayContaining(['only', 'style', 'ref', 'q', 'all']));
   });
 });
 

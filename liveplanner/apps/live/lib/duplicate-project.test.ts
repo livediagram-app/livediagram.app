@@ -17,7 +17,7 @@ const mLoadProject = vi.mocked(apiLoadProject);
 const mLoadTab = vi.mocked(apiLoadTab);
 const mCreate = vi.mocked(apiCreateProject);
 
-// Minimal LiveDoc-ish stub: duplicateProject only reads id, name, tabs.
+// Minimal Project-ish stub: duplicateProject only reads id, name, tabs.
 const sourceProject = (tabs: { id: string }[]) =>
   ({ id: 'src', name: 'Flow', tabs }) as Awaited<ReturnType<typeof apiLoadProject>>;
 
@@ -176,12 +176,12 @@ describe('duplicateProject placement and recorded intent', () => {
 
   it("records the source's recorded intent, unchanged", async () => {
     mLoadProject.mockResolvedValue(
-      placed({ opensIn: 'diagram', tabKind: 'diagram', templateFamily: 'retrospective' }),
+      placed({ opensIn: 'diagram', tabKind: 'board', templateFamily: 'retrospective' }),
     );
     await duplicateProject('owner', 'src');
     expect(mCreate.mock.calls[0]![1].intent).toEqual({
       mode: 'diagram',
-      tabKind: 'diagram',
+      tabKind: 'board',
       templateFamily: 'retrospective',
     });
   });

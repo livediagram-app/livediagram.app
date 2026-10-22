@@ -17,10 +17,21 @@ import {
   cellThreadsOf,
 } from './fields';
 import { headerLine, viewHeader } from './header';
-import { layoutEndText } from './layout';
 import type { ViewModel } from './model';
 import { commentText, readComment } from './comments';
 import { cellText, jsonString } from './text';
+
+// An arrow end in content-origin terms: `ref.anchor`, `arrow:ref@t`, or `x,y` for a free end.
+function arrowEndText(end: Endpoint, model: ViewModel, origin: { x: number; y: number }): string {
+  switch (end.kind) {
+    case 'pinned':
+      return `${model.refs.refOf(end.elementId)}.${end.anchor}`;
+    case 'on-arrow':
+      return `arrow:${model.refs.refOf(end.arrowId)}@${end.t.toFixed(2)}`;
+    default:
+      return `${Math.round(end.x - origin.x)},${Math.round(end.y - origin.y)}`;
+  }
+}
 
 type ShowOptions = { budget?: number; door?: ViewDoor };
 
@@ -263,7 +274,7 @@ export function showElement(
   const rotation = Math.round(numberField(el, 'rotation') ?? 0);
   const placement =
     el.type === 'arrow'
-      ? [`  ${layoutEndText(el.from, model, origin)} → ${layoutEndText(el.to, model, origin)}`]
+      ? [`  ${arrowEndText(el.from, model, origin)} → ${arrowEndText(el.to, model, origin)}`]
       : box === null
         ? []
         : [

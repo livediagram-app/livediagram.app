@@ -101,13 +101,12 @@ describe('tab view', () => {
         view: 'find',
         text: 'sign in',
         budget: '300',
-        coarse: true,
         style: false,
       }),
     );
     expect(tabView.text!(out)).toEqual(['tab "Overview"']);
     expect(tabView.json!(out)).toEqual({ text: 'tab "Overview"' });
-    expect(api.calls.at(-1)).toBe(`${tabPath}?view=find&q=sign%20in&budget=300&coarse=1`);
+    expect(api.calls.at(-1)).toBe(`${tabPath}?view=find&q=sign%20in&budget=300`);
   });
 
   it('asks for JSON with --json, and prints that JSON as itself', async () => {

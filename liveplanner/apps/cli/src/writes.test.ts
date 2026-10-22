@@ -89,7 +89,7 @@ async function cli(io: ReturnType<typeof fakeIo>, argv: string[]) {
 describe('writing from the CLI', () => {
   it("bases an edit on the tab it last viewed, prints the api's lines, and moves its copy on", async () => {
     const { state, route } = host();
-    const io = session(route, { files: { '/work/ops.txt': 'add square label=B\n' } });
+    const io = session(route, { files: { '/work/ops.txt': 'set n1 label=B\n' } });
     await cli(io, ['tab', 'view', 'Auth flow']);
     const edit = await cli(io, ['edit', 'Auth flow', '-f', 'ops.txt', '--summary', 'Add B']);
     expect(edit).toEqual({
@@ -98,13 +98,13 @@ describe('writing from the CLI', () => {
       err: '',
     });
     expect(state.requests[0]).toMatchObject({
-      operations: 'add square label=B\n',
+      operations: 'set n1 label=B\n',
       summary: 'Add B',
       base: { rev: 5 },
     });
-    await cli(io, ['element', 'connect', 'Auth flow', 'n1', 'n2', 'label=calls it']);
+    await cli(io, ['element', 'set', 'Auth flow', 'n1', 'n2', 'label=calls it', 'all']);
     expect(state.requests[1]).toMatchObject({
-      operations: 'connect n1 -> n2 label="calls it"',
+      operations: 'set n1 n2 label="calls it" all',
       base: { rev: 6 },
     });
     expect(Object.keys(state.requests[1]!.base!.elements!)).toEqual(['n1', 'n2']);
@@ -168,7 +168,7 @@ describe('writing from the CLI', () => {
     const { route } = host();
     const io = session(route);
     await cli(io, ['tab', 'view', 'Auth flow']);
-    await cli(io, ['element', 'add', 'Auth flow', 'square', 'label=B']);
+    await cli(io, ['element', 'set', 'Auth flow', 'n1', 'label=B']);
     const diff = await cli(io, ['tab', 'diff', 'Auth flow', '--since', '5']);
     expect(diff.code).toBe(0);
     expect(diff.out).toContain('"B"');

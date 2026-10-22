@@ -103,10 +103,10 @@ export const schemaView = defineVerb({
   id: 'schema.view',
   summary: 'The element format, by kind',
   description:
-    'Prints the element kinds edit operations make, or for one kind its first size, the aliases set takes with their values, and its stored fields.',
+    'Prints the element kinds a tab holds, or for one kind the fields it takes, a closed field with its values.',
   behaviour: 'read',
   input: z.object({
-    kind: z.string().optional().describe('An element kind, such as sticky or code-block'),
+    kind: z.string().optional().describe('An element kind, such as plan-view or bar-chart'),
   }),
   output: z.object({ text: z.string() }),
   run: async (ctx, { kind }) => ({
@@ -124,7 +124,7 @@ export const schemaView = defineVerb({
   text: ({ text }) => [text],
   cli: {
     positionals: ['kind'],
-    examples: ['liveplanner schema', 'liveplanner schema sticky'],
+    examples: ['liveplanner schema', 'liveplanner schema plan-view'],
     prints: 'the kinds, or one kind\u2019s format',
   },
 });

@@ -69,8 +69,8 @@ were last here**, not just a list of files.
   (§3.4). Per-entry removal, which started out in this bullet,
   shipped (§2.9) and went with the Explorer's Timeline section.
 - **No AI day summary.** Manager Toolkit gates one behind Pro;
-  liveplanner has no paid tier ([Business model + licence](../002-project-scope/business-model-and-licence.md)), so it would be free for
-  everyone and gated only on the model key. Deferred as its own
+  liveplanner has no paid tier ([Business model + licence](../002-project-scope/business-model-and-licence.md)) and runs no model of its
+  own. Deferred as its own
   decision rather than smuggled in with this one.
 - **No manual entries.** Every event is emitted by the system from a
   real write. There is no "add a note to your timeline".

@@ -548,7 +548,7 @@ describe('apiCreateProject placement (docs/specs/013-workspace/folders.md "Place
   });
 
   it('carries the creation intent (docs/specs/013-workspace/default-folders.md)', async () => {
-    const intent = { mode: 'plan', tabKind: 'diagram', templateFamily: 'kanban' } as const;
+    const intent = { mode: 'plan', tabKind: 'board', templateFamily: 'kanban' } as const;
     const body = await sentBody({ id: 'd1', name: 'N', intent });
     expect(body.intent).toEqual(intent);
   });

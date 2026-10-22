@@ -100,7 +100,7 @@ const VIEW_COMMON_QUERY = [
   {
     name: 'json',
     required: false,
-    description: '`1` answers the view as JSON (`OutlineView`, `GraphView`, …) instead of text.',
+    description: '`1` answers the view as JSON (`OutlineView`, `CommentsView`, …) instead of text.',
   },
   {
     name: 'budget',
@@ -122,13 +122,7 @@ const TAB_VIEW_QUERY = [
   {
     name: 'only',
     required: false,
-    description:
-      'outline, layout: one element (a ref, unique prefix or id) and what nests under it.',
-  },
-  {
-    name: 'coarse',
-    required: false,
-    description: 'layout: `1` for rows per container instead of geometry.',
+    description: 'outline: one element (a ref, unique prefix or id) and what nests under it.',
   },
   {
     name: 'style',
@@ -179,7 +173,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/capabilities',
     segment: 'capabilities',
     tag: 'Meta',
-    summary: 'Which optional server features are configured (e.g. AI).',
+    summary: 'Which optional server features are configured (e.g. email).',
     auth: 'public',
     responseSchema: 'CapabilitiesResponse',
     statuses: [200],
@@ -312,7 +306,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
         },
         source: {
           anyOf: [ref('ProjectSource'), { type: 'null' }],
-          description: 'The agent front door that made it; `ai` and `mcp` count as Made by AI.',
+          description: 'The agent front door that made it; `mcp` counts as Made by AI.',
         },
         // Placement (docs/specs/013-workspace/folders.md "Placement on create").
         teamId: {
@@ -331,7 +325,8 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
         intent: {
           type: ['object', 'null'],
           description:
-            'What the new project is made as, recorded on it (opensIn, tabKind, templateFamily). ' +
+            'What the new project is made as, recorded on it (opensIn, tabKind, templateFamily). tabKind is ' +
+            "the first tab's kind: board, sheet, dashboard or form, or empty for a blank first tab; absent is empty. " +
             "With no choice of place, the project lands in the caller's default folder for it: " +
             'the tab kind default, else the template family default, else the mode default, else ' +
             'the root of My projects. Malformed: intent_invalid (400).',
@@ -797,8 +792,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/projects/{id}/items/bulk',
     segment: 'projects',
     tag: 'Items',
-    summary:
-      'Make up to 200 items in one write, in order. Needs edit access to the whole project.',
+    summary: 'Make up to 200 items in one write, in order. Needs edit access to the whole project.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     requestSchema: 'ItemsBulkRequest',
@@ -2150,18 +2144,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     auth: 'clerk',
     requestSchema: { type: 'object', properties: { clientName: { type: 'string' } } },
     statuses: [201, 400, 403, 404, 409],
-  },
-
-  // ---- AI ----
-  {
-    method: 'POST',
-    path: '/ai',
-    segment: 'ai',
-    tag: 'AI',
-    summary: 'Ask about or clean up a tab with the optional AI assistant (streamed).',
-    auth: 'guest-or-clerk',
-    requestSchema: 'AiRequest',
-    statuses: [200, 401, 403, 500, 502, 503],
   },
 
   // ---- Link unfurl ----

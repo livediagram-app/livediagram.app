@@ -55,13 +55,10 @@ describe('parseChangesetRequest', () => {
       name: 'Flow',
       theme: 'ocean',
     });
-    expect(replace({ elements: [], layout: 'auto' })).toEqual({
-      kind: 'replace',
-      replace: { elements: [], layout: 'auto' },
-    });
+    expect(replace({ elements: [] })).toEqual({ kind: 'replace', replace: { elements: [] } });
+    expect(replace({ elements: [], layout: 'auto' })).toBe('invalid_body');
     expect(replace({ elements: [], template: 'kanban' })).toBe('invalid_body');
     expect(replace({ elements: {} })).toBe('invalid_body');
-    expect(replace({ elements: [], layout: 'sideways' })).toBe('invalid_body');
     expect(replace({ elements: [], finish: 'sketch' })).toEqual({
       kind: 'replace',
       replace: { elements: [] },

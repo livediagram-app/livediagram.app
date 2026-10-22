@@ -24,7 +24,7 @@ describe('lensSubjectOf', () => {
   it('reads one of my own projects as mine, by me, with its recorded intent', () => {
     expect(
       lensSubjectOf(
-        doc('a', { source: 'mcp', opensIn: 'plan', tabKind: 'diagram', templateFamily: 'kanban' }),
+        doc('a', { source: 'mcp', opensIn: 'plan', tabKind: 'board', templateFamily: 'kanban' }),
         'me',
       ),
     ).toMatchObject({
@@ -100,7 +100,7 @@ describe('scopeProjects', () => {
 describe('narrowRows', () => {
   const rows = [
     doc('Roadmap', { source: 'mcp' }),
-    doc('Retro notes', { templateFamily: 'retrospective', opensIn: 'diagram', tabKind: 'diagram' }),
+    doc('Retro notes', { templateFamily: 'retrospective', opensIn: 'diagram', tabKind: 'board' }),
   ];
 
   it('keeps the rows the lens matches', () => {

@@ -74,7 +74,7 @@ because two agreeing lists still would not prove the validator handles each type
 Treat the sketch below as a high-level outline; read the package for the full field list.
 
 ```ts
-type LiveDoc = {
+type Project = {
   id: ProjectId;
   name: string;
   shareable: boolean;

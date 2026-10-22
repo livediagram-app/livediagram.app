@@ -120,7 +120,12 @@ describe('board set', () => {
     const { ctx, sent } = ctxWith();
     const out = await boardSet.run!(
       ctx,
-      boardSet.input.parse({ project: DOC_A, board: 'sprint', columns: 'To Do, Done', types: 'Task' }),
+      boardSet.input.parse({
+        project: DOC_A,
+        board: 'sprint',
+        columns: 'To Do, Done',
+        types: 'Task',
+      }),
     );
     expect(boardSet.text!(out)).toEqual(['~ board "Sprint": To Do · Done (takes Task)']);
     expect(boardSet.quiet!(out)).toEqual(['b1']);

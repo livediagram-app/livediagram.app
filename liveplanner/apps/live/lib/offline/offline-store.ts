@@ -1,6 +1,6 @@
 // Offline Mode (docs/specs/006-project/offline-mode.md): projects saved only in THIS browser, in IndexedDB,
 // never to the API. This module is the local counterpart of `lib/api/*` — it
-// produces the same wire shapes (LiveDoc / ProjectSummary / Tab) so the editor
+// produces the same wire shapes (Project / ProjectSummary / Tab) so the editor
 // and Explorer render an offline project exactly like a cloud one; the
 // persistence dispatch in `lib/api/*` routes to these when a project id is
 // registered offline (see `isOfflineId`).
@@ -12,7 +12,7 @@
 // every tab of the browser in step).
 
 import type { SheetJson } from '@liveplanner/sheets';
-import type { LiveDoc, ProjectSummary, RecordedIntent, TabSummary } from '@liveplanner/api-schema';
+import type { Project, ProjectSummary, RecordedIntent, TabSummary } from '@liveplanner/api-schema';
 import { utcDay } from '@liveplanner/api-schema';
 import { drawnCount, migrateStoredTab, stampTabKind } from '@liveplanner/project';
 import type { Tab } from '@liveplanner/project';
@@ -112,10 +112,10 @@ export function tabToSummary(
 // (docs/specs/013-workspace/default-folders.md "Recorded intent").
 const UNKNOWN_INTENT: RecordedIntent = { opensIn: null, tabKind: null, templateFamily: null };
 
-// Project a stored record into the full `LiveDoc` the editor hydrates from.
+// Project a stored record into the full `Project` the editor hydrates from.
 // The server-only fields take their inert defaults (unshared, no team, no
 // provenance, no owner join) — offline projects are private by construction.
-export function recordToProject(rec: OfflineProjectRecord): LiveDoc {
+export function recordToProject(rec: OfflineProjectRecord): Project {
   return {
     id: rec.id,
     ownerId: OFFLINE_OWNER_ID,
@@ -298,7 +298,7 @@ export async function offlineListProjects(): Promise<ProjectSummary[]> {
 }
 
 // A trashed record reads as the deleted state, the local twin of the api's 410.
-export async function offlineLoadProject(id: string): Promise<LiveDoc | null> {
+export async function offlineLoadProject(id: string): Promise<Project | null> {
   const rec = await offlineBackend().get(id);
   if (rec?.trashedAt !== undefined) throw new ProjectTrashedError(id);
   return rec ? recordToProject(rec) : null;
@@ -332,7 +332,7 @@ export async function offlineCreateProject(
     savedAt?: number;
     folderId?: string | null;
   } = {},
-): Promise<LiveDoc> {
+): Promise<Project> {
   const rec: OfflineProjectRecord = {
     id: d.id,
     name: d.name,

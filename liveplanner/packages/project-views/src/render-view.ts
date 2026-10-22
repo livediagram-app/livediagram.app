@@ -13,8 +13,6 @@ import type { ViewFit, ViewResult } from './budget';
 import { commentsView } from './comments';
 import { textField } from './fields';
 import { findView } from './find';
-import { graphView } from './graph';
-import { layoutView } from './layout';
 import { buildViewModel, type ViewContext, type ViewModel } from './model';
 import { outlineView } from './outline';
 import { showView } from './show';
@@ -28,7 +26,6 @@ export type ViewRequest = {
   // Ref inputs: a ref, any unique prefix, or a full id.
   only?: string;
   ref?: string;
-  coarse?: boolean;
   style?: boolean;
   all?: boolean;
   q?: string;
@@ -148,10 +145,6 @@ export function renderView(
   switch (request.view) {
     case 'outline':
       return done(outlineView(model, { budget, door, only, style: request.style }));
-    case 'graph':
-      return done(graphView(model, { budget, door }));
-    case 'layout':
-      return done(layoutView(model, { budget, door, only, coarse: request.coarse }));
     case 'comments':
       return done(commentsView(model, { budget, door, all: request.all }));
     case 'show': {

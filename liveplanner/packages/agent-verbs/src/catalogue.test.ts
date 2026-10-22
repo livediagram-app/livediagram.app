@@ -134,7 +134,7 @@ describe('the guides and the skill', () => {
   it('teach edit operations that parse', () => {
     const lines = GUIDE_TOPICS.edit.text
       .split('\n')
-      .filter((l) => /^ {2}(set|insert|connect) /.test(l));
+      .filter((l) => /^ {2}(set |rm |\{"op")/.test(l));
     expect(lines).toHaveLength(3);
     expect(parseEditOperations(lines.map((l) => l.trim()).join('\n'))).toHaveProperty('operations');
   });
@@ -159,7 +159,7 @@ describe('the guides and the skill', () => {
 
   it('teach reading a selection reference from a workbench', () => {
     const text = GUIDE_TOPICS.workbench.text;
-    expect(text).toContain('[liveplanner] "Home screen" › tab "Wireframe"');
+    expect(text).toContain('[liveplanner] "Sprint 14" › tab "Dashboard" (project ');
     for (const command of [
       'liveplanner tab view',
       'liveplanner tab render',

@@ -22,7 +22,6 @@ export type ViewInput = {
   text?: string;
   budget?: number;
   only?: string;
-  coarse?: boolean;
   style?: boolean;
   all?: boolean;
   json?: boolean;
@@ -109,7 +108,6 @@ export function pullFileView(
       ...(input.only === undefined ? {} : { only: input.only }),
       ...(input.ref === undefined ? {} : { ref: input.ref }),
       ...(input.text === undefined ? {} : { q: input.text }),
-      ...(input.coarse ? { coarse: true } : {}),
       ...(input.style ? { style: true } : {}),
       ...(input.all ? { all: true } : {}),
     },

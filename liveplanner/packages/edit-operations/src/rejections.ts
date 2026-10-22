@@ -62,6 +62,7 @@ export function lineParseError(
   expected: string,
 ): EditRejection & { line: number } {
   const quoting = /key=value|closing|selector/.test(expected);
+  const json = expected.startsWith('a whole element');
   return {
     code: 'parse_error',
     operation,
@@ -72,7 +73,11 @@ export function lineParseError(
       text,
       `${' '.repeat(column - 1)}^`,
     ],
-    hint: quoting ? 'quote values with spaces: label="Sign in"' : `write ${expected}`,
+    hint: json
+      ? 'liveplanner schema <kind> shows what an element holds'
+      : quoting
+        ? 'quote values with spaces: label="Sprint board"'
+        : `write ${expected}`,
   };
 }
 
@@ -81,17 +86,12 @@ export function unknownField(
   kind: string,
   key: string,
   fields: readonly string[],
-  aliases: readonly string[] = [],
 ): EditRejection {
-  const stored = fields.filter((field) => !aliases.includes(field));
-  const listed = aliases.length
-    ? `${aliases.join(' ')}, then ${stored.join(' ')}`
-    : stored.join(' ');
   return {
     code: 'unknown_field',
     operation,
-    details: [`${kind} has no field "${key}"`, `fields: ${listed}`],
-    ...didYouMean(key, [...aliases, ...stored]),
+    details: [`${kind} has no field "${key}"`, `fields: ${fields.join(' ')}`],
+    ...didYouMean(key, fields),
   };
 }
 
@@ -180,49 +180,6 @@ export function formatRejections(errors: readonly EditRejection[]): string[] {
     ...(rejection.hint ? [`  hint: ${rejection.hint}`] : []),
   ]);
   return [...lines, 'nothing was applied'];
-}
-
-// `connect a -> b` where an arrow a→b exists, without `again`.
-export function arrowExists(operation: number, ends: string, existing: string): EditRejection {
-  return {
-    code: 'arrow_exists',
-    operation,
-    details: [`${ends} already has an arrow:`, `  ${existing}`],
-    hint: 'add again for a second arrow, or set the existing one',
-  };
-}
-
-// `insert … between a b` with no a→b arrow: the arrows touching a and b, to choose from.
-export function notConnected(
-  operation: number,
-  ends: string,
-  touching: readonly string[],
-  a: string,
-  b: string,
-): EditRejection {
-  return {
-    code: 'not_connected',
-    operation,
-    details: [
-      `no arrow ${ends}`,
-      ...(touching.length ? ['arrows touching them:', ...touching.map((t) => `  ${t}`)] : []),
-    ],
-    hint: `connect ${a} -> ${b} first, or insert between the ends of one of these`,
-  };
-}
-
-// `wrap` would hold elements that are not its members.
-export function frameCaptures(
-  operation: number,
-  container: string,
-  bystanders: readonly string[],
-): EditRejection {
-  return {
-    code: 'frame_captures',
-    operation,
-    details: [`the ${container} would hold non-members:`, ...bystanders.map((b) => `  ${b}`)],
-    hint: 'add them to the members, or add absorb or make-room',
-  };
 }
 
 // `test` found a value other than the one it expected.

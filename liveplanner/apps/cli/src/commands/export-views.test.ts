@@ -212,8 +212,7 @@ describe('a pull file read offline', () => {
       'view',
       'shop.liveplanner.json',
       '--view',
-      'layout',
-      '--coarse',
+      'comments',
       '--json',
     ]);
     expect(JSON.parse(json.out)).toHaveProperty('header');

@@ -15,12 +15,10 @@ import {
 } from '@liveplanner/project';
 import { usePlan } from '@/components/plan/PlanContext';
 import { useSheetsBridgeContext } from '@/hooks/sheets/useSheetsBridge';
-import { tabAsSeen } from '@/lib/export-as-seen';
-import { renderTabToSvg } from '@/lib/export-tab';
 import {
   exportFormatsFor,
+  planArtResolver,
   planImageOf,
-  planViewArt,
   type ExportFormatKey,
   type PlanArtData,
   type PlanImage,
@@ -73,9 +71,6 @@ export function usePlanImageExport(
   const metrics = reads?.metrics;
   const models = reads?.models;
   const contents = reads?.contents;
-  // Keyed on the cards and types alone: the context value also changes with presence and the open card.
-  const planItems = plan?.items;
-  const planTypes = plan?.types;
   const image: PlanImage | null = useMemo(
     () =>
       whole
@@ -87,14 +82,9 @@ export function usePlanImageExport(
             ...(metrics ? { metrics } : {}),
             ...(models ? { sheetHeads: (id: string) => !models.get(id)?.hideHeaders } : {}),
             ...(contents ? { sheetContent: (id: string) => contents.get(id) ?? null } : {}),
-            renderDiagram: (shown) =>
-              renderTabToSvg(tabAsSeen(shown), {
-                pattern: false,
-                ...(planItems ? { items: planItems, itemTypes: planTypes } : {}),
-              }),
           })
         : null,
-    [whole, tab, projectTabs, now, metrics, models, contents, planItems, planTypes],
+    [whole, tab, projectTabs, now, metrics, models, contents],
   );
   const imageTab = image?.tab ?? tab;
   // The Sheets the image frames, each at its size: what the read below depends on. The figures it reads never change
@@ -178,7 +168,7 @@ export function usePlanImageExport(
     [plan?.items, plan?.types, plan?.statusPhases, plan?.statusNames, now],
   );
   const resolvePlanArt = useMemo<ResolvePlanArt>(
-    () => (el) => art.get(el.id) ?? (el.planView ? planViewArt(el, data, surface) : undefined),
+    () => planArtResolver(art, data, surface),
     [art, data, surface],
   );
   const opts = useMemo(

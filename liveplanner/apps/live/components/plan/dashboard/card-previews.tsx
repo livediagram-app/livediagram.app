@@ -107,23 +107,6 @@ function LinksPreview({ palette }: P) {
   );
 }
 
-// A Diagram tab: boxes joined by arrows, as a small flow.
-export function DiagramPreview({ palette }: P) {
-  return (
-    <Frame palette={palette}>
-      <svg aria-hidden viewBox="0 0 120 64" className="h-full w-full">
-        <g fill="none" stroke={palette.muted} strokeWidth={1.2} strokeOpacity={0.7}>
-          <path d="M34 20h18M34 20v0M70 20h14M60 28v10M60 38h-26" />
-        </g>
-        <rect x={6} y={12} width={28} height={16} rx={3} fill={BLUE} fillOpacity={0.85} />
-        <rect x={52} y={12} width={18} height={16} rx={3} fill={GREEN} fillOpacity={0.85} />
-        <rect x={84} y={12} width={30} height={16} rx={3} fill={AMBER} fillOpacity={0.85} />
-        <rect x={10} y={38} width={26} height={16} rx={8} fill={palette.muted} fillOpacity={0.35} />
-      </svg>
-    </Frame>
-  );
-}
-
 // A figure from a Sheet: a figure over a bar toward its target, a summary over its sparkline, a trend with its arrow.
 export function SheetMetricPreview({ palette, metric }: P & { metric: SheetMetricKind }) {
   const line =

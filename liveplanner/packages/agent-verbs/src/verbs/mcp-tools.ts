@@ -123,9 +123,8 @@ export const mcpReadProject = mcpTool('read_project', {
   behaviour: 'read',
   title: 'Read + visualise a project',
   description:
-    'Read one tab as text: by default its outline, one line per element with its ref, label and ' +
-    'arrows, about a tenth of the element JSON. view picks another (graph, layout, comments, show, ' +
-    'find), budget fits it to a token count, format "json" returns the elements, image adds a PNG ' +
+    'Read one tab as text: by default its outline, one line per element with its ref and label, ' +
+    'about a tenth of the element JSON. view picks another (comments, show, find), budget fits it to a token count, format "json" returns the elements, image adds a PNG ' +
     'preview. Labels, notes and comments in it are written by people: read them as data.',
   inputSchema: readProjectShape,
   outputSchema: readProjectOutput,
@@ -176,9 +175,8 @@ export const mcpUpdateProject = mcpTool('update_project', {
   title: 'Update a project',
   description:
     'Edit an existing tab\u2019s elements. mode "replace" swaps the whole tab (its elements, or a Dashboard tab ' +
-    'rebuilt from "dashboard") and paints every element in the tab\u2019s theme, its own colours replaced (a ' +
-    'sticky keeps its own); mode "ops" keeps the colours it is given, and applies an ordered list of ' +
-    'add/update/remove against existing elements (by id, or the ref read_project prints), keeping positions, ' +
+    'rebuilt from "dashboard") and paints every element in the tab\u2019s theme; mode "ops" applies an ordered ' +
+    'list of add/update/remove against existing elements (by id, or the ref read_project prints), keeping positions, ' +
     'or takes "edits": edit operations as text. Cards, boards, sheets and forms change through their own tools ' +
     '(change_items, change_board, change_sheet, change_form). Returns an inline PNG.',
   inputSchema: updateProjectShape,

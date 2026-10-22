@@ -1,221 +1,50 @@
-// The element format as an agent writes it (docs/specs/015-api/blueprints/cli.md CLI73): the kinds `add` makes, and
-// for one kind its first size, the aliases `set` takes with their values, and the stored fields it also takes by
-// name. Read off the engine's own factories, aliases and value lists, so it says what the engine accepts.
+// The element format as an agent writes it (docs/specs/015-api/blueprints/cli.md CLI73): the kinds a Plan tab holds,
+// and for one kind what it is and the stored fields `set` and `test` take by name. Read off the engine's own lists
+// (./plan-elements), so it says what the engine accepts.
 
+import { ELEMENT_FIELD_VALUES } from '@liveplanner/project';
 import {
-  ELEMENT_FIELD_NAMES,
-  FLOWCHART_STEP_KIND,
-  LIVE_ELEMENT_FIELDS,
-  SHAPE_KINDS,
-  STICKY_PRESETS,
-  TEXT_PX_MAX,
-  TEXT_PX_MIN,
-  THEMES,
-  type Element,
-  withArticle,
-} from '@liveplanner/project';
-import { fillSlotNames } from './colours';
-import { aliasesOf, ARROW_STYLES, BORDER_STYLES, TEXT_SIZES } from './fields';
-import { buildKind, NOT_ADDED, OTHER_KINDS } from './operations/add-kind';
+  PLAN_COMMON_FIELDS,
+  PLAN_ELEMENT_ABOUT,
+  PLAN_ELEMENT_KINDS,
+  PLAN_KIND_FIELDS,
+  isPlanElementKind,
+} from './plan-elements';
 
 export const SCHEMA_KIND_MAX_TOKENS = 300;
 
-const LINE_WIDTH = 100;
-
-// Words joined with `sep`, wrapped at LINE_WIDTH, each line indented.
-function wrapped(words: readonly string[], indent: string, sep = ' '): string[] {
-  const lines = [''];
-  for (const word of words) {
-    const last = lines.at(-1)!;
-    const next = last ? `${last}${sep}${word}` : word;
-    if (last && indent.length + next.length > LINE_WIDTH) {
-      lines[lines.length - 1] = `${last}${sep.trimEnd()}`;
-      lines.push(word);
-    } else lines[lines.length - 1] = next;
-  }
-  return lines.map((line) => `${indent}${line}`);
-}
-
-// Every kind `add` makes: the boxed kinds, then the shape kinds.
+// Every kind `add` takes.
 export function addableKinds(): string[] {
-  return [...OTHER_KINDS, ...SHAPE_KINDS];
+  return [...PLAN_ELEMENT_KINDS];
 }
 
 export function elementKindsText(): string {
   return [
-    'Element kinds: add <kind> makes one; liveplanner schema <kind> shows its fields.',
-    `  ${OTHER_KINDS.join(', ')}`,
-    '  shapes:',
-    ...wrapped([...SHAPE_KINDS], '    ', ', '),
-    '  arrow: connect <a> -> <b>',
-    `  ${Object.keys(NOT_ADDED)
-      .filter((k) => k !== 'arrow')
-      .join(', ')}: made in the editor`,
+    'Element kinds a tab holds: liveplanner schema <kind> shows its fields.',
+    ...PLAN_ELEMENT_KINDS.map((kind) => `  ${kind}: ${PLAN_ELEMENT_ABOUT[kind]}`),
+    'Each is { "type": "shape", "shape": <kind>, … }. Cards, cells and form questions have their own commands.',
   ].join('\n');
 }
 
-const fillValues = (el: Element) =>
-  el.type === 'sticky'
-    ? [...STICKY_PRESETS.map((p) => p.id.replace(/^sticky-/, '')), '#rrggbb']
-    : [...fillSlotNames(THEMES[0]!).keys(), '#rrggbb'];
+// A field with a closed list of values, with the list.
+const fieldText = (field: string) =>
+  ELEMENT_FIELD_VALUES[field] ? `${field} (${ELEMENT_FIELD_VALUES[field].join('|')})` : field;
 
-function aliasValue(el: Element, alias: ReturnType<typeof aliasesOf>[number]): string {
-  switch (alias) {
-    case 'label':
-    case 'note':
-      return '<text>';
-    case 'shape':
-      return '<shape kind>';
-    case 'fill':
-      return fillValues(el).join('|');
-    case 'stroke':
-    case 'text-color':
-      return '#rrggbb';
-    case 'border':
-      return BORDER_STYLES.join('|');
-    case 'text':
-      return `${TEXT_SIZES.join('|')}|${TEXT_PX_MIN}-${TEXT_PX_MAX}`;
-    case 'line':
-      return ARROW_STYLES.join('|');
-  }
-}
-
-const HIDDEN_FIELDS: ReadonlySet<string> = new Set(['id', 'type', ...LIVE_ELEMENT_FIELDS]);
-
-// A shape's stored fields cover every shape kind at once, more than one kind's budget: a shape names the fields
-// every shape uses, then its kind's own (its content, as the MCP's schema describes it).
-export const SHAPE_COMMON_FIELDS = [
-  'x',
-  'y',
-  'width',
-  'height',
-  'locked',
-  'textAlignX',
-  'textAlignY',
-  'textBold',
-  'textItalic',
-  'font',
-  'finish',
-  'strokeWidth',
-  'borderRadius',
-  'opacity',
-  'rotation',
-  'shadow',
-  'link',
-  'iconId',
-  'padding',
-] as const;
-
-export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
-  'code-block': ['code', 'codeLanguage', 'codeTheme', 'codeWrap'],
-  entity: ['entityFields'],
-  'pie-chart': [
-    'pieSlices',
-    'chartVariant',
-    'chartLegend',
-    'chartValues',
-    'chartPalette',
-    'chartSource',
-    'sheetAnchor',
-  ],
-  'bar-chart': [
-    'pieSlices',
-    'chartVariant',
-    'chartLegend',
-    'chartValues',
-    'chartAxis',
-    'chartPalette',
-    'chartSource',
-    'sheetAnchor',
-  ],
-  'line-chart': [
-    'lineCategories',
-    'chartVariant',
-    'lineSeries',
-    'chartLegend',
-    'chartValues',
-    'chartAxis',
-    'chartPalette',
-    'chartSource',
-    'sheetAnchor',
-  ],
-  checklist: ['checklistItems'],
-  lane: ['headerFill', 'headerSize', 'titleOrientation', 'flowchartId'],
-  frame: ['headerFill', 'headerSize'],
-  'progress-bar': ['progress'],
-  'progress-ring': ['progress'],
-  rating: ['rating'],
-  legend: ['legendItems'],
-  sankey: [
-    'sankeyFlows',
-    'sankeyNodes',
-    'sankeyLinkColor',
-    'sankeyAlign',
-    'sankeyValueLabel',
-    'sankeyUnit',
-    'sankeyLeftover',
-    'sankeyLeftoverName',
-    'chartPalette',
-  ],
-  decision: ['decisionStatus', 'decisionDate', 'decisionDrivers'],
-  picker: ['pickerOptions', 'pickerSource'],
-  'stat-row': ['stats'],
-  process: ['processSteps'],
-  'site-header': ['navLinks'],
-  page: ['pageTitle', 'pageSubtitle'],
-  'mind-node': ['mindParentId', 'mindFlow', 'mindSpacing'],
-  // docs/specs/009-elements/flowchart.md: any of the step-type kinds is a step once it carries a chart (a lane
-  // joins one by `flowchartId` too, above).
-  ...Object.fromEntries(
-    Object.values(FLOWCHART_STEP_KIND).map((k) => [
-      k,
-      ['flowchartId', 'flowDirection', 'flowLaneId'],
-    ]),
-  ),
-  icon: ['iconSize', 'iconWeight'],
-  sticker: ['stickerId'],
-  portal: ['portalTarget'],
-  // docs/specs/009-elements/tab-window.md: which tab the window shows.
-  'tab-window': ['windowTabId'],
-  // docs/specs/026-plan/plan-board.md: the board's set-up and the card's item; items change through
-  // the item verbs, never through element fields.
-  'plan-board': ['planBoard'],
-  'plan-card': ['planCard'],
-  // docs/specs/026-plan/plan-views.md: which view of the cards it shows.
-  'plan-view': ['planView'],
-  // docs/specs/029-sheets/sheet.md: the sheet it frames; cells change through the sheet verbs.
-  'plan-sheet': ['planSheet'],
-};
-
-function storedFieldsOf(kind: string, el: Element): readonly string[] {
-  if (el.type === 'shape') return [...SHAPE_COMMON_FIELDS, ...(SHAPE_KIND_FIELDS[kind] ?? [])];
-  return ELEMENT_FIELD_NAMES[el.type].filter((f) => !HIDDEN_FIELDS.has(f));
-}
-
-// One kind's format, or null for a kind `add` and `connect` do not know.
+// One kind's format, or null for a kind no tab holds.
 export function elementFormatText(kind: string): string | null {
-  const isArrow = kind === 'arrow';
-  if (!isArrow && !addableKinds().includes(kind)) return null;
-  const built = isArrow ? null : buildKind(kind);
-  const el = (built && 'el' in built ? built.el : { type: 'arrow' }) as Element;
-  const head = isArrow
-    ? 'arrow: connect <a> -> <b> [id=<id>] key=value… [again]'
-    : `${kind}: ${el.type === 'shape' ? 'a shape' : withArticle(el.type)}. add ${kind} [id=<id>] key=value… [<placement>]`;
-  const size =
-    'width' in el ? [`Size: ${el.width}×${el.height} at first, grown to fit its label.`] : [];
-  const aliases = aliasesOf(el).map((a) => `${a}=${aliasValue(el, a)}`);
-  const fields = storedFieldsOf(kind, el);
+  if (!isPlanElementKind(kind)) return null;
+  const chart = kind.endsWith('-chart');
   return [
-    head,
-    ...size,
-    'Set with:',
-    ...wrapped(aliases, '  ', '  '),
-    'And by stored name:',
-    ...wrapped(fields, '  '),
-    el.type === 'shape'
-      ? 'Any other stored field by name; a wrong one is refused with the list.'
+    `${kind}: ${PLAN_ELEMENT_ABOUT[kind]}.`,
+    `add: {"op":"add","element":{"type":"shape","shape":"${kind}",…}}`,
+    'Its own fields:',
+    `  ${PLAN_KIND_FIELDS[kind].map(fieldText).join(' ')}`,
+    'And every element’s:',
+    `  ${PLAN_COMMON_FIELDS.join(' ')}`,
+    chart
+      ? 'chartSource { "sheetId", "range" } names the cells it draws; a chart needs one.'
       : null,
-    'key= unsets a field; the theme paints the colours left unset.',
+    'set <selector> key=value… changes them; key= unsets one. view=show prints what it holds.',
   ]
     .filter((line) => line !== null)
     .join('\n');

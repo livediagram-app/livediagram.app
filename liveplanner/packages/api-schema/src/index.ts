@@ -8,7 +8,7 @@
 // without updating the client (or vice versa) used to be a routine
 // hazard; defining the shapes once means the typechecker catches it.
 //
-// Naming convention: bare nouns (`LiveDoc`, `Folder`, `ShareLink`).
+// Naming convention: bare nouns (`Project`, `Folder`, `ShareLink`).
 // The api worker re-exports some under its own aliases (`ProjectDTO` etc.);
 // new code should prefer the canonical names here.
 
@@ -26,7 +26,7 @@ import type { ItemTypeCatalogue } from '@liveplanner/items';
 // per-tab storage (docs/specs/006-project/per-tab-storage.md), `tabs` is a list of `TabSummary`
 // (metadata only) — element content is fetched separately via
 // `GET /api/projects/:id/tabs/:tabId`.
-export type LiveDoc = {
+export type Project = {
   id: string;
   ownerId: string;
   name: string;
@@ -68,9 +68,9 @@ export type LiveDoc = {
 
 // The creation intent recorded on a project when it was created, written once by the create and
 // never re-derived (docs/specs/013-workspace/default-folders.md "Recorded intent"). A null `opensIn`
-// is unknown (made before intents were recorded, or by a create without one), never Diagram, and
-// the other two are then unknown too; with a known `opensIn`, `tabKind` is known and a null
-// `templateFamily` means made from no family.
+// is unknown (made before intents were recorded, or by a create without one), and the other two are then unknown
+// too; with a known `opensIn`, `tabKind` names the first tab's kind (board, sheet, dashboard, form, or empty) and a
+// null `templateFamily` means made from no family.
 export type RecordedIntent = {
   opensIn: EditorMode | null;
   tabKind: CreationTabKind | null;
@@ -86,9 +86,9 @@ export type ProjectSummary = {
   shareable: boolean;
   shareCode: string | null;
   folderId: string | null;
-  // Team library placement (docs/specs/013-workspace/team-shared-projects.md) — see LiveDoc.teamId.
+  // Team library placement (docs/specs/013-workspace/team-shared-projects.md) — see Project.teamId.
   teamId: string | null;
-  // Provenance (docs/specs/013-workspace/folders.md) — see LiveDoc.source.
+  // Provenance (docs/specs/013-workspace/folders.md) — see Project.source.
   source: ProjectSource | null;
   savedAt: number;
   createdAt: number;
@@ -152,7 +152,7 @@ export type SharedWithItem = {
 // Tabs
 // ---------------------------------------------------------------------
 
-// One row of `LiveDoc.tabs`. Stored in D1 with id + project_id + name
+// One row of `Project.tabs`. Stored in D1 with id + project_id + name
 // + order_index as columns and the rest of the payload as a JSON
 // `data` column. The summary projection is what list / project
 // responses ship; the full payload (below) is fetched per-tab on
@@ -510,37 +510,8 @@ export {
   oauthRedirectUrl,
 } from './request-auth';
 
-export type AiMode = 'clean' | 'ask';
-
-export type AiConversationTurn = { role: 'user' | 'assistant'; content: string };
-
-// The bounds POST /api/ai holds a request to (docs/specs/007-editor/ai-assistance.md), shared so the panel can
-// keep within them rather than meet a bare 400.
-export const AI_MAX_PROMPT_CHARS = 1000;
-export const AI_MAX_ELEMENTS = 200;
-
-// Request body for POST /api/ai.
-export type AiRequest = {
-  mode: AiMode;
-  // Free-text instruction from the user (max 1 000 chars, enforced server-side).
-  prompt: string;
-  // All elements on the active tab (full context). Server uses focusIds
-  // to tell the model which subset to act on; the rest is read-only context.
-  elements: unknown[];
-  // Name of the active tab, included in the system prompt for context.
-  tabName: string;
-  // IDs of the currently selected elements. When non-empty the model is
-  // asked to focus its changes on these elements while treating the rest
-  // as context only. Empty / absent = act on all elements.
-  focusIds?: string[];
-  // Last N conversation turns for multi-turn context. Kept short (≤ 6
-  // turns) so the token cost stays bounded.
-  history?: AiConversationTurn[];
-};
-
 // Response body for GET /api/capabilities.
 export type CapabilitiesResponse = {
-  aiEnabled: boolean;
   // For the CLI (docs/specs/015-api/blueprints/cli.md "Capabilities"), each optional so an older worker parses:
   // where the api answers, whether sign-in exists, the OAuth server, the stored project format, and the
   // oldest CLI accepted for writes.

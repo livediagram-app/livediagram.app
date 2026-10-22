@@ -81,7 +81,7 @@ of their steps ask the person to try things.
 - **What counts as a dialog** is one signal, the modal guard (`lib/modal-guard.ts`): a count of open modal
   dialogs, fed by the editor's `Dialog` (so every dialog built on it counts with no extra work) and by the
   full-screen modals that do not use it calling `useModalGuard` themselves (the Search panel, the canvas theme
-  dialog, Photo Review, the identity prompt, the new project wizard, the sign-in reasons and delete account
+  dialog, the identity prompt, the new project wizard, the sign-in reasons and delete account
   modals). The window-level shortcut and paste listeners read the same count. The tours subscribe to it
   (`useOpenModalCount`, a `useSyncExternalStore` hook), never query the DOM for it. The engine keeps a
   **baseline**: the dialogs open when the tour started, raised when a step's target is found inside a dialog (the

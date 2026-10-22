@@ -50,7 +50,7 @@ describe('attributesOf (VW14)', () => {
     expect(link({ kind: 'element', tabId: '51c9abcd', elementId: 'e4a8-1' })).toBe(
       'link=tab:51c9#e4a8-1',
     );
-    expect(link({ kind: 'project', projectId: 'doc-1', name: 'Other' })).toBe('link=doc:doc-1');
+    expect(link({ kind: 'project', projectId: 'doc-1', name: 'Other' })).toBe('link=project:doc-1');
     expect(link({ kind: 'url', url: 'not a url' })).toBe('link="not a url"');
     expect(link({ kind: 'tab' })).toBe('');
     expect(link({ kind: 'element', tabId: 't' })).toBe('');

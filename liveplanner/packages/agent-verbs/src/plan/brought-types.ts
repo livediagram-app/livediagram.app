@@ -25,9 +25,7 @@ interface KnownCardTypes {
 }
 
 async function readKnown(api: ApiClient, projectId: string): Promise<KnownCardTypes> {
-  const { project } = await api.json<ProjectResponse>(
-    `/projects/${encodeURIComponent(projectId)}`,
-  );
+  const { project } = await api.json<ProjectResponse>(`/projects/${encodeURIComponent(projectId)}`);
   return {
     stored: project.itemTypes ?? null,
     ...(project.itemTypesRev !== undefined ? { rev: project.itemTypesRev } : {}),

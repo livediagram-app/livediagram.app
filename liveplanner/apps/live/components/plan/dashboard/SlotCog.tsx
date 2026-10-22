@@ -1,7 +1,7 @@
 'use client';
 
 // A Dashboard slot's own cog, **Slot Settings** (docs/specs/026-plan/plan-tabs.md "Editing"), for an item with no cog
-// of its own: in the header of a Diagram tab or a chart someone may not change, or floating at the top right of a
+// of its own: in the header of a chart someone may not change, or floating at the top right of a
 // metric, a utility or an empty slot. Its popover holds a utility's **Style** row (an Editor's) over the **Slot**
 // section, open as it opens. An item with a cog of its own folds the Slot section into that cog instead.
 import { useState, type ReactNode } from 'react';

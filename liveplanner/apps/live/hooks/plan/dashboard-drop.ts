@@ -77,9 +77,7 @@ function tabItemOf(rest: string): DashboardItem | null {
   const at = rest.indexOf(':');
   const of = rest.slice(0, at);
   const tabId = rest.slice(at + 1);
-  return at > 0 && tabId && (of === 'board' || of === 'sheet' || of === 'diagram')
-    ? { kind: 'tab', tabId, of }
-    : null;
+  return at > 0 && tabId && (of === 'board' || of === 'sheet') ? { kind: 'tab', tabId, of } : null;
 }
 
 // The cards a slot takes that are written on the page, and a Cards tile's choice (`card:<kind>`).

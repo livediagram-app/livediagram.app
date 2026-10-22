@@ -134,7 +134,6 @@ Not built yet; each fits the same `Timing·Measured` event with a new metric on 
 - **Time to first edit**: finishing the `/new` wizard to the first element placed, the clearest
   "how quickly does someone get going" number.
 - **Export**: PNG, SVG and PDF export, from the click to the file handed over, typed by format.
-- **AI Ask answer**: asking the AI panel to the first token of its answer.
 - **Sign-in round trip**: submitting the sign-in or sign-up code to the editor signed in.
 - **Server-side api latency**: the api worker timing its own project reads and writes, reported with
   `reportServerEvent`, to separate a slow network from a slow worker.

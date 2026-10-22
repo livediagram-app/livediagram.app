@@ -59,7 +59,7 @@ describe('a Board tab whose content arrives after the Dashboard opens', () => {
       </DashboardContext.Provider>,
     );
     expect(screen.getByText('Loading Backlog…')).toBeTruthy();
-    // Waiting as the board the slot was given, never as a Diagram tab's card (its header and drawing).
+    // Waiting as the board the slot was given.
     expect(screen.queryByRole('heading', { name: 'Backlog' })).toBeNull();
     rerender(
       <DashboardContext.Provider value={value(loaded, 'loaded')}>{slot}</DashboardContext.Provider>,
@@ -68,7 +68,7 @@ describe('a Board tab whose content arrives after the Dashboard opens', () => {
   });
 
   it('draws the board even when the slot first showed the tab some other way', () => {
-    // A slot from before `of` was recorded: the placeholder reads as a Diagram tab until it loads.
+    // A slot that names no kind: the placeholder waits as a Board until it loads.
     const old = <DashboardTabPreview slotId="s" tabId="b" />;
     const { rerender } = render(
       <DashboardContext.Provider value={value(placeholder, 'loading')}>

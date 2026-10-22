@@ -21,7 +21,6 @@ type ReadProjectArgs = {
   only?: string;
   ref?: string;
   q?: string;
-  coarse?: boolean;
   all?: boolean;
   style?: boolean;
   format?: 'view' | 'json';
@@ -40,7 +39,7 @@ function viewQuery(args: ReadProjectArgs, view: TabViewName, budget: number): st
     const value = args[key];
     if (value !== undefined) query.set(key, value);
   }
-  for (const key of ['coarse', 'all', 'style'] as const) if (args[key]) query.set(key, '1');
+  for (const key of ['all', 'style'] as const) if (args[key]) query.set(key, '1');
   return query.toString();
 }
 

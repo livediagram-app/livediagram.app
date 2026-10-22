@@ -376,6 +376,4 @@ Opening the popover sends `UI` / `Opened` / `TidyUp`. A press sends the tidier's
 Force-directed ("organic") layouts, laying shapes out inside their lanes (a lane moves only as a
 rigid block, so lane diagrams are offered Auto-align), routing graph input's arrows around
 obstacles (the editor's Tidy Up does), and any LLM
-involvement (the AI "Clean" in [AI Assistance](../007-editor/ai-assistance.md) is the separate,
-key-gated path; Auto Layout is the deterministic, offline-safe one every deployment
-gets). See issue #12 for the fuller rationale and open questions.
+involvement (Auto Layout is deterministic and offline-safe). See issue #12 for the fuller rationale and open questions.

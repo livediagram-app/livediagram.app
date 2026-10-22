@@ -269,7 +269,7 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     (cascades, migrations), the `ProjectRoom` Durable Object's rules, ledger
     and multiplayer paths, every route family (projects, tabs, share, images,
     thumbnails, folders, teams, trash, timeline, activity, tokens, OAuth, unfurl,
-    events, AI incl. the photo reader), the Timeline's writers and its catalogue
+    events), the Timeline's writers and its catalogue
     against its spec, the image reference index, email lifecycle, the OpenAPI
     manifest ↔ dispatch drift guards, response helpers, MIME sniffing.
   - `packages/api-schema`: the wire contracts both sides share: the SHA-256

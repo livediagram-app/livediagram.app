@@ -139,7 +139,7 @@ Location step and no client-side resolution ([New project route](../../007-edito
   (`INSERT … SELECT`), never recomputed.
 - `PROJECT_COLS` and `PROJECT_SUMMARY_COLS` gain the three columns; `readRecordedIntent(row)` maps
   them: `opensIn` through `isEditorMode`, `tabKind` and `templateFamily` through their lists; when
-  `opensIn` reads null, all three are null (`D28`). `LiveDoc` and `ProjectSummary` carry
+  `opensIn` reads null, all three are null (`D28`). `Project` and `ProjectSummary` carry
   `opensIn: EditorMode | null`, `tabKind: CreationTabKind | null`,
   `templateFamily: TemplateFamily | null`. An Offline Mode project and summary carry null, null, null.
 

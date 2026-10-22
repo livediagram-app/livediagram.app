@@ -15,12 +15,10 @@ import { DASHBOARD_CONDENSE_PX } from '@/components/plan/dashboard/condense';
 // What each kind of content needs to look good in a slot, in px: a board its header, three columns and two or three
 // cards under them (less shows one card and reads as cramped), a sheet its toolbar and eight rows, a chart its axes; a
 // metric or a note fits any slot.
-export type SlotFitKind = 'board' | 'sheet' | 'diagram' | 'chart' | 'metric' | 'note';
+export type SlotFitKind = 'board' | 'sheet' | 'chart' | 'metric' | 'note';
 const SLOT_FIT: Record<SlotFitKind, { width: number; height: number }> = {
   board: { width: 480, height: 440 },
   sheet: { width: 320, height: 240 },
-  // A Diagram tab's drawing, fitted: big enough to make out its shapes and labels.
-  diagram: { width: 320, height: 220 },
   chart: { width: 300, height: 220 },
   metric: { width: 0, height: 0 },
   note: { width: 0, height: 0 },

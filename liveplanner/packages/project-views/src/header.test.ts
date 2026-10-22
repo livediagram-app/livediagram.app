@@ -66,7 +66,7 @@ describe('headerLine (R16, VW8)', () => {
   });
 
   it('carries the view name in JSON', () => {
-    expect(viewHeader('graph', facts()).view).toBe('graph');
+    expect(viewHeader('comments', facts()).view).toBe('comments');
   });
 });
 

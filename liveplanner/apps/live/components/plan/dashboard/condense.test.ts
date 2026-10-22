@@ -25,7 +25,7 @@ describe('a Dashboard on a phone', () => {
     expect(phoneSlotSize({ type: 'sheet-metric', metric: 'cell', sheetId: '' } as never)).toBe(
       'figure',
     );
-    expect(phoneSlotSize({ type: 'tab', tabId: 't', of: 'diagram' })).toBe('work');
+    expect(phoneSlotSize({ type: 'tab', tabId: 't', of: 'sheet' })).toBe('work');
     const el = { type: 'element' as const, elementId: 'e' };
     expect(phoneSlotSize(el, { shape: 'plan-view', planView: { view: 'metric:count' } })).toBe(
       'figure',

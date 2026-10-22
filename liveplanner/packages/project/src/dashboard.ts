@@ -24,8 +24,8 @@ export const DASHBOARD_NOTE_MAX = 2000;
 export const DASHBOARD_NOTE_TITLE_MAX = 120;
 
 export type DashboardContent =
-  // A Board, Sheet or Diagram tab of the project, drawn compact and live.
-  // `of`: which it is, so a slot whose tab was deleted can still say what was lost.
+  // A Board or Sheet tab of the project, drawn compact and live.
+  // `of`: which it is, so a slot whose tab was deleted can still say what was lost (a Board when absent).
   | { type: 'tab'; tabId: string; of?: DashboardTabOf }
   // An element on the dashboard tab: a plan view (visualisation or metric) or a chart from a Sheet.
   | { type: 'element'; elementId: string }
@@ -35,10 +35,9 @@ export type DashboardContent =
   // A Status, Checklist, Key Date or Links (dashboard-cards.ts).
   | DashboardCardContent;
 
-// What kind of tab a slot shows: a Board or Sheet tab (worked on in place) or a Diagram tab (any other tab but a
-// Dashboard: its drawing, live, still).
-export type DashboardTabOf = 'board' | 'sheet' | 'diagram';
-const TAB_OFS: readonly unknown[] = ['board', 'sheet', 'diagram'];
+// What kind of tab a slot shows: a Board or Sheet tab, worked on in place. No other kind of tab goes in a slot.
+export type DashboardTabOf = 'board' | 'sheet';
+const TAB_OFS: readonly unknown[] = ['board', 'sheet'];
 
 export type DashboardSlot = { id: string; span: number; content?: DashboardContent };
 // `fill`: the row takes the page's height (a full-screen visualisation, docs/specs/026-plan/plan-tabs.md "A row that

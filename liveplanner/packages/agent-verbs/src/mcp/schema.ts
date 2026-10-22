@@ -1,14 +1,10 @@
 // The element-schema MCP resource (docs/specs/015-api/mcp-server.md §4.5) + the tools' zod input shapes.
-// Element types + anchors come from packages/project (single source of truth);
-// the design rules are curated guidance. The element STRUCTURE is carried inline
-// on every tool argument that takes elements (ELEMENT_SCHEMA_HINT) so the whole
-// format is available from the tool definition itself, with no second lookup to
-// make. It states that completeness as a fact about the tools rather than as a
-// rule for the caller: a description that tells a model how to behave, or steers
-// it away from other tools, is a connector-listing flag (docs/specs/015-api/mcp-server.md §4.15).
-// isValidTab in the project package stays the runtime guard, so
-// the structure still lives in one authoritative place (this string is guidance,
-// not a second validator).
+// The element kinds and their fields come from @liveplanner/edit-operations, the one list edit operations and the
+// value check read, so the format carried inline on every tool argument that takes elements (ELEMENT_SCHEMA_HINT)
+// cannot drift from what is accepted. It states that completeness as a fact about the tools rather than as a rule for
+// the caller: a description that tells a model how to behave, or steers it away from other tools, is a
+// connector-listing flag (docs/specs/015-api/mcp-server.md §4.15). isValidTab in the project package stays the runtime
+// guard.
 import { z } from 'zod';
 import { METRIC_KINDS, PLAN_VISUALISATIONS } from '@liveplanner/items';
 import {
@@ -18,251 +14,86 @@ import {
   VIEW_BUDGET_MAX,
 } from '@liveplanner/api-schema';
 import {
-  ANCHORS,
-  BADGE_LABEL_MAX,
-  CARD_TAGS_MAX,
+  PLAN_COMMON_FIELDS,
+  PLAN_ELEMENT_ABOUT,
+  PLAN_ELEMENT_KINDS,
+  PLAN_KIND_FIELDS,
+} from '@liveplanner/edit-operations';
+import {
   ELEMENT_FIELD_VALUES,
-  GREY_PEN_COLOUR,
-  INK_PEN_COLOUR,
-  PEN_COLOUR_NAMES,
   FINISHES,
   type Finish,
-  CODE_LANGUAGES,
-  CODE_MAX_LENGTH,
-  CODE_THEMES,
-  ELEMENT_TYPES,
-  ENTITY_MAX_FIELDS,
   NAME_MAX_LENGTH,
-  SANKEY_LINK_COLORS,
-  SANKEY_MAX_FLOWS,
-  SANKEY_NAME_MAX,
-  SANKEY_UNIT_MAX,
-  SANKEY_VALUE_LABELS,
-  SHAPE_KINDS,
-  STEP_LABEL_MAX,
-  STICKY_PRESETS,
   THEMES,
   truncateName,
 } from '@liveplanner/project';
 
 export const SCHEMA_RESOURCE_URI = 'liveplanner://schema/elements';
 
-const types = [...ELEMENT_TYPES].join(', ');
-const anchors = [...ANCHORS].join(', ');
-const shapeKinds = [...SHAPE_KINDS].join(', ');
 const themeIds = THEMES.map((t) => t.id).join(', ');
 
-// The content fields of the kinds that carry content (docs/specs/015-api/mcp-server.md §4.7a), as
-// facts. One copy, shared by the tool argument and the schema resource; the
-// vocabularies come from packages/project so they can't drift.
-const stickyPairs = STICKY_PRESETS.map((p) => `${p.name.toLowerCase()} ${p.fill}/${p.text}`).join(
-  ', ',
-);
-const CONTENT_KINDS =
-  'Content-carrying kinds: ' +
-  'type "sticky": a note whose "label" is its text; the theme never recolours it, so its own ' +
-  `"fillColor" + "textColor" are kept (palette pairs, fill/text: ${stickyPairs}); unset it is ` +
-  'the classic amber note. ' +
-  'type "image": an empty picture placeholder; liveplanner keeps no uploaded pictures, so it takes no ' +
-  '"imageId" (one is refused); "alt" describes what it stands for. ' +
-  'type "table": "cells" is rows of strings (ragged rows are padded), "headerRow" / ' +
-  '"headerColumn" style the first row / column, "zebra" tints alternate rows. ' +
-  `shape "code-block": "code" (up to ${CODE_MAX_LENGTH} chars), "codeLanguage" (` +
-  `${CODE_LANGUAGES.join(', ')}), "codeTheme" (${CODE_THEMES.map((t) => t.id).join(', ')}; ` +
-  'default midnight, dark), "codeWrap"; the block draws itself and shows no label. ' +
-  'shape "entity": "label" is the title, "entityFields" is [{ "name", "type"?, "key"? }] rows (up to ' +
-  `${ENTITY_MAX_FIELDS}; "key" is "pk", "fk", "pk-fk" or "uk"); the box grows to fit its rows. A pinned ` +
-  'arrow end on an entity may add "field": a row index, with anchor "w" or "e", to join that field. ' +
-  'shape "lane": a swimlane whose "label" is the title in its left strip; elements fully inside ' +
-  'its box belong to it, lanes are placed one under another, and they paint behind everything. ' +
-  'shape "bar-chart" / "pie-chart": "pieSlices" is [{ "label", "value" }]; categories show in ' +
-  'the legend. shape "line-chart": "lineCategories" is the x labels, "lineSeries" is ' +
-  '[{ "name", "values" }] with one value per category. "chartVariant" picks the chart type: ' +
-  'on "bar-chart" "horizontal" draws a Bar chart (absent: upright columns); on "line-chart" "area" ' +
-  'fills each series down to zero and "scatter" draws points only, at x = each category read as a ' +
-  'number; on "pie-chart" "doughnut" opens the middle. "chartValues": true prints each mark\'s ' +
-  "number on the chart (a pie's as percentages when its values add up to 100; a column chart also " +
-  'names each column under it, so "chartLegend": false can drop the key). "chartAxis": true draws the value axis, ' +
-  'round tick values and gridlines (not on a pie). A "lineSeries" entry with "axis": "right" is drawn against a ' +
-  'scale of its own, labelled on the right, so a series in the thousands and one in the tens both read. ' +
-  'A chart draws no title (a caption is a ' +
-  'separate "text" element) and draws sample data when its data is empty. ' +
-  'shape "sankey": a Sankey diagram, bands as wide as the amount they carry, laid out in columns ' +
-  'by itself. "sankeyFlows" is [{ "from", "to", "value" }] with node NAMES (the nodes are the ' +
-  `names; up to ${SANKEY_MAX_FLOWS} flows, names up to ${SANKEY_NAME_MAX} chars, values above ` +
-  'zero; a flow back to an earlier node is hidden, as is one into itself). Options: ' +
-  `"sankeyLinkColor" (${SANKEY_LINK_COLORS.join(', ')}; default gradient), "sankeyAlign" ` +
-  '(justify: end nodes in the last column, the default; left: each at its own step), ' +
-  `"sankeyValueLabel" (${SANKEY_VALUE_LABELS.join(', ')}), "sankeyUnit" (e.g. "£", "kWh"; up ` +
-  `to ${SANKEY_UNIT_MAX} chars), "sankeyNodes" [{ "name", "color", "leftover": false }] to colour a node or switch ` +
-  'off its own leftover, ' +
-  '"sankeyLeftover" (show, the default: a middle node that sends on less than it receives draws ' +
-  'the difference to a "Leftover" end node; hide: it does not), "sankeyLeftoverName" (that ' +
-  "node's name; do not write leftover flows yourself). Make it " +
-  'wide (about 2:1); it draws no title. ' +
-  // The diagram-building kinds (docs/specs/015-api/mcp-server.md §4.7a).
-  'shape "card": a node with a title, meta line and body; "pageTitle" is the title, "pageSubtitle" ' +
-  'the meta (a product or runtime), "label" the body, "cardMedia" + "iconId" the glyph (a badge disc, a ' +
-  `tile or an initial), "cardHeader" true for a coloured header band, "tags" up to ${CARD_TAGS_MAX} short ` +
-  'facts. Use cards for service and component nodes. "callout" is accepted and stored as a card. ' +
-  '"accentEdge" on a square, stadium or card draws a coloured strip on that side. ' +
-  `shape "badge": a small label pill (up to ${BADGE_LABEL_MAX} chars); shape "step": a numbered disc ` +
-  `("label" the number, up to ${STEP_LABEL_MAX} chars). Both take "chipLook"; with "attachedTo" (a node id) ` +
-  'and "attachAt" they sit on that point of the node and move, copy and delete with it; no x / y needed. ' +
-  'shape "boundary": a titled container ("label" the title, "pageSubtitle" a meta line such as a CIDR, ' +
-  '"iconId" in its tab); elements whose centre is inside it belong to it; nest them for edge, region, ' +
-  'VPC and subnet, "boundaryStyle" inset for a nested one, c4 for a C4 diagram. ' +
-  'shape "layer-stack" / "pyramid" / "cycle": "conceptRows" is [{ "label", "note"? }]: a stack 2 to 8 ' +
-  '(note = a side note), a pyramid 2 to 6 (first row the apex; "pyramidVariant" funnel makes it a ' +
-  'funnel and its note the row\'s value), a cycle 3 to 8 clockwise from the top (its "label" is the ' +
-  'centre); "hub" 3 to 8 satellites round its "label" ("hubSpokes" false hides the lines), "onion" 2 to 6 ' +
-  'rings from the core out, "chevrons" 2 to 8 stages left to right, "timeline-rail" 2 to 8 milestones ' +
-  'left to right (label = what, note = when: a date, a quarter). They draw their own rows in the colour ramp; ' +
-  'do not draw them from separate shapes. ' +
-  // Round 2 (docs/specs/015-api/mcp-server.md §4.7a).
-  'shape "pointer-note": a note ("label") with a leader to a tip; "pointerTip" { x, y } is relative to its ' +
-  'top-left, or "attachedTo" + "attachAt" pins the tip to that point of a node. ' +
-  'shape "diagram-key": a legend of the tab\'s arrow line styles and tag colours; its rows fill in by ' +
-  'themselves, "keyMeanings" maps a row id ("line:dashed", "tag:<tag>") to what it means. ' +
-  'shape "stack": a container that lines up the elements whose centre is inside it; "stackDirection", ' +
-  '"stackColumns" (2 to 6, grid), "stackGap" and "stackPadding" (0 to 64), "stackAlign"; place children ' +
-  'anywhere inside and the editor lays them out. ' +
-  'shape "sequence": a UML sequence diagram in one element; "sequenceParticipants" is [{ "id", "label", ' +
-  '"actor"? }] (2 to 12, left to right), "sequenceMessages" [{ "from", "to", "label", "kind": call | async | ' +
-  'reply }] (up to 60, top to bottom, from === to a self-call), "sequenceNumbered" true numbers them. It lays ' +
-  'itself out; prefer it over loose shapes and arrows for a sequence diagram you will edit.';
+// One kind's fields as facts: its own, a closed field with its values.
+const fieldsText = (fields: readonly string[]) =>
+  fields
+    .map((f) =>
+      ELEMENT_FIELD_VALUES[f] ? `"${f}" (${ELEMENT_FIELD_VALUES[f].join(', ')})` : `"${f}"`,
+    )
+    .join(', ');
 
-// The style fields a box or arrow takes beyond its geometry, as facts (docs/specs/015-api/mcp-server.md §4.7a "Style
-// fields"): the closed vocabularies from the one list edit operations and the value check read, so they cannot drift.
-const STYLE_FIELDS =
-  'Style fields: ' +
-  Object.entries(ELEMENT_FIELD_VALUES)
-    .map(([key, values]) => `"${key}" (${values.join(', ')})`)
-    .join(', ') +
-  '; "textBold", "textItalic" (true/false); "colorPreset" (a shape\u2019s look from the theme, its border\u2019s ' +
-  'width and style included, so it outranks a "strokeStyle" given with it; ghost and outline are dashed, dotted ' +
-  'and dash-dot as named: theme, soft, ' +
-  'tinted, solid, bold, ghost, paper, muted, slate, inked, hairline, outline, dotted, dash-dot, frame, info, ' +
-  'success, warning, danger, highlight); "iconId" with "iconPosition"; "note" (detail ' +
-  'shown on the element); on an arrow "label", ' +
-  '"strokeStyle", "arrowEnds", "arrowheadShape" (an ER line\u2019s ends: one, zero-or-one, many, zero-or-many, ' +
-  'one-or-many), "arrowheadStartShape" (the start\u2019s, when it differs: a one at one table, a many at the ' +
-  'other). A field a type ' +
-  'does not have, or a value off its list, is refused naming what it takes. ' +
-  'Facilitation kinds and what they hold: "session-button" a "session" ({"tool": "timer" with "minutes", ' +
-  '"stopwatch", or "vote" with "dots"}), drawn as what pressing it does ' +
-  'unless it has a label; "checklist" its "checklistItems" ' +
-  '([{"text", "done"}]); a stat row its "stats" ([{"value", "caption"}]); a callout its "pageTitle" over its "label" ' +
-  '(the body); a banner its "pageTitle" and "pageSubtitle"; "sticker" a "stickerId" (an emoji- id). The entries of a "temperature" check ' +
-  'are the people\u2019s, never an edit\u2019s. ';
+const KIND_LINES = PLAN_ELEMENT_KINDS.map(
+  (kind) =>
+    `shape "${kind}": ${PLAN_ELEMENT_ABOUT[kind]}; takes ${fieldsText(PLAN_KIND_FIELDS[kind])}.`,
+);
+
+const CHART_SOURCE =
+  'A chart\'s "chartSource" is { "sheetId", "range": { "r1", "c1", "r2", "c2" } }: a sheet of the project ' +
+  '(list_sheets) and the row and column ids of its first and last cells (read_sheet).';
 
 // Self-contained element schema, attached to each tool's element argument so the
 // model reads it straight from the tool definition (see the comment above).
 const ELEMENT_SCHEMA_HINT =
   'An array of element objects. This is the COMPLETE format, documented inline ' +
   'here: the tool definition is the full reference for it. ' +
-  'Each element: { "id": a unique string, "type", ' +
-  '"x", "y", "width", "height", and optional "label" }. ' +
-  'type "shape" is a NODE (a labelled box) and also needs "shape", one of ' +
-  `${shapeKinds}. The default box is "square" (there is NO "rectangle"); use ` +
-  '"diamond" for a decision, "cylinder" for a datastore, "stadium" for start/end. ' +
-  'type "text" is BARE text with no box; use it only for a title, caption, or ' +
-  'legend, never for a node; it is centred in its box, so a left-aligned heading or caption sets ' +
-  '"textAlignX": "left". type "freehand" is a HAND-DRAWN stroke: give "points" as canvas ' +
-  'coordinates, [[x, y], ...] in drawing order (the box is taken from them), with "closed" true to ' +
-  'close and fill the shape, and "penColour" (' +
-  `${[INK_PEN_COLOUR, GREY_PEN_COLOUR, ...PEN_COLOUR_NAMES].join(', ')}` +
-  '). A hand-drawn board starts from the "whiteboard" template, a tab in Draw mode: underline a ' +
-  'heading, ring a word or draw a doodle with a few strokes, a point every 10 to 20 px along a ' +
-  'curve; an arrow between boxes stays a pinned "arrow", which a "sketch" finish draws by hand and ' +
-  'which stays attached. Any box may carry "rotation" in degrees, a small tilt (-4 to 4) reading as ' +
-  'placed by hand. type "arrow" needs "from" and "to" endpoints, each ' +
-  'either { "kind": "pinned", "elementId", "anchor" } (anchors: ' +
-  `${anchors}; preferred, so arrows track their shapes) or ` +
-  '{ "kind": "free", "x", "y" }; an arrow may carry a "label". ' +
-  'The theme owns fill, stroke, and text colour on every element except a sticky. ' +
-  'Any element may carry "finish" ("flexible", "professional", "sketch" or "marker") to be drawn ' +
-  'differently from its tab. ' +
-  STYLE_FIELDS +
-  CONTENT_KINDS;
+  'Each element: { "id": a unique string, "type": "shape", "shape", "x", "y", "width", "height", and ' +
+  `optional ${fieldsText(PLAN_COMMON_FIELDS.filter((f) => !['x', 'y', 'width', 'height'].includes(f)))} }. ` +
+  'A liveplanner tab holds only these shapes; any other element is refused. ' +
+  KIND_LINES.join(' ') +
+  ' ' +
+  CHART_SOURCE +
+  " Cards are items (change_items), cells are a sheet's (change_sheet), and a Dashboard is easiest made " +
+  'whole with "dashboard".';
 
 export function elementSchemaDoc(): string {
   return `# liveplanner element schema
 
-A tab is { name, elements: Element[] }. Every element needs a unique string "id".
-A project has one or more tabs, each its own canvas. create_project makes a
-project with one or more tabs at once; add_tab appends another tab to an existing
-project (e.g. an overview tab, then a detail tab zooming into one subsystem).
+A project holds tabs: Board, Sheet, Dashboard and Form tabs. A tab is
+{ name, elements: Element[] }; a Form tab holds its form, not elements.
+create_project makes a project with one or more tabs at once; add_tab appends
+another tab to an existing project.
 
-## Element types
-${types}
+## Elements
+Every element is { "id", "type": "shape", "shape", "x", "y", "width", "height" }
+with an optional ${fieldsText(PLAN_COMMON_FIELDS.filter((f) => !['x', 'y', 'width', 'height'].includes(f)))}.
+A tab holds only these shapes; any other element is refused:
 
-Boxed elements (shape, text, sticky, table, image, annotation) carry:
-  id, type, x, y, width, height, and an optional "label" (string).
-  - "shape" is the element for a NODE — a labelled box, the default building
-    block of almost every diagram. It also needs "shape": one of
-    ${shapeKinds}. The default box / process step is "square" (a rounded
-    rectangle that fills its width × height) — there is NO "rectangle" kind.
-    Use "diamond" for a decision, "cylinder" for a datastore, "stadium" for a
-    start/end, "circle", "hexagon", "parallelogram" for I/O, and "frame" for a
-    section container. An unknown kind is coerced to "square".
-  - "text" is BARE text with no box, fill, or border. Use it ONLY for a
-    free-standing title, caption, legend, or note — NEVER for a node. A node
-    that has a label is a "shape" with a "label" (use shape: "square"), not a
-    "text". Defaulting to "text" for nodes makes a diagram of floating words
-    with no boxes; reach for "shape" unless you specifically want loose text.
+${KIND_LINES.map((l) => `- ${l}`).join('\n')}
 
-## Content-carrying kinds
-${CONTENT_KINDS}
+${CHART_SOURCE}
 
-## Arrows
-type "arrow" with "from" and "to" endpoints. PREFER pinned endpoints so arrows
-track their shapes when laid out or moved:
-  from / to: { "kind": "pinned", "elementId": "<id>", "anchor": "<a>" }
-  anchors: ${anchors}
-A free endpoint is { "kind": "free", "x": number, "y": number }. Arrows may carry
-an optional "label".
-
-## Layout — your call
-YOU decide the layout; the server does not override a real arrangement.
-- For a deliberate shape, set explicit x/y and they are kept as given: a life
-  CYCLE as a ring with an arrow looping back to the start, a hierarchy as a
-  top-down tree, a comparison as a grid, a timeline as a row.
-- For a simple flow you'd rather not position, leave coordinates rough or zero
-  and the server arranges a clean graph (>= 3 nodes joined by pinned arrows).
-- The "layout" tool argument forces it either way: "preserve" keeps your
-  coordinates, "auto" re-lays-out the graph. Omitted = auto-detect (a real
-  arrangement is kept; nodes left piled at one point get laid out).
-- Supporting text (a per-node description, a caption, a title) is ALWAYS kept
-  where you place it and never auto-arranged — so put it next to the node it
-  describes, not in a loose pile.
+Cards are items: change_items adds and moves them, and a board shows them.
+A sheet's cells change through change_sheet. A Dashboard is easiest made
+whole: pass "dashboard" (its tabs, metrics, charts and notes) on create_project,
+add_tab or update_project, and the server lays it out.
 
 ## Themes (the look)
-Set "theme" on create_project / add_tab to one of these presets and the server
-paints the whole diagram + canvas with it (you still omit per-element colours):
+Set "theme" on create_project / add_tab to one of these presets:
   ${themeIds}
-Defaults to "brand", the Default scheme: the plain, un-themed canvas, which
-follows each reader's own light / dark setting in the editor and paints no
-element colours at all. Rough guide: cool blues = ocean / sky; greens = forest /
-pine / olive; warm = sunset / sand / rose / mocha; neutral = mono / steel /
-cream; dark backdrops = midnight / plum / abyss / espresso (or leave it on
-"brand", which is dark for a reader in dark mode); multi-colour (each branch a
-different hue) = rainbow / pastel / tropical / autumn / jewel; uml = standard
-UML notation colours. Pick one that fits the subject; one scheme applies to all
-tabs in a create_project call.
+Defaults to "brand", the Default scheme, which follows each reader's own
+light / dark setting.
 
-## Design rules (diagrams that read well)
-- Nodes are SHAPES, not text. Use type "shape" (shape: "square" by default,
-  "diamond" for a decision, "cylinder" for a datastore) for every box in the
-  diagram. Reserve type "text" for stand-alone titles / captions.
-- Do NOT set colours. The theme owns fill / stroke / text colour; omit them and
-  the diagram inherits a coherent palette. A sticky is the exception: it is not
-  themed, so its own fillColor / textColor are kept.
-- Size sibling nodes consistently (e.g. every box 160x64).
-- Prefer pinned arrows (node -> node) so they track their shapes when moved.
-- Give every node an id and a short, clear label.
-- list_templates has hand-tuned Plan scaffolds (kanban, project planner, bug
-  triage, ...) to pass as "template"; a "dashboard" builds a Dashboard tab.
+## Templates
+list_templates lists the Plan scaffolds (kanban, project planner, bug triage,
+...) to pass as "template".
 `;
 }
 
@@ -300,13 +131,6 @@ form; its responses are read with list_items (cards) or read_sheet (rows).`;
 // is the real guard, so there's no second schema to drift. ---
 
 const elementArray = z.array(z.record(z.string(), z.unknown())).describe(ELEMENT_SCHEMA_HINT);
-
-const layoutField = z
-  .enum(['auto', 'preserve'])
-  .optional()
-  .describe(
-    'How to position elements. "preserve" keeps the exact x/y you give — use it for a deliberate shape (a cycle as a ring, a tree, a grid). "auto" arranges a clean directed graph for you. Omit to auto-detect: a real arrangement is kept; nodes left piled at one point get laid out. Supporting text is always kept in place either way.',
-  );
 
 // Template kinds are validated at runtime against the shared catalogue
 // (@liveplanner/templates) rather than a z.enum, so a new template is one
@@ -362,7 +186,7 @@ const dashboardField = z
   })
   .optional()
   .describe(
-    'Make the tab a Plan Dashboard instead of a canvas: rows of the tabs it shows, then metrics, Gantts, other ' +
+    'Make the tab a Plan Dashboard instead of giving elements: rows of the tabs it shows, then metrics, Gantts, other ' +
       'charts and notes, each drawn live from the cards; up to 12 rows. Give it in place of elements or template.',
   );
 
@@ -372,19 +196,13 @@ const templateField = z
   .describe(
     'Start from a hand-tuned template scaffold instead of providing elements: a template ' +
       'kind from list_templates (e.g. "kanban", "project-planner", "bug-triage"). The server ' +
-      'materialises its curated layout ("layout" is ignored for a template tab) and paints ' +
-      'it with the chosen theme. Personalise the placeholder labels afterwards with ' +
-      'update_project mode "ops". Provide template OR elements, not both.',
+      'builds it and paints it with the chosen theme. Provide template OR elements, not both.',
   );
 
 const themeField = z
   .string()
   .optional()
-  .describe(
-    'Preset theme id that paints the whole diagram + canvas. One of: ' +
-      `${themeIds}. Omit per-element colours and let the theme own them. ` +
-      'Defaults to "brand".',
-  );
+  .describe('Preset theme id that paints the tab. One of: ' + `${themeIds}. Defaults to "brand".`);
 
 const finishField = z
   .enum(FINISHES as unknown as [Finish, ...Finish[]])
@@ -415,9 +233,8 @@ export const readProjectShape = {
     .enum(TAB_VIEW_NAMES)
     .optional()
     .describe(
-      'How to read the tab. outline (default): one line per element with its ref, label and arrows, ' +
-        'nested by frame. graph: what connects to what. layout: where things sit. comments: open threads ' +
-        'in full. show: one element in full (needs ref). find: elements holding some text (needs q).',
+      'How to read the tab. outline (default): one line per element with its ref and label. comments: open ' +
+        'threads in full. show: one element in full (needs ref). find: elements holding some text (needs q).',
     ),
   budget: z
     .number()
@@ -433,7 +250,7 @@ export const readProjectShape = {
     .min(1)
     .max(REF_INPUT_MAX_LENGTH)
     .optional()
-    .describe('outline, layout: one element (a ref from a view) and what nests under it.'),
+    .describe('outline: one element (a ref from a view) and what nests under it.'),
   ref: z
     .string()
     .min(1)
@@ -446,12 +263,8 @@ export const readProjectShape = {
     .max(FIND_QUERY_MAX_LENGTH)
     .optional()
     .describe('find: the text to look for, case-insensitive.'),
-  coarse: z.boolean().optional().describe('layout: rows per frame instead of coordinates.'),
   all: z.boolean().optional().describe('comments: include resolved threads.'),
-  style: z
-    .boolean()
-    .optional()
-    .describe('outline: add the colours and line styles that differ from the defaults.'),
+  style: z.boolean().optional().describe('outline: add the colours that differ from the defaults.'),
   format: z
     .enum(['view', 'json'])
     .optional()
@@ -497,8 +310,8 @@ export const createProjectShape = {
     .max(20)
     .optional()
     .describe(
-      'One or more tabs, each its own canvas. Preferred — pass several to create a multi-tab ' +
-        'project in one call (e.g. an overview tab plus a detail tab per subsystem).',
+      'One or more tabs. Preferred: pass several to create a multi-tab project in one call (e.g. a Board tab ' +
+        'and a Dashboard tab over it).',
     ),
   // The alias is checked against the tab shape by the tool, not listed here a second time: the shape carries the
   // whole element format, and a definition twice its size is one a client's tool search ranks out of sight.
@@ -506,7 +319,6 @@ export const createProjectShape = {
     .unknown()
     .optional()
     .describe('A single tab, shaped as one item of "tabs"; accepted as an alias for tabs: [tab].'),
-  layout: layoutField,
   theme: themeField,
   finish: finishField,
   // Making a project is a use (docs/specs/015-api/mcp-server.md §4.3).
@@ -528,7 +340,6 @@ export const addTabShape = {
   elements: elementArray.optional(),
   template: templateField,
   dashboard: dashboardField,
-  layout: layoutField,
   theme: themeField,
   finish: finishField,
 };
@@ -558,7 +369,6 @@ export const updateProjectShape = {
     'Replace mode on a Dashboard tab: its tabs, metrics, charts and notes rebuilt whole (the tab keeps its id ' +
       'and name). Only a Dashboard tab takes one.',
   ),
-  layout: layoutField,
   ops: z
     .array(
       z.object({
@@ -588,20 +398,12 @@ export const updateProjectShape = {
     .optional()
     .describe(
       'ops mode, instead of "ops": edit operations, one a line, applied all or nothing. ' +
-        'Operations: add <kind> [id=<id>] key=value… [placement]; set <sel> key=value… ' +
-        '[all]; rm <sel> [all] [keep-arrows]; move <sel> <placement>|by=dx,dy; connect <a> -> <b> [label=…] ' +
-        '[line=straight|angled|curved]; rewire <arrow> from=<x> to=<y>; insert <kind> key=value… between <a> <b> ' +
-        '(puts a node on the a→b arrow and makes room); wrap <sel…> in frame|lane [label=…] [tidy]; unwrap ' +
-        '<frame>; order <sel> front|back; layout <sel> [style=flow|tree|mindmap] [direction=down|right]. ' +
-        'Selectors: a ref or id, "Label text", type:sticky, shape:diamond, in:<frame>, a->b, from:<x>, to:<x>, ' +
-        'downstream:<x>. Placement: right-of:<x> left-of:<x> above:<x> below:<x> [gap:<n>], after:<x>, ' +
-        'inside:<frame>, align:<x>, at:x,y; inside:<frame> right-of:<x> places beside x in that frame. A box placed ' +
-        'beside one inside a frame or lane joins it (the container grows); to stay outside, place it against the ' +
-        'frame itself (below:<frame>), with align:<x> to line it up with a member (below:<frame> align:<x>). ' +
-        'Keys: label= note= shape= fill=theme|red|orange|yellow|green|blue|' +
-        'violet (a sticky: classic|lemon|peach|rose|lilac|sky|mint|teal|slate) text=sm|md|lg border=solid|dashed|' +
-        'dotted line=…, or any stored field by name. Values with spaces are quoted: label="Sign in". ' +
-        'Coordinates are relative to the content origin, as the layout view prints them.',
+        'Operations: set <sel> key=value… [all]; rm <sel> [all]; test <sel> key=value… (refuses the whole ' +
+        'changeset unless the fields hold those values); add takes a whole element as a JSON line, ' +
+        '{"op":"add","element":{…}}, in the format of "elements". Selectors: a ref or id, "Label text", ' +
+        'label~part, type:plan-view, selected (what the person has selected); several terms must all match. ' +
+        'Keys are the fields the element format names. Values with spaces are quoted: label="Team load"; a ' +
+        'value starting [ or { is JSON; key= unsets.',
     ),
 };
 

@@ -140,17 +140,16 @@ build exercises the same code as production's.
 ## Integrations
 
 Each is wired to its own tenant or its own data — but **only two are switched on**.
-The other two are configured and dormant, waiting on a key that is deliberately not
+Resend is configured and dormant, waiting on a key that is deliberately not
 set. `GET /api/capabilities` is the authoritative answer at any moment; as of the
-first deploy it returns `{"aiEnabled":false,"emailEnabled":false}` on staging against
-`{"aiEnabled":true,"emailEnabled":true}` on production.
+first deploy it returns `{"emailEnabled":false}` on staging against
+`{"emailEnabled":true}` on production.
 
 | Integration        | Staging setup                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Clerk** — ON     | A separate **development tenant** (`ethical-crane-19.clerk.accounts.dev`), `pk_test_*` key, its own JWKS URL. Staging sign-in cannot touch a production user. Needs **no origin configuration**: Clerk dev instances reflect any `Origin` back, which is why localhost works unconfigured. Isolation here comes from being a separate tenant, not from an allow-list. Pointing staging at a Clerk _production_ instance would change that — those do lock origins down, and `staging.liveplanner.app` would need adding under Domains. |
 | **Telemetry** — ON | Events land in staging's own D1, so the **public** `/telemetry` dashboard on production is unaffected; staging's dashboard shows staging's own traffic, which is how you verify a new event actually lands.                                                                                                                                                                                                                                                                                                                            |
 | **Resend** — OFF   | Wired but keyless. `APP_BASE_URL` and `RESEND_FROM` are set, so setting `RESEND_API_KEY --env staging` turns it on and every link points back at staging. Left unset on purpose: staging runs the same daily lifecycle cron as production, from the same verified domain, so switching it on mails **real people** (see the warning below). Turn it on for a specific test, then take the key off again.                                                                                                                               |
-| **AI models** — ON | Keyed by hand, as production is: `wrangler secret put OPENAI_API_KEY --env staging` and/or `GOOGLE_AI_STUDIO_API_KEY`; one key serves both AI features, two split them ([AI Assistance](../007-editor/ai-assistance.md)). `AI_ALLOWED_ORIGINS` restricts the endpoint to the staging origin. It spends real money per request; `GET /api/capabilities` reports whether it is on.                                                                                                                                                       |
 
 > **Email warning.** Staging runs the same daily lifecycle-email cron as production
 > (welcome / week-1 / week-2, token-expiry warnings). With `RESEND_API_KEY` set, any
@@ -174,8 +173,8 @@ value the deploy workflow syncs, plus the Clerk publishable key:
 
 `CF_API_TOKEN` and `CF_ACCOUNT_ID` are shared — same account.
 
-`RESEND_API_KEY` and the model keys (`OPENAI_API_KEY`, `GOOGLE_AI_STUDIO_API_KEY`) are **not** in the workflow for either
-environment; they are provisioned once by hand with `wrangler secret put ... --env
+`RESEND_API_KEY` is **not** in the workflow for either
+environment; it is provisioned once by hand with `wrangler secret put ... --env
 staging`, exactly as production provisions them. Keeping the workflow's secret list
 identical across the two environments is deliberate: a secret that exists in one
 workflow and not the other is how the environments start to differ.
@@ -236,8 +235,6 @@ Still outstanding:
 ```bash
 # 1. Worker secrets not carried by the workflow
 cd apps/api && wrangler secret put RESEND_API_KEY --env staging
-cd apps/api && wrangler secret put OPENAI_API_KEY --env staging            # the assistant
-cd apps/api && wrangler secret put GOOGLE_AI_STUDIO_API_KEY --env staging
 
 # 2. GitHub secrets — Settings → Secrets and variables → Actions
 #    the four _STAGING entries in the table above
@@ -277,20 +274,7 @@ the hosted profile, which the deploy sends with `--var` on every run and then re
 off the live worker ([Deployment](deployment.md) "Hosted profile"). Either way the
 environment is reproducible from the repo alone.
 
-**This prediction came true, and it cost a security control.** `AI_ALLOWED_ORIGINS` was
-documented as production-set but was measurably unset when probed — `POST /api/ai` with no
-`Origin` answered `400 invalid mode` rather than `403 origin_not_allowed` — so the endpoint,
-which fronts a live OpenAI key, accepted requests from any origin. Whether it was never set
-or set once and wiped by a deploy is now unknowable, which is the point: a dashboard var
-leaves no trace either way, and no amount of reading the repo would have revealed it.
-`AI_ALLOWED_ORIGINS` is therefore declared in production's `[vars]` too. The deploy's
-verify step is now the probe that fails when a hosted var is not live.
-`AI_REQUIRE_CLERK` is deliberately unset in **both** environments (the editor offers AI to
-guests; see the comment above production's `AI_ALLOWED_ORIGINS`). Staging set it until
-September 2026, which made staging refuse AI to guests that production serves: exactly the
-drift this environment exists to catch, so it was removed.
-
-The general lesson, worth more than the specific fix: **an optional guard that fails open is
+The general lesson: **an optional guard that fails open is
 untestable from the source tree.** Every file can read as though a protection is active while
 production runs without it. Where a guard is config-gated, the audit step is a probe against
 the deployment, not a code review, and for the hosted profile that probe runs on every deploy.

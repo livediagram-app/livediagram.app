@@ -19,7 +19,6 @@ import { SheetChartsContext, useSheetCharts } from '@/components/sheets/sheet-ch
 import { SheetHomeTabContext } from '@/components/sheets/sheet-home-tab';
 import { useDashboard } from './dashboard-context';
 import { Missing, useBoxSize } from './DashboardSlotContent';
-import { DashboardDiagramView } from './DashboardDiagramView';
 import { TabWaiting } from './TabWaiting';
 import { useCardTheme, useViewerAppearance } from './useCardStyle';
 
@@ -30,7 +29,7 @@ export function DashboardTabPreview({
 }: {
   slotId: string;
   tabId: string;
-  // What the slot was given, so a deleted one is named (a slot from before it was recorded says Board).
+  // What the slot was given, so a deleted one is named and one still loading waits as it (a Board when absent).
   of?: DashboardTabOf | undefined;
 }) {
   const { tabs, tabStatus, retryTab } = useDashboard();
@@ -41,8 +40,8 @@ export function DashboardTabPreview({
   const dashboardTheme = useCardTheme();
   const appearance = useViewerAppearance();
   const tab = tabs.find((t) => t.id === tabId);
-  // One box, measured whatever it shows first: a tab whose content is still on its way reads as a Diagram (no kind
-  // yet), so a box only drawn once it is a Board or Sheet would never be measured, and the board never drawn.
+  // One box, measured whatever it shows first: a tab whose content is still on its way has no kind yet, so a box only
+  // drawn once it is a Board or Sheet would never be measured, and the board never drawn.
   return (
     <div ref={bodyRef} className="relative h-full w-full">
       {body()}
@@ -52,28 +51,17 @@ export function DashboardTabPreview({
     if (!tab)
       return (
         <Missing
-          message={
-            of === 'sheet'
-              ? 'This Sheet was deleted.'
-              : of === 'diagram'
-                ? 'This Diagram was deleted.'
-                : 'This Board was deleted.'
-          }
+          message={of === 'sheet' ? 'This Sheet was deleted.' : 'This Board was deleted.'}
           slotId={slotId}
         />
       );
     // A tab whose content is still on its way is a placeholder with no kind and nothing on it (per-tab-storage.md):
-    // it waits as the Board or Sheet the slot was given, not as a Diagram tab's card.
-    const waiting = !tab.kind && tab.elements.length === 0 && (of === 'board' || of === 'sheet');
-    const kind = waiting ? of : tabKindOf(tab);
+    // it waits as the Board or Sheet the slot was given.
+    const waiting = !tab.kind && tab.elements.length === 0;
+    const kind = waiting ? (of ?? 'board') : tabKindOf(tab);
+    // Only a Board or Sheet tab goes in a slot: a slot naming any other tab (a forged layout) says so.
     if (kind !== 'board' && kind !== 'sheet')
-      return (
-        <DashboardDiagramView
-          tab={tab}
-          status={tabStatus(tab.id)}
-          onRetry={() => retryTab(tab.id)}
-        />
-      );
+      return <Missing message="This tab is not a Board or Sheet." slotId={slotId} />;
     const shape = tab.kind === 'sheet' ? 'plan-sheet' : 'plan-board';
     const own = tab.elements.find((e) => e.type === 'shape' && e.shape === shape) as
       ShapeElement | undefined;

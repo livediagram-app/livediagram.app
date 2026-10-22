@@ -25,10 +25,9 @@ which fixes what that tab is, and every tab is worked on in Plan, the one
 
 ## Choosing the word in prose
 
-Code is strict: the container is always a project. Compound names use
-"project" (`projectId`, `ProjectDTO`); a few older modules still call a loaded
-project `liveDoc` / `LiveDoc`, so the bare name never shadows the browser's
-`document`.
+Code is strict: the container is always a project. Its type is `Project`, and compound names use
+"project" (`projectId`, `ProjectDTO`); older modules still name a loaded project's variable `liveDoc`, so it
+never shadows the browser's `document` or a nearby `project`.
 
 Prose says **project** for the container, **tab** for one page of it, and the tab's kind (a board, a sheet, a
 dashboard, a form) for what is on it. liveplanner is a planner, not a diagram tool

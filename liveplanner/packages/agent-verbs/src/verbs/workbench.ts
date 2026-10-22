@@ -68,7 +68,12 @@ function usageRefusal(message: string, hint: string): AddressError {
   });
 }
 
-function checkScope(input: { project?: string; workspace?: boolean; tab?: string; folder?: string }) {
+function checkScope(input: {
+  project?: string;
+  workspace?: boolean;
+  tab?: string;
+  folder?: string;
+}) {
   const workspace = input.workspace === true;
   if (workspace === (input.project !== undefined))
     throw usageRefusal(

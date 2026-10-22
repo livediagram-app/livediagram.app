@@ -15,15 +15,14 @@ desktop/web, Claude Code, any MCP client) and, from inside that tool:
 1. **Find and view** the projects they already have — search by name, get back a
    link to open in the editor **and an inline image** of the project.
 2. **Create** a new project from a request — e.g. point the AI at a codebase and
-   have it produce a diagram of the control flow.
+   have it build a sprint dashboard from a backlog.
 3. **Edit** an existing project — full rework of a tab, or a small adjustment.
 
 **The calling LLM does the thinking; the MCP is only the bridge.** This is the
-load-bearing decision. We are **not** proxying to the first-party `/api/ai`
-endpoint (`apps/api/src/routes/ai.ts`, OpenAI/`gpt-4o`) — that endpoint is weak
-and may be removed. The user already has a capable model in front of them; the
-MCP's job is to (a) hand that model the diagram **schema** so it can emit
-well-formed elements, (b) **validate + lay out** what it produces, and (c)
+load-bearing decision. liveplanner runs no model of its own (the in-editor
+AI assistant and its `/api/ai` endpoint were removed). The user already has a capable model in front of them; the
+MCP's job is to (a) hand that model the element **schema** so it can emit
+well-formed elements, (b) **validate** what it produces, and (c)
 **persist** it through the same REST API the web app uses. The MCP carries no
 model of its own and makes no LLM calls.
 
@@ -57,9 +56,8 @@ stays a pure REST/WS surface.
   ([Public API and API tokens §3.3](public-api-and-tokens.md)), so **no api authorization
   changes are needed** for the tools themselves.
 - **Reuses `packages/project`** headless: element factories, `validate.ts`
-  (`isValidTab`/`isValidElement`), `auto-layout.ts` (`autoLayoutElements`,
-  `isLayoutCandidate`), and a new pure SVG renderer ([§5](#5-visualise--inline-image-render)).
-  This is the reuse-over-duplication rule: the MCP must not re-implement layout,
+  (`isValidTab`/`isValidElement`) and a new pure SVG renderer ([§5](#5-visualise--inline-image-render)).
+  This is the reuse-over-duplication rule: the MCP must not re-implement
   validation, geometry, or theme-colour resolution.
 - **Routing + deploy.** Served at **`mcp.liveplanner.app`** (its own hostname,
   like the api). Add the service to the deploy workflow alongside marketing /
@@ -219,39 +217,28 @@ Wraps `GET /api/projects/:id` + `GET /api/projects/:id/tabs/:tabId?view=outline`
 tab's [outline view](../024-agents/project-views.md), about a tenth of the element JSON, with
 the refs the edit tools take (`format: "json"` returns the elements instead), plus the deep-link
 `url`. With `image: true` it also attaches an inline **PNG** of the tab as MCP image content
-([§5](#5-visualise--inline-image-render)); without it a read costs no image tokens. So "show me my auth-flow diagram" → `find_projects` →
+([§5](#5-visualise--inline-image-render)); without it a read costs no image tokens. So "show me my sprint dashboard" → `find_projects` →
 `read_project` with `image: true` renders it inline. Its structured result carries the tab's `rev`,
 which `update_project` takes back as the base of its ops ([§4.4](#44-update_project)).
-It also takes `view` (`outline`, `graph`, `layout`, `comments`, `show`, `find`), `budget` (8,000 tokens unless
-given), `only`, `ref`, `q`, `coarse`, `all` and `style`; a ref that names nothing or several comes back as a
+It also takes `view` (`outline`, `comments`, `show`, `find`), `budget` (8,000 tokens unless
+given), `only`, `ref`, `q`, `all` and `style`; a ref that names nothing or several comes back as a
 correctable result naming the candidates.
 
 ### 4.3 `create_project`
 
 Create a new project from elements the model produced. Input: `name`, `tabs:
 [{ name, elements: Element[] }]` (one tab, or several to build a **multi-tab**
-project in one call — an overview plus a detail tab per subsystem), the
-optional `layout`, and the optional `markUsed` (boolean, default `true`). Each tab may instead pass `template: TemplateKind` in place
+project in one call — a dashboard plus a board and a sheet), and the optional `markUsed` (boolean, default `true`). Each tab may instead pass `template: TemplateKind` in place
 of `elements` — the server materialises the hand-tuned scaffold from
 `@liveplanner/templates` ([§4.5](#45-list_templates)), keeping its curated
-layout (`layout` is ignored for a template tab) and applying that template's
+layout and applying that template's
 canvas overrides; the model then personalises labels via `update_project`'s
 `ops` mode. The MCP:
 
 1. **Validates** each tab's `elements` with `isValidTab` (reject `400`-style with
    a clear message naming the offending tab).
-2. **Lays out — but the model decides.** A `layout` argument (`'auto'` |
-   `'preserve'`, optional) governs it: `'preserve'` keeps the exact coordinates
-   the model gave (so it can draw a deliberate shape — a cycle as a ring, a tree,
-   a grid), `'auto'` runs `autoLayoutElements`, and **omitted = auto-detect**:
-   preserve a real arrangement, but run the layout when the model left nodes
-   piled at ~one point (`nodesLookUnplaced`). This realigns with "the calling LLM
-   does the thinking" — the server stopped overriding the model's spatial intent
-   (which flattened a life-cycle ring into a row). When it does lay out it reuses
-   the editor's engine; the model is never _forced_ into pixel-perfect placement.
-   Layout only ever arranges the **connected graph** — edgeless content (titles,
-   per-node descriptions, captions) passes through at its given position rather
-   than being raked into a disconnected-component column.
+2. **Keeps the model's placement.** Elements are kept at the `x` and `y` given; nothing is laid out for the model,
+   and a tab may hold only the Plan elements (§4.7a).
 3. **Tags it as made by AI.** The create sends `source: 'mcp'`, which the Explorer's **Made by AI** filter (`made-by:ai`, [Explorer filters](../013-workspace/explorer-filters.md)) reads, so a user's own work and AI-made projects can be told apart wherever either is filed. Unfiled, it sits at the root of My Projects like any other project, with its **Made by AI** badge. (Earlier this find-or-created a real "Generated" folder, then the Explorer showed a Generated view; provenance is a filter, not a place.) The create also sends the creation `intent` of the first tab it built and the template it used, so with no folder named the server files it in the user's [default folder](../013-workspace/default-folders.md) for that intent, when they have one.
 4. **Persists** all tabs via `POST /api/projects` (which seeds a `tabs[]` array
    and accepts `source`). A tab given as a `template` travels
@@ -271,8 +258,8 @@ canvas overrides; the model then personalises labels via `update_project`'s
 
 Add a **new tab** (its own canvas) to an existing project — the motivating case:
 "make a tab going into more detail on one part of this architecture." Input:
-`projectId`, `name`, `elements`, optional `layout` — or `template: TemplateKind`
-instead of `elements`, exactly like a `create_project` tab. Validates + lays out
+`projectId`, `name`, `elements` — or `template: TemplateKind`
+instead of `elements`, exactly like a `create_project` tab. Validates
 exactly like a `create_project` tab, then submits a [changeset](../024-agents/agent-changesets.md)
 that creates the tab, so anyone with the project open sees it arrive. Returns the new `tabId`, `url`,
 and the rendered PNG. (Pair with `read_project`, which lists the project's
@@ -283,20 +270,16 @@ existing tabs, to decide where a new one fits.)
 Edit an existing tab. **Two modes** (the user asked for both):
 
 - **`replace`** — for building or reworking a whole tab. Input: full new
-  `elements: Element[]` (and the same optional `layout` control as
-  `create_project`). Validated + laid out exactly like `create_project`, as a
+  `elements: Element[]`. Validated exactly like `create_project`, as a
   `replace` changeset. Use when the change is large enough that re-emitting the
   tab is cleaner than patching.
 - **`ops`** — for small adjustments. Input: an ordered list of
   `{ op: 'add' | 'update' | 'remove', element? , elementId? }` targeting existing
   elements by id or by the ref `read_project` prints, sent as `set` / `rm` on the always-safe `id:"…"` ref and
-  compiled by the api's edit-operation engine. **Auto-layout is NOT run by default** in `ops` mode —
-  the point of a granular edit is to preserve the user's existing positions;
-  re-laying out would move everything. (A future `relayout: true` opt-in could be
-  added if wanted.)
+  compiled by the api's edit-operation engine. Nothing is laid out: the user's positions are kept.
 
 Both modes submit one [changeset](../024-agents/agent-changesets.md); the api
-applies, validates and lays out, relays it live to anyone with the tab open, and
+applies and validates, relays it live to anyone with the tab open, and
 keeps it through their next save. `ops` mode sends its ops as
 [edit operations](../024-agents/edit-operations.md) based on the revision
 `read_project` returned, so nothing a person saved in between is overwritten: a
@@ -306,28 +289,20 @@ the rendered PNG of the result. The model picks the mode: rebuild → `replace`;
 tweak → `ops`.
 
 **Edits.** `ops` mode takes `edits` instead of `ops` (`mode: "edits"` names the same mode, as agents read it): [edit operations](../024-agents/edit-operations.md) in the line
-form, one a line, sent as the changeset's operations text for the api to parse and apply all or nothing. They reach
-what JSON ops cannot say in one step (`insert … between a b` making room, `wrap … in frame`, `connect a -> b`, `layout`
-of a selection, placement beside another element). The base is the revision the
+form, one a line, sent as the changeset's operations text for the api to parse and apply all or nothing. There are four:
+`add` (a whole element as a JSON line), `set <selector> key=value… [all]`, `rm <selector> [all]` and
+`test <selector> key=value…`; a selector is a ref or id, a `"label"`, `label~part`, `type:<kind>` or `selected`, and
+all its terms must match. The base is the revision the
 model read (else the tab as loaded) and every element's fingerprint as loaded, since the text may name any of them.
 Coordinates in edits are relative to the content origin, as views print them. `ops` and `edits` together are refused.
-The tool's `edits` description carries the vocabulary, selectors, placements and keys in brief.
-
-**Arrow ends by ref.** A pinned arrow end the model writes (on `create_project`, `add_tab` and both modes here)
-may name its element by id or by the ref `read_project` prints, as an op's `elementId` may. Each end is resolved
-among the ids the result will hold: in `ops` mode the tab's elements and every element the call adds; in `replace`
-mode and on a new tab only the elements sent. An end that names nothing there, or more than one element, refuses
-the call, naming the arrow and its side (`arrow "a1": "to" is pinned to "4aeb", which is no element on the tab or
-in this call`); an arrow to nowhere is never stored.
+The tool's `edits` description carries the operations and selectors in brief.
 
 **Values checked.** A whole element the model sends (on `create_project`, `add_tab`, `replace` and an ops `add`)
-is checked as an edit operation's `set` checks a field: a field its type does not have is refused with the fields
-like it (`"icon" is not a field of a shape; fields like it: iconId, iconPosition`), a value off a closed vocabulary
-(`textSize` `sm`, `md`, `lg`, `scale` or a pixel number; the alignments, arrow styles, ends and heads, border styles
-and radii, and the diagram-building kinds' looks, media, attach points, boundary styles and pyramid variants: the
-same list edit operations check, [Edit operations](../024-agents/edit-operations.md)) is refused naming the values,
-and an `iconId` that names no icon is refused with the icons like it. Each of these was once stored and drawn wrong in silence. The check passes every element
-of every template, so a tab read back as JSON writes again unchanged.
+must be one a liveplanner tab holds (§4.7a); any other is refused naming it (`element "v1": shape "square" is not an
+element a liveplanner tab holds; read liveplanner://schema/elements.`). On a Plan element it is checked as an edit
+operation's `set` checks a field: a field its type does not have is refused with the fields like it, and a value off
+a closed vocabulary is refused naming the values ([Edit operations](../024-agents/edit-operations.md)). The check
+passes every element of every template, so a tab read back as JSON writes again unchanged.
 
 ### 4.5 `list_templates`
 
@@ -358,19 +333,12 @@ to leave `imageId` out (`imageIdIssue` in `@liveplanner/agent-verbs`), before an
 
 ### 4.6 Schema resource (not a tool)
 
-A static, cacheable MCP **resource** — e.g. `liveplanner://schema/elements` —
-returning a compact description of the element schema: the element types
-(`shape` / `text` / `sticky` / `arrow` / `table` / …), the shape vocabulary,
-required fields, the pinned-arrow anchor convention (`from.e → to.w` etc.), and
-the design rules that make diagrams read well (don't set colours — the theme
-owns them, a sticky's own colours excepted; size siblings consistently; prefer
-pinned arrows), and the content fields of the kinds that carry content (§4.7a). This is **how the
-model produces high-quality diagrams**: the schema is presented once, declaratively,
-rather than baked verbatim into every tool description. The same essentials are
-also summarised in the MCP server `instructions` and in the `create`/`update`
-input-schema field descriptions, so a client that ignores resources still gets
-enough. The schema text derives from `packages/project` types — single source of
-truth, no hand-maintained copy that can drift.
+A static, cacheable MCP **resource**, `liveplanner://schema/elements`, returning a compact description of the
+elements a liveplanner tab holds: the six Plan kinds (§4.7a), the fields common to all and each kind's own, and the
+closed values those fields take. The schema is presented once, declaratively, rather than baked verbatim into every
+tool description; the same essentials are summarised in the MCP server `instructions` and the tools' input-schema
+field descriptions, so a client that ignores resources still gets enough. The text derives from the edit-operation
+engine's own kind list (`PLAN_ELEMENT_KINDS`), so it cannot drift.
 
 ### 4.7 No graph or Mermaid input
 
@@ -379,110 +347,19 @@ The tools take no node/edge `graph` and no `mermaid` text. A tab is made from a 
 [§4.9c](#49c-the-sheet-tools), [§4.9e](#49e-the-form-tools)). The changeset `replace` body the api takes is the same
 set: exactly one of `template`, `dashboard`, `form` or `elements` ([Agent changesets](../024-agents/agent-changesets.md)).
 
-### 4.7a Content-carrying element kinds
+### 4.7a The elements a tab holds
 
-These kinds hold content of their own, and the element format projects their
-fields so a model can fill them rather than guess: **sticky**, **table**,
-**code block**, **entity**, **lane**, the three **charts** (bar, line, pie), the
-**Sankey**, and the diagram-building kinds: **card**, **badge**, **step**,
-**boundary**, the concept graphics (**layer stack**, **pyramid**, **cycle**, **hub**, **onion**, **chevrons**, **timeline**),
-**pointer note**, **diagram key**, **stack**, the org chart's **person node**, the **sequence diagram** and the
-**image**.
-Every other kind stays listed by name only. The field notes are facts about what
-each field does (§4.15), carried on the tools' element argument and in the
-schema resource (§4.6), short enough not to bloat every tool definition.
+A liveplanner tab holds only Plan elements, each a `shape` element:
 
-| Kind                                        | Content fields                                                                                                                              | Facts the notes state                                                                                                                                                                                                                                                                                                                                              |
-| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `sticky` (type)                             | `label`; optional `fillColor` + `textColor`                                                                                                 | The theme never recolours a sticky, so its own colours are kept; the notes list the palette's sticky pairs (classic, lemon, peach, rose, lilac, sky, mint, teal, slate, paper, charcoal, ink). Unset, it is the classic amber note.                                                                                                                                |
-| `image` (type)                              | `alt`                                                                                                                                       | An empty picture placeholder: liveplanner keeps no uploaded pictures, so an `imageId` is refused. `alt` describes what it stands for.                                                                                                                                                                                                                              |
-| `table` (type)                              | `cells` (rows of strings), `headerRow`, `headerColumn`, `zebra`                                                                             | The first row is the header when `headerRow` is set.                                                                                                                                                                                                                                                                                                               |
-| `code-block` (shape)                        | `code` (up to 4000 chars), `codeLanguage`, `codeTheme`, `codeWrap`                                                                          | The languages and themes are listed; the block draws itself, so `label` is not shown.                                                                                                                                                                                                                                                                              |
-| `entity` (shape)                            | `label` (the title), `entityFields` `[{ name, type?, key? }]` (up to 40)                                                                    | `key` is `pk`, `fk`, `pk-fk` or `uk` ([The entity](../009-elements/entity.md) "Keys"); a legacy `uuid PK` type still reads as a key. A pinned arrow end may carry `field` (a field index, anchor `w` or `e`) to join that field.                                                                                                                                   |
-| `lane` (shape)                              | `label` (the title), `headerFill`                                                                                                           | Contents sit inside the lane's box; lanes are placed one under another.                                                                                                                                                                                                                                                                                            |
-| `bar-chart` / `pie-chart` (shape)           | `pieSlices` `[{ label, value }]`                                                                                                            | A chart draws no title: a caption is a separate `text` element. Categories show in the legend.                                                                                                                                                                                                                                                                     |
-| `line-chart` (shape)                        | `lineCategories` (x labels), `lineSeries` `[{ name, values }]`                                                                              | The same, with one value per category.                                                                                                                                                                                                                                                                                                                             |
-| `sankey` (shape)                            | `sankeyFlows` `[{ from, to, value }]` (up to 200), options                                                                                  | Nodes are the names; `source` / `target` and text amounts (`"1,200"`) are read too. A flow back to an earlier node is hidden. Options: `sankeyLinkColor`, `sankeyAlign`, `sankeyValueLabel`, `sankeyUnit`, `sankeyNodes`, `sankeyLeftover` (`show` by default: an unbalanced middle node draws its difference to a Leftover node), `sankeyLeftoverName`. No title. |
-| `card` (shape)                              | `pageTitle`, `pageSubtitle` (meta), `label` (body), `cardMedia`, `iconId`, `cardHeader`, `tags` (up to 6)                                   | Use cards for service and component nodes: title the thing, meta the product or runtime, tags the facts. `callout` is accepted and becomes a card with `cardMedia: 'badge'`.                                                                                                                                                                                       |
-| `badge` (shape)                             | `label` (up to 24), `chipLook`, `attachedTo`, `attachAt`                                                                                    | A badge attached to a node sits on one of its eight points and is placed there by the server; no x / y needed.                                                                                                                                                                                                                                                     |
-| `step` (shape)                              | `label` (the number, up to 3), `chipLook`, `attachedTo`, `attachAt`                                                                         | Number the steps of a walkthrough 1, 2, 3; place them on or beside the arrows they mark.                                                                                                                                                                                                                                                                           |
-| `boundary` (shape)                          | `label` (the title), `pageSubtitle`, `iconId`, `boundaryStyle`                                                                              | A container: elements whose centre is inside it belong to it. Nest boundaries for edge, region, VPC, subnet; Inset suits a nested one, C4 a C4 diagram.                                                                                                                                                                                                            |
-| `layer-stack` / `pyramid` / `cycle` (shape) | `conceptRows` `[{ label, note? }]`, `pyramidVariant`, `label` (a cycle's centre)                                                            | Rows: stack 2 to 8 (note = side note), pyramid 2 to 6 (first row the apex; note = a funnel's value), cycle 3 to 8 (clockwise from the top).                                                                                                                                                                                                                        |
-| `hub` / `onion` / `chevrons` (shape)        | `conceptRows` `[{ label }]`, `hubSpokes`, `label` (a hub's centre)                                                                          | Hub 3 to 8 satellites, onion 2 to 6 rings from the core out, chevrons 2 to 8 stages left to right.                                                                                                                                                                                                                                                                 |
-| `timeline-rail` (shape)                     | `conceptRows` `[{ label, note }]`                                                                                                           | A Timeline: 2 to 8 milestones left to right, `label` what happens, `note` when (a date, a quarter).                                                                                                                                                                                                                                                                |
-| `pointer-note` (shape)                      | `label`, `pointerTip` `{ x, y }`, `attachedTo`, `attachAt`                                                                                  | The tip is relative to the note's top-left, or pinned to a point of a node.                                                                                                                                                                                                                                                                                        |
-| `diagram-key` (shape)                       | `label` (the title), `keyMeanings`                                                                                                          | Its rows fill in from the tab's line styles and tag colours; meanings are keyed by row id (`line:dashed`).                                                                                                                                                                                                                                                         |
-| `stack` (shape)                             | `stackDirection`, `stackColumns`, `stackGap`, `stackPadding`, `stackAlign`                                                                  | Children are the elements whose centre is inside; the editor lays them out.                                                                                                                                                                                                                                                                                        |
-| `mind-node` with `mindLook: person`         | `label` (the name), `pageSubtitle` (the role), `mindParentId`                                                                               | An org chart: the root takes `mindFlow: downward`.                                                                                                                                                                                                                                                                                                                 |
-| `sequence` (shape)                          | `sequenceParticipants` `[{ id, label, actor? }]` (2 to 12), `sequenceMessages` `[{ from, to, label, kind }]` (up to 60), `sequenceNumbered` | It lays itself out; prefer it over loose shapes for a sequence diagram that will be edited.                                                                                                                                                                                                                                                                        |
+| Kind                                   | Own fields                                                                                                                                                               |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `plan-board`                           | `planBoard`                                                                                                                                                              |
+| `plan-sheet`                           | `planSheet`                                                                                                                                                              |
+| `plan-view`                            | `planView`, `textSize`                                                                                                                                                   |
+| `bar-chart`, `line-chart`, `pie-chart` | `chartSource { sheetId, range { r1, c1, r2, c2 } }` (required), `sheetAnchor`, `chartVariant`, `chartLegend`, `chartValues`, `chartPalette`; `chartAxis` on bar and line |
 
-**The sticky exception to "the theme owns colours".** The design rule that a
-model leaves colours to the theme (§4.6) holds for every themed element; a
-sticky is not themed at all (it keeps its amber across every theme), so its
-`fillColor` / `textColor` are content, and the notes say so.
-
-**The server makes these kinds safe to author** (`packages/project/src/element-normalise.ts`),
-before validation, on every element path (create, add_tab, update in either
-mode), so a near-miss draws correctly instead of failing the call or drawing
-wrongly:
-
-- **Every element takes the presentation defaults the editor's own factory
-  gives a new one of its kind** for the fields it leaves out: `textSize` (`md`
-  for shapes, stickies and tables, `sm` for text) and, where the kind sets
-  them, the title alignment and padding (an entity's top-left title, a lane's
-  left title strip and `lg` padding, a frame's header). Unset, text scales to
-  fill its box, so a lane or entity title came out as one giant word across
-  its contents and a sticky's note filled it edge to edge; a box drawn in the
-  editor never arrives that way. This applies to every element on these paths,
-  not only the six. Raw boxes size their text by count: on a list of more than 12 labelled
-  boxes, a box that gives no `textSize` takes `sm` rather than `md`, so a hand-placed architecture of twenty boxes
-  does not wrap its names mid-word ("ElastiCa / che"). A raw arrow pinned at both ends that gives no `arrowStyle` is
-  angled, and an angled one that gives no bends takes two (out of its
-  start, across, into its end), so it meets both ends square rather than as the editor's lone L, sideways into a top;
-  one whose ends line up runs straight. `"arrowStyle": "straight"` keeps a diagonal. Both defaults are for content
-  arriving fresh: a `replace` that sends back elements the tab already holds (by id) leaves their text size and lines
-  as they are, so reading a tab and writing it back never restyles what the person made.
-- A **table**'s ragged rows are padded to the widest (`normalizeTable`, the same
-  pass the editor runs on load), so every row renders.
-- An unknown **codeLanguage** becomes `plain` and an unknown **codeTheme** is
-  dropped (the default), rather than failing the whole tab validation.
-- An **entity**'s height grows to fit its rows (`entityHeight`, the geometry
-  the canvas and the export draw with: the title bar, 13.75 px a row, 3 px
-  between rows, 6 px above and below the list), since rows past the box are not
-  drawn.
-- **Chart** data is coerced: a slice or value that is not a finite number
-  becomes 0, labels become strings, and each series' `values` is padded or cut
-  to the category count. Empty data draws the built-in sample, which the notes
-  state.
-- **Lanes move to the front of the element list** (their order among themselves
-  kept), so they paint behind everything: a lane has a fill, and one listed after
-  its contents covered them. It also makes each lane the backmost box under its
-  contents, which is what lets dragging it in the editor carry them.
-- **A freehand stroke in the former `{ nx, ny }` shape is packed**
-  ([Stroke points](../006-project/stroke-points.md)): a stroke read from a tab
-  carries its points as one `packedPoints` block, and a model that writes
-  `points` instead gets them packed, as the api's own writes would. In an
-  update, sent `points` replace the stroke's block (`mergeElementUpdate`).
-
-**Style fields.** The element format names the style fields a box or arrow takes beyond its geometry, as facts:
-every closed vocabulary from `ELEMENT_FIELD_VALUES` (text size and alignment, icon position, arrow style, ends and
-heads, border style and radius, font) with its values, bold and italic, `colorPreset` with the theme's preset looks,
-`iconId` and `note`. Before, these were discoverable only by reading a template's JSON, and
-an agent hand-placing a dashboard guessed `textAlign` and `textSize: "xl"`.
-
-**Session kinds.** The format also names what the session kinds hold: a `session-button`'s `session` (a timer
-with `minutes`, a stopwatch, a vote with `dots`), a checklist's `checklistItems`, a stat row's `stats`, a callout's `pageTitle` over its `label` body, a banner's
-`pageTitle` and `pageSubtitle`, and a sticker's `stickerId`. A bare `text` is centred in its box unless it sets
-`textAlignX`. The entries of a temperature check are the people's, never an edit's,
-so starter questions go on stickies beside it.
-
-**Hand-drawn strokes.** A `freehand` element is written with `points` as canvas coordinates, `[[x, y], ...]` in
-drawing order, `closed` to close and fill it, and a `penColour` (ink, grey or a hued pen). The stored form is a box
-with the points packed inside it ([Stroke points](../006-project/stroke-points.md)), which no model can write, so
-the MCP takes the box from the points and packs them through the stored-tab migration, before the element is
-checked, on every element path (`freehand-points.ts`), and an ops update giving a stroke new `points` sets its new box and block together, where a bare `points` field would have emptied the stroke. Points it cannot draw (none, more than
-`MAX_FREEHAND_POINTS`, or not number pairs) are refused naming the element. The format says a hand-drawn board
-starts from the `whiteboard` template, a tab in Draw mode, and that any box may carry a small `rotation`.
+Every kind also takes `x`, `y`, `width`, `height`, `label` and `locked`. A chart draws what its sheet's range holds
+now. Any other element is refused (§4.4 "Values checked"), and so is an `imageId` (§4.5b).
 
 **Found by search.** A client that searches tools by text finds a tool by its name, description and schema, and
 ranks long ones down or leaves the largest out. So `create_project` leads with what it makes, and the single-`tab` alias
@@ -721,11 +598,11 @@ which is how the gap was found.
 Three behaviours cover the twenty-five tools, and each is a preset in
 `apps/mcp/src/tool-annotations.ts`:
 
-| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                                                                                 |
-| --------------- | -------------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **read**        | `true`         | (not applicable)  | `find_projects`, `read_project`, `list_templates`, `list_trash`, `list_items`, `list_sheets`, `read_sheet`, `read_form`                                             |
+| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                                                                             |
+| --------------- | -------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **read**        | `true`         | (not applicable)  | `find_projects`, `read_project`, `list_templates`, `list_trash`, `list_items`, `list_sheets`, `read_sheet`, `read_form`                                           |
 | **write**       | `false`        | `false`           | `create_project`, `add_tab`, `share_project`, `rename_project`, `restore_project`, `add_board`, `change_board`, `add_sheet`, `add_form`, `share_form`, `try_form` |
-| **destructive** | `false`        | `true`            | `update_project`, `delete_project`, `change_items`, `change_card_types`, `change_sheet`, `change_form`                                                              |
+| **destructive** | `false`        | `true`            | `update_project`, `delete_project`, `change_items`, `change_card_types`, `change_sheet`, `change_form`                                                            |
 
 The split mirrors §4.11's read-only-token boundary exactly (what a
 `read_only = 1` token can still reach is what `read` annotates), so the hint a
@@ -813,17 +690,17 @@ says why by its status (no such tab, view only, the last tab).
 
 | Tool                | Result object                                                                                                                                                                                                           |
 | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `find_projects`    | `count`, `projects[]` of `{ id, name, updatedAt, library, url }`                                                                                                                                                       |
-| `read_project`     | `id`, `name`, `tab { id, name, rev, ... }`, `tabs[]` of `{ id, name }` (every tab, in order), `url`                                                                                                                     |
+| `find_projects`     | `count`, `projects[]` of `{ id, name, updatedAt, library, url }`                                                                                                                                                        |
+| `read_project`      | `id`, `name`, `tab { id, name, rev, ... }`, `tabs[]` of `{ id, name }` (every tab, in order), `url`                                                                                                                     |
 | `list_templates`    | `categories[]` of `{ id, label, description }`, `templates[]` of `{ kind, title, description, category }`                                                                                                               |
-| `create_project`   | `id` and `projectId` (the same), `name`, `tabCount`, `tabIds[]`, `folder`, `url`                                                                                                                                       |
-| `add_tab`           | `projectId`, `tabId`, `name`, `url`, `note` when a template has more tabs than it added                                                                                                                                |
-| `update_project`   | `id` and `projectId` (the same), `tabId`, `url`                                                                                                                                                                        |
-| `share_project`    | `url`, `role`, `expiresAt` (ms epoch, or null for never), `projectUrl`                                                                                                                                                 |
-| `rename_project`   | `renamed` (`project` or `tab`), `name`, then `id` + `url` for a project or `tabId` for a tab                                                                                                                          |
-| `delete_project`   | `deleted` (`project` or `tab`), `projectId`, then `trashed` + `restorableForDays` or `tabId`                                                                                                                          |
+| `create_project`    | `id` and `projectId` (the same), `name`, `tabCount`, `tabIds[]`, `folder`, `url`                                                                                                                                        |
+| `add_tab`           | `projectId`, `tabId`, `name`, `url`, `note` when a template has more tabs than it added                                                                                                                                 |
+| `update_project`    | `id` and `projectId` (the same), `tabId`, `url`                                                                                                                                                                         |
+| `share_project`     | `url`, `role`, `expiresAt` (ms epoch, or null for never), `projectUrl`                                                                                                                                                  |
+| `rename_project`    | `renamed` (`project` or `tab`), `name`, then `id` + `url` for a project or `tabId` for a tab                                                                                                                            |
+| `delete_project`    | `deleted` (`project` or `tab`), `projectId`, then `trashed` + `restorableForDays` or `tabId`                                                                                                                            |
 | `list_trash`        | `trash[]` of `{ id, name, library, reason, deletedAt, purgeAt }` (ISO timestamps)                                                                                                                                       |
-| `restore_project`  | `restored`, `id`, `name` (null when the api omits it), `url`                                                                                                                                                            |
+| `restore_project`   | `restored`, `id`, `name` (null when the api omits it), `url`                                                                                                                                                            |
 | `list_items`        | `boards[]` of `{ title, tab, tabId, kind, takes, columns[] { name, status, wipLimit?, cards[] } }`, `notOnBoard[]`, `count`, `items[]` of `{ ref, id, type, status, column, title, fields }`, `types[]`, `hint?`, `url` |
 | `change_items`      | `applied[]` (one line per change, naming the column), `url`                                                                                                                                                             |
 | `add_board`         | `tabId`, `elementId`, `title`, `columns[]` of `{ name, status }`, `changesetId`, `rev`, `url`                                                                                                                           |

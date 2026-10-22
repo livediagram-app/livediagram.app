@@ -153,8 +153,6 @@ describe('tab views over REST (R23)', () => {
     quiet();
     const db = await setUp();
     for (const query of [
-      'view=graph',
-      'view=layout&coarse=1',
       'view=comments&all=1',
       'view=find&q=pay',
       'view=outline&style=1&budget=50&door=mcp',
@@ -163,7 +161,7 @@ describe('tab views over REST (R23)', () => {
     }
     expect(logged('[views] budget outline')).toMatchObject({ budget: 50 });
     await settled();
-    expect(viewed(db)).toEqual(['Comments', 'Find', 'Graph', 'Layout', 'Outline']);
+    expect(viewed(db)).toEqual(['Comments', 'Find', 'Outline']);
   });
 
   it('leaves the plain tab read as it was', async () => {
@@ -290,7 +288,7 @@ describe('ref refusals over REST (R4, R5, E17, E18)', () => {
   it('refuses an arrow as a subtree (VW41)', async () => {
     quiet();
     const db = await setUp();
-    const res = await tabView(db, 'view=layout&only=arrow-1');
+    const res = await tabView(db, 'view=outline&only=arrow-1');
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({
       error: 'invalid_value',
@@ -321,7 +319,6 @@ describe('parseViewQuery (VW43)', () => {
         only: 'c991',
         ref: undefined,
         q: undefined,
-        coarse: undefined,
         style: true,
         all: undefined,
       },
@@ -338,7 +335,7 @@ describe('parseViewQuery (VW43)', () => {
     expect(await refusal('view=lint')).toMatchObject({ error: 'unknown_view' });
     expect(await refusal('view=overview')).toMatchObject({
       error: 'unknown_view',
-      message: expect.stringContaining('outline, graph'),
+      message: expect.stringContaining('outline, comments'),
     });
     expect(await refusal('view=outline', 'project')).toEqual({
       error: 'unknown_view',
@@ -382,7 +379,7 @@ describe('the overview over REST', () => {
     const res = await docView(db, 'view=overview');
     expect(res.status).toBe(200);
     const lines = (await res.text()).split('\n');
-    expect(lines[0]).toMatch(/^doc D "Checkout" · 10 tabs · edited just now$/);
+    expect(lines[0]).toMatch(/^project D "Checkout" · 10 tabs · edited just now$/);
     expect(lines[1]).toBe(
       '  tab t1 "Architecture" · 6 elements: 4 boxes, 1 frame, 1 arrow · threads 1 open/1 · rev 1',
     );
@@ -418,8 +415,8 @@ describe('views at the edges of time', () => {
     const db = await setUp();
     let now = Date.now();
     vi.spyOn(Date, 'now').mockImplementation(() => (now += 150));
-    expect((await tabView(db, 'view=graph')).status).toBe(200);
-    expect(warns.find((w) => w[0] === '[views] slow graph')?.[1]).toMatchObject({ elements: 6 });
+    expect((await tabView(db, 'view=comments')).status).toBe(200);
+    expect(warns.find((w) => w[0] === '[views] slow comments')?.[1]).toMatchObject({ elements: 6 });
   });
 
   it('leaves out a tab whose body is gone by the time the overview reads it', async () => {
@@ -437,7 +434,7 @@ describe('views at the edges of time', () => {
     );
     expect((await all.text()).split('\n')).toHaveLength(3);
     const scoped = await answerOverview(ctx, parsed, { ...project, tabs: [ghost] }, 'ghost');
-    expect(await scoped.text()).toBe('doc D "Checkout" · 0 tabs · edited just now');
+    expect(await scoped.text()).toBe('project D "Checkout" · 0 tabs · edited just now');
   });
 });
 

@@ -83,7 +83,10 @@ describe('form get', () => {
 describe('form change and share', () => {
   it('applies changes read from stdin', async () => {
     const { ctx, writes } = ctxWith('[{"op":"set_form","heading":"Crash Report"}]');
-    const out = await formChange.run!(ctx, formChange.input.parse({ project: DOC_A, changes: '-' }));
+    const out = await formChange.run!(
+      ctx,
+      formChange.input.parse({ project: DOC_A, changes: '-' }),
+    );
     expect(formChange.text!(out)[0]).toBe('~ changed the form');
     expect(writes).toEqual(['POST form']);
   });
@@ -97,7 +100,10 @@ describe('form change and share', () => {
 
   it('opens a closed form again', async () => {
     const { ctx, writes } = ctxWith();
-    const out = await formShare.run!(ctx, formShare.input.parse({ project: DOC_A, action: 'publish' }));
+    const out = await formShare.run!(
+      ctx,
+      formShare.input.parse({ project: DOC_A, action: 'publish' }),
+    );
     expect(writes).toEqual(['PUT form-link']);
     expect(out.lines).toEqual(['opened again: the same link takes responses']);
   });

@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { PROJECT_CONVERSION_HEADER, PROJECT_OPEN_HEADER } from '@liveplanner/api-schema';
 import {
-  aiError,
   badRequest,
   CORS_HEADERS,
   forbidden,
@@ -131,14 +130,6 @@ describe('payloadTooLarge', () => {
     const res = payloadTooLarge();
     expect(res.status).toBe(413);
     expect(await readJson(res)).toEqual({ error: 'payload_too_large' });
-  });
-});
-
-describe('aiError', () => {
-  it('returns a 502 with the canonical { error: "ai_error" } envelope', async () => {
-    const res = aiError();
-    expect(res.status).toBe(502);
-    expect(await readJson(res)).toEqual({ error: 'ai_error' });
   });
 });
 

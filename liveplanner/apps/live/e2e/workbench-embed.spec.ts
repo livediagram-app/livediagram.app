@@ -115,7 +115,9 @@ test('a paired workbench frames the editor, hears the selection, renews, and end
   await frame.locator('[data-element-id="el-play"]').first().click();
   await expect.poll(() => selectionOf('Play')).toBeTruthy();
   const selection = (await selectionOf('Play'))!;
-  expect(selection.reference).toMatch(/^\[liveplanner\] "Home screen" › tab "Wireframe" \(doc /);
+  expect(selection.reference).toMatch(
+    /^\[liveplanner\] "Home screen" › tab "Wireframe" \(project /,
+  );
   expect(selection.reference).toContain('"Play"');
   expect(selection.reference).toContain(`read: liveplanner tab view ${seeded.projectId}`);
 

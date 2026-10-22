@@ -101,14 +101,10 @@ const SITES = [
 ];
 const MARKETING_DIR = path.join(ROOT, 'apps', 'marketing', 'out');
 const MARKETING_PORT = Number(process.env.E2E_MARKETING_PORT ?? 3013);
-// Two switches for trying the editor as a DIFFERENT deployment would run it,
-// beside a stack that is already up:
+// A switch for trying the editor beside a stack that is already up:
 //   E2E_LIVE_ONLY=1  serve the static editor only, proxying to the api
 //                    already listening on E2E_API_PORT (no second worker).
-//   E2E_NO_AI=1      answer /api/capabilities with aiEnabled: false, as a
-//                    deployment with no AI key does.
 const LIVE_ONLY = process.env.E2E_LIVE_ONLY === '1';
-const NO_AI = process.env.E2E_NO_AI === '1';
 //   E2E_CLERK_JWKS=1  act as Clerk for the signed-in specs (docs/specs/003-system-architecture/
 //                    e2e-smoke.md): a key made at boot, its JWKS on /e2e/jwks.json for the api
 //                    worker to verify against, and /e2e/token?sub=<id> minting a session token
@@ -469,29 +465,6 @@ function startLiveServer() {
   const server = http.createServer((req, res) => {
     const pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
     const liveOut = buildFor(req);
-    if (NO_AI && pathname === '/api/capabilities') {
-      // Everything else about the real answer stands; only the AI is off.
-      http
-        .get({ host: '127.0.0.1', port: API_PORT, path: '/api/capabilities' }, (up) => {
-          let body = '';
-          up.on('data', (c) => (body += c));
-          up.on('end', () => {
-            let caps = {};
-            try {
-              caps = JSON.parse(body);
-            } catch {
-              /* the api answered something else: report AI off regardless */
-            }
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ ...caps, aiEnabled: false }));
-          });
-        })
-        .on('error', () => {
-          res.writeHead(502, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'api_unreachable' }));
-        });
-      return;
-    }
     if (serveClerkStandIn(pathname, new URL(req.url, 'http://localhost'), res)) return;
     if (pathname === '/__e2e/assets-out-of-cache' && req.method === 'POST') {
       res.writeHead(204, {
@@ -589,9 +562,7 @@ async function main() {
     process.exit(1);
   }
   if (LIVE_ONLY) {
-    console.log(
-      `[e2e] static editor only, proxying to the api on :${API_PORT}${NO_AI ? ', AI reported off' : ''}`,
-    );
+    console.log(`[e2e] static editor only, proxying to the api on :${API_PORT}`);
     startLiveServer();
     return;
   }
@@ -611,11 +582,6 @@ async function main() {
       '--local',
       '--port',
       String(API_PORT),
-      // Production's origin allow-list lives in wrangler.toml [vars], which
-      // `wrangler dev` reads too; it would 403 every AI call from this
-      // localhost editor. Blank it, as `pnpm dev` does (docs/specs/007-editor/ai-assistance.md).
-      '--var',
-      'AI_ALLOWED_ORIGINS:',
       // Guest ids are signed as in production (docs/specs/014-identity/auth-and-guest-access.md), so
       // the signed-id upgrade a fresh guest goes through runs here too. A test-only secret.
       '--var',

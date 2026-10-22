@@ -4,7 +4,7 @@ import { planImageOf } from './plan-export-tab';
 import { NOW, shape } from './test-fixtures';
 
 // docs/specs/026-plan/plan-tabs.md "Export": an image draws a Plan tab as laid out, never the canvas under it.
-const input = { tabs: [], now: NOW, renderDiagram: () => '' };
+const input = { tabs: [], now: NOW };
 
 describe('the image of a Plan tab', () => {
   it('is a Board tab’s board alone', () => {

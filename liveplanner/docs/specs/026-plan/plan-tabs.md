@@ -108,7 +108,7 @@ and an agent's `add_board` / `add_sheet` onto such a tab answered `tab_not_plan`
 - **Editing** (an Editor): an item in a slot has **one menu, its cog**; there is no ⋯ beside it. The slot's own
   settings are its **Slot** section, a collapsible section like every cog's: what the slot shows with a cog of its own
   (a board's **Board Settings**, a Sheet's **Sheet Settings**, a chart's **Chart Settings**) holds it last, after its
-  own sections, one open at a time; anything else (a metric, a utility, an empty slot, a Diagram tab, a chart for
+  own sections, one open at a time; anything else (a metric, a utility, an empty slot, a chart for
   someone who may not change it) has the slot's own cog, **Slot Settings**, opening on the Slot section. The Slot
   section holds **Add a Slot**, the slot drawn small (a tinted "This Slot" box) with a dashed button on each of its
   four sides, each an arrow pointing its way and its name: **Left** and **Right** (**Add Slot to the Left**, **Add
@@ -137,7 +137,7 @@ and an agent's `add_board` / `add_sheet` onto such a tab answered `tab_not_plan`
   shown all the time as a quiet marker (the grip at 70%, a divider's and a handle's bar at full length and 50%, fully
   shown while it is dragged), with a finger's reach round it (the grip's 44 px tap area; a divider 24 px wide and 64 px
   tall, a row handle 64 px wide and 24 px tall, each centred on the gap, so the slots' own edges stay theirs), and a
-  finger on any of them carries or resizes rather than scrolling the page. Nothing is drawn round a slot's edges. Where the slot shows something with a header of its own (a board, a Sheet, a visualisation, a Diagram tab), its cog
+  finger on any of them carries or resizes rather than scrolling the page. Nothing is drawn round a slot's edges. Where the slot shows something with a header of its own (a board, a Sheet, a visualisation, a Board or Sheet tab), its cog
   sits last among that header's controls; otherwise (a metric, a note, an empty slot) the Slot Settings cog floats at
   the slot's top right on hover.
   Each change is one undo step.
@@ -233,7 +233,7 @@ and an agent's `add_board` / `add_sheet` onto such a tab answered `tab_not_plan`
 - **Add to Slot browses in two levels**, as the palette's Tools do. Its heading, **Add to Slot**, sits over both
   with one short line, "What fits here, as it will look.". It opens on its **categories**, only those with something
   that fits the slot: a grid of two columns of cards, each a small picture of what it holds (the slot pictures below,
-  at three quarters: a diagram for This Project’s Tabs, a board, a sheet, a Completion tile for Metrics, a Gantt for
+  at three quarters: a Sprint board for This Project’s Tabs, a Kanban board for New Board, a sheet, a Completion tile for Metrics, a Gantt for
   Visualisations, a Trend for From a Sheet, a stack of cards for Utilities), its own glyph in a brand well, its name,
   how many choices it holds (the shared CountBadge) and a line of what is inside, in full, wrapping (never cut off).
   A card lifts on hover with a brand-tinted edge, shows a focus ring, and the cards cascade in when the picker
@@ -282,11 +282,12 @@ and an agent's `add_board` / `add_sheet` onto such a tab answered `tab_not_plan`
     Slot section, and Clear Slot removes it. Nothing makes one any more: a new board or Sheet is a tab (Filling a slot).
   - **Tab**: an existing Board or Sheet tab, from the Tabs category, shown live in the slot; **Open Tab** in its menu goes to it
     (a double-click stays the content's own, a card's open). Until the tab's content arrives the slot says **Loading <name>…**, waiting as the Board or Sheet it was given (a tab not
-    fetched yet has no kind of its own, so it is never shown as a Diagram tab meanwhile) and drawing it once it lands; if
+    fetched yet has no kind of its own; a slot that records none waits as a Board) and drawing it once it lands; if
     its fetch fails, **Couldn’t load <name>.** with **Retry** (Loading again until that fetch settles); loaded with
     nothing on it, **Nothing on <name> yet.** Each slot judges its own tab, so one slow tab never holds the others. A
     slot whose tab is gone says **This Board was deleted.** (or **This Sheet was
-    deleted.**; the slot records which it was given) and offers Clear Slot.
+    deleted.**; the slot records which it was given) and offers Clear Slot. A slot naming a tab that is neither (a
+    forged layout) says **This tab is not a Board or Sheet.** and offers Clear Slot.
   - **Visualisation** or **Metric**: a plan view ([Plan views](plan-views.md)) of the tile's view kind, an element on
     the dashboard tab drawn in the slot at the slot's size.
   - **Note**: a heading and short text, typed in place (each field one step when left).
@@ -341,7 +342,8 @@ offered.
   own 32 px margin round 1376 px of rows, 12 px between rows and slots, each row its own height; a row that fills the
   page is **720 px** tall), each slot a card in the page's look (white at 72%, slate 900 at 60% in dark, 16 px
   corners, a hairline edge) holding a picture of what it holds:
-  - a Board or Sheet (its own, or a tab's) drawn as above at the slot's size; a Diagram tab's drawing fitted inside;
+  - a Board or Sheet (its own, or a tab's) drawn as above at the slot's size; a slot naming any other tab says **This
+    tab is not a Board or Sheet.**;
   - a plan view drawn as a chart, not a labelled box: a metric's figure, its line and its bars; Cards by Field's
     bars; Priority by Status's grid of counts; Status Breakdown's bar; a Gantt's bars over its weeks; a Calendar's
     month with the cards on their days; Card Search's list of cards. The same pictures stand for a plan view on any
@@ -530,14 +532,7 @@ have nothing to offer a dashboard, are not shown (only a Sheet zooms).
 
 ## Showing a tab
 
-Add to Slot's **This Project’s Tabs** offers each of the project's tabs but a Dashboard, in tab-bar order, as a card named for the tab: a **Board** or **Sheet** tab, worked on in place in the slot, and any other tab as a **Diagram**. Picked, it shows that tab in the slot. The list follows the tab bar live (a tab added, renamed or deleted) and is left out while the project has no other tab. A tab may show in several slots and on several dashboards.
-
-A **Diagram** slot is a card with the tab's icon and name over its drawing, live (each edit, a collaborator's
-too, at a deferred priority) and still: drawn as the split view's other pane draws a tab, in this person's
-appearance, fitted to the slot, as one image (it never scrolls or zooms the page, and runs nothing). Pressing it opens
-the tab (**Open <name>**). It needs 320 by 220 px (What fits). Before the tab's content arrives it says "Loading
-<name>…" (or offers Retry); a tab with nothing to draw (no elements, and neither in Pages nor a Form tab with its form)
-says "Nothing on <name> yet."; a deleted one "This Diagram was deleted." The renderer loads only once a Diagram slot is shown.
+Add to Slot's **This Project’s Tabs** offers each of the project's **Board** and **Sheet** tabs, in tab-bar order, as a card named for the tab, drawn as a board or a sheet; picked, it shows that tab in the slot, worked on in place. No other tab goes in a slot: a Dashboard, a Form (a page of its own) and a tab still on Start Planning are not offered, and a slot's tab kind is only ever `board` or `sheet`. The list follows the tab bar live (a tab added, renamed or deleted) and is left out while the project has no other tab. A tab may show in several slots and on several dashboards.
 
 ## Moving a slot
 

@@ -5,6 +5,7 @@ import {
   lucidePanelsTopLeft,
   lucideShare2,
   lucideSlidersHorizontal,
+  lucideSquareKanban,
   lucideSquarePlus,
   lucideUsers,
   lucideZap,
@@ -12,7 +13,7 @@ import {
 import type { IconPrim } from '@liveplanner/icons';
 import type { SearchResultItem } from '@/lib/search';
 import { ProjectIcon } from '@/components/primitives/explorer-icons';
-import { Glyph, Prims } from '@liveplanner/ui';
+import { Glyph, PlanCardsIcon, Prims } from '@liveplanner/ui';
 
 // The search panel's result-kind glyphs (docs/specs/008-canvas/canvas-and-palette.md Search panel), lifted
 // out of SearchPanel: a compact icon per result kind so users can scan
@@ -27,6 +28,7 @@ const KIND_PRIMS: Partial<Record<SearchResultItem['kind'], readonly IconPrim[]>>
   team: lucideUsers,
   folder: lucideFolder,
   tab: lucidePanelsTopLeft,
+  board: lucideSquareKanban,
   palette: lucideSquarePlus,
   command: lucideZap,
   setting: lucideSlidersHorizontal,
@@ -35,6 +37,8 @@ const KIND_PRIMS: Partial<Record<SearchResultItem['kind'], readonly IconPrim[]>>
 
 export function SearchResultIcon({ item }: { item: SearchResultItem }) {
   if (item.kind === 'project') return <ProjectIcon size={13} />;
+  // A card, as the Cards panel draws its button.
+  if (item.kind === 'card') return <PlanCardsIcon size={13} />;
   return (
     <Glyph size={13} units={24}>
       <Prims prims={KIND_PRIMS[item.kind] ?? lucideCircle} />

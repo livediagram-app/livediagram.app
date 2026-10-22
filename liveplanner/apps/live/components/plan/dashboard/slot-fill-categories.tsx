@@ -16,12 +16,7 @@ import {
 import type { PlanPalette } from '../plan-palette';
 import { BoardPreview, SHEET_TILES, SheetPreview } from '../PlanBoardPicker';
 import { MetricPreview, VisualisationPreview } from './slot-previews';
-import {
-  CardPreview,
-  DiagramPreview,
-  FormMetricPreview,
-  SheetMetricPreview,
-} from './card-previews';
+import { CardPreview, FormMetricPreview, SheetMetricPreview } from './card-previews';
 
 // A gauge: a half ring and its needle.
 function GaugeGlyph() {
@@ -89,7 +84,8 @@ const SLOT_CATEGORY_INFO: Record<SlotCategory, Info> = {
   'This Project’s Tabs': {
     icon: <PanelsGlyph />,
     description: 'Your boards and sheets, live.',
-    picture: (p) => <DiagramPreview palette={p} />,
+    // A board of the project's own, set apart from New Board's Kanban.
+    picture: (p) => <BoardPreview preset="sprint" palette={p} />,
   },
   'New Board': {
     icon: <BoardGlyph />,

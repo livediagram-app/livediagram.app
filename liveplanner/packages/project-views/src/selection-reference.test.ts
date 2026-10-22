@@ -40,7 +40,7 @@ describe('selectionReference', () => {
     const { text } = selectionReference(input([]));
 
     expect(text.split('\n')[0]).toBe(
-      `[liveplanner] "Home screen" › tab "Wireframe" (doc doc-3h9x2a, tab ${tabRef()}, rev 41)`,
+      `[liveplanner] "Home screen" › tab "Wireframe" (project doc-3h9x2a, tab ${tabRef()}, rev 41)`,
     );
   });
 

@@ -26,7 +26,7 @@ const OUTPUT = resolve(here, '../src/openapi/schemas.generated.ts');
 // that references a type missing here fails the drift test's reference check;
 // add the type below and regenerate.
 export const ROOT_TYPES = [
-  'LiveDoc',
+  'Project',
   'ProjectSummary',
   'SharedTabsSummary',
   'TrashedProject',
@@ -62,8 +62,6 @@ export const ROOT_TYPES = [
   'ChangesetDetail',
   'RevertResponse',
   'OutlineView',
-  'GraphView',
-  'LayoutView',
   'CommentsView',
   'ShowView',
   'ShowSelectedView',
@@ -107,7 +105,6 @@ export const ROOT_TYPES = [
   'TeamInviteDecline',
   'TelemetryEvent',
   'TelemetrySummary',
-  'AiRequest',
   'CapabilitiesResponse',
   'CurrentTokenResponse',
   'ProjectCommentThread',
@@ -116,10 +113,8 @@ export const ROOT_TYPES = [
   'UnfurlResult',
 ];
 
-// Code names that differ from the published component name. The project's TypeScript type is
-// `LiveDoc`, a name from before the rename that never clashed with the DOM (docs/specs/006-project/project.md);
-// the API publishes it as `Project`.
-export const PUBLIC_NAMES = { LiveDoc: 'Project' };
+// Code names that differ from the published component name (none today: the project's type is `Project`).
+export const PUBLIC_NAMES = {};
 
 const publicName = (name) => PUBLIC_NAMES[name] ?? name;
 

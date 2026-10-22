@@ -513,19 +513,6 @@ export type CanvasProps = {
   onNextVoteResult: () => void;
   onPrevVoteResult: () => void;
   onDoneVoteReview: () => void;
-  aiPanel?: {
-    position: { x: number; y: number } | null;
-    onMove: (x: number, y: number) => void;
-    onReset: () => void;
-    contextElements: Element[];
-    onApplyElements: (elements: Element[], mode: 'clean') => void;
-    ownerId: string;
-    // The active tab's ID — the conversation-reset key. The NAME must
-    // not be the key: renaming a tab would wipe the conversation, and
-    // two same-named tabs wouldn't reset on switch (cross-tab history
-    // contamination).
-    tabId: string;
-  };
   onToggleAspectLock: () => void;
   // Quick add + connect (docs/specs/008-canvas/canvas-and-palette.md). The radial ring on each element edge
   // spawns a connected element (Duplicate / Square / Circle), starts an

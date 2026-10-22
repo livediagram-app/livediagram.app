@@ -46,7 +46,7 @@ describe('seeded tabs compiled on create', () => {
     const summary = (await listProjectsByOwner(db.env, 'user_alice')).find((d) => d.id === 'd1');
     expect(summary).toMatchObject({
       opensIn: 'plan',
-      tabKind: 'diagram',
+      tabKind: 'board',
       templateFamily: 'retrospective',
     });
   });
@@ -94,7 +94,7 @@ describe('seeded tabs compiled on create', () => {
     ]);
   });
 
-  it('adds them to a catalogue the create gives, and leaves a diagram template’s alone', async () => {
+  it('adds them to a catalogue the create gives, and leaves a template’s with no board alone', async () => {
     const own = {
       version: 1,
       types: [

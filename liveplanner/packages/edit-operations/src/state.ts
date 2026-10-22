@@ -7,50 +7,19 @@ import {
   computeRefs,
   isSlugId,
   contentOrigin,
-  DEFAULT_SCHEME_ID,
-  deriveContainers,
-  getBuiltInTheme,
-  THEMES,
-  type ThemeDefinition,
   type Element,
-  type BoxedElement,
   type ElementId,
   type RefTable,
   type Tab,
 } from '@liveplanner/project';
 import { lockedIds } from './locks';
 import type { Naming } from './element-text';
-import type { Fit } from './labels';
 import { elementLocked, type LockReason } from './rejections';
 import type { ApplyOptions, EditLog, EditOperation } from './types';
-import { RESERVED_WORDS } from './vocabulary';
 
 // The first operation that touched an element, and the fields operations wrote on it in the order
 // written: how its ~ line orders them.
-// Why an element moved without an operation naming it.
-export type MoveReason = 'make room' | 'carried' | 'laid out';
-
-// `moved` marks an element only moved along, which prints as a » line and is not normalised.
-// How `layout` laid elements out, as its `»` line says.
-export type LaidOut = { style: 'flow' | 'tree' | 'mindmap'; direction?: 'down' | 'right' };
-
-export type Touch = {
-  operation: number;
-  written: string[];
-  fit?: Fit;
-  moved?: MoveReason;
-  // The summed shift of an element moved along, when the move had one.
-  shift?: [number, number];
-  // How `layout` laid it out.
-  layout?: LaidOut;
-  // The arrow a new arrow copied its style from (insert).
-  styleOf?: ElementId;
-  // Where `order` put it: front, back, or above or below a ref.
-  ordered?: string;
-};
-
-// Why an element left: named by an operation, or pinned to one that was.
-export type Removal = { pinnedTo?: ElementId; unwrapped?: true };
+export type Touch = { operation: number; written: string[] };
 
 export type EditState = {
   readonly tab: Tab;
@@ -65,38 +34,19 @@ export type EditState = {
   readonly targets: ElementId[];
   // The same ids as a set, so noting one is O(1) however many a selector resolves.
   readonly targetSet: Set<ElementId>;
-  readonly removed: Map<ElementId, Removal>;
+  readonly removed: Set<ElementId>;
   readonly warnings: EditWarning[];
   readonly locked: ReadonlyMap<ElementId, LockReason>;
   readonly makeId: () => string;
   readonly log: EditLog;
   // The owner's selection; null when the room was not read.
   readonly selected: readonly ElementId[] | null;
-  // The tab's theme, which theme colour names and new elements' paint come from.
-  readonly theme: ThemeDefinition;
-  // The input tab's content origin: what coordinates shown and taken are relative to.
+  // The input tab's content origin: what coordinates shown are relative to.
   readonly origin: { x: number; y: number };
-  // Every id the tab holds or the changeset used, and every keyword: what a new id may not be.
-  readonly taken: Set<string>;
-  // Refs, recomputed when an element is added or removed; holders and the element list, after any
-  // write. Every write goes through the functions below, which clear them.
-  readonly memo: {
-    refs: RefTable | null;
-    holders: Map<ElementId, ElementId | null> | null;
-    elements: readonly Element[] | null;
-  };
+  // Refs, recomputed when an element is added or removed; the element list, after any write. Every write goes
+  // through the functions below, which clear them.
+  readonly memo: { refs: RefTable | null; elements: readonly Element[] | null };
 };
-
-// The tab's built-in theme; a custom one the caller did not resolve paints as the default (E11).
-function themeOf(tab: Tab, log: EditLog): ThemeDefinition {
-  if (
-    tab.theme !== undefined &&
-    tab.theme !== DEFAULT_SCHEME_ID &&
-    !THEMES.some((t) => t.id === tab.theme)
-  )
-    log('[edit-ops] theme-fallback', {});
-  return getBuiltInTheme(tab.theme);
-}
 
 export function createState(tab: Tab, options: ApplyOptions, log: EditLog): EditState {
   const before = new Map(tab.elements.map((el) => [el.id, el]));
@@ -109,16 +59,14 @@ export function createState(tab: Tab, options: ApplyOptions, log: EditLog): Edit
     created: [],
     targets: [],
     targetSet: new Set(),
-    removed: new Map(),
+    removed: new Set(),
     warnings: [],
     locked: lockedIds(tab),
     makeId: options.makeId ?? (() => crypto.randomUUID()),
     log,
     selected: options.selected === undefined ? [] : options.selected,
-    theme: options.theme ?? themeOf(tab, log),
     origin: contentOrigin(tab.elements),
-    taken: new Set([...before.keys(), ...RESERVED_WORDS]),
-    memo: { refs: null, holders: null, elements: null },
+    memo: { refs: null, elements: null },
   };
 }
 
@@ -137,7 +85,6 @@ export function currentElements(state: EditState): readonly Element[] {
 // What a write leaves stale.
 function written(state: EditState, { added }: { added: boolean }): void {
   if (added) state.memo.refs = null;
-  state.memo.holders = null;
   state.memo.elements = null;
 }
 
@@ -159,7 +106,6 @@ export function writeFields(
   putElement(state, el, operation);
   const touched = touch(state, el.id, operation);
   for (const key of keys) if (!touched.written.includes(key)) touched.written.push(key);
-  delete touched.moved;
 }
 
 // Writes an element over its id (or appends a new one) and marks it touched. An id created and
@@ -168,47 +114,8 @@ export function putElement(state: EditState, el: Element, operation: number): vo
   const known = state.byId.has(el.id) || state.before.has(el.id) || state.removed.has(el.id);
   if (!known) state.order.push(el.id);
   written(state, { added: !state.byId.has(el.id) });
-  state.taken.add(el.id);
   state.byId.set(el.id, el);
   touch(state, el.id, operation);
-}
-
-// Writes an element an operation moved without naming it (carried, made room for, laid out, landed).
-export function moveElement(
-  state: EditState,
-  el: Element,
-  operation: number,
-  reason: MoveReason,
-  how: { shift?: [number, number]; layout?: LaidOut } = {},
-): void {
-  putElement(state, el, operation);
-  const touched = touch(state, el.id, operation);
-  if (touched.written.length > 0 || !state.before.has(el.id)) return;
-  touched.moved ??= reason;
-  if (how.layout) touched.layout = how.layout;
-  const { shift } = how;
-  if (shift)
-    touched.shift = [(touched.shift?.[0] ?? 0) + shift[0], (touched.shift?.[1] ?? 0) + shift[1]];
-}
-
-// Adds a new element at a place in the element order: directly after `after`, or before `before`.
-export function insertElement(
-  state: EditState,
-  el: Element,
-  operation: number,
-  at: { after: ElementId } | { before: ElementId },
-): void {
-  putElement(state, el, operation);
-  state.order.splice(state.order.lastIndexOf(el.id), 1);
-  const anchor = state.order.indexOf('after' in at ? at.after : at.before);
-  state.order.splice('after' in at ? anchor + 1 : anchor, 0, el.id);
-  written(state, { added: false });
-}
-
-// The element order replaced, as `order` rearranges it.
-export function reorder(state: EditState, ids: readonly ElementId[]): void {
-  state.order.splice(0, state.order.length, ...ids);
-  written(state, { added: false });
 }
 
 // An element rewritten in place by finalising, outside any operation.
@@ -217,15 +124,10 @@ export function replaceElement(state: EditState, el: Element): void {
   written(state, { added: false });
 }
 
-export function removeElement(
-  state: EditState,
-  id: ElementId,
-  operation: number,
-  removal: Removal,
-): void {
+export function removeElement(state: EditState, id: ElementId, operation: number): void {
   state.byId.delete(id);
   written(state, { added: true });
-  state.removed.set(id, removal);
+  state.removed.add(id);
   touch(state, id, operation);
 }
 
@@ -234,7 +136,6 @@ export function isTaken(state: EditState, id: ElementId): boolean {
   return state.byId.has(id) || state.before.has(id);
 }
 
-// The working elements' refs: an element's short name, as views print it.
 // The working ref table. A slug id present is its own ref (computeRefs' rule), so it is answered from
 // `byId`; the id list and the table are built on first need, once per add or remove.
 export function refsOf(state: EditState): RefTable {
@@ -250,27 +151,9 @@ export function refsOf(state: EditState): RefTable {
   return state.memo.refs;
 }
 
-// Each working element's container (the smallest frame or lane holding its centre), or null.
-export function holdersOf(state: EditState): ReadonlyMap<ElementId, ElementId | null> {
-  state.memo.holders ??= deriveContainers(currentElements(state));
-  return state.memo.holders;
-}
-
-// How refusals name working elements: by ref, with their container.
+// How refusals name working elements: by ref.
 export function namingOf(state: EditState): Naming {
-  return {
-    refOf: (id) => refsOf(state).refOf(id),
-    containerOf: (id) => {
-      const holder = holdersOf(state).get(id);
-      return holder ? refsOf(state).refOf(holder) : null;
-    },
-  };
-}
-
-// A working element with a box, or undefined for an arrow or an id no element holds.
-export function boxedOf(state: EditState, id: ElementId): BoxedElement | undefined {
-  const el = state.byId.get(id);
-  return el?.type === 'arrow' ? undefined : el;
+  return { refOf: (id) => refsOf(state).refOf(id) };
 }
 
 // A pre-existing element joins the targets the first time an operation resolves it (EO46).

@@ -14,13 +14,31 @@ import {
 import { resolveTemplate } from '@liveplanner/templates';
 
 describe('elementSchemaDoc', () => {
-  it('lists element types, the pinned-arrow convention, and the no-colour rule', () => {
-    const projectRef = elementSchemaDoc();
-    expect(projectRef).toContain('shape');
-    expect(projectRef).toContain('arrow');
-    expect(projectRef).toContain('pinned');
-    expect(projectRef).toContain('"e"'.replace(/"/g, '')); // anchor 'e' from packages/project
-    expect(projectRef).toContain('Do NOT set colours');
+  it('lists the elements a tab holds, with their fields, and no diagram kind', () => {
+    const doc = elementSchemaDoc();
+    for (const kind of [
+      'plan-board',
+      'plan-sheet',
+      'plan-view',
+      'bar-chart',
+      'line-chart',
+      'pie-chart',
+    ])
+      expect(doc).toContain(`shape "${kind}"`);
+    expect(doc).toContain('"planView"');
+    expect(doc).toContain('"chartSource"');
+    for (const word of ['arrow', 'sticky', 'square', 'freehand', 'sankey', 'mermaid'])
+      expect(doc.toLowerCase()).not.toContain(word);
+  });
+});
+
+describe('the inline element format', () => {
+  it('names only the Plan kinds, on every element argument', () => {
+    const schema = z.toJSONSchema(z.object(createProjectShape), { io: 'input' });
+    const text = JSON.stringify(schema);
+    expect(text).toContain('plan-view');
+    for (const word of ['sticky', 'freehand', 'sankey', 'right-of', 'connect', 'layout'])
+      expect(text).not.toContain(word);
   });
 });
 
@@ -62,7 +80,7 @@ describe('tool input shapes', () => {
   it('add_tab: requires projectId + name + elements', () => {
     const s = z.object(addTabShape);
     expect(() => s.parse({ name: 't', elements: [] })).toThrow(); // missing projectId
-    const ok = s.parse({ projectId: 'd', name: 'Detail', elements: [], layout: 'preserve' });
+    const ok = s.parse({ projectId: 'd', name: 'Detail', elements: [] });
     expect(ok.projectId).toBe('d');
   });
 
@@ -75,20 +93,6 @@ describe('tool input shapes', () => {
       ops: [{ op: 'remove', elementId: 'x' }],
     });
     expect(ok.mode).toBe('ops');
-  });
-
-  it('create/update accept an optional layout enum', () => {
-    const c = z.object(createProjectShape);
-    expect(
-      c.parse({ name: 'x', tabs: [{ name: 't', elements: [] }], layout: 'preserve' }).layout,
-    ).toBe('preserve');
-    expect(() =>
-      c.parse({ name: 'x', tabs: [{ name: 't', elements: [] }], layout: 'nope' }),
-    ).toThrow();
-    const u = z.object(updateProjectShape);
-    expect(u.parse({ projectId: 'd', mode: 'replace', elements: [], layout: 'auto' }).layout).toBe(
-      'auto',
-    );
   });
 });
 
@@ -139,7 +143,8 @@ describe('name fields', () => {
 
 describe('SERVER_INSTRUCTIONS template examples', () => {
   it('names only kinds create_project takes', () => {
-    const list = /list_templates lists the Plan templates \(([^)]*)\)/.exec(SERVER_INSTRUCTIONS)?.[1] ?? '';
+    const list =
+      /list_templates lists the Plan templates \(([^)]*)\)/.exec(SERVER_INSTRUCTIONS)?.[1] ?? '';
     const examples = list
       .split(/,\s*/)
       .map((s) => s.trim())

@@ -234,7 +234,6 @@ async function writeAround(
             kind: tab.kind === 'sheet' ? 'sheet' : 'board',
             name: tab.name,
             ...(tab.theme ? { theme: tab.theme } : {}),
-            layout: 'preserve',
           },
           summary: `Add ${tab.name}`,
         },

@@ -535,7 +535,7 @@ A board can be maximised to work on it without the rest of the canvas around it.
   across the canvas (a phone) pushes the top or bottom instead. It never gives up more than 45% of the canvas on an
   axis. It follows the chrome as it changes (a panel opened, closed, moved or collapsed, the window resized), and a
   panel dragged over it still floats above it. A panel opened for a moment (the Trash, the Cards panel, card search,
-  Card Types, Layers, a vote or poll, the AI panel, the item panel) floats over the board and never moves or resizes
+  Card Types, Layers, a vote or poll, the item panel) floats over the board and never moves or resizes
   it, so nothing jumps as it opens or closes. Everything on the board works as it does on the canvas: cards drag,
   open and add, and widgets filter. The header does not move the board while it is maximised.
 - **The header holds the top row**: maximised (or filling its tab), a board, view or Sheet does not start below the

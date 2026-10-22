@@ -8,38 +8,36 @@ default ([Surfaces](#surfaces)) are live.
 
 A **default folder** is where a person's new projects land when they create one without choosing
 a place. A person keeps one default per **default key**, and the key is chosen by how the new
-project opens and what it is made as: a project that opens in Diagram mode can land in "Diagrams",
-one that opens in Draw mode in "Sketches", and a retrospective in "Retros". Defaults belong to the
+project opens and what it is made as: a project can land in "Projects", and a retrospective in "Retros". Defaults belong to the
 person, not to a folder or a team: two teammates may send the same new projects to different places.
 
 ## Domain language
 
-| Term                 | Means                                                                                                      |
-| -------------------- | ---------------------------------------------------------------------------------------------------------- |
-| **default folder**   | The folder a person's new projects of one key land in when no place is chosen.                            |
-| **default key**      | What a default is for: `<dimension>:<value>`, e.g. `mode:plan` (`PlacementDefaultKey`).                    |
-| **creation intent**  | What a new project is made as, captured once when it is created: opens in, tab kind and template family.  |
-| **opens in**         | The editor mode the project is made in (`EditorMode`): Plan, the one mode.                                |
-| **tab kind**         | What the first tab is (`TabKind`): the general `diagram` tab, or a specific kind such as `event-storming`. |
-| **template family**  | The family of templates the project was made from, when it has one: `retrospective` or `kanban`.          |
-| **explicit root**    | The root of My Projects, chosen on purpose (the placement picker's root tile): a place like any other.    |
-| **dangling default** | A default whose folder is gone, no longer the person's to see, or in a team the person has left.           |
+| Term                 | Means                                                                                                    |
+| -------------------- | -------------------------------------------------------------------------------------------------------- |
+| **default folder**   | The folder a person's new projects of one key land in when no place is chosen.                           |
+| **default key**      | What a default is for: `<dimension>:<value>`, e.g. `mode:plan` (`PlacementDefaultKey`).                  |
+| **creation intent**  | What a new project is made as, captured once when it is created: opens in, tab kind and template family. |
+| **opens in**         | The editor mode the project is made in (`EditorMode`): Plan, the one mode.                               |
+| **tab kind**         | What the first tab was made as (`CreationTabKind`): `board`, `sheet`, `dashboard`, `form` or `empty`.    |
+| **template family**  | The family of templates the project was made from, when it has one: `retrospective` or `kanban`.         |
+| **explicit root**    | The root of My Projects, chosen on purpose (the placement picker's root tile): a place like any other.   |
+| **dangling default** | A default whose folder is gone, no longer the person's to see, or in a team the person has left.         |
 
 - "Default" on its own is ambiguous here (default theme, default text size, the Default template); in
   specs and code say **default folder** or **placement default**.
-- A mode and a template family are never a "type": say **opens in** for a mode and **template family** for a family. "Board type" is not a term here: a retrospective and a Kanban board are general diagram tabs made from a template family.
+- A mode and a template family are never a "type": say **opens in** for a mode and **template family** for a family. "Board type" is not a term here: a retrospective and a Kanban board are Plan tabs made from a template family.
 
 ## Default keys
 
 The list a person sets defaults from is titled **New projects that open as**, and holds, in this
 order:
 
-| Entry                 | Key                      |
-| --------------------- | ------------------------ |
-| Projects              | `mode:plan`              |
-| Event Storming boards | `kind:event-storming`    |
-| Retrospectives        | `template:retrospective` |
-| Kanban boards         | `template:kanban`        |
+| Entry          | Key                      |
+| -------------- | ------------------------ |
+| Projects       | `mode:plan`              |
+| Retrospectives | `template:retrospective` |
+| Kanban boards  | `template:kanban`        |
 
 - A key is `<dimension>:<value>`. The dimensions, most specific first, are `kind` (the tab kind),
   `template` (the template family) and `mode` (opens in).
@@ -55,8 +53,10 @@ order:
 
 - **Captured once, at creation**, and never re-derived: content drawn afterwards does not move a
   project. The intent is recorded on the project ([Recorded intent](#recorded-intent)).
-  - `mode`: the editor mode the first tab opens in. `draw` for a tab that opens in Draw mode, including a stored legacy `kind: 'whiteboard'` tab ([Editor modes](../007-editor/editor-modes.md)); `diagram` otherwise, including a project with no tab.
-  - `tabKind`: the first tab's kind, `diagram` (a legacy whiteboard tab included). Absent on the wire reads as `diagram`.
+  - `mode`: the editor mode the first tab opens in: `plan`, the one mode.
+  - `tabKind`: the first tab's kind, `board`, `sheet`, `dashboard` or `form`; `empty` for a tab of none of those kinds
+    or no tab at all. Absent on the wire reads as `empty`. `diagram` is no tab kind here and is refused as
+    `intent_invalid`.
   - `templateFamily`: by the **template** the project is made from. One exhaustive map from every
     template to its family, or none, decides it (`templateFamilyOf` in `@liveplanner/templates`):
     every retrospective format (Retrospective, Start / Stop / Continue, Mad / Sad / Glad, 4Ls,
@@ -81,13 +81,13 @@ order:
 The creation intent is also **written on the project**, by the same insert that creates it, and
 never re-derived or rewritten afterwards:
 
-| Column            | Field            | Holds                                          |
-| ----------------- | ---------------- | ---------------------------------------------- |
+| Column            | Field            | Holds                                         |
+| ----------------- | ---------------- | --------------------------------------------- |
 | `opens_in`        | `opensIn`        | The editor mode the project opens in, or null |
-| `tab_kind`        | `tabKind`        | The first tab's kind at creation, or null      |
-| `template_family` | `templateFamily` | The template family it was made from, or null  |
+| `tab_kind`        | `tabKind`        | The first tab's kind at creation, or null     |
+| `template_family` | `templateFamily` | The template family it was made from, or null |
 
-- **Null `opensIn` means unknown**, never Diagram: the project was made before intents were
+- **Null `opensIn` means unknown**, never Plan: the project was made before intents were
   recorded, or by a create that carries none (an Offline Mode sync, an API
   script, the Duplicate of a project whose own intent is unknown). Its `tabKind` and
   `templateFamily` are then unknown too.
@@ -122,10 +122,9 @@ A create's place is decided in this order; the first that answers wins:
 
 1. **Explicit placement**: a folder, a team (its root included), or the explicit root of My
    projects.
-2. **Kind default**: the default for `kind:<tabKind>`, when the first tab is a specific kind.
-3. **Template default**: the default for `template:<templateFamily>`, when the project has one.
-4. **Mode default**: the default for `mode:<mode>`.
-5. **The root of My Projects**.
+2. **Template default**: the default for `template:<templateFamily>`, when the project has one.
+3. **Mode default**: the default for `mode:<mode>`.
+4. **The root of My Projects**.
 
 - **An absent placement is no choice.** A create whose body names no `folderId` (the key absent) and
   no team, and that carries an intent, consults the defaults.
@@ -186,12 +185,12 @@ A create's place is decided in this order; the first that answers wins:
   included: a surface shows a dangling default as such.
 - `DELETE` of a key with no default is a 204 as well.
 
-| Rejection                | Status | When                                                                  |
-| ------------------------ | ------ | --------------------------------------------------------------------- |
-| `default_key_invalid`    | 400    | `:key` is not one of the keys                                         |
-| `default_folder_invalid` | 400    | The body is not an object whose `folderId` is a non-empty string      |
-| `folder_not_found`       | 404    | The folder is missing, someone else's, or in a team not joined        |
-| `rate_limited`           | 429    | The per-owner write rate limit is spent                               |
+| Rejection                | Status | When                                                                 |
+| ------------------------ | ------ | -------------------------------------------------------------------- |
+| `default_key_invalid`    | 400    | `:key` is not one of the keys                                        |
+| `default_folder_invalid` | 400    | The body is not an object whose `folderId` is a non-empty string     |
+| `folder_not_found`       | 404    | The folder is missing, someone else's, or in a team not joined       |
+| `rate_limited`           | 429    | The per-owner write rate limit is spent                              |
 | `intent_invalid`         | 400    | (on `POST /api/projects`) `intent` is present but not a valid intent |
 
 ## Surfaces
@@ -204,12 +203,11 @@ Settings.
 
 Each key has a label, the plural a sentence uses, and an icon, in list order:
 
-| Key                      | Label                 | In a sentence         | Icon                     |
-| ------------------------ | --------------------- | --------------------- | ------------------------ |
-| `mode:plan`              | Projects              | Projects              | Plan's icon              |
-| `kind:event-storming`    | Event Storming boards | Event Storming boards | A sticky note            |
-| `template:retrospective` | Retrospectives        | retrospectives        | A clock turning back     |
-| `template:kanban`        | Kanban boards         | Kanban boards         | A board of three columns |
+| Key                      | Label          | In a sentence  | Icon                     |
+| ------------------------ | -------------- | -------------- | ------------------------ |
+| `mode:plan`              | Projects       | Projects       | Plan's icon              |
+| `template:retrospective` | Retrospectives | retrospectives | A clock turning back     |
+| `template:kanban`        | Kanban boards  | Kanban boards  | A board of three columns |
 
 - A new editor mode, tab kind or template family is named once (label, plural and icon) and
   needs nothing else; until it is named, it does not compile.

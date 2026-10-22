@@ -106,17 +106,23 @@ describe('comment verbs on a Sheet cell', () => {
   it('refuses a cell off the sheet, an element that is not a Sheet, and a cell with no thread', async () => {
     const { ctx } = setUp();
     expect(
-      await refusal(commentAdd.run!(ctx, { project: DOC_A, ref: 'budget', text: 'x', cell: 'Z99' })),
+      await refusal(
+        commentAdd.run!(ctx, { project: DOC_A, ref: 'budget', text: 'x', cell: 'Z99' }),
+      ),
     ).toEqual([400, 'cell_not_found']);
     expect(
       await refusal(commentAdd.run!(ctx, { project: DOC_A, ref: 'web', text: 'x', cell: 'B4' })),
     ).toEqual([400, 'not_a_sheet']);
     expect(
-      await refusal(commentReply.run!(ctx, { project: DOC_A, ref: 'budget', text: 'x', cell: 'A1' })),
+      await refusal(
+        commentReply.run!(ctx, { project: DOC_A, ref: 'budget', text: 'x', cell: 'A1' }),
+      ),
     ).toEqual([404, 'no_thread']);
     // A cell that is not A1, a Sheet whose sheet is gone, and an element that is not a shape.
     expect(
-      await refusal(commentAdd.run!(ctx, { project: DOC_A, ref: 'budget', text: 'x', cell: 'nope' })),
+      await refusal(
+        commentAdd.run!(ctx, { project: DOC_A, ref: 'budget', text: 'x', cell: 'nope' }),
+      ),
     ).toEqual([400, 'cell_not_found']);
     expect(
       await refusal(

@@ -87,10 +87,10 @@ export function resolveDefaultFor(
 /** What a new project of this entry is made as, in Plan. */
 export function representativeIntent(key: PlacementDefaultKey): CreationIntent {
   const [dimension, value] = key.split(':') as [string, string];
-  if (dimension === 'mode') return { mode: 'plan', tabKind: 'diagram' };
+  if (dimension === 'mode') return { mode: 'plan', tabKind: 'empty' };
   return {
     mode: 'plan',
-    tabKind: 'diagram',
+    tabKind: 'board',
     templateFamily: value as 'retrospective' | 'kanban',
   };
 }

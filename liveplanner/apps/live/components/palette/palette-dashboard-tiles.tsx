@@ -12,7 +12,6 @@ import {
   lucideClipboardList,
   lucideHash,
   lucideLink,
-  lucideWorkflow,
 } from '@liveplanner/icons/lucide';
 import { SheetArt } from '@/components/sheets/sheet-art';
 import {
@@ -140,7 +139,6 @@ function ChecklistGlyph() {
 }
 
 const KeyDateGlyph = lucideGlyph(lucideCalendar, 18);
-const DiagramGlyph = lucideGlyph(lucideWorkflow, 18);
 const LinksGlyph = lucideGlyph(lucideLink, 18);
 
 // What each written card is called (the banner of a pressed tile, the picker, the slot menu).
@@ -298,7 +296,7 @@ export const DASHBOARD_FORM_TILES: PaletteTileDef[] = FORM_METRICS.map(
   }),
 );
 
-// The Tabs category's tiles (docs/specs/026-plan/plan-tabs.md "The Tabs category"): one per Board, Sheet or Diagram tab, named
+// The Tabs category's tiles (docs/specs/026-plan/plan-tabs.md "The Tabs category"): one per Board or Sheet tab, named
 // for it, that shows the tab in a slot, live (a `tab:` choice, which only a Dashboard takes).
 export function dashboardTabTiles(tabs: readonly PlanTabEntry[]): PaletteTileDef[] {
   return tabs.map((t) => ({
@@ -307,20 +305,11 @@ export function dashboardTabTiles(tabs: readonly PlanTabEntry[]): PaletteTileDef
     label: `Show ${t.name}`,
     caption: t.name,
     description:
-      t.of === 'board'
-        ? `The ${t.name} tab’s board, live in a slot: its cards worked on right here.`
-        : t.of === 'sheet'
-          ? `The ${t.name} tab’s sheet, live in a slot: its cells edited right here.`
-          : `The ${t.name} tab’s drawing, live in a slot: press it to open the tab.`,
+      t.of === 'sheet'
+        ? `The ${t.name} tab’s sheet, live in a slot: its cells edited right here.`
+        : `The ${t.name} tab’s board, live in a slot: its cards worked on right here.`,
     noTint: true,
     action: { type: 'shape', kind: 'plan-view', plan: dashboardTabChoice(t.of, t.id) },
-    icon:
-      t.of === 'board' ? (
-        <PlanIcon size={18} />
-      ) : t.of === 'sheet' ? (
-        <SheetArt size={18} />
-      ) : (
-        <DiagramGlyph />
-      ),
+    icon: t.of === 'sheet' ? <SheetArt size={18} /> : <PlanIcon size={18} />,
   }));
 }

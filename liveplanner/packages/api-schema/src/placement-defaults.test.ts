@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import {} from '@liveplanner/project';
 import {
+  CREATION_TAB_KINDS,
   PLACEMENT_DEFAULT_KEYS,
   TEMPLATE_FAMILIES,
   candidateKeysFor,
   creationIntentOf,
+  creationTabKindOf,
   defaultKeysFor,
   isPlacementDefaultKey,
   placementDefaultTelemetryType,
@@ -55,31 +56,33 @@ describe('isPlacementDefaultKey', () => {
 });
 
 describe('creationIntentOf', () => {
-  it('reads a general tab as a diagram tab in Plan', () => {
-    expect(creationIntentOf({ kind: 'diagram' })).toEqual({ mode: 'plan', tabKind: 'diagram' });
-  });
+  it.each([['board'], ['sheet'], ['dashboard'], ['form']] as const)(
+    'names a %s tab by its kind, in Plan',
+    (kind) => {
+      expect(creationIntentOf({ kind })).toEqual({ mode: 'plan', tabKind: kind });
+    },
+  );
 
-  it('reads a tab with no kind as the general tab', () => {
-    expect(creationIntentOf({})).toEqual({ mode: 'plan', tabKind: 'diagram' });
-  });
-
-  it('reads a retired event-storming tab as the general tab', () => {
-    expect(creationIntentOf({ kind: 'event-storming' })).toEqual({
-      mode: 'plan',
-      tabKind: 'diagram',
-    });
+  it('reads a tab of no Plan kind, or no tab, as empty', () => {
+    expect(creationIntentOf({})).toEqual({ mode: 'plan', tabKind: 'empty' });
+    expect(creationIntentOf({ kind: 'diagram' })).toEqual({ mode: 'plan', tabKind: 'empty' });
+    expect(creationIntentOf(undefined)).toEqual({ mode: 'plan', tabKind: 'empty' });
   });
 
   it('carries the template family it was made from', () => {
-    expect(creationIntentOf({ kind: 'diagram' }, 'retrospective')).toEqual({
+    expect(creationIntentOf({ kind: 'board' }, 'retrospective')).toEqual({
       mode: 'plan',
-      tabKind: 'diagram',
+      tabKind: 'board',
       templateFamily: 'retrospective',
     });
   });
+});
 
-  it('reads a project with no tab as the general tab', () => {
-    expect(creationIntentOf(undefined)).toEqual({ mode: 'plan', tabKind: 'diagram' });
+describe('creationTabKindOf', () => {
+  it('is one of the creation tab kinds', () => {
+    expect(CREATION_TAB_KINDS).toEqual(['board', 'sheet', 'dashboard', 'form', 'empty']);
+    expect(creationTabKindOf({ kind: 'sheet' })).toBe('sheet');
+    expect(creationTabKindOf({ kind: 'whiteboard' })).toBe('empty');
   });
 });
 
@@ -88,17 +91,17 @@ describe('readCreationIntent', () => {
     expect(readCreationIntent(value)).toEqual({ ok: true, intent: null });
   });
 
-  it('reads a mode alone as the general tab', () => {
+  it('reads a mode alone as an empty tab', () => {
     expect(readCreationIntent({ mode: 'plan' })).toEqual({
       ok: true,
-      intent: { mode: 'plan', tabKind: 'diagram' },
+      intent: { mode: 'plan', tabKind: 'empty' },
     });
   });
 
   it('reads null tab kind and template family as absent', () => {
     expect(readCreationIntent({ mode: 'plan', tabKind: null, templateFamily: null })).toEqual({
       ok: true,
-      intent: { mode: 'plan', tabKind: 'diagram' },
+      intent: { mode: 'plan', tabKind: 'empty' },
     });
   });
 
@@ -108,24 +111,24 @@ describe('readCreationIntent', () => {
     (mode) => {
       expect(readCreationIntent({ mode })).toEqual({
         ok: true,
-        intent: { mode: 'plan', tabKind: 'diagram' },
+        intent: { mode: 'plan', tabKind: 'empty' },
       });
     },
   );
 
   it('reads every field', () => {
     expect(
-      readCreationIntent({ mode: 'plan', tabKind: 'diagram', templateFamily: 'kanban' }),
+      readCreationIntent({ mode: 'plan', tabKind: 'board', templateFamily: 'kanban' }),
     ).toEqual({
       ok: true,
-      intent: { mode: 'plan', tabKind: 'diagram', templateFamily: 'kanban' },
+      intent: { mode: 'plan', tabKind: 'board', templateFamily: 'kanban' },
     });
   });
 
   it('ignores fields beyond its three', () => {
     expect(readCreationIntent({ mode: 'plan', boardType: 'kanban', extra: 1 })).toEqual({
       ok: true,
-      intent: { mode: 'plan', tabKind: 'diagram' },
+      intent: { mode: 'plan', tabKind: 'empty' },
     });
   });
 
@@ -135,6 +138,7 @@ describe('readCreationIntent', () => {
     ['a missing mode', { templateFamily: 'kanban' }],
     ['an unknown mode', { mode: 'pixel' }],
     ['the legacy whiteboard kind', { mode: 'plan', tabKind: 'whiteboard' }],
+    ['the diagram kind liveplanner has no tab of', { mode: 'plan', tabKind: 'diagram' }],
     ['the retired event-storming kind', { mode: 'diagram', tabKind: 'event-storming' }],
     ['an unknown template family', { mode: 'plan', templateFamily: 'mindmap' }],
     ['a template family that is not a string', { mode: 'plan', templateFamily: 3 }],
@@ -145,24 +149,25 @@ describe('readCreationIntent', () => {
 
 describe('candidateKeysFor', () => {
   it('names the template, then the mode', () => {
-    expect(
-      candidateKeysFor({ mode: 'plan', tabKind: 'diagram', templateFamily: 'kanban' }),
-    ).toEqual(['template:kanban', 'mode:plan']);
+    expect(candidateKeysFor({ mode: 'plan', tabKind: 'board', templateFamily: 'kanban' })).toEqual([
+      'template:kanban',
+      'mode:plan',
+    ]);
   });
 
   it('names the mode alone without a template', () => {
-    expect(candidateKeysFor({ mode: 'plan', tabKind: 'diagram' })).toEqual(['mode:plan']);
+    expect(candidateKeysFor({ mode: 'plan', tabKind: 'sheet' })).toEqual(['mode:plan']);
   });
 });
 
 describe('defaultKeysFor', () => {
-  it('tries the mode key of a general tab', () => {
-    expect(defaultKeysFor({ mode: 'plan', tabKind: 'diagram' })).toEqual(['mode:plan']);
+  it('tries the mode key of an empty tab', () => {
+    expect(defaultKeysFor({ mode: 'plan', tabKind: 'empty' })).toEqual(['mode:plan']);
   });
 
   it('tries the template key, then the mode key, of a retrospective', () => {
     expect(
-      defaultKeysFor({ mode: 'plan', tabKind: 'diagram', templateFamily: 'retrospective' }),
+      defaultKeysFor({ mode: 'plan', tabKind: 'board', templateFamily: 'retrospective' }),
     ).toEqual(['template:retrospective', 'mode:plan']);
   });
 });

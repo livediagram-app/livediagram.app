@@ -32,14 +32,19 @@ const outputOf = (response: ChangesetResponse) => ({
 
 async function targetOf(ctx: VerbContext, projectRef: string, tab: string | undefined) {
   const found = await tabOf(ctx, projectRef, tab);
-  return { projectId: found.project.id, tabId: found.tab.id, tabName: found.tab.name, project: projectRef };
+  return {
+    projectId: found.project.id,
+    tabId: found.tab.id,
+    tabName: found.tab.name,
+    project: projectRef,
+  };
 }
 
 export const changesetApply = defineVerb({
   id: 'changeset.apply',
   summary: 'Apply edit operations from a file',
   description:
-    'Sends a file (or stdin, with -f -) as one changeset: edit operations in the line form or JSON, or elements that replace the tab. All or nothing; prints one result line per element, then the revision and the revert command.',
+    'Sends a file (or stdin, with -f -) as one changeset: edit operations (add, set, rm, test) in the line form or JSON, or elements that replace the tab. All or nothing; prints one result line per element, then the revision and the revert command.',
   behaviour: 'write',
   input: z.object({
     project: projectArg,
@@ -68,45 +73,22 @@ export const changesetApply = defineVerb({
     positionals: ['project'],
     flags: { file: { short: 'f' } },
     examples: [
-      'liveplanner edit "Auth flow" -f ops.txt',
+      'liveplanner edit "Sprint 14" --tab Dashboard -f ops.txt',
       'liveplanner changeset apply 3f9c -f - --dry-run < ops.txt',
     ],
     prints: 'one result line per element, then the revision and revert command',
   },
 });
 
+// The operations a word-at-a-time command sends. An `add` takes a whole element as JSON, so it goes through
+// `changeset apply`, not here.
 const ELEMENT_OPERATIONS = {
-  add: {
-    summary: 'Add an element',
-    words: '<kind> [id=<id>] key=value… [<placement>]',
-    example: 'square id=verify label="Verify email" below:n3',
-  },
   set: {
     summary: 'Change fields of elements',
     words: '<selector> key=value…',
-    example: 'n3 label="Sign in" shape=stadium',
+    example: 'w1 label="Workload" textSize=lg',
   },
-  rm: { summary: 'Remove elements', words: '<selector>', example: 'n7' },
-  move: {
-    summary: 'Move elements beside another, or by an offset',
-    words: '<selector> <placement> | by=dx,dy',
-    example: 'n3 below:n2',
-  },
-  connect: {
-    summary: 'Draw an arrow from one element to another',
-    words: '<from> <to> [key=value…]',
-    example: 'n3 n7 label=retry',
-  },
-  insert: {
-    summary: 'Put an element on an arrow, between its ends',
-    words: '<kind> key=value… between <a> <b>',
-    example: 'square label=Verify between n3 n4',
-  },
-  wrap: {
-    summary: 'Put elements in a new frame or lane',
-    words: '<selector…> in frame|lane key=value…',
-    example: 'n3 n4 in frame label=Auth',
-  },
+  rm: { summary: 'Remove elements', words: '<selector>', example: 'w1' },
 } as const;
 
 type ElementOperation = keyof typeof ELEMENT_OPERATIONS;
@@ -116,7 +98,7 @@ function elementVerb(op: ElementOperation): Verb {
   return defineVerb({
     id: `element.${op}`,
     summary,
-    description: `Sends one \`${op} ${words}\` edit operation as a changeset; the words are the operation's, without quoting the arrow. Prints one result line per element, then the revision and the revert command.`,
+    description: `Sends one \`${op} ${words}\` edit operation as a changeset; the words are the operation's. Prints one result line per element, then the revision and the revert command.`,
     behaviour: op === 'rm' ? 'destructive' : 'write',
     input: z.object({
       project: projectArg,
@@ -136,7 +118,7 @@ function elementVerb(op: ElementOperation): Verb {
     cli: {
       positionals: ['project', '...words'],
       examples: [
-        `liveplanner element ${op} "Auth flow" ${example}`,
+        `liveplanner element ${op} "Sprint 14" --tab Dashboard ${example}`,
         `liveplanner element ${op} 3f9c ${example} --dry-run`,
       ],
       prints: 'one result line per element, then the revision and revert command',

@@ -8,7 +8,7 @@
 // the link's code resolves the project and its role, the password gate asks when the link has one, and the code
 // rides every later request of the project.
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
-import { capWorkbenchRole, type LiveDoc, type ShareRole } from '@liveplanner/api-schema';
+import { capWorkbenchRole, type Project, type ShareRole } from '@liveplanner/api-schema';
 import type { WorkbenchProjectSession } from '@/components/providers/workbench-session-context';
 import {
   apiLoadProject,
@@ -33,7 +33,7 @@ type WorkbenchBootstrapDeps = {
   >;
   seed: (
     selfId: string,
-    fetched: LiveDoc,
+    fetched: Project,
     shareCode: string | null,
     firstTab: string | null,
   ) => Promise<void>;
@@ -56,7 +56,7 @@ type WorkbenchBootstrapDeps = {
   };
 };
 
-type Loaded = { project: LiveDoc; role: ShareRole; tabScope: string | null };
+type Loaded = { project: Project; role: ShareRole; tabScope: string | null };
 // The link asks for its password; `invalid` when the one sent was wrong.
 type PasswordAsked = { password: { invalid: boolean } };
 

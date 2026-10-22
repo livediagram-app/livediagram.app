@@ -6,34 +6,17 @@ import {
   type ThemeDefinition,
 } from '@liveplanner/project';
 import { formatResultLines } from './format-results';
-import { checkoutFlow, fixedIds } from './fixtures/checkout-flow';
+import { fixedIds, newView, sprintDashboard } from './fixtures/sprint-dashboard';
 import { applied, refused } from './fixtures/outcomes';
 import { applyReplace } from './replace';
 import type { EditLog, ReplaceBody, ReplaceOptions } from './types';
 
 const options: ReplaceOptions = { tabId: 'new-tab', name: 'Fresh', makeId: fixedIds() };
-const arrowBetween = (id: string, from: string, to: string) => ({
-  id,
-  type: 'arrow',
-  from: { kind: 'pinned', elementId: from, anchor: 's' },
-  to: { kind: 'pinned', elementId: to, anchor: 'n' },
-});
-const box = (id: string, label: string, y: number) => ({
-  id,
-  type: 'shape',
-  shape: 'square',
-  label,
-  x: 0,
-  y,
-  width: 140,
-  height: 60,
-});
-// Two boxes joined by an arrow: the smallest whole tab a replace writes.
+// Two views: the smallest whole tab a replace writes.
 const simple: ReplaceBody = {
-  elements: [box('a', 'Start', 0), box('b', 'Done', 120), arrowBetween('e', 'a', 'b')],
-  layout: 'preserve',
+  elements: [newView('g1', 'gantt'), { ...newView('s1', 'search'), x: 520 }],
 };
-const themed = (theme: string): Tab => ({ ...checkoutFlow(), theme, font: 'serif' });
+const themed = (theme: string): Tab => ({ ...sprintDashboard(), theme, font: 'serif' });
 
 const recording = () => {
   const calls: [string, Record<string, unknown>][] = [];
@@ -41,66 +24,30 @@ const recording = () => {
   return { calls, log };
 };
 
-describe('applyReplace: elements sent back', () => {
-  // Fourteen labelled boxes in a column, the first two joined by an arrow with no style: past twelve boxes a new raw
-  // box takes `sm` text and a new raw arrow takes angled lines, but these are the tab's own.
-  const boxes = Array.from({ length: 14 }, (_, i) => ({
-    id: `n${i}`,
-    type: 'shape',
-    shape: 'square',
-    label: `Step ${i}`,
-    x: 0,
-    y: i * 120,
-    width: 140,
-    height: 60,
-  }));
-  const tab = {
-    id: 't',
-    name: 'T',
-    elements: [...boxes, arrowBetween('a1', 'n0', 'n1')],
-  } as unknown as Tab;
-
-  it('keeps the look of the elements the tab already holds', () => {
-    const { tab: next } = applied(
-      applyReplace(tab, { elements: tab.elements, layout: 'preserve' }, options),
-    );
-    const arrow = next.elements.find((e) => e.id === 'a1')!;
-    expect(arrow).not.toHaveProperty('arrowStyle');
-    expect(arrow).not.toHaveProperty('curvePoints');
-    // Not shrunk to the small size a fresh list of this many boxes takes.
-    expect(next.elements.find((e) => e.id === 'n3')).not.toHaveProperty('textSize', 'sm');
-  });
-
-  it('gives an element new to the tab the raw defaults', () => {
-    const fresh = arrowBetween('a2', 'n2', 'n3');
-    const { tab: next } = applied(
-      applyReplace(tab, { elements: [...tab.elements, fresh], layout: 'preserve' }, options),
-    );
-    expect(next.elements.find((e) => e.id === 'a2')).toHaveProperty('arrowStyle');
-  });
-});
-
 describe('applyReplace on an existing tab', () => {
   it('swaps the elements, keeping every tab field', () => {
     const tab = themed('ocean');
     const outcome = applyReplace(tab, simple, options);
     const { tab: next, targets, createdIds, results } = applied(outcome);
-    expect(next).toMatchObject({
-      id: 'main',
-      name: 'Checkout flow',
-      theme: 'ocean',
-      font: 'serif',
-    });
-    expect(next.elements.map((el) => el.id).sort()).toEqual(expect.arrayContaining(['a', 'b']));
+    expect(next).toMatchObject({ id: 'main', name: 'Sprint 14', theme: 'ocean', font: 'serif' });
+    expect(next.elements.map((el) => el.id)).toEqual(['g1', 's1']);
     expect(targets).toEqual([]);
-    expect(createdIds).toEqual(next.elements.map((el) => el.id));
-    expect(results.filter((line) => line.mark === '+')).toHaveLength(next.elements.length);
-    expect(formatResultLines(results)).toContain('- n3  square "Login"');
+    expect(createdIds).toEqual(['g1', 's1']);
+    expect(results.filter((line) => line.mark === '+')).toHaveLength(2);
+    expect(formatResultLines(results)).toContain('- w1  plan-view "Workload"');
     expect(results.filter((line) => line.mark === '-')).toHaveLength(tab.elements.length);
   });
 
+  it('keeps the elements where they are given', () => {
+    const { tab } = applied(applyReplace(sprintDashboard(), simple, options));
+    expect(tab.elements.map((el) => (el.type === 'arrow' ? null : [el.x, el.y]))).toEqual([
+      [0, 840],
+      [520, 840],
+    ]);
+  });
+
   it('round trips through its element ops and their inverse', () => {
-    const tab = checkoutFlow();
+    const tab = sprintDashboard();
     const { tab: next, elementOps, inverse } = applied(applyReplace(tab, simple, options));
     expect(applyElementOps(tab.elements, elementOps)).toEqual(next.elements);
     expect(applyElementOps(next.elements, inverse)).toEqual(tab.elements);
@@ -109,28 +56,14 @@ describe('applyReplace on an existing tab', () => {
   it('builds a template with the tab theme', () => {
     const { tab } = applied(applyReplace(themed('ocean'), { template: 'kanban' }, options));
     expect(tab.elements.length).toBeGreaterThan(0);
-    expect(tab.name).toBe('Checkout flow');
-  });
-
-  it('takes raw elements, normalised and laid out when asked', () => {
-    const elements = [
-      { id: 'x', type: 'shape', shape: 'rectangle', x: 0, y: 0, width: 100, height: 50 },
-      { id: 'y', type: 'shape', shape: 'square', x: 0, y: 0, width: 100, height: 50 },
-      { id: 'z', type: 'shape', shape: 'square', x: 0, y: 0, width: 100, height: 50 },
-      arrowBetween('e1', 'x', 'y'),
-      arrowBetween('e2', 'y', 'z'),
-    ];
-    const { tab } = applied(applyReplace(checkoutFlow(), { elements, layout: 'auto' }, options));
-    const [x, y] = tab.elements as { shape: string; y: number; textSize?: string }[];
-    expect(x!.shape).toBe('square');
-    expect(x!.textSize).toBeDefined();
-    expect(y!.y).not.toBe(x!.y);
+    expect(tab.name).toBe('Sprint 14');
   });
 
   it('refuses a locked tab', () => {
     const { calls, log } = recording();
     expect(
-      refused(applyReplace({ ...checkoutFlow(), locked: true }, simple, { ...options, log })).code,
+      refused(applyReplace({ ...sprintDashboard(), locked: true }, simple, { ...options, log }))
+        .code,
     ).toBe('element_locked');
     expect(calls[0]).toEqual(['[edit-ops] locked', { operation: 0, op: 'replace', scope: 'tab' }]);
   });
@@ -165,14 +98,6 @@ describe('applyReplace for a new tab', () => {
     expect(tab).toMatchObject({ id: 'new-tab', templateChosen: true, kind: 'board' });
   });
 
-  it('builds an elements tab as add_tab does, themed', () => {
-    const elements = [
-      { id: 'x', type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10 },
-    ];
-    const { tab } = applied(applyReplace(null, { elements }, options));
-    expect(tab).toMatchObject({ id: 'new-tab', theme: 'brand' });
-  });
-
   it('logs the source and the element count, and a custom theme it could not paint', () => {
     const { calls, log } = recording();
     applyReplace(null, simple, {
@@ -182,7 +107,7 @@ describe('applyReplace for a new tab', () => {
     });
     expect(calls).toEqual([
       ['[edit-ops] theme-fallback', {}],
-      ['[edit-ops] replace', { source: 'elements', elements: 3 }],
+      ['[edit-ops] replace', { source: 'elements', elements: 2 }],
     ]);
   });
 });
@@ -211,21 +136,24 @@ describe('applyReplace refusals', () => {
     expect(rejection.hint).toContain('make it with add_form (starter "contact")');
   });
 
+  it('refuses elements no liveplanner tab holds', () => {
+    const square = { id: 'q', type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10 };
+    const rejection = refusal({ elements: [newView('g1', 'gantt'), square] });
+    expect(rejection.details).toEqual([
+      'elements: shape "square" is not an element a liveplanner tab holds',
+    ]);
+    expect(rejection.hint).toContain('plan-view');
+    expect(refusal({ elements: [{ id: 'x', type: 'sticky' }] }).code).toBe('invalid_value');
+  });
+
   it('refuses elements that are not a list, or an element the format does not allow', () => {
     expect(refusal({ elements: 'x' }).details).toEqual(['elements: expected an array of elements']);
-    expect(refusal({ elements: [{ id: 'x', type: 'sticky' }] }).details).toEqual([
-      'x x: a finite number',
-    ]);
-    expect(refusal({ elements: [{ type: 'blob' }] }).details).toEqual([
-      'an element id: a non-empty string',
-    ]);
-    expect(refusal({ elements: [{ id: 'q', type: 7 }] }).hint).toBe(
-      'see the format: liveplanner schema',
-    );
+    const { x: _x, ...noX } = newView('g1', 'gantt');
+    expect(refusal({ elements: [noX] }).details).toEqual(['g1 x: a finite number']);
   });
 
   it('refuses two elements with one id', () => {
-    const el = { id: 'x', type: 'sticky', x: 0, y: 0, width: 10, height: 10 };
+    const el = newView('g1', 'gantt');
     expect(refusal({ elements: [el, el] }).details).toEqual(['the tab elements: every id once']);
   });
 

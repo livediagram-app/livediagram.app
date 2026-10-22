@@ -14,7 +14,17 @@ import { handleProjects } from './projects';
 const OWNER = 'user_owner';
 
 function box(id: string, x = 0, label = id): Element {
-  return { id, type: 'shape', shape: 'square', x, y: 0, width: 120, height: 60, label };
+  return {
+    id,
+    type: 'shape',
+    shape: 'plan-view',
+    x,
+    y: 0,
+    width: 120,
+    height: 60,
+    label,
+    planView: { view: 'gantt' },
+  };
 }
 
 // A room that records what reached it and holds nothing.

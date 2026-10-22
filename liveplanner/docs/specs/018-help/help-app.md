@@ -44,7 +44,7 @@ Categories fall into two kinds. The **support** categories carry standalone arti
 | `developers`           | Developers           | code      | support |
 | `troubleshooting`      | Troubleshooting      | wrench    | support |
 | `supported-devices`    | Supported Devices    | devices   | support |
-| `policies`             | Policies             | project  | support |
+| `policies`             | Policies             | project   | support |
 | `contact`              | Contact              | mail      | support |
 | `explorer`             | Explorer             | folder    | feature |
 | `palette`              | Palette              | palette   | feature |
@@ -61,8 +61,8 @@ The feature categories group the feature guides by area:
 - **Canvas** — the infinite canvas (09), selecting many elements (multi-select), links and link cards (40), annotations (38), themes (29+42+44), templates, text and fonts (28), Undo and Redo.
 - **Tabs** — multiple canvases (13+17+30): Tabs, Tab Folders, Linking Across Tabs, Add a Tab to Another Project, Importing (27), Exporting, and Cleanup (47), one guide per tab-menu action.
 - **Collaboration** — comments, live presence (07: live cursors / selections / per-tab presence), teams (32+35), sharing and embeds (24+33+34), session tools (39).
-- **Tools** — AI assistance (25), zen mode (26), appearance / light-dark-system (07), layout cleanup (47).
-- **Search Panel** — the global search (09): an overview landing plus sub-articles for each thing search does, finding projects/folders, teams, tabs and elements, adding palette items to the canvas, and the Create-new-tab action.
+- **Tools** — zen mode (26), appearance / light-dark-system (07), layout cleanup (47).
+- **Search Panel** — the global search (09): an overview landing plus sub-articles for each thing search does, finding projects/folders, teams, tabs, boards and cards, adding palette items to the canvas, and the Create-new-tab action.
 
 Where a feature's name would equal its category slug, the landing slug is distinguished (`the-canvas`, `the-explorer`, `using-tabs`) so a feature slug never equals a category slug (which would break the breadcrumb's parent link).
 
@@ -241,7 +241,6 @@ Figures are added to the sections that genuinely benefit (a concrete UI surface,
 a before/after, a spatial relationship), not to every section; reference-only or
 purely conceptual sections stay text. Scenes are reused across articles wherever
 the same surface recurs rather than redrawn.
-
 
 ## Header
 

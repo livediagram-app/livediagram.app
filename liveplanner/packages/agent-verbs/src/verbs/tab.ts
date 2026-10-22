@@ -81,7 +81,7 @@ export const tabView = defineVerb({
   id: 'tab.view',
   summary: 'A view of a tab; the outline by default',
   description:
-    'Prints a view of a tab as the api renders it: outline (default), graph, layout, comments, show (needs --ref), or find (needs --text). --budget fits it to that many tokens; --raw prints the plain tab instead.',
+    'Prints a view of a tab as the api renders it: outline (default), comments, show (needs --ref), or find (needs --text). --budget fits it to that many tokens; --raw prints the plain tab instead.',
   behaviour: 'read',
   input: z.object({
     project: z.string().describe('A name, id prefix or liveplanner URL'),
@@ -98,8 +98,7 @@ export const tabView = defineVerb({
       .min(1)
       .optional()
       .describe('Fit the view to about this many tokens'),
-    only: z.string().optional().describe('outline, layout: one element and what nests under it'),
-    coarse: z.boolean().optional().describe('layout: rows instead of geometry'),
+    only: z.string().optional().describe('outline: one element and what nests under it'),
     style: z.boolean().optional().describe('outline: add style attributes'),
     all: z.boolean().optional().describe('comments: include resolved threads'),
     json: z.boolean().optional().describe('The view as JSON'),
@@ -114,7 +113,6 @@ export const tabView = defineVerb({
       q: input.text,
       budget: input.budget,
       only: input.only,
-      coarse: input.coarse,
       style: input.style,
       all: input.all,
       json: input.json,

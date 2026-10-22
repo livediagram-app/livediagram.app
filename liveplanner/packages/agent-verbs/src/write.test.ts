@@ -9,7 +9,12 @@ import { box, plainTab, tabAnswer } from './testing/tabs';
 import { HELD_RETRY_INTERVAL_MS, submitChangeset } from './write';
 
 const TAB = `/projects/${DOC_A}/tabs/tab-one-0000`;
-const target = { projectId: DOC_A, tabId: 'tab-one-0000', tabName: 'Overview', project: 'Auth flow' };
+const target = {
+  projectId: DOC_A,
+  tabId: 'tab-one-0000',
+  tabName: 'Overview',
+  project: 'Auth flow',
+};
 const written = (rebasedOver = 0) => ({
   dryRun: false,
   changeset: { id: 'cs_1', tabId: 'tab-one-0000', rev: 6, previousRev: 5, rebasedOver },

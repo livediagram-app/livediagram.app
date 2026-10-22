@@ -3,7 +3,7 @@
 // Trash in IndexedDB, behind one set of calls. Restore and purge dispatch on
 // the offline index like every other project call (lib/api-client.ts).
 
-import type { LiveDoc, ProjectResponse, TrashedProject } from '@liveplanner/api-schema';
+import type { Project, ProjectResponse, TrashedProject } from '@liveplanner/api-schema';
 import { isOfflineId } from '../offline/offline-store';
 import {
   offlineListTrash,
@@ -38,7 +38,7 @@ export async function apiListTrash(ownerId: string, now = Date.now()): Promise<T
 
 // Restore one project to where it was. Returns the project (null for an
 // offline one, which the caller re-lists), and lets this page write it again.
-export async function apiRestoreProject(ownerId: string, id: string): Promise<LiveDoc | null> {
+export async function apiRestoreProject(ownerId: string, id: string): Promise<Project | null> {
   if (await isOfflineId(id)) {
     if (!(await offlineRestoreProject(id))) throw new Error('not in the local Trash');
     unmarkProjectDeleted(id);

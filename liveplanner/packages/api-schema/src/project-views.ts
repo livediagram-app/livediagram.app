@@ -7,8 +7,6 @@ import type { Finish, TabKind } from '@liveplanner/project';
 export const VIEW_NAMES = [
   'overview',
   'outline',
-  'graph',
-  'layout',
   'comments',
   'show',
   'find',
@@ -20,8 +18,6 @@ export type ViewName = (typeof VIEW_NAMES)[number];
 export const PROJECT_VIEW_NAMES = ['overview'] as const satisfies readonly ViewName[];
 export const TAB_VIEW_NAMES = [
   'outline',
-  'graph',
-  'layout',
   'comments',
   'show',
   'find',
@@ -39,7 +35,6 @@ export const VIEW_QUERY = {
   json: 'json',
   budget: 'budget',
   only: 'only',
-  coarse: 'coarse',
   style: 'style',
   ref: 'ref',
   q: 'q',
@@ -60,8 +55,6 @@ export const VIEW_PARAMETERS: Readonly<
 > = {
   overview: COMMON_PARAMETERS,
   outline: [...COMMON_PARAMETERS, 'only', 'style'],
-  graph: COMMON_PARAMETERS,
-  layout: [...COMMON_PARAMETERS, 'only', 'coarse'],
   comments: [...COMMON_PARAMETERS, 'all'],
   show: [...COMMON_PARAMETERS, 'ref'],
   find: [...COMMON_PARAMETERS, 'q'],
@@ -142,22 +135,6 @@ export type OutlineView = {
   header: ViewHeader;
   nodes: (OutlineNode | FreehandRunJson)[];
   ownLineArrows: ViewEdgeJson[];
-  elision: Elision;
-};
-
-export type GraphView = {
-  header: ViewHeader;
-  nodes: { ref: string; id: string; kind: string; label: string | null }[];
-  arrows: ViewEdgeJson[];
-  elision: Elision;
-};
-
-export type LayoutView = {
-  header: ViewHeader;
-  origin: { x: number; y: number };
-  boxes: { ref: string; x: number; y: number; w: number; h: number; r: number }[];
-  arrows: { ref: string; from: string; to: string; style: string }[];
-  rows: { container: string | null; rows: string[][] }[] | null;
   elision: Elision;
 };
 

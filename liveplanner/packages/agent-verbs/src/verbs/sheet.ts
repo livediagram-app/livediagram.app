@@ -258,7 +258,11 @@ function axisVerb(
     }),
     output: changeOutput,
     run: async (ctx, input) => {
-      const { project: projectRef, sheet, ...rest } = input as { project: string; sheet: string; where: string };
+      const {
+        project: projectRef,
+        sheet,
+        ...rest
+      } = input as { project: string; sheet: string; where: string };
       const count = (rest as { count?: string }).count;
       if (count !== undefined && !/^[1-9][0-9]{0,3}$/.test(count))
         throw new VerbRefusal({

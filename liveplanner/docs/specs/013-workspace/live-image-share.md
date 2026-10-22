@@ -53,6 +53,39 @@ export).
 
 The router already forwards `/api/*` to the api worker, so no router change.
 
+## What each tab draws
+
+The image draws a tab as the editor's export draws it ([Plan tabs](../026-plan/plan-tabs.md) "Export"), from what the
+project holds now:
+
+- **A Board** draws its columns with their cards, read from the project's items.
+- **A Sheet** draws its window of cells, worked out ([Sheet](../029-sheets/sheet.md) "Exports and images").
+- **A Form** draws its form as respondents see it, on the form's look.
+- **A Dashboard** draws its page laid out, at the export's 1440 px width (`apps/api/src/thumbnail-dashboard.ts`, over
+  `@liveplanner/plan-art`'s `planImageOf` and `planArtResolver`, the same ones the editor's export and the MCP's
+  previews use): each metric and chart drawn from the project's cards (a figure with its bar, Cards by Field's bars,
+  a Gantt's bars over its weeks, a Calendar's month and so on), never a box labelled with its kind; each note, title
+  and Utility on its card; each Board or Sheet tab slot drawing that tab's board or Sheet. A figure from a Sheet and a
+  Form Metric are written by name, without their figure (working a Sheet's figure out needs the sheets engine on its
+  workbook, which the api does not run for an image).
+
+### A Dashboard's cost
+
+A Dashboard's image reads, besides its own tab, one bounded query of the tabs it draws from (`dashboardSourceTabs`):
+the tabs its slots show and the tabs holding a board (whose columns name the statuses its charts count by), in tab
+order, at most `DASHBOARD_IMAGE_TABS_MAX` (60). It reads the project's cards and card types once, as a board's image
+does. Rendering is pure and bounded by the layout's own limits (12 rows of 4 slots) and the project's card limit:
+
+| Page                                                               | Cards | Render (M-series laptop) |
+| ------------------------------------------------------------------ | ----- | ------------------------ |
+| Project Planner's Overview (9 slots: metrics, charts, 4 tab slots) | 50    | about 3 ms               |
+| Project Planner's Overview                                         | 2,000 | about 5 ms               |
+| 12 rows of 4 charts and metrics                                    | 2,000 | about 37 ms              |
+
+`thumbnail-dashboard.perf.test.ts` holds the budget. The first-tab image is cached in R2 until the next save, so a
+Dashboard's render is paid once per save, not per view; an image of another tab renders on each read, behind the
+endpoint's short `Cache-Control`. The labelled boxes drawn before cost about 0.2 ms.
+
 ## Renderer sharing (the build's main work)
 
 The SVG renderer currently lives in `apps/live/lib/export-tab.ts` (client-only)

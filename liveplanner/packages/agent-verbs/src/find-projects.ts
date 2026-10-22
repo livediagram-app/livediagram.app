@@ -46,9 +46,7 @@ async function readTeams(api: ApiClient): Promise<Libraries['teams']> {
   return Promise.all(
     teams.map(async (t) => {
       try {
-        const { projects, folders } = await api.json<TeamLibraryResponse>(
-          `/teams/${t.id}/library`,
-        );
+        const { projects, folders } = await api.json<TeamLibraryResponse>(`/teams/${t.id}/library`);
         return { id: t.id, name: t.name, projects, folders };
       } catch {
         return { id: t.id, name: t.name, projects: [], folders: [] };

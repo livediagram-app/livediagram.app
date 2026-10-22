@@ -6,7 +6,7 @@
 // and @liveplanner/templates. tools.ts keeps the registrations.
 
 import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js';
-import type { LiveDoc, ProjectResponse, TabRecord, TabResponse } from '@liveplanner/api-schema';
+import type { Project, ProjectResponse, TabRecord, TabResponse } from '@liveplanner/api-schema';
 import { apiJson } from './api';
 import type { Env } from './env';
 
@@ -95,7 +95,7 @@ export async function loadTab(
   token: string,
   projectId: string,
   tabId?: string,
-): Promise<{ project: LiveDoc; tab: TabRecord } | null> {
+): Promise<{ project: Project; tab: TabRecord } | null> {
   const { project: liveDoc } = await apiJson<ProjectResponse>(
     env,
     token,

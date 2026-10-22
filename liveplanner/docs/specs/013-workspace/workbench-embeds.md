@@ -14,7 +14,7 @@ A workbench embed has a **scope**, chosen when it is minted and fixed for the li
 
 | Scope       | Frame                                     | Starts on                          | Reaches                                            |
 | ----------- | ----------------------------------------- | ---------------------------------- | -------------------------------------------------- |
-| `project`  | `/embed/workbench?d=<id>`                 | that project (or its asked tab)   | one project                                       |
+| `project`   | `/embed/workbench?d=<id>`                 | that project (or its asked tab)    | one project                                        |
 | `workspace` | `/embed/workbench/explorer[/folder/<id>]` | Explorer Home, or the asked folder | the person's whole workspace, as the Explorer does |
 
 The **workspace** scope is the Explorer itself inside the workbench: a workbench keeps the person's diagrams one
@@ -111,7 +111,7 @@ second, explicit approval, never an existing pairing widened in silence.
 - **Only what the editor of one project needs.** The project, its tabs, comments, changesets, items and room;
   reading the person's display identity, preferences and custom themes; the catalogues. Everything else is refused `403 workbench_confined`: ownership powers
   (share links, password, move, delete, publish, copy), other projects, the person's library and folders,
-  writing preferences or the profile, the guest migration, tokens, teams, the account and the AI assistant. The
+  writing preferences or the profile, the guest migration, tokens, teams and the account. The
   editor offers none of them in a workbench embed: the person's agent sits beside it.
 - **Revocable.** Revoking the minting token ends its sessions; the page learns it on its next request or the room's
   close and turns read-only.
@@ -126,7 +126,7 @@ The bullets above are the project scope. A **workspace** session is confined dif
   trash, restore, and create, rename, move and delete folders, at the person's own access to each.
 - **Never the account.** Refused `403 workbench_confined`, as in the project scope: the profile, preferences'
   writes, the guest migration, API tokens and pairings, team administration (invites, members, roles, plans,
-  billing), the account itself, and the AI assistant (the person's agent sits beside the frame).
+  billing) and the account itself.
 - **Never more than the token.** Each request is capped by the minting token's level and by the person's own access
   now, as in the project scope: a view token gives a frame that browses and reads.
 
@@ -154,7 +154,7 @@ and accepted only from it. Unknown types are ignored, and logged once each.
 | ----------------------- | --------- | -------------------------------------------------------------------- |
 | `liveplanner:hello`     | page      | Nothing; asks the workbench to answer                                |
 | `liveplanner:hello-ack` | workbench | The workbench's name, shown in copy ("Reconnect in Acme Editor")     |
-| `liveplanner:ready`     | page      | `projectId`, `projectName`, `tabId`, `tabName`, `role`             |
+| `liveplanner:ready`     | page      | `projectId`, `projectName`, `tabId`, `tabName`, `role`               |
 | `liveplanner:tab`       | page      | The tab now shown: `tabId`, `tabName`                                |
 | `liveplanner:selection` | page      | The [selection reference](#the-selection-reference); empty when none |
 | `liveplanner:renew`     | page      | Nothing; asks for a ticket                                           |
@@ -185,7 +185,7 @@ What the person meant when they typed. A workbench attaches it to the message th
 reads exactly what was selected then, even when the selection has moved on since:
 
 ```text
-[liveplanner] "Home screen" › tab "Wireframe" (doc 3h9x2a, tab 0b34, rev 41)
+[liveplanner] "Home screen" › tab "Wireframe" (project 3h9x2a, tab 0b34, rev 41)
 selected: button 146b "Play", frame e4a8 "Game grid", sticky 0c84 "Daily streak goes here"
 read: liveplanner tab view 3h9x2a --tab 0b34 --view show --ref 146b
 ```
@@ -228,7 +228,7 @@ What a workbench does to fit this contract (its own documentation holds the deta
 | `WORKBENCH_SELECTION_SETTLE_MS` | 250      | One message per gesture, quicker than a person moves to the composer   |
 | `WORKBENCH_SELECTION_MAX_REFS`  | 20       | Matches agent presence's focus cap; more is a selector, not a list     |
 | `WORKBENCH_PAIRING_TTL_MS`      | 600000   | Ten minutes: time to switch to the browser and read the question       |
-| `WORKBENCH_TICKETS_PER_MINUTE`  | 30       | Per token; a workbench opens a few projects, never a stream of them   |
+| `WORKBENCH_TICKETS_PER_MINUTE`  | 30       | Per token; a workbench opens a few projects, never a stream of them    |
 
 ## Security
 

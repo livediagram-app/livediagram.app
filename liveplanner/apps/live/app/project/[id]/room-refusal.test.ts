@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { LiveDoc } from '@liveplanner/api-schema';
+import type { Project } from '@liveplanner/api-schema';
 import { ProjectTrashedError } from '@/lib/project-trashed';
 
 // A join the room turned away is explained over REST (docs/specs/013-workspace/trash.md): the editor repeats
@@ -37,7 +37,7 @@ describe('joinRefusedBecauseTrashed', () => {
   });
 
   it('is not trashed when the project still loads, or the load fails for another reason', async () => {
-    apiLoadProject.mockResolvedValue({ id: 'd1' } as LiveDoc);
+    apiLoadProject.mockResolvedValue({ id: 'd1' } as Project);
     await expect(
       joinRefusedBecauseTrashed({ projectId: 'd1', selfId: 'me', shareCode: null }),
     ).resolves.toBe(false);

@@ -1,12 +1,12 @@
-// Whole elements checked before they are written (docs/specs/015-api/mcp-server.md §4.4 "Values checked"): the
-// fields an edit operation's `set` refuses, refused the same way when the model sends a whole element
-// (create_project, add_tab, update_project's replace and its ops `add`). A field the element type does not have,
-// a text size off the scale and an icon id that names no icon all used to be stored and drawn wrong in silence
-// (a question mark for the icon, tiny text for the size).
+// Whole elements checked before they are written (docs/specs/015-api/mcp-server.md §4.4 "Values checked"): only the
+// elements a liveplanner tab holds (a board, a sheet, a Dashboard's views and charts), and on those the fields an edit
+// operation's `set` refuses, refused the same way when the model sends a whole element (create_project, add_tab,
+// update_project's replace and its ops `add`). A field the element type does not have and a text size off the scale
+// used to be stored and drawn wrong in silence.
 
+import { planElementIssue } from '@liveplanner/edit-operations';
 import { withArticle } from '@liveplanner/items';
 import { ELEMENT_FIELD_NAMES, fieldValueIssue, type Element } from '@liveplanner/project';
-import { iconsLike, isIconId } from '@liveplanner/icons/search';
 
 // The fields shown beside an unknown one: those sharing its words, else none.
 const NEAREST_FIELDS_MAX = 4;
@@ -32,6 +32,8 @@ function fieldsLike(key: string, fields: readonly string[]): string[] {
 
 // Why one element cannot be written as given, or null. `where` names it in the sentence.
 function elementIssue(el: Rec, where: string): string | null {
+  const notPlan = planElementIssue(el);
+  if (notPlan) return `${where}: ${notPlan}; read liveplanner://schema/elements.`;
   if (!isElementType(el.type)) return null; // the validator names a missing or unknown type
   const fields: readonly string[] = ELEMENT_FIELD_NAMES[el.type];
   for (const key of Object.keys(el)) {
@@ -45,15 +47,6 @@ function elementIssue(el: Rec, where: string): string | null {
   for (const [key, value] of Object.entries(el)) {
     const issue = fieldValueIssue(key, value);
     if (issue) return `${where}: ${issue}.`;
-  }
-  if (typeof el.iconId === 'string' && !isIconId(el.iconId)) {
-    const like = iconsLike(el.iconId).map((i) => i.id);
-    return (
-      `${where}: iconId ${JSON.stringify(el.iconId)} is not an icon` +
-      (like.length
-        ? `; icons like it: ${like.join(', ')}.`
-        : '.')
-    );
   }
   return null;
 }

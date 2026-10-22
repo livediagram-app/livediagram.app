@@ -13,7 +13,7 @@ import { asUser } from './placement-test-support';
 let db: SqliteD1;
 
 const UNKNOWN = { opensIn: null, tabKind: null, templateFamily: null };
-const RETRO = { opensIn: 'plan', tabKind: 'diagram', templateFamily: 'retrospective' };
+const RETRO = { opensIn: 'plan', tabKind: 'empty', templateFamily: 'retrospective' };
 
 function create(id: string, extra: Record<string, unknown> = {}) {
   return handleProjects(
@@ -46,7 +46,7 @@ describe('recorded creation intent', () => {
     await create('d1', { intent: { mode: 'plan', templateFamily: 'retrospective' } });
     expect({ ...stored('d1') }).toEqual({
       opens_in: 'plan',
-      tab_kind: 'diagram',
+      tab_kind: 'empty',
       template_family: 'retrospective',
     });
     expect(await summary('d1')).toMatchObject(RETRO);
@@ -56,7 +56,7 @@ describe('recorded creation intent', () => {
     await create('d1', { intent: { mode: 'plan' } });
     expect(await summary('d1')).toMatchObject({
       opensIn: 'plan',
-      tabKind: 'diagram',
+      tabKind: 'empty',
       templateFamily: null,
     });
   });
@@ -114,7 +114,7 @@ describe('recorded creation intent', () => {
     await copyProject(db.env, 'd1', 'd2', 'user_alice', 'Copy');
     expect({ ...stored('d2') }).toEqual({
       opens_in: 'plan',
-      tab_kind: 'diagram',
+      tab_kind: 'empty',
       template_family: 'kanban',
     });
   });

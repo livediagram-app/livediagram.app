@@ -1,6 +1,6 @@
 // A replace's `dashboard` body checked before it builds (docs/specs/026-plan/plan-agents.md "Making a dashboard"):
 // its tabs by id with what each holds, its metric kinds, its charts by view (Status Breakdown is no longer offered),
-// its notes. Each problem named, as graph-body.ts names a graph's.
+// its notes. Each problem named.
 import {
   DASHBOARD_CHART_VIEWS as CHART_VIEWS,
   DASHBOARD_METRIC_KINDS as METRIC_KINDS,

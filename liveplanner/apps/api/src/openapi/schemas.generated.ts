@@ -561,70 +561,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "AiConversationTurn": {
-    "additionalProperties": false,
-    "properties": {
-      "content": {
-        "type": "string"
-      },
-      "role": {
-        "enum": [
-          "user",
-          "assistant"
-        ],
-        "type": "string"
-      }
-    },
-    "required": [
-      "role",
-      "content"
-    ],
-    "type": "object"
-  },
-  "AiMode": {
-    "enum": [
-      "clean",
-      "ask"
-    ],
-    "type": "string"
-  },
-  "AiRequest": {
-    "additionalProperties": false,
-    "properties": {
-      "elements": {
-        "items": {},
-        "type": "array"
-      },
-      "focusIds": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "history": {
-        "items": {
-          "$ref": "#/components/schemas/AiConversationTurn"
-        },
-        "type": "array"
-      },
-      "mode": {
-        "$ref": "#/components/schemas/AiMode"
-      },
-      "prompt": {
-        "type": "string"
-      },
-      "tabName": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "mode",
-      "prompt",
-      "elements",
-      "tabName"
-    ],
-    "type": "object"
-  },
   "Anchor": {
     "enum": [
       "n",
@@ -1265,9 +1201,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "CapabilitiesResponse": {
     "additionalProperties": false,
     "properties": {
-      "aiEnabled": {
-        "type": "boolean"
-      },
       "apiBase": {
         "type": "string"
       },
@@ -1296,9 +1229,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "number"
       }
     },
-    "required": [
-      "aiEnabled"
-    ],
     "type": "object"
   },
   "CardField": {
@@ -1722,13 +1652,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "enum": [
           "board",
           "sheet"
-        ],
-        "type": "string"
-      },
-      "layout": {
-        "enum": [
-          "auto",
-          "preserve"
         ],
         "type": "string"
       },
@@ -2248,8 +2171,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "type": "string"
   },
   "CreationTabKind": {
-    "const": "diagram",
-    "type": "string"
+    "anyOf": [
+      {
+        "$ref": "#/components/schemas/PlanTabKind"
+      },
+      {
+        "const": "empty",
+        "type": "string"
+      }
+    ]
   },
   "CurrentTokenResponse": {
     "additionalProperties": false,
@@ -3933,8 +3863,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "DashboardTabOf": {
     "enum": [
       "board",
-      "sheet",
-      "diagram"
+      "sheet"
     ],
     "type": "string"
   },
@@ -4071,14 +4000,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "type": "object"
   },
   "EditWarningCode": {
-    "enum": [
-      "no_base",
-      "shape_coerced",
-      "value_coerced",
-      "label_capped",
-      "colour_overrides_theme",
-      "arrows_freed"
-    ],
+    "const": "no_base",
     "type": "string"
   },
   "EditorMode": {
@@ -5350,60 +5272,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "run",
       "refs",
       "closed"
-    ],
-    "type": "object"
-  },
-  "GraphView": {
-    "additionalProperties": false,
-    "properties": {
-      "arrows": {
-        "items": {
-          "$ref": "#/components/schemas/ViewEdgeJson"
-        },
-        "type": "array"
-      },
-      "elision": {
-        "$ref": "#/components/schemas/Elision"
-      },
-      "header": {
-        "$ref": "#/components/schemas/ViewHeader"
-      },
-      "nodes": {
-        "items": {
-          "additionalProperties": false,
-          "properties": {
-            "id": {
-              "type": "string"
-            },
-            "kind": {
-              "type": "string"
-            },
-            "label": {
-              "type": [
-                "string",
-                "null"
-              ]
-            },
-            "ref": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "ref",
-            "id",
-            "kind",
-            "label"
-          ],
-          "type": "object"
-        },
-        "type": "array"
-      }
-    },
-    "required": [
-      "header",
-      "nodes",
-      "arrows",
-      "elision"
     ],
     "type": "object"
   },
@@ -7266,139 +7134,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     ]
   },
-  "LayoutView": {
-    "additionalProperties": false,
-    "properties": {
-      "arrows": {
-        "items": {
-          "additionalProperties": false,
-          "properties": {
-            "from": {
-              "type": "string"
-            },
-            "ref": {
-              "type": "string"
-            },
-            "style": {
-              "type": "string"
-            },
-            "to": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "ref",
-            "from",
-            "to",
-            "style"
-          ],
-          "type": "object"
-        },
-        "type": "array"
-      },
-      "boxes": {
-        "items": {
-          "additionalProperties": false,
-          "properties": {
-            "h": {
-              "type": "number"
-            },
-            "r": {
-              "type": "number"
-            },
-            "ref": {
-              "type": "string"
-            },
-            "w": {
-              "type": "number"
-            },
-            "x": {
-              "type": "number"
-            },
-            "y": {
-              "type": "number"
-            }
-          },
-          "required": [
-            "ref",
-            "x",
-            "y",
-            "w",
-            "h",
-            "r"
-          ],
-          "type": "object"
-        },
-        "type": "array"
-      },
-      "elision": {
-        "$ref": "#/components/schemas/Elision"
-      },
-      "header": {
-        "$ref": "#/components/schemas/ViewHeader"
-      },
-      "origin": {
-        "additionalProperties": false,
-        "properties": {
-          "x": {
-            "type": "number"
-          },
-          "y": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "x",
-          "y"
-        ],
-        "type": "object"
-      },
-      "rows": {
-        "anyOf": [
-          {
-            "items": {
-              "additionalProperties": false,
-              "properties": {
-                "container": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
-                },
-                "rows": {
-                  "items": {
-                    "items": {
-                      "type": "string"
-                    },
-                    "type": "array"
-                  },
-                  "type": "array"
-                }
-              },
-              "required": [
-                "container",
-                "rows"
-              ],
-              "type": "object"
-            },
-            "type": "array"
-          },
-          {
-            "type": "null"
-          }
-        ]
-      }
-    },
-    "required": [
-      "header",
-      "origin",
-      "boxes",
-      "arrows",
-      "rows",
-      "elision"
-    ],
-    "type": "object"
-  },
   "LegendItem": {
     "additionalProperties": false,
     "properties": {
@@ -8468,6 +8203,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "PlanTabKind": {
+    "enum": [
+      "board",
+      "sheet",
+      "dashboard",
+      "form"
+    ],
+    "type": "string"
+  },
   "PlanTabOutline": {
     "additionalProperties": false,
     "properties": {
@@ -8830,7 +8574,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "ProjectSource": {
     "enum": [
-      "ai",
       "mcp",
       "cli"
     ],
@@ -9292,14 +9035,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "minItems": 2,
             "type": "array"
           },
-          "ends": {
-            "items": {
-              "type": "string"
-            },
-            "maxItems": 2,
-            "minItems": 2,
-            "type": "array"
-          },
           "kind": {
             "type": "string"
           },
@@ -9320,9 +9055,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "maxItems": 2,
             "minItems": 2,
             "type": "array"
-          },
-          "styleOf": {
-            "type": "string"
           }
         },
         "required": [
@@ -9359,14 +9091,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       {
         "additionalProperties": false,
         "properties": {
-          "ends": {
-            "items": {
-              "type": "string"
-            },
-            "maxItems": 2,
-            "minItems": 2,
-            "type": "array"
-          },
           "kind": {
             "type": "string"
           },
@@ -9377,16 +9101,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "const": "-",
             "type": "string"
           },
-          "pinnedTo": {
-            "type": "string"
-          },
-          "reason": {
-            "enum": [
-              "pinned",
-              "unwrapped"
-            ],
-            "type": "string"
-          },
           "ref": {
             "type": "string"
           }
@@ -9395,98 +9109,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "mark",
           "ref",
           "kind"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "delta": {
-            "items": {
-              "type": "number"
-            },
-            "maxItems": 2,
-            "minItems": 2,
-            "type": "array"
-          },
-          "layout": {
-            "additionalProperties": false,
-            "properties": {
-              "direction": {
-                "enum": [
-                  "down",
-                  "right"
-                ],
-                "type": "string"
-              },
-              "style": {
-                "enum": [
-                  "flow",
-                  "tree",
-                  "mindmap"
-                ],
-                "type": "string"
-              }
-            },
-            "required": [
-              "style"
-            ],
-            "type": "object"
-          },
-          "mark": {
-            "const": "»",
-            "type": "string"
-          },
-          "reason": {
-            "enum": [
-              "make room",
-              "carried",
-              "laid out"
-            ],
-            "type": "string"
-          },
-          "refs": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          }
-        },
-        "required": [
-          "mark",
-          "refs",
-          "reason"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "joined": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "left": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "mark": {
-            "const": "container",
-            "type": "string"
-          },
-          "ref": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "mark",
-          "ref",
-          "joined",
-          "left"
         ],
         "type": "object"
       },
@@ -13386,8 +13008,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "enum": [
       "overview",
       "outline",
-      "graph",
-      "layout",
       "comments",
       "show",
       "find",

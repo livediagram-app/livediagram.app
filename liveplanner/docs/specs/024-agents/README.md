@@ -25,15 +25,16 @@ and both speak Plan: boards and cards, sheets and forms first, elements only und
   beside `auth`, `skill`, `telemetry` and the top-level `guide`, `schema`, `api`, `pull`, `push`, `export`, `watch`
   and `wait`.
 
-There are no diagram tools: no Mermaid or graph input, no icon search, no image library and no lint. A Board or a
-Sheet is an element on its tab, so the generic element layer below still carries every write, and raw `elements`
-(`create_project`, `add_tab`, `update_project`), `update_project`'s `ops` and the CLI's `element` verbs still reach
-it.
+There are no diagram tools: no Mermaid or graph input, no icon search, no image library, no lint, no layout and no
+arrows. A Board, a Sheet, a chart or a Dashboard's view is an element on its tab, so the element layer below still
+carries every write: raw `elements` (`create_project`, `add_tab`, `update_project`), `update_project`'s `ops` and
+`edits` and the CLI's `element set|rm` and `changeset apply` reach it, and take only those Plan elements
+([Edit operations](edit-operations.md#the-vocabulary)).
 
 ## Specs
 
 - ./agent-changesets.md - when an agent writes a tab: the changeset path through the api and room, conflicts, revert
 - ./agent-presence.md - when showing an agent to people: attribution as its owner, presence, comments
 - ./project-views.md - when an agent reads a tab as text: refs, the outline and the other views, budgets
-- ./edit-operations.md - when an agent edits elements directly: the operation vocabulary, selectors, placement, errors
+- ./edit-operations.md - when an agent edits elements directly: the operation vocabulary, element kinds, selectors, errors
 - ./blueprints/README.md - when implementing an agents spec from its blueprint

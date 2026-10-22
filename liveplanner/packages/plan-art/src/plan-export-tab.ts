@@ -5,12 +5,15 @@ import {
   SHEET_COL_HEAD_H,
   SHEET_HEADER_H,
   SHEET_ROW_HEAD_W,
+  type CanvasSurface,
   type Element,
+  type ResolvePlanArt,
   type SheetAnchor,
   type Tab,
 } from '@liveplanner/project';
 import { planTabKindOf } from './plan-export-formats';
 import { dashboardExportTab, type DashboardExportInput } from './dashboard-export';
+import { planViewArt, type PlanArtData } from './plan-view-art';
 
 export type PlanImage = {
   // The tab the image exporters draw.
@@ -20,6 +23,17 @@ export type PlanImage = {
 };
 
 const NO_ART: ReadonlyMap<string, string> = new Map();
+
+/** What the SVG renderer draws for an image's placeholders (`resolvePlanArt`): a slot's picture from the layout
+ *  (`art`), else a plan view's chart drawn from the project's cards. The editor's export, the MCP's previews and the
+ *  api's live image all draw through this one. */
+export function planArtResolver(
+  art: ReadonlyMap<string, string>,
+  data: PlanArtData,
+  surface: CanvasSurface,
+): ResolvePlanArt {
+  return (el) => art.get(el.id) ?? (el.planView ? planViewArt(el, data, surface) : undefined);
+}
 // The room kept round a Sheet's last chart, and the most a Sheet tab's image grows to for its cells and charts (a
 // side, in px).
 const SHEET_EDGE = 24;

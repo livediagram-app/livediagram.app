@@ -49,7 +49,7 @@ export function overviewView(
     };
     return { line, json: { ...facts, view: 'overview' as const, outOfScope: false as const } };
   });
-  const header = `doc ${project.id} ${jsonString(project.name)} · ${plural(tabs.length, 'tab', 'tabs')} · edited ${editedAge(project.savedAt, options.now)}`;
+  const header = `project ${project.id} ${jsonString(project.name)} · ${plural(tabs.length, 'tab', 'tabs')} · edited ${editedAge(project.savedAt, options.now)}`;
   const fitted = fitLines({
     header,
     lines: entries.map((e) => e.line),

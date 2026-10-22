@@ -65,8 +65,6 @@ The planner is real:
 - **Machine access**: API tokens and the public REST API ([Public API and API tokens](../015-api/public-api-and-tokens.md)),
   the MCP server, agent changesets that reach anyone with the tab open and revert as one unit
   ([Agent changesets](../024-agents/agent-changesets.md)), agent presence, and the CLI.
-- **AI assistance** (optional; [AI Assistance](../007-editor/ai-assistance.md)): an in-editor panel, hidden unless the
-  api has a model key.
 - **Anonymous first-party telemetry** and the public `/telemetry` dashboard, off unless a deployment turns it on, with a
   per-person opt-out ([Telemetry](../017-telemetry/telemetry.md)).
 - **Transactional and lifecycle email** (optional; [Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md)):
@@ -95,12 +93,11 @@ only small per-browser state, under `liveplanner:*` keys:
     still in `packages/project` and `apps/live`, reached from shared code. Their specs in
     [Canvas](../008-canvas/README.md), [Elements](../009-elements/README.md), [Palette](../010-palette/README.md) and
     [Import and export](../020-import-export/README.md) stay until that code goes, and go with it.
-  - **The AI assistant's prompt** is still livediagram's ([AI Assistance](../007-editor/ai-assistance.md)).
   - **The help centre** around the Plan category, and the brand's remaining sky hexes.
 - **Run and verify**: walk every Plan flow on the local stack, and measure the project page's first-load JS against
   livediagram's.
-- **Launch**: create the Cloudflare resources on the liveplanner account and fill in their ids, set up Clerk, Resend and
-  the model key, deploy staging, then production at liveplanner.app, then publish the CLI and the MCP registry entry.
+- **Launch**: create the Cloudflare resources on the liveplanner account and fill in their ids, set up Clerk and Resend,
+  deploy staging, then production at liveplanner.app, then publish the CLI and the MCP registry entry.
 
 ## Later
 

@@ -137,41 +137,6 @@ export const MODE_OPTIONS = chart(
   { typeIn: (t) => /^(Eraser|Format)/.test(t ?? '') },
 );
 
-// AI assistance (Editing tab). Ask and Clean split AI Requests by mode.
-export const AI_REQUESTS: Metric = {
-  category: 'AI',
-  action: 'Used',
-  typeIn: (type) => type === 'Ask' || type === 'Clean',
-  title: 'AI Requests',
-  blurb:
-    'A completed request in the editor AI panel, across both modes (Ask, Clean). Refusals and failures are not counted.',
-};
-
-export const AI_ASK: Metric = {
-  category: 'AI',
-  action: 'Used',
-  type: 'Ask',
-  title: 'Ask Requests',
-  blurb: 'AI requests in Ask mode: read-only questions about the diagram. Part of AI Requests.',
-};
-
-export const AI_CLEAN: Metric = {
-  category: 'AI',
-  action: 'Used',
-  type: 'Clean',
-  title: 'Clean Requests',
-  blurb:
-    'AI requests in Clean mode: tidy-the-tab runs, the one mode that changes the canvas. Part of AI Requests.',
-};
-
-export const AI_ASSISTANCE: MetricStack = {
-  stack: true,
-  title: 'AI Assistance',
-  blurb: 'Requests in the editor AI panel, and how they split between Ask and Clean.',
-  members: [AI_REQUESTS, AI_ASK, AI_CLEAN],
-  headline: AI_REQUESTS,
-};
-
 // A form cover's moving background (docs/specs/030-forms/forms.md "The form card, top to bottom"): set
 // moving, or its speed changed.
 export const ANIMATED_BACKGROUNDS = chart(

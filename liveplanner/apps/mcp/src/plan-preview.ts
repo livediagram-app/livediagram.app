@@ -8,13 +8,7 @@ import type {
   SheetsResponse,
   TabResponse,
 } from '@liveplanner/api-schema';
-import {
-  PIE_PALETTE,
-  canvasSurface,
-  renderElementsToSvg,
-  type ResolvePlanArt,
-  type Tab,
-} from '@liveplanner/project';
+import { PIE_PALETTE, canvasSurface, type ResolvePlanArt, type Tab } from '@liveplanner/project';
 import { statusPhasesOf, type Item, type ItemTypeDef } from '@liveplanner/items';
 import {
   sheetContentSize,
@@ -22,7 +16,12 @@ import {
   sheetFramesOf,
   type SheetJson,
 } from '@liveplanner/sheets';
-import { planImageOf, planTabKindOf, planViewArt, type PlanArtData } from '@liveplanner/plan-art';
+import {
+  planArtResolver,
+  planImageOf,
+  planTabKindOf,
+  type PlanArtData,
+} from '@liveplanner/plan-art';
 import { apiJson } from './api';
 import type { Env } from './env';
 
@@ -78,7 +77,6 @@ async function projectTabs(
 export async function planPreviewFor(
   tab: Tab,
   auth: { env: Env; token: string; projectId?: string } | undefined,
-  render: (tab: Tab) => string = (shown) => renderElementsToSvg(shown, {}),
 ): Promise<PlanPreview | null> {
   const kind = planTabKindOf(tab);
   if (!kind) return null;
@@ -102,7 +100,6 @@ export async function planPreviewFor(
   const image = planImageOf(tab, {
     tabs,
     now,
-    renderDiagram: render,
     sheetHeads: (id) => byId.get(id)?.layout.showHeaders !== false,
     sheetContent: (id) => {
       const json = byId.get(id);
@@ -133,7 +130,7 @@ export async function planPreviewFor(
         now,
         chartPalette: PIE_PALETTE,
       };
-      return (el) => art.get(el.id) ?? (el.planView ? planViewArt(el, data, surface) : undefined);
+      return planArtResolver(art, data, surface);
     },
   };
 }

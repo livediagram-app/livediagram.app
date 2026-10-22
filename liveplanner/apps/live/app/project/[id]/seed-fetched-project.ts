@@ -2,7 +2,7 @@ import { readItemTypeCatalogue } from '@liveplanner/items';
 import type { SavedItemTypes } from '@/lib/api/item-types';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import type { Tab } from '@liveplanner/project';
-import type { LiveDoc } from '@liveplanner/api-schema';
+import type { Project } from '@liveplanner/api-schema';
 import { apiLoadTabRevisioned } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
 import { firstTabToLoad, isTabOutOfScope } from '@/lib/tab-scope';
@@ -69,7 +69,7 @@ export function makeSeedFetchedProject(deps: {
   // wherever it sits in the bar. Null = the first tab, as for everyone else.
   return async (
     selfId: string,
-    fetched: LiveDoc,
+    fetched: Project,
     tabShareCode: string | null,
     tabScope: string | null,
   ) => {

@@ -1,7 +1,7 @@
 // Search-result computation for the global SearchPanel (docs/specs/008-canvas/canvas-and-palette.md
 // "Search panel"). Pure function so the matcher (case-insensitive
 // substring), the cap rules (8 per section, 12 elements total), the
-// section ordering (projects, shared, folders, teams, tabs,
+// section ordering (projects, shared, folders, teams, tabs, boards, cards,
 // elements), and the label-extraction fallbacks (blank labels,
 // table cells) can be reasoned about without rendering React or
 // mocking a DOM.
@@ -13,6 +13,13 @@
 // The palette ranking lives with the icon catalogues, so the api's icon search ranks alike.
 import { matches, paletteRank } from '@liveplanner/icons';
 import type { ShapeKind, Tab } from '@liveplanner/project';
+import {
+  boardResults,
+  cardResults,
+  type BoardResult,
+  type CardResult,
+  type CardSearchSource,
+} from './search-plan';
 
 // Every word typed is found somewhere in the fields, case ignored: "export png" finds Export… (named Export, its
 // keywords saying png), as a start's template search does (docs/specs/008-canvas/canvas-and-palette.md "Search
@@ -150,6 +157,8 @@ export type SearchResultItem =
   | FolderItem
   | TeamItem
   | TabItem
+  | BoardResult
+  | CardResult
   | ElementItem
   | PaletteItem
   | CommandItem
@@ -163,6 +172,8 @@ export type SearchGroup = {
     | 'folders'
     | 'teams'
     | 'tabs'
+    | 'boards'
+    | 'cards'
     | 'elements'
     | 'palette'
     | 'commands'
@@ -233,6 +244,9 @@ type SearchInput = {
   // project's tabs.
   tabs?: Tab[];
   currentTabId?: string;
+  // The open project's cards (search-plan.ts), matched by number, title or description on a non-empty query. Editor
+  // only, like the tabs.
+  cards?: CardSearchSource;
   // Palette catalogue (shapes / icons / tech icons) the editor offers as
   // "Add to canvas" results. Only the editor passes it; matched only when
   // the query is non-empty (you don't browse the whole palette via search).
@@ -359,6 +373,12 @@ export function buildSearchResults(input: SearchInput): SearchGroup[] {
         })),
       });
     }
+
+    // Plan scope: boards by title, then cards by number, title or description (search-plan.ts). Non-empty query only.
+    const boards = boardResults(q, tabs);
+    if (boards.length > 0) groups.push({ key: 'boards', label: 'Boards', items: boards });
+    const cards = input.cards ? cardResults(q, input.cards) : [];
+    if (cards.length > 0) groups.push({ key: 'cards', label: 'Cards', items: cards });
 
     // Element scope: walk every tab's elements, match on label.
     // Elements without a label get filtered out (the user typed

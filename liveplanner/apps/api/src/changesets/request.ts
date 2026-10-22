@@ -13,12 +13,7 @@ import {
   type EditOperation,
   type ReplaceBody,
 } from '@liveplanner/edit-operations';
-import {
-  isFinish,
-  isRecord,
-  ELEMENT_FINGERPRINT_LENGTH,
-  type Finish,
-} from '@liveplanner/project';
+import { isFinish, isRecord, ELEMENT_FINGERPRINT_LENGTH, type Finish } from '@liveplanner/project';
 
 // A changeset request as the route receives it (docs/specs/024-agents/blueprints/agent-changesets.md
 // "Interfaces and contracts"), checked member by member before anything is read. Pure.
@@ -154,9 +149,9 @@ function parseReplace(raw: unknown): ChangesetBody | { refusal: Refusal } {
   const sources = REPLACE_SOURCES.filter((s) => raw[s] !== undefined);
   if (sources.length !== 1)
     return bad('"replace" takes exactly one of template, dashboard, form or elements');
-  if (raw.layout !== undefined && raw.layout !== 'auto' && raw.layout !== 'preserve') {
-    return bad('"replace.layout" is "auto" or "preserve"');
-  }
+  // Nothing is laid out: elements are kept where they are given, so a `layout` asked for is refused, not ignored.
+  if (raw.layout !== undefined)
+    return bad('"replace" takes no layout: elements are kept at the x and y given');
   if (raw.theme !== undefined && typeof raw.theme !== 'string')
     return bad('"replace.theme" must be a string');
   if (raw.finish !== undefined && !isFinish(raw.finish))
@@ -166,9 +161,8 @@ function parseReplace(raw: unknown): ChangesetBody | { refusal: Refusal } {
   const kind = raw.kind === 'board' || raw.kind === 'sheet' ? raw.kind : undefined;
   if (raw.kind !== undefined && !(kind && sources[0] === 'elements'))
     return bad('"replace.kind" is "board" or "sheet", with elements');
-  const layout = raw.layout === 'auto' || raw.layout === 'preserve' ? raw.layout : undefined;
   // The engine checks each source's shape itself (applyReplace), naming what is wrong.
-  const replace = replaceBodyOf(sources[0]!, raw, layout);
+  const replace = replaceBodyOf(sources[0]!, raw);
   if (!replace) return bad(`"replace.${sources[0]}" has the wrong type`);
   return {
     kind: 'replace',
@@ -183,7 +177,6 @@ function parseReplace(raw: unknown): ChangesetBody | { refusal: Refusal } {
 function replaceBodyOf(
   source: (typeof REPLACE_SOURCES)[number],
   raw: Record<string, unknown>,
-  layout: 'auto' | 'preserve' | undefined,
 ): ReplaceBody | null {
   switch (source) {
     case 'template':
@@ -195,9 +188,7 @@ function replaceBodyOf(
     case 'form':
       return isRecord(raw.form) ? { form: raw.form } : null;
     case 'elements':
-      return Array.isArray(raw.elements)
-        ? { elements: raw.elements, ...(layout ? { layout } : {}) }
-        : null;
+      return Array.isArray(raw.elements) ? { elements: raw.elements } : null;
   }
 }
 

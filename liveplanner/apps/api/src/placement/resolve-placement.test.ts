@@ -257,9 +257,9 @@ describe('resolvePlacement', () => {
 describe('resolvePlacement with default folders', () => {
   // No choice: neither a team nor the folderId key in the body.
   const root = { teamId: null, folderId: null, chosen: false };
-  const plan = { mode: 'plan', tabKind: 'diagram' } as const;
-  const kanban = { mode: 'plan', tabKind: 'diagram', templateFamily: 'kanban' } as const;
-  const retro = { mode: 'plan', tabKind: 'diagram', templateFamily: 'retrospective' } as const;
+  const plan = { mode: 'plan', tabKind: 'empty' } as const;
+  const kanban = { mode: 'plan', tabKind: 'board', templateFamily: 'kanban' } as const;
+  const retro = { mode: 'plan', tabKind: 'board', templateFamily: 'retrospective' } as const;
   const defaults = (entries: [PlacementDefaultKey, string][]) =>
     vi.fn(async (): Promise<ReadonlyMap<PlacementDefaultKey, string>> => new Map(entries));
 

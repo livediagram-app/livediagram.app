@@ -41,8 +41,6 @@ export type DashboardExportInput = {
   now: Date;
   // Each figure from a Sheet, by slot id, read now.
   metrics?: ReadonlyMap<string, SheetMetricArt>;
-  // A Diagram tab's drawing as a whole SVG document (renderTabToSvg), fitted into its slot.
-  renderDiagram: (tab: Tab) => string;
   // A tab's theme by id on a surface: the editor's own (its custom themes too); the built-in ones when absent.
   themeOf?: (id: string | undefined, surface: CanvasSurface) => ThemeDefinition;
 };
@@ -102,18 +100,6 @@ const placeholder = (id: string, r: Rect): Element => ({
   width: r.width,
   height: r.height,
 });
-
-// A Diagram tab's SVG nested in the slot: its own viewBox kept, fitted and centred inside the card's padding.
-function nestedDiagram(svg: string, r: Rect): string {
-  const open = /^<svg\b[^>]*>/.exec(svg);
-  const viewBox = open ? /viewBox="([^"]+)"/.exec(open[0])?.[1] : undefined;
-  if (!open || !viewBox) return '';
-  const pad = 12;
-  return (
-    `<svg x="${r2(r.x + pad)}" y="${r2(r.y + pad)}" width="${r2(Math.max(0, r.width - pad * 2))}" height="${r2(Math.max(0, r.height - pad * 2))}"` +
-    ` viewBox="${viewBox}" preserveAspectRatio="xMidYMid meet">${svg.slice(open[0].length)}`
-  );
-}
 
 export function dashboardExportTab(input: DashboardExportInput): DashboardExport {
   const { tab, tabs } = input;
@@ -198,11 +184,13 @@ export function dashboardExportTab(input: DashboardExportInput): DashboardExport
   function tabSlot(slotId: string, rect: Rect, tabId: string, of: string | undefined) {
     const shown = tabs.find((t) => t.id === tabId);
     if (!shown) {
-      const what = of === 'sheet' ? 'Sheet' : of === 'diagram' ? 'Diagram' : 'Board';
+      const what = of === 'sheet' ? 'Sheet' : 'Board';
       card(slotId, rect, slotMessageArt(rect, p, `This ${what} was deleted.`));
       return;
     }
-    const kind = tabKindOf(shown);
+    // A tab whose content has not arrived has no kind yet: it waits as the Board or Sheet the slot was given.
+    const waiting = !shown.kind && shown.elements.length === 0;
+    const kind = waiting ? (of === 'sheet' ? 'sheet' : 'board') : tabKindOf(shown);
     if (kind === 'board' || kind === 'sheet') {
       const own = shown.elements.find(
         (el) =>
@@ -217,11 +205,8 @@ export function dashboardExportTab(input: DashboardExportInput): DashboardExport
       place(own, rect, `export-tab-${slotId}`);
       return;
     }
-    if (shown.elements.length === 0) {
-      card(slotId, rect, slotMessageArt(rect, p, `Nothing on ${shown.name} yet.`));
-      return;
-    }
-    card(slotId, rect, nestedDiagram(input.renderDiagram(shown), rect));
+    // Only a Board or Sheet tab goes in a slot (a forged layout may name another).
+    card(slotId, rect, slotMessageArt(rect, p, 'This tab is not a Board or Sheet.'));
   }
 
   const { dashboard: _layout, layers: _layers, ...rest } = tab;

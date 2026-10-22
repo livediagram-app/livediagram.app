@@ -73,7 +73,7 @@ general diagram tab's environment.
 | Text      | (none)     | (the field) | Free words                                                                                                      |
 | Opens in  | `opens-in` | Opens in    | `plan` Plan: the editor mode the project was created in (a retired mode's id, `opens-in:draw`, reads as Plan)  |
 | Template  | `template` | Template    | `retrospective` Retrospective, `kanban` Kanban: the template family the project was made from                  |
-| Made by   | `made-by`  | Made by AI  | `ai` Made by AI: the project's `source` is the AI assistant or an AI tool through the MCP server (not the CLI) |
+| Made by   | `made-by`  | Made by AI  | `ai` Made by AI: the project's `source` is an AI tool through the MCP server (not the CLI) |
 | Edited    | `edited`   | Edited      | `today` Today, `7d` Last 7 days, `30d` Last 30 days, `12m` Last 12 months, `this-year` This year                |
 | People    | `people`   | People      | `me` Me, `others` Others: the owner of a project; the actor of a Timeline event                                |
 | Space     | `space`    | Space       | `mine` My Projects, `shared` Shared With Me, `team:<id>` the team's name. Aggregate views only                 |

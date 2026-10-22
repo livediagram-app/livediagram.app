@@ -127,13 +127,7 @@ import {
 } from '@/components/panels/CollaboratePanel';
 
 import { useEditorActions } from '@/hooks/collab/useEditorActions';
-import {
-  autosaveReadOnly,
-  createTab,
-  deriveTabLoadState,
-  mergeAiElements,
-  patchTab,
-} from './editor-page-helpers';
+import { autosaveReadOnly, createTab, deriveTabLoadState, patchTab } from './editor-page-helpers';
 import { useSyncInPlace } from './useSyncInPlace';
 import { useAutosave } from './useAutosave';
 import { useProjectTrashed } from './useProjectTrashed';
@@ -249,7 +243,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const commitTabs = (mapTabs: (ts: Tab[]) => Tab[]) => {
     // Layer stamping (docs/specs/006-project/layers.md): elements APPEARING in this commit without
     // a valid layerId land on the active layer. One choke point, so no
-    // individual creation path (draw, paste, AI, template, Mermaid
+    // individual creation path (draw, paste, template, Mermaid
     // import) carries layer logic. stampNewElementLayers no-ops on tabs
     // that never materialised `layers`, and on undo/remote applies (which
     // bypass commitTabs entirely).
@@ -528,7 +522,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   } = useEditorPreferences({
     ownerId: selfParticipant.id,
     passwordGated: sharePasswordGate !== null,
-    setAiPanelVisible: panelLayout.setAiPanelVisible,
   });
 
   // Hide / show a project in the Explorer panel's Recent list (docs/specs/013-workspace/hide-from-recent.md).
@@ -1199,12 +1192,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     }
     fitToBounds(bounds, { maxZoom: 1 });
   });
-  // Server capabilities (docs/specs/007-editor/ai-assistance.md). Fetched once at mount; determines
-  // whether the AI panel option is shown in Settings and rendered.
-  const capabilities = useCapabilities(sharePasswordGate === null);
-  const { emailEnabled } = capabilities;
-  // A workbench offers no AI: the person's agent sits beside it.
-  const aiCapable = capabilities.aiEnabled && !workbenchMode;
+  // Server capabilities (GET /api/capabilities). Fetched once at mount.
+  const { emailEnabled } = useCapabilities(sharePasswordGate === null);
 
   // Pinch-to-zoom on touch screens + trackpad pinch (Ctrl+wheel).
   const { isPinchingRef } = useCanvasPinchZoom({
@@ -1386,7 +1375,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // server content as "user already edited" and (b) re-arms the autosave
   // to PUT the near-empty body over the real row — wiping it. Folding the
   // load state into editsBlocked blocks EVERY commit-based mutator
-  // (keyboard, paste, AI, import, clear) at one chokepoint, not just the
+  // (keyboard, paste, import, clear) at one chokepoint, not just the
   // pointer paths the overlay covers. 'ready' is the only editable state
   // (a loaded tab, a locally-created/peer-delivered tab with content, or
   // a dismissed template picker — see deriveTabLoadState).
@@ -1538,17 +1527,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // A layer turning hidden or locked drops its elements from the live selection (layers.md).
   // A chart its Sheet draws stays selected while its element menu acts on it (sheet.md "Charts").
   usePruneInertSelection(layerInertIds, selectionStore, sheetChartIds);
-
-  // Apply AI-returned elements as a single undo block (docs/specs/007-editor/ai-assistance.md).
-  // Generate handles both modifications and additions in one pass:
-  //   - Elements whose ID matches an existing element → replace in place
-  //   - Elements with a new ID → append; deduplicate if the AI reused a
-  //     short ID (e.g. "ai-001") from a previous generation, remapping
-  //     arrow endpoints to keep connections intact.
-  // Clean always gets the full element list back so it replaces everything.
-  const applyAiElements = (elements: Element[], mode: 'generate' | 'clean') => {
-    commit((existingEls) => mergeAiElements(existingEls, elements, mode));
-  };
 
   // Plan boards and cards (docs/specs/026-plan/): the item panel, board set-up and every action a board
   // takes, handed to the canvas through PlanContext. See usePlanSlice.
@@ -2910,9 +2888,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     getViewportCenter,
     addTab,
     addText,
-    aiCapable,
     anyWelcomeOpen,
-    applyAiElements,
     autoAlignTab,
     autoLayoutTab,
     previewCleanup,

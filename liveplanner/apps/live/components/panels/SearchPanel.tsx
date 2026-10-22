@@ -4,6 +4,7 @@ import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { ThisBrowserPill } from '@/components/primitives/ThisBrowserPill';
 import { CloseIcon, NoMatches, SearchIcon, useEscape, useFocusTrap } from '@liveplanner/ui';
 import type { Tab } from '@liveplanner/project';
+import type { CardSearchSource } from '@/lib/search-plan';
 import {
   buildSearchResults,
   type CommandSearchItem,
@@ -31,8 +32,9 @@ import type {
 // contextual (docs/specs/008-canvas/canvas-and-palette.md "Search panel"):
 //   - Always: projects (user's list) + folders.
 //   - When supplied: "Shared with you" projects + teams (docs/specs/013-workspace/teams.md).
-//   - When inside a project: also tabs + elements on the current
-//     project (table text matches by cell).
+//   - When inside a project: also tabs, boards (by title), cards (by
+//     number, title or description) + elements on the current project
+//     (table text matches by cell).
 // Selection navigates to the right surface (open the project /
 // switch tabs / select the element / jump to the team). Esc +
 // outside-click close; Enter on the first match picks it.
@@ -70,6 +72,10 @@ type SearchPanelProps = {
   // the host can land on the team page with that folder open.
   onSelectTeamFolder?: (teamId: string, folderId: string) => void;
   onSelectTab?: (tabId: string) => void;
+  // The open project's cards (editor only), and what picking one does: open it, on the tab whose board shows it
+  // (null when no board does).
+  cards?: CardSearchSource;
+  onSelectCard?: (itemId: string, tabId: string | null) => void;
   // Receives the tab id AND element id when the user picks an
   // element match. The host route is responsible for switching
   // tabs + selecting the element.
@@ -116,6 +122,8 @@ export function SearchPanel({
   onSelectTeam,
   onSelectTeamFolder,
   onSelectTab,
+  cards,
+  onSelectCard,
   onSelectElement,
   paletteItems,
   onAddPaletteItem,
@@ -181,6 +189,7 @@ export function SearchPanel({
         teamProjects,
         tabs,
         currentTabId,
+        cards,
         paletteItems,
         commandItems,
         helpItems,
@@ -196,6 +205,7 @@ export function SearchPanel({
       teamProjects,
       tabs,
       currentTabId,
+      cards,
       paletteItems,
       commandItems,
       helpItems,
@@ -236,6 +246,8 @@ export function SearchPanel({
     else if (item.kind === 'folder' && !item.team && onSelectFolder) onSelectFolder(item.id);
     else if (item.kind === 'team' && onSelectTeam) onSelectTeam(item.id);
     else if (item.kind === 'tab' && onSelectTab) onSelectTab(item.id);
+    else if (item.kind === 'board' && onSelectTab) onSelectTab(item.tabId);
+    else if (item.kind === 'card' && onSelectCard) onSelectCard(item.id, item.tab?.id ?? null);
     else if (item.kind === 'element' && onSelectElement)
       onSelectElement(item.tabId, item.elementId);
     else if (item.kind === 'palette' && onAddPaletteItem) onAddPaletteItem(item.add);
@@ -301,7 +313,7 @@ export function SearchPanel({
             aria-activedescendant={flatItems.length > 0 ? optionId(activeIndex) : undefined}
             placeholder={
               tabs
-                ? 'Search projects, folders, teams, tabs, elements, help...'
+                ? 'Search projects, tabs, boards, cards, help...'
                 : 'Search projects, folders, teams, help...'
             }
             className="flex-1 bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-400"
@@ -337,7 +349,7 @@ export function SearchPanel({
                 className="py-6"
                 things={
                   tabs
-                    ? 'projects, tabs, elements or help articles'
+                    ? 'projects, tabs, boards, cards or help articles'
                     : 'projects, folders or help articles'
                 }
                 query={query}
@@ -384,6 +396,11 @@ export function SearchPanel({
                         }
                       >
                         <SearchResultIcon item={item} />
+                        {item.kind === 'card' ? (
+                          <span className="shrink-0 tabular-nums text-slate-500 dark:text-slate-400">
+                            #{item.key}
+                          </span>
+                        ) : null}
                         <span className="min-w-0 flex-1 truncate">
                           {item.kind === 'element' ? item.label : item.name}
                         </span>
@@ -391,9 +408,14 @@ export function SearchPanel({
                         {item.kind === 'project' && item.localOnly ? (
                           <ThisBrowserPill asLabel />
                         ) : null}
-                        {item.kind === 'element' ? (
+                        {item.kind === 'element' || item.kind === 'board' ? (
                           <span className="shrink-0 text-[10px] text-slate-500 dark:text-slate-400">
                             on {item.tabName}
+                          </span>
+                        ) : null}
+                        {item.kind === 'card' && item.tab ? (
+                          <span className="shrink-0 text-[10px] text-slate-500 dark:text-slate-400">
+                            on {item.tab.name}
                           </span>
                         ) : null}
                         {/* Which Settings category it lives in: "Theme" alone

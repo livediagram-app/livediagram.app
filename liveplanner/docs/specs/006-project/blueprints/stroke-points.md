@@ -201,7 +201,6 @@ fields from the type and compiling every workspace, plus the untyped entry point
 | Offline store    | `apps/live/lib/offline/offline-store.ts`                                 | unchanged (already migrates)                                                        |
 | MCP server       | `packages/project/src/element-normalise.ts`, `tools.ts`                 | `normaliseElement` migrates; `mergeElementUpdate` lets new points replace the block |
 | Polygon tool     | `useCanvasPolygonGesture.ts`                                             | unchanged: `createFreehand`                                                         |
-| AI features      | `apps/api/src/ai-prompt.ts`, `apps/live/lib/api/ai.ts`                   | unchanged: AI never generates freehand                                              |
 | Undo             | `useEditorHistory.ts`                                                    | unchanged: element snapshots by reference                                           |
 
 ## Data and persistence

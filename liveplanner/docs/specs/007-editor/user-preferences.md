@@ -144,17 +144,6 @@ type UserPreferences = {
   // setting it to false is the only state that changes behaviour.
   // See docs/specs/017-telemetry/telemetry.md for the rest of the telemetry contract.
   telemetryEnabled?: boolean;
-  // When true, the AI Assistant panel renders in the editor.
-  // Defaults to false (opt-in). Only surfaced in the Settings
-  // dialog when the api worker reports aiEnabled:true (an
-  // a model key is configured). See docs/specs/007-editor/ai-assistance.md.
-  aiAssistanceEnabled?: boolean;
-
-  // Show the AI panel's quick suggested-prompt chips (docs/specs/007-editor/ai-assistance.md).
-  // Toggled from the Settings dialog's AI category; they take vertical
-  // space, so it can hide them. Undefined / true === shown.
-  aiSuggestedPrompts?: boolean;
-
   // Opacity (0..1) of EVERY panel at rest, so the canvas shows through
   // them; they snap back to fully opaque while hovered or focused so they
   // stay readable in use. Applied via the `--lvd-panel-opacity` custom
@@ -310,9 +299,6 @@ Missing key === undefined === default behaviour. Concretely:
   can't drift between consumers.
 - `telemetryEnabled` undefined → telemetry on (the default).
   Setting it to `false` is the only state that opts out.
-- `aiAssistanceEnabled` undefined → AI panel hidden (the default).
-  Setting it to `true` shows the panel; the toggle only appears in
-  Settings when the api worker advertises AI capability.
 - `panelLayout` and `minimalPanels`, which older blobs still carry, are
   ignored: there is one panel layout ([Toolbar layout](toolbar-layout.md#one-layout)).
 - `elementIndicatorStyle` undefined → Top: an element's link, note, action
@@ -528,9 +514,7 @@ and the dialog stays as the one complete, browsable index of them.
   **Quick Style**, one per panel),
   **Accessibility** (reduce motion, and a **UI Scale** link row that opens
   Appearance), **Tours** (one switch per guided tour, see **Tours** below),
-  **AI Tools** (assistant, with suggested prompts nested under it, and a
-  **Manage API Tokens** link row that opens the API
-  Tokens sub-category), **Projects** (a **Default Folders** section with one row per
+  **Projects** (a **Default Folders** section with one row per
   [default folder](../013-workspace/default-folders.md#settings) entry, with Change and Clear; those are not a
   preference, they read and write `/api/placement-defaults`), and an **Explorer** section with **Show Home Banner**
   (`homeBanner`, missing means shown; [Explorer Home](../013-workspace/explorer-home.md#hiding-the-banner))), **Account** (identity, Trash, delete account, see
@@ -725,8 +709,8 @@ and the dialog stays as the one complete, browsable index of them.
 
   The **Editor** group holds only Power User Mode and its children. The
   canvas-era rows (`alignmentGuides`, `autoRebindArrows`, `elementIndicatorStyle`,
-  `quickAddOnHover`, `middleMousePan`), the Layers, Map and Quick Style panels and
-  the AI Tools category are no longer offered in Settings; their stored fields
+  `quickAddOnHover`, `middleMousePan`) and the Layers, Map and Quick Style panels
+  are no longer offered in Settings, and the AI assistant is removed; their stored fields
   stay in the type because the canvas host still reads them. The
   **Keyboard** group holds the **Keyboard Shortcuts** switch, which is
   per-device (localStorage, not `UserPreferences`) so shortcuts can be on at

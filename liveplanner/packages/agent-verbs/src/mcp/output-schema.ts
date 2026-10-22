@@ -75,9 +75,7 @@ export const listTemplatesOutput = {
 
 export const createProjectOutput = {
   id: projectId,
-  projectId: projectId.describe(
-    'The project id again, under the name the other tools take it by.',
-  ),
+  projectId: projectId.describe('The project id again, under the name the other tools take it by.'),
   name: z.string().describe('The stored name (shortened if it was over the cap).'),
   tabCount: z.number().int().describe('How many tabs were created.'),
   tabIds: z.array(z.string()).describe('The new tab ids, in order.'),
@@ -109,9 +107,7 @@ export const addTabOutput = {
 
 export const updateProjectOutput = {
   id: projectId,
-  projectId: projectId.describe(
-    'The project id again, under the name the other tools take it by.',
-  ),
+  projectId: projectId.describe('The project id again, under the name the other tools take it by.'),
   tabId: tabId.describe('The tab that was edited.'),
   url,
   ...changesetAnswer,

@@ -98,6 +98,23 @@ A few rules hold for every operation:
 - **Ids.** An `add`'s element may carry its own `id`, so later operations in the same changeset can name it; without one, it gets a fresh id.
 - **Locks.** A changeset on a [locked tab](/help/tabs/locking-tabs/), or one that would change a locked element, is refused with `element_locked`.
 
+## Element Kinds
+
+A tab holds only these elements, each `{ "type": "shape", "shape": <kind>, "x", "y", "width", "height" }` with an optional `label` and `locked`. An `add` or a replace with any other element is refused with `invalid_value`, naming the kinds there are:
+
+| Kind                                    | Is                                                         | Its own fields                                                                                          |
+| --------------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `plan-board`                            | A Board tab's board; its cards are items                   | `planBoard`                                                                                             |
+| `plan-sheet`                            | A Sheet tab's spreadsheet; its cells change by sheet writes | `planSheet`                                                                                             |
+| `plan-view`                             | A Dashboard's metric or chart of the cards                 | `planView`, `textSize`                                                                                  |
+| `bar-chart`, `line-chart`, `pie-chart`  | A chart of a Sheet's cells, in the Sheet or on a Dashboard | `chartSource` (required), `sheetAnchor`, `chartVariant`, `chartLegend`, `chartValues`, `chartPalette`, and `chartAxis` on a bar or line chart |
+
+A chart's `chartSource` is `{ "sheetId", "range": { "r1", "c1", "r2", "c2" } }`: the sheet and the row and column ids of its first and last cells. `GET /api/schema/<kind>` (or `liveplanner schema <kind>`) prints a kind's fields, a closed field with its values:
+
+```json
+{ "op": "add", "element": { "type": "shape", "shape": "plan-view", "x": 0, "y": 840, "width": 500, "height": 360, "planView": { "view": "gantt" } } }
+```
+
 `test` is how you make sure you change what you read: put one before a `set` and the changeset is refused, with nothing applied, if someone changed that element since. Sending the revision you read as `base` (below) does the same for every element at once.
 
 ## Selectors
@@ -125,9 +142,9 @@ To rebuild a tab rather than change it, send `"replace"` instead of `"operations
 | `template`  | The tab a template makes, by its kind from `GET /templates` (such as `kanban`)                  |
 | `dashboard` | A Dashboard tab over the project's Board and Sheet tabs: its `tabs`, `metrics`, `charts`, `notes` |
 | `form`      | A Form tab's form                                                                               |
-| `elements`  | The tab's elements, as the tab JSON gives them                                                  |
+| `elements`  | The tab's elements, as the tab JSON gives them, kept at the `x` and `y` given                  |
 
-A replace may also carry a `name` for the tab. A replace on a tab id the project does not have yet creates that tab, which is how a new tab is added in one write:
+A replace may also carry a `name` for the tab. Nothing is laid out for you, so a replace carrying `layout` is refused. A replace on a tab id the project does not have yet creates that tab, which is how a new tab is added in one write:
 
 ```bash
 curl -X POST https://liveplanner.app/api/projects/$DOC/tabs/$(uuidgen)/changesets \

@@ -45,20 +45,28 @@ describe('GET /api/templates', () => {
 describe('GET /api/schema', () => {
   it("lists the kinds, and one kind's format", async () => {
     expect(await get('/api/schema').text()).toContain('Element kinds');
-    const sticky = get('/api/schema/sticky');
-    expect(sticky.headers.get('Content-Type')).toContain('text/plain');
-    expect(sticky.headers.get('Cache-Control')).toBe(CATALOGUE_CACHE_CONTROL);
-    expect(await sticky.text()).toMatch(/^sticky: a sticky/);
+    const view = get('/api/schema/plan-view');
+    expect(view.headers.get('Content-Type')).toContain('text/plain');
+    expect(view.headers.get('Cache-Control')).toBe(CATALOGUE_CACHE_CONTROL);
+    expect(await view.text()).toMatch(/^plan-view: a Dashboard's metric or chart/);
   });
 
   it('refuses an unknown kind naming the kinds, and a deeper path', async () => {
-    const res = get('/api/schema/rectangle');
-    expect(res.status).toBe(404);
-    expect(await res.json()).toMatchObject({
-      error: 'unknown_kind',
-      kinds: expect.arrayContaining(['square', 'arrow']),
-    });
-    expect(get('/api/schema/square/x').status).toBe(404);
+    for (const kind of ['rectangle', 'sticky', 'arrow']) {
+      const res = get(`/api/schema/${kind}`);
+      expect(res.status).toBe(404);
+      const body: { kinds: string[] } = await res.json();
+      expect(body).toMatchObject({ error: 'unknown_kind' });
+      expect(body.kinds).toEqual([
+        'plan-board',
+        'plan-sheet',
+        'plan-view',
+        'bar-chart',
+        'line-chart',
+        'pie-chart',
+      ]);
+    }
+    expect(get('/api/schema/plan-view/x').status).toBe(404);
   });
 });
 

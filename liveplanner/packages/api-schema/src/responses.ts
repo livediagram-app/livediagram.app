@@ -1,14 +1,14 @@
 // Response envelopes: the `{ <noun>: payload }` wrappers the api worker puts
 // around the canonical types in ./index.ts. Named once here so every consumer
 // of the wire (the live editor's api client, the MCP server's tools) reads
-// the same shape instead of spelling `{ project: LiveDoc }` inline at each
+// the same shape instead of spelling `{ project: Project }` inline at each
 // call site, where a renamed key would drift silently.
 
-import type { LiveDoc, ProjectSummary, Folder, ShareLink, TabRecord, TeamListItem } from './index';
+import type { Project, ProjectSummary, Folder, ShareLink, TabRecord, TeamListItem } from './index';
 import type { TeamRecentProject } from './recent-diagrams';
 
 // GET / PUT /api/projects/:id, POST /api/projects (+ copy).
-export type ProjectResponse = { project: LiveDoc };
+export type ProjectResponse = { project: Project };
 // GET /api/projects/:id/tabs/:tabId.
 export type TabResponse = { tab: TabRecord };
 // GET /api/projects: the caller's personal library. With `?include=team-recent` it also carries the

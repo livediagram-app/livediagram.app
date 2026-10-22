@@ -161,7 +161,9 @@ describe('item writes', () => {
         itemSet.input.parse({ project: DOC_A, item: '#1', fields: ['estimate=a lot'] }),
       ),
     ).rejects.toThrow('"a lot" is not an Estimate: give a number from 0 to 999.');
-    await expect(itemRm.run!(ctx, { project: DOC_A, item: '#9' })).rejects.toBeInstanceOf(VerbRefusal);
+    await expect(itemRm.run!(ctx, { project: DOC_A, item: '#9' })).rejects.toBeInstanceOf(
+      VerbRefusal,
+    );
     expect(() => fieldsFromPairs(['priority'])).toThrow(VerbRefusal);
   });
 });
@@ -196,7 +198,9 @@ describe('item output and refusals', () => {
 
   it('lists the items a name could mean', async () => {
     const { ctx } = api();
-    const refusal = await itemRm.run!(ctx, { project: DOC_A, item: 'item' }).catch((e: unknown) => e);
+    const refusal = await itemRm.run!(ctx, { project: DOC_A, item: 'item' }).catch(
+      (e: unknown) => e,
+    );
     expect(refusal).toBeInstanceOf(VerbRefusal);
     expect((refusal as VerbRefusal).code).toBe('item_unknown');
     expect((refusal as VerbRefusal).message).toMatch(/more than one item/);

@@ -1,5 +1,5 @@
 // `applyReplace` (docs/specs/024-agents/blueprints/edit-operations.md "Replace"): the other changeset
-// body, a whole tab from a template, a dashboard, a form or raw elements, built exactly as the MCP's
+// body, a whole tab from a template, a dashboard, a form or a Plan tab's elements, built exactly as the MCP's
 // `update_project` replace and `add_tab` build it, and answered with the same outcome as operations.
 // An existing tab keeps every tab field and swaps its elements (no theme repaint, EO41); a new tab is
 // built whole.
@@ -7,7 +7,6 @@
 import type { EditRejection } from '@liveplanner/api-schema';
 import {
   buildTab,
-  coerceShapeKind,
   contentOrigin,
   diffToElementOps,
   elementValidationIssue,
@@ -30,6 +29,7 @@ import {
 import { readForm, type FormDefinition } from '@liveplanner/forms';
 import { dashboardSpecIssue } from './dashboard-body';
 import { tabRejection } from './finalise';
+import { PLAN_KINDS_HINT, planElementIssue } from './plan-elements';
 import { invalidResult, tabLocked } from './rejections';
 import { addedLine, lineNaming, removedLine } from './results';
 import type { ApplyOutcome, EditLog, ReplaceBody, ReplaceOptions } from './types';
@@ -69,13 +69,16 @@ const invalidBody = (detail: string, hint?: string): EditRejection => ({
   ...(hint ? { hint } : {}),
 });
 
-function fromElements(
-  raw: unknown,
-  layout: 'auto' | 'preserve' | undefined,
-  themeId: string | undefined,
-  kept: ReadonlySet<string>,
-): Built {
+// Only elements a Plan tab holds, kept where they are given (docs/specs/024-agents/edit-operations.md "Replace a
+// whole tab").
+function fromElements(raw: unknown, themeId: string | undefined, kept: ReadonlySet<string>): Built {
   if (!Array.isArray(raw)) return invalidBody('elements: expected an array of elements');
+  for (const el of raw as unknown[]) {
+    const issue = planElementIssue(
+      typeof el === 'object' && el !== null ? (el as Record<string, unknown>) : {},
+    );
+    if (issue) return invalidBody(`elements: ${issue}`, PLAN_KINDS_HINT);
+  }
   // Elements the tab already holds keep their own look; only new ones take a raw element's defaults.
   const normalised = normaliseElements(raw, { kept }) as unknown[];
   for (const el of normalised) {
@@ -83,16 +86,14 @@ function fromElements(
     if (issue) {
       const subject = el as { id?: unknown; type?: unknown; shape?: unknown };
       const ref = typeof subject.id === 'string' && subject.id !== '' ? subject.id : 'an element';
-      return invalidResult(ref, typeof subject.type === 'string' ? subject.type : undefined, issue);
+      const kind = typeof subject.shape === 'string' ? subject.shape : undefined;
+      return invalidResult(ref, kind, issue);
     }
   }
   const valid = normalised as Element[];
-  const coerced = valid.map((el) =>
-    el.type === 'shape' ? { ...el, shape: coerceShapeKind(el.shape) } : el,
-  );
   return {
-    elements: buildTab('elements', 'elements', coerced, layout, themeId).elements,
-    tab: (tabId, name) => buildTab(tabId, name, valid, layout, themeId),
+    elements: buildTab('elements', 'elements', valid, 'preserve', themeId).elements,
+    tab: (tabId, name) => buildTab(tabId, name, valid, 'preserve', themeId),
   };
 }
 
@@ -129,8 +130,8 @@ function build(
       return { elements: [], tab: (tabId) => formTab(tabId, form, themeId), formOnly: true };
     }
     case 'elements': {
-      const { elements, layout } = body as { elements: unknown; layout?: 'auto' | 'preserve' };
-      return fromElements(elements, layout, themeId, kept);
+      const { elements } = body as { elements: unknown };
+      return fromElements(elements, themeId, kept);
     }
   }
 }

@@ -1,7 +1,7 @@
 // How the engine names elements in result lines and refusals (docs/specs/024-agents/blueprints/
 // edit-operations.md "Result lines", EO43): by ref, as views print them, with the kind word.
 
-import { kindWordOf, type Element, type ElementId, type Endpoint } from '@liveplanner/project';
+import { kindWordOf, type Element, type ElementId } from '@liveplanner/project';
 import { LABEL_CUT_CHARS } from './vocabulary';
 
 // The kind word views print: a shape's kind, else the type.
@@ -9,14 +9,11 @@ export function kindOf(el: Element): string {
   return kindWordOf(el);
 }
 
-// How elements are named on a line: their ref, and the ref of the container holding them.
-export type Naming = {
-  refOf: (id: ElementId) => string;
-  containerOf: (id: ElementId) => string | null;
-};
+// How elements are named on a line: by their ref.
+export type Naming = { refOf: (id: ElementId) => string };
 
 // Ids as they are: what a line uses when no tab names its elements.
-const plainNaming: Naming = { refOf: (id) => id, containerOf: () => null };
+const plainNaming: Naming = { refOf: (id) => id };
 
 export function labelOf(el: Element): string | undefined {
   return 'label' in el && typeof el.label === 'string' && el.label !== '' ? el.label : undefined;
@@ -32,23 +29,8 @@ export function quoteCut(text: string, max: number): string {
   return `${JSON.stringify((space > 0 ? slice.slice(0, space) : slice).trimEnd())}…`;
 }
 
-// An arrow end as results print it: the element or arrow it is attached to, or `@x,y` when free.
-export function endRef(end: Endpoint, refOf: (id: ElementId) => string = (id) => id): string {
-  switch (end.kind) {
-    case 'pinned':
-      return refOf(end.elementId);
-    case 'on-arrow':
-      return refOf(end.arrowId);
-    case 'free':
-      return `@${Math.round(end.x)},${Math.round(end.y)}`;
-  }
-}
-
-// `n7  square "Charge card" in f2`, `a6  arrow n6→n7 "yes"`: one element on a candidate line.
+// `76eb  plan-view "Velocity"`: one element on a candidate line.
 export function describeElement(el: Element, naming: Naming = plainNaming): string {
-  const { refOf } = naming;
-  const ends = el.type === 'arrow' ? ` ${endRef(el.from, refOf)}→${endRef(el.to, refOf)}` : '';
   const label = labelOf(el);
-  const container = el.type === 'arrow' ? null : naming.containerOf(el.id);
-  return `${refOf(el.id)}  ${kindOf(el)}${ends}${label ? ` ${quoteCut(label, LABEL_CUT_CHARS)}` : ''}${container ? ` in ${container}` : ''}`;
+  return `${naming.refOf(el.id)}  ${kindOf(el)}${label ? ` ${quoteCut(label, LABEL_CUT_CHARS)}` : ''}`;
 }

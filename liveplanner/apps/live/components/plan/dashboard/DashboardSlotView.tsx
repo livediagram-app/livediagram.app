@@ -63,7 +63,7 @@ export function DashboardSlotView({
   const cellRef = useRef<HTMLDivElement>(null);
   useSlotEnter(cellRef, at.slot);
   const tabId = slot.content?.type === 'tab' ? slot.content.tabId : null;
-  // What the slot shows has a header of its own (a board, a Sheet, a visualisation, a Diagram tab): the slot's settings
+  // What the slot shows has a header of its own (a board, a Sheet, a visualisation, a Board or Sheet tab): the slot's settings
   // join its cog there (slot-menu.ts). A metric, a note or an empty slot has none: the slot's cog floats at the top
   // right on hover.
   const content = slot.content;

@@ -53,14 +53,14 @@ describe('resolveDefaultFor', () => {
     ]);
     const retro = {
       mode: 'plan' as const,
-      tabKind: 'diagram' as const,
+      tabKind: 'board' as const,
       templateFamily: 'retrospective' as const,
     };
     expect(resolveDefaultFor(retro, d, index)).toMatchObject({
       resolved: { key: 'template:retrospective', folder: { id: 'retros' } },
       skipped: [],
     });
-    expect(resolveDefaultFor({ mode: 'plan', tabKind: 'diagram' }, d, index).resolved?.key).toBe(
+    expect(resolveDefaultFor({ mode: 'plan', tabKind: 'board' }, d, index).resolved?.key).toBe(
       'mode:plan',
     );
   });
@@ -71,7 +71,7 @@ describe('resolveDefaultFor', () => {
       ['mode:plan', 'workshops'],
     ]);
     expect(
-      resolveDefaultFor({ mode: 'plan', tabKind: 'diagram', templateFamily: 'kanban' }, d, index),
+      resolveDefaultFor({ mode: 'plan', tabKind: 'board', templateFamily: 'kanban' }, d, index),
     ).toMatchObject({
       resolved: { key: 'mode:plan' },
       skipped: ['template:kanban'],
@@ -79,7 +79,7 @@ describe('resolveDefaultFor', () => {
   });
 
   it('resolves nothing with no defaults', () => {
-    expect(resolveDefaultFor({ mode: 'plan', tabKind: 'diagram' }, defaults([]), index)).toEqual({
+    expect(resolveDefaultFor({ mode: 'plan', tabKind: 'board' }, defaults([]), index)).toEqual({
       resolved: null,
       skipped: [],
     });
@@ -88,10 +88,10 @@ describe('resolveDefaultFor', () => {
 
 describe('representativeIntent', () => {
   it('reads every entry in Plan', () => {
-    expect(representativeIntent('mode:plan')).toEqual({ mode: 'plan', tabKind: 'diagram' });
+    expect(representativeIntent('mode:plan')).toEqual({ mode: 'plan', tabKind: 'empty' });
     expect(representativeIntent('template:kanban')).toEqual({
       mode: 'plan',
-      tabKind: 'diagram',
+      tabKind: 'board',
       templateFamily: 'kanban',
     });
   });

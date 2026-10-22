@@ -757,8 +757,7 @@ describe('api refusals mid-write', () => {
 
   it('says which cards went to the Trash before a refusal', async () => {
     const { api: a } = api({
-      [`/projects/${D}/items/ccc333`]: () =>
-        Response.json({ error: 'forbidden' }, { status: 403 }),
+      [`/projects/${D}/items/ccc333`]: () => Response.json({ error: 'forbidden' }, { status: 403 }),
     });
     const r = await changeCardTypes(a, D, [{ op: 'delete', type: 'Bug' }]);
     expect(r).toMatchObject({

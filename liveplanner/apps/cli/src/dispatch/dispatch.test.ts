@@ -66,19 +66,22 @@ describe('route', () => {
 describe('fieldsOf', () => {
   it("reads each key's kind, whether it is required, its values and its description", () => {
     const fields = fieldsOf(verb('tab.view').input);
-    expect(fields.find((f) => f.key === 'project')).toMatchObject({ kind: 'string', required: true });
+    expect(fields.find((f) => f.key === 'project')).toMatchObject({
+      kind: 'string',
+      required: true,
+    });
     expect(fields.find((f) => f.key === 'view')).toMatchObject({
       kind: 'enum',
       required: false,
-      values: expect.arrayContaining(['outline', 'graph']),
+      values: expect.arrayContaining(['outline', 'comments']),
     });
     expect(fields.find((f) => f.key === 'budget')).toMatchObject({
       kind: 'number',
       required: false,
     });
-    expect(fields.find((f) => f.key === 'coarse')).toMatchObject({
+    expect(fields.find((f) => f.key === 'style')).toMatchObject({
       kind: 'boolean',
-      description: 'layout: rows instead of geometry',
+      description: 'outline: add style attributes',
     });
     expect(fieldsOf(verb('skill.print').input)).toEqual([]);
   });
@@ -139,14 +142,14 @@ describe('parseVerbArgs', () => {
         'Overview',
         '--budget',
         '300',
-        '--coarse',
+        '--style',
       ]),
     ).toEqual({
       project: 'Auth flow',
       tab: 'Overview',
       view: 'outline',
       budget: 300,
-      coarse: true,
+      style: true,
     });
     expect(parseVerbArgs(verb('auth.login'), ['--with-token'])).toEqual({ withToken: true });
     expect(parseVerbArgs(verb('project.ls'), [])).toEqual({ limit: 20 });
@@ -200,8 +203,8 @@ describe('flag problems', () => {
     expect(failureOf(() => parseVerbArgs(verb('project.ls'), ['--limit']))).toMatchObject({
       message: '--limit needs a value',
     });
-    expect(failureOf(() => parseVerbArgs(verb('tab.view'), ['d', '--coarse=1']))).toMatchObject({
-      message: '--coarse takes no value',
+    expect(failureOf(() => parseVerbArgs(verb('tab.view'), ['d', '--style=1']))).toMatchObject({
+      message: '--style takes no value',
     });
     expect(failureOf(() => parseVerbArgs(verb('tab.ls'), ['-x']))).toMatchObject({
       message: 'unknown flag -x for "tab ls"',
@@ -226,8 +229,8 @@ describe('rest positionals and short flags', () => {
       words: ['n3', 'label=Sign in'],
       dryRun: true,
     });
-    expect(parseVerbArgs(verb('element.move'), ['d', 'n3', '--', '-20,0'])).toMatchObject({
-      words: ['n3', '-20,0'],
+    expect(parseVerbArgs(verb('element.rm'), ['d', 'n3', '--', '-old'])).toMatchObject({
+      words: ['n3', '-old'],
     });
     expect(parseVerbArgs(verb('changeset.apply'), ['d', '-f', '-'])).toMatchObject({ file: '-' });
     expect(route(['edit', 'd', '-f', 'x'])).toMatchObject({

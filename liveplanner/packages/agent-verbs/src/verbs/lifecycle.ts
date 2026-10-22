@@ -96,7 +96,7 @@ export const projectCreate = defineVerb({
       input,
       `liveplanner project create ${JSON.stringify(input.name)}, then liveplanner edit`,
     );
-    const { theme: _t, layout: _l, name: _n, ...tabSource } = source;
+    const { theme: _t, name: _n, ...tabSource } = source;
     const tab = { id: ctx.newId(), name: input.tab ?? input.name, ...tabSource };
     const { project } = await ctx.api.json<ProjectResponse>('/projects', {
       method: 'POST',
@@ -225,7 +225,9 @@ export const projectRestore = defineVerb({
   description:
     'Restores a project from the Trash to its folder, or the root of its space when that folder is gone.',
   behaviour: 'write',
-  input: z.object({ project: z.string().describe('A name or id prefix of a project in the Trash') }),
+  input: z.object({
+    project: z.string().describe('A name or id prefix of a project in the Trash'),
+  }),
   output: lineOutput,
   run: async (ctx, input) => {
     const { trash } = await ctx.api.json<{ trash: TrashedProject[] }>('/trash');
@@ -371,7 +373,10 @@ export const tabRm = defineVerb({
   summary: 'Delete a tab',
   description: 'Deletes one tab of a project; the other tabs stay.',
   behaviour: 'destructive',
-  input: z.object({ project: projectArg, tab: z.string().describe('The tab, by name or id prefix') }),
+  input: z.object({
+    project: projectArg,
+    tab: z.string().describe('The tab, by name or id prefix'),
+  }),
   output: lineOutput,
   run: async (ctx, input) => {
     const project = await projectOf(ctx, input.project);

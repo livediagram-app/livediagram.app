@@ -635,7 +635,7 @@ export * from './savable';
 // Every stored field per element type (docs/specs/024-agents/blueprints/edit-operations.md).
 export * from './element-fields';
 
-// Deterministic auto-layout for AI-generated diagrams (docs/specs/007-editor/ai-assistance.md).
+// Deterministic auto-layout (docs/specs/008-canvas/layout-cleanup.md).
 export * from './auto-layout';
 // The editor's Tidy Up profile (docs/specs/008-canvas/layout-cleanup.md): whether a style suits a tab.
 export { tidyLayoutElements, tidyMindmapFits } from './auto-layout-tidy';

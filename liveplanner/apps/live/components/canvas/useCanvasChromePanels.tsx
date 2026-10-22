@@ -6,7 +6,6 @@ import { useStableCallbacks } from '@/hooks/ui/useStableCallbacks';
 import { participantKey } from '@/lib/identity';
 import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import type { PanelId } from '@/lib/panel-layout';
-import { CanvasAiPanel } from './CanvasAiPanel';
 import { LazyExplorer } from '@/components/panels/LazyExplorer';
 import type { CanvasChromeProps } from './CanvasChrome';
 import { useCanvasToolPanels } from './useCanvasToolPanels';
@@ -94,7 +93,6 @@ export function useCanvasChromePanels({
   const {
     activeDockAnchor,
     activeDockPanel,
-    aiPanel,
     actionRows,
     commentRows,
     commentsPanelPosition,
@@ -140,9 +138,7 @@ export function useCanvasChromePanels({
     selfParticipant,
     setActiveDockAnchor,
     setActiveDockPanel,
-    settings,
     sharedProjects,
-    tabName,
     teamProjects,
     teamFolders,
     teams,
@@ -201,7 +197,6 @@ export function useCanvasChromePanels({
     commentsPanelPosition,
     onResetCommentsPanel,
   );
-  const aiWiring = aiPanel ? panelWiringFor('ai', aiPanel.position, aiPanel.onReset) : null;
   // The Card Types popover, and the Plan strip's others, over their buttons.
   const cardTypesOpen = activeDockPanel === 'card-types';
   const trashOpen = activeDockPanel === 'plan-trash';
@@ -291,11 +286,6 @@ export function useCanvasChromePanels({
       />
     ) : null;
 
-  const aiEl =
-    !chromeHidden && aiPanel && aiWiring ? (
-      <CanvasAiPanel aiPanel={aiPanel} wiring={aiWiring} tabName={tabName} settings={settings} />
-    ) : null;
-
   // The Session strip's popovers (docs/specs/012-collaboration/session-tools.md "The Session strip"). A
   // segment whose button has gone (a view-role visitor's tool ended) closes its
   // popover rather than leaving it floating with no button under it.
@@ -362,7 +352,6 @@ export function useCanvasChromePanels({
   const panelEls: Partial<Record<PanelId, ReactNode>> = {
     // Collaborate renders outside the corner layer (collaborateEl, below).
     collaborate: null,
-    ai: aiEl,
     format: formatEl,
   };
   return {

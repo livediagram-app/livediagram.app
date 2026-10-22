@@ -42,7 +42,6 @@ export const tabPath = (projectId: string, tabId: string) =>
   `/projects/${encodeURIComponent(projectId)}/tabs/${encodeURIComponent(tabId)}`;
 
 // A project's item store (docs/specs/026-plan/items.md), for the CLI's item verbs and the MCP item tools.
-export const itemsPath = (projectId: string) =>
-  `/projects/${encodeURIComponent(projectId)}/items`;
+export const itemsPath = (projectId: string) => `/projects/${encodeURIComponent(projectId)}/items`;
 
 export type { ApiClient };

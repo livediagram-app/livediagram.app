@@ -123,8 +123,7 @@ export async function tabPreview(
   if (form) return [form];
   // A Plan tab as the editor exports it: a Dashboard laid out, its pictures drawn from the cards.
   const art = previewResolvers(await previewEmoji(emojiGlyphsOf(tab.elements)));
-  const plain = (shown: Tab) => renderElementsToSvg(shown, art);
-  const laidOut = await planPreviewFor(tab, auth, plain).catch(() => null);
+  const laidOut = await planPreviewFor(tab, auth).catch(() => null);
   const drawn = laidOut?.tab ?? tab;
   const content = await planContentFor(drawn, auth, laidOut?.sheets);
   // A board scrolls on its tab, so its preview grows to every card rather than cutting the rest off ("+2 more", a lane

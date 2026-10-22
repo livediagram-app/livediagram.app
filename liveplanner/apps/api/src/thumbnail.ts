@@ -42,6 +42,7 @@ import {
   listSheets,
 } from './db';
 import type { ProjectDTO, Env } from './types';
+import { dashboardImageOf } from './thumbnail-dashboard';
 
 // Content type for the cached SVG snapshot. Local to this module — the
 // HTTP responses set their own header (responses.ts); this only stamps
@@ -206,16 +207,28 @@ async function renderTabBodyToSvg(
     const look = formLook(parsed);
     return formArt(form, look, resolveFontStack(look.font)).svg;
   }
-  if (parsed.elements.length === 0) return null;
+  // A Dashboard draws its layout, whose notes and tab slots are not elements.
+  const dashboard = tabKindOf(parsed) === 'dashboard';
+  if (parsed.elements.length === 0 && !dashboard) return null;
   // `tabs.data` is the tab body minus id + name (see db/tabs.ts
   // upsertTab); re-attach them so the value is a complete Tab. The
   // renderer only reads `elements` + `backgroundColor`, both already in
   // the parsed body.
   // Migrated like every other stored-tab read (docs/specs/011-theme/retired-schemes.md).
-  const tab = migrateStoredTab({ id: liveDoc.id, name: liveDoc.name, ...parsed } as Tab);
-  // A Plan board or card draws its project's items (docs/specs/026-plan/plan-board.md).
+  const stored = migrateStoredTab({ id: body.id, name: liveDoc.name, ...parsed } as Tab);
+  // A Dashboard is its page laid out, its metrics and charts drawn from the cards (thumbnail-dashboard.ts), never the
+  // canvas under it with each one a labelled box.
+  const laidOut = dashboard ? await dashboardImageOf(env, liveDoc.id, stored) : null;
+  const tab = laidOut?.tab ?? stored;
+  if (tab.elements.length === 0) return null;
+  // A Plan board or card draws its project's items (docs/specs/026-plan/plan-board.md); a Dashboard's metrics and
+  // charts count them.
   const plan = tab.elements.some(
-    (el) => el.type === 'shape' && (el.shape === 'plan-board' || el.shape === 'plan-card'),
+    (el) =>
+      el.type === 'shape' &&
+      (el.shape === 'plan-board' ||
+        el.shape === 'plan-card' ||
+        (!!laidOut && el.shape === 'plan-view')),
   );
   // A Sheet draws its window of cells (docs/specs/029-sheets/sheet.md "Exports and images"); card functions in
   // its formulas read the items too.
@@ -242,13 +255,15 @@ async function renderTabBodyToSvg(
         cards: sheetCards && items ? cardSourceOf(items.values(), typesOf(catalogue)) : null,
       })
     : undefined;
+  const types = plan ? typesOf(catalogue) : undefined;
   const drawWith = {
     resolveIconArt: resolveIconExportArt,
     resolveStickerArt,
     items,
     sheets,
     // Custom types keep their colours (docs/specs/026-plan/item-types.md).
-    itemTypes: plan ? typesOf(catalogue) : undefined,
+    itemTypes: types,
+    ...(laidOut ? { resolvePlanArt: laidOut.artWith(items ?? new Map(), types ?? []) } : {}),
   };
   return renderElementsToSvg(tab, drawWith);
 }

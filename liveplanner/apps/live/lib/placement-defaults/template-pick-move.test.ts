@@ -16,7 +16,7 @@ const defaults = new Map<PlacementDefaultKey, string>([
   ['template:kanban', 'boards'],
   ['mode:plan', 'plans'],
 ]);
-const kanban = { mode: 'plan', tabKind: 'diagram', templateFamily: 'kanban' } as const;
+const kanban = { mode: 'plan', tabKind: 'board', templateFamily: 'kanban' } as const;
 const handoff = { projectId: 'd', tabId: 't', placementChosen: false };
 const at = (over: Partial<Parameters<typeof templatePickMoveTarget>[0]> = {}) =>
   templatePickMoveTarget({

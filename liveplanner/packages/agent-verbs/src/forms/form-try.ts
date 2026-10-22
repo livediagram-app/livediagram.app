@@ -144,9 +144,7 @@ export async function tryForm(
       : form.sheet
         ? 'its sheet'
         : (target?.where ?? 'its board');
-    const done = (
-      fields: Omit<FormTryDone, 'ok' | 'projectId' | 'tabId' | 'where' | 'lines'>,
-    ) => ({
+    const done = (fields: Omit<FormTryDone, 'ok' | 'projectId' | 'tabId' | 'where' | 'lines'>) => ({
       ok: true as const,
       projectId,
       tabId: tab.id,

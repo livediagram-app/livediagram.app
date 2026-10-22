@@ -9,23 +9,24 @@
 // keys are generated from them.
 
 import {
-  DEFAULT_TAB_KIND,
   EDITOR_MODES,
+  PLAN_TAB_KINDS,
+  isPlanTabKind,
   parseEditorMode,
   type EditorMode,
-  type TabKind,
+  type PlanTabKind,
 } from '@liveplanner/project';
 
 /** The dimensions of a default key, most specific first: the order a create's keys are tried in. */
 export const DEFAULT_KEY_DIMENSIONS = ['template', 'mode'] as const;
 
-/** The tab kinds a project can be created with. The legacy `whiteboard` kind is not one: a
- *  whiteboard is a general tab that opens in Draw mode. */
-export const CREATION_TAB_KINDS = ['diagram'] as const satisfies readonly TabKind[];
-export type CreationTabKind = (typeof CREATION_TAB_KINDS)[number];
+/** What a project's first tab was when it was created: a Board, Sheet, Dashboard or Form tab, or `empty` for a
+ *  tab of none of those kinds (a blank tab) or no tab at all. */
+export const CREATION_TAB_KINDS = [...PLAN_TAB_KINDS, 'empty'] as const;
+export type CreationTabKind = PlanTabKind | 'empty';
 
-/** The template families: ordinary diagram tabs made from a family of templates. The map from each
- *  template to its family is `templateFamilyOf` in `@liveplanner/templates`. */
+/** The template families: projects made from a family of templates. The map from each template to its family is
+ *  `templateFamilyOf` in `@liveplanner/templates`. */
 export const TEMPLATE_FAMILIES = ['retrospective', 'kanban'] as const;
 export type TemplateFamily = (typeof TEMPLATE_FAMILIES)[number];
 
@@ -85,23 +86,25 @@ export function placementDefaultTelemetryType(key: PlacementDefaultKey): string 
   return `Default${key.split(':').map(pascal).join('')}`;
 }
 
+/** The kind a first tab is created as: its Plan kind, or `empty`. */
+export function creationTabKindOf(tab: { kind?: string } | undefined): CreationTabKind {
+  return isPlanTabKind(tab?.kind) ? tab.kind : 'empty';
+}
+
 /**
  * The creation intent of a new project, from its first tab and the family of the template it was
  * made from. Structural; the tab kind is read the way the project model reads it.
  */
 export function creationIntentOf(
-  _tab: { kind?: string } | undefined,
+  tab: { kind?: string } | undefined,
   templateFamily: TemplateFamily | null = null,
 ): CreationIntent {
-  const intent: CreationIntent = {
-    mode: 'plan',
-    tabKind: 'diagram',
-  };
+  const intent: CreationIntent = { mode: 'plan', tabKind: creationTabKindOf(tab) };
   return templateFamily ? { ...intent, templateFamily } : intent;
 }
 
 /** A create body's `intent`: none when absent or null, refused (`intent_invalid`) when malformed.
- *  An absent or null `tabKind` is the general tab; an absent or null `templateFamily` is none. */
+ *  An absent or null `tabKind` is `empty`; an absent or null `templateFamily` is none. */
 export function readCreationIntent(
   value: unknown,
 ): { ok: true; intent: CreationIntent | null } | { ok: false } {
@@ -115,7 +118,7 @@ export function readCreationIntent(
   // A create from an older client still names a retired mode, read as Plan.
   const parsedMode = parseEditorMode(mode);
   if (!parsedMode) return { ok: false };
-  const kind = tabKind ?? DEFAULT_TAB_KIND;
+  const kind = tabKind ?? 'empty';
   if (!isCreationTabKind(kind)) return { ok: false };
   const intent: CreationIntent = { mode: parsedMode, tabKind: kind };
   if (templateFamily === undefined || templateFamily === null) return { ok: true, intent };

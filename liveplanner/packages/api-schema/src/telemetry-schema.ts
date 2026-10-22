@@ -328,14 +328,6 @@ export type TelemetryWindow = {
   rows: TelemetryCount[];
 };
 
-// ---------------------------------------------------------------------
-// AI Assistance (docs/specs/007-editor/ai-assistance.md)
-// ---------------------------------------------------------------------
-
-// Two modes (docs/specs/007-editor/ai-assistance.md): 'ask' is read-only Q&A; 'clean' tidies the existing tab.
-// The old 'generate' (Build) + 'review' modes were removed — the calling model
-// in an external AI tool (docs/specs/015-api/mcp-server.md) does generation far better.
-
 // `byMetric` is the per-event version of `byCategory`: one 30-day
 // series per distinct event, keyed by `metricKey(category, action,
 // type)` (= `category|action|type`, empty string for a null type).

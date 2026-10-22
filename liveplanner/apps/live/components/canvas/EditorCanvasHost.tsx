@@ -94,13 +94,9 @@ export function EditorCanvasHost() {
     addTable,
     addTechIcon,
     addText,
-    aiCapable,
-    aiPanelPosition,
-    aiPanelVisible,
     anyWelcomeOpen,
     appendTableColumnSelected,
     appendTableRowSelected,
-    applyAiElements,
     beginAnchorDrag,
     beginArrowCurveDrag,
     beginArrowCurvePointDrag,
@@ -213,7 +209,6 @@ export function EditorCanvasHost() {
     confirm,
     selfParticipant,
     sessionShareCode,
-    setAiPanelPosition,
     pressSessionButton,
     setSessionConfigFor,
     setTimerDuration,
@@ -895,19 +890,6 @@ export function EditorCanvasHost() {
           // held sideways"): too short for it, and no way to bring it back; turn the phone upright.
           explorerHidden={workbenchMode || landscapePhone}
           onToggleZen={embedMode ? undefined : toggleZenMode}
-          aiPanel={
-            aiCapable && userPreferences.aiAssistanceEnabled && aiPanelVisible && !isReadOnly
-              ? {
-                  position: aiPanelPosition,
-                  onMove: (x, y) => setAiPanelPosition({ x, y }),
-                  onReset: () => setAiPanelPosition(null),
-                  contextElements: activeTab.elements,
-                  onApplyElements: applyAiElements,
-                  ownerId: selfParticipant.id,
-                  tabId: activeTab.id,
-                }
-              : undefined
-          }
         />
       </TagColoursProvider>
     </CanvasThemeProvider>

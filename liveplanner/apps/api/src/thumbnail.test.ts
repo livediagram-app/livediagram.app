@@ -12,6 +12,7 @@ const db = vi.hoisted(() => ({
   getProjectItemTypes: vi.fn(),
   listItems: vi.fn(),
   listSheets: vi.fn(),
+  dashboardSourceTabs: vi.fn(),
   stampTabElementCount: vi.fn(),
   getThumbRenderedAt: vi.fn(),
   markThumbRendered: vi.fn(),
@@ -246,6 +247,83 @@ describe('getProjectThumbnailSvg', () => {
     db.getProjectItemTypes.mockClear();
     await getProjectThumbnailSvg(env, liveDoc({ itemTypes: defaultCatalogue() }));
     expect(db.getProjectItemTypes).not.toHaveBeenCalled();
+  });
+
+  // docs/specs/013-workspace/live-image-share.md "What each tab draws": a Dashboard is its page, each metric drawn
+  // from the cards, never a box labelled Metric; a slot's Board tab draws that tab's board and its cards.
+  it('draws a Dashboard’s metrics from the cards and its tab slots’ boards', async () => {
+    const view = {
+      id: 'v1',
+      type: 'shape',
+      shape: 'plan-view',
+      x: 0,
+      y: 0,
+      width: 300,
+      height: 160,
+      planView: { view: 'metric:count' },
+    };
+    const boardTab = {
+      id: 'bt',
+      name: 'Sprint',
+      kind: 'board',
+      elements: [
+        {
+          id: 'b1',
+          type: 'shape',
+          shape: 'plan-board',
+          x: 0,
+          y: 0,
+          width: 1400,
+          height: 720,
+          planBoard: presetSetup('kanban'),
+        },
+      ],
+    };
+    const status = presetSetup('kanban').columns[0]!.status;
+    const card = (n: number) =>
+      ({
+        id: `i${n}`,
+        type: 'task',
+        key: n,
+        rank: `a${n}`,
+        fields: { title: `Card number ${n}`, status },
+        rev: 1,
+        createdAt: 0,
+        updatedAt: n,
+        createdBy: { id: 'p', name: 'P', color: '#000000' },
+        updatedBy: { id: 'p', name: 'P', color: '#000000' },
+      }) as unknown as Item;
+    const dashboard = {
+      kind: 'dashboard',
+      elements: [view],
+      dashboard: {
+        rows: [
+          {
+            id: 'r1',
+            height: 320,
+            slots: [
+              { id: 's1', span: 4, content: { type: 'element', elementId: 'v1' } },
+              { id: 's2', span: 8, content: { type: 'tab', tabId: 'bt', of: 'board' } },
+            ],
+          },
+        ],
+      },
+    };
+    db.getThumbRenderedAt.mockResolvedValue(null);
+    db.getTabBody.mockResolvedValue({ ...stored(JSON.stringify(dashboard)), id: 'dash' });
+    db.dashboardSourceTabs.mockResolvedValue([boardTab]);
+    db.listItems.mockResolvedValue([card(1), card(2), card(3)]);
+    db.listSheets.mockResolvedValue([]);
+    const env = { SNAPSHOTS: r2() } as unknown as Env;
+
+    const out = (await getProjectThumbnailSvg(env, liveDoc({ itemTypes: defaultCatalogue() })))!;
+    // One query for the tabs it draws from: the slot's tab (and every board, for the status names).
+    expect(db.dashboardSourceTabs).toHaveBeenCalledWith(env, 'd1', ['bt'], 60);
+    // The metric's own picture: its name, its figure and its line.
+    expect(out).toContain('>Item Count<');
+    expect(out).toContain('>Across every board<');
+    expect(out).not.toContain('>Metric<');
+    expect(out).toContain('Card number 2');
   });
 
   it('writes nothing for a count already known, or a body it cannot count', async () => {

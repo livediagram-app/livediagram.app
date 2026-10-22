@@ -9,7 +9,7 @@ import {
   projectRestoredMessage,
 } from '@/lib/project-toast-copy';
 import type { useToast } from '@/hooks/ui/useToast';
-import type { LiveDoc } from '@liveplanner/api-schema';
+import type { Project } from '@liveplanner/api-schema';
 
 /** Which Trash a deleted project went to, as the Trash's own telemetry types it. */
 export type DeletedTrash = 'Personal' | 'Team' | 'Local';
@@ -25,7 +25,7 @@ export function offerDeleteUndo(
     id: string;
     name?: string | null;
     trash: DeletedTrash;
-    onRestored?: (doc: LiveDoc | null) => void;
+    onRestored?: (doc: Project | null) => void;
   },
 ): void {
   const key = `project-deleted:${at.id}`;

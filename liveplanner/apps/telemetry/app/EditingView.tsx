@@ -3,7 +3,6 @@
 import type { TelemetrySummary, TelemetryWindowKey } from '@liveplanner/api-schema';
 import { CardColumns } from './CardColumns';
 import {
-  AI_ASSISTANCE,
   ASSIGNED_ACTIONS,
   DATA_MODELS,
   EDITOR_CHROME,
@@ -58,7 +57,6 @@ export const GROUPS: MetricGroup[] = [
       EDITOR_SEARCH,
       EDITOR_CHROME,
       TRASH,
-      AI_ASSISTANCE,
     ],
   },
 ];

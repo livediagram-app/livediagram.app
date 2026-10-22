@@ -37,7 +37,7 @@ export function selectionReference(input: SelectionReferenceInput): SelectionRef
   const tabRef = model.tabRefOf(tab.id);
   const header =
     `[liveplanner] ${jsonString(projectName)} › tab ${jsonString(tab.name)} ` +
-    `(doc ${projectId}, tab ${tabRef}, rev ${rev})`;
+    `(project ${projectId}, tab ${tabRef}, rev ${rev})`;
   const wanted = new Set(selectedIds);
   // The tab's element order (WB20), so the text never depends on the order of clicks.
   const selected = tab.elements.filter((el) => wanted.has(el.id));

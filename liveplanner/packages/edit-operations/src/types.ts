@@ -4,7 +4,6 @@
 
 import type { EditRejection, EditWarning, JsonValue, ResultLine } from '@liveplanner/api-schema';
 import type { ElementId, ElementOp, Finish, Tab, ThemeDefinition } from '@liveplanner/project';
-import type { PlacementRelation } from './vocabulary';
 import type { DashboardSpec } from '@liveplanner/templates';
 
 // A ref, a quoted label, or `key:value` terms joined by spaces, all of which must match.
@@ -14,98 +13,17 @@ export type Selector = string;
 export type FieldValue = JsonValue;
 export type Fields = Readonly<Record<string, FieldValue>>;
 
-// Where `add` and `move` put an element: beside, after, inside or aligned with a reference, or at a
-// point relative to the content origin.
-// `within` (a frame or lane, from `inside:<frame> right-of:<x>`) says the reference must be inside it; `alignTo`
-// (from `below:<frame> align:<x>`) centres the placed box on x across the side.
-export type Placement =
-  | { rel: PlacementRelation; ref: Selector; gap?: number; within?: Selector; alignTo?: Selector }
-  | { rel: 'at'; x: number; y: number };
-
-// `add` with a whole raw element, as the MCP's `ops` mode sends: taken as given, its geometry kept.
-export type AddElementOperation = { op: 'add'; element: Readonly<Record<string, unknown>> };
-
-// `add <kind> [id=] key=value… [<placement>]`.
-export type AddKindOperation = {
-  op: 'add';
-  kind: string;
-  id?: string;
-  fields?: Fields;
-  place?: Placement;
-};
-
-export type AddOperation = AddElementOperation | AddKindOperation;
+// `add` with a whole element, as the JSON form and the MCP's `ops` mode send it: taken as given, its geometry
+// kept. Only the kinds a Plan tab holds are taken (./plan-elements).
+export type AddOperation = { op: 'add'; element: Readonly<Record<string, unknown>> };
 
 export type SetOperation = { op: 'set'; target: Selector; fields: Fields; all?: true };
 
-export type RmOperation = { op: 'rm'; target: Selector; all?: true; keepArrows?: true };
-
-export type MoveOperation = { op: 'move'; target: Selector; all?: true } & (
-  { place: Placement } | { by: [number, number] }
-);
-
-export type ConnectOperation = {
-  op: 'connect';
-  from: Selector;
-  to: Selector;
-  id?: string;
-  fields?: Fields;
-  again?: true;
-};
-
-// One end, or both at once (a reversal never passes through a self-loop).
-export type RewireOperation = { op: 'rewire'; target: Selector } & (
-  { from: Selector; to?: Selector } | { from?: undefined; to: Selector }
-);
-
-export type InsertOperation = {
-  op: 'insert';
-  kind: string;
-  id?: string;
-  fields?: Fields;
-  between: [Selector, Selector];
-};
-
-// At most one of `absorb` and `makeRoom`.
-export type WrapOperation = {
-  op: 'wrap';
-  targets: Selector[];
-  in: 'frame' | 'lane';
-  id?: string;
-  fields?: Fields;
-  tidy?: true;
-  absorb?: true;
-  makeRoom?: true;
-};
-
-export type UnwrapOperation = { op: 'unwrap'; target: Selector };
-
-export type OrderOperation = { op: 'order'; target: Selector } & (
-  { to: 'front' | 'back' } | { above: Selector } | { below: Selector }
-);
-
-export type LayoutOperation = {
-  op: 'layout';
-  target: Selector;
-  style?: 'flow' | 'tree' | 'mindmap';
-  direction?: 'down' | 'right';
-};
+export type RmOperation = { op: 'rm'; target: Selector; all?: true };
 
 export type TestOperation = { op: 'test'; target: Selector; fields: Fields };
 
-export type EditOperation =
-  | AddOperation
-  | SetOperation
-  | RmOperation
-  | MoveOperation
-  | ConnectOperation
-  | RewireOperation
-  | InsertOperation
-  | WrapOperation
-  | UnwrapOperation
-  | OrderOperation
-  | LayoutOperation
-  | TestOperation;
+export type EditOperation = AddOperation | SetOperation | RmOperation | TestOperation;
 
 export type ParseOutcome = { operations: EditOperation[] } | { errors: EditRejection[] };
 
@@ -141,7 +59,8 @@ export type ReplaceBody =
   | { dashboard: DashboardSpec }
   // A new Form tab's form whole (docs/specs/030-forms/forms.md "Agents"); an existing form changes through its route.
   | { form: unknown }
-  | { elements: unknown[]; layout?: 'auto' | 'preserve' };
+  // A tab's elements, as the tab JSON gives them: kept where they are.
+  | { elements: unknown[] };
 
 export type ApplySuccess = {
   tab: Tab;

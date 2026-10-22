@@ -37,7 +37,7 @@ function linkAttribute(el: Element, tabRefOf: (tabId: string) => string): ViewAt
       }
       case 'project': {
         const projectId = stringField(link, 'projectId');
-        return projectId === null ? null : `doc:${projectId}`;
+        return projectId === null ? null : `project:${projectId}`;
       }
       default:
         return null;

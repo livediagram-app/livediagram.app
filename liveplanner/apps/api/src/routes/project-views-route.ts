@@ -43,7 +43,7 @@ export type ParsedView = { request: ViewRequest; json: boolean };
 
 type Scope = 'tab' | 'project';
 
-const FLAG_PARAMETERS: ReadonlySet<string> = new Set(['json', 'coarse', 'style', 'all']);
+const FLAG_PARAMETERS: ReadonlySet<string> = new Set(['json', 'style', 'all']);
 const QUERY_PARAMETERS: ReadonlySet<string> = new Set(Object.keys(VIEW_QUERY));
 
 function viewsLog(
@@ -137,7 +137,6 @@ export function parseViewQuery(url: URL, scope: Scope): ParsedView | Response | 
     only: query.get(VIEW_QUERY.only) ?? undefined,
     ref: query.get(VIEW_QUERY.ref) ?? undefined,
     q: q ?? undefined,
-    coarse: flag('coarse'),
     style: flag('style'),
     all: flag('all'),
   };
@@ -147,8 +146,6 @@ export function parseViewQuery(url: URL, scope: Scope): ParsedView | Response | 
 const TITLE_CASE: Record<ProjectViewName | TabViewName, string> = {
   overview: 'Overview',
   outline: 'Outline',
-  graph: 'Graph',
-  layout: 'Layout',
   comments: 'Comments',
   show: 'Show',
   find: 'Find',

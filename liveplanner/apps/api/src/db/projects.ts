@@ -36,7 +36,7 @@ type ProjectRow = {
   shareable: number;
   folder_id: string | null;
   team_id: string | null;
-  // Provenance (docs/specs/013-workspace/folders.md): null = user-made; 'ai' / 'mcp' = generated.
+  // Provenance (docs/specs/013-workspace/folders.md): null = user-made; 'mcp' / 'cli' = generated.
   source: string | null;
   // The type catalogue (docs/specs/026-plan/item-types.md), JSON, or null for the default types.
   item_types: string | null;

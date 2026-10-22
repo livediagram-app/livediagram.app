@@ -1,5 +1,4 @@
-// Deterministic auto-layout for AI-generated diagrams (docs/specs/007-editor/ai-assistance.md) and the
-// editor's Auto Layout / "Tidy up" (docs/specs/008-canvas/layout-cleanup.md).
+// Deterministic auto-layout for the editor's Auto Layout / "Tidy up" (docs/specs/008-canvas/layout-cleanup.md).
 //
 // The model is good at deciding WHAT nodes and edges a diagram needs but poor
 // at geometry: it scatters sizes, mis-anchors arrows, and spaces nodes

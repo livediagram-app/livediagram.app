@@ -21,7 +21,6 @@ import { BOARD_WIDGET_INFO } from '@liveplanner/plan-art';
 import { MetricPreview, NotePreview, VisualisationPreview } from './slot-previews';
 import {
   CardPreview,
-  DiagramPreview,
   FormMetricPreview,
   SheetChartPreview,
   SheetMetricPreview,
@@ -89,7 +88,7 @@ export function slotFillSections(
     .filter((s) => s.tiles.length > 0);
   return {
     sections,
-    tooBig: (['board', 'sheet', 'diagram', 'chart'] as const).filter((k) => tooBig.has(k)),
+    tooBig: (['board', 'sheet', 'chart'] as const).filter((k) => tooBig.has(k)),
   };
 }
 
@@ -108,7 +107,6 @@ const TOO_BIG_NAMES: Record<SlotFitKind, string> = {
   chart: 'charts',
   metric: 'metrics',
   note: 'notes',
-  diagram: 'diagrams',
 };
 
 // "Boards, sheets and charts need a bigger slot."
@@ -139,12 +137,10 @@ function TilePicture({
     return <SheetPreview palette={palette} tile={tile} />;
   }
   if (item.kind === 'tab')
-    return item.of === 'board' ? (
-      <BoardPreview preset="kanban" palette={palette} />
-    ) : item.of === 'sheet' ? (
+    return item.of === 'sheet' ? (
       <SheetPreview palette={palette} tile={SHEET_TILES[3] ?? SHEET_TILES[0]!} />
     ) : (
-      <DiagramPreview palette={palette} />
+      <BoardPreview preset="kanban" palette={palette} />
     );
   if (item.kind === 'view' && isPlanViewId(item.view)) {
     if (item.view.startsWith('metric:')) {

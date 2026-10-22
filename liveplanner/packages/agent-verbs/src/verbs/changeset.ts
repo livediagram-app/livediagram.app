@@ -43,7 +43,8 @@ export const changesetLs = defineVerb({
   run: async (ctx, { project: projectRef, tab, limit }) => {
     const project = await projectOf(ctx, projectRef);
     const names = new Map(project.tabs.map((t) => [t.id, t.name]));
-    const tabId = tab === undefined ? undefined : resolveTab(project.tabs, tab, projectRef, ctx.log).id;
+    const tabId =
+      tab === undefined ? undefined : resolveTab(project.tabs, tab, projectRef, ctx.log).id;
     const query = new URLSearchParams({ limit: String(limit), ...(tabId ? { tab: tabId } : {}) });
     const { changesets } = await ctx.api.json<{ changesets: ChangesetSummary[] }>(
       `/projects/${encodeURIComponent(project.id)}/changesets?${query}`,

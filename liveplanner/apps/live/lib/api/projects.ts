@@ -12,7 +12,7 @@ import {
   type SheetCreateRequest,
 } from '@liveplanner/api-schema';
 import type {
-  LiveDoc,
+  Project,
   ProjectListResponse,
   ProjectResponse,
   ProjectSummary,
@@ -75,7 +75,7 @@ export type ProjectListItem = Pick<
 // twice on first paint. With dedup, the second call receives the
 // in-flight promise instead of opening a second request to the
 // same project.
-async function _apiLoadProject(ownerId: string, id: string): Promise<LiveDoc | null> {
+async function _apiLoadProject(ownerId: string, id: string): Promise<Project | null> {
   // Offline Mode (docs/specs/006-project/offline-mode.md): a project registered offline loads from IndexedDB,
   // never the API. Same for the save / delete / list paths below.
   if (await isOfflineId(id)) return offlineLoadProject(id);
@@ -175,7 +175,7 @@ export async function apiCreateProject(
   // Set by the Offline Mode sync path (docs/specs/006-project/offline-mode.md). A sync is a plain POST, so
   // without this the worker records it as a brand-new project being created.
   opts: { conversion?: ProjectConversion } = {},
-): Promise<LiveDoc> {
+): Promise<Project> {
   const res = await apiFetch(`${API_BASE}/projects`, {
     method: 'POST',
     headers: await apiHeaders(ownerId, {
@@ -391,7 +391,7 @@ export async function apiCopyProject(
   ownerId: string,
   sourceId: string,
   opts: { name?: string; shareCode?: string | null } = {},
-): Promise<LiveDoc> {
+): Promise<Project> {
   const res = await apiFetch(`${API_BASE}/projects/${sourceId}/copy`, {
     method: 'POST',
     headers: await apiHeaders(ownerId, { body: true, share: opts.shareCode ?? null }),

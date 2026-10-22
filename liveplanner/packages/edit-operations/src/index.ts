@@ -16,21 +16,19 @@ export { applyReplace } from './replace';
 export { formatResultFooter, formatResultLines } from './format-results';
 export { formatRejections } from './rejections';
 export { EDIT_MAX_ERRORS, EDIT_OPERATION_NAMES, type EditOperationName } from './vocabulary';
+export {
+  PLAN_COMMON_FIELDS,
+  PLAN_ELEMENT_ABOUT,
+  PLAN_ELEMENT_KINDS,
+  PLAN_KIND_FIELDS,
+  isPlanElementKind,
+  planElementIssue,
+  type PlanElementKind,
+} from './plan-elements';
 export type {
-  AddElementOperation,
-  AddKindOperation,
   AddOperation,
-  ConnectOperation,
   Fields,
-  InsertOperation,
-  LayoutOperation,
-  MoveOperation,
-  OrderOperation,
-  Placement,
-  RewireOperation,
   TestOperation,
-  UnwrapOperation,
-  WrapOperation,
   ApplyOptions,
   ApplyOutcome,
   ApplyRejection,

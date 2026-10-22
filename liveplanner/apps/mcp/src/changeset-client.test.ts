@@ -42,121 +42,42 @@ describe('editsBase', () => {
 });
 
 describe('mcpOpsToEditOperations', () => {
-  const ends = (from: string, to: string) => ({
-    from: { kind: 'pinned', elementId: from, anchor: 's' },
-    to: { kind: 'pinned', elementId: to, anchor: 'n' },
-  });
-  const refTab: Tab = {
-    id: 't2',
-    name: 'T',
-    elements: [box('4aeb12f0-aaaa'), box('9c11aa00-bbbb')],
+  const view = {
+    id: 'n',
+    type: 'shape',
+    shape: 'plan-view',
+    x: 0,
+    y: 0,
+    width: 500,
+    height: 360,
+    planView: { view: 'gantt' },
   };
 
-  it('packs a stroke’s new points with its new box, and refuses points it cannot draw', () => {
-    const stroke = {
-      id: 'ring',
-      type: 'freehand',
-      x: 0,
-      y: 0,
-      width: 10,
-      height: 10,
-      closed: true,
-      packedPoints: 'AQA=',
-    } as unknown as Element;
-    const tab: Tab = { id: 't3', name: 'T', elements: [stroke] };
-    const points = [
-      [100, 50],
-      [140, 90],
-      [100, 130],
-    ];
-    const ops = mcpOpsToEditOperations(
-      [{ op: 'update', elementId: 'ring', element: { points, penColour: 'red' } }],
-      tab,
-    ) as { fields: Record<string, unknown> }[];
-    expect(ops[0]!.fields).toMatchObject({
-      x: 100,
-      y: 50,
-      width: 40,
-      height: 80,
-      penColour: 'red',
-    });
-    expect(ops[0]!.fields.points).toBeUndefined();
-    expect(ops[0]!.fields.packedPoints).not.toBe('AQA=');
+  it('refuses an added element no liveplanner tab holds', () => {
     expect(
-      mcpOpsToEditOperations([{ op: 'update', elementId: 'ring', element: { points: [] } }], tab),
-    ).toMatch(/^ops\[1\]: element 1: "points" takes 1 to/);
+      mcpOpsToEditOperations(
+        [{ op: 'add', element: { id: 'a1', type: 'arrow', from: {}, to: {} } }],
+        tab,
+      ),
+    ).toMatch(/^ops\[1\]: element "a1": type "arrow" is not an element a liveplanner tab holds/);
   });
 
-  it('pins an added arrow by the refs read_project prints, and to an element added in the same call', () => {
-    const ops = mcpOpsToEditOperations(
-      [
-        {
-          op: 'add',
-          element: { id: 'new', type: 'shape', shape: 'square', x: 0, y: 0, width: 1, height: 1 },
-        },
-        { op: 'add', element: { id: 'a1', type: 'arrow', ...ends('4aeb', 'new') } },
-      ],
-      refTab,
-    );
-    expect(ops).toEqual([
-      expect.anything(),
-      { op: 'add', element: { id: 'a1', type: 'arrow', ...ends('4aeb12f0-aaaa', 'new') } },
-    ]);
-  });
-
-  it('refuses an arrow end that names nothing rather than storing an arrow to nowhere', () => {
-    const ops = mcpOpsToEditOperations(
-      [{ op: 'add', element: { id: 'a1', type: 'arrow', ...ends('4aeb', 'gone') } }],
-      refTab,
-    );
-    expect(ops).toMatch(/^ops\[1\]: arrow "a1": "to" is pinned to "gone"/);
-  });
-
-  it('resolves refs in an update that re-pins an existing arrow', () => {
-    const withArrow: Tab = {
-      ...refTab,
-      elements: [
-        ...refTab.elements,
-        { id: 'ar', type: 'arrow', ...ends('4aeb12f0-aaaa', '9c11aa00-bbbb') } as Element,
-      ],
-    };
-    const ops = mcpOpsToEditOperations(
-      [
-        {
-          op: 'update',
-          elementId: 'ar',
-          element: { to: { kind: 'pinned', elementId: '4aeb', anchor: 'e' } },
-        },
-      ],
-      withArrow,
-    );
-    expect(ops).toEqual([
-      {
-        op: 'set',
-        target: 'id:"ar"',
-        fields: { to: { kind: 'pinned', elementId: '4aeb12f0-aaaa', anchor: 'e' } },
-      },
-    ]);
-  });
-
-  it('maps add, update and remove onto add, set and rm, dropping an unchanged id or type', () => {
+  it('maps add, update and remove onto add, set and rm, dropping an unchanged id, type or shape', () => {
     expect(
       mcpOpsToEditOperations(
         [
+          { op: 'add', element: view },
           {
-            op: 'add',
-            element: { id: 'n', type: 'shape', shape: 'square', x: 0, y: 0, width: 1, height: 1 },
+            op: 'update',
+            elementId: 'a',
+            element: { id: 'a', type: 'shape', shape: 'square', label: 'Sign in' },
           },
-          { op: 'update', elementId: 'a', element: { id: 'a', type: 'shape', label: 'Sign in' } },
           { op: 'remove', elementId: 'b' },
         ],
         tab,
       ),
     ).toEqual([
-      {
-        op: 'add',
-        element: { id: 'n', type: 'shape', shape: 'square', x: 0, y: 0, width: 1, height: 1 },
-      },
+      { op: 'add', element: view },
       { op: 'set', target: 'id:"a"', fields: { label: 'Sign in' } },
       { op: 'rm', target: 'id:"b"' },
     ]);
@@ -213,16 +134,13 @@ describe('baseFor', () => {
 });
 
 describe('replaceBodyFrom', () => {
-  it('takes one source with its layout, theme and name', () => {
+  it('takes one source with its theme and name', () => {
     expect(replaceBodyFrom({ template: 'kanban', theme: 'ocean', name: 'Board' })).toEqual({
       template: 'kanban',
       theme: 'ocean',
       name: 'Board',
     });
-    expect(replaceBodyFrom({ elements: [], layout: 'auto' })).toEqual({
-      elements: [],
-      layout: 'auto',
-    });
+    expect(replaceBodyFrom({ elements: [] })).toEqual({ elements: [] });
   });
 });
 

@@ -187,7 +187,7 @@ erases anything:
 - It takes an optional `rev`, the revision `read_project` returned; the fingerprints come from the tool's own read
   at call time. A person's change between `read_project` and the call is overwritten only on the fields the ops
   set.
-- `remove` is the edit operation `rm`: arrows pinned to the element go with it and are listed.
+- `remove` is the edit operation `rm`.
 - Coercing shapes is the engine's, for every front door.
 - `rename_project` with a tab renames through the tab name route.
 

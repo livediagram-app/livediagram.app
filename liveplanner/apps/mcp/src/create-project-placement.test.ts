@@ -68,16 +68,16 @@ describe('create_project markUsed', () => {
 });
 
 describe('create_project intent', () => {
-  it('sends a Plan intent for elements', async () => {
+  it('sends an empty-tab intent for elements', async () => {
     const { run, posted } = harness(undefined);
     await run([elements]);
-    expect(posted[0]!.intent).toEqual({ mode: 'plan', tabKind: 'diagram' });
+    expect(posted[0]!.intent).toEqual({ mode: 'plan', tabKind: 'empty' });
   });
 
   it.each([
-    ['team-retro', { mode: 'plan', tabKind: 'diagram', templateFamily: 'retrospective' }],
-    ['kanban', { mode: 'plan', tabKind: 'diagram', templateFamily: 'kanban' }],
-    ['blank-spreadsheet', { mode: 'plan', tabKind: 'diagram' }],
+    ['team-retro', { mode: 'plan', tabKind: 'board', templateFamily: 'retrospective' }],
+    ['kanban', { mode: 'plan', tabKind: 'board', templateFamily: 'kanban' }],
+    ['blank-spreadsheet', { mode: 'plan', tabKind: 'sheet' }],
   ])('sends the intent of a %s template tab', async (template, intent) => {
     const { run, posted } = harness(undefined);
     await run([{ name: 'Tab', template }]);
@@ -115,7 +115,7 @@ describe('create_project intent', () => {
   it('reads the intent from the first tab only', async () => {
     const { run, posted } = harness(undefined);
     await run([elements, { name: 'Board', template: 'kanban' }]);
-    expect(posted[0]!.intent).toEqual({ mode: 'plan', tabKind: 'diagram' });
+    expect(posted[0]!.intent).toEqual({ mode: 'plan', tabKind: 'empty' });
   });
 });
 

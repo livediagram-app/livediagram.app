@@ -42,7 +42,6 @@ import { deleteOldProjectOpens } from './db/project-opens';
 import { clientIp, clientNetwork, clientRateKey } from './client-ip';
 import { MAX_BODY_BYTES } from './limits';
 import { handleAccount } from './routes/account';
-import { handleAi } from './routes/ai';
 import { handleCatalogues } from './routes/catalogues';
 import { handleCapabilities } from './routes/capabilities';
 import { handleOpenapi } from './routes/openapi';
@@ -405,10 +404,6 @@ async function routeApiRequest(
         return handleOpenapi(ctx);
       case 'unfurl':
         return await handleUnfurl(ctx);
-      case 'ai':
-        // The assistant (docs/specs/007-editor/ai-assistance.md) at /api/ai.
-        if (segments[2] === undefined) return await handleAi(ctx);
-        return notFound();
       case 'events':
         return await handleEvents(ctx);
       case 'telemetry':

@@ -75,28 +75,20 @@ describe('changeset apply', () => {
 describe('the element verbs', () => {
   it('send their words as one operation line', async () => {
     const { requests, api } = recording();
-    const connect = elementVerbs.find((v) => v.id === 'element.connect')!;
-    await connect.run!(
+    const set = elementVerbs.find((v) => v.id === 'element.set')!;
+    await set.run!(
       contextOf(api),
-      connect.input.parse({
+      set.input.parse({
         project: 'Auth flow',
-        words: ['n1', 'n2', 'label=calls it'],
+        words: ['n1', 'label=Team load'],
         dryRun: false,
       }),
     );
-    expect(requests).toEqual([{ operations: 'connect n1 -> n2 label="calls it"' }]);
+    expect(requests).toEqual([{ operations: 'set n1 label="Team load"' }]);
   });
 
-  it('are seven, rm destructive, and every example parses', () => {
-    expect(elementVerbs.map((v) => v.id)).toEqual([
-      'element.add',
-      'element.set',
-      'element.rm',
-      'element.move',
-      'element.connect',
-      'element.insert',
-      'element.wrap',
-    ]);
+  it('are set and rm, rm destructive, and every example parses', () => {
+    expect(elementVerbs.map((v) => v.id)).toEqual(['element.set', 'element.rm']);
     expect(elementVerbs.filter((v) => v.behaviour === 'destructive').map((v) => v.id)).toEqual([
       'element.rm',
     ]);

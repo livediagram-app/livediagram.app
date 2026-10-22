@@ -5,13 +5,13 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Finding Tabs and Cards',
   description:
-    'Inside a project, search jumps to any of its tabs by name, and Find in the bottom-right corner finds any card on its boards.',
+    'Inside a project, search jumps to any of its tabs and boards by name, and finds any card by its number or title, opening it on its board.',
   path: '/help/search-panel/the-search-panel/search-tabs-and-elements/',
 });
 
 <ArticleLayout
   title="Finding Tabs and Cards"
-  description="The in-project scope of search: jump to any tab by name, and use Find when you are looking for a card."
+  description="The in-project scope of search: jump to any tab or board by name, and open any card by its number or title."
   categoryTitle="Search Panel"
   categorySlug="search-panel"
   parentArticle={{ title: 'The Search Panel', slug: 'the-search-panel' }}
@@ -20,7 +20,7 @@ export const metadata = helpMetadata({
   )}
 >
 
-When you open the [search panel](/help/search-panel/the-search-panel/) from inside a project, its scope grows to include that project's [tabs](/help/tabs/using-tabs/). That turns search into a quick way around the project you're in, not just a way to open a different one. It works on view-only links too, since it only moves you around.
+When you open the [search panel](/help/search-panel/the-search-panel/) from inside a project, its scope grows to include that project's [tabs](/help/tabs/using-tabs/), its boards and its cards. That turns search into a quick way around the project you're in, not just a way to open a different one. It works on view-only links too, since it only moves you around.
 
 ## Tabs
 
@@ -28,15 +28,22 @@ The **Tabs** group matches the project's tabs by name, whether each holds a Boar
 
 With an empty box the panel lists every tab in the project, so you can open it and arrow straight down to one. The Tabs group shows up to 8 matches; type more of a name to narrow a long list.
 
+## Boards
+
+The **Boards** group matches the titles of the project's boards, each marked with the tab it is on, so a board titled "Release Train" on the Sprint tab is one search away. Picking one switches to its tab. A board titled the same as its tab shows only under Tabs.
+
 ## Cards
 
-Search doesn't look inside boards, so a card's title won't come up there. To find a card, use **Find** in the bottom-right corner (shown on a tab with a board on it): it lists every card in the project that isn't archived or in the Trash, matches what you type against a card's number (`12` or `#12`), title, description or card type, and opens the one you pick. See [Items](/help/plan/items/) for how cards are stored and found, and [Cards](/help/plan/cards/) for working with them.
+The **Cards** group finds the project's cards that aren't archived or in the Trash. Type a card's number (`12` or `#12`) to go straight to it, or words from its title or description. The card whose number you typed comes first, then cards whose title matches, then those that match only in their description, the most recently changed first. Each shows its number, its title and the tab of the board it sits on.
 
-To narrow what one board shows rather than find a single card, use **Filter cards** in the board's header. See [Boards](/help/plan/boards/).
+Picking a card opens it in the card panel, on that tab: search switches to the tab first if you are elsewhere. A card that no board shows (its status has no column anywhere) opens where you are. The group shows up to 8 cards; type more of a title, or the number, to reach the one you want.
+
+To browse every card, or to narrow them by type or field, use **Find** in the bottom-right corner (shown on a tab with a board on it). See [Items](/help/plan/items/) for how cards are stored and found, and [Cards](/help/plan/cards/) for working with them. To narrow what one board shows, use **Filter cards** in the board's header. See [Boards](/help/plan/boards/).
 
 ## What it does not search
 
-- **Cards, a sheet's cells, a dashboard's contents and a form's questions:** use Find for cards, and a sheet's own find (`⌘F`) for its cells. See [Sheets](/help/plan/sheets/).
+- **A board's column names, a sheet's cells, a dashboard's contents and a form's questions:** use a sheet's own find (`⌘F`) for its cells. See [Sheets](/help/plan/sheets/).
+- **Archived cards and cards in the Trash:** see [Items](/help/plan/items/).
 - **Comments** and the names of people in the project.
 - **Other projects' contents:** from anywhere, other projects are found by name only.
 

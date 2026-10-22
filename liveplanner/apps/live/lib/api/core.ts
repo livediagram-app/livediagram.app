@@ -6,7 +6,7 @@
 import type {
   ApiToken,
   CustomTheme,
-  LiveDoc,
+  Project,
   Folder,
   ShareLink,
   ShareRole,
@@ -175,7 +175,7 @@ export type ParticipantResponse = {
 // password was submitted (vs none yet), so the gate can show an error.
 export type SharedProjectResolution =
   // `tabId`: the tab a tab-scoped link opens (docs/specs/013-workspace/tab-scoped-share-links.md); null = All tabs.
-  | { project: LiveDoc; role: ShareRole; tabId: string | null }
+  | { project: Project; role: ShareRole; tabId: string | null }
   | { passwordRequired: true; invalid: boolean };
 
 // Hybrid identity (docs/specs/014-identity/auth-and-guest-access.md, docs/specs/015-api/api.md). When a token provider has been

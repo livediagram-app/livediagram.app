@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { LiveDoc } from '@liveplanner/api-schema';
+import type { Project } from '@liveplanner/api-schema';
 
 const apiLoadTab = vi.fn<typeof import('@/lib/api-client').apiLoadTabRevisioned>();
 vi.mock('@/lib/api-client', () => ({
@@ -30,7 +30,7 @@ const fetched = {
   opensIn: null,
   tabKind: null,
   templateFamily: null,
-} satisfies LiveDoc;
+} satisfies Project;
 
 function seed(recordOpen: boolean, noteChangesetSeen = vi.fn()) {
   const noop = vi.fn();

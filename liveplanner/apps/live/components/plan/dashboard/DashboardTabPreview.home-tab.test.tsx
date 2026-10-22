@@ -43,8 +43,8 @@ describe('a Sheet tab shown in a slot', () => {
   });
 });
 
-// A Board tab's content arriving after the slot first drew (a dashboard opened afresh: the tab reads as a Diagram
-// until its content and kind arrive) still draws the board.
+// A Board tab's content arriving after the slot first drew (a dashboard opened afresh: the tab has no kind
+// until its content arrives) still draws the board.
 describe('a Board tab whose content arrives after the slot drew', () => {
   it('draws the board once it is there', () => {
     const value = (tab: Tab) =>

@@ -146,9 +146,9 @@ describe('comment add, reply, resolve, reopen', () => {
 
   it('replies to, resolves and reopens a thread through its last comment', async () => {
     const { seen, ctx } = setUp();
-    expect((await commentReply.run!(ctx, { project: DOC_A, ref: 'api-gw', text: 'Yes' })).text).toBe(
-      '+ comment c9 on api-gw',
-    );
+    expect(
+      (await commentReply.run!(ctx, { project: DOC_A, ref: 'api-gw', text: 'Yes' })).text,
+    ).toBe('+ comment c9 on api-gw');
     expect(
       commentResolve.text!(await commentResolve.run!(ctx, { project: DOC_A, ref: 'api-gw' })),
     ).toEqual(['~ thread api-gw resolved']);
@@ -169,11 +169,9 @@ describe('comment add, reply, resolve, reopen', () => {
         () => null,
         (e: unknown) => (e instanceof VerbRefusal ? [e.status, e.code, e.message] : e),
       );
-    expect(await refusal(commentAdd.run!(ctx, { project: DOC_A, ref: 'nope', text: 'x' }))).toEqual([
-      404,
-      'ref_not_found',
-      'no element nope on tab "Overview"',
-    ]);
+    expect(await refusal(commentAdd.run!(ctx, { project: DOC_A, ref: 'nope', text: 'x' }))).toEqual(
+      [404, 'ref_not_found', 'no element nope on tab "Overview"'],
+    );
     await expect(
       commentAdd.run!(ctx, { project: DOC_A, ref: 'webb', text: 'x' }),
     ).rejects.toMatchObject({
@@ -184,11 +182,9 @@ describe('comment add, reply, resolve, reopen', () => {
       'ref_ambiguous',
       'api names 2 elements on tab "Overview"',
     ]);
-    expect(await refusal(commentReply.run!(ctx, { project: DOC_A, ref: 'web', text: 'x' }))).toEqual([
-      404,
-      'no_thread',
-      'no thread on web',
-    ]);
+    expect(
+      await refusal(commentReply.run!(ctx, { project: DOC_A, ref: 'web', text: 'x' })),
+    ).toEqual([404, 'no_thread', 'no thread on web']);
   });
 
   it('surfaces the api’s refusal of a thread state change', async () => {

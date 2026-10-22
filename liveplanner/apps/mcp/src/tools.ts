@@ -1,5 +1,5 @@
 // The MCP tools (docs/specs/015-api/mcp-server.md §4). Each is a thin wrapper over the api worker
-// plus the shared project helpers (validate / auto-layout / renderElementsToSvg)
+// plus the shared project helpers (validate / build / renderElementsToSvg)
 // — no business logic the editor doesn't already own. The calling LLM produces
 // the elements; these tools validate, lay out, persist, and render. The
 // shared result / auth / tab-building plumbing lives in tool-helpers.ts.
@@ -34,7 +34,7 @@ import {
   DEFAULT_MCP_SHARE_LEVEL,
   TRASH_RETENTION_DAYS,
   creationIntentOf,
-  type LiveDoc,
+  type Project,
   type TrashedProject,
 } from '@liveplanner/api-schema';
 import { createdFolderLabel } from './created-folder';
@@ -60,9 +60,7 @@ import {
   textResult,
   type Extra,
 } from './tool-helpers';
-import { idsOf, resolveArrowEnds } from './arrow-ends';
 import { elementsIssue } from './element-values';
-import { packFreehandPoints } from './freehand-points';
 import { imageResult } from './image-result';
 import {
   baseFor,
@@ -195,26 +193,21 @@ export function registerTools(server: McpServer, env: Env): void {
         });
         continue;
       }
-      const drawn = packFreehandPoints(t.elements ?? []);
-      if ('error' in drawn) return errorResult(`Tab "${t.name}": ${drawn.error}`);
-      const valueIssue = elementsIssue(drawn.elements);
+      const valueIssue = elementsIssue(t.elements ?? []);
       if (valueIssue) return errorResult(`Tab "${t.name}": ${valueIssue}`);
-      const ended = resolveArrowEnds(drawn.elements, idsOf(drawn.elements));
-      if ('error' in ended) return errorResult(`Tab "${t.name}": ${ended.error}`);
       const candidate: unknown = {
         id: tabId,
         name: t.name,
-        elements: normaliseElements(ended.elements),
+        elements: normaliseElements(t.elements ?? []),
       };
       if (!t.elements || !isValidTab(candidate)) {
         return errorResult(
           `Invalid elements in tab "${t.name}". Provide "elements" (or a "template" kind ` +
             'from list_templates). Check the liveplanner://schema/elements resource: every ' +
-            'element needs id/type/x/y/width/height (arrows need from/to), and arrays must ' +
-            'be well-formed.',
+            'element needs id/type/shape/x/y/width/height, and arrays must be well-formed.',
         );
       }
-      tabs.push(buildTab(tabId, t.name, candidate.elements, args.layout, t.theme ?? args.theme));
+      tabs.push(buildTab(tabId, t.name, candidate.elements, 'preserve', t.theme ?? args.theme));
     }
     // Each Dashboard, showing the call's other tabs by name, in its place among them.
     if (dashboards.length) {
@@ -235,7 +228,7 @@ export function registerTools(server: McpServer, env: Env): void {
     // server files the project in the user's default folder for it, when they have one.
     const intent = creationIntentOf(tabs[0], templateFamilyOf(firstTemplate));
     const itemTypes = catalogueWithBoardTypes(null, templateElements);
-    const { project: created } = await apiJson<{ project?: LiveDoc }>(env, token, '/projects', {
+    const { project: created } = await apiJson<{ project?: Project }>(env, token, '/projects', {
       method: 'POST',
       // markUsed only when the model gave one: absent, the making counts (the api's default).
       body: JSON.stringify({
@@ -290,13 +283,8 @@ export function registerTools(server: McpServer, env: Env): void {
           'from list_templates. Check the liveplanner://schema/elements resource.',
       );
     }
-    const drawn = args.elements ? packFreehandPoints(args.elements) : null;
-    if (drawn && 'error' in drawn) return errorResult(drawn.error);
-    const given = drawn?.elements;
-    const valueIssue = given ? elementsIssue(given) : null;
+    const valueIssue = args.elements ? elementsIssue(args.elements) : null;
     if (valueIssue) return errorResult(valueIssue);
-    const ended = given ? resolveArrowEnds(given, idsOf(given)) : null;
-    if (ended && 'error' in ended) return errorResult(ended.error);
     // Default the new tab's theme to the project's existing one so it matches the other tabs
     // rather than landing as a clashing brand-white tab; the model can still pass a theme.
     let themeId = args.theme;
@@ -315,8 +303,7 @@ export function registerTools(server: McpServer, env: Env): void {
         replace: replaceBodyFrom({
           ...(args.template ? { template: args.template } : {}),
           ...(dashboard ? { dashboard } : {}),
-          ...(ended ? { elements: ended.elements } : {}),
-          ...(args.layout ? { layout: args.layout } : {}),
+          ...(args.elements ? { elements: args.elements } : {}),
           ...(themeId ? { theme: themeId } : {}),
           ...(args.finish ? { finish: args.finish } : {}),
           name: args.name,
@@ -375,20 +362,9 @@ export function registerTools(server: McpServer, env: Env): void {
       } else if (!args.elements) {
         return errorResult('replace mode requires "elements" or "dashboard".');
       } else {
-        const drawn = args.elements ? packFreehandPoints(args.elements) : null;
-        if (drawn && 'error' in drawn) return errorResult(drawn.error);
-        const given = drawn?.elements;
-        const valueIssue = given ? elementsIssue(given) : null;
+        const valueIssue = elementsIssue(args.elements);
         if (valueIssue) return errorResult(valueIssue);
-        // The new elements are the whole tab, so an arrow end may name only them.
-        const ended = given ? resolveArrowEnds(given, idsOf(given)) : null;
-        if (ended && 'error' in ended) return errorResult(ended.error);
-        body = {
-          replace: replaceBodyFrom({
-            ...(ended ? { elements: ended.elements } : {}),
-            ...(args.layout ? { layout: args.layout } : {}),
-          }),
-        };
+        body = { replace: replaceBodyFrom({ elements: args.elements }) };
       }
     } else if (args.edits !== undefined) {
       if (args.ops) return errorResult('ops mode takes "ops" or "edits", not both.');

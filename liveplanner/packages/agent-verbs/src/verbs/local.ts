@@ -356,4 +356,3 @@ export const tabRender = defineVerb({
     prints: '<path>  <width>×<height> · <n> KB',
   },
 });
-

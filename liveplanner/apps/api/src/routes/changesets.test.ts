@@ -15,12 +15,13 @@ const OWNER = 'user_owner';
 const box = (id: string, label = id, x = 0): Element => ({
   id,
   type: 'shape',
-  shape: 'square',
+  shape: 'plan-view',
   x,
   y: 0,
   width: 120,
   height: 60,
   label,
+  planView: { view: 'gantt' },
 });
 
 type Selection = { elementIds: string[]; name: string; color: string; mine: boolean };
@@ -262,18 +263,13 @@ describe('submitting a changeset', () => {
   it('applies the line form, answering the result lines', async () => {
     quiet();
     const { db } = await setUp();
-    const res = await submit(db, { operations: 'set a fill=green\nconnect a -> b label=next' });
+    const res = await submit(db, { operations: 'set a textSize=lg\nrm b' });
     expect(res.status).toBe(200);
     const body = (await res.json()) as { text: string };
     expect(body.text.split('\n').at(-1)).toMatch(/^rev 1→2 · cs_\w+ · revert: /);
-    expect(body.text.split('\n').slice(0, 2)).toEqual([
-      '~ a  fill →green · textSize →md',
-      '+ next  a→b "next"',
-    ]);
-    expect(stored(db).find((e) => e.id === 'next')).toMatchObject({
-      type: 'arrow',
-      label: 'next',
-    });
+    expect(body.text.split('\n').slice(0, 2)).toEqual(['~ a  textSize →lg', '- b  plan-view "b"']);
+    expect(stored(db).find((e) => e.id === 'a')).toMatchObject({ textSize: 'lg' });
+    expect(stored(db).find((e) => e.id === 'b')).toBeUndefined();
   });
 
   it('answers a dry run with the plan only', async () => {
