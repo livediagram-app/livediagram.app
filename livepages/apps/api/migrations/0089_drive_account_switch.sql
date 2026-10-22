@@ -1,4 +1,4 @@
--- docs/specs/022-drive-mirror/drive-mirror.md "Reconnecting with another Google account": a consent by a
+-- Google Drive mirror "Reconnecting with another Google account": a consent by a
 -- different Google account than google_account_id waits here for the owner to confirm or cancel the
 -- switch. The sealed refresh token is sealed exactly as refresh_token_enc; the expiry is epoch ms
 -- (DRIVE_ACCOUNT_SWITCH_TTL_MS after the consent). All three are NULL when no switch is pending.

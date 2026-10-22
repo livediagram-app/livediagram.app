@@ -7,7 +7,6 @@ import { TimingTelemetryBoot } from '@/components/providers/TimingTelemetryBoot'
 import { StaleBuildBoot } from '@/components/providers/StaleBuildBoot';
 import { KeyboardAvoidanceBoot } from '@/components/providers/KeyboardAvoidanceBoot';
 import { ConfirmProvider } from '@/hooks/ui/useConfirm';
-import { DriveMirrorProvider } from '@/components/drive/DriveMirrorProvider';
 import { ToastProvider } from '@/hooks/ui/useToast';
 import { googleFontsHref } from '@livepages/document';
 import { BRAND_OG_IMAGE, BRAND_TWITTER_IMAGE } from '@livepages/ui/seo';
@@ -37,13 +36,12 @@ import './globals.css';
 // `noindex, nofollow` at the root layout cascades through every
 // nested page in the static export. See docs/specs/007-editor/live-app.md "SEO and indexing".
 // Trusted Types before anything else (docs/specs/016-platform/trusted-types.md): the default policy and the
-// violation log, this app's own scripts under its asset prefix, the Clerk origin read from this build's key, and
-// Google's script origins where this build offers the Drive mirror (Next inlines only the literal expression).
+// violation log, this app's own scripts under its asset prefix, and the Clerk origin read from this build's key
+// (Next inlines only the literal expression).
 const TRUSTED_TYPES_BOOT = trustedTypesBootScript(
   '/live',
   trustedScriptOrigins({
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
-    NEXT_PUBLIC_GOOGLE_CLIENT_ID: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
   }),
 );
 
@@ -168,11 +166,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <KeyboardAvoidanceBoot />
         <ClerkProvider>
           <ToastProvider>
-            <ConfirmProvider>
-              {/* The Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md): runs in one
-                  tab per browser, signed in, on a deployment that offers it. */}
-              <DriveMirrorProvider>{children}</DriveMirrorProvider>
-            </ConfirmProvider>
+            <ConfirmProvider>{children}</ConfirmProvider>
           </ToastProvider>
         </ClerkProvider>
       </body>

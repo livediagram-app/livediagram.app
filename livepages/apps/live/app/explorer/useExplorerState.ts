@@ -24,7 +24,6 @@ import { useCachedPreferences } from '@/hooks/persistence/useEditorPreferences';
 import { trackDailyReturn } from '@/lib/daily-return';
 import { useFavourites } from '@/hooks/persistence/useFavourites';
 import { useFolders } from '@/hooks/persistence/useFolders';
-import { useAfterDriveChange } from '@/hooks/persistence/useAfterDriveChange';
 import { useTeamLibrariesSweep } from '@/hooks/persistence/useTeamLibrariesSweep';
 import { useTeams } from '@/hooks/persistence/useTeams';
 import { useTokens } from '@/hooks/persistence/useTokens';
@@ -168,7 +167,7 @@ export function useExplorerState() {
   // Category to open on, for the `?settings=` deep link. Distinct from
   // `settingsFocus`, which additionally rings one row.
   const [settingsCategory, setSettingsCategory] = useState<string | null>(null);
-  // Section of it, for `&section=<id>` (the Drive connect flow returns to Cloud Sync).
+  // Section of it, for `&section=<id>`.
   const [settingsSection, setSettingsSection] = useState<string | null>(null);
   // Open Settings on a category in place: the account menu, and any link
   // that names one (a timeline token card, lib/open-settings.ts).
@@ -304,12 +303,6 @@ export function useExplorerState() {
     if (loadOwner) void load(loadOwner);
     refreshTeamLibraries();
   });
-  // A change made in Google Drive reaches this page without a reload
-  // (docs/specs/022-drive-mirror/drive-mirror.md, "Other views follow"). Quietly:
-  // no skeleton, the lists just settle.
-  useAfterDriveChange(() => {
-    if (loadOwner) void load(loadOwner);
-  }, !!loadOwner);
 
   // ---- Derived tree shape ---------------------------------------
   // Index folders by parentId so the recursive renderer can walk

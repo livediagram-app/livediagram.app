@@ -1,8 +1,8 @@
 'use client';
 
 // Test builds only (NEXT_PUBLIC_E2E_AUTH=1, see lib/clerk-config.ts): a
-// signed-in session without Clerk, for the opt-in Google Drive e2e
-// (docs/specs/022-drive-mirror/blueprints/drive-mirror.md, "Testing"). The test
+// signed-in session without Clerk, for the opt-in workbench e2e
+// (docs/specs/013-workspace/blueprints/workbench-embeds.md "Testing"). The test
 // mints a JWT against a JWKS it serves itself, which the api worker verifies
 // exactly as it verifies Clerk's, and puts it in localStorage; this publishes
 // it as the session. Without one the page is a settled guest.

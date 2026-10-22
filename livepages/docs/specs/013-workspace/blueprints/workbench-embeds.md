@@ -126,7 +126,7 @@ It provides these names to sibling blueprints ([CLI](../../015-api/blueprints/cl
 | `docs/specs/015-api/cli.md`                                                                                                                                                  | The two command rows, the guide topic and the skill's pointer                                                                                                                                                             |
 | `apps/telemetry/app/cli-commands.ts`                                                                                                                                         | Rows `WorkbenchOpen`, `WorkbenchPair`                                                                                                                                                                                     |
 | `apps/telemetry/app/catalogue/collaboration.ts`, `connections.ts`, `event-explanations.ts`                                                                                   | `WORKBENCH_SESSIONS` (`Session·Opened·Workbench`), `WORKBENCHES_PAIRED` (`Token·Linked·Workbench`) in API Token Activity                                                                                                  |
-| `apps/live/e2e/workbench-embed.spec.ts`, `apps/live/e2e/workbench-support.ts`, `apps/live/e2e/fixtures/fake-workbench.html`, `playwright.config.ts`, `scripts/e2e-stack.mjs` | Project `workbench` (dark), opt-in `E2E_WORKBENCH=1` like `E2E_DRIVE`                                                                                                                                                     |
+| `apps/live/e2e/workbench-embed.spec.ts`, `apps/live/e2e/workbench-support.ts`, `apps/live/e2e/fixtures/fake-workbench.html`, `playwright.config.ts`, `scripts/e2e-stack.mjs` | Project `workbench` (dark), opt-in `E2E_WORKBENCH=1`                                                                                                                                                                      |
 | `docs/specs/015-api/api.md`                                                                                                                                                  | Segment row `workbench`; four Owner-keyed data rows; rate-limiting row; Auth's third bearer                                                                                                                               |
 | `docs/specs/017-telemetry/telemetry.md`                                                                                                                                      | The three types                                                                                                                                                                                                           |
 | `docs/operations/self-hosting.md`, `docs/development/local-development.md`, `README.md`                                                                                      | `APP_BASE_URL` builds workbench and pairing URLs; the rate-limiter binding; the e2e flag                                                                                                                                  |
@@ -349,7 +349,7 @@ ON t.id = s.token_id WHERE s.secret_hash = ?`. No row → `unknown`; token revok
 Everything else is `confined`, among it: `documents/:doc` `DELETE`, `copy`, `folder`, `shared-tabs`, `share*`,
 `thumbnail`, `tabs/:tabId/link`, `tabs/:tabId/presence` (an agent's door), `documents` (the library),
 `folders`, `shared`, `favourites`, `home`, `timeline`, `activity`, `trash`, `placement-defaults`, `tokens`, `teams`,
-`account`, `migrate`, `guest-id`, `ai`, `drive`, `oauth`, every write to `preferences`, `participants`,
+`account`, `migrate`, `guest-id`, `ai`, `oauth`, every write to `preferences`, `participants`,
 `custom-themes`, `images/:id` `DELETE`, `images/usage`, `GET images`, and every
 `workbench/*` route but the one above. `/ws` carries no bearer and is decided by its ticket. `events`, `unfurl` and
 `share/:code` are called without credentials by the editor and never see `lvw_`.
@@ -464,7 +464,7 @@ The Surface table, every gate `workbenchMode` touches (`appChrome` is `surface =
 | TabBar "copy to another document"                                                                                                           | `EditorView.tsx` `otherDocuments`                            | `[]`                                                      |
 | Image picker gallery                                                                                                                        | `ImagePicker.tsx`, `useEditorImages`                         | Upload only; `apiListImages` never called                 |
 | Custom theme writes (theme builder save and delete)                                                                                         | their hosts                                                  | Absent; reads stay                                        |
-| `useDriveFollow`, `useFolders`, `useFavourites`, `useTeams`, `useTeamPeople`, `useTeamLibrariesSweep`, `useShareLinks`, `usePublishPicture` | `useEditorState.ts`                                          | `enabled: false`                                          |
+| `useFolders`, `useFavourites`, `useTeams`, `useTeamPeople`, `useTeamLibrariesSweep`, `useShareLinks`, `usePublishPicture` | `useEditorState.ts`                                          | `enabled: false`                                          |
 | `useCommentMentions`, `useAssigneeOptions`                                                                                                  | `hooks/collab`                                               | Candidates from presence only; no team read, no notify    |
 | Identity screen                                                                                                                             | `useEditorState.ts` `joinScreenOpen`                         | Never                                                     |
 | `defaultPan`, `useModeDefaultTool` embed arguments                                                                                          | `useEditorState.ts`                                          | As the app (`false`)                                      |
@@ -624,7 +624,7 @@ is a person's editor and every route re-gates it with the owner's identity at th
 | DELETE                 | `workbench/sessions/current`                                                                                                        |
 
 Everything else is `confined`, among it (Never the account): `account`, `migrate`, `guest-id`, `tokens/**`,
-`workbench/**` but the one above, every write to `participants` and `preferences`, `ai/**`, `oauth/**`, `drive/**`,
+`workbench/**` but the one above, every write to `participants` and `preferences`, `ai/**`, `oauth/**`,
 `teams` writes and `teams/invites`, `teams/invite-link/**`, `teams/invite-decline/**`, `teams/:p/invite-link`
 (team administration), `documents/:p/tabs/:p/presence` (an agent's door), `forms/**` and `telemetry/**`.
 `events` and `unfurl` are called without credentials and never see `lvw_`.
@@ -718,18 +718,18 @@ Explorer view, the same control at the right end of the Explorer's bottom bar li
 
 `useExplorerSurface()` reads `useWorkbenchSession()?.scope === 'workspace'`. The Surface table, Explorer side:
 
-| Gate                                                                      | File                                    | In a workbench                                              |
-| ------------------------------------------------------------------------- | --------------------------------------- | ----------------------------------------------------------- |
-| App header (brand, product nav, `AuthControls`)                           | `ExplorerShell.tsx`                     | Not rendered; the lens field in a slim bar instead (WB61)   |
-| Home hero                                                                 | `ExplorerShell.tsx`                     | Rendered as in the app                                      |
-| Bottom bar: Settings, Appearance                                          | `ExplorerShell.tsx`, `ChromeControls`   | Absent; Search stays; Open in livepages at the right end  |
-| Settings dialog, `?settings=` links, `useOpenSettingsRequests`            | `useExplorerState.ts`, `ExplorerShell`  | Never opens                                                 |
-| Search panel's settings rows                                              | `ExplorerShell.tsx`                     | `[]`                                                        |
-| Sign-in banner, `LocalMovePrompt`                                         | `ExplorerShell.tsx`                     | Not rendered                                                |
-| `useTokens`, `usePublishPicture`, `useDriveFollow`, `useAfterDriveChange` | `useExplorerState.ts`                   | `enabled: false`                                            |
-| Teams administration: New team, the Invites row and view, team settings   | `sidebar/*`, `TeamLibraryHeader`, views | Absent (WB62)                                               |
-| Timeline token cards' Revoke, Drive cards                                 | `timeline/*`                            | Absent                                                      |
-| Every `window.location.assign`, `<a href>`, `router.push`/`replace`       | the Explorer                            | Through `assignAppLocation` / `useAppNavigation`: the frame |
+| Gate                                                                    | File                                    | In a workbench                                              |
+| ----------------------------------------------------------------------- | --------------------------------------- | ----------------------------------------------------------- |
+| App header (brand, product nav, `AuthControls`)                         | `ExplorerShell.tsx`                     | Not rendered; the lens field in a slim bar instead (WB61)   |
+| Home hero                                                               | `ExplorerShell.tsx`                     | Rendered as in the app                                      |
+| Bottom bar: Settings, Appearance                                        | `ExplorerShell.tsx`, `ChromeControls`   | Absent; Search stays; Open in livepages at the right end  |
+| Settings dialog, `?settings=` links, `useOpenSettingsRequests`          | `useExplorerState.ts`, `ExplorerShell`  | Never opens                                                 |
+| Search panel's settings rows                                            | `ExplorerShell.tsx`                     | `[]`                                                        |
+| Sign-in banner, `LocalMovePrompt`                                       | `ExplorerShell.tsx`                     | Not rendered                                                |
+| `useTokens`, `usePublishPicture`                                        | `useExplorerState.ts`                   | `enabled: false`                                            |
+| Teams administration: New team, the Invites row and view, team settings | `sidebar/*`, `TeamLibraryHeader`, views | Absent (WB62)                                               |
+| Timeline token cards' Revoke                                            | `timeline/*`                            | Absent                                                      |
+| Every `window.location.assign`, `<a href>`, `router.push`/`replace`     | the Explorer                            | Through `assignAppLocation` / `useAppNavigation`: the frame |
 
 #### The CLI, workspace scope
 
@@ -1197,7 +1197,7 @@ CREATE TABLE workbench_session_rooms (
 - **The workspace scope is a second approval**: no document pairing ever answers a workspace mint (E35); widening is
   only by Allow on a workspace request, whose page says so.
 - **Never more than the token** in the workspace scope: `clerkUserId` and `token` are null, so every Clerk-only route
-  (team administration, Drive, the account) refuses as it refuses the token, and
+  (team administration, the account) refuses as it refuses the token, and
   `WORKSPACE_ROUTES` refuses them first with `workbench_confined`; a view session is read-only at the choke point and
   never lists share links (WB54).
 - **Share links in the workspace scope** are the person's own: a code reaches only what the code reaches for anyone,
@@ -1436,8 +1436,7 @@ The fake workbench (`apps/live/e2e/fixtures/fake-workbench.html`) is served by `
 server on `127.0.0.1` at a free port; it frames the URL it is given, answers `hello` with `hello-ack { name: 'Fake
 Workbench' }`, answers `renew` with a ticket the test mints, and records every message into `window.received`.
 `scripts/e2e-stack.mjs` under `E2E_WORKBENCH=1` acts as Clerk as under `E2E_CLERK_JWKS` (its own JWKS and `/e2e/token`)
-and sets `APP_BASE_URL` to the live server; `test:e2e:workbench` builds with `NEXT_PUBLIC_E2E_AUTH=1`, as under
-`E2E_DRIVE`.
+and sets `APP_BASE_URL` to the live server; `test:e2e:workbench` builds with `NEXT_PUBLIC_E2E_AUTH=1`.
 
 ## Constants and configuration
 

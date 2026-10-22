@@ -13,7 +13,7 @@ import { API_BASE, apiHeaders, apiFetch } from './core';
 // network error so callers degrade gracefully.
 //
 // Fetched once per page: the answer is deployment config, the same for every
-// caller, and the editor, the Drive mirror and each Settings open all ask.
+// caller, and the editor and each Settings open both ask.
 // A failed answer is not kept, so the next caller asks again.
 let capabilities: Promise<CapabilitiesResponse> | null = null;
 

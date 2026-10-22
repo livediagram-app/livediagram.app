@@ -17,7 +17,7 @@ These docs are the practical guide: what the app does, how to run it locally, ho
 - ./development/contributing.md - when proposing a change: specs-first workflow, code style, tests, PRs
 - ./operations/self-hosting.md - when running your own copy on Cloudflare Workers + D1, optionally with Clerk
 - ./research/README.md - when you need measurements and experiment reports
-- ./research/migration-readiness.md - when designing the Google Drive mirror or importing boards from Miro or Microsoft Whiteboard
+- ./research/migration-readiness.md - when importing boards from Miro or Microsoft Whiteboard
 
 ## How docs relate to specs
 

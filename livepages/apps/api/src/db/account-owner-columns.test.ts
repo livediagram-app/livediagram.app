@@ -77,9 +77,6 @@ const OWNER_COLUMNS: OwnerColumn[] = [
   // only a joined team member sends them.
   { table: 'notify_email_claims', column: 'sender_id', migrate: { kind: 'account-only' } },
   { table: 'team_members', column: 'user_id', migrate: { kind: 'account-only' } },
-  // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md): signed-in only.
-  { table: 'drive_connections', column: 'owner_id', migrate: { kind: 'account-only' } },
-  { table: 'drive_items', column: 'owner_id', migrate: { kind: 'account-only' } },
   // Workbench embeds (docs/specs/013-workspace/workbench-embeds.md): minted from a token, so account-only.
   { table: 'workbench_pairing_requests', column: 'owner_id', migrate: { kind: 'account-only' } },
   { table: 'workbench_pairings', column: 'owner_id', migrate: { kind: 'account-only' } },
@@ -246,15 +243,6 @@ function seedAccountOnly(sql: DatabaseSync, id: string, peer: string) {
   insert(sql, 'email_lifecycle', { owner_id: id, email: `${id}@example.com`, created_at: T0 });
   insert(sql, 'auth_accounts', { owner_id: id, first_seen_at: T0 });
   insert(sql, 'notify_email_claims', { claim_key: `claim-${id}`, sender_id: id, created_at: T0 });
-  insert(sql, 'drive_connections', { owner_id: id, status: 'connected', connected_at: T0 });
-  insert(sql, 'drive_items', {
-    owner_id: id,
-    item_kind: 'document',
-    ld_id: `d-`,
-    drive_file_id: `file-`,
-    name: 'x.livepages',
-    ld_name: 'x',
-  });
   insert(sql, 'teams', { id: 'team-1', name: 'Team', created_at: T0, updated_at: T0 });
   for (const [n, userId] of [id, peer].entries()) {
     insert(sql, 'team_members', {

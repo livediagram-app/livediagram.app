@@ -1,5 +1,4 @@
--- Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md, "Data";
--- blueprint docs/specs/022-drive-mirror/blueprints/drive-mirror.md).
+-- Google Drive mirror ("Data"; dropped by 0102_drop_drive_mirror.sql).
 --
 -- drive_connections: one row per signed-in user who connected Drive. The
 -- refresh token is AES-GCM sealed under DRIVE_TOKEN_KEY before it lands here

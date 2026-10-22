@@ -6,9 +6,7 @@
 // vars with whatever the deploy declares, silently wiping dashboard-only ones.
 //
 // Most hosted vars are shared by every environment; a few are per environment
-// under `environments` (production, staging): the Google Drive mirror's OAuth
-// client id, because livepages.app runs one Google Cloud project per
-// environment (docs/specs/022-drive-mirror/drive-mirror.md, "Hosted deployment").
+// under `environments` (production, staging), such as the app's own base URL.
 // An empty per-environment value means unset there: the feature stays off.
 //
 // Run from apps/api; `--env staging` picks staging, none picks production:
@@ -21,16 +19,11 @@
 //       Exits non-zero unless the worker's live deployment carries every hosted
 //       var of the environment with its value, and none it leaves unset. The
 //       args, `--env` included, reach wrangler.
-//   node scripts/hosted-vars.mjs verify-build <dir> [--env staging]
-//       Exits non-zero unless the built live app in <dir> carries the
-//       environment's Google client id (when set) and no other environment's,
-//       so the api and the live build of one environment agree.
 //
 // The pure helpers are exported for src/hosted-vars.test.ts.
 
 import { execFileSync } from 'node:child_process';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join } from 'node:path';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 export const HOSTED_VARS_PATH = fileURLToPath(new URL('../hosted-vars.json', import.meta.url));
@@ -112,13 +105,10 @@ export function wranglerVarFlags(vars) {
 }
 
 /** The build-time twins of hosted worker vars: each frontend reads
- *  NEXT_PUBLIC_TELEMETRY_ENABLED to skip emitting when the api would drop it,
- *  and the live app reads NEXT_PUBLIC_GOOGLE_CLIENT_ID for the Drive mirror
- *  (docs/specs/022-drive-mirror/drive-mirror.md), the same client id the api holds. */
+ *  NEXT_PUBLIC_TELEMETRY_ENABLED to skip emitting when the api would drop it. */
 export function buildEnv(vars) {
   const out = [];
   if (vars.TELEMETRY_ENABLED) out.push(`NEXT_PUBLIC_TELEMETRY_ENABLED=${vars.TELEMETRY_ENABLED}`);
-  if (vars.GOOGLE_CLIENT_ID) out.push(`NEXT_PUBLIC_GOOGLE_CLIENT_ID=${vars.GOOGLE_CLIENT_ID}`);
   return out;
 }
 
@@ -141,19 +131,6 @@ export function unsetVarDrift(unset, deployed) {
   return unset
     .filter((name) => deployed.has(name))
     .map((name) => ({ name, expected: '(unset)', actual: deployed.get(name) }));
-}
-
-/** What is wrong with a live build's Google client id: the environment's id
- *  missing (when it has one), or another environment's id present. */
-export function clientIdBuildDrift(texts, expected, others) {
-  const problems = [];
-  if (expected && !texts.some((t) => t.includes(expected))) problems.push(`missing ${expected}`);
-  for (const other of others) {
-    if (other && other !== expected && texts.some((t) => t.includes(other))) {
-      problems.push(`holds another environment's ${other}`);
-    }
-  }
-  return problems;
 }
 
 /** Every hosted var the deployed version lacks or holds with a different value. */
@@ -201,40 +178,6 @@ function verify(args) {
   return 0;
 }
 
-/** Every text file under dir (the static live build: html, js, json, txt). */
-function buildTexts(dir) {
-  const out = [];
-  for (const entry of readdirSync(dir)) {
-    const full = join(dir, entry);
-    if (statSync(full).isDirectory()) out.push(...buildTexts(full));
-    else if (/\.(html|js|json|txt)$/.test(entry)) out.push(readFileSync(full, 'utf8'));
-  }
-  return out;
-}
-
-function verifyBuild(args) {
-  const { wranglerEnv, rest } = splitEnvArg(args);
-  const [dir] = rest;
-  if (!dir) {
-    console.error('usage: hosted-vars.mjs verify-build <dir> [--env staging]');
-    return 2;
-  }
-  const profile = readHostedProfile();
-  const environment = hostedEnvironment(wranglerEnv);
-  const expected = profile.environments[environment].GOOGLE_CLIENT_ID || null;
-  const others = ENVIRONMENTS.filter((e) => e !== environment).map(
-    (e) => profile.environments[e].GOOGLE_CLIENT_ID ?? '',
-  );
-  const problems = clientIdBuildDrift(buildTexts(dir), expected, others);
-  for (const p of problems)
-    console.error(`hosted-vars verify-build (${environment}): FAILED, ${p}`);
-  if (problems.length > 0) return 1;
-  console.log(
-    `hosted-vars verify-build (${environment}): ok, Google client id ${expected ?? 'unset'}`,
-  );
-  return 0;
-}
-
 function resolvedFor(args) {
   return resolveHostedVars(readHostedProfile(), hostedEnvironment(splitEnvArg(args).wranglerEnv));
 }
@@ -249,12 +192,8 @@ function main([command, ...rest]) {
       return 0;
     case 'verify':
       return verify(rest);
-    case 'verify-build':
-      return verifyBuild(rest);
     default:
-      console.error(
-        'usage: hosted-vars.mjs flags | build-env | verify | verify-build <dir>  [--env staging]',
-      );
+      console.error('usage: hosted-vars.mjs flags | build-env | verify  [--env staging]');
       return 2;
   }
 }

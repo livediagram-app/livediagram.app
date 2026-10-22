@@ -1,9 +1,7 @@
 # Save Locations
 
 A new document is stored in one of a small set of **save locations**: on the server (livepages) or in this browser
-only (This Browser, [Offline Mode](offline-mode.md)). More stores may come (GitHub is plausible). Google Drive is not
-one of them: it is a mirror of cloud documents, not a place a document is stored
-([Google Drive is a mirror, not a location](#google-drive-is-a-mirror-not-a-location)).
+only (This Browser, [Offline Mode](offline-mode.md)). More stores may come (GitHub is plausible).
 
 **Nobody is asked.** The New Document wizard ([Dedicated route for new-document creation](../007-editor/new-document-route.md#one-step-wizard))
 has no Location step: every new document is stored in the default location for who is creating it, below. A document
@@ -125,17 +123,6 @@ for who gets it, and a create branch in `/new` that hands the document to that s
 
 The wire between the wizard and `/new` is `NewDocumentSettings.saveLocation:
 SaveLocationId`.
-
-## Google Drive is a mirror, not a location
-
-A signed-in user can mirror the documents in My Documents to their own Google
-Drive. The document still lives in livepages (the default location): Drive
-holds a copy that is kept in sync both ways while a tab is open, and a Drive
-file is never the document's home. So Drive is never a save location, and a document created with
-**livepages** is mirrored like any other. Documents in This Browser have no
-server copy and are not mirrored. The mirror itself (connection, folder tree,
-rename, move, delete to Trash, "Open with") is specified in [Google Drive mirror](../022-drive-mirror/drive-mirror.md), not
-here.
 
 ## Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))
 

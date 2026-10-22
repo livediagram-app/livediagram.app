@@ -8,8 +8,7 @@ export const DOCUMENT_COUNT_WAIT_MS = 3000;
 // How many documents the person had before this visit created one (docs/specs/007-editor/editor-tour.md
 // "Where it appears"): reported once by RecentDocumentsCard's fetch, and awaited by the create, which decides
 // the Diagram tour's offer from it. Read before the create, never after: a count taken once the new document
-// exists says 1, and a brand-new person would lose the tour. Only the first report counts, for the same reason
-// (the card re-reads the list when a Drive change lands).
+// exists says 1, and a brand-new person would lose the tour. Only the first report counts, for the same reason.
 export function useDocumentCount() {
   const known = useRef<number | null>(null);
   const waiters = useRef<((n: number) => void)[]>([]);

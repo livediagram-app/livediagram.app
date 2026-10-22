@@ -42,13 +42,8 @@ describe('isRepairClearable', () => {
     }
   });
 
-  it('keeps identity, per-browser keys and Drive state', () => {
-    for (const k of [
-      ...REPAIR_KEPT_KEYS,
-      'livepages:v2:drive-state',
-      'livepages:v2:drive-seen:user_a',
-      'livepages:drive-mirror',
-    ]) {
+  it('keeps identity and per-browser keys', () => {
+    for (const k of REPAIR_KEPT_KEYS) {
       expect(isRepairClearable(k), k).toBe(false);
     }
   });

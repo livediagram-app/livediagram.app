@@ -9,7 +9,6 @@ import {
   type Folder,
 } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
-import { useAfterDriveChange } from '@/hooks/persistence/useAfterDriveChange';
 import { useToast } from '@/hooks/ui/useToast';
 import { FOLDER_FAILURE } from '@/lib/write-failure-copy';
 
@@ -98,11 +97,6 @@ export function useFolders(
   useEffect(() => {
     if (autoLoadOwner) void load(autoLoadOwner);
   }, [autoLoadOwner, load]);
-  // Folders made, renamed or moved in Google Drive (docs/specs/022-drive-mirror/drive-mirror.md,
-  // "Other views follow").
-  useAfterDriveChange(() => {
-    if (ownerId) void load(ownerId);
-  }, !!ownerId);
 
   const createFolder = useCallback(
     async (input: { name?: string; parentId?: string | null }) => {

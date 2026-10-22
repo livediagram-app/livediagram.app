@@ -203,8 +203,6 @@ selectElement, attach }`, made in `useEditorState` and provided by `EditorView` 
 - Duplicate document: cloud body `sheets` (same ids); offline: copied records. Duplicate Tab (`useTabActions`): the
   new tab's Sheet elements get new sheet ids and a `copyOf` create each (`remint-element-ids` keeps `planSheet`
   pointing at the new ids).
-- Drive mirror: `DocumentEnvelope.document.sheets?` (optional; file stays version 1), export via `fetchSheets`, import
-  via `sheetsAsCreates`.
 - Element copy and paste: the canvas clipboard payload gains `sheets?: SheetDto[]` for pasted Sheet elements
   (cut at `SHEET_WRITE_CELLS_MAX` cells: past it, a paste into another document is refused with the spec's toast;
   within the same document it uses `copyOf`).

@@ -26,15 +26,8 @@ export const REPAIR_KEPT_KEYS: readonly string[] = [
   'livepages:v2:collab-secret',
 ];
 
-/** Key prefixes a repair keeps: the Google Drive mirror's state. */
-export const REPAIR_KEPT_PREFIXES: readonly string[] = [
-  'livepages:v2:drive-',
-  'livepages:drive-mirror',
-];
-
 /** True when a repair clears this storage key. */
 export function isRepairClearable(key: string): boolean {
   if (!REPAIR_SCOPE_PREFIXES.some((p) => key.startsWith(p))) return false;
-  if (REPAIR_KEPT_KEYS.includes(key)) return false;
-  return !REPAIR_KEPT_PREFIXES.some((p) => key.startsWith(p));
+  return !REPAIR_KEPT_KEYS.includes(key);
 }

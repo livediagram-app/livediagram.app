@@ -42,7 +42,7 @@ function isIgnored(text: string): boolean {
 
 // The editor's debug flag (docs/specs/003-system-architecture/console-logging.md): the suite drives
 // the production build, which writes its trace lines only with it set, and specs wait for some of
-// them (`[drive-mirror] pass-end`). Set before any page of the context loads.
+// them (`[arrow-rebind] trigger`). Set before any page of the context loads.
 export async function enableDebugLogs(context: BrowserContext): Promise<void> {
   await context.addInitScript(
     ([key]) => {

@@ -96,29 +96,6 @@ describe('isAllowedScriptUrl', () => {
 
 describe('trustedScriptOrigins', () => {
   const key = (host: string) => `pk_test_${btoa(`${host}$`)}`;
-  // docs/specs/022-drive-mirror/drive-mirror.md: the Drive mirror's Google libraries, only for a build that offers it.
-  it("lets Google's Drive libraries load where the build offers the Drive mirror, and only there", () => {
-    const page = 'https://www.livepages.app';
-    const withDrive = trustedScriptOrigins({
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: key('clerk.livepages.app'),
-      NEXT_PUBLIC_GOOGLE_CLIENT_ID: '123456789012-abc.apps.googleusercontent.com',
-    });
-    for (const src of [
-      'https://apis.google.com/js/api.js',
-      'https://accounts.google.com/gsi/client',
-    ])
-      expect(isAllowedScriptUrl(src, page, '/live', withDrive), src).toBe(true);
-    expect(isAllowedScriptUrl('https://evil.google.com/x.js', page, '/live', withDrive)).toBe(
-      false,
-    );
-    const without = trustedScriptOrigins({
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: key('clerk.livepages.app'),
-    });
-    expect(isAllowedScriptUrl('https://apis.google.com/js/api.js', page, '/live', without)).toBe(
-      false,
-    );
-  });
-
   it("reads the Clerk frontend API's origin from the publishable key, beside its sign-up CAPTCHA's", () => {
     expect(
       trustedScriptOrigins({ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: key('clerk.livepages.app') }),

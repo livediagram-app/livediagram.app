@@ -6,7 +6,7 @@ import { trashDocument } from './trash';
 
 // Deleting a folder on a real schema (docs/specs/013-workspace/folders.md "Deleting a folder",
 // blueprint folder-delete.md): its direct documents and subfolders move up to its parent, the space
-// root for a top-level folder, trashed documents included, in one batch with its Drive row.
+// root for a top-level folder, trashed documents included, in one batch.
 
 const T0 = 1_700_000_000_000;
 let db: SqliteD1;

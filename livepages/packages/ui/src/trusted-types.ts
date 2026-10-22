@@ -72,23 +72,13 @@ export function isAllowedScriptUrl(
 const CLERK_CAPTCHA_ORIGIN = 'https://challenges.cloudflare.com';
 
 /**
- * Google's browser libraries for the Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md): Identity Services
- * (`accounts.google.com/gsi/client`) for its tokens, and the API loader (`apis.google.com/js/api.js`), which loads the
- * Picker for Show Folder from the same origin. Refused, Show Folder failed silently ("adopt-failed").
- */
-const GOOGLE_SCRIPT_ORIGINS = ['https://accounts.google.com', 'https://apis.google.com'];
-
-/**
  * The Clerk frontend API's origin, read from the publishable key (`pk_<env>_<base64 of "<host>$">`), and the origin
- * of the CAPTCHA its sign-up loads; none without a key. Then Google's two script origins, for a build that offers the
- * Drive mirror (a Google client id), and only then.
+ * of the CAPTCHA its sign-up loads; none without a key.
  */
 export function trustedScriptOrigins(env: {
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?: string;
-  NEXT_PUBLIC_GOOGLE_CLIENT_ID?: string;
 }): string[] {
-  const google = env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ? GOOGLE_SCRIPT_ORIGINS : [];
-  return [...clerkScriptOrigins(env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY), ...google];
+  return clerkScriptOrigins(env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
 }
 
 function clerkScriptOrigins(publishableKey: string | undefined): string[] {
