@@ -26,13 +26,21 @@ export const CATEGORY_ICONS: Record<string, Icon> = {
       <path d="M10.5 3.5a2.25 2.25 0 0 1 0 4.25M11.75 9.9c1.2.5 2 1.7 2.25 3.6" />
     </>,
   ),
-  // Boards and dashboards: three columns of cards.
-  plan: glyph(
+  // Boards: three columns of cards.
+  boards: glyph(
     <>
       <rect x="1.5" y="2" width="3.5" height="5" rx=".75" />
       <rect x="1.5" y="9" width="3.5" height="3.5" rx=".75" />
       <rect x="6.25" y="2" width="3.5" height="7.5" rx=".75" />
       <rect x="11" y="2" width="3.5" height="3.5" rx=".75" />
+    </>,
+  ),
+  // Dashboards: a page of slots, a wide one over two side by side.
+  dashboards: glyph(
+    <>
+      <rect x="1.5" y="2" width="13" height="4.5" rx=".75" />
+      <rect x="1.5" y="8.5" width="5.5" height="5.5" rx=".75" />
+      <rect x="9" y="8.5" width="5.5" height="5.5" rx=".75" />
     </>,
   ),
   // Sheets: a grid of cells, its header row filled.

@@ -18,6 +18,7 @@ export * from './feature-art/embeds-timeline';
 export * from './feature-art/plan';
 export * from './feature-art/plan-views';
 export * from './feature-art/plan-dashboard';
+export * from './feature-art/plan-dashboard-more';
 export * from './feature-art/plan-more';
 // Sheet tabs (docs/specs/029-sheets/sheet.md), and boards brought in from other tools.
 export * from './feature-art/sheet';
