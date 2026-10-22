@@ -1,28 +1,55 @@
 // /api/documents/<id>/community: the owner's side of Community (docs/specs/025-community/community.md
 // "Publishing"; blueprint §4 and §5 G1 to G3). GET reads the document's post, PUT publishes it or saves an Edit
-// Listing, DELETE removes it from Community.
+// Listing, DELETE removes it from Community. The post itself is kept by the liveworkspace Community service
+// (community-service.ts); this route checks what only this api can (who owns the document, whether it may be
+// published) and keeps the community link that opens it (db/community-links.ts).
 
 import {
-  COMMUNITY_POSTS_PER_AUTHOR,
+  COMMUNITY_UNKNOWN_AUTHOR,
   validateCommunityPostInput,
+  type CommunityAppPost,
+  type CommunityAuthor,
   type CommunityOwnPost,
 } from '@livediagram/api-schema';
 import { communityEnabled } from '../community-enabled';
-import { rowState, rowToCommunityPost, type CommunityPostRow } from '../community-row';
 import {
-  countCommunityPostsByAuthor,
-  createCommunityPost,
-  deleteCommunityPost,
-  firstTabElementCount,
-  getCommunityPostForDocument,
-  getDocumentSharePassword,
-  updateCommunityPost,
-} from '../db';
+  communityServiceConfigured,
+  getServicePost,
+  publishServicePost,
+  removeServicePost,
+} from '../community-service';
+import { firstTabElementCount, getDocumentSharePassword, getParticipant } from '../db';
+import {
+  deleteCommunityLink,
+  newCommunityLinkCode,
+  saveNewCommunityLink,
+  updateCommunityLink,
+} from '../db/community-links';
 import { conflict, json, noContent, notFound, signInRequired } from '../responses';
 import { requireOwnedDocument, type RouteContext } from './context';
 
-function ownPost(row: CommunityPostRow): CommunityOwnPost {
-  return { ...rowToCommunityPost(row, false), state: rowState(row) };
+function ownPost(post: CommunityAppPost): CommunityOwnPost {
+  const { own: _own, ...rest } = post;
+  return rest;
+}
+
+// How the owner is shown on a post that is not anonymous: their participant name, colour and picture.
+async function authorOf(ctx: RouteContext, ownerId: string): Promise<CommunityAuthor> {
+  const p = await getParticipant(ctx.env, ownerId);
+  if (!p) return COMMUNITY_UNKNOWN_AUTHOR;
+  return {
+    name: p.name,
+    color: /^#[0-9a-f]{6}$/i.test(p.color) ? p.color : COMMUNITY_UNKNOWN_AUTHOR.color,
+    picture: p.pictureUrl,
+  };
+}
+
+// The service's refusals the editor knows by code pass through as they are.
+async function passThrough(res: Response): Promise<Response> {
+  const body = (await res.json().catch(() => null)) as { error?: string } | null;
+  const code = body?.error ?? 'community_unavailable';
+  console.warn(`[community] rejected ${code}`);
+  return json({ error: code }, { status: res.status >= 500 ? 502 : res.status });
 }
 
 // Returns null when the request isn't this route.
@@ -32,28 +59,28 @@ export async function handleCommunityOwnerRoutes(ctx: RouteContext): Promise<Res
   const method = request.method;
   if (method !== 'GET' && method !== 'PUT' && method !== 'DELETE') return null;
   const id = segments[2]!;
-  // Switched off, a document has no Community post to read, publish or remove.
-  if (!communityEnabled(env)) return notFound();
+  // Switched off, or with no service to publish to, a document has no Community post to read, publish or remove.
+  if (!communityEnabled(env) || !communityServiceConfigured(env)) return notFound();
 
   const doc = await requireOwnedDocument(ctx, id);
   if (doc instanceof Response) return doc;
-  const found = await getCommunityPostForDocument(env, id);
   // A post made by a previous owner (the document left a team library for another member's) is not this owner's:
   // it reads as none, and publishing replaces it (docs/specs/025-community/community.md "Publishing").
-  const stale = found !== null && found.author_id !== doc.ownerId ? found : null;
-  const existing = stale ? null : found;
+  const found = await getServicePost(env, id, doc.ownerId);
+  const existing = found?.own ? found : null;
 
   if (method === 'GET') return json({ post: existing ? ownPost(existing) : null });
 
   // A post hidden by reports is final (docs/specs/025-community/community.md "Reports and moderation"): nobody
-  // reviews it, so its author can neither edit it nor remove it, which would clear its reports and let the same
-  // document be published again. It stays visible to them alone.
-  const hidden = existing !== null && rowState(existing) === 'hidden';
+  // reviews it, so its author can neither edit it nor remove it. The service refuses both; this says so first.
+  const hidden = existing?.state === 'hidden';
 
   if (method === 'DELETE') {
     if (!existing) return notFound();
     if (hidden) return reject(conflict('post_hidden'), 'post_hidden');
-    await deleteCommunityPost(env, existing.share_code);
+    const res = await removeServicePost(env, id, doc.ownerId);
+    if (!res.ok && res.status !== 404) return passThrough(res);
+    await deleteCommunityLink(env, existing.shareCode);
     console.log('[community] removed', { postId: existing.id });
     return noContent();
   }
@@ -69,39 +96,60 @@ export async function handleCommunityOwnerRoutes(ctx: RouteContext): Promise<Res
   // G2: a share password and a post exclude each other.
   if (await getDocumentSharePassword(env, id))
     return reject(conflict('share_password_set'), 'share_password_set');
+  if (hidden) return reject(conflict('post_hidden'), 'post_hidden');
+  const author = await authorOf(ctx, ctx.clerkUserId);
 
   if (existing) {
-    if (hidden) return reject(conflict('post_hidden'), 'post_hidden');
-    await updateCommunityPost(env, existing.id, parsed.value);
-    console.log('[community] updated', { postId: existing.id });
-    const row = await getCommunityPostForDocument(env, id);
-    return json({ post: ownPost(row!) });
+    const res = await publishServicePost(env, id, {
+      owner: ctx.clerkUserId,
+      shareCode: existing.shareCode,
+      documentState: 'public',
+      author,
+      input: parsed.value,
+    });
+    if (!res.ok) return passThrough(res);
+    const { post } = (await res.json()) as { post: CommunityAppPost };
+    await updateCommunityLink(env, post.shareCode, post);
+    console.log('[community] updated', { postId: post.id });
+    return json({ post: ownPost(post) });
   }
 
-  // G3: something to show, and room under the per-author cap.
-  // Counted, not rendered: a deploy without the snapshot store can still publish.
+  // G3: something to show. Counted, not rendered: a deploy without the snapshot store can still publish. The
+  // per-author cap is the service's: it counts the posts.
   if ((await firstTabElementCount(env, id)) === 0) {
     return reject(conflict('empty_document'), 'empty_document');
   }
-  if ((await countCommunityPostsByAuthor(env, ctx.clerkUserId)) >= COMMUNITY_POSTS_PER_AUTHOR) {
-    return reject(conflict('post_limit'), 'post_limit');
-  }
-  if (stale) {
-    await deleteCommunityPost(env, stale.share_code);
-    console.log('[community] replaced a previous owner post', { postId: stale.id });
-  }
-  let postId: string;
+  // The community link is made here and written only once the service has taken the post, so a refusal leaves
+  // nothing behind.
+  const shareCode = newCommunityLinkCode();
+  const res = await publishServicePost(env, id, {
+    owner: ctx.clerkUserId,
+    shareCode,
+    documentState: 'public',
+    author,
+    input: parsed.value,
+    create: true,
+  });
+  if (!res.ok) return passThrough(res);
+  const { post } = (await res.json()) as { post: CommunityAppPost };
   try {
-    postId = await createCommunityPost(env, id, ctx.clerkUserId, parsed.value);
+    await saveNewCommunityLink(env, {
+      shareCode,
+      documentId: id,
+      authorId: ctx.clerkUserId,
+      postId: post.id,
+      title: post.title,
+      anonymous: post.anonymous,
+    });
   } catch (err) {
-    // Two first publishes of one document at once: the second meets the one-post-per-document rule.
+    // Two first publishes of one document at once, and the other's link got here first: the service has one post
+    // and it is the other's, so this answers as the service would have.
     if (String(err).includes('UNIQUE'))
       return reject(conflict('already_published'), 'already_published');
     throw err;
   }
-  console.log('[community] published', { postId, category: parsed.value.category });
-  const row = await getCommunityPostForDocument(env, id);
-  return json({ post: ownPost(row!) }, { status: 201 });
+  console.log('[community] published', { postId: post.id, category: parsed.value.category });
+  return json({ post: ownPost(post) }, { status: 201 });
 }
 
 function reject(response: Response, code: string): Response {

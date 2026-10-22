@@ -7,13 +7,14 @@
 
 import { DEFAULT_LINK_LEVEL, isAccessLevel, type ShareLinkExpiry } from '@livediagram/api-schema';
 import { communityEnabled } from '../community-enabled';
+import { syncCommunity } from '../community-service';
 import { MAX_PASSWORD_LEN } from '../limits';
 import {
   createShareLink,
   deleteShareLink,
   extendShareLink,
   generateShareCode,
-  getCommunityPostForDocument,
+  getCommunityLinkForDocument,
   getDocumentSharePassword,
   getShareLinkIncludingExpired,
   listShareLinks,
@@ -132,9 +133,9 @@ export async function handleDocumentShareRoutes(ctx: RouteContext): Promise<Resp
       // Switched off, no post is public, so none stands in the way either.
       const post =
         password?.trim() && communityEnabled(env)
-          ? await getCommunityPostForDocument(env, id)
+          ? await getCommunityLinkForDocument(env, id)
           : null;
-      if (post && post.state !== 'hidden') return conflict('community_published');
+      if (post && post.hidden_at === null) return conflict('community_published');
       // Whitespace-only clears, so a stray space can't lock a document in a way
       // the owner can't see. Anything else is stored as the hash of its trimmed
       // value: the visitor's gate trims what is typed, so an untrimmed hash
@@ -145,6 +146,8 @@ export async function handleDocumentShareRoutes(ctx: RouteContext): Promise<Resp
       // Visitors a share code admitted before this password meet the gate again
       // (docs/specs/013-workspace/share-password.md). Clearing it widens access, so closes nobody.
       if (stored !== null) ctx.waitUntil?.(closeShareCodeSessions(env, id));
+      // A Community post's document behind a password is no longer public (docs/specs/025-community/community.md).
+      ctx.waitUntil?.(syncCommunity(env, id));
       return json({ passwordSet: stored !== null });
     }
   }

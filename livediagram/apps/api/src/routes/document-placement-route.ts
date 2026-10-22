@@ -11,6 +11,7 @@ import {
   getTeam,
   setDocumentFolder,
 } from '../db';
+import { syncCommunity } from '../community-service';
 import { badRequest, forbidden, noContent, notFound } from '../responses';
 import {
   audienceForDocument,
@@ -141,6 +142,9 @@ export async function handleDocumentPlacement(ctx: RouteContext): Promise<Respon
       // The folder is re-checked inside the write itself: one deleted since the read above files
       // nothing, and the move answers 404 as if the read had missed it.
       if (!(await setDocumentFolder(env, id, folderId, teamId, newOwnerId))) return notFound();
+      // docs/specs/025-community/community.md "Keeping in step": into a team library, or to another owner, a
+      // document's post leaves the gallery.
+      ctx.waitUntil?.(syncCommunity(env, id));
       // docs/specs/013-workspace/timeline.md: publishing into a team library is a different event
       // from filing something in a folder — the first tells a whole
       // team a document is theirs to work on, the second is personal

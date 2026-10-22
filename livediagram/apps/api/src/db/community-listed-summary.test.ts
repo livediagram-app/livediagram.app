@@ -24,10 +24,16 @@ function setUp() {
       .run(`code-${documentId}`, documentId);
     db.sql
       .prepare(
-        `INSERT INTO community_posts (id, document_id, share_code, author_id, title, description, category, search_text,
-           state, published_at, updated_at) VALUES (?, ?, ?, ?, 'P', 'A post.', 'other', 'p', ?, 1, 1)`,
+        `INSERT INTO community_links (share_code, document_id, author_id, post_id, title, anonymous, hidden_at)
+         VALUES (?, ?, ?, ?, 'P', 0, ?)`,
       )
-      .run(`post-${documentId}`, documentId, `code-${documentId}`, OWNER, state);
+      .run(
+        `code-${documentId}`,
+        documentId,
+        OWNER,
+        `post-${documentId}`,
+        state === 'hidden' ? 5 : null,
+      );
   };
   return { ...db, addDocument, publish };
 }

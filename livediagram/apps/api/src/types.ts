@@ -101,10 +101,6 @@ export type Env = {
   // tighter bound than the general write limiter. Keyed on the Clerk user id.
   // Optional: absent (self-host) → "allow".
   DRIVE_TOKEN_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
-  // Per-network limiter for Community likes and reports (docs/specs/025-community/blueprints/community.md §7),
-  // keyed `community:<address range>` (community-network.ts). These callers are anonymous, so the owner-keyed write
-  // limiter would lump them all onto its 'anonymous' key. Optional: absent (self-host) → "allow".
-  COMMUNITY_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Per-network limiter for a form link's reads and responses (docs/specs/030-forms/forms.md "Abuse and limits").
   FORM_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Per-network limiter for an invite email's Decline link (docs/specs/013-workspace/teams.md "Declining from the
@@ -114,6 +110,12 @@ export type Env = {
   // The Community's off switch (docs/specs/025-community/community.md "Turning the Community off"): false, 0 or off
   // turns it off; unset leaves it on. See community-enabled.ts.
   COMMUNITY_ENABLED?: string;
+  // The liveworkspace Community service (liveworkspace/docs/community.md), which keeps every app's posts. Unset means
+  // production's, https://liveworkspace.app/api/community; staging and local development name their own.
+  COMMUNITY_URL?: string;
+  // livediagram's secret on that service, sent as a bearer token on its app routes. A secret (wrangler secret put
+  // COMMUNITY_KEY); unset, this deploy has no Community to publish to.
+  COMMUNITY_KEY?: string;
   // Telemetry on/off switch (docs/specs/017-telemetry/telemetry.md). Gates every event this worker
   // sends to the liveworkspace telemetry service, its own and the relay's. A plain
   // wrangler.toml [vars] string; only the literal "true" enables it.

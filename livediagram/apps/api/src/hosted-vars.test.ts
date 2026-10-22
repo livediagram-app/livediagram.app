@@ -122,6 +122,13 @@ describe('hosted-vars script', () => {
     ]);
   });
 
+  it('points the Community pages at the same Community service as the api', async () => {
+    const { buildEnv } = await load();
+    expect(buildEnv({ COMMUNITY_URL: 'https://staging.liveworkspace.app/api/community' })).toEqual([
+      'NEXT_PUBLIC_COMMUNITY_API=https://staging.liveworkspace.app/api/community',
+    ]);
+  });
+
   it('rejects a malformed profile rather than deploying half of it', async () => {
     const { readHostedProfile: readHostedVars } = await load();
     const dir = mkdtempSync(join(tmpdir(), 'hosted-vars-'));

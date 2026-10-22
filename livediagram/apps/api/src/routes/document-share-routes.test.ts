@@ -19,7 +19,7 @@ const { db } = vi.hoisted(() => ({
     generateShareCode: vi.fn(() => 'CODE1234'),
     getDocument: vi.fn(),
     getMembership: vi.fn(),
-    getCommunityPostForDocument: vi.fn(async () => null),
+    getCommunityLinkForDocument: vi.fn(async () => null),
     getTrashedDocumentMeta: vi.fn(async () => null),
     // No Community post stands in the way of a password here.
     getDocumentSharePassword: vi.fn(),
