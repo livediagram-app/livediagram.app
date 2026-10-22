@@ -7,13 +7,11 @@ import {
   type Element,
 } from '@livepages/document';
 import type { ArrowLabels } from '@/hooks/canvas/useArrowLabelLayouts';
-import type { InsertShift } from '@/hooks/canvas/useInsertShift';
 import type {
   LayerDrawn,
   LayerPreviewStore,
   PreviewEntry,
 } from '@/hooks/canvas/useLayerDragPreview';
-import type { PhotoDraftView } from '@/lib/photo-draft-preview';
 import type { RemoteSelector } from '@/lib/presence-rows';
 import type { arrowViewGeometry } from './arrow-view-frame';
 import type { CanvasElementsLayerProps } from './CanvasElementsLayer';
@@ -83,8 +81,6 @@ type CanvasElementListProps = Pick<
   boxedShared: BoxedShared;
   arrowGeometry: ReadonlyMap<string, ReturnType<typeof arrowViewGeometry>>;
   arrowLabels: ArrowLabels;
-  insertShift: InsertShift;
-  draftView: PhotoDraftView | null;
   commentActionsFor: ((id: string) => BoxedViewProp<'commentActions'>) | null;
   actionActionsFor: ((id: string) => BoxedViewProp<'actionActions'>) | null;
   // Bumped when webfonts land, so every fitted label measures again in its real face (useFontEpoch).
@@ -111,9 +107,7 @@ export const CanvasElementList = memo(function CanvasElementList({
   isPaintMode,
   tabLocked,
   readOnly,
-  insertShift,
   shiftDupGhostIds,
-  draftView,
   tabVote,
   tabLayers,
   remoteSelectionsByElement,
@@ -144,13 +138,7 @@ export const CanvasElementList = memo(function CanvasElementList({
             // translucent while its materialised copy holds the start
             // position, multiplied over any per-layer opacity.
             const ghostFactor = shiftDupGhostIds?.has(element.id) ? 0.45 : 1;
-            // Photo draft (docs/specs/021-event-storming/event-storming.md Phase 8): while one is open, everything that
-            // is NOT part of it recedes, so the notes the photo brought are the
-            // most visible thing on the board. A render-time style, local to the
-            // importing session — the board itself is untouched.
-            const isDraftNote = element.type === 'sticky' && element.esDraft === true;
-            const draftFade = draftView && !isDraftNote ? 0.5 : 1;
-            const effOpacity = ghostFactor * layerOpacity * draftFade;
+            const effOpacity = ghostFactor * layerOpacity;
             if (element.type === 'arrow') {
               return (
                 <Fragment key={element.id}>
@@ -164,18 +152,10 @@ export const CanvasElementList = memo(function CanvasElementList({
                     // animation repaints every frame, so the fight is visible
                     // continuously rather than only while the camera orbits).
                     data-arrow-svg=""
-                    // An arrow travels whole or not at all in the preview (see
-                    // insert-between.ts): one that straddles the insertion point
-                    // stretches, which a transform cannot express, so it waits for
-                    // the drop.
-                    data-insert-shift={insertShift.animates ? '' : undefined}
                     style={{
                       pointerEvents: 'none',
                       overflow: 'visible',
                       ...(effOpacity < 1 ? { opacity: effOpacity } : {}),
-                      ...(insertShift.xFor(element.id)
-                        ? { transform: `translateX(${insertShift.xFor(element.id)}px)` }
-                        : {}),
                     }}
                   >
                     <SelectableArrowView
@@ -230,8 +210,6 @@ export const CanvasElementList = memo(function CanvasElementList({
                 // onto its own z-plane (globals.css --iso-z): coplanar layers
                 // z-fight under preserve-3d, which is the flicker.
                 isoDepth={isoDepth}
-                insertShiftX={insertShift.xFor(element.id)}
-                insertShiftAnimates={insertShift.animates}
                 // A stack's child glides to its new slot, unless the gesture is moving it (docs/specs/009-elements/stack.md).
                 stackGlide={stackedIds.has(element.id) && entry === undefined}
                 // Resolved once here, where both the vote and the tab's layers
@@ -239,11 +217,6 @@ export const CanvasElementList = memo(function CanvasElementList({
                 // gesture hook and the overlay separately (docs/specs/012-collaboration/vote-layer-scope.md).
                 votableInVote={isVotableInVote(element, tabVote, tabLayers)}
                 layerOpacity={effOpacity < 1 ? effOpacity : undefined}
-                // The draft treatment, and the "already here" badge on a note the
-                // photo matched (with what it read, when that differed).
-                photoDraft={isDraftNote}
-                photoMatched={draftView?.matchedIds.has(element.id) === true}
-                photoReadAs={draftView?.differences.get(element.id)}
                 remoteSelectors={
                   remoteSelectionsByElement.get(element.id) ?? EMPTY_REMOTE_SELECTORS
                 }
@@ -257,9 +230,7 @@ export const CanvasElementList = memo(function CanvasElementList({
                 actionActions={actionActionsFor?.(element.id)}
                 revealedForMe={revealedIds?.has(element.id)}
                 reactionBurst={reactionBursts?.get(element.id)}
-                // A workshop note writes in marker (docs/specs/021-event-storming/event-storming.md): the notation names
-                // the face, so it outranks the tab default — but not an explicit
-                // per-element font, which is a deliberate author choice.
+                // An explicit per-element font outranks the tab default.
                 // Under the Sketch finish, the handwriting font (docs/specs/008-canvas/finish.md).
                 fontFamily={exportFontFamily(element, tabFont, tabFinish)}
               />

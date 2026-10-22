@@ -61,7 +61,7 @@ type GripContext = {
 
 // One element's resize handles and edge anchors (docs/specs/008-canvas/blueprints/selection-store.md):
 // shown on a lone boxed selection, not being edited, in no edit-blocking mode. Fixed-size elements
-// (mode / session buttons by kind, event-storming notes by their creation stamp) advertise no resize,
+// (mode / session buttons by kind, any element by its creation stamp) advertise no resize,
 // and a table no edge anchors. `single` is "this element is the one selected element".
 export function elementGrips(
   el: Element,
@@ -90,10 +90,6 @@ export function deriveCanvasSelection(input: {
   isPaintMode: boolean;
   tabLocked: boolean;
   readOnly: boolean;
-  // Event-storming board (docs/specs/021-event-storming/event-storming.md): a low-threshold capture surface where
-  // every control that doesn't serve "add a note, type, drag" is a
-  // distraction — the quick-connect pluses stand down.
-  esBoard?: boolean;
   // An element context menu is open. One question, one answer: a left click
   // asks "what is this" (popover), a right click "what can I do with it"
   // (menu). Both at once rings the element with two toolbars repeating each
@@ -121,7 +117,6 @@ export function deriveCanvasSelection(input: {
     isPaintMode,
     tabLocked,
     readOnly,
-    esBoard,
     elementMenuOpen,
     labelRectOf,
     plusBlocked,
@@ -166,8 +161,6 @@ export function deriveCanvasSelection(input: {
     !canvasCovered &&
     !elementMenuOpen &&
     selectedIsBoxed &&
-    // Never on an event-storming board (docs/specs/021-event-storming/event-storming.md).
-    !esBoard &&
     // Quick-connect works on a single element. A marquee multi-select stays
     // suppressed: it's a transient selection, not a unit you chain from.
     multiSelectedIds.size === 0 &&

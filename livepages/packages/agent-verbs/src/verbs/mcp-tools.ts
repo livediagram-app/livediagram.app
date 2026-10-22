@@ -208,9 +208,7 @@ export const mcpUpdateDocument = mcpTool('update_document', {
     'mode "ops" keeps the colours it is given, and applies an ordered list of add/update/remove against ' +
     'existing elements (by id, or the ref read_document prints) and PRESERVES positions (no auto-layout), or ' +
     'takes "edits": edit operations as text (insert between, wrap in a frame, connect, layout a selection, ' +
-    'place beside another element), the form each lint finding\u2019s fix is written in. On an event-storming tab, ' +
-    'event-storming notes you add or move land on the board’s horizontal lanes (240px apart, ' +
-    'lane 0 centred at y=100). Returns an inline PNG.',
+    'place beside another element), the form each lint finding\u2019s fix is written in. Returns an inline PNG.',
   inputSchema: updateDocumentShape,
   outputSchema: updateDocumentOutput,
 });

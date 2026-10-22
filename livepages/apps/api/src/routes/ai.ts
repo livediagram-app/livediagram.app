@@ -80,7 +80,7 @@ export async function handleAi(ctx: RouteContext): Promise<Response> {
   const { request, env } = ctx;
 
   // The shared admission sequence (docs/specs/007-editor/ai-assistance.md), one answer for both model routes.
-  const refused = await aiGate(ctx, 'assistant');
+  const refused = await aiGate(ctx);
   if (refused) return refused;
 
   let body: AiRequest;
@@ -113,7 +113,7 @@ export async function handleAi(ctx: RouteContext): Promise<Response> {
   if (!Array.isArray(history)) return badRequest('history must be an array');
 
   // The gate has already refused a deployment with no usable provider.
-  const provider = providerOf(env, 'assistant')!;
+  const provider = providerOf(env)!;
   const model = provider.model;
   const isTextMode = mode === 'ask';
   const safe = sanitiseElements(elements);
@@ -152,7 +152,7 @@ export async function handleAi(ctx: RouteContext): Promise<Response> {
   ];
 
   // A provider unreachable twice (chatCompletions retries a network failure once) is the provider's error,
-  // answered as one (aiError), never a 500 internal_error, as the read-notes route answers it.
+  // answered as one (aiError), never a 500 internal_error.
   let oaiRes: Response;
   try {
     oaiRes = await chatCompletions(provider, {

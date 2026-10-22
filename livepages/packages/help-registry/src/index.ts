@@ -174,7 +174,7 @@ export const categories: Category[] = [
     title: 'Palette',
     description:
       'Your launchpad for everything on the canvas: every element and palette setting explained.',
-    articleCount: 36,
+    articleCount: 35,
     kind: 'feature',
     groups: ['Everyday Elements', 'Diagram Kits', 'Workshop Kits', 'Palette Settings'],
   },
@@ -183,7 +183,7 @@ export const categories: Category[] = [
     title: 'Canvas',
     description:
       'Master the infinite canvas: place, select, link, annotate, layer, rotate, animate, lock and theme elements, undo changes, and start from templates.',
-    articleCount: 31,
+    articleCount: 30,
     kind: 'feature',
     groups: [
       'Basics',
@@ -1086,20 +1086,10 @@ export const articles: Article[] = [
     description:
       'Page, Text, Sticky note, Annotation and Pointer note: the elements made of words.',
     keywords:
-      'write writing text words wordy prose page document label caption title heading sticky note post-it annotation marker remark comment copy typing type compose pointer note leader event storming domain event command actor policy read model aggregate hotspot brandolini ddd workshop notation',
+      'write writing text words wordy prose page document label caption title heading sticky note post-it annotation marker remark comment copy typing type compose pointer note leader',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Everyday Elements',
-  },
-  {
-    slug: 'event-storming',
-    title: 'Event Storming Elements',
-    description: 'The workshop note grammar: eight sticky kinds, each colour a meaning.',
-    keywords:
-      'event storming eventstorming domain event command actor policy read model external system aggregate hotspot brandolini ddd workshop notation sticky colours colors orange blue purple big picture process design stage timeline lanes grid snap photo camera wall import add from photo',
-    category: 'Palette',
-    categorySlug: 'palette',
-    group: 'Diagram Kits',
   },
   {
     slug: 'build',
@@ -1688,17 +1678,6 @@ export const articles: Article[] = [
     group: 'Modes and Boards',
   },
   {
-    slug: 'event-storming-boards',
-    title: 'Event Storming Boards',
-    description: 'A board built for the workshop: the notation, paper-like notes, one wall.',
-    keywords:
-      'event storming eventstorming board workshop brandolini ddd domain driven design session facilitator wall sticky notes paper big picture process modelling modeling software design pass timeline domain event command aggregate hotspot insert between gap make room slot squeeze in add in the middle reorder shuffle push right alt option modifier hold key move a note rearrange resequence capitals caps uppercase upper case all caps shouting letter case marker font typeface handwriting permanent marker sharpie lane lanes timeline grid rows columns stagger staggered snap align rhythm gap gutter spacing space between line up lined up neighbour neighbor edges next note add beside quick add neighbouring note in front on top stacking order actor hotspot photo camera wall picture ocr scan import read transcribe handwriting capture snapshot draft review accept discard add notes already here duplicate matched change kind re-kind recolour recolor wrong colour misread fix words paste drop image detect stickies zoom zoom in magnify enlarge pan scroll close up untick missed draw box pinch mouse wheel middle click middle mouse button move resize delete remove select handle corner wrong box kind colour always on a lane between lanes free placement ctrl cmd arrow keys nudge up down paste at pointer paste here copy duplicate staggered tidy line up older board settle undo',
-    category: 'Canvas',
-    categorySlug: 'canvas',
-    group: 'Modes and Boards',
-    parentSlug: 'templates',
-  },
-  {
     slug: 'infographic-layouts',
     title: 'Infographic Layouts',
     description:
@@ -2041,7 +2020,7 @@ export const articles: Article[] = [
     title: 'Default Folders',
     description: 'Choose the folder new diagrams, whiteboards and boards land in automatically.',
     keywords:
-      'default folder where new documents go automatic placement file whiteboards retrospectives kanban event storming diagrams use as default settings documents new document wizard pages plan',
+      'default folder where new documents go automatic placement file whiteboards retrospectives kanban diagrams use as default settings documents new document wizard pages plan',
     category: 'Explorer',
     categorySlug: 'explorer/folders',
     parentSlug: 'folders',
@@ -2052,7 +2031,7 @@ export const articles: Article[] = [
     description:
       'Narrow any document list with words, chips or typed filters like made-by:ai, and share it as a link.',
     keywords:
-      'search find filter filters chips narrow refine query token tokens made by ai generated opens in mode diagram draw kind event storming template retrospective kanban edited date last week recent people me others owner space team shared unsorted unfiled root lens results pages plan',
+      'search find filter filters chips narrow refine query token tokens made by ai generated opens in mode diagram draw template retrospective kanban edited date last week recent people me others owner space team shared unsorted unfiled root lens results pages plan',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',

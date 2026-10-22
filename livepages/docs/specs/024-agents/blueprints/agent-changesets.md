@@ -116,12 +116,7 @@ Inputs: the document (`getDocument`), the tab id, the parsed `ChangesetRequest`,
 
 1. **Read.** In parallel: `getTab(env, documentId, tabId)` (null means create), `lastChangesetRev(env, tabId)`,
    and `readRoomSelections(env, documentId, tabId, personTagFor(documentId, author))`.
-2. **Compile.** Operations: `applyEditOperations(stored, operations, { selected, log })`. Replace:
-   `applyReplace(stored ?? null, replace, { tabId, name, themeId, selected, log })`. Both return
-   `{ tab, results, elementOps, inverse, warnings, targets, createdIds } | { errors }`. The engine resolves
-   selectors, normalises and coerces values, lands workshop notes on lanes, lays out what it touched and ends with
-   `isValidTab`. `selected` is the union of `elementIds` of the selections marked `mine`, or `null` when the room
-   did not answer.
+2. **Compile.** Operations: `applyEditOperations(stored, operations, { selected, log })`. Replace: `applyReplace(stored ?? null, replace, { tabId, name, themeId, selected, log })`. Both return `{ tab, results, elementOps, inverse, warnings, targets, createdIds } | { errors }`. The engine resolves selectors, normalises and coerces values, lays out what it touched and ends with `isValidTab`. `selected` is the union of `elementIds` of the selections marked `mine`, or `null` when the room did not answer.
 3. **Check the base** with `checkBase` (below). When the engine refused and the base's revision is behind, the base
    check runs over `base.elements` alone first; its conflict wins over the engine's errors (CS13).
 4. **Check held**, agent changesets only: `heldTargets(targets, selections)` over the selections not marked
@@ -425,14 +420,7 @@ before)`. Derived by diffing back rather than op by op, so removes, adds and a r
 layout, theme, name } }`, no base; then reads the tab to render the PNG (CS36). Structured output gains
   `changesetId`, `rev`, `text`, `lint`.
 - `update_document` `replace`: `{ replace: { graph | mermaid | elements, layout } }`, no base.
-- `update_document` `ops`: `mcpOpsToEditOperations(args.ops)` in the JSON form: `add` → `add` of the whole
-  element; `update` → `set` with the element's given fields; `remove` → `rm` (pinned arrows go too and are listed).
-  `elementId` is an id or a ref as `read_document` prints it, resolved with `resolveRef` against the loaded tab; the
-  target is that element's always-safe `id:"…"` ref, and a word naming nothing goes as given for the engine to
-  refuse (EO54). The engine lands event-storming notes on lanes and coerces shapes. Base:
-  `{ rev: args.rev ?? loaded.rev, elements }` with the fingerprints of the elements the ops name, from the tab the
-  tool loads at call time. Input gains optional `rev`, the revision `read_document`
-  returned.
+- `update_document` `ops`: `mcpOpsToEditOperations(args.ops)` in the JSON form: `add` → `add` of the whole element; `update` → `set` with the element's given fields; `remove` → `rm` (pinned arrows go too and are listed). `elementId` is an id or a ref as `read_document` prints it, resolved with `resolveRef` against the loaded tab; the target is that element's always-safe `id:"…"` ref, and a word naming nothing goes as given for the engine to refuse (EO54). Base: `{ rev: args.rev ?? loaded.rev, elements }` with the fingerprints of the elements the ops name, from the tab the tool loads at call time. Input gains optional `rev`, the revision `read_document` returned.
 - `rename_document` with `tabId`: `PUT .../tabs/:tabId/name { name }`.
 - A 4xx from the route returns `errorResult(changesetErrorText(err))` (the route's `text` or `message`, never
   reported to the Error category); a 5xx is reported as today.

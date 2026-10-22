@@ -40,7 +40,6 @@ export function lensSubjectOf(row: LensRow, viewerId: string): LensSubject {
       teamId: row.team?.id ?? row.teamId ?? null,
       source: row.source ?? null,
       opensIn: row.opensIn,
-      tabKind: row.tabKind,
       templateFamily: row.templateFamily,
     },
     viewerId,

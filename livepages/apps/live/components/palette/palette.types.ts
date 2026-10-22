@@ -1,9 +1,8 @@
 import type { ShapeLibraryItem } from '@livepages/api-schema';
-import type { EmbedProvider, EventStormingNoteKind } from '@livepages/document';
+import type { EmbedProvider } from '@livepages/document';
 import type { ShapeKind } from '@livepages/document';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { PaletteTint } from '@/components/palette/palette-controls';
-import type { EsBoardControls } from '@/components/palette/EventStormingBoardRows';
 
 export type CanvasTool =
   | 'pan'
@@ -68,15 +67,7 @@ export type PaletteProps = {
   // middle of the view.
   onInsertLibraryShape: (item: ShapeLibraryItem) => void;
   onAddText: () => void;
-  // Optional fill + kind: an Event Storming note (docs/specs/021-event-storming/event-storming.md).
-  onAddSticky: (fill?: string, esKind?: EventStormingNoteKind) => void;
-  // True when the active tab is an event-storming board (docs/specs/021-event-storming/event-storming.md): the
-  // palette then opens on the Event Storming category instead of
-  // Popular — the notation is what the board is for.
-  esBoard?: boolean;
-  // Board-level switches shown above the notation on one of those boards
-  // (docs/specs/021-event-storming/event-storming.md Phase 6: timeline lanes). Omitted everywhere else.
-  esBoardControls?: EsBoardControls;
+  onAddSticky: () => void;
   // Drop a 3x3 editable table at the viewport centre.
   onAddTable: () => void;
   // Drop a note marker (annotation) at the viewport centre. See docs/specs/009-elements/annotations.md.

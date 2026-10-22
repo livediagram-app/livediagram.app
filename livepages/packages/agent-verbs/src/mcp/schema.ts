@@ -65,9 +65,7 @@ const CONTENT_KINDS =
   'Content-carrying kinds: ' +
   'type "sticky": a note whose "label" is its text; the theme never recolours it, so its own ' +
   `"fillColor" + "textColor" are kept (palette pairs, fill/text: ${stickyPairs}); unset it is ` +
-  'the classic amber note. A sticky with "esKind" (domain-event, command, actor, policy, read-model, ' +
-  'external-system, aggregate, hotspot) is an event-storming note of that kind (its paper, size and lane on a ' +
-  'storm board): add one to a board with the edit `add sticky label="Courier" esKind=actor`. ' +
+  'the classic amber note. ' +
   'type "image": a picture from the user\'s gallery: "imageId" is an id from list_images (one not in the ' +
   'gallery is refused); without it the element is a placeholder the user fills in the editor. "objectFit" ' +
   'contain (default, the whole picture) or cover (fills the box, cropping); "alt" describes it. A box in the ' +
@@ -494,22 +492,6 @@ const graphField = z
             .string()
             .optional()
             .describe('An icon on the box: an id from search_icons ("database", "aws-lambda").'),
-          esKind: z
-            .enum([
-              'domain-event',
-              'command',
-              'actor',
-              'policy',
-              'read-model',
-              'external-system',
-              'aggregate',
-              'hotspot',
-            ])
-            .optional()
-            .describe(
-              'style "storm" only: the workshop note this node is (default domain-event). Its label is the ' +
-                'note\u2019s text, kept whole.',
-            ),
           tone: z
             .enum(['strong', 'soft', 'muted', 'plain'])
             .optional()
@@ -578,17 +560,14 @@ const graphField = z
         'Flow direction: "down" (top to bottom) or "right" (left to right). Default: auto.',
       ),
     style: z
-      .enum(['flow', 'tree', 'mindmap', 'lanes', 'cycle', 'storm', 'sequence'])
+      .enum(['flow', 'tree', 'mindmap', 'lanes', 'cycle', 'sequence'])
       .optional()
       .describe(
         'Layout: "flow" (layered, the default; the layout for processes and systems: a decision\u2019s ' +
           'side exit sits level beside it and a loop back runs round the outside), "tree" (a tidy ' +
           'hierarchy, the layout for org charts), "mindmap" (radial around the first node), "lanes" (a ' +
           'swimlane diagram: each group a lane, the flow left to right across them) or "cycle" (a ring in ' +
-          'node order, clockwise from the top; a node with no edge sits at its centre) or "storm" (an ' +
-          'event-storming board: each node a workshop note of its esKind, one column per domain event in the ' +
-          'order the edges imply, each kind on its own lane, no arrows; a new tab becomes an event-storming ' +
-          'board) or "sequence" (a sequence diagram: the nodes the participants, a node shaped actor a stick ' +
+          'node order, clockwise from the top; a node with no edge sits at its centre) or "sequence" (a sequence diagram: the nodes the participants, a node shaped actor a stick ' +
           'figure; the edges the messages in order, a dashed edge a reply; Mermaid sequenceDiagram text says ' +
           'more: activations, notes, alt/loop fragments). With groups the layout is flow unless it is lanes.',
       ),

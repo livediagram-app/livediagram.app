@@ -237,7 +237,7 @@ Still outstanding:
 # 1. Worker secrets not carried by the workflow
 cd apps/api && wrangler secret put RESEND_API_KEY --env staging
 cd apps/api && wrangler secret put OPENAI_API_KEY --env staging            # the assistant
-cd apps/api && wrangler secret put GOOGLE_AI_STUDIO_API_KEY --env staging  # the crop reader
+cd apps/api && wrangler secret put GOOGLE_AI_STUDIO_API_KEY --env staging
 
 # 2. GitHub secrets — Settings → Secrets and variables → Actions
 #    the four _STAGING entries in the table above

@@ -50,10 +50,10 @@ const entries = (withFiles: boolean): IndexEntry[] => [
         },
         {
           name: 'Workshop',
-          kind: 'event-storming',
+          kind: 'board',
           elements: 0,
           rev: 2,
-          header: withFiles ? null : 'tab b "Workshop" · 0 elements · kind=event-storming · rev 2',
+          header: withFiles ? null : 'tab b "Workshop" · 0 elements · kind=board · rev 2',
         },
       ],
     },

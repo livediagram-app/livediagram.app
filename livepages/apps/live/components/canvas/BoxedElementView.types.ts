@@ -47,13 +47,6 @@ export type BoxedElementViewProps = {
   // `opacity`. Undefined = 1 (kept undefined at full opacity so the
   // memoised view's props stay stable).
   layerOpacity?: number;
-  // Photo draft (docs/specs/021-event-storming/event-storming.md Phase 8): this note arrived from a photograph and
-  // has not been accepted yet, so it wears a dashed accent outline.
-  photoDraft?: boolean;
-  // …and this one is a note the photo MATCHED: it gets a small "already here"
-  // badge, with what the photo read when that differed from the board.
-  photoMatched?: boolean;
-  photoReadAs?: string;
   // Element-id-bearing signatures so the parent can pass a single
   // stable callback per kind (rather than recreating a closure per
   // element on every render). The child has `element.id` in scope
@@ -233,17 +226,6 @@ export type BoxedElementViewProps = {
   // Paint index within the elements layer. Isometric mode only: it stops
   // overlapping elements sharing a z-plane (docs/specs/008-canvas/isometric-view.md).
   isoDepth: number;
-  // Insert-between preview (docs/specs/021-event-storming/event-storming.md): canvas-unit offset this element is
-  // sliding by while a palette drag hovers a gap on an event-storming board.
-  // A RENDER-TIME transform, never a change to `element.x` — the preview must
-  // not reach the document, the undo stack, or a peer. Undefined when no slot
-  // is open (kept undefined rather than 0 so the memo's props stay stable).
-  insertShiftX?: number;
-  // True while a palette drag could open a slot on this board, so the wrapper
-  // carries the transition that animates the slot BOTH ways. It has to
-  // outlive the offset itself: were the transition removed in the same commit
-  // as the transform, the board would snap shut instead of easing.
-  insertShiftAnimates?: boolean;
   // Held by a stack and not being dragged: glides to its slot when the stack reflows (docs/specs/009-elements/stack.md).
   stackGlide?: boolean;
   // The Page masthead (docs/specs/009-elements/page-element.md), and the banner / callout lines (docs/specs/009-elements/web-components-and-no-groups.md).

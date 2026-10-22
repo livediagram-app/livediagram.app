@@ -110,7 +110,7 @@ The editor has none of these:
 - Group / Ungroup in the selection popover, multi-selection toolbar and context menu; `⌘G`.
 - Group mode (the "Click another element to add to the group" pill).
 - Group selection, drill-in (`soloSelectedId`), and group-aware drag / delete / lock / layer /
-  duplicate / clipboard / format-painter / insert-between paths.
+  duplicate / clipboard / format-painter paths.
 - Group quick-connect and `pinned-group` endpoints (except the load-time migration above).
 - The Eraser Panel's "whole group" toggle ([Eraser Panel](../008-canvas/eraser-panel.md)).
 - Group membership in Excalidraw files: import does not map `groupIds` (grouped Excalidraw

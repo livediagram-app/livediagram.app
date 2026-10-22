@@ -5,7 +5,6 @@ import { ErrorTelemetryBoot } from '@/components/providers/ErrorTelemetryBoot';
 import { PageViewBoot } from '@/components/providers/PageViewBoot';
 import { TimingTelemetryBoot } from '@/components/providers/TimingTelemetryBoot';
 import { StaleBuildBoot } from '@/components/providers/StaleBuildBoot';
-import { TruthArmBoot } from '@/components/providers/TruthArmBoot';
 import { KeyboardAvoidanceBoot } from '@/components/providers/KeyboardAvoidanceBoot';
 import { ConfirmProvider } from '@/hooks/ui/useConfirm';
 import { DriveMirrorProvider } from '@/components/drive/DriveMirrorProvider';
@@ -166,7 +165,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <StaleBuildBoot />
         <PageViewBoot />
         <TimingTelemetryBoot />
-        <TruthArmBoot />
         <KeyboardAvoidanceBoot />
         <ClerkProvider>
           <ToastProvider>

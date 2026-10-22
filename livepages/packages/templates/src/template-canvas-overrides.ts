@@ -127,10 +127,6 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'two-truths-and-a-lie': 'grid',
   'would-you-rather': 'grid',
   'people-bingo': 'grid',
-  // Event storming is a sticky-note workshop like the story / affinity
-  // maps, so it pins the dot grid rather than riding the other technical
-  // templates' graph paper.
-  'event-storming': 'grid',
   'empathy-map': 'grid',
   funnel: 'blank',
   sankey: 'blank',
@@ -253,10 +249,6 @@ export function templateCanvasOverrides(kind: TemplateKind): Partial<Tab> {
   if (opacity < 1) overrides.backgroundOpacity = opacity;
   const layers = templateLayers(kind);
   if (layers) overrides.layers = layers;
-  // A template can also declare what KIND of board it makes (docs/specs/021-event-storming/event-storming.md).
-  // The kind, not a layer id, is what the editor reads to decide it is a
-  // workshop board, so it must land on every application path: the picker,
-  // /new, and the MCP worker all go through here.
   // A template's mode (docs/specs/007-editor/templates-by-mode.md): the Draw templates are general
   // tabs that OPEN in Draw mode (docs/specs/007-editor/editor-modes.md "Where the mode lives";
   // whiteboarding is no kind), the Pages ones open in Pages (their pages below).
@@ -272,11 +264,5 @@ export function templateCanvasOverrides(kind: TemplateKind): Partial<Tab> {
   // (canvas-and-palette.md "Templates on pages"); their builders place every element on them.
   const pages = templatePages(kind);
   if (pages) Object.assign(overrides, { opensIn: 'pages', pages });
-  if (kind === 'event-storming') {
-    overrides.kind = 'event-storming';
-    // The seed note is built on a lane, so the board is born settled and the
-    // one-time settle never runs on it (docs/specs/021-event-storming/event-storming.md "Always on a lane").
-    overrides.esLanesSettled = true;
-  }
   return overrides;
 }

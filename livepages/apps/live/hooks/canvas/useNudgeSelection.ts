@@ -19,8 +19,6 @@
 //     (rebindArrowAnchorsAfterMove, docs/specs/008-canvas/arrow-anchors.md)
 //     when the autoRebindArrows pref is on (read through the live ref so the latest value applies
 //     without re-mounting the listener).
-//   - On an event-storming board, up / down move a selection holding a
-//     workshop note a whole LANE per press (laneAwareStep below).
 //   - Suppressed in view-role sessions; the consumer also gates on
 //     "is there a typing target focused" upstream.
 
@@ -28,8 +26,6 @@ import type { Selection } from '@/lib/selection-store';
 import { useEffect, useRef, type RefObject } from 'react';
 import {
   isBoxed,
-  isEventStormingNote,
-  laneStepTop,
   rebindArrowAnchorsAfterMove,
   withSheetCharts,
   withAttached,
@@ -43,9 +39,6 @@ type NudgeDeps = {
   // Read on each press (docs/specs/008-canvas/blueprints/selection-store.md).
   readSelection: () => Selection;
   activeTab: Tab;
-  // An event-storming board: up / down move a workshop note a whole lane
-  // (docs/specs/021-event-storming/event-storming.md "Always on a lane").
-  laneBoard: boolean;
   // History coalescing helpers from useDocumentHistory: the first
   // press of a burst takes a checkpoint, subsequent presses tick.
   markCheckpoint: () => void;
@@ -74,7 +67,7 @@ export function useNudgeSelection(deps: NudgeDeps): (dx: number, dy: number) => 
     };
   }, []);
 
-  return (pressDx, pressDy) => {
+  return (dx, dy) => {
     if (deps.isReadOnly) return;
     const { selectedId, multiSelectedIds } = deps.readSelection();
     const picked =
@@ -97,7 +90,6 @@ export function useNudgeSelection(deps: NudgeDeps): (dx: number, dy: number) => 
     );
     const ids = locked.size > 0 ? new Set([...carried].filter((id) => !locked.has(id))) : carried;
     if (ids.size === 0) return;
-    const { dx, dy } = laneAwareStep({ ...deps, selectedId }, ids, pressDx, pressDy);
     // Open a coalescing burst on the first press: checkpoint so undo
     // returns to the pre-nudge state, then only tick until idle.
     if (!burstActiveRef.current) {
@@ -134,25 +126,4 @@ export function useNudgeSelection(deps: NudgeDeps): (dx: number, dy: number) => 
         : moved;
     });
   };
-}
-
-// Up / down on an event-storming board move a selection holding a workshop
-// note by that note's step to the next lane on that side, every member by the
-// same delta, so the notes stay on their lanes. The anchor is the single
-// selection when it is a workshop note, else the first one in document order.
-function laneAwareStep(
-  deps: Pick<NudgeDeps, 'laneBoard' | 'activeTab'> & { selectedId: string | null },
-  ids: ReadonlySet<string>,
-  dx: number,
-  dy: number,
-): { dx: number; dy: number } {
-  if (!deps.laneBoard || dy === 0) return { dx, dy };
-  const els = deps.activeTab.elements;
-  const single = deps.selectedId ? els.find((el) => el.id === deps.selectedId) : undefined;
-  const anchor =
-    single && ids.has(single.id) && isEventStormingNote(single)
-      ? single
-      : els.find((el) => ids.has(el.id) && isEventStormingNote(el));
-  if (!anchor || !isBoxed(anchor)) return { dx, dy };
-  return { dx: 0, dy: laneStepTop(anchor, dy < 0 ? -1 : 1) - anchor.y };
 }

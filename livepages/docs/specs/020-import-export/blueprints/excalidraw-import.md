@@ -209,10 +209,7 @@ read."
 
 - Dep `insertBoardScene(scene, at?)` (the editor passes `useBoardSceneInsert.insertScene`);
   without it every branch below is skipped and paste behaves as before.
-- **Files** (the `files` branch): the chosen file, when `isExcalidrawFileCandidate`, is read by
-  `readExcalidrawFile` (lazy); `scene` → `insertBoardScene(scene)` + `track('Element',
-'Imported', 'Excalidraw')`; `not-excalidraw` → the ordinary image paste (or the event-storming
-  photo reader); `error` → `toast.error(error)`.
+- **Files** (the `files` branch): the chosen file, when `isExcalidrawFileCandidate`, is read by `readExcalidrawFile` (lazy); `scene` → `insertBoardScene(scene)` + `track('Element', 'Imported', 'Excalidraw')`; `not-excalidraw` → the ordinary image paste; `error` → `toast.error(error)`.
 - **Text**: after the file branches and before `parseElementsPayload`,
   `excalidrawTextFromPaste(e.clipboardData)` (its own MIME type first, then `text/plain`, the
   first that passes `looksLikeExcalidraw`); a hit → `preventDefault`, `sceneFromExcalidrawText`
@@ -225,10 +222,7 @@ read."
 
 ### Drop (`usePaletteDrop`)
 
-- Dep `onDropFile(file, at)`. `dragover` with `Files` and `onDropPhoto` or `onDropFile` →
-  `preventDefault`, `dropEffect = 'copy'`. `drop`: the event-storming photo branch first; then the
-  first dropped file → `preventDefault`, `at = pointerToCanvas(clientX, clientY, wrapperRect,
-zoom)`, `onDropFile(file, at)`.
+- Dep `onDropFile(file, at)`. `dragover` with `Files` and `onDropPhoto` or `onDropFile` → `preventDefault`, `dropEffect = 'copy'`. then the first dropped file → `preventDefault`, `at = pointerToCanvas(clientX, clientY, wrapperRect, zoom)`, `onDropFile(file, at)`.
 - `EditorCanvasHost` passes `dropBoardFile` as `onDropFile` unless read-only.
 
 ### New documents (`excalidraw-board-file.ts`)

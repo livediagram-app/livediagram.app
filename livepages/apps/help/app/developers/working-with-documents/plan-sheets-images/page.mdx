@@ -209,7 +209,7 @@ curl -X POST https://livepages.app/api/documents/$DOC/tabs/$TAB/changesets \
 
 ## Pages and Articles
 
-`POST /documents/$DOC/tabs/$TAB/pages` changes a tab's [Pages](/help/canvas/pages-mode/) pages, up to 50 changes as one edit, or writes an article from Markdown. A tab in another mode is switched into Pages by the same edit; a locked tab or an Event Storming board is refused.
+`POST /documents/$DOC/tabs/$TAB/pages` changes a tab's [Pages](/help/canvas/pages-mode/) pages, up to 50 changes as one edit, or writes an article from Markdown. A tab in another mode is switched into Pages by the same edit; a locked tab is refused.
 
 ```bash
 # Add two slides and rename the first page

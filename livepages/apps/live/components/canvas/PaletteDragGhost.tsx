@@ -13,7 +13,7 @@ import { overFloatingPanel } from '@/lib/canvas-pointer';
 // instead of the browser's default tile snapshot.
 export function PaletteDragGhost({ zoom }: { zoom: number }) {
   const preview = usePaletteDragPreview();
-  // The live alignment snap (docs/specs/021-event-storming/event-storming.md), published by usePaletteDragGuides:
+  // The live alignment snap, published by usePaletteDragGuides:
   // the ghost draws where the element will LAND, not under the raw cursor,
   // so the guide lines and the footprint agree.
   const snap = usePaletteDragSnap();

@@ -253,19 +253,7 @@ canvas overrides; the model then personalises labels via `update_document`'s
    Layout only ever arranges the **connected graph** — edgeless content (titles,
    per-node descriptions, captions) passes through at its given position rather
    than being raked into a disconnected-component column.
-3. **Tags it as made by AI.** The create sends `source: 'mcp'`, which the
-   Explorer's **Made by AI** filter (`made-by:ai`,
-   [Explorer filters](../013-workspace/explorer-filters.md)) reads, so a user's
-   own work and AI-made documents can be told apart wherever either is filed.
-   Unfiled, it sits at the root of My Documents like any other document,
-   with its **Made by AI** badge. (Earlier this find-or-created a real
-   "Generated" folder, then the Explorer showed a Generated view;
-   provenance is a filter, not a place.)
-   The create also sends the creation `intent` of the first tab it built and the
-   template it used (`{ mode: "diagram" }` unless the input makes a whiteboard, an
-   event-storming board, or a document from a template family such as a retrospective), so with no folder named the server files it in the
-   user's [default folder](../013-workspace/default-folders.md) for that intent,
-   when they have one.
+3. **Tags it as made by AI.** The create sends `source: 'mcp'`, which the Explorer's **Made by AI** filter (`made-by:ai`, [Explorer filters](../013-workspace/explorer-filters.md)) reads, so a user's own work and AI-made documents can be told apart wherever either is filed. Unfiled, it sits at the root of My Documents like any other document, with its **Made by AI** badge. (Earlier this find-or-created a real "Generated" folder, then the Explorer showed a Generated view; provenance is a filter, not a place.) The create also sends the creation `intent` of the first tab it built and the template it used, so with no folder named the server files it in the user's [default folder](../013-workspace/default-folders.md) for that intent, when they have one.
 4. **Persists** all tabs via `POST /api/documents` (which seeds a `tabs[]` array
    and accepts `source`). A tab given as `graph`, `mermaid` or `template` travels
    as such and is compiled by the api ([API app](api.md)), so the MCP and the
@@ -583,23 +571,7 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
 - `direction` (auto): `down` (ranks top to bottom) or `right` (left to right). Auto is `down` for a flowchart (it
   reads down the page, as the template does) and for a graph of more than 150 nodes; any other flow is laid out
   both ways and keeps the one whose aspect is nearer a landscape page (3:2).
-- `style` (`flow`): `flow` is the layered layout, `tree` the tidy tree (an org
-  chart, a hierarchy; a parent below the root whose two or more children are all leaves stacks them in a column
-  under it, indented, joined by a bus down its lower-left quarter, the compact org chart; its lines carry no
-  arrowheads, as the org-chart template's do, since a tree shows belonging, unless an edge asks with `ends`; a node
-  with a `role` draws as the template's person card, its name in bold over the role with a person icon unless it
-  names another, in any style), `mindmap` a real mind map as the mind-map template draws one (mind nodes, so it grows with Tab
-  and Enter, laid out balanced: the root is the first node nothing enters, a bold round centre; each first-level
-  branch tinted in its own hue with its icon; leaves white and edged in their branch's hue, one height for every leaf of the map (the tallest any label needs); a root
-  whose label would grow the circle past 260 px takes the next text size down, so the centre stays near the template's; curved connectors in
-  the branch hue with no arrowheads; an edge the tree leaves out drawn dashed), `lanes` a swimlane diagram (each group
-  a lane, one under another, its label in the lane's header strip (a heading, a size up from the steps, the strip as
-  wide as the longest title needs up to the swimlane template's, the columns 48 px apart); the flow runs left to right across the lanes and
-  a node outside every group gets an unnamed lane), `sequence` a sequence diagram (the nodes the participants, a
-  node shaped `actor` a stick figure; the edges the messages in order, a dashed edge a reply; Mermaid says more), `storm` an event-storming board ([Event storming](../021-event-storming/event-storming.md#agents)), `cycle` a ring (the nodes in order clockwise from the top, each
-  edge a curved arrow following the ring's arc, leaving and entering its stops along the ring's tangent so every arc bows
-  out alike, a node with no edge at all at the ring's centre, sized on its own so a longer centre label never grows
-  the stops, a node given no shape a circle).
+- `style` (`flow`): `flow` is the layered layout, `tree` the tidy tree (an org chart, a hierarchy; a parent below the root whose two or more children are all leaves stacks them in a column under it, indented, joined by a bus down its lower-left quarter, the compact org chart; its lines carry no arrowheads, as the org-chart template's do, since a tree shows belonging, unless an edge asks with `ends`; a node with a `role` draws as the template's person card, its name in bold over the role with a person icon unless it names another, in any style), `mindmap` a real mind map as the mind-map template draws one (mind nodes, so it grows with Tab and Enter, laid out balanced: the root is the first node nothing enters, a bold round centre; each first-level branch tinted in its own hue with its icon; leaves white and edged in their branch's hue, one height for every leaf of the map (the tallest any label needs); a root whose label would grow the circle past 260 px takes the next text size down, so the centre stays near the template's; curved connectors in the branch hue with no arrowheads; an edge the tree leaves out drawn dashed), `lanes` a swimlane diagram (each group a lane, one under another, its label in the lane's header strip (a heading, a size up from the steps, the strip as wide as the longest title needs up to the swimlane template's, the columns 48 px apart); the flow runs left to right across the lanes and a node outside every group gets an unnamed lane), `sequence` a sequence diagram (the nodes the participants, a node shaped `actor` a stick figure; the edges the messages in order, a dashed edge a reply; Mermaid says more), `cycle` a ring (the nodes in order clockwise from the top, each edge a curved arrow following the ring's arc, leaving and entering its stops along the ring's tangent so every arc bows out alike, a node with no edge at all at the ring's centre, sized on its own so a longer centre label never grows the stops, a node given no shape a circle).
 - `groups`: named clusters drawn as frames around their members and laid out as
   one block each (the clustered layout the editor's Mermaid import uses); an edge
   may point at a group id. With groups, `style` is flow. A node may name its

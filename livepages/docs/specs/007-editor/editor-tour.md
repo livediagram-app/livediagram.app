@@ -15,7 +15,7 @@ proved the better introduction.
 | ---------------- | ----------------------------------------------------------------------------------------------- |
 | **Diagram tour** | This tour. In the interface: **Diagram Tour**, and **Diagram Tour** in Settings' Tours category |
 | **welcome tour** | Its name until October 2026; kept only in code identifiers and telemetry tokens                 |
-| **Diagram tab**  | A tab whose mode is Diagram, an event-storming board included (one is always in Diagram)        |
+| **Diagram tab**  | A tab whose mode is Diagram                                                                     |
 
 ## Where it appears
 
@@ -107,8 +107,7 @@ flag, so a mid-rerun reload re-offers the same way.
 ## The steps
 
 A welcome offer card, then six steps in palette → canvas → tabs → theme order (five on mobile, where the
-theme-canvas step is skipped; four on an **event-storming board**, which hides the strip's pickers, and so drops
-the two dropdown steps; three when it is both), and a closing "you're ready" card. The bookend cards sit outside the step count. Copy is one or two
+theme-canvas step is skipped), and a closing "you're ready" card. The bookend cards sit outside the step count. Copy is one or two
 short sentences per step about diagramming ("concise" is the spec constraint; the exact strings live in
 `apps/live/components/tour/tour-steps.ts`). A step that names a hover, a click or a right-click carries its touch
 words too (`touchBody`), which a touch screen (a coarse pointer) reads instead: a tap, a long-press:

@@ -18,7 +18,7 @@ import { landTemplateOnTab, templateFollowerTabs } from './template-tab-set';
 type SetState<T> = Dispatch<SetStateAction<T>>;
 // The mode a chosen template's tab opens in (docs/specs/007-editor/editor-modes.md "Where the
 // mode lives"): the Whiteboard draws, every other template is a diagram, Blank included, even on
-// a tab that opened in Draw. An event-storming board has no mode to give (it is always Diagram).
+// a tab that opened in Draw.
 // Undefined leaves the tab as is.
 export function templateOpensIn(overrides: Pick<Tab, 'opensIn' | 'kind'>): EditorMode | undefined {
   if (overrides.opensIn) return overrides.opensIn;

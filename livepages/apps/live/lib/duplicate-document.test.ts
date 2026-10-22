@@ -186,15 +186,6 @@ describe('duplicateDocument placement and recorded intent', () => {
     });
   });
 
-  it('records an event-storming source with no family', async () => {
-    mLoadDocument.mockResolvedValue(placed({ opensIn: 'diagram', tabKind: 'event-storming' }));
-    await duplicateDocument('owner', 'src');
-    expect(mCreate.mock.calls[0]![1].intent).toEqual({
-      mode: 'diagram',
-      tabKind: 'event-storming',
-    });
-  });
-
   it('sends no intent for a source whose intent is unknown', async () => {
     mLoadDocument.mockResolvedValue(placed({}));
     await duplicateDocument('owner', 'src');

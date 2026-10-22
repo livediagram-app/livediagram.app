@@ -661,8 +661,7 @@ export function renderElementsToSvg(
       : `<rect x="${r2(vbX)}" y="${r2(vbY)}" width="${r2(vbW)}" height="${r2(vbH)}" fill="${xmlEscape(bg)}"/>`,
   ];
   if (frame?.writingSvg) parts.push(frame.writingSvg);
-  // Webfont declarations for the faces this tab uses (docs/specs/004-interface-design/fonts.md), including
-  // the one the event-storming notation asks for on its notes.
+  // Webfont declarations for the faces this tab uses (docs/specs/004-interface-design/fonts.md).
   // The categorical ramp the tab's theme gives its charts (docs/specs/009-elements/pie-chart.md), which is
   // what the canvas hands them. Without it every exported chart fell back to
   // the built-in ramp and came out in different colours to the canvas.

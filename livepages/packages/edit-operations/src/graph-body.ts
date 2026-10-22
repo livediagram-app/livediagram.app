@@ -3,7 +3,6 @@
 // untrusted JSON. Returns the first problem, naming the member, or null.
 
 import {
-  EVENT_STORMING_NOTES,
   SEQUENCE_MAX_ITEMS,
   SEQUENCE_MAX_PARTICIPANTS,
   graphShapeError,
@@ -23,8 +22,6 @@ const isOneOf = (values: readonly string[]) => (v: unknown) => values.includes(v
 const isListOf = (v: unknown, check: (item: unknown) => boolean) =>
   Array.isArray(v) && v.every(check);
 
-const ES_KINDS = EVENT_STORMING_NOTES.map((n) => n.kind);
-
 const isEntityField = (f: unknown) => isRecord(f) && isString(f.name) && optional(isString)(f.type);
 
 const isNode = (n: unknown) =>
@@ -32,7 +29,6 @@ const isNode = (n: unknown) =>
   isId(n.id) &&
   ['label', 'shape', 'link', 'note', 'group', 'icon'].every((key) => optional(isString)(n[key])) &&
   optional(isOneOf(['strong', 'soft', 'muted', 'plain']))(n.tone) &&
-  optional(isOneOf(ES_KINDS))(n.esKind) &&
   optional((v) => isListOf(v, isEntityField))(n.fields);
 
 const isEdge = (e: unknown) =>
@@ -126,8 +122,8 @@ const MEMBER_RULES: readonly [string, (v: unknown) => boolean, string][] = [
   ['direction', optional(isOneOf(['down', 'right'])), 'down or right'],
   [
     'style',
-    optional(isOneOf(['flow', 'tree', 'mindmap', 'lanes', 'cycle', 'storm', 'sequence'])),
-    'flow, tree, mindmap, lanes, cycle, storm or sequence',
+    optional(isOneOf(['flow', 'tree', 'mindmap', 'lanes', 'cycle', 'sequence'])),
+    'flow, tree, mindmap, lanes, cycle or sequence',
   ],
   ['lines', optional(isOneOf(['straight', 'angled', 'curved'])), 'straight, angled or curved'],
 ];

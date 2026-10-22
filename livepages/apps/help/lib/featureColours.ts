@@ -21,7 +21,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'text-and-fonts': '#0891b2',
   themes: '#d946ef',
   templates: '#14b8a6',
-  'event-storming-boards': '#d97706',
   'editor-modes': '#4338ca',
   'draw-mode': '#78716c',
   'plan-mode': '#2563eb',
@@ -104,7 +103,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   // Palette → Elements
   write: '#0891b2',
   build: '#22c55e',
-  'event-storming': '#ea580c',
   'mind-maps': '#8b5cf6',
   flowcharts: '#0ea5e9',
   'edit-outline': '#7c3aed',

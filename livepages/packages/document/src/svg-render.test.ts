@@ -216,8 +216,7 @@ describe('renderElementsToSvg', () => {
   });
 
   // Fonts (docs/specs/004-interface-design/fonts.md) used to stop at the canvas: every export painted
-  // system-ui, so a downloaded canvas looked like a different one — most
-  // obviously an event-storming wall, whose marker face IS the notation.
+  // system-ui, so a downloaded canvas looked like a different one.
   describe('fonts', () => {
     // The renderer XML-escapes every attribute, quotes included; read the
     // markup back the way a browser does so the assertions stay legible.
@@ -287,24 +286,8 @@ describe('renderElementsToSvg', () => {
       );
     });
 
-    // Workshop notes are written in capitals (docs/specs/021-event-storming/event-storming.md) — the export paints
-    // what the board shows, or a shared PNG stops being the board.
-    it('exports an event-storming note in capitals', () => {
-      const svg = renderElementsToSvg(tab([sticky({ esKind: 'domain-event' })]));
-      expect(svg).toContain('ORDER PLACED');
-      expect(svg).not.toContain('Order placed');
-    });
-
     it('leaves an ordinary sticky as written', () => {
       expect(renderElementsToSvg(tab([sticky()]))).toContain('Order placed');
-    });
-
-    // The marker face is the notation (docs/specs/021-event-storming/event-storming.md), so it has to survive the
-    // export the same way the colour and the capitals do.
-    it('exports an event-storming note in marker', () => {
-      const svg = renderElementsToSvg(tab([sticky({ esKind: 'domain-event' })]));
-      expect(svg.replace(/&#39;/g, "'")).toContain("font-family=\"'Permanent Marker'");
-      expect(svg).toContain('Permanent+Marker');
     });
   });
 

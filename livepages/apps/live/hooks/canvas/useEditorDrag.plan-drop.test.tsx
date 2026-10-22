@@ -71,7 +71,6 @@ function harness(answer: 'refused' | undefined) {
     autoRebindArrowsRef: { current: false },
     alignmentGuidesRef: { current: false },
     isPinchingRef: { current: false },
-    insertGate: { esBoard: false, readOnly: false, tabLocked: false, createBlocked: false },
     onPlanCardDroppedOnBoard,
   } as unknown as EditorDragDeps;
   const view = renderHook(() => useEditorDrag(deps));

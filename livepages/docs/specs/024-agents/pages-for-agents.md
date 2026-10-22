@@ -43,7 +43,6 @@ The interface's words are kept: an agent writes an **article**, never a "documen
 - A tab named that is not in Pages mode is switched into it by the same edit, as the editor's mode switch does
   (`withEditorModeSwitched`: content past the first page is put onto a page of its own). The answer says
   "Switched the tab to Pages".
-- An Event Storming tab is refused (`tab_kind`): it never changes mode.
 - A locked tab is refused (`tab_locked`).
 
 ## Naming a page

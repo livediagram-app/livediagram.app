@@ -17,8 +17,8 @@
 - Tabs:
   - Main · diagram · 12 elements · rev 17
     `tab a "Main" · 12 elements: 10 boxes, 2 arrows · rev 17`
-  - Workshop · event-storming · 0 elements · rev 2
-    `tab b "Workshop" · 0 elements · kind=event-storming · rev 2`
+  - Workshop · board · 0 elements · rev 2
+    `tab b "Workshop" · 0 elements · kind=board · rev 2`
 
 ## Zeta
 

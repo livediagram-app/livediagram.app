@@ -1,7 +1,6 @@
 import type { ElementStyleOps } from '@/lib/element-style-ops';
 import type { CombineOp } from '@/lib/combine/combine';
 import type { WordmarkPatch } from '@/lib/style-presets';
-import type { EventStormingNoteKind } from '@livepages/document';
 import type {
   AnimationSpeed,
   ArrowEnds,
@@ -65,9 +64,6 @@ export type EditorContextMenuState =
       x: number;
       y: number;
       openUp?: boolean;
-      // The right-clicked spot in canvas coords (null off the canvas): where
-      // this menu's Paste lands on an event-storming board.
-      canvasPoint?: { x: number; y: number } | null;
     };
 
 export type EditorContextMenuProps = {
@@ -99,15 +95,6 @@ export type EditorContextMenuProps = {
   onRemoveLink: () => void;
   onBringToFront: () => void;
   onSendToBack: () => void;
-  // Event-storming note menu (docs/specs/021-event-storming/event-storming.md): the notation's own short verb list
-  // replaces the styling sections — a workshop note's colour, text style and
-  // rotation ARE the notation, so there is nothing there to configure.
-  onCutElement: () => void;
-  onCopyElement: () => void;
-  onDuplicateElement: () => void;
-  onDeleteElement: () => void;
-  onStackFront: () => void;
-  onStackBack: () => void;
   // Layers (docs/specs/006-document/layers.md): the tab's normalised stack (bottom -> top) for the
   // Layer section's move-to dropdown, the selection's resolved layer
   // (null when members span layers), and the selection-wide move. The move
@@ -382,10 +369,6 @@ export type EditorContextMenuProps = {
   // Reset the shape back to its kind's default aspect ratio (keeps area,
   // snaps the width:height proportion back to the canonical look).
   onResetAspectRatio: () => void;
-  // Change a workshop note's KIND (docs/specs/021-event-storming/event-storming.md): a verb on this board, because
-  // the kind is the notation rather than a style. Absent when the session
-  // cannot edit.
-  onSetEsKind?: (kind: EventStormingNoteKind) => void;
   // Set the selection's exact size in canvas pixels (docs/specs/008-canvas/element-size.md). Either
   // dimension alone is allowed: the omitted one is left as-is, or carried by
   // the aspect lock when that is on.

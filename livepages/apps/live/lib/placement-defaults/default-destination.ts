@@ -85,12 +85,11 @@ export function resolveDefaultFor(
   return { resolved: null, skipped };
 }
 
-/** What a new document of this entry is made as. Every Event Storming board and every family
- *  template opens in Diagram mode (blueprint D112). */
+/** What a new document of this entry is made as. Every family template opens in Diagram mode
+ *  (blueprint D112). */
 export function representativeIntent(key: PlacementDefaultKey): CreationIntent {
   const [dimension, value] = key.split(':') as [string, string];
   if (dimension === 'mode') return { mode: value as EditorMode, tabKind: 'diagram' };
-  if (dimension === 'kind') return { mode: 'diagram', tabKind: value as 'event-storming' };
   return {
     mode: 'diagram',
     tabKind: 'diagram',

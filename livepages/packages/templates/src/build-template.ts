@@ -47,7 +47,6 @@ import { buildSequenceDiagram } from './template-builders-sequence';
 import { buildUmlClass } from './template-builders-uml';
 import { buildStateMachine } from './template-builders-state-machine';
 import { buildFloorPlan } from './template-builders-floorplan';
-import { buildEventStorming } from './template-builders-eventstorming';
 import { buildBusinessModelCanvas, buildEmpathyMap } from './template-builders-canvases';
 import { buildAffinityMap, buildUserStoryMap } from './template-builders-workshops';
 import { buildLeanCoffee, buildTownHall } from './template-builders-sessions';
@@ -299,8 +298,6 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
       return buildStateMachine(cx, cy);
     case 'floor-plan':
       return buildOnDesignPage('floor-plan', buildFloorPlan);
-    case 'event-storming':
-      return buildEventStorming(cx, cy);
     // A whiteboard is a clean board (docs/specs/023-draw-mode/draw-mode.md): what makes it one is its
     // kind, which templateCanvasOverrides sets, not any seeded element. Workshop's blank is an empty
     // tab too, opened in Workshop the same way.

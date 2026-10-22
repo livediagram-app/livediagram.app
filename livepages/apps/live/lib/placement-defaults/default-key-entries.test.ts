@@ -22,7 +22,6 @@ describe('DEFAULT_KEY_ENTRIES', () => {
       'Sessions',
       'Pages documents',
       'Plan boards',
-      'Event Storming boards',
       'Retrospectives',
       'Kanban boards',
     ]);
@@ -30,7 +29,6 @@ describe('DEFAULT_KEY_ENTRIES', () => {
 
   it('gives each entry the plural a sentence uses', () => {
     expect(defaultKeyEntry('mode:draw').noun).toBe('whiteboards');
-    expect(defaultKeyEntry('kind:event-storming').noun).toBe('Event Storming boards');
     expect(defaultKeyEntry('template:retrospective').noun).toBe('retrospectives');
     expect(defaultKeyEntry('template:kanban').noun).toBe('Kanban boards');
   });

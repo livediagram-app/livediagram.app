@@ -4,8 +4,6 @@ import { isPlanViewId, planViewSize } from '@livepages/items';
 import type { Selection } from '@/lib/selection-store';
 import { type Dispatch, type SetStateAction } from 'react';
 import {
-  type EventStormingNoteKind,
-  eventStormingNote,
   acceptsInlineIcon,
   createAnnotation,
   type EmbedProvider,
@@ -27,8 +25,6 @@ import {
   type Tab,
   withVariantColours,
 } from '@livepages/document';
-import { takeInsertionSlot } from '@/lib/insertion-preview';
-import type { InsertionSlot } from '@/lib/insert-between';
 import { getTechIcon, isTechIconId } from '@/lib/tech-icons';
 import { buildDrawnBoxed } from '@/lib/draw-commit';
 import { getSticker, stickerDropSize } from '@/lib/stickers';
@@ -80,7 +76,6 @@ export function useElementCreation(opts: {
     make: (x: number, y: number) => T,
     opts?: {
       edit?: boolean;
-      insertion?: InsertionSlot | null;
       style?: <E extends BoxedElement>(el: E) => E;
     },
   ) => void;
@@ -296,13 +291,11 @@ export function useElementCreation(opts: {
     if (editsBlocked) return;
     beginDraw({ type: 'text' });
   };
-  // `fill` + `esKind` = an Event Storming note riding the intent
-  // (docs/specs/021-event-storming/event-storming.md); absent for the plain sticky tile / the N shortcut.
-  const addSticky = (fill?: string, esKind?: EventStormingNoteKind) => {
+  const addSticky = () => {
     if (editsBlocked) return;
     // On a Dashboard a sticky is a note in a slot.
     if (placeOnDashboard(dashboardItemOf('sticky'))) return;
-    beginDraw({ type: 'sticky', ...(fill ? { fill } : {}), ...(esKind ? { esKind } : {}) });
+    beginDraw({ type: 'sticky' });
   };
 
   // Click-to-connect (docs/specs/008-canvas/canvas-and-palette.md) — arm from the selection, complete on the next
@@ -328,42 +321,22 @@ export function useElementCreation(opts: {
     canvasY: number,
     art?: { iconId?: string; stickerId?: string; choice?: string },
   ) => {
-    // The insertion slot the drag was offering on an event-storming board
-    // (docs/specs/021-event-storming/event-storming.md), consumed here so it can never outlive its own drag. Only
-    // ever set while the preview was live, so every other tab reads null.
-    // The drop point already sits in the slot: the preview publishes its
-    // offset through the same snap channel the ghost and the drop follow.
-    const insertion = takeInsertionSlot();
     if (editsBlocked) return;
     if (kind === 'plan-card') {
       onPlanCardPlace?.(art?.choice, canvasX, canvasY);
       return;
     }
-    if (insertion) track('Canvas', 'Used', 'InsertBetween');
     const iconId = art?.iconId;
     const stickerId = art?.stickerId;
     if (kind === 'sticky') {
       // A dragged sticky lands exactly like a tapped one — the drop point is
-      // the only difference — so it goes through the same builder: fill +
-      // stationery silhouette from the note kind, and on an event-storming
-      // board the tilt, the fixed size, and the stage-layer routing
-      // (docs/specs/021-event-storming/event-storming.md). placeBoxed re-centres and leaves sticky colours alone.
-      const esKind = art?.choice as EventStormingNoteKind | undefined;
-      const fill = esKind ? eventStormingNote(esKind).fill : undefined;
+      // the only difference — so it goes through the same builder. placeBoxed re-centres and leaves sticky
+      // colours alone.
       addBoxedAt(
         canvasX,
         canvasY,
-        (x, y) =>
-          buildDrawnBoxed(
-            { type: 'sticky', ...(fill ? { fill } : {}), ...(esKind ? { esKind } : {}) },
-            x,
-            y,
-            x,
-            y,
-            null,
-            activeTab,
-          ),
-        { edit: true, insertion },
+        (x, y) => buildDrawnBoxed({ type: 'sticky' }, x, y, x, y, null, activeTab),
+        { edit: true },
       );
       track('Element', 'Added', 'Sticky');
       return;
@@ -380,7 +353,7 @@ export function useElementCreation(opts: {
           const size = stickerDropSize(getSticker(stickerId), el);
           return { ...el, ...size, stickerId };
         },
-        { insertion, style: styleNewElement },
+        { style: styleNewElement },
       );
       track('Element', 'Added', 'Sticker');
       return;
@@ -453,7 +426,6 @@ export function useElementCreation(opts: {
       // rose) is put back after the theme and the remembered style.
       {
         edit: true,
-        insertion,
         style: (el) => {
           const styled = styleNewElement(el);
           return (

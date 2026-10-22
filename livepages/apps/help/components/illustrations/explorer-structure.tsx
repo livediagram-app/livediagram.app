@@ -983,7 +983,6 @@ export function UseAsDefaultScene() {
     'Whiteboards',
     'Pages documents',
     'Plan boards',
-    'Event Storming boards',
     'Retrospectives',
     'Kanban boards',
   ];

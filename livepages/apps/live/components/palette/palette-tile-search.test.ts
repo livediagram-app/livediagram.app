@@ -34,10 +34,8 @@ describe('elementTileSections', () => {
 
   it('puts the tiles only another mode offers in the other section, never in both', () => {
     const { here, elsewhere } = elementTileSections({ mode: 'diagram', hasImage: true });
-    // Charts and devices are Pages mode's; the event-storming notation is a board's.
-    expect(ids(elsewhere)).toEqual(
-      expect.arrayContaining(['data:pie', 'devices:phone', 'tools:es-domain-event']),
-    );
+    // Charts and devices are Pages mode's.
+    expect(ids(elsewhere)).toEqual(expect.arrayContaining(['data:pie', 'devices:phone']));
     expect(ids(here)).not.toContain('data:pie');
     const mine = new Set(ids(here));
     expect(elsewhere.filter((t) => mine.has(t.id))).toEqual([]);
@@ -192,9 +190,6 @@ describe('tile and element signatures', () => {
   const sigOf = (id: string) => tileSignature(tileById(id)!);
 
   it('tell apart the choices an element records', () => {
-    expect(elementSignature(el({ type: 'sticky', esKind: 'domain-event' }))).toBe(
-      sigOf('tools:es-domain-event'),
-    );
     expect(elementSignature(el({ type: 'sticky' }))).toBe(sigOf('tools:sticky'));
     expect(elementSignature(el({ type: 'freehand', pen: 'highlighter' }))).not.toBe(
       sigOf('tools:pencil'),

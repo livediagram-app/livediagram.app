@@ -17,19 +17,7 @@ showing it is up to date.
 
 - **What it shows** (`windowTabId`): one tab of the document, never the tab the window is on. A Plan tab (a Board,
   Sheet or Dashboard tab, or any tab in Plan mode) is offered like any other. Absent until chosen.
-- **The drawing**: the tab's content drawn as the editor shows it (the export renderer, in this person's appearance,
-  the tab's own theme, its photos and the document's cards), **zoomed to fit** inside the window on the tab's own
-  canvas, centred, never cropped: its paper and its pattern (dots, grid, lines, at the tab's pattern size and
-  opacity), as the editor paints them for that tab in its mode, at the drawing's zoom and lined up with it, filling
-  the window edge to edge, so the window reads as that tab and not as a picture on a blank card. A Plan tab is drawn
-  as laid out, as its image export draws it: its cards, its Sheets' cells and its plan views' pictures. A **Pages**
-  tab is drawn as its pages, where they lie on the canvas, each as its page export draws it (its sheet, its
-  background, its article writing and what reaches onto it, cut at its edges), on the desk between them; an article's
-  writing is the editor's own where that article is laid out, else as estimated without a browser (the agents'
-  previews' estimate). A **Form** tab is drawn as its form on its tab's look, as respondents see it (the picture its
-  thumbnail and an agent's preview draw). Every mode is drawn: Diagram, Draw, Workshop (its timer and vote are live
-  session tools, never drawn), Event Storming, Pages and Plan. It follows every change to the tab (an edit, a
-  collaborator's) at a deferred priority, so a burst of edits never competes with the canvas.
+- **The drawing**: the tab's content drawn as the editor shows it (the export renderer, in this person's appearance, the tab's own theme, its photos and the document's cards), **zoomed to fit** inside the window on the tab's own canvas, centred, never cropped: its paper and its pattern (dots, grid, lines, at the tab's pattern size and opacity), as the editor paints them for that tab in its mode, at the drawing's zoom and lined up with it, filling the window edge to edge, so the window reads as that tab and not as a picture on a blank card. A Plan tab is drawn as laid out, as its image export draws it: its cards, its Sheets' cells and its plan views' pictures. A **Pages** tab is drawn as its pages, where they lie on the canvas, each as its page export draws it (its sheet, its background, its article writing and what reaches onto it, cut at its edges), on the desk between them; an article's writing is the editor's own where that article is laid out, else as estimated without a browser (the agents' previews' estimate). A **Form** tab is drawn as its form on its tab's look, as respondents see it (the picture its thumbnail and an agent's preview draw). Every mode is drawn: Diagram, Draw, Workshop (its timer and vote are live session tools, never drawn), Pages and Plan. It follows every change to the tab (an edit, a collaborator's) at a deferred priority, so a burst of edits never competes with the canvas.
 - **Moving**: the drawing moves as the tab does on the canvas. Each shown element's animation plays in the window
   with its own Speed and Repeat, by the same motion the canvas draws: the Shape set's motions (Blink, Heartbeat,
   Breathe, Bounce, Wobble, Shake, Jelly, Float, Swing) and swells (Shimmer, Highlight), a sticky's Flutter, Sway,

@@ -8,11 +8,9 @@ import type { Selection } from '@/lib/selection-store';
 import { TopCenterBanner } from '@/components/chrome/TopCenter';
 import { PaletteTray, usePaletteStripBox } from '@/components/chrome/PaletteTray';
 import { useShiftHeld } from '@/hooks/ui/useShiftHeld';
-import { useInsertionDragInHand } from '@/lib/insertion-preview';
-import { usePaletteDragPreview } from '@/lib/palette-drag-preview';
 
-// The modifier hint (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/021-event-storming/event-storming.md): a passive top-centre pill naming what
-// a modifier does right now — or, while a drag is in hand, what one COULD do.
+// The modifier hint (docs/specs/008-canvas/canvas-and-palette.md): a passive top-centre pill naming what
+// a modifier does right now.
 // The chain / branch / lock / multi-select powers are invisible until tried,
 // and a held modifier nobody has heard of is a feature nobody finds. One
 // concise message, picked most-specific-first; nothing while typing (the hook
@@ -23,7 +21,6 @@ export function ModifierHintBanner({
   selectedKind,
   hasElements,
   suppressed,
-  esBoard,
 }: {
   drag: DragState | null;
   // The primary selection's flavour, for the no-drag hints.
@@ -33,27 +30,9 @@ export function ModifierHintBanner({
   // True while a mode banner (paint / group / draw) owns the top slot,
   // or the session is read-only.
   suppressed: boolean;
-  // Insert between (docs/specs/021-event-storming/event-storming.md) is an event-storming gesture only. The
-  // existing-note half carries its own board check in the store; a palette
-  // drag knows only what it is dragging, so the board comes from here.
-  esBoard: boolean;
 }) {
   const shiftHeld = useShiftHeld();
-  const movingNote = useInsertionDragInHand();
-  const palette = usePaletteDragPreview();
-  if (suppressed) return null;
-  // Insert between: offered while a sticky is on the move on an
-  // event-storming board, from the palette or from the board itself. Not while
-  // Shift is down — drag-duplicate (docs/specs/008-canvas/shift-drag-duplicate.md) already owns that gesture, so
-  // offering a second meaning for the same drag would be a lie.
-  const canInsertBetween = !shiftHeld && (movingNote || (esBoard && palette?.note === true));
-  if (canInsertBetween) {
-    // "Press", not "Hold": a window manager that claims Alt+press (Cinnamon's
-    // default, and others') never lets the page see a drag that STARTED with
-    // Alt down. Pressing it mid-drag always works, on every desktop.
-    return <Hint modifier="Alt">Press to insert it between two notes</Hint>;
-  }
-  if (!shiftHeld) return null;
+  if (suppressed || !shiftHeld) return null;
   const message = shiftHintMessage(drag, selectedKind, hasElements);
   if (!message) return null;
   return <Hint modifier="⇧ Shift">{message}</Hint>;

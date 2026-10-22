@@ -1,6 +1,5 @@
 import { FLOWCHART_STEP_LABEL, flowchartStepTypeOf, isFlowchartStep } from './flowchart';
 import type { Element, ShapeKind } from './index';
-import { eventStormingKindOf } from './event-storming';
 import { CHART_TYPE_LABELS, chartTypeOf } from './chart-types';
 
 // Human-readable name for a shape kind, e.g. 'square' -> 'Square',
@@ -51,12 +50,8 @@ export function elementKindLabel(el: Element): string {
       return 'Text';
     case 'table':
       return 'Table';
-    case 'sticky': {
-      // An event-storming note IS its kind (docs/specs/021-event-storming/event-storming.md) — "Selected Domain
-      // Event" says what you picked up; "Selected Sticky" says nothing.
-      const kind = eventStormingKindOf(el);
-      return kind ? titleCase(kind) : 'Sticky';
-    }
+    case 'sticky':
+      return 'Sticky';
     case 'image':
       return 'Image';
     case 'freehand':

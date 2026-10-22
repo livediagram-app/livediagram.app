@@ -27,11 +27,7 @@ describe('overviewView (R17, VW37)', () => {
     });
     await expect(text).toMatchFileSnapshot(golden('checkout.overview.txt'));
     expect(json.document).toEqual({ ...CHECKOUT_DOCUMENT, tabs: 3 });
-    expect(json.tabs[2]).toMatchObject({
-      outOfScope: false,
-      view: 'overview',
-      tab: { kind: 'event-storming' },
-    });
+    expect(json.tabs[2]).toMatchObject({ outOfScope: false, view: 'overview' });
     expect(json.elision).toBeNull();
   });
 

@@ -6,7 +6,6 @@ import type {
   ComponentKind,
   EmbedProvider,
   EstimateScale,
-  EventStormingNoteKind,
   Reaction,
   SelectionMode,
   SessionTool,
@@ -14,10 +13,8 @@ import type {
 } from '@livepages/document';
 import {
   EMBED_PROVIDER_LABEL,
-  eventStormingNote,
   penColourCss,
   type PenColour,
-  withArticle,
 } from '@livepages/document';
 
 // Draw-to-size intent. Picking any element from the palette except the
@@ -61,14 +58,7 @@ export type PendingDraw =
       board?: true;
     }
   | { type: 'text' }
-  // `fill` + `esKind` ride the sticky intent for the Event Storming tiles
-  // (docs/specs/021-event-storming/event-storming.md): the notation is one `sticky` type in eight semantic
-  // colours, and the palette offers a tile per note kind, so the choice
-  // has to survive the gesture the same way `session` / `provider` do
-  // above. The kind additionally routes the note onto its workshop
-  // stage's layer on event-storming boards. Absent = the iconic amber
-  // default, no routing.
-  | { type: 'sticky'; fill?: string; esKind?: EventStormingNoteKind }
+  | { type: 'sticky' }
   | { type: 'image' }
   // Table (docs/specs/008-canvas/canvas-and-palette.md), link card (docs/specs/009-elements/link-cards.md), and the embeds (docs/specs/009-elements/youtube-video.md, docs/specs/009-elements/embed-providers.md)
   // are their own element types rather than ShapeKinds, so each needs its own
@@ -253,11 +243,7 @@ export function drawBannerMessage(
     case 'text':
       return 'Tap to drop or drag to place text';
     case 'sticky':
-      // A workshop note has one size for life (docs/specs/021-event-storming/event-storming.md), so it is placed, not
-      // drawn; the ghost under the pointer shows where.
-      return intent.esKind
-        ? `${isMobile ? 'Tap' : 'Click'} to place ${withArticle(eventStormingNote(intent.esKind).label.toLowerCase())} note`
-        : 'Tap to drop or drag to draw a sticky note';
+      return 'Tap to drop or drag to draw a sticky note';
     case 'image':
       return 'Tap to drop or drag to draw image bounds';
     case 'table':

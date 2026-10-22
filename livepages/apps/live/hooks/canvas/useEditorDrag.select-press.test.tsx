@@ -43,7 +43,6 @@ function harness(multi: string[]) {
     autoRebindArrowsRef: { current: false },
     alignmentGuidesRef: { current: false },
     isPinchingRef: { current: false },
-    insertGate: { esBoard: false, readOnly: false, tabLocked: false, createBlocked: false },
   } as unknown as EditorDragDeps;
   const view = renderHook(() => useEditorDrag(deps));
   const press = (key: string, mode: DragMode = 'move') =>

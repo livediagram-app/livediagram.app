@@ -149,7 +149,6 @@ const PAGES_REFUSAL_CODES = [
   'invalid_body',
   'invalid_value',
   'tab_locked',
-  'tab_kind',
   'page_unknown',
   'article_by_write',
   'size_not_offered',

@@ -1,10 +1,9 @@
 // What each default key is called (docs/specs/013-workspace/default-folders.md "Entry names"): the
 // label "New documents that open as" lists, and the plural a sentence uses. Typed per dimension, so
-// a new editor mode, tab kind or template family does not compile until it is named here.
+// a new editor mode or template family does not compile until it is named here.
 import {
   PLACEMENT_DEFAULT_KEYS,
   type PlacementDefaultKey,
-  type SpecificTabKind,
   type TemplateFamily,
 } from '@livepages/api-schema';
 import type { EditorMode } from '@livepages/document';
@@ -21,10 +20,6 @@ const MODE_WORDS: Record<EditorMode, Words> = {
   workshop: { label: 'Sessions', noun: 'sessions' },
 };
 
-const KIND_WORDS: Record<SpecificTabKind, Words> = {
-  'event-storming': { label: 'Event Storming boards', noun: 'Event Storming boards' },
-};
-
 const FAMILY_WORDS: Record<TemplateFamily, Words> = {
   retrospective: { label: 'Retrospectives', noun: 'retrospectives' },
   kanban: { label: 'Kanban boards', noun: 'Kanban boards' },
@@ -33,7 +28,6 @@ const FAMILY_WORDS: Record<TemplateFamily, Words> = {
 function wordsOf(key: PlacementDefaultKey): Words {
   const [dimension, value] = key.split(':') as [string, string];
   if (dimension === 'mode') return MODE_WORDS[value as EditorMode];
-  if (dimension === 'kind') return KIND_WORDS[value as SpecificTabKind];
   return FAMILY_WORDS[value as TemplateFamily];
 }
 

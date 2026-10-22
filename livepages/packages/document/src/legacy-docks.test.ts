@@ -2,11 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { dropLegacyDocks } from './legacy-docks';
 import type { Element } from './index';
 
-const event = { id: 'e', type: 'sticky', esKind: 'domain-event', x: 0, y: 0 } as Element;
+const event = { id: 'e', type: 'sticky', x: 0, y: 0 } as unknown as Element;
 const docked = {
   id: 'c',
   type: 'sticky',
-  esKind: 'command',
   x: -216,
   y: 0,
   esDock: { hostId: 'e', side: 'before' },
@@ -15,7 +14,7 @@ const docked = {
 describe('dropLegacyDocks', () => {
   it('drops a stored dock relation and leaves the note where it is', () => {
     const [, command] = dropLegacyDocks([event, docked]);
-    expect(command).toEqual({ id: 'c', type: 'sticky', esKind: 'command', x: -216, y: 0 });
+    expect(command).toEqual({ id: 'c', type: 'sticky', x: -216, y: 0 });
   });
 
   it('returns the SAME array when nothing carries a dock', () => {

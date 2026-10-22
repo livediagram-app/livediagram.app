@@ -47,7 +47,6 @@ livepages's use and transfer of information received from Google APIs adheres to
 The AI features run only when you use them, and only on a deployment that has an AI provider configured.
 
 - **The AI assistant.** When you ask the assistant something, your prompt, the tab's name, the elements on the current tab (their text, shapes and positions) and your last few messages in that conversation are sent through our API to **OpenAI**, which writes the answer. Nothing is sent until you ask, and the assistant is off until you turn it on in Settings.
-- **Reading sticky notes from a photo.** When you import a photo of sticky notes, the notes are found in your browser, and crops of them are sent through our API to **Google** (Gemini) to read the handwriting. We do not store the crops.
 - **Connected AI tools.** If you [connect an AI tool](/help/account-and-data/connect-ai-mcp/) such as Claude, that tool reads and changes your documents through our API using the token you approved. What the tool does with what it reads is governed by that tool's own terms and privacy policy, not this one.
 
 We do not use your documents to train AI models. The providers above process what is sent to them under their own API terms.
@@ -86,7 +85,7 @@ We rely on a small number of providers to run the service:
 - **Clerk**, for authentication (its script loads for every visitor; it holds account data only if you sign in).
 - **Google**, for the Google Drive mirror (only if you connect it); your browser talks to Google directly.
 - **Resend**, for delivering the emails described above (to account holders, and to addresses a teammate invites).
-- **OpenAI**, for the AI assistant, and **Google** (Gemini), for reading sticky notes from a photo (only when you use them; see **AI features** above).
+- **OpenAI**, for the AI assistant (only when you use it; see **AI features** above).
 
 These providers process data on our behalf so that we can run the service.
 

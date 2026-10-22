@@ -2,22 +2,16 @@ import {
   alignmentGuides,
   distributionSnap,
   snapToAlignment,
-  capturePlacement,
-  laneSnapThreshold,
-  snapToLane,
   type AlignmentGuide,
   type DistributionGuide,
   type Element,
-  type EsTimeline,
 } from '@livepages/document';
 import { ALIGN_SNAP_THRESHOLD } from '@/lib/canvas';
-import type { LanePreview } from '@/lib/lane-preview';
 
-// Alignment help BEFORE the drop (docs/specs/021-event-storming/event-storming.md): a palette tile dragged over the
+// Alignment help BEFORE the drop (docs/specs/010-palette/palette-drag-ghost.md): a palette tile dragged over the
 // canvas snaps to its neighbours like a moved element does, and shows the
 // same guide lines — so a note lands aligned instead of landing and then
-// needing a nudge. On a low-threshold capture board every correction after
-// the fact is friction.
+// needing a nudge.
 //
 // Pure geometry, shared by the three surfaces that must agree: the ghost
 // (draws at the snapped spot), the guide overlay (draws the lines), and the
@@ -31,8 +25,6 @@ export function paletteDragSnapAt({
   width,
   height,
   elements,
-  timeline = null,
-  laneHeld = false,
 }: {
   // The cursor in canvas coords. The footprint is CENTRED on it, matching
   // where the drop actually places the element.
@@ -41,19 +33,11 @@ export function paletteDragSnapAt({
   width: number;
   height: number;
   elements: Element[];
-  // Timeline lanes (docs/specs/021-event-storming/event-storming.md Phase 6), when this drag is eligible for them: a
-  // note, on an event-storming board, with lanes on. Null otherwise — the
-  // caller owns that decision, exactly as the note-drag path's does.
-  timeline?: EsTimeline | null;
-  // A WORKSHOP note always lands on a lane (docs/specs/021-event-storming/event-storming.md "Always on a lane"):
-  // no y tolerance. A plain sticky keeps the lane as an aid.
-  laneHeld?: boolean;
 }): {
   dx: number;
   dy: number;
   guides: AlignmentGuide[];
   distGuides: DistributionGuide[];
-  lane: LanePreview | null;
 } {
   const candidate = {
     x: canvasX - width / 2,
@@ -61,30 +45,6 @@ export function paletteDragSnapAt({
     width,
     height,
   };
-  // Lanes claim the row, the neighbours claim x — the same ladder the
-  // note-drag resolver follows, two entry points.
-  const laneSnap = timeline ? snapToLane(candidate, timeline, laneSnapThreshold(laneHeld)) : null;
-  const gutterSnap = laneSnap
-    ? capturePlacement({ ...candidate, y: laneSnap.y }, elements, {})
-    : null;
-  // On a lanes board the lane resolver is the ONLY source of x: the ordinary
-  // alignment and distribution snaps were adding places the rhythm does not
-  // have (flush against a neighbour, on top of it, half-way along), and the
-  // note-drag path gates them off for the same reason.
-  if (timeline) {
-    return {
-      dx: gutterSnap ? gutterSnap.x - candidate.x : 0,
-      dy: laneSnap ? laneSnap.y - candidate.y : 0,
-      guides: [],
-      distGuides: [],
-      lane: laneSnap
-        ? {
-            laneIndex: laneSnap.laneIndex,
-            ...(gutterSnap ? { ghost: { x: gutterSnap.x, y: laneSnap.y, width, height } } : {}),
-          }
-        : null,
-    };
-  }
   const snap = snapToAlignment(candidate, elements, NO_EXCLUDE, ALIGN_SNAP_THRESHOLD);
   let dx = snap.dx;
   let dy = snap.dy;
@@ -109,7 +69,5 @@ export function paletteDragSnapAt({
   const distGuides = dist.guides.filter((g) =>
     g.axis === 'x' ? !snap.snappedX && dist.dx !== 0 : !snap.snappedY && dist.dy !== 0,
   );
-  // Timeline is null here (the early return above owns every lane frame), so
-  // x and y are the ordinary alignment / distribution answers alone.
-  return { dx, dy, guides, distGuides, lane: null };
+  return { dx, dy, guides, distGuides };
 }

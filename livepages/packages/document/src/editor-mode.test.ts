@@ -67,10 +67,8 @@ describe('opensInOf', () => {
     expect(opensInOf({ opensIn: 'sketch' })).toBe('diagram');
   });
 
-  it('opens an event-storming board in Diagram whatever it stores', () => {
-    expect(opensInOf({ kind: 'event-storming', opensIn: 'draw' })).toBe('diagram');
-    const legacy = { opensIn: 'draw', layers: [{ id: 'layer:es:board', name: 'Event Storming' }] };
-    expect(opensInOf(legacy)).toBe('diagram');
+  it('reads a retired kind as a general tab, in the mode it stores', () => {
+    expect(opensInOf({ kind: 'event-storming', opensIn: 'draw' })).toBe('draw');
   });
 });
 
@@ -80,9 +78,8 @@ describe('editorModeSwitchable', () => {
     expect(editorModeSwitchable({ kind: 'diagram', opensIn: 'draw' })).toBe(true);
   });
 
-  it('never on an event-storming board, new or legacy', () => {
-    expect(editorModeSwitchable({ kind: 'event-storming' })).toBe(false);
-    expect(editorModeSwitchable({ layers: [{ id: 'layer:es:board', name: 'ES' }] })).toBe(false);
+  it('never on a Plan tab', () => {
+    expect(editorModeSwitchable({ kind: 'board' })).toBe(false);
   });
 });
 
@@ -124,9 +121,9 @@ describe('setTabOpensIn', () => {
     expect(setTabOpensIn(general, 'diagram')).toBe(general);
   });
 
-  it('never gives an event-storming board an opening mode', () => {
-    const es = { ...general, kind: 'event-storming' as const };
-    expect(setTabOpensIn(es, 'draw')).toBe(es);
+  it('never gives a Plan tab an opening mode', () => {
+    const board = { ...general, kind: 'board' as const };
+    expect(setTabOpensIn(board, 'draw')).toBe(board);
   });
 });
 

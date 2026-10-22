@@ -32,7 +32,6 @@ describe('lensSubjectOf', () => {
       people: 'me',
       madeByAi: true,
       opensIn: 'draw',
-      kind: null,
       template: 'kanban',
     });
   });

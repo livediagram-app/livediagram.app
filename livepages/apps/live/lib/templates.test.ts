@@ -14,7 +14,6 @@ import {
   untitledNameForTemplate,
   type TemplateKind,
 } from '@livepages/templates';
-import { ES_BOARD_LAYER_ID, eventStormingLayers } from '@livepages/document';
 import { getTheme } from './themes';
 
 // `buildTemplatedTab` is the seam between /live/new (the welcome
@@ -26,7 +25,7 @@ import { getTheme } from './themes';
 
 // The catalogue's shape (count + default/extra split + no kind
 // drift) is load-bearing across both the picker and the marketing
-// site. docs/specs/019-marketing/marketing-site.md pins "147 templates (11 default + 136 extra)" and
+// site. docs/specs/019-marketing/marketing-site.md pins "146 templates (11 default + 135 extra)" and
 // docs/specs/008-canvas/canvas-and-palette.md catalogues the picker UX. These tests pin the array so
 // either the spec or the catalogue can't silently drift away from
 // the other.
@@ -98,7 +97,6 @@ describe('TEMPLATES catalogue', () => {
     'cloud-architecture',
     'uml-class',
     'state-machine',
-    'event-storming',
     'start-stop-continue',
     'mad-sad-glad',
     'four-ls',
@@ -187,21 +185,21 @@ describe('TEMPLATES catalogue', () => {
   ];
 
   // Hidden templates are buildable but never listed, so every user-facing
-  // count (docs/specs/019-marketing/marketing-site.md's "147 templates", the picker grids, the MCP catalogue)
+  // count (docs/specs/019-marketing/marketing-site.md's "146 templates", the picker grids, the MCP catalogue)
   // is over the listed subset. The mechanism is generic; nothing ships
   // hidden today (the docs/specs/007-editor/guided-tour-sample.md guided-tour sample used it until the
   // interactive tour, docs/specs/007-editor/editor-tour.md, superseded it).
   const listed = TEMPLATES.filter((t) => !t.hidden);
 
-  it('lists exactly 147 templates (11 default + 136 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
-    expect(listed).toHaveLength(147);
+  it('lists exactly 146 templates (11 default + 135 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
+    expect(listed).toHaveLength(146);
   });
 
-  it('splits cleanly into 11 default + 136 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
+  it('splits cleanly into 11 default + 135 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
     const defaults = listed.filter((t) => !t.extra);
     const extras = listed.filter((t) => t.extra);
     expect(defaults).toHaveLength(11);
-    expect(extras).toHaveLength(136);
+    expect(extras).toHaveLength(135);
   });
 
   it('ships no hidden templates (the flag is generic; docs/specs/007-editor/guided-tour-sample.md was retired by docs/specs/007-editor/editor-tour.md)', () => {
@@ -304,15 +302,6 @@ describe('templateCanvasOverrides', () => {
     ).toEqual(ids);
     // No raw Markdown survives the read.
     expect(flow.blocks.map(text).join(' ')).not.toMatch(/\*\*|^#|\[ \]/);
-  });
-
-  it('makes an event-storming board already settled on its lanes', () => {
-    // docs/specs/021-event-storming/event-storming.md "Always on a lane": the seed note is built on lane 0,
-    // so a new board never needs the one-time settle.
-    expect(templateCanvasOverrides('event-storming')).toMatchObject({
-      kind: 'event-storming',
-      esLanesSettled: true,
-    });
   });
 
   it('gives mind maps a softer backdrop opacity (plus an explicit grid)', () => {
@@ -645,12 +634,8 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
 
   it('pins each layered template’s names and scaffold / content split', () => {
     // Every layered kind has a table entry and vice versa, so adding a
-    // layered template forces a deliberate row here. Event storming is the
-    // one deliberate exception to the two-band shape — it ships FOUR stage
-    // layers for the workshop views (docs/specs/021-event-storming/event-storming.md) and gets its own pin below.
-    const layeredKinds = TEMPLATES.map((t) => t.kind).filter(
-      (k) => k !== 'event-storming' && templateLayers(k),
-    );
+    // layered template forces a deliberate row here.
+    const layeredKinds = TEMPLATES.map((t) => t.kind).filter((k) => templateLayers(k));
     expect(layeredKinds.sort()).toEqual(Object.keys(LAYERED_BANDS).sort());
 
     for (const [kind, expected] of Object.entries(LAYERED_BANDS) as [
@@ -680,19 +665,6 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
       expect(content.length, `${kind} content`).toBe(expected.content);
       expect(scaffold.length + content.length, kind).toBe(elements.length);
     }
-  });
-
-  // Event storming (docs/specs/021-event-storming/event-storming.md): three stage layers for the shared workshop
-  // views — Big picture / Process / Design. The seed lives on Big picture
-  // (the workshop's first stage).
-  it('event storming ships ONE layer, with the whole seed on it', () => {
-    const layers = templateLayers('event-storming')!;
-    expect(layers).toEqual(eventStormingLayers());
-    const elements = buildTemplate('event-storming', 0, 0);
-    const onBoard = elements.filter((el) => el.layerId === ES_BOARD_LAYER_ID);
-    // The one orange event, on the one board layer.
-    expect(onBoard).toHaveLength(1);
-    expect(onBoard.length).toBe(elements.length);
   });
 
   it('buildTemplatedTab lands the layers on the tab and theming keeps the stamps', () => {

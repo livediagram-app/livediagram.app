@@ -506,7 +506,6 @@ const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
   'sequence-diagram': ['sequence', 'uml', 'messages', 'api calls', 'interactions'],
   'uml-class': ['uml', 'classes', 'object oriented', 'oop', 'model'],
   'state-machine': ['states', 'transitions', 'fsm', 'lifecycle', 'statechart'],
-  'event-storming': ['ddd', 'domain driven design', 'events', 'workshop', 'bounded context'],
   'incident-postmortem': ['postmortem', 'incident', 'outage', 'rca', 'blameless', 'review'],
   'threat-model': [
     'stride',

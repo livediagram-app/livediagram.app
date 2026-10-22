@@ -35,9 +35,8 @@ export const PALETTE_KINDS: ReadonlySet<string> = new Set(
 );
 
 // The canvas selection modes (useCanvasTool's `Canvas·Used` tokens). Other
-// Canvas·Used events are not modes a person selects: InsertBetween is a drag
-// gesture and FollowMe is pinning your view to a peer's (it has its own card
-// on the Collaboration tab), so the ranking names the modes it counts.
+// Canvas·Used events are not modes a person selects: FollowMe is pinning your view to a peer's (it has its own
+// card on the Collaboration tab), so the ranking names the modes it counts.
 export const SELECTION_MODES: readonly string[] = [
   'Laser',
   'Spotlight',

@@ -4,7 +4,7 @@
 import { kindWordOf, type Element, type ElementId, type Endpoint } from '@livepages/document';
 import { LABEL_CUT_CHARS } from './vocabulary';
 
-// The kind word views print: an event-storming note's notation, a shape's kind, else the type.
+// The kind word views print: a shape's kind, else the type.
 export function kindOf(el: Element): string {
   return kindWordOf(el);
 }

@@ -1,9 +1,6 @@
 import { trustedHtml } from '@livepages/ui';
 // Tile pictures that are art, not icons (docs/specs/004-interface-design/iconography.md, "Art"):
-// the code block's fixed dark card, the embed providers' marks, and the event-storming notes in
-// their own stationery colour. They keep their own paint.
-
-import type { EventStormingNoteSize } from '@livepages/document';
+// the code block's fixed dark card and the embed providers' marks. They keep their own paint.
 
 // The code block's dark editor card with angle brackets; it stays untinted like the element.
 export function CodeBlockTileArt() {
@@ -90,20 +87,3 @@ export function FigmaTileArt() {
   );
 }
 
-const NOTE_RECT = {
-  wide: { x: 1.5, y: 5, width: 15, height: 9 },
-  small: { x: 5, y: 5, width: 8, height: 8 },
-  square: { x: 3, y: 3, width: 12, height: 12 },
-} as const;
-
-// An event-storming note's stationery silhouette (docs/specs/021-event-storming/event-storming.md): a
-// standard square, a WIDE rect for the prose kinds, a small square for the actor, in the note's
-// colour.
-export function NoteTileArt({ size, fill }: { size: EventStormingNoteSize; fill: string }) {
-  const r = NOTE_RECT[size];
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-      <rect {...r} fill={fill} stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-    </svg>
-  );
-}

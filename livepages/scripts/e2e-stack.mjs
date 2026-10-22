@@ -106,14 +106,9 @@ const MARKETING_PORT = Number(process.env.E2E_MARKETING_PORT ?? 3013);
 //   E2E_LIVE_ONLY=1  serve the static editor only, proxying to the api
 //                    already listening on E2E_API_PORT (no second worker).
 //   E2E_NO_AI=1      answer /api/capabilities with aiEnabled: false, as a
-//                    deployment with no AI key does — so the photo import
-//                    reads with the in-browser model.
-//   E2E_AI_BUDGET_SPENT=1  answer /api/ai/read-notes with 429 `ai_quota`, as a
-//                    hosted reader whose free budget is spent does — so the
-//                    photo import fails over to the in-browser model.
+//                    deployment with no AI key does.
 const LIVE_ONLY = process.env.E2E_LIVE_ONLY === '1';
 const NO_AI = process.env.E2E_NO_AI === '1';
-const AI_BUDGET_SPENT = process.env.E2E_AI_BUDGET_SPENT === '1';
 //   E2E_DRIVE=1      the Google Drive mirror e2e (docs/specs/022-drive-mirror/blueprints/
 //                    drive-mirror.md, "Testing"): the api worker verifies JWTs
 //                    against the JWKS the test serves (E2E_DRIVE_JWKS_PORT) and
@@ -513,15 +508,6 @@ function startLiveServer() {
         });
       return;
     }
-    if (AI_BUDGET_SPENT && pathname === '/api/ai/read-notes') {
-      // Drain the body first, as a real server would, then refuse for quota.
-      req.resume();
-      req.on('end', () => {
-        res.writeHead(429, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'ai_quota' }));
-      });
-      return;
-    }
     if (serveClerkStandIn(pathname, new URL(req.url, 'http://localhost'), res)) return;
     if (pathname === '/__e2e/assets-out-of-cache' && req.method === 'POST') {
       res.writeHead(204, {
@@ -620,7 +606,7 @@ async function main() {
   }
   if (LIVE_ONLY) {
     console.log(
-      `[e2e] static editor only, proxying to the api on :${API_PORT}${NO_AI ? ', AI reported off' : ''}${AI_BUDGET_SPENT ? ', AI budget spent' : ''}`,
+      `[e2e] static editor only, proxying to the api on :${API_PORT}${NO_AI ? ', AI reported off' : ''}`,
     );
     startLiveServer();
     return;

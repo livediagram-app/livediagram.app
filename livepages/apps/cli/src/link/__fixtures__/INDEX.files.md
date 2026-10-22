@@ -18,7 +18,7 @@
 - Files: `home-screen.livepages.json`, `home-screen.md`
 - Tabs:
   - Main · diagram · 12 elements · rev 17
-  - Workshop · event-storming · 0 elements · rev 2
+  - Workshop · board · 0 elements · rev 2
 
 ## Zeta
 

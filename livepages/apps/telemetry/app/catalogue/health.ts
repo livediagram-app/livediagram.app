@@ -63,11 +63,11 @@ export const WARNINGS: Metric = {
   rising: 'bad',
   category: 'Error',
   action: 'Warning',
-  // Every kind of warning: each names its fallback (AiQuota.BrowserReader, …).
+  // Every kind of warning: each names its fallback.
   typeIn: () => true,
   title: 'Warnings',
   blurb:
-    'Not a failure: a degradation the author was carried through, such as a spent AI budget reading the photo on the device instead. A rising line means a fallback is doing more of the work.',
+    'Not a failure: a degradation the author was carried through, such as a slow document load. A rising line means a fallback is doing more of the work.',
 };
 
 // Headed by the errors someone actually hit, each once: failed requests plus

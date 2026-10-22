@@ -35,7 +35,6 @@ import {
   EmbedArt,
   EntityArt,
   ErasersArt,
-  EventStormingArt,
   ExpiryArt,
   ExportArt,
   WorkshopModeArt,
@@ -106,7 +105,6 @@ import {
   SlideLayoutsArt,
   SlideTimingArt,
   SpotlightArt,
-  StickyPhotoArt,
   TabCopyArt,
   TabFoldersArt,
   TabWindowArt,
@@ -473,22 +471,6 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Code blocks with highlighting',
         description:
           'Put the payload beside the API arrow and the query under the database. A code block highlights TypeScript, JavaScript, Python, JSON, Bash, SQL, HTML, CSS and YAML, wraps long lines if you like, and keeps its own colour scheme whatever the theme.',
-      },
-      {
-        art: <EventStormingArt />,
-        href: '/help/canvas/event-storming-boards/',
-        group: 'Event storming',
-        title: 'Event storming boards',
-        description:
-          'A board built for the workshop: the eight note kinds of the notation one click away, written in marker capitals on paper that keeps its size and colour. Notes snap to timeline lanes, and holding Alt over a gap slides the rest of the wall along to make room for the step you missed.',
-      },
-      {
-        art: <StickyPhotoArt />,
-        href: '/help/canvas/event-storming-boards/',
-        group: 'Event storming',
-        title: 'Bring the paper wall in from a photo',
-        description:
-          'Ran the session on a real wall? Take a photo and every sticky comes in as a note: its words read from the handwriting, its kind from the paper\u2019s colour, laid out where it was. Untick what is not a note, fix a misreading, then add them as a draft you check in place.',
       },
       {
         art: <IconsArt />,

@@ -9,7 +9,6 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   EDITOR_MODES,
-  ES_BOARD_LAYER_ID,
   editorModeDescription,
   editorModeLabel,
   type EditorMode,
@@ -257,14 +256,6 @@ describe('StartModeSwitch in the editor', () => {
     expect(slot(container)).toBeNull();
   });
 
-  it('offers no switch on an event-storming board, nor a legacy one known by its layer', () => {
-    const { container } = render(<Host tab={freshTab({ kind: 'event-storming' })} />);
-    expect(slot(container)).toBeNull();
-    cleanup();
-    const layers = [{ id: ES_BOARD_LAYER_ID, name: 'Board', visible: true }];
-    const legacy = render(<Host tab={freshTab({ layers })} />);
-    expect(slot(legacy.container)).toBeNull();
-  });
 });
 
 // docs/specs/026-plan/plan-tabs.md "The kinds": a Board, Sheet or Dashboard tab keeps Plan; the switch shows, and another

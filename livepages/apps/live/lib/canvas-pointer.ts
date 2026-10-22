@@ -1,6 +1,5 @@
-// The pointer's canvas position as a paste sees it (docs/specs/021-event-storming/event-storming.md "Always on a
-// lane"): a paste holding a workshop note lands at the pointer when the pointer
-// is over the canvas, and staggers on the original otherwise. A floating panel
+// The pointer's canvas position as a paste sees it: a pasted board scene lands at the pointer when the pointer
+// is over the canvas. A floating panel
 // (the palette, the explorer, the map) lies on top of the canvas and still lets
 // its pointer moves reach the canvas, so it is "otherwise" by hand: the same
 // marker the palette drag's ghost already reads.

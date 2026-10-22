@@ -71,7 +71,7 @@ describe('template categories', () => {
       hierarchies: 7,
       design: 14,
       presentations: 17,
-      technical: 10,
+      technical: 9,
       games: 5,
     });
   });

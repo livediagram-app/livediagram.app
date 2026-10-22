@@ -6,7 +6,6 @@ import { PaletteToolRows } from './PaletteToolRows';
 import { PaletteTileGroup } from './PaletteTileGroup';
 import { EmbedGroupIcon, WebGroupIcon } from '@livepages/ui';
 import type { PaletteTileDef } from './palette-tile-defs';
-import { EventStormingBoardRows, type EsBoardControls } from './EventStormingBoardRows';
 
 // The palette's creation-category tab bodies. Every tile is
 // a data entry in the shared catalogue (palette-tile-defs.tsx) rendered
@@ -43,27 +42,6 @@ export function PaletteBuildTab({ pendingDraw, actions, tiles }: TabProps) {
 // The wordy elements (docs/specs/010-palette/palette-top-level-categories.md): Page, Text, Sticky Note, Annotation.
 export function PaletteWriteTab({ pendingDraw, actions, tiles }: TabProps) {
   return <PaletteToolRows tiles={tiles} actions={actions} pendingDraw={pendingDraw} />;
-}
-
-// The Event Storming notation (docs/specs/021-event-storming/event-storming.md): one coloured-sticky tile per note
-// kind of the workshop grammar, in workshop order. Rows with a blurb, like
-// Behaviour and Data — eight identical squares in different colours don't
-// explain themselves; "Something that happened, past tense" against "An
-// intent that triggers an event" is the actual choice.
-export function PaletteEventStormingTab({
-  pendingDraw,
-  actions,
-  tiles,
-  board,
-}: TabProps & { board?: EsBoardControls }) {
-  return (
-    <>
-      {/* Board-level switches first (docs/specs/021-event-storming/event-storming.md Phase 6), then the notation.
-          Absent on every other tab, where they would control nothing. */}
-      {board ? <EventStormingBoardRows controls={board} /> : null}
-      <PaletteToolRows tiles={tiles} actions={actions} pendingDraw={pendingDraw} />
-    </>
-  );
 }
 
 // The gesture tools (docs/specs/010-palette/palette-top-level-categories.md): the three pens, Polygon, Arrow, Line. Separate

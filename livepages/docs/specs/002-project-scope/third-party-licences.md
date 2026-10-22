@@ -18,7 +18,7 @@ reach a deployed artefact, and nothing else.
   at runtime, so server chunks never leave the build. The workers (api, mcp, router) are bundled
   with `wrangler deploy --dry-run --metafile`, and every module in the metafile counts.
 - **Why not the lockfile closure.** The production closure of a Next app lists its build machinery
-  (sharp and its LGPL libvips, Playwright, `onnxruntime-node`, the MDX toolchain) as if it shipped.
+  (sharp and its LGPL libvips, Playwright, the MDX toolchain) as if it shipped.
   Publishing that would claim obligations we do not have and bury the ones we do.
 - **Versions.** A work's version is its installed `package.json` version, cross-checked against the
   pnpm store path it was bundled from; the store path is the lockfile's resolution, so the page
@@ -35,9 +35,8 @@ reach a deployed artefact, and nothing else.
 - **Embedded works.** A bundler sees JavaScript, not what is compiled into a WebAssembly binary or
   a font. Every emitted binary asset (`.wasm`, `.ttf`, `.otf`, `.woff`, `.woff2`) must match at least
   one entry of the reviewed **embedded-works table**, which names the libraries inside it with their
-  own licence texts: XNNPACK and its helpers plus the Emscripten runtime inside the TensorFlow.js
-  WASM backend, ONNX Runtime's third-party notices inside its WASM, libwebp inside `@jsquash/webp`,
-  resvg and tiny-skia inside `@resvg/resvg-wasm`, and the Inter font inside the mcp worker. The same
+  own licence texts: resvg and tiny-skia inside `@resvg/resvg-wasm`, and the Inter font inside the
+  mcp worker. The same
   table covers material vendored into our own source (Lucide and Feather icon geometry, draw.io's
   view geometry ported into the draw.io importer), triggered by the first-party source file that
   carries it being bundled.
@@ -50,8 +49,7 @@ reach a deployed artefact, and nothing else.
 - **A work with no licence text fails the build**, naming the package and version. The fix is never
   to omit it: an **override** supplies the upstream text, committed to the repo with its source URL
   (pinned to a tag or commit) and a checksum, keyed to the exact package version so an upgrade asks
-  for review again. Today nine packages need one: five TensorFlow.js packages, two ONNX Runtime
-  packages, seedrandom and `@resvg/resvg-wasm`.
+  for review again. Today one package needs one: `@resvg/resvg-wasm`.
 - **Licence id.** The `license` field of the work's `package.json`, as an SPDX expression. When it is
   absent, the id is recognised from the text (MIT, ISC, BSD-2-Clause, BSD-3-Clause, Apache-2.0);
   text that is not recognised fails the build.
@@ -59,7 +57,7 @@ reach a deployed artefact, and nothing else.
   and weak-copyleft licences. An `UNLICENSED` package, a strong copyleft licence or anything new
   fails the build, so adding one is a decision somebody makes, not something a dependency bump does.
 - A table entry (override or embedded work) that matches nothing in a build is reported, not fatal:
-  an entry may land ahead of the dependency it serves (libwebp's entry precedes PR #176's encoder).
+  an entry may land ahead of the dependency it serves.
 
 ## The page
 

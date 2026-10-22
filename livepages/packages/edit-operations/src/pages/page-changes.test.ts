@@ -89,12 +89,9 @@ describe('which tab', () => {
     expect(out.lines[0]).toBe('Switched the tab to Pages.');
   });
 
-  it('refuses a locked tab and an Event Storming board', () => {
+  it('refuses a locked tab', () => {
     expect(refusal(tabOf({ locked: true }), [{ op: 'add', kind: 'slide' }]).code).toBe(
       'tab_locked',
-    );
-    expect(refusal(tabOf({ kind: 'event-storming' }), [{ op: 'add', kind: 'slide' }]).code).toBe(
-      'tab_kind',
     );
   });
 });

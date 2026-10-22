@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { labelMeasure, wrapLabel } from '@livepages/document';
 import { fitMultilineFontPx, FIT_MAX_PX, FIT_MIN_PX } from './fit-multiline-text';
 
-// Genuine auto-fit for multi-line labels (stickies, docs/specs/021-event-storming/event-storming.md): `scale` should
+// Genuine auto-fit for multi-line labels (stickies): `scale` should
 // mean "fill the note", the way writing on a physical sticky does — a
 // two-word event large, a long policy sentence small — rather than the fixed
 // 14px it used to mean. Pure: same inputs, same answer, so the display label,
@@ -51,7 +51,7 @@ describe('fitMultilineFontPx', () => {
   });
 });
 
-// Workshop notes render in capitals (docs/specs/021-event-storming/event-storming.md), and capitals are WIDER. The
+// A label in capitals is WIDER. The
 // fitter therefore has to measure the caps, not the typed mixed case — a
 // size fitted against "Order placed" overflows the moment it paints as
 // "ORDER PLACED".
@@ -78,8 +78,8 @@ describe('fitMultilineFontPx — uppercase', () => {
   });
 });
 
-// The note is painted in a face of its own (a workshop note wears the marker,
-// docs/specs/021-event-storming/event-storming.md), and faces have different widths at the same px. The fitter
+// A note can be painted in a face of its own (a marker, say), and faces have different widths at the same
+// px. The fitter
 // therefore measures IN THAT FACE — measuring system-ui and painting a marker
 // is how a note ends up with its last word over the edge.
 describe('fitMultilineFontPx — font family', () => {

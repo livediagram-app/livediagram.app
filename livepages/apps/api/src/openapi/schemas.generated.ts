@@ -2822,10 +2822,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "type": "string"
   },
   "CreationTabKind": {
-    "enum": [
-      "diagram",
-      "event-storming"
-    ],
+    "const": "diagram",
     "type": "string"
   },
   "CurrentTokenResponse": {
@@ -6020,19 +6017,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "fibonacci",
       "tshirt",
       "powers"
-    ],
-    "type": "string"
-  },
-  "EventStormingNoteKind": {
-    "enum": [
-      "domain-event",
-      "command",
-      "actor",
-      "policy",
-      "read-model",
-      "external-system",
-      "aggregate",
-      "hotspot"
     ],
     "type": "string"
   },
@@ -9463,42 +9447,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
-  "NoteCrop": {
-    "additionalProperties": false,
-    "properties": {
-      "id": {
-        "type": "number"
-      },
-      "image": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "id",
-      "image"
-    ],
-    "type": "object"
-  },
-  "NoteText": {
-    "additionalProperties": false,
-    "properties": {
-      "id": {
-        "type": "number"
-      },
-      "legible": {
-        "type": "boolean"
-      },
-      "text": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "id",
-      "text",
-      "legible"
-    ],
-    "type": "object"
-  },
   "NumOp": {
     "enum": [
       "between",
@@ -11928,36 +11876,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
-  "ReadNotesRequest": {
-    "additionalProperties": false,
-    "properties": {
-      "crops": {
-        "items": {
-          "$ref": "#/components/schemas/NoteCrop"
-        },
-        "type": "array"
-      }
-    },
-    "required": [
-      "crops"
-    ],
-    "type": "object"
-  },
-  "ReadNotesResponse": {
-    "additionalProperties": false,
-    "properties": {
-      "texts": {
-        "items": {
-          "$ref": "#/components/schemas/NoteText"
-        },
-        "type": "array"
-      }
-    },
-    "required": [
-      "texts"
-    ],
-    "type": "object"
-  },
   "RefCandidate": {
     "additionalProperties": false,
     "properties": {
@@ -12178,8 +12096,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "enum": [
               "make room",
               "carried",
-              "laid out",
-              "landed on a lane"
+              "laid out"
             ],
             "type": "string"
           },
@@ -14345,13 +14262,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
       },
-      "esDraft": {
-        "const": true,
-        "type": "boolean"
-      },
-      "esKind": {
-        "$ref": "#/components/schemas/EventStormingNoteKind"
-      },
       "fillColor": {
         "type": "string"
       },
@@ -14593,9 +14503,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
-      "esLanesSettled": {
-        "type": "boolean"
-      },
       "finish": {
         "$ref": "#/components/schemas/Finish"
       },
@@ -14673,7 +14580,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "TabKind": {
     "enum": [
       "diagram",
-      "event-storming",
       "board",
       "sheet",
       "dashboard",
@@ -14725,9 +14631,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "$ref": "#/components/schemas/Element"
         },
         "type": "array"
-      },
-      "esLanesSettled": {
-        "type": "boolean"
       },
       "finish": {
         "$ref": "#/components/schemas/Finish"

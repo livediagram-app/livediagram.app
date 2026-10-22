@@ -1,5 +1,5 @@
 // Show Me on always-loaded surfaces loads its steps at the press (docs/specs/007-editor/show-me.md "Code"): the page
-// panel's host and the photo review are in the editor's first load, and their step copy added 3.3 KiB gzipped to it
+// panel's host is in the editor's first load, and its step copy added 3.3 KiB gzipped to it
 // when imported statically. The Pages tour loads the same page steps at its offer.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -13,7 +13,6 @@ describe('Show Me in the editor’s first load', () => {
   it.each([
     ['PageTour.tsx', './page-tour-steps'],
     ['PagesTourHost.tsx', './page-tour-steps'],
-    ['PhotoReviewTour.tsx', './photo-review-tour-steps'],
   ])('%s imports its steps only at the press', (file, steps) => {
     const src = read(file);
     expect(staticImports(src)).not.toContain(steps);

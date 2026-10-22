@@ -123,8 +123,7 @@ exposes the custom type only to pages in the same browser engine, so:
   `livepages.elements`). Everything that already gates a canvas paste (a
   modal open, a text field focused, read-only, a label being edited) gates it
   too.
-- A recognised paste on a **whiteboard** tab lands with the whiteboard profile;
-  on a **diagram** or **event-storming** tab with the diagram profile.
+- A recognised paste on a **whiteboard** tab lands with the whiteboard profile; on a **diagram**.
 - It lands through the shared board-scene insert ([Board scene](board-scene.md)):
   the scene's bounds centred on the canvas pointer when the pointer is over the
   canvas, else on the viewport centre; **one undo step**; the landed elements
@@ -138,16 +137,7 @@ exposes the custom type only to pages in the same browser engine, so:
   `application/vnd.excalidraw+json` type) is read and lands the same way. A
   pasted PNG or SVG is checked for an embedded scene first: with one, the scene
   lands; without one, it is an ordinary image paste, as before.
-- **Dropped files** (on a tab that is not read-only): the same files land at the point
-  they are released. A picture without a scene (a photo, a screenshot, a PNG, JPEG or SVG) lands as an image
-  element centred where it was released, through the same upload as a pasted one
-  ([Image import pipeline](import-image-pipeline.md)), so dragging a screenshot in works as pasting it does. Any
-  other dropped file is refused with an info toast: _"Drop an Excalidraw file, or an Excalidraw image with the
-  scene embedded."_ A file the Import dialog reads (a draw.io, Mermaid, Markdown or livepages JSON file, by
-  its name) is told where it goes instead: _"To bring in a draw.io file, use Import in the tab menu."_ (Import
-  replaces the tab's content, so a drop never does it unasked; `lib/drop-import-hint.ts`.) A photo dropped on
-  an event-storming board still goes to the wall reader first
-  ([Event storming](../021-event-storming/event-storming.md)).
+- **Dropped files** (on a tab that is not read-only): the same files land at the point they are released. A picture without a scene (a photo, a screenshot, a PNG, JPEG or SVG) lands as an image element centred where it was released, through the same upload as a pasted one ([Image import pipeline](import-image-pipeline.md)), so dragging a screenshot in works as pasting it does. Any other dropped file is refused with an info toast: _"Drop an Excalidraw file, or an Excalidraw image with the scene embedded."_ A file the Import dialog reads (a draw.io, Mermaid, Markdown or livepages JSON file, by its name) is told where it goes instead: _"To bring in a draw.io file, use Import in the tab menu."_ (Import replaces the tab's content, so a drop never does it unasked.
 
 ## Scene mapping (Excalidraw to board scene)
 
@@ -258,16 +248,7 @@ The landing is [Board scene](board-scene.md)'s, one for every source:
   pressure where recorded, adaptive ink and stock colours, text boxes that hug
   their text at the exact font size, stickies, whiteboard shapes, arrows
   pinned to their shapes, the frame.
-- **Diagram profile** (a diagram or event-storming tab, and the Import
-  dialog on such a tab): the element mapping this importer has always had:
-  rectangles as `square` shapes (rounded corners as `lg`, see below), ellipses as
-  `circle`, diamonds, frames, text elements, arrows with pinned ends and curve
-  points, two-point lines as headless arrows, longer lines and freedraw as
-  `freehand` (straight-edged for lines), images, and the scene background as
-  the tab's background colour. Colours stay exact, except near-black ink
-  (the landing's ink rule, [Board scene](board-scene.md)), which lands unset
-  so the tab's theme ink shows: Excalidraw's `#1e1e1e` is legible on a dark
-  theme as on a light one.
+- **Diagram profile**: the element mapping this importer has always had: rectangles as `square` shapes (rounded corners as `lg`, see below), ellipses as `circle`, diamonds, frames, text elements, arrows with pinned ends and curve points, two-point lines as headless arrows, longer lines and freedraw as `freehand` (straight-edged for lines), images, and the scene background as the tab's background colour. Colours stay exact, except near-black ink (the landing's ink rule, [Board scene](board-scene.md)), which lands unset so the tab's theme ink shows: Excalidraw's `#1e1e1e` is legible on a dark theme as on a light one.
 
 ## Images
 

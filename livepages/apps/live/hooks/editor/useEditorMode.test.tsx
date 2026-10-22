@@ -120,7 +120,7 @@ describe('useEditorMode', () => {
     expect(events).toEqual([]);
   });
 
-  it('refuses a switch from a visitor, on a locked tab, or on an event-storming board', () => {
+  it('refuses a switch from a visitor or on a locked tab', () => {
     const visitor = setup({ id: 't', name: 'T', opensIn: 'pages', elements: [] }, false);
     expect(visitor.hook.result.current).toMatchObject({ mode: 'pages', canSwitch: false });
     act(() => visitor.hook.result.current.setMode('draw'));
@@ -128,9 +128,5 @@ describe('useEditorMode', () => {
     const locked = setup({ id: 't', name: 'T', locked: true, elements: [] });
     act(() => locked.hook.result.current.setMode('draw'));
     expect(locked.commitTabs).not.toHaveBeenCalled();
-    const es = setup({ id: 't', name: 'T', kind: 'event-storming', elements: [] });
-    expect(es.hook.result.current.mode).toBe('diagram');
-    act(() => es.hook.result.current.setMode('draw'));
-    expect(es.commitTabs).not.toHaveBeenCalled();
   });
 });

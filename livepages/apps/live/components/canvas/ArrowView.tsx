@@ -523,7 +523,7 @@ function ArrowViewImpl({
       {/* The grips draw in the canvas grips layer, above every element (docs/specs/008-canvas/canvas-and-palette.md
           "Resize"), while their presses keep this view's React event path. */}
       {isSelected && !isPaintMode && !readOnly ? (
-        <ArrowGripsPortal arrowId={arrow.id}>
+        <ArrowGripsPortal>
           <SelectedArrowHandles
             arrow={arrow}
             from={from}

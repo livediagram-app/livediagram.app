@@ -45,11 +45,9 @@ Adding or upgrading a dependency that ships to a browser or a worker can fail `p
 
 A Dependabot alert is fixed by upgrading the direct dependency that pulls the vulnerable package in. An entry in the root `package.json` `pnpm.overrides` is for when no upstream release fixes it; `package.json` holds no comments, so each such entry is listed here with its alert:
 
-| Override                                 | Alert                                                | Why no upstream fix                                                                                                                                                                      |
-| ---------------------------------------- | ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `sharp` `^0.35.5`                        | GHSA-wq5f-xc86-pv6w (librsvg in sharp `< 0.35.5`)    | `@huggingface/transformers` 3.8.1, the last 3.x, asks for `^0.34.1`; 4.x is ruled out by the 25 MiB asset limit ([Deployment](../specs/016-platform/deployment.md))                      |
-| `onnxruntime-node>global-agent` `^4.1.3` | GHSA-hp3w-g68c-fv3c (sprintf-js, no patched release) | transformers 3.8.1 pins `onnxruntime-node` 1.21.0, whose `global-agent` 3 pulls `roarr` 2 and `sprintf-js`; `global-agent` 4 has neither and keeps the `bootstrap` its postinstall calls |
-| `@tensorflow/tfjs>argparse` `^2.0.1`     | GHSA-hp3w-g68c-fv3c (sprintf-js, no patched release) | `@tensorflow/tfjs` 4.22.0, the latest, declares `argparse` 1 but never requires it; `argparse` 2 has no dependencies                                                                     |
+| Override          | Alert                                             | Why no upstream fix                                |
+| ----------------- | ------------------------------------------------- | -------------------------------------------------- |
+| `sharp` `^0.35.5` | GHSA-wq5f-xc86-pv6w (librsvg in sharp `< 0.35.5`) | `miniflare` 5.20261006.0-alpha pins `sharp` 0.35.4 |
 
 Drop an entry once an upstream release makes it redundant.
 

@@ -10,8 +10,6 @@ import { isSvgRenderedShape, ShapeSvgOverlay } from '@/components/canvas/shape-s
 import { POLYGON_CLOSE_PX } from '@/components/canvas/useCanvasPolygonGesture';
 import { isWhiteboardPenIntent, type PendingDraw } from '@/lib/draw-mode';
 import { drawnDragBox } from '@/lib/draw-commit';
-import type { StampGhost } from '@/components/canvas/useStampGhost';
-import { NoteGhost } from '@/components/canvas/NoteGhost';
 import { PenShapePreview } from '@/components/canvas/whiteboard/BoardShapePreview';
 import { useCanvasClientOrigin } from '@/hooks/canvas/useCanvasClientOrigin';
 import { HIGHLIGHTER_COLOR, HIGHLIGHTER_WIDTH } from '@/lib/highlighter-config';
@@ -23,9 +21,6 @@ type CanvasDrawPreviewProps = {
   polygonVertices: { x: number; y: number }[];
   polygonCursor: { x: number; y: number } | null;
   pendingDraw: PendingDraw | null;
-  // The armed fixed-size note's ghost (docs/specs/021-event-storming/event-storming.md Phase 4), when the tile is a
-  // stamp rather than a draw-to-size. It replaces the size box entirely.
-  stamp: StampGhost | null;
   wrapperRef: RefObject<HTMLDivElement | null>;
   // The canvas size. With the view, read from the viewport store here, it is what the wrapper's
   // origin follows (useCanvasViewKey), so the chrome around this takes no view.
@@ -47,7 +42,6 @@ export function CanvasDrawPreview({
   polygonVertices,
   polygonCursor,
   pendingDraw,
-  stamp,
   wrapperRef,
   mainSize,
   whiteboardInk,
@@ -66,7 +60,7 @@ export function CanvasDrawPreview({
   const showsPolygon = pendingDraw?.type === 'polygon' && polygonVertices.length > 0;
   // A line or an arrow previews as the element it lands, in the canvas layer
   // (DrawnArrowPreview, docs/specs/023-draw-mode/draw-mode.md "Shapes"), not here.
-  const showsBox = !!drawDrag && !!pendingDraw && !stamp && pendingDraw.type !== 'arrow';
+  const showsBox = !!drawDrag && !!pendingDraw && pendingDraw.type !== 'arrow';
   // Where canvas (0, 0) sits on screen, measured only while a preview shows.
   const origin = useCanvasClientOrigin(wrapperRef, showsPen || showsPolygon || showsBox, viewKey);
   // The drawings in progress (pencil, polygon, draw-to-size box), given once more reflected while
@@ -281,15 +275,6 @@ export function CanvasDrawPreview({
       : [];
   return (
     <>
-      {stamp && pendingDraw?.type === 'sticky' ? (
-        <NoteGhost
-          kind={pendingDraw.esKind ?? null}
-          box={stamp.screen}
-          px={1}
-          position="fixed"
-          testId="stamp-ghost"
-        />
-      ) : null}
       {/* Draw-to-size preview. drawDrag holds canvas coords; convert
           to client coords via the wrapper rect + viewportZoom so the
           overlay aligns with the canvas content under it. The shape

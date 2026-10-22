@@ -66,7 +66,7 @@ file to this.
 | The Drive mirror (editor, a build with a Google client id) | Google Identity Services (`https://accounts.google.com/gsi/client`) and the API loader with the Picker (`https://apis.google.com/js/api.js`, then the same origin) | `default`, those two origins, only with `NEXT_PUBLIC_GOOGLE_CLIENT_ID` |
 
 A worker's own scope is not the page's: its script is served from `/_next/` with no policy header, so the libraries
-it runs (transformers.js, TensorFlow.js, jsquash) are outside this boundary.
+it runs are outside this boundary.
 
 A third party that needs anything else is a bug to fix with it, never a wider `default`.
 

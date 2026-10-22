@@ -87,18 +87,3 @@ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
 
 - Pre-commit hook scanning for likely secrets (`gitleaks` or similar) — to be added when there are enough secrets in dev that scanning earns its keep.
 - CI check that no `NEXT_PUBLIC_*`-bundled value matches a known secret-key prefix (e.g. `sk_`, Resend's `re_`).
-
-## Photo bytes never leave the browser
-
-The event-storming photo import ([Event storming](../021-event-storming/event-storming.md) Phase 8) finds the stickies in a
-photograph of a physical wall **in the browser**, with classical computer
-vision. The photograph itself is never uploaded: only the CROPS — one sticky
-each — go to `POST /api/ai/read-notes` so the model can read the handwriting,
-and the route forwards them to the provider and discards them. Nothing is
-persisted anywhere: not R2, not D1, not IndexedDB, not a log
-line. The browser also re-encodes every crop, which drops EXIF (including the
-GPS tag) after honouring the orientation flag.
-
-A workshop wall is somebody's unreleased strategy, and the room around it is
-somebody's face. The safest place for a picture of either is the machine it was
-taken on.
