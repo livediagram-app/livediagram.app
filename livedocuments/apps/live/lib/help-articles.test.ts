@@ -1,0 +1,116 @@
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { describe, expect, it } from 'vitest';
+import {
+  HELP_ARTICLES,
+  HELP_LINK_COPY,
+  helpArticleHref,
+  helpArticleTelemetryId,
+  type HelpArticleKey,
+} from './help-articles';
+
+// The editor deep-links into the help centre (apps/help) by the slugs in
+// HELP_ARTICLES, so a stale slug ships a 404 link. The editor depends on
+// help's URL structure at runtime, so reading help's app/ here to confirm
+// every link resolves is a legitimate cross-app guard: if help moves an
+// article, that link really is broken and this should fail. (Stronger than
+// checking against @livedocuments/help-registry: the filesystem is what
+// actually serves the page.)
+const HELP_APP = fileURLToPath(new URL('../../help/app', import.meta.url));
+
+describe('HELP_ARTICLES deep links resolve to a real help page', () => {
+  it('every mapped path has a page.mdx (article) or page.tsx (category landing)', () => {
+    const missing = Object.entries(HELP_ARTICLES).filter(
+      ([, slug]) =>
+        !existsSync(`${HELP_APP}/${slug}/page.mdx`) && !existsSync(`${HELP_APP}/${slug}/page.tsx`),
+    );
+    expect(missing).toEqual([]);
+  });
+});
+
+describe('every key earns its place', () => {
+  // docs/specs/018-help/contextual-help-links.md pairs the two halves: "new placements reuse HelpArticleLink + a
+  // HELP_ARTICLES key". A key with no surface is half a placement — it looks
+  // like the editor links that article when nothing does, and the existing
+  // test above passes happily because the PATH is fine.
+  //
+  // Six had accumulated. Four (mind maps, lanes, entities, the Behaviour
+  // category) never had a placement in docs/specs/018-help/contextual-help-links.md at all. Two more (the Explorer
+  // panel, reverting changes) lost theirs when the floating panels' header
+  // help icons were deliberately removed, which docs/specs/018-help/contextual-help-links.md records. Every one of
+  // those articles is still in the help centre; only the editor's unused
+  // constants went.
+  //
+  // Matching on the key as a QUOTED STRING is deliberate. Surfaces spell it
+  // three ways — `article="x"`, `article: 'x'` in the Explorer's pane config,
+  // and `article={cond ? 'x' : 'y'}` — so keying off the prop name would miss
+  // one, and matching a bare identifier lets an unrelated word vouch for a
+  // key: `lanes` is also a palette category id, which is exactly how it sat
+  // here unused. A coincidental quoted string elsewhere could still vouch for
+  // a dead key, but that failure is silent and cheap, where a false failure
+  // would block an honest change.
+  it('is referenced by at least one surface outside the map', () => {
+    const SRC = fileURLToPath(new URL('..', import.meta.url));
+    const skip = new Set(['node_modules', '.next', '.next-dev', 'out', 'dist', '.turbo']);
+    const sources: string[] = [];
+    const walk = (dir: string) => {
+      for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        if (skip.has(entry.name)) continue;
+        const full = `${dir}/${entry.name}`;
+        if (entry.isDirectory()) walk(full);
+        else if (/\.tsx?$/.test(entry.name) && !full.endsWith('lib/help-articles.ts')) {
+          sources.push(readFileSync(full, 'utf8'));
+        }
+      }
+    };
+    walk(SRC);
+    const haystack = sources.join('\n');
+    // Guard against the walk finding nothing, which would pass vacuously.
+    expect(sources.length).toBeGreaterThan(200);
+
+    const orphans = Object.keys(HELP_ARTICLES).filter(
+      (key) => !new RegExp(`['"]${key}['"]`).test(haystack),
+    );
+    expect(orphans).toEqual([]);
+  });
+});
+
+describe('helpArticleHref / helpArticleTelemetryId', () => {
+  it('builds an absolute /help path with a trailing slash', () => {
+    expect(helpArticleHref('sharing')).toBe('/help/collaboration/sharing/');
+  });
+
+  it('returns a slash-free telemetry id', () => {
+    expect(helpArticleTelemetryId('shareLinkExpiry')).toBe('share-link-expiry');
+    expect(helpArticleTelemetryId('palette')).toBe('palette'); // single-segment value
+    for (const key of Object.keys(HELP_ARTICLES) as HelpArticleKey[]) {
+      expect(helpArticleTelemetryId(key)).toMatch(/^[a-z0-9-]{1,40}$/);
+    }
+  });
+
+  it('gives two different linked pages two different ids', () => {
+    // A `UI·Opened` row has to name one page, or two links read as one.
+    const idToPath = new Map<string, string>();
+    for (const key of Object.keys(HELP_ARTICLES) as HelpArticleKey[]) {
+      const id = helpArticleTelemetryId(key);
+      const path = HELP_ARTICLES[key];
+      expect(idToPath.get(id) ?? path, id).toBe(path);
+      idToPath.set(id, path);
+    }
+  });
+});
+
+describe('HELP_LINK_COPY (docs/specs/018-help/contextual-help-links.md)', () => {
+  // The hover card on every help link: a "Learn about …" title naming what the
+  // reader is looking at, and one line on what the article does for them.
+  // The Record type already forces an entry per key; this guards the shape
+  // of the copy, so a `?` never says a bare "Learn more" again.
+  it('gives every article a "Learn about" title and a one-line description', () => {
+    for (const key of Object.keys(HELP_ARTICLES) as (keyof typeof HELP_ARTICLES)[]) {
+      const { title, description } = HELP_LINK_COPY[key];
+      expect(title, key).toMatch(/^Learn about \S/);
+      expect(description, key).toMatch(/^[A-Z].*[.!]$/);
+      expect(description, key).not.toContain('\n');
+    }
+  });
+});

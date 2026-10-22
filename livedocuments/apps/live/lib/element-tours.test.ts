@@ -1,0 +1,111 @@
+// Element tours' kinds, gate and answers (docs/specs/007-editor/element-tours.md "Remembering answers", "Share roles").
+
+import { describe, expect, it } from 'vitest';
+import { createShape, type Element } from '@livedocuments/document';
+import {
+  canTourElement,
+  elementTourKindOf,
+  elementTourSeen,
+  markElementTourSeen,
+  offerElementTourAgain,
+} from './element-tours';
+
+const sankey = createShape('sankey', 0, 0) as Element;
+
+describe('element tours', () => {
+  it('tours a Sankey and nothing else yet', () => {
+    expect(elementTourKindOf(sankey)).toBe('sankey');
+    expect(elementTourKindOf(createShape('square', 0, 0) as Element)).toBeNull();
+    expect(elementTourKindOf(null)).toBeNull();
+  });
+
+  it('offers it only to whoever may edit the element', () => {
+    expect(canTourElement({ level: 'edit' }, sankey, 'sankey')).toBe(true);
+    expect(canTourElement({ level: 'participate' }, sankey, 'sankey')).toBe(false);
+    expect(canTourElement({ level: 'view' }, sankey, 'sankey')).toBe(false);
+    expect(canTourElement({ level: 'edit' }, { ...sankey, locked: true }, 'sankey')).toBe(false);
+  });
+
+  it('remembers an answer, and counts every kind seen for a power user only', () => {
+    expect(elementTourSeen({}, 'sankey')).toBe(false);
+    expect(elementTourSeen(markElementTourSeen({}, 'sankey'), 'sankey')).toBe(true);
+    expect(elementTourSeen({ elementToursSeen: true }, 'sankey')).toBe(false);
+    expect(elementTourSeen({ elementToursSeen: true, powerUserMode: true }, 'sankey')).toBe(true);
+  });
+
+  it('marks an answer once', () => {
+    const once = markElementTourSeen({}, 'sankey');
+    expect(markElementTourSeen(once, 'sankey')).toEqual({ elementTourKinds: ['sankey'] });
+  });
+
+  it('offers a kind again, even to a power user', () => {
+    const power = {
+      powerUserMode: true,
+      elementToursSeen: true,
+      elementTourKinds: ['sankey' as const],
+    };
+    const again = offerElementTourAgain(power, 'sankey');
+    expect(elementTourSeen(again, 'sankey')).toBe(false);
+    expect(again.elementToursSeen).toBe(false);
+  });
+});
+
+describe('element tour kinds of the concept graphics', () => {
+  it('tours a pyramid and an inverted one as the Pyramid, never a funnel', () => {
+    const pyramid = createShape('pyramid', 0, 0) as Element;
+    expect(elementTourKindOf(pyramid)).toBe('pyramid');
+    expect(elementTourKindOf({ ...pyramid, pyramidVariant: 'inverted' } as Element)).toBe(
+      'pyramid',
+    );
+    expect(elementTourKindOf({ ...pyramid, pyramidVariant: 'funnel' } as Element)).not.toBe(
+      'pyramid',
+    );
+    expect(canTourElement({ level: 'edit' }, pyramid, 'pyramid')).toBe(true);
+    expect(canTourElement({ level: 'participate' }, pyramid, 'pyramid')).toBe(false);
+  });
+});
+
+describe('the Funnel element tour kind', () => {
+  it('tours a pyramid in its Funnel variant as the Funnel', () => {
+    const funnel = { ...createShape('pyramid', 0, 0), pyramidVariant: 'funnel' } as Element;
+    expect(elementTourKindOf(funnel)).toBe('funnel');
+    expect(canTourElement({ level: 'edit' }, funnel, 'funnel')).toBe(true);
+    expect(canTourElement({ level: 'view' }, funnel, 'funnel')).toBe(false);
+  });
+});
+
+describe('the Cycle element tour kind', () => {
+  it('tours a cycle, for an Editor only', () => {
+    const cycle = createShape('cycle', 0, 0) as Element;
+    expect(elementTourKindOf(cycle)).toBe('cycle');
+    expect(canTourElement({ level: 'edit' }, cycle, 'cycle')).toBe(true);
+    expect(canTourElement({ level: 'participate' }, cycle, 'cycle')).toBe(false);
+  });
+});
+
+describe('the Hub and Spoke element tour kind', () => {
+  it('tours a hub, for an Editor only', () => {
+    const hub = createShape('hub', 0, 0) as Element;
+    expect(elementTourKindOf(hub)).toBe('hub');
+    expect(canTourElement({ level: 'edit' }, hub, 'hub')).toBe(true);
+    expect(canTourElement({ level: 'view' }, hub, 'hub')).toBe(false);
+  });
+});
+
+describe('the Onion element tour kind', () => {
+  it('tours an onion, for an Editor only', () => {
+    const onion = createShape('onion', 0, 0) as Element;
+    expect(elementTourKindOf(onion)).toBe('onion');
+    expect(canTourElement({ level: 'edit' }, onion, 'onion')).toBe(true);
+    expect(canTourElement({ level: 'participate' }, onion, 'onion')).toBe(false);
+  });
+});
+
+describe('the Chevrons element tour kind', () => {
+  it('tours a chevron process, for an Editor only', () => {
+    const chevrons = createShape('chevrons', 0, 0) as Element;
+    expect(elementTourKindOf(chevrons)).toBe('chevrons');
+    expect(canTourElement({ level: 'edit' }, chevrons, 'chevrons')).toBe(true);
+    expect(canTourElement({ level: 'participate' }, chevrons, 'chevrons')).toBe(false);
+  });
+});

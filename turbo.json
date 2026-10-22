@@ -12,7 +12,7 @@
     "tsconfig.base.json",
     "livediagram/tsconfig.base.json",
     "liveplanner/tsconfig.base.json",
-    "livepages/tsconfig.base.json"
+    "livedocuments/tsconfig.base.json"
   ],
   "tasks": {
     "build": {
@@ -200,23 +200,23 @@
         "!$TURBO_ROOT$/.git/**"
       ]
     },
-    // livepages: the same per-package rules as livediagram above, on its own paths.
-    "@livepages/marketing#build": {
+    // livedocuments: the same per-package rules as livediagram above, on its own paths.
+    "@livedocuments/marketing#build": {
       "dependsOn": [
         "^build",
-        "@livepages/live#build",
-        "@livepages/help#build",
-        "@livepages/telemetry#build",
-        "@livepages/api#build",
-        "@livepages/mcp#build",
-        "@livepages/router#build"
+        "@livedocuments/live#build",
+        "@livedocuments/help#build",
+        "@livedocuments/telemetry#build",
+        "@livedocuments/api#build",
+        "@livedocuments/mcp#build",
+        "@livedocuments/router#build"
       ],
       "inputs": [
         "$TURBO_DEFAULT$",
         ".env*",
         "$TURBO_ROOT$/pnpm-lock.yaml",
-        "$TURBO_ROOT$/livepages/apps/**",
-        "$TURBO_ROOT$/livepages/packages/**",
+        "$TURBO_ROOT$/livedocuments/apps/**",
+        "$TURBO_ROOT$/livedocuments/packages/**",
         // Explicit root globs ignore .gitignore: keep build output out.
         "!$TURBO_ROOT$/**/node_modules/**",
         "!$TURBO_ROOT$/**/.next*/**",
@@ -228,16 +228,16 @@
         "!$TURBO_ROOT$/**/test-results/**",
         "!$TURBO_ROOT$/**/playwright-report/**",
         "!$TURBO_ROOT$/**/next-env.d.ts",
-        "!$TURBO_ROOT$/livepages/apps/marketing/generated/**",
-        "!$TURBO_ROOT$/livepages/apps/marketing/public/licences/**"
+        "!$TURBO_ROOT$/livedocuments/apps/marketing/generated/**",
+        "!$TURBO_ROOT$/livedocuments/apps/marketing/public/licences/**"
       ],
       "outputs": [".next/**", "!.next/cache/**", "out/**", "generated/**", "public/licences/**"]
     },
-    "@livepages/help#test": {
+    "@livedocuments/help#test": {
       "dependsOn": ["^build"],
       "inputs": [
         "$TURBO_DEFAULT$",
-        "$TURBO_ROOT$/livepages/**",
+        "$TURBO_ROOT$/livedocuments/**",
         "!$TURBO_ROOT$/**/node_modules/**",
         "!$TURBO_ROOT$/**/.next*/**",
         "!$TURBO_ROOT$/**/out/**",
@@ -250,12 +250,12 @@
         "!$TURBO_ROOT$/.git/**"
       ]
     },
-    "@livepages/help#test:coverage": {
+    "@livedocuments/help#test:coverage": {
       "dependsOn": ["^build"],
       "outputs": ["coverage/**"],
       "inputs": [
         "$TURBO_DEFAULT$",
-        "$TURBO_ROOT$/livepages/**",
+        "$TURBO_ROOT$/livedocuments/**",
         "!$TURBO_ROOT$/**/node_modules/**",
         "!$TURBO_ROOT$/**/.next*/**",
         "!$TURBO_ROOT$/**/out/**",

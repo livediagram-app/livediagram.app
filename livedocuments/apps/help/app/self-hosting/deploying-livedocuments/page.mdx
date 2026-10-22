@@ -1,0 +1,64 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { RequestRouting, DeployFlow } from '@/components/illustrations/self-hosting';
+
+export const metadata = helpMetadata({
+  title: 'Deploying livedocuments',
+  description:
+    'How livedocuments is structured as a set of Cloudflare Workers and deployed via GitHub Actions. A conceptual overview for self-hosters.',
+  path: '/help/self-hosting/deploying-livedocuments/',
+});
+
+<ArticleLayout title="Deploying livedocuments" description="The apps that make up livedocuments and how they deploy to Cloudflare. A conceptual map, with the repo as the authoritative guide." categoryTitle="Self-Hosting" categorySlug="self-hosting">
+
+livedocuments is not one application but a small set of apps that each deploy as their own Cloudflare Worker, stitched together at a single hostname. This page is a conceptual map of how the pieces fit so the deployment makes sense. For the exact commands and account setup, the repository and its self-hosting guide are the authoritative source.
+
+## The apps
+
+The product is split into focused apps, each deployed as a named Cloudflare Worker.
+
+- **marketing** serves the public landing site at the root.
+- **live** is the editor itself, served at clean routes such as `/new` and `/explorer`.
+- **telemetry** is the public, read-only analytics dashboard at `/telemetry`.
+- **help** is the help centre you are reading now, at `/help`.
+- **api** is the Worker that holds the REST and WebSocket layer, backed by the D1 database and the per-document Durable Object.
+- **router** sits in front and forwards each request to the right app by URL path. It holds no business logic, only routing.
+- **mcp** (optional) is the MCP server that lets people connect AI tools to their documents. It has its own hostname (`mcp.livedocuments.app` on the hosted service), needs sign-in configured, and talks to the api Worker directly.
+
+The router is what makes the first five appear under one domain.
+
+## How a request is routed
+
+The router Worker inspects the path and forwards accordingly: `/api/*` to the api Worker, `/telemetry` to the dashboard, `/help` to the help centre, the editor's routes (`/document`, `/explorer`, `/new`, `/join`, `/sign-in`, `/get-started`, `/embed` and the like) to the live app, and everything else to marketing. Because the router has service bindings to the five path-routed apps, they must exist before the router can be deployed.
+
+<Figure caption="The router forwards each request to an app by matching the URL path.">
+  <RequestRouting />
+</Figure>
+
+## How it deploys
+
+Deployments run through **GitHub Actions to Cloudflare Workers**. In broad strokes:
+
+1. Continuous integration runs lint, format, typecheck, test, and build on every pull request and every push to `main`.
+2. A separate, manually triggered deploy workflow builds everything, then deploys the apps.
+3. The marketing, telemetry, help and api Workers deploy in parallel. The live editor follows the api, so a new editor never calls an api that lacks its routes, and the mcp Worker follows the api too. The bundled workflow always deploys mcp, so a fork that does not want the MCP server removes the `deploy-mcp` job, or creates its KV namespace first. The router deploys last because its bindings depend on the five path-routed apps already existing.
+4. Database migrations are applied to D1 as part of the api deploy, before the new Worker code goes live.
+
+Deploying needs a Cloudflare API token and account id, supplied as repository secrets (`CF_API_TOKEN` and `CF_ACCOUNT_ID`), never committed to source. You can also deploy by hand: run `pnpm build`, apply migrations with `pnpm --filter @livedocuments/api db:migrate:remote`, then run `wrangler deploy` for each Worker in the same order. The repository also has a staging workflow that the hosted service uses for rehearsals. It runs automatically after every green CI on `main`, so a fork should delete it, or it fails on every merge.
+
+<Figure caption="GitHub Actions deploys five apps in parallel, then live and mcp once the api is up, and the router last.">
+  <DeployFlow />
+</Figure>
+
+<Note>
+  This is a conceptual overview, not a step-by-step runbook. For exact commands, required token
+  permissions, and first-deploy ordering, follow the repository's `docs/operations/self-hosting.md`
+  and the deployment workflow in the source.
+</Note>
+
+<Tip>
+  Next, see [configuration and optional auth](/help/self-hosting/configuration/) for the environment
+  variables that turn optional features on or off.
+</Tip>
+
+</ArticleLayout>

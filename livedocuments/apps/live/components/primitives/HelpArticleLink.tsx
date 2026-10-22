@@ -1,0 +1,199 @@
+'use client';
+
+import type { ReactNode } from 'react';
+import {
+  HELP_LINK_COPY,
+  helpArticleHref,
+  helpArticleTelemetryId,
+  type HelpArticleKey,
+} from '@/lib/help-articles';
+import { track } from '@/lib/telemetry';
+import { HoverCard, Glyph } from '@livedocuments/ui';
+
+type HelpArticleLinkProps = {
+  /** Which help article to deep-link (key in HELP_ARTICLES). */
+  article: HelpArticleKey;
+  /**
+   * HoverCard title (custom HoverCard, never a native `title`). Defaults to the
+   * article's entry in HELP_LINK_COPY ("Learn about the Explorer"); pass one
+   * only when the surface needs a different framing.
+   */
+  title?: string;
+  /** One-line hover card elaboration; defaults from HELP_LINK_COPY too. */
+  description?: string;
+  /**
+   * `icon` (default): a bare `?` ghost button to sit beside a control label
+   *   or in a panel's header chrome. ONE look everywhere (see below).
+   * `text`: a "Learn more" inline link for dialog headers / empty states.
+   * `button`: a full button (help glyph + "Help" label) that matches a
+   *   neighbouring primary button's shape but stays neutral, not brand —
+   *   for header action rows (e.g. beside the explorer "+ Create" button).
+   * `labelled`: the `icon` look with a small "Help" after the `?`, for a header row of labelled
+   *   ghost controls where a lone `?` reads as a stray mark (the Plan item panel).
+   */
+  variant?: 'icon' | 'text' | 'button' | 'labelled';
+  /**
+   * Hit-box for the `icon` variant, mirroring DialogCloseButton's own two
+   * blessed shapes so the `?` and the `×` beside it are the same target:
+   * `sm` (default) for panel header chrome and inline control labels, `md`
+   * for a dialog header sitting next to a DialogCloseButton.
+   */
+  size?: 'sm' | 'md';
+  /** Override the visible text for the `text` and `button` variants. */
+  label?: string;
+  /** Leading icon for the `button` variant (defaults to the help glyph). */
+  icon?: ReactNode;
+  /** Extra classes merged onto the anchor. */
+  className?: string;
+};
+
+// The one telemetry event a help deep link sends, wherever it is opened from.
+export function trackHelpArticle(article: HelpArticleKey): void {
+  track('UI', 'Opened', helpArticleTelemetryId(article));
+}
+
+// Open an article from a control that is not a link (a menu row).
+export function openHelpArticle(article: HelpArticleKey): void {
+  trackHelpArticle(article);
+  window.open(helpArticleHref(article), '_blank', 'noopener,noreferrer');
+}
+
+// One affordance for every editor -> help-centre deep link (docs/specs/018-help/contextual-help-links.md).
+// Surfaces reference an article key, never a raw URL; the link opens the
+// help centre in a new tab and fires a single UI/Opened telemetry event
+// keyed by the article's registry telemetry id (docs/specs/017-telemetry/telemetry.md).
+export function HelpArticleLink({
+  article,
+  title = HELP_LINK_COPY[article].title,
+  description = HELP_LINK_COPY[article].description,
+  variant = 'icon',
+  size = 'sm',
+  label = 'Learn more',
+  icon,
+  className,
+}: HelpArticleLinkProps) {
+  const href = helpArticleHref(article);
+  const onClick = () => trackHelpArticle(article);
+  const common = {
+    href,
+    target: '_blank',
+    rel: 'noreferrer noopener',
+    onClick,
+  } as const;
+
+  if (variant === 'text') {
+    return (
+      <HoverCard title={title} description={description}>
+        <a
+          {...common}
+          // touch-target: a 16px line of text, padded to a finger's 44px on a touch screen.
+          className={`relative touch-target inline-flex items-center gap-1 text-xs font-medium text-blue-600 underline-offset-2 transition hover:text-blue-700 hover:underline dark:text-blue-400 dark:hover:text-blue-300${
+            className ? ` ${className}` : ''
+          }`}
+        >
+          {label}
+          <ArrowOutIcon />
+        </a>
+      </HoverCard>
+    );
+  }
+
+  if (variant === 'button') {
+    // A real button (help glyph + "Help" label) that matches a neighbouring
+    // primary button's shape (e.g. the explorer "+ Create") but stays neutral
+    // slate/white rather than brand, so it reads as a secondary action.
+    return (
+      <HoverCard title={title} description={description}>
+        <a
+          {...common}
+          aria-label={title}
+          className={`optical-edges inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:hover:text-white${
+            className ? ` ${className}` : ''
+          }`}
+        >
+          {/* optical-edges pulls the leading icon in by its own blank margin
+              and text-optical-line centres the label's cap band, the Button
+              label rules (docs/specs/004-interface-design/optical-alignment.md); without them the
+              content sat over half a pixel right of centre. */}
+          {icon ?? <HelpMarkIcon />}
+          <span className="text-optical-line">{label === 'Learn more' ? 'Help' : label}</span>
+        </a>
+      </HoverCard>
+    );
+  }
+
+  // ONE `?` everywhere: a bare glyph that picks up a soft rounded hover
+  // background, matching the Palette panel's header chrome (reset /
+  // minimise). The old default drew a bordered circle around the mark, so a
+  // dialog header's `?` and a panel's `?` read as two different affordances
+  // for the same thing, and ShortcutsDialog had already resorted to a row of
+  // `!important` overrides to cancel the ring and size up. Only the box
+  // changes between the two sizes; the look does not.
+  //
+  // `md` is 28px to match DialogCloseButton's h-7, and its glyph runs a point
+  // larger than that button's 14px `×` because a question mark carries less
+  // visual mass than an X at the same type size. `shrink-0` so an inline
+  // placement beside a long control label never squashes it.
+  // A 44px tap area on a touch screen either way (`touch-target`).
+  if (variant === 'labelled') {
+    return (
+      <HoverCard title={title} description={description}>
+        <a
+          {...common}
+          aria-label={title}
+          className={`relative touch-target inline-flex h-8 shrink-0 items-center gap-1 rounded-md px-2 text-[12px] font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100${
+            className ? ` ${className}` : ''
+          }`}
+        >
+          <span aria-hidden className="text-[14px] font-semibold leading-none">
+            ?
+          </span>
+          Help
+        </a>
+      </HoverCard>
+    );
+  }
+
+  const box = `relative touch-target ${size === 'md' ? 'h-7 w-7 text-[15px]' : 'h-5 w-5 text-[13px]'}`;
+  return (
+    <HoverCard title={title} description={description}>
+      <a
+        {...common}
+        aria-label={title}
+        className={`inline-flex ${box} shrink-0 items-center justify-center rounded font-semibold leading-none text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100${
+          className ? ` ${className}` : ''
+        }`}
+      >
+        ?
+      </a>
+    </HoverCard>
+  );
+}
+
+// A circled question mark for the `button` variant's leading icon (sized to
+// sit beside a 12px label like the + on the Create button).
+export function HelpMarkIcon() {
+  return (
+    <Glyph size={14} units={16} strokeLinecap="butt" strokeLinejoin="miter">
+      <circle cx="8" cy="8" r="6.25" />
+      <path
+        d="M6.3 6.2a1.8 1.8 0 1 1 2.5 1.7c-.5.25-.9.65-.9 1.25v.3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle cx="8" cy="11.6" r="0.6" fill="currentColor" stroke="none" />
+    </Glyph>
+  );
+}
+
+// Tiny "opens in a new tab" glyph for the text variant, and for any text link
+// that leaves the app.
+export function ArrowOutIcon() {
+  return (
+    <Glyph size={11} units={20}>
+      <path d="M8 4H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-3" />
+      <path d="M12 4h4v4" />
+      <path d="M16 4l-7 7" />
+    </Glyph>
+  );
+}
