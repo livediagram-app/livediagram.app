@@ -61,9 +61,6 @@ type EditorHeaderProps = {
   // isn't allowed to rename someone else's document. Make-a-copy +
   // Share gates already handle their own visibility.
   readOnly?: boolean;
-  // Accent colour for the brand logo's "diagram" half. Comes from the
-  // active tab's theme stroke so the header subtly echoes the canvas.
-  brandAccent?: string;
   onOpenShare: () => void;
   // Opens the editor's Settings on its Account category (the account menu's
   // Account item), so it doesn't navigate away from the document.
@@ -91,7 +88,6 @@ export function EditorHeader({
   onMakeCopy,
   copying = false,
   readOnly = false,
-  brandAccent,
   onOpenShare,
   onOpenAccount,
   onRename,
@@ -120,6 +116,8 @@ export function EditorHeader({
     // document order and the canvas wins.
     <header
       data-region="header"
+      // The app's own colours, whatever the tab's style (docs/specs/011-theme/canvas-and-theme-dialog.md).
+      data-app-chrome
       // Below the status bar / notch and past a landscape notch's sides (lib/safe-area).
       style={{
         height: `calc(3.5rem + ${safeInset('top')})`,
@@ -135,7 +133,6 @@ export function EditorHeader({
           <Brand
             href={EXPLORER_LANDING_PATH}
             size="md"
-            accentColor={brandAccent}
             wordmarkClassName="hidden sm:inline"
             className="relative touch-target"
           />

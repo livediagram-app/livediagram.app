@@ -15,7 +15,6 @@ import { useRegionCycle } from '@/hooks/ui/useRegionCycle';
 import { useEffect, useMemo } from 'react';
 import { addToDocumentTargets } from '@/lib/add-to-document-targets';
 import { canvasSurface } from '@livedocuments/document';
-import { getTheme } from '@/lib/themes';
 import { resolveViewBackdrop } from '@/lib/view-backdrop';
 import { CanvasPatternContext } from '@/components/canvas/canvas-pattern-context';
 import { CanvasSurfaceProvider } from '@/components/canvas/CanvasSurfaceContext';
@@ -279,7 +278,6 @@ export function EditorView() {
                   }
                 : undefined
             }
-            brandAccent={getTheme(activeTab.theme).elementStroke ?? undefined}
             onOpenAccount={() => openSettingsOn('account')}
             onOpenShare={() => {
               setShareDialogOpen(true);

@@ -14,7 +14,6 @@ import { useRegionCycle } from '@/hooks/ui/useRegionCycle';
 import { useEffect, useMemo } from 'react';
 import { addToProjectTargets } from '@/lib/add-to-project-targets';
 import { canvasSurface } from '@liveplanner/project';
-import { getTheme } from '@/lib/themes';
 import { resolveViewBackdrop } from '@/lib/view-backdrop';
 import { CanvasPatternContext } from '@/components/canvas/canvas-pattern-context';
 import { CanvasSurfaceProvider } from '@/components/canvas/CanvasSurfaceContext';
@@ -285,7 +284,6 @@ export function EditorView() {
             renameNonce={renameProjectNonce}
             // Minimal chrome moves the pill to an icon in the status bar.
             rolePill={minimalChrome ? undefined : <RolePill {...role} />}
-            brandAccent={getTheme(activeTab.theme).elementStroke ?? undefined}
             onOpenAccount={() => openSettingsOn('account')}
             onOpenShare={() => {
               setShareDialogOpen(true);

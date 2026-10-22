@@ -273,6 +273,43 @@
   --color-brand-950: #211438;
 }
 
+/* App chrome (docs/specs/011-theme/canvas-and-theme-dialog.md "The app's chrome"): a themed tab retints the brand
+ * ramp, and in dark mode the slate surfaces, on the root (useEditorAccent), but the editor's header, its tab bar and
+ * the logo keep the app's own colours. Marked `data-app-chrome`, they re-declare the palettes above, light and dark,
+ * so the tint stops at their edge. Kept equal to `@theme` and `.dark` by theme-budget.test.ts. */
+[data-app-chrome] {
+  --color-brand-50: #f5f3ff;
+  --color-brand-100: #ede9fe;
+  --color-brand-200: #ddd6fe;
+  --color-brand-300: #c4b5fd;
+  --color-brand-400: #a78bfa;
+  --color-brand-500: #8b5cf6;
+  --color-brand-600: #7c3aed;
+  --color-brand-700: #6d28d9;
+  --color-brand-800: #5b21b6;
+  --color-brand-900: #4c1d95;
+  --color-brand-950: #2e1065;
+}
+
+.dark [data-app-chrome] {
+  --color-slate-600: oklch(44.6% 0.043 257.281);
+  --color-slate-700: oklch(37.2% 0.044 257.287);
+  --color-slate-800: #16202e;
+  --color-slate-900: #131b26;
+  --color-slate-950: #0b0f16;
+  --color-brand-50: #f2eefa;
+  --color-brand-100: #e4dbf4;
+  --color-brand-200: #cdbcea;
+  --color-brand-300: #b49bde;
+  --color-brand-400: #ad8fe0;
+  --color-brand-500: #805bbf;
+  --color-brand-600: #5d3a99;
+  --color-brand-700: #4e2f84;
+  --color-brand-800: #3f266b;
+  --color-brand-900: #311d53;
+  --color-brand-950: #211438;
+}
+
 /* Explorer: Midnight (docs/specs/004-interface-design/color-scheme.md "Explorer: Midnight"). The Explorer pages set
  * `data-palette="midnight"` on the root while mounted; in dark mode it retargets Steel's tokens to the marketing
  * site's night section: a deep navy ground and the violet accent. The compound selector outranks `.dark`. */
