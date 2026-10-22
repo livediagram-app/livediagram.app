@@ -121,7 +121,7 @@ export const ALTERNATIVES: Alternative[] = [
       'Run the lesson on the board: an agenda that starts the timer for each segment, a roll call, and a picker that chooses someone at random so nobody has to volunteer.',
       'Around 190 emoji stickers and 32 word badges like APPROVED and WIP, for reacting to work and marking it.',
       'Switch the same tab to Diagram mode when a sketch needs to become a tidy flowchart, org chart or plan, and draw it in the Marker finish so it still looks like it came off the whiteboard.',
-      '146 templates, including retrospectives, Lean Coffee and town hall Q&A.',
+      '143 templates, including retrospectives, Lean Coffee and town hall Q&A.',
       'Free and MIT-licensed, so no future retirement can take your boards away: you can always run your own copy.',
     ],
     sections: [
@@ -219,7 +219,7 @@ export const ALTERNATIVES: Alternative[] = [
       'Assign action items to teammates on the canvas itself, tracked beside comments in the Collaborate panel.',
       'Workshop tools built in: Workshop mode, a facilitator role, a shared timer, dot-voting, live polls, planning-poker estimate cards, temperature checks, quizzes, an anonymous idea box and a Q&A board.',
       'Run the meeting itself on the board: an agenda that starts the timer for each segment, a roll call, a random picker, reveal zones that cover work until the room is ready, and decision records that keep what was agreed.',
-      '146 templates, 24 one-click whole-canvas themes and ready-made looks turn a blank canvas into a polished diagram fast, drawn clean, crisp and Professional, or by hand in Sketch or Marker.',
+      '143 templates, 24 one-click whole-canvas themes and ready-made looks turn a blank canvas into a polished diagram fast, drawn clean, crisp and Professional, or by hand in Sketch or Marker.',
       'Forms built in: share a link, and every response lands as a card on a board or a row in a Sheet.',
       'Meet on the board: everyone walks an avatar round a virtual office or team space, with speech bubbles and a status.',
       'Present a document as a slide deck built from its own elements, with a laser pointer and spotlight, no export needed.',
@@ -250,7 +250,7 @@ export const ALTERNATIVES: Alternative[] = [
       {
         heading: 'Connected to the rest of your workflow',
         paragraphs: [
-          'Diagrams rarely live alone. livedesign imports Markdown outlines, exports PNG, SVG, PDF, Markdown or a portable JSON file, and agents and scripts can hand it Mermaid text (flowcharts, state and ER diagrams, the diagram-as-code format that lives in READMEs and AI output) to lay out as a real diagram. Any share link embeds as a live-updating iframe in a wiki or doc: an editor link embeds an editable canvas, and a participant or view-only link a read-only one.',
+          'Diagrams rarely live alone. livedesign exports PNG, SVG, PDF, Markdown or a portable JSON file, and agents and scripts can hand it Mermaid text (flowcharts, state and ER diagrams, the diagram-as-code format that lives in READMEs and AI output) to lay out as a real diagram. Any share link embeds as a live-updating iframe in a wiki or doc: an editor link embeds an editable canvas, and a participant or view-only link a read-only one.',
           'For programmatic use there is a free REST API with personal tokens and an MCP server at mcp.livedesign.app that lets AI assistants read and edit your documents directly; their edits arrive live, outlined, and undoable as one unit. None of it sits behind a plan.',
         ],
       },
@@ -335,9 +335,9 @@ export const ALTERNATIVES: Alternative[] = [
       'Edit Outline opens the whole map as an indented list: rename, nest and reorder there, then save it back to the map in one step.',
       'More than mind maps: flowcharts, freehand whiteboards, Plan boards of cards, timelines, wireframes and charts in the same document.',
       'Nothing to install: open a link in any browser and start.',
-      'Bring existing maps across: export Markdown from XMind and import it as a themed diagram.',
+      'Bring existing maps across: export Markdown from XMind and paste it into Edit Outline.',
       'Sketch with the Freehand pen, or the Shape Pen to have a rough shape tidied into a clean one.',
-      '146 templates (three mind-map styles among them), 24 one-click themes and ready-made looks make a map look polished instantly, clean or hand-drawn in the Sketch and Marker finishes.',
+      '143 templates (three mind-map styles among them), 24 one-click themes and ready-made looks make a map look polished instantly, clean or hand-drawn in the Sketch and Marker finishes.',
       'Free, open source, and self-hostable.',
     ],
     sections: [
@@ -351,7 +351,7 @@ export const ALTERNATIVES: Alternative[] = [
       {
         heading: 'Bring your existing maps with you',
         paragraphs: [
-          "You don't have to start over. XMind exports maps as Markdown outlines, and livedesign imports Markdown directly: the outline becomes a real, themed node-and-link diagram, laid out for you, in place of the tab's contents (add a new tab first to keep what is there). Or paste the outline into a mind map's Edit Outline and every line becomes a mind node you can keep growing.",
+          "You don't have to start over. XMind exports maps as Markdown outlines: paste one into a mind map's Edit Outline and every line becomes a mind node you can keep growing.",
           'Going the other direction is just as open: export a map as PNG, SVG, or PDF for documents, or as Markdown text to keep the structure portable. Nothing about export sits behind a subscription.',
         ],
       },
@@ -372,7 +372,7 @@ export const ALTERNATIVES: Alternative[] = [
     faqs: [
       {
         q: 'Can I import my XMind files?',
-        a: "Not the .xmind file directly, but there is a clean path: export the map from XMind as Markdown, then use livedesign's Markdown import. The outline becomes a themed, laid-out node-and-link diagram on the current tab, replacing what is there, so add a new tab first. To keep growing it as a mind map, paste the outline into a mind map's Edit Outline instead.",
+        a: "Not the .xmind file directly, but there is a clean path: export the map from XMind as Markdown, then paste the outline into a mind map's Edit Outline, and every line becomes a mind node you can keep growing.",
       },
       {
         q: 'Does livedesign work offline like the XMind desktop app?',
@@ -550,7 +550,7 @@ export const ALTERNATIVES: Alternative[] = [
     usBest: [
       'Real-time co-editing with live cursors and presence on every document, wherever it is stored.',
       'A modern, fast canvas with nothing to set up: open a link and go.',
-      '146 templates and 24 themes for good-looking diagrams in minutes, not blank-canvas fiddling.',
+      '143 templates and 24 themes for good-looking diagrams in minutes, not blank-canvas fiddling.',
       'Diagrams stay tidy on their own: arrows re-route as shapes move, with collision avoidance, alignment guides and snapping.',
       'Full-colour technology icons (AWS, Azure, Kubernetes, databases…) for architecture diagrams.',
       'Tidy Up lays out a tangle of shapes and arrows as a flowchart, tree or mind map, and the UML theme colours each shape by its meaning.',
@@ -726,7 +726,7 @@ export const ALTERNATIVES: Alternative[] = [
     name: 'FigJam',
     title: 'FigJam alternative · livedesign',
     description:
-      'A free, open-source FigJam alternative: a real-time whiteboard with workshop tools, no account needed, 146 templates, Mermaid, an API and an MCP server.',
+      'A free, open-source FigJam alternative: a real-time whiteboard with workshop tools, no account needed, 143 templates, Mermaid, an API and an MCP server.',
     h1: 'The free, open-source FigJam alternative',
     lede: 'FigJam is a polished, playful whiteboard that lives inside Figma. livedesign covers the same ground, brainstorms, workshops and diagrams with your team in real time, as free, open-source software that anyone can open from a link, no account or Figma seat needed.',
     rows: [
@@ -768,7 +768,7 @@ export const ALTERNATIVES: Alternative[] = [
     usBest: [
       'Free with no file limits and no seats: every feature, for everyone.',
       'Open a link and start, no account needed, even to create a document.',
-      'Structured diagrams that stay tidy: shapes and arrows that stay attached, alignment guides, 24 one-click themes and 146 templates.',
+      'Structured diagrams that stay tidy: shapes and arrows that stay attached, alignment guides, 24 one-click themes and 143 templates.',
       'Five ways to work one tab: Diagram for structure, Draw for freehand whiteboarding, Workshop for running a session with your team, Pages for slides, articles, posters and logos, and Plan for boards of cards, Sheets and forms.',
       'Diagrams with a whiteboard feel: the Sketch and Marker finishes draw any tab by hand, and ready-made looks set theme, finish, font and pattern in one click.',
       'Meet on the board: everyone walks an avatar round a virtual office or team space, with speech bubbles and a status.',
@@ -790,7 +790,7 @@ export const ALTERNATIVES: Alternative[] = [
         heading: 'A whiteboard that keeps going',
         paragraphs: [
           'FigJam is excellent for loose, freeform boards. livedesign’s Draw mode is a plain whiteboard too, with pressure-sensitive markers, sticky notes, text and shapes, but the same document carries on after the brainstorm. Switch a tab to Diagram when a sketch needs structure, with arrows that stay attached, themes that restyle the whole canvas in one click and a Marker or Sketch finish that keeps it looking hand-drawn; to Plan when the ideas become cards on a board, with a Sheet beside it and a form to gather more; or to Pages for the write-up and the slides.',
-          'Start from one of 146 templates, from retrospectives and story maps to flowcharts and system architecture, and split larger work across tabs, folders and layers.',
+          'Start from one of 143 templates, from retrospectives and story maps to flowcharts and system architecture, and split larger work across tabs, folders and layers.',
         ],
       },
       {
@@ -802,7 +802,7 @@ export const ALTERNATIVES: Alternative[] = [
       {
         heading: 'Open at the edges',
         paragraphs: [
-          'livedesign imports Markdown outlines and exports PNG, SVG, PDF, Markdown or portable JSON. Any share link embeds as a live-updating iframe in a wiki or doc: an editor link embeds an editable canvas, and a participant or view-only link a read-only one.',
+          'livedesign exports PNG, SVG, PDF, Markdown or portable JSON. Any share link embeds as a live-updating iframe in a wiki or doc: an editor link embeds an editable canvas, and a participant or view-only link a read-only one.',
           'For automation there is a free REST API with personal tokens and an MCP server that lets AI assistants read and edit your documents directly, with their changes shown live and undoable as one unit.',
         ],
       },
@@ -814,7 +814,7 @@ export const ALTERNATIVES: Alternative[] = [
       },
       {
         q: 'Can I import my FigJam boards?',
-        a: 'Not directly: there is no FigJam importer. You can bring a board across as a picture by exporting it from FigJam as a PNG and adding it to a tab as an image. For new work, start from one of the 146 templates.',
+        a: 'Not directly: there is no FigJam importer. You can bring a board across as a picture by exporting it from FigJam as a PNG and adding it to a tab as an image. For new work, start from one of the 143 templates.',
       },
       {
         q: 'Does livedesign work with Figma?',
@@ -873,7 +873,7 @@ export const ALTERNATIVES: Alternative[] = [
     usBest: [
       'Free with no plan limits on documents or shapes, and no paid tier.',
       'Open a link and start, no account needed, even to create a document.',
-      '146 templates, from flowcharts, org charts and swimlanes to system and cloud architecture, database schemas and sequence, class and state diagrams.',
+      '143 templates, from flowcharts, org charts and swimlanes to system and cloud architecture, database schemas and sequence, class and state diagrams.',
       'Real-time multiplayer with live cursors, comments, assigned actions and a laser pointer for presenting.',
       '24 one-click themes restyle the whole canvas, shapes and arrows, and the Professional finish draws it crisp and print-ready: square corners, thin lines, Inter lettering, no default shadows.',
       'Mermaid through the API: flowcharts from a script or an AI assistant become editable diagrams.',
@@ -892,7 +892,7 @@ export const ALTERNATIVES: Alternative[] = [
       {
         heading: 'The diagrams you need, ready to go',
         paragraphs: [
-          'livedesign ships 146 templates, including flowcharts in four styles, swimlanes, org charts, mind maps, data-flow diagrams, system and cloud architecture, database schemas, Sankey flows, and sequence, class and state diagrams. Shapes and arrows stay attached and re-route as you move things, alignment guides and snapping keep layouts tidy, and themes restyle the whole canvas in one click. A finish sets how it is drawn: Professional for crisp, print-ready work, or Sketch and Marker when a review should feel like a whiteboard.',
+          'livedesign ships 143 templates, including flowcharts in four styles, swimlanes, org charts, mind maps, data-flow diagrams, system and cloud architecture, database schemas, Sankey flows, and sequence, class and state diagrams. Shapes and arrows stay attached and re-route as you move things, alignment guides and snapping keep layouts tidy, and themes restyle the whole canvas in one click. A finish sets how it is drawn: Professional for crisp, print-ready work, or Sketch and Marker when a review should feel like a whiteboard.',
           'Bigger work splits across tabs inside one document, grouped into folders, with Photoshop-style layers on each tab. Presentation mode turns elements from any tab into a slide deck, so you can walk a room through a diagram without exporting it, and a Pages tab adds designed slides with a live window onto the diagram.',
         ],
       },
@@ -905,7 +905,7 @@ export const ALTERNATIVES: Alternative[] = [
       {
         heading: 'Open at the edges',
         paragraphs: [
-          'livedesign imports Markdown outlines and exports PNG, SVG, PDF, Markdown or portable JSON. Any share link embeds as a live-updating iframe in Confluence, Notion or any page that allows iframes: an editor link embeds an editable canvas, and a participant or view-only link a read-only one.',
+          'livedesign exports PNG, SVG, PDF, Markdown or portable JSON. Any share link embeds as a live-updating iframe in Confluence, Notion or any page that allows iframes: an editor link embeds an editable canvas, and a participant or view-only link a read-only one.',
           'For automation there is a free REST API with personal tokens and an MCP server that lets AI assistants read and edit your documents directly, with their changes shown live and undoable as one unit.',
         ],
       },

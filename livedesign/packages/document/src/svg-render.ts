@@ -629,8 +629,7 @@ export function renderElementsToSvg(
     resolveTabWindow?: ResolveTabWindow;
     // One page as an export draws it (page-frame.ts, svg-render-pages.ts): the drawing is the
     // page's rect, painted with its background, its elements inked for it; only the elements reaching it are drawn.
-    // `writingSvg` goes over the page and under every element (an article's writing).
-    frame?: PageExportFrame & { writingSvg?: string };
+    frame?: PageExportFrame;
   } = {},
 ): string {
   const frame = opts.frame;
@@ -660,7 +659,6 @@ export function renderElementsToSvg(
       ? frame.backgroundSvg
       : `<rect x="${r2(vbX)}" y="${r2(vbY)}" width="${r2(vbW)}" height="${r2(vbH)}" fill="${xmlEscape(bg)}"/>`,
   ];
-  if (frame?.writingSvg) parts.push(frame.writingSvg);
   // Webfont declarations for the faces this tab uses (docs/specs/004-interface-design/fonts.md).
   // The categorical ramp the tab's theme gives its charts (docs/specs/009-elements/pie-chart.md), which is
   // what the canvas hands them. Without it every exported chart fell back to

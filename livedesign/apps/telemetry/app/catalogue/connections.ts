@@ -128,7 +128,6 @@ export const MCP_TOOL_METRICS: readonly Metric[] = [
     'Change Pages',
     'Adding, changing, laying out, moving or deleting pages: slides, logos, infographics.',
   ),
-  mcpTool('WriteArticle', 'Write Article', 'Writing an article on pages from Markdown.'),
   mcpTool(
     'ReadForm',
     'Read Form',

@@ -161,7 +161,7 @@ The room relays an Editor's op as it was sent and keeps it in the catch-up log, 
 document-changing op's envelope before applying it (`roomOpIsWellFormed`, `room-op-shape.ts`): a `tab` carries a
 tab with its elements, an `el` an element op (an add or update an element with an id and a type, a remove an id, a
 reorder a list, a patch an id and its fields), an `el-delta` an element id and a delta, a `changeset` a list of
-element ops if any, a `vote` an element and a voter, a `tab-meta` a patch, an `article` a flow, a `document-meta`
+element ops if any, a `vote` an element and a voter, a `tab-meta` a patch, a `document-meta`
 a name and a list of tabs with ids and names; each but `document-meta` names its tab. One that does not is dropped
 and logged (`[room] malformed op dropped`), so it can no longer stop every editor in the room, or each one that
 reconnects, from rendering. What an element or a patch holds is the stored-element migrations' to settle; a kind

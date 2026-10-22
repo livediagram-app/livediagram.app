@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import type { PagesAnswer } from '@livedesign/api-schema';
+import type { PageChange, PagesAnswer } from '@livedesign/api-schema';
 import { VerbRefusal } from '../define';
-import { changePages, pagesTabOf, readArticle, writeArticle } from '../pages/pages-calls';
+import { changePages, pagesTabOf } from '../pages/pages-calls';
 import { contextOf, DOC_A, fakeApi, library, tabsOfA } from '../testing/fake-api';
-import { articleGet, articleSet, pageLs, pageSet } from './pages';
+import { pageLs, pageSet } from './pages';
 
 // The Pages verbs and calls (docs/specs/024-agents/pages-for-agents.md "The front doors",
 // "Which tab").
@@ -28,52 +28,22 @@ const ANSWER: PagesAnswer = {
       rect: { x: -960, y: -540, width: 1920, height: 1080 },
       background: null,
       locked: false,
-      flow: null,
       elements: 3,
     },
   ],
-  articles: [
-    {
-      flow: 'art-1',
-      title: 'Brief',
-      pages: [2],
-      blocks: 2,
-      words: 4,
-      estimatedPages: 1,
-      look: null,
-    },
-  ],
-  article: {
-    flow: 'art-1',
-    title: 'Brief',
-    pages: [2],
-    blocks: 2,
-    words: 4,
-    estimatedPages: 1,
-    look: null,
-    created: true,
-  },
   changesetId: null,
 };
 
-const ARTICLE_TAB = {
+const PAGES_TAB = {
   id: ONE,
   rev: 4,
   opensIn: 'pages',
   elements: [],
-  pages: [{ id: 'a1', orientation: 'portrait', kind: 'article', flow: 'art-1' }],
-  articles: {
-    'art-1': {
-      blocks: [
-        { id: 'b1', type: 'paragraph', style: 'title', runs: [{ text: 'Brief' }] },
-        { id: 'b2', type: 'paragraph', runs: [{ text: 'Hello there' }] },
-      ],
-    },
-  },
+  pages: [{ id: 'a1', orientation: 'portrait', kind: 'logo', size: 'logo' }],
 };
 
 function setUp(
-  tabs: Record<string, unknown> = { [TWO]: { id: TWO, elements: [] }, [ONE]: ARTICLE_TAB },
+  tabs: Record<string, unknown> = { [TWO]: { id: TWO, elements: [] }, [ONE]: PAGES_TAB },
   answer: (r: Request) => Response | Promise<Response> = () => Response.json(ANSWER),
   input = '',
 ) {
@@ -146,45 +116,13 @@ describe('the calls', () => {
 
   it('reads a refusal without a message as the generic words, and lets a 5xx throw', async () => {
     const bare = setUp(undefined, () => new Response('nope', { status: 403 }));
-    expect(await writeArticle(bare.api, DOC_A, { tabId: ONE, markdown: 'x' }, 'mcp')).toMatchObject(
-      {
-        ok: false,
-        code: 'http_403',
-      },
-    );
-    const down = setUp(undefined, () => new Response('down', { status: 503 }));
-    await expect(
-      writeArticle(down.api, DOC_A, { tabId: ONE, markdown: 'x' }, 'mcp'),
-    ).rejects.toThrow();
-  });
-
-  it('reads an article as Markdown, by id, title or as the only one', async () => {
-    const { api } = setUp();
-    const only = await readArticle(api, DOC_A, {}, 'mcp');
-    expect(only).toMatchObject({ ok: true, flow: 'art-1', title: 'Brief' });
-    expect((only as { markdown: string }).markdown).toBe('---\ntitle: Brief\n---\n\nHello there\n');
-    expect(await readArticle(api, DOC_A, { article: 'brief' }, 'mcp')).toMatchObject({ ok: true });
-    expect(await readArticle(api, DOC_A, { article: 'Plan' }, 'mcp')).toMatchObject({
+    const add = { tabId: ONE, changes: [{ op: 'add', kind: 'slide' }] as PageChange[] };
+    expect(await changePages(bare.api, DOC_A, add, 'mcp')).toMatchObject({
       ok: false,
-      code: 'article_unknown',
+      code: 'http_403',
     });
-  });
-
-  it('asks which article when there are two, and says when there are none', async () => {
-    const two = {
-      ...ARTICLE_TAB,
-      articles: { ...ARTICLE_TAB.articles, 'art-2': { blocks: [] } },
-    };
-    const { api } = setUp({ [TWO]: { id: TWO, elements: [] }, [ONE]: two });
-    expect(await readArticle(api, DOC_A, {}, 'mcp')).toMatchObject({ code: 'article_ambiguous' });
-    const none = setUp({
-      [TWO]: { id: TWO, elements: [] },
-      [ONE]: { ...ARTICLE_TAB, articles: {} },
-    });
-    expect(await readArticle(none.api, DOC_A, {}, 'mcp')).toMatchObject({
-      message: 'That tab has no article.',
-    });
-    expect(await readArticle(none.api, 'nope', {}, 'mcp')).toMatchObject({ ok: false });
+    const down = setUp(undefined, () => new Response('down', { status: 503 }));
+    await expect(changePages(down.api, DOC_A, add, 'mcp')).rejects.toThrow();
   });
 });
 
@@ -197,9 +135,6 @@ describe('the calls with no tab to act on', () => {
     expect(
       await changePages(api, DOC_A, { changes: [{ op: 'add', kind: 'slide' }] }, 'mcp'),
     ).toMatchObject({
-      code: 'tab_needed',
-    });
-    expect(await writeArticle(api, DOC_A, { markdown: 'x' }, 'mcp')).toMatchObject({
       code: 'tab_needed',
     });
     expect(sent).toEqual([]);
@@ -304,80 +239,5 @@ describe('page ls and page set', () => {
     const refused = await run({ page: '9', delete: true });
     expect(refused).toBeInstanceOf(VerbRefusal);
     expect((refused as Error).message).toContain('change 1: No page.');
-  });
-});
-
-describe('article get and article set', () => {
-  it('prints an article as Markdown', async () => {
-    const { ctx } = setUp();
-    const out = await articleGet.run!(
-      ctx,
-      articleGet.input.parse({ doc: DOC_A, article: 'Brief' }),
-    );
-    expect(articleGet.text!(out)).toEqual(['---\ntitle: Brief\n---\n\nHello there']);
-    const { ctx: none } = setUp({
-      [TWO]: { id: TWO, elements: [] },
-      [ONE]: { ...ARTICLE_TAB, articles: {} },
-    });
-    await expect(
-      articleGet.run!(none, articleGet.input.parse({ doc: DOC_A })),
-    ).rejects.toBeInstanceOf(VerbRefusal);
-  });
-
-  it('writes an article from a file with its options', async () => {
-    const { ctx, sent } = setUp(undefined, undefined, '# Hello');
-    const out = await articleSet.run!(
-      ctx,
-      articleSet.input.parse({
-        doc: DOC_A,
-        file: 'a.md',
-        article: 'Brief',
-        append: true,
-        look: 'report',
-        accent: '#ff0066',
-        pageNumbers: true,
-        size: 'letter',
-        orientation: 'portrait',
-      }),
-    );
-    expect(sent).toEqual([
-      {
-        article: {
-          markdown: '# Hello',
-          article: 'Brief',
-          mode: 'append',
-          size: 'letter',
-          orientation: 'portrait',
-          look: 'report',
-          accent: '#ff0066',
-          pageNumbers: true,
-        },
-      },
-    ]);
-    expect(out).toMatchObject({ flow: 'art-1', title: 'Brief', created: true, rev: 5 });
-    expect(articleSet.text!(out)).toEqual(['~ Added page 2 (slide, Slide (16:9)).']);
-    expect(articleSet.quiet!(out)).toEqual(['art-1']);
-  });
-
-  it('reads and writes on the tab named', async () => {
-    const { ctx, sent } = setUp(undefined, undefined, 'x');
-    const got = await articleGet.run!(ctx, articleGet.input.parse({ doc: DOC_A, tab: 'Overview' }));
-    expect(got.flow).toBe('art-1');
-    await articleSet.run!(ctx, articleSet.input.parse({ doc: DOC_A, tab: 'Overview', file: '-' }));
-    expect(sent).toEqual([{ article: { markdown: 'x' } }]);
-  });
-
-  it('starts a new article, and refuses what the api refuses', async () => {
-    const { ctx, sent } = setUp(undefined, undefined, 'x');
-    await articleSet.run!(ctx, articleSet.input.parse({ doc: DOC_A, file: '-', new: true }));
-    expect(sent).toEqual([{ article: { markdown: 'x', new: true } }]);
-    const refused = setUp(
-      undefined,
-      () => Response.json({ error: 'article_ambiguous', message: 'Name one.' }, { status: 400 }),
-      'x',
-    );
-    await expect(
-      articleSet.run!(refused.ctx, articleSet.input.parse({ doc: DOC_A, file: '-' })),
-    ).rejects.toBeInstanceOf(VerbRefusal);
   });
 });

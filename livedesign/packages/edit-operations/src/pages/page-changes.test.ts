@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { PageChange } from '@livedesign/api-schema';
 import {
-  articlesOf,
   pagesOf,
   layOutPages,
   MAX_PAGES,
@@ -20,7 +19,7 @@ const counter = (prefix: string) => {
   let n = 0;
   return () => `${prefix}-${++n}`;
 };
-const ids = () => ({ page: counter('pg'), flow: counter('art') });
+const ids = () => ({ page: counter('pg') });
 
 const box = (id: string, x: number, y: number): Element => ({
   id,
@@ -162,26 +161,18 @@ describe('adding', () => {
     expect(out.lines[1]).toBe('Added page 3 (infographic, A3 landscape): size a3, landscape.');
   });
 
-  it('refuses an article (write_article makes them) and a size the kind lacks', () => {
-    expect(refusal(tabOf(), [{ op: 'add', kind: 'article' }]).code).toBe('article_by_write');
+  it('refuses a size the kind lacks', () => {
     const r = refusal(tabOf({ pages: [page('p1')] }), [{ op: 'add', kind: 'slide', size: 'a4' }]);
     expect(r).toMatchObject({ code: 'size_not_offered', change: 0 });
     expect(r.message).toContain('slide, slide-classic');
   });
 
-  it('refuses a layout of another kind, and any on an article page', () => {
+  it('refuses a layout of another kind', () => {
     const r = refusal(tabOf({ pages: [page('p1')] }), [
       { op: 'add', kind: 'logo', layout: 'title' },
     ]);
     expect(r.code).toBe('layout_unknown');
     expect(r.message).toContain('A logo page takes the layouts');
-    const withArticle = tabOf({
-      pages: [page('a', { kind: 'article', flow: 'f' })],
-      articles: { f: { blocks: [] } },
-    });
-    expect(refusal(withArticle, [{ op: 'layout', page: 1, layout: 'title' }]).message).toContain(
-      'write_article',
-    );
   });
 
   it('refuses past the page limit', () => {
@@ -322,38 +313,24 @@ describe('laying out, moving, duplicating, deleting', () => {
     ]);
   });
 
-  it('duplicates a page and an article', () => {
-    const tab = tabOf({
-      pages: [page('p1'), page('a1', { kind: 'article', flow: 'f' })],
-      articles: { f: { blocks: [{ id: 'b', type: 'paragraph', runs: [{ text: 'Hi' }] }] } },
-    });
-    const out = run(tab, [
-      { op: 'duplicate', page: 1 },
-      { op: 'duplicate', page: 'a1' },
-    ]);
-    expect(out.lines).toEqual([
-      'Duplicated page 1 as page 2.',
-      'Duplicated the article on page 3 (1 page, from page 4).',
-    ]);
-    expect(Object.keys(articlesOf(out.tab))).toHaveLength(2);
+  it('duplicates a page', () => {
+    const out = run(tabOf({ pages: [page('p1'), page('p2')] }), [{ op: 'duplicate', page: 1 }]);
+    expect(out.lines).toEqual(['Duplicated page 1 as page 2.']);
+    expect(pagesOf(out.tab)).toHaveLength(3);
   });
 
-  it('deletes a page with what is on it, and a whole article', () => {
-    const pages = [page('p1'), page('p2'), page('a1', { kind: 'article', flow: 'f' })];
-    const tab = tabOf({
-      pages,
-      elements: [onPage(pages, 1, 'x')],
-      articles: { f: { blocks: [] } },
-    });
+  it('deletes a page with what is on it', () => {
+    const pages = [page('p1'), page('p2'), page('p3')];
+    const tab = tabOf({ pages, elements: [onPage(pages, 1, 'x')] });
     const out = run(tab, [
       { op: 'delete', page: 2 },
-      { op: 'delete', page: 'a1' },
+      { op: 'delete', page: 'p3' },
     ]);
     expect(pagesOf(out.tab).map((p) => p.id)).toEqual(['p1']);
     expect(out.tab.elements).toEqual([]);
     expect(out.lines).toEqual([
       'Deleted page 2 and 1 element on it.',
-      'Deleted the article on page 2 (1 page, writing and 0 elements).',
+      'Deleted page 2 and 0 elements on it.',
     ]);
     expect(refusal(tabOf({ pages: [page('p1')] }), [{ op: 'delete', page: 1 }]).code).toBe(
       'last_page',
@@ -387,42 +364,19 @@ describe('laying out, moving, duplicating, deleting', () => {
     expect(pagesOf(appended.tab).map((p) => p.id)).toEqual(['p1']);
   });
 
-  it('takes a delete of a page an earlier delete took with its article as done', () => {
-    const pages = [
-      page('s1'),
-      page('a1', { kind: 'article', flow: 'f' }),
-      page('a2', { kind: 'article', flow: 'f' }),
-      page('a3', { kind: 'article', flow: 'f' }),
-    ];
-    const tab = tabOf({ pages, articles: { f: { blocks: [] } } });
-    const out = run(tab, [
+  it('takes a delete of a page an earlier delete took, by its id or its name, as done', () => {
+    const pages = [page('s1'), page('a1', { name: 'Chapter 1' })];
+    const out = run(tabOf({ pages }), [
       { op: 'delete', page: 'a1' },
-      { op: 'delete', page: 'a2' },
-      { op: 'delete', page: 'a3' },
+      { op: 'delete', page: 'a1' },
+      { op: 'delete', page: 'Chapter 1' },
     ]);
     expect(pagesOf(out.tab).map((p) => p.id)).toEqual(['s1']);
     expect(out.lines).toEqual([
-      'Deleted the article on page 2 (3 pages, writing and 0 elements).',
-      'Page a2 went with what an earlier delete in this change took.',
-      'Page a3 went with what an earlier delete in this change took.',
+      'Deleted page 2 and 0 elements on it.',
+      'Page a1 went with what an earlier delete in this change took.',
+      'Page Chapter 1 went with what an earlier delete in this change took.',
     ]);
-  });
-
-  it('takes a delete naming a page an earlier delete took, by its name, as done', () => {
-    const pages = [
-      page('s1'),
-      page('a1', { kind: 'article', flow: 'f' }),
-      page('a2', { kind: 'article', flow: 'f', name: 'Chapter 2' }),
-    ];
-    const tab = tabOf({ pages, articles: { f: { blocks: [] } } });
-    const out = run(tab, [
-      { op: 'delete', page: 'a1' },
-      { op: 'delete', page: 'Chapter 2' },
-    ]);
-    expect(pagesOf(out.tab).map((p) => p.id)).toEqual(['s1']);
-    expect(out.lines[1]).toBe(
-      'Page Chapter 2 went with what an earlier delete in this change took.',
-    );
   });
 
   it('stops at the first refusal and writes nothing, naming the change', () => {

@@ -16,8 +16,6 @@ export const loadAvatarSpeechLayer = () =>
 
 export const loadCanvasPages = () =>
   import('@/components/canvas/CanvasPages').then((m) => m.CanvasPages);
-export const loadArticleFlows = () =>
-  import('@/components/canvas/article/ArticleFlows').then((m) => m.ArticleFlows);
 export const loadWhiteboardDock = () =>
   import('@/components/canvas/whiteboard/WhiteboardDock').then((m) => m.WhiteboardDock);
 export const loadTableView = () => import('@/components/canvas/TableView').then((m) => m.TableView);
@@ -46,7 +44,6 @@ export const loadSessionElementSettings = () =>
 
 export const DOCUMENT_CONTENT_CODE = [
   loadCanvasPages,
-  loadArticleFlows,
   loadWhiteboardDock,
   loadTableView,
   loadCollabFaceRouter,

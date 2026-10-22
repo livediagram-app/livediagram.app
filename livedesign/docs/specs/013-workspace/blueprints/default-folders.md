@@ -254,7 +254,6 @@ owner_id = ?` then `DELETE … WHERE owner_id = <guest>`: the account's row for 
 | Client functions; the create body's absent versus null `folderId`            | `apps/live/lib/api/placement-defaults.test.ts`, `apps/live/lib/api-client.test.ts`               |
 | Wizard placement: the context, else none (server decides)                    | `apps/live/app/new/useNewDocumentLocation.test.tsx`, e2e `apps/live/e2e/default-folders.spec.ts` |
 | Duplicate beside its source, record-only, root on refusal                    | `apps/live/lib/duplicate-document.test.ts`                                                       |
-| A Drive copy sends the intent                                                | `apps/live/lib/drive/livedesign-port.test.ts`                                                   |
 | MCP create sends the intent and names the folder                             | `apps/mcp/src/create-document-placement.test.ts`                                                 |
 
 ## Constants and configuration
@@ -481,19 +480,19 @@ dark:text-slate-400`, then `+N` at 10px semibold; after the count badge; in a tr
 
 ### Constants and configuration (surfaces)
 
-| Constant                      | Value                                  | Provenance  | Safe range |
-| ----------------------------- | -------------------------------------- | ----------- | ---------- |
-| `MARKER_MAX_ICONS`            | 2                                      | Spec marker | 1 to 3     |
+| Constant                      | Value                                 | Provenance  | Safe range |
+| ----------------------------- | ------------------------------------- | ----------- | ---------- |
+| `MARKER_MAX_ICONS`            | 2                                     | Spec marker | 1 to 3     |
 | `DEFAULT_FOLDER_NAMES_PREFIX` | `livedesign:v2:default-folder-names:` | `D113`      | Fixed      |
 
 ### Assets (surfaces)
 
-| Icon                  | Source                        | Licence | Path                                                               |
-| --------------------- | ----------------------------- | ------- | ------------------------------------------------------------------ |
-| Diagrams, Whiteboards | `FlowchartIcon`, `MarkerIcon` | MIT     | `packages/ui/src/icons/drawing-kinds.tsx`                          |
-| Retrospectives        | Lucide `history`              | ISC     | same                                                               |
+| Icon                  | Source                        | Licence | Path                                                              |
+| --------------------- | ----------------------------- | ------- | ----------------------------------------------------------------- |
+| Diagrams, Whiteboards | `FlowchartIcon`, `MarkerIcon` | MIT     | `packages/ui/src/icons/drawing-kinds.tsx`                         |
+| Retrospectives        | Lucide `history`              | ISC     | same                                                              |
 | Kanban boards         | Lucide `square-kanban`        | ISC     | same, vendored by `pnpm --filter @livedesign/icons vendor:lucide` |
-| Use as Default for    | Lucide `folder-check`         | ISC     | same                                                               |
+| Use as Default for    | Lucide `folder-check`         | ISC     | same                                                              |
 
 ## The wizard's Location step (retired)
 

@@ -5,7 +5,6 @@ import {
   PAGES_REF_MAX,
   PAGE_CHANGES_MAX,
   PAGE_CHANGE_OPS,
-  type ArticleWrite,
   type PagesRefusal,
   type PagesRequest,
   type PageBackgroundInput,
@@ -13,9 +12,6 @@ import {
 } from '@livedesign/api-schema';
 import {
   isRecord,
-  ARTICLE_LOOK_IDS,
-  ARTICLE_MARKDOWN_MAX,
-  isArticleHex,
   PAGE_NAME_MAX,
   PAGE_ORIENTATIONS,
   PAGE_PATTERNS,
@@ -24,7 +20,7 @@ import {
   WIREFRAME_FRAME_LOOKS,
 } from '@livedesign/document';
 
-const PAGE_KINDS = ['infographic', 'article', 'slide', 'logo', 'wireframe'] as const;
+const PAGE_KINDS = ['infographic', 'slide', 'logo', 'wireframe'] as const;
 const WIREFRAME_KEYS = ['device', 'frameLook', 'systemBars'];
 
 type Raw = Record<string, unknown>;
@@ -79,8 +75,11 @@ function pageRef(v: unknown, change: number): string | number {
   );
 }
 
+// A colour as an agent may write it: #rgb or #rrggbb.
+const HEX = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i;
+
 const hex = (v: unknown, field: string, change?: number): string => {
-  if (isArticleHex(v)) return v;
+  if (typeof v === 'string' && HEX.test(v)) return v;
   return bad(`"${field}" is a hex colour such as #0f172a.`, change);
 };
 
@@ -232,53 +231,11 @@ function pageChange(v: unknown, i: number): PageChange {
   }
 }
 
-function articleWrite(v: unknown): ArticleWrite {
-  if (!isRecord(v)) return bad('"article" is an object with "markdown".');
-  onlyKeys(
-    v,
-    ['article', 'new', 'markdown', 'mode', 'size', 'orientation', 'look', 'accent', 'pageNumbers'],
-    '"article"',
-  );
-  if (typeof v.markdown !== 'string') bad('"markdown" is the article\'s text, in Markdown.');
-  if ((v.markdown as string).length > ARTICLE_MARKDOWN_MAX)
-    throw new Refused(
-      'article_too_large',
-      `The Markdown is ${(v.markdown as string).length.toLocaleString('en')} characters; one write takes at most ${ARTICLE_MARKDOWN_MAX.toLocaleString('en')}. Write the rest with mode "append".`,
-    );
-  if (v.new !== undefined && typeof v.new !== 'boolean') bad('"new" is true or false.');
-  if (v.pageNumbers !== undefined && typeof v.pageNumbers !== 'boolean')
-    bad('"pageNumbers" is true or false.');
-  if (v.new === true && v.article !== undefined) bad('Give "article" or "new", not both.');
-  return {
-    markdown: v.markdown as string,
-    ...(v.article === undefined ? {} : { article: text(v.article, 'article', 200) }),
-    ...(v.new === true ? { new: true } : {}),
-    ...(v.mode === undefined
-      ? {}
-      : { mode: oneOf(['replace', 'append'] as const, v.mode, 'mode') }),
-    ...(v.size === undefined ? {} : { size: oneOf(PAGE_SIZE_IDS, v.size, 'size') }),
-    ...(v.orientation === undefined
-      ? {}
-      : { orientation: oneOf(PAGE_ORIENTATIONS, v.orientation, 'orientation') }),
-    ...(v.look === undefined ? {} : { look: oneOf(ARTICLE_LOOK_IDS, v.look, 'look') }),
-    ...(v.accent === undefined ? {} : { accent: hex(v.accent, 'accent') }),
-    ...(v.pageNumbers === undefined ? {} : { pageNumbers: v.pageNumbers as boolean }),
-  };
-}
-
 /** The request, or why it was refused. */
 export function parsePagesRequest(raw: unknown): PagesRequest | { refusal: PagesRefusal } {
   try {
-    if (!isRecord(raw))
-      throw new Refused('invalid_body', 'The body is an object with "pages" or "article".');
-    const has = ['pages', 'article'].filter((k) => raw[k] !== undefined);
-    if (has.length !== 1)
-      throw new Refused(
-        'invalid_body',
-        'Send exactly one of "pages" (page changes) or "article" (a write).',
-      );
-    onlyKeys(raw, ['pages', 'article'], 'The body');
-    if (raw.article !== undefined) return { article: articleWrite(raw.article) };
+    if (!isRecord(raw)) throw new Refused('invalid_body', 'The body is an object with "pages".');
+    onlyKeys(raw, ['pages'], 'The body');
     const pages = raw.pages;
     if (!Array.isArray(pages) || pages.length === 0 || pages.length > PAGE_CHANGES_MAX)
       throw new Refused(

@@ -4,7 +4,7 @@
 // page kept across what shows. Pure: usePageSnap measures the canvas and hands it in.
 import type { LaidOutPage } from '@livedesign/document';
 import { pageInView } from './page-contents';
-import { READING_TOP_ROOM, type Offset } from './viewport';
+import type { Offset } from './viewport';
 
 export type SnapFrame = { zoom: number; offset: Offset };
 
@@ -21,9 +21,8 @@ export const SNAP_SWIPE_FRACTION = 0.2;
 // hand lets go, after at least SNAP_FLICK_MIN_PX of travel.
 export const SNAP_FLICK_PX_PER_MS = 0.5;
 export const SNAP_FLICK_MIN_PX = 24;
-// How far inside the band a zoomed-in page's edge may rest: the reading frame's own top room, so
-// an article page read on a phone never moves when the finger lets go.
-export const SNAP_EDGE_ROOM = READING_TOP_ROOM;
+// How far inside the band a zoomed-in page's edge may rest, in screen px.
+export const SNAP_EDGE_ROOM = 104;
 
 export type PageSnap = {
   pageId: string;
@@ -58,7 +57,7 @@ export function pageSnap(input: {
   if (turned) page = turned;
   const fit = fitOf(page);
   // Moved on from a page seen whole (a swipe, or a pan onto another page): the new page is seen whole
-  // too, at its own fit, however its zoom compares (a watch's fit is far closer than an article's).
+  // too, at its own fit, however its zoom compares (a watch's fit is far closer than a poster's).
   const start = input.from === undefined ? undefined : pages.find((p) => p.id === input.from);
   const movedOnWhole =
     !!start && start.id !== page.id && view.zoom <= fitOf(start).zoom * SNAP_FIT_TOLERANCE;

@@ -55,7 +55,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   sharing: '#0284c7',
   'zen-mode': '#475569',
   ai: '#7c3aed',
-  'markdown-import': '#0d9488',
   history: '#94a3b8',
   'session-tools': '#f43f5e',
   // The last ten cards

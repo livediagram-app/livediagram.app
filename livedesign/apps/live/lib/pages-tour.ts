@@ -15,7 +15,7 @@ export function requestPagesTourRelaunch(): void {
 // Each page kind offers its own track once (docs/specs/007-editor/pages-tour.md "Where it appears"):
 // `pagesTourKinds` lists the kinds answered; `pagesTourSeen` counts them all only for a power user
 // (tourTrackSeen).
-export const PAGES_TOUR_KINDS: readonly PageKind[] = ['slide', 'infographic', 'article', 'logo'];
+export const PAGES_TOUR_KINDS: readonly PageKind[] = ['slide', 'infographic', 'logo'];
 
 export function pagesKindSeen(prefs: UserPreferences | null | undefined, kind: PageKind): boolean {
   return tourTrackSeen(prefs, prefs?.pagesTourKinds, prefs?.pagesTourSeen, kind);

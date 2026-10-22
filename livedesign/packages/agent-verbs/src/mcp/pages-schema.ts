@@ -1,17 +1,14 @@
 // The Pages tools' input and output shapes (docs/specs/024-agents/pages-for-agents.md,
-// docs/specs/015-api/mcp-server.md §4.9d): change_pages and write_article. Pages are named by id, place
-// or name; articles by flow id or title. The layout ids each kind offers come from the catalogue the
+// docs/specs/015-api/mcp-server.md §4.9d): change_pages. Pages are named by id, place
+// or name. The layout ids each kind offers come from the catalogue the
 // editor's page panel shows, so the two never disagree.
 import { z } from 'zod';
 import { PAGE_CHANGES_MAX } from '@livedesign/api-schema';
 import {
-  ARTICLE_LOOK_IDS,
-  ARTICLE_MARKDOWN_MAX,
   PAGE_NAME_MAX,
   PAGE_SIZE_IDS,
   WIREFRAME_DEVICE_IDS,
   WIREFRAME_FRAME_LOOKS,
-  type ArticleLookId,
   type PageKind,
   type PageSizeId,
   type WireframeDeviceId,
@@ -19,7 +16,7 @@ import {
 } from '@livedesign/document';
 import { layoutCatalogueFor } from '@livedesign/templates';
 
-const layoutIds = (kind: Exclude<PageKind, 'article'>) =>
+const layoutIds = (kind: PageKind) =>
   layoutCatalogueFor(kind)
     .layouts.map((l) => l.id)
     .join(', ');
@@ -38,7 +35,7 @@ const pageRef = z
 const size = z
   .enum(PAGE_SIZE_IDS as [PageSizeId, ...PageSizeId[]])
   .describe(
-    'Page size: a4, letter, a3, square, social (4:5), wide (9:16, or 16:9 turned) for infographic and article ' +
+    'Page size: a4, letter, a3, square, social (4:5), wide (9:16, or 16:9 turned) for infographic ' +
       'pages; slide (16:9) or slide-classic (4:3) for slides; logo (1024) for logo pages; a wireframe page is its ' +
       'device (use device, not size). fit is never chosen.',
   );
@@ -94,7 +91,7 @@ const layout = z
   .describe(
     `A ready-made arrangement put onto the page in place of what is on it. Infographic: ${layoutIds('infographic')}. ` +
       `Slide: ${layoutIds('slide')}. Logo: ${layoutIds('logo')}. Wireframe: ${layoutIds('wireframe')} ` +
-      '(the wf-watch-* on a watch only, the rest anywhere else). Article pages take none.',
+      '(the wf-watch-* on a watch only, the rest anywhere else).',
   );
 const name = z
   .string()
@@ -108,9 +105,7 @@ const pageChange = z
         op: z.literal('add').describe('Add a page.'),
         kind: z
           .enum(['infographic', 'slide', 'logo', 'wireframe'])
-          .describe(
-            'What the page is for (wireframe: a screen framed as a device). Article pages are made by write_article.',
-          ),
+          .describe('What the page is for (wireframe: a screen framed as a device).'),
         size: size.optional(),
         orientation: orientation.optional(),
         name: name.optional(),
@@ -137,7 +132,7 @@ const pageChange = z
         systemBars: systemBars.optional(),
       })
       .describe(
-        'A page’s name, size, orientation, background or lock, or a wireframe page’s frame and system bars (its device is fixed once added); on an article, all its pages.',
+        'A page’s name, size, orientation, background or lock, or a wireframe page’s frame and system bars (its device is fixed once added).',
       ),
     z
       .object({ op: z.literal('layout').describe('Lay a page out.'), page: pageRef, layout })
@@ -148,10 +143,10 @@ const pageChange = z
         page: pageRef,
         to: z.number().int().min(1).describe('The place to move it to.'),
       })
-      .describe('Move a page (an article page: its whole article), with its content.'),
+      .describe('Move a page, with its content.'),
     z
       .object({ op: z.literal('duplicate').describe('Copy a page.'), page: pageRef })
-      .describe('A copy after it, content and all (an article: the whole article).'),
+      .describe('A copy after it, content and all.'),
     z
       .object({
         op: z
@@ -164,9 +159,7 @@ const pageChange = z
       ),
     z
       .object({ op: z.literal('delete').describe('Delete a page.'), page: pageRef })
-      .describe(
-        'Delete a page and what is on it (an article page: the whole article). Never the last.',
-      ),
+      .describe('Delete a page and what is on it. Never the last.'),
   ])
   .describe('One page change.');
 
@@ -187,7 +180,7 @@ const pageOut = z
     place: z.number().describe('Its place in the row, 1 first.'),
     id: z.string().describe('The page id.'),
     name: z.string().nullable().describe('Its name, or null.'),
-    kind: z.string().describe('infographic, article, slide, logo or wireframe.'),
+    kind: z.string().describe('infographic, slide, logo or wireframe.'),
     size: z.string().describe('Its size id.'),
     orientation: z.string().nullable().describe('portrait, landscape, or null for none.'),
     rect: canvasRect.describe(
@@ -195,7 +188,6 @@ const pageOut = z
     ),
     background: z.string().nullable().describe('Its background in words, or null for the paper.'),
     locked: z.boolean().describe('Whether it is locked.'),
-    flow: z.string().nullable().describe('The article it is a page of, or null.'),
     elements: z.number().describe('How many elements are on it.'),
     device: z.string().optional().describe('A wireframe page’s device.'),
     frameLook: z.string().optional().describe('A wireframe page’s frame look.'),
@@ -208,75 +200,14 @@ const pageOut = z
   })
   .describe('A page as it is now.');
 
-const articleOut = z
-  .object({
-    flow: z.string().describe('The article id.'),
-    title: z.string().describe('Its title.'),
-    pages: z.array(z.number()).describe('The places of its pages.'),
-    blocks: z.number().describe('How many blocks its writing has.'),
-    words: z.number().describe('How many words.'),
-    estimatedPages: z
-      .number()
-      .optional()
-      .describe(
-        'About how many pages its writing reaches once laid out (an estimate): the editor grows the article to them, so more than its pages means it runs on.',
-      ),
-    look: z.string().nullable().describe('Its look, or null for the default.'),
-  })
-  .describe('An article.');
-
 const answerOut = {
   documentId: z.string().describe('The document id.'),
   tabId: z.string().describe('The tab changed.'),
   switched: z.boolean().describe('Whether the tab was switched into Pages mode.'),
   lines: z.array(z.string()).describe('What was done, one line each.'),
   pages: z.array(pageOut).describe('Every page of the tab as it now is.'),
-  articles: z.array(articleOut).describe('Every article of the tab.'),
   rev: z.number().describe('The tab revision written.'),
   url,
 };
 
 export const changePagesOutput = answerOut;
-
-export const writeArticleShape = {
-  documentId,
-  tabId,
-  markdown: z
-    .string()
-    .max(ARTICLE_MARKDOWN_MAX)
-    .describe(
-      'The text, in Markdown: # ## ### headings, paragraphs, - and 1. lists (indent two spaces a level), ' +
-        '- [ ] to-dos, > quotes, ``` code, --- dividers, **bold**, *italic*, ~~strike~~, `code`, [links](https://…). ' +
-        'Front matter sets the title and subtitle: a first line ---, then title: …, subtitle: …, then ---. ' +
-        'A line \\pagebreak starts a new page; a line [zone <id>] keeps an existing zone there. ' +
-        'An article holds no tables: a Markdown table is written as a list.',
-    ),
-  article: z
-    .string()
-    .optional()
-    .describe(
-      'Which article, by id or title. Absent: the tab’s only one, or a new one if it has none.',
-    ),
-  new: z.boolean().optional().describe('Always start a new article.'),
-  mode: z
-    .enum(['replace', 'append'])
-    .optional()
-    .describe('replace (default) writes the text anew; append adds it after the last block.'),
-  size: size
-    .optional()
-    .describe('A new article’s paper: a4 (default), letter, a3, square, social or wide.'),
-  orientation: orientation.optional(),
-  look: z
-    .enum(ARTICLE_LOOK_IDS as [ArticleLookId, ...ArticleLookId[]])
-    .optional()
-    .describe('The article’s look: clean, classic, report, notebook or bold.'),
-  accent: hex.optional().describe('The accent colour, a hex.'),
-  pageNumbers: z.boolean().optional().describe('Page numbers in the bottom margin on or off.'),
-};
-
-export const writeArticleOutput = {
-  ...answerOut,
-  article: articleOut
-    .extend({ created: z.boolean().describe('Whether the article is new.') })
-    .describe('The article written.'),
-};

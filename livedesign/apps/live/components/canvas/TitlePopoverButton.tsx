@@ -138,7 +138,6 @@ function TitleSheet({
       ref={sheet}
       role="dialog"
       aria-label={name}
-      data-article-keep-active=""
       onClose={onClose}
       zClassName="z-[var(--z-overlay)]"
       onPointerDown={(e) => e.stopPropagation()}

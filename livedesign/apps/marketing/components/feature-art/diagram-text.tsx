@@ -79,51 +79,6 @@ function ImportArrow() {
   );
 }
 
-// Markdown import: an outline from your notes on the left, and the themed node-link tree it lands
-// as on the right, each node arriving in turn.
-export function MarkdownImportArt() {
-  const children: [string, number, 'violet' | 'emerald' | 'amber', string][] = [
-    ['Design', 10, 'violet', 'Wireframes'],
-    ['Build', 38, 'emerald', 'API'],
-    ['Ship', 66, 'amber', 'Announce'],
-  ];
-  return (
-    <Frame canvas>
-      <svg viewBox={STAGE} className="absolute inset-0 h-full w-full">
-        <SourceCard
-          name="launch.md"
-          lines={[
-            [0, '# Launch', true],
-            [0, '- Design'],
-            [1, '- Wireframes'],
-            [0, '- Build'],
-            [1, '- API'],
-            [0, '- Ship'],
-            [1, '- Announce'],
-          ]}
-        />
-        <ImportArrow />
-        {children.map(([label, y, tone, leaf], i) => (
-          <g key={label} className="fa-pop" style={delay(0.4 + i * 0.3)}>
-            <path
-              className={LINK}
-              d={`M188 48 C 196 48, 196 ${y + 9}, 204 ${y + 9}`}
-              fill="none"
-              strokeWidth="1.2"
-            />
-            <Node x={204} y={y} w={38} h={18} label={label} tone={tone} size={6.6} />
-            <path className={LINK} d={`M242 ${y + 9} H248`} strokeWidth="1.2" />
-            <Node x={248} y={y + 2} w={42} h={14} label={leaf} tone={tone} size={5.8} />
-          </g>
-        ))}
-        <g className="fa-pop">
-          <Node x={148} y={38} w={40} h={20} label="Launch" tone="sky" shape="pill" size={7.4} />
-        </g>
-      </svg>
-    </Frame>
-  );
-}
-
 // Mermaid: flowchart text on the left, and the graph it lays out on the right, every connection
 // kept, the decision's "no" looping back to the start.
 export function MermaidArt() {

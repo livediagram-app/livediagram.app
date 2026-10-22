@@ -87,21 +87,6 @@ describe('renderTabDrawingSvg', () => {
     const svg = renderTabDrawingSvg(tab({ opensIn: 'pages' }));
     expect(svg).toContain('<svg x="');
   });
-
-  it("draws an article's writing as estimated when the editor has not laid it out", () => {
-    const t = tab({
-      opensIn: 'pages',
-      pages: [{ id: 'p1', orientation: 'portrait', kind: 'article', flow: 'f' }],
-      articles: {
-        f: {
-          blocks: [
-            { id: 'b1', type: 'paragraph', runs: [{ text: 'Quarterly results look strong' }] },
-          ],
-        },
-      },
-    });
-    expect(renderTabDrawingSvg(t)).toContain('Quarterly');
-  });
 });
 
 describe('tabDrawingFontIdsOf', () => {

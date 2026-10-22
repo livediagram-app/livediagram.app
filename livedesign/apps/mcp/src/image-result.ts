@@ -17,10 +17,8 @@ import {
 import { embedTabImages } from '@livedesign/api-schema';
 import {
   canvasSurface,
-  articlesOf,
   exportFontIds,
   laidOutPagesOf,
-  resolveArticleStyle,
   planBoardFitHeight,
   renderElementsToSvg,
   renderPageToSvg,
@@ -245,16 +243,11 @@ export async function tabPreview(
   return previewBlocks({ type: 'image', data: png, mimeType: 'image/png' }, leftOut);
 }
 
-// The editor's font ids a tab draws in: its elements' and its own, a sheet's cells', and its articles' heading and body
-// faces (the fonts a preview fetches beyond Inter), and Inter's italics when any text is set in italic.
+// The editor's font ids a tab draws in: its elements' and its own and a sheet's cells' (the fonts a preview fetches
+// beyond Inter), and Inter's italics when any text is set in italic.
 export function tabFontIds(tab: Tab, sheets?: ReadonlyMap<string, SheetRenderModel>): string[] {
-  const articles = Object.values(articlesOf(tab)).flatMap((doc) => {
-    const style = resolveArticleStyle(doc.style);
-    return [style.headingFont, style.bodyFont];
-  });
   return [
     ...exportFontIds(tab.elements, tab.font, sheets, tab.finish),
-    ...articles,
     ...(usesItalic(tab.elements) ? [INTER_ITALIC] : []),
   ];
 }

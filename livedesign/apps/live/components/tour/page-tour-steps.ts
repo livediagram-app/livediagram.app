@@ -2,7 +2,6 @@
 // its welcome card as the Pages tour offers them. Loaded at the offer or the press (`import('./page-tour-steps')`),
 // so the copy stays out of the editor's first load.
 import type { PageKind } from '@livedesign/document';
-import { ARTICLE_WELCOME, articleTourSteps } from './article-tour-steps';
 import { INFOGRAPHIC_WELCOME, infographicTourSteps } from './infographic-tour-steps';
 import { LOGO_WELCOME, logoTourSteps } from './logo-tour-steps';
 import type { PageTourApi, PageTourStep } from './page-tour-api';
@@ -17,8 +16,6 @@ export function pageTourSteps(kind: PageKind): PageTourStep[] {
   switch (kind) {
     case 'slide':
       return slideTourSteps();
-    case 'article':
-      return articleTourSteps();
     case 'logo':
       return logoTourSteps();
     // A wireframe page takes the infographic track, save that its cog sets a device rather than a page size.
@@ -40,7 +37,6 @@ export function pageTourSteps(kind: PageKind): PageTourStep[] {
 const WELCOMES: Record<PageKind, PageTourStep> = {
   slide: SLIDE_WELCOME,
   infographic: INFOGRAPHIC_WELCOME,
-  article: ARTICLE_WELCOME,
   logo: LOGO_WELCOME,
   // A wireframe page is laid out as an infographic page is, and takes its track under its own welcome.
   wireframe: {

@@ -14,7 +14,7 @@ what starts there. A search on a start also finds the other modes' templates, ea
   canvas overrides (`templateCanvasOverrides`) take `opensIn` from it, so the mode a card shows and
   the mode the tab opens in can never disagree.
 - Draw templates: Blank Whiteboard and the eight [Draw templates](#draw-templates) below.
-- Pages templates: Blank Illustration, the four [blanks of a page kind](#blanks-of-a-page-kind), Article,
+- Pages templates: Blank Illustration, the three [blanks of a page kind](#blanks-of-a-page-kind),
   Slide deck, Logo design, Group card and the
   eight [Pages templates](#pages-templates) below.
 - Plan templates: Blank Plan and the twenty-two [Plan templates](../026-plan/plan-templates.md), Kanban Board
@@ -38,13 +38,13 @@ what starts there. A search on a start also finds the other modes' templates, ea
 Popular opens with one blank per mode, in mode order. Each blank also leads its mode's Recommended in that mode's
 start ([Template starts](start-diagramming.md)), and is what the New Document wizard creates for the mode chosen:
 
-| Template           | Kind id              | Opens in | What it makes                                                                             |
-| ------------------ | -------------------- | -------- | ----------------------------------------------------------------------------------------- |
-| Blank Diagram      | `blank`              | Diagram  | An empty canvas (was "Blank Canvas").                                                     |
-| Blank Whiteboard   | `whiteboard`         | Draw     | An empty board to draw on (was "Whiteboard").                                             |
-| Blank Session      | `blank-session`      | Workshop | An empty tab in Workshop, named "Untitled Session".                                       |
-| Blank Illustration | `blank-illustration` | Pages    | One empty page that asks what it is for (Infographic, Article, Slide, Logo or Wireframe). |
-| Blank Plan         | `blank-plan`         | Plan     | An empty Plan tab that opens on Start Planning.                                           |
+| Template           | Kind id              | Opens in | What it makes                                                                    |
+| ------------------ | -------------------- | -------- | -------------------------------------------------------------------------------- |
+| Blank Diagram      | `blank`              | Diagram  | An empty canvas (was "Blank Canvas").                                            |
+| Blank Whiteboard   | `whiteboard`         | Draw     | An empty board to draw on (was "Whiteboard").                                    |
+| Blank Session      | `blank-session`      | Workshop | An empty tab in Workshop, named "Untitled Session".                              |
+| Blank Illustration | `blank-illustration` | Pages    | One empty page that asks what it is for (Infographic, Slide, Logo or Wireframe). |
+| Blank Plan         | `blank-plan`         | Plan     | An empty Plan tab that opens on Start Planning.                                  |
 
 **Blank Spreadsheet** (`blank-spreadsheet`, Plan) is a sixth blank beside them (`EXTRA_BLANK_TEMPLATES`): one tab
 holding an empty Sheet that fills it, made from the `blank-spreadsheet` start, an empty grid with no template, no
@@ -56,16 +56,15 @@ shelf lists it after Blank Plan ([Marketing site](../019-marketing/marketing-sit
 
 ### Blanks of a page kind
 
-Blank Illustration's one page asks what it is for. Four more Pages blanks have already answered, for someone
-who knows they are making a deck, an article, an infographic or a logo (`EXTRA_BLANK_TEMPLATES`, beside Blank
+Blank Illustration's one page asks what it is for. Three more Pages blanks have already answered, for someone
+who knows they are making a deck, an infographic or a logo (`EXTRA_BLANK_TEMPLATES`, beside Blank
 Spreadsheet):
 
-| Template          | Kind id             | What it makes                                                     |
-| ----------------- | ------------------- | ----------------------------------------------------------------- |
-| Blank Slide Deck  | `blank-slide-deck`  | One empty 16:9 slide page.                                        |
-| Blank Article     | `blank-article`     | One empty article page, its writing an empty Title and paragraph. |
-| Blank Infographic | `blank-infographic` | One empty A4 portrait infographic page.                           |
-| Blank Logo        | `blank-logo`        | One empty logo page (the 1024 artboard).                          |
+| Template          | Kind id             | What it makes                            |
+| ----------------- | ------------------- | ---------------------------------------- |
+| Blank Slide Deck  | `blank-slide-deck`  | One empty 16:9 slide page.               |
+| Blank Infographic | `blank-infographic` | One empty A4 portrait infographic page.  |
+| Blank Logo        | `blank-logo`        | One empty logo page (the 1024 artboard). |
 
 - **Exactly one page and nothing else**: no elements, the page's kind already chosen. The page is made the way the
   first page's **What Is This Page For?** makes it (`withPageKindChosen` on an unchosen page, through
@@ -74,24 +73,24 @@ Spreadsheet):
   show over it ([Template starts](start-diagramming.md) "When it shows").
 - **Its layouts are offered as usual.** The empty slide, infographic or logo page shows its in-page **Start From a
   Layout** card with its own kind's layouts (slide layouts on a slide, logo layouts on a logo page), as any empty
-  page of that kind does ([Pages](pages-mode.md)); an article page never shows one.
+  page of that kind does ([Pages](pages-mode.md)).
 - **Blanks like the others** (`isBlankTemplate`): in no category and on no category shelf, the tab keeps its name, a
   `/new?template=` link to one opens with the start closed. None is a mode's blank, so none leads Recommended or is
   what the wizard creates. One is recommended: **Blank Slide Deck** takes the Slide Deck's place in Pages mode's
-  Popular (so in Start Making Pages' Recommended, after Blank Illustration and Article), since a deck is most often
+  Popular (so in Start Making Pages' Recommended, after Blank Illustration), since a deck is most often
   built from its own slides; the others are found in their groups or by search.
 - **Each leads its group in Start Making Pages**: Blank Slide Deck first in **Slides**, Blank Infographic in
-  **Infographics**, Blank Article in **Articles**, Blank Logo in **Logos** ([Template starts](start-diagramming.md)).
+  **Infographics**, Blank Logo in **Logos** ([Template starts](start-diagramming.md)).
   **Slides** holds decks alone; the Social Carousel, made to post rather than present, is in **Posters and Social**
   (posters, cards and social posts to print, pin up or share).
-- The landing page's **Blank Slate** shelf lists them after Blank Illustration, in that order (Slide Deck, Article,
+- The landing page's **Blank Slate** shelf lists them after Blank Illustration, in that order (Slide Deck,
   Infographic, Logo).
 
 - The kind ids of the first two are unchanged, so `/new?template=blank` and
   `/new?template=whiteboard` links keep working.
 - None of the blanks is on a category shelf or a category tile.
 - Popular under Everything, in order: Blank Diagram, Blank Whiteboard, Blank Session, Blank Illustration, Blank Plan,
-  Mind map, Flowchart, Kanban Board, Sailboat retrospective, Budget Planner, Org chart, Sketchnote, Article. Under a
+  Mind map, Flowchart, Kanban Board, Sailboat retrospective, Budget Planner, Org chart, Sketchnote, Logo design. Under a
   mode, its own list ([Template categories](../008-canvas/canvas-and-palette.md#template-categories)).
 
 ## Draw templates
@@ -144,10 +143,6 @@ already infographic pages, built with the page layouts' kit.
   matched rows of pros and cons, and a verdict at the foot.
 - **Social Carousel** _(Presentations)_: five Square slides for a LinkedIn or Instagram carousel: a hook,
   three tips and a call to action, with slide numbers and swipe cues.
-- **Working Backwards** _(Strategy)_: Amazon's PR/FAQ on article pages (Report look): the press release for a launch
-  that is not built yet, then the Customer FAQ and, after a page break, the Internal FAQ, closing on a to-do list
-  for the review ([Templates](../008-canvas/canvas-and-palette.md#templates)). It is an article, not infographic
-  pages, as the Project Brief template is.
 
 ### Design templates
 

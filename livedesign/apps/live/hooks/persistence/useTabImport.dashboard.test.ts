@@ -96,15 +96,11 @@ describe('importing into a Dashboard tab', () => {
     expect(landed()).toBe(dashboard);
   });
 
-  it('refuses text that is not JSON, and Markdown', async () => {
+  it('refuses text that is not JSON', async () => {
     const { api, deps } = setup(dashboard);
     expect(await api.importTextIntoActiveTab('json', '# Plan\n- A')).toEqual({
       status: 'error',
       error: "File isn't valid JSON.",
-    });
-    expect(await api.importTextIntoActiveTab('markdown', '# Plan\n- A')).toEqual({
-      status: 'error',
-      error: NOT_A_DASHBOARD,
     });
     expect(deps.commitTabs).not.toHaveBeenCalled();
   });

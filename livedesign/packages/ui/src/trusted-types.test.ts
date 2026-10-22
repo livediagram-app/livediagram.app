@@ -38,7 +38,7 @@ afterEach(() => {
 describe('TRUSTED_TYPES_CSP', () => {
   it('enforces Trusted Types and names every policy the pages may create', () => {
     expect(TRUSTED_TYPES_CSP).toBe(
-      "require-trusted-types-for 'script'; trusted-types livedesign-markup nextjs ProseMirrorClipboard default",
+      "require-trusted-types-for 'script'; trusted-types livedesign-markup nextjs default",
     );
   });
 });
@@ -48,12 +48,7 @@ describe('isAllowedScriptUrl', () => {
   it("lets the app's own build scripts through, under its asset prefix", () => {
     expect(isAllowedScriptUrl('/_next/static/chunks/a.js', page, '', [])).toBe(true);
     expect(
-      isAllowedScriptUrl(
-        'https://livedesign.app/live/_next/static/chunks/b.js',
-        page,
-        '/live',
-        [],
-      ),
+      isAllowedScriptUrl('https://livedesign.app/live/_next/static/chunks/b.js', page, '/live', []),
     ).toBe(true);
     expect(isAllowedScriptUrl('/live/_next/static/media/reader.worker.js', page, '/live', [])).toBe(
       true,
@@ -193,9 +188,8 @@ describe('trustedTypesBootScript', () => {
     expect(error).toHaveBeenCalledWith('[trusted-types] html-refused <img src=x onerror=alert(1)>');
   });
 
-  // ProseMirror (the article editor's paste) asks `trustedTypes.defaultPolicy.createHTML(html)` first and makes its
-  // own ProseMirrorClipboard policy only if that throws. Returning null there handed it an empty string, so every
-  // rich paste into an article pasted nothing. Asked by hand, the default policy throws, logging no violation.
+  // A library that asks `trustedTypes.defaultPolicy.createHTML(html)` first makes its own policy only if that throws:
+  // returning null there hands it an empty string. Asked by hand, the default policy throws, logging no violation.
   it('throws when asked for HTML by hand, so a library falls back to its own policy', () => {
     const { created } = stubTrustedTypes();
     const error = vi.spyOn(console, 'error').mockImplementation(() => {});

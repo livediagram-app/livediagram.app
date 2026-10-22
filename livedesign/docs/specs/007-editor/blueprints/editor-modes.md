@@ -3,7 +3,7 @@
 Derived from [Editor modes](../editor-modes.md). Implementation detail only; the spec owns every
 design decision. Draw mode's own tools are blueprinted in
 [Draw mode blueprints](../../023-draw-mode/blueprints/README.md); Pages mode's pages in
-[Pages](pages-mode.md) and [Article pages](article-pages.md).
+[Pages](pages-mode.md).
 
 ## Domain and naming
 
@@ -18,7 +18,7 @@ design decision. Draw mode's own tools are blueprinted in
 | The page look's one gate    | `hasPageLook(mode)`: true in Pages mode                                                                                                                                                                              |
 | A switch as one tab edit    | `withEditorModeSwitched(tab, mode)` (`packages/document/src/editor-mode-switch.ts`), `switchedTab(tab, next, alsoChange?)` (`useEditorMode.ts`)                                                                      |
 | Plan stands apart           | `crossesPlan(from, to)`, `modesBesidePlanRule(mode)` (`editor-mode.ts`); `EditorModeState.crossPlan` (an empty tab crosses), `lockedReason`, `newTabIn`                                                              |
-| Leaving Pages               | `useLeavePages(editorMode, { tab, canEdit })`, `LeavePagesDialog` ([Article pages](article-pages.md))                                                                                                                |
+| Leaving Pages               | `useLeavePages(editorMode, { tab, canEdit })`, `LeavePagesConfirm`                                                                                                                                                   |
 | Legacy names elsewhere      | `parsePlacementDefaultKey`, `legacyPlacementDefaultKeys` (`packages/api-schema/src/placement-defaults.ts`); `pagesModeEnabled` / `infographicModeEnabled` / `planModeEnabled` in `RETIRED` (`legacy-preferences.ts`) |
 | The tab's mode              | `Tab.opensIn?: EditorMode` (stored name kept), read through `opensInOf(tab)`                                                                                                                                         |
 | Setting the mode            | `setTabOpensIn(tab, mode)`                                                                                                                                                                                           |
@@ -51,7 +51,7 @@ activity, the template and Draw mode's dock (`useWhiteboard`, `WhiteboardDock`),
 | `LEGACY_EDITOR_MODES`      | `{ infographic: 'pages' }`            | `editor-mode.ts`; spec "Naming in the interface" |
 | Legacy default-folder key  | `'mode:infographic'` → `'mode:pages'` | `LEGACY_PLACEMENT_DEFAULT_KEYS`; spec            |
 | `DEFAULT_EDITOR_MODE`      | `'diagram'`                           | Spec: `opensIn` absent = Diagram                 |
-| Retired mode store key     | `livedesign:v2:editor-mode:<tabId>`  | Per-person era; never read or written now        |
+| Retired mode store key     | `livedesign:v2:editor-mode:<tabId>`   | Per-person era; never read or written now        |
 | `PEN_INK`                  | `#1c1917` light, `#e2e8f0` dark       | `pen-colours.ts`; spec "Ink is one colour"       |
 | `WHITEBOARD_UNSET_PATTERN` | `'blank'`                             | Written on a migrated board with no pattern      |
 | `WHITEBOARD_INKED_SHAPES`  | square, circle, triangle, diamond     | The shapes a migrated board inks                 |
@@ -247,7 +247,7 @@ lockedReason?, onLockedPick? })` (`ModeMenu.tsx`), opened by `ModeMenuChip`:
 | Field / key                          | Class                  | Notes                                                                                                                                                                                          |
 | ------------------------------------ | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `Tab.opensIn`                        | Document, synced       | The tab's mode, the same for everyone. Absent = Diagram; written by templates, imports and an editor's switch (one undo step; never a new tab); `'infographic'` read as Pages, never rewritten |
-| Per-person mode (retired)            | Device-local           | `livedesign:v2:editor-mode:<tab>` keys from before the shared mode: left in place, never read                                                                                                 |
+| Per-person mode (retired)            | Device-local           | `livedesign:v2:editor-mode:<tab>` keys from before the shared mode: left in place, never read                                                                                                  |
 | `drawPattern`                        | Synced user preference | The person's Draw pattern, Grid until chosen                                                                                                                                                   |
 | `TextElement.sizing`                 | Document               | Replaces `autoWidth`                                                                                                                                                                           |
 | `penColour` / `penTextColour: 'ink'` | Document               | Ink by name                                                                                                                                                                                    |

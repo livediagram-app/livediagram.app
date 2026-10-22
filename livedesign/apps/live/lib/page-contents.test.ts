@@ -7,25 +7,18 @@ import { contentsDropUnit } from './page-contents';
 const pages = layOutPages([
   { id: 'a', orientation: 'portrait', kind: 'infographic', name: 'Cover' },
   { id: 'b', orientation: 'landscape', kind: 'slide', size: 'slide' },
-  { id: 'c', orientation: 'portrait', kind: 'article', flow: 'f1', locked: true },
+  { id: 'c', orientation: 'portrait', kind: 'infographic', size: 'square', locked: true },
   { id: 'd', orientation: 'portrait', kind: 'logo', size: 'logo' },
 ] as Page[]);
 
 describe('the Contents list', () => {
-  const rows = contentsRows(pages, {
-    inDeck: (id) => id === 'b',
-    articles: {
-      f1: {
-        blocks: [{ type: 'paragraph', style: 'title', runs: [{ text: 'Field Notes' }] }],
-      } as never,
-    },
-  });
+  const rows = contentsRows(pages, { inDeck: (id) => id === 'b' });
 
   it('numbers each page, names it, and says what it is', () => {
     expect(rows.map((r) => [r.number, r.name, r.line])).toEqual([
       [1, 'Cover', 'Infographic · A4 Portrait'],
       [2, 'Page 2', 'Slide · In the deck'],
-      [3, 'Page 3', 'Article · Field Notes'],
+      [3, 'Page 3', 'Infographic · Square'],
       [4, 'Page 4', 'Logo'],
     ]);
     expect(rows[2]!.locked).toBe(true);
@@ -107,17 +100,5 @@ describe('contentsDropUnit', () => {
     expect(contentsDropUnit(plain, 'b', { index: 1, side: 'after' })).toBeNull();
     expect(contentsDropUnit(plain, 'b', { index: 0, side: 'after' })).toBeNull();
     expect(contentsDropUnit(plain, 'b', { index: 2, side: 'before' })).toBeNull();
-  });
-
-  it('moves an article as one, a drop beside any of its pages beside the whole article', () => {
-    const pages = [{ id: 'a' }, { id: 'x1', flow: 'f' }, { id: 'x2', flow: 'f' }, { id: 'b' }];
-    // Units: a, article, b. The second article page dropped after b: the article goes last.
-    expect(contentsDropUnit(pages, 'x2', { index: 3, side: 'after' })).toBe(2);
-    // b dropped after the article's first page lands after the article: where it is already.
-    expect(contentsDropUnit(pages, 'b', { index: 1, side: 'after' })).toBeNull();
-    // a dropped beside its own article's page is a move past the article.
-    expect(contentsDropUnit(pages, 'a', { index: 2, side: 'after' })).toBe(1);
-    // A drop on the dragged article itself is none.
-    expect(contentsDropUnit(pages, 'x1', { index: 2, side: 'after' })).toBeNull();
   });
 });

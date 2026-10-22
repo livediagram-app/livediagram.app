@@ -12,7 +12,7 @@ anywhere an image does (a chat message, an email, a README, a social post), whic
   "Export") gain a **GIF** card after SVG: PDF, PNG, SVG, GIF, JSON (then Logo Kit while the tab has a logo page).
   Outside Pages the card is never shown.
 - Card copy: **GIF**, "An animated image of the pages, moving as they move on the canvas."
-- Every page kind exports: slides, infographic, article and logo pages. A logo page's see-through paper exports white
+- Every page kind exports: slides, infographic and logo pages. A logo page's see-through paper exports white
   (GIF transparency is one bit and would fringe every soft edge).
 - **Share roles**: as every Export dialog format. Whoever can open the Export dialog (an Editor, a Participant and a
   Viewer alike) can export a GIF; it reads the tab and changes nothing.

@@ -2,7 +2,7 @@
 // doors take, and every view's JSON form, shared by the api, the MCP, the CLI and
 // `@livedesign/document-views` (docs/specs/024-agents/blueprints/document-views.md, VW49).
 import type { EditorMode, Finish, PageKind, TabKind } from '@livedesign/document';
-import type { ArticleSummary, PageSummary } from './pages';
+import type { PageSummary } from './pages';
 
 // Every view. `lint` is answered by `@livedesign/diagram-lint` (docs/specs/024-agents/diagram-lint.md), not
 // by `renderView`; it takes only `json`.
@@ -251,13 +251,12 @@ export function isViewDoor(value: string): value is ViewDoor {
 }
 
 // The `pages` view (docs/specs/024-agents/pages-for-agents.md "Reading: the pages view"): an
-// a Pages tab's pages, the refs of what is on each, its articles as Markdown, and the layouts on
-// offer. `pages` and `articles` are empty on a tab in another mode.
+// a Pages tab's pages, the refs of what is on each, and the layouts on offer. `pages` is empty on a
+// tab in another mode.
 export type PagesView = {
   header: ViewHeader;
   pagesMode: boolean;
   pages: (PageSummary & { refs: string[] })[];
-  articles: (ArticleSummary & { markdown: string })[];
   layouts: { kind: PageKind; layouts: { id: string; label: string }[] }[];
   elision: Elision;
 };

@@ -6,7 +6,7 @@ import { ART, TourArtFrame } from './TourArtFrame';
 
 // The Pages tour's welcome card heroes (docs/specs/007-editor/pages-tour.md "The steps"), one per page
 // kind, each showing what its track teaches: a slide taking a layout and being presented, an infographic page
-// filling in, an article being written, a logo's shapes combining on its guides. Drawn in TourArtFrame's recipe.
+// filling in, a logo's shapes combining on its guides. Drawn in TourArtFrame's recipe.
 
 const SLIDES_CSS = `
   @keyframes slides-art-pick {
@@ -192,60 +192,6 @@ function InfographicTourArt() {
   );
 }
 
-const ARTICLE_CSS = `
-  @keyframes article-art-write {
-    0%, 6% { transform: scaleX(0); }
-    22%, 90% { transform: scaleX(1); }
-    100% { transform: scaleX(1); opacity: 0; }
-  }
-  @keyframes article-art-caret {
-    0%, 49% { opacity: 1; }
-    50%, 100% { opacity: 0; }
-  }
-  .article-art-line { transform-origin: 0% 50%; animation: article-art-write 6s ease-out infinite; }
-  .article-art-caret { animation: article-art-caret 1s step-end infinite; }
-  @media (prefers-reduced-motion: reduce) {
-    .article-art-line, .article-art-caret { animation: none; }
-  }
-`;
-
-// The article's lines, written one after another: [x, y, width, delay in s].
-const LINES: [number, number, number, number][] = [
-  [104, 40, 52, 0.4],
-  [104, 47, 48, 0.8],
-  [104, 54, 54, 1.2],
-  [104, 66, 50, 1.6],
-  [104, 73, 40, 2],
-];
-
-/** Article: a page being written down, its heading, then line after line, a caret at the end. */
-function ArticleTourArt() {
-  return (
-    <TourArtFrame css={ARTICLE_CSS}>
-      {/* The page the writing flows on to, behind. */}
-      <rect x="170" y="14" width="62" height="84" rx="3" className={ART.paper} />
-      <rect x="178" y="26" width="40" height="3" rx="1.5" className={ART.faint} />
-      <rect x="178" y="33" width="34" height="3" rx="1.5" className={ART.faint} />
-      <rect x="94" y="8" width="70" height="90" rx="3" className={ART.paper} strokeWidth="1.5" />
-      <rect x="104" y="20" width="44" height="6" rx="2" className={ART.ink} />
-      <rect x="104" y="30" width="18" height="2" rx="1" className={ART.accent} />
-      {LINES.map(([x, y, w, delay]) => (
-        <rect
-          key={y}
-          x={x}
-          y={y}
-          width={w}
-          height="3"
-          rx="1.5"
-          className={`tour-art-el article-art-line ${ART.faint}`}
-          style={{ animationDelay: `${delay}s` }}
-        />
-      ))}
-      <rect x="146" y="71" width="1.5" height="7" className={`article-art-caret ${ART.accent}`} />
-    </TourArtFrame>
-  );
-}
-
 const LOGO_CSS = `
   @keyframes logo-art-left {
     0%, 16% { transform: translate(-22px, 0px); }
@@ -302,7 +248,6 @@ function LogoTourArt() {
 const BY_KIND: Record<PageKind, () => ReactNode> = {
   slide: SlidesTourArt,
   infographic: InfographicTourArt,
-  article: ArticleTourArt,
   logo: LogoTourArt,
   // A wireframe page is laid out as an infographic page is: its track and art are the infographic's.
   wireframe: InfographicTourArt,

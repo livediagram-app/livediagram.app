@@ -46,8 +46,7 @@ describe('layoutCardShows', () => {
       expect(layoutCardShows(page(), { ...ok, ...c }), JSON.stringify(c)).toBe(false);
   });
 
-  it('never shows on an article, a locked or blank-started page, or one too small on screen', () => {
-    expect(layoutCardShows(page({ kind: 'article' }), ok)).toBe(false);
+  it('never shows on a locked or blank-started page, or one too small on screen', () => {
     expect(layoutCardShows(page({ locked: true }), ok)).toBe(false);
     expect(layoutCardShows(page({ startedBlank: true }), ok)).toBe(false);
     expect(layoutCardShows(page(), { ...ok, zoom: 0.2 })).toBe(false);

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { Page, Tab } from '@livedesign/document';
-import { articleSummaries, describeBackground, pageLabel, resolvePage, sizeLabel } from './summary';
+import type { Page } from '@livedesign/document';
+import { describeBackground, pageLabel, resolvePage, sizeLabel } from './summary';
 
 // docs/specs/024-agents/pages-for-agents.md "change_pages" (the answer), "Naming a page".
 
@@ -53,7 +53,7 @@ describe('sizes and labels', () => {
       elements: 0,
     } as const;
     expect(pageLabel({ ...base, place: 2, name: 'Cover', kind: 'slide' })).toBe('2 Cover (slide)');
-    expect(pageLabel({ ...base, place: 3, name: null, kind: 'article' })).toBe('3 (article)');
+    expect(pageLabel({ ...base, place: 3, name: null, kind: 'logo' })).toBe('3 (logo)');
   });
 });
 
@@ -72,47 +72,5 @@ describe('naming a page', () => {
     expect(resolvePage(pages, 'COVER')?.id).toBe('page-1');
     expect(resolvePage(pages, 'Nope')).toBeUndefined();
     expect(resolvePage(pages, 9)).toBeUndefined();
-  });
-});
-
-describe('articles in the answer', () => {
-  it('lists each article once, in row order, with its pages and size', () => {
-    const tab = {
-      elements: [],
-      pages: [
-        page('i'),
-        page('b1', { kind: 'article', flow: 'b' }),
-        page('a1', { kind: 'article', flow: 'a' }),
-        page('a2', { kind: 'article', flow: 'a' }),
-        page('x', { kind: 'article', flow: 'missing' }),
-      ],
-      articles: {
-        a: {
-          blocks: [{ id: '1', type: 'paragraph', style: 'title', runs: [{ text: 'Alpha' }] }],
-          style: { look: 'report' },
-        },
-        b: { blocks: [{ id: '2', type: 'paragraph', runs: [{ text: 'two words' }] }] },
-      },
-    } as unknown as Pick<Tab, 'elements' | 'pages' | 'articles'>;
-    expect(articleSummaries(tab)).toEqual([
-      {
-        flow: 'b',
-        title: 'Untitled',
-        pages: [2],
-        blocks: 1,
-        words: 2,
-        estimatedPages: 1,
-        look: null,
-      },
-      {
-        flow: 'a',
-        title: 'Alpha',
-        pages: [3, 4],
-        blocks: 1,
-        words: 1,
-        estimatedPages: 1,
-        look: 'report',
-      },
-    ]);
   });
 });

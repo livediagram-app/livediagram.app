@@ -5,19 +5,16 @@ import {
   buildElementIndex,
   elementAnchorPoint,
   rowPageAt,
-  type ArticleFlow,
   type Element,
   type LaidOutPage,
 } from '@livedesign/document';
 import { elementFindTexts } from '@livedesign/document-views';
 
 /** The words on each page, for Find a Page: the texts of the elements on it (their labels,
- *  notes, cells, items and the rest the editor's find reads) and, on an article's page, the
- *  article's writing. One walk over the tab's elements. */
+ *  notes, cells, items and the rest the editor's find reads). One walk over the tab's elements. */
 export function pageTexts(
   pages: readonly LaidOutPage[],
   elements: readonly Element[],
-  articles: Readonly<Record<string, ArticleFlow>> = {},
 ): Map<string, string> {
   const parts = new Map<string, string[]>(pages.map((p) => [p.id, []]));
   const index = buildElementIndex(elements as Element[]);
@@ -26,15 +23,6 @@ export function pageTexts(
     if (page) parts.get(page.id)!.push(...elementFindTexts(el));
   }
   const out = new Map<string, string>();
-  for (const p of pages) {
-    const flow = p.flow ? articles[p.flow] : undefined;
-    const writing = flow ? flow.blocks.map(blockText).join(' ') : '';
-    out.set(p.id, `${parts.get(p.id)!.join(' ')} ${writing}`);
-  }
+  for (const p of pages) out.set(p.id, parts.get(p.id)!.join(' '));
   return out;
-}
-
-function blockText(block: ArticleFlow['blocks'][number]): string {
-  if ('runs' in block) return block.runs.map((r) => r.text).join('');
-  return block.type === 'code' ? block.text : '';
 }

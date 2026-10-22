@@ -12,7 +12,7 @@ import {
   pageSizeChoices,
   pageSizesFor,
 } from './page';
-import { withPageKindChosen } from './article-pages';
+import { withPageKindChosen } from './page-units';
 
 // docs/specs/007-editor/logo-pages.md "A logo page": the 1024 artboard, its safe area, no pattern.
 describe('logo pages', () => {
@@ -70,7 +70,7 @@ describe('logo pages', () => {
 
   it('offer only the artboard, and no other kind offers it', () => {
     expect(pageSizesFor('logo')).toEqual(['logo']);
-    for (const kind of ['infographic', 'article', 'slide'] as const) {
+    for (const kind of ['infographic', 'slide'] as const) {
       expect(pageSizesFor(kind)).not.toContain('logo');
     }
   });
@@ -108,7 +108,7 @@ describe('logo pages', () => {
         },
       ],
     };
-    const chosen = withPageKindChosen(tab, 'p', 'logo', 'flow-x');
+    const chosen = withPageKindChosen(tab, 'p', 'logo');
     expect(chosen!.pages).toEqual([
       {
         id: 'p',

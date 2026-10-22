@@ -78,7 +78,7 @@ export function withDefaultPageBackgrounds<T extends Partial<Pick<Tab, 'pages'>>
   const next = pages.map((p) => {
     const kind = pageKindOf(p);
     const themed = kind === 'infographic' || (kind === 'slide' && pages.length === 1);
-    if (p.background || p.flow || !themed) return p;
+    if (p.background || !themed) return p;
     if (ids && !ids.has(p.id)) return p;
     // An unchosen first page (no kind yet) waits for its choice.
     if (p.kind === undefined && !ids) return p;

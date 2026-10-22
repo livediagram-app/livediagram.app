@@ -315,21 +315,18 @@ theirs: list_sheets lists a document's sheets, read_sheet reads one's cells by A
 formats cells, inserts and deletes rows and columns, sorts, freezes and renames,
 and sets dropdowns, checkboxes and other validation rules and conditional formats,
 and add_sheet puts a new Sheet on a tab in Plan, blank or from rows or CSV text.
-Tabs in Pages mode hold pages: infographics, slides, logo artboards and articles
-(documents of text on pages). change_pages adds, changes, lays out (from a
-ready-made layout), moves, copies and deletes infographic, slide and logo pages
-and answers each page's rectangle on the canvas, where update_document puts
-elements; write_article writes an article from Markdown, new or over an existing
-one, and the editor flows it onto pages. Asked to write a document, a report or
-a brief, write an article; asked for a deck, add slide pages; asked for a logo,
-add a logo page. A new document for pages starts with create_document and one
+Tabs in Pages mode hold pages: infographics, slides, logo artboards and wireframes.
+change_pages adds, changes, lays out (from a ready-made layout), moves, copies and
+deletes them and answers each page's rectangle on the canvas, where update_document
+puts elements. Asked for a deck, add slide pages; asked for a logo, add a logo page;
+asked for a screen, add a wireframe page. A new document for pages starts with create_document and one
 tab whose template is "blank-slide-deck" for a deck (one empty slide; change_pages
 adds the rest, each change an object such as {"op": "add", "kind": "slide",
-"layout": ...}) or "blank-illustration" otherwise (then write_article or
-change_pages on it); the Pages templates (article, slide-deck, logo-design, ...) start
+"layout": ...}) or "blank-illustration" otherwise (then
+change_pages on it); the Pages templates (slide-deck, logo-design, ...) start
 from ready-made pages. A layout's elements hold sample text: read_document with
 view "pages" lists each page's elements with their refs and text, to replace
-with update_document. It also shows each article as Markdown.
+with update_document.
 Form tabs hold forms (like Google Forms): questions anyone fills in from a link,
 without an account, each response a card on a Board tab or a row in a sheet.
 add_form makes one (from a starter or questions, in a document of its own when
@@ -651,7 +648,7 @@ export const readDocumentShape = {
       'How to read the tab. outline (default): one line per element with its ref, label and arrows, ' +
         'nested by frame. graph: what connects to what. layout: where things sit. comments: open threads ' +
         'in full. show: one element in full (needs ref). find: elements holding some text (needs q). ' +
-        "pages: a Pages tab's pages with their rectangles, each article as Markdown, and the layouts on offer.",
+        "pages: a Pages tab's pages with their rectangles and the layouts on offer.",
     ),
   budget: z
     .number()

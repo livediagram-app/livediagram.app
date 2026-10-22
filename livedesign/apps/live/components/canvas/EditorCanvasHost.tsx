@@ -356,7 +356,6 @@ export function EditorCanvasHost() {
     drag,
     editorMode,
     pagesMode,
-    presentArticles,
     loadedTabIds,
     autoAlignTab,
     autoLayoutTab,
@@ -655,7 +654,7 @@ export function EditorCanvasHost() {
               pagesMode={
                 startPanelOpen && editorMode.mode === 'pages'
                   ? null
-                  : presentedPages(pagesMode, activeTab, presentingPageId, presentArticles)
+                  : presentedPages(pagesMode, activeTab, presentingPageId)
               }
               whiteboardDock={whiteboardDock.whiteboard ? whiteboardDock : undefined}
               whiteboardInk={PEN_INK[surface]}

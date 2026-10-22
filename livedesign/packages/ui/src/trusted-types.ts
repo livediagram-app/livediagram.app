@@ -123,7 +123,7 @@ export function trustedTypesBootScript(assetPrefix: string, origins: readonly st
     // Written <\\/script> so the HTML parser never sees a closing tag inside this inline script.
     "createHTML:function(html,type,sink){if(html==='<script><\\/script>')return html;" +
     // Called by hand (no sink: the browser always names one), it creates nothing and throws, so a library that
-    // tries the default policy before its own (ProseMirror's clipboard) falls back to its own named policy.
+    // tries the default policy before its own falls back to its own named policy.
     "if(sink===undefined)throw new TypeError('[trusted-types] the default policy makes no HTML on request');" +
     "console.error('[trusted-types] html-refused '+html);return null;}});}" +
     "addEventListener('securitypolicyviolation',function(e){" +

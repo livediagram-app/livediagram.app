@@ -39,7 +39,6 @@ export function pagesTourStepTelemetryType(kind: PageKind, stepId: string): stri
 const EYEBROW: Record<PageKind, string> = {
   slide: 'Slides tour',
   infographic: 'Infographic tour',
-  article: 'Article tour',
   logo: 'Logo tour',
   wireframe: 'Wireframe tour',
 };

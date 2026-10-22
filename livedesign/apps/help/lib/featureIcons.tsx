@@ -194,7 +194,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   ),
   // The same map as an indented list: a bold root line, then bullets stepping
   // in a level each. The stepped indent is what makes it an outline rather
-  // than the plain bullet list `checklists` or `markdown-import` would be.
+  // than the plain bullet list `checklists` would be.
   'edit-outline': (
     <Glyph>
       <path d="M3 5h11" />
@@ -649,12 +649,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     <Glyph>
       <path d="M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8L12 3z" />
       <path d="M19 14l.9 2.1L22 17l-2.1.9L19 20l-.9-2.1L16 17l2.1-.9L19 14z" />
-    </Glyph>
-  ),
-  'markdown-import': (
-    <Glyph>
-      <rect x="3" y="6" width="18" height="12" rx="2" />
-      <path d="M6 14V10l2 2 2-2v4M14 10v4M14 14l2-2M14 14l-2-2" />
     </Glyph>
   ),
   history: (

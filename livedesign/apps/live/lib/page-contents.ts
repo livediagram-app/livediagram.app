@@ -2,12 +2,10 @@
 // page in row order, what each says about itself, which page is in view, and the Find a Page
 // narrowing. Pure: pages and the view in, rows out.
 import {
-  articleTitleOf,
   pageHasOrientation,
   pageKindOf,
   pageSizeLabel,
   pageUnits,
-  type ArticleFlow,
   type Page,
   type LaidOutPage,
   type PageKind,
@@ -20,7 +18,7 @@ export type ContentsRow = {
   number: number;
   // Its own name, else "Page n".
   name: string;
-  // What it is: "Infographic · A4 Portrait", "Slide · In the deck", "Article · Its Title", "Logo".
+  // What it is: "Infographic · A4 Portrait", "Slide · In the deck", "Logo".
   line: string;
   locked: boolean;
   // Its shape on the sheet, for the thumbnail's frame.
@@ -36,7 +34,6 @@ export const CONTENTS_FIND_AFTER = 6;
 const KIND_NAME = {
   infographic: 'Infographic',
   slide: 'Slide',
-  article: 'Article',
   logo: 'Logo',
   wireframe: 'Wireframe',
 } as const;
@@ -46,7 +43,6 @@ export function contentsRows(
   opts: {
     // Whether the deck has a slide of the page; absent where there is no deck to ask.
     inDeck?: (pageId: string) => boolean;
-    articles?: Readonly<Record<string, ArticleFlow>>;
   } = {},
 ): ContentsRow[] {
   return pages.map((p, i) => {
@@ -60,10 +56,6 @@ export function contentsRows(
       line += ` · ${pageSizeLabel(p)}${p.orientation === 'landscape' && pageHasOrientation(p) ? ' Landscape' : ''}`;
     } else if (kind === 'slide' && opts.inDeck) {
       line += opts.inDeck(p.id) ? ' · In the deck' : ' · Not in the deck';
-    } else if (kind === 'article' && p.flow) {
-      const flow = opts.articles?.[p.flow];
-      const title = flow ? articleTitleOf(flow).trim() : '';
-      if (title) line += ` · ${title}`;
     }
     return {
       id: p.id,
@@ -125,11 +117,9 @@ export function pageInView(
 }
 
 /** The place (among the row's units, 0 first) a page dropped beside the row at `drop.index` moves
- *  to, or null when it stays put (docs/specs/007-editor/pages-mode.md "Contents"). A page moves
- *  with its unit: an article's pages go together, so a drop beside any of its pages is a drop beside
- *  the whole article. */
+ *  to, or null when it stays put (docs/specs/007-editor/pages-mode.md "Contents"). */
 export function contentsDropUnit(
-  pages: readonly Pick<Page, 'id' | 'flow'>[],
+  pages: readonly Pick<Page, 'id'>[],
   pageId: string,
   drop: RowDrop,
 ): number | null {

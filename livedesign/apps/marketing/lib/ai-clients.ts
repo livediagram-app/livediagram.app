@@ -241,7 +241,7 @@ export const AI_CLIENTS: readonly AiClient[] = [
 type StarterPrompt = { title: string; prompt: string };
 
 // Each maps to a shipped MCP tool (docs/specs/015-api/mcp-server.md §4): create_document with a graph,
-// a Plan template, write_article, change_pages, find + read_document, add_sheet.
+// a Plan template, change_pages, find + read_document, add_sheet.
 export const STARTER_PROMPTS: readonly StarterPrompt[] = [
   {
     title: 'Map a codebase',
@@ -264,9 +264,9 @@ export const STARTER_PROMPTS: readonly StarterPrompt[] = [
       'Build a five-slide livedesign deck that explains our product to a new hire: the problem, who it is for, how it works, what is next, and how to get help.',
   },
   {
-    title: 'Write it up',
+    title: 'Sketch the screen',
     prompt:
-      'Write up the decisions from this conversation as a livedesign article, with a short summary first and a section per decision.',
+      'Wireframe the sign-up screen we just discussed as a livedesign phone wireframe: the fields, the button and the error states.',
   },
   {
     title: 'Find and improve',

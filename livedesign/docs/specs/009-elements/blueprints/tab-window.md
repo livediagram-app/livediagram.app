@@ -49,10 +49,8 @@ Derived from [The tab window](../tab-window.md). Implementation detail only; the
 - **What is drawn** (`renderTabDrawingSvg(tab, opts)`): a Form tab whose `readForm(tab.form)` reads → `formArt(form,
 formLook(tab), resolveFontStack(look.font)).svg`. A tab with `laidOutPagesOf(tab)` (in Pages) → a root `<svg>` whose
   viewBox is the union of the page rects in canvas space, holding each page's `renderTabToSvg({ ...tab, elements:
-pageElements(...)[i] }, { ...opts, page, estimatedWriting })`, its ids `prefixSvgIds(…, 'pg<i>-')` and its root tag
-  placed at `x`/`y` of its rect. `estimatedWriting` is `pagesWithWriting(tab).writing` when any page has a `flow`;
-  `renderTabToSvg` draws it only where `pageWriting` finds no laid-out article (no `articleHandleOf`), with
-  `pageWritingFonts` declared. Anything else → `renderTabToSvg(tab, opts)`.
+pageElements(...)[i] }, { ...opts, page })`, its ids `prefixSvgIds(…, 'pg<i>-')` and its root tag
+  placed at `x`/`y` of its rect. Anything else → `renderTabToSvg(tab, opts)`.
 - **Page elements** (`pageElements(elements, pages)`): each element's span once (its box; an arrow's resolved ends via
   `endpointPosition`), kept on each page it overlaps (edges included, as `PageExportFrame.reaches`), with every
   element or arrow an arrow kept there is pinned to (`keepEnds`, up to 5 hops), in tab order. The renderer still

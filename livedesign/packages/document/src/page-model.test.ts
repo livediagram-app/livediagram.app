@@ -101,8 +101,8 @@ describe('a page', () => {
       'Launch · Square',
     );
     expect(pageLabel({ orientation: 'landscape', size: 'wide' }, 0, 1)).toBe('Widescreen (16:9)');
-    expect(pageLabel({ orientation: 'portrait', kind: 'article' }, 1, 2)).toBe(
-      'Page 2 · A4 · Portrait · Article',
+    expect(pageLabel({ orientation: 'portrait', kind: 'logo' }, 1, 2)).toBe(
+      'Page 2 · A4 · Portrait · Logo',
     );
   });
 

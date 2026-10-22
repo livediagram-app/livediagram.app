@@ -157,7 +157,7 @@ const contentBox = (tab: Pick<Tab, 'elements'>, ids?: ReadonlySet<string>): Box 
  * nothing to do (docs/specs/007-editor/pages-mode.md "Into pages"). No element moves:
  * - with no pages stored, content that does not fit inside the first page gets one page made
  *   around all of it, anchored on its centre (the row anchor);
- * - with pages stored, none an article page or locked and nothing on any page, the stored pages
+ * - with pages stored, none locked and nothing on any page, the stored pages
  *   are replaced by that one page;
  * - otherwise null: content off the pages stays where it is.
  */
@@ -178,12 +178,10 @@ export function withContentOnAPage<T extends Pick<Tab, 'elements'>>(
       box.b <= r.y + r.height + 1;
     if (fits) return null;
   } else {
-    // Only pages nobody has made anything of are replaced: a page with a kind of its own (an
-    // article, a slide, a logo), a name, a paint or a lock is kept, and the content stays where it is.
+    // Only pages nobody has made anything of are replaced: a page with a kind of its own (a
+    // slide, a logo), a name, a paint or a lock is kept, and the content stays where it is.
     if (
-      stored.some(
-        (p) => p.flow || p.locked || (p.kind && p.kind !== 'infographic') || p.name || p.background,
-      )
+      stored.some((p) => p.locked || (p.kind && p.kind !== 'infographic') || p.name || p.background)
     )
       return null;
     const index = elementIndexFor(tab.elements);

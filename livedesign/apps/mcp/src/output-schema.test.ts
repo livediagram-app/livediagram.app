@@ -92,7 +92,6 @@ const CHANGESET = {
   lint: null,
 };
 // What the pages route answers (docs/specs/024-agents/pages-for-agents.md "The route").
-const ARTICLE = { flow: 'art-1', title: 'Brief', pages: [2], blocks: 3, words: 9, look: null };
 const PAGES = {
   tab: { id: 't1', rev: 4 },
   switched: false,
@@ -108,12 +107,9 @@ const PAGES = {
       rect: { x: -960, y: -540, width: 1920, height: 1080 },
       background: null,
       locked: false,
-      flow: null,
       elements: 0,
     },
   ],
-  articles: [ARTICLE],
-  article: { ...ARTICLE, created: true },
   changesetId: null,
 };
 const ITEM = {
@@ -428,11 +424,6 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
     tool: 'change_pages',
     output: 'changePagesOutput',
     args: { documentId: 'd1', changes: [{ op: 'add', kind: 'slide', layout: 'slide-title' }] },
-  },
-  {
-    tool: 'write_article',
-    output: 'writeArticleOutput',
-    args: { documentId: 'd1', markdown: '# Brief', look: 'report' },
   },
 ];
 

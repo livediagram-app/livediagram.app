@@ -58,12 +58,11 @@ describe('a Pages tab drawn as its pages', () => {
       label: 'Elsewhere',
     };
     const t = tab(pages, [on, off] as Tab['elements']);
-    const svg = renderPageToSvg(t, laid[0]!, { writingSvg: () => '<g id="writing"/>' });
+    const svg = renderPageToSvg(t, laid[0]!);
     const r = laid[0]!.rect;
     expect(svg).toContain(`viewBox="${r.x} ${r.y} ${r.width} ${r.height}"`);
     expect(svg).toContain('linearGradient');
     expect(svg).toContain('<pattern');
-    expect(svg).toContain('<g id="writing"/>');
     expect(svg).toContain('Inside');
     expect(svg).not.toContain('Elsewhere');
   });

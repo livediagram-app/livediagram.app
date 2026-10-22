@@ -1,8 +1,6 @@
 // Counterpart to export-tab.ts — parses an imported `.livedesign-
-// tab.json` envelope back into a Tab. Markdown is also importable
-// (docs/specs/020-import-export/markdown-import.md) via its own module (`markdown-import.ts`). The Import
-// dialog lets the user pick which format; the chosen format drives the picker's file filter + which parser
-// runs. PNG / PDF remain export-only.
+// tab.json` envelope back into a Tab (docs/specs/020-import-export/README.md). PNG / PDF remain
+// export-only.
 
 // The result of an import attempt, surfaced back to the Import dialog:
 // 'done' (replaced the tab — close, or show the report when part of it could

@@ -40,7 +40,7 @@ The walk is a pure function over the element list, so it is unit-tested without 
 
 Multi-colour assignment needs the **whole element list** (to see the arrow graph), unlike the single-colour path which is per-element. So `packages/document/src/theme-graph.ts` exposes graph-aware wrappers alongside the per-element helpers in `packages/document/src/themes.ts`:
 
-- `recolourElementsForTheme(elements, theme)` — used when a template or Markdown import is painted with a theme.
+- `recolourElementsForTheme(elements, theme)` — used when a template or an agent's tab is painted with a theme.
 - `switchThemeElements(elements, prev, next)` — the Theme accordion / welcome picker "apply a theme" path. Preserves a field the user hand-customised away from the previous theme, same per-field rule as the single-colour `switchThemeElement`.
 - `resetThemeElementsToTheme(elements, theme)` — the "Reset elements to theme" button; force-repaints every branch from the palette, overwriting customs.
 

@@ -8,16 +8,16 @@ where it is and changes only how the next mark is made.
 
 ## Domain language
 
-| Term              | Means                                                                                                                                                                                                      |
-| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **tab kind**      | What a tab **is** ([Document](../006-document/document.md)). Reserved for specific uses.                                                                                                                   |
-| **editor mode**   | How a general tab is **worked on** right now: `diagram`, `draw`, `pages`, `plan` or `workshop` (`EditorMode`).                                                                                             |
-| **Diagram mode**  | Structured drawing: the palette, shapes, arrows, icons, templates, snapping and guides.                                                                                                                    |
-| **Draw mode**     | Freehand whiteboarding: the dock, preset pens, eraser, shape recognition ([Draw mode](../023-draw-mode/draw-mode.md)).                                                                                     |
-| **Pages mode**    | Pages on the canvas, of four kinds: infographic pages to lay out, article pages to write, slide pages to present and logo pages to design a logo on ([Pages](pages-mode.md), [Logo pages](logo-pages.md)). |
-| **Plan mode**     | Boards of items: Plan boards, cards, the item panel ([Plan mode](../026-plan/plan-mode.md)).                                                                                                               |
-| **Workshop mode** | Running a session with a team: the Collaborate elements, stickers and the Session strip ([Workshop mode](../012-collaboration/workshop-mode.md)).                                                          |
-| **mode switch**   | The control leading an empty tab's start that changes the editor mode.                                                                                                                                     |
+| Term              | Means                                                                                                                                                                                                                                                            |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **tab kind**      | What a tab **is** ([Document](../006-document/document.md)). Reserved for specific uses.                                                                                                                                                                         |
+| **editor mode**   | How a general tab is **worked on** right now: `diagram`, `draw`, `pages`, `plan` or `workshop` (`EditorMode`).                                                                                                                                                   |
+| **Diagram mode**  | Structured drawing: the palette, shapes, arrows, icons, templates, snapping and guides.                                                                                                                                                                          |
+| **Draw mode**     | Freehand whiteboarding: the dock, preset pens, eraser, shape recognition ([Draw mode](../023-draw-mode/draw-mode.md)).                                                                                                                                           |
+| **Pages mode**    | Pages on the canvas, of four kinds: infographic pages to lay out, slide pages to present, logo pages to design a logo on and wireframe pages to sketch a screen on ([Pages](pages-mode.md), [Logo pages](logo-pages.md), [Wireframe pages](wireframe-pages.md)). |
+| **Plan mode**     | Boards of items: Plan boards, cards, the item panel ([Plan mode](../026-plan/plan-mode.md)).                                                                                                                                                                     |
+| **Workshop mode** | Running a session with a team: the Collaborate elements, stickers and the Session strip ([Workshop mode](../012-collaboration/workshop-mode.md)).                                                                                                                |
+| **mode switch**   | The control leading an empty tab's start that changes the editor mode.                                                                                                                                                                                           |
 
 - "Whiteboard" names the activity and Draw mode's look, never a tab kind and
   never a type of document.
@@ -77,7 +77,7 @@ where it is and changes only how the next mark is made.
   - Diagram: "Flowcharts, architecture and org charts with snapping shapes."
   - Draw: "Sketch freehand with pens, tidied into shapes as you go."
   - Workshop: "Run a live session: timers, votes, polls and reveals."
-  - Pages: "Lay out slides, infographics, articles and logos on pages."
+  - Pages: "Lay out slides, infographics, logos and wireframes on pages."
   - Plan: "Boards of cards moving through columns, with types and fields."
 - **One switch:** every start panel's rail carries the same chip and menu. The New Document wizard's mode cards are
   a choice of what to make, not a switch.
@@ -123,8 +123,7 @@ switch lists every mode unlocked, and Shift+D steps through all five. The first 
   mode, used by an editor on a general, unlocked tab, set the tab's mode: **one tab edit** (one undo step,
   synced to everyone). Everything the switch brings with it lands in the same edit: entering
   Pages puts a board that does not fit its first page onto a page made around it
-  ([Pages](pages-mode.md) "Into pages"), and leaving Pages with **Turn Into
-  Pages** turns the articles into Page elements ([Article pages](article-pages.md#leaving-pages)).
+  ([Pages](pages-mode.md) "Into pages").
 - **Undo switches back.** Undo after a switch puts the tab back exactly as it was, in the mode it
   was in, for everyone; Redo switches again. Undoing further back past a switch returns the tab to
   that earlier mode too.
@@ -230,8 +229,7 @@ element in the same colour.
   and Stickers categories, which Diagram does not offer) and the Session strip's three tools
   ([Workshop mode](../012-collaboration/workshop-mode.md)).
 - **Each mode's mark**: Diagram a flowchart (two steps joined), Draw a marker,
-  Pages a page with a little chart above two lines of writing (its first two
-  page kinds, infographic and article), Plan a board of three columns with a raised card, Workshop a flipchart on an easel; the same glyph on the switch and the tab pill.
+  Pages a page with a little chart above two lines of writing, Plan a board of three columns with a raised card, Workshop a flipchart on an easel; the same glyph on the switch and the tab pill.
 - **No further cue:** the dock (in place of the palette) and the switch's
   own label say which mode is on; no tint, accent or notice is added.
 - **Leaving a mode puts its tool down**, as leaving a whiteboard did: a pen,
@@ -373,7 +371,7 @@ actions, snapping, export, putting content onto a page, page slides) is
   as in Diagram mode. Its pattern is **plain** while the tab keeps its theme's pattern (see One look, "Each mode's
   default canvas"); a pattern someone picked shows as it does in Diagram mode.
 - **Each page's label** sits above its top-left corner (**A4 · Portrait** on an infographic page, or
-  **A4 · Landscape · Article**, its name first when it has one, never "Page n": the page
+  **Slide (16:9)** on a slide, its name first when it has one, never "Page n": the page
   navigator shows its place), and
   **its settings cog** above its top-right, both held at one screen size at any
   zoom. The cog (tooltip **Page settings**, or **Page 2 settings**) opens the
@@ -388,8 +386,7 @@ actions, snapping, export, putting content onto a page, page slides) is
 - **Content moves with its page.** Turning, resizing, moving or deleting a page
   moves the pages after it; every element whose centre lies on a page that
   moves (and an arrow's free ends) moves with it, re-centred on the page's
-  centre (`withPages`); on an article page it keeps its place from
-  the page's top-left corner, where the writing starts. A deleted page takes its content with it; a
+  centre (`withPages`). A deleted page takes its content with it; a
   turned or resized page re-fits its own content
   ([Pages](pages-mode.md) "Sizes"). Elements on no page stay
   where they are. Each change is one tab edit (one undo step, synced to
@@ -426,9 +423,7 @@ actions, snapping, export, putting content onto a page, page slides) is
 Diagram and Draw show no pages, so an editor's switch away from Pages on a tab that has
 something on it asks first:
 
-- **A tab with articles** asks Turn Articles Into Pages? (Convert, Keep as Articles, Cancel;
-  [Article pages](article-pages.md#leaving-pages)).
-- **A tab with content but no articles** asks a lighter question: a small card hanging from the
+- **A tab with content** asks a lighter question: a small card hanging from the
   mode switch that asked (a start's, `data-mode-switch`), pointing at it, below
   it or above when there is no room below. A warning glyph in an amber disc, the title "Switch to
   <Mode>?" and one sentence: "<Mode> mode doesn't show pages. Changes you make there may not fit
@@ -472,7 +467,7 @@ dashboard ([Telemetry](../017-telemetry/telemetry.md) "Retired features").
   fired by the retired Opens in submenu, whose successor (the tab menu's Mode) is retired too.
 - `Tab` · `Changed` · `PagePortrait` / `PageLandscape`, fired by a page's
   orientation in Pages mode, `PageAdded` (an infographic page; `SlidePageAdded`,
-  `ArticleAdded` and `LogoPageAdded` for the other kinds) by its add button, and `PageRemoved` by
+  `LogoPageAdded` and `WireframePageAdded` for the other kinds) by its add button, and `PageRemoved` by
   Delete Page.
 - Draw mode's own events are the **`Draw`** category (pens, shapes, eraser,
   recognition, background, snap colours,

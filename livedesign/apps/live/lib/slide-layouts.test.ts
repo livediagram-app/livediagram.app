@@ -47,7 +47,7 @@ describe('slide layouts', () => {
     }
   });
 
-  it('are what a slide page offers; every other kind gets the infographic layouts', () => {
+  it('are what a slide page offers; an infographic page gets the infographic layouts', () => {
     expect(layoutCatalogueFor('slide')).toEqual({
       categories: SLIDE_LAYOUT_CATEGORIES,
       layouts: SLIDE_LAYOUTS,
@@ -56,7 +56,6 @@ describe('slide layouts', () => {
       categories: PAGE_LAYOUT_CATEGORIES,
       layouts: PAGE_LAYOUTS,
     });
-    expect(layoutCatalogueFor('article').layouts).toBe(PAGE_LAYOUTS);
   });
 
   it('are found by id, a slide-only one too', () => {

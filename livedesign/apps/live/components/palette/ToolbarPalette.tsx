@@ -68,7 +68,6 @@ import { SessionBrowse } from './session-category';
 import { barCategoriesFor } from './bar-categories';
 import { CategoryBarButtons, CategoryBarFlyout, useCategoryBar } from './CategoryBar';
 import { usePaletteKindMotion } from './usePaletteKindMotion';
-import { ArticleDockSlot } from './ArticleDockSlot';
 import { usePaletteKind } from '@/lib/palette-kind';
 
 // The Toolbar layout's Palette (docs/specs/007-editor/toolbar-layout.md): one horizontal strip pinned to the
@@ -207,9 +206,7 @@ export function ToolbarPalette(props: Props) {
   // (docs/specs/007-editor/toolbar-layout.md "The category bar"). Not for a Participant, whose palette is one
   // category.
   const categoryBar = CATEGORY_BAR_MODES.has(editorMode) && !participant && !dashboardTab;
-  // In Pages mode with the palette's kind Article, the strip holds the article's formatting in place of the bar.
   const paletteKind = usePaletteKind();
-  const articleDock = categoryBar && editorMode === 'pages' && paletteKind === 'article';
   // A change of kind cascades its categories in (usePaletteKindMotion).
   usePaletteKindMotion(editorMode === 'pages' ? paletteKind : editorMode, rootRef);
   const defaultId = participant
@@ -509,10 +506,7 @@ export function ToolbarPalette(props: Props) {
                             {swipe ? null : <Divider />}
                           </>
                         )}
-                        {articleDock ? (
-                          // The article's formatting, docked (lib/article/article-dock.ts).
-                          <ArticleDockSlot />
-                        ) : categoryBar ? (
+                        {categoryBar ? (
                           <CategoryBarButtons
                             bar={bar}
                             categories={barCategories}

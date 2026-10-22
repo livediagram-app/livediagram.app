@@ -3,7 +3,7 @@ import { BackBar } from '@/components/primitives/BackBar';
 import { Button } from '@livedesign/ui';
 import { useCopiedFlash } from '@livedesign/ui';
 
-// The view/edit/copy sub-view for a text export format (docs/specs/020-import-export/markdown-import.md):
+// The view/edit/copy sub-view for a text export format (docs/specs/020-import-export/README.md):
 // a textarea pre-filled with the tab serialised to text, editable for a
 // quick tweak-and-copy, plus Copy and Download buttons. Edits live only in
 // this textarea — they never touch the tab (a scratch view for getting the

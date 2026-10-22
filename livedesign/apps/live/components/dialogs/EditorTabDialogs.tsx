@@ -9,7 +9,6 @@ import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
 import { tabAsSeen } from '@/lib/export-as-seen';
 import { panelEnabled } from '@/lib/user-preferences';
-import { LeavePagesDialog } from '@/components/dialogs/LeavePagesDialog';
 import { LeavePagesConfirm } from '@/components/dialogs/LeavePagesConfirm';
 
 const ExportTabDialog = dynamic(
@@ -87,7 +86,6 @@ export function EditorTabDialogs() {
 
   return (
     <>
-      <LeavePagesDialog leave={leavePages} />
       <LeavePagesConfirm leave={leavePages} />
       {exportOpen ? (
         <ExportTabDialog

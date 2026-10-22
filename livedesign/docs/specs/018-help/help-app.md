@@ -36,7 +36,7 @@ Categories fall into two kinds. The **support** categories carry standalone arti
 
 | slug                   | title                | icon      | kind    |
 | ---------------------- | -------------------- | --------- | ------- |
-| `about`                | About livedesign    | info      | support |
+| `about`                | About livedesign     | info      | support |
 | `getting-started`      | Getting Started      | rocket    | support |
 | `tips-and-tricks`      | Tips and Tricks      | lightbulb | support |
 | `account-and-data`     | Account and Data     | user      | support |
@@ -62,7 +62,7 @@ The feature categories group the feature guides by area:
 - **Canvas** — the infinite canvas (09), selecting many elements (multi-select), links and link cards (40), annotations (38), themes (29+42+44), templates, text and fonts (28), Undo and Redo.
 - **Tabs** — multiple canvases (13+17+30): Tabs, Tab Folders, Linking Across Tabs, Add a Tab to Another Document, Importing (27), Exporting, and Cleanup (47), one guide per tab-menu action.
 - **Collaboration** — comments, live presence (07: live cursors / selections / per-tab presence), teams (32+35), sharing and embeds (24+33+34), session tools (39).
-- **Tools** — AI assistance (25), zen mode (26), appearance / light-dark-system (07), Markdown import (27), layout cleanup (47).
+- **Tools** — AI assistance (25), zen mode (26), appearance / light-dark-system (07), layout cleanup (47).
 - **Search Panel** — the global search (09): an overview landing plus sub-articles for each thing search does, finding documents/folders, teams, tabs and elements, adding palette items to the canvas, and the Create-new-tab action.
 
 Where a feature's name would equal its category slug, the landing slug is distinguished (`the-canvas`, `the-explorer`, `using-tabs`) so a feature slug never equals a category slug (which would break the breadcrumb's parent link).

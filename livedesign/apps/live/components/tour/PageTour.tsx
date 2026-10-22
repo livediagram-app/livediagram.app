@@ -26,15 +26,12 @@ type Frozen = { pageId: string; kind: PageKind };
 
 function trackStarted(kind: PageKind) {
   if (kind === 'slide') track('UI', 'Started', 'SlideTour');
-  else if (kind === 'article') track('UI', 'Started', 'ArticleTour');
   else if (kind === 'logo') track('UI', 'Started', 'LogoTour');
   else track('UI', 'Started', 'InfographicTour');
 }
 
 function trackEnded(kind: PageKind, completed: boolean) {
   if (kind === 'slide') track('UI', 'Ended', completed ? 'SlideTourCompleted' : 'SlideTourSkipped');
-  else if (kind === 'article')
-    track('UI', 'Ended', completed ? 'ArticleTourCompleted' : 'ArticleTourSkipped');
   else if (kind === 'logo')
     track('UI', 'Ended', completed ? 'LogoTourCompleted' : 'LogoTourSkipped');
   else track('UI', 'Ended', completed ? 'InfographicTourCompleted' : 'InfographicTourSkipped');
@@ -109,7 +106,6 @@ export function PageShowMeButton({
 export const PAGE_TOUR_HELP: Record<PageKind, { article: HelpArticleKey }> = {
   slide: { article: 'slidePages' },
   infographic: { article: 'infographicLayouts' },
-  article: { article: 'articlePages' },
   logo: { article: 'logoPages' },
   wireframe: { article: 'wireframePages' },
 };

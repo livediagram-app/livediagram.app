@@ -6,7 +6,6 @@ import {
   lucideTable,
   lucideUndo2,
   lucideWorkflow,
-  lucideFileText,
 } from '@livedesign/icons/lucide';
 import { lucideGlyph } from '@livedesign/ui';
 
@@ -32,11 +31,6 @@ const CAPABILITIES = [
     icon: lucideGlyph(lucidePresentation, 20),
     title: 'Slides, posters and logos',
     body: 'Decks from ready-made slide layouts, infographics and logo artboards, all on pages you can polish by hand.',
-  },
-  {
-    icon: lucideGlyph(lucideFileText, 20),
-    title: 'Articles',
-    body: 'Written up in Markdown and flowed onto pages, then read back and revised whenever you ask.',
   },
   {
     icon: lucideGlyph(lucideSearch, 20),

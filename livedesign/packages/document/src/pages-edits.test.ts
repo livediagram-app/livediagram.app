@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { articlesOf } from './article-flow';
 import {
   pageAdded,
   pageBackgroundSet,
@@ -11,10 +10,10 @@ import {
   pageRemoved,
   pageRenamed,
   pageResized,
-  pagesSharing,
   pageTurned,
   type PageEdit,
 } from './pages-edits';
+import { pagesSharing } from './page-units';
 import { pagesOf, layOutPages, MAX_PAGES, type Page } from './page';
 import type { Element, Tab } from './index';
 
@@ -50,8 +49,6 @@ const a4 = (id: string, extra: Partial<Page> = {}): Page => ({
   orientation: 'portrait',
   ...extra,
 });
-const article = (id: string, flow: string, extra: Partial<Page> = {}): Page =>
-  a4(id, { kind: 'article', flow, ...extra });
 
 // A box in the middle of the n-th page of a row.
 const onPage = (pages: Page[], index: number, id: string): Element => {
@@ -60,17 +57,15 @@ const onPage = (pages: Page[], index: number, id: string): Element => {
 };
 
 describe('which pages an edit reaches', () => {
-  const pages = [a4('p1'), article('a1', 'f'), article('a2', 'f', { locked: true })];
+  const pages = [a4('p1'), a4('p2', { locked: true })];
 
-  it('reaches a page alone, or every page of its article', () => {
+  it('reaches the page alone', () => {
     expect([...pagesSharing(pages, 'p1')]).toEqual(['p1']);
-    expect([...pagesSharing(pages, 'a1')]).toEqual(['a1', 'a2']);
     expect(pagesSharing(pages, 'nope').size).toBe(0);
   });
 
-  it('holds an article-wide edit when any of its pages is locked, a page-only one by its own lock', () => {
-    expect(pageLockRefuses(pages, 'a1')).toBe(true);
-    expect(pageLockRefuses(pages, 'a1', false)).toBe(false);
+  it('is held by the page’s own lock', () => {
+    expect(pageLockRefuses(pages, 'p2')).toBe(true);
     expect(pageLockRefuses(pages, 'p1')).toBe(false);
     expect(pageLockRefuses(pages, 'nope')).toBe(false);
   });
@@ -121,12 +116,6 @@ describe('turning and resizing', () => {
     expect(pageTurned(tab, 'nope', 'portrait')).toEqual({ refused: 'unknown_page' });
   });
 
-  it('turns every page of an article together, fitting nothing', () => {
-    const tab = tabOf([article('a1', 'f'), article('a2', 'f'), a4('p')]);
-    const pages = pagesAfter(pageTurned(tab, 'a2', 'landscape'));
-    expect(pages.map((p) => p.orientation)).toEqual(['landscape', 'landscape', 'portrait']);
-  });
-
   it('resizes to a size the kind offers, and refuses any other and Fit to Content', () => {
     const tab = tabOf([a4('p1', { size: 'fit', fit: { width: 300, height: 200 } })]);
     const a3 = pagesAfter(pageResized(tab, 'p1', 'a3'))[0]!;
@@ -136,7 +125,7 @@ describe('turning and resizing', () => {
     expect(back.size).toBeUndefined();
     expect(ok(pageResized(tabOf([a4('p1')]), 'p1', 'a4')).pages).toEqual([a4('p1')]);
     expect(pageResized(tabOf([a4('p1')]), 'p1', 'fit')).toEqual({ refused: 'size_not_offered' });
-    expect(pageResized(tabOf([article('a', 'f')]), 'a', 'slide')).toEqual({
+    expect(pageResized(tabOf([a4('p1', { kind: 'infographic' })]), 'p1', 'slide')).toEqual({
       refused: 'size_not_offered',
     });
     expect(pageResized(tabOf([a4('p1', { locked: true })]), 'p1', 'a3')).toEqual({
@@ -149,16 +138,12 @@ describe('turning and resizing', () => {
 describe('painting', () => {
   const solid = { kind: 'solid', color: '#0f172a' } as const;
 
-  it('paints a page, and every page of an article', () => {
+  it('paints a page', () => {
     expect(
       pagesAfter(pageBackgroundSet(tabOf([a4('p')]), 'p', { fill: solid }))[0]!.background,
     ).toEqual({
       fill: solid,
     });
-    const both = pagesAfter(
-      pageBackgroundSet(tabOf([article('a1', 'f'), article('a2', 'f')]), 'a1', { pattern: 'dots' }),
-    );
-    expect(both.every((p) => p.background?.pattern === 'dots')).toBe(true);
   });
 
   it('is no edit when the page already wears it, and back to paper clears it', () => {
@@ -187,12 +172,7 @@ describe('painting', () => {
 describe('adding', () => {
   it('adds an infographic page like the last one, A4 after Fit to Content', () => {
     const like = pagesAfter(
-      pageAdded(
-        tabOf([a4('p', { size: 'a3', orientation: 'landscape' })]),
-        'infographic',
-        'n',
-        'f',
-      ),
+      pageAdded(tabOf([a4('p', { size: 'a3', orientation: 'landscape' })]), 'infographic', 'n'),
     );
     expect(like[1]).toEqual({ id: 'n', orientation: 'landscape', size: 'a3' });
     const afterFit = pagesAfter(
@@ -200,11 +180,10 @@ describe('adding', () => {
         tabOf([a4('p', { size: 'fit', fit: { width: 100, height: 100 } })]),
         'infographic',
         'n',
-        'f',
       ),
     );
     expect(afterFit[1]).toEqual({ id: 'n', orientation: 'portrait' });
-    expect(pagesAfter(pageAdded(tabOf([]), 'infographic', 'n', 'f')).at(-1)).toEqual({
+    expect(pagesAfter(pageAdded(tabOf([]), 'infographic', 'n')).at(-1)).toEqual({
       id: 'n',
       orientation: 'portrait',
     });
@@ -213,63 +192,38 @@ describe('adding', () => {
   it('carries the last page’s background onto a new page of any kind, a logo without pattern', () => {
     const fill = { kind: 'gradient' as const, from: '#fde68a', to: '#fca5a5', angle: 160 };
     const tab = tabOf([a4('p', { background: { fill, pattern: 'dots' } })]);
-    for (const kind of ['infographic', 'slide', 'article'] as const) {
-      expect(pagesOf(ok(pageAdded(tab, kind, 'n', 'f')))[1]!.background).toEqual({
+    for (const kind of ['infographic', 'slide'] as const) {
+      expect(pagesOf(ok(pageAdded(tab, kind, 'n')))[1]!.background).toEqual({
         fill,
         pattern: 'dots',
       });
     }
-    expect(pagesOf(ok(pageAdded(tab, 'logo', 'n', 'f')))[1]!.background).toEqual({
+    expect(pagesOf(ok(pageAdded(tab, 'logo', 'n')))[1]!.background).toEqual({
       fill,
     });
     // The paper carries nothing over.
-    expect(pagesAfter(pageAdded(tabOf([a4('p')]), 'slide', 'n', 'f'))[1]!.background).toBe(
-      undefined,
-    );
+    expect(pagesAfter(pageAdded(tabOf([a4('p')]), 'slide', 'n'))[1]!.background).toBe(undefined);
   });
 
   it('adds a slide in the last slide size, and a logo artboard', () => {
     const tab = tabOf([
       a4('s', { kind: 'slide', size: 'slide-classic', orientation: 'landscape' }),
     ]);
-    expect(pagesAfter(pageAdded(tab, 'slide', 'n', 'f'))[1]).toMatchObject({
+    expect(pagesAfter(pageAdded(tab, 'slide', 'n'))[1]).toMatchObject({
       kind: 'slide',
       size: 'slide-classic',
       orientation: 'landscape',
     });
-    expect(pagesAfter(pageAdded(tab, 'logo', 'n', 'f'))[1]).toMatchObject({
+    expect(pagesAfter(pageAdded(tab, 'logo', 'n'))[1]).toMatchObject({
       kind: 'logo',
       size: 'logo',
     });
   });
 
-  it('adds an article on the last paper size, else A4 portrait, with its writing', () => {
-    const onA3 = ok(
-      pageAdded(tabOf([a4('p', { size: 'a3', orientation: 'landscape' })]), 'article', 'n', 'f'),
-    );
-    expect(pagesOf(onA3)[1]).toMatchObject({
-      kind: 'article',
-      flow: 'f',
-      size: 'a3',
-      orientation: 'landscape',
-    });
-    expect(articlesOf(onA3).f).toBeDefined();
-    const afterSlide = ok(
-      pageAdded(
-        tabOf([a4('s', { kind: 'slide', size: 'slide', orientation: 'landscape' })]),
-        'article',
-        'n',
-        'f',
-      ),
-    );
-    expect(pagesOf(afterSlide)[1]).toMatchObject({ orientation: 'portrait' });
-    expect(pagesOf(afterSlide)[1]!.size).toBeUndefined();
-  });
-
   it('refuses past the page limit or on an id already there', () => {
     const full = tabOf(Array.from({ length: MAX_PAGES }, (_, i) => a4(`p${i}`)));
-    expect(pageAdded(full, 'slide', 'n', 'f')).toEqual({ refused: 'page_limit' });
-    expect(pageAdded(tabOf([a4('p')]), 'slide', 'p', 'f')).toEqual({ refused: 'page_limit' });
+    expect(pageAdded(full, 'slide', 'n')).toEqual({ refused: 'page_limit' });
+    expect(pageAdded(tabOf([a4('p')]), 'slide', 'p')).toEqual({ refused: 'page_limit' });
   });
 });
 
@@ -277,24 +231,12 @@ describe('duplicating, moving and deleting', () => {
   it('duplicates a page with its content after it', () => {
     const pages = [a4('p1'), a4('p2')];
     const tab = tabOf(pages, [onPage(pages, 0, 'b')]);
-    const out = ok(pageDuplicated(tab, 'p1', 'c', 'f'));
+    const out = ok(pageDuplicated(tab, 'p1', 'c'));
     expect(pagesOf(out).map((p) => p.id)).toEqual(['p1', 'c', 'p2']);
     expect(out.elements).toHaveLength(2);
-    expect(pageDuplicated(tab, 'nope', 'c', 'f')).toEqual({ refused: 'unknown_page' });
+    expect(pageDuplicated(tab, 'nope', 'c')).toEqual({ refused: 'unknown_page' });
     const full = tabOf(Array.from({ length: MAX_PAGES }, (_, i) => a4(`p${i}`)));
-    expect(pageDuplicated(full, 'p0', 'c', 'f')).toEqual({ refused: 'page_limit' });
-  });
-
-  it('duplicates a whole article with its writing', () => {
-    const tab = ok(pageAdded(tabOf([a4('p')]), 'article', 'a', 'f'));
-    const out = ok(pageDuplicated(tab, 'a', 'unused', 'g'));
-    expect(pagesOf(out).filter((p) => p.flow === 'g')).toHaveLength(1);
-    expect(Object.keys(articlesOf(out)).sort()).toEqual(['f', 'g']);
-    const full = tabOf([
-      ...Array.from({ length: MAX_PAGES - 1 }, (_, i) => a4(`p${i}`)),
-      article('a', 'f'),
-    ]);
-    expect(pageDuplicated(full, 'a', 'x', 'g')).toEqual({ refused: 'page_limit' });
+    expect(pageDuplicated(full, 'p0', 'c')).toEqual({ refused: 'page_limit' });
   });
 
   it('moves a page, clamped to the row, and is no edit in place', () => {
@@ -313,11 +255,7 @@ describe('duplicating, moving and deleting', () => {
     expect(out.elements.map((e) => e.id)).toEqual(['kept']);
   });
 
-  it('deletes a whole article, never the last unit, never a locked page', () => {
-    const withArticle = ok(pageAdded(tabOf([a4('p')]), 'article', 'a', 'f'));
-    const out = ok(pageRemoved(withArticle, 'a'));
-    expect(pagesOf(out).map((p) => p.id)).toEqual(['p']);
-    expect(articlesOf(out).f).toBeUndefined();
+  it('never deletes the last page, nor a locked one', () => {
     expect(pageRemoved(tabOf([a4('p')]), 'p')).toEqual({ refused: 'last_page' });
     expect(pageRemoved(tabOf([a4('p', { locked: true }), a4('q')]), 'p')).toEqual({
       refused: 'locked',

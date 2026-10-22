@@ -1,24 +1,12 @@
 // An agent's Pages edit (docs/specs/024-agents/pages-for-agents.md "The route"; blueprint
-// "Data and persistence"): read the tab at its revision, apply the page changes or the article write,
+// "Data and persistence"): read the tab at its revision, apply the page changes,
 // and write the tab at that revision. Elements that changed (a layout, a deleted page's content, a
 // moved page's content) go through the changeset write, so they are recorded, merged into later
-// saves and relayed; the pages, mode and writing ride the same batch. Then the room hears what an
+// saves and relayed; the pages and mode ride the same batch. Then the room hears what an
 // editor's own edit sends. A lost race repeats once from the read.
-import {
-  tabArticleOps,
-  type PagesAnswer,
-  type PagesRefusal,
-  type PagesRequest,
-  type RoomOp,
-} from '@livedesign/api-schema';
-import { diffToElementOps, plural, type Tab } from '@livedesign/document';
-import {
-  applyArticleWrite,
-  applyPageChanges,
-  articleSummaries,
-  type PageChangesOutcome,
-  pageSummaries,
-} from '@livedesign/edit-operations';
+import type { PagesAnswer, PagesRefusal, PagesRequest, RoomOp } from '@livedesign/api-schema';
+import { diffToElementOps, type Tab } from '@livedesign/document';
+import { applyPageChanges, pageSummaries } from '@livedesign/edit-operations';
 import { isTabRevStale, lastChangesetRev, upsertTabAtRev } from '../db';
 import { TabTooLargeError } from '../limits';
 import { relayPages } from '../room-client';
@@ -67,7 +55,6 @@ export function pagesRoomOps(before: Tab, after: Tab): RoomOp[] {
       patch: patch,
       ...(clear.length ? { clear: clear } : {}),
     });
-  ops.push(...tabArticleOps(before, after, { agent: true }));
   return ops;
 }
 
@@ -80,15 +67,7 @@ export async function submitPages(args: PagesArgs): Promise<PagesResult> {
       lastChangesetRev(env, tabId),
     ]);
     if (!stored) return { status: 404, body: { error: 'not_found', message: 'No such tab.' } };
-    // The page changes, or the write and which article it made or wrote.
-    let out: PageChangesOutcome;
-    let wrote: { flow: string; created: boolean } | null = null;
-    if ('pages' in request) out = applyPageChanges(stored.tab, request.pages);
-    else {
-      const w = applyArticleWrite(stored.tab, request.article);
-      out = w;
-      if (!('refusal' in w)) wrote = { flow: w.flow, created: w.created };
-    }
+    const out = applyPageChanges(stored.tab, request.pages);
     if ('refusal' in out) {
       console.info('[pages-agent] refused', {
         ...where,
@@ -144,27 +123,17 @@ export async function submitPages(args: PagesArgs): Promise<PagesResult> {
     await relayPages(env, document.id, ops);
     console.info('[pages-agent] applied', {
       ...where,
-      kind: 'pages' in request ? 'pages' : 'article',
-      changes: 'pages' in request ? request.pages.length : 1,
+      changes: request.pages.length,
       rev,
       switched: out.switched,
     });
-    const articles = articleSummaries(next);
-    const article = wrote ? articles.find((a) => a.flow === wrote.flow) : undefined;
     return {
       status: 200,
       body: {
         tab: { id: tabId, rev },
         switched: out.switched,
-        lines: article
-          ? [
-              ...out.lines,
-              `It takes about ${plural(article.estimatedPages, 'page', 'pages')} once laid out (estimated: the editor adds pages to hold the writing and drops any it leaves empty).`,
-            ]
-          : out.lines,
+        lines: out.lines,
         pages: pageSummaries(next),
-        articles,
-        ...(article && wrote ? { article: { ...article, created: wrote.created } } : {}),
         changesetId,
       },
     };

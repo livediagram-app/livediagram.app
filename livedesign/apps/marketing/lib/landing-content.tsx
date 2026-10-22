@@ -6,10 +6,6 @@ import {
   AnimatedShapesArt,
   ApiArt,
   ArrowsArt,
-  ArticleFlowArt,
-  ArticleLooksArt,
-  ArticlePagesArt,
-  ArticleWrapArt,
   AssignedActionsArt,
   AvatarModeArt,
   BoardCsvArt,
@@ -27,7 +23,6 @@ import {
   CommentsArt,
   ComponentsArt,
   ConditionalFormatArt,
-  ContentsSidebarArt,
   CustomThemesArt,
   DashboardArt,
   DragDuplicateArt,
@@ -67,8 +62,6 @@ import {
   LivingBackgroundArt,
   LockArt,
   LogoPageArt,
-  MarginCommentsArt,
-  MarkdownImportArt,
   MarkersArt,
   MarqueeArt,
   McpArt,
@@ -753,14 +746,6 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Hand a Mermaid flowchart to livedesign through the API, the CLI or an AI assistant and it lays it out on the canvas, keeping every connection, not just the outline. The CLI exports a tab back out as Mermaid. It is the diagram-as-code format your READMEs, issues, and AI tools already use, so your diagrams travel.',
       },
       {
-        art: <MarkdownImportArt />,
-        href: '/help/tools/markdown-import/',
-        group: 'AI & your tools',
-        title: 'Import a Markdown outline',
-        description:
-          'Bring an outline in from XMind, Obsidian, or any notes: headings and nested bullets become a tidy, themed node-link tree. Pick Markdown in the import dialog: it replaces the current tab’s contents, and one undo puts them back.',
-      },
-      {
         art: <ExportArt />,
         href: '/help/tabs/export-tabs/',
         group: 'AI & your tools',
@@ -1000,72 +985,6 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Zen mode for focus',
         description:
           'Hit Z, or the zen button by the laser pointer, and every toolbar, panel, and tab bar drops away, leaving just your canvas. Only the zoom controls stay, with an exit button right beside them. Press Z or Esc to bring it all back.',
-      },
-    ],
-  },
-  {
-    id: 'documents',
-    label: 'Documents',
-    scene: 'article',
-    cta: 'Explore documents',
-    title: 'Write it up, diagram and all',
-    description:
-      'Write on pages like a doc, with the diagram right there in the text: pictures that wrap, comments in the margin, and five looks to match your house style. The write-up and the diagram stay one document.',
-    metaDescription:
-      'Write on pages like a doc, with the diagram in the text: pictures that wrap, margin comments and five looks. The write-up and diagram stay one document.',
-    highlights: [
-      'Write like a doc',
-      'Pages that grow',
-      'Pictures and drawings in the text',
-      'Comments in the margin',
-    ],
-    items: [
-      {
-        art: <ArticlePagesArt />,
-        href: '/help/canvas/pages-mode/articles/',
-        group: 'Write',
-        title: 'Write like a doc',
-        description:
-          'Type straight onto a page with Markdown shortcuts and a / menu for every block, and paste cleanly from web pages, Google Docs and Word. A formatting toolbar sits on the page for styles, colour, links and lists.',
-      },
-      {
-        art: <ArticleFlowArt />,
-        href: '/help/canvas/pages-mode/articles/#pages-that-grow',
-        group: 'Write',
-        title: 'Pages that grow',
-        description:
-          'Writing flows onto a new page as it grows, and empty pages tidy themselves away. A heading never strands alone at the foot of a page, and a page break is there when you want one.',
-      },
-      {
-        art: <ContentsSidebarArt />,
-        href: '/help/canvas/pages-mode/',
-        title: 'Every page in the Contents',
-        description:
-          'A Contents sidebar lists every page with a picture of it, its number and its name, and highlights the one you are reading. Press a row to glide there, or type to find a page by its name or any words on it.',
-      },
-      {
-        art: <ArticleWrapArt />,
-        href: '/help/canvas/pages-mode/articles/',
-        group: 'Write',
-        title: 'Pictures and drawings in the text',
-        description:
-          'Pictures, charts and tables sit in the line, wrap left or right, or float free. Drop a shape into the writing and a drawing area opens right there in the text.',
-      },
-      {
-        art: <MarginCommentsArt />,
-        href: '/help/canvas/pages-mode/articles/#comments-and-actions-on-words',
-        group: 'Write',
-        title: 'Comments in the margin',
-        description:
-          'Select words to comment on them or hand them to a teammate as an action. A marker in the margin keeps pace with the text as it moves.',
-      },
-      {
-        art: <ArticleLooksArt />,
-        href: '/help/canvas/pages-mode/articles/#the-article-s-style',
-        group: 'Write',
-        title: 'Five looks for an article',
-        description:
-          'Clean, Classic, Report, Notebook or Bold, then set the accent colour, margins, fonts and page numbers to match your house style.',
       },
     ],
   },

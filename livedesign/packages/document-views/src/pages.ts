@@ -1,17 +1,9 @@
 // The `pages` view (docs/specs/024-agents/pages-for-agents.md "Reading: the pages view"): an
-// Pages tab's pages in row order, each with its rectangle and the refs of what is on it; each
-// article with its writing as the Markdown write_article takes, so read, edit, write back
-// round-trips; and the layouts each kind on the tab offers. A tab in another mode says how to
+// Pages tab's pages in row order, each with its rectangle and the refs of what is on it, and the
+// layouts each kind on the tab offers. A tab in another mode says how to
 // switch it. Kept to the budget like every view: whole lines in order, then what was left out.
+import { pageSummaries, type PagesView, type ViewDoor } from '@livedesign/api-schema';
 import {
-  articleSummaries,
-  pageSummaries,
-  type PagesView,
-  type ViewDoor,
-} from '@livedesign/api-schema';
-import {
-  articlesOf,
-  articleToMarkdown,
   elementIdsOnPage,
   pagesOf,
   layOutPages,
@@ -33,11 +25,10 @@ import { depthFirst } from './tree';
 type PagesOptions = { budget?: number; door?: ViewDoor };
 
 const PAGE = { one: 'page line', many: 'page lines' };
-const WRITING = { one: 'line of writing', many: 'lines of writing' };
 const LAYOUTS = { one: 'layout line', many: 'layout lines' };
 const ELEMENT = { one: 'element line', many: 'element lines' };
 
-const KIND_ORDER: readonly PageKind[] = ['infographic', 'slide', 'logo', 'wireframe', 'article'];
+const KIND_ORDER: readonly PageKind[] = ['infographic', 'slide', 'logo', 'wireframe'];
 
 const sizeName = (size: keyof typeof PAGE_SIZES, orientation: 'portrait' | 'landscape' | null) => {
   const s = PAGE_SIZES[size];
@@ -82,8 +73,8 @@ export function pagesView(model: ViewModel, options: PagesOptions = {}): ViewRes
   if (opensInOf(tab) !== 'pages') {
     const how =
       door === 'mcp'
-        ? 'change_pages adds pages and switches it; write_article starts an article.'
-        : 'page set adds pages and switches it; article set starts an article.';
+        ? 'change_pages adds pages and switches it.'
+        : 'page set adds pages and switches it.';
     const fitted = fitLines({
       header: headerLine(model.facts),
       lines: [{ text: `This tab is not in Pages mode: ${how}` }],
@@ -91,7 +82,7 @@ export function pagesView(model: ViewModel, options: PagesOptions = {}): ViewRes
     });
     return {
       text: fitted.text,
-      json: { header, pagesMode: false, pages: [], articles: [], layouts: [], elision: null },
+      json: { header, pagesMode: false, pages: [], layouts: [], elision: null },
       fit: fitOf(fitted),
     };
   }
@@ -104,12 +95,7 @@ export function pagesView(model: ViewModel, options: PagesOptions = {}): ViewRes
       .filter((id) => printed.has(id))
       .map((id) => model.refs.refOf(id)),
   }));
-  const writing = articlesOf(tab);
-  const articles = articleSummaries(tab).map((a) => ({
-    ...a,
-    markdown: articleToMarkdown(writing[a.flow]!),
-  }));
-  const kinds = KIND_ORDER.filter((k) => k !== 'article' && pages.some((p) => p.kind === k));
+  const kinds = KIND_ORDER.filter((k) => pages.some((p) => p.kind === k));
   const layouts = kinds.map((kind) => ({
     kind,
     layouts: layoutCatalogueFor(kind).layouts.map((l) => ({ id: l.id, label: l.label })),
@@ -127,12 +113,7 @@ export function pagesView(model: ViewModel, options: PagesOptions = {}): ViewRes
       `at ${x},${y} ${width}x${height}`,
       ...(p.background ? [`background ${p.background}`] : []),
       ...(p.locked ? ['locked'] : []),
-      ...(p.flow ? [`article ${p.flow}`] : []),
-      p.refs.length
-        ? `${p.refs.length} element${p.refs.length === 1 ? '' : 's'}`
-        : p.flow
-          ? 'its writing below'
-          : 'empty',
+      p.refs.length ? `${p.refs.length} element${p.refs.length === 1 ? '' : 's'}` : 'empty',
     ];
     lines.push({
       text: `page ${p.place}${p.name ? ` ${jsonString(p.name)}` : ''} ${p.id} · ${facts.join(' · ')}`,
@@ -148,19 +129,6 @@ export function pagesView(model: ViewModel, options: PagesOptions = {}): ViewRes
   lines.push({
     text: "Rectangles and elements' x, y are canvas coordinates (the layout view prints positions from the content's corner).",
   });
-  for (const a of articles) {
-    const places =
-      a.pages.length > 1
-        ? `pages ${a.pages[0]}-${a.pages[a.pages.length - 1]}`
-        : `page ${a.pages[0]}`;
-    lines.push({ text: '' });
-    lines.push({
-      text: `article ${a.flow} ${jsonString(a.title)} · ${places} · ${a.blocks} blocks · ${a.words} words${a.look ? ` · look ${a.look}` : ''}`,
-      noun: PAGE,
-    });
-    for (const line of a.markdown.replace(/\n$/, '').split('\n'))
-      lines.push({ text: `  ${line}`, noun: WRITING });
-  }
   if (layouts.length) lines.push({ text: '' });
   for (const l of layouts)
     lines.push({
@@ -175,7 +143,7 @@ export function pagesView(model: ViewModel, options: PagesOptions = {}): ViewRes
   });
   return {
     text: fitted.text,
-    json: { header, pagesMode: true, pages, articles, layouts, elision: fitted.elision },
+    json: { header, pagesMode: true, pages, layouts, elision: fitted.elision },
     fit: fitOf(fitted),
   };
 }

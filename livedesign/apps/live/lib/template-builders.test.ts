@@ -106,17 +106,14 @@ const ALL_KINDS = [
   'service-blueprint',
   'metric-tree',
   'value-proposition-canvas',
-  'working-backwards',
   'family-tree',
   'value-stream-map',
   'user-persona',
   'meeting-agenda',
   'objectives-planner',
   'whiteboard',
-  'article',
   'blank-illustration',
   'blank-slide-deck',
-  'blank-article',
   'blank-infographic',
   'blank-logo',
   'blank-wireframe-phone',
@@ -335,12 +332,9 @@ describe('buildTemplate translation invariance', () => {
       (k) =>
         k !== 'blank' &&
         k !== 'whiteboard' &&
-        k !== 'article' &&
-        k !== 'working-backwards' &&
         k !== 'blank-illustration' &&
         // One empty page of a chosen kind (docs/specs/007-editor/templates-by-mode.md "Blanks of a page kind").
         k !== 'blank-slide-deck' &&
-        k !== 'blank-article' &&
         k !== 'blank-infographic' &&
         k !== 'blank-logo' &&
         !k.startsWith('blank-wireframe-') &&

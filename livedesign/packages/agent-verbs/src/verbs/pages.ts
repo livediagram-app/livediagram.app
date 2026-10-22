@@ -1,19 +1,11 @@
 // The Pages verbs (docs/specs/024-agents/pages-for-agents.md "The front doors"): `page ls` (the pages
-// view), `page set` (change_pages), `article get` (one article as Markdown) and `article set` (write_article),
-// over the calls the MCP's change_pages and write_article share. Pages are named by id, place or name; articles
-// by id or title.
+// view) and `page set` (change_pages), over the call the MCP's change_pages shares. Pages are named by id,
+// place or name.
 import { z } from 'zod';
 import { PAGE_CHANGES_MAX, type PageChange } from '@livedesign/api-schema';
-import { ARTICLE_LOOK_IDS, type ArticleLookId, type PageSizeId } from '@livedesign/document';
+import type { PageSizeId } from '@livedesign/document';
 import { defineVerb, VerbRefusal, type Verb, type VerbContext } from '../define';
-import {
-  changePages,
-  pagesTabOf,
-  readArticle,
-  writeArticle,
-  type PagesDone,
-  type PagesRefused,
-} from '../pages/pages-calls';
+import { changePages, pagesTabOf, type PagesDone, type PagesRefused } from '../pages/pages-calls';
 import { resolveTab } from '../addressing';
 import { documentOf, tabPath } from './shared';
 
@@ -50,7 +42,6 @@ const pageOutput = z.object({
   rect: z.object({ x: z.number(), y: z.number(), width: z.number(), height: z.number() }),
   background: z.string().nullable(),
   locked: z.boolean(),
-  flow: z.string().nullable(),
   elements: z.number(),
 });
 const doneOutput = z.object({
@@ -72,9 +63,9 @@ const pageLine = (p: z.infer<typeof pageOutput>) =>
 
 export const pageLs = defineVerb({
   id: 'page.ls',
-  summary: "List a tab's pages and articles",
+  summary: "List a tab's pages",
   description:
-    'Prints the pages view of a Pages tab: each page with its rectangle on the canvas and the refs on it, each article as Markdown, and the layouts on offer.',
+    'Prints the pages view of a Pages tab: each page with its rectangle on the canvas and the refs on it, and the layouts on offer.',
   behaviour: 'read',
   input: z.object({
     doc: docArg,
@@ -219,106 +210,4 @@ function changeFrom(flags: ChangeFlags): PageChange {
   throw none();
 }
 
-export const articleGet = defineVerb({
-  id: 'article.get',
-  summary: 'Print an article as Markdown',
-  description:
-    'Prints an article’s writing as the Markdown article set takes (front matter for the title, [zone <id>] lines for its zones), to edit and write back.',
-  behaviour: 'read',
-  input: z.object({
-    doc: docArg,
-    tab: tabFlag,
-    article: z
-      .string()
-      .optional()
-      .describe('The article by id or title; the only one when omitted'),
-  }),
-  output: z.object({ flow: z.string(), title: z.string(), markdown: z.string() }),
-  run: async (ctx, input) => {
-    const at = await where(ctx, input.doc, input.tab);
-    const read = await readArticle(
-      ctx.api,
-      at.documentId,
-      {
-        ...(at.tabId ? { tabId: at.tabId } : {}),
-        ...(input.article ? { article: input.article } : {}),
-      },
-      'cli',
-    );
-    if (!read.ok) throw refusal(read);
-    return { flow: read.flow, title: read.title, markdown: read.markdown };
-  },
-  text: ({ markdown }) => [markdown.replace(/\n$/, '')],
-  cli: {
-    positionals: ['doc'],
-    examples: [
-      'livedesign article get "Project brief" > brief.md',
-      'livedesign article get 3f9c --article Notes',
-    ],
-    prints: 'the article as Markdown',
-  },
-});
-
-export const articleSet = defineVerb({
-  id: 'article.set',
-  summary: 'Write an article from Markdown',
-  description:
-    'Writes an article from a Markdown file (or - for stdin): a new one, or over or after (--append) one named by id or title. The editor flows it onto as many pages as it needs.',
-  behaviour: 'destructive',
-  input: z.object({
-    doc: docArg,
-    tab: tabFlag,
-    file: z.string().describe('The Markdown file, or - for stdin'),
-    article: z.string().optional().describe('The article by id or title'),
-    new: z.boolean().optional().describe('Start a new article'),
-    append: z.boolean().optional().describe('Add after the last block instead of replacing'),
-    size: sizeArg,
-    orientation: z
-      .enum(['portrait', 'landscape'])
-      .optional()
-      .describe('A new article’s orientation'),
-    look: z
-      .enum(ARTICLE_LOOK_IDS as [ArticleLookId, ...ArticleLookId[]])
-      .optional()
-      .describe('clean, classic, report, notebook or bold'),
-    accent: z.string().optional().describe('The accent colour, a hex'),
-    pageNumbers: z.boolean().optional().describe('Page numbers on'),
-  }),
-  output: doneOutput.extend({ flow: z.string(), title: z.string(), created: z.boolean() }),
-  run: async (ctx, input) => {
-    const markdown = await ctx.readInput(input.file);
-    const at = await where(ctx, input.doc, input.tab);
-    const done = await writeArticle(
-      ctx.api,
-      at.documentId,
-      {
-        ...(at.tabId ? { tabId: at.tabId } : {}),
-        markdown,
-        ...(input.article ? { article: input.article } : {}),
-        ...(input.new ? { new: true } : {}),
-        ...(input.append ? { mode: 'append' as const } : {}),
-        ...(input.size ? { size: input.size as PageSizeId } : {}),
-        ...(input.orientation ? { orientation: input.orientation } : {}),
-        ...(input.look ? { look: input.look } : {}),
-        ...(input.accent ? { accent: input.accent } : {}),
-        ...(input.pageNumbers !== undefined ? { pageNumbers: input.pageNumbers } : {}),
-      },
-      'cli',
-    );
-    if (!done.ok) throw refusal(done);
-    const article = done.article!;
-    return { ...doneOf(done), flow: article.flow, title: article.title, created: article.created };
-  },
-  text: ({ lines }) => lines.map((l) => `~ ${l}`),
-  quiet: ({ flow }) => [flow],
-  cli: {
-    positionals: ['doc', 'file'],
-    examples: [
-      'livedesign article set "Project brief" brief.md',
-      'cat notes.md | livedesign article set 3f9c - --article Notes --append',
-    ],
-    prints: 'what was written',
-  },
-});
-
-export const pagesVerbs: readonly Verb[] = [pageLs, pageSet, articleGet, articleSet] as Verb[];
+export const pagesVerbs: readonly Verb[] = [pageLs, pageSet] as Verb[];

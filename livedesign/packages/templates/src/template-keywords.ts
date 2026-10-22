@@ -20,17 +20,6 @@ const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
     'keynote',
     'pitch',
   ],
-  'blank-article': [
-    'empty',
-    'article',
-    'document',
-    'doc',
-    'write',
-    'writing',
-    'report',
-    'essay',
-    'word',
-  ],
   'blank-infographic': ['empty', 'infographic', 'page', 'poster', 'flyer', 'handout', 'layout'],
   'blank-logo': ['empty', 'logo', 'brand', 'mark', 'wordmark', 'icon', 'artboard'],
   'blank-wireframe-phone': [
@@ -397,16 +386,6 @@ const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
     'product market fit',
     'strategyzer',
   ],
-  'working-backwards': [
-    'pr faq',
-    'prfaq',
-    'press release',
-    'amazon',
-    'six pager',
-    'product proposal',
-    'faq',
-    'launch',
-  ],
   // Org Charts.
   orgchart: ['org', 'organisation', 'organization', 'team', 'hierarchy', 'reporting lines'],
   pyramid: ['hierarchy', 'levels', 'layers', 'maslow', 'tiers'],
@@ -451,7 +430,6 @@ const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
   ],
   // Presentations.
   'slide-deck': ['presentation', 'slides', 'deck', 'pitch', 'powerpoint', 'keynote'],
-  article: ['article', 'project', 'document', 'doc', 'brief', 'report', 'writing', 'memo', 'blog'],
   'how-it-works': ['steps', 'explainer', 'onboarding', 'guide', 'infographic'],
   'data-story': ['infographic', 'statistics', 'numbers', 'charts', 'report'],
   'year-in-review': ['annual report', 'recap', 'wrapped', 'review', 'highlights'],

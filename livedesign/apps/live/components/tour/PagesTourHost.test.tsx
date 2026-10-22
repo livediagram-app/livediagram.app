@@ -273,17 +273,16 @@ describe('PagesTourHost end', () => {
   });
 
   it('runs the track of the tour page’s kind', async () => {
-    dom.page = { pageId: 'p2', kind: 'article' };
+    dom.page = { pageId: 'p2', kind: 'logo' };
     await start({
       activeTab: {
         id: 'tab1',
         locked: false,
-        pages: [{ id: 'p2', orientation: 'portrait', kind: 'article', flow: 'f' }],
+        pages: [{ id: 'p2', orientation: 'portrait', kind: 'logo', size: 'logo' }],
       },
     });
-    expect(stage.engine?.step?.title).toBe('Getting started with Articles?');
-    expect(stage.helpHref).toBe('/help/canvas/pages-mode/articles/');
-    expect(stage.engine!.countableSteps).toBe(4);
+    expect(stage.engine?.step?.title).toBe('Getting started with Logos?');
+    expect(stage.helpHref).toBe('/help/canvas/pages-mode/logo-pages/');
   });
 
   it('counts the slide’s steps on screen', async () => {

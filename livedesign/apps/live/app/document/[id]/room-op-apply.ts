@@ -1,11 +1,6 @@
 import {
-  applyArticleOps,
-  pagesOf,
   settleTabFields,
-  isArticleId,
-  parseArticleOps,
   applyElementDelta,
-  articlesOf,
   applyElementOp,
   applyRoomElementOp,
   applyVoteDelta,
@@ -18,7 +13,6 @@ import {
 } from '@livedesign/document';
 import type { RoomOp } from '@livedesign/api-schema';
 import { META_SKIP, mergeRemoteTab, mergeRemoteVote } from './tab-broadcast-ops';
-import { markArticleGrow } from '@/lib/article/article-grow-store';
 
 // The document-changing room ops, as a pure function over a tab list.
 //
@@ -116,35 +110,6 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp, pendingIdeaIds?: Pend
         }
         // A peer's patch is untrusted like any incoming tab: its raw-read fields are settled.
         return settleTabFields(merged);
-      });
-    case 'article':
-      // ONE article's writing, block by block (docs/specs/007-editor/article-pages.md
-      // "Collaboration"): two people writing different blocks merge.
-      return updateTab(tabs, op.tabId, (tab) => {
-        if (!isArticleId(op.flow)) return tab;
-        const articles = { ...articlesOf(tab) };
-        if ('removed' in op) {
-          if (!Object.hasOwn(articles, op.flow)) return tab;
-          delete articles[op.flow];
-        } else {
-          // Read defensively: a malformed frame changes nothing.
-          const ops = parseArticleOps(op.ops);
-          if (!ops) return tab;
-          // Writing for an article this tab no longer has (removed while the writer typed) is
-          // dropped, unless the article is new or its pages are here.
-          const known =
-            Object.hasOwn(articles, op.flow) ||
-            op.created === true ||
-            pagesOf(tab).some((p) => p.flow === op.flow);
-          if (!known) return tab;
-          articles[op.flow] = applyArticleOps(articles[op.flow], ops);
-          // An agent's writing has no writer here to add the pages it needs: the next lay-out may.
-          if (op.agent === true) markArticleGrow(op.tabId, op.flow);
-        }
-        if (Object.keys(articles).length > 0) return { ...tab, articles };
-        const { articles: _drop, ...rest } = tab;
-        void _drop;
-        return rest;
       });
     case 'document-meta': {
       // Rename / reorder / add / delete. Reorder to match; a new id lands as a

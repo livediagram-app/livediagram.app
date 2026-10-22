@@ -31,7 +31,6 @@ import { AnnotationGlyph } from '@/components/canvas/AnnotationMarker';
 import { ElementSettingsButton } from '@/components/canvas/ElementEllipsisMenu';
 import { CollabSettingsSlot } from '@/components/canvas/collab/collab-chrome';
 import { CommentPanelFace } from '@/components/canvas/CommentPanelFace';
-import { ArticleNoteFace } from '@/components/canvas/article/ArticleNoteFace';
 import { ActionPanelFace } from '@/components/canvas/ActionPanelFace';
 import { FreehandSvg } from '@/components/canvas/boxed-element-overlays';
 import { PathSvg } from '@/components/canvas/path/PathSvg';
@@ -409,8 +408,6 @@ export function ElementFaceRouter({
           // A locked window, or a read-only canvas (presenting, a viewer), keeps its tab: no Choose a Tab.
           canChoose={!readOnly && !isLocked}
         />
-      ) : element.type === 'annotation' && element.articleNote ? (
-        <ArticleNoteFace element={element} />
       ) : element.type === 'annotation' ? (
         <AnnotationGlyph
           stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)}

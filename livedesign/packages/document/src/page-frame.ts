@@ -124,7 +124,6 @@ export function pageExportFrame(
   {
     paper = PAGE_EXPORT_PAPER,
     idPrefix = 'lvd-page',
-    ruling,
     transparentPaper = false,
     imageHref,
     overFill,
@@ -136,9 +135,6 @@ export function pageExportFrame(
     // Prefixes the gradient and pattern ids: pages of different tabs share ids (every tab's first
     // page), so markup inlined beside other pages' (slide thumbnails, the Map) needs its own.
     idPrefix?: string;
-    // An article page's Lines, on its writing's baselines inside its margins
-    // (docs/specs/007-editor/article-pages.md "Article style").
-    ruling?: { pitch: number; inset: number; top: number };
     // A logo page's plain paper is left out (a logo goes over other things); a fill is kept.
     transparentPaper?: boolean;
     // A page picture's bytes by gallery id (a data URL, export-tab-images), to embed. Without them
@@ -182,16 +178,7 @@ export function pageExportFrame(
     parts.push(rect(xmlEscape(fill?.color ?? paper)));
   }
   if (overFill) parts.push(overFill);
-  if (pattern && ruling && pattern === 'lines') {
-    // Ruled inside the margins, one line under each line of body text.
-    const p = ruling.pitch;
-    const ink = xmlEscape(pagePatternInk(page.background));
-    parts.push(
-      `<defs><pattern id="${id}-pattern" patternUnits="userSpaceOnUse" x="${r2(r.x + ruling.inset)}" y="${r2(r.y + ruling.top)}" width="${r2(r.width - 2 * ruling.inset)}" height="${r2(p)}">` +
-        `<rect y="${r2(p - 1)}" width="${r2(r.width - 2 * ruling.inset)}" height="1" fill="${ink}"/></pattern></defs>`,
-      `<rect x="${r2(r.x + ruling.inset)}" y="${r2(r.y + ruling.top)}" width="${r2(r.width - 2 * ruling.inset)}" height="${r2(r.height - ruling.top - ruling.inset)}" fill="url(#${id}-pattern)"/>`,
-    );
-  } else if (pattern) {
+  if (pattern) {
     const p = PAGE_PATTERN_PITCH;
     parts.push(
       `<defs><pattern id="${id}-pattern" patternUnits="userSpaceOnUse" x="${r2(r.x)}" y="${r2(r.y)}" width="${p}" height="${p}">` +
@@ -212,8 +199,6 @@ export function pageExportFrame(
     transparent,
     ...(device ? { clipPath: device.screen, clipId: `${id}-screen`, overlaySvg: device.over } : {}),
     reaches: (el, elements) => {
-      // An article's note marker is the editor's, never part of the page: no export or preview draws it.
-      if (el.type === 'annotation' && el.articleNote) return false;
       const overlaps = (x: number, y: number, rr: number, b: number) =>
         x <= p.x + p.width && rr >= p.x && y <= p.y + p.height && b >= p.y;
       if (el.type !== 'arrow') return overlaps(el.x, el.y, el.x + el.width, el.y + el.height);

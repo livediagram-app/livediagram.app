@@ -1,9 +1,8 @@
 // The wire shapes of an agent's Pages edits (docs/specs/024-agents/pages-for-agents.md):
-// the page changes and the article write `POST /api/documents/:id/tabs/:tabId/pages` takes,
+// the page changes `POST /api/documents/:id/tabs/:tabId/pages` takes,
 // and what it answers. Shared by the api route, the engine (@livedesign/edit-operations), the
 // verbs (CLI and MCP) and the views.
 import type {
-  ArticleLookId,
   PageKind,
   PageOrientation,
   PagePattern,
@@ -23,7 +22,7 @@ type WireframeFields = {
 // The most page changes one call takes (as change_items and change_sheet).
 export const PAGE_CHANGES_MAX = 50;
 
-// The longest page ref, layout id or article flow id taken (an article id's own cap).
+// The longest page ref or layout id taken.
 export const PAGES_REF_MAX = 64;
 
 // A page named by its id, its 1-based place in the row, or its name.
@@ -80,24 +79,7 @@ export const PAGE_CHANGE_OPS: readonly PageChangeOp[] = [
   'apply_background_to_all',
 ];
 
-export type ArticleWriteMode = 'replace' | 'append';
-
-export type ArticleWrite = {
-  // The article by flow id or title; absent is the tab's only one, else a new one.
-  article?: string;
-  // Always a new article.
-  new?: boolean;
-  markdown: string;
-  mode?: ArticleWriteMode;
-  // A new article's paper.
-  size?: PageSizeId;
-  orientation?: PageOrientation;
-  look?: ArticleLookId;
-  accent?: string;
-  pageNumbers?: boolean;
-};
-
-export type PagesRequest = { pages: PageChange[] } | { article: ArticleWrite };
+export type PagesRequest = { pages: PageChange[] };
 
 export type PageRect = { x: number; y: number; width: number; height: number };
 
@@ -111,8 +93,6 @@ export type PageSummary = {
   rect: PageRect;
   background: string | null;
   locked: boolean;
-  // The article it is a page of.
-  flow: string | null;
   // How many elements are on it.
   elements: number;
   // A wireframe page's device, frame look and system bars, and its screen's safe area on the canvas
@@ -123,25 +103,11 @@ export type PageSummary = {
   screen?: PageRect;
 };
 
-export type ArticleSummary = {
-  flow: string;
-  title: string;
-  // The places of its pages.
-  pages: number[];
-  blocks: number;
-  words: number;
-  // About how many pages its writing reaches once laid out (an estimate, article-layout-estimate.ts).
-  estimatedPages: number;
-  look: ArticleLookId | null;
-};
-
 export type PagesAnswer = {
   tab: { id: string; rev: number };
   switched: boolean;
   lines: string[];
   pages: PageSummary[];
-  articles: ArticleSummary[];
-  article?: ArticleSummary & { created: boolean };
   changesetId: string | null;
 };
 
@@ -150,7 +116,6 @@ const PAGES_REFUSAL_CODES = [
   'invalid_value',
   'tab_locked',
   'page_unknown',
-  'article_by_write',
   'size_not_offered',
   'no_orientation',
   'pattern_not_offered',
@@ -160,10 +125,6 @@ const PAGES_REFUSAL_CODES = [
   'page_locked',
   'page_limit',
   'last_page',
-  'article_unknown',
-  'article_ambiguous',
-  'zone_unknown',
-  'article_too_large',
 ] as const;
 
 export type PagesRefusalCode = (typeof PAGES_REFUSAL_CODES)[number];

@@ -11,7 +11,7 @@ import {
 } from '@livedesign/document';
 import { exportScale, exportTabAsSvg, MAX_EXPORT_CANVAS_SIDE, renderTabToSvg } from './export-tab';
 import { parseImportedTab } from './import-tab';
-import { encodeStrokePoints, layOutPages } from '@livedesign/document';
+import { encodeStrokePoints } from '@livedesign/document';
 
 const shape = (id: string, overrides: Partial<ShapeElement> = {}): ShapeElement => ({
   id,
@@ -348,37 +348,6 @@ describe('exportTabAsSvg', () => {
     );
     expect(svg).toContain('<path d="M '); // a path...
     expect(svg).toContain(' Q '); // ...with a quadratic curve segment
-  });
-});
-
-describe('an article page export cuts a drawing off at its zone', () => {
-  it('wraps a shape poking past a drawing zone in a clip to the zone', () => {
-    const pages = [
-      { id: 'p1', orientation: 'portrait' as const, kind: 'article' as const, flow: 'f' },
-    ];
-    const page = layOutPages(pages)[0]!;
-    const zoneX = page.rect.x + 100;
-    const t = tab({
-      pages,
-      articles: {
-        f: {
-          blocks: [
-            {
-              id: 'z',
-              type: 'zone',
-              zone: 'drawing',
-              width: 200,
-              height: 100,
-              at: { page: 'p1', x: 100, y: 100 },
-            },
-          ],
-        },
-      },
-      elements: [shape('poke', { x: zoneX - 40, y: page.rect.y + 120, width: 80, height: 40 })],
-    });
-    const svg = renderTabToSvg(t, { page });
-    expect(svg).toContain('<clipPath id="lvd-zc-poke">');
-    expect(svg).toContain('clip-path="url(#lvd-zc-poke)"');
   });
 });
 

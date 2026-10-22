@@ -1,5 +1,5 @@
 // A keyboard shortcut as this computer spells it: `Mod-B` is ⌘B on an Apple device and Ctrl+B elsewhere (Shift-
-// and Alt- likewise). Shared by the article page toolbar and the Sheet's cell menu.
+// and Alt- likewise). Used by the Sheet's cell menu.
 
 const mac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
 

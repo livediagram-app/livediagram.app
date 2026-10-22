@@ -53,7 +53,7 @@ export const WireframeDeviceSheet = memo(function WireframeDeviceSheet({
     width: g.screen.width,
     height: g.screen.height,
     clipPath: `path('${deviceScreenPath(g, -g.screen.x, -g.screen.y)}')`,
-    ...pageSheetStyle(background, undefined, resolveImage),
+    ...pageSheetStyle(background, resolveImage),
   };
   return (
     <>

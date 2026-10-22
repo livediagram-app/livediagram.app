@@ -20,8 +20,6 @@ import {
   tabWireframeFrameTheme,
 } from '@livedesign/document';
 import type { Item, ItemTypeDef } from '@livedesign/items';
-import { pageRulingOf, pageWritingBars } from '@/lib/article/article-export';
-import { articleOpsToSvg } from '@/lib/article/article-draw';
 import { CANVAS_PAPER } from '@/lib/page-paint';
 import { pageExportFrame } from '@/lib/export-page';
 import { exportChartInk } from '@/lib/export-chart-ink';
@@ -72,14 +70,10 @@ export function slideThumbFor(slide: Slide, tab: Tab, opts: SlideThumbOptions): 
     const frame = pageExportFrame(page, {
       paper: CANVAS_PAPER[canvasSurface === 'dark' ? 'dark' : 'light'],
       idPrefix: `lvd-slide-${slide.id}`,
-      ruling: pageRulingOf(tab, page),
       frameTheme: tabWireframeFrameTheme(tab),
     });
     if (page.background?.fill) surface = frame.surface;
     parts.push(frame.backgroundSvg);
-    // An article page's writing, as lines of text.
-    const bars = pageWritingBars(page);
-    if (bars.length) parts.push(articleOpsToSvg(bars));
   }
   // Shapes something sits on keep a solid fill under Sketch, as on the canvas (sketch-backdrop.ts).
   const backdrops = sketchBackdropIds(elements, tab.finish);

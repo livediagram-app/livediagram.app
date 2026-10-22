@@ -56,7 +56,6 @@ export const HELP_ARTICLES = {
   apiTokens: 'account-and-data/api-tokens',
   trash: 'account-and-data/trash',
   importTabs: 'tabs/import-tabs',
-  markdownImport: 'tools/markdown-import',
   tags: 'explorer/tags',
   linkingTabs: 'tabs/linking-tabs',
   // Teams
@@ -131,7 +130,6 @@ export const HELP_ARTICLES = {
   // Each page kind's Show Me links its own article (docs/specs/007-editor/pages-tour.md).
   slidePages: 'canvas/pages-mode/slide-pages',
   infographicLayouts: 'canvas/pages-mode/infographic-layouts',
-  articlePages: 'canvas/pages-mode/articles',
   keyboardShortcuts: 'tips-and-tricks/keyboard-shortcuts',
   guestVsAccount: 'getting-started/guest-vs-account',
   // Load recovery (docs/specs/007-editor/load-recovery.md).
@@ -275,10 +273,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   importTabs: {
     title: 'Learn about importing tabs',
     description: 'What you can import and how it replaces the tab.',
-  },
-  markdownImport: {
-    title: 'Learn about Markdown import',
-    description: 'How headings and lists become a themed tree diagram.',
   },
   linkingTabs: {
     title: 'Learn about linking tabs',
@@ -494,10 +488,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   infographicLayouts: {
     title: 'Learn about infographic layouts',
     description: 'Starting a page from a layout, its theme, and making it your own.',
-  },
-  articlePages: {
-    title: 'Learn about articles',
-    description: 'Writing, the page toolbar, article style and how pages flow.',
   },
   livePresence: {
     title: 'Learn about live presence',

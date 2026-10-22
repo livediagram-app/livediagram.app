@@ -1,13 +1,8 @@
-// How a tab's pages and articles are summarised for agents (docs/specs/024-agents/
-// pages-for-agents.md "change_pages" answer, "Reading: the pages view"): each page's place,
-// kind, size and rectangle on the canvas, where update_document puts elements onto it; each
-// article's title, pages and size. Shared by the api's answer (@livedesign/edit-operations) and
+// How a tab's pages are summarised for agents (docs/specs/024-agents/pages-for-agents.md
+// "change_pages" answer, "Reading: the pages view"): each page's place, kind, size and rectangle on
+// the canvas, where update_document puts elements onto it. Shared by the api's answer (@livedesign/edit-operations) and
 // the pages view (@livedesign/document-views).
 import {
-  articlesOf,
-  articleTitleOf,
-  articleWordCount,
-  estimateArticle,
   elementIdsOnPage,
   pagesOf,
   layOutPages,
@@ -18,9 +13,9 @@ import {
   type PageBackground,
   type Tab,
 } from '@livedesign/document';
-import type { ArticleSummary, PageSummary } from './pages';
+import type { PageSummary } from './pages';
 
-export type PagesTab = Pick<Tab, 'elements' | 'pages' | 'articles'> & { pageOrientation?: unknown };
+export type PagesTab = Pick<Tab, 'elements' | 'pages'> & { pageOrientation?: unknown };
 
 // A picture's overlay in words: "light 60%", or "no overlay".
 const overlayWords = (o: { kind: string; strength: number } | undefined) =>
@@ -66,7 +61,6 @@ export function pageSummaries(tab: PagesTab): PageSummary[] {
     },
     background: describeBackground(p.background),
     locked: p.locked === true,
-    flow: p.flow ?? null,
     elements: elementIdsOnPage(tab.elements, laid, p.id).size,
     ...(p.kind === 'wireframe'
       ? {
@@ -77,28 +71,4 @@ export function pageSummaries(tab: PagesTab): PageSummary[] {
         }
       : {}),
   }));
-}
-
-/** Every article as the answers list it, in row order. */
-export function articleSummaries(tab: PagesTab): ArticleSummary[] {
-  const pages = pagesOf(tab);
-  const laid = layOutPages(pages);
-  const articles = articlesOf(tab);
-  const seen: string[] = [];
-  for (const p of pages)
-    if (p.flow && articles[p.flow] && !seen.includes(p.flow)) seen.push(p.flow);
-  return seen.map((flow) => {
-    const doc = articles[flow]!;
-    return {
-      flow,
-      title: articleTitleOf(doc),
-      pages: pages.flatMap((p, i) => (p.flow === flow ? [i + 1] : [])),
-      blocks: doc.blocks.length,
-      words: articleWordCount(doc),
-      // How many pages its writing reaches once laid out, estimated without a browser (the editor adds pages to
-      // hold it, and drops those it leaves empty).
-      estimatedPages: Math.max(1, estimateArticle(tab, flow, laid, '#000000').pagesUsed),
-      look: doc.style?.look ?? null,
-    };
-  });
 }

@@ -356,8 +356,6 @@ const PAGES_LOGO: PaletteLayout = {
 const PAGES_BY_KIND: Readonly<Record<PaletteKind, PaletteLayout>> = {
   design: PAGES,
   slide: PAGES_SLIDE,
-  // An article's strip is its formatting (the docked page toolbar); its More and Search keep Pages'.
-  article: PAGES,
   wireframe: PAGES_WIREFRAME,
   logo: PAGES_LOGO,
 };

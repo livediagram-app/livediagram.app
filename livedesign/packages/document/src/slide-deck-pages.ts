@@ -2,7 +2,7 @@
 // deck, and a tab's page slides run in its page order. Pure, so the editor runs it on every change to the pages and a
 // viewer reads the same deck an editor would store.
 
-import { pageUnits } from './article-pages';
+import { pageUnits } from './page-units';
 import { opensInOf } from './editor-mode';
 import { pagesOf, type Page } from './page';
 import type { Tab } from './index';
@@ -151,7 +151,7 @@ export function deckFollowingPages(deck: Deck, tabs: readonly Tab[], gone?: Gone
 // Where a drag in the Slide Deck should move a page slide's page, so the two orders stay one: just after the page
 // whose slide now comes before it in the deck (that tab's page slides only), else just before the page whose slide
 // comes after it, else first. Nothing moves while it already sits between those two in the tab. As the unit
-// index pageMovedTo takes (an article's pages move together). Null when the slide is not a followed tab's page
+// index pageMovedTo takes. Null when the slide is not a followed tab's page
 // slide, or its page is already there.
 export function pageMoveForDeckOrder(
   deck: Deck,

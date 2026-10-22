@@ -8,7 +8,7 @@ import { PAGE_LAYOUT_CATEGORIES, PAGE_LAYOUTS, type PageLayoutId } from './page-
 import { LOGO_LAYOUT_CATEGORIES, LOGO_LAYOUTS } from './logo-layouts';
 import { SLIDE_LAYOUT_CATEGORIES, SLIDE_LAYOUTS } from './slide-layouts';
 import { WIREFRAME_LAYOUTS, wireframeLayoutsFor } from './wireframe-layouts';
-import type { WireframeDeviceClass } from '@livedesign/document';
+import type { PageKind, WireframeDeviceClass } from '@livedesign/document';
 
 type CatalogueLayout = {
   id: PageLayoutId;
@@ -30,11 +30,10 @@ const INFOGRAPHIC: LayoutCatalogue = {
 const SLIDE: LayoutCatalogue = { categories: SLIDE_LAYOUT_CATEGORIES, layouts: SLIDE_LAYOUTS };
 const LOGO: LayoutCatalogue = { categories: LOGO_LAYOUT_CATEGORIES, layouts: LOGO_LAYOUTS };
 
-/** The layouts a page of this kind starts from (an article page has none, and gets the
- *  infographic ones should it ever ask); a wireframe page its device class's (every wireframe
- *  layout when no class is given). */
+/** The layouts a page of this kind starts from; a wireframe page its device class's (every
+ *  wireframe layout when no class is given). */
 export function layoutCatalogueFor(
-  kind: 'infographic' | 'article' | 'slide' | 'logo' | 'wireframe',
+  kind: PageKind,
   deviceClass?: WireframeDeviceClass | null,
 ): LayoutCatalogue {
   if (kind === 'slide') return SLIDE;

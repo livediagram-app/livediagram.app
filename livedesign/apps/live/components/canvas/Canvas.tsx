@@ -62,7 +62,6 @@ import { ReactionBurst } from '@/components/canvas/ReactionBurst';
 // person rather than by whatever size of pad last set one off.
 import { useCanvasAvatar } from './useCanvasAvatar';
 import { useCanvasPointer } from './useCanvasPointer';
-import { articlePlusBlocked } from '@/lib/article-plus-blocked';
 import { useCanvasDrawTools } from './useCanvasDrawTools';
 
 const AVATAR_BURST_PX = 120;
@@ -80,19 +79,14 @@ import { useCanvasSurfaceGestures } from '@/hooks/canvas/useCanvasSurfaceGesture
 import { useCanvasSelectHandlers } from '@/hooks/canvas/useCanvasSelectHandlers';
 import { useArrowLabelLayouts } from '@/hooks/canvas/useArrowLabelLayouts';
 import { useFontEpoch } from '@/components/canvas/useFontEpoch';
-import {
-  loadArticleFlows,
-  loadAvatarSpeechLayer,
-  loadCanvasPages,
-} from '@/lib/editor-deferred-code';
+import { loadAvatarSpeechLayer, loadCanvasPages } from '@/lib/editor-deferred-code';
 import { GifOmit } from './GifOmit';
 import { SLIDE_VIEW_TRANSITION_UPDATE } from './slide-transition';
 import { useStickyPeelVars } from '@/lib/sticky-peel-image';
 
-// Pages mode's pages and their writing draw only on a tab that has pages, so their code loads on demand
+// Pages mode's pages draw only on a tab that has pages, so their code loads on demand
 // (lib/editor-deferred-code.ts fetches it as the editor mounts).
 const CanvasPages = dynamic(loadCanvasPages, { ssr: false });
-const ArticleFlows = dynamic(loadArticleFlows, { ssr: false });
 // Speech bubbles (docs/specs/008-canvas/avatar-mode.md "Speech bubbles") load the first time somebody speaks:
 // nothing on the canvas needs them before then.
 const AvatarSpeechLayer = dynamic(loadAvatarSpeechLayer, { ssr: false });
@@ -256,14 +250,6 @@ function CanvasView(props: CanvasProps) {
   // it's unit-tested. Memoised because it walks the elements. The chrome that derives it lays a drag in
   // progress over these elements itself (useCanvasSelectionView), so a preview frame renders the
   // chrome and not this canvas (docs/specs/008-canvas/canvas-performance.md "A move re-renders what moved").
-  // An object in an article's writing (a chart, an image, a table) connects to nothing: no
-  // quick-connect pluses on it (docs/specs/007-editor/article-pages.md "Zones"). A predicate the
-  // selection derivation applies, so the canvas itself still doesn't read the selection.
-  const articlePages = props.pagesMode?.pages;
-  const plusBlocked = useMemo(
-    () => articlePlusBlocked(articlePages, elements),
-    [articlePages, elements],
-  );
   const selectionInput = useMemo<CanvasSelectionInput>(
     () => ({
       elements,
@@ -273,18 +259,8 @@ function CanvasView(props: CanvasProps) {
       readOnly,
       elementMenuOpen: props.elementMenuOpen === true,
       labelRectOf: arrowLabels.labelRectOf,
-      plusBlocked,
     }),
-    [
-      elements,
-      editingId,
-      isPaintMode,
-      tabLocked,
-      readOnly,
-      props.elementMenuOpen,
-      arrowLabels,
-      plusBlocked,
-    ],
+    [elements, editingId, isPaintMode, tabLocked, readOnly, props.elementMenuOpen, arrowLabels],
   );
   // The one selected element when it is a path: the path tool's edit gesture arms on it.
   const soleSelectedPathId = useSelectionOf(
@@ -647,18 +623,6 @@ function CanvasView(props: CanvasProps) {
                     onOpenTheme={props.onOpenCanvasTheme}
                   />
                 </PageImageAccessProvider>
-              ) : null}
-              {/* Article pages' writing (ArticleFlows), over the sheets and under the elements, so a
-            zone's elements sit in the room the writing leaves them. */}
-              {props.pagesMode?.articles && canvasTool !== 'isometric' ? (
-                <ArticleFlows
-                  view={props.pagesMode}
-                  zoom={viewportZoom}
-                  interactive={
-                    !pendingDraw && canvasTool !== 'spotlight' && canvasTool !== 'avatar'
-                  }
-                  elements={elements}
-                />
               ) : null}
               <CanvasStillProvider still={props.editorMode === 'draw'}>
                 <CanvasArrivalProvider

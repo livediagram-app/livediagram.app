@@ -5,7 +5,6 @@ import { pageKindOf, WIREFRAME_DEVICES, type Page, type PageKind } from '@livede
 
 const KIND_NOUN: Record<PageKind, string> = {
   infographic: 'Infographic Page',
-  article: 'Article',
   slide: 'Slide',
   logo: 'Logo Page',
   wireframe: 'Screen',

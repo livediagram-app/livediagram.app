@@ -10,8 +10,7 @@ import { renderView } from './render-view';
 const pages: Page[] = [
   { id: 'page-cover', orientation: 'landscape', size: 'slide', kind: 'slide', name: 'Cover' },
   { id: 'page-logo', orientation: 'portrait', size: 'logo', kind: 'logo', locked: true },
-  { id: 'page-art1', orientation: 'portrait', kind: 'article', flow: 'art-1' },
-  { id: 'page-art2', orientation: 'portrait', kind: 'article', flow: 'art-1' },
+  { id: 'page-wf1', orientation: 'portrait', size: 'device', kind: 'wireframe', device: 'iphone' },
 ];
 const cover = layOutPages(pages)[0]!.rect;
 
@@ -22,16 +21,6 @@ const pagesTab = (): Tab =>
     opensIn: 'pages',
     pages,
     elements: [shapeAt('square', 'aaaa1111', cover.x + 100, cover.y + 100)],
-    articles: {
-      'art-1': {
-        blocks: [
-          { id: 'b1', type: 'paragraph', style: 'title', runs: [{ text: 'Brief' }] },
-          { id: 'b2', type: 'paragraph', style: 'h1', runs: [{ text: 'Goals' }] },
-          { id: 'b3', type: 'list', list: 'bullet', runs: [{ text: 'Ship it' }] },
-        ],
-        style: { look: 'report' },
-      },
-    },
   }) as unknown as Tab;
 
 const pagesOf = (tab: Tab, budget?: number) => {
@@ -61,11 +50,11 @@ describe('the items of an element’s lists', () => {
 });
 
 describe('the pages view', () => {
-  it('lists each page with its rectangle and the refs on it, then each article as Markdown', () => {
+  it('lists each page with its rectangle and the refs on it', () => {
     const out = pagesOf(pagesTab());
     const lines = out.text.split('\n');
     expect(lines[0]).toBe(
-      'tab tab-deck "Deck" · 1 element: 1 box · mode=pages · 4 pages: 1 slide, 1 logo, 2 article (view pages) · rev 7',
+      'tab tab-deck "Deck" · 1 element: 1 box · mode=pages · 3 pages: 1 slide, 1 logo, 1 wireframe (view pages) · rev 7',
     );
     expect(lines[1]).toBe(
       `page 1 "Cover" page-cover · slide Slide (16:9) · at ${cover.x},${cover.y} 1920x1080 · 1 element`,
@@ -75,26 +64,19 @@ describe('the pages view', () => {
       `page 1 "Cover" page-cover · slide Slide (16:9) · at ${cover.x},${cover.y} 1920x1080 · 1 element`,
     );
     expect(lines[3]).toMatch(/^page 2 page-logo · logo 1024 x 1024 · at .* · locked · empty$/);
-    expect(lines[4]).toMatch(
-      /^page 3 page-art1 · article A4 · at .* · article art-1 · its writing below$/,
-    );
+    expect(lines[4]).toMatch(/^page 3 page-wf1 · wireframe .* · at .* · empty$/);
     expect(out.text).toContain(
       "Rectangles and elements' x, y are canvas coordinates (the layout view prints positions from the content's corner).",
     );
-    expect(out.text).toContain(
-      'article art-1 "Brief" · pages 3-4 · 3 blocks · 4 words · look report',
-    );
-    expect(out.text).toContain('  ---\n  title: Brief\n  ---\n  \n  # Goals\n  \n  - Ship it');
     expect(out.text).toMatch(/layouts slide: slide-title, /);
     expect(out.text).toMatch(/layouts logo: /);
     const json = out.json as PagesView;
     expect(json.pagesMode).toBe(true);
     expect(json.pages[0]).toMatchObject({ place: 1, kind: 'slide', refs: ['aaaa1111'] });
-    expect(json.articles[0]!.markdown.startsWith('---\ntitle: Brief')).toBe(true);
-    expect(json.layouts.map((l) => l.kind)).toEqual(['slide', 'logo']);
+    expect(json.layouts.map((l) => l.kind)).toEqual(['slide', 'logo', 'wireframe']);
   });
 
-  it('names a landscape page, its paint, its elements; a one-page article; no layouts for articles alone', () => {
+  it('names a landscape page, its paint and its elements', () => {
     const page: Page = {
       id: 'page-wide',
       orientation: 'landscape',
@@ -119,17 +101,6 @@ describe('the pages view', () => {
       /^page 1 page-wide · infographic A4 · at .* · background #0f172a · 2 elements$/,
     );
     expect(lines).toContain('    processSteps: Plan');
-    const articleOnly = {
-      id: 'tab-art',
-      name: 'Notes',
-      opensIn: 'pages',
-      pages: [{ id: 'a', orientation: 'portrait', kind: 'article', flow: 'f' }],
-      articles: { f: { blocks: [{ id: 'b', type: 'paragraph', runs: [{ text: 'Hi' }] }] } },
-      elements: [],
-    } as unknown as Tab;
-    const out = pagesOf(articleOnly);
-    expect(out.text).toContain('article f "Untitled" · page 1 · 1 blocks · 1 words\n  Hi');
-    expect(out.text).not.toContain('layouts ');
   });
 
   it('keeps to a budget, saying what it left out', () => {
@@ -145,6 +116,6 @@ describe('the pages view', () => {
     if (!cli.ok || !mcp.ok) throw new Error('refused');
     expect(cli.text).toContain('page set adds pages');
     expect(mcp.text).toContain('change_pages adds pages');
-    expect(cli.json).toMatchObject({ pagesMode: false, pages: [], articles: [] });
+    expect(cli.json).toMatchObject({ pagesMode: false, pages: [] });
   });
 });

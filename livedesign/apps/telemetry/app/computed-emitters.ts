@@ -295,13 +295,12 @@ const camel = (id: string) =>
     .split('-')
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join('');
-const PAGES_TOUR_STEP_SOURCE: string[] = (
-  ['slide', 'infographic', 'article', 'logo'] as const
-).flatMap((kind) =>
-  [...read(`live/components/tour/${kind}-tour-steps.ts`).matchAll(/^ +id: '([a-z-]+)',/gm)]
-    .map((m) => m[1]!)
-    .filter((id, i, ids) => id !== 'welcome' && ids.indexOf(id) === i)
-    .map((id) => `PagesTourStep${camel(`${kind}-${id}`)}`),
+const PAGES_TOUR_STEP_SOURCE: string[] = (['slide', 'infographic', 'logo'] as const).flatMap(
+  (kind) =>
+    [...read(`live/components/tour/${kind}-tour-steps.ts`).matchAll(/^ +id: '([a-z-]+)',/gm)]
+      .map((m) => m[1]!)
+      .filter((id, i, ids) => id !== 'welcome' && ids.indexOf(id) === i)
+      .map((id) => `PagesTourStep${camel(`${kind}-${id}`)}`),
 );
 
 // Plan items name their type (titleCaseType of an item type id); set-up changes name the part.
@@ -418,14 +417,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
   'apps/live/components/dialogs/settings/settings-catalogue.ts UI·Changed': {
     values: PRESENTATION_SETTINGS.changed,
-  },
-  // ARTICLE_BLOCK_INSERT_EVENT (apps/live/lib/article/article-telemetry.ts): a block put into an
-  // article from the page toolbar's Insert or the slash menu.
-  'apps/live/components/canvas/article/PageToolbar.tsx Element·Added': {
-    values: ['ArticleDivider', 'ArticlePageBreak', 'ArticleQuote', 'ArticleCode'],
-  },
-  'apps/live/components/canvas/article/ArticleEditor.tsx Element·Added': {
-    values: ['ArticleDivider', 'ArticlePageBreak', 'ArticleQuote', 'ArticleCode'],
   },
   'apps/live/app/document/[id]/useTemplateFlow.ts Template·Used': {
     values: TEMPLATES,

@@ -2,7 +2,6 @@
 // Show Me on a page (docs/specs/007-editor/pages-tour.md, show-me.md, logo-pages.md "Show Me"): every page's panel
 // runs its kind's track on that page, opening the real controls a step is about and closing them again.
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { readPinnedPageToolbar } from '@/components/canvas/article/page-toolbar-presence';
 import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { layOutPages, pageKindOf, type Page } from '@livedesign/document';
@@ -31,7 +30,6 @@ const page = (kind: Page['kind'], over: Partial<Page> = {}): Page => ({
   orientation: kind === 'slide' ? 'landscape' : 'portrait',
   kind,
   ...(kind === 'logo' ? { size: 'logo' as const } : {}),
-  ...(kind === 'article' ? { flow: 'f1' } : {}),
   ...over,
 });
 
@@ -173,7 +171,6 @@ describe('Show Me on every page', () => {
   it.each([
     ['slide', '/help/canvas/pages-mode/slide-pages/'],
     ['infographic', '/help/canvas/pages-mode/infographic-layouts/'],
-    ['article', '/help/canvas/pages-mode/articles/'],
     ['logo', '/help/canvas/pages-mode/logo-pages/'],
   ] as const)('heads a %s page’s panel beside its own Help', (kind, href) => {
     render(<Page of={page(kind)} />);
@@ -252,41 +249,6 @@ describe('an infographic’s Show Me', () => {
     await next();
     await shows(() => expect(document.querySelector('[data-page-panel]')).toBeNull());
     await shows(() => expect(stepDialog(/Add a Page/)).toBeTruthy());
-  });
-});
-
-describe('an article’s Show Me', () => {
-  it('holds the page toolbar up on its step, then opens Style and Text beside the cog', async () => {
-    render(<Page of={page('article')} />);
-    // The toolbar as PageToolbar draws it; the step pins it to the tour page (it shows on hover otherwise).
-    const bar = document.createElement('div');
-    bar.setAttribute('data-page-toolbar', '');
-    bar.setAttribute('role', 'toolbar');
-    bar.setAttribute('aria-label', 'Article Formatting');
-    document.body.append(bar);
-    await showMe();
-    expect(track).toHaveBeenCalledWith('UI', 'Started', 'ArticleTour');
-    await shows(() => expect(stepDialog(/Write on the Page/)).toBeTruthy());
-    await next();
-    await shows(() => expect(stepDialog(/The Page Toolbar/)).toBeTruthy());
-    expect(readPinnedPageToolbar()).not.toBeNull();
-    await next();
-    await shows(() => expect(readPinnedPageToolbar()).toBeNull());
-    bar.remove();
-    await shows(() => expect(stepDialog(/Article Style/)).toBeTruthy());
-    expect(document.querySelector('[role="dialog"][aria-label="Style"]')).not.toBeNull();
-    await next();
-    await shows(() => expect(stepDialog(/Fonts and Spacing/)).toBeTruthy());
-    await shows(() =>
-      expect(document.querySelector('[role="dialog"][aria-label="Style"]')).toBeNull(),
-    );
-    expect(document.querySelector('[role="dialog"][aria-label="Text"]')).not.toBeNull();
-    await next();
-    await shows(() =>
-      expect(document.querySelector('[role="dialog"][aria-label="Text"]')).toBeNull(),
-    );
-    fireEvent.click(screen.getByRole('button', { name: 'Done' }));
-    expect(track).toHaveBeenCalledWith('UI', 'Ended', 'ArticleTourCompleted');
   });
 });
 

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
-// The Import dialog's format cards and their routing: a clean import closes, an
-// import that left something out shows the report (docs/specs/020-import-export/markdown-import.md).
+// The Import dialog's routing: a clean import closes, an import that left something
+// out shows the report (docs/specs/020-import-export/README.md).
 
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
@@ -9,6 +9,8 @@ import type { ImportOutcome } from '@/lib/import-tab';
 import { ImportTabDialog } from './ImportTabDialog';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
+
+const JSON_TEXT = '{"schemaVersion":1}';
 
 function open(outcome: ImportOutcome) {
   const onClose = vi.fn();
@@ -21,31 +23,39 @@ function open(outcome: ImportOutcome) {
       onClose={onClose}
     />,
   );
-  fireEvent.click(screen.getByRole('button', { name: /Markdown/ }));
-  fireEvent.change(screen.getByRole('textbox'), { target: { value: '# Plan' } });
+  fireEvent.change(screen.getByRole('textbox'), { target: { value: JSON_TEXT } });
   fireEvent.click(screen.getByRole('button', { name: 'Import' }));
   return { onClose, onImportText };
 }
 
-describe('ImportTabDialog, Markdown', () => {
-  it('offers Markdown and passes the pasted outline to it', async () => {
-    const { onImportText, onClose } = open({ status: 'done' });
-    await waitFor(() => expect(onClose).toHaveBeenCalledOnce());
-    expect(onImportText).toHaveBeenCalledWith('markdown', '# Plan');
+describe('ImportTabDialog', () => {
+  it('opens straight at JSON, its one format, with no way back to a list', () => {
+    render(
+      <ImportTabDialog
+        tabName="Poster"
+        onImportFile={vi.fn()}
+        onImportText={vi.fn()}
+        onClose={vi.fn()}
+      />,
+    );
+    expect(screen.getByText('Paste your JSON, or import a file.')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /All formats/ })).toBeNull();
   });
 
-  it('shows the report instead of closing when part of the import was left out', async () => {
+  it('passes the pasted JSON on and closes on a clean import', async () => {
+    const { onImportText, onClose } = open({ status: 'done' });
+    await waitFor(() => expect(onClose).toHaveBeenCalledOnce());
+    expect(onImportText).toHaveBeenCalledWith('json', JSON_TEXT);
+  });
+
+  it('shows the report instead of closing when part of the import was left out (docs/specs/026-plan/items.md)', async () => {
     const { onClose } = open({
       status: 'done',
-      failures: [
-        {
-          title: 'Markdown',
-          message:
-            '500 headings, list items, lines and tables beyond the first 2,000 were left out.',
-        },
-      ],
+      failures: [{ title: 'Plan Cards', message: "2 cards couldn't be added to this document." }],
     });
-    expect((await screen.findByTestId('import-report')).textContent).toContain('500 headings');
+    expect((await screen.findByTestId('import-report')).textContent).toContain(
+      "2 cards couldn't be added",
+    );
     expect(screen.getByText("Here's how your import came across.")).toBeTruthy();
     expect(screen.queryByText(/This replaces everything/)).toBeNull();
     expect(onClose).not.toHaveBeenCalled();
@@ -53,43 +63,8 @@ describe('ImportTabDialog, Markdown', () => {
     expect(onClose).toHaveBeenCalledOnce();
   });
 
-  it("reports a JSON import's refused Plan cards (docs/specs/026-plan/items.md)", async () => {
-    open({
-      status: 'done',
-      failures: [{ title: 'Plan Cards', message: "2 cards couldn't be added to this document." }],
-    });
-    expect((await screen.findByTestId('import-report')).textContent).toContain(
-      "2 cards couldn't be added",
-    );
-  });
-});
-
-describe('ImportTabDialog, offered formats', () => {
-  const props = {
-    tabName: 'Poster',
-    onImportFile: vi.fn(),
-    onImportText: vi.fn(),
-    onClose: vi.fn(),
-  };
-
-  it('offers JSON and Markdown', () => {
-    render(<ImportTabDialog {...props} />);
-    expect(screen.getByRole('button', { name: /JSON/ })).toBeTruthy();
-    expect(screen.getByRole('button', { name: /Markdown/ })).toBeTruthy();
-  });
-
-  // Pages mode and a Dashboard tab (docs/specs/026-plan/plan-tabs.md "Import and Export of a Dashboard").
-  it('opens straight at the one format it offers, with no way back to a list', () => {
-    render(<ImportTabDialog {...props} formats={['json']} />);
-    expect(screen.getByText('Paste your JSON, or import a file.')).toBeTruthy();
-    expect(screen.getByRole('textbox')).toBeTruthy();
-    expect(screen.queryByRole('button', { name: /All formats/ })).toBeNull();
-  });
-});
-
-// docs/specs/020-import-export/markdown-import.md: two cards across; the warning's keys only for a keyboard.
-describe('ImportTabDialog on a phone', () => {
-  it('lays its formats out two across and names Undo’s keys only on a fine pointer', () => {
+  // The warning's keys only for a keyboard.
+  it('names Undo’s keys only on a fine pointer', () => {
     render(
       <ImportTabDialog
         tabName="Board"
@@ -98,8 +73,6 @@ describe('ImportTabDialog on a phone', () => {
         onClose={vi.fn()}
       />,
     );
-    const grid = screen.getByRole('button', { name: /Markdown/ }).parentElement!;
-    expect(grid.className).toContain('grid-cols-2');
     const keys = screen.getByText(/⌘Z/);
     expect(keys.className).toContain('pointer-coarse:hidden');
     expect(keys.parentElement!.textContent).toMatch(/Undo \(⌘Z \/ Ctrl.Z\) brings it back\./);

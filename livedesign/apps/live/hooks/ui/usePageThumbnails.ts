@@ -24,7 +24,7 @@ import { slideThumbFor, tabArrowLabels, type SlideThumb } from '@/lib/slide-thum
 
 export type PageThumbTab = Pick<
   Tab,
-  'id' | 'name' | 'elements' | 'pages' | 'layers' | 'font' | 'finish' | 'articles'
+  'id' | 'name' | 'elements' | 'pages' | 'layers' | 'font' | 'finish'
 >;
 
 // One page's picture and what it was drawn from.
@@ -46,7 +46,7 @@ export function usePageThumbnails(
     () => ({ tab, pageIds }),
     // On the inputs a picture shows, not on the tab object's identity.
     // oxlint-disable-next-line react/exhaustive-deps
-    [tab.elements, tab.pages, tab.layers, tab.font, tab.finish, tab.articles, key],
+    [tab.elements, tab.pages, tab.layers, tab.font, tab.finish, key],
   );
   const drawn = useSettled(live, settleMs);
   const cache = useRef<{ shared: Shared; pages: Map<string, Drawn> }>({
@@ -55,15 +55,7 @@ export function usePageThumbnails(
   });
   return useMemo(() => {
     const full = drawn.tab as Tab;
-    const shared: Shared = [
-      full.id,
-      full.layers,
-      full.font,
-      full.finish,
-      full.articles,
-      iconsLoaded,
-      surface,
-    ];
+    const shared: Shared = [full.id, full.layers, full.font, full.finish, iconsLoaded, surface];
     const kept = sameList(shared, cache.current.shared)
       ? cache.current.pages
       : new Map<string, Drawn>();

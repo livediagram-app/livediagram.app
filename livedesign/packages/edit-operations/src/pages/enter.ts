@@ -5,7 +5,7 @@ import type { PagesRefusal } from '@livedesign/api-schema';
 import { opensInOf, withEditorModeSwitched, type Tab } from '@livedesign/document';
 
 // Fresh ids, injectable so tests are deterministic.
-export type PagesIds = { page?: () => string; flow?: () => string };
+export type PagesIds = { page?: () => string };
 
 export function enterPages(tab: Tab): { tab: Tab; switched: boolean } | { refusal: PagesRefusal } {
   if (tab.locked)

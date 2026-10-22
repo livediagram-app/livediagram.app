@@ -1,7 +1,6 @@
 // The DOM a page's tour steps point at (docs/specs/007-editor/pages-tour.md "The steps"): the tour page and its
 // title-bar controls, held by that page rather than the first page, and its title-bar popovers (Layout, Background),
 // opened once by pressing their real button and closed again on leaving the step.
-import { pinPageToolbar } from '@/components/canvas/article/page-toolbar-presence';
 import { clearCombineDemo } from './logo-combine-demo';
 import { waitForSelector } from './tour-dom';
 
@@ -113,10 +112,7 @@ export function closeSlideDeck(): void {
 export function tidyPageTour(pageId: string): void {
   closeTitlePopover(pageId, 'Layout');
   closeTitlePopover(pageId, 'Background');
-  closeTitlePopover(pageId, 'Style');
-  closeTitlePopover(pageId, 'Text');
   closeSlideDeck();
-  pinPageToolbar(null);
   clearCombineDemo();
 }
 

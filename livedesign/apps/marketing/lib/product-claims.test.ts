@@ -17,13 +17,13 @@ const FALSE_CLAIMS: { pattern: RegExp; why: string }[] = [
     why: 'an editor link embeds an editable canvas (docs/specs/013-workspace/embeds.md)',
   },
   {
-    pattern: /markdown[^.]*on a new tab/i,
-    why: 'Markdown import replaces the current tab (docs/specs/020-import-export/markdown-import.md)',
+    pattern: /imports? (?:a |your )?markdown|markdown (?:outline )?import/i,
+    why: 'the editor imports a livedesign JSON export only (help: tabs/import-tabs)',
   },
   {
     pattern:
       /imports? (?:a |an |your )?(?:mermaid|excalidraw|draw\.io|\.drawio|drawio|microsoft whiteboard)|(?:excalidraw|draw\.io|drawio|whiteboard) import|\.excalidraw in|paste an excalidraw/i,
-    why: 'the editor imports a livedesign JSON export and a Markdown outline only (help: tabs/import-tabs)',
+    why: 'the editor imports a livedesign JSON export only (help: tabs/import-tabs)',
   },
   {
     pattern: /no Figma integration/i,
@@ -45,10 +45,6 @@ const FALSE_CLAIMS: { pattern: RegExp; why: string }[] = [
   {
     pattern: /undo never reaches|only rewinds your own changes, never/i,
     why: 'undo puts back an element you both changed as you had it (help: canvas/undo)',
-  },
-  {
-    pattern: /builds onto the current tab/i,
-    why: 'Markdown import replaces the current tab, it does not add to it',
   },
   {
     pattern: /live state of every part of the service/i,

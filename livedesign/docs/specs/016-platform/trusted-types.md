@@ -9,7 +9,7 @@ injection then needs a policy's help, and every policy is small, named and liste
 ## The header
 
 - **Every HTML response carries** `Content-Security-Policy: require-trusted-types-for 'script'; trusted-types
-livedesign-markup nextjs ProseMirrorClipboard default`, enforced from the start, never
+livedesign-markup nextjs default`, enforced from the start, never
   report-only.
 - **Where it is set**: the editor's worker (`apps/live/src/worker.ts`) beside its other security headers; the four
   static apps (marketing, help, telemetry) in their `public/_headers`. The router adds nothing; it holds no
@@ -55,7 +55,6 @@ file to this.
 | React DOM, rendering a `<script>` in the browser           | `innerHTML = '<script></script>'` on a scratch element (an empty, inert script)                                                                                    | `default`, that exact string alone                                     |
 | Next.js and Turbopack's chunk loading                      | Script URLs under `/_next/` (`/live/_next/` in the editor)                                                                                                         | `default`                                                              |
 | Next.js's own script helper                                | Its pass-through policy                                                                                                                                            | The `nextjs` policy name                                               |
-| ProseMirror (the article editor)                           | Parsing pasted HTML into an inert template                                                                                                                         | The `ProseMirrorClipboard` policy name                                 |
 | Our web workers                                            | Their script URLs under `/_next/`                                                                                                                                  | `default`                                                              |
 | Clerk (editor sign-in)                                     | Script URLs on the Clerk frontend API origin                                                                                                                       | `default`, origin from the publishable key                             |
 | Clerk's sign-up bot protection                             | Cloudflare Turnstile's script on `https://challenges.cloudflare.com`                                                                                               | `default`, beside Clerk's origin                                       |
@@ -68,10 +67,9 @@ it runs are outside this boundary.
 A third party that needs anything else is a bug to fix with it, never a wider `default`.
 
 **Asked by hand, `default` makes nothing.** The browser always calls the default policy with the sink's name; a call
-without one is code asking `trustedTypes.defaultPolicy.createHTML(...)` directly, and the policy throws. ProseMirror
-tries the default policy that way before making its own `ProseMirrorClipboard` policy, and only falls back when it
-throws: when the policy answered `null` instead, ProseMirror kept it and parsed every pasted HTML as empty, so a rich
-paste into an article pasted nothing (`article-paste.spec.ts` locks it).
+without one is code asking `trustedTypes.defaultPolicy.createHTML(...)` directly, and the policy throws, so a library
+that tries the default policy that way before making its own falls back to its own rather than keep an empty
+answer.
 
 **One third party is refused by design.** Cloudflare's JavaScript Detections (bot management) is injected by the edge
 into every page: it writes a script into a hidden iframe with `innerHTML`, in the iframe's own realm, where no policy

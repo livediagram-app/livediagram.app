@@ -192,8 +192,8 @@ export function SettingsDialog({
   // Tours › "Avatar Tour" (docs/specs/008-canvas/avatar-tour.md): as the Plan tour's.
   const avatarTourSeen = settings.avatarTourSeen === true;
   const avatarTourSeenAtOpen = useRef(avatarTourSeen);
-  // Tours › "Slides Tour", "Infographic Tour", "Article Tour", "Logo Tour" (docs/specs/007-editor/pages-tour.md): as
-  // the Plan tour's.
+  // Tours › "Slides Tour", "Infographic Tour", "Logo Tour" (docs/specs/007-editor/pages-tour.md): as the Plan
+  // tour's.
   const pagesOwed = PAGES_TOUR_KINDS.filter((k) => !pagesKindSeen(settings, k));
   const pagesOwedAtOpen = useRef(pagesOwed);
   const close = () => {

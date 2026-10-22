@@ -67,12 +67,6 @@ describe('pagePanelTabs', () => {
     ).toEqual(['page', 'background']);
   });
 
-  it('gives an article page Page alone, its Style, Text and Background beside the cog', () => {
-    expect(
-      pagePanelTabs(laidOut({ id: 'p', orientation: 'portrait', kind: 'article', flow: 'f' })),
-    ).toEqual(['page']);
-  });
-
   it('drops Page from a logo page, which has no size or orientation to choose', () => {
     expect(
       pagePanelTabs(laidOut({ id: 'p', orientation: 'portrait', kind: 'logo', size: 'logo' })),

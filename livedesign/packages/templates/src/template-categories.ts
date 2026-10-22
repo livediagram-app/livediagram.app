@@ -101,7 +101,7 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
     id: 'presentations',
     label: 'Presentations',
     searchWords: 'content',
-    description: 'Slides, articles, posters and social posts.',
+    description: 'Slide decks, posters, carousels and social posts.',
   },
   {
     id: 'technical',
@@ -132,7 +132,6 @@ type BlankKind =
   | 'whiteboard'
   | 'blank-illustration'
   | 'blank-slide-deck'
-  | 'blank-article'
   | 'blank-infographic'
   | 'blank-logo'
   | 'blank-wireframe-phone'
@@ -234,7 +233,6 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'rich-picture': 'strategy',
   'wardley-map': 'strategy',
   'value-proposition-canvas': 'strategy',
-  'working-backwards': 'strategy',
   // Org and Structure: top-down structure.
   orgchart: 'hierarchies',
   pyramid: 'hierarchies',
@@ -255,7 +253,6 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'service-blueprint': 'design',
   // Presentations and Content: pages made to be read or shared.
   'slide-deck': 'presentations',
-  article: 'presentations',
   'how-it-works': 'presentations',
   'data-story': 'presentations',
   'year-in-review': 'presentations',
@@ -342,7 +339,6 @@ export const TEMPLATE_ALSO_IN: Readonly<
   'value-stream-map': ['flowcharts'],
   // A value proposition is product design; a PR/FAQ is a document to share.
   'value-proposition-canvas': ['design'],
-  'working-backwards': ['presentations'],
 };
 
 /** A template's primary category; null for the blanks, which are in none. */

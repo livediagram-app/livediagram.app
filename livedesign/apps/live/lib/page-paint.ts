@@ -122,9 +122,6 @@ function patternLayers(pattern: PagePattern): { image: string; size: string } {
  */
 export function pageSheetStyle(
   background: PageBackground | undefined,
-  // An article page's ruling (docs/specs/007-editor/article-pages.md "Article style"): its Lines
-  // drawn at its body line pitch inside its margins, on the writing's baselines.
-  ruling?: { pitch: number; inset: number; top: number },
   resolveImage?: (imageId: string) => string | undefined,
 ): CSSProperties {
   const fill = background?.fill;
@@ -149,13 +146,7 @@ export function pageSheetStyle(
   };
   if (background?.pattern) {
     const pattern = patternLayers(background.pattern);
-    if (ruling && background.pattern === 'lines') {
-      layer(pattern.image, `100% ${ruling.pitch}px`, 'content-box');
-      style.padding = `${ruling.top}px ${ruling.inset}px ${ruling.inset}px`;
-      style.backgroundOrigin = 'content-box';
-    } else {
-      layer(pattern.image, pattern.size, 'border-box');
-    }
+    layer(pattern.image, pattern.size, 'border-box');
   }
   if (fill?.kind === 'gradient') {
     layer(fillCss(fill), '100% 100%', 'border-box');

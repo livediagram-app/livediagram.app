@@ -15,8 +15,6 @@ import {
   type RefObject,
 } from 'react';
 import {
-  articleMarginPx,
-  articlesOf,
   hasPageLook,
   pageFitBox,
   pagesOf,
@@ -30,7 +28,7 @@ import {
   type LaidOutPage,
   type Tab,
 } from '@livedesign/document';
-import { besideSideInsets, computeFitBelow, computeReadingFrame } from '@/lib/viewport';
+import { besideSideInsets, computeFitBelow } from '@/lib/viewport';
 
 // The most a wireframe page's fit zooms in (a watch's face fills the screen at about this).
 const WIREFRAME_FIT_MAX_ZOOM = 2.5;
@@ -41,7 +39,6 @@ import { debugLog } from '@/lib/debug-log';
 import { track } from '@/lib/telemetry';
 import { getTheme } from '@/lib/themes';
 import { themeAccent, themeBackgroundPresets, type ThemeBackgroundPreset } from '@/lib/page-paint';
-import type { ArticlesView } from './useArticles';
 import { pageEdits, type PageEdits } from './page-edits';
 import type { PageLayoutId } from '@livedesign/templates';
 import { glideViewport, type ViewPose } from '@/lib/viewport-glide';
@@ -64,11 +61,6 @@ export type PagesModeView = {
   // beside the Contents sidebar, not the whole tab (docs/specs/007-editor/pages-mode.md
   // "Contents" "Framing beside it").
   fitPageInView: () => void;
-  // An article page framed for writing on a phone: its text column across the screen.
-  readPage: (pageId: string) => void;
-  // A finger's pan over an article page begun from the view now: moves it by a screen-px drag.
-  // Absent where nothing pans the view from a page (presenting).
-  panFrom?: () => (dx: number, dy: number) => void;
   // Backgrounds drawn from the tab's theme, offered first in the page panel.
   themeBackgrounds: ThemeBackgroundPreset[];
   // The tab theme's accent: a document's accent unless it picked one of its own.
@@ -76,8 +68,6 @@ export type PagesModeView = {
   // The tab theme's colours a wireframe page's frame is drawn in (docs/specs/007-editor/
   // wireframe-pages.md "Choosing the device").
   frameTheme: WireframeFrameTheme;
-  // The articles' writing on the pages (useArticles), composed in by the editor.
-  articles?: ArticlesView | null;
   // The tab's default face, for what the pages draw themselves (a layout preview).
   tabFont?: string;
   // The tab's elements, for the content a previewed layout carries over from its page.
@@ -131,8 +121,6 @@ export function usePagesMode(deps: {
   // in this browser (useLastPage); without either, landing frames the first page.
   documentId?: string;
   viewport?: { get: () => View; subscribe: (listener: () => void) => () => void };
-  // A new document by its flow id, so its writing can take the caret.
-  onArticleCreated?: (flow: string) => void;
   // The view is not this person's to snap onto a page: following someone, or presenting.
   snapSuspended?: () => boolean;
 }): PagesModeView | null {
@@ -141,10 +129,8 @@ export function usePagesMode(deps: {
   const tabId = activeTab.id;
 
   // Frames a page (the first by default) below a top strip, seen whole, whatever its kind: the page
-  // itself, so turning or resizing one frames it again (page-edits). `read` frames an article page
-  // to be written on a phone instead: its text column across the screen.
-  // A page framed on request (its navigator, its label, a page just added, an article page taking
-  // the caret on a phone) glides there; the frame on entering the mode lands at once. A glide under
+  // itself, so turning or resizing one frames it again (page-edits).
+  // A page framed on request (its navigator, its label, a page just added) glides there; the frame on entering the mode lands at once. A glide under
   // way gives way to the next, or to a finger's pan.
   const glide = useRef<(() => void) | null>(null);
   useEffect(() => () => glide.current?.(), []);
@@ -157,25 +143,18 @@ export function usePagesMode(deps: {
     const sides = sideChromeInsets(canvas);
     return { width: canvas.offsetWidth, height: canvas.offsetHeight, inset, sides };
   };
-  const frameFor = (
-    m: NonNullable<ReturnType<typeof measure>>,
-    page?: LaidOutPage,
-    read = false,
-  ) => {
+  const frameFor = (m: NonNullable<ReturnType<typeof measure>>, page?: LaidOutPage) => {
     const { inset, sides } = m;
     const size = { width: m.width - sides.left - sides.right, height: m.height };
-    const doc = page?.flow ? articlesOf(activeTab)[page.flow] : undefined;
     return besideSideInsets(
-      read && page && doc
-        ? computeReadingFrame(size, page.rect, inset, articleMarginPx(doc.style))
-        : computeFitBelow(
-            size,
-            pageFitBox(page),
-            inset,
-            // A wireframe page is a device at its real size (a watch is 198 px wide): its fit may
-            // zoom in past 100% to fill the screen; paper stays at most at its own size.
-            page?.kind === 'wireframe' ? WIREFRAME_FIT_MAX_ZOOM : undefined,
-          ),
+      computeFitBelow(
+        size,
+        pageFitBox(page),
+        inset,
+        // A wireframe page is a device at its real size (a watch is 198 px wide): its fit may
+        // zoom in past 100% to fill the screen; paper stays at most at its own size.
+        page?.kind === 'wireframe' ? WIREFRAME_FIT_MAX_ZOOM : undefined,
+      ),
       sides,
     );
   };
@@ -186,10 +165,10 @@ export function usePagesMode(deps: {
       offset: deps.setViewportOffset,
     });
   };
-  const frame = (page?: LaidOutPage, read = false, glides = false) => {
+  const frame = (page?: LaidOutPage, glides = false) => {
     const m = measure();
     if (!m) return;
-    const { zoom, offset } = frameFor(m, page, read);
+    const { zoom, offset } = frameFor(m, page);
     glide.current?.();
     glide.current = null;
     if (glides) {
@@ -310,7 +289,7 @@ export function usePagesMode(deps: {
     const page = layOutPages(pagesOf(activeTab)).find((p) => p.id === goTo);
     if (!page) return;
     setGoTo(null);
-    frame(page, false, true);
+    frame(page, true);
   });
   const landed = goTo !== null && pagesOf(activeTab).some((p) => p.id === goTo);
   useEffect(() => {
@@ -333,23 +312,7 @@ export function usePagesMode(deps: {
     const page = pages.find((p) => p.id === pageId);
     // Gone to: the page someone is on now (Select All's reach, the palette's page).
     if (page) setCurrentPageKind(pageKindOf(page), page.id);
-    frame(page, false, true);
-  };
-  const readPage = (pageId: string) =>
-    frame(
-      pages.find((p) => p.id === pageId),
-      true,
-      true,
-    );
-  const panFrom = () => {
-    glide.current?.();
-    glide.current = null;
-    const from = deps.getViewport();
-    return (dx: number, dy: number) =>
-      deps.setViewportOffset({
-        x: from.offset.x + dx / from.zoom,
-        y: from.offset.y + dy / from.zoom,
-      });
+    frame(page, true);
   };
   const theme = getTheme(activeTab.theme);
   const themeBackgrounds = themeBackgroundPresets(theme);
@@ -366,7 +329,6 @@ export function usePagesMode(deps: {
     );
     frame(
       pages.find((p) => p.id === id),
-      false,
       true,
     );
   };
@@ -374,8 +336,6 @@ export function usePagesMode(deps: {
     pages,
     focusPage,
     fitPageInView,
-    readPage,
-    panFrom,
     themeBackgrounds,
     themeAccent: themeAccent(theme),
     frameTheme,
@@ -397,7 +357,6 @@ export function usePagesMode(deps: {
       layers: activeTab.layers,
       commitTabs,
       onGoTo: setGoTo,
-      onArticleCreated: deps.onArticleCreated,
       onLayoutPlaced: deps.clearSelection,
       mayEdit,
       toastInfo: deps.toastInfo,

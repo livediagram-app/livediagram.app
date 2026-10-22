@@ -7,7 +7,6 @@ import {
   elementIdsOnPage,
   pagesOf,
   layOutPages,
-  nextArticleFlowId,
   nextPageId,
   offersPageKindChoice,
   pageAdded,
@@ -93,18 +92,17 @@ const describePatch = (input: PageBackgroundInput) =>
 
 function messageFor(why: PageEditRefusal, tab: Tab, page: Pick<Page, 'kind'> | undefined): string {
   const kind = page ? pageKindOf(page) : 'infographic';
-  // "An infographic page", "An article page", "A slide page".
+  // "An infographic page", "A slide page".
   const aKind = `${/^[aeiou]/.test(kind) ? 'An' : 'A'} ${kind}`;
   // Every reason in words; the page is found before an edit, so `unknown_page` is only a fallback.
   const words: Record<PageEditRefusal, string> = {
     unknown_page: `No such page. Pages: ${listPages(tab)}.`,
-    locked:
-      'That page is locked (an article: one of its pages is). Unlock it first with set { locked: false }.',
+    locked: 'That page is locked. Unlock it first with set { locked: false }.',
     no_orientation: `${aKind} page has no orientation: it is always the shape its size is.`,
     size_not_offered: `${aKind} page takes the sizes ${pageSizesFor(kind).join(', ')}.`,
     pattern_not_offered: 'A logo page takes no pattern; give it a color or gradient.',
     page_limit: 'A tab holds at most 100 pages: delete one first.',
-    last_page: "That is the tab's only page (or article): add another before deleting it.",
+    last_page: "That is the tab's only page: add another before deleting it.",
     not_a_wireframe: `${aKind} page has no device: device, frameLook and systemBars are a wireframe page's.`,
   };
   return words[why];
@@ -120,10 +118,7 @@ export function applyPageChanges(
   let current = entered.tab;
   const lines: string[] = entered.switched ? ['Switched the tab to Pages.'] : [];
   const newPageId = ids.page ?? (() => nextPageId(pagesOf(current)));
-  const newFlowId = ids.flow ?? (() => nextArticleFlowId());
-  // The pages a delete in this change took, an article's whole flow among them: a later delete naming one by id is
-  // already done, never a missing page that undoes the change.
-  // The pages an earlier delete in this change took (an article's pages go together), as they were, so a later delete
+  // The pages an earlier delete in this change took, as they were, so a later delete
   // naming one by its id or its name is answered rather than refused.
   const removed: Page[] = [];
   try {
@@ -158,15 +153,12 @@ export function applyPageChanges(
       };
       const layOut = (page: Page, layout: string): string => {
         const kind = pageKindOf(page);
-        const offered =
-          kind === 'article' ? [] : layoutCatalogueFor(kind, pageDeviceClass(page)).layouts;
+        const offered = layoutCatalogueFor(kind, pageDeviceClass(page)).layouts;
         const found = offered.find((l) => l.id === layout);
         if (!found)
           stop(
             'layout_unknown',
-            kind === 'article'
-              ? 'An article page takes no layout: write it with write_article.'
-              : `A ${kind} page takes the layouts ${offered.map((l) => l.id).join(', ')}.`,
+            `A ${kind} page takes the layouts ${offered.map((l) => l.id).join(', ')}.`,
           );
         const laid = layOutPages(pages()).find((p) => p.id === page.id)!;
         const replaced = onPage(page.id);
@@ -220,8 +212,6 @@ export function applyPageChanges(
       };
       switch (change.op) {
         case 'add': {
-          if (change.kind === 'article')
-            stop('article_by_write', 'Article pages are made by write_article, from Markdown.');
           // A device is a wireframe page's alone (docs/specs/007-editor/wireframe-pages.md).
           if (change.device !== undefined && change.kind !== 'wireframe')
             stop('not_a_wireframe', messageFor('not_a_wireframe', current, { kind: change.kind }));
@@ -230,13 +220,7 @@ export function applyPageChanges(
           let page: Page;
           if (offersPageKindChoice(ps, first.id, onPage(first.id))) {
             // The fresh tab's empty, unchosen first page becomes the page asked for.
-            current = withPageKindChosen(
-              current,
-              first.id,
-              change.kind,
-              newFlowId(),
-              change.device,
-            )!;
+            current = withPageKindChosen(current, first.id, change.kind, change.device)!;
             page = pages()[0]!;
             tookBlank.set(page.id, i + 1);
           } else if (
@@ -252,7 +236,7 @@ export function applyPageChanges(
             tookBlank.set(page.id, i + 1);
           } else {
             const id = newPageId();
-            current = take(pageAdded(current, change.kind, id, newFlowId(), change.device));
+            current = take(pageAdded(current, change.kind, id, change.device));
             page = pages().find((p) => p.id === id)!;
           }
           madeHere.add(page.id);
@@ -290,13 +274,9 @@ export function applyPageChanges(
         case 'duplicate': {
           const page = pageOf(change);
           const before = new Set(pages().map((p) => p.id));
-          current = take(pageDuplicated(current, page.id, newPageId(), newFlowId()), page);
+          current = take(pageDuplicated(current, page.id, newPageId()), page);
           const made = pages().filter((p) => !before.has(p.id));
-          lines.push(
-            page.flow
-              ? `Duplicated the article on page ${placeOf(page.id)} (${plural(made.length, 'page')}, from page ${placeOf(made[0]!.id)}).`
-              : `Duplicated page ${placeOf(page.id)} as page ${placeOf(made[0]!.id)}.`,
-          );
+          lines.push(`Duplicated page ${placeOf(page.id)} as page ${placeOf(made[0]!.id)}.`);
           return;
         }
         case 'apply_background_to_all': {
@@ -306,7 +286,7 @@ export function applyPageChanges(
           if ('refused' in out)
             stop(
               'no_other_pages',
-              `Page ${placeOf(page.id)} is the only ${pageKindOf(page)} page (or article): there is no other to give its background.`,
+              `Page ${placeOf(page.id)} is the only ${pageKindOf(page)} page: there is no other to give its background.`,
             );
           const done = out as Extract<typeof out, { tab: Tab }>;
           current = done.tab;
@@ -333,18 +313,11 @@ export function applyPageChanges(
             );
             return;
           }
-          // An article's pages go together.
-          const gone = page.flow ? pages().filter((p) => p.flow === page.flow) : [page];
           const at = placeOf(page.id);
-          const count = gone.length;
-          const els = gone.reduce((n, p) => n + onPage(p.id), 0);
+          const els = onPage(page.id);
           current = take(pageRemoved(current, page.id), page);
-          removed.push(...gone);
-          lines.push(
-            page.flow
-              ? `Deleted the article on page ${at} (${plural(count, 'page')}, writing and ${plural(els, 'element')}).`
-              : `Deleted page ${at} and ${plural(els, 'element')} on it.`,
-          );
+          removed.push(page);
+          lines.push(`Deleted page ${at} and ${plural(els, 'element')} on it.`);
           return;
         }
       }

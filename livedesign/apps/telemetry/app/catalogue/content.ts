@@ -469,12 +469,10 @@ const DATA_MODEL_CHANGED = ['Entity', 'Cardinality'];
 export const OTHER_ELEMENTS_ADDED: Metric = {
   category: 'Element',
   action: 'Added',
-  // Article inserts (`Article…`) are their own card (Article Inserts, features.ts).
   typeIn: (type) =>
     !PALETTE_KINDS.has(canonicalElementType(type)) &&
     !isTablePart(type) &&
-    !DATA_MODEL_ADDED.includes(type ?? '') &&
-    !/^Article[A-Z]/.test(type ?? ''),
+    !DATA_MODEL_ADDED.includes(type ?? ''),
   title: 'Other Elements Added',
   blurb:
     'Kinds the palette catalogue does not list, such as pasted images. Table rows and columns are in Tables, entity fields in Data Models.',
@@ -507,14 +505,10 @@ export const ELEMENTS_CHANGED = chart(
   'Changed',
   'Elements Changed',
   'Restyled or edited: colour, text, arrow ends, size, presets, the format painter and more.',
-  // An article's writing formatted (`Article…`) is its own card (Article Formatting, features.ts),
-  // as are a logo page's tools (Logo Tools Used).
+  // A logo page's tools are their own card (Logo Tools Used).
   // An entity's fields and a relationship's cardinality are Data Models'.
   {
-    typeIn: (t) =>
-      !/^Article[A-Z]/.test(t ?? '') &&
-      !LOGO_TOOL_TYPES.includes(t ?? '') &&
-      !DATA_MODEL_CHANGED.includes(t ?? ''),
+    typeIn: (t) => !LOGO_TOOL_TYPES.includes(t ?? '') && !DATA_MODEL_CHANGED.includes(t ?? ''),
   },
 );
 
@@ -750,14 +744,13 @@ export const TAB_IMPORTS = chart(
   'Tab',
   'Imported',
   'Tabs Imported',
-  'A tab imported from a Markdown outline or a livedesign JSON export.',
+  'A tab imported from a livedesign JSON export.',
 );
 
 export const EXPORT_AND_IMPORT: MetricStack = {
   stack: true,
   title: 'Export & Import',
-  blurb:
-    'Diagrams leaving livedesign as files and text, and tabs coming in from Markdown outlines and JSON exports.',
+  blurb: 'Diagrams leaving livedesign as files and text, and tabs coming in from JSON exports.',
   members: [EXPORTS, EXPORT_OPTIONS, TAB_IMPORTS],
   seeAlso: { section: 'editing', label: 'See Each Export Format in Features › Editing' },
 };

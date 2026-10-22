@@ -13,12 +13,7 @@ import type { Item, ItemTypeDef } from '@livedesign/items';
 import {
   arrowLabelFontStack,
   arrowLabelPass,
-  articlesOf,
-  drawingZoneClips,
-  pagesOf,
   isBoxed,
-  isDrawingElement,
-  layOutPages,
   layerBands,
   layerOpacityOf,
   shade,
@@ -29,7 +24,6 @@ import {
   type BoxedElement,
   type Element,
   type LaidOutPage,
-  type PageRect,
   type ResolvePlanArt,
   type ResolveTabWindow,
   type SheetRenderModel,
@@ -126,9 +120,6 @@ export type ImageExportOpts = {
   // animation class and custom properties, as the canvas mounts them, so the page's own motion stylesheets play it.
   // Only a tab window passes it (an inline SVG on the page); every file export is a still.
   motion?: SvgMotion;
-  // A page's writing as estimated without a browser (svg-render-pages.ts pagesWithWriting), drawn where the editor has
-  // not laid that article out (no handle): a tab window onto a Pages tab passes it. SVG only.
-  estimatedWriting?: (page: LaidOutPage) => string | undefined;
 };
 
 // How an element moves in a live inline SVG: the wrapper class + inline style for a boxed element, and the moving
@@ -144,43 +135,6 @@ export { loadTabImages } from './export-tab-images';
 
 // Webfont embedding for downloads (docs/specs/004-interface-design/fonts.md) — the bytes travel with the file.
 import { embeddedFontFaceCss } from './export-fonts';
-import {
-  pageRulingOf,
-  pageWriting,
-  pageWritingFonts,
-  type PageWriting,
-} from './article/article-export';
-import { articleOpsToSvg, drawArticleOps } from './article/article-draw';
-
-// A page export's drawing-zone clips (docs/specs/007-editor/article-pages.md "Zones"): what pokes
-// past a drawing zone's edge is cut off in an export as on the canvas.
-function exportZoneClips(tab: Tab, page: LaidOutPage | undefined): Map<string, PageRect> {
-  if (!page) return new Map();
-  return drawingZoneClips(
-    layOutPages(pagesOf(tab)),
-    articlesOf(tab),
-    tab.elements,
-    isDrawingElement,
-  );
-}
-
-// An element's SVG markup cut off at its drawing zone, when it has one.
-function svgZoneClipped(id: string, svg: string, clips: Map<string, PageRect>): string {
-  const r = clips.get(id);
-  if (!r || !svg) return svg;
-  const cid = `lvd-zc-${id}`.replace(/[^a-zA-Z0-9-]/g, '');
-  return `<clipPath id="${cid}"><rect x="${r2(r.x)}" y="${r2(r.y)}" width="${r2(r.width)}" height="${r2(r.height)}"/></clipPath><g clip-path="url(#${cid})">${svg}</g>`;
-}
-
-// An article's margin-note marker (docs/specs/007-editor/article-pages.md "Comments and actions"):
-// review furniture, like a comment badge, never part of what the page prints.
-const isArticleNoteMarker = (el: Element) => el.type === 'annotation' && !!el.articleNote;
-
-// The font ids an export declares, with an article page's writing's faces added.
-function withWritingFonts(ids: string[], writing: Pick<PageWriting, 'fonts'> | null): string[] {
-  return writing ? [...new Set([...ids, ...writing.fonts])] : ids;
-}
-
 // Default backdrop pattern colour when a tab leaves it unset (matches the
 // editor's fallback).
 export const EXPORT_PATTERN_COLOR = '#cbd5e1'; // slate-300
@@ -250,18 +204,13 @@ export async function renderTabToCanvas(
 ): Promise<HTMLCanvasElement> {
   const frame = opts.page
     ? pageExportFrame(opts.page, {
-        ruling: pageRulingOf(tab, opts.page),
         transparentPaper: opts.transparentPaper,
         imageHref: (id) => opts.images?.get(id)?.href,
         frameTheme: tabWireframeFrameTheme(tab),
       })
     : null;
-  // An article page's writing (docs/specs/007-editor/article-pages.md "Everywhere a page goes").
-  const writing = opts.page ? pageWriting(tab, opts.page) : null;
-  const clips = exportZoneClips(tab, opts.page);
   const chartInk = exportChartInk(tab, opts.page);
-  const reaches = (el: Element) =>
-    !isArticleNoteMarker(el) && (!frame || frame.reaches(el, tab.elements));
+  const reaches = (el: Element) => !frame || frame.reaches(el, tab.elements);
   // Hidden layers drop out of the export (bounds included) unless the
   // dialog's include-hidden option is on (docs/specs/006-document/layers.md). `ordered` is the
   // paint order — layer bands bottom -> top, frames first per band —
@@ -363,11 +312,6 @@ export async function renderTabToCanvas(
   // apply the iso projection so element coords map onto the tilted plane.
   ctx.translate(pad - draw.x, pad - draw.y);
   if (iso) ctx.transform(iso.a, iso.b, iso.c, iso.d, 0, 0);
-  // The writing, over the page and under every element (its zones' elements sit over it).
-  if (writing) {
-    await document.fonts?.ready;
-    drawArticleOps(ctx, writing.ops);
-  }
 
   // Isometric: paint every element's extrusion column first, so all the
   // depth sits behind all the element bodies (matching the editor's single
@@ -474,25 +418,22 @@ export async function renderTabToCanvas(
   };
   for (const { el, alpha } of ordered) {
     if (el.type === 'arrow') {
-      const svg = svgZoneClipped(
-        el.id,
-        svgArrow(el, tab.elements, surface, tabFont, labels, undefined, els, paper, tab.finish),
-        clips,
+      const svg = svgArrow(
+        el,
+        tab.elements,
+        surface,
+        tabFont,
+        labels,
+        undefined,
+        els,
+        paper,
+        tab.finish,
       );
       arrowRun.push(alpha < 1 ? `<g opacity="${r2(alpha)}">${svg}</g>` : svg);
       continue;
     }
     await flushArrows();
-    // Cut off at its drawing zone, as on the canvas.
-    const clip = clips.get(el.id);
-    if (clip) {
-      ctx.save();
-      ctx.beginPath();
-      ctx.rect(clip.x, clip.y, clip.width, clip.height);
-      ctx.clip();
-    }
     drawOne(ctx, el, alpha);
-    if (clip) ctx.restore();
   }
   await flushArrows();
   if (frame?.clipPath) {
@@ -620,20 +561,14 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   // renderer above; each band wraps in a <g opacity> when dimmed.
   const frame = opts.page
     ? pageExportFrame(opts.page, {
-        ruling: pageRulingOf(tab, opts.page),
         transparentPaper: opts.transparentPaper,
         imageHref: (id) => opts.images?.get(id)?.href,
         frameTheme: tabWireframeFrameTheme(tab),
         overFill: opts.stillBackground ? undefined : pageMotionSvg(opts.page),
       })
     : null;
-  const writing = opts.page ? pageWriting(tab, opts.page) : null;
-  const estimated =
-    !writing && opts.page && opts.estimatedWriting ? opts.estimatedWriting(opts.page) : undefined;
-  const clips = exportZoneClips(tab, opts.page);
   const chartInk = exportChartInk(tab, opts.page);
-  const reaches = (el: Element) =>
-    !isArticleNoteMarker(el) && (!frame || frame.reaches(el, tab.elements));
+  const reaches = (el: Element) => !frame || frame.reaches(el, tab.elements);
   const els = (
     opts.hiddenLayers ? tab.elements : visibleLayerElements(tab.elements, tab.layers)
   ).filter(reaches);
@@ -680,19 +615,11 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   // stylesheet (the live preview, where the page has the faces already).
   const fontDefs = opts.fontCss
     ? `<defs><style type="text/css">${opts.fontCss}</style></defs>`
-    : svgFontDefs(
-        withWritingFonts(
-          [
-            ...exportFontIds(els, tab.font, opts.sheets, tab.finish),
-            ...(opts.tabWindowFontIds ?? []),
-          ],
-          writing ?? (estimated && opts.page ? { fonts: pageWritingFonts(tab, opts.page) } : null),
-        ),
-      );
+    : svgFontDefs([
+        ...exportFontIds(els, tab.font, opts.sheets, tab.finish),
+        ...(opts.tabWindowFontIds ?? []),
+      ]);
   if (fontDefs) parts.push(fontDefs);
-  // The writing, over the page and under every element.
-  if (writing) parts.push(articleOpsToSvg(writing.ops));
-  else if (estimated) parts.push(estimated);
   // Element-shadow filter defs (docs/specs/008-canvas/element-shadows.md); empty string when none.
   const shadowDefs = svgShadowDefs(els);
   if (shadowDefs) parts.push(shadowDefs);
@@ -730,49 +657,41 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
     for (const el of band.elements) {
       if (el.type !== 'arrow')
         inner.push(
-          svgZoneClipped(
-            el.id,
-            withMotion(
-              el,
-              opts.motion,
-              svgBoxed(el, {
-                resolveImageHref,
-                resolveIconArt: resolveIconArtLoaded,
-                resolveStickerArt: resolveStickerArtLoaded,
-                tabFont: tab.font,
-                tabFinish: tab.finish,
-                sketchBackdrop: backdrops.has(el.id),
-                surface,
-                ...chartInk,
-                items: opts.items,
-                itemTypes: opts.itemTypes,
-                sheets: opts.sheets,
-                resolvePlanArt: opts.resolvePlanArt,
-                resolveTabWindow: opts.resolveTabWindow,
-              }),
-            ),
-            clips,
+          withMotion(
+            el,
+            opts.motion,
+            svgBoxed(el, {
+              resolveImageHref,
+              resolveIconArt: resolveIconArtLoaded,
+              resolveStickerArt: resolveStickerArtLoaded,
+              tabFont: tab.font,
+              tabFinish: tab.finish,
+              sketchBackdrop: backdrops.has(el.id),
+              surface,
+              ...chartInk,
+              items: opts.items,
+              itemTypes: opts.itemTypes,
+              sheets: opts.sheets,
+              resolvePlanArt: opts.resolvePlanArt,
+              resolveTabWindow: opts.resolveTabWindow,
+            }),
           ),
         );
     }
     for (const el of band.elements) {
       if (el.type === 'arrow')
         inner.push(
-          svgZoneClipped(
-            el.id,
-            svgArrow(
-              el,
-              tab.elements,
-              surface,
-              tab.font,
-              labels,
-              undefined,
-              els,
-              paper,
-              tab.finish,
-              opts.motion?.arrowLine(el),
-            ),
-            clips,
+          svgArrow(
+            el,
+            tab.elements,
+            surface,
+            tab.font,
+            labels,
+            undefined,
+            els,
+            paper,
+            tab.finish,
+            opts.motion?.arrowLine(el),
           ),
         );
     }
@@ -793,19 +712,12 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
 // Permanent Marker installed, and an @import is dead in an offline viewer.
 export async function exportTabAsSvg(tab: Tab, opts: ImageExportOpts = {}): Promise<Blob> {
   const els = opts.hiddenLayers ? tab.elements : visibleLayerElements(tab.elements, tab.layers);
-  // The writing's faces only: the writing itself is measured once, by renderTabToSvg.
-  const writing = opts.page ? { fonts: pageWritingFonts(tab, opts.page) } : null;
   const fontCss =
     opts.fontCss ??
-    (await embeddedFontFaceCss(
-      withWritingFonts(
-        [
-          ...exportFontIds(els, tab.font, opts.sheets, tab.finish),
-          ...(opts.tabWindowFontIds ?? []),
-        ],
-        writing,
-      ),
-    ));
+    (await embeddedFontFaceCss([
+      ...exportFontIds(els, tab.font, opts.sheets, tab.finish),
+      ...(opts.tabWindowFontIds ?? []),
+    ]));
   return new Blob([renderTabToSvg(tab, { ...opts, fontCss })], { type: 'image/svg+xml' });
 }
 

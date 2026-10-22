@@ -190,60 +190,6 @@ describe('Page edits', () => {
   });
 });
 
-describe('Page edits: documents', () => {
-  const withDocument = (): Tab =>
-    ({
-      id: 't',
-      name: 'T',
-      elements: [],
-      pages: [
-        { id: 'page-1', orientation: 'portrait', size: 'square' },
-        { id: 'd1', orientation: 'portrait', kind: 'article', flow: 'f' },
-        { id: 'd2', orientation: 'portrait', kind: 'article', flow: 'f' },
-      ],
-      articles: { f: { blocks: [{ id: 'b', type: 'paragraph', runs: [{ text: 'Hi' }] }] } },
-    }) as unknown as Tab;
-
-  it('adds an infographic page like the last infographic, and a document on paper', () => {
-    const h = harness(withDocument());
-    h.edits().addPage!('infographic');
-    expect(pagesOf(h.tab()).at(-1)).toMatchObject({ size: 'square' });
-    h.edits().addPage!('article');
-    const added = pagesOf(h.tab()).at(-1)!;
-    expect(added.kind).toBe('article');
-    expect(added.size).toBeUndefined();
-    expect(Object.keys(h.tab().articles!)).toHaveLength(2);
-  });
-
-  it('turns, sizes and paints every page of a document together', () => {
-    const h = harness(withDocument());
-    h.edits().setOrientation('d2', 'landscape');
-    h.edits().setSize('d1', 'letter');
-    h.edits().setBackground('d1', { pattern: 'lines' });
-    const [, a, b] = pagesOf(h.tab());
-    for (const p of [a!, b!]) {
-      expect(p).toMatchObject({
-        orientation: 'landscape',
-        size: 'letter',
-        background: { pattern: 'lines' },
-      });
-    }
-  });
-
-  it('moves, duplicates and deletes the whole document', () => {
-    const h = harness(withDocument());
-    expect(h.edits().canMove('d2', 1)).toBe(false);
-    h.edits().movePage('d2', -1);
-    expect(pagesOf(h.tab()).map((p) => p.id)).toEqual(['d1', 'd2', 'page-1']);
-    h.edits().duplicatePage!('d1');
-    expect(pagesOf(h.tab())).toHaveLength(5);
-    expect(Object.keys(h.tab().articles!)).toHaveLength(2);
-    h.edits().removePage!('d2');
-    expect(pagesOf(h.tab())).toHaveLength(3);
-    expect(Object.keys(h.tab().articles!)).toHaveLength(1);
-  });
-});
-
 // docs/specs/007-editor/pages-mode.md "Page kinds", "Sizes": a slide is added landscape in a
 // slide size, keeps to the slide sizes and never turns.
 describe('slide page edits', () => {
@@ -409,23 +355,6 @@ describe('locking a page (docs/specs/007-editor/pages-mode.md "Locking a page")'
     h.edits().setLocked('page-2', true);
     h.edits().startBlank('page-2');
     expect(pagesOf(h.tab())[1]!.startedBlank).toBeUndefined();
-  });
-
-  it("refuses the edits an article's pages share when any of them is locked", () => {
-    const h = harness({
-      id: 't',
-      name: 'T',
-      elements: [],
-      pages: [
-        { id: 'd1', orientation: 'portrait', kind: 'article', flow: 'f' },
-        { id: 'd2', orientation: 'portrait', kind: 'article', flow: 'f', locked: true },
-      ],
-      articles: { f: { blocks: [] } },
-    } as unknown as Tab);
-    const before = h.tab();
-    h.edits().setOrientation('d1', 'landscape');
-    h.edits().removePage?.('d1');
-    expect(h.tab()).toBe(before);
   });
 
   it("renames an unlocked page of an article another of whose pages is locked: a name is a page's own", () => {

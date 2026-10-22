@@ -1,5 +1,5 @@
-// Tab import (docs/specs/020-import-export/markdown-import.md), lifted out of useTabActions: the id re-mint imported
-// elements go through, the single-undo-step content replace, and the format-dispatched importer (JSON / Markdown)
+// Tab import (docs/specs/020-import-export/README.md), lifted out of useTabActions: the id re-mint imported
+// elements go through, the single-undo-step content replace, and the format-dispatched importer (JSON)
 // with its lazy-loaded parsers.
 
 import {
@@ -71,7 +71,7 @@ export function remintTabElements<T extends Pick<Tab, 'elements' | 'dashboard'>>
 export const NOT_A_DASHBOARD =
   "This file isn't a Dashboard. Export a Dashboard tab as JSON, then import that.";
 
-export type ImportFormat = 'json' | 'markdown';
+export type ImportFormat = 'json';
 
 type TabImportDeps = {
   tabs: Tab[];
@@ -127,33 +127,18 @@ export function useTabImport({
     if (imported.elements.length > 0) requestFit();
   };
 
-  // Import TEXT of a given format into the active tab (docs/specs/020-import-export/markdown-import.md). Shared by
+  // Import TEXT of a given format into the active tab (docs/specs/020-import-export/README.md). Shared by
   // the Import dialog's paste-editor path and the file path (which reads the file then hands the text here), so both
   // routes run the exact same parse + replace. The parsers are lazy-loaded so their code stays out of the editor's
   // initial bundle. Never throws — returns the outcome the dialog renders (close / stay / show error).
   const importTextIntoActiveTab = async (
-    format: ImportFormat,
+    // JSON is the one format: the dialog still names it, so a second can join without new wiring.
+    _format: ImportFormat,
     text: string,
   ): Promise<ImportOutcome> => {
     const active = tabs.find((t) => t.id === activeId);
     if (active?.locked) {
       return { status: 'error', error: 'This tab is locked. Unlock it before importing.' };
-    }
-
-    // A Dashboard takes only a Dashboard's JSON (docs/specs/026-plan/plan-tabs.md "Import and Export of a Dashboard").
-    if (active?.kind === 'dashboard' && format !== 'json') {
-      return { status: 'error', error: NOT_A_DASHBOARD };
-    }
-
-    if (format === 'markdown') {
-      const { buildTabFromMarkdown, markdownImportOutcome } = await import('@/lib/markdown-import');
-      const result = buildTabFromMarkdown(text, { tabName: active?.name, themeId: active?.theme });
-      if (!result.ok) return { status: 'error', error: result.error };
-      replaceActiveTabContent(result.tab);
-      track('Tab', 'Imported', 'Markdown');
-      if (result.leftOut > 0) debugLog('[markdown-import] left out', { leftOut: result.leftOut });
-      // Past the node cap, the dialog's report says how much was left out.
-      return markdownImportOutcome(result.leftOut);
     }
 
     const { parseImportedTab } = await import('@/lib/import-tab');
@@ -172,7 +157,7 @@ export function useTabImport({
     return { status: 'done' };
   };
 
-  // Import a FILE into the active tab (docs/specs/020-import-export/markdown-import.md). Picks a file for the
+  // Import a FILE into the active tab (docs/specs/020-import-export/README.md). Picks a file for the
   // chosen format, then hands its text to importTextIntoActiveTab so the file and paste paths converge on one
   // parser. Returns the dialog outcome; 'cancelled' when the file picker is dismissed.
   const importIntoActiveTab = async (format: ImportFormat): Promise<ImportOutcome> => {
@@ -180,10 +165,7 @@ export function useTabImport({
     if (active?.locked) {
       return { status: 'error', error: 'This tab is locked. Unlock it before importing.' };
     }
-    const accept =
-      format === 'markdown'
-        ? 'text/markdown,.md,.markdown,.mdown,.mkd,text/plain'
-        : '.json,application/json';
+    const accept = '.json,application/json';
     const { pickTabFile } = await import('@/lib/import-tab');
     const picked = await pickTabFile(accept);
     if (!picked) return { status: 'cancelled' };

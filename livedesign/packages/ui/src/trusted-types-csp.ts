@@ -3,9 +3,8 @@
 
 export const MARKUP_POLICY = 'livedesign-markup';
 
-// Every policy a page may create: ours, then the third parties' own (Next.js's script helper, ProseMirror's paste
-// parser), then `default`.
+// Every policy a page may create: ours, then the third parties' own (Next.js's script helper), then `default`.
 export const TRUSTED_TYPES_CSP = [
   "require-trusted-types-for 'script'",
-  `trusted-types ${MARKUP_POLICY} nextjs ProseMirrorClipboard default`,
+  `trusted-types ${MARKUP_POLICY} nextjs default`,
 ].join('; ');

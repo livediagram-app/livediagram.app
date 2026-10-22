@@ -26,9 +26,9 @@ of infographic pages applies to a logo page except where this spec says otherwis
 
 ## A logo page
 
-- **Adding one**: the **Add a page** popover and the first page's choice offer a fourth card,
-  **Logo**: "A square artboard for a logo, with guides and drawing tools." The cards sit in a 2 x 2
-  grid (Infographic, Article / Slide, Logo). A new logo page is the artboard on plain paper.
+- **Adding one**: the **Add a page** popover and the first page's choice offer a third card,
+  **Logo**: "A square artboard for a logo, with guides and drawing tools." The cards sit in a two-column
+  grid (Infographic, Slide / Logo, then Wireframe across both columns). A new logo page is the artboard on plain paper.
 - **Size**: the artboard is the `logo` size, **1024 x 1024**, labelled `1024 x 1024`. It offers no
   other size and no orientation; a stored logo page in any other size is read as the artboard.
   The page label reads `<name or Page n> · 1024 x 1024 · Logo`.

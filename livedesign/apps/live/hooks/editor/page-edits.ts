@@ -1,7 +1,5 @@
 // The edits to a Pages tab's pages (docs/specs/007-editor/pages-mode.md): turn,
-// resize, rename and paint a page; add, duplicate, move and delete one. On an article page
-// (docs/specs/007-editor/article-pages.md) each acts on the whole document: its pages share their
-// size, orientation and background, and move, copy and go as one. Each is one tab edit (one undo
+// resize, rename and paint a page; add, duplicate, move and delete one. Each is one tab edit (one undo
 // step, synced to everyone) that moves the content of every page it shifts along with it
 // (withPages), re-reading the tab at commit time so two quick edits compose.
 import {
@@ -10,7 +8,6 @@ import {
   pagesOf,
   layOutPages,
   MAX_PAGES,
-  nextArticleFlowId,
   nextPageId,
   pageHasOrientation,
   pageKindOf,
@@ -60,7 +57,6 @@ import { lockedElementIds } from '@/lib/locked-element-ids';
 import { debugLog } from '@/lib/debug-log';
 import { clearLocalPreview, localPreview, setLocalPreview } from '@/lib/drag-preview';
 import { track } from '@/lib/telemetry';
-import { articleHandleOf } from '@/lib/article/article-editor-store';
 import { restoreEmptyCard } from '@/components/canvas/empty-card-dismissed';
 import { startClosedKey } from '@/components/start/start-closed-key';
 import { backgroundCopyEdits, type BackgroundCopyEdits } from './pages-background-copy-edits';
@@ -88,7 +84,7 @@ export type PageEdits = BackgroundCopyEdits & {
   // (docs/specs/007-editor/wireframe-pages.md "Choosing the device").
   setDevice: (pageId: string, patch: WireframeDevicePatch) => void;
   duplicatePage?: (pageId: string) => void;
-  // Whether a page's copy fits under the page limit (an article's copy is all its pages).
+  // Whether a page's copy fits under the page limit.
   canDuplicate: (pageId: string) => boolean;
   // Deletes a page, or its whole document; the last one empties the tab, which opens Start Making Pages again.
   removePage?: (pageId: string) => void;
@@ -132,14 +128,12 @@ const edited = (before: Tab, out: PageEdit<Tab>): Tab | null =>
 // Telemetry for a kind chosen on the first page, and for a page of a kind added.
 const KIND_CHOSEN_EVENT: Record<PageKind, string> = {
   infographic: 'PageKindInfographic',
-  article: 'PageKindArticle',
   slide: 'PageKindSlide',
   logo: 'PageKindLogo',
   wireframe: 'PageKindWireframe',
 };
 const KIND_ADDED_EVENT: Record<PageKind, string> = {
   infographic: 'PageAdded',
-  article: 'ArticleAdded',
   slide: 'SlidePageAdded',
   logo: 'LogoPageAdded',
   wireframe: 'WireframePageAdded',
@@ -181,7 +175,6 @@ export function pageEdits({
   layers,
   commitTabs,
   onGoTo,
-  onArticleCreated,
   onLayoutPlaced,
   mayEdit = () => true,
   toastInfo = () => {},
@@ -206,8 +199,6 @@ export function pageEdits({
   // The page the view should glide to: a new page (added or duplicated), or the page before a
   // deleted one.
   onGoTo: (pageId: string) => void;
-  // A new document by its flow id, so its writing can take the caret.
-  onArticleCreated?: (flow: string) => void;
   // What a page action says it did (Split Into Pages).
   toastInfo?: (message: string) => void;
   // The tab's theme: a new infographic page starts on its Dusk gradient, a new slide document's
@@ -237,11 +228,8 @@ export function pageEdits({
   const page = (pageId: string) => current.find((p) => p.id === pageId);
   const isLocked = (pageId: string) => page(pageId)?.locked === true;
   // A locked page takes no edit of its own (its name, size, turn, paint, layout, kind or delete).
-  // An article's pages change together (a turn, a size, its paint, a delete): any of them locked
-  // refuses those for all. A page's own edits (its name) reach only the page itself, so another
-  // page's lock never holds them (`shared: false`).
-  const refusedLocked = (pageId: string, edit: string, shared = true) => {
-    if (!pageLockRefuses(current, pageId, shared)) return false;
+  const refusedLocked = (pageId: string, edit: string) => {
+    if (!pageLockRefuses(current, pageId)) return false;
     debugLog('[page] refused: page locked', { tabId, pageId, edit });
     return true;
   };
@@ -254,20 +242,13 @@ export function pageEdits({
   };
   const startBlank = (pageId: string) => {
     const target = page(pageId);
-    if (!target || target.startedBlank === true || refusedLocked(pageId, 'start blank', false))
-      return;
+    if (!target || target.startedBlank === true || refusedLocked(pageId, 'start blank')) return;
     patchPage(pageId, (p) => ({ ...p, startedBlank: true }));
     debugLog('[page] started blank', { tabId, pageId });
   };
   // A turn or a new size re-fits an infographic page's content into the page as it now is: what
   // was on it before stays on it, scaled down as one where it no longer fits
-  // (withContentFittedToPage). A document's pages all change together; its writing reflows and
-  // its zones follow, so nothing is fitted.
-  // An article's pages re-flowing is this person's layout to settle (its zones' elements).
-  const claimArticleLayout = (pageId: string) => {
-    const flow = page(pageId)?.flow;
-    if (flow) articleHandleOf(flow)?.claimLayout();
-  };
+  // (withContentFittedToPage).
 
   // A page in a slide size (every slide page) has no turn: it is landscape only.
   const setOrientation = (pageId: string, next: PageOrientation) => {
@@ -279,14 +260,13 @@ export function pageEdits({
       return;
     }
     track('Tab', 'Changed', next === 'landscape' ? 'PageLandscape' : 'PagePortrait');
-    claimArticleLayout(pageId);
     commitTab((t) => edited(t, pageTurned(t, pageId, next)));
     // The view frames the page itself, so a turned page is framed again in its new shape.
     onGoTo(pageId);
     debugLog('[page] orientation set', { tabId, pageId, orientation: next });
   };
-  // A page takes only the sizes its kind offers (pageSizesFor): a slide page a slide size, an
-  // article a paper or screen size, a logo page keeps its artboard, the artboard being the logo
+  // A page takes only the sizes its kind offers (pageSizesFor): a slide page a slide size, a logo
+  // page keeps its artboard, the artboard being the logo
   // kind's alone.
   const setSize = (pageId: string, size: PageSizeId) => {
     if (refusedLocked(pageId, 'size')) return;
@@ -308,13 +288,12 @@ export function pageEdits({
       return;
     }
     track('Tab', 'Changed', 'PageSize');
-    claimArticleLayout(pageId);
     commitTab((t) => edited(t, pageResized(t, pageId, size)));
     onGoTo(pageId);
     debugLog('[page] size set', { tabId, pageId, size });
   };
   const rename = (pageId: string, raw: string) => {
-    if (refusedLocked(pageId, 'name', false)) return;
+    if (refusedLocked(pageId, 'name')) return;
     const name = raw.trim().slice(0, PAGE_NAME_MAX);
     if ((page(pageId)?.name ?? '') === name) return;
     track('Tab', 'Changed', 'PageRenamed');
@@ -371,19 +350,16 @@ export function pageEdits({
     if (canMove(pageId, by)) movePageTo(pageId, unitIndexOf(pageId) + by);
   };
   // A new infographic page takes the last infographic page's size and orientation (else A4
-  // portrait); a new document the last page's paper size and orientation when it is a paper size
-  // (A4, US Letter, A3), else A4 portrait; a new slide the last slide's size (else 16:9),
+  // portrait); a new slide the last slide's size (else 16:9),
   // landscape; a new logo page the 1024 artboard. All on the plain paper.
   const choosePageKind = (pageId: string, kind: PageKind, device?: WireframeDeviceId) => {
     if (refusedLocked(pageId, 'kind')) return;
     track('Tab', 'Changed', KIND_CHOSEN_EVENT[kind]);
     if (kind === 'wireframe' && device) track('Tab', 'Changed', WIREFRAME_DEVICE_EVENT[device]);
-    const flow = nextArticleFlowId(new Set());
     commitTab((t) => {
-      const chosen = withPageKindChosen(t, pageId, kind, flow, device);
+      const chosen = withPageKindChosen(t, pageId, kind, device);
       return kind === 'infographic' || kind === 'slide' ? themed(chosen, pageId) : chosen;
     });
-    if (kind === 'article') onArticleCreated?.(flow);
     debugLog('[page] first page kind chosen', { tabId, pageId, kind });
   };
   const addPage = (kind: PageKind, chosen?: WireframeDeviceId) => {
@@ -398,17 +374,10 @@ export function pageEdits({
     track('Tab', 'Changed', KIND_ADDED_EVENT[kind]);
     if (kind === 'wireframe' && chosen) track('Tab', 'Changed', WIREFRAME_DEVICE_EVENT[chosen]);
     const id = nextPageId(current);
-    const flow = nextArticleFlowId(new Set(current.flatMap((p) => (p.flow ? [p.flow] : []))));
     commitTab((t) => {
-      const added = edited(t, pageAdded(t, kind, id, flow, device));
+      const added = edited(t, pageAdded(t, kind, id, device));
       return kind === 'infographic' || kind === 'slide' ? themed(added, id) : added;
     });
-    if (kind === 'article') {
-      onGoTo(id);
-      onArticleCreated?.(flow);
-      debugLog('[page] article added', { tabId, flow, count: current.length + 1 });
-      return;
-    }
     onGoTo(id);
     debugLog('[page] page added', { tabId, count: current.length + 1 });
   };
@@ -434,16 +403,10 @@ export function pageEdits({
     const kind = pageKindOf(source);
     track('Tab', 'Changed', 'PageAddedLikeLast');
     const id = nextPageId(current);
-    const flow = nextArticleFlowId(new Set(current.flatMap((p) => (p.flow ? [p.flow] : []))));
     commitTab((t) => {
-      const added = edited(t, pageAddedLike(t, pageId, id, flow));
+      const added = edited(t, pageAddedLike(t, pageId, id));
       return kind === 'infographic' || kind === 'slide' ? themed(added, id) : added;
     });
-    if (kind === 'article') {
-      onGoTo(id);
-      onArticleCreated?.(flow);
-      return;
-    }
     onGoTo(id);
     debugLog('[page] page added like another', { tabId, from: pageId, kind });
   };
@@ -452,34 +415,22 @@ export function pageEdits({
     const target = page(pageId);
     if (!target) return;
     track('Tab', 'Changed', 'PageDuplicated');
-    const flow = nextArticleFlowId(new Set(current.flatMap((p) => (p.flow ? [p.flow] : []))));
     const id = nextPageId(current);
-    const out = edited(tab, pageDuplicated(tab, pageId, id, flow));
-    const created = out
-      ? target.flow
-        ? out.pages?.find((p) => p.flow === flow)?.id
-        : id
-      : undefined;
-    if (out) commitTab((t) => (t === tab ? out : edited(t, pageDuplicated(t, pageId, id, flow))));
-    if (created) onGoTo(created);
-    if (target.flow) {
-      debugLog('[page] article duplicated', { tabId, flow: target.flow });
-      return;
-    }
+    const out = edited(tab, pageDuplicated(tab, pageId, id));
+    if (out) commitTab((t) => (t === tab ? out : edited(t, pageDuplicated(t, pageId, id))));
+    if (out) onGoTo(id);
     debugLog('[page] duplicated', { tabId, pageId });
   };
-  // A deleted page takes its content with it; the pages after it close the gap. An article page
-  // deletes its whole document, writing and all.
+  // A deleted page takes its content with it; the pages after it close the gap.
   const removePage = (pageId: string) => {
     if (refusedLocked(pageId, 'delete')) return;
     const target = page(pageId);
     if (!target) return;
     track('Tab', 'Changed', 'PageRemoved');
-    // The last page (or the last article) goes with everything on the tab, leaving it empty: no pages, no writing,
-    // no elements, so Start Making Pages opens again, brought back if it was closed
+    // The last page goes with everything on the tab, leaving it empty: no pages, no elements, so Start Making Pages opens again, brought back if it was closed
     // (docs/specs/007-editor/start-diagramming.md "Start Making Pages"). Undo puts it all back.
     if (units.length <= 1) {
-      commitTab((t) => ({ ...t, elements: [], pages: [], articles: {} }));
+      commitTab((t) => ({ ...t, elements: [], pages: [] }));
       restoreEmptyCard(startClosedKey(tabId, 'pages'));
       debugLog('[page] last page removed', { tabId, pageId });
       return;
@@ -491,10 +442,6 @@ export function pageEdits({
     const land = at > 0 ? units[at - 1]!.pageIds.at(-1) : units[at + 1]?.pageIds[0];
     if (land) onGoTo(land);
     commitTab((t) => edited(t, pageRemoved(t, pageId)));
-    if (target.flow) {
-      debugLog('[page] article removed', { tabId, flow: target.flow });
-      return;
-    }
     debugLog('[page] page removed', { tabId, pageId });
   };
 
@@ -583,7 +530,7 @@ export function pageEdits({
   const tidied = (t: Tab, pageId: string): Tab | null => {
     const pages = layOutPages(pagesOf(t));
     const target = pages.find((p) => p.id === pageId);
-    // An infographic or slide page; a logo page tidies its drawn lines, an article flows.
+    // An infographic or slide page; a logo page tidies its drawn lines.
     if (!target || (pageKindOf(target) !== 'infographic' && target.kind !== 'slide')) return null;
     const next = tidyPageElements(t.elements, {
       ids: elementIdsOnPage(t.elements, pages, pageId),
@@ -594,7 +541,7 @@ export function pageEdits({
     return next === t.elements ? null : { ...t, elements: next };
   };
   const tidyPage = (pageId: string) => {
-    if (!mayEdit() || refusedLocked(pageId, 'tidy', false)) return;
+    if (!mayEdit() || refusedLocked(pageId, 'tidy')) return;
     const out = tidied(tab, pageId);
     const changed = out !== null;
     if (out) commitTab((t) => (t === tab ? out : tidied(t, pageId)));
@@ -662,11 +609,7 @@ export function pageEdits({
     choosePageKind,
     setDevice,
     duplicatePage: room ? duplicatePage : undefined,
-    canDuplicate: (pageId: string) => {
-      const flow = page(pageId)?.flow;
-      const size = flow ? current.filter((p) => p.flow === flow).length : 1;
-      return current.length + size <= MAX_PAGES;
-    },
+    canDuplicate: () => current.length + 1 <= MAX_PAGES,
     removePage,
     splitPage,
     applyLayout,

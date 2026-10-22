@@ -3,7 +3,7 @@ import type { TemplateKind } from '@livedesign/templates';
 import { pv } from './motion';
 
 // Group 20: the blanks of a page kind (docs/specs/007-editor/templates-by-mode.md "Blanks of a page kind"): Blank
-// Slide Deck, Blank Article, Blank Infographic and Blank Logo. Each draws its one empty page in its own proportions
+// Slide Deck, Blank Infographic and Blank Logo. Each draws its one empty page in its own proportions
 // (a 16:9 slide, an A4 page, the square artboard) with the dashed edge, faint guides and sky "+" of Blank
 // Illustration's page, so the Pages blanks read as a set. Hover story: the guides light up, what the page is for.
 // Static SVG preview tiles, one branch per TemplateKind; TemplatePreview chains the groups with ??.
@@ -48,28 +48,6 @@ export function templatePreviewGroup20(kind: TemplateKind): ReactElement | null 
             <rect x="30" y="24.6" width="20" height="1.6" rx="0.8" fill={GUIDE} />
           </g>
           <Plus cx={40} cy={33.5} />
-        </svg>
-      );
-    case 'blank-article':
-      // One empty A4 page of writing: a title, then lines of text. Hover story: the writing lights up.
-      return (
-        <svg width="80" height="50" viewBox="0 0 80 50" aria-hidden>
-          <Page x={25} y={3} width={30} height={44} />
-          <g className="pv-pulse" style={pv({ '--pv-at': '500ms' })}>
-            <rect x="29" y="8" width="15" height="2.6" rx="0.8" fill={EDGE} />
-            {[14, 17, 20, 23, 26, 29].map((y, i) => (
-              <rect
-                key={y}
-                x="29"
-                y={y}
-                width={i === 2 ? 17 : i === 5 ? 12 : 22}
-                height="1.3"
-                rx="0.6"
-                fill={LINE}
-              />
-            ))}
-          </g>
-          <Plus cx={40} cy={40.5} />
         </svg>
       );
     case 'blank-infographic':

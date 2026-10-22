@@ -1,6 +1,5 @@
 'use client';
 
-import { useArticleLaidOutSeq } from '@/lib/article/article-editor-store';
 import { useMemo } from 'react';
 import type { Deck, Tab } from '@livedesign/document';
 import type { Item, ItemTypeDef } from '@livedesign/items';
@@ -51,14 +50,10 @@ export function useSlideThumbnails(
   const iconsLoaded = useIconCatalogs();
   // The canvas's surface: a page with no fill is pictured on the paper as the canvas shows it.
   const surface = useCanvasSurface();
-  // An article's writing laid out for the first time: its lines of text can be drawn now.
-  const laidOut = useArticleLaidOutSeq();
   const showsBoard = useMemo(() => deckShowsBoard(deck, tabs), [deck, tabs]);
   const items = showsBoard ? plan?.items : undefined;
   const itemTypes = showsBoard ? plan?.types : undefined;
   return useMemo(() => {
-    // Read so the pictures redraw once the writing they draw has been laid out.
-    void laidOut;
     const out = new Map<string, SlideThumb>();
     if (deck.slides.length === 0) return out;
     const byId = new Map(tabs.map((t) => [t.id, t]));
@@ -74,5 +69,5 @@ export function useSlideThumbnails(
       if (thumb) out.set(slide.id, thumb);
     }
     return out;
-  }, [deck, tabs, iconsLoaded, surface, laidOut, items, itemTypes]);
+  }, [deck, tabs, iconsLoaded, surface, items, itemTypes]);
 }

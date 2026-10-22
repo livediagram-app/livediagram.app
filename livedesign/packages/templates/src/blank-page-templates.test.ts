@@ -33,20 +33,6 @@ describe('blanks of a page kind', () => {
     expect(blankPageTemplateOverrides('blank-logo')!.pages).toEqual([
       { id: 'page-1', orientation: 'portrait', size: 'logo', kind: 'logo' },
     ]);
-    const article = blankPageTemplateOverrides('blank-article')!;
-    expect(article.pages).toEqual([
-      { id: 'page-1', orientation: 'portrait', kind: 'article', flow: 'art-1' },
-    ]);
-    // Its writing: an empty Title and an empty paragraph.
-    expect(article.articles?.['art-1']?.blocks).toEqual([
-      expect.objectContaining({ type: 'paragraph', style: 'title', runs: [] }),
-      expect.objectContaining({ type: 'paragraph', runs: [] }),
-    ]);
-  });
-
-  it('carries no writing but the article', () => {
-    for (const kind of KINDS.filter((k) => k !== 'blank-article'))
-      expect(blankPageTemplateOverrides(kind)!.articles).toBeUndefined();
   });
 
   it('are blanks: in no category, keeping the tab name rules of a blank', () => {

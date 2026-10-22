@@ -573,7 +573,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Documents',
     summary:
-      'Change the pages of a tab (add, set, lay out, move, duplicate, delete; up to 50, as one edit) or write an article from Markdown. Switches the tab into Pages and reaches everyone with the document open. Answers each page with its rectangle on the canvas.',
+      'Change the pages of a tab (add, set, lay out, move, duplicate, delete; up to 50, as one edit). Switches the tab into Pages and reaches everyone with the document open. Answers each page with its rectangle on the canvas.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     requestSchema: ref('PagesRequest'),
@@ -2365,7 +2365,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     requestSchema: 'AiRequest',
     statuses: [200, 401, 403, 500, 502, 503],
   },
-
 
   // ---- Link unfurl ----
   {

@@ -9,9 +9,9 @@ import {
   pageBackgroundSet,
   pageBackgroundStored,
   pageLockRefuses,
-  pagesSharing,
   type PageEdit,
 } from './pages-edits';
+import { pagesSharing } from './page-units';
 import { pagesInkFor, type InkMemory, type PageInk } from './page-ink';
 
 type PagesTab = Pick<Tab, 'elements'> & {

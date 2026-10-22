@@ -1,20 +1,18 @@
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
 import { BackBar } from '@/components/primitives/BackBar';
 import { Button } from '@livedesign/ui';
 import type { ImportOutcome } from '@/lib/import-tab';
 
 type DoneOutcome = Extract<ImportOutcome, { status: 'done' }>;
 
-// The paste-or-file sub-view for a text import format (docs/specs/020-import-export/markdown-import.md).
+// The paste-or-file sub-view for a text import format (docs/specs/020-import-export/README.md).
 // A textarea to paste/write the content, an Import button, and a "pick a
 // file instead" escape hatch. Format-agnostic — the parent supplies the
 // placeholder example and the two runners (text vs file). Owns its own
-// text / busy / error so the format grid stays simple. Shared by JSON and
-// Markdown.
+// text / busy / error so the format grid stays simple.
 export function TextImportPanel({
   formatTitle,
   placeholder,
-  note,
   onImportText,
   onImportFile,
   onDone,
@@ -24,12 +22,6 @@ export function TextImportPanel({
   // which format is being pasted.
   formatTitle: string;
   placeholder: string;
-  // Optional footnote for this format (a help link). It rides in the footer's
-  // left slot, level with the action buttons — the conventional spot for a
-  // dialog's help link, and the slot the old "← Back" link vacated when the
-  // way back became the BackBar above. Left to hang under the footer instead,
-  // it read as a stray line that had fallen off the dialog.
-  note?: ReactNode;
   onImportText: (text: string) => Promise<ImportOutcome>;
   onImportFile: () => Promise<ImportOutcome>;
   onDone: (outcome: DoneOutcome) => void;
@@ -79,9 +71,7 @@ export function TextImportPanel({
           {error}
         </p>
       ) : null}
-      <div className="mt-4 flex items-center justify-between gap-3">
-        {/* The left slot carries the format's note. */}
-        <div className="min-w-0">{note}</div>
+      <div className="mt-4 flex items-center justify-end gap-3">
         <div className="flex items-center gap-2">
           <button
             type="button"

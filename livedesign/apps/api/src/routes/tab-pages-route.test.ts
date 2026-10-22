@@ -9,7 +9,7 @@ import { pagesRoomOps } from '../changesets/pages';
 import { layoutCatalogueFor } from '@livedesign/templates';
 
 // POST /api/documents/:id/tabs/:tabId/pages (docs/specs/024-agents/pages-for-agents.md
-// "The route"): page changes or an article write, at the tab's revision, relayed to the room as an
+// "The route"): page changes, at the tab's revision, relayed to the room as an
 // editor's own edit.
 
 function roomRecorder(status = 204) {
@@ -64,7 +64,6 @@ type StoredTab = {
   elements: unknown[];
   opensIn?: string;
   pages?: unknown[];
-  articles: Record<string, unknown>;
 };
 
 const stored = (db: SqliteD1) => {
@@ -104,7 +103,7 @@ describe('page changes', () => {
     expect(room.bodies[0]!.op).toMatchObject({ tabId: 't1', patch: { opensIn: 'pages' } });
     expect(info).toHaveBeenCalledWith(
       '[pages-agent] applied',
-      expect.objectContaining({ kind: 'pages', changes: 2 }),
+      expect.objectContaining({ changes: 2 }),
     );
   });
 
@@ -183,39 +182,6 @@ describe('page changes', () => {
       '[pages-agent] relay-missed',
       expect.objectContaining({ op: 'tab-meta' }),
     );
-  });
-});
-
-describe('an article write', () => {
-  it('starts an article and relays its writing as agent-marked frames', async () => {
-    vi.spyOn(console, 'info').mockImplementation(() => {});
-    const { db, room } = await setUp();
-    const res = await call(db, { article: { markdown: '---\ntitle: Brief\n---\n# Goals\n- One' } });
-    expect(res.status).toBe(200);
-    const body = (await res.json()) as PagesAnswer;
-    expect(body.article).toMatchObject({ title: 'Brief', pages: [1], blocks: 3, created: true });
-    // The answer says how many pages the writing takes, as estimated.
-    expect(body.lines.at(-1)).toMatch(/^It takes about 1 page once laid out \(estimated/);
-    const tab = stored(db);
-    expect(Object.values(tab.articles)).toHaveLength(1);
-    const kinds = room.bodies.map((b) => b.op.kind);
-    expect(kinds).toEqual(['tab-meta', 'article']);
-    expect(room.bodies[1]!.op).toMatchObject({ created: true, agent: true });
-  });
-
-  it('refuses an ambiguous write with 400', async () => {
-    vi.spyOn(console, 'info').mockImplementation(() => {});
-    const { db } = await setUp(204, {
-      opensIn: 'pages',
-      pages: [
-        { id: 'a', orientation: 'portrait', kind: 'article', flow: 'f' },
-        { id: 'b', orientation: 'portrait', kind: 'article', flow: 'g' },
-      ],
-      articles: { f: { blocks: [] }, g: { blocks: [] } },
-    });
-    const res = await call(db, { article: { markdown: 'x' } });
-    expect(res.status).toBe(400);
-    expect(await res.json()).toMatchObject({ error: 'article_ambiguous' });
   });
 });
 

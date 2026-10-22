@@ -16,7 +16,6 @@ export type HeroSceneKey =
   | 'mindmap'
   | 'infographic'
   | 'slides'
-  | 'article'
   | 'plan'
   | 'sheet'
   | 'form'
@@ -123,18 +122,6 @@ export const HERO_SCENE_DATA: HeroSceneData[] = [
     tabs: [{ name: 'Deck', color: '#0284c7', active: true }],
     shared: true,
     portraitViewBox: PORTRAIT,
-  },
-  {
-    key: 'article',
-    word: 'Document',
-    build: '/new?mode=pages&q=article',
-    short: 'Article',
-    title: 'Field notes',
-    label: 'Article: write long reads on pages, with images, headings and pull quotes',
-    mode: 'pages',
-    tabs: [{ name: 'Draft', color: '#0ea5e9', active: true }],
-    shared: true,
-    portraitViewBox: PORTRAIT_PAGES,
   },
   {
     key: 'plan',

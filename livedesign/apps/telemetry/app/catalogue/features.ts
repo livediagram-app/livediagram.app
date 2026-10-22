@@ -236,16 +236,13 @@ export const PAGES = chart(
   'Tab',
   'Changed',
   'Pages Added and Deleted',
-  'A page added to a Pages tab from the plus after its last page (an infographic page, a new article, or a slide), or deleted from its settings.',
+  'A page added to a Pages tab from the plus after its last page (an infographic page, a slide, a logo or a wireframe), or deleted from its settings.',
   {
     types: [
       'PageAdded',
-      'ArticleAdded',
       'SlidePageAdded',
       'PageRemoved',
-      'ArticlesToPages',
       'PageKindInfographic',
-      'PageKindArticle',
       'PageKindSlide',
       'LogoPageAdded',
       'PageKindLogo',
@@ -432,68 +429,6 @@ export const EMPTY_PAGE_LAYOUTS_HIDDEN = chart(
   { types: ['EmptyPageLayouts', 'EmptyPageLayoutsBlank'] },
 );
 
-// Writing articles (docs/specs/007-editor/article-pages.md "Telemetry").
-export const ARTICLE_INSERTS = chart(
-  'Element',
-  'Added',
-  'Article Inserts',
-  'Something put into the writing of an article: an image, table, chart or drawing at the caret, an object or drawing taken in from the palette, or a divider, page break, quote or code block.',
-  {
-    types: [
-      'ArticleImage',
-      'ArticleTable',
-      'ArticleChart',
-      'ArticleCallout',
-      'ArticleSticky',
-      'ArticleDrawing',
-      'ArticleObject',
-      'ArticleDivider',
-      'ArticlePageBreak',
-      'ArticleQuote',
-      'ArticleCode',
-      'ArticleComment',
-      'ArticleAction',
-    ],
-  },
-);
-
-export const ARTICLE_FORMATTING = chart(
-  'Element',
-  'Changed',
-  'Article Formatting',
-  "The page toolbar used on an article's writing (a format, a text style or list, a link) and a zone in the writing wrapped, placed or deleted.",
-  {
-    types: [
-      'ArticleFormat',
-      'ArticleBlockStyle',
-      'ArticleLink',
-      'ArticlePaste',
-      'ArticleZoneWrap',
-      'ArticleZoneResized',
-      'ArticleZoneMoved',
-      'ArticleZoneFloat',
-      'ArticleZoneRemoved',
-    ],
-  },
-);
-
-export const ARTICLE_LOOKS = chart(
-  'Tab',
-  'Changed',
-  'Article Looks',
-  "An article's look chosen in its Style tab, or one of its style fields changed.",
-  {
-    types: [
-      'ArticleLookClean',
-      'ArticleLookClassic',
-      'ArticleLookReport',
-      'ArticleLookNotebook',
-      'ArticleLookBold',
-      'ArticleStyle',
-    ],
-  },
-);
-
 export const WHITEBOARDS: MetricStack = {
   stack: true,
   title: 'Draw Mode',
@@ -518,9 +453,6 @@ export const WHITEBOARDS: MetricStack = {
     WIREFRAME_DEVICES_CHOSEN,
     WIREFRAME_SYSTEM_BARS,
     EMPTY_PAGE_LAYOUTS_HIDDEN,
-    ARTICLE_INSERTS,
-    ARTICLE_FORMATTING,
-    ARTICLE_LOOKS,
     WHITEBOARD_PENS,
     WHITEBOARD_SETTINGS,
     WHITEBOARD_RECOGNITION,

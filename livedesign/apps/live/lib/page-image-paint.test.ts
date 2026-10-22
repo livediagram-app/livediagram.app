@@ -21,11 +21,7 @@ const blob = (id: string) => (id === 'img-1' ? 'blob:http://localhost/abc' : und
 
 describe('a picture on the sheet', () => {
   it('layers the pattern, the overlay and the cropped picture over its tone', () => {
-    const style = pageSheetStyle(
-      { fill: fill({ position: 'top' }), pattern: 'dots' },
-      undefined,
-      blob,
-    );
+    const style = pageSheetStyle({ fill: fill({ position: 'top' }), pattern: 'dots' }, blob);
     const layers = String(style.backgroundImage);
     expect(layers.indexOf('radial-gradient')).toBeLessThan(
       layers.indexOf('rgb(255 255 255 / 0.6)'),

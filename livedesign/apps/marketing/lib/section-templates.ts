@@ -64,7 +64,6 @@ export const SECTION_TEMPLATE_KINDS: Readonly<Record<string, readonly TemplateKi
     'social-carousel',
     'blank-slide-deck',
   ],
-  documents: ['article', 'working-backwards', 'year-in-review', 'blank-article'],
   plan: [
     'kanban',
     'project-planner',

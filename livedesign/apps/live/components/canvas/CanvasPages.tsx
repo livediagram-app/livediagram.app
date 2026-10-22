@@ -18,24 +18,16 @@ import { WireframeDeviceSheet } from './WireframeDeviceSheet';
 import { PageDeviceButton } from './wireframe/PageDeviceButton';
 import { PageNotesButton } from './PageNotesButton';
 import { PageTidyUpButton } from './PageTidyUpButton';
-import { PageArticleButtons } from './PageArticleButtons';
 import { LABEL_MIN, titleBarFixedRoom, titleBarNamed } from './page-title-bar-room';
 import { track } from '@/lib/telemetry';
-import { isArticleLocked } from '@/lib/article/article-lock';
 import { GIF_OMIT_ATTR } from '@/lib/gif-export/gif-omit';
 import {
-  articleBodyLinePx,
-  articleMarginPx,
   offersPageKindChoice,
-  articleTopMarginPx,
   PAGE_GAP,
-  pageIsDark,
   pageKindOf,
   pageLabel,
   pageScreenRect,
   pageUnits,
-  resolveArticleStyle,
-  resolveFontStack,
   type LaidOutPage,
 } from '@livedesign/document';
 import { HoverCard, lucideGlyph, Tooltip } from '@livedesign/ui';
@@ -59,8 +51,6 @@ import {
 } from '@/components/tour/PageTour';
 import { useFollowPagePanelRequests } from '@/lib/page-panel-request';
 import { AddPageButton } from './AddPageButton';
-import { ArticleStyleSection } from './article/ArticleStyleSection';
-import { useStylePanelRequest } from '@/lib/article/article-editor-store';
 import {
   previewedBackground,
   setPageBackgroundPreview,
@@ -108,39 +98,10 @@ export function CanvasPages({
   onOpenTheme?: (() => void) | undefined;
 }) {
   const { pages, focusPage } = view;
-  const articles = view.articles ?? null;
-  // An article page's style (a hover in its Style tab previews one).
-  const articleStyleOf = (page: LaidOutPage) =>
-    page.flow
-      ? articles?.stylePreview?.flow === page.flow
-        ? articles.stylePreview.style
-        : articles?.flows[page.flow]?.style
-      : undefined;
-  // An article page's Lines pattern ruled on its writing's baselines, inside its margins.
-  const rulingOf = (page: LaidOutPage) =>
-    page.flow && articles?.flows[page.flow]
-      ? {
-          pitch: articleBodyLinePx(articleStyleOf(page)),
-          inset: articleMarginPx(articleStyleOf(page)),
-          top: articleTopMarginPx(articleStyleOf(page)),
-        }
-      : undefined;
-  // An article page's number, in its bottom margin, when its article has them.
-  const pageNumberOf = (page: LaidOutPage) => {
-    if (!page.flow || !articles?.flows[page.flow]) return null;
-    const style = resolveArticleStyle(articleStyleOf(page));
-    if (!style.pageNumbers) return null;
-    const own = pages.filter((p) => p.flow === page.flow);
-    return {
-      n: own.findIndex((p) => p.id === page.id) + 1,
-      bottom: articleMarginPx(articleStyleOf(page)) / 2 - 8,
-      font: resolveFontStack(style.bodyFont),
-    };
-  };
   const edit = bare ? undefined : view.edit;
   // The open panel's page and the tab it opened on. Its cog is looked up live (cogs), so a cog
   // remounted by zen or a role change is the one the panel hangs from.
-  // `seq`: a request to open on a tab (the toolbar's Article Style), so a panel already open
+  // `seq`: a request to open on a tab (a tour's), so a panel already open
   // switches to it.
   const [opened, setOpened] = useState<{ id: string; tab: PagePanelTab; seq?: number } | null>(
     null,
@@ -166,7 +127,7 @@ export function CanvasPages({
   const last = pages[pages.length - 1]!;
   // A label dragged sideways reorders the pages (usePageReorderDrag).
   const drag = usePageReorderDrag({ pages, zoom, onMove: edit?.movePageTo });
-  // A label drags only when there is something to swap with: two units (a page, or a whole article).
+  // A label drags only when there is something to swap with: two pages.
   const reorderable = pageUnits(pages).length > 1;
   const openId = opened?.id ?? null;
   const open = edit && opened ? pages.find((p) => p.id === opened.id) : undefined;
@@ -187,11 +148,6 @@ export function CanvasPages({
   );
   // A tour opens a page's panel on the tab a step is about, afresh, or closes it (lib/page-panel-request.ts).
   useFollowPagePanelRequests(setOpened);
-  // The page toolbar's Article Style button opens the page's panel on Style.
-  const styleRequest = useStylePanelRequest();
-  // The article toolbar's Style command opens the Style beside that page's cog (PageArticleButtons).
-  const styleRequestFor = (pageId: string) =>
-    styleRequest.pageId === pageId ? styleRequest.seq : 0;
   // The empty page's own invitation opens its panel on Layouts.
   const openLayouts = (id: string) => setOpened({ id, tab: 'layouts' });
   // The pages whose in-page layout card was hidden, until the tab is next opened.
@@ -218,25 +174,13 @@ export function CanvasPages({
   const previewed = view.layoutPreview
     ? pages.find((p) => p.id === view.layoutPreview!.pageId)
     : undefined;
-  // An article's Style or Text sections (ArticleStyleSection), for the buttons beside an article page's cog.
-  const articleSection = (flow: string, part: 'style' | 'text') =>
-    articles?.flows[flow] ? (
-      <ArticleStyleSection
-        part={part}
-        style={articles.flows[flow].style}
-        themeAccent={view.themeAccent}
-        onChange={(change) => articles.setStyle(flow, change)}
-        onPreview={(style) => articles.setStylePreview(style ? { flow, style } : null)}
-      />
-    ) : null;
   const anchorOf = useCallback((id: string) => cogs.current.get(id), []);
   return (
     <>
       {pages.map((page) => {
-        const background = previewedBackground(page, pages, preview);
+        const background = previewedBackground(page, preview);
         // No "Page n": the page navigator under the page says which it is.
         const label = pageLabel(page, page.index, 1);
-        const number = pageNumberOf(page);
         // The label fits the page's on-screen width, less the title bar's buttons; too narrow, it
         // hides. The title bar's room on screen: the page's width at this zoom. The cog takes its
         // corner; an empty logo page's layout invite sits beside it, with its words while there is
@@ -250,7 +194,6 @@ export function CanvasPages({
         const pageButtons =
           !!edit &&
           !locked &&
-          !page.flow &&
           (page.kind === 'slide' ||
             page.kind === 'wireframe' ||
             pageKindOf(page) === 'infographic');
@@ -259,9 +202,6 @@ export function CanvasPages({
         // An infographic or slide page's Tidy, left of its Background, shown only while it would
         // change something.
         const tidyButton = pageButtons && edit.canTidy?.(page.id) === true;
-        // An article page's Style, Text and Background sit beside its cog (PageArticleButtons); a locked page
-        // offers none.
-        const articleButtons = !!edit && !locked && !!page.flow && !!articles?.flows[page.flow];
         // A logo page's empty artboard invites its layouts (its panel's Layouts tab).
         const empty = !!edit && !locked && page.kind === 'logo' && edit.contentCount(page.id) === 0;
         // The first page, unchosen and empty, offers its kind first (FirstPageChoice).
@@ -289,7 +229,6 @@ export function CanvasPages({
           notes: notesButton,
           logo: logoButtons,
           page: pageButtons,
-          article: articleButtons,
           tidy: tidyButton,
           device: deviceButton,
         };
@@ -337,7 +276,7 @@ export function CanvasPages({
                 : device
                   ? undefined
                   : '0 1px 3px rgb(15 23 42 / 0.14), 0 12px 32px rgb(15 23 42 / 0.12)',
-              ...(device ? {} : pageSheetStyle(background, rulingOf(page), pictureOf)),
+              ...(device ? {} : pageSheetStyle(background, pictureOf)),
             }}
           >
             {device ? (
@@ -414,8 +353,6 @@ export function CanvasPages({
             </div>
             {edit ? (
               <div
-                // The page's own controls: a press on them keeps an article's toolbar.
-                data-article-keep-active=""
                 className="absolute right-0 flex items-center gap-1"
                 style={{ bottom: '100%', marginBottom: 6 / zoom, ...steady(zoom, 'bottom right') }}
               >
@@ -433,14 +370,6 @@ export function CanvasPages({
                 ) : null}
                 {notesButton && view.deck ? (
                   <PageNotesButton pageId={page.id} deck={view.deck} labelled={labelled} />
-                ) : null}
-                {/* An article page's Style and Text (PageArticleButtons), then its Background. */}
-                {articleButtons && page.flow ? (
-                  <PageArticleButtons
-                    labelled={labelled}
-                    styleRequest={styleRequestFor(page.id)}
-                    section={(part) => articleSection(page.flow!, part)}
-                  />
                 ) : null}
                 {/* A wireframe page's Device (PageDeviceButton). */}
                 {deviceButton ? (
@@ -464,8 +393,8 @@ export function CanvasPages({
                     }
                   />
                 ) : null}
-                {/* An infographic, slide or article page's Background (PageBackgroundButton). */}
-                {pageButtons || articleButtons ? (
+                {/* An infographic or slide page's Background (PageBackgroundButton). */}
+                {pageButtons ? (
                   <PageBackgroundButton
                     page={page}
                     labelled={labelled}
@@ -505,20 +434,6 @@ export function CanvasPages({
                 zoom={zoom}
                 onChoose={(kind, device) => edit.choosePageKind(page.id, kind, device)}
               />
-            ) : null}
-            {number ? (
-              <span
-                aria-hidden
-                data-page-number=""
-                className="pointer-events-none absolute inset-x-0 text-center text-[12px] tabular-nums"
-                style={{
-                  bottom: number.bottom,
-                  color: pageIsDark(page) ? 'rgb(255 255 255 / 0.55)' : 'rgb(71 85 105 / 0.8)',
-                  fontFamily: number.font,
-                }}
-              >
-                {number.n}
-              </span>
             ) : null}
           </div>
         );
@@ -606,7 +521,6 @@ export function CanvasPages({
           key={`${open.id}:${opened.seq ?? 0}`}
           page={open}
           count={pages.length}
-          heldByLock={isArticleLocked(pages, open.id)}
           getAnchor={() => anchorOf(open.id)}
           initialTab={opened.tab}
           themeBackgrounds={view.themeBackgrounds}

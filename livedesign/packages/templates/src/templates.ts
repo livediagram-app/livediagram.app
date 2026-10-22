@@ -164,15 +164,13 @@ export type TemplateKind =
   // Power / interest stakeholder grid with stances and an engagement plan.
   | 'stakeholder-map'
   // The strategy and systems batch (docs/specs/008-canvas/canvas-and-palette.md "Templates"): a Wardley map, a
-  // STRIDE threat model, a service blueprint, a north-star metric tree, the Value Proposition Canvas, Amazon's
-  // Working Backwards PR/FAQ (an article), a family tree and a value stream map. The threat model, metric tree and
+  // STRIDE threat model, a service blueprint, a north-star metric tree, the Value Proposition Canvas, a family tree and a value stream map. The threat model, metric tree and
   // value stream map make a companion Sheet tab after the drawing (template-companions.ts).
   | 'wardley-map'
   | 'threat-model'
   | 'service-blueprint'
   | 'metric-tree'
   | 'value-proposition-canvas'
-  | 'working-backwards'
   | 'family-tree'
   | 'value-stream-map'
   // 5x5 likelihood x impact heatmap beside a risk register.
@@ -189,9 +187,6 @@ export type TemplateKind =
   // with a dock of pens rather than the palette. Shown beside Blank as a
   // quick-pick, never inside a category grid.
   | 'whiteboard'
-  // Article (docs/specs/007-editor/article-pages.md): a tab that opens in Pages mode on one
-  // article page, written as a short project brief.
-  | 'article'
   // Blank Illustration (docs/specs/007-editor/templates-by-mode.md "Five blanks"): a tab that opens
   // in Pages on one empty page, which asks what it is for. A quick-pick beside the other two
   // blanks, never inside a category grid.
@@ -199,7 +194,6 @@ export type TemplateKind =
   // The blanks of a page kind (docs/specs/007-editor/templates-by-mode.md "Blanks of a page kind"): one empty page
   // whose kind is already chosen (blank-page-templates.ts), so it never asks what it is for.
   | 'blank-slide-deck'
-  | 'blank-article'
   | 'blank-infographic'
   | 'blank-logo'
   | 'blank-wireframe-phone'
@@ -305,19 +299,13 @@ export const TEMPLATES: TemplateDescriptor[] = [
   {
     kind: 'blank-illustration',
     title: 'Blank Illustration',
-    description: 'An empty page for an infographic, an article, a slide, a logo or a wireframe.',
+    description: 'An empty page for an infographic, a slide, a logo or a wireframe.',
     extra: true,
   },
   {
     kind: 'blank-slide-deck',
     title: 'Blank Slide Deck',
     description: 'One empty 16:9 slide, ready for your first idea.',
-    extra: true,
-  },
-  {
-    kind: 'blank-article',
-    title: 'Blank Article',
-    description: 'One empty article page: a title and a first paragraph to write.',
     extra: true,
   },
   {
@@ -1034,13 +1022,6 @@ export const TEMPLATES: TemplateDescriptor[] = [
     extra: true,
   },
   {
-    kind: 'working-backwards',
-    title: 'Working Backwards',
-    description:
-      'Amazon’s PR/FAQ: the launch press release written before anything is built, then the customer and internal FAQs.',
-    extra: true,
-  },
-  {
     kind: 'family-tree',
     title: 'Family Tree',
     description:
@@ -1067,13 +1048,6 @@ export const TEMPLATES: TemplateDescriptor[] = [
     title: 'Meeting Agenda',
     description:
       'A weekly sync that runs itself: purpose and roles, a timed agenda, then parking lot, decisions and actions.',
-    extra: true,
-  },
-  {
-    kind: 'article',
-    title: 'Project Brief',
-    description:
-      'A project brief, written on pages like a doc: headings and lists to write over, room for charts and drawings in the text.',
     extra: true,
   },
   {

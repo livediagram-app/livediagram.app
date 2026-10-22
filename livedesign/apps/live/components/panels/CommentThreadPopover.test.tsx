@@ -3,9 +3,9 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { act, cleanup, render, screen } from '@testing-library/react';
 import { CommentThreadPopover } from './CommentThreadPopover';
 
-// The comment thread popover (docs/specs/007-editor/article-pages.md "Comments and actions"): the
-// composer takes the caret when the popover opens, including when its anchor lands a render after
-// it (a new margin note's marker), so what is typed next is the comment, not the writing's.
+// The comment thread popover (docs/specs/012-collaboration/comment-pin.md): the composer takes the
+// caret when the popover opens, including when its anchor lands a render after it, so what is typed
+// next is the comment.
 
 const noop = () => {};
 

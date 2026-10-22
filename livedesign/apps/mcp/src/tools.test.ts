@@ -148,14 +148,11 @@ function okResponse(request: Request): Response {
   }
   // A Pages edit (docs/specs/024-agents/pages-for-agents.md "The route").
   if (path.endsWith('/pages')) {
-    const article = { flow: 'art-1', title: 'A', pages: [1], blocks: 1, words: 1, look: null };
     return json({
       tab: { id: 't_1', rev: 2 },
       switched: false,
       lines: [],
       pages: [],
-      articles: [article],
-      article: { ...article, created: true },
       changesetId: null,
     });
   }
@@ -286,7 +283,6 @@ describe('registerTools', () => {
       'share_form',
       'try_form',
       'update_document',
-      'write_article',
     ]);
     // The description is what the calling model reads to pick a tool, so an
     // undescribed tool is effectively unreachable.
@@ -407,9 +403,8 @@ describe('tool annotations', () => {
     change_sheet: 'destructive',
     add_sheet: 'write',
     // docs/specs/024-agents/pages-for-agents.md: change_pages deletes pages and replaces their
-    // content; write_article replaces an article's text.
+    // content.
     change_pages: 'destructive',
-    write_article: 'destructive',
     // docs/specs/030-forms/forms.md "Agents": change_form deletes questions and sections; share_form publishes.
     read_form: 'read',
     add_form: 'write',
@@ -491,7 +486,6 @@ describe('tool annotations', () => {
       'change_sheet',
       'delete_document',
       'update_document',
-      'write_article',
     ]);
   });
 });

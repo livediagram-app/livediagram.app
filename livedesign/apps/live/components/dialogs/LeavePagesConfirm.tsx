@@ -1,6 +1,6 @@
 'use client';
 
-// Leaving Pages on a tab with content but no articles (docs/specs/007-editor/editor-modes.md
+// Leaving Pages on a tab with content (docs/specs/007-editor/editor-modes.md
 // "Leaving Pages"): a small card hanging from the mode switch that asked, since Diagram and
 // Draw show no pages and what is changed there may not fit back onto them. A warning glyph, a
 // question for a title, one plain sentence, and the two ways out: Cancel, or Switch (the target

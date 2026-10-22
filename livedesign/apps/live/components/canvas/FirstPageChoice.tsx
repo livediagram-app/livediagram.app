@@ -2,9 +2,9 @@
 
 // The first page's own choice (docs/specs/007-editor/pages-mode.md "Page kinds"): while a tab's
 // only page is unchosen and empty, it offers the four kinds of page inside itself, the same cards as
-// the add-a-page popover. Infographic keeps the page and puts the choice away; Article makes it the
-// first page of an article, the caret in its title; Slide turns it into a 16:9 landscape slide;
-// Logo into the 1024 artboard. Held at one screen size, centred on the page.
+// the add-a-page popover. Infographic keeps the page and puts the choice away; Slide turns it into a
+// 16:9 landscape slide; Logo into the 1024 artboard; Wireframe asks for its device. Held at one screen
+// size, centred on the page.
 import type { PageKind, WireframeDeviceId } from '@livedesign/document';
 import { useRef, useState } from 'react';
 import { rememberWireframeDevice } from '@/lib/wireframe-device-memory';

@@ -22,7 +22,7 @@ export const POPULAR_BY_MODE: Readonly<Record<PopularChoice, readonly TemplateKi
     'budget-planner',
     'orgchart',
     'sketchnote',
-    'article',
+    'logo-design',
   ],
   diagram: [
     'blank',
@@ -43,7 +43,6 @@ export const POPULAR_BY_MODE: Readonly<Record<PopularChoice, readonly TemplateKi
   ],
   pages: [
     'blank-illustration',
-    'article',
     'blank-slide-deck',
     'event-poster',
     'year-in-review',

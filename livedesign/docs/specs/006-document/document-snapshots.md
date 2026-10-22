@@ -65,10 +65,10 @@ This is **render-on-read**, not render-on-save, on purpose:
 
 ### Pages tabs
 
-A first tab in Pages (pages: infographics, slides, logos, articles)
+A first tab in Pages (pages: infographics, slides, logos, wireframes)
 snapshots as **its first page alone**, drawn as the page export draws it
 (`renderPageToSvg`, [Pages](../007-editor/pages-mode.md) "Export"): the page's sheet and
-background, an article page's estimated writing, and the elements reaching
+background, and the elements reaching
 onto it, cut at its edges, at the page's own size. Drawing the whole canvas
 instead put every page side by side, which at thumbnail size shrank to a
 row of slivers nobody could recognise; a deck is recognised by its cover.
@@ -80,9 +80,7 @@ photos costs one page's R2 reads.
 
 Measured on the renderer alone (Node, warm): a 12-slide deck of 10 shapes
 a slide drew in 1.33 ms as a 42 KB whole canvas and draws in 0.14 ms as a
-4 KB first page; a worst case of 60 slides of 25 shapes plus a 30-page,
-600-paragraph article drew in 6.5 ms at 528 KB and draws in 5.6 ms at
-9 KB (the article's writing estimate dominates either way).
+4 KB first page.
 
 An empty / unparseable first tab yields no snapshot (the endpoints 404
 and the row shows its generic icon). Deleting a document clears its R2

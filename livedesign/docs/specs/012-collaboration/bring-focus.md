@@ -84,7 +84,7 @@ fitted zoom.
 ### On a page
 
 On a tab in Pages mode ([Pages](../007-editor/pages-mode.md)) the thing worth looking
-at is a page, not a point: a slide, a poster, a page of an article. So when the element sits on a page,
+at is a page, not a point: a slide, a poster, a logo. So when the element sits on a page,
 taking the invitation **frames that page**, whole, beside the Contents sidebar, exactly as pressing the
 page's label frames it (the same glide, the same fit), on this tab or after switching to it. Here the zoom
 does change, because seeing the page is the point and the zoom that frames it is worked out on each

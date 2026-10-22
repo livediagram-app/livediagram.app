@@ -28,7 +28,7 @@ import { typeStatusRefusal } from '@/hooks/plan/status-refusal';
 import type { PlanPalette } from './plan-palette';
 import { BAND_CONTROLS_CLASS, BAND_HEADER_END, bandControlsProps } from './band-controls';
 
-// The shared six-dot grip (the article zone bar's), a board's move handle.
+// The shared six-dot grip, a board's move handle.
 const GripIcon = lucideGlyph(lucideGripVertical, 16);
 
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();

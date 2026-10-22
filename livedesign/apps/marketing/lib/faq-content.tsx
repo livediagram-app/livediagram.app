@@ -33,7 +33,7 @@ export type FaqCategory = {
 const ICON = 18;
 // Written out rather than read from @livedesign/templates: this module ships in the FAQ's client bundle, and the
 // catalogue is ~15 KB for one number. faq-content.test.tsx pins it to TEMPLATES.length.
-export const TEMPLATE_COUNT = 146;
+export const TEMPLATE_COUNT = 143;
 // The template categories, pinned to TEMPLATE_CATEGORIES.length by faq-content.test.tsx the same way.
 export const TEMPLATE_CATEGORY_COUNT = 14;
 // Pages mode's slide layouts, pinned to the catalogue by faq-content.test.tsx like the template count.
@@ -275,20 +275,6 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         ),
         aText:
           'Yes. Isometric mode tilts the whole tab and raises each box into a solid block, for an architecture walkthrough or a screenshot. It is a way to look at a diagram rather than edit it. See Isometric mode.',
-      },
-      {
-        q: 'Can I write documents in it?',
-        a: (
-          <>
-            Yes. Switch a tab to Pages and write an article straight onto pages: Markdown shortcuts,
-            a / menu for every block, and clean paste from web pages, Google Docs and Word. Writing
-            flows onto new pages as it grows, pictures, charts and diagrams sit in the text, and
-            teammates comment on the words themselves. Pick one of five looks, then export every
-            page as a PDF. See <a href="/help/canvas/pages-mode/articles/">Articles</a>.
-          </>
-        ),
-        aText:
-          'Yes. Switch a tab to Pages and write an article straight onto pages: Markdown shortcuts, a / menu for every block, and clean paste from web pages, Google Docs and Word. Writing flows onto new pages as it grows, pictures, charts and diagrams sit in the text, and teammates comment on the words themselves. Pick one of five looks, then export every page as a PDF. See Articles.',
       },
       {
         q: 'Can I design infographics, posters or a logo?',

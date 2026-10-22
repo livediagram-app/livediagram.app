@@ -104,7 +104,7 @@ export function inside(snap, word, group) {
 }
 
 // A Pages tab's pages, from its pages view: `page 2 "Tip 2" page-99 · infographic Square · at … · 16 elements`
-// (a logo page adds `· background #fff` before its count; an article page ends `· article art-1 · its writing below`).
+// (a logo page adds `· background #fff` before its count).
 // A page line's rectangle on the canvas: `at -960,-540 1920x1080`.
 function rectOf(line) {
   const r = / · at (-?[\d.]+),(-?[\d.]+) ([\d.]+)x([\d.]+)/.exec(line);
@@ -116,9 +116,7 @@ export function pagesOf(snap) {
   for (const t of tabsOf(snap)) {
     for (const line of (t.pages ?? '').split('\n')) {
       const m =
-        /^page (\d+)(?: "([^"]*)")? \S+ · ([\w-]+) ([^·]+?) · at .*?(?:· (\d+) elements?|· article .*)$/.exec(
-          line,
-        );
+        /^page (\d+)(?: "([^"]*)")? \S+ · ([\w-]+) ([^·]+?) · at .*?· (\d+) elements?$/.exec(line);
       if (m)
         out.push({
           tabId: t.id,

@@ -129,7 +129,6 @@ export const RESOURCES: readonly { name: string; alias?: string; summary: string
   { name: 'type', summary: 'Card types and their fields' },
   { name: 'sheet', summary: 'Sheets: their cells by A1, rows and columns' },
   { name: 'page', summary: 'Pages: slides, logos, infographics' },
-  { name: 'article', summary: 'Articles as Markdown' },
   { name: 'form', summary: 'Forms: build, read and publish one' },
   { name: 'changeset', summary: 'Changesets: what changed, by whom, and undoing one' },
   { name: 'comment', summary: 'Comment threads' },

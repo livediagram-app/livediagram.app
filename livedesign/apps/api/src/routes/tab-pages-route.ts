@@ -1,5 +1,5 @@
-// POST /api/documents/<id>/tabs/<tabId>/pages: an agent's Pages edit, page changes or an
-// article write (docs/specs/024-agents/pages-for-agents.md "The route"), for the CLI, the MCP and
+// POST /api/documents/<id>/tabs/<tabId>/pages: an agent's Pages edit, its page changes
+// (docs/specs/024-agents/pages-for-agents.md "The route"), for the CLI, the MCP and
 // any script. Gated like a changeset: anyone who may edit the tab, a read-only token refused.
 import { parsePagesRequest } from '@livedesign/edit-operations';
 import { getDocument } from '../db';

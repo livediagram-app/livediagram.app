@@ -27,7 +27,7 @@ describe('templateStartMode', () => {
 
   it('offers none once the tab has content, or its page a kind or company', () => {
     expect(templateStartMode({ ...base, elementCount: 1 })).toBeNull();
-    expect(templateStartMode({ ...base, mode: 'pages', pages: [{ kind: 'article' }] })).toBeNull();
+    expect(templateStartMode({ ...base, mode: 'pages', pages: [{ kind: 'logo' }] })).toBeNull();
     expect(templateStartMode({ ...base, mode: 'pages', pages: [{}, {}] })).toBeNull();
   });
 

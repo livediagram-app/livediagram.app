@@ -4,8 +4,8 @@
 // above the page's top-right corner, in screen space so it reads at one size whatever the zoom.
 // Its name, then its tabs: Page (size, orientation; absent where the page has neither), Background
 // (every hover over a swatch previews on the page itself) and a logo page's Layouts; then the page's
-// actions. An article page's Style, Text and Background sit beside its cog (PageArticleButtons). It closes on an outside press, Escape, or the canvas
-// panning or zooming under it (it would no longer sit by its cog).
+// actions. It closes on an outside press, Escape, or the canvas panning or zooming under it (it
+// would no longer sit by its cog).
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import {
   PAGE_NAME_MAX,
@@ -59,9 +59,8 @@ const TAB_LABEL: Record<PagePanelTab, string> = {
 };
 
 // The page's tabs: Page while it has a size or orientation to choose (a logo page has neither),
-// Background (not on an infographic or article page, whose Background sits beside its cog), then a
-// logo page's Layouts (an infographic or slide page's Layouts, and an article's Style and Text, sit
-// beside its cog).
+// Background (not on an infographic page, whose Background sits beside its cog), then a logo page's
+// Layouts (an infographic or slide page's Layouts sit beside its cog).
 export function pagePanelTabs(page: LaidOutPage): PagePanelTab[] {
   // A wireframe page's size is its device (docs/specs/007-editor/wireframe-pages.md); its
   // Background and Layouts sit beside its cog, as an infographic page's.
@@ -72,7 +71,7 @@ export function pagePanelTabs(page: LaidOutPage): PagePanelTab[] {
   const kind = pageKindOf(page);
   return [
     ...(hasPage ? (['page'] as const) : []),
-    ...(kind !== 'infographic' && !page.flow ? (['background'] as const) : []),
+    ...(kind !== 'infographic' ? (['background'] as const) : []),
     ...(kind === 'logo' ? (['layouts'] as const) : []),
   ];
 }
@@ -80,7 +79,6 @@ export function pagePanelTabs(page: LaidOutPage): PagePanelTab[] {
 export function PagePanel({
   page,
   count,
-  heldByLock = false,
   getAnchor,
   initialTab,
   themeBackgrounds,
@@ -95,8 +93,6 @@ export function PagePanel({
   // pages-tour.md "Where it appears").
   showMe?: { button: ReactNode; article: HelpArticleKey } | undefined;
   count: number;
-  // Another page of this page's article is locked (isArticleLocked): its shared edits are held.
-  heldByLock?: boolean;
   // The cog the panel hangs from, looked up when placed.
   getAnchor: () => HTMLElement | undefined;
   initialTab: PagePanelTab;
@@ -192,10 +188,8 @@ export function PagePanel({
   const placeLabel = `Page ${page.index + 1}`;
   const title = page.name ?? (count > 1 ? placeLabel : 'Page');
   // A locked page's panel says so, its name and sections unavailable (docs/specs/007-editor/
-  // pages-mode.md "Locking a page"); moving and duplicating it still work. A page of an
-  // article another of whose pages is locked is held too, all but its own name.
-  const selfLocked = page.locked === true;
-  const locked = selfLocked || heldByLock;
+  // pages-mode.md "Locking a page"); moving and duplicating it still work.
+  const locked = page.locked === true;
   const body = (
     <>
       {locked ? (
@@ -203,9 +197,7 @@ export function PagePanel({
           role="status"
           className="mx-3 mt-2 rounded-md bg-amber-50 px-2.5 py-1.5 text-xs text-amber-900 dark:bg-amber-500/15 dark:text-amber-100"
         >
-          {selfLocked
-            ? 'This page is locked. Unlock it beside the cog to change it.'
-            : "A page of this article is locked. Unlock it to change the article's pages."}
+          This page is locked. Unlock it beside the cog to change it.
         </p>
       ) : null}
       {showMe ? (
@@ -214,15 +206,13 @@ export function PagePanel({
           <HelpArticleLink article={showMe.article} variant="labelled" />
         </div>
       ) : null}
-      <div inert={selfLocked} className={selfLocked ? 'opacity-50' : undefined}>
+      <div inert={locked} className={locked ? 'opacity-50' : undefined}>
         <NameField
           key={page.id}
           name={page.name ?? ''}
           placeholder={count > 1 ? placeLabel : 'Untitled page'}
           onRename={(name) => edit.rename(page.id, name)}
         />
-      </div>
-      <div inert={locked} className={locked ? 'opacity-50' : undefined}>
         {/* One tab (an infographic page's Page) needs no switch. */}
         {tabs.length > 1 ? (
           <PanelTabs
@@ -296,8 +286,6 @@ export function PagePanel({
         role="dialog"
         aria-label={label}
         data-page-panel
-        // The page's own panel: working in it keeps an article's toolbar on its page.
-        data-article-keep-active=""
         tabIndex={-1}
         onClose={() => onClose(false)}
         zClassName="z-[var(--z-overlay)]"
@@ -314,8 +302,6 @@ export function PagePanel({
         role="dialog"
         aria-label={label}
         data-page-panel
-        // The page's own panel: working in it keeps an article's toolbar on its page.
-        data-article-keep-active=""
         tabIndex={-1}
         onPointerDown={(e) => e.stopPropagation()}
         className="fixed z-[var(--z-overlay)] flex outline-none animate-fade-in flex-col overflow-y-auto rounded-xl border border-slate-200 bg-white pb-1 shadow-xl shadow-slate-900/15 dark:border-slate-700 dark:bg-slate-900"
@@ -442,8 +428,7 @@ function ActionButton({
 }
 
 // Duplicate, move left, move right, delete: one row of icon buttons, each disabled where it has
-// nothing to do (the row's ends, the page limit, the last page). On an article page each acts on
-// the whole article, and says so.
+// nothing to do (the row's ends, the page limit, the last page).
 function PageActions({
   page,
   locked,
@@ -451,13 +436,13 @@ function PageActions({
   onClose,
 }: {
   page: LaidOutPage;
-  // The page, or its article, is held by a lock: no split and no delete.
+  // The page is held by a lock: no split and no delete.
   locked: boolean;
   edit: PageEdits;
   onClose: () => void;
 }) {
   const { duplicatePage, removePage } = edit;
-  const noun = page.flow ? 'article' : page.kind === 'slide' ? 'slide' : 'page';
+  const noun = page.kind === 'slide' ? 'slide' : 'page';
   return (
     <div className="mt-1 flex gap-1 border-t border-slate-100 px-2 pt-1.5 dark:border-slate-800">
       {page.size === 'fit' && (

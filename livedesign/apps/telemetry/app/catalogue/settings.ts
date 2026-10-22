@@ -369,7 +369,7 @@ export const TOURS_SETTINGS = settingsStack(
       'PagesTourSeenOff',
       'PagesTourSeenOn',
       'Pages Tours',
-      'Every Pages tour (slides, infographics, articles and logos) switched back on or off at once.',
+      'Every Pages tour (slides, infographics and logos) switched back on or off at once.',
     ),
     toggle(
       'UI',
@@ -384,13 +384,6 @@ export const TOURS_SETTINGS = settingsStack(
       'InfographicTourSeenOn',
       'Infographic Tour',
       "The Pages tour's infographic track switched back on or off.",
-    ),
-    toggle(
-      'UI',
-      'ArticleTourSeenOff',
-      'ArticleTourSeenOn',
-      'Article Tour',
-      "The Pages tour's article track switched back on or off.",
     ),
     toggle(
       'UI',

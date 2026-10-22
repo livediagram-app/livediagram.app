@@ -872,56 +872,9 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Changed|OpensInDraw':
     "Someone set a tab to open in Draw mode for everyone, from the tab menu's former Opens in (retired: the tab menu's Mode now counts as a mode switch).",
   'Tab|Changed|PageAdded': 'Someone added an infographic page to a Pages tab.',
-  'Tab|Changed|ArticleAdded': 'Someone added a new article to a Pages tab.',
   'Tab|Changed|SlidePageAdded': 'Someone added a slide page to a Pages tab.',
   'Tab|Changed|PageKindInfographic': "Someone chose Infographic for a new Pages tab's first page.",
-  'Tab|Changed|PageKindArticle': "Someone chose Article for a new Pages tab's first page.",
   'Tab|Changed|PageKindSlide': "Someone chose Slide for a new Pages tab's first page.",
-  'Tab|Changed|ArticlesToPages':
-    "Someone left Pages mode and turned a tab's articles into Page elements.",
-  'Tab|Changed|ArticleLookClean': 'Someone gave an article the Clean look.',
-  'Tab|Changed|ArticleLookClassic': 'Someone gave an article the Classic look.',
-  'Tab|Changed|ArticleLookReport': 'Someone gave an article the Report look.',
-  'Tab|Changed|ArticleLookNotebook': 'Someone gave an article the Notebook look, on ruled pages.',
-  'Tab|Changed|ArticleLookBold': 'Someone gave an article the Bold look.',
-  'Tab|Changed|ArticleStyle':
-    "Someone changed one part of an article's style: a font, the accent, spacing, rules, margins or page numbers.",
-  'Element|Added|ArticleImage': "Someone inserted an image at the caret in an article's writing.",
-  'Element|Added|ArticleTable': "Someone inserted a table at the caret in an article's writing.",
-  'Element|Added|ArticleChart': "Someone inserted a chart at the caret in an article's writing.",
-  'Element|Added|ArticleCallout':
-    "Someone inserted a callout at the caret in an article's writing.",
-  'Element|Added|ArticleSticky':
-    "Someone inserted a sticky note at the caret in an article's writing.",
-  'Element|Added|ArticleDrawing':
-    "Someone started a drawing in an article's writing: from Insert, or by putting shapes onto the page.",
-  'Element|Added|ArticleObject':
-    'Someone put an object (a chart, an image, a component) onto an article page, and the writing took it in.',
-  'Element|Added|ArticleDivider': "Someone inserted a divider into an article's writing.",
-  'Element|Added|ArticlePageBreak': "Someone inserted a page break into an article's writing.",
-  'Element|Added|ArticleQuote': "Someone inserted a quote into an article's writing.",
-  'Element|Added|ArticleCode': "Someone inserted a code block into an article's writing.",
-  'Element|Added|ArticleComment':
-    "Someone commented on a stretch of an article's writing, a marker in the margin beside it.",
-  'Element|Added|ArticleAction':
-    "Someone assigned an action on a stretch of an article's writing, a marker in the margin beside it.",
-  'Element|Changed|ArticleFormat':
-    'Someone formatted text in an article from the page toolbar: bold, italic, underline, strikethrough, a colour or a highlight.',
-  'Element|Changed|ArticleBlockStyle':
-    "Someone changed a block of an article's writing to another style or a list, from the page toolbar.",
-  'Element|Changed|ArticleLink': 'Someone added a link to text in an article.',
-  'Element|Changed|ArticlePaste':
-    'Someone pasted Markdown into an article, and it became headings, lists and formatting.',
-  'Element|Changed|ArticleZoneWrap':
-    "Someone changed how a picture or drawing sits in an article's writing: in line, or wrapped.",
-  'Element|Changed|ArticleZoneResized':
-    "Someone made a drawing in an article's writing bigger or smaller.",
-  'Element|Changed|ArticleZoneFloat':
-    'Someone set a picture or drawing in an article to float in front of the text.',
-  'Element|Changed|ArticleZoneMoved':
-    "Someone dragged a picture or drawing to a new place in an article's writing.",
-  'Element|Changed|ArticleZoneRemoved':
-    "Someone deleted a picture or drawing from an article's writing.",
   'Tab|Changed|PageRemoved': 'Someone deleted a page from a Pages tab.',
   'Tab|Changed|PagePortrait': 'Someone turned a page to portrait.',
   'Tab|Changed|PageLandscape': 'Someone turned a page to landscape.',
@@ -1234,8 +1187,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone reached the end of an infographic page's Show Me tour.",
   'UI|Ended|InfographicTourSkipped':
     "Someone left an infographic page's Show Me tour before its end.",
-  'UI|Ended|ArticleTourCompleted': "Someone reached the end of an article page's Show Me tour.",
-  'UI|Ended|ArticleTourSkipped': "Someone left an article page's Show Me tour before its end.",
   'UI|Ended|TabStyleTourCompleted':
     "Someone reached the end of the Tab Style dialog's Show Me tour.",
   'UI|Ended|TabStyleTourSkipped':
@@ -1556,8 +1507,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone pressed Show Me in a slide page's panel, starting its tour of layouts, backgrounds, the deck and presenting.",
   'UI|Started|InfographicTour':
     "Someone pressed Show Me in an infographic page's panel, starting its tour of layouts, backgrounds and page size.",
-  'UI|Started|ArticleTour':
-    "Someone pressed Show Me in an article page's panel, starting its tour of writing and article style.",
   'UI|Started|LogoTour':
     "Someone pressed Show Me in a logo page's panel, starting its tour of the logo tools.",
   'UI|Started|TabStyleTour':
@@ -1781,10 +1730,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone switched on Tours › "Infographic Tour" in Settings, so the Pages tour\'s infographic track is offered again.',
   'UI|Toggled|InfographicTourSeenOn':
     'Someone switched off Tours › "Infographic Tour" in Settings, marking the Pages tour\'s infographic track as answered.',
-  'UI|Toggled|ArticleTourSeenOff':
-    'Someone switched on Tours › "Article Tour" in Settings, so the Pages tour\'s article track is offered again.',
-  'UI|Toggled|ArticleTourSeenOn':
-    'Someone switched off Tours › "Article Tour" in Settings, marking the Pages tour\'s article track as answered.',
   'UI|Toggled|LogoTourSeenOff':
     'Someone switched on Tours › "Logo Tour" in Settings, so the Pages tour\'s logo track is offered again.',
   'UI|Toggled|LogoTourSeenOn':
@@ -1963,16 +1908,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Pages tour\'s infographic track reached its "Present It" step, with the Slide Deck open.',
   'UI|View|PagesTourStepInfographicOutro':
     'The Pages tour\'s infographic track reached its closing "You\'re ready to make pages" card.',
-  'UI|View|PagesTourStepArticleWrite':
-    'The Pages tour\'s article track reached its "Write on the Page" step, on the article page.',
-  'UI|View|PagesTourStepArticleToolbar':
-    'The Pages tour\'s article track reached its "The Page Toolbar" step.',
-  'UI|View|PagesTourStepArticleStyle':
-    'The Pages tour\'s article track reached its "Article Style" step, with the page\'s Style settings open.',
-  'UI|View|PagesTourStepArticleText':
-    'The Pages tour\'s article track reached its "Fonts and Spacing" step, with the page\'s Text settings open.',
-  'UI|View|PagesTourStepArticleOutro':
-    'The Pages tour\'s article track reached its closing "You\'re ready to write" card.',
   'UI|View|PagesTourStepLogoLayouts':
     'The Pages tour\'s logo track reached its "Start From a Logo Layout" step, with the page\'s Layouts open.',
   'UI|View|PagesTourStepLogoGuides':

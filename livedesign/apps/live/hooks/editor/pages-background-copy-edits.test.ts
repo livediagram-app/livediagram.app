@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { pagesOf, pageKindOf, pagesSharing, type Page, type Tab } from '@livedesign/document';
+import { pagesOf, pageKindOf, type Page, type Tab } from '@livedesign/document';
 import { track } from '@/lib/telemetry';
 import { appliedToAllMessage } from './pages-background-copy-edits';
 import { pageEdits } from './page-edits';
@@ -52,25 +52,24 @@ describe('Apply to All', () => {
     expect(h.toastInfo).toHaveBeenCalledWith('Background applied to 2 slides.');
   });
 
-  it('counts each page’s reach as the other pages of its kind, outside its own article', () => {
+  it('counts each page’s reach as the other pages of its kind', () => {
     const pages: Page[] = [
       slide('s1'),
       slide('s2'),
       slide('s3'),
       { id: 'i1', orientation: 'portrait', kind: 'infographic' },
-      { id: 'a1', orientation: 'portrait', kind: 'article', flow: 'f1' },
-      { id: 'a2', orientation: 'portrait', kind: 'article', flow: 'f1' },
-      { id: 'b1', orientation: 'portrait', kind: 'article', flow: 'f2' },
+      { id: 'l1', orientation: 'portrait', kind: 'logo', size: 'logo' },
+      { id: 'l2', orientation: 'portrait', kind: 'logo', size: 'logo' },
     ];
     const h = harness(pages);
     const laid = pagesOf({ elements: [], pages } as unknown as Tab);
     for (const p of laid) {
-      const own = pagesSharing(laid, p.id);
-      const direct = laid.filter((q) => pageKindOf(q) === pageKindOf(p) && !own.has(q.id)).length;
+      const direct = laid.filter((q) => pageKindOf(q) === pageKindOf(p) && q.id !== p.id).length;
       expect(h.edits().applyToAllReach(p.id), p.id).toBe(direct);
     }
     expect(h.edits().applyToAllReach('s1')).toBe(2);
-    expect(h.edits().applyToAllReach('a1')).toBe(1);
+    expect(h.edits().applyToAllReach('l1')).toBe(1);
+    expect(h.edits().applyToAllReach('i1')).toBe(0);
   });
 
   it('says and counts nothing for someone who may no longer edit', () => {

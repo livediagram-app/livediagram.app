@@ -122,8 +122,7 @@ device or from the keyboard.
   The link keeps its hover card naming the destination, the action its "Assigned to …" card.
 - Indicators scale with the canvas zoom and hide below 40% zoom (`ADORNMENT_MIN_ZOOM`), with the
   lock badge and the remote selectors.
-- An annotation's marker is its note, and a margin note shows its count on its own face, so
-  neither shows a note indicator.
+- An annotation's marker is its note, so it shows no note indicator.
 - They are editor chrome: exports, thumbnails, embeds (view or edit role) and a slide being
   **presented** ([Presentation mode](../012-collaboration/presentation-mode.md)) never draw them,
   whatever style the person chose (`SuppressElementIndicators` above the canvas reads as **Off**);

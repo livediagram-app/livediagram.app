@@ -17,7 +17,6 @@ const TEMPLATE_MODES: Partial<Record<TemplateKind, EditorMode>> = {
   'idea-garden': 'draw',
   'blank-illustration': 'pages',
   'blank-slide-deck': 'pages',
-  'blank-article': 'pages',
   'blank-infographic': 'pages',
   'blank-logo': 'pages',
   'blank-wireframe-phone': 'pages',
@@ -30,8 +29,6 @@ const TEMPLATE_MODES: Partial<Record<TemplateKind, EditorMode>> = {
   'wireframe-dashboard': 'pages',
   'wireframe-tablet-app': 'pages',
   'wireframe-watch-app': 'pages',
-  article: 'pages',
-  'working-backwards': 'pages',
   'slide-deck': 'pages',
   'logo-design': 'pages',
   'live-card': 'pages',
@@ -148,7 +145,6 @@ export const BLANK_TEMPLATE_FOR_MODE: Readonly<Record<EditorMode, TemplateKind>>
 // beside Blank Illustration, in the order the landing page's Blank Slate lists them.
 export const EXTRA_BLANK_TEMPLATES: readonly TemplateKind[] = [
   'blank-slide-deck',
-  'blank-article',
   'blank-infographic',
   'blank-logo',
   'blank-wireframe-phone',

@@ -1,17 +1,9 @@
 // The edits to a Pages tab's pages, as pure tab changes (docs/specs/007-editor/pages-mode.md
-// "The page panel", "Page actions", docs/specs/007-editor/article-pages.md "An article"): turn,
-// resize, rename, paint and lock a page; add, duplicate, move, delete and lay one out. On an article
-// page the edits that reach its look (a turn, a size, its paint) and its place (a move, a delete) act
-// on every page of the article. Shared by the page panel (apps/live page-edits) and the
+// "The page panel", "Page actions"): turn, resize, rename, paint and lock a page; add, duplicate,
+// move, delete and lay one out. Shared by the page panel (apps/live page-edits) and the
 // agents' page changes (docs/specs/024-agents/pages-for-agents.md), so an agent's edit is the
 // panel's. Each answers the next tab (the same one when nothing changes) or why it was refused.
-import {
-  pageUnits,
-  withArticleAdded,
-  withArticleDuplicated,
-  withArticleRemoved,
-  withUnitMoved,
-} from './article-pages';
+import { pageUnits, pagesSharing, withUnitMoved } from './page-units';
 import type { Element, Tab } from './index';
 import {
   pagesOf,
@@ -59,30 +51,16 @@ export type PageEditRefusal =
 type PagesTab = Pick<Tab, 'elements'> & {
   pages?: unknown;
   pageOrientation?: unknown;
-  articles?: unknown;
 };
 
 export type PageEdit<T> = { tab: T } | { refused: PageEditRefusal };
 
 const refused = (why: PageEditRefusal): { refused: PageEditRefusal } => ({ refused: why });
 
-/** The pages a page-wide change reaches: the page, or every page of its article. */
-export function pagesSharing(pages: readonly Page[], pageId: string): Set<string> {
-  const target = pages.find((p) => p.id === pageId);
-  if (!target) return new Set();
-  return new Set(
-    target.flow ? pages.filter((p) => p.flow === target.flow).map((p) => p.id) : [pageId],
-  );
-}
-
 /** Whether a lock holds an edit of this page (docs/specs/007-editor/pages-mode.md "Locking a
- *  page"): its own lock, or, for an edit that reaches its whole article (`shared`), any lock on the
- *  article's pages. A page's own edits (its name) reach only the page itself. */
-export function pageLockRefuses(pages: readonly Page[], pageId: string, shared = true): boolean {
-  const target = pages.find((p) => p.id === pageId);
-  if (!target) return false;
-  const reach = shared && target.flow ? pages.filter((p) => p.flow === target.flow) : [target];
-  return reach.some((p) => p.locked === true);
+ *  page"): its own lock. */
+export function pageLockRefuses(pages: readonly Page[], pageId: string): boolean {
+  return pages.find((p) => p.id === pageId)?.locked === true;
 }
 
 /** A page's lock set or cleared. Never refused by its own lock (unlocking is how one gets in). */
@@ -108,7 +86,7 @@ export function pageRenamed<T extends PagesTab>(tab: T, pageId: string, raw: str
   const pages = pagesOf(tab);
   const target = pages.find((p) => p.id === pageId);
   if (!target) return refused('unknown_page');
-  if (pageLockRefuses(pages, pageId, false)) return refused('locked');
+  if (pageLockRefuses(pages, pageId)) return refused('locked');
   const name = raw.trim().slice(0, PAGE_NAME_MAX);
   if ((target.name ?? '') === name) return { tab };
   const next = pages.map((p) => {
@@ -119,14 +97,11 @@ export function pageRenamed<T extends PagesTab>(tab: T, pageId: string, raw: str
   return { tab: withPages(tab, next) };
 }
 
-// A turn or a new size re-fits an infographic page's content into the page as it now is
-// (withContentFittedToPage); an article's pages all change together and its writing reflows, so
-// nothing is fitted.
+// A turn or a new size re-fits the page's content into the page as it now is
+// (withContentFittedToPage).
 function reshaped<T extends PagesTab>(tab: T, pageId: string, patch: (p: Page) => Page): T {
   const pages = pagesOf(tab);
-  const reach = pagesSharing(pages, pageId);
-  const next = pages.map((p) => (reach.has(p.id) ? patch(p) : p));
-  if (pages.find((p) => p.id === pageId)?.flow) return withPages(tab, next);
+  const next = pages.map((p) => (p.id === pageId ? patch(p) : p));
   const ids = elementIdsOnPage(tab.elements, layOutPages(pages), pageId);
   return withContentFittedToPage(withPages(tab, next), ids, pageId);
 }
@@ -169,7 +144,7 @@ export function pageResized<T extends PagesTab>(
   };
 }
 
-/** A page's background patched; on an article, every page of it. A new fill re-inks what is on
+/** A page's background patched. A new fill re-inks what is on
  *  the page so it still reads (pageInkFor, docs/specs/007-editor/pages-mode.md "Re-inking"),
  *  judged from the author's own colours where `memory` recalls them; `memory` comes back as it is
  *  after (the caller keeps it). A logo page takes no pattern. */
@@ -185,7 +160,7 @@ export function pageBackgroundSet<T extends PagesTab>(
   return pagesInkFor(stored.tab, stored.inks, memory);
 }
 
-/** pageBackgroundSet's page half: the background written onto the page (and its article), and
+/** pageBackgroundSet's page half: the background written onto the page, and
  *  the pages a new fill must re-ink, left for the caller to ink (pagesInkFor) so a spread over
  *  many pages inks them in one walk. No inks when nothing changed or the fill was left alone. */
 export function pageBackgroundStored<T extends PagesTab>(
@@ -214,21 +189,18 @@ export function pageBackgroundStored<T extends PagesTab>(
   return { tab: out, inks: [...reach].map((id) => ({ pageId: id, background })) };
 }
 
-/** Whether another page of this kind fits (an article's copy is all its pages). */
+/** Whether another page fits. */
 const room = (pages: readonly Page[], more = 1) => pages.length + more <= MAX_PAGES;
 
 /**
  * A new page of a kind after the last: an infographic page takes the last infographic page's size
- * and orientation (else A4 portrait; A4 after a Fit to Content page); an article the last page's
- * paper size and orientation when it is a paper size, else A4 portrait, its writing a new Title and
- * paragraph (`flow` its id); a slide the last slide's size (else 16:9), landscape; a logo page the
+ * and orientation (else A4 portrait; A4 after a Fit to Content page); a slide the last slide's size (else 16:9), landscape; a logo page the
  * 1024 artboard. All on the plain paper.
  */
 export function pageAdded<T extends PagesTab>(
   tab: T,
   kind: PageKind,
   id: string,
-  flow: string,
   // A wireframe page's device, chosen as it was added; absent takes the last wireframe page's.
   device?: WireframeDeviceId,
 ): PageEdit<T> {
@@ -237,21 +209,6 @@ export function pageAdded<T extends PagesTab>(
   // The new page wears the background of the page before it (the last), whatever either kind; a
   // logo page takes its fill alone, since it takes no pattern.
   const carried = carriedBackground(pages[pages.length - 1]?.background, kind);
-  if (kind === 'article') {
-    const last = pages[pages.length - 1];
-    const paper = last && ['a4', 'letter', 'a3'].includes(last.size ?? 'a4');
-    const out = withArticleAdded(
-      tab,
-      {
-        id,
-        orientation: paper ? last.orientation : 'portrait',
-        ...(paper && last.size ? { size: last.size } : {}),
-        ...(carried ? { background: carried } : {}),
-      },
-      flow,
-    );
-    return { tab: out as T };
-  }
   let page: Page;
   if (kind === 'slide') {
     const lastSlide = [...pages].reverse().find((p) => p.kind === 'slide');
@@ -266,7 +223,7 @@ export function pageAdded<T extends PagesTab>(
   } else {
     const model = [...pages]
       .reverse()
-      .find((p) => !p.flow && p.kind !== 'slide' && p.kind !== 'logo' && p.kind !== 'wireframe');
+      .find((p) => p.kind !== 'slide' && p.kind !== 'logo' && p.kind !== 'wireframe');
     const size = model?.size === 'fit' ? undefined : model?.size;
     page = { id, orientation: model?.orientation ?? 'portrait', ...(size ? { size } : {}) };
   }
@@ -277,23 +234,21 @@ export function pageAdded<T extends PagesTab>(
 /**
  * A new page like `sourceId` after the last (docs/specs/007-editor/pages-mode.md "Adding a page"):
  * its kind and shape, a wireframe page's device, frame look, orientation and system bars too,
- * carrying the last page's background as any new page does; never its content. An article page
- * starts a new article on the same paper.
+ * carrying the last page's background as any new page does; never its content.
  */
 export function pageAddedLike<T extends PagesTab>(
   tab: T,
   sourceId: string,
   id: string,
-  flow: string,
 ): PageEdit<T> {
   const pages = pagesOf(tab);
   const source = pages.find((p) => p.id === sourceId);
   if (!source) return refused('unknown_page');
   if (source.kind !== 'wireframe') {
     const kind = pageKindOf(source);
-    if (kind !== 'infographic' || source.size === 'fit') return pageAdded(tab, kind, id, flow);
+    if (kind !== 'infographic' || source.size === 'fit') return pageAdded(tab, kind, id);
     // An infographic page in the source's own size and turn (pageAdded takes the last infographic's).
-    const out = pageAdded(tab, kind, id, flow);
+    const out = pageAdded(tab, kind, id);
     if (!('tab' in out)) return out;
     const next = pagesOf(out.tab).map((p) => {
       if (p.id !== id) return p;
@@ -388,37 +343,25 @@ export function pageDeviceSet<T extends PagesTab>(
   return { tab: reshaped(tab, pageId, apply) };
 }
 
-/** A copy after the page, content and all; an article page copies its whole article (`flow` the
- *  copy's article id). */
+/** A copy after the page, content and all. */
 export function pageDuplicated<T extends PagesTab>(
   tab: T,
   pageId: string,
   id: string,
-  flow: string,
 ): PageEdit<T> {
   const pages = pagesOf(tab);
-  const target = pages.find((p) => p.id === pageId);
-  if (!target) return refused('unknown_page');
-  if (target.flow) {
-    const out = withArticleDuplicated(tab, target.flow, flow);
-    return out ? { tab: out } : refused('page_limit');
-  }
+  if (!pages.some((p) => p.id === pageId)) return refused('unknown_page');
   if (!room(pages) || pages.some((p) => p.id === id)) return refused('page_limit');
   return { tab: withDuplicatedPage(tab, pageId, id) };
 }
 
-/** A page deleted with everything on it, the pages after it closing the gap; an article page
- *  deletes its whole article, writing and all. Never the last unit. */
+/** A page deleted with everything on it, the pages after it closing the gap. Never the last page. */
 export function pageRemoved<T extends PagesTab>(tab: T, pageId: string): PageEdit<T> {
   const pages = pagesOf(tab);
   const target = pages.find((p) => p.id === pageId);
   if (!target) return refused('unknown_page');
   if (pageLockRefuses(pages, pageId)) return refused('locked');
   if (pageUnits(pages).length <= 1) return refused('last_page');
-  if (target.flow) {
-    const out = withArticleRemoved(tab, target.flow);
-    return out ? { tab: out } : refused('last_page');
-  }
   const emptied = withPageContentReplaced(tab, pageId, []);
   return {
     tab: withPages(
@@ -428,7 +371,7 @@ export function pageRemoved<T extends PagesTab>(tab: T, pageId: string): PageEdi
   };
 }
 
-/** A page's unit (the page, or its whole article) moved to a place among the units (0 first), its
+/** A page moved to a place among the pages (0 first), its
  *  content with it. */
 export function pageMovedTo<T extends PagesTab>(
   tab: T,

@@ -18,7 +18,6 @@ import type { TabKind } from './tab-kind';
 import type { DashboardLayout } from './dashboard';
 import type { EditorMode } from './editor-mode';
 import type { Page, PageOrientation } from './page';
-import type { ArticleFlow } from './article-flow';
 import type { TabTimer, TabVote } from './session';
 
 // Layer type used by the `Tab.layers` field below (docs/specs/006-document/layers.md). Type-only
@@ -351,10 +350,6 @@ export type Tab = {
   // in row order, each portrait or landscape, that everyone lays the tab out on. Absent = one page
   // (read via `pagesOf`).
   pages?: Page[];
-  // The writing of the tab's article pages, by flow id (docs/specs/007-editor/article-pages.md):
-  // each document's blocks and style, shared by its pages (`Page.flow`). Read via
-  // `articlesOf`; synced block by block (the `article` room op), never in a `tab-meta` patch.
-  articles?: Record<string, ArticleFlow>;
   // Legacy: a single page's orientation, from before multiple pages. Read as one page when `pages`
   // is absent; dropped the first time the pages change (`withPages`).
   pageOrientation?: PageOrientation;
@@ -494,16 +489,7 @@ export * from './page-ink-ground';
 export * from './page-ink-rules';
 export * from './paginate';
 export * from './editor-mode-switch';
-export * from './article-flow';
-export * from './article-flow-ops';
-export * from './article-pages';
-export * from './article-style';
-export * from './article-zones';
-export * from './article-notes';
-export * from './article-to-page';
-export * from './article-intake';
-export * from './article-markdown';
-export * from './article-markdown-io';
+export * from './page-units';
 export * from './page-paint';
 export * from './page-default-background';
 export * from './pages-edits';
@@ -895,8 +881,6 @@ export * from './dashboard-card-style';
 export * from './tab-names';
 export { planBoardFitHeight } from './svg-render-plan';
 export * from './svg-render-pages';
-export * from './article-draw-ops';
-export * from './article-layout-estimate';
 export { agendaFitHeight } from './svg-render-agenda';
 export * from './session-button-text';
 export { lineChars } from './svg-render-web';

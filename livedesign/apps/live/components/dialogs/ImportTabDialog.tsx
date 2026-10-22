@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Dialog } from '@/components/dialogs/Dialog';
-import { FormatCard } from './FormatCard';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
+import { FormatCard } from './FormatCard';
 import { TextImportPanel } from './TextImportPanel';
 import type { ImportOutcome } from '@/lib/import-tab';
 import { ImportReport } from './ImportReport';
@@ -17,7 +17,7 @@ type ImportTabDialogProps = {
   // dialog can close / stay open / show an error without throwing.
   onImportFile: (format: Format) => Promise<ImportOutcome>;
   // Runs a text import (the paste/write path) for the chosen format,
-  // bypassing the file picker (docs/specs/020-import-export/markdown-import.md).
+  // bypassing the file picker (docs/specs/020-import-export/README.md).
   onImportText: (format: Format, text: string) => Promise<ImportOutcome>;
   // The formats offered, in catalogue order; absent offers every one. Pages mode and a Dashboard tab offer
   // JSON only (docs/specs/007-editor/pages-mode.md "Import", docs/specs/026-plan/plan-tabs.md "Import and
@@ -33,11 +33,6 @@ const FORMATS: {
   title: string;
   description: string;
   placeholder: string;
-  // Optional footnote for this format's paste step — a help link for a
-  // format whose mapping isn't obvious from the placeholder alone. It rides
-  // on the format rather than the picker screen so it appears once the
-  // reader has actually chosen that format and the answer is relevant.
-  note?: { article: 'markdownImport'; label: string };
 }[] = [
   {
     key: 'json',
@@ -46,18 +41,10 @@ const FORMATS: {
       'A livedesign tab (a .json export). Restores its elements exactly. Paste it or pick a file.',
     placeholder: '{\n  "schemaVersion": 1,\n  "kind": "livedesign.tab",\n  "tab": { … }\n}',
   },
-  {
-    key: 'markdown',
-    title: 'Markdown',
-    description:
-      'A .md outline (headings + lists), e.g. exported from XMind. Becomes a themed tree.',
-    placeholder: '# Project\n\n- Research\n  - Interviews\n  - Survey\n- Build\n- Launch',
-    note: { article: 'markdownImport', label: 'See how a Markdown outline maps to a tree' },
-  },
 ];
 
 // Counterpart to ExportTabDialog: pick a format to import INTO the current
-// tab. Importing REPLACES the tab's contents (docs/specs/020-import-export/markdown-import.md), so the dialog leads
+// tab. Importing REPLACES the tab's contents (docs/specs/020-import-export/README.md), so the dialog leads
 // with a warning before the format cards. Every format is text, so each card
 // opens the same two-step panel: paste/write the content, or pick a file.
 // Errors render inline; on success the dialog closes.
@@ -158,19 +145,6 @@ function ImportChooser({
         <TextImportPanel
           formatTitle={activeFormat.title}
           placeholder={activeFormat.placeholder}
-          /* Quiet footnote for this format. It used to sit under the picker
-               grid, where it asked "Importing a Markdown outline?" of a reader
-               who had not picked a format yet — an answer to a question nobody
-               had. */
-          note={
-            activeFormat.note ? (
-              <HelpArticleLink
-                article={activeFormat.note.article}
-                variant="text"
-                label={activeFormat.note.label}
-              />
-            ) : null
-          }
           onImportText={(text) => onImportText(activeFormat.key, text)}
           onImportFile={() => onImportFile(activeFormat.key)}
           onDone={onDone}
@@ -195,7 +169,7 @@ function ImportChooser({
 }
 
 function FormatIcon({ kind }: { kind: Format }) {
-  const label = kind === 'markdown' ? 'md' : 'json';
+  const label = kind;
   return (
     <svg width="36" height="20" viewBox="0 0 36 20" aria-hidden>
       <rect

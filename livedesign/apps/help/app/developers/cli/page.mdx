@@ -162,18 +162,16 @@ livedesign watch "Shop"                         # stream changes until you stop 
 
 `wait` blocks until someone comments or the document changes (a burst of edits counts as one change), prints it and exits, which lets an agent respond to the people working beside it. Comments the CLI adds are yours.
 
-## Pages and Articles
+## Pages
 
-[Pages](/help/canvas/pages-mode/) tabs hold pages (infographics, slides and logos) and articles, which have their own commands:
+[Pages](/help/canvas/pages-mode/) tabs hold pages (infographics, slides, logos and wireframes), which have their own commands:
 
 ```bash
-livedesign page ls "Pitch deck"                                  # each page, its refs, articles and layouts
+livedesign page ls "Pitch deck"                                  # each page, its refs and layouts
 livedesign page set "Pitch deck" --add slide --layout slide-title  # add, lay out, move, copy or delete pages
-livedesign article get "Project brief" > brief.md                # an article as Markdown
-livedesign article set "Project brief" brief.md                  # write it back, or a new one
 ```
 
-`page set` makes one change from its flags, or up to 50 from a JSON list with `--changes`. `article set` writes over the article you name with `--article`, adds after its last block with `--append`, or starts another with `--new`, and the editor flows the text onto as many pages as it needs.
+`page set` makes one change from its flags, or up to 50 from a JSON list with `--changes`.
 
 ## Forms
 

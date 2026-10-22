@@ -90,20 +90,20 @@ export default [
   {
     id: 'I3',
     level: 'easy',
-    prompt: 'Write a one-page Q3 engineering report: highlights, metrics, risks, next quarter.',
+    prompt: 'Wireframe the sign-in screen of a mobile banking app.',
     checks: [
       [
-        'a one-page article',
+        'one phone wireframe',
         ({ snap }) => ({
-          pass: pagesOfKind(snap, 'article').length === 1,
-          detail: `${pagesOfKind(snap, 'article').length} article pages`,
+          pass: pagesOfKind(snap, 'wireframe').length === 1,
+          detail: `${pagesOfKind(snap, 'wireframe').length} wireframe pages`,
         }),
       ],
       [
-        'highlights, metrics, risks, next quarter',
-        ({ snap }) => mentionsAll(snap, [/highlight/i, /metric/i, /risk/i, /next quarter|q4/i]),
+        'an email or username, a password and a sign-in button',
+        ({ snap }) => mentionsAll(snap, [/email|username/i, /password/i, /sign in|log in/i]),
       ],
-      ['about Q3 engineering', ({ snap }) => mentionsAll(snap, [/q3/i, /engineering/i])],
+      ['about banking', ({ snap }) => mentionsAll(snap, [/bank/i])],
     ],
   },
   {
@@ -134,7 +134,7 @@ export default [
       [
         '5 panels',
         ({ snap }) => ({
-          pass: pagesOf(snap).filter((p) => p.kind !== 'article').length === 5,
+          pass: pagesOf(snap).length === 5,
           detail: `${pagesOf(snap).length} pages`,
         }),
       ],

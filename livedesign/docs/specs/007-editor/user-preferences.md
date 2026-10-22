@@ -767,8 +767,8 @@ and the dialog stays as the one complete, browsable index of them.
 
   **Tours** is a category of its own: one switch per guided tour, **Diagram
   Tour**, **Plan Tours** (over **Boards Tour**, **Sheets Tour** and **Dashboards Tour**), **Workshop Tour**,
-  **Draw Tour**, **Forms Tour**, **Avatar Tour** and **Pages Tours** (over **Slides Tour**, **Infographic Tour**,
-  **Article Tour** and **Logo Tour**), each with a line saying where it offers itself and a **Learn more**
+  **Draw Tour**, **Forms Tour**, **Avatar Tour** and **Pages Tours** (over **Slides Tour**, **Infographic Tour**
+  and **Logo Tour**), each with a line saying where it offers itself and a **Learn more**
   to its article, under one **Offer Again** section note: each tour offers
   itself once; switch one back on and close Settings to take it again, straight
   away if you are in its mode, otherwise the next time you are. (The tours used
@@ -798,7 +798,7 @@ and the dialog stays as the one complete, browsable index of them.
   `drawTourSeen` ([Draw tour](../023-draw-mode/draw-tour.md)), **Forms Tour** against `formTourSeen` ([Forms](../030-forms/forms.md) "The Forms tour"), **Avatar Tour** against `avatarTourSeen`
   ([Avatar tour](../008-canvas/avatar-tour.md)), and the Pages tour is built as the Plan tour's
   rows are ([Pages tour](pages-tour.md)): **Pages Tours** over one row per page kind (**Slides Tour**,
-  **Infographic Tour**, **Article Tour**, **Logo Tour**); `pagesTourKinds` lists the kinds answered. Power user
+  **Infographic Tour**, **Logo Tour**); `pagesTourKinds` lists the kinds answered. Power user
   mode's readout lists each tour's switch over all its tracks (**Plan Tours**, **Pages Tours**).
   A multi-track tour's old single flag (`planTourSeen`, `pagesTourSeen`) counts every track only while Power
   user mode is on, so an answer given before the tour split offers each track once more.

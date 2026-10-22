@@ -121,12 +121,12 @@ describe('withContentOnAPage', () => {
     ).toBeNull();
   });
 
-  it('never replaces a locked page or an article page', () => {
+  it('never replaces a locked page or a logo page', () => {
     const stray = [box('s', 9000, 9000, 40, 40)];
     expect(
       withContentOnAPage({
         elements: stray,
-        pages: [{ id: 'a', orientation: 'portrait', kind: 'article', flow: 'f' }],
+        pages: [{ id: 'a', orientation: 'portrait', size: 'logo', kind: 'logo' }],
       }),
     ).toBeNull();
     expect(

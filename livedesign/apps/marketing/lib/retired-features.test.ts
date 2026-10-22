@@ -19,6 +19,7 @@ const RETIRED = [
   'reliability',
   'connect',
   'foundations',
+  'documents',
 ];
 
 const rules = readFileSync(fileURLToPath(new URL('../public/_redirects', import.meta.url)), 'utf8')

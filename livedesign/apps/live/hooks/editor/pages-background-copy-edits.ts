@@ -29,7 +29,6 @@ export type BackgroundCopyEdits = {
 export const KIND_PAGES: Record<PageKind, { one: string; many: string }> = {
   slide: { one: 'slide', many: 'Slides' },
   infographic: { one: 'infographic page', many: 'Infographic Pages' },
-  article: { one: 'article page', many: 'Article Pages' },
   logo: { one: 'logo page', many: 'Logo Pages' },
   wireframe: { one: 'wireframe page', many: 'Wireframe Pages' },
 };
@@ -59,7 +58,7 @@ export function backgroundCopyEdits({
   // the edit of someone who no longer may, and a notice or event for it would be untrue.
   mayEdit?: () => boolean;
 }): BackgroundCopyEdits {
-  // The other pages of a page's kind Apply to All reaches, outside its own article.
+  // The other pages of a page's kind Apply to All reaches.
   const targetsOf = (pageId: string) => {
     const source = current.find((p) => p.id === pageId);
     if (!source) return [];
@@ -72,7 +71,7 @@ export function backgroundCopyEdits({
     const source = current.find((p) => p.id === pageId);
     const targets = targetsOf(pageId);
     if (!source || targets.length === 0 || !mayEdit()) return;
-    // A locked page keeps its own (and, for an article, any lock holds its whole article).
+    // A locked page keeps its own.
     const skipped = targets.filter((p) => pageLockRefuses(current, p.id)).length;
     track('Tab', 'Changed', 'PageBackgroundAppliedToAll');
     commitTab((t) => {
@@ -115,26 +114,17 @@ export function backgroundCopyEdits({
     return true;
   };
 
-  // Every page's title bar asks its reach on every render (a pan, a zoom): counted once per kind and
-  // per article here, then answered per page without a scan, rather than O(pages) a page.
+  // Every page's title bar asks its reach on every render (a pan, a zoom): counted once per kind
+  // here, then answered per page without a scan, rather than O(pages) a page.
   let reachOf: Map<string, number> | null = null;
   const applyToAllReach = (pageId: string) => {
     if (!reachOf) {
       const byKind = new Map<PageKind, number>();
-      const byArticle = new Map<string, number>();
       for (const p of current) {
         const kind = pageKindOf(p);
         byKind.set(kind, (byKind.get(kind) ?? 0) + 1);
-        if (p.flow)
-          byArticle.set(`${kind}|${p.flow}`, (byArticle.get(`${kind}|${p.flow}`) ?? 0) + 1);
       }
-      reachOf = new Map(
-        current.map((p) => {
-          const kind = pageKindOf(p);
-          const own = p.flow ? (byArticle.get(`${kind}|${p.flow}`) ?? 1) : 1;
-          return [p.id, (byKind.get(kind) ?? 0) - own];
-        }),
-      );
+      reachOf = new Map(current.map((p) => [p.id, byKind.get(pageKindOf(p))! - 1]));
     }
     return reachOf.get(pageId) ?? 0;
   };

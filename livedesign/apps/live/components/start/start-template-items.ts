@@ -46,16 +46,13 @@ const RECOMMENDED_LINE: Record<TemplateStartMode, string> = {
 // Recommended leaves these to their group (Timeline, under Timelines).
 const NOT_RECOMMENDED: ReadonlySet<TemplateKind> = new Set(['timeline']);
 
-// Start Making Pages' Recommended opens on two blanks of a page kind in place of the Popular shelf's Blank Illustration
-// and Article: a page already of its kind is the quicker start (docs/specs/007-editor/start-diagramming.md
+// Start Making Pages' Recommended opens on a blank of a page kind in place of the Popular shelf's Blank Illustration:
+// a page already of its kind is the quicker start (docs/specs/007-editor/start-diagramming.md
 // "Recommended and groups"). The shelf itself, shared with the Quick Start and the gallery, is unchanged.
 const RECOMMENDED_SWAPS: Partial<
   Record<TemplateStartMode, ReadonlyMap<TemplateKind, TemplateKind>>
 > = {
-  pages: new Map<TemplateKind, TemplateKind>([
-    ['blank-illustration', 'blank-infographic'],
-    ['article', 'blank-article'],
-  ]),
+  pages: new Map<TemplateKind, TemplateKind>([['blank-illustration', 'blank-infographic']]),
 };
 
 type OwnGroup = { id: string; name: string; line: string; kinds: readonly TemplateKind[] };
@@ -178,13 +175,15 @@ const OWN_GROUPS: Readonly<Record<Exclude<TemplateStartMode, 'diagram'>, readonl
       id: 'infographics',
       name: 'Infographics',
       line: 'Numbers, comparisons and how-tos told visually.',
-      kinds: ['blank-infographic', 'year-in-review', 'data-story', 'how-it-works', 'versus'],
-    },
-    {
-      id: 'articles',
-      name: 'Articles',
-      line: 'Articles, résumés and cards of text on pages.',
-      kinds: ['blank-article', 'article', 'working-backwards', 'resume', 'recipe-card'],
+      kinds: [
+        'blank-infographic',
+        'year-in-review',
+        'data-story',
+        'how-it-works',
+        'versus',
+        'resume',
+        'recipe-card',
+      ],
     },
     {
       id: 'posters',

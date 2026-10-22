@@ -6,12 +6,12 @@ describe('the Pages tour’s seen kinds', () => {
   it('counts a kind once answered, and the rest still owed', () => {
     const prefs = markPagesKindSeen({}, 'slide');
     expect(pagesKindSeen(prefs, 'slide')).toBe(true);
-    expect(pagesKindSeen(prefs, 'article')).toBe(false);
+    expect(pagesKindSeen(prefs, 'logo')).toBe(false);
   });
 
   it('owes nothing once every kind is answered', () => {
     let prefs = {};
-    for (const kind of ['slide', 'infographic', 'article', 'logo'] as const)
+    for (const kind of ['slide', 'infographic', 'logo'] as const)
       prefs = markPagesKindSeen(prefs, kind);
     expect(PAGES_TOUR_KINDS.every((k) => pagesKindSeen(prefs, k))).toBe(true);
   });

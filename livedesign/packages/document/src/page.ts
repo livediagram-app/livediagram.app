@@ -149,7 +149,7 @@ const LOGO_PAGE_SIZE_IDS: readonly PageSizeId[] = ['logo'];
 const WIREFRAME_PAGE_SIZE_IDS: readonly PageSizeId[] = ['device'];
 
 /** The sizes a page of this kind offers in its panel: a slide page only the slide sizes, a logo
- *  page only the artboard, an infographic or article page the paper and screen ones (a slide size
+ *  page only the artboard, an infographic page the paper and screen ones (a slide size
  *  is a slide page's alone: a deck is made of slide pages). */
 export function pageSizesFor(kind: PageKind): readonly PageSizeId[] {
   if (kind === 'slide') return SLIDE_PAGE_SIZE_IDS;
@@ -200,9 +200,9 @@ export type PageBackground = { fill?: PageFill; pattern?: PagePattern };
 export const PAGE_NAME_MAX = 60;
 
 // What a page is for, fixed when it is made (docs/specs/007-editor/pages-mode.md "Page
-// kinds"): an infographic page to lay out, an article page to write on, a slide of a deck, or a
-// logo's artboard, or a wireframe's device (docs/specs/007-editor/wireframe-pages.md).
-export type PageKind = 'infographic' | 'article' | 'slide' | 'logo' | 'wireframe';
+// kinds"): an infographic page to lay out, a slide of a deck, a logo's artboard, or a wireframe's
+// device (docs/specs/007-editor/wireframe-pages.md).
+export type PageKind = 'infographic' | 'slide' | 'logo' | 'wireframe';
 
 export type Page = {
   id: string;
@@ -220,12 +220,10 @@ export type Page = {
   // Absent shows the page's place ("Page 2").
   name?: string;
   // Absent is an infographic page nobody has chosen yet (the first page offers the choice while
-  // it is the only page and empty); 'infographic' once chosen; 'article' for an article page;
+  // it is the only page and empty); 'infographic' once chosen;
   // 'slide' for a slide, always landscape in a slide size; 'logo' for a logo's artboard, always
   // the `logo` size and never patterned.
   kind?: PageKind;
-  // The article an article page belongs to (`Tab.articles[flow]`); present exactly on article pages.
-  flow?: string;
   // Locked (docs/specs/007-editor/pages-mode.md "Locking a page"): it and what is on it stay
   // as they are. Absent is unlocked.
   locked?: true;
@@ -283,23 +281,16 @@ function parsePageFields(v: unknown): Page | undefined {
     ...(p.locked === true ? { locked: true as const } : {}),
     ...(p.startedBlank === true ? { startedBlank: true as const } : {}),
   };
-  // An article page without a readable flow is an article of its own.
   const kindFields =
-    p.kind === 'article'
-      ? {
-          kind: 'article' as const,
-          flow:
-            typeof p.flow === 'string' && p.flow.length > 0 && p.flow.length <= 64 ? p.flow : p.id,
-        }
-      : p.kind === 'infographic'
-        ? { kind: 'infographic' as const }
-        : p.kind === 'slide'
-          ? { kind: 'slide' as const }
-          : p.kind === 'logo'
-            ? { kind: 'logo' as const }
-            : p.kind === 'wireframe'
-              ? { kind: 'wireframe' as const }
-              : {};
+    p.kind === 'infographic'
+      ? { kind: 'infographic' as const }
+      : p.kind === 'slide'
+        ? { kind: 'slide' as const }
+        : p.kind === 'logo'
+          ? { kind: 'logo' as const }
+          : p.kind === 'wireframe'
+            ? { kind: 'wireframe' as const }
+            : {};
   // A slide is landscape in a slide size, whatever was stored.
   if (kindFields.kind === 'slide') {
     const size = isPageSizeId(p.size) && SLIDE_PAGE_SIZE_IDS.includes(p.size) ? p.size : 'slide';
@@ -348,7 +339,7 @@ function parsePageFields(v: unknown): Page | undefined {
   }
   // The artboard is the logo kind's alone: any other page stored in it is read as A4. Fit to
   // Content is an infographic page's, and only with its sides.
-  const fit = p.size === 'fit' && kindFields.kind !== 'article' ? parsePageSides(p.fit) : undefined;
+  const fit = p.size === 'fit' ? parsePageSides(p.fit) : undefined;
   const ownSize =
     isPageSizeId(p.size) &&
     p.size !== 'a4' &&
@@ -367,12 +358,9 @@ function parsePageFields(v: unknown): Page | undefined {
   };
 }
 
-/** The page's kind: an article, a slide, a logo or a wireframe page, or else an infographic page. */
+/** The page's kind: a slide, a logo or a wireframe page, or else an infographic page. */
 export function pageKindOf(page: Pick<Page, 'kind'>): PageKind {
-  return page.kind === 'article' ||
-    page.kind === 'slide' ||
-    page.kind === 'logo' ||
-    page.kind === 'wireframe'
+  return page.kind === 'slide' || page.kind === 'logo' || page.kind === 'wireframe'
     ? page.kind
     : 'infographic';
 }
@@ -412,61 +400,6 @@ export function newSlidePage(id: string, size: PageSizeId = 'slide'): Page {
   };
 }
 
-export function isArticlePage(
-  page: Pick<Page, 'kind'>,
-): page is Pick<Page, 'kind'> & { kind: 'article'; flow: string } {
-  return page.kind === 'article';
-}
-
-/** Pages in an order where each document's pages sit together (docs/specs/007-editor/
- *  pages-mode.md "A page"): a flow's pages join its first page's run, in their order, and
- *  take its size, orientation and background. Same array back when nothing needed doing. */
-function withArticlesTogether(pages: Page[]): Page[] {
-  const byFlow = new Map<string, Page[]>();
-  for (const p of pages) {
-    if (!p.flow) continue;
-    const run = byFlow.get(p.flow);
-    if (run) run.push(p);
-    else byFlow.set(p.flow, [p]);
-  }
-  if (byFlow.size === 0) return pages;
-  const out: Page[] = [];
-  let changed = false;
-  for (const p of pages) {
-    if (!p.flow) {
-      out.push(p);
-      continue;
-    }
-    const run = byFlow.get(p.flow);
-    if (!run) continue; // already placed with its first page
-    byFlow.delete(p.flow);
-    const [lead, ...rest] = run;
-    out.push(lead!);
-    for (const q of rest) {
-      const same =
-        q.orientation === lead!.orientation &&
-        q.size === lead!.size &&
-        JSON.stringify(q.background) === JSON.stringify(lead!.background);
-      if (!same) changed = true;
-      const { size: _s, background: _b, ...own } = q;
-      void _s;
-      void _b;
-      out.push(
-        same
-          ? q
-          : {
-              ...own,
-              orientation: lead!.orientation,
-              ...(lead!.size ? { size: lead!.size } : {}),
-              ...(lead!.background ? { background: lead!.background } : {}),
-            },
-      );
-    }
-  }
-  if (!changed && out.every((p, i) => p === pages[i])) return pages;
-  return out;
-}
-
 /** Pages with the row anchor on the first page found carrying it, dropped from any other. Same
  *  array back when at most one carries it. */
 function withOneRowAnchor(pages: Page[]): Page[] {
@@ -497,7 +430,7 @@ export function pagesOf(tab: { pages?: unknown; pageOrientation?: unknown } | un
         return true;
       })
     : [];
-  if (stored.length > 0) return withArticlesTogether(withOneRowAnchor(stored.slice(0, MAX_PAGES)));
+  if (stored.length > 0) return withOneRowAnchor(stored.slice(0, MAX_PAGES));
   const orientation = isPageOrientation(tab?.pageOrientation) ? tab.pageOrientation : 'portrait';
   return [{ id: FIRST_PAGE_ID, orientation }];
 }
@@ -547,7 +480,7 @@ export function pageSizeLabel(
 
 /** The label above a page: its name, or "Page n" once there are several, then its size, where it
  *  has one its orientation, and its kind but for an infographic page or where the size names it
- *  ("Page 2 · A4 · Landscape", "Launch · Square · Article", "Intro · Slide (16:9)"). */
+ *  ("Page 2 · A4 · Landscape", "Launch · Square · Logo", "Intro · Slide (16:9)"). */
 export function pageLabel(
   page: Pick<Page, 'orientation' | 'size' | 'name' | 'kind' | 'device'>,
   index: number,
@@ -578,7 +511,6 @@ export function pageLabel(
 
 const PAGE_KIND_LABEL: Record<PageKind, string> = {
   infographic: 'Infographic',
-  article: 'Article',
   slide: 'Slide',
   logo: 'Logo',
   wireframe: 'Wireframe',
@@ -700,17 +632,10 @@ export function withPages<T extends Pick<Tab, 'elements'>>(
     const page = rowPageAt(before, point);
     const moved = page && after.get(page.id);
     if (!page || !moved) return null;
-    // An article page's content keeps its place from the page's top-left corner, where its
-    // writing starts and its zones are measured from (docs/specs/007-editor/article-pages.md
-    // "Zones"); an infographic page's is re-centred on the page's centre, so a page that turned
-    // keeps its content about its middle.
-    const doc = page.kind === 'article';
-    const dx = doc
-      ? moved.x - page.rect.x
-      : moved.x + moved.width / 2 - (page.rect.x + page.rect.width / 2);
-    const dy = doc
-      ? moved.y - page.rect.y
-      : moved.y + moved.height / 2 - (page.rect.y + page.rect.height / 2);
+    // A page's content is re-centred on the page's centre, so a page that turned keeps its content
+    // about its middle.
+    const dx = moved.x + moved.width / 2 - (page.rect.x + page.rect.width / 2);
+    const dy = moved.y + moved.height / 2 - (page.rect.y + page.rect.height / 2);
     return dx === 0 && dy === 0 ? null : { dx, dy };
   };
   const elements = still

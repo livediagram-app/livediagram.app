@@ -79,7 +79,7 @@ describe('a page’s frame', () => {
         background: { fill: { kind: 'solid', color: '#0f172a' }, pattern: 'lines' },
       },
     ]);
-    const ruled = pageExportFrame(s!, { ruling: { pitch: 24, inset: 96, top: 96 } });
+    const ruled = pageExportFrame(s!);
     expect(ruled.backgroundSvg).toContain('fill="#0f172a"');
     expect(ruled.surface).toBe('dark');
     expect(pageExportFrame(s!).backgroundSvg).toContain('<pattern');
@@ -115,20 +115,6 @@ describe('a page’s frame', () => {
     } as unknown as Element;
     const els = [inside, outside, arrow, away];
     expect(els.filter((el) => frame.reaches(el, els)).map((el) => el.id)).toEqual(['in', 'ar']);
-  });
-
-  it('never holds an article’s note marker, on the page or not', () => {
-    const r = a4!.rect;
-    const note = {
-      id: 'n',
-      type: 'annotation',
-      x: r.x + 10,
-      y: r.y + 10,
-      width: 32,
-      height: 32,
-      articleNote: { kind: 'comment' },
-    } as unknown as Element;
-    expect(pageExportFrame(a4!).reaches(note, [note])).toBe(false);
   });
 });
 

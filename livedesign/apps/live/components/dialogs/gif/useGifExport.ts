@@ -8,7 +8,6 @@ import {
   type LaidOutPage,
   type Tab,
 } from '@livedesign/document';
-import { pageWritingFonts } from '@/lib/article/article-export';
 import { downloadBlob } from '@/lib/download-blob';
 import { embeddedFontFaceCss } from '@/lib/export-fonts';
 import { exportPageLabel, sanitizeFilename, type PageScope } from '@/lib/export-pages';
@@ -79,9 +78,7 @@ export function useGifExport({
   const captureOnce = useCallback(() => {
     capture.current ??= (async () => ({
       css: collectCss(document.styleSheets),
-      fontCss: await embeddedFontFaceCss(
-        gifFontIds(fontSource.current.tab, fontSource.current.pages),
-      ),
+      fontCss: await embeddedFontFaceCss(gifFontIds(fontSource.current.tab)),
       images: createImageInliner(),
     }))();
     return capture.current;
@@ -225,12 +222,10 @@ export function useGifExport({
   };
 }
 
-// The tab's faces and every page's writing's: the GIF's fonts travel in it.
-function gifFontIds(tab: Tab, pages: readonly LaidOutPage[]): string[] {
+// The tab's faces: the GIF's fonts travel in it.
+function gifFontIds(tab: Tab): string[] {
   const els = visibleLayerElements(tab.elements, tab.layers);
-  const ids = new Set(exportFontIds(els, tab.font, undefined, tab.finish));
-  for (const p of pages) for (const id of pageWritingFonts(tab, p)) ids.add(id);
-  return [...ids];
+  return [...new Set(exportFontIds(els, tab.font, undefined, tab.finish))];
 }
 
 const errorCode = (err: unknown): GifExportErrorCode =>

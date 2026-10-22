@@ -1263,9 +1263,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         {
           label: 'Pages Tours',
           event: { category: 'UI', on: 'PagesTourSeenOff', off: 'PagesTourSeenOn' },
-          keywords:
-            'tour walkthrough onboarding tutorial pages slides infographic article logo all replay',
-          description: 'Every Pages tour at once: slides, infographics, articles and logos.',
+          keywords: 'tour walkthrough onboarding tutorial pages slides infographic logo all replay',
+          description: 'Every Pages tour at once: slides, infographics and logos.',
           helpArticle: 'pagesTour',
         },
       ),
@@ -1287,20 +1286,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
           event: { category: 'UI', on: 'InfographicTourSeenOff', off: 'InfographicTourSeenOn' },
           keywords: 'tour walkthrough onboarding tutorial pages infographic poster layout replay',
           description: 'On an infographic page: layouts, backgrounds, page size and presenting.',
-          helpArticle: 'pagesTour',
-        },
-      ),
-      tourTrackSwitch(
-        'pagesTourSeen',
-        'pagesTourKinds',
-        PAGES_TOUR_KINDS,
-        pagesKindSeen,
-        'article',
-        {
-          label: 'Article Tour',
-          event: { category: 'UI', on: 'ArticleTourSeenOff', off: 'ArticleTourSeenOn' },
-          keywords: 'tour walkthrough onboarding tutorial pages article document writing replay',
-          description: 'On an article: writing, the page toolbar, its style and fonts.',
           helpArticle: 'pagesTour',
         },
       ),

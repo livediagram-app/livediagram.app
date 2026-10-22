@@ -31,7 +31,7 @@ const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
   'canvas/infographics/infographic-layouts': 'canvas/pages-mode/infographic-layouts',
   'canvas/infographics/exporting-infographics': 'canvas/pages-mode/exporting-pages',
   'canvas/illustrate': 'canvas/pages-mode',
-  'canvas/illustrate/articles': 'canvas/pages-mode/articles',
+  'canvas/illustrate/articles': 'canvas/pages-mode',
   'canvas/illustrate/exporting-pages': 'canvas/pages-mode/exporting-pages',
   'canvas/illustrate/illustrate-tour': 'canvas/pages-mode/pages-tour',
   'canvas/illustrate/infographic-layouts': 'canvas/pages-mode/infographic-layouts',

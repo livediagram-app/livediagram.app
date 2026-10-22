@@ -5,33 +5,28 @@ import { ImportMenu, ImportWarning } from '@/components/illustrations/tabs';
 export const metadata = helpMetadata({
   title: 'Importing a Tab',
   description:
-    'Import a JSON tab export or a Markdown outline into a tab by pasting text or picking a file. It replaces the tab contents.',
+    'Import a JSON tab export into a tab by pasting text or picking a file. It replaces the tab contents.',
   path: '/help/tabs/import-tabs/',
 });
 
 <ArticleLayout
   title="Importing a Tab"
-  description="Bring a tab's contents in from pasted text or a file. Import a JSON tab or a Markdown outline into the active tab."
+  description="Bring a tab's contents in from pasted text or a file. Import a JSON tab into the active tab."
   categoryTitle="Tabs"
   categorySlug="tabs"
 >
 
 **Import** brings content into the active tab from pasted text or a file. It is the counterpart to [exporting](/help/tabs/export-tabs/): export a tab from one document, import it into a tab somewhere else.
 
-## Import formats
+## Importing JSON
 
-Open the tab's menu (the **⋯** button on the active tab, or right-click the tab) and choose **Import**. You can also run **Import…** from the [command palette](/help/search-panel/the-search-panel/command-palette/). The **Import to Tab** dialog opens with a card per format:
-
-- **JSON** reads a livedesign tab export (a `.livedesign-tab.json` file) and restores its elements exactly, the highest-fidelity round trip. Plan cards in the file are added to this document, along with any card types it doesn't have yet; cards the document already holds are left as they are, so importing a tab back into its own document never doubles them.
-- **Markdown** turns a Markdown outline into a themed tree diagram, the same conversion as [Markdown Import](/help/tools/markdown-import/), so you can draft structure in text and bring it onto the canvas.
+Open the tab's menu (the **⋯** button on the active tab, or right-click the tab) and choose **Import**. You can also run **Import…** from the [command palette](/help/search-panel/the-search-panel/command-palette/). The **Import to Tab** dialog opens at **JSON**, which reads a livedesign tab export (a `.livedesign-tab.json` file) and restores its elements exactly, the highest-fidelity round trip. Plan cards in the file are added to this document, along with any card types it doesn't have yet; cards the document already holds are left as they are, so importing a tab back into its own document never doubles them.
 
 <Figure caption="The tab menu holds Import, beside Export and Clear.">
   <ImportMenu />
 </Figure>
 
-Each format card opens the same panel: **paste or write** the content into the box and press **Import**, or press **Import a file instead** to pick one from disk. Either way the tab updates once it parses. **All formats** at the top of the panel takes you back to the cards.
-
-In [Pages mode](/help/canvas/pages-mode/) the dialog offers **JSON** only, since a Markdown outline becomes a diagram rather than pages, and opens straight at it.
+**Paste or write** the content into the box and press **Import**, or press **Import a file instead** to pick one from disk. Either way the tab updates once it parses.
 
 On a [Dashboard](/help/canvas/plan-mode/dashboards/) tab, Import takes a Dashboard's own JSON export only (**Export** › **JSON** on a Dashboard tab): it opens straight at JSON and replaces the dashboard's rows, slots and what they hold, one step to undo. Anything else (a file that isn't JSON, or a tab that isn't a Dashboard) is turned away with a message, and the dashboard is left as it was. A slot that showed one of the document's other tabs reads as deleted when the file comes from another document; clear it or fill it again.
 
@@ -43,7 +38,7 @@ Importing **replaces the active tab's contents** with what comes in, it does not
 
 **Import** is greyed out while a tab is [locked](/help/tabs/locking-tabs/), since a locked tab is protected from edits, and the tab menu isn't offered on a view-only share link.
 
-<Figure caption="Because importing overwrites the tab, the Import to Tab dialog leads with a warning naming the tab, above the format cards.">
+<Figure caption="Because importing overwrites the tab, the Import to Tab dialog leads with a warning naming the tab, above the import panel.">
   <ImportWarning />
 </Figure>
 

@@ -213,8 +213,8 @@ export const categories: Category[] = [
     slug: 'tools',
     title: 'Tools',
     description:
-      'Do more with less effort using the editor helpers: AI, zen mode, light and dark mode, Markdown import, and cleanup.',
-    articleCount: 5,
+      'Do more with less effort using the editor helpers: AI, zen mode, light and dark mode, and cleanup.',
+    articleCount: 4,
     kind: 'feature',
   },
   {
@@ -1469,7 +1469,7 @@ export const articles: Article[] = [
     title: 'Templates',
     description: 'Start from a ready-made template instead of a blank canvas.',
     keywords:
-      'wardley map value chain evolution threat model threat modelling stride security trust boundary threat register service blueprint frontstage backstage line of visibility metric tree north star kpi tree driver model what if value proposition canvas jobs pains gains working backwards pr faq press release amazon family tree genealogy ancestry value stream map vsm lead time flow efficiency kaizen virtual office office rooms coworking cowork team pod all hands town hall auditorium pub quiz quiz night trivia icebreaker icebreakers two truths and a lie would you rather bingo find someone who games starter blank slide deck blank article blank infographic blank logo empty slide empty page artboard kanban flowchart swot gantt sankey flow diagram wireframe prebuilt scaffold quick start retro sailboat postmortem risk stakeholder persona agenda objectives crazy 8s opportunity tree article brief document write writing standup stand-up hiring pipeline recruiting content calendar editorial project planner bug tracker okrs key results product launch go no-go feedback board feature requests onboarding new wizard mode filter draw pages plan popular blank category categories finance budget invoice expense report loan calculator mortgage sales pipeline crm spreadsheet sheet inventory guest list rsvp grade book habit tracker meetings workshops presentations timelines roadmaps search words blank spreadsheet empty sheet blank slate',
+      'wardley map value chain evolution threat model threat modelling stride security trust boundary threat register service blueprint frontstage backstage line of visibility metric tree north star kpi tree driver model what if value proposition canvas jobs pains gains family tree genealogy ancestry value stream map vsm lead time flow efficiency kaizen virtual office office rooms coworking cowork team pod all hands town hall auditorium pub quiz quiz night trivia icebreaker icebreakers two truths and a lie would you rather bingo find someone who games starter blank slide deck blank infographic blank logo empty slide empty page artboard kanban flowchart swot gantt sankey flow diagram wireframe prebuilt scaffold quick start retro sailboat postmortem risk stakeholder persona agenda objectives crazy 8s opportunity tree standup stand-up hiring pipeline recruiting content calendar editorial project planner bug tracker okrs key results product launch go no-go feedback board feature requests onboarding new wizard mode filter draw pages plan popular blank category categories finance budget invoice expense report loan calculator mortgage sales pipeline crm spreadsheet sheet inventory guest list rsvp grade book habit tracker meetings workshops presentations timelines roadmaps search words blank spreadsheet empty sheet blank slate',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Basics',
@@ -1687,17 +1687,6 @@ export const articles: Article[] = [
       'Wireframe a screen inside a phone, tablet, laptop, desktop, browser or watch frame, from ready-made screens.',
     keywords:
       'wireframe wireframes mockup mock up mockups prototype ui ux screen screens app design device frame phone iphone android mobile tablet ipad laptop desktop monitor browser website web page watch smartwatch status bar dynamic island notch home indicator landscape portrait safe area sign in login onboarding dashboard settings profile checkout pricing chat feed landing page button text field input search switch toggle placeholder',
-    category: 'Canvas',
-    categorySlug: 'canvas/pages-mode',
-    parentSlug: 'pages-mode',
-  },
-  {
-    slug: 'articles',
-    title: 'Writing Articles',
-    description:
-      'Write on pages like a doc: text that flows onto new pages, with pictures, charts and drawings in it.',
-    keywords:
-      'article articles write writing document doc word google docs page pages text paragraph heading headings title subtitle list bullet numbered todo checklist quote code divider page break flow overflow new page toolbar formatting bold italic underline link colour color highlight align markdown shortcut slash menu paste picture image chart table sticky drawing inline wrap float move drag resize comment comments action actions assign margin note style look font fonts margins page numbers line spacing lined paper notebook convert page element leave pages',
     category: 'Canvas',
     categorySlug: 'canvas/pages-mode',
     parentSlug: 'pages-mode',
@@ -2073,14 +2062,6 @@ export const articles: Article[] = [
     description: 'Optional Ask and Clean helpers on the canvas.',
     keywords:
       'assistant ask clean generate artificial intelligence helper suggest question summarise summarize typo llm',
-    category: 'Tools',
-    categorySlug: 'tools',
-  },
-  {
-    slug: 'markdown-import',
-    title: 'Markdown Import',
-    description: 'Turn a Markdown outline into a themed tree diagram.',
-    keywords: 'outline text to diagram tree convert bullet list paste',
     category: 'Tools',
     categorySlug: 'tools',
   },

@@ -38,12 +38,6 @@ export const PAGE_KINDS: readonly PageKindChoice[] = [
     hint: 'Lay out icons, charts and media.',
   },
   {
-    kind: 'article',
-    name: 'Article',
-    line: 'A page to write on, flowing onto new pages as it grows.',
-    hint: 'Write, flowing onto new pages.',
-  },
-  {
     kind: 'slide',
     name: 'Slide',
     line: 'A slide for a deck: widescreen, ready to present.',
@@ -91,8 +85,6 @@ export function PageKindCard({
       >
         {choice.kind === 'wireframe' ? (
           <WireframeMiniature />
-        ) : choice.kind === 'article' ? (
-          <ArticleMiniature />
         ) : choice.kind === 'slide' ? (
           <SlideMiniature />
         ) : choice.kind === 'logo' ? (
@@ -156,43 +148,6 @@ function InfographicMiniature() {
         rx="1.25"
         className="fill-slate-200 dark:fill-slate-500"
       />
-    </svg>
-  );
-}
-
-// A sheet of writing: a title, paragraphs, a list and a picture with text wrapping beside it.
-function ArticleMiniature() {
-  const line = 'fill-slate-300 dark:fill-slate-500';
-  return (
-    <svg width="58" height="78" viewBox="0 0 58 78" aria-hidden className="drop-shadow-sm">
-      <rect width="58" height="78" rx="3" className="fill-white dark:fill-slate-700" />
-      <rect
-        x="8"
-        y="8"
-        width="28"
-        height="5"
-        rx="2"
-        className="fill-slate-700 dark:fill-slate-200"
-      />
-      <rect x="8" y="18" width="42" height="2.5" rx="1.25" className={line} />
-      <rect x="8" y="23" width="40" height="2.5" rx="1.25" className={line} />
-      <rect x="8" y="28" width="30" height="2.5" rx="1.25" className={line} />
-      <rect
-        x="8"
-        y="36"
-        width="17"
-        height="14"
-        rx="2"
-        className="fill-brand-100 dark:fill-brand-500/25"
-      />
-      <rect x="28" y="36" width="22" height="2.5" rx="1.25" className={line} />
-      <rect x="28" y="41" width="20" height="2.5" rx="1.25" className={line} />
-      <rect x="28" y="46" width="22" height="2.5" rx="1.25" className={line} />
-      <circle cx="10" cy="57" r="1.5" className="fill-brand-500" />
-      <rect x="14" y="56" width="30" height="2.5" rx="1.25" className={line} />
-      <circle cx="10" cy="62" r="1.5" className="fill-brand-500" />
-      <rect x="14" y="61" width="26" height="2.5" rx="1.25" className={line} />
-      <rect x="8" y="68" width="38" height="2.5" rx="1.25" className={line} />
     </svg>
   );
 }

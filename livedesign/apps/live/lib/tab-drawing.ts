@@ -8,8 +8,6 @@ import {
   exportFontIds,
   formLook,
   laidOutPagesOf,
-  opensInOf,
-  pagesWithWriting,
   prefixSvgIds,
   r2,
   resolveFontStack,
@@ -22,7 +20,6 @@ import {
 } from '@livedesign/document';
 import { readForm } from '@livedesign/forms';
 import { formArt } from '@livedesign/plan-art';
-import { pageWritingFonts } from './article/article-export';
 import { renderTabToSvg, type ImageExportOpts } from './export-tab';
 
 const SVG_OPEN = '<svg xmlns="http://www.w3.org/2000/svg" ';
@@ -40,13 +37,11 @@ export function renderTabDrawingSvg(tab: Tab, opts: ImageExportOpts = {}): strin
   return pages.length ? pagesAsLaidOut(tab, pages, opts) : renderTabToSvg(tab, opts);
 }
 
-// Each page drawn as its page export (its sheet, background, writing and what reaches onto it, cut at its edges) and
+// Each page drawn as its page export (its sheet, background and what reaches onto it, cut at its edges) and
 // nested at its own rect, so the desk shows between them as on the canvas. Each page's ids are its own: two pages'
 // backgrounds or markers never meet. Each page is drawn from the elements that reach it (pageElements), so a deck
 // costs about one drawing of its tab rather than one per page.
 function pagesAsLaidOut(tab: Tab, pages: readonly LaidOutPage[], opts: ImageExportOpts): string {
-  // Estimated once for the whole tab, and only when a page carries writing.
-  const estimatedWriting = pages.some((p) => p.flow) ? pagesWithWriting(tab).writing : undefined;
   const perPage = pageElements(tab.elements, pages);
   let minX = Infinity;
   let minY = Infinity;
@@ -64,10 +59,7 @@ function pagesAsLaidOut(tab: Tab, pages: readonly LaidOutPage[], opts: ImageExpo
     `${SVG_OPEN}width="${r2(w)}" height="${r2(h)}" viewBox="${r2(minX)} ${r2(minY)} ${r2(w)} ${r2(h)}">`,
   ];
   pages.forEach((page, i) => {
-    const markup = renderTabToSvg(
-      { ...tab, elements: perPage[i]! },
-      { ...opts, page, estimatedWriting },
-    );
+    const markup = renderTabToSvg({ ...tab, elements: perPage[i]! }, { ...opts, page });
     const { x, y } = page.rect;
     parts.push(
       prefixSvgIds(markup, `pg${i}-`).replace(SVG_OPEN, `<svg x="${r2(x)}" y="${r2(y)}" `),
@@ -131,13 +123,9 @@ function keepEnds(
   }
 }
 
-/** The typefaces the drawing of this tab writes in: its elements', a form's, and its pages' writing. */
+/** The typefaces the drawing of this tab writes in: its elements' and a form's. */
 export function tabDrawingFontIdsOf(tab: Tab): string[] {
   const ids = new Set(exportFontIds(tab.elements, tab.font, undefined, tab.finish));
   if (tabKindOf(tab) === 'form' && tab.font) ids.add(tab.font);
-  if (opensInOf(tab) === 'pages') {
-    for (const page of laidOutPagesOf(tab))
-      for (const id of pageWritingFonts(tab, page)) ids.add(id);
-  }
   return [...ids];
 }

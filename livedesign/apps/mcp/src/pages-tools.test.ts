@@ -8,7 +8,6 @@ import { connectTestClient } from './mcp-test-client';
 // mistake the caller can fix is a tool error in words, naming the change it stopped at.
 const LIVE_DOC = { id: 'd1', name: 'Deck', tabs: [{ id: 't1', name: 'Slides', orderIndex: 0 }] };
 const TAB = { id: 't1', name: 'Slides', rev: 3, opensIn: 'pages', elements: [] };
-const ARTICLE = { flow: 'art-1', title: 'Brief', pages: [1], blocks: 2, words: 3, look: null };
 
 function api(answer: (body: unknown) => Response) {
   const sent: unknown[] = [];
@@ -32,7 +31,6 @@ const done = (extra: Record<string, unknown> = {}) =>
     switched: false,
     lines: ['Wrote it.'],
     pages: [],
-    articles: [ARTICLE],
     changesetId: null,
     ...extra,
   });
@@ -73,24 +71,5 @@ describe('the Pages tools', () => {
     });
     expect(out.isError).toBe(true);
     expect(out.content[0]!.text).toBe('Change 2: No page "9".');
-  });
-
-  it('write an article, sending only what was given', async () => {
-    const { handler, sent } = api(() => done({ article: { ...ARTICLE, created: true } }));
-    const out = await call(handler, 'write_article', { markdown: '# Brief', look: 'report' });
-    expect(sent).toEqual([{ article: { markdown: '# Brief', look: 'report' } }]);
-    expect(out.structuredContent).toMatchObject({ article: { flow: 'art-1', created: true } });
-  });
-
-  it('say so when the write cannot be read back, or is refused', async () => {
-    const lost = api(() => done());
-    expect(
-      (await call(lost.handler, 'write_article', { markdown: 'x' })).content[0]!.text,
-    ).toContain('could not be read back');
-    const refused = api(() =>
-      Response.json({ error: 'article_ambiguous', message: 'Name one.' }, { status: 400 }),
-    );
-    const out = await call(refused.handler, 'write_article', { markdown: 'x' });
-    expect(out).toMatchObject({ isError: true, content: [{ text: 'Name one.' }] });
   });
 });

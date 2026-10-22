@@ -24,7 +24,7 @@ export const EDITOR_MODE_CATALOGUE = [
   {
     id: 'pages',
     label: 'Pages',
-    description: 'Lay out slides, infographics, articles and logos on pages.',
+    description: 'Lay out slides, infographics, logos and wireframes on pages.',
   },
   {
     id: 'plan',

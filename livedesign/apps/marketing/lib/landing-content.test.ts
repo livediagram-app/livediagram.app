@@ -29,7 +29,6 @@ describe('LANDING_SECTIONS', () => {
       'whiteboard',
       'infographics',
       'slides',
-      'documents',
       'plan',
       'sheets',
       'forms',

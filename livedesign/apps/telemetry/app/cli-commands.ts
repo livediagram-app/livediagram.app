@@ -52,10 +52,8 @@ export const CLI_COMMANDS: readonly { type: string; command: string; what: strin
   },
   { type: 'SheetRmRows', command: 'sheet rm-rows', what: 'deleting rows from a sheet' },
   { type: 'SheetRmCols', command: 'sheet rm-cols', what: 'deleting columns from a sheet' },
-  { type: 'PageLs', command: 'page ls', what: 'listing a tab’s pages and articles' },
+  { type: 'PageLs', command: 'page ls', what: 'listing a tab’s pages' },
   { type: 'PageSet', command: 'page set', what: 'changing a tab’s pages' },
-  { type: 'ArticleGet', command: 'article get', what: 'reading an article as Markdown' },
-  { type: 'ArticleSet', command: 'article set', what: 'writing an article from Markdown' },
   {
     type: 'FormGet',
     command: 'form get',

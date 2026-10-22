@@ -116,7 +116,6 @@ export function useContentsChrome({
     layers: props.layers,
     font: props.tabFont,
     finish: props.tabFinish,
-    articles: pagesMode.articles?.flows,
   };
   return {
     contentsDocked,

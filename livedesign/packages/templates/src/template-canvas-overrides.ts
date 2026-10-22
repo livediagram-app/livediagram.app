@@ -2,13 +2,7 @@
 // kind. Its own module, apart from the template catalogue in templates.ts: these read the template builders (a
 // template's pages are built here), and the editor reads the catalogue (a template's title) on every load, which
 // drew every builder into its first load while the two shared a module.
-import {
-  WHITEBOARD_DEFAULT_PATTERN,
-  type BackgroundPattern,
-  type Tab,
-} from '@livedesign/document';
-import { articleTemplateOverrides } from './article-template';
-import { workingBackwardsOverrides } from './template-working-backwards';
+import { WHITEBOARD_DEFAULT_PATTERN, type BackgroundPattern, type Tab } from '@livedesign/document';
 import { blankPageTemplateOverrides } from './blank-page-templates';
 import { templateLayers } from './template-layers';
 import { templateEditorMode } from './template-modes';
@@ -157,8 +151,7 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'stakeholder-map': 'graph',
   'risk-matrix': 'graph',
   // The strategy and systems batch: the drawn notations ride graph paper; the Wardley map's axes are its page, so
-  // its canvas is blank; the Value Proposition Canvas is a sticky-note board on the dot grid; Working Backwards is an
-  // article, its page the paper.
+  // its canvas is blank; the Value Proposition Canvas is a sticky-note board on the dot grid.
   'threat-model': 'graph',
   'service-blueprint': 'graph',
   'metric-tree': 'graph',
@@ -166,15 +159,11 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'value-stream-map': 'graph',
   'wardley-map': 'blank',
   'value-proposition-canvas': 'grid',
-  'working-backwards': 'blank',
   'user-persona': 'grid',
   'meeting-agenda': 'grid',
-  // An article's surround stays plain: the page is the paper.
-  article: 'blank',
   // The other Pages templates: their pages are the paper.
   'blank-illustration': 'blank',
   'blank-slide-deck': 'blank',
-  'blank-article': 'blank',
   'blank-infographic': 'blank',
   'blank-logo': 'blank',
   'blank-wireframe-phone': 'blank',
@@ -253,10 +242,6 @@ export function templateCanvasOverrides(kind: TemplateKind): Partial<Tab> {
   // tabs that OPEN in Draw mode (docs/specs/007-editor/editor-modes.md "Where the mode lives";
   // whiteboarding is no kind), the Pages ones open in Pages (their pages below).
   if (mode !== 'diagram') overrides.opensIn = mode;
-  // The Article opens in Pages on its one article page (docs/specs/007-editor/article-pages.md).
-  if (kind === 'article') Object.assign(overrides, articleTemplateOverrides());
-  // Working Backwards is an article too: its PR/FAQ flows onto pages in the Report look (template-working-backwards.ts).
-  if (kind === 'working-backwards') Object.assign(overrides, workingBackwardsOverrides());
   // A blank of a page kind opens in Pages on its one page, its kind already chosen (blank-page-templates.ts).
   const blankPage = blankPageTemplateOverrides(kind);
   if (blankPage) Object.assign(overrides, blankPage);

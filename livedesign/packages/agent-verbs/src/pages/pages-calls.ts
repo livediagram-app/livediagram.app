@@ -1,23 +1,16 @@
-// An agent's Pages calls (docs/specs/024-agents/pages-for-agents.md): change_pages and
-// write_article on the MCP, `page set` and `article set` on the CLI, and `article get`. Each finds the
+// An agent's Pages calls (docs/specs/024-agents/pages-for-agents.md): change_pages on the MCP and
+// `page set` on the CLI. Each finds the
 // tab ("Which tab"), sends one request to the pages route, and answers what it did or why not,
 // in the same words on both doors.
 import { ApiError, type ApiClient } from '@livedesign/api-client';
 import {
   CLIENT_HEADER,
-  type ArticleWrite,
   type DocumentResponse,
   type PagesAnswer,
   type PageChange,
   type TabResponse,
 } from '@livedesign/api-schema';
-import {
-  articlesOf,
-  articleTitleOf,
-  articleToMarkdown,
-  opensInOf,
-  type Tab,
-} from '@livedesign/document';
+import { opensInOf, type Tab } from '@livedesign/document';
 import { apiRefusalOf } from '../plan/api-refusal';
 import { tabPath } from '../verbs/shared';
 
@@ -95,7 +88,7 @@ async function send(
   api: ApiClient,
   documentId: string,
   tabId: string,
-  body: { pages: PageChange[] } | { article: ArticleWrite },
+  body: { pages: PageChange[] },
   door: PagesDoor,
 ): Promise<PagesDone | PagesRefused> {
   try {
@@ -120,54 +113,4 @@ export async function changePages(
   const found = await pagesTabOf(api, documentId, input.tabId, door);
   if ('ok' in found) return found;
   return send(api, documentId, found.tabId, { pages: input.changes }, door);
-}
-
-/** write_article / `article set`: an article's text from Markdown. */
-export async function writeArticle(
-  api: ApiClient,
-  documentId: string,
-  input: { tabId?: string } & ArticleWrite,
-  door: PagesDoor,
-): Promise<PagesDone | PagesRefused> {
-  const { tabId, ...write } = input;
-  const found = await pagesTabOf(api, documentId, tabId, door);
-  if ('ok' in found) return found;
-  return send(api, documentId, found.tabId, { article: write }, door);
-}
-
-/** `article get`: one article's writing as the Markdown write_article takes. */
-export async function readArticle(
-  api: ApiClient,
-  documentId: string,
-  input: { tabId?: string; article?: string },
-  door: PagesDoor,
-): Promise<
-  { ok: true; tabId: string; flow: string; title: string; markdown: string } | PagesRefused
-> {
-  const found = await pagesTabOf(api, documentId, input.tabId, door);
-  if ('ok' in found) return found;
-  const articles = articlesOf(found.tab);
-  const flows = Object.keys(articles);
-  const key = input.article?.trim().toLowerCase();
-  const flow = key
-    ? (flows.find((f) => f === input.article) ??
-      flows.find((f) => articleTitleOf(articles[f]!).toLowerCase() === key))
-    : flows.length === 1
-      ? flows[0]
-      : undefined;
-  if (!flow) {
-    const listed = flows.map((f) => `"${articleTitleOf(articles[f]!)}" (${f})`).join(', ');
-    return {
-      ok: false,
-      code: flows.length > 1 && !key ? 'article_ambiguous' : 'article_unknown',
-      message: flows.length ? `Name an article: ${listed}.` : 'That tab has no article.',
-    };
-  }
-  return {
-    ok: true,
-    tabId: found.tabId,
-    flow,
-    title: articleTitleOf(articles[flow]!),
-    markdown: articleToMarkdown(articles[flow]!),
-  };
 }

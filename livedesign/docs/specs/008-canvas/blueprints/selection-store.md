@@ -128,9 +128,9 @@ Selection` instead and reads it where it acts. By kind:
 | Views that show the selection     | `EditorContextMenuHost` (while a menu is open), `EditorSearchPanel` (`useEditorCommands(open)`, while search is open), `EditorTabDialogs` (while a selection export is open), `AiPanelContent` (its focus), `ModifierHint` (`selectedKindOf`, the selected element's flavour)                                                                                                                                                                                               | `useSelectionOf` in the component; a closed one selects `EMPTY_SELECTION`, so it never renders for a change                                                                                                      |
 | The Quick Style view              | `useQuickStyle`, called by the root                                                                                                                                                                                                                                                                                                                                                                                                                                         | the root returns `quickStyleDeps` (every input but the selection); `QuickStyleHost` (`components/canvas/QuickStyleHost.tsx`) subscribes to `selectionIds` and calls `useQuickStyle`, rendering `QuickStylePanel` |
 
-- The editor root also reads the gesture store only through `useElementGestureActive()` (whether a
-  move, resize, reshape, stroke or erase is open; `useArticleIntake`), so a pan, zoom or marquee
-  renders no part of the editor above the canvas.
+- The editor root does not read the gesture store (`useElementGestureActive()`, whether a move,
+  resize, reshape, stroke or erase is open, is kept for a reader that only asks that), so a pan, zoom
+  or marquee renders no part of the editor above the canvas.
 - One root render per press remains: pressing an element opens a pending drag (`useEditorDrag`'s
   `drag` state), and the release closes it. It is drag state, not selection; a plain click-select
   therefore still renders the root twice.

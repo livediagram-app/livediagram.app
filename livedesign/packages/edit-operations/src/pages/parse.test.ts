@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { ARTICLE_MARKDOWN_MAX } from '@livedesign/document';
 import { parsePagesRequest } from './parse';
 
 // docs/specs/024-agents/blueprints/pages-for-agents.md "Interfaces and contracts".
@@ -11,11 +10,11 @@ const refusal = (raw: unknown) => {
 };
 
 describe('the body', () => {
-  it('takes exactly one of pages or article', () => {
+  it('takes an object of page changes', () => {
     expect(refusal(null).code).toBe('invalid_body');
     expect(refusal([]).code).toBe('invalid_body');
     expect(refusal({}).code).toBe('invalid_body');
-    expect(refusal({ pages: [], article: { markdown: '' } }).code).toBe('invalid_body');
+    expect(refusal({ article: { markdown: '' } }).message).toContain('"article"');
     expect(refusal({ pages: [{ op: 'delete', page: 1 }], extra: 1 }).message).toContain('"extra"');
   });
 
@@ -123,62 +122,6 @@ describe('an add without a place', () => {
     });
   });
 });
-
-describe('an article write', () => {
-  it('reads every field', () => {
-    expect(
-      parsePagesRequest({
-        article: {
-          markdown: '# Hi',
-          article: 'Brief',
-          mode: 'append',
-          size: 'letter',
-          orientation: 'portrait',
-          look: 'report',
-          accent: '#ff0066',
-          pageNumbers: true,
-        },
-      }),
-    ).toEqual({
-      article: {
-        markdown: '# Hi',
-        article: 'Brief',
-        mode: 'append',
-        size: 'letter',
-        orientation: 'portrait',
-        look: 'report',
-        accent: '#ff0066',
-        pageNumbers: true,
-      },
-    });
-    expect(parsePagesRequest({ article: { markdown: '', new: true } })).toEqual({
-      article: { markdown: '', new: true },
-    });
-  });
-
-  it('refuses a malformed write', () => {
-    const at = (article: unknown) => refusal({ article });
-    expect(at('text').message).toContain('object');
-    expect(at({}).message).toContain('"markdown"');
-    expect(at({ markdown: 'x', mode: 'merge' }).message).toContain('"mode"');
-    expect(at({ markdown: 'x', new: 'yes' }).message).toContain('"new"');
-    expect(at({ markdown: 'x', pageNumbers: 1 }).message).toContain('"pageNumbers"');
-    expect(at({ markdown: 'x', new: true, article: 'a' }).message).toContain('not both');
-    expect(at({ markdown: 'x', accent: 'pink' }).message).toContain('hex');
-    expect(at({ markdown: 'x', look: 'fancy' }).message).toContain('"look"');
-    expect(at({ markdown: 'x', title: 'T' }).message).toContain('takes no "title"');
-  });
-
-  it('refuses Markdown past the cap as too large, pointing at append', () => {
-    const out = at({ markdown: 'x'.repeat(ARTICLE_MARKDOWN_MAX + 1) });
-    expect(out.code).toBe('article_too_large');
-    expect(out.message).toContain('append');
-  });
-});
-
-function at(article: unknown) {
-  return refusal({ article });
-}
 
 // docs/specs/007-editor/wireframe-pages.md: a wireframe page's device, frame look and system bars.
 describe('wireframe fields', () => {

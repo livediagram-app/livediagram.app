@@ -124,7 +124,6 @@ describe('pagesOf', () => {
       'page 1 page-1 · slide Slide (16:9) · at -960,-540 1920x1080 · 3 elements',
       'page 2 "Tip 2" page-99 · infographic Square · at 636,-540 1080x1080 · 16 elements',
       'page 3 "Badge" page-3 · logo 1024 x 1024 · at -512,-512 1024x1024 · background #fdf3e3 · 5 elements',
-      'page 4 page-4 · article A4 · at -397,-561 794x1123 · article art-55 · its writing below',
     ].join('\n');
     const snap = { documents: [{ id: 'd', tabs: [{ id: 't', elements: [], pages }] }] };
     expect(pagesOf(snap)).toEqual([
@@ -163,18 +162,6 @@ describe('pagesOf', () => {
         width: 1024,
         height: 1024,
         elements: 5,
-      },
-      {
-        tabId: 't',
-        n: 4,
-        name: null,
-        kind: 'article',
-        format: 'A4',
-        x: -397,
-        y: -561,
-        width: 794,
-        height: 1123,
-        elements: null,
       },
     ]);
   });

@@ -2,19 +2,18 @@
 
 Derived from [Pages](../pages-mode.md). Implementation detail only; the spec owns
 every design decision. The mode itself (the switch, the opening mode, the pages' basics) is
-[Editor modes](editor-modes.md); an article page's writing is [Article pages](article-pages.md).
+[Editor modes](editor-modes.md).
 
 ## Domain and naming
 
 | Term                        | Identifier                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Page                        | `Page` (`{ id, orientation, size?, fit?, rowAt?, background?, name?, kind?, flow?, locked?, startedBlank? }`), `packages/document/src/page.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| Page                        | `Page` (`{ id, orientation, size?, fit?, rowAt?, background?, name?, kind?, locked?, startedBlank? }`), `packages/document/src/page.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | Fit to Content sides        | `PageSides` (`{ width, height }`), `parsePageSides`, `clampPageSide`, `FIT_PAGE_MIN_SIDE`, `FIT_PAGE_MAX_SIDE`, `packages/document/src/page-fit.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | Row anchor                  | `RowAt` (`{ x, y }`), `parseRowAt` (`page-fit.ts`); `rowAnchorOf(pages)`, `withOneRowAnchor` and `withRowAnchorKept` (private), `page.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| Page kind                   | `PageKind` (`'infographic' \| 'article' \| 'slide' \| 'logo'`); `pageKindOf(page)` (absent reads infographic), `isArticlePage(page)`, `newSlidePage(id, size?)`, `newLogoPage(id)` ([Logo pages](logo-pages.md))                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| The first page's choice     | `offersPageKindChoice(pages, pageId, contentCount)`, `withPageKindChosen(tab, pageId, kind, flow)`, `packages/document/src/article-pages.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| Units of the row            | `PageUnit` (`{ pageIds, flow? }`), `pageUnits`, `withUnitMoved` (`article-pages.ts`); `laidOutUnits` (`usePageReorderDrag.ts`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| A flow's pages together     | `withArticlesTogether(pages)`, private to `page.ts`, run by `pagesOf`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| Page kind                   | `PageKind` (`'infographic' \| 'slide' \| 'logo' \| 'wireframe'`); `pageKindOf(page)` (absent reads infographic), `newSlidePage(id, size?)`, `newLogoPage(id)` ([Logo pages](logo-pages.md))                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| The first page's choice     | `offersPageKindChoice(pages, pageId, contentCount)`, `withPageKindChosen(tab, pageId, kind, device?)`, `packages/document/src/page-units.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| Units of the row            | `PageUnit` (`{ pageIds }`, one page each), `pageUnits`, `withUnitMoved` (`page-units.ts`); `laidOutUnits` (`usePageReorderDrag.ts`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | A page laid out             | `LaidOutPage` (`Page & { index, rect: PageRect }`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | Page size                   | `PageSizeId` (`'a4' \| 'letter' \| 'a3' \| 'square' \| 'social' \| 'wide' \| 'slide' \| 'slide-classic' \| 'logo' \| 'fit'`), `PAGE_SIZES` (`landscapeOnly` on the slide sizes, `logoOnly` on `logo`, `fitOnly` on `fit`), `PAGE_SIZE_IDS`, `SLIDE_PAGE_SIZE_IDS`, `LOGO_PAGE_SIZE_IDS`, `pageSizesFor(kind)`, `pageSizeChoices(page)`                                                                                                                                                                                                                                                                                                                   |
 | Orientation                 | `PageOrientation`, `PAGE_ORIENTATIONS`; `pageHasOrientation(page)`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
@@ -181,11 +180,11 @@ page; "template" stays the whole-tab starting point.
 
 - `Tab.pages?: Page[]`, in row order, stored with the tab (synced and saved as any tab
   field). Absent: one page in the legacy `pageOrientation` (Editor modes "The pages"), its kind
-  unchosen. An article page's writing is `Tab.articles` ([Article pages](article-pages.md)).
+  unchosen.
 - **Parsing** (`parsePage`, `parseFill`, `parseBackground`, private to `page.ts`):
   - no string `id` or no valid `orientation`: the page is skipped;
   - `size` kept when a `PageSizeId` other than `'a4'` (A4 is stored as absent); `'fit'` only on a
-    non-article page with valid `fit` sides (`parsePageSides`: both finite and positive, rounded,
+    page with valid `fit` sides (`parsePageSides`: both finite and positive, rounded,
     clamped to `FIT_PAGE_MIN_SIDE`..`FIT_PAGE_MAX_SIDE`), else read as A4 with no `fit`;
   - `rowAt` kept when both `x` and `y` are finite (rounded); `withOneRowAnchor` keeps it on the
     first page carrying it and drops it from any other;
@@ -200,16 +199,13 @@ page; "template" stays the whole-tab starting point.
   - `pattern` kept when one of `PAGE_PATTERNS`; a background with neither fill nor pattern is
     dropped;
   - `name` trimmed and cut to `PAGE_NAME_MAX`; empty is dropped;
-  - `kind: 'article'` kept with `flow` (a string of 1 to 64 characters, else the page's own id);
-    `kind: 'infographic'` kept without a flow; `kind: 'slide'` read landscape in a slide size (Slide
+  - `kind: 'infographic'` kept; `kind: 'slide'` read landscape in a slide size (Slide
     pages, below); `kind: 'logo'` read as the `logo` size, portrait, its fill kept unless a picture, and no pattern
-    ([Logo pages](logo-pages.md)); anything else: no kind (unchosen);
+    ([Logo pages](logo-pages.md)); anything else (a stored `article` page included, its `flow` dropped):
+    no kind (unchosen);
   - the `logo` size on any page but a logo page is read as A4 (`logoOnly`);
   - `locked` and `startedBlank` kept only when `true`;
-  - a repeat of an id already read is skipped; at most `MAX_PAGES` are read;
-  - then `withArticlesTogether`: each flow's pages join its first page's run, in stored order,
-    each taking the first's `orientation`, `size` and `background`; the same array back when
-    nothing moved.
+  - a repeat of an id already read is skipped; at most `MAX_PAGES` are read.
 - Writes keep the same shape: `size: 'a4'`, an empty name and an empty background are deleted, not
   stored (`setSize`, `rename`, `setBackground`); a size set away from `'fit'` deletes `fit`.
 - Layout: `layOutPages` centres the first page on `rowAnchorOf(pages)` (the origin when
@@ -236,10 +232,8 @@ page; "template" stays the whole-tab starting point.
 Returns null outside a page look (`hasPageLook(mode)`), else `PagesModeView`:
 `pages` (laid out), `rowPages?` (the whole row while a page slide presents, `presentedPages`),
 `focusPage(id)` (frames one page whatever its kind: `computeFitBelow` of
-`pageFitBox(page)` below the Toolbar strip), `readPage(id)` (an article page on a phone:
-`computeReadingFrame` with its margin, gliding there), `panFrom?` (a finger's pan from the view
-now; stops a glide), `themeBackgrounds`, `themeAccent`, `articles?` (composed
-in by `useEditorState`), `tabFont`, `layoutPreview` / `setLayoutPreview` (state held here so the
+`pageFitBox(page)` below the Toolbar strip), `panFrom?` (a finger's pan from the view
+now; stops a glide), `themeBackgrounds`, `themeAccent`, `tabFont`, `layoutPreview` / `setLayoutPreview` (state held here so the
 clip and the overlay share it), and `edit` (absent for a viewer or a locked tab).
 
 On `[on, tabLoaded, tabId]` a frame later `centre()` (`frameLanding`: the remembered page, else
@@ -256,10 +250,7 @@ tabLoaded, tabId, canEdit]` `putOnAPage()` (Into pages, below), its own effect s
 resolved after the load still gets the page. After `onGoTo(id)` (add, duplicate, a turn or a new
 size, the page before a deleted one, the first page of a split) the hook frames that page once it
 is in the row (`goTo` state, consumed in a `requestAnimationFrame`), gliding there
-(`glideViewport`, `VIEW_GLIDE_MS`; instant under reduced motion), as `focusPage` does;
-`onArticleCreated(flow)`
-(a new article, the first page chosen as an article) hands the flow on so its title takes the
-caret.
+(`glideViewport`, `VIEW_GLIDE_MS`; instant under reduced motion), as `focusPage` does.
 
 ### Resting on a page (`usePageSnap`, `pageSnap`)
 
@@ -299,13 +290,10 @@ cancels it), `cancelGlide`, and `suspended` (`snapSuspended`: `useEditorState` p
 Every edit is one `commitTabs` call that re-reads the tab at commit time (refused by `mayEdit()`
 or a locked tab) and runs its pure edit from `pages-edits.ts` (`edited(t, pageX(t, ...))`:
 the next tab, or no change when refused or unchanged); the panel's checks, telemetry and logs sit
-in front of it. `pagesSharing(pages, id)` is the page, or every page of its flow: a page-wide
-change reaches them all.
+in front of it. `pagesSharing(pages, id)` is the page a page-wide change reaches.
 
-- `setOrientation`, `setSize`: `claimArticleLayout(id)` (an article's re-flow is this person's to
-  settle: `articleHandleOf(flow).claimLayout()`), then `pageTurned` / `pageResized` (`reshaped`:
-  every page in `pagesSharing` patched; an article page: `withPages` only (its writing
-  reflows, zones follow); an infographic page: ids = `elementIdsOnPage` before,
+- `setOrientation`, `setSize`: `pageTurned` / `pageResized` (`reshaped`:
+  every page in `pagesSharing` patched; an infographic page: ids = `elementIdsOnPage` before,
   `withPages`, then `withContentFittedToPage(tab, ids, pageId)`), then `onGoTo(id)` to
   frame the page in its new shape.
 - `rename(id, raw)` (`pageRenamed`): trimmed, cut to `PAGE_NAME_MAX`; a no-op when unchanged; that
@@ -320,29 +308,24 @@ change reaches them all.
   drag preview (`setLocalPreview`), cleared with the preview. An AI tool's `pageBackgroundSet`
   passes no memory.
 - `movePageTo(id, unitIndex)` (`pageMovedTo`, clamped to the row), `movePage(id, ±1)`,
-  `canMove(id, ±1)`: over units (`pageUnits`: a page, or a whole article), `withUnitMoved`;
+  `canMove(id, ±1)`: over units (`pageUnits`: one per page), `withUnitMoved`;
   content follows its page.
 - `addPage(kind)` (absent at the limit, `pageAdded`), `nextPageId(current)`:
-  `'infographic'` takes the last page that is neither an article's, a slide nor a logo page as its
+  `'infographic'` takes the last page that is neither a slide nor a logo page as its
   model (its size and orientation, else A4 portrait; a `'fit'` model gives no `size`, A4);
-  `'article'` uses `withArticleAdded` with the last page's size and orientation when it is a paper
-  size (A4, US Letter, A3), else A4 portrait, and a `nextArticleFlowId`; `'slide'` and `'logo'` as
-  in Slide pages below and [Logo pages](logo-pages.md); then `onGoTo(id)` (and
-  `onArticleCreated(flow)`). Telemetry `KIND_ADDED_EVENT` (`PageAdded`, `ArticleAdded`,
-  `SlidePageAdded`, `LogoPageAdded`).
-- `choosePageKind(id, kind)`: `withPageKindChosen` (null once the page no longer offers the
-  choice); an article hands its flow to `onArticleCreated`.
+  `'slide'` and `'logo'` as in Slide pages below and [Logo pages](logo-pages.md); then
+  `onGoTo(id)`. Telemetry `KIND_ADDED_EVENT` (`PageAdded`, `SlidePageAdded`, `LogoPageAdded`,
+  `WireframePageAdded`).
+- `choosePageKind(id, kind, device?)`: `withPageKindChosen` (null once the page no longer offers
+  the choice).
 - `duplicatePage(id)` (absent at the limit, `pageDuplicated`; the button also asks
-  `canDuplicate(id)`, false when an article's copy would pass the limit): an infographic page
-  `withDuplicatedPage` with `crypto.randomUUID` element ids; an article page
-  `withArticleDuplicated(t, flow, newFlow)` (null, so no edit, when the copy would pass the limit),
-  framing the copy's first page.
+  `canDuplicate(id)`, false at the limit): `withDuplicatedPage` with `crypto.randomUUID` element
+  ids, framing the copy.
 - `removePage(id)` (always present; refused on a locked page): with one unit left it clears the
-  tab (`elements: []`, `pages: []`, `articles: {}`, one commit),
+  tab (`elements: []`, `pages: []`, one commit),
   `restoreEmptyCard(startClosedKey(tabId, 'pages'))` so Start Making Pages comes back, log
-  `last page removed`; else `onGoTo` the unit before it (its last page; the next unit's first when
-  the first goes), then `pageRemoved`: an infographic page `withPageContentReplaced(tab, id, [])`
-  then the page list without it; an article page `withArticleRemoved(t, flow)`. (`pageRemoved`
+  `last page removed`; else `onGoTo` the page before it (the next when the first goes), then
+  `pageRemoved`: `withPageContentReplaced(tab, id, [])` then the page list without it. (`pageRemoved`
   itself refuses the last unit, `last_page`, the agents' rule.)
 - `applyLayout(id, layout)` (`pageLaidOut`): `withPageContentReplaced(tab, id,
 buildPageLayoutOver(layout, page, elementsOnPage(tab.elements, pages, id)))`, then
@@ -421,7 +404,7 @@ with content copied in; geometry and look are always the placed element's.
   - No `pages` stored: null when the box lies inside the first page (1 px slack); else one page
     `pageAround(box)` with `rowAt` the box's centre (rounded). Elements are returned as they are
     (same array); `pageOrientation` dropped.
-  - `pages` stored: null when any page has been made something of (a `flow`, `locked`, a `kind`
+  - `pages` stored: null when any page has been made something of (`locked`, a `kind`
     other than `'infographic'`, a `name` or a `background`), or any element's anchor point
     (`elementAnchorPoint` over `elementIndexFor`, linear) is on a page; else the stored pages are
     replaced by that one page.
@@ -450,8 +433,7 @@ locked`); at `MAX_PAGES` refused with the toast "A tab holds at most 100 pages: 
   goes to the first new page, log `page split`.
 - `setSize(id, 'fit')` is refused (log `size refused: fit to content`), as is any size outside
   `pageSizesFor(pageKindOf(page))` (log `size refused: not offered for the kind`).
-- `refusedLocked(id, edit, shared = true)`: with `shared`, any locked page of the page's article
-  refuses; `rename` and `startBlank` pass `shared: false` (the page's own lock only).
+- `refusedLocked(id, edit)`: the page's own lock refuses (`pageLockRefuses`).
 
 ### Surfaces and ink
 
@@ -507,7 +489,7 @@ locked`); at `MAX_PAGES` refused with the toast "A tab holds at most 100 pages: 
   `|w sin a| + |h cos a|`, clamped 0 to 1), `GRADIENT_SAMPLES` `mixHex` tones across `[lo, hi]`
   (deduplicated) and the mean at `(lo + hi) / 2`. An image fill's tone comes from
   `pageImageTone` through `pageFillTone`: the image background work owns that estimate.
-- `legibleOn(color, tone, floor)` stays for single-tone callers (article accents, image
+- `legibleOn(color, tone, floor)` stays for single-tone callers (image
   placeholders): tints or shades in steps of 0.1 from 0.2 until `PAGE_INK_CONTRAST`.
 
 ### Image backgrounds
@@ -572,16 +554,13 @@ resolve))`, `cover`, `pageImagePositionCss`, `no-repeat`), over `backgroundColor
   pruning).
 - Edits (`page-edits.ts`): `isLocked`, `setLocked` (`Tab · Changed · PageLocked /
 PageUnlocked`, tracked before the change); rename, orientation, size, background, layout, kind
-  and delete are refused for a locked page, or (all but rename) any page of its article
-  (`[page] refused: page locked`). `useArticles.onLayout` leaves a flow with a locked
-  page as it is.
+  and delete are refused for a locked page (`[page] refused: page locked`).
 - UI: `PageLockButton` (`components/canvas/PageLockButton.tsx`) before the cog, named for its
   press ("Lock page" / "Unlock page", no `aria-pressed`), its room `pageLockRoom(locked, !mobile)`;
   the title bar's fixed room (cog, lock, deck button, logo buttons, Background button) is taken before the invite
   chooses its wide or icon form; a locked page shows no layout invite, card or kind choice. The
   panel (`PagePanel`) shows a `role="status"` notice and renders its name and sections
-  `inert` at 50% opacity; Delete page is disabled. `ArticleFlows` makes a flow with a locked page
-  read-only (`editable` false, no paper press).
+  `inert` at 50% opacity; Delete page is disabled.
 
 ### Panel, previews, reorder
 
@@ -611,17 +590,13 @@ themeGradient)`: the page's `fillCss` on its own category's tile, else Solid the
 - Closes: outside pointerdown (`useClickOutside`, the trigger whitelisted by
   `[data-page-panel-trigger]`), Escape (capture; restores focus to the cog), a wheel outside it.
 - Background preview: a shared store (`page-background-preview.ts`), set by the panel through
-  `CanvasPages`; each sheet paints `previewedBackground(page, pages, preview)` (an article's
-  preview covers every page of its flow); `PageClip` inks elements with
-  `withPreviewedBackgrounds`, and the writing takes the previewed ink; `edit.previewInk` shows
+  `CanvasPages`; each sheet paints `previewedBackground(page, preview)`; `PageClip` inks elements with
+  `withPreviewedBackgrounds`; `edit.previewInk` shows
   own-coloured elements re-inked; cleared on leave, on commit and on unmount.
 - Panel tabs (`pagePanelTabs(page)`): **Page** while `pageSizeChoices(page).length > 1 ||
 pageHasOrientation(page)`, then **Background**, then an infographic, slide or logo page's
-  **Layouts**, or an article page's **Style** / **Text** (`articleStyle(part)` renders
-  `ArticleStyleSection`); an initial tab the page lacks opens as its first. Leaving Background
-  clears the background preview (`onPreview(null)`); leaving Layouts clears the layout preview. The page toolbar's Article style opens the panel on Style
-  (`useStylePanelRequest`). Actions read `Duplicate / Move … / Delete article` on an article page.
-  The panel and the cog row carry `data-article-keep-active`.
+  **Layouts**; an initial tab the page lacks opens as its first. Leaving Background
+  clears the background preview (`onPreview(null)`); leaving Layouts clears the layout preview.
 - Layout preview: `view.layoutPreview` set on tile pointerenter / focus; the clip drops that page
   (`hiddenPageId`); `InfographicLayoutPreview` draws `svgBoxed` / `svgArrow` markup of
   `buildPageLayoutOver` (the page's content carried in) over the sheet. Cleared on apply and on
@@ -648,12 +623,12 @@ pageHasOrientation(page)`, then **Background**, then an infographic, slide or lo
   refocuses the +; an outside press closes (the + trigger whitelisted).
 - **First page's choice**: `CanvasPages` renders `FirstPageChoice` on a page when `edit`, not
   `bare`, not locked, and `offersPageKindChoice(pages, page.id, edit.contentCount(page.id))`; the
-  layout invite is withheld meanwhile; an article page never shows the invite. Cards call
-  `edit.choosePageKind(page.id, kind)`. The card is scaled `1 / zoom` and centred on the sheet,
+  layout invite is withheld meanwhile. Cards call
+  `edit.choosePageKind(page.id, kind, device?)`. The card is scaled `1 / zoom` and centred on the sheet,
   stopping pointer and double-click propagation.
 - **In-page layout card**: `EmptyPageLayouts` on every page `showsLayoutCard` passes
   (`layoutCardShows`, `page-layout-card.ts`): `layoutOfferShows` (`edit`, not locked, not
-  `startedBlank`, not an article's or a wireframe's, empty, not offering its kind, its panel not
+  `startedBlank`, not a wireframe's, empty, not offering its kind, its panel not
   open, not hidden: `layoutsHidden`, local state until the tab remounts; Hide tracks `UI · Closed ·
 EmptyPageLayouts`) and `layoutCardSize(page, zoom)` (the page on screen less `LAYOUT_CARD_MARGIN`
   a side, capped at `LAYOUT_CARD_MAX_WIDTH` x `LAYOUT_CARD_MAX_HEIGHT`) at least
@@ -718,8 +693,7 @@ next), ownerId)`; the editor follows the cache (`useEditorPreferences`). Setting
 - **Find**: `filterContents(rows, query, texts)` folds case and width (NFKC, lower case) and needs
   every word in the number, name, kind line or the page's words; `usePageContents` computes `texts`
   with `pageTexts` (`apps/live/lib/page-texts.ts`: one walk, each element to the page its anchor
-  lies on via `rowPageAt`, its `elementFindTexts` from `@livedesign/document-views`, plus an
-  article page's runs and code) only while the query is not blank.
+  lies on via `rowPageAt`, its `elementFindTexts` from `@livedesign/document-views`) only while the query is not blank.
 - **Add Page**: `ContentsAddPage` is two buttons in a row: the wide one (`data-contents-add`,
   **Add Page** with `lucidePlus`, its tooltip `addAnotherLabel(lastPage)`) calls `addLike()` (`edit.addPageLike(lastPage.id)`); the
   square one (`data-add-page-trigger`, `data-contents-add-any`, **Add a Page of Any Kind**,
@@ -731,7 +705,7 @@ next), ownerId)`; the editor follows the cache (`useEditorPreferences`). Setting
   inputs until they rest `settleMs` (the sidebar's `CONTENTS_SIDEBAR_SETTLE_MS`, the popover's 0),
   buckets the elements once (`pageElementBuckets`) and redraws a page only when its laid-out page
   (fields and rect) or its bucket (by reference) changed, or what all share (tab id, layers, font,
-  finish, articles, icons loaded) did.
+  finish, icons loaded) did.
 
 ### Snapping
 
@@ -893,11 +867,11 @@ value)`; keys other than Escape stop at the textarea. Room `pageNotesRoom(named)
 ### Slide pages
 
 - `parsePage` reads `kind: 'slide'` as landscape in a slide size (`'slide'` when the stored size is
-  not one), dropping any flow. `pageDimensions` draws a `landscapeOnly` size landscape whatever the
+  not one). `pageDimensions` draws a `landscapeOnly` size landscape whatever the
   stored orientation; `pageHasOrientation` is false for it, so `OrientationSection` is absent.
-- `withPageKindChosen(tab, id, 'slide', flow)` stores `newSlidePage(id)` keeping name and
+- `withPageKindChosen(tab, id, 'slide')` stores `newSlidePage(id)` keeping name and
   background. `addPage('slide')` appends `newSlidePage(id, lastSlide?.size)`; `addPage('infographic')`
-  models on the last page that is neither an article's nor a slide.
+  models on the last page that is neither a slide nor a logo page.
 - `setOrientation` is refused on a page without an orientation; `setSize` refuses a size the kind
   does not offer; both log `[page] … refused`.
 - `SizeSection` lists `pageSizeChoices(page)` four to a row (the kind's sizes, `'fit'` first on a
@@ -909,7 +883,7 @@ value)`; keys other than Escape stop at the textarea. Room `pageNotesRoom(named)
 - Telemetry: `KIND_CHOSEN_EVENT` (`PageKindSlide`) and `KIND_ADDED_EVENT` (`SlidePageAdded`).
 - Actions read **Duplicate slide**, **Move slide left / right**, **Delete slide** (`PageActions`
   noun).
-- Tests: `page-slide.test.ts`, `article-pages.test.ts`, `page-edits.test.ts`
+- Tests: `page-slide.test.ts`, `page-edits.test.ts`
   "slide page edits", `apps/live/lib/slide-layouts.test.ts`, `page-deck-controls.test.ts`,
   `PageDeckButton.test.tsx`.
 
@@ -945,12 +919,10 @@ null)`, `isLocked(id)`, `setLocked(id, locked)`, `startBlank(id)`. An unknown pa
 | Malformed stored page / field          | Skipped / dropped by `parsePage` (Data and persistence)     |
 | Edit to a page removed meanwhile       | The commit's `find` misses; the tab is unchanged            |
 | Duplicate or add at the limit          | The control is absent / disabled; the commit also refuses   |
-| Delete of the last page or article     | The tab is cleared; Start Making Pages comes back; Undo     |
+| Delete of the last page                | The tab is cleared; Start Making Pages comes back; Undo     |
 | Arrow end over another page's element  | Not pinned or joined; the end stays free                    |
-| An article's copy past the limit       | `withArticleDuplicated` null: no edit (the control stays)   |
 | Kind chosen on a page no longer alone  | `withPageKindChosen` null: no edit                          |
 | Stored page with a repeated id         | Skipped after the first                                     |
-| A flow's pages apart in the row        | Rejoined at the first, each taking its size and paint       |
 | Two quick edits                        | Each re-reads the tab at commit time                        |
 | Duplicated arrow pinned off the page   | Not copied                                                  |
 | Re-fit of content larger than the room | Scaled down, never up                                       |
@@ -1050,17 +1022,17 @@ SVG `href` is escaped. The api counts a page picture as an image reference
 ## Presentation and UX
 
 Copy and layout as the spec: **Add a Page** over the four cards (**Infographic**, "A page to lay
-out: layouts, icons, charts and media."; **Article**, "A page to write on, flowing onto new pages
-as it grows."; **Slide**, "A slide for a deck: widescreen, ready to present."; **Logo**, "A square
-artboard for a logo, with guides and drawing tools."), each over its miniature; the strip +'s
-HoverCard **Add Page**, "A new infographic, article, slide or logo page after the last."; the
+out: layouts, icons, charts and media."; **Slide**, "A slide for a deck: widescreen, ready to present."; **Logo**, "A square
+artboard for a logo, with guides and drawing tools."; **Wireframe**, "A screen to wireframe,
+framed as a phone, tablet, laptop or browser."), each over its miniature; the strip +'s
+HoverCard **Add Page**, "A new infographic, slide or logo page after the last."; the
 in-page card **Start From a Layout** with **Hide**; the first page's card **What Is This Page For?**, "Choose now: a
 page keeps its kind once you start."; the navigator **Previous page**, "n of m", **Next page**;
-the panel's tabs **Page** / **Background** / **Layouts** (an article page **Page** / **Background** / **Style** / **Text**; a logo page **Background** / **Layouts**), sections **Size**,
+the panel's tabs **Page** / **Background** / **Layouts** (a logo page **Background** / **Layouts**), sections **Size**,
 **Orientation**, **Background**, **Pattern**, **Start From a Layout**; the confirm **Replace this
 page's content?**, "The n elements on it make way for <layout>. Undo brings them back.",
 **Cancel** / **Replace**; actions **Duplicate page**, **Move page left**, **Move page right**,
-**Delete page** ("slide" on a slide page, "article" on an article page); the logo page's invite **Start From a Layout**; the title-bar **Layout** and **Tidy Up** buttons; the title-bar **Background** button on an infographic or slide page (tooltip **Background**, its popover named **Background**, holding the **Background** and **Pattern** sections); the export row **All pages** / **One page** with the outcome line ("n pages, one PDF.", "A .zip of n PNG files, one per page.", "A one-page PDF.", "One PNG."), the subtitle "Pick a format to export the pages."; the slide picker
+**Delete page** ("slide" on a slide page); the logo page's invite **Start From a Layout**; the title-bar **Layout** and **Tidy Up** buttons; the title-bar **Background** button on an infographic or slide page (tooltip **Background**, its popover named **Background**, holding the **Background** and **Pattern** sections); the export row **All pages** / **One page** with the outcome line ("n pages, one PDF.", "A .zip of n PNG files, one per page.", "A one-page PDF.", "One PNG."), the subtitle "Pick a format to export the pages."; the slide picker
 **Add as slide**; the size tile **Fit** (tooltip "Sized around the board it was made for"), the
 action **Split Into Pages**; the toasts "Put onto a page that fits it. Undo switches back to
 <Mode>.", "Put onto a page that fits it. Undo takes the page away.",
@@ -1095,8 +1067,8 @@ positioned over the canvas.
 ## Observability
 
 - `debugLog` fingerprints: `[page] orientation set`, `size set`, `renamed`,
-  `background set`, `moved`, `page added`, `article added`, `duplicated`, `article duplicated`,
-  `page removed`, `article removed`, `last page removed`, `first page kind chosen`,
+  `background set`, `moved`, `page added`, `duplicated`,
+  `page removed`, `last page removed`, `first page kind chosen`,
   `layout placed`, `framed`, `last page recorded`, `content put onto a page`, `page split`, `split: one group`,
   `split refused: page limit`, `size refused: fit to content`, `size refused: not offered for the
 kind`, `turn refused: landscape only`, `pattern refused: a logo page`, `refused: page locked`,
@@ -1116,11 +1088,11 @@ read against the code. Rules no test covers are listed as gaps after the table.
 
 | Spec rule                                                                                                                                                                                                                                                                   | Test                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Page kinds: read, absent is infographic, an article's flow kept or its own id                                                                                                                                                                                               | `packages/document/src/page.test.ts` "page kinds"                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| A new page per kind: infographic modelled on the last, article, slide, logo                                                                                                                                                                                                 | `packages/document/src/pages-edits.test.ts` "adding"; `apps/live/hooks/editor/page-edits.test.ts` "Page edits: documents", "slide page edits", "logo page edits", "Fit to Content page edits"                                                                                                                                                                                                                                                                           |
+| Page kinds: read, absent is infographic, a stored article page read as a plain page                                                                                                                                                                                         | `packages/document/src/page.test.ts` "page kinds"                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| A new page per kind: infographic modelled on the last, slide, logo                                                                                                                                                                                                          | `packages/document/src/pages-edits.test.ts` "adding"; `apps/live/hooks/editor/page-edits.test.ts` "slide page edits", "logo page edits", "Fit to Content page edits"                                                                                                                                                                                                                                                                                                    |
 | Back to the page you were on: landing frames it, else the first; nothing recorded before the landing frame; a settling move kept on leaving or closing                                                                                                                      | `apps/live/hooks/editor/usePagesMode.last-page.test.ts`                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | The remembered page: per document and tab, malformed reads absent, capped at the latest 200, the page under (else nearest) the view's centre                                                                                                                                | `apps/live/lib/last-page.test.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| The first page's choice: offered while alone, unchosen, empty; each kind taken                                                                                                                                                                                              | `packages/document/src/article-pages.test.ts` "the first page's own choice of kind"; `page-edits.test.ts` "chooses Slide for the only, empty page", "chooses Logo for the only, empty page"                                                                                                                                                                                                                                                                             |
+| The first page's choice: offered while alone, unchosen, empty; each kind taken                                                                                                                                                                                              | `apps/live/components/canvas/FirstPageChoice.test.tsx`; `page-edits.test.ts` "chooses Slide for the only, empty page", "chooses Logo for the only, empty page"                                                                                                                                                                                                                                                                                                          |
 | The kind cards: arrow keys between the four                                                                                                                                                                                                                                 | `apps/live/components/canvas/FirstPageChoice.test.tsx`                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | The + after the last page: level with its middle                                                                                                                                                                                                                            | `apps/live/components/canvas/AddPageButton.test.tsx`                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | The page panel's tabs per kind; Background apart from Page; its preview cleared                                                                                                                                                                                             | `apps/live/components/canvas/PagePanel.tabs.test.tsx`                                                                                                                                                                                                                                                                                                                                                                                                                   |
@@ -1135,7 +1107,6 @@ read against the code. Rules no test covers are listed as gaps after the table.
 | Find a Page by the words on a page                                                                                                                                                                                                                                          | `apps/live/lib/page-texts.test.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | Contents' pictures: drawn from each page's own elements exactly as from the tab, one page redrawn per edit, none mid-drag                                                                                                                                                   | `apps/live/lib/page-element-buckets.test.ts`; `apps/live/hooks/ui/usePageThumbnails.test.ts`                                                                                                                                                                                                                                                                                                                                                                            |
 | The row anchor: read, one carrier, kept when its carrier is deleted                                                                                                                                                                                                         | `page.test.ts` "the row anchor"                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| An article's pages sit together, each like its first                                                                                                                                                                                                                        | `page.test.ts` "keep a document's pages together, each like its first", "give back the same pages when a document is already together"                                                                                                                                                                                                                                                                                                                                  |
 | Sizes: measures, labels, mixed row, slide sizes landscape only, sizes per kind                                                                                                                                                                                              | `page-model.test.ts` "measures every size, the long side upright in portrait", "names itself by its name, or its place once there are several", "lays mixed sizes out in a row"; `packages/document/src/page-slide.test.ts`                                                                                                                                                                                                                                             |
 | Fit to Content sides read, clamped, A4 without them, no orientation                                                                                                                                                                                                         | `page.test.ts` "Fit to Content pages"; `apps/live/components/canvas/PagePanel.fit.test.tsx`                                                                                                                                                                                                                                                                                                                                                                             |
 | A page only takes a size its kind offers; a turn refused without an orientation                                                                                                                                                                                             | `pages-edits.test.ts` "turning and resizing"; `page-edits.test.ts` "gives a page only the sizes its kind offers", "never turns a slide, nor gives it a size that is not a slide size"                                                                                                                                                                                                                                                                                   |
@@ -1145,7 +1116,7 @@ read against the code. Rules no test covers are listed as gaps after the table.
 | Tidy Up: one edit, tracked, already tidy toast, locked page and layer, infographic only, preview                                                                                                                                                                            | `apps/live/hooks/editor/page-edits.tidy.test.ts`                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | Tidy Up button: labelled, Editors only, mouse-hover preview, dropped on leave and unmount                                                                                                                                                                                   | `apps/live/components/canvas/PageTidyUpButton.test.tsx`                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | Theme backgrounds, presets, the sheet's paint and pattern                                                                                                                                                                                                                   | `apps/live/lib/page-paint.test.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| A background edit: patched, compared by value, every page of an article                                                                                                                                                                                                     | `packages/document/src/page-paint.test.ts`; `pages-edits.test.ts` "painting"; `page-edits.test.ts` "paints and clears a background"                                                                                                                                                                                                                                                                                                                                     |
+| A background edit: patched, compared by value                                                                                                                                                                                                                               | `packages/document/src/page-paint.test.ts`; `pages-edits.test.ts` "painting"; `page-edits.test.ts` "paints and clears a background"                                                                                                                                                                                                                                                                                                                                     |
 | A dark page has light ink; own colours re-inked                                                                                                                                                                                                                             | `page-model.test.ts` "page backgrounds", "page ink"; `page-ink.test.ts` (every floor on paper, pale, white, dark, navy, grey, red, yellow, Night, Sunrise, a steep gradient and a picture; idempotent; cards, marks, outlines, covers, kept kinds, locks, going back, one edit, cost); `page-ink-contrast.test.ts`; `page-ink-ground.test.ts`; `apps/live/hooks/editor/page-edits.reink.test.ts` (one commit, preview, memory); `apps/live/lib/page-ink-memory.test.ts` |
 | Charts adapt as they are drawn (series 3:1, text 4.5:1, hue kept, legible colours unchanged; grounds: paper, solid, card, cover, unknown surface, gradient; export matches)                                                                                                 | `packages/document/src/chart-ink.test.ts`; `apps/live/components/canvas/chart-ground.test.tsx`                                                                                                                                                                                                                                                                                                                                                                          |
 | Ninety-two layouts in eight categories, each fitting every size and orientation                                                                                                                                                                                             | `apps/live/lib/page-layouts.test.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                    |
@@ -1159,12 +1130,11 @@ read against the code. Rules no test covers are listed as gaps after the table.
 | The card's size, and Choose a Layout where the card has no room                                                                                                                                                                                                             | `apps/live/components/canvas/page-layout-card.test.ts`                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | A tile's sample pictures; a plain page's dark paper in dark chrome; every slide tile within budget                                                                                                                                                                          | `apps/live/components/canvas/layout-sample-pictures.test.ts`, `apps/live/components/canvas/layout-render-thumb.test.tsx`                                                                                                                                                                                                                                                                                                                                                |
 | Page actions: duplicate with content, move, delete closing the gap                                                                                                                                                                                                          | `pages-edits.test.ts` "duplicating, moving and deleting"; `page-model.test.ts` "page content"; `page-edits.test.ts` "Page edits"                                                                                                                                                                                                                                                                                                                                        |
-| An article's actions act on the whole article                                                                                                                                                                                                                               | `page-edits.test.ts` "moves, duplicates and deletes the whole document"; `article-pages.test.ts` "remove an article with its pages, content and writing", "move a whole article as one"                                                                                                                                                                                                                                                                                 |
 | A delete glides to the page before; the last page clears the tab                                                                                                                                                                                                            | `page-edits.test.ts` "goes to the page before a deleted one, or the next when the first goes", "deletes the last page with everything on the tab, and brings Start Making Pages back"                                                                                                                                                                                                                                                                                   |
 | A new, turned or resized page comes into view                                                                                                                                                                                                                               | `page-edits.test.ts` "duplicates a page, announcing the copy", "frames a turned or resized page again, as the view frames the page itself"                                                                                                                                                                                                                                                                                                                              |
 | Arrows stay on one page                                                                                                                                                                                                                                                     | `packages/document/src/page-of.test.ts`; `apps/live/hooks/canvas/arrow-endpoint-resolve.test.ts` "resolveArrowEndpointDrag across pages"; `apps/live/app/document/[id]/useArrowConnect.test.tsx` "useArrowConnect across pages"                                                                                                                                                                                                                                         |
-| Locking a page: what it holds, what it refuses, an article's shared edits                                                                                                                                                                                                   | `packages/document/src/page-lock.test.ts`; `pages-edits.test.ts` "locking and naming"; `page-edits.test.ts` "locking a page"; `apps/live/lib/page-lock-guard.test.ts`                                                                                                                                                                                                                                                                                                   |
-| The lock button and the locked panel                                                                                                                                                                                                                                        | `apps/live/components/canvas/PageLockButton.test.tsx`; `apps/live/components/canvas/PagePanel.locks.test.tsx`                                                                                                                                                                                                                                                                                                                                                           |
+| Locking a page: what it holds, what it refuses                                                                                                                                                                                                                              | `packages/document/src/page-lock.test.ts`; `pages-edits.test.ts` "locking and naming"; `page-edits.test.ts` "locking a page"; `apps/live/lib/page-lock-guard.test.ts`                                                                                                                                                                                                                                                                                                   |
+| The lock button and the locked panel                                                                                                                                                                                                                                        | `apps/live/components/canvas/PageLockButton.test.tsx`                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | A page frames itself, whatever its shape                                                                                                                                                                                                                                    | `page.test.ts` "frame a page by the page itself, so it fills the screen whatever its shape"                                                                                                                                                                                                                                                                                                                                                                             |
 | Drag a label to reorder, by units                                                                                                                                                                                                                                           | `apps/live/hooks/canvas/usePageReorderDrag.test.ts`                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | Snapping to page edges, centre lines, margins                                                                                                                                                                                                                               | `apps/live/hooks/canvas/boxed-drag-resolve.test.ts` "Page lines"                                                                                                                                                                                                                                                                                                                                                                                                        |

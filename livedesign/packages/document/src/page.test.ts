@@ -5,7 +5,6 @@ import {
   PAGE_GAP,
   MAX_PAGES,
   pageAt,
-  isArticlePage,
   pageKindOf,
   pageFitBox,
   pagesOf,
@@ -156,45 +155,15 @@ describe('withPages', () => {
 });
 
 describe('page kinds', () => {
-  const D = (id: string, flow?: string, extra: Partial<Page> = {}): Page => ({
-    id,
-    orientation: 'portrait',
-    kind: 'article',
-    ...(flow ? { flow } : {}),
-    ...extra,
-  });
-
-  it('read a page with no kind as an infographic, and an article page with its flow', () => {
-    const [a, b, c] = pagesOf({
-      pages: [P('a'), D('b', 'art-1'), { ...P('c'), kind: 'poster', flow: 'art-9' }],
-    });
+  it('read a page with no kind as an infographic, and an unknown kind as none', () => {
+    const [a, c] = pagesOf({ pages: [P('a'), { ...P('c'), kind: 'poster', flow: 'art-9' }] });
     expect(pageKindOf(a!)).toBe('infographic');
-    expect(b).toEqual(D('b', 'art-1'));
     expect(c).toEqual(P('c'));
   });
 
-  it('read an article page with no flow as an article of its own', () => {
-    expect(pagesOf({ pages: [D('b')] })).toEqual([D('b', 'b')]);
-  });
-
-  it("keep a document's pages together, each like its first", () => {
-    const pages = pagesOf({
-      pages: [
-        D('d1', 'doc', { size: 'letter' }),
-        P('x'),
-        D('d2', 'doc', { orientation: 'landscape', background: { pattern: 'dots' } }),
-        P('y'),
-      ],
-    });
-    expect(pages.map((p) => p.id)).toEqual(['d1', 'd2', 'x', 'y']);
-    expect(pages[1]).toEqual(D('d2', 'doc', { size: 'letter' }));
-    expect(isArticlePage(pages[1]!)).toBe(true);
-  });
-
-  it('give back the same pages when a document is already together', () => {
-    const stored = [P('x'), D('d1', 'doc'), D('d2', 'doc')];
-    const read = pagesOf({ pages: stored });
-    expect(read).toEqual(stored);
+  it('read a stored article page as a plain page', () => {
+    const [b] = pagesOf({ pages: [{ ...P('b'), kind: 'article', flow: 'art-1' }] });
+    expect(b).toEqual(P('b'));
   });
 });
 
@@ -225,14 +194,12 @@ describe('Fit to Content pages', () => {
     expect(page!.fit).toEqual({ width: FIT_PAGE_MAX_SIDE, height: FIT_PAGE_MIN_SIDE });
   });
 
-  it('reads as A4 without valid sides, or on an article page', () => {
+  it('reads as A4 without valid sides', () => {
     for (const sides of [undefined, { width: 0, height: 10 }, { width: 'x', height: 1 }, 5]) {
       const [page] = pagesOf({ pages: [fit({ fit: sides })] });
       expect(page!.size).toBeUndefined();
       expect(page!.fit).toBeUndefined();
     }
-    const [doc] = pagesOf({ pages: [fit({ kind: 'article', flow: 'd' })] });
-    expect(doc!.size).toBeUndefined();
   });
 
   it('keeps an explicit infographic kind', () => {

@@ -97,7 +97,7 @@ Exclude), **Wordmark**, **Logo Kit**.
 - `page.ts`: `PageKind`, `PAGE_SIZES.logo`, `LOGO_PAGE_SIZE_IDS`, `pageSizesFor`,
   `parsePage` logo branch, `pageKindOf`, `newLogoPage(id)`, `PAGE_KIND_LABEL.logo = 'Logo'`,
   `pageMargin` (`LOGO_SAFE_FRACTION` for the logo size). The label reads `1024 x 1024 · Logo`.
-- `article-pages.ts` `withPageKindChosen(tab, pageId, 'logo', flow)`: the only page becomes
+- `page-units.ts` `withPageKindChosen(tab, pageId, 'logo')`: the only page becomes
   `newLogoPage(id)` keeping its name and fill.
 - `logo-page.ts`: `logoGuides(rect)` (centre, diagonals, safe area, keyline and inner circles, keyline
   square, the grid's 14 inner lines); `logoPageSnapBoxes(pages)` (boxes `logo-inner:<id>`,
