@@ -4,12 +4,12 @@ import { Wordmark } from './Wordmark';
 const linkClass =
   'relative touch-target-y text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white';
 
-// The footer (liveworkspace/docs/site.md "The front door"): every app again, and the platform's own
-// services.
+// The footer (liveworkspace/docs/site.md "The front door"): every app again, the platform's own
+// services, and the privacy policy and terms that cover all of them.
 export function Footer() {
   return (
     <footer className="border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
-      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:grid-cols-[2fr_1fr_1fr] sm:px-6">
+      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:grid-cols-[2fr_1fr_1fr_1fr] sm:px-6">
         <div>
           <Wordmark />
           <p className="mt-3 max-w-xs text-sm text-slate-500 dark:text-slate-400">
@@ -26,6 +26,14 @@ export function Footer() {
         <FooterColumn title="Platform">
           <a href="/telemetry" className={linkClass}>
             Telemetry
+          </a>
+        </FooterColumn>
+        <FooterColumn title="Legal">
+          <a href="/privacy" className={linkClass}>
+            Privacy Policy
+          </a>
+          <a href="/terms" className={linkClass}>
+            Terms of Use
           </a>
         </FooterColumn>
       </div>

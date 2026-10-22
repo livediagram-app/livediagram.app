@@ -67,11 +67,20 @@ moves between them, and the one account that joins them.
    account), live by default, share by link, open about data (linking `/telemetry`), yours to keep
    (closing the account closes it everywhere), completely free (no paywalls or subscriptions).
 4. **Closing call to action**: "One account. Every app. Always live."
-5. **Footer**: Our Apps (each live app's site) and Platform (the telemetry dashboard).
+5. **Footer**: Our Apps (each app's site), Platform (the telemetry dashboard) and Legal (the
+   privacy policy and terms).
 
 The illustrations are drawn in the page (HTML and SVG with the apps' own logos), not images. Their
 ambient motion (the current along the lines, drifting cursors, the cards settling) is in
 `app/landing-motion.css`, paced as content, and stops for reduced motion.
+
+### Privacy and terms (`/privacy`, `/terms`)
+
+One privacy policy and one set of terms for liveworkspace and every app in it, linked from the
+footer. They were built from the apps' own policies, which said the same things app by app; a
+feature only one app has (livediagram's Google Drive mirror, its Clerk sign-in until it moves to the
+liveworkspace account) says which. Both share `components/LegalPage.tsx`, and their date and contact
+form are in `lib/legal.ts`. Change them when what an app stores or who it uses changes.
 
 ### Telemetry (`/telemetry`)
 
@@ -121,11 +130,8 @@ That runs the site's dev server on 3300 and both APIs behind it (accounts on 878
 8790; first-time setup for each is in [the README](../README.md#local-development) and
 [telemetry.md](telemetry.md#running-it-locally)). The dev server forwards `/api/auth/*`,
 `/.well-known/*` and `/api/telemetry/*` to them (`next.config.ts`), so the whole site works from
-one origin, as it does in production. Run `corepack pnpm dev:site` for the pages alone.
+one origin, as it does in production. Run `corepack pnpm dev:site` for- **The apps' own policies** still live in each app's help centre; they should point here instead.wn site; the
+footer links to none.
 
-## Not done yet
-
-- **A liveworkspace privacy policy and terms.** Each app has its own today, on its own site; the
-  footer links to none.
 - **livedocuments' and livedesign's own logos** replace the tinted prism here when their UI
   packages land in this repo.
