@@ -11,7 +11,7 @@ import { toGallery, type GalleryTemplate } from '@/lib/template-gallery';
 export const SECTION_TEMPLATES_MAX = 9;
 
 export const SECTION_TEMPLATE_KINDS: Readonly<Record<string, readonly TemplateKind[]>> = {
-  plan: [
+  boards: [
     'kanban',
     'project-planner',
     'bug-triage',
@@ -21,6 +21,17 @@ export const SECTION_TEMPLATE_KINDS: Readonly<Record<string, readonly TemplateKi
     'content-calendar',
     'weekly-planner',
     'blank-plan',
+  ],
+  // Each of these opens with a Dashboard tab of its own (template-builders-plan.ts).
+  dashboards: [
+    'product-launch',
+    'project-planner',
+    'okrs',
+    'bug-triage',
+    'kanban',
+    'hiring-pipeline',
+    'weekly-planner',
+    'content-calendar',
   ],
   sheets: [
     'budget-planner',

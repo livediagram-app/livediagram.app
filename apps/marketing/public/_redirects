@@ -1,44 +1,48 @@
 # Retired feature category pages (docs/specs/019-marketing/marketing-site.md "Feature category pages").
 # The landing page once had thirteen generic categories, then one per editor mode; liveplanner keeps
-# only Plan's (boards and dashboards, sheets, forms) and collaboration, so each old /features/<id> URL
+# only Plan's (boards, dashboards, sheets, forms) and collaboration, so each old /features/<id> URL
 # moves permanently to the live page nearest to it, and search results and old links keep landing.
 # Workers Static Assets reads this file from out/ (Next copies public/).
 # lib/retired-features.test.ts pins every target to a live page.
 
-/features/simple /features/plan 301
-/features/simple/ /features/plan 301
-/features/content /features/plan 301
-/features/content/ /features/plan 301
+# Boards and dashboards shared one page, /features/plan, until October 2026; it moves to Boards.
+/features/plan /features/boards 301
+/features/plan/ /features/boards 301
+
+/features/simple /features/boards 301
+/features/simple/ /features/boards 301
+/features/content /features/boards 301
+/features/content/ /features/boards 301
 /features/assist /features/collaboration 301
 /features/assist/ /features/collaboration 301
-/features/customise /features/plan 301
-/features/customise/ /features/plan 301
-/features/refine /features/plan 301
-/features/refine/ /features/plan 301
-/features/tabs /features/plan 301
-/features/tabs/ /features/plan 301
-/features/motion /features/plan 301
-/features/motion/ /features/plan 301
-/features/connect /features/plan 301
-/features/connect/ /features/plan 301
+/features/customise /features/boards 301
+/features/customise/ /features/boards 301
+/features/refine /features/boards 301
+/features/refine/ /features/boards 301
+/features/tabs /features/boards 301
+/features/tabs/ /features/boards 301
+/features/motion /features/boards 301
+/features/motion/ /features/boards 301
+/features/connect /features/boards 301
+/features/connect/ /features/boards 301
 /features/express /features/collaboration 301
 /features/express/ /features/collaboration 301
-/features/present /features/plan 301
-/features/present/ /features/plan 301
+/features/present /features/boards 301
+/features/present/ /features/boards 301
 /features/reliability / 301
 /features/reliability/ / 301
 /features/foundations / 301
 /features/foundations/ / 301
-/features/diagrams /features/plan 301
-/features/diagrams/ /features/plan 301
+/features/diagrams /features/boards 301
+/features/diagrams/ /features/boards 301
 /features/whiteboard /features/collaboration 301
 /features/whiteboard/ /features/collaboration 301
-/features/infographics /features/plan 301
-/features/infographics/ /features/plan 301
-/features/slides /features/plan 301
-/features/slides/ /features/plan 301
-/features/documents /features/plan 301
-/features/documents/ /features/plan 301
+/features/infographics /features/boards 301
+/features/infographics/ /features/boards 301
+/features/slides /features/boards 301
+/features/slides/ /features/boards 301
+/features/documents /features/boards 301
+/features/documents/ /features/boards 301
 
 # Retired comparison pages (docs/specs/019-marketing/comparison-pages.md "Retired comparisons"). liveplanner
 # compares itself with planners now, so each old diagram-tool comparison moves permanently to the hub.

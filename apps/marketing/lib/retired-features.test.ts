@@ -25,6 +25,8 @@ const RETIRED = [
   'infographics',
   'slides',
   'documents',
+  // Boards and dashboards, one page until they split into two.
+  'plan',
 ];
 
 const rules = readFileSync(fileURLToPath(new URL('../public/_redirects', import.meta.url)), 'utf8')

@@ -16,9 +16,10 @@ describe('CATEGORY_ICONS', () => {
   });
 
   it('renders decorative and in the text colour', () => {
-    const Icon = CATEGORY_ICONS.plan!;
-    const markup = renderToStaticMarkup(<Icon />);
-    expect(markup).toContain('aria-hidden="true"');
-    expect(markup).toContain('stroke="currentColor"');
+    for (const Icon of Object.values(CATEGORY_ICONS)) {
+      const markup = renderToStaticMarkup(<Icon />);
+      expect(markup).toContain('aria-hidden="true"');
+      expect(markup).toContain('stroke="currentColor"');
+    }
   });
 });
