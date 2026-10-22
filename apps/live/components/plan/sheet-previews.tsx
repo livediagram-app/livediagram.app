@@ -15,12 +15,11 @@ import {
   type SheetTemplateId,
 } from '@liveplanner/sheets';
 import type { PlacedSheetStart } from '@/lib/sheet-seeds';
-import { SHEET_STARTS } from './start/start-planning-items';
 import type { PlanPalette } from './plan-palette';
 
 // The Spreadsheets tab's sheet types (docs/specs/026-plan/plan-mode.md "Start Planning"): the empty sheet, the card
 // table, then every template; each opens Setup Sheet a step in (sheet-seeds' PlacedSheetStart).
-type SheetTile = { start: PlacedSheetStart | null; name: string; line: string };
+export type SheetTile = { start: PlacedSheetStart | null; name: string; line: string };
 
 // The picture's box (the tile scales it to its width).
 const W = 160;
@@ -367,7 +366,3 @@ function GridPicture({ palette, cards }: { palette: PlanPalette; cards: boolean 
     </svg>
   );
 }
-
-// The empty sheet, the card table, then every template in the catalogue's order (Budget and Tracker third and
-// fourth, where Add to Slot reads them): Start Planning's own list.
-export const SHEET_TILES: readonly SheetTile[] = SHEET_STARTS;

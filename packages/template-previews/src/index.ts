@@ -5,4 +5,4 @@
 // kind gets its artwork in one place.
 export { TemplatePreview } from './template-preview';
 export { PreviewFan } from './PreviewFan';
-export { FormStarterPicture, FormStarterArt } from './form-starter-picture';
+export { FormStarterPicture, FormStarterArt, FORM_STARTER_VIEWBOX } from './form-starter-picture';

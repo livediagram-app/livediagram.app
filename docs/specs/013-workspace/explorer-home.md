@@ -14,7 +14,7 @@ brings, in one screen: "what was I working on?" and "what happened while I was a
 ## Layout
 
 Home reads as the front page of the person's work, in the marketing site's visual language: the dotted
-backdrop, a heavy display heading, pills with a coloured dot, the glowing search field and fanned sheets
+backdrop, a heavy display heading, pills with a coloured dot, the glowing search field and fanned previews
 ([Design principles](../004-interface-design/design-principles.md)).
 
 - **The hero** opens the page ([The hero](#the-hero)): a full-width band under the Explorer header, above the
@@ -56,11 +56,15 @@ Top to bottom, left column:
   Search results, as the header's field does from Home, and the header's field there takes the focus with the caret
   after what was typed, so the typing carries on uninterrupted.
 
-The right column, on a wide screen only (`lg` and up), shows **fanned sheets**: the snapshot thumbnails of the
-person's three most recently saved documents of My Documents, the newest in front and the two behind turned out to
-either side, each on a white sheet with a soft shadow. They are decoration (hidden from assistive technology, not
-links): Jump Back In is the way in. With fewer than three, fewer sheets; with none, the column is empty and the text
-keeps its width.
+The right column, on a wide screen only (`lg` and up), shows **fanned previews** of what a project holds: a
+**Board**, a **Sheet**, a **Dashboard** and a **Form**, the Board and the Sheet behind turned out to either side, the
+Dashboard and the Form in front, each on a white sheet with a soft shadow and its name in a small pill. They are the
+same for everyone, on every Home, the first run's included: static art drawn from the pictures Start Planning offers
+([Plan mode](../026-plan/plan-mode.md) "Starting a board"), in the page's light or dark look, and **nothing is
+fetched** to draw them (no document's thumbnail is asked for). They are not links: Jump Back In is the way in. For
+assistive technology they are one group, "What a project can hold", of four images named Board, Sheet, Dashboard and
+Form. Their one motion is a short fade as they land, within the motion budget, and none under reduced motion. On a
+phone or a tablet the column is not drawn, so the hero keeps to its words and its field.
 
 **It comes and goes with Home.** Leaving Home for another Explorer page folds the hero away (its height to nothing as
 it fades), and the page under it slides up; returning to Home unfolds it again. Each runs over the `long` motion token
@@ -116,8 +120,8 @@ The hero speaks to a beginning:
   Enter opens the New Document wizard with the words in its template search (`/new?q=`). Inside its right end,
   **Start Blank** asks which mode, then makes that mode's blank with its start closed (`/new?start=blank`,
   [Start Blank after a mode](../007-editor/new-document-route.md#start-blank-after-a-mode)).
-- **The fanned sheets** show three template previews (Flowchart in front, Mind Map and Kanban Board behind), the
-  marketing hero's fan, so the page shows what can be made.
+- **The fanned previews** are every Home's: a Board, a Sheet, a Dashboard and a Form, so the page shows what can be
+  made.
 
 Under it, beside the sidebar, Home holds three sections in place of Jump Back In and What Happened:
 
