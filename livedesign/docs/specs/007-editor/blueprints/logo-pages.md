@@ -30,37 +30,37 @@ Exclude), **Wordmark**, **Logo Kit**.
 
 ## Constants and configuration
 
-| Constant                                   | Value                                         | Where                                                      | Provenance / safe range                                          |
-| ------------------------------------------ | --------------------------------------------- | ---------------------------------------------------------- | ---------------------------------------------------------------- |
-| `LOGO_SIDE`                                | 1024                                          | `packages/document/src/page.ts`                            | The largest common app-icon master; 512 to 2048                  |
-| `LOGO_SAFE_FRACTION`                       | 0.1                                           | `packages/document/src/page.ts`                            | Spec; 0.05 to 0.15                                               |
-| `LOGO_KEYLINE_CIRCLE`                      | 0.8 (diameter / side)                         | `packages/document/src/logo-page.ts`                       | Inscribed in the safe area                                       |
-| `LOGO_INNER_CIRCLE`                        | 0.5                                           | `packages/document/src/logo-page.ts`                       | Spec                                                             |
-| `LOGO_KEYLINE_SQUARE`                      | 0.64                                          | `packages/document/src/logo-page.ts`                       | Spec (Material's 18/24 of the 20/24 live area, rounded)          |
-| `LOGO_GRID_DIVISIONS`                      | 8                                             | `packages/document/src/logo-page.ts`                       | Spec                                                             |
-| `LOGO_GUIDE_ALPHA`                         | faint .2/.08, medium .35/.15, strong .6/.3    | `apps/live/lib/logo-guide-prefs.ts`                        | Guides / grid opacity per strength                               |
-| `MIRROR_AXIS_TOLERANCE`                    | 0.01 (of the artboard's width)                | `packages/document/src/element-mirror.ts`                  | Spec; 0.005 to 0.03                                              |
-| `LETTER_SPACING_MIN` / `_MAX`              | -0.2 / 1 (em)                                 | `packages/document/src/wordmark.ts`                        | Spec                                                             |
-| `TEXT_ARC_MAX`                             | 360 (degrees, either sign)                    | `packages/document/src/wordmark.ts`                        | Spec                                                             |
-| `FONT_WEIGHTS`                             | 400, 500, 700                                 | `packages/document/src/wordmark.ts`                        | The weights `fonts.ts` loads for every catalogue font            |
-| `ARC_ASCENT` / `ARC_DESCENT`               | 0.8 / 0.25 (em)                               | `packages/document/src/wordmark.ts`                        | Room kept for glyphs above / below the arc's baseline            |
-| `COMBINE_TOLERANCE_PX`                     | 0.25                                          | `apps/live/lib/combine/outline.ts`                         | Spec ("a quarter of a pixel")                                    |
-| `COMBINE_MERGE_PX`                         | 0.05                                          | `apps/live/lib/combine/simplify.ts`                        | Collinear merge distance; well under a device pixel              |
-| `COMBINE_MAX_INPUT_POINTS`                 | 50,000                                        | `apps/live/lib/combine/combine.ts`                         | Refused above as Too detailed; measured runs stay under 4 ms     |
-| `MAX_PATH_NODES`                           | 5,000 (existing; now across all contours)     | `packages/document/src/validate.ts`                        | Existing                                                         |
-| `LOGO_KIT_PNG_SIZES`                       | 16, 32, 48, 64, 128, 180, 192, 256, 512, 1024 | `apps/live/lib/export-logo-kit.ts`                         | Spec                                                             |
-| `LOGO_ICO_SIZES`                           | 16, 32, 48                                    | `apps/live/lib/export-logo-kit.ts`                         | Spec                                                             |
-| `BUTTON_ROOM` / `LABELLED_ROOM`            | 28 px / 72 px                                 | `apps/live/components/canvas/LogoTitleBar.tsx`             | Title-bar room a control takes, icon-only / named                |
-| `SNAP_POINTS_NEAR_PX`                      | 64 px                                         | `apps/live/components/canvas/GuideSnapPoints.tsx`          | Screen px round the pointer within which a guide crossing shows  |
-| `LOGO_GUIDE_SNAP_PX`                       | 8 px                                          | `apps/live/lib/logo-guide-snapping.ts`                     | Spec ("within 8 screen px")                                      |
-| `TIDY_GUIDE_PX`                            | 16 px                                         | `apps/live/lib/logo-guide-snapping.ts`                     | Spec ("within 16 screen px")                                     |
-| `TIDY_TOLERANCE` / `TIDY_MIN_TOLERANCE_PX` | 0.05 (of the diagonal) / 2 px                 | `apps/live/lib/stroke-tidy.ts`                             | Spec ("5% of the element's size, 2 px at least")                 |
-| `TIDY_SQUARE_DEGREES`                      | 12                                            | `apps/live/lib/stroke-tidy.ts`                             | Spec ("within 12 degrees of level or upright")                   |
-| `LOGO_PAGE_GUIDES_MAX`                     | 200                                           | `apps/live/lib/logo-page-guides.ts`                        | Spec ("the latest 200 pages"); about 10 KB of local storage      |
-| `LOGO_PALETTE_OPEN_RETRY_MS`               | 400 ms                                        | `apps/live/hooks/canvas/useLogoPaletteSwitch.ts`           | Second ask on opening, for a palette that mounts after the pages |
-| `RADIAL_COPIES`                            | 3, 4, 5, 6, 8                                 | `packages/document/src/element-symmetry.ts`                | A radial mirror's choices of copies                              |
-| `DEFAULT_MIRROR`                           | Vertical, 6 copies, merge on                  | `packages/document/src/element-symmetry.ts`                | Mirror settings before any are chosen                            |
-| `THUMB_W`                                  | 120 px                                        | `apps/live/components/canvas/infographic-layout-thumb.tsx` | Two layout tiles to a row (user request, every kind)             |
+| Constant                                   | Value                                         | Where                                             | Provenance / safe range                                          |
+| ------------------------------------------ | --------------------------------------------- | ------------------------------------------------- | ---------------------------------------------------------------- |
+| `LOGO_SIDE`                                | 1024                                          | `packages/document/src/page.ts`                   | The largest common app-icon master; 512 to 2048                  |
+| `LOGO_SAFE_FRACTION`                       | 0.1                                           | `packages/document/src/page.ts`                   | Spec; 0.05 to 0.15                                               |
+| `LOGO_KEYLINE_CIRCLE`                      | 0.8 (diameter / side)                         | `packages/document/src/logo-page.ts`              | Inscribed in the safe area                                       |
+| `LOGO_INNER_CIRCLE`                        | 0.5                                           | `packages/document/src/logo-page.ts`              | Spec                                                             |
+| `LOGO_KEYLINE_SQUARE`                      | 0.64                                          | `packages/document/src/logo-page.ts`              | Spec (Material's 18/24 of the 20/24 live area, rounded)          |
+| `LOGO_GRID_DIVISIONS`                      | 8                                             | `packages/document/src/logo-page.ts`              | Spec                                                             |
+| `LOGO_GUIDE_ALPHA`                         | faint .2/.08, medium .35/.15, strong .6/.3    | `apps/live/lib/logo-guide-prefs.ts`               | Guides / grid opacity per strength                               |
+| `MIRROR_AXIS_TOLERANCE`                    | 0.01 (of the artboard's width)                | `packages/document/src/element-mirror.ts`         | Spec; 0.005 to 0.03                                              |
+| `LETTER_SPACING_MIN` / `_MAX`              | -0.2 / 1 (em)                                 | `packages/document/src/wordmark.ts`               | Spec                                                             |
+| `TEXT_ARC_MAX`                             | 360 (degrees, either sign)                    | `packages/document/src/wordmark.ts`               | Spec                                                             |
+| `FONT_WEIGHTS`                             | 400, 500, 700                                 | `packages/document/src/wordmark.ts`               | The weights `fonts.ts` loads for every catalogue font            |
+| `ARC_ASCENT` / `ARC_DESCENT`               | 0.8 / 0.25 (em)                               | `packages/document/src/wordmark.ts`               | Room kept for glyphs above / below the arc's baseline            |
+| `COMBINE_TOLERANCE_PX`                     | 0.25                                          | `apps/live/lib/combine/outline.ts`                | Spec ("a quarter of a pixel")                                    |
+| `COMBINE_MERGE_PX`                         | 0.05                                          | `apps/live/lib/combine/simplify.ts`               | Collinear merge distance; well under a device pixel              |
+| `COMBINE_MAX_INPUT_POINTS`                 | 50,000                                        | `apps/live/lib/combine/combine.ts`                | Refused above as Too detailed; measured runs stay under 4 ms     |
+| `MAX_PATH_NODES`                           | 5,000 (existing; now across all contours)     | `packages/document/src/validate.ts`               | Existing                                                         |
+| `LOGO_KIT_PNG_SIZES`                       | 16, 32, 48, 64, 128, 180, 192, 256, 512, 1024 | `apps/live/lib/export-logo-kit.ts`                | Spec                                                             |
+| `LOGO_ICO_SIZES`                           | 16, 32, 48                                    | `apps/live/lib/export-logo-kit.ts`                | Spec                                                             |
+| `BUTTON_ROOM` / `LABELLED_ROOM`            | 28 px / 72 px                                 | `apps/live/components/canvas/LogoTitleBar.tsx`    | Title-bar room a control takes, icon-only / named                |
+| `SNAP_POINTS_NEAR_PX`                      | 64 px                                         | `apps/live/components/canvas/GuideSnapPoints.tsx` | Screen px round the pointer within which a guide crossing shows  |
+| `LOGO_GUIDE_SNAP_PX`                       | 8 px                                          | `apps/live/lib/logo-guide-snapping.ts`            | Spec ("within 8 screen px")                                      |
+| `TIDY_GUIDE_PX`                            | 16 px                                         | `apps/live/lib/logo-guide-snapping.ts`            | Spec ("within 16 screen px")                                     |
+| `TIDY_TOLERANCE` / `TIDY_MIN_TOLERANCE_PX` | 0.05 (of the diagonal) / 2 px                 | `apps/live/lib/stroke-tidy.ts`                    | Spec ("5% of the element's size, 2 px at least")                 |
+| `TIDY_SQUARE_DEGREES`                      | 12                                            | `apps/live/lib/stroke-tidy.ts`                    | Spec ("within 12 degrees of level or upright")                   |
+| `LOGO_PAGE_GUIDES_MAX`                     | 200                                           | `apps/live/lib/logo-page-guides.ts`               | Spec ("the latest 200 pages"); about 10 KB of local storage      |
+| `LOGO_PALETTE_OPEN_RETRY_MS`               | 400 ms                                        | `apps/live/hooks/canvas/useLogoPaletteSwitch.ts`  | Second ask on opening, for a palette that mounts after the pages |
+| `RADIAL_COPIES`                            | 3, 4, 5, 6, 8                                 | `packages/document/src/element-symmetry.ts`       | A radial mirror's choices of copies                              |
+| `DEFAULT_MIRROR`                           | Vertical, 6 copies, merge on                  | `packages/document/src/element-symmetry.ts`       | Mirror settings before any are chosen                            |
+| `THUMB_W`                                  | 120 px                                        | `apps/live/components/canvas/layout-thumb.tsx`    | Two layout tiles to a row (user request, every kind)             |
 
 ## Data and persistence
 
@@ -419,7 +419,7 @@ page, count)`.
 - Twenty-five builders over the safe area: lockups (7), wordmarks (6), emblems (6), marks (6), on
   the shared kit (`word`, `tagline`, `rule`, `icon`, `stacked`, `arched`).
   `layoutCatalogueFor('logo')`; `pageLayoutById` searches the logo catalogue last.
-- Thumbnails (`infographic-layout-thumb.tsx`, every kind): circles as ellipses, diamonds, hexagons,
+- Thumbnails (`layout-thumb.tsx`, every kind): circles as ellipses, diamonds, hexagons,
   triangles, stars and stadiums by their outline, an unfilled shape as its line, arched text along
   its arc, and wordmark text as a bar sized to its words.
 

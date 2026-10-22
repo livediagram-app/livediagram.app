@@ -6,16 +6,7 @@
 import { DeviceGlyph } from '@/components/canvas/wireframe/DeviceGlyph';
 import { useEffect, useMemo } from 'react';
 import { lucideGlyph } from '@livedesign/ui';
-import {
-  lucideChartPie,
-  lucideFileText,
-  lucideImage,
-  lucideLayers,
-  lucideLightbulb,
-  lucidePenTool,
-  lucideShapes,
-  lucideStar,
-} from '@livedesign/icons/lucide';
+import { lucideLightbulb, lucidePenTool, lucideShapes, lucideStar } from '@livedesign/icons/lucide';
 import type { EditorMode } from '@livedesign/document';
 import type { TemplateKind } from '@livedesign/templates';
 import { dismissEmptyCard } from '@/components/canvas/empty-card-dismissed';
@@ -33,10 +24,6 @@ const glyph = (icon: Parameters<typeof lucideGlyph>[0]) => lucideGlyph(icon, 16)
 // Each rail group's glyph (start-template-items.ts OWN_GROUPS).
 const RAIL_ICONS: Readonly<Record<string, ReturnType<typeof lucideGlyph>>> = {
   recommended: glyph(lucideStar),
-  slides: glyph(lucideLayers),
-  infographics: glyph(lucideChartPie),
-  articles: glyph(lucideFileText),
-  posters: glyph(lucideImage),
   logos: glyph(lucideShapes),
   // A phone, the device a wireframe is most often for (docs/specs/007-editor/wireframe-pages.md).
   wireframes: WireframesIcon,

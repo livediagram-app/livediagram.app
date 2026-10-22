@@ -13,7 +13,7 @@ import {
 } from '@livedesign/document';
 import { layoutCatalogueFor, LOGO_LAYOUTS } from '@livedesign/templates';
 import { LayoutRenderThumb, layoutRenderSvg, PAGE_PAPER_DARK } from './layout-render-thumb';
-import { LayoutThumb } from './infographic-layout-thumb';
+import { LayoutThumb } from './layout-thumb';
 
 afterEach(() => cleanup());
 

@@ -192,7 +192,7 @@ export function pageBackgroundStored<T extends PagesTab>(
 const room = (pages: readonly Page[], more = 1) => pages.length + more <= MAX_PAGES;
 
 /**
- * A new page of a kind after the last: an infographic page takes the last infographic page's size
+ * A new page of a kind after the last: a blank page takes the last blank page's size
  * and orientation (else A4 portrait; A4 after a Fit to Content page); a logo page the
  * 1024 artboard. All on the plain paper.
  */

@@ -6,7 +6,7 @@ import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { pagesOf, layOutPages, type Element } from '@livedesign/document';
 import { buildPageLayout } from '@livedesign/templates';
-import { InfographicLayoutPreview } from './InfographicLayoutPreview';
+import { PageLayoutPreview } from './PageLayoutPreview';
 import { PageImageAccessProvider } from './page-image-access';
 
 vi.mock('@/lib/api-client', () => ({
@@ -25,21 +25,16 @@ const written = (): Element[] =>
     el.type === 'text' && el.label === 'Brand' ? { ...el, label: 'Acme' } : el,
   );
 
-describe('InfographicLayoutPreview', () => {
+describe('PageLayoutPreview', () => {
   it('shows the layout alone without the page content', () => {
-    const { container } = render(<InfographicLayoutPreview page={page} layout="logo-stacked" />);
+    const { container } = render(<PageLayoutPreview page={page} layout="logo-stacked" />);
     expect(container.textContent).toContain('BRAND');
   });
 
   it('carries the page words into the previewed layout', () => {
     const { container } = render(
       <PageImageAccessProvider access={{ ownerId: 'o', documentId: 'd', shareCode: null }}>
-        <InfographicLayoutPreview
-          page={page}
-          layout="logo-stacked"
-          elements={written()}
-          pages={pages}
-        />
+        <PageLayoutPreview page={page} layout="logo-stacked" elements={written()} pages={pages} />
       </PageImageAccessProvider>,
     );
     expect(container.textContent).toContain('ACME');

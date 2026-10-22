@@ -5,7 +5,7 @@ import type { TemplateKind } from './templates';
 const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
   // The blanks.
   blank: ['empty', 'scratch', 'new', 'canvas', 'nothing'],
-  'blank-illustration': ['empty', 'page', 'infographic', 'poster', 'design'],
+  'blank-illustration': ['empty', 'page', 'design'],
   'blank-logo': ['empty', 'logo', 'brand', 'mark', 'wordmark', 'icon', 'artboard'],
   'blank-wireframe-phone': [
     'empty',

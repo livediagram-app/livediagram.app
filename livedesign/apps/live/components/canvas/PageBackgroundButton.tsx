@@ -1,6 +1,6 @@
 'use client';
 
-// An infographic or wireframe page's Background beside its cog (docs/specs/007-editor/pages-mode.md
+// A wireframe page's Background beside its cog (docs/specs/007-editor/pages-mode.md
 // "Beside the cog"): the page panel's Background and Pattern sections in a popover anchored to the
 // button, as a logo page's Guides open theirs. Hovers preview on the page; a press commits and the
 // popover stays for another pick; closing it drops any preview.

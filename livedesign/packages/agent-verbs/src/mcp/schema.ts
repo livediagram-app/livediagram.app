@@ -173,8 +173,8 @@ const ELEMENT_SCHEMA_HINT =
 export function elementSchemaDoc(): string {
   return `# livedesign element schema
 
-A tab is { name, elements: Element[] }, and its pages (infographics, slides, logo
-artboards and articles) sit on its canvas; an element is on the page whose
+A tab is { name, elements: Element[] }, and its pages (logo artboards, wireframe
+screens and blank pages) sit on its canvas; an element is on the page whose
 rectangle holds it. Every element needs a unique string "id". A document has one
 or more tabs. create_document makes a document with one or more tabs at once;
 add_tab appends another tab to an existing document. change_pages answers each

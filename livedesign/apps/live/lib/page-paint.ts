@@ -211,7 +211,7 @@ export function themeBackgroundPresets(
     g('vivid', 'vivid', tint(a, 0.15), shade(a, 0.35)),
     g('aurora', 'aurora', shade(a, 0.3), shade(b, 0.1)),
     g('ember', 'ember', b, shade(c, 0.5)),
-    // A new infographic page's own background (defaultPageBackground).
+    // A new blank page's own background (defaultPageBackground).
     g('dusk', 'dusk', shade(a, DUSK_TOP_SHADE), shade(b, DUSK_BOTTOM_SHADE)),
     g('twilight', 'twilight', shade(b, 0.6), shade(a, 0.8)),
     g('ink', 'ink', shade(a, 0.75), '#0f172a'),

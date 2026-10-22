@@ -211,7 +211,7 @@ export function pageEdits({
     patchPage(pageId, (p) => ({ ...p, startedBlank: true }));
     debugLog('[page] started blank', { tabId, pageId });
   };
-  // A turn or a new size re-fits an infographic page's content into the page as it now is: what
+  // A turn or a new size re-fits a page's content into the page as it now is: what
   // was on it before stays on it, scaled down as one where it no longer fits
   // (withContentFittedToPage).
 

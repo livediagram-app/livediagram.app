@@ -33,7 +33,7 @@ import { useCanvasChartPalette, useCanvasSurface } from './CanvasSurfaceContext'
 import { WireframeDeviceSheet } from './WireframeDeviceSheet';
 import { useImageSources } from './page-image-access';
 
-export function InfographicLayoutPreview({
+export function PageLayoutPreview({
   page,
   layout,
   tabFont,

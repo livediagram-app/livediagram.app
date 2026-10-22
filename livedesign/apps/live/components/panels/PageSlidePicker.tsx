@@ -2,7 +2,7 @@
 
 // The Slide Deck panel's way in on a Pages tab (docs/specs/007-editor/pages-mode.md
 // "Slides"): pick a page, add it as a slide. In place of "select elements to make a slide": a page
-// is already the unit an infographic is built in.
+// is already the unit a design is built in.
 import { useState } from 'react';
 import { Select } from '@livedesign/ui';
 

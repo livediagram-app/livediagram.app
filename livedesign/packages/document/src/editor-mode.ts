@@ -7,7 +7,7 @@ export const EDITOR_MODE_CATALOGUE = [
   {
     id: 'pages',
     label: 'Pages',
-    description: 'Lay out slides, infographics, logos and wireframes on pages.',
+    description: 'Design logos and wireframes on pages.',
   },
 ] as const satisfies readonly { id: string; label: string; description: string }[];
 

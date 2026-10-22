@@ -1,6 +1,6 @@
 // The palette's kind in Pages mode (docs/specs/007-editor/pages-mode.md "The palette's kind"): which
 // categories the palette offers, in what order (each kind's layout, palette-layouts.ts). Design for
-// an infographic page, Wireframe and Logo for theirs. Always the kind of the page someone is
+// a blank page, Wireframe and Logo for theirs. Always the kind of the page someone is
 // on: it is never shown or chosen.
 import type { PageKind } from '@livedesign/document';
 import { useCurrentPageKind } from './current-page-kind';

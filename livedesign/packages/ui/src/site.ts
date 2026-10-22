@@ -18,11 +18,11 @@ export const SITE_NAME = 'livedesign';
 // "SEO and metadata"), kept here so they can't drift: the landing page's title, its description
 // (also the web app manifest's), and the one-line pitch the share card, the share images' alt text
 // and the share rail build on. It names every kind of page a document is made of.
-export const SITE_TITLE = 'livedesign: Write, present and design on pages together, live';
+export const SITE_TITLE = 'livedesign: Design logos and wireframes together, live';
 export const SITE_DESCRIPTION =
-  'A free, real-time editor for documents made of pages: articles, slide decks, infographics and logos. Built for teams who write and present together.';
+  'A free, real-time editor for logos and wireframes. Built for teams who design together.';
 // Lower case: it follows "livedesign: " or starts a sentence through sentencePitch.
-export const SITE_PITCH = 'a real-time editor for articles, slide decks, infographics and logos';
+export const SITE_PITCH = 'a real-time editor for logos and wireframes';
 export const sentencePitch = () => `${SITE_PITCH[0]!.toUpperCase()}${SITE_PITCH.slice(1)}.`;
 
 // The open-source repository (docs/specs/002-project-scope/open-source-and-business-model.md: the codebase is public + MIT), linked

@@ -8,7 +8,7 @@
 import { memo, useEffect, useRef, useState, type RefObject } from 'react';
 import type { LaidOutPage } from '@livedesign/document';
 import type { PageLayoutId } from '@livedesign/templates';
-import { LayoutThumb } from '../infographic-layout-thumb';
+import { LayoutThumb } from '../layout-thumb';
 import type { GalleryLayout } from './layout-gallery-filter';
 
 // How far beyond the scrolling area a tile starts drawing, so a flick rarely meets a placeholder.

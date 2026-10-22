@@ -35,7 +35,7 @@ import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
 import type { PageEdits } from '@/hooks/editor/usePagesMode';
 import type { ThemeBackgroundPreset } from '@/lib/page-paint';
 import type { PageLayoutId } from '@livedesign/templates';
-import { LayoutsSection } from './infographic-page-layouts-section';
+import { LayoutsSection } from './page-layouts-section';
 import { WireframeDeviceSettings } from './wireframe/WireframeDeviceSettings';
 import { OrientationSection, SizeSection } from './page-panel-sections';
 import { ApplyBackgroundToAll } from './page-background-apply-all';
@@ -59,8 +59,8 @@ const TAB_LABEL: Record<PagePanelTab, string> = {
 };
 
 // The page's tabs: Page while it has a size or orientation to choose (a logo page has neither),
-// Background (not on an infographic page, whose Background sits beside its cog), then a logo page's
-// Layouts (an infographic or wireframe page's Layouts sit beside its cog).
+// Background, then a logo page's Layouts (a wireframe page's Background and Layouts sit beside its
+// cog).
 export function pagePanelTabs(page: LaidOutPage): PagePanelTab[] {
   // A wireframe page's size is its device (docs/specs/007-editor/wireframe-pages.md); its
   // Background and Layouts sit beside its cog.
@@ -97,7 +97,7 @@ export function PagePanel({
   themeBackgrounds: ThemeBackgroundPreset[];
   edit: PageEdits;
   onPreview: (preview: PagePreview) => void;
-  // A layout shown on the page while its tile is hovered (InfographicLayoutPreview); null clears.
+  // A layout shown on the page while its tile is hovered (PageLayoutPreview); null clears.
   onLayoutPreview: (layout: PageLayoutId | null) => void;
   onClose: (restoreFocus: boolean) => void;
 }) {
@@ -211,7 +211,7 @@ export function PagePanel({
           placeholder={count > 1 ? placeLabel : 'Untitled page'}
           onRename={(name) => edit.rename(page.id, name)}
         />
-        {/* One tab (an infographic page's Page) needs no switch. */}
+        {/* One tab needs no switch. */}
         {tabs.length > 1 ? (
           <PanelTabs
             tab={tab}

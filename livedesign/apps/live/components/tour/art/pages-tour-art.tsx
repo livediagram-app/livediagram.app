@@ -8,7 +8,7 @@ import { ART, TourArtFrame } from './TourArtFrame';
 // kind, each showing what its track teaches: a wireframe page filling in, a logo's shapes combining on its
 // guides. Drawn in TourArtFrame's recipe.
 
-const INFOGRAPHIC_CSS = `
+const LAYOUT_ART_CSS = `
   @keyframes info-art-in {
     0%, 10% { opacity: 0; transform: translateY(4px); }
     24%, 88% { opacity: 1; transform: translateY(0); }
@@ -36,7 +36,7 @@ const INFOGRAPHIC_CSS = `
 /** Wireframe: a page filling in, a band, a headline, bars growing, and a ring chart drawing. */
 function LayoutTourArt() {
   return (
-    <TourArtFrame css={INFOGRAPHIC_CSS}>
+    <TourArtFrame css={LAYOUT_ART_CSS}>
       <rect x="92" y="8" width="120" height="88" rx="3" className={ART.paper} strokeWidth="1.5" />
       <rect
         x="92"

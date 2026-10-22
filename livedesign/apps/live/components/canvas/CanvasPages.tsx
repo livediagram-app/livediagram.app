@@ -30,7 +30,7 @@ import {
 } from '@livedesign/document';
 import { HoverCard, lucideGlyph, Tooltip } from '@livedesign/ui';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
-import { InfographicLayoutPreview } from './InfographicLayoutPreview';
+import { PageLayoutPreview } from './PageLayoutPreview';
 import {
   laidOutUnits,
   usePageReorderDrag,
@@ -209,7 +209,7 @@ export function CanvasPages({
         const notesButton = deckButton && !!view.deck!.slideOf(page.id);
         const logoButtons = !!edit && page.kind === 'logo' && !!view.logo;
         // The title bar's fixed buttons (the cog, the lock, the deck button, a logo page's own and
-        // an infographic or wireframe page's): the invite and the label share what they leave.
+        // a wireframe page's): the invite and the label share what they leave.
         const buttons = {
           edit: !!edit,
           locked,
@@ -366,7 +366,7 @@ export function CanvasPages({
                     frameTheme={view.frameTheme}
                   />
                 ) : null}
-                {/* An infographic or wireframe page's Layouts (PageLayoutsButton). */}
+                {/* A wireframe page's Layouts (PageLayoutsButton). */}
                 {pageButtons ? (
                   <PageLayoutsButton
                     page={page}
@@ -379,7 +379,7 @@ export function CanvasPages({
                     }
                   />
                 ) : null}
-                {/* An infographic or wireframe page's Background (PageBackgroundButton). */}
+                {/* A wireframe page's Background (PageBackgroundButton). */}
                 {pageButtons ? (
                   <PageBackgroundButton
                     page={page}
@@ -426,7 +426,7 @@ export function CanvasPages({
         <AddPageButton last={last} zoom={zoom} onAdd={edit.addPage} onAddLike={edit.addPageLike} />
       ) : null}
       {previewed && view.layoutPreview ? (
-        <InfographicLayoutPreview
+        <PageLayoutPreview
           page={previewed}
           layout={view.layoutPreview.layout}
           tabFont={view.tabFont}

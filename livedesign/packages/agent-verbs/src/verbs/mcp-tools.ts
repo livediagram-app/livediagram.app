@@ -107,7 +107,7 @@ export const mcpListTemplates = mcpTool('list_templates', {
   title: 'List templates',
   description:
     'Browse the template library: the same ready-made pages the editor\u2019s Quick Start offers ' +
-    '(slide decks, articles, logos, posters, infographics, résumés, wireframes, ...). Returns categories ' +
+    '(logos and wireframes for apps, websites and dashboards). Returns categories ' +
     'plus { kind, title, description, category } per template. Pass a kind as "template" on ' +
     'create_document / add_tab to start from it, then replace its sample text with update_document.',
   inputSchema: {},

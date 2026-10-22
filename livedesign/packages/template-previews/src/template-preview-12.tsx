@@ -14,7 +14,7 @@ export function templatePreviewGroup12(kind: TemplateKind): ReactElement | null 
     // Blank Tab is an empty Pages tab: the one unchosen page Blank Illustration opens on.
     case 'blank':
     case 'blank-illustration':
-      // One empty page with a dashed edge, a faint infographic on its top half and faint lines of
+      // One empty page with a dashed edge, a faint chart on its top half and faint lines of
       // writing below: a page to fill, either way. Hover story: the two halves take turns to
       // light up, the choice the page asks for.
       return (

@@ -85,7 +85,7 @@ const PAGES: PaletteLayout = {
   landing: 'popular',
   categories: [
     {
-      // Twelve tiles an infographic is most often built from, in the order they are reached for:
+      // Twelve tiles a page is most often built from, in the order they are reached for:
       // words and simple marks, a picture and a speech bubble, the charts, then the ready-made
       // blocks. Each is also in one of the categories below.
       id: 'popular',

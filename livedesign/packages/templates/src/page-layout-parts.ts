@@ -18,7 +18,7 @@ export function iconDisc(k: Kit, x: number, y: number, d: number, iconId: string
   };
 }
 
-// The line an infographic owes its numbers: where they came from, at the foot of the page.
+// The line a page's numbers owe their source: where they came from, at the foot of the page.
 export const SOURCE_H = 6;
 export function sourceLine(k: Kit, label: string): Element {
   return k.text(0, k.box.height - k.u * SOURCE_H, k.box.width, k.u * SOURCE_H, label);

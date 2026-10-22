@@ -19,7 +19,7 @@ export function MarkerIcon({ size = 16, ...rest }: IconProps) {
 }
 
 // A page with a little chart above two lines of writing, on its 24-unit grid: Pages mode's mark
-// (docs/specs/007-editor/pages-mode.md), for the pages it lays out, infographics and articles.
+// (docs/specs/007-editor/pages-mode.md), for the pages it lays out.
 export function PagesIcon({ size = 16, ...rest }: IconProps) {
   return (
     <Glyph size={size} units={24} {...rest}>
