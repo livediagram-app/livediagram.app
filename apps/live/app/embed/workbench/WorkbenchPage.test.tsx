@@ -54,6 +54,10 @@ vi.mock('next/dynamic', () => ({
     };
   },
 }));
+// The page prefetches the chunk its scope needs without awaiting it; the real modules would still be loading when the
+// file's environment is torn down. next/dynamic is faked above, so these stand-ins are never drawn.
+vi.mock('./WorkspaceFrame', () => ({ WorkspaceFrame: () => null }));
+vi.mock('../../document/[id]/editor-page', () => ({ default: () => null }));
 vi.mock('@/components/chrome/LoadErrorCard', () => ({
   LoadErrorCard: ({ embed }: { embed: boolean }) => <p>load error {String(embed)}</p>,
 }));
