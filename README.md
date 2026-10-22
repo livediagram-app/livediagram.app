@@ -5,7 +5,7 @@ share.
 
 ```
 packages/        shared by every product (@liveworkspace/*)
-liveworkspace/   the platform's own apps: accounts (sign-in for every product)
+liveworkspace/   the platform's own apps: the liveworkspace.app site, accounts (sign-in) and telemetry
 livediagram/     livediagram.app
 liveplanner/     liveplanner.app
 docs/            how this repo is laid out and where it's heading
@@ -23,6 +23,8 @@ corepack pnpm install
 corepack pnpm dev:diagram        # livediagram's apps
 corepack pnpm dev:planner        # liveplanner's apps
 corepack pnpm dev:accounts       # accounts.liveworkspace.app on :8787
+corepack pnpm dev:telemetry      # liveworkspace.app/telemetry on :8790
+corepack pnpm dev:site           # liveworkspace.app on :3300
 corepack pnpm typecheck          # everything; or inside a product folder, just that product
 ```
 

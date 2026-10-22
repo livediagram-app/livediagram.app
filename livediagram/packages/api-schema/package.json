@@ -20,7 +20,8 @@
     "@livediagram/document": "workspace:*",
     "@livediagram/forms": "workspace:*",
     "@livediagram/items": "workspace:*",
-    "@livediagram/sheets": "workspace:*"
+    "@livediagram/sheets": "workspace:*",
+    "@liveworkspace/telemetry": "workspace:*"
   },
   "devDependencies": {
     "@livediagram/oxlint-config": "workspace:*",

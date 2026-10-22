@@ -25,7 +25,6 @@ export * from './notify-email-claims';
 export * from './notification-prefs';
 export * from './account';
 export * from './auth-sightings';
-export * from './telemetry';
 export * from './timeline';
 export * from './collab-index';
 export * from './items';

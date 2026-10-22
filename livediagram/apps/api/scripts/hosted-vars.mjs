@@ -113,11 +113,14 @@ export function wranglerVarFlags(vars) {
 
 /** The build-time twins of hosted worker vars: each frontend reads
  *  NEXT_PUBLIC_TELEMETRY_ENABLED to skip emitting when the api would drop it,
+ *  and NEXT_PUBLIC_TELEMETRY_URL to send to the same liveworkspace telemetry
+ *  service as the api (staging's on staging),
  *  and the live app reads NEXT_PUBLIC_GOOGLE_CLIENT_ID for the Drive mirror
  *  (docs/specs/022-drive-mirror/drive-mirror.md), the same client id the api holds. */
 export function buildEnv(vars) {
   const out = [];
   if (vars.TELEMETRY_ENABLED) out.push(`NEXT_PUBLIC_TELEMETRY_ENABLED=${vars.TELEMETRY_ENABLED}`);
+  if (vars.TELEMETRY_URL) out.push(`NEXT_PUBLIC_TELEMETRY_URL=${vars.TELEMETRY_URL}`);
   if (vars.GOOGLE_CLIENT_ID) out.push(`NEXT_PUBLIC_GOOGLE_CLIENT_ID=${vars.GOOGLE_CLIENT_ID}`);
   return out;
 }

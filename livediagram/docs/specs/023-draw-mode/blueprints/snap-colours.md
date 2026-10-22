@@ -6,16 +6,16 @@ whiteboard shows"). Defaults applied where the spec is silent are ledgered in
 
 Scope, by file:
 
-| File                                                                                      | Role                                                                          |
-| ----------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| `packages/document/src/pen-colours.ts`                                                    | `hexOklch`, `PEN_NEUTRAL_CHROMA`, `penColourAtHue`, `nearestPenColour` (pure) |
-| `packages/document/src/snap-colours.ts`                                                   | `SNAP_COLOUR_FIELDS`, `snappableCustomColours`, `snapTabColours` (pure)       |
-| `apps/live/hooks/canvas/useSnapColours.ts`                                                | The board's snappable colours and the one-commit `snap()`                     |
-| `apps/live/components/canvas/whiteboard/SnapColoursSection.tsx`                           | The Settings flyout's Colours section                                         |
-| `apps/live/components/canvas/whiteboard/dock-flyouts.tsx`                                 | Renders the section last in `SettingsFlyoutBody`                              |
-| `apps/live/hooks/canvas/useWhiteboard.ts`                                                 | Carries `snapColours` on the dock model                                       |
-| `apps/live/app/document/[id]/useEditorState.ts`                                           | Builds `useSnapColours` and hands it to `useWhiteboard`                       |
-| `packages/api-schema/src/telemetry-schema.ts`, `apps/telemetry/app/event-explanations.ts` | The `SnapColours` token's comment and its dashboard sentence                  |
+| File                                                                                                                        | Role                                                                          |
+| --------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `packages/document/src/pen-colours.ts`                                                                                      | `hexOklch`, `PEN_NEUTRAL_CHROMA`, `penColourAtHue`, `nearestPenColour` (pure) |
+| `packages/document/src/snap-colours.ts`                                                                                     | `SNAP_COLOUR_FIELDS`, `snappableCustomColours`, `snapTabColours` (pure)       |
+| `apps/live/hooks/canvas/useSnapColours.ts`                                                                                  | The board's snappable colours and the one-commit `snap()`                     |
+| `apps/live/components/canvas/whiteboard/SnapColoursSection.tsx`                                                             | The Settings flyout's Colours section                                         |
+| `apps/live/components/canvas/whiteboard/dock-flyouts.tsx`                                                                   | Renders the section last in `SettingsFlyoutBody`                              |
+| `apps/live/hooks/canvas/useWhiteboard.ts`                                                                                   | Carries `snapColours` on the dock model                                       |
+| `apps/live/app/document/[id]/useEditorState.ts`                                                                             | Builds `useSnapColours` and hands it to `useWhiteboard`                       |
+| `packages/api-schema/src/telemetry-schema.ts`, liveworkspace/apps/telemetry-dashboard/app/livediagram/event-explanations.ts | The `SnapColours` token's comment and its dashboard sentence                  |
 
 ## Domain and naming
 

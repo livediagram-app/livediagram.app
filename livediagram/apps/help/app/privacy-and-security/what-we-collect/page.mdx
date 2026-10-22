@@ -30,7 +30,7 @@ The same rules apply to error tracking. When something breaks, the event records
 
 ## Page views
 
-Every page on livediagram.app (the landing pages, the help centre, the Community, the Explorer, the editor and the telemetry dashboard) also counts a view when you open it. The event is the same three fields, with the page's address as the type, reduced in your browser before it is sent to just _which page_ it was:
+Every page on livediagram.app (the landing pages, the help centre, the Community, the Explorer and the editor) also counts a view when you open it. The event is the same three fields, with the page's address as the type, reduced in your browser before it is sent to just _which page_ it was:
 
 - **No query string or link fragment.** Anything after a `?` or `#`, which is where invite and share codes live, is dropped.
 - **No ids.** Every document is counted as the same page, `/document`. Any other part of the address that looks like an id is cut off the same way.
@@ -52,7 +52,7 @@ The label comes from a fixed list of our own buttons and says nothing about you 
 
 ## The public dashboard
 
-Whatever is collected is published openly at the public [telemetry dashboard](/telemetry). It shows aggregate counts for today, the last 7 days and the last 30 days, grouped by category and action. Events are deleted automatically after 60 days, so this is recent trend data, not a permanent archive. The whole point is transparency: anyone can see precisely what is measured. [The Public Telemetry Dashboard](/help/privacy-and-security/what-we-collect/telemetry-dashboard/) walks through each of its views.
+Whatever is collected is published openly at the public [telemetry dashboard](/telemetry), run by liveworkspace, the service that counts usage for livediagram and its sister apps. Events go there from your browser and from our server, each labelled with the app it came from, and are kept in liveworkspace's own database, apart from your documents. The dashboard shows aggregate counts for today, the last 7 days and the last 30 days, grouped by category and action, for livediagram alone or for every app together. Events are deleted automatically after 60 days, so this is recent trend data, not a permanent archive. The whole point is transparency: anyone can see precisely what is measured. [The Public Telemetry Dashboard](/help/privacy-and-security/what-we-collect/telemetry-dashboard/) walks through each of its views.
 
 ## How to opt out
 

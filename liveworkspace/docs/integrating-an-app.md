@@ -147,3 +147,8 @@ ADMIN_TOKEN=… node apps/accounts/scripts/register-client.ts \
 Locally, against a development accounts Worker, the redirect is
 `http://localhost:3100/api/auth/callback` (the router) and the resource `http://localhost/api`
 (liveplanner/docs/development/local-development.md).
+
+## Telemetry
+
+An app's anonymous product events go to liveworkspace too, not to its own API. See
+[telemetry.md](telemetry.md) for the batch format, the settings, and the steps for adding an app.

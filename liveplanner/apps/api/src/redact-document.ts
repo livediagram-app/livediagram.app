@@ -16,7 +16,7 @@
 // view or edit, because a view-only visitor has to be able to open the
 // document), and it returned `ownerId` intact — so the redaction guarded one
 // door of two. Hence a module: the rule now has one home, both doors, and a
-// test surface of its own, matching the precedent set by origin-check /
+// test surface of its own, matching the precedent set by
 // share-link-row.
 //
 // Every non-owner reader already behaved as though this value might be blank:

@@ -35,18 +35,19 @@ It applies every SQL file in `apps/api/migrations/` to the local SQLite file Wra
 pnpm dev
 ```
 
-Turbo spins up all eight dev servers in parallel:
+Turbo spins up all seven dev servers in parallel:
 
 | App              | Dev URL                                                                                            |
 | ---------------- | -------------------------------------------------------------------------------------------------- |
 | `apps/router`    | `http://localhost:3000` — **everything on one port**, stitched like production                     |
 | `apps/marketing` | `http://localhost:3001`                                                                            |
 | `apps/live`      | `http://localhost:3002` (clean routes: /new, /explorer, ...)                                       |
-| `apps/telemetry` | `http://localhost:3003/telemetry`                                                                  |
 | `apps/help`      | `http://localhost:3004/help`                                                                       |
 | `apps/community` | `http://localhost:3005/community`                                                                  |
 | `apps/api`       | `http://localhost:8787/api`                                                                        |
 | `apps/mcp`       | `http://localhost:8788` (MCP server, [MCP server](../specs/015-api/mcp-server.md); signed-in only) |
+
+The telemetry dashboard is not one of them: it is liveworkspace's (`liveworkspace/apps/telemetry`, [Telemetry](../specs/017-telemetry/telemetry.md)), and `localhost:3000/telemetry` redirects to the local service. To see events locally, run that service and set `NEXT_PUBLIC_TELEMETRY_URL`, `TELEMETRY_URL` and `TELEMETRY_KEY` as the `.env.example` files describe.
 
 The `router` dev server (`wrangler dev --env local`, port 3000) gives you the production URL shape locally: `/` is marketing, `/new` and `/document/*` are the editor, plus `/telemetry`, `/help`, `/community`, and `/api` — no per-app port to remember. It has no service bindings in dev; the `[env.local]` environment in `apps/router/wrangler.toml` points it at the localhost origins above and it proxies plain HTTP (see [Router app](../specs/016-platform/router-app.md)).
 

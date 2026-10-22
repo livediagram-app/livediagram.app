@@ -194,10 +194,10 @@ sighting with a changed address (§4), resets the count to zero.
 All sends use `ctx.waitUntil` (or are already in the cron) — email is never on
 the request's critical path.
 
-**Counting sends ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).** `sendEmail` writes one
-anonymous `Email·Sent·<kind>` row straight to the events table, and a failure
-writes `Error·Api·Http<status>.SendEmail` (or `Network.SendEmail` when the
-request never completed). Server-side rather than through `POST /api/events`
+**Counting sends ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).** `sendEmail` reports one
+anonymous `Email·Sent·<kind>` event (`reportServerEvent`), and a failure
+reports `Error·Api·Http<status>.SendEmail` (or `Network.SendEmail` when the
+request never completed). Server-side rather than from a browser
 because nothing about an email reaches a browser: the send happens in a cron or
 a `waitUntil` after the response has gone, so this is the only place that can
 count it. Before this, the whole lifecycle series was unmeasurable and a dead

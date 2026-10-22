@@ -29,7 +29,7 @@ are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 | `apps/live/e2e/clerk-stub/*`, `apps/live/scripts/build-clerk-stub.mjs`                                                         | Fake `window.Clerk`, signed-in and collaborator specs, the Clerk-enabled export                                                                  |
 | `scripts/e2e-stack.mjs`, `apps/live/playwright.config.ts`                                                                      | `E2E_LIVE_OUT`, `E2E_CLERK_JWKS` (`/e2e/jwks.json`, `/e2e/token`), the `clerk-stub` project                                                      |
 | `apps/help/app/account-and-data/signing-in/page.mdx`, `policies/privacy-policy/page.mdx`                                       | User-facing copy                                                                                                                                 |
-| `apps/telemetry/app/catalogue/settings.ts`, `event-explanations.ts`                                                            | `ShowProfilePictureOn/Off`                                                                                                                       |
+| liveworkspace/apps/telemetry-dashboard/app/livediagram/catalogue/settings.ts, `event-explanations.ts`                          | `ShowProfilePictureOn/Off`                                                                                                                       |
 
 ## Domain and naming
 

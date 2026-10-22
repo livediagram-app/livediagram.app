@@ -33,7 +33,7 @@ Scope, by file:
 | `apps/live/components/dialogs/TextImportPanel.tsx`                                     | Progress label; hands the outcome to the dialog                                    |
 | `apps/live/components/dialogs/ImportTabDialog.tsx`                                     | Shows the report view when the outcome carries one                                 |
 | `apps/live/components/dialogs/ImportImageReport.tsx`                                   | The report view                                                                    |
-| `apps/telemetry/app/event-explanations.ts`                                             | Explanations for `ExcalidrawPng` / `ExcalidrawSvg` and the paste                   |
+| liveworkspace/apps/telemetry-dashboard/app/livediagram/event-explanations.ts           | Explanations for `ExcalidrawPng` / `ExcalidrawSvg` and the paste                   |
 
 ## Domain and naming
 

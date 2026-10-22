@@ -62,8 +62,8 @@ answers `'closed'`, which closes the grant, the share resolve and the card image
 guard skips the post check. The apps ask through `useCommunityEnabled(apiBase)` / `fetchCommunityEnabled`
 (`packages/ui/src/community/useCommunityEnabled.ts`; one request per api base per page, on unless an explicit
 `false`; `useCommunityEnabled(apiBase, ask)` skips the request and answers on while `ask` is false). Each asks only
-when its answer can matter, so a page view that never reaches them makes no request: `ProductNav` filters its
-Community item, asking once someone reaches for the menu (pointer, focus or open); `CommunityFooterLink` renders
+when its answer can matter, so a page view that never reaches them makes no request: `ProductNavLinks` (the Explorer footer row) filters its
+Community link, asking as it mounts; `CommunityFooterLink` renders
 nothing, asking once the footer comes near the viewport (`useNearViewport`); `ShareDialogWithCommunity` falls back to
 the plain `ShareDialog`; `EditorView` drops the Public badge (it asks only while a post is listed and not in an embed);
 `CommunityShowcase` never asks: it renders nothing on a 404 from `featured`, which the worker answers while the
@@ -475,8 +475,8 @@ page's first paint, and a visit that does not scroll there costs nothing. Intera
 
 ## 12. Observability
 
-The telemetry dashboard reads these through a Community tab (`apps/telemetry/app/CommunityView.tsx`) and the
-Community cards (`apps/telemetry/app/catalogue/community.ts`); its emitter scan recognises `siteTrack`, so the
+The telemetry dashboard reads these through a Community tab (liveworkspace/apps/telemetry-dashboard/app/livediagram/CommunityView.tsx) and the
+Community cards (liveworkspace/apps/telemetry-dashboard/app/livediagram/catalogue/community.ts); its emitter scan recognises `siteTrack`, so the
 Community app's events are covered by the completeness tests.
 
 Worker logs with fingerprints: `[community] published`, `[community] updated`, `[community] removed`,
@@ -502,7 +502,7 @@ app's api errors read `[community] api <status> <code>`. Telemetry per the spec.
 | Community link: no room                    | `apps/api/src/routes/document-room-routes.test.ts`                                       |
 | Community grant                            | `apps/api/src/auth/document-access.test.ts`                                              |
 | Switched off: routes, links, capabilities  | `apps/api/src/community-enabled.test.ts`, `apps/api/src/routes/community-routes.test.ts` |
-| Switched off: apps menu, footer, fetch     | `packages/ui/src/community/useCommunityEnabled.test.tsx`                                 |
+| Switched off: footer links, fetch          | `packages/ui/src/community/useCommunityEnabled.test.tsx`                                 |
 | Hidden is final (Share dialog)             | `apps/live/components/dialogs/community/CommunitySection.test.tsx`                       |
 | Copy counting                              | `apps/api/src/db/community.test.ts`                                                      |
 | Query state round trip                     | `apps/community/lib/query-state.test.ts`                                                 |

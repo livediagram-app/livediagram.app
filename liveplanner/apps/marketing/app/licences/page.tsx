@@ -19,7 +19,7 @@ export default function LicencesPage() {
   return (
     <>
       <BreadcrumbJsonLd name="Licences" path="/licences" />
-      <SiteHeader productNav="home" />
+      <SiteHeader />
       <main className="mx-auto max-w-3xl px-6 py-16 sm:py-20">
         <LicencesView manifest={manifest} />
       </main>

@@ -12,6 +12,12 @@ packages/auth-client   what each app imports: sign-in redirect, code swap, refre
 docs/                  adding an app, moving off Clerk
 ```
 
+liveworkspace.app itself is a short site that explains the platform and points at each app
+([docs/marketing-site.md](docs/marketing-site.md)). Every app's logo lists liveworkspace's sites on hover: see [docs/site-switcher.md](docs/site-switcher.md).
+
+liveworkspace also runs every app's anonymous telemetry, at liveworkspace.app/telemetry: see
+[docs/telemetry.md](docs/telemetry.md).
+
 ## How signing in works
 
 The apps live on different sites (`livediagram.app`, `liveplanner.app`), so they can't share a

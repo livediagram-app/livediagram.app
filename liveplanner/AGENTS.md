@@ -198,7 +198,6 @@ See [Domain language](docs/specs/003-system-architecture/domain-language.md).
 apps/
   marketing/    # static marketing site (Next.js, /)
   live/         # the planner app: Explorer and the project editor (Next.js, clean routes)
-  telemetry/    # public anonymous-events dashboard (Next.js, /telemetry)
   help/         # help centre (Next.js export + MDX, /help)
   api/          # Cloudflare Worker REST + WebSocket API (D1 + Durable Objects, /api)
   mcp/          # Cloudflare Worker MCP server for AI tools (OAuth + tools, mcp.liveplanner.app)

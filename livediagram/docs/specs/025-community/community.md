@@ -313,7 +313,7 @@ is edge-cached the same way for its 30 seconds; [Web performance](../016-platfor
 
 ## Where Community is linked from
 
-- The shared apps menu in every header (Welcome, Editor, Explorer, **Community**, Help, Telemetry).
+- The Explorer panel's footer row of links (Home, Explorer, **Community**, Help).
 - The shared site footer, and the marketing sitemap (`/community/`).
 - The Share dialog's **Community** section, and the [help articles](../018-help/help-app.md) **Sharing to the
   Community** and **Finding Documents in the Community** under Collaboration, Sharing and Embeds.
@@ -369,7 +369,7 @@ While it is off:
 - Every Community route answers 404 (the gallery, posts, likes, reports, featured, My Shares, an owner's post), and
   every community link is closed: its document, card image and copy all answer as missing. Nothing is deleted;
   turning it back on restores everything as it was.
-- It disappears from every interface: the **Community** entry in the apps menu and the site footer, the landing page's
+- It disappears from every interface: the **Community** link in the Explorer footer row and the site footer, the landing page's
   section, the Community section of the Share dialog and the editor's Public badge. Visiting `/community` sends
   you to the home page. A listed post no longer stands in the way of a share password.
 - The apps learn it from the capabilities endpoint after they load, so a Community link can show for a moment before

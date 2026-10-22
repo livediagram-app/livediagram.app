@@ -35,9 +35,9 @@ Derived from [Plan tour](../plan-tour.md). The engine, popover and DOM helpers a
 Also touched: `ClusterPopoverButton` (a `dataTourId` prop; Card Types passes `card-types`), the Settings catalogue
 and dialog, `power-user-mode.ts`, `help-articles.ts`, the help article
 `apps/help/app/canvas/plan-mode/plan-tour/page.mdx` with its registry entry, icon and colour, and the telemetry
-dashboard (`apps/telemetry/app/catalogue/features.ts`, `apps/telemetry/app/catalogue/visitors.ts`,
-`apps/telemetry/app/catalogue/settings.ts`, `apps/telemetry/app/DashboardView.tsx`,
-`apps/telemetry/app/computed-emitters.ts`, `apps/telemetry/app/event-explanations.ts`).
+dashboard (`../liveworkspace/apps/telemetry-dashboard/app/liveplanner/catalogue/features.ts`, `../liveworkspace/apps/telemetry-dashboard/app/liveplanner/catalogue/visitors.ts`,
+`../liveworkspace/apps/telemetry-dashboard/app/liveplanner/catalogue/settings.ts`, `../liveworkspace/apps/telemetry-dashboard/app/liveplanner/DashboardView.tsx`,
+`../liveworkspace/apps/telemetry-dashboard/app/liveplanner/computed-emitters.ts`, `../liveworkspace/apps/telemetry-dashboard/app/liveplanner/event-explanations.ts`).
 
 Wiring: `useEditorState` composes `usePlanTourLeftovers` (it returns nothing); `EditorView` mounts `<PlanTourHost />` beside `<TourHost />` in the same
 `AreaErrorBoundary`. `usePlanSlice` returns `showItem(id | null)`, setting the open item without `Plan` ·
@@ -231,26 +231,26 @@ surface is fixed-position over the canvas.
 
 ## Testing
 
-| Rule                                                                    | Test                                                     |
-| ----------------------------------------------------------------------- | -------------------------------------------------------- |
-| Offered in Plan once a board or Sheet is on the tab, after the delay    | `PlanTourHost.test.tsx`                                  |
-| Waits on an empty tab or a Dashboard; a rerun waits and places nothing  | `PlanTourHost.test.tsx`                                  |
-| Not offered when seen, read-only, locked, unhydrated, embedded          | `PlanTourHost.test.tsx`                                  |
-| Waits for another tour on screen; not for the Diagram tour being owed   | `PlanTourHost.test.tsx`                                  |
-| Relaunch offers in Plan only                                            | `PlanTourHost.test.tsx`                                  |
-| One kind skips the choice; both ask; the track runs on the subject      | `PlanTourHost.test.tsx`, `TourStage.test.tsx`            |
-| A board with no cards leaves out the card steps                         | `PlanTourHost.test.tsx`, `plan-tour-steps.test.ts`       |
-| Runs to the end without changing the document or sending content events | `PlanTourHost.test.tsx`                                  |
-| Ends as skipped on another tab or the subject deleted                   | `PlanTourHost.test.tsx`                                  |
-| Steps, selectors on the subject, nothing prepared but the card panel    | `plan-tour-steps.test.ts`                                |
-| Welcome bodies per offer, Title Case step titles                        | `plan-tour-steps.test.ts`                                |
-| Leftover record round trip, malformed value dropped                     | `plan-tour.test.ts`                                      |
-| Sweep of a leftover record                                              | `usePlanTourLeftovers.test.ts`                           |
-| Engine: prepare, skip a missing target, heal, finish outcomes           | `useTourEngine.test.tsx`                                 |
-| Stage: default and Plan card words, ring, labels                        | `TourStage.test.tsx`                                     |
-| Active-tour store                                                       | `tour-active.test.ts`                                    |
-| Settings row inverted, events                                           | `settings-catalogue.test.ts`                             |
-| Telemetry tokens charted and explained                                  | `apps/telemetry` `metric-emitters.test.ts`, explanations |
+| Rule                                                                    | Test                                                                             |
+| ----------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Offered in Plan once a board or Sheet is on the tab, after the delay    | `PlanTourHost.test.tsx`                                                          |
+| Waits on an empty tab or a Dashboard; a rerun waits and places nothing  | `PlanTourHost.test.tsx`                                                          |
+| Not offered when seen, read-only, locked, unhydrated, embedded          | `PlanTourHost.test.tsx`                                                          |
+| Waits for another tour on screen; not for the Diagram tour being owed   | `PlanTourHost.test.tsx`                                                          |
+| Relaunch offers in Plan only                                            | `PlanTourHost.test.tsx`                                                          |
+| One kind skips the choice; both ask; the track runs on the subject      | `PlanTourHost.test.tsx`, `TourStage.test.tsx`                                    |
+| A board with no cards leaves out the card steps                         | `PlanTourHost.test.tsx`, `plan-tour-steps.test.ts`                               |
+| Runs to the end without changing the document or sending content events | `PlanTourHost.test.tsx`                                                          |
+| Ends as skipped on another tab or the subject deleted                   | `PlanTourHost.test.tsx`                                                          |
+| Steps, selectors on the subject, nothing prepared but the card panel    | `plan-tour-steps.test.ts`                                                        |
+| Welcome bodies per offer, Title Case step titles                        | `plan-tour-steps.test.ts`                                                        |
+| Leftover record round trip, malformed value dropped                     | `plan-tour.test.ts`                                                              |
+| Sweep of a leftover record                                              | `usePlanTourLeftovers.test.ts`                                                   |
+| Engine: prepare, skip a missing target, heal, finish outcomes           | `useTourEngine.test.tsx`                                                         |
+| Stage: default and Plan card words, ring, labels                        | `TourStage.test.tsx`                                                             |
+| Active-tour store                                                       | `tour-active.test.ts`                                                            |
+| Settings row inverted, events                                           | `settings-catalogue.test.ts`                                                     |
+| Telemetry tokens charted and explained                                  | `liveworkspace/apps/telemetry-dashboard` `metric-emitters.test.ts`, explanations |
 
 ## Constants and configuration
 

@@ -1112,18 +1112,19 @@ describe('DocumentRoom op ordering + reconnect catch-up (docs/specs/012-collabor
   });
 });
 describe('DocumentRoom multiplayer telemetry (docs/specs/017-telemetry/telemetry.md)', () => {
-  // A fake D1 that records every telemetry row the room writes.
+  // A fake central telemetry service that records every event the room sends, as [category, action, type].
   function envWithRows(): { env: Env; rows: unknown[][] } {
     const rows: unknown[][] = [];
-    const DB = {
-      prepare: () => ({ bind: (...args: unknown[]) => args }),
-      batch: (stmts: unknown[][]) => {
-        rows.push(...stmts);
-        return Promise.resolve([]);
-      },
-    };
-    return { env: { TELEMETRY_ENABLED: 'true', DB } as unknown as Env, rows };
+    vi.stubGlobal('fetch', (_url: string, init: { body: string }) => {
+      const { events } = JSON.parse(init.body) as {
+        events: { category: string; action: string; type: string | null }[];
+      };
+      rows.push(...events.map((e) => [e.category, e.action, e.type]));
+      return Promise.resolve(new Response(null, { status: 204 }));
+    });
+    return { env: { TELEMETRY_ENABLED: 'true', TELEMETRY_KEY: 'k' } as unknown as Env, rows };
   }
+  afterEach(() => vi.unstubAllGlobals());
 
   function join(room: DocumentRoom, name: string): FakeSocket {
     const ws = makeSocket();

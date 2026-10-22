@@ -8,13 +8,13 @@ The editor is friction-free and discoverable, but there's no place that explains
 
 ## Shape
 
-A new Next.js app, `apps/help`, deployed as the `liveplanner-help` Worker and stitched in by the router under `/help` — the same pattern as `apps/telemetry` (see [Router app](../016-platform/router-app.md), [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)):
+A new Next.js app, `apps/help`, deployed as the `liveplanner-help` Worker and stitched in by the router under `/help` — the same pattern as the live app's assets (see [Router app](../016-platform/router-app.md), [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)):
 
 - `output: 'export'`, `basePath: '/help'`, `assetPrefix: '/help'`. Static only, no SSR (see [hard constraints](../../../AGENTS.md)).
 - The router strips `/help` and forwards to the worker, which serves `./out`.
 - Content is **MDX** (`@next/mdx`) plus a TypeScript article index (`lib/articles.ts`). Navigation/index pages are TSX.
 
-It started as a copy of the Manager Toolkit help centre and has since been redesigned in the marketing site's language; what each page looks like (the home page's sections, category art, grouped category pages, article navigation, search keys) is [Help pages](help-pages.md). The building blocks below stay: hero + client-side search, category cards, article pages with an auto-generated table of contents, breadcrumbs, "Was this helpful?" feedback, reading time, related-guide sidebar, and a back-to-top button. An article's sections (the tinted bands between its `##` headings) are grouped while it renders, so the static HTML already has them, and the reading-time row holds its height before the time is counted: nothing moves after the page appears. The difference is the categories/content (liveplanner's) and the **brand**: liveplanner is violet (`brand-500`, see [Theme](../004-interface-design/color-scheme.md)) on light or dark chrome ([Appearance](../004-interface-design/appearance.md)), not MT's dark purple, so every surface uses the shared `@liveplanner/tailwind-config` brand ramp and slate neutrals to match `apps/marketing` and `apps/telemetry`.
+It started as a copy of the Manager Toolkit help centre and has since been redesigned in the marketing site's language; what each page looks like (the home page's sections, category art, grouped category pages, article navigation, search keys) is [Help pages](help-pages.md). The building blocks below stay: hero + client-side search, category cards, article pages with an auto-generated table of contents, breadcrumbs, "Was this helpful?" feedback, reading time, related-guide sidebar, and a back-to-top button. An article's sections (the tinted bands between its `##` headings) are grouped while it renders, so the static HTML already has them, and the reading-time row holds its height before the time is counted: nothing moves after the page appears. The difference is the categories/content (liveplanner's) and the **brand**: liveplanner is violet (`brand-500`, see [Theme](../004-interface-design/color-scheme.md)) on light or dark chrome ([Appearance](../004-interface-design/appearance.md)), not MT's dark purple, so every surface uses the shared `@liveplanner/tailwind-config` brand ramp and slate neutrals to match `apps/marketing` and `liveworkspace/apps/telemetry-dashboard`.
 
 ### No paid tier
 
@@ -276,7 +276,7 @@ Six articles about the container moved when it became a document ([Document](../
 
 ## Header
 
-The help centre's header is the shared `SiteHeader` from `@liveplanner/ui`, the same bar marketing and the telemetry dashboard render, so the three read as one product: Brand + the apps menu (keyed to Help) on the left, the article search (`SearchInput`) in the header's centre slot from `sm` up, and on the right the same **Start Blank** and **Choose Template** CTA pair the landing page shows (`ctaSurface="Help"`, so its links carry `Help.HeaderBlank` and `Help.Header` for the [Landing funnel](../019-marketing/landing-funnel.md)), Start Blank hidden below `md` (rather than `sm`, as on pages without a centre slot) so the search box keeps room on a small tablet. It leaves the page-edge ShareRail off: the rail sits in the gutter beside a `max-w-6xl` page, and help's pages run `max-w-7xl`, so on an `xl` screen it would cover the article sidebar. It passes `wide`, which gives the bar help's own `max-w-7xl` / `md:px-8` column, so the logo lines up with the breadcrumb and article content below. The bar is a fixed 72px (`h-18`) at every breakpoint, which the sticky breadcrumb bar (`top-18`) and the article sidebar's sticky offset rely on.
+The help centre's header is the shared `SiteHeader` from `@liveplanner/ui`, the same bar marketing and the telemetry dashboard render, so the three read as one product: Brand (hover it for liveworkspace's other sites, the [site switcher](../../../../liveworkspace/docs/site-switcher.md)) on the left, the article search (`SearchInput`) in the header's centre slot from `sm` up, and on the right the same **Start Blank** and **Choose Template** CTA pair the landing page shows (`ctaSurface="Help"`, so its links carry `Help.HeaderBlank` and `Help.Header` for the [Landing funnel](../019-marketing/landing-funnel.md)), Start Blank hidden below `md` (rather than `sm`, as on pages without a centre slot) so the search box keeps room on a small tablet. It leaves the page-edge ShareRail off: the rail sits in the gutter beside a `max-w-6xl` page, and help's pages run `max-w-7xl`, so on an `xl` screen it would cover the article sidebar. It passes `wide`, which gives the bar help's own `max-w-7xl` / `md:px-8` column, so the logo lines up with the breadcrumb and article content below. The bar is a fixed 72px (`h-18`) at every breakpoint, which the sticky breadcrumb bar (`top-18`) and the article sidebar's sticky offset rely on.
 
 ## SEO
 
@@ -319,7 +319,7 @@ The help centre emits through the first-party pipeline ([Telemetry + public tran
 
 ## Deployment
 
-A `deploy-help` job in `.github/workflows/deploy.yml` mirrors `deploy-telemetry` (build artifact → `wrangler deploy`). The router's `deploy-router` job already depends on the static apps; it gains a dependency on `deploy-help`, and `apps/router/wrangler.toml` gains a `HELP` service binding to `liveplanner-help`.
+A `deploy-help` job in `.github/workflows/deploy.yml` mirrors `deploy-marketing` (build artifact → `wrangler deploy`). The router's `deploy-router` job already depends on the static apps; it gains a dependency on `deploy-help`, and `apps/router/wrangler.toml` gains a `HELP` service binding to `liveplanner-help`.
 
 ## Out of scope (for now)
 

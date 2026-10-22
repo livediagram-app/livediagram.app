@@ -8,35 +8,35 @@ as `Dn`.
 
 Scope, by file (all under `apps/live/` unless stated):
 
-| File                                                 | Role                                                                                     |
-| ---------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `components/canvas/whiteboard/WhiteboardDock.tsx`    | Orchestrates the groups, the one open flyout, the pins-full hint                         |
-| `components/canvas/whiteboard/DockToolbar.tsx`       | `DockToolbar` (a group: a run of the card; roving tab stop), `DockButton`, `DockDivider` |
-| `components/canvas/whiteboard/DrawingToolsGroup.tsx` | Select, Markers 1 to 3, Text, Sticky note, Path tool, Eraser                             |
-| `components/canvas/whiteboard/ShapesGroup.tsx`       | The pinned shapes, a separator, Shapes                                                   |
-| `components/canvas/whiteboard/SettingsGroup.tsx`     | The cog, alone                                                                           |
-| `components/canvas/whiteboard/useDockFlyout.ts`      | Which flyout is open, where, hover open, delayed close, re-anchoring                     |
-| `components/canvas/whiteboard/dock-flyouts.tsx`      | Flyout bodies: pen, eraser, Settings, slot menu                                          |
-| `components/canvas/whiteboard/ShapesFlyout.tsx`      | The Shapes flyout: the field over the six slots or six results                           |
-| `components/canvas/whiteboard/useShapeSearch.ts`     | The query, what it shows, the active entry, arrow keys and Enter                         |
-| `components/canvas/whiteboard/ShapePreview.tsx`      | A catalogue shape's own preview                                                          |
-| `components/canvas/whiteboard/useShapeSlotDrag.ts`   | Dragging a flyout shape onto the pinned side, or a pinned one off it                     |
-| `components/canvas/whiteboard/SlotGhost.tsx`         | The dragged shape under the pointer                                                      |
-| `components/canvas/whiteboard/WhiteboardFlyout.tsx`  | A flyout: portalled, `offDock`, its tip, focus in, `restoreFocus` on close               |
-| `lib/whiteboard-shape-catalogue.ts`                  | The whiteboard shape catalogue, derived from the palette's shape tiles                   |
-| `lib/whiteboard-shape-search.ts`                     | Ranked search (at most six) and grid movement (pure)                                     |
-| `lib/whiteboard-shape-slots.ts`                      | Default pins, the six slots, pick record, drops, outcomes (pure)                         |
-| `lib/whiteboard-dock-prefs.ts`                       | The dock's synced preferences: parse and write, the dock position                        |
-| `components/canvas/CanvasChrome.tsx`                 | The dock; top corners and stack clear a top dock                                         |
-| `hooks/ui/useStripCrowdsCorners.ts`                  | Whether a top bar (the strip or a top dock) reaches a top corner                         |
-| `components/chrome/TopCenter.tsx`                    | `TopCenterStack` `below`: under the strip or under a top dock                            |
-| `components/dialogs/settings/settings-catalogue.ts`  | Editor › Draw sub-category: the Dock Position row                                        |
-| `hooks/canvas/useWhiteboardDockPrefs.ts`             | Those preferences as state, written like every synced preference                         |
-| `hooks/canvas/useWhiteboard.ts`                      | `pickShape`, `pickSearchedShape`, `openShapes` and the dock prefs                        |
-| `lib/palette-search.ts`, `lib/search.ts`             | `SHAPE_TILES`, `shapeTileSearchItem`; `paletteRank` from `@livediagram/icons`, shared    |
-| `lib/user-preferences.ts`                            | `whiteboardPinnedShapes`, `whiteboardShapePicks`                                         |
-| `components/primitives/SearchInput.tsx`              | `listboxId`: the box as a combobox over an always-shown listbox                          |
-| `apps/telemetry/app/event-explanations.ts`           | Sentences for the new tokens                                                             |
+| File                                                                         | Role                                                                                     |
+| ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `components/canvas/whiteboard/WhiteboardDock.tsx`                            | Orchestrates the groups, the one open flyout, the pins-full hint                         |
+| `components/canvas/whiteboard/DockToolbar.tsx`                               | `DockToolbar` (a group: a run of the card; roving tab stop), `DockButton`, `DockDivider` |
+| `components/canvas/whiteboard/DrawingToolsGroup.tsx`                         | Select, Markers 1 to 3, Text, Sticky note, Path tool, Eraser                             |
+| `components/canvas/whiteboard/ShapesGroup.tsx`                               | The pinned shapes, a separator, Shapes                                                   |
+| `components/canvas/whiteboard/SettingsGroup.tsx`                             | The cog, alone                                                                           |
+| `components/canvas/whiteboard/useDockFlyout.ts`                              | Which flyout is open, where, hover open, delayed close, re-anchoring                     |
+| `components/canvas/whiteboard/dock-flyouts.tsx`                              | Flyout bodies: pen, eraser, Settings, slot menu                                          |
+| `components/canvas/whiteboard/ShapesFlyout.tsx`                              | The Shapes flyout: the field over the six slots or six results                           |
+| `components/canvas/whiteboard/useShapeSearch.ts`                             | The query, what it shows, the active entry, arrow keys and Enter                         |
+| `components/canvas/whiteboard/ShapePreview.tsx`                              | A catalogue shape's own preview                                                          |
+| `components/canvas/whiteboard/useShapeSlotDrag.ts`                           | Dragging a flyout shape onto the pinned side, or a pinned one off it                     |
+| `components/canvas/whiteboard/SlotGhost.tsx`                                 | The dragged shape under the pointer                                                      |
+| `components/canvas/whiteboard/WhiteboardFlyout.tsx`                          | A flyout: portalled, `offDock`, its tip, focus in, `restoreFocus` on close               |
+| `lib/whiteboard-shape-catalogue.ts`                                          | The whiteboard shape catalogue, derived from the palette's shape tiles                   |
+| `lib/whiteboard-shape-search.ts`                                             | Ranked search (at most six) and grid movement (pure)                                     |
+| `lib/whiteboard-shape-slots.ts`                                              | Default pins, the six slots, pick record, drops, outcomes (pure)                         |
+| `lib/whiteboard-dock-prefs.ts`                                               | The dock's synced preferences: parse and write, the dock position                        |
+| `components/canvas/CanvasChrome.tsx`                                         | The dock; top corners and stack clear a top dock                                         |
+| `hooks/ui/useStripCrowdsCorners.ts`                                          | Whether a top bar (the strip or a top dock) reaches a top corner                         |
+| `components/chrome/TopCenter.tsx`                                            | `TopCenterStack` `below`: under the strip or under a top dock                            |
+| `components/dialogs/settings/settings-catalogue.ts`                          | Editor › Draw sub-category: the Dock Position row                                        |
+| `hooks/canvas/useWhiteboardDockPrefs.ts`                                     | Those preferences as state, written like every synced preference                         |
+| `hooks/canvas/useWhiteboard.ts`                                              | `pickShape`, `pickSearchedShape`, `openShapes` and the dock prefs                        |
+| `lib/palette-search.ts`, `lib/search.ts`                                     | `SHAPE_TILES`, `shapeTileSearchItem`; `paletteRank` from `@livediagram/icons`, shared    |
+| `lib/user-preferences.ts`                                                    | `whiteboardPinnedShapes`, `whiteboardShapePicks`                                         |
+| `components/primitives/SearchInput.tsx`                                      | `listboxId`: the box as a combobox over an always-shown listbox                          |
+| liveworkspace/apps/telemetry-dashboard/app/livediagram/event-explanations.ts | Sentences for the new tokens                                                             |
 
 ## Domain and naming
 
@@ -451,25 +451,25 @@ to measure` (warn).
 
 ## Testing
 
-| Rule                                                      | Test                                                                       |
-| --------------------------------------------------------- | -------------------------------------------------------------------------- |
-| Catalogue scope, keys, order, intents, armed read-back    | `apps/live/lib/whiteboard-shape-catalogue.test.ts`                         |
-| Preselected set, six results, ranking, grid movement      | `apps/live/lib/whiteboard-shape-search.test.ts`                            |
-| Default pins, the six slots, pick record, drops, outcomes | `apps/live/lib/whiteboard-shape-slots.test.ts`                             |
-| Preference parsing and writing, emptied pins kept         | `apps/live/lib/whiteboard-dock-prefs.test.ts`                              |
-| Picks counted, search pick, S request, pins, unpin count  | `apps/live/hooks/canvas/useWhiteboard.test.tsx`                            |
-| Groups, order, tab stops, arrows, scroll re-anchoring     | `apps/live/components/canvas/whiteboard/WhiteboardDock.test.tsx`           |
-| A press focuses the flyout once shown; Escape hands back  | `WhiteboardDock.test.tsx` "takes the focus on a press once it is shown"    |
-| Off the dock: board side, centred, in viewport, tip over  | `WhiteboardDock.test.tsx` "offDock"                                        |
-| Pinned bar, pressed state, Unpin menu, drags both ways    | `apps/live/components/canvas/whiteboard/ShapesGroup.test.tsx`              |
-| Shapes flyout: hover focus, slots, results, menu, closing | `apps/live/components/canvas/whiteboard/ShapesFlyout.test.tsx`             |
-| Dock position: parse, write, default top                  | `apps/live/lib/whiteboard-dock-prefs.test.ts`                              |
-| Top and bottom wrapper, flyout and hint below or above    | `apps/live/components/canvas/whiteboard/WhiteboardDock.test.tsx`           |
-| A top bar (strip or dock) crowding the top corners        | `apps/live/hooks/ui/useStripCrowdsCorners.test.tsx`                        |
-| Settings row: Top / Bottom round trip, section, token     | `apps/live/components/dialogs/settings/settings-catalogue.test.ts`         |
-| Telemetry sentences                                       | `apps/telemetry/app/event-explanation.test.ts`                             |
-| Dock position and snap colours end to end                 | `whiteboard-dock-position.spec.ts`, `whiteboard-snap-colours.spec.ts`      |
-| End to end                                                | Playwright, Chromium and WebKit, dark and light, 1600 × 900 and 820 × 1180 |
+| Rule                                                      | Test                                                                             |
+| --------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Catalogue scope, keys, order, intents, armed read-back    | `apps/live/lib/whiteboard-shape-catalogue.test.ts`                               |
+| Preselected set, six results, ranking, grid movement      | `apps/live/lib/whiteboard-shape-search.test.ts`                                  |
+| Default pins, the six slots, pick record, drops, outcomes | `apps/live/lib/whiteboard-shape-slots.test.ts`                                   |
+| Preference parsing and writing, emptied pins kept         | `apps/live/lib/whiteboard-dock-prefs.test.ts`                                    |
+| Picks counted, search pick, S request, pins, unpin count  | `apps/live/hooks/canvas/useWhiteboard.test.tsx`                                  |
+| Groups, order, tab stops, arrows, scroll re-anchoring     | `apps/live/components/canvas/whiteboard/WhiteboardDock.test.tsx`                 |
+| A press focuses the flyout once shown; Escape hands back  | `WhiteboardDock.test.tsx` "takes the focus on a press once it is shown"          |
+| Off the dock: board side, centred, in viewport, tip over  | `WhiteboardDock.test.tsx` "offDock"                                              |
+| Pinned bar, pressed state, Unpin menu, drags both ways    | `apps/live/components/canvas/whiteboard/ShapesGroup.test.tsx`                    |
+| Shapes flyout: hover focus, slots, results, menu, closing | `apps/live/components/canvas/whiteboard/ShapesFlyout.test.tsx`                   |
+| Dock position: parse, write, default top                  | `apps/live/lib/whiteboard-dock-prefs.test.ts`                                    |
+| Top and bottom wrapper, flyout and hint below or above    | `apps/live/components/canvas/whiteboard/WhiteboardDock.test.tsx`                 |
+| A top bar (strip or dock) crowding the top corners        | `apps/live/hooks/ui/useStripCrowdsCorners.test.tsx`                              |
+| Settings row: Top / Bottom round trip, section, token     | `apps/live/components/dialogs/settings/settings-catalogue.test.ts`               |
+| Telemetry sentences                                       | liveworkspace/apps/telemetry-dashboard/app/livediagram/event-explanation.test.ts |
+| Dock position and snap colours end to end                 | `whiteboard-dock-position.spec.ts`, `whiteboard-snap-colours.spec.ts`            |
+| End to end                                                | Playwright, Chromium and WebKit, dark and light, 1600 × 900 and 820 × 1180       |
 
 ## Constants and configuration
 

@@ -1,20 +1,21 @@
-// /api/events — anonymous telemetry ingest (docs/specs/017-telemetry/telemetry.md).
+// /api/events — the relay for clients that can't reach the liveworkspace telemetry service
+// themselves (docs/specs/017-telemetry/telemetry.md "The relay").
 
 import { isServerEmittedEvent, isValidTelemetryEvent } from '@liveplanner/api-schema';
-import { insertTelemetryEvents } from '../db';
+import { TELEMETRY_BATCH_MAX } from '@liveworkspace/telemetry';
 import { isLocalhostPair } from '../origin-check';
 import { noContent, notFound } from '../responses';
 import { clientRateKey } from '../client-ip';
-import { timingSafeEqual } from '../auth/timing-safe';
-import type { Env } from '../types';
+import { reportServerEvents } from '../server-telemetry';
 import type { RouteContext } from './context';
 
-// Anonymous telemetry ingest (docs/specs/017-telemetry/telemetry.md). Batched POST of
-// { events: TelemetryEvent[] }. No auth, no stored identity: only
-// the closed-vocabulary three-field events (validated here) reach
-// D1, with a server-stamped ts. Off unless TELEMETRY_ENABLED, so
-// deployments ingest nothing by default. Always 204 — telemetry must
+// Telemetry is stored by the liveworkspace service (liveworkspace/docs/telemetry.md), which takes a
+// batch only from one of liveplanner.app's pages or from a Worker holding liveplanner's key. The CLI
+// is neither: it runs on somebody's machine and posts to its profile's api, so the api passes its
+// anonymous counts on under its own key. Batched POST of { events }; no auth, no stored identity;
+// only the closed vocabulary goes on. Off unless TELEMETRY_ENABLED. Always 204 — telemetry must
 // never surface an error to the caller.
+
 export async function handleEvents(ctx: RouteContext): Promise<Response> {
   const { request, env, url, segments } = ctx;
   if (!(segments[1] === 'events' && segments.length === 2)) return notFound();
@@ -31,28 +32,16 @@ export async function handleEvents(ctx: RouteContext): Promise<Response> {
   //       client can't forge, unlike X-Owner-Id). A SEPARATE
   //       limiter from the document write limiter, so it never
   //       touches real users; the IP is a transient key, never
-  //       stored. Both degrade to "allow" when unconfigured, so
-  //       deployments still work. Cloudflare's edge DDoS
+  //       stored or passed on. Both degrade to "allow" when unconfigured, so
+  //       self-host / OSS forks still work. Cloudflare's edge DDoS
   //       + an optional WAF rate-limit rule on /api/events sit in
   //       front of all this (see docs/specs/017-telemetry/telemetry.md). Always 204 — telemetry
   //       must never surface an error.
   const origin = request.headers.get('Origin');
   if (origin && origin !== url.origin && !isLocalhostPair(origin, url.origin)) return noop;
-  // Our own workers reach this over a service binding, which carries no
-  // CF-Connecting-IP — so `clientIp` fell back to the literal 'anonymous'
-  // and every internal caller in the world shared ONE 120/min bucket,
-  // silently dropping the overflow as a 204 (docs/specs/017-telemetry/telemetry.md, issue #36). A
-  // matching secret exempts them: the limiter exists to stop anonymous
-  // abuse of a public endpoint, and a caller holding a worker secret is
-  // neither anonymous nor unbounded (it's bounded by its own OAuth'd
-  // traffic). Unset on either side = nobody is exempt, exactly as before,
-  // so a deployment needs no configuration.
-  if (!(await isInternalCaller(request, env))) {
-    if (env.EVENTS_RATE_LIMITER) {
-      const ip = clientRateKey(request);
-      const { success } = await env.EVENTS_RATE_LIMITER.limit({ key: ip });
-      if (!success) return noop;
-    }
+  if (env.EVENTS_RATE_LIMITER) {
+    const { success } = await env.EVENTS_RATE_LIMITER.limit({ key: clientRateKey(request) });
+    if (!success) return noop;
   }
   let body: unknown;
   try {
@@ -72,28 +61,9 @@ export async function handleEvents(ctx: RouteContext): Promise<Response> {
   const valid = raw
     .filter(isValidTelemetryEvent)
     .filter((e) => !isServerEmittedEvent(e))
-    .slice(0, 100);
-  try {
-    await insertTelemetryEvents(
-      env,
-      valid.map((e) => ({ category: e.category, action: e.action, type: e.type ?? null })),
-      Date.now(),
-    );
-  } catch {
-    // A transient D1 failure must not surface: without this the throw
-    // became a 5xx at the edge, breaking the "always 204" contract above
-    // (the batch is lost either way; telemetry is fire-and-forget).
-  }
+    .slice(0, TELEMETRY_BATCH_MAX)
+    .map((e) => ({ category: e.category, action: e.action, type: e.type ?? null }));
+  // Swallows its own failure: the batch is lost either way, the 204 is not.
+  await reportServerEvents(env, valid);
   return noop;
-}
-
-// Does this request carry the internal shared secret? Compared in constant
-// time like the share-password check: the endpoint always answers 204, but
-// the comparison shouldn't be the thing that leaks the key.
-async function isInternalCaller(request: Request, env: Env): Promise<boolean> {
-  const expected = env.INTERNAL_EVENTS_KEY;
-  if (!expected) return false;
-  const provided = request.headers.get('X-Internal-Events-Key');
-  if (!provided) return false;
-  return timingSafeEqual(provided, expected);
 }

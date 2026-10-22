@@ -506,7 +506,7 @@ per element, steps, completed, skipped), as Show Me's is one stack.
 A new toured kind adds, in one change: its kind and name to `ELEMENT_TOUR_KINDS` / `ELEMENT_TOUR_NAMES` with its
 edit gate (`apps/live/lib/element-tours.ts`); its entry in `ELEMENT_TOUR_DEFS` (token, eyebrow, help article, steps,
 what Done puts away; `apps/live/components/tour/element-tour-defs.ts`); its steps file; its switch under Element
-Tours in Settings; its token on the dashboard (`apps/telemetry/app/element-tour-kinds.ts`, its steps in
+Tours in Settings; its token on the dashboard (liveworkspace/apps/telemetry-dashboard/app/livediagram/element-tour-kinds.ts, its steps in
 `computed-emitters.ts`, its sentences in `event-explanations.ts`); its kind in the e2e fixture's answered list; its
 help article's tour section; and a section here.
 

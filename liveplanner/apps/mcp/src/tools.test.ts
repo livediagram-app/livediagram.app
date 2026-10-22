@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { Env } from './env';
 import { ITEM_TYPES } from '@liveplanner/items';
@@ -174,20 +174,20 @@ function harness(api: 'ok' | 'down' = 'down') {
     },
   } as unknown as McpServer;
 
-  const env = {
-    API: {
-      fetch: async (request: Request) => {
-        if (new URL(request.url).pathname.endsWith('/events')) {
-          const body = (await request.json()) as { events: Emitted[] };
-          emitted.push(...body.events);
-          return new Response(null, { status: 204 });
-        }
-        if (api === 'ok') return okResponse(request);
-        // Anything else fails, so each handler stops at its first api call.
-        throw new Error('api unavailable in this test');
-      },
-    },
-  } as unknown as Env;
+  // The api over its binding, and the central telemetry service over plain fetch, answered by one handler.
+  const handle = async (input: Request | string, init?: RequestInit) => {
+    const request = typeof input === 'string' ? new Request(input, init) : input;
+    if (new URL(request.url).pathname.endsWith('/events')) {
+      const body = (await request.json()) as { events: Emitted[] };
+      emitted.push(...body.events);
+      return new Response(null, { status: 204 });
+    }
+    if (api === 'ok') return okResponse(request);
+    // Anything else fails, so each handler stops at its first api call.
+    throw new Error('api unavailable in this test');
+  };
+  vi.stubGlobal('fetch', handle);
+  const env = { API: { fetch: handle }, TELEMETRY_KEY: 'k' } as unknown as Env;
 
   registerTools(server, env);
   return { registered, emitted };
@@ -231,6 +231,8 @@ const AUTHED = { authInfo: { token: 'tok_test' } };
 // early and reports a perfectly instrumented tool as missing: a false alarm,
 // not a finding.
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
+
+afterEach(() => vi.unstubAllGlobals());
 
 describe('registerTools', () => {
   it('registers the twenty-five documented tools, each with a description', () => {

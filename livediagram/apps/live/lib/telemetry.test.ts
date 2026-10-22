@@ -97,6 +97,8 @@ afterEach(() => {
 
 async function importWithEnv(enabled: boolean) {
   vi.stubEnv('NEXT_PUBLIC_TELEMETRY_ENABLED', enabled ? 'true' : '');
+  // Unset, so the emitter targets production's service URL.
+  vi.stubEnv('NEXT_PUBLIC_TELEMETRY_URL', '');
   return import('./telemetry');
 }
 
@@ -155,10 +157,11 @@ describe('track gate', () => {
     await vi.runAllTimersAsync();
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(fetchMock).toHaveBeenCalledWith(
-      '/api/events',
+      'https://liveworkspace.app/telemetry/api/events',
       expect.objectContaining({
         method: 'POST',
         body: JSON.stringify({
+          app: 'livediagram.app',
           events: [{ category: 'Element', action: 'Added', type: 'Square' }],
         }),
       }),
@@ -185,9 +188,10 @@ describe('track gate', () => {
     vi.advanceTimersByTime(10_001);
     await vi.runAllTimersAsync();
     expect(fetchMock).toHaveBeenCalledWith(
-      '/api/events',
+      'https://liveworkspace.app/telemetry/api/events',
       expect.objectContaining({
         body: JSON.stringify({
+          app: 'livediagram.app',
           events: [{ category: 'Session', action: 'Joined', type: null }],
         }),
       }),

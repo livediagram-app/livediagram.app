@@ -20,10 +20,14 @@ globs = ["**/*.ttf", "**/*.otf"]
 # with `wrangler deploy --var` on liveplanner.app's own repository only, and
 # then verifies on the live worker (docs/specs/016-platform/deployment.md
 # "Hosted profile"). A fork is therefore telemetry-off until it
-# opts in, by declaring the var here. TELEMETRY_ENABLED gates the anonymous,
-# first-party product analytics + the public /telemetry dashboard
-# (docs/specs/017-telemetry/telemetry.md): "true" turns it on; anything else,
-# or absent, keeps it fully off.
+# opts in, by declaring the var here. TELEMETRY_ENABLED gates this worker's
+# anonymous, first-party product events, sent to liveworkspace's central
+# telemetry service (docs/specs/017-telemetry/telemetry.md, liveworkspace/docs/telemetry.md):
+# "true" turns it on; anything else, or absent, keeps it fully off. The
+# service's URL is TELEMETRY_URL, also from the hosted profile (per
+# environment, mirrored into the frontends as NEXT_PUBLIC_TELEMETRY_URL);
+# unset means production's (https://liveworkspace.app/telemetry). Locally,
+# `TELEMETRY_URL=http://localhost:8790/telemetry` in .dev.vars.
 [vars]
 
 # Origin allow-list for POST /api/ai (docs/specs/007-editor/ai-assistance.md). Stated HERE, not in the
@@ -117,14 +121,10 @@ type = "ratelimit"
 namespace_id = "1001"
 simple = { limit = 300, period = 60 }
 
-# Per-IP limiter for the anonymous telemetry ingest (POST /api/events,
-# docs/specs/017-telemetry/telemetry.md). Separate namespace from the write limiter so abuse of the
-# public events endpoint can never eat into a user's document-write
-# budget. 120 batches / 60s per IP is generous for a real editor
-# session (which flushes a handful of batches a minute) while bounding
-# how fast one source can flood D1 / inflate the public dashboard.
-# Keyed on CF-Connecting-IP in src/index.ts. Absent binding → the
-# helper allows, so a deployment without it still works.
+# Per-IP limiter for the CLI's telemetry relay (POST /api/events,
+# docs/specs/017-telemetry/telemetry.md "The relay"). Separate namespace from the write limiter so abuse of
+# the public relay can never eat into a user's document-write budget. Keyed on
+# CF-Connecting-IP in src/routes/events.ts. Absent binding → the helper allows.
 [[unsafe.bindings]]
 name = "EVENTS_RATE_LIMITER"
 type = "ratelimit"
@@ -153,10 +153,7 @@ renamed_classes = [{ from = "DiagramRoom", to = "DocumentRoom" }]
 # to the matching pattern so the body can dispatch.
 #
 # `0 3 * * *`: daily at 03:00 UTC. Fires independent retention sweeps
-# on this trigger, among them:
-#   - events, 60-day floor (docs/specs/017-telemetry/telemetry.md "Retention"). The /telemetry
-#     dashboard surfaces a 30-day max window, so anything past 60
-#     days is dead storage.
+# on this trigger (telemetry's retention is liveworkspace's, liveworkspace/docs/telemetry.md).
 # Plus the docs/specs/014-identity/transactional-email.md email sweeps (lifecycle onboarding + token-expiry
 # warnings), both no-ops when RESEND_API_KEY is unset.
 [triggers]
@@ -311,32 +308,19 @@ simple = { limit = 20, period = 60 }
 # (docs/specs/014-identity/auth-and-guest-access.md). Generate with `openssl rand -hex 32`. Unset = legacy unsigned
 # migrate (pure-guest / single-user deployment).
 
-# INTERNAL_EVENTS_KEY marks a POST to /api/events as coming from one of our
-# OWN workers over a service binding, rather than from the open internet
-# (docs/specs/017-telemetry/telemetry.md, issue #36). Provisioned out-of-band like the two above; never in
-# [vars] — it is secret material:
+# TELEMETRY_KEY is liveplanner's Worker key for liveworkspace's central
+# telemetry service (docs/specs/017-telemetry/telemetry.md, liveworkspace/docs/telemetry.md), sent as
+# X-Telemetry-Key: a Worker sends no Origin, so the key is what lets its posts
+# speak for liveplanner.app. Secret material, provisioned out-of-band like the
+# two above; never in [vars]:
 #
-#   - Local dev: `INTERNAL_EVENTS_KEY=...` in `apps/api/.dev.vars`
-#     (gitignored). Rarely needed — local dev doesn't run the MCP worker
-#     over a service binding.
-#   - Production: `wrangler secret put INTERNAL_EVENTS_KEY`, and the SAME
-#     value on the mcp worker (`wrangler secret put INTERNAL_EVENTS_KEY`
-#     from apps/mcp). Generate with `openssl rand -hex 32`.
+#   - Local dev: `TELEMETRY_KEY=dev-liveplanner-key` in `apps/api/.dev.vars`
+#     (gitignored), matching the service's .dev.vars.
+#   - Production: `wrangler secret put TELEMETRY_KEY` here and on the mcp
+#     worker, the SAME value as the service's TELEMETRY_KEY_LIVEPLANNER.
+#     Generate with `openssl rand -hex 32`.
 #
-# Why it exists: a service-binding call carries no CF-Connecting-IP, so
-# `clientIp` fell back to the literal 'anonymous' and every internal caller
-# in the world shared ONE 120/min EVENTS_RATE_LIMITER key, with the overflow
-# dropped as a 204 the caller can't distinguish from success. Since the mcp
-# worker posts one request per tool call, that ceiling was roughly two tool
-# calls per second globally. A matching key exempts those calls from the
-# per-IP limiter, which exists to stop ANONYMOUS abuse of a public endpoint
-# and was never aimed at us.
-#
-# Unset on either side = nobody is exempt, which is the pre-existing
-# behaviour and needs no configuration, so a deployment can ignore this.
-# The two sides MUST match: a mismatch is silent (the caller simply lands
-# back in the shared bucket), so check `wrangler secret list` on both if
-# Mcp·Used counts look flat.
+# Unset = this worker sends no telemetry, so a deployment can ignore it.
 
 
 # ---------------------------------------------------------------------------
@@ -362,8 +346,8 @@ simple = { limit = 20, period = 60 }
 name = "liveplanner-api-staging"
 
 # TELEMETRY_ENABLED comes from `hosted-vars.json`, exactly as
-# for production (see the top of this file). Staging's events land in its own D1,
-# on STAGING's /telemetry dashboard, never in production's published numbers.
+# for production (see the top of this file), and so does TELEMETRY_URL: staging's
+# events go to staging's telemetry service, never into production's published numbers.
 [env.staging.vars]
 # APP_BASE_URL comes from `hosted-vars.json` per environment, so staging's email and workbench links point
 # back at staging (docs/specs/014-identity/transactional-email.md, docs/specs/013-workspace/workbench-embeds.md).
@@ -489,7 +473,7 @@ renamed_classes = [{ from = "DiagramRoom", to = "DocumentRoom" }]
 crons = ["0 3 * * *"]
 
 # The four ACCOUNTS_* / API_RESOURCE values, GUEST_ID_HMAC_SECRET and
-# INTERNAL_EVENTS_KEY come from the
+# TELEMETRY_KEY come from the
 # `_STAGING` GitHub secrets via the deploy workflow. RESEND_API_KEY and the
 # model keys (OPENAI_API_KEY and/or GOOGLE_AI_STUDIO_API_KEY) are provisioned by
 # hand exactly as they are for production:

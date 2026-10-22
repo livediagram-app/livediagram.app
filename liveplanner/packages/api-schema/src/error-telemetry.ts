@@ -109,7 +109,6 @@ export const API_ROUTE_RESOURCES: ReadonlySet<string> = new Set([
   'unfurl',
   'ai',
   'events',
-  'telemetry',
   'share',
   // A form link's public doors (docs/specs/030-forms/forms.md).
   'forms',

@@ -8,9 +8,9 @@ name: Deploy (reusable)
 # this workflow's inputs and which secrets the caller hands over.
 #
 # Builds each app, then deploys to Cloudflare Workers in dependency order:
-# marketing + live + telemetry + help + api in parallel → mcp
-# (service binding to api) → router last (service bindings to the five
-# path-routed workers).
+# marketing + live + help + api in parallel → mcp
+# (service binding to api) → router last (service bindings to the four
+# path-routed workers). Telemetry is liveworkspace's (liveworkspace/docs/telemetry.md), not deployed here.
 on:
   workflow_call:
     inputs:
@@ -66,7 +66,7 @@ on:
         required: false
       GUEST_ID_HMAC_SECRET:
         required: false
-      INTERNAL_EVENTS_KEY:
+      TELEMETRY_KEY:
         required: false
 
 # The hosted profile (docs/specs/016-platform/deployment.md "Hosted profile"):
@@ -164,13 +164,6 @@ jobs:
           path: apps/live/out
           retention-days: 1
 
-      - name: Upload telemetry build
-        uses: actions/upload-artifact@v7
-        with:
-          name: telemetry-out
-          path: apps/telemetry/out
-          retention-days: 1
-
       - name: Upload help build
         uses: actions/upload-artifact@v7
         with:
@@ -212,43 +205,6 @@ jobs:
 
       - name: Deploy to Cloudflare Workers
         working-directory: apps/marketing
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
-        run: pnpm exec wrangler deploy ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
-
-  deploy-telemetry:
-    name: Deploy telemetry
-    needs: build
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    env:
-      WRANGLER_ENV: ${{ inputs.wrangler_env }}
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          ref: ${{ inputs.ref }}
-
-      - uses: pnpm/action-setup@v6
-        with:
-          version: 9.15.0
-
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 22
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Download build
-        uses: actions/download-artifact@v8
-        with:
-          name: telemetry-out
-          path: apps/telemetry/out
-
-      - name: Deploy to Cloudflare Workers
-        working-directory: apps/telemetry
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
@@ -347,7 +303,7 @@ jobs:
       ACCOUNTS_CLIENT_ID: ${{ secrets.ACCOUNTS_CLIENT_ID }}
       ACCOUNTS_CLIENT_SECRET: ${{ secrets.ACCOUNTS_CLIENT_SECRET }}
       GUEST_ID_HMAC_SECRET: ${{ secrets.GUEST_ID_HMAC_SECRET }}
-      INTERNAL_EVENTS_KEY: ${{ secrets.INTERNAL_EVENTS_KEY }}
+      TELEMETRY_KEY: ${{ secrets.TELEMETRY_KEY }}
       WRANGLER_ENV: ${{ inputs.wrangler_env }}
     steps:
       - uses: actions/checkout@v7
@@ -417,22 +373,21 @@ jobs:
           printf '%s' "$GUEST_ID_HMAC_SECRET" \
             | pnpm exec wrangler secret put GUEST_ID_HMAC_SECRET ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
 
-      # INTERNAL_EVENTS_KEY (docs/specs/017-telemetry/telemetry.md) has to hold the SAME value on the api and
-      # mcp workers, and a mismatch is silent — the MCP's telemetry just lands
-      # back in the throttled anonymous bucket with no error anywhere. Driving
-      # both from one GitHub secret is what makes them agree by construction;
-      # provisioning them by hand in two terminals is exactly how they drift.
+      # TELEMETRY_KEY (docs/specs/017-telemetry/telemetry.md) is liveplanner's Worker key for liveworkspace's
+      # central telemetry service, and has to hold the SAME value on the api and mcp workers as the
+      # service's TELEMETRY_KEY_LIVEPLANNER; a mismatch is silent — the posts are simply not stored.
+      # Driving both workers from one GitHub secret is what makes them agree by construction.
       # Unset = both steps skip, which leaves whatever is already on the
       # workers (including a pair set by hand) untouched.
-      - name: Sync INTERNAL_EVENTS_KEY secret
-        if: ${{ env.INTERNAL_EVENTS_KEY != '' }}
+      - name: Sync TELEMETRY_KEY secret
+        if: ${{ env.TELEMETRY_KEY != '' }}
         working-directory: apps/api
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
         run: |
-          printf '%s' "$INTERNAL_EVENTS_KEY" \
-            | pnpm exec wrangler secret put INTERNAL_EVENTS_KEY ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
+          printf '%s' "$TELEMETRY_KEY" \
+            | pnpm exec wrangler secret put TELEMETRY_KEY ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
 
       # Runs straight before the deploy, after the secret syncs, so the time the
       # live worker runs against a schema newer than its code is only the deploy
@@ -520,7 +475,7 @@ jobs:
     # Lifted to job level for the same reason as deploy-api's: the `secrets`
     # context isn't readable from a step `if:`.
     env:
-      INTERNAL_EVENTS_KEY: ${{ secrets.INTERNAL_EVENTS_KEY }}
+      TELEMETRY_KEY: ${{ secrets.TELEMETRY_KEY }}
       WRANGLER_ENV: ${{ inputs.wrangler_env }}
     steps:
       - uses: actions/checkout@v7
@@ -542,15 +497,15 @@ jobs:
       # The matching half of deploy-api's sync — same GitHub secret, so the two
       # workers can't disagree (docs/specs/017-telemetry/telemetry.md). Skipped when unset, leaving whatever
       # is already on the worker in place.
-      - name: Sync INTERNAL_EVENTS_KEY secret
-        if: ${{ env.INTERNAL_EVENTS_KEY != '' }}
+      - name: Sync TELEMETRY_KEY secret
+        if: ${{ env.TELEMETRY_KEY != '' }}
         working-directory: apps/mcp
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
         run: |
-          printf '%s' "$INTERNAL_EVENTS_KEY" \
-            | pnpm exec wrangler secret put INTERNAL_EVENTS_KEY ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
+          printf '%s' "$TELEMETRY_KEY" \
+            | pnpm exec wrangler secret put TELEMETRY_KEY ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
 
       - name: Deploy to Cloudflare Workers
         working-directory: apps/mcp
@@ -563,7 +518,7 @@ jobs:
     name: Deploy router
     # Router has service bindings to all five path-routed workers, so they
     # must exist before it deploys.
-    needs: [deploy-marketing, deploy-live, deploy-api, deploy-telemetry, deploy-help]
+    needs: [deploy-marketing, deploy-live, deploy-api, deploy-help]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     # The router is what makes the hostname serve the new code, so it is the

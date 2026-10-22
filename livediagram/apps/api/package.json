@@ -30,6 +30,7 @@
     "@livediagram/render-png": "workspace:*",
     "@livediagram/sheets": "workspace:*",
     "@livediagram/templates": "workspace:*",
+    "@liveworkspace/telemetry": "workspace:*",
     "jose": "^6.2.12"
   },
   "devDependencies": {

@@ -26,12 +26,17 @@
     // other apps' builds because Next's analyzer uses an app's Turbopack build
     // cache (.next/cache) whatever its distDir: beside that app's own build, the
     // two processes corrupt it.
+    // The telemetry Worker serves the dashboard's static export as its assets, so wrangler's dry run
+    // needs out/ built first (liveworkspace/docs/telemetry.md).
+    "@liveworkspace/telemetry-service#build": {
+      "dependsOn": ["^build", "@liveworkspace/telemetry-dashboard#build"],
+      "outputs": ["dist/**"]
+    },
     "@livediagram/marketing#build": {
       "dependsOn": [
         "^build",
         "@livediagram/live#build",
         "@livediagram/help#build",
-        "@livediagram/telemetry#build",
         "@livediagram/community#build",
         "@livediagram/api#build",
         "@livediagram/mcp#build",
@@ -126,7 +131,6 @@
         "^build",
         "@liveplanner/live#build",
         "@liveplanner/help#build",
-        "@liveplanner/telemetry#build",
         "@liveplanner/api#build",
         "@liveplanner/mcp#build",
         "@liveplanner/router#build"
@@ -150,18 +154,10 @@
         "!$TURBO_ROOT$/liveplanner/apps/marketing/generated/**",
         "!$TURBO_ROOT$/liveplanner/apps/marketing/public/licences/**"
       ],
-      "outputs": [
-        ".next/**",
-        "!.next/cache/**",
-        "out/**",
-        "generated/**",
-        "public/licences/**"
-      ]
+      "outputs": [".next/**", "!.next/cache/**", "out/**", "generated/**", "public/licences/**"]
     },
     "@liveplanner/help#test": {
-      "dependsOn": [
-        "^build"
-      ],
+      "dependsOn": ["^build"],
       "inputs": [
         "$TURBO_DEFAULT$",
         "$TURBO_ROOT$/liveplanner/**",
@@ -178,12 +174,8 @@
       ]
     },
     "@liveplanner/help#test:coverage": {
-      "dependsOn": [
-        "^build"
-      ],
-      "outputs": [
-        "coverage/**"
-      ],
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"],
       "inputs": [
         "$TURBO_DEFAULT$",
         "$TURBO_ROOT$/liveplanner/**",

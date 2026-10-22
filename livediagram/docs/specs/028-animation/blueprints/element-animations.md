@@ -303,7 +303,7 @@ shows a Shape miniature and the old label. The old static glyphs (`AnimationKind
 ## Observability
 
 `track('Element', 'Changed', type)` on commit with `ANIMATION_SET_TELEMETRY_TYPE[set]`; each new type is explained
-in `apps/telemetry/app/event-explanations.ts`.
+in liveworkspace/apps/telemetry-dashboard/app/livediagram/event-explanations.ts.
 
 ## Testing
 

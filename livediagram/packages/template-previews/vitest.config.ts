@@ -5,5 +5,5 @@ import { defineProject } from '@livediagram/vitest-config';
 // no DOM is needed. The JSX in the preview files compiles with the
 // automatic runtime, as it does in the apps that render them.
 export default defineProject({
-  esbuild: { jsx: 'automatic' },
+  oxc: { jsx: { runtime: 'automatic' } },
 });

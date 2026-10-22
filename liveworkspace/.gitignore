@@ -1,0 +1,15 @@
+# Build output, as livediagram/.gitignore explains for the same Next and Wrangler setup.
+node_modules/
+dist/
+.next/
+.next-dev/
+.next-analyze/
+out/
+.wrangler/
+*.tsbuildinfo
+next-env.d.ts
+.dev.vars
+
+# `next dev` drops these into each app it runs; agent guidance lives in the root AGENTS.md.
+apps/*/AGENTS.md
+apps/*/CLAUDE.md

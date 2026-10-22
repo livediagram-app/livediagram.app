@@ -3,23 +3,20 @@ import type { ReactNode } from 'react';
 import { Brand } from './Brand';
 import { BuildWithAiLink } from './BuildWithAiLink';
 import { HeaderPrimaryCta } from './HeaderPrimaryCta';
-import { ProductNav, type ProductNavKey } from './ProductNav';
 import { ShareRail } from './ShareRail';
+import { SITE_ID } from './site';
+import { SiteSwitcher } from './SiteSwitcher';
 import { StartBlankLink } from './StartBlankLink';
 
 // The public site header shared by the marketing landing page, the telemetry
-// dashboard and the help centre so the three read as one product. Brand +
-// apps-menu dropdown on the left, the CTA pair on the right (a secondary
+// dashboard and the help centre so the three read as one product. The logo on the left (hover it for
+// liveworkspace's other sites, SiteSwitcher), the CTA pair on the right (a secondary
 // "Start Blank", a plain link to the wizard whose chosen mode opens with no start
 // screen (StartBlankLink), beside the primary "Choose Template", /new), with the
-// ShareRail pinned to the page edge below. Cross-surface navigation (Help,
-// Explorer, Telemetry, ...) lives in the apps menu, so the header itself
-// carries just those CTAs. The Appearance toggle is never here
+// ShareRail pinned to the page edge below. The Appearance toggle is never here
 // (docs/specs/004-interface-design/appearance.md): it sits on the page-edge rail (xl+), and where there is
 // no gutter for the rail it is left out (the device's own setting applies through System).
 //
-// `productNav` is the current section key for the apps-menu dropdown next to
-// the logo (the landing page passes 'home', which reads as "Home").
 // `center` is an optional slot between the two clusters, shown from `sm` up
 // (the help centre's search box). `actions` replaces the default CTA pair
 // (no surface uses it today). `shareRail` (default true) puts the
@@ -39,7 +36,6 @@ import { StartBlankLink } from './StartBlankLink';
 // `buildWithAi` adds the Build with AI link (desktop only) left of Start Blank: 'link' on a marketing page,
 // 'current' on /ai itself (docs/specs/019-marketing/build-with-ai.md "Entry points").
 export function SiteHeader({
-  productNav,
   ctaSurface,
   center,
   actions,
@@ -47,7 +43,6 @@ export function SiteHeader({
   shareRail = true,
   wide = false,
 }: {
-  productNav?: ProductNavKey;
   ctaSurface?: CtaSurface;
   center?: ReactNode;
   actions?: ReactNode;
@@ -60,10 +55,8 @@ export function SiteHeader({
       <header className="sticky top-0 z-50 h-18 border-y border-slate-200/70 bg-slate-50/80 backdrop-blur dark:border-slate-800/70 dark:bg-slate-950/80 [view-transition-name:site-header]">
         {/* gap-* guarantees breathing room between the left cluster and the CTA
             even when justify-between collapses to zero on a narrow phone (where
-            Brand + the apps-menu dropdown + CTA otherwise sit flush). Mobile
-            also trims the side padding to reclaim width, and the CTA is shrink-0
-            so it never squishes. The dropdown drops its text label on mobile
-            (see ProductNav) so the three never crowd. */}
+            the logo and CTA otherwise sit flush). Mobile also trims the side
+            padding to reclaim width, and the CTA is shrink-0 so it never squishes. */}
         <div
           className={`mx-auto flex h-full items-center justify-between gap-2 px-4 sm:gap-4 ${
             wide ? 'max-w-7xl md:px-8' : 'max-w-6xl sm:px-6'
@@ -72,8 +65,9 @@ export function SiteHeader({
           {/* The bar's controls are under 44px tall; on a touch screen each tap area reaches to 44px
               vertically (touch-target-y, touch-targets.md), never sideways into a neighbour's. */}
           <div className="flex shrink-0 items-center gap-2.5">
-            <Brand href="/" size="md" className="relative touch-target-y" />
-            {productNav ? <ProductNav current={productNav} showOnMobile /> : null}
+            <SiteSwitcher current={SITE_ID}>
+              <Brand href="/" size="md" className="relative touch-target-y" />
+            </SiteSwitcher>
           </div>
           {center ? (
             <div className="hidden min-w-0 flex-1 justify-center sm:flex">
@@ -92,7 +86,7 @@ export function SiteHeader({
   );
 }
 
-// The default CTA pair. Start Blank is hidden on mobile: Brand + dropdown + the primary already fill a
+// The default CTA pair. Start Blank is hidden on mobile: the logo + the primary already fill a
 // narrow bar, and the wizard's own Skip covers the escape. `max-sm:hidden` (a variant, so it wins over the base
 // inline-flex). Beside a centre slot (help's search) it waits for `md`, so the search box keeps room to read on a
 // small tablet. Signed in, the primary is Open Explorer instead (HeaderPrimaryCta).

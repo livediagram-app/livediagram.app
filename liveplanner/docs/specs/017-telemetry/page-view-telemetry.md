@@ -96,7 +96,7 @@ whether or not the document exists.
 - One view per **path change**, from the shared `PageViewTracker` component
   (`@liveplanner/ui`), which reacts to Next's `usePathname`, mounted in each
   app's root layout through a client adapter that hands it a `track()`. The
-  public sites (marketing, help, the dashboard) all mount the shared
+  public sites (marketing, help) both mount the shared
   `PageViewBoot` from `@liveplanner/ui`, wired to their one shared emitter
   (`siteTrack` in `@liveplanner/telemetry-client`); the editor mounts its own
   `PageViewBoot` with its own emitter. A query-only change
@@ -110,14 +110,13 @@ whether or not the document exists.
 
 ## Who emits
 
-All four frontends, each through the shared engine with the same policy as the
+All three frontends, each through the shared engine with the same policy as the
 existing emitters: the build-time `NEXT_PUBLIC_TELEMETRY_ENABLED` gate plus the
 [User preferences](../007-editor/user-preferences.md) per-browser opt-out, which every app on the origin reads from the same
 preferences key.
 
 - **editor** (`apps/live`) and **help centre** (`apps/help`): already emitting.
-- **marketing** (`apps/marketing`) and **the dashboard** (`apps/telemetry`):
-  new emitters. Their _only_ event is the page view: they mount the shared
+- **marketing** (`apps/marketing`): its _only_ event is the page view: it mounts the shared
   `PageViewBoot` and nothing else, and deliberately no error tracking (the
   privacy policy promises page views only). The landing funnel
   ([Landing funnel](../019-marketing/landing-funnel.md)) measures what those pages lead to
@@ -159,7 +158,7 @@ last 7 days against the 7 before), and the **All pages** list of every page
 pages were briefly a stack opening into the per-app lists; a set of rankings
 read side by side on the page is not a stack.
 
-The page-view helpers live in `apps/telemetry/app/page-views.ts`, pure and
+The page-view helpers live in `../liveworkspace/apps/telemetry-dashboard/app/liveplanner/page-views.ts`, pure and
 tested apart from the view.
 
 Page views are events, so they also count toward the window totals and Search

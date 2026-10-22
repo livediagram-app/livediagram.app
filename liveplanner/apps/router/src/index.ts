@@ -6,24 +6,26 @@
 import { applyCachePolicy } from './cache-policy';
 import { legacyEditorRedirect, legacyHelpRedirect } from './legacy-editor-route';
 import { LIVE_ROUTE_SEGMENTS } from '@liveplanner/api-schema';
+import { TELEMETRY_URL } from '@liveworkspace/telemetry';
 
 export interface Env {
   // Production service bindings (absent in the `local` env).
   MARKETING?: Fetcher;
   LIVE?: Fetcher;
   API?: Fetcher;
-  TELEMETRY?: Fetcher;
   HELP?: Fetcher;
   // Local-dev origins (absent in production).
   MARKETING_ORIGIN?: string;
   LIVE_ORIGIN?: string;
   API_ORIGIN?: string;
-  TELEMETRY_ORIGIN?: string;
   HELP_ORIGIN?: string;
   // Set to "staging" on the staging router only (docs/specs/016-platform/staging-environment.md). Marks every
   // response noindex so the public staging mirror can't compete with
   // production in search results. Absent in production and in local dev.
   DEPLOY_ENV?: string;
+  // The central telemetry dashboard /telemetry redirects to (liveworkspace/docs/telemetry.md): unset means
+  // production's, staging and local dev name their own.
+  TELEMETRY_DASHBOARD_URL?: string;
 }
 
 const LIVE_PATH = '/live';
@@ -194,9 +196,9 @@ async function route(request: Request, env: Env): Promise<Response> {
     return forward(request, url, env.LIVE, env.LIVE_ORIGIN, LIVE_PATH);
   }
   if (hasPrefix(url.pathname, TELEMETRY_PATH)) {
-    // The public transparency dashboard (docs/specs/017-telemetry/telemetry.md), a basePath:'/telemetry'
-    // static app — same prefix-strip as the live app's assets.
-    return forward(request, url, env.TELEMETRY, env.TELEMETRY_ORIGIN, TELEMETRY_PATH);
+    // The public transparency dashboard (docs/specs/017-telemetry/telemetry.md) is liveworkspace's now, one
+    // for every app: an old link lands on it with liveplanner picked.
+    return telemetryRedirect(env);
   }
   const legacyHelp = legacyHelpRedirect(url);
   if (legacyHelp) return legacyHelp;
@@ -221,4 +223,12 @@ async function route(request: Request, env: Env): Promise<Response> {
     return Response.redirect(url.toString(), 308);
   }
   return forward(request, url, env.MARKETING, env.MARKETING_ORIGIN);
+}
+
+// Where /telemetry and everything under it now lives: the central dashboard, filtered to liveplanner.
+export function telemetryRedirect(env: Env): Response {
+  const target = new URL(env.TELEMETRY_DASHBOARD_URL || TELEMETRY_URL);
+  target.searchParams.set('app', 'liveplanner.app');
+  // Built by hand: Response.redirect's headers are immutable, and the caching rules still stamp this one.
+  return new Response(null, { status: 301, headers: { Location: target.toString() } });
 }

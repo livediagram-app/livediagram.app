@@ -101,6 +101,10 @@ describe('hosted-vars script', () => {
     expect(buildEnv({ TELEMETRY_ENABLED: 'true', APP_BASE_URL: 'x' })).toEqual([
       'NEXT_PUBLIC_TELEMETRY_ENABLED=true',
     ]);
+    expect(buildEnv({ TELEMETRY_ENABLED: 'true', TELEMETRY_URL: 'https://t.test' })).toEqual([
+      'NEXT_PUBLIC_TELEMETRY_ENABLED=true',
+      'NEXT_PUBLIC_TELEMETRY_URL=https://t.test',
+    ]);
     expect(buildEnv({ APP_BASE_URL: 'x' })).toEqual([]);
   });
 

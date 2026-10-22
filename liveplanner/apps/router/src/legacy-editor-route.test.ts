@@ -14,7 +14,6 @@ function envWithLive() {
     MARKETING: fetcher,
     LIVE: fetcher,
     API: fetcher,
-    TELEMETRY: fetcher,
     HELP: fetcher,
   };
   return { env, urls };

@@ -212,8 +212,11 @@ const TAGS = [
   { name: 'Participants', description: 'Display name and colour for a collaborator.' },
   { name: 'Account', description: 'Account-level data, preferences, and migration.' },
   { name: 'AI', description: 'Optional AI assistant for the active tab.' },
-  { name: 'Telemetry', description: 'Anonymous first-party usage events and the public summary.' },
   { name: 'Meta', description: 'Capabilities, link unfurl, and this document.' },
+  {
+    name: 'Telemetry',
+    description: 'Anonymous first-party usage events, passed on to liveworkspace.',
+  },
 ];
 
 /** Build the full OpenAPI 3.1 document. Deterministic; safe to memoise. */

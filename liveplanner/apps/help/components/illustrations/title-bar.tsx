@@ -146,7 +146,7 @@ export function TitleBarParts() {
         className="stroke-slate-200"
         strokeWidth={1.2}
       />
-      {/* Logo and the section menu (ProductNav), which reads "Editor" here. */}
+      {/* The logo, with the chevron of its site switcher (liveworkspace/docs/site-switcher.md). */}
       <rect x={10} y={y + 10} width={20} height={20} rx={5} className="fill-brand-500" />
       <path
         d={`M15 ${y + 23} l4 -6 l3 4 l3 -3`}
@@ -157,10 +157,10 @@ export function TitleBarParts() {
         strokeLinejoin="round"
       />
       <Label x={40} y={y + 21} size={10} weight={600} tone="body">
-        Editor
+        liveplanner
       </Label>
       <path
-        d={`M76 ${y + 19} l3 3 l3 -3`}
+        d={`M102 ${y + 19} l3 3 l3 -3`}
         className="stroke-slate-400"
         fill="none"
         strokeWidth={1.3}

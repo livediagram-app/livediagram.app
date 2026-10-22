@@ -6,5 +6,5 @@ import { SiteHeader } from '@livediagram/ui';
 // app's max-w-7xl pages, so the logo lines up with the hero below, and keeps the page-edge rail (its Appearance
 // toggle; sharing is off, like help's) until 2xl, where there is a gutter for it beside the grid.
 export function Header() {
-  return <SiteHeader productNav="community" ctaSurface="Community" wide shareRail={false} />;
+  return <SiteHeader ctaSurface="Community" wide shareRail={false} />;
 }

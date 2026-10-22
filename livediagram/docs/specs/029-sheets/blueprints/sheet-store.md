@@ -344,7 +344,7 @@ LIMIT SHEET_EXPIRY_BATCH` (the partial index), deletes them in one batch (cells 
   (`formatsCopied`). Schemas in
   `packages/agent-verbs/src/mcp/sheet-schema.ts`; the server instructions in `packages/agent-verbs/src/mcp/schema.ts` mention them.
 - Telemetry: `Mcp·Used·ListSheets|ReadSheet|ChangeSheet|AddSheet` and `Cli·Used·Sheet*`, charted in
-  `apps/telemetry` (`apps/telemetry/app/catalogue/connections.ts`, `cli-commands.ts`).
+  `apps/telemetry` (liveworkspace/apps/telemetry-dashboard/app/livediagram/catalogue/connections.ts, `cli-commands.ts`).
 - Docs: `docs/specs/015-api/mcp-server.md` §4.9c, read-only table and output table; `docs/specs/015-api/cli.md`.
 
 ## Errors and edge cases

@@ -357,7 +357,7 @@ escalation. Two options were weighed:
 
 - **(a) First-party origin gate — rejected as the sole fix.** Accept
   `X-Owner-Id` only on same-origin requests via the `Origin` / `Sec-Fetch-Site`
-  signals (as telemetry does, `origin-check.ts`). This does **not** stop the
+  signals (as the telemetry ingest did). This does **not** stop the
   attack: a non-browser client sets the `Origin` header freely, so a `curl`
   caller forges `Origin: https://liveplanner.app` and passes the gate. Origin
   is hygiene, not an authorization boundary.

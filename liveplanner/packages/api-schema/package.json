@@ -20,7 +20,8 @@
     "@liveplanner/document": "workspace:*",
     "@liveplanner/forms": "workspace:*",
     "@liveplanner/items": "workspace:*",
-    "@liveplanner/sheets": "workspace:*"
+    "@liveplanner/sheets": "workspace:*",
+    "@liveworkspace/telemetry": "workspace:*"
   },
   "devDependencies": {
     "@liveplanner/oxlint-config": "workspace:*",

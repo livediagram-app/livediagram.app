@@ -138,7 +138,7 @@ The stack serves whatever `apps/live/out` holds and never rebuilds it, so locall
      URL);
    - proxy `/api/*` to the api worker, WebSocket upgrades included (the realtime room), so the app is same-origin (no CORS
      surprises, mirroring the router);
-   - serve `apps/help/out` under `/help/*` and `apps/telemetry/out` under `/telemetry/*`, their basePaths, as the router mounts them; a missing build answers a logged 404;
+   - serve `apps/help/out` under `/help/*` and `../liveworkspace/apps/telemetry-dashboard/out` under `/telemetry/*`, their basePaths, as the router mounts them; a missing build answers a logged 404;
    - cache as production does ([Stale builds](../016-platform/stale-builds.md) "Caching rules"): every
      file goes out as Cloudflare's asset server sends it (`public, max-age=0, must-revalidate`, an
      ETag, 304 on a match), then through the router's rules, run from the router's own

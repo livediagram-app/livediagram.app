@@ -21,7 +21,7 @@ export default defineProject({
   // scope), so any .tsx module a test touches (e.g. the template
   // preview switches) must be transformed the same way here or it
   // throws "React is not defined" at render time.
-  esbuild: { jsx: 'automatic' },
+  oxc: { jsx: { runtime: 'automatic' } },
   // The e2e/ Playwright smoke suite (docs/specs/003-system-architecture/e2e-smoke.md) uses the same `.spec.ts`
   // extension but runs under Playwright, not Vitest — keep it out of
   // the unit run (it has its own `test:e2e` script).

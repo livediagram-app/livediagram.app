@@ -1,0 +1,64 @@
+name = "liveworkspace-telemetry"
+main = "src/index.ts"
+compatibility_date = "2026-05-29"
+# Only /telemetry on liveworkspace.app: the rest of the zone is someone else's.
+routes = [{ pattern = "liveworkspace.app/telemetry*", zone_name = "liveworkspace.app" }]
+
+# Secrets (wrangler secret put): each app's Worker key, sent as X-Telemetry-Key.
+#   TELEMETRY_KEY_LIVEDIAGRAM   shared with livediagram's api and mcp Workers as TELEMETRY_KEY
+#   TELEMETRY_KEY_LIVEPLANNER   shared with liveplanner's api and mcp Workers as TELEMETRY_KEY
+[vars]
+ENVIRONMENT = "production"
+TELEMETRY_ENABLED = "true"
+
+# The dashboard: the static export from ../telemetry-dashboard (build that first).
+[assets]
+directory = "../telemetry-dashboard/out"
+binding = "ASSETS"
+not_found_handling = "404-page"
+run_worker_first = true
+
+# Its own database, apart from accounts and from every app's own data.
+[[d1_databases]]
+binding = "TELEMETRY_DB"
+database_name = "liveworkspace-telemetry"
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "migrations"
+
+# Per-network budget for browser batches: counted at Cloudflare's edge, so it holds across isolates.
+[[ratelimits]]
+name = "EVENTS_RATE_LIMITER"
+namespace_id = "1101"
+simple = { limit = 120, period = 60 }
+
+# Retention: once a day, drop what is older than 60 days.
+[triggers]
+crons = ["17 3 * * *"]
+
+[env.staging]
+name = "liveworkspace-telemetry-staging"
+routes = [{ pattern = "staging.liveworkspace.app/telemetry*", zone_name = "liveworkspace.app" }]
+
+[env.staging.vars]
+ENVIRONMENT = "staging"
+TELEMETRY_ENABLED = "true"
+
+[env.staging.assets]
+directory = "../telemetry-dashboard/out"
+binding = "ASSETS"
+not_found_handling = "404-page"
+run_worker_first = true
+
+[[env.staging.d1_databases]]
+binding = "TELEMETRY_DB"
+database_name = "liveworkspace-telemetry-staging"
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "migrations"
+
+[[env.staging.ratelimits]]
+name = "EVENTS_RATE_LIMITER"
+namespace_id = "2101"
+simple = { limit = 120, period = 60 }
+
+[env.staging.triggers]
+crons = ["17 3 * * *"]

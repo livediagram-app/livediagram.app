@@ -32,6 +32,7 @@
     "@liveplanner/sheets": "workspace:*",
     "@liveplanner/templates": "workspace:*",
     "@liveworkspace/auth-client": "workspace:*",
+    "@liveworkspace/telemetry": "workspace:*",
     "jose": "^6.2.12"
   },
   "devDependencies": {

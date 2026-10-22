@@ -45,7 +45,7 @@ Each AI request optionally includes a `history` array of prior `{ role, content 
   leaving the flag unset.
 - Per-IP rate limiter (`AI_RATE_LIMITER` binding, 20 req/60 s). Optional — absent on
   a deployment it falls through to "allow", matching the pattern used by
-  `WRITE_RATE_LIMITER` and `EVENTS_RATE_LIMITER`.
+  `WRITE_RATE_LIMITER`.
 - Optional `Origin` allow-list (`AI_ALLOWED_ORIGINS`). When set, every `/api/ai` request
   must carry an `Origin` header whose value matches one of the entries; otherwise the
   worker returns `403 { error: 'origin_not_allowed' }` before reaching OpenAI. Unset =

@@ -109,6 +109,10 @@ describe('hosted-vars script', () => {
       'NEXT_PUBLIC_TELEMETRY_ENABLED=true',
     ]);
     expect(buildEnv({ IMAGE_MAX_PER_OWNER: '1' })).toEqual([]);
+    // The frontends send to the same telemetry service as the api.
+    expect(buildEnv({ TELEMETRY_URL: 'https://staging.liveworkspace.app/telemetry' })).toEqual([
+      'NEXT_PUBLIC_TELEMETRY_URL=https://staging.liveworkspace.app/telemetry',
+    ]);
   });
 
   it('hands the Google client id to the frontends (docs/specs/022-drive-mirror/drive-mirror.md)', async () => {

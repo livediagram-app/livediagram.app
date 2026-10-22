@@ -11,6 +11,9 @@ import type { Metadata, Viewport } from 'next';
 // metadata").
 export const SITE_URL = 'https://liveplanner.app';
 
+// This site in liveworkspace's list of sites (@liveworkspace/sites), marked in the logo's switcher.
+export const SITE_ID = 'liveplanner.app' as const;
+
 // The product / site name: the metadata siteName and the JSON-LD name.
 export const SITE_NAME = 'liveplanner';
 

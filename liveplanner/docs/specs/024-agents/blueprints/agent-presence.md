@@ -60,7 +60,7 @@ Scope, by file:
 | `apps/live/components/primitives/ParticipantAvatar.tsx`                                                                   | The status line in the hover card and the accessible name                                                                                               |
 | `apps/live/components/dialogs/CollaboratorsDialog.tsx`                                                                    | The status line on a row                                                                                                                                |
 | `apps/live/components/canvas/AgentFocusOverlay.tsx` (+ test), `CanvasElementsLayer.tsx`, `EditorView.tsx`                 | `AgentFocusOverlay` beneath the remote cursors, fed by `AgentFocusContext`                                                                              |
-| `apps/telemetry/app/catalogue/`                                                                                           | The `Present` series on the Agent stack the agent-changesets blueprint adds                                                                             |
+| `../liveworkspace/apps/telemetry-dashboard/app/liveplanner/catalogue/`                                                    | The `Present` series on the Agent stack the agent-changesets blueprint adds                                                                             |
 | `packages/api-schema/src/index.ts`                                                                                        | `MAX_PARTICIPANT_NAME_LEN`, `MAX_COLOR_LEN`, moved from `apps/api/src/limits.ts` so the editor clamps to them                                           |
 
 ## Domain and naming
@@ -460,7 +460,7 @@ Refusals are logged once each, at the route family's entry (`logRefusal` in `app
 answer's status and error code.
 
 Telemetry: `Agent·Present`, type `frontDoorOf(request)`, written with `reportServerEvent` in `waitUntil` when a
-`PUT` creates an entry, as the spec says. `Agent·Present` joins `SERVER_EMITTED_EVENT_PAIRS`, so `/api/events` drops a
+`PUT` creates an entry, as the spec says. `Agent·Present` joins `SERVER_EMITTED_EVENT_PAIRS`, so the central ingest drops a
 client's copy.
 
 ## Testing

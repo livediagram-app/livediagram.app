@@ -122,8 +122,8 @@ The slots:
 - `Closing`: the shared "Time to start" band (`StartDrawingCta`).
 - `Card`: the Start drawing card at the foot of the comparison and FAQ pages.
 
-A link into `/new` from a public page with no source (the apps menu's Editor
-item, a link inside a help article) is deliberately not a CTA and is not
+A link into `/new` from a public page with no source (the Explorer
+footer's Editor link, a link inside a help article) is deliberately not a CTA and is not
 counted. Adding a CTA means adding its slot to `CTA_SOURCES` and building its
 `href` with `ctaHref(href, source)`; `cta-sources.test.ts` pins the table.
 

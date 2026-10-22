@@ -53,7 +53,13 @@ afterEach(() => {
 });
 
 const makeEmitter = (over: Partial<Parameters<Emitter['createTelemetryEmitter']>[0]> = {}) =>
-  mod.createTelemetryEmitter({ apiBase: '/api', enabled: true, isOptedIn: () => true, ...over });
+  mod.createTelemetryEmitter({
+    url: 'https://telemetry.test',
+    app: 'livediagram.app',
+    enabled: true,
+    isOptedIn: () => true,
+    ...over,
+  });
 
 const sentEvents = (call: unknown[]) =>
   (JSON.parse((call[1] as { body: string }).body) as { events: unknown[] }).events;
@@ -68,8 +74,14 @@ describe('createTelemetryEmitter', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const sent: unknown[] = fetchMock.mock.calls[0]!;
     const [url, init] = sent;
-    expect(url).toBe('/api/events');
-    expect((init as { keepalive: boolean }).keepalive).toBe(true);
+    expect(url).toBe('https://telemetry.test/api/events');
+    expect(init).toMatchObject({
+      keepalive: true,
+      credentials: 'omit',
+      // A CORS simple request: the cross-site service needs no preflight.
+      headers: { 'Content-Type': 'text/plain' },
+    });
+    expect(JSON.parse((init as { body: string }).body)).toMatchObject({ app: 'livediagram.app' });
     expect(sentEvents(fetchMock.mock.calls[0]!)).toEqual([
       { category: 'UI', action: 'Opened', type: 'Settings' },
       { category: 'UI', action: 'Closed', type: null }, // missing type -> null
@@ -109,7 +121,7 @@ describe('createTelemetryEmitter', () => {
     documentTarget.visibilityState = 'hidden';
     documentTarget.fire('visibilitychange');
     expect(sendBeacon).toHaveBeenCalledTimes(1);
-    expect(sendBeacon.mock.calls[0]![0]).toBe('/api/events');
+    expect(sendBeacon.mock.calls[0]![0]).toBe('https://telemetry.test/api/events');
     // The beacon drained the buffer; the pending timer sends nothing.
     vi.advanceTimersByTime(10_000);
     expect(fetchMock).not.toHaveBeenCalled();
@@ -450,7 +462,11 @@ describe('createLazyTrack', () => {
 
   it('sends through the shared engine when enabled and opted in', () => {
     withPrefs(null);
-    const track = mod.createLazyTrack({ apiBase: '/api', enabled: true });
+    const track = mod.createLazyTrack({
+      url: 'https://telemetry.test',
+      app: 'livediagram.app',
+      enabled: true,
+    });
     track('Page', 'View', '/faq');
     vi.advanceTimersByTime(10_000);
     expect(fetchMock).toHaveBeenCalledOnce();
@@ -461,9 +477,17 @@ describe('createLazyTrack', () => {
 
   it('honours the stored opt-out and the build gate', () => {
     withPrefs(JSON.stringify({ telemetryEnabled: false }));
-    mod.createLazyTrack({ apiBase: '/api', enabled: true })('Page', 'View', '/');
+    mod.createLazyTrack({ url: 'https://telemetry.test', app: 'livediagram.app', enabled: true })(
+      'Page',
+      'View',
+      '/',
+    );
     withPrefs(null);
-    mod.createLazyTrack({ apiBase: '/api', enabled: false })('Page', 'View', '/');
+    mod.createLazyTrack({ url: 'https://telemetry.test', app: 'livediagram.app', enabled: false })(
+      'Page',
+      'View',
+      '/',
+    );
     vi.advanceTimersByTime(10_000);
     expect(fetchMock).not.toHaveBeenCalled();
   });

@@ -155,10 +155,11 @@ describe('track gate', () => {
     await vi.runAllTimersAsync();
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(fetchMock).toHaveBeenCalledWith(
-      '/api/events',
+      'https://liveworkspace.app/telemetry/api/events',
       expect.objectContaining({
         method: 'POST',
         body: JSON.stringify({
+          app: 'liveplanner.app',
           events: [{ category: 'Element', action: 'Added', type: 'Square' }],
         }),
       }),
@@ -185,9 +186,10 @@ describe('track gate', () => {
     vi.advanceTimersByTime(10_001);
     await vi.runAllTimersAsync();
     expect(fetchMock).toHaveBeenCalledWith(
-      '/api/events',
+      'https://liveworkspace.app/telemetry/api/events',
       expect.objectContaining({
         body: JSON.stringify({
+          app: 'liveplanner.app',
           events: [{ category: 'Session', action: 'Joined', type: null }],
         }),
       }),
