@@ -19,9 +19,6 @@ const CATEGORY_ROWS: Record<string, Row[]> = {
     { caption: 'Annotation', blurb: 'A marker that holds a note' },
   ],
   Draw: [
-    { caption: 'Freehand', blurb: 'Sketch a stroke, left as drawn', key: 'P' },
-    { caption: 'Shape Pen', blurb: 'A rough shape snaps to the real one', key: '6' },
-    { caption: 'Highlighter', blurb: 'A wide translucent marker stroke' },
     { caption: 'Polygon', blurb: 'Straight edges, point by point' },
     { caption: 'Arrow', blurb: 'A connector you place by hand', key: 'A' },
     { caption: 'Line', blurb: 'A plain line, no pointers' },

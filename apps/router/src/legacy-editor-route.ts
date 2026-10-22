@@ -14,8 +14,8 @@ export function legacyEditorRedirect(url: URL): Response | null {
 }
 
 // Renamed help articles: the ones about the container moved when it became a document,
-// Whiteboards became Draw mode, the Highlighter went from a selection mode to a Draw tile, and
-// the Activity Panel category went when the panel was removed (Undo and Redo moved to Canvas;
+// Whiteboards became Draw mode, whose pens, eraser, Highlighter, shape recognition and tour were then
+// retired (their articles land on the nearest article left), and the Activity Panel category went when the panel was removed (Undo and Redo moved to Canvas;
 // its other articles land on Undo), Infographics became Illustrate mode and then Pages mode,
 // Facilitate mode became Workshop mode, and the Welcome Tour became the Diagram Tour. The old
 // addresses are links people have already shared (docs/specs/018-help/help-app.md, "Renamed articles").
@@ -26,7 +26,12 @@ const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
   'search-panel/the-search-panel/search-diagrams': 'search-panel/the-search-panel/search-documents',
   'getting-started/sharing-your-diagram': 'getting-started/sharing-your-document',
   'developers/working-with-diagrams': 'developers/working-with-documents',
-  'canvas/whiteboards': 'canvas/draw-mode',
+  'canvas/whiteboards': 'canvas/editor-modes',
+  'canvas/draw-mode': 'canvas/editor-modes',
+  'canvas/draw-mode/draw-tour': 'canvas/editor-modes',
+  'palette/tools/highlighter': 'palette/tools',
+  'palette/tools/drawing/shape-recognition': 'palette/tools/drawing',
+  'selection-modes/eraser': 'selection-modes',
   'canvas/infographics': 'canvas/pages-mode',
   'canvas/infographics/infographic-layouts': 'canvas/pages-mode/infographic-layouts',
   'canvas/infographics/exporting-infographics': 'canvas/pages-mode/exporting-pages',
@@ -40,7 +45,7 @@ const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
   'canvas/illustrate/tab-windows': 'canvas/pages-mode/tab-windows',
   'canvas/facilitate-mode': 'canvas/workshop-mode',
   'canvas/facilitate-mode/facilitate-tour': 'canvas/workshop-mode/workshop-tour',
-  'selection-modes/highlighter': 'palette/tools/highlighter',
+  'selection-modes/highlighter': 'palette/tools',
   'activity-panel': 'canvas/undo',
   'activity-panel/what-it-is': 'canvas/undo',
   'activity-panel/how-it-works': 'canvas/undo',

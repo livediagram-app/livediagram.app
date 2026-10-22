@@ -24,15 +24,6 @@ const MODES: { name: string; glyph: ReactNode }[] = [
     ),
   },
   {
-    name: 'Eraser',
-    glyph: (
-      <g transform="rotate(-40)">
-        <rect x={-7} y={-4} width={14} height={8} rx={2} className={ICON} strokeWidth={1.5} />
-        <line x1={-1} y1={-4} x2={-1} y2={4} className="stroke-current" strokeWidth={1.5} />
-      </g>
-    ),
-  },
-  {
     name: 'Laser',
     glyph: (
       <g>

@@ -310,11 +310,11 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
             Yes. Switch a tab to Draw for a plain whiteboard: three pressure-sensitive markers,
             text, an eraser and shapes, on a plain, dotted or grid board in light or dark. With a
             stylus, a resting palm never leaves a mark. See{' '}
-            <a href="/help/canvas/draw-mode/">Draw mode</a>.
+            <a href="/help/canvas/editor-modes/">Editor modes</a>.
           </>
         ),
         aText:
-          'Yes. Switch a tab to Draw for a plain whiteboard: three pressure-sensitive markers, text, an eraser and shapes, on a plain, dotted or grid board in light or dark. With a stylus, a resting palm never leaves a mark. See Draw mode.',
+          'Yes. Switch a tab to Draw for a plain whiteboard: three pressure-sensitive markers, text, an eraser and shapes, on a plain, dotted or grid board in light or dark. With a stylus, a resting palm never leaves a mark. See Editor modes.',
       },
       {
         q: 'Is there a spreadsheet?',

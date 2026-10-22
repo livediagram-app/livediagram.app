@@ -1,4 +1,4 @@
-// Feature illustration for Draw mode's dock (docs/specs/023-draw-mode/draw-mode.md): the drawing tools on their keys
+// Feature illustration for Draw mode's dock (docs/specs/007-editor/editor-modes.md): the drawing tools on their keys
 // and the shapes you pin beside them.
 
 import { PANEL, SHADOW, Scene, TEXT_BODY, TEXT_MUTED } from './canvas-marks';

@@ -18,7 +18,6 @@ import {
   lucidePalette,
   lucidePanelLeft,
   lucidePanelsTopLeft,
-  lucidePencilLine,
   lucideRoute,
   lucideScanEye,
   lucideSearch,
@@ -123,12 +122,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   hand: (
     <Glyph>
       <path d="M8 11V5.5a1.5 1.5 0 013 0V10m0-.5V4.5a1.5 1.5 0 013 0V10m0-.5V6a1.5 1.5 0 013 0v6a7 7 0 01-7 7h-1a6 6 0 01-5-3l-2.5-4a1.6 1.6 0 012.7-1.7L8 13" />
-    </Glyph>
-  ),
-  eraser: (
-    <Glyph>
-      <path d="M4 14l6-6 7 7-4 4H8l-4-4a1 1 0 010-1.4z" />
-      <path d="M10 8l6 6M9 19h11" />
     </Glyph>
   ),
   'format-painter': (
@@ -334,18 +327,13 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M9.5 10a2.5 2.5 0 015 0c0 1.7-2.5 2-2.5 3.5M12 17h.01" />
     </Glyph>
   ),
+  // A polygon with its placed points.
   drawing: (
     <Glyph>
-      <Prims prims={lucidePencilLine} />
-    </Glyph>
-  ),
-  // A chisel tip and a broad swipe. `write` is a pen nib and `drawing` is a
-  // pencil, so the tip shape is what separates all three.
-  highlighter: (
-    <Glyph>
-      <path d="M8 13.5l6.5-8.5a2 2 0 013 2.6L11 16z" />
-      <path d="M8 13.5L6 17l5-1" />
-      <path d="M3.5 20.5h17" />
+      <path d="M5 18l2-11 10-3 3 9-7 7z" />
+      <circle cx="7" cy="7" r="1.3" fill="currentColor" stroke="none" />
+      <circle cx="17" cy="4" r="1.3" fill="currentColor" stroke="none" />
+      <circle cx="13" cy="20" r="1.3" fill="currentColor" stroke="none" />
     </Glyph>
   ),
   'selecting-and-grouping': (
@@ -380,7 +368,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <rect x="8" y="13.5" width="8" height="8" rx="1" transform="rotate(-3 12 17.5)" />
     </Glyph>
   ),
-  // A board on its stand with a marker scribble.
   // One canvas, two ways of working on it: a clean shape on one side of the split, a hand-drawn
   // stroke on the other.
   'editor-modes': (
@@ -389,13 +376,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M3 3l18 18" />
       <rect x="13.5" y="5.5" width="5" height="5" rx="1" />
       <path d="M5.5 17.5c1-2.2 2-2.2 2.8 0s1.9 2.2 2.8-0.3" />
-    </Glyph>
-  ),
-  'draw-mode': (
-    <Glyph>
-      <rect x="3" y="3.5" width="18" height="12" rx="1.5" />
-      <path d="M6.5 10c1-2.2 2.3-2.2 3 0s2 2.2 3 0 2-2.2 3 0" />
-      <path d="M9 15.5 7.5 21M15 15.5l1.5 5.5" />
     </Glyph>
   ),
   // A board of three columns, a card raised in the middle one: work on the move.
@@ -1158,14 +1138,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   'shape-markers': (
     <Glyph>
       <Prims prims={lucideCircleDot} />
-    </Glyph>
-  ),
-  // The rough sketch, with the snap that cleans it up. One sparkle, not two: the
-  // second sat low enough that its stroke clipped the viewBox edge.
-  'shape-recognition': (
-    <Glyph>
-      <path d="M4.5 6.5l13 .8-1 10.4-11.4-.6z" />
-      <path d="M19 3.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z" />
     </Glyph>
   ),
   // Palette → Collaborate elements. Each draws what its own article describes

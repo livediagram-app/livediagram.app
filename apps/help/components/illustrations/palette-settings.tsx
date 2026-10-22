@@ -5,9 +5,9 @@
 
 import { Scene, Shape, SelectionBox } from './primitives';
 
-// The four default quick-add options, drawn as the strip's icon buttons (Duplicate, Arrow,
-// Pencil, Text), left to right.
-function OptionGlyph({ kind }: { kind: 'duplicate' | 'arrow' | 'pencil' | 'text' }) {
+// The three default quick-add options, drawn as the strip's icon buttons (Duplicate, Arrow,
+// Text), left to right.
+function OptionGlyph({ kind }: { kind: 'duplicate' | 'arrow' | 'text' }) {
   const s = {
     className: 'stroke-slate-600',
     strokeWidth: 1.6,
@@ -25,8 +25,6 @@ function OptionGlyph({ kind }: { kind: 'duplicate' | 'arrow' | 'pencil' | 'text'
       );
     case 'arrow':
       return <path d="M-5 5 L5 -5 M-1 -5 H5 V1" {...s} />;
-    case 'pencil':
-      return <path d="M-5 5 L-4 1 L3 -6 L6 -3 L-1 4 Z" {...s} />;
     case 'text':
       return <path d="M-5 -5 H5 M0 -5 V6" {...s} />;
   }
@@ -35,7 +33,7 @@ function OptionGlyph({ kind }: { kind: 'duplicate' | 'arrow' | 'pencil' | 'text'
 /** Quick-add on hover: the selected element's right-hand "+" with the pointer resting on it and
  *  its menu already open beside it, no click needed: a column of options, as on either side edge. */
 export function QuickAddHoverMenu() {
-  const opts = ['duplicate', 'arrow', 'pencil', 'text'] as const;
+  const opts = ['duplicate', 'arrow', 'text'] as const;
   return (
     <Scene w={420} h={210}>
       <Shape x={48} y={78} w={112} h={60} accent label="Idea" />
@@ -75,15 +73,15 @@ export function QuickAddHoverMenu() {
       {/* Its menu: on a side edge the options stand in a column beside the "+". */}
       <rect
         x={198}
-        y={44}
+        y={60}
         width={34}
-        height={128}
+        height={96}
         rx={8}
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
       />
       {opts.map((k, i) => (
-        <g key={k} transform={`translate(215 ${60 + i * 32})`}>
+        <g key={k} transform={`translate(215 ${76 + i * 32})`}>
           <OptionGlyph kind={k} />
         </g>
       ))}

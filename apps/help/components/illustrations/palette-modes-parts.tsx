@@ -45,21 +45,6 @@ export function HandGlyph({ on = false }: { on?: boolean }) {
   );
 }
 
-/** An eraser block glyph. */
-export function EraserGlyph({ on = false }: { on?: boolean }) {
-  return (
-    <g
-      className={on ? 'stroke-white' : 'stroke-slate-500'}
-      strokeWidth={1.5}
-      fill="none"
-      strokeLinejoin="round"
-    >
-      <path d="M-6 4 L0 -2 a2 2 0 0 1 3 0 l3 3 a2 2 0 0 1 0 3 L4 6 H-2 Z" />
-      <path d="M-2 6 L-6 2" />
-    </g>
-  );
-}
-
 /** A paint-roller / brush glyph (Format Painter). */
 export function PainterGlyph({ on = false }: { on?: boolean }) {
   return (

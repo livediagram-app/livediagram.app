@@ -1,4 +1,4 @@
-// Feature art for the Whiteboard category's pen cards (docs/specs/023-draw-mode/draw-mode.md): the Path
+// Feature art for the Whiteboard category's pen cards (docs/specs/007-editor/editor-modes.md): the Path
 // tool and palm rejection. Split from ./whiteboard, whose palette it shares.
 
 import { at, INK, Keycap, MUTED, Pill, Stage, SURFACE, ToolStrip } from './mode-parts';
