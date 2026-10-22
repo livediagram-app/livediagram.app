@@ -103,7 +103,7 @@ export function RedirectingCard() {
 
 // ---------------------------------------------------------------------
 // Notice shown on the auth routes when Clerk isn't configured for the
-// deployment (self-host path, no NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY).
+// deployment (no NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY).
 // The editor still works — only sign-up / sign-in are off — so the
 // CTA points back to the editor's welcome flow.
 // ---------------------------------------------------------------------

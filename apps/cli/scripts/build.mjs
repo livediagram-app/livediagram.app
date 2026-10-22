@@ -97,7 +97,7 @@ const rule = '-'.repeat(78);
 await writeFile(
   join(dist, 'THIRD_PARTY_LICENSES'),
   [
-    'liveplanner bundles the following open-source packages. Their licences ask for these notices to travel with it.',
+    'liveplanner bundles the following third-party packages. Their licences ask for these notices to travel with it.',
     ...notices.map(
       (n) =>
         `${rule}\n${n.name} ${n.version} (${n.licence})\n\n${n.text || `Licensed under ${n.licence}.`}`,
@@ -114,7 +114,7 @@ await writeFile(
       name: source.name,
       version: source.version,
       description: 'Read, build, edit and discuss liveplanner documents from the terminal.',
-      license: 'MIT',
+      license: 'UNLICENSED',
       type: 'module',
       bin: { liveplanner: 'liveplanner.mjs' },
       files: [
@@ -126,12 +126,6 @@ await writeFile(
       ],
       engines: { node: '>=22' },
       homepage: 'https://liveplanner.app',
-      repository: {
-        type: 'git',
-        url: 'git+https://github.com/liveplanner-app/liveplanner.app.git',
-        directory: 'apps/cli',
-      },
-      bugs: 'https://github.com/liveplanner-app/liveplanner.app/issues',
       keywords: ['diagram', 'cli', 'agents', 'liveplanner'],
     },
     null,

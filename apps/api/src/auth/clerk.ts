@@ -89,7 +89,7 @@ export async function getClerkIdentity(env: Env, request: Request): Promise<Cler
     // configured we also assert the `iss` / `aud` claims, so a validly-signed
     // token from a different Clerk instance/tenant sharing the JWKS host — or
     // one minted for a different audience/app — can't be replayed here. Both
-    // are left optional (unset → current behaviour) so self-host keeps working;
+    // are left optional (unset → current behaviour) so a deployment without it keeps working;
     // production should set CLERK_ISSUER (and CLERK_AUDIENCE if configured in
     // Clerk).
     const verifyOptions: { clockTolerance: number; issuer?: string; audience?: string } = {

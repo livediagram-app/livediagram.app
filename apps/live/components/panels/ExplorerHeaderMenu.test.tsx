@@ -19,18 +19,19 @@ function openMenu() {
 
 describe('ExplorerHeaderMenu', () => {
   // Third-party licences (docs/specs/002-project-scope/third-party-licences.md).
-  it('offers Licences beside GitHub in the app band', () => {
+  it('offers Licences before Settings in the app band, and no source-code link', () => {
     openMenu();
     const menu = screen.getByRole('menu');
     const rows = within(menu)
       .getAllByRole('menuitem')
       .map((row) => row.textContent);
-    const github = rows.indexOf('GitHub');
-    expect(github).toBeGreaterThan(-1);
-    expect(rows[github + 1]).toBe('Licences');
+    const licences = rows.indexOf('Licences');
+    expect(licences).toBeGreaterThan(-1);
+    expect(rows[licences + 1]).toBe('Settings');
+    expect(rows).not.toContain('GitHub');
   });
 
-  it('opens the licences page in a new tab, as GitHub does', () => {
+  it('opens the licences page in a new tab', () => {
     const open = vi.spyOn(window, 'open').mockReturnValue(null);
     openMenu();
     fireEvent.click(within(screen.getByRole('menu')).getByRole('menuitem', { name: 'Licences' }));

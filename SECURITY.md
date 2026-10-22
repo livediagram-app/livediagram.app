@@ -2,22 +2,21 @@
 
 ## Reporting a vulnerability
 
-Please report security vulnerabilities **privately** through GitHub:
+Please report security vulnerabilities **privately** by email to
+**[security@liveplanner.app](mailto:security@liveplanner.app)**.
 
-**[Report a vulnerability](https://github.com/liveplanner-app/liveplanner.app/security/advisories/new)**
-
-Do not open a public issue, discussion or pull request for a security problem.
+Do not disclose a security problem publicly before we have had a chance to fix it.
 
 The full policy, covering scope, rules for testing, safe harbour and what to expect, is at
 [liveplanner.app/help/policies/report-a-vulnerability](https://liveplanner.app/help/policies/report-a-vulnerability/).
 
 In short:
 
-- **In scope:** the hosted service at liveplanner.app (and the subdomains we run, such as `mcp.liveplanner.app`) and the source code in this repository.
-- **Out of scope:** third-party services (Clerk, Cloudflare, Resend, GitHub), self-hosted copies run by others, and findings with no demonstrated security impact.
+- **In scope:** the hosted service at liveplanner.app and the subdomains we run, such as `mcp.liveplanner.app`, plus the published liveplanner CLI.
+- **Out of scope:** third-party services (Clerk, Cloudflare, Resend), and findings with no demonstrated security impact.
 - **Safe harbour:** good-faith research that follows the policy is authorised, and we will not take legal action over it.
-- liveplanner is free with no paid tier, so there is **no bug bounty** and **no guaranteed response time**. Every report is read, handled in good faith, and credited in the published advisory unless you would rather it wasn't.
+- liveplanner is free with no paid tier, so there is **no bug bounty** and **no guaranteed response time**. Every report is read, handled in good faith, and credited when the fix ships unless you would rather it wasn't.
 
 ## Supported versions
 
-Only the latest `main` (what liveplanner.app runs) receives security fixes. Self-hosters should stay up to date with `main`.
+Only what liveplanner.app runs (the latest `main`) receives security fixes.

@@ -34,7 +34,7 @@ const CAPTION_HEIGHT = 44;
 const GAP = 24;
 const CAPTION_MAX = 40;
 
-// The caller's gallery, or null when this server keeps no images (a self-host without R2 answers 503).
+// The caller's gallery, or null when this server keeps no images (a deployment without R2 answers 503).
 async function readGallery(env: Env, token: string): Promise<ImageSummary[] | null> {
   try {
     return (await apiJson<{ images?: ImageSummary[] }>(env, token, '/images')).images ?? [];

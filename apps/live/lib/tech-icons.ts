@@ -16,8 +16,7 @@
 // line-art glyph (the AWS resource-icon visual language, applied uniformly
 // for a cohesive palette). It is NOT the verbatim vendor asset pack — that
 // keeps the bundle small, renders crisply at icon size, and avoids
-// redistributing proprietary SVGs from a public MIT repo (docs/specs/002-project-scope/open-source-and-business-model.md,
-// docs/specs/002-project-scope/secrets-policy.md). Swapping in a vendor's official SVG later is a per-id edit.
+// redistributing vendors' proprietary SVGs (docs/specs/002-project-scope/third-party-licences.md). Swapping in a vendor's official SVG later is a per-id edit.
 //
 // This module is the SYNCHRONOUS API surface only. The heavy per-icon data
 // (colour + SVG markup) lives in @liveplanner/icons/tech-icon-catalog and

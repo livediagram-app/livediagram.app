@@ -31,7 +31,7 @@ import { gateGrant, requireOwner, type RouteContext } from './context';
 // Parse a positive-integer cap from a wrangler.toml [vars] entry.
 // Returns null when the string is missing, blank, non-numeric, or
 // not strictly positive, so callers treat "unset" and "0" and
-// "garbage" identically as "no cap" (the OSS self-host default per
+// "garbage" identically as "no cap" (the unconfigured default per
 // docs/specs/009-elements/images.md).
 export function parsePositiveCap(raw: string | undefined): number | null {
   if (!raw) return null;
@@ -62,7 +62,7 @@ function galleryFull(
 }
 
 // Per-owner gallery + dedup'd upload + auth-gated byte read.
-// When the R2 binding is absent (self-host without R2), every
+// When the R2 binding is absent (a deployment without R2), every
 // endpoint returns 503 so the live app can hide the feature
 // without falling through to a generic 500.
 export async function handleImages(ctx: RouteContext): Promise<Response> {
@@ -129,7 +129,7 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
     // first (above) so an oversize upload is rejected before any D1
     // round-trip; then this owner-sum check so the body parse only
     // happens for uploads that would actually land. Both caps zero
-    // out when their env var is unset, which is the OSS self-host
+    // out when their env var is unset, which is the unconfigured
     // default. Dedupe via the body-recomputed hash happens AFTER
     // the body parse below, so a deduped upload that would not grow
     // either total still pays the parse: that is acceptable because

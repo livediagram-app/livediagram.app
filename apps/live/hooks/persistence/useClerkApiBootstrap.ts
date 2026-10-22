@@ -40,8 +40,8 @@ import {
 // destructure them — there's exactly one place those values come from
 // per page.
 //
-// When Clerk isn't configured for the deployment (docs/specs/002-project-scope/open-source-and-business-model.md self-host
-// path, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` unset), the hook returns
+// When Clerk isn't configured for the deployment (docs/specs/002-project-scope/business-model-and-licence.md: Clerk
+// is optional; `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` unset), the hook returns
 // a stable stub — `useAuth` would throw outside a ClerkProvider, so
 // the disabled branch never touches Clerk at all. The choice between
 // real-Clerk and stub is made at module load, then frozen — React's

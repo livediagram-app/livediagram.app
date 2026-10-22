@@ -28,7 +28,7 @@ or store it for this machine:
 printf %s "$TOKEN" | liveplanner auth login --with-token
 ```
 
-The CLI never prompts. A self-hosted liveplanner is reached with `--host https://…` or `LIVEPLANNER_HOST`.
+The CLI never prompts. Another liveplanner host (a staging or local stack) is reached with `--host https://…` or `LIVEPLANNER_HOST`.
 
 ## Start
 
@@ -49,4 +49,4 @@ The CLI counts which commands succeed (the command's name only: never arguments,
 count to the host it talks to. Turn it off with `liveplanner telemetry off`, `LIVEPLANNER_TELEMETRY=0` or
 `DO_NOT_TRACK=1`.
 
-MIT licensed. The notices of bundled packages are in `THIRD_PARTY_LICENSES`.
+Free to use. Copyright (c) liveplanner, all rights reserved; see `LICENSE`. The notices of bundled third-party packages are in `THIRD_PARTY_LICENSES`.

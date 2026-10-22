@@ -2,6 +2,7 @@
   "name": "liveplanner",
   "version": "0.0.0",
   "private": true,
+  "license": "UNLICENSED",
   "type": "module",
   "packageManager": "pnpm@9.15.0",
   "scripts": {

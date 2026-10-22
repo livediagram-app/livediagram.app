@@ -180,7 +180,7 @@ describe('HomeHero', () => {
       'Welcome to liveplanner. What are you making first?',
     );
     expect(screen.queryByRole('link', { name: /documents?$/ })).toBeNull();
-    expect(screen.getByText('Free and open source')).toBeTruthy();
+    expect(screen.getByText('Free, no trackers')).toBeTruthy();
     expect(screen.getByText('No sign-up to start')).toBeTruthy();
     expect(screen.getByRole('searchbox', { name: 'Search templates' })).toBeTruthy();
     expect(screen.queryByTestId('lens')).toBeNull();

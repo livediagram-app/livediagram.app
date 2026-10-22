@@ -4,13 +4,8 @@ import { OpenIcon, PlusIcon } from '@/components/primitives/explorer-icons';
 import { useState, type ReactNode } from 'react';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import { MenuActionRow, MenuGroupSeparator, PortalMenu } from '@/components/primitives/PortalMenu';
-import {
-  SettingsIcon,
-  GithubIcon,
-  ScaleIcon,
-  SearchGlyph,
-} from '@/components/chrome/tab-bar-icons';
-import { REPO_URL, Glyph } from '@liveplanner/ui';
+import { SettingsIcon, ScaleIcon, SearchGlyph } from '@/components/chrome/tab-bar-icons';
+import { Glyph } from '@liveplanner/ui';
 import type { ExplorerMenuActions } from './Explorer.types';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import { HelpMarkIcon, openHelpArticle } from '@/components/primitives/HelpArticleLink';
@@ -20,7 +15,7 @@ import { assignAppLocation } from '@/lib/app-location';
 // The Explorer panel header's ⋯ menu (docs/specs/013-workspace/folders.md): the document-level verbs that
 // used to be split between a "+ New" chip here and the editor's bottom bar.
 // Three bands, new/open, then this document (share / export), then the app
-// (search / GitHub / Licences / settings). Each row renders only when its handler is
+// (search / Licences / settings). Each row renders only when its handler is
 // wired, and a band left empty takes its separator with it, so the Explorer
 // behind an error screen (no document, so no share / export) still reads
 // cleanly. Rows, not tiles: a ⋯ menu that IS the list (docs/specs/013-workspace/folders.md).
@@ -111,17 +106,8 @@ export function ExplorerHeaderMenu({
             onClick={run(actions.onSearch)}
           />
         ) : null,
-        <MenuActionRow
-          key="github"
-          plain
-          icon={<GithubIcon />}
-          label="GitHub"
-          onClick={run(() => {
-            window.open(REPO_URL, '_blank', 'noopener,noreferrer');
-          })}
-        />,
         // Third-party licences (docs/specs/002-project-scope/third-party-licences.md),
-        // in a new tab like GitHub so the open document stays put.
+        // in a new tab so the open document stays put.
         <MenuActionRow
           key="licences"
           plain

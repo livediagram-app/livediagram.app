@@ -65,7 +65,7 @@ type AssignActionDialogProps = {
   // whether they can actually open this document (docs/specs/012-collaboration/assigned-actions.md §4).
   documentId: string | null;
   documentTeamId: string | null;
-  // capabilities.emailEnabled — hides the email offer on a self-host
+  // capabilities.emailEnabled — hides the email offer on a deployment without email
   // without Resend (never advertise a send we can't perform).
   emailEnabled: boolean;
   // Inline personal-document fix (docs/specs/012-collaboration/assigned-actions.md §2): file the document into the

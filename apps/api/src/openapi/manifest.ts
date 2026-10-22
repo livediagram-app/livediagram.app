@@ -1258,7 +1258,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Documents',
     summary:
-      'WebSocket upgrade to the realtime room. The op protocol is documented in docs/specs/015-api/api.md, not here.',
+      'WebSocket upgrade to the realtime room. The op protocol is internal and not covered here.',
     auth: 'guest-or-clerk',
     query: [
       { name: 's', required: false, description: 'Share code, for non-owner collaborators.' },
