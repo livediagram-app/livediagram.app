@@ -1,0 +1,342 @@
+import {
+  arrowReferencesAny,
+  createAnnotation,
+  createShape,
+  createTable,
+  type ArrowElement,
+  type BoxedElement,
+} from '@livepages/document';
+import { describe, expect, it } from 'vitest';
+import {
+  cornerOf,
+  framesFirst,
+  inheritedSizeFor,
+  MIN_SIZE,
+  nextBounds,
+  unionResizeMember,
+  type ShapeBounds,
+} from './canvas';
+
+const baseBounds: ShapeBounds = { x: 100, y: 200, width: 80, height: 40 };
+
+describe('nextBounds — move', () => {
+  it('translates the box by the cursor delta and leaves dimensions untouched', () => {
+    const out = nextBounds(baseBounds, 'move', 50, -25, false);
+    expect(out).toEqual({ x: 150, y: 175, width: 80, height: 40 });
+  });
+
+  it('ignores aspectLocked for move (no resize axis to compress onto)', () => {
+    const out = nextBounds(baseBounds, 'move', 50, -25, true);
+    expect(out).toEqual({ x: 150, y: 175, width: 80, height: 40 });
+  });
+});
+
+describe('nextBounds — free corner resize', () => {
+  it('grows SE corner outward, leaving x/y pinned to the NW corner', () => {
+    const out = nextBounds(baseBounds, 'resize-se', 20, 10, false);
+    expect(out).toEqual({ x: 100, y: 200, width: 100, height: 50 });
+  });
+
+  it('pulls SW corner inward by adjusting x to keep the eastern edge fixed', () => {
+    const out = nextBounds(baseBounds, 'resize-sw', 20, 10, false);
+    // signX is -1 here, so dx=20 shrinks width by 20 → 60; x slides right
+    // by (80 - 60) = 20 so the east edge (x=180) stays put.
+    expect(out).toEqual({ x: 120, y: 200, width: 60, height: 50 });
+  });
+
+  it('pulls NE corner inward in y, keeping the south edge fixed', () => {
+    const out = nextBounds(baseBounds, 'resize-ne', 20, 10, false);
+    // signY is -1 here, so dy=10 shrinks height by 10 → 30; y slides
+    // down by (40 - 30) = 10 so the south edge (y=240) stays put.
+    expect(out).toEqual({ x: 100, y: 210, width: 100, height: 30 });
+  });
+
+  it('pulls NW corner inward in both axes, keeping the south-east corner pinned', () => {
+    const out = nextBounds(baseBounds, 'resize-nw', 20, 10, false);
+    expect(out).toEqual({ x: 120, y: 210, width: 60, height: 30 });
+  });
+
+  it('clamps each side at MIN_SIZE when the cursor would shrink past it', () => {
+    const out = nextBounds(baseBounds, 'resize-se', -200, -200, false);
+    expect(out.width).toBe(MIN_SIZE);
+    expect(out.height).toBe(MIN_SIZE);
+  });
+});
+
+describe('nextBounds — aspect-locked corner resize', () => {
+  it('lets the dominant axis (x here) drive both dimensions', () => {
+    // baseBounds is 80×40 (ratio 2:1). dx=40 > dy=5, so width wins.
+    const out = nextBounds(baseBounds, 'resize-se', 40, 5, true);
+    expect(out.width).toBe(120);
+    expect(out.height).toBe(60); // 120 / 2
+    expect(out.x).toBe(100);
+    expect(out.y).toBe(200);
+  });
+
+  it('lets the dominant axis (y here) drive both dimensions when dy wins', () => {
+    // dx=5 < dy=40, so height wins. candH = 80; newW = 80 * (80/40) = 160.
+    const out = nextBounds(baseBounds, 'resize-se', 5, 40, true);
+    expect(out.height).toBe(80);
+    expect(out.width).toBe(160);
+  });
+
+  it('clamps locked resize at MIN_SIZE on each axis', () => {
+    const out = nextBounds(baseBounds, 'resize-se', -200, -200, true);
+    expect(out.width).toBeGreaterThanOrEqual(MIN_SIZE);
+    expect(out.height).toBeGreaterThanOrEqual(MIN_SIZE);
+  });
+});
+
+const freeArrow: ArrowElement = {
+  type: 'arrow',
+  id: 'a1',
+  from: { kind: 'free', x: 0, y: 0 },
+  to: { kind: 'free', x: 100, y: 100 },
+};
+
+const pinnedFromArrow: ArrowElement = {
+  ...freeArrow,
+  from: { kind: 'pinned', elementId: 'el-from', anchor: 'e' },
+};
+
+const pinnedToArrow: ArrowElement = {
+  ...freeArrow,
+  to: { kind: 'pinned', elementId: 'el-to', anchor: 'w' },
+};
+
+const bothPinnedArrow: ArrowElement = {
+  type: 'arrow',
+  id: 'a2',
+  from: { kind: 'pinned', elementId: 'el-from', anchor: 'e' },
+  to: { kind: 'pinned', elementId: 'el-to', anchor: 'w' },
+};
+
+describe('inheritedSizeFor', () => {
+  it('squares a circle, a diamond and a star up from a flat selection, never squashing them', () => {
+    const step = { ...createShape('square', 0, 0), width: 160, height: 56 } as BoxedElement;
+    for (const kind of ['circle', 'diamond', 'star'] as const) {
+      expect(inheritedSizeFor(createShape(kind, 0, 0), step), kind).toEqual({
+        width: 160,
+        height: 160,
+      });
+    }
+    expect(inheritedSizeFor(createShape('hexagon', 0, 0), step)).toEqual({
+      width: 160,
+      height: 56,
+    });
+  });
+
+  it('keeps a step number, boundary, concept graphic, sequence, key and tab window their own size', () => {
+    const card = { ...createShape('card', 0, 0), width: 300, height: 150 } as BoxedElement;
+    for (const kind of [
+      'step',
+      'boundary',
+      'stack',
+      'cycle',
+      'pyramid',
+      'sequence',
+      'diagram-key',
+      'tab-window',
+    ] as const) {
+      const fresh = createShape(kind, 0, 0) as BoxedElement;
+      expect(inheritedSizeFor(fresh, card), kind).toEqual({
+        width: fresh.width,
+        height: fresh.height,
+      });
+    }
+  });
+
+  it('keeps a chart, a meter, a rating, a timeline rail and a legend their own size', () => {
+    const legend = { ...createShape('legend', 0, 0), width: 200, height: 170 } as BoxedElement;
+    for (const kind of [
+      'progress-bar',
+      'progress-ring',
+      'rating',
+      'pie-chart',
+      'bar-chart',
+      'line-chart',
+      'legend',
+      'timeline-rail',
+    ] as const) {
+      const fresh = createShape(kind, 0, 0) as BoxedElement;
+      expect(inheritedSizeFor(fresh, legend), kind).toEqual({
+        width: fresh.width,
+        height: fresh.height,
+      });
+    }
+  });
+
+  it('never hands a chart or meter size on to the next shape', () => {
+    const square = createShape('square', 0, 0);
+    for (const kind of ['progress-bar', 'rating', 'legend'] as const) {
+      const donor = createShape(kind, 0, 0);
+      expect(inheritedSizeFor(square, donor), kind).toEqual({
+        width: square.width,
+        height: square.height,
+      });
+    }
+  });
+
+  it('drops a table at its own size, and never hands a table size on', () => {
+    const table = createTable(0, 0);
+    const card = { ...createShape('card', 0, 0), width: 300, height: 90 } as BoxedElement;
+    expect(inheritedSizeFor(table, card)).toEqual({ width: table.width, height: table.height });
+    const node = createShape('mind-node', 0, 0);
+    expect(inheritedSizeFor(node, table)).toEqual({ width: node.width, height: node.height });
+  });
+
+  it('inherits the selected element size for a normal shape', () => {
+    const newShape = createShape('square', 0, 0);
+    const selected = { ...createShape('square', 0, 0), width: 300, height: 90 };
+    expect(inheritedSizeFor(newShape, selected)).toEqual({ width: 300, height: 90 });
+  });
+
+  it('keeps an annotation at its fixed marker size regardless of selection (docs/specs/009-elements/annotations.md)', () => {
+    const marker = createAnnotation(0, 0);
+    const bigSelected = { ...createShape('square', 0, 0), width: 400, height: 250 };
+    // A marker added while a big shape is selected must NOT balloon.
+    expect(inheritedSizeFor(marker, bigSelected)).toEqual({ width: 44, height: 44 });
+    expect(inheritedSizeFor(marker, null)).toEqual({ width: 44, height: 44 });
+  });
+
+  it('keeps a portal at its intrinsic size regardless of selection (docs/specs/009-elements/portal-element.md)', () => {
+    const portal = createShape('portal', 0, 0);
+    // A wide banner selected when the portal is dropped must not stretch the
+    // ring into a letterbox — the silhouette IS the element.
+    const wideSelected = { ...createShape('square', 0, 0), width: 1666, height: 16 };
+    expect(inheritedSizeFor(portal, wideSelected)).toEqual({
+      width: portal.width,
+      height: portal.height,
+    });
+  });
+});
+
+describe('framesFirst', () => {
+  it('moves frames ahead of everything else, preserving relative order', () => {
+    const frameA = createShape('frame', 0, 0);
+    const box = createShape('square', 0, 0);
+    const frameB = createShape('frame', 9, 9);
+    const ordered = framesFirst([box, frameA, frameB]);
+    expect(ordered.map((e) => e.id)).toEqual([frameA.id, frameB.id, box.id]);
+  });
+
+  it('puts lanes first too, as containers', () => {
+    const box = createShape('square', 0, 0);
+    const lane = createShape('lane', 0, 0);
+    expect(framesFirst([box, lane]).map((e) => e.id)).toEqual([lane.id, box.id]);
+  });
+
+  it('returns the same array reference when there are no frames (no-op)', () => {
+    const arr = [createShape('square', 0, 0)];
+    expect(framesFirst(arr)).toBe(arr);
+  });
+});
+
+describe('arrowReferencesAny', () => {
+  it('returns false for an arrow with no pinned endpoints', () => {
+    expect(arrowReferencesAny(freeArrow, new Set(['el-from', 'el-to']))).toBe(false);
+  });
+
+  it('matches when the `from` endpoint is pinned to a listed id', () => {
+    expect(arrowReferencesAny(pinnedFromArrow, new Set(['el-from']))).toBe(true);
+  });
+
+  it('matches when the `to` endpoint is pinned to a listed id', () => {
+    expect(arrowReferencesAny(pinnedToArrow, new Set(['el-to']))).toBe(true);
+  });
+
+  it('matches when either endpoint of a fully-pinned arrow is listed', () => {
+    expect(arrowReferencesAny(bothPinnedArrow, new Set(['el-from']))).toBe(true);
+    expect(arrowReferencesAny(bothPinnedArrow, new Set(['el-to']))).toBe(true);
+  });
+
+  it('returns false when the pinned endpoints are not in the id set', () => {
+    expect(arrowReferencesAny(bothPinnedArrow, new Set(['unrelated']))).toBe(false);
+  });
+
+  it('returns false against an empty id set', () => {
+    expect(arrowReferencesAny(bothPinnedArrow, new Set())).toBe(false);
+  });
+});
+
+describe('cornerOf', () => {
+  it('maps each resize mode to its diagonal corner letter', () => {
+    expect(cornerOf('resize-nw')).toBe('nw');
+    expect(cornerOf('resize-ne')).toBe('ne');
+    expect(cornerOf('resize-sw')).toBe('sw');
+    expect(cornerOf('resize-se')).toBe('se');
+  });
+
+  it('returns null for move (no corner is being pulled)', () => {
+    expect(cornerOf('move')).toBeNull();
+  });
+});
+
+describe('unionResizeMember', () => {
+  // Union starts at (0,0) - (100,100). The two members are:
+  //   - top-left quadrant: (0,0) - (40,40)
+  //   - bottom-right quadrant: (60,60) - (100,100)
+  // so we can pin both the corner-at-anchor and the corner-far-from-anchor
+  // members at the same time and assert each one moves the right way.
+  const unionStart: ShapeBounds = { x: 0, y: 0, width: 100, height: 100 };
+  const memberAtNW: ShapeBounds = { x: 0, y: 0, width: 40, height: 40 };
+  const memberAtSE: ShapeBounds = { x: 60, y: 60, width: 40, height: 40 };
+
+  it('with SE corner drag (NW anchor fixed), scales every member outward from the NW corner', () => {
+    // Double the union: (0,0) - (200,200).
+    const unionNext: ShapeBounds = { x: 0, y: 0, width: 200, height: 200 };
+    const newNW = unionResizeMember(memberAtNW, unionStart, unionNext, 'se');
+    const newSE = unionResizeMember(memberAtSE, unionStart, unionNext, 'se');
+    // NW member sits on the anchor: position stays, size doubles.
+    expect(newNW).toEqual({ x: 0, y: 0, width: 80, height: 80 });
+    // SE member doubles in distance from the anchor AND in size.
+    expect(newSE).toEqual({ x: 120, y: 120, width: 80, height: 80 });
+  });
+
+  it('with NW corner drag (SE anchor fixed), scales every member inward toward the SE corner', () => {
+    // Halve the union from the SE side: (50,50) - (100,100).
+    const unionNext: ShapeBounds = { x: 50, y: 50, width: 50, height: 50 };
+    const newNW = unionResizeMember(memberAtNW, unionStart, unionNext, 'nw');
+    const newSE = unionResizeMember(memberAtSE, unionStart, unionNext, 'nw');
+    // NW member halves and slides toward the SE anchor.
+    expect(newNW).toEqual({ x: 50, y: 50, width: 20, height: 20 });
+    // SE member's bottom-right was AT the anchor — it stays put at the
+    // anchor and halves its size.
+    expect(newSE.x).toBeCloseTo(80);
+    expect(newSE.y).toBeCloseTo(80);
+    expect(newSE.width).toBe(MIN_SIZE);
+    expect(newSE.height).toBe(MIN_SIZE);
+  });
+
+  it('with SW corner drag (NE anchor fixed), keeps the east edge of east-side members put', () => {
+    // Pull SW down + left: (-50, 0) - (100, 150). Width grew from 100 to 150.
+    const unionNext: ShapeBounds = { x: -50, y: 0, width: 150, height: 150 };
+    const newSE = unionResizeMember(memberAtSE, unionStart, unionNext, 'sw');
+    // The east edge of memberAtSE was at x=100, which IS the anchor x.
+    // Its right edge should still land at x=100 (anchor = unionStart.x + width).
+    expect(newSE.x + newSE.width).toBeCloseTo(100);
+  });
+
+  it('with NE corner drag (SW anchor fixed), keeps the west edge of west-side members put', () => {
+    // Pull NE up + right: (0,-50) - (150, 100). Width grew 100→150.
+    const unionNext: ShapeBounds = { x: 0, y: -50, width: 150, height: 150 };
+    const newNW = unionResizeMember(memberAtNW, unionStart, unionNext, 'ne');
+    // The west edge of memberAtNW was at x=0, which IS the anchor x.
+    expect(newNW.x).toBeCloseTo(0);
+  });
+
+  it('floors each member at MIN_SIZE on collapse so tiny members survive a hard shrink', () => {
+    const tinyUnion: ShapeBounds = { x: 0, y: 0, width: 1, height: 1 };
+    const out = unionResizeMember(memberAtSE, unionStart, tinyUnion, 'nw');
+    expect(out.width).toBe(MIN_SIZE);
+    expect(out.height).toBe(MIN_SIZE);
+  });
+
+  it('handles a zero-width union without dividing by zero', () => {
+    const flat: ShapeBounds = { x: 10, y: 10, width: 0, height: 50 };
+    // sx falls back to unionNext.width / 1 so the math stays finite.
+    const out = unionResizeMember(flat, flat, { ...flat, width: 30 }, 'se');
+    expect(Number.isFinite(out.x)).toBe(true);
+    expect(Number.isFinite(out.width)).toBe(true);
+  });
+});

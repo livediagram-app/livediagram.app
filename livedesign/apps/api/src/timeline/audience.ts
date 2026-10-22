@@ -1,0 +1,118 @@
+// Who should see a timeline event (docs/specs/013-workspace/timeline.md §4.1).
+//
+// The whole reason the scope join table exists: one event row, many
+// recipients. A comment on a document in a twelve-person team library is
+// one row plus twelve memberships, not twelve copies of the text.
+//
+// Kept apart from db/timeline.ts (which is pure D1 over the timeline
+// tables) because resolving an audience means reading OTHER resources'
+// tables — documents, team_members — and that dependency shouldn't leak
+// into the storage layer.
+
+import type { TimelineScopeRef } from '@livepages/api-schema';
+import type { DocumentDTO, Env } from '../types';
+
+export function userScope(ownerId: string): TimelineScopeRef {
+  return { scopeType: 'user', scopeId: ownerId };
+}
+
+function teamScope(teamId: string): TimelineScopeRef {
+  return { scopeType: 'team', scopeId: teamId };
+}
+
+function documentScope(documentId: string): TimelineScopeRef {
+  return { scopeType: 'document', scopeId: documentId };
+}
+
+// Everyone who should see an event about this document: its owner, plus
+// every JOINED member of its team when it lives in a team library
+// (docs/specs/013-workspace/team-shared-documents.md). `invited` rows are excluded — an invite grants no
+// membership until it's accepted (docs/specs/013-workspace/teams.md), and it must not leak the
+// contents of a library the person hasn't joined.
+//
+// The actor is deliberately NOT excluded. "You commented on X" belongs
+// in your own history; the renderer resolves the pronoun by comparing
+// actorId against the viewer, which is what lets one row serve the
+// whole audience.
+export async function audienceForDocument(
+  env: Env,
+  liveDoc: Pick<DocumentDTO, 'id' | 'ownerId' | 'teamId'>,
+): Promise<TimelineScopeRef[]> {
+  // The owner is added before the team lookup, so a failed lookup
+  // degrades to "the owner still sees it" rather than to silence.
+  const owners = new Set<string>([liveDoc.ownerId]);
+  if (liveDoc.teamId) {
+    for (const id of await joinedMemberIds(env, liveDoc.teamId)) owners.add(id);
+  }
+  // Plus the document's own history, which anyone who can read the
+  // document can read — including a share-link visitor who is in nobody's
+  // user scope.
+  const scopes = [...[...owners].map(userScope), documentScope(liveDoc.id)];
+  // …and the team's own feed, so somebody who joins next month can read
+  // back what happened before they arrived. The per-member scopes above
+  // are still written: they are what makes a personal feed a single
+  // indexed scan instead of a union across every team you belong to.
+  return liveDoc.teamId ? [...scopes, teamScope(liveDoc.teamId)] : scopes;
+}
+
+// Everyone in a team, for team-level events (a member joined, a role
+// changed). Same joined-only rule, plus the team's own scope.
+export async function audienceForTeam(env: Env, teamId: string): Promise<TimelineScopeRef[]> {
+  const members = (await joinedMemberIds(env, teamId)).map(userScope);
+  return [...members, teamScope(teamId)];
+}
+
+// Never throws.
+//
+// Unlike the emit itself — which every call site wraps in waitUntil and
+// `record` swallows — audience resolution genuinely has to run on the
+// critical path for deletes: the team link disappears with the row, so
+// there is nothing left to resolve afterwards. That means a failure
+// here would take down a legitimate member removal or document delete,
+// which is exactly the trade the timeline is not allowed to make. An
+// empty list costs one missing bubble.
+async function joinedMemberIds(env: Env, teamId: string): Promise<string[]> {
+  try {
+    const res = await env.DB.prepare(
+      `SELECT user_id FROM team_members
+        WHERE team_id = ?1 AND status = 'joined' AND user_id IS NOT NULL`,
+    )
+      .bind(teamId)
+      .all<{ user_id: string }>();
+    return (res.results ?? []).map((r) => r.user_id);
+  } catch (err) {
+    console.error('timeline audience lookup failed', teamId, err);
+    return [];
+  }
+}
+
+// Just the team's joined admins. Declining an invite is an outcome of
+// something an admin did, and the rest of the team never saw the invite
+// go out, so telling everyone would be noise about a stranger.
+//
+// Never throws, for the same reason as joinedMemberIds.
+export async function adminsForTeam(env: Env, teamId: string): Promise<TimelineScopeRef[]> {
+  try {
+    const res = await env.DB.prepare(
+      `SELECT user_id FROM team_members
+        WHERE team_id = ?1 AND status = 'joined' AND role = 'admin' AND user_id IS NOT NULL`,
+    )
+      .bind(teamId)
+      .all<{ user_id: string }>();
+    return (res.results ?? []).map((r) => userScope(r.user_id));
+  } catch (err) {
+    console.error('timeline admin lookup failed', teamId, err);
+    return [];
+  }
+}
+
+// Merge audiences without duplicating a scope. Used where an event has
+// two natural audiences — an assigned action reaches the assignee AND
+// everyone who can see the document, and those sets usually overlap.
+export function mergeScopes(...groups: TimelineScopeRef[][]): TimelineScopeRef[] {
+  const seen = new Map<string, TimelineScopeRef>();
+  for (const group of groups) {
+    for (const scope of group) seen.set(`${scope.scopeType}:${scope.scopeId}`, scope);
+  }
+  return [...seen.values()];
+}

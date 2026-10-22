@@ -1,0 +1,322 @@
+import {
+  createFreehand,
+  createShape,
+  fitStrokeToLimit,
+  INK_PEN_COLOUR,
+  isPenColourName,
+  nearestBorderStroke,
+  recogniseShape,
+  type RecognisedShape,
+  snapToArrowPoint,
+  type ArrowElement,
+  type Element,
+  type FreehandElement,
+  type PenColour,
+  type PenStroke,
+  type Endpoint,
+  type ShapeElement,
+} from '@livepages/document';
+import type { Tab } from '@livepages/document';
+import type { MutableRefObject } from 'react';
+import { ARROW_SNAP_THRESHOLD_PX } from '@/lib/canvas';
+import { NEW_ARROW_THEME_STROKE_FALLBACK } from '@/lib/draw-commit';
+import { deriveNewBoxedColours, getTheme } from '@/lib/themes';
+import { titleCaseType, track } from '@/lib/telemetry';
+import type { PendingDraw } from '@/lib/draw-mode';
+import { HIGHLIGHTER_COLOR, HIGHLIGHTER_WIDTH } from '@/lib/highlighter-config';
+import { simplifyPenStroke } from '@/lib/pen-smoothing';
+import { RECOGNITION_THRESHOLD, recogniseBoardStroke } from '@/lib/recognition-preview';
+
+// WHAT A PEN STROKE BECOMES (docs/specs/008-canvas/two-pens.md's two pens, docs/specs/008-canvas/highlighter.md's highlighter).
+//
+// The largest single branch of useShapeDrawing, and the one that is an
+// algorithm rather than wiring: simplify the raw pointer samples, decide
+// whether the gesture closed on itself, and — in Shape Pen mode — try to
+// recognise a real shape before falling back to a sketch.
+//
+// A factory called per render rather than a hook: it needs values that change
+// every render (the pending draw, the live tab) and owns
+// no state of its own.
+//
+// Decision and effect are interleaved on purpose and stay that way. Each
+// branch mints its element and commits it in the same breath; teasing the two
+// apart would be a rewrite of behaviour nobody asked for, not a move.
+
+export function makeCommitFreehand({
+  editsBlocked,
+  activeTab,
+  commit,
+  pendingDraw,
+  setPendingDraw,
+  setSelectedId,
+  zoomRef,
+  styleNewElement = (el) => el,
+}: {
+  editsBlocked: boolean;
+  activeTab: Tab;
+  commit: (fn: (els: Element[]) => Element[]) => void;
+  pendingDraw: PendingDraw | null;
+  setPendingDraw: (p: PendingDraw | null) => void;
+  setSelectedId: (id: string | null) => void;
+  zoomRef: MutableRefObject<number> | { current: number };
+  // Style memory (docs/specs/008-canvas/quick-style-panel.md): a recognised shape or line is user-drawn, so
+  // it takes the remembered style of its kind. A plain sketch is not a kind
+  // the memory knows.
+  styleNewElement?: <T extends Element>(el: T) => T;
+}) {
+  // Canvas-driven commit for the pen gesture. A whiteboard pen's raw samples land as they
+  // are, with their pressures and streamline (`ink`), and draw as the same perfect-freehand
+  // outline the stroke showed while drawn (docs/specs/023-draw-mode/draw-mode.md "Pens"),
+  // so release reshapes nothing. The diagram pencil and the highlighter hand over raw pointer
+  // samples in canvas coords, which get:
+  //   1. Ramer-Douglas-Peucker simplification with a tolerance
+  //      that scales inversely with zoom so the visible jitter
+  //      (~1 px on screen) is what gets smoothed, not absolute
+  //      canvas pixels. At zoom 1 the tolerance is 1.2 canvas px
+  //      which removes the bulk of pointer noise without
+  //      flattening real curves.
+  //   2. Auto-close detection: if the gesture's end point is
+  //      within 16 canvas px of its start AND the polyline has
+  //      at least 4 samples (so a stray jitter near the start
+  //      doesn't trip the close), commit a closed path. Otherwise
+  //      commit an open stroke.
+  //   3. createFreehand to mint the element + commit.
+  return (rawPoints: { x: number; y: number }[], recogniseShapesMode: boolean, drawn?: PenInk) => {
+    // Disarm on a gesture too short to be a stroke, unless a whiteboard pen is HELD
+    // (docs/specs/023-draw-mode/draw-mode.md "Pens"), where a stray tap must not silently put it down.
+    const whiteboardPen =
+      pendingDraw?.type === 'freehand' && pendingDraw.variant === 'whiteboard' ? pendingDraw : null;
+    const disarm = () => {
+      if (!whiteboardPen) setPendingDraw(null);
+    };
+    // A whiteboard pen's tap is a dot: one point is a stroke (docs/specs/023-draw-mode/draw-mode.md
+    // "Pens"). Every other pen needs a line.
+    const fewestPoints = whiteboardPen ? 1 : 2;
+    if (editsBlocked || rawPoints.length < fewestPoints) {
+      disarm();
+      return;
+    }
+    const zoom = zoomRef.current ?? 1;
+    // A whiteboard stroke keeps its raw samples; anything else is simplified here
+    // (lib/pen-smoothing). Either is then fitted to what a stroke can store
+    // (docs/specs/006-document/stroke-points.md "Limits"): a stroke longer than that is simplified
+    // just enough to fit, so it is kept, never lost on release.
+    const fitted = fitStrokeToLimit(
+      whiteboardPen ? rawPoints : simplifyPenStroke(rawPoints, zoom),
+      whiteboardPen ? drawn?.pressures : undefined,
+    );
+    const simplified = fitted.points;
+    const ink: PenInk | undefined =
+      drawn && fitted.pressures ? { ...drawn, pressures: fitted.pressures } : drawn;
+    if (simplified.length < fewestPoints) {
+      disarm();
+      return;
+    }
+    const theme = getTheme(activeTab.theme);
+
+    // Highlighter variant (docs/specs/008-canvas/highlighter.md): commit the marker recipe and
+    // skip both recognition and close-to-fill — a highlight is an
+    // annotation gesture, not a sketch-a-shape one. Colour and width are
+    // the ones the arm carries (the Quick style panel's Highlighter rows);
+    // translucency lives in the renderers' pen recipe. One-shot, like the
+    // pencil: the stroke is selected and the tile puts itself down.
+    if (pendingDraw?.type === 'freehand' && pendingDraw.variant === 'highlighter') {
+      const width = pendingDraw.width ?? HIGHLIGHTER_WIDTH;
+      const stroke = {
+        ...createFreehand(simplified, false),
+        pen: 'highlighter' as const,
+        strokeColor: pendingDraw.colour ?? HIGHLIGHTER_COLOR,
+        ...(width !== HIGHLIGHTER_WIDTH ? { penWidth: width } : {}),
+      };
+      commit((els) => [...els, stroke]);
+      setSelectedId(stroke.id);
+      setPendingDraw(null);
+      track('Element', 'Added', 'Highlighter');
+      return;
+    }
+
+    if (whiteboardPen) {
+      const stroke = whiteboardStroke(simplified, whiteboardPen, ink);
+      commit((els) => [...els, stroke]);
+      // A marker picked up for one stroke goes back down and its stroke is selected, as the
+      // pencil's is.
+      if (whiteboardPen.once) {
+        setPendingDraw(null);
+        setSelectedId(stroke.id);
+      }
+      return;
+    }
+
+    // Shape-recognition mode: try classifying the simplified
+    // polyline before falling back to FreehandElement. Threshold
+    // 0.40 leans hard toward "convert it". The bar is low on
+    // purpose: recognition only runs for a stroke drawn with the
+    // Shape Pen (docs/specs/008-canvas/two-pens.md), so picking that pen
+    // already says the user wants strokes classified. False
+    // positives are one Cmd+Z away and Freehand is one pick
+    // away; false negatives (a wobbly square
+    // that stayed a sketch when the user wanted a rectangle) are
+    // the more frustrating outcome, so erring toward conversion
+    // is correct. Previous values: 0.72 (too strict), 0.55 (still
+    // too strict per user feedback).
+    if (recogniseShapesMode) {
+      const detected = recogniseShape(simplified);
+      if (detected !== null && detected.confidence >= RECOGNITION_THRESHOLD) {
+        if (detected.kind === 'line') {
+          const fromPt = detected.from ?? simplified[0]!;
+          const toPt = detected.to ?? simplified[simplified.length - 1]!;
+          // Snap each end onto a nearby arrow's line (docs/specs/008-canvas/arrow-to-arrow.md), as the arrow
+          // tool does, so a sketched line connects to an existing one.
+          const snapLineEnd = (p: { x: number; y: number }): Endpoint => {
+            const hit = snapToArrowPoint(p, activeTab.elements, ARROW_SNAP_THRESHOLD_PX, '');
+            return hit
+              ? { kind: 'on-arrow', arrowId: hit.arrowId, t: hit.t }
+              : { kind: 'free', ...p };
+          };
+          // Map "line" to an ArrowElement with arrowEnds 'none'
+          // (the existing addArrow drop). The arrowEnds toggle in
+          // the Pointer accordion is there if the user wants to
+          // promote it to a pointer afterwards.
+          const arrow: ArrowElement = {
+            id: crypto.randomUUID(),
+            type: 'arrow',
+            from: snapLineEnd(fromPt),
+            to: snapLineEnd(toPt),
+            arrowEnds: 'none',
+            strokeColor: theme.elementStroke ?? NEW_ARROW_THEME_STROKE_FALLBACK,
+          };
+          // Functional commit for the same mid-gesture-staleness reason
+          // as the arrow branch above.
+          commit((els) => [...els, styleNewElement(arrow)]);
+          setSelectedId(arrow.id);
+          setPendingDraw(null);
+          track('Element', 'Added', 'Arrow');
+          return;
+        }
+        // square / circle / diamond all map directly to ShapeKind.
+        // Bounding box is the gesture's bbox; the renderer stretches
+        // each shape to fill it, so a tall-and-thin rectangle stays
+        // tall-and-thin, an oval stays oval, etc.
+        const shapeBase = createShape(detected.kind, detected.bbox.x, detected.bbox.y);
+        const colours = deriveNewBoxedColours(shapeBase, {
+          backgroundColor: activeTab.backgroundColor,
+          patternColor: activeTab.patternColor,
+          theme: activeTab.theme,
+        });
+        const sized: ShapeElement = {
+          ...shapeBase,
+          ...colours,
+          x: detected.bbox.x,
+          y: detected.bbox.y,
+          width: Math.max(16, detected.bbox.width),
+          height: Math.max(16, detected.bbox.height),
+        };
+        commit((els) => [...els, styleNewElement(sized)]);
+        setSelectedId(sized.id);
+        setPendingDraw(null);
+        track('Element', 'Added', titleCaseType(detected.kind));
+        return;
+      }
+    }
+
+    // Fallback: commit the polyline as-is as a FreehandElement.
+    const first = simplified[0]!;
+    const last = simplified[simplified.length - 1]!;
+    const closeDist = Math.hypot(last.x - first.x, last.y - first.y);
+    const closed = simplified.length >= 4 && closeDist <= 16 / zoom;
+    const base = createFreehand(simplified, closed);
+    const elementToInsert: typeof base = {
+      ...base,
+      // Theme-aware stroke colour so a freehand sketch reads as
+      // part of the canvas. Falls back to the default in
+      // defaultStrokeColor when the theme has no override.
+      ...(theme.elementStroke ? { strokeColor: theme.elementStroke } : {}),
+      ...(closed && theme.elementFill ? { fillColor: theme.elementFill } : {}),
+    };
+    // Append: land on top by default (see addBoxed).
+    commit((els) => [...els, elementToInsert]);
+    setSelectedId(elementToInsert.id);
+    setPendingDraw(null);
+    track('Element', 'Added', 'Freehand');
+  };
+}
+
+type WhiteboardPenIntent = Extract<PendingDraw, { variant: 'whiteboard' }>;
+// A whiteboard pen stroke's ink beyond its points: a pressure per point (a pen) and the streamline.
+// What the pen drew with, and, when the stroke locked to a recognised shape (held still, or Alt),
+// that shape as the pen reshaped it: it lands as is, never re-read from the stroke. `keepInk`: the
+// stroke was broken out of a shape (Alt, or the chip), so it lands as drawn, never recognised.
+export type PenInk = Pick<FreehandElement, 'streamline'> & {
+  pressures?: number[];
+  snapped?: RecognisedShape;
+  keepInk?: true;
+};
+
+// What a whiteboard pen stroke becomes (docs/specs/023-draw-mode/draw-mode.md "Pens", "Shape
+// recognition"): with recognition on, a stroke that reads as a shape is the
+// clean shape, unfilled, in the pen's colour and nearest weight; otherwise an
+// OPEN stroke (a written "o" is ink, not a filled shape) carrying the pen's
+// width. The main pen records no colour, so its marks follow the board; a named colour is recorded
+// by name (drawn in its version for each viewer's board), a custom one as its hex.
+// Style memory is skipped on purpose: a board's marks wear the pen, not the
+// remembered diagram style.
+function penColourFields(
+  colour: PenColour | null,
+): Pick<FreehandElement, 'penColour' | 'strokeColor'> {
+  if (colour === null) return {};
+  return isPenColourName(colour) ? { penColour: colour } : { strokeColor: colour };
+}
+
+function whiteboardStroke(
+  points: { x: number; y: number }[],
+  pen: WhiteboardPenIntent,
+  ink: PenInk | undefined,
+): Element {
+  const colour = penColourFields(pen.colour);
+  const stroke: PenStroke = {
+    points,
+    pressures: ink?.pressures,
+    width: pen.width,
+    streamline: ink?.streamline ?? 0,
+  };
+  // The same test on the same stroke the hold-still preview runs (lib/recognition-preview), so
+  // it is what lands.
+  const detected =
+    ink?.snapped ?? (pen.recognise && !ink?.keepInk ? recogniseBoardStroke(stroke) : null);
+  if (detected) {
+    // A recognised shape or line is written in its pen's colour, the main pen's Ink by name
+    // (docs/specs/007-editor/editor-modes.md "One look"), so it is Ink in Diagram mode too.
+    const lined = penColourFields(pen.colour ?? INK_PEN_COLOUR);
+    track('Element', 'Added', detected.kind === 'line' ? 'Arrow' : titleCaseType(detected.kind));
+    if (detected.kind === 'line') {
+      const from = detected.from ?? points[0]!;
+      const to = detected.to ?? points[points.length - 1]!;
+      return {
+        id: crypto.randomUUID(),
+        type: 'arrow',
+        from: { kind: 'free', ...from },
+        to: { kind: 'free', ...to },
+        arrowEnds: 'none',
+        strokeWidth: pen.width,
+        ...lined,
+      };
+    }
+    return {
+      ...createShape(detected.kind, detected.bbox.x, detected.bbox.y),
+      x: detected.bbox.x,
+      y: detected.bbox.y,
+      width: Math.max(16, detected.bbox.width),
+      height: Math.max(16, detected.bbox.height),
+      fillColor: 'transparent',
+      strokeWidth: nearestBorderStroke(pen.width),
+      ...lined,
+    };
+  }
+  track('Element', 'Added', 'Freehand');
+  return {
+    ...createFreehand(points, false, ink?.pressures),
+    penWidth: pen.width,
+    ...(ink?.streamline !== undefined ? { streamline: ink.streamline } : {}),
+    ...colour,
+  };
+}

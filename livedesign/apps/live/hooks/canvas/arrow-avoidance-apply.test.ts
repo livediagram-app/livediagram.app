@@ -1,0 +1,135 @@
+import { describe, expect, it } from 'vitest';
+import type { ArrowElement, Element } from '@livepages/document';
+import { applyCollisionAvoidance } from './arrow-avoidance-apply';
+
+// The apply side of docs/specs/008-canvas/arrow-collision-avoidance.md: pure elements map, so the whole creation
+// wiring short of the pointer gesture is testable here. The geometry
+// itself is covered in packages/document/src/arrow-avoidance.test.ts;
+// these assertions pin the mapping around it (role assignment, the
+// untouched-default guard, and the written wire fields).
+
+const shape = (id: string, x: number, y: number, w = 120, h = 80): Element => ({
+  id,
+  type: 'shape',
+  shape: 'square',
+  x,
+  y,
+  width: w,
+  height: h,
+  label: id,
+});
+
+const arrowBetween = (id: string, fromId: string, toId: string): ArrowElement => ({
+  id,
+  type: 'arrow',
+  from: { kind: 'pinned', elementId: fromId, anchor: 's' },
+  to: { kind: 'pinned', elementId: toId, anchor: 'n' },
+});
+
+// Two stacked endpoints with a third box squatting on the straight chord
+// between them: the canonical avoidance scene.
+const scene = (): Element[] => [
+  shape('top', 0, 0),
+  shape('mid', -20, 200), // extends 100 left / 80 right of the chord at x=60
+  shape('bottom', 0, 400),
+  arrowBetween('arr', 'top', 'bottom'),
+];
+
+describe('applyCollisionAvoidance', () => {
+  it('curves a fresh arrow whose chord crosses an unrelated element', () => {
+    const out = applyCollisionAvoidance(scene(), 'arr');
+    const arr = out.find((e) => e.id === 'arr') as ArrowElement;
+    expect(arr.arrowStyle).toBe('curved');
+    expect(arr.curveOffset).toBeDefined();
+    // The mid box reaches further left of the chord than right, so the
+    // cheaper bow is rightward (positive dx).
+    expect(arr.curveOffset!.dx).toBeGreaterThan(0);
+    // Everything else passes through untouched (same references).
+    expect(out.find((e) => e.id === 'mid')).toBe(out.find((e) => e.id === 'mid'));
+  });
+
+  it('makes a Professional arrow a right-angled connector, from its tab or its own finish', () => {
+    const els = scene();
+    const style = (out: Element[]) => (out.find((e) => e.id === 'arr') as ArrowElement).arrowStyle;
+    const fromTab = applyCollisionAvoidance(els, 'arr', 'professional');
+    expect(style(fromTab)).toBe('angled');
+    expect((fromTab.find((e) => e.id === 'arr') as ArrowElement).curveOffset).toBeUndefined();
+    // Clear chord too: still angled.
+    const clear = els.filter((e) => e.id !== 'mid');
+    expect(style(applyCollisionAvoidance(clear, 'arr', 'professional'))).toBe('angled');
+    const own = els.map((e) => (e.id === 'arr' ? { ...e, finish: 'professional' as const } : e));
+    expect(style(applyCollisionAvoidance(own, 'arr'))).toBe('angled');
+    // An arrow's own Flexible beats a Professional tab.
+    const flexible = els.map((e) => (e.id === 'arr' ? { ...e, finish: 'flexible' as const } : e));
+    const out = applyCollisionAvoidance(flexible, 'arr', 'professional');
+    expect((out.find((e) => e.id === 'arr') as ArrowElement).arrowStyle).toBe('curved');
+    // Sketch bows like Flexible.
+    expect(applyCollisionAvoidance(els, 'arr', 'sketch')).not.toBe(els);
+  });
+
+  it('leaves the arrow alone when the chord is clear', () => {
+    const els = scene().filter((e) => e.id !== 'mid');
+    const out = applyCollisionAvoidance(els, 'arr');
+    expect(out).toBe(els);
+  });
+
+  it('never touches an arrow that already has a style or curve', () => {
+    for (const styled of [
+      { arrowStyle: 'straight' as const },
+      { arrowStyle: 'angled' as const },
+      { curveOffset: { dx: 5, dy: 5 } },
+      { curvePoints: [{ dx: 5, dy: 5 }] },
+    ]) {
+      const els = scene().map((e) => (e.id === 'arr' ? { ...e, ...styled } : e));
+      const out = applyCollisionAvoidance(els, 'arr');
+      expect(out).toBe(els);
+    }
+  });
+
+  it('treats the endpoint elements as their own obstacles (flush case bows)', () => {
+    // Both ends pinned at the RIGHT-EDGE MIDDLES of two stacked boxes: the
+    // chord runs flush along both boxes' edges well past the anchor
+    // exemption, so it must bow outward.
+    const els: Element[] = [
+      shape('a', 0, 0, 100, 80),
+      shape('b', 0, 320, 100, 80),
+      {
+        id: 'arr',
+        type: 'arrow',
+        from: { kind: 'pinned', elementId: 'b', anchor: 'e' },
+        to: { kind: 'pinned', elementId: 'a', anchor: 'e' },
+      },
+    ];
+    const out = applyCollisionAvoidance(els, 'arr');
+    const arr = out.find((e) => e.id === 'arr') as ArrowElement;
+    expect(arr.arrowStyle).toBe('curved');
+    // Away from the boxes (which sit left of the chord) = positive dx.
+    expect(arr.curveOffset!.dx).toBeGreaterThan(0);
+  });
+
+  it('bows a corner-anchored chord collinear with its own edge lines', () => {
+    // The image-21 shape: pinned at the facing right CORNERS of two stacked
+    // boxes, the chord retracing both right-edge lines. The collinear-edge
+    // rule (docs/specs/008-canvas/arrow-collision-avoidance.md) bows it outward.
+    const els: Element[] = [
+      shape('a', 0, 0, 100, 80),
+      shape('b', 0, 320, 100, 80),
+      {
+        id: 'arr',
+        type: 'arrow',
+        from: { kind: 'pinned', elementId: 'b', anchor: 'ne' },
+        to: { kind: 'pinned', elementId: 'a', anchor: 'se' },
+      },
+    ];
+    const out = applyCollisionAvoidance(els, 'arr');
+    const arr = out.find((e) => e.id === 'arr') as ArrowElement;
+    expect(arr.arrowStyle).toBe('curved');
+    expect(arr.curveOffset!.dx).toBeGreaterThan(0);
+  });
+
+  it('is a no-op for unknown ids and non-arrows', () => {
+    const els = scene();
+    expect(applyCollisionAvoidance(els, 'nope')).toBe(els);
+    expect(applyCollisionAvoidance(els, 'top')).toBe(els);
+  });
+});

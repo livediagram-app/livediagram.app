@@ -1,0 +1,517 @@
+import type { Element, ShapeElement, Tab } from '@livepages/document';
+import { describe, expect, it } from 'vitest';
+import { matches } from '@livepages/icons';
+import { buildSearchResults } from './search';
+
+const shape = (id: string, label?: string): ShapeElement => ({
+  id,
+  type: 'shape',
+  shape: 'square',
+  x: 0,
+  y: 0,
+  width: 100,
+  height: 50,
+  ...(label ? { label } : {}),
+});
+
+const tab = (id: string, name: string, elements: Element[] = []): Tab => ({ id, name, elements });
+
+describe('matches', () => {
+  it('treats an empty query as a wildcard so the panel pre-opens with everything', () => {
+    expect(matches('', 'anything')).toBe(true);
+  });
+
+  it('matches case-insensitively so "FLOW" hits "Flowchart"', () => {
+    expect(matches('FLOW', 'Flowchart')).toBe(true);
+  });
+
+  it('substring matches in the middle of a name', () => {
+    expect(matches('chart', 'Flowchart')).toBe(true);
+  });
+
+  it('returns false when the needle is not present', () => {
+    expect(matches('zzz', 'Flowchart')).toBe(false);
+  });
+});
+
+describe('buildSearchResults', () => {
+  const liveDocs = [
+    { id: 'd1', name: 'Flowchart' },
+    { id: 'd2', name: 'Mind map' },
+    { id: 'd3', name: '' }, // untitled, falls back to "Untitled document"
+  ];
+  const folders = [
+    { id: 'f1', name: 'Projects' },
+    { id: 'f2', name: 'Personal' },
+  ];
+
+  it('marks a document saved only in this browser as This Browser (docs/specs/006-document/offline-mode.md#this-browser-pill)', () => {
+    const out = buildSearchResults({
+      query: 'notes',
+      documents: [
+        { id: 'l1', name: 'Workshop notes', localOnly: true },
+        { id: 'c1', name: 'Cloud notes' },
+      ],
+      folders: [],
+    });
+    const items = out.find((g) => g.key === 'documents')!.items;
+    expect(items.map((i) => (i.kind === 'document' ? i.localOnly === true : null))).toEqual([
+      true,
+      false,
+    ]);
+  });
+
+  it('orders groups: documents, folders, tabs, elements', () => {
+    const out = buildSearchResults({
+      query: '',
+      documents: liveDocs,
+      folders,
+      tabs: [tab('t1', 'Tab one', [shape('e1', 'thing')])],
+    });
+    expect(out.map((g) => g.key)).toEqual(['documents', 'folders', 'tabs', 'elements']);
+  });
+
+  it('skips groups whose matches are empty rather than rendering empty section headers', () => {
+    const out = buildSearchResults({
+      query: 'thereisnomatchanywhere',
+      documents: liveDocs,
+      folders,
+      tabs: [tab('t1', 'Tab one', [shape('e1', 'thing')])],
+    });
+    expect(out).toEqual([]);
+  });
+
+  it('falls back to "Untitled document" for documents with empty names', () => {
+    const out = buildSearchResults({
+      query: 'untitled',
+      documents: liveDocs,
+      folders: [],
+    });
+    const documentGroup = out.find((g) => g.key === 'documents')!;
+    expect(documentGroup.items).toHaveLength(1);
+    expect(documentGroup.items[0]).toMatchObject({
+      kind: 'document',
+      id: 'd3',
+      name: 'Untitled document',
+    });
+  });
+
+  it('marks the current tab in the tabs section so the user knows where they are', () => {
+    const out = buildSearchResults({
+      query: '',
+      documents: [],
+      folders: [],
+      tabs: [tab('t1', 'Tab one'), tab('t2', 'Tab two')],
+      currentTabId: 't2',
+    });
+    const tabGroup = out.find((g) => g.key === 'tabs')!;
+    expect(tabGroup.items).toEqual([
+      { kind: 'tab', id: 't1', name: 'Tab one', isCurrent: false },
+      { kind: 'tab', id: 't2', name: 'Tab two', isCurrent: true },
+    ]);
+  });
+
+  it("caps document + folder + tab matches at 8 each so a giant library doesn't blow up the modal", () => {
+    const many = Array.from({ length: 25 }, (_, i) => ({ id: `d${i}`, name: `Diagram ${i}` }));
+    const manyFolders = Array.from({ length: 25 }, (_, i) => ({
+      id: `f${i}`,
+      name: `Folder ${i}`,
+    }));
+    const manyTabs = Array.from({ length: 25 }, (_, i) => tab(`t${i}`, `Tab ${i}`));
+    const out = buildSearchResults({
+      query: '',
+      documents: many,
+      folders: manyFolders,
+      tabs: manyTabs,
+    });
+    const counts = Object.fromEntries(out.map((g) => [g.key, g.items.length]));
+    expect(counts.documents).toBe(8);
+    expect(counts.folders).toBe(8);
+    expect(counts.tabs).toBe(8);
+  });
+
+  it('caps element hits at 12 total across all tabs, not per-tab', () => {
+    // Each of 4 tabs has 5 labelled shapes (20 candidates); the cap
+    // should still land at exactly 12 element hits.
+    const tabs = [0, 1, 2, 3].map((ti) =>
+      tab(
+        `t${ti}`,
+        `Tab ${ti}`,
+        [0, 1, 2, 3, 4].map((ei) => shape(`t${ti}-e${ei}`, `Label ${ti}-${ei}`)),
+      ),
+    );
+    const out = buildSearchResults({ query: 'label', documents: [], folders: [], tabs });
+    const elementGroup = out.find((g) => g.key === 'elements');
+    expect(elementGroup?.items).toHaveLength(12);
+  });
+
+  it('drops elements whose label is empty or whitespace (no matchable content)', () => {
+    const t = tab('t1', 'Tab', [shape('e1', ''), shape('e2', '   '), shape('e3', 'real label')]);
+    const out = buildSearchResults({ query: '', documents: [], folders: [], tabs: [t] });
+    const elementGroup = out.find((g) => g.key === 'elements')!;
+    expect(elementGroup.items).toHaveLength(1);
+    expect(elementGroup.items[0]).toMatchObject({ elementId: 'e3', label: 'real label' });
+  });
+
+  it('omits the tabs + elements scope entirely when no tabs are supplied (explorer dashboard case)', () => {
+    const out = buildSearchResults({
+      query: '',
+      documents: liveDocs,
+      folders,
+      // tabs deliberately undefined
+    });
+    expect(out.map((g) => g.key)).toEqual(['documents', 'folders']);
+  });
+
+  it('reports the source tab name on element hits so users see "label on Tab name"', () => {
+    const out = buildSearchResults({
+      query: 'specific',
+      documents: [],
+      folders: [],
+      tabs: [tab('t1', 'Architecture', [shape('e1', 'specific component')])],
+    });
+    const elementGroup = out.find((g) => g.key === 'elements')!;
+    expect(elementGroup.items[0]).toMatchObject({
+      kind: 'element',
+      tabId: 't1',
+      tabName: 'Architecture',
+      elementId: 'e1',
+      label: 'specific component',
+      type: 'shape',
+    });
+  });
+});
+
+describe('buildSearchResults — table cells (docs/specs/008-canvas/canvas-and-palette.md Search panel)', () => {
+  const table = (id: string, cells: string[][]): Element => ({
+    id,
+    type: 'table',
+    x: 0,
+    y: 0,
+    width: 200,
+    height: 100,
+    cells,
+  });
+
+  it('matches a table by its cell text and surfaces the matching cell as the label', () => {
+    const t = tab('t1', 'Tab', [
+      table('tbl', [
+        ['Owner', 'Status'],
+        ['Sasha', 'Blocked on review'],
+      ]),
+    ]);
+    const out = buildSearchResults({ query: 'blocked', documents: [], folders: [], tabs: [t] });
+    const elementGroup = out.find((g) => g.key === 'elements')!;
+    expect(elementGroup.items[0]).toMatchObject({
+      kind: 'element',
+      elementId: 'tbl',
+      label: 'Blocked on review',
+      type: 'table',
+    });
+  });
+
+  it('skips tables whose cells are all empty (nothing matchable)', () => {
+    const t = tab('t1', 'Tab', [
+      table('tbl', [
+        ['', ' '],
+        ['', ''],
+      ]),
+    ]);
+    const out = buildSearchResults({ query: '', documents: [], folders: [], tabs: [t] });
+    expect(out.find((g) => g.key === 'elements')).toBeUndefined();
+  });
+
+  it('surfaces a table on the empty query via its first non-empty cell, like labelled elements', () => {
+    const t = tab('t1', 'Tab', [table('tbl', [['', 'First cell with text']])]);
+    const out = buildSearchResults({ query: '', documents: [], folders: [], tabs: [t] });
+    const elementGroup = out.find((g) => g.key === 'elements')!;
+    expect(elementGroup.items[0]).toMatchObject({
+      elementId: 'tbl',
+      label: 'First cell with text',
+    });
+  });
+});
+
+describe('buildSearchResults — shared documents + teams (docs/specs/008-canvas/canvas-and-palette.md Search panel)', () => {
+  it('matches "Shared with you" rows by name and carries the share code for navigation', () => {
+    const out = buildSearchResults({
+      query: 'road',
+      documents: [],
+      folders: [],
+      shared: [
+        { id: 'd1', name: 'Roadmap 2026', shareCode: 'CODE1' },
+        { id: 'd2', name: 'Other', shareCode: 'CODE2' },
+      ],
+    });
+    expect(out).toHaveLength(1);
+    expect(out[0]!.key).toBe('shared');
+    expect(out[0]!.items[0]).toMatchObject({
+      kind: 'shared',
+      id: 'd1',
+      name: 'Roadmap 2026',
+      shareCode: 'CODE1',
+    });
+  });
+
+  it('matches teams by name', () => {
+    const out = buildSearchResults({
+      query: 'platform',
+      documents: [],
+      folders: [],
+      teams: [
+        { id: 'team1', name: 'Platform' },
+        { id: 'team2', name: 'Design' },
+      ],
+    });
+    expect(out).toHaveLength(1);
+    expect(out[0]!.key).toBe('teams');
+    expect(out[0]!.items[0]).toMatchObject({ kind: 'team', id: 'team1', name: 'Platform' });
+  });
+
+  it('keeps the section order: documents, shared, folders, teams, tabs, elements', () => {
+    const out = buildSearchResults({
+      query: '',
+      documents: [{ id: 'd1', name: 'A' }],
+      folders: [{ id: 'f1', name: 'B' }],
+      shared: [{ id: 's1', name: 'C', shareCode: 'X' }],
+      teams: [{ id: 't1', name: 'D' }],
+      tabs: [tab('tab1', 'E', [shape('e1', 'F')])],
+    });
+    expect(out.map((g) => g.key)).toEqual([
+      'documents',
+      'shared',
+      'folders',
+      'teams',
+      'tabs',
+      'elements',
+    ]);
+  });
+
+  it('omits shared + teams groups entirely when the inputs are absent (guest case)', () => {
+    const out = buildSearchResults({
+      query: '',
+      documents: [],
+      folders: [{ id: 'f1', name: 'F' }],
+    });
+    expect(out.map((g) => g.key)).toEqual(['folders']);
+  });
+});
+
+describe('buildSearchResults — team library (docs/specs/013-workspace/team-shared-documents.md)', () => {
+  it('keeps personal folders in "My Documents" and team folders/documents in "Teams"', () => {
+    const out = buildSearchResults({
+      query: 'q3',
+      documents: [],
+      folders: [{ id: 'pf', name: 'Q3 planning' }],
+      teamFolders: [
+        { id: 'tf', path: 'Marketing / Q3', teamId: 'team1', teamName: 'Platform' },
+        { id: 'tf2', path: 'Hiring', teamId: 'team1', teamName: 'Platform' },
+      ],
+      teamDocuments: [{ id: 'td', name: 'Q3 roadmap', teamId: 'team1', teamName: 'Platform' }],
+    });
+    // My Documents (personal folder) + Teams (team folder + team document).
+    expect(out.map((g) => g.key)).toEqual(['folders', 'teams']);
+    const personalSpace = out.find((g) => g.key === 'folders')!;
+    expect(personalSpace.label).toBe('My Documents');
+    expect(personalSpace.items).toEqual([{ kind: 'folder', id: 'pf', name: 'Q3 planning' }]);
+    const teamsGroup = out.find((g) => g.key === 'teams')!;
+    expect(teamsGroup.items).toEqual([
+      { kind: 'folder', id: 'tf', name: 'Marketing / Q3', team: { id: 'team1', name: 'Platform' } },
+      { kind: 'document', id: 'td', name: 'Q3 roadmap', team: { id: 'team1', name: 'Platform' } },
+    ]);
+  });
+
+  it('matches team folders + documents by team name too, so "platform" finds the library', () => {
+    const out = buildSearchResults({
+      query: 'platform',
+      documents: [],
+      folders: [],
+      teamFolders: [{ id: 'tf', path: 'Hiring', teamId: 'team1', teamName: 'Platform' }],
+      teamDocuments: [{ id: 'td', name: 'Roadmap', teamId: 'team1', teamName: 'Platform' }],
+    });
+    const teamsGroup = out.find((g) => g.key === 'teams')!;
+    expect(teamsGroup.items).toEqual([
+      { kind: 'folder', id: 'tf', name: 'Hiring', team: { id: 'team1', name: 'Platform' } },
+      { kind: 'document', id: 'td', name: 'Roadmap', team: { id: 'team1', name: 'Platform' } },
+    ]);
+  });
+
+  it('surfaces palette items as an "Add to canvas" group, matched on name + keywords', () => {
+    const paletteItems = [
+      {
+        id: 'shape:cylinder',
+        name: 'Cylinder',
+        keywords: 'shape database storage',
+        add: { type: 'shape' as const, shapeKind: 'cylinder' as const },
+      },
+      {
+        id: 'tech:aws-s3',
+        name: 'S3',
+        keywords: 'technology amazon storage bucket',
+        add: { type: 'tech' as const, iconId: 'aws-s3' },
+      },
+    ];
+    const out = buildSearchResults({ query: 'storage', documents: [], folders: [], paletteItems });
+    const palette = out.find((g) => g.key === 'palette')!;
+    expect(palette.items.map((i) => (i.kind === 'palette' ? i.id : null))).toEqual([
+      'shape:cylinder',
+      'tech:aws-s3',
+    ]);
+  });
+
+  it('ranks the element whose name matches above keyword-only matches', () => {
+    const item = (id: string, name: string, keywords: string) => ({
+      id,
+      name,
+      keywords,
+      add: { type: 'tile' as const, tileId: id },
+    });
+    const paletteItems = [
+      item('entity', 'Entity', 'record table uml'),
+      item('tablet', 'Tablet', 'ipad slate'),
+      item('table', 'Table', 'grid rows'),
+      item('coffee', 'Coffee table', 'furniture'),
+    ];
+    const out = buildSearchResults({ query: 'table', documents: [], folders: [], paletteItems });
+    const palette = out.find((g) => g.key === 'palette')!;
+    expect(palette.items.map((i) => (i.kind === 'palette' ? i.id : null))).toEqual([
+      'table',
+      'tablet',
+      'coffee',
+      'entity',
+    ]);
+  });
+
+  it('does not surface palette items on an empty query (no catalogue dump)', () => {
+    const paletteItems = [
+      {
+        id: 'shape:square',
+        name: 'Rectangle',
+        keywords: 'shape box',
+        add: { type: 'shape' as const, shapeKind: 'square' as const },
+      },
+    ];
+    const out = buildSearchResults({ query: '', documents: [], folders: [], paletteItems });
+    expect(out.find((g) => g.key === 'palette')).toBeUndefined();
+  });
+});
+
+describe('buildSearchResults — commands (action palette)', () => {
+  const commandItems = [
+    { id: 'create-tab', name: 'Create new tab', keywords: 'new tab create add page sheet board' },
+    { id: 'delete', name: 'Delete', keywords: 'remove' },
+    { id: 'lock', name: 'Lock', keywords: 'unlock freeze' },
+  ];
+  const withCommands = (query: string) =>
+    buildSearchResults({ query, documents: [], folders: [], commandItems });
+
+  // docs/specs/008-canvas/canvas-and-palette.md "Search panel": every word typed, across name and keywords.
+  it('finds a command when its words are split between its name and its keywords', () => {
+    const ids = (q: string) =>
+      withCommands(q)
+        .find((g) => g.key === 'commands')
+        ?.items.map((i) => (i.kind === 'command' ? i.id : null)) ?? [];
+    expect(ids('create sheet')).toEqual(['create-tab']);
+    expect(ids('lock freeze')).toEqual(['lock']);
+    expect(ids('lock delete')).toEqual([]);
+  });
+
+  it('surfaces matching commands as an "Actions" group, matched on name', () => {
+    const out = withCommands('lock');
+    const commands = out.find((g) => g.key === 'commands')!;
+    expect(commands.label).toBe('Actions');
+    expect(commands.items).toEqual([{ kind: 'command', id: 'lock', name: 'Lock' }]);
+  });
+
+  it('matches on keyword synonyms beyond the name (create-tab via "new")', () => {
+    const commands = withCommands('new').find((g) => g.key === 'commands')!;
+    expect(commands.items.map((i) => (i.kind === 'command' ? i.id : null))).toEqual(['create-tab']);
+  });
+
+  it('does not surface commands for unrelated queries', () => {
+    expect(withCommands('database').find((g) => g.key === 'commands')).toBeUndefined();
+  });
+
+  it('does not surface commands on an empty query (no catalogue dump)', () => {
+    expect(withCommands('').find((g) => g.key === 'commands')).toBeUndefined();
+  });
+
+  it('is absent when the editor passes no command catalogue', () => {
+    const out = buildSearchResults({ query: 'delete', documents: [], folders: [] });
+    expect(out.find((g) => g.key === 'commands')).toBeUndefined();
+  });
+
+  it('ranks below a matching tab so navigation keeps the default Enter', () => {
+    const out = buildSearchResults({
+      query: 'tab',
+      documents: [],
+      folders: [],
+      tabs: [tab('t1', 'Tab notes')],
+      commandItems,
+    });
+    const keys = out.map((g) => g.key);
+    expect(keys.indexOf('tabs')).toBeLessThan(keys.indexOf('commands'));
+  });
+});
+
+describe('buildSearchResults — help articles (docs/specs/018-help/help-app.md + docs/specs/018-help/contextual-help-links.md)', () => {
+  const helpItems = [
+    {
+      id: 'help:keyboardShortcuts',
+      title: 'Keyboard shortcuts',
+      keywords: 'hotkey keys bindings',
+      href: '/help/tips-and-tricks/keyboard-shortcuts/',
+      leaf: 'keyboard-shortcuts',
+    },
+    {
+      id: 'help:sharing',
+      title: 'Sharing and embeds',
+      keywords: 'share link invite',
+      href: '/help/collaboration/sharing/',
+      leaf: 'sharing',
+    },
+  ];
+
+  it('finds an article from words in its title and its keywords together', () => {
+    const out = buildSearchResults({
+      query: 'sharing invite',
+      documents: [],
+      folders: [],
+      helpItems,
+    });
+    const help = out.find((g) => g.key === 'help')!;
+    expect(help.items.map((i) => (i.kind === 'help' ? i.id : null))).toEqual(['help:sharing']);
+  });
+
+  it('surfaces help articles as a "Help" group, matched on title', () => {
+    const out = buildSearchResults({ query: 'keyboard', documents: [], folders: [], helpItems });
+    const help = out.find((g) => g.key === 'help')!;
+    expect(help.items.map((i) => (i.kind === 'help' ? i.href : null))).toEqual([
+      '/help/tips-and-tricks/keyboard-shortcuts/',
+    ]);
+  });
+
+  it('matches on keyword synonyms beyond the title', () => {
+    const out = buildSearchResults({ query: 'hotkey', documents: [], folders: [], helpItems });
+    const help = out.find((g) => g.key === 'help')!;
+    expect(help.items).toHaveLength(1);
+    expect(help.items[0]!.kind === 'help' && help.items[0].leaf).toBe('keyboard-shortcuts');
+  });
+
+  it('does not surface help on an empty query (no catalogue dump)', () => {
+    const out = buildSearchResults({ query: '', documents: [], folders: [], helpItems });
+    expect(out.find((g) => g.key === 'help')).toBeUndefined();
+  });
+
+  it('ranks the help group last so navigation + edit results keep the default Enter', () => {
+    const out = buildSearchResults({
+      query: 'share',
+      documents: [{ id: 'd1', name: 'Share plan' }],
+      folders: [],
+      helpItems,
+    });
+    const keys = out.map((g) => g.key);
+    expect(keys.indexOf('help')).toBe(keys.length - 1);
+    expect(keys.indexOf('documents')).toBeLessThan(keys.indexOf('help'));
+  });
+});

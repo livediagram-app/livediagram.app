@@ -1,0 +1,87 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { CommentThread } from '@/components/illustrations/collaboration';
+
+export const metadata = helpMetadata({
+  title: 'Comments',
+  description:
+    'Leave comments on the canvas to give feedback, ask questions, and track decisions, then resolve them once they are handled.',
+  path: '/help/collaboration/comments/',
+});
+
+<ArticleLayout title="Comments" description="Drop a comment anywhere on the canvas to ask a question or leave feedback, then resolve it once it has been handled." categoryTitle="Collaboration" categorySlug="collaboration" subArticles={getSubArticles("comments")}>
+
+Comments let you have a conversation on top of the canvas without changing anything on it. Drop one on the canvas where it matters, leave a question or a piece of feedback, and resolve it once it has been dealt with. They are the lightweight way to review work, agree on changes, and keep a record of why something is the way it is.
+
+## Leaving a comment
+
+A comment is attached to the thing it is about, so the reader sees exactly what you are talking about.
+
+<Step n={1}>
+  Right-click the element (or long-press it on a touch screen) and press **Add Comment** in the row
+  of buttons along the top of its menu. Every boxed element can carry a thread; arrows cannot. On a
+  Participant link there is no right-click menu: select the element and press **Add Comment** on its
+  toolbar.
+</Step>
+
+<Step n={2}>
+  Type your note in the **Comments** popover and press **Comment** (or **Ctrl+Enter**, **Cmd+Enter**
+  on a Mac). The element shows a small comment icon with the count near its top (or along its bottom
+  edge, if you chose **Footer** for **Element Indicators** in Settings › Editor; **Off** hides it).
+  See [Element Indicators](/help/canvas/element-indicators/).
+</Step>
+
+<Step n={3}>
+  Press that icon any time to reopen the thread and read or reply to what is there. **Esc** or the
+  close button shuts the popover.
+</Step>
+
+Because a thread lives on the element rather than inside its content, you can leave feedback on a draft without nudging anyone's shapes or arrows out of place. Each comment shows its author's name, colour and how long ago it was posted. While a thread is open, you can delete your own comments with the bin that appears when you hover one; people who can edit the document can delete anyone's.
+
+On a Sheet, a comment can be about a single cell: right-click the cell and choose **Insert Comment**. See [Comment on a Cell](/help/canvas/plan-mode/sheets/#comment-on-a-cell).
+
+To comment on a **place** rather than a shape, an empty patch of canvas or the gap between two clusters, use a [comment panel](/help/palette/collaborate/comment-panels/): the same thread as a card on the canvas, joined to whatever it is about by an ordinary arrow.
+
+<Figure caption="An element's comment icon opens its Comments popover, with the thread, Resolve and the reply box.">
+  <CommentThread />
+</Figure>
+
+## Mentioning a teammate
+
+Type **@** in a comment to tag someone on your team. A list of teammates appears as you type: use the arrow keys and **Enter** (or click) to pick one, and their handle, like `@priya-kaur`, goes into the comment. **Esc** closes the list and leaves what you typed.
+
+A mention does two things for the person you tag:
+
+- The thread appears on their [Inbox](/help/explorer/activity/), marked **Mentioned You**, even if they never commented.
+- They get an email quoting your comment, unless they have turned off **Someone Mentions Me in a Comment** in their [email notifications](/help/account-and-data/email-notifications/).
+
+You can mention the members of the team whose library holds the document, as long as you are a member of that team too, including people who have been invited but not joined yet. On a personal document there is nobody to mention; move it into a team library first. You need to be signed in to mention anyone.
+
+## Resolving comments
+
+Once a comment has been actioned, press **Resolve** at the top of its thread to clear it from the working view while keeping the record. It becomes a green **Resolved** badge, the reply box is hidden, and the element's comment icon goes away. To reopen the thread, find it under **Resolved** in the [Collaborate panel](/help/collaboration/assigned-actions/#the-collaborate-panel) and press **Reopen** beside the badge. Resolving keeps the canvas focused on what still needs attention rather than on questions that are already settled.
+
+Every open thread on a tab is also listed in the [Collaborate panel](/help/collaboration/assigned-actions/#the-collaborate-panel), the **Collaborate** button in the bottom-right corner with a count of what is still open. Its **Resolved** view holds the threads you have resolved. Use comments to:
+
+- **Request changes** during a review without editing someone else's work directly.
+- **Ask a question** anchored to the exact element it is about.
+- **Capture a decision** so the reasoning is not lost once the canvas changes.
+
+## Comments and collaboration
+
+The canvas is multiplayer, so comments are part of how a group works on the canvas together. New comments appear for everyone in the document as they are posted. A collaborator can answer a question where it was asked, and a reviewer can leave feedback for the author to pick up later.
+
+Because the canvas works without signing in, a guest you hand a share link to can read and join the conversation too. Commenting needs a **Participant** or **Editor** share link: someone on a **Viewer** link can read the threads but not add to them, resolve them or delete anything.
+
+A few things to know:
+
+- **Comments aren't part of undo.** Pressing undo never takes back a comment, yours or anyone else's.
+- **Owners can be emailed.** When someone comments on a document you own, you can get an email, controlled by **Someone Comments on My Document** in your [email notifications](/help/account-and-data/email-notifications/).
+
+<Tip>
+  Keep each comment to one point. A marker that asks a single, specific question is far easier to
+  resolve than a long thread covering five unrelated things.
+</Tip>
+
+</ArticleLayout>

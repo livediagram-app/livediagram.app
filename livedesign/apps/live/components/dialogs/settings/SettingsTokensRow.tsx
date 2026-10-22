@@ -1,0 +1,96 @@
+'use client';
+
+import { useState } from 'react';
+import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
+import { useTokens } from '@/hooks/persistence/useTokens';
+import { useWorkbenchPairings } from '@/hooks/persistence/useWorkbenchPairings';
+import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
+import { TokensGlyph } from './settings-icons';
+import { SettingsRowShell } from './SettingsRowShell';
+import { SettingsSignInLink } from './SettingsSignInLink';
+import { SettingsTokenCreate } from './SettingsTokenCreate';
+import { SettingsTokenList } from './SettingsTokenList';
+import { SettingsTokenOverview } from './SettingsTokenOverview';
+import { SettingsTokenReveal } from './SettingsTokenReveal';
+import type { SettingsTokensRowSpec } from './settings-catalogue';
+
+// The API Tokens category's one row: the whole token manager
+// (docs/specs/015-api/public-api-and-tokens.md#36-management--the-settings-dialogs-api-tokens-category).
+// Overview and capacity, then whichever of the composer or the one-time
+// reveal is open, then the tokens. Tokens are Clerk-only, so a guest gets the
+// reason and a way to sign in rather than a form that would only ever 403.
+export function SettingsTokensRow({ row }: { row: SettingsTokensRowSpec }) {
+  const { authLoaded, clerkUserId, isSignedIn } = useClerkApiBootstrap();
+  const enabled = Boolean(isSignedIn && clerkUserId);
+  const tokens = useTokens(clerkUserId ?? null, { enabled });
+  const pairings = useWorkbenchPairings(clerkUserId ?? null, { enabled });
+  const [composing, setComposing] = useState(false);
+  const [secret, setSecret] = useState<string | null>(null);
+  // First run: with no tokens and nothing just minted, the composer is the
+  // category, one field and one button, rather than an empty list plus two
+  // routes to the same form.
+  const firstRun = tokens.list !== null && tokens.list.length === 0 && secret === null;
+
+  return (
+    <SettingsRowShell
+      row={row}
+      leading={
+        // The key tile heads the row: muted until signed in.
+        <span
+          aria-hidden
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+            authLoaded && !enabled
+              ? 'bg-slate-100 text-slate-400 dark:bg-slate-700 dark:text-slate-400'
+              : 'bg-gradient-to-br from-slate-600 to-slate-800 text-white shadow-sm shadow-slate-900/20 dark:from-slate-500 dark:to-slate-700'
+          }`}
+        >
+          {TokensGlyph}
+        </span>
+      }
+      descriptionContent={
+        authLoaded && !enabled ? (
+          <>
+            Sign in to create API tokens.
+            <SettingsSignInLink />
+          </>
+        ) : undefined
+      }
+    >
+      {!authLoaded || !enabled ? null : (
+        <div className="flex flex-col gap-4">
+          <SettingsTokenOverview
+            count={tokens.list === null ? null : tokens.count}
+            max={tokens.max}
+            composing={composing || secret !== null}
+            onNew={() => setComposing(true)}
+          />
+          {secret !== null ? (
+            <SettingsTokenReveal secret={secret} onDone={() => setSecret(null)} />
+          ) : composing || firstRun ? (
+            <SettingsTokenCreate
+              tokens={tokens}
+              onCancel={firstRun ? undefined : () => setComposing(false)}
+              onCreated={(minted) => {
+                setComposing(false);
+                setSecret(minted);
+              }}
+            />
+          ) : null}
+          {firstRun ? (
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              Connecting Claude or another AI tool? It creates its own token when you approve it.{' '}
+              <HelpArticleLink article="connectAiTool" variant="text" label="Read the guide" />
+            </p>
+          ) : (
+            <SettingsTokenList
+              tokens={tokens.list}
+              onRevoke={(id) => void tokens.revoke(id)}
+              pairingsFor={pairings.forToken}
+              onUnpair={(id) => void pairings.unpair(id)}
+            />
+          )}
+        </div>
+      )}
+    </SettingsRowShell>
+  );
+}

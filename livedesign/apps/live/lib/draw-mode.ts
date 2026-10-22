@@ -1,0 +1,440 @@
+import { DEFAULT_PEN_CURSOR, penCursor } from './whiteboard-pen-cursor';
+import { WHITEBOARD_SHAPES } from './whiteboard-tool';
+import { shapeKindLabel } from './element-names';
+import type {
+  ArrowEnds,
+  ComponentKind,
+  EmbedProvider,
+  EstimateScale,
+  Reaction,
+  SelectionMode,
+  SessionTool,
+  ShapeKind,
+} from '@livepages/document';
+import {
+  EMBED_PROVIDER_LABEL,
+  penColourCss,
+  type PenColour,
+} from '@livepages/document';
+
+// Draw-to-size intent. Picking any element from the palette except the
+// annotation (docs/specs/008-canvas/canvas-and-palette.md "Placement on add") stashes the intent here; the canvas
+// then enters a "drag to define" gesture and forwards the resolved
+// start + end points to the editor on pointer-up. Discriminated so
+// the canvas can render the right preview per intent (oval for a
+// circle shape, line for an arrow, dashed box for text / sticky /
+// image, etc.) and the editor's commit handler can mint the right
+// element type from the same gesture.
+export type PendingDraw =
+  // `iconId` (+ seed `label`) ride the shape intent for the `icon` kind, so a
+  // palette icon / tech icon draws to size exactly like a shape (tap to drop,
+  // drag to size) instead of dropping at a fixed size.
+  // `stickerId` rides the same intent for the `sticker` kind (docs/specs/010-palette/stickers.md), the
+  // way `iconId` does for `icon`.
+  // `session` (docs/specs/012-collaboration/session-button.md) and `reaction` (docs/specs/009-elements/reaction-pad.md) ride the same intent for
+  // the same reason: both kinds are ONE element with a mode field, and the
+  // palette offers a tile per mode rather than one tile you then reconfigure.
+  // Carrying the choice on the intent is what lets "Add poll" place a poll
+  // instead of placing a timer you have to go and change.
+  | {
+      type: 'shape';
+      kind: ShapeKind;
+      iconId?: string;
+      stickerId?: string;
+      label?: string;
+      session?: SessionTool;
+      reaction?: Reaction;
+      mode?: SelectionMode;
+      estimateScale?: EstimateScale;
+      // A Plan board's preset, or a Plan card's item type (docs/specs/026-plan/plan-mode.md).
+      plan?: string;
+      // A creation-time variant of the kind (packages/document shape-variants.ts): the Callout card, a Funnel.
+      variant?: string;
+      // What the tile that armed it calls it ("Funnel", "Org Chart"), for the banner: a variant or a
+      // compound kind reads wrong named by its kind alone (a Funnel is a pyramid underneath).
+      name?: string;
+      // A whiteboard shape (docs/specs/023-draw-mode/draw-mode.md "Shapes"): drawn in the board's ink,
+      // unfilled, at the default width. Pens never colour it.
+      board?: true;
+    }
+  | { type: 'text' }
+  | { type: 'sticky' }
+  | { type: 'image' }
+  // Table (docs/specs/008-canvas/canvas-and-palette.md), link card (docs/specs/009-elements/link-cards.md), and the embeds (docs/specs/009-elements/youtube-video.md, docs/specs/009-elements/embed-providers.md)
+  // are their own element types rather than ShapeKinds, so each needs its own
+  // intent to ride the same gesture. They used to drop at the viewport centre
+  // for want of one, which made "draws or drops?" a property of how the
+  // element was modelled instead of whether it has a size worth choosing.
+  // Annotation is deliberately absent: a fixed 44x44 marker has no box to
+  // size, so it stays the one instant-drop tile (docs/specs/009-elements/annotations.md).
+  | { type: 'table' }
+  | { type: 'link-card' }
+  // `provider` rides the intent the way `session` / `reaction` do above: the
+  // Media tab offers a tile per service and they are all one `video` kind, so
+  // the choice has to survive the gesture or "Add Loom" would place a bare
+  // embed the user then has to go and re-point.
+  | { type: 'video'; provider?: EmbedProvider }
+  // `ends` rides the arrow intent for the whiteboard's Line and Arrow shapes
+  // (docs/specs/023-draw-mode/draw-mode.md), which differ only in their heads.
+  | { type: 'arrow'; ends?: ArrowEnds; board?: true }
+  // A composite Component (docs/specs/008-canvas/canvas-and-palette.md): banner / hero / header / callout / stat /
+  // process / avatar. Draws to size exactly like a shape — a tap drops it at
+  // its natural size, a drag scales the whole group to the dragged box.
+  | { type: 'component'; kind: ComponentKind }
+  // Pencil intent: the user picked the freehand tool. Unlike the
+  // box intents, this one has no tap-to-drop branch (the pencil is
+  // gestural by definition) and the gesture collects a
+  // stream of pointer samples during the drag, simplified +
+  // smoothed on release into a FreehandElement (see docs/specs/008-canvas/canvas-and-palette.md Pencil
+  // (freehand) subsection, docs/specs/006-document/document-structure.md FreehandElement). The
+  // 'highlighter' variant (docs/specs/008-canvas/highlighter.md) rides the same gesture but
+  // commits the marker recipe: no shape recognition, no
+  // close-to-fill, wide translucent stroke.
+  //
+  // 'shape-pen' (docs/specs/008-canvas/two-pens.md) is the same gesture WITH recognition: a rough
+  // circle becomes a circle. Recognition used to be a toggle in the pen's
+  // mode banner, which made "will this stroke convert?" a hidden mode you had
+  // to check before every stroke. It is now which pen you picked, so the
+  // answer is the tile you clicked.
+  | { type: 'freehand'; variant?: 'shape-pen' }
+  // The Highlighter tile's arm (docs/specs/008-canvas/highlighter.md): the colour and width the
+  // stroke lands in ride the intent, set from the Quick style panel's Highlighter rows, so the
+  // preview and the commit read them where they already read the arm. Absent: Yellow / Medium.
+  | { type: 'freehand'; variant: 'highlighter'; colour?: string; width?: number }
+  // A whiteboard pen (docs/specs/023-draw-mode/draw-mode.md "Pens"): held in the hand,
+  // carrying the pen's colour (null = the board's ink), width in px and whether
+  // shape recognition is on.
+  | {
+      type: 'freehand';
+      variant: 'whiteboard';
+      colour: PenColour | null;
+      width: number;
+      recognise: boolean;
+      // Which of Draw mode's markers this is, so two set alike never both read as held.
+      penId?: import('./whiteboard-prefs').WhiteboardPenId;
+      // Picked up for one stroke (the Logo palette, docs/specs/007-editor/logo-pages.md "The Logo
+      // palette"): put down once it lands, as the pencil is. Absent: held until put down.
+      once?: boolean;
+    }
+  // Polygon tool (docs/specs/008-canvas/polygon-tool.md): click-to-place vertices rather than a
+  // drag gesture. The canvas accumulates clicked points; closing on
+  // the start vertex or double-click / Enter commits a
+  // straight-edged FreehandElement.
+  | { type: 'polygon' }
+  // The Path tool (docs/specs/023-draw-mode/path-tool.md): a vector pen held on a whiteboard. Clicks
+  // place corner nodes and drags pull out curves; the canvas keeps the path being drawn
+  // (usePathDrawGesture) and the tool stays in hand after each path lands.
+  | { type: 'path' };
+
+/** The choices a tile hands `addShape` along with its kind: they ride the shape intent through the gesture. */
+export type AddShapeOptions = Pick<
+  Extract<PendingDraw, { type: 'shape' }>,
+  'session' | 'reaction' | 'mode' | 'estimateScale' | 'plan' | 'variant' | 'name'
+>;
+
+// The shape the banner names ("Tap to drop or drag to draw Square"), as the tile the person just picked names it.
+// Draw mode's dock names its own shapes (Rectangle, Ellipse); everywhere else a shape is named as the palette and
+// the selection badge name it (shapeKindLabel: Square, Circle). Its own aliases (square -> Rectangle, circle ->
+// Oval) had drifted from both, so a Circle tile armed an "Oval" and a dock Ellipse did too.
+function shapeIntentName(intent: Extract<PendingDraw, { type: 'shape' }>): string {
+  if (intent.name) return intent.name;
+  if (intent.board) {
+    const dock = WHITEBOARD_SHAPES.find(
+      (s) => s.intent.type === 'shape' && s.intent.kind === intent.kind,
+    );
+    if (dock) return dock.label;
+  }
+  return shapeKindLabel(intent.kind);
+}
+
+// User-facing component names for the draw-mode banner.
+const COMPONENT_LABELS: Record<ComponentKind, string> = {
+  banner: 'Banner',
+  hero: 'Hero',
+  header: 'Header',
+  callout: 'Callout',
+  stat: 'Stat row',
+  process: 'Process steps',
+  avatar: 'Avatar',
+  flowchart: 'Flowchart',
+};
+
+// Banner copy per draw intent. Shape intents include the kind name
+// so the user can see which palette button they queued ("Drag to
+// draw Rectangle"); tools read in plain English ("Drag to draw an
+// arrow") because there's no kind dimension to disambiguate. The
+// freehand variant carries a hint about the auto-close gesture on
+// desktop, but that parenthetical overflows the mode banner on a
+// phone-width viewport, so mobile gets the bare "Drag to draw"
+// (the gesture still auto-closes, the user just doesn't see the
+// hint until they try it).
+// A whiteboard pen draws freely: no alignment guides and no start snap
+// (docs/specs/023-draw-mode/draw-mode.md "No guides for pens").
+/** A whiteboard pen drawing freely, as on a whiteboard: no start snap, no alignment guides. Off a
+ *  whiteboard a marker lines up as the pencil does (docs/specs/007-editor/logo-pages.md). */
+export function isFreePenIntent(
+  intent: PendingDraw | null | undefined,
+  whiteboard: boolean,
+): boolean {
+  return whiteboard && isWhiteboardPenIntent(intent);
+}
+
+export function isWhiteboardPenIntent(
+  intent: PendingDraw | null | undefined,
+): intent is Extract<PendingDraw, { variant: 'whiteboard' }> {
+  return intent?.type === 'freehand' && intent.variant === 'whiteboard';
+}
+
+// A tool that exists on a whiteboard only (docs/specs/023-draw-mode/draw-mode.md "Shapes"): a pen,
+// the Path tool, or a shape, line or arrow armed from the dock. Leaving the board puts it down, so
+// the board's tools and their look never carry over a mode switch (a marker can still be picked
+// up in another mode on purpose, from the Toolbar strip's Search).
+export function isWhiteboardOnlyIntent(intent: PendingDraw | null | undefined): boolean {
+  if (!intent) return false;
+  if (isWhiteboardPenIntent(intent) || isPathIntent(intent)) return true;
+  return (intent.type === 'shape' || intent.type === 'arrow') && intent.board === true;
+}
+
+// Whether a freshly drawn element drops straight into typing. A text box is
+// only useful once typed into; on a whiteboard a sticky is too, as on a real
+// board (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows").
+export function opensForTyping(intent: PendingDraw, whiteboard: boolean): boolean {
+  return intent.type === 'text' || (whiteboard && intent.type === 'sticky');
+}
+
+// A pen held in the hand rather than armed for one gesture: a whiteboard pen
+// (docs/specs/023-draw-mode/draw-mode.md "Pens") and the Path tool
+// (docs/specs/023-draw-mode/path-tool.md). Neither wears the one-shot banner. The
+// highlighter is a one-shot Draw tile (docs/specs/008-canvas/highlighter.md), so it does.
+export function isHeldPenIntent(intent: PendingDraw | null | undefined): boolean {
+  return (intent?.type === 'freehand' && intent.variant === 'whiteboard') || isPathIntent(intent);
+}
+
+// A Plan card tile pressed: it goes into a board's column, never onto the canvas
+// (docs/specs/026-plan/plan-mode.md "The palette").
+export function isPlanCardIntent(
+  intent: PendingDraw | null | undefined,
+): intent is Extract<PendingDraw, { type: 'shape' }> {
+  return intent?.type === 'shape' && intent.kind === 'plan-card';
+}
+
+// The Path tool in hand (docs/specs/023-draw-mode/path-tool.md).
+export function isPathIntent(intent: PendingDraw | null | undefined): boolean {
+  return intent?.type === 'path';
+}
+
+// What the tab holds that changes a hint: a Plan card goes into a board's column, so its hint says where, or
+// that a board comes first (docs/specs/026-plan/plan-mode.md "The palette").
+type DrawBannerContext = { hasPlanBoard?: boolean };
+
+export function drawBannerMessage(
+  intent: PendingDraw,
+  isMobile: boolean,
+  context: DrawBannerContext = {},
+): string {
+  switch (intent.type) {
+    case 'shape':
+      if (intent.kind === 'plan-card') {
+        return context.hasPlanBoard
+          ? 'Select the board column you want this card to appear in'
+          : 'Add a board first in order to use cards';
+      }
+      return `Tap to drop or drag to draw ${shapeIntentName(intent)}`;
+    case 'text':
+      return 'Tap to drop or drag to place text';
+    case 'sticky':
+      return 'Tap to drop or drag to draw a sticky note';
+    case 'image':
+      return 'Tap to drop or drag to draw image bounds';
+    case 'table':
+      return 'Tap to drop or drag to draw a table';
+    case 'link-card':
+      return 'Tap to drop or drag to draw a link card';
+    case 'video':
+      // Names the service the tile promised (docs/specs/009-elements/embed-providers.md) rather than saying
+      // "video" for all six, so the banner confirms which one is queued. The
+      // 16:9 note is the one surprising thing about this drag, so it earns
+      // its place on desktop; a phone-width banner can't hold it.
+      return isMobile
+        ? `Tap to drop or drag to draw ${EMBED_PROVIDER_LABEL[intent.provider ?? 'website']}`
+        : `Tap to drop or drag to draw ${EMBED_PROVIDER_LABEL[intent.provider ?? 'website']} (stays 16:9)`;
+    case 'arrow':
+      // The Line is the arrow without its heads, and its tile says Line (docs/specs/008-canvas/canvas-and-palette.md).
+      return intent.ends === 'none'
+        ? 'Tap to drop or drag to draw a line'
+        : 'Tap to drop or drag to draw an arrow';
+    case 'component':
+      return `Tap to drop or drag to draw ${COMPONENT_LABELS[intent.kind]}`;
+    case 'freehand':
+      // Freehand is gestural only (no tap-to-drop): it collects the
+      // pointer stream, so it keeps the bare "Drag to draw". The
+      // highlighter variant never closes, so it skips the hint.
+      if (intent.variant === 'highlighter') return 'Drag to highlight';
+      // The shape pen says what it will do, since that is the whole
+      // difference between it and Freehand (docs/specs/008-canvas/two-pens.md).
+      if (intent.variant === 'shape-pen')
+        return isMobile ? 'Draw a shape' : 'Draw a rough shape; it snaps to the real one';
+      // A whiteboard pen is held and never closes (docs/specs/023-draw-mode/draw-mode.md); its dock
+      // button says it is in hand, so this copy only reaches a screen reader.
+      if (intent.variant === 'whiteboard') return 'Drag to draw';
+      return isMobile ? 'Drag to draw' : 'Drag to draw (release near the start to close)';
+    case 'path':
+      // Held like a pen: its dock button says it is in hand, so this reaches a screen reader.
+      return 'Click to place points, drag to curve';
+    case 'polygon':
+      // The close / finish affordances overflow a phone-width banner,
+      // same trade-off as the freehand close hint above.
+      return isMobile
+        ? 'Tap to place points'
+        : 'Click to place points, click the start to close, double-click to finish';
+  }
+}
+
+// Per-shape draw-mode cursor. Returns a `cursor:` CSS value, an
+// `url(data:image/svg+xml,...)` referencing an inline SVG whose
+// hotspot sits at (4, 4): a small crosshair at the pointer tip,
+// plus a faded outline of the shape kind in the cursor's lower-
+// right so the user can see at a glance which shape is queued.
+// `crosshair` is the system fallback for browsers that won't load
+// the data URL. Three kinds get explicit outlines (square, circle,
+// diamond); everything else uses the plain crosshair branch since
+// the banner already shows the shape name.
+function drawShapeCursor(kind: ShapeKind): string {
+  if (kind === 'square') {
+    return drawCursorFromGlyph(
+      `<rect x="13" y="13" width="11" height="8" fill="none" stroke="black" stroke-width="1.4" />`,
+    );
+  }
+  if (kind === 'circle') {
+    return drawCursorFromGlyph(
+      `<ellipse cx="18.5" cy="17" rx="5.5" ry="4" fill="none" stroke="black" stroke-width="1.4" />`,
+    );
+  }
+  if (kind === 'diamond') {
+    return drawCursorFromGlyph(
+      `<path d="M18.5 12 L24 17 L18.5 22 L13 17 Z" fill="none" stroke="black" stroke-width="1.4" />`,
+    );
+  }
+  // Other shape kinds fall back to the plain crosshair (so a Tab key
+  // press never lands them on an undefined cursor): the banner
+  // carries the kind name and the palette button is pressed, so the
+  // user still sees what's queued.
+  return 'crosshair';
+}
+
+// Builds a per-tool cursor for non-shape draw intents: text, sticky,
+// image, arrow. Reads the same crosshair-at-(4, 4) shape as
+// drawShapeCursor so every draw-mode pointer has the same anchor,
+// then layers a tiny tool-specific glyph in the lower-right. Anything
+// the discriminated union adds in future falls back to 'crosshair'
+// rather than 'auto' / inherited so the cursor never reads as "not
+// in a mode" when one is active.
+export function drawIntentCursor(intent: PendingDraw): string {
+  if (intent.type === 'shape') return drawShapeCursor(intent.kind);
+  if (intent.type === 'text') {
+    return drawCursorFromGlyph(
+      `<path d="M13 13 H24 M18.5 13 V23 M16 23 H21" stroke="black" stroke-width="1.4" stroke-linecap="round" fill="none" />`,
+    );
+  }
+  if (intent.type === 'sticky') {
+    return drawCursorFromGlyph(
+      `<path d="M13 13 H21 L24 16 V23 H13 Z M21 13 V16 H24" stroke="black" stroke-width="1.4" stroke-linejoin="round" fill="none" />`,
+    );
+  }
+  if (intent.type === 'image') {
+    return drawCursorFromGlyph(
+      `<rect x="13" y="14" width="11" height="9" rx="1" fill="none" stroke="black" stroke-width="1.4" /><circle cx="15.5" cy="16.5" r="0.9" fill="black" /><path d="M13 21 L16 18.5 L18.5 20.5 L21 18 L24 20" stroke="black" stroke-width="1.2" stroke-linejoin="round" fill="none" />`,
+    );
+  }
+  if (intent.type === 'table') {
+    // A 3x3 grid: a box with one vertical and one horizontal rule, and a
+    // filled top band for the header row the factory turns on.
+    return drawCursorFromGlyph(
+      `<rect x="13" y="13" width="12" height="10" rx="1" fill="none" stroke="black" stroke-width="1.3" /><path d="M13 16.5 H25" stroke="black" stroke-width="1.3" /><path d="M17 16.5 V23 M21 16.5 V23 M13 20 H25" stroke="black" stroke-width="1" />`,
+    );
+  }
+  if (intent.type === 'link-card') {
+    // A card with a chain link on it — matches the palette tile's bookmark
+    // reading rather than repeating the plain image rectangle.
+    return drawCursorFromGlyph(
+      `<rect x="12" y="14" width="13" height="9" rx="1.5" fill="none" stroke="black" stroke-width="1.3" /><path d="M16 18.5 a1.8 1.8 0 0 1 1.8 -1.8 h1.4 M21 18.5 a1.8 1.8 0 0 1 -1.8 1.8 h-1.4" stroke="black" stroke-width="1.2" stroke-linecap="round" fill="none" /><path d="M17 20.5 H20.5" stroke="black" stroke-width="1.2" stroke-linecap="round" />`,
+    );
+  }
+  if (intent.type === 'video') {
+    // A 16:9 frame with a play triangle — one glyph for all six providers.
+    // Painting a per-provider mark here would mean six more inline SVGs to
+    // read at 12px, and the banner already names the service.
+    return drawCursorFromGlyph(
+      `<rect x="12" y="14.5" width="14" height="8" rx="1.5" fill="none" stroke="black" stroke-width="1.3" /><path d="M17.5 16.8 L21.5 18.5 L17.5 20.2 Z" fill="black" />`,
+    );
+  }
+  if (intent.type === 'freehand') {
+    if (intent.variant === 'highlighter') {
+      // Marker glyph: a chisel-tip body with a SOLID YELLOW tip over a
+      // bold yellow underline band, so the cursor reads "highlighter"
+      // at a glance rather than another black pen nib.
+      return drawCursorFromGlyph(
+        `<path d="M15 20 L20 15 L23 18 L18 23 Z" fill="rgb(253 224 71)" stroke="black" stroke-width="1.3" stroke-linejoin="round" /><path d="M20 15 L22 12 L25 15 L23 18 Z" fill="none" stroke="black" stroke-width="1.3" stroke-linejoin="round" /><path d="M12 26 H24" stroke="rgb(250 204 21)" stroke-width="4" stroke-linecap="round" />`,
+      );
+    }
+    if (intent.variant === 'whiteboard') {
+      // The canvas draws the look chosen in the dock (useWhiteboardPenCursor);
+      // this is its default, on the light board.
+      return penCursor(
+        DEFAULT_PEN_CURSOR,
+        penColourCss(intent.colour, 'light', 'rgb(28 25 23)'),
+        'light',
+      );
+    }
+    if (intent.variant === 'shape-pen') {
+      // Pen nib with a dashed square beside it: the nib says "drawing", the
+      // square says "this one lands as a shape" (docs/specs/008-canvas/two-pens.md).
+      return drawCursorFromGlyph(
+        `<path d="M12 24 L17 19 L19.5 21.5 L14.5 26.5 Z M17 19 L19 17" stroke="black" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none" /><rect x="17.5" y="12" width="9" height="9" rx="1" fill="none" stroke="black" stroke-width="1.3" stroke-dasharray="2.4 2" />`,
+      );
+    }
+    // Pen nib glyph: a tiny diagonal point. Reads as "drawing
+    // instrument", same as the palette button below.
+    return drawCursorFromGlyph(
+      `<path d="M14 22 L20 16 L23 19 L17 25 Z M20 16 L22 14 M14 22 L13 25" stroke="black" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" fill="none" />`,
+    );
+  }
+  if (intent.type === 'polygon') {
+    // Open polygon with vertex dots: reads as "place points".
+    return drawCursorFromGlyph(
+      `<path d="M14 23 L16 15 L23 13 L24 20 L19 24 Z" stroke="black" stroke-width="1.3" stroke-linejoin="round" fill="none" /><circle cx="16" cy="15" r="1.3" fill="black" /><circle cx="23" cy="13" r="1.3" fill="black" /><circle cx="19" cy="24" r="1.3" fill="black" />`,
+    );
+  }
+  if (intent.type === 'path') {
+    // A pen nib over a curve with one anchor: reads as "place points, pull curves".
+    return drawCursorFromGlyph(
+      `<path d='M12 25 C 13 18 19 15 25 15' stroke='black' stroke-width='1.3' fill='none' /><rect x='16.3' y='16.8' width='2.6' height='2.6' fill='white' stroke='black' stroke-width='1' /><path d='M14 21 L21 15' stroke='black' stroke-width='1' />`,
+    );
+  }
+  if (intent.type === 'component') {
+    // Stacked blocks (a header bar over a content block) — the same glyph the
+    // Components palette category uses, so the queued cursor matches the tile.
+    return drawCursorFromGlyph(
+      `<rect x="13" y="13" width="11" height="3.5" rx="1" fill="none" stroke="black" stroke-width="1.3" /><rect x="13" y="18" width="11" height="6" rx="1" fill="none" stroke="black" stroke-width="1.3" />`,
+    );
+  }
+  // Arrow: a tiny line with a head at the right end.
+  return drawCursorFromGlyph(
+    `<path d="M13 18 L23 18 M20 15.5 L23 18 L20 20.5" stroke="black" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" fill="none" />`,
+  );
+}
+
+// Shared SVG-cursor builder. Crosshair tip at (4, 4), white halo
+// first for visibility on dark canvas backgrounds (graph paper, dark
+// mode), black stroke on top so it remains legible on light
+// backgrounds too. The glyph is the tool / shape preview, drawn in
+// the lower-right of a 28x28 hotspot box.
+function drawCursorFromGlyph(glyph: string): string {
+  const svg =
+    `<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'>` +
+    `<path d='M0 4 H8 M4 0 V8' stroke='white' stroke-width='3' stroke-linecap='round' />` +
+    `<path d='M0 4 H8 M4 0 V8' stroke='black' stroke-width='1.5' stroke-linecap='round' />` +
+    glyph +
+    `</svg>`;
+  return `url("data:image/svg+xml;utf8,${encodeURIComponent(svg)}") 4 4, crosshair`;
+}

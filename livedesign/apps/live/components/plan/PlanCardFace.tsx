@@ -1,0 +1,377 @@
+'use client';
+
+import type { ReactNode } from 'react';
+// One item's card face (docs/specs/026-plan/plan-board.md "What the board shows"), shared by the board's
+// cards and the Plan card element, at the board's card size: Minimal (the title), Compact (the type's glyph and
+// title over one row of pills) or Detailed (the type chip, number and priority signal; the title; the project;
+// the description; custom fields; label chips; then a footer of pills and who has it). The type's colour fills
+// the card's number (a dot on Minimal, which shows none); the card lifts a little under the pointer. Face-down while its board hides writing;
+// ringed in someone's colour while they drag or read it. The parts live in plan-card-parts.tsx.
+import { NewResponseMark } from '@/components/forms/NewResponseMark';
+import { useFreshResponse } from '@/components/forms/fresh-responses';
+import {
+  isFlagged,
+  isPriority,
+  itemAssignee,
+  itemLabels,
+  itemTitle,
+  ITEM_TYPES,
+  itemVoteTotal,
+  typeIn,
+  itemColourOf,
+  linkedCard,
+  cardFieldsAt,
+  type CardField,
+  type CardSize,
+  type Item,
+  typeCardDisplay,
+  type ItemTypeDef,
+  typeCardLayout,
+  type CardSlot,
+  isCustomCardField,
+} from '@livepages/items';
+import { finishFaceShadows } from '@livepages/document';
+import { useFaceFinish } from '@/components/canvas/CanvasFinishContext';
+import { usePlan, type PlanCardPresence } from './PlanContext';
+import { customFieldText } from './custom-field-text';
+import { CUSTOM_KIND_ICONS } from './CustomFieldKindParts';
+import { accentOn, type PlanPalette } from './plan-palette';
+import { PersonDisc, PresenceTag } from './PersonDisc';
+import { PlanTypeGlyph } from './plan-type-glyph';
+import { ColourDot } from './ColourSwatches';
+import {
+  ChecklistPill,
+  CommentsPill,
+  DuePill,
+  FlagMark,
+  KeyTag,
+  LabelChips,
+  MetaPill,
+  PrioritySignal,
+  StartPill,
+  TypeChip,
+  TypeDot,
+  checklistProgress,
+} from './plan-card-parts';
+
+type PlanCardFaceProps = {
+  item: Item;
+  palette: PlanPalette;
+  fields: readonly CardField[];
+  // The board's card size (docs/specs/026-plan/plan-board.md "The board set-up"); a Plan card is Detailed.
+  size?: CardSize;
+  faceDown?: boolean;
+  muted?: boolean;
+  presence?: PlanCardPresence;
+  // A type to draw it as instead of the catalogue's (the type editor's Display preview, a draft not yet saved).
+  typeOverride?: ItemTypeDef;
+  // The type editor's Display (docs/specs/026-plan/item-types.md "Editing a type"): the card drawn as its own layout
+  // editor. Each slot is drawn even when empty, through `slot` (a dotted box to drop into), and each field's bit
+  // through `bit` (a chip that drags and comes off).
+  edit?: CardFaceEdit;
+};
+
+export type CardFaceEdit = {
+  slot: (slot: CardSlot, bits: ReactNode[]) => ReactNode;
+  bit: (field: CardField, node: ReactNode) => ReactNode;
+};
+
+// How far the Display editor's dotted box (1 px border, 2 px padding) and chip (2 px padding) lower a chip's
+// middle: a Compact title beside them drops as much, so its first line stays level with them.
+const EDIT_CHIP_INSET_PX = 5;
+
+// The card's frame: rounded, a hairline border and a soft shadow that deepens under the pointer.
+const FRAME =
+  'group/card relative flex h-full overflow-hidden rounded-xl border transition-[box-shadow,transform] duration-150 hover:-translate-y-px hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0';
+const REST_SHADOW = '0 1px 2px rgba(15,23,42,0.06), 0 1px 3px rgba(15,23,42,0.04)';
+
+export function PlanCardFace({
+  item,
+  palette,
+  fields,
+  size = 'detailed',
+  faceDown,
+  muted,
+  presence,
+  typeOverride,
+  edit,
+}: PlanCardFaceProps) {
+  const plan = usePlan();
+  const faceFinish = useFaceFinish();
+  const type = typeOverride ?? typeIn(plan?.types ?? ITEM_TYPES, item.type);
+  // Lifted on a dark card, so Project's black still shows.
+  const accent = accentOn(type.color, palette);
+  // What the board shows at this size, and what the card's type shows (docs/specs/026-plan/item-types.md "Card
+  // display"): both must allow a field.
+  const typeShows = typeCardDisplay(type, size);
+  const shown = cardFieldsAt(size, fields).filter((f) => typeShows.includes(f));
+  // A custom field shows wherever the type's Display places it (the board's field list names built-ins only).
+  const show = (f: CardField) => (isCustomCardField(f) ? typeShows.includes(f) : shown.includes(f));
+  const ring = presence ? `0 0 0 2px ${presence.color}` : undefined;
+  // A response's card is New until opened (docs/specs/030-forms/forms.md "Hearing about responses").
+  const fresh = useFreshResponse(item);
+  if (faceDown) {
+    return (
+      <div
+        className="relative flex h-full min-h-14 items-center gap-2 overflow-hidden rounded-xl border px-3 py-2"
+        style={{
+          backgroundColor: palette.card,
+          borderColor: palette.cardBorder,
+          boxShadow: ring,
+          backgroundImage: `repeating-linear-gradient(135deg, ${item.createdBy.color}22 0 6px, transparent 6px 12px)`,
+        }}
+      >
+        <span
+          className="h-5 w-5 shrink-0 rounded-full"
+          style={{ backgroundColor: item.createdBy.color }}
+          aria-hidden
+        />
+        <span className="text-[12px] italic" style={{ color: palette.muted }}>
+          Hidden until reveal
+        </span>
+      </div>
+    );
+  }
+  const assignee = itemAssignee(item);
+  const priority = item.fields['priority'];
+  const labels = itemLabels(item);
+  const estimate = item.fields['estimate'];
+  const due = item.fields['due'];
+  const start = item.fields['start'];
+  const description = item.fields['description'];
+  // An item's own colour (docs/specs/026-plan/items.md "Colour"): a dot beside the type, never replacing it.
+  const ownColour = itemColourOf(item);
+  const progress = checklistProgress(item);
+  const votes = itemVoteTotal(item);
+  const title = itemTitle(item) || 'Untitled';
+  const flag = (
+    <>
+      {fresh ? <NewResponseMark /> : null}
+      {isFlagged(item) ? <FlagMark /> : null}
+    </>
+  );
+  const frame = {
+    backgroundColor: palette.card,
+    borderColor: palette.cardBorder,
+    // Flat under Professional and Marker (docs/specs/008-canvas/finish.md "Faces"); a presence ring still shows.
+    boxShadow: ring ?? (finishFaceShadows(faceFinish) ? REST_SHADOW : undefined),
+    opacity: muted ? 0.7 : 1,
+  };
+  const presenceTag = presence ? <PresenceTag name={presence.name} color={presence.color} /> : null;
+  // One field's bit, as it draws in a row (a pill, a chip, a disc); null when the card has nothing for it. `big`
+  // is a Detailed header's larger chips.
+  const pill = (f: CardField, big = false): ReactNode => {
+    switch (f) {
+      case 'key':
+        return <KeyTag key={f} itemKey={item.key} accent={accent} />;
+      case 'type':
+        return (
+          <TypeChip key={f} glyph={type.glyph} label={type.label} accent={accent} compact={!big} />
+        );
+      case 'priority':
+        return isPriority(priority) ? (
+          <PrioritySignal key={f} priority={priority} label={big} />
+        ) : null;
+      case 'start':
+        return typeof start === 'string' ? (
+          <StartPill key={f} start={start} palette={palette} />
+        ) : null;
+      case 'due':
+        return typeof due === 'string' ? (
+          <DuePill key={f} due={due} done={!!muted} palette={palette} />
+        ) : null;
+      case 'estimate':
+        return typeof estimate === 'number' ? (
+          <MetaPill key={f} palette={palette} label={`Estimate ${estimate}`}>
+            <PlanTypeGlyph glyph="cube" size={11} />
+            <span aria-hidden>{estimate}</span>
+          </MetaPill>
+        ) : null;
+      case 'checklist':
+        return progress ? <ChecklistPill key={f} progress={progress} palette={palette} /> : null;
+      case 'comments':
+        return <CommentsPill key={f} item={item} palette={palette} />;
+      // The votes the card has gathered from ended session votes, read-only.
+      case 'votes':
+        return votes > 0 ? (
+          <MetaPill key={f} palette={palette} label={votes === 1 ? '1 vote' : `${votes} votes`}>
+            <span aria-hidden>▲ {votes}</span>
+          </MetaPill>
+        ) : null;
+      case 'assignee':
+        return assignee ? (
+          <PersonDisc key={f} person={assignee} label={`Assigned to ${assignee.name}`} />
+        ) : null;
+      case 'labels':
+        return labels.length > 0 ? <LabelChips key={f} labels={labels} /> : null;
+      case 'description':
+        return typeof description === 'string' && description.trim() ? (
+          <p
+            key={f}
+            className="line-clamp-2 w-full text-[12px] leading-snug"
+            style={{ color: palette.muted }}
+          >
+            {description}
+          </p>
+        ) : null;
+      default: {
+        // A custom field the type's Display places: its kind's glyph (a linked card's own, in its colour) and value.
+        const def = isCustomCardField(f) ? (type.custom ?? []).find((c) => c.id === f) : undefined;
+        const text = def ? customFieldText(def, item.fields[def.id], plan?.items) : null;
+        if (!def || !text) return null;
+        const linkedType =
+          def.kind === 'card' && def.linkType
+            ? typeIn(plan?.types ?? ITEM_TYPES, def.linkType)
+            : undefined;
+        // A linked card with its own Colour shows it (a Parent project's colour), else its type's glyph.
+        const linked =
+          def.kind === 'card' && plan ? linkedCard(plan.items, item.fields[def.id]) : undefined;
+        const linkedColour = linked ? itemColourOf(linked) : undefined;
+        return (
+          <MetaPill key={f} palette={palette} label={`${def.label}: ${text}`}>
+            {linkedColour ? (
+              <ColourDot colour={linkedColour} />
+            ) : linkedType ? (
+              <PlanTypeGlyph
+                glyph={linkedType.glyph}
+                size={11}
+                color={accentOn(linkedType.color, palette)}
+              />
+            ) : (
+              <span className="flex [&_svg]:h-[11px] [&_svg]:w-[11px]">
+                {CUSTOM_KIND_ICONS[def.kind]}
+              </span>
+            )}
+            <span aria-hidden className="max-w-[10rem] truncate">
+              {text}
+            </span>
+          </MetaPill>
+        );
+      }
+    }
+  };
+  // A slot's bits, in its order, of the fields this card shows there (docs/specs/026-plan/item-types.md "Card
+  // display").
+  const layout = typeCardLayout(type, size);
+  const slotBits = (slot: CardSlot, big = false): ReactNode[] =>
+    (layout[slot] ?? [])
+      .filter(show)
+      .map((f) => (edit ? edit.bit(f, pill(f, big)) : pill(f, big)))
+      .filter(Boolean);
+  // A slot as drawn: its bits, or, in the editor, its dotted box (drawn even when empty).
+  const zone = (slot: CardSlot, bits: ReactNode[]) => (edit ? edit.slot(slot, bits) : bits);
+  // `lineHeight` matches the 20 px chips beside a Compact title, so its first line shares their middle; `inset`
+  // lowers it by as much as the editor's dotted box and chip padding raise the chips (EDIT_CHIP_INSET_PX).
+  const titleText = (lines: 2 | 3, px: number, lineHeight?: number, inset = 0) => (
+    <span
+      className={`${lines === 2 ? 'line-clamp-2' : 'line-clamp-3'} min-w-0 flex-1 font-semibold ${lineHeight ? '' : 'leading-snug'}`}
+      style={{
+        color: palette.text,
+        fontSize: px,
+        ...(lineHeight ? { lineHeight: `${lineHeight}px` } : {}),
+        ...(inset ? { paddingTop: inset } : {}),
+      }}
+    >
+      {title}
+    </span>
+  );
+
+  // Minimal: one line, the title between its Before and After slots.
+  if (size === 'minimal') {
+    return (
+      <div className={`${FRAME} items-center gap-2 px-3 py-2.5`} style={frame}>
+        {presenceTag}
+        <TypeDot accent={accent} />
+        {zone('lead', slotBits('lead'))}
+        {titleText(2, 13)}
+        {flag}
+        <span
+          className="flex shrink-0 items-center gap-1.5 text-[11px] font-medium"
+          style={{ color: palette.muted }}
+        >
+          {zone('trail', slotBits('trail'))}
+        </span>
+      </div>
+    );
+  }
+
+  // Compact: the title with its Beside slot, over one row (Below the Title).
+  if (size === 'compact') {
+    const row = slotBits('row');
+    // The Bottom Right slot: the row's far end (the assignee, by default).
+    const trail = slotBits('trail');
+    return (
+      <div className={`${FRAME} flex-col gap-1.5 px-3 py-2`} style={frame}>
+        {presenceTag}
+        <div className="flex items-start gap-1.5">
+          {edit
+            ? zone('lead', slotBits('lead'))
+            : slotBits('lead').map((bit, i) => (
+                <span key={i} className="flex">
+                  {bit}
+                </span>
+              ))}
+          {ownColour ? <ColourDot colour={ownColour} className="mt-1.5" /> : null}
+          {titleText(2, 13, 20, edit ? EDIT_CHIP_INSET_PX : 0)}
+          {flag}
+        </div>
+        {row.length || trail.length || edit ? (
+          <div
+            className="flex flex-wrap items-center gap-1.5 text-[11px] font-medium"
+            style={{ color: palette.muted }}
+          >
+            {zone('row', row)}
+            {trail.length || edit ? (
+              <span className="ml-auto flex items-center gap-1.5">{zone('trail', trail)}</span>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+
+  // Detailed: a header (start and end), the title, what sits under it, a footer (start and end).
+  const head = slotBits('head', true);
+  const headEnd = slotBits('headEnd', true);
+  const body = slotBits('body');
+  const foot = slotBits('foot');
+  // The Bottom Right slot: the footer's far end (the assignee, by default).
+  const footEnd = slotBits('footEnd');
+  return (
+    <div className={`${FRAME} flex-col gap-2 px-3 py-2.5`} style={frame}>
+      {presenceTag}
+      {head.length || headEnd.length || ownColour || edit ? (
+        <div
+          className="flex items-center gap-1.5 text-[11px] font-medium"
+          style={{ color: palette.muted }}
+        >
+          {zone('head', head)}
+          {ownColour ? <ColourDot colour={ownColour} /> : null}
+          {headEnd.length || edit ? (
+            <span className="ml-auto flex items-center gap-1.5">{zone('headEnd', headEnd)}</span>
+          ) : null}
+        </div>
+      ) : null}
+      <div className="flex items-start gap-1.5">
+        {titleText(3, 14)}
+        {flag}
+      </div>
+      {body.length || edit ? (
+        <div
+          className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[11px] font-medium"
+          style={{ color: palette.muted }}
+        >
+          {zone('body', body)}
+        </div>
+      ) : null}
+      {foot.length || footEnd.length || edit ? (
+        <div className="mt-auto flex flex-wrap items-center gap-1 pt-0.5 text-[11px] font-medium">
+          {zone('foot', foot)}
+          {footEnd.length || edit ? (
+            <span className="ml-auto flex items-center gap-1">{zone('footEnd', footEnd)}</span>
+          ) : null}
+        </div>
+      ) : null}
+    </div>
+  );
+}

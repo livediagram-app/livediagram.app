@@ -1,0 +1,59 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { OpenSource } from '@/components/illustrations/about';
+
+export const metadata = helpMetadata({
+  title: 'What is Open Source?',
+  description:
+    'Open source means the code is public and anyone can read, run, or modify it. livepages is MIT-licensed, so here is what that gives you.',
+  path: '/help/about/what-is-open-source/',
+});
+
+<ArticleLayout title="What is Open Source?" description="The code is public, free to read, and free to run. Here is what open source means and what livepages being MIT-licensed gives you." categoryTitle="About livepages" categorySlug="about">
+
+Most software you use is a black box: you get the finished app, but the source code that makes it work is kept private. **Open source** flips that around. The code is published in the open for anyone to read, run, modify, and share. livepages is open source, and that shapes the whole product, from what it costs to how your data is handled.
+
+## What "open source" actually means
+
+Software is open source when its source code, the human-readable instructions that make the program work, is published under a licence that grants everyone the right to use it freely. In practice that means four things:
+
+- **You can read it.** Nothing about how the app works is hidden. The exact code that runs is the code you can inspect.
+- **You can run it.** Anyone can take the code and run their own copy, for any purpose.
+- **You can modify it.** Fork it, change it, adapt it to your needs.
+- **You can share it.** Pass on the original or your modified version.
+
+The licence is what makes those rights real rather than a promise. Different open-source licences attach different conditions; livepages uses one of the most permissive.
+
+## livepages is MIT-licensed
+
+livepages is released under the **MIT licence**, one of the simplest and most permissive open-source licences. It is permissive on purpose: anyone may read, run, fork, modify, embed, or self-host the code, for any purpose, commercial or not, with no copyleft strings attached. The whole codebase is publicly viewable.
+
+That licence choice has concrete consequences for you.
+
+### It is free, with no paid tier
+
+Because the project is open and there is no commercial product to protect, livepages is **free for everyone**. There is no paid tier, no "Pro" upgrade, and no plan to introduce one. Every feature ships to every user. See [Why use livepages?](/help/about/why-livepages/).
+
+### You can verify the claims, not just trust them
+
+A public codebase means you do not have to take any privacy or security claim on faith. How a document is stored, what telemetry records, how share passwords work, all of it is in the open for you (or anyone) to audit. See [Open source and trust](/help/privacy-and-security/open-source-trust/).
+
+### You can run your own copy
+
+Since the code is public and free to use, you can [self-host](/help/self-hosting/self-hosting-overview/) livepages on your own Cloudflare account with the full feature set: no subscription to us and no licence check phoning home. And because your documents export to portable formats, you are never locked in.
+
+<Figure caption="Because the code is public and MIT-licensed, anyone can run their own copy.">
+  <OpenSource />
+</Figure>
+
+## Open source, hosted for convenience
+
+Being open source does not mean you have to deploy anything yourself. A free hosted version runs at livepages.app so you can just use it, while the option to read the code or run your own copy stays open. Both paths get the **same feature set**: the hosted site is a convenience, not a more capable product.
+
+<Tip>
+  Open source is also an invitation: the code is [on
+  GitHub](https://github.com/livepages-app/livepages.app), and contributions back to the project
+  are welcome under the same MIT licence.
+</Tip>
+
+</ArticleLayout>

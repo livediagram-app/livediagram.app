@@ -1,0 +1,367 @@
+// Format-painter field projections. Given a source element, return
+// the subset of fields that should be copied onto a target of the
+// same kind. Pure functions split out from `applyFormatFromSource`
+// in editor-page.tsx so each list is the single source of truth for
+// "what does the format painter actually paint?" and the boxed /
+// arrow projections are testable in isolation.
+//
+// Why explicit per-field listing instead of "spread the source":
+// some fields (id, type, shape, label, link, commentThread,
+// locked, position x / y) are identity or content and must NOT be
+// copied. A spread that omitted those would still drag along future
+// fields silently. Listing each painted field by name makes a future
+// addition to BoxedElement / ArrowElement an active, deliberate
+// choice ("does this belong on the painter?") instead of a passive,
+// silent one ("the painter just started copying my new field too").
+//
+// A projection key whose value is `undefined` is deliberate: it means
+// "the source is on the default here", and `applyPaint` clears the
+// target's override so the target ends up looking like the source
+// (docs/specs/008-canvas/canvas-and-palette.md). A key that is ABSENT means the source's kind doesn't carry
+// the field at all, so it has no opinion and the target keeps its own.
+
+import {
+  animationSectionOf,
+  bodyAnimationSetOf,
+  carriesWords,
+  hasRichFormatting,
+  normalizeRuns,
+  shapeAnimationsFor,
+  supportsAccentEdge,
+  type AnimationSpeed,
+  type ArrowElement,
+  type BorderRadius,
+  type BorderStroke,
+  type BorderStyle,
+  type QuickSwatchSlot,
+  type BoxedElement,
+  type ElementShadow,
+  type Finish,
+  type IconAnimation,
+  type IconSize,
+  type IconWeight,
+  type RunBoolKey,
+  type TextAnimation,
+  type TextRun,
+} from '@livepages/document';
+
+type BoxedKind = BoxedElement['type'];
+
+// The boxed kinds that carry each optional family of look fields. The
+// element types declare some of these on every variant for union
+// ergonomics (an image "has" a textColor it never draws), so the
+// painter reads what each kind actually renders rather than what it
+// merely declares.
+const BORDER_KINDS: ReadonlySet<BoxedKind> = new Set(['shape', 'table', 'freehand']);
+const RADIUS_KINDS: ReadonlySet<BoxedKind> = new Set(['shape', 'freehand']);
+const SHADOW_KINDS: ReadonlySet<BoxedKind> = new Set([
+  'shape',
+  'sticky',
+  'image',
+  'link-card',
+  'video',
+]);
+
+// The inline editor stores "select all + bold" as a single attributed
+// `richText` run, not the element-level `textBold` flag (see
+// hasRichFormatting / commitLabel) — so a label that LOOKS uniformly
+// bold carries its formatting in the runs, leaving the element-level
+// text fields unset. The painter copies element-level fields, so
+// without this it would silently drop that formatting. We collapse the
+// runs: an attribute every run agrees on becomes the painted
+// whole-label value; a partially-styled label (runs disagree) has no
+// single value to paint, so that attribute falls back to the
+// element-level field. richText itself is NOT painted — its runs are
+// bound to the source's characters, not the target's.
+function uniformRunValue<K extends keyof TextRun>(
+  runs: TextRun[] | undefined,
+  key: K,
+): TextRun[K] | undefined {
+  if (!runs || runs.length === 0) return undefined;
+  const first = runs[0]?.[key];
+  if (first === undefined) return undefined;
+  return runs.every((r) => r[key] === first) ? first : undefined;
+}
+
+// The boxed kinds that carry a finish (docs/specs/008-canvas/finish.md).
+const FINISH_KINDS: ReadonlySet<string> = new Set(['shape', 'text', 'sticky', 'table']);
+
+// Boxed (shape / text / sticky / ...) painter projection. Carries every
+// formatting field the source's kind renders: size + aspect lock +
+// opacity + colours + every text-styling switch + padding, plus the
+// border / shadow / icon families where the kind has them. Position and
+// identity stay on the target.
+export function paintableBoxedFields(source: BoxedElement): Partial<BoxedElement> {
+  const kind = source.type;
+  // Fields every boxed kind shares, images included.
+  const base: Partial<BoxedElement> = {
+    width: source.width,
+    height: source.height,
+    aspectLocked: source.aspectLocked,
+    opacity: source.opacity,
+    // Looping animation (docs/specs/008-canvas/canvas-and-palette.md) is a cosmetic field, so paint it like the rest.
+    animation: source.animation,
+    animationSpeed: source.animationSpeed,
+    animationRepeat: source.animationRepeat,
+  };
+  // Text animation (docs/specs/028-animation/element-animations.md), on the words a kind carries.
+  if (carriesWords(source)) {
+    const words = source as {
+      textAnimation?: TextAnimation;
+      textAnimationSpeed?: AnimationSpeed;
+      textAnimationRepeat?: boolean;
+    };
+    Object.assign(base, {
+      textAnimation: words.textAnimation,
+      textAnimationSpeed: words.textAnimationSpeed,
+      textAnimationRepeat: words.textAnimationRepeat,
+    });
+  }
+  // Drop shadow (docs/specs/008-canvas/element-shadows.md): cosmetic, painted alongside where the kind draws one.
+  if (SHADOW_KINDS.has(kind)) {
+    (base as { shadow?: ElementShadow }).shadow = (source as { shadow?: ElementShadow }).shadow;
+  }
+  // ImageElement is a boxed element (move / resize / lock) but
+  // renders no colour / text / padding, so its projection stops at the
+  // fields above.
+  if (kind === 'image') return base;
+
+  // Read the variant-specific fields through a loose view so the
+  // projection compiles across the union; each is only emitted for the
+  // kinds that carry it (see the sets above).
+  const ext = source as {
+    strokeWidth?: BorderStroke;
+    strokeStyle?: BorderStyle;
+    borderRadius?: BorderRadius;
+    colorPreset?: string;
+    strokeSwatch?: QuickSwatchSlot;
+    fillSwatch?: QuickSwatchSlot;
+    textSwatch?: QuickSwatchSlot;
+    themeLockFill?: boolean;
+    headerFill?: string;
+    headerTextColor?: string;
+    font?: string;
+    richText?: TextRun[];
+    iconAnimation?: IconAnimation;
+    iconAnimationSpeed?: AnimationSpeed;
+    iconAnimationRepeat?: boolean;
+    iconSize?: IconSize;
+    iconWeight?: IconWeight;
+  };
+  // Effective whole-label formatting: a uniform richText run wins over
+  // the (often unset) element-level flag, otherwise the element field.
+  const rt = ext.richText;
+  const out: Record<string, unknown> = {
+    ...base,
+    fillColor: source.fillColor,
+    strokeColor: source.strokeColor,
+    // A table's header row / a lane's title gutter (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/009-elements/lane.md).
+    headerFill: ext.headerFill,
+    textColor: uniformRunValue(rt, 'color') ?? source.textColor,
+    textSize: uniformRunValue(rt, 'size') ?? source.textSize,
+    textAlignX: source.textAlignX,
+    textAlignY: source.textAlignY,
+    textBold: uniformRunValue(rt, 'bold') ?? source.textBold,
+    textItalic: uniformRunValue(rt, 'italic') ?? source.textItalic,
+    textUnderline: uniformRunValue(rt, 'underline') ?? source.textUnderline,
+    textStrikethrough: uniformRunValue(rt, 'strikethrough') ?? source.textStrikethrough,
+    font: ext.font,
+    padding: source.padding,
+  };
+  // Border presets. Carried so painting a styled border onto another
+  // shape actually copies the border, not just the stroke colour.
+  if (BORDER_KINDS.has(kind)) {
+    out.strokeWidth = ext.strokeWidth;
+    out.strokeStyle = ext.strokeStyle;
+  }
+  if (RADIUS_KINDS.has(kind)) out.borderRadius = ext.borderRadius;
+  // The accent edge (docs/specs/008-canvas/accent-edge.md) travels with Border, on the kinds that draw one.
+  if (supportsAccentEdge(source)) {
+    out.accentEdge = (source as { accentEdge?: unknown }).accentEdge;
+    out.accentEdgeColor = (source as { accentEdgeColor?: unknown }).accentEdgeColor;
+  }
+  if (kind === 'table') out.headerTextColor = ext.headerTextColor;
+  // The finish (docs/specs/008-canvas/finish.md), on the kinds that carry one; unset copies Follow Tab.
+  if (FINISH_KINDS.has(kind)) out.finish = (source as { finish?: Finish }).finish;
+  // A text element's quick-swatch binding, beside its colour; not when a
+  // uniform run colour is what was painted, which the slot does not describe.
+  if (kind === 'text') out.textSwatch = uniformRunValue(rt, 'color') ? undefined : ext.textSwatch;
+  if (kind === 'shape') {
+    // Colour-preset binding (docs/specs/010-palette/style-presets.md) + the fill's theme lock: carried
+    // alongside the colours so a painted shape tracks the theme exactly
+    // like the source did. applyPaint decides whether the binding holds.
+    out.colorPreset = ext.colorPreset;
+    out.themeLockFill = ext.themeLockFill;
+    // Quick-swatch bindings (docs/specs/008-canvas/quick-style-panel.md), beside the colours they bind.
+    out.strokeSwatch = ext.strokeSwatch;
+    out.fillSwatch = ext.fillSwatch;
+    // Per-icon glyph animation + speed and the Technology mark's fixed
+    // size preset (docs/specs/008-canvas/canvas-and-palette.md / docs/specs/010-palette/technology-icons.md).
+    out.iconAnimation = ext.iconAnimation;
+    out.iconAnimationSpeed = ext.iconAnimationSpeed;
+    out.iconAnimationRepeat = ext.iconAnimationRepeat;
+    out.iconSize = ext.iconSize;
+    out.iconWeight = ext.iconWeight;
+  }
+  return out;
+}
+
+// Arrow painter projection. Arrows carry stroke + opacity + arrowhead
+// shape + line-pattern preset, plus label text styling (arrow labels
+// store formatting element-level only — commitLabel drops richText for
+// arrows — so the flags below capture the whole label look).
+export function paintableArrowFields(source: ArrowElement): Partial<ArrowElement> {
+  return {
+    strokeColor: source.strokeColor,
+    strokeSwatch: source.strokeSwatch,
+    strokeWidth: source.strokeWidth,
+    strokeStyle: source.strokeStyle,
+    opacity: source.opacity,
+    arrowEnds: source.arrowEnds,
+    // Arrowhead + path-shape presets, so painting copies the whole look
+    // (a curved dashed UML connector), not just colour + ends.
+    arrowheadColor: source.arrowheadColor,
+    arrowheadSize: source.arrowheadSize,
+    arrowheadShape: source.arrowheadShape,
+    // An ER relationship's own start head (one, many...); absent, the start takes the end's shape.
+    arrowheadStartShape: source.arrowheadStartShape,
+    arrowStyle: source.arrowStyle,
+    // Route behind boxes (docs/specs/008-canvas/arrow-route-behind.md): a look choice like the rest. Absent
+    // means on, so a default source turns it back on for the target.
+    routeBehind: source.routeBehind,
+    // Flow animation (docs/specs/008-canvas/canvas-and-palette.md): marching dashes / travelling dot.
+    flow: source.flow,
+    flowSpeed: source.flowSpeed,
+    flowRepeat: source.flowRepeat,
+    // Label text styling (docs/specs/008-canvas/canvas-and-palette.md). Arrows don't carry alignment /
+    // padding (the label rides the line), but do carry the same text
+    // switches + size + colour + font as boxed labels, and the
+    // caption plate behind the label.
+    textColor: source.textColor,
+    textSize: source.textSize,
+    textBold: source.textBold,
+    textItalic: source.textItalic,
+    textUnderline: source.textUnderline,
+    textStrikethrough: source.textStrikethrough,
+    labelFill: source.labelFill,
+    font: source.font,
+    finish: source.finish,
+  };
+}
+
+// Element-level text field -> the run attribute that overrides it per
+// character. Painting the field has to drop the attribute from the
+// target's runs, or the runs keep winning and the paint looks like it
+// did nothing.
+const RUN_OVERRIDES: readonly (readonly [string, RunBoolKey | 'color' | 'size'])[] = [
+  ['textBold', 'bold'],
+  ['textItalic', 'italic'],
+  ['textUnderline', 'underline'],
+  ['textStrikethrough', 'strikethrough'],
+  ['textColor', 'color'],
+  ['textSize', 'size'],
+];
+
+const PRESET_COLOURS = ['fillColor', 'strokeColor', 'textColor'] as const;
+const SWATCH_BINDINGS = [
+  ['fillColor', 'fillSwatch'],
+  ['strokeColor', 'strokeSwatch'],
+  ['textColor', 'textSwatch'],
+] as const;
+
+// Lay a (filtered) projection onto the target. Defined values are set,
+// `undefined` values clear the target's override (see the header), and
+// the two derived fields are kept honest: the target's per-range runs
+// yield to painted text, and the colour-preset binding only survives
+// when it still describes the colours on the element (docs/specs/008-canvas/canvas-and-palette.md).
+// Animations travel only where they mean the same thing (docs/specs/028-animation/element-animations.md):
+// a body animation between members of one animation set, a Shape motion to any element that takes it, a Text
+// animation to any element that carries words. Everything else in the projection is left as it is.
+export function fitPaintToTarget(
+  source: BoxedElement,
+  target: BoxedElement,
+  patch: Partial<BoxedElement>,
+): Partial<BoxedElement> {
+  const out: Record<string, unknown> = { ...patch };
+  // Only between members of one set (or a text element's legacy value onto another text
+  // element): elements outside every body set (icons, charts) must not pick up an `animation` no
+  // menu of theirs could show or remove.
+  const set = bodyAnimationSetOf(source);
+  const sameSet = set !== undefined && set === bodyAnimationSetOf(target);
+  // A Shape motion travels to any element whose Shape category offers it (a square's Bounce onto a photo).
+  const motion = source.animation;
+  const sharedMotion =
+    motion !== undefined &&
+    animationSectionOf(source, motion) === 'shape' &&
+    (shapeAnimationsFor(target) as readonly string[]).includes(motion);
+  if (!sameSet && !sharedMotion && !(source.type === 'text' && target.type === 'text')) {
+    delete out.animation;
+    delete out.animationSpeed;
+    delete out.animationRepeat;
+  }
+  if (!carriesWords(target)) {
+    delete out.textAnimation;
+    delete out.textAnimationSpeed;
+    delete out.textAnimationRepeat;
+  } else if (target.type === 'text' && out.textAnimation !== undefined) {
+    // A Text animation painted onto a text element replaces its legacy body one, as a Text pick
+    // does: a text element never carries both.
+    out.animation = undefined;
+    out.animationSpeed = undefined;
+    out.animationRepeat = undefined;
+  }
+  return out;
+}
+
+export function applyPaint<T extends BoxedElement | ArrowElement>(
+  target: T,
+  patch: Partial<BoxedElement> | Partial<ArrowElement>,
+): T {
+  const next: Record<string, unknown> = { ...target };
+  const painted = patch as Record<string, unknown>;
+  for (const [field, value] of Object.entries(painted)) {
+    if (value === undefined) delete next[field];
+    else next[field] = value;
+  }
+
+  // The binding re-derives all three colours on a theme change, so it is
+  // only copied when all three travelled together. A partial colour paint
+  // is a hand edit, which clears it like any other (lib/style-presets.ts).
+  const colours = PRESET_COLOURS.filter((field) => field in painted).length;
+  if (colours === PRESET_COLOURS.length && painted.colorPreset !== undefined) {
+    next.colorPreset = painted.colorPreset;
+  } else if (colours > 0) {
+    delete next.colorPreset;
+  }
+
+  // A quick-swatch binding (docs/specs/008-canvas/quick-style-panel.md) holds only while it still names the
+  // colour beside it: painted together it lands, a colour painted alone drops it.
+  for (const [colour, binding] of SWATCH_BINDINGS) {
+    if (!(colour in painted)) continue;
+    if (painted[binding] !== undefined) next[binding] = painted[binding];
+    else delete next[binding];
+  }
+
+  // An accent edge lands only on a kind that draws one (docs/specs/008-canvas/accent-edge.md).
+  if (!supportsAccentEdge(target)) {
+    delete next.accentEdge;
+    delete next.accentEdgeColor;
+  }
+
+  const runs = next.richText as TextRun[] | undefined;
+  if (runs) {
+    const drop = RUN_OVERRIDES.filter(([field]) => field in painted).map(([, attr]) => attr);
+    if (drop.length > 0) {
+      const stripped = normalizeRuns(
+        runs.map((run) => {
+          const copy = { ...run };
+          for (const attr of drop) delete copy[attr];
+          return copy;
+        }),
+      );
+      if (hasRichFormatting(stripped)) next.richText = stripped;
+      else delete next.richText;
+    }
+  }
+  return next as T;
+}

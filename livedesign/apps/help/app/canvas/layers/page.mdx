@@ -1,0 +1,80 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { LayersPanelScene } from '@/components/illustrations/layers';
+
+export const metadata = helpMetadata({
+  title: 'Layers',
+  description:
+    'Organise a tab into Photoshop-style layers from the Layers panel: previews, an active layer for new elements, hiding, locking, opacity and merging.',
+  path: '/help/canvas/layers/',
+});
+
+<ArticleLayout title="Layers" description="Split a tab into named stacking layers you can hide, lock, dim, restack, and merge, managed from the Layers panel." categoryTitle="Canvas" categorySlug="canvas" subArticles={getSubArticles("layers")}>
+
+Every tab starts with a single layer, and for many diagrams that's all you need. When a tab grows busy (a background grid, the main content, a pass of review notes), layers let you split it into named bands you can hide, lock, dim, and restack independently, just like an image editor. Layers are saved with the tab and sync live, so everyone sees the same stack.
+
+## Opening the Panel
+
+Open the panel with the **Layers button next to the zoom controls** (bottom-right). It opens as a popover above the button, on a computer and a phone alike; press the button again, or tap the canvas, to close it. See [Panel Layout](/help/user-interface/panel-layout/) for where everything else sits.
+
+The panel is for Editors: Viewers and Participants get no panel or button, though hidden and locked layers still apply to what they see. It is not offered in [Pages mode](/help/canvas/pages-mode/), where the **Slides** button takes its place, in [Plan mode](/help/canvas/plan-mode/), where a board is worked by its columns, nor in Zen mode.
+
+Its settings live in [Settings](/help/user-interface/settings/) under **Panels**, then **Layers**: **Layer Thumbnails** (the row previews), **Layer Element Counts** (how many elements each layer holds, beside its name) and **Preview Layer on Hover**. **Enable Layers Panel** turns the panel, its button and the menu's **Move to layer** tiles off altogether; layers keep working underneath, with their order, visibility and lock still applied.
+
+## Reading the Panel
+
+The top of the panel counts your layers and holds the **New Layer** button; a new layer lands directly above the active one and becomes active itself. Below it, each row is one layer, top of the stack first, and shows:
+
+- a **preview** of just that layer's elements, framed against the whole tab so you can see where its content sits (an empty layer shows a dashed frame, so stale ones are easy to spot),
+- the layer's **name** (double-click to rename it inline) over a short line saying how many elements it holds, or **Empty**, plus its opacity, **Locked** or **Hidden** when they apply,
+- a **padlock** to lock or unlock the layer and an **eye** to hide or show it,
+- an **ellipsis** opening the layer's menu.
+
+The padlock and ellipsis appear when you point at a row (and always on the active row, and on touch screens); a locked layer keeps its padlock showing.
+
+<Figure caption="The Layers panel: New Layer at the top, the active layer highlighted, a locked background, an empty layer's dashed preview, and the footer's merge and delete buttons.">
+  <LayersPanelScene />
+</Figure>
+
+Click a row to make that layer **active**, and rest the pointer on one for a moment to temporarily see only that layer on the canvas ([more on the hover preview](/help/canvas/layers-visibility-and-locking/)). The footer acts on the active layer: **Merge Up** and **Merge Down** on the left, **Delete** on the right.
+
+**Right-click a row (or click its ellipsis)** for the full menu, which opens beside the panel with every action a click away: an opacity slider, then Hide or Show Layer, Lock or Unlock Layer, Hide Others, Bring to Top, Send to Bottom, Merge With Layer Above or Below, Rename, Clear Layer and Delete Layer.
+
+## The Active Layer
+
+Exactly one layer is always active, and **everything you add lands on it**: palette shapes, text, arrows, pastes, imports, AI-built elements. While the active layer is hidden or locked, adding is paused (a notice explains why) so you never create something you can't immediately see or touch.
+
+Which layer is active is yours alone; a collaborator can work on a different layer of the same tab at the same time.
+
+## Stacking, Front, and Back
+
+Layers are stacking bands: everything on a higher layer paints above everything on a lower one. **Bring to Front** and **Send to Back** in the right-click menu (and **Cmd+Shift+]** / **Cmd+Shift+[**) work through layers too: the selection moves onto the top (or bottom) layer, creating a fresh one if that layer holds anything else, and a layer those buttons empty out is cleaned up automatically. The **Bring to Front** and **Send to Back** buttons on the selection's floating toolbar are different: they restack the selection within its own layer and never move it to another. To place elements deliberately, use the **Move to layer** tiles in the right-click menu's Layer category; each tile carries a live preview of its layer. See [Layer Order and Opacity](/help/canvas/layer-order/).
+
+For restacking layers themselves, moving elements between layers, merging, clearing, deleting, and the smart auto-naming that names a fresh layer after the first label you type onto it, see [Organising and Merging Layers](/help/canvas/layers-organising/).
+
+## Hiding, Locking, and Dimming
+
+The eye hides a layer everywhere, including exports and embeds; the lock makes a layer's elements read-only; the opacity slider dims a whole layer; Hide Others solos one layer in a click. All of it is covered in depth in [Hiding, Locking, and Dimming Layers](/help/canvas/layers-visibility-and-locking/).
+
+## Layers and Exports
+
+Exports match what you see: hidden layers are left out of PNG, SVG and PDF [exports](/help/account-and-data/exporting-diagrams/), and out of shared thumbnails, while layer opacity carries through. If you want hidden layers included in an image export anyway, the export options screen offers a **Hidden layers** toggle whenever at least one layer is hidden and the Layers panel is switched on (it is never offered in Pages).
+
+<Note>
+  You never have to manage layers to use livepages: a tab with one layer behaves exactly as it
+  always did, and Bring to Front / Send to Back quietly do the layering for you.
+</Note>
+
+<Tip>
+  Keep review feedback on its own layer. Reviewers can sketch and annotate freely, you can hide the
+  layer for a clean export, and one delete clears the whole pass when it's dealt with.
+</Tip>
+
+<Tip>
+  Layers and [dot voting](/help/collaboration/session-tools/voting/) work together: a vote can be
+  scoped to one layer, which dims everything else and rings the elements that can take a dot. Useful
+  when the ideas being voted on share a canvas with a background frame or last round's output.
+</Tip>
+
+</ArticleLayout>

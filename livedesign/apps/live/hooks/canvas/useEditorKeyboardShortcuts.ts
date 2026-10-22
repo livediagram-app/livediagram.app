@@ -1,0 +1,527 @@
+// Global keyboard shortcuts for the editor route, lifted out of
+// editor-page.tsx so the page file stays focused on orchestration.
+//
+// The callbacks (undo, redo, deleteSelected, copy, paste, setCanvasTool,
+// add*, beginEdit, etc.) and the per-render selection / isReadOnly /
+// editingId state are all closures over editor-page state, so they
+// get fresh identity on every render. The hook stashes the whole
+// deps bag in a single mutable ref that the keydown listeners read
+// THROUGH, so the listener body always sees the latest closure
+// even though the main effects only re-attach on `enabled` (one
+// extra Escape effect also keys on the transient mode flags it
+// gates on, but never on the per-render callbacks or selection).
+// Historical bug this avoids: when the listener deps included
+// `isReadOnly` + the action callbacks directly, the effect re-
+// attached on every render and captured stale undo / redo
+// references at attach time, so shortcuts fired through them
+// silently no-op'd.
+
+import { useEffect } from 'react';
+import { isInMenuSurface, isPressableControl } from '@livepages/ui';
+import { anyModalOpen } from '@/lib/modal-guard';
+import { isMobileViewportSync } from '@/lib/responsive';
+import {
+  EDIT_KEYS,
+  runModShortcut,
+  coveredKeyRole,
+  PARTICIPANT_KEYS,
+  VIEW_TOOL_KEYS,
+  WHITEBOARD_EDIT_KEYS,
+  WHITEBOARD_VIEW_KEYS,
+  type EditorKeyboardShortcutsDeps,
+} from './editor-shortcut-keys';
+import { useLatest } from '@/hooks/ui/useLatest';
+import { arrowPageDir } from '@/lib/page-step';
+import { isTypingTarget, passesHistoryChords } from '@/lib/typing-target';
+import { avatarActionForKey } from '@/lib/avatar-action-keys';
+import { altGraphHeld } from '@/lib/composed-key';
+
+// Re-exported so existing importers (the unit test) keep resolving.
+export { EDIT_KEYS, VIEW_TOOL_KEYS, type ShortcutAction } from './editor-shortcut-keys';
+
+export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): void {
+  // Single mutable ref the keydown listeners read from. Repointed
+  // on every render so a stale closure can't reach an outdated
+  // callback. This is the React canon for "I want fresh references
+  // but I don't want to re-attach the listener on every render."
+  const liveRef = useLatest(deps);
+  // Re-arms the Escape listener when the tab turns into (or out of) a whiteboard.
+  const onWhiteboard = deps.whiteboard !== null;
+
+  // Escape cancels whichever transient editor mode is active:
+  // format-painter, or a pending draw-to-size shape.
+  // Keeping the narrow deps means the listener only attaches while
+  // one of those modes is on, so we pay nothing in the idle case.
+  // The setters come through the ref so the same-render values apply.
+  useEffect(() => {
+    const { formatSourceId, pendingDraw, canvasTool, enabled } = liveRef.current;
+    if (!enabled) return;
+    // A whiteboard's eraser is a held tool too: Escape puts it down
+    // (docs/specs/023-draw-mode/draw-mode.md "Keyboard shortcuts").
+    const whiteboardEraser = liveRef.current.whiteboard !== null && canvasTool === 'eraser';
+    if (
+      formatSourceId === null &&
+      pendingDraw === null &&
+      canvasTool !== 'format' &&
+      canvasTool !== 'isometric' &&
+      canvasTool !== 'avatar' &&
+      !whiteboardEraser
+    )
+      return;
+    const onKey = (e: KeyboardEvent) => {
+      // A modal dialog owns the keyboard while open (its own Escape
+      // closes it); cancelling canvas modes behind it double-acts.
+      if (anyModalOpen()) return;
+      // A menu holding focus owns the keyboard (docs/specs/004-interface-design/menus.md).
+      if (isInMenuSurface(e.target)) return;
+      // A closer handler already claimed this keystroke (e.g. the table's
+      // selected-cell layer) — don't double-act on it.
+      if (e.defaultPrevented) return;
+      if (e.key === 'Escape') {
+        const live = liveRef.current;
+        // Claim the key when it cancelled something, so a later listener
+        // (the non-modal poll sheet's Escape-to-skip) knows it's spoken for.
+        if (
+          live.formatSourceId !== null ||
+          live.pendingDraw !== null ||
+          live.canvasTool === 'format' ||
+          live.canvasTool === 'isometric' ||
+          live.canvasTool === 'avatar' ||
+          (live.whiteboard !== null && live.canvasTool === 'eraser')
+        ) {
+          e.preventDefault();
+        }
+        // Whiteboard: back to Select from any tool in hand.
+        if (live.whiteboard !== null && live.canvasTool === 'eraser') {
+          live.whiteboard.pickSelect();
+          return;
+        }
+        liveRef.current.setFormatSourceId(null);
+        // Persistent Format tool: Escape exits the tool entirely (back to
+        // Select) from either phase, not just disarming the base.
+        if (liveRef.current.canvasTool === 'format') liveRef.current.setCanvasTool('select');
+        // Isometric: Escape leaves the view back to the normal editing tool —
+        // Select on desktop, Hand (pan) on touch where Select isn't the
+        // default. Mirrors how Spotlight reverts to Select.
+        if (liveRef.current.canvasTool === 'isometric') {
+          liveRef.current.setCanvasTool(isMobileViewportSync() ? 'pan' : 'select');
+        }
+        // Avatar mode (docs/specs/008-canvas/avatar-mode.md): Escape puts the walking character away and
+        // hands editing back, same revert rule as Isometric.
+        if (liveRef.current.canvasTool === 'avatar') {
+          liveRef.current.setCanvasTool(isMobileViewportSync() ? 'pan' : 'select');
+        }
+        if (liveRef.current.pendingDraw !== null) {
+          liveRef.current.onCancelDraw();
+        }
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [deps.enabled, deps.formatSourceId, deps.pendingDraw, deps.canvasTool, onWhiteboard, liveRef]);
+
+  // Everything else: Delete / Backspace, Cmd-Z / Cmd-Y / Cmd-Shift-Z,
+  // Cmd-C / Cmd-V, V / H / L tool switches. One listener for the
+  // whole keyboard since they all share the typing-bailout + read-
+  // only-bailout logic.
+  useEffect(() => {
+    if (!deps.enabled) return;
+    const handleKey = (e: KeyboardEvent) => {
+      // A modal dialog owns the keyboard while open: its buttons /
+      // toggles aren't text inputs, so without this gate `R` dropped a
+      // rectangle (and Backspace deleted the selection) on the canvas
+      // BEHIND the modal.
+      if (anyModalOpen()) return;
+      // While focus is inside a menu of either kind the canvas stands down: an arrow there never
+      // nudges, Delete never deletes, Tab never grows a mind map
+      // (docs/specs/004-interface-design/menus.md).
+      if (isInMenuSurface(e.target)) return;
+      // A closer handler already claimed this keystroke — the table's
+      // selected-cell layer prevents default on the keys it consumes
+      // (arrows / Backspace / Escape / type-to-edit), and acting on them
+      // again here nudged or even deleted the whole table mid-cell-edit.
+      if (e.defaultPrevented) return;
+      const live = liveRef.current;
+      const { selectedId, multiSelectedIds } = live.readSelection();
+      const target = e.target as Element | null;
+      // <select> included: a letter press there is the browser's
+      // type-ahead, not a canvas shortcut.
+      const inText = isTypingTarget(target);
+      // Any text input gets a wide berth, except for read-only
+      // checks: even Delete / Backspace bail BEFORE preventDefault
+      // when read-only so the browser's default behaviour for
+      // those keys stays intact.
+      // AltGr's Ctrl is not one the person pressed (lib/composed-key.ts): AltGr+E types € into a label.
+      const mod = e.metaKey || (e.ctrlKey && !altGraphHeld(e));
+      const key = e.key;
+      const lower = key.toLowerCase();
+
+      // --- A Plan board covers the canvas (docs/specs/026-plan/plan-board.md "Nothing under it moves") ---
+      // Nothing on the canvas changes from the keyboard; undo, redo, search, zen, the mode switch and Escape still
+      // work, and a canvas chord the browser would take over (Cmd+D, Cmd+A...) is prevented.
+      if (live.canvasCovered?.()) {
+        if (inText) return;
+        const role = coveredKeyRole(e);
+        if (role === 'swallow') e.preventDefault();
+        if (role !== 'run') return;
+        if (mod) {
+          runModShortcut(e, live);
+          return;
+        }
+        if (key !== 'Escape') {
+          e.preventDefault();
+          if (lower === 'z') live.onToggleZen();
+          else live.onCycleEditorMode?.();
+          return;
+        }
+      }
+
+      // --- Mind map growth (docs/specs/009-elements/mind-node.md) ---
+      // Tab adds a child, Enter a sibling, both off the selected mind node.
+      // Placed before every other branch because Tab is otherwise the
+      // browser's focus key: left to bubble it would walk the chrome behind
+      // the canvas, which is never what someone mid-mind-map wants.
+      //
+      // Only ever fires with a single mind node selected and no editor open,
+      // so Tab keeps its normal meaning everywhere else in the app.
+      if (
+        (key === 'Tab' || key === 'Enter') &&
+        !inText &&
+        !mod &&
+        !e.shiftKey &&
+        (!live.isReadOnly || live.participant) &&
+        live.editingId === null &&
+        selectedId !== null &&
+        multiSelectedIds.size === 0 &&
+        live.canGrowMindNode(selectedId)
+      ) {
+        e.preventDefault();
+        live.onGrowMindNode(selectedId, key === 'Tab' ? 'child' : 'sibling');
+        return;
+      }
+
+      // --- Zen mode exit (docs/specs/007-editor/zen-mode.md) ---
+      // Escape leaves zen mode. Only when actually in zen, not mid-
+      // edit / typing (there Escape cancels the label edit instead),
+      // and with nothing MORE transient to peel first: an active mode
+      // (format / draw / isometric — the narrow effect above
+      // owns those) or a live selection each take their own Escape, so
+      // one press exits exactly one layer instead of snapping the whole
+      // stack back at once.
+      if (
+        key === 'Escape' &&
+        live.zenMode &&
+        !inText &&
+        live.editingId === null &&
+        live.formatSourceId === null &&
+        live.pendingDraw === null &&
+        live.canvasTool !== 'format' &&
+        live.canvasTool !== 'isometric' &&
+        live.canvasTool !== 'avatar' &&
+        !(live.whiteboard !== null && live.canvasTool === 'eraser') &&
+        selectedId === null &&
+        multiSelectedIds.size === 0
+      ) {
+        e.preventDefault();
+        live.onToggleZen();
+        return;
+      }
+
+      // --- Escape drops an empty, just-grown mind node ---
+      // (docs/specs/009-elements/mind-node.md "Escape keeps what you typed")
+      if (
+        key === 'Escape' &&
+        !inText &&
+        live.editingId === null &&
+        selectedId !== null &&
+        multiSelectedIds.size === 0 &&
+        live.onEscapeMindNode(selectedId)
+      ) {
+        e.preventDefault();
+        return;
+      }
+
+      // --- Escape clears the selection ---
+      // When Escape has no transient mode to cancel (the narrow first
+      // effect above owns format / pending-draw / Format /
+      // Isometric) and the user isn't typing, a live selection is
+      // dropped, mirroring a click on empty canvas. Guarded on the same
+      // mode flags so a single Escape does one thing: cancel the mode
+      // OR deselect, never both.
+      if (
+        key === 'Escape' &&
+        !inText &&
+        live.editingId === null &&
+        live.formatSourceId === null &&
+        live.pendingDraw === null &&
+        live.canvasTool !== 'format' &&
+        live.canvasTool !== 'isometric' &&
+        live.canvasTool !== 'avatar' &&
+        // A whiteboard eraser in hand is put down first (the narrow listener).
+        !(live.whiteboard !== null && live.canvasTool === 'eraser') &&
+        (selectedId !== null || multiSelectedIds.size > 0)
+      ) {
+        e.preventDefault();
+        live.onDeselect();
+        return;
+      }
+
+      // --- Delete / Backspace ---
+      if (key === 'Delete' || key === 'Backspace') {
+        if (live.isReadOnly && !live.participant) return;
+        if (inText) return;
+        if (live.editingId !== null) return;
+        if (multiSelectedIds.size > 0) {
+          e.preventDefault();
+          live.deleteMultiSelected();
+        } else if (selectedId !== null) {
+          e.preventDefault();
+          live.deleteSelected();
+        }
+        return;
+      }
+
+      // --- Cmd / Ctrl modified shortcuts ---
+      // The chord table lives in editor-shortcut-keys beside the plain-key
+      // ones. A modified key returns either way: one we don't handle must
+      // not fall through to the plain-key table and drop a shape.
+      if (mod) {
+        // An empty start search hands undo and redo on (start-diagramming.md): it has no typing of its own to undo.
+        const historyChord = lower === 'z' || lower === 'y';
+        if (inText && !(historyChord && passesHistoryChords(target))) return;
+        // A Viewer's or Participant's canvas chord it may not run (select-all, duplicate, lock, z-order) is still the
+        // canvas's, as on a covered canvas: left to the browser, Cmd+A selected the page's text and Cmd+D bookmarked it.
+        if (!runModShortcut(e, live) && live.isReadOnly && coveredKeyRole(e) === 'swallow') {
+          e.preventDefault();
+        }
+        return;
+      }
+
+      // --- Plain key tool + element-add shortcuts ---
+      // Standards-aligned bindings (Excalidraw / tldraw / Figma / Miro),
+      // dispatched via VIEW_TOOL_KEYS / EDIT_KEYS above:
+      //   V (S alias) = Select, H = Hand, K = Laser, I = Isometric,
+      //   Z = Zen, E = Eraser, P (F alias) = Pencil (tools)
+      //   R = Rectangle, O = Oval, D = Diamond, C = Cylinder,
+      //   G = Parallelogram, T = Text, N = Note, A = Arrow (elements)
+      //   1-9/0 mirror the same actions (Excalidraw number row).
+      // The plain shape keys never collide with Cmd/Ctrl+C / +D (copy /
+      // duplicate) etc., which are handled in the modifier block above and
+      // return before reaching here.
+      // Bail on text-input focus + editing-label state so the user
+      // can still type literal letters into a label or comment.
+      // Element-add shortcuts also check isReadOnly so view-role
+      // visitors don't accidentally drop placeholder elements that
+      // the server will reject anyway.
+      if (inText) return;
+      if (live.editingId !== null) return;
+
+      // --- Arrow-key nudge (docs/specs/008-canvas/canvas-and-palette.md Move) ---
+      // Move the selection 1px per press, 10px with Shift. Bails for
+      // view-role (no mutation) and when nothing is selected (so the
+      // arrows keep their default page behaviour). Placed before the
+      // letter shortcuts; arrow keys never collide with them.
+      if (key === 'ArrowUp' || key === 'ArrowDown' || key === 'ArrowLeft' || key === 'ArrowRight') {
+        // Avatar mode (docs/specs/008-canvas/avatar-mode.md) owns the arrow keys: they steer the walking
+        // character (useAvatarWalk), and the mode is read-only anyway.
+        if (live.canvasTool === 'avatar') return;
+        const hasSelection = multiSelectedIds.size > 0 || selectedId !== null;
+        // With nothing selected in Pages mode, an arrow goes to the next or previous page (for every
+        // role: it only moves the view).
+        const dir = arrowPageDir(key);
+        if (!hasSelection && live.onStepPage && dir && !e.shiftKey && !e.altKey) {
+          if (live.onStepPage(dir)) e.preventDefault();
+          return;
+        }
+        if (live.isReadOnly) return;
+        if (!hasSelection) return;
+        const step = e.shiftKey ? 10 : 1;
+        const dx = key === 'ArrowLeft' ? -step : key === 'ArrowRight' ? step : 0;
+        const dy = key === 'ArrowUp' ? -step : key === 'ArrowDown' ? step : 0;
+        e.preventDefault();
+        live.onNudgeSelection(dx, dy);
+        return;
+      }
+
+      // --- Zoom to fit (Shift+1) ---
+      // Matched on `code` (not `key`) because Shift turns "1" into "!"
+      // on US layouts; `Digit1` is layout-stable. Non-mutating, so it
+      // runs before the read-only gate and before type-to-edit (which
+      // would otherwise seed a label with "!").
+      if (e.shiftKey && e.code === 'Digit1') {
+        e.preventDefault();
+        live.onFitToScreen();
+        return;
+      }
+
+      // --- Type-to-edit (docs/specs/008-canvas/canvas-and-palette.md Labels) ---
+      // A printable key on a single selected, label-bearing element
+      // opens its label editor seeded with that character, INSTEAD of
+      // firing the tool / add shortcuts below — the user kept selecting
+      // a shape, typing, and accidentally dropping new elements. Space
+      // is excluded (it stays the pan / tap-to-edit modifier). View-role
+      // never types (so viewers keep V / H / K). A non-labelable selection
+      // returns false and falls through to the shortcuts.
+      if (
+        (!live.isReadOnly || live.participant) &&
+        selectedId !== null &&
+        multiSelectedIds.size === 0 &&
+        key.length === 1 &&
+        key !== ' '
+      ) {
+        if (live.onTypeIntoSelected(selectedId, key)) {
+          e.preventDefault();
+          return;
+        }
+      }
+
+      // --- Editor mode (Shift+D, docs/specs/007-editor/editor-modes.md) ---
+      // After type-to-edit, so a capital D still types into a selected
+      // label; before the dock keys, so it works in Draw mode too. Where no
+      // switch is offered it does nothing (it is never Diamond's D).
+      if (e.shiftKey && !e.altKey && lower === 'd') {
+        if (!live.onCycleEditorMode) return;
+        e.preventDefault();
+        live.onCycleEditorMode();
+        return;
+      }
+
+      // Walking, the Avatar Panel's action keys are the character's (docs/specs/008-canvas/avatar-mode.md
+      // "Keyboard actions", useAvatarActionKeys): S spins rather than searching, 1 throws confetti rather than
+      // picking Select. V / H / K / I / Z and Escape stay the way out.
+      if (live.canvasTool === 'avatar' && avatarActionForKey(e)) return;
+
+      // A whiteboard's keys are its dock's, and only these
+      // (docs/specs/023-draw-mode/draw-mode.md "Keyboard shortcuts"): the diagram tab's element and
+      // mode keys have no palette to mirror there.
+      if (live.whiteboard) {
+        const action =
+          WHITEBOARD_VIEW_KEYS[lower] ??
+          (live.isReadOnly ? undefined : WHITEBOARD_EDIT_KEYS[lower]);
+        if (action) {
+          e.preventDefault();
+          action(live);
+        }
+        return;
+      }
+
+      // Non-mutating view tools (Select / Hand / Laser / Isometric /
+      // Zen): before the read-only gate so view-role visitors get them.
+      const viewAction = VIEW_TOOL_KEYS[lower];
+      if (viewAction) {
+        e.preventDefault();
+        viewAction(live);
+        return;
+      }
+
+      if (live.isReadOnly) {
+        // A Participant's tiles show their keys, and each tile works as an Editor's does (share-roles.md).
+        const add =
+          live.participant && live.canvasTool !== 'avatar' ? PARTICIPANT_KEYS[lower] : undefined;
+        if (add) {
+          e.preventDefault();
+          add(live);
+        }
+        return;
+      }
+      // Avatar mode (docs/specs/008-canvas/avatar-mode.md) is read-only FOR THE PRESENTER too: the
+      // element-add / Eraser / Pencil keys stay dormant while walking, so a
+      // stray keypress can't drop a shape mid-narration. The view tools above
+      // already ran, so V / H / K / I / Z remain the way out.
+      if (live.canvasTool === 'avatar') return;
+
+      // Image (`9`): separate from EDIT_KEYS because its callback is
+      // nullable on guest deploys without an api worker.
+      if (lower === '9' && live.onAddImage) {
+        e.preventDefault();
+        live.onAddImage();
+        return;
+      }
+
+      // Mutating tools / element adds (Eraser / Pencil / shapes / Text /
+      // Note / Arrow), editors only.
+      const editAction = EDIT_KEYS[lower];
+      if (editAction) {
+        e.preventDefault();
+        editAction(live);
+        return;
+      }
+    };
+    // Every branch that acts claims the key with preventDefault, so a key this
+    // listener newly claimed is a shortcut used (the power user mode offer,
+    // docs/specs/007-editor/power-user-mode.md). A key someone else claimed first is not counted.
+    const onKey = (e: KeyboardEvent) => {
+      const claimed = e.defaultPrevented;
+      handleKey(e);
+      if (!claimed && e.defaultPrevented) liveRef.current.onShortcutUsed?.();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [deps.enabled, liveRef]);
+
+  // Space-tap on a selected element enters label edit mode. Held-
+  // Space-with-drag stays as the canvas pan modifier (see
+  // useCanvasPanAndMarquee); we distinguish a tap from a hold by
+  // watching for a pointerdown between Space-down and Space-up. If
+  // any pointerdown fires while Space is held, treat it as
+  // pan-drag and skip the edit; otherwise the keyup fires the
+  // beginEdit call. The repeat-key check stops a held Space
+  // (autorepeat) from spuriously triggering on every fired keydown.
+  useEffect(() => {
+    if (!deps.enabled) return;
+    let spaceDownAt: number | null = null;
+    let pointerDownSinceSpace = false;
+    // A focused menu row is pressed by Space, not tapped into a label edit.
+    const isTypingTarget = (t: EventTarget | null) =>
+      isInMenuSurface(t) ||
+      // A keyboard-focused button or box: Space presses it (isPressableControl), never edits a label.
+      isPressableControl(t) ||
+      t instanceof HTMLInputElement ||
+      t instanceof HTMLTextAreaElement ||
+      (t instanceof HTMLElement && t.isContentEditable);
+    const onPointerDown = () => {
+      if (spaceDownAt !== null) pointerDownSinceSpace = true;
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.code !== 'Space') return;
+      if (e.repeat) return;
+      if (isTypingTarget(e.target)) return;
+      if (spaceDownAt === null) {
+        spaceDownAt = performance.now();
+        pointerDownSinceSpace = false;
+      }
+    };
+    const onKeyUp = (e: KeyboardEvent) => {
+      if (e.code !== 'Space') return;
+      const heldFor = spaceDownAt !== null ? performance.now() - spaceDownAt : Infinity;
+      const wasDrag = pointerDownSinceSpace;
+      spaceDownAt = null;
+      pointerDownSinceSpace = false;
+      if (wasDrag) return;
+      if (heldFor > 600) return; // long-press with no drag is not a tap
+      const live = liveRef.current;
+      const { selectedId, multiSelectedIds } = live.readSelection();
+      if (live.isReadOnly && !live.participant) return;
+      if (live.editingId !== null) return;
+      if (isTypingTarget(e.target)) return;
+      // A dialog over the canvas owns Space: never a label edit on the shape behind it.
+      if (anyModalOpen()) return;
+      // Only act on single-element selections: multi-select Space
+      // has no well-defined "which element gets the label edit"
+      // answer, so leave the pan modifier as the only behaviour
+      // there.
+      if (multiSelectedIds.size > 0) return;
+      if (selectedId === null) return;
+      e.preventDefault();
+      live.onBeginEditSelected(selectedId);
+    };
+    document.addEventListener('pointerdown', onPointerDown, true);
+    document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('keyup', onKeyUp);
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown, true);
+      document.removeEventListener('keydown', onKeyDown);
+      document.removeEventListener('keyup', onKeyUp);
+    };
+  }, [deps.enabled, liveRef]);
+}

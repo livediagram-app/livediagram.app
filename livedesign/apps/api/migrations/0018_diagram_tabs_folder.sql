@@ -1,0 +1,14 @@
+-- Tab folders (docs/specs/006-document/tab-folders.md). A diagram's tabs can be grouped into
+-- one-level, named folders along the tab bar. Membership is
+-- per-diagram, so it lives on the diagram_tabs link row alongside
+-- order_index (a tab shared into two diagrams can be foldered in
+-- one and loose in the other — see docs/specs/006-document/tab-document-many-to-many.md).
+--
+-- NULL = loose (no folder). No backfill: every existing tab is
+-- loose. No index: folders are derived by a client-side scan over
+-- the already-ordered hot read (diagram_tabs_by_diagram).
+--
+-- Deliberately NOT mirrored onto the legacy `tabs` table the way
+-- order_index is (0011) — folder membership is a diagram-link
+-- concept with no legacy denormalised equivalent.
+ALTER TABLE diagram_tabs ADD COLUMN folder TEXT;

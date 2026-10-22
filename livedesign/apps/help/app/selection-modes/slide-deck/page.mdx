@@ -1,0 +1,81 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { SlideDeckPanel } from '@/components/illustrations/presentation';
+
+export const metadata = helpMetadata({
+  title: 'Slide Deck',
+  description:
+    'Turn a canvas into a talk in livepages: build slides from the elements you pick, write presenter notes, then present them full screen one at a time.',
+  path: '/help/selection-modes/slide-deck/',
+});
+
+<ArticleLayout
+  title="Slide Deck"
+  description="Turn a canvas into a deck: each slide shows the elements you picked, presented full screen one at a time."
+  categoryTitle="Selection Modes"
+  categorySlug="selection-modes"
+  subArticles={getSubArticles('slide-deck')}
+>
+
+A finished canvas shows everything at once, which is exactly what you want for reference and exactly what you don't want when you are narrating it. **Slide Deck** turns the canvas into a talk: a set of slides you build yourself, each showing the elements you chose, presented full screen one at a time.
+
+Choose it from the tool picker at the start of the palette strip, in the **Present** band beside **Laser** and **Spotlight**. Like them it needs something to work with, so it is disabled on an empty canvas. Slide Deck is also **desktop only**: a phone screen has no room for the deck list and the canvas side by side, so the mode isn't offered there. A deck you built on a desktop browser is kept, ready for the next time you open the document on one.
+
+Picking the tool does **not** start presenting. It opens the **Slide Deck** panel, where you build and check the deck; starting is a deliberate second act.
+
+<Figure caption="The Slide Deck panel lists the deck in order, each row naming its tab and element count, with the settings cog in its header.">
+  <SlideDeckPanel />
+</Figure>
+
+The cog in the panel's header opens the same presenter settings as the cog you get while presenting (transitions, auto-advance, looping and the rest), so you can set them before you start rather than in front of the room. See [The Presenter's Controls](/help/selection-modes/slide-deck/presenter-controls/#presenter-settings).
+
+## What a slide is
+
+**A slide is a set of elements you chose, from one tab.** It is not a region of the canvas, not a saved camera position, and not a layer.
+
+- **The deck spans tabs, a slide doesn't.** Slide 1 can come from one tab, slide 2 from another, and slide 3 from the first one again, but each slide draws from a single tab, which is what gives it a backdrop and a coordinate space to be framed in.
+- **An element can be on as many slides as you like.** Membership is a list, not a split, so a title that belongs on every slide simply goes on every slide.
+- **Slide order is the deck's own.** It has nothing to do with tab order or with which element sits in front of which, and reordering the deck never restacks anything on the canvas.
+- **Slides point at elements, they never copy them.** Restyle a shape and every slide it appears on shows the new one. Delete it and the slides quietly skip it; undo the delete and it is back on all of them.
+
+## Building a deck, in short
+
+<Step n={1}>
+  Pick **Slide Deck** from the palette's tool picker. A new deck starts empty, because a guessed
+  deck is one you have to read and prune before you can trust it.
+</Step>
+<Step n={2}>On the canvas, select what you want on the first slide.</Step>
+<Step n={3}>
+  Press **New slide** at the bottom of the panel. It counts your selection back to you, "New slide
+  from 3 elements", and the slide takes the tab you are on.
+</Step>
+<Step n={4}>
+  Move to the next thing you want to talk about, select it, and press the button again.
+</Step>
+
+**In Pages mode**, slides are pages: the panel offers a page picker and **Add as slide** instead, and the **Slides** button in the bottom-right corner opens the panel. See [Exporting and Presenting Pages](/help/canvas/pages-mode/exporting-pages/#turning-pages-into-slides).
+
+**In Plan mode**, a card can be a slide of its own: right-click a card on a board and choose **Add to Slides**. Presenting it shows the card full screen, its type, title, status, assignee, dates, description and checklist laid out to read across a room, and it keeps up with the card as it changes. A whole board can be a slide too: press the **⋯** in the board's header (left of its settings cog) and choose **Add to Slides**; presenting it frames the live board, cards and all. See [Plan Mode](/help/canvas/plan-mode/).
+
+**Arrows come along on their own.** An arrow with both ends on the slide is included automatically, so you can build a slide by dragging a box round four shapes without hand-picking the connectors between them.
+
+Everything else about building, the slide menu, editing what is on a slide, hiding one from the run, reordering, notes and time budgets, is in [Building a Deck](/help/selection-modes/slide-deck/building-a-deck/).
+
+## Presenting it
+
+Press **Present** at the bottom of the panel and the deck opens full screen at slide 1 with every part of the editor hidden. Its badge counts the slides that will run, and it stays greyed out until the deck has at least one slide that isn't hidden. See [Presenting](/help/selection-modes/slide-deck/presenting/) for how a slide is framed, how you move through the deck, and what you can and cannot touch while it runs, and [The Presenter's Controls](/help/selection-modes/slide-deck/presenter-controls/) for the strip in the corner, the pacing clock and the settings behind the cog.
+
+**Starting a presentation broadcasts nothing.** Nobody else is pulled into your deck and nobody's view moves. The way you show a deck to people is the way you already show them everything else in the meeting: **share your screen**.
+
+**The deck itself is ordinary document data**, though: a teammate who opens the document sees your slides in their own Slide Deck panel, and can edit them. It saves and travels exactly like the document's name does.
+
+Building and presenting a deck needs edit access. People on a view-only or participant [share link](/help/collaboration/sharing/) don't get the Slide Deck tool, the Slides button or the Slide Deck command, so to show them a deck, present it yourself and share your screen.
+
+<Tip>
+  Build the deck as you would an agenda: one slide per point you intend to make, in the order you
+  intend to make them. Put the same title element on every slide and the room always knows which
+  diagram they are looking at.
+</Tip>
+
+</ArticleLayout>

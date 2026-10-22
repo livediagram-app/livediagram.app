@@ -1,0 +1,69 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { LightDarkToggle } from '@/components/illustrations/tools';
+
+export const metadata = helpMetadata({
+  title: 'Appearance: Light, Dark, System',
+  description:
+    'Switch livepages between Light, Dark and System from the tab bar, Settings or the website rail. One remembered choice covers the editor, site and help.',
+  path: '/help/tools/dark-mode/',
+});
+
+<ArticleLayout
+  title="Appearance: Light, Dark, System"
+  description="Three settings for livepages's own look (Light, Dark, or follow your device), kept separate from the theme each tab is saved with."
+  categoryTitle="Tools"
+  categorySlug="tools"
+>
+
+**Appearance** is how livepages itself looks, just for you. It has three settings, **Light**, **Dark** and **System**, and one button that steps through them in that order.
+
+**One choice covers everything.** Pick Dark in the help centre and the editor opens dark too, and the other way round.
+
+## Where to change it
+
+- **In the editor:** the Appearance button sits in the right-hand cluster of the tab bar, beside **Search** and **Settings**. It shows the setting you are on (a sun for Light, a moon for Dark, a monitor for System) and, on a wider screen, its name. Each click moves to the next setting; hover it to see which one is current. On a phone it is icon-only.
+- **In Settings:** the **Appearance** category has a **Theme** row with all three settings side by side, if you would rather pick one directly than cycle.
+- **On the website, this help centre and the telemetry dashboard:** a small sun / moon / monitor button on a rail at the right-hand edge of the page. It only shows on wide screens, where there is room beside the content; on a narrower screen the page follows your saved choice, or your device.
+
+<Figure caption="The Appearance button on the tab bar steps through Light, Dark and System, one setting per click.">
+  <LightDarkToggle />
+</Figure>
+
+With [Power User Mode](/help/user-interface/power-user-mode/) on, the editor's button becomes a quick switch: a click flips straight between Light and Dark, and a right-click sets System.
+
+## The three settings
+
+- **Light.** The editor's chrome stays light, whatever your device is set to.
+- **Dark.** The editor's chrome stays dark, whatever your device is set to.
+- **System.** The editor follows your operating system, so a machine that turns dark at sunset takes the editor with it, live, without a reload.
+
+**System is where everyone starts.** Open livepages on a machine set to dark and the editor is dark from the first paint, canvas included. Pick Light or Dark yourself and that choice outranks your device from then on, in both directions: a light editor on a dark machine is perfectly allowed.
+
+## Appearance is yours; a theme is the tab's
+
+The distinction worth holding on to is _who_ each setting belongs to.
+
+Appearance belongs to **you and this browser**. It recolours the editor's interface (the tab bar, header, panels, and the backdrop around your work) and it is never saved into the document, so nobody you share with is affected by it.
+
+A [theme](/help/canvas/themes/) belongs to **the tab**. It sets the canvas backdrop and the colours of your elements, it is stored on the tab, and everyone who opens that tab sees it.
+
+## Every theme follows you
+
+Every theme has a light half and a dark half, and your appearance decides which one you see. Work in Dark and a tab on **Default** is a deep blue-slate canvas with slate-grey elements; switch to Light and the same tab is off-white with the familiar blue ones. Any other theme does the same: a pastel diagram turns into deep, muted versions of its own hues in Dark, and a dark diagram turns pale in Light, keeping its colours recognisable either way. Both halves keep text and lines easy to read.
+
+Nothing is written to the document when you switch: the tab is not edited, and there is nothing to save. A colleague reading the same tab in light chrome sees the light half at the same moment you are looking at the dark one. A colour someone picked by hand is drawn as it is, for everyone.
+
+So no tab ever needs a particular appearance, and the editor never asks you to switch.
+
+## Your choice sticks
+
+- **Remembered.** Your pick is saved in this browser, so a refresh, or your next visit, keeps the appearance you chose, on every livepages page. It is not tied to your account, so another browser or device starts on System until you pick there too.
+- **No flash.** It is worked out before the page first paints (your saved pick, or your device setting if you have not made one) on every screen including the website, this help centre and the welcome and new-document flows, so you never see a flash of the wrong one.
+
+<Tip>
+  Prefer a dark workspace? Set it once and forget it. Every tab's canvas comes with you, whatever
+  its theme, without changing what anyone else sees.
+</Tip>
+
+</ArticleLayout>

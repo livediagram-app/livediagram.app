@@ -1,0 +1,216 @@
+// The working state made into the next tab (docs/specs/024-agents/blueprints/edit-operations.md
+// "Finalise"): touched elements normalised and their shape kinds coerced, then checked, workshop
+// notes landed on lanes, arrows re-anchored around moved boxes, lanes behind what they hold, and the
+// whole tab validated. Untouched elements pass through as the same objects (I2).
+
+import type { EditRejection } from '@livepages/api-schema';
+import {
+  MAX_ELEMENTS_PER_TAB,
+  agendaFitHeight,
+  coerceShapeKind,
+  deriveContainers,
+  isContainer,
+  elementValidationIssue,
+  isValidTab,
+  lanesToFront,
+  normaliseElement,
+  rebindArrowAnchorsAfterMove,
+  type ArrowElement,
+  type BoxedElement,
+  type Element,
+  type ElementId,
+  type Endpoint,
+  type Tab,
+  settleDiagramKeys,
+  tagColoursOf,
+} from '@livepages/document';
+import { kindOf } from './element-text';
+import { ROUTE_KEYS, rerouted } from './operations/connect';
+import { sameValue } from './equality';
+import { invalidResult } from './rejections';
+import { currentElements, replaceElement, type EditState } from './state';
+import type { EditLog } from './types';
+import { ALIAS_FIELDS } from './fields';
+
+type Raw = Record<string, unknown>;
+
+const GEOMETRY: ReadonlySet<string> = new Set(['x', 'y', 'width', 'height', 'from', 'to']);
+
+// The coercions normalising may make that change what the caller asked for.
+function noteCoercions(state: EditState, before: Raw, after: Raw, log: EditLog, op: number) {
+  const id = String(after.id);
+  const coerced = (field: string, message: string) => {
+    state.warnings.push({ code: 'value_coerced', ref: id, message });
+    log('[edit-ops] coerced', { operation: op, field });
+  };
+  if (before.codeLanguage !== after.codeLanguage)
+    coerced(
+      'codeLanguage',
+      `${id} codeLanguage ${JSON.stringify(before.codeLanguage)} drawn as plain`,
+    );
+  if (before.codeTheme !== after.codeTheme)
+    coerced(
+      'codeTheme',
+      `${id} codeTheme ${JSON.stringify(before.codeTheme)} is not a theme; removed`,
+    );
+}
+
+function normaliseTouched(state: EditState, log: EditLog): void {
+  for (const [id, { operation, written }] of state.touched) {
+    const el = state.byId.get(id);
+    // Normalising settles what an operation wrote; an element only moved, carried or grown changes
+    // nothing but where it is and how big.
+    if (!el || (!!state.before.has(id) && written.every((key) => GEOMETRY.has(key)))) continue;
+    const normalised = normaliseElement(el) as Raw;
+    // A sticky's borderless look comes with the fill it is given: an existing note whose fill this edit
+    // left alone keeps the border it had, so a relabelled note looks like its neighbours.
+    if (
+      normalised.type === 'sticky' &&
+      state.before.has(id) &&
+      (el as Raw).strokeColor === undefined &&
+      // The fill named by its stored key or by an alias that writes it (`fill`).
+      !written.some((k) => k === 'fillColor' || ALIAS_FIELDS[k]?.includes('fillColor'))
+    )
+      delete normalised.strokeColor;
+    noteCoercions(state, el, normalised, log, operation);
+    if (normalised.type === 'shape') {
+      const shape = coerceShapeKind(normalised.shape);
+      if (shape !== normalised.shape) {
+        state.warnings.push({
+          code: 'shape_coerced',
+          ref: id,
+          message: `${id} shape ${JSON.stringify(normalised.shape)} drawn as ${shape}`,
+        });
+        log('[edit-ops] coerced', { operation, field: 'shape' });
+        normalised.shape = shape;
+      }
+      // An agenda given its segments grows down to draw every one, as a label grows its box, rather
+      // than the face leaving the last off (docs/specs/012-collaboration/agenda.md "The face").
+      if (
+        normalised.shape === 'agenda' &&
+        (!state.before.has(id) || written.includes('agendaItems'))
+      ) {
+        const height = agendaFitHeight(normalised as unknown as BoxedElement);
+        if (height !== normalised.height) {
+          normalised.height = height;
+          log('[edit-ops] agenda fitted', { operation, height });
+        }
+      }
+    }
+    replaceElement(state, normalised as unknown as Element);
+  }
+}
+
+function touchedIssue(state: EditState): EditRejection | null {
+  for (const id of state.touched.keys()) {
+    const el = state.byId.get(id);
+    const issue = el && elementValidationIssue(el);
+    if (issue) return invalidResult(id, kindOf(el), issue);
+  }
+  return null;
+}
+
+const boxOf = (el: Element) => (el.type === 'arrow' ? null : [el.x, el.y, el.width, el.height]);
+
+// Boxes present before and after whose position or size changed.
+function movedBoxes(before: ReadonlyMap<ElementId, Element>, next: Element[]): Set<ElementId> {
+  const moved = new Set<ElementId>();
+  for (const el of next) {
+    const was = before.get(el.id);
+    const box = boxOf(el);
+    if (!was || !box || was === el) continue;
+    if (box.some((v, i) => v !== boxOf(was)?.[i])) moved.add(el.id);
+  }
+  return moved;
+}
+
+// An arrow the rebind re-anchored with one end's box moved and the other still is drawn afresh (EO31): kept, its
+// route ran from the new anchor through the moved box. Both ends moved, the arrow moved whole and its route holds.
+function rerouteRebound(
+  landed: Element[],
+  rebound: Element[],
+  moved: ReadonlySet<ElementId>,
+): Element[] {
+  if (rebound === landed) return rebound;
+  const anchorOf = (end: Endpoint) => (end as { anchor?: string }).anchor;
+  const endsMoved = (a: ArrowElement) =>
+    [a.from, a.to].filter((end) => end.kind === 'pinned' && moved.has(end.elementId)).length;
+  return rebound.map((el, i) => {
+    const was = landed[i];
+    if (el.type !== 'arrow' || !was || was === el || was.type !== 'arrow') return el;
+    const ends = (a: ArrowElement) => `${anchorOf(a.from)}>${anchorOf(a.to)}`;
+    const reanchored = ends(el) !== ends(was);
+    const routed = ROUTE_KEYS.some((k) => el[k] !== undefined);
+    return reanchored && routed && endsMoved(el) === 1 ? rerouted(el, rebound) : el;
+  });
+}
+
+// Why a whole tab fails validation: the first invalid element, the element cap, a repeated id, or
+// the tab's own id and name.
+export function tabRejection(tab: Tab): EditRejection {
+  for (const el of tab.elements) {
+    const issue = elementValidationIssue(el);
+    if (issue) return invalidResult(el.id, kindOf(el), issue);
+  }
+  if (tab.elements.length > MAX_ELEMENTS_PER_TAB)
+    return invalidResult('the tab', undefined, {
+      field: 'elements',
+      rule: `at most ${MAX_ELEMENTS_PER_TAB} elements`,
+    });
+  const ids = new Set(tab.elements.map((el) => el.id));
+  if (ids.size < tab.elements.length)
+    return invalidResult('the tab', undefined, { field: 'elements', rule: 'every id once' });
+  return invalidResult('the tab', undefined, { field: 'id', rule: 'an id and a name' });
+}
+
+// Every container directly before its earliest member when it is after it, innermost first, so an
+// outer container ends before the inner ones it holds (I6).
+export function containersBehindMembers(elements: readonly Element[]): Element[] {
+  const byId = new Map(elements.map((el) => [el.id, el]));
+  const members = new Map<BoxedElement, ElementId[]>();
+  for (const [id, holder] of deriveContainers(elements)) {
+    const container = holder ? byId.get(holder) : undefined;
+    // A mind node holds its children by link, not by drawing behind them.
+    if (!container || container.type === 'arrow' || !isContainer(container)) continue;
+    const held = members.get(container);
+    if (held) held.push(id);
+    else members.set(container, [id]);
+  }
+  const order = elements.map((el) => el.id);
+  // Each id's index in `order`, kept true as containers move: a move shifts only the range it crosses, so the
+  // pass is linear in the tab plus what actually moves, never a scan of the order per member.
+  const at = new Map(order.map((id, i) => [id, i]));
+  const innermostFirst = [...members].sort(([a], [b]) => a.width * a.height - b.width * b.height);
+  for (const [container, held] of innermostFirst) {
+    const from = at.get(container.id)!;
+    let earliest = Infinity;
+    for (const id of held) earliest = Math.min(earliest, at.get(id)!);
+    if (earliest > from) continue;
+    order.splice(from, 1);
+    order.splice(earliest, 0, container.id);
+    for (let i = earliest; i <= from; i++) at.set(order[i]!, i);
+  }
+  return order.map((id) => byId.get(id)!);
+}
+
+export function finalise(state: EditState, log: EditLog): Tab | EditRejection {
+  normaliseTouched(state, log);
+  const issue = touchedIssue(state);
+  if (issue) return issue;
+  const landed = [...currentElements(state)];
+  const moved = movedBoxes(state.before, landed);
+  const rebound = rerouteRebound(landed, rebindArrowAnchorsAfterMove(landed, moved), moved);
+  // An element that ends as it began is the element it began as (E1, I2).
+  // A diagram key's rows follow the tab's lines and tags (docs/specs/009-elements/diagram-key.md), settled here as the
+  // editor settles them on commit: an agent's key otherwise drew its empty hint.
+  const settled = settleDiagramKeys(
+    containersBehindMembers(lanesToFront(rebound)),
+    tagColoursOf(state.tab),
+  );
+  const elements = settled.map((el) => {
+    const was = state.before.get(el.id);
+    return was && was !== el && sameValue(was, el) ? was : el;
+  });
+  const next: Tab = { ...state.tab, elements };
+  return isValidTab(next) ? next : tabRejection(next);
+}

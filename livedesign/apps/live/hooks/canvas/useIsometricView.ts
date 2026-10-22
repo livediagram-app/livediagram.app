@@ -1,0 +1,55 @@
+'use client';
+
+import { useMemo, type Ref } from 'react';
+import { isBoxed, unionBoxedBounds, type Element } from '@livepages/document';
+import { isoPivot, isoTransform } from '@/lib/isometric';
+import { useIsometricCamera } from '@/hooks/canvas/useIsometricCamera';
+import { useObservedSize } from '@/hooks/canvas/useObservedSize';
+import type { CanvasTool } from '@/components/palette/palette.types';
+
+// The isometric-view slice (docs/specs/008-canvas/isometric-view.md), lifted out of Canvas: the
+// orbit-able camera, the content-centre pivot the tilt rotates around,
+// and the transform fragment the canvas wrapper appends innermost.
+// Everything is local view state — nothing persists or syncs.
+export function useIsometricView({
+  canvasTool,
+  elements,
+  mainRef,
+}: {
+  canvasTool: CanvasTool;
+  elements: Element[];
+  mainRef: Ref<HTMLElement>;
+}) {
+  // Isometric camera (docs/specs/008-canvas/isometric-view.md): the orbit-able view angle. Local, non-synced
+  // view state; Shift-drag on the canvas spins / tilts it (the <main>
+  // pointerdown handler routes to `isoCamera.startOrbit`).
+  const isoCamera = useIsometricCamera();
+
+  // Centre of the boxed content, in canvas px — the point the isometric
+  // tilt pivots around so the canvas tilts in place (and stays put as you
+  // orbit) instead of swinging off-screen. Only computed while the tool is
+  // active; null when there's no boxed element to centre on.
+  const isoContentCenter = useMemo(() => {
+    if (canvasTool !== 'isometric') return null;
+    const boxedIds = new Set(elements.filter(isBoxed).map((el) => el.id));
+    if (boxedIds.size === 0) return null;
+    const bb = unionBoxedBounds(elements, boxedIds);
+    if (!bb) return null;
+    return { x: bb.x + bb.width / 2, y: bb.y + bb.height / 2 };
+  }, [canvasTool, elements]);
+
+  // Isometric tilt fragment, appended innermost to the wrapper transform.
+  // The pivot (content centre relative to the wrapper centre) makes the
+  // tilt rotate around the canvas rather than the wrapper centre, so the
+  // content tilts in place and stays centred as the camera orbits. The
+  // wrapper's unscaled size = the main canvas rect (it's `absolute inset-0`
+  // and untransformed itself), observed only while the tool is active.
+  const mainSize = useObservedSize(mainRef, canvasTool === 'isometric');
+  let isoFragment = '';
+  if (canvasTool === 'isometric') {
+    const pivot = mainSize ? isoPivot(isoContentCenter, mainSize) : null;
+    isoFragment = ` ${isoTransform(isoCamera.azimuth, isoCamera.elevation, pivot ?? undefined)}`;
+  }
+
+  return { isoCamera, isoFragment };
+}

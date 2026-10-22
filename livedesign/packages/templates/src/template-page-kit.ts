@@ -1,0 +1,69 @@
+// The kit a template that opens on pages builds with (docs/specs/008-canvas/
+// canvas-and-palette.md "Templates on pages"): its pages, declared once, and a page-scale layout kit
+// for each (page-layout-kit.ts) over that page's content box, the page less its margin. The pages
+// sit where Pages lays them out (layOutPages), so a paged template's elements are
+// built in page coordinates and ignore the centre every other template is built around.
+import {
+  layOutPages,
+  newLogoPage,
+  newSlidePage,
+  pageMargin,
+  type Page,
+  type PageBackground,
+  type PageOrientation,
+  type PageSizeId,
+} from '@livepages/document';
+import { kit, type Kit } from './page-layout-kit';
+
+/** An infographic page of a template: `page-n`, already an infographic page so the first page's
+ *  kind choice is not offered. */
+export function templatePage(
+  n: number,
+  size: PageSizeId,
+  orientation: PageOrientation,
+  name: string,
+  background?: PageBackground,
+): Page {
+  return {
+    id: `page-${n}`,
+    orientation,
+    ...(size !== 'a4' ? { size } : {}),
+    ...(background ? { background } : {}),
+    name,
+    kind: 'infographic',
+  };
+}
+
+/** A slide page of a template (docs/specs/007-editor/pages-mode.md "Page kinds"): `page-n`,
+ *  landscape in a slide size (16:9 by default), so it offers the slide sizes and layouts and its
+ *  deck button. */
+export function templateSlidePage(
+  n: number,
+  name: string,
+  background?: PageBackground,
+  size: PageSizeId = 'slide',
+): Page {
+  return {
+    ...newSlidePage(`page-${n}`, size),
+    ...(background ? { background } : {}),
+    name,
+  };
+}
+
+/** A template's logo page (docs/specs/007-editor/logo-pages.md): the 1024 artboard, named. */
+export function templateLogoPage(n: number, name: string, background?: PageBackground): Page {
+  return {
+    ...newLogoPage(`page-${n}`),
+    ...(background?.fill ? { background: { fill: background.fill } } : {}),
+    name,
+  };
+}
+
+/** One layout kit per page, in page order, each over its page's content box. */
+export function pageKits(pages: readonly Page[]): Kit[] {
+  return layOutPages(pages).map((p) => {
+    const m = pageMargin(p);
+    const { x, y, width, height } = p.rect;
+    return kit({ x: x + m, y: y + m, width: width - m * 2, height: height - m * 2 });
+  });
+}

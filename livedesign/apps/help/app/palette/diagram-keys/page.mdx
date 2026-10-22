@@ -1,0 +1,52 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { DiagramKeyFigure } from '@/components/illustrations/palette-diagram-elements-2';
+
+export const metadata = helpMetadata({
+  title: 'Diagram Keys and Tag Colours',
+  description:
+    'A diagram key lists the line styles and tag colours a tab uses, each with a meaning you write. Colour by tag keeps every card with a tag the same colour.',
+  path: '/help/palette/diagram-keys/',
+});
+
+<ArticleLayout
+  title="Diagram Keys and Tag Colours"
+  description="A legend that builds itself, and cards coloured by their tags."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  subArticles={getSubArticles('diagram-keys')}
+>
+
+A **Diagram Key** is a legend that fills itself in. It lists every line style your arrows use and every tag colour on the tab, and you write what each one means. Switch an arrow to dotted and the key gains a row; stop using it and the row goes.
+
+It sits in the palette's **Layout** category ([Build Elements](/help/palette/build/)), after the Timeline.
+
+<Figure caption="Two cards edged by their tags' colours, and a key listing both line styles and both tags.">
+  <DiagramKeyFigure />
+</Figure>
+
+## Take the tour
+
+The first time you select a diagram key, a small **Show Me** toolbar appears beside its toolbar. Press **Play** for a short walkthrough on your own key: the rows it builds from your arrows and tag colours, writing a meaning, and its title. Press the cross if you would rather not; either way it is not offered again. To be offered it again, open **Settings**, then **Tours**, open **Show Me** and switch **Diagram Key** back on.
+
+## Writing the meanings
+
+Select the key and click a row's words to write its meaning, such as "Request: waits for the reply" for a solid line. **Enter** keeps it and **Escape** puts it back. A row you haven't written shows a starting meaning, "Dashed line" or the tag's own name.
+
+Double-click the title ("Key") to rename it. The key grows to fit its rows; resize it to change its width.
+
+A meaning is kept even when its row goes, so switching a style off and on again doesn't lose what you wrote.
+
+## Colour by tag
+
+[Cards](/help/palette/cards-and-callouts/) carry tags, such as a team, a status or a layer. **Colour by tag** gives a tag one colour across the whole tab:
+
+1. Select a card with the tag, right-click and open the **Card** section.
+2. Under **Tag Colours**, pick a colour for the tag.
+
+Every card with that tag now has a coloured edge and a tinted chip. Retag a card and its colour follows; change the tag's colour once and every card changes. **Clear** removes it. A card with its own edge colour keeps it.
+
+Each tag colour also shows in the diagram key, so the colour-coding explains itself.
+
+</ArticleLayout>

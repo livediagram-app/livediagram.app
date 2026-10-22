@@ -1,0 +1,15 @@
+name: Next build cache, save
+description: >-
+  Saves Turbopack's build cache restored by next-cache-restore in the same job, on main only: pull
+  requests read main's cache but never write their own, so they cannot evict it from the
+  repository's cache storage.
+
+runs:
+  using: composite
+  steps:
+    - name: Save Next build cache
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      uses: actions/cache/save@v6
+      with:
+        path: ${{ env.NEXT_CACHE_PATHS }}
+        key: ${{ env.NEXT_CACHE_KEY }}

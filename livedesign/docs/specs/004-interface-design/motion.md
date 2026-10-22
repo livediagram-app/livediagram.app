@@ -1,0 +1,189 @@
+# Motion
+
+Status: shipped
+
+## What
+
+The interface moves quickly. Chrome motion confirms what just happened; it does not narrate it, and the
+person using it never waits for it. Motion on the canvas and in marketing illustrations is content,
+and follows its own specs. Content drawn in for reading, such as a marketing page entrance or a
+telemetry chart, takes a little longer (see Content pacing).
+
+This applies to everyone. It isn't a preference. [Reduce motion](../007-editor/user-preferences.md) is
+the one switch, and it goes further: it collapses all motion to instant.
+
+## The budget
+
+- **Ceiling.** Every chrome transition or animation settles within **250ms**, delay included.
+- **Hovers and small fades** settle within **150ms**. This covers hover, focus and press feedback,
+  colour changes, tooltips, and opacity fades on small surfaces.
+- **Cascades** settle as a whole within 250ms, and the last item lands by then too. A cascade is a
+  list, grid, menu or feed whose items enter one beat apart. Each item runs at most 150ms, and the
+  delay stops growing at 100ms.
+
+Chrome is everything that isn't the canvas. That includes panels, menus, popovers, flyouts,
+dropdowns, tooltips, dialogs, sheets, drawers, toasts, banners, tab bars, the tour, the Explorer,
+the help centre, the telemetry dashboard and the marketing site's own navigation
+and cards.
+
+## Motion tokens
+
+Three named durations, shared by every app through the Tailwind theme (`@livepages/tailwind-config`).
+A chrome duration is one of these three and never a bare number.
+
+| Token   | Duration | For                                                                                                                        |
+| ------- | -------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `micro` | 150ms    | Hover, focus, press and colour feedback. Tooltips, small fades, chevrons, menu and dropdown opens. Each item of a cascade. |
+| `short` | 200ms    | Panels opening and resizing, accordions, rails, sliding indicators, progress bars, step swaps, drawers.                    |
+| `long`  | 250ms    | Dialogs and modals, sheets, tour moves, page transitions. This is also the ceiling.                                        |
+
+Tailwind's bare `transition` utility runs at `micro`.
+
+## Kinds of motion
+
+Every duration in the codebase belongs to exactly one kind. The budget applies to the first two.
+
+| Kind                     | What it is                                                                                             | Budget                                    |
+| ------------------------ | ------------------------------------------------------------------------------------------------------ | ----------------------------------------- |
+| **Chrome transition**    | A chrome surface changing state: entering, leaving, opening, resizing, hovering                        | 250ms, or 150ms for hovers                |
+| **Cascade**              | Chrome items entering one beat apart                                                                   | 250ms for the whole cascade               |
+| **Canvas animation**     | Motion of or on the canvas. Element entry and animations, arrow flow, slide transitions, collab boards | Its own spec                              |
+| **Content illustration** | Marketing illustrations and template-preview stories: a picture that moves, not a control              | Its own spec                              |
+| **Content reveal**       | Content drawn in for reading: the marketing page entrance, telemetry data-viz reveals                  | About half its original length, see below |
+| **Ambient indicator**    | Looping status. Spinners, skeleton pulses, live dots, empty-state float, attention pulses that repeat  | Exempt; not a transition                  |
+| **Timer**                | Time before something happens: debounce, hover grace, close delay, long press, auto-save, auto-dismiss | Untouched; not motion                     |
+
+A timer that only waits for an exit animation to finish before unmounting is an **exit hold**. It
+belongs to the animation it waits for, not to the timers, so it runs for that animation's token.
+Timers of every other kind keep their own durations.
+
+A progress ring that fills over a timer's window measures that timer. It is an ambient indicator
+(the touch long-press hold ring, for example).
+
+## Where durations live
+
+- **Chrome** durations are tokens, in chrome stylesheets and in component classes.
+- **Canvas** and **content** durations live only in their own stylesheets. In the editor that's
+  `canvas-motion.css` and `qa-board.css`. In marketing it's `hero-animations.css`,
+  `feature-art/*.css` and `page-motion.css`. On the account and connect pages it's
+  `auth-motion.css`. In telemetry
+  it's `dataviz-motion.css`. In the template previews it's `preview-motion.css`. Any other
+  stylesheet is chrome.
+- No component class or inline style carries a duration above the ceiling.
+
+## Reduced motion
+
+Reduced motion is unchanged, and it outranks the budget. The OS `prefers-reduced-motion` setting and
+the per-user `reduceMotion` preference both collapse every animation and transition to about
+instant, canvas included, and zero every cascade delay. The budget describes full motion; reduced
+motion is stricter still.
+
+- **Animations** collapse to 0.01ms rather than 0, so `animationend` still fires for code that
+  waits on it (a split pane closing).
+- **Transitions** collapse to 0s, so none is created. Every element's `transition-property`
+  defaults to `all`, so any non-zero duration on every element turns every style write into a
+  transition. A position written and measured in the same frame then reads back its old value. The
+  tab menu's viewport clamp looped on exactly that ("Maximum update depth exceeded"). Nothing waits
+  on `transitionend`.
+
+## View Transitions
+
+A state change that swaps a whole surface animates as a React View Transition
+([React state and effects](../003-system-architecture/react-state-and-effects.md) "Animating a state change").
+
+- **Its pace follows its surface.** A chrome surface (the start's mode switch) runs within the ceiling on a motion
+  token; a canvas surface (a slide move) follows its own spec.
+- **Only the named surface moves.** The document root takes no part (`view-transition-name: none` on `<html>`), so
+  the rest of the page neither cross-fades nor freezes into a picture.
+- **Its animation classes** live beside the surface's other motion: the canvas's in `canvas-motion.css`, chrome's in
+  `globals.css`, each on the `::view-transition-old(.<class>)` and `::view-transition-new(.<class>)` pseudo-elements.
+- **Reduced motion starts no View Transition at all.** The collapse rule above matches elements, not the
+  `::view-transition-*` pseudo-elements, so the change itself runs without a transition and appears at once.
+
+## Dialogs
+
+A modal arrives rather than appearing. Every dialog built on the shared `Dialog` shell (the Plan card
+panel, Settings, Share, confirms) enters the same way, and none waits on an exit animation to close,
+so focus returns at once.
+
+- **The dim** behind it fades in over `micro` (`fade-in`).
+- **A centred panel** settles into place over `long`: it fades up from 97% scale and 6px low, on the
+  ease-out curve `cubic-bezier(0.16, 1, 0.3, 1)` (`dialog-in`). The gentle rise keeps a large panel
+  (the 60rem card panel) from jumping.
+- **A phone sheet** rises its full height from the bottom edge over `long` (`sheet-up`).
+- **Under reduced motion** the panel only fades (no rise, no scale), and in the editor every entrance
+  collapses to about instant as above.
+- `fly-up-in`, the bolder 16px lift, stays for banners, search and the template picker.
+
+## Editor arrival
+
+The editor's floating chrome (the corner panels such as the Map, the tab bar, the zoom cluster)
+**fades in** as it mounts, `fade-in` at the short token (200ms), opacity only, so a document opens
+softly rather than its parts popping into place. It is one rule in `apps/live/app/globals.css`
+keyed on the surfaces' existing markers (`data-floating-panel`, `data-editor-tabbar`,
+`data-zoom-cluster`), in the components layer so a surface's own entrance utility still wins.
+
+The board itself (the canvas world) **appears at once**, with no fade. Fading
+the world animates the opacity of every element on the board, and Chrome lays out the whole page's
+compositing again as that fade starts and again as it ends: about 300 ms of main-thread work each
+time at the reference speed on the 1,000-element reference board. That alone kept opening the
+board over its 3 s time-to-interactive budget ([Canvas performance](../008-canvas/canvas-performance.md)).
+Measured on the reference board, with the elements' arrival change in
+[Canvas and palette](../008-canvas/canvas-and-palette.md) "Motion and animations": the median open
+went from 2.9 s (whiteboard) and 3.0 s (diagram), with runs up to 5.0 s and 4.2 s, to 2.2 s and
+1.7 s, with no run over 2.4 s. The chrome's fades cost nothing measurable, so they stay. The panels, and the zoom cluster's button groups (history and undo / redo, layers, the
+brush, collaborate, zoom), used to scale in from nothing with an overshoot
+(`pop-in`); a whole panel or toolbar popping read as abrupt, so they fade (`animate-fade-in`)
+instead. `pop-in` stays
+on small controls, where it reads as feedback.
+
+A picker's first paint does not animate: the template picker's open shelf plays its entrance
+(`shelf-open`) only when the person opens a category, not on load, and a carousel reserves its
+arrows' space from the first frame ([Canvas and palette](../008-canvas/canvas-and-palette.md)
+"Templates section"), so nothing shifts as the modal arrives.
+
+## Layout stability
+
+Shortening motion changes when things settle, never where. Chrome motion animates `opacity` and
+`transform`. The exceptions are height, width and grid-row reveals, and those are driven by the
+person's own input. Layout shift stays at zero.
+
+## Content pacing
+
+Three kinds of content motion were compared against the 250ms budget, and the operator decided each:
+
+- **The marketing page entrance** runs at half its original length. At 250ms it read as too fast
+  for a page that's there to be read. The hero's pieces take 310ms each and start 35ms apart, the
+  last at 130ms, so the hero settles in about 440ms. The cross-document crossfade stays at
+  260ms. The scroll-driven section reveal follows the scroll, not a clock, so it isn't timed
+  motion.
+- **The account and connect pages' entrance** follows the marketing hero's pace: the header, eyebrow and heading
+  take 310ms each, 35ms apart; the card lands in 420ms after 70ms with an overshoot; the promise rows take 360ms,
+  35ms apart from 105ms, and each icon pops in 300ms after its row, the last at 360ms, so the page settles by about
+  660ms. Their background lines are a content illustration: one route draws in, holds and trails off over 14 seconds.
+- **Telemetry data-viz reveals** run at half their original length, for the same reason. Cloud
+  words take 210ms and start 11ms apart, capped at 250ms, so the cloud settles by about 460ms. A
+  charted metric's pieces take 210ms and start 30ms apart. The line wipe takes 400ms after 150ms,
+  settling by about 550ms, and the funnel bars take 250ms.
+- **Template-preview hover stories** keep their own pace, 420–1600ms per beat. Compressed into
+  250ms, a story becomes a blip.
+- **The logo's hover turn** keeps its own pace ([Brand mark](./brand-mark.md)). The prism opens
+  over 700ms, turns at 60 degrees a second for as long as the pointer stays, and settles home over
+  450ms when it leaves; the wordmark's gleam crosses once in 900ms. Squeezed into 150ms, a slow
+  turn becomes a twitch. It runs on a frame loop only while moving, and reduced motion holds it
+  still.
+
+## Enforcement
+
+- A **static guard** runs in every app's and shared package's test suite. It reads each chrome
+  stylesheet and every component source, and computes an upper bound for every duration and delay.
+  It fails when a chrome duration passes 250ms, or when a hover transition passes 150ms. It also
+  fails when a bound can't be computed, so an unresolvable duration is never let through.
+- A **runtime guard** in the end-to-end suite opens chrome surfaces in the editor. It reads every
+  running animation outside the canvas and fails if any settles past 250ms.
+
+## Related
+
+- [User preferences](../007-editor/user-preferences.md): the `reduceMotion` preference
+- [Canvas and palette](../008-canvas/canvas-and-palette.md): canvas motion
+- [Menu flyouts must not resize under the pointer](flyout-height-stability.md)

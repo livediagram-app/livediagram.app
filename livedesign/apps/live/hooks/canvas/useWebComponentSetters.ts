@@ -1,0 +1,114 @@
+import {
+  appendWebRow,
+  HERO_DEFAULT_CAPTION,
+  PAGE_HEADING_MAX,
+  withWebRows,
+  type Element,
+  type HeroCaption,
+  type WebRows,
+} from '@livepages/document';
+import { track } from '@/lib/telemetry';
+import { elementTelemetryType } from '@/lib/element-telemetry';
+
+type WebComponentSetterDeps = {
+  currentSelectionIds: () => Set<string>;
+  commit: (mapElements: (els: Element[]) => Element[]) => void;
+  // The active tab's elements as they are now.
+  elements: () => Element[];
+};
+
+// The web components' writes (docs/specs/009-elements/web-components-and-no-groups.md): the rows of a stat row / process /
+// header, and a hero image's caption card. Two addressing styles, like the
+// checklist's: the canvas edits ONE element by id (an inline edit, the "+" at
+// the end of a row), the context menu edits the selection.
+export function useWebComponentSetters({
+  currentSelectionIds,
+  commit,
+  elements,
+}: WebComponentSetterDeps) {
+  // Replace the rows of one element, from an inline edit on the canvas.
+  // Bounded by withWebRows, so a paste can't outgrow what validate accepts.
+  const setWebRows = (elementId: string, rows: WebRows) => {
+    commit((els) =>
+      els.map((el) => (el.id === elementId && el.type === 'shape' ? withWebRows(el, rows) : el)),
+    );
+  };
+
+  // The canvas "+": one more row on one element.
+  // Whether a row is added is read from the elements as they are, not from inside the commit's updater, which React
+  // may run after this returns (so the event would be lost).
+  const appendWebRowTo = (elementId: string) => {
+    const el = elements().find((e) => e.id === elementId);
+    if (!el || el.type !== 'shape' || appendWebRow(el) === el) return;
+    commit((els) =>
+      els.map((e) => (e.id === elementId && e.type === 'shape' ? appendWebRow(e) : e)),
+    );
+    track('Element', 'Changed', elementTelemetryType(el));
+  };
+
+  // The menu's row editors: the whole array at once, so an add / remove /
+  // retitle is one undo step. Each field only lands on its own kind.
+  const setWebRowsSelected = (rows: WebRows) => {
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
+    commit((els) =>
+      els.map((el) => (ids.has(el.id) && el.type === 'shape' ? withWebRows(el, rows) : el)),
+    );
+    track(
+      'Element',
+      'Changed',
+      rows.stats
+        ? 'StatRow'
+        : rows.processSteps
+          ? 'ProcessSteps'
+          : rows.tags
+            ? 'Card'
+            : rows.conceptRows
+              ? 'ConceptRows'
+              : 'Header',
+    );
+  };
+
+  // A hero caption line, edited in place on the card.
+  const setHeroCaptionLine = (elementId: string, field: keyof HeroCaption, value: string) => {
+    commit((els) =>
+      els.map((el) =>
+        el.id === elementId && el.type === 'image' && el.heroCaption
+          ? {
+              ...el,
+              heroCaption: {
+                ...el.heroCaption,
+                [field]: value.replace(/\s+/g, ' ').trim().slice(0, PAGE_HEADING_MAX),
+              },
+            }
+          : el,
+      ),
+    );
+  };
+
+  // The image menu's Caption Card toggle: any image can become a hero, and a
+  // hero can lose its card. Turning it on starts from the default words.
+  const setHeroCaptionSelected = (on: boolean) => {
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
+    commit((els) =>
+      els.map((el) => {
+        if (!ids.has(el.id) || el.type !== 'image') return el;
+        if (!on) {
+          const { heroCaption: _drop, ...rest } = el;
+          return rest;
+        }
+        return el.heroCaption ? el : { ...el, heroCaption: { ...HERO_DEFAULT_CAPTION } };
+      }),
+    );
+    track('Element', 'Changed', 'Hero');
+  };
+
+  return {
+    setWebRows,
+    appendWebRowTo,
+    setWebRowsSelected,
+    setHeroCaptionLine,
+    setHeroCaptionSelected,
+  };
+}

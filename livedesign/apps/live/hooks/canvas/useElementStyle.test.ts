@@ -1,0 +1,360 @@
+// @vitest-environment jsdom
+
+import { renderHook } from '@testing-library/react';
+import { describe, it, expect } from 'vitest';
+import {
+  createArrow,
+  createShape,
+  DEFAULT_ANIMATION_SPEED,
+  type Element,
+  type Tab,
+} from '@livepages/document';
+import { useElementStyle } from './useElementStyle';
+
+// useElementStyle builds plain handler closures from its deps (no internal
+// React hooks), so one render gives the handlers the tests drive. These tests pin the
+// selection-wide setters to a MULTI-selection (selectedId null, two shapes in
+// currentSelectionIds), guarding against the "applies to the single selection
+// only" regression where a setter reads selectedId instead of the selection
+// set.
+
+function harness(elements: Element[], selection: Set<string>) {
+  const tab: Tab = { id: 'tab1', name: 'Tab', elements };
+  let committed = tab;
+  const style = renderHook(() =>
+    useElementStyle({
+      currentSelectionIds: () => new Set(selection),
+      selectionPrimary: () => elements.find((e) => selection.has(e.id)) ?? null,
+      // multi-select: no single id
+      readSelection: () => ({ selectedId: null, multiSelectedIds: new Set<string>() }),
+      activeTab: committed,
+      activeId: 'tab1',
+      editsBlocked: false,
+      commit: (map) => {
+        committed = { ...committed, elements: map(committed.elements) };
+      },
+      commitActiveTab: (map) => {
+        committed = map(committed);
+      },
+      tickTabs: (map) => {
+        committed = map([committed])[0]!;
+      },
+      checkpointBurst: () => {},
+      notify: () => {},
+    }),
+  ).result.current;
+  return { style, result: () => committed.elements, tab: () => committed };
+}
+
+describe('useElementStyle selection-wide setters on a multi-selection', () => {
+  it('applies border stroke + style to every selected shape', () => {
+    const a = createShape('square', 0, 0);
+    const b = createShape('square', 200, 0);
+    const { style, result } = harness([a, b], new Set([a.id, b.id]));
+
+    style.setBorderStrokeSelected('thick');
+    style.setBorderStyleSelected('dashed');
+
+    for (const el of result()) {
+      expect((el as { strokeWidth?: string }).strokeWidth).toBe('thick');
+      expect((el as { strokeStyle?: string }).strokeStyle).toBe('dashed');
+    }
+  });
+
+  it('applies stroke colour to every selected shape (parity with border)', () => {
+    const a = createShape('square', 0, 0);
+    const b = createShape('square', 200, 0);
+    const { style, result } = harness([a, b], new Set([a.id, b.id]));
+
+    style.setStrokeColorSelected('#123456');
+
+    for (const el of result()) {
+      expect((el as { strokeColor?: string }).strokeColor).toBe('#123456');
+    }
+  });
+});
+
+describe('useElementStyle Reset Aspect Ratio', () => {
+  it('resets every unlocked shape of a multi-selection, keeping a locked one', () => {
+    const a = { ...createShape('square', 0, 0), width: 300, height: 100 };
+    const b = { ...createShape('square', 400, 0), width: 100, height: 300 };
+    const locked = { ...createShape('square', 800, 0), width: 300, height: 100, locked: true };
+    const { style, result } = harness([a, b, locked], new Set([a.id, b.id, locked.id]));
+
+    style.resetAspectRatioSelected();
+
+    const [ra, rb, rl] = result() as (typeof a)[];
+    expect(ra!.width).not.toBe(300);
+    expect(rb!.height).not.toBe(300);
+    expect(ra!.width / ra!.height).toBeCloseTo(rb!.width / rb!.height, 1);
+    expect([rl!.width, rl!.height]).toEqual([300, 100]);
+  });
+});
+
+describe('useElementStyle shape markers (docs/specs/009-elements/shape-markers.md)', () => {
+  it('sets and clears a marker on the selected shape', () => {
+    const a = createShape('square', 0, 0);
+    const { style, result } = harness([a], new Set([a.id]));
+
+    style.setMarkerSelected('green-circle');
+    expect((result()[0] as { marker?: string }).marker).toBe('green-circle');
+
+    style.setMarkerSelected(null);
+    expect((result()[0] as { marker?: string }).marker).toBeUndefined();
+  });
+
+  it('sets the marker size bucket', () => {
+    const a = createShape('square', 0, 0);
+    const { style, result } = harness([a], new Set([a.id]));
+
+    style.setMarkerSizeSelected('lg');
+    expect((result()[0] as { markerSize?: string }).markerSize).toBe('lg');
+  });
+});
+
+describe('useElementStyle rating (docs/specs/009-elements/rating.md)', () => {
+  it('sets the star score (clamped 0..5) on the rating shape', () => {
+    const a = createShape('rating', 0, 0);
+    const { style, result } = harness([a], new Set([a.id]));
+    style.setRatingSelected(4);
+    expect((result()[0] as { rating?: number }).rating).toBe(4);
+    style.setRatingSelected(99);
+    expect((result()[0] as { rating?: number }).rating).toBe(5);
+  });
+
+  it('sets and clears the rating animation', () => {
+    const a = createShape('rating', 0, 0);
+    const { style, result } = harness([a], new Set([a.id]));
+    style.setRatingAnimSelected('twinkle');
+    expect((result()[0] as { ratingAnim?: string }).ratingAnim).toBe('twinkle');
+    style.setRatingAnimSelected(null);
+    expect((result()[0] as { ratingAnim?: string }).ratingAnim).toBeUndefined();
+  });
+
+  it('leaves non-rating shapes untouched', () => {
+    const a = createShape('square', 0, 0);
+    const { style, result } = harness([a], new Set([a.id]));
+    style.setRatingSelected(4);
+    expect((result()[0] as { rating?: number }).rating).toBeUndefined();
+  });
+});
+
+describe('useElementStyle pie chart (docs/specs/009-elements/pie-chart.md)', () => {
+  it('replaces the slice data on the pie shape', () => {
+    const a = createShape('pie-chart', 0, 0);
+    const { style, result } = harness([a], new Set([a.id]));
+    style.setPieDataSelected([
+      { label: 'X', value: 1 },
+      { label: 'Y', value: 2 },
+    ]);
+    const el = result()[0] as { pieSlices?: { label: string; value: number }[] };
+    expect(el.pieSlices).toEqual([
+      { label: 'X', value: 1 },
+      { label: 'Y', value: 2 },
+    ]);
+  });
+
+  it('sets and clears the pie animation', () => {
+    const a = createShape('pie-chart', 0, 0);
+    const { style, result } = harness([a], new Set([a.id]));
+    style.setPieAnimSelected('spin');
+    expect((result()[0] as { pieAnim?: string }).pieAnim).toBe('spin');
+    style.setPieAnimSelected(null);
+    expect((result()[0] as { pieAnim?: string }).pieAnim).toBeUndefined();
+  });
+
+  it('leaves non-pie shapes untouched', () => {
+    const a = createShape('square', 0, 0);
+    const { style, result } = harness([a], new Set([a.id]));
+    style.setPieDataSelected([{ label: 'X', value: 1 }]);
+    expect((result()[0] as { pieSlices?: unknown }).pieSlices).toBeUndefined();
+  });
+
+  it('edits bar chart data + legend like a pie', () => {
+    const a = createShape('bar-chart', 0, 0);
+    const { style, result } = harness([a], new Set([a.id]));
+    style.setPieDataSelected([{ label: 'X', value: 5 }]);
+    style.setChartLegendSelected(false);
+    const el = result()[0] as { pieSlices?: { value: number }[]; chartLegend?: boolean };
+    expect(el.pieSlices).toEqual([{ label: 'X', value: 5 }]);
+    expect(el.chartLegend).toBe(false);
+  });
+
+  it('replaces the line chart 2-D dataset (categories + series)', () => {
+    const a = createShape('line-chart', 0, 0);
+    const { style, result } = harness([a], new Set([a.id]));
+    style.setLineDataSelected(['Q1', 'Q2'], [{ name: 'Rev', values: [3, 7] }]);
+    const el = result()[0] as {
+      lineCategories?: string[];
+      lineSeries?: { name: string; values: number[] }[];
+    };
+    expect(el.lineCategories).toEqual(['Q1', 'Q2']);
+    expect(el.lineSeries).toEqual([{ name: 'Rev', values: [3, 7] }]);
+  });
+});
+
+describe('useElementStyle shape style presets (docs/specs/010-palette/style-presets.md)', () => {
+  it('applies a style preset (colour + matching border) in one step', () => {
+    const a = createShape('square', 0, 0);
+    const { style, result } = harness([a], new Set([a.id]));
+
+    style.applyShapeColorPresetSelected({
+      id: 'bold',
+      name: 'Bold',
+      fill: '#fee2e2',
+      stroke: '#ef4444',
+      text: '#7f1d1d',
+      borderStroke: 'thick',
+      borderStyle: 'solid',
+    });
+
+    const el = result()[0] as {
+      fillColor?: string;
+      strokeColor?: string;
+      textColor?: string;
+      strokeWidth?: string;
+      strokeStyle?: string;
+      borderRadius?: string;
+      colorPreset?: string;
+    };
+    expect(el.fillColor).toBe('#fee2e2');
+    expect(el.strokeColor).toBe('#ef4444');
+    expect(el.textColor).toBe('#7f1d1d');
+    // A preset is one complete look now: it stamps the border too (docs/specs/010-palette/style-presets.md).
+    expect(el.strokeWidth).toBe('thick');
+    expect(el.strokeStyle).toBe('solid');
+    // Radius stays the user's own choice (docs/specs/010-palette/style-presets.md): presets never stamp it.
+    expect(el.borderRadius).toBeUndefined();
+    // The preset id is recorded so a theme change can re-derive it.
+    expect(el.colorPreset).toBe('bold');
+  });
+
+  it('resets a preset-styled shape back to its defaults (colour + border cleared)', () => {
+    const a = createShape('square', 0, 0);
+    const { style, result } = harness([a], new Set([a.id]));
+
+    style.applyShapeColorPresetSelected({
+      id: 'bold',
+      name: 'Bold',
+      fill: '#fee2e2',
+      stroke: '#ef4444',
+      text: '#7f1d1d',
+      borderStroke: 'thick',
+      borderStyle: 'dotted',
+    });
+    style.resetShapeStyleSelected();
+
+    const el = result()[0] as {
+      strokeWidth?: string;
+      strokeStyle?: string;
+      borderRadius?: string;
+      colorPreset?: string;
+    };
+    expect(el.strokeWidth).toBeUndefined();
+    expect(el.strokeStyle).toBeUndefined();
+    expect(el.borderRadius).toBeUndefined();
+    // Reset also drops the colour-preset binding (docs/specs/010-palette/style-presets.md).
+    expect(el.colorPreset).toBeUndefined();
+  });
+
+  it('clears the colour-preset binding when a colour is hand-edited', () => {
+    const a = createShape('square', 0, 0);
+    const { style, result } = harness([a], new Set([a.id]));
+
+    style.applyShapeColorPresetSelected({
+      id: 'bold',
+      name: 'Bold',
+      fill: '#fee2e2',
+      stroke: '#ef4444',
+      text: '#7f1d1d',
+      borderStroke: 'thick',
+      borderStyle: 'solid',
+    });
+    style.setFillColorSelected('#123456');
+
+    const el = result()[0] as { fillColor?: string; colorPreset?: string };
+    expect(el.fillColor).toBe('#123456');
+    expect(el.colorPreset).toBeUndefined();
+  });
+});
+
+describe('useElementStyle arrow style presets (docs/specs/010-palette/style-presets.md)', () => {
+  it('applies an animated line preset (pattern + thickness + flow) in one step', () => {
+    const a = createArrow(0, 0, 100, 0);
+    const { style, result } = harness([a], new Set([a.id]));
+
+    style.applyArrowPresetSelected({ style: 'dashed', thickness: 'thick', flow: 'dashes' });
+
+    const el = result()[0] as {
+      strokeStyle?: string;
+      strokeWidth?: number;
+      flow?: string;
+      flowSpeed?: string;
+    };
+    expect(el.strokeStyle).toBe('dashed');
+    expect(el.strokeWidth).toBe(4); // thick → 4px
+    expect(el.flow).toBe('dashes');
+    // A fresh flow starts at the shared default speed ('slow', docs/specs/008-canvas/canvas-and-palette.md).
+    expect(el.flowSpeed).toBe(DEFAULT_ANIMATION_SPEED);
+  });
+
+  it('a preset without a flow clears any existing animation', () => {
+    const a = createArrow(0, 0, 100, 0);
+    const { style, result } = harness([a], new Set([a.id]));
+
+    style.applyArrowPresetSelected({ style: 'solid', thickness: 'medium', flow: 'dashes' });
+    style.applyArrowPresetSelected({ style: 'dotted', thickness: 'medium' });
+
+    const el = result()[0] as { flow?: string; strokeStyle?: string };
+    expect(el.flow).toBeUndefined();
+    expect(el.strokeStyle).toBe('dotted');
+  });
+
+  it('resets a preset-styled arrow back to its defaults', () => {
+    const a = createArrow(0, 0, 100, 0);
+    const { style, result } = harness([a], new Set([a.id]));
+
+    style.applyArrowPresetSelected({ style: 'dashed', thickness: 'thick', flow: 'dashes' });
+    style.resetArrowStyleSelected();
+
+    const el = result()[0] as {
+      strokeStyle?: string;
+      strokeWidth?: number;
+      flow?: string;
+      flowSpeed?: string;
+    };
+    expect(el.strokeStyle).toBeUndefined();
+    expect(el.strokeWidth).toBeUndefined();
+    expect(el.flow).toBeUndefined();
+    expect(el.flowSpeed).toBeUndefined();
+  });
+});
+
+describe('useElementStyle bring to front / send to back as layer moves (docs/specs/006-document/layers.md)', () => {
+  it('bring to front mints a top layer holding the selection', () => {
+    const a = createShape('square', 0, 0);
+    const b = createShape('square', 200, 0);
+    const { style, tab } = harness([a, b], new Set([a.id]));
+
+    style.bringSelectedToFront();
+
+    const t = tab();
+    expect(t.layers).toHaveLength(2);
+    const topId = t.layers![1]!.id;
+    expect(t.elements.find((e) => e.id === a.id)?.layerId).toBe(topId);
+    // The other shape stays on the (default) bottom layer.
+    expect(t.elements.find((e) => e.id === b.id)?.layerId).toBeUndefined();
+  });
+
+  it('send to back mints a bottom layer holding the selection', () => {
+    const a = createShape('square', 0, 0);
+    const b = createShape('square', 200, 0);
+    const { style, tab } = harness([a, b], new Set([b.id]));
+
+    style.sendSelectedToBack();
+
+    const t = tab();
+    expect(t.layers).toHaveLength(2);
+    expect(t.elements.find((e) => e.id === b.id)?.layerId).toBe(t.layers![0]!.id);
+  });
+});

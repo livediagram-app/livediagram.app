@@ -1,0 +1,269 @@
+// Routes a collaboration element (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md) to its face, and holds
+// the one prop the canvas threads for all five.
+//
+// One router and one prop rather than five branches and six callbacks on
+// BoxedElementView: the faces share a viewer context (who am I, who else is
+// here, may I write) that would otherwise be passed five times.
+
+import {
+  DONE_VALUE,
+  type EstimateScale,
+  defaultFillColor,
+  isCollabPanelShape,
+  type ShapeElement,
+  type TabTimer,
+} from '@livepages/document';
+import type { Participant } from '@/lib/identity';
+import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { EstimateFace } from './EstimateFace';
+import { TemperatureFace } from './TemperatureFace';
+import { IdeaBoxFace } from './IdeaBoxFace';
+import { AgendaFace } from './AgendaFace';
+import { RollCallFace } from './RollCallFace';
+import { DecisionFace } from './DecisionFace';
+import { DoneCheckFace } from './DoneCheckFace';
+import { QaBoardFace } from './qa/QaBoardFace';
+import { QuizFace } from './quiz/QuizFace';
+import type { QuizDraft } from '@/hooks/canvas/useQuizElements';
+
+// What a collaboration face needs from the editor. Absent entirely on a
+// surface with no session behind it (the read-only embed, the export
+// renderer), which renders every face inert but still readable — a shared
+// estimate card in a PNG should still show what the room said.
+export type CollabApi = {
+  // Whose answer is "mine" — our `participantKey`, the id these faces are
+  // recorded under in the document (docs/specs/012-collaboration/participant-responses.md), not our owner id. See the
+  // note on Participant.key: the owner id is unpublishable and the room's
+  // presence id is per-socket, so neither can join a saved answer to a face.
+  selfKey: string;
+  // The room, for the estimate card's avatars. Includes ourselves.
+  participants: Participant[];
+  // The tab's timer, so an agenda can show the live remaining time on the
+  // segment the room is in. Undefined when no timer is running.
+  tabTimer?: TabTimer;
+  // This viewer edits the element itself (an Editor): its empty states tell them how to fill it. A Participant or
+  // Viewer reads a description instead (docs/specs/013-workspace/share-roles.md).
+  canArrange?: boolean;
+  // Absent when this viewer may not write (view role, locked tab): the faces
+  // render their controls disabled rather than lying about what a press does.
+  respond?: (element: ShapeElement, value: string) => void;
+  setResponsesRevealed?: (element: ShapeElement, revealed: boolean) => void;
+  // A new estimate card's scale, chosen on the card (docs/specs/012-collaboration/estimate-card.md).
+  chooseEstimateScale?: (element: ShapeElement, scale: EstimateScale) => void;
+  clearResponses?: (element: ShapeElement) => void;
+  // Whether the idea went in (false when the box is full), or a promise of it: false when the room
+  // numbered another card first (docs/specs/012-collaboration/idea-box.md "Racing for the last card").
+  addIdea?: (element: ShapeElement, text: string) => boolean | Promise<boolean>;
+  revealIdeas?: (element: ShapeElement) => void;
+  clearIdeas?: (element: ShapeElement) => void;
+  scatterIdeas?: (element: ShapeElement) => void;
+  pressAgendaItem?: (element: ShapeElement, index: number) => void;
+  // Back to "not started" (docs/specs/012-collaboration/agenda.md).
+  resetAgenda?: (element: ShapeElement) => void;
+  takeRoll?: (element: ShapeElement) => void;
+  // The Q&A board (docs/specs/012-collaboration/qa-board.md). Our OWNER id, only so the board can compute our
+  // voter id the way the server does (qaVoterId) and know which notes we
+  // voted for; the face never renders or sends it. And our name, for the
+  // composer's "As …" toggle.
+  selfOwnerId?: string;
+  selfName?: string;
+  // Present for anyone in a live session, view links included: the server
+  // owns the board and gates these on read access.
+  // Returns whether the note was sent (false when the board is full).
+  addQaNote?: (
+    element: ShapeElement,
+    text: string,
+    anonymous: boolean,
+  ) => boolean | Promise<boolean>;
+  voteQaNote?: (element: ShapeElement, noteId: string, on: boolean) => void;
+  // Whoever is running the board (docs/specs/012-collaboration/facilitator.md): absent for everyone else.
+  discussQaNote?: (element: ShapeElement, noteId: string | null) => void;
+  closeQaNote?: (element: ShapeElement, noteId: string) => void;
+  reopenQaNote?: (element: ShapeElement, noteId: string) => void;
+  removeQaNote?: (element: ShapeElement, noteId: string) => void;
+  clearQaBoard?: (element: ShapeElement) => void;
+  // The Quiz (docs/specs/012-collaboration/quiz.md). `answerQuiz` is anyone with edit rights; the rest
+  // run the round, so they are absent for everyone but whoever runs it.
+  answerQuiz?: (element: ShapeElement, index: number) => void;
+  startQuiz?: (element: ShapeElement) => void;
+  lockQuiz?: (element: ShapeElement) => void;
+  revealQuiz?: (element: ShapeElement) => void;
+  resetQuiz?: (element: ShapeElement) => void;
+  saveQuiz?: (element: ShapeElement, draft: QuizDraft) => void;
+};
+
+export function CollabFaceRouter({
+  element,
+  label,
+  textColor,
+  collab,
+  onOpenSettings,
+}: {
+  element: ShapeElement;
+  label: string;
+  textColor: string;
+  collab: CollabApi | undefined;
+  // The Done check, the Idea box, the Temperature check and the Agenda draw
+  // their own `…` (their round controls), so the shared settings button is suppressed for them and this
+  // is how their menus still reach the element's full settings (docs/specs/008-canvas/canvas-and-palette.md).
+  // Every other card here takes the shared button and never sees this.
+  onOpenSettings?: () => void;
+}) {
+  // Which paper the canvas is, for a card that carries no fill of its own.
+  // Called `paper` here because `surface` is already this file's word for the
+  // card's own colour, four lines below.
+  const paper = useCanvasSurface();
+  if (!isCollabPanelShape(element.shape)) return null;
+  // No session behind this surface: still render, still readable, inert.
+  const api = collab;
+  // The colour showing THROUGH a card's holes and tears (docs/specs/012-collaboration/participant-responses.md's paper
+  // kit): its own fill, so a punch reads as an opening rather than a dot.
+  const surface = element.fillColor ?? defaultFillColor(element, paper);
+  // Bind a verb to this element once, so a face with many deals in its own
+  // ids (a Q&A note, a quiz answer) rather than in elements.
+  const bind = <A extends unknown[], R>(fn?: (el: ShapeElement, ...args: A) => R) =>
+    fn ? (...args: A) => fn(element, ...args) : undefined;
+
+  if (element.shape === 'done-check') {
+    return (
+      <DoneCheckFace
+        element={element}
+        label={label}
+        textColor={textColor}
+        surface={surface}
+        selfKey={api?.selfKey ?? ''}
+        participants={api?.participants ?? []}
+        // `respond` already withdraws when you send the value you already
+        // sent (docs/specs/012-collaboration/participant-responses.md), so marking and unmarking are the same call.
+        onToggleMine={api?.respond ? () => api.respond!(element, DONE_VALUE) : undefined}
+        canArrange={api?.canArrange === true}
+        onResetAll={api?.clearResponses ? () => api.clearResponses!(element) : undefined}
+        onOpenSettings={onOpenSettings}
+      />
+    );
+  }
+  if (element.shape === 'estimate') {
+    return (
+      <EstimateFace
+        element={element}
+        label={label}
+        textColor={textColor}
+        surface={surface}
+        selfKey={api?.selfKey ?? ''}
+        participants={api?.participants ?? []}
+        onRespond={api?.respond ? (value) => api.respond!(element, value) : undefined}
+        onSetRevealed={
+          api?.setResponsesRevealed
+            ? (revealed) => api.setResponsesRevealed!(element, revealed)
+            : undefined
+        }
+        onClear={api?.clearResponses ? () => api.clearResponses!(element) : undefined}
+        onChooseScale={
+          api?.chooseEstimateScale ? (scale) => api.chooseEstimateScale!(element, scale) : undefined
+        }
+      />
+    );
+  }
+  if (element.shape === 'temperature') {
+    return (
+      <TemperatureFace
+        element={element}
+        label={label}
+        textColor={textColor}
+        selfKey={api?.selfKey ?? ''}
+        onRespond={api?.respond ? (value) => api.respond!(element, value) : undefined}
+        onClear={api?.clearResponses ? () => api.clearResponses!(element) : undefined}
+        onOpenSettings={onOpenSettings}
+      />
+    );
+  }
+  if (element.shape === 'idea-box') {
+    return (
+      <IdeaBoxFace
+        element={element}
+        label={label}
+        textColor={textColor}
+        surface={surface}
+        onAddIdea={api?.addIdea ? (text) => api.addIdea!(element, text) : undefined}
+        onReveal={api?.revealIdeas ? () => api.revealIdeas!(element) : undefined}
+        onClear={api?.clearIdeas ? () => api.clearIdeas!(element) : undefined}
+        onScatter={api?.scatterIdeas ? () => api.scatterIdeas!(element) : undefined}
+        onOpenSettings={onOpenSettings}
+      />
+    );
+  }
+  if (element.shape === 'qa-board') {
+    return (
+      <QaBoardFace
+        element={element}
+        label={label}
+        textColor={textColor}
+        surface={surface}
+        selfOwnerId={api?.selfOwnerId ?? ''}
+        selfName={api?.selfName ?? ''}
+        actions={{
+          add: bind(api?.addQaNote),
+          vote: bind(api?.voteQaNote),
+          discuss: bind(api?.discussQaNote),
+          close: bind(api?.closeQaNote),
+          reopen: bind(api?.reopenQaNote),
+          remove: bind(api?.removeQaNote),
+          clear: bind(api?.clearQaBoard),
+        }}
+        onOpenSettings={onOpenSettings}
+      />
+    );
+  }
+  if (element.shape === 'quiz') {
+    return (
+      <QuizFace
+        element={element}
+        label={label}
+        textColor={textColor}
+        surface={surface}
+        selfKey={api?.selfKey ?? ''}
+        participants={api?.participants ?? []}
+        actions={{
+          answer: bind(api?.answerQuiz),
+          start: bind(api?.startQuiz),
+          lock: bind(api?.lockQuiz),
+          reveal: bind(api?.revealQuiz),
+          reset: bind(api?.resetQuiz),
+          save: bind(api?.saveQuiz),
+        }}
+        onOpenSettings={onOpenSettings}
+      />
+    );
+  }
+  if (element.shape === 'decision') {
+    // Nothing to press: a decision is set from its menu. It routes here anyway
+    // because it draws its own card (see DecisionFace).
+    return <DecisionFace element={element} label={label} textColor={textColor} />;
+  }
+  if (element.shape === 'agenda') {
+    return (
+      <AgendaFace
+        element={element}
+        label={label}
+        textColor={textColor}
+        surface={surface}
+        timer={api?.tabTimer}
+        canArrange={api?.canArrange === true}
+        onPressItem={
+          api?.pressAgendaItem ? (index) => api.pressAgendaItem!(element, index) : undefined
+        }
+        onReset={api?.resetAgenda ? () => api.resetAgenda!(element) : undefined}
+        onOpenSettings={onOpenSettings}
+      />
+    );
+  }
+  return (
+    <RollCallFace
+      element={element}
+      label={label}
+      textColor={textColor}
+      surface={surface}
+      onTakeRoll={api?.takeRoll ? () => api.takeRoll!(element) : undefined}
+    />
+  );
+}

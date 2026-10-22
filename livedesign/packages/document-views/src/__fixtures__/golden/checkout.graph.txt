@@ -1,0 +1,26 @@
+tab 0b34 "Checkout platform" · 30 elements: 16 boxes, 3 frames, 11 arrows · threads 1 open/2 · rev 41
+actor b811 "Customer"
+square a3cf "Web app"
+hexagon 649c "API gateway"
+square 202b "Auth service"
+square 146b "Orders service"
+stadium 6406 "Event bus"
+square e4a8 "Payments service"
+square 12de "Inventory service"
+square 0556 "Notification worker"
+cylinder d41e "Orders DB"
+cylinder 822f "Inventory DB"
+cloud e6d7 "Stripe"
+
+b811 -> a3cf [c74b]
+a3cf -> 649c [6e71]
+649c -> 202b "JWT" [9c5e]
+649c -> 146b [111e]
+146b -> e4a8 "charge" [c41d]
+e4a8 -> e6d7 "HTTPS" [8e70]
+146b -> d41e [892e]
+146b -> 6406 "OrderPlaced" [3462]
+6406 -> 12de [1434]
+6406 -> 0556 [0cee]
+12de -> 822f [1fc0]
+… 7 unconnected elements hidden: view --view outline

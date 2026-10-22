@@ -1,0 +1,63 @@
+// The Project Brief template (kind `article`, docs/specs/007-editor/article-pages.md "An article"): a tab that opens in
+// Pages mode on one article page, written as a short project brief so the page shows what
+// the writing does (a title and subtitle, headings, lists, a quote) rather than an empty sheet.
+// Pure data: the tab's pages and writing, merged in by templateCanvasOverrides.
+import type { ArticleBlock, ArticleFlow, ArticleStyle, Page, Tab } from '@livepages/document';
+
+const PAGE_ID = 'page-1';
+const FLOW_ID = 'art-brief';
+
+function briefBlocks(): ArticleBlock[] {
+  // Block ids in order, fresh for each build.
+  let n = 0;
+  const id = () => `b-brief-${++n}`;
+  const p = (text: string, style?: 'title' | 'subtitle' | 'h1' | 'h2' | 'quote'): ArticleBlock => ({
+    id: id(),
+    type: 'paragraph',
+    ...(style ? { style } : {}),
+    runs: [{ text }],
+  });
+  const li = (list: 'bullet' | 'numbered' | 'todo', text: string): ArticleBlock => ({
+    id: id(),
+    type: 'list',
+    list,
+    runs: [{ text }],
+  });
+  return [
+    p('Project brief', 'title'),
+    p('What we are doing, why, and how we will know it worked', 'subtitle'),
+    p('Summary', 'h1'),
+    p(
+      'One paragraph a busy reader can stop after: what changes, for whom, and by when. Keep it to three sentences.',
+    ),
+    p('Goals', 'h1'),
+    li('bullet', 'A measurable outcome, with a number and a date'),
+    li('bullet', 'A second one, only if it matters as much as the first'),
+    p('Plan', 'h1'),
+    li('numbered', 'Talk to five customers about the problem'),
+    li('numbered', 'Build the smallest version that tests the idea'),
+    li('numbered', 'Launch it to a pilot group and measure'),
+    p('Open questions', 'h1'),
+    li('todo', 'Who signs off the launch?'),
+    li('todo', 'What would make us stop?'),
+    p('A plan is a guess written down, so we can see when it is wrong.', 'quote'),
+  ];
+}
+
+// An article tab's overrides: one A4 portrait article page holding the flow, which the editor flows onto as many pages
+// as the writing fills (docs/specs/007-editor/article-pages.md "An article"). The Article and Working Backwards
+// templates are each one of these.
+export function articleTabOverrides(
+  flow: string,
+  blocks: ArticleBlock[],
+  style?: ArticleStyle,
+): Partial<Tab> {
+  const pages: Page[] = [{ id: PAGE_ID, orientation: 'portrait', kind: 'article', flow }];
+  const doc: ArticleFlow = { blocks, ...(style ? { style } : {}) };
+  return { opensIn: 'pages', pages, articles: { [flow]: doc } };
+}
+
+/** The Project Brief template's pages and writing (opens in Pages). */
+export function articleTemplateOverrides(): Partial<Tab> {
+  return articleTabOverrides(FLOW_ID, briefBlocks());
+}
