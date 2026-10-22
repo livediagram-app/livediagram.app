@@ -145,7 +145,7 @@ above, sign in, and create a token in Settings › API Tokens. Then build the bu
 
 ```bash
 pnpm --filter @liveplanner/cli build
-export LIVEPLANNER_HOST=http://localhost:8887 LIVEPLANNER_TOKEN=lvd_...
+export LIVEPLANNER_HOST=http://localhost:8887 LIVEPLANNER_TOKEN=lwt_...
 apps/cli/dist/liveplanner.mjs project ls
 ```
 

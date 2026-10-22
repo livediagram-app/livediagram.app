@@ -81,9 +81,7 @@ describe('Choose a Chart', () => {
     const other = { id: 'x', name: 'Other', elements: [] } as unknown as Tab;
     const { loadAllTabs } = show([other], '', () => 'failed');
     expect(screen.queryByText('Finding this project’s sheets…')).toBeNull();
-    expect(screen.getByRole('alert').textContent).toContain(
-      'Couldn’t load this project’s sheets.',
-    );
+    expect(screen.getByRole('alert').textContent).toContain('Couldn’t load this project’s sheets.');
     loadAllTabs.mockClear();
     fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
     expect(loadAllTabs).toHaveBeenCalled();

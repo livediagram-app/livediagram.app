@@ -9,27 +9,27 @@ Scope, by file:
 
 | File                                                                      | Role                                                                                                         |
 | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `packages/api-schema/src/trash.ts`                                        | `TrashReason`, `TrashedProject.reason`, `EMPTY_PROJECT_STALE_DAYS` / `_MS`                                 |
-| `apps/api/migrations/0001_liveplanner_baseline.sql`                       | `projects.trash_reason`                                                                                     |
-| `apps/api/src/db/empty-project-sweep.ts`                                 | `trashEmptyProjects`: the set-based move, capped                                                            |
-| `apps/api/src/db/trash.ts`                                                | `listTrash` reads the reason; `restoreProject` clears it and restarts stale                                 |
+| `packages/api-schema/src/trash.ts`                                        | `TrashReason`, `TrashedProject.reason`, `EMPTY_PROJECT_STALE_DAYS` / `_MS`                                   |
+| `apps/api/migrations/0001_liveplanner_baseline.sql`                       | `projects.trash_reason`                                                                                      |
+| `apps/api/src/db/empty-project-sweep.ts`                                  | `trashEmptyProjects`: the set-based move, capped                                                             |
+| `apps/api/src/db/trash.ts`                                                | `listTrash` reads the reason; `restoreProject` clears it and restarts stale                                  |
 | `apps/api/src/index.ts`                                                   | The 03:00 cron calls the sweep beside the purge                                                              |
-| `apps/api/src/openapi/schemas.generated.ts`                               | Regenerated: `TrashedProject.reason`                                                                        |
+| `apps/api/src/openapi/schemas.generated.ts`                               | Regenerated: `TrashedProject.reason`                                                                         |
 | `apps/mcp/src/{tools,output-schema}.ts`                                   | `list_trash` rows carry `reason`                                                                             |
 | `apps/live/lib/offline/offline-trash.ts`                                  | Local rows are `reason: 'deleted'`                                                                           |
 | `apps/live/lib/trash-groups.ts`                                           | `trashedOnLabel(row)`, `trashedCardHeading(row)`, `trashedCardLead(row, now)`: the reason copy, in one place |
-| `apps/live/components/{panels/TrashPane,chrome/ProjectTrashedCard}.tsx`  | The row and the deleted card copy                                                                            |
+| `apps/live/components/{panels/TrashPane,chrome/ProjectTrashedCard}.tsx`   | The row and the deleted card copy                                                                            |
 | `apps/help/app/account-and-data/trash/page.mdx`, `packages/help-registry` | The help article's section and keywords                                                                      |
 
 ## Domain and naming
 
-| Term             | Identifier                                              | Meaning                                               |
-| ---------------- | ------------------------------------------------------- | ----------------------------------------------------- |
-| Empty            | SQL predicate in `empty-project-sweep.ts`              | No tab linked to the project holds an element        |
-| Stale            | `saved_at <= now - EMPTY_PROJECT_STALE_MS`             | Not saved for 30 days (so also created 30+ days ago)  |
-| Clean-up / sweep | `trashEmptyProjects`, log `empty sweep`                | The daily move of empty, stale projects to the Trash |
-| Trash reason     | `projects.trash_reason`, `TrashReason`, `reason`       | Why a project is in the Trash: `deleted` or `empty`  |
-| Stale window     | `EMPTY_PROJECT_STALE_DAYS` / `EMPTY_PROJECT_STALE_MS` | 30 days                                               |
+| Term             | Identifier                                            | Meaning                                              |
+| ---------------- | ----------------------------------------------------- | ---------------------------------------------------- |
+| Empty            | SQL predicate in `empty-project-sweep.ts`             | No tab linked to the project holds an element        |
+| Stale            | `saved_at <= now - EMPTY_PROJECT_STALE_MS`            | Not saved for 30 days (so also created 30+ days ago) |
+| Clean-up / sweep | `trashEmptyProjects`, log `empty sweep`               | The daily move of empty, stale projects to the Trash |
+| Trash reason     | `projects.trash_reason`, `TrashReason`, `reason`      | Why a project is in the Trash: `deleted` or `empty`  |
+| Stale window     | `EMPTY_PROJECT_STALE_DAYS` / `EMPTY_PROJECT_STALE_MS` | 30 days                                              |
 
 `trash_reason` is NULL for a delete and `'empty'` for the sweep in the database; the wire maps NULL to
 `'deleted'` so a client never sees a null (D142). Banned: "auto-delete", "expired", "abandoned", "inactive"
@@ -39,11 +39,11 @@ Scope, by file:
 
 The Trash's three states are unchanged. One transition is added and one is refined:
 
-| From    | Event                                        | To      | Guard / effect                                               |
-| ------- | -------------------------------------------- | ------- | ------------------------------------------------------------ |
-| live    | daily cron, empty and stale                  | trashed | none; `trashed_at = now`, `trash_reason = 'empty'`           |
+| From    | Event                                        | To      | Guard / effect                                              |
+| ------- | -------------------------------------------- | ------- | ----------------------------------------------------------- |
+| live    | daily cron, empty and stale                  | trashed | none; `trashed_at = now`, `trash_reason = 'empty'`          |
 | trashed | restore (any door), `trash_reason = 'empty'` | live    | `mayDeleteProject`; `trash_reason = NULL`, `saved_at = now` |
-| trashed | restore (any door), `trash_reason IS NULL`   | live    | unchanged: `saved_at` untouched                              |
+| trashed | restore (any door), `trash_reason IS NULL`   | live    | unchanged: `saved_at` untouched                             |
 
 Invariants:
 
@@ -105,8 +105,8 @@ No new route, no new error.
 
 ## Data and persistence
 
-| Field                    | Class | Notes                                                      |
-| ------------------------ | ----- | ---------------------------------------------------------- |
+| Field                   | Class | Notes                                                      |
+| ----------------------- | ----- | ---------------------------------------------------------- |
 | `projects.trash_reason` | state | TEXT NULL; NULL or `'empty'`; meaningful only in the Trash |
 | `TrashedProject.reason` | wire  | `'deleted' \| 'empty'`, derived                            |
 
@@ -152,11 +152,11 @@ limits; the cap bounds the writes at 2,000 per run, the same order as the Trash 
 
 ## Observability
 
-| Fingerprint                                     | Where     |
-| ----------------------------------------------- | --------- |
+| Fingerprint                                    | Where     |
+| ---------------------------------------------- | --------- |
 | `empty sweep: moved <n> projects to the Trash` | api, cron |
-| `empty sweep failed <err>`                      | api, cron |
-| `[trash] restored <id>` (existing)              | api       |
+| `empty sweep failed <err>`                     | api, cron |
+| `[trash] restored <id>` (existing)             | api       |
 
 ## Presentation and UX
 
@@ -178,24 +178,24 @@ limits; the cap bounds the writes at 2,000 per run, the same order as the Trash 
 
 ## Testing
 
-| Rule                                                         | Test                                           |
-| ------------------------------------------------------------ | ---------------------------------------------- |
+| Rule                                                         | Test                                          |
+| ------------------------------------------------------------ | --------------------------------------------- |
 | Empty / not empty (X1 to X4), stale boundary, live only, cap | `apps/api/src/db/empty-project-sweep.test.ts` |
 | Reason on the list; restore clears it and restarts stale     | `apps/api/src/db/empty-project-sweep.test.ts` |
-| Cron: moves, logs, never purges what it moved (C1)           | `apps/api/src/scheduled-trash.test.ts`         |
-| MCP `list_trash` carries `reason`                            | `apps/mcp/src/tools.test.ts`                   |
-| Local rows are `deleted`                                     | `apps/live/lib/offline/offline-trash.test.ts`  |
-| Row lead and card lead copy                                  | `apps/live/lib/trash-groups.test.ts`           |
-| OpenAPI parity                                               | `apps/api/src/openapi/*.test.ts`               |
-| Help registry keywords                                       | `apps/help` registry tests                     |
+| Cron: moves, logs, never purges what it moved (C1)           | `apps/api/src/scheduled-trash.test.ts`        |
+| MCP `list_trash` carries `reason`                            | `apps/mcp/src/tools.test.ts`                  |
+| Local rows are `deleted`                                     | `apps/live/lib/offline/offline-trash.test.ts` |
+| Row lead and card lead copy                                  | `apps/live/lib/trash-groups.test.ts`          |
+| OpenAPI parity                                               | `apps/api/src/openapi/*.test.ts`              |
+| Help registry keywords                                       | `apps/help` registry tests                    |
 
 ## Constants and configuration
 
-| Constant                    | Value | Provenance                                        | Safe range |
-| --------------------------- | ----- | ------------------------------------------------- | ---------- |
+| Constant                   | Value | Provenance                                        | Safe range |
+| -------------------------- | ----- | ------------------------------------------------- | ---------- |
 | `EMPTY_PROJECT_STALE_DAYS` | 30    | Operator decision                                 | 7 to 90    |
-| `EMPTY_SWEEP_BATCH`         | 500   | One bounded UPDATE; measured scan cost (D144)     | 50 to 1000 |
-| `EMPTY_SWEEP_MAX_BATCHES`   | 4     | 2,000 moves a run, the purge's order of magnitude | 1 to 20    |
+| `EMPTY_SWEEP_BATCH`        | 500   | One bounded UPDATE; measured scan cost (D144)     | 50 to 1000 |
+| `EMPTY_SWEEP_MAX_BATCHES`  | 4     | 2,000 moves a run, the purge's order of magnitude | 1 to 20    |
 
 No new environment variable or binding; a deployment needs only the migration.
 

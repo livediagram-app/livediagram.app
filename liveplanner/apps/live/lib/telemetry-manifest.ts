@@ -173,16 +173,13 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Tab·Toggled',
   'Tab·Unlocked',
   'Team·Added',
-  'Team·Changed',
   'Team·Created',
   // The recipient turned an invitation down — the counterpart to Team·Joined,
   // and distinct from Team·Removed·Invite (an Admin withdrawing one). docs/specs/013-workspace/teams.md.
   'Team·Declined',
-  'Team·Deleted',
   'Team·Joined',
   'Team·Moved',
   'Team·Removed',
-  'Team·Shared',
   'Template·Used',
   'Theme·Changed',
   'Theme·Created',
@@ -197,7 +194,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Token·Created',
   // A token's owner allowed a workbench on the pairing page (docs/specs/013-workspace/workbench-embeds.md).
   'Token·Linked',
-  'Token·Removed',
   // Trash (docs/specs/013-workspace/trash.md): opened from Settings, and a
   // project restored / deleted for good / a group emptied, typed by which Trash.
   'Trash·Cleared',

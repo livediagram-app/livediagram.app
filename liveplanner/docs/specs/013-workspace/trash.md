@@ -50,7 +50,7 @@ Three things bypass it:
 
 ## Where things live
 
-| Project                               | Its Trash                         | Who may see, restore and purge           |
+| Project                                | Its Trash                         | Who may see, restore and purge           |
 | -------------------------------------- | --------------------------------- | ---------------------------------------- |
 | Personal (guest or account)            | The owner's personal Trash        | The owner                                |
 | Team library                           | The team's Trash                  | Any joined member (the delete authority) |

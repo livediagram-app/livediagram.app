@@ -7,7 +7,7 @@ import { signOut, useSession } from '@/lib/session';
 const noChange = () => () => {};
 
 // The header's account control (liveworkspace/docs/site.md "The header"): Sign in, or the signed-in
-// name and Sign out. Until the page knows who is signed in (lib/session.ts), it holds its place
+// name, a link to their teams and API tokens, and Sign out. Until the page knows who is signed in (lib/session.ts), it holds its place
 // without showing either, so nothing jumps.
 export function AccountControl() {
   const session = useSession();
@@ -31,9 +31,12 @@ export function AccountControl() {
   if (session.state === 'in') {
     return (
       <span className="flex items-center gap-1">
-        <span className="max-w-32 truncate px-1 text-slate-900 max-sm:hidden dark:text-white">
+        <a
+          href="/account/teams"
+          className={`${link} max-w-40 truncate font-medium text-slate-900 max-sm:hidden dark:text-white`}
+        >
           {session.name}
-        </span>
+        </a>
         <button
           type="button"
           onClick={() => void leave()}

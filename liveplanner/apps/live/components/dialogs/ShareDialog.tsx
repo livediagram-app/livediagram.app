@@ -166,11 +166,7 @@ export function ShareDialog({
       <DialogHeader
         title="Share This Project"
         subtitle={
-          <ShareStatus
-            passes={activeLinks.length}
-            password={sharePasswordSet}
-            team={teamProject}
-          />
+          <ShareStatus passes={activeLinks.length} password={sharePasswordSet} team={teamProject} />
         }
       >
         <ShareShowMeButton tour={tour} onStart={freezeTour} />

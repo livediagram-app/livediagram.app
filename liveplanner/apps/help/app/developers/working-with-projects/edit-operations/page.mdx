@@ -84,10 +84,10 @@ One parser turns the line form into the JSON form, so both are checked the same 
 
 ## Operations
 
-| Operation | Line form                           | What it does                                                                                 |
-| --------- | ----------------------------------- | -------------------------------------------------------------------------------------------- |
-| `set`     | `set <selector> key=value… [all]`   | Changes only the fields named; `key=` with nothing after it unsets one                       |
-| `rm`      | `rm <selector> [all]`               | Removes elements                                                                             |
+| Operation | Line form                           | What it does                                                                                |
+| --------- | ----------------------------------- | ------------------------------------------------------------------------------------------- |
+| `set`     | `set <selector> key=value… [all]`   | Changes only the fields named; `key=` with nothing after it unsets one                      |
+| `rm`      | `rm <selector> [all]`               | Removes elements                                                                            |
 | `test`    | `test <selector> key=value…`        | Refuses the whole changeset unless the element still holds these values                     |
 | `add`     | `{ "op": "add", "element": { … } }` | Puts a whole element on the tab, as the JSON form gives it; the answer says where it landed |
 
@@ -102,17 +102,28 @@ A few rules hold for every operation:
 
 A tab holds only these elements, each `{ "type": "shape", "shape": <kind>, "x", "y", "width", "height" }` with an optional `label` and `locked`. An `add` or a replace with any other element is refused with `invalid_value`, naming the kinds there are:
 
-| Kind                                    | Is                                                         | Its own fields                                                                                          |
-| --------------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| `plan-board`                            | A Board tab's board; its cards are items                   | `planBoard`                                                                                             |
-| `plan-sheet`                            | A Sheet tab's spreadsheet; its cells change by sheet writes | `planSheet`                                                                                             |
-| `plan-view`                             | A Dashboard's metric or chart of the cards                 | `planView`, `textSize`                                                                                  |
-| `bar-chart`, `line-chart`, `pie-chart`  | A chart of a Sheet's cells, in the Sheet or on a Dashboard | `chartSource` (required), `sheetAnchor`, `chartVariant`, `chartLegend`, `chartValues`, `chartPalette`, and `chartAxis` on a bar or line chart |
+| Kind                                   | Is                                                          | Its own fields                                                                                                                                |
+| -------------------------------------- | ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `plan-board`                           | A Board tab's board; its cards are items                    | `planBoard`                                                                                                                                   |
+| `plan-sheet`                           | A Sheet tab's spreadsheet; its cells change by sheet writes | `planSheet`                                                                                                                                   |
+| `plan-view`                            | A Dashboard's metric or chart of the cards                  | `planView`, `textSize`                                                                                                                        |
+| `bar-chart`, `line-chart`, `pie-chart` | A chart of a Sheet's cells, in the Sheet or on a Dashboard  | `chartSource` (required), `sheetAnchor`, `chartVariant`, `chartLegend`, `chartValues`, `chartPalette`, and `chartAxis` on a bar or line chart |
 
 A chart's `chartSource` is `{ "sheetId", "range": { "r1", "c1", "r2", "c2" } }`: the sheet and the row and column ids of its first and last cells. `GET /api/schema/<kind>` (or `liveplanner schema <kind>`) prints a kind's fields, a closed field with its values:
 
 ```json
-{ "op": "add", "element": { "type": "shape", "shape": "plan-view", "x": 0, "y": 840, "width": 500, "height": 360, "planView": { "view": "gantt" } } }
+{
+  "op": "add",
+  "element": {
+    "type": "shape",
+    "shape": "plan-view",
+    "x": 0,
+    "y": 840,
+    "width": 500,
+    "height": 360,
+    "planView": { "view": "gantt" }
+  }
+}
 ```
 
 `test` is how you make sure you change what you read: put one before a `set` and the changeset is refused, with nothing applied, if someone changed that element since. Sending the revision you read as `base` (below) does the same for every element at once.
@@ -121,13 +132,13 @@ A chart's `chartSource` is `{ "sheetId", "range": { "r1", "c1", "r2", "c2" } }`:
 
 A selector picks the elements an operation acts on. It is a ref, a quoted label, or `key:value` terms joined by spaces, every one of which must match:
 
-| Selector               | Matches                                                              |
-| ---------------------- | -------------------------------------------------------------------- |
-| `0a78`, `0a78f3c1…`    | The element with that ref, id or unique start of an id               |
-| `"Sprint board"`       | The element whose label is exactly that, ignoring case               |
-| `label~sprint`         | Elements whose label contains `sprint`                               |
-| `type:plan-view`       | Elements of that kind, as the outline prints it                      |
-| `selected`             | What the token's owner has selected in an editor open on that tab    |
+| Selector            | Matches                                                           |
+| ------------------- | ----------------------------------------------------------------- |
+| `0a78`, `0a78f3c1…` | The element with that ref, id or unique start of an id            |
+| `"Sprint board"`    | The element whose label is exactly that, ignoring case            |
+| `label~sprint`      | Elements whose label contains `sprint`                            |
+| `type:plan-view`    | Elements of that kind, as the outline prints it                   |
+| `selected`          | What the token's owner has selected in an editor open on that tab |
 
 - A selector must match **exactly one** element unless the operation takes `all`. Nothing matching is refused as `target_not_found`; several is refused as `target_ambiguous`, listing them with their refs.
 - `selected` with nothing selected is refused. The owner is whoever the API token belongs to, so an agent can act on "what I have selected" while you point at it.
@@ -137,12 +148,12 @@ A selector picks the elements an operation acts on. It is a ref, a quoted label,
 
 To rebuild a tab rather than change it, send `"replace"` instead of `"operations"`, with exactly one of:
 
-| Source      | Builds                                                                                          |
-| ----------- | ----------------------------------------------------------------------------------------------- |
-| `template`  | The tab a template makes, by its kind from `GET /templates` (such as `kanban`)                  |
+| Source      | Builds                                                                                            |
+| ----------- | ------------------------------------------------------------------------------------------------- |
+| `template`  | The tab a template makes, by its kind from `GET /templates` (such as `kanban`)                    |
 | `dashboard` | A Dashboard tab over the project's Board and Sheet tabs: its `tabs`, `metrics`, `charts`, `notes` |
-| `form`      | A Form tab's form                                                                               |
-| `elements`  | The tab's elements, as the tab JSON gives them, kept at the `x` and `y` given                  |
+| `form`      | A Form tab's form                                                                                 |
+| `elements`  | The tab's elements, as the tab JSON gives them, kept at the `x` and `y` given                     |
 
 A replace may also carry a `name` for the tab. Nothing is laid out for you, so a replace carrying `layout` is refused. A replace on a tab id the project does not have yet creates that tab, which is how a new tab is added in one write:
 
@@ -173,12 +184,12 @@ A changeset answers with one line per element, the same for a dry run (`?dryRun=
 rev 1→2 · cs_tbrfqcvm1w · revert: liveplanner changeset revert 4cd7082b-… cs_tbrfqcvm1w
 ```
 
-| Mark | Means                                      |
-| ---- | ------------------------------------------ |
-| `+`  | Added                                      |
-| `~`  | Changed, each field before→after           |
-| `-`  | Removed                                    |
-| `!`  | A warning                                  |
+| Mark | Means                            |
+| ---- | -------------------------------- |
+| `+`  | Added                            |
+| `~`  | Changed, each field before→after |
+| `-`  | Removed                          |
+| `!`  | A warning                        |
 
 The last line carries the tab's new revision, the changeset's id and the command that reverts it; a dry run ends `dry run · rev 1 · nothing written` instead. A changeset that changes nothing answers `nothing changed`. The JSON answer carries the same lines as `results`, beside `text`.
 

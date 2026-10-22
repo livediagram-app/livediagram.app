@@ -2,6 +2,7 @@ import {
   oauthProviderAuthServerMetadata,
   oauthProviderOpenIdConfigMetadata,
 } from '@better-auth/oauth-provider';
+import { ACCOUNT_API_PATH, handleAccountApi } from './account-api.ts';
 import { AUTH_BASE_PATH, SEND_CODE_PATH, SIGN_IN_CODE_PATH } from './auth-options.ts';
 import { getAuth } from './auth.ts';
 import { CLIENTS_PATH, registerClient } from './clients.ts';
@@ -10,8 +11,8 @@ import type { Env } from './env.ts';
 import { overCodeLimit } from './rate-limit.ts';
 import { SIGN_IN_OPTIONS_PATH, signInOptions } from './sign-in-options.ts';
 
-// The accounts API. Only the paths routed to this Worker reach it (wrangler.toml): /api/auth/* and
-// the two discovery documents. Every page, the sign-in pages included, is the static site's
+// The accounts API. Only the paths routed to this Worker reach it (wrangler.toml): /api/auth/*,
+// /api/account/* (teams and API tokens, account-api.ts) and the two discovery documents. Every page, the sign-in pages included, is the static site's
 // (liveworkspace/apps/site), on the same origin.
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -30,12 +31,16 @@ export default {
       }
     }
 
+    if (pathname === ACCOUNT_API_PATH || pathname.startsWith(`${ACCOUNT_API_PATH}/`)) {
+      return handleAccountApi(request, env, getAuth(env));
+    }
+
     if (request.method === 'POST' && pathname === CLIENTS_PATH) {
       return registerClient(request, env, getAuth(env));
     }
 
     if (request.method === 'POST' && pathname === `${AUTH_BASE_PATH}${DELETE_ACCOUNT_PATH}`) {
-      return deleteAccount(request, getAuth(env));
+      return deleteAccount(request, getAuth(env), env.AUTH_DB);
     }
 
     if (pathname === AUTH_BASE_PATH || pathname.startsWith(`${AUTH_BASE_PATH}/`)) {

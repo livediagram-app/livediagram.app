@@ -30,7 +30,7 @@ An **aggregate view** lists projects from every place at once: **Recent**, **Fav
 
 | View                                                     | Route                                                                              | Lens                              |
 | -------------------------------------------------------- | ---------------------------------------------------------------------------------- | --------------------------------- |
-| My Projects, and each of its folders                    | `/explorer/all`, `/explorer/folder?id=<id>`                                        | Scoped                            |
+| My Projects, and each of its folders                     | `/explorer/all`, `/explorer/folder?id=<id>`                                        | Scoped                            |
 | A team, at its root or in one of its folders             | `/explorer/team?id=<id>`                                                           | Scoped                            |
 | This Browser                                             | `/explorer/offline`                                                                | Scoped                            |
 | Recent, Favourites, Search results, Shared With Me       | `/explorer/recent`, `/explorer/favourites`, `/explorer/search`, `/explorer/shared` | Aggregate                         |
@@ -68,15 +68,15 @@ Each dimension is a closed list of values. The interface says what a value means
 kind or a template family a "type", and it keeps "board type" for what it means elsewhere: a board that leaves the
 general diagram tab's environment.
 
-| Dimension | Key        | Chip label  | Values and their labels                                                                                         |
-| --------- | ---------- | ----------- | --------------------------------------------------------------------------------------------------------------- |
-| Text      | (none)     | (the field) | Free words                                                                                                      |
-| Opens in  | `opens-in` | Opens in    | `plan` Plan: the editor mode the project was created in (a retired mode's id, `opens-in:draw`, reads as Plan)  |
-| Template  | `template` | Template    | `retrospective` Retrospective, `kanban` Kanban: the template family the project was made from                  |
-| Made by   | `made-by`  | Made by AI  | `ai` Made by AI: the project's `source` is an AI tool through the MCP server (not the CLI) |
-| Edited    | `edited`   | Edited      | `today` Today, `7d` Last 7 days, `30d` Last 30 days, `12m` Last 12 months, `this-year` This year                |
-| People    | `people`   | People      | `me` Me, `others` Others: the owner of a project; the actor of a Timeline event                                |
-| Space     | `space`    | Space       | `mine` My Projects, `shared` Shared With Me, `team:<id>` the team's name. Aggregate views only                 |
+| Dimension | Key        | Chip label  | Values and their labels                                                                                       |
+| --------- | ---------- | ----------- | ------------------------------------------------------------------------------------------------------------- |
+| Text      | (none)     | (the field) | Free words                                                                                                    |
+| Opens in  | `opens-in` | Opens in    | `plan` Plan: the editor mode the project was created in (a retired mode's id, `opens-in:draw`, reads as Plan) |
+| Template  | `template` | Template    | `retrospective` Retrospective, `kanban` Kanban: the template family the project was made from                 |
+| Made by   | `made-by`  | Made by AI  | `ai` Made by AI: the project's `source` is an AI tool through the MCP server (not the CLI)                    |
+| Edited    | `edited`   | Edited      | `today` Today, `7d` Last 7 days, `30d` Last 30 days, `12m` Last 12 months, `this-year` This year              |
+| People    | `people`   | People      | `me` Me, `others` Others: the owner of a project; the actor of a Timeline event                               |
+| Space     | `space`    | Space       | `mine` My Projects, `shared` Shared With Me, `team:<id>` the team's name. Aggregate views only                |
 
 - **Opens in** and **Template** read the creation intent recorded on the project (Default folders: `opensIn`, `templateFamily` on the project summary). Opens in offers one value per editor mode (`EDITOR_MODES`: Plan alone); Kind offers the specific tab kinds, every creatable kind but the general diagram tab; Template offers the template families (`TEMPLATE_FAMILIES`). A project whose recorded value is unknown (made before the intent was recorded) matches no value of that dimension; it shows whenever that dimension is not set. A general diagram tab matches no Kind value, and a project made from no family matches no Template value.
 - **Made by AI is a filter, not a place.** AI-made projects are no bucket of their own: they live at the root of
@@ -211,9 +211,9 @@ Keyboard:
 
 ## States
 
-| State          | Shows                                                                                                  |
-| -------------- | ------------------------------------------------------------------------------------------------------ |
-| Empty          | The view's own empty copy, unchanged: there is nothing here at all                                     |
+| State          | Shows                                                                                                 |
+| -------------- | ----------------------------------------------------------------------------------------------------- |
+| Empty          | The view's own empty copy, unchanged: there is nothing here at all                                    |
 | Filtered empty | "No projects match these filters", the reported reasons under it, and **Clear Filters** (empties `q`) |
 | Failed         | "Couldn’t load projects" and **Try again**; the lens stays as it was                                  |
 

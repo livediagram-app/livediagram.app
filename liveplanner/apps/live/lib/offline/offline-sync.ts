@@ -143,9 +143,7 @@ export async function syncOfflineProject(
       // Its tags the same way (docs/specs/013-workspace/tags.md). One deleted meanwhile is refused and left off;
       // the project is synced either way.
       await Promise.allSettled(
-        (done.rec.tagIds ?? []).map((tagId) =>
-          apiSetProjectTag(ownerId, tagId, done.rec.id, true),
-        ),
+        (done.rec.tagIds ?? []).map((tagId) => apiSetProjectTag(ownerId, tagId, done.rec.id, true)),
       );
       return { id: rec.id };
     }

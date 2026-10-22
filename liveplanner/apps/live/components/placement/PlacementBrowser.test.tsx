@@ -332,9 +332,7 @@ describe('opening where its selection is', () => {
 
   it('opens the space root for a top-level folder', () => {
     render(<Opened initial="folder:e" />);
-    expect(screen.getByRole('button', { name: /All spaces/ }).textContent).toContain(
-      'My Projects',
-    );
+    expect(screen.getByRole('button', { name: /All spaces/ }).textContent).toContain('My Projects');
     expect(checked()[0]).toMatch(/^Epsilon/);
   });
 

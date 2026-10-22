@@ -97,8 +97,8 @@ tab e1b2 "Flow" · since rev 41 · rev 47 · 2 changes
 
 Three routes read and revert changesets, with the same [authentication](/help/developers/authentication/) as the rest of the [API](/help/developers/api-overview/):
 
-| Route                                                      | What it does                                                                                                 |
-| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Route                                                     | What it does                                                                                                 |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
 | `GET /api/projects/{id}/changesets`                       | The recent changesets, newest first. `?tab=` narrows it to one tab; `?limit=` from 1 to 100 (20 by default). |
 | `GET /api/projects/{id}/changesets/{changesetId}`         | One changeset, with its result lines.                                                                        |
 | `POST /api/projects/{id}/changesets/{changesetId}/revert` | Reverts it, as a new changeset.                                                                              |

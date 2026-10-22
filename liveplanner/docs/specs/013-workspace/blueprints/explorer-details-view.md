@@ -7,42 +7,42 @@ The spec decides; this file adds engineering precision. Defaults are ledgered in
 
 | File                                                          | Role                                                                                    |
 | ------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| `apps/api/migrations/0001_liveplanner_baseline.sql`                      | The `tab_stats` table                                                                   |
-| `packages/project/src/tab-stats.ts`                          | `tabStatsOf`, `TabStats`: one counting rule for the api and the browser                 |
-| `apps/api/src/db/tab-stats.ts`                                | `tabStatsOfData`, `tabStatsStatement`, `projectStatsSql`, `readProjectStats`          |
+| `apps/api/migrations/0001_liveplanner_baseline.sql`           | The `tab_stats` table                                                                   |
+| `packages/project/src/tab-stats.ts`                           | `tabStatsOf`, `TabStats`: one counting rule for the api and the browser                 |
+| `apps/api/src/db/tab-stats.ts`                                | `tabStatsOfData`, `tabStatsStatement`, `projectStatsSql`, `readProjectStats`            |
 | `apps/api/src/tab-stats-backfill.ts`                          | `runTabStatsBackfill`: the cron's bounded count of tabs without stats                   |
-| `apps/api/src/db/tabs.ts`, `apps/api/src/db/projects.ts`     | Every tab write batches `tabStatsStatement`; the summary projection selects `doc_stats` |
+| `apps/api/src/db/tabs.ts`, `apps/api/src/db/projects.ts`      | Every tab write batches `tabStatsStatement`; the summary projection selects `doc_stats` |
 | `apps/api/src/participant-write.ts`                           | Hand `swapTabData` the next body's stats                                                |
-| `packages/api-schema/src/index.ts`                            | `ProjectStats`, `ProjectSummary.stats`                                                |
+| `packages/api-schema/src/index.ts`                            | `ProjectStats`, `ProjectSummary.stats`                                                  |
 | `packages/ui/src/hint/*`, `packages/ui/src/useRowPreview.tsx` | Hint kind `preview`: delay, per-kind warm-up (`isHintWarm`), look; `useRowPreview`      |
 | `apps/live/app/explorer/useExplorerViewMode.ts`               | `ExplorerViewMode` gains `'details'`                                                    |
 | `apps/live/app/explorer/ViewToggle.tsx`                       | The third button                                                                        |
-| `apps/live/app/explorer/details/DetailsView.tsx`              | The table: header, folder rows, project rows                                           |
+| `apps/live/app/explorer/details/DetailsView.tsx`              | The table: header, folder rows, project rows                                            |
 | `apps/live/app/explorer/details/DetailsHeader.tsx`            | Sortable column headers                                                                 |
-| `apps/live/app/explorer/details/DetailsProjectRow.tsx`       | One project row: drag source, preview, `⋯`                                             |
+| `apps/live/app/explorer/details/DetailsProjectRow.tsx`        | One project row: drag source, preview, `⋯`                                              |
 | `apps/live/app/explorer/details/DetailsFolderRow.tsx`         | One folder row: drop target, `⋯`                                                        |
 | `apps/live/app/explorer/details/details-columns.ts`           | `DETAILS_COLUMNS`, `sortDetailsEntries`, cell values                                    |
 | `apps/live/app/explorer/details/details-format.ts`            | `formatObjects`, `formatBytes`, `formatSize`, `formatDateTime`, `formatItems`           |
 | `apps/live/app/explorer/details/details-cells.tsx`            | `TypeCell`, `AccessCell`, `DateCell`, `NoValue`, `SHOWN_FROM_CLASS`                     |
-| `apps/live/app/explorer/explorer-view-props.ts`               | `projectEntryPropsFor`: the per-project bindings every view shares                    |
-| `apps/live/lib/offline/offline-stats.ts`                      | `offlineProjectStats`: a project in this browser counted from its record              |
-| `apps/live/components/panels/TeamSharedProjects.tsx`         | The team library's Details branch                                                       |
+| `apps/live/app/explorer/explorer-view-props.ts`               | `projectEntryPropsFor`: the per-project bindings every view shares                      |
+| `apps/live/lib/offline/offline-stats.ts`                      | `offlineProjectStats`: a project in this browser counted from its record                |
+| `apps/live/components/panels/TeamSharedProjects.tsx`          | The team library's Details branch                                                       |
 | `apps/live/app/explorer/details/useDetailsSort.ts`            | The device-local sort                                                                   |
 | `apps/live/app/explorer/details/useSnapshotPrefetch.ts`       | Asks for a row's snapshot as it nears the viewport                                      |
-| `apps/live/lib/project-space.ts`                             | `readerAccessOf`                                                                        |
+| `apps/live/lib/project-space.ts`                              | `readerAccessOf`                                                                        |
 
 ## Domain and naming
 
-| Term           | Identifier                     | Meaning                                                                     |
-| -------------- | ------------------------------ | --------------------------------------------------------------------------- |
-| tab stats      | `TabStats`, table `tab_stats`  | One tab's `mode`, `elementCount`, `commentCount`, `dataBytes`, `writtenAt`  |
-| project stats | `ProjectStats`                | `{ mode, elements, comments, bytes }`, summed over a project's linked tabs |
-| not counted    | `stats: null`                  | No tabs, or a linked tab without a stats row; the cells show `–`            |
-| Details view   | `ExplorerViewMode` `'details'` | The third browse layout                                                     |
-| column         | `DetailsColumnId`              | `name`, `type`, `comments`, `access`, `size`, `created`, `updated`          |
-| sort           | `DetailsSort`                  | `{ column: DetailsColumnId, direction: 'asc' \| 'desc' }`                   |
-| reader access  | `readerAccessOf(doc)`          | `AccessLevel`: `edit` unless the row is shared, then its role               |
-| preview        | `HintKind` `'preview'`         | The resting-hover snapshot hint                                             |
+| Term          | Identifier                     | Meaning                                                                    |
+| ------------- | ------------------------------ | -------------------------------------------------------------------------- |
+| tab stats     | `TabStats`, table `tab_stats`  | One tab's `mode`, `elementCount`, `commentCount`, `dataBytes`, `writtenAt` |
+| project stats | `ProjectStats`                 | `{ mode, elements, comments, bytes }`, summed over a project's linked tabs |
+| not counted   | `stats: null`                  | No tabs, or a linked tab without a stats row; the cells show `–`           |
+| Details view  | `ExplorerViewMode` `'details'` | The third browse layout                                                    |
+| column        | `DetailsColumnId`              | `name`, `type`, `comments`, `access`, `size`, `created`, `updated`         |
+| sort          | `DetailsSort`                  | `{ column: DetailsColumnId, direction: 'asc' \| 'desc' }`                  |
+| reader access | `readerAccessOf(doc)`          | `AccessLevel`: `edit` unless the row is shared, then its role              |
+| preview       | `HintKind` `'preview'`         | The resting-hover snapshot hint                                            |
 
 ## Behaviour and state
 
@@ -151,17 +151,17 @@ CREATE TABLE tab_stats (
 
 ## Errors and edge cases
 
-| Case                                 | Handling                                                   |
-| ------------------------------------ | ---------------------------------------------------------- |
-| Project with no tabs                | `stats: null`, cells `–`                                   |
-| Some tabs not yet counted            | `stats: null` until the backfill reaches them              |
+| Case                                 | Handling                                                  |
+| ------------------------------------ | --------------------------------------------------------- |
+| Project with no tabs                 | `stats: null`, cells `–`                                  |
+| Some tabs not yet counted            | `stats: null` until the backfill reaches them             |
 | A stored row of a retired mode       | Plan (`readProjectStats` reads through `parseEditorMode`) |
-| Corrupt tab body in the backfill     | Counted empty, warned                                      |
-| Write racing the backfill            | The write's row wins (`DO NOTHING`)                        |
-| Shared row                           | No `stats`: `–`; no Created: `–` "Not known" (`D153`)      |
-| Offline row                          | Counted in the browser, the first tab's mode (`D152`)      |
-| Unknown stored sort or view mode     | Defaults                                                   |
-| Folder row in Type, Comments, Access | Type "Folder", the others empty; sorted by name for those  |
+| Corrupt tab body in the backfill     | Counted empty, warned                                     |
+| Write racing the backfill            | The write's row wins (`DO NOTHING`)                       |
+| Shared row                           | No `stats`: `–`; no Created: `–` "Not known" (`D153`)     |
+| Offline row                          | Counted in the browser, the first tab's mode (`D152`)     |
+| Unknown stored sort or view mode     | Defaults                                                  |
+| Folder row in Type, Comments, Access | Type "Folder", the others empty; sorted by name for those |
 
 ## Security and trust
 
@@ -238,14 +238,14 @@ CREATE TABLE tab_stats (
 
 | Rule                                                           | Test                                                          |
 | -------------------------------------------------------------- | ------------------------------------------------------------- |
-| Stats of a body: mode, elements, comments, bytes               | `packages/project/src/tab-stats.test.ts`                     |
+| Stats of a body: mode, elements, comments, bytes               | `packages/project/src/tab-stats.test.ts`                      |
 | A corrupt body counts empty                                    | `apps/api/src/db/tab-stats.test.ts`                           |
-| A project in this browser is counted, cached per save         | `apps/live/lib/offline/offline-stats.test.ts`                 |
+| A project in this browser is counted, cached per save          | `apps/live/lib/offline/offline-stats.test.ts`                 |
 | The snapshot prefetch asks once, near the viewport             | `apps/live/app/explorer/details/useSnapshotPrefetch.test.tsx` |
-| Reader access                                                  | `apps/live/lib/project-space.test.ts`                        |
+| Reader access                                                  | `apps/live/lib/project-space.test.ts`                         |
 | Warm-up per kind                                               | `packages/ui/src/hint/hint-registry.test.ts`                  |
 | Every write path leaves a matching stats row                   | `apps/api/src/db/tab-stats-writers.test.ts`                   |
-| Project stats sum, latest mode, null when uncounted           | `apps/api/src/db/tab-stats.test.ts`                           |
+| Project stats sum, latest mode, null when uncounted            | `apps/api/src/db/tab-stats.test.ts`                           |
 | Backfill counts, keeps a racing write, logs, stops             | `apps/api/src/tab-stats-backfill.test.ts`                     |
 | Preview delay, warm-up, focus                                  | `packages/ui/src/hint/useHint.test.tsx`                       |
 | Sort: natural direction, toggle, folders first, `–` last       | `apps/live/app/explorer/details/details-columns.test.ts`      |

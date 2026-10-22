@@ -68,7 +68,7 @@ If you'd rather use an API token than sign in through the browser, pass it as a 
 
 ```bash
 claude mcp add --transport http liveplanner https://mcp.liveplanner.app/mcp \
-  --header "Authorization: Bearer lvd_..."
+  --header "Authorization: Bearer lwt_..."
 ```
 
 For coding agents working in a repository, the [liveplanner CLI](/help/developers/cli/) is an alternative to the MCP server: both use the same API and the same kind of token.
@@ -90,7 +90,7 @@ Add liveplanner to Cursor's MCP configuration: `~/.cursor/mcp.json` for every pr
 Cursor then lists liveplanner in its MCP settings and offers to sign in to it, which opens the liveplanner approval page. To use an API token instead, add a `headers` entry beside `url`:
 
 ```json
-"headers": { "Authorization": "Bearer lvd_..." }
+"headers": { "Authorization": "Bearer lwt_..." }
 ```
 
 ## ChatGPT
@@ -106,7 +106,7 @@ Any tool that supports remote MCP servers can connect. Add a remote server (HTTP
 Some tools can't sign in to a server, or you may want to set one up from a script or a config file. Instead of approving the connection in the browser, you can give the tool an API token as a header on every request:
 
 ```text
-Authorization: Bearer lvd_...
+Authorization: Bearer lwt_...
 ```
 
 <Step n={1}>

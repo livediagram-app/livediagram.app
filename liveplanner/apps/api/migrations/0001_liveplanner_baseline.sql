@@ -40,7 +40,8 @@ CREATE TABLE user_preferences (
   updated_at INTEGER NOT NULL
 );
 
--- Personal API tokens (docs/specs/015-api/public-api-and-tokens.md): only the hash is kept.
+-- The liveworkspace account tokens this app has seen (src/db/api-tokens.ts): its mirror, which workbench
+-- pairings and sessions hang off. Only the hash is kept.
 CREATE TABLE api_tokens (
   id               TEXT    PRIMARY KEY,
   owner_id         TEXT    NOT NULL,
@@ -84,6 +85,15 @@ CREATE INDEX notify_email_claims_sender ON notify_email_claims (sender_id, creat
 -- ---------------------------------------------------------------------------------------------------------------
 -- Teams and the workspace
 -- ---------------------------------------------------------------------------------------------------------------
+
+-- Teams are run on liveworkspace.app (liveworkspace/docs/accounts.md): teams and team_members are this
+-- app's copy of each team and its joined members, kept by following liveworkspace's change feed from
+-- this cursor (src/db/team-sync.ts).
+CREATE TABLE team_sync_state (
+  id        INTEGER PRIMARY KEY CHECK (id = 1),
+  cursor    TEXT    NOT NULL,
+  synced_at INTEGER NOT NULL
+);
 
 CREATE TABLE teams (
   id                     TEXT    PRIMARY KEY,

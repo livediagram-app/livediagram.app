@@ -94,9 +94,7 @@ describe('MindOutlineDialog', () => {
 
   it('links the help article beside the close button', () => {
     open();
-    expect(screen.getByRole('link').getAttribute('href')).toContain(
-      'plan/visualisations',
-    );
+    expect(screen.getByRole('link').getAttribute('href')).toContain('plan/visualisations');
   });
 
   it('cannot save without a root', () => {

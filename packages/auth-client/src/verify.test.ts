@@ -45,6 +45,21 @@ describe('createVerifier', () => {
       email: 'ada@example.com',
       emailVerified: true,
       scopes: ['openid', 'email'],
+      teams: null,
+    });
+  });
+
+  it('reads the teams the token carries, dropping malformed entries', async () => {
+    const jwt = await token({
+      sub: 'user_2abc',
+      teams: [
+        { id: 't1', name: 'Design', role: 'admin' },
+        { id: 't2', name: 'Ops', role: 'owner' },
+        'nonsense',
+      ],
+    });
+    await expect(verify(jwt)).resolves.toMatchObject({
+      teams: [{ id: 't1', name: 'Design', role: 'admin' }],
     });
   });
 

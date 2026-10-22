@@ -1,10 +1,4 @@
-import type {
-  BoxedElement,
-  TextAlignX,
-  TextAlignY,
-  TextRun,
-  TextSize,
-} from '@liveplanner/project';
+import type { BoxedElement, TextAlignX, TextAlignY, TextRun, TextSize } from '@liveplanner/project';
 import type { LabelPadding } from './label-style';
 
 export type RichTextEditorProps = {

@@ -42,9 +42,7 @@ describe('describeLink', () => {
 
   it('treats a whitespace-only tab name as no name', () => {
     const blank: { id: string; name: string }[] = [{ id: 't1', name: '   ' }];
-    expect(describeLink({ kind: 'tab', tabId: 't1' }, blank)).toBe(
-      'Goes to a tab in this project',
-    );
+    expect(describeLink({ kind: 'tab', tabId: 't1' }, blank)).toBe('Goes to a tab in this project');
   });
 
   it('covers every ElementLink kind', () => {

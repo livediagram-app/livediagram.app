@@ -27,8 +27,8 @@ const isEventsPost = (req: Request) => req.url === 'https://liveworkspace.app/ap
 describe('apiFetch', () => {
   it('forwards the bearer token and the /api path to the service binding', async () => {
     const { env, calls } = envWith(() => new Response('{}'));
-    await apiFetch(env, 'lvd_abc', '/projects');
-    expect(calls[0]!.headers.get('Authorization')).toBe('Bearer lvd_abc');
+    await apiFetch(env, 'lwt_abc', '/projects');
+    expect(calls[0]!.headers.get('Authorization')).toBe('Bearer lwt_abc');
     expect(new URL(calls[0]!.url).pathname).toBe('/api/projects');
   });
 

@@ -85,10 +85,7 @@ async function _apiLoadProject(ownerId: string, id: string): Promise<Project | n
   const body = await expectOkOrNull<ProjectResponse>(res, 'load');
   return body?.project ?? null;
 }
-export const apiLoadProject = dedupeInFlight(
-  _apiLoadProject,
-  (ownerId, id) => `${ownerId}|${id}`,
-);
+export const apiLoadProject = dedupeInFlight(_apiLoadProject, (ownerId, id) => `${ownerId}|${id}`);
 
 // How many of the project's tabs are also in other projects, and how many
 // projects (docs/specs/006-project/tab-project-many-to-many.md, "Shared-tab

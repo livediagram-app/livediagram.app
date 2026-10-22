@@ -1,12 +1,7 @@
 // Looks (docs/specs/011-theme/canvas-and-theme-dialog.md "Looks"): shortcuts that set four of a tab's existing
 // settings at once, its theme, finish, tab font and canvas pattern. Not a stored concept: picking one writes those
 // four ordinary fields, and a look reads as selected only while the tab still matches all four.
-import {
-  resolveFinish,
-  type BackgroundPattern,
-  type Finish,
-  type Tab,
-} from '@liveplanner/project';
+import { resolveFinish, type BackgroundPattern, type Finish, type Tab } from '@liveplanner/project';
 import { withThemeApplied } from '@/lib/tab-theme-apply';
 import { SEASONAL_LOOKS, type Season } from '@/lib/seasonal-looks';
 

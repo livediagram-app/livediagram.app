@@ -14,8 +14,7 @@ vi.mock('@/lib/api-client', () => ({
   apiCreateFolder: (...a: Parameters<typeof apiCreateFolder>) => apiCreateFolder(...a),
   apiUpdateFolder: (...a: Parameters<typeof apiUpdateFolder>) => apiUpdateFolder(...a),
   apiDeleteFolder: (...a: Parameters<typeof apiDeleteFolder>) => apiDeleteFolder(...a),
-  apiSetProjectFolder: (...a: Parameters<typeof apiSetProjectFolder>) =>
-    apiSetProjectFolder(...a),
+  apiSetProjectFolder: (...a: Parameters<typeof apiSetProjectFolder>) => apiSetProjectFolder(...a),
   apiSaveProjectMeta: (...a: Parameters<typeof apiSaveProjectMeta>) => apiSaveProjectMeta(...a),
 }));
 const duplicateProject = vi.fn<typeof import('@/lib/duplicate-project').duplicateProject>();

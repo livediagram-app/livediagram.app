@@ -20,7 +20,7 @@ export const SIDEBAR_LABELS = {
   shared: 'Shared With Me',
   myProjects: 'My Projects',
   invites: 'Invites',
-  newTeam: 'New Team',
+  newTeam: 'Manage Teams',
   thisBrowser: 'This Browser',
   tags: 'Tags',
   library: 'Library',

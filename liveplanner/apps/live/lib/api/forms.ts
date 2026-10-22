@@ -4,11 +4,7 @@ import type { FormLinkResponse } from '@liveplanner/api-schema';
 import type { AnswerError } from '@liveplanner/forms';
 import { API_BASE, apiFetch, apiHeaders, expectOk } from './core';
 
-const linkUrl = (
-  projectId: string,
-  tabId: string,
-  door: 'form-link' | 'form-seen' = 'form-link',
-) =>
+const linkUrl = (projectId: string, tabId: string, door: 'form-link' | 'form-seen' = 'form-link') =>
   `${API_BASE}/projects/${encodeURIComponent(projectId)}/tabs/${encodeURIComponent(tabId)}/${door}`;
 
 async function call(

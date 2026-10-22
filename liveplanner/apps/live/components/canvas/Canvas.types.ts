@@ -497,10 +497,7 @@ export type CanvasProps = {
   // Change a running / paused countdown's length, restarting it at the new
   // one (docs/specs/012-collaboration/session-button.md). Driven by the Timer element's own `…` menu.
   onSetTimerDuration?: (durationMs: number) => void;
-  onStartVote: (
-    votesPerPerson: number,
-    privacy?: import('@liveplanner/project').VoteSetup,
-  ) => void;
+  onStartVote: (votesPerPerson: number, privacy?: import('@liveplanner/project').VoteSetup) => void;
   onEndVote: () => void;
   onRevealVote: () => void;
   onClearVote: () => void;

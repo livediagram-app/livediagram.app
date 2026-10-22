@@ -1,0 +1,307 @@
+// The account API under /api/account (liveworkspace/docs/accounts.md "Teams" and "API tokens"):
+//   - for the signed-in person on liveworkspace.app, by their session cookie: their teams, members and
+//     invitations, and their API tokens;
+//   - for the apps' servers, by their OAuth client credentials (/api/account/internal/*): checking an
+//     API token, making one for a connecting AI tool, a token revoking itself, which tokens still
+//     work, and the teams change feed.
+import { AUTH_BASE_PATH } from './auth-options.ts';
+import type { Auth } from './auth.ts';
+import type { Env } from './env.ts';
+import { sendTeamInviteEmail } from './email.ts';
+import {
+  answerInvitation,
+  createTeam,
+  deleteTeam,
+  getMembership,
+  inviteMember,
+  listMembers,
+  listMyInvitations,
+  listMyTeams,
+  removeMember,
+  renameTeam,
+  setMemberRole,
+  teamChanges,
+  teamsClaim,
+  type Actor,
+  type Result,
+} from './teams.ts';
+import {
+  cleanTokenName,
+  listApiTokens,
+  liveApiTokenIds,
+  MAX_LIVE_TOKEN_IDS,
+  mintApiToken,
+  revokeApiToken,
+  revokeApiTokenBySecret,
+  verifyApiToken,
+} from './tokens.ts';
+
+export const ACCOUNT_API_PATH = '/api/account';
+
+const json = (body: unknown, status = 200) =>
+  Response.json(body, { status, headers: { 'cache-control': 'no-store' } });
+const error = (status: number, code: string) => json({ error: code }, status);
+
+function answer<T>(result: Result<T>, status = 200): Response {
+  return result.ok ? json(result.value, status) : error(result.status, result.error);
+}
+
+async function readBody(request: Request): Promise<Record<string, unknown>> {
+  const body: unknown = await request.json().catch(() => ({}));
+  return body && typeof body === 'object' ? (body as Record<string, unknown>) : {};
+}
+
+export async function handleAccountApi(request: Request, env: Env, auth: Auth): Promise<Response> {
+  const url = new URL(request.url);
+  const parts = url.pathname.slice(ACCOUNT_API_PATH.length).split('/').filter(Boolean);
+  if (parts[0] === 'internal') return handleInternal(request, env, auth, parts.slice(1), url);
+  return handleSignedIn(request, env, auth, parts);
+}
+
+// --- The signed-in person, on liveworkspace.app ---
+
+async function sessionActor(
+  request: Request,
+  auth: Auth,
+): Promise<(Actor & { name: string }) | null> {
+  const session = await auth.api.getSession({ headers: request.headers }).catch(() => null);
+  if (!session) return null;
+  const { user } = session;
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.emailVerified ? user.email.toLowerCase() : null,
+  };
+}
+
+// The session cookie is SameSite=Lax, which already keeps it off another site's requests; a write
+// must also come from the site itself.
+function sameOrigin(request: Request, env: Env): boolean {
+  return request.headers.get('origin') === new URL(env.BASE_URL).origin;
+}
+
+async function handleSignedIn(
+  request: Request,
+  env: Env,
+  auth: Auth,
+  parts: string[],
+): Promise<Response> {
+  const { method } = request;
+  if (method !== 'GET' && !sameOrigin(request, env)) return error(403, 'cross_origin');
+  const actor = await sessionActor(request, auth);
+  if (!actor) return error(401, 'signed_out');
+  const db = env.AUTH_DB;
+  const [section, id, sub, subId, action] = parts;
+
+  if (section === 'teams') {
+    if (!id) {
+      if (method === 'GET') {
+        const [teams, invitations] = await Promise.all([
+          listMyTeams(db, actor.id),
+          listMyInvitations(db, actor.email),
+        ]);
+        return json({ teams, invitations });
+      }
+      if (method === 'POST')
+        return answer(await createTeam(db, actor, (await readBody(request)).name), 201);
+    } else if (!sub) {
+      if (method === 'PATCH')
+        return answer(await renameTeam(db, actor, id, (await readBody(request)).name));
+      if (method === 'DELETE') return answer(await deleteTeam(db, actor, id));
+    } else if (sub === 'members' && !action) {
+      if (!subId) {
+        if (method === 'GET') {
+          const me = await getMembership(db, id, actor.id);
+          if (!me) return error(404, 'not_found');
+          return json({
+            team: { id, name: me.teamName, myRole: me.role, myMemberId: me.memberId },
+            members: await listMembers(db, id),
+          });
+        }
+        if (method === 'POST') {
+          const body = await readBody(request);
+          const result = await inviteMember(db, actor, id, body.email, body.role);
+          if (result.ok) {
+            await sendTeamInviteEmail(env, {
+              to: result.value.member.email,
+              teamName: result.value.teamName,
+              inviterName: actor.name,
+            }).catch((cause: unknown) => console.error('[teams] invite email failed', cause));
+            return json(result.value.member, 201);
+          }
+          return answer(result);
+        }
+      } else {
+        if (method === 'PATCH') {
+          return answer(await setMemberRole(db, actor, id, subId, (await readBody(request)).role));
+        }
+        if (method === 'DELETE') return answer(await removeMember(db, actor, id, subId));
+      }
+    }
+  }
+
+  if (
+    section === 'invitations' &&
+    id &&
+    (sub === 'accept' || sub === 'decline') &&
+    method === 'POST'
+  ) {
+    return answer(await answerInvitation(db, actor, id, sub === 'accept'));
+  }
+
+  if (section === 'tokens') {
+    if (!id && method === 'GET') return json({ tokens: await listApiTokens(db, actor.id) });
+    if (!id && method === 'POST') {
+      const body = await readBody(request);
+      const token = await mintApiToken(db, actor.id, {
+        name: cleanTokenName(body.name, 'API token'),
+        readOnly: body.readOnly === true,
+      });
+      return token ? json(token, 201) : error(409, 'token_limit_reached');
+    }
+    if (id && !sub && method === 'DELETE') {
+      return (await revokeApiToken(db, actor.id, id)) ? json({ id }) : error(404, 'not_found');
+    }
+  }
+
+  return error(404, 'not_found');
+}
+
+// --- The apps' servers ---
+
+// Client credentials already checked in this isolate, by a hash of the header, so an app's burst of
+// token checks costs one credential check, not one each.
+const CLIENT_CHECK_TTL_MS = 5 * 60_000;
+const checkedClients = new Map<string, { clientId: string; until: number }>();
+
+function basicClientId(header: string | null): string | null {
+  const encoded = header?.match(/^Basic\s+(.+)$/i)?.[1];
+  if (!encoded) return null;
+  try {
+    const decoded = atob(encoded);
+    const colon = decoded.indexOf(':');
+    return colon > 0 ? decodeURIComponent(decoded.slice(0, colon)) : null;
+  } catch {
+    return null;
+  }
+}
+
+async function digest(value: string): Promise<string> {
+  const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
+  return btoa(String.fromCharCode(...new Uint8Array(bytes)));
+}
+
+// An app's client id when the request carries its client credentials. The OAuth provider checks
+// them, through token introspection: it answers 401 for a wrong secret and 200 otherwise.
+async function verifiedClient(
+  request: Request,
+  auth: Auth,
+  now = Date.now(),
+): Promise<string | null> {
+  const authorization = request.headers.get('authorization');
+  const clientId = basicClientId(authorization);
+  if (!authorization || !clientId) return null;
+  const key = await digest(authorization);
+  const known = checkedClients.get(key);
+  if (known && known.until > now) return known.clientId;
+  const checked = await auth.handler(
+    new Request(new URL(`${AUTH_BASE_PATH}/oauth2/introspect`, request.url), {
+      method: 'POST',
+      headers: {
+        authorization,
+        accept: 'application/json',
+        'content-type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        token: 'client-check',
+        token_type_hint: 'access_token',
+      }).toString(),
+    }),
+  );
+  if (!checked.ok) return null;
+  if (checkedClients.size > 100) checkedClients.clear();
+  checkedClients.set(key, { clientId, until: now + CLIENT_CHECK_TTL_MS });
+  return clientId;
+}
+
+interface Introspection {
+  active?: boolean;
+  sub?: unknown;
+  client_id?: unknown;
+}
+
+async function handleInternal(
+  request: Request,
+  env: Env,
+  auth: Auth,
+  parts: string[],
+  url: URL,
+): Promise<Response> {
+  const clientId = await verifiedClient(request, auth);
+  if (!clientId) return error(401, 'invalid_client');
+  const db = env.AUTH_DB;
+  const route = `${request.method} ${parts.join('/')}`;
+
+  if (route === 'POST tokens/verify') {
+    const { token } = await readBody(request);
+    const verified = typeof token === 'string' ? await verifyApiToken(db, token) : null;
+    if (!verified) return error(404, 'invalid_token');
+    return json({ ...verified, teams: await teamsClaim(db, verified.userId) });
+  }
+
+  // A token for an AI tool someone is connecting in an app: the app vouches for the person with the
+  // access token it holds for them, so it can only make tokens for someone signed in to it.
+  if (route === 'POST tokens') {
+    const body = await readBody(request);
+    if (typeof body.accessToken !== 'string') return error(400, 'access_token_required');
+    const checked = await auth.handler(
+      new Request(new URL(`${AUTH_BASE_PATH}/oauth2/introspect`, request.url), {
+        method: 'POST',
+        headers: {
+          authorization: request.headers.get('authorization') ?? '',
+          accept: 'application/json',
+          'content-type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          token: body.accessToken,
+          token_type_hint: 'access_token',
+        }).toString(),
+      }),
+    );
+    const result = (await checked.json().catch(() => ({}))) as Introspection;
+    if (
+      !checked.ok ||
+      result.active !== true ||
+      typeof result.sub !== 'string' ||
+      result.client_id !== clientId
+    ) {
+      return error(401, 'invalid_token');
+    }
+    const token = await mintApiToken(db, result.sub, {
+      name: cleanTokenName(body.name, 'MCP client'),
+      readOnly: body.readOnly === true,
+    });
+    return token ? json(token, 201) : error(409, 'token_limit_reached');
+  }
+
+  if (route === 'POST tokens/revoke') {
+    const { token } = await readBody(request);
+    const revoked = typeof token === 'string' && (await revokeApiTokenBySecret(db, token));
+    return revoked ? json({ ok: true }) : error(404, 'invalid_token');
+  }
+
+  if (route === 'POST tokens/live') {
+    const { ids } = await readBody(request);
+    if (!Array.isArray(ids) || ids.some((id) => typeof id !== 'string')) {
+      return error(400, 'ids_required');
+    }
+    if (ids.length > MAX_LIVE_TOKEN_IDS) return error(400, 'too_many_ids');
+    return json({ live: await liveApiTokenIds(db, ids as string[]) });
+  }
+
+  if (route === 'GET teams/changes') {
+    return json(await teamChanges(db, url.searchParams.get('cursor')));
+  }
+
+  return error(404, 'not_found');
+}

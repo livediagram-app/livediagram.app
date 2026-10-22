@@ -8,6 +8,7 @@
 // token stops working at once; an access token already issued runs out on its own (minutes).
 import { AUTH_BASE_PATH } from './auth-options.ts';
 import type { Auth } from './auth.ts';
+import { leaveAllTeams } from './teams.ts';
 
 export const DELETE_ACCOUNT_PATH = '/delete-account';
 
@@ -29,7 +30,11 @@ function basicClientId(header: string | null): string | null {
   }
 }
 
-export async function deleteAccount(request: Request, auth: Auth): Promise<Response> {
+export async function deleteAccount(
+  request: Request,
+  auth: Auth,
+  db: D1Database,
+): Promise<Response> {
   const authorization = request.headers.get('authorization');
   const clientId = basicClientId(authorization);
   const body = (await request.json().catch(() => ({}))) as { token?: unknown };
@@ -64,6 +69,8 @@ export async function deleteAccount(request: Request, auth: Auth): Promise<Respo
     return Response.json({ error: 'invalid_token' }, { status: 401 });
   }
 
+  // Teams first, so the apps hear that the account left each one and a team it ran passes on.
+  await leaveAllTeams(db, result.sub);
   const ctx = await auth.$context;
   await ctx.internalAdapter.deleteUser(result.sub);
   return Response.json({ deleted: true });

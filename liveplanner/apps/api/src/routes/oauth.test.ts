@@ -25,12 +25,14 @@ const makeCtx = (
     body: opts.body,
     accountUserId,
     owner: accountUserId,
+    // A signed-in caller's bearer is their access token, which vouches for them at liveworkspace.
+    headers: { Authorization: 'Bearer jwt-user-1' },
   });
 };
 
 beforeEach(() => {
   for (const fn of Object.values(db)) if (typeof fn === 'function') fn.mockReset();
-  db.mintApiToken.mockResolvedValue({ secret: 'lvd_abc', id: 'tok_1', expiresAt: 123 });
+  db.mintApiToken.mockResolvedValue({ secret: 'lwt_abc', id: 'tok_1', expiresAt: 123 });
 });
 
 describe('handleOauthExchange — signed-in gate', () => {
@@ -44,18 +46,18 @@ describe('handleOauthExchange — signed-in gate', () => {
 });
 
 describe('handleOauthExchange — mint', () => {
-  it('mints a client-named lvd_ token and returns the secret once', async () => {
+  it('mints a client-named lwt_ token and returns the secret once', async () => {
     const res = await handleOauthExchange(
       makeCtx('POST', '/api/oauth/exchange', { body: { clientName: 'Claude (MCP)' } }),
     );
     expect(res.status).toBe(201);
     const out = (await res.json()) as { token: string; id: string; name: string };
-    expect(out.token).toBe('lvd_abc');
+    expect(out.token).toBe('lwt_abc');
     expect(out.name).toBe('Claude (MCP)');
     // Minted for the signed-in owner, under the client's name.
     expect(db.mintApiToken).toHaveBeenCalledWith(
       {},
-      { ownerId: 'user_1', name: 'Claude (MCP)', readOnly: false },
+      { accessToken: 'jwt-user-1', name: 'Claude (MCP)', readOnly: false },
     );
   });
 
@@ -76,7 +78,7 @@ describe('handleOauthExchange — mint', () => {
     await handleOauthExchange(makeCtx('POST', '/api/oauth/exchange', { body: { readOnly: true } }));
     expect(db.mintApiToken).toHaveBeenCalledWith(
       {},
-      { ownerId: 'user_1', name: 'MCP client', readOnly: true },
+      { accessToken: 'jwt-user-1', name: 'MCP client', readOnly: true },
     );
   });
 
