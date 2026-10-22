@@ -2,7 +2,8 @@
 
 import { Fragment, useState } from 'react';
 import { cascadeDelayMs } from '@liveplanner/tailwind-config/motion';
-import { useAppearance, Glyph } from '@liveplanner/ui';
+import { useAppearance } from '@livediagram/ui';
+import { Glyph } from '@liveplanner/ui';
 import type { TelemetrySummary, TelemetryWindowKey } from '@liveplanner/api-schema';
 import { MetricCard } from './MetricCard';
 import { MetricStackCard } from './MetricStackCard';
