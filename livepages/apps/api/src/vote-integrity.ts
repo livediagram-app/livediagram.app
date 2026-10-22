@@ -44,7 +44,7 @@ export async function admitGuestVoter(
   return (results[1]?.results?.length ?? 0) > 0;
 }
 
-// The REST gate for a vote that ADDS a vote (a Q&A upvote, a Plan `+1`). Null = go ahead; a Response = refused.
+// The REST gate for a vote that ADDS a vote (a Plan `+1`). Null = go ahead; a Response = refused.
 // A verified account votes freely; a guest is admitted against its network's cap. Withdrawing never calls this.
 export async function refuseGuestVoteOverCap(
   ctx: RouteContext,

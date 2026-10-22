@@ -48,7 +48,7 @@ is worth having with this limit, and the limit is written down.
 
 A **shape kind**, `idea-box`. Its `label` is the prompt ("What might go
 wrong?"). It arrives at 340x420, tall enough for its empty state above the
-composer, and like the Q&A board it reflows: resizing makes room for more ideas
+composer, and like the Comment panel it reflows: resizing makes room for more ideas
 rather than bigger ones.
 
 - **`ShapeElement.ideaCards`** — the submissions, in submission order. Bounded
@@ -86,7 +86,7 @@ apply. The second poster's copy settles the same way:
   its frames in order). So the peer's card goes in and this browser's newest
   pending card comes out, found by its id: the box ends exactly as every other
   copy has it.
-- The poster is told, as on the [Q&A board](qa-board.md): the toast says
+- The poster is told: the toast says
   **The box filled up before your idea landed.**, and the draft goes back in
   the composer (unless something new was typed there meanwhile), where the
   full box now reads **Box is full** with the field off.
@@ -116,7 +116,7 @@ an idea after the reveal is still an idea.
 
 ## The look
 
-Built from the [Q&A board](qa-board.md)'s parts, so the two read as one family,
+Built from the shared Collaborate parts (`collab-parts.tsx`), so the cards read as one family,
 not two eras ([Participant responses](participant-responses.md): the paper kit is being retired). It
 replaced a cardboard carton (a lid with a lip, a slot, a corrugated body, and a
 blank card drawn caught in the slot whenever the box held anything). That card
@@ -125,29 +125,24 @@ sticky note, and could not be read or restyled, because it was a drawing with
 nothing written on it.
 
 - **Accent.** The tab theme's accent, from the element's themed stroke, with
-  the ink that reads on it, exactly as the Q&A board does (one shared accent
+  the ink that reads on it (the shared accent
   scope). An unstyled box follows light and dark with the rest of the canvas.
-- **The composer is at the foot**, where people add from, as on the Q&A
-  board, and it is the same composer: a rounded field with a send button in
-  the accent. Where the Q&A board has an Anonymous switch, the idea box shows a
+- **The composer is at the foot**, where people add from, and it is the
+  shared composer: a rounded field with a send button in
+  the accent. The idea box shows a
   fixed **Anonymous** chip: there is nothing to switch, and saying so at the
   point of writing is the reassurance the element exists to give. Enter posts;
   a counter appears near the limit.
 - **Closed** is a sealed panel, not an object: a lock in the accent, the count
   large ("6 ideas sealed"), and "Hidden from everyone until the box is opened".
-  When an idea lands the count pops and lifts a +1, the Q&A board's vote
-  motion, so the room sees the box fill without seeing a word.
-- **Empty**, the Q&A board's empty state, shared: faint rows that breathe,
+  When an idea lands the count pops and lifts a +1, so the room sees the box fill without seeing a word.
+- **Empty**, the shared empty state: faint rows that breathe,
   and spaced well below them a small invitation, a sparkle in the accent over
   a title ("Nothing in the box yet") and a softer hint kept to a readable
   measure ("Be the first to add an idea. Nobody's name is stored with it.").
-  The Q&A board reads "No notes yet" over its own hint.
-- **Open**, each idea is a card drawn exactly as a Q&A note is, minus the
-  vote: where the note has its vote pill, the idea has a tile of the same size
-  carrying its number (submission order), not a control; the text at the same
-  weight and clamp; and a meta line with the anonymous mask where a note names
-  its author. Ideas added after the box first painted slide in.
-- **The facilitator's one action sits above the rows** as the Q&A board's
+- **Open**, each idea is a card: a tile
+  carrying its number (submission order), not a control; the text, clamped; and a meta line with the anonymous mask. Ideas added after the box first painted slide in.
+- **The facilitator's one action sits above the rows** as the shared
   dashed accent bar: **Open the box (6)** while closed, **Scatter to sticky
   notes** once open. Empty the Box stays in the `…` menu.
 - All of it is layout and `tint()` of the element's own colours, so it holds

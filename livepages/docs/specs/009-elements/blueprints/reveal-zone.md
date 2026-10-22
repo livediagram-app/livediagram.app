@@ -15,7 +15,7 @@ Scope, by file:
 | `packages/document/src/svg-render-faces.ts`              | `revealCover`, omitted when `revealed === true`                 |
 | `apps/live/components/canvas/RevealFace.tsx`             | Cover, double press, Hide pill                                  |
 | `apps/live/components/canvas/ElementFaceRouter.tsx`      | Resolves the accent: `ownColours(element).stroke` or default    |
-| `apps/live/app/qa-board.css`                             | `.reveal-sweep`, `.reveal-cover` hover                          |
+| `apps/live/app/collab-cards.css`                         | `.reveal-sweep`, `.reveal-cover` hover                          |
 | `apps/live/hooks/ui/usePressWithoutDrag.ts`              | `requireDouble` and `isDoublePress`                             |
 | `apps/live/lib/double-press.ts`                          | `DOUBLE_PRESS_MS`                                               |
 | `apps/live/hooks/canvas/useBehaviourElements.ts`         | `revealedIds`, `toggleRevealForMe`, the facilitator gate        |

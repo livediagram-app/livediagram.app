@@ -106,7 +106,7 @@ by any column.
 
 - **Tab stats.** Every tab carries a stats record: its mode, its element count, its comment count,
   the byte size of its stored body, and when it was written. The record is written in the same batch
-  as the tab, by every write (a save, a changeset, a seeded create, a participant or Q&A write, a
+  as the tab, by every write (a save, a changeset, a seeded create, a participant write, a
   duplicate's copied tab), so it never drifts from the tab it describes. It lives apart from the tab
   body so a list reads the numbers without reading any body.
 - **A document's stats** are summed over the tabs it links: elements, comments and bytes added, the

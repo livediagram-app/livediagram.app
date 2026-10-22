@@ -2,7 +2,7 @@
 @import '@livepages/tailwind-config';
 @import '@livepages/template-previews/preview-art-tile.css';
 @import '@livepages/template-previews/preview-motion.css';
-@import './qa-board.css';
+@import './collab-cards.css';
 @import './forms.css';
 @import './canvas-motion.css';
 @import './motion-shape.css';

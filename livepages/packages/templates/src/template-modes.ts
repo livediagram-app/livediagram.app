@@ -91,8 +91,6 @@ const TEMPLATE_MODES: Partial<Record<TemplateKind, EditorMode>> = {
   'mad-sad-glad': 'workshop',
   'four-ls': 'workshop',
   sailboat: 'workshop',
-  'town-hall': 'workshop',
-  'lean-coffee': 'workshop',
   brainstorm: 'workshop',
   'workshop-board': 'workshop',
   'crazy-eights': 'workshop',

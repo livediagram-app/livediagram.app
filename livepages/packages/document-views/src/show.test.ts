@@ -112,11 +112,10 @@ describe('person ids (security)', () => {
     mentions: [{ userId: secret, memberId: secret, name: 'Pri', handle: 'pri' }],
   };
   const el = {
-    ...shapeAt('qa-board', 'q', 0, 0),
+    ...shapeAt('estimate', 'q', 0, 0),
     action,
     actions: [action],
     responses: [{ participantId: secret, value: '3', at: 0 }],
-    qaNotes: [{ id: 'n', text: 'Q', at: 0, voters: [secret] }],
     commentThread: { comments: [comment], resolved: false },
     cellComments: { 'row001:col001': { comments: [comment], resolved: false } },
     addedBy: secret,

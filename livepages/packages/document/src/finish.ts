@@ -140,7 +140,6 @@ export const FACTORY_CORNERS: Readonly<Record<string, string>> = {
   estimate: 'lg',
   temperature: 'lg',
   'idea-box': 'lg',
-  'qa-board': 'lg',
   agenda: 'lg',
   decision: 'lg',
   'roll-call': 'lg',

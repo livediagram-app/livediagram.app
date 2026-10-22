@@ -6,7 +6,7 @@
 import { participantKey, type Participant } from '@/lib/identity';
 import { ParticipantAvatar } from '@/components/primitives/ParticipantAvatar';
 import { tint } from '../collab-chrome';
-import { CheckGlyph } from '../qa/qa-parts';
+import { CheckGlyph } from '../collab-parts';
 
 export function DoneRoster({
   title,
@@ -41,7 +41,7 @@ export function DoneRoster({
       </span>
       {/* gap-3 clears the presence RING, which is a box-shadow outside each
           avatar's layout box and eats 4px of any gap beside it. */}
-      <div className={`flex flex-wrap items-center gap-3 ${waiting ? 'qa-ghost' : ''}`}>
+      <div className={`flex flex-wrap items-center gap-3 ${waiting ? 'collab-ghost' : ''}`}>
         {keys.map((key) => {
           const who = participants.find((p) => participantKey(p) === key);
           if (!who) return null;
@@ -52,7 +52,7 @@ export function DoneRoster({
                 <span
                   aria-hidden
                   className="absolute -bottom-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-emerald-500 text-white ring-2"
-                  style={{ ['--tw-ring-color' as string]: 'var(--qa-card)' }}
+                  style={{ ['--tw-ring-color' as string]: 'var(--collab-card)' }}
                 >
                   <CheckGlyph size={9} />
                 </span>

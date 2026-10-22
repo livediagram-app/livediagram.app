@@ -1,13 +1,12 @@
 // @vitest-environment jsdom
 
-// The shared composer (docs/specs/012-collaboration/qa-board.md, idea-box.md):
+// The shared composer (docs/specs/012-collaboration/idea-box.md):
 // a post the board refused keeps its draft, and a full board says so instead
 // of taking text it will drop.
 
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CollabComposer } from './CollabComposer';
-import { QaComposer } from './qa/QaComposer';
 
 afterEach(cleanup);
 
@@ -45,7 +44,7 @@ describe('CollabComposer', () => {
     expect(field().value).toBe('Coffee');
   });
 
-  // docs/specs/012-collaboration/qa-board.md: a post the server refused because the board filled meanwhile.
+  // docs/specs/012-collaboration/idea-box.md: a post refused because the box filled meanwhile.
   it('puts the draft back when the server refuses the post', async () => {
     let answer: (ok: boolean) => void = () => {};
     composer(() => new Promise<boolean>((resolve) => (answer = resolve)));
@@ -77,22 +76,5 @@ describe('CollabComposer', () => {
     expect(field().getAttribute('aria-label')).toBe('Add: Box is full');
     send();
     expect(onSubmit).not.toHaveBeenCalled();
-  });
-});
-
-describe('QaComposer', () => {
-  it('names the Anonymous switch the same in both states', () => {
-    render(<QaComposer textColor="#000" selfName="Sam" onAdd={vi.fn(() => true)} />);
-    const toggle = screen.getByRole('switch', { name: 'Anonymous' });
-    expect(toggle.getAttribute('aria-checked')).toBe('false');
-    fireEvent.click(toggle);
-    expect(screen.getByRole('switch', { name: 'Anonymous' }).getAttribute('aria-checked')).toBe(
-      'true',
-    );
-  });
-
-  it('says the board is full', () => {
-    render(<QaComposer textColor="#000" selfName="Sam" full onAdd={vi.fn(() => true)} />);
-    expect(field().placeholder).toBe('Board is full');
   });
 });

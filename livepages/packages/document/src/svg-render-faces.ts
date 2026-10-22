@@ -408,7 +408,7 @@ function revealCover(
     `<circle cx="${r2(cx)}" cy="${r2(discY)}" r="26" fill="${a}" fill-opacity="0.07"/>` +
     `<circle cx="${r2(cx)}" cy="${r2(discY)}" r="20" fill="${REVEAL_COVER_BASE[surface]}"/>` +
     `<circle cx="${r2(cx)}" cy="${r2(discY)}" r="20" fill="${a}" fill-opacity="0.14"/>` +
-    // qa-parts' LockGlyph, 18px on its 16-unit grid.
+    // collab-parts' LockGlyph, 18px on its 16-unit grid.
     `<svg x="${r2(cx - 9)}" y="${r2(discY - 9)}" width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="${a}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">` +
     `<rect x="3.5" y="7" width="9" height="6.5" rx="1.5"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/></svg>` +
     text(cx, top + 59.5, title || 'Hidden', { size: 14, weight: 600, color, anchor: 'middle' }) +

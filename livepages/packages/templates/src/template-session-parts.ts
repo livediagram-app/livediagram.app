@@ -1,5 +1,5 @@
-// Shared parts of the live-session boards (template-builders-sessions.ts and
-// template-builders-town-hall.ts): the heading, section labels, guidance
+// Shared parts of the live-session boards (template-builders-meeting.ts, template-builders-quiz-games.ts and the
+// rest): the heading, section labels, guidance
 // lines, a checklist sized to its rows and a column of joined step cards, plus the spacing they share.
 
 import {

@@ -1199,14 +1199,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <Prims prims={lucideLightbulb} />
     </Glyph>
   ),
-  // A ranked queue: an upvote chevron beside the top row, shorter rows below.
-  'qa-boards': (
-    <Glyph>
-      <path d="M3.5 8.5 6 6l2.5 2.5" />
-      <path d="M6 6v7" />
-      <path d="M11 6.5h9.5M11 12h7M11 17.5h4.5" />
-    </Glyph>
-  ),
   // The run of a session: its segments, and the time against them.
   agendas: (
     <Glyph>

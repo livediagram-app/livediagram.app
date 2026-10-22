@@ -60,7 +60,7 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
     id: 'meetings',
     label: 'Workshops',
     searchWords: 'meetings',
-    description: 'Agendas, retros, Q&A and workshop formats.',
+    description: 'Agendas, retros, brainstorms and workshop formats.',
   },
   {
     id: 'mindmaps',
@@ -177,12 +177,10 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'rsvp-form': 'forms',
   'job-application-form': 'forms',
   'contact-form': 'forms',
-  // Meetings and Workshops: agendas, retros, live Q&A and the boards a team runs together.
+  // Meetings and Workshops: agendas, retros and the boards a team runs together.
   'meeting-agenda': 'meetings',
-  'lean-coffee': 'meetings',
   brainstorm: 'meetings',
   'workshop-board': 'meetings',
-  'town-hall': 'meetings',
   retrospective: 'meetings',
   'start-stop-continue': 'meetings',
   'mad-sad-glad': 'meetings',

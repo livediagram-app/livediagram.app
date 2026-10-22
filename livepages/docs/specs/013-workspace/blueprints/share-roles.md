@@ -2,8 +2,7 @@
 
 Derived from [Share roles](../share-roles.md), with the room of
 [Realtime conflict resolution](../../012-collaboration/realtime-conflict-resolution.md) and
-[Collab race hardening](../../012-collaboration/collab-race-hardening.md), the queued tab write of the
-[Q&A board](../../012-collaboration/qa-board.md), the baton of [Facilitator](../../012-collaboration/facilitator.md),
+[Collab race hardening](../../012-collaboration/collab-race-hardening.md), the room's queued tab write, the baton of [Facilitator](../../012-collaboration/facilitator.md),
 the pass and pill of [Live app](../../007-editor/live-app.md#share-dialog), [Embeds](../embeds.md), the Plan item
 and Sheet doors of [Plan board](../../026-plan/plan-board.md) and [Sheet store](../../029-sheets/sheet-store.md), and the share
 types of [Telemetry](../../017-telemetry/telemetry.md). The code sites it answers are catalogued in
@@ -70,7 +69,7 @@ Doors by level (server):
 | Reads (document, tabs, images, comment threads, the Timeline); share resolve; make a copy  | view                              |
 | Room: presence (cursor, select, laser, follow, focus); never `poll-answer` or `reaction`   | view                              |
 | Comments: add, reply, resolve, reopen, delete own; card comments                           | participate (`deniedParticipate`) |
-| Q&A: add a note, upvote; room `poll-answer` and `reaction`                                 | participate                       |
+| Room: `poll-answer` and `reaction`                                                         | participate                       |
 | Room: `vote`; `el-delta` `response` or `idea`                                              | participate                       |
 | Room: `el` (`add`, `update`, `remove`) through the participant rule                        | participate                       |
 | Items: create, patch, move, patches                                                        | participate (`gateParticipate`)   |
@@ -84,8 +83,8 @@ An Editor's `el` op is relayed as today. A Participant's `el` op takes the parti
 
 1. **Gate.** The session's level is `participate`, the op's tab passes the tab-scope check, and the op kind is `add`,
    `update` or `remove`. A `reorder` is dropped.
-2. **Queue.** The op joins the room's tab write queue (`tabWriteQueue`, the Q&A board's queue renamed, SR2), so
-   participant writes and Q&A writes on a document run one at a time.
+2. **Queue.** The op joins the room's tab write queue (`tabWriteQueue`, SR2), so
+   participant writes on a document run one at a time.
 3. **Write.** `writeParticipantOps(env, { documentId, tabId, ops: [op], adderKey })` reads the stored tab, runs
    `applyParticipantOp` and compare-and-swaps the result (up to `TAB_CAS_MAX_ATTEMPTS`).
 4. **Relay.** An `applied` op is sequenced from the sender to everyone but the sender when it equals what the sender
@@ -376,8 +375,8 @@ Share dialog cards, in `LEVEL_ORDER = ['edit', 'participate', 'view']`:
 - A Participant's palette strip: the selection-mode dropdown (Select, Hand, Laser, Spotlight, Avatar, Isometric,
   Zen), the category picker holding **Participate** alone (ballot glyph, "Add stickies and text to the board."),
   and its tiles; the mode switch, tab add, rename and delete and context menus' structural rows are absent.
-- A Viewer sees no comment composer, resolve or delete (`CommentThreadPopover canComment`), no poll prompt, no Q&A
-  add or upvote, no card votes or comments, no reactions. Its selection holds nothing
+- A Viewer sees no comment composer, resolve or delete (`CommentThreadPopover canComment`), no poll prompt,
+  no card votes or comments, no reactions. Its selection holds nothing
   (`RemoteSelector.holds`, `lockedByOther`).
 - Badges: "Editor", "Participant", "Viewer". Shared-with-you chip: "Edit", "Participate", "View".
 
@@ -431,7 +430,7 @@ The Share dialog is a lazy chunk; a third card adds no request. A Participant's 
 | `DEFAULT_MCP_SHARE_LEVEL`   | `'participate'`                                 | Spec                                           | fixed               |
 | `LEVEL_ORDER`               | `['edit', 'participate', 'view']`               | Spec's card order                              | fixed               |
 | `PARTICIPANT_ADDABLE_TYPES` | `['sticky', 'text', 'image', 'shape', 'arrow']` | Spec (shape and arrow narrowed by `addableOn`) | grows with the spec |
-| `TAB_CAS_MAX_ATTEMPTS`      | 8                                               | The Q&A write's existing bound                 | 3 to 20             |
+| `TAB_CAS_MAX_ATTEMPTS`      | 8                                               | The room's existing bound                      | 3 to 20             |
 | `ADDER_KEY_LENGTH`          | 32                                              | 128 bits of hex (SR4)                          | 16 to 64            |
 | `ANSWERS_FLUSH_MS`          | 1500                                            | SR9                                            | 250 to 10000        |
 | `PARTICIPANT_PENDING_MAX`   | 64                                              | SR12                                           | 8 to 512            |

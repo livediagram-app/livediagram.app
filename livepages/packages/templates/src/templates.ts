@@ -85,14 +85,8 @@ export type TemplateKind =
   // Affinity map: research notes grouped under insight headers and
   // themes, with dot-vote tallies and an unsorted pile still to place.
   | 'affinity-map'
-  // Lean Coffee (docs/specs/012-collaboration/qa-board.md): an agenda-less meeting run on a Q&A board, with
-  // its four-step loop drawn out, timebox timers, a keep-going poll and takeaways.
-  | 'lean-coffee'
   | 'brainstorm'
   | 'workshop-board'
-  // Town Hall Q&A (docs/specs/012-collaboration/qa-board.md): an audience Q&A board beside the panel, a
-  // run-of-show agenda, a facilitator kit and a follow-ups checklist.
-  | 'town-hall'
   // Quizzes & Games (docs/specs/012-collaboration/quiz-and-game-templates.md): a pub quiz on Quiz cards with a
   // scoreboard, icebreakers spun on Pickers, and three party games run on polls, timers and reaction pads.
   | 'pub-quiz'
@@ -769,13 +763,6 @@ export const TEMPLATES: TemplateDescriptor[] = [
     extra: true,
   },
   {
-    kind: 'lean-coffee',
-    title: 'Lean Coffee',
-    description:
-      'The four-step loop drawn out, a topics board, and the timers and poll that run it.',
-    extra: true,
-  },
-  {
     kind: 'brainstorm',
     title: 'Brainstorm Board',
     description:
@@ -787,12 +774,6 @@ export const TEMPLATES: TemplateDescriptor[] = [
     title: 'Workshop Board',
     description:
       'The kickoff wall for a longer session: a check-in and icebreaker, goals, a timed agenda and ground rules.',
-    extra: true,
-  },
-  {
-    kind: 'town-hall',
-    title: 'Town Hall Q&A',
-    description: 'An upvoted audience Q&A beside the panel, a run of show and a facilitator kit.',
     extra: true,
   },
   {

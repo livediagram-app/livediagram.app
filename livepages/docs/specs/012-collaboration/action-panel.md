@@ -59,8 +59,8 @@ only job is to hold actions, so:
 
 ## The card
 
-The card is built from the same parts as the modern Collaborate cards (the Q&A
-board, the Idea box, the Decision record; [Idea box](idea-box.md) "The look"):
+The card is built from the same parts as the modern Collaborate cards (the
+Idea box, the Decision record; [Idea box](idea-box.md) "The look"):
 the tab theme's **accent** (the element's own stroke, `CollabAccentScope`),
 and the shared `CollabPanel` frame, which reflows with the element. It carries
 **no `…`**: it has no settings of its own, every act is on the card, and

@@ -14,7 +14,7 @@ import { debugLog } from '@/lib/debug-log';
 // card go for it. The check below sees that card leave and tells the poster, and the post's promise answers
 // false, so the composer puts the draft back.
 
-// What a post that lost the last card says (the Q&A board's refused note, in the box's words).
+// What a post that lost the last card says.
 export const IDEA_BOX_FULL_MESSAGE = 'The box filled up before your idea landed.';
 
 type IdeaPost = {

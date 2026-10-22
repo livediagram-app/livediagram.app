@@ -8,7 +8,13 @@ import { plural } from '@livepages/document';
 import { Glyph } from '@livepages/ui';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { tint } from '../collab-chrome';
-import { CheckGlyph, QA_ACCENT, QA_ACCENT_INK, QA_ON_ACCENT, stopPointer } from '../qa/qa-parts';
+import {
+  CheckGlyph,
+  COLLAB_ACCENT,
+  COLLAB_ACCENT_INK,
+  COLLAB_ON_ACCENT,
+  stopPointer,
+} from '../collab-parts';
 
 export type StepState = 'done' | 'current' | 'ahead';
 
@@ -94,17 +100,17 @@ export function AgendaStep({
           <span
             className="absolute bottom-[-6px] top-5 w-[2px] rounded-full"
             style={{
-              backgroundColor: state === 'done' ? tint(QA_ACCENT, 0.45) : tint(textColor, 0.1),
+              backgroundColor: state === 'done' ? tint(COLLAB_ACCENT, 0.45) : tint(textColor, 0.1),
             }}
           />
         )}
         <span
-          className={`relative mt-2 flex h-4 w-4 items-center justify-center rounded-full ${current ? 'qa-live' : ''}`}
+          className={`relative mt-2 flex h-4 w-4 items-center justify-center rounded-full ${current ? 'collab-live' : ''}`}
           style={
             state === 'done'
-              ? { backgroundColor: tint(QA_ACCENT, 0.2), color: QA_ACCENT_INK }
+              ? { backgroundColor: tint(COLLAB_ACCENT, 0.2), color: COLLAB_ACCENT_INK }
               : current
-                ? { backgroundColor: QA_ACCENT, color: QA_ON_ACCENT }
+                ? { backgroundColor: COLLAB_ACCENT, color: COLLAB_ON_ACCENT }
                 : { boxShadow: `inset 0 0 0 2px ${tint(textColor, 0.22)}` }
           }
         >
@@ -123,8 +129,8 @@ export function AgendaStep({
         style={
           current
             ? {
-                backgroundColor: tint(QA_ACCENT, 0.12),
-                boxShadow: `inset 0 0 0 1px ${tint(QA_ACCENT, 0.35)}`,
+                backgroundColor: tint(COLLAB_ACCENT, 0.12),
+                boxShadow: `inset 0 0 0 1px ${tint(COLLAB_ACCENT, 0.35)}`,
               }
             : undefined
         }
@@ -139,7 +145,7 @@ export function AgendaStep({
           {current ? (
             <span
               className="shrink-0 text-[15px] font-bold tabular-nums leading-none"
-              style={{ color: QA_ACCENT_INK }}
+              style={{ color: COLLAB_ACCENT_INK }}
             >
               {remainingMs !== null ? formatRemaining(remainingMs) : `${minutes}m`}
             </span>
@@ -154,7 +160,7 @@ export function AgendaStep({
               {state === 'ahead' && onPress ? (
                 <span
                   className="agenda-start absolute right-0 top-1/2 flex -translate-y-1/2 items-center gap-1 whitespace-nowrap font-semibold"
-                  style={{ color: QA_ACCENT_INK }}
+                  style={{ color: COLLAB_ACCENT_INK }}
                 >
                   <PlayGlyph /> Start
                 </span>
@@ -165,11 +171,11 @@ export function AgendaStep({
         {current ? (
           <span
             className="mt-1.5 h-1 overflow-hidden rounded-full"
-            style={{ backgroundColor: tint(QA_ACCENT, 0.18) }}
+            style={{ backgroundColor: tint(COLLAB_ACCENT, 0.18) }}
           >
             <span
               className="agenda-drain block h-full rounded-full"
-              style={{ width: `${share * 100}%`, backgroundColor: QA_ACCENT }}
+              style={{ width: `${share * 100}%`, backgroundColor: COLLAB_ACCENT }}
             />
           </span>
         ) : null}

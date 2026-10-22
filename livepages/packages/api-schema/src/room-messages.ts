@@ -1,5 +1,5 @@
 import type { AgentPresence } from './agent-presence';
-import type { ArticleOp, ElementDelta, QaNote, RoomElementOp, Tab } from '@livepages/document';
+import type { ArticleOp, ElementDelta, RoomElementOp, Tab } from '@livepages/document';
 import type { ParticipantPresence } from './index';
 import type { AvatarConfig } from './avatar';
 import type { AvatarSayOp } from './avatar-say';
@@ -184,12 +184,6 @@ export const MUTATION_OP_KINDS = [
 // `share-revoked` carrying the code from their own URL and force-redirect every
 // collaborator out of the session (docs/specs/013-workspace/share-password.md).
 //
-// `qa` (docs/specs/012-collaboration/qa-board.md) is here for the same reason: it is the api's authoritative
-// word on a Q&A board after a write it has already persisted. A client that
-// could send one could rewrite every peer's board without touching D1. Unlike
-// `share-revoked` it is SEQUENCED into the catch-up log (the worker asks for
-// that on the /broadcast body), because it changes the document.
-//
 // `share-rescoped` (docs/specs/013-workspace/tab-scoped-share-links.md) for the same reason as
 // `share-revoked`: a forged one would reload every holder of a code.
 //
@@ -206,7 +200,6 @@ export const MUTATION_OP_KINDS = [
 export const SYSTEM_OP_KINDS = [
   'share-revoked',
   'share-rescoped',
-  'qa',
   'document-trashed',
   'changeset',
   'items',
@@ -675,9 +668,6 @@ export type RoomOp =
   // hydrated with that code reload into the new scope; the room closes their
   // sockets. Worker-originated, like share-revoked.
   | { kind: 'share-rescoped'; code: string }
-  // A Q&A board's whole state after a server write (docs/specs/012-collaboration/qa-board.md). Replaces the
-  // element's notes when `rev` is newer than the local `qaRev`.
-  | { kind: 'qa'; tabId: string; elementId: string; notes: QaNote[]; rev: number }
   // One changeset the api applied (docs/specs/024-agents/agent-changesets.md "What the room does").
   // Worker-originated through /mutation.
   | ChangesetRoomOp

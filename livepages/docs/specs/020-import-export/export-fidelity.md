@@ -72,7 +72,7 @@ it, and the accent as text mixed 40% toward the text colour on a card of the
 same tone), and draws its controls from the shared parts
 (`svg-render-collab-parts.ts`: the dashed accent bar, the composer, accent
 chips, count boxes, the 16-unit glyphs). The done green is `COLLAB_DONE_COLOR`.
-Cards whose rows reflow (Q&A board, Idea box, Comment panel, Action panel,
+Cards whose rows reflow (Idea box, Comment panel, Action panel,
 Agenda, Roll call) lay out at the element's own size rather than scaling.
 
 **Every export draws an arrow the same way.** The SVG and the PNG / PDF both
@@ -122,14 +122,12 @@ Reveal zone and the Idea box. What stays out is motion (a bob, a sweep, a
 flip) and live clocks, as above.
 
 The cards export their **controls** too, at rest: the Agenda's progress bar,
-step markers and the current step's minutes; the Q&A board and Idea box
-composers, accent bars and "Most wanted" rows; the Estimate card's pick cards,
+step markers and the current step's minutes; the Idea box
+composer, accent bar and rows; the Estimate card's pick cards,
 face-down room cards and Reveal / New Round footer; the Temperature check's
 bars and meter; the Comment panel's grouped bubbles, Resolve chip and composer;
 the Action panel's rings, checks and Add Action bar; the Roll call's avatar
-stack, time chip and Take again bar; the Q&A board's folded "Discussed · N"
-drawer whenever a note is done (a board whose every note is done shows the
-drawer, never "No notes yet").
+stack, time chip and Take again bar.
 
 **Nothing runs off a card.** A Collaborate card's title takes one line in the
 room its aside leaves and ends in an ellipsis (`fitLine`), as the canvas's

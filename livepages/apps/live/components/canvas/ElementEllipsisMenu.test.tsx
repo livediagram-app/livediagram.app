@@ -105,11 +105,11 @@ describe('ElementEllipsisMenu event containment', () => {
 describe('ElementEllipsisMenu kinds', () => {
   it('is a menu of menu items for verbs, focused on open and closed by Escape', () => {
     render(
-      <ElementEllipsisMenu label="Q&A board options" kind="command">
+      <ElementEllipsisMenu label="Idea box options" kind="command">
         {(close) => <ElementMenuItem onPress={close}>Empty the Board</ElementMenuItem>}
       </ElementEllipsisMenu>,
     );
-    const trigger = screen.getByRole('button', { name: 'Q&A board options' });
+    const trigger = screen.getByRole('button', { name: 'Idea box options' });
     expect(trigger.getAttribute('aria-haspopup')).toBe('menu');
     trigger.focus();
     fireEvent.click(trigger);

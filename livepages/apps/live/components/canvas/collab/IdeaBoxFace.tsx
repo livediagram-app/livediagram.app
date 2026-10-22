@@ -1,7 +1,7 @@
 // The face of an Idea box (docs/specs/012-collaboration/idea-box.md): anonymous ideas, sealed until the
-// facilitator opens the box. Built from the Q&A board's parts ("The look"):
-// the shared accent scope, the composer at the foot, its row style, its empty
-// state and its motion.
+// facilitator opens the box. Built from the shared Collaborate parts ("The look"):
+// the accent scope, the composer at the foot, the row style, the empty
+// state and the motion.
 //
 // Closed, it shows a count and NOT the text, not even to the person who wrote
 // one. A box that shows you your own card tells the room what you wrote the
@@ -20,10 +20,10 @@ import {
   EmptyRows,
   EyeGlyph,
   MaskGlyph,
-  QA_ACCENT,
-  QA_ACCENT_INK,
+  COLLAB_ACCENT,
+  COLLAB_ACCENT_INK,
   ScatterGlyph,
-} from './qa/qa-parts';
+} from './collab-parts';
 import {
   ElementEllipsisMenu,
   ElementMenuItem,
@@ -157,14 +157,13 @@ export function IdeaBoxFace({
   );
 }
 
-// Where the Q&A board has an Anonymous switch, the Idea box states it: there
-// is nothing to switch, and saying so where you write is the reassurance the
+// The Idea box states that it is anonymous: there is nothing to switch, and saying so where you write is the reassurance the
 // element exists to give.
 function AnonymousBadge() {
   return (
     <span
       className="pointer-events-auto inline-flex items-center gap-1 rounded-full py-0.5 pl-1 pr-2 text-[10px] font-semibold"
-      style={{ color: QA_ACCENT_INK, backgroundColor: tint(QA_ACCENT, 0.14) }}
+      style={{ color: COLLAB_ACCENT_INK, backgroundColor: tint(COLLAB_ACCENT, 0.14) }}
     >
       <MaskGlyph size={11} />
       Anonymous

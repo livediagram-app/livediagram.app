@@ -44,7 +44,7 @@ The element is a **card on the canvas**, not a marker.
 
 ### The look
 
-Built from the same parts as the modern Collaborate cards (the Q&A board, the
+Built from the same parts as the modern Collaborate cards (the
 Idea box; [Idea box](idea-box.md) "The look"): the tab theme's **accent**
 (`CollabAccentScope`), the shared `CollabPanel` frame and the shared composer.
 It carries **no `…`**: it has no settings of its own, every act is on the card,
@@ -59,7 +59,7 @@ and right-click opens the ordinary element menu.
   time. Your own comments sit on the right in an accent-tinted bubble;
   everyone else's sit on the left in a neutral one. Consecutive comments by
   the same author group under one name. A comment that arrives while the card
-  is on screen settles in (the Q&A board's enter motion), and the thread keeps
+  is on screen settles in (the shared enter motion), and the thread keeps
   the newest in view. Your own comments carry a small delete on hover.
 - **Empty**: a speech-bubble glyph in a soft accent disc, **Start the
   Conversation**, and "Replies stay on the canvas for everyone to read."

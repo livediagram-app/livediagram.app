@@ -11,7 +11,7 @@ export function EstimateEmpty({ textColor, canPick }: { textColor: string; canPi
         {[0, 1, 2, 3].map((i) => (
           <span
             key={i}
-            className="qa-ghost h-[46px] w-[34px] rounded-lg"
+            className="collab-ghost h-[46px] w-[34px] rounded-lg"
             style={{ backgroundColor: tint(textColor, 0.07), animationDelay: `${i * 250}ms` }}
           />
         ))}

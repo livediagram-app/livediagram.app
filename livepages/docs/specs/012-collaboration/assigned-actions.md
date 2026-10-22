@@ -310,7 +310,7 @@ the tab has threads or actions. Comments and actions keep working from the eleme
 
 ### The look
 
-The panel follows the refreshed Collaborate cards ([Participant responses](participant-responses.md), [Q&A board](qa-board.md) "The look"): soft tinted rows rather than a ruled list, a friendly empty state with its glyph in a soft brand disc, round brand controls, count chips, and short motion that collapses under Reduce motion. It is editor chrome, not a card on a themed tab, so its accent is the **brand** colour rather than a tab theme's.
+The panel follows the refreshed Collaborate cards ([Participant responses](participant-responses.md), [Idea box](idea-box.md) "The look"): soft tinted rows rather than a ruled list, a friendly empty state with its glyph in a soft brand disc, round brand controls, count chips, and short motion that collapses under Reduce motion. It is editor chrome, not a card on a themed tab, so its accent is the **brand** colour rather than a tab theme's.
 
 - **Header.** The title with the **open count** in a brand chip sitting directly beside it (`MovablePanel`'s `titleAdornment`), hidden at zero. It no longer floats in the middle of the header.
 - **Open / Resolved.** A segmented control on the shared sliding pill (`SegmentSlider`), each side carrying its count. **Open** = open actions + unresolved comment threads; **Resolved** = completed actions + resolved comment threads (the thread still reopens from its element badge). It lands on Open, or Resolved when nothing is open.

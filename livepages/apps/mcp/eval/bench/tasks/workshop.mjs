@@ -14,7 +14,7 @@ import {
 const stickies = (snap) => shapes(snap, 'sticky').filter((s) => (s.label ?? '').trim());
 // The containers a cluster can sit in.
 const themes = (snap) => ['frame', 'lane', 'boundary'].flatMap((k) => shapes(snap, k));
-// A note people add to a board: a sticky on the canvas, or a card on a Plan board (a retro or Q&A board's own way).
+// A note people add to a board: a sticky on the canvas, or a card on a Plan board (a retro board's own way).
 const notes = (snap) => [
   ...stickies(snap).map((s) => s.label),
   ...itemsOf(snap).map((i) => i.title ?? ''),
@@ -82,22 +82,6 @@ export default [
           );
           return atLeast(12, inGroup.length, 'stickies inside a theme');
         },
-      ],
-    ],
-  },
-  {
-    id: 'F4',
-    level: 'easy',
-    prompt: 'A town hall Q&A board for our all-hands with 5 seeded questions.',
-    checks: [
-      [
-        'a Q&A board',
-        ({ snap }) => shapes(snap, 'qa-board').length > 0 || mentionsAll(snap, [/q\s*&\s*a/i]).pass,
-      ],
-      ['for the all-hands town hall', ({ snap }) => mentionsAll(snap, [/town hall|all.?hands/i])],
-      [
-        '5 seeded questions',
-        ({ snap }) => atLeast(5, notes(snap).filter((n) => /\?/.test(n)).length, 'questions'),
       ],
     ],
   },

@@ -2,7 +2,7 @@
 
 **Workshop** is the fifth [editor mode](../007-editor/editor-modes.md), beside Diagram, Draw,
 Pages and Plan: how a general tab is worked on while a team runs a session on it, a
-retrospective, a town hall, a lean coffee, a workshop. It brings the tools that run a room into
+retrospective, a brainstorm, a workshop. It brings the tools that run a room into
 focus (timers, votes, polls, reveals, the Collaborate elements, stickers) and takes them out of
 Diagram, so Diagram is about diagrams.
 
@@ -20,7 +20,7 @@ boards.
 | Term              | Means                                                                                         | Not                                                          |
 | ----------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
 | **Workshop mode** | The editor mode for running a session with a team (`EditorMode` `'workshop'`)                 | Workshop mode (its old name), Session mode, Collaborate mode |
-| **session**       | The activity a team runs on a tab (a retro, a town hall); never a stored thing                | a tab kind, a document type                                  |
+| **session**       | The activity a team runs on a tab (a retro, a brainstorm); never a stored thing               | a tab kind, a document type                                  |
 | **facilitator**   | The person holding the baton ([Facilitator](facilitator.md)); unrelated to who is in the mode | anyone in Workshop mode                                      |
 | **session tools** | Timer, Vote and Poll ([Session tools](session-tools.md))                                      | the Collaborate elements as a whole                          |
 | **Collaborate**   | The session elements as a whole (`toolGroup: 'behaviour'`), offered as six categories         | the mode, or comments and presence in general                |
@@ -111,7 +111,7 @@ stop to draw):
   [Collaborate](../010-palette/palette-top-level-categories.md#collaborate-one-category-fully-grouped)
   is its own category in a **Collaborate** band (the heading names the elements, where Dynamic
   named a mechanism), in the same room-first order, each a list of rows:
-  - **Ask**: Dot vote, Poll, Quiz, the estimate scales, Temperature check, Idea box, Q&A board.
+  - **Ask**: Dot vote, Poll, Quiz, the estimate scales, Temperature check, Idea box.
   - **Tools**: Timer, Stopwatch, Reveal zone, Done check, Picker.
   - **Record**: Comment panel, Action card, Agenda, Decision record, Roll call.
   - **React**: the five reaction pads.
@@ -158,7 +158,7 @@ Session templates open in Workshop, as the Draw templates open in Draw
 
 - the Retrospectives family's `retrospective`, `start-stop-continue`, `mad-sad-glad`, `four-ls`
   and `sailboat` (`team-retro` stays in Plan: it is a board of cards);
-- `town-hall`, `lean-coffee`, `crazy-eights`, `meeting-agenda`, `workshop-board` and `brainstorm`;
+- `crazy-eights`, `meeting-agenda`, `workshop-board` and `brainstorm`;
 - the boards that ship a dot vote, `affinity-map`, `prioritization-matrix` and `risk-matrix`, since
   only a mode with a Session strip can watch, end and keep that vote;
 - the boards a team fills in together: `incident-postmortem`, `user-persona`, `empathy-map`, `journey`,

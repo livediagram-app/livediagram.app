@@ -16,8 +16,6 @@ export const SECTION_TEMPLATE_KINDS: Readonly<Record<string, readonly TemplateKi
     'brainstorm',
     'workshop-board',
     'meeting-agenda',
-    'town-hall',
-    'lean-coffee',
     'affinity-map',
     'crazy-eights',
     'virtual-office',

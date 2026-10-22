@@ -141,9 +141,6 @@ export type ShapeKind =
   // Idea box (docs/specs/012-collaboration/idea-box.md): anonymous submissions in `ideaCards`, held until
   // `ideasRevealed`. There is nowhere to put an author, on purpose.
   | 'idea-box'
-  // Q&A board (docs/specs/012-collaboration/qa-board.md): a self-sorting list of upvotable notes in
-  // `qaNotes`, owned by the server so view links can add and vote.
-  | 'qa-board'
   // Agenda (docs/specs/012-collaboration/agenda.md): ordered `agendaItems` with minutes; pressing one starts
   // the tab timer and sets `agendaCurrent`.
   | 'agenda'

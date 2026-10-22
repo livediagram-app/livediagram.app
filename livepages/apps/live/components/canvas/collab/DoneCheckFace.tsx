@@ -8,7 +8,7 @@ import { CollabAccentScope } from './collab-accent';
 import { DoneButton } from './done/DoneButton';
 import { DoneRing } from './done/DoneRing';
 import { DoneRoster } from './done/DoneRoster';
-import { EmptyRows } from './qa/qa-parts';
+import { EmptyRows } from './collab-parts';
 import {
   ElementEllipsisMenu,
   ElementMenuItem,

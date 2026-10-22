@@ -1147,9 +1147,9 @@ export const articles: Article[] = [
     slug: 'collaborate',
     title: 'Collaborate elements',
     description:
-      'The Collaborate categories (Ask and Record) that collect what the room thinks: comment panels, action panels, estimates, quizzes, temperature checks, idea boxes, Q&A boards, agendas, decisions and roll calls.',
+      'The Collaborate categories (Ask and Record) that collect what the room thinks: comment panels, action panels, estimates, quizzes, temperature checks, idea boxes, agendas, decisions and roll calls.',
     keywords:
-      'collaborate collaboration comment panel action panel task assign card pin pinned remark note thread reply discuss feedback annotate sticky question estimate estimation planning poker story points fibonacci tshirt t-shirt temperature check fist of five pulse mood vote idea box anonymous brainstorm brainwriting retro retrospective q&a qa slido upvote questions agenda run of show timebox segments decision record adr architecture decision roll call attendance register present room team workshop facilitation powers of two',
+      'collaborate collaboration comment panel action panel task assign card pin pinned remark note thread reply discuss feedback annotate sticky question estimate estimation planning poker story points fibonacci tshirt t-shirt temperature check fist of five pulse mood vote idea box anonymous brainstorm brainwriting retro retrospective agenda run of show timebox segments decision record adr architecture decision roll call attendance register present room team workshop facilitation powers of two',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Workshop Kits',
@@ -1332,7 +1332,7 @@ export const articles: Article[] = [
     slug: 'behaviour',
     title: 'Collaborate',
     description:
-      'Every element that comes alive with the room, as six palette categories in Workshop mode: comment and action panels, estimates, quizzes, temperature checks, idea boxes, Q&A boards, Done checks, pickers, session buttons (timer, stopwatch, vote, poll), agendas, decisions, roll calls, reactions, mode buttons, portals and Bring Focus.',
+      'Every element that comes alive with the room, as six palette categories in Workshop mode: comment and action panels, estimates, quizzes, temperature checks, idea boxes, Done checks, pickers, session buttons (timer, stopwatch, vote, poll), agendas, decisions, roll calls, reactions, mode buttons, portals and Bring Focus.',
     keywords:
       'behaviour behavior behaviours behaviors interactive button portal session timer stopwatch countdown count up elapsed vote poll reveal hide cover picker random spinner control mode switch chair seat desk sofa couch fence barrier link card bookmark preview url bring focus look here attention gather reaction pad confetti celebrate sparkles hearts applause fireworks emoji burst done check finished ready waiting who progress everyone mark complete collaborate collaboration estimate quiz trivia question temperature idea box agenda decision roll call ask the room keep a record run the room workshop facilitation runtime live tools record react navigate selection mode',
     category: 'Palette',
@@ -1511,9 +1511,9 @@ export const articles: Article[] = [
     slug: 'workshop-mode',
     title: 'Workshop Mode',
     description:
-      'Run a session on any tab: retros, town halls and workshops, with timers, votes, polls and reveals.',
+      'Run a session on any tab: retros, brainstorms and workshops, with timers, votes, polls and reveals.',
     keywords:
-      'pub quiz trivia icebreaker questions two truths and a lie would you rather people bingo games workshop mode facilitate facilitate mode facilitation facilitator session sessions run a session workshop meeting team meeting retro retrospective town hall all hands lean coffee crazy eights brainstorm board workshop board kickoff ground rules icebreaker q&a questions agenda timer countdown stopwatch vote dot vote voting poll survey pulse check reveal hide estimate planning poker quiz temperature check fist of five idea box anonymous picker random spin reactions confetti stickers emoji sticker badge collaborate category session strip blank session editor mode switch shift+d where did the timer go where are stickers missing tools moved',
+      'pub quiz trivia icebreaker questions two truths and a lie would you rather people bingo games workshop mode facilitate facilitate mode facilitation facilitator session sessions run a session workshop meeting team meeting retro retrospective all hands crazy eights brainstorm board workshop board kickoff ground rules icebreaker questions agenda timer countdown stopwatch vote dot vote voting poll survey pulse check reveal hide estimate planning poker quiz temperature check fist of five idea box anonymous picker random spin reactions confetti stickers emoji sticker badge collaborate category session strip blank session editor mode switch shift+d where did the timer go where are stickers missing tools moved',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Modes and Boards',
@@ -2611,16 +2611,6 @@ export const articles: Article[] = [
     description: 'Anonymous submissions, held until you open the box.',
     keywords:
       'idea box anonymous anonymity brainstorm brainwriting suggestion submissions count hidden open the box scatter to stickies sticky notes retro pre-mortem safety',
-    category: 'Palette',
-    categorySlug: 'palette/collaborate',
-    parentSlug: 'collaborate',
-  },
-  {
-    slug: 'qa-boards',
-    title: 'Q&A Boards',
-    description: 'Notes the room upvotes, with the most wanted always on top.',
-    keywords:
-      'q&a qa question questions ask slido upvote vote voting rank ranked queue audience ama panel town hall all hands anonymous spotlight discuss discussing discussed facilitator moderate',
     category: 'Palette',
     categorySlug: 'palette/collaborate',
     parentSlug: 'collaborate',

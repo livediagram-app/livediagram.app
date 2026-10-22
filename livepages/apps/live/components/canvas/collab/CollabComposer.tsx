@@ -1,9 +1,8 @@
-// The composer at the foot of a modern collab board (docs/specs/012-collaboration/qa-board.md, idea-box.md
+// The composer at the foot of a modern collab card (docs/specs/012-collaboration/idea-box.md, comment-pin.md
 // "The look"): a rounded field, a send button in the accent, a line of meta
-// underneath (the board's own chip) and a counter once the limit is near.
-// Enter posts. Shared so the Q&A board and the Idea box are written into the
-// same way; each passes its own chip (the Q&A board's Anonymous switch, the
-// Idea box's fixed Anonymous badge).
+// underneath (the card's own chip) and a counter once the limit is near.
+// Enter posts. Shared so the Idea box and the Comment panel are written into the
+// same way; each passes its own chip (the Idea box's fixed Anonymous badge).
 
 import { useRef, useState, type ReactNode } from 'react';
 import type { CommentMention } from '@livepages/document';
@@ -11,7 +10,7 @@ import { MentionMenu } from '@/components/primitives/MentionMenu';
 import { useMentionAutocomplete } from '@/hooks/ui/useMentionAutocomplete';
 import type { MentionScope } from './comment/MentionContext';
 import { tint } from './collab-chrome';
-import { QA_ACCENT, QA_ON_ACCENT, SendGlyph, stopPointer } from './qa/qa-parts';
+import { COLLAB_ACCENT, COLLAB_ON_ACCENT, SendGlyph, stopPointer } from './collab-parts';
 
 export function CollabComposer({
   textColor,
@@ -31,7 +30,7 @@ export function CollabComposer({
   maxLength: number;
   meta?: ReactNode;
   // @-mentions (docs/specs/012-collaboration/comment-mentions.md): the Comment panel passes who can be
-  // mentioned; the Q&A board and the Idea box are anonymous and pass nothing.
+  // mentioned; the Idea box is anonymous and passes nothing.
   mentionScope?: MentionScope;
   // Set when the board takes no more ("Box is full"): the field shows it in
   // place of the placeholder, and the field and send are off.
@@ -68,7 +67,7 @@ export function CollabComposer({
 
   return (
     <div
-      className="relative flex w-full flex-col gap-1.5 rounded-2xl border p-1.5 transition-shadow focus-within:shadow-[0_0_0_3px_var(--qa-accent-soft)]"
+      className="relative flex w-full flex-col gap-1.5 rounded-2xl border p-1.5 transition-shadow focus-within:shadow-[0_0_0_3px_var(--collab-accent-soft)]"
       style={{ borderColor: tint(textColor, 0.16), backgroundColor: tint(textColor, 0.03) }}
     >
       {mentionScope && mention.open ? (
@@ -116,7 +115,7 @@ export function CollabComposer({
           disabled={!text || !!full}
           aria-label={sendLabel}
           className="pointer-events-auto inline-flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-full transition hover:scale-105 active:scale-95 disabled:cursor-default disabled:opacity-35"
-          style={{ backgroundColor: QA_ACCENT, color: QA_ON_ACCENT }}
+          style={{ backgroundColor: COLLAB_ACCENT, color: COLLAB_ON_ACCENT }}
         >
           <SendGlyph size={13} />
         </button>

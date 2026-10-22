@@ -238,7 +238,6 @@ describe('the shared settings ellipsis (docs/specs/008-canvas/canvas-and-palette
 describe('supportsTextAlign', () => {
   it('is off for kinds with their own face and for self-drawing kinds', () => {
     for (const kind of [
-      'qa-board',
       'agenda',
       'decision',
       'roll-call',
@@ -273,7 +272,6 @@ describe('supportsMarkers', () => {
   it('is off for kinds with their own face and for self-drawing kinds', () => {
     for (const kind of [
       'temperature',
-      'qa-board',
       'idea-box',
       'session-button',
       'progress-bar',

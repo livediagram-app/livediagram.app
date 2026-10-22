@@ -55,7 +55,6 @@ const ATTRIBUTE_SOURCES = [
   // Each card's random id moves with its card, so the ideas count speaks for it too.
   'ideaCardIds',
   'ideasRevealed',
-  'qaNotes',
   'agendaItems',
   'agendaCurrent',
   'decisionStatus',

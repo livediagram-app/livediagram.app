@@ -1,9 +1,9 @@
-// The accent scope the modern collab faces share (docs/specs/012-collaboration/qa-board.md, idea-box.md
+// The accent scope the modern collab faces share (docs/specs/012-collaboration/idea-box.md, comment-pin.md
 // "The look"): the tab theme's accent, taken from the element's themed stroke,
 // plus the ink that reads ON it and the accent as TEXT on the card, published
-// as CSS variables for everything inside (QA_ACCENT and friends in
-// qa/qa-parts.tsx read them). One place decides the colour, so the Q&A board
-// and the Idea box can't drift apart.
+// as CSS variables for everything inside (COLLAB_ACCENT and friends in
+// collab-parts.tsx read them). One place decides the colour, so the cards
+// can't drift apart.
 
 import type { CSSProperties, ReactNode } from 'react';
 import { canvasSurface, defaultStrokeColor, inkOn, type ShapeElement } from '@livepages/document';
@@ -37,11 +37,11 @@ export function CollabAccentScope({
       style={
         {
           display: 'contents',
-          '--qa-accent': accent,
-          '--qa-on-accent': onAccent,
-          '--qa-accent-ink': accentInk,
-          '--qa-accent-soft': tint(accent, 0.35),
-          '--qa-card': surface,
+          '--collab-accent': accent,
+          '--collab-on-accent': onAccent,
+          '--collab-accent-ink': accentInk,
+          '--collab-accent-soft': tint(accent, 0.35),
+          '--collab-card': surface,
         } as CSSProperties
       }
     >

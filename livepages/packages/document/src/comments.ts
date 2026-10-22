@@ -182,10 +182,6 @@ export const LIVE_ELEMENT_FIELDS = [
   'quizStartedAt',
   'quizLockedAt',
   'quizRevealed',
-  // The Q&A board's notes (docs/specs/012-collaboration/qa-board.md) are written by its endpoint, never by
-  // an undoable edit, so a snapshot's copy is only ever older.
-  'qaNotes',
-  'qaRev',
 ] as const;
 type LiveFieldBag = {
   commentThread?: CommentThread;
@@ -207,8 +203,6 @@ type LiveFieldBag = {
   | 'quizStartedAt'
   | 'quizLockedAt'
   | 'quizRevealed'
-  | 'qaNotes'
-  | 'qaRev'
 >;
 
 function applyLiveField<K extends keyof LiveFieldBag>(

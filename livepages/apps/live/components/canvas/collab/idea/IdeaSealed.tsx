@@ -2,15 +2,14 @@
 // and the promise that nothing shows until the box is opened. No text, not
 // even to its writer.
 //
-// When an idea lands the count pops and lifts a +1 (the Q&A board's vote
-// motion), so the room watches the box fill without reading a word. Both are
+// When an idea lands the count pops and lifts a +1 (collab-cards.css), so the room watches the box fill without reading a word. Both are
 // keyed on the count, so each new idea remounts them and replays the
 // animation; the count the box first painted with doesn't animate.
 
 import { useState } from 'react';
 import { GlyphDisc } from '@livepages/ui';
 import { tint } from '../collab-chrome';
-import { LockGlyph, QA_ACCENT, QA_ACCENT_INK } from '../qa/qa-parts';
+import { LockGlyph, COLLAB_ACCENT, COLLAB_ACCENT_INK } from '../collab-parts';
 
 export function IdeaSealed({ count, textColor }: { count: number; textColor: string }) {
   const [initial] = useState(count);
@@ -23,13 +22,16 @@ export function IdeaSealed({ count, textColor }: { count: number; textColor: str
         boxShadow: `inset 0 0 0 1px ${tint(textColor, 0.08)}`,
       }}
     >
-      <GlyphDisc size={30} style={{ color: QA_ACCENT_INK, backgroundColor: tint(QA_ACCENT, 0.14) }}>
+      <GlyphDisc
+        size={30}
+        style={{ color: COLLAB_ACCENT_INK, backgroundColor: tint(COLLAB_ACCENT, 0.14) }}
+      >
         <LockGlyph size={15} />
       </GlyphDisc>
       <span className="relative mt-1 inline-flex">
         <span
           key={count}
-          className={`text-[26px] font-bold leading-none tabular-nums ${bumped ? 'qa-pop' : ''}`}
+          className={`text-[26px] font-bold leading-none tabular-nums ${bumped ? 'collab-pop' : ''}`}
           style={{ color: textColor }}
         >
           {count}
@@ -38,8 +40,8 @@ export function IdeaSealed({ count, textColor }: { count: number; textColor: str
           <span
             key={`+${count}`}
             aria-hidden
-            className="qa-float pointer-events-none absolute left-1/2 top-0 text-[11px] font-black"
-            style={{ color: QA_ACCENT_INK }}
+            className="collab-float pointer-events-none absolute left-1/2 top-0 text-[11px] font-black"
+            style={{ color: COLLAB_ACCENT_INK }}
           >
             +1
           </span>

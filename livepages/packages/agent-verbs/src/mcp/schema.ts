@@ -161,8 +161,8 @@ const STYLE_FIELDS =
   '"stopwatch", "vote" with "dots", or "poll" with "question" and "options"}), drawn as what pressing it does ' +
   'unless it has a label; "agenda" its "agendaItems" ([{"label", "minutes"}]); "checklist" its "checklistItems" ' +
   '([{"text", "done"}]); a stat row its "stats" ([{"value", "caption"}]); a callout its "pageTitle" over its "label" ' +
-  '(the body); a banner its "pageTitle" and "pageSubtitle"; "sticker" a "stickerId" (an emoji- id from search_icons). The entries of a "qa-board", ' +
-  '"idea-box" and "temperature" are the people\u2019s, never an edit\u2019s: starter questions or ideas go on ' +
+  '(the body); a banner its "pageTitle" and "pageSubtitle"; "sticker" a "stickerId" (an emoji- id from search_icons). The entries of an "idea-box" ' +
+  'and a "temperature" are the people\u2019s, never an edit\u2019s: starter questions or ideas go on ' +
   'stickies beside them. ';
 
 // Self-contained element schema, attached to each tool's element argument so the

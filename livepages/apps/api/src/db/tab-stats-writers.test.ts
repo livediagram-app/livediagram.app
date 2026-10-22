@@ -103,7 +103,7 @@ describe('seedTabs', () => {
   });
 });
 
-describe('swapTabData (participant and Q&A writes)', () => {
+describe('swapTabData (participant writes)', () => {
   it('writes the next body stats on a won swap, and nothing on a lost one', async () => {
     const db = withDocument();
     await upsertTab(db.env, 'A', tab('t1', 'draw'), 0);

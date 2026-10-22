@@ -142,15 +142,14 @@ export function elementAriaLabel(el: Element): string {
   return label ? `${kind} "${label}"` : kind;
 }
 
-// The kinds whose face carries controls of its own: a timer's Start, a checklist's ticks, a poll's Ask, a Q&A board's
-// note field, an agenda's items, a quiz's answer, a reaction pad's button, a picker's draw, a reveal, a decision
+// The kinds whose face carries controls of its own: a timer's Start, a checklist's ticks, a poll's Ask, an agenda's
+// items, a quiz's answer, a reaction pad's button, a picker's draw, a reveal, a decision
 // record's settings and a mode button.
 const CONTROL_FACE_SHAPES: ReadonlySet<string> = new Set<ShapeKind>([
   'session-button',
   'checklist',
   'temperature',
   'agenda',
-  'qa-board',
   'reaction-pad',
   'quiz',
   'picker',

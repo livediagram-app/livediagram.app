@@ -49,7 +49,6 @@ import { buildStateMachine } from './template-builders-state-machine';
 import { buildFloorPlan } from './template-builders-floorplan';
 import { buildBusinessModelCanvas, buildEmpathyMap } from './template-builders-canvases';
 import { buildAffinityMap, buildUserStoryMap } from './template-builders-workshops';
-import { buildLeanCoffee, buildTownHall } from './template-builders-sessions';
 import { buildIcebreakerQuestions, buildPubQuiz } from './template-builders-quiz-games';
 import {
   buildPeopleBingo,
@@ -250,14 +249,10 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
       return buildUserStoryMap(cx, cy);
     case 'affinity-map':
       return buildAffinityMap(cx, cy);
-    case 'lean-coffee':
-      return buildLeanCoffee(cx, cy);
     case 'brainstorm':
       return buildBrainstorm(cx, cy);
     case 'workshop-board':
       return buildWorkshopBoard(cx, cy);
-    case 'town-hall':
-      return buildTownHall(cx, cy);
     case 'pub-quiz':
       return buildPubQuiz(cx, cy);
     case 'icebreaker-questions':

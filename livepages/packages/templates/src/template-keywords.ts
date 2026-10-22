@@ -233,7 +233,6 @@ const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
     'notes',
     'actions',
   ],
-  'lean-coffee': ['meeting', 'agenda', 'discussion', 'topics', 'vote', 'unconference'],
   brainstorm: ['brainstorm', 'ideas', 'ideation', 'cluster', 'themes', 'how might we', 'vote'],
   'workshop-board': [
     'workshop',
@@ -244,7 +243,6 @@ const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
     'icebreaker',
     'session',
   ],
-  'town-hall': ['q&a', 'questions', 'all hands', 'ama', 'ask me anything', 'meeting'],
   // Quizzes & Games.
   'pub-quiz': ['quiz', 'trivia', 'quiz night', 'game', 'teams', 'fun', 'social'],
   'coworking-space': [

@@ -8,7 +8,7 @@ import { checkMotionBudget, formatViolations } from '@livepages/tailwind-config/
 // stylesheets listed here, which the guard does not read.
 const CANVAS_STYLESHEETS = [
   'app/canvas-motion.css',
-  'app/qa-board.css',
+  'app/collab-cards.css',
   // The animation sets (docs/specs/028-animation/element-animations.md).
   'app/motion-shape.css',
   'app/motion-text.css',

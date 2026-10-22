@@ -64,7 +64,7 @@ order:
     template to its family, or none, decides it (`templateFamilyOf` in `@livepages/templates`):
     every retrospective format (Retrospective, Start / Stop / Continue, Mad / Sad / Glad, 4Ls,
     Sailboat) is `retrospective`, the Kanban template `kanban`, every other template none, the
-    Incident postmortem and Lean coffee included. A new template is not complete until it is
+    Incident postmortem included. A new template is not complete until it is
     mapped. Absent for an import, a blank document, or a template with no family.
 - **Sent on the create** as `intent: { mode, tabKind?, templateFamily? }` beside the placement
   ([Placement on create](folders.md#placement-on-create)).

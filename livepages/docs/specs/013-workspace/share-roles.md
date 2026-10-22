@@ -16,14 +16,14 @@ Participant level is the middle: take part in the board, never reshape it.
 
 ## The levels
 
-| Level           | Wire name     | May                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| --------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Viewer**      | `view`        | Look only: open and read every tab it admits; pan, zoom, point, use the laser and spotlight, follow and be followed, appear in the presence stack, present on their own screen, export. Writes nothing: no comment, poll answer, Q&A note or upvote, vote, answer or reaction.                                                                                                                                                        |
-| **Participant** | `participate` | All of Viewer; comment, reply, resolve and reopen; answer live polls; add to and upvote on Q&A boards; react; speak in Avatar mode; take part in session tools; add, write and arrange stickies and text; place images and swap their pictures; grow mind maps; write on any element but a Behaviour, a table's cells included; work with Plan cards and Sheet cells (see [What a Participant changes](#what-a-participant-changes)). |
-| **Editor**      | `edit`        | All of Participant; change anything on the drawing, its tabs, its modes and its tools' configuration; hold the facilitator baton.                                                                                                                                                                                                                                                                                                     |
+| Level           | Wire name     | May                                                                                                                                                                                                                                                                                                                                                                                                  |
+| --------------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Viewer**      | `view`        | Look only: open and read every tab it admits; pan, zoom, point, use the laser and spotlight, follow and be followed, appear in the presence stack, present on their own screen, export. Writes nothing: no comment, poll answer, vote, answer or reaction.                                                                                                                                           |
+| **Participant** | `participate` | All of Viewer; comment, reply, resolve and reopen; answer live polls; react; speak in Avatar mode; take part in session tools; add, write and arrange stickies and text; place images and swap their pictures; grow mind maps; write on any element but a Behaviour, a table's cells included; work with Plan cards and Sheet cells (see [What a Participant changes](#what-a-participant-changes)). |
+| **Editor**      | `edit`        | All of Participant; change anything on the drawing, its tabs, its modes and its tools' configuration; hold the facilitator baton.                                                                                                                                                                                                                                                                    |
 
 - **The levels are a ladder**: every level holds everything below it.
-- **A Viewer only looks.** A comment, a poll answer, a Q&A note or upvote, a vote, a reaction and an Avatar-mode
+- **A Viewer only looks.** A comment, a poll answer, a vote, a reaction and an Avatar-mode
   [speech bubble](../008-canvas/avatar-mode.md#speech-bubbles) are all taking part, which is a Participant's. A Viewer's selection shows its badge and holds nothing: it never stops anyone
   editing the element it looks at.
 - **Running a session is facilitation, an Editor's hat**: starting, ending, revealing, clearing and pacing stay with
@@ -147,7 +147,7 @@ and moves stay with the owner and joined team members. No level grants any of th
 ## Moving to three levels
 
 - **Edit links stay Editor; view links stay Viewer, which now only looks.** A view link handed out before this
-  change loses commenting, poll answers and the Q&A board (decided 2026-10-10): an owner who wants an audience to
+  change loses commenting and poll answers (decided 2026-10-10): an owner who wants an audience to
   chime in issues a Participant link.
 - **No old reader escalates.** Before the server can write a `participate` link, every reader of a stored level
   reads an unknown value as Viewer. An editor bundle from before this change reads a Participant link as Editor,

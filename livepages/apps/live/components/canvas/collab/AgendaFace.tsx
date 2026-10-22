@@ -20,7 +20,7 @@ import {
 import { CollabPanel, tint } from './collab-chrome';
 import { CollabAccentScope } from './collab-accent';
 import { AgendaStep, type StepState } from './agenda/AgendaStep';
-import { EmptyRows, QA_ACCENT } from './qa/qa-parts';
+import { EmptyRows, COLLAB_ACCENT } from './collab-parts';
 
 // "1h 5m" / "45m". The number in the header is what tells you the plan doesn't
 // fit before you start.
@@ -145,7 +145,7 @@ export function AgendaFace({
             >
               <span
                 className="agenda-progress block h-full rounded-full"
-                style={{ width: `${progress * 100}%`, backgroundColor: QA_ACCENT }}
+                style={{ width: `${progress * 100}%`, backgroundColor: COLLAB_ACCENT }}
               />
             </span>
             <ol className="flex flex-col">

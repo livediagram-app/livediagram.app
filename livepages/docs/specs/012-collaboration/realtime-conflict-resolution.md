@@ -149,11 +149,10 @@ that let `viewport` through.
 
 **D1 stays the system of record.** Tab content is persisted by clients (each
 editor PUTs its whole copy of a changed tab); the op log is a warm catch-up
-cache, not a second writer. Two later additions put the room on the
+cache, not a second writer. One later addition puts the room on the
 persistence path without making it hold the document: the tab PUT merges the
 room's collaboration ledger in before writing
-([Collaboration race hardening](collab-race-hardening.md) phase 3), and Q&A board writes are performed
-by the room itself, one at a time ([Q&A board](qa-board.md)).
+([Collaboration race hardening](collab-race-hardening.md) phase 3).
 
 ### A malformed op
 
@@ -248,8 +247,7 @@ verified end-to-end and turned on properly, not carried as dormant code.
   rewrites comment authors in every mutation it relays and keeps collaboration
   state in Durable Object storage: the per-element ledger
   (`room-ledger-store.ts`), the live poll (`room-live-poll.ts`) and the
-  facilitator baton (`facilitator.ts`). It writes D1 for Q&A boards
-  (`handleQaWrite` → `qa-board-write.ts`). The full description is
+  facilitator baton (`facilitator.ts`). The full description is
   [API app → Realtime model](../015-api/api.md#realtime-model).
 - `apps/api/src/room-client.ts` — the worker's calls into the room: the ledger
   merge on a tab PUT (`fetchRoomLedger` + `applyRoomLedger`, driven by `X-Room-Cursor`), the

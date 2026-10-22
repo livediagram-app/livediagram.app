@@ -1,12 +1,10 @@
-// One idea in an opened Idea box (docs/specs/012-collaboration/idea-box.md "The look"), drawn as the Q&A
-// board's note card: a tile on the left the size of the Q&A vote pill, the
+// One idea in an opened Idea box (docs/specs/012-collaboration/idea-box.md "The look"): a tile on the left, the
 // text, and a meta line under it. Nothing is votable, so the tile is not a
-// control: it carries the idea's number, and the meta line carries the mask
-// where a Q&A note names its author. An idea added after the box first
+// control: it carries the idea's number, and the meta line carries the mask. An idea added after the box first
 // painted slides in.
 
 import { tint } from '../collab-chrome';
-import { AuthorChip } from '../qa/qa-parts';
+import { AnonymousChip } from '../collab-parts';
 
 export function IdeaRow({
   text,
@@ -22,7 +20,7 @@ export function IdeaRow({
 }) {
   return (
     <li
-      className={`relative flex gap-2.5 overflow-hidden rounded-xl p-2 ${fresh ? 'qa-enter' : ''}`}
+      className={`relative flex gap-2.5 overflow-hidden rounded-xl p-2 ${fresh ? 'collab-enter' : ''}`}
       style={{ backgroundColor: tint(textColor, 0.04) }}
     >
       <span
@@ -49,7 +47,7 @@ export function IdeaRow({
           {text}
         </p>
         <div className="flex min-w-0 items-center gap-1.5 text-[10px]">
-          <AuthorChip author={undefined} textColor={textColor} size={14} />
+          <AnonymousChip textColor={textColor} size={14} />
         </div>
       </div>
     </li>

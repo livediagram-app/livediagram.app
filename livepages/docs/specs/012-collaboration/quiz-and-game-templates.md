@@ -10,7 +10,7 @@ Workshop already had every piece a quiz night or a warm-up needs: the Quiz card 
 ([Picker](picker.md)), the reveal zone ([Reveal zone](../009-elements/reveal-zone.md)), polls and timers on session
 buttons ([Session button](session-button.md)) and reaction pads ([Reaction pad](../009-elements/reaction-pad.md)).
 Nothing put them together, so the first person to run a team quiz had to assemble one from an empty tab. Every
-other session format (retros, Lean Coffee, a town hall) had a template; games had none, and a game shelved under
+other session format (retros, brainstorms, a meeting agenda) had a template; games had none, and a game shelved under
 Workshops beside the retros is hard to find. They get a category of their own.
 
 ## The category
@@ -59,7 +59,7 @@ everyone picks before the clock runs out, then Reveal shows who got it."
 "Icebreakers · Team kick-off" with a waving-hand sticker; how-to: "Spin a question, spin a person, two minutes
 each. Then add yourself to the wall."
 
-- **How it works**, the left column: four tinted step cards joined by arrows, as Lean Coffee's are: 1 Spin a
+- **How it works**, the left column: four tinted step cards joined by arrows: 1 Spin a
   question, 2 Spin a person, 3 Two minutes, 4 Say hello.
 - **The spin**, the centre: a Picker over twelve written questions labelled "Today's question" (420 x 180), a
   Picker over the room labelled "Who answers?" (420 x 150), a 2-minute timer and a Hearts reaction pad, "Love

@@ -139,7 +139,7 @@ Applied to every tool:
 Three cases worth stating, because they test the rule:
 
 - **A Q&A note is participation, not a comment.** It answers the board's question, is bounded by the board, is
-  run by the facilitator, and can be anonymous ([Q&A board](../../specs/012-collaboration/qa-board.md)). A comment
+  run by the facilitator, and can be anonymous (the Q&A board, since removed). A comment
   is none of those.
 - **A checklist tick is editing.** It is one shared value anybody can flip, not one person's answer; it already
   rides an edit-only delta and the share-roles blueprint keeps it there.
@@ -163,7 +163,7 @@ holds today and what a Participant level would expose.
    view link can therefore cast a thousand answers today. The same claimed-key weakness applies to dots and
    responses once participants may send them.
 3. **Identity rotation on the Q&A board.** The Q&A voter id is a hash of the caller's owner id
-   ([Q&A board](../../specs/012-collaboration/qa-board.md)). A guest can obtain a fresh id from `POST /api/guest-id`, so
+   (the Q&A board, since removed). A guest can obtain a fresh id from `POST /api/guest-id`, so
    upvotes are one per browser identity, not one per person, and the per-owner write limiter keys on that same id
    ([API app, Rate limiting](../../specs/015-api/api.md#rate-limiting)). That is the honest limit every per-browser
    product has (pattern 5 above); it is worth bounding, not pretending away.

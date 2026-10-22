@@ -224,9 +224,6 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // empty state (the breathing rows plus the invitation under them) above the
   // composer without scrolling.
   'idea-box': { width: 340, height: 420 },
-  // Q&A board (docs/specs/012-collaboration/qa-board.md): a spotlight over a ranked list over the add field,
-  // so it arrives tall enough for five or six notes before it scrolls.
-  'qa-board': { width: 360, height: 460 },
   // Agenda (docs/specs/012-collaboration/agenda.md): a run of six segments before it needs resizing.
   agenda: { width: 330, height: 300 },
   // Decision record (docs/specs/012-collaboration/decision-record.md): a card for a sentence plus three drivers.
@@ -426,7 +423,6 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
     kind === 'estimate' ||
     kind === 'temperature' ||
     kind === 'idea-box' ||
-    kind === 'qa-board' ||
     kind === 'agenda' ||
     kind === 'roll-call'
   ) {
@@ -449,7 +445,6 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
     }
     if (kind === 'temperature') return { ...seed, label: 'How are we feeling?' };
     if (kind === 'idea-box') return { ...seed, label: 'Ideas' };
-    if (kind === 'qa-board') return { ...seed, label: 'Questions' };
     if (kind === 'agenda') {
       return {
         ...seed,

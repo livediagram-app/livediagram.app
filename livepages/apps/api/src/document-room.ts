@@ -40,7 +40,6 @@ import { sessionMatchesAccessClose, type AccessCloseMatch } from './room-access'
 import type { FacilitatorState } from './facilitator';
 import { RoomFacilitator } from './room-facilitator';
 
-import { writeQaAction, type QaWriteRequest } from './qa-board-write';
 import {
   newSessionAttachment,
   readSessionAttachment,
@@ -57,7 +56,7 @@ import {
 // classifies each op by kind, orders mutations (seq within an epoch, kept in
 // storage), rewrites comment authors, and keeps collaboration state in DO
 // storage (the ledger, the live poll, the facilitator baton). It never holds
-// the document: D1 does, written by clients over REST, except the Q&A board
+// the document: D1 does, written by clients over REST, except a Participant's
 // writes this room performs itself. Payloads stay `op: unknown` so the
 // editor can evolve its vocabulary without changing the room. Two edits to
 // the same element are last-writer-wins in room order.
@@ -179,14 +178,14 @@ export class DocumentRoom implements DurableObject {
   // from a fake state alone; without it the emit is skipped.
   env: Env | undefined;
 
-  // The Q&A board write queue (docs/specs/012-collaboration/qa-board.md). Every board write for this document
+  // The tab write queue. Every write this room makes to this document's tabs
   // runs through here ONE AT A TIME. A Durable Object only serialises the
   // synchronous parts of its handlers: while one write is awaiting D1, the
   // runtime happily starts the next request, and two read-modify-writes of the
   // same row would be exactly the race that once cost the dot vote its votes.
   // In memory because a queue only matters while requests are in flight; a
   // hibernation wake has none.
-  // The tab write queue (blueprint SR2): Q&A board writes and a Participant's writes, one at a time per document.
+  // Blueprint SR2: a Participant's writes, one at a time per document.
   private tabWriteQueue: Promise<unknown> = Promise.resolve();
   // The surface the api worker's internal endpoints act on (room-internal.ts).
   private readonly internal: InternalRoom;
@@ -215,7 +214,6 @@ export class DocumentRoom implements DurableObject {
       closeSessionsForAccessChange: (close) => this.closeSessionsForAccessChange(close),
       purge: () => this.purge(),
       handleAgentPresence: (req, u) => this.handleAgentPresence(req, u),
-      handleQaWrite: (req) => this.handleQaWrite(req),
       sequenceMutation: (from, op) => this.sequenceMutation(from, op),
       readSelections: (tabId, person) => this.selections.read(tabId, this.liveSessions(), person),
       readLedger: (tabId) => this.ledger.read(tabId),
@@ -530,40 +528,7 @@ export class DocumentRoom implements DurableObject {
     return run;
   }
 
-  // One Q&A board write, queued behind every other one for this document
-  // (docs/specs/012-collaboration/qa-board.md). Reached only from the api worker's qa route, which has already
-  // checked access and derived the actor, so the body is trusted the same way
-  // /broadcast's is. The broadcast happens INSIDE the queued step, so peers
-  // receive board states in rev order.
-  async handleQaWrite(request: Request): Promise<Response> {
-    const env = this.env;
-    if (!env) return new Response('no env', { status: 503 });
-    let req: QaWriteRequest;
-    try {
-      req = (await request.json()) as QaWriteRequest;
-    } catch {
-      return new Response('bad json', { status: 400 });
-    }
-    const step = this.queueTabWrite(async () => {
-      const result = await writeQaAction(env, req);
-      if (result.ok && result.changed) {
-        this.broadcastOrderedSystemOp({
-          kind: 'qa',
-          tabId: req.tabId,
-          elementId: req.elementId,
-          notes: result.notes,
-          rev: result.rev,
-        });
-      }
-      return result;
-    });
-    const result = await step;
-    return result.ok
-      ? Response.json({ notes: result.notes, rev: result.rev })
-      : Response.json({ error: 'qa_write_failed' }, { status: result.status });
-  }
-
-  // A system op that changes the document (docs/specs/012-collaboration/qa-board.md): sequenced and logged
+  // A system op that changes the document (docs/specs/026-plan/items.md "Live for everyone"): sequenced and logged
   // exactly like a client mutation, so `resolveCatchup` replays it. Nobody is
   // excluded from the relay (there is no sending socket), so there is no
   // separate `cursor` frame to send back either.

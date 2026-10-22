@@ -14,7 +14,6 @@ import { PlanBoard } from './hero-plan-board';
 import { SheetBoard } from './hero-sheet-board';
 import { SlidesBoard } from './hero-slides-board';
 import { HERO_SCENE_DATA, type HeroSceneData, type HeroSceneKey } from './hero-scene-data';
-import { TownHallBoard } from './hero-townhall-board';
 
 export type { HeroSceneKey } from './hero-scene-data';
 
@@ -31,7 +30,6 @@ const BOARDS: Record<HeroSceneKey, ComponentType<{ portrait?: boolean }>> = {
   plan: PlanBoard,
   sheet: SheetBoard,
   form: FormBoard,
-  townhall: TownHallBoard,
 };
 
 export const HERO_SCENES: HeroScene[] = HERO_SCENE_DATA.map((scene) => ({

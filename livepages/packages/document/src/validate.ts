@@ -172,7 +172,6 @@ export const SHAPE_KINDS = new Set<string>([
   'estimate',
   'temperature',
   'idea-box',
-  'qa-board',
   'agenda',
   'decision',
   'roll-call',

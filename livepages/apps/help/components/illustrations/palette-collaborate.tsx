@@ -2,11 +2,11 @@
 // docs/specs/012-collaboration/comment-pin.md): the palette's Collaborate groups, plus one scene per element that
 // collects what the room thinks: estimate card, temperature check, idea box,
 // agenda, decision record and roll call. (The comment and action panels live in
-// palette-collab-panels.tsx, the Q&A board in palette-qa-board.tsx.)
+// palette-collab-panels.tsx.)
 //
 // One scene per sub-article, drawn as the card really looks: a titled panel
 // with its caption on the right, and the card's one action as the dashed
-// accent bar the Q&A board introduced.
+// accent bar.
 
 import type { ReactNode } from 'react';
 
@@ -375,7 +375,7 @@ export function IdeaBoxCard() {
   return (
     <Scene w={420} h={222}>
       <CollabCard x={x} y={y} w={w} h={198} title="What slowed us down?" aside="7 IDEAS">
-        {/* The facilitator's one action, the Q&A board's dashed accent bar. */}
+        {/* The facilitator's one action, the dashed accent bar. */}
         <AccentBar x={x + 12} y={y + 40} w={w - 24} label="Open the Box" count={7} />
         {/* Sealed: a lock, the count, and no text. */}
         <rect

@@ -226,7 +226,7 @@ describe('slugIdFor (R7)', () => {
   });
 
   it('always yields a slug id', () => {
-    const labels = ['', '9', 'Ünïcødé', '日本語', 'a'.repeat(80), '-x-', 'Q&A board'];
+    const labels = ['', '9', 'Ünïcødé', '日本語', 'a'.repeat(80), '-x-', 'Idea box'];
     const taken = new Set<string>();
     for (const label of labels) {
       const id = slugIdFor(label, 'domain-event', taken);

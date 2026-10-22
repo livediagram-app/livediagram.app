@@ -15,7 +15,6 @@ const STATE_KINDS: [ShapeKind, Record<string, unknown>][] = [
   ['temperature', { responses: [] }],
   ['done-check', { responses: [{ participantId: 'p', value: 'done', at: 0 }] }],
   ['idea-box', { ideaCards: ['a', 'b'] }],
-  ['qa-board', { qaNotes: [] }],
   [
     'agenda',
     {

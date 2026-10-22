@@ -22,7 +22,6 @@ import { AgendaFace } from './AgendaFace';
 import { RollCallFace } from './RollCallFace';
 import { DecisionFace } from './DecisionFace';
 import { DoneCheckFace } from './DoneCheckFace';
-import { QaBoardFace } from './qa/QaBoardFace';
 import { QuizFace } from './quiz/QuizFace';
 import type { QuizDraft } from '@/hooks/canvas/useQuizElements';
 
@@ -61,27 +60,6 @@ export type CollabApi = {
   // Back to "not started" (docs/specs/012-collaboration/agenda.md).
   resetAgenda?: (element: ShapeElement) => void;
   takeRoll?: (element: ShapeElement) => void;
-  // The Q&A board (docs/specs/012-collaboration/qa-board.md). Our OWNER id, only so the board can compute our
-  // voter id the way the server does (qaVoterId) and know which notes we
-  // voted for; the face never renders or sends it. And our name, for the
-  // composer's "As …" toggle.
-  selfOwnerId?: string;
-  selfName?: string;
-  // Present for anyone in a live session, view links included: the server
-  // owns the board and gates these on read access.
-  // Returns whether the note was sent (false when the board is full).
-  addQaNote?: (
-    element: ShapeElement,
-    text: string,
-    anonymous: boolean,
-  ) => boolean | Promise<boolean>;
-  voteQaNote?: (element: ShapeElement, noteId: string, on: boolean) => void;
-  // Whoever is running the board (docs/specs/012-collaboration/facilitator.md): absent for everyone else.
-  discussQaNote?: (element: ShapeElement, noteId: string | null) => void;
-  closeQaNote?: (element: ShapeElement, noteId: string) => void;
-  reopenQaNote?: (element: ShapeElement, noteId: string) => void;
-  removeQaNote?: (element: ShapeElement, noteId: string) => void;
-  clearQaBoard?: (element: ShapeElement) => void;
   // The Quiz (docs/specs/012-collaboration/quiz.md). `answerQuiz` is anyone with edit rights; the rest
   // run the round, so they are absent for everyone but whoever runs it.
   answerQuiz?: (element: ShapeElement, index: number) => void;
@@ -120,7 +98,7 @@ export function CollabFaceRouter({
   // kit): its own fill, so a punch reads as an opening rather than a dot.
   const surface = element.fillColor ?? defaultFillColor(element, paper);
   // Bind a verb to this element once, so a face with many deals in its own
-  // ids (a Q&A note, a quiz answer) rather than in elements.
+  // ids (a quiz answer) rather than in elements.
   const bind = <A extends unknown[], R>(fn?: (el: ShapeElement, ...args: A) => R) =>
     fn ? (...args: A) => fn(element, ...args) : undefined;
 
@@ -188,28 +166,6 @@ export function CollabFaceRouter({
         onReveal={api?.revealIdeas ? () => api.revealIdeas!(element) : undefined}
         onClear={api?.clearIdeas ? () => api.clearIdeas!(element) : undefined}
         onScatter={api?.scatterIdeas ? () => api.scatterIdeas!(element) : undefined}
-        onOpenSettings={onOpenSettings}
-      />
-    );
-  }
-  if (element.shape === 'qa-board') {
-    return (
-      <QaBoardFace
-        element={element}
-        label={label}
-        textColor={textColor}
-        surface={surface}
-        selfOwnerId={api?.selfOwnerId ?? ''}
-        selfName={api?.selfName ?? ''}
-        actions={{
-          add: bind(api?.addQaNote),
-          vote: bind(api?.voteQaNote),
-          discuss: bind(api?.discussQaNote),
-          close: bind(api?.closeQaNote),
-          reopen: bind(api?.reopenQaNote),
-          remove: bind(api?.removeQaNote),
-          clear: bind(api?.clearQaBoard),
-        }}
         onOpenSettings={onOpenSettings}
       />
     );

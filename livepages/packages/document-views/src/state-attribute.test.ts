@@ -17,7 +17,6 @@ describe('stateAttributeOf (R14, VW22)', () => {
     expect(state('done-check', { responses: [{}, {}, {}] })).toBe('done=3');
     expect(state('idea-box', { ideaCards: ['a'], ideasRevealed: true })).toBe('ideas=1 revealed');
     expect(state('idea-box', { ideaCards: [] })).toBe('ideas=0');
-    expect(state('qa-board', { qaNotes: [{}] })).toBe('questions=1');
     expect(state('roll-call', { rollCall: [{}, {}] })).toBe('present=2');
   });
 

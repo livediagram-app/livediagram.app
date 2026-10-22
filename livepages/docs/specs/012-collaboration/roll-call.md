@@ -46,7 +46,7 @@ the roll is taken, and nothing later rewrites them.
 
 ## The face
 
-Built in the behaviour elements' current direction ([Participant responses](participant-responses.md): the paper kit is being retired; the [Q&A board](qa-board.md) set the look), in the tab theme's accent. It replaced a two-column list on a perforated "ticket stub" with a torn
+Built in the behaviour elements' current direction ([Participant responses](participant-responses.md): the paper kit is being retired; the [Idea box](idea-box.md) set the look), in the tab theme's accent. It replaced a two-column list on a perforated "ticket stub" with a torn
 bottom edge.
 
 - A **header block**: the count large ("7 present"), an overlapping stack of

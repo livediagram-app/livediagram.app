@@ -80,8 +80,6 @@ export function stateAttributeOf(el: Element): ViewAttribute[] {
         'revealed',
         flagField(el, 'ideasRevealed'),
       );
-    case 'qa-board':
-      return [countAttribute('questions', countOf(el, 'qaNotes'))];
     case 'agenda':
       return agendaState(el);
     case 'session-button':

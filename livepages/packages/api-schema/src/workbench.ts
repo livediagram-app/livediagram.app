@@ -265,7 +265,6 @@ const WORKBENCH_ROUTES: readonly RouteShape[] = [
   shape('POST', 'documents/:doc/tabs/:p/comments/:p/resolve'),
   shape('POST', 'documents/:doc/tabs/:p/comments/:p/reopen'),
   shape('DELETE', 'documents/:doc/tabs/:p/comments/:p'),
-  shape('POST', 'documents/:doc/tabs/:p/qa'),
   shape('POST', 'documents/:doc/room-ticket'),
   shape('GET,POST', 'documents/:doc/items'),
   shape('POST', 'documents/:doc/items/bulk'),

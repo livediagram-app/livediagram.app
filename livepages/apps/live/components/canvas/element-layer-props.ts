@@ -36,13 +36,6 @@ const COLLAB_HANDLERS = [
   'pressAgendaItem',
   'resetAgenda',
   'takeRoll',
-  'addQaNote',
-  'voteQaNote',
-  'discussQaNote',
-  'closeQaNote',
-  'reopenQaNote',
-  'removeQaNote',
-  'clearQaBoard',
   'answerQuiz',
   'startQuiz',
   'lockQuiz',
@@ -80,9 +73,9 @@ export function useStableCollab(collab: CollabApi): CollabApi {
   const [roster, setRoster] = useState({ signature, participants: collab.participants });
   if (roster.signature !== signature) setRoster({ signature, participants: collab.participants });
   const participants = roster.signature === signature ? roster.participants : collab.participants;
-  const { selfKey, tabTimer, selfOwnerId, selfName, canArrange } = collab;
+  const { selfKey, tabTimer, canArrange } = collab;
   return useMemo(
-    () => ({ ...handlers, selfKey, participants, tabTimer, selfOwnerId, selfName, canArrange }),
-    [handlers, selfKey, participants, tabTimer, selfOwnerId, selfName, canArrange],
+    () => ({ ...handlers, selfKey, participants, tabTimer, canArrange }),
+    [handlers, selfKey, participants, tabTimer, canArrange],
   );
 }

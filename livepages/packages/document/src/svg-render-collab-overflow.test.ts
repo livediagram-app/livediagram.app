@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { renderElementsToSvg } from './svg-render';
 import { createShape } from './factories';
 import { fitLine, wrapLines } from './svg-render-face-kit';
-import type { QaNote, ShapeElement } from './index';
+import type { ShapeElement } from './index';
 
 // Collaborate cards export without text running off the card
 // (docs/specs/020-import-export/export-fidelity.md): a long title, a long
@@ -45,26 +45,6 @@ describe('collab card title', () => {
     expect(all).not.toContain(long);
     const title = all.find((t) => t.startsWith('A very long'))!;
     expect(title.endsWith('…')).toBe(true);
-  });
-});
-
-describe('Q&A board with every note discussed', () => {
-  it('shows the Discussed drawer, not the empty state', () => {
-    const note = (i: number): QaNote => ({
-      id: `n${i}`,
-      text: `Note ${i}`,
-      voters: [],
-      at: 1,
-      state: 'done',
-      doneAt: i,
-    });
-    const el = {
-      ...createShape('qa-board', 0, 0),
-      qaNotes: [note(1), note(2)],
-    } as ShapeElement;
-    const all = texts(svgOf(el));
-    expect(all).not.toContain('No notes yet');
-    expect(all).toContain('DISCUSSED · 2');
   });
 });
 

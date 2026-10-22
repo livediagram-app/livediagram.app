@@ -65,7 +65,6 @@ The Behaviour and Collaborate elements sit on a canvas people are working
 across, so a card that opens on every pass gets in the way. On them a hover
 card is kept **only where it says something the face cannot**:
 
-- an **icon-only control** (the Q&A board's per-row Discuss / Done / Remove);
 - **a person** (an avatar's name card);
 - something the face deliberately **does not draw** (where a Portal leads, since
   the ring carries no caption);

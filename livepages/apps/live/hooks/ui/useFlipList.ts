@@ -1,12 +1,10 @@
-// FLIP reordering for a list (the Q&A board's queue, docs/specs/012-collaboration/qa-board.md; the form builder's
-// questions, docs/specs/030-forms/forms.md "Building a form"): when the order changes, each row slides from where it
-// was to where it now is. A row new to the list can be told (`onEnter`), and one that moved up (`onClimb`), once each.
-// Reduced motion moves nothing.
+// FLIP reordering for a list (the form builder's questions, docs/specs/030-forms/forms.md "Building a form"): when
+// the order changes, each row slides from where it was to where it now is. A row new to the list can be told
+// (`onEnter`), once. Reduced motion moves nothing.
 //
-// Rows are measured with `measure`: by default `offsetTop`, layout units untouched by a transform on an ancestor (the
-// Q&A board sits inside the canvas zoom and its card's own scale), so the delta is in the units the translate is
-// applied in. A list whose rows have different offset parents (questions in different sections) measures against a
-// common root instead.
+// Rows are measured with `measure`: by default `offsetTop`, layout units untouched by a transform on an ancestor, so
+// the delta is in the units the translate is applied in. A list whose rows have different offset parents (questions
+// in different sections) measures against a common root instead.
 import { useEffectEvent, useLayoutEffect, useRef } from 'react';
 import { prefersReducedMotion } from '@/lib/motion-preference';
 
@@ -15,7 +13,6 @@ export type FlipListOptions = {
   moveClass: string;
   measure?: (node: HTMLElement) => number;
   onEnter?: (node: HTMLElement) => void;
-  onClimb?: (node: HTMLElement) => void;
 };
 
 // One flip: each row measured now, and one that was measured before and moved slid home from where it was; a row new
@@ -26,7 +23,7 @@ function flipRows(
   before: ReadonlyMap<string, number> | null,
   options: FlipListOptions,
 ): Map<string, number> {
-  const { moveClass, measure = (n: HTMLElement) => n.offsetTop, onEnter, onClimb } = options;
+  const { moveClass, measure = (n: HTMLElement) => n.offsetTop, onEnter } = options;
   const after = new Map<string, number>();
   const reduce = prefersReducedMotion();
   for (const id of order) {
@@ -52,7 +49,6 @@ function flipRows(
     node.style.transition = '';
     node.classList.add(moveClass);
     node.style.transform = '';
-    if (delta > 0) onClimb?.(node);
   }
   return after;
 }

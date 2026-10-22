@@ -25,7 +25,7 @@ export function MoodBars({ tally, textColor }: { tally: number[]; textColor: str
           <div key={TEMPERATURE_VALUES[i]} className="flex min-h-0 flex-col items-center gap-1">
             <span
               key={count}
-              className={`text-[10px] font-semibold leading-none tabular-nums ${rose ? 'qa-pop' : ''}`}
+              className={`text-[10px] font-semibold leading-none tabular-nums ${rose ? 'collab-pop' : ''}`}
               style={{ color: textColor, opacity: count ? 0.8 : 0.3 }}
             >
               {count}

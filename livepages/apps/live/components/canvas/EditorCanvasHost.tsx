@@ -298,7 +298,6 @@ export function EditorCanvasHost() {
     pickerFor,
     collabElements,
     quiz,
-    qaBoard,
     followMe,
     keepPollResults,
     tabs,
@@ -562,18 +561,6 @@ export function EditorCanvasHost() {
     pressAgendaItem: isReadOnly || runBlocked ? undefined : collabElements.pressAgendaItem,
     resetAgenda: isReadOnly || runBlocked ? undefined : collabElements.resetAgenda,
     takeRoll: isReadOnly || runBlocked ? undefined : collabElements.takeRoll,
-    // The Q&A board (docs/specs/012-collaboration/qa-board.md). Adding and voting are a Participant's
-    // (docs/specs/013-workspace/share-roles.md: a Viewer only looks); the server owns the board and
-    // gates them. Running it is the facilitator's, else any editor's.
-    selfOwnerId: selfParticipant.id,
-    selfName: selfParticipant.name,
-    addQaNote: can.takePart ? qaBoard.addQaNote : undefined,
-    voteQaNote: can.takePart ? qaBoard.voteQaNote : undefined,
-    discussQaNote: isReadOnly || runBlocked ? undefined : qaBoard.discussQaNote,
-    closeQaNote: isReadOnly || runBlocked ? undefined : qaBoard.closeQaNote,
-    reopenQaNote: isReadOnly || runBlocked ? undefined : qaBoard.reopenQaNote,
-    removeQaNote: isReadOnly || runBlocked ? undefined : qaBoard.removeQaNote,
-    clearQaBoard: isReadOnly || runBlocked ? undefined : qaBoard.clearQaBoard,
     // The Quiz (docs/specs/012-collaboration/quiz.md). Picking is everyone's with edit rights;
     // editing and running the round are the facilitator's, else any editor's.
     answerQuiz: can.takePart ? quiz.answerQuiz : undefined,

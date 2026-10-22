@@ -38,7 +38,6 @@ A scoped link grants its role **on its tab only**. The worker enforces this in o
 | `POST /api/documents/:id/copy`                                | A copy holding **only their tab**.                                                                                                                                           |
 | `GET /api/documents/:id/thumbnail`                            | Their tab's image, not the first-tab snapshot.                                                                                                                               |
 | `GET /api/images/:id?d=`                                      | Only images referenced by their tab.                                                                                                                                         |
-| Q&A board `POST .../tabs/:tabId/qa`                           | Their tab only.                                                                                                                                                              |
 | Document timeline feed                                        | Refused: it spans every tab.                                                                                                                                                 |
 | `GET /api/share/:code/image.svg`                              | Always their tab. A `?tab=` naming another tab is a 404.                                                                                                                     |
 | Room ticket / WS upgrade                                      | Admitted with the role and the scope (see [Realtime](#realtime)).                                                                                                            |
@@ -69,7 +68,7 @@ The upgrade forwards the resolved scope to the room with the role (`X-Verified-T
 
 For a scoped session:
 
-- **Outbound**: the room doesn't send it any op carrying a different `tabId`: element, tab, cursor, selection, avatar, reaction, viewport, focus and Q&A ops. A `select` without a `tabId` is dropped, as is a `log` op whose entry is on another tab. `document-meta` is redacted the same way the REST document is. Catch-up replay applies the same filter. Its `seq` can lag because of filtered ops, which is harmless: every op on its own tab still reaches it, and the ledger merge is per tab.
+- **Outbound**: the room doesn't send it any op carrying a different `tabId`: element, tab, cursor, selection, avatar, reaction, viewport and focus ops. A `select` without a `tabId` is dropped, as is a `log` op whose entry is on another tab. `document-meta` is redacted the same way the REST document is. Catch-up replay applies the same filter. Its `seq` can lag because of filtered ops, which is harmless: every op on its own tab still reaches it, and the ledger merge is per tab.
 - **Inbound**: the room drops any op from it that carries a different `tabId` (presence included, so a `tab-focus` elsewhere too), a `select` with no `tabId`, and `document-meta` outright (and the retired `log` / `log-remove` ops of the removed Activity panel). Of the tab-less ops it may still send the poll ops. Anything else fails closed.
 - Presence entries still carry each peer's tab id, so avatars can stack on "Not shared" pills. An id is not content.
 

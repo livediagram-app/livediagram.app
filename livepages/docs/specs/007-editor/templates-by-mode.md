@@ -204,8 +204,7 @@ unchanged; only the mode they open in moved from Diagram.
 - The Retrospectives family's **Retrospective** (`retrospective`), **Start, Stop, Continue**
   (`start-stop-continue`), **Mad, Sad, Glad** (`mad-sad-glad`), **4Ls** (`four-ls`) and **Sailboat**
   (`sailboat`). **Team Retro** (`team-retro`) stays in Plan: it is a board of cards.
-- **Town Hall Q&A** (`town-hall`), **Lean Coffee** (`lean-coffee`), **Crazy Eights**
-  (`crazy-eights`), **Meeting Agenda** (`meeting-agenda`), **Workshop Board** (`workshop-board`) and
+- **Crazy Eights** (`crazy-eights`), **Meeting Agenda** (`meeting-agenda`), **Workshop Board** (`workshop-board`) and
   **Brainstorm Board** (`brainstorm`).
 - The boards that ship a dot vote: **Affinity Map** (`affinity-map`), **Prioritization Matrix**
   (`prioritization-matrix`) and **Risk Matrix** (`risk-matrix`). Diagram has no Session strip, so a

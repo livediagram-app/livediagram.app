@@ -8,7 +8,7 @@ import {
 } from 'react';
 import { setRemoteBesideTab, syncRemoteBesideTabs } from '@/lib/split-presence';
 import { noteAccessEnded } from '@/lib/access-notice';
-import type { EditorMode, QaNote, Tab } from '@livepages/document';
+import type { EditorMode, Tab } from '@livepages/document';
 import {
   parseArticleCaret,
   type AgentPresence,
@@ -156,9 +156,6 @@ export function useRoomConnection(opts: {
   receivePoll: (poll: LivePoll) => void;
   receivePollAnswer: (from: string, pollId: string, value: string | null, key?: string) => void;
   receivePollEnd: (pollId: string) => void;
-  // A Q&A board's authoritative state after a server write (docs/specs/012-collaboration/qa-board.md).
-  // Stable, like the poll handlers, so it can't reopen the socket.
-  receiveQa: (tabId: string, elementId: string, notes: QaNote[], rev: number) => void;
   // The document went to the Trash (docs/specs/013-workspace/trash.md): the
   // worker's document-trashed op, or the room closing the socket with 4004.
   // Stable, like the others, so it can't reopen the socket.
@@ -236,7 +233,6 @@ export function useRoomConnection(opts: {
     receivePoll,
     receivePollAnswer,
     receivePollEnd,
-    receiveQa,
     receiveDocumentTrashed,
     resyncFromServer,
     receiveChangeset,
@@ -550,12 +546,6 @@ export function useRoomConnection(opts: {
         receivePollAnswer(from, op.pollId, op.value, op.key);
       } else if (op.kind === 'poll-end') {
         receivePollEnd(op.pollId);
-      } else if (op.kind === 'qa') {
-        // The api's word on a Q&A board (docs/specs/012-collaboration/qa-board.md). System-only: the worker
-        // sends it through /broadcast after the write is already in D1, and
-        // the room refuses it from a client socket, so the sender check is
-        // defence in depth like share-revoked's below.
-        if (from === 'system') receiveQa(op.tabId, op.elementId, op.notes, op.rev);
       } else if (op.kind === 'share-revoked' || op.kind === 'share-rescoped') {
         // The owner revoked or rescoped a share link (share-link-ops.ts).
         // A session hydrated with that exact code leaves the editor on a

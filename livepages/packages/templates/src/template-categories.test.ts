@@ -63,7 +63,7 @@ describe('template categories', () => {
       finance: 6,
       spreadsheets: 5,
       forms: 6,
-      meetings: 17,
+      meetings: 15,
       mindmaps: 8,
       timelines: 7,
       flowcharts: 5,

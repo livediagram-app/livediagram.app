@@ -3,9 +3,8 @@
 // sends to the STORED tab through the participant content rule, and folds its dots, responses and ideas from the
 // room's ledger, then compare-and-swaps the row.
 //
-// Called ONLY from the document's room, on its tab write queue, so these writes never race each other or the Q&A
-// board's. The compare-and-swap is the second line, against an editor's autosave and a linked tab's other room,
-// exactly as qa-board-write.ts.
+// Called ONLY from the document's room, on its tab write queue, so these writes never race each other. The
+// compare-and-swap is the second line, against an editor's autosave and a linked tab's other room.
 
 import {
   applyParticipantOp,
@@ -20,8 +19,7 @@ import { tabStatsOf } from './db/tab-stats';
 import { TabTooLargeError } from './limits';
 import type { Env } from './types';
 
-// Only an autosave or a linked tab's room can beat us to the row, so a handful of re-reads is plenty; the Q&A
-// write's bound (TAB_CAS_MAX_ATTEMPTS).
+// Only an autosave or a linked tab's room can beat us to the row, so a handful of re-reads is plenty.
 export const TAB_CAS_MAX_ATTEMPTS = 8;
 
 export type ParticipantWriteFailure = { ok: false; status: 404 | 409 | 413 };

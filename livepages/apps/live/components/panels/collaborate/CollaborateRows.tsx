@@ -99,7 +99,7 @@ export function ActionRowItem({
           : shownDone
             ? 'border-emerald-500 bg-emerald-500 text-white'
             : 'border-slate-300 text-transparent group-hover/check:border-brand-500 group-hover/check:text-brand-700 dark:border-slate-600'
-      } ${pressed ? 'qa-pop' : ''}`}
+      } ${pressed ? 'collab-pop' : ''}`}
     >
       <CheckIcon size={11} />
     </span>

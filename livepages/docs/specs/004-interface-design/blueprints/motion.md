@@ -174,15 +174,11 @@ Every chrome `duration-<n>` becomes a token. Hover-driven ones become `duration-
 
 Canvas and content durations above the ceiling move into their stylesheets, unchanged:
 
-- The `QaNoteRow` heat bar (500ms) becomes `.qa-heat` in `qa-board.css`.
-- The `useFlipList` play transition (420ms) becomes `.qa-flip-move` in `qa-board.css`. The hook
-  adds the class instead of writing the transition inline. Like the old inline value, it stays on
-  the row.
 - The `HeroIllustration` card dim (500ms) becomes `.hero-card-dim` in `hero-animations.css`.
 
 ### `canvas-motion.css`
 
-This is a pure move out of `globals.css` into a new file, imported right after `qa-board.css`. It
+This is a pure move out of `globals.css` into a new file, imported right after `collab-cards.css`. It
 takes these blocks:
 
 - The animated elements: `lvd-anim-*`, `lvd-text-*`, `lvd-svg-*`, `lvd-trace-run`, `lvd-grad-*`,

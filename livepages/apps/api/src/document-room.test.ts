@@ -228,11 +228,11 @@ describe('DocumentRoom /broadcast endpoint', () => {
     });
   });
 
-  it('sequences an `ordered` system op into the catch-up log (docs/specs/012-collaboration/qa-board.md)', async () => {
+  it('sequences an `ordered` system op into the catch-up log (docs/specs/026-plan/items.md)', async () => {
     const { room, state } = newRoom();
     const a = makeSocket();
     seedSession(state, a, presence('p-a', 'view'));
-    const op = { kind: 'qa', tabId: 't', elementId: 'b', notes: [], rev: 1 };
+    const op = { kind: 'items', upserts: [], removed: ['i1'], rev: 1 };
     await room.fetch(
       new Request('https://room/broadcast', {
         method: 'POST',

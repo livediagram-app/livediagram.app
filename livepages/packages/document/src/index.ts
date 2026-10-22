@@ -678,8 +678,6 @@ export * from './color-wash';
 export { labelOn } from './readable-colour';
 export * from './quick-swatches';
 export * from './quick-swatch-rederive';
-// The Q&A board (docs/specs/012-collaboration/qa-board.md)
-export * from './qa-board';
 export * from './web-components';
 // The Behaviours family (docs/specs/010-palette/palette-top-level-categories.md): which kinds are in it, and which of them
 // draw their own `…` rather than taking the shared settings one.

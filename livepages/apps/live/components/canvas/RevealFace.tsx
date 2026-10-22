@@ -22,7 +22,7 @@ import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
 import { REVEAL_COVER_BASE } from '@livepages/document';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { tint } from '@/lib/element-tint';
-import { LockGlyph } from '@/components/canvas/collab/qa/qa-parts';
+import { LockGlyph } from '@/components/canvas/collab/collab-parts';
 import { Glyph, GlyphDisc } from '@livepages/ui';
 
 // The cover's base comes from the PAPER under it (REVEAL_COVER_BASE, shared

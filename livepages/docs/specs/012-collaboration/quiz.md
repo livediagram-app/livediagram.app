@@ -150,8 +150,7 @@ options came back under picks cast against the new ones.
   like any field, so someone reading the raw document (the JSON export, the
   network tab) can see it before the reveal. The face never shows it early,
   and the Edit dialog is only offered to people who can run the card. Hiding
-  it for real would need the server to hold it, the way the Q&A board's
-  server owns its notes, and is not worth it for a workshop quiz.
+  it for real would need the server to hold it, and is not worth it for a workshop quiz.
 - **The lock is each client's clock.** The lock time is the starter's wall
   clock plus the limit, compared against each viewer's own clock, exactly as
   the tab timer is ([Session tools (timer + voting)](session-tools.md)). A

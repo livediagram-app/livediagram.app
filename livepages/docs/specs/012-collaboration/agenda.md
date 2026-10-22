@@ -69,7 +69,7 @@ to the person facilitating.
 
 ## The face
 
-Built in the behaviour elements' current direction ([Participant responses](participant-responses.md): the paper kit is being retired; the [Q&A board](qa-board.md) set the look), in the tab theme's accent. It replaced a list of rows over a ruled, creased "folded programme".
+Built in the behaviour elements' current direction ([Participant responses](participant-responses.md): the paper kit is being retired; the [Idea box](idea-box.md) set the look), in the tab theme's accent. It replaced a list of rows over a ruled, creased "folded programme".
 
 - A header with the session name and the **total** of every segment's minutes,
   which is the number that tells you the plan doesn't fit before you start.
@@ -97,7 +97,7 @@ Built in the behaviour elements' current direction ([Participant responses](part
   shrinks), as a label grows its box.
 - **No segments** gets the shared invitation ("No segments yet", "Add them from
   the element's menu, under Segments").
-- Motion is canvas motion, in `qa-board.css`, off under reduced motion.
+- Motion is canvas motion, in `collab-cards.css`, off under reduced motion.
 
 ## Editing
 

@@ -108,7 +108,6 @@ import { usePortalSetters } from '@/hooks/canvas/usePortalSetters';
 import { useBehaviourElements } from '@/hooks/canvas/useBehaviourElements';
 import { useCollabElements } from '@/hooks/canvas/useCollabElements';
 import { useQuizElements } from '@/hooks/canvas/useQuizElements';
-import { useQaBoard } from '@/hooks/canvas/useQaBoard';
 import { useFollowMe } from '@/hooks/collab/useFollowMe';
 import { useShowFollowersMyView } from '@/hooks/collab/useShowFollowersMyView';
 import { useFacilitator } from '@/hooks/collab/useFacilitator';
@@ -1128,19 +1127,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     [setSelectedId, setEditingId, setMultiSelectedIds, toast],
   );
 
-  // The Q&A board (docs/specs/012-collaboration/qa-board.md). Up here, ahead of the room, because the room
-  // lands the server's `qa` ops through it.
-  const qaBoard = useQaBoard({
-    documentId,
-    activeId,
-    selfParticipant,
-    sessionShareCode,
-    applyRemoteTabs,
-    commitTabs,
-    lastSavedTabsRef,
-    onError: (message) => toast.error(message),
-  });
-
   // The document's items (docs/specs/026-plan/items.md): what Plan boards and Plan cards draw.
   // Items load only for a document with Plan content (docs/specs/026-plan/plan-mode.md "Cost").
   const planOpenTab = tabs.find((t) => t.id === activeId) ?? tabs[0];
@@ -1273,7 +1259,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     receivePoll: livePoll.receivePoll,
     receivePollAnswer: livePoll.receiveAnswer,
     receivePollEnd: livePoll.receivePollEnd,
-    receiveQa: qaBoard.receiveQa,
     receiveDocumentTrashed: () => documentTrashed.setDocumentTrashed(true),
     resyncFromServer: async () => {
       planItems.refetch();
@@ -4226,7 +4211,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     pickerFor,
     collabElements,
     quiz,
-    qaBoard,
     setRatingSelected,
     setRatingAnimSelected,
     setRatingAnimSpeedSelected,

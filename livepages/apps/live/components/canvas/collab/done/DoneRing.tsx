@@ -6,7 +6,7 @@
 
 import { useState } from 'react';
 import { tint } from '../collab-chrome';
-import { CheckGlyph, QA_ACCENT } from '../qa/qa-parts';
+import { CheckGlyph, COLLAB_ACCENT } from '../collab-parts';
 import { CelebrationBurst } from '../CelebrationBurst';
 
 const SIZE = 84;
@@ -48,12 +48,12 @@ export function DoneRing({
           strokeDasharray={C}
           strokeDashoffset={C * (1 - share)}
           transform={`rotate(-90 ${SIZE / 2} ${SIZE / 2})`}
-          style={{ stroke: complete ? GREEN : QA_ACCENT }}
+          style={{ stroke: complete ? GREEN : COLLAB_ACCENT }}
         />
       </svg>
       <span className="absolute inset-0 flex flex-col items-center justify-center">
         {complete ? (
-          <span key="done" className="qa-pop inline-flex" style={{ color: GREEN }}>
+          <span key="done" className="collab-pop inline-flex" style={{ color: GREEN }}>
             <CheckGlyph size={30} />
           </span>
         ) : (

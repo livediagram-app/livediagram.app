@@ -28,7 +28,7 @@ import { mixHex } from './svg-render-face-kit';
 import { BODY_GAP, BODY_TOP, roundRect } from './svg-render-collab-parts';
 import { svgTemperature } from './svg-render-temperature';
 import { svgEstimate } from './svg-render-estimate';
-import { svgIdeaBox, svgQaBoard } from './svg-render-qa-idea';
+import { svgIdeaBox } from './svg-render-idea-box';
 import {
   checkMark,
   collabAccent,
@@ -82,8 +82,6 @@ export function svgCollabFace(
       return svgTemperature(el, title, color);
     case 'idea-box':
       return svgIdeaBox(el, title, color, accent);
-    case 'qa-board':
-      return svgQaBoard(el, title, color, accent);
     case 'agenda':
       return svgAgenda(el, title, color, accent);
     case 'decision': {

@@ -18,7 +18,7 @@ import { tint } from '@/lib/element-tint';
 // it, so it has to look like something you can stand on: the glowing spot
 // under the emoji is that, without drawing hardware. The emoji bobs, lifts
 // under the pointer, and on a press squashes and throws a ring out from the
-// spot. Motion lives in qa-board.css and stops under reduced motion.
+// spot. Motion lives in collab-cards.css and stops under reduced motion.
 //
 // Interaction rules match the Selection Mode button (docs/specs/009-elements/mode-button.md) and the Portal
 // (docs/specs/009-elements/portal-element.md): a real <button> so a click travels rather than only selecting,

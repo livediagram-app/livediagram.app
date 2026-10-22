@@ -159,7 +159,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
   {
     id: 'collaboration',
     label: 'Collaborate',
-    scene: 'townhall',
+    scene: 'mindmap',
     cta: 'Explore collaboration',
     title: 'Work on it together, live',
     description:
@@ -251,7 +251,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Present & workshop',
         title: 'A mode for running the room',
         description:
-          'Switch a tab to Workshop and it brings the session to hand: stickies, timers, votes, polls, reveals, quizzes and the Q&A board on its palette, and the Session strip at the foot of the canvas. Retrospectives, Lean Coffee and town halls open there, and Diagram stays about diagrams.',
+          'Switch a tab to Workshop and it brings the session to hand: stickies, timers, votes, polls, reveals and quizzes on its palette, and the Session strip at the foot of the canvas. Retrospectives and brainstorms open there, and Diagram stays about diagrams.',
       },
       {
         art: <FacilitatorArt />,

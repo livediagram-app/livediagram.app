@@ -62,7 +62,6 @@ export const PERSON_ID_FIELDS = [
   'actions[].assignee.memberId',
   'actions[].teamId',
   'responses[].participantId',
-  'qaNotes[].voters',
   // Which Participant added a sticky or text (docs/specs/013-workspace/share-roles.md): the room's record, a key
   // that ties one person's additions together, so it never leaves through a view either.
   'addedBy',
@@ -73,7 +72,7 @@ type Segment = { key: string; each: boolean; values?: boolean };
 type Path = readonly [Segment, ...Segment[]];
 type Stripped<T> = { value: T; removed: boolean };
 
-// `qaNotes[].voters` → [{ qaNotes, each }, { voters }].
+// `responses[].participantId` → [{ responses, each }, { participantId }].
 function pathOf(field: string): Path {
   const [first, ...rest] = field.split('.').map((part) => ({
     key: part.replace(/(\[\]|\{\})$/, ''),

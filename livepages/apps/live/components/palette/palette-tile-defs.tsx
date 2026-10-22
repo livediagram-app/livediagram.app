@@ -37,7 +37,6 @@ import {
   LaserIcon,
   PanIcon,
   IdeaBoxIcon,
-  QaBoardIcon,
   PickerIcon,
   SelectIcon,
   ShapePenIcon,
@@ -1423,20 +1422,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'idea-box' },
     icon: <IdeaBoxIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    id: 'collab:qa-board',
-    tileGroup: 'ask',
-    blurb: 'Notes the room upvotes, best on top',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Q&A Board',
-    caption: 'Q&A Board',
-    description:
-      'Anyone can add a note, named or anonymous, and upvote others. The most wanted rise to the top; the facilitator spotlights one to discuss.',
-    filled: true,
-    action: { type: 'shape', kind: 'qa-board' },
-    icon: <QaBoardIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'collab:agenda',

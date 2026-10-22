@@ -9,7 +9,7 @@ import { GlyphDisc, Glyph, IDENTITY_FILL, identityVars } from '@livepages/ui';
 import { initialsOf } from '@/lib/identity';
 import { CollabPanel, tint } from './collab-chrome';
 import { CollabAccentScope } from './collab-accent';
-import { AccentBar, EmptyRows } from './qa/qa-parts';
+import { AccentBar, EmptyRows } from './collab-parts';
 
 // The stored name + colour, drawn as the presence avatar it was copied from.
 // NOT ParticipantAvatar: that takes a live Participant with a presence status,
@@ -145,7 +145,7 @@ export function RollCallFace({
               {entries.map((entry, i) => (
                 <li
                   key={`${i}-${entry.name}`}
-                  className={`flex min-w-0 max-w-full items-center gap-1.5 rounded-full py-0.5 pl-0.5 pr-2.5 ${fresh ? 'qa-enter' : ''}`}
+                  className={`flex min-w-0 max-w-full items-center gap-1.5 rounded-full py-0.5 pl-0.5 pr-2.5 ${fresh ? 'collab-enter' : ''}`}
                   style={{
                     backgroundColor: tint(textColor, 0.06),
                     animationDelay: fresh ? `${i * 40}ms` : undefined,

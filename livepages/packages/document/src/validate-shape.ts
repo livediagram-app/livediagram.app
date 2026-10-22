@@ -12,7 +12,6 @@ import { CHART_VARIANTS, isChartVariant } from './chart-types';
 import { EMBED_PROVIDERS } from './youtube';
 import { SELECTION_MODES, isPickerSource, isSelectionMode, isSessionTool } from './selection-mode';
 import { RESPONSES_MAX, RESPONSE_VALUE_MAX } from './responses';
-import { QA_MAX_ID, QA_MAX_NAME, QA_MAX_NOTES, QA_MAX_TEXT, QA_MAX_VOTERS } from './qa-board';
 import { COLLAB_ROUND_MAX, COMMENTS_MAX, isComment } from './element-deltas';
 import { CELL_THREADS_MAX, isCellKey } from './cell-comments';
 import { QUIZ_MAX_OPTIONS, QUIZ_OPTION_MAX_TEXT } from './quiz';
@@ -149,21 +148,6 @@ const isResponse = (r: unknown) =>
   typeof r.participantId === 'string' &&
   isStrUpTo(RESPONSE_VALUE_MAX)(r.value) &&
   isNum(r.at);
-
-// Q&A board (docs/specs/012-collaboration/qa-board.md): bounded notes, each with bounded voters.
-// The one-vote-per-person rule is the reducer's (applyQaAction), not a load check.
-const isQaAuthor = (a: unknown) =>
-  isRecord(a) && isStrUpTo(QA_MAX_NAME)(a.name) && isStrUpTo(32)(a.color);
-const isQaNote = (n: unknown) =>
-  isRecord(n) &&
-  isNonEmptyStr(n.id) &&
-  n.id.length <= QA_MAX_ID &&
-  isStrUpTo(QA_MAX_TEXT)(n.text) &&
-  isNum(n.at) &&
-  rowsOf(QA_MAX_VOTERS, isStrUpTo(QA_MAX_ID))(n.voters) &&
-  (n.state === undefined || n.state === 'discussing' || n.state === 'done') &&
-  (n.doneAt === undefined || isNum(n.doneAt)) &&
-  (n.author === undefined || isQaAuthor(n.author));
 
 // A Sheet's cell threads (docs/specs/029-sheets/sheet.md "Cell comments"): at most CELL_THREADS_MAX, each keyed
 // by a cell key and holding a thread as an element's.
@@ -452,12 +436,6 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
     rule: arrayRule(IDEA_MAX_CARDS, `ids of ${IDEA_CARD_ID_MAX} characters`),
   },
   flag('ideasRevealed'),
-  {
-    field: 'qaNotes',
-    valid: rowsOf(QA_MAX_NOTES, isQaNote),
-    rule: arrayRule(QA_MAX_NOTES, 'Q&A notes'),
-  },
-  finite('qaRev'),
   { field: 'collabRound', valid: isStrUpTo(COLLAB_ROUND_MAX), rule: stringRule(COLLAB_ROUND_MAX) },
   {
     field: 'agendaItems',

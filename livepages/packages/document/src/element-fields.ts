@@ -94,8 +94,6 @@ export const ELEMENT_FIELD_NAMES = {
     'ideaCards',
     'ideaCardIds',
     'ideasRevealed',
-    'qaNotes',
-    'qaRev',
     'collabRound',
     'agendaItems',
     'agendaCurrent',

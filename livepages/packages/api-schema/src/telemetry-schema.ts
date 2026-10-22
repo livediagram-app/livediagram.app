@@ -504,8 +504,6 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Estimate',
     'Temperature',
     'Idea-box',
-    // Q&A board (docs/specs/012-collaboration/qa-board.md).
-    'Qa-board',
     'Agenda',
     'Decision',
     'Roll-call',

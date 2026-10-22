@@ -112,7 +112,6 @@ describe('workbenchRouteVerdict', () => {
     ['POST', 'documents/doc1/tabs/t1/comments/c1/resolve'],
     ['POST', 'documents/doc1/tabs/t1/comments/c1/reopen'],
     ['DELETE', 'documents/doc1/tabs/t1/comments/c1'],
-    ['POST', 'documents/doc1/tabs/t1/qa'],
     ['POST', 'documents/doc1/room-ticket'],
     ['GET', 'documents/doc1/items'],
     ['POST', 'documents/doc1/items'],

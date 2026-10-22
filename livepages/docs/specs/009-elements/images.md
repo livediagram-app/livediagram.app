@@ -212,7 +212,7 @@ CREATE INDEX image_refs_image_idx ON image_refs (image_id);
 - **Maintained in the body's own batch.** Every write of `tabs.data` carries its index statements in the same D1 batch, one transaction, so the index can't drift from the body:
   - **Replace** (`upsertTab`: the autosave, which the realtime room and the MCP server reach through the tab PUT, and the comment / action routes; `seedTabs`: create, JSON import and Offline Mode's Sync Document): delete the tab's references not in the new set, then insert the new set, ignoring ones already there. A save that changes no image writes no index row.
   - **Copy** (`copyDocument`, Copy to my files): the copy's references come from the copied body.
-  - **Compare-and-swap** (`swapTabData`, the [Q&A board](../012-collaboration/qa-board.md)): add only. The swap can lose to a concurrent save, and a delete would then remove references the winner wrote.
+  - **Compare-and-swap** (`swapTabData`, a Participant's write): add only. The swap can lose to a concurrent save, and a delete would then remove references the winner wrote.
   - **Tab removal** (`deleteTabRow`) and **document removal** (`documentRemovalStatements`, which the Explorer delete, a team-library delete, Take Offline and account deletion all run): the dropped tabs' references go in the same batch, before the tabs.
   - Any new writer of `tabs.data`, a data migration included, maintains `image_refs` the same way. A census test fails when SQL writing `tabs` appears outside the known writers.
 - **Trash.** A document in the Trash keeps its `tabs` rows, so its references stay live until the purge runs `documentRemovalStatements`. The index needs nothing more for it.

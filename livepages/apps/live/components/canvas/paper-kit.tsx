@@ -3,8 +3,8 @@
 // The paper kit: the textures that give each Behaviours element the look of a
 // particular OBJECT rather than of a generic card (docs/specs/012-collaboration/participant-responses.md).
 //
-// Being retired, element by element: the collab boards moved onto the Q&A
-// board's flat, accent-lit look, and their textures went with them. What is
+// Being retired, element by element: the collab boards moved onto the
+// flat, accent-lit Collaborate look (collab-parts.tsx), and their textures went with them. What is
 // left serves the three elements that have not moved yet (the Picker's reel
 // window, the Mode button's keycap edge, the Timer's dial ticks).
 //

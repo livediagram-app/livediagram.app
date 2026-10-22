@@ -19,7 +19,7 @@ interchangeable. These are design decisions, taken before any feature that uses 
 - A tab stores the mode it **opens in**. "Opens in" is a choice among modes, not a binary, so a new mode needs no
   new concept.
 - Whiteboarding is Draw mode. There is no whiteboard tab kind and no whiteboard document type.
-- Running a session (a retro, a town hall) is Workshop mode. A session is an activity, never a tab kind or a
+- Running a session (a retro, a brainstorm) is Workshop mode. A session is an activity, never a tab kind or a
   stored thing; "Session" and "Collaborate" never name the mode, and neither does its old name, "Facilitate".
 - "Workshop" names the mode; a start's template group is never called Workshops (Workshop mode's is **Ideation**,
   Draw's **Exercises**). The template catalogue's **Workshops** category

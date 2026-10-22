@@ -9,7 +9,7 @@ import { useState } from 'react';
 import { TEMPERATURE_COLORS, TEMPERATURE_MOODS, TEMPERATURE_VALUES } from '@livepages/document';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { tint } from '../collab-chrome';
-import { stopPointer } from '../qa/qa-parts';
+import { stopPointer } from '../collab-parts';
 import { MoodGlyph } from './MoodGlyph';
 import { MOOD_GRID } from './mood-grid';
 import { useFaceShadow } from '@/components/canvas/CanvasFinishContext';
@@ -81,7 +81,7 @@ function MoodButton({
         transform: chosen ? 'translateY(-2px)' : undefined,
       }}
     >
-      <span key={pop ? 'pop' : 'rest'} className={pop ? 'qa-pop inline-flex' : 'inline-flex'}>
+      <span key={pop ? 'pop' : 'rest'} className={pop ? 'collab-pop inline-flex' : 'inline-flex'}>
         <MoodGlyph value={index + 1} size={26} />
       </span>
       <span

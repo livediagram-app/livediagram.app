@@ -40,7 +40,7 @@ So there is no `responsesRevealed` on this kind, and no control to add one.
 ## The face
 
 Built in the behaviour elements' current direction ([Participant responses](participant-responses.md): the paper kit
-is being retired; the [Q&A board](qa-board.md) and [Idea box](idea-box.md) set the look): a flat card, no printed
+is being retired; the [Idea box](idea-box.md) set the look): a flat card, no printed
 instrument, and motion that says something happened. It replaced a row of numbered chips over a
 graduated gauge plate.
 
@@ -75,4 +75,4 @@ live in `@livepages/document` (`TEMPERATURE_COLORS`, `TEMPERATURE_MOODS`), so th
 same card: the five faces over their numbers (`TEMPERATURE_FACE_MOUTHS`, shared with the canvas), the bars, the gradient track and the average. Everything else
 is `tint()` of the element's own colours, so the card holds on any theme and in either appearance,
 and every motion collapses under reduced motion. Its durations are canvas motion, so they live in
-`qa-board.css` beside the Q&A board's ([Motion](../004-interface-design/motion.md)), not in component classes.
+`collab-cards.css` beside the other Collaborate cards' ([Motion](../004-interface-design/motion.md)), not in component classes.

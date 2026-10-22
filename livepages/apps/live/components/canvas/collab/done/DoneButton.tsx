@@ -5,7 +5,7 @@
 import { useState } from 'react';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { tint } from '../collab-chrome';
-import { CheckGlyph, LOUD_ACCENT, stopPointer } from '../qa/qa-parts';
+import { CheckGlyph, LOUD_ACCENT, stopPointer } from '../collab-parts';
 import { useFaceShadow } from '@/components/canvas/CanvasFinishContext';
 
 export function DoneButton({
@@ -35,7 +35,7 @@ export function DoneButton({
     >
       <span
         key={mine ? 'mine' : 'not'}
-        className={`inline-flex items-center gap-1.5 ${mine !== initial ? 'qa-pop' : ''}`}
+        className={`inline-flex items-center gap-1.5 ${mine !== initial ? 'collab-pop' : ''}`}
       >
         {mine ? null : <CheckGlyph size={13} />}
         {mine ? "I'm not done" : "I'm done"}

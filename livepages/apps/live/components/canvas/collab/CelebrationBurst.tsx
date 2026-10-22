@@ -3,7 +3,7 @@
 // being marked complete (docs/specs/012-collaboration/action-panel.md). The host decides WHEN (only for a
 // change seen on screen, never for a card that loaded already complete); this
 // is only the look, so both celebrations are the same celebration. The
-// `.done-burst` keyframes live in app/qa-board.css and collapse under reduced
+// `.done-burst` keyframes live in app/collab-cards.css and collapse under reduced
 // motion with everything else there.
 
 import type { CSSProperties } from 'react';

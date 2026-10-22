@@ -150,7 +150,7 @@ mode, none of which a per-kind colour would.
 | Element         | Object             | What draws it                                                                                                        |
 | --------------- | ------------------ | -------------------------------------------------------------------------------------------------------------------- |
 | Done check      | (moved on)         | none: a progress ring and two rosters ([The Done check](done-check.md#reading-the-card))                             |
-| Idea box        | (moved on, below)  | none: rebuilt on the Q&A board's look ([Idea box](idea-box.md#the-look))                                             |
+| Idea box        | (moved on, below)  | none: rebuilt on the flat Collaborate look ([Idea box](idea-box.md#the-look))                                        |
 | Estimate        | (moved on)         | none: cards to pick, face down then face up ([Estimate card](estimate-card.md#the-look))                             |
 | Temperature     | (moved on)         | none: faces, bars and a mood meter ([Temperature check](temperature-check.md#the-face))                              |
 | Agenda          | (moved on)         | none: a run-of-show stepper with a live countdown ([Agenda](agenda.md#the-face))                                     |
@@ -164,11 +164,11 @@ mode, none of which a per-kind colour would.
 | Reaction pad    | (moved on)         | none: a glow and a spotlight in the reaction's colour ([The Reaction Pad](../009-elements/reaction-pad.md#the-look)) |
 | Mode button     | a keycap           | lit top, shaded skirt, a drop below it                                                                               |
 
-**The kit is being retired, one element at a time.** The [Q&A board](qa-board.md) set a newer
+**The kit is being retired, one element at a time.** The Collaborate cards follow a newer
 direction: a flat card lit by the tab theme's accent, rounded rows, a composer at the foot, and
 motion that carries meaning (a vote pops, a new entry settles in) instead of printed texture. Next
-to it the paper objects read as skeuomorphic and dated, so elements move onto the Q&A board's
-parts (its accent scope, composer, rows and motion) rather than growing new textures. The Idea box
+to it the paper objects read as skeuomorphic and dated, so elements move onto the shared
+parts (the accent scope, composer, rows and motion) rather than growing new textures. The Idea box
 went first, then the Temperature check, the Estimate card, the Reveal zone, the Done check, the Reaction pad, the Agenda, the Decision record and the Roll call; the rest follow. Until an element moves, its row above still describes it.
 
 House rules for anything added to the kit: decorative, so `aria-hidden` and
@@ -231,6 +231,6 @@ paints its backdrop edge to edge: a centred design box left the agenda's
 ruling and crease floating in a band mid-element with bare card above and
 below.
 
-**The one exception is the Q&A board** ([Q&A board](qa-board.md)), which
-passes `reflow`. Its content is a list that grows, so resizing it is how you
-make room for more notes, and scaling would spend that room on bigger type.
+**The exceptions are the list cards** (the [Idea box](idea-box.md), the Comment panel and the Action panel), which
+pass `reflow`. Their content is a list that grows, so resizing is how you
+make room for more rows, and scaling would spend that room on bigger type.

@@ -15,7 +15,7 @@ import {
 import { Glyph, GlyphDisc } from '@livepages/ui';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { tint } from '../collab-chrome';
-import { QA_ACCENT, QA_ACCENT_INK, stopPointer } from '../qa/qa-parts';
+import { COLLAB_ACCENT, COLLAB_ACCENT_INK, stopPointer } from '../collab-parts';
 
 // Two cards overlapping: "a hand to pick from".
 function CardsGlyph() {
@@ -47,7 +47,7 @@ export function EstimateScalePicker({
       <div className="flex items-center gap-2.5">
         <GlyphDisc
           size={30}
-          style={{ color: QA_ACCENT_INK, backgroundColor: tint(QA_ACCENT, 0.14) }}
+          style={{ color: COLLAB_ACCENT_INK, backgroundColor: tint(COLLAB_ACCENT, 0.14) }}
         >
           <CardsGlyph />
         </GlyphDisc>
@@ -100,9 +100,9 @@ function ScaleOption({
       style={
         {
           '--est-row': tint(textColor, 0.035),
-          '--est-row-hover': tint(QA_ACCENT, 0.09),
+          '--est-row-hover': tint(COLLAB_ACCENT, 0.09),
           '--est-border': tint(textColor, 0.12),
-          '--est-border-hover': tint(QA_ACCENT, 0.45),
+          '--est-border-hover': tint(COLLAB_ACCENT, 0.45),
         } as React.CSSProperties
       }
     >
@@ -115,9 +115,9 @@ function ScaleOption({
               {
                 left: i * 15,
                 '--est-fan-i': i - 1,
-                color: QA_ACCENT_INK,
-                backgroundColor: 'var(--qa-card)',
-                borderColor: tint(QA_ACCENT, 0.4),
+                color: COLLAB_ACCENT_INK,
+                backgroundColor: 'var(--collab-card)',
+                borderColor: tint(COLLAB_ACCENT, 0.4),
                 zIndex: i,
               } as React.CSSProperties
             }
@@ -138,7 +138,7 @@ function ScaleOption({
         </span>
       </span>
       {onPress ? (
-        <span className="est-chevron shrink-0" style={{ color: QA_ACCENT_INK }} aria-hidden>
+        <span className="est-chevron shrink-0" style={{ color: COLLAB_ACCENT_INK }} aria-hidden>
           <ChevronRight />
         </span>
       ) : null}

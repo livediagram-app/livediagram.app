@@ -23,7 +23,7 @@ first id the editor minted threw `crypto.randomUUID is not a function` while it 
   `crypto.randomUUID` when the browser left it out. It mints RFC 4122 version 4 ids from
   `crypto.getRandomValues`, which every context has, so the ids are as random as the real ones. A browser that
   has `randomUUID` keeps its own. Call sites keep calling `crypto.randomUUID()`: one shim, no second id helper.
-- **Hashes work everywhere.** Every SHA-256 the code computes (a Plan card person's id, a Q&A board's voter id,
+- **Hashes work everywhere.** Every SHA-256 the code computes (a Plan card person's id,
   an image's content address, the CLI's PKCE challenge) goes through `sha256` in `@livepages/items`
   (`packages/items/src/sha256.ts`, the dependency-free package both `@livepages/document` and
   `@livepages/api-schema` already use). It calls `crypto.subtle.digest` wherever the context has it and

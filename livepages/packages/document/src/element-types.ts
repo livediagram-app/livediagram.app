@@ -41,7 +41,6 @@ import type { IconSize } from './icon-size';
 import type { IconWeight } from './icon-weight';
 import type { EmbedProvider } from './youtube';
 import type { ParticipantResponse } from './responses';
-import type { QaNote } from './qa-board';
 import type { HeroCaption, StatItem } from './web-components';
 import type { ImageCredit } from './image-credit';
 import type {
@@ -305,12 +304,6 @@ export type ShapeElement = {
   // (docs/specs/012-collaboration/idea-box.md "Anonymity is structural").
   ideaCardIds?: string[];
   ideasRevealed?: boolean;
-  // Q&A board (docs/specs/012-collaboration/qa-board.md): the notes, in submission order (the sort is a view,
-  // never stored), and the server-bumped revision every whole-element sync
-  // path compares so a stale snapshot can't roll the board back
-  // (preferNewerQa). Only the qa endpoint writes these.
-  qaNotes?: QaNote[];
-  qaRev?: number;
   // Which round of answers / ideas this card is on (docs/specs/012-collaboration/collab-race-hardening.md): a random id
   // minted by each clear or reset. Answers and ideas travel as their own
   // element deltas stamped with it, so one cast before a clear can't land in

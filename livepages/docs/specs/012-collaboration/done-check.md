@@ -91,7 +91,7 @@ and a bubbling listener never hears the click that should dismiss it.
 ## Reading the card
 
 Built in the behaviour elements' current direction ([Participant responses](participant-responses.md): the paper
-kit is being retired; the [Q&A board](qa-board.md) set the look). It replaced a feint-ruled "sheet"
+kit is being retired; the [Idea box](idea-box.md) set the look). It replaced a feint-ruled "sheet"
 with two plain avatar lists and a grey pill button.
 
 - **Title row**: the `…` leading the question, the `done/total` count at the right.
@@ -111,6 +111,6 @@ with two plain avatar lists and a grey pill button.
 - Avatar gaps clear the presence ring (the ring is a box-shadow outside each
   avatar's layout box and eats 4px of any gap beside it).
 - The card stays **fixed-size at 280x220**. Durations are canvas motion, in
-  `qa-board.css`, and collapse under reduced motion. The export draws the same
+  `collab-cards.css`, and collapse under reduced motion. The export draws the same
   card: the ring, a check in it once anyone is done, a neutral disc with a
   green check per person done (an export has no names to show), and the button.

@@ -61,7 +61,7 @@ describe('useStableCollab', () => {
   it('changes when its own data changes', () => {
     const { result, rerender } = setup();
     const first = result.current;
-    rerender({ c: collab({ selfName: 'Someone' }) });
+    rerender({ c: collab({ selfKey: 'someone-else' }) });
     expect(result.current).not.toBe(first);
   });
 });

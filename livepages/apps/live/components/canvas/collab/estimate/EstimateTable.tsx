@@ -14,7 +14,7 @@ import {
 import { participantKey, type Participant } from '@/lib/identity';
 import { ParticipantAvatar } from '@/components/primitives/ParticipantAvatar';
 import { tint } from '../collab-chrome';
-import { QA_ACCENT, QA_ACCENT_INK, QA_ON_ACCENT } from '../qa/qa-parts';
+import { COLLAB_ACCENT, COLLAB_ACCENT_INK, COLLAB_ON_ACCENT } from '../collab-parts';
 
 export function EstimateTable({
   scale,
@@ -56,7 +56,7 @@ export function EstimateTable({
           >
             <span
               className="est-progress block h-full rounded-full"
-              style={{ width: `${Math.round(share * 100)}%`, backgroundColor: QA_ACCENT }}
+              style={{ width: `${Math.round(share * 100)}%`, backgroundColor: COLLAB_ACCENT }}
             />
           </span>
         </div>
@@ -78,7 +78,7 @@ export function EstimateTable({
         className="rounded-full px-2.5 py-1 text-[10.5px] font-bold"
         style={
           unanimous
-            ? { color: QA_ACCENT_INK, backgroundColor: tint(QA_ACCENT, 0.16) }
+            ? { color: COLLAB_ACCENT_INK, backgroundColor: tint(COLLAB_ACCENT, 0.16) }
             : { color: textColor, backgroundColor: tint(textColor, 0.08) }
         }
       >
@@ -129,17 +129,21 @@ function Card({
   return (
     <span className="relative flex flex-col items-center pb-2">
       <span
-        className={`flex h-[46px] w-[34px] items-center justify-center rounded-lg border text-[15px] font-bold tabular-nums ${faceUp ? 'est-flip' : 'qa-enter'}`}
+        className={`flex h-[46px] w-[34px] items-center justify-center rounded-lg border text-[15px] font-bold tabular-nums ${faceUp ? 'est-flip' : 'collab-enter'}`}
         style={{
           animationDelay: faceUp ? `${delay}ms` : undefined,
-          color: filled ? QA_ON_ACCENT : textColor,
+          color: filled ? COLLAB_ON_ACCENT : textColor,
           backgroundColor: filled
-            ? QA_ACCENT
+            ? COLLAB_ACCENT
             : faceUp
               ? tint(textColor, 0.05)
-              : tint(QA_ACCENT, 0.18),
-          borderColor: ringed ? QA_ACCENT : faceUp ? tint(textColor, 0.16) : tint(QA_ACCENT, 0.4),
-          boxShadow: ringed ? `0 0 0 2px ${tint(QA_ACCENT, 0.35)}` : undefined,
+              : tint(COLLAB_ACCENT, 0.18),
+          borderColor: ringed
+            ? COLLAB_ACCENT
+            : faceUp
+              ? tint(textColor, 0.16)
+              : tint(COLLAB_ACCENT, 0.4),
+          boxShadow: ringed ? `0 0 0 2px ${tint(COLLAB_ACCENT, 0.35)}` : undefined,
         }}
       >
         {faceUp ? <span className="text-optical-centre">{children}</span> : null}

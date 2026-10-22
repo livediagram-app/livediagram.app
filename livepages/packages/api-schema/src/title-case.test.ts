@@ -22,7 +22,7 @@ describe('headlineCase', () => {
 
   it('never lowers letters a word already has', () => {
     expect(headlineCase('OK hand')).toBe('OK Hand');
-    expect(headlineCase('Q&A board')).toBe('Q&A Board');
+    expect(headlineCase('Q&A session')).toBe('Q&A Session');
     expect(headlineCase('YouTube embed')).toBe('YouTube Embed');
   });
 });

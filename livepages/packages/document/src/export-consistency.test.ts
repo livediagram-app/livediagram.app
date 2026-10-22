@@ -72,7 +72,6 @@ describe('every kind with a body draws one', () => {
     'estimate',
     'temperature',
     'idea-box',
-    'qa-board',
     'agenda',
     'decision',
     'roll-call',

@@ -6,7 +6,7 @@
 import { useState } from 'react';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { tint } from '../collab-chrome';
-import { QA_ACCENT, QA_ON_ACCENT, stopPointer } from '../qa/qa-parts';
+import { COLLAB_ACCENT, COLLAB_ON_ACCENT, stopPointer } from '../collab-parts';
 import { useFaceShadow } from '@/components/canvas/CanvasFinishContext';
 
 export function EstimatePicks({
@@ -66,14 +66,14 @@ function PickCard({
       aria-label={chosen ? `Withdraw ${value}` : `Pick ${value}`}
       className="est-card pointer-events-auto flex h-[52px] w-full min-w-0 cursor-pointer items-center justify-center rounded-xl border text-[15px] font-bold tabular-nums disabled:cursor-default"
       style={{
-        color: chosen ? QA_ON_ACCENT : textColor,
-        backgroundColor: chosen ? QA_ACCENT : tint(textColor, 0.04),
-        borderColor: chosen ? QA_ACCENT : tint(textColor, 0.14),
-        boxShadow: shadow(chosen ? `0 10px 18px -10px ${QA_ACCENT}` : undefined),
+        color: chosen ? COLLAB_ON_ACCENT : textColor,
+        backgroundColor: chosen ? COLLAB_ACCENT : tint(textColor, 0.04),
+        borderColor: chosen ? COLLAB_ACCENT : tint(textColor, 0.14),
+        boxShadow: shadow(chosen ? `0 10px 18px -10px ${COLLAB_ACCENT}` : undefined),
         transform: chosen ? 'translateY(-3px)' : undefined,
       }}
     >
-      <span key={pop ? 'pop' : 'rest'} className={`text-optical-centre ${pop ? 'qa-pop' : ''}`}>
+      <span key={pop ? 'pop' : 'rest'} className={`text-optical-centre ${pop ? 'collab-pop' : ''}`}>
         {value}
       </span>
     </button>

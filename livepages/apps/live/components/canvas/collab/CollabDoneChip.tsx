@@ -7,7 +7,7 @@ import type { ReactNode } from 'react';
 import { COLLAB_DONE_COLOR } from '@livepages/document';
 import { Chip } from '@livepages/ui';
 import { tint } from './collab-chrome';
-import { CheckGlyph } from './qa/qa-parts';
+import { CheckGlyph } from './collab-parts';
 
 export function CollabDoneChip({ children }: { children: ReactNode }) {
   return (

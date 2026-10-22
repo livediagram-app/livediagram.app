@@ -1082,46 +1082,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/documents/{id}/tabs/{tabId}/qa',
-    segment: 'documents',
-    tag: 'Documents',
-    summary:
-      "Apply one action to a Q&A board element. Readers may add and vote; running the board needs edit access. The voter and author are derived from the caller, never read from the body. A guest's upvote answers 429 vote_limit once its network holds the most guest voters the document takes.",
-    auth: 'guest-or-clerk',
-    requestSchema: {
-      type: 'object',
-      properties: {
-        elementId: { type: 'string' },
-        action: {
-          type: 'object',
-          description:
-            'One of: add { id, text, anonymous }; vote { noteId, on }; discuss { noteId | null }; done, reopen or remove { noteId }; clear.',
-          properties: {
-            type: { enum: ['add', 'vote', 'discuss', 'done', 'reopen', 'remove', 'clear'] },
-            id: { type: 'string' },
-            text: { type: 'string' },
-            anonymous: { type: 'boolean' },
-            noteId: { type: ['string', 'null'] },
-            on: { type: 'boolean' },
-          },
-          required: ['type'],
-        },
-      },
-      required: ['elementId', 'action'],
-    },
-    responseSchema: {
-      type: 'object',
-      properties: {
-        notes: { type: 'array', items: ref('QaNote') },
-        rev: { type: 'integer' },
-        voterId: { type: 'string' },
-      },
-      required: ['notes', 'rev', 'voterId'],
-    },
-    statuses: [200, 400, 401, 403, 404, 409, 410, 413, 429],
-  },
-  {
-    method: 'POST',
     path: '/documents/{id}/tabs/{tabId}/link',
     segment: 'documents',
     tag: 'Documents',

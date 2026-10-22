@@ -9,7 +9,7 @@ import {
   TAB_SAVE_CAS_ATTEMPTS,
   parseChangesetSeen,
 } from '@livepages/api-schema';
-import { isValidTab, migrateIncomingTab, preferNewerQaAll, type Tab } from '@livepages/document';
+import { isValidTab, migrateIncomingTab, type Tab } from '@livepages/document';
 import { mergeChangesetsIntoSave } from '../changesets/merge-on-save';
 import { hasNewComments, rewriteCommentAuthors } from '../comments';
 import {
@@ -112,9 +112,6 @@ export async function handleTabPut(
     ) {
       return conflict('empty_tab_overwrite_blocked');
     }
-    // A Q&A board's notes are owned by the qa endpoint (docs/specs/012-collaboration/qa-board.md):
-    // keep whichever copy has the higher `qaRev`.
-    if (existingTab) body.elements = preferNewerQaAll(existingTab.elements, body.elements);
     const orderIndex = existingTab?.orderIndex ?? existing.tabCount;
     // Newly added comments carry the resolved owner's participant record, never the client's claim
     // (docs/specs/014-identity/auth-and-guest-access.md). getDocument already joined the owner's

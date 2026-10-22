@@ -79,7 +79,7 @@ ringed, because they are the two people who should talk first.
 ## The look
 
 Built in the behaviour elements' current direction ([Participant responses](participant-responses.md): the paper
-kit is being retired; the [Q&A board](qa-board.md), [Idea box](idea-box.md) and [Temperature check](temperature-check.md) set it). It
+kit is being retired; the [Idea box](idea-box.md) and [Temperature check](temperature-check.md) set it). It
 replaced a row of number chips over a printed crosshatched card back, a "Shown"
 rubber stamp after the reveal, and Reveal / Clear pills side by side.
 
@@ -92,7 +92,7 @@ rubber stamp after the reveal, and Reveal / Clear pills side by side.
   face-down card in the accent's tint with its person's avatar, over a slim
   progress bar; the count is the header's "4/6 answered", shown once. On the reveal they flip face up in a short
   cascade, sorted low to high.
-- **The one action** is the Q&A board's dashed accent bar, at the foot of the
+- **The one action** is the shared dashed accent bar, at the foot of the
   card under the cards it acts on: **Reveal** with its count as a badge while
   hidden, **New Round** once revealed. No hover card on either: the label says
   what it does.
@@ -103,7 +103,7 @@ rubber stamp after the reveal, and Reveal / Clear pills side by side.
   scale chooser while it has no scale; otherwise the scale's cards over the
   room's, face down before the reveal and face up after, sorted, with the spread
   and its ends ringed.
-- Durations are canvas motion and live in `qa-board.css`; every motion
+- Durations are canvas motion and live in `collab-cards.css`; every motion
   collapses under reduced motion.
 
 ## What it is not

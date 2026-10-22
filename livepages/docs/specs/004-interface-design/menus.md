@@ -139,7 +139,7 @@ element or add one:
   Point", "Add Stat".
 - **Buttons drawn on an element**: the selection toolbar ("Bring to Front", "Edit Points", "Add
   Text"), the path toolbar ("Delete Point", "Close Path"), a facilitator's accent bar ("Open the
-  Box", "New Round", "Take Roll") and a Q&A note's row actions ("Discuss Now", "Mark Done"). An
+  Box", "New Round", "Take Roll"). An
   export draws an accent bar with the same words.
 - **Command palette names**: every command search offers ("Bring to Front", "Create New Tab",
   "Hand Tool", "Add Green Status Marker"), so an action reads the same in search as on the toolbar.
@@ -178,7 +178,7 @@ Each menu, how it opens, what it holds, and what the keyboard could do before th
 | Zoom menu             | Hovering or focusing the zoom percentage                       | One-of-a-set zoom levels, Fit to screen                                  | Opened on focus; Tab through; no arrows             |
 | Account menu          | The account pill                                               | Name header, Account, Sign out                                           | Tab only; trigger had no `aria-haspopup`; no Escape |
 | Embed tab menu        | The tab pill on an embedded document                           | One-of-a-set tabs                                                        | Tab, Escape                                         |
-| Element quick menus   | ⋯ on a Q&A board, Done check, Idea box, Quiz                   | Verbs, All Settings… under a separator                                   | Tab only                                            |
+| Element quick menus   | ⋯ on a Done check, Idea box, Quiz                              | Verbs, All Settings… under a separator                                   | Tab only                                            |
 | Locked element menu   | Right-click on an element someone else holds                   | "In use" header, Release rows, a note                                    | Escape only                                         |
 | Product switcher      | The section name in the help, telemetry and marketing headers  | Section links                                                            | Tab only                                            |
 | Telemetry view picker | The view button on the sticky window bar                       | Views                                                                    | Tab only                                            |

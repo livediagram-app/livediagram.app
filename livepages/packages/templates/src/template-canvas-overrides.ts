@@ -113,10 +113,8 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'state-machine': 'graph',
   'user-story-map': 'grid',
   'affinity-map': 'grid',
-  'lean-coffee': 'grid',
   brainstorm: 'grid',
   'workshop-board': 'grid',
-  'town-hall': 'grid',
   'pub-quiz': 'grid',
   'icebreaker-questions': 'grid',
   // Grid: an office's floor plan reads as one on gridded paper, the rooms carrying their own floors.

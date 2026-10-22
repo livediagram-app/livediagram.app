@@ -722,7 +722,7 @@ an agent hand-placing a dashboard guessed `textAlign` and `textSize: "xl"`.
 with `minutes`, a stopwatch, a vote with `dots`, a poll with `question` and `options`), an agenda's `agendaItems`,
 a checklist's `checklistItems`, a stat row's `stats`, a callout's `pageTitle` over its `label` body, a banner's
 `pageTitle` and `pageSubtitle`, and a sticker's `stickerId`. A bare `text` is centred in its box unless it sets
-`textAlignX`. The entries of a Q&A board, an idea box and a temperature check are the people's, never an edit's,
+`textAlignX`. The entries of an idea box and a temperature check are the people's, never an edit's,
 so starter questions go on stickies beside them. An agenda written with segments grows to draw every one
 ([Agenda](../012-collaboration/agenda.md) "The face").
 

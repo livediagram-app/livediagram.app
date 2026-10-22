@@ -17,7 +17,7 @@ import { EstimateEmpty } from './estimate/EstimateEmpty';
 import { EstimatePicks } from './estimate/EstimatePicks';
 import { EstimateScalePicker } from './estimate/EstimateScalePicker';
 import { EstimateTable } from './estimate/EstimateTable';
-import { AccentBar, EyeGlyph, ReopenGlyph } from './qa/qa-parts';
+import { AccentBar, EyeGlyph, ReopenGlyph } from './collab-parts';
 
 export function EstimateFace({
   element,

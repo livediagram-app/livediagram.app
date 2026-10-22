@@ -9,7 +9,6 @@
 // Everything here is re-exported from './index'.
 
 import type { ShapeKind } from './index';
-import { isQaBoardShape } from './qa-board';
 import { isQuizShape } from './quiz';
 import { isSelfDrawingShape } from './data-shapes';
 
@@ -327,7 +326,6 @@ export function isCollabPanelShape(kind: ShapeKind): boolean {
     isEstimateShape(kind) ||
     isTemperatureShape(kind) ||
     isIdeaBoxShape(kind) ||
-    isQaBoardShape(kind) ||
     isAgendaShape(kind) ||
     isRollCallShape(kind) ||
     isDecisionShape(kind) ||
