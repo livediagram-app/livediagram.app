@@ -34,16 +34,8 @@ function agendaState(el: Element): ViewAttribute[] {
 // What pressing a session button starts: its tool and the setting it starts with.
 function sessionState(el: Element): ViewAttribute {
   const plan = sessionButtonPlan(Reflect.get(el, 'session') as SessionButtonConfig | undefined);
-  // A poll not set up yet (no question, or a choice poll with fewer than two answers), as the editor shows it.
-  if (!plan) return countAttribute('session', 'poll:unset');
   const setting =
-    plan.tool === 'timer'
-      ? `:${plan.minutes}m`
-      : plan.tool === 'vote'
-        ? `:${plan.dots}`
-        : plan.tool === 'poll'
-          ? `:${plan.style}`
-          : '';
+    plan.tool === 'timer' ? `:${plan.minutes}m` : plan.tool === 'vote' ? `:${plan.dots}` : '';
   return countAttribute('session', `${plan.tool}${setting}`);
 }
 

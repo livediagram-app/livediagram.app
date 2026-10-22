@@ -145,7 +145,7 @@ A character can **say something**: a short message appears in a speech bubble ab
 ### Who may speak
 
 - An **Editor** and a **Participant** may speak. A **Viewer** may not: the Enter key does nothing for them and their panel has no Send a Message button, but they **see** everyone else's bubbles, as they see everyone's characters. Gated on the session's `can`, never on `isReadOnly` (Avatar mode makes the canvas read-only for everyone in it).
-- The room enforces it too: it drops an `avatar-say` from a view-role sender, as it drops a Viewer's reaction or poll answer.
+- The room enforces it too: it drops an `avatar-say` from a view-role sender, as it drops a Viewer's reaction.
 - Speaking needs the mode: there is no bubble without a character to say it.
 
 ### Typing a message (the composer)

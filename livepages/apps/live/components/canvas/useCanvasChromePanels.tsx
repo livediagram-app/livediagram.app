@@ -53,7 +53,7 @@ const CollaboratePanel = dynamic(
 );
 
 // Lazy for the same reason: the Session strip's popovers (docs/specs/012-collaboration/session-tools.md
-// "The Session strip") load on the first press of a Timer, Vote or Poll button.
+// "The Session strip") load on the first press of a Timer or Vote button.
 const SessionPopover = dynamic(() => import('./SessionPopover').then((m) => m.SessionPopover), {
   ssr: false,
 });
@@ -108,7 +108,7 @@ export function useCanvasChromePanels({
   trashPopoverEl: ReactNode;
   newCardPopoverEl: ReactNode;
   cardFinderPopoverEl: ReactNode;
-  // The Session strip's open popover (Timer, Vote or Poll), over its button.
+  // The Session strip's open popover (Timer or Vote), over its button.
   sessionPopoverEl: ReactNode;
   // The Tidy Up popover over its button, in Diagram mode.
   tidyUpPopoverEl: ReactNode;
@@ -141,7 +141,6 @@ export function useCanvasChromePanels({
     onToggleRecentExclusion,
     favouriteIds,
     onToggleFavourite,
-    pollPanel,
     tabVote,
     voteResults,
     onJumpToVoteResult,
@@ -488,12 +487,10 @@ export function useCanvasChromePanels({
     ) : null;
 
   // The Session strip's popovers (docs/specs/012-collaboration/session-tools.md "The Session strip"). A
-  // segment whose button has gone (a view-role visitor's tool ended, a poll dismissed) closes its
+  // segment whose button has gone (a view-role visitor's tool ended) closes its
   // popover rather than leaving it floating with no button under it.
   const sessionSegment =
-    activeDockPanel === 'session-timer' ||
-    activeDockPanel === 'session-vote' ||
-    activeDockPanel === 'session-poll'
+    activeDockPanel === 'session-timer' || activeDockPanel === 'session-vote'
       ? activeDockPanel
       : null;
   // Only the tools the mode's strip offers (docs/specs/012-collaboration/session-tools.md).
@@ -502,7 +499,7 @@ export function useCanvasChromePanels({
     segment: sessionSegment,
     tools: sessionTools ? stripTools : null,
     readOnly: !!readOnly,
-    running: { timer: !!sessionTools?.timer, vote: !!tabVote, poll: !!pollPanel },
+    running: { timer: !!sessionTools?.timer, vote: !!tabVote },
   });
   useEffect(() => {
     if (sessionButtonGone) closeDockPanel();
@@ -515,9 +512,7 @@ export function useCanvasChromePanels({
       ? !!sessionTools?.timer
       : sessionSegment === 'session-vote'
         ? !!tabVote
-        : sessionSegment === 'session-poll'
-          ? !!sessionTools?.livePoll
-          : false;
+        : false;
   // Per segment: switching from a running tool's popover to an idle one is not an ending.
   const wasRunning = useRef({ segment: sessionSegment, running: sessionRunning });
   useEffect(() => {
@@ -537,7 +532,6 @@ export function useCanvasChromePanels({
         canVote={!readOnly || !!takePart}
         holdOpen={!isMobile}
         voteSelfId={participantKey(selfParticipant)}
-        pollPanel={pollPanel}
         vote={{
           tabVote,
           elements,

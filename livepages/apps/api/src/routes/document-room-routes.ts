@@ -20,7 +20,6 @@ import { noteWorkbenchSessionRoom } from '../db/workbench';
 import { forbidden, json, notFound } from '../responses';
 import { gateGrant, missingDocument, ownsDocument, type RouteContext } from './context';
 import { personTagFor } from '../person-tag';
-import { networkTagFor } from '../vote-integrity';
 
 // Returns null when the request isn't a room route.
 export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Response | null> {
@@ -235,9 +234,6 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     // The document this room serves, so a Participant's write knows its row; the room is named after it, and the
     // header is set on every path for the same reason as the headers above.
     forwarded.headers.set('X-Verified-Document', id);
-    // The caller's network, hashed with the document id (docs/specs/012-collaboration/vote-integrity.md): what
-    // caps a poll's answers from one network. Set on every path for the same reason as the headers above.
-    forwarded.headers.set('X-Verified-Network', await networkTagFor(id, clientRateKey(request)));
     return stub.fetch(forwarded);
   }
 

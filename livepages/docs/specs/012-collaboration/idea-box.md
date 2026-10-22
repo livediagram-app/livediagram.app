@@ -41,8 +41,7 @@ to every frame — so a peer reading their own devtools can tell who submitted
 what. Closing that would mean relaying idea submissions through a separate
 unattributed path, which is a second sync route for one element.
 
-The same honesty [Live poll (ephemeral pulse-check)](live-poll.md) applies to the poll's costs applies here: the feature
-is worth having with this limit, and the limit is written down.
+The feature is worth having with this limit, and the limit is written down.
 
 ## The element
 
@@ -55,7 +54,7 @@ rather than bigger ones.
   in `validate.ts` like every other list field.
 - **`ShapeElement.ideaCardIds`**: each card's id, by position: `ideaCardIds[i]`
   names `ideaCards[i]`. Optional and back-compatible: a box from before ids,
-  a card a template or a poll capture put in, or one the room's ledger
+  a card a template put in, or one the room's ledger
   restored has no id (the entry is missing or `''`), and is still a card.
   Same bound as `ideaCards`; each id at most 64 characters.
 - **`ShapeElement.ideasRevealed`** — shared, false by default.

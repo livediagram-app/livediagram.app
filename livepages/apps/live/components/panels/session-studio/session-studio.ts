@@ -1,4 +1,4 @@
-// Pure logic behind the session panes (docs/specs/012-collaboration/session-tools.md, docs/specs/012-collaboration/live-poll.md): the Timer
+// Pure logic behind the session panes (docs/specs/012-collaboration/session-tools.md): the Timer
 // dial's angle <-> minutes mapping, and the rules a running dot vote is under. Kept out of the components so it can be tested without a
 // DOM, and so the dial's snapping rules live in one place.
 

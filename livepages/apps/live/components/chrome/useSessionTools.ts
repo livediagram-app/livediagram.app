@@ -20,10 +20,6 @@ export function useSessionTools(): SessionToolsProps {
     endVote,
     revealVote,
     clearVote,
-    livePoll,
-    documentShareable,
-    documentTeamId,
-    pollCollaborators,
     layers,
     activeLayerId,
   } = useEditorContext();
@@ -35,9 +31,6 @@ export function useSessionTools(): SessionToolsProps {
       : null;
   const timer = activeTab.timer ?? null;
   const vote = activeTab.vote ?? null;
-  // A poll only reaches other people through the realtime room (docs/specs/012-collaboration/live-poll.md).
-  // Unshared and off-team, it still runs, just for you; the composer says so rather than refusing.
-  const pollHasAudience = documentShareable || !!documentTeamId;
   return useMemo(
     () => ({
       facilitatedBy,
@@ -54,10 +47,6 @@ export function useSessionTools(): SessionToolsProps {
       onEndVote: endVote,
       onRevealVote: revealVote,
       onClearVote: clearVote,
-      livePoll: livePoll.poll,
-      pollHasAudience,
-      onStartPoll: livePoll.startPoll,
-      pollCollaborators,
       voteLayers: layers,
       activeLayerId,
     }),
@@ -76,10 +65,6 @@ export function useSessionTools(): SessionToolsProps {
       endVote,
       revealVote,
       clearVote,
-      livePoll.poll,
-      pollHasAudience,
-      livePoll.startPoll,
-      pollCollaborators,
       layers,
       activeLayerId,
     ],

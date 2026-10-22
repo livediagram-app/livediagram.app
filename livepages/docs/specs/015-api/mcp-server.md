@@ -719,7 +719,7 @@ heads, border style and radius, font) with its values, bold and italic, `colorPr
 an agent hand-placing a dashboard guessed `textAlign` and `textSize: "xl"`.
 
 **Facilitation kinds.** The format also names what the session kinds hold: a `session-button`'s `session` (a timer
-with `minutes`, a stopwatch, a vote with `dots`, a poll with `question` and `options`), an agenda's `agendaItems`,
+with `minutes`, a stopwatch, and a vote with `dots`), an agenda's `agendaItems`,
 a checklist's `checklistItems`, a stat row's `stats`, a callout's `pageTitle` over its `label` body, a banner's
 `pageTitle` and `pageSubtitle`, and a sticker's `stickerId`. A bare `text` is centred in its box unless it sets
 `textAlignX`. The entries of an idea box and a temperature check are the people's, never an edit's,

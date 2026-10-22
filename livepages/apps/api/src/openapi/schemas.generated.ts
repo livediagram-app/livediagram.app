@@ -11299,17 +11299,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
-  "PollStyle": {
-    "enum": [
-      "yesNo",
-      "yesNoAbstain",
-      "choice",
-      "collaborators",
-      "rating",
-      "text"
-    ],
-    "type": "string"
-  },
   "ProgressAnim": {
     "enum": [
       "fill",
@@ -12195,18 +12184,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "minutes": {
         "type": "number"
       },
-      "options": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "question": {
-        "type": "string"
-      },
-      "style": {
-        "$ref": "#/components/schemas/PollStyle"
-      },
       "tool": {
         "$ref": "#/components/schemas/SessionTool"
       }
@@ -12220,8 +12197,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "enum": [
       "timer",
       "stopwatch",
-      "vote",
-      "poll"
+      "vote"
     ],
     "type": "string"
   },

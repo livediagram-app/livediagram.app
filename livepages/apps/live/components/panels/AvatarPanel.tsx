@@ -1,7 +1,7 @@
 'use client';
 
 // The Avatar Panel (docs/specs/008-canvas/avatar-mode.md): the character sheet for Avatar mode. Present
-// only while the mode is active — like the Poll / Vote panels, it joins and
+// only while the mode is active — like the Vote panel, it joins and
 // leaves its corner stack rather than sitting there. Same width as the
 // Palette it stacks under.
 //

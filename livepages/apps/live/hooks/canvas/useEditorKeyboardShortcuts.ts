@@ -80,7 +80,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       if (e.key === 'Escape') {
         const live = liveRef.current;
         // Claim the key when it cancelled something, so a later listener
-        // (the non-modal poll sheet's Escape-to-skip) knows it's spoken for.
+        // knows it's spoken for.
         if (
           live.formatSourceId !== null ||
           live.pendingDraw !== null ||

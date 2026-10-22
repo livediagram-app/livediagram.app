@@ -76,7 +76,7 @@ export type ParticipantOpResult =
 
 type Bag = Record<string, unknown>;
 
-// Whether a Participant may write on an element someone else added. A Behaviour's words (a poll's question, a
+// Whether a Participant may write on an element someone else added. A Behaviour's words (a
 // timer's or mode button's caption) are how the facilitator runs the session, so they stay an Editor's.
 export function participantWritesOn(el: Element): boolean {
   return !(el.type === 'shape' && isBehaviourShape(el.shape));

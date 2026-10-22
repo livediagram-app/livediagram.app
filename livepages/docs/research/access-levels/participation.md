@@ -74,7 +74,7 @@ write, and they disagree in effect though each is coherent on its own:
 
 - **Presence-class ops** relay from any role (`PRESENCE_OP_KINDS`, `packages/api-schema/src/room-messages.ts`).
   `poll-answer` was placed there on purpose, because "audiences are usually on view links"
-  ([Live poll](../../specs/012-collaboration/live-poll.md#roles)).
+  (the live poll, since removed).
 - **Mutation-class ops** relay only from `edit` (`apps/api/src/document-room.ts:663`). A dot (`vote`) and every
   `el-delta` (estimate, temperature, Done check, quiz pick, idea) are mutations, so a viewer cannot cast them
   ([Session tools](../../specs/012-collaboration/session-tools.md#roles),
@@ -174,7 +174,7 @@ holds today and what a Participant level would expose.
    compared with Kahoot or Slido, is **removing one participant** without revoking everybody's link. A true Viewer
    level (looks only) shrinks the blast radius of a leaked look-only link to nothing writable.
 5. **Anonymity is against the room, not the wire.** Polls say "not shown against names", never "anonymous", because
-   the relay carries the sender's presence id ([Live poll](../../specs/012-collaboration/live-poll.md#anonymity--what-is-and-isnt-guaranteed));
+   the relay carries the sender's presence id (the live poll, since removed);
    the idea box's `el` op carries `from` ([Idea box](../../specs/012-collaboration/idea-box.md#the-limit-stated-plainly)).
    Slido, by contrast, states its anonymous mode is "truly anonymous"
    ([Participant privacy](https://community.slido.com/setting-up-a-slido-event-82/participant-privacy-set-anonymous-or-named-questions-and-poll-votes-by-default-1609)).

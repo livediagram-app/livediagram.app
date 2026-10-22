@@ -45,8 +45,8 @@ describe('the whiteboard shape catalogue', () => {
     expect([...keys].some((k) => k.startsWith('plan-'))).toBe(false);
   });
 
-  it('keys each creation choice apart, so a poll is not a timer', () => {
-    expect(whiteboardShapeEntry('session-button:poll')?.label).toBe('Poll');
+  it('keys each creation choice apart, so a vote is not a timer', () => {
+    expect(whiteboardShapeEntry('session-button:vote')?.label).toBe('Dot Vote');
     expect(whiteboardShapeEntry('session-button:timer')?.label).toBe('Timer');
   });
 

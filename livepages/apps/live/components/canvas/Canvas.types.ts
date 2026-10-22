@@ -132,7 +132,7 @@ export type CanvasProps = {
   revealedIds?: ReadonlySet<string>;
   onToggleReveal?: (elementId: string) => void;
   // Per-element session settings from the element's own `…` menu (docs/specs/012-collaboration/session-button.md):
-  // the timer's length, the vote's dots, the poll's question and answers.
+  // the timer's length and the vote's dots.
   // Absent on a read-only surface, which renders the menu's trigger not at all.
   // Comment panel (docs/specs/012-collaboration/comment-pin.md): who I am, plus the thread mutators, so a panel
   // shows and edits its thread in place. All keyed by element id, which is how
@@ -456,18 +456,6 @@ export type CanvasProps = {
   // The session tools for the Session strip (docs/specs/012-collaboration/session-tools.md "The Session
   // strip"): the same bundle the tab menu's Session Studio drives. Absent on a surface without one.
   sessionTools?: import('@/components/chrome/session-tools-props').SessionToolsProps;
-  // Live poll (docs/specs/012-collaboration/live-poll.md). The panel exists only while a poll is running
-  // and its results are yours to see, so null means the Poll button opens the composer instead.
-  pollPanel: {
-    poll: import('@livepages/api-schema').LivePoll;
-    answers: Map<string, string | null>;
-    isHost: boolean;
-    onEnd: () => void;
-    // Keep the tallies so far on the canvas as a chart, without ending the
-    // poll (docs/specs/012-collaboration/poll-result-capture.md). Absent for a viewer who can't add elements.
-    onKeepResults?: () => void;
-    onDismiss: () => void;
-  } | null;
   // Live vote panel (docs/specs/012-collaboration/session-tools.md): turnout while casting is open, then the
   // clickable ranked results. Null when no vote is running on this tab.
   // Per-user preferences (docs/specs/007-editor/user-preferences.md) + the Recent exclusion toggle

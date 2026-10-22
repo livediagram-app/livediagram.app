@@ -3,14 +3,14 @@
 **Workshop** is the fifth [editor mode](../007-editor/editor-modes.md), beside Diagram, Draw,
 Pages and Plan: how a general tab is worked on while a team runs a session on it, a
 retrospective, a brainstorm, a workshop. It brings the tools that run a room into
-focus (timers, votes, polls, reveals, the Collaborate elements, stickers) and takes them out of
+focus (timers, votes, reveals, the Collaborate elements, stickers) and takes them out of
 Diagram, so Diagram is about diagrams.
 
 ## Why
 
 Diagram was the first mode, so it collected everything: shapes and arrows, and beside them a
-whole workshop kit (34 Collaborate tiles, a sticker catalogue, a Session strip of Timer, Vote and
-Poll in the bottom bar). Someone drawing an architecture diagram meets a fist-of-five gauge and
+whole workshop kit (34 Collaborate tiles, a sticker catalogue, a Session strip of Timer and Vote
+in the bottom bar). Someone drawing an architecture diagram meets a fist-of-five gauge and
 confetti; someone running a retro has to know those tools hide in the last category of a diagram
 palette. A mode for running a session gives each audience its own surface, the way Plan did for
 boards.
@@ -22,7 +22,7 @@ boards.
 | **Workshop mode** | The editor mode for running a session with a team (`EditorMode` `'workshop'`)                 | Workshop mode (its old name), Session mode, Collaborate mode |
 | **session**       | The activity a team runs on a tab (a retro, a brainstorm); never a stored thing               | a tab kind, a document type                                  |
 | **facilitator**   | The person holding the baton ([Facilitator](facilitator.md)); unrelated to who is in the mode | anyone in Workshop mode                                      |
-| **session tools** | Timer, Vote and Poll ([Session tools](session-tools.md))                                      | the Collaborate elements as a whole                          |
+| **session tools** | Timer and Vote ([Session tools](session-tools.md))                                            | the Collaborate elements as a whole                          |
 | **Collaborate**   | The session elements as a whole (`toolGroup: 'behaviour'`), offered as six categories         | the mode, or comments and presence in general                |
 
 - The interface says **Workshop**; specs and code say **Workshop mode** or `'workshop'`.
@@ -42,7 +42,7 @@ boards.
 - **Diagram mode's look and input.** No pages, no dock: the canvas, the palette and the Toolbar
   strip as Diagram has them. Every rule, tool and shortcut not named here is Diagram mode's.
 - **Its own palette layout** (below), landing on its Popular.
-- **The Session strip with all three tools**, Timer, Vote and Poll, with their set-up panes
+- **The Session strip with both tools**, Timer and Vote, with their set-up panes
   ([Session tools](session-tools.md#the-session-strip)).
 - **It starts on Select** (Hand on a phone), like Diagram.
 - **Its mark** is a flipchart on an easel, on a start's mode switch, the tab pill, the
@@ -111,7 +111,7 @@ stop to draw):
   [Collaborate](../010-palette/palette-top-level-categories.md#collaborate-one-category-fully-grouped)
   is its own category in a **Collaborate** band (the heading names the elements, where Dynamic
   named a mechanism), in the same room-first order, each a list of rows:
-  - **Ask**: Dot vote, Poll, the estimate scales, Temperature check, Idea box.
+  - **Ask**: Dot vote, the estimate scales, Temperature check, Idea box.
   - **Tools**: Timer, Stopwatch, Reveal zone, Done check, Picker.
   - **Record**: Comment panel, Action card, Agenda, Decision record, Roll call.
   - **React**: the five reaction pads.
@@ -133,21 +133,21 @@ stop to draw):
 
 `sessionStripTools`:
 
-| Mode     | Strip tools              |
-| -------- | ------------------------ |
-| Workshop | Timer, Vote, Poll        |
-| Plan     | Timer, Vote              |
-| Diagram  | none                     |
-| Draw     | none (as today)          |
-| Pages    | Vote, Poll while running |
+| Mode     | Strip tools        |
+| -------- | ------------------ |
+| Workshop | Timer, Vote        |
+| Plan     | Timer, Vote        |
+| Diagram  | none               |
+| Draw     | none (as today)    |
+| Pages    | Vote while running |
 
-- **Diagram has no strip, running or not.** A timer, vote or poll started on a Diagram tab (by a
+- **Diagram has no strip, running or not.** A timer or vote started on a Diagram tab (by a
   session button on it, or before the tab was switched out of Workshop) runs as before and shows
-  on its own canvas element, but its strip button and popover do not: watching turnout, ending a
-  poll or keeping its results is done from Workshop (or Plan for a timer or vote). This is the
+  on its own canvas element, but its strip button and popover do not: watching turnout or ending a
+  vote is done from Workshop (or Plan). This is the
   same rule Draw already follows, and the price of a Diagram mode with no session chrome.
-- **Pages shows a running Vote or Poll only.** Nothing is started from its strip (the session
-  buttons on a page do that), but once a vote or poll runs, its button and popover appear for
+- **Pages shows a running Vote only.** Nothing is started from its strip (the session
+  buttons on a page do that), but once a vote runs, its button and popover appear for
   everyone so it can be watched and ended, and go again when it ends. It never shows a Timer.
 - A popover whose button leaves (a mode switch, the tool ending) closes, as today.
 
@@ -165,8 +165,7 @@ Session templates open in Workshop, as the Draw templates open in Draw
   `objectives-planner`, `roadmap`, `raci-matrix`, `user-story-map`, `swot`, `business-model-canvas`,
   `stakeholder-map` and `opportunity-solution-tree` (grouped in Start a Workshop under Retrospectives, Workshops, Planning
   and Strategy, [Templates by mode](../007-editor/templates-by-mode.md#workshop-templates));
-- the games, `icebreaker-questions`, `two-truths-and-a-lie`, `would-you-rather` and
-  `people-bingo` ([Game templates](game-templates.md));
+- the games, `icebreaker-questions` and `people-bingo` ([Game templates](game-templates.md));
 - the spaces to walk round in Avatar mode, `virtual-office`, `coworking-space`, `team-pod` and `all-hands-hall`
   ([Virtual Office template](virtual-office-template.md)).
 

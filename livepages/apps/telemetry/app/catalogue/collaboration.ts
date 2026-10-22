@@ -2,12 +2,7 @@
 // Part of the metric catalogue: import from ../metric-catalogue.
 
 import type { Metric, MetricStack } from '../metric-series';
-import {
-  SESSION_POLL_OPENED,
-  SESSION_TIMER_OPENED,
-  SESSION_VOTE_OPENED,
-  SLIDE_DECK_OPENED,
-} from './features';
+import { SESSION_TIMER_OPENED, SESSION_VOTE_OPENED, SLIDE_DECK_OPENED } from './features';
 import { chart } from './helpers';
 
 export const VOTES_ENDED = chart(
@@ -210,9 +205,9 @@ export const LIVE_IMAGE_TABS = chart(
 
 // ---- Collaboration tab -------------------------------------------------------
 // Everything but Live Together counts an INVITATION (a link made, a member
-// added, a poll opened); Live Together counts two people on one canvas at the
+// added, a vote opened); Live Together counts two people on one canvas at the
 // same moment, which is what the rest is FOR, so read the rest against it. The
-// facilitation tools (docs/specs/012-collaboration/session-tools.md + docs/specs/012-collaboration/live-poll.md) are read by their drop-off: votes
+// facilitation tools (docs/specs/012-collaboration/session-tools.md) are read by their drop-off: votes
 // started vs revealed, dots cast vs retracted, timers started vs finished.
 
 export const MULTIPLAYER_SESSIONS: Metric = {
@@ -422,30 +417,6 @@ export const VOTES_DISCARDED: Metric = {
     'The whole round was thrown away, dots and all. Distinct from ending it, which keeps the tallies.',
 };
 
-export const POLLS_STARTED: Metric = {
-  category: 'Tab',
-  action: 'Started',
-  type: 'Poll',
-  title: 'Polls Started',
-  blurb: 'A live pulse-check was opened on a tab. Nothing about a poll is persisted.',
-};
-
-export const POLL_ANSWERS: Metric = {
-  category: 'Tab',
-  action: 'Voted',
-  type: 'Poll',
-  title: 'Poll Answers',
-  blurb: 'A participant answered. Read against polls started for average turnout.',
-};
-
-export const POLLS_ENDED: Metric = {
-  category: 'Tab',
-  action: 'Ended',
-  type: 'Poll',
-  title: 'Polls Ended',
-  blurb: 'The facilitator closed the poll.',
-};
-
 export const COUNTDOWNS_STARTED: Metric = {
   category: 'Tab',
   action: 'Started',
@@ -604,14 +575,6 @@ export const VOTING: MetricStack = {
     SESSION_VOTE_OPENED,
   ],
   headline: VOTES_STARTED,
-};
-
-export const POLLS: MetricStack = {
-  stack: true,
-  title: 'Polls',
-  blurb: 'Live pulse-checks opened, answered, and closed.',
-  members: [POLLS_STARTED, POLL_ANSWERS, POLLS_ENDED, SESSION_POLL_OPENED],
-  headline: POLLS_STARTED,
 };
 
 // Countdowns and stopwatches are different tools, so different stacks. The

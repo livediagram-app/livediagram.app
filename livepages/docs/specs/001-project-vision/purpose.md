@@ -55,7 +55,7 @@ never arrives.
 - **Structure**: tabs, tab folders, per-tab layers ([Layers](../006-document/layers.md)),
   themes and templates.
 - **Running the session**: timers and dot votes
-  ([Session tools (timer + voting)](../012-collaboration/session-tools.md)), live polls ([Live poll (ephemeral pulse-check)](../012-collaboration/live-poll.md)),
+  ([Session tools (timer + voting)](../012-collaboration/session-tools.md)),
   and the ask-the-room elements that followed: estimates
   ([Estimate card](../012-collaboration/estimate-card.md)), temperature checks
   ([Temperature check](../012-collaboration/temperature-check.md)), idea boxes

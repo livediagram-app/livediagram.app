@@ -13,9 +13,8 @@ import { useEffect, useRef, useState } from 'react';
 //
 // This owns ONLY the flag and its lifetime. Writing to the clipboard stays
 // with the caller, because what happens when the write FAILS is genuinely
-// per-surface: the share dialog toasts an error, the poll panel stays quiet
-// because the results are still on screen, and the team invite falls back to a
-// selectable field. The one rule they share is the one worth enforcing here:
+// per-surface: the share dialog toasts an error, and the team invite falls back
+// to a selectable field. The one rule they share is the one worth enforcing here:
 // flash only on success, so a blocked clipboard never says "Copied".
 //
 // Generic over the flashed value so a surface with several copy buttons can

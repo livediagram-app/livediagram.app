@@ -2,11 +2,11 @@
 
 Status: **implemented**.
 
-A canvas element that **starts a session tool when pressed**: a countdown timer, a dot vote ([Session tools (timer + voting)](session-tools.md)), or a live poll ([Live poll (ephemeral pulse-check)](live-poll.md)). Its tiles live in the palette's **Collaborate** category: the Timer and the Stopwatch under **Tools**, the Dot vote and the Poll under **Ask**.
+A canvas element that **starts a session tool when pressed**: a countdown timer, a stopwatch or a dot vote ([Session tools (timer + voting)](session-tools.md)). Its tiles live in the palette's **Collaborate** category: the Timer and the Stopwatch under **Tools**, the Dot vote under **Ask**.
 
 ## Why
 
-The session tools are facilitation, and facilitation is a script someone has to remember: start a five-minute timer, then vote three dots each, then poll the room. Today that script lives in a menu and in the facilitator's head, which means the canvas only works when the person who built it is the one running it.
+The session tools are facilitation, and facilitation is a script someone has to remember: start a five-minute timer, then vote three dots each. Today that script lives in a menu and in the facilitator's head, which means the canvas only works when the person who built it is the one running it.
 
 Putting the tools ON the canvas makes the canvas self-facilitating. A retro template can ship with a "5 minutes" button over the writing column and a "Vote — 3 dots" button over the results column, and anyone can run it. It is the same instinct as the Selection Mode button: put the affordance where the user already is.
 
@@ -16,26 +16,25 @@ Putting the tools ON the canvas makes the canvas self-facilitating. A retro temp
 - What it starts lives in **`ShapeElement.session`**, one small object rather than a scatter of fields:
   - `{ tool: 'timer', minutes }` — a countdown of that many minutes (default 5).
   - `{ tool: 'vote', dots }` — a dot vote with that many dots each (default 3).
-  - `{ tool: 'poll', style, question, options }` — a live poll, pre-written.
 - Absent `session` means a timer, so a button authored by an older client (or hand-written through the API) still does something sensible.
 
 ## Pressing it
 
-- The press routes through the **same entry points the menus use** (`startTimer`, `startVote`, `startPoll`), so every rule those already enforce still applies: the edit-role gate, the "one vote at a time" rule, the telemetry. A vote button pressed while a vote is already running does nothing: starting over would reset every dot cast so far ([Collaboration race hardening](collab-race-hardening.md)).
+- The press routes through the **same entry points the menus use** (`startTimer`, `startVote`), so every rule those already enforce still applies: the edit-role gate, the "one vote at a time" rule, the telemetry. A vote button pressed while a vote is already running does nothing: starting over would reset every dot cast so far ([Collaboration race hardening](collab-race-hardening.md)).
 - **It starts the tool for the room**, unlike the Selection Mode button, which only ever changes the presser's own mode. That asymmetry is the point: a timer nobody else can see is not a timer. The element menu says so.
-- **A timer is not pressed at all any more**, so the rest of this section is about Vote and Poll. On any surface that can drive a timer, the element renders the countdown with its own pause / resume / reset / remove controls (see "The Timer element IS the timer" below); there is no whole-face press to interpret. The press-to-pause face it replaced — "Start 5 min timer" / "Pause the timer" / "Continue the timer", from `sessionButtonText` — is still what a surface WITHOUT timer controls draws, which today means a read-only one, so it reads as a live control and correctly refuses like every other read-only press.
-- **A read-only visitor's press does nothing**, and the face says why rather than looking live: starting a timer or a vote is an edit-role action ([Session tools (timer + voting)](session-tools.md) "Roles"). Answering the poll it starts is taking part, a Participant's as well as an Editor's; a Viewer only looks and is never shown the poll ([Live poll](live-poll.md), [Share roles](../013-workspace/share-roles.md)).
+- **A timer is not pressed at all any more**, so the rest of this section is about the Vote. On any surface that can drive a timer, the element renders the countdown with its own pause / resume / reset / remove controls (see "The Timer element IS the timer" below); there is no whole-face press to interpret. The press-to-pause face it replaced — "Start 5 min timer" / "Pause the timer" / "Continue the timer", from `sessionButtonText` — is still what a surface WITHOUT timer controls draws, which today means a read-only one, so it reads as a live control and correctly refuses like every other read-only press.
+- **A read-only visitor's press does nothing**, and the face says why rather than looking live: starting a timer or a vote is an edit-role action ([Session tools (timer + voting)](session-tools.md) "Roles"). Casting dots in the vote it starts is taking part, a Participant's as well as an Editor's; a Viewer only looks ([Share roles](../013-workspace/share-roles.md)).
 - **Dragging it does not press it** (`usePressWithoutDrag`), same as every other Behaviour element.
 
 ## Configuring it
 
-Right-click → **Session**: the button's one setting — minutes for a timer, dots for a vote, the question and answers for a poll.
+Right-click → **Session**: the button's one setting — minutes for a timer, dots for a vote.
 
-**It does not choose the tool.** The section used to lead with a Timer / Vote / Poll tile grid, which asked a second time a question the palette already asks once: it offers a tile per tool (see "One tile per tool in the palette" below), so the button lands as the thing you picked. Wanting a different one is wanting a different element — drag it out — and the grid cost every session button three tiles of menu height to re-open a settled decision. `session.tool` is still a field, still validated, still what everything reads; there is simply no control that rewrites it.
+**It does not choose the tool.** The section used to lead with a tile grid of tools, which asked a second time a question the palette already asks once: it offers a tile per tool (see "One tile per tool in the palette" below), so the button lands as the thing you picked. Wanting a different one is wanting a different element — drag it out — and the grid cost every session button a row of tiles of menu height to re-open a settled decision. `session.tool` is still a field, still validated, still what everything reads; there is simply no control that rewrites it.
 
 ### A stopwatch is its own tool, not a timer mode
 
-`SESSION_TOOLS` is `timer | stopwatch | vote | poll`. The Session strip keeps
+`SESSION_TOOLS` is `timer | stopwatch | vote`. The Session strip keeps
 one Timer tool with a Countdown / Stopwatch toggle, because its Timer set-up is where
 you choose which kind of clock to run. An ELEMENT is not: it is a countdown you
 placed on a canvas, with a length, and the question its `…` answers is "how
@@ -56,56 +55,11 @@ Pressing either is the same three-way control as before (start, then pause,
 then continue), because a tab runs one clock and pressing mid-run means "hold
 on", never a silent restart.
 
-### One answer cap, not two
-
-The button's answer list is capped by `POLL_OPTIONS_MAX` — the same number the
-Session strip's poll composer uses. It used to have its own `SESSION_POLL_MAX_OPTIONS = 6`,
-and the two drifted the instant the poll cap went to 10: the composer offered ten
-answers while this menu silently stopped at six, with no hint which number was
-real. Two constants for one idea will always produce that, so there is one now,
-declared beside `PollStyle` in `@livepages/document` for the same reason that
-union lives there — a `SessionButtonConfig` is a `Tab` field, and api-schema
-depends on document rather than the reverse.
-
-### A poll button carries its ANSWER STYLE, not just its answers
-
-`session.style` is a [Live poll (ephemeral pulse-check)](live-poll.md) `PollStyle` — the same five the
-Session strip's poll composer offers, from the same list — so a button can ask
-Yes / No, + Abstain, your own **Choices**, a 1-5 **Rating**, or **Free text**.
-
-It has to be stored, because the press has to say which one. It originally
-wasn't: `pressSessionButton` hard-coded `style: 'text'`, so every poll button
-in the product threw away the answers its author had written and asked the room
-to type instead. The answers were configurable and simply unused.
-
-Two rules fall out of the style, both in `sessionButtonPlan` so the menu, the
-face and the press cannot disagree:
-
-- **Only `choice` reads `options`.** Every other style has a fixed answer set,
-  so a list left behind from an earlier style is dropped rather than shipped
-  alongside them — a poll with two disagreeing answer sets is not a poll. The
-  list stays on the config through the round trip, so trying Yes / No and
-  coming back doesn't cost you what you typed.
-- **Only `choice` can be half-written.** The two-answer floor (below) applies
-  to it alone; a Yes / No or Rating button is startable the moment it has a
-  question.
-
-**Absent `style` means `choice`**, not the wire default. A button authored
-before the field existed was placed by `defaultSessionConfig` with two answers
-already in it and plainly meant them to be the answers — so the fallback is the
-style that reads them, and every existing poll button starts behaving the way
-its author configured it.
-
-The union itself lives in `@livepages/document` (`poll-style.ts`) rather than
-beside `LivePoll` in `@livepages/api-schema`: the style is now a `Tab` field,
-api-schema depends on document and not the reverse, and re-exporting `PollStyle`
-from api-schema keeps every existing import resolving against one list.
-
-For **Vote and Poll**, the face's derived label follows that setting ("Start vote · 3 dots each", "Ask · 4 options" over the question, a poll naming the shape of its answers in a few words that fit the kicker: yes / no, its options' count, a person, rating or open), and an author's own label wins over it, like any shape. A **Timer** has no label to win: `SessionTimerFace` draws the clock, showing the configured minutes until a timer is actually running and the live countdown after. The setting still drives what you see, just as the digits rather than as a sentence about them.
+For the **Vote**, the face's derived label follows that setting ("Start vote · 3 dots each"), and an author's own label wins over it, like any shape. A **Timer** has no label to win: `SessionTimerFace` draws the clock, showing the configured minutes until a timer is actually running and the live countdown after. The setting still drives what you see, just as the digits rather than as a sentence about them.
 
 ## Telemetry
 
-Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md): adding one emits `Element·Added·SessionButton`, reconfiguring emits `Element·Changed·SessionButton`. The press itself is NOT tracked separately — it reports as the tool it starts (`Tab·Started·Timer` / `Vote` / `Poll`) through the shared entry point, because a press IS starting that tool.
+Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md): adding one emits `Element·Added·SessionButton`, reconfiguring emits `Element·Changed·SessionButton`. The press itself is NOT tracked separately — it reports as the tool it starts (`Tab·Started·Timer` / `Vote`) through the shared entry point, because a press IS starting that tool.
 
 ## Out of scope
 
@@ -115,13 +69,13 @@ Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md): 
 
 ## One tile per tool in the palette
 
-The palette offers **Timer**, **Stopwatch**, **Dot Vote** and **Poll** as separate
-tiles in Collaborate. There is no Session group: a dot vote and a poll ask the
-room, so they sit in **Ask** beside the estimate card and the temperature
+The palette offers **Timer**, **Stopwatch** and **Dot Vote** as separate
+tiles in Collaborate. There is no Session group: a dot vote asks the
+room, so it sits in **Ask** beside the estimate card and the temperature
 check; a timer and a stopwatch are facilitation, so they sit in **Tools** beside
 the Reveal, the Done check and the Picker.
 
-The three have nothing in common at the moment of choosing: you know whether
+The tools have nothing in common at the moment of choosing: you know whether
 you want a countdown or a vote before you reach for the palette, so a single
 button you place and then reconfigure is two steps for something already
 decided.
@@ -139,11 +93,7 @@ already exists.
 
 The choice rides the draw intent (`PendingDraw.session`) and is applied at
 commit through `defaultSessionConfig`, which fills in a working default per
-tool. That matters most for the poll: `sessionPlan` refuses a Choices poll with
-fewer than two answers, so dropping one with an empty config would place a
-button that cannot be pressed. The dropped poll is a Choices poll for exactly
-that reason — it arrives with two answers, so it has to be the style that reads
-them.
+tool, so a dropped button can be pressed straight away.
 
 ## No tooltip on the button
 
@@ -186,9 +136,9 @@ box on the canvas.
 - A **read-only** surface renders the clock and the drain and withholds the
   controls, rather than hiding the timer.
 
-Vote and poll keep the ordinary button face: they start something that lives
-elsewhere (a dot vote over the whole canvas, a poll in a panel), so there is
-nothing for the element itself to become.
+The vote keeps the ordinary button face: it starts something that lives
+elsewhere (a dot vote over the whole canvas), so there is nothing for the
+element itself to become.
 
 ## Settings on the element itself
 
@@ -196,24 +146,12 @@ Each session element carries a `…` menu on its own face, so the setting you
 most want to change is one press away rather than a right-click into the
 Session category.
 
-| Tool      | Menu                                                                |
-| --------- | ------------------------------------------------------------------- |
-| **Timer** | Length presets (1 to 30 minutes)                                    |
-| **Vote**  | Dots each (1, 2, 3, 5, 8)                                           |
-| **Poll**  | The question, the answer style, and — for Choices — the list itself |
+| Tool      | Menu                             |
+| --------- | -------------------------------- |
+| **Timer** | Length presets (1 to 30 minutes) |
+| **Vote**  | Dots each (1, 2, 3, 5, 8)        |
 
-The answer-style picker is `PollAnswerStyleRow`, shared by this menu and the
-right-click Session section: both configure the same button, so a style named
-differently in one of them would describe two products. Each row previews the
-answers the style produces ("Yes No Abstain"), following the estimate card's
-scale picker — the name of a shape is not the thing being chosen between.
-
-A vote is a single number, so it is a list of presets: one tap and done. A poll
-is text, so it is a small form. The asymmetry is deliberate rather than an
-inconsistency — a menu of presets for a question nobody has written would be a
-menu of nothing. The Choices list will not go below **two** answers, because
-`sessionPlan` refuses a Choices poll with fewer and removing one would leave a
-button nobody can press.
+A vote is a single number, so it is a list of presets: one tap and done.
 
 The full range stays in the right-click menu, which has room for a proper
 number input; these are the common values.

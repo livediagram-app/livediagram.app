@@ -4,8 +4,8 @@
 // hook measures, this decides.
 
 /**
- * The editor's own bottom chrome: the tab bar, the bottom-right cluster (Undo / Redo, the Session strip's Timer, Vote
- * and Poll, Layers, Zoom) and the whiteboard dock. The sign-in banner stands on it, so it never covers them
+ * The editor's own bottom chrome: the tab bar, the bottom-right cluster (Undo / Redo, the Session strip's Timer and
+ * Vote, Layers, Zoom) and the whiteboard dock. The sign-in banner stands on it, so it never covers them
  * (docs/specs/014-identity/sign-in-encouragement.md "Where it shows").
  */
 export const BOTTOM_CHROME_SELECTOR =

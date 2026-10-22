@@ -112,7 +112,7 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
     id: 'games',
     label: 'Games',
     searchWords: 'icebreaker icebreakers warm up energiser fun team building',
-    description: 'Icebreakers, bingo and party games for the room.',
+    description: 'Icebreakers and bingo to warm up the room.',
   },
 ];
 
@@ -287,8 +287,6 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'value-stream-map': 'technical',
   // Games: the lighter end of running a room.
   'icebreaker-questions': 'games',
-  'two-truths-and-a-lie': 'games',
-  'would-you-rather': 'games',
   'people-bingo': 'games',
 };
 

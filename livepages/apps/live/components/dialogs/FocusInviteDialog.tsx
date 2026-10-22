@@ -2,14 +2,13 @@
 
 // The invitation somebody's Bring Focus press puts on your screen (docs/specs/012-collaboration/bring-focus.md).
 //
-// A dialog rather than a pill in the chrome, for the same reason the poll
-// prompt is one: it is a question addressed to YOU, and the answer decides
+// A dialog rather than a pill in the chrome: it is a question addressed to YOU, and the answer decides
 // where you are looking next. A banner at the top of the canvas is the shape
 // of a status line, and it was read as one: missed entirely on a busy canvas,
 // which for an element whose whole job is "everybody look here" is the element
 // not working.
 //
-// Escape and the backdrop both decline, like the poll's Skip: dismissing is a
+// Escape and the backdrop both decline: dismissing is a
 // real answer, not a silent drop.
 
 import { Dialog } from '@/components/dialogs/Dialog';

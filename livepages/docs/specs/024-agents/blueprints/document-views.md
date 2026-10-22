@@ -345,7 +345,7 @@ The table line prints its label first when it has one. Every text a summary prin
 | `done-check`            | `done=<responses.length>`                                                             |
 | `idea-box`              | `ideas=<ideaCards.length>`, then `revealed` when `ideasRevealed`                      |
 | `agenda`                | `item=<agendaCurrent + 1>/<n>` once started, else `items=<n>`; then `minutes=<total>` |
-| `session-button`        | `session=<tool>`, with `:<minutes>m` (timer), `:<dots>` (vote) or `:<style>` (poll)   |
+| `session-button`        | `session=<tool>`, with `:<minutes>m` (timer) or `:<dots>` (vote)                      |
 | `decision`              | `status=<decisionStatus>` when set                                                    |
 | `roll-call`             | `present=<rollCall.length>`                                                           |
 | `picker`                | `picked=<attrValue(pickerResult)>` when set                                           |

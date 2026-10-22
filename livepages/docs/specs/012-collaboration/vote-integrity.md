@@ -1,23 +1,22 @@
 # Vote integrity
 
-A live poll answer and a REST upvote each count one person once (a dot on a Plan card is a session vote's dot,
-keyed and budgeted as any dot is: [Session tools](session-tools.md) "Voting on Plan cards"). This spec says who "one person"
-is on each path, and what stops one browser from posing as many people or changing somebody else's answer.
+A REST upvote counts one person once (a dot on a Plan card is a session vote's dot, keyed and budgeted as any dot
+is: [Session tools](session-tools.md) "Voting on Plan cards"). This spec says who "one person" is, and what stops one
+browser from posing as many people or changing somebody else's vote.
 
 ## What it protects against
 
 - **Stuffing:** one person casting many votes by presenting a new identity for each one.
-- **Overwriting:** one person changing an answer somebody else cast.
+- **Overwriting:** one person changing a vote somebody else cast.
 
 Overwriting is closed outright. Stuffing is bounded rather than impossible: a guest is a browser, and many real
 browsers are many votes. The bound makes a scripted flood from one network buy nothing.
 
 ## Who a voter is
 
-Every path uses the strongest identity the server holds for the caller, in this order:
+The server uses the strongest identity it holds for the caller, in this order:
 
-1. **A verified account** (a Clerk session or an API token over REST; a room session whose ticket carried a person
-   tag). One account is one voter, whatever browser or device it votes from.
+1. **A verified account** (a Clerk session or an API token over REST). One account is one voter, whatever browser or device it votes from.
 2. **A guest.** A guest id costs nothing to make (`POST /api/guest-id`), so it is never trusted to be one person.
    Guests are counted against their **network**: the caller's IPv4 address, or IPv6 /64 (`clientRateKey`). At most
    `GUEST_VOTERS_PER_NETWORK` (100) distinct guest voters per network take part in one target (below). The 101st is
@@ -28,29 +27,6 @@ cannot be read back or matched across documents.
 
 100 is far above a household or office on one address and well below what a flood needs. A large room behind one
 address (a conference on venue wi-fi) can exceed it; past that, the extra guests cannot vote until they sign in.
-
-## Live poll answers (the room)
-
-The answer key is decided by the room, never taken from the sender as given ([Live poll](live-poll.md)). The room
-relays an answer only once it has accepted it, and relays it under the key it decided, so a refused answer reaches
-nobody's tally.
-
-- **Account sessions** (a ticket with a person tag): one answer per account per poll. The first key the account
-  answers under becomes its key; a later answer from any of its sessions replaces that one answer.
-- **Other sessions** answer under their collab key with a **proof**: a per-browser secret
-  (`livepages:v2:collab-secret`, `ensureCollabSecret`) that is never relayed, never stored raw (the room keeps its
-  SHA-256) and never shown. The first proof to answer under a key claims it for the poll; an answer under a claimed key
-  with a different proof is refused. The collab key is public (it rides the roster), the secret is not, so nobody can
-  answer as somebody else, including somebody who has left.
-- **One key per session per poll.** A session that has answered under one key cannot answer under another.
-- **An old client** that sends no proof answers under its server-assigned presence id, which only that same session
-  can answer under again.
-- **Per network:** at most `GUEST_VOTERS_PER_NETWORK` answer keys from non-account sessions per network per poll. The
-  network tag is stamped by the api worker on the upgrade (`X-Verified-Network`), on every path, like the other
-  `X-Verified-*` headers.
-
-A refused answer logs `[live-poll] answer refused` with the reason (`claimed`, `session_key`, `network_cap`,
-`answers_cap`), never the key or the proof.
 
 ## Upvotes over REST
 

@@ -84,13 +84,6 @@ describe('stateAttributeOf (R14, VW22)', () => {
       'session=timer:10m',
     );
     expect(state('session-button', { session: { tool: 'vote', dots: 3 } })).toBe('session=vote:3');
-    expect(
-      state('session-button', { session: { tool: 'poll', style: 'yesNo', question: 'Go?' } }),
-    ).toBe('session=poll:yesNo');
-    // A poll not set up yet (one answer) reads as unset, never failing the whole view.
-    expect(
-      state('session-button', { session: { tool: 'poll', question: 'Go?', options: ['A'] } }),
-    ).toBe('session=poll:unset');
     expect(state('session-button', { session: { tool: 'stopwatch' } })).toBe('session=stopwatch');
   });
 });

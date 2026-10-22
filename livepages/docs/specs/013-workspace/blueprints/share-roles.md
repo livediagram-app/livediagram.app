@@ -67,15 +67,15 @@ Doors by level (server):
 | Door                                                                                       | Needs                             |
 | ------------------------------------------------------------------------------------------ | --------------------------------- |
 | Reads (document, tabs, images, comment threads, the Timeline); share resolve; make a copy  | view                              |
-| Room: presence (cursor, select, laser, follow, focus); never `poll-answer` or `reaction`   | view                              |
+| Room: presence (cursor, select, laser, follow, focus); never `reaction`                    | view                              |
 | Comments: add, reply, resolve, reopen, delete own; card comments                           | participate (`deniedParticipate`) |
-| Room: `poll-answer` and `reaction`                                                         | participate                       |
+| Room: `reaction`                                                                           | participate                       |
 | Room: `vote`; `el-delta` `response` or `idea`                                              | participate                       |
 | Room: `el` (`add`, `update`, `remove`) through the participant rule                        | participate                       |
 | Items: create, patch, move, patches                                                        | participate (`gateParticipate`)   |
 | Sheets: `writes` of kind `cells`                                                           | participate                       |
 | Tab PUT, tab DELETE, document PUT; room `tab`, `tab-meta`, `document-meta`, `el` `reorder` | edit                              |
-| Room: `el-delta` `check`, `board`, `comment-*`; `poll-start`, `poll-end`; `drag-preview`   | edit                              |
+| Room: `el-delta` `check`, `board`, `comment-*`; `drag-preview`                             | edit                              |
 | Items: bulk, delete, tally; item types; Sheets: create, delete, `layout`, `title`          | edit                              |
 | Facilitator baton                                                                          | edit (`canHold`, unchanged)       |
 
@@ -320,7 +320,7 @@ lands in a new document, where no adder key matches it.
 - **E8** The write loses the compare-and-swap `TAB_CAS_MAX_ATTEMPTS` times, the tab is gone, or the tab is over its
   cap: the sender gets `catchup { resync: true }`; nothing is relayed.
 - **E9** A Participant socket without an adder key adds a sticky: refused `no-adder`.
-- **E10** A Participant socket sends `tab`, `tab-meta`, `reorder`, `check`, `board`, `poll-start` or `drag-preview`:
+- **E10** A Participant socket sends `tab`, `tab-meta`, `reorder`, `check`, `board` or `drag-preview`:
   dropped.
 - **E11** A tab-scoped Participant link: its ops on another tab are dropped by the scope check first.
 - **E12** An embed of a Participant link: renders as a Viewer (SR6).
@@ -375,7 +375,7 @@ Share dialog cards, in `LEVEL_ORDER = ['edit', 'participate', 'view']`:
 - A Participant's palette strip: the selection-mode dropdown (Select, Hand, Laser, Spotlight, Avatar, Isometric,
   Zen), the category picker holding **Participate** alone (ballot glyph, "Add stickies and text to the board."),
   and its tiles; the mode switch, tab add, rename and delete and context menus' structural rows are absent.
-- A Viewer sees no comment composer, resolve or delete (`CommentThreadPopover canComment`), no poll prompt,
+- A Viewer sees no comment composer, resolve or delete (`CommentThreadPopover canComment`),
   no card votes or comments, no reactions. Its selection holds nothing
   (`RemoteSelector.holds`, `lockedByOther`).
 - Badges: "Editor", "Participant", "Viewer". Shared-with-you chip: "Edit", "Participate", "View".

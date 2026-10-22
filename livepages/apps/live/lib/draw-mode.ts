@@ -34,7 +34,7 @@ export type PendingDraw =
   // `session` (docs/specs/012-collaboration/session-button.md) and `reaction` (docs/specs/009-elements/reaction-pad.md) ride the same intent for
   // the same reason: both kinds are ONE element with a mode field, and the
   // palette offers a tile per mode rather than one tile you then reconfigure.
-  // Carrying the choice on the intent is what lets "Add poll" place a poll
+  // Carrying the choice on the intent is what lets "Add Dot Vote" place a vote
   // instead of placing a timer you have to go and change.
   | {
       type: 'shape';

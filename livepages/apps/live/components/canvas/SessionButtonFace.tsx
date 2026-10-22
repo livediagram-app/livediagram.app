@@ -18,14 +18,13 @@ import {
 } from '@livepages/document';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { SessionSettingsMenu } from '@/components/canvas/SessionSettingsMenu';
-import { PollIcon, StopwatchIcon, TimerIcon, VoteIcon } from '@/components/palette/palette-icons';
+import { StopwatchIcon, TimerIcon, VoteIcon } from '@/components/palette/palette-icons';
 
 const TOOL_ICON: Record<SessionPlan['tool'], React.ReactNode> = {
   // The palette tile's glyph, so a placed button looks like the tile it came from.
   timer: <TimerIcon />,
   stopwatch: <StopwatchIcon />,
   vote: <VoteIcon />,
-  poll: <PollIcon />,
 };
 
 // What the face says when the author hasn't written their own label (@livepages/document, shared with the
@@ -36,7 +35,6 @@ const TOOL_BLURB: Record<SessionPlan['tool'], string> = {
   timer: 'Starts a countdown everyone in the room can see.',
   stopwatch: 'Counts up from zero for everyone, until you stop it.',
   vote: 'Starts a dot vote on this tab for everyone.',
-  poll: 'Opens this poll on everyone’s screen; answers are anonymous.',
 };
 
 const ICON_BOX = 'flex items-center justify-center [&>svg]:h-[22px] [&>svg]:w-[22px]';
@@ -64,8 +62,7 @@ export function SessionButtonFace({
   timerState?: TimerState;
   onPress?: () => void;
   // Per-element settings from the button's own `…` menu (docs/specs/012-collaboration/session-button.md): the
-  // vote's dots, the poll's question and answers. Absent on a read-only
-  // surface, where the trigger is not rendered.
+  // vote's dots. Absent on a read-only surface, where the trigger is not rendered.
   onSetConfig?: (next: SessionButtonConfig) => void;
   /** The way out of the quick settings to the element's full menu (docs/specs/008-canvas/canvas-and-palette.md). */
   onOpenSettings?: () => void;
@@ -74,7 +71,7 @@ export function SessionButtonFace({
   const derived = sessionButtonText(plan, timerState);
   const text = label.trim();
   const press = usePressWithoutDrag(onPress);
-  const tool = plan?.tool ?? 'poll';
+  const { tool } = plan;
 
   const chipClass = `${ICON_BOX} h-9 w-9 shrink-0 rounded-full bg-black/[0.055] ring-1 ring-inset ring-black/[0.07] dark:bg-white/10 dark:ring-white/15`;
   // The face: the icon chip, then the label. The chip is passed in because
@@ -126,20 +123,6 @@ export function SessionButtonFace({
   // for. What each one said is either already on the button's own face (it
   // states the tool and the setting) or in the element menu; the accessible
   // names below still carry it.
-  if (!plan) {
-    return (
-      <div
-        role="button"
-        aria-disabled
-        // Only a Choices poll can land here: every other answer style is
-        // startable the moment it has a question (see sessionButtonPlan).
-        aria-label="Poll not set up. Open Session to write at least two choices, or switch its answers to Yes / No."
-        className={`pointer-events-auto cursor-default opacity-60 ${layout}`}
-      >
-        {inner}
-      </div>
-    );
-  }
   if (!onPress || !canStart) {
     const name = text || `${derived.kicker} ${derived.action}`;
     return (

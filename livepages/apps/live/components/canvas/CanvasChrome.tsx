@@ -605,7 +605,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
       )}
 
       {/* Bottom-right cluster. Order, left to right: the Undo / Redo
-          strip, the Session strip (Timer, Vote, Poll), the mode's own strip (Slides, Plan), the
+          strip, the Session strip (Timer, Vote), the mode's own strip (Slides, Plan), the
           Collaborate button (only while the tab has a thread or an action), the Layers and
           Theme & Canvas strip, then the Zoom controls. The buttons open their panels as popovers
           above them (docs/specs/007-editor/live-app.md). */}
@@ -672,7 +672,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
             {/* The Session strip (docs/specs/012-collaboration/session-tools.md "The Session strip"): left of
                 Layers, or of the mode's own strip. Kept in Zen: a running session is the one piece of
                 chrome a facilitator still needs there. Workshop has all three, Plan its Timer and
-                Vote, Pages a running Vote or Poll only; Diagram and Draw keep their bottom bar to
+                Vote, Pages a running Vote only; Diagram and Draw keep their bottom bar to
                 their own tools. */}
             {props.sessionTools && stripTools ? (
               <div className="contents">
@@ -691,14 +691,10 @@ export function CanvasChrome(props: CanvasChromeProps) {
                   }
                   voteReviewing={!!props.voteReview}
                   voteButtonRef={voteButtonRef}
-                  pollRunning={!!props.pollPanel}
                   canStart={stripCanStart(stripTools, !!readOnly)}
                   offersTimer={stripTools.timer}
-                  offersPoll={stripTools.poll}
                   open={
-                    activeDockPanel === 'session-timer' ||
-                    activeDockPanel === 'session-vote' ||
-                    activeDockPanel === 'session-poll'
+                    activeDockPanel === 'session-timer' || activeDockPanel === 'session-vote'
                       ? activeDockPanel
                       : null
                   }

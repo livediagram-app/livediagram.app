@@ -23,10 +23,8 @@
 
 import { useState } from 'react';
 import {
-  DEFAULT_SESSION_POLL_STYLE,
   DEFAULT_TIMER_MINUTES,
   DEFAULT_VOTE_DOTS,
-  isPollStyle,
   sessionButtonPlan,
   type SessionButtonConfig,
   type TimerMode,
@@ -34,12 +32,11 @@ import {
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { TimerSetupBody } from '@/components/panels/session-studio/TimerSetupBody';
 import { VoteSetupBody } from '@/components/panels/session-studio/VotePane';
-import { PollComposerBody } from '@/components/panels/session-studio/PollPane';
 
 // The Session Studio's pane body measures 286px wide including its own p-3.
 // Matched here rather than approximated, so the identical component is not
 // laid out two different ways — the tiles in particular wrap differently at
-// 240px, which is how "Collaborators" ended up truncated.
+// 240px.
 const BODY_CLASS = 'w-[286px] p-3';
 
 export function SessionTimerSettings({
@@ -60,7 +57,7 @@ export function SessionTimerSettings({
   // Clamped as the press clamps it (sessionButtonPlan), so a stored value out of range or not a number shows as
   // the timer it would start.
   const plan = sessionButtonPlan({ ...config, tool: 'timer' });
-  const minutes = plan?.tool === 'timer' ? plan.minutes : DEFAULT_TIMER_MINUTES;
+  const minutes = plan.tool === 'timer' ? plan.minutes : DEFAULT_TIMER_MINUTES;
 
   return (
     <div className={BODY_CLASS}>
@@ -97,41 +94,10 @@ function SessionVoteSettings({
       <VoteSetupBody
         voteLayers={layers}
         activeLayerId={activeLayerId}
-        dots={votePlan?.tool === 'vote' ? votePlan.dots : DEFAULT_VOTE_DOTS}
+        dots={votePlan.tool === 'vote' ? votePlan.dots : DEFAULT_VOTE_DOTS}
         onDotsChange={(dots) => onChange({ ...config, dots })}
         onStartVote={(dots, setup) => {
           startVote(dots, setup);
-          onClose?.();
-        }}
-      />
-    </div>
-  );
-}
-
-function SessionPollSettings({
-  config,
-  onChange,
-  onClose,
-}: {
-  config: SessionButtonConfig;
-  onChange: (next: SessionButtonConfig) => void;
-  onClose?: () => void;
-}) {
-  const { livePoll, pollCollaborators, documentShareable, documentTeamId } = useEditorContext();
-  return (
-    <div className={BODY_CLASS}>
-      <PollComposerBody
-        hasAudience={documentShareable || !!documentTeamId}
-        collaborators={pollCollaborators}
-        // Read as the press reads it (sessionButtonPlan): only text is a question or an answer.
-        question={typeof config.question === 'string' ? config.question : ''}
-        onQuestionChange={(question) => onChange({ ...config, question })}
-        style={isPollStyle(config.style) ? config.style : DEFAULT_SESSION_POLL_STYLE}
-        onStyleChange={(style) => onChange({ ...config, style })}
-        options={(config.options ?? []).filter((o): o is string => typeof o === 'string')}
-        onOptionsChange={(options) => onChange({ ...config, options })}
-        onStartPoll={(draft) => {
-          livePoll.startPoll(draft);
           onClose?.();
         }}
       />
@@ -166,9 +132,9 @@ export function SessionElementSettings(props: {
   onChange: (next: SessionButtonConfig) => void;
   onClose?: () => void;
 }) {
-  if (props.config.tool === 'timer') return <SessionTimerSettings {...props} />;
-  if (props.config.tool === 'stopwatch')
-    return <SessionStopwatchSettings onClose={props.onClose} />;
-  if (props.config.tool === 'vote') return <SessionVoteSettings {...props} />;
-  return <SessionPollSettings {...props} />;
+  // Read as the press reads it: a tool this app does not know is the timer the button starts.
+  const { tool } = sessionButtonPlan(props.config);
+  if (tool === 'timer') return <SessionTimerSettings {...props} />;
+  if (tool === 'stopwatch') return <SessionStopwatchSettings onClose={props.onClose} />;
+  return <SessionVoteSettings {...props} />;
 }

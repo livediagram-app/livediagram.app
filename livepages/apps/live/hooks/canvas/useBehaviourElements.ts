@@ -11,7 +11,6 @@
 import { useState } from 'react';
 import {
   sessionButtonPlan,
-  type PollStyle,
   type SessionButtonConfig,
   type ShapeElement,
   type Tab,
@@ -36,7 +35,6 @@ export function useBehaviourElements({
   pauseTimer,
   resumeTimer,
   startVote,
-  startPoll,
 }: {
   activeId: string;
   commitTabs: (mapTabs: (ts: Tab[]) => Tab[]) => unknown;
@@ -62,18 +60,16 @@ export function useBehaviourElements({
   pauseTimer: () => void;
   resumeTimer: () => void;
   startVote: (votesPerPerson: number) => void;
-  startPoll: (draft: { question: string; style: PollStyle; options: string[] }) => void;
 }) {
   // --- Session button (docs/specs/012-collaboration/session-button.md) --------------------------------------------
   // Pressing one starts the tool FOR THE ROOM, through the same entry points
   // the menus use — so the edit gate and the telemetry
   // that go with each tool all still happen exactly once, in one place.
   const pressSessionButton = (element: ShapeElement) => {
-    // It starts the timer / vote / poll for the room, so it is one of the
+    // It starts the timer / vote for the room, so it is one of the
     // facilitator's (docs/specs/012-collaboration/facilitator.md) rather than an ordinary press.
     if (editsBlocked || sessionToolsBlocked) return;
     const plan = sessionButtonPlan(element.session);
-    if (!plan) return;
     if (plan.tool === 'timer') {
       // Mid-session the button is the timer's control, not a reset: someone
       // pressing it while five minutes are running means "hold on", and
@@ -92,19 +88,12 @@ export function useBehaviourElements({
       else resumeTimer();
       return;
     }
-    if (plan.tool === 'vote') {
-      // A vote already open is the room's round: somebody pressing the
-      // button again mid-vote means "we're voting", not "start over", and
-      // starting over wiped every dot cast so far (docs/specs/012-collaboration/collab-race-hardening.md). Ending it stays
-      // with the vote's own controls.
-      if (activeVote?.active) return;
-      startVote(plan.dots);
-      return;
-    }
-    // The button's OWN style and answers (docs/specs/012-collaboration/session-button.md). This used to hard-code
-    // `style: 'text'`, which threw away every answer the author had written
-    // and asked the room a free-text question instead.
-    startPoll({ question: plan.question, style: plan.style, options: plan.options });
+    // A vote already open is the room's round: somebody pressing the
+    // button again mid-vote means "we're voting", not "start over", and
+    // starting over wiped every dot cast so far (docs/specs/012-collaboration/collab-race-hardening.md). Ending it stays
+    // with the vote's own controls.
+    if (activeVote?.active) return;
+    startVote(plan.dots);
   };
 
   // --- Reveal zone (docs/specs/009-elements/reveal-zone.md) -----------------------------------------------
@@ -179,7 +168,7 @@ export function useBehaviourElements({
   // one element; the selection-wide setter in usePortalSetters stays for the
   // context menu, which acts on whatever is selected.
   const setSessionConfigFor = (element: ShapeElement, config: SessionButtonConfig) => {
-    // Its configuration IS the timer's length and the poll's question, so
+    // Its configuration IS the timer's length and the vote's dots, so
     // changing it mid-session changes what the next press does to everybody
     // (docs/specs/012-collaboration/facilitator.md). The owner who wants to edit it takes the baton back.
     if (sessionToolsBlocked) return;

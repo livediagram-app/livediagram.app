@@ -193,7 +193,7 @@ function SurfaceFrame({
         // double-click on this panel arrives at the canvas element that
         // rendered the `…` trigger, however far away it is on screen.
         //
-        // Double-click was the one that bit: the poll's panel has text
+        // Double-click was the one that bit: a settings panel with text
         // inputs, and double-clicking to select a word in one put the
         // element underneath into text-edit mode, which re-rendered the
         // face and took the panel with it. So the gesture you make to edit
@@ -311,7 +311,7 @@ export function ElementSettingsButton({
 /**
  * The last row of a quick `…` menu: the way through to everything else.
  *
- * An element with its own popover (the Timer's lengths, the poll's question)
+ * An element with its own popover (the Timer's lengths, the Vote's dots)
  * keeps it — those are the settings worth one press — and this row stops that
  * popover from being a dead end when the setting you want is not one of them.
  */

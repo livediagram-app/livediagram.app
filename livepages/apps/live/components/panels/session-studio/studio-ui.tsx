@@ -157,7 +157,7 @@ export function FacilitatedNote({ name }: { name: string }) {
   return (
     <p className="rounded-md bg-slate-100 px-2.5 py-2 text-[12px] leading-snug text-slate-600 dark:bg-slate-800 dark:text-slate-300">
       <span className="font-semibold">{name}</span> is facilitating this session. Ask them to start
-      the timer, the vote or a poll.
+      the timer or the vote.
     </p>
   );
 }

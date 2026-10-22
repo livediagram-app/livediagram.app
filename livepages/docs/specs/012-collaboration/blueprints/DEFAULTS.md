@@ -12,7 +12,7 @@ One row per default applied where a spec is silent or qualitative.
 | #   | Blueprint     | Spec silence                                     | Default applied                                                                                        |
 | --- | ------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------ |
 | D1  | workshop-mode | Position in the mode order (switch, Shift+D)     | Last, after Plan: the catalogue order, so existing Shift+D muscle memory is unchanged                  |
-| D2  | workshop-mode | The catalogue's one-line description             | "Run a session with your team: timers, votes, polls and reveals"                                       |
+| D2  | workshop-mode | The catalogue's one-line description             | "Run a session with your team: timers, votes and reveals"                                       |
 | D3  | workshop-mode | Order of Workshop's categories within a band     | Diagram's order for the shared ones; the six Collaborate categories last, in its old group order       |
 | D4  | workshop-mode | Where Diagram's Comment panel and Action card go | The end of Write, after its existing tiles, in that order                                              |
 | D5  | workshop-mode | Popular for Workshop (POPULAR_BY_MODE)           | Blank Session, Sailboat, Retrospective, Crazy 8s, Icebreaker Questions (canvas-and-palette spec)                   |

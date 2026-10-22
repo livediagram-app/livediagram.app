@@ -17,7 +17,7 @@ export const MODE_TINT: Readonly<Record<EditorMode, string>> = {
 export const MODE_TOOLS: Readonly<Record<EditorMode, readonly string[]>> = {
   diagram: ['Shapes', 'Arrows', 'Icons', 'Templates', 'Snapping'],
   draw: ['Pens', 'Highlighter', 'Eraser', 'Shape recognition'],
-  workshop: ['Timer', 'Votes', 'Polls', 'Reveals', 'Stickers'],
+  workshop: ['Timer', 'Votes', 'Reveals', 'Stickers'],
   pages: ['Infographics', 'Slides', 'Articles', 'Logos'],
   plan: ['Boards', 'Cards', 'Card types', 'Fields'],
 };

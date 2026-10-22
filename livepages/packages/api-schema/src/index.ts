@@ -610,7 +610,6 @@ export * from './access-levels';
 export * from './image-limits';
 export * from './cta-sources';
 export * from './page-views';
-export * from './poll';
 export * from './room-messages';
 export * from './changesets';
 export * from './items';

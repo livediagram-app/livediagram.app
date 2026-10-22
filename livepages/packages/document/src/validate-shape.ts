@@ -205,13 +205,9 @@ const isLegendItem = (item: unknown) =>
   isStrUpTo(LEGEND_MAX_TEXT)(item.label) &&
   (item.color === undefined || typeof item.color === 'string');
 
-// Session button (docs/specs/012-collaboration/session-button.md): a known tool and bounded
-// options. Durations are clamped where read (sessionButtonPlan), and the poll's answer shape falls
-// back to the default style, so neither is a load check.
-const isSession = (v: unknown) =>
-  isRecord(v) &&
-  isSessionTool(v.tool) &&
-  (v.options === undefined || boundedArray(v.options, MAX_DATA_ARRAY));
+// Session button (docs/specs/012-collaboration/session-button.md): a known tool. Durations and dots are
+// clamped where read (sessionButtonPlan), so they are not a load check.
+const isSession = (v: unknown) => isRecord(v) && isSessionTool(v.tool);
 
 // Absent passes every check; a present value must satisfy its rule. Ids that point at nothing
 // (`portalTarget`, `mindParentId`, `windowTabId`) are legal: the element renders unpaired or as a root.

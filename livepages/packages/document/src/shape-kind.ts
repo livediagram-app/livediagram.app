@@ -81,7 +81,7 @@ export type ShapeKind =
   // which tab lives in `windowTabId`.
   | 'tab-window'
   // Session button (docs/specs/012-collaboration/session-button.md): pressing it starts a session tool for the room
-  // — a timer, a dot vote, or a live poll. Which one lives in `session`.
+  // — a timer, a stopwatch or a dot vote. Which one lives in `session`.
   | 'session-button'
   // Reveal zone (docs/specs/009-elements/reveal-zone.md): a cover over part of the canvas. Click it to
   // uncover it for yourself; `revealed` uncovers it for everyone.

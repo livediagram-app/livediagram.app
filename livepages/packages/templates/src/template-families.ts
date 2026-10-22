@@ -81,8 +81,6 @@ const TEMPLATE_FAMILY: Record<TemplateKind, TemplateFamily | null> = {
   'coworking-space': null,
   'team-pod': null,
   'all-hands-hall': null,
-  'two-truths-and-a-lie': null,
-  'would-you-rather': null,
   'people-bingo': null,
   'business-model-canvas': null,
   'empathy-map': null,

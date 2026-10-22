@@ -19,11 +19,8 @@ export const GUEST_IDENTITY_KEYS = {
 export const REPAIR_KEPT_KEYS: readonly string[] = [
   // Guest identity.
   ...Object.values(GUEST_IDENTITY_KEYS),
-  // Per-browser keys that recorded answers are matched against, and the collab key's
-  // secret half (vote integrity, #443): a new secret under the same key would no longer prove this
-  // browser's answers.
+  // The per-browser key that recorded answers are matched against.
   'livepages:v2:collab-key',
-  'livepages:v2:collab-secret',
 ];
 
 /** True when a repair clears this storage key. */

@@ -203,7 +203,7 @@ export const DARK_INK = {
 
 // The Behaviour elements that look like controls or furniture store no
 // colour (behaviour-skin.ts); these are their unstyled looks per surface. The
-// buttons (mode, session: the timer, vote and poll; picker) wear a real UI
+// buttons (mode, session: the timer and vote; picker) wear a real UI
 // button's skin, a light card on light paper and a raised slate one on dark,
 // never the shape default, so they read as pressable before anyone styles
 // them. The reveal cover and the chair paint themselves; only their outline

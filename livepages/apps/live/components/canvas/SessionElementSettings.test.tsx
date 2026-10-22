@@ -10,10 +10,6 @@ import { SessionElementSettings } from './SessionElementSettings';
 
 vi.mock('@/app/document/[id]/EditorContext', () => ({
   useEditorContext: () => ({
-    livePoll: { startPoll: vi.fn() },
-    pollCollaborators: [],
-    documentShareable: false,
-    documentTeamId: null,
     startTimer: vi.fn(),
     startVote: vi.fn(),
     layers: [],
@@ -26,20 +22,9 @@ afterEach(cleanup);
 const junk = (config: Record<string, unknown>) => config as unknown as SessionButtonConfig;
 
 describe('SessionElementSettings with a malformed config', () => {
-  it('shows a poll whose question is not text and whose answers hold a number', () => {
-    render(
-      <SessionElementSettings
-        config={junk({
-          tool: 'poll',
-          style: 'choice',
-          question: -1,
-          options: [1, 'Tea', 'Coffee'],
-        })}
-        onChange={vi.fn()}
-      />,
-    );
-    expect(screen.getByDisplayValue('Tea')).toBeTruthy();
-    expect(screen.queryByDisplayValue('-1')).toBeNull();
+  it('shows a tool it does not know as the timer the button starts', () => {
+    render(<SessionElementSettings config={junk({ tool: 'poll' })} onChange={vi.fn()} />);
+    expect(screen.getByRole('button', { name: /^Start .* countdown$/ })).toBeTruthy();
   });
 
   it('shows a timer and a vote whose numbers are not numbers', () => {

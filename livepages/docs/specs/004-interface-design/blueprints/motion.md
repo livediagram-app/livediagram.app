@@ -112,7 +112,7 @@ Timers of every other kind are not touched. That covers `GRACE_MS`, `CLOSE_DELAY
 | `fly-up-in`                 | 420ms  | `long`  | Banners, search, template picker             |
 | `dialog-in` (new)           |        | `long`  | The shared Dialog shell's centred panel      |
 | `fade-in` on the backdrop   |        | `micro` | The shared Dialog shell's dim                |
-| `sheet-up`                  | 340ms  | `long`  | Poll prompt sheet                            |
+| `sheet-up`                  | 340ms  | `long`  | Bottom sheets and phone dialogs              |
 | `slide-row-in` / `-out`     | 220ms  | `micro` | Explorer rows, back bar, placement list (D4) |
 | `slide-in-left`             | 240ms  | `short` | Mobile Explorer drawer                       |
 | `tip-next` / `tip-prev`     | 260ms  | `short` | Tour steps, template-picker phases           |
@@ -149,7 +149,7 @@ Every chrome `duration-<n>` becomes a token. Hover-driven ones become `duration-
     `TimelineLanesOverlay`, and the `MovablePanel` fade.
   - `short`: `ToolbarStripRail`, `AccordionSection`,
     `MovablePanel` rows, `AnimatedHeightBox`, the `PortalMenu` body and chevron, the
-    `template-picker-wizard` progress bar, the `PollPanel` and `VotePanel` bars, and `NoteBox`.
+    `template-picker-wizard` progress bar, the `VotePanel` bars, and `NoteBox`.
   - `long`: `TourPopover`, `TourHost`, `PresentationHud`.
   - Inline: the `CanvasSelectionToolbars` fades take `micro`. `QuickConnectRing` takes `micro`
     for the plus and opacity, and `short` for the ring's transform. `explorer-icons` takes `micro`.

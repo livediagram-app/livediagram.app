@@ -14,8 +14,8 @@ is "what does each person think":
 - **One value, one author, persisted** — rating ([Rating](../009-elements/rating.md)), progress ([Progress elements](../009-elements/progress.md)),
   checklist ([Checklist](../009-elements/checklist.md)), picker result ([Picker](picker.md)). Anyone can change it, and the
   element remembers only the last change.
-- **Room-wide and ephemeral** — the timer and dot-vote ([Session tools (timer + voting)](session-tools.md)), the live poll
-  ([Live poll (ephemeral pulse-check)](live-poll.md)). Per-person, but scoped to a session and gone afterwards.
+- **Room-wide and ephemeral** — the timer and dot-vote ([Session tools (timer + voting)](session-tools.md)). Per-person,
+  but scoped to a session and gone afterwards.
 
 A planning-poker round and a temperature check are neither. They need each
 person's own answer, kept apart from everyone else's, surviving a reload. That
@@ -29,7 +29,7 @@ and the id of who cast it (see below — it is NOT the owner id).
 
 - **At most one response per participant**, enforced by `setResponse`: casting
   again REPLACES your earlier answer rather than stacking a second one. This is
-  the whole contract, and it matches how `poll-answer` ([Live poll (ephemeral pulse-check)](live-poll.md)) keys by sender.
+  the whole contract.
 - **A string, not a number**, because the consumers disagree about what an
   answer is: `'8'` and `'XL'` and `'?'` are all valid estimates. Consumers parse
   what they need (`responseStats` does the numeric read for the gauge).
@@ -103,9 +103,8 @@ The estimate card uses it; the temperature check deliberately does not.
 ## Rules it inherits, and the one it breaks
 
 - **It syncs, it persists, it exports.** An ordinary element field, so it rides
-  the granular `el` op ([Realtime conflict resolution](realtime-conflict-resolution.md)), lands in D1, and reaches late joiners. This is
-  the deliberate opposite of the poll ([Live poll (ephemeral pulse-check)](live-poll.md)): a poll is a pulse-check that
-  should evaporate, an estimate is a record of what the team decided.
+  the granular `el` op ([Realtime conflict resolution](realtime-conflict-resolution.md)), lands in D1, and reaches late joiners. An estimate
+  is a record of what the team decided, so it is kept rather than left to evaporate.
 - **Edit-role only.** The room drops view-role mutations ([API app](../015-api/api.md)), so casting
   is gated with no extra code, exactly like a dot-vote.
 - **Casting does NOT push undo history.** It writes through the non-history

@@ -19,7 +19,6 @@ import {
   type SheetPresenceOp,
   type SheetsRoomOp,
   type FacilitatorReason,
-  type LivePoll,
 } from '@livepages/api-schema';
 import { nextFreeColor, type Participant } from '@/lib/identity';
 import { usePublishedPicture } from '@/hooks/persistence/usePublishedPicture';
@@ -125,11 +124,9 @@ export function useRoomConnection(opts: {
   setRemoteViewports: Dispatch<SetStateAction<Map<string, RemoteViewport>>>;
   setDocumentName: Dispatch<SetStateAction<string>>;
   setSelfParticipant: Dispatch<SetStateAction<Participant>>;
-  // Live poll (docs/specs/012-collaboration/live-poll.md) inbound handlers, owned by useLivePoll. Stable
-  // (useCallback with no changing deps) so they don't reopen the socket —
-  // the effect's dep list stays [hydrated, documentId, documentServerStored].
-  // Avatar mode (docs/specs/008-canvas/avatar-mode.md): somebody pushed our character. Stable, like the
-  // poll handlers below, so it can't reopen the socket.
+  // Inbound handlers are stable (useCallback with no changing deps) so they don't reopen the socket — the
+  // effect's dep list stays [hydrated, documentId, documentServerStored].
+  // Avatar mode (docs/specs/008-canvas/avatar-mode.md): somebody pushed our character.
   receiveAvatarPush: (dx: number, dy: number) => void;
   // A peer set off a reaction pad (docs/specs/009-elements/reaction-pad.md). Purely visual: nothing is
   // written, so there is nothing here to persist, order, or undo.
@@ -153,15 +150,12 @@ export function useRoomConnection(opts: {
   // The facilitator freed an element we were holding (docs/specs/007-editor/live-app.md lock). Only our
   // socket is sent this, so there is nothing to check it against.
   receiveSelectionReleased: (msg: { elementId: string; by: string }) => void;
-  receivePoll: (poll: LivePoll) => void;
-  receivePollAnswer: (from: string, pollId: string, value: string | null, key?: string) => void;
-  receivePollEnd: (pollId: string) => void;
   // The document went to the Trash (docs/specs/013-workspace/trash.md): the
   // worker's document-trashed op, or the room closing the socket with 4004.
   // Stable, like the others, so it can't reopen the socket.
   receiveDocumentTrashed: () => void;
   // Re-hydrate tab content from D1 when the room can't replay our gap
-  // (docs/specs/012-collaboration/resync-without-reload.md). Stable, like the poll handlers, so it can't reopen the
+  // (docs/specs/012-collaboration/resync-without-reload.md). Stable, like the others, so it can't reopen the
   // socket — the effect's dep list stays [hydrated, documentId, shareable].
   resyncFromServer: () => Promise<void>;
   // A peer switched a tab's editor mode (docs/specs/007-editor/editor-modes.md "Where the mode
@@ -230,9 +224,6 @@ export function useRoomConnection(opts: {
     readFacilitatorToken,
     setFollowerIds,
     readFollowing,
-    receivePoll,
-    receivePollAnswer,
-    receivePollEnd,
     receiveDocumentTrashed,
     resyncFromServer,
     receiveChangeset,
@@ -535,17 +526,6 @@ export function useRoomConnection(opts: {
         });
         // Their other pane, side by side (docs/specs/007-editor/split-view.md "Presence").
         setRemoteBesideTab(from, op.besideTabId);
-      } else if (op.kind === 'poll-start') {
-        // Live poll (docs/specs/012-collaboration/live-poll.md). Purely ephemeral: it lands in the poll
-        // hook's memory and never touches tabs or autosave, so there is
-        // nothing here to persist or undo.
-        receivePoll(op.poll);
-      } else if (op.kind === 'poll-answer') {
-        // `from` keys the answer so a peer changing their mind replaces
-        // it. It is never rendered — results carry no identity.
-        receivePollAnswer(from, op.pollId, op.value, op.key);
-      } else if (op.kind === 'poll-end') {
-        receivePollEnd(op.pollId);
       } else if (op.kind === 'share-revoked' || op.kind === 'share-rescoped') {
         // The owner revoked or rescoped a share link (share-link-ops.ts).
         // A session hydrated with that exact code leaves the editor on a

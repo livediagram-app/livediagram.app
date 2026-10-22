@@ -6,7 +6,7 @@ import { usePaletteStripBox, useToolbarBox } from '@/components/chrome/PaletteTr
 // The gap a popover keeps under a toolbar it would otherwise run beneath.
 const TOOLBAR_GAP_PX = 8;
 
-// How far below its box's top a popover that opens UP from a bottom dock button (the Vote, the Poll, Layers) may
+// How far below its box's top a popover that opens UP from a bottom dock button (the Vote, Layers) may
 // reach, in screen px: `fallback` where nothing is in the way; under a toolbar across the canvas's top that its
 // column meets, the palette strip or Draw's dock, the toolbar's bottom plus 8 px. On a phone the strip spans the
 // width: a tall panel ran up under it and hid its own header (docs/specs/007-editor/toolbar-layout.md "Layout

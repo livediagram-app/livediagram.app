@@ -1,21 +1,15 @@
 import type { Layer, TabTimer, TabVote, TimerMode, VoteSetup } from '@livepages/document';
-import type { LivePoll, PollStyle } from '@livepages/api-schema';
-import type { PollCandidate } from '@/lib/poll-collaborators';
 
-// The session-tools bundle (docs/specs/012-collaboration/session-tools.md, docs/specs/012-collaboration/live-poll.md, docs/specs/012-collaboration/vote-layer-scope.md): the running timer, the
-// dot vote, the live poll, and every verb that drives them.
+// The session-tools bundle (docs/specs/012-collaboration/session-tools.md, docs/specs/012-collaboration/vote-layer-scope.md): the
+// running timer, the dot vote, and every verb that drives them. Both are Tab FIELDS, so they persist with the
+// document.
 //
 // One bundle, read once (useSessionTools) for the bottom bar's Session strip and handed to its
 // popovers' panes (docs/specs/012-collaboration/session-tools.md "The Session strip").
-//
-// The one asymmetry worth keeping in view: the timer and the vote are Tab
-// FIELDS, so they persist with the document, while the poll is ephemeral room
-// state and never becomes one. That is why the poll arrives as three separate
-// props rather than a `poll` slot on the tab beside the other two.
 export type SessionToolsProps = {
   // Who is running the session, when it is not you (docs/specs/012-collaboration/facilitator.md). The set-up
   // popovers show the name and disables every control in one place, which is the
-  // whole reason these sixteen verbs already travel as one bundle.
+  // whole reason these verbs already travel as one bundle.
   facilitatedBy?: string | null;
   // We hold the facilitator baton, so the vote's controls are ours even when
   // somebody else started it (docs/specs/012-collaboration/session-tools.md).
@@ -33,19 +27,6 @@ export type SessionToolsProps = {
   onEndVote: () => void;
   onRevealVote: () => void;
   onClearVote: () => void;
-  livePoll: LivePoll | null;
-  // Shared or on a team, so a poll reaches other people. False doesn't stop
-  // a poll (it runs for just you); the composer only notes it.
-  pollHasAudience: boolean;
-  onStartPoll: (draft: { question: string; style: PollStyle; options: string[] }) => void;
-  // Everyone currently in the document, for the `collaborators` poll style
-  // (docs/specs/012-collaboration/live-poll.md). The composer needs it to PREVIEW the ballot it is about to
-  // freeze; the freeze itself happens in `startPoll`, reading the roster again
-  // at the instant the poll starts, so what is sent is never staler than the
-  // press. Raw candidates rather than finished option strings: turning them
-  // into a ballot (de-duplicating, numbering repeats, capping) is one pure
-  // function both sides call, not a list one side prepares for the other.
-  pollCollaborators: readonly PollCandidate[];
   // The tab's layers + the active one, for the vote's layer scope (docs/specs/012-collaboration/vote-layer-scope.md).
   voteLayers: Layer[];
   activeLayerId: string;

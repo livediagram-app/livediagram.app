@@ -88,7 +88,7 @@ export function usePaletteDrop({
     if (overFloatingPanel(e.target)) return;
     // `kind` or `kind|choice` — the creation-time choice a split tile
     // carries (docs/specs/009-elements/mode-button.md, /105, /123, /135). Without parsing it back out, a
-    // dragged Poll tile dropped a timer.
+    // dragged Vote tile dropped a timer.
     const file = onDropFile ? e.dataTransfer.files?.[0] : undefined;
     if (file) {
       e.preventDefault();

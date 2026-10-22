@@ -6,7 +6,7 @@
 import {
   CHART_TYPE_LABELS,
   chartTypeOf,
-  DEFAULT_SESSION_TOOL,
+  sessionButtonPlan,
   type BoxedElement,
   type Element,
   type SessionTool,
@@ -18,7 +18,6 @@ const SESSION_TOOL_KIND: Record<SessionTool, string> = {
   timer: 'Timer',
   stopwatch: 'Stopwatch',
   vote: 'Dot vote',
-  poll: 'Poll',
 };
 
 // Display kind for an element — capitalised, no article. Shapes
@@ -41,9 +40,9 @@ export function kindLabel(el: Element): string {
   if (el.type === 'path') return 'Path';
   if (el.type === 'link-card') return 'Link card';
   if (el.type === 'video') return 'Embed';
-  // A session button names the tool it starts ('Timer', 'Poll'), not the generic kind, which said nothing about it.
+  // A session button names the tool it starts ('Timer', 'Dot vote'), not the generic kind, which said nothing about it.
   if (el.type === 'shape' && el.shape === 'session-button')
-    return SESSION_TOOL_KIND[el.session?.tool ?? DEFAULT_SESSION_TOOL];
+    return SESSION_TOOL_KIND[sessionButtonPlan(el.session).tool];
   if (el.type === 'shape') {
     // A chart is named by its chart type, as the palette names it: 'Column chart', not its kind's 'Bar chart'.
     const chart = chartTypeOf(el);
@@ -142,7 +141,7 @@ export function elementAriaLabel(el: Element): string {
   return label ? `${kind} "${label}"` : kind;
 }
 
-// The kinds whose face carries controls of its own: a timer's Start, a checklist's ticks, a poll's Ask, an agenda's
+// The kinds whose face carries controls of its own: a timer's Start, a checklist's ticks, an agenda's
 // items, a reaction pad's button, a picker's draw, a reveal, a decision
 // record's settings and a mode button.
 const CONTROL_FACE_SHAPES: ReadonlySet<string> = new Set<ShapeKind>([

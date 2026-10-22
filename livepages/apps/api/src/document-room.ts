@@ -12,7 +12,6 @@ import {
 import { opForTheWire, stampCommentAuthor } from '@livepages/document';
 import { RoomParticipantWrites } from './room-participant';
 import { RoomLedgerStore } from './room-ledger-store';
-import { RoomLivePoll } from './room-live-poll';
 import { RoomSelectionStore, selectionFromOp, type LiveSession } from './room-selections';
 import {
   agentPresenceLog,
@@ -55,7 +54,7 @@ import {
 // State and conflict model (docs/specs/015-api/api.md, Realtime model): the room
 // classifies each op by kind, orders mutations (seq within an epoch, kept in
 // storage), rewrites comment authors, and keeps collaboration state in DO
-// storage (the ledger, the live poll, the facilitator baton). It never holds
+// storage (the ledger, the facilitator baton). It never holds
 // the document: D1 does, written by clients over REST, except a Participant's
 // writes this room performs itself. Payloads stay `op: unknown` so the
 // editor can evolve its vocabulary without changing the room. Two edits to
@@ -162,12 +161,8 @@ export class DocumentRoom implements DurableObject {
   get facilitator(): FacilitatorState {
     return this.baton.state;
   }
-  // The collaboration ledger (docs/specs/012-collaboration/collab-race-hardening.md phase 3) and the running poll
-  // (docs/specs/012-collaboration/collab-race-hardening.md), each in its own module; see room-ledger-store / room-live-poll.
+  // The collaboration ledger (docs/specs/012-collaboration/collab-race-hardening.md phase 3); see room-ledger-store.
   ledger: RoomLedgerStore;
-  poll: RoomLivePoll;
-  // The poll answers in flight, in arrival order (relayPollAnswer). Awaited by tests.
-  pollAnswers: Promise<void>;
   // Each session's selection, for the api's held check (room-selections.ts).
   selections: RoomSelectionStore;
   // Agent presence entries (docs/specs/024-agents/agent-presence.md "Presence").
@@ -204,7 +199,6 @@ export class DocumentRoom implements DurableObject {
       position: () => ({ epoch: this.epoch, seq: this.seq }),
       readLedger: (tabId) => this.ledger.read(tabId),
     });
-    this.poll = new RoomLivePoll(state.storage);
     this.internal = {
       broadcastSystemOp: (op) => this.broadcastSystemOp(op),
       broadcastOrderedSystemOp: (op) => this.broadcastOrderedSystemOp(op),
@@ -228,7 +222,6 @@ export class DocumentRoom implements DurableObject {
       readSession: (ws) => this.readSession(ws),
       armAlarm: () => this.armAlarm(),
     });
-    this.pollAnswers = Promise.resolve();
     this.selections = new RoomSelectionStore(state.storage);
     // The keepalive (see the hibernation notes above): answered by the runtime, never by this class. Absent from a
     // test double of the state, and from a runtime without the hibernation API.
@@ -252,7 +245,6 @@ export class DocumentRoom implements DurableObject {
         await state.storage.put(ORDER_STATE_KEY, { epoch: this.epoch, seq: this.seq });
       }
       await this.baton.restore();
-      await this.poll.restore();
       for (const r of await this.agents.restore()) agentPresenceLog('expired', r);
       this.armAlarm();
     });
@@ -288,7 +280,6 @@ export class DocumentRoom implements DurableObject {
       v.shareCode,
       v.account,
       v.personTag,
-      v.networkTag,
       v.workbenchPairing,
       v.adderKey,
       v.documentId,
@@ -334,7 +325,6 @@ export class DocumentRoom implements DurableObject {
     shareCode: string | null = null,
     account = false,
     personTag: string | null = null,
-    networkTag: string | null = null,
     workbenchPairing: string | null = null,
     adderKey: string | null = null,
     documentId: string | null = null,
@@ -348,7 +338,6 @@ export class DocumentRoom implements DurableObject {
           shareCode,
           account,
           personTag,
-          networkTag,
           workbenchPairing,
           adderKey,
           documentId,
@@ -482,7 +471,7 @@ export class DocumentRoom implements DurableObject {
   }
 
   // The document is gone for good: end every session, then drop everything stored here, which includes the
-  // collaboration ledger's comment, idea and answer text, the order state, the poll, the baton and the alarm.
+  // collaboration ledger's comment, idea and answer text, the order state, the baton and the alarm.
   // The ledger's queued writes land first, so none of them can re-create a key after the wipe.
   private async purge(): Promise<void> {
     this.closeSockets(() => [DOCUMENT_TRASHED_CLOSE, 'document-purged']);
@@ -590,8 +579,6 @@ export class DocumentRoom implements DurableObject {
       // older than it offers a reload. With the live build id (docs/specs/016-platform/stale-builds.md).
       const build = parseBuildId(this.env?.BUILD_ID);
       this.sendTo(ws, { kind: 'format', format: DOCUMENT_FORMAT, ...(build ? { build } : {}) });
-      // The running poll, and every answer so far (docs/specs/012-collaboration/collab-race-hardening.md).
-      for (const op of this.poll.replayOps()) this.sendTo(ws, { kind: 'op', from: 'system', op });
       this.broadcastPresence();
       this.noteMultiplayer();
       this.baton.welcome(ws, session, presence.id, msg.facilitatorToken);
@@ -640,16 +627,6 @@ export class DocumentRoom implements DurableObject {
       }
       const opKind = (msg.op as { kind?: unknown } | null | undefined)?.kind;
       const isPresenceOp = gate.presence;
-      // Running the session belongs to whoever holds the baton (docs/specs/012-collaboration/facilitator.md).
-      // Only these two ops can be enforced here: a poll start / end is its own
-      // kind, while the timer and the dot vote ride the same `tab` /
-      // `tab-meta` ops as every shape move, so telling them apart would mean
-      // inspecting payloads for no gain against somebody who can already save
-      // the whole document over REST. Those stay a client-side rule, which is
-      // what docs/specs/012-collaboration/facilitator.md says out loud: who is driving, not who is allowed.
-      if (opKind === 'poll-start' || opKind === 'poll-end') {
-        if (!this.baton.mayRun(sender.id)) return;
-      }
       // Remember the sender's current tab so a future joiner learns it
       // from the presence list (tab-focus ops only fire on a switch, so
       // they're invisible to anyone who joins afterwards). Persisted to
@@ -691,17 +668,6 @@ export class DocumentRoom implements DurableObject {
         // peer's real owner id (docs/specs/015-api/public-api-and-tokens.md §6) — which also means a receiver can't
         // recognise its own id in the packet. So the routing happens here, and
         // a client acts on any avatar-push that reaches it.
-        // The room decides who an answer belongs to, and relays only what it accepted, under the key it chose
-        // (docs/specs/012-collaboration/vote-integrity.md): the sender's proof never leaves the room.
-        // Chained, so answers apply in the order they arrived even though each one is hashed first: a quick change
-        // of mind must not lose to the answer it replaced.
-        if (opKind === 'poll-answer') {
-          const op = msg.op;
-          this.pollAnswers = this.pollAnswers
-            .then(() => this.relayPollAnswer(ws, op))
-            .catch(() => {});
-          return;
-        }
         if (opKind === 'avatar-push') {
           const targetId = (msg.op as { targetId?: unknown }).targetId;
           if (typeof targetId === 'string') {
@@ -723,7 +689,6 @@ export class DocumentRoom implements DurableObject {
         // ledger has it (docs/specs/012-collaboration/collab-race-hardening.md phase 6).
         const ref = isRoomOpRef(msg.ref) ? { ref: msg.ref } : {};
         this.sendTo(ws, { kind: 'cursor', epoch: this.epoch, seq, ...ref });
-        if (opKind === 'poll-start' || opKind === 'poll-end') this.poll.noteLifecycle(op);
       }
     }
   }
@@ -775,32 +740,6 @@ export class DocumentRoom implements DurableObject {
     } catch {
       this.opRates.delete(ws);
     }
-  }
-
-  // One live poll answer (docs/specs/012-collaboration/vote-integrity.md). The poll decides the key from what the
-  // room holds about this session, and the room relays only an accepted answer, as the poll rewrote it.
-  private async relayPollAnswer(ws: WebSocket, op: unknown): Promise<void> {
-    const session = this.readSession(ws);
-    const sender = session?.presence;
-    if (!session || !sender) return;
-    const outcome = await this.poll.noteAnswer(op, {
-      presenceId: sender.id,
-      personTag: session.personTag ?? null,
-      networkTag: session.networkTag ?? null,
-      answeredAs: () => this.readSession(ws)?.pollAnsweredAs ?? null,
-      rememberAnswer: (answeredAs) => {
-        const latest = this.readSession(ws);
-        if (latest) ws.serializeAttachment({ ...latest, pollAnsweredAs: answeredAs });
-      },
-    });
-    if (!outcome.accepted) {
-      // A stale or malformed answer is routine; a refusal is the interesting one. Never the key or the proof.
-      if (outcome.reason !== 'no_poll' && outcome.reason !== 'bad_value') {
-        console.warn('[live-poll] answer refused', { reason: outcome.reason });
-      }
-      return;
-    }
-    this.broadcast({ kind: 'op', from: sender.id, op: outcome.op }, ws);
   }
 
   // Who this session follows (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"): kept on the

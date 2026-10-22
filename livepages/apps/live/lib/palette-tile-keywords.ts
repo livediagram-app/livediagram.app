@@ -55,7 +55,7 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   'mode-button': 'mode switch button press avatar',
   portal: 'teleport jump link warp travel',
   'tab-window': 'tab window live view embed mirror show diagram slide reference frame',
-  'session-button': 'timer vote poll session start',
+  'session-button': 'timer vote session start',
   reveal: 'hide cover spoiler blur uncover',
   picker: 'random pick spinner wheel choose',
   chair: 'seat sit stool furniture',

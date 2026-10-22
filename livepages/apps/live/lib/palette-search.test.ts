@@ -75,7 +75,6 @@ describe('buildPaletteSearchItems', () => {
     for (const id of [
       'shape:session-button:timer',
       'shape:session-button:vote',
-      'shape:session-button:poll',
       'shape:reaction-pad:confetti',
       'shape:reaction-pad:fireworks',
     ]) {

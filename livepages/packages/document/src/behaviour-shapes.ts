@@ -59,8 +59,8 @@ export function isBehaviourShape(kind: ShapeKind): boolean {
 /**
  * Does this kind draw its OWN `…` menu, with quick settings in it?
  *
- * The ones that do earned it: a Timer's length, a Vote's dots and a Poll's
- * question are the settings you change mid-session, and a Done check's round
+ * The ones that do earned it: a Timer's length and a Vote's dots are
+ * the settings you change mid-session, and a Done check's round
  * and an Idea box's contents are reset from the same place. Everything else in
  * the family gets the shared settings `…` instead, which opens the element's
  * context menu.

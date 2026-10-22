@@ -166,7 +166,7 @@ or opens a hole; "should" is a strong preference.
   pattern (REST endpoint writes D1, then relays the delta through `/mutation`) and the Q&A pattern
   (the room serialises writes and writes D1 itself with compare-and-swap). The worktree blueprint
   leaves this open (Open A5).
-- **C15. Poll answers are ephemeral by design** ([Live poll](../../specs/012-collaboration/live-poll.md));
+- **C15. Poll answers are ephemeral by design** (the live poll, since removed);
   they need no persistence path, only a role gate.
 
 ### API tokens and agents

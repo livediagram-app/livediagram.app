@@ -284,7 +284,7 @@ export function ElementFaceRouter({
           }
         />
       ) : element.type === 'shape' && element.shape === 'session-button' && !isEditing ? (
-        /* Session button (docs/specs/012-collaboration/session-button.md): starts a vote / poll for the room. */
+        /* Session button (docs/specs/012-collaboration/session-button.md): starts a timer / vote for the room. */
         <SessionButtonFace
           config={element.session}
           label={label}

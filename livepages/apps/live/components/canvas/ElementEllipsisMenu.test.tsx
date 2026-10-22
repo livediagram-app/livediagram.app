@@ -8,10 +8,10 @@
 // far apart the two are on screen. That is the whole hazard this file guards:
 // the panel looks detached and behaves attached.
 //
-// It bit on double-click. The poll's panel is a form with text inputs, so
-// double-clicking to select a word in a choice reached the element underneath,
+// It bit on double-click. A settings panel is a form with text inputs, so
+// double-clicking to select a word in one reached the element underneath,
 // put it into text-edit mode, and the re-render took the panel away — the
-// gesture for editing a choice was the gesture that closed the editor.
+// gesture for editing a field was the gesture that closed the editor.
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -33,7 +33,7 @@ function mountInFace(handlers: {
       onDoubleClick={handlers.onDoubleClick}
       onContextMenu={handlers.onContextMenu}
     >
-      <ElementEllipsisMenu label="Poll options" kind="control">
+      <ElementEllipsisMenu label="Dot vote options" kind="control">
         {(close) => (
           <>
             <input aria-label="Choice" defaultValue="Ariel" />
@@ -46,8 +46,8 @@ function mountInFace(handlers: {
 }
 
 function openMenu() {
-  fireEvent.click(screen.getByRole('button', { name: 'Poll options' }));
-  return screen.getByRole('dialog', { name: 'Poll options' });
+  fireEvent.click(screen.getByRole('button', { name: 'Dot vote options' }));
+  return screen.getByRole('dialog', { name: 'Dot vote options' });
 }
 
 describe('ElementEllipsisMenu event containment', () => {
@@ -68,7 +68,7 @@ describe('ElementEllipsisMenu event containment', () => {
     fireEvent.doubleClick(screen.getByLabelText('Choice'));
     expect(onDoubleClick).not.toHaveBeenCalled();
     // And the panel is still open, which is the half the user actually feels.
-    expect(screen.getByRole('dialog', { name: 'Poll options' })).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: 'Dot vote options' })).toBeTruthy();
   });
 
   it('does not leak a right-click in a field, and leaves the browser menu alone', () => {
@@ -122,9 +122,9 @@ describe('ElementEllipsisMenu kinds', () => {
 
   it('is a named dialog for settings', () => {
     mountInFace({});
-    expect(screen.getByRole('button', { name: 'Poll options' }).getAttribute('aria-haspopup')).toBe(
-      'dialog',
-    );
+    expect(
+      screen.getByRole('button', { name: 'Dot vote options' }).getAttribute('aria-haspopup'),
+    ).toBe('dialog');
     openMenu();
     expect(screen.queryByRole('menuitem')).toBeNull();
   });

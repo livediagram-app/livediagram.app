@@ -1,7 +1,6 @@
 // Icebreaker Questions, of the Games category (docs/specs/012-collaboration/game-templates.md). Like the
 // other session boards it is RUN rather than filled in, so each tool sits beside the words that say when to press
-// it. The party games (Two Truths and a Lie, Would You Rather, Find
-// Someone Who Bingo) live next door in template-builders-party-games.ts.
+// it. Find Someone Who Bingo lives next door in template-builders-party-games.ts.
 //
 // Each builder is pure: it takes a centre (cx, cy) and returns a fresh Element[].
 

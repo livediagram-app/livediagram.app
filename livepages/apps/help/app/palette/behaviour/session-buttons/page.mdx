@@ -6,31 +6,31 @@ import { SessionButtons } from '@/components/illustrations/palette-behaviour';
 export const metadata = helpMetadata({
   title: 'Session Buttons',
   description:
-    'Put a Timer, Stopwatch, Dot vote or Poll on the canvas so anyone can start that session tool for the whole room with one press.',
+    'Put a Timer, Stopwatch or Dot vote on the canvas so anyone can start that session tool for the whole room with one press.',
   path: '/help/palette/behaviour/session-buttons/',
 });
 
 <ArticleLayout
   title="Session Buttons"
-  description="An element on the canvas that starts a timer, a stopwatch, a dot vote or a poll for everyone."
+  description="An element on the canvas that starts a timer, a stopwatch or a dot vote for everyone."
   categoryTitle="Palette"
   categorySlug="palette"
   parentArticle={{ title: 'Collaborate', slug: 'behaviour' }}
   subArticles={getSubArticles('behaviour').filter((a) => a.slug !== 'session-buttons')}
 >
 
-A session button starts one of the [session tools](/help/collaboration/session-tools/) for everyone in the room: a countdown [timer](/help/collaboration/session-tools/timer/), a stopwatch that counts up, a [dot vote](/help/collaboration/session-tools/voting/), or a [poll](/help/collaboration/session-tools/polls/) you write in advance.
+A session button starts one of the [session tools](/help/collaboration/session-tools/) for everyone in the room: a countdown [timer](/help/collaboration/session-tools/timer/), a stopwatch that counts up, or a [dot vote](/help/collaboration/session-tools/voting/).
 
 ## Adding one
 
 There is one tile per tool in the [Collaborate](/help/palette/behaviour/) categories, so the element drops as the tool you picked rather than as a generic button you then have to point at one:
 
 - **Timer** and **Stopwatch** are in the **Tools** category, with the Reveal zone, the Done check and the Picker.
-- **Dot Vote** and **Poll** are in the **Ask** category, with the other ways of putting a question to the room.
+- **Dot Vote** is in the **Ask** category, with the other ways of putting a question to the room.
 
 Plan mode has no palette, so the Timer and Stopwatch elements are placed in the other modes.
 
-<Figure caption="A Timer is the clock itself; a Stopwatch just starts, and a Dot vote and a Poll are labelled from their own setting.">
+<Figure caption="A Timer is the clock itself; a Stopwatch just starts, and a Dot vote is labelled from its own setting.">
   <SessionButtons />
 </Figure>
 
@@ -46,25 +46,13 @@ A tab runs one clock at a time, so a Timer and a Stopwatch on the same tab share
 
 ## Changing the setting
 
-Each button carries a **…** menu on its own face for the setting you change most: the length on a Timer (a dial plus presets of 1, 3, 5, 10, 15 and 30 minutes), the dots each on a Dot vote, and the question and answers on a Poll. The menu ends with **All Settings…** for the full element menu.
+Each button carries a **…** menu on its own face for the setting you change most: the length on a Timer (a dial plus presets of 1, 3, 5, 10, 15 and 30 minutes), and the dots each on a Dot vote. The menu ends with **All Settings…** for the full element menu.
 
 Changing a Timer's length from its **…** menu **while it is counting restarts it** at the new one, keeping it running (or paused) as it was. Extend a timer between rounds rather than mid-round. Changing it from the right-click **Session** section saves the new length for next time and leaves a running timer alone.
 
 A button stays the tool you picked it as. If you want a countdown where you put a vote, drag a **Timer** out of the palette instead: the palette has one tile per tool, so choosing there is the whole decision.
 
 Pressing a Dot vote button while a vote is already running does nothing, because starting again would wipe the dots already cast.
-
-## How a Poll button asks
-
-A Poll button carries its **answers** as well as its question, and you pick the shape they take, the same six the [poll](/help/collaboration/session-tools/polls/) composer offers:
-
-- **Yes / No**, and **+ Abstain** for the version with a way out.
-- **Choices**: the answers you write yourself, two to ten of them.
-- **Collaborators**: the people in the document become the answers, taken when the poll starts.
-- **Rating 1-5**.
-- **Free text**, for answers people type.
-
-Only **Choices** reads a written list. Switch to Yes / No and the list is left alone but unused, so you can try a shape and come back without retyping anything. A Choices button with fewer than two answers has nothing to press, so it shows as not set up until you add a second one; every other shape is ready as soon as it has a question.
 
 ## Who can start one
 

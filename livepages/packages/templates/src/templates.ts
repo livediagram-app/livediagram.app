@@ -87,8 +87,8 @@ export type TemplateKind =
   | 'affinity-map'
   | 'brainstorm'
   | 'workshop-board'
-  // Games (docs/specs/012-collaboration/game-templates.md): icebreakers spun on Pickers, and three party
-  // games run on polls, timers and reaction pads.
+  // Games (docs/specs/012-collaboration/game-templates.md): icebreakers spun on Pickers, and a
+  // bingo card run on a timer and a reaction pad.
   | 'icebreaker-questions'
   // A whole office to walk round in Avatar mode (docs/specs/012-collaboration/virtual-office-template.md).
   | 'virtual-office'
@@ -96,8 +96,6 @@ export type TemplateKind =
   | 'coworking-space'
   | 'team-pod'
   | 'all-hands-hall'
-  | 'two-truths-and-a-lie'
-  | 'would-you-rather'
   | 'people-bingo'
   // The classic nine-block Business Model Canvas, coloured by area,
   // numbered in fill order and seeded with worked sticky notes.
@@ -370,7 +368,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
   {
     kind: 'blank-session',
     title: 'Blank Session',
-    description: 'An empty tab to run a session on: timers, votes, polls and reveals to hand.',
+    description: 'An empty tab to run a session on: timers, votes and reveals to hand.',
     extra: true,
   },
   {
@@ -808,20 +806,6 @@ export const TEMPLATES: TemplateDescriptor[] = [
     title: 'All-Hands Hall',
     description:
       'A hall for town halls and demos in Avatar mode: a stage, rows of seats facing it and Bring Focus.',
-    extra: true,
-  },
-  {
-    kind: 'two-truths-and-a-lie',
-    title: 'Two Truths and a Lie',
-    description:
-      'Each player writes three statements, one of them false, and the room votes on the lie in a live poll.',
-    extra: true,
-  },
-  {
-    kind: 'would-you-rather',
-    title: 'Would You Rather',
-    description:
-      'Six light dilemmas, each with a ready-made poll, so the room picks a side and argues its case.',
     extra: true,
   },
   {

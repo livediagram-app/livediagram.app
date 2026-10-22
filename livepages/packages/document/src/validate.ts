@@ -137,7 +137,7 @@ export const SHAPE_KINDS = new Set<string>([
   'portal',
   // Tab window (docs/specs/009-elements/tab-window.md): another tab of the document drawn inside it.
   'tab-window',
-  // Session button (docs/specs/012-collaboration/session-button.md): starts a timer / vote / poll for the room.
+  // Session button (docs/specs/012-collaboration/session-button.md): starts a timer / vote for the room.
   'session-button',
   // Reveal zone (docs/specs/009-elements/reveal-zone.md): a cover you click to see what is underneath.
   'reveal',

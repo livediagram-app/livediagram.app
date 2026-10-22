@@ -238,12 +238,12 @@ describe('WorkshopTourHost end', () => {
   it('leaves the Share step out where there is no Share button', () => {
     dom.share = false;
     start();
-    expect(stage.engine!.countableSteps).toBe(5);
+    expect(stage.engine!.countableSteps).toBe(4);
   });
 
   it('keeps the Share step where there is one', () => {
     start();
-    expect(stage.engine!.countableSteps).toBe(6);
+    expect(stage.engine!.countableSteps).toBe(5);
   });
 
   it('ends as skipped when the person leaves Workshop or the tab', () => {

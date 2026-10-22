@@ -7,12 +7,12 @@ import type { Env } from './types';
 
 // Who one voter is (docs/specs/012-collaboration/vote-integrity.md). A verified account is one voter. A guest id costs
 // nothing to make, so guests are counted against their network: at most this many distinct guest voters per network
-// take part in one target (a document over REST, a poll in the room). Far above a household or an office on one
+// take part in one document. Far above a household or an office on one
 // address, far below what a flood needs.
 export const GUEST_VOTERS_PER_NETWORK = 100;
 
 // The caller's network as stored: a SHA-256 of the target's scope and the network key, so it cannot be read back or
-// matched across documents. 32 hex characters (128 bits) keeps the room's poll state and the ledger rows small.
+// matched across documents. 32 hex characters (128 bits) keeps the ledger rows small.
 export async function networkTagFor(scope: string, networkKey: string): Promise<string> {
   const digest = await sha256Hex(
     new TextEncoder().encode(`livepages:vote-network:v1:${scope}:${networkKey}`),

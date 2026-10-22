@@ -230,7 +230,7 @@ rename sends (tabs in order, with their folders), through `/mutation`; a failure
 - The editor opens its room when `hydrated && documentId && documentServerStored`, where
   `documentServerStored = fetched.ownerId !== OFFLINE_OWNER_ID` (set in `useIdentityBootstrap`, false for a
   never-saved draft). `useRoomConnection` and `usePresenceBroadcast` use it. The presence streams
-  (`useEditorBroadcast`, `useDragPreviewBroadcast`), the presence rows and the poll audience keep the audience gate
+  (`useEditorBroadcast`, `useDragPreviewBroadcast`), and the presence rows keep the audience gate
   `documentShareable || documentTeamId`.
 
 ### The editor

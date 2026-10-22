@@ -121,8 +121,6 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'coworking-space': 'grid',
   'team-pod': 'grid',
   'all-hands-hall': 'grid',
-  'two-truths-and-a-lie': 'grid',
-  'would-you-rather': 'grid',
   'people-bingo': 'grid',
   'empathy-map': 'grid',
   funnel: 'blank',

@@ -46,7 +46,6 @@ import { useLandscapeBars } from '@/hooks/ui/useLandscapeBars';
 import { SplitViewFrame } from '@/components/split/SplitViewFrame';
 import { SignInBanner, SIGNIN_BANNER_DISMISS_KEY } from '@/components/chrome/SignInBanner';
 import { EditorModals } from '@/components/dialogs/EditorModals';
-import { PollPromptSheet } from '@/components/panels/PollPromptSheet';
 import { FocusInviteDialog } from '@/components/dialogs/FocusInviteDialog';
 import { focusPageAt } from '@/lib/focus-audience';
 import { EditorTabDialogs } from '@/components/dialogs/EditorTabDialogs';
@@ -125,7 +124,6 @@ export function EditorView() {
     appChrome,
     workbench,
     quickStyleDeps,
-    livePoll,
     focusInvite,
     livePresence,
     canvasTool,
@@ -581,25 +579,8 @@ export function EditorView() {
                                         <EditorSearchPanel />
                                       </AreaErrorBoundary>
                                     ) : null}
-                                    {/* Live poll (docs/specs/012-collaboration/live-poll.md). The prompt is shown to EVERY participant
-          including view-role; the results panel unlocks once you've
-          responded (or if you're the host). Both vanish with the poll —
-          nothing here is persisted. */}
-                                    <PollPromptSheet
-                                      // Keyed on the poll so a second poll starts with a clean free-text
-                                      // box rather than inheriting the first one's half-typed answer.
-                                      key={livePoll.poll?.id ?? 'no-poll'}
-                                      // Asked of whoever may answer (docs/specs/013-workspace/share-roles.md): a Viewer only looks.
-                                      poll={
-                                        ctx.can.takePart && livePoll.poll && !livePoll.myAnswer
-                                          ? livePoll.poll
-                                          : null
-                                      }
-                                      onAnswer={livePoll.answerPoll}
-                                    />
-                                    {/* Bring Focus (docs/specs/012-collaboration/bring-focus.md). A dialog like the poll prompt above, and for
-          the same reason: it is a question addressed to you, not a status
-          line. Shown to view-role visitors too. */}
+                                    {/* Bring Focus (docs/specs/012-collaboration/bring-focus.md). A dialog: it is a question addressed to
+          you, not a status line. Shown to view-role visitors too. */}
                                     <FocusInviteDialog
                                       from={
                                         focusInvite.invite

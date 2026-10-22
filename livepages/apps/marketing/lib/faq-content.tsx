@@ -33,7 +33,7 @@ export type FaqCategory = {
 const ICON = 18;
 // Written out rather than read from @livepages/templates: this module ships in the FAQ's client bundle, and the
 // catalogue is ~15 KB for one number. faq-content.test.tsx pins it to TEMPLATES.length.
-export const TEMPLATE_COUNT = 143;
+export const TEMPLATE_COUNT = 141;
 // The template categories, pinned to TEMPLATE_CATEGORIES.length by faq-content.test.tsx the same way.
 export const TEMPLATE_CATEGORY_COUNT = 14;
 // Pages mode's slide layouts, pinned to the catalogue by faq-content.test.tsx like the template count.
@@ -183,7 +183,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'What are the five modes?',
-        a: 'Diagram is for structured shapes, connectors and layouts. Draw is a freehand whiteboard with pressure-sensitive markers. Workshop runs a session with your team, with timers, dot votes, polls and reveals to hand. Pages lays out designed pages like posters and slides. Plan turns a tab into boards of cards with columns, WIP limits and quick add, beside spreadsheets with formulas. A mode belongs to the tab, so everyone on it works in the same one, and each tab of a document can have its own.',
+        a: 'Diagram is for structured shapes, connectors and layouts. Draw is a freehand whiteboard with pressure-sensitive markers. Workshop runs a session with your team, with timers, dot votes and reveals to hand. Pages lays out designed pages like posters and slides. Plan turns a tab into boards of cards with columns, WIP limits and quick add, beside spreadsheets with formulas. A mode belongs to the tab, so everyone on it works in the same one, and each tab of a document can have its own.',
       },
       {
         q: 'Can I organise a big document?',
@@ -439,13 +439,12 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           <>
             Very. Switch a tab to Workshop, the mode for running a session, or start from a
             retrospective template, which opens there. Whoever holds the facilitator role runs the
-            room’s timer, votes, polls and reveals. Estimate cards run planning poker, a temperature
-            check shows how the room feels, and an idea box collects
-            anonymous ideas. See <a href="/help/canvas/workshop-mode/">Workshop mode</a>.
+            room’s timer, votes and reveals. Estimate cards run planning poker, a temperature check
+            shows how the room feels, and an idea box collects anonymous ideas. See <a href="/help/canvas/workshop-mode/">Workshop mode</a>.
           </>
         ),
         aText:
-          'Very. Switch a tab to Workshop, the mode for running a session, or start from a retrospective template, which opens there. Whoever holds the facilitator role runs the room’s timer, votes, polls and reveals. Estimate cards run planning poker, a temperature check shows how the room feels, and an idea box collects anonymous ideas. See Workshop mode.',
+          'Very. Switch a tab to Workshop, the mode for running a session, or start from a retrospective template, which opens there. Whoever holds the facilitator role runs the room’s timer, votes and reveals. Estimate cards run planning poker, a temperature check shows how the room feels, and an idea box collects anonymous ideas. See Workshop mode.',
       },
     ],
   },

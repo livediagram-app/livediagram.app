@@ -29,28 +29,11 @@ describe('Behaviour face export', () => {
     );
   });
 
-  it('draws a vote, poll or stopwatch Session button as its tool and what pressing it does', () => {
+  it('draws a vote or stopwatch Session button as its tool and what pressing it does', () => {
     const vote = svgOf(shape('session-button', { session: { tool: 'vote', dots: 3 }, label: '' }));
     expect(vote).toContain('>START VOTE<');
     expect(vote).toContain('>3 dots each<');
     expect(vote.match(/<circle[^<>]*r="3"/g)).toHaveLength(3);
-    const poll = svgOf(
-      shape('session-button', {
-        session: { tool: 'poll', question: 'Ship it?', options: ['Yes', 'No'] },
-        label: '',
-      }),
-    );
-    expect(poll).toContain('>Ship it?<');
-    // The kicker names the shape of its answers.
-    expect(poll).toContain('>ASK · 2 OPTIONS<');
-    const yesNo = svgOf(
-      shape('session-button', {
-        session: { tool: 'poll', style: 'yesNo', question: 'Ship it?' },
-        label: '',
-      }),
-    );
-    expect(yesNo).toContain('>ASK · YES / NO<');
-    expect(poll).toContain('rx="1"');
     const watch = svgOf(shape('session-button', { session: { tool: 'stopwatch' }, label: 'Lap' }));
     expect(watch).toContain('>Lap<');
     expect(watch).toContain('r="10"');

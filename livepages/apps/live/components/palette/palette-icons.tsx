@@ -14,7 +14,6 @@
 import type { TextAlignX, TextAlignY } from '@livepages/document';
 import {
   lucideArmchair,
-  lucideChartNoAxesColumnIncreasing,
   lucideCircleCheck,
   lucideFileDown,
   lucideFileUp,
@@ -286,10 +285,8 @@ export function StopwatchIcon({ size = 14 }: IconSizeProps = {}) {
   );
 }
 
-// Vote and Poll: the same glyphs as their context-menu categories.
+// Vote: the same glyph as its context-menu category.
 export const VoteIcon = lucideGlyph(lucideCircleCheck, 14);
-
-export const PollIcon = lucideGlyph(lucideChartNoAxesColumnIncreasing, 14);
 
 // --- Reveal zone (docs/specs/009-elements/reveal-zone.md) + Picker (docs/specs/012-collaboration/picker.md) ------------------------------
 
@@ -515,15 +512,6 @@ export function SessionVoteIcon() {
       <circle cx="8.5" cy="11" r="1.9" fill="currentColor" stroke="none" />
       <circle cx="14" cy="11" r="1.9" fill="currentColor" stroke="none" />
       <circle cx="11.2" cy="15.4" r="1.9" fill="currentColor" stroke="none" />
-    </Glyph>
-  );
-}
-
-/** Session tools (docs/specs/012-collaboration/session-button.md): a poll, drawn as answer bars of different lengths. */
-export function SessionPollIcon() {
-  return (
-    <Glyph size={18} units={24} strokeLinejoin="miter">
-      <path d="M4 6.5h15M4 12h9.5M4 17.5h12.5" />
     </Glyph>
   );
 }

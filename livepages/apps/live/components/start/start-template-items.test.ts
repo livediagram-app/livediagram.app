@@ -72,12 +72,7 @@ describe('Start a Workshop', () => {
     const group = (id: string) => TEMPLATE_STARTS.workshop.groups.find((g) => g.id === id)!.kinds;
     expect(group('retrospectives')).toContain('incident-postmortem');
     expect(group('ideation')).toContain('user-persona');
-    expect(group('games')).toEqual([
-      'icebreaker-questions',
-      'two-truths-and-a-lie',
-      'would-you-rather',
-      'people-bingo',
-    ]);
+    expect(group('games')).toEqual(['icebreaker-questions', 'people-bingo']);
     expect(group('planning')).toEqual([
       'objectives-planner',
       'roadmap',

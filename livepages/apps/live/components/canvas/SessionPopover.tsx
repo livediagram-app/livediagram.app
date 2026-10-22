@@ -10,14 +10,11 @@ import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { FacilitatedNote } from '@/components/panels/session-studio/studio-ui';
 import { TimerPane } from '@/components/panels/session-studio/TimerPane';
 import { VotePane } from '@/components/panels/session-studio/VotePane';
-import { PollPane } from '@/components/panels/session-studio/PollPane';
-import { PollPanel } from '@/components/panels/PollPanel';
 import { VotePanel } from '@/components/panels/VotePanel';
-import type { CanvasProps } from './Canvas.types';
 import type { SessionSegment } from './SessionClusterStrip';
 
 // What a Session strip button opens (docs/specs/012-collaboration/session-tools.md "The Session strip"):
-// the tool's live panel while it runs (the Timer pane's live dial, the Vote panel, the Poll panel),
+// the tool's live panel while it runs (the Timer pane's live dial, the Vote panel),
 // and its Session Studio set-up pane while it is idle, so starting one from the strip is the same
 // form as starting it from the tab menu.
 
@@ -32,13 +29,12 @@ export type SessionPopoverProps = {
   readOnly: boolean;
   // Casts dots in a running vote: an Editor, or a read-only Participant (docs/specs/013-workspace/share-roles.md).
   canVote: boolean;
-  // A running vote's or poll's popover stays open until its button closes it, rather than on any
+  // A running vote's popover stays open until its button closes it, rather than on any
   // press outside it (desktop; on a phone it would sit over the canvas being voted on). The timer
   // always closes on a press outside: its clock is on its button.
   holdOpen: boolean;
   // Who the dot-vote knows us by (the collab key).
   voteSelfId: string;
-  pollPanel: CanvasProps['pollPanel'];
   vote: {
     tabVote: TabVote | undefined;
     elements: Element[];
@@ -64,7 +60,6 @@ export function SessionPopover({
   canVote,
   holdOpen,
   voteSelfId,
-  pollPanel,
   vote,
 }: SessionPopoverProps) {
   if (segment === 'session-vote' && vote.tabVote) {
@@ -94,24 +89,6 @@ export function SessionPopover({
       />
     );
   }
-  if (segment === 'session-poll' && pollPanel) {
-    return (
-      <PollPanel
-        poll={pollPanel.poll}
-        answers={pollPanel.answers}
-        isHost={pollPanel.isHost}
-        onEnd={pollPanel.onEnd}
-        onKeepResults={pollPanel.onKeepResults}
-        onDismiss={() => {
-          pollPanel.onDismiss();
-          onClose();
-        }}
-        popoverAnchor={anchor}
-        onPopoverClose={onClose}
-        dismissOnOutside={!holdOpen}
-      />
-    );
-  }
   if (segment === 'session-timer') {
     // A view-role visitor only reaches this while a timer runs (the strip offers them nothing idle).
     if (readOnly) {
@@ -134,29 +111,15 @@ export function SessionPopover({
     );
   }
   if (readOnly) return null;
-  if (segment === 'session-vote') {
-    return (
-      <SessionToolPopover
-        title="Vote"
-        help="sessionVoting"
-        anchor={anchor}
-        onClose={onClose}
-        facilitatedBy={session.facilitatedBy}
-      >
-        <VotePane {...session} selfId={voteSelfId} />
-      </SessionToolPopover>
-    );
-  }
   return (
     <SessionToolPopover
-      title="Poll"
-      help="sessionPolls"
+      title="Vote"
+      help="sessionVoting"
       anchor={anchor}
       onClose={onClose}
       facilitatedBy={session.facilitatedBy}
     >
-      {/* Asking keeps the popover open: once the poll runs it becomes the Poll panel. */}
-      <PollPane {...session} />
+      <VotePane {...session} selfId={voteSelfId} />
     </SessionToolPopover>
   );
 }

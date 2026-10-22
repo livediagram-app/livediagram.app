@@ -297,8 +297,6 @@ const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
     'kick-off',
     'team building',
   ],
-  'two-truths-and-a-lie': ['icebreaker', 'game', 'get to know', 'guess', 'team building', 'fun'],
-  'would-you-rather': ['icebreaker', 'this or that', 'game', 'poll', 'debate', 'fun'],
   'people-bingo': [
     'bingo',
     'find someone who',

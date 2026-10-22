@@ -21,7 +21,7 @@ export function tileDragStart(
         action.plan ??
         action.variant;
       return (e) => {
-        // `kind` or `kind|choice`, so a dragged Poll drops a poll, not a timer.
+        // `kind` or `kind|choice`, so a dragged Vote drops a vote, not a timer.
         copy(e, PALETTE_DND_MIME, choice ? `${action.kind}|${choice}` : action.kind);
         const { width, height } = SHAPE_DEFAULT_SIZE[action.kind];
         setPaletteDragPreview({ kind: action.kind, width, height });

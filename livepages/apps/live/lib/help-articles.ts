@@ -92,7 +92,6 @@ export const HELP_ARTICLES = {
   // The Tidy Up popover's tidiers (docs/specs/008-canvas/layout-cleanup.md).
   layoutCleanup: 'tools/layout-cleanup',
   minimap: 'user-interface/minimap',
-  sessionPolls: 'collaboration/session-tools/polls',
   sessionVoting: 'collaboration/session-tools/voting',
   sessionTimer: 'collaboration/session-tools/timer',
   imageGallery: 'explorer/image-gallery',
@@ -353,10 +352,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   minimap: {
     title: 'Learn about the Map',
     description: 'Tips for finding your way around a big canvas.',
-  },
-  sessionPolls: {
-    title: 'Learn about polls',
-    description: 'Tips for asking the room a question and sharing the results.',
   },
   sessionVoting: {
     title: 'Learn about voting',

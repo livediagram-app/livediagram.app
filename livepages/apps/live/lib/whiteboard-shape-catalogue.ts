@@ -19,7 +19,7 @@ import {
 } from './whiteboard-tool';
 
 // A catalogue entry's stable id, stored in the synced preferences: a dock shape's id
-// ('rectangle'), a shape kind ('triangle'), or a kind and its creation choice ('session-button:poll').
+// ('rectangle'), a shape kind ('triangle'), or a kind and its creation choice ('session-button:vote').
 // 'sticky' is the whiteboard's sticky note, a shape of the bar and the flyout like any other.
 export type WhiteboardShapeKey =
   WhiteboardShapeId | 'sticky' | ShapeKind | `${ShapeKind}:${string}`;

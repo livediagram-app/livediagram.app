@@ -103,7 +103,7 @@ type ElementItem = {
 export type PaletteAdd =
   // `session` / `reaction` are the creation-time choice for the two kinds
   // that have one (docs/specs/012-collaboration/session-button.md, docs/specs/009-elements/reaction-pad.md). The palette offers a tile per choice,
-  // so search has to as well: typing "poll" should place a poll, not a timer.
+  // so search has to as well: typing "vote" should place a vote, not a timer.
   | {
       type: 'shape';
       shapeKind: ShapeKind;

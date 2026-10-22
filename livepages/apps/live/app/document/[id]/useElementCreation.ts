@@ -389,9 +389,8 @@ export function useElementCreation(opts: {
                 ? {
                     session: defaultSessionConfig(art.choice as SessionTool),
                     // Same sizing the tap path applies (draw-commit): a timer is
-                    // a wide pill, a poll has to fit its question.
+                    // a wide pill.
                     ...(art.choice === 'timer' ? { width: 224, height: 64 } : {}),
-                    ...(art.choice === 'poll' ? { width: 240, height: 116 } : {}),
                   }
                 : {}),
               ...(art?.choice && kind === 'reaction-pad'

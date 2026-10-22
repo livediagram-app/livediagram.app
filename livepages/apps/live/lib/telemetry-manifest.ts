@@ -191,7 +191,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Tab·Started',
   'Tab·Toggled',
   'Tab·Unlocked',
-  'Tab·Voted',
   'Team·Added',
   'Team·Changed',
   'Team·Created',

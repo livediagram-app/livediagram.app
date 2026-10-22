@@ -565,8 +565,8 @@ export function TeamSharedTree() {
 /** The floating timer pill: its kicker, the clock, and (for editors) pause, reset and remove.
  *  A countdown drains left to right, so the tinted part is the time left. */
 /** The Session strip in the bottom bar: the Timer showing its clock over the countdown's drain
- *  (or its glyph alone, idle), then Vote with your dots left as a badge, and Poll, beside the
- *  Layers and Theme strip. */
+ *  (or its glyph alone, idle), then Vote with your dots left as a badge, beside the Layers and
+ *  Theme strip. */
 function SessionStripArt({
   x,
   y,
@@ -584,7 +584,7 @@ function SessionStripArt({
   const h = 40;
   const seg = 40;
   const timerW = time ? 96 : seg;
-  const w = timerW + seg * 2;
+  const w = timerW + seg;
   const glyph = 'fill-none stroke-slate-500';
   const divider = (dx: number) => (
     <line
@@ -649,14 +649,6 @@ function SessionStripArt({
       <Label x={vx + 8} y={y + 11.5} anchor="middle" size={8} weight={700} tone="onAccent">
         {dotsLeft}
       </Label>
-      {/* Poll: rising bars */}
-      {divider(x + timerW + seg)}
-      <path
-        d={`M${x + timerW + seg + 13} ${y + 27} v-4 M${x + timerW + seg + 20} ${y + 27} v-9 M${x + timerW + seg + 27} ${y + 27} v-13`}
-        className={glyph}
-        strokeWidth={2}
-        strokeLinecap="round"
-      />
       {/* Layers and the Theme & Canvas brush, one strip to the right */}
       <rect
         x={lx}
@@ -743,7 +735,7 @@ export function SessionTools() {
       <VoteShape x={20} y={40} label="Idea A" count={3} mine />
       <VoteShape x={156} y={40} label="Idea B" count={1} />
       <VoteShape x={292} y={40} label="Idea C" count={0} />
-      <SessionStripArt x={140} y={176} time="4:32" dotsLeft={2} />
+      <SessionStripArt x={180} y={176} time="4:32" dotsLeft={2} />
     </Scene>
   );
 }
@@ -830,7 +822,7 @@ export function DotVoting() {
       <VoteShape x={20} y={40} label="Reduce WIP" count={4} mine />
       <VoteShape x={156} y={40} label="Pair more" count={1} />
       <VoteShape x={292} y={40} label="Auto tests" count={2} mine />
-      <SessionStripArt x={196} y={176} dotsLeft={1} />
+      <SessionStripArt x={236} y={176} dotsLeft={1} />
     </Scene>
   );
 }

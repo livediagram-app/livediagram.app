@@ -311,7 +311,7 @@ export const PALETTE_CATEGORIES: {
     label: 'Ask',
     group: 6,
     description:
-      'Put a question to the room: dot votes, polls, estimates, a temperature check and an idea box.',
+      'Put a question to the room: dot votes, estimates, a temperature check and an idea box.',
     icon: <AskGroupIcon />,
   },
   {

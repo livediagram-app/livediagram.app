@@ -50,11 +50,7 @@ import { buildFloorPlan } from './template-builders-floorplan';
 import { buildBusinessModelCanvas, buildEmpathyMap } from './template-builders-canvases';
 import { buildAffinityMap, buildUserStoryMap } from './template-builders-workshops';
 import { buildIcebreakerQuestions } from './template-builders-icebreakers';
-import {
-  buildPeopleBingo,
-  buildTwoTruthsAndALie,
-  buildWouldYouRather,
-} from './template-builders-party-games';
+import { buildPeopleBingo } from './template-builders-party-games';
 import { buildBrainstorm, buildWorkshopBoard } from './template-builders-workshop-boards';
 import { buildOkrTree, buildSitemap } from './template-builders-hierarchies';
 import { buildFunnel } from './template-builders-funnel';
@@ -263,10 +259,6 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
       return buildTeamPod(cx, cy);
     case 'all-hands-hall':
       return buildAllHandsHall(cx, cy);
-    case 'two-truths-and-a-lie':
-      return buildTwoTruthsAndALie(cx, cy);
-    case 'would-you-rather':
-      return buildWouldYouRather(cx, cy);
     case 'people-bingo':
       return buildPeopleBingo(cx, cy);
     case 'business-model-canvas':

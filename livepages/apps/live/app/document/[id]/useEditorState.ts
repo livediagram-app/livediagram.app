@@ -138,12 +138,8 @@ import {
   toggleRecentExcluded,
   writeUserPreferences,
 } from '@/lib/user-preferences';
-import type { PollCandidate } from '@/lib/poll-collaborators';
-import { withoutAgentRows } from '@/lib/agent-presence-rows';
 import { track } from '@/lib/telemetry';
-import { pollResultElement } from '@/lib/poll-capture';
 import { useEditorBroadcast } from '@/hooks/collab/useEditorBroadcast';
-import { useLivePoll } from '@/hooks/collab/useLivePoll';
 import { useFavourites } from '@/hooks/persistence/useFavourites';
 import { useShortcutsEnabled } from '@/hooks/ui/useShortcutsEnabled';
 import { useEditorComments } from '@/hooks/collab/useEditorComments';
@@ -1020,26 +1016,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   useEffect(() => {
     selfParticipantRef.current = selfParticipant;
   }, [selfParticipant]);
-  // Live poll (docs/specs/012-collaboration/live-poll.md): the ephemeral pulse-check. Declared before the
-  // room connection because that's what feeds it inbound ops. Nothing it
-  // holds is persisted — no tab field, no autosave, no change log.
-  // Kept in step with the facilitator hook below, which cannot be declared up
-  // here: it needs the room, and the room needs this.
-  const sessionBlockedRef = useRef(false);
-  // The room's roster, for a `collaborators` poll (docs/specs/012-collaboration/live-poll.md). A ref because the
-  // presence rows it is filled from are derived much further down this file —
-  // they need the room, which needs the poll hook — and because the only
-  // moment its value matters is the instant somebody starts a poll.
-  const pollCollaboratorsRef = useRef<readonly PollCandidate[]>([]);
-  // Our collab key, for the poll's answers and host (docs/specs/012-collaboration/collab-race-hardening.md). A ref: the poll
-  // hook's handlers stay stable while identity hydrates.
-  const pollSelfKeyRef = useLatest(voteSelfId);
-  const livePoll = useLivePoll({
-    roomRef,
-    sessionBlockedRef,
-    collaboratorsRef: pollCollaboratorsRef,
-    selfKeyRef: pollSelfKeyRef,
-  });
   // In-place recovery when the room can't replay our reconnect gap
   // (docs/specs/012-collaboration/resync-without-reload.md), in place of the page reload this used to do.
   const resyncFromServer = useRoomResync({
@@ -1098,7 +1074,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // announcement reads correctly.
     nameOf: (presenceId) => livePresence.find((p) => p.id === presenceId)?.name ?? null,
   });
-  useAssignRef(sessionBlockedRef, facilitator.sessionToolsBlocked);
 
   // The facilitator has freed an element we were holding (docs/specs/007-editor/live-app.md lock,
   // docs/specs/012-collaboration/facilitator.md). Only our socket is sent this, so there is no target id to check.
@@ -1255,9 +1230,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     readFacilitatorToken: facilitator.readFacilitatorToken,
     setFollowerIds,
     readFollowing: () => followingRef.current,
-    receivePoll: livePoll.receivePoll,
-    receivePollAnswer: livePoll.receiveAnswer,
-    receivePollEnd: livePoll.receivePollEnd,
     receiveDocumentTrashed: () => documentTrashed.setDocumentTrashed(true),
     resyncFromServer: async () => {
       planItems.refetch();
@@ -1834,27 +1806,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // (docs/specs/012-collaboration/presentation-mode.md). Inbound only; our own laser still broadcasts.
     cursorsHidden: voteCursorsHidden || presenting,
   });
-  // Everyone in the document, as poll candidates (docs/specs/012-collaboration/live-poll.md). Self first, then
-  // whoever is present on any tab — the order the Collaborators modal uses, so
-  // a roster poll's ballot reads the way the panel beside it does. Someone on
-  // two tabs appears twice here; de-duplicating is `pollCollaboratorOptions`'s
-  // job, along with numbering shared names and applying the cap, so the
-  // composer's preview and the frozen ballot cannot disagree.
-  const pollCollaborators = useMemo<readonly PollCandidate[]>(
-    () => [
-      { id: selfParticipant.id, name: selfParticipant.name },
-      ...withoutAgentRows([...participantsByTab.values()].flat()).map((p) => ({
-        id: p.id,
-        name: p.name,
-      })),
-    ],
-    [participantsByTab, selfParticipant],
-  );
-  // The poll hook reads the roster through a ref, because it is declared long
-  // before this point (see the note there).
-  useEffect(() => {
-    pollCollaboratorsRef.current = pollCollaborators;
-  }, [pollCollaborators]);
   // Comment-bearing element rows for the floating Comments panel.
   // Only the boxed elements carry threads (arrows can't), so the
   // filter walks `activeTab.elements` and routes the boxed ones
@@ -2708,7 +2659,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       pauseTimer,
       resumeTimer,
       startVote,
-      startPoll: livePoll.startPoll,
     });
 
   // The collaboration elements (docs/specs/012-collaboration/participant-responses.md to docs/specs/012-collaboration/roll-call.md). Sibling of the
@@ -2730,20 +2680,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   });
   // A checklist tick is a room press like an answer (docs/specs/012-collaboration/collab-race-hardening.md).
   const { toggleChecklistItem } = collabElements;
-
-  // Keeping a poll's results (docs/specs/012-collaboration/poll-result-capture.md). Ends the poll for the room through
-  // the SAME `endPoll` the plain End uses — one op, so a participant sees no
-  // difference and no new op kind exists — and additionally drops the tallies
-  // onto the canvas as an ordinary, undoable element.
-  // Keep Results (docs/specs/012-collaboration/poll-result-capture.md): drop a chart of the tallies so far onto the
-  // active tab. The poll keeps running, so it can be kept again later
-  // (a second chart), and End is still the only thing that ends it.
-  const keepPollResults = () => {
-    const poll = livePoll.poll;
-    if (!poll) return;
-    addBoxed((x, y) => pollResultElement(poll, livePoll.answers, x, y));
-    track('Element', 'Added', 'PollResult');
-  };
 
   // Image domain (picker state, recent-images list, placement + fill
   // handlers). Lives in its own hook so the page no longer carries
@@ -3994,8 +3930,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     openCellLinkPicker,
     applyCellLink,
     activeTabLoadState,
-    // Slide deck (docs/specs/012-collaboration/presentation-mode.md): the whole surface in one object, like livePoll —
-    // nothing outside the panel and the overlay reads into it.
+    // Slide deck (docs/specs/012-collaboration/presentation-mode.md): the whole surface in one object — nothing
+    // outside the panel and the overlay reads into it.
     slideDeck,
     commentMentions,
     // Bring an element into view (the Collaborate panel's jump to a card).
@@ -4008,10 +3944,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // the canvas then shows that sheet alone, as it shows the slide's elements alone.
     presentingPageId: presentingStep?.slide.pageId ?? null,
     livePresence,
-    // Live poll (docs/specs/012-collaboration/live-poll.md) — the whole ephemeral surface in one object
-    // rather than a dozen flattened keys, since nothing else reads into it.
-    livePoll,
-    keepPollResults,
     followMe,
     loadAllTabs,
     loadedTabIds,
@@ -4034,7 +3966,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     openNote,
     participantsByTab,
     pendingDraw,
-    pollCollaborators,
     redo,
     refreshRecentImages,
     remoteAvatarRows,

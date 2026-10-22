@@ -1,13 +1,12 @@
-// The party games of the Games category (docs/specs/012-collaboration/game-templates.md): Two
-// Truths and a Lie, Would You Rather and Find Someone Who Bingo. Built from the session boards' parts
+// The party game of the Games category (docs/specs/012-collaboration/game-templates.md): Find
+// Someone Who Bingo. Built from the session boards' parts
 // (template-session-parts.ts), Icebreaker Questions' siblings in template-builders-icebreakers.ts.
 //
 // Each builder is pure: it takes a centre (cx, cy) and returns a fresh Element[].
 
-import { createShape, createSticky, createText, type Element } from '@livepages/document';
+import { createShape, createSticky, type Element } from '@livepages/document';
 import {
   BUTTON_H,
-  BUTTON_W,
   GAP,
   HEAD_GAP,
   PAD_W,
@@ -22,7 +21,7 @@ import {
   section,
   sessionButton,
 } from './template-session-parts';
-import { BINGO_PROMPTS, TWO_TRUTHS_PLAYERS, WOULD_YOU_RATHER } from './template-games-data';
+import { BINGO_PROMPTS } from './template-games-data';
 import { YELLOW } from './template-workshop-stickies';
 
 // A reaction pad as tall as a session button, with the line that says when to press it beside it.
@@ -44,221 +43,6 @@ function padRow(
     },
     note(x + PAD_W + 16, y, width - PAD_W - 16, BUTTON_H, text),
   ];
-}
-
-// Two Truths and a Lie: a row per player (who they are, their three numbered statements on stickies of their own
-// colour, and the poll that asks the room which is the lie), the first row a worked example and the rest left for
-// the next players to write. The host's kit sits on the right: a Picker for who goes next and a Confetti pad.
-export function buildTwoTruthsAndALie(cx: number, cy: number): Element[] {
-  const playerW = 180;
-  const stickyW = 170;
-  const rowH = 170;
-  const rowGap = 32;
-  const inner = 24;
-  const rowW = playerW + inner + 3 * stickyW + 2 * 16 + inner + BUTTON_W;
-  const sideW = 330;
-  const totalW = rowW + GAP + sideW;
-  const bodyH = UNDER_SECTION + TWO_TRUTHS_PLAYERS.length * (rowH + rowGap) - rowGap;
-  const x0 = cx - totalW / 2;
-  const y0 = cy - (TITLE_H + SUBTITLE_H + HEAD_GAP + bodyH) / 2;
-  const top = y0 + TITLE_H + SUBTITLE_H + HEAD_GAP;
-  const sideX = x0 + rowW + GAP;
-
-  const elements: Element[] = [
-    ...heading(
-      x0,
-      y0,
-      totalW,
-      'Two Truths and a Lie',
-      440,
-      'emoji-thinking-face',
-      'Each player writes three things about themselves, one of them false. The room votes on the lie, then the player owns up.',
-    ),
-    section(x0, top, rowW, 'Players'),
-  ];
-
-  TWO_TRUTHS_PLAYERS.forEach((p, i) => {
-    const y = top + UNDER_SECTION + i * (rowH + rowGap);
-    const disc = 56;
-    elements.push(
-      {
-        ...createShape('square', x0, y),
-        width: playerW,
-        height: rowH,
-        fillColor: '#ffffff',
-        strokeColor: '#cbd5e1',
-      },
-      {
-        ...createShape('circle', x0 + (playerW - disc) / 2, y + 30),
-        width: disc,
-        height: disc,
-        label: p.initials,
-        textSize: 'md',
-        textBold: true,
-        padding: 'none',
-        fillColor: p.colour,
-        strokeColor: '#ffffff',
-        textColor: '#ffffff',
-        themeLockFill: true,
-      },
-      {
-        ...createText(x0 + 12, y + 30 + disc + 12),
-        width: playerW - 24,
-        height: 28,
-        label: p.name,
-        textSize: 'md',
-        textBold: true,
-        textColor: '#0f172a',
-      },
-    );
-    for (let s = 0; s < 3; s++) {
-      const statement = p.statements?.[s] ?? 'A truth, or the lie';
-      elements.push({
-        ...createSticky(x0 + playerW + inner + s * (stickyW + 16), y),
-        ...p.sticky,
-        width: stickyW,
-        height: rowH,
-        label: `${s + 1}. ${statement}`,
-        textSize: 'sm',
-      });
-    }
-    elements.push({
-      ...sessionButton({
-        tool: 'poll',
-        style: 'choice',
-        // Generic, as the spec has it: the names are placeholders the players write over, and a Participant can
-        // never rewrite a poll's question, so a named one would ask about someone who is not playing.
-        question: 'Which one is the lie?',
-        options: ['1', '2', '3'],
-      }),
-      x: x0 + rowW - BUTTON_W,
-      y: y + (rowH - BUTTON_H) / 2,
-    });
-  });
-
-  const kitTop = top + UNDER_SECTION;
-  const pickerH = 132;
-  const padY = kitTop + pickerH + 20;
-  elements.push(
-    section(sideX, top, sideW, 'Host kit'),
-    {
-      ...createShape('picker', sideX, kitTop),
-      width: sideW,
-      height: pickerH,
-      label: 'Who goes next?',
-    },
-    ...padRow(sideX, padY, sideW, 'confetti', 'Got me!', 'For every lie that fooled the room.'),
-    note(
-      sideX,
-      padY + BUTTON_H + 20,
-      sideW,
-      96,
-      'The player reads their three out loud. Start their poll, give the room a minute, end it, then they say which one was the lie.',
-    ),
-  );
-
-  return elements;
-}
-
-// Would You Rather: six dilemmas in two columns, each an A card and a B card with an "or" disc between them and
-// the poll that puts it to the room beside them: "Would you rather?" with the two sides as its answers, short
-// enough to read on the button. A one-minute timer and an Applause pad close the board.
-const SIDE_A = { fillColor: '#e0f2fe', strokeColor: '#0369a1', textColor: '#082f49' };
-const SIDE_B = { fillColor: '#fce7f3', strokeColor: '#be185d', textColor: '#500724' };
-
-export function buildWouldYouRather(cx: number, cy: number): Element[] {
-  const cardW = 220;
-  const cardH = 100;
-  const orD = 44;
-  const rowGap = 28;
-  const colGap = 60;
-  const rowW = cardW + 12 + orD + 12 + cardW + 20 + BUTTON_W;
-  const perCol = Math.ceil(WOULD_YOU_RATHER.length / 2);
-  const gridH = perCol * (cardH + rowGap) - rowGap;
-  const totalW = rowW * 2 + colGap;
-  const bodyH = UNDER_SECTION + gridH + GAP + BUTTON_H;
-  const x0 = cx - totalW / 2;
-  const y0 = cy - (TITLE_H + SUBTITLE_H + HEAD_GAP + bodyH) / 2;
-  const top = y0 + TITLE_H + SUBTITLE_H + HEAD_GAP;
-
-  const elements: Element[] = [
-    ...heading(
-      x0,
-      y0,
-      totalW,
-      'Would You Rather?',
-      400,
-      'emoji-dice',
-      'Press a question, everyone picks a side, then the room makes its case.',
-    ),
-    section(x0, top, totalW, 'The dilemmas'),
-  ];
-
-  WOULD_YOU_RATHER.forEach((d, i) => {
-    const col = Math.floor(i / perCol);
-    const x = x0 + col * (rowW + colGap);
-    const y = top + UNDER_SECTION + (i % perCol) * (cardH + rowGap);
-    const card = (cx0: number, label: string, side: typeof SIDE_A): Element => ({
-      ...createShape('square', cx0, y),
-      ...side,
-      width: cardW,
-      height: cardH,
-      label,
-      textSize: 'md',
-      textBold: true,
-      borderRadius: 'lg',
-      themeLockFill: true,
-    });
-    elements.push(
-      card(x, d.a, SIDE_A),
-      {
-        ...createShape('circle', x + cardW + 12, y + (cardH - orD) / 2),
-        width: orD,
-        height: orD,
-        label: 'or',
-        textSize: 'sm',
-        textBold: true,
-        padding: 'none',
-        fillColor: '#334155',
-        strokeColor: '#ffffff',
-        textColor: '#ffffff',
-        themeLockFill: true,
-      },
-      card(x + cardW + 12 + orD + 12, d.b, SIDE_B),
-      {
-        ...sessionButton({
-          tool: 'poll',
-          style: 'choice',
-          question: 'Would you rather?',
-          options: [d.a, d.b],
-        }),
-        x: x + rowW - BUTTON_W,
-        y: y + (cardH - BUTTON_H) / 2,
-      },
-    );
-  });
-
-  const kitY = top + UNDER_SECTION + gridH + GAP;
-  const kitW = rowW;
-  elements.push(
-    ...kitRow(
-      x0,
-      kitY,
-      kitW,
-      sessionButton({ tool: 'timer', minutes: 1 }),
-      'One minute for each side to make its case.',
-    ),
-    ...padRow(
-      x0 + rowW + colGap,
-      kitY,
-      kitW,
-      'applause',
-      'Applause',
-      'For the best argument of the round.',
-    ),
-  );
-
-  return elements;
 }
 
 // Find Someone Who Bingo: a 4 x 4 card of prompts in two alternating tints; people put a sticky with a teammate's

@@ -7,13 +7,12 @@ import {
 
 // The Workshop tour's steps (docs/specs/012-collaboration/workshop-tour.md "The steps").
 describe('Workshop tour steps', () => {
-  it('runs welcome, six steps, then the outro, in the spec order', () => {
+  it('runs welcome, five steps, then the outro, in the spec order', () => {
     expect(WORKSHOP_TOUR_STEPS.map((s) => s.id)).toEqual([
       'welcome',
       'collaborate',
       'timer',
       'vote',
-      'poll',
       'session-strip',
       'share',
       'outro',
@@ -30,12 +29,12 @@ describe('Workshop tour steps', () => {
   // spec "Tour content": the session elements are the tour's own, placed once and shown one by one.
   it('places the session elements and shows each, by the id the host gave it', async () => {
     const api = { placeDemo: vi.fn(), demoId: (which: string) => `el-${which}` };
-    for (const id of ['timer', 'vote', 'poll'] as const) {
+    for (const id of ['timer', 'vote'] as const) {
       const step = WORKSHOP_TOUR_STEPS.find((s) => s.id === id)!;
       await step.prepare!(api);
       expect(step.selector!(api)).toBe(`[data-element-id="el-${id}"]`);
     }
-    expect(api.placeDemo).toHaveBeenCalledTimes(3);
+    expect(api.placeDemo).toHaveBeenCalledTimes(2);
   });
 
   // The palette is the welcome tour's; this tour rings the session kit on the category bar alone.

@@ -256,7 +256,7 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
   named workspace. This section records the SHAPE of coverage, not counts or
   filenames: `pnpm test` reports the counts, which change with every feature.
   A workspace that gains its first test file joins this list in the same change.
-  - `packages/document`: the data model end to end: element factories + defaults, geometry / anchor / snap math, arrow path + avoidance + endpoint-spread + auto-rebind and crossing swaps, arrow labels, layer mutations, auto-layout (clusters, styles, lanes, crossings), mind maps, Mermaid import/export (flowchart, state, ER), graph authoring, freehand + shape recognition, rich text, tables, comments + mentions, element ops and deltas, sessions (polls), slide decks, tab kinds, names, themes, element shadows, the headless SVG renderer's fidelity and coverage, validation.
+  - `packages/document`: the data model end to end: element factories + defaults, geometry / anchor / snap math, arrow path + avoidance + endpoint-spread + auto-rebind and crossing swaps, arrow labels, layer mutations, auto-layout (clusters, styles, lanes, crossings), mind maps, Mermaid import/export (flowchart, state, ER), graph authoring, freehand + shape recognition, rich text, tables, comments + mentions, element ops and deltas, slide decks, tab kinds, names, themes, element shadows, the headless SVG renderer's fidelity and coverage, validation.
   - `apps/live`: the lib layer's helpers (api client + Offline Mode store,
     auto-align, canvas geometry + backgrounds, export/import,
     search, templates + theme catalogues, user preferences, telemetry policy,
@@ -280,7 +280,7 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     manifest ↔ dispatch drift guards, response helpers, MIME sniffing.
   - `packages/api-schema`: the wire contracts both sides share: the SHA-256
     contract (FIPS 180-4 vectors), the telemetry-event validator's closed
-    vocabulary + type-pattern gate, request auth, image limits, trash and poll
+    vocabulary + type-pattern gate, request auth, image limits, trash
     shapes, error telemetry and page views.
   - `packages/explorer-lens`: the Explorer filter lens, at 100 % coverage
   - `packages/items`: items and the Plan board projection, at 95 % lines

@@ -192,7 +192,7 @@ Each menu, how it opens, what it holds, and what the keyboard could do before th
 | Cell menu             | Right-click on a table cell                                              | Text toggles, colour rows, tiles                                        |
 | Tab menu, Canvas menu | ⋯ on the active tab; right-click on the canvas; the footer canvas button | Tool buttons, accordions, canvas sections                               |
 | Layer menu            | ⋯ on a layer row                                                         | Tool buttons, an opacity slider, accordion tiles                        |
-| Session tool settings | ⋯ on a timer, stopwatch, vote or poll element                            | The session pane for that tool                                          |
+| Session tool settings | ⋯ on a timer, stopwatch or vote element                                  | The session pane for that tool                                          |
 | Live image copy menu  | Live image on a share pass, with more than one tab                       | A tab select, copy rows                                                 |
 | Settings cog          | The cog on a board, Sheet or chart header, a Dashboard slot or page      | Collapsible sections of fields, tiles and pictures                      |
 

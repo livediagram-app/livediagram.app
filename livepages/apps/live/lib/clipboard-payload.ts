@@ -59,7 +59,7 @@ type ClipboardEnvelope = {
 // Fields that carry WHO did something rather than WHAT the element is. They are
 // stripped on the way out, so a copy handed to another person (or pasted into a
 // document with a different participant set) never arrives carrying somebody
-// else's name against a comment or their answer against a poll.
+// else's name against a comment or their answer against a card.
 //
 // Comments go entirely rather than being anonymised: a thread is a conversation
 // about the original element, and re-attaching it to a copy in another document

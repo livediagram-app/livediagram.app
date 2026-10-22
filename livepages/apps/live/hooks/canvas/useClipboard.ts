@@ -190,7 +190,7 @@ export function useClipboard(deps: ClipboardDeps) {
       // into a future paste.
       .map((el) => JSON.parse(JSON.stringify(el)) as Element)
       // Same stripping as the OS clipboard copy: the in-app buffer is the
-      // fallback paste, and it used to carry comments, poll answers and
+      // fallback paste, and it used to carry comments, answers and
       // assigned actions onto the copies.
       .map(stripIdentity);
     if (snapshot.length === 0) return;

@@ -41,7 +41,6 @@ import {
   SelectIcon,
   ShapePenIcon,
   SpotlightIcon,
-  SessionPollIcon,
   SessionVoteIcon,
   RevealIcon,
   RollCallIcon,
@@ -150,7 +149,7 @@ type PaletteTileAction =
   // `session` / `reaction` are creation-time choices, not separate kinds: both
   // elements are ONE kind with a mode field, and the palette offers a tile per
   // mode inside an accordion (docs/specs/012-collaboration/session-button.md, docs/specs/009-elements/reaction-pad.md) the way Media does for embed
-  // providers. Placing "Poll" has to place a poll, not a timer to reconfigure.
+  // providers. Placing "Dot Vote" has to place a vote, not a timer to reconfigure.
   | {
       type: 'shape';
       kind: ShapeKind;
@@ -912,7 +911,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
-    // Session button (docs/specs/012-collaboration/session-button.md): starts a timer / vote / poll for the ro  {
     // Session tools (docs/specs/012-collaboration/session-button.md): one tile per tool, grouped, rather than one
     // button you place and then reconfigure. The tools have nothing in common
     // at the moment of choosing — you know whether you want a countdown or a
@@ -957,20 +955,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'session-button', session: 'vote' },
     icon: <SessionVoteIcon />,
-  },
-  {
-    id: 'tools:session-poll',
-    tileGroup: 'ask',
-    blurb: 'A question you write in advance',
-    caption: 'Poll',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Poll Button',
-    description:
-      'A button that opens a poll you have written in advance, so the press asks the question rather than opening a composer. Write it from its right-click menu.',
-    filled: true,
-    action: { type: 'shape', kind: 'session-button', session: 'poll' },
-    icon: <SessionPollIcon />,
   },
   {
     // Reveal zone (docs/specs/009-elements/reveal-zone.md): a cover you click to see what is underneath.

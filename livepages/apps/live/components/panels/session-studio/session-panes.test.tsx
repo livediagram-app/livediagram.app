@@ -9,11 +9,9 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { TabTimer } from '@livepages/document';
-import type { LivePoll } from '@livepages/api-schema';
 import type { SessionToolsProps } from '@/components/chrome/session-tools-props';
 import { TimerPane } from './TimerPane';
 import { VotePane } from './VotePane';
-import { PollPane } from './PollPane';
 
 type Props = SessionToolsProps & { selfId: string };
 function Timer(p: Props) {
@@ -21,9 +19,6 @@ function Timer(p: Props) {
 }
 function Vote(p: Props) {
   return <VotePane {...p} />;
-}
-function Poll(p: Props) {
-  return <PollPane {...p} />;
 }
 
 function props(overrides: Partial<SessionToolsProps & { selfId: string }> = {}) {
@@ -41,10 +36,6 @@ function props(overrides: Partial<SessionToolsProps & { selfId: string }> = {}) 
     onEndVote: vi.fn(),
     onRevealVote: vi.fn(),
     onClearVote: vi.fn(),
-    livePoll: null,
-    pollCollaborators: [],
-    pollHasAudience: true,
-    onStartPoll: vi.fn(),
     voteLayers: [],
     activeLayerId: 'l1',
     ...overrides,
@@ -126,74 +117,5 @@ describe('session panes', () => {
       1,
       expect.objectContaining({ onePerElement: false }),
     );
-  });
-
-  it('names what a poll is missing instead of starting it', () => {
-    const p = props();
-    render(<Poll {...p} />);
-    const ask = screen.getByRole('button', { name: 'Write a question to ask' });
-    expect((ask as HTMLButtonElement).disabled).toBe(true);
-    fireEvent.change(screen.getByLabelText('Poll question'), { target: { value: 'Lunch?' } });
-    fireEvent.click(screen.getByRole('radio', { name: /Choices/ }));
-    expect(screen.getByRole('button', { name: 'Add at least 2 answers' })).toBeTruthy();
-  });
-
-  it('will not ask with the same answer twice, and asks with one of each', () => {
-    const p = props();
-    render(<Poll {...p} />);
-    fireEvent.change(screen.getByLabelText('Poll question'), { target: { value: 'Lunch?' } });
-    fireEvent.click(screen.getByRole('radio', { name: /Choices/ }));
-    fireEvent.change(screen.getByLabelText('Answer 1'), { target: { value: 'Pizza' } });
-    fireEvent.change(screen.getByLabelText('Answer 2'), { target: { value: ' Pizza ' } });
-    const ask = screen.getByRole('button', { name: 'Make at least 2 answers different' });
-    expect((ask as HTMLButtonElement).disabled).toBe(true);
-    fireEvent.keyDown(screen.getByLabelText('Answer 2'), { key: 'Enter' });
-    fireEvent.change(screen.getByLabelText('Answer 3'), { target: { value: 'Tacos' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Ask everyone' }));
-    expect(p.onStartPoll).toHaveBeenCalledWith({
-      question: 'Lunch?',
-      style: 'choice',
-      options: ['Pizza', 'Tacos'],
-    });
-  });
-
-  it('adds the next answer on Enter and asks with the trimmed list', () => {
-    const p = props();
-    render(<Poll {...p} />);
-    fireEvent.change(screen.getByLabelText('Poll question'), { target: { value: ' Lunch? ' } });
-    fireEvent.click(screen.getByRole('radio', { name: /Choices/ }));
-    fireEvent.change(screen.getByLabelText('Answer 1'), { target: { value: 'Pizza' } });
-    fireEvent.change(screen.getByLabelText('Answer 2'), { target: { value: 'Tacos' } });
-    fireEvent.keyDown(screen.getByLabelText('Answer 2'), { key: 'Enter' });
-    const third = screen.getByLabelText('Answer 3');
-    expect(document.activeElement).toBe(third);
-    fireEvent.click(screen.getByRole('button', { name: 'Ask everyone' }));
-    expect(p.onStartPoll).toHaveBeenCalledWith({
-      question: 'Lunch?',
-      style: 'choice',
-      options: ['Pizza', 'Tacos'],
-    });
-  });
-
-  it('lets a poll start on an unshared document, with a note', () => {
-    const p = props({ pollHasAudience: false });
-    render(<Poll {...p} />);
-    expect(screen.getByText(/only you will get this poll/)).toBeTruthy();
-    fireEvent.change(screen.getByLabelText('Poll question'), { target: { value: 'Ready?' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Ask everyone' }));
-    expect(p.onStartPoll).toHaveBeenCalled();
-  });
-
-  it('shows a running poll instead of the composer', () => {
-    const poll: LivePoll = {
-      id: 'p1',
-      question: 'Ship it?',
-      style: 'yesNo',
-      options: [],
-      startedAt: 0,
-    };
-    render(<Poll {...props({ livePoll: poll })} />);
-    expect(screen.getByText('Ship it?')).toBeTruthy();
-    expect(screen.queryByLabelText('Poll question')).toBeNull();
   });
 });

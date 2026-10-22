@@ -24,7 +24,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Editor|Changed|ModePlan':
     'Someone switched a tab to Plan mode, to work on boards of items: drag cards through columns, add and open items.',
   'Editor|Changed|ModeWorkshop':
-    'Someone switched a tab to Workshop mode, to run a session with their team: timers, votes, polls and reveals.',
+    'Someone switched a tab to Workshop mode, to run a session with their team: timers, votes and reveals.',
   'Draw|Created|Template':
     'Someone started a new document as a whiteboard, a plain board drawn on with pens, from the New Document wizard.',
   'Draw|Created|NewTab':
@@ -387,7 +387,7 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone took a roll call on a Roll Call element, freezing the names of everyone currently in the room onto it.',
   'Element|Changed|Rotation': 'Someone rotated a selected element to a fixed angle.',
   'Element|Changed|SessionButton':
-    'Someone configured what a Session Button element starts when pressed, such as a timer, a poll, or a vote.',
+    'Someone configured what a Session Button element starts when pressed, such as a timer or a vote.',
   'Element|Changed|Finish':
     "Someone set a selected element's own finish (Flexible, Professional, Sketch or Marker), or set it back to follow its tab.",
   'Element|Changed|SankeyAnim':
@@ -603,7 +603,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Facilitator|Ended|Released':
     'The facilitator of a live session stepped down, leaving nobody in charge of its shared tools.',
   'Facilitator|Started|Claimed':
-    'Someone took the facilitator role in a live session, becoming the one in charge of its shared tools: the timer, votes, and polls.',
+    'Someone took the facilitator role in a live session, becoming the one in charge of its shared tools: the timer and votes.',
   'Folder|Created|': 'A new folder was created in the document explorer.',
   'Folder|Created|Tab':
     'A new tab folder was created inside a document, by typing a name the document had not used before.',
@@ -972,7 +972,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Duplicated|': 'A tab was duplicated.',
   'Tab|Ended|CountdownTimer':
     "Someone cleared a tab's countdown timer, whether it had run out or was dismissed early.",
-  'Tab|Ended|Poll': 'Someone ended a live poll on a tab.',
   'Tab|Ended|StopwatchTimer': 'Someone cleared a running stopwatch on a tab.',
   'Tab|Ended|Vote': 'Someone ended a dot vote on a tab.',
   'Tab|Ended|VoteReview':
@@ -996,7 +995,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Closed|SideBySide': 'Someone closed the side by side pane, going back to one tab.',
   'Tab|Revealed|Vote': "Someone revealed a dot vote's results to everyone in the room.",
   'Tab|Started|CountdownTimer': 'Someone started a countdown timer on a tab.',
-  'Tab|Started|Poll': 'Someone started a live poll on a tab.',
   'Tab|Started|PrivateVote':
     'Someone started a dot vote with cursors or counts hidden from other participants.',
   'Tab|Started|StopwatchTimer': 'Someone started a stopwatch on a tab.',
@@ -1004,8 +1002,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Toggled|TimerPaused': 'Someone paused a running timer on a tab.',
   'Tab|Toggled|TimerResumed': 'Someone resumed a paused timer on a tab.',
   'Tab|Unlocked|': 'A tab was unlocked (edits resume).',
-  'Tab|Voted|Poll':
-    'Someone answered a live poll. Counted once per person per poll, even if they change their answer.',
   'Team|Added|Document': "A document was added to a team's shared library.",
   'Team|Added|Member':
     'An admin invited someone to a team by email. This counts invitations sent, not accepted: that is Joined.',
@@ -1358,8 +1354,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone opened the Timer button in the bottom bar: the set-up while no timer runs, the live timer while one does. A timer shared by countdowns and stopwatches, so it appears under both.',
   'UI|Opened|SessionVote':
     'Someone opened the Vote button in the bottom bar: the vote set-up while none runs, the Vote panel while one does.',
-  'UI|Opened|SessionPoll':
-    'Someone opened the Poll button in the bottom bar: the poll composer while none runs, the answers while one does.',
   'UI|Opened|TidyUp':
     "Someone opened Diagram mode's Tidy Up button in the bottom bar, the panel of layout styles and Auto-align. What they then picked counts as a tab being auto-arranged.",
   'UI|Opened|BehaviourGroup':
@@ -1367,7 +1361,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Opened|CanvasStyle':
     "Someone opened the tab's look-and-feel dialog on its Canvas tab, to change the background.",
   'UI|Opened|CollabGroup':
-    "Someone opened a category inside the palette's old Collaborate tab (session tools like polls and votes). That tab was merged into Behaviours (since renamed Collaborate). No longer recorded.",
+    "Someone opened a category inside the palette's old Collaborate tab (session tools like timers and votes). That tab was merged into Behaviours (since renamed Collaborate). No longer recorded.",
   'UI|Opened|Collaborators':
     "Someone opened the Collaborators dialog, either from a tab's presence stack or from a command.",
   'UI|Opened|IconGroup': "Someone opened a category inside the palette's Icons tab.",
@@ -2502,7 +2496,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Tab|Created': 'A new tab was added to a document.',
   'Tab|Deleted': 'A tab was removed from a document.',
   'Tab|Duplicated': 'A tab was duplicated.',
-  'Tab|Ended': 'Someone ended a live activity on a tab, such as a poll or a timer.',
+  'Tab|Ended': 'Someone ended a live activity on a tab, such as a vote or a timer.',
   'Tab|Imported': 'Someone imported a tab from a file.',
   'Tab|Linked': 'A tab was linked into another document.',
   'Tab|Loaded':
@@ -2518,11 +2512,10 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Tab|Closed': 'Someone closed the side by side pane.',
   'Tab|Revealed':
     "Someone revealed a tab's hidden results to everyone in the room, such as a dot vote's.",
-  'Tab|Started': 'Someone started a live activity on a tab, such as a poll or a timer.',
+  'Tab|Started': 'Someone started a live activity on a tab, such as a vote or a timer.',
   'Tab|Toggled':
     'Someone switched something on a tab on or off, such as pausing or resuming its timer.',
   'Tab|Unlocked': 'A tab was unlocked (edits resume).',
-  'Tab|Voted': 'Someone answered a live vote or poll on a tab. Counted once per person per poll.',
   'Team|Added':
     'Something was added to a team: an invitation sent, or a document added to its shared library.',
   'Team|Changed': "Something about a team's settings, or a member's role, was changed.",

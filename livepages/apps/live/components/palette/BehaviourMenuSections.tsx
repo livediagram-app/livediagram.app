@@ -36,9 +36,7 @@ const fieldClass =
   'mt-1 w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] text-slate-700 outline-none placeholder:text-slate-400 focus:border-brand-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200';
 const labelClass = 'text-[10px] font-medium text-slate-500 dark:text-slate-400';
 
-// A textarea of one-per-line entries, committed on blur. Used by both the
-// poll's answers and the picker's options — the same shape of list, so the
-// same control rather than two spellings of it.
+// A textarea of one-per-line entries, committed on blur: the picker's options.
 function LinesRow({
   label,
   hint,
@@ -97,7 +95,7 @@ export function SessionMenuSection({
   const tool = config?.tool ?? DEFAULT_SESSION_TOOL;
 
   // This section is the button's SETTINGS, not a tool picker. It used to lead
-  // with a Timer / Vote / Poll tile grid, which was a second way to choose
+  // with a Timer / Vote tile grid, which was a second way to choose
   // something the palette already asks you once: it offers a tile per tool
   // (docs/specs/012-collaboration/session-button.md), so the button lands as the thing you picked. Wanting a
   // different one is wanting a different element — drag it out — and the grid
@@ -106,8 +104,8 @@ export function SessionMenuSection({
   return (
     // A side PANEL, not an inline accordion. The body is the Session Studio's
     // own (see SessionElementSettings), which is 286px wide, and the context
-    // menu is narrower than that — inline, a poll's answer tiles and its
-    // choice fields ran off the right-hand edge and were simply cut off. The
+    // menu is narrower than that — inline, the Studio's tiles and its
+    // fields ran off the right-hand edge and were simply cut off. The
     // Studio itself is reached the same way, as the tab menu's Collaborate
     // flyout, so this also makes the two open alike.
     <MenuFlyoutSection title="Session" icon={<ToolsMenuGlyph />} panel {...sectionProps}>

@@ -1,7 +1,7 @@
 'use client';
 
 // The live VOTE panel (docs/specs/012-collaboration/session-tools.md): the facilitator's read on a dot-vote in
-// progress, a popover over the Session strip's Vote button on the same shared MovablePanel as Poll /
+// progress, a popover over the Session strip's Vote button on the same shared MovablePanel as
 // Collaborate / Layers. Two phases, one panel:
 //
 //   Casting open  -> TURNOUT. How many dots are spent and how many people
@@ -11,7 +11,7 @@
 //                    first, each row clickable to jump the results
 //                    walkthrough straight to that element.
 //
-// Like the poll panel it only exists while a vote does.
+// It only exists while a vote does.
 //
 // On naming: rows are NOT attributed to people, and can't be. Dots are
 // keyed by the local participant id while the room's presence roster is

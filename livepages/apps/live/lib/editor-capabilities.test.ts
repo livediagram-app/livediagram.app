@@ -42,7 +42,7 @@ describe('resolveEditorCapabilities', () => {
     expect(can.takePart && can.addContent && can.planCards && can.sheetCells).toBe(true);
     expect(can.writeText(shape())).toBe(true);
     expect(can.writeText(shape({ locked: true }))).toBe(false);
-    expect(can.writeText(shape({ shape: 'session-button', label: 'Poll' }))).toBe(false);
+    expect(can.writeText(shape({ shape: 'session-button', label: 'Vote' }))).toBe(false);
     expect(can.move(sticky())).toBe(true);
     expect(can.move(shape())).toBe(false);
     expect(can.move(shape({ shape: 'mind-node' }))).toBe(true);

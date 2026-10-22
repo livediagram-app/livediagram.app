@@ -76,7 +76,7 @@ where it is and changes only how the next mark is made.
 - **The mode descriptions** say what each mode is for, in the catalogue (`EDITOR_MODE_CATALOGUE`):
   - Diagram: "Flowcharts, architecture and org charts with snapping shapes."
   - Draw: "Sketch freehand with pens, tidied into shapes as you go."
-  - Workshop: "Run a live session: timers, votes, polls and reveals."
+  - Workshop: "Run a live session: timers, votes and reveals."
   - Pages: "Lay out slides, infographics, articles and logos on pages."
   - Plan: "Boards of cards moving through columns, with types and fields."
 - **One switch:** every start panel's rail carries the same chip and menu. The New Document wizard's mode cards are

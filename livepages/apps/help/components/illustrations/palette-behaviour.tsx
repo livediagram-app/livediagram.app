@@ -117,14 +117,6 @@ function VoteGlyph() {
     </Lucide>
   );
 }
-/** Three rising columns, the Poll glyph. */
-function PollGlyph() {
-  return (
-    <Lucide>
-      <path d="M6 20v-4M12 20V10M18 20V4" />
-    </Lucide>
-  );
-}
 /** A laser dot with a trail. */
 function LaserGlyph() {
   return (
@@ -332,13 +324,12 @@ export function ModeButtonBar() {
   );
 }
 
-/** The four session elements: a Timer, which is the clock itself, then the Stopwatch, Dot vote
- *  and Poll buttons, each labelled from its own setting. */
+/** The three session elements: a Timer, which is the clock itself, then the Stopwatch and Dot
+ *  vote buttons, each labelled from its own setting. */
 export function SessionButtons() {
   const cards: { kicker: string; action: string; icon: ReactNode }[] = [
     { kicker: 'START', action: 'a stopwatch', icon: <StopwatchGlyph /> },
     { kicker: 'START VOTE', action: '3 dots each', icon: <VoteGlyph /> },
-    { kicker: 'ASK', action: 'Ready to ship?', icon: <PollGlyph /> },
   ];
   return (
     <Scene w={420} h={226}>
@@ -370,7 +361,7 @@ export function SessionButtons() {
       <circle cx={292} cy={39} r={11} className="fill-brand-500" />
       <path d="M288.5 33.5 L297 39 L288.5 44.5 Z" className="fill-white" />
       {cards.map((c, i) => {
-        const cx = 34 + i * 122;
+        const cx = 95 + i * 122;
         return (
           <g key={c.kicker}>
             <rect

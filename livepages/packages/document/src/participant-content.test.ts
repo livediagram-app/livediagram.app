@@ -170,8 +170,8 @@ describe("applyParticipantOp: update someone else's element", () => {
     expect(r.changed).toBe(true);
   });
 
-  it("never writes on a Behaviour's words, a poll's question among them", () => {
-    const stored = shape('poll', { shape: 'session-button', label: 'Lunch?' });
+  it("never writes on a Behaviour's words", () => {
+    const stored = shape('timer', { shape: 'session-button', label: 'Lunch?' });
     const tab = tabOf([stored]);
     const r = applied(
       applyParticipantOp(tab, { kind: 'update', element: { ...stored, label: 'Mine' } }, ME),

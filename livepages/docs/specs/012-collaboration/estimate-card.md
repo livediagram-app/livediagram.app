@@ -11,10 +11,9 @@ Estimating out loud anchors — the first number said is the number the room
 converges on, and the most senior voice says it. The fix is older than software
 and is always the same: everyone commits before anyone sees.
 
-The canvas already knows how to hide things (the reveal zone, [Reveal zone](../009-elements/reveal-zone.md)) and how
-to collect one answer per person for a moment (the poll, [Live poll (ephemeral pulse-check)](live-poll.md)). Neither does
-this: the reveal zone hides content from **everyone equally**, including its
-author, and a poll evaporates. An estimate has to hide your neighbour's answer
+The canvas already knows how to hide things (the reveal zone, [Reveal zone](../009-elements/reveal-zone.md)). That
+does not do this: the reveal zone hides content from **everyone equally**, including its
+author. An estimate has to hide your neighbour's answer
 while showing you your own, and it has to still be there tomorrow.
 
 ## The element

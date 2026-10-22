@@ -134,10 +134,9 @@ export function graceExpired(state: FacilitatorState, now: number): boolean {
  * May this session run the session tools? True for everybody while the baton
  * is free, which is what keeps every existing room behaving as it did.
  *
- * The room enforces this only for the ops it can see as session tools —
- * `poll-start` / `poll-end`, which are their own kinds. The timer and the vote
- * ride the same `tab` / `tab-meta` ops as every shape move, so they stay a
- * client-side rule; see docs/specs/012-collaboration/facilitator.md "How it is enforced, honestly".
+ * The timer and the vote ride the same `tab` / `tab-meta` ops as every shape
+ * move, so this stays a client-side rule; see docs/specs/012-collaboration/facilitator.md "How it is enforced,
+ * honestly".
  */
 export function mayRunSession(state: FacilitatorState, presenceId: string): boolean {
   return state.holder === null || state.holder === presenceId;
@@ -152,8 +151,8 @@ export function mayRunSession(state: FacilitatorState, presenceId: string): bool
  * in the ordinary case, because most sessions never claim a baton at all — and
  * the moment you need it (somebody wandered off with an element selected) is
  * exactly a moment nobody has thought about facilitation. While the baton is
- * free the session is everyone's, which is already how starting a timer or a
- * poll works; once somebody IS facilitating, freeing a lock is theirs alone,
+ * free the session is everyone's, which is already how starting a timer
+ * works; once somebody IS facilitating, freeing a lock is theirs alone,
  * like every other session verb.
  *
  * It is also the least destructive of those verbs: it drops a selection. The

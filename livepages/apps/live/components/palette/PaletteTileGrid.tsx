@@ -61,7 +61,7 @@ export function tileHandler(
   }
   switch (a.type) {
     case 'shape':
-      // The creation-time choice rides along, so "Add poll" places a poll and
+      // The creation-time choice rides along, so "Add Dot Vote" places a vote and
       // a confetti tile places a confetti pad (docs/specs/012-collaboration/session-button.md, docs/specs/009-elements/reaction-pad.md).
       return () =>
         actions.addShape(a.kind, {

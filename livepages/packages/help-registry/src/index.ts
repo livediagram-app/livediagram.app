@@ -1332,9 +1332,9 @@ export const articles: Article[] = [
     slug: 'behaviour',
     title: 'Collaborate',
     description:
-      'Every element that comes alive with the room, as six palette categories in Workshop mode: comment and action panels, estimates, temperature checks, idea boxes, Done checks, pickers, session buttons (timer, stopwatch, vote, poll), agendas, decisions, roll calls, reactions, mode buttons, portals and Bring Focus.',
+      'Every element that comes alive with the room, as six palette categories in Workshop mode: comment and action panels, estimates, temperature checks, idea boxes, Done checks, pickers, session buttons (timer, stopwatch, vote), agendas, decisions, roll calls, reactions, mode buttons, portals and Bring Focus.',
     keywords:
-      'behaviour behavior behaviours behaviors interactive button portal session timer stopwatch countdown count up elapsed vote poll reveal hide cover picker random spinner control mode switch chair seat desk sofa couch fence barrier link card bookmark preview url bring focus look here attention gather reaction pad confetti celebrate sparkles hearts applause fireworks emoji burst done check finished ready waiting who progress everyone mark complete collaborate collaboration estimate question temperature idea box agenda decision roll call ask the room keep a record run the room workshop facilitation runtime live tools record react navigate selection mode',
+      'behaviour behavior behaviours behaviors interactive button portal session timer stopwatch countdown count up elapsed vote reveal hide cover picker random spinner control mode switch chair seat desk sofa couch fence barrier link card bookmark preview url bring focus look here attention gather reaction pad confetti celebrate sparkles hearts applause fireworks emoji burst done check finished ready waiting who progress everyone mark complete collaborate collaboration estimate question temperature idea box agenda decision roll call ask the room keep a record run the room workshop facilitation runtime live tools record react navigate selection mode',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Workshop Kits',
@@ -1469,7 +1469,7 @@ export const articles: Article[] = [
     title: 'Templates',
     description: 'Start from a ready-made template instead of a blank canvas.',
     keywords:
-      'wardley map value chain evolution threat model threat modelling stride security trust boundary threat register service blueprint frontstage backstage line of visibility metric tree north star kpi tree driver model what if value proposition canvas jobs pains gains working backwards pr faq press release amazon family tree genealogy ancestry value stream map vsm lead time flow efficiency kaizen virtual office office rooms coworking cowork team pod all hands auditorium icebreaker icebreakers two truths and a lie would you rather bingo find someone who games starter blank slide deck blank article blank infographic blank logo empty slide empty page artboard kanban flowchart swot gantt sankey flow diagram wireframe prebuilt scaffold quick start retro sailboat postmortem risk stakeholder persona agenda objectives crazy 8s opportunity tree article brief document write writing standup stand-up hiring pipeline recruiting content calendar editorial project planner bug tracker okrs key results product launch go no-go feedback board feature requests onboarding new wizard mode filter draw pages plan popular blank category categories finance budget invoice expense report loan calculator mortgage sales pipeline crm spreadsheet sheet inventory guest list rsvp grade book habit tracker meetings workshops presentations timelines roadmaps search words blank spreadsheet empty sheet blank slate',
+      'wardley map value chain evolution threat model threat modelling stride security trust boundary threat register service blueprint frontstage backstage line of visibility metric tree north star kpi tree driver model what if value proposition canvas jobs pains gains working backwards pr faq press release amazon family tree genealogy ancestry value stream map vsm lead time flow efficiency kaizen virtual office office rooms coworking cowork team pod all hands auditorium icebreaker icebreakers bingo find someone who games starter blank slide deck blank article blank infographic blank logo empty slide empty page artboard kanban flowchart swot gantt sankey flow diagram wireframe prebuilt scaffold quick start retro sailboat postmortem risk stakeholder persona agenda objectives crazy 8s opportunity tree article brief document write writing standup stand-up hiring pipeline recruiting content calendar editorial project planner bug tracker okrs key results product launch go no-go feedback board feature requests onboarding new wizard mode filter draw pages plan popular blank category categories finance budget invoice expense report loan calculator mortgage sales pipeline crm spreadsheet sheet inventory guest list rsvp grade book habit tracker meetings workshops presentations timelines roadmaps search words blank spreadsheet empty sheet blank slate',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Basics',
@@ -1511,9 +1511,9 @@ export const articles: Article[] = [
     slug: 'workshop-mode',
     title: 'Workshop Mode',
     description:
-      'Run a session on any tab: retros, brainstorms and workshops, with timers, votes, polls and reveals.',
+      'Run a session on any tab: retros, brainstorms and workshops, with timers, votes and reveals.',
     keywords:
-      'icebreaker questions two truths and a lie would you rather people bingo games workshop mode facilitate facilitate mode facilitation facilitator session sessions run a session workshop meeting team meeting retro retrospective all hands crazy eights brainstorm board workshop board kickoff ground rules icebreaker questions agenda timer countdown stopwatch vote dot vote voting poll survey pulse check reveal hide estimate planning poker temperature check fist of five idea box anonymous picker random spin reactions confetti stickers emoji sticker badge collaborate category session strip blank session editor mode switch shift+d where did the timer go where are stickers missing tools moved',
+      'icebreaker questions find someone who people bingo games workshop mode facilitate facilitate mode facilitation facilitator session sessions run a session workshop meeting team meeting retro retrospective all hands crazy eights brainstorm board workshop board kickoff ground rules icebreaker questions agenda timer countdown stopwatch vote dot vote voting pulse check reveal hide estimate planning poker temperature check fist of five idea box anonymous picker random spin reactions confetti stickers emoji sticker badge collaborate category session strip blank session editor mode switch shift+d where did the timer go where are stickers missing tools moved',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Modes and Boards',
@@ -1578,7 +1578,7 @@ export const articles: Article[] = [
     description:
       'A short, optional walkthrough of Workshop mode, offered once after the welcome tour and replayable from Settings.',
     keywords:
-      'workshop tour facilitate tour tour walkthrough onboarding intro introduction show me around getting started guide tutorial first time learn workshop mode session retro workshop timer vote poll session strip collaborate share participant replay rerun settings accessibility',
+      'workshop tour facilitate tour tour walkthrough onboarding intro introduction show me around getting started guide tutorial first time learn workshop mode session retro workshop timer vote session strip collaborate share participant replay rerun settings accessibility',
     category: 'Canvas',
     categorySlug: 'canvas/workshop-mode',
     parentSlug: 'workshop-mode',
@@ -1834,9 +1834,9 @@ export const articles: Article[] = [
   {
     slug: 'facilitator',
     title: 'Facilitator',
-    description: 'Give one person the timer, votes and polls for a live session.',
+    description: 'Give one person the timer and votes for a live session.',
     keywords:
-      'facilitator workshop host run the room session lead moderator driver baton timer vote poll control handover take over step down chair meeting workshop',
+      'facilitator workshop host run the room session lead moderator driver baton timer vote control handover take over step down chair meeting workshop',
     category: 'Collaboration',
     categorySlug: 'collaboration',
   },
@@ -2087,9 +2087,8 @@ export const articles: Article[] = [
   {
     slug: 'session-tools',
     title: 'Session Tools',
-    description: 'A shared countdown or stopwatch, live dot-voting, and polls.',
-    keywords:
-      'timer voting workshop meeting facilitation retro countdown poll polls survey pulse check',
+    description: 'A shared countdown or stopwatch and live dot-voting.',
+    keywords: 'timer voting workshop meeting facilitation retro countdown stopwatch dot vote dots',
     category: 'Collaboration',
     categorySlug: 'collaboration',
   },
@@ -2506,9 +2505,9 @@ export const articles: Article[] = [
   {
     slug: 'session-buttons',
     title: 'Session Buttons',
-    description: 'Start a timer, a stopwatch, a dot vote or a poll for the room from the canvas.',
+    description: 'Start a timer, a stopwatch or a dot vote for the room from the canvas.',
     keywords:
-      'session button timer countdown minutes dot vote dots poll question answers answer style choices options yes no abstain rating free text start room facilitation running order agenda clock pause resume reset remove edit access view only stopwatch count up facilitator',
+      'session button timer countdown minutes dot vote dots start room facilitation running order agenda clock pause resume reset remove edit access view only stopwatch count up facilitator',
     category: 'Palette',
     categorySlug: 'palette/behaviour',
     parentSlug: 'behaviour',
@@ -2796,17 +2795,6 @@ export const articles: Article[] = [
     title: 'The Timer',
     description: 'Run a shared countdown or stopwatch on a tab.',
     keywords: 'countdown stopwatch timebox clock minutes workshop',
-    category: 'Collaboration',
-    categorySlug: 'collaboration/session-tools',
-    parentSlug: 'session-tools',
-  },
-  {
-    slug: 'polls',
-    title: 'Polls',
-    description:
-      'Ask the room a question, tally the answers live, and keep the results if you want them.',
-    keywords:
-      'poll polls survey question vote pulse check sentiment anonymous ephemeral rating scale yes no abstain multiple choice free text audience presenter keep results chart collaborators people',
     category: 'Collaboration',
     categorySlug: 'collaboration/session-tools',
     parentSlug: 'session-tools',

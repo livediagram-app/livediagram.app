@@ -1,6 +1,6 @@
 // The steps of the Workshop tour (docs/specs/012-collaboration/workshop-tour.md "The steps"): a welcome card, then Ask
-// and Session on the category bar, then the session's key elements shown on the canvas (a Timer, a Dot Vote and a
-// Poll, placed by the tour and taken away when it ends), the Session strip and Share, then the outro.
+// and Session on the category bar, then the session's key elements shown on the canvas (a Timer and a Dot Vote,
+// placed by the tour and taken away when it ends), the Session strip and Share, then the outro.
 
 import { ensurePaletteOpen } from './tour-steps';
 import { stepTelemetryType, type TourStepOf } from './tour-step';
@@ -9,7 +9,7 @@ import { elementSelector } from '@/lib/canvas-selectors';
 
 // The session elements the tour shows (spec "Tour content"): placed once, in a row in view, with no history, and taken
 // away when the tour ends, however it ends (WorkshopTourHost).
-export type WorkshopDemo = 'timer' | 'vote' | 'poll';
+export type WorkshopDemo = 'timer' | 'vote';
 export type WorkshopTourApi = {
   placeDemo: () => void;
   demoId: (which: WorkshopDemo) => string | null;
@@ -59,15 +59,10 @@ export const WORKSHOP_TOUR_STEPS: WorkshopTourStep[] = [
     'Dot Voting',
     'Press a Vote and everyone gets dots to put on the notes they back; the counts show when it ends.',
   ),
-  demoStep(
-    'poll',
-    'A Live Poll',
-    'A Poll asks the room a question. Answers come in live, and it can be yes or no, choices, a rating or open.',
-  ),
   {
     id: 'session-strip',
     title: 'Run the Room',
-    body: 'Timer, Vote and Poll run for everyone at once.',
+    body: 'Timer and Vote run for everyone at once.',
     target: 'session-tools',
   },
   opensFrom(

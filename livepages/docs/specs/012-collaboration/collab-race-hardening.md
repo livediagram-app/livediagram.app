@@ -208,15 +208,6 @@ and the next save from anybody repairs it.
   vote button mid-vote used to start a fresh vote, which reset every dot on
   the canvas. It is now a no-op; ending the vote stays with the vote's own
   controls.
-- **The live poll survives a socket.** The room keeps the running poll and
-  every answer (`live-poll` in its storage) and replays them to each session
-  on hello, so a late joiner, a refresh and a reconnecting host all catch up.
-  Answers are keyed by the answerer's collab key (`poll-answer.key`), so a
-  re-answer after a reconnect replaces the first instead of counting twice. A
-  poll records its starter's key (`LivePoll.hostKey`), so the host can still
-  end it after a refresh. Two polls started at once converge: the room and
-  every client keep the newer start (`pollSupersedes`, then id), so the
-  starter of the loser switches rather than answering the other poll alone.
 - **Votes are keyed by the collab key.** Dots, the budget and the host
   (`startedBy`) use `participantKey`, not the owner id, which is a guest's
   credential and which every dot op broadcast to the whole room.
@@ -244,7 +235,7 @@ and the next save from anybody repairs it.
   lets the author's own save (the only copy carrying their id) claim it. A
   comment that already has an author id is never re-claimed.
 - **Ops sent while the socket is down are held, not dropped.** The room
-  client keeps an outbox of document ops and poll answers (bounded at 500)
+  client keeps an outbox of document ops (bounded at 500)
   and flushes it, in order, right after the reconnect's hello and sync.
   Cursors, selections and other presence ops are not held.
 

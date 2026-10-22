@@ -19,7 +19,7 @@ export const EDITOR_MODE_CATALOGUE = [
   {
     id: 'workshop',
     label: 'Workshop',
-    description: 'Run a live session: timers, votes, polls and reveals.',
+    description: 'Run a live session: timers, votes and reveals.',
   },
   {
     id: 'pages',

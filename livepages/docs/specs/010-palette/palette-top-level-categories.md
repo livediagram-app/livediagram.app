@@ -191,19 +191,19 @@ arrive at runtime rather than being drawn by the author?**
 
 | Group              | Holds                                                                                                                             |
 | ------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
-| **Ask**            | the three estimate scales, Temperature, Idea box, Dot vote, Poll                                                                  |
+| **Ask**            | the three estimate scales, Temperature, Idea box, Dot vote                                                                        |
 | **Tools**          | Reveal, Done, Picker, Timer                                                                                                       |
 | **Record**         | Comment panel, Agenda, Decision record, Roll call                                                                                 |
 | **Reactions**      | the five pads                                                                                                                     |
 | **Selection Mode** | one button per mode (8)                                                                                                           |
 | **Navigate**       | Portal, Chair, Desk, Sofa, Fence, Avatar Pad, Link card, Room, Meeting Table, Plant, Bookshelf, Water Cooler, Coffee Machine, Rug |
 
-**There is no Session group.** It held the Timer, the Dot vote and the Poll —
+**There is no Session group.** It held the Timer and the Dot vote —
 a group named after the machinery that runs them rather than the job they do.
-A poll and a dot vote ARE asking the room, so they belong with the estimate
+A dot vote IS asking the room, so it belongs with the estimate
 card and the temperature check, which is where somebody wanting to put a
 question to everybody actually looks; a timer is facilitation, so it belongs
-with the Reveal, the Done check and the Picker. With all three rehoused the
+with the Reveal, the Done check and the Picker. With both rehoused the
 group had nothing left in it, and an empty group is not a group.
 
 They remain one shape kind with a `session` config ([Session button](../012-collaboration/session-button.md)) —

@@ -79,15 +79,8 @@ describe('opForScope (what a scoped session receives)', () => {
     expect(scopedSenderMayRelay(op, SCOPE)).toBe(false);
   });
 
-  it('delivers the tab-less session ops', () => {
-    for (const kind of [
-      'poll-start',
-      'poll-answer',
-      'poll-end',
-      'share-revoked',
-      'share-rescoped',
-      'document-trashed',
-    ]) {
+  it('delivers the tab-less notices', () => {
+    for (const kind of ['share-revoked', 'share-rescoped', 'document-trashed']) {
       const op = { kind };
       expect(opForScope(op, SCOPE), kind).toBe(op);
     }
@@ -123,12 +116,6 @@ describe('scopedSenderMayRelay (what a scoped session may send)', () => {
 
   it('refuses document-meta outright: the structure is not theirs', () => {
     expect(scopedSenderMayRelay({ kind: 'document-meta', name: 'x', tabs: [] }, SCOPE)).toBe(false);
-  });
-
-  it('lets it take part in the session', () => {
-    for (const kind of ['poll-answer', 'poll-start', 'poll-end']) {
-      expect(scopedSenderMayRelay({ kind }, SCOPE), kind).toBe(true);
-    }
   });
 
   it('fails closed on anything else', () => {

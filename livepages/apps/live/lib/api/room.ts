@@ -104,7 +104,7 @@ const MAX_RECONNECT_ATTEMPTS = 6;
 // Ops held while the socket is down (docs/specs/012-collaboration/collab-race-hardening.md). A change made in that window
 // used to be dropped on the floor: the save still carried it to D1, but no
 // peer saw it until they reloaded, and a dot or an answer never reached the
-// room's ledger at all. Only what changes the document or a poll is held: a
+// room's ledger at all. Only what changes the document is held: a
 // cursor or a selection from a minute ago means nothing. Bounded, so a long
 // outage can't grow it without end; past the bound, newer ops are dropped
 // and the next save still carries the state to D1.
@@ -112,7 +112,7 @@ const OUTBOX_MAX = 500;
 function isOutboxOp(msg: RoomOutgoing): boolean {
   if (msg.kind !== 'op') return false;
   const kind = (msg.op as { kind?: unknown }).kind;
-  return kind === 'poll-answer' || isMutationOpKind(kind);
+  return isMutationOpKind(kind);
 }
 // How long a save waits for the room to say it sequenced a delta (docs/specs/012-collaboration/collab-race-hardening.md
 // phase 6). A healthy room answers in one socket round trip, tens of milliseconds; past this the save

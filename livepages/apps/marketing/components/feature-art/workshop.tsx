@@ -1,6 +1,6 @@
 // The Workshop mode card's art (docs/specs/012-collaboration/workshop-mode.md): the tab's mode
-// menu with Workshop picked, a retro's stickies taking dot votes, and the Session strip of Timer,
-// Vote and Poll that comes with the mode. Drawn from ./features-parts on the 300 by 96 stage, moving
+// menu with Workshop picked, a retro's stickies taking dot votes, and the Session strip of Timer
+// and Vote that comes with the mode. Drawn from ./features-parts on the 300 by 96 stage, moving
 // with the shared fa-pop and features' fa-b-* loops, which settle to the finished frame under
 // reduced motion.
 
@@ -49,9 +49,9 @@ export function WorkshopModeArt() {
         <VoteSticky x={168} fill="#fde68a" ink="#78350f" label="Try" votes={4} i={1} />
         <VoteSticky x={220} fill="#fbcfe8" ink="#831843" label="Ask" votes={1} i={2} />
 
-        {/* The Session strip: Timer, Vote and Poll, in Workshop only. */}
-        <PanelShadow x={116} y={63} w={148} h={22} r={11} />
-        <rect className={PANEL} x="116" y="63" width="148" height="22" rx="11" strokeWidth="1" />
+        {/* The Session strip: Timer and Vote, in Workshop. */}
+        <PanelShadow x={116} y={63} w={98} h={22} r={11} />
+        <rect className={PANEL} x="116" y="63" width="98" height="22" rx="11" strokeWidth="1" />
         <g
           className="stroke-slate-500 dark:stroke-slate-400"
           fill="none"
@@ -77,9 +77,6 @@ export function WorkshopModeArt() {
             Vote
           </text>
         </g>
-        <text className={SUBTLE} x="232" y="76.3" textAnchor="middle" fontSize="6.4" fill="#64748b">
-          Poll
-        </text>
       </svg>
     </Frame>
   );

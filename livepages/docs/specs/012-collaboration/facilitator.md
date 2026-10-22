@@ -5,7 +5,7 @@ Status: shipped
 ## What
 
 One person in a live session holds the **facilitator** baton, and the tools that
-run the room answer to them: the timer, the votes, the polls, the reveals. The
+run the room answer to them: the timer, the votes, the reveals. The
 owner hands it out, anybody can be given it, and the owner can always take it
 back.
 
@@ -16,8 +16,8 @@ as it does today.
 
 A canvas full of workshop tools has no idea who is running the workshop. Two
 people start countdown timers over each other; somebody reveals the estimates
-while a third is still typing one; a poll ends mid-answer because a second
-person pressed End. Every one of those is a collision between people who all
+while a third is still typing one; a vote ends while people are still placing
+dots because a second person pressed End. Every one of those is a collision between people who all
 have edit rights and all mean well.
 
 The missing idea is not a permission, it is a **role**: who is driving. The
@@ -128,7 +128,6 @@ every one of them behaves exactly as it does today.
 | --------------------------------------------------------------------- | ------------------------- |
 | Timer: start, pause, resume, set duration, reset, clear               | `useTabSession.ts`        |
 | Dot vote: start, end, reveal, clear, and stepping through the results | `useTabSession.ts`        |
-| Poll: start, end                                                      | `useLivePoll.ts`          |
 | Session button: pressing it **and configuring it**                    | `useBehaviourElements.ts` |
 | Agenda item press (it starts that item's countdown)                   | `useCollabElements.ts`    |
 | Estimate / Temperature: reveal responses, clear for a new round       | `useCollabElements.ts`    |
@@ -141,20 +140,20 @@ every one of them behaves exactly as it does today.
 
 The session button is the one that reads oddly against "authoring is not
 running", and it earns its place: its configuration IS the timer's length and
-the poll's question, so changing it mid-session changes what the next press does
+the vote's dots, so changing it mid-session changes what the next press does
 to everybody. The owner who wants to edit it can take the baton back, which is
 one click.
 
 ### What stays everyone's
 
-| Open                                                                                                                                                     | Why                                                                                                            |
-| -------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| Every personal response: casting and retracting a dot, answering a poll, responding to an estimate or temperature, adding an idea, marking yourself done | This is what the room is FOR. A tool only the facilitator can answer is not a tool                             |
-| Mode button press                                                                                                                                        | It switches YOUR canvas tool and touches nothing shared                                                        |
-| Follow Me, the laser, the spotlight, reactions, cursors                                                                                                  | Pointing at things is everybody's job                                                                          |
-| Running a slide deck                                                                                                                                     | `presentingAt` is local state: it is your own screen                                                           |
-| Comments, assigned actions                                                                                                                               | They are a conversation, not a pace                                                                            |
-| All ordinary editing, import, export, themes, layout cleanup                                                                                             | Nothing to collide over that the selection lock ([Live app](../007-editor/live-app.md)) doesn't already handle |
+| Open                                                                                                                                   | Why                                                                                                            |
+| -------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Every personal response: casting and retracting a dot, responding to an estimate or temperature, adding an idea, marking yourself done | This is what the room is FOR. A tool only the facilitator can answer is not a tool                             |
+| Mode button press                                                                                                                      | It switches YOUR canvas tool and touches nothing shared                                                        |
+| Follow Me, the laser, the spotlight, reactions, cursors                                                                                | Pointing at things is everybody's job                                                                          |
+| Running a slide deck                                                                                                                   | `presentingAt` is local state: it is your own screen                                                           |
+| Comments, assigned actions                                                                                                             | They are a conversation, not a pace                                                                            |
+| All ordinary editing, import, export, themes, layout cleanup                                                                           | Nothing to collide over that the selection lock ([Live app](../007-editor/live-app.md)) doesn't already handle |
 
 ### Two elements this changes
 
@@ -179,21 +178,14 @@ This is **who is driving, not who is allowed**. Everybody in the room already
 has edit rights or does not, and the baton is not defending the document from
 them — it is stopping two well-meaning people from starting timers at once.
 
-Enforcement is therefore uneven, and deliberately so:
+Enforcement is therefore light, and deliberately so:
 
 - **Client-side for everything.** The gated controls disable, with the reason on
-  them.
-- **Room-side for the ops that are already distinct.** `poll-start` /
-  `poll-end` are their own mutation kinds, so refusing them from a non-holder
-  costs a few lines and closes the one case where a second client could end
-  somebody's poll. The facilitator may end a poll they did not start, so a
-  baton taken mid-poll hands them its End control (`pollHostFor`) rather than
-  leaving the poll with none; the starter's falls away, as the room would
-  refuse it. A vote's starter likewise loses its host controls while somebody
-  else holds the baton, and ending a vote tallies its Plan cards only when the
-  end was not refused.
-- **Not room-side for the timer and the vote.** They are plain tab state riding
-  the same `tab` / `tab-meta` ops that carry every shape move, so the room
+  them. A vote's starter loses its host controls while somebody else holds the
+  baton, and ending a vote tallies its Plan cards only when the end was not
+  refused.
+- **Not room-side for any session tool.** The room enforces the baton on no
+  session op: the timer and the vote are plain tab state riding the same `tab` / `tab-meta` ops that carry every shape move, so the room
   cannot tell "started a timer" from "dragged a box" without inspecting
   payloads. Adding that inspection would buy nothing against an actor who can
   already save the whole document over REST.
@@ -342,14 +334,14 @@ everywhere it matters.
 
 A gated control that is not yours is **disabled with the reason on it** where
 the control has a home of its own: the Session strip's set-up popovers name the facilitator at
-the top ("Alex is facilitating this session. Ask them to start the timer, the
-vote or a poll.") and wrap their pane in a disabled `fieldset`, which disables
+the top ("Alex is facilitating this session. Ask them to start the timer or
+the vote.") and wrap their pane in a disabled `fieldset`, which disables
 every control inside it natively, including ones added later. Hiding the panel
 would teach a different editor to every participant, and somebody who had never
 seen the timer would not know there was one.
 
 A **session button** on the canvas has no popover, so its face carries the reason: while somebody else
-facilitates, an Editor's Vote or Poll button is drawn disabled and reads "{name} is facilitating this session;
+facilitates, an Editor's Vote button is drawn disabled and reads "{name} is facilitating this session;
 ask them to start it.", and a Timer element shows its clock without its controls and reads "{name} is
 facilitating this session; ask them to run the timer." (screen-reader text, as the button's label is). The
 name is the roster's, else the holder's as last seen, so the 90 seconds an absent holder keeps the baton

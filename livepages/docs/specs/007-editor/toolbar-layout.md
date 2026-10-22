@@ -334,10 +334,10 @@ button's left edge (`computeDockAnchor(..., 'button')`).
 
 Layers and Collaborate open as **popovers over their bottom-row
 buttons** ([Live app](live-app.md)): they are not corner panels. Every
-other panel (AI, the minimap, Poll, Vote and the tool panels) docks in its corner
+other panel (AI, the minimap, Vote and the tool panels) docks in its corner
 ([Panel docking](panel-docking.md)). Layers and Collaborate render outside
 the corner layer, since a popover positions against the canvas and a corner stack would move it.
-A popover opening up from a bottom-row button (Layers, the Vote, the Poll) grows no higher than 8 px under a
+A popover opening up from a bottom-row button (Layers, the Vote) grows no higher than 8 px under a
 toolbar across the canvas's top whose span meets its column, the strip or Draw's dock (`usePopoverTopClearance`), and
 12 px from the canvas's top otherwise: on a phone the strip spans the width, and a tall panel ran up under it with its
 header hidden.

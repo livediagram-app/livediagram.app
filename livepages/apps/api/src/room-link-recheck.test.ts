@@ -136,7 +136,6 @@ const join = (r: DocumentRoom, ws: Socket, tabScope: string | null, code: string
     null,
     null,
     null,
-    null,
     'd1',
   );
 

@@ -155,7 +155,7 @@ export const IDEA_MAX_TEXT = 500;
 export const IDEA_CARD_ID_MAX = 64;
 
 // A box's card ids, aligned by position with its cards: cut to the cards' length and padded with '' (an
-// id-less card: one from before ids, a template's, a poll capture's or one the room's ledger restored).
+// id-less card: one from before ids, a template's or one the room's ledger restored).
 export function alignedIdeaCardIds(el: { ideaCards?: string[]; ideaCardIds?: string[] }): string[] {
   const n = (el.ideaCards ?? []).length;
   const ids = (el.ideaCardIds ?? []).slice(0, n);

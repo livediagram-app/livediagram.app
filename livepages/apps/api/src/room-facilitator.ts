@@ -7,7 +7,6 @@ import {
   graceExpired,
   grantBaton,
   mayReleaseLock,
-  mayRunSession,
   reclaimBaton,
   releaseBaton,
   type Asker,
@@ -106,14 +105,6 @@ export class RoomFacilitator {
       reason: 'state',
       ...(mine ? { token: mine } : {}),
     });
-  }
-
-  /** Whether this presence may start or end a poll now. */
-  mayRun(presenceId: string): boolean {
-    // Same reason the hello path sweeps: a baton whose holder never came
-    // back must not keep refusing polls just because no alarm has fired.
-    this.sweepLapsed();
-    return mayRunSession(this.state, presenceId);
   }
 
   /** A client asked to move the baton. The room decides; silence means no. */

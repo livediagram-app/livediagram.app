@@ -82,7 +82,7 @@ test('create a blank document, add a shape, and it survives a reload', async ({
 // a popover that only OVERLAPS its host when the viewport is too narrow to
 // put it alongside, and so only then has to win the stacking contest.
 //
-// The bug it guards: the bottom-right cluster gained the Session strip (Timer, Vote, Poll), and at
+// The bug it guards: the bottom-right cluster gained the Session strip (Timer, Vote), and at
 // phone width one row could no longer hold it beside Undo, Redo, Layers, the brush and Fit, so Undo
 // was pushed off the left edge. On a phone the cluster's buttons now share the row's width, so the
 // strip fits beside Undo (docs/specs/012-collaboration/session-tools.md "The Session strip"), and the

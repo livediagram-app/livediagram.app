@@ -154,7 +154,8 @@ describe('a session button’s kind', () => {
         ...(session ? { session } : {}),
       }) as Element;
     expect(kindLabel(button())).toBe('Timer');
-    expect(kindLabel(button({ tool: 'poll', question: 'Q' }))).toBe('Poll');
+    // A tool this app does not know names the timer it starts.
+    expect(kindLabel(button({ tool: 'poll' }))).toBe('Timer');
     expect(kindLabel(button({ tool: 'vote', dots: 3 }))).toBe('Dot vote');
     expect(kindLabel(button({ tool: 'stopwatch' }))).toBe('Stopwatch');
   });

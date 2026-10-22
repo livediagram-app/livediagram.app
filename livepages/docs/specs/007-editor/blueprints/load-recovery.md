@@ -101,7 +101,7 @@ Invariant: on every path the bootstrap leaves `loadingDocument` false or the wat
 - Writes one sessionStorage key, `AUTO_RELOAD_KEY` (page → time map, entries older than the window
   dropped by `claimReloadIn`).
 - A repair removes keys; it never writes. Scope: keys starting `livepages:` or `livepages-`.
-  Kept: `REPAIR_KEPT_KEYS` (the four guest-identity keys, `collab-key`, `collab-secret`). IndexedDB and cookies are never touched.
+  Kept: `REPAIR_KEPT_KEYS` (the four guest-identity keys, `collab-key`). IndexedDB and cookies are never touched.
 - The browser probe opens and deletes its own database, `livepages-probe`.
 
 ## Errors and edge cases

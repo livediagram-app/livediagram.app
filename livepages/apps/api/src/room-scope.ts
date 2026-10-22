@@ -6,11 +6,8 @@
 // withheld from, and refused from, a scoped session.
 
 // Ops that carry no tab and say nothing about one, which a scoped session
-// still receives: session tools and the worker's share-link and Trash notices.
+// still receives: the worker's share-link and Trash notices.
 const TAB_LESS_DELIVERED = new Set([
-  'poll-start',
-  'poll-answer',
-  'poll-end',
   'share-revoked',
   'share-rescoped',
   'document-trashed',
@@ -21,7 +18,7 @@ const TAB_LESS_DELIVERED = new Set([
 
 // The tab-less ops a scoped session may itself send.
 // A follow (docs/specs/012-collaboration/follow-me-viewport.md) names a person, not a tab, so a scoped visitor may follow too.
-const TAB_LESS_SENDABLE = new Set(['poll-start', 'poll-answer', 'poll-end', 'follow']);
+const TAB_LESS_SENDABLE = new Set(['follow']);
 
 type LooseOp = { kind?: unknown; tabId?: unknown; tabs?: unknown };
 

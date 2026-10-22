@@ -679,14 +679,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M18.5 6.5l1.5-1.5" />
     </Glyph>
   ),
-  // A question put to the room.
-  polls: (
-    <Glyph>
-      <path d="M3 6.5A2.5 2.5 0 015.5 4h13A2.5 2.5 0 0121 6.5v7a2.5 2.5 0 01-2.5 2.5H10l-4.5 4v-4H5.5A2.5 2.5 0 013 13.5z" />
-      <path d="M10 8.2a2 2 0 114 0c0 1.4-2 1.6-2 3" />
-      <path d="M12 13.5h.01" />
-    </Glyph>
-  ),
   // Dots landing ON something — the sub-article `casting-dots` draws the dots
   // themselves, so the parent draws what they are spent on.
   voting: (

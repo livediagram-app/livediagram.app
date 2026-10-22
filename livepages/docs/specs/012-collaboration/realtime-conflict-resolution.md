@@ -193,7 +193,7 @@ the editor until a reload, and nothing says so. The client therefore checks its 
    tab they added, and the resulting element ops are broadcast as yours. A
    resync's re-read content replaces only what is on screen.
 2. **D1 is the system of record.** The room holds ordering and collaboration
-   state (epoch + seq, the op log, the collaboration ledger, the live poll, the
+   state (epoch + seq, the op log, the collaboration ledger, the
    facilitator baton), never a copy of the document. REST reads, exports, and
    offline durability read D1.
 3. **The selection lock stays advisory.** The [Live app](../007-editor/live-app.md) lock soft-locks a
@@ -246,7 +246,7 @@ verified end-to-end and turned on properly, not carried as dormant code.
   `sync` → `catchup` handler (`resolveCatchup` in `document-room-rules.ts`). It
   rewrites comment authors in every mutation it relays and keeps collaboration
   state in Durable Object storage: the per-element ledger
-  (`room-ledger-store.ts`), the live poll (`room-live-poll.ts`) and the
+  (`room-ledger-store.ts`) and the
   facilitator baton (`facilitator.ts`). The full description is
   [API app → Realtime model](../015-api/api.md#realtime-model).
 - `apps/api/src/room-client.ts` — the worker's calls into the room: the ledger

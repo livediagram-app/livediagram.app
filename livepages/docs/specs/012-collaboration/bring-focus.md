@@ -27,8 +27,7 @@ I say so once, and everybody's view is their own again immediately.
 
 ## The invitation, not the yank
 
-Pressing it **moves nobody**. Every other participant gets a dialog, the same
-shape as the poll prompt ([The lane](../009-elements/lane.md)), because it is a question addressed to them
+Pressing it **moves nobody**. Every other participant gets a dialog, because it is a question addressed to them
 and the answer decides where they look next:
 
 > **Alex wants you to look at something** [ Not now ] [ Take me there ]
@@ -160,7 +159,7 @@ hovered or held.
 
 It is the one Behaviour element with **no `…` on its face**. The rest of the
 family carries the shared settings ellipsis (or draws a richer one of its own),
-because they hold something you set: a timer's length, a poll's question. This
+because they hold something you set: a timer's length, a vote's dots. This
 one holds nothing but a label and its colours, and those are reached by
 right-clicking the element like any other shape, so the `…` would only open the
 menu that was already one click away.

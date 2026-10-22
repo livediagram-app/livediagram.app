@@ -215,14 +215,13 @@ unchanged; only the mode they open in moved from Diagram.
   (`coworking-space`), **Team Pod** (`team-pod`) and **All-Hands Hall** (`all-hands-hall`), "Offices and halls to walk
   round together in Avatar mode." ([Virtual Office template](../012-collaboration/virtual-office-template.md)).
 - The **Games** group, after Spaces: **Icebreaker Questions**
-  (`icebreaker-questions`), **Two Truths and a Lie** (`two-truths-and-a-lie`), **Would You Rather**
-  (`would-you-rather`) and **Find Someone Who Bingo** (`people-bingo`), "Icebreakers and games to warm up
+  (`icebreaker-questions`) and **Find Someone Who Bingo** (`people-bingo`), "Icebreakers and games to warm up
   the room." ([Game templates](../012-collaboration/game-templates.md)).
 
 ## Testing
 
 - Every template's mode equals the mode its overrides open it in (`templates.test.ts`).
-- Every template carrying a session tool (timer, vote, poll) opens in Workshop (`templates.test.ts`).
+- Every template carrying a session tool (timer, vote) opens in Workshop (`templates.test.ts`).
 - Every Popular list starts with its mode's blank and holds only that mode's templates (`popular.test.ts`).
 - Every category holds a template in at least one mode (`template-categories.test.ts`).
 - A card found from another mode's start shows "Opens in <Mode>" (`StartPanel.test.tsx`).

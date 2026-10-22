@@ -191,7 +191,7 @@ describe("freeing somebody else's selection lock", () => {
   });
 
   it('is the same rule as the session tools, deliberately', () => {
-    // Freeing a selection is less invasive than starting a timer or a poll —
+    // Freeing a selection is less invasive than starting a timer —
     // it drops a selection and destroys no work — so it earns no separate,
     // stricter rule. Pinned so the two cannot drift apart silently.
     const states = [FREE_BATON, { holder: 'host', token: 't' }];

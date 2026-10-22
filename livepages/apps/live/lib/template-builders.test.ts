@@ -73,8 +73,6 @@ const ALL_KINDS = [
   'coworking-space',
   'team-pod',
   'all-hands-hall',
-  'two-truths-and-a-lie',
-  'would-you-rather',
   'people-bingo',
   'brainstorm',
   'workshop-board',

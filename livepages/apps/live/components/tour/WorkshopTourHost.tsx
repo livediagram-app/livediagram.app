@@ -32,12 +32,11 @@ const WORKSHOP_TOUR_COPY = {
   helpHref: '/help/canvas/workshop-mode/',
 };
 
-// The demo elements' row: a Timer, a Dot Vote and a Poll, at their palette sizes, this far apart.
+// The demo elements' row: a Timer and a Dot Vote, at their palette sizes, this far apart.
 const DEMO_GAP = 32;
 const DEMOS: readonly { which: WorkshopDemo; width: number; height: number }[] = [
   { which: 'timer', width: 224, height: 64 },
   { which: 'vote', width: 104, height: 96 },
-  { which: 'poll', width: 240, height: 116 },
 ];
 
 // Orchestrates the Workshop tour (docs/specs/012-collaboration/workshop-tour.md). Mounted once in

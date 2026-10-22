@@ -3,7 +3,6 @@ import type { ArticleOp, ElementDelta, RoomElementOp, Tab } from '@livepages/doc
 import type { ParticipantPresence } from './index';
 import type { AvatarConfig } from './avatar';
 import type { AvatarSayOp } from './avatar-say';
-import type { LivePoll } from './poll';
 import type { DragPreviewPatch } from './drag-preview';
 import type { ChangesetRoomOp } from './changesets';
 import type { ItemsRoomOp, ItemTypesRoomOp } from './items';
@@ -69,13 +68,6 @@ export type AvatarPresence = {
 // Room op kinds that are ephemeral signals: they mutate no document state,
 // so they relay unordered (no seq) and from any role.
 //
-// `poll-answer` (docs/specs/012-collaboration/live-poll.md) is here for the ROLE half rather than the
-// presence half: answering a poll changes nothing on the document, and a
-// presenter pulse-checking an audience on a view link is the main thing
-// polls are for, so a view-role participant must be able to send one.
-// `poll-start` / `poll-end` are deliberately NOT here — they stay behind
-// the edit-role gate below, so an audience member can answer a poll but
-// can't start one or end someone else's.
 // `avatar` (docs/specs/008-canvas/avatar-mode.md) is presence in the plainest sense: someone's walking
 // character, at cursor rates, mutating nothing. View-role senders included —
 // an audience member walking around a document they were shown a link to is
@@ -94,7 +86,6 @@ export const PRESENCE_OP_KINDS = [
   'select',
   'laser',
   'tab-focus',
-  'poll-answer',
   'avatar',
   // A shove (docs/specs/008-canvas/avatar-mode.md) moves nothing on the server and nothing in the
   // document — it asks one peer to step aside. Same trust level as `avatar`.
@@ -155,10 +146,6 @@ export const PRESENCE_OP_KINDS = [
 // Room op kinds that DO change the document: they get a monotonic `seq` within
 // the room's epoch, land in the bounded catch-up log so a reconnecting peer can
 // replay them (docs/specs/012-collaboration/realtime-conflict-resolution.md), and are refused from a view-role sender.
-//
-// `poll-start` / `poll-end` sit here rather than with `poll-answer` above on
-// purpose: an audience member on a view link may answer a poll but must not be
-// able to start one or end someone else's (docs/specs/012-collaboration/live-poll.md).
 export const MUTATION_OP_KINDS = [
   'tab',
   'tab-meta',
@@ -174,8 +161,6 @@ export const MUTATION_OP_KINDS = [
   // One article's writing changing, block by block (docs/specs/007-editor/article-pages.md
   // "Collaboration"): two people writing different paragraphs merge, as `el` does for elements.
   'article',
-  'poll-start',
-  'poll-end',
 ] as const;
 
 // Op kinds only the WORKER may originate, stamped `from: 'system'` and pushed
@@ -630,33 +615,6 @@ export type RoomOp =
   // receiver resolves the name from the presence list it holds, so a renamed
   // participant's invitation reads correctly.
   | { kind: 'focus-here'; tabId: string; at: { x: number; y: number }; zoom: number }
-  // --- Live poll (docs/specs/012-collaboration/live-poll.md) -------------------------------------------
-  // Deliberately NOT a Tab field like the timer / dot-vote: a poll is
-  // ephemeral, so nothing here reaches D1 or undo. The
-  // room keeps the running poll and its answers in its own storage and
-  // replays them on hello (docs/specs/012-collaboration/live-poll.md).
-  // `poll-start` / `poll-end` are sequenced mutations; `poll-answer` relays
-  // unordered, like presence.
-  //
-  // The host opened a poll. Replaces any poll already on screen (one at a
-  // time per document).
-  | { kind: 'poll-start'; poll: LivePoll }
-  // One participant's answer; `null` means they skipped. Keyed by sender
-  // on receipt, so re-sending REPLACES that person's earlier answer
-  // rather than stacking a second one. Allowed from view-role senders
-  // too (docs/specs/012-collaboration/live-poll.md) — polling an audience on a view link is the point.
-  //
-  // `key` is the answerer's collab key (docs/specs/012-collaboration/collab-race-hardening.md): answers used to be keyed
-  // by the per-socket presence id, so re-answering after a reconnect counted
-  // twice. Optional so an older client still parses.
-  //
-  // `proof` is the sender's per-browser collab secret (docs/specs/012-collaboration/vote-integrity.md): it proves the
-  // key is the sender's own. The room checks it and NEVER relays it; a relayed or replayed answer carries the key the
-  // room decided and no proof.
-  | { kind: 'poll-answer'; pollId: string; value: string | null; key?: string; proof?: string }
-  // The host ended the poll: drop the question, the answers, and the
-  // panel everywhere. Edit-role only, like poll-start.
-  | { kind: 'poll-end'; pollId: string }
   // A share link was revoked by the document owner. Every connected
   // peer using that share code (the `X-Share-Code` they handed in to
   // hydrate) should hard-redirect to a "share revoked" surface so

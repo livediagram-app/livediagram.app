@@ -236,7 +236,7 @@ bound their access levels, and what that means for livepages's proposed four: **
   ([API app, op classes](../../specs/015-api/api.md)).
 - A `view` link can therefore already: read, comment and delete its own comment, add and upvote on the Q&A board,
   answer a live poll, follow and be followed, bring focus, and roll the picker locally
-  (the Q&A board, since removed; [Live poll](../../specs/012-collaboration/live-poll.md);
+  (the Q&A board, since removed; the live poll, since removed;
   [Follow-me viewport](../../specs/012-collaboration/follow-me-viewport.md)).
 - A `view` link **cannot** cast dot votes, estimates, temperature checks or quiz answers, or drop a card in the idea
   box, because those travel as element mutations ([Session tools](../../specs/012-collaboration/session-tools.md);

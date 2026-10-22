@@ -82,7 +82,7 @@ action in a document also has a card on its **Actions board**, kept in step both
 **A copy doesn't carry the action.** Copy / paste (both the OS clipboard and
 the in-app fallback buffer) and every Duplicate (`freshCopyFields`, one list,
 `ORIGINAL_ONLY_FIELDS`) strip `action` and `actions` along with comment threads
-and poll responses: an action is work somebody handed to a person, with its own id in
+and votes: an action is work somebody handed to a person, with its own id in
 the Activity index, not a property of the shape, so a pasted copy would be a
 second action under the same id that nobody assigned.
 

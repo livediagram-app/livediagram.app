@@ -181,10 +181,8 @@ export function svgBehaviourFace(
       );
     }
     case 'session-button': {
-      // The tool as the canvas reads it, through its plan: a missing or unknown tool is the timer, and a poll not
-      // set up yet is still a poll.
-      const tool =
-        sessionButtonPlan(el.session)?.tool ?? (el.session?.tool === 'poll' ? 'poll' : 'timer');
+      // The tool as the canvas reads it, through its plan: a missing or unknown tool is the timer.
+      const { tool } = sessionButtonPlan(el.session);
       // A timer reads as the canvas's idle dial (SessionTimerFace): ticks
       // along the top edge, the kicker and the configured length. The Start
       // control is editor chrome and stays out of the image.
@@ -461,23 +459,12 @@ function picker(
   );
 }
 
-// A Session tool's glyph, 20 px, centred at (x, y): a stopwatch, three vote dots, or a poll's bars.
+// A Session tool's glyph, 20 px, centred at (x, y): a stopwatch or three vote dots.
 function sessionToolGlyph(tool: string | undefined, x: number, y: number, color: string): string {
   const ink = xmlEscape(color);
   if (tool === 'vote')
     return [-7, 0, 7]
       .map((dx) => `<circle cx="${r2(x + dx)}" cy="${r2(y)}" r="3" fill="${ink}"/>`)
-      .join('');
-  if (tool === 'poll')
-    return [
-      [-6, 4],
-      [0, -2],
-      [6, 1],
-    ]
-      .map(
-        ([dx, top]) =>
-          `<rect x="${r2(x + dx! - 2)}" y="${r2(y + top!)}" width="4" height="${r2(8 - top!)}" rx="1" fill="${ink}"/>`,
-      )
       .join('');
   return (
     `<circle cx="${r2(x)}" cy="${r2(y)}" r="10" fill="none" stroke="${ink}" stroke-width="1.5"/>` +
@@ -493,8 +480,7 @@ function sessionWords(
   cy: number,
   color: string,
 ): string {
-  // Within the button, as the canvas's face clamps them: the kicker on one line, the action on at most two (a poll's
-  // question can run to a sentence).
+  // Within the button, as the canvas's face clamps them: the kicker on one line, the action on at most two.
   const room = Math.max(24, el.width - 16);
   if (title)
     return text(cx, cy + 16, fitLine(title, room, 12), {

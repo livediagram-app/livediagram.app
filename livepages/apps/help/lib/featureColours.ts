@@ -125,7 +125,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   technology: '#0ea5e9',
   // Collaboration guides
   timer: '#f43f5e',
-  polls: '#8b5cf6',
   voting: '#ef4444',
   'roles-and-invites': '#a855f7',
   'team-shared-documents': '#0ea5e9',

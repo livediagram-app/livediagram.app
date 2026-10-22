@@ -126,8 +126,8 @@ cache, cached share passwords, and the stale-build reload guards.
 - the guest identity: `self-id`, `self-sig`, `pending-signed-id`,
   `name-confirmed` (all under `livepages:v2:`). Losing the guest id loses
   every document a guest owns;
-- `collab-key` and its secret half `collab-secret`, the per-browser keys that
-  past answers and votes are matched against;
+- `collab-key`, the per-browser key that past answers and votes are matched
+  against;
 - the offline store (IndexedDB `livepages-offline`): Offline Mode documents
   exist nowhere else;
 - cookies and the sign-in provider's own storage: repair never signs anyone

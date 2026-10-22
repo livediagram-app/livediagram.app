@@ -165,7 +165,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
     description:
       'Share a link and your team is on the canvas with you: live cursors, comments on any element, actions handed to teammates, and Workshop, a mode for running a workshop, with timers, votes and a spotlight on the thing you mean.',
     metaDescription:
-      'Share a link and your team is on the canvas with you: live cursors, comments, assigned actions and workshop tools, from timers and votes to polls.',
+      'Share a link and your team is on the canvas with you: live cursors, comments, assigned actions and workshop tools, from timers to dot votes.',
     highlights: [
       'Live presence',
       'Comments on any element',
@@ -243,7 +243,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Present & workshop',
         title: 'Run the session: timer + voting',
         description:
-          'Run the room from the canvas. In Workshop, Timer, Vote and Poll sit in the Session strip at the foot of the canvas: start a countdown or stopwatch the whole room sees, its time on the button, or drop a timer onto the canvas as a session button so a template carries its own running order. Then open dot-voting to surface the group’s priorities. Everyone votes with a budget of dots; results tally in real time, and revealing them starts a guided walkthrough: each top pick lights up and centres on screen while you step through with Next and Previous. Perfect for retros, workshops, and timeboxed planning.',
+          'Run the room from the canvas. In Workshop, Timer and Vote sit in the Session strip at the foot of the canvas: start a countdown or stopwatch the whole room sees, its time on the button, or drop a timer onto the canvas as a session button so a template carries its own running order. Then open dot-voting to surface the group’s priorities. Everyone votes with a budget of dots; results tally in real time, and revealing them starts a guided walkthrough: each top pick lights up and centres on screen while you step through with Next and Previous. Perfect for retros, workshops, and timeboxed planning.',
       },
       {
         art: <WorkshopModeArt />,
@@ -251,7 +251,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Present & workshop',
         title: 'A mode for running the room',
         description:
-          'Switch a tab to Workshop and it brings the session to hand: stickies, timers, votes, polls and reveals on its palette, and the Session strip at the foot of the canvas. Retrospectives and brainstorms open there, and Diagram stays about diagrams.',
+          'Switch a tab to Workshop and it brings the session to hand: stickies, timers, votes and reveals on its palette, and the Session strip at the foot of the canvas. Retrospectives and brainstorms open there, and Diagram stays about diagrams.',
       },
       {
         art: <FacilitatorArt />,
@@ -259,7 +259,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Present & workshop',
         title: 'One person runs the room',
         description:
-          'Hand someone the facilitator baton and the tools that run the session answer to them alone: the timer, the votes, the polls, the reveals. No two people starting timers over each other. Nobody holds it by default, anybody can be given it, and the owner can always take it back.',
+          'Hand someone the facilitator baton and the tools that run the session answer to them alone: the timer, the votes, the reveals. No two people starting timers over each other. Nobody holds it by default, anybody can be given it, and the owner can always take it back.',
       },
       {
         art: <SessionToolsArt />,
