@@ -1,4 +1,3 @@
-import type { PaletteTileDef } from './palette-tile-defs';
 import { usePaletteKind } from '@/lib/palette-kind';
 import { DEFAULT_EDITOR_MODE, type EmbedProvider } from '@livepages/document';
 import { useEffect, useState } from 'react';
@@ -13,7 +12,6 @@ import { buildCanvasToolOptions } from './canvas-tool-options';
 import { restoresMaximised, withTileActionPreamble } from './palette-tile-actions';
 import { paletteCategoryTabs } from './palette-category-tabs';
 import type { PaletteAddHandlers } from './palette-add-handlers';
-import { useLogoMarkerTiles } from './PaletteLogoTab';
 import {
   coveredPaletteCategories,
   dashboardPaletteCategories,
@@ -25,7 +23,6 @@ import { useBoardFillingTab, usePlanTabKind } from '@/hooks/plan/plan-cover-stor
 import { usePlanTabList } from '@/hooks/plan/plan-tab-list-store';
 import { dashboardTabTiles } from './palette-dashboard-tiles';
 import { getMaximisedPlanId, restorePlanElement } from '@/hooks/plan/maximised-plan';
-import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
 import type { AddShapeOptions } from '@/lib/draw-mode';
 import { useEditorModeState } from '@/components/chrome/editor-mode/editor-mode-context';
 
@@ -73,13 +70,8 @@ export function usePaletteCatalogue({
   onAddAvatar,
   onAddImage,
   onAddArrow,
-  onBeginFreehand,
-  onBeginHighlighter,
-  onBeginMarker,
   onCancelDraw,
-  onBeginShapePen,
   onBeginPolygon,
-  onBeginPath,
   pendingDraw,
   onTileUsed,
   participant = false,
@@ -129,13 +121,7 @@ export function usePaletteCatalogue({
   // palette so the canvas is clear to draw on.
   const addArrow = (ends?: import('@livepages/document').ArrowEnds) =>
     armed(() => onAddArrow(ends))();
-  const beginFreehand = armed(onBeginFreehand);
-  const beginHighlighter = armed(onBeginHighlighter);
-  const beginMarker = (penId: WhiteboardPenId, once?: boolean) =>
-    armed(() => (once ? onBeginMarker(penId, true) : onBeginMarker(penId)))();
-  const beginShapePen = armed(onBeginShapePen);
   const beginPolygon = armed(onBeginPolygon);
-  const beginPath = armed(onBeginPath);
   const addImage = armed(() => onAddImage?.());
   // One handler per composite-component kind, so the tile catalogue can
   // address them by kind (see PaletteTileGrid).
@@ -160,12 +146,7 @@ export function usePaletteCatalogue({
     {
       addShape,
       addText,
-      beginFreehand,
-      beginHighlighter,
-      beginMarker,
-      beginShapePen,
       beginPolygon,
-      beginPath,
       addArrow,
       addSticky,
       addTable,
@@ -230,8 +211,6 @@ export function usePaletteCatalogue({
   // (palette-layouts.ts).
   const paletteKind = usePaletteKind();
   const pages = editorMode === 'pages';
-  // Logo's Draw takes this person's markers, as tiles in their colours and widths (useLogoMarkerTiles).
-  const markers = useLogoMarkerTiles(pages && paletteKind === 'logo');
   // While a Plan board fills its tab, only Cards (coveredPaletteCategories).
   const categories = participant
     ? participantPaletteCategories()
@@ -245,11 +224,7 @@ export function usePaletteCatalogue({
                 ? [{ ...c, tiles: dashboardTabTiles(planTabList) }]
                 : [],
           )
-        : paletteCategoriesFor(editorMode, pages ? { pagesKind: paletteKind } : {}).map((c) =>
-            c.id === 'draw' && markers.length
-              ? { ...c, tiles: [...withGroupEnd(c.tiles ?? []), ...markers] }
-              : c,
-          );
+        : paletteCategoriesFor(editorMode, pages ? { pagesKind: paletteKind } : {});
   const tabs = paletteCategoryTabs({
     categories,
     pendingDraw,
@@ -294,12 +269,4 @@ export function usePaletteCatalogue({
     onCanvasToolChange,
     iconCatalogsLoaded,
   };
-}
-
-// `tiles` with its last ending a group, so what is added after it (Logo's markers) is a group of its own.
-function withGroupEnd(tiles: readonly PaletteTileDef[]): PaletteTileDef[] {
-  const last = tiles.at(-1);
-  return last && !last.dividerAfter
-    ? [...tiles.slice(0, -1), { ...last, dividerAfter: true }]
-    : [...tiles];
 }

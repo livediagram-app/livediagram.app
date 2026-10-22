@@ -61,9 +61,6 @@ export function canvasCursorClass(input: {
   // in globals.css) pins the exact centre of the light. Space still pans, so
   // defer to the grab cursor while it's held.
   if (canvasTool === 'spotlight' && !spaceHeld) return 'cursor-spotlight';
-  // Eraser shows a custom eraser glyph (see .cursor-eraser in globals.css),
-  // unless Space is held for a temporary pan.
-  if (canvasTool === 'eraser' && !spaceHeld) return 'cursor-eraser';
   // Isometric view (docs/specs/008-canvas/isometric-view.md) is navigation-only: it pans like Hand, so it
   // shares the grab cursor (grabbing while dragging is handled by the `pan`
   // branch above).

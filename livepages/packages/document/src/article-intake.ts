@@ -49,7 +49,7 @@ const DRAWING_SHAPES: ReadonlySet<ShapeKind> = new Set<ShapeKind>([
  *  a drawing joins it there. */
 export function isDrawingElement(el: Element): boolean {
   if (el.type === 'arrow' || el.type === 'text') return true;
-  if (el.type === 'freehand' || el.type === 'path') return true;
+  if (el.type === 'freehand') return true;
   return el.type === 'shape' && DRAWING_SHAPES.has(el.shape);
 }
 

@@ -3,7 +3,6 @@ import type {
   ArrowElement,
   Element,
   FreehandElement,
-  PathElement,
   ShapeElement,
   Tab,
   TextElement,
@@ -48,8 +47,6 @@ const freehand = (over: Partial<FreehandElement> = {}): FreehandElement => ({
   closed: false,
   ...over,
 });
-const path = (over: Partial<PathElement> = {}): PathElement =>
-  ({ id: 'p', type: 'path', x: 0, y: 0, width: 10, height: 10, ...over }) as PathElement;
 const text = (over: Partial<TextElement> = {}): TextElement => ({
   id: 'x',
   type: 'text',
@@ -140,14 +137,6 @@ describe('migrateWhiteboardKind', () => {
     expect(migrated(blue)).toEqual(blue);
     const hex = arrow({ strokeColor: '#123456' });
     expect(migrated(hex)).toEqual(hex);
-  });
-
-  it('gives an unpainted path an Ink line and no fill', () => {
-    const out = migrated(path()) as PathElement;
-    expect(out.penColour).toBe('ink');
-    expect(out.fillColor).toBe('transparent');
-    const filled = path({ strokeColor: '#123456', fillColor: '#abcdef' });
-    expect(migrated(filled)).toEqual(filled);
   });
 
   it('leaves pen strokes and text to draw in Ink by themselves, only taking a stroke fill away', () => {

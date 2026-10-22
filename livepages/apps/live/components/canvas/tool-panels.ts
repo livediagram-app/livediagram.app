@@ -2,6 +2,5 @@
 // has one is picked (useCanvasToolPanels; lib/editor-deferred-code.ts).
 export { LaserPanel } from '@/components/panels/LaserPanel';
 export { SpotlightPanel } from '@/components/panels/SpotlightPanel';
-export { EraserPanel } from '@/components/panels/EraserPanel';
 export { FormatPanel } from '@/components/panels/FormatPanel';
 export { SlideDeckPanel } from '@/components/panels/SlideDeckPanel';

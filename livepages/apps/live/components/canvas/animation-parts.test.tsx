@@ -2,27 +2,28 @@
 import { render, renderHook } from '@testing-library/react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { DRAWING_ANIMATIONS, type PathElement, type TableElement } from '@livepages/document';
+import {
+  createFreehand,
+  DRAWING_ANIMATIONS,
+  type FreehandElement,
+  type TableElement,
+} from '@livepages/document';
 import { AnimationLayer } from './AnimationLayer';
 import { useDrawingAnimation } from './drawing-animation';
 import { InlineTextLine } from './InlineTextLine';
 import { useTableAnimation } from './useTableAnimation';
 
-const path = (animation?: string) =>
-  ({
-    id: 'p',
-    type: 'path',
-    x: 0,
-    y: 0,
-    width: 100,
-    height: 50,
-    closed: false,
-    nodes: [
-      { nx: 0, ny: 1, mode: 'corner' },
-      { nx: 1, ny: 0, mode: 'corner' },
+const path = (animation?: string): FreehandElement => ({
+  ...createFreehand(
+    [
+      { x: 0, y: 50 },
+      { x: 100, y: 0 },
     ],
-    ...(animation ? { animation } : {}),
-  }) as unknown as PathElement;
+    false,
+  ),
+  id: 'p',
+  ...(animation ? { animation: animation as FreehandElement['animation'] } : {}),
+});
 
 describe('AnimationLayer', () => {
   it('is a plain layer for the ring, halo and band, and a measured outline for Trace', () => {

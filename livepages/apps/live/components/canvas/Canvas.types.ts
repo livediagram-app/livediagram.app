@@ -1,7 +1,5 @@
 import type { TidyUpActions } from './tidy-up-actions';
-import type { PenInk } from '@/hooks/canvas/commit-freehand';
 import type { SnapGuideStore } from '@/hooks/canvas/useSnapGuideState';
-import type { CombineOp } from '@/lib/combine/combine';
 import type { RemoteSelector } from '@/lib/presence-rows';
 import type { Dispatch, SetStateAction } from 'react';
 // Prop contract for the Canvas component, split out of Canvas.tsx
@@ -90,10 +88,6 @@ export type CanvasProps = {
   // Pages mode's A4 pages and their edits (docs/specs/007-editor/editor-modes.md "The
   // pages"), present only in that mode.
   pagesMode?: import('@/hooks/editor/usePagesMode').PagesModeView | null;
-  // The whiteboard dock's model and the board's ink for this appearance
-  // (docs/specs/023-draw-mode/draw-mode.md), present on a whiteboard tab.
-  whiteboardDock?: import('@/hooks/canvas/useWhiteboard').WhiteboardDockModel;
-  whiteboardInk?: string;
   // Element ids on a hidden or locked layer (docs/specs/006-document/layers.md) — inert to every
   // selection surface, including the right-click context menu.
   layerInertIds: Set<string>;
@@ -211,13 +205,6 @@ export type CanvasProps = {
   spotlightPanelPosition?: { x: number; y: number } | null;
   onMoveSpotlightPanel?: (x: number, y: number) => void;
   onResetSpotlightPanel?: () => void;
-  // The eraser's settings (docs/specs/008-canvas/eraser-panel.md). Owned in editor state, where the erase
-  // gesture lives; Canvas forwards them to the panel.
-  eraserConfig?: import('@/lib/eraser-config').EraserConfig;
-  onChangeEraserField?: <K extends keyof import('@/lib/eraser-config').EraserConfig>(
-    field: K,
-    value: import('@/lib/eraser-config').EraserConfig[K],
-  ) => void;
   // The format painter's settings (docs/specs/008-canvas/format-panel.md) and what its brush holds. Owned
   // in editor state, where the paint happens; Canvas forwards them.
   formatConfig?: import('@/lib/format-config').FormatConfig;
@@ -227,10 +214,6 @@ export type CanvasProps = {
   formatPanelPosition?: { x: number; y: number } | null;
   onMoveFormatPanel?: (x: number, y: number) => void;
   onResetFormatPanel?: () => void;
-  // Eraser Panel (docs/specs/008-canvas/eraser-panel.md): where it sits.
-  eraserPanelPosition?: { x: number; y: number } | null;
-  onMoveEraserPanel?: (x: number, y: number) => void;
-  onResetEraserPanel?: () => void;
   // Slide Deck panel (docs/specs/012-collaboration/presentation-mode.md): the deck builder, present only while its tool
   // is picked. The deck itself rides `slideDeck`.
   slideDeckPanelPosition?: { x: number; y: number } | null;
@@ -261,10 +244,6 @@ export type CanvasProps = {
     target?: EventTarget | null,
   ) => void;
   onDuplicateMultiSelected: () => void;
-  // Combine (docs/specs/007-editor/logo-pages.md "Combine"): offered while the multi-selection
-  // is combinable shapes on one logo page.
-  canCombine?: () => boolean;
-  onCombine?: (op: CombineOp) => void;
   onDeleteMultiSelected: () => void;
   onToggleLockMultiSelected: () => void;
   // Narrows the multi-selection to just `ids` (Filter Selection menu).
@@ -313,17 +292,8 @@ export type CanvasProps = {
   // The arrow whose shape a handle drag is changing (a bend, curve, elbow or endpoint): its
   // selection frame stands down until the drag ends (docs/specs/008-canvas/arrow-bending.md).
   reshapingArrowId?: string | null;
-  onBeginFreehand: () => void;
-  // Highlighter variant of the pencil (docs/specs/008-canvas/highlighter.md) + the polygon
-  // click-to-place tool (docs/specs/008-canvas/polygon-tool.md), armed from the palette tiles.
-  onBeginHighlighter: () => void;
-  // One of Draw mode's markers, picked up from the Toolbar strip's Search in another mode.
-  // `once`: picked up for one stroke (a logo page's palette), else held until put down.
-  onBeginMarker: (penId: import('@/lib/whiteboard-prefs').WhiteboardPenId, once?: boolean) => void;
-  onBeginShapePen: () => void;
+  // The polygon click-to-place tool (docs/specs/008-canvas/polygon-tool.md), armed from its tile.
   onBeginPolygon: () => void;
-  // The Path tool (docs/specs/023-draw-mode/path-tool.md), a logo page's Pen in the palette.
-  onBeginPath: () => void;
   // Draw-to-size mode. Picking any palette element except the annotation
   // (docs/specs/008-canvas/canvas-and-palette.md "Placement on add") stashes the intent here; the canvas then
   // enters a drag-to-define gesture. pointer-up calls onCommitDraw with the start + end
@@ -341,40 +311,12 @@ export type CanvasProps = {
     endX: number,
     endY: number,
   ) => void;
-  // Freehand commit (pen intent). Receives the raw pointer-sample
-  // polyline in canvas coords. The editor applies RDP simplification
-  // and Catmull-Rom-to-Bezier smoothing before minting the
-  // FreehandElement, both for storage size and visual smoothness.
-  // `recogniseShapes` says whether this stroke came from the Shape Pen
-  // (docs/specs/010-palette/stickers.md); when true the caller (commitFreehand) runs the polyline
-  // through recogniseShape and may mint a real shape primitive instead of a
-  // FreehandElement. It reads off the armed intent's variant, not a
-  // preference — the toggle that used to set it is gone. A whiteboard pen's points are its raw
-  // samples, landed as they are with their `ink` (pressures, streamline; lib/live-stroke).
-  onCommitFreehand: (
-    points: { x: number; y: number }[],
-    recogniseShapes: boolean,
-    // `snapped`: the shape a held-still stroke locked to, as the pen reshaped it (lib/live-stroke);
-    // `keepInk`: the stroke was broken out of a shape, so it lands as drawn.
-    ink?: PenInk,
-  ) => void;
   // Polygon commit (docs/specs/008-canvas/polygon-tool.md). Receives the deliberately clicked
   // vertices in canvas coords (no simplification — the user placed
   // each one) plus whether the loop closed on the start vertex.
   onCommitPolygon: (vertices: { x: number; y: number }[], closed: boolean) => void;
-  // The Path tool (docs/specs/023-draw-mode/path-tool.md): a drawn or continued path lands, an
-  // edit-mode gesture lands, and how a new path is dressed (style memory), so the path being
-  // drawn shows the style it will land with.
-  onCommitPath: (commit: import('@/components/canvas/path/usePathDrawGesture').PathCommit) => void;
-  onCommitPathEdit: (
-    id: string,
-    next: { anchors: import('@livepages/document').PathAnchor[]; closed: boolean },
-    kind: import('@/hooks/canvas/usePathCommits').PathEditKind,
-  ) => void;
-  onDressPath?: <T extends import('@livepages/document').Element>(el: T) => T;
-  // The line or arrow a draw would land if released now, as the canvas would show it
-  // (docs/specs/023-draw-mode/draw-mode.md "Shapes"), drawn in place of a stand-in while the drag
-  // is in flight. From lib/drawn-arrow-preview.
+  // The line or arrow a draw would land if released now, as the canvas would show it, drawn in
+  // place of a stand-in while the drag is in flight. From lib/drawn-arrow-preview.
   previewDrawnArrow?: (
     intent: Extract<PendingDraw, { type: 'arrow' }>,
     startX: number,
@@ -519,17 +461,6 @@ export type CanvasProps = {
   // menu anchored under it. Distinct from element right-clicks
   // (those go through BoxedElementView's onContextSelect).
   onCanvasContextMenu?: (screenX: number, screenY: number) => void;
-  // Eraser tool (docs/specs/008-canvas/canvas-and-palette.md): a primary-button press while the eraser is
-  // active. The canvas intercepts it in the capture phase (before element
-  // select/drag) and hands the screen coords here to start an erase
-  // gesture; the gesture's move/release are tracked by useCanvasEraser.
-  // `frame`: reads where the canvas sits on screen, per sample of the sweep (the whiteboard's
-  // geometric erase, docs/specs/023-draw-mode/draw-mode.md; lib/erase-frame).
-  onEraseStart?: (
-    clientX: number,
-    clientY: number,
-    frame?: import('@/lib/erase-frame').EraseFrameReader,
-  ) => void;
   // Right-click on an element. Forwarded from BoxedElementView's
   // own context handler — the canvas selects the element and the
   // page opens an element context menu.
@@ -736,7 +667,7 @@ export type CanvasProps = {
   // Quick add + connect (docs/specs/008-canvas/canvas-and-palette.md). The radial ring on each element edge
   // spawns a connected element (Duplicate / Square / Circle), starts an
   // arrow from that side (drag on desktop, tap-target on mobile — the
-  // handler branches on the pointer type), or enters freehand draw.
+  // handler branches on the pointer type).
   onSpawnConnect: (direction: QuickConnectDirection, kind: QuickConnectKind) => void;
   // Drag-from-palette drop: a palette tile dropped on the canvas places that
   // element kind centred on the drop point. `art` carries the catalogue id
@@ -752,7 +683,6 @@ export type CanvasProps = {
     art?: { iconId?: string; stickerId?: string; choice?: string },
   ) => void;
   onStartArrow: (direction: QuickConnectDirection, e: ReactPointerEvent) => void;
-  onStartPencil: () => void;
   onToggleLockSelected: () => void;
   onDeleteSelected: () => void;
   // Duplicate the selected element. Surfaced as a one-click button in

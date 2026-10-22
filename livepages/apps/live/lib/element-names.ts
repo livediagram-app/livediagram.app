@@ -31,13 +31,12 @@ export function kindLabel(el: Element): string {
   if (el.type === 'image') return 'Image';
   if (el.type === 'annotation') return 'Annotation';
   if (el.type === 'freehand') {
-    // The marker pen (docs/specs/008-canvas/highlighter.md) and the polygon tool (docs/specs/008-canvas/polygon-tool.md) both
-    // commit FreehandElements; name them by what the user drew.
+    // A highlighter stroke and the polygon tool's outline (docs/specs/008-canvas/polygon-tool.md) are both
+    // FreehandElements; name them by what was drawn.
     if (el.pen === 'highlighter') return 'Highlight';
     if (el.straightEdges) return el.closed ? 'Polygon' : 'Polyline';
     return 'Sketch';
   }
-  if (el.type === 'path') return 'Path';
   if (el.type === 'link-card') return 'Link card';
   if (el.type === 'video') return 'Embed';
   // A session button names the tool it starts ('Timer', 'Dot vote'), not the generic kind, which said nothing about it.
@@ -132,10 +131,6 @@ export function describeMany(elements: Element[]): string {
 // 'Arrow "yes"'. Unlike describeOne this always leads with the kind,
 // so a screen-reader user hears WHAT the thing is before its text.
 export function elementAriaLabel(el: Element): string {
-  // A path is read by its points (docs/specs/023-draw-mode/path-tool.md "Accessibility").
-  if (el.type === 'path') {
-    return `${el.closed ? 'Closed path' : 'Path'}, ${el.nodes.length} points`;
-  }
   const kind = kindLabel(el);
   const label = ('label' in el && typeof el.label === 'string' ? el.label : '').trim();
   return label ? `${kind} "${label}"` : kind;

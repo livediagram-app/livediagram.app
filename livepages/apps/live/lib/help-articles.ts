@@ -44,7 +44,6 @@ export const HELP_ARTICLES = {
   // pointing at nothing is a bug, the same way an unregistered article is.
   laser: 'selection-modes/laser',
   spotlight: 'selection-modes/spotlight',
-  eraser: 'selection-modes/eraser',
   formatPainter: 'selection-modes/format-painter',
   slideDeck: 'selection-modes/slide-deck',
   // AI
@@ -77,7 +76,6 @@ export const HELP_ARTICLES = {
   planForms: 'canvas/plan-mode/forms',
   planTour: 'canvas/plan-mode/plan-tour',
   workshopTour: 'canvas/workshop-mode/workshop-tour',
-  drawTour: 'canvas/draw-mode/draw-tour',
   pagesTour: 'canvas/pages-mode/pages-tour',
   links: 'canvas/links',
   comments: 'collaboration/comments',
@@ -122,7 +120,6 @@ export const HELP_ARTICLES = {
   // Onboarding / empty states
   yourFirstDiagram: 'getting-started/your-first-diagram',
   templates: 'canvas/templates',
-  drawMode: 'canvas/draw-mode',
   logoPages: 'canvas/pages-mode/logo-pages',
   wireframePages: 'canvas/pages-mode/wireframe-pages',
   // Each page kind's Show Me links its own article (docs/specs/007-editor/pages-tour.md).
@@ -177,10 +174,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about the Workshop Tour',
     description: 'What the tour shows you and how replaying works.',
   },
-  drawTour: {
-    title: 'Learn about the Draw Tour',
-    description: 'What the tour shows you and how replaying works.',
-  },
   pagesTour: {
     title: 'Learn about the Pages Tour',
     description: 'What the tour shows you and how replaying works.',
@@ -228,10 +221,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   spotlight: {
     title: 'Learn about the Spotlight',
     description: 'Tips for dimming everything but the part you are talking about.',
-  },
-  eraser: {
-    title: 'Learn about the Eraser',
-    description: 'Tips for rubbing out sketches and elements without selecting them first.',
   },
   formatPainter: {
     title: 'Learn about the Format Painter',
@@ -459,10 +448,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   templates: {
     title: 'Learn about templates',
     description: 'How templates give you a themed starting point.',
-  },
-  drawMode: {
-    title: 'Learn about Draw mode',
-    description: 'Switching modes, the dock, its pens and shapes, and where it sits.',
   },
   logoPages: {
     title: 'Learn about logo pages',

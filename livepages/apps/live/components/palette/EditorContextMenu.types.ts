@@ -1,5 +1,4 @@
 import type { ElementStyleOps } from '@/lib/element-style-ops';
-import type { CombineOp } from '@/lib/combine/combine';
 import type { WordmarkPatch } from '@/lib/style-presets';
 import type {
   AnimationSpeed,
@@ -337,9 +336,6 @@ export type EditorContextMenuProps = {
   // Wordmark type (docs/specs/007-editor/logo-pages.md "Wordmark type"): offered for a text
   // element on a logo page; tiles and sliders preview, a press or a let-go commits.
   wordmarkOffered?: boolean;
-  // Combine (docs/specs/007-editor/logo-pages.md "Combine"): present only while the selection is
-  // combinable shapes on one logo page.
-  onCombine?: (op: CombineOp) => void;
   // Mirror Copy (docs/specs/007-editor/logo-pages.md "Mirror"): present only while the selection
   // has an element on a logo page to reflect.
   onMirrorCopy?: () => void;

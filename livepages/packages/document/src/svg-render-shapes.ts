@@ -8,8 +8,7 @@
 import { BORDER_DASH_ARRAY, BORDER_STROKE_PX } from './border-style';
 import { actorFigureRect } from './actor-figure';
 import { finishBorderStroke, type Finish } from './finish';
-import type { BoxedElement, FreehandElement, PathElement, ShapeKind } from './index';
-import { isCompoundPath, pathElementD } from './path-element';
+import type { BoxedElement, FreehandElement, ShapeKind } from './index';
 import { r2, xmlEscape } from './svg-render-primitives';
 import { boxFit, fitShapePart } from './svg-shape-fit';
 import { catmullRomToBezierPath } from './polyline';
@@ -193,28 +192,6 @@ export function svgFreehandShape(
   const fillAttr = el.closed && fill !== 'transparent' ? xmlEscape(fill) : 'none';
   return (
     `<path d="${d}" fill="${fillAttr}" stroke="${xmlEscape(stroke)}" stroke-width="${strokeWidth}"` +
-    `${dash ? ` stroke-dasharray="${dash}"` : ''} stroke-linecap="round" stroke-linejoin="round"/>`
-  );
-}
-
-// A path (docs/specs/023-draw-mode/path-tool.md): the headless twin of the canvas PathSvg, the same
-// curve from the same function at the border preset width, filled only when closed.
-export function svgPathElementShape(
-  el: PathElement,
-  stroke: string,
-  fill: string,
-  finish: Finish = 'flexible',
-): string {
-  if (el.nodes.length < 2) return '';
-  const d = pathElementD(el, undefined, r2);
-  // An unset width follows the finish (Professional's Thin).
-  const width = polygonStrokePx({ strokeWidth: el.strokeWidth }, finish);
-  const dash = BORDER_DASH_ARRAY[el.strokeStyle ?? 'solid'];
-  const fillAttr = el.closed && fill !== 'transparent' ? xmlEscape(fill) : 'none';
-  // A combined shape's holes show through (docs/specs/007-editor/logo-pages.md "Combine").
-  const rule = isCompoundPath(el) ? ' fill-rule="evenodd"' : '';
-  return (
-    `<path d="${d}" fill="${fillAttr}"${rule} stroke="${xmlEscape(stroke)}" stroke-width="${width}"` +
     `${dash ? ` stroke-dasharray="${dash}"` : ''} stroke-linecap="round" stroke-linejoin="round"/>`
   );
 }

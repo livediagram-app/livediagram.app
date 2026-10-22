@@ -27,7 +27,7 @@ import {
 import type { ShapeKind } from './shape-kind';
 import { boxFit } from './svg-shape-fit';
 import { PATH_ARC_SEGMENTS, PATH_CURVE_SEGMENTS, svgPathSubpaths } from './svg-path-outline';
-import { insidePolygon, segmentDistance } from './whiteboard-stroke';
+import { insidePolygon, segmentDistance } from './segment-geometry';
 
 type HitLine = { readonly points: readonly Point[]; readonly closed: boolean };
 

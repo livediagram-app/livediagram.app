@@ -47,7 +47,6 @@ function setup(label: string, richText?: { text: string; bold?: boolean }[]) {
       documentName: 'My document',
       tabs: [tab],
       activeTab: tab,
-      drawMode: false,
       editingId: null,
       commit,
       discardLastStep,

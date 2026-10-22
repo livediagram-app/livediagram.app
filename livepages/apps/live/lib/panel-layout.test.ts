@@ -72,7 +72,7 @@ describe('panel-layout', () => {
   });
 
   it('homes every tool panel and the AI panel bottom-right', () => {
-    for (const id of ['ai', 'laser', 'spotlight', 'eraser', 'format', 'slide-deck'] as const)
+    for (const id of ['ai', 'laser', 'spotlight', 'format', 'slide-deck'] as const)
       expect(DEFAULT_PANEL_CORNER[id]).toBe('bottom-right');
   });
 

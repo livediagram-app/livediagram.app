@@ -32,8 +32,6 @@ function editor(over: Record<string, unknown> = {}) {
   return {
     isReadOnly: false,
     canShareDocument: true,
-    canCombine: () => false,
-    combineSelected: vi.fn(),
     documentId: 'd1',
     activeTab: { id: 't1', elements: [] },
     editorMode: { mode: 'diagram', setMode: vi.fn(), canSwitch: true },

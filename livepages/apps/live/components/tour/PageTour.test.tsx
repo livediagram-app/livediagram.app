@@ -11,7 +11,6 @@ import { useFollowPagePanelRequests } from '@/lib/page-panel-request';
 import { track } from '@/lib/telemetry';
 import { PagePanel, type PagePanelTab } from '@/components/canvas/PagePanel';
 import { PAGE_TOUR_HELP, PageShowMeButton, PageTourStage, usePageTour } from './PageTour';
-import { registerCombineDemo } from './logo-combine-demo';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 // jsdom lays nothing out, so "on screen" is just "in the document" here.
@@ -22,7 +21,6 @@ vi.mock('./tour-dom', async (actual) => ({
 }));
 afterEach(() => {
   cleanup();
-  registerCombineDemo(null);
   vi.mocked(track).mockClear();
 });
 
@@ -292,36 +290,11 @@ describe('an article’s Show Me', () => {
 
 describe('a logo page’s Show Me', () => {
   it('reopens the panel on Layouts, then closes it for the title bar’s steps', async () => {
-    // The editor's side of the Combine demonstration, cut down: placing shows Combine, uniting leaves one shape.
-    const placed: HTMLElement[] = [];
-    const add = (el: HTMLElement) => (placed.push(el), document.body.append(el));
-    let shape: string | null = null;
-    const clear = vi.fn(() => {
-      for (const el of placed.splice(0)) el.remove();
-      shape = null;
-    });
-    registerCombineDemo({
-      place: async () => {
-        const combine = document.createElement('button');
-        combine.setAttribute('aria-label', 'Combine shapes');
-        add(combine);
-        return true;
-      },
-      unite: async () => {
-        const united = document.createElement('div');
-        united.setAttribute('data-element-id', 'united');
-        add(united);
-        shape = 'united';
-        return true;
-      },
-      clear,
-      shape: () => shape,
-    });
     render(<Page of={page('logo')} />);
     await showMe();
     expect(track).toHaveBeenCalledWith('UI', 'Started', 'LogoTour');
     await shows(() =>
-      expect(stepDialog(/^Show Me step 1 of 6: Start From a Logo Layout/)).toBeTruthy(),
+      expect(stepDialog(/^Show Me step 1 of 4: Start From a Logo Layout/)).toBeTruthy(),
     );
     expect(screen.getByRole('button', { name: 'Layouts' }).getAttribute('aria-pressed')).toBe(
       'true',
@@ -332,16 +305,8 @@ describe('a logo page’s Show Me', () => {
     await next();
     await shows(() => expect(stepDialog(/Mirror As You Draw/)).toBeTruthy());
     await next();
-    await shows(() => expect(stepDialog(/Combine Shapes/)).toBeTruthy());
-    await next();
-    await shows(() => expect(stepDialog(/Four Ways to Combine/)).toBeTruthy());
-    await next();
-    await shows(() => expect(stepDialog(/One Shape/)).toBeTruthy());
-    await next();
     fireEvent.click(screen.getByRole('button', { name: 'Done' }));
     expect(track).toHaveBeenCalledWith('UI', 'Ended', 'LogoTourCompleted');
-    // What the demonstration placed goes with the tour.
-    expect(clear).toHaveBeenCalled();
   });
 
   it('ends with its page, sending no Ended event', async () => {

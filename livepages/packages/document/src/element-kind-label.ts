@@ -61,8 +61,6 @@ export function elementKindLabel(el: Element): string {
       if (el.pen === 'highlighter') return 'Highlight';
       if (el.straightEdges) return el.closed ? 'Polygon' : 'Polyline';
       return 'Sketch';
-    case 'path':
-      return 'Path';
     case 'annotation':
       return 'Annotation';
     case 'link-card':

@@ -3,14 +3,12 @@
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { useCanvasDrawGesture } from '@/components/canvas/useCanvasDrawGesture';
 import { useCanvasPolygonGesture } from '@/components/canvas/useCanvasPolygonGesture';
-import { usePathTool } from '@/components/canvas/path/usePathTool';
 import { pageIdAtPress, pressIsOffPage } from '@/hooks/canvas/page-guard';
 
 type CanvasDrawToolsInput = {
   props: CanvasProps;
   wrapperRef: React.RefObject<HTMLDivElement | null>;
   viewportZoom: number;
-  soleSelectedPathId: string | null;
 } & Pick<
   CanvasProps,
   | 'pendingDraw'
@@ -18,14 +16,11 @@ type CanvasDrawToolsInput = {
   | 'canvasTool'
   | 'isPinchingRef'
   | 'onCommitDraw'
-  | 'onCommitFreehand'
   | 'onCommitPolygon'
-  | 'editingId'
-  | 'onDeselect'
 >;
 
-// The canvas's drawing gestures, composed in their order of precedence: the Path tool
-// (docs/specs/023-draw-mode/path-tool.md), then a polygon's click-to-place (docs/specs/008-canvas/polygon-tool.md), then
+// The canvas's drawing gestures, composed in their order of precedence: a polygon's click-to-place
+// (docs/specs/008-canvas/polygon-tool.md), then
 // the draw-to-size of an armed tile, with
 // Pages mode's off-page presses and the Format tool's page press ahead of them all.
 export function useCanvasDrawTools({
@@ -37,13 +32,9 @@ export function useCanvasDrawTools({
   wrapperRef,
   isPinchingRef,
   onCommitDraw,
-  onCommitFreehand,
   onCommitPolygon,
-  editingId,
-  soleSelectedPathId,
-  onDeselect,
 }: CanvasDrawToolsInput) {
-  const { drawDrag, penPoints, penStroke, drawHover, beginPendingDrawGesture } =
+  const { drawDrag, drawHover, beginPendingDrawGesture } =
     useCanvasDrawGesture({
       pendingDraw,
       elements,
@@ -51,8 +42,6 @@ export function useCanvasDrawTools({
       viewportZoom,
       isPinchingRef,
       onCommitDraw,
-      onCommitFreehand,
-      whiteboard: props.editorMode === 'draw',
     });
 
   // Polygon click-to-place gesture (docs/specs/008-canvas/polygon-tool.md), composed IN FRONT of the
@@ -66,27 +55,6 @@ export function useCanvasDrawTools({
       viewportZoom,
       onCommitPolygon,
     });
-  // The Path tool (docs/specs/023-draw-mode/path-tool.md), in front of both: see usePathTool.
-  const pathTool = usePathTool({
-    pendingDraw,
-    canvasTool,
-    elements,
-    inertIds: props.layerInertIds,
-    wrapperRef,
-    viewportZoom,
-    activeTabId: props.activeTabId,
-    editingId,
-    soleSelectedPathId,
-    onCommitPath: props.onCommitPath,
-    onCommitPathEdit: props.onCommitPathEdit,
-    onDressPath: props.onDressPath,
-    onLeaveEdit: props.onCancelEdit,
-    onDeselect,
-    onBeginEdit: props.onBeginEdit,
-    onCancelDraw: props.onCancelDraw,
-    // A logo page's shown guides take a click near them (docs/specs/007-editor/logo-pages.md).
-    snapPoint: (p) => props.pagesMode?.logo?.snapPoint?.(p, viewportZoom) ?? null,
-  });
   // The Format tool's press on a page's paper arms or paints its background (docs/specs/007-editor/
   // pages-mode.md "Copying a background"); off every page it stays an empty-canvas press.
   const formatPagePress = (e: React.PointerEvent): boolean => {
@@ -102,16 +70,13 @@ export function useCanvasDrawTools({
   const offPage = (e: { clientX: number; clientY: number }) =>
     pressIsOffPage(props.pagesMode, e, wrapperRef, viewportZoom);
   const beginPendingDrawOrPolygon = (e: React.PointerEvent): boolean =>
-    offPage(e) || pathTool.beginPathPress(e) || beginPolygonPoint(e) || beginPendingDrawGesture(e);
+    offPage(e) || beginPolygonPoint(e) || beginPendingDrawGesture(e);
   return {
     drawDrag,
-    penPoints,
-    penStroke,
     drawHover,
     polygonVertices,
     polygonCursor,
     handlePolygonDoubleClick,
-    pathTool,
     formatPagePress,
     offPage,
     beginPendingDrawOrPolygon,

@@ -101,7 +101,7 @@ const COPY: Record<
     title: 'Start Drawing',
     line: 'Pick something to sketch on, or close this to start from a blank whiteboard.',
     noMatch: 'drawing templates',
-    help: 'drawMode',
+    help: 'templates',
   },
   workshop: {
     title: 'Start a Workshop',

@@ -28,15 +28,13 @@ const tools = (over: Partial<LogoToolsView> = {}) =>
     ...over,
   }) as unknown as LogoToolsView;
 
-function show(t: LogoToolsView, canTidyUp = false) {
-  const ctx = { canTidyUp: () => canTidyUp, tidyUpSelected: vi.fn() };
+function show(t: LogoToolsView) {
   const wrap = ({ children }: { children: ReactNode }) => (
-    <EditorContext.Provider value={ctx as never}>
+    <EditorContext.Provider value={{} as never}>
       <SelectionStoreProvider store={createSelectionStore()}>{children}</SelectionStoreProvider>
     </EditorContext.Provider>
   );
   render(<LogoTitleBar pageId="p" tools={t} />, { wrapper: wrap });
-  return ctx;
 }
 
 describe('LogoTitleBar', () => {
@@ -57,19 +55,9 @@ describe('LogoTitleBar', () => {
     expect(t.setGuides).toHaveBeenCalledWith('p', false);
   });
 
-  it('offers Tidy only while the selection holds a hand-drawn line', () => {
-    show(tools());
-    expect(screen.queryByRole('button', { name: /^Tidy:/ })).toBeNull();
-    cleanup();
-    const ctx = show(tools(), true);
-    fireEvent.click(screen.getByRole('button', { name: /^Tidy:/ }));
-    expect(ctx.tidyUpSelected).toHaveBeenCalled();
-  });
-
   it('renders Mirror and Guides alone outside an editor, and reserves room for what shows', () => {
     render(<LogoTitleBar pageId="p" tools={tools()} />);
     expect(screen.getAllByRole('button')).toHaveLength(2);
-    expect(logoTitleBarRoom(true, false)).toBeGreaterThan(logoTitleBarRoom(false, false));
-    expect(logoTitleBarRoom(false, true)).toBeGreaterThan(logoTitleBarRoom(false, false));
+    expect(logoTitleBarRoom(true)).toBeGreaterThan(logoTitleBarRoom(false));
   });
 });

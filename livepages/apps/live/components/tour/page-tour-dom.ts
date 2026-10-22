@@ -2,7 +2,6 @@
 // title-bar controls, held by that page rather than the first page, and its title-bar popovers (Layout, Background),
 // opened once by pressing their real button and closed again on leaving the step.
 import { pinPageToolbar } from '@/components/canvas/article/page-toolbar-presence';
-import { clearCombineDemo } from './logo-combine-demo';
 import { waitForSelector } from './tour-dom';
 
 /** The tour page's sheet. */
@@ -117,7 +116,6 @@ export function tidyPageTour(pageId: string): void {
   closeTitlePopover(pageId, 'Text');
   closeSlideDeck();
   pinPageToolbar(null);
-  clearCombineDemo();
 }
 
 /** Forgets what an earlier tour opened (one that ended with its page unmounted under it): each run starts clean. */

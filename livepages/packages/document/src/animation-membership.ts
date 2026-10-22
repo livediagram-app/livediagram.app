@@ -43,7 +43,6 @@ export function bodyAnimationSetOf(el: Element): BodyAnimationSet | undefined {
     case 'sticky':
       return 'sticky';
     case 'freehand':
-    case 'path':
       return 'drawing';
     case 'image':
     case 'video':
@@ -69,7 +68,6 @@ export function takesShapeMotions(el: Element): boolean {
   switch (el.type) {
     case 'sticky':
     case 'freehand':
-    case 'path':
     case 'image':
     case 'video':
     case 'table':

@@ -7,8 +7,6 @@ import {
   HoverCard,
   Glyph,
 } from '@livepages/ui';
-import type { CombineOp } from '@/lib/combine/combine';
-import { CombineMenuButton } from '@/components/canvas/CombineMenu';
 import { buildFilterGroups, SelectionFilterMenu } from '@/components/canvas/SelectionFilterMenu';
 import { TOOLBAR_BTN, TOOLBAR_BTN_ON } from '@/components/canvas/toolbar-buttons';
 import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
@@ -23,9 +21,6 @@ type MultiSelectionToolbarProps = {
   // per-kind buckets.
   selectedElements: Element[];
   onDuplicate: () => void;
-  // Combine (docs/specs/007-editor/logo-pages.md "Combine"): shown only while the selection can be
-  // combined.
-  onCombine?: (op: CombineOp) => void;
   onDelete: () => void;
   onToggleLock: () => void;
   // Narrows the selection to one kind (Filter Selection menu). Omitted for
@@ -45,7 +40,6 @@ export function MultiSelectionToolbar({
   allLocked,
   selectedElements,
   onDuplicate,
-  onCombine,
   onDelete,
   onToggleLock,
   onFilter,
@@ -100,7 +94,6 @@ export function MultiSelectionToolbar({
           <DuplicateIcon size={14} />
         </button>
       </HoverCard>
-      {onCombine ? <CombineMenuButton onCombine={onCombine} /> : null}
       {/* Duplicate copies the selection; everything after acts ON it
           (export, then lock / delete) — the divider marks that
           boundary, same as the one after More above. */}

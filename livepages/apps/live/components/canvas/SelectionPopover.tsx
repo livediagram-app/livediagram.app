@@ -11,7 +11,6 @@ import {
   TextIcon,
 } from '@/components/canvas/selection-popover-icons';
 import { MIND_CHILD_OPTION, MIND_SIBLING_OPTION } from '@/components/canvas/quick-connect-options';
-import { EditPointsIcon } from '@/components/palette/palette-icons';
 import {
   FlowchartStepButtons,
   type FlowchartStepToolbar,
@@ -47,8 +46,6 @@ type SelectionPopoverProps = {
   // True when the element already has text: the button reads "Edit Text";
   // false = "Add Text". Defaults to edit for older callers.
   hasText?: boolean;
-  // Open a path's edit mode (docs/specs/023-draw-mode/path-tool.md "Editing"): a path only.
-  onEditPoints?: () => void;
   // Mind map growth (docs/specs/009-elements/mind-node.md): Add child / Add sibling on a mind node.
   // The same actions as Tab / Enter and the "+" ring, given a one-click home
   // on the toolbar. Passed only for an editable, unlocked mind node.
@@ -109,7 +106,6 @@ export function SelectionPopover({
   onDelete,
   onEditText,
   hasText = true,
-  onEditPoints,
   onAddMindChild,
   flowchartStep,
   cardinality,
@@ -217,19 +213,6 @@ export function SelectionPopover({
                 onClick={onEditText}
               >
                 <TextIcon />
-              </PopoverButton>
-              <Divider />
-            </>
-          ) : null}
-
-          {onEditPoints ? (
-            <>
-              <PopoverButton
-                label="Edit Points"
-                description="Adjust the path's points, corners and curves."
-                onClick={onEditPoints}
-              >
-                <EditPointsIcon />
               </PopoverButton>
               <Divider />
             </>

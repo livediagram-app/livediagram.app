@@ -18,7 +18,6 @@ import {
   supportsFillColor,
   type ArrowElement,
   type Element,
-  type PathElement,
   type QuickSwatchRole,
   type QuickSwatchSlot,
   type ShapeElement,
@@ -27,15 +26,8 @@ import {
   type ThemeDefinition,
 } from '@livepages/document';
 import { applySwatchOverrides, type ShownSwatch, type SwatchOverrides } from './swatch-overrides';
-import type { PenColourChoice, PenColourOption, QuickPenStyle } from './quick-style-pen';
 
-// The whiteboard's colours as a row: the choice the targets share and the stock options.
-export type BoardColourSection = {
-  value: PenColourChoice | null;
-  options: PenColourOption[];
-};
-
-export type QuickStyleTarget = ShapeElement | ArrowElement | TextElement | PathElement;
+export type QuickStyleTarget = ShapeElement | ArrowElement | TextElement;
 type QuickSectionId =
   'stroke' | 'background' | 'textColour' | 'width' | 'style' | 'textAlign' | 'iconAlign';
 export type QuickSwatchValue = 0 | QuickSwatchSlot;
@@ -50,8 +42,6 @@ export type QuickFillValue = QuickSwatchValue | typeof QUICK_TRANSPARENT;
 export type QuickWidth = 'thin' | 'medium' | 'thick';
 export type QuickStrokeStyle = 'solid' | 'dashed' | 'dotted' | 'flowing';
 export type QuickIconAlign = 'left' | 'above' | 'right';
-// The Corners row's choices: the corner presets but Full, which is a pill rather than a corner.
-export type QuickCorners = 'none' | 'sm' | 'md' | 'lg';
 
 export const QUICK_WIDTHS: readonly QuickWidth[] = ['thin', 'medium', 'thick'];
 export const QUICK_TEXT_ALIGNS: readonly TextAlignX[] = ['left', 'center', 'right'];
@@ -71,27 +61,13 @@ export type QuickStyleView = {
     style?: { value: QuickStrokeStyle | null; options: readonly QuickStrokeStyle[] };
     textAlign?: { value: TextAlignX | null };
     iconAlign?: { value: QuickIconAlign | null };
-    // A whiteboard's Stroke and Text colour rows (lib/quick-style-whiteboard): the whiteboard's
-    // colours in place of `stroke` and `textColour`.
-    boardStroke?: BoardColourSection;
-    boardText?: BoardColourSection;
-    // A whiteboard's Corners row (docs/specs/008-canvas/corner-radius.md): the shared preset.
-    corners?: { value: QuickCorners | null };
   };
-  // A whiteboard's pen rows (lib/quick-style-pen): the selected strokes, or the pen in hand.
-  pen?: QuickPenStyle;
-  // The Highlighter rows (lib/quick-style-highlighter): the selected highlights, or the armed
-  // Highlighter tile's next stroke (docs/specs/008-canvas/highlighter.md "Settings").
-  highlighter?: import('./quick-style-highlighter').QuickHighlighterStyle;
-  // Names whose style this is when it is not a selection: a tool's next mark.
-  caption?: string;
 };
 
-// An unlocked shape, arrow, text element or path (docs/specs/023-draw-mode/path-tool.md "Style"):
-// the only elements the panel styles.
+// An unlocked shape, arrow or text element: the only elements the panel styles.
 export function isQuickStyleTarget(el: Element): el is QuickStyleTarget {
   return (
-    (el.type === 'shape' || el.type === 'arrow' || el.type === 'text' || el.type === 'path') &&
+    (el.type === 'shape' || el.type === 'arrow' || el.type === 'text') &&
     el.locked !== true
   );
 }
@@ -103,12 +79,9 @@ export function supportsQuickSection(el: QuickStyleTarget, section: QuickSection
     case 'stroke':
       return (
         el.type === 'arrow' ||
-        el.type === 'path' ||
         (el.type === 'shape' && supportsColours(el) && !takesChartPalette(el.shape))
       );
     case 'background':
-      // A path fills only when closed.
-      if (el.type === 'path') return el.closed;
       return el.type === 'shape' && supportsFillColor(el) && !takesChartPalette(el.shape);
     case 'textColour':
       return el.type === 'text';
@@ -116,7 +89,6 @@ export function supportsQuickSection(el: QuickStyleTarget, section: QuickSection
     case 'style':
       return (
         el.type === 'arrow' ||
-        el.type === 'path' ||
         (el.type === 'shape' && supportsBorderControls(el))
       );
     case 'textAlign':
@@ -133,7 +105,7 @@ export function supportsQuickSection(el: QuickStyleTarget, section: QuickSection
 function isLinedTarget(
   el: Element,
   section: 'stroke' | 'width' | 'style',
-): el is ShapeElement | ArrowElement | PathElement {
+): el is ShapeElement | ArrowElement {
   return isQuickStyleTarget(el) && el.type !== 'text' && supportsQuickSection(el, section);
 }
 
@@ -190,12 +162,12 @@ function swatchValue(
   return shown && shown.slot !== 0 ? shown.slot : null;
 }
 
-function widthOf(el: ShapeElement | ArrowElement | PathElement): QuickWidth | null {
+function widthOf(el: ShapeElement | ArrowElement): QuickWidth | null {
   const w = el.type === 'arrow' ? arrowThicknessOf(el) : (el.strokeWidth ?? 'medium');
   return (QUICK_WIDTHS as readonly string[]).includes(w) ? (w as QuickWidth) : null;
 }
 
-function styleOf(el: ShapeElement | ArrowElement | PathElement): QuickStrokeStyle | null {
+function styleOf(el: ShapeElement | ArrowElement): QuickStrokeStyle | null {
   const style = el.strokeStyle ?? 'solid';
   if (el.type === 'arrow' && el.flow)
     return el.flow === 'dashes' && style === 'dashed' ? 'flowing' : null;
@@ -335,22 +307,14 @@ export function applyQuickFill(
   slot: QuickFillValue,
   overrides: SwatchOverrides = {},
 ): Element {
-  if (
-    (el.type !== 'shape' && el.type !== 'path') ||
-    !isQuickStyleTarget(el) ||
-    !supportsQuickSection(el, 'background')
-  )
+  if (el.type !== 'shape' || !isQuickStyleTarget(el) || !supportsQuickSection(el, 'background'))
     return el;
   if (slot === QUICK_TRANSPARENT) {
     const { fillSwatch: _bound, ...rest } = el;
-    return el.type === 'path'
-      ? { ...rest, fillColor: QUICK_TRANSPARENT }
-      : ({ ...rest, fillColor: QUICK_TRANSPARENT, colorPreset: undefined } as Element);
+    return { ...rest, fillColor: QUICK_TRANSPARENT, colorPreset: undefined } as Element;
   }
   const { colour, bind } = pickFor(theme, 'fill', slot, overrides);
-  return el.type === 'path'
-    ? { ...el, fillColor: colour, fillSwatch: bind }
-    : { ...el, fillColor: colour, fillSwatch: bind, colorPreset: undefined };
+  return { ...el, fillColor: colour, fillSwatch: bind, colorPreset: undefined };
 }
 
 export function applyQuickTextColour(
@@ -376,7 +340,7 @@ export function applyQuickWidth(el: Element, width: QuickWidth): Element {
 
 export function applyQuickStrokeStyle(el: Element, style: QuickStrokeStyle): Element {
   if (!isLinedTarget(el, 'style')) return el;
-  if (el.type === 'shape' || el.type === 'path')
+  if (el.type === 'shape')
     return { ...el, strokeStyle: style === 'flowing' ? 'dashed' : style };
   if (style === 'flowing') {
     return {
@@ -419,20 +383,6 @@ export function clearQuickStyle(el: Element, theme: ThemeDefinition): Element {
       strokeColor: _c,
       penColour: _pc,
       penTextColour: _ptc,
-      ...rest
-    } = el;
-    return theme.elementStroke ? { ...rest, strokeColor: theme.elementStroke } : rest;
-  }
-  if (el.type === 'path') {
-    // Back to plain ink: a path takes the theme's line, never a fill (path-tool.md "Style").
-    const {
-      strokeSwatch: _sw,
-      fillSwatch: _fw,
-      strokeWidth: _w,
-      strokeStyle: _st,
-      strokeColor: _sc,
-      fillColor: _fc,
-      penColour: _pc,
       ...rest
     } = el;
     return theme.elementStroke ? { ...rest, strokeColor: theme.elementStroke } : rest;

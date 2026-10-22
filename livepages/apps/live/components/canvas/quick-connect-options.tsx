@@ -3,7 +3,6 @@ import type { QuickConnectKind } from '@/lib/canvas';
 import {
   DuplicateIcon as SharedDuplicateIcon,
   Glyph,
-  PencilIcon as SharedPencilIcon,
   Prims,
 } from '@livepages/ui';
 import {
@@ -24,7 +23,6 @@ export type Option = {
   kind:
     | QuickConnectKind
     | 'arrow'
-    | 'pencil'
     | 'add-web-row'
     | 'add-row'
     | 'add-column'
@@ -131,12 +129,6 @@ export const OPTIONS: Option[] = [
     icon: <ArrowIcon />,
   },
   {
-    kind: 'pencil',
-    label: 'Pencil',
-    description: 'Draw a freehand sketch.',
-    icon: <PencilIcon />,
-  },
-  {
     kind: 'text',
     label: 'Text',
     description: 'Add a text label to the side (no connector).',
@@ -155,9 +147,6 @@ function ArrowIcon() {
       <Prims prims={lucideArrowUpRight} />
     </Glyph>
   );
-}
-function PencilIcon() {
-  return <SharedPencilIcon size={OPTION_ICON_SIZE} />;
 }
 function TextIcon() {
   return (

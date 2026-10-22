@@ -14,7 +14,6 @@ import {
   type Tab,
   type TextRun,
 } from '@livepages/document';
-import { whiteboardTakesTyping } from '@/lib/whiteboard-tool';
 import { hugCommittedText, hugsText } from '@/lib/text-hug';
 import { measureDrawnMindLabel, measureDrawnText } from '@/components/canvas/text-hug-measure';
 import { fitMindLabel } from '@/lib/mind-label-fit';
@@ -53,9 +52,6 @@ export function useSelectionEditing(opts: {
   documentName: string;
   tabs: Tab[];
   activeTab: Tab;
-  // The viewer works in Draw mode (docs/specs/007-editor/editor-modes.md): plain keys belong to
-  // the dock.
-  drawMode: boolean;
   // The element whose label editor is open, if any: what an Escape leaves.
   editingId: string | null;
   commit: (updater: (els: Element[]) => Element[]) => void;
@@ -323,14 +319,10 @@ export function useSelectionEditing(opts: {
     if (lockedByOther(elementId)) return false;
     const el = activeTab.elements.find((e) => e.id === elementId);
     if (!el) return false;
-    // A path takes no typed label (docs/specs/023-draw-mode/blueprints/path-tool.md P1): its edit
-    // mode is its points, never a caret.
-    const labelable = (isBoxed(el) && el.type !== 'path') || el.type === 'arrow';
+    const labelable = isBoxed(el) || el.type === 'arrow';
     if (!labelable) return false;
     // Self-drawing data components have no editable label (see beginEdit).
     if (el.type === 'shape' && !opensInlineLabelEditor(el.shape)) return false;
-    // Draw mode leaves the key to its dock unless a note or text box is selected.
-    if (opts.drawMode && !whiteboardTakesTyping(el)) return false;
     // Type-to-edit REPLACES the whole label with the typed char, so any
     // per-range `richText` from a prior edit must be dropped — otherwise the
     // editor would re-open against the stale runs instead of the seed char.

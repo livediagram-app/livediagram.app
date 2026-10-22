@@ -23,11 +23,6 @@ const FormTourHost = dynamic(
   () => import('@/components/tour/FormTourHost').then((m) => m.FormTourHost),
   { ssr: false },
 );
-// The Draw tour (docs/specs/023-draw-mode/draw-tour.md): the same, the first time the person enters Draw.
-const DrawTourHost = dynamic(
-  () => import('@/components/tour/DrawTourHost').then((m) => m.DrawTourHost),
-  { ssr: false },
-);
 // Element tours (docs/specs/007-editor/element-tours.md): offered beside the selection toolbar of a toured element
 // kind, so mounted with the editor; its chunk stays out of the first load.
 const ElementTourHost = dynamic(
@@ -47,7 +42,6 @@ export function EditorTours() {
   const { editorMode, activeTab } = useEditorContext();
   const mountPlanTour = useEverTrue(editorMode.mode === 'plan');
   const mountWorkshopTour = useEverTrue(editorMode.mode === 'workshop');
-  const mountDrawTour = useEverTrue(editorMode.mode === 'draw');
   const mountFormTour = useEverTrue(activeTab.kind === 'form');
   const mountPagesTour = useEverTrue(editorMode.mode === 'pages');
   return (
@@ -57,7 +51,6 @@ export function EditorTours() {
       {mountPlanTour ? <PlanTourHost /> : null}
       {/* The Workshop tour (docs/specs/012-collaboration/workshop-tour.md): the first time a person works in Workshop. */}
       {mountWorkshopTour ? <WorkshopTourHost /> : null}
-      {mountDrawTour ? <DrawTourHost /> : null}
       {/* The Forms tour (docs/specs/030-forms/forms.md "The Forms tour"): the first time an Editor opens a Form tab. */}
       {mountFormTour ? <FormTourHost /> : null}
       {/* A form template's form, started once its tab opens (lib/pending-form-start.ts). */}

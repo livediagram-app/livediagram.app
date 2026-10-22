@@ -8,7 +8,6 @@ import { readLogoPageGuides } from '@/lib/logo-page-guides';
 import { useLogoTools } from './useLogoTools';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
-vi.mock('@/lib/combine/combine', () => ({ preloadCombineEngine: vi.fn() }));
 
 afterEach(() => localStorage.clear());
 

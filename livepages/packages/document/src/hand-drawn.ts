@@ -8,7 +8,6 @@ import { MARKER_INK_OPACITY } from './marker';
 import { markerArrow, markerElementPaint } from './marker-element';
 import {
   handDrawnImagePaint,
-  handDrawnPathPaint,
   handDrawnPolygonPaint,
 } from './drawn-outline-finish';
 import { sketchArrow, sketchElementPaint } from './sketch-element';
@@ -30,7 +29,6 @@ export function handDrawnElementPaint(
   if (finish === 'marker' && el.type === 'sticky') return markerElementPaint(el, fill, backdrop);
   if (!finishDrawsBodyByHand(finish, el.type)) return null;
   if (el.type === 'freehand') return handDrawnPolygonPaint(el, finish, fill);
-  if (el.type === 'path') return handDrawnPathPaint(el, finish, fill);
   if (el.type === 'image') return handDrawnImagePaint(el, finish);
   return finish === 'marker'
     ? markerElementPaint(el, fill, backdrop)

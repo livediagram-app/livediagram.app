@@ -38,8 +38,6 @@ import type { ThemeDefinition } from '@livepages/document';
 import { isTechIconId } from '@/lib/tech-icons';
 import { getSticker, stickerDropSize } from '@/lib/stickers';
 import type { PendingDraw } from '@/lib/draw-mode';
-import { placedTextBox } from '@/lib/text-hug';
-import { boardShape } from '@/lib/whiteboard-tool';
 import { placeNewSheet, sheetTitleForTab } from '@/lib/sheet-seeds';
 
 // The pure element construction behind commitDraw (docs/specs/008-canvas/canvas-and-palette.md draw-to-add),
@@ -119,9 +117,8 @@ export function buildDrawnArrow(
   endY: number,
   elements: Element[],
   theme: ThemeDefinition,
-  // The whiteboard's Line / Arrow shapes (docs/specs/023-draw-mode/draw-mode.md): their heads, and
-  // no colour so the board's ink shows.
-  opts: { ends?: ArrowEnds; unpainted?: boolean } = {},
+  // The Line tile's heads (docs/specs/008-canvas/canvas-and-palette.md "Arrows and lines").
+  opts: { ends?: ArrowEnds } = {},
 ): ArrowElement {
   const isClick = isDrawTap(startX, startY, endX, endY);
   const arrowStartX = isClick ? startX - 80 : startX;
@@ -138,30 +135,25 @@ export function buildDrawnArrow(
     from: snapDrawn(arrowStartX, startY),
     to: snapDrawn(arrowEndX, arrowEndY),
     arrowEnds: opts.ends ?? 'none',
-    ...(opts.unpainted
-      ? {}
-      : { strokeColor: theme.elementStroke ?? NEW_ARROW_THEME_STROKE_FALLBACK }),
+    strokeColor: theme.elementStroke ?? NEW_ARROW_THEME_STROKE_FALLBACK,
   };
 }
 
-// The arrow a draw gesture lands, dressed as it lands (docs/specs/023-draw-mode/draw-mode.md
-// "Shapes"): unpainted on a whiteboard so the board's ink shows, then in its tool's remembered
-// style. The live preview and the commit both build it here, so what the drag shows is what the
-// release lands, down to the stroke width and the arrowhead.
+// The arrow a draw gesture lands, dressed as it lands: in its tool's remembered style. The live
+// preview and the commit both build it here, so what the drag shows is what the release lands,
+// down to the stroke width and the arrowhead.
 export function buildDressedDrawnArrow(
   intent: Extract<PendingDraw, { type: 'arrow' }>,
   startX: number,
   startY: number,
   endX: number,
   endY: number,
-  board: { elements: Element[]; theme: ThemeDefinition; whiteboard: boolean },
+  board: { elements: Element[]; theme: ThemeDefinition },
   styleNewElement: <T extends Element>(el: T) => T,
 ): ArrowElement {
-  const drawn = buildDrawnArrow(startX, startY, endX, endY, board.elements, board.theme, {
-    ends: intent.ends,
-    unpainted: board.whiteboard,
-  });
-  return styleNewElement(board.whiteboard ? boardShape(drawn) : drawn);
+  return styleNewElement(
+    buildDrawnArrow(startX, startY, endX, endY, board.elements, board.theme, { ends: intent.ends }),
+  );
 }
 
 // Component branch (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/009-elements/web-components-and-no-groups.md): build the component at the theme's
@@ -213,8 +205,6 @@ export function buildDrawnBoxed(
   endY: number,
   inheritFrom: Element | null,
   activeTab: Tab,
-  // Drawn in Draw mode (docs/specs/007-editor/editor-modes.md): a text box hugs its text.
-  drawMode = false,
 ) {
   const isTap = isDrawTap(startX, startY, endX, endY);
   const base =
@@ -274,12 +264,6 @@ export function buildDrawnBoxed(
   });
   // Seed the tab's default text size onto the new element (docs/specs/004-interface-design/fonts.md).
   const textSize = activeTab.defaultTextSize ? { textSize: activeTab.defaultTextSize } : {};
-  // A text box placed in Draw mode hugs its text (docs/specs/023-draw-mode/draw-mode.md "Text
-  // boxes"): it lands empty, one line tall, caret-sized at a click or at the dragged width.
-  const hugged =
-    base.type === 'text' && drawMode
-      ? placedTextBox({ ...base, ...textSize }, isTap, { x: startX, y: startY }, dragBox)
-      : {};
   return {
     ...base,
     ...colours,
@@ -288,7 +272,6 @@ export function buildDrawnBoxed(
     width,
     height,
     ...textSize,
-    ...hugged,
     // Icon draw intent: carry the chosen glyph id + seed label onto the
     // freshly-drawn 'icon' shape (so palette icons / tech icons draw to
     // size like any shape, see draw-mode.ts).

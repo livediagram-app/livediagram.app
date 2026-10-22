@@ -1,5 +1,4 @@
 import {
-  EraserIcon,
   FormatPainterIcon,
   IsometricIcon,
   LaserIcon,
@@ -11,10 +10,10 @@ import {
 } from '@/components/palette/palette-icons';
 import type { PaletteDropdownOption } from '@/components/palette/PaletteDropdown';
 
-// The canvas-tool dropdown's option set (Select / Hand / Eraser / Format /
+// The canvas-tool dropdown's option set (Select / Hand / Format /
 // Laser / Spotlight / Isometric / Zen), grouped (group index drives
 // the menu dividers): editing tools, then presenter tools, then the view modes.
-// Eraser and everything after act on existing content, so they disable on an
+// Format and everything after act on existing content, so they disable on an
 // empty canvas; Spotlight and Slide Deck are desktop-only. Zen is an ACTION, not a persistent
 // tool: picking it fires the toggle and leaves the current tool selected (the
 // picker's onChange special-cases the id); `includeZen` is set only when the
@@ -29,11 +28,11 @@ export function buildCanvasToolOptions({
   canvasEmpty?: boolean;
   isMobile: boolean;
   includeZen?: boolean;
-  // Plan mode leaves Eraser and Format out (docs/specs/026-plan/plan-mode.md).
+  // Plan mode leaves Format out (docs/specs/026-plan/plan-mode.md).
   planMode?: boolean;
 }): PaletteDropdownOption[] {
   const options = buildAll(canvasEmpty, isMobile, includeZen);
-  return planMode ? options.filter((o) => o.id !== 'eraser' && o.id !== 'format') : options;
+  return planMode ? options.filter((o) => o.id !== 'format') : options;
 }
 
 function buildAll(
@@ -44,17 +43,9 @@ function buildAll(
   return [
     { id: 'select', label: 'Select', shortcut: 'V', icon: <SelectIcon />, group: 0 },
     { id: 'pan', label: 'Hand', shortcut: 'H', icon: <PanIcon />, group: 0 },
-    // Eraser / Format / Laser / Spotlight / Isometric all act on
+    // Format / Laser / Spotlight / Isometric all act on
     // existing content, so they're disabled on an empty canvas —
     // only Select + Hand stay available until something's drawn.
-    {
-      id: 'eraser',
-      label: 'Eraser',
-      shortcut: 'E',
-      icon: <EraserIcon />,
-      group: 0,
-      disabled: canvasEmpty,
-    },
     // Format painter as a persistent tool: pick a base element,
     // then tap any number of targets to paint its style. No
     // keyboard shortcut (F is the Pencil/freehand key).

@@ -16,7 +16,6 @@ import {
 import { drawsShapeSvgOverlay } from '@/components/canvas/ShapeContentRouter';
 import { bodySetClass } from '@/lib/animation-classes';
 import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
-import { useCanvasStill } from '@/components/canvas/CanvasStillContext';
 import { useArrivesWithBoard } from '@/components/canvas/CanvasArrivalContext';
 import { COVERING_SHAPES, useCoversCanvas } from '@/hooks/plan/plan-cover-store';
 
@@ -81,8 +80,6 @@ export function useBoxedElementAnimation(element: BoxedElement, textColor: strin
   // The gradient animation blends the element's fill, which falls back to the
   // canvas's own ink when the element carries none (docs/specs/007-editor/live-app.md).
   const surface = useElementSurface(element.id);
-  // A still canvas (a whiteboard) shows a new element as drawn: no pop-in.
-  const still = useCanvasStill();
   // A standalone text element has no fill or border, so the box-shadow / ring /
   // background animations (glow / pulse / trace / gradient) would animate an
   // invisible bounding rectangle around the words. For those, ride the rendered
@@ -148,10 +145,9 @@ export function useBoxedElementAnimation(element: BoxedElement, textColor: strin
   // reorders (bring to front / send to back) move every keyed sibling — so
   // a lingering pop-in class made unrelated elements visibly re-enter.
   // An element that never pops starts entered and arms nothing: one the board arrives with
-  // (docs/specs/008-canvas/canvas-and-palette.md "Motion and animations"), and one mounted on a still
-  // canvas, which stays settled if the tab later switches to Diagram mode.
+  // (docs/specs/008-canvas/canvas-and-palette.md "Motion and animations").
   const arrivesWithBoard = useArrivesWithBoard();
-  const [entered, setEntered] = useState(() => still || arrivesWithBoard);
+  const [entered, setEntered] = useState(() => arrivesWithBoard);
   const [pops] = useState(!entered);
   useEffect(() => {
     if (!pops) return;
@@ -176,7 +172,7 @@ export function useBoxedElementAnimation(element: BoxedElement, textColor: strin
       ? stickyClass
       : // Nothing else on the wrapper drives `animation` (a Drawing, Media or Table animation
         // sits on an inner node), so a new element still pops in.
-        entered || still
+        entered
         ? ''
         : 'animate-element-pop-in';
 

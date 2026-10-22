@@ -128,8 +128,6 @@ export function elementTelemetryType(element: Element): string {
       return 'Video';
     case 'annotation':
       return 'Annotation';
-    case 'path':
-      return 'Path';
     case 'freehand':
       // Three tools share this element kind and the draw paths report them
       // separately, so a copy must too. `pen` marks the highlighter and

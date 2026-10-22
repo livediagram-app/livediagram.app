@@ -41,7 +41,6 @@ export function QuickConnectPluses({
   openOnHover,
   onSpawnConnect,
   onStartArrow,
-  onStartPencil,
   onAddTableRow,
   onAddTableColumn,
   onAppendWebRow,
@@ -57,7 +56,6 @@ export function QuickConnectPluses({
   openOnHover: boolean;
   onSpawnConnect: (direction: QuickConnectDirection, kind: QuickConnectKind) => void;
   onStartArrow: (direction: QuickConnectDirection, e: ReactPointerEvent) => void;
-  onStartPencil: () => void;
   onAddTableRow: () => void;
   onAddTableColumn: () => void;
   onAppendWebRow?: (elementId: string) => void;
@@ -101,7 +99,6 @@ export function QuickConnectPluses({
           onClose={() => setQuickRingOpen(null)}
           onSpawn={(kind) => onSpawnConnect(placement, kind)}
           onArrowPointerDown={(e) => onStartArrow(placement, e)}
-          onPencil={onStartPencil}
           webRow={webRow}
           // Table ring (docs/specs/008-canvas/canvas-and-palette.md): Arrow + this side's structural add.
           variant={selectedIsTable ? 'table' : 'default'}

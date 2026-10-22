@@ -13,9 +13,6 @@ import type { PaletteTileDef } from './palette-tile-defs';
 import { mergeByName, searchElementTiles } from './palette-tile-search';
 import { searchCatalogueTiles } from './palette-catalogue-search';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
-import { markerTiles } from './palette-marker-tiles';
-import { loadWhiteboardPrefs } from '@/lib/whiteboard-prefs';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 
 // The Toolbar strip's Search (docs/specs/007-editor/toolbar-layout.md "Search: every element type"):
 // a button at the strip's far right, and the body of the popover it opens. The popover's card,
@@ -82,9 +79,6 @@ export function ToolbarSearchPanel({
   const [query, setQuery] = useState('');
   const [othersOpen, setOthersOpen] = useState(false);
   const [unavailableOpen, setUnavailableOpen] = useState(false);
-  // Draw mode's markers as this browser last set them, read once per opening.
-  const [pens] = useState(loadWhiteboardPrefs);
-  const surface = useCanvasSurface();
   // Icons, Stickers and Technology load as a chunk of their own: re-rendered when it lands.
   const cataloguesLoaded = useIconCatalogs();
   const elements = searchElementTiles({
@@ -93,7 +87,6 @@ export function ToolbarSearchPanel({
     hasImage: actions.hasImage,
     planCardTiles,
     tabElements,
-    drawTiles: markerTiles(pens, surface),
   });
   const catalogues = searchCatalogueTiles({ query, mode, tabElements, loaded: cataloguesLoaded });
   // One ranking per section across element types and catalogue entries: name matches first.

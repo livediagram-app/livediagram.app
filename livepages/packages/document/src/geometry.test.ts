@@ -304,7 +304,7 @@ describe('type predicates', () => {
     expect(supportsColours({ ...shape('e'), type: 'image', imageId: null })).toBe(false);
   });
 
-  it('supportsBorder is true for shape, freehand and path only', () => {
+  it('supportsBorder is true for shape and freehand only', () => {
     // Border-stroke + border-pattern apply to shapes and the pen
     // tool's freehand element (both render through the same
     // strokeWidth / strokeStyle fields). Everything else (text,
@@ -319,7 +319,6 @@ describe('type predicates', () => {
         closed: false,
       }),
     ).toBe(true);
-    expect(supportsBorder({ ...shape('p'), type: 'path', nodes: [], closed: false })).toBe(true);
     expect(supportsBorder({ ...shape('c'), type: 'sticky' })).toBe(false);
     expect(supportsBorder({ ...shape('d'), type: 'text' })).toBe(false);
     expect(supportsBorder({ ...shape('e'), type: 'image', imageId: null })).toBe(false);

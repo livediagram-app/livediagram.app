@@ -40,7 +40,6 @@ export const PALETTE_KINDS: ReadonlySet<string> = new Set(
 export const SELECTION_MODES: readonly string[] = [
   'Laser',
   'Spotlight',
-  'Eraser',
   'FormatPainter',
   'Isometric',
 ];

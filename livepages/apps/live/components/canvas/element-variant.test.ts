@@ -1,6 +1,6 @@
 import type { BoxedElement } from '@livepages/document';
 import { describe, expect, it } from 'vitest';
-import { describeVariant, editingLook } from '@/components/canvas/element-variant';
+import { describeVariant } from '@/components/canvas/element-variant';
 
 const shape = (over: Record<string, unknown> = {}): BoxedElement => ({
   id: 's',
@@ -233,17 +233,6 @@ describe('describeVariant — element shadows (docs/specs/008-canvas/element-sha
     const { style } = describeVariant(make('text', { shadow }), false, false, null);
     expect(style.boxShadow).toBeUndefined();
     expect(style.filter).toBeUndefined();
-  });
-});
-
-describe('editingLook (docs/specs/023-draw-mode/path-tool.md "Editing")', () => {
-  it('raises a label being typed and shows the text cursor on it', () => {
-    expect(editingLook({ type: 'shape' }, true)).toEqual({ raise: true, textCursor: true });
-    expect(editingLook({ type: 'shape' }, false)).toEqual({ raise: false, textCursor: false });
-  });
-
-  it('never gives a path in its edit mode a text cursor, nor lifts it over its own nodes', () => {
-    expect(editingLook({ type: 'path' }, true)).toEqual({ raise: false, textCursor: false });
   });
 });
 

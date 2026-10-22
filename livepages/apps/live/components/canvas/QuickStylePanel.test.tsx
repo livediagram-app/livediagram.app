@@ -1,9 +1,5 @@
 // @vitest-environment jsdom
 import { fireEvent, render, screen, within } from '@testing-library/react';
-import type { QuickStyleView } from '@/lib/quick-style';
-import { heldPenStyle, stockOptions } from '@/lib/quick-style-pen';
-import { toolHighlighterStyle } from '@/lib/quick-style-highlighter';
-import { DEFAULT_WHITEBOARD_PREFS } from '@/lib/whiteboard-prefs';
 import { describe, expect, it, vi } from 'vitest';
 import { QuickRadioRow } from './quick-style-rows';
 import { SwatchOverridePopover } from './SwatchOverridePopover';
@@ -216,14 +212,7 @@ describe('QuickStylePanel under Minimal chrome (docs/specs/007-editor/power-user
     setStrokeStyle: vi.fn(),
     setTextAlign: vi.fn(),
     setIconAlign: vi.fn(),
-    setCorners: vi.fn(),
     setTextColour: vi.fn(),
-    setPenColour: vi.fn(),
-    setPenWidth: vi.fn(),
-    setHighlighterColour: vi.fn(),
-    setHighlighterWidth: vi.fn(),
-    setBoardStroke: vi.fn(),
-    setBoardTextColour: vi.fn(),
     clearStyles: vi.fn(),
     setSwatchOverride: vi.fn(),
     clearSwatchOverride: vi.fn(),
@@ -250,177 +239,6 @@ describe('QuickStylePanel under Minimal chrome (docs/specs/007-editor/power-user
   });
 });
 
-const PALETTE = { board: 'light' as const, ink: '#1c1917' };
-
-describe('QuickStylePanel on a whiteboard: the marker rows', () => {
-  const api = (pen: QuickStyleView['pen'], targetIds: string[] = []) => ({
-    view: { targetIds, sections: {}, pen },
-    setStroke: vi.fn(),
-    setBackground: vi.fn(),
-    setWidth: vi.fn(),
-    setStrokeStyle: vi.fn(),
-    setTextAlign: vi.fn(),
-    setIconAlign: vi.fn(),
-    setCorners: vi.fn(),
-    setTextColour: vi.fn(),
-    setPenColour: vi.fn(),
-    setPenWidth: vi.fn(),
-    setHighlighterColour: vi.fn(),
-    setHighlighterWidth: vi.fn(),
-    setBoardStroke: vi.fn(),
-    setBoardTextColour: vi.fn(),
-    clearStyles: vi.fn(),
-    setSwatchOverride: vi.fn(),
-    clearSwatchOverride: vi.fn(),
-    setColour: vi.fn(),
-  });
-  const second = heldPenStyle(DEFAULT_WHITEBOARD_PREFS.pens[1]!, PALETTE);
-
-  it('styles the pen in hand, with nothing selected, and offers no Clear Styles', () => {
-    const quickStyle = api(second);
-    render(<QuickStylePanel quickStyle={quickStyle} hidden={false} />);
-    expect(screen.getByText('Marker 2')).toBeTruthy();
-    const colour = screen.getByRole('group', { name: 'Marker colour' });
-    expect(within(colour).getByRole('button', { name: 'Blue' }).getAttribute('aria-pressed')).toBe(
-      'true',
-    );
-    fireEvent.click(within(colour).getByRole('button', { name: 'Red' }));
-    expect(quickStyle.setPenColour).toHaveBeenCalledWith('red');
-    const width = screen.getByRole('radiogroup', { name: 'Marker width' });
-    expect(
-      within(width)
-        .getAllByRole('radio')
-        .map((r) => r.getAttribute('aria-label')),
-    ).toEqual(['Fine', 'Medium', 'Bold', 'Thick', 'Heavy', 'Broad']);
-    fireEvent.click(within(width).getByRole('radio', { name: 'Bold' }));
-    expect(quickStyle.setPenWidth).toHaveBeenCalledWith('bold');
-    fireEvent.click(within(width).getByRole('radio', { name: 'Broad' }));
-    expect(quickStyle.setPenWidth).toHaveBeenCalledWith('broad');
-    expect(screen.queryByTestId('quick-style-clear')).toBeNull();
-  });
-
-  it('offers the whiteboard’s colours on Stroke and Text colour, one row each', () => {
-    // docs/specs/023-draw-mode/draw-mode.md "The quick style panel stays".
-    const board = { value: 'blue' as const, options: stockOptions(PALETTE) };
-    const quickStyle = {
-      ...api(undefined, ['s1']),
-      view: {
-        targetIds: ['s1'],
-        sections: { boardStroke: board, boardText: { ...board, value: null } },
-      },
-    };
-    render(<QuickStylePanel quickStyle={quickStyle} hidden={false} />);
-    const stroke = screen.getByRole('group', { name: 'Stroke' });
-    // The nine stock colours and More colours (docs/specs/004-interface-design/colour-picker.md).
-    expect(within(stroke).getAllByRole('button')).toHaveLength(10);
-    expect(within(stroke).getByRole('button', { name: 'Blue' }).getAttribute('aria-pressed')).toBe(
-      'true',
-    );
-    fireEvent.click(within(stroke).getByRole('button', { name: 'Teal' }));
-    expect(quickStyle.setBoardStroke).toHaveBeenCalledWith('teal');
-    // Custom colours live one press deeper, in More colours: no second row.
-    expect(screen.queryByRole('group', { name: 'Custom text colours' })).toBeNull();
-    expect(screen.queryByRole('group', { name: 'Custom stroke colours' })).toBeNull();
-  });
-
-  it('offers Corners as four quick choices, marking the shared one', () => {
-    // docs/specs/008-canvas/quick-style-panel.md "Corners".
-    const quickStyle = {
-      ...api(undefined, ['q1']),
-      view: { targetIds: ['q1'], sections: { corners: { value: 'md' as const } } },
-    };
-    render(<QuickStylePanel quickStyle={quickStyle} hidden={false} />);
-    const row = screen.getByRole('radiogroup', { name: 'Corners' });
-    expect(
-      within(row)
-        .getAllByRole('radio')
-        .map((r) => r.getAttribute('aria-label')),
-    ).toEqual(['None', 'Small', 'Medium', 'Large']);
-    expect(within(row).getByRole('radio', { name: 'Medium' }).getAttribute('aria-checked')).toBe(
-      'true',
-    );
-    fireEvent.click(within(row).getByRole('radio', { name: 'Large' }));
-    expect(quickStyle.setCorners).toHaveBeenCalledWith('lg');
-  });
-
-  it('drops the pen name in power user mode', () => {
-    render(<QuickStylePanel quickStyle={api(second)} hidden={false} powerUser />);
-    expect(screen.queryByText('Marker 2')).toBeNull();
-    expect(screen.getByRole('radiogroup', { name: 'Marker width' })).toBeTruthy();
-  });
-
-  it('offers the nine stock colours and More colours in one row, with no Custom colours row', () => {
-    // docs/specs/023-draw-mode/draw-mode.md "The quick style panel stays": quick choices only; the
-    // colour picker behind More colours holds the custom colours.
-    render(<QuickStylePanel quickStyle={api(second)} hidden={false} />);
-    const colour = screen.getByRole('group', { name: 'Marker colour' });
-    expect(
-      within(colour)
-        .getAllByRole('button')
-        .map((r) => r.getAttribute('aria-label')),
-    ).toEqual([
-      'Ink',
-      'Red',
-      'Orange',
-      'Yellow',
-      'Green',
-      'Teal',
-      'Blue',
-      'Violet',
-      'Pink',
-      'More colours, marker colour',
-    ]);
-    expect(screen.queryByRole('group', { name: 'Custom colours' })).toBeNull();
-  });
-
-  it('gives Marker 1 its one colour, the ink', () => {
-    render(
-      <QuickStylePanel
-        quickStyle={api(heldPenStyle(DEFAULT_WHITEBOARD_PREFS.pens[0]!, PALETTE))}
-        hidden={false}
-      />,
-    );
-    expect(
-      within(screen.getByRole('group', { name: 'Marker colour' })).getAllByRole('button'),
-    ).toHaveLength(1);
-  });
-
-  it('keeps one width for every pen, whatever its colour row holds', () => {
-    const widthOf = (i: number) => {
-      const { unmount } = render(
-        <QuickStylePanel
-          quickStyle={api(heldPenStyle(DEFAULT_WHITEBOARD_PREFS.pens[i]!, PALETTE))}
-          hidden={false}
-        />,
-      );
-      const width = screen.getByTestId('quick-style-panel').style.width;
-      unmount();
-      return width;
-    };
-    expect(widthOf(0)).toBe('258px');
-    expect(widthOf(1)).toBe('258px');
-  });
-
-  it('keeps Marker width at the same height for every pen', () => {
-    const rowsBefore = (i: number) => {
-      const { container, unmount } = render(
-        <QuickStylePanel
-          quickStyle={api(heldPenStyle(DEFAULT_WHITEBOARD_PREFS.pens[i]!, PALETTE))}
-          hidden={false}
-        />,
-      );
-      const width = container.querySelector('[data-testid="quick-style-marker-width"]')!;
-      const body = container.querySelector('[data-quick-style-body]')!;
-      const index = [...body.children].findIndex((el) => el.contains(width));
-      unmount();
-      return index;
-    };
-    expect(new Set([0, 1, 2].map(rowsBefore)).size).toBe(1);
-  });
-});
-
-// docs/specs/008-canvas/quick-style-panel.md "Where it sits": a swatch row never wraps and is never
-// clipped, so the width counts the targets, their gaps, the padding and the border exactly.
 describe('panelFrame', () => {
   it('is one width in every mode: ten touching targets', () => {
     // Ten touching 24 px targets (the stock colours, Ink and eight, then More colours, the widest
@@ -458,14 +276,7 @@ describe('QuickStylePanel: the Ink swatch', () => {
     setStrokeStyle: vi.fn(),
     setTextAlign: vi.fn(),
     setIconAlign: vi.fn(),
-    setCorners: vi.fn(),
     setTextColour: vi.fn(),
-    setPenColour: vi.fn(),
-    setPenWidth: vi.fn(),
-    setHighlighterColour: vi.fn(),
-    setHighlighterWidth: vi.fn(),
-    setBoardStroke: vi.fn(),
-    setBoardTextColour: vi.fn(),
     clearStyles: vi.fn(),
     setSwatchOverride: vi.fn(),
     clearSwatchOverride: vi.fn(),
@@ -539,46 +350,3 @@ describe('QuickStylePanel: the Ink swatch', () => {
   });
 });
 
-// docs/specs/008-canvas/highlighter.md "Settings": the Highlighter rows.
-describe('QuickStylePanel: the Highlighter rows', () => {
-  const api = (highlighter: QuickStyleView['highlighter']) => ({
-    view: { targetIds: [], sections: {}, highlighter },
-    setStroke: vi.fn(),
-    setBackground: vi.fn(),
-    setWidth: vi.fn(),
-    setStrokeStyle: vi.fn(),
-    setTextAlign: vi.fn(),
-    setIconAlign: vi.fn(),
-    setCorners: vi.fn(),
-    setTextColour: vi.fn(),
-    setPenColour: vi.fn(),
-    setPenWidth: vi.fn(),
-    setHighlighterColour: vi.fn(),
-    setHighlighterWidth: vi.fn(),
-    setBoardStroke: vi.fn(),
-    setBoardTextColour: vi.fn(),
-    clearStyles: vi.fn(),
-    setSwatchOverride: vi.fn(),
-    clearSwatchOverride: vi.fn(),
-    setColour: vi.fn(),
-  });
-
-  it('sets the armed Highlighter\u2019s next stroke, captioned with its name', () => {
-    const quickStyle = api(toolHighlighterStyle('#fde047', 14));
-    render(<QuickStylePanel quickStyle={quickStyle} hidden={false} />);
-    expect(screen.getByText('Highlighter')).toBeTruthy();
-    const colour = screen.getByRole('group', { name: 'Highlighter colour' });
-    expect(
-      within(colour).getByRole('button', { name: 'Yellow' }).getAttribute('aria-pressed'),
-    ).toBe('true');
-    fireEvent.click(within(colour).getByRole('button', { name: 'Pink' }));
-    expect(quickStyle.setHighlighterColour).toHaveBeenCalledWith('#f9a8d4');
-    const width = screen.getByRole('radiogroup', { name: 'Highlighter width' });
-    expect(within(width).getByRole('radio', { name: 'Medium' }).getAttribute('aria-checked')).toBe(
-      'true',
-    );
-    fireEvent.click(within(width).getByRole('radio', { name: 'Bold' }));
-    expect(quickStyle.setHighlighterWidth).toHaveBeenCalledWith('bold');
-    expect(screen.queryByTestId('quick-style-clear')).toBeNull();
-  });
-});

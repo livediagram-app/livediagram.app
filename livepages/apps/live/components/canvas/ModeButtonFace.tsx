@@ -19,7 +19,6 @@ import { SELECTION_MODE_LABEL, type SelectionMode } from '@livepages/document';
 import { keycapEdge } from '@/components/canvas/paper-kit';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import {
-  EraserIcon,
   FormatPainterIcon,
   IsometricIcon,
   LaserIcon,
@@ -35,7 +34,6 @@ const MODE_ICON: Record<SelectionMode, React.ReactNode> = {
   pan: <PanIcon />,
   laser: <LaserIcon />,
   spotlight: <SpotlightIcon />,
-  eraser: <EraserIcon />,
   format: <FormatPainterIcon />,
   isometric: <IsometricIcon />,
 };

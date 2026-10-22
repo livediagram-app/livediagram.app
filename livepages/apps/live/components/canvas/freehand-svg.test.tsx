@@ -53,21 +53,4 @@ describe('FreehandSvg', () => {
     );
   });
 
-  it('catches pointers on the drawn line alone when given a hit width', () => {
-    // docs/specs/023-draw-mode/draw-mode.md "Selecting": a pen stroke is picked by its line, not its box.
-    const el = stroke({ penWidth: 1.5 });
-    const { container } = render(
-      <FreehandSvg element={el} fill="none" stroke="#000" hitPenWidth={1.5} />,
-    );
-    const hit = container.querySelector('[data-stroke-hit]')!;
-    // The outline, grown by the margin either side (13.5 - the 1.5 px line).
-    expect(hit.getAttribute('stroke-width')).toBe('12');
-    expect(hit.getAttribute('stroke')).toBe('transparent');
-    expect((hit as SVGElement).style.pointerEvents).toBe('all');
-  });
-
-  it('has no hit line otherwise', () => {
-    const { container } = render(<FreehandSvg element={stroke()} fill="none" stroke="#000" />);
-    expect(container.querySelector('[data-stroke-hit]')).toBeNull();
-  });
 });

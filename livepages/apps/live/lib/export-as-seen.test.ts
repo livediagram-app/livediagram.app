@@ -4,7 +4,6 @@ import {
   DEFAULT_BACKGROUND_COLOR,
   PEN_INK,
   createFreehand,
-  createPath,
   createShape,
   penColourHex,
   type Tab,
@@ -16,10 +15,10 @@ import { renderTabToSvg } from './export-tab';
 // Export what the author is looking at (docs/specs/007-editor/editor-modes.md "One look"): the
 // tab's Diagram backdrop for the export's appearance, whoever exports and in whichever mode, and
 // every stock colour stored by name in its version for that canvas.
-const path = createPath(
+const path = createFreehand(
   [
-    { x: 0, y: 0, mode: 'corner' },
-    { x: 10, y: 10, mode: 'corner' },
+    { x: 0, y: 0 },
+    { x: 10, y: 10 },
   ],
   false,
 );

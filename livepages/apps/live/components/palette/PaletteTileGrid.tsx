@@ -7,8 +7,6 @@ import { IconButton } from '@/components/palette/palette-controls';
 import type { PaletteTileDef } from './palette-tile-defs';
 import { tileDragStart } from './palette-tile-drag';
 import { usePlanCardTileDisabled } from '@/hooks/plan/card-types-taken';
-import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
-import { MarkerPaletteTile } from './MarkerPaletteTile';
 
 // Renders palette tiles from the shared catalogue (palette-tile-defs): maps each tile's action
 // descriptor to the editor's add-handler bundle and derives the pending-draw highlight, so every
@@ -20,11 +18,7 @@ import { MarkerPaletteTile } from './MarkerPaletteTile';
 export type PaletteTileActions = {
   addShape: (kind: ShapeKind, opts?: AddShapeOptions) => void;
   addText: () => void;
-  beginFreehand: () => void;
-  beginHighlighter: () => void;
-  beginShapePen: () => void;
   beginPolygon: () => void;
-  beginPath: () => void;
   addArrow: (ends?: import('@livepages/document').ArrowEnds) => void;
   addSticky: () => void;
   addTable: () => void;
@@ -38,8 +32,6 @@ export type PaletteTileActions = {
   // Technology catalogue icon, same handlers the Icons / Technology tabs use.
   addIcon: (iconId: string) => void;
   addTechIcon: (iconId: string) => void;
-  // Picks up one of Draw mode's markers (the Toolbar strip's Search, palette-marker-tiles).
-  beginMarker: (penId: WhiteboardPenId, once?: boolean) => void;
   // Puts the armed tool down (its tile pressed again).
   cancelDraw?: () => void;
   // Whether image uploads are available (the editor supplied onAddImage);
@@ -49,14 +41,14 @@ export type PaletteTileActions = {
 };
 
 // A tile pressed: places or arms its tool; pressed again while armed (`pendingDraw`), puts it down
-// (docs/specs/008-canvas/canvas-and-palette.md "Placement on add"). A marker keeps its press, which opens its settings.
+// (docs/specs/008-canvas/canvas-and-palette.md "Placement on add").
 export function tileHandler(
   def: PaletteTileDef,
   actions: PaletteTileActions,
   pendingDraw?: PendingDraw | null,
 ): () => void {
   const a = def.action;
-  if (a.type !== 'marker' && actions.cancelDraw && tileActive(def, pendingDraw)) {
+  if (actions.cancelDraw && tileActive(def, pendingDraw)) {
     return actions.cancelDraw;
   }
   switch (a.type) {
@@ -75,16 +67,8 @@ export function tileHandler(
         });
     case 'text':
       return actions.addText;
-    case 'freehand':
-      return actions.beginFreehand;
-    case 'highlighter':
-      return actions.beginHighlighter;
-    case 'shape-pen':
-      return actions.beginShapePen;
     case 'polygon':
       return actions.beginPolygon;
-    case 'path':
-      return actions.beginPath;
     case 'arrow':
       // The Arrow tile's pointer, or the Line tile's none (canvas-and-palette.md "Arrows and lines").
       return () => actions.addArrow(a.ends);
@@ -108,8 +92,6 @@ export function tileHandler(
       return () => actions.addIcon(a.iconId);
     case 'tech-icon':
       return () => actions.addTechIcon(a.iconId);
-    case 'marker':
-      return () => (a.once ? actions.beginMarker(a.penId, true) : actions.beginMarker(a.penId));
     case 'open':
       // Off the strip (which opens its popover itself) an opener moves the palette to its category.
       return () => requestPaletteCategory(a.category);
@@ -141,14 +123,6 @@ export function tileActive(
       );
     case 'component':
       return pendingDraw.type === 'component' && pendingDraw.kind === a.kind;
-    // The three pens share the freehand intent, split by the variant
-    // payload — each tile lights only for its own arm (docs/specs/008-canvas/two-pens.md).
-    case 'freehand':
-      return pendingDraw.type === 'freehand' && pendingDraw.variant === undefined;
-    case 'highlighter':
-      return pendingDraw.type === 'freehand' && pendingDraw.variant === 'highlighter';
-    case 'shape-pen':
-      return pendingDraw.type === 'freehand' && pendingDraw.variant === 'shape-pen';
     // The Media tab has a tile per service and they all arm one `video`
     // intent, so match on the provider too or picking Loom would light up
     // Vimeo alongside it (the same trap the shape branch above avoids).
@@ -165,15 +139,6 @@ export function tileActive(
     case 'icon':
     case 'tech-icon':
       return false;
-    // A marker in hand: the whiteboard pen intent in this pen's colour and width.
-    case 'marker':
-      return (
-        pendingDraw.type === 'freehand' &&
-        pendingDraw.variant === 'whiteboard' &&
-        (pendingDraw.penId !== undefined
-          ? pendingDraw.penId === a.penId
-          : pendingDraw.colour === a.colour && pendingDraw.width === a.width)
-      );
     default:
       return pendingDraw.type === a.type;
   }
@@ -192,29 +157,13 @@ export function PaletteTile({
   actions,
   pendingDraw,
   compact,
-  onPress,
 }: {
   def: PaletteTileDef;
   actions: PaletteTileActions;
   pendingDraw: PendingDraw | null | undefined;
   compact?: boolean;
-  // A press of the tile's own (a held marker opening its flyout), else the tile's action.
-  onPress?: () => void;
 }) {
-  // A marker held, pressed again, opens its colour and width (MarkerPaletteTile).
-  if (def.action.type === 'marker' && !onPress)
-    return (
-      <MarkerPaletteTile def={def} actions={actions} pendingDraw={pendingDraw} compact={compact} />
-    );
-  return (
-    <TileButton
-      def={def}
-      actions={actions}
-      pendingDraw={pendingDraw}
-      compact={compact}
-      onPress={onPress}
-    />
-  );
+  return <TileButton def={def} actions={actions} pendingDraw={pendingDraw} compact={compact} />;
 }
 
 function TileButton({
@@ -222,16 +171,14 @@ function TileButton({
   actions,
   pendingDraw,
   compact,
-  onPress,
 }: {
   def: PaletteTileDef;
   actions: PaletteTileActions;
   pendingDraw: PendingDraw | null | undefined;
   compact?: boolean;
-  onPress?: () => void;
 }) {
   const a = def.action;
-  const onClick = onPress ?? tileHandler(def, actions, pendingDraw);
+  const onClick = tileHandler(def, actions, pendingDraw);
   // Shape tiles drag through IconButton's dragKind (which also picks their theme tint); every other
   // placeable tile (sticky, icons, sticker) carries the shared payload from tileDragStart.
   const otherDrag = a.type === 'shape' ? undefined : tileDragStart(a);

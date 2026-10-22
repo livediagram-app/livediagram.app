@@ -7,7 +7,7 @@ import {
   type Element,
   type FreehandElement,
 } from '@livepages/document';
-import { logoGuideSnapper, logoTidyGuides, snapNewStrokes } from './logo-guide-snapping';
+import { logoGuideSnapper, snapNewStrokes } from './logo-guide-snapping';
 
 // docs/specs/007-editor/logo-pages.md "Construction guides": drawing snaps onto the shown guides.
 const pages = layOutPages([newLogoPage('l')]);
@@ -83,21 +83,3 @@ describe('snapNewStrokes', () => {
   });
 });
 
-describe('logoTidyGuides', () => {
-  it('lines a straight run up with the nearest guide line along it, in screen px at the zoom', () => {
-    const g = logoTidyGuides(pages, new Set(['grid', 'centre'] as const), 1)!;
-    const gridStep = page.height / 8;
-    // A level run 10 px under a grid line moves onto it; 30 px away it stays.
-    expect(g.y(page.y + gridStep + 10, { x: cx + 40, y: page.y + gridStep })).toBe(
-      page.y + gridStep,
-    );
-    expect(g.y(page.y + gridStep + 30, { x: cx + 40, y: page.y + gridStep })).toBeNull();
-    expect(g.x(cx - 12, { x: cx, y: cy + 60 })).toBe(cx);
-    expect(logoTidyGuides(null, allParts, 1)).toBeNull();
-  });
-
-  it('puts a corner on a crossing within its wider reach', () => {
-    const g = logoTidyGuides(pages, allParts, 1)!;
-    expect(g.point({ x: cx + 12, y: cy - 10 })).toEqual({ x: cx, y: cy });
-  });
-});

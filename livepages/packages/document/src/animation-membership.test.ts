@@ -31,7 +31,6 @@ describe('bodyAnimationSetOf', () => {
     [of('link-card'), 'shape'],
     [createSticky(0, 0), 'sticky'],
     [of('freehand'), 'drawing'],
-    [of('path'), 'drawing'],
     [of('image'), 'media'],
     [of('video'), 'media'],
     [of('table'), 'table'],
@@ -69,7 +68,7 @@ describe('carriesWords', () => {
   });
 
   it('is false for drawings, media and arrows', () => {
-    for (const t of ['freehand', 'path', 'image', 'video', 'arrow']) {
+    for (const t of ['freehand', 'image', 'video', 'arrow']) {
       expect(carriesWords(of(t))).toBe(false);
     }
   });
@@ -108,7 +107,6 @@ describe('Shape motions', () => {
     for (const el of [
       createSticky(0, 0),
       of('freehand'),
-      of('path'),
       of('image'),
       of('video'),
       of('table'),

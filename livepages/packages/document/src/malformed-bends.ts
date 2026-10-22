@@ -7,7 +7,7 @@
 
 import type { Element } from './index';
 import { isRecord } from './is-record';
-/** The most bend points an arrow holds: as many as a path's nodes (validate.ts MAX_PATH_NODES). */
+/** The most bend points an arrow holds: far past any drawn curve, short of an abuse payload. */
 export const MAX_CURVE_POINTS = 5_000;
 
 /** Whether a value is one bend: finite dx and dy. */

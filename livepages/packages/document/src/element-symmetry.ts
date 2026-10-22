@@ -1,14 +1,12 @@
 // Mirror While Drawing's symmetry (docs/specs/007-editor/logo-pages.md "Mirror"): the ways a
 // drawing on a logo page repeats about the artboard's centre (across its vertical centre line, its
 // horizontal one, both, or turned round its centre a number of times), as plain affine maps, and
-// a drawing's twins under them. A stroke's or a path's points are mapped (any rotation baked in);
+// a drawing's twins under them. A stroke's points are mapped (any rotation baked in);
 // a shape is moved and turned. Pure: the caller gives each twin its own id.
 import type { BoxedElement } from './index';
-import type { FreehandElement, PathElement } from './element-types';
+import type { FreehandElement } from './element-types';
 import { freehandCanvasPoints, freehandStrokePoints } from './freehand-points';
 import { encodeStrokePoints } from './stroke-points';
-import { pathContours, pathOfContours, pathWorldAnchors } from './path-element';
-import type { PathAnchor } from './path-geometry';
 import type { LaidOutPage, PageRect } from './page';
 import { MIRROR_AXIS_TOLERANCE } from './element-mirror';
 import type { GuideLine } from './logo-page';
@@ -166,35 +164,10 @@ function mapFreehand(el: FreehandElement, m: SymmetryMap): FreehandElement {
   };
 }
 
-function mapPath(el: PathElement, m: SymmetryMap): PathElement {
-  const at = (p: { x: number; y: number }) => mapPoint(m, p);
-  const contours = pathContours(el).map((nodes) =>
-    pathWorldAnchors(el, nodes).map((a): PathAnchor => ({
-      x: at(a).x,
-      y: at(a).y,
-      mode: a.mode,
-      ...(a.handleIn ? { handleIn: at(a.handleIn) } : {}),
-      ...(a.handleOut ? { handleOut: at(a.handleOut) } : {}),
-    })),
-  );
-  const {
-    x: _x,
-    y: _y,
-    width: _w,
-    height: _h,
-    nodes: _n,
-    subpaths: _s,
-    rotation: _r,
-    ...base
-  } = el;
-  return pathOfContours(base, contours);
-}
-
-/** The element under `m` (same id): points mapped for a stroke or a path, else its box moved so
+/** The element under `m` (same id): points mapped for a stroke, else its box moved so
  *  its centre maps and its turn follows (`m.turn`). */
 export function mapElement<T extends BoxedElement>(el: T, m: SymmetryMap): T {
   if (el.type === 'freehand') return mapFreehand(el, m) as T;
-  if (el.type === 'path') return mapPath(el, m) as T;
   const c = mapPoint(m, { x: el.x + el.width / 2, y: el.y + el.height / 2 });
   const turned = ((m.turn((el as { rotation?: number }).rotation ?? 0) % 360) + 360) % 360;
   return {
@@ -264,8 +237,8 @@ export function symmetryMapsFor(
   });
 }
 
-/** The twins a drawn element gets (a stroke, a path or a shape), none off a mirrored page. */
+/** The twins a drawn element gets (a stroke or a shape), none off a mirrored page. */
 export function symmetryTwins(el: BoxedElement, pages: readonly MirroredPage[]): BoxedElement[] {
-  if (el.type !== 'freehand' && el.type !== 'path' && el.type !== 'shape') return [];
+  if (el.type !== 'freehand' && el.type !== 'shape') return [];
   return symmetryMapsFor(pages, el).map((m) => mapElement(el, m));
 }

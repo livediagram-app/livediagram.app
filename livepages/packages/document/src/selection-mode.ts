@@ -3,16 +3,15 @@
 // lives in the live app; this is the DATA half — what a saved element may carry
 // — so it belongs with the model, where validation can reach it.
 //
-// Kept deliberately as the full set: a button that hands someone the Eraser is
-// odd but not our call to forbid, and the author picks from a menu that names
-// each one.
+// Kept deliberately as the full set: a button that hands someone the Format
+// painter is odd but not our call to forbid, and the author picks from a menu
+// that names each one.
 
 export const SELECTION_MODES = [
   'select',
   'pan',
   'laser',
   'spotlight',
-  'eraser',
   'format',
   'isometric',
 ] as const;
@@ -36,13 +35,18 @@ export const SELECTION_MODE_LABEL: Record<SelectionMode, string> = {
   pan: 'Hand',
   laser: 'Laser',
   spotlight: 'Spotlight',
-  eraser: 'Eraser',
   format: 'Format',
   isometric: 'Isometric',
 };
 
 export function isSelectionMode(value: unknown): value is SelectionMode {
   return typeof value === 'string' && (SELECTION_MODES as readonly string[]).includes(value);
+}
+
+/** The mode a Mode Button switches to: its own, or the default when it carries none, or one this
+ *  build no longer has (a button stored while a mode existed). */
+export function buttonModeOf(el: { mode?: unknown }): SelectionMode {
+  return isSelectionMode(el.mode) ? el.mode : DEFAULT_BUTTON_MODE;
 }
 
 // Shape kinds that are a FIXED SIZE: a control, not a box you draw. They get no

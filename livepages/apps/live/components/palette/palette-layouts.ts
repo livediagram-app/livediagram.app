@@ -319,18 +319,17 @@ const PAGES_WIREFRAME: PaletteLayout = {
   ],
 };
 
-// A logo (docs/specs/007-editor/logo-pages.md "The Logo palette"): what a mark is drawn and set with. Draw (the Pen,
-// the Pencil, the Shape Pen, the Polygon, then each person's markers, useLogoMarkerTiles), Shapes, Text, glyphs to
-// start from, the Library, and a picture to trace; no charts, blocks, frames, stickers or embeds.
+// A logo (docs/specs/007-editor/logo-pages.md "The Logo palette"): what a mark is drawn and set with. Draw (the
+// Polygon), Shapes, Text, glyphs to start from, the Library, and a picture to trace; no charts, blocks, frames,
+// stickers or embeds.
 const PAGES_LOGO: PaletteLayout = {
   landing: 'draw',
   categories: [
     {
       id: 'popular',
-      description: 'What a mark is most often drawn with: the pen, the pencil, text and shapes.',
+      description: 'What a mark is most often drawn with: outlines, text and shapes.',
       tiles: [
-        'logo:pen',
-        'tools:pencil',
+        'tools:polygon',
         'tools:text',
         'shapes:square',
         'shapes:circle',
@@ -341,8 +340,8 @@ const PAGES_LOGO: PaletteLayout = {
     },
     {
       id: 'draw',
-      description: 'The pen, the pencil, the shape pen and outlines, then your markers.',
-      tiles: ['logo:pen', 'tools:pencil', 'tools:shape-pen', DIVIDE, 'tools:polygon'],
+      description: 'Outlines placed point by point.',
+      tiles: ['tools:polygon'],
     },
     { id: 'shapes' },
     // Text for a wordmark, and a sticky note for a comment on the design.
@@ -401,7 +400,7 @@ const WORKSHOP: PaletteLayout = {
         'tools:checklist',
       ],
     },
-    { id: 'draw', tiles: tilesExcept('draw', 'tools:shape-pen', 'tools:polygon') },
+    { id: 'draw', tiles: tilesExcept('draw', 'tools:polygon') },
     // Diagram's Layout (docs/specs/010-palette/build-category.md): a board is laid out in frames and lanes and its
     // notes labelled with badges and step numbers, as a diagram is, with the Timeline (Workshop has no Concepts).
     { id: 'layout', tiles: WORKSHOP_LAYOUT_TILES },

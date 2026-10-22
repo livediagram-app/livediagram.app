@@ -7,7 +7,6 @@ import {
   createFreehand,
   createImage,
   createLinkCard,
-  createPath,
   createShape,
   createSticky,
   createTable,
@@ -60,18 +59,6 @@ const KINDS: [string, () => Element][] = [
           { x: 0, y: 0 },
           { x: 90, y: 30 },
           { x: 160, y: 70 },
-        ],
-        false,
-      ),
-  ],
-  [
-    'path',
-    () =>
-      createPath(
-        [
-          { x: 0, y: 0, mode: 'corner' },
-          { x: 120, y: 40, mode: 'corner' },
-          { x: 60, y: 90, mode: 'corner' },
         ],
         false,
       ),

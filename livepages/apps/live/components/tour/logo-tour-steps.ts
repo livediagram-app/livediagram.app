@@ -3,10 +3,8 @@
 // Each step rings a real control of the page it was started on, which stays usable, so the person can pick a layout
 // or turn the guides on while the step is up.
 import type { PageTourApi, PageTourStep } from './page-tour-api';
-import { pageCog, pageSheet } from './page-tour-dom';
+import { pageCog } from './page-tour-dom';
 import { opensFrom } from './tour-open';
-import { combineDemoShape, placeCombineDemo, uniteCombineDemo } from './logo-combine-demo';
-import { elementSelector } from '@/lib/canvas-selectors';
 
 type LogoTourStep = PageTourStep;
 
@@ -50,47 +48,6 @@ const MIRROR: LogoTourStep = opensFrom(
   titleButton('Mirror'),
 );
 
-// Combine, shown on two shapes the tour places on the page (logo-combine-demo.ts): selected, so Combine appears; its
-// menu opened; then united into one, as Unite does. The shapes and what they become go when the tour ends.
-const COMBINE_BUTTON = '[aria-label="Combine shapes"]';
-
-const COMBINE_SELECT: LogoTourStep = {
-  id: 'combine',
-  title: 'Combine Shapes',
-  body: 'Select two or more shapes and Combine appears. Here are two, selected for you.',
-  selector: () => COMBINE_BUTTON,
-  // The Combine steps make what they point at: they need only the page on screen (spec "Filtering").
-  requires: (api) => pageSheet(api.pageId),
-  prepare: async (api) => {
-    await placeCombineDemo(api.pageId);
-  },
-};
-
-const COMBINE_MENU: LogoTourStep = opensFrom<PageTourApi, LogoTourStep>(
-  {
-    id: 'combine-menu',
-    title: 'Four Ways to Combine',
-    body: 'Unite merges them, Subtract cuts one from the other, Intersect keeps the overlap, Exclude keeps the rest.',
-    selector: () => COMBINE_BUTTON,
-    requires: (api) => pageSheet(api.pageId),
-  },
-  () => COMBINE_BUTTON,
-);
-
-const COMBINE_UNITE: LogoTourStep = {
-  id: 'combine-unite',
-  title: 'One Shape',
-  body: 'United: the two are now one shape you can fill, outline and resize as one. Ours goes when the tour ends.',
-  requires: (api) => pageSheet(api.pageId),
-  selector: () => {
-    const id = combineDemoShape();
-    return id ? elementSelector(id) : null;
-  },
-  prepare: async () => {
-    await uniteCombineDemo();
-  },
-};
-
 const OUTRO: LogoTourStep = {
   id: 'outro',
   card: 'outro',
@@ -98,7 +55,7 @@ const OUTRO: LogoTourStep = {
   body: 'Export › Logo Kit downloads every size you need, plus a favicon.',
 };
 
-// The steps, Combine shown on the tour's own shapes, which go when the tour ends (PagesTourHost).
+// The steps.
 export function logoTourSteps(): LogoTourStep[] {
-  return [LAYOUTS, GUIDES, MIRROR, COMBINE_SELECT, COMBINE_MENU, COMBINE_UNITE, OUTRO];
+  return [LAYOUTS, GUIDES, MIRROR, OUTRO];
 }

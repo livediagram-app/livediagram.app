@@ -35,7 +35,6 @@ export function useCanvasTool({ defaultPan = false }: { defaultPan?: boolean } =
     if (tool !== canvasTool) priorToolRef.current = canvasTool;
     if (tool === 'laser' && canvasTool !== 'laser') track('Canvas', 'Used', 'Laser');
     if (tool === 'spotlight' && canvasTool !== 'spotlight') track('Canvas', 'Used', 'Spotlight');
-    if (tool === 'eraser' && canvasTool !== 'eraser') track('Canvas', 'Used', 'Eraser');
     if (tool === 'format' && canvasTool !== 'format') track('Canvas', 'Used', 'FormatPainter');
     if (tool === 'isometric' && canvasTool !== 'isometric') track('Canvas', 'Used', 'Isometric');
     // Slide Deck (docs/specs/012-collaboration/presentation-mode.md) is 'UI'/'Opened' rather than 'Canvas'/'Used':
