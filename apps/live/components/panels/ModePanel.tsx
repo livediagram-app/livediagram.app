@@ -29,7 +29,7 @@ type ModePanelExtras = {
   headerActions?: ReactNode;
   /** The article explaining this mode (docs/specs/018-help/contextual-help-links.md), shown as `?` in the header. */
   helpArticle?: HelpArticleKey;
-  /** A tour's anchor on the panel (the Slide Deck, docs/specs/007-editor/pages-tour.md). */
+  /** A tour's anchor on the panel (docs/specs/007-editor/editor-tour.md). */
   dataTourId?: string;
 };
 

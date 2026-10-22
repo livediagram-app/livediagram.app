@@ -48,6 +48,10 @@ their points carry no handles and are not edited point by point.
   never committed.
 - The box always wraps the drawn curve (its extremes, not just its nodes and handles), so selection,
   hit-testing, snapping and export bounds match what is seen.
+- A path may carry further contours (`subpaths`), each closed or open as the path is: filled
+  even-odd, so a closed one inside another is a hole. Nothing in the editor draws one, but a stored
+  path keeps them: it draws, exports and erases every contour, and it moves and restyles as a whole
+  (its points are not edited one by one).
 
 ## Drawing
 
@@ -196,7 +200,7 @@ corner and handle can be adjusted, by mouse, pen, finger and keyboard.
 
 ## Non-goals (round one)
 
-- Boolean operations, compound paths (several subpaths in one element), text on a path.
+- Boolean operations, drawing a path of several contours, text on a path.
 - Stroke caps, joins, arrowheads and variable width on paths.
 - Pressure, and a pen-pressure-aware Path tool.
 - The Path tool on diagram tabs.

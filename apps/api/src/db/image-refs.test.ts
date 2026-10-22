@@ -17,7 +17,6 @@ import {
 // "Reference index"): one that the SQL side misses is an image the sweep
 // would reap for a tab that was only ever backfilled.
 
-const pageFill = (imageId: unknown) => ({ kind: 'image', imageId });
 const img = (imageId: unknown, extra: Record<string, unknown> = {}) => ({
   id: 'e',
   type: 'image',
@@ -47,18 +46,6 @@ const CORPUS: Record<string, unknown> = {
   topLevelArray: [img('top')],
   topLevelNull: null,
   settingsImageId: { imageId: 'setting', elements: [] },
-  pagePicture: { elements: [], pages: [{ id: 'p', background: { fill: pageFill('pic') } }] },
-  pageAndElement: {
-    elements: [img('a')],
-    pages: [
-      { id: 'p', background: { fill: pageFill('a') } },
-      { background: { fill: pageFill('b') } },
-    ],
-  },
-  pageDataUri: { pages: [{ background: { fill: pageFill('data:image/png;base64,AA') } }] },
-  pageSolid: { pages: [{ background: { fill: { kind: 'solid', color: '#fff', imageId: 'no' } } }] },
-  pageJunk: { pages: [null, 'x', { background: null }, { background: { fill: pageFill(7) } }] },
-  pagesObject: { pages: { p: { background: { fill: pageFill('obj') } } } },
 };
 
 function tabRow(sql: DatabaseSync, id: string, data: string) {
@@ -97,8 +84,6 @@ describe('the SQL extractor', () => {
       'duplicate',
       'escaped',
       'mixedEntries',
-      'pageAndElement',
-      'pagePicture',
       'plain',
       'unicode',
     ]);

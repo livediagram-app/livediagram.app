@@ -7,13 +7,12 @@ import { TEMPLATES, type TemplateKind } from './templates';
 
 type PopularChoice = 'all' | EditorMode;
 
-export const POPULAR_BY_MODE: Readonly<Record<PopularChoice, readonly TemplateKind[]>> = {
-  // The five blanks lead, one per mode in mode order (EDITOR_MODES), so the picker needs no separate blank card.
+export const POPULAR_BY_MODE: Readonly<Partial<Record<PopularChoice, readonly TemplateKind[]>>> = {
+  // The blanks lead, one per mode in mode order (EDITOR_MODES), so the picker needs no separate blank card.
   all: [
     'blank',
     'whiteboard',
     'blank-session',
-    'blank-illustration',
     'blank-plan',
     'mindmap',
     'flowchart',
@@ -22,7 +21,7 @@ export const POPULAR_BY_MODE: Readonly<Record<PopularChoice, readonly TemplateKi
     'budget-planner',
     'orgchart',
     'sketchnote',
-    'article',
+    'gantt',
   ],
   diagram: [
     'blank',
@@ -40,14 +39,6 @@ export const POPULAR_BY_MODE: Readonly<Record<PopularChoice, readonly TemplateKi
     'comic-strip',
     'idea-garden',
     'rich-picture',
-  ],
-  pages: [
-    'blank-illustration',
-    'article',
-    'blank-slide-deck',
-    'event-poster',
-    'year-in-review',
-    'social-carousel',
   ],
   plan: [
     'blank-plan',
@@ -70,7 +61,7 @@ export const POPULAR_BY_MODE: Readonly<Record<PopularChoice, readonly TemplateKi
 };
 
 // Popular under Everything (the marketing gallery's and the step's default shelf).
-export const POPULAR_TEMPLATE_KINDS: readonly TemplateKind[] = POPULAR_BY_MODE.all;
+export const POPULAR_TEMPLATE_KINDS: readonly TemplateKind[] = POPULAR_BY_MODE.all ?? [];
 
 // The fewest cards any mode's Popular holds (popular.test.ts pins every list to it).
 export const POPULAR_PER_MODE = 5;
@@ -79,5 +70,5 @@ const LISTED = new Set(TEMPLATES.filter((t) => !t.hidden).map((t) => t.kind));
 
 /** Popular for a mode filter: its curated list, hidden templates left out. */
 export function popularKindsFor(choice: PopularChoice): TemplateKind[] {
-  return POPULAR_BY_MODE[choice].filter((k) => LISTED.has(k));
+  return (POPULAR_BY_MODE[choice] ?? []).filter((k) => LISTED.has(k));
 }

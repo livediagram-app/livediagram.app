@@ -1,7 +1,6 @@
 import type { TidyUpActions } from './tidy-up-actions';
 import type { PenInk } from '@/hooks/canvas/commit-freehand';
 import type { SnapGuideStore } from '@/hooks/canvas/useSnapGuideState';
-import type { CombineOp } from '@/lib/combine/combine';
 import type { RemoteSelector } from '@/lib/presence-rows';
 import type { Dispatch, SetStateAction } from 'react';
 import type { ShapeLibraryItem } from '@liveplanner/api-schema';
@@ -95,9 +94,6 @@ export type CanvasProps = {
   // The viewer's editor mode on the tab (docs/specs/007-editor/editor-modes.md): Draw trades the
   // palette, the strip and the tool panels for the dock, and keeps the canvas still.
   editorMode?: EditorMode;
-  // Pages mode's A4 pages and their edits (docs/specs/007-editor/editor-modes.md "The
-  // pages"), present only in that mode.
-  pagesMode?: import('@/hooks/editor/usePagesMode').PagesModeView | null;
   // The whiteboard dock's model and the board's ink for this appearance
   // (docs/specs/023-draw-mode/draw-mode.md), present on a whiteboard tab.
   whiteboardDock?: import('@/hooks/canvas/useWhiteboard').WhiteboardDockModel;
@@ -301,10 +297,6 @@ export type CanvasProps = {
     target?: EventTarget | null,
   ) => void;
   onDuplicateMultiSelected: () => void;
-  // Combine (docs/specs/007-editor/logo-pages.md "Combine"): offered while the multi-selection
-  // is combinable shapes on one logo page.
-  canCombine?: () => boolean;
-  onCombine?: (op: CombineOp) => void;
   onDeleteMultiSelected: () => void;
   onToggleLockMultiSelected: () => void;
   // Narrows the multi-selection to just `ids` (Filter Selection menu).
@@ -386,7 +378,7 @@ export type CanvasProps = {
   onBeginMarker: (penId: import('@/lib/whiteboard-prefs').WhiteboardPenId, once?: boolean) => void;
   onBeginShapePen: () => void;
   onBeginPolygon: () => void;
-  // The Path tool (docs/specs/023-draw-mode/path-tool.md), a logo page's Pen in the palette.
+  // The Path tool (docs/specs/023-draw-mode/path-tool.md).
   onBeginPath: () => void;
   // Draw-to-size mode. Picking any palette element except the annotation
   // (docs/specs/008-canvas/canvas-and-palette.md "Placement on add") stashes the intent here; the canvas then
@@ -698,10 +690,6 @@ export type CanvasProps = {
   // Wrap up the Format canvas tool (the palette tool): drops back to the
   // tool active before it. Drives the format-tool mode banner's "Done" button.
   onExitFormatTool: () => void;
-  // The Format tool's press on a page's paper (docs/specs/007-editor/pages-mode.md
-  // "Copying a background"): arms or paints that page's background. Absent where pages cannot be
-  // painted (another mode, a person who may not edit them), so such a press is an empty-canvas one.
-  onFormatPagePress?: (pageId: string) => void;
   onFollowLink: (link: import('@liveplanner/document').ElementLink) => void;
   onOpenComments: (elementId: string) => void;
   // Open the element's assigned-action popover (docs/specs/012-collaboration/assigned-actions.md). Available in

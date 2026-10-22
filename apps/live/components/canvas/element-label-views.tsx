@@ -22,7 +22,6 @@ import {
   labelBasePx,
   labelRunPx,
   labelTextStyleCss,
-  wordmarkTextCss,
   TEXT_ALIGN,
   type LabelPadding,
   type LabelTextStyle,
@@ -106,8 +105,8 @@ export function ScalingLabel({
     if (!node) return;
     const b = node.getBBox();
     setBBox({ x: b.x, y: b.y, w: b.width || 1, h: b.height || 1 });
-    // Tracking, weight and case change the glyphs' extent too.
-  }, [text, style?.letterSpacing, style?.weight, style?.uppercase, style?.lowercase]);
+    // Case changes the glyphs' extent too.
+  }, [text, style?.uppercase]);
 
   const viewBox = bbox ? `${bbox.x} ${bbox.y} ${bbox.w} ${bbox.h}` : '0 0 100 24';
   const svgRef = useRef<SVGSVGElement>(null);
@@ -130,15 +129,8 @@ export function ScalingLabel({
           y="0"
           dominantBaseline="hanging"
           fontFamily={style?.fontFamily ?? 'ui-sans-serif, system-ui, sans-serif'}
-          fontWeight={style?.weight ?? (style?.bold ? 700 : 500)}
-          style={{
-            letterSpacing: style?.letterSpacing ? `${style.letterSpacing}em` : undefined,
-            textTransform: style?.uppercase
-              ? 'uppercase'
-              : style?.lowercase
-                ? 'lowercase'
-                : undefined,
-          }}
+          fontWeight={style?.bold ? 700 : 500}
+          style={{ textTransform: style?.uppercase ? 'uppercase' : undefined }}
           fontStyle={style?.italic ? 'italic' : undefined}
           textDecoration={
             style?.underline && style?.strikethrough
@@ -177,14 +169,9 @@ export function ScalingLabel({
             lineHeight: 1.2,
             whiteSpace: 'pre',
             fontFamily: style?.fontFamily ?? 'ui-sans-serif, system-ui, sans-serif',
-            fontWeight: style?.weight ?? (style?.bold ? 700 : 500),
+            fontWeight: style?.bold ? 700 : 500,
             fontStyle: style?.italic ? 'italic' : undefined,
-            letterSpacing: style?.letterSpacing ? `${style.letterSpacing}em` : undefined,
-            textTransform: style?.uppercase
-              ? 'uppercase'
-              : style?.lowercase
-                ? 'lowercase'
-                : undefined,
+            textTransform: style?.uppercase ? 'uppercase' : undefined,
             textDecoration:
               [style?.underline && 'underline', style?.strikethrough && 'line-through']
                 .filter(Boolean)
@@ -345,7 +332,6 @@ export function RichLabel({
   fontFamily,
   multiline,
   uppercase,
-  wordmark,
   className = '',
   animClass,
   textAnim,
@@ -363,8 +349,6 @@ export function RichLabel({
   // Paint in capitals (an event-storming note, docs/specs/021-event-storming/event-storming.md) — whole-label, so
   // it sits on the wrapper rather than on each run's style.
   uppercase?: boolean;
-  // Wordmark type (docs/specs/007-editor/logo-pages.md): tracking, weight and case on the wrapper.
-  wordmark?: LabelTextStyle;
   className?: string;
   // Text-native animation class for the glyphs (docs/specs/008-canvas/canvas-and-palette.md); see renderLabel.
   animClass?: string;
@@ -394,13 +378,7 @@ export function RichLabel({
           ...textAnim?.style,
           textAlign: TEXT_ALIGN[alignX],
           fontFamily,
-          ...(wordmark ? wordmarkTextCss(wordmark) : {}),
-          textTransform:
-            uppercase || wordmark?.uppercase
-              ? 'uppercase'
-              : wordmark?.lowercase
-                ? 'lowercase'
-                : undefined,
+          textTransform: uppercase ? 'uppercase' : undefined,
         }}
       >
         {runs.map((run, i) => (

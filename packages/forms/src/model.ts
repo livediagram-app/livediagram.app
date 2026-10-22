@@ -106,8 +106,8 @@ export interface FormDestination {
   status: string;
 }
 
-// The band across the form's top (docs/specs/030-forms/forms.md "The form card"): a slide background in colour, a
-// solid colour, a gradient (a moving one included) and a pattern, picked and painted as a slide's are. No pictures.
+// The band across the form's top (docs/specs/030-forms/forms.md "The form card"): a colour background, a
+// solid colour, a gradient (a moving one included) and a pattern. No pictures.
 export type FormCover = ColourBackground;
 
 export const STARTER_IDS = [

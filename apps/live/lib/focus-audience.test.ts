@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { pagesOf, layOutPages, type Tab } from '@liveplanner/document';
-import { focusPageAt, focusPressOutcome, viewIsCentredOn } from './focus-audience';
+import { focusPressOutcome, viewIsCentredOn } from './focus-audience';
 
 const SIZE = { width: 1200, height: 800 };
 // A view whose middle is exactly the canvas point (400, 300) at 50% zoom.
@@ -114,79 +113,5 @@ describe('focusPressOutcome', () => {
   it('asks a peer whose viewport carries no size (a client from before it was sent)', () => {
     const viewports = new Map([['a', view({ size: undefined })]]);
     expect(focusPressOutcome({ ...base, sent: true, peerIds: ['a'], viewports })).toBe('asked');
-  });
-});
-
-// docs/specs/012-collaboration/bring-focus.md "On a page": on a Pages tab the press points at the page.
-describe('focusPageAt', () => {
-  const tab = (over: Partial<Tab> = {}): Tab => ({
-    id: 'tab-a',
-    name: 'Pages',
-    elements: [],
-    opensIn: 'pages',
-    pages: [
-      { id: 'p1', orientation: 'portrait' },
-      { id: 'p2', orientation: 'landscape' },
-    ],
-    ...over,
-  });
-  const rects = () => layOutPages(pagesOf(tab()));
-  const middleOf = (r: { x: number; y: number; width: number; height: number }) => ({
-    x: r.x + r.width / 2,
-    y: r.y + r.height / 2,
-  });
-
-  it('finds the page the point is on', () => {
-    const [p1, p2] = rects();
-    expect(focusPageAt(tab(), middleOf(p1!.rect))?.id).toBe('p1');
-    expect(focusPageAt(tab(), middleOf(p2!.rect))?.id).toBe('p2');
-  });
-
-  it('is null on the surround between pages', () => {
-    const [p1] = rects();
-    expect(focusPageAt(tab(), { x: p1!.rect.x + p1!.rect.width + 1, y: 0 })).toBeNull();
-  });
-
-  it('is null on a tab that is not showing pages', () => {
-    const [p1] = rects();
-    expect(focusPageAt(tab({ opensIn: 'diagram' }), middleOf(p1!.rect))).toBeNull();
-    expect(focusPageAt(undefined, middleOf(p1!.rect))).toBeNull();
-  });
-});
-
-describe('viewIsCentredOn with a page', () => {
-  const PAGE = { x: 0, y: 0, width: 600, height: 400 };
-  // A 1200x800 canvas whose middle is the page's middle.
-  const framing = (zoom: number) => ({ size: SIZE, pan: { x: 600 - 300, y: 400 - 200 }, zoom });
-  const corner = { x: 10, y: 10 };
-
-  it('is there when the page is framed, wherever the point is on it', () => {
-    expect(viewIsCentredOn(framing(1.8), corner, PAGE)).toBe(true);
-    expect(viewIsCentredOn(framing(0.5), corner, PAGE)).toBe(true);
-  });
-
-  it('is not there when zoomed into part of the page', () => {
-    expect(viewIsCentredOn(framing(3), corner, PAGE)).toBe(false);
-  });
-
-  it('is not there when the middle of the view is off the page', () => {
-    expect(viewIsCentredOn({ ...framing(1), pan: { x: 2000, y: 0 } }, corner, PAGE)).toBe(false);
-  });
-
-  it('judges a press on a page by the page, from the presser side too', () => {
-    const viewports = new Map([['a', { tabId: 'tab-a', ...framing(1.5) }]]);
-    expect(
-      focusPressOutcome({ sent: true, peerIds: ['a'], viewports, tabId: 'tab-a', at: corner }),
-    ).toBe('asked');
-    expect(
-      focusPressOutcome({
-        sent: true,
-        peerIds: ['a'],
-        viewports,
-        tabId: 'tab-a',
-        at: corner,
-        page: PAGE,
-      }),
-    ).toBe('already-there');
   });
 });

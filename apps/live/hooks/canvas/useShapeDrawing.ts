@@ -321,8 +321,8 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
   // Polygon tool entry (docs/specs/008-canvas/polygon-tool.md): queues the click-to-place-vertices
   // intent. The vertex accumulation lives canvas-side
   // (useCanvasPolygonGesture); this just arms the mode.
-  // The Path tool from a palette (a logo page's, docs/specs/007-editor/logo-pages.md "The Logo
-  // palette"): the same tool Draw mode's dock holds.
+  // The Path tool from a palette (docs/specs/023-draw-mode/path-tool.md): the same tool Draw
+  // mode's dock holds.
   const beginPath = () => {
     if (editsBlocked) return;
     beginDraw({ type: 'path' });

@@ -5,8 +5,8 @@ import { toGallery, type GalleryTemplate } from '@/lib/template-gallery';
 // category pages"): the templates most worth starting from once you have read about the feature, best
 // first, so a visitor can dive straight into one. A hand-picked list per `LANDING_SECTIONS` id, never
 // more than SECTION_TEMPLATES_MAX (three rows of three); a category with fewer good fits lists fewer
-// rather than padding. section-templates.test.ts holds every id to a list and every kind to a listed
-// template.
+// rather than padding, and one with none shows no band. section-templates.test.ts holds every list to a
+// category and every kind to a listed template.
 
 export const SECTION_TEMPLATES_MAX = 9;
 
@@ -44,27 +44,6 @@ export const SECTION_TEMPLATE_KINDS: Readonly<Record<string, readonly TemplateKi
     'doodle-warmup',
     'whiteboard',
   ],
-  infographics: [
-    'data-story',
-    'how-it-works',
-    'event-poster',
-    'versus',
-    'social-carousel',
-    'logo-design',
-    'resume',
-    'recipe-card',
-    'live-card',
-  ],
-  slides: [
-    'slide-deck',
-    'launch-keynote',
-    'quarterly-review',
-    'team-welcome',
-    'workshop-kickoff',
-    'social-carousel',
-    'blank-slide-deck',
-  ],
-  documents: ['article', 'working-backwards', 'year-in-review', 'blank-article'],
   plan: [
     'kanban',
     'project-planner',

@@ -15,13 +15,11 @@ import {
   PEN_INK,
 } from '@liveplanner/document';
 import { createStockColourProjector } from '@/lib/stock-colour-projector';
-import { usePageView } from '@/hooks/canvas/usePageView';
 import { drawnArrowAsShown } from '@/lib/drawn-arrow-preview';
 import { useMemo, useState } from 'react';
 import { isBoxed, isVoteHost, threadAt } from '@liveplanner/document';
 import { commentPersisters } from '@/lib/comment-persistence';
 import { pollHostFor } from '@/hooks/collab/useLivePoll';
-import { presentedPages } from '@/lib/presented-pages';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
 import { useElementMenuOpener } from '@/hooks/canvas/element-menu-opener';
 import { useSheetChartMenuSelection } from '@/hooks/sheets/useSheetChartMenuSelection';
@@ -33,7 +31,6 @@ import { useEditModeContextMenu } from '@/hooks/canvas/useEditModeContextMenu';
 import { track } from '@/lib/telemetry';
 import { useTeamFolderActions } from '@/hooks/ui/useTeamFolderActions';
 import { getTheme, themeChartPalette, themeViewMap, type ThemeId } from '@/lib/themes';
-import { labelsFollowCanvas } from '@/lib/tab-theme-apply';
 import { resolveViewBackdrop } from '@/lib/view-backdrop';
 import { readDrawPattern } from '@/lib/whiteboard-dock-prefs';
 import { useAppearance } from '@/hooks/ui/useAppearance';
@@ -45,7 +42,6 @@ import { useSessionTools } from '@/components/chrome/useSessionTools';
 import { useShapeLibraries } from '@/components/primitives/ShapeLibraryProvider';
 import type { LibraryShapeRef } from '@/lib/shape-library-dnd';
 import { useStableCollab } from '@/components/canvas/element-layer-props';
-import { useStartPanelOpen } from '@/components/start/start-panel-open';
 import { canEditSankey } from '@/lib/sankey-edit';
 import { canEditSequence } from '@/lib/sequence-edit';
 import { CanvasThemeProvider } from '@/components/canvas/CanvasSurfaceContext';
@@ -54,8 +50,6 @@ import {
   useTabWindowContextValue,
 } from '@/components/canvas/tab-window/tab-window-context';
 import { useSelectTab } from '@/app/document/[id]/useSelectTab';
-import { brushPageId, pageBrushPreview, pagePaintPress } from '@/lib/format-page-brush';
-import { useDeadPageBrush } from '@/hooks/editor/useDeadPageBrush';
 import { elementSelector } from '@/lib/canvas-selectors';
 
 // The Canvas element's wiring, lifted out of EditorView (which carried
@@ -72,7 +66,6 @@ export function EditorCanvasHost() {
     activeTabLocked,
     commitElements,
     presentingElements,
-    presentingPageId,
     slideDeck,
     slideDeckPanelPosition,
     setSlideDeckPanelPosition,
@@ -223,8 +216,6 @@ export function EditorCanvasHost() {
     dropPaletteItem,
     duplicateDocument,
     duplicateMultiSelected,
-    canCombine,
-    combineSelected,
     contextMenu,
     duplicateSelected,
     stackSelectedFront,
@@ -365,8 +356,6 @@ export function EditorCanvasHost() {
     whiteboardDock,
     drag,
     editorMode,
-    pagesMode,
-    presentArticles,
     loadedTabIds,
     autoAlignTab,
     autoLayoutTab,
@@ -384,7 +373,6 @@ export function EditorCanvasHost() {
   // A shape dragged from My shapes (docs/specs/013-workspace/shape-libraries.md): resolved against the
   // owner's libraries, then placed at the drop point.
   const { libraries } = useShapeLibraries();
-  const startPanelOpen = useStartPanelOpen();
   const dropLibraryShape = (ref: LibraryShapeRef, at: { x: number; y: number }) => {
     const item = libraries
       .find((l) => l.id === ref.libraryId)
@@ -491,20 +479,14 @@ export function EditorCanvasHost() {
   // Theme colours in this viewer's half (docs/specs/011-theme/light-and-dark.md); the map is cached per theme and
   // appearance, so its identity holds and the projector's cache with it.
   const shownElements = presentingElements ?? activeTab.elements;
-  // On a page with a fill of its own, an element is drawn for that page rather than the chrome
-  // (stock-colour-projector.ts "PageView"); off Pages mode, or with no filled page, nothing to do.
-  const pageView = usePageView(shownElements, pagesMode?.pages, activeTab.theme);
   const canvasElements = projectStockColours(
     shownElements,
     surface,
     themeViewMap(activeTab.theme, appearance),
-    labelsFollowCanvas(activeTab)
-      ? {
-          stored: activeTab.backgroundColor ?? DEFAULT_BACKGROUND_COLOR,
-          drawn: backdrop.backgroundColor,
-        }
-      : undefined,
-    pageView,
+    {
+      stored: activeTab.backgroundColor ?? DEFAULT_BACKGROUND_COLOR,
+      drawn: backdrop.backgroundColor,
+    },
   );
   // Lazy per-tab load gate (docs/specs/006-document/per-tab-storage.md): show a blocking loader / error over
   // the canvas while the active tab's content is still being fetched, so
@@ -546,13 +528,6 @@ export function EditorCanvasHost() {
   // The element the format brush is loaded from (docs/specs/010-palette/stickers.md), for the panel's
   // preview. Resolved here rather than in the panel so the panel stays a
   // renderer and never reaches into the tab.
-  // A page's background in the brush (docs/specs/007-editor/pages-mode.md "Copying a background").
-  const brushedPage = pagesMode?.pages.find((pg) => pg.id === brushPageId(formatSourceId));
-  useDeadPageBrush(
-    formatSourceId,
-    pagesMode?.pages.map((pg) => pg.id),
-    setFormatSourceId,
-  );
   const formatSource = formatSourceId
     ? (activeTab.elements.find((el) => el.id === formatSourceId) ?? null)
     : null;
@@ -667,9 +642,7 @@ export function EditorCanvasHost() {
               isPinchingRef={isPinchingRef}
               setViewportZoom={setViewportZoom}
               onFitToScreen={() => {
-                // In Pages, Fit frames the page you are nearest, not the whole tab.
-                if (pagesMode) pagesMode.fitPageInView();
-                else fitToScreen();
+                fitToScreen();
                 track('Canvas', 'Zoomed', 'Fit');
               }}
               setViewportOffset={setViewportOffset}
@@ -681,13 +654,6 @@ export function EditorCanvasHost() {
               tabLayers={activeTab.layers}
               tabKind={activeTab.kind}
               editorMode={editorMode.mode}
-              // No page while Start Making Pages is open (docs/specs/007-editor/start-diagramming.md "Start Making Pages"):
-              // the tab's first page is drawn only once a template is picked or the panel closed, so nothing waits behind it.
-              pagesMode={
-                startPanelOpen && editorMode.mode === 'pages'
-                  ? null
-                  : presentedPages(pagesMode, activeTab, presentingPageId, presentArticles)
-              }
               whiteboardDock={whiteboardDock.whiteboard ? whiteboardDock : undefined}
               whiteboardInk={PEN_INK[surface]}
               previewDrawnArrow={(intent, startX, startY, endX, endY) =>
@@ -828,8 +794,6 @@ export function EditorCanvasHost() {
               collab={collab}
               onEraseStart={isReadOnly ? undefined : beginErase}
               onDuplicateMultiSelected={duplicateMultiSelected}
-              canCombine={canCombine}
-              onCombine={(op) => void combineSelected(op)}
               onDeleteMultiSelected={deleteMultiSelected}
               onToggleLockMultiSelected={toggleLockMultiSelected}
               onFilterMultiSelected={narrowMultiSelection}
@@ -840,29 +804,6 @@ export function EditorCanvasHost() {
               editingId={editingId}
               editCursorAtEnd={editCursorAtEnd}
               formatSourceId={formatSourceId}
-              onFormatPagePress={
-                canvasTool === 'format' && pagesMode?.edit
-                  ? (pageId) => {
-                      // A page's background as the brush, painted page to page (docs/specs/007-editor/
-                      // pages-mode.md "Copying a background").
-                      // A brush whose page has gone is emptied as the page goes (useDeadPageBrush), so this
-                      // press arms the pressed page at once.
-                      const press = pagePaintPress(
-                        formatSourceId,
-                        pageId,
-                        formatConfig.mode === 'keep',
-                      );
-                      // A refused paint (a locked page, a picture onto a logo page) keeps the brush:
-                      // only a paint empties a Paint once brush.
-                      if (
-                        press.paint &&
-                        !pagesMode.edit?.copyBackground(press.paint.from, press.paint.to)
-                      )
-                        return;
-                      if (press.next !== formatSourceId) setFormatSourceId(press.next);
-                    }
-                  : undefined
-              }
               canUndo={canUndo && !activeTabLocked}
               canRedo={canRedo && !activeTabLocked}
               onAddShape={addShape}
@@ -965,17 +906,14 @@ export function EditorCanvasHost() {
               // What the brush holds, described for the panel's preview (docs/specs/010-palette/stickers.md):
               // the loaded element's name and the three colours the swatch draws.
               formatBrushSource={
-                brushedPage
-                  ? pageBrushPreview(brushedPage)
-                  : formatSource
-                    ? {
-                        name: describeOne(formatSource),
-                        fill: 'fillColor' in formatSource ? formatSource.fillColor : undefined,
-                        stroke:
-                          'strokeColor' in formatSource ? formatSource.strokeColor : undefined,
-                        textColor: 'textColor' in formatSource ? formatSource.textColor : undefined,
-                      }
-                    : null
+                formatSource
+                  ? {
+                      name: describeOne(formatSource),
+                      fill: 'fillColor' in formatSource ? formatSource.fillColor : undefined,
+                      stroke: 'strokeColor' in formatSource ? formatSource.strokeColor : undefined,
+                      textColor: 'textColor' in formatSource ? formatSource.textColor : undefined,
+                    }
+                  : null
               }
               formatPanelPosition={formatPanelPosition}
               onMoveFormatPanel={(x, y) => setFormatPanelPosition({ x, y })}

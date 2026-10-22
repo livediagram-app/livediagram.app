@@ -67,7 +67,6 @@ import {
 } from '@liveplanner/icons/lucide';
 import { Glyph, Prims } from '@liveplanner/ui';
 import { PLAN_TILES } from './palette-plan-tiles';
-import { WIREFRAME_TILES } from './palette-wireframe-tiles';
 import { tileCaption } from './tile-caption';
 
 import {
@@ -126,10 +125,6 @@ export type PaletteTileSection =
   | 'dashboard-tabs'
   // A Dashboard's written cards (Status, Checklist, Key Date, Links), on a Dashboard tab alone.
   | 'dashboard-cards'
-  // A logo page's drawing tools (docs/specs/007-editor/logo-pages.md "The Logo palette").
-  | 'logo'
-  // A screen's parts (docs/specs/007-editor/wireframe-pages.md "The Elements palette").
-  | 'wireframe'
   | 'plan-sheets'
   | 'tools'
   | 'data'
@@ -182,7 +177,7 @@ type PaletteTileAction =
   | { type: 'video'; provider?: EmbedProvider }
   | { type: 'sticker'; stickerId: string }
   | { type: 'polygon' }
-  // The Path tool (docs/specs/023-draw-mode/path-tool.md): a logo page's Pen (logo-pages.md).
+  // The Path tool (docs/specs/023-draw-mode/path-tool.md).
   | { type: 'path' }
   // `ends`: the Line tile's `'none'`; the Arrow tile leaves it to the tool's pointer at its end.
   | { type: 'arrow'; ends?: import('@liveplanner/document').ArrowEnds }
@@ -601,19 +596,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
         <Prims prims={lucideType} />
       </Glyph>
     ),
-  },
-  // The Path tool as a logo page's Pen (docs/specs/007-editor/logo-pages.md "The Logo palette"):
-  // the same tool Draw mode's dock holds, in a logo page's Draw only.
-  {
-    id: 'logo:pen',
-    blurb: 'Click for corners, drag for curves',
-    section: 'logo',
-    caption: 'Pen',
-    label: 'Pen',
-    description:
-      'Draw a precise path: click to place corners, drag to pull out curves, and close it on its first point.',
-    action: { type: 'path' },
-    icon: <ShapePenIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'tools:pencil',
@@ -2410,8 +2392,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   })),
   // Plan (docs/specs/026-plan/plan-mode.md): boards by preset, cards by item type.
   ...PLAN_TILES,
-  // A wireframe page's parts (docs/specs/007-editor/wireframe-pages.md "The Elements palette").
-  ...WIREFRAME_TILES,
 ];
 
 export function tilesInSection(section: PaletteTileSection): PaletteTileDef[] {

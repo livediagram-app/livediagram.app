@@ -152,9 +152,7 @@ const STYLE_FIELDS =
   'and dash-dot as named: theme, soft, ' +
   'tinted, solid, bold, ghost, paper, muted, slate, inked, hairline, outline, dotted, dash-dot, frame, info, ' +
   'success, warning, danger, highlight); "iconId" (an id from search_icons) with "iconPosition"; "note" (detail ' +
-  'shown on the element); on text, wordmark type: "letterSpacing" (em between letters, -0.2 to 1), ' +
-  '"fontWeight" (400, 500, 700), "textCase" (upper, lower), "textArc" (bends one line along a circle, -360 to ' +
-  '360 degrees, positive bowing up: a badge\u2019s top line 180, its bottom -180); on an arrow "label", ' +
+  'shown on the element); on an arrow "label", ' +
   '"strokeStyle", "arrowEnds", "arrowheadShape" (an ER line\u2019s ends: one, zero-or-one, many, zero-or-many, ' +
   'one-or-many), "arrowheadStartShape" (the start\u2019s, when it differs: a one at one table, a many at the ' +
   'other). A Mermaid erDiagram draws these ends itself. A field a type ' +
@@ -274,7 +272,7 @@ tabs in a create_document call.
 - Give every node an id and a short, clear label.
 - A node/edge diagram given as "graph" is laid out in the template look (sizes,
   elbows, side exits, loops round the outside, title, key). For an artefact that
-  is not a graph (kanban, SWOT, gantt, wireframe, ...) list_templates has
+  is not a graph (kanban, SWOT, gantt, ...) list_templates has
   hand-tuned scaffolds to pass as "template", then personalise with update_document.
 `;
 }
@@ -302,7 +300,7 @@ use a unique "id" per element, make nodes "shape" elements (a labelled box) NOT
 and the theme owns colours (a sticky keeps its own). Stickies, tables, code blocks,
 entities, lanes and charts carry content fields, documented on each tool's
 element argument. For a standard artefact that is not a node/edge graph (kanban, swot,
-gantt, wireframe-website, retrospective, ...) list_templates has hand-tuned scaffolds: pass its kind as
+gantt, retrospective, ...) list_templates has hand-tuned scaffolds: pass its kind as
 "template" on create_document / add_tab, then fill in real labels with
 update_document. search_icons finds icon ids for "iconId" and a graph node's "icon". Plan boards hold cards (items), which have their own tools:
 list_items reads a document's boards, their columns by name, its cards and its
@@ -317,21 +315,6 @@ theirs: list_sheets lists a document's sheets, read_sheet reads one's cells by A
 formats cells, inserts and deletes rows and columns, sorts, freezes and renames,
 and sets dropdowns, checkboxes and other validation rules and conditional formats,
 and add_sheet puts a new Sheet on a tab in Plan, blank or from rows or CSV text.
-Tabs in Pages mode hold pages: infographics, slides, logo artboards and articles
-(documents of text on pages). change_pages adds, changes, lays out (from a
-ready-made layout), moves, copies and deletes infographic, slide and logo pages
-and answers each page's rectangle on the canvas, where update_document puts
-elements; write_article writes an article from Markdown, new or over an existing
-one, and the editor flows it onto pages. Asked to write a document, a report or
-a brief, write an article; asked for a deck, add slide pages; asked for a logo,
-add a logo page. A new document for pages starts with create_document and one
-tab whose template is "blank-slide-deck" for a deck (one empty slide; change_pages
-adds the rest, each change an object such as {"op": "add", "kind": "slide",
-"layout": ...}) or "blank-illustration" otherwise (then write_article or
-change_pages on it); the Pages templates (article, slide-deck, logo-design, ...) start
-from ready-made pages. A layout's elements hold sample text: read_document with
-view "pages" lists each page's elements with their refs and text, to replace
-with update_document. It also shows each article as Markdown.
 Form tabs hold forms (like Google Forms): questions anyone fills in from a link,
 without an account, each response a card on a Board tab or a row in a sheet.
 add_form makes one (from a starter or questions, in a document of its own when
@@ -671,8 +654,7 @@ export const readDocumentShape = {
     .describe(
       'How to read the tab. outline (default): one line per element with its ref, label and arrows, ' +
         'nested by frame. graph: what connects to what. layout: where things sit. comments: open threads ' +
-        'in full. show: one element in full (needs ref). find: elements holding some text (needs q). ' +
-        "pages: a Pages tab's pages with their rectangles, each article as Markdown, and the layouts on offer.",
+        'in full. show: one element in full (needs ref). find: elements holding some text (needs q).',
     ),
   budget: z
     .number()
@@ -714,15 +696,7 @@ export const readDocumentShape = {
   image: z
     .boolean()
     .optional()
-    .describe(
-      'Also attach a PNG preview of the tab (costs about a thousand tokens). A Pages tab draws as its pages, each as it exports: its background, what reaches onto it, cut at its edges.',
-    ),
-  page: z
-    .union([z.string(), z.number().int().min(1)])
-    .optional()
-    .describe(
-      'With image, on a Pages tab: draw only this page, at its own size (its id, its place 1 first, or its name). Without it every page is drawn, in rows.',
-    ),
+    .describe('Also attach a PNG preview of the tab (costs about a thousand tokens).'),
 };
 
 // A document or tab name (docs/specs/006-document/name-length.md). Shortened with

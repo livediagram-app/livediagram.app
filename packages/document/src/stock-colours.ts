@@ -29,8 +29,7 @@ export function resolveStockColours<T extends Element>(el: T, surface: CanvasSur
     named.penTextColour !== undefined && named.textColor === undefined
       ? { textColor: penColourHex(named.penTextColour, surface) }
       : null;
-  // A pen stroke's area as a path (merged by Mirror, or Combined: docs/specs/007-editor/logo-pages.md)
-  // is a closed path with no outline: its pen colour names its fill.
+  // A pen stroke's area as a path (docs/specs/023-draw-mode/path-tool.md) is a closed path with no outline: its pen colour names its fill.
   const area =
     named.type === 'path' &&
     named.closed === true &&

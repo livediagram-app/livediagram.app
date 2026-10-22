@@ -42,13 +42,7 @@ describe('isFirstRun', () => {
 
 describe('the starts', () => {
   it('offers each mode its blank, in mode order', () => {
-    expect(WELCOME_BLANKS).toEqual([
-      'blank',
-      'whiteboard',
-      'blank-session',
-      'blank-illustration',
-      'blank-plan',
-    ]);
+    expect(WELCOME_BLANKS).toEqual(['blank', 'whiteboard', 'blank-session', 'blank-plan']);
   });
 
   it('offers the first eight Popular templates, none of them a blank', () => {

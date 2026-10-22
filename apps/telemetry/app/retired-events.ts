@@ -69,9 +69,86 @@ const LOCATION_STEP_AND_QUICK_START_UI = new Set([
 // arrival"): its Escape / X back-out and the Start Blank link that skipped it. /new asks nothing now; a template link
 // carries on (UI·Used·TemplateLink).
 const NEW_DOCUMENT_WIZARD_UI = new Set(['Closed|NewDocument', 'Used|JustDraw']);
+// Pages mode (removed 2026-10-22, docs/specs/017-telemetry/telemetry.md "Retired features"): its pages, slide pages,
+// articles, logos, wireframes and infographics, their exports, tours and settings, and the agent tools that wrote
+// them. Presentations, Plan's item and board slides, a form cover's moving background and Tab Windows carry on.
+const PAGES_MODE_EVENTS = new Set([
+  'Agent|Viewed|Pages',
+  'Cli|Used|PageLs',
+  'Cli|Used|PageSet',
+  'Cli|Used|ArticleGet',
+  'Cli|Used|ArticleSet',
+  'Document|Exported|LogoKit',
+  'Editor|Changed|LeavePagesConfirmed',
+  'Element|Changed|MirrorCopy',
+  'Element|Changed|ShapesExcluded',
+  'Element|Changed|ShapesIntersected',
+  'Element|Changed|ShapesSubtracted',
+  'Element|Changed|ShapesUnited',
+  'Element|Changed|StrokesTidiedUp',
+  'Element|Changed|TextArc',
+  'Element|Changed|TextCase',
+  'Element|Changed|TextTracking',
+  'Element|Changed|TextWeight',
+  'Element|Created|MirrorTwin',
+  'Mcp|Used|ChangePages',
+  'Mcp|Used|WriteArticle',
+  'Tab|Aligned|PageTidyUp',
+  'Tab|Changed|ArticleAdded',
+  'Tab|Changed|ArticlesToPages',
+  'Tab|Changed|ArticleStyle',
+  'Tab|Changed|LogoPageAdded',
+  'Tab|Changed|PageAdded',
+  'Tab|Changed|PageAddedLikeLast',
+  'Tab|Changed|PageBackground',
+  'Tab|Changed|PageBackgroundAppliedToAll',
+  'Tab|Changed|PageBackgroundImage',
+  'Tab|Changed|PageBackgroundPainted',
+  'Tab|Changed|PageDuplicated',
+  'Tab|Changed|PageLandscape',
+  'Tab|Changed|PageLayout',
+  'Tab|Changed|PageLayoutSurprise',
+  'Tab|Changed|PageLocked',
+  'Tab|Changed|PageMoved',
+  'Tab|Changed|PagePattern',
+  'Tab|Changed|PagePortrait',
+  'Tab|Changed|PageRemoved',
+  'Tab|Changed|PageRenamed',
+  'Tab|Changed|PageSize',
+  'Tab|Changed|PagesLaidOut',
+  'Tab|Changed|PageUnlocked',
+  'Tab|Changed|SlidePageAdded',
+  'Tab|Changed|WireframePageAdded',
+  'UI|Added|AllPageSlides',
+  'UI|Added|PageSlide',
+  'UI|Closed|EmptyPageLayouts',
+  'UI|Closed|EmptyPageLayoutsBlank',
+  'UI|Closed|PagesTourOffer',
+  'UI|Opened|EmptyPageInvite',
+  'UI|Opened|PageArticleStyleButton',
+  'UI|Opened|PageArticleTextButton',
+  'UI|Opened|PageBackgroundButton',
+  'UI|Opened|PageContents',
+  'UI|Opened|PageLayoutsButton',
+  'UI|Opened|PageNotesButton',
+  'UI|Opened|PagesTourOffer',
+  'UI|Toggled|WireframeSystemBarsOn',
+  'UI|Toggled|WireframeSystemBarsOff',
+  'UI|Used|PageContentsJump',
+  'UI|Used|PageContentsReorder',
+  'UI|Used|PageSwipe',
+]);
+// The families: each page kind's tour (offered, started, stepped, ended, and its Settings switch), the pages'
+// exports (`PagesPNG`, `PagesPDFPages`, ...), the page kinds and wireframe frames, the article's inserts, formatting
+// and looks, the logo guides and mirror, and where Contents docked.
+const PAGES_MODE_FAMILIES =
+  /^(UI\|(Started|Ended)\|(Pages|Slide|Infographic|Article|Logo)Tour\w*|UI\|View\|PagesTourStep\w+|UI\|Toggled\|(Pages|Slides|Infographic|Article|Logo)TourSeen(On|Off)|Document\|Exported\|Pages(PNG|SVG|PDF|GIF)\w*|Tab\|Changed\|(PageKind|WireframeDevice|WireframeFrame|ArticleLook)\w+|Element\|(Added|Changed)\|Article[A-Z]\w*|UI\|(Toggled|Changed)\|Logo(Guide|Mirror)\w*|UI\|Changed\|Contents(Placement|Side)\w+)$/;
+const isPagesModeEvent = (key: string) =>
+  PAGES_MODE_EVENTS.has(key) || PAGES_MODE_FAMILIES.test(key);
 
 export function isRetiredEvent(category: string, action: string, type: string | null): boolean {
   if (category === 'Document' && action === 'Reverted') return true;
+  if (isPagesModeEvent(`${category}|${action}|${type ?? ''}`)) return true;
   if (category === 'UI' && PALETTE_FAVOURITES_UI.has(`${action}|${type ?? ''}`)) return true;
   if (category === 'UI' && EXPERIMENTAL_SETTINGS_UI.has(`${action}|${type ?? ''}`)) return true;
   if (category === 'UI' && LOCATION_STEP_AND_QUICK_START_UI.has(`${action}|${type ?? ''}`))

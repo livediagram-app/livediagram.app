@@ -24,7 +24,6 @@ toolbar beside a selected element.
 | [Share dialog](live-app.md#share-dialog)                               | The dialog's title row (not on the offline gate)          | The owner (only the owner can open it)       |
 | [Dashboard Settings](../026-plan/plan-tabs.md#dashboard-settings)      | The settings panel's title row                            | An Editor (only an Editor sees the settings) |
 | [Photo import review](../021-event-storming/event-storming.md#show-me) | The review's top-left corner, once the stickies are found | Whoever reaches the review (edit access)     |
-| [Page panel](pages-tour.md#where-it-appears)                           | The page panel's title row, on every unlocked page        | An Editor (only an Editor has the panel)     |
 | [Sankey Flows dialog](../009-elements/sankey.md#show-me)               | The dialog's title row                                    | An Editor (only an Editor opens the dialog)  |
 | [Tab Style dialog](../011-theme/canvas-and-theme-dialog.md#show-me)    | The dialog's title row                                    | An Editor (only an Editor opens the dialog)  |
 
@@ -72,8 +71,7 @@ points only at controls that person can use. Each surface's spec names who that 
 
 Each surface sends three literal events under its own token `<Surface>Tour`: `UI` · `Started` · `<Surface>Tour`
 when the button is pressed, and `UI` · `Ended` · `<Surface>TourCompleted` or `<Surface>TourSkipped`. The tokens:
-`CardTypeTour`, `ShareTour`, `DashboardTour`, `PhotoReviewTour`, `LogoTour`, `SlideTour`, `InfographicTour`,
-`ArticleTour`, `SankeyFlowsTour`, `TabStyleTour`. Each has its stack (Started,
+`CardTypeTour`, `ShareTour`, `DashboardTour`, `PhotoReviewTour`, `SankeyFlowsTour`, `TabStyleTour`. Each has its stack (Started,
 Completed, Skipped) on the telemetry dashboard beside the card type tour's, and its explanations.
 
 ## Code
@@ -83,5 +81,5 @@ each surface keeps its steps in `<surface>-tour-steps.ts` and its literal teleme
 the dashboard's emitter scan reads every event. The engine scrolls each step's control into view in its scrolling
 panel (`revealInScrollers`, `tour-reveal.ts`, [Mechanics](editor-tour.md#mechanics)); a step never scrolls itself. A surface whose steps depend on what is there (a second tab, an empty slot, a box found) fixes
 them when the button is pressed, so they never change mid-tour. A surface in the editor's first load (the photo
-review, the page panel) imports its steps at the press (`onStart` returns the promise the tour waits for), so
+review) imports its steps at the press (`onStart` returns the promise the tour waits for), so
 their copy stays out of that load; `show-me-lazy-load.test.ts` keeps it so.

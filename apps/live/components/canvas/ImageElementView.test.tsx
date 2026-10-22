@@ -9,11 +9,7 @@ import {
   type ImageElement,
   type ThemeDefinition,
 } from '@liveplanner/document';
-import {
-  CanvasSurfaceProvider,
-  CanvasThemeProvider,
-  PageSurfacesProvider,
-} from './CanvasSurfaceContext';
+import { CanvasSurfaceProvider, CanvasThemeProvider } from './CanvasSurfaceContext';
 import { ImageElementView } from './ImageElementView';
 import {
   IMAGE_BROKEN_TONE,
@@ -49,16 +45,8 @@ const image = (over: Partial<ImageElement> = {}): ImageElement => ({
 
 function draw(
   el: ImageElement,
-  {
-    canvas = 'light',
-    page,
-    onOpenPicker = () => {},
-    canPick = true,
-    theme = null,
-    fontFamily,
-  } = {} as {
+  { canvas = 'light', onOpenPicker = () => {}, canPick = true, theme = null, fontFamily } = {} as {
     canvas?: 'light' | 'dark';
-    page?: 'light' | 'dark';
     onOpenPicker?: (id: string) => void;
     canPick?: boolean;
     theme?: ThemeDefinition | null;
@@ -68,16 +56,14 @@ function draw(
   return render(
     <CanvasThemeProvider theme={theme}>
       <CanvasSurfaceProvider surface={canvas}>
-        <PageSurfacesProvider surfaces={page ? new Map([[el.id, page]]) : null}>
-          <ImageElementView
-            element={el}
-            ownerId="o"
-            documentId="d"
-            shareCode={null}
-            onOpenPicker={canPick ? onOpenPicker : undefined}
-            fontFamily={fontFamily}
-          />
-        </PageSurfacesProvider>
+        <ImageElementView
+          element={el}
+          ownerId="o"
+          documentId="d"
+          shareCode={null}
+          onOpenPicker={canPick ? onOpenPicker : undefined}
+          fontFamily={fontFamily}
+        />
       </CanvasSurfaceProvider>
     </CanvasThemeProvider>,
   );
@@ -94,10 +80,9 @@ afterEach(() => {
 });
 
 describe('image placeholder ink', () => {
-  it('takes dark ink on a light page in dark chrome (the reported bug)', () => {
-    // Dark chrome, a dark canvas around the page, a cream / peach page under the placeholder.
+  it('takes dark ink on a light canvas in dark chrome (the reported bug)', () => {
     document.documentElement.classList.add('dark');
-    const { container, getByText } = draw(image(), { canvas: 'dark', page: 'light' });
+    const { container, getByText } = draw(image(), { canvas: 'light' });
     const el = box(container);
     expect(el.dataset.imagePlaceholder).toBe('light');
     expect(el.style.getPropertyValue('--ph-ink')).toBe(IMAGE_PLACEHOLDER_TONE.light.ink);
@@ -107,19 +92,10 @@ describe('image placeholder ink', () => {
     expect(el.className).not.toMatch(/\bdark:/);
   });
 
-  it('takes light ink on a dark page in light chrome', () => {
-    const { container } = draw(image(), { canvas: 'light', page: 'dark' });
+  it('takes light ink on a dark canvas in light chrome', () => {
+    const { container } = draw(image(), { canvas: 'dark' });
     expect(box(container).dataset.imagePlaceholder).toBe('dark');
     expect(box(container).style.getPropertyValue('--ph-ink')).toBe(IMAGE_PLACEHOLDER_TONE.dark.ink);
-  });
-
-  it('follows the canvas where the page has no fill of its own (or there is no page)', () => {
-    document.documentElement.classList.add('dark');
-    expect(box(draw(image(), { canvas: 'light' }).container).dataset.imagePlaceholder).toBe(
-      'light',
-    );
-    cleanup();
-    expect(box(draw(image(), { canvas: 'dark' }).container).dataset.imagePlaceholder).toBe('dark');
   });
 
   it('shows the face with no button and no hover tint to someone who cannot pick one', () => {
@@ -129,13 +105,10 @@ describe('image placeholder ink', () => {
     expect(box(container).className).not.toContain('hover:');
   });
 
-  it('inks the broken state for the page too', () => {
+  it('inks the broken state for the paper too', () => {
     blob.state = { status: 'broken' };
     document.documentElement.classList.add('dark');
-    const { container, getByText } = draw(image({ imageId: 'gone' }), {
-      canvas: 'dark',
-      page: 'light',
-    });
+    const { container, getByText } = draw(image({ imageId: 'gone' }), { canvas: 'light' });
     expect(getByText('Image unavailable')).toBeTruthy();
     expect(box(container).style.color).toBe('rgb(190, 18, 60)'); // IMAGE_BROKEN_TONE.light.ink
   });
@@ -252,8 +225,8 @@ describe('image placeholder theme', () => {
     expect(vars(box(container))).toEqual({ body: '#dcfce7', border: '#15803d', ink: '#14532d' });
   });
 
-  it('keeps the theme hue but turns legible on a dark page', () => {
-    const { container } = draw(image(), { theme: theme('forest'), page: 'dark' });
+  it('keeps the theme hue but turns legible on a dark canvas', () => {
+    const { container } = draw(image(), { theme: theme('forest'), canvas: 'dark' });
     const v = vars(box(container));
     expect(v.body).not.toBe('#dcfce7');
     expect(contrastRatio(v.ink, v.body)).toBeGreaterThanOrEqual(MIN_TEXT_CONTRAST);

@@ -2,15 +2,11 @@
 // what was made rather than what the agent said it made. Read-only: it never writes.
 import { resultJson, resultText } from './mcp-client.mjs';
 
-// The outline's first line: `tab 6cb1 "Name" · 0 elements · kind=form (read_form) · mode=plan · rev 1`, or for an
-// Pages tab `tab 3be5 "Deck" · 53 elements: 53 boxes · mode=pages · 6 pages: 6 slide (view pages) · rev 5`.
+// The outline's first line: `tab 6cb1 "Name" · 0 elements · kind=form (read_form) · mode=plan · rev 1`.
 export function parseTabHeader(line) {
   const kind = /kind=([\w-]+)/.exec(line)?.[1] ?? null;
-  const pages = /· (\d+) pages?: ([^(]+)\(/.exec(line);
-  const mode = pages ? 'pages' : (/mode=([\w-]+)/.exec(line)?.[1] ?? null);
-  const pageKinds = {};
-  for (const m of (pages?.[2] ?? '').matchAll(/(\d+) ([\w-]+)/g)) pageKinds[m[2]] = Number(m[1]);
-  return { kind, mode, ...(pages ? { pageCount: Number(pages[1]), pageKinds } : {}) };
+  const mode = /mode=([\w-]+)/.exec(line)?.[1] ?? null;
+  return { kind, mode };
 }
 
 async function readTab(client, documentId, tab) {
@@ -19,7 +15,7 @@ async function readTab(client, documentId, tab) {
   );
   const outline = resultText(await client.call('read_document', { documentId, tabId: tab.id }));
   const header = parseTabHeader(outline?.split('\n')[0] ?? '');
-  const { kind, mode } = header;
+  const { kind } = header;
   const out = {
     id: tab.id,
     name: tab.name,
@@ -29,10 +25,6 @@ async function readTab(client, documentId, tab) {
   };
   if (kind === 'form')
     out.form = resultJson(await client.call('read_form', { documentId, tab: tab.id }));
-  if (mode === 'pages')
-    out.pages = resultText(
-      await client.call('read_document', { documentId, tabId: tab.id, view: 'pages' }),
-    );
   return out;
 }
 

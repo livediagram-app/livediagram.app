@@ -64,7 +64,6 @@ import { useCoversCanvas } from '@/hooks/plan/plan-cover-store';
 import { ElementContentSections } from './ElementContentSections';
 import { ElementMenuQuickBar } from './ElementMenuQuickBar';
 import { ElementAppearanceSections } from './ElementAppearanceSections';
-import { MirrorCopyGlyph } from '@/components/canvas/logo-glyphs';
 import { MultiSelectionContextMenu } from './MultiSelectionContextMenu';
 
 import { shapeKindLabel } from '@/lib/element-names';
@@ -362,14 +361,6 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             </div>
           </MenuAccordionSection>
         ) : null}
-        {/* Mirror Copy on a logo page (docs/specs/007-editor/logo-pages.md "Mirror"). */}
-        {props.onMirrorCopy ? (
-          <MenuActionRow
-            icon={<MirrorCopyGlyph />}
-            label="Mirror Copy"
-            onClick={runAndClose(props.onMirrorCopy)}
-          />
-        ) : null}
         {/* ── Appearance group: Presets / Progress / Animation / Colours / Border ──
             Skipped entirely for an event-storming note: its colour, text
             treatment and shadow are the notation (docs/specs/021-event-storming/event-storming.md), so every
@@ -387,7 +378,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             headerFillHandlers={headerFillHandlers}
             arrowheadColorHandlers={arrowheadColorHandlers}
             strokeColorHandlers={strokeColorHandlers}
-            afterGroup={!covering || !!props.onMirrorCopy}
+            afterGroup={!covering}
           />
         )}
         {showContentGroup ? <MenuGroupSeparator /> : null}

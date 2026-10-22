@@ -60,7 +60,6 @@ export function usePathTool({
   onDeselect,
   onBeginEdit,
   onCancelDraw,
-  snapPoint,
 }: {
   pendingDraw: PendingDraw | null;
   canvasTool: CanvasTool;
@@ -85,8 +84,6 @@ export function usePathTool({
   onBeginEdit: (id: string) => void;
   // Puts a held tool down: opening a path's edit mode puts the Path tool down first.
   onCancelDraw: () => void;
-  // Where a click places a node instead (usePathDrawGesture).
-  snapPoint?: (p: { x: number; y: number }) => { x: number; y: number } | null;
 }) {
   const surface = useCanvasSurface();
   const toast = useToast();
@@ -99,7 +96,6 @@ export function usePathTool({
     activeTabId,
     onCommitPath,
     onStartPath: onDeselect,
-    snapPoint,
   });
   const openEdit = (id: string) => {
     if (pendingDraw) onCancelDraw();
@@ -119,7 +115,7 @@ export function usePathTool({
   // A tool picked, the path locked, out of reach or deleted (by a peer too): edit mode leaves.
   const stale =
     editingId !== null && elements.some((e) => e.id === editingId && e.type === 'path') && !editing;
-  // Edit mode asked of a combined shape, which has no points to edit one by one.
+  // Edit mode asked of a path of several contours, which has no points to edit one by one.
   const askedCompound =
     stale && elements.some((e) => e.id === editingId && e.type === 'path' && isCompoundPath(e));
   const lastEditedRef = useRef<string | null>(null);
@@ -128,8 +124,8 @@ export function usePathTool({
     lastEditedRef.current = editing?.id ?? null;
     if (!stale && !vanished) return;
     debugLog(`[path] edit left: ${vanished && !stale ? 'path gone' : 'no longer editable'}`);
-    // A combined shape's points are not edited one by one (docs/specs/007-editor/logo-pages.md).
-    if (askedCompound) toast.info('Combined shapes edit as a whole.');
+    // A path of several contours is not edited point by point (docs/specs/023-draw-mode/path-tool.md).
+    if (askedCompound) toast.info('This shape edits as a whole.');
     onLeaveEdit();
   }, [stale, editing, editingId, onLeaveEdit, askedCompound, toast]);
   const edit = usePathEditGesture({

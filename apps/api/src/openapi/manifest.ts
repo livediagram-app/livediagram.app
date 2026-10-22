@@ -568,33 +568,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [200, 400, 401, 403, 404, 410],
   },
   {
-    method: 'POST',
-    path: '/documents/{id}/tabs/{tabId}/pages',
-    segment: 'documents',
-    tag: 'Documents',
-    summary:
-      'Change the pages of a tab (add, set, lay out, move, duplicate, delete; up to 50, as one edit) or write an article from Markdown. Switches the tab into Pages and reaches everyone with the document open. Answers each page with its rectangle on the canvas.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    requestSchema: ref('PagesRequest'),
-    responseSchema: 'PagesAnswer',
-    statuses: [200, 400, 401, 403, 404, 409, 410, 413],
-  },
-  {
-    method: 'POST',
-    path: '/documents/{id}/tabs/{tabId}/illustrate',
-    segment: 'documents',
-    tag: 'Documents',
-    summary:
-      'The address of the pages call before Illustrate mode became Pages mode, kept for older clients. Use /documents/{id}/tabs/{tabId}/pages.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    deprecated: true,
-    requestSchema: ref('PagesRequest'),
-    responseSchema: 'PagesAnswer',
-    statuses: [200, 400, 401, 403, 404, 409, 410, 413],
-  },
-  {
     method: 'DELETE',
     path: '/documents/{id}/tabs/{tabId}',
     segment: 'documents',

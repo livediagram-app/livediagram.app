@@ -15,41 +15,6 @@ const TEMPLATE_MODES: Partial<Record<TemplateKind, EditorMode>> = {
   'journey-doodle': 'draw',
   'pre-mortem': 'draw',
   'idea-garden': 'draw',
-  'blank-illustration': 'pages',
-  'blank-slide-deck': 'pages',
-  'blank-article': 'pages',
-  'blank-infographic': 'pages',
-  'blank-logo': 'pages',
-  'blank-wireframe-phone': 'pages',
-  'blank-wireframe-tablet': 'pages',
-  'blank-wireframe-browser': 'pages',
-  'blank-wireframe-laptop': 'pages',
-  'blank-wireframe-watch': 'pages',
-  'wireframe-mobile-app': 'pages',
-  'wireframe-website': 'pages',
-  'wireframe-dashboard': 'pages',
-  'wireframe-tablet-app': 'pages',
-  'wireframe-watch-app': 'pages',
-  article: 'pages',
-  'working-backwards': 'pages',
-  'slide-deck': 'pages',
-  'logo-design': 'pages',
-  'live-card': 'pages',
-  'event-poster': 'pages',
-  'year-in-review': 'pages',
-  resume: 'pages',
-  'recipe-card': 'pages',
-  'data-story': 'pages',
-  'how-it-works': 'pages',
-  versus: 'pages',
-  'social-carousel': 'pages',
-  'launch-keynote': 'pages',
-  'quarterly-review': 'pages',
-  'team-welcome': 'pages',
-  'workshop-kickoff': 'pages',
-  // Design templates (template-design-pages.ts): drawn on a page sized for what each is.
-  'floor-plan': 'pages',
-  storyboard: 'pages',
   // Plan templates (docs/specs/026-plan/plan-templates.md).
   'blank-plan': 'plan',
   'blank-spreadsheet': 'plan',
@@ -135,32 +100,19 @@ export function templateEditorMode(kind: TemplateKind): EditorMode {
 }
 
 /** Each mode's blank (docs/specs/007-editor/templates-by-mode.md "Five blanks"). */
-export const BLANK_TEMPLATE_FOR_MODE: Readonly<Record<EditorMode, TemplateKind>> = {
-  diagram: 'blank',
-  draw: 'whiteboard',
-  pages: 'blank-illustration',
-  plan: 'blank-plan',
-  workshop: 'blank-session',
-};
+export const BLANK_TEMPLATE_FOR_MODE: Readonly<Record<Exclude<EditorMode, 'pages'>, TemplateKind>> =
+  {
+    diagram: 'blank',
+    draw: 'whiteboard',
+    plan: 'blank-plan',
+    workshop: 'blank-session',
+  };
 
 // The blanks beyond each mode's own (docs/specs/007-editor/templates-by-mode.md "The blanks"): Blank Spreadsheet, an
-// empty Sheet, beside Blank Plan; the blanks of a page kind ("Blanks of a page kind"), one empty page of a chosen kind,
-// beside Blank Illustration, in the order the landing page's Blank Slate lists them.
-export const EXTRA_BLANK_TEMPLATES: readonly TemplateKind[] = [
-  'blank-slide-deck',
-  'blank-article',
-  'blank-infographic',
-  'blank-logo',
-  'blank-wireframe-phone',
-  'blank-wireframe-tablet',
-  'blank-wireframe-browser',
-  'blank-wireframe-laptop',
-  'blank-wireframe-watch',
-  'blank-spreadsheet',
-  'blank-form',
-];
+// empty Sheet, and Blank Form, beside Blank Plan.
+export const EXTRA_BLANK_TEMPLATES: readonly TemplateKind[] = ['blank-spreadsheet', 'blank-form'];
 
-/** True for the blanks: each mode's, Blank Spreadsheet and the blanks of a page kind. Quick-picks on Popular, never on a category shelf or tile. */
+/** True for the blanks: each mode's, Blank Spreadsheet and Blank Form. Quick-picks on Popular, never on a category shelf or tile. */
 export function isBlankTemplate(kind: TemplateKind): boolean {
   return (
     Object.values(BLANK_TEMPLATE_FOR_MODE).includes(kind) || EXTRA_BLANK_TEMPLATES.includes(kind)

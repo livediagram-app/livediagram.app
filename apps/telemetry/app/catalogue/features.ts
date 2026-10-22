@@ -7,7 +7,6 @@ import { CUSTOM_THEME_TYPES, NON_PATTERN_CANVAS_TYPES, isNonThemePick } from '..
 import type { Metric, MetricStack } from '../metric-series';
 import { chart } from './helpers';
 import { elementTourTokens } from '../element-tour-kinds';
-import { LOGO_TOOL_TYPES } from '../logo-types';
 
 export const LAYERS_RENAMED = chart(
   'Layer',
@@ -260,276 +259,32 @@ export const TAB_OPENS_IN = chart(
   { types: ['OpensInDiagram', 'OpensInDraw', 'OpensInPages', 'OpensInPlan'] },
 );
 
-// Pages mode's A4 page turned portrait or landscape (docs/specs/007-editor/editor-modes.md "The page").
-export const PAGE_ORIENTATION = chart(
-  'Tab',
-  'Changed',
-  'Page Orientations Set',
-  "A Pages tab's A4 page turned to portrait or landscape, from the page's settings.",
-  { types: ['PagePortrait', 'PageLandscape'] },
-);
-
-// Pages added after the last one, or deleted (docs/specs/007-editor/editor-modes.md "The pages").
-export const PAGES = chart(
-  'Tab',
-  'Changed',
-  'Pages Added and Deleted',
-  'A page added to a Pages tab from the plus after its last page (an infographic page, a new article, or a slide), or deleted from its settings.',
-  {
-    types: [
-      'PageAdded',
-      'ArticleAdded',
-      'SlidePageAdded',
-      'PageRemoved',
-      'ArticlesToPages',
-      'PageKindInfographic',
-      'PageKindArticle',
-      'PageKindSlide',
-      'LogoPageAdded',
-      'PageKindLogo',
-      'WireframePageAdded',
-      'PageKindWireframe',
-      'PageAddedLikeLast',
-    ],
-  },
-);
-
-// A wireframe page's device and frame chosen (docs/specs/007-editor/wireframe-pages.md).
-export const WIREFRAME_DEVICES_CHOSEN = chart(
-  'Tab',
-  'Changed',
-  'Wireframe Devices',
-  'The device a wireframe page was framed as, chosen as it was added or afterwards, and its frame look.',
-  {
-    types: [
-      'WireframeDeviceIphone',
-      'WireframeDeviceIphoneDuo',
-      'WireframeDeviceAndroid',
-      'WireframeDeviceIpad',
-      'WireframeDeviceAndroidTablet',
-      'WireframeDeviceLaptop',
-      'WireframeDeviceDesktop',
-      'WireframeDeviceBrowser',
-      'WireframeDeviceWatch',
-      'WireframeFrameTheme',
-      'WireframeFrameDark',
-      'WireframeFrameLight',
-      'WireframeFrameOutline',
-    ],
-  },
-);
-
-// A wireframe page's system bars turned on or off.
-export const WIREFRAME_SYSTEM_BARS = chart(
-  'UI',
-  'Toggled',
-  'Wireframe System Bars',
-  'A wireframe page’s status bar and home indicator turned on or off.',
-  { types: ['WireframeSystemBarsOn', 'WireframeSystemBarsOff'] },
-);
-
-// A logo page's tools (docs/specs/007-editor/logo-pages.md): shapes combined into one, Mirror
-// Copy, and wordmark type set on a text.
-export const LOGO_TOOLS = chart(
-  'Element',
-  'Changed',
-  'Logo Tools Used',
-  'On a logo page: shapes combined (Unite, Subtract, Intersect, Exclude), a Mirror Copy, and wordmark type (tracking, weight, case, arc) set on a text.',
-  { types: [...LOGO_TOOL_TYPES] },
-);
-
-// Drawing with Mirror on: each drawing that got its reflected twin.
-export const LOGO_MIRROR_TWINS = chart(
-  'Element',
-  'Created',
-  'Mirrored Drawings',
-  'A shape, path or stroke drawn on a logo page with Mirror While Drawing on, so it got a reflected twin.',
-  { types: ['MirrorTwin'] },
-);
-
-// A logo page's own switches, each person's (Show Guides is a Setting, charted there).
-export const LOGO_SWITCHES = chart(
-  'UI',
-  'Toggled',
-  'Logo Mirror Switched',
-  'Mirror While Drawing turned on or off on a logo page.',
-  { types: ['LogoMirrorOn', 'LogoMirrorOff'] },
-);
-
-// How a logo page mirrors (docs/specs/007-editor/logo-pages.md "Mirror"): the axis, a radial
-// mirror's copies and Merge Into One, from the Mirror popover.
-export const LOGO_MIRROR_SETTINGS = chart(
-  'UI',
-  'Changed',
-  'Logo Mirror Set Up',
-  "A logo page's mirror axis, radial copies or Merge Into One changed in its Mirror popover.",
-  {
-    types: [
-      'LogoMirrorAxisVertical',
-      'LogoMirrorAxisHorizontal',
-      'LogoMirrorAxisBoth',
-      'LogoMirrorAxisRadial',
-      'LogoMirrorCopies3',
-      'LogoMirrorCopies4',
-      'LogoMirrorCopies5',
-      'LogoMirrorCopies6',
-      'LogoMirrorCopies8',
-      'LogoMirrorMergeOn',
-      'LogoMirrorMergeOff',
-    ],
-  },
-);
-
-// A page's own settings (docs/specs/007-editor/pages-mode.md).
-export const PAGE_SETUP = chart(
-  'Tab',
-  'Changed',
-  'Pages Set Up',
-  "A page's size, name, background or pattern changed from its panel (or a background given to every page of its kind, or painted from another page), or a page locked or unlocked.",
-  {
-    types: [
-      'PageSize',
-      'PageRenamed',
-      'PageBackground',
-      'PageBackgroundImage',
-      'PageBackgroundAnimated',
-      'PageBackgroundAnimatedSpeed',
-      'PageBackgroundAppliedToAll',
-      'PageBackgroundPainted',
-      'PagePattern',
-      'PageLocked',
-      'PageUnlocked',
-    ],
-  },
-);
-
-// Contents (docs/specs/007-editor/pages-mode.md "Contents"): a press on a page in the list,
-// going there, or a page dragged to a new place in it.
-export const PAGE_CONTENTS_JUMPS = chart(
-  'UI',
-  'Used',
-  'Contents Jumps and Reorders',
-  "A page pressed in Pages mode's Contents list (the canvas gliding to it), or dragged to a new place there.",
-  { types: ['PageContentsJump', 'PageContentsReorder'], rising: 'neutral' },
-);
-
-// The view rests on a page (docs/specs/007-editor/pages-mode.md "Getting around the pages"): a
-// short pan or a flick from a page seen whole turning to its neighbour.
-export const PAGE_SWIPES = chart(
-  'UI',
-  'Used',
-  'Page Swipes',
-  'A short pan or flick in Pages mode that turned the view to the next or previous page.',
-  { types: ['PageSwipe'], rising: 'neutral' },
-);
-
 // Tab windows (docs/specs/009-elements/tab-window.md): a window's tab chosen, and the tab opened from it.
 export const TAB_WINDOW_USE = chart(
   'UI',
   'Used',
   'Tab Windows Opened',
-  'A tab opened from a Tab Window showing it, on a slide or page.',
+  'A tab opened from a Tab Window showing it.',
   { types: ['TabWindowOpen'], rising: 'neutral' },
 );
 
-// Building pages: a layout placed, a page duplicated or moved.
-export const PAGE_BUILDING = chart(
+// A form cover's moving background (docs/specs/030-forms/forms.md "The form card, top to bottom"): set
+// moving, or its speed changed.
+export const ANIMATED_BACKGROUNDS = chart(
   'Tab',
   'Changed',
-  'Pages Built',
-  'A layout put onto a page, a page duplicated, moved or split, or a board put onto a page.',
-  {
-    types: [
-      'PageLayout',
-      'PageLayoutSurprise',
-      'PageDuplicated',
-      'PageMoved',
-      'PagesLaidOut',
-      'PageFitToContent',
-    ],
-  },
+  'Animated Backgrounds',
+  'A background set moving, or its speed changed.',
+  { types: ['PageBackgroundAnimated', 'PageBackgroundAnimatedSpeed'] },
 );
 
-// Leaving Pages past the pages warning (docs/specs/007-editor/editor-modes.md "Leaving
-// Pages"): how often people go on to Diagram or Draw once told their pages will not show.
-export const LEAVE_PAGES_CONFIRMED = chart(
-  'Editor',
-  'Changed',
-  'Pages Left Past the Warning',
-  'Someone switched a Pages tab with pages to Diagram or Draw after the warning that its pages do not show there.',
-  { types: ['LeavePagesConfirmed'] },
-);
-
-// An empty infographic page's in-page layout card hidden (docs/specs/007-editor/pages-mode.md
-// "Layouts"): set beside Page Layout to see whether the card helps or gets in the way.
-export const EMPTY_PAGE_LAYOUTS_HIDDEN = chart(
-  'UI',
-  'Closed',
-  'Empty Page Layouts Hidden',
-  'Someone hid the Start From a Layout card an empty page shows inside itself, or chose Start From Scratch on it.',
-  { types: ['EmptyPageLayouts', 'EmptyPageLayoutsBlank'] },
-);
-
-// Writing articles (docs/specs/007-editor/article-pages.md "Telemetry").
-export const ARTICLE_INSERTS = chart(
-  'Element',
-  'Added',
-  'Article Inserts',
-  'Something put into the writing of an article: an image, table, chart or drawing at the caret, an object or drawing taken in from the palette, or a divider, page break, quote or code block.',
-  {
-    types: [
-      'ArticleImage',
-      'ArticleTable',
-      'ArticleChart',
-      'ArticleCallout',
-      'ArticleSticky',
-      'ArticleDrawing',
-      'ArticleObject',
-      'ArticleDivider',
-      'ArticlePageBreak',
-      'ArticleQuote',
-      'ArticleCode',
-      'ArticleComment',
-      'ArticleAction',
-    ],
-  },
-);
-
-export const ARTICLE_FORMATTING = chart(
-  'Element',
-  'Changed',
-  'Article Formatting',
-  "The page toolbar used on an article's writing (a format, a text style or list, a link) and a zone in the writing wrapped, placed or deleted.",
-  {
-    types: [
-      'ArticleFormat',
-      'ArticleBlockStyle',
-      'ArticleLink',
-      'ArticlePaste',
-      'ArticleZoneWrap',
-      'ArticleZoneResized',
-      'ArticleZoneMoved',
-      'ArticleZoneFloat',
-      'ArticleZoneRemoved',
-    ],
-  },
-);
-
-export const ARTICLE_LOOKS = chart(
+// A board switched onto a page that fits it (docs/specs/007-editor/editor-modes.md).
+export const PAGE_FIT_TO_CONTENT = chart(
   'Tab',
   'Changed',
-  'Article Looks',
-  "An article's look chosen in its Style tab, or one of its style fields changed.",
-  {
-    types: [
-      'ArticleLookClean',
-      'ArticleLookClassic',
-      'ArticleLookReport',
-      'ArticleLookNotebook',
-      'ArticleLookBold',
-      'ArticleStyle',
-    ],
-  },
+  'Boards Put Onto Pages',
+  'A board put onto a page that fits it as its tab switched mode.',
+  { types: ['PageFitToContent'] },
 );
 
 export const WHITEBOARDS: MetricStack = {
@@ -540,25 +295,10 @@ export const WHITEBOARDS: MetricStack = {
   members: [
     WHITEBOARDS_CREATED,
     EDITOR_MODE_SWITCHES,
-    LEAVE_PAGES_CONFIRMED,
     TAB_OPENS_IN,
-    PAGE_ORIENTATION,
-    PAGES,
-    PAGE_SETUP,
-    PAGE_BUILDING,
-    PAGE_CONTENTS_JUMPS,
-    PAGE_SWIPES,
+    ANIMATED_BACKGROUNDS,
+    PAGE_FIT_TO_CONTENT,
     TAB_WINDOW_USE,
-    LOGO_TOOLS,
-    LOGO_MIRROR_TWINS,
-    LOGO_SWITCHES,
-    LOGO_MIRROR_SETTINGS,
-    WIREFRAME_DEVICES_CHOSEN,
-    WIREFRAME_SYSTEM_BARS,
-    EMPTY_PAGE_LAYOUTS_HIDDEN,
-    ARTICLE_INSERTS,
-    ARTICLE_FORMATTING,
-    ARTICLE_LOOKS,
     WHITEBOARD_PENS,
     WHITEBOARD_SETTINGS,
     WHITEBOARD_RECOGNITION,
@@ -1118,13 +858,6 @@ export const AVATAR_TOUR_OFFERED = opened(
   'Avatar Tour Offered',
   'The Avatar tour offered, the first time someone walks as an avatar.',
   (t) => t === 'AvatarTourOffer',
-);
-
-// The Pages tour's offer (docs/specs/007-editor/pages-tour.md); charted in its funnel on the Visitors tab.
-export const PAGES_TOUR_OFFERED = opened(
-  'Pages Tour Offered',
-  'The Pages tour offered, the first time someone works in Pages mode.',
-  (t) => t === 'PagesTourOffer',
 );
 
 // The element tours' offers (docs/specs/007-editor/element-tours.md), any `<Kind>TourOffer`; charted in their funnel on

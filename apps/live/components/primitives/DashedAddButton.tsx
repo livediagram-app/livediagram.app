@@ -1,7 +1,6 @@
 'use client';
 
-// The full-width dashed "add" row (docs/specs/026-plan/item-types.md "The Card Types panel",
-// docs/specs/007-editor/logo-pages.md "Logo layouts"): a plus and the label, quiet until hovered,
+// The full-width dashed "add" row (docs/specs/026-plan/item-types.md "The Card Types panel"): a plus and the label, quiet until hovered,
 // when it takes the brand colour. Add New Card Type and Start From Scratch both wear it. Its border and text
 // default to the chrome's; a host may pass its own (`tone`) through CSS variables.
 import type { ButtonHTMLAttributes, CSSProperties } from 'react';

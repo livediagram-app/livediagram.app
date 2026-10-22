@@ -21,7 +21,6 @@ export type MapSize = 'short' | 'medium' | 'tall';
 // render would otherwise be undone.
 
 import { upgradeLegacyPreferences } from '@liveplanner/api-schema';
-import type { PageKind } from '@liveplanner/document';
 import type { ElementTourKind } from './element-tours';
 import type { PlanTourTrack } from './plan-tour';
 import type { SwatchOverrideStore } from './swatch-overrides';
@@ -128,14 +127,6 @@ export type UserPreferences = {
   // unaffected; only the visual hint is suppressed). Missing /
   // undefined === guides on, the default.
   alignmentGuides?: boolean;
-  // Construction guides on a logo page (docs/specs/007-editor/logo-pages.md "Construction guides"):
-  // its centre lines, keylines, safe area and grid, and snapping to its keylines. Missing /
-  // undefined === on, the default; `false` hides them (and the keyline snaps with them).
-  logoGuides?: boolean;
-  // Which construction guides a logo page hides (docs/specs/007-editor/logo-pages.md), and how
-  // strongly the rest show. Read through lib/logo-guide-prefs.ts; absent is every part, Medium.
-  logoGuidesHidden?: string[];
-  logoGuideStrength?: 'faint' | 'medium' | 'strong';
   // Reduce motion (accessibility, docs/specs/007-editor/user-preferences.md). When `true`, the editor adds
   // `.reduce-motion` to <html> so the CSS in globals.css collapses every
   // decorative animation + transition to ~instant. Independent of the OS
@@ -226,12 +217,6 @@ export type UserPreferences = {
   // The Avatar tour's seen-guard (docs/specs/008-canvas/avatar-tour.md), as `drawTourSeen`.
   // Surfaced in Settings as Tours › "Avatar Tour" (inverted). Missing / undefined === not seen.
   avatarTourSeen?: boolean;
-  // The Pages tour's seen-guard (docs/specs/007-editor/pages-tour.md), as `planTourSeen`: true counts every
-  // page kind's track as seen while Power user mode is on. Set with every kind by Power user mode.
-  pagesTourSeen?: boolean;
-  // The page kinds whose Pages tour track has been offered and answered (taken, skipped or declined), so each
-  // kind offers its own once ever. Cleared with `pagesTourSeen` when the Settings switch is turned on.
-  pagesTourKinds?: PageKind[];
   // Element tours (docs/specs/007-editor/element-tours.md): the toured element kinds whose offer has been answered
   // (Play or Cancel), so each offers itself once ever. Surfaced in Settings as Tours › Show Me, one switch
   // per kind (inverted). Read through lib/element-tours.
@@ -283,10 +268,6 @@ export type UserPreferences = {
   // Draw mode's pattern, the person's own (docs/specs/007-editor/editor-modes.md "One look"):
   // Plain, Dots or Grid. Read through lib/whiteboard-dock-prefs. Missing === Grid.
   drawPattern?: 'blank' | 'grid' | 'graph';
-  // How Pages mode's Contents shows on a desktop (docs/specs/007-editor/pages-mode.md
-  // "Contents"): docked as a sidebar down the canvas's left, or minimised to its cluster button. Read
-  // through lib/contents-placement. Missing (or anything but 'button') === the sidebar.
-  contentsPlacement?: 'sidebar' | 'button';
   // The presenter settings (docs/specs/012-collaboration/presentation-mode.md "Settings"): transition, speed,
   // playback and display, as one object. Read through lib/presentation-config, which trusts it only once parsed.
   // Missing === what this browser kept before they followed the account, else the defaults.

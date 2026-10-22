@@ -64,6 +64,31 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('UI', 'Opened', 'SettingsAi')).toBe(false);
   });
 
+  it('retires Pages mode, not the presentations, slides and backgrounds that outlive it', () => {
+    expect(isRetiredEvent('Tab', 'Changed', 'PageAdded')).toBe(true);
+    expect(isRetiredEvent('Tab', 'Changed', 'PageKindLogo')).toBe(true);
+    expect(isRetiredEvent('Tab', 'Changed', 'WireframeDeviceIphone')).toBe(true);
+    expect(isRetiredEvent('Element', 'Added', 'ArticleTable')).toBe(true);
+    expect(isRetiredEvent('Element', 'Changed', 'ShapesUnited')).toBe(true);
+    expect(isRetiredEvent('Document', 'Exported', 'PagesPDFPages')).toBe(true);
+    expect(isRetiredEvent('Document', 'Exported', 'LogoKit')).toBe(true);
+    expect(isRetiredEvent('UI', 'View', 'PagesTourStepSlideWelcome')).toBe(true);
+    expect(isRetiredEvent('UI', 'Started', 'LogoTour')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'LogoGuideGridOn')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'SlidesTourSeenOff')).toBe(true);
+    expect(isRetiredEvent('UI', 'Changed', 'ContentsPlacementButton')).toBe(true);
+    expect(isRetiredEvent('UI', 'Added', 'PageSlide')).toBe(true);
+    expect(isRetiredEvent('Mcp', 'Used', 'WriteArticle')).toBe(true);
+    expect(isRetiredEvent('Cli', 'Used', 'PageSet')).toBe(true);
+    expect(isRetiredEvent('UI', 'Added', 'Slide')).toBe(false);
+    expect(isRetiredEvent('UI', 'Added', 'BoardSlide')).toBe(false);
+    expect(isRetiredEvent('Tab', 'Changed', 'PageBackgroundAnimated')).toBe(false);
+    expect(isRetiredEvent('UI', 'Used', 'TabWindowOpen')).toBe(false);
+    expect(isRetiredEvent('UI', 'Started', 'PlanTour')).toBe(false);
+    expect(isRetiredEvent('Document', 'Exported', 'PNG')).toBe(false);
+    expect(isRetiredEvent('Help', 'View', 'pages')).toBe(false);
+  });
+
   it('keeps everything that still exists', () => {
     expect(isRetiredEvent('Document', 'Undone', null)).toBe(false);
     expect(isRetiredEvent('Help', 'View', 'undo')).toBe(false);

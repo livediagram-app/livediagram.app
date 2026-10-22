@@ -1,6 +1,5 @@
 'use client';
 
-import { pageLabel } from '@liveplanner/document';
 import type { DockAnchor } from '@/hooks/canvas/useDockPopovers';
 import type { ReactNode } from 'react';
 import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
@@ -35,15 +34,12 @@ export function useCanvasToolPanels({
   props,
   chromeHidden,
   panelWiringFor,
-  slidesPopover,
   avatarPopover,
 }: {
   props: CanvasChromeProps;
   // The Avatar panel as a popover over its cluster button (docs/specs/008-canvas/avatar-mode.md "The Avatar
   // Panel"), while open: it has no corner form.
   avatarPopover?: { anchor: DockAnchor | undefined; onClose: () => void } | null;
-  // The Slide Deck as a popover over its cluster button (Pages mode), while open.
-  slidesPopover?: { anchor: DockAnchor | undefined; onClose: () => void } | null;
   chromeHidden: boolean;
   panelWiringFor: ReturnType<typeof useCornerDocking>['panelWiringFor'];
 }): {
@@ -221,27 +217,16 @@ export function useCanvasToolPanels({
   // whose tool does not itself change the canvas — picking it opens the
   // workbench, and Start is a deliberate second act.
   const slideDeckEl =
-    !chromeHidden && slideDeck && (canvasTool === 'slide-deck' || slidesPopover) ? (
+    !chromeHidden && slideDeck && canvasTool === 'slide-deck' ? (
       <SlideDeckPanel
         state={slideDeck}
         tabs={tabSummaries}
         activeTabId={activeTabId ?? ''}
         isReadOnly={readOnly}
-        pages={props.pagesMode?.pages.map((p) => ({
-          id: p.id,
-          label: pageLabel(p, p.index, Math.max(2, props.pagesMode!.pages.length)),
-          slide: p.kind === 'slide',
-        }))}
         position={slideDeckWiring.position}
         onMoveTo={(x, y) => onMoveSlideDeckPanel?.(x, y)}
         onReset={slideDeckWiring.onReset}
-        dock={slidesPopover ? undefined : slideDeckWiring.dock}
-        // Over the Slides cluster button (Pages mode): a popover, closed by an outside press.
-        asPopover={!!slidesPopover}
-        popoverOpen={!!slidesPopover}
-        popoverAnchor={slidesPopover?.anchor}
-        dismissOnOutside={!!slidesPopover}
-        onPopoverClose={slidesPopover?.onClose}
+        dock={slideDeckWiring.dock}
       />
     ) : null;
 

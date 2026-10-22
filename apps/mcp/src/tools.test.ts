@@ -72,8 +72,7 @@ const BOARD = {
     hideWriting: false,
   },
 };
-// In Pages mode, so the Pages tools find it (docs/specs/024-agents/pages-for-agents.md).
-const TAB = { id: 't_1', name: 'Tab 1', rev: 1, opensIn: 'pages', elements: [BOARD] };
+const TAB = { id: 't_1', name: 'Tab 1', rev: 1, elements: [BOARD] };
 const PLAN = {
   boards: [
     {
@@ -145,19 +144,6 @@ function okResponse(request: Request): Response {
   if (path.endsWith('/restore')) return json({ document: LIVE_DOC });
   if (path.endsWith('/share')) {
     return json({ link: { code: 'abc', role: 'view', expiresAt: null } });
-  }
-  // A Pages edit (docs/specs/024-agents/pages-for-agents.md "The route").
-  if (path.endsWith('/pages')) {
-    const article = { flow: 'art-1', title: 'A', pages: [1], blocks: 1, words: 1, look: null };
-    return json({
-      tab: { id: 't_1', rev: 2 },
-      switched: false,
-      lines: [],
-      pages: [],
-      articles: [article],
-      article: { ...article, created: true },
-      changesetId: null,
-    });
   }
   // Tab writes are changesets and the tab name route (docs/specs/024-agents/agent-changesets.md).
   if (path.endsWith('/changesets')) {
@@ -266,7 +252,6 @@ describe('registerTools', () => {
       'change_card_types',
       'change_form',
       'change_items',
-      'change_pages',
       'change_sheet',
       'create_document',
       'delete_document',
@@ -286,7 +271,6 @@ describe('registerTools', () => {
       'share_form',
       'try_form',
       'update_document',
-      'write_article',
     ]);
     // The description is what the calling model reads to pick a tool, so an
     // undescribed tool is effectively unreachable.
@@ -303,7 +287,7 @@ describe('registerTools', () => {
     const seen: Record<string, Emitted[]> = {};
     for (const tool of registered) {
       const before = emitted.length;
-      // A board or Sheet goes only on a tab in Plan: the Form tab is one, Tab 1 is in Pages.
+      // A board or Sheet goes only on a tab in Plan: the Form tab is one, Tab 1 is not.
       const planOnly = tool.name === 'add_sheet' || tool.name === 'add_board';
       const args = planOnly ? { ...ARGS, tabId: 'f_1' } : ARGS;
       const result = (await tool.handler(args, AUTHED)) as { isError?: boolean };
@@ -406,10 +390,6 @@ describe('tool annotations', () => {
     read_sheet: 'read',
     change_sheet: 'destructive',
     add_sheet: 'write',
-    // docs/specs/024-agents/pages-for-agents.md: change_pages deletes pages and replaces their
-    // content; write_article replaces an article's text.
-    change_pages: 'destructive',
-    write_article: 'destructive',
     // docs/specs/030-forms/forms.md "Agents": change_form deletes questions and sections; share_form publishes.
     read_form: 'read',
     add_form: 'write',
@@ -487,11 +467,9 @@ describe('tool annotations', () => {
       'change_card_types',
       'change_form',
       'change_items',
-      'change_pages',
       'change_sheet',
       'delete_document',
       'update_document',
-      'write_article',
     ]);
   });
 });

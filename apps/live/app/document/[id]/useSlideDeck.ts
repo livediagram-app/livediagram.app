@@ -21,14 +21,8 @@ const idsOf = (s: Selection) => selectionIds(s.selectedId, s.multiSelectedIds);
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
-  deckFollowingPages,
-  GoneSlides,
   EMPTY_DECK,
   firstDeck,
-  pageMoveForDeckOrder,
-  slidePageOwnSlideIds,
-  pagesOf,
-  pageLabel,
   parseStoredPresentation,
   presentableSlides,
   storePresentation,
@@ -56,28 +50,6 @@ const DECK_SAVE_DEBOUNCE_MS = 900;
 
 export type SlideDeckState = ReturnType<typeof useSlideDeck>;
 
-/**
- * Every page slide's page label, read from the slide's OWN tab's pages so a slide on another tab
- * still names its page; null when that page (or its tab) no longer exists. Labelled as the page
- * picker labels them, so the row and the picker agree.
- */
-export function pageSlideLabels(deck: Deck, tabs: readonly Tab[]): Map<string, string | null> {
-  const out = new Map<string, string | null>();
-  const pagesByTab = new Map<string, ReturnType<typeof pagesOf>>();
-  for (const slide of deck.slides) {
-    if (!slide.pageId) continue;
-    let pages = pagesByTab.get(slide.tabId);
-    if (!pages) {
-      const tab = tabs.find((t) => t.id === slide.tabId);
-      pages = tab ? pagesOf(tab) : [];
-      pagesByTab.set(slide.tabId, pages);
-    }
-    const at = pages.findIndex((p) => p.id === slide.pageId);
-    out.set(slide.id, at < 0 ? null : pageLabel(pages[at]!, at, Math.max(2, pages.length)));
-  }
-  return out;
-}
-
 export function useSlideDeck({
   tabs,
   activeTabId,
@@ -89,8 +61,6 @@ export function useSlideDeck({
   saveDeck,
   loadAllTabs,
   plan,
-  framePage,
-  movePage,
   prefs,
   commitPrefs,
 }: {
@@ -111,12 +81,6 @@ export function useSlideDeck({
   loadAllTabs?: () => Promise<unknown>;
   /** The document's items and types, for a Plan board's thumbnail. */
   plan?: ThumbnailPlan;
-  /** Frames a page of a tab in the view (as its label's press does), once that tab is
-   *  the active one. Absent where nothing frames pages. */
-  framePage?: (tabId: string, pageId: string) => void;
-  /** Moves a tab's page to a unit index (pageMovedTo), for a page slide dragged in the deck: the deck follows the
-   *  pages, so a drag there moves the page (docs/specs/007-editor/pages-mode.md "Slides"). */
-  movePage?: (tabId: string, pageId: string, unitIndex: number) => void;
 }) {
   const [deck, setDeck] = useState<Deck>(EMPTY_DECK);
   // Which slide the PANEL has open. Separate from the presentation's own
@@ -146,7 +110,6 @@ export function useSlideDeck({
   // Hydration guard. Seeding the deck from the server must not look like an
   // edit, or opening a document would immediately PUT the deck straight back.
   const hydratedRef = useRef(false);
-  const tabsRef = useLatest(tabs);
   const saveTimer = useRef<number | null>(null);
   const saveRef = useLatest(saveDeck);
 
@@ -162,7 +125,7 @@ export function useSlideDeck({
     (next: Deck | ((prev: Deck) => Deck)) => {
       setDeck((prev) => {
         const resolved = typeof next === 'function' ? next(prev) : next;
-        // Nothing changed (a follow pass with the deck already in step): nothing to save.
+        // Nothing changed: nothing to save.
         if (resolved === prev) return prev;
         if (saveTimer.current !== null) window.clearTimeout(saveTimer.current);
         saveTimer.current = window.setTimeout(() => {
@@ -181,21 +144,6 @@ export function useSlideDeck({
     },
     [],
   );
-
-  // The deck follows the slide pages (docs/specs/007-editor/pages-mode.md "Slides"): each in the deck, a tab's
-  // page slides in its page order. An editor saves it; a viewer only sees it, the same deck an editor would store.
-  // Built on the deck as it stands when the update runs, so a stored deck hydrated in the same pass is the base.
-  // A deleted page takes its slides out of the deck; the session remembers them, so an undo of the delete (or a
-  // peer's) brings them back as they were.
-  const [goneSlides] = useState(() => new GoneSlides());
-  const followPages = useCallback(() => {
-    const follow = (prev: Deck) => deckFollowingPages(prev, tabsRef.current, goneSlides);
-    if (isReadOnly) setDeck(follow);
-    else commitDeck(follow);
-  }, [commitDeck, goneSlides, isReadOnly, tabsRef]);
-  // The slides a slide page holds in the deck, which the panel offers Hide for rather than Delete.
-  // One pass over the deck and the loaded Pages tabs' pages: about 0.1 ms at the 100-page cap.
-  const ownPageSlideIds = useMemo(() => slidePageOwnSlideIds(deck, tabs), [deck, tabs]);
 
   // --- What the panel renders -----------------------------------------------
 
@@ -220,8 +168,6 @@ export function useSlideDeck({
   );
   // Row previews, from the same headless renderer the Layers panel uses.
   const thumbs = useSlideThumbnails(deck, tabs, plan);
-  // Each page slide's page, named from its own tab (null once the page is gone).
-  const pageLabels = useMemo(() => pageSlideLabels(deck, tabs), [deck, tabs]);
   // What each slide is about, for a row whose slide has no name: its largest text.
   const headlines = useMemo(() => slideHeadlines(deck, tabs), [deck, tabs]);
 
@@ -239,19 +185,6 @@ export function useSlideDeck({
     setOpenSlideId(slide.id);
     track('UI', 'Added', 'Slide');
   }, [activeTabId, commitDeck, isReadOnly, readSelection]);
-
-  // A page as a slide (docs/specs/007-editor/pages-mode.md "Slides"): the slide
-  // is the page, resolved live, so it follows the page's content wherever the page goes.
-  const newPageSlide = useCallback(
-    (pageId: string) => {
-      if (isReadOnly) return;
-      const slide: Slide = { id: crypto.randomUUID(), tabId: activeTabId, elementIds: [], pageId };
-      commitDeck((prev) => ({ slides: [...prev.slides, slide] }));
-      setOpenSlideId(slide.id);
-      track('UI', 'Added', 'PageSlide');
-    },
-    [activeTabId, commitDeck, isReadOnly],
-  );
 
   // A Plan card as a slide (docs/specs/012-collaboration/presentation-mode.md "Item slides"): the slide
   // is the item, presented as a card and resolved live. It belongs to the tab the card is on.
@@ -417,8 +350,7 @@ export function useSlideDeck({
         return { slides };
       });
       // Literal types, so the telemetry dashboard's emitter scan reads each one.
-      if (original?.pageId) track('UI', 'Added', 'PageSlide');
-      else if (original?.itemId) track('UI', 'Added', 'ItemSlide');
+      if (original?.itemId) track('UI', 'Added', 'ItemSlide');
       else if (original) track('UI', 'Added', 'Slide');
     },
     [commitDeck, deckRef, isReadOnly],
@@ -438,27 +370,16 @@ export function useSlideDeck({
         if (moved) slides.splice(toIndex, 0, moved);
         return { slides };
       });
-      // A page slide dragged out of its page's order moves its page, and the deck then follows the pages: the two
-      // orders are one (docs/specs/007-editor/pages-mode.md "Slides").
-      const slides = [...deckRef.current.slides];
-      const from = slides.findIndex((s) => s.id === fromId);
-      if (from >= 0 && toIndex >= 0 && toIndex < slides.length) {
-        const [moved] = slides.splice(from, 1);
-        if (moved) slides.splice(toIndex, 0, moved);
-        const move = pageMoveForDeckOrder({ slides }, fromId, tabsRef.current);
-        if (move) movePage?.(move.tabId, move.pageId, move.unitIndex);
-      }
       // One event per completed drag, not per position crossed: the reorder
       // only commits on release, so this is already once per gesture.
       track('UI', 'Moved', 'Slide');
     },
-    [commitDeck, deckRef, isReadOnly, movePage, tabsRef],
+    [commitDeck, isReadOnly],
   );
 
   /**
    * Open a slide in the panel: switch to its tab and select its members, so
-   * you can see what is on it without presenting. A page slide frames its page
-   * instead, as the page's own label does: the page is what is on it.
+   * you can see what is on it without presenting.
    */
   const openSlideInEditor = useCallback(
     (slideId: string) => {
@@ -469,11 +390,7 @@ export function useSlideDeck({
       if (tabExists && slide.tabId !== activeTabId) {
         setActiveId(slide.tabId);
       }
-      if (slide.pageId) {
-        setSelectedId(null);
-        setMultiSelectedIds(new Set());
-        if (tabExists) framePage?.(slide.tabId, slide.pageId);
-      } else if (slide.elementIds.length === 1) {
+      if (slide.elementIds.length === 1) {
         setSelectedId(slide.elementIds[0]!);
         setMultiSelectedIds(new Set());
       } else {
@@ -481,33 +398,29 @@ export function useSlideDeck({
         setMultiSelectedIds(new Set(slide.elementIds));
       }
     },
-    [activeTabId, deck.slides, framePage, setActiveId, setMultiSelectedIds, setSelectedId, tabs],
+    [activeTabId, deck.slides, setActiveId, setMultiSelectedIds, setSelectedId, tabs],
   );
 
   // --- Presenting -----------------------------------------------------------
 
-  // From the first slide, or from `fromSlideId` (the row's Present from Here) when it is shown.
-  const start = useCallback(
-    async (fromSlideId?: string) => {
-      if (runnable.length === 0) return;
-      const from = fromSlideId ? runnable.findIndex((r) => r.slide.id === fromSlideId) : 0;
-      // A deck reaching into a tab nobody has visited would stall mid-show, so
-      // pull every unloaded tab before the first slide paints (docs/specs/006-document/per-tab-storage.md).
-      // The overlay's code too (it loads on demand, lib/editor-deferred-code.ts), so its keys listen from the
-      // first slide. A failed load is left to the overlay's own render, which recovers a stale build.
-      setStartingDeck(true);
-      try {
-        await Promise.all([loadAllTabs?.(), loadPresentationOverlay().catch(() => {})]);
-      } finally {
-        setStartingDeck(false);
-      }
-      setSelectedId(null);
-      setMultiSelectedIds(new Set());
-      setPresentingAt(Math.max(0, from));
-      track('UI', 'Started', 'Presentation');
-    },
-    [loadAllTabs, runnable, setMultiSelectedIds, setPresentingAt, setSelectedId],
-  );
+  // From the first slide.
+  const start = useCallback(async () => {
+    if (runnable.length === 0) return;
+    // A deck reaching into a tab nobody has visited would stall mid-show, so
+    // pull every unloaded tab before the first slide paints (docs/specs/006-document/per-tab-storage.md).
+    // The overlay's code too (it loads on demand, lib/editor-deferred-code.ts), so its keys listen from the
+    // first slide. A failed load is left to the overlay's own render, which recovers a stale build.
+    setStartingDeck(true);
+    try {
+      await Promise.all([loadAllTabs?.(), loadPresentationOverlay().catch(() => {})]);
+    } finally {
+      setStartingDeck(false);
+    }
+    setSelectedId(null);
+    setMultiSelectedIds(new Set());
+    setPresentingAt(0);
+    track('UI', 'Started', 'Presentation');
+  }, [loadAllTabs, runnable, setMultiSelectedIds, setPresentingAt, setSelectedId]);
 
   const exitPresentation = useCallback(() => {
     setPresenting((at) => {
@@ -526,10 +439,8 @@ export function useSlideDeck({
     openSlideInEditor,
     runnable,
     thumbs,
-    pageLabels,
     headlines,
     newSlideFromSelection,
-    newPageSlide,
     newItemSlide,
     newBoardSlide,
     addSelectionToSlide,
@@ -538,8 +449,6 @@ export function useSlideDeck({
     setSlideNotes,
     setSlideMinutes,
     deleteSlide,
-    ownPageSlideIds,
-    followPages,
     toggleSlideHidden,
     duplicateSlide,
     reorderSlides,

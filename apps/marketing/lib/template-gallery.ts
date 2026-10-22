@@ -60,24 +60,15 @@ export function galleryTemplates(): GalleryTemplate[] {
   return TEMPLATES.filter((t) => !t.hidden && !isBlankTemplate(t.kind)).map(toGallery);
 }
 
-// Blanks the row already shows by another name: Blank Infographic is Blank Illustration's own
-// empty infographic page, so it is left off rather than shown twice.
-const SHOWN_AS_ANOTHER_BLANK: readonly string[] = [
-  'blank-infographic',
-  // One blank wireframe stands for all five (docs/specs/007-editor/templates-by-mode.md "Wireframe templates").
-  'blank-wireframe-tablet',
-  'blank-wireframe-browser',
-  'blank-wireframe-laptop',
-  'blank-wireframe-watch',
-];
-
 // Blank Slate's blanks in mode order (the mode switch's), Blank Spreadsheet beside Blank Plan.
-const BLANK_SLATE_KINDS = EDITOR_MODES.flatMap((mode) => [
-  BLANK_TEMPLATE_FOR_MODE[mode],
-  ...EXTRA_BLANK_TEMPLATES.filter(
-    (k) => templateEditorMode(k) === mode && !SHOWN_AS_ANOTHER_BLANK.includes(k),
-  ),
-]);
+const BLANK_SLATE_KINDS = EDITOR_MODES.flatMap((mode) =>
+  mode === 'pages'
+    ? []
+    : [
+        BLANK_TEMPLATE_FOR_MODE[mode],
+        ...EXTRA_BLANK_TEMPLATES.filter((k) => templateEditorMode(k) === mode),
+      ],
+);
 
 // Blank Slate: every blank and nothing else, in its fixed order.
 export function popularTemplates(): GalleryTemplate[] {

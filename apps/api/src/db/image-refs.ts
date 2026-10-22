@@ -58,34 +58,20 @@ export function imageRefPruneTabStatement(env: Env, tabId: string): D1PreparedSt
 // valid JSON with an `elements` ARRAY, so a corrupt tab can't fail the
 // statement (in whatever order SQLite evaluates the join) and an object
 // isn't walked.
-// The pages' pictures (docs/specs/007-editor/pages-mode.md "Image backgrounds") are walked
-// the same way over `$.pages`, the id at `$.background.fill.imageId` of a `kind: 'image'` fill.
-function walkSql(
-  tabWhere: string,
-  array: '$.elements' | '$.pages',
-  typeAt: string,
-  kind: string,
-  idAt: string,
-): string {
-  return `SELECT t.id AS tab_id, json_extract(e.value, '${idAt}') AS image_id
+function indexTabsSql(tabWhere: string): string {
+  return `INSERT OR IGNORE INTO image_refs (tab_id, image_id)
+    SELECT t.id AS tab_id, json_extract(e.value, '$.imageId') AS image_id
       FROM tabs t,
            json_each(CASE WHEN instr(t.data, '"imageId"') = 0 THEN '{}'
                           WHEN NOT json_valid(t.data) THEN '{}'
-                          WHEN json_type(t.data, '${array}') = 'array' THEN t.data
-                          ELSE '{}' END, '${array}') e
+                          WHEN json_type(t.data, '$.elements') = 'array' THEN t.data
+                          ELSE '{}' END, '$.elements') e
      WHERE (${tabWhere})
        AND e.type = 'object'
-       AND json_extract(e.value, '${typeAt}') = '${kind}'
-       AND json_type(e.value, '${idAt}') = 'text'
-       AND length(json_extract(e.value, '${idAt}')) BETWEEN 1 AND ${IMAGE_REF_ID_MAX_LENGTH}
-       AND substr(json_extract(e.value, '${idAt}'), 1, 5) <> 'data:'`;
-}
-
-function indexTabsSql(tabWhere: string): string {
-  return `INSERT OR IGNORE INTO image_refs (tab_id, image_id)
-    ${walkSql(tabWhere, '$.elements', '$.type', 'image', '$.imageId')}
-    UNION ALL
-    ${walkSql(tabWhere, '$.pages', '$.background.fill.kind', 'image', '$.background.fill.imageId')}`;
+       AND json_extract(e.value, '$.type') = 'image'
+       AND json_type(e.value, '$.imageId') = 'text'
+       AND length(json_extract(e.value, '$.imageId')) BETWEEN 1 AND ${IMAGE_REF_ID_MAX_LENGTH}
+       AND substr(json_extract(e.value, '$.imageId'), 1, 5) <> 'data:'`;
 }
 
 // Backfill page: tabs with rowid in (fromRowId, toRowId].

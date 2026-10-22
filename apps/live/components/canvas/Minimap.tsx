@@ -1,9 +1,5 @@
 'use client';
 
-import { CANVAS_PAPER } from '@/lib/page-paint';
-import { pageWritingBars } from '@/lib/article/article-export';
-import { useArticleLaidOutSeq } from '@/lib/article/article-editor-store';
-import { articleOpsToSvg } from '@/lib/article/article-draw';
 import { useCallback, useDeferredValue, useMemo, useRef } from 'react';
 import { watchMapBox } from '@/lib/fit-clear-of-panel';
 import {
@@ -15,14 +11,10 @@ import {
   svgArrow,
   sketchBackdropIds,
   svgBoxed,
-  chartPageGrounds,
   svgShadowDefs,
-  elementPageSurfaces,
   type Element,
-  type LaidOutPage,
   type Point,
 } from '@liveplanner/document';
-import { pageExportFrame } from '@/lib/export-page';
 import { framesFirst, ZOOM_MAX, ZOOM_MIN } from '@/lib/canvas';
 import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-registry';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
@@ -60,11 +52,6 @@ const MAP_HEIGHT: Record<MapSize, string> = {
 
 type MinimapProps = {
   elements: Element[];
-  // Pages mode's pages (docs/specs/007-editor/pages-mode.md "Getting around the
-  // pages"): drawn under the content as their sheets, each outlined, and counted in the bounds.
-  pages?: readonly LaidOutPage[];
-  // The articles' writing, by identity: the picture redraws a page's lines of text as it changes.
-  writing?: unknown;
   // The tab default face (docs/specs/004-interface-design/fonts.md): the miniature paints what the canvas
   // paints, so a canvas set in the marker face looks that way in the map too.
   tabFont?: string;
@@ -133,8 +120,6 @@ const MAP_RATIO: Record<MapSize, number> = {
 
 export function Minimap({
   elements: liveElements,
-  pages,
-  writing,
   tabFont,
   viewportOffset,
   viewportZoom,
@@ -175,8 +160,6 @@ export function Minimap({
   const viewColors = selectionBoxColors(accentColor, surface);
   // Re-render once the async icon catalogues land so Technology marks pop in.
   const iconsLoaded = useIconCatalogs();
-  // An article's writing laid out for the first time: its lines of text can be drawn now.
-  const laidOut = useArticleLaidOutSeq();
   // One pass builds the full-fidelity markup (the SAME headless renderer the
   // exports / live image use — real colours, silhouettes, tables, freehand,
   // icon glyphs, rotation, curved arrows) plus the content bounds; recomputed
@@ -190,24 +173,6 @@ export function Minimap({
     const drawn = elements.map(withoutLabel);
     const corners: Point[] = [];
     const parts: string[] = [];
-    // The pages first, under everything: each sheet in its own paint with a crisp outline, so
-    // even an empty page shows where it is.
-    const paper = CANVAS_PAPER[surface === 'dark' ? 'dark' : 'light'];
-    const outline = surface === 'dark' ? '#94a3b8' : '#64748b';
-    for (const page of pages ?? []) {
-      const { x, y, width, height } = page.rect;
-      parts.push(
-        pageExportFrame(page, { paper, idPrefix: 'lvd-minimap-page' }).backgroundSvg +
-          // An article page's writing, as soft lines of text.
-          (page.flow ? articleOpsToSvg(pageWritingBars(page, outline)) : '') +
-          `<rect x="${x}" y="${y}" width="${width}" height="${height}" fill="none" stroke="${outline}" stroke-width="${Math.max(width, height) / 160}"/>`,
-      );
-      corners.push({ x, y }, { x: x + width, y: y + height });
-    }
-    // Each element inked for the page it is on, as the canvas inks it.
-    const pageSurfaces = pages ? elementPageSurfaces(drawn, pages) : null;
-    // And each chart on a filled page adapted to what it sits on.
-    const chartGrounds = pages ? chartPageGrounds(drawn, pages) : undefined;
     // The resolvers find nothing until the catalogue chunk lands, which
     // re-runs the build with the glyphs.
     const resolveIconArt = iconsLoaded ? resolveIconArtLoaded : NO_ART;
@@ -229,9 +194,8 @@ export function Minimap({
           tabFont,
           tabFinish,
           sketchBackdrop: backdrops.has(el.id),
-          surface: pageSurfaces?.get(el.id) ?? surface,
+          surface,
           chartPalette,
-          chartGrounds,
         }),
       );
       corners.push({ x: el.x, y: el.y }, { x: el.x + el.width, y: el.y + el.height });
@@ -242,7 +206,7 @@ export function Minimap({
         svgArrow(
           el,
           drawn,
-          pageSurfaces?.get(el.id) ?? surface,
+          surface,
           tabFont,
           labels,
           'lvd-minimap-ko-',
@@ -272,9 +236,7 @@ export function Minimap({
       picture: { ...box, href: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(doc)}` },
       bounds: content,
     };
-    // `writing` changes with the documents' text, which the bars read off the editors.
-    // oxlint-disable-next-line react/exhaustive-deps
-  }, [elements, pages, tabFont, tabFinish, iconsLoaded, surface, chartPalette, writing, laidOut]);
+  }, [elements, tabFont, tabFinish, iconsLoaded, surface, chartPalette]);
 
   const recentreToClient = (clientX: number, clientY: number) => {
     const svg = svgRef.current;

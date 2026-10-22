@@ -10,7 +10,7 @@ import { startClosedKey } from './start-closed-key';
 export function closeStartForBlank(tabId: string, kind: TemplateKind | null): boolean {
   if (!kind || !isBlankTemplate(kind)) return false;
   const mode = templateEditorMode(kind);
-  if (mode === 'plan') return false;
+  if (mode === 'plan' || mode === 'pages') return false;
   dismissEmptyCard(startClosedKey(tabId, mode));
   return true;
 }

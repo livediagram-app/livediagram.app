@@ -13,10 +13,11 @@ import { TEMPLATES } from './templates';
 describe('Popular', () => {
   const kinds = new Set(TEMPLATES.map((t) => t.kind));
 
-  it('leads Everything with the five blanks, in mode order', () => {
+  it('leads Everything with the blanks, in mode order', () => {
+    const modes = EDITOR_MODES.filter((mode) => mode !== 'pages');
     expect(popularKindsFor('all')).toEqual([...POPULAR_TEMPLATE_KINDS]);
-    expect(POPULAR_TEMPLATE_KINDS.slice(0, EDITOR_MODES.length)).toEqual(
-      EDITOR_MODES.map((mode) => BLANK_TEMPLATE_FOR_MODE[mode]),
+    expect(POPULAR_TEMPLATE_KINDS.slice(0, modes.length)).toEqual(
+      modes.map((mode) => BLANK_TEMPLATE_FOR_MODE[mode]),
     );
   });
 

@@ -8,7 +8,7 @@ import { changesBeyondSettings, readForm } from '@liveplanner/forms';
 import { getLiveFormLink, isTabRevStale, upsertTabAtRev } from '../db';
 import { TabTooLargeError } from '../limits';
 import { capStoredName } from '../names';
-import { relayPages } from '../room-client';
+import { relayRoomOps } from '../room-client';
 import type { Env } from '../types';
 import { readStoredTab } from '../changesets/stored-tab';
 import { SUBMIT_ATTEMPTS } from '../changesets/submit';
@@ -87,7 +87,7 @@ export async function writeAgentForm(
       tabId,
       patch: { name, form, ...(typeof theme === 'string' ? { theme } : {}) },
     };
-    await relayPages(env, documentId, [op], '[forms] agent');
+    await relayRoomOps(env, documentId, [op], '[forms] agent');
     console.info('[forms] agent.written', where);
     return { status: 200, body: { tabId, rev: written, name } };
   }

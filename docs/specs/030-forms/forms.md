@@ -20,7 +20,7 @@ document.
 | ------------------- | --------------------------------------------------------------------------------------------- | ----------------------------- |
 | **Form tab**        | A tab of kind `form`: one form, filling the tab                                               | form page, survey tab         |
 | **form**            | The definition a Form tab holds: its heading, sections, questions, look and where answers go  | survey, questionnaire         |
-| **section**         | One page of a form, shown alone with Next and Back; a form has at least one                   | page (Pages mode's), step     |
+| **section**         | One page of a form, shown alone with Next and Back; a form has at least one                   | page, step                    |
 | **question**        | One thing a form asks: a prompt, a question type, whether it is required, and its answer slot | field (that is a card's)      |
 | **question type**   | What a question takes (Short Answer, Multiple Choice...)                                      | field kind (that is a card's) |
 | **mapping**         | Where a question's answer is kept on the card: Title, Description or one custom field         | binding, link                 |
@@ -131,12 +131,11 @@ previewing), the help link and the form's **cog**.
 
 ### The form card, top to bottom
 
-- **Cover**: a band 160 px tall (96 on a phone) across the top of the column, painted with a slide background in
-  colour, picked and drawn exactly as a slide's ([Pages](../007-editor/pages-mode.md)
-  "Backgrounds", "Animated backgrounds"): the slide's **Background** section with **Solid**, **Gradient** (the tab
-  theme's gradients first) and **Animated** (the slide motions, moving on screen; still under reduced motion), then
-  **Pattern**. No **Image**: a cover takes no picture. Stored as `form.cover` (`{ fill?, pattern? }`, the
-  `@liveplanner/page-background` shape a slide's colours share). A hover previews on the band; a press sets it.
+- **Cover**: a band 160 px tall (96 on a phone) across the top of the column, painted with a colour background
+  (`@liveplanner/page-background`): a **Background** section with **Solid**, **Gradient** (the tab theme's gradients
+  first) and **Animated** (the background motions, moving on screen; still under reduced motion), then **Pattern**.
+  No **Image**: a cover takes no picture. Stored as `form.cover` (`{ fill?, pattern? }`, the
+  `@liveplanner/page-background` shape). A hover previews on the band; a press sets it.
   Without a cover, a 10 px band of the form colour. **Add Cover** / **Change Cover** on hover (always shown on a
   touch screen, which has no hover) opens the cover popover, with **Remove Cover**.
 - **Heading**: the form's name (1 to 80 characters), edited in place (renaming it renames the board or sheet its
@@ -749,5 +748,5 @@ Every chart is on the public dashboard's **Forms** stack.
 - File uploads, logic that skips sections by an answer, quizzes and scores.
 - A responses summary of charts per question (a Dashboard over the board covers it for now).
 - A QR code of the form link, and importing questions from another form.
-- A cover image (a cover is a slide background in colour): an image would join the image store's reference index.
+- A cover image (a cover is a colour background): an image would join the image store's reference index.
 - Dragging a choice's options (Alt+Up and Alt+Down move them).

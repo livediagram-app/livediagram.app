@@ -51,9 +51,7 @@ export class OpenverseSearchError extends Error {
   }
 }
 
-// Openverse's own shape and size filters. The picker never passes them; a page's Image background
-// asks for pictures of the page's shape, large (docs/specs/007-editor/pages-mode.md "Image
-// backgrounds").
+// Openverse's own shape and size filters. The picker never passes them.
 export type OpenverseAspectRatio = 'tall' | 'wide' | 'square';
 export type OpenverseSize = 'small' | 'medium' | 'large';
 export type OpenverseFilters = { aspectRatio?: OpenverseAspectRatio; size?: OpenverseSize };

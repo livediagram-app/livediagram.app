@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest';
 import {
   contrastRatio,
   getBuiltInTheme,
-  pagesOf,
   PAGE_MOTIONS,
+  parseColourBackground,
   sameFill,
-  type PageFill,
+  type PageColourFill,
 } from '@liveplanner/document';
 import { backgroundCategoryOf, isCustomGradient } from './page-paint';
 import {
@@ -18,7 +18,7 @@ import {
   PAGE_MOTION_COLOURINGS,
 } from './page-motion';
 
-// docs/specs/007-editor/pages-mode.md "Animated backgrounds".
+// docs/specs/030-forms/forms.md "The form card, top to bottom", Cover: an animated background.
 const theme = getBuiltInTheme('ocean');
 
 describe('animated backgrounds', () => {
@@ -30,36 +30,19 @@ describe('animated backgrounds', () => {
   it('is stored as a gradient with a motion, kept through a reload and told apart from a plain one', () => {
     const fill = motionFill(theme, 'aurora', 'deep');
     expect(fill.kind).toBe('gradient');
-    const tab = {
-      pages: [{ id: 'p', orientation: 'landscape', kind: 'slide', background: { fill } }],
-    };
-    const back = pagesOf(JSON.parse(JSON.stringify(tab)) as typeof tab)[0]!.background!.fill!;
+    const back = parseColourBackground(JSON.parse(JSON.stringify({ fill })))!.fill!;
     expect(back).toEqual(fill);
-    const still = { ...fill, motion: undefined } as PageFill;
+    const still = { ...fill, motion: undefined } as PageColourFill;
     expect(sameFill(fill, still)).toBe(false);
     expect(backgroundCategoryOf(fill)).toBe('animated');
     expect(isCustomGradient(fill, [])).toBe(false);
   });
 
   it('drops a motion it does not know', () => {
-    const tab = {
-      pages: [
-        {
-          id: 'p',
-          orientation: 'landscape',
-          background: {
-            fill: {
-              kind: 'gradient',
-              from: '#000000',
-              to: '#111111',
-              angle: 160,
-              motion: 'lasers',
-            },
-          },
-        },
-      ],
+    const background = {
+      fill: { kind: 'gradient', from: '#000000', to: '#111111', angle: 160, motion: 'lasers' },
     };
-    expect(pagesOf(tab)[0]!.background!.fill).not.toHaveProperty('motion');
+    expect(parseColourBackground(background)!.fill).not.toHaveProperty('motion');
   });
 
   it('finds the colouring a fill is in, for this theme', () => {
@@ -68,7 +51,7 @@ describe('animated backgrounds', () => {
     }
   });
 
-  it('paints its moving parts in a light that reads on a dark page', () => {
+  it('paints its moving parts in a light that reads on a dark fill', () => {
     const fill = motionFill(theme, 'starfield', 'night');
     if (fill.kind !== 'gradient') throw new Error('gradient');
     const p = motionPaint(fill);
@@ -86,15 +69,7 @@ describe('animated backgrounds', () => {
 
 describe('animated background speed', () => {
   const read = (speed: unknown) =>
-    pagesOf({
-      pages: [
-        {
-          id: 'p',
-          orientation: 'landscape',
-          background: { fill: { ...motionFill(theme, 'waves', 'deep'), speed } },
-        },
-      ],
-    })[0]!.background!.fill;
+    parseColourBackground({ fill: { ...motionFill(theme, 'waves', 'deep'), speed } })!.fill;
 
   it('keeps a speed in range through a reload, and drops one out of it or the default', () => {
     expect(read(2)).toMatchObject({ speed: 2 });
@@ -105,7 +80,7 @@ describe('animated background speed', () => {
 
   it('tells two speeds of the same motion apart', () => {
     const f = motionFill(theme, 'waves', 'deep');
-    expect(sameFill(f, { ...f, speed: 2 } as PageFill)).toBe(false);
-    expect(sameFill(f, { ...f, speed: 1 } as PageFill)).toBe(true);
+    expect(sameFill(f, { ...f, speed: 2 } as PageColourFill)).toBe(false);
+    expect(sameFill(f, { ...f, speed: 1 } as PageColourFill)).toBe(true);
   });
 });

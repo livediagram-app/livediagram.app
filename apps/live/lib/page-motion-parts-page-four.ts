@@ -1,5 +1,5 @@
-// The Motion carousel's fourth page of slide backgrounds (docs/specs/007-editor/
-// pages-mode.md "Animated backgrounds"): Warp, Orbits, Radar, Equaliser, Confetti and
+// The Motion carousel's fourth page of animated backgrounds (docs/specs/030-forms/forms.md "The form card, top to bottom",
+// Cover): Warp, Orbits, Radar, Equaliser, Confetti and
 // Threads, as parts in the shape lib/page-motion-parts.ts describes, so the moving layer and the
 // export draw them as they draw the rest.
 //

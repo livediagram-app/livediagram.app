@@ -18,7 +18,6 @@ import {
 } from '@/lib/format-painter';
 import { filterPaintedFields, formatPaintsAnything, type FormatConfig } from '@/lib/format-config';
 import { track } from '@/lib/telemetry';
-import { brushPageId } from '@/lib/format-page-brush';
 import { patchTab } from './editor-page-helpers';
 import { selectionIds, type Selection } from '@/lib/selection-store';
 
@@ -207,9 +206,6 @@ export function useElementHelpers(opts: {
     // Every toggle off means there is nothing to paint: leave the brush and
     // the target alone rather than committing an empty change per tap.
     if (!formatPaintsAnything(formatConfig)) return;
-    // A page's background in the brush paints pages, not elements: the brush is kept
-    // (docs/specs/007-editor/pages-mode.md "Copying a background").
-    if (brushPageId(formatSourceId)) return;
     const keepSource = formatConfig.mode === 'keep';
     const source = activeTab.elements.find((el) => el.id === formatSourceId);
     // The source is gone (deleted, or another tab): the brush holds nothing any more.

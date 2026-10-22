@@ -17,15 +17,9 @@ import {
 import { embedTabImages } from '@liveplanner/api-schema';
 import {
   canvasSurface,
-  articlesOf,
   exportFontIds,
-  laidOutPagesOf,
-  resolveArticleStyle,
   planBoardFitHeight,
   renderElementsToSvg,
-  renderPageToSvg,
-  renderPagesToSvg,
-  type LaidOutPage,
   type SheetRenderModel,
   type Tab,
 } from '@liveplanner/document';
@@ -174,33 +168,10 @@ async function planContentFor(
 export async function tabPreview(
   tab: Tab,
   auth?: { env: Env; token: string; documentId?: string },
-  // One page of a Pages tab to draw alone (read_document's `page`); every page when absent.
-  page?: LaidOutPage,
 ): Promise<(TextBlock | ImageBlock)[]> {
   // A Form tab draws as its form, as respondents see it.
   const form = await formPreview(tab);
   if (form) return [form];
-  // A Pages tab draws as its pages (svg-render-pages.ts), as the editor exports them.
-  if (laidOutPagesOf(tab).length > 0) {
-    // Its pictures, its Plan cards and sheets (a sheet or a sheet-linked chart on a page draws what it holds, as on any
-    // tab) and its faces, fetched together rather than one after another.
-    const [{ resolveImageHref, leftOut }, content, fonts, emoji] = await Promise.all([
-      auth ? buildImageResolver(auth.env, auth.token, tab) : NO_IMAGES,
-      planContentFor(tab, auth, undefined),
-      previewFonts(tabFontIds(tab)),
-      previewEmoji(emojiGlyphsOf(tab.elements)),
-    ]);
-    const { sheetJson, ...withContent } = content;
-    const live = sheetJson ? { ...tab, elements: chartsReadLive(tab.elements, sheetJson) } : tab;
-    const drawWith = { resolveImageHref, ...previewResolvers(emoji), ...withContent };
-    const svg = page ? renderPageToSvg(live, page, drawWith) : renderPagesToSvg(live, drawWith)!;
-    const image: ImageBlock = {
-      type: 'image',
-      data: await svgToPngBase64(svg, fonts),
-      mimeType: 'image/png',
-    };
-    return previewBlocks(image, leftOut);
-  }
   // A Plan tab as the editor exports it: a Dashboard laid out, its pictures drawn from the cards.
   const art = previewResolvers(await previewEmoji(emojiGlyphsOf(tab.elements)));
   const plain = (shown: Tab) => renderElementsToSvg(shown, art);
@@ -245,16 +216,11 @@ export async function tabPreview(
   return previewBlocks({ type: 'image', data: png, mimeType: 'image/png' }, leftOut);
 }
 
-// The editor's font ids a tab draws in: its elements' and its own, a sheet's cells', and its articles' heading and body
-// faces (the fonts a preview fetches beyond Inter), and Inter's italics when any text is set in italic.
+// The editor's font ids a tab draws in: its elements' and its own and a sheet's cells' (the fonts a preview fetches
+// beyond Inter), and Inter's italics when any text is set in italic.
 export function tabFontIds(tab: Tab, sheets?: ReadonlyMap<string, SheetRenderModel>): string[] {
-  const articles = Object.values(articlesOf(tab)).flatMap((doc) => {
-    const style = resolveArticleStyle(doc.style);
-    return [style.headingFont, style.bodyFont];
-  });
   return [
     ...exportFontIds(tab.elements, tab.font, sheets, tab.finish),
-    ...articles,
     ...(usesItalic(tab.elements) ? [INTER_ITALIC] : []),
   ];
 }

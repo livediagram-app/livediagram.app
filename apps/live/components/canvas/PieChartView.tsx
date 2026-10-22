@@ -27,7 +27,6 @@ export function PieChartView({
   fontFamily,
   textColor,
   palette,
-  ground,
 }: {
   element: ShapeElement;
   fontFamily?: string;
@@ -35,10 +34,8 @@ export function PieChartView({
   // Default slice colours (theme-derived, docs/specs/009-elements/pie-chart.md). Falls back to the built-in
   // categorical palette when absent (e.g. an export with no theme context).
   palette?: readonly string[];
-  // What the chart sits on (chartPageGrounds): its series drawn adapted to it.
-  ground?: readonly string[];
 }) {
-  const { w, h, data: slices, colorAt, area, legend } = chartFrame(element, palette, ground);
+  const { w, h, data: slices, colorAt, area, legend } = chartFrame(element, palette);
   const { hover, markProps } = useChartHover<number>();
   // The pie (or doughnut) fills the chart area chartFrame leaves after the legend strip, laid out by the marks the
   // export draws too.

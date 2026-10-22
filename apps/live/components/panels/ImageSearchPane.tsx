@@ -24,9 +24,7 @@ import {
 
 // The image picker's Search tab (docs/specs/009-elements/image-search.md "The
 // Search tab"): openly licensed pictures from Openverse, searched from the
-// browser on submit, picked into the gallery through the import pipeline. A page's Image
-// background (docs/specs/007-editor/pages-mode.md "Image backgrounds") shows the same pane,
-// narrower, asking for its page's shape and previewing a hovered result on the page.
+// browser on submit, picked into the gallery through the import pipeline.
 
 const SEARCH_ERROR_COPY = {
   'rate-limited': 'Too many searches for now. Wait a minute and try again.',

@@ -39,12 +39,6 @@ const AvatarTourHost = dynamic(
   () => import('@/components/tour/AvatarTourHost').then((m) => m.AvatarTourHost),
   { ssr: false },
 );
-// The Pages tour (docs/specs/007-editor/pages-tour.md): the same, the first time the person enters
-// Pages.
-const PagesTourHost = dynamic(
-  () => import('@/components/tour/PagesTourHost').then((m) => m.PagesTourHost),
-  { ssr: false },
-);
 
 // The editor's tours (docs/specs/007-editor/editor-tour.md), each mounted the first time its mode or kind is
 // worked in and kept mounted after, so leaving mid-tour still runs its clean-up.
@@ -55,7 +49,6 @@ export function EditorTours() {
   const mountDrawTour = useEverTrue(editorMode.mode === 'draw');
   const mountFormTour = useEverTrue(activeTab.kind === 'form');
   const mountAvatarTour = useEverTrue(canvasTool === 'avatar');
-  const mountPagesTour = useEverTrue(editorMode.mode === 'pages');
   return (
     <>
       <TourHost />
@@ -70,7 +63,6 @@ export function EditorTours() {
       <PendingFormStart />
       {/* The Avatar tour (docs/specs/008-canvas/avatar-tour.md): the first time a person walks as an avatar. */}
       {mountAvatarTour ? <AvatarTourHost /> : null}
-      {mountPagesTour ? <PagesTourHost /> : null}
       <ElementTourHost />
     </>
   );

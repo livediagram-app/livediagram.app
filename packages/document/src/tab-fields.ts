@@ -1,8 +1,9 @@
 // A tab's own fields read the way every renderer assumes them (docs/specs/006-document/layers.md
 // "Data model"): the stored-tab migration runs this, so a tab that arrives with a malformed
 // field (an api write, a peer's patch, a file) is repaired on the way in, and one already stored
-// is repaired as it is read. Most tab fields already have a defensive reader (`pagesOf`,
-// `tagColoursOf`, `readDashboard`, ...); these are the ones read raw.
+// is repaired as it is read. Most tab fields already have a defensive reader (`tagColoursOf`,
+// `readDashboard`, ...); these are the ones read raw. Fields of retired features (a tab's pages and
+// their writing) are dropped as they are read.
 import type { Layer } from './layers';
 import { isRecord } from './is-record';
 
@@ -11,7 +12,13 @@ type SettledFields = {
   backgroundColor?: unknown;
   patternColor?: unknown;
   vote?: unknown;
+  pages?: unknown;
+  articles?: unknown;
+  pageOrientation?: unknown;
 };
+
+// What a tab carried for Pages mode, which nothing reads any more.
+const RETIRED_FIELDS = ['pages', 'articles', 'pageOrientation'] as const;
 
 // A dot vote as its tallies read it (docs/specs/012-collaboration/session-tools.md): `votes` a map of element id to
 // the voters' ids. A vote that is not an object is no vote; its map's entries that are not lists of ids are
@@ -60,6 +67,7 @@ export function settleTabFields<T extends object>(tab: T): T {
   if (t.backgroundColor !== undefined && typeof t.backgroundColor !== 'string')
     drop.push('backgroundColor');
   if (t.patternColor !== undefined && typeof t.patternColor !== 'string') drop.push('patternColor');
+  for (const k of RETIRED_FIELDS) if (t[k] !== undefined) drop.push(k);
   // The vote is settled into a copy below, so `vote` is never in `drop`.
   const vote = t.vote === undefined ? undefined : settleVote(t.vote);
   if (t.layers !== undefined) {

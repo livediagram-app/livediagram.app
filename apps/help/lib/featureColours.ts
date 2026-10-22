@@ -33,17 +33,10 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'plan-tour': '#0284c7',
   'workshop-tour': '#ea580c',
   'draw-tour': '#57534e',
-  'pages-tour': '#be123c',
   dashboards: '#0ea5e9',
   forms: '#7c3aed',
   sheets: '#16a34a',
   'sheet-functions': '#059669',
-  'pages-mode': '#e11d48',
-  'infographic-layouts': '#db2777',
-  'logo-pages': '#0891b2',
-  'wireframe-pages': '#7c3aed',
-  articles: '#0d9488',
-  'exporting-pages': '#9333ea',
   'tab-windows': '#4f46e5',
   'using-tabs': '#3b82f6',
   comments: '#f59e0b',
@@ -256,7 +249,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   visualisations: '#6366f1',
   'colours-borders-opacity': '#9333ea',
   'formatting-label-text': '#0e7490',
-  'slide-pages': '#f97316',
 };
 
 /** Top-level feature category → accent hue, the fallback for a landing with no

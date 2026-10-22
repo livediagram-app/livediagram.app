@@ -259,10 +259,6 @@ export const ELEMENT_FIELD_NAMES = {
     'richText',
     'sizing',
     'textScale',
-    'letterSpacing',
-    'fontWeight',
-    'textCase',
-    'textArc',
   ]),
   sticky: fieldsOf<StickyElement>()([
     'id',
@@ -527,7 +523,6 @@ export const ELEMENT_FIELD_NAMES = {
     'textUnderline',
     'textStrikethrough',
     'font',
-    'articleNote',
   ]),
   'link-card': fieldsOf<LinkCardElement>()([
     'id',

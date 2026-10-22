@@ -22,8 +22,8 @@
 /features/connect/ /features/diagrams 301
 /features/express /features/whiteboard 301
 /features/express/ /features/whiteboard 301
-/features/present /features/documents 301
-/features/present/ /features/documents 301
+/features/present /features/slides 301
+/features/present/ /features/slides 301
 /features/reliability / 301
 /features/reliability/ / 301
 /features/foundations / 301

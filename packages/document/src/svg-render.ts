@@ -10,7 +10,6 @@
 
 import type { Item, ItemTypeDef } from '@liveplanner/items';
 import { svgPlanSheet, type SheetRenderModel } from './svg-render-plan-sheet';
-import { PAGE_EXPORT_PAPER, withinPageFrame, type PageExportFrame } from './page-frame';
 import { svgPlanBoard, svgPlanCard, svgPlanView } from './svg-render-plan';
 import { svgTabWindow, type ResolveTabWindow } from './tab-window';
 import {
@@ -68,8 +67,6 @@ export {
   xmlEscape,
 } from './svg-render-primitives';
 import { svgRichWrappedLabel, svgWrappedLabel } from './svg-render-labels';
-import { svgWordmarkLabel } from './svg-render-wordmark';
-import { hasWordmarkType } from './wordmark';
 
 export {
   EXPORT_DEFAULT_FONT,
@@ -385,7 +382,6 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
       stroke: shape.stroke,
       fill: shape.fill,
       chartPalette: opts.chartPalette,
-      chartGround: opts.chartGrounds?.get(el.id),
       label: label?.text ?? el.label ?? '',
       surface,
       resolveIconArt: opts.resolveIconArt,
@@ -481,38 +477,35 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
   const labelStr =
     !label || selfLabelled(el)
       ? ''
-      : el.type === 'text' && hasWordmarkType(el)
-        ? // Tracking, weight, case and arc (docs/specs/007-editor/logo-pages.md "Wordmark type").
-          svgWordmarkLabel(el, label)
-        : label.runs
-          ? svgRichWrappedLabel(
-              label.runs,
-              label.x,
-              label.y,
-              label.anchor,
+      : label.runs
+        ? svgRichWrappedLabel(
+            label.runs,
+            label.x,
+            label.y,
+            label.anchor,
+            label.maxWidth,
+            label.valign,
+            label.fontFamily,
+          )
+        : svgWrappedLabel(
+            // Wrapped in the face it paints in, or a wide face breaks at the
+            // wrong words and runs out of its element.
+            wrapLabel(
+              label.text,
               label.maxWidth,
-              label.valign,
-              label.fontFamily,
-            )
-          : svgWrappedLabel(
-              // Wrapped in the face it paints in, or a wide face breaks at the
-              // wrong words and runs out of its element.
-              wrapLabel(
-                label.text,
-                label.maxWidth,
-                labelMeasure(label.size, label.bold, label.italic, label.fontFamily),
-                !(el.type === 'shape' && el.shape === 'icon'),
-              ),
-              label.x,
-              label.y,
-              label.anchor,
-              label.color,
-              label.size,
-              label.bold,
-              label.italic,
-              label.valign,
-              label.fontFamily,
-            );
+              labelMeasure(label.size, label.bold, label.italic, label.fontFamily),
+              !(el.type === 'shape' && el.shape === 'icon'),
+            ),
+            label.x,
+            label.y,
+            label.anchor,
+            label.color,
+            label.size,
+            label.bold,
+            label.italic,
+            label.valign,
+            label.fontFamily,
+          );
   // An upright lane title turns about its frame's corner (docs/specs/009-elements/lane.md).
   const turned =
     labelStr && label?.turnAbout
@@ -572,8 +565,6 @@ export function boxedNeedsSvgRaster(
   // An accent edge (docs/specs/008-canvas/accent-edge.md) is a clipped bar only the SVG draws.
   if (resolvedAccentEdge(el)) return true;
   if (el.type === 'table' || el.type === 'freehand' || el.type === 'path') return true;
-  // Wordmark type (tracking, weight, case, an arc) is drawn by the SVG alone.
-  if (el.type === 'text' && hasWordmarkType(el)) return true;
   if (el.type === 'shape' && (hasShapeSilhouette(el.shape) || el.shape === 'stadium')) return true;
   // Anything whose BODY this module draws and the canvas drawers cannot: a
   // chart's plot, a progress value, a card's face, a lane's gutter, a
@@ -627,40 +618,30 @@ export function renderElementsToSvg(
     resolvePlanArt?: ResolvePlanArt;
     // Each tab window's tab (docs/specs/009-elements/tab-window.md "Exports"); its frame named for its tab without.
     resolveTabWindow?: ResolveTabWindow;
-    // One page as an export draws it (page-frame.ts, svg-render-pages.ts): the drawing is the
-    // page's rect, painted with its background, its elements inked for it; only the elements reaching it are drawn.
-    // `writingSvg` goes over the page and under every element (an article's writing).
-    frame?: PageExportFrame & { writingSvg?: string };
   } = {},
 ): string {
-  const frame = opts.frame;
-  const padding = frame ? 0 : (opts.padding ?? EXPORT_PADDING);
-  const visible = visibleLayerElements(tab.elements, tab.layers).filter(
-    (el) => !frame || frame.reaches(el, tab.elements),
-  );
+  const padding = opts.padding ?? EXPORT_PADDING;
+  const visible = visibleLayerElements(tab.elements, tab.layers);
   // Shapes something sits on keep a solid fill under Sketch (sketch-backdrop.ts), as on the canvas.
   const backdrops = sketchBackdropIds(visible, tab.finish);
   // Every caption laid out once, in document order, so labels see each other.
   const labels = arrowLabelPass(tab.elements, {
     fontFamilyOf: (a) => arrowLabelFontStack(a, tab.font, tab.finish),
   });
-  const bounds = frame ? frame.bounds : contentBounds(visible, labels);
+  const bounds = contentBounds(visible, labels);
   const vbX = bounds.x - padding;
   const vbY = bounds.y - padding;
   const vbW = bounds.w + padding * 2;
   const vbH = bounds.h + padding * 2;
-  const bg = frame ? PAGE_EXPORT_PAPER : (opts.background ?? tab.backgroundColor ?? EXPORT_BG);
+  const bg = opts.background ?? tab.backgroundColor ?? EXPORT_BG;
   // What you export is what you see: an element with no colours of its own is
   // drawn in the ink of the paper it is being exported onto (docs/specs/007-editor/live-app.md), so a
   // dark canvas exports dark-canvas elements rather than pale ones.
-  const surface = frame ? frame.surface : canvasSurface(bg);
+  const surface = canvasSurface(bg);
   const parts: string[] = [
     `<svg xmlns="http://www.w3.org/2000/svg" width="${r2(vbW)}" height="${r2(vbH)}" viewBox="${r2(vbX)} ${r2(vbY)} ${r2(vbW)} ${r2(vbH)}">`,
-    frame
-      ? frame.backgroundSvg
-      : `<rect x="${r2(vbX)}" y="${r2(vbY)}" width="${r2(vbW)}" height="${r2(vbH)}" fill="${xmlEscape(bg)}"/>`,
+    `<rect x="${r2(vbX)}" y="${r2(vbY)}" width="${r2(vbW)}" height="${r2(vbH)}" fill="${xmlEscape(bg)}"/>`,
   ];
-  if (frame?.writingSvg) parts.push(frame.writingSvg);
   // Webfont declarations for the faces this tab uses (docs/specs/004-interface-design/fonts.md), including
   // the one the event-storming notation asks for on its notes.
   // The categorical ramp the tab's theme gives its charts (docs/specs/009-elements/pie-chart.md), which is
@@ -681,13 +662,8 @@ export function renderElementsToSvg(
   // A dimmed layer wraps its band in a <g opacity>.
   // The tab's tag colours (docs/specs/009-elements/tag-colours.md): a mapped card's edge and chips.
   const tagColours = tagColoursOf(tab);
-  // A wireframe page's elements are cut to its screen, its system bars over them (withinPageFrame).
-  const bandsStart = parts.length;
   for (const band of layerBands(tab.elements, tab.layers)) {
-    const shown = frame
-      ? band.elements.filter((el) => frame.reaches(el, tab.elements))
-      : band.elements;
-    const inner = shown.map((el) =>
+    const inner = band.elements.map((el) =>
       el.type === 'arrow'
         ? svgArrow(el, tab.elements, surface, tab.font, labels, undefined, visible, bg, tab.finish)
         : svgBoxed(el, {
@@ -714,12 +690,6 @@ export function renderElementsToSvg(
       opacity < 1 ? `<g opacity="${r2(opacity)}">${inner.join('\n')}</g>` : inner.join('\n'),
     );
   }
-  if (frame?.clipId)
-    parts.splice(
-      bandsStart,
-      parts.length - bandsStart,
-      withinPageFrame(frame, parts.slice(bandsStart).join('\n')),
-    );
   parts.push('</svg>');
   return parts.join('\n');
 }

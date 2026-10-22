@@ -41,25 +41,6 @@ describe('tabImageIds', () => {
     (tab.elements as unknown[]).push({ id: 'x', type: 'shape' });
     expect(tabImageIds(tab)).toEqual(['b', 'a']);
   });
-
-  it('lists a page’s picture background too, once', () => {
-    const tab = {
-      ...tabOf('b'),
-      pages: [
-        {
-          id: 'p1',
-          orientation: 'landscape',
-          background: { fill: { kind: 'image', imageId: 'pic', tone: '#336699' } },
-        },
-        {
-          id: 'p2',
-          orientation: 'landscape',
-          background: { fill: { kind: 'image', imageId: 'b', tone: '#336699' } },
-        },
-      ],
-    } as never;
-    expect(tabImageIds(tab)).toEqual(['b', 'pic']);
-  });
 });
 
 describe('embedTabImages', () => {

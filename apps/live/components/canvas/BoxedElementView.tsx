@@ -1,5 +1,4 @@
 import { memo, useRef, useState } from 'react';
-import { useZoneClip, zoneClipPolygon } from '@/lib/article/zone-clip-store';
 import { PhotoDraftRing, PhotoMatchedBadge } from '@/components/canvas/photo-badges';
 import {
   BORDER_DASH_ARRAY,
@@ -53,7 +52,7 @@ import { FurnitureView, isFurnitureViewShape } from '@/components/canvas/collab/
 import { RoomView } from '@/components/canvas/collab/RoomView';
 import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
 import { describeVariant, editingLook } from '@/components/canvas/element-variant';
-import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
 import { SketchOverlay, useSketchPaint } from '@/components/canvas/SketchOverlay';
 import { SketchFace } from '@/components/canvas/SketchFace';
@@ -185,7 +184,7 @@ function BoxedElementViewImpl({
   // Which paper this element sits on, for every colour it doesn't carry
   // itself (docs/specs/007-editor/live-app.md): a Default tab stores no element colours at all, so on
   // a dark canvas this is where the greys come from.
-  const surface = useElementSurface(element.id);
+  const surface = useCanvasSurface();
   const isLocked = element.locked === true || tabLocked;
   // Concurrent-selection lock (docs/specs/007-editor/live-app.md): another participant has this
   // element selected (remoteSelectors already excludes our own
@@ -196,14 +195,9 @@ function BoxedElementViewImpl({
   // Clockwise rotation about the element centre. The resize handles stay
   // while rotated, turned with the box: resolveBoxedResize projects the drag
   // into the element's own frame and anchors the opposite side, it just
-  // skips the axis-aligned snap. `isRotated` drives the wrapper transform and
-  // the zone clip below.
+  // skips the axis-aligned snap. `isRotated` drives the wrapper transform.
   const rotation = rotationOf(element);
   const isRotated = rotation % 360 !== 0;
-  // In an article's drawing zone: cut off at the zone's edge (a turned element is left whole).
-  const zoneClip = useZoneClip(element.id);
-  const clipPath =
-    zoneClip && !isRotated ? zoneClipPolygon(zoneClip, element.x, element.y) : undefined;
   // Layer-scoped vote (docs/specs/012-collaboration/vote-layer-scope.md). Only while casting is OPEN: after End
   // vote the canvas goes back to normal so the results walkthrough reads
   // against the full canvas. `votableInVote` already folds in the kind
@@ -250,13 +244,6 @@ function BoxedElementViewImpl({
   // floats its note above everything; clicking it (handled in the drag
   // engine's click-vs-drag test) opens the editable note popover.
   const isAnnotation = element.type === 'annotation';
-  // An article's margin note (docs/specs/007-editor/article-pages.md "Comments and actions"): a
-  // click opens what it carries, its comment thread or its action.
-  const articleNote = element.type === 'annotation' ? element.articleNote : undefined;
-  const noteDown = useRef<{ x: number; y: number } | null>(null);
-  const openArticleNote = articleNote
-    ? () => (articleNote === 'action' ? onOpenAction(element.id) : onOpenComments(element.id))
-    : undefined;
   const [hovering, setHovering] = useState(false);
 
   // Right-click selects the element + asks the page to open a
@@ -504,23 +491,6 @@ function BoxedElementViewImpl({
       }}
       onContextMenu={handleContextMenu}
       onPointerUp={handlePointerUp}
-      onClick={
-        openArticleNote
-          ? (e) => {
-              // A drag of the marker ends in a click too: only a press that stayed put opens it.
-              const down = noteDown.current;
-              if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) > 4) return;
-              openArticleNote();
-            }
-          : undefined
-      }
-      onPointerDownCapture={
-        openArticleNote
-          ? (e) => {
-              noteDown.current = { x: e.clientX, y: e.clientY };
-            }
-          : undefined
-      }
       onPointerEnter={isAnnotation ? () => setHovering(true) : undefined}
       onPointerLeave={isAnnotation ? () => setHovering(false) : undefined}
       onDragOver={acceptsIconDrop ? handleIconDragOver : undefined}
@@ -578,7 +548,6 @@ function BoxedElementViewImpl({
         // is typing isn't hidden behind elements painted above it. (The
         // selection handles live in the grips layer, SelectionChromeLayer.)
         ...(editLook.raise ? { zIndex: 10 } : {}),
-        ...(clipPath ? { clipPath } : {}),
         // Only the drawn line picks an element not yet selected (its hit
         // line, in FreehandSvg / ShapeHitOutline); the rest of its box lets pointers through.
         ...(passThrough ? { pointerEvents: 'none' as const } : {}),

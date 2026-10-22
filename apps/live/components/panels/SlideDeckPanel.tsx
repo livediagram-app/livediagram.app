@@ -27,7 +27,6 @@ import { useMemo, useRef, useState } from 'react';
 import { slideName, type Slide } from '@liveplanner/document';
 
 import { ModePanel, type ModePanelProps } from '@/components/panels/ModePanel';
-import { PageSlidePicker } from '@/components/panels/PageSlidePicker';
 import { SlideRowMenu } from '@/components/panels/SlideRowMenu';
 import { SlideDeckSettingsPopover } from '@/components/panels/SlideDeckSettingsPopover';
 import { SlideDeckRow } from '@/components/panels/SlideDeckRow';
@@ -47,7 +46,6 @@ export function SlideDeckPanel({
   tabs,
   activeTabId,
   isReadOnly,
-  pages,
   ...placement
 }: {
   state: SlideDeckState;
@@ -56,12 +54,7 @@ export function SlideDeckPanel({
   tabs: { id: string; name: string }[];
   activeTabId: string;
   isReadOnly: boolean;
-  // The active tab's pages while it is shown in Pages mode: slides are then added a page at
-  // a time (PageSlidePicker) rather than from a selection, and its slide pages all at once.
-  pages?: readonly { id: string; label: string; slide?: boolean }[];
 } & ModePanelProps) {
-  // The Pages popover: room for large pictures, headlines and Present from Here.
-  const roomy = placement.asPopover === true;
   // An item slide's card, read live from the items (docs/specs/012-collaboration/presentation-mode.md
   // "Item slides").
   const plan = usePlan();
@@ -76,17 +69,14 @@ export function SlideDeckPanel({
     openSlideInEditor,
     runnable,
     thumbs,
-    pageLabels,
     headlines,
     newSlideFromSelection,
-    newPageSlide,
     addSelectionToSlide,
     removeFromSlide,
     renameSlide,
     setSlideNotes,
     setSlideMinutes,
     deleteSlide,
-    ownPageSlideIds,
     toggleSlideHidden,
     duplicateSlide,
     reorderSlides,
@@ -136,13 +126,10 @@ export function SlideDeckPanel({
 
   // The talk's planned length: every shown slide's minutes.
   const totalMinutes = deck.slides.reduce((n, sl) => n + (sl.hidden ? 0 : (sl.minutes ?? 0)), 0);
-  // A deck spanning tabs names each slide's tab.
-  const spansTabs = new Set(deck.slides.map((sl) => sl.tabId)).size > 1;
   return (
     <ModePanel
       title="Slide Deck"
       helpArticle="slideDeck"
-      // The Pages tour's Present step rings it (docs/specs/007-editor/pages-tour.md).
       dataTourId="slide-deck"
       // The SAME presenter settings the HUD's cog carries, reachable BEFORE
       // you start. Discovering "Actual size" or "Auto-advance" mid-talk means
@@ -167,12 +154,9 @@ export function SlideDeckPanel({
           )}
         </>
       }
-      {...(roomy ? { popoverWidth: 'w-[420px]' } : {})}
       {...placement}
     >
-      <div
-        className={`flex flex-col gap-2 px-2 pb-2 ${roomy ? 'max-h-[min(calc(100vh-200px),620px)]' : 'max-h-[26rem]'}`}
-      >
+      <div className="flex max-h-[26rem] flex-col gap-2 px-2 pb-2">
         {deck.slides.length === 0 ? (
           <div className="flex flex-col items-center gap-2 px-2 py-5 text-center">
             <span className="flex h-11 w-11 items-center justify-center rounded-full bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-200">
@@ -182,21 +166,12 @@ export function SlideDeckPanel({
               Build your deck
             </p>
             <p className="max-w-[18rem] text-xs leading-snug text-slate-500 dark:text-slate-400">
-              {/* Each way in names the button it has: on a Pages tab a slide page joins on its own
-                  (docs/specs/007-editor/pages-mode.md "Slides"), any other page a page at a time. */}
-              {pages
-                ? 'Slide pages join the deck on their own. For any other page, pick it below and press'
-                : 'Select what you want on the first slide, then press'}{' '}
-              <span className="font-medium text-slate-700 dark:text-slate-200">
-                {pages ? 'Add as slide' : 'New slide'}
-              </span>
-              .
+              Select what you want on the first slide, then press{' '}
+              <span className="font-medium text-slate-700 dark:text-slate-200">New slide</span>.
             </p>
           </div>
         ) : (
-          <div
-            className={`flex flex-col gap-1 overflow-y-auto overflow-x-hidden py-px ${roomy ? 'min-h-0 flex-1' : 'max-h-52'}`}
-          >
+          <div className="flex max-h-52 flex-col gap-1 overflow-y-auto overflow-x-hidden py-px">
             {deck.slides.map((slide, i) => (
               <div key={slide.id} className="flex flex-col gap-1">
                 {caretBefore(i) ? <DropCaret /> : null}
@@ -204,14 +179,7 @@ export function SlideDeckPanel({
                   slide={slide}
                   index={i}
                   tabName={tabNames.get(slide.tabId)}
-                  showTab={spansTabs || !roomy}
-                  // From the slide's own tab's pages, so a slide on another tab names its page too.
-                  pageName={pageLabels.get(slide.id) ?? null}
                   headline={headlines.get(slide.id)}
-                  roomy={roomy}
-                  onPresentFrom={
-                    slide.hidden || runnable.length === 0 ? undefined : () => void start(slide.id)
-                  }
                   isOpen={slide.id === openSlideId}
                   isDragging={draggingId === slide.id && moving}
                   renaming={renamingId === slide.id}
@@ -236,13 +204,10 @@ export function SlideDeckPanel({
                         onRemoveSelection={() => removeFromSlide(slide.id, currentSelectionIds)}
                         onToggleHidden={() => toggleSlideHidden(slide.id)}
                         onDuplicate={() => duplicateSlide(slide.id)}
-                        onDelete={
-                          ownPageSlideIds.has(slide.id)
-                            ? undefined
-                            : (anchor) =>
-                                anchor
-                                  ? setConfirmDelete({ id: slide.id, anchor })
-                                  : deleteSlide(slide.id)
+                        onDelete={(anchor) =>
+                          anchor
+                            ? setConfirmDelete({ id: slide.id, anchor })
+                            : deleteSlide(slide.id)
                         }
                       />
                     )
@@ -315,9 +280,7 @@ export function SlideDeckPanel({
           </label>
         ) : null}
 
-        {!isReadOnly && pages ? (
-          <PageSlidePicker pages={pages} onAdd={newPageSlide} />
-        ) : !isReadOnly ? (
+        {!isReadOnly ? (
           <button
             type="button"
             onClick={newSlideFromSelection}
@@ -335,9 +298,7 @@ export function SlideDeckPanel({
           onClick={() => void start()}
           disabled={runnable.length === 0 || startingDeck}
           data-presentation-start="panel"
-          className={`flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-md bg-brand-700 font-semibold text-white transition hover:bg-brand-800 disabled:cursor-default disabled:opacity-40 ${
-            roomy ? 'rounded-lg px-3 py-2.5 text-sm' : 'px-2 py-2 text-[11px]'
-          } ${SOLID_BRAND_DARK_CONTROL}`}
+          className={`flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-md bg-brand-700 px-2 py-2 text-[11px] font-semibold text-white transition hover:bg-brand-800 disabled:cursor-default disabled:opacity-40 ${SOLID_BRAND_DARK_CONTROL}`}
         >
           <PlayIcon />
           {startingDeck ? 'Loading…' : 'Present'}
@@ -352,11 +313,9 @@ export function SlideDeckPanel({
         <ConfirmPopover
           anchor={confirmDelete.anchor}
           message={`Delete “${slideName(deleting, deck.slides.indexOf(deleting))}”? ${
-            deleting.pageId
-              ? 'The page stays.'
-              : deleting.elementIds.length === 1
-                ? 'The element stays on the canvas.'
-                : 'The elements stay on the canvas.'
+            deleting.elementIds.length === 1
+              ? 'The element stays on the canvas.'
+              : 'The elements stay on the canvas.'
           }`}
           confirmLabel="Delete slide"
           onConfirm={() => {

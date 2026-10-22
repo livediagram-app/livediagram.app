@@ -223,7 +223,6 @@ Each key has a label, the plural a sentence uses, and an icon, in list order:
 | ------------------------ | --------------------- | --------------------- | ------------------------ |
 | `mode:diagram`           | Diagrams              | diagrams              | The Diagram mode's icon  |
 | `mode:draw`              | Whiteboards           | whiteboards           | The Draw mode's icon     |
-| `mode:pages`             | Pages documents       | Pages documents       | The Pages mode's icon    |
 | `mode:plan`              | Plan boards           | Plan boards           | The Plan mode's icon     |
 | `mode:workshop`          | Sessions              | sessions              | The Workshop mode's icon |
 | `kind:event-storming`    | Event Storming boards | Event Storming boards | A sticky note            |

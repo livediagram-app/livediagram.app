@@ -21,7 +21,7 @@ const db = vi.hoisted(() => ({
 }));
 vi.mock('./db', () => db);
 
-import { getDocumentTabImageSvg, getDocumentThumbnailSvg } from './thumbnail';
+import { getDocumentThumbnailSvg } from './thumbnail';
 
 function r2() {
   return { get: vi.fn(), put: vi.fn().mockResolvedValue(undefined), delete: vi.fn() };
@@ -373,101 +373,6 @@ describe('getDocumentThumbnailSvg', () => {
 
 // Retired schemes (docs/specs/011-theme/retired-schemes.md): the thumbnail parses `tabs.data` itself,
 // so it runs the same stored-tab migration as every other read.
-// docs/specs/006-document/document-snapshots.md "Pages tabs": the first page alone, as an export draws it.
-describe('a thumbnail of a Pages tab', () => {
-  const A4 = { orientation: 'portrait', size: 'a4', kind: 'infographic' };
-  const PICTURE = 'b'.repeat(32);
-  const ON_FIRST = 'c'.repeat(32);
-  const ON_SECOND = 'd'.repeat(32);
-  // Two A4 pages side by side (the second starts past the first's 794px width), each with a labelled square and an
-  // image; the first page has a picture background.
-  const tabData = JSON.stringify({
-    opensIn: 'pages',
-    pages: [
-      {
-        id: 'p1',
-        ...A4,
-        background: { fill: { kind: 'image', imageId: PICTURE, tone: '#336699' } },
-      },
-      { id: 'p2', ...A4 },
-    ],
-    elements: [
-      {
-        id: 'a',
-        type: 'shape',
-        shape: 'square',
-        x: 40,
-        y: 40,
-        width: 100,
-        height: 80,
-        label: 'Cover',
-      },
-      { id: 'ia', type: 'image', x: 40, y: 200, width: 100, height: 80, imageId: ON_FIRST },
-      {
-        id: 'b',
-        type: 'shape',
-        shape: 'square',
-        x: 2000,
-        y: 40,
-        width: 100,
-        height: 80,
-        label: 'Later',
-      },
-      { id: 'ib', type: 'image', x: 2000, y: 200, width: 100, height: 80, imageId: ON_SECOND },
-    ],
-  });
-
-  function setup() {
-    const images = r2();
-    images.get.mockImplementation(async (key: string) =>
-      key.startsWith('thumb')
-        ? null
-        : {
-            arrayBuffer: async () => new Uint8Array([1, 2, 3, 4]).buffer,
-            httpMetadata: { contentType: 'image/png' },
-          },
-    );
-    db.getThumbRenderedAt.mockResolvedValue(null);
-    db.getTabBody.mockResolvedValue(stored(tabData, 4));
-    return { images, env: { IMAGES: images } as unknown as Env };
-  }
-
-  it('draws the first page alone, at its own size', async () => {
-    const { env } = setup();
-    const out = (await getDocumentThumbnailSvg(env, liveDoc()))!;
-    expect(out).toContain('Cover');
-    expect(out).not.toContain('Later');
-    // The page's own frame, not the bounds of everything on the canvas, nor the grid of every page.
-    expect(out).toMatch(/^<svg [^>]*width="794" height="1123"/);
-  });
-
-  it("reads only the first page's images, its picture background among them", async () => {
-    const { env, images } = setup();
-    await getDocumentThumbnailSvg(env, liveDoc());
-    const read = images.get.mock.calls.map(([key]) => key as string);
-    expect(read).toEqual(expect.arrayContaining([ON_FIRST, PICTURE]));
-    expect(read).not.toContain(ON_SECOND);
-  });
-
-  it('skips a malformed stored page rather than failing the thumbnail', async () => {
-    const { env } = setup();
-    const parsed = JSON.parse(tabData) as { pages: unknown[] };
-    db.getTabBody.mockResolvedValue(
-      stored(JSON.stringify({ ...parsed, pages: [null, 5, ...parsed.pages] }), 4),
-    );
-    const out = (await getDocumentThumbnailSvg(env, liveDoc()))!;
-    expect(out).toContain('Cover');
-    expect(out).not.toContain('Later');
-  });
-
-  it('draws the first page for a tab image too', async () => {
-    const { env } = setup();
-    const tabImage = (await getDocumentTabImageSvg(env, liveDoc(), 't1'))!;
-    expect(tabImage).toContain('Cover');
-    expect(tabImage).not.toContain('Later');
-  });
-});
-
 describe('a thumbnail of a Charcoal tab', () => {
   it('renders the migrated tab, not the colours Charcoal baked', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});

@@ -9,8 +9,6 @@ import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
 import { tabAsSeen } from '@/lib/export-as-seen';
 import { panelEnabled } from '@/lib/user-preferences';
-import { LeavePagesDialog } from '@/components/dialogs/LeavePagesDialog';
-import { LeavePagesConfirm } from '@/components/dialogs/LeavePagesConfirm';
 
 const ExportTabDialog = dynamic(
   () => import('@/components/dialogs/ExportTabDialog').then((m) => m.ExportTabDialog),
@@ -35,7 +33,6 @@ export function EditorTabDialogs() {
     userPreferences,
     exportOpen,
     exportScope,
-    pagesMode,
     activeTab,
     tabs,
     loadAllTabs,
@@ -63,9 +60,6 @@ export function EditorTabDialogs() {
     setDocumentSharePassword,
     setShareDialogOpen,
     syncToCloud,
-    leavePages,
-    setSelectedId,
-    setMultiSelectedIds,
   } = useEditorContext();
   // The selection the export covers, read from the store while a selection export is open
   // (docs/specs/008-canvas/blueprints/selection-store.md).
@@ -87,8 +81,6 @@ export function EditorTabDialogs() {
 
   return (
     <>
-      <LeavePagesDialog leave={leavePages} />
-      <LeavePagesConfirm leave={leavePages} />
       {exportOpen ? (
         <ExportTabDialog
           // Export what the author is LOOKING at: a tab on the Default colour
@@ -103,17 +95,10 @@ export function EditorTabDialogs() {
               : {}),
           })}
           scope={exportScope}
-          // In Pages mode the whole tab exports as its pages
-          // (docs/specs/007-editor/pages-mode.md "Export").
-          pages={exportScope === 'tab' ? pagesMode?.pages : undefined}
           documentName={documentName}
           // A Dashboard's slots that show another tab draw it (docs/specs/026-plan/plan-tabs.md "Export").
           documentTabs={tabs}
           loadTabs={loadAllTabs}
-          onClearSelection={() => {
-            setSelectedId(null);
-            setMultiSelectedIds(new Set());
-          }}
           imageContext={imageContext}
           offerHiddenLayers={panelEnabled(userPreferences, 'layersPanelEnabled')}
           onClose={() => setExportOpen(false)}
@@ -124,10 +109,9 @@ export function EditorTabDialogs() {
           tabName={activeTab.name}
           onImportFile={importIntoActiveTab}
           onImportText={importTextIntoActiveTab}
-          // Pages mode and a Dashboard tab import a liveplanner tab only: the other formats are diagrams
-          // (docs/specs/007-editor/pages-mode.md "Import", docs/specs/026-plan/plan-tabs.md "Import and
-          // Export of a Dashboard").
-          formats={pagesMode || activeTab.kind === 'dashboard' ? ['json'] : undefined}
+          // A Dashboard tab imports a liveplanner tab only: the other formats are diagrams
+          // (docs/specs/026-plan/plan-tabs.md "Import and Export of a Dashboard").
+          formats={activeTab.kind === 'dashboard' ? ['json'] : undefined}
           onClose={() => setImportOpen(false)}
         />
       ) : null}

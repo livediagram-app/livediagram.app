@@ -169,7 +169,7 @@ export function insidePolygon(p: Point, pts: readonly Point[]): boolean {
  * "Selecting and erasing"): its drawn line, and the inside of a closed path with a fill.
  */
 export function pathTouchesBrush(el: PathElement, a: Point, b: Point, r: number): boolean {
-  // A combined shape's every contour (docs/specs/007-editor/logo-pages.md "Combine").
+  // A path's every contour (docs/specs/023-draw-mode/path-tool.md).
   const contours = pathContours(el).map((nodes) =>
     samplePath(pathWorldAnchors(el, nodes), el.closed),
   );

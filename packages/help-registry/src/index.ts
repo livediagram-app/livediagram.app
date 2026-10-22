@@ -1658,17 +1658,6 @@ export const articles: Article[] = [
     parentSlug: 'plan-mode',
   },
   {
-    slug: 'pages-mode',
-    title: 'Pages Mode',
-    description:
-      'Work on a tab as pages: sizes for print and social, layouts, colour and photo backgrounds, then export or present.',
-    keywords:
-      'pages pages mode illustrate illustrate mode infographic infographics poster one pager one-pager flyer handout report page pages sheet sheets a4 a3 letter us letter square social post instagram linkedin story stories slide portrait landscape orientation size page size background article articles write writing document page kind infographic or article first page choice navigator next page previous page backgrounds colour color gradient pattern dots grid lines theme dark page name rename duplicate move reorder drag delete add page snap margins margin fit resize scale lay out into pages diagram to infographic convert mind map editor mode switch modes opens in templates blank illustration leave lock locked unlock padlock protect freeze read only page lock custom gradient photo background image background picture background photo overlay image overlay wash tint fade upload image stock photo openverse title bar layout button background button tidy up tidy align straighten even spacing widescreen carry over',
-    category: 'Canvas',
-    categorySlug: 'canvas',
-    group: 'Modes and Boards',
-  },
-  {
     slug: 'event-storming-boards',
     title: 'Event Storming Boards',
     description: 'A board built for the workshop: the notation, paper-like notes, one wall.',
@@ -1678,91 +1667,6 @@ export const articles: Article[] = [
     categorySlug: 'canvas',
     group: 'Modes and Boards',
     parentSlug: 'templates',
-  },
-  {
-    slug: 'infographic-layouts',
-    title: 'Infographic Layouts',
-    description:
-      'Ninety-two ready-made pages in eight categories, previewed on your page as you hover.',
-    keywords:
-      'layout layouts template templates page template start from a layout ready made starter preview hover replace title page big number key stats statistics process steps timeline milestones comparison before after chart story top tips quote testimonial team people facts grid checklist event invitation poster layout button replace undo covers posters data explainers cover report cover annual report magazine book cover proposal case study newsletter contents certificate award gig concert research poster academic coming soon movie film exhibition travel workshop hiring job sale discount notice warning motivational kpi dashboard metrics trend market share pie doughnut stat mosaic staircase customer journey project plan gantt decision flow flowchart how-to recipe versus vs pricing price plans tiers swot effort impact matrix quadrant scorecard rating spectrum venn options org chart organisation organization testimonials reviews speakers spotlight employee values idea board brainstorm persona user persona shout-outs kudos thank you social media carousel instagram tip of the day milestone followers behind the scenes countdown product launch giveaway contest welcome onboarding webinar how it works anatomy diagram key concepts cheat sheet shortcuts glossary definitions myths facts fact file lesson summary quiz formula equation explainer education',
-    category: 'Canvas',
-    categorySlug: 'canvas/pages-mode',
-    parentSlug: 'pages-mode',
-  },
-  {
-    slug: 'logo-pages',
-    title: 'Logo Pages',
-    description:
-      'Design a logo on a square artboard with guides, mirror, wordmarks, combined shapes and a logo kit.',
-    keywords:
-      'logo logos brand branding mark wordmark lettermark monogram icon favicon app icon avatar artboard guides keyline grid safe area symmetry mirror reflect flip radial rotational kaleidoscope four way horizontal vertical axis copies merge combine boolean union unite subtract intersect exclude merge shapes tracking letter spacing kerning arc curved text circle text badge emblem logo kit export png svg ico transparent',
-    category: 'Canvas',
-    categorySlug: 'canvas/pages-mode',
-    parentSlug: 'pages-mode',
-  },
-  {
-    slug: 'wireframe-pages',
-    title: 'Wireframe Pages',
-    description:
-      'Wireframe a screen inside a phone, tablet, laptop, desktop, browser or watch frame, from ready-made screens.',
-    keywords:
-      'wireframe wireframes mockup mock up mockups prototype ui ux screen screens app design device frame phone iphone android mobile tablet ipad laptop desktop monitor browser website web page watch smartwatch status bar dynamic island notch home indicator landscape portrait safe area sign in login onboarding dashboard settings profile checkout pricing chat feed landing page button text field input search switch toggle placeholder',
-    category: 'Canvas',
-    categorySlug: 'canvas/pages-mode',
-    parentSlug: 'pages-mode',
-  },
-  {
-    slug: 'articles',
-    title: 'Writing Articles',
-    description:
-      'Write on pages like a doc: text that flows onto new pages, with pictures, charts and drawings in it.',
-    keywords:
-      'article articles write writing document doc word google docs page pages text paragraph heading headings title subtitle list bullet numbered todo checklist quote code divider page break flow overflow new page toolbar formatting bold italic underline link colour color highlight align markdown shortcut slash menu paste picture image chart table sticky drawing inline wrap float move drag resize comment comments action actions assign margin note style look font fonts margins page numbers line spacing lined paper notebook convert page element leave pages',
-    category: 'Canvas',
-    categorySlug: 'canvas/pages-mode',
-    parentSlug: 'pages-mode',
-  },
-  {
-    slug: 'pages-tour',
-    title: 'The Pages Tour',
-    description:
-      'A short, optional walkthrough for each kind of page, offered the first time you work on one and replayable from Settings or Show Me.',
-    keywords:
-      'pages tour tour walkthrough onboarding intro introduction getting started guide tutorial first time learn pages mode pages page name cog page settings layout background add page slides slide deck add to slides present presentation infographic article logo show me replay rerun settings accessibility',
-    category: 'Canvas',
-    categorySlug: 'canvas/pages-mode',
-    parentSlug: 'pages-mode',
-  },
-  {
-    slug: 'exporting-pages',
-    title: 'Exporting and Presenting Pages',
-    description: 'Every page or one page as a PDF, images or an animated GIF, and pages as slides.',
-    keywords:
-      'export download pdf png svg gif animated gif animation moving image loop image zip all pages one page import json print printable pages page pages infographic slides slide deck present presentation add as slide page slide deck from pages',
-    category: 'Canvas',
-    categorySlug: 'canvas/pages-mode',
-    parentSlug: 'pages-mode',
-  },
-  {
-    slug: 'tab-windows',
-    title: 'Tab Windows',
-    description: 'Another tab, live, fitted inside a slide or page.',
-    keywords:
-      'tab window windows live view embed mirror show another tab diagram on a slide reference up to date stale copy paste sync linked picture choose a tab open',
-    category: 'Canvas',
-    categorySlug: 'canvas/pages-mode',
-    parentSlug: 'pages-mode',
-  },
-  {
-    slug: 'slide-pages',
-    title: 'Slide Pages',
-    description: 'Landscape 16:9 or 4:3 pages with slide layouts, added to the deck in one press.',
-    keywords:
-      'slide slides deck presentation present powerpoint keynote 16:9 4:3 widescreen classic landscape layouts title slide bullets agenda thank you add to slide deck hide show eye presenter',
-    category: 'Canvas',
-    categorySlug: 'canvas/pages-mode',
-    parentSlug: 'pages-mode',
   },
   {
     slug: 'using-tabs',
@@ -1878,6 +1782,16 @@ export const articles: Article[] = [
       'cursors online who viewing realtime collaborators avatars multiplayer people participants roster room agent agents ai status working focus',
     category: 'Collaboration',
     categorySlug: 'collaboration',
+  },
+  {
+    slug: 'tab-windows',
+    title: 'Tab Windows',
+    description: 'Another tab, live, fitted inside a window on the canvas.',
+    keywords:
+      'tab window windows live view embed mirror show another tab diagram on the canvas reference up to date stale copy paste sync linked picture choose a tab open',
+    category: 'Canvas',
+    categorySlug: 'canvas',
+    group: 'Basics',
   },
   {
     slug: 'links',

@@ -19,8 +19,7 @@ import {
   type UserPreferences,
 } from '@/lib/user-preferences';
 import { isPowerUserMode, setPowerUserMode } from '@/lib/power-user-mode';
-import { PAGES_TOUR_KINDS, pagesKindSeen } from '@/lib/pages-tour';
-import { PLAN_TOUR_TRACKS, planTrackSeen } from '@/lib/plan-tour';
+import { PLAN_TOUR_TRACKS, planTrackSeen, type PlanTourTrack } from '@/lib/plan-tour';
 import {
   ELEMENT_TOUR_KINDS,
   elementTourSeen,
@@ -51,38 +50,9 @@ import {
   withWhiteboardDockPosition,
   type WhiteboardDockPosition,
 } from '@/lib/whiteboard-dock-prefs';
-import {
-  readContentsPlacement,
-  withContentsPlacement,
-  type ContentsPlacement,
-} from '@/lib/contents-placement';
 import type { SettingsIllustrationId } from './settings-illustrations';
-import {
-  LOGO_GUIDE_PARTS,
-  readLogoGuideParts,
-  readLogoGuideStrength,
-  withLogoGuidePart,
-  type LogoGuidePart,
-  type LogoGuideStrength,
-} from '@/lib/logo-guide-prefs';
 import type { PlacementDefaultKey } from '@liveplanner/api-schema';
 import { DEFAULT_KEY_ENTRIES } from '@/lib/placement-defaults/default-key-entries';
-
-// One logo guide's switch (docs/specs/007-editor/logo-pages.md "Construction guides"): a tile in
-// Settings > Editor > Pages mode's Guides Shown grid, as in a logo page's Guides popover. The token
-// is written out per guide so the telemetry dashboard reads it.
-function logoGuidePart(
-  part: LogoGuidePart,
-  event: SettingsToggleOptionSpec['event'],
-): SettingsToggleOptionSpec {
-  return {
-    key: `logoGuide-${part}`,
-    label: LOGO_GUIDE_PARTS.find((p) => p.id === part)!.label,
-    read: (p) => readLogoGuideParts(p).has(part),
-    write: (p, v) => withLogoGuidePart(p, part, v),
-    event,
-  };
-}
 
 // One email notification switch (docs/specs/014-identity/profile-and-email-notifications.md): only
 // where the deployment sends email AND the reader is signed in, since a guest has no address.
@@ -204,25 +174,6 @@ export type SettingsToggleRowSpec = RowBase & {
   event: { category: TelemetryCategory; on: string; off: string };
 };
 
-// One switch inside a toggle group: its own preference and telemetry, like a toggle row, drawn as a
-// tile in the group's grid under the group's heading and description.
-export type SettingsToggleOptionSpec = {
-  key: string;
-  label: string;
-  // Linked from the group's description by this switch's label.
-  helpArticle?: HelpArticleKey;
-  read: (prefs: UserPreferences) => boolean;
-  write: (prefs: UserPreferences, next: boolean) => UserPreferences;
-  event: { category: TelemetryCategory; on: string; off: string };
-};
-
-// Several related switches as one control (the guided tours): one heading and one description over a
-// grid of switch tiles, where separate rows would repeat the same paragraph each time.
-export type SettingsToggleGroupRowSpec = RowBase & {
-  kind: 'toggleGroup';
-  toggles: SettingsToggleOptionSpec[];
-};
-
 export type SettingsChoiceRowSpec = RowBase & {
   kind: 'choice';
   options: { id: string; label: string }[];
@@ -312,7 +263,6 @@ export type SettingsPlacementDefaultRowSpec = RowBase & {
 
 export type SettingsRowSpec =
   | SettingsToggleRowSpec
-  | SettingsToggleGroupRowSpec
   | SettingsChoiceRowSpec
   | SettingsSliderRowSpec
   | SettingsAppearanceRowSpec
@@ -448,16 +398,16 @@ function elementTourSwitch(
 const ELEMENT_TOURS_SECTION = 'Show Me';
 
 // One track of a tour of several (lib/tour-tracks.ts), as its own row nested under the tour's switch over every track
-// (Plan Tours, Pages Tours): the Plan tour's Boards and Sheets, the Pages tour's page kinds
+// (Plan Tours): the Plan tour's Boards and Sheets
 // (docs/specs/007-editor/user-preferences.md "Tours"). On while the track is owed; off answers it, on forgets its
 // answer. Each track is named for itself ("Slides Tour"), never the mode. The tour's single seen flag (set by Power
 // user mode) is folded into the answered list first, so turning one track back on leaves the others as they were.
-function tourTrackSwitch<T extends string>(
-  key: 'planTourSeen' | 'pagesTourSeen',
-  tracksKey: 'planTourTracks' | 'pagesTourKinds',
-  tracks: readonly T[],
-  seen: (p: UserPreferences, track: T) => boolean,
-  track: T,
+function tourTrackSwitch(
+  key: 'planTourSeen',
+  tracksKey: 'planTourTracks',
+  tracks: readonly PlanTourTrack[],
+  seen: (p: UserPreferences, track: PlanTourTrack) => boolean,
+  track: PlanTourTrack,
   row: Pick<SettingsToggleRowSpec, 'label' | 'description' | 'helpArticle' | 'keywords' | 'event'>,
 ): SettingsToggleRowSpec {
   return {
@@ -479,8 +429,8 @@ function tourTrackSwitch<T extends string>(
 }
 
 function tourTracksSwitch(
-  key: 'planTourSeen' | 'pagesTourSeen' | 'elementToursSeen',
-  tracksKey: 'planTourTracks' | 'pagesTourKinds' | 'elementTourKinds',
+  key: 'planTourSeen' | 'elementToursSeen',
+  tracksKey: 'planTourTracks' | 'elementTourKinds',
   tracks: readonly string[],
   owed: (p: UserPreferences) => boolean,
   row: Pick<SettingsToggleRowSpec, 'label' | 'description' | 'helpArticle' | 'keywords' | 'event'>,
@@ -504,7 +454,6 @@ type TourSeenKey =
   | 'drawTourSeen'
   | 'formTourSeen'
   | 'avatarTourSeen'
-  | 'pagesTourSeen'
   | 'elementToursSeen';
 
 // A presenter setting's row (docs/specs/012-collaboration/presentation-mode.md "Settings"): read and written through
@@ -690,105 +639,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         read: readWhiteboardDockPosition,
         write: (p, v) => withWhiteboardDockPosition(p, v as WhiteboardDockPosition),
         event: { category: 'UI', changed: 'WhiteboardDockPosition' },
-      },
-    ],
-  },
-  {
-    // Pages mode's own settings (docs/specs/007-editor/logo-pages.md "Construction guides"):
-    // the master switch, then how strong and which guides, nested under it.
-    id: 'pages',
-    label: 'Pages',
-    parent: 'editor',
-    rows: [
-      {
-        // docs/specs/007-editor/pages-mode.md "Contents": the sidebar's minimise and the
-        // popover's dock button write the same choice.
-        kind: 'choice',
-        key: 'contentsPlacement',
-        keywords:
-          'contents pages page list sidebar side bar left panel filmstrip slides navigator thumbnails minimise minimize maximise maximize dock button',
-        section: 'Pages',
-        label: 'Contents',
-        description:
-          'Where the list of pages sits on a computer: docked down the left, or tucked into its button. A phone always has the button.',
-        options: [
-          { id: 'sidebar', label: 'Sidebar' },
-          { id: 'button', label: 'Button' },
-        ],
-        read: readContentsPlacement,
-        write: (p, v) => withContentsPlacement(p, v as ContentsPlacement),
-        event: { category: 'UI', changed: 'ContentsPlacement' },
-      },
-      {
-        kind: 'toggle',
-        key: 'logoGuides',
-        keywords: 'logo guides construction grid keylines safe area centre lines snap artboard',
-        section: 'Logo Pages',
-        label: 'Logo Guides',
-        description:
-          'Draws centre lines, keylines, the safe area and a grid over a logo page; the keylines snap. A page you set on its own keeps its choice.',
-        helpArticle: 'logoPages',
-        alsoIn: "a logo page's Guides button",
-        read: (p) => p.logoGuides !== false,
-        write: (p, v) => ({ ...p, logoGuides: v }),
-        event: { category: 'UI', on: 'LogoGuidesOn', off: 'LogoGuidesOff' },
-      },
-      {
-        kind: 'choice',
-        key: 'logoGuideStrength',
-        keywords: 'logo guides strength opacity faint strong contrast',
-        section: 'Logo Pages',
-        parent: 'logoGuides',
-        label: 'Logo Guide Strength',
-        description: 'How strongly the guides show over the artwork.',
-        options: [
-          { id: 'faint', label: 'Faint' },
-          { id: 'medium', label: 'Medium' },
-          { id: 'strong', label: 'Strong' },
-        ],
-        read: readLogoGuideStrength,
-        write: (p, v) => ({ ...p, logoGuideStrength: v as LogoGuideStrength }),
-        event: { category: 'UI', changed: 'LogoGuideStrength' },
-      },
-      {
-        // One switch per guide (docs/specs/007-editor/logo-pages.md "Construction guides") as one
-        // grid; each event written out, so the telemetry dashboard reads its tokens.
-        kind: 'toggleGroup',
-        key: 'logoGuideParts',
-        keywords:
-          'logo guides centre lines diagonals safe area circles square grid construction keylines',
-        section: 'Logo Pages',
-        parent: 'logoGuides',
-        label: 'Guides Shown',
-        description: 'Which guides draw while they are on.',
-        toggles: [
-          logoGuidePart('centre', {
-            category: 'UI',
-            on: 'LogoGuideCentreLinesOn',
-            off: 'LogoGuideCentreLinesOff',
-          }),
-          logoGuidePart('diagonals', {
-            category: 'UI',
-            on: 'LogoGuideDiagonalsOn',
-            off: 'LogoGuideDiagonalsOff',
-          }),
-          logoGuidePart('safe', {
-            category: 'UI',
-            on: 'LogoGuideSafeAreaOn',
-            off: 'LogoGuideSafeAreaOff',
-          }),
-          logoGuidePart('circles', {
-            category: 'UI',
-            on: 'LogoGuideCirclesOn',
-            off: 'LogoGuideCirclesOff',
-          }),
-          logoGuidePart('square', {
-            category: 'UI',
-            on: 'LogoGuideSquareOn',
-            off: 'LogoGuideSquareOff',
-          }),
-          logoGuidePart('grid', { category: 'UI', on: 'LogoGuideGridOn', off: 'LogoGuideGridOff' }),
-        ],
       },
     ],
   },
@@ -1252,64 +1102,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
           'tour walkthrough onboarding tutorial avatar character walk speech message push replay',
         description: 'The first time you walk as an avatar.',
         helpArticle: 'avatarTour',
-      }),
-      // The Pages tour: one switch over every kind of page, then each kind's own row beneath it
-      // (docs/specs/007-editor/pages-tour.md).
-      tourTracksSwitch(
-        'pagesTourSeen',
-        'pagesTourKinds',
-        PAGES_TOUR_KINDS,
-        (p) => PAGES_TOUR_KINDS.some((k) => !pagesKindSeen(p, k)),
-        {
-          label: 'Pages Tours',
-          event: { category: 'UI', on: 'PagesTourSeenOff', off: 'PagesTourSeenOn' },
-          keywords:
-            'tour walkthrough onboarding tutorial pages slides infographic article logo all replay',
-          description: 'Every Pages tour at once: slides, infographics, articles and logos.',
-          helpArticle: 'pagesTour',
-        },
-      ),
-      tourTrackSwitch('pagesTourSeen', 'pagesTourKinds', PAGES_TOUR_KINDS, pagesKindSeen, 'slide', {
-        label: 'Slides Tour',
-        event: { category: 'UI', on: 'SlidesTourSeenOff', off: 'SlidesTourSeenOn' },
-        keywords: 'tour walkthrough onboarding tutorial pages slides deck present replay',
-        description: 'On a slide: layouts, backgrounds, the deck and presenting.',
-        helpArticle: 'pagesTour',
-      }),
-      tourTrackSwitch(
-        'pagesTourSeen',
-        'pagesTourKinds',
-        PAGES_TOUR_KINDS,
-        pagesKindSeen,
-        'infographic',
-        {
-          label: 'Infographic Tour',
-          event: { category: 'UI', on: 'InfographicTourSeenOff', off: 'InfographicTourSeenOn' },
-          keywords: 'tour walkthrough onboarding tutorial pages infographic poster layout replay',
-          description: 'On an infographic page: layouts, backgrounds, page size and presenting.',
-          helpArticle: 'pagesTour',
-        },
-      ),
-      tourTrackSwitch(
-        'pagesTourSeen',
-        'pagesTourKinds',
-        PAGES_TOUR_KINDS,
-        pagesKindSeen,
-        'article',
-        {
-          label: 'Article Tour',
-          event: { category: 'UI', on: 'ArticleTourSeenOff', off: 'ArticleTourSeenOn' },
-          keywords: 'tour walkthrough onboarding tutorial pages article document writing replay',
-          description: 'On an article: writing, the page toolbar, its style and fonts.',
-          helpArticle: 'pagesTour',
-        },
-      ),
-      tourTrackSwitch('pagesTourSeen', 'pagesTourKinds', PAGES_TOUR_KINDS, pagesKindSeen, 'logo', {
-        label: 'Logo Tour',
-        event: { category: 'UI', on: 'LogoTourSeenOff', off: 'LogoTourSeenOn' },
-        keywords: 'tour walkthrough onboarding tutorial pages logo artboard brand replay',
-        description: 'On a logo artboard: layouts, guides, mirroring and combining shapes.',
-        helpArticle: 'pagesTour',
       }),
       // Element tours (docs/specs/007-editor/element-tours.md "Settings"): their own closed section, one switch for
       // them all over one per toured kind.

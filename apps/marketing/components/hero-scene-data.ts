@@ -4,23 +4,14 @@
 // the one that shows its feature (FeatureScene.tsx), so a scene is declared once, here.
 //
 // The data alone, without the boards: a page that shows one scene (FeatureScene) loads only that
-// scene's board, never all ten. hero-scenes.tsx pairs each with its board for the hero stage.
+// scene's board, never all eight. hero-scenes.tsx pairs each with its board for the hero stage.
 
 import type { TabDef } from './hero-editor-window';
 import type { HeroMode } from './hero-mode-palette';
 import type { PlanTab } from './hero-plan-bars';
 
 export type HeroSceneKey =
-  | 'diagram'
-  | 'draw'
-  | 'mindmap'
-  | 'infographic'
-  | 'slides'
-  | 'article'
-  | 'plan'
-  | 'sheet'
-  | 'form'
-  | 'townhall';
+  'diagram' | 'draw' | 'mindmap' | 'slides' | 'plan' | 'sheet' | 'form' | 'townhall';
 
 export type HeroSceneData = {
   key: HeroSceneKey;
@@ -43,13 +34,11 @@ export type HeroSceneData = {
   // The landscape viewBox, when the scene reaches past the shared 600 by 400 one (LANDSCAPE_VIEWBOX):
   // as tall, so the hero's height-bound canvas draws it at the same scale, only wider.
   landscapeViewBox?: string;
-  // The portrait viewBox a phone draws it in: taller than wide, the pages' scenes taller still so
-  // two pages stack.
+  // The portrait viewBox a phone draws it in: taller than wide.
   portraitViewBox: string;
 };
 
 const PORTRAIT = '0 -40 360 520';
-const PORTRAIT_PAGES = '10 -40 360 680';
 
 // In the order the hero's stage plays them.
 export const HERO_SCENE_DATA: HeroSceneData[] = [
@@ -100,41 +89,16 @@ export const HERO_SCENE_DATA: HeroSceneData[] = [
     portraitViewBox: PORTRAIT,
   },
   {
-    key: 'infographic',
-    word: 'Pages',
-    build: '/new?mode=pages',
-    short: 'Infographic',
-    title: 'Year in review',
-    label: 'Infographic: lay out pages of numbers, charts and quotes, ready to print or share',
-    mode: 'pages',
-    tabs: [{ name: 'Infographic', color: '#8b5cf6', active: true }],
-    shared: true,
-    landscapeViewBox: '-24 -60 690 400',
-    portraitViewBox: PORTRAIT_PAGES,
-  },
-  {
     key: 'slides',
     word: 'Present',
-    build: '/new?mode=pages&q=slide',
+    build: '/new?mode=diagram',
     short: 'Slides',
     title: 'Board update',
-    label: 'Slides: build a deck from ready-made layouts, then present it full screen',
-    mode: 'pages',
+    label: 'Slides: build a deck from what you drew, then present it full screen',
+    mode: 'diagram',
     tabs: [{ name: 'Deck', color: '#0284c7', active: true }],
     shared: true,
     portraitViewBox: PORTRAIT,
-  },
-  {
-    key: 'article',
-    word: 'Document',
-    build: '/new?mode=pages&q=article',
-    short: 'Article',
-    title: 'Field notes',
-    label: 'Article: write long reads on pages, with images, headings and pull quotes',
-    mode: 'pages',
-    tabs: [{ name: 'Draft', color: '#0ea5e9', active: true }],
-    shared: true,
-    portraitViewBox: PORTRAIT_PAGES,
   },
   {
     key: 'plan',

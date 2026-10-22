@@ -26,7 +26,7 @@ import { getTheme } from './themes';
 
 // The catalogue's shape (count + default/extra split + no kind
 // drift) is load-bearing across both the picker and the marketing
-// site. docs/specs/019-marketing/marketing-site.md pins "147 templates (11 default + 136 extra)" and
+// site. docs/specs/019-marketing/marketing-site.md pins "113 templates (11 default + 102 extra)" and
 // docs/specs/008-canvas/canvas-and-palette.md catalogues the picker UX. These tests pin the array so
 // either the spec or the catalogue can't silently drift away from
 // the other.
@@ -56,16 +56,8 @@ describe('TEMPLATES catalogue', () => {
     'journey',
     'fishbone',
     'pyramid',
-    'slide-deck',
     'flywheel',
-    'logo-design',
-    'wireframe-mobile-app',
-    'wireframe-website',
-    'wireframe-dashboard',
-    'wireframe-tablet-app',
-    'wireframe-watch-app',
     'gantt',
-    'live-card',
     'comparison-table',
     'system-architecture',
     'er-diagram',
@@ -94,7 +86,6 @@ describe('TEMPLATES catalogue', () => {
     'sankey',
     'okr-tree',
     'sitemap',
-    'storyboard',
     'cloud-architecture',
     'uml-class',
     'state-machine',
@@ -113,41 +104,16 @@ describe('TEMPLATES catalogue', () => {
     'service-blueprint',
     'metric-tree',
     'value-proposition-canvas',
-    'working-backwards',
     'family-tree',
     'value-stream-map',
     'user-persona',
     'meeting-agenda',
     'objectives-planner',
-    'floor-plan',
     'whiteboard',
-    'article',
-    'blank-illustration',
-    'blank-slide-deck',
-    'blank-article',
-    'blank-infographic',
-    'blank-logo',
-    'blank-wireframe-phone',
-    'blank-wireframe-tablet',
-    'blank-wireframe-browser',
-    'blank-wireframe-laptop',
-    'blank-wireframe-watch',
     'sketchnote',
     'rich-picture',
     'comic-strip',
     'doodle-warmup',
-    'event-poster',
-    'year-in-review',
-    'resume',
-    'recipe-card',
-    'data-story',
-    'how-it-works',
-    'versus',
-    'social-carousel',
-    'launch-keynote',
-    'quarterly-review',
-    'team-welcome',
-    'workshop-kickoff',
     'paper-prototype',
     'journey-doodle',
     'pre-mortem',
@@ -187,21 +153,21 @@ describe('TEMPLATES catalogue', () => {
   ];
 
   // Hidden templates are buildable but never listed, so every user-facing
-  // count (docs/specs/019-marketing/marketing-site.md's "147 templates", the picker grids, the MCP catalogue)
+  // count (docs/specs/019-marketing/marketing-site.md's "113 templates", the picker grids, the MCP catalogue)
   // is over the listed subset. The mechanism is generic; nothing ships
   // hidden today (the docs/specs/007-editor/guided-tour-sample.md guided-tour sample used it until the
   // interactive tour, docs/specs/007-editor/editor-tour.md, superseded it).
   const listed = TEMPLATES.filter((t) => !t.hidden);
 
-  it('lists exactly 147 templates (11 default + 136 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
-    expect(listed).toHaveLength(147);
+  it('lists exactly 113 templates (11 default + 102 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
+    expect(listed).toHaveLength(113);
   });
 
-  it('splits cleanly into 11 default + 136 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
+  it('splits cleanly into 11 default + 102 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
     const defaults = listed.filter((t) => !t.extra);
     const extras = listed.filter((t) => t.extra);
     expect(defaults).toHaveLength(11);
-    expect(extras).toHaveLength(136);
+    expect(extras).toHaveLength(102);
   });
 
   it('ships no hidden templates (the flag is generic; docs/specs/007-editor/guided-tour-sample.md was retired by docs/specs/007-editor/editor-tour.md)', () => {
@@ -236,20 +202,9 @@ describe('TEMPLATES catalogue', () => {
       // 'blank' and 'whiteboard' are intentionally empty (docs/specs/007-editor/new-document-route.md,
       // docs/specs/023-draw-mode/draw-mode.md); every other kind seeds content. Either way the
       // switch must handle the union member.
-      // An article's writing is tab data, not elements (templateCanvasOverrides).
-      // A blank illustration is its one empty page, which asks what it is for.
       const empty =
         kind === 'blank' ||
         kind === 'whiteboard' ||
-        kind === 'article' ||
-        kind === 'working-backwards' ||
-        kind === 'blank-illustration' ||
-        // One empty page of a chosen kind.
-        kind === 'blank-slide-deck' ||
-        kind === 'blank-article' ||
-        kind === 'blank-infographic' ||
-        kind === 'blank-logo' ||
-        kind.startsWith('blank-wireframe-') ||
         // An empty Plan tab, which opens on Start Planning.
         kind === 'blank-plan' ||
         // An empty session tab, in Workshop.
@@ -270,40 +225,6 @@ describe('templateCanvasOverrides', () => {
       opensIn: 'draw',
       backgroundPattern: 'graph',
     });
-  });
-
-  it('makes an article that opens in Pages on one article page of writing', () => {
-    // docs/specs/007-editor/article-pages.md: the template's page and writing are tab data.
-    const o = templateCanvasOverrides('article');
-    expect(o.opensIn).toBe('pages');
-    expect(o.pages).toEqual([expect.objectContaining({ kind: 'article', flow: 'art-brief' })]);
-    expect(o.articles?.['art-brief']?.blocks.length).toBeGreaterThan(5);
-  });
-
-  // docs/specs/008-canvas/canvas-and-palette.md "Templates": Working Backwards is a PR/FAQ article in the Report look.
-  it('makes Working Backwards a PR/FAQ article: press release, a page break, both FAQs and a review list', () => {
-    const o = templateCanvasOverrides('working-backwards');
-    expect(o.opensIn).toBe('pages');
-    expect(o.pages).toEqual([expect.objectContaining({ kind: 'article', flow: 'art-prfaq' })]);
-    const flow = o.articles!['art-prfaq']!;
-    expect(flow.style).toEqual({ look: 'report' });
-    const text = (b: (typeof flow.blocks)[number]) =>
-      'runs' in b ? b.runs.map((r) => r.text).join('') : '';
-    const styled = (style: string) =>
-      flow.blocks.filter((b) => b.type === 'paragraph' && b.style === style).map(text);
-    expect(flow.blocks[0]).toMatchObject({ type: 'paragraph', style: 'title' });
-    expect(flow.blocks[1]).toMatchObject({ type: 'paragraph', style: 'subtitle' });
-    expect(styled('h1')).toEqual(['Customer FAQ', 'Internal FAQ', 'Before the review']);
-    expect(flow.blocks.filter((b) => b.type === 'pageBreak')).toHaveLength(1);
-    expect(styled('quote')).toHaveLength(2);
-    // Every block has its own id, the same on every build.
-    const ids = flow.blocks.map((b) => b.id);
-    expect(new Set(ids).size).toBe(ids.length);
-    expect(
-      templateCanvasOverrides('working-backwards').articles!['art-prfaq']!.blocks.map((b) => b.id),
-    ).toEqual(ids);
-    // No raw Markdown survives the read.
-    expect(flow.blocks.map(text).join(' ')).not.toMatch(/\*\*|^#|\[ \]/);
   });
 
   it('makes an event-storming board already settled on its lanes', () => {
@@ -358,46 +279,7 @@ describe('templateCanvasOverrides', () => {
     expect(templateCanvasOverrides('flywheel')).toEqual({ backgroundPattern: 'blank' });
   });
 
-  it('opens the slide deck in Pages on six 16:9 slide pages, keeping its layers', () => {
-    // canvas-and-palette.md "Templates on pages": a plain surround, the pages are the paper.
-    const o = templateCanvasOverrides('slide-deck');
-    expect(o).toMatchObject({
-      backgroundPattern: 'blank',
-      opensIn: 'pages',
-      layers: templateLayers('slide-deck'),
-    });
-    expect(o.pages).toHaveLength(6);
-    expect(
-      o.pages!.every(
-        (p) => p.size === 'slide' && p.orientation === 'landscape' && p.kind === 'slide',
-      ),
-    ).toBe(true);
-    expect(o.pages!.map((p) => p.id)).toEqual([
-      'page-1',
-      'page-2',
-      'page-3',
-      'page-4',
-      'page-5',
-      'page-6',
-    ]);
-  });
-
-  it('opens the logo exploration on Logo pages, and timelines get ruled lines', () => {
-    const o = templateCanvasOverrides('logo-design');
-    expect(o).toMatchObject({ backgroundPattern: 'blank', opensIn: 'pages' });
-    // Six lockup artboards, then the palette.
-    expect(o.pages?.map((p) => p.name)).toEqual([
-      'Horizontal',
-      'Stacked',
-      'App Icon',
-      'Horizontal + Tagline',
-      'Stacked + Tagline',
-      'One Colour',
-      'Palette',
-    ]);
-    // Each lockup on the logo artboard; the palette on a Square infographic page.
-    expect(o.pages!.slice(0, 6).every((p) => p.size === 'logo' && p.kind === 'logo')).toBe(true);
-    expect(o.pages![6]).toMatchObject({ size: 'square', kind: 'infographic' });
+  it('gives timelines ruled lines', () => {
     expect(templateCanvasOverrides('timeline')).toEqual({
       backgroundPattern: 'lines',
       backgroundOpacity: 0.6,
@@ -410,15 +292,6 @@ describe('templateCanvasOverrides', () => {
       layers: templateLayers('journey'),
       opensIn: 'workshop',
     });
-  });
-
-  it('opens the group card on a cover and an inside, both Portrait post (4:5) pages', () => {
-    const o = templateCanvasOverrides('live-card');
-    expect(o).toMatchObject({ backgroundPattern: 'blank', opensIn: 'pages' });
-    expect(o.pages?.map((p) => [p.name, p.size, p.orientation, p.kind])).toEqual([
-      ['Cover', 'social', 'portrait', 'infographic'],
-      ['Inside', 'social', 'portrait', 'infographic'],
-    ]);
   });
 
   it('leaves the blank template to inherit the theme backdrop', () => {
@@ -515,12 +388,6 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
     // (label plus two line samples with their words). Components: 15 nodes
     // and the 14 edges between them.
     'system-architecture': { names: ['Tiers', 'Components'], scaffold: 15, content: 29 }, // the key is one Diagram key (docs/specs/009-elements/diagram-key.md)
-    // Frames: the footer (deck name + page number) of the five content slides; the slides
-    // themselves are pages. Content: the title slide's nine pieces, each other
-    // slide's kicker + headline, and its body (pains 9, steps 5, traction 3, team 12, ask 5).
-    'slide-deck': { names: ['Frames', 'Content'], scaffold: 10, content: 63 },
-    // Frames: six panel cards, their number chips and the how-to.
-    storyboard: { names: ['Frames', 'Content'], scaffold: 13, content: 41 },
     // Title, caption, the two spine runs (done, to come) and the three-entry
     // status legend stay put; each of the six milestones brings a disc, its
     // glyph, a date, a title and a detail line, plus the Today marker + pill.
@@ -537,12 +404,6 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
     // gutter labels, and the Feeling row's +/- cues. Content is the twenty
     // stickies, five mood faces and the four curve segments between them.
     journey: { names: ['Stages', 'Notes'], scaffold: 22, content: 29 },
-    // Shell: title + outer wall + 7 rooms, their 7 zone washes, 7 captions
-    // and 7 doorways; two dimension chains (4 ticks + 3 spans each); the
-    // scale bar + caption; the north arrow (N, ring, arrow); and the key
-    // (2 headings, the zone legend, 6 symbol rows of glyph + name).
-    // Furniture is the 21 movable pieces.
-    'floor-plan': { names: ['Rooms', 'Furniture'], scaffold: 64, content: 21 },
     // The plan 0002 batch. Retro formats share the Retrospective's kit.
     // Start / Stop / Continue: how-to, rail note, 3 columns + actions panel,
     // 3 lamp discs + their glyphs, actions glyph, verbs, prompts, actions
@@ -791,20 +652,7 @@ describe('buildTemplatedTab', () => {
 // again here, they're covered above against the blank + flowchart
 // templates.
 
-describe('slide deck and flywheel templates', () => {
-  it('slide-deck drops a six-slide pitch with speaker notes', () => {
-    const tab = buildTemplatedTab('slide-deck', 'brand', 'tab-1', 'slides');
-    // Built from standard primitives, no device shape.
-    expect(tab.elements.some((el) => el.type === 'shape' && el.shape === 'monitor')).toBe(false);
-    const labels = tab.elements
-      .map((el) => ('label' in el ? el.label : undefined))
-      .filter((l): l is string => Boolean(l));
-    for (const kicker of ['The problem', 'The solution', 'Traction', 'The team', 'The ask'])
-      expect(labels).toContain(kicker);
-    // Reading order rides the page numbers, not arrows.
-    expect(tab.elements.filter((el) => el.type === 'arrow')).toHaveLength(0);
-  });
-
+describe('flywheel template', () => {
   it('flywheel is one Cycle of four stages round Momentum', () => {
     const tab = buildTemplatedTab('flywheel', 'brand', 'tab-1', 'fly');
     const cycles = tab.elements.filter(
@@ -825,7 +673,7 @@ describe('slide deck and flywheel templates', () => {
 });
 
 // Board templates moved to template-builders-boards.ts in commit
-// 77f2859. Same kind of structural fingerprint as the slide deck
+// 77f2859. Same kind of structural fingerprint as the flywheel
 // above: a silent refactor that drops a column / lane / quadrant
 // (or changes the framework-defining label set) compiles AND
 // passes the catalogue "every kind builds non-empty" check, so
@@ -878,7 +726,7 @@ describe('board templates', () => {
 
 // Structural fingerprints for the later template batch (roadmap /
 // canvases / workshops / hierarchies / funnel / UML / cloud /
-// browser / storyboard / RACI). Same rationale as the wireframe and
+// browser / RACI). Same rationale as the
 // board suites above: the catalogue-level "builds non-empty" check
 // can't tell a real scaffold from a gutted one, so each template pins
 // the labels and element mix that define it.
@@ -970,14 +818,6 @@ describe('planning + strategy templates', () => {
 // template-technical.test.ts with the rest of the technical starters.
 
 describe('design + table templates (later batch)', () => {
-  it('storyboard drops six numbered shots, each with an action and a sound line', () => {
-    const labels = labelsOf('storyboard');
-    expect(labels.filter((l) => /^[1-6]$/.test(l))).toHaveLength(6);
-    // Every shot chip names a framing and a start time.
-    expect(labels.filter((l) => /^[A-Z][a-z -]+ · 0:\d\d$/.test(l))).toHaveLength(6);
-    expect(labels.filter((l) => /^(SFX|VO|Music):/.test(l))).toHaveLength(6);
-  });
-
   it('raci matrix drops the tasks-by-roles grid with one legend chip per letter', () => {
     const tab = buildTemplatedTab('raci-matrix', 'brand', 'tab-1', 'raci');
     const table = tab.elements.find(
@@ -1030,12 +870,6 @@ describe('templateEditorMode', () => {
   it('gives every mode a blank of its own mode', () => {
     for (const [mode, kind] of Object.entries(BLANK_TEMPLATE_FOR_MODE)) {
       expect(templateEditorMode(kind)).toBe(mode);
-    }
-  });
-
-  it('opens every paged template in Pages', () => {
-    for (const t of TEMPLATES) {
-      if (templateCanvasOverrides(t.kind).pages) expect(templateEditorMode(t.kind)).toBe('pages');
     }
   });
 

@@ -4,9 +4,6 @@ import {
   contrastRatio,
   createFreehand,
   penColourHex,
-  THEMES,
-  themeColourMap,
-  themeHalf,
   type Element,
 } from '@liveplanner/document';
 import { createStockColourProjector } from './stock-colour-projector';
@@ -116,51 +113,5 @@ describe('labels against the drawn canvas', () => {
     const a = caption('a');
     const board = [a];
     expect(project(board, 'light', undefined, { stored: '#ffffff', drawn: '#ffffff' })).toBe(board);
-  });
-});
-
-// docs/specs/011-theme/light-and-dark.md "A page's own paper": a layout placed on a light slide in Steel keeps its
-// dark words in dark chrome, rather than the dark half's light ink sinking into the slide.
-describe('createStockColourProjector on a page with its own fill', () => {
-  const steel = THEMES.find((t) => t.id === 'steel')!;
-  const paper = '#e2e8f0';
-  const title = {
-    id: 't',
-    type: 'text',
-    x: 0,
-    y: 0,
-    width: 300,
-    height: 60,
-    label: 'Your presentation title',
-    textColor: themeHalf(steel, 'light').elementText!,
-  } as unknown as Element;
-  const maps = { light: themeColourMap(steel, 'light'), dark: themeColourMap(steel, 'dark') };
-  const inkOf = (el: Element | undefined) => (el as { textColor?: string }).textColor ?? '';
-
-  it('draws the theme half the page needs, not the chrome’s', () => {
-    const project = createStockColourProjector();
-    const pageView = { surfaces: new Map([['t', 'light' as const]]), maps };
-    const out = project([title], 'dark', maps.dark, undefined, pageView);
-    expect(contrastRatio(inkOf(out[0]), paper)).toBeGreaterThanOrEqual(4.5);
-  });
-
-  it('still draws the chrome’s half off a filled page', () => {
-    const project = createStockColourProjector();
-    const out = project([title], 'dark', maps.dark, undefined, {
-      surfaces: new Map(),
-      maps,
-    });
-    expect(inkOf(out[0])).toBe(themeHalf(steel, 'dark').elementText);
-  });
-
-  it('draws an element afresh when it moves onto a filled page', () => {
-    const project = createStockColourProjector();
-    const board = [title];
-    const off = project(board, 'dark', maps.dark, undefined, { surfaces: new Map(), maps });
-    const on = project(board, 'dark', maps.dark, undefined, {
-      surfaces: new Map([['t', 'light' as const]]),
-      maps,
-    });
-    expect(inkOf(off[0])).not.toBe(inkOf(on[0]));
   });
 });

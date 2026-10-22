@@ -43,8 +43,6 @@ import { usePhotoDraftView } from '@/lib/photo-draft-preview';
 import { ZoomedLaserOverlay, ZoomedRemoteCursor } from '@/components/canvas/view-readers';
 import { useInsertShift } from '@/hooks/canvas/useInsertShift';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
-import { PageClip } from '@/components/canvas/PageClip';
-import { WireframeDeviceOverlays } from '@/components/canvas/WireframeDeviceOverlays';
 import { CardVoteProvider, type CardVote } from '@/components/plan/CardVoteContext';
 import {
   SheetChartsContext,
@@ -579,58 +577,39 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             above all boxes inside a single SVG layer). Each arrow
             gets its own <svg> overlay; pointer events on the SVG are
             disabled in CSS, only the inner arrow line picks them up. */}
-          {/* Pages mode cuts elements off at the page edges (PageClip); not in the
-          isometric view, whose 3D stack a clip would flatten. */}
-          <PageClip
-            pages={
-              props.pagesMode && props.canvasTool !== 'isometric' ? props.pagesMode.pages : null
-            }
-            // A page under a layout preview shows only the preview.
-            hiddenPageId={props.pagesMode?.layoutPreview?.pageId ?? null}
+          <CanvasElementList
+            shownOrder={shownOrder}
+            previewStore={previewStore}
+            h={h}
+            boxedShared={boxedShared}
+            arrowGeometry={arrowGeometry}
+            arrowLabels={arrowLabels}
             elements={elements}
-            layers={tabLayers}
-          >
-            <CanvasElementList
-              shownOrder={shownOrder}
-              previewStore={previewStore}
-              h={h}
-              boxedShared={boxedShared}
-              arrowGeometry={arrowGeometry}
-              arrowLabels={arrowLabels}
-              elements={elements}
-              editingId={editingId}
-              editCursorAtEnd={editCursorAtEnd}
-              reshapingArrowId={props.reshapingArrowId}
-              isPaintMode={isPaintMode}
-              tabLocked={tabLocked}
-              readOnly={readOnly}
-              insertShift={insertShift}
-              shiftDupGhostIds={shiftDupGhostIds}
-              draftView={draftView}
-              tabVote={tabVote}
-              tabLayers={tabLayers}
-              remoteSelectionsByElement={remoteSelectionsByElement}
-              canMove={canMove}
-              canWriteText={canWriteText}
-              canResize={canResize}
-              voteReview={voteReview}
-              commentActionsFor={commentActionsFor}
-              actionActionsFor={actionActionsFor}
-              revealedIds={revealedIds}
-              reactionBursts={reactionBursts}
-              tabFont={tabFont}
-              tabFinish={tabFinish}
-              fontEpoch={fontEpoch}
-              stackedIds={stackedIds}
-            />
-          </PageClip>
-          {/* A wireframe page's camera and system bars, over what is on its screen. */}
-          {props.pagesMode && props.canvasTool !== 'isometric' ? (
-            <WireframeDeviceOverlays
-              pages={props.pagesMode.pages}
-              frameTheme={props.pagesMode.frameTheme}
-            />
-          ) : null}
+            editingId={editingId}
+            editCursorAtEnd={editCursorAtEnd}
+            reshapingArrowId={props.reshapingArrowId}
+            isPaintMode={isPaintMode}
+            tabLocked={tabLocked}
+            readOnly={readOnly}
+            insertShift={insertShift}
+            shiftDupGhostIds={shiftDupGhostIds}
+            draftView={draftView}
+            tabVote={tabVote}
+            tabLayers={tabLayers}
+            remoteSelectionsByElement={remoteSelectionsByElement}
+            canMove={canMove}
+            canWriteText={canWriteText}
+            canResize={canResize}
+            voteReview={voteReview}
+            commentActionsFor={commentActionsFor}
+            actionActionsFor={actionActionsFor}
+            revealedIds={revealedIds}
+            reactionBursts={reactionBursts}
+            tabFont={tabFont}
+            tabFinish={tabFinish}
+            fontEpoch={fontEpoch}
+            stackedIds={stackedIds}
+          />
 
           {/* Editor-only marks, left out of an animated GIF (GifOmit). */}
           <GifOmit>
@@ -706,7 +685,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
                 onAddRelatedEntity: h.onAddRelatedEntity,
               }}
               onBeginDrag={onBeginDrag}
-              pages={props.pagesMode?.pages}
             />
           </SelectionGripsLayer>
         </SelectionGripsContext.Provider>

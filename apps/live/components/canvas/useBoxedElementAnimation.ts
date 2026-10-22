@@ -17,7 +17,7 @@ import {
 } from '@liveplanner/document';
 import { drawsShapeSvgOverlay } from '@/components/canvas/ShapeContentRouter';
 import { bodySetClass } from '@/lib/animation-classes';
-import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useCanvasStill } from '@/components/canvas/CanvasStillContext';
 import { useArrivesWithBoard } from '@/components/canvas/CanvasArrivalContext';
 import { COVERING_SHAPES, useCoversCanvas } from '@/hooks/plan/plan-cover-store';
@@ -82,7 +82,7 @@ export function useBoxedElementAnimation(element: BoxedElement, textColor: strin
   const animation = covering ? undefined : wrapperShapeAnimation(element);
   // The gradient animation blends the element's fill, which falls back to the
   // canvas's own ink when the element carries none (docs/specs/007-editor/live-app.md).
-  const surface = useElementSurface(element.id);
+  const surface = useCanvasSurface();
   // A still canvas (a whiteboard) shows a new element as drawn: no pop-in.
   const still = useCanvasStill();
   // A standalone text element has no fill or border, so the box-shadow / ring /

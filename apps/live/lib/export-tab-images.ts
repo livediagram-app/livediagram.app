@@ -6,7 +6,7 @@
 // onto the export canvas without tainting it — then decode it to an
 // HTMLImageElement for the canvas path. Browser-only (uses Image / FileReader);
 // never reached in the no-DOM test runs.
-import { pageImageIds, type Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/document';
 import { apiFetchImageDataUrl } from './api/images';
 
 type ExportImageEntry = {
@@ -24,20 +24,16 @@ export type ExportImageMap = Map<string, ExportImageEntry>;
 // The raster types an upload can hold (the api sniffs to these four).
 const SAFE_INLINE_IMAGE = /^data:image\/(png|jpeg|gif|webp);base64,[A-Za-z0-9+/=]+$/;
 
-/** The image ids a tab draws, once each: its image elements' and its pages' pictures
- *  (docs/specs/007-editor/pages-mode.md "Image backgrounds"). */
-export function tabImageIds(tab: Pick<Tab, 'elements' | 'pages'>): string[] {
+/** The image ids a tab draws, once each: its image elements' pictures. */
+export function tabImageIds(tab: Pick<Tab, 'elements'>): string[] {
   return Array.from(
-    new Set([
-      ...tab.elements.flatMap((el) => (el.type === 'image' && el.imageId ? [el.imageId] : [])),
-      ...pageImageIds(tab.pages),
-    ]),
+    new Set(tab.elements.flatMap((el) => (el.type === 'image' && el.imageId ? [el.imageId] : []))),
   );
 }
 
 /** Those ids sorted and joined: the key a tab's bitmaps are fetched on, so an edit that moves a
  *  shape, or one on another tab, does not fetch every photo again. */
-export function tabImageKey(tab: Pick<Tab, 'elements' | 'pages'>): string {
+export function tabImageKey(tab: Pick<Tab, 'elements'>): string {
   return tabImageIds(tab).sort().join(',');
 }
 

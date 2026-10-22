@@ -211,7 +211,7 @@ export function svgPathElementShape(
   const width = polygonStrokePx({ strokeWidth: el.strokeWidth }, finish);
   const dash = BORDER_DASH_ARRAY[el.strokeStyle ?? 'solid'];
   const fillAttr = el.closed && fill !== 'transparent' ? xmlEscape(fill) : 'none';
-  // A combined shape's holes show through (docs/specs/007-editor/logo-pages.md "Combine").
+  // A path of several contours shows its holes through (docs/specs/023-draw-mode/path-tool.md).
   const rule = isCompoundPath(el) ? ' fill-rule="evenodd"' : '';
   return (
     `<path d="${d}" fill="${fillAttr}"${rule} stroke="${xmlEscape(stroke)}" stroke-width="${width}"` +

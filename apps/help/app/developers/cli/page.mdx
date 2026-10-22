@@ -162,19 +162,6 @@ liveplanner watch "Shop"                         # stream changes until you stop
 
 `wait` blocks until someone comments or the document changes (a burst of edits counts as one change), prints it and exits, which lets an agent respond to the people working beside it. Comments the CLI adds are yours.
 
-## Pages and Articles
-
-[Pages](/help/canvas/pages-mode/) tabs hold pages (infographics, slides and logos) and articles, which have their own commands:
-
-```bash
-liveplanner page ls "Pitch deck"                                  # each page, its refs, articles and layouts
-liveplanner page set "Pitch deck" --add slide --layout slide-title  # add, lay out, move, copy or delete pages
-liveplanner article get "Project brief" > brief.md                # an article as Markdown
-liveplanner article set "Project brief" brief.md                  # write it back, or a new one
-```
-
-`page set` makes one change from its flags, or up to 50 from a JSON list with `--changes`. `article set` writes over the article you name with `--article`, adds after its last block with `--append`, or starts another with `--new`, and the editor flows the text onto as many pages as it needs.
-
 ## Forms
 
 A [form](/help/canvas/plan-mode/forms/) on a Form tab has its own commands, so an agent can build one, publish it and check where its answers land:

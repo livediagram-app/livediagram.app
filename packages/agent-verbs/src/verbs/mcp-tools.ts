@@ -18,12 +18,6 @@ import {
   tryFormOutput,
   tryFormShape,
 } from '../mcp/form-schema';
-import {
-  changePagesOutput,
-  changePagesShape,
-  writeArticleOutput,
-  writeArticleShape,
-} from '../mcp/pages-schema';
 import { listImagesOutput, listImagesShape } from '../mcp/image-schema';
 import {
   addTabOutput,
@@ -145,7 +139,7 @@ export const mcpListTemplates = mcpTool('list_templates', {
   title: 'List templates',
   description:
     'Browse the template library — the same hand-tuned scaffolds the editor\u2019s Quick ' +
-    'Start offers (kanban, flowchart, SWOT, gantt, wireframes, ...). Returns categories ' +
+    'Start offers (kanban, flowchart, SWOT, gantt, ...). Returns categories ' +
     'plus { kind, title, description, category } per template. Pass a kind as "template" ' +
     'on create_document / add_tab to start from it, then personalise the labels with ' +
     'update_document.',
@@ -169,9 +163,8 @@ export const mcpCreateDocument = mcpTool('create_document', {
   behaviour: 'write',
   title: 'Create a document',
   description:
-    'Create a new document: a diagram (flowchart, architecture, org chart, mind map, sequence, ER), a whiteboard, a ' +
-    'slide deck or presentation (a tab from the "blank-slide-deck" template, then change_pages adds the slides), an ' +
-    'article or report (write_article), an infographic, a Plan board or a spreadsheet. Each tab takes a "graph" ' +
+    'Create a new document: a diagram (flowchart, architecture, org chart, mind map, sequence, ER), a whiteboard, ' +
+    'a Plan board or a spreadsheet. Each tab takes a "graph" ' +
     '(nodes and edges, laid out in the template look: ' +
     'sizes, elbows, side exits, loops round the outside, title and key), "mermaid", raw "elements" (the full ' +
     'format is documented inline on the "tabs" argument below) or a "template". ' +
@@ -402,37 +395,6 @@ export const mcpAddSheet = mcpTool('add_sheet', {
   outputSchema: addSheetOutput,
 });
 
-export const mcpChangePages = mcpTool('change_pages', {
-  behaviour: 'destructive',
-  title: 'Change pages',
-  description:
-    'Build a slide deck or presentation, an infographic or a logo: change the pages of a tab in Pages mode, in ' +
-    'order, as one edit. Each change is an object with its "op" (never a bare string): add {kind, layout, ...} an ' +
-    'infographic, slide or logo page, set {page, name, size, orientation, background, locked}, layout ' +
-    '{page, layout}, move {page, to}, duplicate {page}, delete {page}, apply_background_to_all {page} (every ' +
-    "other page of its kind, every slide say, takes that page's background). A tab in another mode, named by tabId, " +
-    'is switched into Pages. The answer gives every page with its rectangle in canvas coordinates, the ' +
-    "same as an element's x and y in update_document (the layout view prints positions from the content's " +
-    'corner instead). A layout fills a page with sample text: read_document view "pages" lists it, with each ' +
-    "list's items, to replace. A layout's colours are the tab's theme (create_document's and add_tab's theme: " +
-    'mocha, ocean, forest...), a page\u2019s background its own. Articles are written with write_article. ' +
-    'Everyone with the document open sees it at once.',
-  inputSchema: changePagesShape,
-  outputSchema: changePagesOutput,
-});
-
-export const mcpWriteArticle = mcpTool('write_article', {
-  behaviour: 'destructive',
-  title: 'Write an article',
-  description:
-    'Write an article (a document of text on pages, in Pages mode) from Markdown: a new one, or replace ' +
-    'or append to one named by id or title, with its look. The editor flows the text onto as many pages as ' +
-    'it needs. read_document with view "pages" shows each article as Markdown to edit and write back. Not for ' +
-    'slides: an article flows as running text, where a slide deck is slide pages, made with change_pages.',
-  inputSchema: writeArticleShape,
-  outputSchema: writeArticleOutput,
-});
-
 export const mcpReadForm = mcpTool('read_form', {
   behaviour: 'read',
   title: 'Read a form',
@@ -509,8 +471,6 @@ export const MCP_TOOL_VERBS: readonly McpToolVerb[] = [
   mcpReadSheet,
   mcpChangeSheet,
   mcpAddSheet,
-  mcpChangePages,
-  mcpWriteArticle,
   mcpListImages,
   mcpReadForm,
   mcpAddForm,

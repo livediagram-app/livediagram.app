@@ -1,11 +1,6 @@
 import { useCanvasViewKey } from '@/hooks/canvas/useViewportStore';
 import type { RefObject } from 'react';
-import {
-  BORDER_STROKE_PX,
-  DEFAULT_BORDER_STROKE,
-  isSelfDrawingShape,
-  type MirroredPage,
-} from '@liveplanner/document';
+import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE, isSelfDrawingShape } from '@liveplanner/document';
 import { isSvgRenderedShape, ShapeSvgOverlay } from '@/components/canvas/shape-svg-overlay';
 import { POLYGON_CLOSE_PX } from '@/components/canvas/useCanvasPolygonGesture';
 import { isWhiteboardPenIntent, type PendingDraw } from '@/lib/draw-mode';
@@ -15,7 +10,6 @@ import { NoteGhost } from '@/components/canvas/NoteGhost';
 import { PenShapePreview } from '@/components/canvas/whiteboard/BoardShapePreview';
 import { useCanvasClientOrigin } from '@/hooks/canvas/useCanvasClientOrigin';
 import { HIGHLIGHTER_COLOR, HIGHLIGHTER_WIDTH } from '@/lib/highlighter-config';
-import { draftMirrorMaps, pointsBox, SymmetryCopies, toScreen } from './MirrorReflection';
 
 type CanvasDrawPreviewProps = {
   drawDrag: { startX: number; startY: number; currentX: number; currentY: number } | null;
@@ -33,9 +27,6 @@ type CanvasDrawPreviewProps = {
   // The board's ink on a whiteboard (docs/specs/023-draw-mode/draw-mode.md), what the main pen
   // previews in. Absent elsewhere.
   whiteboardInk?: string;
-  // The pages while Mirror While Drawing is on (docs/specs/007-editor/logo-pages.md
-  // "Mirror"): a drawing on a logo page previews its twin too. Absent otherwise.
-  mirrorPages?: readonly MirroredPage[] | null;
 };
 
 // Live previews shown while a draw gesture is in flight: the freehand pen
@@ -51,7 +42,6 @@ export function CanvasDrawPreview({
   wrapperRef,
   mainSize,
   whiteboardInk,
-  mirrorPages,
 }: CanvasDrawPreviewProps) {
   const { viewportZoom, viewKey } = useCanvasViewKey(mainSize);
   // A whiteboard shape or line previews as it will land (docs/specs/023-draw-mode/draw-mode.md
@@ -69,10 +59,17 @@ export function CanvasDrawPreview({
   const showsBox = !!drawDrag && !!pendingDraw && !stamp && pendingDraw.type !== 'arrow';
   // Where canvas (0, 0) sits on screen, measured only while a preview shows.
   const origin = useCanvasClientOrigin(wrapperRef, showsPen || showsPolygon || showsBox, viewKey);
-  // The drawings in progress (pencil, polygon, draw-to-size box), given once more reflected while
-  // Mirror While Drawing is on over a logo page (docs/specs/007-editor/logo-pages.md "Mirror").
-  const drafts = (
+  return (
     <>
+      {stamp && pendingDraw?.type === 'sticky' ? (
+        <NoteGhost
+          kind={pendingDraw.esKind ?? null}
+          box={stamp.screen}
+          px={1}
+          position="fixed"
+          testId="stamp-ghost"
+        />
+      ) : null}
       {/* Pen-gesture live preview for the diagram pencil and the highlighter. While the user
             is drawing freehand, paint the in-progress polyline so they can see what they're
             sketching. Sits on the same z-[var(--z-chrome)] overlay layer as the draw-to-size box
@@ -256,57 +253,6 @@ export function CanvasDrawPreview({
             );
           })()
         : null}
-    </>
-  );
-  const mirrorMaps =
-    pendingDraw?.type === 'shape' ||
-    pendingDraw?.type === 'freehand' ||
-    pendingDraw?.type === 'polygon'
-      ? draftMirrorMaps(
-          mirrorPages,
-          showsBox && drawDrag && pendingDraw
-            ? drawnDragBox(
-                pendingDraw,
-                drawDrag.startX,
-                drawDrag.startY,
-                drawDrag.currentX,
-                drawDrag.currentY,
-              )
-            : showsPen && penPoints
-              ? pointsBox(penPoints)
-              : showsPolygon
-                ? pointsBox(polygonVertices)
-                : null,
-        )
-      : [];
-  return (
-    <>
-      {stamp && pendingDraw?.type === 'sticky' ? (
-        <NoteGhost
-          kind={pendingDraw.esKind ?? null}
-          box={stamp.screen}
-          px={1}
-          position="fixed"
-          testId="stamp-ghost"
-        />
-      ) : null}
-      {/* Draw-to-size preview. drawDrag holds canvas coords; convert
-          to client coords via the wrapper rect + viewportZoom so the
-          overlay aligns with the canvas content under it. The shape
-          itself renders via ShapeSvgOverlay (the same primitive
-          BoxedElementView uses for committed shapes) with a dashed-
-          brand stroke + translucent brand fill, so "draw circle"
-          looks like an oval, "draw diamond" like a diamond, etc.
-          The three simple kinds (square / circle / stadium) bypass
-          SVG and use border-radius on the wrapping div, matching
-          how BoxedElementView renders them at rest. */}
-      {drafts}
-      {/* Mirror While Drawing's twins, growing with the drawing (MirrorReflection). */}
-      {mirrorMaps.length > 0 && origin ? (
-        <SymmetryCopies maps={mirrorMaps.map((m) => toScreen(m, origin, viewportZoom))} fixed>
-          {drafts}
-        </SymmetryCopies>
-      ) : null}
     </>
   );
 }

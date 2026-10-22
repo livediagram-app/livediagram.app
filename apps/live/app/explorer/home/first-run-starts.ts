@@ -18,8 +18,8 @@ export const WELCOME_TEMPLATES_MAX = 8;
 export const WELCOME_FAN: readonly TemplateKind[] = ['flowchart', 'mindmap', 'kanban'];
 
 /** Start Blank: each mode's blank, in mode order. */
-export const WELCOME_BLANKS: readonly TemplateKind[] = EDITOR_MODES.map(
-  (mode) => BLANK_TEMPLATE_FOR_MODE[mode],
+export const WELCOME_BLANKS: readonly TemplateKind[] = EDITOR_MODES.flatMap((mode) =>
+  mode === 'pages' ? [] : [BLANK_TEMPLATE_FOR_MODE[mode]],
 );
 
 /** Popular Templates: the shared Popular list without its blanks, cut to WELCOME_TEMPLATES_MAX. */

@@ -33,14 +33,9 @@ export type FaqCategory = {
 const ICON = 18;
 // Written out rather than read from @liveplanner/templates: this module ships in the FAQ's client bundle, and the
 // catalogue is ~15 KB for one number. faq-content.test.tsx pins it to TEMPLATES.length.
-export const TEMPLATE_COUNT = 147;
+export const TEMPLATE_COUNT = 113;
 // The template categories, pinned to TEMPLATE_CATEGORIES.length by faq-content.test.tsx the same way.
 export const TEMPLATE_CATEGORY_COUNT = 14;
-// Pages mode's slide layouts, pinned to the catalogue by faq-content.test.tsx like the template count.
-export const SLIDE_LAYOUT_COUNT = 61;
-// Pages mode's infographic page layouts and logo layouts, pinned the same way.
-export const PAGE_LAYOUT_COUNT = 92;
-export const LOGO_LAYOUT_COUNT = 25;
 
 export const FAQ_CATEGORIES: FaqCategory[] = [
   {
@@ -51,7 +46,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'What is liveplanner?',
-        a: 'A free, real-time canvas for diagrams, whiteboards, illustrations and plans. Every document is a stack of tabs, and each tab can be worked on in five modes: Diagram for shapes and arrows, Draw for freehand whiteboarding, Workshop for running a session with your team, Pages for slides, articles, posters and logos, and Plan for boards of cards, spreadsheets and forms. Your team can join any of them live.',
+        a: 'A free, real-time canvas for diagrams, whiteboards and plans. Every document is a stack of tabs, and each tab can be worked on in four modes: Diagram for shapes and arrows, Draw for freehand whiteboarding, Workshop for running a session with your team, and Plan for boards of cards, spreadsheets and forms. Your team can join any of them live.',
       },
       {
         q: 'Do I need an account to use liveplanner?',
@@ -69,7 +64,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'How do I start my first document?',
-        a: `Press Start drawing and choose what you are making: Diagram, Draw, Workshop, Pages or Plan. The document opens straight away on that mode's start, where you begin from a blank canvas or one of ${TEMPLATE_COUNT} templates, and a short tour offers to show you round.`,
+        a: `Press Start drawing and choose what you are making: Diagram, Draw, Workshop or Plan. The document opens straight away on that mode's start, where you begin from a blank canvas or one of ${TEMPLATE_COUNT} templates, and a short tour offers to show you round.`,
       },
       {
         q: 'Does it work on my phone or tablet?',
@@ -182,8 +177,8 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           "Yes. Every tab has a finish: Flexible (the everyday look), Professional (crisp and print-ready), Sketch (wobbly pencil lines and handwriting) or Marker (bold felt-tip, like a flip chart). Switch it from the tab's style, or set it on one element, and nothing about the diagram changes underneath. Ready-made looks set the theme, finish, font and canvas pattern in one click. See choosing a finish.",
       },
       {
-        q: 'What are the five modes?',
-        a: 'Diagram is for structured shapes, connectors and layouts. Draw is a freehand whiteboard with pressure-sensitive markers. Workshop runs a session with your team, with timers, dot votes, polls and reveals to hand. Pages lays out designed pages like posters and slides. Plan turns a tab into boards of cards with columns, WIP limits and quick add, beside spreadsheets with formulas. A mode belongs to the tab, so everyone on it works in the same one, and each tab of a document can have its own.',
+        q: 'What are the four modes?',
+        a: 'Diagram is for structured shapes, connectors and layouts. Draw is a freehand whiteboard with pressure-sensitive markers. Workshop runs a session with your team, with timers, dot votes, polls and reveals to hand. Plan turns a tab into boards of cards with columns, WIP limits and quick add, beside spreadsheets with formulas. A mode belongs to the tab, so everyone on it works in the same one, and each tab of a document can have its own.',
       },
       {
         q: 'Can I organise a big document?',
@@ -277,33 +272,6 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           'Yes. Isometric mode tilts the whole tab and raises each box into a solid block, for an architecture walkthrough or a screenshot. It is a way to look at a diagram rather than edit it. See Isometric mode.',
       },
       {
-        q: 'Can I write documents in it?',
-        a: (
-          <>
-            Yes. Switch a tab to Pages and write an article straight onto pages: Markdown shortcuts,
-            a / menu for every block, and clean paste from web pages, Google Docs and Word. Writing
-            flows onto new pages as it grows, pictures, charts and diagrams sit in the text, and
-            teammates comment on the words themselves. Pick one of five looks, then export every
-            page as a PDF. See <a href="/help/canvas/pages-mode/articles/">Articles</a>.
-          </>
-        ),
-        aText:
-          'Yes. Switch a tab to Pages and write an article straight onto pages: Markdown shortcuts, a / menu for every block, and clean paste from web pages, Google Docs and Word. Writing flows onto new pages as it grows, pictures, charts and diagrams sit in the text, and teammates comment on the words themselves. Pick one of five looks, then export every page as a PDF. See Articles.',
-      },
-      {
-        q: 'Can I design infographics, posters or a logo?',
-        a: (
-          <>
-            Yes, in Pages. Lay out pages in print sizes (A4, US Letter, A3) or social sizes,
-            starting from one of {PAGE_LAYOUT_COUNT} layouts, and export them print-ready as PDF,
-            PNG or SVG. A logo page is a square artboard with {LOGO_LAYOUT_COUNT} logo layouts,
-            construction guides, mirror drawing and wordmark type, and it exports a logo kit. See{' '}
-            <a href="/help/canvas/pages-mode/">Pages mode</a>.
-          </>
-        ),
-        aText: `Yes, in Pages. Lay out pages in print sizes (A4, US Letter, A3) or social sizes, starting from one of ${PAGE_LAYOUT_COUNT} layouts, and export them print-ready as PDF, PNG or SVG. A logo page is a square artboard with ${LOGO_LAYOUT_COUNT} logo layouts, construction guides, mirror drawing and wordmark type, and it exports a logo kit. See Pages mode.`,
-      },
-      {
         q: 'Can I use it as a whiteboard?',
         a: (
           <>
@@ -348,7 +316,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Can I present from it?',
-        a: `Yes. Presentation mode builds a slide deck from elements across your tabs and runs it full screen. Slides point at the real elements, so editing a shape updates every slide it appears on. For designed slides, Pages adds 16:9 or 4:3 slide pages started from one of ${SLIDE_LAYOUT_COUNT} layouts, which join the same deck. Each slide can carry presenter notes and a time budget, transitions slide or fade between them, and a laser pointer and spotlight help you guide the room.`,
+        a: `Yes. Presentation mode builds a slide deck from elements across your tabs and runs it full screen. Slides point at the real elements, so editing a shape updates every slide it appears on. Each slide can carry presenter notes and a time budget, transitions slide or fade between them, and a laser pointer and spotlight help you guide the room.`,
       },
       {
         q: 'Can I undo a mistake?',

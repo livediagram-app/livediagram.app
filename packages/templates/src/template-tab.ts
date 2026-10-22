@@ -3,8 +3,7 @@
 // `replace` body. Here rather than in @liveplanner/document because the catalogue lives here and
 // this package already imports the document one (the reverse would be a cycle).
 
-import { buildTab, getBuiltInTheme, stampTabKind, type Tab } from '@liveplanner/document';
-import { withBlankPageThemed } from './blank-page-templates';
+import { buildTab, stampTabKind, type Tab } from '@liveplanner/document';
 import { buildTemplate, templateTabs } from './build-template';
 import { TEMPLATES, templateKindOf, type TemplateKind } from './templates';
 import { formTemplateStarter, isFormTemplateKind } from './form-templates';
@@ -64,16 +63,12 @@ export function buildTemplateTab(
   kind: TemplateKind,
   themeId?: string,
 ): Tab {
-  return withBlankPageThemed(
-    stampTabKind({
-      ...buildTab(tabId, name, buildTemplate(kind, 0, 0), 'preserve', themeId),
-      templateChosen: true,
-      ...templateCanvasOverrides(kind),
-      ...templateTabs(kind)[0]?.tab?.([tabId]),
-    }),
-    kind,
-    getBuiltInTheme(themeId),
-  );
+  return stampTabKind({
+    ...buildTab(tabId, name, buildTemplate(kind, 0, 0), 'preserve', themeId),
+    templateChosen: true,
+    ...templateCanvasOverrides(kind),
+    ...templateTabs(kind)[0]?.tab?.([tabId]),
+  });
 }
 
 // Every tab a template makes (docs/specs/026-plan/plan-templates.md "How a template with tabs is made"):
@@ -99,21 +94,17 @@ export function buildTemplateTabs(
   const defs = templateTabs(kind);
   const ids = defs.map((_, i) => (i === 0 ? first.id : newId()));
   return defs.map((def, i) =>
-    withBlankPageThemed(
-      stampTabKind({
-        ...buildTab(
-          ids[i]!,
-          i === 0 ? first.name : (def.name ?? first.name),
-          def.build(0, 0),
-          'preserve',
-          themeId,
-        ),
-        templateChosen: true,
-        ...(def.ownCanvas ? {} : templateCanvasOverrides(kind)),
-        ...def.tab?.(ids),
-      }),
-      kind,
-      getBuiltInTheme(themeId),
-    ),
+    stampTabKind({
+      ...buildTab(
+        ids[i]!,
+        i === 0 ? first.name : (def.name ?? first.name),
+        def.build(0, 0),
+        'preserve',
+        themeId,
+      ),
+      templateChosen: true,
+      ...(def.ownCanvas ? {} : templateCanvasOverrides(kind)),
+      ...def.tab?.(ids),
+    }),
   );
 }

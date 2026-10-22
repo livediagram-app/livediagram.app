@@ -122,8 +122,7 @@ export type PendingDraw =
       recognise: boolean;
       // Which of Draw mode's markers this is, so two set alike never both read as held.
       penId?: import('./whiteboard-prefs').WhiteboardPenId;
-      // Picked up for one stroke (the Logo palette, docs/specs/007-editor/logo-pages.md "The Logo
-      // palette"): put down once it lands, as the pencil is. Absent: held until put down.
+      // Picked up for one stroke (a marker's palette tile, MarkerPaletteTile): put down once it lands, as the pencil is. Absent: held until put down.
       once?: boolean;
     }
   // Polygon tool (docs/specs/008-canvas/polygon-tool.md): click-to-place vertices rather than a
@@ -181,7 +180,7 @@ const COMPONENT_LABELS: Record<ComponentKind, string> = {
 // A whiteboard pen draws freely: no alignment guides and no start snap
 // (docs/specs/023-draw-mode/draw-mode.md "No guides for pens").
 /** A whiteboard pen drawing freely, as on a whiteboard: no start snap, no alignment guides. Off a
- *  whiteboard a marker lines up as the pencil does (docs/specs/007-editor/logo-pages.md). */
+ *  whiteboard a marker lines up as the pencil does. */
 export function isFreePenIntent(
   intent: PendingDraw | null | undefined,
   whiteboard: boolean,

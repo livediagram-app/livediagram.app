@@ -76,21 +76,7 @@ describe('the editor’s first load', () => {
     expect(imports).not.toContain('@/components/sheets/sheet-csv');
   });
 
-  // The page layouts, the template builders and the sticky-photo detector loaded with every editor until 2026-10-13
-  // (about 130 KiB compressed of the document page's first load): each came in through one small import.
-  it('loads the page layout builders only when a layout is applied', () => {
-    expect(staticImports(read('hooks/editor/page-edits.ts'))).not.toContain(
-      '@liveplanner/templates/page-layout-build',
-    );
-    expect(read('hooks/editor/page-edits.ts')).toContain(
-      "import('@liveplanner/templates/page-layout-build')",
-    );
-  });
-
-  it('keeps the template catalogue apart from the builders it names', () => {
-    const catalogue = staticImports(read('../../packages/templates/src/templates.ts'));
-    for (const heavy of ['./template-pages', './article-template', './blank-page-templates'])
-      expect(catalogue).not.toContain(heavy);
+  it('keeps the untitled name apart from the template catalogue', () => {
     // The untitled name is read on every load: it lives in its own leaf module.
     expect(staticImports(read('../../packages/templates/src/legacy-untitled.ts'))).toEqual([]);
   });

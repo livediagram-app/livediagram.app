@@ -70,8 +70,8 @@ proved the better introduction.
   the next time the person is on a Diagram tab. The welcome card is always step 1, on a rerun too. Finishing
   the rerun turns it off again.
 - **One tour at a time.** The [Plan tour](../026-plan/plan-tour.md), the
-  [Workshop tour](../012-collaboration/workshop-tour.md), the [Draw tour](../023-draw-mode/draw-tour.md) and
-  the [Pages tour](pages-tour.md) are this tour's siblings; while any is on screen the others wait.
+  [Workshop tour](../012-collaboration/workshop-tour.md) and the [Draw tour](../023-draw-mode/draw-tour.md) are
+  this tour's siblings; while any is on screen the others wait.
   Each belongs to its own mode, so none is owed to another: the others never wait for this tour's offer, and
   this tour never carries theirs.
 - **Dialogs come first.** A tour never lands over a dialog the person has open (Share, Settings, Export, Share
