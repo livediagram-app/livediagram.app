@@ -86,14 +86,14 @@ mode as today:
 Workshop's layout, in order (no Concepts: concept graphics lay out an idea for a diagram, which a session does not
 stop to draw):
 
-| Band        | Categories                                            |
-| ----------- | ----------------------------------------------------- |
-| _(none)_    | Popular                                               |
-| Common      | Shapes, My shapes (with a shape library), Write, Draw |
-| Structure   | Layout                                                |
-| Collaborate | Ask, Tools, Record, React, Selection Mode, Navigate   |
-| Decorate    | Icons, Stickers, Media                                |
-| Dynamic     | Data                                                  |
+| Band        | Categories                                          |
+| ----------- | --------------------------------------------------- |
+| _(none)_    | Popular                                             |
+| Common      | Shapes, Write, Draw                                 |
+| Structure   | Layout                                              |
+| Collaborate | Ask, Tools, Record, React, Selection Mode, Navigate |
+| Decorate    | Icons, Stickers, Media                              |
+| Dynamic     | Data                                                |
 
 - **Popular** (the landing category), fixed: Square, Sticky note, Text, Frame, Arrow, Image, then behind a divider **Ask**,
   **Tools**, **Record** and **React** as openers ([Editor modes](../007-editor/editor-modes.md) "Popular"): each draws its category's glyph

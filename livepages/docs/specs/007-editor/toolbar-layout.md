@@ -52,8 +52,7 @@ under the pointer as a category is switched.
 - **One button per category**, its glyph and its name (13 px, medium), in the mode's layout order
   ([Editor modes](editor-modes.md#the-palette-per-mode)), a hairline divider between the bands (Common, Structure,
   Decorate, Dynamic, Collaborate). No hover card: resting on a button opens its flyout, which names it.
-- **Names are one word**, never more: a layout's longer name gives way on the bar (`barLabel`): My shapes reads
-  **Library**.
+- **Names are one word**, never more: a layout's longer name gives way on the bar (`barLabel`).
 - **No Popular.** With every category one press away, a pick from across them adds nothing. The layouts keep their
   Popular entry; the bar leaves it out (`barCategoriesFor`).
 - **Write and Draw are two categories**, each its own button, where both are offered (Diagram, Workshop). They were
@@ -77,9 +76,6 @@ under the pointer as a category is switched.
   | Diagram  | Shapes, Write, Draw · Diagrams, Concepts, Layout · Icons, Tech, Media                 |
   | Workshop | Shapes, Write, Draw · Layout · Ask, Session · Icons, Stickers, Media · Data           |
   | Pages    | (Logo,) Shapes, Write · Concepts, Components, Devices · Icons, Stickers, Media · Data |
-
-  Library joins after Shapes while the person has a [shape library](../013-workspace/shape-libraries.md) to place
-  from, as My shapes does in the picker.
 
 - **Names fit or go.** The bar shows its names while the strip, named, fits the room the centred strip may take
   (the editor's width less the top-left menu card, measured, on both sides); otherwise the glyphs alone
@@ -184,8 +180,7 @@ A strip shows one category at a time, so finding an element means knowing which 
   and another mode's otherwise. Before anything is typed, the entries already on the tab list with
   the element types (an icon or a technology mark is an icon shape carrying its id, a sticker a shape
   carrying its sticker id). The catalogues load as a chunk of their own; the popover asks for it on
-  opening and fills in when it lands. My shapes stays in its own category: it is the person's
-  libraries, not a catalogue of the product.
+  opening and fills in when it lands.
   **Draw mode's markers** join them: Draw has no palette layout (its pens are the dock's), so its
   Marker 1, 2 and 3 are built as tiles when the popover opens, from this browser's pens, each in
   its colour and width (`palette-marker-tiles`). They are always another mode's, since the strip is
@@ -258,9 +253,8 @@ its catalogue a moment later focuses the field as soon as it appears); on a phon
 because focusing would raise the keyboard over the popover.
 
 More appears when the category has more than twelve tiles, and always for
-Icons, Stickers, Technology, Behaviour and My shapes, whose bodies carry
-more than tiles (search, group browsing, the person's libraries; My shapes has no strip tiles
-of its own, so More is its only way in). It sits outside the
+Icons, Stickers, Technology and Behaviour, whose bodies carry
+more than tiles (search, group browsing). It sits outside the
 animated tile rail, so it rides the rail's width change.
 
 **Icons, Stickers and Technology show their groups** where a strip shows their tiles (no mode's strip does since
@@ -275,8 +269,8 @@ closes it, as More's does. The groups and their entries are the browse's
 ([Palette category browse](../010-palette/palette-category-browse.md)), so the strip and the More body never
 disagree.
 
-**On a phone More shows only for My shapes**, whose library picker has no strip tiles of its own: every other
-category's strip already holds all of it (the whole category swipes, and the three catalogues hold their groups).
+**On a phone More never shows**: every category's strip already holds all of it (the whole category swipes, and
+the three catalogues hold their groups).
 
 ## The strip's order and dividers
 
@@ -397,8 +391,8 @@ their bottom-row buttons. What changes to fit the width:
   right gutter; only its tiles scroll sideways, under a finger, while the selection mode, the
   category picker and More stay put. The scrollbar is hidden ([Scrollbars](../004-interface-design/scrollbars.md)):
   a tile cut at the edge shows there is more. A new category starts scrolled to its first tile.
-  More shows only for My shapes ([More](#more-the-rest-of-the-category)): the swiping strip reaches every
-  other category's tiles, and Icons, Stickers and Technology their groups.
+  More never shows ([More](#more-the-rest-of-the-category)): the swiping strip reaches every
+  category's tiles, and Icons, Stickers and Technology their groups.
 - **More spans the screen** between the gutters instead of hanging from its
   button.
 - **Zoom drops − and +** (`pinchOnly`), as on every phone ([Live app](live-app.md)). Fit

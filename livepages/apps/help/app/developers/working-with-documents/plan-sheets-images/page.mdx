@@ -248,19 +248,11 @@ curl -X POST https://livepages.app/api/documents/$DOC/copy \
 
 Makes a copy in your own files and answers `201` with the new `document`. Leave out `name` for `Copy of <name>`. Anything you can read can be copied; share links are not copied with it.
 
-## Shape Libraries and Custom Themes
+## Custom Themes
 
-Your [shape libraries](/help/explorer/shape-libraries/) and [custom themes](/help/canvas/themes/custom-themes/) belong to you, not to a document.
+Your [custom themes](/help/canvas/themes/custom-themes/) belong to you, not to a document.
 
 ```bash
-# A shape library: each item is a reusable shape, its elements placed from its top-left corner
-curl -X POST https://livepages.app/api/shape-libraries \
-  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{ "id": "'"$(uuidgen)"'", "name": "Network kit", "source": "drawio",
-        "items": [ { "id": "'"$(uuidgen)"'", "title": "Router", "width": 120, "height": 60,
-          "elements": [ { "id": "r1", "type": "shape", "shape": "square", "x": 0, "y": 0, "width": 120, "height": 60, "label": "Router" } ] } ] }'
-
-# A custom theme
 curl -X POST https://livepages.app/api/custom-themes \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "id": "custom:'"$(uuidgen)"'", "name": "Night shift",
@@ -268,6 +260,6 @@ curl -X POST https://livepages.app/api/custom-themes \
           "elementFill": "#1e293b", "elementStroke": "#38bdf8", "elementText": "#f8fafc" } }'
 ```
 
-A library holds up to 1,000 items and you can keep 100; a name you already use gets a number added. `PUT /shape-libraries/{id}` renames one or replaces its items, and `DELETE` removes it (shapes already placed stay in their documents). A custom theme's id starts `custom:`, and a tab uses it by that id. `PUT /custom-themes/{id}` changes its name or definition, `DELETE` removes it, and a `palette` you send must not be empty. `GET` on either path lists yours.
+A custom theme's id starts `custom:`, and a tab uses it by that id. `PUT /custom-themes/{id}` changes its name or definition, `DELETE` removes it, and a `palette` you send must not be empty. `GET` on the path lists yours.
 
 </ArticleLayout>

@@ -42,8 +42,6 @@ import { Canvas } from '@/components/canvas/Canvas';
 import { useStableObject } from '@/hooks/ui/useStableObject';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useSessionTools } from '@/components/chrome/useSessionTools';
-import { useShapeLibraries } from '@/components/primitives/ShapeLibraryProvider';
-import type { LibraryShapeRef } from '@/lib/shape-library-dnd';
 import { useStableCollab } from '@/components/canvas/element-layer-props';
 import { useStartPanelOpen } from '@/components/start/start-panel-open';
 import { canEditSankey } from '@/lib/sankey-edit';
@@ -137,7 +135,6 @@ export function EditorCanvasHost() {
     dropBoardFile,
     addTable,
     addTechIcon,
-    insertLibraryShape,
     addText,
     aiCapable,
     aiPanelPosition,
@@ -374,20 +371,7 @@ export function EditorCanvasHost() {
   // The viewer's editor mode (docs/specs/007-editor/editor-modes.md): Draw brings the dock and its
   // rules into focus; the board look keys on it through hasBoardLook.
   const drawMode = editorMode.mode === 'draw';
-  // A shape dragged from My shapes (docs/specs/013-workspace/shape-libraries.md): resolved against the
-  // owner's libraries, then placed at the drop point.
-  const { libraries } = useShapeLibraries();
   const startPanelOpen = useStartPanelOpen();
-  const dropLibraryShape = (ref: LibraryShapeRef, at: { x: number; y: number }) => {
-    const item = libraries
-      .find((l) => l.id === ref.libraryId)
-      ?.items.find((i) => i.id === ref.itemId);
-    if (!item) {
-      console.warn('[shape-libraries] drop ignored', { reason: 'unknown shape' });
-      return;
-    }
-    insertLibraryShape(item, at);
-  };
   // A free arrow's frame stands down while a handle reshapes it (arrow-bending.md).
   const reshapingArrowId =
     drag &&
@@ -854,7 +838,6 @@ export function EditorCanvasHost() {
               onAddIcon={addIcon}
               onAddSticker={addSticker}
               onAddTechIcon={addTechIcon}
-              onInsertLibraryShape={(item) => void insertLibraryShape(item)}
               onDropIcon={isReadOnly ? undefined : dropIconOnElement}
               onLinkCell={isReadOnly ? undefined : openCellLinkPicker}
               onAddTable={addTable}
@@ -872,7 +855,6 @@ export function EditorCanvasHost() {
               onAddText={addText}
               onAddSticky={addSticky}
               onDropFile={isReadOnly ? undefined : dropBoardFile}
-              onDropLibraryShape={isReadOnly ? undefined : dropLibraryShape}
               onAddImage={addImage}
               onAddArrow={addArrow}
               reshapingArrowId={reshapingArrowId}

@@ -18,7 +18,7 @@ on the `nav`.
 | `apps/live/app/explorer/sidebar/inbox-badge.ts`                          | `inboxBadge(feed)`: the Inbox pill, 0 included, nothing while loading or failed                                                                                                                                                                                                      |
 | `apps/live/app/explorer/sidebar/SpacesGroup.tsx`                         | My Documents (its root folders), teams, Invites, New Team, the sign-in nudge                                                                                                                                                                                                         |
 | `apps/live/app/explorer/sidebar/TeamRows.tsx`                            | `TeamRows`, one `TeamRow` per team: a drop target opening its folders on a resting drag                                                                                                                                                                                              |
-| `apps/live/app/explorer/sidebar/MoreGroup.tsx`                           | This Browser, Library (Tags with one row per tag, `TagRows.tsx`, then Image Gallery, Themes, Shape Libraries), Trash                                                                                                                                                                 |
+| `apps/live/app/explorer/sidebar/MoreGroup.tsx`                           | This Browser, Library (Tags with one row per tag, `TagRows.tsx`, then Image Gallery, Themes), Trash                                                                                                                                                                                  |
 | `apps/live/app/explorer/sidebar/SidebarFolderSubtree.tsx`                | A personal folder row, its menu, and its subfolders                                                                                                                                                                                                                                  |
 | `apps/live/app/explorer/sidebar/TeamFolderSubtree.tsx`                   | A team folder row and its subfolders                                                                                                                                                                                                                                                 |
 | `apps/live/app/explorer/sidebar/SidebarSignInNudge.tsx`                  | The guest's "Sign in to access Teams" card                                                                                                                                                                                                                                           |
@@ -86,8 +86,8 @@ name of the view (`kind: 'offline'`), whose row reads "This Browser".
    The shell renders in the browser only (`useExplorerState` calls `use(browser())`), so the sidebar first draws with
    the device's preferences already read.
 3. **Expansion** (`useSidebarExpansion`): `expanded` starts as `initialExpanded(selected)`: always
-   `MY_DOCUMENTS_EXPAND_KEY`, plus `LIBRARY_EXPAND_KEY` when `isLibraryView(selected.kind)` (`gallery`, `themes`,
-   `shape-libraries`). When `selected.kind` changes to a Library view, `LIBRARY_EXPAND_KEY` is added during that render
+   `MY_DOCUMENTS_EXPAND_KEY`, plus `LIBRARY_EXPAND_KEY` when `isLibraryView(selected.kind)` (`gallery`, `themes`).
+   When `selected.kind` changes to a Library view, `LIBRARY_EXPAND_KEY` is added during that render
    (state adjusted in render, not an effect). Toggling is `toggleExpand(key)`; `expand(key)` opens idempotently, used to
    reveal a new folder's parent (My Documents for a root folder).
 4. **Row activation** (click on the label area, or Enter / Space): `go(node)` for a view row, `toggleExpand` for

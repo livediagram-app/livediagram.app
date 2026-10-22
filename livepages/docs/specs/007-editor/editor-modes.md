@@ -264,7 +264,7 @@ holds.
   different categories in different modes, and a category can be renamed,
   re-banded or re-filled for one mode without touching another.
 - **A layout entry** names a category and may override its `label`, `description` and `band`, and list its `tiles` by id, in order. With no list it holds the category's own tiles (`tilesForCategory`), so a layout spells out only where a mode differs.
-- **Catalogue categories** (My shapes, Icons, Stickers, Tech) are
+- **Catalogue categories** (Icons, Stickers, Tech) are
   bodies with their own content and take no tile list.
 - **A body decides presentation only** (a grid, rows with a blurb, Media's
   and Components' collapsed groups); it
@@ -304,7 +304,6 @@ and sets targets as often as a page reports them.
 | Plan's seven      | no      | no        | yes  | no       |
 | Logo              | no      | logo page | no   | no       |
 | Shapes            | yes     | yes       | no   | yes      |
-| My shapes         | yes     | yes       | no   | yes      |
 | Write             | yes     | yes       | no   | yes      |
 | Draw              | yes     | no        | no   | yes      |
 | Build             | no      | no        | no   | no       |

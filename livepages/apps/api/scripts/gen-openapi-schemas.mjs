@@ -77,8 +77,6 @@ export const ROOT_TYPES = [
   'Folder',
   'CustomTheme',
   'CustomThemeDefinition',
-  'ShapeLibrary',
-  'ShapeLibraryItem',
   'ShareLink',
   'ShareLinkExpiry',
   'ShareRole',

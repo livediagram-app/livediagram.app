@@ -120,7 +120,6 @@ import { useCellLinkPicker } from '@/hooks/canvas/useCellLinkPicker';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { usePublishPicture } from '@/hooks/persistence/usePublishedPicture';
 import { useCommentPicturesLoader } from '@/lib/comment-pictures';
-import { useLibraryShapeInsert } from '@/hooks/canvas/useLibraryShapeInsert';
 import { useClipboard } from '@/hooks/canvas/useClipboard';
 import { useDocumentActions } from '@/hooks/canvas/useDocumentActions';
 import { useEditorContextMenu } from '@/hooks/canvas/useEditorContextMenu';
@@ -3602,16 +3601,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     dropOther: dropBoardFile,
     toast: (message) => toast.error(message),
   });
-  // Shapes placed from the palette's My shapes (docs/specs/013-workspace/shape-libraries.md): like a
-  // paste, one commit, selected.
-  const insertLibraryShape = useLibraryShapeInsert({
-    activeTab,
-    editsBlocked: structureBlocked,
-    commit,
-    setSelectedId,
-    setMultiSelectedIds,
-    getViewportCenter,
-  });
 
   // Zen / focus mode (docs/specs/007-editor/zen-mode.md). Flips the chrome-hidden flag and emits
   // the toggle telemetry BEFORE the state change (matches the dark-mode /
@@ -3824,7 +3813,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     pasteFromClipboard,
     dropBoardFile: dropFileOnCanvas,
     hasClipboard,
-    insertLibraryShape,
     ...panelLayout,
     // Presenting wears the zen chrome treatment (docs/specs/012-collaboration/presentation-mode.md → docs/specs/007-editor/zen-mode.md): header,
     // tab bar, panels and palette all gone, so a projector shows the document

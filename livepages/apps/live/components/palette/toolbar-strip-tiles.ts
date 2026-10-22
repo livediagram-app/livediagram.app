@@ -81,7 +81,7 @@ export function stripCrowdsCorners(strip: Span, corners: Span[], gap = 8): boole
 // picker. They always get More, even
 // when the tiles alone would fit, because the rest of the body can only be
 // reached through it.
-const ALWAYS_MORE = new Set(['icons', 'stickers', 'technology', 'my-shapes']);
+const ALWAYS_MORE = new Set(['icons', 'stickers', 'technology']);
 
 function allTilesFor(
   categoryId: string,

@@ -118,13 +118,13 @@ export function ImageElement() {
   );
 }
 
-/** The image picker open on its Gallery tab (beside Upload and Search): a
+/** The image picker open on its Gallery tab (beside Upload): a
  *  grid of reusable thumbnails. */
 export function ImagePicker() {
   return (
     <Scene w={420} h={246} bg="plain">
       <Dialog x={70} y={20} w={280} h={206} title="Image" sceneW={420} sceneH={246} scrim={false}>
-        <Tabs x={86} y={66} items={['Upload', 'Gallery', 'Search']} active={1} tabW={84} h={22} />
+        <Tabs x={86} y={66} items={['Upload', 'Gallery']} active={1} tabW={84} h={22} />
         {[0, 1, 2, 3, 4, 5].map((i) => {
           const col = i % 3;
           const row = Math.floor(i / 3);

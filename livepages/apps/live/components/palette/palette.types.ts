@@ -1,4 +1,3 @@
-import type { ShapeLibraryItem } from '@livepages/api-schema';
 import type { EmbedProvider } from '@livepages/document';
 import type { ShapeKind } from '@livepages/document';
 import type { PendingDraw } from '@/lib/draw-mode';
@@ -63,9 +62,6 @@ export type PaletteProps = {
   // element carrying the chosen tech-catalogue id. Picked from the
   // Technology tab's searchable grid; never dropped inside a shape.
   onAddTechIcon: (iconId: string) => void;
-  // Places a shape from the palette's My shapes (docs/specs/013-workspace/shape-libraries.md) at the
-  // middle of the view.
-  onInsertLibraryShape: (item: ShapeLibraryItem) => void;
   onAddText: () => void;
   onAddSticky: () => void;
   // Drop a 3x3 editable table at the viewport centre.

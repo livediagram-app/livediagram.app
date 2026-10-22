@@ -21,7 +21,7 @@ import { BrowseLayoutContext } from './PaletteCategoryBrowser';
 // tiles under its name, in its named groups, as a grid of pictures (Shapes) or cards with a blurb (Build). A footer
 // says what the pointed-at tile does and its key. A tile with presets (Card, Badge) or an opener opens a side panel
 // beside the flyout (CategoryFlyoutSide), which the host draws, so this one stays open. A catalogue (Icons,
-// Technology, My shapes) shows its own browse instead, under the same header.
+// Technology) shows its own browse instead, under the same header.
 
 export type FlyoutCategory = {
   id: string;
@@ -135,13 +135,9 @@ export function CategoryFlyout({
             ))}
           </div>
         ) : (
-          // A catalogue browses as two panes (PaletteCategoryRail), edge to edge; My shapes keeps its padding.
+          // A catalogue browses as two panes (PaletteCategoryRail), edge to edge.
           <BrowseLayoutContext.Provider value="rail">
-            {category.id === 'my-shapes' ? (
-              <div className="px-2 py-2.5">{category.content}</div>
-            ) : (
-              category.content
-            )}
+            {category.content}
           </BrowseLayoutContext.Provider>
         )}
       </div>

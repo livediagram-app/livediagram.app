@@ -110,8 +110,8 @@ second, explicit approval, never an existing pairing widened in silence.
   owner's own access now: a view token gives a read-only frame.
 - **Only what the editor of one document needs.** The document, its tabs, comments, changesets, items and room;
   uploading images into it (always with the bytes: the hash-only dedupe shortcut is not theirs, so the session
-  cannot probe the owner's gallery, [Images](../009-elements/images.md) "Size cap") and reading its images; reading the person's display identity, preferences, custom
-  themes and shape libraries; the catalogues. Everything else is refused `403 workbench_confined`: ownership powers
+  cannot probe the owner's gallery, [Images](../009-elements/images.md) "Size cap") and reading its images; reading the person's display identity, preferences and custom
+  themes; the catalogues. Everything else is refused `403 workbench_confined`: ownership powers
   (share links, password, move, delete, publish, copy), other documents, the person's library and folders,
   writing preferences or the profile, the guest migration, tokens, teams, the account and the AI assistant. The
   editor offers none of them in a workbench embed: the person's agent sits beside it.
@@ -122,7 +122,7 @@ The bullets above are the document scope. A **workspace** session is confined di
 
 - **Act as the person, in their workspace.** It reaches what the person reaches in the Explorer: their library and
   folders, the documents shared with them, their teams' shared documents as a member, the Inbox, the Timeline,
-  Favourites, Recent, Search, the Trash, their image gallery, themes and shape libraries; and every document in
+  Favourites, Recent, Search, the Trash, their image gallery and themes; and every document in
   them, opened in the frame as the document scope opens one.
 - **Everything the Explorer does.** Create, rename, move, copy, favourite, share (links, roles, password, expiry),
   trash, restore, and create, rename, move and delete folders, at the person's own access to each.

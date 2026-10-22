@@ -58,7 +58,6 @@ export const HELP_ARTICLES = {
   googleDrive: 'account-and-data/google-drive',
   importTabs: 'tabs/import-tabs',
   markdownImport: 'tools/markdown-import',
-  shapeLibraries: 'explorer/shape-libraries',
   tags: 'explorer/tags',
   linkingTabs: 'tabs/linking-tabs',
   // Teams
@@ -281,10 +280,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   importTabs: {
     title: 'Learn about importing tabs',
     description: 'What you can import and how it replaces the tab.',
-  },
-  shapeLibraries: {
-    title: 'Learn about shape libraries',
-    description: 'How libraries are made, placed from My shapes, and managed.',
   },
   markdownImport: {
     title: 'Learn about Markdown import',

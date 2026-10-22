@@ -9,7 +9,6 @@ import { dateKey, pickRenderer, timeLabel } from '@livepages/ui';
 import { ActivityPane } from '@/components/panels/ActivityPane';
 import { GalleryPane } from '@/components/panels/GalleryPane';
 import { ThemesPane } from '@/components/panels/ThemesPane';
-import { ShapeLibrariesPane } from '@/components/panels/ShapeLibrariesPane';
 import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import { AvatarStack } from '@/components/panels/home/HomeAvatar';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
@@ -401,7 +400,7 @@ export function TrashSection({
 
 export type LibraryKind = (typeof LIBRARY_PAGES)[number]['kind'];
 
-// The Library's three pages as tabs over one view (Image gallery first), each drawn for the pane. The pane holds the
+// The Library's two pages as tabs over one view (Image gallery first), each drawn for the pane. The pane holds the
 // tab, so its Open Page goes to the page shown.
 export function LibrarySection({
   ownerId,
@@ -441,13 +440,7 @@ export function LibrarySection({
         ))}
       </div>
       <div role="tabpanel">
-        {tab === 'gallery' ? (
-          <GalleryPane compact ownerId={ownerId} />
-        ) : tab === 'themes' ? (
-          <ThemesPane compact />
-        ) : (
-          <ShapeLibrariesPane compact />
-        )}
+        {tab === 'gallery' ? <GalleryPane compact ownerId={ownerId} /> : <ThemesPane compact />}
       </div>
     </div>
   );

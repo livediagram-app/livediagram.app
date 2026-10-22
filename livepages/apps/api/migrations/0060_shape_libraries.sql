@@ -1,4 +1,4 @@
--- Shape libraries, per docs/specs/013-workspace/shape-libraries.md.
+-- Shape libraries (dropped by 0101_drop_shape_libraries.sql).
 --
 -- Owner-scoped (Clerk sub or the X-Owner-Id guest id, like custom_themes),
 -- guests included. `items` is the JSON array of library items as the api

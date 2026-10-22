@@ -6,7 +6,7 @@
 // renamed or re-filled for one mode without touching another.
 //
 // An entry with no `tiles` holds its category's own tiles (tilesForCategory), so a layout spells
-// out only where a mode differs. The catalogue categories (My shapes, Icons, Stickers, Tech) are
+// out only where a mode differs. The catalogue categories (Icons, Stickers, Tech) are
 // bodies with their own content and take no tile list. Every mode lands on its own Popular, a
 // fixed pick of twelve tiles from across its categories.
 import type { EditorMode } from '@livepages/document';
@@ -38,7 +38,6 @@ type PaletteLayout = {
 
 // The categories whose body is its own content rather than a list of tiles.
 export const CATALOGUE_CATEGORIES: ReadonlySet<string> = new Set([
-  'my-shapes',
   'icons',
   'stickers',
   'technology',
@@ -143,7 +142,6 @@ const DIAGRAM: PaletteLayout = {
       ],
     },
     { id: 'shapes' },
-    { id: 'my-shapes' },
     // Comments and assigned actions belong to every mode, so their two Collaborate tiles stay here.
     { id: 'write', tiles: WRITE_WITH_COMMENTS },
     { id: 'draw' },
@@ -209,7 +207,6 @@ const PAGES: PaletteLayout = {
       ],
     },
     { id: 'shapes' },
-    { id: 'my-shapes' },
     { id: 'write', tiles: PAGES_WRITE },
     // No Build (docs/specs/010-palette/build-category.md "In Pages: no Build"): mind maps, flowcharts, lanes and
     // frames organise a diagram, not a visual page, and the Build tiles a page uses join the categories they sit
@@ -260,7 +257,6 @@ const PAGES_SLIDE: PaletteLayout = {
     { id: 'shapes' },
     // Pictures and the embeds a talk plays (a video, a prototype, a page), in Common: a slide reaches for them first.
     { id: 'media', band: 0 },
-    { id: 'my-shapes' },
     {
       id: 'data',
       tiles: [...tilesForCategory('data').map((t) => t.id), DIVIDE, 'tools:table'],
@@ -312,7 +308,6 @@ const PAGES_WIREFRAME: PaletteLayout = {
       ],
     },
     { id: 'shapes' },
-    { id: 'my-shapes' },
     { id: 'write', tiles: PAGES_WRITE },
     { id: 'icons' },
     { id: 'stickers' },
@@ -353,7 +348,6 @@ const PAGES_LOGO: PaletteLayout = {
     // Text for a wordmark, and a sticky note for a comment on the design.
     { id: 'write', tiles: ['tools:text', DIVIDE, 'tools:sticky'] },
     { id: 'icons' },
-    { id: 'my-shapes' },
     // A picture to trace or to set the mark beside.
     { id: 'media', tiles: ['tools:image'] },
   ],
@@ -395,7 +389,6 @@ const WORKSHOP: PaletteLayout = {
       ],
     },
     { id: 'shapes' },
-    { id: 'my-shapes' },
     // Words and notes, then a table and a checklist to keep them in. No Page or Annotation; and a Sankey reports on a
     // flow, mind maps and flowcharts build a diagram: a session does not stop for them.
     {

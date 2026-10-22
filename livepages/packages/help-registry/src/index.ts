@@ -157,7 +157,7 @@ export const categories: Category[] = [
     title: 'Explorer',
     description:
       'Organise everything you build: how the Explorer keeps your documents, folders, teams, and assets easy to find and manage.',
-    articleCount: 16,
+    articleCount: 15,
     kind: 'feature',
     groups: ['Your Library', 'Activity', 'Assets and Imports'],
   },
@@ -627,7 +627,7 @@ export const articles: Article[] = [
     title: 'Plan Items, Sheets and Images',
     description: 'API examples for Plan cards, Sheets, images, pages, copies and themes.',
     keywords:
-      'items cards plan board card types sheets cells spreadsheet images upload pages pages article render svg copy shape libraries custom themes api',
+      'items cards plan board card types sheets cells spreadsheet images upload pages pages article render svg copy custom themes api',
     category: 'Developers',
     categorySlug: 'developers/working-with-documents',
     parentSlug: 'working-with-documents',
@@ -1672,7 +1672,7 @@ export const articles: Article[] = [
     description:
       'Work on a tab as pages: sizes for print and social, layouts, colour and photo backgrounds, then export or present.',
     keywords:
-      'pages pages mode illustrate illustrate mode infographic infographics poster one pager one-pager flyer handout report page pages sheet sheets a4 a3 letter us letter square social post instagram linkedin story stories slide portrait landscape orientation size page size background article articles write writing document page kind infographic or article first page choice navigator next page previous page backgrounds colour color gradient pattern dots grid lines theme dark page name rename duplicate move reorder drag delete add page snap margins margin fit resize scale lay out into pages diagram to infographic convert mind map editor mode switch modes opens in templates blank illustration leave lock locked unlock padlock protect freeze read only page lock custom gradient photo background image background picture background photo overlay image overlay wash tint fade upload image stock photo openverse title bar layout button background button tidy up tidy align straighten even spacing widescreen carry over',
+      'pages pages mode illustrate illustrate mode infographic infographics poster one pager one-pager flyer handout report page pages sheet sheets a4 a3 letter us letter square social post instagram linkedin story stories slide portrait landscape orientation size page size background article articles write writing document page kind infographic or article first page choice navigator next page previous page backgrounds colour color gradient pattern dots grid lines theme dark page name rename duplicate move reorder drag delete add page snap margins margin fit resize scale lay out into pages diagram to infographic convert mind map editor mode switch modes opens in templates blank illustration leave lock locked unlock padlock protect freeze read only page lock custom gradient photo background image background picture background photo overlay image overlay wash tint fade upload image title bar layout button background button tidy up tidy align straighten even spacing widescreen carry over',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Modes and Boards',
@@ -1896,17 +1896,6 @@ export const articles: Article[] = [
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
-  },
-  {
-    slug: 'shape-libraries',
-    title: 'Shape libraries',
-    description:
-      "Your own named sets of reusable shapes from draw.io, placed from the palette's My shapes and managed on the Explorer page.",
-    keywords:
-      'shape library libraries my shapes custom shapes reusable stencil stencils preset presets scratchpad drawio draw.io mxlibrary uml icons notation import palette rename delete',
-    category: 'Explorer',
-    categorySlug: 'explorer',
-    group: 'Assets and Imports',
   },
   {
     slug: 'tags',

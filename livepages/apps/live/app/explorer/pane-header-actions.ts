@@ -15,7 +15,6 @@ const NO_NEW_DOCUMENT: ReadonlySet<Kind> = new Set<Kind>([
   'shared',
   'gallery',
   'themes',
-  'shape-libraries',
   'trash',
   'team',
   'invites',
