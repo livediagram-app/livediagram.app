@@ -91,9 +91,6 @@ type Tab = {
   // (docs/specs/007-editor/editor-modes.md "Where the mode lives"); absent = 'diagram'. A stored kind 'whiteboard' reads as
   // kind 'diagram' with opensIn 'draw'.
   opensIn?: EditorMode; // 'diagram' | 'draw' | 'pages' | 'plan'
-  // The tab's bound source (docs/specs/027-repositories/diagram-sources.md): its format and whether it may hold
-  // residue; absent = not bound. The source's path lives in the repository, never here.
-  source?: { format: SourceFormat; compatibility: 'relaxed' | 'strict' };
   elements: Element[];
   // …plus theme, backgroundColor/Pattern/Opacity, patternColor, locked
 };

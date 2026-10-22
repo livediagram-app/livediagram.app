@@ -140,13 +140,6 @@ person lets go. The CLI's `--wait-held <seconds>` retries for it.
 
 The room's answer is the source; when the room cannot be reached, nothing counts as held and the api logs it.
 
-## Strict sources
-
-A changeset on a tab bound to a source in strict compatibility
-([Diagram sources](../027-repositories/diagram-sources.md#strict)) is compiled, then checked against the bridge's
-capabilities before the write; a result holding residue is refused `422 not_expressible`, naming each element and
-field, and nothing is applied. A relaxed tab is never refused for residue.
-
 ## Boards and Sheets only in Plan
 
 A Plan board or a Sheet goes only on a tab in Plan ([Plan tabs](../026-plan/plan-tabs.md#only-in-plan)). A changeset,

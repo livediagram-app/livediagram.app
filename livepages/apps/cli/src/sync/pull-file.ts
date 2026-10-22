@@ -14,8 +14,7 @@ import {
 import { sha256Hex } from '@livepages/api-schema';
 
 export type PulledTab = { rev: number; hash: string; settingsHash: string };
-// `pulledAt` is absent from a mirror file, which holds no time (repository-link blueprint "The mirror file").
-export type PullSync = { host: string; pulledAt?: number; tabs: Record<string, PulledTab> };
+export type PullSync = { host: string; pulledAt: number; tabs: Record<string, PulledTab> };
 export type PullFile = DocumentEnvelope & { livepagesSync: PullSync };
 
 export const PULL_FILE_SUFFIX = '.livepages.json';
@@ -47,6 +46,21 @@ export function fileSlug(name: string, id: string): string {
 
 export const idSlug = (id: string) => id.slice(0, ID_SLUG_LENGTH);
 
+const sameIds = (a: readonly string[], b: readonly string[]) =>
+  a.length === b.length && a.every((id) => b.includes(id));
+
+// A tab in the file without a record, a record without a tab, or a tab hashing other than recorded.
+export function isLocallyChanged(
+  file: PullFile,
+  hashes: Record<string, { hash: string; settingsHash: string }>,
+): boolean {
+  const recorded = file.livepagesSync.tabs;
+  if (!sameIds(Object.keys(hashes), Object.keys(recorded))) return true;
+  return Object.entries(hashes).some(
+    ([id, h]) => h.hash !== recorded[id]!.hash || h.settingsHash !== recorded[id]!.settingsHash,
+  );
+}
+
 export function pullFileText(file: PullFile): string {
   return `${JSON.stringify(file, null, 2)}\n`;
 }
@@ -62,11 +76,11 @@ function isPulledTab(value: unknown): value is PulledTab {
 
 function syncOf(value: unknown): PullSync | null {
   if (!isRecord(value) || typeof value.host !== 'string') return null;
-  if (value.pulledAt !== undefined && typeof value.pulledAt !== 'number') return null;
+  if (typeof value.pulledAt !== 'number') return null;
   if (!isRecord(value.tabs) || !Object.values(value.tabs).every(isPulledTab)) return null;
   return {
     host: value.host,
-    ...(value.pulledAt === undefined ? {} : { pulledAt: value.pulledAt }),
+    pulledAt: value.pulledAt,
     tabs: value.tabs as Record<string, PulledTab>,
   };
 }

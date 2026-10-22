@@ -13,14 +13,6 @@ export type CliFiles = {
   chmod: (path: string, mode: number) => Promise<void>;
   // A file, or an empty directory.
   remove: (path: string) => Promise<void>;
-  // Entries of a directory, or null when it is not one; symbolic links reported as 'link' and never followed.
-  list(path: string): Promise<{ name: string; kind: 'file' | 'dir' | 'link' }[] | null>;
-  // rename(2); parent directories created.
-  move: (from: string, to: string) => Promise<void>;
-  // An O_EXCL create; false when the path exists.
-  createExclusive: (path: string, data: string) => Promise<boolean>;
-  // The path with every symbolic link resolved, or null when nothing is there.
-  realpath: (path: string) => Promise<string | null>;
 };
 
 // The room socket `wait` and `watch` listen on (blueprint "The room stream"): text frames in, a close code out.
@@ -41,12 +33,6 @@ export type CliIo = {
   stdoutIsTTY: boolean;
   // Writes `prompt` to stderr and reads one line from stdin (the terminal's own line editing); null at end of input.
   readLine: (prompt: string) => Promise<string | null>;
-  // Recursive change events under `dir`; the returned function stops it.
-  watchTree: (dir: string, onChange: (path: string) => void) => () => void;
-  pid: number;
-  hostname: string;
-  // Whether a process of this machine is alive (signal 0 answered without ESRCH).
-  processAlive: (pid: number) => boolean;
   fetch: (request: Request) => Promise<Response>;
   now: () => number;
   sleep: (ms: number) => Promise<void>;

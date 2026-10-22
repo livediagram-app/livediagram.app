@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { fakeIo, type Route } from './testing/fake-io';
 import { transport } from './transport';
 
-// A long-running command (`sync --watch`) outlives a fresh `auth login`, which revokes the token it started with.
+// A long-running command (`watch`) outlives a fresh `auth login`, which revokes the token it started with.
 // The transport re-reads the stored credential when the api refuses the token it holds, and retries once.
 
 const API = 'https://livepages.app/api';

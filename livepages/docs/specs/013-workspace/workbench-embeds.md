@@ -18,7 +18,7 @@ A workbench embed has a **scope**, chosen when it is minted and fixed for the li
 | `workspace` | `/embed/workbench/explorer[/folder/<id>]` | Explorer Home, or the asked folder | the person's whole workspace, as the Explorer does |
 
 The **workspace** scope is the Explorer itself inside the workbench: a workbench keeps the person's diagrams one
-click away, and a project's folder (a [repository link](../027-repositories/repository-link.md)'s) beside its code.
+click away, and a project's folder beside its code.
 It never starts on `/new` or the landing page: a frame with no folder starts on Explorer Home
 ([Explorer Home](explorer-home.md)). Where this page says "the document" without a scope, it means the document
 scope's document, or the document open in a workspace frame.

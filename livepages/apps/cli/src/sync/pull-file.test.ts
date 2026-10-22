@@ -131,14 +131,6 @@ describe('pullFileText and parsePullFile', () => {
   });
 });
 
-describe('a pull file without pulledAt', () => {
-  it('parses, its sync data kept without a time', () => {
-    const { pulledAt: _p, ...sync } = file().livepagesSync;
-    const text = JSON.stringify({ ...file(), livepagesSync: sync });
-    expect(parsePullFile(text)).toEqual({ ok: true, file: { ...file(), livepagesSync: sync } });
-  });
-});
-
 describe('a pull file whose pulledAt is not a time', () => {
   it('is not a pull file', () => {
     const text = JSON.stringify({

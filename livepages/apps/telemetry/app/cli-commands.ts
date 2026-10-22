@@ -87,15 +87,6 @@ export const CLI_COMMANDS: readonly { type: string; command: string; what: strin
   { type: 'Pull', command: 'pull', what: 'writing a document to a file' },
   { type: 'Push', command: 'push', what: 'sending a pulled file’s changes back' },
   { type: 'Export', command: 'export --all', what: 'exporting every document to files' },
-  { type: 'LinkInit', command: 'link init', what: 'linking a repository to livepages' },
-  { type: 'LinkStatus', command: 'link status', what: 'checking a repository link’s sync states' },
-  { type: 'LinkLs', command: 'link ls', what: 'listing the documents a repository link covers' },
-  { type: 'Sync', command: 'sync', what: 'mirroring a link’s documents into a repository' },
-  {
-    type: 'SyncWatch',
-    command: 'sync --watch',
-    what: 'keeping a repository’s mirror of its documents current',
-  },
   {
     type: 'WorkbenchOpen',
     command: 'workbench open',

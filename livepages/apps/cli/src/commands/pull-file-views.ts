@@ -50,13 +50,6 @@ export async function pullFileOf(
 
 const tabIdsOf = (file: PullFile) => file.document.tabs.map((t) => t.id);
 
-// When the file's document was last saved: its pull, or for a mirror file, which holds no time, its newest tab
-// (RL10).
-function savedAtOf(file: PullFile): number {
-  if (file.livepagesSync.pulledAt !== undefined) return file.livepagesSync.pulledAt;
-  const updated = file.document.tabs.map((t): unknown => Reflect.get(t, 'updatedAt'));
-  return Math.max(0, ...updated.filter((at): at is number => typeof at === 'number'));
-}
 const summariesOf = (file: PullFile) =>
   file.document.tabs.map((t, orderIndex) => ({ id: t.id, name: t.name, orderIndex }));
 
@@ -85,7 +78,7 @@ export function pullFileView(
       facts: headerFactsOf(tab, { rev: sync.tabs[tab.id]?.rev, tabIds }),
     }));
     const result = overviewView(
-      { id: document.id, name: document.name, savedAt: savedAtOf(file) },
+      { id: document.id, name: document.name, savedAt: sync.pulledAt },
       tabs,
       {
         now,

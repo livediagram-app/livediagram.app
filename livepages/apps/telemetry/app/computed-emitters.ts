@@ -23,7 +23,7 @@ import {
   pascalToken,
   placementDefaultTelemetryType,
 } from '@livepages/api-schema';
-import { countedVerbs, SYNC_WATCH_TYPE } from '@livepages/agent-verbs';
+import { countedVerbs } from '@livepages/agent-verbs';
 import { FORM_STARTERS, QUESTION_TYPE_TELEMETRY } from '@livepages/forms';
 import { MCP_TOOL_VERBS } from '@livepages/agent-verbs/mcp';
 import { CANVAS_CONTROLS } from './event-vocab';
@@ -60,8 +60,8 @@ const DRIVE_OPEN_WITH_TYPES = tokensAfter(
 // The api's email templates: `export type EmailKind = 'Welcome' | ...;`.
 const EMAIL_KINDS = tokensAfter(read('api/src/email/templates.ts'), 'export type EmailKind', ';');
 
-// The verbs the CLI counts (packages/agent-verbs), as their `Cli·Used` types, and `sync --watch`'s own.
-const CLI_VERBS = [...countedVerbs().map((v) => pascalToken(v.id)), SYNC_WATCH_TYPE];
+// The verbs the CLI counts (packages/agent-verbs), as their `Cli·Used` types.
+const CLI_VERBS = countedVerbs().map((v) => pascalToken(v.id));
 
 // Each tool the MCP server registers, from its verb (packages/agent-verbs mcp-tools.ts), as pascalToken(name).
 const MCP_TOOLS = MCP_TOOL_VERBS.map((v) => pascalToken(v.mcp.tool));

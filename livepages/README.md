@@ -32,7 +32,7 @@ marketing/   off-site copy + media for listings and promotion (see docs/specs/01
 - **Help** at `/help` is the static help centre (guides, feature docs, troubleshooting).
 - **MCP** at `mcp.livepages.app` is a Cloudflare Worker that exposes the document tools to AI clients (Claude and other MCP hosts) over OAuth — its own host, not a router path.
 - **Router** stitches the five under one hostname.
-- **CLI** (`apps/cli`) is `livepages`, the command line agents and scripts read, lint and change documents with, published on npm as `@livepages/cli`. It also links a repository to its diagrams and opens a document inside a developer tool ([CLI](docs/specs/015-api/cli.md), [Repositories](docs/specs/027-repositories/README.md), [Workbench embeds](docs/specs/013-workspace/workbench-embeds.md)).
+- **CLI** (`apps/cli`) is `livepages`, the command line agents and scripts read, lint and change documents with, published on npm as `@livepages/cli`. It also opens a document inside a developer tool ([CLI](docs/specs/015-api/cli.md), [Workbench embeds](docs/specs/013-workspace/workbench-embeds.md)).
 
 The whole stack runs on Cloudflare Workers (Static Assets for the Next.js apps). There's no Node-hosted backend, no SSR, no Next.js API routes.
 

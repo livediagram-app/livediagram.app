@@ -15,8 +15,8 @@ import type { ApiClient } from '@livepages/api-client';
 
 type TeamLibrary = { teamName: string; documents: DocumentSummary[] };
 
-// Every library the caller reaches, with its folders (the repository link's coverage and folder picker):
-// the personal one, then each joined team's.
+// Every library the caller reaches, with its folders (the folder picker): the personal one, then each joined
+// team's.
 export type Libraries = {
   personal: { documents: DocumentSummary[]; folders: Folder[] };
   teams: { id: string; name: string; documents: DocumentSummary[]; folders: Folder[] }[];

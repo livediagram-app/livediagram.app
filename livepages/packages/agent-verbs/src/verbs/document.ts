@@ -15,7 +15,7 @@ export const listedDocument = z.object({
 });
 export type ListedDocument = z.infer<typeof listedDocument>;
 
-// The rows `document ls` prints, shared with `link ls`: each document's ref, name, library and last saved day.
+// The rows `document ls` prints: each document's ref, name, library and last saved day.
 export function documentRows(
   found: readonly FoundDocument[],
   refs: ReadonlyMap<string, string>,
