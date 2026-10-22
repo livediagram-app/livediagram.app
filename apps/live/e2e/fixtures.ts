@@ -256,11 +256,10 @@ export async function openStartBlank(page: Page): Promise<void> {
   await dismissQuickTour(page);
 }
 
-// A blank tab in Workshop mode straight away: /new?template=blank-session creates it with no wizard
-// (docs/specs/012-collaboration/session-tools.md). Where the session kit lives: the
-// Collaborate and Stickers categories and the Session strip.
-export async function openBlankSession(page: Page): Promise<void> {
-  await page.goto('/new?template=blank-session');
+// A Team Retro straight away: its retro board's cards take votes, so the tab offers the Session strip
+// (docs/specs/012-collaboration/session-tools.md "The Session strip").
+export async function openTeamRetro(page: Page): Promise<void> {
+  await page.goto('/new?template=team-retro');
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
   await dismissQuickTour(page);
 }

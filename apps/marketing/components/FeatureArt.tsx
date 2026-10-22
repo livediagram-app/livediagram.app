@@ -27,8 +27,6 @@ export * from './feature-art/embeds-timeline';
 export * from './feature-art/room';
 // The mode categories (docs/specs/019-marketing/marketing-site.md "Story beats"): Draw's markers and
 // erasers, and Plan's boards.
-export * from './feature-art/whiteboard';
-export * from './feature-art/whiteboard-pen';
 export * from './feature-art/plan';
 export * from './feature-art/plan-views';
 export * from './feature-art/plan-dashboard';
@@ -48,5 +46,3 @@ export * from './feature-art/reach';
 export * from './feature-art/plan-more';
 export * from './feature-art/sheet-more';
 export * from './feature-art/forms-more';
-export * from './feature-art/slide-timing';
-export * from './feature-art/whiteboard-dock';

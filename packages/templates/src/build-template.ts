@@ -242,10 +242,8 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
     case 'event-storming':
       return buildEventStorming(cx, cy);
     // A whiteboard is a clean board (docs/specs/007-editor/editor-modes.md): what makes it one is its
-    // kind, which templateCanvasOverrides sets, not any seeded element. Workshop's blank is an empty
-    // tab too, opened in Workshop the same way.
+    // kind, which templateCanvasOverrides sets, not any seeded element.
     case 'whiteboard':
-    case 'blank-session':
       return [];
     case 'sketchnote':
       return buildSketchnote(cx, cy);

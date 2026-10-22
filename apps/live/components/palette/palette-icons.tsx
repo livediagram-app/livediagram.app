@@ -81,17 +81,6 @@ export function IsometricIcon({ size = 14 }: IconSizeProps = {}) {
   return <ModeGlyphIcon mode="isometric" size={size} />;
 }
 
-// Slides (docs/specs/007-editor/pages-mode.md): a card with a smaller one behind it, which is what a
-// deck IS.
-export function SlideDeckIcon() {
-  return (
-    <Glyph size={14} units={16}>
-      <rect x="1.5" y="4.5" width="10" height="7.5" rx="1.2" />
-      <path d="M4.5 2.5h8a1.2 1.2 0 0 1 1.2 1.2v6.3" />
-    </Glyph>
-  );
-}
-
 // The bottom-dock "Theme & canvas" button (docs/specs/011-theme/canvas-and-theme-dialog.md): a paintbrush on the
 // 20-unit dock grid (matching LayersStackIcon's stroke weight) that opens
 // the CanvasThemeDialog. Distinct from FormatPainterIcon below (the

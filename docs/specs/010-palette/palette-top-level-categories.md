@@ -49,7 +49,7 @@ tools plus Frame). The **User / actor** tile was deleted outright — see below.
 | **Structure**   | Diagrams (Diagram), Layout (Diagram, Workshop), Components, Concepts ([Concept graphics](../009-elements/concept-graphics.md)), Devices, Event Storming (on an event-storming board only) |
 | **Decorate**    | Icons, Stickers, Technology, Media                                                                                                                                                        |
 | **Dynamic**     | Data (Workshop)                                                                                                                                                                           |
-| **Collaborate** | Ask, Tools, Record, Navigate ([Workshop](../012-collaboration/workshop-mode.md#the-palette) only)                                                                                         |
+| **Collaborate** | Ask, Tools, Record, Navigate                                                                                                                                                              |
 
 ## Why flatten
 

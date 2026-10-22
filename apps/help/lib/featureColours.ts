@@ -22,7 +22,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   templates: '#14b8a6',
   'event-storming-boards': '#d97706',
   'plan-mode': '#2563eb',
-  'workshop-mode': '#c2410c',
   items: '#7c3aed',
   boards: '#4f46e5',
   cards: '#0d9488',

@@ -25,9 +25,8 @@ export type PanelId =
   | 'collaborate'
   | 'ai'
   | 'minimap'
-  // Eraser Panel (docs/specs/008-canvas/eraser-panel.md): the brush's settings, present only while the Eraser
+  // Format Panel (docs/specs/008-canvas/format-panel.md): what the painter copies, present only while the Format
   // tool is.
-  // Format Panel (docs/specs/008-canvas/format-panel.md): what the painter copies, on the same terms.
   | 'format';
 
 export const PANEL_CORNERS: readonly PanelCorner[] = [

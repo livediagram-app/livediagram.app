@@ -3,7 +3,7 @@ import {
   expect,
   dismissQuickTour,
   expectNoPageErrors,
-  openBlankSession,
+  openTeamRetro,
   startBlankDocument,
   startEventStormingRow,
   startTemplateDocument,
@@ -322,8 +322,8 @@ test.describe('mobile', () => {
     page,
     pageErrors,
   }) => {
-    // The strip is Workshop's (docs/specs/012-collaboration/session-tools.md), so a Blank Session.
-    await openBlankSession(page);
+    // The strip shows where cards take votes (docs/specs/012-collaboration/session-tools.md), so a Team Retro.
+    await openTeamRetro(page);
 
     // Every cluster button is inside the viewport: nothing pushed off the left edge.
     const undo = page.getByRole('button', { name: /^undo/i });

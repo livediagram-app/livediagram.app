@@ -183,7 +183,7 @@ export const categories: Category[] = [
     title: 'Canvas',
     description:
       'Master the infinite canvas: place, select, link, annotate, layer, rotate, animate, lock and theme elements, undo changes, and start from templates.',
-    articleCount: 30,
+    articleCount: 27,
     kind: 'feature',
     groups: [
       'Basics',
@@ -1330,17 +1330,7 @@ export const articles: Article[] = [
     categorySlug: 'canvas',
     group: 'Modes and Boards',
   },
-  {
-    slug: 'workshop-mode',
-    title: 'Workshop Mode',
-    description:
-      'Run a session on any tab: retros, brainstorms and workshops, with timers and votes.',
-    keywords:
-      'workshop mode facilitate facilitate mode session sessions run a session workshop meeting team meeting retro retrospective crazy eights brainstorm board workshop board kickoff timer countdown stopwatch vote dot vote voting temperature check fist of five picker random spin stickers emoji sticker badge collaborate category session strip blank session editor mode switch shift+d where did the timer go where are stickers missing tools moved',
-    category: 'Canvas',
-    categorySlug: 'canvas',
-    group: 'Modes and Boards',
-  },
+
   {
     slug: 'items',
     title: 'Items',

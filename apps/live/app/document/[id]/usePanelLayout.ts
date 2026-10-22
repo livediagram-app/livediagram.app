@@ -17,9 +17,9 @@ export function usePanelLayout() {
   const [commentsPanelPosition, setCommentsPanelPosition] = useState<Pos | null>(null);
   const [aiPanelPosition, setAiPanelPosition] = useState<Pos | null>(null);
   const [aiPanelVisible, setAiPanelVisible] = useState(false);
-  // Eraser Panel (docs/specs/008-canvas/eraser-panel.md): present only while the Eraser tool is active, so
+  // Format Panel (docs/specs/008-canvas/format-panel.md): present only while the Format tool is active, so
   // position only — there is nothing to minimise when leaving the tool dismisses the panel outright. (Timer and
-  // Vote open over the Session strip's buttons, so they keep no position: docs/specs/012-collaboration/session-tools.md.)  // Format Panel (docs/specs/008-canvas/format-panel.md): the same.
+  // Vote open over the Session strip's buttons, so they keep no position: docs/specs/012-collaboration/session-tools.md.)
   const [formatPanelPosition, setFormatPanelPosition] = useState<Pos | null>(null);
   // Zen / focus mode (docs/specs/007-editor/zen-mode.md): hide all the chrome (header, tab
   // bar, panels, docks) so only the canvas content + zoom controls

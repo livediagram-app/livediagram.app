@@ -18,7 +18,6 @@ describe('isDefaultDocumentName', () => {
       'Untitled document',
       'Untitled diagram',
       'Untitled Plan',
-      'Untitled Session',
       'Untitled Whiteboard',
       'Untitled Flowchart',
     ])

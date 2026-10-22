@@ -15,7 +15,7 @@ describe('galleryTemplates (docs/specs/019-marketing/marketing-site.md)', () => 
       (t) => t.kind,
     );
     expect(kinds).toEqual(expected);
-    for (const blank of ['blank', 'whiteboard', 'blank-plan', 'blank-session']) {
+    for (const blank of ['blank', 'whiteboard', 'blank-plan']) {
       expect(kinds).not.toContain(blank);
     }
     expect(new Set(kinds).size).toBe(kinds.length);
@@ -87,17 +87,7 @@ describe('the shelves, as the template step lays them out', () => {
     const shelves = galleryShelves();
     expect(shelves[0]?.id).toBe('popular');
     const kinds = shelves[0]?.templates.map((t) => t.kind);
-    expect(kinds).toEqual([
-      'blank-plan',
-      'blank-spreadsheet',
-      'blank-form',
-      'blank',
-      'whiteboard',
-      'blank-session',
-      'blank-plan',
-      'blank-spreadsheet',
-      'blank-form',
-    ]);
+    expect(kinds).toEqual(['blank-plan', 'blank-spreadsheet', 'blank-form', 'blank', 'whiteboard']);
     // In BLANK_TEMPLATES' own order.
     expect(kinds).toEqual(BLANK_TEMPLATES.filter((k) => kinds?.includes(k)));
     for (const t of popularTemplates()) expect(isBlankTemplate(t.kind), t.kind).toBe(true);

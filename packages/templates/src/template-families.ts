@@ -24,7 +24,6 @@ const TEMPLATE_FAMILY: Record<TemplateKind, TemplateFamily | null> = {
   // Kanban board by another name, the Team Retro is a retrospective; the rest belong to no family.
   'blank-plan': null,
   'blank-spreadsheet': null,
-  'blank-session': null,
   'project-planner': 'kanban',
   'bug-triage': null,
   'team-retro': 'retrospective',

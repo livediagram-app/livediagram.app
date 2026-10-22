@@ -23,17 +23,6 @@ export const SECTION_TEMPLATE_KINDS: Readonly<Record<string, readonly TemplateKi
     'cloud-architecture',
     'decision-tree',
   ],
-  whiteboard: [
-    'sketchnote',
-    'idea-garden',
-    'paper-prototype',
-    'rich-picture',
-    'journey-doodle',
-    'pre-mortem',
-    'comic-strip',
-    'doodle-warmup',
-    'whiteboard',
-  ],
   plan: [
     'kanban',
     'project-planner',

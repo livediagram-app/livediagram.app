@@ -10,9 +10,7 @@
 import { Frame } from './shared';
 import {
   ArrowHead,
-  Chip,
   HAIRLINE,
-  INK,
   LINK,
   MUTED_TEXT,
   Node,
@@ -24,7 +22,6 @@ import {
   STAGE,
   TONE_SHAPE,
   TONE_TEXT,
-  WandIcon,
   delay,
 } from './versatility-parts';
 
@@ -327,97 +324,6 @@ export function ArrowsArt() {
 }
 
 /* ──────────────── Drawing, guides, backdrops ──────────────── */
-
-// Shape recognition in Draw mode: a rough box drawn in marker, lifted the moment the pen does and
-// replaced by the clean shape it meant, beside the Shape recognition switch and a legend of what
-// it knows.
-export function PencilArt() {
-  const rough =
-    'M30 26 C 52 21, 96 20, 126 24 C 130 38, 131 56, 128 70 C 100 74, 60 75, 33 71 C 28 56, 27 40, 31 27';
-  return (
-    <Frame canvas>
-      <svg viewBox={STAGE} className="absolute inset-0 h-full w-full">
-        <path
-          className={`fa-c-draw ${INK}`}
-          d={rough}
-          pathLength={1}
-          fill="none"
-          strokeWidth="2.6"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        {/* The marker in hand while it draws. */}
-        <g className="fa-c-before" transform="translate(31 27) rotate(-35)">
-          <rect
-            className="fill-slate-700 dark:fill-slate-300"
-            x="-2.4"
-            y="-22"
-            width="4.8"
-            height="17"
-            rx="1.4"
-          />
-          <path className="fill-slate-900 dark:fill-white" d="M-2.4 -5 L2.4 -5 L0 0 Z" />
-        </g>
-        <g className="fa-c-snap">
-          <rect
-            className={INK}
-            x="30"
-            y="24"
-            width="98"
-            height="48"
-            rx="2"
-            fill="none"
-            strokeWidth="2.6"
-          />
-          <Selection x={30} y={24} w={98} h={48} pad={4} />
-        </g>
-        <path
-          className="stroke-slate-400 dark:stroke-slate-500"
-          d="M146 48 H162 M158 44 L162 48 L158 52"
-          fill="none"
-          strokeWidth="1.3"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-
-        {/* What it recognises. */}
-        <rect className={PANEL} x="174" y="30" width="116" height="56" rx="6" strokeWidth="1" />
-        <text
-          className={MUTED_TEXT}
-          x="182"
-          y="42"
-          fontSize="6"
-          fontWeight="700"
-          letterSpacing="0.3"
-        >
-          RECOGNISES
-        </text>
-        <g
-          className="stroke-slate-600 dark:stroke-slate-300"
-          fill="none"
-          strokeWidth="1.3"
-          strokeLinejoin="round"
-          strokeLinecap="round"
-        >
-          <circle cx="190" cy="61" r="7" />
-          <rect x="206" y="54" width="15" height="14" rx="1" />
-          <path d="M235 53.5 L243 68 L227 68 Z" />
-          <path d="M256 53 L263 61 L256 69 L249 61 Z" />
-          <path d="M270 68 L283 54" />
-        </g>
-        <text className={MUTED_TEXT} x="232" y="80" fontSize="5.4" textAnchor="middle">
-          Hold still to preview, lift to snap
-        </text>
-      </svg>
-      <Chip className="right-2 top-2">
-        <WandIcon /> Shape recognition
-        <span className="ml-0.5 flex h-2.5 w-4.5 items-center rounded-full bg-emerald-500 px-px">
-          <span className="ml-auto h-2 w-2 rounded-full bg-white" />
-        </span>
-      </Chip>
-    </Frame>
-  );
-}
 
 // Alignment guides: a shape dragged across the canvas settles where its left edge meets the shape
 // above and its top meets the shape beside it, and the guides light up the moment it does.

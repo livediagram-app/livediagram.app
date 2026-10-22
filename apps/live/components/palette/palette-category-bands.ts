@@ -14,8 +14,8 @@ export const CATEGORY_BANDS: Record<number, string> = {
   4: 'Boards & Cards',
   // Plan mode's Sheets (docs/specs/029-sheets/sheet.md "Placing a sheet"), after Boards & Cards.
   5: 'Spreadsheets',
-  // Workshop mode's session kit (docs/specs/012-collaboration/workshop-mode.md "The palette"): the
-  // six Collaborate categories, under the name the elements go by rather than Dynamic.
+  // The session kit (docs/specs/012-collaboration/session-tools.md): the Collaborate categories, under the
+  // name the elements go by rather than Dynamic.
   6: 'Collaborate',
   // The screen parts' own band (docs/specs/008-canvas/canvas-and-palette.md "Palette"): Components
   // and Elements, set apart from the rest.

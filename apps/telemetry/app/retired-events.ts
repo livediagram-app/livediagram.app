@@ -238,7 +238,7 @@ const isPagesModeEvent = (key: string) =>
 // the mode switch and its Editor·Changed series (each mode, and leaving Pages past its warning) went with them, as did
 // the switch's turning of articles into pages, a start's templates from other modes, the toolbar search's "not in
 // this mode" note, the other modes' default-folder keys, and the Draw, Pages and Workshop tours' offers, starts,
-// ends and steps. Their Settings rows still send their seen-flag toggles, so those carry on. A Pages tab's board
+// ends and steps, and their Settings rows' seen-flag toggles. A Pages tab's board
 // put onto a page as it loads (Tab·Changed·PageFitToContent) and the toolbar's category picker carry on too.
 const EDITOR_MODES_UI = new Set([
   'Used|StartOtherMode',
@@ -258,6 +258,10 @@ const EDITOR_MODES_UI = new Set([
   'Started|WorkshopTour',
   'Ended|WorkshopTourCompleted',
   'Ended|WorkshopTourSkipped',
+  'Toggled|DrawTourSeenOff',
+  'Toggled|DrawTourSeenOn',
+  'Toggled|WorkshopTourSeenOff',
+  'Toggled|WorkshopTourSeenOn',
 ]);
 const EDITOR_MODES_TOUR_STEP_PREFIXES = ['DrawTourStep', 'PagesTourStep', 'WorkshopTourStep'];
 const EDITOR_MODES_DEFAULT_FOLDER_TYPES = new Set([
@@ -268,7 +272,7 @@ const EDITOR_MODES_DEFAULT_FOLDER_TYPES = new Set([
 ]);
 
 // The Diagram tour (removed 2026-10-22 with the Diagram mode, docs/specs/026-plan/plan-mode.md; the welcome tour
-// until October 2026): its offer, start, end and each step's view, and its Settings row. The Plan, Forms, Avatar and
+// until October 2026): its offer, start, end and each step's view, and its Settings row. The Plan, Forms and
 // element tours carry on under their own tokens.
 const DIAGRAM_TOUR_UI = new Set([
   'Opened|TourOffer',

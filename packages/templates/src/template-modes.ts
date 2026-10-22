@@ -52,7 +52,6 @@ export const BLANK_TEMPLATES: readonly TemplateKind[] = [
   'blank-form',
   'blank',
   'whiteboard',
-  'blank-session',
 ];
 
 /** True for the blanks. Quick-picks on Popular, never on a category shelf or tile. */

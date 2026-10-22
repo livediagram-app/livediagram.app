@@ -11,7 +11,6 @@ const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
   whiteboard: ['empty', 'scratch', 'draw', 'sketch', 'freehand', 'pen'],
   'blank-plan': ['empty', 'board', 'cards', 'tasks', 'sheet'],
   'blank-spreadsheet': ['empty', 'sheet', 'spreadsheet', 'excel', 'grid', 'cells', 'table'],
-  'blank-session': ['empty', 'workshop', 'meeting', 'facilitate', 'session'],
   // Planning.
   'project-planner': [
     'project',

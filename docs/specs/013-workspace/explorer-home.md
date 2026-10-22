@@ -121,8 +121,7 @@ The hero speaks to a beginning:
 
 Under it, beside the sidebar, Home holds three sections in place of Jump Back In and What Happened:
 
-- **Start Blank**: the five blanks, one per mode (Blank Diagram, Blank Whiteboard, Blank Session, Blank
-  Illustration, Blank Plan), each a card with its preview, title and one-line description. Activating one makes
+- **Start Blank**: Plan's three blanks (Blank Plan, Blank Spreadsheet, Blank Form, `WELCOME_BLANKS`), each a card with its preview, title and one-line description. Activating one makes
   that blank at once (`/new?template=<kind>`).
 - **Popular Templates**: the first eight non-blank templates of the shared Popular list, as large cards with their
   previews, titles and descriptions; activating one makes it at once. A quiet **Browse All Templates** link in the

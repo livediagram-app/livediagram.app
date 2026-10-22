@@ -150,8 +150,6 @@ export type TemplateKind =
   | 'journey-doodle'
   | 'pre-mortem'
   | 'idea-garden'
-  // Workshop mode's blank (docs/specs/012-collaboration/session-tools.md).
-  | 'blank-session'
   // Plan templates (docs/specs/026-plan/plan-templates.md): a way of working across several tabs,
   // each opening in Plan mode, with no cards. The Kanban board ('kanban', above) is one of them;
   // Blank Plan is the mode's blank.
@@ -230,12 +228,6 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'blank-spreadsheet',
     title: 'Blank Spreadsheet',
     description: 'An empty spreadsheet: cells, formulas and charts, ready to type into.',
-    extra: true,
-  },
-  {
-    kind: 'blank-session',
-    title: 'Blank Session',
-    description: 'An empty tab to run a session on: timers, votes, polls and reveals to hand.',
     extra: true,
   },
   {

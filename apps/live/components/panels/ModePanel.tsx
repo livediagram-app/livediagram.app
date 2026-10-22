@@ -8,7 +8,7 @@ import type { HelpArticleKey } from '@/lib/help-articles';
 
 // The chrome every MODE panel wears: Format.
 //
-// These are the panels that exist only while their tool does (docs/specs/008-canvas/eraser-panel.md). They are
+// These are the panels that exist only while their tool does (docs/specs/008-canvas/format-panel.md). They are
 // deliberately identical outside their bodies (same corner, same width, same
 // collapse behaviour) because the bottom-right column, above the bottom
 // cluster, has to read as one edge rather than panels that each drifted

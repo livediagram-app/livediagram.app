@@ -49,8 +49,7 @@ export function PlanIcon({ size = 16, ...rest }: IconProps) {
   );
 }
 
-// Workshop mode's mark (docs/specs/012-collaboration/workshop-mode.md): a flipchart on an
-// easel, its pad holding two lines of writing, on the 24-unit grid.
+// A flipchart on an easel, its pad holding two lines of writing, on the 24-unit grid.
 export function FlipchartIcon({ size = 16, ...rest }: IconProps) {
   return (
     <Glyph size={size} units={24} {...rest}>

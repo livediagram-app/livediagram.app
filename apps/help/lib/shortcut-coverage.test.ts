@@ -75,10 +75,10 @@ function chords(): string[] {
 
 describe('the Keyboard Shortcuts article covers what the editor binds', () => {
   it('parses real tables (guard against this test going blind)', () => {
-    // Twenty-eight bindings when this landed. A collapse toward zero means the
-    // table shape changed and every assertion below passes vacuously.
-    expect(boundKeys().size).toBeGreaterThan(20);
-    expect(documentedKeys().size).toBeGreaterThan(20);
+    // Twenty-eight bindings when this landed, twenty once Plan was the only mode. A collapse toward zero means
+    // the table shape changed and every assertion below passes vacuously.
+    expect(boundKeys().size).toBeGreaterThan(15);
+    expect(documentedKeys().size).toBeGreaterThan(15);
   });
 
   it('documents every plain key in the lookup tables', () => {

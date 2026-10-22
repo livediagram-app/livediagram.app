@@ -33,7 +33,7 @@ export type FaqCategory = {
 const ICON = 18;
 // Written out rather than read from @liveplanner/templates: this module ships in the FAQ's client bundle, and the
 // catalogue is ~15 KB for one number. faq-content.test.tsx pins it to TEMPLATES.length.
-export const TEMPLATE_COUNT = 101;
+export const TEMPLATE_COUNT = 100;
 // The template categories, pinned to TEMPLATE_CATEGORIES.length by faq-content.test.tsx the same way.
 export const TEMPLATE_CATEGORY_COUNT = 13;
 
@@ -270,19 +270,6 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         ),
         aText:
           'Yes. Isometric mode tilts the whole tab and raises each box into a solid block, for an architecture walkthrough or a screenshot. It is a way to look at a diagram rather than edit it. See Isometric mode.',
-      },
-      {
-        q: 'Can I use it as a whiteboard?',
-        a: (
-          <>
-            Yes. Switch a tab to Draw for a plain whiteboard: three pressure-sensitive markers,
-            text, an eraser and shapes, on a plain, dotted or grid board in light or dark. With a
-            stylus, a resting palm never leaves a mark. See{' '}
-            <a href="/help/canvas/editor-modes/">Editor modes</a>.
-          </>
-        ),
-        aText:
-          'Yes. Switch a tab to Draw for a plain whiteboard: three pressure-sensitive markers, text, an eraser and shapes, on a plain, dotted or grid board in light or dark. With a stylus, a resting palm never leaves a mark. See Editor modes.',
       },
       {
         q: 'Is there a spreadsheet?',

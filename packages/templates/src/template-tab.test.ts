@@ -132,6 +132,6 @@ describe('closestTemplateKinds', () => {
   });
 
   it('offers at most CLOSEST_TEMPLATES_MAX', () => {
-    expect(closestTemplateKinds('blank')).toHaveLength(CLOSEST_TEMPLATES_MAX);
+    expect(closestTemplateKinds('map')).toHaveLength(CLOSEST_TEMPLATES_MAX);
   });
 });

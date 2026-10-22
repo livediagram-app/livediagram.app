@@ -120,8 +120,7 @@ export const TEMPLATE_CATEGORIES: readonly Omit<CategoryInfo, 'searchWords'>[] =
 
 // The blanks: in no category, reached from Popular or by search (docs/specs/026-plan/plan-templates.md "The blanks").
 // Mirrors isBlankTemplate (BLANK_TEMPLATES); the categories test pins them together.
-type BlankKind =
-  'blank' | 'whiteboard' | 'blank-plan' | 'blank-spreadsheet' | 'blank-session' | 'blank-form';
+type BlankKind = 'blank' | 'whiteboard' | 'blank-plan' | 'blank-spreadsheet' | 'blank-form';
 
 // Every non-blank template's primary category.
 const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCategory> = {

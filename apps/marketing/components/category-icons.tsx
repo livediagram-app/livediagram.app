@@ -34,13 +34,6 @@ export const CATEGORY_ICONS: Record<string, Icon> = {
       <path d="M4.25 6.5v4.75H9" />
     </>,
   ),
-  // Whiteboard: a freehand stroke under a pen nib.
-  whiteboard: glyph(
-    <>
-      <path d="M10.5 2.5l3 3-6 6-3.5.5.5-3.5z" />
-      <path d="M2 14c1.5-1 3-1 4.5 0s3 1 4.5 0" />
-    </>,
-  ),
   // Plans and boards: three columns of cards.
   plan: glyph(
     <>

@@ -103,8 +103,8 @@ describe('isRetiredEvent', () => {
       expect(isRetiredEvent('UI', 'Ended', `${tour}TourCompleted`)).toBe(true);
       expect(isRetiredEvent('UI', 'Ended', `${tour}TourSkipped`)).toBe(true);
       expect(isRetiredEvent('UI', 'View', `${tour}TourStepOutro`)).toBe(true);
-      // Their Settings rows still send.
-      expect(isRetiredEvent('UI', 'Toggled', `${tour}TourSeenOff`)).toBe(false);
+      // Their Settings rows went with them.
+      expect(isRetiredEvent('UI', 'Toggled', `${tour}TourSeenOff`)).toBe(true);
     }
     expect(isRetiredEvent('Folder', 'Changed', 'DefaultModePlan')).toBe(false);
     expect(isRetiredEvent('Folder', 'Changed', 'DefaultKindEventStorming')).toBe(false);
