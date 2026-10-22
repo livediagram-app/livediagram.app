@@ -41,7 +41,7 @@ function state(sql: DatabaseSync, id: string) {
     .get(id) as { trashed_at: number | null; trash_reason: string | null; saved_at: number };
 }
 
-describe('migration 0056 (documents.trash_reason)', () => {
+describe('documents.trash_reason', () => {
   it('adds a nullable trash_reason', () => {
     const { sql } = sqliteD1();
     const col = sql
@@ -99,23 +99,6 @@ describe('trashEmptyDocuments', () => {
 
     expect(await trashEmptyDocuments(db.env, NOW)).toBe(1);
     expect(state(db.sql, 'essay').trashed_at).toBeNull();
-    expect(state(db.sql, 'blank').trash_reason).toBe('empty');
-  });
-
-  it('keeps a document whose only content is a form, which is not an element', async () => {
-    const db = sqliteD1();
-    liveDoc(db.sql, 'survey', { savedAt: STALE - DAY });
-    liveDoc(db.sql, 'blank', { savedAt: STALE - DAY });
-    tab(
-      db.sql,
-      'tf',
-      { kind: 'form', elements: [], form: { v: 1, heading: 'S', sections: [] } },
-      'survey',
-    );
-    tab(db.sql, 'tz', { kind: 'form', elements: [] }, 'blank');
-
-    expect(await trashEmptyDocuments(db.env, NOW)).toBe(1);
-    expect(state(db.sql, 'survey').trashed_at).toBeNull();
     expect(state(db.sql, 'blank').trash_reason).toBe('empty');
   });
 

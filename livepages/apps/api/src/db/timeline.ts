@@ -1,4 +1,4 @@
-// timeline — the Explorer's landing feed (migration 0042, docs/specs/013-workspace/timeline.md).
+// timeline — the Explorer's landing feed (the baseline migration, docs/specs/013-workspace/timeline.md).
 //
 // Every event is written inline on the write path that caused it.
 // There are no scanners and no scan cron: unlike the system this shape

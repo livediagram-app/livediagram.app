@@ -1,4 +1,4 @@
-// shared_with — "shared with you" tracking (migration 0010).
+// shared_with — "shared with you" tracking (the baseline migration).
 
 import type { SharedWithItem } from '@livepages/api-schema';
 import type { Env, ShareRole } from '../types';

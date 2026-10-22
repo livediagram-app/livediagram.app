@@ -15,7 +15,7 @@ import {
 } from '@livepages/document';
 import { Glyph, lucideGlyph } from '@livepages/ui';
 import { lucideRoute, lucideShapes, lucideWorkflow } from '@livepages/icons/lucide';
-import { OptionRows } from '@/components/plan/OptionRows';
+import { OptionRows } from '@/components/primitives/OptionRows';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { MENU_ICON_PX } from '@/components/palette/context-menu-icons';

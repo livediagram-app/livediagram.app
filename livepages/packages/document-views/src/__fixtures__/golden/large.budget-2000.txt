@@ -1,4 +1,4 @@
-tab 0b34 "Checkout platform ×10" · 300 elements: 160 boxes, 30 frames, 110 arrows · threads 10 open/20
+tab 0b34 "Checkout platform ×10" · 300 elements: 160 boxes, 30 frames, 110 arrows · 1 page: 1 infographic (view pages) · threads 10 open/20
 text e712 "Checkout platform: production"
 text 024b "Checkout platform: production"
 text 9474 "Checkout platform: production"

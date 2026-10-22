@@ -28,10 +28,7 @@ const lists = {
 
 beforeEach(() => {
   resetPlacementDefaultsForTests();
-  api.apiListPlacementDefaults.mockResolvedValue([
-    { key: 'mode:draw', folderId: 'w' },
-    { key: 'template:kanban', folderId: 'gone' },
-  ]);
+  api.apiListPlacementDefaults.mockResolvedValue([{ key: 'mode:pages', folderId: 'w' }]);
   api.apiSetPlacementDefault.mockResolvedValue(undefined);
   api.apiClearPlacementDefault.mockResolvedValue(undefined);
 });
@@ -53,12 +50,13 @@ describe('useDefaultFolderMenus', () => {
   it('checks the keys a folder holds, and toggles them', async () => {
     const { result } = await ready();
     const menu = result.current.forFolder({ id: 'w' })!;
-    expect(menu.isChecked('mode:draw')).toBe(true);
-    expect(menu.isChecked('mode:diagram')).toBe(false);
-    await act(async () => menu.toggle('mode:draw'));
-    expect(api.apiClearPlacementDefault).toHaveBeenCalledWith('owner', 'mode:draw');
-    await act(async () => result.current.forFolder({ id: 'w' })!.toggle('mode:diagram'));
-    expect(api.apiSetPlacementDefault).toHaveBeenCalledWith('owner', 'mode:diagram', 'w');
+    expect(menu.isChecked('mode:pages')).toBe(true);
+    await act(async () => menu.toggle('mode:pages'));
+    expect(api.apiClearPlacementDefault).toHaveBeenCalledWith('owner', 'mode:pages');
+    const team = result.current.forFolder({ id: 't', teamId: 'team-a' })!;
+    expect(team.isChecked('mode:pages')).toBe(false);
+    await act(async () => team.toggle('mode:pages'));
+    expect(api.apiSetPlacementDefault).toHaveBeenCalledWith('owner', 'mode:pages', 't');
   });
 
   it('offers a team folder only of a listed team', async () => {
@@ -67,16 +65,23 @@ describe('useDefaultFolderMenus', () => {
     expect(result.current.forFolder({ id: 'x', teamId: 'team-left' })).toBeUndefined();
   });
 
-  it('checks My Documents for keys with no working default, and only clears', async () => {
+  it('leaves My Documents unchecked for a working default, and clears it from there', async () => {
     const { result } = await ready();
     const root = result.current.forRoot!;
-    expect(root.isChecked('mode:diagram')).toBe(true);
-    expect(root.isChecked('template:kanban')).toBe(true); // dangling
-    expect(root.isChecked('mode:draw')).toBe(false);
-    expect(root.isDisabled('mode:diagram')).toBe(true);
-    await act(async () => root.toggle('mode:draw'));
-    expect(api.apiClearPlacementDefault).toHaveBeenCalledWith('owner', 'mode:draw');
-    await act(async () => result.current.forRoot!.toggle('mode:diagram'));
-    expect(api.apiClearPlacementDefault).toHaveBeenCalledTimes(1);
+    expect(root.isChecked('mode:pages')).toBe(false);
+    expect(root.isDisabled('mode:pages')).toBe(false);
+    await act(async () => root.toggle('mode:pages'));
+    expect(api.apiClearPlacementDefault).toHaveBeenCalledWith('owner', 'mode:pages');
+  });
+
+  it('checks My Documents for a default whose folder is gone, and only clears', async () => {
+    api.apiListPlacementDefaults.mockResolvedValue([{ key: 'mode:pages', folderId: 'gone' }]);
+    const { result } = await ready();
+    const root = result.current.forRoot!;
+    expect(root.isChecked('mode:pages')).toBe(true);
+    expect(root.isDisabled('mode:pages')).toBe(true);
+    await act(async () => root.toggle('mode:pages'));
+    expect(api.apiClearPlacementDefault).not.toHaveBeenCalled();
+    expect(api.apiSetPlacementDefault).not.toHaveBeenCalled();
   });
 });

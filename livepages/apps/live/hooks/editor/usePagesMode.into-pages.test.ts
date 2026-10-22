@@ -5,7 +5,7 @@
 
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { Element, EditorMode, Tab } from '@livepages/document';
+import type { Element, Tab } from '@livepages/document';
 import { track } from '@/lib/telemetry';
 import { usePagesMode } from './usePagesMode';
 
@@ -20,7 +20,7 @@ const board = (): Tab => ({
   ] as unknown as Element[],
 });
 
-function enter(tab: Tab, opts: { canEdit?: boolean; mode?: EditorMode } = {}) {
+function enter(tab: Tab, opts: { canEdit?: boolean } = {}) {
   let tabs = [tab];
   const commitTabs = vi.fn((map: (ts: Tab[]) => Tab[]) => {
     tabs = map(tabs);
@@ -29,7 +29,6 @@ function enter(tab: Tab, opts: { canEdit?: boolean; mode?: EditorMode } = {}) {
   renderHook(() =>
     usePagesMode({
       activeTab: tabs[0]!,
-      mode: opts.mode ?? 'pages',
       canEdit: opts.canEdit ?? true,
       tabLoaded: true,
       commitTabs,
@@ -57,10 +56,9 @@ describe('entering Pages mode', () => {
     expect(track).toHaveBeenCalledWith('Tab', 'Changed', 'PageFitToContent');
   });
 
-  it('leaves the tab alone for a viewer, a locked tab, or another mode', () => {
+  it('leaves the tab alone for a viewer or a locked tab', () => {
     expect(enter(board(), { canEdit: false }).commitTabs).not.toHaveBeenCalled();
     expect(enter({ ...board(), locked: true }).commitTabs).not.toHaveBeenCalled();
-    expect(enter(board(), { mode: 'diagram' }).commitTabs).not.toHaveBeenCalled();
   });
 
   it('leaves a board that already fits its first page alone', () => {

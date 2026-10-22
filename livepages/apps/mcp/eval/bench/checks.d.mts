@@ -9,7 +9,6 @@ export interface Tab {
   outline?: string;
   elements: Element[];
   pages?: string;
-  form?: Record<string, unknown>;
 }
 export interface Snapshot {
   documents: {
@@ -17,21 +16,7 @@ export interface Snapshot {
     name?: string;
     missing?: boolean;
     tabs?: Tab[];
-    items?: unknown;
-    sheets?: unknown[];
   }[];
-}
-export interface Cell {
-  at: string;
-  input: string;
-  value: unknown;
-  display?: string;
-}
-export interface Header {
-  sheet: unknown;
-  at: string;
-  col: string;
-  row: number;
 }
 export interface Page {
   tabId: string;
@@ -74,9 +59,6 @@ export declare function allLinked(
   pairs: [Word, Word][],
   opts?: { directed?: boolean },
 ): Reasoned;
-export declare function header(snap: Snapshot, word: Word): Header | null;
-export declare function below(found: Header | null): Cell[];
-export declare function errorCells(snap: Snapshot): Cell[];
 export declare function pagesOf(snap: Snapshot): Page[];
 export declare function runChecks(
   task: { checks?: readonly (readonly [string, (ctx: CheckContext) => CheckResult])[] },

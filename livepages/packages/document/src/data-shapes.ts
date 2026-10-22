@@ -217,7 +217,6 @@ export function isSelfDrawingShape(kind: ShapeKind): boolean {
     isChecklistShape(kind) ||
     isLegendShape(kind) ||
     isSankeyShape(kind) ||
-    isPlanShape(kind) ||
     kind === 'sticker' ||
     // A layer stack, a pyramid, an onion and a chevron process draw all their own text
     // (docs/specs/009-elements/concept-graphics.md); a cycle and a hub keep their label, the words at the centre.
@@ -226,21 +225,6 @@ export function isSelfDrawingShape(kind: ShapeKind): boolean {
     kind === 'onion' ||
     kind === 'chevrons'
   );
-}
-
-// The Plan board, Plan card and plan view (docs/specs/026-plan/plan-board.md, plan-views.md), and the Sheet
-// (docs/specs/029-sheets/sheet.md): they draw items or cells, not a label.
-export function isPlanShape(kind: ShapeKind): boolean {
-  return (
-    kind === 'plan-board' || kind === 'plan-card' || kind === 'plan-view' || kind === 'plan-sheet'
-  );
-}
-
-// Whether an element takes a comment thread, an assigned action, a link or a note (docs/specs/026-plan/plan-mode.md
-// "Nothing attached to Plan items"): every element but a Plan item (a board, card, view or Sheet), whose cards hold
-// the conversation. Whoever is asking: the rule does not depend on a share role.
-export function takesAttachments(el: { type: string; shape?: string | undefined }): boolean {
-  return !(el.type === 'shape' && isPlanShape(el.shape as ShapeKind));
 }
 
 // Round to a whole number and clamp into [0, max]. The fiddly half of the

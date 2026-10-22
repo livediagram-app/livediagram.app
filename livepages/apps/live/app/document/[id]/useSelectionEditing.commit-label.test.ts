@@ -141,8 +141,8 @@ describe('on a locked tab', () => {
   });
 });
 
-// docs/specs/023-draw-mode/draw-mode.md "Text boxes": an empty text box that hugs its text is removed when it is
-// left, by a click away or by Escape alike.
+// docs/specs/008-canvas/canvas-and-palette.md "Labels": an empty text box that hugs its text is removed when it
+// is left, by a click away or by Escape alike.
 describe('Escape on a text box', () => {
   const hugging = { ...createText(0, 0), id: 'hug', label: '', sizing: 'fit' } as Element;
 

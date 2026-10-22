@@ -55,16 +55,10 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe('SettingsPlacementDefaultRow', () => {
-  it('lists the eight entries in title case under Default Folders', () => {
+  it('lists the one entry in title case under Default Folders', () => {
     const rows = SETTINGS_CATEGORIES.find((c) => c.id === 'documents')!.rows;
     expect(rows.filter((r) => r.kind === 'placementDefault').map((r) => r.label)).toEqual([
-      'Diagrams',
-      'Whiteboards',
-      'Sessions',
-      'Pages Documents',
-      'Plan Boards',
-      'Retrospectives',
-      'Kanban Boards',
+      'Documents',
     ]);
     expect(
       new Set(rows.filter((r) => r.kind === 'placementDefault').map((r) => r.section)),
@@ -77,56 +71,51 @@ describe('SettingsPlacementDefaultRow', () => {
 
   it('says My Documents without a default, and offers no Clear', async () => {
     await withDefaults([]);
-    render(<SettingsPlacementDefaultRow row={rowFor('mode:draw')} lists={lists()} />);
+    render(<SettingsPlacementDefaultRow row={rowFor('mode:pages')} lists={lists()} />);
     expect(screen.getByText('My Documents')).toBeTruthy();
     expect(
-      screen.getByRole('button', { name: 'Change default folder for whiteboards' }),
+      screen.getByRole('button', { name: 'Change default folder for documents' }),
     ).toBeTruthy();
     expect(screen.queryByRole('button', { name: /Clear/ })).toBeNull();
   });
 
   it('names the folder, with its team, and clears it', async () => {
-    await withDefaults([{ key: 'mode:draw', folderId: 's' }]);
-    render(<SettingsPlacementDefaultRow row={rowFor('mode:draw')} lists={lists()} />);
+    await withDefaults([{ key: 'mode:pages', folderId: 's' }]);
+    render(<SettingsPlacementDefaultRow row={rowFor('mode:pages')} lists={lists()} />);
     expect(screen.getByText('Sprints · Design')).toBeTruthy();
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Clear default folder for whiteboards' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Clear default folder for documents' }));
     });
-    expect(api.apiClearPlacementDefault).toHaveBeenCalledWith('owner', 'mode:draw');
+    expect(api.apiClearPlacementDefault).toHaveBeenCalledWith('owner', 'mode:pages');
     expect(screen.getByText('My Documents')).toBeTruthy();
   });
 
   it('says a deleted default is deleted, by its remembered name, and where documents go instead', async () => {
     localStorage.setItem(
       `${DEFAULT_FOLDER_NAMES_PREFIX}owner`,
-      JSON.stringify({ gone: { name: 'Old retros', teamId: null } }),
+      JSON.stringify({ gone: { name: 'Old decks', teamId: null } }),
     );
-    await withDefaults([
-      { key: 'template:retrospective', folderId: 'gone' },
-      { key: 'mode:diagram', folderId: 'w' },
-    ]);
-    render(<SettingsPlacementDefaultRow row={rowFor('template:retrospective')} lists={lists()} />);
-    expect(screen.getByText('Old retros (deleted), using Workshops')).toBeTruthy();
-    expect(
-      screen.getByRole('button', { name: 'Clear default folder for retrospectives' }),
-    ).toBeTruthy();
+    await withDefaults([{ key: 'mode:pages', folderId: 'gone' }]);
+    render(<SettingsPlacementDefaultRow row={rowFor('mode:pages')} lists={lists()} />);
+    expect(screen.getByText('Old decks (deleted), using My Documents')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Clear default folder for documents' })).toBeTruthy();
   });
 
   it('says so when it never saw the deleted folder', async () => {
-    await withDefaults([{ key: 'mode:draw', folderId: 'gone' }]);
-    render(<SettingsPlacementDefaultRow row={rowFor('mode:draw')} lists={lists()} />);
+    await withDefaults([{ key: 'mode:pages', folderId: 'gone' }]);
+    render(<SettingsPlacementDefaultRow row={rowFor('mode:pages')} lists={lists()} />);
     expect(screen.getByText('A deleted folder, using My Documents')).toBeTruthy();
   });
 
   it('waits for the folders before judging, and says when it cannot read them', async () => {
-    await withDefaults([{ key: 'mode:draw', folderId: 'w' }]);
+    await withDefaults([{ key: 'mode:pages', folderId: 'w' }]);
     const { rerender } = render(
-      <SettingsPlacementDefaultRow row={rowFor('mode:draw')} lists={lists({ ready: false })} />,
+      <SettingsPlacementDefaultRow row={rowFor('mode:pages')} lists={lists({ ready: false })} />,
     );
     expect(screen.getByText('Loading…')).toBeTruthy();
     rerender(
       <SettingsPlacementDefaultRow
-        row={rowFor('mode:draw')}
+        row={rowFor('mode:pages')}
         lists={lists({ ready: false, failed: true })}
       />,
     );

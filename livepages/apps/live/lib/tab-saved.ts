@@ -1,4 +1,4 @@
-// Which tabs this page has saved, and a wait for one (docs/specs/030-forms/forms.md "Starting a form"). A form's
+// Which tabs this page has saved, and a wait for one. A form's
 // responses sheet is made on a Sheet tab created a moment before: sent at once, its create reached the server before
 // the tab's save and was refused `tab_not_found` (404), which the store retried, but which the browser printed as a
 // red "Failed to load resource" line on every new form. Autosave notes each tab it saves; a create that needs its tab

@@ -7,8 +7,8 @@ import { tileHandler, visibleTiles, type PaletteTileActions } from './PaletteTil
 import { tileDragStart } from './palette-tile-drag';
 import { PointerWords } from './PointerWords';
 
-// What a category opener (palette-openers: Workshop's Ask, Tools, Record, React) opens on the Toolbar strip
-// (docs/specs/007-editor/editor-modes.md "Popular"): the category named, then its tiles as cards, two to a row, each
+// What a category opener (palette-openers) opens on the Toolbar strip
+// (docs/specs/007-editor/toolbar-layout.md "A tile's side panel"): the category named, then its tiles as cards, two to a row, each
 // its glyph large on a soft plate, its name and what it is for. A card places or arms its element as its tile does,
 // and drags onto the canvas the same way; using one closes the popover (the strip's tile actions do).
 

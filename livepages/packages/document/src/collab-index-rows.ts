@@ -79,7 +79,7 @@ export function collabIndexRowsFromElements(elements: Element[]): CollabIndexRow
         elementLabel: elementDisplayLabel(el),
         name: action.name,
         description: action.description ?? '',
-        // Won't Do is closed too (docs/specs/026-plan/linked-boards.md "On the canvas"): never listed as open.
+        // Won't Do is closed too (docs/specs/012-collaboration/assigned-actions.md): never listed as open.
         status: isClosedAction(action) ? 'done' : 'open',
         assigneeUserId: action.assignee.userId ?? null,
         assigneeMemberId: action.assignee.memberId ?? null,

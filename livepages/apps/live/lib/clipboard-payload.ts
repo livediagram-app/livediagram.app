@@ -24,8 +24,6 @@ import {
   ORIGINAL_ONLY_FIELDS,
   type Element,
 } from '@livepages/document';
-import type { SheetJson } from '@livepages/sheets';
-import { sheetsForClipboard, stashSheetSeeds } from './sheet-seeds';
 
 // 2: freehand points are packed (docs/specs/006-document/stroke-points.md); an older editor
 // refuses a version 2 payload rather than pasting strokes it cannot draw.
@@ -47,9 +45,6 @@ type ClipboardEnvelope = {
   kind: typeof CLIPBOARD_KIND;
   copiedAt: number;
   elements: Element[];
-  // The sheets of copied Sheet elements (docs/specs/029-sheets/sheet.md "Copying a Sheet element"). Optional and
-  // additive, so the version stays 2.
-  sheets?: SheetJson[];
   // Set, with `elements` empty, when the copy was too large for the system
   // clipboard: the copy lives in the in-app buffer of the window that made it,
   // and this id names that copy (see `clipboardWriteFor`).
@@ -80,24 +75,13 @@ export function stripIdentity(el: Element): Element {
 
 /** The clipboard text for a selection. */
 export function serialiseElements(elements: Element[]): string {
-  const sheetIds = elements.flatMap((el) =>
-    el.type === 'shape' && el.shape === 'plan-sheet' && el.planSheet?.sheetId
-      ? [el.planSheet.copyOf ?? el.planSheet.sheetId]
-      : [],
-  );
-  const sheets = sheetsForClipboard(sheetIds);
   const envelope: ClipboardEnvelope = {
     schemaVersion: CLIPBOARD_SCHEMA_VERSION,
     kind: CLIPBOARD_KIND,
     copiedAt: Date.now(),
     elements: elements.map(stripIdentity),
-    ...(sheets.length ? { sheets } : {}),
   };
-  const text = JSON.stringify(envelope);
-  // Sheets past the clipboard's size travel without their cells (the copy is then made only within the document).
-  return text.length > MAX_CLIPBOARD_BYTES && sheets.length
-    ? JSON.stringify({ ...envelope, sheets: undefined })
-    : text;
+  return JSON.stringify(envelope);
 }
 
 // What a copy writes to the system clipboard. A selection past either cap
@@ -146,17 +130,6 @@ export function copyTooLargeMessage(count: number): string {
 /** Said when another window's too-large copy is pasted here. */
 export const IN_APP_COPY_ELSEWHERE =
   'That copy was too big to leave its window. Paste it there, or copy less.';
-
-// The sheets a pasted payload carried, stashed for the pasted Sheets (lib/sheet-seeds.ts).
-export function takeSheetSeeds(text: string | null | undefined): void {
-  if (!text || !text.includes('"sheets"') || text.length > MAX_CLIPBOARD_BYTES) return;
-  try {
-    const env = JSON.parse(text) as Partial<ClipboardEnvelope>;
-    if (env.kind === CLIPBOARD_KIND && Array.isArray(env.sheets)) stashSheetSeeds(env.sheets);
-  } catch {
-    // Not ours, or broken: nothing to stash.
-  }
-}
 
 /**
  * The elements in a clipboard string, or null when it isn't ours.

@@ -32,7 +32,7 @@ afterEach(() => vi.unstubAllGlobals());
 
 describe('placement default calls', () => {
   it('lists the defaults', async () => {
-    const defaults = [{ key: 'mode:draw', folderId: 'f1' }];
+    const defaults = [{ key: 'mode:pages', folderId: 'f1' }];
     reply = new Response(JSON.stringify({ defaults }), { status: 200 });
     expect(await apiListPlacementDefaults('owner-1')).toEqual(defaults);
     expect(calls[0]).toMatchObject({ method: 'GET' });
@@ -40,20 +40,20 @@ describe('placement default calls', () => {
   });
 
   it('sets a default with the key encoded in the path', async () => {
-    await apiSetPlacementDefault('owner-1', 'template:retrospective', 'f-retros');
-    expect(calls[0]).toMatchObject({ method: 'PUT', body: { folderId: 'f-retros' } });
-    expect(calls[0]!.url).toMatch(/\/placement-defaults\/template%3Aretrospective$/);
+    await apiSetPlacementDefault('owner-1', 'mode:pages', 'f-decks');
+    expect(calls[0]).toMatchObject({ method: 'PUT', body: { folderId: 'f-decks' } });
+    expect(calls[0]!.url).toMatch(/\/placement-defaults\/mode%3Apages$/);
   });
 
   it('clears a default', async () => {
-    await apiClearPlacementDefault('owner-1', 'mode:diagram');
+    await apiClearPlacementDefault('owner-1', 'mode:pages');
     expect(calls[0]).toMatchObject({ method: 'DELETE' });
-    expect(calls[0]!.url).toMatch(/\/placement-defaults\/mode%3Adiagram$/);
+    expect(calls[0]!.url).toMatch(/\/placement-defaults\/mode%3Apages$/);
   });
 
   it('surfaces a refusal by its token', async () => {
     reply = new Response(JSON.stringify({ error: 'folder_not_found' }), { status: 404 });
-    const error = await apiSetPlacementDefault('owner-1', 'mode:draw', 'gone').catch(
+    const error = await apiSetPlacementDefault('owner-1', 'mode:pages', 'gone').catch(
       (e: unknown) => e,
     );
     expect(error).toBeInstanceOf(ApiError);

@@ -1,5 +1,5 @@
-// How It Works template (kind `how-it-works`, docs/specs/007-editor/templates-by-mode.md
-// "Pages templates"): one Story (9:16) portrait page explaining a made-up neighbourhood
+// How It Works template (kind `how-it-works`, docs/specs/008-canvas/canvas-and-palette.md
+// "Templates"): one Story (9:16) portrait page explaining a made-up neighbourhood
 // lending app, Borrowbox, in five steps from first tap to done, sized for a story or a phone
 // screen. It reads top to bottom:
 //
@@ -16,12 +16,7 @@
 // Pure: () -> Element[], placed on the explainer's page (howItWorksPages) whatever centre is
 // passed.
 
-import {
-  createPinnedArrow,
-  type Element,
-  type Page,
-  type ShapeElement,
-} from '@livepages/document';
+import { createPinnedArrow, type Element, type Page, type ShapeElement } from '@livepages/document';
 import type { Kit } from './page-layout-kit';
 import { CARD_SHADOW, glyph, lockedFill, panel } from './template-page-design';
 import { pageKits, templatePage } from './template-page-kit';

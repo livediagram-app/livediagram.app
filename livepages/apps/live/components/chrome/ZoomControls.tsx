@@ -27,11 +27,9 @@ type ZoomControlsProps = {
   // A phone (docs/specs/007-editor/live-app.md): the cluster also carries Activity + Layers there, so
   // the step buttons go (pinch zooms) and Fit stays.
   pinchOnly?: boolean;
-  // A Plan element covers the canvas (docs/specs/026-plan/plan-board.md "Maximised board"): the controls stay in
-  // place, disabled, their hover cards saying why.
+  // An element maximised over the canvas: the controls stay in place, disabled, their hover cards saying why.
   zoomOff?: boolean;
-  // What the controls zoom: the canvas, or a Sheet covering it (docs/specs/029-sheets/sheet.md "Zoom"), which only
-  // their hover cards tell apart.
+  // What the controls zoom: the canvas, or a Sheet covering it, which only their hover cards tell apart.
   zoomScope?: 'canvas' | 'sheet';
   // The levels the zoom can reach, when narrower than the canvas's: the preset menu offers only those.
   zoomRange?: ZoomRange | undefined;

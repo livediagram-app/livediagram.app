@@ -2,74 +2,37 @@
 // elements go through, the single-undo-step content replace, and the format-dispatched importer (JSON / Markdown)
 // with its lazy-loaded parsers.
 
-import {
-  copiedSheetId,
-  freshCopyFields,
-  readDashboard,
-  relinkCopiedCharts,
-  remapDashboardElements,
-  remintDashboardIds,
-  remapElementRefs,
-  savableElements,
-  type Element,
-  type Tab,
-} from '@livepages/document';
+import { remapElementRefs, savableElements, type Element, type Tab } from '@livepages/document';
 import { mergeImportedTab } from '@/lib/import-merge';
-import type { ImportedPlanItems, ImportOutcome } from '@/lib/import-tab';
-import type { PlanTabImportResult } from '@/hooks/plan/usePlanTabImport';
+import type { ImportOutcome } from '@/lib/import-tab';
 import { track } from '@/lib/telemetry';
 import { debugLog } from '@/lib/debug-log';
 
 // Re-mint element ids (and remap pinned-arrow endpoints) so imported elements can't collide with anything already on
-// the document, with the old-to-new maps of the element ids and of the Sheets copied with them. Shared with
-// remintTabElements, which a Duplicate goes through too.
+// the document, with the old-to-new map of the element ids. Shared with remintTabElements, which a Duplicate goes
+// through too.
 export function remintElements(elements: Element[]): {
   elements: Element[];
   ids: Map<string, string>;
-  sheetIds: Map<string, string>;
 } {
   const ids = new Map<string, string>();
-  const sheetIds = new Map<string, string>();
   const minted = elements.map((el) => {
     const id = crypto.randomUUID();
     ids.set(el.id, id);
-    // A Sheet's copy frames a new sheet made from the original's (freshCopyFields).
-    const sheet = el.type === 'shape' && el.shape === 'plan-sheet' ? freshCopyFields(el) : {};
-    const copy = { ...el, id, ...sheet } as Element;
-    const pair = copiedSheetId(el, copy as { planSheet?: { sheetId: string } });
-    if (pair) sheetIds.set(pair[0], pair[1]);
-    return copy;
+    return { ...el, id };
   });
-  // A chart on the tab reads the tab's copy of its Sheet (docs/specs/029-sheets/sheet.md "Charts").
-  const next = relinkCopiedCharts(minted, sheetIds);
   // Arrow endpoints, mind-map parents (docs/specs/009-elements/mind-node.md) and portal partners
   // (docs/specs/009-elements/portal-element.md) follow the new ids. Missed, a duplicated tab's mind-map
   // nodes named parents on the SOURCE tab and paired portals lost their
   // partner. Element links are left alone: a link names its tab too, and
   // that is still the source tab, where the original element still is.
-  return { elements: remapElementRefs(next, ids), ids, sheetIds };
+  return { elements: remapElementRefs(minted, ids), ids };
 }
 
-// A tab's elements re-minted as above, its Dashboard layout (if any) following them: each element slot names its
-// element's new id, each figure from a Sheet the Sheet copied with it, and every row and slot takes a new id of its
-// own (docs/specs/026-plan/plan-tabs.md "Import and Export of a Dashboard"). The layout is read safely first, as a
-// file's is never trusted. Shared with useTabActions' Duplicate.
-export function remintTabElements<T extends Pick<Tab, 'elements' | 'dashboard'>>(tab: T): T {
-  const { elements, ids, sheetIds } = remintElements(tab.elements);
-  const layout = tab.dashboard === undefined ? undefined : readDashboard(tab.dashboard);
-  if (!layout) {
-    const { dashboard: _drop, ...rest } = tab;
-    return { ...rest, elements } as T;
-  }
-  const dashboard = remintDashboardIds(remapDashboardElements(layout, ids, sheetIds), () =>
-    crypto.randomUUID(),
-  );
-  return { ...tab, elements, dashboard };
+// A tab's elements re-minted as above. Shared with useTabActions' Duplicate.
+export function remintTabElements<T extends Pick<Tab, 'elements'>>(tab: T): T {
+  return { ...tab, elements: remintElements(tab.elements).elements };
 }
-
-// What a Dashboard tab refuses to import (null: it may): only a Dashboard tab's own JSON export replaces it.
-export const NOT_A_DASHBOARD =
-  "This file isn't a Dashboard. Export a Dashboard tab as JSON, then import that.";
 
 export type ImportFormat = 'json' | 'markdown';
 
@@ -84,17 +47,7 @@ type TabImportDeps = {
   setImportError: (message: string | null) => void;
   // Frames the tab once the imported content has rendered (useTabEntryEffects).
   requestFit: () => void;
-  // Adds a JSON export's Plan items to the document (usePlanTabImport, docs/specs/026-plan/items.md).
-  importPlanItems: (plan: ImportedPlanItems) => Promise<PlanTabImportResult>;
 };
-
-// The import report's line when the store refused a file's cards.
-export function planCardsFailure(failed: number): { title: string; message: string } {
-  return {
-    title: 'Plan Cards',
-    message: `${failed === 1 ? '1 card' : `${failed} cards`} couldn't be added to this document. The tab was imported without them.`,
-  };
-}
 
 export function useTabImport({
   tabs,
@@ -105,7 +58,6 @@ export function useTabImport({
   setFormatSourceId,
   setImportError,
   requestFit,
-  importPlanItems,
 }: TabImportDeps) {
   // Replace the ACTIVE tab's content with an imported tab — its
   // elements + theme/background, keeping the tab's own id and name.
@@ -140,11 +92,6 @@ export function useTabImport({
       return { status: 'error', error: 'This tab is locked. Unlock it before importing.' };
     }
 
-    // A Dashboard takes only a Dashboard's JSON (docs/specs/026-plan/plan-tabs.md "Import and Export of a Dashboard").
-    if (active?.kind === 'dashboard' && format !== 'json') {
-      return { status: 'error', error: NOT_A_DASHBOARD };
-    }
-
     if (format === 'markdown') {
       const { buildTabFromMarkdown, markdownImportOutcome } = await import('@/lib/markdown-import');
       const result = buildTabFromMarkdown(text, { tabName: active?.name, themeId: active?.theme });
@@ -159,16 +106,8 @@ export function useTabImport({
     const { parseImportedTab } = await import('@/lib/import-tab');
     const result = parseImportedTab(text);
     if (!result.ok) return { status: 'error', error: result.error };
-    if (active?.kind === 'dashboard' && result.tab.kind !== 'dashboard') {
-      return { status: 'error', error: NOT_A_DASHBOARD };
-    }
     replaceActiveTabContent(remintTabElements(result.tab));
     track('Tab', 'Imported', 'JSON');
-    // The tab's boards and cards draw from the document's items: the file's come in after the tab.
-    const landed = result.plan ? await importPlanItems(result.plan) : null;
-    if (landed && landed.failed > 0) {
-      return { status: 'done', failures: [planCardsFailure(landed.failed)] };
-    }
     return { status: 'done' };
   };
 

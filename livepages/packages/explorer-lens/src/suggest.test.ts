@@ -11,8 +11,7 @@ const subject = (overrides: Partial<LensSubject> = {}): LensSubject => ({
   space: 'mine',
   people: 'me',
   madeByAi: false,
-  opensIn: 'diagram',
-  template: null,
+  opensIn: 'pages',
   ...overrides,
 });
 
@@ -53,7 +52,6 @@ describe('suggestTokens', () => {
       },
     ]);
     expect(ids('MADE')).toEqual(['dimension:made-by']);
-    expect(ids('t')).toEqual(['dimension:template']);
     expect(ids('e')).toEqual(['dimension:edited']);
     expect(ids('p')).toEqual(['dimension:people']);
   });
@@ -94,8 +92,8 @@ describe('suggestTokens', () => {
   it('offers the values whose value or label starts with what is typed', () => {
     expect(ids('edited:LAST')).toEqual(['value:edited:7d', 'value:edited:30d', 'value:edited:12m']);
     expect(ids('edited:th')).toEqual(['value:edited:this-year']);
-    expect(ids('template:kan')).toEqual(['value:template:kanban']);
-    expect(ids('template:x')).toEqual([]);
+    expect(ids('people:ot')).toEqual(['value:people:others']);
+    expect(ids('people:x')).toEqual([]);
   });
 
   it('offers my documents, shared, then teams by name, never showing an id', () => {
@@ -115,15 +113,15 @@ describe('suggestTokens', () => {
 
   describe('comma lists', () => {
     it('matches only the entry after the last comma and keeps the earlier entries', () => {
-      const [kanban] = suggestTokens('template:Retrospective,k', 24, context);
-      expect(kanban).toMatchObject({
-        insert: 'template:Retrospective,kanban',
-        range: { start: 0, end: 24 },
+      const [others] = suggestTokens('people:Me,o', 11, context);
+      expect(others).toMatchObject({
+        insert: 'people:Me,others',
+        range: { start: 0, end: 11 },
       });
     });
 
     it('never offers a value the list already holds', () => {
-      expect(ids('template:kanban,')).toEqual(['value:template:retrospective']);
+      expect(ids('people:me,')).toEqual(['value:people:others']);
       expect(ids('space:team:T1,mine,')).toEqual(['value:space:shared', 'value:space:team:T2']);
     });
 
@@ -143,8 +141,8 @@ describe('suggestTokens', () => {
   });
 
   it('reads only up to the caret but replaces the whole word', () => {
-    const [kanban] = suggestTokens('template:kxyz plan', 10, context);
-    expect(kanban).toMatchObject({ insert: 'template:kanban', range: { start: 0, end: 13 } });
+    const [others] = suggestTokens('people:oxyz plan', 8, context);
+    expect(others).toMatchObject({ insert: 'people:others', range: { start: 0, end: 11 } });
   });
 
   it('clamps a caret outside the input', () => {
@@ -159,36 +157,34 @@ describe('suggestTokens', () => {
 
   describe('marking', () => {
     it('marks a value that would match nothing on its own, and still offers it', () => {
-      const within = { ...context, subjects: [subject({ template: 'kanban' })] };
-      const marks = suggestTokens('template:', 9, within).map((s) => [
+      const within = { ...context, subjects: [subject({ people: 'others' })] };
+      const marks = suggestTokens('people:', 7, within).map((s) => [
         s.value,
         s.matchesNothing,
         s.name,
       ]);
       expect(marks).toEqual([
-        ['retrospective', true, 'Retrospective, Template, no matches'],
-        ['kanban', false, 'Kanban, Template'],
+        ['me', true, 'Me, People, no matches'],
+        ['others', false, 'Others, People'],
       ]);
     });
 
     it('marks a value on its own even when the list’s other values match', () => {
-      const within = { ...context, subjects: [subject({ template: 'kanban' })] };
-      const [retrospective] = suggestTokens('template:kanban,r', 17, within);
-      expect(retrospective?.matchesNothing).toBe(true);
+      const within = { ...context, subjects: [subject({ people: 'others' })] };
+      const [me] = suggestTokens('people:others,m', 15, within);
+      expect(me?.matchesNothing).toBe(true);
     });
 
     it('keeps every other dimension and word of the field when marking', () => {
-      const within = { ...context, subjects: [subject({ name: 'Other', template: 'kanban' })] };
-      expect(suggestTokens('plan template:k', 15, within)[0]?.matchesNothing).toBe(true);
-      const other = { ...context, subjects: [subject({ template: 'kanban', people: 'others' })] };
-      expect(suggestTokens('people:me template:k', 20, other)[0]?.matchesNothing).toBe(true);
+      const within = { ...context, subjects: [subject({ name: 'Other', people: 'others' })] };
+      expect(suggestTokens('plan people:o', 13, within)[0]?.matchesNothing).toBe(true);
+      const other = { ...context, subjects: [subject({ people: 'others', madeByAi: false })] };
+      expect(suggestTokens('made-by:ai people:o', 19, other)[0]?.matchesNothing).toBe(true);
     });
 
     it('drops other tokens of the same dimension when marking a value on its own', () => {
-      const within = { ...context, subjects: [subject({ template: 'retrospective' })] };
-      expect(suggestTokens('template:kanban template:r', 26, within)[0]?.matchesNothing).toBe(
-        false,
-      );
+      const within = { ...context, subjects: [subject({ people: 'me' })] };
+      expect(suggestTokens('people:others people:m', 22, within)[0]?.matchesNothing).toBe(false);
     });
 
     it('marks everything when nothing is in scope', () => {
@@ -209,20 +205,17 @@ describe('acceptSuggestion', () => {
 
   it('writes a value with one space and the caret after it', () => {
     expect(accept('plan edited:7', 13)).toEqual({ input: 'plan edited:7d ', caret: 15 });
-    expect(accept('template:k  plan', 10)).toEqual({ input: 'template:kanban plan', caret: 16 });
+    expect(accept('people:o  plan', 8)).toEqual({ input: 'people:others plan', caret: 14 });
   });
 
   it('writes a value into a comma list', () => {
-    expect(accept('template:retrospective,k', 24)).toEqual({
-      input: 'template:retrospective,kanban ',
-      caret: 30,
-    });
+    expect(accept('people:me,o', 11)).toEqual({ input: 'people:me,others ', caret: 17 });
   });
 
   it('leaves the rest of the field as it is', () => {
-    expect(accept('a   template:k   x  template:retrospective', 14)).toEqual({
-      input: 'a   template:kanban x  template:retrospective',
-      caret: 20,
+    expect(accept('a   people:o   x  people:me', 12)).toEqual({
+      input: 'a   people:others x  people:me',
+      caret: 18,
     });
   });
 });

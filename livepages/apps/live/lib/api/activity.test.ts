@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 // The Activity read (docs/specs/013-workspace/inbox.md §3): a failed read is null, never an empty
-// inbox, and a body missing a kind (an older api before Plan cards, §2.4, or card threads, §2.5) reads as none of that kind.
+// inbox, and a body missing a kind reads as none of that kind.
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { apiListActivity } from './activity';
@@ -21,36 +21,15 @@ const answer = (res: Response | Error) =>
 
 describe('apiListActivity', () => {
   it('returns every kind the api sends', async () => {
-    const card = { id: 'it1' };
-    const cardThread = { id: 'it2' };
-    const form = { tabId: 'f1' };
-    answer(
-      Response.json({
-        actions: [],
-        threads: [],
-        cards: [card],
-        cardThreads: [cardThread],
-        formResponses: [form],
-      }),
-    );
-    expect(await apiListActivity('me')).toEqual({
-      actions: [],
-      threads: [],
-      cards: [card],
-      cardThreads: [cardThread],
-      formResponses: [form],
-    });
+    const action = { id: 'a1' };
+    const thread = { elementId: 'e1' };
+    answer(Response.json({ actions: [action], threads: [thread] }));
+    expect(await apiListActivity('me')).toEqual({ actions: [action], threads: [thread] });
   });
 
   it('reads a missing kind as none', async () => {
     answer(Response.json({ actions: [] }));
-    expect(await apiListActivity('me')).toEqual({
-      actions: [],
-      threads: [],
-      cards: [],
-      cardThreads: [],
-      formResponses: [],
-    });
+    expect(await apiListActivity('me')).toEqual({ actions: [], threads: [] });
   });
 
   it('is null when the read fails or the network does', async () => {

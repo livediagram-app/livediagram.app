@@ -8,7 +8,6 @@
 // useEditorDrag so the helpers always read fresh tab elements
 // without re-creating themselves on every parent render.
 
-import { isFocusedOnAdd } from '@/hooks/plan/useFocusNewPlanElement';
 import { prefersReducedMotion } from '@/lib/motion-preference';
 import { createViewportStore, type ViewportStore } from '@/lib/viewport-store';
 import type { Selection } from '@/lib/selection-store';
@@ -118,7 +117,7 @@ type EditorViewportApi = {
   isCentredOn: (at: { x: number; y: number }, page?: PageRect | null) => boolean;
 };
 
-// How long a Focus glide takes (docs/specs/026-plan/plan-board.md "Focus").
+// How long a Focus glide takes.
 const FIT_GLIDE_MS = 420;
 
 // Whether two views are the same, to the pixel a view is rounded to.
@@ -285,8 +284,7 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
     const sel = deps.readSelection().selectedId;
     if (!sel || prev.has(sel) || !ids.has(sel)) return;
     const el = els.find((e) => e.id === sel);
-    // A board, view or Sheet glides to fit instead (useFocusNewPlanElement): one glide, not two.
-    if (!el || !isBoxed(el) || isFocusedOnAdd(el)) return;
+    if (!el || !isBoxed(el)) return;
     scrollToNew(el.x, el.y, el.width, el.height);
   }, [deps.activeTab.elements, deps]);
 
@@ -439,8 +437,8 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
     [setViewportOffset, setViewportZoom, stopGlide],
   );
 
-  // Focus (docs/specs/026-plan/plan-board.md "Focus"): glide to fit an element; pressed again while it is already
-  // fitted, glide out to fit everything on the tab.
+  // Focus: glide to fit an element; pressed again while it is already fitted, glide out to fit everything on the
+  // tab.
   const focusOn = useCallback(
     (bbox: { x: number; y: number; w: number; h: number }, maxZoom?: number) => {
       const node = canvasMainRef.current;

@@ -148,8 +148,8 @@ export function applyFillColorToEl(el: Element, color: string): Element {
   return el;
 }
 
-// A colour row's choice on an element that stores stock colours by name (docs/specs/007-editor/
-// editor-modes.md "One look"): a standard colour (Ink, Grey, Red ...) is stored as its name and
+// A colour row's choice on an element that stores stock colours by name (docs/specs/008-canvas/
+// canvas-and-palette.md "Colours"): a standard colour (Ink, Grey, Red ...) is stored as its name and
 // drawn in its version for the canvas; any other colour replaces the name.
 const lineColour = (color: string): { strokeColor?: string; penColour?: PenColourName } =>
   isPenColourName(color)
@@ -213,7 +213,7 @@ export function applyHeaderFillToEl(el: Element, color: string): Element {
 // Border weight / pattern apply to any border-bearing element (shapes + the
 // freehand pen) plus tables; radius is shape-only.
 export function applyBorderStrokeToEl(el: Element, value: BorderStroke): Element {
-  // A pen stroke's recorded width (docs/specs/023-draw-mode/draw-mode.md) outranks the preset when
+  // A pen stroke's recorded width outranks the preset when
   // drawn, so choosing a preset must drop it or the choice would do nothing.
   // A highlighter never draws the preset, so its width stays.
   if (el.type === 'freehand' && el.pen !== 'highlighter' && el.penWidth !== undefined) {

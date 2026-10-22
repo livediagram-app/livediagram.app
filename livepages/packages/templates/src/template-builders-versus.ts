@@ -1,5 +1,5 @@
-// Versus template (kind `versus`, docs/specs/007-editor/templates-by-mode.md "Pages
-// templates"): one Portrait post (4:5) page that sets two options side by side, the great office
+// Versus template (kind `versus`, docs/specs/008-canvas/canvas-and-palette.md
+// "Templates"): one Portrait post (4:5) page that sets two options side by side, the great office
 // debate of Tea against Coffee, ready to post. The page is split down the middle, each half in
 // its option's colour and bleeding off its edges:
 //

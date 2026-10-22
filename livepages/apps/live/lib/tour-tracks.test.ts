@@ -1,6 +1,6 @@
 // A tour of several tracks offers each once (lib/tour-tracks.ts, docs/specs/007-editor/user-preferences.md "Tours").
 import { describe, expect, it } from 'vitest';
-import { markPlanTracksSeen, planTrackSeen } from './plan-tour';
+import { markPagesKindSeen, pagesKindSeen } from './pages-tour';
 import { tourTrackSeen, withTracksAnswered } from './tour-tracks';
 
 describe('tour tracks', () => {
@@ -22,16 +22,16 @@ describe('tour tracks', () => {
   });
 });
 
-describe('the Plan tour’s tracks', () => {
-  it('offers Sheets after Boards is answered, and nothing once both are', () => {
-    const boards = markPlanTracksSeen({}, ['boards']);
-    expect(planTrackSeen(boards, 'boards')).toBe(true);
-    expect(planTrackSeen(boards, 'sheets')).toBe(false);
-    expect(planTrackSeen(markPlanTracksSeen(boards, ['sheets']), 'sheets')).toBe(true);
+describe('the Pages tour’s tracks', () => {
+  it('offers Logo after Slides is answered, and nothing once both are', () => {
+    const slides = markPagesKindSeen({}, 'slide');
+    expect(pagesKindSeen(slides, 'slide')).toBe(true);
+    expect(pagesKindSeen(slides, 'logo')).toBe(false);
+    expect(pagesKindSeen(markPagesKindSeen(slides, 'logo'), 'logo')).toBe(true);
   });
 
-  it('offers both again to someone who answered the single Plan tour', () => {
-    expect(planTrackSeen({ planTourSeen: true }, 'boards')).toBe(false);
-    expect(planTrackSeen({ planTourSeen: true, powerUserMode: true }, 'sheets')).toBe(true);
+  it('counts the single seen flag as every kind only for a power user', () => {
+    expect(pagesKindSeen({ pagesTourSeen: true }, 'slide')).toBe(false);
+    expect(pagesKindSeen({ pagesTourSeen: true, powerUserMode: true }, 'logo')).toBe(true);
   });
 });

@@ -9,15 +9,15 @@ describe('tabKindOf', () => {
     expect(tabKindOf(tab())).toBe('diagram');
   });
 
-  it('reads a Plan kind', () => {
-    expect(tabKindOf(tab({ kind: 'board' }))).toBe('board');
+  it('reads a livediagram Plan kind as an ordinary tab', () => {
+    expect(tabKindOf({ kind: 'board' })).toBe('diagram');
   });
 
   it('reads the retired event-storming kind as an ordinary diagram', () => {
     expect(tabKindOf({ kind: 'event-storming' })).toBe('diagram');
   });
 
-  // Whiteboarding is an editor mode, not a kind (docs/specs/007-editor/editor-modes.md): a stored
+  // livediagram's whiteboard kind is not a kind here (docs/specs/003-system-architecture/domain-language.md "Kind"): a stored
   // 'whiteboard' is migrated on read (./legacy-whiteboard-tab); a reader alone sees a general tab.
   it('reads the former whiteboard kind as an ordinary diagram', () => {
     expect(tabKindOf({ kind: 'whiteboard' })).toBe('diagram');
@@ -37,18 +37,12 @@ describe('stampTabKind', () => {
     expect(stampTabKind(tab()).kind).toBe('diagram');
   });
 
-  it('leaves a specialised kind alone', () => {
-    expect(stampTabKind(tab({ kind: 'sheet' })).kind).toBe('sheet');
-  });
-
   it('returns the SAME object when nothing needs stamping', () => {
     // Identity matters: this runs at the editor's commit choke point on
     // every tab of every commit, and a fresh object for an unchanged tab
     // would defeat the memoised element views downstream.
     const already = tab({ kind: 'diagram' });
     expect(stampTabKind(already)).toBe(already);
-    const board = tab({ kind: 'board' });
-    expect(stampTabKind(board)).toBe(board);
   });
 
   it('does not otherwise touch the tab', () => {

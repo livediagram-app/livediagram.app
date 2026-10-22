@@ -1,5 +1,5 @@
-// Data Story template (kind `data-story`, docs/specs/007-editor/templates-by-mode.md "Pages
-// templates"): one A4 portrait infographic that tells one story in numbers, a year at a made-up
+// Data Story template (kind `data-story`, docs/specs/008-canvas/canvas-and-palette.md
+// "Templates"): one A4 portrait infographic that tells one story in numbers, a year at a made-up
 // branch library, Elm Street Library, that opens in Pages ready to print or post. It reads
 // the way a good infographic is read, biggest number first:
 //

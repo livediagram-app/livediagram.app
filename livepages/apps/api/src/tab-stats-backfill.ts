@@ -1,4 +1,4 @@
-// Counting the tabs written before tab stats existed (migration 0084,
+// Counting the tabs written before tab stats existed (the baseline migration,
 // docs/specs/013-workspace/explorer-details-view.md "Counting the existing tabs"). Tabs written
 // since count themselves in their own batch; this reaches the rest.
 //

@@ -9,20 +9,13 @@ import { searchTechIcons } from '@/lib/tech-icons';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 import type { CanvasTool, PaletteProps } from './palette.types';
 import { buildCanvasToolOptions } from './canvas-tool-options';
-import { restoresMaximised, withTileActionPreamble } from './palette-tile-actions';
 import { paletteCategoryTabs } from './palette-category-tabs';
 import type { PaletteAddHandlers } from './palette-add-handlers';
 import {
-  coveredPaletteCategories,
-  dashboardPaletteCategories,
   paletteCategoriesFor,
   participantPaletteCategories,
   PARTICIPANT_CANVAS_TOOLS,
 } from './palette-layouts';
-import { useBoardFillingTab, usePlanTabKind } from '@/hooks/plan/plan-cover-store';
-import { usePlanTabList } from '@/hooks/plan/plan-tab-list-store';
-import { dashboardTabTiles } from './palette-dashboard-tiles';
-import { getMaximisedPlanId, restorePlanElement } from '@/hooks/plan/maximised-plan';
 import type { AddShapeOptions } from '@/lib/draw-mode';
 import { useEditorModeState } from '@/components/chrome/editor-mode/editor-mode-context';
 
@@ -141,32 +134,24 @@ export function usePaletteCatalogue({
   // The add-handler bundle every catalogue-driven tile grid consumes
   // (palette-tile-defs). All handlers above already wrap the mobile-close /
   // draw-armed behaviour, so a tile behaves the same from any tab.
-  // Wrapping the bundle runs the preamble before every add, including tiles added later.
-  const tileActions: PaletteTileActions = withTileActionPreamble<PaletteTileActions>(
-    {
-      addShape,
-      addText,
-      beginPolygon,
-      addArrow,
-      addSticky,
-      addTable,
-      addImage,
-      addAnnotation,
-      addLinkCard,
-      addVideo,
-      addSticker,
-      addComponent,
-      addIcon,
-      addTechIcon,
-      cancelDraw: onCancelDraw,
-      hasImage: !!onAddImage,
-    },
-    (action, args) => {
-      // A maximised board, view or Sheet gives the canvas back for anything but a card (docs/specs/026-plan/
-      // plan-board.md "The palette follows what fills the screen"), so the tool is ready where it lands.
-      if (getMaximisedPlanId() !== null && restoresMaximised(action, args)) restorePlanElement();
-    },
-  );
+  const tileActions: PaletteTileActions = {
+    addShape,
+    addText,
+    beginPolygon,
+    addArrow,
+    addSticky,
+    addTable,
+    addImage,
+    addAnnotation,
+    addLinkCard,
+    addVideo,
+    addSticker,
+    addComponent,
+    addIcon,
+    addTechIcon,
+    cancelDraw: onCancelDraw,
+    hasImage: !!onAddImage,
+  };
   // Icon-picker search query (Icons tab). Filters the catalogue
   // by label / keyword as the user types.
   const [iconQuery, setIconQuery] = useState('');
@@ -201,30 +186,13 @@ export function usePaletteCatalogue({
   // It renders the dropdown straight from this order, so the array IS
   // the grid layout.
   // The mode's palette layout (palette-layouts): its categories, in order, with their tiles.
-  // A board filling its tab: cards land only on a board (a maximised one keeps the mode's palette).
-  const boardFillingTab = useBoardFillingTab();
-  // A Dashboard tab's palette is what fills a slot (docs/specs/026-plan/plan-tabs.md "Dashboard tab").
-  const dashboardTab = usePlanTabKind() === 'dashboard';
-  // Its Tabs category: the document's Board and Sheet tabs (plan-tab-list-store), gone while it has none.
-  const planTabList = usePlanTabList();
   // In Pages mode, the palette's kind (lib/palette-kind.ts): the page someone is on's. Each kind is its own layout
   // (palette-layouts.ts).
   const paletteKind = usePaletteKind();
   const pages = editorMode === 'pages';
-  // While a Plan board fills its tab, only Cards (coveredPaletteCategories).
   const categories = participant
     ? participantPaletteCategories()
-    : boardFillingTab
-      ? coveredPaletteCategories()
-      : dashboardTab
-        ? dashboardPaletteCategories().flatMap((c) =>
-            c.id !== 'dashboard-tabs'
-              ? [c]
-              : planTabList.length
-                ? [{ ...c, tiles: dashboardTabTiles(planTabList) }]
-                : [],
-          )
-        : paletteCategoriesFor(editorMode, pages ? { pagesKind: paletteKind } : {});
+    : paletteCategoriesFor(editorMode, pages ? { pagesKind: paletteKind } : {});
   const tabs = paletteCategoryTabs({
     categories,
     pendingDraw,
@@ -251,7 +219,6 @@ export function usePaletteCatalogue({
     canvasEmpty,
     isMobile,
     includeZen: !!onToggleZen,
-    planMode: editorMode === 'plan',
   });
   const canvasToolOptions = participant
     ? allCanvasToolOptions.filter((o) => PARTICIPANT_CANVAS_TOOLS.includes(o.id))

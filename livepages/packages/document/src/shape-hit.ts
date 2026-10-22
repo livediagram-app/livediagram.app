@@ -1,5 +1,4 @@
-// A whiteboard shape's hit outline (docs/specs/023-draw-mode/draw-mode.md
-// "Selecting" and "Eraser"): the line the shape is drawn with, as polylines in
+// A shape's hit outline: the line the shape is drawn with, as polylines in
 // the element's local, unrotated px (0..width, 0..height), plus the regions a
 // visible fill covers. Selecting draws these polylines as the shape's
 // invisible hit path; the eraser measures its brush against the same

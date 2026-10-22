@@ -20,9 +20,7 @@
 // happy accident for a dot-vote, and the turnout numbers below answer the
 // question the host actually has ("is everyone done?") without it.
 
-import { itemIdOfVoteKey, votesSpentBy, type Element, type TabVote } from '@livepages/document';
-import { itemTitle } from '@livepages/items';
-import { usePlan } from '@/components/plan/PlanContext';
+import { votesSpentBy, type Element, type TabVote } from '@livepages/document';
 import { describeOne } from '@/lib/element-names';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import type { DockAnchor } from '@/lib/canvas-chrome';
@@ -353,8 +351,6 @@ function VoteResultsList({
   // shared, so a follower clicking a row would move the whole room.
   canControl: boolean;
 }) {
-  // The document's cards, to name a Plan card's row.
-  const plan = usePlan();
   if (results.length === 0) {
     return (
       <p className="text-[11px] italic text-slate-500 dark:text-slate-400">
@@ -366,17 +362,9 @@ function VoteResultsList({
   return (
     <ul className="flex max-h-56 flex-col gap-0.5 overflow-y-auto">
       {results.map((row, i) => {
-        // A Plan card's key names the card ("#12 Ship it"); an element's, the element.
-        const itemId = itemIdOfVoteKey(row.id);
-        const card = itemId ? plan?.items.get(itemId) : undefined;
-        const el = itemId ? undefined : elements.find((e) => e.id === row.id);
-        const label = card
-          ? `#${card.key} ${itemTitle(card) || 'Untitled'}`
-          : itemId
-            ? 'Card'
-            : el
-              ? describeOne(el).replace(/^'|'$/g, '')
-              : 'Element';
+        // A row names the element its dots went to.
+        const el = elements.find((e) => e.id === row.id);
+        const label = el ? describeOne(el).replace(/^'|'$/g, '') : 'Element';
         const active = reviewIndex === i;
         // Joint winners all read as winners, matching the amber rings on
         // the canvas (voteMax, not "index 0").

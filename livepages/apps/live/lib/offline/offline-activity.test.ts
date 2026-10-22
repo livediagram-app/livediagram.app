@@ -1,7 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Element } from '@livepages/document';
 import { ACTIVITY_LIST_MAX } from '@livepages/api-schema';
-import { itemPersonId, type Item } from '@livepages/items';
 import { __setOfflineBackend, offlinePutRecord } from './offline-store';
 import {
   offlineActivityFromRecords,
@@ -41,44 +40,6 @@ const action = (over: Record<string, unknown> = {}) => ({
   updatedAt: 150,
   ...over,
 });
-
-const board = (id: string, planBoard: unknown): Element =>
-  ({
-    id,
-    type: 'shape',
-    shape: 'plan-board',
-    x: 0,
-    y: 0,
-    width: 10,
-    height: 10,
-    planBoard,
-  }) as never;
-
-const sprint = board('b1', {
-  title: 'Sprint',
-  columns: [
-    { id: 'c-todo', status: 'todo', name: 'To Do' },
-    { id: 'c-done', status: 'done', name: 'Done' },
-  ],
-  doneColumnId: 'c-done',
-});
-
-const person = { id: 'x', name: 'X', color: '#000' };
-
-function item(id: string, fields: Record<string, unknown>, updatedAt = 10): Item {
-  return {
-    id,
-    type: 'task',
-    key: 1,
-    rank: 'a',
-    fields: { title: id, ...fields },
-    rev: 1,
-    createdAt: 1,
-    updatedAt,
-    createdBy: person,
-    updatedBy: person,
-  };
-}
 
 async function reader(...ids: string[]): Promise<OfflineReader> {
   return offlineReader(ids);
@@ -172,95 +133,6 @@ describe('offlineActivityFromRecords', () => {
     ]);
   });
 
-  it('lists open, unlinked cards on the reader and places them on the board holding their status', async () => {
-    const me = await itemPersonId('guest-1');
-    const mine = { id: me, name: 'Me', color: '#123' };
-    const other = { id: await itemPersonId('u-x'), name: 'X', color: '#456' };
-    const rec = testRecord({
-      tabs: [testTab('t1', { name: 'Plan', elements: [sprint] })],
-      items: [
-        item('open', { status: 'todo', assignee: mine }, 30),
-        item('stray', { status: 'later', assignee: mine }, 20),
-        item('done', { status: 'done', assignee: mine }),
-        item('archived', { status: 'todo', assignee: mine, archived: true }),
-        item('trash', { status: 'trash', assignee: mine }),
-        item('linked', { status: 'todo', assignee: mine, linked: 'action:t1:s1:a1' }),
-        item('theirs', { status: 'todo', assignee: other }),
-      ],
-    });
-    const { cards } = offlineActivityFromRecords([rec], await reader('guest-1'));
-    expect(cards.map((c) => [c.id, c.status, c.board?.title ?? null])).toEqual([
-      ['open', 'todo', 'Sprint'],
-      // No column holds it: still open, landed on any board.
-      ['stray', 'later', 'Sprint'],
-    ]);
-    expect(cards[0]?.board).toEqual({
-      tabId: 't1',
-      tabName: 'Plan',
-      elementId: 'b1',
-      title: 'Sprint',
-    });
-  });
-
-  it('prefers a board holding the status, then an All Cards board; a document with no board has none', async () => {
-    const mine = { id: await itemPersonId('guest-1'), name: 'Me', color: '#123' };
-    const all = board('all', { title: 'Everything', allCards: true, columns: [] });
-    const rec = testRecord({
-      tabs: [testTab('t1', { elements: [all] }), testTab('t2', { elements: [sprint] })],
-      items: [
-        item('held', { status: 'todo', assignee: mine }, 2),
-        item('loose', { status: 'other', assignee: mine }, 1),
-      ],
-    });
-    const bare = testRecord({
-      id: 'd2',
-      items: [item('nowhere', { status: 'x', assignee: mine })],
-    });
-    const { cards } = offlineActivityFromRecords([rec, bare], await reader('guest-1'));
-    expect(cards.map((c) => [c.id, c.board?.elementId ?? null])).toEqual([
-      ['nowhere', null],
-      ['held', 'b1'],
-      ['loose', 'all'],
-    ]);
-  });
-
-  it('lists a card’s unresolved thread, latest comment last', async () => {
-    const thread = (resolved: boolean) => ({
-      resolved,
-      comments: [
-        {
-          id: '1',
-          text: 'first',
-          createdAt: 3,
-          authorName: 'A',
-          authorColor: '#a',
-          authorId: 'guest-1',
-        },
-        { id: '2', text: 'latest', createdAt: 8, authorName: 'B', authorColor: '#b' },
-      ],
-    });
-    const rec = testRecord({
-      tabs: [testTab('t1', { elements: [sprint] })],
-      items: [
-        item('talk', { status: 'done', comments: thread(false) }),
-        item('quiet', { status: 'todo', comments: thread(true) }),
-        item('gone', { status: 'trash', comments: thread(false) }),
-      ],
-    });
-    const { cardThreads } = offlineActivityFromRecords([rec], await reader('guest-1'));
-    expect(cardThreads).toEqual([
-      expect.objectContaining({
-        id: 'talk',
-        commentCount: 2,
-        latest: { text: 'latest', authorName: 'B', authorColor: '#b', at: 8 },
-        firstAt: 3,
-        youCommented: true,
-        onYourDocument: true,
-        mentionsYou: false,
-      }),
-    ]);
-  });
-
   it('skips a document in the local Trash', async () => {
     const rec = testRecord({
       trashedAt: 5,
@@ -307,8 +179,6 @@ describe('readOfflineActivity', () => {
     expect(await readOfflineActivity(['guest-1'])).toEqual({
       actions: [],
       threads: [],
-      cards: [],
-      cardThreads: [],
     });
   });
 });

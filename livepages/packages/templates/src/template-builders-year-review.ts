@@ -1,5 +1,5 @@
-// Year in Review template (kind `year-in-review`, docs/specs/007-editor/templates-by-mode.md
-// "Pages templates"): a four-page A4 report for a made-up eight-person design team, Harbour
+// Year in Review template (kind `year-in-review`, docs/specs/008-canvas/canvas-and-palette.md
+// "Templates"): a four-page A4 report for a made-up eight-person design team, Harbour
 // Studio, looking back on 2026, that opens in Pages ready to export and send round.
 //
 //   1. Cover: a deep teal-to-navy sheet with the year set huge, the report's title, a one-line

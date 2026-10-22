@@ -148,24 +148,6 @@ describe('ActionPanelFace (docs/specs/012-collaboration/action-panel.md "The car
     expect(onComplete).not.toHaveBeenCalled();
   });
 
-  it('offers the Actions board from its header once it holds actions and the document has one', () => {
-    const onOpenBoard = vi.fn();
-    const { rerender } = render(
-      <ActionPanelFace element={card()} textColor="#000" selfId={null} onOpenBoard={onOpenBoard} />,
-    );
-    expect(screen.queryByRole('button', { name: 'Open the Actions board' })).toBeNull();
-    rerender(
-      <ActionPanelFace
-        element={listCard(second())}
-        textColor="#000"
-        selfId={null}
-        onOpenBoard={onOpenBoard}
-      />,
-    );
-    fireEvent.click(screen.getByRole('button', { name: 'Open the Actions board' }));
-    expect(onOpenBoard).toHaveBeenCalledOnce();
-  });
-
   it('renders readable but inert without handlers (read-only surfaces)', () => {
     render(<ActionPanelFace element={listCard(second())} textColor="#000" selfId={null} />);
     expect(screen.getByText('Load test the queue')).toBeTruthy();

@@ -85,7 +85,7 @@ afterEach(() => {
   cleanup();
   viewport.phone = false;
   vi.clearAllMocks();
-  setActiveTour('draw', false);
+  setActiveTour('pages', false);
   setActiveTour('element', false);
   setStartPanelOpen(false);
   while (anyModalOpen()) modalClosed();
@@ -148,14 +148,14 @@ describe('ElementTourHost offer', () => {
   it('waits while another tour is on screen', () => {
     editor();
     mount();
-    act(() => setActiveTour('draw', true));
+    act(() => setActiveTour('pages', true));
     act(() => store.setSelectedId('sk1'));
     expect(elementTourOffer()).toBeNull();
-    act(() => setActiveTour('draw', false));
+    act(() => setActiveTour('pages', false));
     expect(elementTourOffer()?.elementId).toBe('sk1');
   });
 
-  // docs/specs/007-editor/editor-tour.md "Dialogs come first".
+  // docs/specs/007-editor/pages-tour.md "Dialogs come first".
   it('goes while a dialog is open, and comes back once it closes', () => {
     editor();
     mount();

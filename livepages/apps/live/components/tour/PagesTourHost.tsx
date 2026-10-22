@@ -64,7 +64,7 @@ export function PagesTourHost() {
   // One tour at a time: publish this one while it is on screen, and wait while another is.
   const shown = useActiveTour();
   const otherTour = shown !== null && shown !== 'pages';
-  // Dialogs come first (docs/specs/007-editor/editor-tour.md): the offer waits for the last one to close.
+  // Dialogs come first (docs/specs/007-editor/pages-tour.md): the offer waits for the last one to close.
   const modalOpen = useAnyModalOpen();
   useEffect(() => {
     setActiveTour('pages', active);

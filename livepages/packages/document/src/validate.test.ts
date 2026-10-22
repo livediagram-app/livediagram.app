@@ -98,7 +98,7 @@ describe('isValidElement', () => {
   });
 
   it('accepts a whiteboard pen stroke\u2019s packed pressures and streamline, rejects junk', () => {
-    // docs/specs/023-draw-mode/draw-mode.md "Pens": a pressure per point, 0 to 1, packed.
+    // docs/specs/006-document/stroke-points.md: a pressure per point, 0 to 1, packed.
     const points = [
       { nx: 0, ny: 0 },
       { nx: 1, ny: 1 },
@@ -111,7 +111,7 @@ describe('isValidElement', () => {
   });
 
   it('accepts a marker\u2019s named colour on a stroke, a shape or a line, rejects any other', () => {
-    // docs/specs/023-draw-mode/draw-mode.md "The colour picker": stored by name.
+    // docs/specs/008-canvas/canvas-and-palette.md "Colours": stored by name.
     const packedPoints = encodeStrokePoints([
       { nx: 0, ny: 0 },
       { nx: 1, ny: 1 },
@@ -131,14 +131,14 @@ describe('isValidElement', () => {
     }
   });
 
-  // docs/specs/023-draw-mode/draw-mode.md "Imported and pasted content": a text box's and a
-  // shape label's stock colour, stored by name.
+  // docs/specs/008-canvas/canvas-and-palette.md "Colours": a text box's and a shape label's stock
+  // colour, stored by name.
   it('accepts a named text colour and rejects anything else in its place', () => {
     const text = { id: 't', type: 'text', label: 'Hi', ...box };
     const shape = { id: 's', type: 'shape', shape: 'square', label: 'Hi', ...box };
     for (const el of [text, shape]) {
       expect(isValidElement({ ...el, penTextColour: 'green' })).toBe(true);
-      // Ink is a stock colour by name (docs/specs/007-editor/editor-modes.md "One look").
+      // Ink is a stock colour by name (docs/specs/004-interface-design/colour-picker.md).
       expect(isValidElement({ ...el, penTextColour: 'ink' })).toBe(true);
       expect(isValidElement({ ...el, penTextColour: 'chalk' })).toBe(false);
       expect(isValidElement({ ...el, penTextColour: '#2f9e44' })).toBe(false);
@@ -369,7 +369,7 @@ describe('quick-swatch bindings (docs/specs/008-canvas/quick-style-panel.md)', (
   });
 });
 
-// docs/specs/007-editor/editor-modes.md "A text box's sizing": a text box's sizing and Shift scale.
+// docs/specs/006-document/document-structure.md: a text box's sizing and Shift scale.
 describe('text box validation', () => {
   const text = { id: 't', type: 'text', x: 0, y: 0, width: 40, height: 22, label: 'Hi' };
 

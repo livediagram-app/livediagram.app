@@ -12,7 +12,7 @@
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import { EMPTY_SELECTION, type Selection } from '@/lib/selection-store';
 import { useCallback, useMemo } from 'react';
-import { isBoxed, renumberSteps, supportsRotation, takesAttachments } from '@livepages/document';
+import { isBoxed, renumberSteps, supportsRotation } from '@livepages/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
@@ -75,7 +75,6 @@ export function useEditorCommands(open: boolean): {
   const { selectedId, multiSelectedIds } = useSelectionOf(
     useCallback((s: Selection) => (open ? s : EMPTY_SELECTION), [open]),
   );
-  const planMode = ctx.editorMode.mode === 'plan';
   const {
     isReadOnly,
     canShareDocument,
@@ -136,7 +135,6 @@ export function useEditorCommands(open: boolean): {
   const single =
     !isMulti && selectedId ? (activeTab.elements.find((e) => e.id === selectedId) ?? null) : null;
   const singleIsBoxed = single ? isBoxed(single) : false;
-  const singleTakesAttachments = single ? takesAttachments(single) : true;
   const singleIsShape = single?.type === 'shape';
   const singleRotates = single ? supportsRotation(single) : false;
   const mirrorable = selectionCount > 0 && !!pagesMode?.logo?.canMirrorCopy();
@@ -161,7 +159,6 @@ export function useEditorCommands(open: boolean): {
       zenMode,
       selectionCount,
       singleIsBoxed,
-      singleTakesAttachments,
       singleRotates,
       canMirrorCopy: mirrorable,
       singleIsShape,
@@ -177,7 +174,6 @@ export function useEditorCommands(open: boolean): {
       // has greyed out.
       canvasEmpty,
       isMobile,
-      planMode,
       tabLocked,
     }),
     [
@@ -187,7 +183,6 @@ export function useEditorCommands(open: boolean): {
       zenMode,
       selectionCount,
       singleIsBoxed,
-      singleTakesAttachments,
       singleRotates,
       mirrorable,
       singleIsShape,
@@ -200,7 +195,6 @@ export function useEditorCommands(open: boolean): {
       canvasTool,
       canvasEmpty,
       isMobile,
-      planMode,
       tabLocked,
     ],
   );
@@ -224,12 +218,12 @@ export function useEditorCommands(open: boolean): {
       commitElements(renumberSteps);
       track('Element', 'Changed', 'RenumberSteps');
     },
-    // Never on a Plan item (docs/specs/026-plan/plan-mode.md "Nothing attached to Plan items").
+    // Never on a Plan item.
     addComment: () => {
-      if (selectedId && singleTakesAttachments) openComments(selectedId);
+      if (selectedId) openComments(selectedId);
     },
     editNote: () => {
-      if (selectedId && singleTakesAttachments) openNote(selectedId);
+      if (selectedId) openNote(selectedId);
     },
     createTab: addTab,
     renameDocument: requestRenameDocument,

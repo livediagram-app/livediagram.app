@@ -47,7 +47,7 @@ describe('the Keyboard settings list matches the keys the editor binds', () => {
   it('reads real rows (guard against this test going blind)', () => {
     expect(SHORTCUT_SECTIONS.length).toBeGreaterThan(3);
     expect(singleKeyRows.length).toBeGreaterThan(15);
-    expect(handledKeys.size).toBeGreaterThan(25);
+    expect(handledKeys.size).toBeGreaterThan(20);
   });
 
   it('lists no key the editor does not bind', () => {
@@ -76,16 +76,6 @@ describe('the Keyboard settings list matches the keys the editor binds', () => {
       (key) => !documented.has(key) && !(numberRowSummarised && /^[0-9]$/.test(key)),
     );
     expect(undocumented.sort()).toEqual([]);
-  });
-});
-
-describe('the editor mode key', () => {
-  it('lists Shift+D as moving to the next editor mode', () => {
-    const rows = EDITOR_SECTIONS.flatMap((section) => section.rows);
-    expect(rows).toContainEqual({
-      keys: ['⇧', 'D'],
-      label: 'Next Editor Mode (Diagram, Draw, Workshop, Pages)',
-    });
   });
 });
 

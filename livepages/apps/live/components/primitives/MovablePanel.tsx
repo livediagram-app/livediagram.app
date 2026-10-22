@@ -135,7 +135,7 @@ export function MovablePanel({
     () => onPopoverClose?.(),
     dismissOnOutside && popoverShown,
     // The button that opened the popover toggles it itself. The tour popover
-    // (docs/specs/007-editor/editor-tour.md) is always "inside": it sits next to the panel it's
+    // (docs/specs/007-editor/pages-tour.md) is always "inside": it sits next to the panel it's
     // explaining, so tapping its Next button must not dismiss that panel out
     // from under the highlight. A popover's own portalled menus and confirms
     // (a layer's row menu, Delete's confirm) are inside too, or choosing

@@ -143,18 +143,6 @@ describe('buildEditorCommands — selection commands', () => {
     expect(out).not.toContain('rotate-0');
   });
 
-  // docs/specs/026-plan/plan-mode.md "Nothing attached to Plan items".
-  it('offers no note or comment for a Plan item', () => {
-    const out = ids({
-      ...base,
-      selectionCount: 1,
-      singleIsBoxed: true,
-      singleTakesAttachments: false,
-    });
-    expect(out).not.toContain('note');
-    expect(out).not.toContain('comment');
-  });
-
   it('does not offer boxed-only commands for a single arrow (not boxed)', () => {
     const out = ids({ ...base, selectionCount: 1, singleIsBoxed: false });
     expect(out).not.toContain('rotate-90');
@@ -390,7 +378,7 @@ describe('buildEditorCommands — Renumber Steps', () => {
 });
 
 // docs/specs/008-canvas/canvas-and-palette.md "Locking": a locked tab refuses every element edit, so search
-// offers none; docs/specs/026-plan/plan-mode.md: Plan mode has no Format, in search as in the dropdown.
+// offers none, Format included.
 describe('buildEditorCommands — locked tab and Plan mode', () => {
   it('offers no element edits, layout cleanup or Format on a locked tab', () => {
     const got = ids({ ...base, tabLocked: true, selectionCount: 1, singleIsBoxed: true });
@@ -406,11 +394,5 @@ describe('buildEditorCommands — locked tab and Plan mode', () => {
   it('keeps them on an unlocked tab', () => {
     const got = ids({ ...base, selectionCount: 1, singleIsBoxed: true });
     expect(got).toEqual(expect.arrayContaining(['auto-align', 'tool:format']));
-  });
-
-  it('leaves Format out in Plan mode', () => {
-    const got = ids({ ...base, planMode: true });
-    expect(got).not.toContain('tool:format');
-    expect(got).toContain('tool:laser');
   });
 });

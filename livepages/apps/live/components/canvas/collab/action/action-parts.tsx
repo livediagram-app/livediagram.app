@@ -17,7 +17,7 @@ export const PlusGlyph = ({ size = 12 }: { size?: number }) => (
   </Glyph>
 );
 
-// Won't Do (docs/specs/026-plan/linked-boards.md "On the canvas"): a stroke through, inside the row's ring.
+// Won't Do (docs/specs/012-collaboration/action-panel.md "The card"): a stroke through, inside the row's ring.
 export const SlashGlyph = ({ size = 12 }: { size?: number }) => (
   <Glyph size={size} units={16}>
     <path d="M4 12 12 4" />

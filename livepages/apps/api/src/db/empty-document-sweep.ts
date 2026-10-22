@@ -14,13 +14,11 @@ const EMPTY_SWEEP_BATCH = 500;
 const EMPTY_SWEEP_MAX_BATCHES = 4;
 
 // The checks are a CASE, not an OR chain: SQLite stops a CASE at its first match (an OR it may evaluate whole), so a
-// tab with elements is parsed twice at most and a body that is not JSON never reaches json_type. Measured on 5,000
-// tabs of 6.7 KiB: 8.9 ms CPU, as the three-check OR before the form check (8.7 ms); that OR with it was 11.0 ms.
+// tab with elements is parsed once and a body that is not JSON is never parsed.
 // Select and move in one statement, so a document saved a moment before it runs
 // is judged on that save. A tab whose data is not valid JSON counts as content:
 // the sweep fails safe. So does a tab with any article: an article's writing
-// lives in `articles`, not in `elements`; and a tab holding a form (a Form tab's
-// form is `form`, not an element). A tab shared with another document counts in
+// lives in `articles`, not in `elements`. A tab shared with another document counts in
 // both.
 const MOVE_EMPTY_STALE = `
   UPDATE documents SET trashed_at = ?1, trash_reason = 'empty'
@@ -34,7 +32,6 @@ const MOVE_EMPTY_STALE = `
                    WHEN NOT json_valid(t.data) THEN 1
                    WHEN COALESCE(json_array_length(t.data, '$.elements'), 0) > 0 THEN 1
                    WHEN EXISTS (SELECT 1 FROM json_each(t.data, '$.articles')) THEN 1
-                   WHEN json_type(t.data, '$.form') = 'object' THEN 1
                    ELSE 0
                  END = 1)
       ORDER BY d.saved_at ASC, d.id ASC

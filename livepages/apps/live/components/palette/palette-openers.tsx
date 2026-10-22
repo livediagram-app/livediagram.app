@@ -5,7 +5,7 @@ import { PALETTE_CATEGORIES } from './palette-categories';
 import { catalogueStripGroups } from './catalogue-strip-groups';
 import type { PaletteTileDef, PaletteTileSection } from './palette-tile-defs';
 
-// Openers (docs/specs/007-editor/editor-modes.md "The palette per mode"): a tile in a layout's list that stands for a
+// Openers (docs/specs/007-editor/toolbar-layout.md "A tile's side panel"): a tile in a layout's list that stands for a
 // whole category, or one group of a catalogue, rather than one element. On the Toolbar strip it is drawn as an opener
 // (its glyph with a chevron) and opens a popover of what it stands for, as a catalogue's groups do
 // (docs/specs/007-editor/toolbar-layout.md "More"); elsewhere pressing it moves the palette to its category. Listed by

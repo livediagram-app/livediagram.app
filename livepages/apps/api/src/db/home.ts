@@ -4,6 +4,7 @@
 // Binds shared by both: ?1 = the person's owner id, ?2 = now.
 
 import {
+  DAY_MS,
   HOME_OPENED_EVENT_TYPE,
   HOME_WITHIN_REACH_PER_ROW,
   windowStartOf,
@@ -16,7 +17,6 @@ import { WHAT_HAPPENED_EVENT_TYPES, type WhatHappenedRow } from '../home/what-ha
 import type { Env } from '../types';
 import { VISIBLE_DOCUMENTS_CTES } from './document-visibility';
 import { firstTabCountSql, isEmptyCount } from './tabs';
-import { DAY_MS } from '@livepages/items';
 
 // Where each document lives and what its thumbnail needs. A shared document's team and folder
 // are the owner's filing, so they are not disclosed.

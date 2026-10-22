@@ -14,7 +14,6 @@ const ctxOf = (over: Partial<ChartTourContext> = {}): ChartTourContext => ({
   hasMore: true,
   touch: false,
   type: 'line',
-  fromSheet: false,
   ...over,
 });
 const api = () =>
@@ -42,18 +41,13 @@ describe('chartTourSteps', () => {
     ]);
   });
 
-  it('keeps a pie, a column chart or a chart from a Sheet on the canvas, its data named in the menu step', () => {
-    for (const ctx of [
-      ctxOf({ type: 'pie' }),
-      ctxOf({ type: 'column' }),
-      ctxOf({ type: 'area', fromSheet: true }),
-    ]) {
+  it('keeps a pie or a column chart on the canvas, its data named in the menu step', () => {
+    for (const ctx of [ctxOf({ type: 'pie' }), ctxOf({ type: 'column' })]) {
       const ids = chartTourSteps(ctx).map((s) => s.id);
       expect(ids).toEqual(['chart', 'readout', 'animate', 'menu', 'outro']);
     }
     const menu = (ctx: ChartTourContext) => chartTourSteps(ctx).find((s) => s.id === 'menu')!.body;
     expect(menu(ctxOf({ type: 'pie' }))).toContain('a row per slice');
-    expect(menu(ctxOf({ type: 'area', fromSheet: true }))).toContain('Unlink From Sheet');
     expect(menu(ctxOf())).toContain('as a grid');
   });
 

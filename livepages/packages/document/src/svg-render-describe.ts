@@ -7,8 +7,6 @@
 import type { ResolveTabWindow } from './tab-window';
 import type { TagColour } from './tag-colours';
 import { isPersonNode } from './person-node';
-import type { SheetRenderModel } from './svg-render-plan-sheet';
-import type { Item, ItemTypeDef } from '@livepages/items';
 import { imageCornerPx } from './drawn-outline-finish';
 import { ownColours } from './behaviour-skin';
 import {
@@ -132,23 +130,10 @@ export type BoxedExportOptions = {
   // are drawn adapted to it, as the canvas draws them (docs/specs/007-editor/pages-mode.md
   // "Charts adapt as they are drawn"). Absent, a chart is drawn in its colours as they are.
   chartGrounds?: ReadonlyMap<string, readonly string[]>;
-  // The document's items, for the Plan board and Plan card (docs/specs/026-plan/plan-board.md). Without
-  // them a board draws its columns empty and a card a neutral placeholder.
-  items?: ReadonlyMap<string, Item>;
-  // The document's item types (docs/specs/026-plan/item-types.md); the built-in ones without them.
-  itemTypes?: readonly ItemTypeDef[];
-  // Sheet windows by sheet id (docs/specs/029-sheets/sheet.md "Exports and images").
-  sheets?: ReadonlyMap<string, SheetRenderModel>;
-  // A plan view's picture at its box (docs/specs/026-plan/plan-tabs.md "Export"), from a caller that has the charts'
-  // models (the editor); undefined, or no resolver, draws the labelled box.
-  resolvePlanArt?: ResolvePlanArt;
   // A tab window's tab (docs/specs/009-elements/tab-window.md "Exports"): its drawing to fit inside, from a caller
   // that has the document's tabs (the editor's export); without one a window draws its frame named for its tab.
   resolveTabWindow?: ResolveTabWindow;
 };
-
-// The markup of a plan view drawn at its own box, or undefined to fall back to the labelled box.
-export type ResolvePlanArt = (el: BoxedElement & { type: 'shape' }) => string | undefined;
 
 // The face a label paints in: the author's own choice, else the tab default. The
 // same ladder the canvas walks — an export that resolved it differently
@@ -183,20 +168,14 @@ export function exportFontIds(
     fillColor?: string;
   }[],
   tabFont?: string,
-  // The Sheet windows drawn (docs/specs/029-sheets/sheet.md "Formatting"): a cell's own font is painted too.
-  sheets?: ReadonlyMap<string, { cells: readonly { font?: string }[] }>,
   tabFinish?: Finish,
 ): string[] {
   const boxed = elements.filter((el) => el.type !== 'arrow') as BoxedElement[];
-  const cellFonts = [...(sheets?.values() ?? [])].flatMap((m) => m.cells.map((c) => c.font));
   // What each element letters in when it has no face of its own: the handwriting font under Sketch.
   const finishFonts = elements.map((el) =>
     el.font ? undefined : elementFontId(el, undefined, tabFinish),
   );
-  return fontIdsUsed(boxed, tabFont, [
-    ...cellFonts,
-    ...finishFonts,
-  ]);
+  return fontIdsUsed(boxed, tabFont, finishFonts);
 }
 
 export function describeBoxedExport(
@@ -330,7 +309,7 @@ export function describeBoxedExport(
   // smaller at every preset. The canvas decides that the same way (its
   // `multiline` flag is `type === 'sticky'`).
   const multiline = el.type === 'sticky';
-  // A Shift-resized text box draws its text scaled (docs/specs/023-draw-mode/draw-mode.md).
+  // A Shift-resized text box draws its text scaled (docs/specs/006-document/document-structure.md "Data model").
   const textScale = el.type === 'text' ? (el.textScale ?? 1) : 1;
   const baseSize = fontSizeFor(el.textSize, multiline) * textScale;
   const richText = (el as { richText?: TextRun[] }).richText;
@@ -457,10 +436,6 @@ export function drawsStandardLabel(el: BoxedElement): boolean {
     (el.shape === 'code-block' ||
       el.shape === 'legend' ||
       el.shape === 'checklist' ||
-      el.shape === 'plan-board' ||
-      el.shape === 'plan-card' ||
-      el.shape === 'plan-view' ||
-      el.shape === 'plan-sheet' ||
       el.shape === 'tab-window')
   )
     return false;

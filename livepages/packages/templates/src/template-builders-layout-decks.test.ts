@@ -8,7 +8,7 @@ import {
   type LayoutDeckKind,
 } from './template-builders-layout-decks';
 
-// docs/specs/007-editor/templates-by-mode.md "Slide deck templates".
+// docs/specs/008-canvas/canvas-and-palette.md "Templates on pages".
 const kinds = Object.keys(LAYOUT_DECKS) as LayoutDeckKind[];
 const [page] = layOutPages([newSlidePage('s', 'slide')]);
 

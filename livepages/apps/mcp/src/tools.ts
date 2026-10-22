@@ -21,16 +21,12 @@ import {
   type Tab,
 } from '@livepages/document';
 import {
-  buildDashboardTab,
   buildTemplateTabs,
   templateTabName,
   resolveTemplate,
   templateCatalogue,
-  templateFamilyOf,
-  templateTabs,
   validTemplateKinds,
   closestTemplatesHint,
-  type TemplateKind,
 } from '@livepages/templates';
 import {
   DEFAULT_MCP_SHARE_LEVEL,
@@ -43,15 +39,7 @@ import { createdFolderLabel } from './created-folder';
 import { ApiError, apiFetch, apiJson, clientFor, reportApiFailure } from './api';
 import { readDocument } from './read-document';
 import type { Env } from './env';
-import {
-  bringBoardCardTypes,
-  fetchTeamLibraries,
-  matchDocuments,
-  resolveDashboardInput,
-  type DashboardInput,
-} from '@livepages/agent-verbs';
-import { catalogueWithBoardTypes, typesOf } from '@livepages/items';
-import { dashboardTabKind, documentDashboard } from './dashboard-tabs';
+import { fetchTeamLibraries, matchDocuments } from '@livepages/agent-verbs';
 import {
   deepLink,
   errorResult,
@@ -62,7 +50,6 @@ import {
   type Extra,
 } from './tool-helpers';
 import { lintLineOf, lintReportsOf, lintTextOf } from './lint-summary';
-import { withoutFindings } from '@livepages/diagram-lint';
 import { idsOf, resolveArrowEnds } from './arrow-ends';
 import { elementsIssue, graphIconIssue } from './element-values';
 import { packFreehandPoints } from './freehand-points';
@@ -80,10 +67,7 @@ import {
   submitChangeset,
 } from './changeset-client';
 import { registerTool } from './tool-annotations';
-import { registerPlanTools } from './plan-tools';
-import { registerSheetTools } from './sheet-tools';
 import { registerPagesTools } from './pages-tools';
-import { registerFormTools } from './form-tools';
 import {
   createDocumentTab,
   mcpAddTab,
@@ -101,14 +85,9 @@ import {
 } from '@livepages/agent-verbs/mcp';
 
 export function registerTools(server: McpServer, env: Env): void {
-  // The items Plan boards show (docs/specs/026-plan/plan-mode.md "Agents").
-  registerPlanTools(server, env);
-  // Sheets, by title and A1 (docs/specs/029-sheets/sheet-store.md "Agents").
-  registerSheetTools(server, env);
   registerPagesTools(server, env);
   // The user's image gallery, for image elements (docs/specs/015-api/mcp-server.md §4.5b).
   registerImageTools(server, env);
-  registerFormTools(server, env);
   registerTool(server, env, mcpFindDocuments, async (args, extra) => {
     const token = requireToken(extra);
     // Personal + team shared libraries (docs/specs/013-workspace/team-shared-documents.md): a document filed into a
@@ -158,20 +137,6 @@ export function registerTools(server: McpServer, env: Env): void {
     const tabs: Tab[] = [];
     // What a graph tab could not keep of what it asked (a Mermaid subgraph nested in another), said back.
     const graphNotes: string[] = [];
-    const dashboards: {
-      at: number;
-      tabId: string;
-      name: string;
-      input: DashboardInput;
-      theme: string | undefined;
-    }[] = [];
-    // The template the first tab is made from, for the creation intent.
-    let firstTemplate: TemplateKind | null = null;
-    // Every template tab's elements: their Plan boards bring their card types
-    // (docs/specs/026-plan/plan-templates.md "Card types a template uses").
-    const templateElements: Tab['elements'] = [];
-    // The tabs a template made, whose colours are its own.
-    const templateTabIds = new Set<string>();
     for (const [index, given] of inputTabs.entries()) {
       const tabId = crypto.randomUUID();
       // A template tab's name follows the templates' rule; any other unnamed tab is "Tab n".
@@ -190,32 +155,14 @@ export function registerTools(server: McpServer, env: Env): void {
               `Valid kinds: ${validTemplateKinds()}.`,
           );
         }
-        if (tabs.length === 0) firstTemplate = kind;
-        // A template of several tabs adds them all, the first named as given
-        // (docs/specs/026-plan/plan-templates.md "How a template with tabs is made").
-        const made = buildTemplateTabs(
-          { id: tabId, name: t.name },
-          kind,
-          () => crypto.randomUUID(),
-          t.theme ?? args.theme,
+        tabs.push(
+          ...buildTemplateTabs(
+            { id: tabId, name: t.name },
+            kind,
+            () => crypto.randomUUID(),
+            t.theme ?? args.theme,
+          ),
         );
-        tabs.push(...made);
-        for (const m of made) {
-          templateElements.push(...m.elements);
-          templateTabIds.add(m.id);
-        }
-        continue;
-      }
-      // A Dashboard (docs/specs/026-plan/plan-agents.md "Making a dashboard"): made once every other tab is, so it
-      // can show them by name.
-      if (t.dashboard) {
-        dashboards.push({
-          at: tabs.length,
-          tabId,
-          name: t.name,
-          input: t.dashboard,
-          theme: t.theme ?? args.theme,
-        });
         continue;
       }
       // Graph-first (docs/specs/015-api/mcp-server.md §4.7): the server builds + lays out the boxes
@@ -250,16 +197,6 @@ export function registerTools(server: McpServer, env: Env): void {
       }
       tabs.push(buildTab(tabId, t.name, candidate.elements, args.layout, t.theme ?? args.theme));
     }
-    // Each Dashboard, showing the call's other tabs by name, in its place among them.
-    if (dashboards.length) {
-      const refs = tabs.map((t) => ({ id: t.id, name: t.name, of: dashboardTabKind(t) }));
-      const types = typesOf(catalogueWithBoardTypes(null, templateElements));
-      for (const [n, d] of dashboards.entries()) {
-        const resolved = resolveDashboardInput(d.input, refs, types);
-        if (!resolved.ok) return errorResult(`Tab "${d.name}": ${resolved.message}`);
-        tabs.splice(d.at + n, 0, buildDashboardTab(d.tabId, d.name, resolved.spec, d.theme).tab);
-      }
-    }
     // The finish asked for (docs/specs/008-canvas/finish.md) is every new tab's.
     if (args.finish) for (const t of tabs) t.finish = args.finish;
     const id = crypto.randomUUID();
@@ -267,8 +204,7 @@ export function registerTools(server: McpServer, env: Env): void {
     // filter and badge read source != null, wherever the document is filed.
     // The creation intent (docs/specs/013-workspace/default-folders.md): with no folder named, the
     // server files the document in the user's default folder for it, when they have one.
-    const intent = creationIntentOf(tabs[0], templateFamilyOf(firstTemplate));
-    const itemTypes = catalogueWithBoardTypes(null, templateElements);
+    const intent = creationIntentOf(tabs[0]);
     const { document: created } = await apiJson<{ document?: LiveDoc }>(env, token, '/documents', {
       method: 'POST',
       // markUsed only when the model gave one: absent, the making counts (the api's default).
@@ -278,16 +214,11 @@ export function registerTools(server: McpServer, env: Env): void {
         tabs,
         source: 'mcp',
         intent,
-        ...(itemTypes ? { itemTypes } : {}),
         ...(args.markUsed !== undefined ? { markUsed: args.markUsed } : {}),
       }),
     });
     const tabIds = tabs.map((t) => t.id);
-    // A template's colours are its design, not the agent's doing (diagram-lint.md "Where it runs"): its tabs' lint
-    // names none.
-    const reports = (await lintReportsOf(env, token, id, tabIds)).map((r, i) =>
-      r && templateTabIds.has(tabIds[i]!) ? withoutFindings(r, 'colour-on-themed') : r,
-    );
+    const reports = await lintReportsOf(env, token, id, tabIds);
     const lint = reports.map(lintLineOf);
     return imageResult(
       {
@@ -322,14 +253,7 @@ export function registerTools(server: McpServer, env: Env): void {
     }
     const input = resolveGraphInput(args);
     if (input.error) return errorResult(input.error);
-    // A Dashboard (docs/specs/026-plan/plan-agents.md "Making a dashboard"): the document's tabs and card types by name.
-    let dashboard: Record<string, unknown> | undefined;
-    if (args.dashboard) {
-      const resolved = await documentDashboard(env, token, args.documentId, args.dashboard);
-      if (!resolved.ok) return errorResult(resolved.message);
-      dashboard = resolved.spec;
-    }
-    if (!args.template && !input.graph && !args.elements && !dashboard) {
+    if (!args.template && !input.graph && !args.elements) {
       return errorResult(
         'Invalid input. Provide a "graph" (nodes + edges), "mermaid", "elements", or a "template" kind ' +
           'from list_templates. Check the livepages://schema/elements resource.',
@@ -360,7 +284,6 @@ export function registerTools(server: McpServer, env: Env): void {
         replace: replaceBodyFrom({
           ...(input.graph ? { graph: input.graph } : {}),
           ...(args.template ? { template: args.template } : {}),
-          ...(dashboard ? { dashboard } : {}),
           ...(ended ? { elements: ended.elements } : {}),
           ...(args.layout ? { layout: args.layout } : {}),
           ...(themeId ? { theme: themeId } : {}),
@@ -378,9 +301,6 @@ export function registerTools(server: McpServer, env: Env): void {
       token,
       `/documents/${encodeURIComponent(args.documentId)}/tabs/${encodeURIComponent(tabId)}`,
     );
-    // A Plan template's boards bring their card types (docs/specs/026-plan/plan-agents.md "Adding a board").
-    if (args.template)
-      await bringBoardCardTypes(clientFor(env, token), args.documentId, tab.elements);
     return imageResult(
       {
         documentId: args.documentId,
@@ -391,7 +311,6 @@ export function registerTools(server: McpServer, env: Env): void {
         rev: tab.rev,
         text: mcpResultText(answer.text),
         lint: lintLineOf(answer.lint),
-        ...templateNote(args.template),
         ...(input.notes ? { notes: input.notes } : {}),
       },
       tab,
@@ -418,15 +337,8 @@ export function registerTools(server: McpServer, env: Env): void {
       const input = resolveGraphInput(args);
       if (input.error) return errorResult(input.error);
       graphNotes = input.notes;
-      // A Dashboard tab rebuilt whole (docs/specs/026-plan/plan-agents.md "Making a dashboard").
-      if (args.dashboard) {
-        const resolved = await documentDashboard(env, token, args.documentId, args.dashboard);
-        if (!resolved.ok) return errorResult(resolved.message);
-        body = {
-          replace: replaceBodyFrom({ dashboard: resolved.spec }),
-        };
-      } else if (!input.graph && !args.elements) {
-        return errorResult('replace mode requires "graph", "mermaid", "elements" or "dashboard".');
+      if (!input.graph && !args.elements) {
+        return errorResult('replace mode requires "graph", "mermaid" or "elements".');
       } else {
         const drawn = args.elements ? packFreehandPoints(args.elements) : null;
         if (drawn && 'error' in drawn) return errorResult(drawn.error);
@@ -492,7 +404,7 @@ export function registerTools(server: McpServer, env: Env): void {
   registerTool(server, env, mcpShareDocument, async (args, extra) => {
     const token = requireToken(extra);
     // Default to Participant (docs/specs/013-workspace/share-roles.md): people take part without reshaping the
-    // board, and an automated share never silently grants edit. The api's own default is edit, so the role is
+    // document, and an automated share never silently grants edit. The api's own default is edit, so the role is
     // always sent.
     const role = args.role ?? DEFAULT_MCP_SHARE_LEVEL;
     const { link } = await apiJson<ShareLinkResponse>(
@@ -622,17 +534,4 @@ export function deleteRefusal(status: number, tab: boolean): string {
   return tab
     ? `The api refused it (${status}): check the document and tab ids.`
     : 'Check the document id and that you own it.';
-}
-
-// add_tab takes a template's first tab only (docs/specs/015-api/mcp-server.md §4.5): said in the answer when the
-// template has more, so the caller knows where the rest are.
-export function templateNote(template: string | undefined): { note?: string } {
-  const kind = template ? resolveTemplate(template) : null;
-  const tabs = kind ? templateTabs(kind) : [];
-  if (tabs.length < 2) return {};
-  return {
-    note:
-      `The ${template} template has ${tabs.length} tabs; add_tab added its first. ` +
-      'create_document with this template makes all of them.',
-  };
 }

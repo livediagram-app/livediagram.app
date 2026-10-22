@@ -49,15 +49,7 @@ describe('the tracks', () => {
   });
 
   it('Logo: the logo page’s Show Me steps', () => {
-    expect(ids(pageTourSteps('logo'))).toEqual([
-      'layouts',
-      'guides',
-      'mirror',
-      'combine',
-      'combine-menu',
-      'combine-unite',
-      'outro',
-    ]);
+    expect(ids(pageTourSteps('logo'))).toEqual(['layouts', 'guides', 'mirror', 'outro']);
   });
 
   it('holds the article toolbar up on the tour page through its step', () => {

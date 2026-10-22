@@ -3,7 +3,6 @@
 @import '@livepages/template-previews/preview-art-tile.css';
 @import '@livepages/template-previews/preview-motion.css';
 @import './collab-cards.css';
-@import './forms.css';
 @import './canvas-motion.css';
 @import './motion-shape.css';
 @import './motion-text.css';
@@ -886,10 +885,9 @@ html[data-presenting][data-hide-pointer][data-pointer-idle] [data-presentation-s
   cursor: auto;
 }
 
-/* A whiteboard pen in hand draws wherever it presses (docs/specs/023-draw-mode/draw-mode.md "Pens"):
-   elements, handles and labels under it keep the pen cursor instead of their own. A path in its
-   edit mode owns the cursor the same way (docs/specs/023-draw-mode/path-tool.md "Cursors in edit
-   mode"): no label, element or overlay underneath lends its own, a text cursor least of all. */
+/* A pen in hand draws wherever it presses: elements, handles and labels under it keep the pen
+   cursor instead of their own. A path in its edit mode owns the cursor the same way: no label,
+   element or overlay underneath lends its own, a text cursor least of all. */
 [data-pen-in-hand] *,
 [data-path-cursor] * {
   cursor: inherit !important;
@@ -966,13 +964,4 @@ html[data-presenting][data-hide-pointer][data-pointer-idle] [data-presentation-s
    motion adds nothing here: the handlers start no View Transition then (lib/view-transition.ts). */
 html {
   view-transition-name: none;
-}
-
-/* The start's mode switch (docs/specs/007-editor/start-diagramming.md "Changing mode"): the browser's own
-   cross-fade, on the short token and the ease-out curve, so the panel turns in place. */
-::view-transition-group(.start-mode),
-::view-transition-old(.start-mode),
-::view-transition-new(.start-mode) {
-  animation-duration: var(--transition-duration-short);
-  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
 }

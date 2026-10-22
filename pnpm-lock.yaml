@@ -1711,24 +1711,12 @@ importers:
       '@livepages/edit-operations':
         specifier: workspace:*
         version: link:../../packages/edit-operations
-      '@livepages/forms':
-        specifier: workspace:*
-        version: link:../../packages/forms
       '@livepages/icons':
         specifier: workspace:*
         version: link:../../packages/icons
-      '@livepages/items':
-        specifier: workspace:*
-        version: link:../../packages/items
-      '@livepages/plan-art':
-        specifier: workspace:*
-        version: link:../../packages/plan-art
       '@livepages/render-png':
         specifier: workspace:*
         version: link:../../packages/render-png
-      '@livepages/sheets':
-        specifier: workspace:*
-        version: link:../../packages/sheets
       '@livepages/templates':
         specifier: workspace:*
         version: link:../../packages/templates
@@ -1833,9 +1821,6 @@ importers:
       '@livepages/icons':
         specifier: workspace:^
         version: link:../../packages/icons
-      '@livepages/sheets':
-        specifier: workspace:*
-        version: link:../../packages/sheets
       '@livepages/telemetry-client':
         specifier: workspace:*
         version: link:../../packages/telemetry-client
@@ -1930,24 +1915,12 @@ importers:
       '@livepages/explorer-lens':
         specifier: workspace:*
         version: link:../../packages/explorer-lens
-      '@livepages/forms':
-        specifier: workspace:*
-        version: link:../../packages/forms
       '@livepages/help-registry':
         specifier: workspace:*
         version: link:../../packages/help-registry
       '@livepages/icons':
         specifier: workspace:*
         version: link:../../packages/icons
-      '@livepages/items':
-        specifier: workspace:*
-        version: link:../../packages/items
-      '@livepages/plan-art':
-        specifier: workspace:*
-        version: link:../../packages/plan-art
-      '@livepages/sheets':
-        specifier: workspace:*
-        version: link:../../packages/sheets
       '@livepages/telemetry-client':
         specifier: workspace:*
         version: link:../../packages/telemetry-client
@@ -2157,24 +2130,12 @@ importers:
       '@livepages/edit-operations':
         specifier: workspace:*
         version: link:../../packages/edit-operations
-      '@livepages/forms':
-        specifier: workspace:*
-        version: link:../../packages/forms
       '@livepages/icons':
         specifier: workspace:*
         version: link:../../packages/icons
-      '@livepages/items':
-        specifier: workspace:*
-        version: link:../../packages/items
-      '@livepages/plan-art':
-        specifier: workspace:*
-        version: link:../../packages/plan-art
       '@livepages/render-png':
         specifier: workspace:*
         version: link:../../packages/render-png
-      '@livepages/sheets':
-        specifier: workspace:*
-        version: link:../../packages/sheets
       '@livepages/templates':
         specifier: workspace:*
         version: link:../../packages/templates
@@ -2257,9 +2218,6 @@ importers:
       '@livepages/api-schema':
         specifier: workspace:*
         version: link:../../packages/api-schema
-      '@livepages/forms':
-        specifier: workspace:*
-        version: link:../../packages/forms
       '@livepages/icons':
         specifier: workspace:*
         version: link:../../packages/icons
@@ -2339,18 +2297,9 @@ importers:
       '@livepages/edit-operations':
         specifier: workspace:*
         version: link:../edit-operations
-      '@livepages/forms':
-        specifier: workspace:*
-        version: link:../forms
-      '@livepages/items':
-        specifier: workspace:*
-        version: link:../items
       '@livepages/page-background':
         specifier: workspace:*
         version: link:../page-background
-      '@livepages/sheets':
-        specifier: workspace:*
-        version: link:../sheets
       '@livepages/templates':
         specifier: workspace:*
         version: link:../templates
@@ -2403,15 +2352,6 @@ importers:
       '@livepages/document':
         specifier: workspace:*
         version: link:../document
-      '@livepages/forms':
-        specifier: workspace:*
-        version: link:../forms
-      '@livepages/items':
-        specifier: workspace:*
-        version: link:../items
-      '@livepages/sheets':
-        specifier: workspace:*
-        version: link:../sheets
     devDependencies:
       '@livepages/oxlint-config':
         specifier: workspace:*
@@ -2468,15 +2408,9 @@ importers:
 
   livepages/packages/document:
     dependencies:
-      '@livepages/forms':
-        specifier: workspace:*
-        version: link:../forms
       '@livepages/icons':
         specifier: workspace:*
         version: link:../icons
-      '@livepages/items':
-        specifier: workspace:*
-        version: link:../items
       '@livepages/page-background':
         specifier: workspace:*
         version: link:../page-background
@@ -2548,9 +2482,6 @@ importers:
       '@livepages/document':
         specifier: workspace:*
         version: link:../document
-      '@livepages/forms':
-        specifier: workspace:*
-        version: link:../forms
       '@livepages/icons':
         specifier: workspace:*
         version: link:../icons
@@ -2608,37 +2539,6 @@ importers:
         specifier: ^5.0.1
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
 
-  livepages/packages/forms:
-    dependencies:
-      '@livepages/items':
-        specifier: workspace:*
-        version: link:../items
-      '@livepages/page-background':
-        specifier: workspace:*
-        version: link:../page-background
-      '@livepages/sheets':
-        specifier: workspace:*
-        version: link:../sheets
-    devDependencies:
-      '@livepages/oxlint-config':
-        specifier: workspace:*
-        version: link:../oxlint-config
-      '@livepages/vitest-config':
-        specifier: workspace:*
-        version: link:../vitest-config
-      '@vitest/coverage-v8':
-        specifier: ^5.0.3
-        version: 5.0.5(vitest@5.0.5)
-      oxlint:
-        specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
-      typescript:
-        specifier: ^7.0.2
-        version: 7.0.2
-      vitest:
-        specifier: ^5.0.1
-        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
-
   livepages/packages/help-registry:
     devDependencies:
       '@livepages/oxlint-config':
@@ -2672,27 +2572,6 @@ importers:
       lucide-static:
         specifier: 1.52.0
         version: 1.52.0
-      oxlint:
-        specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
-      typescript:
-        specifier: ^7.0.2
-        version: 7.0.2
-      vitest:
-        specifier: ^5.0.1
-        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
-
-  livepages/packages/items:
-    devDependencies:
-      '@livepages/oxlint-config':
-        specifier: workspace:*
-        version: link:../oxlint-config
-      '@livepages/vitest-config':
-        specifier: workspace:*
-        version: link:../vitest-config
-      '@vitest/coverage-v8':
-        specifier: ^5.0.3
-        version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
         version: 1.89.0(oxlint-tsgolint@7.0.2004)
@@ -2786,43 +2665,6 @@ importers:
         specifier: ^5.0.1
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
 
-  livepages/packages/plan-art:
-    dependencies:
-      '@livepages/document':
-        specifier: workspace:*
-        version: link:../document
-      '@livepages/forms':
-        specifier: workspace:*
-        version: link:../forms
-      '@livepages/icons':
-        specifier: workspace:*
-        version: link:../icons
-      '@livepages/items':
-        specifier: workspace:*
-        version: link:../items
-      '@livepages/ui':
-        specifier: workspace:*
-        version: link:../ui
-    devDependencies:
-      '@livepages/oxlint-config':
-        specifier: workspace:*
-        version: link:../oxlint-config
-      '@livepages/vitest-config':
-        specifier: workspace:*
-        version: link:../vitest-config
-      '@vitest/coverage-v8':
-        specifier: ^5.0.3
-        version: 5.0.5(vitest@5.0.5)
-      oxlint:
-        specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
-      typescript:
-        specifier: ^7.0.2
-        version: 7.0.2
-      vitest:
-        specifier: ^5.0.1
-        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
-
   livepages/packages/prettier-config: {}
 
   livepages/packages/render-png:
@@ -2830,30 +2672,6 @@ importers:
       '@resvg/resvg-wasm':
         specifier: ^2.6.2
         version: 2.6.2
-    devDependencies:
-      '@livepages/oxlint-config':
-        specifier: workspace:*
-        version: link:../oxlint-config
-      '@livepages/vitest-config':
-        specifier: workspace:*
-        version: link:../vitest-config
-      '@types/node':
-        specifier: ^26.6.4
-        version: 26.6.5
-      '@vitest/coverage-v8':
-        specifier: ^5.0.3
-        version: 5.0.5(vitest@5.0.5)
-      oxlint:
-        specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
-      typescript:
-        specifier: ^7.0.2
-        version: 7.0.2
-      vitest:
-        specifier: ^5.0.1
-        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
-
-  livepages/packages/sheets:
     devDependencies:
       '@livepages/oxlint-config':
         specifier: workspace:*
@@ -2954,9 +2772,6 @@ importers:
       '@livepages/document':
         specifier: workspace:*
         version: link:../document
-      '@livepages/forms':
-        specifier: workspace:*
-        version: link:../forms
       '@livepages/icons':
         specifier: workspace:*
         version: link:../icons
@@ -3009,15 +2824,6 @@ importers:
       '@livepages/document':
         specifier: workspace:*
         version: link:../document
-      '@livepages/forms':
-        specifier: workspace:*
-        version: link:../forms
-      '@livepages/items':
-        specifier: workspace:*
-        version: link:../items
-      '@livepages/sheets':
-        specifier: workspace:*
-        version: link:../sheets
     devDependencies:
       '@livepages/oxlint-config':
         specifier: workspace:*
@@ -3049,9 +2855,6 @@ importers:
       '@livepages/icons':
         specifier: workspace:^
         version: link:../icons
-      '@livepages/items':
-        specifier: workspace:*
-        version: link:../items
       '@livepages/tailwind-config':
         specifier: workspace:*
         version: link:../tailwind-config

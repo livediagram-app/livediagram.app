@@ -3,13 +3,12 @@
 import { useCloseVanishedDialogs } from '@/components/dialogs/useCloseVanishedDialogs';
 import dynamic from 'next/dynamic';
 import { apiSetDocumentFolder } from '@/lib/api-client';
-import { elementActions, isBoxed, threadAt } from '@livepages/document';
+import { elementActions, isBoxed } from '@livepages/document';
 
 import { track } from '@/lib/telemetry';
 import { canonicalNote, noteFieldsEqual } from '@/lib/note-value';
 import { commentPersisters } from '@/lib/comment-persistence';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
-import { cellCommentAnchorSelector } from '@/hooks/sheets/sheet-comments-context';
 
 const CommentThreadPopover = dynamic(
   () => import('@/components/panels/CommentThreadPopover').then((m) => m.CommentThreadPopover),
@@ -36,7 +35,6 @@ const AssignActionDialog = dynamic(
 export function EditorAnchoredPopovers() {
   const {
     commentThreadOpenId,
-    commentThreadOpenCell,
     activeTab,
     addComment,
     isReadOnly,
@@ -61,7 +59,6 @@ export function EditorAnchoredPopovers() {
     completeAction,
     reopenAction,
     wontDoAction,
-    linkedActions,
     deleteAction,
     teams,
     clerkUserId,
@@ -102,39 +99,22 @@ export function EditorAnchoredPopovers() {
               (el) => el.id === commentThreadOpenId && isBoxed(el),
             );
             if (!target || !isBoxed(target)) return null;
-            // A Sheet cell's thread (docs/specs/029-sheets/sheet.md "Cell comments"): anchored to its cell, every
-            // change naming the cell.
-            const cell = commentThreadOpenCell ?? undefined;
-            const thread = threadAt(target, cell);
+            const thread = target.commentThread;
             return (
               <CommentThreadPopover
                 elementId={target.id}
-                {...(cell !== undefined
-                  ? {
-                      anchorSelector: cellCommentAnchorSelector(target.id, cell),
-                      title: 'Cell Comments',
-                    }
-                  : {})}
                 thread={thread}
                 onAddComment={(text, mentions) =>
                   // The hook adopts the server-minted id when the add went through the endpoint, and counts the
                   // add once the server accepted it.
-                  addComment(
-                    target.id,
-                    text,
-                    persist.add(target.id, text, mentions, cell),
-                    mentions,
-                    cell,
-                  )
+                  addComment(target.id, text, persist.add(target.id, text, mentions), mentions)
                 }
                 // The server re-checks authorId === caller, so a read-only session can only land its own deletes.
                 onDeleteComment={(cid) => deleteComment(target.id, cid, persist.remove(cid))}
                 // A session that may comment but not edit resolves and reopens through the comment endpoints, as it
                 // adds (docs/specs/024-agents/agent-presence.md "Comments"); the thread is named by its first comment.
-                onResolve={() => resolveThread(target.id, persist.threadState(thread, true), cell)}
-                onUnresolve={() =>
-                  unresolveThread(target.id, persist.threadState(thread, false), cell)
-                }
+                onResolve={() => resolveThread(target.id, persist.threadState(thread, true))}
+                onUnresolve={() => unresolveThread(target.id, persist.threadState(thread, false))}
                 onClose={closeComments}
                 readOnly={isReadOnly}
                 canComment={can.takePart}
@@ -152,7 +132,6 @@ export function EditorAnchoredPopovers() {
               (el) => el.id === actionPopoverOpenId && isBoxed(el),
             );
             if (!target || !isBoxed(target) || !target.action) return null;
-            const actionId = target.action.id;
             return (
               <ActionPopover
                 elementId={target.id}
@@ -160,14 +139,6 @@ export function EditorAnchoredPopovers() {
                 onComplete={() => completeAction(target.id)}
                 onReopen={() => reopenAction(target.id)}
                 onWontDo={() => wontDoAction(target.id)}
-                onOpenBoard={
-                  linkedActions.openOnBoard
-                    ? () => {
-                        closeActionPopover();
-                        linkedActions.openOnBoard?.(actionId);
-                      }
-                    : undefined
-                }
                 onEdit={() => openAssignActionDialog(target.id)}
                 onDelete={() => deleteAction(target.id)}
                 onClose={closeActionPopover}

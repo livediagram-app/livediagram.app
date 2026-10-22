@@ -10,7 +10,6 @@
 import {
   takesChartPalette,
   isCodeBlockShape,
-  planColorPresets,
   STICKY_PRESETS,
   supportsColours,
   type ArrowFlow,
@@ -29,7 +28,6 @@ import {
   TablePresets,
 } from '@/components/palette/StylePresets';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 
 // The accordion open/toggle bundle a caller gets from `sectionProps(key)`.
@@ -101,47 +99,6 @@ export function ShapePresetsSection({
         }}
       />
     </MenuAccordionSection>
-  );
-}
-
-// The elements that take the board and sheet presets.
-export const isPlanPresetShape = (shape: ShapeKind) =>
-  shape === 'plan-board' || shape === 'plan-sheet';
-
-// A board's or a sheet's presets, its tiles drawn for the canvas surface they will be seen on.
-export function PlanPresetsSection({
-  target,
-  props,
-  accordion,
-  onClose,
-  title,
-}: {
-  target: ShapeElement;
-  props: EditorContextMenuProps;
-  accordion: AccordionProps;
-  onClose: () => void;
-  title?: string;
-}) {
-  const surface = useCanvasSurface();
-  return (
-    <ShapePresetsSection
-      shape="square"
-      presets={planColorPresets(surface).map((p) => ({
-        ...p,
-        borderStroke: 'thin',
-        borderStyle: 'solid',
-      }))}
-      current={{
-        fillColor: target.fillColor,
-        strokeColor: target.strokeColor,
-        textColor: target.textColor,
-        colorPreset: target.colorPreset,
-      }}
-      props={props}
-      accordion={accordion}
-      onClose={onClose}
-      {...(title ? { title } : {})}
-    />
   );
 }
 
@@ -310,13 +267,6 @@ export function TargetPresetsSection({
         accordion={accordion}
         onClose={onClose}
       />
-    );
-  }
-  // A board or a sheet: calm hues drawn for the surface (docs/specs/010-palette/style-presets.md "Boards and
-  // sheets"), not the shape looks, which made a whole board a loud slab.
-  if (target.type === 'shape' && isPlanPresetShape(target.shape)) {
-    return (
-      <PlanPresetsSection target={target} props={props} accordion={accordion} onClose={onClose} />
     );
   }
   if (target.type === 'table') {

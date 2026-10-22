@@ -1,5 +1,5 @@
-// Social Carousel template (kind `social-carousel`, docs/specs/007-editor/templates-by-mode.md
-// "Pages templates"): five Square slides for a LinkedIn or Instagram carousel by a made-up
+// Social Carousel template (kind `social-carousel`, docs/specs/008-canvas/canvas-and-palette.md
+// "Templates"): five Square slides for a LinkedIn or Instagram carousel by a made-up
 // team lead, Maya Okafor, on running better one-to-ones, that opens in Pages ready to export
 // slide by slide.
 //

@@ -201,7 +201,6 @@ export class DocumentRoom implements DurableObject {
     });
     this.internal = {
       broadcastSystemOp: (op) => this.broadcastSystemOp(op),
-      broadcastOrderedSystemOp: (op) => this.broadcastOrderedSystemOp(op),
       closeSessionsOfChangedLink: (op) => this.closeSessionsOfChangedLink(op),
       closeAllIfTrashed: (op) => this.closeAllIfTrashed(op),
       clearAgentsFor: (op) => this.clearAgentsFor(op),
@@ -514,14 +513,6 @@ export class DocumentRoom implements DurableObject {
     const run = this.tabWriteQueue.then(step);
     this.tabWriteQueue = run.catch(() => undefined);
     return run;
-  }
-
-  // A system op that changes the document (docs/specs/026-plan/items.md "Live for everyone"): sequenced and logged
-  // exactly like a client mutation, so `resolveCatchup` replays it. Nobody is
-  // excluded from the relay (there is no sending socket), so there is no
-  // separate `cursor` frame to send back either.
-  broadcastOrderedSystemOp(op: unknown): void {
-    this.sequenceMutation('system', op);
   }
 
   // Hibernation event handler: one inbound frame from one socket. The DO

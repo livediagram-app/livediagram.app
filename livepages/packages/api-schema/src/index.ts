@@ -15,8 +15,7 @@
 import type { AccessLevel } from './access-levels';
 import type { DocumentSource } from './document-source';
 import type { BackgroundPattern, EditorMode, ShapeKind, Tab } from '@livepages/document';
-import type { CreationTabKind, TemplateFamily } from './placement-defaults';
-import type { ItemTypeCatalogue } from '@livepages/items';
+import type { CreationTabKind } from './placement-defaults';
 
 // ---------------------------------------------------------------------
 // Documents
@@ -54,12 +53,6 @@ export type LiveDoc = {
   // has no use for their decks, and a deck is the one metadata field that can
   // grow with the document.
   presentation: string | null;
-  // The document's type catalogue (docs/specs/026-plan/item-types.md): its own item types, or null
-  // (or absent, from an older client or record) for the built-in ones. Written only by
-  // PUT /documents/:id/item-types.
-  itemTypes?: ItemTypeCatalogue | null;
-  // The catalogue's revision (ItemTypesRequest `expectedRev`): 0 until its first write.
-  itemTypesRev?: number;
   savedAt: number;
   createdAt: number;
   // Owner's display name + avatar colour, joined server-side from the
@@ -74,13 +67,11 @@ export type LiveDoc = {
 
 // The creation intent recorded on a document when it was created, written once by the create and
 // never re-derived (docs/specs/013-workspace/default-folders.md "Recorded intent"). A null `opensIn`
-// is unknown (made before intents were recorded, or by a create without one), never Diagram, and
-// the other two are then unknown too; with a known `opensIn`, `tabKind` is known and a null
-// `templateFamily` means made from no family.
+// is unknown (made before intents were recorded, or by a create without one), and `tabKind` is
+// then unknown too.
 export type RecordedIntent = {
   opensIn: EditorMode | null;
   tabKind: CreationTabKind | null;
-  templateFamily: TemplateFamily | null;
 };
 
 // Lightweight list projection — drops `tabs` so listing 100 documents
@@ -512,6 +503,8 @@ export type ImageSummary = {
 // Lives here so the client and server can't drift on the dedup key
 // (see ./sha256.ts for the rationale).
 export { pkceChallenge, sha256Hex } from './sha256';
+// The digest itself, for a hash that is not hex (docs/specs/016-platform/secure-context.md).
+export { sha256 } from './sha256-digest';
 
 // Worker-safe base64 / base64url encoders for raw bytes, shared by both
 // workers and the editor (see ./bytes.ts).
@@ -610,8 +603,6 @@ export * from './cta-sources';
 export * from './page-views';
 export * from './room-messages';
 export * from './changesets';
-export * from './items';
-export * from './sheets';
 export * from './telemetry-schema';
 export * from './timing-telemetry';
 export * from './server-emitted-events';
@@ -684,5 +675,3 @@ export * from './pages';
 export * from './article-frames';
 export * from './pages-summary';
 export * from './mcp-origin';
-// Forms (docs/specs/030-forms/forms.md).
-export * from './forms';

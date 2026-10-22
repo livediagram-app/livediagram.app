@@ -19,8 +19,6 @@ import { capStoredName } from '../names';
 import { personTagFor } from '../person-tag';
 import { readRoomSelections, type RoomSelection } from '../room-client';
 import type { DocumentDTO, Env } from '../types';
-import { makeTemplateSheets } from './template-sheets';
-import type { ChangesetBody } from './request';
 import { afterChangeset } from './after';
 import { checkBase, type BaseOutcome } from './base-check';
 import type { FrontDoor } from './front-door';
@@ -95,7 +93,7 @@ export async function submitChangeset(args: SubmitArgs): Promise<SubmitResult> {
     const lines = formatResultLines(compiled.results);
     if (args.dryRun) {
       changesetLog('info', '[changeset] dry-run', { ...where, targets: compiled.targets.length });
-      const lint = lintResult(compiled.tab, where, priorOf(request.body, stored));
+      const lint = lintResult(compiled.tab, where);
       const footer = formatResultFooter({
         dryRun: true,
         rev: stored?.rev ?? 0,
@@ -110,17 +108,8 @@ export async function submitChangeset(args: SubmitArgs): Promise<SubmitResult> {
         lint,
       });
     }
-    const ruled = withServerRules(compiled.tab, stored, args.author);
-    // A template's Sheets a replace lands (sheet-store.md "Template starts"), made before the tab is written.
-    const next =
-      request.body.kind === 'replace'
-        ? await makeTemplateSheets(env, document.id, ruled, {
-            id: args.author.id ?? '',
-            name: args.author.name,
-            color: args.author.color,
-          })
-        : ruled;
-    const lint = lintResult(next, where, priorOf(request.body, stored));
+    const next = withServerRules(compiled.tab, stored, args.author);
+    const lint = lintResult(next, where);
     const outcome = await writeChangeset(env, {
       documentId: document.id,
       tabId,
@@ -229,7 +218,6 @@ function compile(
       name: body.name ?? 'Tab',
       ...(body.theme ? { themeId: body.theme } : {}),
       ...(body.finish ? { finish: body.finish } : {}),
-      ...(body.tabKind ? { kind: body.tabKind } : {}),
     });
   }
   if (!stored)
@@ -297,13 +285,4 @@ function refusal(status: number, error: string, message: string): SubmitResult {
 
 function answer(body: ChangesetResponse): SubmitResult {
   return { status: 200, body };
-}
-
-// What a changeset's lint judges its colours against (lint.ts): a replace landing a template is the template's own.
-function priorOf(
-  body: ChangesetBody,
-  stored: StoredTab | null,
-): StoredTab['tab'] | 'template' | null {
-  if (body.kind === 'replace' && 'template' in body.replace) return 'template';
-  return stored?.tab ?? null;
 }

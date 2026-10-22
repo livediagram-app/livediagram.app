@@ -63,22 +63,3 @@ export function threadOf(
   const comments = arrayField(thread, 'comments').filter(isObject);
   return comments.length === 0 ? null : { comments, resolved: flagField(thread, 'resolved') };
 }
-
-// A Sheet's cell threads (docs/specs/029-sheets/sheet.md "Cell comments"), by cell key in key order, each read as
-// `threadOf` reads an element's; threads without a comment are left out.
-export function cellThreadsOf(
-  source: object,
-): { cell: string; comments: readonly object[]; resolved: boolean }[] {
-  const cells = objectField(source, 'cellComments');
-  if (cells === null) return [];
-  return Object.keys(cells)
-    .sort()
-    .flatMap((cell) => {
-      const thread = objectField(cells, cell);
-      if (thread === null) return [];
-      const comments = arrayField(thread, 'comments').filter(isObject);
-      return comments.length === 0
-        ? []
-        : [{ cell, comments, resolved: flagField(thread, 'resolved') }];
-    });
-}

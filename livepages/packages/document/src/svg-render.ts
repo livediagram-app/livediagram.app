@@ -8,10 +8,7 @@
 // Text measurement degrades to a char-width estimate when there's no DOM
 // (Workers / jsdom), so wrapping still works headless.
 
-import type { Item, ItemTypeDef } from '@livepages/items';
-import { svgPlanSheet, type SheetRenderModel } from './svg-render-plan-sheet';
 import { PAGE_EXPORT_PAPER, withinPageFrame, type PageExportFrame } from './page-frame';
-import { svgPlanBoard, svgPlanCard, svgPlanView } from './svg-render-plan';
 import { svgTabWindow, type ResolveTabWindow } from './tab-window';
 import {
   hasShapeSilhouette,
@@ -111,7 +108,6 @@ export {
   type ResolveEmojiArt,
   type ResolveIconArt,
   type ResolveImageHref,
-  type ResolvePlanArt,
   type ResolveStickerArt,
 } from './svg-render-describe';
 import {
@@ -128,7 +124,6 @@ import {
   type ResolveEmojiArt,
   type ResolveIconArt,
   type ResolveImageHref,
-  type ResolvePlanArt,
   type ResolveStickerArt,
 } from './svg-render-describe';
 // Typefaces (docs/specs/004-interface-design/fonts.md): an export paints the face the canvas painted, and
@@ -279,24 +274,6 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
       opts.chartPalette,
       fontFamily,
     )}</g>`;
-  }
-  if (el.type === 'shape' && el.shape === 'plan-sheet') {
-    const model = el.planSheet?.sheetId ? opts.sheets?.get(el.planSheet.sheetId) : undefined;
-    return `<g${opAttr}${rotAttr}${shadowAttr}>${svgPlanSheet(el, model, surface)}</g>`;
-  }
-  if (
-    el.type === 'shape' &&
-    (el.shape === 'plan-board' || el.shape === 'plan-card' || el.shape === 'plan-view')
-  ) {
-    // Columns of cards, or one card, drawn from the document's items (docs/specs/026-plan/plan-board.md);
-    // a plan view as its labelled box (plan-views.md).
-    const body =
-      el.shape === 'plan-board'
-        ? svgPlanBoard(el, opts.items, surface, opts.itemTypes)
-        : el.shape === 'plan-card'
-          ? svgPlanCard(el, opts.items, surface, opts.itemTypes)
-          : (opts.resolvePlanArt?.(el) ?? svgPlanView(el, surface));
-    return `<g${opAttr}${rotAttr}${shadowAttr}>${body}</g>`;
   }
   if (el.type === 'shape' && el.shape === 'tab-window') {
     // Another tab of the document, fitted inside its frame (docs/specs/009-elements/tab-window.md "Exports"); its frame
@@ -609,16 +586,6 @@ export function renderElementsToSvg(
     resolveIconArt?: ResolveIconArt;
     resolveStickerArt?: ResolveStickerArt;
     resolveEmojiArt?: ResolveEmojiArt;
-    // The document's items, so Plan boards and cards draw their cards (docs/specs/026-plan/plan-board.md).
-    items?: ReadonlyMap<string, Item>;
-    // The document's item types (docs/specs/026-plan/item-types.md).
-    itemTypes?: readonly ItemTypeDef[];
-    // Each Sheet element's window of cells (docs/specs/029-sheets/sheet.md "Exports and images"), by sheet id,
-    // worked out by the caller with the sheets engine. Without one a sheet draws its frame and headers.
-    sheets?: ReadonlyMap<string, SheetRenderModel>;
-    // A plan view's or placeholder's picture (a Dashboard laid out, @livepages/plan-art); its labelled box when
-    // absent or answering nothing.
-    resolvePlanArt?: ResolvePlanArt;
     // Each tab window's tab (docs/specs/009-elements/tab-window.md "Exports"); its frame named for its tab without.
     resolveTabWindow?: ResolveTabWindow;
     // One page as an export draws it (page-frame.ts, svg-render-pages.ts): the drawing is the
@@ -662,7 +629,7 @@ export function renderElementsToSvg(
   const chartPalette = themeChartPalette(
     getBuiltInTheme(tab.theme, surface === 'dark' ? 'dark' : 'light'),
   );
-  const fontDefs = svgFontDefs(exportFontIds(visible, tab.font, opts.sheets, tab.finish));
+  const fontDefs = svgFontDefs(exportFontIds(visible, tab.font, tab.finish));
   if (fontDefs) parts.push(fontDefs);
   // Element-shadow filter defs (docs/specs/008-canvas/element-shadows.md); empty string when none.
   const shadowDefs = svgShadowDefs(visible);
@@ -694,10 +661,6 @@ export function renderElementsToSvg(
             surface,
             paper: bg,
             chartPalette,
-            items: opts.items,
-            itemTypes: opts.itemTypes,
-            sheets: opts.sheets,
-            resolvePlanArt: opts.resolvePlanArt,
             resolveTabWindow: opts.resolveTabWindow,
             tagColours,
           }),

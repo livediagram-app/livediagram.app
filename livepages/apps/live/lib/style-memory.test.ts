@@ -94,7 +94,7 @@ describe('recordStyleEdit', () => {
   });
 });
 
-// docs/specs/007-editor/editor-modes.md "One look": memory keeps a stock colour by name, so the next
+// docs/specs/008-canvas/canvas-and-palette.md "Colours": memory keeps a stock colour by name, so the next
 // shape adapts per canvas too.
 describe('stock colours in memory', () => {
   it('remembers a named colour and drops the hex it replaced', () => {
@@ -230,4 +230,3 @@ describe('text elements', () => {
     expect(parseStyleMemory(JSON.stringify(memory))).toEqual(memory);
   });
 });
-

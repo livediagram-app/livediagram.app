@@ -12,9 +12,9 @@ import { canvasSurface } from '@livepages/document';
 import { tabAsSeen } from './export-as-seen';
 import { renderTabToSvg } from './export-tab';
 
-// Export what the author is looking at (docs/specs/007-editor/editor-modes.md "One look"): the
-// tab's Diagram backdrop for the export's appearance, whoever exports and in whichever mode, and
-// every stock colour stored by name in its version for that canvas.
+// Export what the author is looking at (docs/specs/011-theme/light-and-dark.md "What a viewer sees"):
+// the tab's backdrop for the export's appearance, whoever exports, and every stock colour stored by
+// name in its version for that canvas.
 const path = createFreehand(
   [
     { x: 0, y: 0 },
@@ -28,7 +28,7 @@ describe('tabAsSeen', () => {
     const tab = {
       id: 't',
       name: 'Board',
-      opensIn: 'draw',
+      opensIn: 'pages',
       backgroundPattern: 'blank',
       elements: [path],
     } as Tab;

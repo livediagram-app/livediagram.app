@@ -17,7 +17,7 @@ import type { arrowViewGeometry } from './arrow-view-frame';
 import type { CanvasElementsLayerProps } from './CanvasElementsLayer';
 import { PreviewedElement } from './PreviewedElement';
 import { FreeArrowFrame, SelectableArrowView, SelectableBoxedView } from './selection-aware-views';
-import type { BoxedShared } from './sheet-chart-renderer';
+import type { BoxedShared } from './boxed-shared';
 
 // Every element of the canvas in paint order (arrows and boxed views interleaved, so `bringToFront` /
 // `sendToBack` reorder arrows relative to boxes), each a PreviewedElement drawn from its drag preview

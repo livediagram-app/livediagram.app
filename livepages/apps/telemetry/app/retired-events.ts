@@ -37,9 +37,8 @@ const PALETTE_FAVOURITES_UI = new Set([
 ]);
 const PALETTE_FAVOURITES_HELP_ID = 'favourites';
 
-// Settings › Experimental (removed 2026-10-06, docs/specs/007-editor/editor-modes.md "Every mode,
-// always offered"): the category opening and its Pages Mode and Plan Mode switches. Every mode
-// is always offered now; the modes themselves, and their own events, carry on.
+// Settings › Experimental (removed 2026-10-06): the category opening and its Pages Mode and Plan
+// Mode switches. Pages is the one mode now (docs/specs/007-editor/pages-mode.md "One mode").
 const EXPERIMENTAL_SETTINGS_UI = new Set([
   'Opened|SettingsExperimental',
   'Toggled|PagesModeOn',

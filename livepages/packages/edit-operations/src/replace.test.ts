@@ -121,7 +121,7 @@ describe('applyReplace on an existing tab', () => {
   });
 
   it('builds a template with the tab theme', () => {
-    const { tab } = applied(applyReplace(themed('ocean'), { template: 'swot' }, options));
+    const { tab } = applied(applyReplace(themed('ocean'), { template: 'storyboard' }, options));
     expect(tab.elements.length).toBeGreaterThan(0);
     expect(tab.name).toBe('Checkout flow');
   });
@@ -178,10 +178,10 @@ describe('applyReplace for a new tab', () => {
     expect(tab.theme).toBe('ocean');
   });
 
-  it('builds a template tab whole, with its canvas and kind', () => {
-    // Kanban's first tab is a Board tab (docs/specs/026-plan/plan-tabs.md "Templates").
-    const { tab } = applied(applyReplace(null, { template: 'kanban' }, options));
-    expect(tab).toMatchObject({ id: 'new-tab', templateChosen: true, kind: 'board' });
+  it('builds a template tab whole, with its pages', () => {
+    const { tab } = applied(applyReplace(null, { template: 'slide-deck' }, options));
+    expect(tab).toMatchObject({ id: 'new-tab', templateChosen: true });
+    expect(tab.pages?.length).toBeGreaterThan(0);
   });
 
   it('builds an elements tab as add_tab does, themed', () => {
@@ -215,7 +215,7 @@ describe('applyReplace refusals', () => {
 
   it('needs exactly one source', () => {
     expect(refusal({}).details).toEqual([
-      'replace takes exactly one of graph, mermaid, template, dashboard, form, elements',
+      'replace takes exactly one of graph, mermaid, template, elements',
     ]);
     expect(refusal({ graph, mermaid: 'x' }).code).toBe('invalid_value');
   });
@@ -242,15 +242,8 @@ describe('applyReplace refusals', () => {
   it('names the templates for an unknown one', () => {
     const rejection = refusal({ template: 'nope' });
     expect(rejection.details).toEqual(['template="nope": not a template']);
-    expect(rejection.hint).toContain('kanban');
+    expect(rejection.hint).toContain('slide-deck');
     expect(refusal({ template: 7 }).code).toBe('invalid_value');
-  });
-
-  // docs/specs/030-forms/forms.md "As templates": a form template starts a form, which only the editor makes.
-  it('refuses a form template as made in the editor only, saying how its form is made', () => {
-    const rejection = refusal({ template: 'contact-form' });
-    expect(rejection.details).toEqual(['template="contact-form": made in the editor only']);
-    expect(rejection.hint).toContain('make it with add_form (starter "contact")');
   });
 
   it('refuses elements that are not a list, or an element the format does not allow', () => {

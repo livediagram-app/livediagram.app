@@ -6,8 +6,7 @@ import { debugLog } from '@/lib/debug-log';
 // The role pill's toggle (docs/specs/007-editor/live-app.md#role-pill): someone whose role allows editing can preview
 // the document as a Participant or as a Viewer, a press stepping Editing, Participating, Viewing and back to Editing.
 // Local to this tab and visit; the session role itself, which presence reports, never changes. `canEdit` is the one
-// answer to "may this person edit right now?": the editor's read-only guard and the mode switch both read it
-// (docs/specs/007-editor/editor-modes.md "The mode switch").
+// answer to "may this person edit right now?": the editor's read-only guard reads it.
 const NEXT: Record<AccessLevel, AccessLevel> = {
   edit: 'participate',
   participate: 'view',

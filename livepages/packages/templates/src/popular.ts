@@ -8,38 +8,18 @@ import { TEMPLATES, type TemplateKind } from './templates';
 type PopularChoice = 'all' | EditorMode;
 
 export const POPULAR_BY_MODE: Readonly<Record<PopularChoice, readonly TemplateKind[]>> = {
-  // The five blanks lead, one per mode in mode order (EDITOR_MODES), so the picker needs no separate blank card.
+  // The blanks lead, so the picker needs no separate blank card.
   all: [
-    'blank',
-    'whiteboard',
-    'blank-session',
     'blank-illustration',
-    'blank-plan',
-    'mindmap',
-    'flowchart',
-    'kanban',
-    'sailboat',
-    'budget-planner',
-    'orgchart',
-    'sketchnote',
+    'blank-slide-deck',
+    'blank-article',
     'article',
-  ],
-  diagram: [
-    'blank',
-    'flowchart',
-    'mindmap',
-    'orgchart',
-    'gantt',
-    'timeline',
-    'system-architecture',
-  ],
-  draw: [
-    'whiteboard',
-    'sketchnote',
-    'journey-doodle',
-    'comic-strip',
-    'idea-garden',
-    'rich-picture',
+    'slide-deck',
+    'event-poster',
+    'year-in-review',
+    'social-carousel',
+    'wireframe-mobile-app',
+    'logo-design',
   ],
   pages: [
     'blank-illustration',
@@ -49,16 +29,6 @@ export const POPULAR_BY_MODE: Readonly<Record<PopularChoice, readonly TemplateKi
     'year-in-review',
     'social-carousel',
   ],
-  plan: [
-    'blank-plan',
-    'project-planner',
-    'kanban',
-    'budget-planner',
-    'team-retro',
-    'bug-triage',
-    'invoice',
-  ],
-  workshop: ['blank-session', 'sailboat', 'retrospective', 'crazy-eights', 'icebreaker-questions'],
 };
 
 // Popular under Everything (the marketing gallery's and the step's default shelf).

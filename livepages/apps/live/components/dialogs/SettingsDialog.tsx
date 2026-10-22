@@ -17,10 +17,6 @@ import {
 import { useCapabilities } from '@/hooks/persistence/useCapabilities';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
-import { markTourPending, requestTourRelaunch } from '@/lib/tour-pending';
-import { PLAN_TOUR_TRACKS, planTrackSeen, requestPlanTourRelaunch } from '@/lib/plan-tour';
-import { requestWorkshopTourRelaunch } from '@/lib/workshop-tour';
-import { requestFormTourRelaunch } from '@/lib/form-tour';
 import { PAGES_TOUR_KINDS, pagesKindSeen, requestPagesTourRelaunch } from '@/lib/pages-tour';
 import { track } from '@/lib/telemetry';
 import {
@@ -162,40 +158,12 @@ export function SettingsDialog({
     track('UI', 'Opened', `Settings${id.charAt(0).toUpperCase()}${id.slice(1)}`);
   };
 
-  // Tours › "Diagram Tour" (docs/specs/007-editor/editor-tour.md). The row is ON when the tour has not been
-  // resolved, and promises it will be offered, so closing the dialog has to
-  // MAKE that true. `tourSeen !== true` alone never was: TourHost also needs
-  // the per-tab pending flag, which only /new sets for a brand-new user. A
-  // reader who had simply never taken the tour therefore saw the row sitting
-  // on, promising a tour that would never arrive.
-  //
-  // Marking pending is idempotent, so leaving the row alone just re-arms the
-  // offer it already claims. Turning it on from off additionally relaunches
-  // in place, which is the "run it again" case the row's copy describes.
-  const tourSeen = settings.tourSeen === true;
-  const tourSeenAtOpen = useRef(tourSeen);
-  // Tours › "Boards Tour" and "Sheets Tour" (docs/specs/026-plan/plan-tour.md): no handoff flag to arm, as the
-  // Plan tour offers itself on entering Plan; turning a track's row on from off reruns it in place.
-  const planOwed = PLAN_TOUR_TRACKS.filter((t) => !planTrackSeen(settings, t));
-  const planOwedAtOpen = useRef(planOwed);
-  // Tours › "Workshop Tour" (docs/specs/012-collaboration/workshop-tour.md): as the Plan tour's.
-  const workshopTourSeen = settings.workshopTourSeen === true;
-  const workshopTourSeenAtOpen = useRef(workshopTourSeen);
-  // Tours › "Forms Tour" (docs/specs/030-forms/forms.md "The Forms tour"): as the Plan tour's.
-  const formTourSeen = settings.formTourSeen === true;
-  const formTourSeenAtOpen = useRef(formTourSeen);
-  // Tours › "Slides Tour", "Infographic Tour", "Article Tour", "Logo Tour" (docs/specs/007-editor/pages-tour.md): as
-  // the Plan tour's.
+  // Tours › "Slides Tour", "Infographic Tour", "Article Tour", "Logo Tour" (docs/specs/007-editor/pages-tour.md): no
+  // handoff flag to arm, as the Pages tour offers itself on working with each kind of page; turning a kind's row on
+  // from off reruns it in place.
   const pagesOwed = PAGES_TOUR_KINDS.filter((k) => !pagesKindSeen(settings, k));
   const pagesOwedAtOpen = useRef(pagesOwed);
   const close = () => {
-    if (!tourSeen) {
-      markTourPending();
-      if (tourSeenAtOpen.current) requestTourRelaunch();
-    }
-    if (planOwed.some((t) => !planOwedAtOpen.current.includes(t))) requestPlanTourRelaunch();
-    if (!workshopTourSeen && workshopTourSeenAtOpen.current) requestWorkshopTourRelaunch();
-    if (!formTourSeen && formTourSeenAtOpen.current) requestFormTourRelaunch();
     if (pagesOwed.some((k) => !pagesOwedAtOpen.current.includes(k))) requestPagesTourRelaunch();
     onClose();
   };

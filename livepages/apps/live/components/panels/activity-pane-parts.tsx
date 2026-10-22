@@ -9,15 +9,7 @@ import { InboxIcon, TeamIcon } from '@/components/primitives/explorer-icons';
 import { CountBadge, IDENTITY_FILL, identityVars } from '@livepages/ui';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import type {
-  ActivityAction,
-  ActivityCard,
-  ActivityCardThread,
-  ActivityFormResponses,
-  ActivityPlace,
-  ActivityThread,
-} from '@livepages/api-schema';
-import { ITEM_TYPES } from '@livepages/items';
+import type { ActivityAction, ActivityPlace, ActivityThread } from '@livepages/api-schema';
 import {
   EmptyState,
   HoverCard,
@@ -28,12 +20,7 @@ import {
 import { ActionMenuIcon, CommentMenuIcon } from '@/components/palette/context-menu-icons';
 import { ThisBrowserPill } from '@/components/primitives/ThisBrowserPill';
 import type { Located } from '@/app/explorer/useActivityFeed';
-import { PlanTypeGlyph } from '@/components/plan/plan-type-glyph';
-import { cardDeepLinkHref, collabDeepLinkHref, formResponsesHref } from '@/lib/collab-deep-link';
-import { lucideGlyph } from '@livepages/ui';
-import { lucideClipboardList } from '@livepages/icons/lucide';
-
-const FormGlyph = lucideGlyph(lucideClipboardList, 16);
+import { collabDeepLinkHref } from '@/lib/collab-deep-link';
 import { helpArticleHref } from '@/lib/help-articles';
 import { initialsOf } from '@/lib/identity';
 import { formatRelativeTimeShort, useRelativeNow } from '@/lib/relative-time';
@@ -96,7 +83,7 @@ export function ActivityActionRow({
   );
 }
 
-// What a thread row says about why it is on the page, an element's or a card's alike: a mention is the most
+// What a thread row says about why it is on the page: a mention is the most
 // direct reason, so it wins (docs/specs/012-collaboration/comment-mentions.md "The Inbox").
 type ThreadFacts = Pick<
   ActivityThread,
@@ -141,93 +128,12 @@ export function ActivityThreadRow({
   );
 }
 
-// A Plan card on the reader (docs/specs/013-workspace/inbox.md §1, §2.4): its type's glyph, its
-// number and title, where it sits, and the reader as its assignee. A custom type, whose name lives in its
-// document's catalogue, reads as a plain card.
-export function ActivityCardRow({
-  card,
-  onOpen,
-}: {
-  card: Located<ActivityCard>;
-  onOpen: () => void;
-}) {
-  const type = ITEM_TYPES.find((t) => t.id === card.type);
-  return (
-    <ActivityRowShell
-      href={cardDeepLinkHref(card)}
-      place={card}
-      where={card.board ? `${card.board.title} · ${card.board.tabName}` : 'Not on a board'}
-      onOpen={onOpen}
-      icon={<PlanTypeGlyph glyph={type?.glyph} size={16} />}
-      title={`#${card.key} ${card.title}`}
-      detail={type?.label ?? 'Card'}
-      avatar={{
-        name: 'You',
-        detail: 'Assigned to you',
-        colorClass: `bg-brand-700 ${SOLID_BRAND_DARK}`,
-      }}
-      at={card.updatedAt}
-    />
-  );
-}
-
-// A Plan card's comment thread (docs/specs/013-workspace/inbox.md §1, §2.5): the card's type glyph,
-// number and title, and where it sits, as a card row; the latest comment and its author, and the same hints, as a
-// thread row. It opens the card.
-export function ActivityCardThreadRow({
-  thread,
-  onOpen,
-}: {
-  thread: Located<ActivityCardThread>;
-  onOpen: () => void;
-}) {
-  const type = ITEM_TYPES.find((t) => t.id === thread.type);
-  return (
-    <ActivityRowShell
-      href={cardDeepLinkHref(thread)}
-      place={thread}
-      where={thread.board ? `${thread.board.title} · ${thread.board.tabName}` : 'Not on a board'}
-      onOpen={onOpen}
-      icon={<PlanTypeGlyph glyph={type?.glyph} size={16} />}
-      title={`#${thread.key} ${thread.title}`}
-      detail={thread.latest.text}
-      hint={threadHint(thread)}
-      avatar={threadAvatar(thread)}
-      at={thread.latest.at}
-    />
-  );
-}
-
-// A form with responses the reader has not seen (docs/specs/030-forms/forms.md "Hearing about responses"): how many,
-// the form, and the board they land on; it opens that board.
-export function ActivityFormResponsesRow({
-  form,
-  onOpen,
-}: {
-  form: ActivityFormResponses;
-  onOpen: () => void;
-}) {
-  return (
-    <ActivityRowShell
-      href={formResponsesHref(form)}
-      place={form}
-      where="Responses on its board"
-      onOpen={onOpen}
-      icon={<FormGlyph />}
-      title={`${form.unseen} new ${form.unseen === 1 ? 'response' : 'responses'} to ${form.heading}`}
-      detail={null}
-      at={form.latestAt}
-    />
-  );
-}
-
 // The shared row: kind glyph far left, title + detail in the middle
 // with the "where" line under them, avatar-over-time far right. The
 // whole row is one link into the editor (docs/specs/013-workspace/inbox.md §1).
 function ActivityRowShell({
   href,
   place,
-  where,
   onOpen,
   icon,
   title,
@@ -237,16 +143,13 @@ function ActivityRowShell({
   at,
 }: {
   href: string;
-  place: DocumentPlace;
-  // The line under the title; an element's row defaults to "element label · tab name".
-  where?: string;
+  place: Located<ActivityPlace>;
   onOpen: () => void;
   icon: ReactNode;
   title: string;
   detail: string | null;
   hint?: string | null;
-  // Absent where no one person stands behind the row (a form's responses).
-  avatar?: { name: string; detail: string; colorClass?: string; color?: string };
+  avatar: { name: string; detail: string; colorClass?: string; color?: string };
   at: number;
 }) {
   const now = useRelativeNow();
@@ -278,23 +181,19 @@ function ActivityRowShell({
           ) : null}
           <span className="mt-1 flex min-w-0 items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
             <PlaceChip place={place} />
-            <span className="truncate">
-              {where ?? ('elementLabel' in place ? `${place.elementLabel} · ${place.tabName}` : '')}
-            </span>
+            <span className="truncate">{`${place.elementLabel} · ${place.tabName}`}</span>
           </span>
         </span>
         <span className="flex shrink-0 flex-col items-end gap-0.5">
-          {avatar ? (
-            <HoverCard title={avatar.name} description={avatar.detail}>
-              <GlyphDisc
-                size={24}
-                className={`text-[9px] font-semibold text-white ${avatar.colorClass ?? ''} ${avatar.color ? IDENTITY_FILL : ''}`}
-                style={avatar.color ? identityVars(avatar.color) : undefined}
-              >
-                {initialsOf(avatar.name)}
-              </GlyphDisc>
-            </HoverCard>
-          ) : null}
+          <HoverCard title={avatar.name} description={avatar.detail}>
+            <GlyphDisc
+              size={24}
+              className={`text-[9px] font-semibold text-white ${avatar.colorClass ?? ''} ${avatar.color ? IDENTITY_FILL : ''}`}
+              style={avatar.color ? identityVars(avatar.color) : undefined}
+            >
+              {initialsOf(avatar.name)}
+            </GlyphDisc>
+          </HoverCard>
           <span className="text-[10px] text-slate-500 dark:text-slate-400">
             {formatRelativeTimeShort(now - at)}
           </span>
@@ -304,16 +203,11 @@ function ActivityRowShell({
   );
 }
 
-// What every row knows of its document: an element's full place, or a card's; `local` when the document is
-// saved only in this browser (docs/specs/013-workspace/inbox.md §2.6).
-type DocumentPlace = Located<
-  ActivityPlace | ActivityCard | ActivityCardThread | ActivityFormResponses
->;
-
 // Which document the row is from; a team document's chip leads with the
 // team glyph so the source of the work reads at a glance. When the document is in This Browser, the chip is followed by
 // the This Browser pill, as a label since the whole row is a link (docs/specs/006-document/offline-mode.md#this-browser-pill).
-function PlaceChip({ place }: { place: DocumentPlace }) {
+// `local` is set when the document is saved only in this browser (docs/specs/013-workspace/inbox.md §2.6).
+function PlaceChip({ place }: { place: Located<ActivityPlace> }) {
   return (
     <>
       <DocumentChip place={place} />
@@ -322,7 +216,7 @@ function PlaceChip({ place }: { place: DocumentPlace }) {
   );
 }
 
-function DocumentChip({ place }: { place: DocumentPlace }) {
+function DocumentChip({ place }: { place: Located<ActivityPlace> }) {
   return (
     <span className="inline-flex max-w-[14rem] shrink-0 items-center gap-1 rounded-full bg-slate-100 px-1.5 py-0.5 font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">
       {place.via === 'team' ? (
@@ -343,7 +237,7 @@ export function ActivityEmptyState({ compact = false }: { compact?: boolean } = 
       compact={compact}
       icon={<InboxIcon />}
       title="Nothing waiting on you"
-      description="Open actions and Plan cards assigned to you, actions you assigned, and comment threads you're in, collect here across every document."
+      description="Open actions assigned to you, actions you assigned, and comment threads you're in, collect here across every document."
     >
       <a
         href={helpArticleHref('assignedActions')}

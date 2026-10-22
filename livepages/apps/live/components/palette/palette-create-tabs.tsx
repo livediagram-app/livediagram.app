@@ -10,8 +10,8 @@ import type { PaletteTileDef } from './palette-tile-defs';
 // The palette's creation-category tab bodies. Every tile is
 // a data entry in the shared catalogue (palette-tile-defs.tsx) rendered
 // through PaletteTileGrid. Each body is how its category is PRESENTED (a grid, rows with a
-// blurb, collapsed groups); which tiles it holds is the mode's palette layout's call
-// (palette-layouts.ts, docs/specs/007-editor/editor-modes.md "The palette per mode"), handed in
+// blurb, collapsed groups); which tiles it holds is the page kind's palette layout's call
+// (palette-layouts.ts, docs/specs/007-editor/pages-mode.md "The palette's kind"), handed in
 // as `tiles`. The
 // search-driven tabs (Icons / Stickers / Technology) have their own files since they
 // own their search state.
@@ -60,13 +60,12 @@ export function PaletteDataTab({ pendingDraw, actions, tiles }: TabProps) {
   return <PaletteToolRows tiles={tiles} actions={actions} pendingDraw={pendingDraw} />;
 }
 
-// The Collaborate elements (docs/specs/012-collaboration/workshop-mode.md "The palette"): six
-// categories, one per group (Ask, Tools, Record, React, Selection Mode, Navigate). Rows with a blurb,
+// The Collaborate elements: six categories, one per group (Ask, Tools, Record, React, Selection Mode, Navigate). Rows with a blurb,
 // like Build and Data: eight mode buttons or five reaction pads look alike at palette size, and
 // "Hand everyone the laser" against "Hand everyone the spotlight" is the choice being made.
 //
-// They were once one category with a group browser inside it. In Workshop every group is
-// something a facilitator reaches for mid-session, so the parent was a click in front of each.
+// They were once one category with a group browser inside it. Every group is something a
+// facilitator reaches for mid-session, so the parent was a click in front of each.
 export function PaletteCollaborateTab({ pendingDraw, actions, tiles }: TabProps) {
   return <PaletteToolRows tiles={tiles} actions={actions} pendingDraw={pendingDraw} />;
 }

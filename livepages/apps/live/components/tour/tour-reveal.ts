@@ -1,4 +1,4 @@
-// Bringing a tour step's target into view (docs/specs/007-editor/editor-tour.md "Mechanics"): a target below the fold
+// Bringing a tour step's target into view (docs/specs/007-editor/pages-tour.md "Mechanics"): a target below the fold
 // of a scrolling panel (a long form's Add bar, a dialog's lower section) is scrolled to before the ring lands, so the
 // highlight and its popover never point off-screen. Only real scroll containers move (overflow auto or scroll), and
 // only when the target is not wholly in view; it is then centred, clear of chrome floating over a panel's edges (a

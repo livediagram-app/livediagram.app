@@ -6,22 +6,9 @@
 // materialises these directly (docs/specs/015-api/mcp-server.md §4.5).
 
 import { buildWireframeFlow } from './template-builders-wireframe-flows';
-import { isFormTemplateKind } from './form-templates';
-import { settleChips, type Element, type Tab } from '@livepages/document';
+import { settleChips, type Element } from '@livepages/document';
 import type { TemplateKind } from './templates';
 import { buildSlideDeck } from './template-builders-slides';
-import { buildPlanTemplate, isPlanTemplateKind, planTemplateTabs } from './template-builders-plan';
-import { companionTemplateTabs } from './template-companions';
-import {
-  buildComicStrip,
-  buildDoodleWarmup,
-  buildIdeaGarden,
-  buildJourneyDoodle,
-  buildPaperPrototype,
-  buildPreMortem,
-  buildRichPicture,
-  buildSketchnote,
-} from './template-builders-sketch';
 import { buildEventPoster } from './template-builders-poster';
 import { buildYearInReview } from './template-builders-year-review';
 import { buildResume } from './template-builders-resume';
@@ -33,71 +20,9 @@ import { buildSocialCarousel } from './template-builders-social-carousel';
 import { buildLayoutDeck } from './template-builders-layout-decks';
 import { buildStoryboard } from './template-builders-storyboard';
 import { buildOnDesignPage } from './template-design-pages';
-import {
-  buildPrioritizationMatrix,
-  buildRetrospective,
-  buildSwot,
-} from './template-builders-boards';
-import { buildSystemArchitecture } from './template-builders-technical';
-import { buildCloudArchitecture } from './template-builders-cloud';
-import { buildErDiagram } from './template-builders-er';
-import { buildSequenceDiagram } from './template-builders-sequence';
-import { buildUmlClass } from './template-builders-uml';
-import { buildStateMachine } from './template-builders-state-machine';
 import { buildFloorPlan } from './template-builders-floorplan';
-import { buildBusinessModelCanvas, buildEmpathyMap } from './template-builders-canvases';
-import { buildAffinityMap, buildUserStoryMap } from './template-builders-workshops';
-import { buildIcebreakerQuestions } from './template-builders-icebreakers';
-import { buildPeopleBingo } from './template-builders-party-games';
-import { buildBrainstorm, buildWorkshopBoard } from './template-builders-workshop-boards';
-import { buildOkrTree, buildSitemap } from './template-builders-hierarchies';
-import { buildFunnel } from './template-builders-funnel';
-import { buildSankey } from './template-builders-sankey';
-import { buildRoadmap } from './template-builders-roadmap';
 import { buildLogoDesign } from './template-builders-logo';
-import { buildGanttChart } from './template-builders-gantt';
 import { buildLiveCard } from './template-builders-livecard';
-import { buildComparisonTable, buildRaciMatrix } from './template-builders-table';
-import {
-  buildFishbone,
-  buildFlywheel,
-  buildJourney,
-  buildPyramid,
-  buildVenn,
-} from './template-builders-diagrams';
-import { buildTimeline } from './template-builders-timelines';
-import { buildMilestoneTimeline } from './template-builders-milestones';
-import { buildMilestoneTimelineVertical } from './template-builders-milestones-vertical';
-import {
-  buildApprovalWorkflow,
-  buildBlank,
-  buildDecisionTree,
-  buildSwimlane,
-} from './template-builders-flows';
-import { buildDataFlow } from './template-builders-dataflow';
-import { buildFlowchart, buildOrgChart } from './template-builders-trees';
-import { buildBubbleMap, buildMindMap, buildMindMapTree } from './template-builders-mindmaps';
-import {
-  buildStartStopContinue,
-  buildMadSadGlad,
-  buildFourLs,
-  buildSailboat,
-} from './template-builders-retro-formats';
-import { buildIncidentPostmortem } from './template-builders-postmortem';
-import { buildRiskMatrix } from './template-builders-risk';
-import { buildOpportunitySolutionTree } from './template-builders-opportunity-tree';
-import { buildStakeholderMap } from './template-builders-stakeholders';
-import { buildCrazyEights } from './template-builders-crazy-eights';
-import { buildUserPersona } from './template-builders-persona';
-import { buildMeetingAgenda } from './template-builders-meeting';
-import { buildObjectivesPlanner } from './template-builders-objectives';
-import { buildWardleyMap } from './template-builders-wardley';
-import { buildThreatModel } from './template-builders-threat-model';
-import { buildServiceBlueprint } from './template-builders-service-blueprint';
-import { buildMetricTree } from './template-builders-metric-tree';
-import { buildValuePropositionCanvas } from './template-builders-value-proposition';
-import { buildFamilyTree } from './template-builders-family-tree';
-import { buildValueStreamMap } from './template-builders-value-stream';
 
 // Build the elements for a given template, centred on the supplied canvas
 // point. Each template is intentionally small and editable; users grow them.
@@ -109,176 +34,20 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
 }
 
 function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
-  // A form template's tab starts empty: the editor starts the form on it (form-templates.ts).
-  if (isFormTemplateKind(kind)) return [];
   switch (kind) {
+    // Blank Tab is truly blank: no seeded element.
     case 'blank':
-      return buildBlank();
-    case 'mindmap':
-      return buildMindMap(cx, cy);
-    case 'mindmap-tree':
-      return buildMindMapTree(cx, cy);
-    case 'mindmap-bubble':
-      return buildBubbleMap(cx, cy);
-    case 'orgchart':
-      return buildOrgChart(cx, cy);
-    case 'retrospective':
-      return buildRetrospective(cx, cy);
-    case 'flowchart':
-      return buildFlowchart(cx, cy);
-    case 'swimlane':
-      return buildSwimlane(cx, cy);
-    case 'decision-tree':
-      return buildDecisionTree(cx, cy);
-    case 'approval-workflow':
-      return buildApprovalWorkflow(cx, cy);
-    case 'data-flow':
-      return buildDataFlow(cx, cy);
-    // Plan templates (docs/specs/026-plan/plan-templates.md): the first of their tabs; templateTabs
-    // gives them all.
-    case 'kanban':
-    case 'blank-plan':
-    case 'blank-spreadsheet':
-    case 'project-planner':
-    case 'bug-triage':
-    case 'team-retro':
-    case 'weekly-planner':
-    case 'content-calendar':
-    case 'hiring-pipeline':
-    case 'okrs':
-    case 'product-launch':
-    case 'feedback-board':
-    case 'budget-planner':
-    case 'timesheet':
-    case 'contact-list':
-    case 'task-tracker':
-    case 'invoice':
-    case 'expense-report':
-    case 'loan-calculator':
-    case 'sales-pipeline':
-    case 'inventory':
-    case 'guest-list':
-    case 'grade-book':
-    case 'habit-tracker':
-      return buildPlanTemplate(kind, cx, cy);
-    case 'swot':
-      return buildSwot(cx, cy);
-    case 'timeline':
-      return buildTimeline(cx, cy);
-    case 'milestone-timeline':
-      return buildMilestoneTimeline(cx, cy);
-    case 'milestone-timeline-vertical':
-      return buildMilestoneTimelineVertical(cx, cy);
-    case 'venn':
-      return buildVenn(cx, cy);
-    case 'journey':
-      return buildJourney(cx, cy);
-    case 'fishbone':
-      return buildFishbone(cx, cy);
-    case 'pyramid':
-      return buildPyramid(cx, cy);
+      return [];
     case 'slide-deck':
       return buildSlideDeck(cx, cy);
-    case 'flywheel':
-      return buildFlywheel(cx, cy);
     case 'logo-design':
       return buildLogoDesign(cx, cy);
-    case 'gantt':
-      return buildGanttChart(cx, cy);
     case 'live-card':
       return buildLiveCard(cx, cy);
-    case 'comparison-table':
-      return buildComparisonTable(cx, cy);
-    case 'system-architecture':
-      return buildSystemArchitecture(cx, cy);
-    case 'er-diagram':
-      return buildErDiagram(cx, cy);
-    case 'sequence-diagram':
-      return buildSequenceDiagram(cx, cy);
-    case 'prioritization-matrix':
-      return buildPrioritizationMatrix(cx, cy);
-    case 'start-stop-continue':
-      return buildStartStopContinue(cx, cy);
-    case 'mad-sad-glad':
-      return buildMadSadGlad(cx, cy);
-    case 'four-ls':
-      return buildFourLs(cx, cy);
-    case 'sailboat':
-      return buildSailboat(cx, cy);
-    case 'incident-postmortem':
-      return buildIncidentPostmortem(cx, cy);
-    case 'risk-matrix':
-      return buildRiskMatrix(cx, cy);
-    case 'opportunity-solution-tree':
-      return buildOpportunitySolutionTree(cx, cy);
-    case 'stakeholder-map':
-      return buildStakeholderMap(cx, cy);
-    case 'crazy-eights':
-      return buildCrazyEights(cx, cy);
-    case 'user-persona':
-      return buildUserPersona(cx, cy);
-    case 'meeting-agenda':
-      return buildMeetingAgenda(cx, cy);
-    case 'objectives-planner':
-      return buildObjectivesPlanner(cx, cy);
-    case 'wardley-map':
-      return buildWardleyMap(cx, cy);
-    case 'threat-model':
-      return buildThreatModel(cx, cy);
-    case 'service-blueprint':
-      return buildServiceBlueprint(cx, cy);
-    case 'metric-tree':
-      return buildMetricTree(cx, cy);
-    case 'value-proposition-canvas':
-      return buildValuePropositionCanvas(cx, cy);
-    case 'family-tree':
-      return buildFamilyTree(cx, cy);
-    case 'value-stream-map':
-      return buildValueStreamMap(cx, cy);
-    case 'roadmap':
-      return buildRoadmap(cx, cy);
-    case 'raci-matrix':
-      return buildRaciMatrix(cx, cy);
-    case 'user-story-map':
-      return buildUserStoryMap(cx, cy);
-    case 'affinity-map':
-      return buildAffinityMap(cx, cy);
-    case 'brainstorm':
-      return buildBrainstorm(cx, cy);
-    case 'workshop-board':
-      return buildWorkshopBoard(cx, cy);
-    case 'icebreaker-questions':
-      return buildIcebreakerQuestions(cx, cy);
-    case 'people-bingo':
-      return buildPeopleBingo(cx, cy);
-    case 'business-model-canvas':
-      return buildBusinessModelCanvas(cx, cy);
-    case 'empathy-map':
-      return buildEmpathyMap(cx, cy);
-    case 'funnel':
-      return buildFunnel(cx, cy);
-    case 'sankey':
-      return buildSankey(cx, cy);
-    case 'okr-tree':
-      return buildOkrTree(cx, cy);
-    case 'sitemap':
-      return buildSitemap(cx, cy);
     case 'storyboard':
       return buildOnDesignPage('storyboard', buildStoryboard);
-    case 'cloud-architecture':
-      return buildCloudArchitecture(cx, cy);
-    case 'uml-class':
-      return buildUmlClass(cx, cy);
-    case 'state-machine':
-      return buildStateMachine(cx, cy);
     case 'floor-plan':
       return buildOnDesignPage('floor-plan', buildFloorPlan);
-    // A whiteboard is a clean board (docs/specs/023-draw-mode/draw-mode.md): what makes it one is its
-    // kind, which templateCanvasOverrides sets, not any seeded element. Workshop's blank is an empty
-    // tab too, opened in Workshop the same way.
-    case 'whiteboard':
-    case 'blank-session':
-      return [];
     // An article's writing and page are tab data (templateCanvasOverrides), not elements; a blank
     // illustration is its one empty page, which asks what it is for, and a blank of a page kind its one
     // empty page of that kind (blank-page-templates.ts).
@@ -301,22 +70,6 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
     case 'wireframe-tablet-app':
     case 'wireframe-watch-app':
       return buildWireframeFlow(kind);
-    case 'sketchnote':
-      return buildSketchnote(cx, cy);
-    case 'rich-picture':
-      return buildRichPicture(cx, cy);
-    case 'comic-strip':
-      return buildComicStrip(cx, cy);
-    case 'doodle-warmup':
-      return buildDoodleWarmup(cx, cy);
-    case 'paper-prototype':
-      return buildPaperPrototype(cx, cy);
-    case 'journey-doodle':
-      return buildJourneyDoodle(cx, cy);
-    case 'pre-mortem':
-      return buildPreMortem(cx, cy);
-    case 'idea-garden':
-      return buildIdeaGarden(cx, cy);
     // Built on their own pages (template-pages.ts), whatever the centre.
     case 'event-poster':
       return buildEventPoster();
@@ -342,26 +95,14 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
   }
 }
 
-// The "Blank Diagram" template is truly blank: no seeded element. The user
-// starts from an empty canvas (with the empty-canvas hint banner, docs/specs/007-editor/new-document-route.md) and
-// adds their first element from the palette / Quick Start.
-
-// A template's tabs (docs/specs/026-plan/plan-templates.md "How a template with tabs is made"): every Plan
-// template but Blank Plan makes several, named; every other template makes one, named null so it keeps
-// the name the caller gives a new tab. The first tab's elements are always buildTemplate's.
+// A template's tabs: every Pages template
+// makes one, named null so it keeps the name the caller gives a new tab. The shape stays a list so the callers that
+// make a template's tabs (the editor, the api, the MCP worker) need not change. Its elements are buildTemplate's.
 export type TemplateTabDef = {
   name: string | null;
   build: (cx: number, cy: number) => Element[];
-  // The tab's own fields, given every tab's id in order: a Plan template's kind and Dashboard
-  // (docs/specs/026-plan/plan-tabs.md "Templates").
-  tab?: (ids: readonly string[]) => Partial<Tab>;
-  // A companion Sheet (template-companions.ts): takes the theme but none of the template's canvas overrides
-  // (templateCanvasOverrides: its pattern, layers, mode and pages), which are the drawing's.
-  ownCanvas?: true;
 };
 
 export function templateTabs(kind: TemplateKind): TemplateTabDef[] {
-  if (isPlanTemplateKind(kind)) return planTemplateTabs(kind);
-  const build = (cx: number, cy: number) => buildTemplate(kind, cx, cy);
-  return companionTemplateTabs(kind, build) ?? [{ name: null, build }];
+  return [{ name: null, build: (cx: number, cy: number) => buildTemplate(kind, cx, cy) }];
 }

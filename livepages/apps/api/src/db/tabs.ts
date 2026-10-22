@@ -1,5 +1,5 @@
 // tabs — one row per tab, linked to documents through the
-// document_tabs many-to-many table (migration 0011 / docs/specs/006-document/tab-document-many-to-many.md).
+// document_tabs many-to-many table (the baseline migration / docs/specs/006-document/tab-document-many-to-many.md).
 
 import { capElementActions, drawnCount, type Tab } from '@livepages/document';
 import { rowToTab, type TabRow } from '../tab-row';
@@ -20,7 +20,6 @@ import { imageRefIds, imageRefIdsFromData } from '../image-refs/extract';
 import { tabStatsOf, tabStatsStatement, type TabStats } from './tab-stats';
 import { imageGrantLinkStatement, imageGrantPlacementStatements } from './image-grants';
 import { collabIndexStatements } from './collab-index';
-import { sheetRefIds, sheetRefReplaceStatements, sheetSettleStatements } from './sheet-refs';
 import {
   imageRefAddStatements,
   imageRefPruneTabStatement,
@@ -67,7 +66,7 @@ export async function tabIdsWithComments(env: Env, documentId: string): Promise<
   const { results } = await env.DB.prepare(
     `SELECT dt.tab_id FROM document_tabs dt JOIN tabs t ON t.id = dt.tab_id
       WHERE dt.document_id = ?
-        AND (instr(t.data, '"commentThread"') > 0 OR instr(t.data, '"cellComments"') > 0)
+        AND instr(t.data, '"commentThread"') > 0
       ORDER BY dt.order_index, dt.tab_id`,
   )
     .bind(documentId)
@@ -76,7 +75,7 @@ export async function tabIdsWithComments(env: Env, documentId: string): Promise<
 }
 
 // A page of the document's tabs that hold a Plan board, in tab order, bodies included: the plan route
-// (docs/specs/026-plan/plan-agents.md "Cost") never parses a tab without a board.
+// never parses a tab without a board.
 export async function tabBodiesWithBoards(
   env: Env,
   documentId: string,
@@ -124,7 +123,7 @@ export async function tabBodiesInOrder(
 // reads the single `data` column rather than going through getTab.
 // The `empty` column of a document list (docs/specs/006-document/document-snapshots.md): the element
 // count of the document's first tab, or of `scopeTabSql`'s tab when that is not null. Reads the
-// count each tab write binds (migration 0059), never a tab body. NULL = no tab, -1 = not yet known.
+// count each tab write binds (the baseline migration), never a tab body. NULL = no tab, -1 = not yet known.
 export function firstTabCountSql(documentIdSql: string, scopeTabSql: string | null = null): string {
   const scope = scopeTabSql ? ` AND (${scopeTabSql} IS NULL OR dt.tab_id = ${scopeTabSql})` : '';
   return `(SELECT COALESCE(t.element_count, -1)
@@ -140,7 +139,7 @@ export function isEmptyCount(firstTabCount: number | null | undefined): boolean 
   return firstTabCount == null || firstTabCount === 0;
 }
 
-// A stored tab body with its id and its element count (null until known, migration 0059).
+// A stored tab body with its id and its element count (null until known, the baseline migration).
 export type StoredTabBody = { id: string; data: string; elementCount: number | null };
 
 // The document's first tab, or `tabId`'s tab when given, as the snapshot renderer reads it.
@@ -163,19 +162,19 @@ export async function getTabBody(
 }
 
 // How much the document's first tab has to draw (drawnCount): its stored count, or a parse of its body while the count is
-// not yet known (migration 0059). Zero with no tab or an unreadable body. Needs no snapshot store, unlike a render.
+// not yet known (the baseline migration). Zero with no tab or an unreadable body. Needs no snapshot store, unlike a render.
 export async function firstTabElementCount(env: Env, documentId: string): Promise<number> {
   const body = await getTabBody(env, documentId);
   if (!body) return 0;
   if (body.elementCount !== null) return body.elementCount;
   try {
-    return drawnCount(JSON.parse(body.data) as { elements?: unknown; form?: unknown });
+    return drawnCount(JSON.parse(body.data) as { elements?: unknown });
   } catch {
     return 0;
   }
 }
 
-// The lazy backfill (migration 0059): a reader that has parsed a body whose count is still unknown
+// The lazy backfill (the baseline migration): a reader that has parsed a body whose count is still unknown
 // records it. Only ever fills a null, so it can never undo a write's own count.
 export async function stampTabElementCount(env: Env, tabId: string, count: number): Promise<void> {
   await env.DB.prepare('UPDATE tabs SET element_count = ? WHERE id = ? AND element_count IS NULL')
@@ -266,10 +265,6 @@ export function tabWriteStatements(
     // Placement grants (docs/specs/009-elements/images.md, "Placement grants"), after the
     // document_tabs upsert above, which they read.
     ...imageGrantPlacementStatements(env, id, imageRefIds(tab.elements, tab.pages), now),
-    // The sheet reference index (docs/specs/029-sheets/sheet-store.md "Deleting a sheet"), after the tabs and
-    // document_tabs upserts, which the rows' FK and the settling triggers (migration 0079) read. A write whose
-    // references are unchanged touches no row, so the triggers cost it nothing.
-    ...sheetRefReplaceStatements(env, id, sheetRefIds(tab.elements)),
   ];
 }
 
@@ -383,8 +378,6 @@ export async function seedTabs(
     stmts.push(
       ...imageGrantPlacementStatements(env, tab.id, imageRefIds(tab.elements, tab.pages), now),
     );
-    // A seed's sheets come after its tabs (routes/documents.ts), so they find these references on create.
-    stmts.push(...sheetRefReplaceStatements(env, tab.id, sheetRefIds(tab.elements)));
   }
   await env.DB.batch(stmts);
 }
@@ -440,9 +433,6 @@ export async function deleteTabRow(
       env.DB.prepare('DELETE FROM tabs WHERE id = ?').bind(tabId),
     ]);
   }
-  // The tab's references are gone (by the FK cascade, or by the unlink the reference join reads), with the link
-  // the triggers would find the document by, so the document's sheets settle here.
-  await env.DB.batch(sheetSettleStatements(env, documentId, Date.now()));
   return unlinked?.data ?? null;
 }
 
@@ -607,7 +597,7 @@ export async function swapTabData(
   expectedData: string,
   nextData: string,
   // `nextData`'s stats (tabStatsOf), from the tab the caller parsed to build it; its element count
-  // is also the tab's element_count (migration 0059).
+  // is also the tab's element_count (the baseline migration).
   nextStats: TabStats,
 ): Promise<boolean> {
   assertTabDataFits(tabId, nextData, 'swapTabData');

@@ -1,14 +1,10 @@
 // The words people search for a template by, beyond its title and description (docs/specs/008-canvas/canvas-and-palette.md
-// "Template categories", Search): other names for it and the job it does. Pure data. A spreadsheet template adds to
-// its sheet's own words (@livepages/sheets SheetTemplateInfo.keywords, which Start Planning searches too), so the
-// Quick Start and Start Planning find a sheet by the same words.
-import { TEMPLATE_START_SHEETS, sheetTemplateInfo } from '@livepages/sheets';
+// "Template categories", Search): other names for it and the job it does. Pure data.
 import type { TemplateKind } from './templates';
 
 const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
   // The blanks.
   blank: ['empty', 'scratch', 'new', 'canvas', 'nothing'],
-  whiteboard: ['empty', 'scratch', 'draw', 'sketch', 'freehand', 'pen'],
   'blank-illustration': ['empty', 'page', 'infographic', 'poster', 'design'],
   'blank-slide-deck': [
     'empty',
@@ -137,216 +133,6 @@ const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
     'ui',
     'mockup',
   ],
-  'blank-plan': ['empty', 'board', 'cards', 'tasks', 'sheet'],
-  'blank-spreadsheet': ['empty', 'sheet', 'spreadsheet', 'excel', 'grid', 'cells', 'table'],
-  'blank-session': ['empty', 'workshop', 'meeting', 'facilitate', 'session'],
-  // Planning.
-  'project-planner': [
-    'project',
-    'sprint',
-    'scrum',
-    'standup',
-    'backlog',
-    'roadmap',
-    'gantt',
-    'agile',
-    'pm',
-  ],
-  kanban: [
-    'agile',
-    'board',
-    'workflow',
-    'tasks',
-    'todo',
-    'to do',
-    'wip',
-    'trello',
-    'requests',
-    'pipeline',
-  ],
-  'task-tracker': ['tasks', 'to do', 'todo', 'checklist', 'owners', 'status', 'due dates', 'list'],
-  'bug-triage': [
-    'bugs',
-    'issues',
-    'defects',
-    'qa',
-    'support',
-    'tickets',
-    'jira',
-    'triage',
-    'health',
-  ],
-  'weekly-planner': ['week', 'schedule', 'calendar', 'days', 'routine', 'personal', 'agenda'],
-  'content-calendar': [
-    'marketing',
-    'social',
-    'posts',
-    'blog',
-    'editorial',
-    'schedule',
-    'publish',
-    'calendar',
-  ],
-  'product-launch': ['release', 'launch', 'go to market', 'gtm', 'checklist', 'ship', 'go no go'],
-  'hiring-pipeline': [
-    'recruiting',
-    'hiring',
-    'candidates',
-    'interviews',
-    'jobs',
-    'hr',
-    'onboarding',
-    'ats',
-  ],
-  okrs: ['objectives', 'key results', 'goals', 'targets', 'kpi', 'quarter', 'okr'],
-  // Finance (the sheets' own words come from their sheet template).
-  'budget-planner': ['budget', 'personal finance'],
-  timesheet: ['time tracking', 'payroll', 'invoice hours'],
-  invoice: ['receipt', 'payment request', 'small business'],
-  'expense-report': ['expenses', 'expense claim', 'reimburse'],
-  'loan-calculator': ['loan', 'emi', 'apr', 'debt'],
-  'sales-pipeline': ['pipeline', 'deals', 'sales funnel', 'kpi'],
-  // Spreadsheets.
-  'contact-list': ['contacts', 'leads', 'directory'],
-  inventory: ['stock control', 'stocktake', 'catalogue'],
-  'guest-list': ['guests', 'rsvp list', 'invite list'],
-  'grade-book': ['grades', 'report card', 'exam'],
-  'habit-tracker': ['habits', 'self improvement', 'fitness'],
-  // Form templates (form-templates.ts).
-  'blank-form': ['empty', 'survey', 'questionnaire', 'responses', 'sign up'],
-  'bug-report-form': ['bug', 'issue', 'report', 'support', 'triage', 'survey'],
-  'feedback-form': ['feedback', 'survey', 'rating', 'satisfaction', 'nps', 'questionnaire'],
-  'feature-request-form': ['feature', 'idea', 'request', 'suggestion', 'roadmap', 'survey'],
-  'rsvp-form': ['rsvp', 'event', 'invite', 'attendance', 'party', 'guest', 'sign up'],
-  'job-application-form': ['job', 'application', 'hiring', 'candidate', 'recruitment', 'careers'],
-  'contact-form': ['contact', 'enquiry', 'inquiry', 'message', 'support', 'get in touch'],
-  // Workshops.
-  'meeting-agenda': [
-    'meeting',
-    'agenda',
-    '1:1',
-    '1-on-1',
-    'one on one',
-    'standup',
-    'sync',
-    'minutes',
-    'notes',
-    'actions',
-  ],
-  brainstorm: ['brainstorm', 'ideas', 'ideation', 'cluster', 'themes', 'how might we', 'vote'],
-  'workshop-board': [
-    'workshop',
-    'kickoff',
-    'goals',
-    'agenda',
-    'ground rules',
-    'icebreaker',
-    'session',
-  ],
-  // Games.
-  'icebreaker-questions': [
-    'icebreaker',
-    'warm up',
-    'get to know',
-    'introductions',
-    'kick-off',
-    'team building',
-  ],
-  'people-bingo': [
-    'bingo',
-    'find someone who',
-    'icebreaker',
-    'networking',
-    'game',
-    'team building',
-  ],
-  retrospective: ['retro', 'sprint', 'agile', 'went well', 'lessons', 'feedback', 'team'],
-  'start-stop-continue': ['retro', 'retrospective', 'feedback', 'team', 'agile'],
-  'mad-sad-glad': ['retro', 'retrospective', 'feelings', 'emotions', 'team'],
-  'four-ls': ['retro', 'retrospective', 'liked', 'learned', 'lacked', 'longed for'],
-  sailboat: ['retro', 'retrospective', 'speedboat', 'anchors', 'wind', 'risks'],
-  'team-retro': [
-    'retro',
-    'retrospective',
-    'actions',
-    'feedback',
-    'vote',
-    'sprint',
-    'archive',
-    'team',
-  ],
-  'pre-mortem': ['risk', 'failure', 'premortem', 'project', 'what could go wrong'],
-  'feedback-board': [
-    'feedback',
-    'feature requests',
-    'ideas',
-    'votes',
-    'customers',
-    'roadmap',
-    'suggestions',
-  ],
-  // Brainstorm.
-  mindmap: ['mind map', 'mindmap', 'ideas', 'brainstorm', 'notes', 'concept map', 'radial'],
-  'mindmap-tree': ['mind map', 'outline', 'tree', 'ideas', 'brainstorm', 'notes'],
-  'mindmap-bubble': ['bubble', 'thinking map', 'describe', 'adjectives', 'brainstorm'],
-  sketchnote: ['visual notes', 'notes', 'doodle', 'talk', 'lecture', 'sketch'],
-  'idea-garden': ['ideas', 'brainstorm', 'tree', 'growth', 'ideation'],
-  'affinity-map': ['affinity', 'clustering', 'research', 'synthesis', 'themes', 'stickies'],
-  'crazy-eights': ['crazy 8s', 'design sprint', 'sketch', 'ideation', 'ideas', 'ux'],
-  'doodle-warmup': ['icebreaker', 'warm up', 'energiser', 'game', 'team building', 'fun'],
-  // Timelines.
-  timeline: ['history', 'schedule', 'milestones', 'chronology', 'dates', 'events'],
-  'milestone-timeline': ['milestones', 'phases', 'schedule', 'project', 'dates'],
-  'milestone-timeline-vertical': ['milestones', 'phases', 'schedule', 'history', 'dates'],
-  gantt: ['gantt', 'schedule', 'project plan', 'dependencies', 'bars', 'dates'],
-  roadmap: ['product roadmap', 'now next later', 'quarters', 'plan', 'strategy', 'releases'],
-  'objectives-planner': ['goals', 'personal', 'smart', 'objectives', 'development', 'pdp'],
-  'raci-matrix': ['raci', 'roles', 'responsibilities', 'accountable', 'ownership', 'rasci'],
-  // Flowcharts.
-  flowchart: ['flow', 'process', 'diagram', 'steps', 'workflow', 'algorithm', 'bpmn'],
-  swimlane: ['cross functional', 'process', 'lanes', 'handoffs', 'workflow', 'bpmn'],
-  'decision-tree': ['decision', 'yes no', 'choices', 'logic', 'branching'],
-  'approval-workflow': ['approval', 'sign off', 'review', 'process', 'workflow'],
-  'data-flow': ['dfd', 'data', 'system', 'processes', 'stores'],
-  // Strategy.
-  swot: ['strengths', 'weaknesses', 'opportunities', 'threats', 'analysis', 'strategy'],
-  'business-model-canvas': ['bmc', 'startup', 'business plan', 'revenue', 'value proposition'],
-  'prioritization-matrix': [
-    'prioritisation',
-    'priority',
-    'eisenhower',
-    'impact effort',
-    '2x2',
-    'quadrant',
-  ],
-  'risk-matrix': ['risk', 'risks', 'likelihood', 'impact', 'register', 'heatmap'],
-  fishbone: ['ishikawa', 'root cause', 'cause and effect', 'problem', '5 whys'],
-  venn: ['overlap', 'sets', 'compare', 'circles', 'intersection'],
-  flywheel: ['growth', 'loop', 'cycle', 'momentum', 'strategy'],
-  funnel: ['sales funnel', 'conversion', 'marketing', 'aarrr', 'pipeline', 'stages'],
-  sankey: ['flow diagram', 'energy', 'budget', 'traffic', 'drop-off', 'allocation', 'sankeymatic'],
-  'comparison-table': ['compare', 'comparison', 'features', 'options', 'table', 'vs'],
-  'stakeholder-map': ['stakeholders', 'power interest', 'influence', 'engagement'],
-  'rich-picture': ['systems thinking', 'soft systems', 'problem', 'stakeholders', 'drawing'],
-  'wardley-map': [
-    'wardley',
-    'value chain',
-    'evolution',
-    'situational awareness',
-    'build vs buy',
-    'landscape',
-    'doctrine',
-  ],
-  'value-proposition-canvas': [
-    'vpc',
-    'value proposition',
-    'customer profile',
-    'jobs to be done',
-    'jtbd',
-    'pains and gains',
-    'product market fit',
-    'strategyzer',
-  ],
   'working-backwards': [
     'pr faq',
     'prfaq',
@@ -357,48 +143,8 @@ const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
     'faq',
     'launch',
   ],
-  // Org Charts.
-  orgchart: ['org', 'organisation', 'organization', 'team', 'hierarchy', 'reporting lines'],
-  pyramid: ['hierarchy', 'levels', 'layers', 'maslow', 'tiers'],
-  'okr-tree': ['okr', 'goals', 'objectives', 'key results', 'alignment', 'tree'],
-  sitemap: ['site map', 'ia', 'information architecture', 'website', 'pages', 'navigation'],
-  'opportunity-solution-tree': ['ost', 'product discovery', 'outcomes', 'opportunities'],
-  'metric-tree': [
-    'north star',
-    'kpi tree',
-    'driver tree',
-    'metrics',
-    'input metrics',
-    'growth model',
-    'what if',
-  ],
-  'family-tree': [
-    'genealogy',
-    'ancestry',
-    'ancestors',
-    'family history',
-    'relatives',
-    'generations',
-    'pedigree',
-  ],
-  // Design.
-  'paper-prototype': ['prototype', 'lo-fi', 'sketch', 'wireframe', 'usability', 'ux'],
   storyboard: ['story', 'scenes', 'frames', 'film', 'video', 'ux'],
-  journey: ['customer journey', 'journey map', 'cx', 'experience', 'touchpoints', 'ux'],
-  'journey-doodle': ['customer journey', 'journey map', 'cx', 'experience', 'drawn'],
-  'user-persona': ['persona', 'user', 'customer', 'profile', 'research', 'ux'],
-  'empathy-map': ['empathy', 'says thinks does feels', 'user', 'research', 'ux'],
-  'user-story-map': ['story map', 'user stories', 'backlog', 'mvp', 'releases', 'agile'],
   'floor-plan': ['floorplan', 'layout', 'room', 'office', 'house', 'architecture'],
-  'service-blueprint': [
-    'blueprint',
-    'service design',
-    'frontstage',
-    'backstage',
-    'line of visibility',
-    'cx',
-    'touchpoints',
-  ],
   // Presentations.
   'slide-deck': ['presentation', 'slides', 'deck', 'pitch', 'powerpoint', 'keynote'],
   article: ['article', 'project', 'document', 'doc', 'brief', 'report', 'writing', 'memo', 'blog'],
@@ -448,48 +194,9 @@ const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
   resume: ['resume', 'cv', 'curriculum vitae', 'job', 'career'],
   'recipe-card': ['recipe', 'cooking', 'food', 'ingredients', 'menu'],
   'live-card': ['card', 'greeting', 'birthday', 'farewell', 'leaving card', 'thank you'],
-  'comic-strip': ['comic', 'cartoon', 'story', 'panels', 'storyboard'],
-  // Technical.
-  'system-architecture': ['architecture', 'system design', 'services', 'components', 'c4'],
-  'cloud-architecture': ['aws', 'azure', 'gcp', 'cloud', 'infrastructure', 'devops'],
-  'er-diagram': ['erd', 'database', 'schema', 'tables', 'entity relationship', 'sql'],
-  'sequence-diagram': ['sequence', 'uml', 'messages', 'api calls', 'interactions'],
-  'uml-class': ['uml', 'classes', 'object oriented', 'oop', 'model'],
-  'state-machine': ['states', 'transitions', 'fsm', 'lifecycle', 'statechart'],
-  'incident-postmortem': ['postmortem', 'incident', 'outage', 'rca', 'blameless', 'review'],
-  'threat-model': [
-    'stride',
-    'threat modelling',
-    'threat modeling',
-    'security',
-    'trust boundary',
-    'dfd',
-    'appsec',
-    'attack',
-  ],
-  'value-stream-map': [
-    'vsm',
-    'value stream',
-    'lean',
-    'lead time',
-    'flow efficiency',
-    'kaizen',
-    'devops',
-    'waste',
-  ],
 };
 
-// The templates made with a sheet template, by kind (their start's sheet): the spreadsheet templates and the three
-// companion Sheets (template-companions.ts).
-const SHEET_STARTS_BY_KIND = TEMPLATE_START_SHEETS as Readonly<Record<string, unknown>>;
-
-/** The words a template is searched by: its own, and for a template made with a sheet template (a spreadsheet
- *  template, or a Diagram template's companion Sheet) its sheet's too. */
+/** The words a template is searched by. */
 export function templateKeywords(kind: TemplateKind): readonly string[] {
-  const own = OWN_KEYWORDS[kind];
-  if (!(kind in SHEET_STARTS_BY_KIND)) return own;
-  const sheet = sheetTemplateInfo(
-    TEMPLATE_START_SHEETS[kind as keyof typeof TEMPLATE_START_SHEETS],
-  ).keywords;
-  return [...new Set([...own, ...sheet])];
+  return OWN_KEYWORDS[kind];
 }

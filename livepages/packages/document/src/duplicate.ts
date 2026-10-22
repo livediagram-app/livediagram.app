@@ -4,12 +4,9 @@
 // factories; re-exported from ./index so the public surface is
 // unchanged.
 
-import { copiedSheetId, relinkCopiedCharts } from './chart-source';
 import {
   isBoxed,
-  newPlanSheetId,
   type ArrowElement,
-  type PlanSheetRef,
   type BoxedElement,
   type Element,
   type ElementId,
@@ -25,22 +22,14 @@ import {
 // about that element, `responses` were cast in a session (docs/specs/012-collaboration/participant-responses.md),
 // and an assigned action is work handed to a person under its own id (docs/specs/012-collaboration/assigned-actions.md
 // "A copy doesn't carry the action"): a duplicate under the same id is a second action nobody assigned, which the
-// timeline never sees added. A Sheet's cell threads go the same way (docs/specs/029-sheets/sheet.md "Cell comments").
+// timeline never sees added. A Sheet's cell threads go the same way.
 // The clipboard strips the same list on the way out (stripIdentity in apps/live).
-export const ORIGINAL_ONLY_FIELDS = [
-  'commentThread',
-  'cellComments',
-  'responses',
-  'action',
-  'actions',
-] as const;
+export const ORIGINAL_ONLY_FIELDS = ['commentThread', 'responses', 'action', 'actions'] as const;
 
 export function freshCopyFields(el: Element): {
   rotation?: number;
-  planSheet?: PlanSheetRef;
   addedBy?: undefined;
   commentThread?: undefined;
-  cellComments?: undefined;
   responses?: undefined;
   action?: undefined;
   actions?: undefined;
@@ -50,17 +39,6 @@ export function freshCopyFields(el: Element): {
   } = {};
   if ('addedBy' in el) fresh.addedBy = undefined;
   for (const field of ORIGINAL_ONLY_FIELDS) if (field in el) fresh[field] = undefined;
-  // A copied Sheet frames a new sheet, made from the original's when it is first drawn
-  // (docs/specs/029-sheets/sheet.md "Copying a Sheet element"). A copy of a copy not yet made copies the original.
-  // A template's Sheet not yet made (sheet-store.md "Template starts") has nothing to copy yet: the copy is made from
-  // the same start.
-  if (el.type === 'shape' && el.shape === 'plan-sheet' && el.planSheet?.start)
-    return { ...fresh, planSheet: { sheetId: newPlanSheetId(), start: el.planSheet.start } };
-  if (el.type === 'shape' && el.shape === 'plan-sheet' && el.planSheet?.sheetId)
-    return {
-      ...fresh,
-      planSheet: { sheetId: newPlanSheetId(), copyOf: el.planSheet.copyOf ?? el.planSheet.sheetId },
-    };
   return fresh;
 }
 
@@ -78,20 +56,15 @@ export function duplicateElements(
   dy: number,
 ): { newElements: Element[]; idMap: Map<ElementId, ElementId> } {
   const idMap = new Map<ElementId, ElementId>();
-  let newBoxed: BoxedElement[] = [];
-  const sheetIds = new Map<string, string>();
+  const newBoxed: BoxedElement[] = [];
 
   for (const el of elements) {
     if (!ids.has(el.id) || !isBoxed(el)) continue;
     const newId = crypto.randomUUID();
     idMap.set(el.id, newId);
     const copy = { ...el, id: newId, x: el.x + dx, y: el.y + dy, ...freshCopyFields(el) };
-    const sheet = copiedSheetId(el, copy);
-    if (sheet) sheetIds.set(sheet[0], sheet[1]);
     newBoxed.push(copy);
   }
-  // A chart copied with its Sheet reads the Sheet's copy (docs/specs/029-sheets/sheet.md "Charts").
-  newBoxed = relinkCopiedCharts(newBoxed, sheetIds);
 
   const existingIds = new Set(elements.map((e) => e.id));
 

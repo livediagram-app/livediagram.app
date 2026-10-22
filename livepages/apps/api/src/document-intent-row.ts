@@ -1,18 +1,17 @@
-// The recorded creation intent as stored on a documents row (migration 0062,
+// The recorded creation intent as stored on a documents row (the baseline migration,
 // docs/specs/013-workspace/default-folders.md "Recorded intent"). Each stored value reads as itself
 // only when it is in its list, so a retired value never reaches a client as a live option. The
-// opens-in decides whether anything was recorded: when it reads null, so does everything else.
+// opens-in decides whether anything was recorded: when it reads null, so does the tab kind.
 
-import { isCreationTabKind, isTemplateFamily, type RecordedIntent } from '@livepages/api-schema';
+import { isCreationTabKind, type RecordedIntent } from '@livepages/api-schema';
 import { parseEditorMode } from '@livepages/document';
 
 export type RecordedIntentRow = {
   opens_in: string | null;
   tab_kind: string | null;
-  template_family: string | null;
 };
 
-const UNKNOWN: RecordedIntent = { opensIn: null, tabKind: null, templateFamily: null };
+const UNKNOWN: RecordedIntent = { opensIn: null, tabKind: null };
 
 export function readRecordedIntent(row: RecordedIntentRow): RecordedIntent {
   // A row recorded before Pages mode's rename says `infographic`.
@@ -21,6 +20,5 @@ export function readRecordedIntent(row: RecordedIntentRow): RecordedIntent {
   return {
     opensIn,
     tabKind: isCreationTabKind(row.tab_kind) ? row.tab_kind : null,
-    templateFamily: isTemplateFamily(row.template_family) ? row.template_family : null,
   };
 }

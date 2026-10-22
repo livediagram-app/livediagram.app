@@ -16,26 +16,18 @@ import { embedTabImages } from '@livepages/api-schema';
 import {
   drawnCount,
   elementsOnPage,
-  formLook,
   laidOutPagesOf,
   migrateStoredTab,
   pagesOf,
   renderElementsToSvg,
   renderPageToSvg,
-  resolveFontStack,
-  tabKindOf,
   type Tab,
 } from '@livepages/document';
-import { readForm } from '@livepages/forms';
-import { formArt } from '@livepages/plan-art';
-import { cardSourceOf, typesOf } from '@livepages/items';
-import { renderModelsForTab, sheetFramesOf } from '@livepages/sheets';
 // Static-import icon resolver (bundle size is fine in a Worker) so icon
 // elements render their real glyph in the snapshot / live image instead of
 // the renderer's box-with-label fallback.
 import { resolveIconExportArt, resolveStickerArt } from '@livepages/icons/resolve';
 import {
-  getDocumentItemTypes,
   getTab,
   getTabBody,
   getThumbRenderedAt,
@@ -43,8 +35,6 @@ import {
   stampTabElementCount,
   thumbnailKey,
   type StoredTabBody,
-  listItems,
-  listSheets,
   servableImageIds,
 } from './db';
 import { imageRefIds } from './image-refs/extract';
@@ -68,11 +58,7 @@ const IMAGE_EMBED_BUDGET_BYTES = 3 * 1024 * 1024;
 // caller that already read it alongside the document row (the Explorer
 // thumbnail route, via getDocumentThumbMeta) passes it and saves a query;
 // one that didn't leaves it out and it is read here.
-// `itemTypes` likewise: a caller that read them passes them; one that did not (the Explorer thumbnail route, whose
-// one read leaves the catalogue out) leaves them out, and they are read only when a render draws cards. Never
-// defaulted to none: a board then takes no type and draws no card.
 export type ThumbnailSubject = Pick<DocumentDTO, 'id' | 'name' | 'savedAt'> & {
-  itemTypes?: DocumentDTO['itemTypes'];
   thumbRenderedAt?: number | null;
 };
 
@@ -179,7 +165,7 @@ export async function renderTabSvg(
   });
 }
 
-// The lazy backfill of tabs.element_count (migration 0059): a tab stored before the count existed gets it
+// The lazy backfill of tabs.element_count (the baseline migration): a tab stored before the count existed gets it
 // from the parse a render does anyway, so the lists know an old empty document after one ask. Best effort:
 // a failed stamp leaves the count unknown, which only means the row asks again.
 function stampUnknownCount(
@@ -200,7 +186,7 @@ function stampUnknownCount(
 }
 
 // Turn a stored tab body into an SVG, shared by the first-tab snapshot and
-// the per-tab live image. A Form tab draws its form. Null when the body is
+// the per-tab live image. Null when the body is
 // absent, unparseable, or has nothing to draw (an empty canvas has no
 // meaningful thumbnail; the row shows its icon instead).
 async function renderTabBodyToSvg(
@@ -218,13 +204,6 @@ async function renderTabBodyToSvg(
   }
   if (!Array.isArray(parsed.elements)) return null;
   await stampUnknownCount(env, body, drawnCount(parsed), opts);
-  // A Form tab is its form as respondents see it on its tab's look (docs/specs/030-forms/forms.md "Look"), the picture
-  // the MCP preview draws: the form is not an element, so the canvas under it has nothing to show.
-  const form = tabKindOf(parsed) === 'form' ? readForm(parsed.form) : null;
-  if (form) {
-    const look = formLook(parsed);
-    return formArt(form, look, resolveFontStack(look.font)).svg;
-  }
   if (parsed.elements.length === 0) return null;
   // `tabs.data` is the tab body minus id + name (see db/tabs.ts
   // upsertTab); re-attach them so the value is a complete Tab. The
@@ -252,43 +231,10 @@ async function renderTabBodyToSvg(
         }
       : tab,
   );
-  // A Plan board or card draws its document's items (docs/specs/026-plan/plan-board.md).
-  const plan = tab.elements.some(
-    (el) => el.type === 'shape' && (el.shape === 'plan-board' || el.shape === 'plan-card'),
-  );
-  // A Sheet draws its window of cells (docs/specs/029-sheets/sheet.md "Exports and images"); card functions in
-  // its formulas read the items too.
-  const frames = sheetFramesOf(tab.elements);
-  const sheetJson = frames.length
-    ? await listSheets(env, liveDoc.id, {
-        ids: [...new Set(frames.map((f) => f.sheetId))].slice(0, 50),
-      })
-    : [];
-  const sheetCards = sheetJson.some((s) =>
-    s.cells.some((c) => c.i && 'f' in c.i && c.i.f.t.includes('CARD')),
-  );
-  const [items, catalogue] =
-    plan || sheetCards
-      ? await Promise.all([
-          listItems(env, liveDoc.id).then((all) => new Map(all.map((i) => [i.id, i]))),
-          liveDoc.itemTypes !== undefined
-            ? liveDoc.itemTypes
-            : getDocumentItemTypes(env, liveDoc.id),
-        ])
-      : [undefined, null];
-  const sheets = frames.length
-    ? renderModelsForTab(sheetJson, frames, {
-        cards: sheetCards && items ? cardSourceOf(items.values(), typesOf(catalogue)) : null,
-      })
-    : undefined;
   const drawWith = {
     resolveImageHref: (id: string) => images.get(id),
     resolveIconArt: resolveIconExportArt,
     resolveStickerArt,
-    items,
-    sheets,
-    // Custom types keep their colours (docs/specs/026-plan/item-types.md).
-    itemTypes: plan ? typesOf(catalogue) : undefined,
   };
   return firstPage ? renderPageToSvg(tab, firstPage, drawWith) : renderElementsToSvg(tab, drawWith);
 }

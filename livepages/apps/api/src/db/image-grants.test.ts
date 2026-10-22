@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
-import { migrateFrom, sqliteD1 } from '../test-sqlite-d1';
+import { sqliteD1 } from '../test-sqlite-d1';
 import { copyDocument, setDocumentFolder } from './documents';
 import { handTeamWorkToHeir } from './teams';
 import { migrateOwnerId } from './account';
@@ -99,7 +99,7 @@ describe('documentServesImage', () => {
     image(db.sql, 'editor-img', 'guest-editor');
     image(db.sql, 'participant-img', 'guest-participant');
     image(db.sql, 'viewer-img', 'guest-viewer');
-    // A Participant's row keeps the two-valued role at 'view' (migration 0080); its level says participate.
+    // A Participant's row keeps the two-valued role at 'view' (the baseline migration); its level says participate.
     for (const [owner, role, level] of [
       ['guest-editor', 'edit', null],
       ['guest-participant', 'view', 'participate'],
@@ -216,28 +216,6 @@ describe('removal', () => {
     await upsertTab(db.env, 'D', tabWith('t1', 'bob-img'), 0);
     await db.env.DB.batch(documentRemovalStatements(db.env, { column: 'id', value: 'D' }));
     expect(grants(db.sql)).toEqual([]);
-  });
-});
-
-// Migration 0075 cannot tell an old paste from a legitimate placement, so
-// every reference that already crossed owners keeps rendering.
-describe('migration 0075', () => {
-  it('grants every existing cross-owner reference and nothing else', () => {
-    const db = sqliteD1({}, { before: '0075' });
-    liveDoc(db.sql, 'D', { owner: 'alice' });
-    image(db.sql, 'own', 'alice');
-    image(db.sql, 'foreign', 'bob');
-    insert(db.sql, 'tabs', { id: 't1', name: 't1', data: '{}', updated_at: 0 });
-    insert(db.sql, 'document_tabs', {
-      document_id: 'D',
-      tab_id: 't1',
-      order_index: 0,
-      added_at: 0,
-    });
-    insert(db.sql, 'image_refs', { tab_id: 't1', image_id: 'own' });
-    insert(db.sql, 'image_refs', { tab_id: 't1', image_id: 'foreign' });
-    migrateFrom(db.sql, '0075');
-    expect(grants(db.sql)).toEqual(['D:foreign']);
   });
 });
 

@@ -159,15 +159,7 @@ describe('finishSplitsFace (docs/specs/008-canvas/finish.md "Every other face is
   const shape = (kind: string, iconId?: string) => ({ type: 'shape', shape: kind, iconId });
 
   it('splits every face that draws more than its label', () => {
-    for (const kind of [
-      'bar-chart',
-      'pyramid',
-      'sankey',
-      'badge',
-      'card',
-      'plan-board',
-      'entity',
-    ]) {
+    for (const kind of ['bar-chart', 'pyramid', 'sankey', 'badge', 'card', 'entity']) {
       expect(finishSplitsFace(shape(kind)), kind).toBe(true);
     }
     for (const type of ['table', 'link-card', 'video', 'annotation']) {

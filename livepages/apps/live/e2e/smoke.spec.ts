@@ -103,7 +103,7 @@ test.describe('mobile', () => {
     page,
     pageErrors,
   }) => {
-    // The strip is Workshop's (docs/specs/012-collaboration/workshop-mode.md), so a Blank Session.
+    // The Session strip (docs/specs/012-collaboration/session-tools.md "The Session strip"), on a Blank Session.
     await openBlankSession(page);
 
     // Every cluster button is inside the viewport: nothing pushed off the left edge.

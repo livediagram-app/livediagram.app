@@ -126,7 +126,6 @@ export function EditorContextMenuHost() {
     setChartRightAxisSelected,
     setChartLegendPositionSelected,
     setChartTypeSelected,
-    unlinkChartSelected,
     setLineDataOpenForId,
     setCodeEditOpenForId,
     setCodeWrapSelected,
@@ -402,7 +401,6 @@ export function EditorContextMenuHost() {
       onSetChartRightAxis={setChartRightAxisSelected}
       onSetChartLegendPosition={setChartLegendPositionSelected}
       onSetChartType={setChartTypeSelected}
-      onUnlinkChart={unlinkChartSelected}
       onEditLineData={setLineDataOpenForId}
       onEditCodeBlock={setCodeEditOpenForId}
       onSetCodeWrap={setCodeWrapSelected}

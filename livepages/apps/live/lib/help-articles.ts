@@ -50,7 +50,7 @@ export const HELP_ARTICLES = {
   aiTools: 'tools/ai/ai-tools',
   connectAiTool: 'account-and-data/connect-ai-mcp',
   // Tabs / import-export
-  exportingDiagrams: 'account-and-data/exporting-diagrams',
+  exportingDiagrams: 'account-and-data/exporting-documents',
   apiTokens: 'account-and-data/api-tokens',
   trash: 'account-and-data/trash',
   importTabs: 'tabs/import-tabs',
@@ -67,16 +67,7 @@ export const HELP_ARTICLES = {
   customThemes: 'canvas/themes/custom-themes',
   choosingFonts: 'canvas/text-and-fonts/choosing-fonts',
   // Links / activity / comments
-  // Plan mode's card types (docs/specs/026-plan/item-types.md).
-  planCardTypes: 'canvas/plan-mode/card-types',
-  planBoards: 'canvas/plan-mode/boards',
-  planCards: 'canvas/plan-mode/cards',
-  planSheets: 'canvas/plan-mode/sheets',
-  planDashboards: 'canvas/plan-mode/dashboards',
-  planForms: 'canvas/plan-mode/forms',
-  planTour: 'canvas/plan-mode/plan-tour',
-  workshopTour: 'canvas/workshop-mode/workshop-tour',
-  pagesTour: 'canvas/pages-mode/pages-tour',
+  pagesTour: 'pages/pages-tour',
   links: 'canvas/links',
   comments: 'collaboration/comments',
   livePresence: 'collaboration/live-presence',
@@ -85,8 +76,6 @@ export const HELP_ARTICLES = {
   // Standing panels.
   explorerPanel: 'explorer/explorer-panel',
   layers: 'canvas/layers',
-  // The Tidy Up popover's tidiers (docs/specs/008-canvas/layout-cleanup.md).
-  layoutCleanup: 'tools/layout-cleanup',
   minimap: 'user-interface/minimap',
   sessionVoting: 'collaboration/session-tools/voting',
   sessionTimer: 'collaboration/session-tools/timer',
@@ -100,11 +89,11 @@ export const HELP_ARTICLES = {
   defaultFolders: 'explorer/folders/default-folders',
   explorerFilters: 'explorer/filters',
   dataElements: 'palette/tools/data-elements',
-  sankeyDiagram: 'palette/build/sankey-diagram',
+  sankeyDiagram: 'palette/concept-graphics/sankey-diagram',
   // The round-two element tours' closing cards (docs/specs/007-editor/element-tours.md).
   stacks: 'palette/stacks',
   entities: 'palette/entities',
-  tabWindows: 'canvas/pages-mode/tab-windows',
+  tabWindows: 'pages/tab-windows',
   lanes: 'palette/lanes',
   boundaries: 'palette/boundaries',
   diagramKeys: 'palette/diagram-keys',
@@ -114,18 +103,16 @@ export const HELP_ARTICLES = {
   palette: 'palette',
   // Settings
   powerUserMode: 'user-interface/power-user-mode',
-  diagramTour: 'getting-started/diagram-tour',
   whatWeCollect: 'privacy-and-security/what-we-collect',
   offlineMode: 'privacy-and-security/offline-mode',
   // Onboarding / empty states
-  yourFirstDiagram: 'getting-started/your-first-diagram',
   templates: 'canvas/templates',
-  logoPages: 'canvas/pages-mode/logo-pages',
-  wireframePages: 'canvas/pages-mode/wireframe-pages',
+  logoPages: 'pages/logo-pages',
+  wireframePages: 'pages/wireframe-pages',
   // Each page kind's Show Me links its own article (docs/specs/007-editor/pages-tour.md).
-  slidePages: 'canvas/pages-mode/slide-pages',
-  infographicLayouts: 'canvas/pages-mode/infographic-layouts',
-  articlePages: 'canvas/pages-mode/articles',
+  slidePages: 'pages/slide-pages',
+  infographicLayouts: 'pages/infographic-layouts',
+  articlePages: 'pages/articles',
   keyboardShortcuts: 'tips-and-tricks/keyboard-shortcuts',
   guestVsAccount: 'getting-started/guest-vs-account',
   // Load recovery (docs/specs/007-editor/load-recovery.md).
@@ -141,39 +128,6 @@ export type HelpArticleKey = keyof typeof HELP_ARTICLES;
 // the same article say the same thing, and a `?` never falls back to a bare
 // "Learn more" that tells the reader nothing about where it goes.
 export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description: string }> = {
-  planCardTypes: {
-    title: 'Learn about card types',
-    description: 'Add your own kinds of card, with the fields each one holds.',
-  },
-  planBoards: {
-    title: 'Learn about boards',
-    description: 'Columns, swimlanes, widgets, and the cards each board takes.',
-  },
-  planCards: {
-    title: 'Learn about cards',
-    description: 'Open a card, fill it in, and archive, trash or present it.',
-  },
-  planSheets: {
-    title: 'Learn about sheets',
-    description: 'Cells, formulas, charts, setup and settings.',
-  },
-  planDashboards: {
-    title: 'Learn about dashboards',
-    description: 'Rows of slots, what a slot can show, and arranging them.',
-  },
-  planForms: {
-    title: 'Learn about forms',
-    description: 'Questions, where answers go, publishing and responses.',
-  },
-
-  planTour: {
-    title: 'Learn about the Plan Tour',
-    description: 'What the tour shows you and how replaying works.',
-  },
-  workshopTour: {
-    title: 'Learn about the Workshop Tour',
-    description: 'What the tour shows you and how replaying works.',
-  },
   pagesTour: {
     title: 'Learn about the Pages Tour',
     description: 'What the tour shows you and how replaying works.',
@@ -303,11 +257,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about the Explorer',
     description: 'Tips and tricks to help you get the most out of the Explorer.',
   },
-  layoutCleanup: {
-    title: 'Learn about tidying a layout',
-    description:
-      'Tips for laying a diagram out in one press, and choosing the style that suits it.',
-  },
   layers: {
     title: 'Learn about layers',
     description: 'Tips and tricks for stacking, hiding and locking parts of a tab.',
@@ -429,10 +378,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about power user mode',
     description: 'The recommended settings it applies, and Minimal chrome.',
   },
-  diagramTour: {
-    title: 'Learn about the Diagram Tour',
-    description: 'What the tour covers and how replaying works.',
-  },
   whatWeCollect: {
     title: 'Learn about what we collect',
     description: "Exactly which anonymous events are sent, and what isn't.",
@@ -440,10 +385,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   offlineMode: {
     title: 'Learn about Offline Mode',
     description: 'Documents saved only in this browser, and how to sync them.',
-  },
-  yourFirstDiagram: {
-    title: 'Learn about your first diagram',
-    description: 'A short walkthrough of building your first diagram.',
   },
   templates: {
     title: 'Learn about templates',

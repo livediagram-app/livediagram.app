@@ -120,20 +120,6 @@ export const MENTION_EMAILS = email(
   'A teammate was emailed because someone @-mentioned them in a comment.',
 );
 
-// docs/specs/030-forms/forms.md "Hearing about responses".
-export const FORM_RESPONSE_EMAILS = email(
-  'FormResponse',
-  'Form Response Notifications',
-  'An owner told someone filled in one of their forms. At most one per form in a burst.',
-);
-
-export const FORM_SUSPENDED_EMAILS = email(
-  'FormSuspended',
-  'Form Suspended Emails',
-  'An owner told their form link was suspended after reports from respondents.',
-  'bad',
-);
-
 export const TOKEN_EXPIRING_EMAILS = email(
   'TokenExpiring',
   'Token Expiry Warnings',
@@ -165,8 +151,6 @@ export const EMAIL_KIND_METRICS: readonly Metric[] = [
   COMMENT_EMAILS,
   ACTION_EMAILS,
   MENTION_EMAILS,
-  FORM_RESPONSE_EMAILS,
-  FORM_SUSPENDED_EMAILS,
   TOKEN_EXPIRING_EMAILS,
   ACCOUNT_DELETED_EMAILS,
 ];

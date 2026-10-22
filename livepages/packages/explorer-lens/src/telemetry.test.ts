@@ -10,15 +10,15 @@ const facets = (before: string, after: string) =>
 
 describe('selectedFacets', () => {
   it('names each dimension that gains a value it did not hold, in dimension order', () => {
-    expect(facets('', 'space:mine template:kanban')).toEqual(['template', 'space']);
-    expect(facets('template:kanban', 'template:kanban,retrospective')).toEqual(['template']);
-    expect(facets('template:kanban', 'template:retrospective')).toEqual(['template']);
+    expect(facets('', 'space:mine edited:7d')).toEqual(['edited', 'space']);
+    expect(facets('edited:7d', 'edited:7d,30d')).toEqual(['edited']);
+    expect(facets('edited:7d', 'edited:30d')).toEqual(['edited']);
   });
 
   it('names nothing for a value taken away, a cleared or an unchanged dimension', () => {
-    expect(facets('template:kanban,retrospective', 'template:kanban')).toEqual([]);
-    expect(facets('template:kanban', '')).toEqual([]);
-    expect(facets('template:kanban x', 'template:kanban y')).toEqual([]);
+    expect(facets('edited:7d,30d', 'edited:7d')).toEqual([]);
+    expect(facets('edited:7d', '')).toEqual([]);
+    expect(facets('edited:7d x', 'edited:7d y')).toEqual([]);
   });
 
   it('names the text only when it goes from empty to non-empty', () => {
@@ -28,8 +28,9 @@ describe('selectedFacets', () => {
   });
 
   it('maps every facet to a closed type', () => {
-    expect(
-      facets('', 'plan template:kanban').map((facet) => LENS_TELEMETRY_TYPES[facet]),
-    ).toEqual(['Text', 'Template']);
+    expect(facets('', 'plan edited:7d').map((facet) => LENS_TELEMETRY_TYPES[facet])).toEqual([
+      'Text',
+      'Edited',
+    ]);
   });
 });

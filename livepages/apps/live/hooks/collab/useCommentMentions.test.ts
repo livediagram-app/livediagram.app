@@ -27,20 +27,12 @@ function hook(ownerId: string | null = 'me') {
 }
 
 describe('useCommentMentions notify', () => {
-  it("names the card for a card's comment, and nothing more for a canvas one", async () => {
+  it('tells the mentioned people about the comment', async () => {
     const { result } = hook();
     await waitFor(() => expect(api.apiGetTeam).toHaveBeenCalled());
-    result.current.notifyMentioned('Hi @priya', mentions, 'item-one', 'c1');
+    result.current.notifyMentioned('Hi @priya', mentions);
     expect(track).toHaveBeenCalledWith('Comment', 'Mentioned');
     expect(api.apiNotifyMention).toHaveBeenCalledWith('me', 't1', {
-      documentId: 'd1',
-      commentText: 'Hi @priya',
-      mentions: [{ userId: 'u2', memberId: 'm2' }],
-      itemId: 'item-one',
-      commentId: 'c1',
-    });
-    result.current.notifyMentioned('Hi @priya', mentions);
-    expect(api.apiNotifyMention).toHaveBeenLastCalledWith('me', 't1', {
       documentId: 'd1',
       commentText: 'Hi @priya',
       mentions: [{ userId: 'u2', memberId: 'm2' }],
@@ -49,7 +41,7 @@ describe('useCommentMentions notify', () => {
 
   it('counts but sends nothing for a guest, and does nothing without mentions', () => {
     const { result } = hook(null);
-    result.current.notifyMentioned('Hi', mentions, 'item-one');
+    result.current.notifyMentioned('Hi', mentions);
     expect(track).toHaveBeenCalledWith('Comment', 'Mentioned');
     expect(api.apiNotifyMention).not.toHaveBeenCalled();
     track.mockClear();

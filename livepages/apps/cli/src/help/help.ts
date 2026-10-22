@@ -25,12 +25,8 @@ const GROUPED_ROWS = [
   },
 ] as const;
 const NAMED_ONLY = [
-  'board',
-  'sheet',
   'page',
   'article',
-  'form',
-  'type',
   'template',
   'icon',
   'image',

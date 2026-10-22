@@ -15,8 +15,8 @@ import type { PaletteTileDef } from './palette-tile-defs';
 
 // The category flyout's arrangement (docs/specs/007-editor/toolbar-layout.md "The category bar").
 
-const tiles = (mode: 'diagram' | 'workshop' | 'pages', id: string): PaletteTileDef[] =>
-  paletteCategoriesFor(mode).find((c) => c.id === id)?.tiles ?? [];
+const tiles = (id: string): PaletteTileDef[] =>
+  paletteCategoriesFor('pages').find((c) => c.id === id)?.tiles ?? [];
 
 const tile = (id: string, dividerAfter = false): PaletteTileDef => ({
   id,
@@ -29,8 +29,8 @@ const tile = (id: string, dividerAfter = false): PaletteTileDef => ({
 });
 
 describe('the category bar', () => {
-  it('is Diagram’s, Workshop’s and Pages’s strip, not Plan’s or Draw’s', () => {
-    expect([...CATEGORY_BAR_MODES].sort()).toEqual(['diagram', 'pages', 'workshop']);
+  it('is Pages’s strip', () => {
+    expect([...CATEGORY_BAR_MODES]).toEqual(['pages']);
   });
 
   it('names every category in one word', () => {
@@ -55,11 +55,8 @@ describe('a flyout’s layout', () => {
     expect(flyoutCardColumns(SHORT_CARD_LIST + 1)).toBe(2);
   });
 
-  it('words a line its own way where a mode fills the category differently', () => {
-    expect(flyoutTagline('write', 'fallback', 'workshop')).toBe(
-      'Words, notes, tables and checklists.',
-    );
-    expect(flyoutTagline('write', 'fallback', 'diagram')).toBe(
+  it('words a category’s line, or falls back on its own', () => {
+    expect(flyoutTagline('write', 'fallback')).toBe(
       'Words on the canvas: text, notes and comments.',
     );
     expect(flyoutTagline('unknown', 'fallback')).toBe('fallback');
@@ -67,42 +64,21 @@ describe('a flyout’s layout', () => {
 });
 
 describe('a flyout’s groups', () => {
-  it('heads Shapes, Draw, Layout, Data and Components by the tile that starts each group', () => {
-    expect(flyoutGroups('shapes', tiles('diagram', 'shapes')).map((g) => g.title)).toEqual([
-      'Basics',
-      'Flowchart',
-      'More Shapes',
-    ]);
-    expect(flyoutGroups('draw', tiles('diagram', 'draw')).map((g) => g.title)).toEqual([
-      'Pens',
-      'Outlines',
-      'Connectors',
-    ]);
-    expect(flyoutGroups('layout', tiles('diagram', 'layout')).map((g) => g.title)).toEqual([
-      'Containers',
-      'Parts',
-    ]);
-    expect(flyoutGroups('data', tiles('pages', 'data')).map((g) => g.title)).toEqual([
+  it('heads Data and Components by the tile that starts each group', () => {
+    expect(flyoutGroups('data', tiles('data')).map((g) => g.title)).toEqual([
       'Charts',
       'Meters',
       'Tables',
     ]);
-    expect(flyoutGroups('components', tiles('pages', 'components')).map((g) => g.title)).toEqual([
+    expect(flyoutGroups('components', tiles('components')).map((g) => g.title)).toEqual([
       'Layout',
       'Page Blocks',
       'Code and Lists',
     ]);
-    expect(flyoutGroups('data', tiles('workshop', 'data')).map((g) => g.title)).toEqual([
-      'Charts',
-      'Meters',
-    ]);
   });
 
-  it('shows one block, unheaded, when not every group has a name', () => {
-    const groups = flyoutGroups('write', tiles('workshop', 'write'));
-    expect(groups).toHaveLength(1);
-    expect(groups[0]!.title).toBeNull();
-    expect(groups[0]!.tiles).toHaveLength(tiles('workshop', 'write').length);
+  it('never splits Popular, and has nothing to show for no tiles', () => {
+    expect(flyoutGroups('popular', tiles('popular'))).toHaveLength(1);
     expect(flyoutGroups('x', [tile('a', true), tile('b')])).toEqual([
       {
         id: 'a',
@@ -110,10 +86,6 @@ describe('a flyout’s groups', () => {
         tiles: [expect.objectContaining({ id: 'a' }), expect.objectContaining({ id: 'b' })],
       },
     ]);
-  });
-
-  it('never splits Popular, and has nothing to show for no tiles', () => {
-    expect(flyoutGroups('popular', tiles('diagram', 'popular'))).toHaveLength(1);
     expect(flyoutGroups('shapes', [])).toEqual([]);
     // One group: no heading, whatever its first tile is called.
     expect(flyoutGroups('shapes', [tile('shapes:square')])[0]!.title).toBeNull();

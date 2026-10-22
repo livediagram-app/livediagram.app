@@ -73,7 +73,7 @@ describe('ColourRow', () => {
   });
 });
 
-// docs/specs/007-editor/editor-modes.md "One look": where a row can store a stock colour by name.
+// docs/specs/008-canvas/canvas-and-palette.md "Colours": where a row can store a stock colour by name.
 describe('ColourRow storing names', () => {
   it('picks the standard colours by name, Ink included, and marks the one drawn', () => {
     const { onCommit } = renderRow({

@@ -3,8 +3,6 @@
 // handles document data. See docs/specs/006-document/document-structure.md and
 // docs/specs/008-canvas/canvas-and-palette.md.
 
-import type { FormDefinition } from '@livepages/forms';
-
 // Live session-tool types used by the `Tab.timer` / `Tab.vote` fields
 // below. Type-only import (erased at build) so the index <-> session
 // circular reference is fine. The runtime helpers are re-exported lower
@@ -15,7 +13,6 @@ import type { FormDefinition } from '@livepages/forms';
 import type { TagColour } from './tag-colours';
 import { isSelfDrawingShape } from './data-shapes';
 import type { TabKind } from './tab-kind';
-import type { DashboardLayout } from './dashboard';
 import type { EditorMode } from './editor-mode';
 import type { Page, PageOrientation } from './page';
 import type { ArticleFlow } from './article-flow';
@@ -69,9 +66,6 @@ export type {
   LinkCardMeta,
   LinkCardElement,
   VideoElement,
-  PlanCardRef,
-  PlanSheetRef,
-  PlanViewRef,
 } from './element-types';
 
 // Arrow appearance preset types used by ArrowElement's fields below. The
@@ -320,10 +314,7 @@ export type BoxedElement =
   | VideoElement;
 export type Element = BoxedElement | ArrowElement;
 
-// What KIND a tab is (./tab-kind): an ordinary diagram tab, or one of Plan's Board, Sheet,
-// Dashboard and Form tabs. This is deliberately a FIRST-CLASS field rather than something
-// inferred from the tab's contents. The editor stays one editor — a kind tunes presentation, it
-// does not fork persistence, realtime, comments or export.
+// What KIND a tab is (./tab-kind): livepages has only the general tab.
 //
 // 'diagram' is an ordinary tab and is written explicitly onto tabs the
 // editor commits; tabs stored before the field carry nothing, which reads
@@ -333,15 +324,11 @@ export type Tab = {
   id: TabId;
   name: string;
   kind?: TabKind;
-  // A Dashboard tab's rows and slots (docs/specs/026-plan/plan-tabs.md "Dashboard tab"), read via `readDashboard`.
-  dashboard?: DashboardLayout;
-  // A Form tab's form (docs/specs/030-forms/forms.md), read via `readForm` from @livepages/forms.
-  form?: FormDefinition;
   // The tab's editor mode, the same for everyone on it and the mode it opens in
-  // (docs/specs/007-editor/editor-modes.md "Where the mode lives"). Absent = 'diagram' (read via
-  // `opensInOf`); a switch sets it as one tab edit (withEditorModeSwitched).
+  // (docs/specs/007-editor/pages-mode.md "One mode"). livepages has one, Pages: any stored mode,
+  // or none, reads as Pages (via `opensInOf`).
   opensIn?: EditorMode;
-  // Pages mode's pages (docs/specs/007-editor/editor-modes.md "The pages"): the A4 sheets,
+  // Pages mode's pages (docs/specs/007-editor/pages-mode.md "The pages"): the A4 sheets,
   // in row order, each portrait or landscape, that everyone lays the tab out on. Absent = one page
   // (read via `pagesOf`).
   pages?: Page[];
@@ -427,21 +414,8 @@ export type Tab = {
 
 // --- Type guards -----------------------------------------------------------
 
-export {
-  isPlanSheetRef,
-  newPlanSheetId,
-  PLAN_SHEET_ID_PATTERN,
-  takesTypedLabel,
-} from './element-types';
-export {
-  DEFAULT_TAB_KIND,
-  PLAN_TAB_KINDS,
-  isPlanTabKind,
-  stampTabKind,
-  tabKindOf,
-  type PlanTabKind,
-  type TabKind,
-} from './tab-kind';
+export { takesTypedLabel } from './element-types';
+export { DEFAULT_TAB_KIND, stampTabKind, tabKindOf, type TabKind } from './tab-kind';
 export * from './accent-edge';
 export * from './card';
 export * from './chip';
@@ -487,7 +461,6 @@ export * from './page-ink-contrast';
 export * from './page-ink-ground';
 export * from './page-ink-rules';
 export * from './paginate';
-export * from './editor-mode-switch';
 export * from './article-flow';
 export * from './article-flow-ops';
 export * from './article-pages';
@@ -607,16 +580,11 @@ export * from './selection-mode';
 export * from './behaviour-skin';
 export * from './comments';
 export * from './collab-index-rows';
-export * from './plan-board-rows';
-export * from './cell-comments';
 export * from './comment-thread';
-export * from './item-comments';
 // The whole-document `livepages.document` envelope and the per-tab JSON and Markdown export (the editor and the
 // CLI's pull files).
 export * from './document-envelope';
 export * from './export-tab-text';
-export * from './export-tab-plan';
-export * from './plan-board-layout';
 export * from './comment-mentions';
 // The shared plain-object guard for untrusted JSON.
 export * from './is-record';
@@ -645,8 +613,6 @@ export * from './chart-types';
 export * from './chart-marks';
 export * from './chart-axis';
 export * from './chart-values';
-export * from './chart-source';
-export * from './plan-only';
 // Per-participant responses (docs/specs/012-collaboration/participant-responses.md) + the collaboration element family
 // (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md). Both leaf modules, for the factories cycle.
 export * from './responses';
@@ -737,10 +703,8 @@ export { ELEMENT_FIELD_VALUES, fieldValueIssue } from './element-field-values';
 export { buildMindTemplate, MIND_HUES, type MindHue, type MindSpec } from './mind-template';
 export { inlineIconGap, inlineIconMetrics } from './svg-render-inline-icon';
 export { SKETCH_ART_FILTER_ID, SKETCH_FACE_FILTER, svgSketchArtFilter } from './svg-render-sketch';
-export * from './svg-render-plan-sheet';
 export * from './svg-render-table';
-// The marks the editor's Plan tab images draw with (docs/specs/026-plan/plan-tabs.md "Export"): text, line fitting,
-// people and card faces, so its plan view and dashboard pictures read like the boards beside them.
+// The SVG face kit's marks: text, line fitting and colour mixing.
 export {
   fitLine as svgFitLine,
   mixHex,
@@ -756,8 +720,6 @@ export * from './themes';
 export * from './theme-halves';
 export * from './label-backdrop';
 export * from './theme-presets';
-// A Form tab's look: its theme, finish and font as the builder and the form link's page draw them.
-export * from './form-look';
 
 // Human-readable name for an element's kind ('Square', 'Table', 'Icon', ...),
 // used by selection captions and any surface that names what's selected.
@@ -822,7 +784,6 @@ export * from './element-fingerprint';
 // Per-element deltas for the fields many participants write at once
 // (docs/specs/012-collaboration/collab-race-hardening.md): answers, ideas, checklist ticks, comments.
 export * from './element-deltas';
-export * from './plan-board-patch';
 
 // The room's record of those deltas, merged into each save so D1 keeps what
 // the room saw (docs/specs/012-collaboration/collab-race-hardening.md phase 3).
@@ -856,13 +817,7 @@ export * from './lane-seam-snapping';
 export * from './element-refs';
 export * from './containment';
 export * from './style-keys';
-export * from './plan-palette';
-export * from './plan-presets';
-export * from './dashboard';
-export * from './dashboard-cards';
-export * from './dashboard-card-style';
 export * from './tab-names';
-export { planBoardFitHeight } from './svg-render-plan';
 export * from './svg-render-pages';
 export * from './article-draw-ops';
 export * from './article-layout-estimate';
@@ -871,4 +826,4 @@ export * from './session-button-text';
 export { lineChars } from './svg-render-web';
 export * from './drawn-count';
 // The a / an rule for copy built around a name, shared with every package above this one.
-export { indefiniteArticle, withArticle } from '@livepages/items';
+export { indefiniteArticle, withArticle } from './indefinite-article';

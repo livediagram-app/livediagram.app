@@ -19,7 +19,7 @@ function setup(tab: Tab, selection: string[]) {
       editsBlocked: false,
       liveElements: () => elements,
       commit,
-      memory: memory as never,
+      memory,
       swatchOverrides: { overrides: {}, setOverride: vi.fn(), clearOverride: vi.fn() },
     }),
   );
@@ -42,7 +42,7 @@ describe('useQuickStyle', () => {
   });
 });
 
-// docs/specs/007-editor/editor-modes.md "One look": the Ink swatch shows its version for the canvas
+// docs/specs/008-canvas/canvas-and-palette.md: the Ink swatch shows its version for the canvas
 // the tab paints, which on a dark theme is the dark one in any appearance.
 describe('useQuickStyle swatches on a themed canvas', () => {
   it('shows the dark canvas Ink on a dark theme', () => {

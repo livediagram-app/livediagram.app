@@ -23,12 +23,8 @@
     "@livepages/document": "workspace:*",
     "@livepages/document-views": "workspace:*",
     "@livepages/edit-operations": "workspace:*",
-    "@livepages/forms": "workspace:*",
     "@livepages/icons": "workspace:*",
-    "@livepages/items": "workspace:*",
-    "@livepages/plan-art": "workspace:*",
     "@livepages/render-png": "workspace:*",
-    "@livepages/sheets": "workspace:*",
     "@livepages/templates": "workspace:*",
     "jose": "^6.2.12"
   },

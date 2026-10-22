@@ -83,7 +83,7 @@ export function useQuickStyle(
   );
   const editsBlocked = deps.editsBlocked || (!!canStyle && selected.some((el) => !canStyle(el)));
   // The stock colours in their version for the canvas the tab paints
-  // (docs/specs/007-editor/editor-modes.md "One look"): the viewer's appearance on the Default
+  // (docs/specs/008-canvas/canvas-and-palette.md): the viewer's appearance on the Default
   // theme, the theme's own canvas otherwise.
   const { appearance } = useAppearance();
   const ink = PEN_INK[canvasSurface(resolveTabBackdrop(activeTab, appearance).backgroundColor)];

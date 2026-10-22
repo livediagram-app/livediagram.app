@@ -154,8 +154,8 @@ export function svgFreehandShape(
   finish: Finish = 'flexible',
 ): string {
   if (freehandStrokePoints(el).count < 2) return '';
-  // A whiteboard pen stroke (docs/specs/023-draw-mode/draw-mode.md "Pens"): the filled
-  // perfect-freehand outline FreehandSvg draws, from the same function (pen-stroke.ts).
+  // A pen stroke: the filled perfect-freehand outline FreehandSvg draws, from the same
+  // function (pen-stroke.ts).
   if (isPenStroke(el)) {
     const ink = penStrokePath(freehandPenStroke(el, { x: el.x, y: el.y }), r2);
     return `<path d="${ink}" fill="${xmlEscape(stroke)}" stroke="none"/>`;
@@ -176,7 +176,7 @@ export function svgFreehandShape(
       ` stroke-linecap="round" stroke-linejoin="round"/>`
     );
   }
-  // A recorded pen width (a whiteboard pen, docs/specs/023-draw-mode/draw-mode.md) wins over the preset; a
+  // A pen stroke's recorded width wins over the preset; a
   // Polygon-tool outline's unset width follows its finish (Professional's Thin).
   const strokeWidth = isPolygonOutline(el)
     ? polygonStrokePx(el, finish)

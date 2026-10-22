@@ -52,20 +52,6 @@ describe('useEditorViewport scrolling a new element into view', () => {
     expect(view.result.current.viewport.get().offset).not.toEqual(before);
   });
 
-  it('leaves an added board or Sheet to its Focus glide', () => {
-    const { selection, near, view } = setup();
-    const before = view.result.current.viewport.get().offset;
-    const sheet = createShape('plan-sheet', 3000, 3000);
-    act(() => {
-      selection.setSelectedId(sheet.id);
-      view.rerender({ tab: tabOf([near, sheet]) });
-    });
-    act(() => {
-      vi.advanceTimersByTime(800);
-    });
-    expect(view.result.current.viewport.get().offset).toEqual(before);
-  });
-
   it('leaves the view alone for an added element that is not selected', () => {
     const { near, view } = setup();
     const before = view.result.current.viewport.get().offset;
@@ -100,7 +86,7 @@ describe('useEditorViewport view', () => {
   });
 });
 
-// docs/specs/026-plan/plan-board.md "Focus": glide to fit an element; pressed again, out to the whole tab.
+// Focus: glide to fit an element; pressed again, out to the whole tab.
 describe('useEditorViewport focus', () => {
   function sized() {
     const s = setup();

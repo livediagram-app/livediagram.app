@@ -1,9 +1,9 @@
 // Slide deck templates built from the slide layouts (docs/specs/008-canvas/canvas-and-palette.md
-// "Templates on pages", docs/specs/007-editor/templates-by-mode.md "Slide deck templates"): each a
-// handful of slide pages, each page one slide layout (slide-layouts-*.ts) with its sample text
-// replaced by the deck's own, in the order the layout writes it. Each opens and closes on an
-// animated background of its own colours (docs/specs/007-editor/pages-mode.md "Animated
-// backgrounds"); the slides between sit on a soft still gradient, so they read and print plainly.
+// "Templates on pages"): each a handful of slide pages, each page one slide layout
+// (slide-layouts-*.ts) with its sample text replaced by the deck's own, in the order the layout
+// writes it. Each opens and closes on an animated background of its own colours
+// (docs/specs/007-editor/pages-mode.md "Animated backgrounds"); the slides between sit on a soft
+// still gradient, so they read and print plainly.
 // Pure: the pages are declared once and the elements built on them.
 import {
   layOutPages,

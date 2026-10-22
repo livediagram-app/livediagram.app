@@ -47,7 +47,7 @@ describe('Behaviour face export', () => {
 
   it('names a Mode button whose stored mode this build does not know by the default mode', () => {
     const svg = svgOf(shape('mode-button', { mode: 'eraser' as never, label: '' }));
-    expect(svg).toContain('>Avatar<');
+    expect(svg).toContain('>Laser<');
   });
 
   it('draws a portal as its lit ring when paired, and dim when not', () => {
@@ -161,7 +161,7 @@ describe('Mode button glyph (docs/specs/020-import-export/export-fidelity.md)', 
   });
 });
 
-// docs/specs/023-draw-mode/draw-mode.md "Text boxes": a Shift-resized text box draws its text
+// docs/specs/006-document/document-structure.md "Data model": a Shift-resized text box draws its text
 // scaled, and exports that way too.
 describe('Scaled text box export', () => {
   it('draws the label at its size times its scale', () => {

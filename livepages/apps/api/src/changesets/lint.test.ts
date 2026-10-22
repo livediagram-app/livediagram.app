@@ -33,23 +33,10 @@ describe('lintResult', () => {
     ]);
   });
 
-  it('judges colours on what the write set: none of a template replace, a change over the tab before', () => {
-    vi.spyOn(console, 'info').mockImplementation(() => {});
-    const coloured = { ...box('a', 0), fillColor: '#123456' } as Element;
-    const codes = (before: Parameters<typeof lintResult>[2]) =>
-      lintResult({ elements: [coloured] }, where, before)!.findings.map((f) => f.code);
-    expect(codes(null)).toEqual(['colour-on-themed']);
-    expect(codes('template')).toEqual([]);
-    expect(codes({ elements: [coloured] })).toEqual([]);
-    expect(codes({ elements: [box('a', 0)] })).toEqual(['colour-on-themed']);
-  });
-
-  it('logs the lint\x27s warnings and debug lines at their levels', () => {
+  it('logs the lint\x27s warnings at their level', () => {
     const warns: unknown[][] = [];
-    const debugs: unknown[][] = [];
     vi.spyOn(console, 'info').mockImplementation(() => {});
     vi.spyOn(console, 'warn').mockImplementation((...args: unknown[]) => void warns.push(args));
-    vi.spyOn(console, 'debug').mockImplementation((...args: unknown[]) => void debugs.push(args));
     const arrows: Element[] = Array.from({ length: 301 }, (_, i) => ({
       id: `x${i}`,
       type: 'arrow',
@@ -58,12 +45,10 @@ describe('lintResult', () => {
     })) as Element[];
     lintResult(
       {
-        elements: [box('a', 0), { ...box('b', 300), fillColor: '#123456' } as Element, ...arrows],
-        theme: 'custom-1',
+        elements: [box('a', 0), box('b', 300), ...arrows],
       },
       where,
     );
     expect(warns[0]?.[0]).toBe('[lint] crossings skipped');
-    expect(debugs[0]?.[0]).toBe('[lint] theme unresolved');
   });
 });

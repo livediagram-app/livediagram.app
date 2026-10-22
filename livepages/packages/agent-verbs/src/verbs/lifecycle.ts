@@ -118,7 +118,7 @@ export const documentCreate = defineVerb({
     flags: { file: { short: 'f' } },
     examples: [
       'livepages document create "Shop" -f arch.json',
-      'livepages document create "Retro" --template start-stop-continue',
+      'livepages document create "Pitch" --template slide-deck',
     ],
     prints: '+ document <ref> "<name>" · <n> tabs · <link>',
   },
@@ -324,7 +324,7 @@ export const tabAdd = defineVerb({
     flags: { file: { short: 'f' } },
     examples: [
       'livepages tab add "Auth flow" Details -f detail.mmd',
-      'livepages tab add 3f9c Board --template kanban',
+      'livepages tab add 3f9c Deck --template blank-slide-deck',
     ],
     prints:
       '+ tab <id> "<name>", the result lines, then the revision, lint verdict and the tab rm that undoes it',

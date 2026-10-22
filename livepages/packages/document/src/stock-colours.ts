@@ -1,7 +1,7 @@
-// The stock colours, first-class (docs/specs/007-editor/editor-modes.md "One look"): Ink and the
+// The stock colours, first-class (docs/specs/008-canvas/canvas-and-palette.md "Colours"): Ink and the
 // eight hued colours are stored by name on any element and drawn in the version tuned for the
 // canvas they sit on. Every renderer resolves them here, so the canvas, every export, thumbnail
-// and MCP image draw the same element in the same colour, in either editor mode.
+// and MCP image draw the same element in the same colour.
 import type { CanvasSurface } from './colors';
 import { penColourHex, type PenColourName } from './pen-colours';
 import type { Element } from './index';

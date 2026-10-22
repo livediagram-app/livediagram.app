@@ -9,7 +9,7 @@ import {
   selectRange,
 } from './rich-text-dom';
 
-// The list helpers of the note editor (docs/specs/026-plan/plan-board.md "Working on a board").
+// The list helpers of the note editor.
 function editor(text: string): HTMLElement {
   const root = document.createElement('div');
   root.contentEditable = 'true';

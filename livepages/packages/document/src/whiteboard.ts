@@ -1,8 +1,7 @@
-// Draw mode (docs/specs/023-draw-mode/draw-mode.md): the canvases its stock colours are tuned
-// for, its Plain / Dots / Grid backgrounds and its pens' weights. Pure data and pure functions; the
-// editor owns the dock and the device-local pens. There is one look in both editor modes
-// (docs/specs/007-editor/editor-modes.md "One look"): Draw mode writes its colours onto what it
-// makes, and every renderer resolves stock colours by name (./stock-colours).
+// The whiteboard data: the canvases the stock colours are tuned for, the Plain / Dots / Grid
+// backgrounds and the pens' weights. Pure data and pure functions; the editor owns the dock and
+// the device-local pens. Stock colours are stored by name and every renderer resolves them by
+// name (./stock-colours, docs/specs/008-canvas/canvas-and-palette.md "Colours").
 import { BORDER_STROKE_PX, type BorderStroke } from './border-style';
 import { DARK_CANVAS_BACKGROUND_COLOR, DEFAULT_BACKGROUND_COLOR } from './canvas-colors';
 import { PEN_INK } from './pen-colours';
@@ -18,8 +17,7 @@ export const WHITEBOARD_BOARD: Readonly<Record<Appearance, string>> = {
 export const WHITEBOARD_INK: Readonly<Record<Appearance, string>> = PEN_INK;
 type WhiteboardBackground = 'plain' | 'dots' | 'grid';
 
-// Draw mode's Background row: each choice is a canvas pattern, the person's own in Draw mode
-// (docs/specs/007-editor/editor-modes.md "One look").
+// The whiteboard's Background row: each choice is a canvas pattern.
 export const WHITEBOARD_BACKGROUNDS: readonly {
   id: WhiteboardBackground;
   label: string;
@@ -30,8 +28,8 @@ export const WHITEBOARD_BACKGROUNDS: readonly {
   { id: 'grid', label: 'Grid', pattern: 'graph' },
 ];
 
-// A new whiteboard starts on Grid (docs/specs/023-draw-mode/draw-mode.md "Board background"),
-// written onto the tab when it is made (templateCanvasOverrides), so it never changes later.
+// A new whiteboard starts on Grid, written onto the tab when it is made (templateCanvasOverrides),
+// so it never changes later.
 export const WHITEBOARD_DEFAULT_PATTERN: BackgroundPattern = 'graph';
 
 // A board stored without a pattern reads as Plain, as it always showed: the new-board default is

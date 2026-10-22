@@ -15,7 +15,6 @@ import {
   isBoxed,
   type Element,
   type Tab,
-  type TabKind,
 } from '@livepages/document';
 import type { DragMode } from '@/lib/canvas';
 import { applyOverlay, localPreview, resetDragPreviewForTests } from '@/lib/drag-preview';
@@ -32,7 +31,7 @@ vi.mock('@/components/canvas/text-hug-measure', () => ({
 }));
 
 // Shift keeps the aspect ratio everywhere (docs/specs/008-canvas/canvas-and-palette.md "Resize"),
-// through the whole drag machine: every boxed kind, every tab kind, and Shift pressed or released
+// through the whole drag machine: every boxed kind, and Shift pressed or released
 // mid-drag taking effect on the next pointer move.
 
 const COLOURS = { accent: '#0284c7', surface: '#ffffff', ink: '#0f172a' };
@@ -67,11 +66,11 @@ const KINDS: [string, () => Element][] = [
   ['avatar component', () => createComponent('avatar', 200, 100, COLOURS)],
 ];
 
-function harness(element: Element, kind: TabKind = 'diagram') {
+function harness(element: Element) {
   let elements: Element[] = [element];
   const deps = {
     get activeTab() {
-      return { id: 't', name: 'Tab', kind, elements } as Tab;
+      return { id: 't', name: 'Tab', elements } as Tab;
     },
     zoomRef: { current: 1 },
     setSelectedId: vi.fn(),
@@ -175,18 +174,6 @@ describe('Shift resize, every boxed kind', () => {
   });
 });
 
-describe('Shift resize, every tab kind', () => {
-  it.each(['diagram', 'board'] as const)('keeps the ratio on a %s tab', (kind) => {
-    syncFrames();
-    const el = { ...createShape('square', 0, 0), width: 200, height: 100 };
-    const h = harness(el, kind);
-    h.press('resize-ne');
-    move(10, -80, true);
-    expect(ratio(h.current())).toBeCloseTo(2, 6);
-    release();
-  });
-});
-
 describe('Shift pressed or released mid-drag', () => {
   it('takes effect on the next pointer move, without letting go', () => {
     syncFrames();
@@ -203,10 +190,9 @@ describe('Shift pressed or released mid-drag', () => {
   });
 });
 
-// docs/specs/023-draw-mode/draw-mode.md "Text boxes": Shift keeps a hugging text box's
-// ratio by scaling its text with the box; the height hugs the scaled text.
-// Keyed on the box's sizing, never the editor mode (docs/specs/007-editor/editor-modes.md "A text
-// box's sizing"); the drag machine has no mode at all.
+// docs/specs/006-document/document-structure.md (a text box's sizing): Shift keeps a hugging
+// text box's ratio by scaling its text with the box; the height hugs the scaled text.
+// Keyed on the box's sizing, never the editor mode; the drag machine has no mode at all.
 describe('Shift resize of a hugging text box', () => {
   const hello = () => ({
     ...createText(0, 0),

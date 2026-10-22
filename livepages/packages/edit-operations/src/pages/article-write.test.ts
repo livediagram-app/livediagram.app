@@ -57,17 +57,13 @@ const texts = (doc: ArticleFlow | undefined) =>
   (doc?.blocks ?? []).map((b) => ('runs' in b ? b.runs.map((r) => r.text).join('') : b.type));
 
 describe('a new article', () => {
-  it('takes the fresh tab’s empty first page, switching a diagram tab into Pages', () => {
-    const out = write(tabOf({ opensIn: undefined }), { markdown: '---\ntitle: Brief\n---\nHello' });
-    expect(out.switched).toBe(true);
+  it('takes the fresh tab’s empty first page', () => {
+    const out = write(tabOf(), { markdown: '---\ntitle: Brief\n---\nHello' });
     expect(out.created).toBe(true);
     expect(pagesOf(out.tab)).toHaveLength(1);
     expect(pagesOf(out.tab)[0]).toMatchObject({ kind: 'article', flow: 'art-1' });
     expect(texts(articlesOf(out.tab)['art-1'])).toEqual(['Brief', 'Hello']);
-    expect(out.lines).toEqual([
-      'Switched the tab to Pages.',
-      'Started the article "Brief" (art-1): 2 blocks.',
-    ]);
+    expect(out.lines).toEqual(['Started the article "Brief" (art-1): 2 blocks.']);
   });
 
   it('goes after the last page otherwise, on the paper asked for', () => {

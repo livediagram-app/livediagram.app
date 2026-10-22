@@ -181,7 +181,7 @@ export function ElementTourHost() {
   const dismissRef = useLatest(dismiss);
 
   const startPanelOpen = useStartPanelOpen();
-  // Dialogs come first (docs/specs/007-editor/editor-tour.md): the offer goes while one is open and comes back after.
+  // Dialogs come first (docs/specs/007-editor/pages-tour.md): the offer goes while one is open and comes back after.
   const modalOpen = useAnyModalOpen();
   const usable =
     ctx.hydrated &&

@@ -1,13 +1,6 @@
 'use client';
 
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type MutableRefObject,
-  useEffectEvent,
-} from 'react';
+import { useEffect, useRef, type MutableRefObject, useEffectEvent } from 'react';
 import type { Element } from '@livepages/document';
 import { parseCollabDeepLink, type CollabDeepLink } from '@/lib/collab-deep-link';
 import type { TabLoadState } from './editor-page-helpers';
@@ -16,9 +9,7 @@ import type { TabLoadState } from './editor-page-helpers';
 // (docs/specs/013-workspace/inbox.md §1): `#t=<tab>&el=<element>&open=action|comments`. Once the
 // pinned tab's elements have loaded, select the element, bring it into
 // view, and open the named popover — exactly what a Collaborate Panel
-// row click does in-editor. A Plan card's row names its board and the card
-// (`&item=<id>`), or the card alone when no board shows it: the card opens
-// in the item panel, as a click on it does.
+// row click does in-editor.
 //
 // Two hooks because of WHEN the fragment can be read. useTabEntryEffects
 // rewrites the hash to the plain `#t=` pin on the hydration commit, so
@@ -53,7 +44,6 @@ export function useCollabDeepLink({
   scrollIntoView,
   openActionPopover,
   openComments,
-  openItem,
 }: {
   link: MutableRefObject<CollabDeepLink | null>;
   hydrated: boolean;
@@ -64,18 +54,8 @@ export function useCollabDeepLink({
   scrollIntoView: (x: number, y: number, w: number, h: number, opts?: { center?: boolean }) => void;
   openActionPopover: (elementId: string) => void;
   openComments: (elementId: string) => void;
-  openItem: (itemId: string) => void;
-}): (target: CollabDeepLink) => void {
+}): void {
   const consumed = useRef(false);
-  // An arrival asked for in the editor (the Actions board's links, docs/specs/026-plan/linked-boards.md): the same
-  // landing as an Inbox link, run again for each ask.
-  const [asked, setAsked] = useState(0);
-  const askedLink = useRef<CollabDeepLink | null>(null);
-  const arrive = useCallback((target: CollabDeepLink) => {
-    askedLink.current = target;
-    consumed.current = false;
-    setAsked((n) => n + 1);
-  }, []);
   // The stable editor callbacks are read when the link lands, not depended on: re-running on their
   // identity would only re-evaluate an already-consumed link.
   const arriveAt = useEffectEvent(
@@ -94,28 +74,20 @@ export function useCollabDeepLink({
     },
   );
 
-  const openCard = useEffectEvent((itemId: string) => openItem(itemId));
-
   useEffect(() => {
-    const target = askedLink.current ?? link.current;
+    const target = link.current;
     if (!target || consumed.current || !hydrated) return;
-    // A card with no board lands on whichever tab the document opens on.
-    if (target.at && activeId !== target.at.tabId) return;
+    if (activeId !== target.at.tabId) return;
     if (activeTabLoadState === 'loading') return;
     // Either the tab loaded (find the element) or it errored (nothing to
     // find); both consume the link so it can't fire on a later tab.
     consumed.current = true;
     if (activeTabLoadState !== 'ready') return;
-    // The item panel draws the card once the item store has it; a card deleted since the Inbox
-    // loaded draws nothing.
-    if (target.itemId) openCard(target.itemId);
-    if (!target.at) return;
     const { elementId } = target.at;
     const el = elements.find((e) => e.id === elementId);
     // Deleted since the Inbox loaded: the tab is open, which is
     // as close as the link can get (docs/specs/013-workspace/inbox.md §1).
     if (!el || el.type === 'arrow') return;
     arriveAt(el, target.open);
-  }, [link, hydrated, activeId, activeTabLoadState, elements, asked]);
-  return arrive;
+  }, [link, hydrated, activeId, activeTabLoadState, elements]);
 }

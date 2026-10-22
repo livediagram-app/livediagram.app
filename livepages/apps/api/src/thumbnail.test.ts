@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PEN_INK, penColourHex } from '@livepages/document';
-import { defaultCatalogue, presetSetup, type Item } from '@livepages/items';
 import type { DocumentDTO, Env } from './types';
 
 // The render-cache reads/writes the snapshot freshness + first-tab body
@@ -9,9 +8,6 @@ import type { DocumentDTO, Env } from './types';
 // live D1. renderElementsToSvg stays real — it's pure.
 const db = vi.hoisted(() => ({
   getTabBody: vi.fn(),
-  getDocumentItemTypes: vi.fn(),
-  listItems: vi.fn(),
-  listSheets: vi.fn(),
   stampTabElementCount: vi.fn(),
   getThumbRenderedAt: vi.fn(),
   markThumbRendered: vi.fn(),
@@ -46,7 +42,6 @@ function liveDoc(over: Partial<DocumentDTO> = {}): DocumentDTO {
     // No recorded creation intent (docs/specs/013-workspace/default-folders.md).
     opensIn: null,
     tabKind: null,
-    templateFamily: null,
     ...over,
   };
 }
@@ -166,7 +161,7 @@ describe('getDocumentThumbnailSvg', () => {
     expect(db.markThumbRendered).not.toHaveBeenCalled();
   });
 
-  // The lazy backfill (migration 0059): a tab stored before the count existed gets it from this parse,
+  // The lazy backfill (the baseline migration): a tab stored before the count existed gets it from this parse,
   // so an old empty document is asked for at most once.
   it('records an unknown count from the body it parsed, empty or drawn', async () => {
     const env = { IMAGES: r2() } as unknown as Env;
@@ -177,78 +172,6 @@ describe('getDocumentThumbnailSvg', () => {
     db.getTabBody.mockResolvedValue(stored(TAB_DATA, null));
     expect(await getDocumentThumbnailSvg(env, liveDoc())).toContain('<svg');
     expect(db.stampTabElementCount).toHaveBeenLastCalledWith(env, 't1', 1);
-  });
-
-  // docs/specs/030-forms/forms.md: a Form tab's form is not an element, so its canvas is empty; the snapshot is the
-  // form as respondents see it, and its count takes the form in.
-  it('draws a Form tab as its form, and counts the form', async () => {
-    const images = r2();
-    db.getThumbRenderedAt.mockResolvedValue(null);
-    const form = {
-      v: 1,
-      heading: 'Contact Us',
-      sections: [
-        { id: 's1', title: '', questions: [{ id: 'q1', type: 'short', prompt: 'Your name' }] },
-      ],
-    };
-    db.getTabBody.mockResolvedValue(
-      stored(JSON.stringify({ kind: 'form', theme: 'forest', elements: [], form }), null),
-    );
-    const env = { IMAGES: images } as unknown as Env;
-
-    const out = await getDocumentThumbnailSvg(env, liveDoc());
-
-    expect(out).toContain('<svg');
-    expect(out).toContain('Contact Us');
-    expect(out).toContain('Your name');
-    expect(images.put).toHaveBeenCalledOnce();
-    expect(db.stampTabElementCount).toHaveBeenCalledWith(env, 't1', 1);
-    // A form that cannot be read leaves the tab as its canvas: empty, nothing drawn.
-    db.getTabBody.mockResolvedValue(
-      stored(JSON.stringify({ kind: 'form', elements: [], form: 'not a form' }), 0),
-    );
-    expect(await getDocumentThumbnailSvg(env, liveDoc())).toBeNull();
-  });
-
-  // The Explorer route's one read leaves the card types out; a board draws only the types it takes, so the snapshot
-  // reads them before drawing its cards (it drew an empty board before).
-  it('draws a board’s cards, reading the card types the route left out', async () => {
-    const board = {
-      id: 'b1',
-      type: 'shape',
-      shape: 'plan-board',
-      x: 0,
-      y: 0,
-      width: 1400,
-      height: 720,
-      planBoard: presetSetup('kanban'),
-    };
-    const status = presetSetup('kanban').columns[0]!.status;
-    const card = {
-      id: 'i1',
-      type: 'task',
-      key: 1,
-      rank: 'a',
-      fields: { title: 'Ship the fix', status },
-      rev: 1,
-      createdAt: 0,
-      updatedAt: 0,
-      createdBy: { id: 'p', name: 'P', color: '#000000' },
-      updatedBy: { id: 'p', name: 'P', color: '#000000' },
-    } as unknown as Item;
-    db.getThumbRenderedAt.mockResolvedValue(null);
-    db.getTabBody.mockResolvedValue(stored(JSON.stringify({ kind: 'board', elements: [board] })));
-    db.listItems.mockResolvedValue([card]);
-    db.getDocumentItemTypes.mockResolvedValue(defaultCatalogue());
-    const env = { IMAGES: r2() } as unknown as Env;
-
-    const out = await getDocumentThumbnailSvg(env, liveDoc());
-    expect(db.getDocumentItemTypes).toHaveBeenCalledWith(env, 'd1');
-    expect(out).toContain('Ship the fix');
-    // A caller that read them passes them: no second read.
-    db.getDocumentItemTypes.mockClear();
-    await getDocumentThumbnailSvg(env, liveDoc({ itemTypes: defaultCatalogue() }));
-    expect(db.getDocumentItemTypes).not.toHaveBeenCalled();
   });
 
   it('writes nothing for a count already known, or a body it cannot count', async () => {
@@ -497,12 +420,13 @@ describe('a thumbnail of a Charcoal tab', () => {
     );
     const out = await getDocumentThumbnailSvg({ IMAGES: images } as unknown as Env, liveDoc());
     expect(out).not.toContain('#2c2c33');
-    expect(out).toContain('#0d121a');
+    expect(out).not.toContain('#2b2b33');
+    expect(out).toContain('<rect x="1" y="1" width="98" height="78"');
   });
 });
 
-// Stock colours are first-class (docs/specs/007-editor/editor-modes.md "One look"): a thumbnail
-// draws a colour stored by name in its version for the page, on any tab, whatever mode drew it.
+// Stock colours are first-class (docs/specs/008-canvas/canvas-and-palette.md "Colours"): a thumbnail
+// draws a colour stored by name in its version for the page, on any tab.
 describe('a thumbnail of named stock colours', () => {
   it('draws Blue and Ink by name in the light page version', async () => {
     const images = r2();

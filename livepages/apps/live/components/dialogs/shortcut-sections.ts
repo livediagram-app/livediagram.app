@@ -9,11 +9,6 @@
 // editor knows"), and it is a hand-kept list beside the hand-kept key maps in
 // hooks/canvas/editor-shortcut-keys.ts. The test pins the two together.
 
-import { editorModeLabel, modesBesidePlanRule } from '@livepages/document';
-
-// The mode key's row names the modes it moves through, from the mode catalogue so a new mode cannot go missing.
-const CYCLED_MODES = modesBesidePlanRule('diagram').map(editorModeLabel).join(', ');
-
 export type ShortcutRow = {
   keys: string[];
   label: string;
@@ -51,16 +46,13 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
       { keys: ['I'], label: 'Isometric View' },
       { keys: ['⇧', 'drag'], label: 'Rotate Isometric Camera' },
       { keys: ['Z'], label: 'Zen Mode (focus)' },
-      // The modes a drawn-on tab cycles: Plan only joins on an empty tab (docs/specs/007-editor/editor-modes.md).
-      { keys: ['⇧', 'D'], label: `Next Editor Mode (${CYCLED_MODES})` },
     ],
   },
   {
     heading: 'Add elements',
     rows: [
-      // Named as each mode's palette names them: the Diagram tiles, then Draw's toolbar.
-      { keys: ['R'], label: 'Square (Rectangle in Draw)' },
-      { keys: ['O'], label: 'Circle (Ellipse in Draw)' },
+      { keys: ['R'], label: 'Square' },
+      { keys: ['O'], label: 'Circle' },
       { keys: ['D'], label: 'Diamond' },
       { keys: ['C'], label: 'Cylinder' },
       { keys: ['G'], label: 'Parallelogram' },

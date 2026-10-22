@@ -1,8 +1,6 @@
 import type { ArrowElement, Element, Tab, ThemeDefinition } from '@livepages/document';
 import { COMPONENT_SIZE } from '@livepages/document';
 import { describe, expect, it } from 'vitest';
-import { PLAN_SHEET_ID_PATTERN } from '@livepages/document';
-import { takePlacedSheet } from './sheet-seeds';
 import {
   buildDrawnArrow,
   buildDressedDrawnArrow,
@@ -37,15 +35,7 @@ describe('buildDressedDrawnArrow', () => {
   const board = { elements: [] as Element[], theme: themed };
 
   it('paints a diagram arrow in the theme stroke, then dresses it', () => {
-    const out = buildDressedDrawnArrow(
-      { type: 'arrow' },
-      0,
-      0,
-      100,
-      0,
-      board,
-      thick,
-    );
+    const out = buildDressedDrawnArrow({ type: 'arrow' }, 0, 0, 100, 0, board, thick);
     expect(out.strokeColor).toBe('#123456');
     expect(out.strokeWidth).toBe(6);
     expect(out.arrowEnds).toBe('none');
@@ -118,7 +108,7 @@ describe('buildDrawnComponent', () => {
 describe('buildDrawnBoxed', () => {
   const shapeIntent = { type: 'shape', kind: 'square' } as const;
 
-  it('keeps a Diagram mode text box at its default size, whatever the tab opens in', () => {
+  it('keeps a text box at its default size, whatever the tab opens in', () => {
     const out = buildDrawnBoxed(
       { type: 'text' },
       500,
@@ -126,7 +116,7 @@ describe('buildDrawnBoxed', () => {
       502,
       301,
       null,
-      tab({ opensIn: 'draw' }),
+      tab({ opensIn: 'pages' }),
     );
     expect(out).toMatchObject({ label: 'Text', width: 220, height: 64 });
     expect(out).not.toHaveProperty('sizing');
@@ -213,41 +203,5 @@ describe('buildDrawnBoxed', () => {
       width: 200,
       height: 100,
     });
-  });
-});
-
-// docs/specs/029-sheets/sheet.md "Placing a sheet": a drawn or tapped Sheet names a new sheet the Sheet then makes.
-describe('buildDrawnBoxed for a Sheet', () => {
-  it('names a new sheet after its tab, placed and waiting to be made', () => {
-    const out = buildDrawnBoxed(
-      { type: 'shape', kind: 'plan-sheet' },
-      100,
-      100,
-      100,
-      100,
-      null,
-      tab(),
-    ) as {
-      shape: string;
-      planSheet: { sheetId: string };
-    };
-    expect(out.shape).toBe('plan-sheet');
-    expect(out.planSheet.sheetId).toMatch(PLAN_SHEET_ID_PATTERN);
-    expect(takePlacedSheet(out.planSheet.sheetId)).toEqual({ title: tab().name });
-    expect(takePlacedSheet(out.planSheet.sheetId)).toBeNull();
-  });
-
-  // docs/specs/026-plan/plan-board.md "The board set-up": a board drawn on a tab is named after it.
-  it('names a new board after its tab', () => {
-    const out = buildDrawnBoxed(
-      { type: 'shape', kind: 'plan-board', plan: 'kanban' },
-      100,
-      100,
-      100,
-      100,
-      null,
-      { ...tab(), name: 'Launch' },
-    ) as { planBoard: { title: string } };
-    expect(out.planBoard.title).toBe('Launch');
   });
 });

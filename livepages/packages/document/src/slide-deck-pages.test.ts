@@ -110,10 +110,9 @@ describe('deckFollowingPages', () => {
     expect(deckFollowingPages(before, [deckTab('t', [slidePage('a')])])).toBe(before);
   });
 
-  it('leaves alone a tab not in Pages, a tab not yet loaded, and a deck already in step', () => {
+  it('leaves alone a tab not yet loaded, and a deck already in step', () => {
     const before: Deck = { slides: [pageSlide('t', 'b'), pageSlide('t', 'a')] };
     const pages = [slidePage('a'), slidePage('b')];
-    expect(deckFollowingPages(before, [deckTab('t', pages, 'diagram')])).toBe(before);
     expect(deckFollowingPages(before, [deckTab('t', undefined)])).toBe(before);
     const inStep: Deck = { slides: [pageSlide('t', 'a'), pageSlide('t', 'b')] };
     expect(deckFollowingPages(inStep, [deckTab('t', pages)])).toBe(inStep);
@@ -137,7 +136,6 @@ describe('deckPagesKey', () => {
     expect(deckPagesKey([deckTab('t', [slidePage('a'), infoPage('b')])])).toBe(one);
     expect(deckPagesKey([deckTab('t', [infoPage('b'), slidePage('a')])])).not.toBe(one);
     expect(deckPagesKey([deckTab('t', [slidePage('a'), slidePage('b')])])).not.toBe(one);
-    expect(deckPagesKey([deckTab('t', [slidePage('a')], 'diagram')])).toBe('');
   });
 });
 
@@ -188,7 +186,7 @@ describe('pageMoveForDeckOrder', () => {
 });
 
 describe('slidePageOwnSlideIds', () => {
-  it("holds a slide page's only slide, not a copy's pair, another page's, or an unfollowed tab's", () => {
+  it("holds a slide page's only slide, not a copy's pair or another page's", () => {
     const tab = deckTab('t', [slidePage('a'), infoPage('i'), slidePage('b')]);
     const deck: Deck = {
       slides: [
@@ -201,7 +199,6 @@ describe('slidePageOwnSlideIds', () => {
       ],
     };
     expect([...slidePageOwnSlideIds(deck, [tab])]).toEqual(['s-t-a']);
-    expect(slidePageOwnSlideIds(deck, [deckTab('t', [slidePage('a')], 'diagram')]).size).toBe(0);
   });
 });
 

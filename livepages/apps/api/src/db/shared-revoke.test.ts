@@ -14,7 +14,7 @@ function arrange() {
     )
     .run();
   const link = db.sql.prepare(
-    `INSERT INTO share_links (code, document_id, role, created_at, purpose) VALUES (?, 'd1', 'edit', ?, 'share')`,
+    `INSERT INTO share_links (code, document_id, role, created_at) VALUES (?, 'd1', 'edit', ?)`,
   );
   // L1 is the older link: the old rule would hand every edit visitor L1, and L2 after L1 went.
   link.run('LINKONE1', 1);

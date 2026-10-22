@@ -499,44 +499,6 @@ export default [
     ],
   },
   {
-    id: 'D13',
-    level: 'medium',
-    prompt:
-      'A dashboard tab for Q3 sales: revenue by month (Jul 120k, Aug 135k, Sep 160k), revenue by region (UK 40%, EU 35%, US 25%), and a funnel trend of signups vs paid over 6 weeks.',
-    checks: [
-      [
-        'revenue by month as a chart with Jul 120k, Aug 135k, Sep 160k',
-        ({ snap }) =>
-          shapes(snap, 'bar-chart')
-            .concat(shapes(snap, 'line-chart'), shapes(snap, 'column-chart'))
-            .some(
-              (c) =>
-                JSON.stringify(c).match(/120/) &&
-                JSON.stringify(c).match(/135/) &&
-                JSON.stringify(c).match(/160/),
-            ),
-      ],
-      [
-        'revenue by region as a share chart (UK 40, EU 35, US 25)',
-        ({ snap }) =>
-          [...shapes(snap, 'pie-chart'), ...shapes(snap, 'bar-chart')].some(
-            (c) =>
-              /UK/.test(JSON.stringify(c)) &&
-              /40/.test(JSON.stringify(c)) &&
-              /35/.test(JSON.stringify(c)) &&
-              /25/.test(JSON.stringify(c)),
-          ),
-      ],
-      [
-        'signups vs paid over 6 weeks as two series',
-        ({ snap }) =>
-          shapes(snap, 'line-chart')
-            .concat(shapes(snap, 'bar-chart'))
-            .some((c) => (c.lineSeries ?? []).length >= 2 && (c.lineCategories ?? []).length >= 6),
-      ],
-    ],
-  },
-  {
     id: 'D14',
     level: 'hard',
     prompt:

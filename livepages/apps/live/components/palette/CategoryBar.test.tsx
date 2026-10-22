@@ -1,10 +1,8 @@
 // @vitest-environment jsdom
 // The category bar and its flyouts (docs/specs/007-editor/toolbar-layout.md "The category bar"): hover intent, the
-// keyboard, a tile's side panel, the guards that keep a flyout open mid-drag or mid-search, and Session's two-pane
-// browse with its memory.
+// keyboard, a tile's side panel, and the guards that keep a flyout open mid-drag or mid-search.
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { EditorMode } from '@livepages/document';
 import { EditorModeProvider } from '@/components/chrome/editor-mode/editor-mode-context';
 import { PALETTE_ADD_HANDLER_KEYS, type PaletteAddHandlers } from './palette-add-handlers';
 import { ToolbarPalette } from './ToolbarPalette';
@@ -28,13 +26,13 @@ afterEach(() => {
   cleanup();
 });
 
-function show(mode: EditorMode = 'diagram', { minimal = false }: { minimal?: boolean } = {}) {
+function show({ minimal = false }: { minimal?: boolean } = {}) {
   const h = Object.fromEntries(
     PALETTE_ADD_HANDLER_KEYS.map((k) => [k, vi.fn()]),
   ) as unknown as PaletteAddHandlers;
   render(
     <MinimalChromeProvider value={minimal}>
-      <EditorModeProvider value={{ mode, setMode: vi.fn(), canSwitch: true, canEdit: true }}>
+      <EditorModeProvider value={{ mode: 'pages', canEdit: true }}>
         <ToolbarPalette
           canvasTool="select"
           onSetCanvasTool={vi.fn()}
@@ -63,11 +61,11 @@ describe('hover intent', () => {
     show();
     fireEvent.pointerEnter(button('Shapes'), mouse);
     fireEvent.pointerLeave(button('Shapes'), mouse);
-    fireEvent.pointerEnter(button('Layout'), mouse);
+    fireEvent.pointerEnter(button('Components'), mouse);
     wait(HOVER_OPEN_MS - 10);
     expect(flyout()).toBeNull();
     wait(20);
-    expect(heading()).toBe('Layout');
+    expect(heading()).toBe('Components');
   });
 
   it('moves an open flyout to the next category at once, and ignores a touch', () => {
@@ -76,7 +74,7 @@ describe('hover intent', () => {
     wait(HOVER_OPEN_MS);
     fireEvent.pointerEnter(button('Concepts'), mouse);
     expect(heading()).toBe('Concepts');
-    fireEvent.pointerEnter(button('Layout'), { pointerType: 'touch' });
+    fireEvent.pointerEnter(button('Components'), { pointerType: 'touch' });
     expect(heading()).toBe('Concepts');
   });
 
@@ -101,11 +99,11 @@ describe('hover intent', () => {
     wait(HOVER_CLOSE_MS * 2);
     expect(heading()).toBe('Shapes');
     // Pointing at another category still moves it there, and it stays pinned.
-    fireEvent.pointerEnter(button('Layout'), mouse);
-    expect(heading()).toBe('Layout');
-    fireEvent.pointerLeave(button('Layout'), mouse);
+    fireEvent.pointerEnter(button('Components'), mouse);
+    expect(heading()).toBe('Components');
+    fireEvent.pointerLeave(button('Components'), mouse);
     wait(HOVER_CLOSE_MS * 2);
-    expect(heading()).toBe('Layout');
+    expect(heading()).toBe('Components');
     fireEvent.pointerDown(document.body);
     expect(flyout()).toBeNull();
   });
@@ -146,9 +144,9 @@ describe('hover intent', () => {
     show();
     fireEvent.pointerDown(button('Shapes'), { pointerType: 'touch' });
     fireEvent.click(button('Shapes'), { detail: 1 });
-    fireEvent.pointerDown(button('Layout'), { pointerType: 'touch' });
-    fireEvent.click(button('Layout'), { detail: 1 });
-    expect(heading()).toBe('Layout');
+    fireEvent.pointerDown(button('Components'), { pointerType: 'touch' });
+    fireEvent.click(button('Components'), { detail: 1 });
+    expect(heading()).toBe('Components');
   });
 
   it('keeps a second mouse click on the open category from closing it', () => {
@@ -176,12 +174,12 @@ describe('hover intent', () => {
   });
 
   it('stays open while its search holds a query', () => {
-    show('workshop');
-    fireEvent.pointerEnter(button('Session'), mouse);
+    show();
+    fireEvent.pointerEnter(button('Icons'), mouse);
     wait(HOVER_OPEN_MS);
     const field = within(flyout()!).getByRole('textbox') as HTMLInputElement;
     field.focus();
-    fireEvent.change(field, { target: { value: 'timer' } });
+    fireEvent.change(field, { target: { value: 'star' } });
     fireEvent.pointerLeave(flyout()!.firstElementChild!, mouse);
     wait(HOVER_CLOSE_MS * 2);
     expect(flyout()).not.toBeNull();
@@ -190,14 +188,14 @@ describe('hover intent', () => {
 
 describe('minimal chrome (docs/specs/007-editor/power-user-mode.md)', () => {
   it('shows a picture tile’s icon alone, keeping its name, and a card its name', () => {
-    show('diagram', { minimal: true });
+    show({ minimal: true });
     fireEvent.click(button('Shapes'), { detail: 1 });
     const square = within(flyout()!).getByRole('button', { name: 'Add Square' });
     expect(square.textContent).not.toContain('Square');
-    fireEvent.click(button('Diagrams'), { detail: 1 });
-    expect(
-      within(flyout()!).getAllByRole('button', { name: /Mind Node/ })[0]!.textContent,
-    ).toContain('Mind Node');
+    fireEvent.click(button('Components'), { detail: 1 });
+    expect(within(flyout()!).getAllByRole('button', { name: /Hero/ })[0]!.textContent).toContain(
+      'Hero',
+    );
   });
 });
 
@@ -210,9 +208,9 @@ describe('the keyboard', () => {
     fireEvent.keyDown(button('Write'), { key: 'ArrowLeft' });
     fireEvent.keyDown(button('Shapes'), { key: 'ArrowLeft' });
     // Wraps round to the last.
-    expect(document.activeElement).toBe(button('Media'));
-    fireEvent.keyDown(button('Media'), { key: 'ArrowDown' });
-    expect(heading()).toBe('Media');
+    expect(document.activeElement).toBe(button('Data'));
+    fireEvent.keyDown(button('Data'), { key: 'ArrowDown' });
+    expect(heading()).toBe('Data');
     expect(document.activeElement?.hasAttribute('data-flyout-item')).toBe(true);
   });
 
@@ -254,7 +252,7 @@ describe('the keyboard', () => {
 describe('a tile’s side panel', () => {
   it('opens Card’s presets beside the flyout, keeping the flyout open', () => {
     const h = show();
-    fireEvent.click(button('Layout'), { detail: 1 });
+    fireEvent.click(button('Components'), { detail: 1 });
     const card = within(flyout()!).getByRole('button', { name: 'Add Card' });
     expect(card.getAttribute('draggable')).toBeNull();
     fireEvent.click(card);
@@ -272,12 +270,12 @@ describe('a tile’s side panel', () => {
 
   it('opens on a rest, closes on a rest on another tile, and a second press closes it', () => {
     show();
-    fireEvent.click(button('Layout'), { detail: 1 });
+    fireEvent.click(button('Components'), { detail: 1 });
     const card = within(flyout()!).getByRole('button', { name: 'Add Card' });
     fireEvent.pointerEnter(card);
     wait(200);
     expect(side()).not.toBeNull();
-    fireEvent.pointerEnter(within(flyout()!).getByRole('button', { name: 'Add Frame' }));
+    fireEvent.pointerEnter(within(flyout()!).getByRole('button', { name: 'Add Hero' }));
     wait(HOVER_CLOSE_MS);
     expect(side()).toBeNull();
     fireEvent.click(card);
@@ -288,49 +286,10 @@ describe('a tile’s side panel', () => {
 
   it('drops the side panel when the flyout moves to another category', () => {
     show();
-    fireEvent.click(button('Layout'), { detail: 1 });
+    fireEvent.click(button('Components'), { detail: 1 });
     fireEvent.click(within(flyout()!).getByRole('button', { name: 'Add Badge' }));
     expect(side()).not.toBeNull();
     fireEvent.pointerEnter(button('Shapes'), mouse);
     expect(side()).toBeNull();
-  });
-});
-
-describe('Session’s browse', () => {
-  it('lists its groups down a rail with their counts as badges, and opens on the first', () => {
-    show('workshop');
-    fireEvent.click(button('Session'), { detail: 1 });
-    const rail = within(flyout()!).getByRole('navigation');
-    const groups = within(rail).getAllByRole('button');
-    expect(groups.map((g) => g.textContent?.replace(/\d+$/, ''))).toEqual([
-      'Tools',
-      'Record',
-      'React',
-      'Selection Mode',
-      'Navigate',
-    ]);
-    expect(groups[0]!.getAttribute('aria-current')).toBe('true');
-    expect(within(flyout()!).getByRole('button', { name: /Timer/ })).toBeTruthy();
-  });
-
-  it('switches group from the rail, finds across every group, and remembers the group it was left on', () => {
-    show('workshop');
-    fireEvent.click(button('Session'), { detail: 1 });
-    const rail = () => within(flyout()!).getByRole('navigation');
-    fireEvent.click(within(rail()).getByRole('button', { name: /^React/ }));
-    expect(within(flyout()!).getAllByRole('button', { name: /Confetti/ })[0]).toBeTruthy();
-    fireEvent.change(within(flyout()!).getByRole('textbox'), { target: { value: 'portal' } });
-    expect(within(flyout()!).getByText(/Results for/)).toBeTruthy();
-    expect(within(flyout()!).getAllByRole('button', { name: /Portal/ })[0]).toBeTruthy();
-    // Back to the canvas and in again: React, not Tools.
-    act(() => {
-      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
-    });
-    fireEvent.click(button('Session'), { detail: 1 });
-    expect(
-      within(rail())
-        .getByRole('button', { name: /^React/ })
-        .getAttribute('aria-current'),
-    ).toBe('true');
   });
 });

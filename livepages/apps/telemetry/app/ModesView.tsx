@@ -12,7 +12,7 @@ import { rankTrend, windowLabel } from './windows';
 // Palette tab, which ranks the elements people add: a mode is a way of working
 // on the canvas, not a thing put on it.
 
-const MODE_OPTION = /^(Eraser|Laser|Spotlight|Format)/;
+const MODE_OPTION = /^(Laser|Spotlight|Format)/;
 
 export function ModesView({
   summary,

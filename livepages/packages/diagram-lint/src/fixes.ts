@@ -74,8 +74,4 @@ export const fixes = {
   // Both ends in one rewire: one end at a time would pass through a self-loop, which rewire refuses.
   flowBackwards: (s: LintSource, arrow: string, x: string, y: string) =>
     pick(s, `rewire ${arrow} from=${y} to=${x}`, 'reverse the edge, unless it is a loop'),
-  aspectExtreme: (s: LintSource, direction: 'down' | 'right') =>
-    pick(s, `layout type:shape direction=${direction}`, `direction: ${direction}`),
-  colourOnThemed: (s: LintSource, a: string, fields: readonly ('fill' | 'stroke')[]) =>
-    pick(s, `set ${a} ${fields.map((f) => `${f}=`).join(' ')}`, 'drop the colour'),
 };

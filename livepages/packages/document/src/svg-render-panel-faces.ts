@@ -224,7 +224,7 @@ export function svgActionPanel(el: Face, title: string, color: string, a: Collab
       let y = BODY_TOP;
       for (const action of actions) {
         const done = action.status === 'done';
-        // Won't Do (docs/specs/026-plan/linked-boards.md "On the canvas"): a grey slashed circle, muted like done.
+        // Won't Do (docs/specs/012-collaboration/action-panel.md "The card"): a grey slashed circle, muted like done.
         const wontDo = action.status === 'wont-do';
         const closed = done || wontDo;
         const name = action.assignee.name?.trim() || 'Teammate';

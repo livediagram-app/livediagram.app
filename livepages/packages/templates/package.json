@@ -8,8 +8,6 @@
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./template-sheets": "./src/template-sheets.ts",
-    "./plan-template-seeds": "./src/plan-template-seeds.ts",
     "./page-layout-build": "./src/page-layout-build.ts"
   },
   "scripts": {
@@ -20,10 +18,7 @@
   },
   "dependencies": {
     "@livepages/api-schema": "workspace:*",
-    "@livepages/document": "workspace:*",
-    "@livepages/forms": "workspace:*",
-    "@livepages/items": "workspace:*",
-    "@livepages/sheets": "workspace:*"
+    "@livepages/document": "workspace:*"
   },
   "devDependencies": {
     "@livepages/oxlint-config": "workspace:*",

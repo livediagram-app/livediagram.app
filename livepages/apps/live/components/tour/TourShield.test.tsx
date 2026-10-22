@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// The tour's click shield (docs/specs/007-editor/editor-tour.md "The page waits"): a press on it never reaches the page,
+// The tour's click shield (docs/specs/007-editor/pages-tour.md "The page waits"): a press on it never reaches the page,
 // not even a document listener such as an open menu's outside-press close.
 import { cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';

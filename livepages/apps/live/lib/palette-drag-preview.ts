@@ -17,9 +17,6 @@ type PaletteDragPreview = {
   // The shape's default footprint (canvas units); the ghost scales it by zoom.
   width: number;
   height: number;
-  // A Plan card tile's item type (docs/specs/026-plan/plan-mode.md "The palette"): the boards that
-  // show it open a gap where it would land.
-  planType?: string;
   // The tile's creation choice (a preset, a view, a Dashboard Layout tile's `layout:`), for a drop target that reads
   // it while dragging (a Dashboard's drop zones).
   choice?: string;

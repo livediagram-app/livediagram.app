@@ -5,15 +5,18 @@ import type { TourStepOf } from './tour-step';
 import type { TourEngine } from './useTourEngine';
 import { TourStage } from './TourStage';
 import { holePath } from './TourSpotlight';
-import { BoardsTourArt } from './art/plan-tour-art';
+import { PagesTourArt } from './art/pages-tour-art';
 // The tour wears the active tab's colours (tour-colours.ts); outside an editor, a plain light palette.
-vi.mock('@/components/start/useStartPalette', async () => {
-  const { planPalette } = await import('@livepages/document');
-  return { useStartPalette: () => planPalette('light') };
-});
+const PALETTE = vi.hoisted(() => ({
+  card: '#ffffff',
+  border: '#e2e8f0',
+  text: '#0f172a',
+  muted: '#5d6d83',
+  focus: '#2563eb',
+}));
+vi.mock('@/components/start/useStartPalette', () => ({ useStartPalette: () => PALETTE }));
 
-// What a running tour draws (docs/specs/007-editor/editor-tour.md "The steps"), with a second tour's own
-// card words (docs/specs/026-plan/plan-tour.md).
+// What a running tour draws (docs/specs/007-editor/pages-tour.md "The steps"), with a tour's own card words.
 
 afterEach(cleanup);
 
@@ -46,7 +49,7 @@ describe('TourStage', () => {
     expect(document.querySelector('[data-tour-popover]')).toBeNull();
   });
 
-  // docs/specs/007-editor/editor-tour.md "Dialogs come first".
+  // docs/specs/007-editor/pages-tour.md "Dialogs come first".
   it('draws nothing while it has stepped aside for a dialog', () => {
     render(
       <TourStage
@@ -63,55 +66,37 @@ describe('TourStage', () => {
   it("wears the welcome tour's words by default", () => {
     const e = engine({ id: 'welcome', card: 'welcome', title: 'Welcome', body: 'Hi' });
     render(<TourStage engine={e} />);
-    expect(screen.getByText('Diagram tour')).toBeTruthy();
+    expect(screen.getByText('Tour')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Yes' }));
     expect(e.next).toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'No' }));
     expect(e.skip).toHaveBeenCalled();
   });
 
-  it("wears a second tour's own words and art", () => {
-    const welcome = engine({ id: 'welcome', card: 'welcome', title: 'Welcome to Plan', body: '' });
+  it("wears a tour's own words and art", () => {
+    const welcome = engine({
+      id: 'welcome',
+      card: 'welcome',
+      title: 'Welcome to Slides',
+      body: '',
+    });
     const { unmount } = render(
       <TourStage
         engine={welcome}
-        copy={{ welcomeEyebrow: 'Plan tour', finish: 'Start planning', helpHref: '/help/x/' }}
-        welcomeArt={<BoardsTourArt />}
+        copy={{ welcomeEyebrow: 'Slides tour', finish: 'Start writing', helpHref: '/help/x/' }}
+        welcomeArt={<PagesTourArt kind="slide" />}
       />,
     );
-    expect(screen.getByText('Plan tour')).toBeTruthy();
+    expect(screen.getByText('Slides tour')).toBeTruthy();
     unmount();
     render(
       <TourStage
         engine={engine({ id: 'outro', card: 'outro', title: 'Done', body: '' })}
-        copy={{ finish: 'Start planning', helpHref: '/help/x/' }}
+        copy={{ finish: 'Start writing', helpHref: '/help/x/' }}
       />,
     );
-    expect(screen.getByRole('button', { name: 'Start planning' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Start writing' })).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Learn More' }).getAttribute('href')).toBe('/help/x/');
-  });
-
-  it('offers each way in on a welcome card with choices, in place of the accept', () => {
-    const e = engine({ id: 'welcome', card: 'welcome', title: 'Welcome to Plan', body: '' });
-    const boards = vi.fn();
-    const sheets = vi.fn();
-    render(
-      <TourStage
-        engine={e}
-        welcomeChoices={[
-          { id: 'boards', label: 'Boards', onPick: boards },
-          { id: 'sheets', label: 'Spreadsheets', onPick: sheets },
-        ]}
-      />,
-    );
-    expect(screen.queryByRole('button', { name: 'Yes' })).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'Spreadsheets' }));
-    expect(sheets).toHaveBeenCalled();
-    fireEvent.click(screen.getByRole('button', { name: 'Boards' }));
-    expect(boards).toHaveBeenCalled();
-    expect(e.next).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole('button', { name: 'No' }));
-    expect(e.skip).toHaveBeenCalled();
   });
 
   it('rings the target and labels the step with the tour', () => {
@@ -119,23 +104,22 @@ describe('TourStage', () => {
       { id: 'one', title: 'One', body: 'Copy' },
       { targetRect: { left: 10, top: 10, width: 50, height: 20 } },
     );
-    render(<TourStage engine={e} ariaPrefix="Plan tour" />);
-    expect(screen.getByRole('dialog', { name: 'Plan tour step 2 of 2: One' })).toBeTruthy();
+    render(<TourStage engine={e} ariaPrefix="Slides tour" />);
+    expect(screen.getByRole('dialog', { name: 'Slides tour step 2 of 2: One' })).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Back' }));
     expect(e.back).toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'Skip tour' }));
     expect(e.skip).toHaveBeenCalled();
   });
 
-  // docs/specs/007-editor/editor-tour.md "Look": the spotlight dims round the target; the card wears the tab's colours.
+  // docs/specs/007-editor/pages-tour.md "Look and motion": the spotlight dims round the target; the card wears the tab's colours.
   it("spotlights the target and paints the card in the tab's accent", async () => {
-    const { planPalette } = await import('@livepages/document');
-    const accent = planPalette('light').focus;
+    const accent = PALETTE.focus;
     const e = engine(
       { id: 'one', title: 'One', body: 'Copy' },
       { targetRect: { left: 10, top: 10, width: 50, height: 20 } },
     );
-    render(<TourStage engine={e} ariaPrefix="Plan tour" />);
+    render(<TourStage engine={e} ariaPrefix="Slides tour" />);
     expect(document.querySelector('[data-tour-spotlight]')).not.toBeNull();
     const card = document.querySelector<HTMLElement>('[data-tour-popover]')!;
     expect(card.style.getPropertyValue('--tour-accent')).toBe(accent);
@@ -168,7 +152,7 @@ describe('TourStage', () => {
     expect(holePath({ x: 0, y: 0, w: 100, h: 8 })).toContain('A4 4');
   });
 
-  // Keyboard (docs/specs/007-editor/editor-tour.md): Escape is each card's way out, as its own button is.
+  // Keyboard (docs/specs/007-editor/pages-tour.md): Escape is each card's way out, as its own button is.
   it('declines the offer, skips from a step and finishes from the last card on Escape', () => {
     const offer = engine({ id: 'welcome', card: 'welcome', title: 'Welcome', body: '' });
     const { unmount } = render(<TourStage engine={offer} />);

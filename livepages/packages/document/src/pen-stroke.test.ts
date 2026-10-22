@@ -17,7 +17,7 @@ import {
   type PenStroke,
 } from './index';
 
-// The whiteboard pen's ink (docs/specs/023-draw-mode/draw-mode.md "Pens"): perfect-freehand with
+// A pen stroke's ink: perfect-freehand with
 // pressure, the way Excalidraw draws freedraw. One pure function draws the stroke being drawn and
 // the stroke that lands, on the canvas and in the export.
 
@@ -101,7 +101,7 @@ describe('penStrokePath', () => {
     expect(penStrokePath({ points: [], width: 1.5, streamline: 0.2 })).toBe('');
   });
 
-  // docs/specs/023-draw-mode/draw-mode.md "Pens": a tap with a pen leaves a dot.
+  // A tap with a pen leaves a dot.
   for (const pressures of [undefined, [0.5]]) {
     it(`draws a lone point as a round dot the pen's width, centred on it (pressures ${pressures ? 'yes' : 'no'})`, () => {
       const dot = penStrokeOutline({
@@ -148,8 +148,8 @@ describe('penStrokePath', () => {
   });
 });
 
-// Ink the smoothing has settled never moves while drawing (docs/specs/023-draw-mode/draw-mode.md
-// "Pens"): the tip is the stretch from the last streamlined point to the pointer, with its end cap;
+// Ink the smoothing has settled never moves while drawing: the tip is the stretch from the last
+// streamlined point to the pointer, with its end cap;
 // every outline point farther from it than the stroke's widest radius is exactly where it was.
 describe('settled ink', () => {
   const distToSegment = (p: Point, a: Point, b: Point) => {

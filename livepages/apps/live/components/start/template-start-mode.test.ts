@@ -8,30 +8,24 @@ const base = {
   embed: false,
   readOnly: false,
   drawToolArmed: false,
-  mode: 'diagram' as const,
+  mode: 'pages' as const,
   elementCount: 0,
-  pages: [],
+  pages: [{}],
 };
 
 describe('templateStartMode', () => {
-  it('offers each mode with templates its own start on an empty tab', () => {
-    expect(templateStartMode(base)).toBe('diagram');
-    expect(templateStartMode({ ...base, mode: 'workshop' })).toBe('workshop');
-    expect(templateStartMode({ ...base, mode: 'pages', pages: [{}] })).toBe('pages');
-  });
-
-  it('offers Start Drawing with the pen in hand, and none in Plan (Start Planning is its own)', () => {
-    expect(templateStartMode({ ...base, mode: 'draw', drawToolArmed: true })).toBe('draw');
-    expect(templateStartMode({ ...base, mode: 'plan' })).toBeNull();
+  it('offers Start Making Pages on an empty tab', () => {
+    expect(templateStartMode(base)).toBe('pages');
+    expect(templateStartMode({ ...base, pages: [] })).toBe('pages');
   });
 
   it('offers none once the tab has content, or its page a kind or company', () => {
     expect(templateStartMode({ ...base, elementCount: 1 })).toBeNull();
-    expect(templateStartMode({ ...base, mode: 'pages', pages: [{ kind: 'article' }] })).toBeNull();
-    expect(templateStartMode({ ...base, mode: 'pages', pages: [{}, {}] })).toBeNull();
+    expect(templateStartMode({ ...base, pages: [{ kind: 'article' }] })).toBeNull();
+    expect(templateStartMode({ ...base, pages: [{}, {}] })).toBeNull();
   });
 
-  it('offers none to someone who cannot edit, nor in zen, an embed, under the Quick Start or with a tool armed', () => {
+  it('offers none to someone who cannot edit, nor in zen, an embed, before hydration or with a tool armed', () => {
     for (const k of ['readOnly', 'zen', 'embed', 'drawToolArmed'] as const)
       expect(templateStartMode({ ...base, [k]: true }), k).toBeNull();
     expect(templateStartMode({ ...base, hydrated: false })).toBeNull();

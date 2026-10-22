@@ -6,7 +6,7 @@ import { tilesForCategory } from './palette-tile-defs';
 import type { PaletteTileActions } from './PaletteTileGrid';
 import { StripOpenerPanel } from './StripOpenerPanel';
 
-// docs/specs/007-editor/editor-modes.md "Popular": a category opener's popover shows its tiles as cards that place,
+// docs/specs/007-editor/toolbar-layout.md "A tile's side panel": a category opener's popover shows its tiles as cards that place,
 // arm and drag as the tiles do.
 
 const actions = () =>

@@ -1,15 +1,12 @@
 'use client';
 
 import { useEffect, useRef, type Ref } from 'react';
-import { tabHasDrawing, type Tab } from '@livepages/document';
+import type { Tab } from '@livepages/document';
 import { isTextEditFocused } from '@livepages/ui';
-import { TabModeIcon } from '@/components/chrome/editor-mode/TabModeIcon';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { anyModalOpen } from '@/lib/modal-guard';
 import { SPLIT_HOVER_FOCUS_MS } from '@/lib/split-view';
 import type { CanvasAnchor } from '@/lib/split-pane-view';
-import { legibleTabAccent } from '@/lib/tab-accent';
-import { useAppearance } from '@/hooks/ui/useAppearance';
 import { TabSvgViewport, type TabSvgViewportHandle } from './TabSvgViewport';
 import { useTabSvg } from './useTabSvg';
 import { useTabBackdropPaint } from './useTabBackdropPaint';
@@ -42,13 +39,9 @@ export function SplitStaticPane({
   onFocus: (via: 'Click' | 'Hover') => void;
 }) {
   const { editingId } = useEditorContext();
-  const { appearance } = useAppearance();
-  const isDark = appearance === 'dark';
   const svg = useTabSvg(loaded ? tab : undefined);
-  // A Pages tab always has a page and a Form tab its form, though neither need hold an element.
-  const empty = loaded && !tabHasDrawing(tab);
 
-  // The paper and pattern the editor would paint for this tab, in its mode.
+  // The paper and pattern the editor would paint for this tab.
   const paint = useTabBackdropPaint(tab);
 
   // Resting here hands the editor over; passing through on the way somewhere doesn't. Never while
@@ -90,8 +83,6 @@ export function SplitStaticPane({
         <PaneMessage>{`Couldn't load ${tab.name}. Click to try again.`}</PaneMessage>
       ) : !loaded || !svg ? (
         <PaneMessage busy>{`Loading ${tab.name}…`}</PaneMessage>
-      ) : empty ? (
-        <PaneMessage>Nothing on this tab yet. Click to start on it.</PaneMessage>
       ) : (
         <TabSvgViewport
           svg={svg}
@@ -102,8 +93,7 @@ export function SplitStaticPane({
         />
       )}
       {/* The tab's name, where the editor's Explorer would sit, so the pane says what it shows. */}
-      <div className="pointer-events-none absolute left-4 top-4 flex max-w-[calc(100%-8rem)] items-center gap-2 rounded-full border border-slate-200/80 bg-white/90 py-1.5 pl-2.5 pr-3 shadow-sm backdrop-blur dark:border-slate-700/80 dark:bg-slate-900/90">
-        <TabModeIcon tab={tab} style={{ color: legibleTabAccent(tab, isDark) }} />
+      <div className="pointer-events-none absolute left-4 top-4 flex max-w-[calc(100%-8rem)] items-center gap-2 rounded-full border border-slate-200/80 bg-white/90 px-3 py-1.5 shadow-sm backdrop-blur dark:border-slate-700/80 dark:bg-slate-900/90">
         <span className="truncate text-sm font-semibold text-slate-800 dark:text-slate-100">
           {tab.name}
         </span>
@@ -119,7 +109,7 @@ export function SplitStaticPane({
 // the target previews exactly what will open there.
 export function SplitTabPreview({ tab, loaded }: { tab: Tab; loaded: boolean }) {
   const svg = useTabSvg(loaded ? tab : undefined);
-  if (!svg || !tabHasDrawing(tab)) return null;
+  if (!svg) return null;
   return <TabSvgViewport svg={svg} fitNonce={0} />;
 }
 

@@ -1,13 +1,17 @@
-// A tour's card in the active tab's colours (docs/specs/007-editor/editor-tour.md "Look"): the start panels' palette
-// (useStartPalette) as the CSS variables TourPopover and TourStage paint from, so every tour (Diagram, Plan,
-// Workshop, Draw, Pages, the card type tour) reads as part of the tab it runs on. Pure.
+// A tour's card in the active tab's colours (docs/specs/007-editor/pages-tour.md "Look and motion"): the start
+// panels' palette (useStartPalette) as the CSS variables TourPopover and TourStage paint from, so every tour (the Pages tour, the
+// element tours, Show Me) reads as part of the tab it runs on. Pure.
 import type { CSSProperties } from 'react';
-import {
-  contrastRatio,
-  isLightColor,
-  toneToContrast,
-  type PlanPalette,
-} from '@livepages/document';
+import { contrastRatio, isLightColor, toneToContrast } from '@livepages/document';
+
+// The palette colours a tour's card is painted in: its surface, border, ink, muted ink and accent.
+export type TourPalette = {
+  card: string;
+  border: string;
+  text: string;
+  muted: string;
+  focus: string;
+};
 
 const LIGHT_INK = '#ffffff';
 const DARK_INK = '#0f172a';
@@ -45,7 +49,7 @@ export function bannerColours(accent: string): { from: string; to: string } {
 // The variables: --tour-card, --tour-border, --tour-text, --tour-muted, --tour-accent, --tour-on-accent,
 // --tour-banner-from and --tour-banner-to (the banners' gradient, whose deep end is also the label on their white
 // button) and --tour-hover (a faint wash of the accent for the quiet buttons).
-export function tourColourVars(palette: PlanPalette): CSSProperties {
+export function tourColourVars(palette: TourPalette): CSSProperties {
   const banner = bannerColours(palette.focus);
   return {
     '--tour-card': palette.card,

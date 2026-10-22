@@ -11,14 +11,7 @@ import { LENS_ISSUE_REASONS } from './types';
 
 describe('the dimension catalogue', () => {
   it('lists the dimensions in canonical order', () => {
-    expect(LENS_DIMENSIONS).toEqual([
-      'opens-in',
-      'template',
-      'made-by',
-      'edited',
-      'people',
-      'space',
-    ]);
+    expect(LENS_DIMENSIONS).toEqual(['opens-in', 'made-by', 'edited', 'people', 'space']);
   });
 
   it('labels every fixed value of every fixed dimension', () => {
@@ -28,7 +21,7 @@ describe('the dimension catalogue', () => {
     }
   });
 
-  it('never calls a mode, a tab kind or a template family a type, nor a dimension a board', () => {
+  it('never calls a mode or a tab kind a type, nor a dimension a board', () => {
     const copy = [
       ...Object.values(DIMENSION_LABELS),
       ...Object.values(VALUE_LABELS).flatMap((labels) => Object.values(labels)),
@@ -40,7 +33,6 @@ describe('the dimension catalogue', () => {
     expect(LENS_TELEMETRY_TYPES).toEqual({
       text: 'Text',
       'opens-in': 'OpensIn',
-      template: 'Template',
       'made-by': 'MadeBy',
       edited: 'Edited',
       people: 'People',

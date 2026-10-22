@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { noteTabSaved, whenTabSaved } from './tab-saved';
 
-// docs/specs/030-forms/forms.md "Starting a form": a responses sheet waits for its new tab's save, so its create is
+// A form's responses sheet waits for its new tab's save, so its create is
 // never refused tab_not_found (issue #984).
 afterEach(() => vi.useRealTimers());
 

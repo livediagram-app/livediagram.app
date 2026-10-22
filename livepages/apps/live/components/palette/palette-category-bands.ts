@@ -9,13 +9,12 @@ export const CATEGORY_BANDS: Record<number, string> = {
   1: 'Structure',
   2: 'Decorate',
   3: 'Dynamic',
-  // Plan mode's Boards and Cards (docs/specs/026-plan/plan-mode.md "The palette"), listed first in
-  // that mode, straight after Popular.
+  // Boards and Cards, listed first in a layout that offers them, straight after Popular.
   4: 'Boards & Cards',
-  // Plan mode's Sheets (docs/specs/029-sheets/sheet.md "Placing a sheet"), after Boards & Cards.
+  // Sheets, after Boards & Cards.
   5: 'Spreadsheets',
-  // Workshop mode's session kit (docs/specs/012-collaboration/workshop-mode.md "The palette"): the
-  // six Collaborate categories, under the name the elements go by rather than Dynamic.
+  // The session kit: the six Collaborate categories, under the name the elements go by rather than
+  // Dynamic.
   6: 'Collaborate',
   // A wireframe page's own band (docs/specs/007-editor/wireframe-pages.md "The Elements palette"):
   // Components and Elements, first, set apart from the rest.

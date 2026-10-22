@@ -16,10 +16,7 @@
     "clean": "rm -rf node_modules .turbo"
   },
   "dependencies": {
-    "@livepages/document": "workspace:*",
-    "@livepages/forms": "workspace:*",
-    "@livepages/items": "workspace:*",
-    "@livepages/sheets": "workspace:*"
+    "@livepages/document": "workspace:*"
   },
   "devDependencies": {
     "@livepages/oxlint-config": "workspace:*",

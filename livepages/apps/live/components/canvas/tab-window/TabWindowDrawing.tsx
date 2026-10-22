@@ -3,25 +3,19 @@
 import { trustedHtml } from '@livepages/ui';
 
 // A tab window's drawing (docs/specs/009-elements/tab-window.md "The element"): the tab drawn as the editor shows it
-// (useTabSvg: the export renderer, in this person's appearance, with its photos and the document's cards), zoomed to
-// fit and centred on the tab's own canvas: its paper and its pattern (dots, grid, lines) at the drawing's fit, lined
-// up with it, as the editor paints them for that tab in its mode (useTabBackdropPaint). Inline rather than an image so the page's typefaces apply, its ids prefixed so
+// (useTabSvg: the export renderer, in this person's appearance, with its photos), zoomed to fit and centred on the
+// tab's own canvas: its paper and its pattern (dots, grid, lines) at the drawing's fit, lined up with it, as the editor
+// paints them for that tab (useTabBackdropPaint). Inline rather than an image so the page's typefaces apply, its ids prefixed so
 // its gradients and markers never meet the canvas's. Loaded only once a window is on screen (the renderer is heavy).
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type RefObject } from 'react';
 import { prefixSvgIds, type Tab } from '@livepages/document';
 import { useTabSvg } from '@/components/split/useTabSvg';
-import { usePlanImageExport } from '@/components/dialogs/usePlanImageExport';
-import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useTabBackdropPaint } from '@/components/split/useTabBackdropPaint';
 import { windowMotion } from './tab-window-motion';
 
 export function TabWindowDrawing({ tab, elementId }: { tab: Tab; elementId: string }) {
-  // A Plan tab (a Board, Sheet or Dashboard tab) is drawn as laid out, as its image export draws it: its cards, its
-  // Sheets' cells and its plan views' pictures ("The drawing"). Any other tab is itself, with any plan view on it.
-  const { tabs } = useEditorContext();
-  const plan = usePlanImageExport(tab, tabs);
   // The drawing moves as the tab does on the canvas ("The drawing"): its elements' animations play in the window.
-  const svg = useTabSvg(plan.imageTab, windowMotion, plan.opts);
+  const svg = useTabSvg(tab, windowMotion);
   const paint = useTabBackdropPaint(tab);
   const svgRef = useRef<SVGSVGElement>(null);
   const frameRef = useRef<HTMLDivElement>(null);

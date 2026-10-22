@@ -12,21 +12,16 @@ import {
 } from '@livepages/api-schema';
 import {
   applyElementDelta,
-  isCellKey,
   sanitizeMentions,
-  takesCellThreads,
-  threadAt,
   type Comment,
   type Element,
   type ElementDelta,
 } from '@livepages/document';
-import { formatA1, layoutIndex } from '@livepages/sheets';
-import { findCommentHost, removeComment, threadsOfTab } from '../comments';
+import { commentThreadOf, findCommentHost, removeComment, threadsOfTab } from '../comments';
 import {
   getDocument,
   getParticipant,
   getTab,
-  listSheetHeads,
   isTabRevStale,
   tabIdsWithComments,
   upsertTabAtRev,
@@ -62,10 +57,6 @@ type ThreadVerb = 'reply' | 'resolve' | 'reopen';
 type Doc = NonNullable<Awaited<ReturnType<typeof getDocument>>>;
 type CommentCaller = { doc: Doc; owner: string };
 type Caller = CommentCaller;
-
-// A thread's timeline key: the element's id, or `<elementId>#<cell>` for a Sheet cell's (timeline/tab-diff.ts).
-const threadKeyOf = (elementId: string, cell: string | undefined) =>
-  cell === undefined ? elementId : `${elementId}#${cell}`;
 
 // The caller and the document, when the caller may take part on the tab.
 async function participant(
@@ -116,9 +107,8 @@ async function writeTab(
   return json({ error: 'tab_busy', message: 'the tab kept changing; try again' }, { status: 409 });
 }
 
-// A new comment from the caller, its author fields server-stamped (and the token id, for an agent: PR23). A
-// Plan card's comment writes (item-routes.ts) post through it too (docs/specs/026-plan/items.md "Comments").
-export async function newComment(
+// A new comment from the caller, its author fields server-stamped (and the token id, for an agent: PR23).
+async function newComment(
   ctx: RouteContext,
   owner: string,
   body: Record<string, unknown>,
@@ -143,26 +133,21 @@ export async function newComment(
 // Which comment route a path of this many segments is; a thread verb names itself (its last segment).
 const COMMENT_ROUTE_NAMES: Record<number, string> = { 4: 'list', 6: 'add', 7: 'delete' };
 
-// Appends `comment` to the thread of `elementId` (or of its `cell`, a Sheet cell's, docs/specs/029-sheets/sheet.md
-// "Cell comments"), as the editor does (it unresolves a resolved thread).
-function appended(tab: TabDTO, elementId: string, comment: Comment, cell?: string): Mutation {
+// Appends `comment` to the thread of `elementId`, as the editor does (it unresolves a resolved thread).
+function appended(tab: TabDTO, elementId: string, comment: Comment): Mutation {
   const target = tab.elements.find((el) => el.id === elementId);
   if (!target || target.type === 'arrow') return notFound();
-  if (cell !== undefined && !takesCellThreads(target)) return badRequest('cell_not_on_sheet');
   const { authorId: _a, tokenId: _t, ...publicComment } = comment;
-  const at = cell !== undefined ? { cell } : {};
-  const next = applyElementDelta(target, { kind: 'comment-add', comment, ...at });
-  // The Sheet already holds as many cell threads as it may.
-  if (next === target) return json({ error: 'too_many_threads' }, { status: 409 });
+  const next = applyElementDelta(target, { kind: 'comment-add', comment });
   return {
     elements: tab.elements.map((el) => (el.id === elementId ? next : el)),
     elementId,
-    delta: { kind: 'comment-add', comment: publicComment, ...at },
+    delta: { kind: 'comment-add', comment: publicComment },
   };
 }
 
-// The timeline and the owner's email for a posted comment (add and reply alike, on the canvas or on a card).
-export function afterCommentPosted(
+// The timeline and the owner's email for a posted comment (add and reply alike).
+function afterCommentPosted(
   ctx: RouteContext,
   caller: Caller,
   comment: Comment,
@@ -200,16 +185,13 @@ async function addComment(ctx: RouteContext, id: string, tabId: string): Promise
   if (body instanceof Response) return body;
   const elementId = typeof body.elementId === 'string' ? body.elementId : null;
   if (!elementId) return badRequest('missing elementId');
-  // A Sheet cell's thread, by its cell key (`rowId:colId`).
-  const cell = body.cell === undefined ? undefined : body.cell;
-  if (cell !== undefined && !isCellKey(cell)) return badRequest('invalid cell');
   const comment = await newComment(ctx, caller.owner, body);
   if (comment instanceof Response) return comment;
   let reply = false;
   const written = await writeTab(ctx, id, tabId, (tab) => {
     const target = tab.elements.find((el) => el.id === elementId);
-    reply = (target ? (threadAt(target, cell)?.comments.length ?? 0) : 0) > 0;
-    return appended(tab, elementId, comment, cell);
+    reply = (target ? (commentThreadOf(target)?.comments.length ?? 0) : 0) > 0;
+    return appended(tab, elementId, comment);
   });
   if (written instanceof Response) return written;
   afterCommentPosted(ctx, caller, comment, reply);
@@ -217,7 +199,6 @@ async function addComment(ctx: RouteContext, id: string, tabId: string): Promise
     documentId: id,
     tabId,
     agent: ctx.token !== null,
-    cell: cell !== undefined,
   });
   return json({ comment }, { status: 201 });
 }
@@ -239,9 +220,7 @@ async function deleteOwn(
     const el = tab.elements.find((e) => e.id === host.elementId)!;
     // The opening comment's text is what the thread's resolved event says.
     threadKey =
-      threadAt(el, host.cell)?.comments[0]?.id === commentId
-        ? `${id}:${threadKeyOf(host.elementId, host.cell)}`
-        : null;
+      commentThreadOf(el)?.comments[0]?.id === commentId ? `${id}:${host.elementId}` : null;
     return {
       elements: removeComment(tab.elements, commentId),
       elementId: host.elementId,
@@ -270,7 +249,7 @@ async function threadVerb(
     if (comment instanceof Response) return comment;
     const written = await writeTab(ctx, id, tabId, (tab) => {
       const host = findCommentHost(tab.elements, commentId);
-      return host ? appended(tab, host.elementId, comment, host.cell) : notFound();
+      return host ? appended(tab, host.elementId, comment) : notFound();
     });
     if (written instanceof Response) return written;
     afterCommentPosted(ctx, caller, comment, true);
@@ -284,16 +263,12 @@ async function threadVerb(
     const host = findCommentHost(tab.elements, commentId);
     if (!host) return notFound();
     const el = tab.elements.find((e) => e.id === host.elementId)!;
-    const thread = threadAt(el, host.cell)!;
+    const thread = commentThreadOf(el)!;
     opening = thread.comments[0]?.text ?? null;
-    threadKey = threadKeyOf(el.id, host.cell);
+    threadKey = el.id;
     // Resolving a resolved thread, or reopening an open one, writes and relays nothing (PR17).
     if (thread.resolved === resolved) return 'unchanged';
-    const delta: ElementDelta = {
-      kind: 'comment-resolve',
-      resolved,
-      ...(host.cell !== undefined ? { cell: host.cell } : {}),
-    };
+    const delta: ElementDelta = { kind: 'comment-resolve', resolved };
     return {
       elements: tab.elements.map((e) => (e.id === el.id ? applyElementDelta(e, delta) : e)),
       elementId: el.id,
@@ -316,29 +291,6 @@ async function threadVerb(
   return noContent();
 }
 
-// The A1 of a Sheet cell's thread (docs/specs/029-sheets/sheet.md "Cell comments"), from the tab's stored sheets:
-// read only when a Sheet on the tab carries cell threads, one query for the tab's sheets. A cell whose row or
-// column is gone has none.
-async function cellRefsOf(
-  ctx: RouteContext,
-  documentId: string,
-  tab: TabDTO,
-): Promise<(el: Element, cell: string) => string | null> {
-  const none = () => null;
-  if (!tab.elements.some((el) => (el as { cellComments?: unknown }).cellComments)) return none;
-  const heads = await listSheetHeads(ctx.env, documentId, tab.id);
-  const indexes = new Map(heads.map((h) => [h.id, layoutIndex(h.layout)]));
-  return (el, cell) => {
-    const sheetId = el.type === 'shape' ? el.planSheet?.sheetId : undefined;
-    const ix = sheetId ? indexes.get(sheetId) : undefined;
-    if (!ix) return null;
-    const [r, c] = cell.split(':');
-    const row = ix.rowPos.get(r!);
-    const col = ix.colPos.get(c!);
-    return row === undefined || col === undefined ? null : formatA1(row, col);
-  };
-}
-
 // GET /api/documents/:id/comments?status=: the threads across the document, one tab read at a time (PR21). A
 // grant confined to one tab lists that tab only.
 async function listThreads(ctx: RouteContext, id: string): Promise<Response> {
@@ -357,7 +309,7 @@ async function listThreads(ctx: RouteContext, id: string): Promise<Response> {
     // A tab whose body does not parse is left out of the list, not the whole list refused (E21).
     try {
       const tab = await getTab(ctx.env, id, tabId);
-      if (tab) threads.push(...threadsOfTab(tab, status, viewer, await cellRefsOf(ctx, id, tab)));
+      if (tab) threads.push(...threadsOfTab(tab, status, viewer));
       tabsRead++;
     } catch (err) {
       console.warn('[comments] list skipped tab', { documentId: id, tabId, error: String(err) });

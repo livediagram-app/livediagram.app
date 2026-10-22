@@ -8,7 +8,6 @@ import { parseAccessCloseMatch, type AccessCloseMatch } from './room-access';
 /** The room's surface the internal endpoints act on. */
 export type InternalRoom = {
   broadcastSystemOp: (op: unknown) => void;
-  broadcastOrderedSystemOp: (op: unknown) => void;
   closeSessionsOfChangedLink: (op: unknown) => void;
   closeAllIfTrashed: (op: unknown) => void;
   clearAgentsFor: (op: unknown) => Promise<void>;
@@ -50,11 +49,7 @@ export async function answerInternal(
     const body = await readBody(request);
     const op = body?.op;
     if (!op) return new Response('missing op', { status: 400 });
-    // `ordered` asks for a seq + a catch-up log slot: a system op that
-    // changes the document (an item write, docs/specs/026-plan/items.md "Live for everyone") must replay to a
-    // peer whose socket blipped, the same as a peer's own mutation would.
-    if (body.ordered === true) room.broadcastOrderedSystemOp(op);
-    else room.broadcastSystemOp(op);
+    room.broadcastSystemOp(op);
     room.closeSessionsOfChangedLink(op);
     room.closeAllIfTrashed(op);
     await room.clearAgentsFor(op);
@@ -121,9 +116,9 @@ export async function answerInternal(
   return null;
 }
 
-// The JSON body of an internal worker call (`{ op, ordered? }`), or null
+// The JSON body of an internal worker call (`{ op }`), or null
 // when it doesn't parse as an object.
-async function readBody(request: Request): Promise<{ op?: unknown; ordered?: unknown } | null> {
+async function readBody(request: Request): Promise<{ op?: unknown } | null> {
   try {
     const body: unknown = await request.json();
     return body && typeof body === 'object' ? body : null;

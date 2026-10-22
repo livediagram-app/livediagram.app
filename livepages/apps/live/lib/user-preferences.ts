@@ -23,7 +23,6 @@ export type MapSize = 'short' | 'medium' | 'tall';
 import { upgradeLegacyPreferences } from '@livepages/api-schema';
 import type { PageKind } from '@livepages/document';
 import type { ElementTourKind } from './element-tours';
-import type { PlanTourTrack } from './plan-tour';
 import type { SwatchOverrideStore } from './swatch-overrides';
 import { USER_PREFERENCES_STORAGE_KEY } from '@livepages/telemetry-client';
 import { apiGetPreferences } from './api-client';
@@ -186,33 +185,11 @@ export type UserPreferences = {
   notifyActionAssigned?: boolean;
   // "A teammate @-mentioned me in a comment" (docs/specs/012-collaboration/comment-mentions.md).
   notifyMentions?: boolean;
-  // "Someone fills in one of my forms" (docs/specs/030-forms/forms.md "Hearing about responses").
-  notifyFormResponses?: boolean;
   // "Show my profile picture" (docs/specs/014-identity/profile-picture.md §4): whether signed-in
   // collaborators see this account's picture. Missing = SHOW_PROFILE_PICTURE_DEFAULT. The owner
   // always sees their own picture whatever this says.
   showProfilePicture?: boolean;
-  // The Diagram tour's seen-guard (docs/specs/007-editor/editor-tour.md; named for the welcome tour it was
-  // until October 2026, so earlier answers still hold). True once the
-  // tour's welcome offer has been answered (taken, skipped, or declined),
-  // so the offer never re-appears for this user — synced, so it follows
-  // the account across devices like every other preference. Surfaced in
-  // Settings as Tours › "Diagram Tour" (inverted); turning it on there and
-  // closing Settings replays the tour. Missing / undefined === not seen.
-  tourSeen?: boolean;
-  // The Plan tour's seen-guard (docs/specs/026-plan/plan-tour.md): true counts both tracks as seen while Power user
-  // mode is on (lib/tour-tracks.ts); set with every track by Power user mode.
-  planTourSeen?: boolean;
-  // The Plan tour tracks (Boards, Sheets, Dashboards) whose offer has been answered (taken, skipped or declined), so each offers
-  // itself once ever. Cleared with `planTourSeen` when the Settings switch is turned on.
-  planTourTracks?: PlanTourTrack[];
-  // The Workshop tour's seen-guard (docs/specs/012-collaboration/workshop-tour.md), as `planTourSeen`.
-  // Surfaced in Settings as Tours › "Workshop Tour" (inverted). Missing / undefined === not seen.
-  workshopTourSeen?: boolean;
-  // The Forms tour's seen-guard (docs/specs/030-forms/forms.md "The Forms tour"), as `workshopTourSeen`; Show Me in the
-  // form's cog panel reruns it. Missing / undefined === not seen.
-  formTourSeen?: boolean;
-  // The Pages tour's seen-guard (docs/specs/007-editor/pages-tour.md), as `planTourSeen`: true counts every
+  // The Pages tour's seen-guard (docs/specs/007-editor/pages-tour.md): true counts every
   // page kind's track as seen while Power user mode is on. Set with every kind by Power user mode.
   pagesTourSeen?: boolean;
   // The page kinds whose Pages tour track has been offered and answered (taken, skipped or declined), so each
@@ -255,7 +232,7 @@ export type UserPreferences = {
   minimalChrome?: boolean;
   // One-way latch: the power user mode offer has been shown to this account.
   powerUserOfferShown?: boolean;
-  // Draw mode's pattern, the person's own (docs/specs/007-editor/editor-modes.md "One look"):
+  // A canvas pattern of the person's own, kept from livediagram's Draw mode:
   // Plain, Dots or Grid. Read through lib/whiteboard-dock-prefs. Missing === Grid.
   drawPattern?: 'blank' | 'grid' | 'graph';
   // How Pages mode's Contents shows on a desktop (docs/specs/007-editor/pages-mode.md

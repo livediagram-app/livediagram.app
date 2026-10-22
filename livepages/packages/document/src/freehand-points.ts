@@ -18,9 +18,9 @@ type FreehandGeometry = Pick<FreehandElement, 'x' | 'y' | 'width' | 'height'> & 
 // a dimension to normalise against; dividing by 0 would make NaN points), grown
 // outwards to whole canvas px, and every point normalised into [0..1] inside it,
 // so the saved element resizes proportionally. No points: a 1x1 box at the
-// origin. Shared with the whiteboard pen's live ink, which lays itself out as
-// exactly the stroke it lands as (docs/specs/023-draw-mode/draw-mode.md
-// "Pens"). The whole-px box is what keeps drawn ink still while the stroke
+// origin. Shared with the pen's live ink, which lays itself out as exactly
+// the stroke it lands as. The whole-px box is what keeps drawn ink still
+// while the stroke
 // grows: layout snaps a positioned box and its svg to the pixel grid, so a
 // fractional origin that moved with every sample re-rasterised the whole path
 // at a new sub-pixel offset; a box on whole px moves by whole px only, which

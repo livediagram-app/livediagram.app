@@ -183,7 +183,7 @@ describe('createShareLink (docs/specs/013-workspace/share-link-expiry.md)', () =
     expect(db.one('INSERT INTO share_links').bindings[5]).toBe('week');
   });
 
-  // docs/specs/013-workspace/share-roles.md (migration 0080): a Participant link's legacy role is view, so an older
+  // docs/specs/013-workspace/share-roles.md (the baseline migration): a Participant link's legacy role is view, so an older
   // reader fails closed; its level column says participate.
   it('stores a Participant link as role view with level participate', async () => {
     const db = fakeD1();

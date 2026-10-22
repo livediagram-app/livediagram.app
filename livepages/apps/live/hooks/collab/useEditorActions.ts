@@ -43,13 +43,13 @@ export type SaveActionInput = {
   // The dialog's "Email {name} about this action" checkbox. Only consulted
   // when it can matter: on create, and on an edit that changes the assignee.
   notifyEmail: boolean;
-  // An edit's new status, when the dialog's Status changed it (docs/specs/026-plan/linked-boards.md "On the canvas").
+  // An edit's new status, when the dialog's Status changed it.
   status?: ElementActionStatus;
 };
 
 type EditorActionsDeps = {
   activeId: string;
-  // A new action was saved (the Actions board is made on the first, docs/specs/026-plan/linked-boards.md).
+  // A new action was saved (the Actions board is made on the first).
   onCreated?: (elementId: string) => void;
   // The history hook's element-only setter (no snapshot), per the
   // non-undoable rule above.
@@ -92,7 +92,7 @@ type EditorActionsApi = {
   saveAction: (elementId: string, input: SaveActionInput, actionId?: string | null) => void;
   completeAction: (elementId: string, actionId?: string | null) => void;
   reopenAction: (elementId: string, actionId?: string | null) => void;
-  // Won't Do (docs/specs/026-plan/linked-boards.md "On the canvas"): closed without being done.
+  // Won't Do: closed without being done.
   wontDoAction: (elementId: string, actionId?: string | null) => void;
   deleteAction: (elementId: string, actionId?: string | null) => void;
 };

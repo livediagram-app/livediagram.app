@@ -200,7 +200,6 @@ export const ELEMENT_TOUR_DEFS: Record<ElementTourKind, ElementTourDef> = {
       chartTourSteps({
         elementId: el.id,
         type: chartTypeOf(el as ShapeElement) ?? 'column',
-        fromSheet: !!(el as ShapeElement).chartSource,
         hasMore: env.hasMore,
         touch: env.touch,
       }),

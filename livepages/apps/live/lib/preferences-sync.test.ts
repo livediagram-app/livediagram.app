@@ -45,9 +45,7 @@ function fullAccount(): UserPreferences {
     // Stored by older clients and kept (docs/specs/004-interface-design/colour-picker.md).
     customSwatches: Array.from({ length: 150 }, (_, i) => `#${String(i).padStart(6, '0')}`),
     telemetryEnabled: false,
-    tourSeen: true,
-    planTourSeen: true,
-    workshopTourSeen: true,
+    alignmentGuides: true,
     uiScale: 1.1,
     panelOpacity: 0.85,
     elementIndicatorStyle: 'footer',
@@ -73,7 +71,7 @@ afterEach(() => {
 
 describe('fitPreferences', () => {
   it('leaves a blob that fits as it is', () => {
-    const prefs = { tourSeen: true };
+    const prefs = { alignmentGuides: true };
     expect(fitPreferences(prefs)).toBe(prefs);
   });
 
@@ -147,10 +145,10 @@ describe('fetchUserPreferences after a save that did not land', () => {
   it('keeps the device copy over the server and sends it again', async () => {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ showMinimap: false, uiScale: 1.2 }));
     window.localStorage.setItem(PREFERENCES_UNSYNCED_KEY, 'owner-1');
-    mockedGet.mockResolvedValue({ showMinimap: true, uiScale: 1, tourSeen: true });
+    mockedGet.mockResolvedValue({ showMinimap: true, uiScale: 1, alignmentGuides: true });
     mockedPut.mockResolvedValue(true);
     const merged = await fetchUserPreferences('owner-1');
-    expect(merged).toEqual({ showMinimap: false, uiScale: 1.2, tourSeen: true });
+    expect(merged).toEqual({ showMinimap: false, uiScale: 1.2, alignmentGuides: true });
     expect(mockedPut).toHaveBeenCalledWith('owner-1', merged);
   });
 
@@ -176,17 +174,20 @@ describe('rebaseUserPreferences', () => {
   });
 
   it('removes a key the change removed', () => {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ uiScale: 1.1, tourSeen: true }));
-    const { uiScale: _gone, ...rest } = { uiScale: 1.1, tourSeen: true };
-    expect(rebaseUserPreferences({ uiScale: 1.1, tourSeen: true }, rest)).toEqual({
-      tourSeen: true,
+    window.localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ uiScale: 1.1, alignmentGuides: true }),
+    );
+    const { uiScale: _gone, ...rest } = { uiScale: 1.1, alignmentGuides: true };
+    expect(rebaseUserPreferences({ uiScale: 1.1, alignmentGuides: true }, rest)).toEqual({
+      alignmentGuides: true,
     });
   });
 
   it('builds on the snapshot when there is no cache yet', () => {
-    expect(rebaseUserPreferences({ uiScale: 1 }, { uiScale: 1, tourSeen: true })).toEqual({
+    expect(rebaseUserPreferences({ uiScale: 1 }, { uiScale: 1, alignmentGuides: true })).toEqual({
       uiScale: 1,
-      tourSeen: true,
+      alignmentGuides: true,
     });
   });
 });

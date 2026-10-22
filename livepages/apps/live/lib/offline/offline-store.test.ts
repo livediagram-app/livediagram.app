@@ -143,7 +143,6 @@ describe('offline store ops (in-memory backend)', () => {
     expect((await offlineListDocuments())[0]).toMatchObject({
       opensIn: null,
       tabKind: null,
-      templateFamily: null,
     });
     await offlineSetDocumentFolder('d1', null, 300);
     expect((await offlineListDocuments())[0]?.folderId).toBeNull();
@@ -174,10 +173,6 @@ describe('upsertTab — tab kind', () => {
 
   it('stamps the ordinary kind on the way in', () => {
     expect(upsertTab(rec(), tab(), 2).tabs[0]!.kind).toBe('diagram');
-  });
-
-  it('keeps a Plan tab a Plan tab', () => {
-    expect(upsertTab(rec(), tab({ kind: 'sheet' }), 2).tabs[0]!.kind).toBe('sheet');
   });
 });
 

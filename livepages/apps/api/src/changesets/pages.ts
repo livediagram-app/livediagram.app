@@ -147,7 +147,6 @@ export async function submitPages(args: PagesArgs): Promise<PagesResult> {
       kind: 'pages' in request ? 'pages' : 'article',
       changes: 'pages' in request ? request.pages.length : 1,
       rev,
-      switched: out.switched,
     });
     const articles = articleSummaries(next);
     const article = wrote ? articles.find((a) => a.flow === wrote.flow) : undefined;
@@ -155,7 +154,6 @@ export async function submitPages(args: PagesArgs): Promise<PagesResult> {
       status: 200,
       body: {
         tab: { id: tabId, rev },
-        switched: out.switched,
         lines: article
           ? [
               ...out.lines,

@@ -41,8 +41,7 @@ import { buildPageLayout, layoutCatalogueFor } from '@livepages/templates';
 import { enterPages, type PagesIds } from './enter';
 import { pageLabel, pageSummaries, resolvePage, sizeLabel } from './summary';
 
-export type PageChangesOutcome =
-  { tab: Tab; lines: string[]; switched: boolean } | { refusal: PagesRefusal };
+export type PageChangesOutcome = { tab: Tab; lines: string[] } | { refusal: PagesRefusal };
 
 const CODE: Record<PageEditRefusal, PagesRefusal['code']> = {
   unknown_page: 'page_unknown',
@@ -115,10 +114,10 @@ export function applyPageChanges(
   changes: readonly PageChange[],
   ids: PagesIds = {},
 ): PageChangesOutcome {
-  const entered = enterPages(tab);
-  if ('refusal' in entered) return entered;
-  let current = entered.tab;
-  const lines: string[] = entered.switched ? ['Switched the tab to Pages.'] : [];
+  const locked = enterPages(tab);
+  if (locked) return locked;
+  let current = tab;
+  const lines: string[] = [];
   const newPageId = ids.page ?? (() => nextPageId(pagesOf(current)));
   const newFlowId = ids.flow ?? (() => nextArticleFlowId());
   // The pages a delete in this change took, an article's whole flow among them: a later delete naming one by id is
@@ -353,5 +352,5 @@ export function applyPageChanges(
     if (err instanceof Stop) return { refusal: err.refusal };
     throw err;
   }
-  return { tab: current, lines, switched: entered.switched };
+  return { tab: current, lines };
 }

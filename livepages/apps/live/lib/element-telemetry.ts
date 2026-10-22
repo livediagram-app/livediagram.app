@@ -94,10 +94,10 @@ const SHAPE_TOKENS: Record<string, string> = {
   'stat-row': 'StatRow',
   process: 'ProcessSteps',
   'site-header': 'Header',
-  // Plan board and Plan card (docs/specs/026-plan/plan-mode.md "Telemetry").
+  // Plan board and Plan card.
   'plan-board': 'PlanBoard',
   'plan-card': 'PlanCard',
-  // Plan view (docs/specs/026-plan/plan-views.md "Telemetry"), never the view kind.
+  // Plan view, never the view kind.
   'plan-view': 'PlanView',
   'plan-sheet': 'PlanSheet',
 };

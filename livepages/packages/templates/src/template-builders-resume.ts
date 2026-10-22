@@ -1,5 +1,5 @@
-// Résumé template (kind `resume`, docs/specs/007-editor/templates-by-mode.md "Pages
-// templates"): a one-page A4 CV for a made-up product designer, Maya Lindqvist, that opens in
+// Résumé template (kind `resume`, docs/specs/008-canvas/canvas-and-palette.md
+// "Templates"): a one-page A4 CV for a made-up product designer, Maya Lindqvist, that opens in
 // Pages ready to export as a PDF. It follows the shape recruiters skim fastest:
 //
 //   - a navy header bleeding off the top with a photo slot, the name, the role and a two-by-two

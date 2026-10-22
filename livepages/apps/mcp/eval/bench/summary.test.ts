@@ -31,12 +31,12 @@ const run = (
   metrics: { ...metrics, errors: errors.length },
   checks: pass.map((p, i) => ({ name: `c${i}`, pass: p, detail: p ? null : `why ${i}` })),
   errors,
-  tools: ['add_form'],
+  tools: ['change_pages'],
 });
 
 const err = (id: string) => ({
-  tool: 'add_form',
-  error: `Question "Name ${id}" (q-${id}) needs 2 options, has 1`,
+  tool: 'change_pages',
+  error: `Page "Slide ${id}" (p-${id}) needs 2 columns, has 1`,
 });
 
 const results = {
@@ -44,9 +44,9 @@ const results = {
   meta: { commit: 'abcdef1234', toolCount: 30, toolChars: 1000 },
   deprecated: [],
   runs: [
-    run('Q1', 'haiku', 1, [true, false], [err('a')]),
-    run('Q1', 'haiku', 2, [true, false], [err('b'), err('c')]),
-    run('Q1', 'sonnet', 1, [true, true]),
+    run('I1', 'haiku', 1, [true, false], [err('a')]),
+    run('I1', 'haiku', 2, [true, false], [err('b'), err('c')]),
+    run('I1', 'sonnet', 1, [true, true]),
     run('D1', 'sonnet', 1, [false, true], [{ tool: 'create_document', error: 'once only' }]),
   ],
 };
@@ -63,13 +63,13 @@ describe('normaliseError', () => {
 describe('recurring findings', () => {
   it('keeps a tool error seen in two runs, counting each run once', () => {
     expect(recurringToolErrors(results.runs)).toEqual([
-      expect.objectContaining({ tool: 'add_form', runs: 2, tasks: ['Q1'], models: ['haiku'] }),
+      expect.objectContaining({ tool: 'change_pages', runs: 2, tasks: ['I1'], models: ['haiku'] }),
     ]);
   });
 
   it('keeps a check that failed in two runs, out of the task’s runs', () => {
     expect(recurringCheckFailures(results.runs)).toEqual([
-      { key: 'Q1 · c1', count: 2, of: 3, models: ['haiku'], detail: 'why 1' },
+      { key: 'I1 · c1', count: 2, of: 3, models: ['haiku'], detail: 'why 1' },
     ]);
   });
 });
@@ -97,7 +97,7 @@ describe('summarise', () => {
       '## Tool errors in 2+ runs',
     ])
       expect(md).toContain(heading);
-    expect(md).toContain('| Q1 · c1 | 2/3 | haiku | why 1 |');
+    expect(md).toContain('| I1 · c1 | 2/3 | haiku | why 1 |');
     expect(summarise({ ...results, excluded: ['S1-sonnet-1'] })).toContain(
       'Left out, the MCP never connected: S1-sonnet-1.',
     );
@@ -126,7 +126,7 @@ describe('compareRounds', () => {
     };
     const md = compareRounds(before, results);
     expect(md).toContain('## Compared with r1');
-    expect(md).toContain('| Q1 | haiku | 100% → 50% |');
-    expect(md).not.toContain('| Q1 | sonnet |');
+    expect(md).toContain('| I1 | haiku | 100% → 50% |');
+    expect(md).not.toContain('| I1 | sonnet |');
   });
 });

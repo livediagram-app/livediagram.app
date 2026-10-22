@@ -7,7 +7,7 @@ import { fitLines, fitOf, type ViewLine, type ViewResult } from './budget';
 import { LABEL_CUT_CHARS } from './constants';
 import { contentSummaryOf } from './content-summary';
 import { edgeText, endText, type ViewEdge } from './edges';
-import { boxOf, cellThreadsOf, fieldOf, numberField, textField, threadOf } from './fields';
+import { boxOf, fieldOf, numberField, textField, threadOf } from './fields';
 import { viewHeader } from './header';
 import { buildViewModel, type ViewContext, type ViewModel } from './model';
 import { stateAttributeOf } from './state-attribute';
@@ -93,14 +93,9 @@ const attributeValue = (a: ViewAttribute | undefined) =>
 
 function threadState(el: Element): string {
   const thread = threadOf(el);
-  const own =
-    thread === null ? NONE : `${thread.comments.length} ${thread.resolved ? 'resolved' : 'open'}`;
-  // A Sheet's cell threads (docs/specs/029-sheets/sheet.md "Cell comments"): how many comments, how many open.
-  const cells = cellThreadsOf(el);
-  if (cells.length === 0) return own;
-  const count = cells.reduce((n, t) => n + t.comments.length, 0);
-  const open = cells.filter((t) => !t.resolved).length;
-  return `${own} · cells ${count} in ${cells.length} (${open} open)`;
+  return thread === null
+    ? NONE
+    : `${thread.comments.length} ${thread.resolved ? 'resolved' : 'open'}`;
 }
 
 // Two reads have two ref tables: one added id can lengthen another's ref. So changes compare ids, and refs are
@@ -138,8 +133,7 @@ function changesOf(before: ViewModel, after: ViewModel, a: Element, b: Element):
   ) => changes.push({ text, field, before: was, after: now, covers });
 
   const [kindA, kindB] = [before.kindOf(a), after.kindOf(b)];
-  if (kindA !== kindB)
-    add('kind', `kind ${kindA} → ${kindB}`, kindA, kindB, ['type', 'shape']);
+  if (kindA !== kindB) add('kind', `kind ${kindA} → ${kindB}`, kindA, kindB, ['type', 'shape']);
   if (textField(a, 'label') !== textField(b, 'label')) {
     add(
       'label',
@@ -171,10 +165,7 @@ function changesOf(before: ViewModel, after: ViewModel, a: Element, b: Element):
   }
   const [threadA, threadB] = [threadState(a), threadState(b)];
   if (threadA !== threadB)
-    add('comments', `comments ${threadA} → ${threadB}`, threadA, threadB, [
-      'commentThread',
-      'cellComments',
-    ]);
+    add('comments', `comments ${threadA} → ${threadB}`, threadA, threadB, ['commentThread']);
   if (a.type === 'arrow' && b.type === 'arrow') {
     const [edgeA, edgeB] = [edgeOf(before, a.id), edgeOf(after, b.id)];
     for (const end of ['from', 'to'] as const) {

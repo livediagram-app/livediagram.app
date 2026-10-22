@@ -14,12 +14,7 @@ export function tileDragStart(
   switch (action.type) {
     case 'shape': {
       const choice =
-        action.session ??
-        action.reaction ??
-        action.mode ??
-        action.estimateScale ??
-        action.plan ??
-        action.variant;
+        action.session ?? action.reaction ?? action.mode ?? action.estimateScale ?? action.variant;
       return (e) => {
         // `kind` or `kind|choice`, so a dragged Vote drops a vote, not a timer.
         copy(e, PALETTE_DND_MIME, choice ? `${action.kind}|${choice}` : action.kind);

@@ -33,7 +33,7 @@ const lerp = (a: Box, b: Box, t: number): Box => ({
 const prefersReducedMotion = () =>
   window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
 
-// The spotlight around a step's target (docs/specs/007-editor/editor-tour.md "Motion"): the screen dimmed around
+// The spotlight around a step's target (docs/specs/007-editor/pages-tour.md "Look and motion"): the screen dimmed around
 // the target, the target itself clear, with no outline drawn round it. pointer-events-none, so whatever is highlighted
 // stays usable (unless the tour's shield is up); portalled menus (higher z / later portals) paint above the dim.
 //

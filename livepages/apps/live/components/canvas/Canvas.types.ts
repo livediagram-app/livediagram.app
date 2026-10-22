@@ -1,4 +1,3 @@
-import type { TidyUpActions } from './tidy-up-actions';
 import type { SnapGuideStore } from '@/hooks/canvas/useSnapGuideState';
 import type { RemoteSelector } from '@/lib/presence-rows';
 import type { Dispatch, SetStateAction } from 'react';
@@ -7,12 +6,7 @@ import type { Dispatch, SetStateAction } from 'react';
 // via inline import('...') so this file only needs the bare-named
 // types as top-level imports.
 import type { PointerEvent as ReactPointerEvent, Ref } from 'react';
-import type {
-  CommentMention,
-  EmbedProvider,
-  Finish,
-  FrameHandle,
-} from '@livepages/document';
+import type { CommentMention, EmbedProvider, Finish, FrameHandle } from '@livepages/document';
 import type {
   BackgroundPattern,
   EditorMode,
@@ -82,11 +76,9 @@ export type CanvasProps = {
   // materialises one. Drives the band-aware paint order + hidden-layer
   // filtering in CanvasElementsLayer and the Minimap.
   tabLayers?: Layer[];
-  // The viewer's editor mode on the tab (docs/specs/007-editor/editor-modes.md): Draw trades the
-  // palette, the strip and the tool panels for the dock, and keeps the canvas still.
+  // The viewer's editor mode on the tab (docs/specs/007-editor/pages-mode.md "One mode"): Pages.
   editorMode?: EditorMode;
-  // Pages mode's A4 pages and their edits (docs/specs/007-editor/editor-modes.md "The
-  // pages"), present only in that mode.
+  // The tab's pages and their edits (docs/specs/007-editor/pages-mode.md "The pages").
   pagesMode?: import('@/hooks/editor/usePagesMode').PagesModeView | null;
   // Element ids on a hidden or locked layer (docs/specs/006-document/layers.md) — inert to every
   // selection surface, including the right-click context menu.
@@ -147,8 +139,6 @@ export type CanvasProps = {
     configure: (elementId: string, actionId?: string | null) => void;
     complete: (elementId: string, actionId?: string | null) => void;
     reopen: (elementId: string, actionId?: string | null) => void;
-    // Opens the Actions board (docs/specs/026-plan/linked-boards.md "On the canvas"); absent with no board.
-    openBoard?: () => void;
   };
   onSetSessionConfig?: (
     element: import('@livepages/document').ShapeElement,
@@ -184,10 +174,7 @@ export type CanvasProps = {
   onFireReaction?: (element: import('@livepages/document').ShapeElement) => void;
   // The bursts currently playing, keyed by the pad's element id, plus the way
   // to retire one when its animation ends. Ephemeral: never document state.
-  reactionBursts?: Map<
-    string,
-    { reaction: import('@livepages/document').Reaction; seed: number }
-  >;
+  reactionBursts?: Map<string, { reaction: import('@livepages/document').Reaction; seed: number }>;
   onReactionBurstDone?: (elementId: string) => void;
   // The laser pen (docs/specs/008-canvas/spotlight-panel.md). Owned in editor state, not here: the broadcaster
   // stamps it onto every sample and the trail rows carry it, both of which sit
@@ -389,9 +376,6 @@ export type CanvasProps = {
   // Bottom-dock "Theme & canvas" button (docs/specs/011-theme/canvas-and-theme-dialog.md): opens the
   // CanvasThemeDialog. Omitted in read-only / embed sessions (no button).
   onOpenCanvasTheme?: () => void;
-  // Diagram mode's Tidy Up button and popover (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up
-  // button"). Absent in a session that may not tidy (a Participant, a Viewer, an embed): no button.
-  tidyUp?: TidyUpActions;
   onSelectLayer: (layerId: string) => void;
   onAddLayer: () => void;
   onRemoveLayer: (layerId: string) => void;
@@ -416,8 +400,7 @@ export type CanvasProps = {
   onMoveCommentsPanel: (x: number, y: number) => void;
   onResetCommentsPanel: () => void;
   // Row click: editor selects the element + opens its thread popover.
-  // `cell` names a Sheet cell's thread (docs/specs/029-sheets/sheet.md "Cell comments").
-  onOpenCommentsForElement: (elementId: string, cell?: string) => void;
+  onOpenCommentsForElement: (elementId: string) => void;
   // Floating Actions panel (docs/specs/012-collaboration/assigned-actions.md). Mirrors the Comments panel: only
   // mounted when actionRows is non-empty (at least one OPEN action on
   // the active tab).
@@ -632,10 +615,7 @@ export type CanvasProps = {
   // Change a running / paused countdown's length, restarting it at the new
   // one (docs/specs/012-collaboration/session-button.md). Driven by the Timer element's own `…` menu.
   onSetTimerDuration?: (durationMs: number) => void;
-  onStartVote: (
-    votesPerPerson: number,
-    privacy?: import('@livepages/document').VoteSetup,
-  ) => void;
+  onStartVote: (votesPerPerson: number, privacy?: import('@livepages/document').VoteSetup) => void;
   onEndVote: () => void;
   onRevealVote: () => void;
   onClearVote: () => void;

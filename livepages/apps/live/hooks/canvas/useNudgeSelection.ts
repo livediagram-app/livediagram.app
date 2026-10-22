@@ -27,7 +27,6 @@ import { useEffect, useRef, type RefObject } from 'react';
 import {
   isBoxed,
   rebindArrowAnchorsAfterMove,
-  withSheetCharts,
   withAttached,
   type Element,
   type Tab,
@@ -82,12 +81,8 @@ export function useNudgeSelection(deps: NudgeDeps): (dx: number, dy: number) => 
     const locked = new Set(
       deps.activeTab.elements.filter((el) => el.locked === true).map((el) => el.id),
     );
-    // A Sheet carries the charts drawn from it, as a drag does (docs/specs/029-sheets/sheet.md "Charts").
-    // And a host carries its badges and step numbers (docs/specs/009-elements/badge.md).
-    const carried = withAttached(
-      deps.activeTab.elements,
-      withSheetCharts(deps.activeTab.elements, picked),
-    );
+    // A host carries its badges and step numbers (docs/specs/009-elements/badge.md).
+    const carried = withAttached(deps.activeTab.elements, picked);
     const ids = locked.size > 0 ? new Set([...carried].filter((id) => !locked.has(id))) : carried;
     if (ids.size === 0) return;
     // Open a coalescing burst on the first press: checkpoint so undo

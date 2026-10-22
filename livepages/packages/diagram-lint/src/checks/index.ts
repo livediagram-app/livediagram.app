@@ -1,10 +1,8 @@
-// The thirteen checks, in the spec's code order.
+// The eleven checks, in the spec's code order.
 
 import { arrowBehindBox } from './arrow-behind-box';
 import { arrowDangling } from './arrow-dangling';
-import { aspectExtreme } from './aspect-extreme';
 import { boxOverlap } from './box-overlap';
-import { colourOnThemed } from './colour-on-themed';
 import { duplicateLabel } from './duplicate-label';
 import { edgeCrossings } from './edge-crossings';
 import { flowBackwards } from './flow-backwards';
@@ -27,6 +25,4 @@ export const LINT_CHECKS: readonly Check[] = [
   groupSplitEdges,
   duplicateLabel,
   flowBackwards,
-  aspectExtreme,
-  colourOnThemed,
 ];

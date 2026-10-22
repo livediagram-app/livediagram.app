@@ -3,14 +3,10 @@
 // `template`); the place the frame shows fills in where it says nothing, a folder view its folder and a team page its
 // team. The document is made as /new makes it (lib/new-document-content.ts) and opened in the frame.
 import { creationIntentOf } from '@livepages/api-schema';
-import {
-  templateFamilyOf,
-  untitledNameForTemplate,
-  type TemplateKind,
-} from '@livepages/templates';
+import { untitledNameForTemplate, type TemplateKind } from '@livepages/templates';
 import { apiCreateDocument } from '@/lib/api-client';
 import { NEW_DOCUMENT_THEME_ID, newDocumentContent } from '@/lib/new-document-content';
-import { wizardBypassKind } from '@/lib/new-document-params';
+import { newDocumentKind } from '@/lib/new-document-params';
 import type { WorkspacePlace } from '@/lib/workbench/workspace-place';
 
 export type CreateInPlace = {
@@ -27,7 +23,7 @@ export function createInPlaceOf(
   place: WorkspacePlace,
 ): CreateInPlace {
   const search = new URL(href, origin).searchParams;
-  const templateKind = wizardBypassKind(search.toString());
+  const templateKind = newDocumentKind(search.toString());
   const folder = search.get('folder');
   const team = search.get('team');
   if (folder || team) return { folderId: folder ?? undefined, teamId: team, templateKind };
@@ -46,11 +42,10 @@ export async function createDocumentInPlace(
   const { templateKind } = request;
   const documentId = crypto.randomUUID();
   const tabId = crypto.randomUUID();
-  const { tabs, tab, itemTypes, seedItems } = await newDocumentContent({
+  const { tabs, tab } = await newDocumentContent({
     templateKind,
     themeId: NEW_DOCUMENT_THEME_ID,
     tabId,
-    via: 'workbench',
     // No template asked for: the editor opens on its start, where the templates are.
     templateChosen: templateKind !== null,
   });
@@ -58,11 +53,9 @@ export async function createDocumentInPlace(
     id: documentId,
     name: untitledNameForTemplate(templateKind),
     tabs: tabs ?? [tab],
-    ...(itemTypes ? { itemTypes } : {}),
-    ...(seedItems.length ? { items: seedItems } : {}),
     teamId: request.teamId,
     folderId: request.folderId,
-    intent: creationIntentOf(tab, templateFamilyOf(templateKind)),
+    intent: creationIntentOf(tab),
   });
   return documentId;
 }

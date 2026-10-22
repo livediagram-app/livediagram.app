@@ -10,46 +10,39 @@ import {
   templateTabName,
   validTemplateKinds,
 } from './template-tab';
-import { templateTabs } from './build-template';
 import { TEMPLATES } from './templates';
 import { templateCatalogue } from './template-catalogue';
 
-// Templates drawn from sketches (the sailboat scene) carry freehand strokes: what the MCP writes
-// from a template must be a tab the api accepts, its strokes packed
-// (docs/specs/006-document/stroke-points.md).
+// What the MCP writes from a template must be a tab the api accepts, any strokes packed
+// (docs/specs/006-document/stroke-points.md), opening in Pages.
 describe('buildTemplateTab', () => {
-  it('builds every template as a valid tab, with packed strokes', () => {
-    let strokes = 0;
+  it('builds every template as a valid tab opening in Pages, with packed strokes', () => {
     for (const { kind } of TEMPLATES) {
       const tab = buildTemplateTab(`tab-${kind}`, kind, kind);
       expect(isValidTab(tab), kind).toBe(true);
+      expect(tab.opensIn, kind).toBe('pages');
+      expect(tab.templateChosen, kind).toBe(true);
       for (const el of tab.elements) {
         if (el.type !== 'freehand') continue;
-        strokes++;
         expect(parseStrokePoints(el.packedPoints).ok, kind).toBe(true);
       }
     }
-    expect(strokes).toBeGreaterThan(0);
-  });
-});
-
-// docs/specs/007-editor/editor-modes.md: the Whiteboard template makes a general tab that opens in
-// Draw mode; there is no whiteboard kind.
-describe('buildTemplateTab: the Whiteboard template', () => {
-  it('makes a general tab that opens in Draw', () => {
-    const tab = buildTemplateTab('tab-wb', 'Whiteboard', 'whiteboard');
-    expect(tab.kind).toBe('diagram');
-    expect(tab.opensIn).toBe('draw');
   });
 
-  it('leaves every other template opening in Diagram', () => {
-    expect(buildTemplateTab('tab-b', 'Blank', 'blank').opensIn).toBeUndefined();
+  // Blank Tab and Blank Illustration open on the one unchosen page every new Pages tab starts on.
+  it('opens every other template on pages of its own', () => {
+    for (const { kind } of TEMPLATES) {
+      if (kind === 'blank' || kind === 'blank-illustration') continue;
+      expect(buildTemplateTab('t', kind, kind).pages?.length, kind).toBeGreaterThan(0);
+    }
   });
 });
 
 describe('resolveTemplate', () => {
   it('resolves a catalogue kind and refuses an unknown one', () => {
-    expect(resolveTemplate('kanban')).toBe('kanban');
+    expect(resolveTemplate('slide-deck')).toBe('slide-deck');
+    // A retired kind resolves to its replacement.
+    expect(resolveTemplate('mobile-wireframe')).toBe('wireframe-mobile-app');
     expect(resolveTemplate('nope')).toBeNull();
   });
 
@@ -58,79 +51,50 @@ describe('resolveTemplate', () => {
       templateCatalogue().templates.map((t) => t.kind),
     );
   });
-
-  // docs/specs/030-forms/forms.md "As templates": only the editor starts a form, so an agent's form template was an
-  // empty Plan tab with no form. It is refused, saying how the form is made.
-  it('refuses a form template, pointing at add_form with its starter', () => {
-    expect(TEMPLATES.some((t) => t.kind === 'contact-form')).toBe(true);
-    expect(resolveTemplate('contact-form')).toBeNull();
-    expect(validTemplateKinds().split(', ')).not.toContain('contact-form');
-    expect(closestTemplatesHint('contact-form')).toBe(
-      '"contact-form" starts a form, which only the editor makes from a template: make it with add_form (starter "contact"). ',
-    );
-  });
 });
 
-// docs/specs/026-plan/plan-templates.md "How a template with tabs is made".
 describe('buildTemplateTabs', () => {
-  it('makes every tab of a Plan template, the first named as given, each valid and opening in Plan', () => {
-    let n = 0;
-    const tabs = buildTemplateTabs({ id: 'first', name: 'Mine' }, 'team-retro', () => `t${++n}`);
-    expect(tabs.map((t) => [t.id, t.name])).toEqual([
-      ['first', 'Mine'],
-      ['t1', 'Actions'],
-      ['t2', 'Archive'],
-      ['t3', 'Overview'],
-    ]);
-    // A Board tab per board and a Dashboard showing them (docs/specs/026-plan/plan-tabs.md "Templates").
-    expect(tabs.map((t) => t.kind)).toEqual(['board', 'board', 'board', 'dashboard']);
-    for (const tab of tabs) {
-      expect(isValidTab(tab), tab.name).toBe(true);
-      expect(tab.opensIn).toBe('plan');
-      expect(tab.templateChosen).toBe(true);
-    }
-  });
-
-  it('makes exactly buildTemplateTab’s one tab for any other template', () => {
+  it('makes exactly buildTemplateTab’s one tab for every template', () => {
     const newId = () => 'never';
     // Element ids are fresh each build: compare everything else.
     const shape = (tab: ReturnType<typeof buildTemplateTab>) => ({
       ...tab,
       elements: tab.elements.map(({ id: _id, ...rest }) => rest.type),
     });
-    const tabs = buildTemplateTabs({ id: 's', name: 'SWOT' }, 'swot', newId);
-    expect(tabs.map(shape)).toEqual([shape(buildTemplateTab('s', 'SWOT', 'swot'))]);
+    // Not an article's: its writing's block ids are fresh each build too.
+    for (const kind of [
+      'blank',
+      'slide-deck',
+      'event-poster',
+      'floor-plan',
+      'wireframe-website',
+    ] as const) {
+      const tabs = buildTemplateTabs({ id: 's', name: 'Mine' }, kind, newId);
+      expect(tabs.map(shape), kind).toEqual([shape(buildTemplateTab('s', 'Mine', kind))]);
+    }
   });
 });
 
 describe('templateTabName', () => {
-  const names = templateTabs('hiring-pipeline').map((d) => d.name);
-
-  it('takes the name given, unless it is a later tab’s', () => {
-    expect(templateTabName('Hiring', 'hiring-pipeline')).toBe('Hiring');
-    expect(templateTabName(` ${names[1]!.toUpperCase()}`, 'hiring-pipeline')).toBe(names[0]);
-  });
-
-  it('takes the template’s own first name, else Tab 1, when none is given', () => {
-    expect(templateTabName(undefined, 'hiring-pipeline')).toBe(names[0]);
-    expect(templateTabName('  ', 'hiring-pipeline')).toBe(names[0]);
-    expect(templateTabName(undefined, 'flowchart')).toBe('Tab 1');
+  it('takes the name given, else Tab 1', () => {
+    expect(templateTabName('Pitch', 'slide-deck')).toBe('Pitch');
+    expect(templateTabName(undefined, 'slide-deck')).toBe('Tab 1');
+    expect(templateTabName('  ', 'event-poster')).toBe('Tab 1');
   });
 });
 
 // docs/specs/015-api/mcp-server.md §4.5: an unknown kind is refused with the ones it most likely meant.
 describe('closestTemplateKinds', () => {
   it('offers the kinds with a word starting with a word of it', () => {
-    expect(closestTemplateKinds('retro')).toEqual([
-      'retrospective',
-      'team-retro',
-      'four-ls',
-      'sailboat',
+    expect(closestTemplateKinds('wireframe')).toEqual([
+      'blank-wireframe-phone',
+      'blank-wireframe-tablet',
+      'blank-wireframe-browser',
+      'blank-wireframe-laptop',
+      'blank-wireframe-watch',
     ]);
-    expect(closestTemplateKinds('Kanban Board')).toContain('kanban');
-    expect(closestTemplatesHint('retro')).toBe(
-      'Closest: retrospective, team-retro, four-ls, sailboat. ',
-    );
+    expect(closestTemplateKinds('Recipe Card')).toContain('recipe-card');
+    expect(closestTemplatesHint('poster')).toBe('Closest: event-poster. ');
   });
 
   it('offers nothing for a word under 3 letters or one no template has', () => {

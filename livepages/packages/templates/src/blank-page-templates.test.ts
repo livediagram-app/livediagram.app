@@ -7,7 +7,7 @@ import { isBlankTemplate, templateEditorMode } from './template-modes';
 import { templateCanvasOverrides } from './template-canvas-overrides';
 import { untitledNameForTemplate } from './templates';
 
-// docs/specs/007-editor/templates-by-mode.md "Blanks of a page kind".
+// docs/specs/007-editor/start-diagramming.md "Recommended and groups".
 const KINDS = Object.keys(BLANK_PAGE_TEMPLATE_KINDS) as (keyof typeof BLANK_PAGE_TEMPLATE_KINDS)[];
 
 describe('blanks of a page kind', () => {
@@ -68,8 +68,7 @@ describe('blanks of a page kind', () => {
 describe('a blank infographic on its theme', () => {
   it("starts its page on the theme's default background, a blank deck's on Steel; other templates keep theirs", async () => {
     const { buildTemplateTab } = await import('./template-tab');
-    const { defaultPageBackground, getBuiltInTheme, pagesOf } =
-      await import('@livepages/document');
+    const { defaultPageBackground, getBuiltInTheme, pagesOf } = await import('@livepages/document');
     const tab = buildTemplateTab('t', 'T', 'blank-infographic', 'ocean');
     expect(pagesOf(tab)[0]!.background).toEqual(defaultPageBackground(getBuiltInTheme('ocean')));
     const slides = buildTemplateTab('s', 'S', 'blank-slide-deck', 'ocean');

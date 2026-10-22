@@ -78,7 +78,7 @@ const stored = (db: SqliteD1) => {
 afterEach(() => vi.restoreAllMocks());
 
 describe('page changes', () => {
-  it('switches the tab into Pages, writes the pages at the next revision and relays them', async () => {
+  it('writes the pages at the next revision and relays them', async () => {
     const info = vi.spyOn(console, 'info').mockImplementation(() => {});
     const { db, room } = await setUp();
     const res = await call(db, {
@@ -89,19 +89,17 @@ describe('page changes', () => {
     });
     expect(res.status).toBe(200);
     const body = (await res.json()) as PagesAnswer;
-    expect(body.switched).toBe(true);
-    expect(body.lines[0]).toBe('Switched the tab to Pages.');
+    expect(body.lines[0]).toBe('Added page 1 (slide, Slide (16:9)).');
     expect(body.pages.map((p) => [p.place, p.kind, p.name])).toEqual([
       [1, 'slide', null],
       [2, 'slide', 'Two'],
     ]);
     expect(body.changesetId).toBeNull();
     const tab = stored(db);
-    expect(tab.opensIn).toBe('pages');
     expect(tab.pages).toHaveLength(2);
     expect(body.tab.rev).toBe(tab.rev);
     expect(room.bodies.map((b) => b.op.kind)).toEqual(['tab-meta']);
-    expect(room.bodies[0]!.op).toMatchObject({ tabId: 't1', patch: { opensIn: 'pages' } });
+    expect(room.bodies[0]!.op).toMatchObject({ tabId: 't1', patch: { pages: tab.pages } });
     expect(info).toHaveBeenCalledWith(
       '[pages-agent] applied',
       expect.objectContaining({ kind: 'pages', changes: 2 }),
@@ -117,8 +115,6 @@ describe('page changes', () => {
       { path: '/api/documents/D/tabs/t1/illustrate' },
     );
     expect(res.status).toBe(200);
-    const body = (await res.json()) as PagesAnswer;
-    expect(body.switched).toBe(false);
     expect(stored(db).pages).toHaveLength(1);
   });
 

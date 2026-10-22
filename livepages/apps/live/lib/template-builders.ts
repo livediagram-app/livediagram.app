@@ -34,12 +34,11 @@ export function buildTemplatedTab(
   tabId: string,
   tabName: string,
 ): Tab {
-  return themedTab(templateTabs(kind)[0]!, kind, themeId, tabId, tabName, [tabId]);
+  return themedTab(templateTabs(kind)[0]!, kind, themeId, tabId, tabName);
 }
 
-// Every tab a template makes (docs/specs/026-plan/plan-templates.md "How a template with tabs is made"):
-// the first takes `tabId` and `tabName` (unless the template names it), the rest a fresh id each and
-// the template's names.
+// Every tab a template makes (templateTabs, @livepages/templates; one for every Pages template): the first takes
+// `tabId` and `tabName` (unless the template names it), the rest a fresh id each and the template's names.
 export function buildTemplatedTabs(
   kind: TemplateKind,
   themeId: string,
@@ -49,7 +48,7 @@ export function buildTemplatedTabs(
 ): Tab[] {
   const defs = templateTabs(kind);
   const ids = defs.map((_, i) => (i === 0 ? tabId : newId()));
-  return defs.map((def, i) => themedTab(def, kind, themeId, ids[i]!, def.name ?? tabName, ids));
+  return defs.map((def, i) => themedTab(def, kind, themeId, ids[i]!, def.name ?? tabName));
 }
 
 function themedTab(
@@ -58,8 +57,6 @@ function themedTab(
   themeId: string,
   tabId: string,
   tabName: string,
-  // Every tab's id in order, for a template whose tabs name each other (a Plan Dashboard's slots).
-  ids: readonly string[],
 ): Tab {
   const theme = getTheme(themeId);
   // Graph-aware recolour so multi-colour themes (docs/specs/011-theme/multicolour-themes.md) can tint each
@@ -77,9 +74,7 @@ function themedTab(
       patternColor: theme.patternColor,
       ...(theme.backgroundOpacity != null ? { backgroundOpacity: theme.backgroundOpacity } : {}),
       templateChosen: true,
-      // A companion Sheet takes the theme only; the template's canvas is its drawing's (template-companions.ts).
-      ...(def.ownCanvas ? {} : templateCanvasOverrides(kind)),
-      ...def.tab?.(ids),
+      ...templateCanvasOverrides(kind),
     },
     kind,
     theme,

@@ -2,8 +2,8 @@ import type { ReactElement } from 'react';
 import type { TemplateKind } from '@livepages/templates';
 import { pv } from './motion';
 
-// Group 21: the slide decks built from slide layouts (docs/specs/007-editor/templates-by-mode.md "Slide deck
-// templates"): Launch Keynote, Quarterly Review, Team Welcome and Workshop Kickoff. Each is three 16:9 slides fanned
+// Group 21: the slide decks built from slide layouts (docs/specs/008-canvas/canvas-and-palette.md "Templates on
+// pages"): Launch Keynote, Quarterly Review, Team Welcome and Workshop Kickoff. Each is three 16:9 slides fanned
 // back to front: two pale slides of its body (a heading and a hint of the layout on each) behind its title slide on
 // its own dark colours, with a hint of the motion it opens on (aurora lights, a mesh of colour, bokeh, waves) and the
 // title's bars in white. Hover story: the motion drifts across the title slide. Static SVG preview tiles; TemplatePreview chains the groups with ??.

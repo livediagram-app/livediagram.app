@@ -4,9 +4,8 @@ import { getTheme } from './themes';
 import { resetElementColours } from './reset-colours';
 
 // "Reset to Theme" (docs/specs/008-canvas/canvas-and-palette.md, the Colours category): every
-// colour override goes, including a whiteboard stock colour stored by name
-// (docs/specs/023-draw-mode/draw-mode.md "Imported and pasted content"), which would otherwise
-// show again the moment the explicit colour is cleared.
+// colour override goes, including a stock colour stored by name (canvas-and-palette.md "Colours"),
+// which would otherwise show again the moment the explicit colour is cleared.
 const theme = getTheme(undefined);
 const box = { x: 0, y: 0, width: 10, height: 10 };
 

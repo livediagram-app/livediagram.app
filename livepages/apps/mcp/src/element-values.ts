@@ -4,8 +4,12 @@
 // a text size off the scale and an icon id that names no icon all used to be stored and drawn wrong in silence
 // (a question mark for the icon, tiny text for the size).
 
-import { withArticle } from '@livepages/items';
-import { ELEMENT_FIELD_NAMES, fieldValueIssue, type Element } from '@livepages/document';
+import {
+  ELEMENT_FIELD_NAMES,
+  fieldValueIssue,
+  withArticle,
+  type Element,
+} from '@livepages/document';
 import { iconsLike, isIconId } from '@livepages/icons/search';
 
 // The fields shown beside an unknown one: those sharing its words, else none.

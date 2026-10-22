@@ -41,7 +41,7 @@ async function personPage(browser: Browser, baseURL: string, who: StubUser | nul
   });
   await ctx.addInitScript(() => {
     localStorage.setItem('livepages:v2:name-confirmed', '1');
-    localStorage.setItem('livepages:user-preferences:v1', JSON.stringify({ tourSeen: true }));
+    localStorage.setItem('livepages:user-preferences:v1', JSON.stringify({ pagesTourSeen: true }));
   });
   const pictureRequests: string[] = [];
   await ctx.route('https://img.clerk.com/stub/**', (route) => {

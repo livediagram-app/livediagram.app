@@ -9,7 +9,7 @@
 // `layer:default` pattern), not random uuids: re-applying a template
 // converges, and elements copied between any two layered-template tabs
 // keep their band, even across template kinds. Only the display names
-// vary per template ("Board" / "Cards", "Axes" / "Items", ...). The
+// vary per template ("Frames" / "Content", "Rooms" / "Furniture"). The
 // content layer is LAST (top), so it's the default active layer and
 // everything the user adds lands with the content, never under the
 // scaffold. Scaffold layers ship named but unlocked; locking is one
@@ -29,81 +29,14 @@ const layered = (scaffoldName: string, contentName: string): Layer[] => [
 ];
 
 // The layers a template ships with, or undefined for the templates
-// without a meaningful scaffold / content split (single-plane
-// node-and-arrow diagrams, tables, lockups).
+// without a meaningful scaffold / content split (pages laid out from
+// layouts, lockups, articles).
 export function templateLayers(kind: TemplateKind): Layer[] | undefined {
   switch (kind) {
-    // Boards: the stationary lanes / quadrants / axes under the cards,
-    // stickies and items users drag around.
-    case 'retrospective':
-    case 'start-stop-continue':
-    case 'mad-sad-glad':
-    case 'four-ls':
-    case 'sailboat':
-    case 'brainstorm':
-    case 'workshop-board':
-      return layered('Board', 'Stickies');
-    case 'incident-postmortem':
-      return layered('Report', 'Findings');
-    case 'opportunity-solution-tree':
-      return layered('Levels', 'Tree');
-    case 'crazy-eights':
-      return layered('Sheet', 'Sketches');
-    case 'stakeholder-map':
-      return layered('Grid', 'Stakeholders');
-    case 'risk-matrix':
-      return layered('Matrix', 'Risks');
-    case 'wardley-map':
-      return layered('Map', 'Components');
-    case 'threat-model':
-      return layered('Model', 'Threats');
-    case 'service-blueprint':
-      return layered('Blueprint', 'Service');
-    case 'metric-tree':
-      return layered('Levels', 'Tree');
-    case 'value-proposition-canvas':
-      return layered('Canvas', 'Notes');
-    case 'family-tree':
-      return layered('Generations', 'People');
-    case 'value-stream-map':
-      return layered('Map', 'Stream');
-    case 'user-persona':
-      return layered('Card', 'Details');
-    case 'meeting-agenda':
-      return layered('Board', 'Notes');
-    case 'objectives-planner':
-      return layered('Planner', 'Objectives');
-    case 'prioritization-matrix':
-      return layered('Axes', 'Items');
-    case 'affinity-map':
-      return layered('Board', 'Stickies');
-    case 'user-story-map':
-      return layered('Backbone', 'Stories');
-    case 'roadmap':
-      return layered('Lanes', 'Cards');
-    // Fixed grids / frameworks with sliding or fill-in content.
-    case 'gantt':
-      return layered('Grid', 'Bars');
-    case 'swot':
-      return layered('Quadrants', 'Notes');
-    case 'business-model-canvas':
-      return layered('Canvas', 'Notes');
-    case 'empathy-map':
-      return layered('Quadrants', 'Notes');
-    case 'sequence-diagram':
-      return layered('Lifelines', 'Messages');
-    // Tier lanes stay put while components and their wiring move.
-    case 'system-architecture':
-      return layered('Tiers', 'Components');
+    // The frames stay put while their content moves.
     case 'slide-deck':
     case 'storyboard':
       return layered('Frames', 'Content');
-    case 'timeline':
-    case 'milestone-timeline':
-    case 'milestone-timeline-vertical':
-      return layered('Spine', 'Milestones');
-    case 'journey':
-      return layered('Stages', 'Notes');
     // The shell (walls, doorways, room captions) stays put while the
     // furniture is dragged around it.
     case 'floor-plan':

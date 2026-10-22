@@ -54,7 +54,7 @@ export type { ElementValidationIssue } from './validate-primitives';
 
 // Bounds. Generous vs any real document, tight vs an abuse payload.
 export const MAX_ELEMENTS_PER_TAB = 10_000;
-// A Shift-resized text box's scale on its label (docs/specs/023-draw-mode/draw-mode.md "Text boxes"):
+// A Shift-resized text box's scale on its label (docs/specs/006-document/document-structure.md):
 // a 14 px label reads from 1.4 px to 560 px, past any real board, short of an abuse payload.
 export const TEXT_SCALE_MIN = 0.1;
 export const TEXT_SCALE_MAX = 40;
@@ -182,11 +182,6 @@ export const SHAPE_KINDS = new Set<string>([
   'focus-button',
   'icon',
   'sticker',
-  // Plan board and Plan card (docs/specs/026-plan/plan-board.md).
-  'plan-board',
-  'plan-card',
-  'plan-view',
-  'plan-sheet',
 ]);
 
 // Map an arbitrary shape value to a real ShapeKind, defaulting an unknown /
@@ -206,7 +201,7 @@ const COMMON_FIELD_CHECKS: readonly FieldCheck[] = [
   { field: 'fillSwatch', valid: isQuickSwatchSlot, rule: 'a quick-swatch slot 1 to 6' },
   { field: 'textSwatch', valid: isQuickSwatchSlot, rule: 'a quick-swatch slot 1 to 6' },
   // A marker's named colour, and a text's or label's stock colour
-  // (docs/specs/023-draw-mode/draw-mode.md "The colour picker", "Imported and pasted content").
+  // (docs/specs/008-canvas/canvas-and-palette.md "Colours").
   { field: 'penColour', valid: isPenColourName, rule: 'a pen colour name' },
   { field: 'penTextColour', valid: isPenColourName, rule: 'a pen colour name' },
   // Catalogue keys (docs/specs/010-palette/technology-icons.md): looked up as text everywhere.
@@ -352,7 +347,7 @@ function freehandIssue(el: Record<string, unknown>): ElementValidationIssue | nu
   return firstFieldIssue(el, FREEHAND_FIELD_CHECKS);
 }
 
-// A text box's sizing and Shift scale (docs/specs/007-editor/editor-modes.md "A text box's sizing").
+// A text box's sizing and Shift scale (docs/specs/006-document/document-structure.md).
 const TEXT_FIELD_CHECKS: readonly FieldCheck[] = [
   { field: 'sizing', valid: (v) => v === 'fit' || v === 'wrap', rule: oneOfRule(['fit', 'wrap']) },
   {

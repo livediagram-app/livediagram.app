@@ -1,12 +1,5 @@
 import { useEffect, useEffectEvent, useMemo, useRef } from 'react';
-import {
-  isBoxed,
-  isVoteHost,
-  itemIdOfVoteKey,
-  voteKeyOf,
-  voteResultsOf,
-  type Tab,
-} from '@livepages/document';
+import { isBoxed, isVoteHost, voteKeyOf, voteResultsOf, type Tab } from '@livepages/document';
 import { track } from '@/lib/telemetry';
 
 // Vote-results review (docs/specs/012-collaboration/session-tools.md). Once a vote's results are revealed, the
@@ -81,16 +74,7 @@ export function useVoteReview({
   // reads the elements as an effect event.
   const lastCentred = useRef<string | null>(null);
   const centreOn = useEffectEvent((id: string) => {
-    // A card centres its card element, else the board drawing it (found by the card on screen).
-    const itemId = itemIdOfVoteKey(id);
-    const boardId = itemId
-      ? document
-          .querySelector(`[data-plan-card="${CSS.escape(itemId)}"]`)
-          ?.closest<HTMLElement>('[data-plan-board]')?.dataset.planBoard
-      : undefined;
-    const el =
-      activeTab.elements.find((e) => voteKeyOf(e) === id && isBoxed(e)) ??
-      (boardId ? activeTab.elements.find((e) => e.id === boardId) : undefined);
+    const el = activeTab.elements.find((e) => voteKeyOf(e) === id && isBoxed(e));
     if (el && isBoxed(el)) scrollIntoView(el.x, el.y, el.width, el.height, { center: true });
   });
   useEffect(() => {

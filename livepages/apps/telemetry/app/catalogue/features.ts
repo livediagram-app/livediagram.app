@@ -135,8 +135,8 @@ export const MODE_OPTIONS = chart(
   'UI',
   'Changed',
   'Mode Options',
-  'Settings inside a canvas mode: eraser, laser, spotlight and format painter options.',
-  { typeIn: (t) => /^(Eraser|Laser|Spotlight|Format)/.test(t ?? '') },
+  'Settings inside a canvas mode: laser, spotlight and format painter options.',
+  { typeIn: (t) => /^(Laser|Spotlight|Format)/.test(t ?? '') },
 );
 
 // AI assistance (Editing tab). Ask and Clean split AI Requests by mode.
@@ -174,33 +174,7 @@ export const AI_ASSISTANCE: MetricStack = {
   headline: AI_REQUESTS,
 };
 
-// Draw mode (docs/specs/007-editor/editor-modes.md): Whiteboard tabs made.
-export const WHITEBOARDS_CREATED = chart(
-  'Draw',
-  'Created',
-  'Whiteboards Created',
-  'A whiteboard tab made, from the New Document wizard or as a new tab.',
-);
-
-// Editor modes (docs/specs/007-editor/editor-modes.md): switches between the editor modes.
-export const EDITOR_MODE_SWITCHES = chart(
-  'Editor',
-  'Changed',
-  'Editor Mode Switches',
-  'A tab switched to another editor mode by the person working on it.',
-  { types: ['ModeDiagram', 'ModeDraw', 'ModePages', 'ModePlan', 'ModeWorkshop'] },
-);
-
-// The mode a tab opens in, set from the tab menu's Opens in (docs/specs/007-editor/editor-modes.md).
-export const TAB_OPENS_IN = chart(
-  'Tab',
-  'Changed',
-  'Opening Modes Set',
-  'A tab set to open in Diagram, Draw or Pages mode for everyone, from the tab menu.',
-  { types: ['OpensInDiagram', 'OpensInDraw', 'OpensInPages', 'OpensInPlan'] },
-);
-
-// Pages mode's A4 page turned portrait or landscape (docs/specs/007-editor/editor-modes.md "The page").
+// Pages mode's A4 page turned portrait or landscape (docs/specs/007-editor/pages-mode.md).
 export const PAGE_ORIENTATION = chart(
   'Tab',
   'Changed',
@@ -209,7 +183,7 @@ export const PAGE_ORIENTATION = chart(
   { types: ['PagePortrait', 'PageLandscape'] },
 );
 
-// Pages added after the last one, or deleted (docs/specs/007-editor/editor-modes.md "The pages").
+// Pages added after the last one, or deleted (docs/specs/007-editor/pages-mode.md "The pages").
 export const PAGES = chart(
   'Tab',
   'Changed',
@@ -221,7 +195,6 @@ export const PAGES = chart(
       'ArticleAdded',
       'SlidePageAdded',
       'PageRemoved',
-      'ArticlesToPages',
       'PageKindInfographic',
       'PageKindArticle',
       'PageKindSlide',
@@ -390,16 +363,6 @@ export const PAGE_BUILDING = chart(
   },
 );
 
-// Leaving Pages past the pages warning (docs/specs/007-editor/editor-modes.md "Leaving
-// Pages"): how often people go on to Diagram or Draw once told their pages will not show.
-export const LEAVE_PAGES_CONFIRMED = chart(
-  'Editor',
-  'Changed',
-  'Pages Left Past the Warning',
-  'Someone switched a Pages tab with pages to Diagram or Draw after the warning that its pages do not show there.',
-  { types: ['LeavePagesConfirmed'] },
-);
-
 // An empty infographic page's in-page layout card hidden (docs/specs/007-editor/pages-mode.md
 // "Layouts"): set beside Page Layout to see whether the card helps or gets in the way.
 export const EMPTY_PAGE_LAYOUTS_HIDDEN = chart(
@@ -472,16 +435,12 @@ export const ARTICLE_LOOKS = chart(
   },
 );
 
-export const WHITEBOARDS: MetricStack = {
+// Pages (docs/specs/007-editor/pages-mode.md): pages made and set up, logos, wireframes and articles.
+export const PAGE_WORK: MetricStack = {
   stack: true,
-  title: 'Draw Mode',
-  blurb:
-    'Whiteboard tabs made and mode switches.',
+  title: 'Pages',
+  blurb: 'Pages added and set up, logo and wireframe tools, and articles written and styled.',
   members: [
-    WHITEBOARDS_CREATED,
-    EDITOR_MODE_SWITCHES,
-    LEAVE_PAGES_CONFIRMED,
-    TAB_OPENS_IN,
     PAGE_ORIENTATION,
     PAGES,
     PAGE_SETUP,
@@ -500,7 +459,7 @@ export const WHITEBOARDS: MetricStack = {
     ARTICLE_FORMATTING,
     ARTICLE_LOOKS,
   ],
-  headline: WHITEBOARDS_CREATED,
+  headline: PAGES,
 };
 
 // Layers (docs/specs/006-document/layers.md): made, used, and looked at.
@@ -620,15 +579,6 @@ export const ACTIONS_WONT_DO: Metric = {
     'Actions someone decided against: closed without being done, from the canvas or the Actions board.',
 };
 
-export const ACTIONS_BOARDS_MADE: Metric = {
-  category: 'Action',
-  action: 'Linked',
-  type: 'Board',
-  title: 'Actions Boards Made',
-  blurb:
-    'Documents that got an Actions board: a board tab where every action in the document has a card, kept in step with the canvas.',
-};
-
 export const FOLDERS_CREATED: Metric = {
   category: 'Folder',
   action: 'Created',
@@ -689,7 +639,6 @@ export const ASSIGNED_ACTIONS: MetricStack = {
     ACTIONS_EMAILED,
     ACTIONS_COMPLETED,
     ACTIONS_WONT_DO,
-    ACTIONS_BOARDS_MADE,
     ACTIONS_EDITED,
     ACTIONS_OPENED,
     ACTIONS_DELETED,
@@ -838,8 +787,7 @@ export const PALETTE_GROUPS_OPENED = chart(
       type === 'ToolbarMore' ||
       type === 'ToolbarExplorer' ||
       type === 'ToolbarSearch' ||
-      type === 'ToolbarSearchOtherModes' ||
-      type === 'ToolbarSearchUnavailable',
+      type === 'ToolbarSearchOtherModes',
   },
 );
 
@@ -984,34 +932,6 @@ export const MIND_OUTLINE_OPENED = opened(
   (t) => t === 'MindOutline',
 );
 
-export const TOUR_OFFERED = opened(
-  'Tour Offered',
-  'The Diagram tour (the welcome tour until October 2026) offered.',
-  (t) => t === 'TourOffer',
-);
-
-// The Plan tour's offer (docs/specs/026-plan/plan-tour.md); charted in its funnel on the Visitors tab.
-export const PLAN_TOUR_OFFERED = opened(
-  'Plan Tour Offered',
-  'The Plan tour offered, the first time someone works in Plan mode.',
-  (t) => t === 'PlanTourOffer',
-);
-
-// The Workshop tour's offer (docs/specs/012-collaboration/workshop-tour.md); charted in its funnel on
-// the Visitors tab.
-export const WORKSHOP_TOUR_OFFERED = opened(
-  'Workshop Tour Offered',
-  'The Workshop tour offered, the first time someone works in Workshop mode.',
-  (t) => t === 'WorkshopTourOffer',
-);
-
-// The Forms tour's offer (docs/specs/030-forms/forms.md "The Forms tour"); charted in its funnel on the Visitors tab.
-export const FORM_TOUR_OFFERED = opened(
-  'Forms Tour Offered',
-  'The Forms tour offered, the first time an Editor opens a Form tab.',
-  (t) => t === 'FormTourOffer',
-);
-
 // The Pages tour's offer (docs/specs/007-editor/pages-tour.md); charted in its funnel on the Visitors tab.
 export const PAGES_TOUR_OFFERED = opened(
   'Pages Tour Offered',
@@ -1075,14 +995,6 @@ export const SESSION_VOTE_OPENED = opened(
   (t) => t === 'SessionVote',
 );
 
-// Diagram mode's Tidy Up button (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button"); what it then
-// laid out counts under Tabs Auto-Arranged.
-export const TIDY_UP_OPENED = opened(
-  'Tidy Up Opened',
-  'The Tidy Up button in the bottom bar opened, to pick a layout for the tab.',
-  (t) => t === 'TidyUp',
-);
-
 export const ACTION_SIGN_IN_NUDGE = opened(
   'Assign Action Nudge',
   'A guest opened Assign Action and was asked to sign in, since actions need an account.',
@@ -1130,16 +1042,6 @@ export const TEMPLATES_USED = chart(
   'Used',
   'Templates Used',
   'A template picked to start a document or seed a tab.',
-);
-
-// A template a start's search found in another mode (docs/specs/007-editor/start-diagramming.md "Found in other
-// modes"), switching the tab to that mode: how often a search crosses modes. Each is a Template Used too.
-export const TEMPLATES_FROM_OTHER_MODES = chart(
-  'UI',
-  'Used',
-  'Templates From Other Modes',
-  "A template chosen from another mode's matches in a start's search, switching the tab to that mode.",
-  { types: ['StartOtherMode'] },
 );
 
 export const THEMES_CHOSEN = chart(
@@ -1198,10 +1100,9 @@ export const LOOK_AND_FEEL: MetricStack = {
   stack: true,
   title: 'Look & Feel',
   blurb:
-    "The visual presets people reach for: templates (and those found in another mode by a start's search), themes, canvas styles, and their own themes. Headed by themes and canvas styles picked: a template also applies its theme, so adding templates would count that pick twice.",
+    'The visual presets people reach for: templates, themes, canvas styles, and their own themes. Headed by themes and canvas styles picked: a template also applies its theme, so adding templates would count that pick twice.',
   members: [
     TEMPLATES_USED,
-    TEMPLATES_FROM_OTHER_MODES,
     THEMES_CHOSEN,
     CANVAS_STYLES_PICKED,
     CANVAS_CONTROLS_TWEAKED,

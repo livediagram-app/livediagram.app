@@ -6,10 +6,7 @@
 // handful of them, and never grows into the old Editor panel.
 
 import { useRef, useState, type PointerEvent } from 'react';
-import {
-  BorderStrokeIcon,
-  BorderStyleIcon,
-} from '@/components/palette/palette-style-previews';
+import { BorderStrokeIcon, BorderStyleIcon } from '@/components/palette/palette-style-previews';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { useQuickStylePlacement } from '@/hooks/ui/useQuickStylePlacement';
 import { useUiScale } from '@/components/providers/ui-scale';
@@ -72,7 +69,7 @@ const ICON_ALIGN_NAMES: Record<QuickIconAlign, string> = {
 };
 
 // A colour row's options: the theme's seven swatches, then, on the Stroke and Text colour rows,
-// Ink (docs/specs/007-editor/editor-modes.md "One look"), stored by name.
+// Ink (docs/specs/008-canvas/quick-style-panel.md "Colours"), stored by name.
 const swatchOptions = (
   swatches: ShownSwatch[],
   ink?: string,
@@ -188,7 +185,7 @@ export function QuickStylePanel({
       aria-label="Quick style"
       data-quick-style-panel=""
       data-testid="quick-style-panel"
-      // The Draw tour's anchor (docs/specs/023-draw-mode/draw-tour.md "The steps").
+      // A guided tour's anchor.
       data-tour-id="quick-style"
       // A panel, so the panel-opacity preference (docs/specs/007-editor/user-preferences.md) applies to it.
       data-panel-translucent=""

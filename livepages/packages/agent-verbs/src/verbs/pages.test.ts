@@ -10,12 +10,9 @@ import { articleGet, articleSet, pageLs, pageSet } from './pages';
 const ONE = 'tab-one-0000';
 const TWO = 'tab-two-0000';
 const tabPath = (id: string) => `/documents/${DOC_A}/tabs/${id}`;
-// A diagram with something on it: never switched unasked.
-const DRAWN = [{ id: 'box', type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10 }];
 
 const ANSWER: PagesAnswer = {
   tab: { id: ONE, rev: 5 },
-  switched: false,
   lines: ['Added page 2 (slide, Slide (16:9)).'],
   pages: [
     {
@@ -59,7 +56,6 @@ const ANSWER: PagesAnswer = {
 const ARTICLE_TAB = {
   id: ONE,
   rev: 4,
-  opensIn: 'pages',
   elements: [],
   pages: [{ id: 'a1', orientation: 'portrait', kind: 'article', flow: 'art-1' }],
   articles: {
@@ -92,35 +88,15 @@ function setUp(
 }
 
 describe('which tab', () => {
-  it('is the one named, else the first in Pages mode', async () => {
+  it('is the one named, else the first', async () => {
     const { api } = setUp();
-    expect(await pagesTabOf(api, DOC_A, TWO, 'mcp')).toMatchObject({ tabId: TWO });
-    expect(await pagesTabOf(api, DOC_A, undefined, 'mcp')).toMatchObject({ tabId: ONE });
-  });
-
-  it('takes an empty first tab, a document just made for pages', async () => {
-    const { api } = setUp({
-      [TWO]: { id: TWO, elements: DRAWN },
-      [ONE]: { id: ONE, elements: [] },
-    });
-    expect(await pagesTabOf(api, DOC_A, undefined, 'mcp')).toMatchObject({ tabId: ONE });
-  });
-
-  it('refuses rather than switching a diagram unasked, in each door’s words', async () => {
-    const { api } = setUp({
-      [TWO]: { id: TWO, elements: [] },
-      [ONE]: { id: ONE, elements: DRAWN },
-    });
-    const mcp = await pagesTabOf(api, DOC_A, undefined, 'mcp');
-    expect(mcp).toMatchObject({ ok: false, code: 'tab_needed' });
-    expect((mcp as { message: string }).message).toContain('add_tab');
-    const cli = await pagesTabOf(api, DOC_A, undefined, 'cli');
-    expect((cli as { message: string }).message).toContain('--tab');
+    expect(await pagesTabOf(api, DOC_A, TWO)).toMatchObject({ tabId: TWO });
+    expect(await pagesTabOf(api, DOC_A, undefined)).toMatchObject({ tabId: ONE });
   });
 
   it('turns a missing document into the api’s refusal', async () => {
     const { api } = setUp();
-    expect(await pagesTabOf(api, 'nope', undefined, 'mcp')).toMatchObject({
+    expect(await pagesTabOf(api, 'nope', undefined)).toMatchObject({
       ok: false,
       code: 'not_found',
     });
@@ -160,11 +136,11 @@ describe('the calls', () => {
 
   it('reads an article as Markdown, by id, title or as the only one', async () => {
     const { api } = setUp();
-    const only = await readArticle(api, DOC_A, {}, 'mcp');
+    const only = await readArticle(api, DOC_A, {});
     expect(only).toMatchObject({ ok: true, flow: 'art-1', title: 'Brief' });
     expect((only as { markdown: string }).markdown).toBe('---\ntitle: Brief\n---\n\nHello there\n');
-    expect(await readArticle(api, DOC_A, { article: 'brief' }, 'mcp')).toMatchObject({ ok: true });
-    expect(await readArticle(api, DOC_A, { article: 'Plan' }, 'mcp')).toMatchObject({
+    expect(await readArticle(api, DOC_A, { article: 'brief' })).toMatchObject({ ok: true });
+    expect(await readArticle(api, DOC_A, { article: 'Plan' })).toMatchObject({
       ok: false,
       code: 'article_unknown',
     });
@@ -176,33 +152,15 @@ describe('the calls', () => {
       articles: { ...ARTICLE_TAB.articles, 'art-2': { blocks: [] } },
     };
     const { api } = setUp({ [TWO]: { id: TWO, elements: [] }, [ONE]: two });
-    expect(await readArticle(api, DOC_A, {}, 'mcp')).toMatchObject({ code: 'article_ambiguous' });
+    expect(await readArticle(api, DOC_A, {})).toMatchObject({ code: 'article_ambiguous' });
     const none = setUp({
       [TWO]: { id: TWO, elements: [] },
       [ONE]: { ...ARTICLE_TAB, articles: {} },
     });
-    expect(await readArticle(none.api, DOC_A, {}, 'mcp')).toMatchObject({
+    expect(await readArticle(none.api, DOC_A, {})).toMatchObject({
       message: 'That tab has no article.',
     });
-    expect(await readArticle(none.api, 'nope', {}, 'mcp')).toMatchObject({ ok: false });
-  });
-});
-
-describe('the calls with no tab to act on', () => {
-  it('answer the refusal rather than send anything', async () => {
-    const { api, sent } = setUp({
-      [TWO]: { id: TWO, elements: DRAWN },
-      [ONE]: { id: ONE, elements: DRAWN },
-    });
-    expect(
-      await changePages(api, DOC_A, { changes: [{ op: 'add', kind: 'slide' }] }, 'mcp'),
-    ).toMatchObject({
-      code: 'tab_needed',
-    });
-    expect(await writeArticle(api, DOC_A, { markdown: 'x' }, 'mcp')).toMatchObject({
-      code: 'tab_needed',
-    });
-    expect(sent).toEqual([]);
+    expect(await readArticle(none.api, 'nope', {})).toMatchObject({ ok: false });
   });
 });
 
@@ -213,16 +171,6 @@ describe('page ls and page set', () => {
     expect(pageLs.text!(out)).toEqual(['tab one · pages']);
     const fitted = await pageLs.run!(ctx, pageLs.input.parse({ doc: DOC_A, budget: 50 }));
     expect(fitted.text).toBe('tab one · fitted');
-  });
-
-  it('refuses page ls with no Pages tab', async () => {
-    const { ctx } = setUp({
-      [TWO]: { id: TWO, elements: DRAWN },
-      [ONE]: { id: ONE, elements: DRAWN },
-    });
-    await expect(pageLs.run!(ctx, pageLs.input.parse({ doc: DOC_A }))).rejects.toBeInstanceOf(
-      VerbRefusal,
-    );
   });
 
   it('makes one change from the flags', async () => {

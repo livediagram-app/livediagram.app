@@ -15,31 +15,12 @@ import type { CanvasChromeProps } from './CanvasChrome';
 import { usePaletteChrome } from './usePaletteChrome';
 import { useCanvasToolPanels } from './useCanvasToolPanels';
 import { stripSegmentGone, type SessionStripTools } from './SessionClusterStrip';
-import { tidyUpOffered } from './tidy-up-actions';
 import { useContentsChrome } from './useContentsChrome';
 import { useWithheldExplorerCloses } from './useWithheldExplorerCloses';
 
 // Layers is a popover most visits never open: mounted from its first opening on (its code fetched once the
 // editor is idle, lib/editor-deferred-code.ts), and kept mounted after.
 const LayersPanel = dynamic(loadLayersPanel, { ssr: false });
-
-// Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a document without
-// Plan pays nothing for it.
-const CardFinderPanel = dynamic(
-  () => import('@/components/plan/CardFinderPanel').then((m) => m.CardFinderPanel),
-  { ssr: false },
-);
-const TrashPanel = dynamic(() => import('@/components/plan/TrashPanel').then((m) => m.TrashPanel), {
-  ssr: false,
-});
-const NewCardPanel = dynamic(
-  () => import('@/components/plan/NewCardPanel').then((m) => m.NewCardPanel),
-  { ssr: false },
-);
-const CardTypesPanel = dynamic(
-  () => import('@/components/plan/CardTypesPanel').then((m) => m.CardTypesPanel),
-  { ssr: false },
-);
 
 // Lazy-load CommentsPanel: only mounts when the active tab has at
 // least one element with comments. It stacks below the Palette (the
@@ -54,12 +35,6 @@ const CollaboratePanel = dynamic(
 // Lazy for the same reason: the Session strip's popovers (docs/specs/012-collaboration/session-tools.md
 // "The Session strip") load on the first press of a Timer or Vote button.
 const SessionPopover = dynamic(() => import('./SessionPopover').then((m) => m.SessionPopover), {
-  ssr: false,
-});
-
-// Lazy for the same reason: the Tidy Up popover (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button")
-// loads on the first press of its button.
-const TidyUpPopover = dynamic(() => import('./TidyUpPopover').then((m) => m.TidyUpPopover), {
   ssr: false,
 });
 
@@ -102,15 +77,8 @@ export function useCanvasChromePanels({
   layersEl: ReactNode;
   collaborateEl: ReactNode;
   slidesPopoverEl: ReactNode;
-  // The Card Types panel over its cluster button, in Plan mode (docs/specs/026-plan/item-types.md).
-  cardTypesPopoverEl: ReactNode;
-  trashPopoverEl: ReactNode;
-  newCardPopoverEl: ReactNode;
-  cardFinderPopoverEl: ReactNode;
   // The Session strip's open popover (Timer or Vote), over its button.
   sessionPopoverEl: ReactNode;
-  // The Tidy Up popover over its button, in Diagram mode.
-  tidyUpPopoverEl: ReactNode;
   // Pages mode's Contents (docs/specs/007-editor/pages-mode.md "Contents"): the popover,
   // or docked as the sidebar (useContentsChrome).
   contentsPopoverEl: ReactNode;
@@ -264,33 +232,6 @@ export function useCanvasChromePanels({
     isMobile,
     closeDockPanel,
   });
-  // The Card Types popover, likewise, belongs to Plan mode's button.
-  const planMode = props.editorMode === 'plan';
-  const cardTypesOpen = activeDockPanel === 'card-types' && planMode;
-  const trashOpen = activeDockPanel === 'plan-trash' && planMode;
-  const cardFinderOpen = activeDockPanel === 'plan-cards' && planMode;
-  const newCardOpen = activeDockPanel === 'plan-new-card' && planMode;
-  useEffect(() => {
-    if (
-      (activeDockPanel === 'card-types' ||
-        activeDockPanel === 'plan-trash' ||
-        activeDockPanel === 'plan-cards' ||
-        activeDockPanel === 'plan-new-card') &&
-      !planMode
-    )
-      closeDockPanel();
-  }, [activeDockPanel, planMode, closeDockPanel]);
-  // The Tidy Up popover belongs to its button: leaving Diagram mode, Zen or a locked-out session closes it.
-  const tidyUp = props.tidyUp;
-  const tidyUpShown = tidyUpOffered({
-    actions: tidyUp,
-    editorMode: props.editorMode,
-    zenMode: !!zenMode,
-  });
-  const tidyUpOpen = activeDockPanel === 'tidy-up' && tidyUpShown && !chromeHidden;
-  useEffect(() => {
-    if (activeDockPanel === 'tidy-up' && !tidyUpShown) closeDockPanel();
-  }, [activeDockPanel, tidyUpShown, closeDockPanel]);
   const { laserEl, spotlightEl, formatEl, slideDeckEl } = useCanvasToolPanels({
     props,
     chromeHidden,
@@ -364,8 +305,8 @@ export function useCanvasChromePanels({
         onReset={collaborateWiring.onReset}
         // It steps aside once a row takes you somewhere, or on a phone it
         // would cover the card you just went to.
-        onCommentRowClick={(id, cell) => {
-          onOpenCommentsForElement(id, cell);
+        onCommentRowClick={(id) => {
+          onOpenCommentsForElement(id);
           closeDockPanel();
         }}
         onActionRowClick={(id) => {
@@ -436,9 +377,8 @@ export function useCanvasChromePanels({
     () => visibleLayerElements(elements, props.tabLayers),
     [elements, props.tabLayers],
   );
-  // The Map is Diagram, Draw and Workshop's: Pages has Contents for its pages, and a Plan
-  // board is a list, not a space to find your way round.
-  const mapMode = !props.pagesMode && props.editorMode !== 'plan';
+  // The Map is for a canvas without pages: Pages has Contents for its pages.
+  const mapMode = !props.pagesMode;
   const minimapEl =
     !chromeHidden && !isMobile && mapEnabled && mapMode && elements.length >= 4 ? (
       <ViewMinimap
@@ -544,34 +484,6 @@ export function useCanvasChromePanels({
     contentsSidebarEl,
     contentsDocked,
     contentsSide,
-    tidyUpPopoverEl:
-      tidyUpOpen && tidyUp ? (
-        <TidyUpPopover
-          actions={tidyUp}
-          empty={elements.length === 0}
-          anchor={activeDockAnchor ?? undefined}
-          onClose={closeDockPanel}
-        />
-      ) : null,
-    cardTypesPopoverEl: cardTypesOpen ? (
-      <CardTypesPanel
-        popoverOpen
-        popoverAnchor={activeDockAnchor ?? undefined}
-        onPopoverClose={closeDockPanel}
-      />
-    ) : null,
-    cardFinderPopoverEl: cardFinderOpen ? (
-      <CardFinderPanel
-        popoverAnchor={activeDockAnchor ?? undefined}
-        onPopoverClose={closeDockPanel}
-      />
-    ) : null,
-    newCardPopoverEl: newCardOpen ? (
-      <NewCardPanel popoverAnchor={activeDockAnchor ?? undefined} onPopoverClose={closeDockPanel} />
-    ) : null,
-    trashPopoverEl: trashOpen ? (
-      <TrashPanel popoverAnchor={activeDockAnchor ?? undefined} onPopoverClose={closeDockPanel} />
-    ) : null,
     layersEl,
     sessionPopoverEl,
     paletteTint,

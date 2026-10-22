@@ -3,8 +3,6 @@ import type { ArticleOp, ElementDelta, RoomElementOp, Tab } from '@livepages/doc
 import type { ParticipantPresence } from './index';
 import type { DragPreviewPatch } from './drag-preview';
 import type { ChangesetRoomOp } from './changesets';
-import type { ItemsRoomOp, ItemTypesRoomOp } from './items';
-import type { SheetsRoomOp } from './sheets';
 
 // ---------------------------------------------------------------------
 // Realtime room messages
@@ -63,13 +61,6 @@ export const PRESENCE_OP_KINDS = [
   // their caret, as a block id and a character offset, at cursor rates, writing nothing. From any
   // session, like the cursor: a viewer's writing takes no caret, so a viewer never sends one.
   'article-caret',
-  // Whose hands are on a Plan board's card (docs/specs/026-plan/plan-board.md "What the board shows"):
-  // the card someone is dragging or reading, so peers ring it in their colour. Ephemeral, never
-  // logged, from any session (a viewer reads items too).
-  'plan-presence',
-  // Someone's selection on a sheet (docs/specs/029-sheets/sheet.md "Collaboration"): outlined in their colour.
-  // Ephemeral, never logged, from any session (a viewer selects too).
-  'sheet-presence',
   // Who the sender is following (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"). The room
   // keeps it on the session and is the only one who reads it: it tells each person, on their own socket, who
   // follows them (`followers`). Never relayed, from any session (a viewer follows too).
@@ -111,20 +102,11 @@ export const MUTATION_OP_KINDS = [
 //
 // `changeset` (docs/specs/024-agents/agent-changesets.md): one write the api applied and recorded,
 // sequenced through /mutation. A forged one would show people a change nobody made (CS24).
-//
-// `items` (docs/specs/026-plan/items.md "Live for everyone"): item writes the api made. Items change
-// only through the api, so a forged one would show people items nobody wrote. `item-types` likewise
-// (docs/specs/026-plan/item-types.md): the catalogue changes only through the api.
 export const SYSTEM_OP_KINDS = [
   'share-revoked',
   'share-rescoped',
   'document-trashed',
   'changeset',
-  'items',
-  'item-types',
-  // `sheets` (docs/specs/029-sheets/sheet-store.md "Live for everyone"): sheet writes the api made. Sheets change
-  // only through the api, so a forged one would show people cells nobody wrote.
-  'sheets',
 ] as const;
 
 // The whole vocabulary. Every op the editor sends or handles is one of these
@@ -482,17 +464,6 @@ export type RoomOp =
   // element; `end` says the preview is over, `landed` that it was written (the real change follows as
   // element ops, after the autosave's wait), so receivers keep drawing it until then.
   | { kind: 'drag-preview'; tabId: string; patches?: DragPreviewPatch[]; end?: true; landed?: true }
-  // The card the sender is dragging or reading on a Plan board (docs/specs/026-plan/plan-board.md), or
-  // none (itemId null). Presence: relayed as is, never stored.
-  | { kind: 'plan-presence'; tabId: string; itemId: string | null; state?: 'drag' | 'view' }
-  // The sender's selection on a sheet (docs/specs/029-sheets/sheet.md "Collaboration"), by ids, or none.
-  | {
-      kind: 'sheet-presence';
-      tabId: string;
-      sheetId: string;
-      ranges: { r1: string; c1: string; r2: string; c2: string }[] | null;
-      editing: boolean;
-    }
   // The sender's VIEWPORT (docs/specs/012-collaboration/follow-me-viewport.md): where they are looking, so anyone who
   // has chosen to follow them can mirror it. Ephemeral presence exactly like
   // cursor / laser: throttled, never logged, never ordered (no
@@ -546,14 +517,6 @@ export type RoomOp =
   // One changeset the api applied (docs/specs/024-agents/agent-changesets.md "What the room does").
   // Worker-originated through /mutation.
   | ChangesetRoomOp
-  // Item writes the api made (docs/specs/026-plan/items.md "Live for everyone"). Worker-originated
-  // through an ordered /broadcast; a session scoped to one tab hears it without its items.
-  | ItemsRoomOp
-  // A document's type catalogue the api stored (docs/specs/026-plan/item-types.md "Storage and sync").
-  | ItemTypesRoomOp
-  // Sheet writes the api made (docs/specs/029-sheets/sheet-store.md "Live for everyone"). Worker-originated
-  // through an ordered /broadcast; a session scoped to one tab hears only its tab's.
-  | SheetsRoomOp
   // The document went to the Trash (docs/specs/013-workspace/trash.md). Every
   // session shows the deleted state; the room then closes every socket (4004).
   // Worker-originated, like share-revoked.

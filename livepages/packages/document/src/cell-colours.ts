@@ -1,5 +1,4 @@
-// A sheet cell's colours as drawn on its Sheet (docs/specs/029-sheets/sheet.md "Formatting", "Readable cells"): a
-// cell stores literal colours (a fill picked on a light canvas stays `#ecfdf5`), so the drawing side resolves them for
+// A sheet cell's colours as drawn on its Sheet: a cell stores literal colours (a fill picked on a light canvas stays `#ecfdf5`), so the drawing side resolves them for
 // the surface it is drawn on. On a dark Sheet a pale fill (a band, a highlight, an input's yellow) is drawn as a tint
 // of its hue on the dark surface, and on a light Sheet a near-black tint is drawn as a pale one, so a sheet set up in
 // one theme reads in the other. Then the ink (the cell's own text colour, else the Sheet's) is lifted or deepened until

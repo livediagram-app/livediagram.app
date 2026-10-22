@@ -24,7 +24,7 @@ import {
 //
 // A team the user already belongs to is skipped: an invite sent to their email after they joined
 // by link (or under another address) would otherwise become a second membership row for the same
-// person. The unique (team_id, user_id) index (migration 0083) backs this up, and OR IGNORE keeps a
+// person. The unique (team_id, user_id) index (the baseline migration) backs this up, and OR IGNORE keeps a
 // concurrent claim or link join from turning that into an error: the row stays unclaimed instead.
 // Only a pending invite is claimed: a rejected row is a record of an answer, not an invite to connect.
 export async function connectInvitesByEmail(

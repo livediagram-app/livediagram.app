@@ -42,15 +42,15 @@ describe('runTabStatsBackfill', () => {
   it('counts every tab without stats from its stored body, and logs once', async () => {
     tabWithoutStats(
       't1',
-      JSON.stringify({ opensIn: 'draw', elements: [{ id: 'a' }, { id: 'b' }] }),
+      JSON.stringify({ opensIn: 'pages', elements: [{ id: 'a' }, { id: 'b' }] }),
     );
     tabWithoutStats(
       't2',
       JSON.stringify({ elements: [{ id: 'c', commentThread: { comments: [{}, {}, {}] } }] }),
     );
     expect(await runTabStatsBackfill(db.env)).toBe(2);
-    expect(stats('t1')).toMatchObject({ mode: 'draw', element_count: 2, comment_count: 0 });
-    expect(stats('t2')).toMatchObject({ mode: 'diagram', element_count: 1, comment_count: 3 });
+    expect(stats('t1')).toMatchObject({ mode: 'pages', element_count: 2, comment_count: 0 });
+    expect(stats('t2')).toMatchObject({ mode: 'pages', element_count: 1, comment_count: 3 });
     expect(log).toHaveBeenCalledTimes(1);
     expect(log).toHaveBeenCalledWith('tab-stats: backfilled n=2 left=none');
   });
@@ -76,15 +76,15 @@ describe('runTabStatsBackfill', () => {
       .prepare(
         'INSERT INTO tab_stats (tab_id, mode, element_count, comment_count, data_bytes, written_at) VALUES (?, ?, ?, ?, ?, ?)',
       )
-      .run('t1', 'plan', 9, 9, 9, T0);
+      .run('t1', 'pages', 9, 9, 9, T0);
     expect(await runTabStatsBackfill(db.env)).toBe(0);
-    expect(stats('t1')).toMatchObject({ mode: 'plan', element_count: 9 });
+    expect(stats('t1')).toMatchObject({ mode: 'pages', element_count: 9 });
   });
 
   it('counts a corrupt body as empty, warns, and never retries it', async () => {
     tabWithoutStats('bad', '{oops');
     expect(await runTabStatsBackfill(db.env)).toBe(1);
-    expect(stats('bad')).toMatchObject({ mode: 'diagram', element_count: 0, data_bytes: 5 });
+    expect(stats('bad')).toMatchObject({ mode: 'pages', element_count: 0, data_bytes: 5 });
     expect(warn).toHaveBeenCalledWith('tab-stats: corrupt tab bad counted empty');
     expect(await runTabStatsBackfill(db.env)).toBe(0);
   });
@@ -121,13 +121,13 @@ describe('tabStatsBackfillStatement', () => {
       .prepare(
         'INSERT INTO tab_stats (tab_id, mode, element_count, comment_count, data_bytes, written_at) VALUES (?, ?, ?, ?, ?, ?)',
       )
-      .run('t1', 'plan', 9, 9, 9, T0);
+      .run('t1', 'pages', 9, 9, 9, T0);
     await tabStatsBackfillStatement(
       db.env,
       't1',
-      { mode: 'diagram', elementCount: 0, commentCount: 0, dataBytes: 2 },
+      { mode: 'pages', elementCount: 0, commentCount: 0, dataBytes: 2 },
       T0 + 1,
     ).run();
-    expect(stats('t1')).toMatchObject({ mode: 'plan', element_count: 9 });
+    expect(stats('t1')).toMatchObject({ mode: 'pages', element_count: 9 });
   });
 });

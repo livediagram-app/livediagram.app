@@ -421,7 +421,7 @@ describe('applyIconWeightToEl', () => {
   });
 });
 
-// docs/specs/007-editor/editor-modes.md "One look": the element menu's Ink swatch stores Ink by
+// docs/specs/008-canvas/canvas-and-palette.md "Colours": the element menu's Ink swatch stores Ink by
 // name; any other colour replaces a stored name.
 describe('Ink by name from the colour rows', () => {
   it('stores Ink as the line\u2019s name on a shape, an arrow and a pen stroke', () => {

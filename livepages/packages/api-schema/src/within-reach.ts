@@ -34,6 +34,9 @@ export function withinReach<T>(
   return { mostUsed, recent };
 }
 
+/** One day in milliseconds: the unit of the Trash's clock, Home's use window and the telemetry windows. */
+export const DAY_MS = 86_400_000;
+
 /** `YYYY-MM-DD` of `at` in UTC: the day a use is counted on, the boundary every coalesced event uses. */
 export function utcDay(at: number): string {
   return new Date(at).toISOString().slice(0, 10);

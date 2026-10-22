@@ -26,8 +26,8 @@ const CHARCOAL = {
 // dark-mode reader's Default tabs stored as their backdrop.
 const PREVIOUS_DEFAULT_DARK = { backgroundColor: '#2b2b33', patternColor: '#636373' } as const;
 
-// Default's light half before the off-white canvas (docs/specs/007-editor/editor-modes.md "One
-// look"): white, with the same slate grid. An unset grid read as that slate.
+// Default's light half before the off-white canvas (docs/specs/011-theme/retired-schemes.md
+// "Default's previous light half"): white, with the same slate grid. An unset grid read as that slate.
 const PREVIOUS_DEFAULT_LIGHT = { backgroundColor: '#ffffff', patternColor: '#cbd5e1' } as const;
 
 type SchemeFields = Pick<Tab, 'theme' | 'backgroundColor' | 'patternColor'>;

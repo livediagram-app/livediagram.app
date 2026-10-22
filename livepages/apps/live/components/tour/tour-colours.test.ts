@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { contrastRatio, hexToRgb, hueName, planPalette, rgbToHex } from '@livepages/document';
+import { contrastRatio, hexToRgb, hueName, rgbToHex } from '@livepages/document';
 import {
   BANNER_FROM_CONTRAST,
   BANNER_INK,
@@ -7,6 +7,7 @@ import {
   bannerColours,
   inkOn,
   tourColourVars,
+  type TourPalette,
 } from './tour-colours';
 
 // White at `alpha` over `behind`, as the browser paints it.
@@ -16,10 +17,16 @@ function whiteAt(alpha: number, behind: string): string {
   return rgbToHex({ r: over(r), g: over(g), b: over(b) });
 }
 
-// docs/specs/007-editor/editor-tour.md "Look": the tour card wears the active tab's colours.
+// docs/specs/007-editor/pages-tour.md "Look and motion": the tour card wears the active tab's colours.
 describe('tour colours', () => {
   it('reads the palette into the card, border, text, muted and accent variables', () => {
-    const p = planPalette('light', { fill: '#fef3c7', stroke: '#b45309', text: '#451a03' });
+    const p: TourPalette = {
+      card: '#fef3c7',
+      border: '#e7c98f',
+      text: '#451a03',
+      muted: '#7c4a1e',
+      focus: '#b45309',
+    };
     const vars = tourColourVars(p) as Record<string, string>;
     expect(vars['--tour-card']).toBe(p.card);
     expect(vars['--tour-border']).toBe(p.border);
@@ -37,8 +44,8 @@ describe('tour colours', () => {
     expect(inkOn('#fde047')).toBe('#0f172a');
   });
 
-  // docs/specs/007-editor/editor-tour.md "Look": the banners are the sign-in banner's deep gradient in the tab's hue,
-  // in white. A dark tab's pale accent painted it a washed-out blue with its words in navy.
+  // docs/specs/007-editor/pages-tour.md "Look and motion": the banners are the sign-in banner's deep gradient in the tab's
+  // hue, in white. A dark tab's pale accent painted it a washed-out blue with its words in navy.
   const ACCENTS = [
     '#93c5fd',
     '#60a5fa',
@@ -60,14 +67,20 @@ describe('tour colours', () => {
     }
   });
 
-  it('keeps the tab’s hue, so a Workshop banner is blue and a Plan one amber', () => {
+  it('keeps the tab’s hue, so a blue tab’s banner is blue and an amber one amber', () => {
     for (const accent of ['#93c5fd', '#b45309', '#22d3ee']) {
       expect(hueName(bannerColours(accent).from), accent).toBe(hueName(accent));
     }
   });
 
   it('gives the white button its label in the banner’s own colour, a dark tab’s pale accent included', () => {
-    const dark = planPalette('dark', { fill: '#1e293b', stroke: '#60a5fa', text: '#e2e8f0' });
+    const dark: TourPalette = {
+      card: '#1e293b',
+      border: '#334155',
+      text: '#e2e8f0',
+      muted: '#94a3b8',
+      focus: '#60a5fa',
+    };
     const vars = tourColourVars(dark) as Record<string, string>;
     expect(contrastRatio(vars['--tour-banner-from']!, '#ffffff')).toBeGreaterThanOrEqual(4.5);
     expect(contrastRatio(vars['--tour-banner-to']!, '#ffffff')).toBeGreaterThanOrEqual(

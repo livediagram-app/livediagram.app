@@ -8,12 +8,4 @@ describe('buildCanvasToolOptions', () => {
   it('offers the editing and presenter tools', () => {
     expect(ids()).toEqual(expect.arrayContaining(['select', 'pan', 'laser', 'spotlight']));
   });
-
-  // docs/specs/026-plan/plan-mode.md: Plan mode leaves Eraser and Format out.
-  it('leaves Eraser and Format out in Plan mode', () => {
-    expect(ids()).toEqual(expect.arrayContaining(['eraser', 'format']));
-    const plan = ids({ isMobile: false, planMode: true });
-    expect(plan).not.toContain('eraser');
-    expect(plan).not.toContain('format');
-  });
 });

@@ -1,7 +1,7 @@
 'use client';
 
 // The Explorer's Inbox (docs/specs/013-workspace/inbox.md): card-lists of what
-// is outstanding for the reader — actions and Plan cards assigned to them, actions
+// is outstanding for the reader — actions assigned to them, actions
 // they assigned, and the comment threads they are in — each hidden
 // when empty, one empty state when all three are.
 //
@@ -15,12 +15,9 @@ import type { ActivityFeed } from '@/app/explorer/useActivityFeed';
 import { SkeletonRows } from '@/app/explorer/views';
 import {
   ActivityActionRow,
-  ActivityCardRow,
   ActivityEmptyState,
   ActivityFailedState,
-  ActivityFormResponsesRow,
   ActivitySection,
-  ActivityCardThreadRow,
   ActivityThreadRow,
 } from './activity-pane-parts';
 
@@ -34,41 +31,18 @@ export function ActivityPane({ feed, compact = false }: { feed: ActivityFeed; co
 
   if (feed.loading) return <SkeletonRows />;
   if (feed.error) return <ActivityFailedState onRetry={feed.retry} />;
-  const total =
-    feed.assignedToMe.length +
-    feed.youAssigned.length +
-    feed.threads.length +
-    feed.formResponses.length;
+  const total = feed.assignedToMe.length + feed.youAssigned.length + feed.threads.length;
   if (total === 0) return <ActivityEmptyState compact={compact} />;
 
   return (
     <div>
       {feed.assignedToMe.length > 0 ? (
         <ActivitySection title="Assigned to You" count={feed.assignedToMe.length}>
-          {feed.assignedToMe.map((row) =>
-            row.kind === 'card' ? (
-              <ActivityCardRow
-                key={`card:${row.documentId}:${row.id}`}
-                card={row}
-                onOpen={() => track('Activity', 'Selected', 'Card')}
-              />
-            ) : (
-              <ActivityActionRow
-                key={`${row.tabId}:${row.elementId}:${row.id}`}
-                action={row}
-                onOpen={() => track('Activity', 'Selected', 'Action')}
-              />
-            ),
-          )}
-        </ActivitySection>
-      ) : null}
-      {feed.formResponses.length > 0 ? (
-        <ActivitySection title="Form Responses" count={feed.formResponses.length}>
-          {feed.formResponses.map((f) => (
-            <ActivityFormResponsesRow
-              key={`form:${f.documentId}:${f.tabId}`}
-              form={f}
-              onOpen={() => track('Activity', 'Selected', 'FormResponses')}
+          {feed.assignedToMe.map((row) => (
+            <ActivityActionRow
+              key={`${row.tabId}:${row.elementId}:${row.id}`}
+              action={row}
+              onOpen={() => track('Activity', 'Selected', 'Action')}
             />
           ))}
         </ActivitySection>
@@ -86,21 +60,13 @@ export function ActivityPane({ feed, compact = false }: { feed: ActivityFeed; co
       ) : null}
       {feed.threads.length > 0 ? (
         <ActivitySection title="Open Comment Threads" count={feed.threads.length}>
-          {feed.threads.map((t) =>
-            t.kind === 'card' ? (
-              <ActivityCardThreadRow
-                key={`card:${t.documentId}:${t.id}`}
-                thread={t}
-                onOpen={() => track('Activity', 'Selected', 'CardThread')}
-              />
-            ) : (
-              <ActivityThreadRow
-                key={`${t.tabId}:${t.elementId}`}
-                thread={t}
-                onOpen={() => track('Activity', 'Selected', 'Thread')}
-              />
-            ),
-          )}
+          {feed.threads.map((t) => (
+            <ActivityThreadRow
+              key={`${t.tabId}:${t.elementId}`}
+              thread={t}
+              onOpen={() => track('Activity', 'Selected', 'Thread')}
+            />
+          ))}
         </ActivitySection>
       ) : null}
     </div>

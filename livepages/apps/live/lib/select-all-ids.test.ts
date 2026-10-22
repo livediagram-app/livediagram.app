@@ -19,8 +19,7 @@ describe('selectAllIds', () => {
     expect([...selectAllIds(tab, 'pages', new Set(['c']), 'p2')]).toEqual(['b']);
   });
 
-  it('selects the whole tab in any other mode, or with no page known', () => {
-    expect(selectAllIds(tab, 'diagram', new Set(), 'p2').size).toBe(3);
+  it('selects the whole tab with no page known', () => {
     expect(selectAllIds(tab, 'pages', new Set(), null).size).toBe(3);
     expect(selectAllIds(tab, 'pages', new Set(), 'gone').size).toBe(3);
   });

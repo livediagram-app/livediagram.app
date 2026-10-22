@@ -10,7 +10,6 @@ import type { ElementAction } from './element-action';
 import type { CommentMention } from './comment-mentions';
 import { isComment, keepLocalTicks } from './element-deltas';
 import { reconcileRestoredElement } from './undo-live-reconcile';
-import { mapElementThreads, type CellCommentThreads } from './cell-comments';
 
 // A single comment inside a thread. The author is the participant who
 // wrote it (per `apps/live/lib/identity.ts`). The participant model is
@@ -83,11 +82,12 @@ export function withoutCommentAuthorId(comment: Comment): Comment {
 }
 
 function withoutCommentAuthorIds<E extends Element>(el: E): E {
-  return mapElementThreads(el, (thread) =>
-    thread.comments.some((c) => c.authorId !== undefined || c.tokenId !== undefined)
-      ? { ...thread, comments: thread.comments.map(withoutCommentAuthorId) }
-      : thread,
-  ) as E;
+  const thread = (el as { commentThread?: CommentThread }).commentThread;
+  if (!thread?.comments.some((c) => c.authorId !== undefined || c.tokenId !== undefined)) return el;
+  return {
+    ...el,
+    commentThread: { ...thread, comments: thread.comments.map(withoutCommentAuthorId) },
+  };
 }
 
 // A room op with every comment author id taken out, whichever kind carries
@@ -163,8 +163,6 @@ export function stampCommentAuthor(
 // change these through deltas that never conflict with an agent's edit.
 export const LIVE_ELEMENT_FIELDS = [
   'commentThread',
-  // A Sheet's cell threads (docs/specs/029-sheets/sheet.md "Cell comments"), as `commentThread`.
-  'cellComments',
   'action',
   'actions',
   'responses',
@@ -180,7 +178,6 @@ export const LIVE_ELEMENT_FIELDS = [
 ] as const;
 type LiveFieldBag = {
   commentThread?: CommentThread;
-  cellComments?: CellCommentThreads;
   action?: ElementAction;
   actions?: ElementAction[];
 } & Pick<

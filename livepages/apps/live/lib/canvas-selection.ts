@@ -4,12 +4,7 @@
 // selection bounds, and every "should this chrome show?" predicate the
 // Canvas render reads. Lifted out of Canvas.tsx so this decision logic
 // is unit-testable in isolation (the component itself has no tests).
-import {
-  isFixedSizeElement,
-  sheetDrawnChartIds,
-  isChipShape,
-  type Rect,
-} from '@livepages/document';
+import { isFixedSizeElement, isChipShape, type Rect } from '@livepages/document';
 import {
   elementBounds,
   isBoxed,
@@ -103,9 +98,8 @@ export function deriveCanvasSelection(input: {
   // An element that never shows quick-connect pluses, beyond the rules below: an object in an
   // article's writing connects to nothing (docs/specs/007-editor/article-pages.md "Zones").
   plusBlocked?: (el: Element) => boolean;
-  // A Plan board or view is drawn over the canvas (maximised, or filling its tab: docs/specs/026-plan/plan-board.md
-  // "Maximised board", "Fill Tab"). The canvas under it cannot be worked on, so no selection toolbar, popover or
-  // plus floats over it, whatever is selected and however it came to be (a press before, select-all, undo, a
+  // A Plan board or view is drawn over the canvas (maximised, or filling its tab). The canvas under it cannot be
+  // worked on, so no selection toolbar, popover or plus floats over it, whatever is selected and however it came to be (a press before, select-all, undo, a
   // collaborator, the tab opening with the board selected). The selection itself is kept.
   canvasCovered?: boolean;
 }): CanvasSelection {
@@ -143,9 +137,7 @@ export function deriveCanvasSelection(input: {
   const selectedIsBoxed = selected ? isBoxed(selected) : false;
   const selectionBounds: Rect | null = selected ? selectionExtent(selected) : null;
 
-  // A chart that sits in a Sheet is drawn and worked in its Sheet (docs/specs/029-sheets/sheet.md "Charts"): selected
-  // there to open its element menu, it has no box on the canvas to float chrome over.
-  const canvasCovered = covered || (!!selected && sheetDrawnChartIds(elements).has(selected.id));
+  const canvasCovered = covered;
   const selectedLocked = selected ? selected.locked === true : false;
   const showPopover = !!(
     selected &&
@@ -176,15 +168,6 @@ export function deriveCanvasSelection(input: {
     selected.type !== 'annotation' &&
     // Nor is a badge or step number: it is a mark on a node (docs/specs/009-elements/badge.md).
     !(selected.type === 'shape' && isChipShape(selected.shape)) &&
-    // A Plan board or Plan card is not a node to chain from: its cards are its content
-    // (docs/specs/026-plan/plan-board.md).
-    !(
-      selected.type === 'shape' &&
-      (selected.shape === 'plan-board' ||
-        selected.shape === 'plan-card' ||
-        selected.shape === 'plan-view' ||
-        selected.shape === 'plan-sheet')
-    ) &&
     editingId !== selected.id &&
     !isPaintMode &&
     !selectedLocked &&

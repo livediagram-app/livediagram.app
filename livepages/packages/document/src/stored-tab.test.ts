@@ -43,8 +43,8 @@ describe('migrateStoredTab', () => {
   });
 });
 
-// docs/specs/007-editor/editor-modes.md "Existing whiteboards": every entry point reads a stored
-// whiteboard as a general tab that opens in Draw.
+// docs/specs/003-system-architecture/domain-language.md "Kind": every entry point reads a stored
+// livediagram whiteboard as a general tab stamped to open in Draw, which reads as Pages.
 describe('a stored whiteboard tab', () => {
   const whiteboard = () => ({
     id: 't',

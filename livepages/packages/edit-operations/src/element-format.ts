@@ -109,15 +109,7 @@ export const SHAPE_COMMON_FIELDS = [
 export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
   'code-block': ['code', 'codeLanguage', 'codeTheme', 'codeWrap'],
   entity: ['entityFields'],
-  'pie-chart': [
-    'pieSlices',
-    'chartVariant',
-    'chartLegend',
-    'chartValues',
-    'chartPalette',
-    'chartSource',
-    'sheetAnchor',
-  ],
+  'pie-chart': ['pieSlices', 'chartVariant', 'chartLegend', 'chartValues', 'chartPalette'],
   'bar-chart': [
     'pieSlices',
     'chartVariant',
@@ -125,8 +117,6 @@ export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
     'chartValues',
     'chartAxis',
     'chartPalette',
-    'chartSource',
-    'sheetAnchor',
   ],
   'line-chart': [
     'lineCategories',
@@ -136,8 +126,6 @@ export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
     'chartValues',
     'chartAxis',
     'chartPalette',
-    'chartSource',
-    'sheetAnchor',
   ],
   checklist: ['checklistItems'],
   lane: ['headerFill', 'headerSize', 'titleOrientation', 'flowchartId'],
@@ -179,14 +167,6 @@ export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
   portal: ['portalTarget'],
   // docs/specs/009-elements/tab-window.md: which tab the window shows.
   'tab-window': ['windowTabId'],
-  // docs/specs/026-plan/plan-board.md: the board's set-up and the card's item; items change through
-  // the item verbs, never through element fields.
-  'plan-board': ['planBoard'],
-  'plan-card': ['planCard'],
-  // docs/specs/026-plan/plan-views.md: which view of the cards it shows.
-  'plan-view': ['planView'],
-  // docs/specs/029-sheets/sheet.md: the sheet it frames; cells change through the sheet verbs.
-  'plan-sheet': ['planSheet'],
 };
 
 function storedFieldsOf(kind: string, el: Element): readonly string[] {

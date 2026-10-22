@@ -40,8 +40,6 @@ export type PendingDraw =
       reaction?: Reaction;
       mode?: SelectionMode;
       estimateScale?: EstimateScale;
-      // A Plan board's preset, or a Plan card's item type (docs/specs/026-plan/plan-mode.md).
-      plan?: string;
       // A creation-time variant of the kind (packages/document shape-variants.ts): the Callout card, a Funnel.
       variant?: string;
       // What the tile that armed it calls it ("Funnel", "Org Chart"), for the banner: a variant or a
@@ -81,7 +79,7 @@ export type PendingDraw =
 /** The choices a tile hands `addShape` along with its kind: they ride the shape intent through the gesture. */
 export type AddShapeOptions = Pick<
   Extract<PendingDraw, { type: 'shape' }>,
-  'session' | 'reaction' | 'mode' | 'estimateScale' | 'plan' | 'variant' | 'name'
+  'session' | 'reaction' | 'mode' | 'estimateScale' | 'variant' | 'name'
 >;
 
 // The shape the banner names ("Tap to drop or drag to draw Square"), as the tile the person just picked names it,
@@ -108,34 +106,13 @@ export function opensForTyping(intent: PendingDraw): boolean {
   return intent.type === 'text';
 }
 
-// A Plan card tile pressed: it goes into a board's column, never onto the canvas
-// (docs/specs/026-plan/plan-mode.md "The palette").
-export function isPlanCardIntent(
-  intent: PendingDraw | null | undefined,
-): intent is Extract<PendingDraw, { type: 'shape' }> {
-  return intent?.type === 'shape' && intent.kind === 'plan-card';
-}
-
-// What the tab holds that changes a hint: a Plan card goes into a board's column, so its hint says where, or
-// that a board comes first (docs/specs/026-plan/plan-mode.md "The palette").
-type DrawBannerContext = { hasPlanBoard?: boolean };
-
 // Banner copy per draw intent. Shape intents include the kind name
 // so the user can see which palette button they queued ("Drag to
 // draw Rectangle"); tools read in plain English ("Drag to draw an
 // arrow") because there's no kind dimension to disambiguate.
-export function drawBannerMessage(
-  intent: PendingDraw,
-  isMobile: boolean,
-  context: DrawBannerContext = {},
-): string {
+export function drawBannerMessage(intent: PendingDraw, isMobile: boolean): string {
   switch (intent.type) {
     case 'shape':
-      if (intent.kind === 'plan-card') {
-        return context.hasPlanBoard
-          ? 'Select the board column you want this card to appear in'
-          : 'Add a board first in order to use cards';
-      }
       return `Tap to drop or drag to draw ${shapeIntentName(intent)}`;
     case 'text':
       return 'Tap to drop or drag to place text';

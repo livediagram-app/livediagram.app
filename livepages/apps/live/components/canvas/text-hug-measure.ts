@@ -1,5 +1,5 @@
-// Measures a whiteboard text box's text with the real DOM (docs/specs/023-draw-mode/draw-mode.md
-// "Text boxes"), so the box hugs the words exactly in whatever face and size they are drawn in.
+// Measures a text box's text with the real DOM, so the box hugs the words exactly in whatever
+// face and size they are drawn in.
 //
 // One hidden block, kept off-screen under <body>, is laid out the way the label and its editor
 // lay their text out: the single-line label typography (medium weight, tight leading), pre-wrap

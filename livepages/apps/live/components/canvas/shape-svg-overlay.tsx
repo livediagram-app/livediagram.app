@@ -100,13 +100,7 @@ export function isSvgRenderedShape(kind: ShapeKind): boolean {
     // The web components (docs/specs/009-elements/web-components-and-no-groups.md): a callout is a bordered card with its
     // content on top, and the rest paint their own surfaces (they are
     // self-painting, so the box path gives them a bare wrapper).
-    !isWebComponentShape(kind) &&
-    // The Plan board, card and view (docs/specs/026-plan/plan-board.md, plan-views.md) paint their own surfaces.
-    kind !== 'plan-board' &&
-    kind !== 'plan-card' &&
-    kind !== 'plan-view' &&
-    // The Sheet (docs/specs/029-sheets/sheet.md) paints its own grid.
-    kind !== 'plan-sheet'
+    !isWebComponentShape(kind)
   );
 }
 

@@ -82,13 +82,6 @@ describe('fresh ids and the unexpected', () => {
 });
 
 describe('which tab', () => {
-  it('switches a diagram tab into Pages, saying so', () => {
-    const out = run(tabOf({ opensIn: undefined }), [{ op: 'add', kind: 'slide' }]);
-    expect(out.switched).toBe(true);
-    expect(out.tab.opensIn).toBe('pages');
-    expect(out.lines[0]).toBe('Switched the tab to Pages.');
-  });
-
   it('refuses a locked tab', () => {
     expect(refusal(tabOf({ locked: true }), [{ op: 'add', kind: 'slide' }]).code).toBe(
       'tab_locked',

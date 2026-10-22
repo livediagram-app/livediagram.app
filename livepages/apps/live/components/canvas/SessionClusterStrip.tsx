@@ -18,11 +18,8 @@ import { ClusterPopoverSegment, ClusterStrip } from './ClusterPopoverButton';
 
 export type SessionSegment = 'session-timer' | 'session-vote';
 
-// Which tools a mode's strip offers (docs/specs/012-collaboration/session-tools.md "The Session strip"):
-// both in Workshop (docs/specs/012-collaboration/workshop-mode.md); both in Plan, where cards take the dots,
-// only while `planVoting` (usePlanVoting: a board on the tab made for voting, or a session running);
-// in Pages, Vote only while one runs (`runningOnly`), so a vote started from a session button there can
-// be watched and ended; none in Diagram or Draw, even while a tool runs.
+// Which tools the strip offers (docs/specs/012-collaboration/session-tools.md "The Session strip"): in Pages,
+// Vote only while one runs (`runningOnly`), so a vote started from a session button can be watched and ended.
 export type SessionStripTools = {
   timer: boolean;
   vote: boolean;
@@ -30,12 +27,7 @@ export type SessionStripTools = {
   runningOnly?: boolean;
 };
 
-export function sessionStripTools(
-  mode: string | undefined,
-  planVoting = true,
-): SessionStripTools | null {
-  if (mode === 'workshop') return { timer: true, vote: true };
-  if (mode === 'plan') return planVoting ? { timer: true, vote: true } : null;
+export function sessionStripTools(mode: string | undefined): SessionStripTools | null {
   if (mode === 'pages') return { timer: false, vote: true, runningOnly: true };
   return null;
 }

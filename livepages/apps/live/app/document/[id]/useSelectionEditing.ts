@@ -182,8 +182,7 @@ export function useSelectionEditing(opts: {
     // plain JSON. `label` stays the plain-text mirror either way.
     const richText = runs ? normalizeRuns(runs) : undefined;
     const keepRich = hasRichFormatting(richText);
-    // A text box that fits or wraps hugs its text, in either editor mode (docs/specs/007-editor/
-    // editor-modes.md "A text box's sizing"): the commit sizes it to the committed text in the
+    // A text box that fits or wraps hugs its text: the commit sizes it to the committed text in the
     // same step, and removes it when left empty.
     const measure = measureDrawnText(activeTab.font, activeTab.finish);
     const target = activeTab.elements.find((el) => el.id === elementId);
@@ -279,7 +278,7 @@ export function useSelectionEditing(opts: {
     seeded.current = null;
     setEditingId(null);
     // An empty text box that hugs its text goes when Escape leaves it, as when a click leaves it
-    // (docs/specs/023-draw-mode/draw-mode.md "Text boxes"): nothing would show where it stands.
+    // (docs/specs/008-canvas/canvas-and-palette.md "Labels"): nothing would show where it stands.
     const left = opts.editingId
       ? activeTab.elements.find((e) => e.id === opts.editingId)
       : undefined;

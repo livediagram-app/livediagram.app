@@ -303,16 +303,11 @@ describe('tabForWire — tab kind', () => {
     expect(tabForWire(tab()).kind).toBe('diagram');
   });
 
-  it('keeps a specialised kind', () => {
-    expect(tabForWire(tab({ kind: 'board' })).kind).toBe('board');
-  });
-
   it('still strips the UI-only fields', () => {
     const out = tabForWire(tab({ templateChosen: true, folder: 'f1' }));
     expect('templateChosen' in out).toBe(false);
     expect('folder' in out).toBe(false);
   });
-
 });
 
 // docs/specs/016-platform/new-version-prompt.md: every response's format header is noted, so an open

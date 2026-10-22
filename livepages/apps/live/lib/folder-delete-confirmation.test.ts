@@ -29,10 +29,10 @@ describe('folderDeleteConfirmation', () => {
         name: 'Workshops',
         parentName: null,
         scope: 'personal',
-        defaultKeys: ['template:retrospective', 'mode:draw'],
+        defaultKeys: ['mode:pages'],
       }).message,
     ).toBe(
-      'Its documents and subfolders move to My Documents.\nNew whiteboards and retrospectives are saved here by default. Choose another default folder in Settings.',
+      'Its documents and subfolders move to My Documents.\nNew documents are saved here by default. Choose another default folder in Settings.',
     );
   });
 

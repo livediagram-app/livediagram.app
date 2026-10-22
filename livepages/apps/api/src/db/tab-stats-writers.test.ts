@@ -78,18 +78,18 @@ function expected(sql: DatabaseSync, tabId: string): Row {
 describe('upsertTab and upsertTabAtRev', () => {
   it('write the stats of the stored body', async () => {
     const db = withDocument();
-    await upsertTab(db.env, 'A', tab('t1', 'draw', 2, 0, 1), 0);
-    expect(statsRow(db.sql, 't1')).toEqual({ ...expected(db.sql, 't1'), mode: 'draw' });
+    await upsertTab(db.env, 'A', tab('t1', 'pages', 2, 0, 1), 0);
+    expect(statsRow(db.sql, 't1')).toEqual(expected(db.sql, 't1'));
     expect(statsRow(db.sql, 't1')).toMatchObject({ element_count: 3, comment_count: 3 });
   });
 
   it('replace them on the next write', async () => {
     const db = withDocument();
-    await upsertTab(db.env, 'A', tab('t1', 'draw', 2), 0);
-    const rev = await upsertTab(db.env, 'A', tab('t1', 'plan'), 0);
-    await upsertTabAtRev(db.env, 'A', tab('t1', 'plan', 0, 0), 0, rev);
+    await upsertTab(db.env, 'A', tab('t1', 'pages', 2), 0);
+    const rev = await upsertTab(db.env, 'A', tab('t1', 'pages'), 0);
+    await upsertTabAtRev(db.env, 'A', tab('t1', 'pages', 0, 0), 0, rev);
     expect(statsRow(db.sql, 't1')).toEqual(expected(db.sql, 't1'));
-    expect(statsRow(db.sql, 't1')).toMatchObject({ mode: 'plan', element_count: 2 });
+    expect(statsRow(db.sql, 't1')).toMatchObject({ mode: 'pages', element_count: 2 });
   });
 });
 
@@ -106,7 +106,7 @@ describe('seedTabs', () => {
 describe('swapTabData (participant writes)', () => {
   it('writes the next body stats on a won swap, and nothing on a lost one', async () => {
     const db = withDocument();
-    await upsertTab(db.env, 'A', tab('t1', 'draw'), 0);
+    await upsertTab(db.env, 'A', tab('t1', 'pages'), 0);
     const before = statsRow(db.sql, 't1');
     const stored = db.sql.prepare('SELECT data FROM tabs WHERE id = ?').get('t1')!.data as string;
     const next = { opensIn: 'draw', elements: [shape('x', 4)] };
@@ -126,7 +126,7 @@ describe('swapTabData (participant writes)', () => {
 describe('copyDocument', () => {
   it("counts the copy's tabs from the copied bodies", async () => {
     const db = withDocument();
-    await upsertTab(db.env, 'A', tab('t1', 'draw', 2), 0);
+    await upsertTab(db.env, 'A', tab('t1', 'pages', 2), 0);
     const copy = await copyDocument(db.env, 'A', 'B', 'visitor', 'Copy of A');
     const copied = copy!.tabs[0]!.id;
     expect(statsRow(db.sql, copied)).toEqual(expected(db.sql, copied));

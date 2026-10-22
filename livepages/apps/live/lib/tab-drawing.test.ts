@@ -1,12 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { laidOutPagesOf, type Element, type Page, type Tab } from '@livepages/document';
-import { blankQuestion, type FormDefinition } from '@livepages/forms';
-import { renderTabToSvg } from './export-tab';
 import { pageElements, renderTabDrawingSvg, tabDrawingFontIdsOf } from './tab-drawing';
 import { svgFrameOf } from './svg-frame';
 
-// docs/specs/009-elements/tab-window.md "The drawing": every mode is drawn, a Pages tab as its pages and a Form tab as
-// its form.
+// docs/specs/009-elements/tab-window.md "The drawing": a tab is drawn as its pages.
 
 const box = (id: string, label: string, at: { x: number; y: number }): Element => ({
   id,
@@ -19,38 +16,7 @@ const box = (id: string, label: string, at: { x: number; y: number }): Element =
 });
 const tab = (extra: Partial<Tab>): Tab => ({ id: 't', name: 'T', elements: [], ...extra });
 
-const form: FormDefinition = {
-  v: 1,
-  heading: 'Team Survey',
-  sections: [
-    {
-      id: 's-1',
-      title: '',
-      questions: [{ ...blankQuestion('short', 'q-1'), prompt: 'Your Role' }],
-    },
-  ],
-};
-
 describe('renderTabDrawingSvg', () => {
-  it('draws a Diagram or Draw tab as its canvas', () => {
-    const t = tab({ elements: [box('a', 'Checkout', { x: 0, y: 0 })] });
-    expect(renderTabDrawingSvg(t)).toBe(renderTabToSvg(t));
-    const draw = { ...t, opensIn: 'draw' as const };
-    expect(renderTabDrawingSvg(draw)).toBe(renderTabToSvg(draw));
-  });
-
-  it('draws a Form tab as its form on its look, though no element is on it', () => {
-    const svg = renderTabDrawingSvg(tab({ kind: 'form', form, theme: 'ocean' }));
-    expect(svg).toContain('Team Survey');
-    expect(svg).toContain('Your Role');
-    expect(svg).toContain('Submit');
-  });
-
-  it('draws a Form tab whose form cannot be read as its canvas', () => {
-    const t = tab({ kind: 'form', form: [] as never });
-    expect(renderTabDrawingSvg(t)).toBe(renderTabToSvg(t));
-  });
-
   it('draws a Pages tab as each page where it lies, its own ids per page', () => {
     const pages: Page[] = [
       { id: 'p1', orientation: 'landscape', kind: 'slide' },
@@ -105,8 +71,10 @@ describe('renderTabDrawingSvg', () => {
 });
 
 describe('tabDrawingFontIdsOf', () => {
-  it("names a form's typeface and its elements'", () => {
-    expect(tabDrawingFontIdsOf(tab({ kind: 'form', form, font: 'marker' }))).toContain('marker');
+  it("names the tab's typeface", () => {
+    expect(
+      tabDrawingFontIdsOf(tab({ font: 'caveat', elements: [box('a', 'A', { x: 0, y: 0 })] })),
+    ).toContain('caveat');
   });
 });
 

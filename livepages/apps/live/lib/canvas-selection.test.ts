@@ -66,10 +66,10 @@ describe('deriveCanvasSelection', () => {
     expect(s.showUnionResize).toBe(false);
   });
 
-  // docs/specs/026-plan/plan-board.md "Maximised board", "Fill Tab": a board drawn over the canvas covers it, so no
-  // selection chrome floats there, alone or in a multi-selection; the selection itself stands.
-  it('shows no toolbar, popover or plus while a Plan board covers the canvas', () => {
-    const board = box('b', { shape: 'plan-board' });
+  // Something drawn over the canvas covers it, so no selection chrome floats there, alone or in a
+  // multi-selection; the selection itself stands.
+  it('shows no toolbar, popover or plus while the canvas is covered', () => {
+    const board = box('b');
     const one = derive({ elements: [board, box('a')], selectedId: 'b', canvasCovered: true });
     expect(one.selected).toBe(board);
     expect(one.showPopover).toBe(false);
@@ -85,35 +85,6 @@ describe('deriveCanvasSelection', () => {
     });
     expect(all.showMultiToolbar).toBe(false);
     expect(derive({ elements: [board], selectedId: 'b' }).showPopover).toBe(true);
-  });
-
-  // docs/specs/029-sheets/sheet.md "Charts": a chart in a Sheet, selected to open its element menu there, floats no
-  // canvas chrome; the same chart floating on the canvas (its Sheet gone) does.
-  it('shows no popover or plus for a chart its Sheet draws', () => {
-    const range = { r1: 'a', c1: 'b', r2: 'c', c2: 'd' };
-    const chart = box('c', {
-      shape: 'bar-chart',
-      chartSource: { sheetId: 's1', range },
-      sheetAnchor: { x: 10, y: 10 },
-    });
-    const sheet = box('s', {
-      shape: 'plan-sheet',
-      planSheet: { sheetId: 's1' },
-    });
-    const inSheet = derive({ elements: [sheet, chart], selectedId: 'c' });
-    expect(inSheet.selected).toBe(chart);
-    expect(inSheet.showPopover).toBe(false);
-    expect(inSheet.showPlus).toBe(false);
-    expect(derive({ elements: [chart], selectedId: 'c' }).showPopover).toBe(true);
-  });
-
-  // docs/specs/026-plan/plan-board.md: a board's cards are its content, not nodes to chain from.
-  it('shows no quick-connect pluses on a Plan board or Plan card', () => {
-    for (const shape of ['plan-board', 'plan-card'] as const) {
-      const s = derive({ elements: [box('p', { shape })], selectedId: 'p' });
-      expect(s.showPlus).toBe(false);
-      expect(s.showPopover).toBe(true);
-    }
   });
 
   it('hides handles + plus while editing the selected element (popover hides too)', () => {

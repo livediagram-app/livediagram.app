@@ -272,7 +272,6 @@ export const VIEWERS_JOINED: Metric = {
 export const COMMENTS_ADDED: Metric = {
   category: 'Comment',
   action: 'Added',
-  // Canvas comments send no type; a Plan card's comments send Item. Both count.
   allTypes: true,
   title: 'Comments Added',
 };
@@ -289,7 +288,6 @@ export const COMMENT_POPOVERS_OPENED: Metric = {
 export const COMMENTS_RESOLVED: Metric = {
   category: 'Comment',
   action: 'Resolved',
-  // On the canvas and on Plan cards (Item) alike.
   allTypes: true,
   title: 'Comments Resolved',
 };
@@ -659,7 +657,7 @@ export const ACTIVITY_THREADS = chart(
   'Activity',
   'Selected',
   'Inbox Items Opened',
-  "An action, a Plan card or a comment thread opened from the Explorer's Inbox.",
+  "An action or a comment thread opened from the Explorer's Inbox.",
 );
 
 // Explorer Home (docs/specs/013-workspace/explorer-home.md): arrivals by type, documents opened
@@ -759,8 +757,8 @@ export const SLIDES_ADDED = chart(
   'UI',
   'Added',
   'Slides Added',
-  'A slide added to a deck: from a selection, a page, a Plan card or a whole Plan board as a slide.',
-  { types: ['Slide', 'PageSlide', 'ItemSlide', 'BoardSlide', 'AllPageSlides'] },
+  'A slide added to a deck: from a selection or a page.',
+  { types: ['Slide', 'PageSlide', 'AllPageSlides'] },
 );
 
 export const SLIDES_REMOVED = chart(

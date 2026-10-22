@@ -10,7 +10,6 @@
 // the structure still lives in one authoritative place (this string is guidance,
 // not a second validator).
 import { z } from 'zod';
-import { METRIC_KINDS, PLAN_VISUALISATIONS } from '@livepages/items';
 import {
   FIND_QUERY_MAX_LENGTH,
   REF_INPUT_MAX_LENGTH,
@@ -181,8 +180,7 @@ const ELEMENT_SCHEMA_HINT =
   'coordinates, [[x, y], ...] in drawing order (the box is taken from them), with "closed" true to ' +
   'close and fill the shape, and "penColour" (' +
   `${[INK_PEN_COLOUR, GREY_PEN_COLOUR, ...PEN_COLOUR_NAMES].join(', ')}` +
-  '). A hand-drawn board starts from the "whiteboard" template, a tab in Draw mode: underline a ' +
-  'heading, ring a word or draw a doodle with a few strokes, a point every 10 to 20 px along a ' +
+  '): underline a heading, ring a word or draw a doodle with a few strokes, a point every 10 to 20 px along a ' +
   'curve; an arrow between boxes stays a pinned "arrow", which a "sketch" finish draws by hand and ' +
   'which stays attached. Any box may carry "rotation" in degrees, a small tilt (-4 to 4) reading as ' +
   'placed by hand. type "arrow" needs "from" and "to" endpoints, each ' +
@@ -198,10 +196,12 @@ const ELEMENT_SCHEMA_HINT =
 export function elementSchemaDoc(): string {
   return `# livepages element schema
 
-A tab is { name, elements: Element[] }. Every element needs a unique string "id".
-A document has one or more tabs, each its own canvas. create_document makes a
-document with one or more tabs at once; add_tab appends another tab to an existing
-document (e.g. an overview tab, then a detail tab zooming into one subsystem).
+A tab is { name, elements: Element[] }, and its pages (infographics, slides, logo
+artboards and articles) sit on its canvas; an element is on the page whose
+rectangle holds it. Every element needs a unique string "id". A document has one
+or more tabs. create_document makes a document with one or more tabs at once;
+add_tab appends another tab to an existing document. change_pages answers each
+page's rectangle, so elements can be placed on it.
 
 ## Element types
 ${types}
@@ -248,7 +248,7 @@ YOU decide the layout; the server does not override a real arrangement.
 
 ## Themes (the look)
 Set "theme" on create_document / add_tab to one of these presets and the server
-paints the whole diagram + canvas with it (you still omit per-element colours):
+paints the pages and their elements with it (you still omit per-element colours):
   ${themeIds}
 Defaults to "brand", the Default scheme: the plain, un-themed canvas, which
 follows each reader's own light / dark setting in the editor and paints no
@@ -271,9 +271,10 @@ tabs in a create_document call.
 - Prefer pinned arrows (node -> node) so they track their shapes when moved.
 - Give every node an id and a short, clear label.
 - A node/edge diagram given as "graph" is laid out in the template look (sizes,
-  elbows, side exits, loops round the outside, title, key). For an artefact that
-  is not a graph (kanban, SWOT, gantt, wireframe, ...) list_templates has
-  hand-tuned scaffolds to pass as "template", then personalise with update_document.
+  elbows, side exits, loops round the outside, title, key). For a deck, an
+  article, a logo, a poster or another page that is not a graph, list_templates
+  has ready-made pages to pass as "template", then replace their sample text
+  with update_document.
 `;
 }
 
@@ -282,61 +283,34 @@ tabs in a create_document call.
 // with what you send, and where the format is written down), not as rules for
 // the calling model (docs/specs/015-api/mcp-server.md §4.15).
 export const SERVER_INSTRUCTIONS = `Tools to find, view, create, add tabs to, edit, share, rename, delete (to the Trash) and restore the user's livepages documents.
-The calling model produces the diagram elements AND decides their layout; this
-server validates, persists, and renders them, and only auto-arranges the graph
-when you ask it to (or leave nodes unplaced). The full element format is
-documented inline on each tool's element argument, so the tool definitions are
-the complete reference for it. The "graph" argument (nodes + edges by id, or the same as Mermaid text in
-"mermaid") builds any node/edge diagram (flowchart, process, architecture, org chart, state machine, swimlanes, a
-cycle, a mind map) in the template look with no coordinates: template-sized boxes, elbow lines, a decision's side
-exit level beside it, loops and skipped ranks routed round the boxes, flowchart steps toned by their "shape" (a
-stadium starts or ends, a diamond decides; a node's "role" is a person's job title, for an org chart), node tones and
-icons, and a title, subtitle and shape key when given. Its styles: flow (layered), tree (hierarchy),
-mindmap, lanes (each group a swimlane) and cycle (a ring). A node's label is its heading (up to 40 characters,
-longer ones shortened with the full text kept in the node's note). Raw "elements" are for content a graph cannot
-express (charts, tables, stickies, free placement). Either way:
-use a unique "id" per element, make nodes "shape" elements (a labelled box) NOT
-"text" (text is only for titles/captions), prefer pinned arrows (node -> node),
-and the theme owns colours (a sticky keeps its own). Stickies, tables, code blocks,
-entities, lanes and charts carry content fields, documented on each tool's
-element argument. For a standard artefact that is not a node/edge graph (kanban, swot,
-gantt, wireframe-website, retrospective, ...) list_templates has hand-tuned scaffolds: pass its kind as
-"template" on create_document / add_tab, then fill in real labels with
-update_document. search_icons finds icon ids for "iconId" and a graph node's "icon". Plan boards hold cards (items), which have their own tools:
-list_items reads a document's boards, their columns by name, its cards and its
-card types; change_items adds, edits and moves cards, naming columns, card
-types, fields and people as the board shows them; add_board puts a board on a
-tab in Plan (a preset or columns by name) and change_board changes one (title, columns,
-the card types it shows); change_card_types adds and edits card types and their
-custom fields. A board shows only the card types it takes. A Plan template (kanban, project-planner, bug-triage)
-makes a document with boards ready to fill. Sheets (spreadsheets on a tab) have
-theirs: list_sheets lists a document's sheets, read_sheet reads one's cells by A1
-(inputs, worked-out values and what they show), change_sheet sets, clears and
-formats cells, inserts and deletes rows and columns, sorts, freezes and renames,
-and sets dropdowns, checkboxes and other validation rules and conditional formats,
-and add_sheet puts a new Sheet on a tab in Plan, blank or from rows or CSV text.
-Tabs in Pages mode hold pages: infographics, slides, logo artboards and articles
-(documents of text on pages). change_pages adds, changes, lays out (from a
-ready-made layout), moves, copies and deletes infographic, slide and logo pages
-and answers each page's rectangle on the canvas, where update_document puts
-elements; write_article writes an article from Markdown, new or over an existing
-one, and the editor flows it onto pages. Asked to write a document, a report or
-a brief, write an article; asked for a deck, add slide pages; asked for a logo,
-add a logo page. A new document for pages starts with create_document and one
-tab whose template is "blank-slide-deck" for a deck (one empty slide; change_pages
-adds the rest, each change an object such as {"op": "add", "kind": "slide",
-"layout": ...}) or "blank-illustration" otherwise (then write_article or
-change_pages on it); the Pages templates (article, slide-deck, logo-design, ...) start
-from ready-made pages. A layout's elements hold sample text: read_document with
-view "pages" lists each page's elements with their refs and text, to replace
-with update_document. It also shows each article as Markdown.
-Form tabs hold forms (like Google Forms): questions anyone fills in from a link,
-without an account, each response a card on a Board tab or a row in a sheet.
-add_form makes one (from a starter or questions, in a document of its own when
-no documentId is given), change_form changes it, read_form reads it with its
-link, state and anything stopping it being published, share_form publishes,
-closes or deletes its link, and try_form fills it in as a test response. Asked for a form, survey, sign-up or RSVP, make a
-form; its responses are read with list_items (cards) or read_sheet (rows).`;
+A document holds tabs, and each tab holds pages: infographics, slides, logo artboards and articles (documents of text on
+pages). change_pages adds, changes, lays out (from a ready-made layout), moves, copies and deletes infographic, slide
+and logo pages and answers each page's rectangle on the canvas, where update_document puts elements; write_article
+writes an article from Markdown, new or over an existing one, and the editor flows it onto pages. Asked to write a
+document, a report or a brief, write an article; asked for a deck, add slide pages; asked for a logo, add a logo page;
+asked for a poster or an infographic, add an infographic page. A new document starts with create_document and one tab
+whose template is "blank-slide-deck" for a deck (one empty slide; change_pages adds the rest, each change an object
+such as {"op": "add", "kind": "slide", "layout": ...}), "blank-article" for an article, "blank-logo" for a logo, or
+"blank-infographic" otherwise; the other templates (slide-deck, article, logo-design, event-poster, resume, ...) start
+from ready-made pages, and list_templates lists them all. A layout's elements hold sample text: read_document with view
+"pages" lists each page's elements with their refs and text, to replace with update_document. It also shows each
+article as Markdown.
+The calling model produces the elements on a page AND decides their layout; this server validates, persists, and
+renders them, and only auto-arranges a graph when you ask it to (or leave nodes unplaced). The full element format is
+documented inline on each tool's element argument, so the tool definitions are the complete reference for it. The
+"graph" argument (nodes + edges by id, or the same as Mermaid text in "mermaid") builds a node/edge diagram
+(flowchart, process, architecture, org chart, state machine, swimlanes, a cycle, a mind map) with no coordinates:
+template-sized boxes, elbow lines, a decision's side exit level beside it, loops and skipped ranks routed round the
+boxes, flowchart steps toned by their "shape" (a stadium starts or ends, a diamond decides;
+a node's "role" is a person's job title, for an org chart), node tones and icons, and a title, subtitle and shape key when given. Its
+styles: flow (layered), tree (hierarchy), mindmap, lanes (each group a swimlane) and cycle (a ring). A node's label is
+its heading (up to 40 characters, longer ones shortened with the full text kept in the node's note). Raw "elements"
+are for content a graph cannot express (text, charts, tables, stickies, free placement). Either way: use a unique "id"
+per element, make nodes "shape" elements (a labelled box) NOT "text" (text is only for titles, captions and running
+copy), prefer pinned arrows (node -> node), and the theme owns colours (a sticky keeps its own). Stickies, tables, code
+blocks, entities, lanes and charts carry content fields, documented on each tool's element argument. search_icons
+finds icon ids for "iconId" and a graph node's "icon"; list_images lists the user's pictures for an image element's
+"imageId".`;
 
 // --- Tool input shapes (ZodRawShape). Element arrays are permissive; isValidTab
 // is the real guard, so there's no second schema to drift. ---
@@ -354,69 +328,14 @@ const layoutField = z
 // (@livepages/templates) rather than a z.enum, so a new template is one
 // catalogue entry with no schema churn; list_templates is the discovery
 // surface.
-// A new Dashboard tab (docs/specs/026-plan/plan-agents.md "Making a dashboard"), everything named as people name it.
-const dashboardField = z
-  .object({
-    tabs: z
-      .union([z.array(z.string()), z.literal('every')])
-      .optional()
-      .describe(
-        'The Board and Sheet tabs it shows, by name (in create_document, other tabs of the same call), or "every"; ' +
-          'two to a row.',
-      ),
-    metrics: z
-      .array(z.enum(METRIC_KINDS))
-      .optional()
-      .describe(
-        'Metric tiles, four to a row: count (cards), progress (percent done), people, types, priorities, due ' +
-          '(overdue and due soon), unassigned, points (estimates), top-voted, stale.',
-      ),
-    charts: z
-      .array(
-        z.object({
-          view: z
-            .enum(PLAN_VISUALISATIONS)
-            .exclude(['status-mix'])
-            .describe(
-              'gantt, calendar (by due date), start-calendar, workload (cards by a field), priority-matrix ' +
-                '(priority by status), search.',
-            ),
-          groupBy: z
-            .string()
-            .optional()
-            .describe(
-              'workload only: assignee (default), type, priority, status, or a field by name.',
-            ),
-          types: z.array(z.string()).optional().describe('Only these card types, by name.'),
-        }),
-      )
-      .optional()
-      .describe('Charts, two to a row; a Gantt takes a row of its own.'),
-    notes: z
-      .array(
-        z.object({
-          title: z.string().describe('The note’s heading.'),
-          text: z.string().describe('Its text; a line each.'),
-        }),
-      )
-      .optional()
-      .describe('Notes, three to a row.'),
-  })
-  .optional()
-  .describe(
-    'Make the tab a Plan Dashboard instead of a canvas: rows of the tabs it shows, then metrics, Gantts, other ' +
-      'charts and notes, each drawn live from the cards; up to 12 rows. Give it in place of graph, mermaid, ' +
-      'elements or template.',
-  );
-
 const templateField = z
   .string()
   .optional()
   .describe(
-    'Start from a hand-tuned template scaffold instead of providing elements: a template ' +
-      'kind from list_templates (e.g. "kanban", "flowchart", "gantt"). The server ' +
-      'materialises its curated layout ("layout" is ignored for a template tab) and paints ' +
-      'it with the chosen theme. Personalise the placeholder labels afterwards with ' +
+    'Start from a template\u2019s ready-made pages instead of providing elements: a template ' +
+      'kind from list_templates (e.g. "blank-slide-deck", "slide-deck", "article", "logo-design"). The server ' +
+      'builds its pages ("layout" is ignored for a template tab) and paints ' +
+      'them with the chosen theme. Replace the sample text afterwards with ' +
       'update_document mode "ops". Provide template OR elements, not both.',
   );
 
@@ -424,7 +343,7 @@ const themeField = z
   .string()
   .optional()
   .describe(
-    'Preset theme id that paints the whole diagram + canvas. One of: ' +
+    'Preset theme id that paints the pages and their elements. One of: ' +
       `${themeIds}. Omit per-element colours and let the theme own them. ` +
       'Defaults to "brand".',
   );
@@ -723,7 +642,6 @@ export const createDocumentTab = z.object({
   mermaid: mermaidField,
   elements: elementArray.optional(),
   template: templateField,
-  dashboard: dashboardField,
   theme: z
     .string()
     .optional()
@@ -741,8 +659,8 @@ export const createDocumentShape = {
     .max(20)
     .optional()
     .describe(
-      'One or more tabs, each its own canvas. Preferred — pass several to create a multi-tab ' +
-        'document in one call (e.g. an overview tab plus a detail tab per subsystem).',
+      'One or more tabs, each with its own pages. Preferred — pass several to create a multi-tab ' +
+        'document in one call (e.g. a deck plus an article that goes with it).',
     ),
   // The alias is checked against the tab shape by the tool, not listed here a second time: the shape carries the
   // whole element format, and a definition twice its size is one a client's tool search ranks out of sight.
@@ -773,7 +691,6 @@ export const addTabShape = {
   mermaid: mermaidField,
   elements: elementArray.optional(),
   template: templateField,
-  dashboard: dashboardField,
   layout: layoutField,
   theme: themeField,
   finish: finishField,
@@ -802,10 +719,6 @@ export const updateDocumentShape = {
   elements: elementArray
     .optional()
     .describe(`Replace mode: the full new element list. ${ELEMENT_SCHEMA_HINT}`),
-  dashboard: dashboardField.describe(
-    'Replace mode on a Dashboard tab: its tabs, metrics, charts and notes rebuilt whole (the tab keeps its id ' +
-      'and name). Only a Dashboard tab takes one.',
-  ),
   layout: layoutField,
   ops: z
     .array(

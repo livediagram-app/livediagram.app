@@ -19,7 +19,6 @@
   "dependencies": {
     "@livepages/api-schema": "workspace:*",
     "@livepages/document": "workspace:*",
-    "@livepages/forms": "workspace:*",
     "@livepages/icons": "workspace:*",
     "@livepages/templates": "workspace:*"
   },

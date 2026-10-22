@@ -56,28 +56,6 @@ describe('settings catalogue', () => {
     }
   });
 
-  it('offers the Draw mode dock position in the Editor › Draw sub-category', () => {
-    // docs/specs/023-draw-mode/draw-mode.md "Where the dock sits": top by default, bottom by choice;
-    // the sub-category says Draw, as the mode switch does (docs/specs/007-editor/editor-modes.md
-    // "Naming in the interface").
-    const draw = SETTINGS_CATEGORIES.find((c) => c.id === 'draw')!;
-    expect(settingsCategoryPath(draw)).toBe('Editor › Draw');
-    const row = draw.rows.find((r) => r.key === 'whiteboardDockPosition');
-    if (row?.kind !== 'choice') throw new Error('no Dock Position choice row');
-    expect(row.section).toBeUndefined();
-    expect(row.keywords).toContain('draw mode');
-    expect(row.keywords).toContain('whiteboard');
-    expect(row.helpArticle).toBe('drawMode');
-    expect(row.label).toBe('Dock Position');
-    expect(row.options.map((o) => [o.id, o.label])).toEqual([
-      ['top', 'Top'],
-      ['bottom', 'Bottom'],
-    ]);
-    expect(row.read({})).toBe('top');
-    expect(row.write({}, 'bottom')).toEqual({ whiteboardDockPosition: 'bottom' });
-    expect(row.event).toEqual({ category: 'UI', changed: 'WhiteboardDockPosition' });
-  });
-
   it("offers where Pages mode's Contents sits, the sidebar until chosen otherwise", () => {
     // docs/specs/007-editor/pages-mode.md "Contents": the sidebar by default, the button by choice.
     const pages = SETTINGS_CATEGORIES.find((c) => c.id === 'pages')!;
@@ -118,58 +96,31 @@ describe('settings catalogue', () => {
     }
   });
 
-  it('inverts the Diagram tour row against the stored preference', () => {
-    // The row asks "show me the tour?"; `tourSeen` records "already seen".
-    // Getting this backwards would re-offer the tour to everyone who has
-    // taken it, so it is worth pinning both directions explicitly.
-    const row = SWITCHES.find((r) => r.key === 'tourSeen')!;
-    expect(row.read({ tourSeen: true })).toBe(false);
-    expect(row.read({ tourSeen: false })).toBe(true);
-    expect(row.read({})).toBe(true);
-    expect(row.write({}, true).tourSeen).toBe(false);
-    expect(row.write({}, false).tourSeen).toBe(true);
-    // And the tokens still describe the PREFERENCE, so the dashboard series
-    // keeps its meaning: switching the row on means "not seen".
-    expect(row.event.on).toBe('TourSeenOff');
-    expect(row.event.off).toBe('TourSeenOn');
-  });
-
-  it('gives each Plan tour track its own row, named for itself', () => {
-    // docs/specs/026-plan/plan-tour.md "Where it appears": Boards Tour and Sheets Tour, never "Plan Tour".
-    const boards = SWITCHES.find((r) => r.key === 'planTourSeen-boards')!;
-    const sheets = SWITCHES.find((r) => r.key === 'planTourSeen-sheets')!;
-    expect([boards.label, sheets.label]).toEqual(['Boards Tour', 'Sheets Tour']);
-    expect(boards.read({ planTourTracks: ['boards'] })).toBe(false);
-    expect(sheets.read({ planTourTracks: ['boards'] })).toBe(true);
+  it('gives each Pages tour track its own row, named for itself', () => {
+    // docs/specs/007-editor/pages-tour.md: each kind of page its own tour, never "Pages Tour".
+    const slide = SWITCHES.find((r) => r.key === 'pagesTourSeen-slide')!;
+    const logo = SWITCHES.find((r) => r.key === 'pagesTourSeen-logo')!;
+    expect([slide.label, logo.label]).toEqual(['Slides Tour', 'Logo Tour']);
+    expect(slide.read({ pagesTourKinds: ['slide'] })).toBe(false);
+    expect(logo.read({ pagesTourKinds: ['slide'] })).toBe(true);
     // On forgets this track alone; off answers it alone.
-    expect(boards.write({ planTourTracks: ['boards', 'sheets'] }, true)).toEqual({
-      planTourSeen: false,
-      planTourTracks: ['sheets'],
+    expect(slide.write({ pagesTourKinds: ['slide', 'logo'] }, true)).toEqual({
+      pagesTourSeen: false,
+      pagesTourKinds: ['logo'],
     });
-    expect(sheets.write({}, false)).toEqual({ planTourSeen: false, planTourTracks: ['sheets'] });
-    expect(boards.event.on).toBe('BoardsTourSeenOff');
-    expect(sheets.event.off).toBe('SheetsTourSeenOn');
+    expect(logo.write({}, false)).toEqual({ pagesTourSeen: false, pagesTourKinds: ['logo'] });
+    expect(slide.event.on).toBe('SlidesTourSeenOff');
+    expect(logo.event.off).toBe('LogoTourSeenOn');
   });
 
-  it("folds a power user's single seen flag into the list, so one track back on leaves the other answered", () => {
+  it("folds a power user's single seen flag into the list, so one track back on leaves the others answered", () => {
     const power = setPowerUserMode({}, true).prefs;
-    const boards = SWITCHES.find((r) => r.key === 'planTourSeen-boards')!;
-    const sheets = SWITCHES.find((r) => r.key === 'planTourSeen-sheets')!;
-    expect(boards.read(power)).toBe(false);
-    const next = boards.write(power, true);
-    expect(boards.read(next)).toBe(true);
-    expect(sheets.read(next)).toBe(false);
-  });
-
-  it('inverts the Workshop tour row the same way, after the Plan tour row', () => {
-    // docs/specs/012-collaboration/workshop-tour.md "Where it appears".
-    const row = SWITCHES.find((r) => r.key === 'workshopTourSeen')!;
-    expect(row.read({ workshopTourSeen: true })).toBe(false);
-    expect(row.read({})).toBe(true);
-    expect(row.write({}, true).workshopTourSeen).toBe(false);
-    expect(row.write({}, false).workshopTourSeen).toBe(true);
-    expect(row.event.on).toBe('WorkshopTourSeenOff');
-    expect(row.event.off).toBe('WorkshopTourSeenOn');
+    const slide = SWITCHES.find((r) => r.key === 'pagesTourSeen-slide')!;
+    const logo = SWITCHES.find((r) => r.key === 'pagesTourSeen-logo')!;
+    expect(slide.read(power)).toBe(false);
+    const next = slide.write(power, true);
+    expect(slide.read(next)).toBe(true);
+    expect(logo.read(next)).toBe(false);
   });
 
   // docs/specs/007-editor/user-preferences.md "Tours": a category of its own, one switch per tour in
@@ -177,15 +128,7 @@ describe('settings catalogue', () => {
   it('gives the tours a category of their own, a switch each with its own article', () => {
     const tours = SETTINGS_CATEGORIES.find((c) => c.id === 'tours')!;
     expect(tours.rows.map((r) => [r.key, r.kind, r.label, r.helpArticle])).toEqual([
-      ['tourSeen', 'toggle', 'Diagram Tour', 'diagramTour'],
       // A tour of several tracks: one switch over them all, then each track's own row beneath it.
-      ['planTourSeen', 'toggle', 'Plan Tours', 'planTour'],
-      ['planTourSeen-boards', 'toggle', 'Boards Tour', 'planTour'],
-      ['planTourSeen-sheets', 'toggle', 'Sheets Tour', 'planTour'],
-      ['planTourSeen-dashboards', 'toggle', 'Dashboards Tour', 'planDashboards'],
-      ['workshopTourSeen', 'toggle', 'Workshop Tour', 'workshopTour'],
-      ['drawTourSeen', 'toggle', 'Draw Tour', 'drawTour'],
-      ['formTourSeen', 'toggle', 'Forms Tour', 'planForms'],
       ['pagesTourSeen', 'toggle', 'Pages Tours', 'pagesTour'],
       ['pagesTourSeen-slide', 'toggle', 'Slides Tour', 'pagesTour'],
       ['pagesTourSeen-infographic', 'toggle', 'Infographic Tour', 'pagesTour'],
@@ -226,14 +169,6 @@ describe('settings catalogue', () => {
     const tours = SETTINGS_CATEGORIES.find((c) => c.id === 'tours')!;
     expect(tours.rows.map((r) => (r.kind === 'toggle' ? [r.event.on, r.event.off] : null))).toEqual(
       [
-        ['TourSeenOff', 'TourSeenOn'],
-        ['PlanTourSeenOff', 'PlanTourSeenOn'],
-        ['BoardsTourSeenOff', 'BoardsTourSeenOn'],
-        ['SheetsTourSeenOff', 'SheetsTourSeenOn'],
-        ['DashboardsTourSeenOff', 'DashboardsTourSeenOn'],
-        ['WorkshopTourSeenOff', 'WorkshopTourSeenOn'],
-        ['DrawTourSeenOff', 'DrawTourSeenOn'],
-        ['FormTourSeenOff', 'FormTourSeenOn'],
         ['PagesTourSeenOff', 'PagesTourSeenOn'],
         ['SlidesTourSeenOff', 'SlidesTourSeenOn'],
         ['InfographicTourSeenOff', 'InfographicTourSeenOn'],
@@ -316,10 +251,6 @@ describe('settings catalogue', () => {
     // A tour of several tracks also writes its answered list (lib/tour-tracks.ts).
     const own: Record<string, string[]> = {
       // A tour track's row writes the answered list and clears the tour's single flag (lib/tour-tracks.ts).
-      planTourSeen: ['planTourSeen', 'planTourTracks'],
-      'planTourSeen-boards': ['planTourSeen', 'planTourTracks'],
-      'planTourSeen-sheets': ['planTourSeen', 'planTourTracks'],
-      'planTourSeen-dashboards': ['planTourSeen', 'planTourTracks'],
       pagesTourSeen: ['pagesTourSeen', 'pagesTourKinds'],
       'pagesTourSeen-slide': ['pagesTourSeen', 'pagesTourKinds'],
       'pagesTourSeen-infographic': ['pagesTourSeen', 'pagesTourKinds'],
@@ -537,10 +468,10 @@ describe('settings catalogue', () => {
 
 // Editor and Panels hold sub-categories (docs/specs/007-editor/user-preferences.md), each its own pane.
 describe('settings sub-categories', () => {
-  it('nests one sub-category per mode with settings of its own under Editor (Draw, Pages; no Diagram yet), then Presenting', () => {
+  it('nests Pages, then Presenting, under Editor', () => {
     const ids = SETTINGS_CATEGORIES.map((c) => c.id);
     const children = SETTINGS_CATEGORIES.filter((c) => c.parent === 'editor').map((c) => c.id);
-    expect(children).toEqual(['draw', 'pages', 'presenting']);
+    expect(children).toEqual(['pages', 'presenting']);
     const at = ids.indexOf('editor');
     expect(ids.slice(at + 1, at + 1 + children.length)).toEqual(children);
   });

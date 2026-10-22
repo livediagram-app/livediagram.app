@@ -51,7 +51,7 @@ describe('preview hover stories', () => {
 });
 
 // An arriving group scales from its own box: without transform-box: fill-box a <g> scales from the view box's corner,
-// so it flies in from the top left (story-parts.tsx FILL_BOX).
+// so it flies in from the top left.
 describe('a group that arrives', () => {
   it('scales from its own box on every template', () => {
     for (const { kind, svg } of markup) {

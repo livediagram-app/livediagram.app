@@ -8,7 +8,7 @@ const info = vi.fn();
 vi.mock('@/hooks/ui/useToast', () => ({
   useToast: () => ({ info, error: vi.fn(), success: vi.fn() }),
 }));
-const move = vi.fn(async () => 'Moved to Boards, your default folder for Kanban boards.');
+const move = vi.fn(async () => 'Moved to Decks, your default folder for slide decks.');
 vi.mock('@/lib/placement-defaults/move-on-template-pick', () => ({ moveOnTemplatePick: move }));
 
 // docs/specs/013-workspace/default-folders.md "A template picked after creation"
@@ -23,21 +23,23 @@ describe('useTemplatePickMove', () => {
   it('moves at the first pick on the document /new made, and says where', async () => {
     handTemplatePick({ documentId: 'd', tabId: 't', placementChosen: false });
     const { result } = renderHook(() => useTemplatePickMove(base));
-    result.current('kanban');
+    result.current('slide-deck');
     expect(readTemplatePick()).toBeNull();
     await vi.waitFor(() =>
-      expect(info).toHaveBeenCalledWith(expect.stringMatching(/^Moved to Boards/)),
+      expect(info).toHaveBeenCalledWith(expect.stringMatching(/^Moved to Decks/)),
     );
-    expect(move).toHaveBeenCalledWith(expect.objectContaining({ documentId: 'd', kind: 'kanban' }));
-    result.current('kanban');
+    expect(move).toHaveBeenCalledWith(
+      expect.objectContaining({ documentId: 'd', kind: 'slide-deck' }),
+    );
+    result.current('slide-deck');
     expect(move).toHaveBeenCalledTimes(1);
   });
 
   it('does nothing without a handoff, or for a folder the person chose', () => {
     const { result } = renderHook(() => useTemplatePickMove(base));
-    result.current('kanban');
+    result.current('slide-deck');
     handTemplatePick({ documentId: 'd', tabId: 't', placementChosen: true });
-    result.current('kanban');
+    result.current('slide-deck');
     expect(move).not.toHaveBeenCalled();
   });
 

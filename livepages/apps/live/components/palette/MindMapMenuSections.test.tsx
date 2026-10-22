@@ -1,14 +1,19 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { stubResizeObserver } from '@/components/sheets/sheet-ui-test-utils';
 import { MindMapMenuSections } from './MindMapMenuSections';
 
 // docs/specs/009-elements/mind-node.md "The Mind Map menu": a Mind Map flyout row holding Outline, Branching and
 // Spacing, each a closed category around a list of full-width rows.
 
 // The flyout panel tracks its own size, which jsdom cannot.
-beforeAll(stubResizeObserver);
+beforeAll(() => {
+  globalThis.ResizeObserver ??= class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  } as unknown as typeof ResizeObserver;
+});
 afterEach(cleanup);
 
 function renderMenu(

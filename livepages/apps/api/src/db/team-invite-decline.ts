@@ -1,6 +1,6 @@
 // Decline tokens for team invites (docs/specs/013-workspace/teams.md "Declining from the email"). Every invite
 // email carries its own token, `<member id>.<secret>`; only the SHA-256 hash of the secret is stored, in the
-// row's space-separated `decline_token_hashes` (migration 0095). A token is single-purpose: it reads that one
+// row's space-separated `decline_token_hashes` (the baseline migration). A token is single-purpose: it reads that one
 // invite's team name and state, and declines it. Nothing else accepts it.
 
 import type { TeamMemberStatus } from '@livepages/api-schema';

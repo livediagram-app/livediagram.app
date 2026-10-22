@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import type { Tab } from '@livepages/document';
 import { insertTabsAfter, landTemplateOnTab, templateFollowerTabs } from './template-tab-set';
 
-// docs/specs/026-plan/plan-templates.md "How a template with tabs is made": Quick Start lands the first
-// template tab on its tab and adds the others straight after it, with its look.
+// Quick Start lands the first template tab on its tab and adds the others straight after it, with its
+// look.
 const tab = (id: string, extra: Partial<Tab> = {}): Tab => ({
   id,
   name: id,
@@ -18,12 +18,12 @@ describe('templateFollowerTabs', () => {
       backgroundColor: '#000',
       backgroundPattern: 'lines',
       defaultTextSize: 'md',
-      opensIn: 'plan',
+      opensIn: 'pages',
       locked: true,
     });
     const [follower] = templateFollowerTabs(landed, [{ id: 'b', name: 'Backlog', elements: [] }], {
       backgroundPattern: 'grid',
-      opensIn: 'plan',
+      opensIn: 'pages',
     });
     expect(follower).toMatchObject({
       id: 'b',
@@ -32,38 +32,11 @@ describe('templateFollowerTabs', () => {
       backgroundColor: '#000',
       backgroundPattern: 'grid',
       defaultTextSize: 'md',
-      opensIn: 'plan',
+      opensIn: 'pages',
       templateChosen: true,
     });
     // Only the look carries over, never the tab's own state.
     expect(follower).not.toHaveProperty('locked');
-  });
-
-  // docs/specs/026-plan/plan-templates.md "How a template with tabs is made": a companion Sheet keeps the theme but
-  // none of the drawing's canvas overrides (its graph paper, layers, mode).
-  it('gives a companion Sheet its own canvas instead of the template’s overrides', () => {
-    const landed = tab('a', { theme: 'ocean', backgroundPattern: 'graph', backgroundOpacity: 0.4 });
-    const [follower] = templateFollowerTabs(
-      landed,
-      [
-        {
-          id: 'b',
-          name: 'Threat Register',
-          elements: [],
-          fields: { kind: 'sheet', opensIn: 'plan' },
-          ownCanvas: { backgroundPattern: 'grid', backgroundOpacity: 1 },
-        },
-      ],
-      { backgroundPattern: 'graph', layers: [{ id: 'l', name: 'Model' }], opensIn: 'diagram' },
-    );
-    expect(follower).toMatchObject({
-      theme: 'ocean',
-      backgroundPattern: 'grid',
-      backgroundOpacity: 1,
-      kind: 'sheet',
-      opensIn: 'plan',
-    });
-    expect(follower).not.toHaveProperty('layers');
   });
 });
 

@@ -112,7 +112,6 @@ export function EditorSearchPanel() {
                   reaction: add.reaction,
                   mode: add.mode,
                   estimateScale: add.estimateScale,
-                  plan: add.plan,
                   variant: add.variant,
                 });
               else if (add.type === 'icon') addIcon(add.iconId);

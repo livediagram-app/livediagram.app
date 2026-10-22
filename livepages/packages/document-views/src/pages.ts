@@ -1,8 +1,7 @@
 // The `pages` view (docs/specs/024-agents/pages-for-agents.md "Reading: the pages view"): an
 // Pages tab's pages in row order, each with its rectangle and the refs of what is on it; each
 // article with its writing as the Markdown write_article takes, so read, edit, write back
-// round-trips; and the layouts each kind on the tab offers. A tab in another mode says how to
-// switch it. Kept to the budget like every view: whole lines in order, then what was left out.
+// round-trips; and the layouts each kind on the tab offers. Kept to the budget like every view: whole lines in order, then what was left out.
 import {
   articleSummaries,
   pageSummaries,
@@ -15,7 +14,6 @@ import {
   elementIdsOnPage,
   pagesOf,
   layOutPages,
-  opensInOf,
   PAGE_SIZES,
   type Element,
   type PageKind,
@@ -79,22 +77,6 @@ export function pagesView(model: ViewModel, options: PagesOptions = {}): ViewRes
   const tab = model.tab;
   const header = viewHeader('pages', model.facts);
   const door = options.door ?? 'cli';
-  if (opensInOf(tab) !== 'pages') {
-    const how =
-      door === 'mcp'
-        ? 'change_pages adds pages and switches it; write_article starts an article.'
-        : 'page set adds pages and switches it; article set starts an article.';
-    const fitted = fitLines({
-      header: headerLine(model.facts),
-      lines: [{ text: `This tab is not in Pages mode: ${how}` }],
-      door,
-    });
-    return {
-      text: fitted.text,
-      json: { header, pagesMode: false, pages: [], articles: [], layouts: [], elision: null },
-      fit: fitOf(fitted),
-    };
-  }
   const laid = layOutPages(pagesOf(tab));
   const printed = new Set(model.printed.map((el) => el.id));
   const pages = pageSummaries(tab).map((p) => ({

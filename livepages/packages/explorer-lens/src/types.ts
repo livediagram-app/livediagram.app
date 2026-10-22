@@ -7,7 +7,6 @@ import type {
   MadeByValue,
   OpensInValue,
   PeopleValue,
-  TemplateValue,
 } from './dimensions';
 
 /** A space as the lens names it: My Documents, Shared With Me, or one team by id. */
@@ -16,7 +15,6 @@ export type SpaceValue = 'mine' | 'shared' | `team:${string}`;
 /** The value type of each dimension. */
 export type LensValueOf = {
   'opens-in': OpensInValue;
-  template: TemplateValue;
   'made-by': MadeByValue;
   edited: EditedValue;
   people: PeopleValue;
@@ -100,7 +98,6 @@ export type LensSubject = {
   people: PeopleValue;
   madeByAi: boolean | null;
   opensIn: OpensInValue | null;
-  template: TemplateValue | null;
 };
 
 /** What suggestions need beyond parsing: the rows in scope, to mark a value that matches nothing. */

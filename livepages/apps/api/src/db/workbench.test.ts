@@ -546,7 +546,7 @@ describe('sweepWorkbench', () => {
   });
 });
 
-describe('the workspace scope (migration 0099)', () => {
+describe('the workspace scope (the baseline migration)', () => {
   const WORKSPACE_REACH: WorkbenchReach = { scope: 'workspace', documentId: null, folderId: 'f1' };
   const ask = (db: SqliteD1, scope: 'document' | 'workspace', code: string) =>
     openPairingRequest(db.env, {

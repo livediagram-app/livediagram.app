@@ -5,7 +5,6 @@ import {
   TAB_SCHEMA_VERSION,
   type ExportedTabEnvelope,
 } from '@livepages/document';
-import { defaultCatalogue } from '@livepages/items';
 import { parseImportedTab } from './import-tab';
 
 // A minimal but valid tab payload.
@@ -141,43 +140,5 @@ describe('parseImportedTab — stroke points (docs/specs/006-document/stroke-poi
       expect(el.type).toBe('freehand');
       expect(typeof el.packedPoints).toBe('string');
     }
-  });
-});
-
-// A tab export's Plan items (docs/specs/026-plan/items.md "Copies and exports").
-describe('parseImportedTab, Plan items', () => {
-  const person = { id: 'p', name: 'Sam', color: '#2563eb' };
-  const item = {
-    id: 'item-1',
-    type: 'task',
-    key: 4,
-    rank: 'i',
-    fields: { title: 'Ship', status: 'todo' },
-    rev: 1,
-    createdAt: 0,
-    updatedAt: 0,
-    createdBy: person,
-    updatedBy: person,
-  };
-
-  it('reads the items, leaving behind what does not look like one', () => {
-    const r = parseImportedTab(
-      JSON.stringify(envelope({ items: [item, { id: 'nope' }] as never })),
-    );
-    // Cards with no catalogue: a tab exported before card types started empty, so the default types (legacyCatalogue).
-    expect(r.ok && r.plan).toEqual({ items: [item], itemTypes: defaultCatalogue() });
-  });
-
-  it('reads a valid catalogue and drops a broken one, its cards keeping the default types', () => {
-    const catalogue = { version: 1, types: 'broken' };
-    const r = parseImportedTab(
-      JSON.stringify(envelope({ items: [item], itemTypes: catalogue as never })),
-    );
-    expect(r.ok && r.plan?.itemTypes).toEqual(defaultCatalogue());
-  });
-
-  it('has no plan for a file without items', () => {
-    const r = parseImportedTab(JSON.stringify(envelope({ items: [] })));
-    expect(r.ok && 'plan' in r).toBe(false);
   });
 });

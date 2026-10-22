@@ -44,14 +44,6 @@ function checklistSummary(el: Element): string {
   return `done=${items.filter((item) => flagField(item, 'done')).length}/${items.length}`;
 }
 
-// A Plan board (docs/specs/026-plan/plan-board.md): its columns by name; its cards are items.
-function planBoardSummary(el: Element): string {
-  const setup = (el as { planBoard?: { columns?: unknown } }).planBoard;
-  const columns = Array.isArray(setup?.columns) ? setup.columns.filter(isObject) : [];
-  // Each name escaped as a table cell: a newline or `|` in a name never forges a line or a column.
-  return `columns=${columns.map((c) => cellText(stringField(c, 'name') ?? '?')).join('|')}`;
-}
-
 // A Sankey's size (docs/specs/009-elements/sankey.md): its flows, and the distinct node names they join.
 function sankeySummary(el: Element): string {
   const flows = arrayField(el, 'sankeyFlows').filter(isObject);
@@ -111,20 +103,6 @@ export function contentSummaryOf(el: Element): string | null {
       return sequenceSummary(el);
     case 'stack':
       return `direction=${cellText(stringField(el, 'stackDirection') ?? 'row')}`;
-    case 'plan-board':
-      return planBoardSummary(el);
-    case 'plan-card': {
-      const card = (el as { planCard?: { itemId?: unknown } }).planCard;
-      return `item=${typeof card?.itemId === 'string' && card.itemId ? cellText(card.itemId) : 'none'}`;
-    }
-    case 'plan-view': {
-      const view = (el as { planView?: { view?: unknown } }).planView?.view;
-      return `view=${typeof view === 'string' ? cellText(view) : 'none'}`;
-    }
-    case 'plan-sheet': {
-      const sheet = (el as { planSheet?: { sheetId?: unknown } }).planSheet;
-      return `sheet=${typeof sheet?.sheetId === 'string' && sheet.sheetId ? cellText(sheet.sheetId) : 'none'}`;
-    }
     default:
       return null;
   }

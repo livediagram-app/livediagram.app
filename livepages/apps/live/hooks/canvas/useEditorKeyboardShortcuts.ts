@@ -134,26 +134,6 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       const key = e.key;
       const lower = key.toLowerCase();
 
-      // --- A Plan board covers the canvas (docs/specs/026-plan/plan-board.md "Nothing under it moves") ---
-      // Nothing on the canvas changes from the keyboard; undo, redo, search, zen, the mode switch and Escape still
-      // work, and a canvas chord the browser would take over (Cmd+D, Cmd+A...) is prevented.
-      if (live.canvasCovered?.()) {
-        if (inText) return;
-        const role = coveredKeyRole(e);
-        if (role === 'swallow') e.preventDefault();
-        if (role !== 'run') return;
-        if (mod) {
-          runModShortcut(e, live);
-          return;
-        }
-        if (key !== 'Escape') {
-          e.preventDefault();
-          if (lower === 'z') live.onToggleZen();
-          else live.onCycleEditorMode?.();
-          return;
-        }
-      }
-
       // --- Mind map growth (docs/specs/009-elements/mind-node.md) ---
       // Tab adds a child, Enter a sibling, both off the selected mind node.
       // Placed before every other branch because Tab is otherwise the
@@ -343,17 +323,6 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
           e.preventDefault();
           return;
         }
-      }
-
-      // --- Editor mode (Shift+D, docs/specs/007-editor/editor-modes.md) ---
-      // After type-to-edit, so a capital D still types into a selected
-      // label; before the dock keys, so it works in Draw mode too. Where no
-      // switch is offered it does nothing (it is never Diamond's D).
-      if (e.shiftKey && !e.altKey && lower === 'd') {
-        if (!live.onCycleEditorMode) return;
-        e.preventDefault();
-        live.onCycleEditorMode();
-        return;
       }
 
       // Non-mutating view tools (Select / Hand / Laser / Isometric /

@@ -19,8 +19,8 @@ describe('View Transitions', () => {
     expect(globals).toMatch(/html\s*\{\s*view-transition-name:\s*none;\s*\}/);
   });
 
-  it('keep the start mode switch with chrome and the slide moves with the canvas', () => {
-    expect([...classesIn(globals)]).toEqual(['start-mode']);
+  it('keep the slide moves with the canvas', () => {
+    expect([...classesIn(globals)]).toEqual([]);
     expect([...classesIn(canvasMotion)].sort()).toEqual([
       'slide-back',
       'slide-fade',

@@ -40,7 +40,7 @@ describe('apiListDocuments', () => {
     stubFetch(() =>
       Response.json({
         documents: [
-          { id: 'old', name: 'Old', savedAt: 1, empty: false, opensIn: 'draw' },
+          { id: 'old', name: 'Old', savedAt: 1, empty: false, opensIn: 'pages' },
           { id: 'new', name: 'New', savedAt: 2, empty: false, opensIn: null },
         ],
       }),
@@ -50,7 +50,7 @@ describe('apiListDocuments', () => {
 
     expect(parseRecentDiagrams(localStorage.getItem(RECENT_DIAGRAMS_KEY))).toEqual([
       { id: 'new', name: 'New', savedAt: 2, mode: null, teamName: null },
-      { id: 'old', name: 'Old', savedAt: 1, mode: 'draw', teamName: null },
+      { id: 'old', name: 'Old', savedAt: 1, mode: 'pages', teamName: null },
     ]);
   });
 
@@ -65,7 +65,7 @@ describe('apiListDocuments', () => {
             name: 'Team',
             savedAt: 3,
             empty: false,
-            opensIn: 'plan',
+            opensIn: 'pages',
             teamName: 'Design',
           },
         ],
@@ -77,7 +77,7 @@ describe('apiListDocuments', () => {
 
     expect(seen[0]).toMatch(/\/documents\?include=team-recent$/);
     expect(parseRecentDiagrams(localStorage.getItem(RECENT_DIAGRAMS_KEY))).toEqual([
-      { id: 'team', name: 'Team', savedAt: 3, mode: 'plan', teamName: 'Design' },
+      { id: 'team', name: 'Team', savedAt: 3, mode: 'pages', teamName: 'Design' },
       { id: 'mine', name: 'Mine', savedAt: 1, mode: null, teamName: null },
     ]);
   });

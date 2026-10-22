@@ -5,7 +5,6 @@
 import {
   activeCommentCount,
   isOpenAction,
-  takesAttachments,
   type BoxedElement,
   type TextAlignX,
   type TextAlignY,
@@ -36,9 +35,6 @@ export function elementIndicatorItems(
 ): IndicatorItem[] {
   // A margin note shows its count and action on its own face.
   if (element.type === 'annotation' && element.articleNote) return [];
-  // A Plan item carries no link, note, action or comments (docs/specs/026-plan/plan-mode.md "Nothing attached to Plan
-  // items"): any left on one from before are kept in the document but not shown.
-  if (!takesAttachments(element)) return [];
   const { onFollowLink, onOpenComments, onOpenAction, onOpenNote, tabSummaries } = handlers;
   const shape = element.type === 'shape' ? element.shape : undefined;
   // A comment pin and an action panel show theirs on their face; a link card IS its link; an

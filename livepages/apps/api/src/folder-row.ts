@@ -1,6 +1,6 @@
 import type { Folder as FolderDTO } from '@livepages/api-schema';
 
-// folders row shape as read from D1 (migration 0007). Pure
+// folders row shape as read from D1 (the baseline migration). Pure
 // snake_case to camelCase mapping, no nested JSON to parse, but
 // every folder read in the api (list, get-by-id, the parent-of-N
 // walks the Explorer does) flows through this mapper, so pinning

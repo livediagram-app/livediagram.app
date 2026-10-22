@@ -1,14 +1,19 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { stubResizeObserver } from '@/components/sheets/sheet-ui-test-utils';
 import { FlowchartMenuSections } from './FlowchartMenuSections';
 
 // docs/specs/009-elements/flowchart.md "The Flowchart menu": a Flowchart flyout row holding Chart, Step Type
 // and Direction, each a closed category around a list of full-width rows.
 
 // The flyout panel tracks its own size, which jsdom cannot.
-beforeAll(stubResizeObserver);
+beforeAll(() => {
+  globalThis.ResizeObserver ??= class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  } as unknown as typeof ResizeObserver;
+});
 afterEach(cleanup);
 
 function renderMenu(

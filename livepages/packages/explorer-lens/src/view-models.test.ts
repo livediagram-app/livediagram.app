@@ -9,7 +9,7 @@ const scoped: LensContext = { ...aggregate, view: 'scoped' };
 
 describe('lensChips', () => {
   it('shows one chip per dimension, Space only on aggregate views', () => {
-    const order = ['opens-in', 'template', 'made-by', 'edited', 'people'];
+    const order = ['opens-in', 'made-by', 'edited', 'people'];
     expect(lensChips(parseLens('', aggregate), aggregate).map((c) => c.dimension)).toEqual([
       ...order,
       'space',
@@ -18,27 +18,24 @@ describe('lensChips', () => {
   });
 
   it('lights a multi-select chip with every value its tokens hold', () => {
-    const template = lensChips(
-      parseLens('plan template:kanban template:retrospective', aggregate),
-      aggregate,
-    )[1];
-    expect(template).toEqual({
-      dimension: 'template',
-      label: 'Template',
+    const people = lensChips(parseLens('plan people:others people:me', aggregate), aggregate)[3];
+    expect(people).toEqual({
+      dimension: 'people',
+      label: 'People',
       control: 'multiple',
-      values: ['retrospective', 'kanban'],
-      valueLabels: ['Retrospective', 'Kanban'],
-      name: 'Template: Retrospective, Kanban',
+      values: ['me', 'others'],
+      valueLabels: ['Me', 'Others'],
+      name: 'People: Me, Others',
       options: [
         { value: null, label: 'Any', selected: false },
-        { value: 'retrospective', label: 'Retrospective', selected: true },
-        { value: 'kanban', label: 'Kanban', selected: true },
+        { value: 'me', label: 'Me', selected: true },
+        { value: 'others', label: 'Others', selected: true },
       ],
     });
   });
 
   it('names an unset chip as any, with Any selected', () => {
-    const edited = lensChips(parseLens('', aggregate), aggregate)[3];
+    const edited = lensChips(parseLens('', aggregate), aggregate)[2];
     expect(edited).toMatchObject({ values: [], valueLabels: [], name: 'Edited, any' });
     expect(edited?.options[0]).toEqual({ value: null, label: 'Any', selected: true });
     expect(edited?.options.map((o) => o.label)).toEqual([
@@ -52,14 +49,14 @@ describe('lensChips', () => {
   });
 
   it('makes Made by AI a toggle named by itself', () => {
-    const off = lensChips(parseLens('', aggregate), aggregate)[2];
-    const on = lensChips(parseLens('made-by:ai', aggregate), aggregate)[2];
+    const off = lensChips(parseLens('', aggregate), aggregate)[1];
+    const on = lensChips(parseLens('made-by:ai', aggregate), aggregate)[1];
     expect(off).toMatchObject({ control: 'toggle', name: 'Made by AI', values: [] });
     expect(on).toMatchObject({ control: 'toggle', name: 'Made by AI', values: ['ai'] });
   });
 
   it('names a team by its name, never its id', () => {
-    const space = lensChips(parseLens('space:team:T1,mine', aggregate), aggregate)[5];
+    const space = lensChips(parseLens('space:team:T1,mine', aggregate), aggregate)[4];
     expect(space).toMatchObject({ values: ['mine', 'team:T1'], name: 'Space: My Documents, Acme' });
     expect(space?.options.map((o) => o.label)).toEqual([
       'Any',
@@ -72,25 +69,22 @@ describe('lensChips', () => {
 
 describe('lensPills', () => {
   it('makes a pill of every token, and none of text', () => {
-    const parsed = parseLens(
-      'plan template:kanban,retrospective made-by:ai template:mindmap',
-      aggregate,
-    );
+    const parsed = parseLens('plan edited:30d,today made-by:ai edited:yesterday', aggregate);
     expect(lensPills(parsed, aggregate)).toEqual([
       {
         start: 5,
-        end: 34,
-        dimension: 'template',
-        values: ['retrospective', 'kanban'],
+        end: 21,
+        dimension: 'edited',
+        values: ['today', '30d'],
         state: 'applied',
-        label: 'Template: Retrospective, Kanban',
-        name: 'Filter Template: Retrospective, Kanban',
-        removeName: 'Remove filter Template: Retrospective, Kanban',
+        label: 'Edited: Today, Last 30 days',
+        name: 'Filter Edited: Today, Last 30 days',
+        removeName: 'Remove filter Edited: Today, Last 30 days',
         note: null,
       },
       {
-        start: 35,
-        end: 45,
+        start: 22,
+        end: 32,
         dimension: 'made-by',
         values: ['ai'],
         state: 'applied',
@@ -113,7 +107,7 @@ describe('lensPills', () => {
   });
 
   it('makes no pill of the word being typed', () => {
-    expect(lensPills(parseLens('template:kan', aggregate, 12), aggregate)).toEqual([]);
+    expect(lensPills(parseLens('edited:to', aggregate, 9), aggregate)).toEqual([]);
   });
 });
 
@@ -123,9 +117,9 @@ describe('issueMessage', () => {
 
   it.each([
     ['colour:red', '“colour:red” isn’t a filter, so it’s searched as text.'],
-    ['template:', '“template:” needs a value, so it’s searched as text.'],
+    ['people:', '“people:” needs a value, so it’s searched as text.'],
     ['edited:7d,', '“edited:7d,” needs a value, so it’s searched as text.'],
-    ['template:mindmap', '“mindmap” isn’t a Template option, so it’s searched as text.'],
+    ['people:everyone', '“everyone” isn’t a People option, so it’s searched as text.'],
     ['space:team:', '“space:team:” needs a value, so it’s searched as text.'],
     ['space:team:nope', 'That team isn’t one of yours, so it’s searched as text.'],
   ])('explains %s', (input, message) => {
@@ -156,7 +150,7 @@ describe('announceResults', () => {
 describe('labels', () => {
   it('reads a team that is not the reader’s as an unknown team, and an unknown value as itself', () => {
     expect(valueLabel('space', 'team:gone', [])).toBe('Unknown team');
-    expect(valueLabel('template', 'mindmap', [])).toBe('mindmap');
+    expect(valueLabel('edited', 'yesterday', [])).toBe('yesterday');
   });
 
   it('orders teams by name', () => {

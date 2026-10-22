@@ -41,7 +41,7 @@ export type ElementAction = {
   // signed-out self-assignment).
   assignerId: string;
   assignerName: string | null;
-  // 'wont-do' (docs/specs/026-plan/linked-boards.md "On the canvas"): decided against, closed without being done.
+  // 'wont-do' (docs/specs/012-collaboration/assigned-actions.md): decided against, closed without being done.
   status: ElementActionStatus;
   createdAt: number; // unix ms
   updatedAt: number; // unix ms

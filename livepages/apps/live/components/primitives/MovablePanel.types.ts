@@ -149,7 +149,7 @@ export type MovablePanelProps = {
   onDockDragStart?: () => void;
   onDockDrag?: (geom: PanelDragGeometry) => void;
   onDockDragEnd?: (geom: PanelDragGeometry) => void;
-  // Stable anchor id for the interactive tour (docs/specs/007-editor/editor-tour.md), rendered as
+  // Stable anchor id for the interactive tour (docs/specs/007-editor/pages-tour.md "Mechanics"), rendered as
   // `data-tour-id` on the panel root in BOTH render paths (floating panel
   // and popover) so tour steps can find the panel
   // whatever the layout.

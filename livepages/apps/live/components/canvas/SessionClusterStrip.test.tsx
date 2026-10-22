@@ -116,12 +116,8 @@ describe('Pages: a running Vote only', () => {
 });
 
 describe('sessionStripTools', () => {
-  it('offers Timer and Vote in Workshop and Plan, none in Diagram or Draw', () => {
-    expect(sessionStripTools('workshop')).toEqual({ timer: true, vote: true });
-    expect(sessionStripTools('plan')).toEqual({ timer: true, vote: true });
+  it('offers nothing outside a mode', () => {
     expect(sessionStripTools(undefined)).toBeNull();
-    expect(sessionStripTools('diagram')).toBeNull();
-    expect(sessionStripTools('draw')).toBeNull();
   });
 
   it('offers Pages a running Vote only', () => {
@@ -131,8 +127,9 @@ describe('sessionStripTools', () => {
 
 describe('stripCanStart', () => {
   it('offers the idle tools to an editor, never in a running-only strip or to a view role', () => {
-    expect(stripCanStart(sessionStripTools('workshop')!, false)).toBe(true);
-    expect(stripCanStart(sessionStripTools('workshop')!, true)).toBe(false);
+    const full = { timer: true, vote: true };
+    expect(stripCanStart(full, false)).toBe(true);
+    expect(stripCanStart(full, true)).toBe(false);
     expect(stripCanStart(sessionStripTools('pages')!, false)).toBe(false);
   });
 });
@@ -141,7 +138,8 @@ describe('stripSegmentGone', () => {
   const idle = { timer: false, vote: false };
   const all = { timer: true, vote: true };
   const pages = sessionStripTools('pages');
-  const workshop = sessionStripTools('workshop');
+  // A strip that offers starting both tools.
+  const workshop = { timer: true, vote: true };
 
   it('keeps nothing open when no popover is', () => {
     expect(stripSegmentGone({ segment: null, tools: null, readOnly: false, running: idle })).toBe(

@@ -37,20 +37,6 @@ interface QueryParam {
   description: string;
 }
 
-const SHEET_TAB_QUERY: QueryParam = {
-  name: 'tabId',
-  required: false,
-  description:
-    "The tab a tab-scoped link reaches (required on one); a GET's tabId also narrows to that tab's sheets.",
-};
-
-const ITEM_TAB_QUERY: QueryParam = {
-  name: 'tabId',
-  required: false,
-  description:
-    'The tab a tab-scoped share link is confined to; the call then reaches only the items that tab shows.',
-};
-
 export interface RouteSpec {
   method: 'GET' | 'POST' | 'PUT' | 'DELETE';
   /** Path template under the server base, e.g. `/documents/{id}/tabs/{tabId}`. */
@@ -353,14 +339,12 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
         intent: {
           type: ['object', 'null'],
           description:
-            'What the new document is made as, recorded on it (opensIn, tabKind, templateFamily). ' +
-            "With no choice of place, the document lands in the caller's default folder for it: " +
-            'the tab kind default, else the template family default, else the mode default, else ' +
-            'the root of My documents. Malformed: intent_invalid (400).',
+            'What the new document is made as, recorded on it (opensIn, tabKind). ' +
+            "With no choice of place, the document lands in the caller's default folder for its " +
+            'mode, else the root of My documents. Malformed: intent_invalid (400).',
           properties: {
             mode: ref('EditorMode'),
             tabKind: { anyOf: [ref('CreationTabKind'), { type: 'null' }] },
-            templateFamily: { anyOf: [ref('TemplateFamily'), { type: 'null' }] },
           },
           required: ['mode'],
         },
@@ -722,260 +706,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     responseSchema: listOf('threads', 'DocumentCommentThread'),
     statuses: [200, 400, 401, 403, 404, 405, 410],
   },
-  // The document's type catalogue (docs/specs/026-plan/item-types.md).
-  {
-    method: 'PUT',
-    path: '/documents/{id}/item-types',
-    segment: 'documents',
-    tag: 'Items',
-    summary:
-      "Store the document's item types, whole: up to 32 types, each with its fields and custom fields. null goes back to the default types (Project, Task, Note, Idea, Action). expectedRev names the revision (itemTypesRev) the change was made to: when another change landed since, 409 item_types_stale answers with the stored types and revision to re-apply the change to. Needs edit access to the whole document.",
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    requestSchema: 'ItemTypesRequest',
-    responseSchema: 'ItemTypesResponse',
-    statuses: [200, 400, 401, 403, 404, 405, 409, 410],
-  },
-  // The document's plan for agents (docs/specs/026-plan/plan-agents.md).
-  {
-    method: 'GET',
-    path: '/documents/{id}/plan',
-    segment: 'documents',
-    tag: 'Items',
-    summary:
-      "The document's Plan boards, in tab then canvas order, with their columns; the statuses they name, each once with its column name; and the card types. A tab-scoped link passes tabId and gets that tab's boards.",
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    query: [ITEM_TAB_QUERY],
-    responseSchema: 'PlanResponse',
-    statuses: [200, 401, 403, 404, 405, 410],
-  },
-  // The sheet store (docs/specs/029-sheets/sheet-store.md). A caller on a tab-scoped link adds ?tabId=.
-  {
-    method: 'GET',
-    path: '/documents/{id}/sheets',
-    segment: 'documents',
-    tag: 'Sheets',
-    summary:
-      "The document's sheets, cells included: a tab's (tabId), named ones (ids, comma-separated, up to 50), or all. A tab-scoped link gets its tab's only.",
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    query: [
-      SHEET_TAB_QUERY,
-      { name: 'ids', required: false, description: 'Sheet ids, comma-separated, up to 50.' },
-    ],
-    responseSchema: 'SheetsResponse',
-    statuses: [200, 400, 401, 403, 404, 410],
-  },
-  {
-    method: 'POST',
-    path: '/documents/{id}/sheets',
-    segment: 'documents',
-    tag: 'Sheets',
-    summary:
-      "Make a sheet on a tab: blank, filled (a layout and up to 5,000 cells), or a copy of another of the document's sheets (copyOf). Titles are unique on a tab. Needs edit access.",
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    query: [SHEET_TAB_QUERY],
-    requestSchema: 'SheetCreateRequest',
-    responseSchema: 'SheetResponse',
-    statuses: [201, 400, 401, 403, 404, 409, 410, 413],
-  },
-  {
-    method: 'DELETE',
-    path: '/documents/{id}/sheets/{sheetId}',
-    segment: 'documents',
-    tag: 'Sheets',
-    summary: 'Delete a sheet and its cells.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    query: [
-      SHEET_TAB_QUERY,
-      {
-        name: 'whenUnreferenced',
-        required: false,
-        description:
-          'true to delete it once no element of the document references it (now, if none does): the editor deleting a Sheet with its element.',
-      },
-    ],
-    statuses: [204, 400, 401, 403, 404, 410],
-  },
-  {
-    method: 'POST',
-    path: '/documents/{id}/sheets/{sheetId}/writes',
-    segment: 'documents',
-    tag: 'Sheets',
-    summary:
-      'Change a sheet: cells (inputs and format keys, by row and column id), its layout (insert, delete, move, order, size, hide, freeze, merge, filter) or its title. Answers the write as it landed, the new rev and the stored cells it touched.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    query: [SHEET_TAB_QUERY],
-    requestSchema: 'SheetWriteRequest',
-    responseSchema: 'SheetWriteResponse',
-    statuses: [200, 400, 401, 403, 404, 409, 410, 413],
-  },
-  // The item store (docs/specs/026-plan/items.md). A caller on a tab-scoped link adds ?tabId=.
-  {
-    method: 'GET',
-    path: '/documents/{id}/items',
-    segment: 'documents',
-    tag: 'Items',
-    summary:
-      "The document's items and the store's revision. A tab-scoped link passes tabId and gets the items that tab shows.",
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    query: [ITEM_TAB_QUERY],
-    responseSchema: 'ItemsResponse',
-    statuses: [200, 400, 401, 403, 404, 410],
-  },
-  {
-    method: 'POST',
-    path: '/documents/{id}/items',
-    segment: 'documents',
-    tag: 'Items',
-    summary:
-      'Make an item: a type, its fields (a title at least) and an optional place (a status, and the item to sit after or before). Needs edit access.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    query: [ITEM_TAB_QUERY],
-    requestSchema: 'ItemCreate',
-    responseSchema: 'ItemResponse',
-    statuses: [201, 400, 401, 403, 404, 409, 410, 413],
-  },
-  {
-    method: 'POST',
-    path: '/documents/{id}/items/bulk',
-    segment: 'documents',
-    tag: 'Items',
-    summary:
-      'Make up to 200 items in one write, in order. Needs edit access to the whole document.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    requestSchema: 'ItemsBulkRequest',
-    responseSchema: 'ItemsResponse',
-    statuses: [201, 400, 401, 403, 404, 409, 410, 413],
-  },
-  {
-    method: 'POST',
-    path: '/documents/{id}/items/patches',
-    segment: 'documents',
-    tag: 'Items',
-    summary:
-      'Change up to 200 items in one write: each an item id with fields to set, fields to clear and optionally a new type. Every item is checked first, so one refusal (naming its item) changes nothing.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    query: [ITEM_TAB_QUERY],
-    requestSchema: 'ItemsPatchRequest',
-    responseSchema: 'ItemsResponse',
-    statuses: [200, 400, 401, 403, 404, 409, 410],
-  },
-  {
-    method: 'POST',
-    path: '/documents/{id}/items/tally',
-    segment: 'documents',
-    tag: 'Items',
-    summary:
-      "Add a session vote's tally to up to 200 cards: each a card id and its voters' dots. A card gone meanwhile is skipped. Needs edit access.",
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    query: [ITEM_TAB_QUERY],
-    requestSchema: 'ItemsTallyRequest',
-    responseSchema: 'ItemsResponse',
-    statuses: [200, 400, 401, 403, 404, 409, 410],
-  },
-  {
-    method: 'POST',
-    path: '/documents/{id}/items/{itemId}',
-    segment: 'documents',
-    tag: 'Items',
-    summary:
-      'Change an item: fields to set, fields to clear (never the title or votes) and optionally a new type. Other fields are untouched.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    query: [ITEM_TAB_QUERY],
-    requestSchema: 'ItemPatchRequest',
-    responseSchema: 'ItemResponse',
-    statuses: [200, 400, 401, 403, 404, 409, 410],
-  },
-  {
-    method: 'DELETE',
-    path: '/documents/{id}/items/{itemId}',
-    segment: 'documents',
-    tag: 'Items',
-    summary: 'Delete an item. Its key is never reused.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    query: [ITEM_TAB_QUERY],
-    statuses: [204, 400, 401, 403, 404, 410],
-  },
-  {
-    method: 'POST',
-    path: '/documents/{id}/items/{itemId}/move',
-    segment: 'documents',
-    tag: 'Items',
-    summary:
-      "Move an item to a status and a place in that status's column (after or before another item), optionally setting or clearing a swimlane field (assignee, priority, or any lane field: Labels, Estimate, Start, Due or a custom field such as Parent) or its type.",
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    query: [ITEM_TAB_QUERY],
-    requestSchema: 'ItemMoveRequest',
-    responseSchema: 'ItemResponse',
-    statuses: [200, 400, 401, 403, 404, 409, 410],
-  },
-  {
-    method: 'POST',
-    path: '/documents/{id}/items/{itemId}/comments',
-    segment: 'documents',
-    tag: 'Items',
-    summary:
-      "Add a comment to an item's thread (a resolved thread reopens). The author is the caller; author ids reach only their author. Needs participate access.",
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    query: [ITEM_TAB_QUERY],
-    requestSchema: {
-      type: 'object',
-      properties: { text: { type: 'string' } },
-      required: ['text'],
-    },
-    responseSchema: 'ItemResponse',
-    statuses: [200, 400, 401, 403, 404, 409, 410, 413],
-  },
-  {
-    method: 'DELETE',
-    path: '/documents/{id}/items/{itemId}/comments/{commentId}',
-    segment: 'documents',
-    tag: 'Items',
-    summary: "Delete a comment from an item's thread: your own, or any with edit access.",
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    query: [ITEM_TAB_QUERY],
-    responseSchema: 'ItemResponse',
-    statuses: [200, 401, 403, 404, 405, 409, 410],
-  },
-  {
-    method: 'POST',
-    path: '/documents/{id}/items/{itemId}/comments/resolve',
-    segment: 'documents',
-    tag: 'Items',
-    summary: "Resolve an item's thread; resolving a resolved thread changes nothing (204).",
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    query: [ITEM_TAB_QUERY],
-    responseSchema: 'ItemResponse',
-    statuses: [200, 204, 401, 403, 404, 405, 409, 410],
-  },
-  {
-    method: 'POST',
-    path: '/documents/{id}/items/{itemId}/comments/reopen',
-    segment: 'documents',
-    tag: 'Items',
-    summary: "Reopen an item's thread; reopening an open thread changes nothing (204).",
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    query: [ITEM_TAB_QUERY],
-    responseSchema: 'ItemResponse',
-    statuses: [200, 204, 401, 403, 404, 405, 409, 410],
-  },
   {
     method: 'GET',
     path: '/documents/{id}/tabs/{tabId}/comment-pictures',
@@ -989,96 +719,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       properties: { pictures: { type: 'object', additionalProperties: { type: 'string' } } },
     },
     statuses: [200, 403, 404],
-  },
-  // ---- Form links (docs/specs/030-forms/forms.md) ----
-  {
-    method: 'POST',
-    path: '/documents/{id}/tabs/{tabId}/form',
-    segment: 'documents',
-    tag: 'Documents',
-    summary:
-      "Replace a Form tab's form whole (an agent's form write): `{ form, rev? }`. The tab takes the form's heading as its name, and the change reaches everyone with the document open. 409 form_changed (with `rev`) when the tab moved past the revision given, 409 form_locked while the form takes responses and the change is more than its settings, 400 not_a_form_tab. Edit access.",
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    requestSchema: {
-      type: 'object',
-      properties: { form: { type: 'object' }, rev: { type: 'integer', minimum: 0 } },
-      required: ['form'],
-    },
-    statuses: [200, 400, 401, 403, 404, 409, 410, 413],
-  },
-  {
-    method: 'GET',
-    path: '/documents/{id}/tabs/{tabId}/form-link',
-    segment: 'documents',
-    tag: 'Documents',
-    summary:
-      "A Form tab's link: whether it is published and open, how many responses it has, and how many the caller has not seen. Anyone who may read the tab; the code itself only to someone who may edit it.",
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    responseSchema: ref('FormLinkResponse'),
-    statuses: [200, 400, 403, 404],
-  },
-  {
-    method: 'POST',
-    path: '/documents/{id}/tabs/{tabId}/form-link',
-    segment: 'documents',
-    tag: 'Documents',
-    summary:
-      'Publish the Form tab: make its public link. 409 form_already_published, 409 form_destination_missing (its board, column or card type is gone), 409 form_not_ready with its problems (no questions, an unworded question, a choice without options, a broken mapping or section rule), 403 form_suspensions (this document has had too many links suspended).',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    responseSchema: ref('FormLinkResponse'),
-    statuses: [200, 400, 403, 404, 409],
-  },
-  {
-    method: 'PUT',
-    path: '/documents/{id}/tabs/{tabId}/form-link',
-    segment: 'documents',
-    tag: 'Documents',
-    summary: 'Open or close the published form, keeping its link. Edit access.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    requestSchema: {
-      type: 'object',
-      properties: { open: { type: 'boolean' } },
-      required: ['open'],
-    },
-    responseSchema: ref('FormLinkResponse'),
-    statuses: [200, 400, 403, 404],
-  },
-  {
-    method: 'DELETE',
-    path: '/documents/{id}/tabs/{tabId}/form-link',
-    segment: 'documents',
-    tag: 'Documents',
-    summary: 'Delete the form link; publishing again makes a new one. Edit access.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    responseSchema: ref('FormLinkResponse'),
-    statuses: [200, 400, 403, 404],
-  },
-  {
-    method: 'POST',
-    path: '/documents/{id}/tabs/{tabId}/form-seen',
-    segment: 'documents',
-    tag: 'Documents',
-    summary: "Mark the form's responses so far as seen by the caller (the Inbox and the New dots).",
-    auth: 'guest-or-clerk',
-    responseSchema: ref('FormLinkResponse'),
-    statuses: [200, 400, 403, 404],
-  },
-  {
-    method: 'POST',
-    path: '/documents/{id}/tabs/{tabId}/form-preview',
-    segment: 'documents',
-    tag: 'Documents',
-    summary:
-      'An Editor\'s Preview of the published form: sent as a counted response, its card titled "Preview: ...", taken while the form is closed too, with no email. 404 form_not_published when the form has no live link.',
-    auth: 'guest-or-clerk',
-    requestSchema: ref('FormResponseBody'),
-    responseSchema: ref('FormResponseAccepted'),
-    statuses: [201, 400, 403, 404, 409, 413, 429],
   },
   {
     method: 'POST',
@@ -1471,41 +1111,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
 
   // ---- Shared with you ----
-  // ---- Forms, the public side (docs/specs/030-forms/forms.md "Filling in a form") ----
-  {
-    method: 'GET',
-    path: '/forms/{code}',
-    segment: 'forms',
-    tag: 'Forms',
-    summary:
-      'A published form as respondents see it (never where its answers go), or that it is closed and why. 404 form_not_found for an unknown, deleted or suspended link. Limited per network.',
-    auth: 'public',
-    responseSchema: ref('PublicFormResponse'),
-    statuses: [200, 404, 429],
-  },
-  {
-    method: 'POST',
-    path: '/forms/{code}/responses',
-    segment: 'forms',
-    tag: 'Forms',
-    summary:
-      "Send a response: it becomes one card on the form's board. 400 invalid_answers with an error per question, 409 form_closed, 413 form_full, 429 form_busy (the form's hourly cap) or rate_limited (per network).",
-    auth: 'public',
-    requestSchema: ref('FormResponseBody'),
-    responseSchema: ref('FormResponseAccepted'),
-    statuses: [201, 400, 404, 409, 413, 429],
-  },
-  {
-    method: 'POST',
-    path: '/forms/{code}/reports',
-    segment: 'forms',
-    tag: 'Forms',
-    summary:
-      'Report a form (spam, phishing, offensive, other), once per browser. Reports from three networks suspend its link for good.',
-    auth: 'public',
-    requestSchema: ref('FormReportBody'),
-    statuses: [201, 400, 404, 429],
-  },
   {
     method: 'GET',
     path: '/shared',
@@ -1974,24 +1579,15 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'activity',
     tag: 'Account',
     summary:
-      'What is outstanding for the caller across every document they can open: open actions assigned to them or by them, open Plan cards assigned to them, and unresolved comment threads they are in, on elements and on Plan cards. Capped at 100 per kind, newest first.',
+      'What is outstanding for the caller across every document they can open: open actions assigned to them or by them, and unresolved comment threads they are in. Capped at 100 per kind, newest first.',
     auth: 'guest-or-clerk',
     responseSchema: {
       type: 'object',
       properties: {
         actions: { type: 'array', items: { $ref: '#/components/schemas/ActivityAction' } },
         threads: { type: 'array', items: { $ref: '#/components/schemas/ActivityThread' } },
-        cards: { type: 'array', items: { $ref: '#/components/schemas/ActivityCard' } },
-        cardThreads: {
-          type: 'array',
-          items: { $ref: '#/components/schemas/ActivityCardThread' },
-        },
-        formResponses: {
-          type: 'array',
-          items: { $ref: '#/components/schemas/ActivityFormResponses' },
-        },
       },
-      required: ['actions', 'threads', 'cards', 'cardThreads'],
+      required: ['actions', 'threads'],
     },
     statuses: [200, 400, 401],
   },
@@ -2247,8 +1843,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
             properties: { userId: { type: 'string' }, memberId: { type: 'string' } },
           },
         },
-        // A Plan card's comment: the card, so the email's button opens it.
-        itemId: { type: 'string' },
       },
       required: ['documentId', 'commentText', 'mentions'],
     },
@@ -2325,7 +1919,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     requestSchema: 'AiRequest',
     statuses: [200, 401, 403, 500, 502, 503],
   },
-
 
   // ---- Link unfurl ----
   {

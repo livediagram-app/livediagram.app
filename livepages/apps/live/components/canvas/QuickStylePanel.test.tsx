@@ -253,8 +253,8 @@ describe('panelFrame', () => {
   });
 });
 
-// docs/specs/007-editor/editor-modes.md "One look": Ink is the eighth swatch of the Stroke and Text
-// colour rows in Diagram mode, after the theme's colours.
+// docs/specs/008-canvas/quick-style-panel.md "Colours": Ink is the eighth swatch of the Stroke and
+// Text colour rows, after the theme's colours.
 describe('QuickStylePanel: the Ink swatch', () => {
   const swatches = Array.from({ length: 7 }, (_, slot) => ({
     slot: slot as 0,
@@ -349,4 +349,3 @@ describe('QuickStylePanel: the Ink swatch', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 });
-

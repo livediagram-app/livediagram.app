@@ -48,7 +48,7 @@ function valueLabels(
   return values.map((value) => valueLabel(dimension, value, context.teams));
 }
 
-/** "Template: Retrospective, Kanban"; Made by AI names itself. */
+/** "Edited: Today, Last 7 days"; Made by AI names itself. */
 function tokenLabel(
   dimension: LensDimension,
   values: readonly string[],

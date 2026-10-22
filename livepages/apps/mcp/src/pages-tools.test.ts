@@ -29,7 +29,6 @@ function api(answer: (body: unknown) => Response) {
 const done = (extra: Record<string, unknown> = {}) =>
   Response.json({
     tab: { id: 't1', rev: 4 },
-    switched: false,
     lines: ['Wrote it.'],
     pages: [],
     articles: [ARTICLE],

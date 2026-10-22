@@ -4,7 +4,7 @@
 // folders they can see, then moves the document when a default answers somewhere else. Every failure leaves the
 // document where it is: being unable to apply a default is no reason to disturb the work.
 import { creationIntentOf, type PlacementDefaultKey } from '@livepages/api-schema';
-import { templateFamilyOf, type TemplateKind } from '@livepages/templates';
+import { type TemplateKind } from '@livepages/templates';
 import {
   apiGetTeamLibrary,
   apiListFolders,
@@ -58,10 +58,7 @@ export async function moveOnTemplatePick(at: {
       libraries.flat(),
       teams,
     );
-    const intent = creationIntentOf(
-      buildTemplatedTab(at.kind, 'brand', 'intent', 'Tab 1'),
-      templateFamilyOf(at.kind),
-    );
+    const intent = creationIntentOf(buildTemplatedTab(at.kind, 'brand', 'intent', 'Tab 1'));
     const target = templatePickMoveTarget({
       handoff,
       intent,

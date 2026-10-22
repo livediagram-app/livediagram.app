@@ -46,7 +46,6 @@ import {
   lucideType,
 } from '@livepages/icons/lucide';
 import { Glyph, Prims } from '@livepages/ui';
-import { PLAN_TILES } from './palette-plan-tiles';
 import { WIREFRAME_TILES } from './palette-wireframe-tiles';
 import { tileCaption } from './tile-caption';
 
@@ -89,23 +88,10 @@ export type PaletteTileSection =
   // scattered across Write, Draw, Data and Components, filed by what they look
   // like; what they have in common is that they hold other work.
   | 'build'
-  // Plan mode's Boards and Cards (docs/specs/026-plan/plan-mode.md "The palette"): boards by preset,
-  // cards by item type.
-  | 'plan-boards'
-  | 'plan-cards'
-  // Plan views (docs/specs/026-plan/plan-views.md): metrics and visualisations.
-  | 'plan-metrics'
-  | 'plan-visualisations'
-  // A Dashboard's rows and slots (docs/specs/026-plan/plan-tabs.md), on a Dashboard tab alone.
-  | 'dashboard-layout'
-  | 'dashboard-tabs'
-  // A Dashboard's written cards (Status, Checklist, Key Date, Links), on a Dashboard tab alone.
-  | 'dashboard-cards'
   // A logo page's drawing tools (docs/specs/007-editor/logo-pages.md "The Logo palette").
   | 'logo'
   // A screen's parts (docs/specs/007-editor/wireframe-pages.md "The Elements palette").
   | 'wireframe'
-  | 'plan-sheets'
   | 'tools'
   | 'data'
   // 'collaborate' is GONE (docs/specs/010-palette/palette-top-level-categories.md). The collaboration family (docs/specs/012-collaboration/estimate-card.md to
@@ -140,8 +126,6 @@ type PaletteTileAction =
       reaction?: Reaction;
       mode?: SelectionMode;
       estimateScale?: EstimateScale;
-      // Plan board preset, or a Plan card's item type (docs/specs/026-plan/plan-mode.md "The palette").
-      plan?: string;
       // A creation-time variant of the kind (packages/document shape-variants.ts): the Callout card, a Funnel.
       variant?: string;
     }
@@ -236,8 +220,7 @@ export type PaletteTileDef = {
   // Tile only renders when the editor supplies onAddImage (image uploads
   // available) — the Image / Avatar / Hero / Header tiles.
   needsImage?: boolean;
-  // Greyed out with its reason (no press, no drag, the reason in its hover card). A card tile no board on the tab
-  // takes gets one at render (usePlanCardTileDisabled, docs/specs/026-plan/plan-mode.md "The palette").
+  // Greyed out with its reason (no press, no drag, the reason in its hover card).
   disabled?: { reason: string };
   // Ends a group of related tiles in its category: a fixed divider follows it on the Toolbar
   // strip, between it and the next tile shown (docs/specs/007-editor/toolbar-layout.md "Fixed
@@ -1990,8 +1973,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       </Glyph>
     ),
   },
-  // Plan (docs/specs/026-plan/plan-mode.md): boards by preset, cards by item type.
-  ...PLAN_TILES,
   // A wireframe page's parts (docs/specs/007-editor/wireframe-pages.md "The Elements palette").
   ...WIREFRAME_TILES,
 ];
@@ -2018,9 +1999,8 @@ export function tileDisplayName(def: PaletteTileDef): string {
   return tileCaption(def.label, def.caption);
 }
 
-// The Collaborate elements' six categories (docs/specs/012-collaboration/workshop-mode.md "The palette"):
-// each holds the `behaviour` tool group's tiles of one `tileGroup`, in catalogue order. Workshop
-// offers them in place of one Collaborate category with a group browser inside it.
+// The Collaborate elements' six categories: each holds the `behaviour` tool group's tiles of one
+// `tileGroup`, in catalogue order, in place of one Collaborate category with a group browser inside it.
 export const COLLABORATE_CATEGORY_GROUPS: Readonly<
   Record<string, NonNullable<PaletteTileDef['tileGroup']>>
 > = {

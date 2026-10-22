@@ -3,7 +3,6 @@ import {
   elementChangeIsDeltaOnly,
   mergeIncomingElement,
   mergeIncomingVote,
-  planBoardPatch,
   type Tab,
 } from '@livepages/document';
 import { tabArticleOps, type RoomOp } from '@livepages/api-schema';
@@ -85,29 +84,6 @@ function tabMetaPatch(before: Tab, after: Tab): Partial<Omit<Tab, 'elements'>> {
   return patch;
 }
 
-// One `board` delta per Plan board whose set-up changed (docs/specs/012-collaboration/collab-race-hardening.md,
-// phase 6). Derived here rather than at each control, so a column cog, the Board flyout, a widget dropped
-// from the palette and undo or redo all reach peers as only what changed.
-function boardDeltaOps(before: Tab, after: Tab): RoomOp[] {
-  const beforeById = new Map(before.elements.map((e) => [e.id, e]));
-  const ops: RoomOp[] = [];
-  for (const el of after.elements) {
-    if (el.type !== 'shape' || !el.planBoard) continue;
-    const prev = beforeById.get(el.id);
-    if (!prev || prev.type !== 'shape' || prev.planBoard === el.planBoard) continue;
-    const patch = planBoardPatch(prev.planBoard, el.planBoard);
-    if (patch) {
-      ops.push({
-        kind: 'el-delta',
-        tabId: after.id,
-        elementId: el.id,
-        delta: { kind: 'board', patch },
-      });
-    }
-  }
-  return ops;
-}
-
 // Derive the room ops to broadcast for a tab autosave just persisted, given
 // the last state peers saw (`before`) and the saved state (`after`):
 //   - no `before` (a tab peers don't have yet) → one whole-`tab` op;
@@ -127,11 +103,8 @@ export function tabBroadcastOps(before: Tab | undefined, after: Tab): RoomOp[] {
     const prev = beforeById.get(op.element.id);
     return !prev || !elementChangeIsDeltaOnly(prev, op.element);
   });
-  // A receiver keeps its own board set-up through a whole-element or whole-tab copy, so the set-up's
-  // change goes as its delta on both paths.
-  const boardOps = boardDeltaOps(before, after);
   if (elOps.length > EL_OP_BROADCAST_LIMIT) {
-    return [wholeTabOp(after), ...boardOps, ...tabArticleOps(before, after)];
+    return [wholeTabOp(after), ...tabArticleOps(before, after)];
   }
 
   const ops: RoomOp[] = [];
@@ -152,7 +125,6 @@ export function tabBroadcastOps(before: Tab | undefined, after: Tab): RoomOp[] {
     });
   }
   for (const op of elOps) ops.push({ kind: 'el', tabId: after.id, op });
-  ops.push(...boardOps);
   ops.push(...tabArticleOps(before, after));
   return ops;
 }

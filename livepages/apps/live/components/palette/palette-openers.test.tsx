@@ -10,7 +10,7 @@ vi.mock('@/lib/icon-registry', async (real) => ({
 
 import { openerById } from './palette-openers';
 
-// docs/specs/007-editor/editor-modes.md "The palette per mode": a catalogue group's opener draws that group's artwork,
+// docs/specs/007-editor/toolbar-layout.md "A tile's side panel": a catalogue group's opener draws that group's artwork,
 // so it must fetch the catalogues itself rather than rely on the editor's one prefetch (a failed prefetch left the
 // AWS opener blank).
 describe('openerById', () => {

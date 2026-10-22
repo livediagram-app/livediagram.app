@@ -13,11 +13,6 @@ type CommentThreadPopoverProps = {
   // Element this thread belongs to. The popover anchors itself by querying
   // the DOM for the matching `[data-element-id]` wrapper.
   elementId: string;
-  // A selector for another anchor than the element (a Sheet cell's thread anchors to its cell,
-  // docs/specs/029-sheets/sheet.md "Cell comments").
-  anchorSelector?: string;
-  // The header's title; "Comments" by default (a cell's thread names its cell).
-  title?: string;
   thread: CommentThread | undefined;
   onAddComment: (text: string, mentions: CommentMention[]) => void;
   onDeleteComment: (commentId: string) => void;
@@ -57,8 +52,6 @@ const GAP = 12;
 // click and on Escape.
 export function CommentThreadPopover({
   elementId,
-  anchorSelector,
-  title = 'Comments',
   thread,
   onAddComment,
   onDeleteComment,
@@ -93,7 +86,7 @@ export function CommentThreadPopover({
   // been applied), then place the popover just to the right with a small
   // gap. Re-measures on resize / scroll so it stays attached during pans.
   const reposition = useCallback(() => {
-    const node = document.querySelector(anchorSelector ?? elementSelector(elementId));
+    const node = document.querySelector(elementSelector(elementId));
     if (!node) return;
     const rect = node.getBoundingClientRect();
     let left = rect.right + GAP;
@@ -106,7 +99,7 @@ export function CommentThreadPopover({
     left = Math.max(EDGE_MARGIN, Math.min(left, window.innerWidth - WIDTH - EDGE_MARGIN));
     top = Math.max(EDGE_MARGIN, top);
     setPos({ left, top });
-  }, [elementId, anchorSelector]);
+  }, [elementId]);
   useReposition(reposition);
 
   // Don't close on a click that lands on a comment badge: those are
@@ -130,7 +123,7 @@ export function CommentThreadPopover({
       >
         <header className="flex items-center justify-between border-b border-slate-100 px-3 py-2 dark:border-slate-800">
           <h3 className="text-xs font-semibold text-slate-800 dark:text-slate-100">
-            {title}
+            Comments
             {comments.length > 0 ? (
               <span className="ml-1 font-normal text-slate-500 dark:text-slate-400">
                 ({comments.length})

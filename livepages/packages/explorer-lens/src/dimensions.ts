@@ -1,27 +1,15 @@
 // The lens's catalogue (docs/specs/013-workspace/explorer-filters.md "Dimensions"): every
 // dimension, its closed values, their British English labels and the closed telemetry types.
 
-import { TEMPLATE_FAMILIES, type TemplateFamily } from '@livepages/api-schema';
 import { EDITOR_MODES, type EditorMode } from '@livepages/document';
 
 /** The dimensions in canonical order: the order tokens are written in and chips are shown in. */
-export const LENS_DIMENSIONS = [
-  'opens-in',
-  'template',
-  'made-by',
-  'edited',
-  'people',
-  'space',
-] as const;
+export const LENS_DIMENSIONS = ['opens-in', 'made-by', 'edited', 'people', 'space'] as const;
 export type LensDimension = (typeof LENS_DIMENSIONS)[number];
 
 /** The editor modes a document can be created to open in: the one list of modes. */
 export const OPENS_IN_VALUES = EDITOR_MODES;
 export type OpensInValue = EditorMode;
-
-/** The template families: ordinary diagram tabs made from a family of templates. */
-export const TEMPLATE_VALUES = TEMPLATE_FAMILIES;
-export type TemplateValue = TemplateFamily;
 
 export const MADE_BY_VALUES = ['ai'] as const;
 export type MadeByValue = (typeof MADE_BY_VALUES)[number];
@@ -39,7 +27,6 @@ export const SPACE_TEAM_PREFIX = 'team:';
 /** Every dimension whose values are a fixed list, with that list. */
 export const FIXED_VALUES = {
   'opens-in': OPENS_IN_VALUES,
-  template: TEMPLATE_VALUES,
   'made-by': MADE_BY_VALUES,
   edited: EDITED_VALUES,
   people: PEOPLE_VALUES,
@@ -48,7 +35,6 @@ export const FIXED_VALUES = {
 /** The chip label of each dimension; also how messages name it. */
 export const DIMENSION_LABELS: Record<LensDimension, string> = {
   'opens-in': 'Opens in',
-  template: 'Template',
   'made-by': 'Made by AI',
   edited: 'Edited',
   people: 'People',
@@ -57,14 +43,7 @@ export const DIMENSION_LABELS: Record<LensDimension, string> = {
 
 /** The label of every fixed value. A team's label is its name. */
 export const VALUE_LABELS = {
-  'opens-in': {
-    diagram: 'Diagram',
-    draw: 'Draw',
-    workshop: 'Workshop',
-    pages: 'Pages',
-    plan: 'Plan',
-  },
-  template: { retrospective: 'Retrospective', kanban: 'Kanban' },
+  'opens-in': { pages: 'Pages' },
   'made-by': { ai: 'Made by AI' },
   edited: {
     today: 'Today',
@@ -84,7 +63,6 @@ export type LensFacet = 'text' | LensDimension;
 export const LENS_TELEMETRY_TYPES = {
   text: 'Text',
   'opens-in': 'OpensIn',
-  template: 'Template',
   'made-by': 'MadeBy',
   edited: 'Edited',
   people: 'People',
@@ -100,7 +78,7 @@ export const LENS_MAX_SUGGESTIONS = 8;
 /** How long after the last change the result count is announced, in milliseconds. */
 export const LENS_SETTLE_MS = 400;
 
-/** Separates the values of one token: `template:retrospective,kanban`. */
+/** Separates the values of one token: `edited:today,7d`. */
 export const LENS_VALUE_SEPARATOR = ',';
 
 /** The URL parameter that carries the lens string. */

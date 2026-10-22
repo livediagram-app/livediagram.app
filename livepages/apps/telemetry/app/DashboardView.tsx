@@ -14,7 +14,6 @@ import {
   EMAILS_SENT,
   EXCEPTIONS,
   FAILED_REQUESTS,
-  FORMS,
   HELP_CENTRE,
   LIVE_TOGETHER,
   LOOK_AND_FEEL,
@@ -24,19 +23,17 @@ import {
   OFFLINE_MODE,
   ONBOARDING_TOURS,
   PAGE_VIEWS_BY_APP,
+  PAGE_WORK,
   PALETTE_USE,
   PANELS_OPENED,
-  PLAN_BOARDS,
   PRESENTATIONS,
   RETURNING_VISITORS,
   SHARING_AND_JOINING,
-  SHEETS,
   SIGN_IN_PROMPTS,
   SIGN_UPS,
   TAB_ACTIONS,
   TIMELINE_AND_ACTIVITY,
   VOTING,
-  WHITEBOARDS,
 } from './metric-catalogue';
 import { MetricGroups, type MetricGroup } from './MetricCards';
 import type { SectionKey } from './view-keys';
@@ -76,19 +73,11 @@ export const GROUPS: MetricGroup[] = [
   },
   {
     title: 'Content',
-    metrics: [
-      DOCUMENT_ACTIONS,
-      TAB_ACTIONS,
-      ELEMENTS_ADDED,
-      ELEMENT_EDITING,
-      PLAN_BOARDS,
-      SHEETS,
-      FORMS,
-    ],
+    metrics: [DOCUMENT_ACTIONS, TAB_ACTIONS, ELEMENTS_ADDED, ELEMENT_EDITING],
   },
   {
     title: 'Features',
-    metrics: [WHITEBOARDS, PALETTE_USE, CANVAS_MODES, LOOK_AND_FEEL, PANELS_OPENED, OFFLINE_MODE],
+    metrics: [PAGE_WORK, PALETTE_USE, CANVAS_MODES, LOOK_AND_FEEL, PANELS_OPENED, OFFLINE_MODE],
   },
   // Live Together is the only stack that counts two people on one canvas at
   // the same moment; the rest of Collaboration counts invitations to be there,

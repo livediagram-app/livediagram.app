@@ -21,7 +21,7 @@ const docArg = z.string().describe('A name, id prefix or livepages URL');
 const tabFlag = z
   .string()
   .optional()
-  .describe('A tab name or id prefix; the first tab in Pages mode when omitted');
+  .describe('A tab name or id prefix; the first tab when omitted');
 const LS_HINT = 'list the pages with: livepages page ls <doc>';
 const CHANGES_HINT = 'see the changes with: livepages help page set';
 
@@ -55,14 +55,12 @@ const pageOutput = z.object({
 });
 const doneOutput = z.object({
   tabId: z.string(),
-  switched: z.boolean(),
   lines: z.array(z.string()),
   pages: z.array(pageOutput),
   rev: z.number(),
 });
 const doneOf = (done: PagesDone): z.infer<typeof doneOutput> => ({
   tabId: done.tabId,
-  switched: done.switched,
   lines: done.lines,
   pages: done.pages,
   rev: done.tab.rev,
@@ -84,7 +82,7 @@ export const pageLs = defineVerb({
   output: z.object({ text: z.string() }),
   run: async (ctx, input) => {
     const at = await where(ctx, input.doc, input.tab);
-    const found = await pagesTabOf(ctx.api, at.documentId, at.tabId, 'cli');
+    const found = await pagesTabOf(ctx.api, at.documentId, at.tabId);
     if ('ok' in found) throw refusal(found);
     const query = new URLSearchParams({ view: 'pages', door: 'cli' });
     if (input.budget) query.set('budget', String(input.budget));
@@ -108,7 +106,7 @@ export const pageSet = defineVerb({
   id: 'page.set',
   summary: "Change a tab's pages",
   description:
-    'Adds, changes, lays out, moves, duplicates or deletes pages, as one edit: --changes takes a JSON list (a file, or - for stdin) of up to 50, or the flags make one. A tab in another mode, named with --tab, is switched into Pages.',
+    'Adds, changes, lays out, moves, duplicates or deletes pages, as one edit: --changes takes a JSON list (a file, or - for stdin) of up to 50, or the flags make one.',
   behaviour: 'destructive',
   input: z.object({
     doc: docArg,
@@ -236,15 +234,10 @@ export const articleGet = defineVerb({
   output: z.object({ flow: z.string(), title: z.string(), markdown: z.string() }),
   run: async (ctx, input) => {
     const at = await where(ctx, input.doc, input.tab);
-    const read = await readArticle(
-      ctx.api,
-      at.documentId,
-      {
-        ...(at.tabId ? { tabId: at.tabId } : {}),
-        ...(input.article ? { article: input.article } : {}),
-      },
-      'cli',
-    );
+    const read = await readArticle(ctx.api, at.documentId, {
+      ...(at.tabId ? { tabId: at.tabId } : {}),
+      ...(input.article ? { article: input.article } : {}),
+    });
     if (!read.ok) throw refusal(read);
     return { flow: read.flow, title: read.title, markdown: read.markdown };
   },

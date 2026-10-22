@@ -228,7 +228,7 @@ export function useGifExport({
 // The tab's faces and every page's writing's: the GIF's fonts travel in it.
 function gifFontIds(tab: Tab, pages: readonly LaidOutPage[]): string[] {
   const els = visibleLayerElements(tab.elements, tab.layers);
-  const ids = new Set(exportFontIds(els, tab.font, undefined, tab.finish));
+  const ids = new Set(exportFontIds(els, tab.font, tab.finish));
   for (const p of pages) for (const id of pageWritingFonts(tab, p)) ids.add(id);
   return [...ids];
 }

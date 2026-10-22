@@ -1,27 +1,21 @@
 // A tab drawn where it is shown away from its own canvas (docs/specs/009-elements/tab-window.md "The drawing",
-// docs/specs/007-editor/split-view.md "The other pane"): a Form tab its form on its tab's look, as respondents see it;
-// a Pages tab its pages where they lie on the canvas, each as its page export draws it; any other tab its canvas
-// (renderTabToSvg). Shared by useTabSvg (a tab window, the split view's other pane and its drop preview, a Dashboard's
-// Diagram slot) and a window in an export (tabWindowArts), so each draws a tab the same way.
+// docs/specs/007-editor/split-view.md "The other pane"): its pages where they lie on the canvas, each as its page
+// export draws it, else its canvas (renderTabToSvg). Shared by useTabSvg (a tab window, the split view's other pane and
+// its drop preview) and a window in an export (tabWindowArts), so each draws a tab the same way.
 import {
   endpointPosition,
   exportFontIds,
-  formLook,
   laidOutPagesOf,
   opensInOf,
   pagesWithWriting,
   prefixSvgIds,
   r2,
-  resolveFontStack,
-  tabKindOf,
   type ArrowElement,
   type Element,
   type Endpoint,
   type LaidOutPage,
   type Tab,
 } from '@livepages/document';
-import { readForm } from '@livepages/forms';
-import { formArt } from '@livepages/plan-art';
 import { pageWritingFonts } from './article/article-export';
 import { renderTabToSvg, type ImageExportOpts } from './export-tab';
 
@@ -29,13 +23,6 @@ const SVG_OPEN = '<svg xmlns="http://www.w3.org/2000/svg" ';
 
 /** The tab drawn, as a whole SVG document whose viewBox is in the tab's canvas space. */
 export function renderTabDrawingSvg(tab: Tab, opts: ImageExportOpts = {}): string {
-  if (tabKindOf(tab) === 'form') {
-    const form = readForm(tab.form);
-    if (form) {
-      const look = formLook(tab);
-      return formArt(form, look, resolveFontStack(look.font)).svg;
-    }
-  }
   const pages = laidOutPagesOf(tab);
   return pages.length ? pagesAsLaidOut(tab, pages, opts) : renderTabToSvg(tab, opts);
 }
@@ -131,10 +118,9 @@ function keepEnds(
   }
 }
 
-/** The typefaces the drawing of this tab writes in: its elements', a form's, and its pages' writing. */
+/** The typefaces the drawing of this tab writes in: its elements', and its pages' writing. */
 export function tabDrawingFontIdsOf(tab: Tab): string[] {
-  const ids = new Set(exportFontIds(tab.elements, tab.font, undefined, tab.finish));
-  if (tabKindOf(tab) === 'form' && tab.font) ids.add(tab.font);
+  const ids = new Set(exportFontIds(tab.elements, tab.font, tab.finish));
   if (opensInOf(tab) === 'pages') {
     for (const page of laidOutPagesOf(tab))
       for (const id of pageWritingFonts(tab, page)) ids.add(id);

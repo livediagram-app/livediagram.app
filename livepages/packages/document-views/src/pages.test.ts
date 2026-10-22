@@ -65,7 +65,7 @@ describe('the pages view', () => {
     const out = pagesOf(pagesTab());
     const lines = out.text.split('\n');
     expect(lines[0]).toBe(
-      'tab tab-deck "Deck" · 1 element: 1 box · mode=pages · 4 pages: 1 slide, 1 logo, 2 article (view pages) · rev 7',
+      'tab tab-deck "Deck" · 1 element: 1 box · 4 pages: 1 slide, 1 logo, 2 article (view pages) · rev 7',
     );
     expect(lines[1]).toBe(
       `page 1 "Cover" page-cover · slide Slide (16:9) · at ${cover.x},${cover.y} 1920x1080 · 1 element`,
@@ -136,15 +136,5 @@ describe('the pages view', () => {
     const out = pagesOf(pagesTab(), 60);
     expect(out.text).toMatch(/hidden/);
     expect((out.json as PagesView).elision).not.toBeNull();
-  });
-
-  it('says how to switch a tab in another mode, by door', () => {
-    const tab = { id: 'tab-x', name: 'X', elements: [] } as unknown as Tab;
-    const cli = renderView({ view: 'pages' }, tab);
-    const mcp = renderView({ view: 'pages', door: 'mcp' }, tab);
-    if (!cli.ok || !mcp.ok) throw new Error('refused');
-    expect(cli.text).toContain('page set adds pages');
-    expect(mcp.text).toContain('change_pages adds pages');
-    expect(cli.json).toMatchObject({ pagesMode: false, pages: [], articles: [] });
   });
 });

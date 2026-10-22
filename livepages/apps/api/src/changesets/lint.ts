@@ -3,32 +3,26 @@
 // write: it logs `[lint] failed` and answers null, which the footer prints as `lint unavailable`.
 
 import type { LintReport } from '@livepages/api-schema';
-import { coloursSet, lintTab, type LintLogger } from '@livepages/diagram-lint';
+import { lintTab, type LintLogger } from '@livepages/diagram-lint';
 import type { Tab } from '@livepages/document';
 
 type Where = { documentId: string; tabId: string };
 
-// The lint's own lines, prefixed with where they happened, at the level each names.
+// The lint's own lines, prefixed with where they happened: a skipped crossing check warns, the rest inform.
 export function lintLog(where: Where): LintLogger {
   return (fingerprint, fields) => {
     const line = { ...where, ...fields };
     if (fingerprint === '[lint] crossings skipped') console.warn(fingerprint, line);
-    else if (fingerprint === '[lint] theme unresolved') console.debug(fingerprint, line);
     else console.info(fingerprint, line);
   };
 }
 
-// `before`, the tab as it was (null for a tab the write makes), names the colours the write set: colour-on-themed judges
-// those alone (LN17). A replace that lands a template sets none of its own: the template's colours are its design.
 export function lintResult(
   tab: Pick<Tab, 'elements' | 'layers' | 'theme'>,
   where: Where,
-  before: { elements: readonly Tab['elements'][number][] } | null | 'template' = null,
 ): LintReport | null {
   try {
-    const coloured =
-      before === 'template' ? new Set<string>() : coloursSet(before?.elements ?? [], tab.elements);
-    return lintTab(tab, { log: lintLog(where), coloured });
+    return lintTab(tab, { log: lintLog(where) });
   } catch (err) {
     console.error('[lint] failed', { where: 'changeset', ...where, error: String(err) });
     return null;

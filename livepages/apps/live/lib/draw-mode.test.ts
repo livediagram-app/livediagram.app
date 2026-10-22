@@ -1,12 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { EMBED_PROVIDERS } from '@livepages/document';
-import {
-  drawBannerMessage,
-  drawIntentCursor,
-  isPlanCardIntent,
-  opensForTyping,
-  type PendingDraw,
-} from './draw-mode';
+import { drawBannerMessage, drawIntentCursor, opensForTyping, type PendingDraw } from './draw-mode';
 
 // One sample per discriminant. Typing it as a Record over PendingDraw['type']
 // means a NEW intent type also fails to compile until it's represented, so
@@ -36,12 +30,7 @@ const INTENT_SAMPLES: Record<PendingDraw['type'], PendingDraw[]> = {
 const ALL_INTENTS: PendingDraw[] = Object.values(INTENT_SAMPLES).flat();
 
 describe('drawBannerMessage', () => {
-  it('tells a pressed Plan card where it goes, or that a board comes first', () => {
-    const card = { type: 'shape', kind: 'plan-card' } as const;
-    expect(drawBannerMessage(card, false, { hasPlanBoard: true })).toBe(
-      'Select the board column you want this card to appear in',
-    );
-    expect(drawBannerMessage(card, false)).toBe('Add a board first in order to use cards');
+  it('asks to drop or drag a shape', () => {
     expect(drawBannerMessage({ type: 'shape', kind: 'square' }, false)).toContain('Tap to drop');
   });
 
@@ -222,14 +211,5 @@ describe('opensForTyping', () => {
 
   it('leaves shapes selected, not typing', () => {
     expect(opensForTyping({ type: 'shape', kind: 'square' })).toBe(false);
-  });
-});
-
-describe('a pressed Plan card (docs/specs/026-plan/plan-mode.md "The palette")', () => {
-  it('is told apart from every other shape in hand', () => {
-    expect(isPlanCardIntent({ type: 'shape', kind: 'plan-card', plan: 'task' })).toBe(true);
-    expect(isPlanCardIntent({ type: 'shape', kind: 'plan-board' })).toBe(false);
-    expect(isPlanCardIntent({ type: 'text' })).toBe(false);
-    expect(isPlanCardIntent(null)).toBe(false);
   });
 });

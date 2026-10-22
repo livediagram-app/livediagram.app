@@ -6,16 +6,11 @@
 // The upload takes seconds, and the document stays editable (and writable from another tab)
 // while it runs. So the local copy is removed only if it still matches what went up, checked and
 // deleted in one transaction; a change in between takes the cloud copy back and uploads again.
-// And the cloud copy must hold every card and sheet before the local one goes: a create that
-// resolves to an existing row (a retry after a half-finished sync) never re-seeds those stores.
 
-import { storeAsCreates } from '@livepages/items';
 import { DOCUMENT_CONVERSION_HEADER } from '@livepages/api-schema';
 import { apiCreateDocument, apiSetFavourite } from '@/lib/api-client';
 import { apiSetDocumentTag } from '@/lib/api/tags';
 import { API_BASE, ApiError, apiDelete } from '@/lib/api/core';
-import { fetchCloudItems } from '../api/items';
-import { fetchCloudSheets, sheetAsCreate } from '../api/sheets';
 import { uploadEmbeddedImages } from './offline-images';
 import {
   offlineDeleteIfUnchanged,
@@ -28,26 +23,20 @@ import {
 // seconds after choosing Sync Document, without retrying forever against a busy other tab.
 const SYNC_UPLOAD_ATTEMPTS = 3;
 
-// Why a sync stopped with the local copy kept: it changed during every upload, or the cloud copy
-// came up short of its cards or sheets.
+// Why a sync stopped with the local copy kept: it changed during every upload.
 export class OfflineSyncIncompleteError extends Error {
-  readonly reason: 'kept_changing' | 'stores_short';
-  constructor(reason: 'kept_changing' | 'stores_short') {
+  readonly reason: 'kept_changing';
+  constructor(reason: 'kept_changing') {
     super(`offline sync incomplete: ${reason}`);
     this.reason = reason;
     this.name = 'OfflineSyncIncompleteError';
   }
 }
 
-// What the upload carried, as far as a later write would change it: every edit stamps savedAt
-// (tabs, name, deck, folder, card types), a card write moves itemsRev, a sheet write its rev.
-// A star or an open changes neither, and needs no new upload.
+// What the upload carried, as far as a later write would change it: every edit stamps savedAt (tabs,
+// name, deck, folder). A star or an open does not, and needs no new upload.
 function uploadMark(rec: OfflineDocumentRecord): string {
-  return JSON.stringify([
-    rec.savedAt,
-    rec.itemsRev ?? 0,
-    (rec.sheets ?? []).map((s) => [s.id, s.rev, s.updatedAt]),
-  ]);
+  return String(rec.savedAt);
 }
 
 // What a finished sync hands back: the (unchanged) document id, and every image it re-homed (data URI ->
@@ -75,12 +64,6 @@ async function upload(rec: OfflineDocumentRecord, ownerId: string): Promise<Map<
         folderId,
         createdAt: rec.createdAt,
         presentation: rec.presentation ?? null,
-        // The item store, in each column's order (docs/specs/026-plan/items.md "Offline documents").
-        items: storeAsCreates(rec.items ?? []),
-        // And its type catalogue (docs/specs/026-plan/item-types.md "Storage and sync").
-        itemTypes: rec.itemTypes ?? null,
-        // The sheet store, whole (docs/specs/029-sheets/sheet-store.md "Offline documents").
-        ...(rec.sheets?.length ? { sheets: rec.sheets.map(sheetAsCreate) } : {}),
       },
       { conversion: 'sync' },
     );
@@ -96,17 +79,6 @@ async function upload(rec: OfflineDocumentRecord, ownerId: string): Promise<Map<
     await create(null);
   }
   return imageIds;
-}
-
-// True when the cloud copy holds as many cards and sheets as the record. Skips the fetch for a
-// record with none (the common case: a diagram-only document).
-async function cloudHoldsStores(rec: OfflineDocumentRecord, ownerId: string): Promise<boolean> {
-  const scope = { ownerId, documentId: rec.id, shareCode: null, tabId: null };
-  const items = rec.items?.length ?? 0;
-  const sheets = rec.sheets?.length ?? 0;
-  if (items > 0 && (await fetchCloudItems(scope)).items.length !== items) return false;
-  if (sheets > 0 && (await fetchCloudSheets(scope)).length !== sheets) return false;
-  return true;
 }
 
 // Take back a cloud copy the local one was not swapped for, so a retry is a genuine create again.
@@ -135,11 +107,6 @@ export async function syncOfflineDocument(
   const imageIds = new Map<string, string>();
   for (let attempt = 1; ; attempt++) {
     for (const [dataUrl, id] of await upload(rec, ownerId)) imageIds.set(dataUrl, id);
-    if (!(await cloudHoldsStores(rec, ownerId))) {
-      console.warn('[offline-sync] stores-short, local copy kept');
-      await takeBackCloudCopy(rec.id, ownerId);
-      throw new OfflineSyncIncompleteError('stores_short');
-    }
     const uploaded = uploadMark(rec);
     const done = await offlineDeleteIfUnchanged(rec.id, (now) => uploadMark(now) === uploaded);
     // Gone already: another tab finished a sync of it first. Nothing here is left to move.

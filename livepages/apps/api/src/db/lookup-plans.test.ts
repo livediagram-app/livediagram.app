@@ -1,4 +1,4 @@
-// Statements by document id or author id seek an index (migration 0091), against the real migrations: each of
+// Statements by document id or author id seek an index (the baseline migration), against the real migrations: each of
 // these tables is keyed by owner first, and these statements used to read the whole table. A document delete
 // cascades into the first four; the guest-to-account migration and account deletion run the last two.
 import { describe, expect, it } from 'vitest';

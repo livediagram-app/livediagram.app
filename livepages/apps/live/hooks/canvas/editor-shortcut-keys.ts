@@ -20,10 +20,6 @@ export type EditorKeyboardShortcutsDeps = {
   // Called once per key the editor acted on: the power user mode offer counts
   // them (docs/specs/007-editor/power-user-mode.md).
   onShortcutUsed?: () => void;
-  // A Plan board or view covers the canvas (maximised, or filling its tab: docs/specs/026-plan/plan-board.md): the
-  // canvas's own shortcuts stand down (no nudge, delete, select-all, paste, duplicate or tool key), as its pointer
-  // input does. Read when a key is pressed.
-  canvasCovered?: () => boolean;
   // Modal-interaction state. Escape clears whichever is active.
   formatSourceId: string | null;
   setFormatSourceId: (v: string | null) => void;
@@ -108,9 +104,6 @@ export type EditorKeyboardShortcutsDeps = {
   // Shift+1: fit all content on the active tab to the viewport. A pure
   // view action (allowed for view-role).
   onFitToScreen: () => void;
-  // Shift+D: move to the next editor mode (docs/specs/007-editor/editor-modes.md). Null where
-  // the mode switch is not offered (view role, Plan tabs).
-  onCycleEditorMode: (() => void) | null;
   // Escape with a live selection and no transient mode to cancel clears
   // the selection (single + multi). Mirrors clicking empty canvas.
   onDeselect: () => void;
@@ -333,8 +326,7 @@ export function runModShortcut(e: KeyboardEvent, live: EditorKeyboardShortcutsDe
   return false;
 }
 
-// What a key does while a Plan board or view covers the canvas (docs/specs/026-plan/plan-board.md "Nothing under it
-// moves"): `run` leaves the canvas alone (undo, redo, search, zen, the mode switch, Escape) and is handled as usual;
+// What a key does while a board or view covers the canvas, so nothing under it moves: `run` leaves the canvas alone (undo, redo, search, zen, the mode switch, Escape) and is handled as usual;
 // `swallow` is a canvas chord the browser would act on in its place (duplicate, select-all, lock, z-order, zoom), so it
 // is prevented and does nothing; `ignore` is every other key, left to the browser and the board (copy and cut of the
 // board's text included), never reaching the canvas.
@@ -361,6 +353,5 @@ export function coveredKeyRole(
   }
   if (e.key === 'Escape') return 'run';
   if (lower === 'z' && !e.shiftKey && !e.altKey) return 'run';
-  if (lower === 'd' && e.shiftKey && !e.altKey) return 'run';
   return 'ignore';
 }

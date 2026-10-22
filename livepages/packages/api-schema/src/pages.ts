@@ -137,7 +137,6 @@ export type ArticleSummary = {
 
 export type PagesAnswer = {
   tab: { id: string; rev: number };
-  switched: boolean;
   lines: string[];
   pages: PageSummary[];
   articles: ArticleSummary[];

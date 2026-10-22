@@ -125,7 +125,7 @@ describe('tab views over REST (R23)', () => {
     expect(res.headers.get('ETag')).toBe('W/"1"');
     const text = await res.text();
     expect(text.split('\n').slice(0, 4)).toEqual([
-      'tab t1 "Architecture" · 6 elements: 4 boxes, 1 frame, 1 arrow · threads 1 open/1 · rev 1',
+      'tab t1 "Architecture" · 6 elements: 4 boxes, 1 frame, 1 arrow · 1 page: 1 infographic (view pages) · threads 1 open/1 · rev 1',
       'frame frame-1 "Services"',
       '  square orders "Orders service" comments=1 open → payments "charge"',
       '  square payments "Payments"',
@@ -436,7 +436,7 @@ describe('the overview over REST', () => {
     const lines = (await res.text()).split('\n');
     expect(lines[0]).toMatch(/^doc D "Checkout" · 10 tabs · edited just now$/);
     expect(lines[1]).toBe(
-      '  tab t1 "Architecture" · 6 elements: 4 boxes, 1 frame, 1 arrow · threads 1 open/1 · rev 1',
+      '  tab t1 "Architecture" · 6 elements: 4 boxes, 1 frame, 1 arrow · 1 page: 1 infographic (view pages) · threads 1 open/1 · rev 1',
     );
     expect(lines).toHaveLength(11);
     expect(logged('[views] overview')).toMatchObject({ doc: 'D', tabs: 10, batches: 2 });
@@ -515,7 +515,7 @@ describe('views behind the read gate (E22, E23, E25)', () => {
     const lines = (await (await docView(db, 'view=overview', who)).text()).split('\n');
     expect(lines.slice(1)).toEqual([
       '  tab t1 (out of scope)',
-      '  tab t2 "Tab 2" · 1 element: 1 box · rev 1',
+      '  tab t2 "Tab 2" · 1 element: 1 box · 1 page: 1 infographic (view pages) · rev 1',
     ]);
     expect(logged('[views] overview')).toMatchObject({ batches: 1 });
   });

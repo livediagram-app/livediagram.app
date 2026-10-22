@@ -2,8 +2,6 @@ import { useEffect, useEffectEvent, useState, type RefObject } from 'react';
 import { snapResizeBounds, snapToAlignment, snapToArrowPoint } from '@livepages/document';
 import { ARROW_SNAP_THRESHOLD_PX, pointerToCanvas, snapLeadingAxis } from '@/lib/canvas';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
-import { isPlanCardIntent } from '@/lib/draw-mode';
-import { usePlanCardPlacingGap } from '@/hooks/plan/usePlanCardPlacingGap';
 import { beginCanvasGesture } from '@/lib/canvas-gesture';
 
 const EMPTY_ID_SET: Set<string> = new Set();
@@ -78,14 +76,8 @@ export function useCanvasDrawGesture({
     const rect = wrapperRef.current?.getBoundingClientRect();
     if (!rect) return false;
     const { x: sx, y: sy } = pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom);
-    if (isPlanCardIntent(pendingDraw)) {
-      // A pressed Plan card lands in the column under the press, exactly there: no snap, no drag
-      // (docs/specs/026-plan/plan-mode.md "The palette").
-      onCommitDraw(pendingDraw, sx, sy, sx, sy);
-    } else {
-      const start = snapDrawStart(sx, sy);
-      setDrawDrag({ startX: start.x, startY: start.y, currentX: start.x, currentY: start.y });
-    }
+    const start = snapDrawStart(sx, sy);
+    setDrawDrag({ startX: start.x, startY: start.y, currentX: start.x, currentY: start.y });
     return true;
   };
 
@@ -97,9 +89,7 @@ export function useCanvasDrawGesture({
   // in CanvasChrome) appears exactly when the start would latch.
   const [drawHover, setDrawHover] = useState<{ x: number; y: number } | null>(null);
   // The corner-snap dot is for shapes drawn to size. Out of that state, the dot goes at once.
-  const hoverSnaps = !!pendingDraw && !drawDrag && !isPlanCardIntent(pendingDraw);
-  // A pressed Plan card opens the gap where it would land as the pointer crosses a board.
-  usePlanCardPlacingGap(isPlanCardIntent(pendingDraw) ? (pendingDraw.plan ?? 'task') : null);
+  const hoverSnaps = !!pendingDraw && !drawDrag;
   if (!hoverSnaps && drawHover) setDrawHover(null);
   useEffect(() => {
     if (!hoverSnaps) return;

@@ -1,4 +1,4 @@
-// Wireframe templates (docs/specs/007-editor/templates-by-mode.md "Wireframe templates"): a flow of
+// Wireframe templates (docs/specs/007-editor/wireframe-pages.md "Templates"): a flow of
 // screens, each a wireframe page in its device with one wireframe layout on it
 // (wireframe-layouts.ts), named for the screen it is (a browser page's name is its address). Pure:
 // the pages are declared once and the elements built on them.

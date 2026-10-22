@@ -19,12 +19,10 @@ import {
   ALL_TIMING_TYPES,
   LEVEL_TELEMETRY_TYPE,
   PLACEMENT_DEFAULT_KEYS,
-  SHEET_CHANGE_KINDS,
   pascalToken,
   placementDefaultTelemetryType,
 } from '@livepages/api-schema';
 import { countedVerbs } from '@livepages/agent-verbs';
-import { FORM_STARTERS, QUESTION_TYPE_TELEMETRY } from '@livepages/forms';
 import { MCP_TOOL_VERBS } from '@livepages/agent-verbs/mcp';
 import { CANVAS_CONTROLS } from './event-vocab';
 
@@ -133,54 +131,6 @@ const IMAGE_SEARCH_WARNINGS = [
   ),
 ];
 
-// The welcome tour's steps, in order, as tourStepTelemetryType makes them
-// (apps/live tour-steps.ts). The welcome card sends no step view.
-export const TOUR_STEP_SOURCE: string[] = [
-  ...read('live/components/tour/tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm),
-]
-  .map((m) => m[1]!)
-  .filter((id) => id !== 'welcome')
-  .map(
-    (id) =>
-      `TourStep${id
-        .split('-')
-        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-        .join('')}`,
-  );
-
-// The Plan tour's steps, as planTourStepTelemetryType makes them (apps/live plan-tour-steps.ts,
-// docs/specs/026-plan/plan-tour.md), both tracks; the two outros share one id. The welcome card sends no step view.
-const PLAN_TOUR_STEP_SOURCE: string[] = [
-  ...new Set(
-    [...read('live/components/tour/plan-tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm)].map(
-      (m) => m[1]!,
-    ),
-  ),
-]
-  .filter((id) => id !== 'welcome')
-  .map(
-    (id) =>
-      `PlanTourStep${id
-        .split('-')
-        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-        .join('')}`,
-  );
-
-// The Workshop tour's steps, as workshopTourStepTelemetryType makes them (apps/live
-// workshop-tour-steps.ts, docs/specs/012-collaboration/workshop-tour.md). The welcome card sends no step view.
-const WORKSHOP_TOUR_STEP_SOURCE: string[] = [
-  ...read('live/components/tour/workshop-tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm),
-]
-  .map((m) => m[1]!)
-  .filter((id) => id !== 'welcome')
-  .map(
-    (id) =>
-      `WorkshopTourStep${id
-        .split('-')
-        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-        .join('')}`,
-  );
-
 // The Sankey tour (docs/specs/007-editor/element-tours.md): its canvas steps, then the Flows dialog's Show Me steps
 // it runs inside the dialog (each `flows-` prefixed), then its closing card.
 const pascal = (id: string) =>
@@ -241,22 +191,6 @@ export const ELEMENT_TOUR_STEP_SOURCE: string[] = [
   ...conceptTourSteps('PortalTour', 'portal-tour-steps.ts'),
 ];
 
-// The Forms tour's steps, as formTourStepTelemetryType makes them (apps/live form-tour-steps.ts,
-// docs/specs/030-forms/forms.md "The Forms tour"). Its steps are top-level consts, so their ids sit two spaces in.
-// The welcome card sends no step view.
-const FORM_TOUR_STEP_SOURCE: string[] = [
-  ...read('live/components/tour/form-tour-steps.ts').matchAll(/^ {2}id: '([a-z-]+)',/gm),
-]
-  .map((m) => m[1]!)
-  .filter((id) => id !== 'welcome')
-  .map(
-    (id) =>
-      `FormTourStep${id
-        .split('-')
-        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-        .join('')}`,
-  );
-
 // The Pages tour's steps, as pagesTourStepTelemetryType makes them (apps/live PagesTourHost.tsx,
 // docs/specs/007-editor/pages-tour.md): each page kind's track names its kind before the step. The welcome card
 // sends no step view.
@@ -274,32 +208,6 @@ const PAGES_TOUR_STEP_SOURCE: string[] = (
     .map((id) => `PagesTourStep${camel(`${kind}-${id}`)}`),
 );
 
-// Plan items name their type (titleCaseType of an item type id); set-up changes name the part.
-const PLAN_ITEM_TYPES = ['Task', 'Story', 'Bug', 'Epic', 'Note', 'Idea', 'Action', 'Risk'];
-const PLAN_TYPE_WHY = "titleCaseType(type): an item type's id, or a later type an agent made";
-const PLAN_SETUP_PARTS = [
-  'Title',
-  'BoardSetUp',
-  'ColumnAdded',
-  'ColumnAddedExisting',
-  'ColumnRenamed',
-  'ColumnReordered',
-  'ColumnRemoved',
-  'ColumnColour',
-  'WipLimit',
-  'ColumnWidth',
-  'DoneColumn',
-  'Swimlanes',
-  'Scope',
-  'CardFields',
-  'CardSize',
-  'PlanCardSize',
-  'AddTypes',
-  'Widgets',
-  'Voting',
-  'VoteBudget',
-  'HideWriting',
-];
 const SLUGS = ['your-first-diagram', 'tips-format-painter', 'connect-ai-mcp'];
 const SLUG_WHY = "a help article's telemetry id, one per registered article";
 const THEMES = ['Default', 'Plum', 'Custom'];
@@ -425,90 +333,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   // A delete toast's Undo (lib/document-delete-undo.ts DeletedTrash, the same three).
   'apps/live/lib/document-delete-undo.ts Trash·Restored': { values: TRASH_TYPES },
   'apps/live/app/explorer/sidebar/sidebar-telemetry.ts UI·Selected': { values: SIDEBAR_ROWS },
-  // Plan mode (docs/specs/026-plan/plan-mode.md "Telemetry"): an item type, or a set-up part.
-  'apps/live/hooks/plan/usePlanSlice.ts Plan·Added': {
-    values: PLAN_ITEM_TYPES,
-    open: PLAN_TYPE_WHY,
-  },
-  'apps/live/hooks/plan/usePlanSlice.ts Plan·Deleted': {
-    values: PLAN_ITEM_TYPES,
-    open: PLAN_TYPE_WHY,
-  },
-  'apps/live/components/plan/track-board-setup.ts Plan·Changed': { values: PLAN_SETUP_PARTS },
-  // A Dashboard tab's layout change names its kind (usePlanTabActions.ts DashboardChange).
-  'apps/live/hooks/plan/usePlanTabActions.ts Plan·Changed': {
-    values: [
-      'DashboardRow',
-      'DashboardSlot',
-      'DashboardContent',
-      'DashboardLook',
-      'DashboardCardStyle',
-    ],
-  },
-  // A board or a view maximised from its header, or restored (maximised-plan.ts MaximisedKind).
-  'apps/live/hooks/plan/maximised-plan.ts Plan·Toggled': {
-    values: [
-      'BoardMaximised',
-      'ViewMaximised',
-      'SheetMaximised',
-      'BoardRestored',
-      'ViewRestored',
-      'SheetRestored',
-    ],
-  },
-  // A form started names its starter, a question added its type (docs/specs/030-forms/forms.md "Telemetry").
-  'apps/live/hooks/forms/useFormActions.ts Form·Created': {
-    values: FORM_STARTERS.map((s) => s.telemetry),
-  },
-  'apps/live/components/forms/builder/FormAddBar.tsx Form·Added': {
-    values: Object.values(QUESTION_TYPE_TELEMETRY),
-  },
-  // Not Taking Responses pressed names its reason (apps/live/components/forms/form-not-taking.ts FORM_NOT_TAKING).
-  'apps/live/components/forms/FormNotTakingWarning.tsx Form·Opened': {
-    values: [
-      'NotTakingSuspended',
-      'NotTakingPaused',
-      'NotTakingSwitchedOff',
-      'NotTakingClosesAt',
-      'NotTakingLimit',
-      'NotTakingFull',
-    ],
-  },
-  // A Sheet change names its kind (api-schema SHEET_CHANGE_KINDS); a formula's first use of a function, its name.
-  'apps/live/components/sheets/sheet-controller.tsx Sheet·Changed': {
-    values: [...SHEET_CHANGE_KINDS],
-  },
-  // A Sheet set up from Setup Sheet names how it started (SheetSetup.tsx TELEMETRY).
-  'apps/live/components/sheets/SheetSetup.tsx Sheet·Created': {
-    values: [
-      'Blank',
-      'Budget',
-      'Tracker',
-      'Timesheet',
-      'Contacts',
-      'Invoice',
-      'ExpenseReport',
-      'SalesPipeline',
-      'Inventory',
-      'ThreatRegister',
-      'DriverModel',
-      'ValueStream',
-      'GuestList',
-      'GradeBook',
-      'HabitTracker',
-      'LoanCalculator',
-      'Cards',
-      'Csv',
-    ],
-  },
-  'apps/live/components/sheets/useSheetActions.ts Sheet·Used': {
-    values: ['SUM', 'AVERAGE', 'IF', 'VLOOKUP', 'CARDCOUNT'],
-    open: "a function's name, from the Sheet's closed function list (packages/sheets FUNCTION_NAMES)",
-  },
-  // An item opened: `Item` from a board or a list, or how the item panel moved to it (item-trail.ts ItemOpenVia).
-  'apps/live/hooks/plan/usePlanSlice.ts Plan·Opened': {
-    values: ['Item', 'Parent', 'ChildCard', 'Breadcrumb'],
-  },
   // Default folders (docs/specs/013-workspace/default-folders.md "Telemetry"): one value per key.
   'apps/live/lib/placement-defaults/placement-defaults-store.ts Folder·Changed': {
     values: DEFAULT_FOLDER_TYPES,
@@ -581,11 +405,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: API_ERRORS,
     open: API_ERROR_WHY,
   },
-  'apps/live/components/tour/PlanTourHost.tsx UI·View': { values: PLAN_TOUR_STEP_SOURCE },
-  'apps/live/components/tour/WorkshopTourHost.tsx UI·View': {
-    values: WORKSHOP_TOUR_STEP_SOURCE,
-  },
-  'apps/live/components/tour/FormTourHost.tsx UI·View': { values: FORM_TOUR_STEP_SOURCE },
   'apps/live/components/tour/ElementTourHost.tsx UI·View': { values: ELEMENT_TOUR_STEP_SOURCE },
   'apps/live/components/tour/ElementTourHost.tsx UI·Started': { values: ELEMENT_TOUR_TOKENS },
   'apps/live/components/tour/ElementTourHost.tsx UI·Ended': {
@@ -600,7 +419,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/live/components/tour/PagesTourHost.tsx UI·View': {
     values: PAGES_TOUR_STEP_SOURCE,
   },
-  'apps/live/components/tour/TourHost.tsx UI·View': { values: TOUR_STEP_SOURCE },
   'apps/live/hooks/canvas/useDebouncedCanvasTelemetry.ts Canvas·Changed': {
     values: Object.keys(CANVAS_CONTROLS),
   },

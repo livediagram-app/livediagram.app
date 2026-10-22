@@ -1,4 +1,4 @@
-// Pages mode draws only on its pages (docs/specs/007-editor/editor-modes.md "The pages"): a
+// Pages mode draws only on its pages (docs/specs/007-editor/pages-mode.md "The pages"): a
 // draw, tap-to-place or double-click-to-add that starts off every page is swallowed. Elements
 // already on the canvas move freely; only making something new is confined to the pages.
 import type { RefObject } from 'react';

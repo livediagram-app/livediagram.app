@@ -20,7 +20,7 @@ describe('sortFindings', () => {
       raw('box-overlap', ['q', 'r'], { x: 0, y: 0 }),
       raw('box-overlap', ['q', 'p'], { x: 0, y: 0 }),
       raw('box-overlap', ['q', 'p'], { x: 0, y: 0 }),
-      raw('aspect-extreme', [], null),
+      raw('flow-backwards', [], null),
     ]);
     expect(sorted.map((f) => `${f.code} ${f.refs.join(',')}`)).toEqual([
       'box-overlap q,p',
@@ -30,7 +30,7 @@ describe('sortFindings', () => {
       'node-isolated a',
       'node-isolated b',
       'duplicate-label z',
-      'aspect-extreme ',
+      'flow-backwards ',
     ]);
     expect(sorted[0]).toEqual({
       code: 'box-overlap',

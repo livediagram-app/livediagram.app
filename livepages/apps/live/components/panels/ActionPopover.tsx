@@ -34,10 +34,8 @@ type ActionPopoverProps = {
   action: ElementAction;
   onComplete: () => void;
   onReopen: () => void;
-  // Won't Do (docs/specs/026-plan/linked-boards.md "On the canvas"): closes it without it being done.
+  // Won't Do (docs/specs/012-collaboration/assigned-actions.md): closes it without it being done.
   onWontDo?: () => void;
-  // Present when the document has an Actions board: opens it on this action's card ("Where it went").
-  onOpenBoard?: () => void;
   onEdit: () => void;
   onDelete: () => void;
   onClose: () => void;
@@ -56,7 +54,6 @@ export function ActionPopover({
   onComplete,
   onReopen,
   onWontDo,
-  onOpenBoard,
   onEdit,
   onDelete,
   onClose,
@@ -168,16 +165,6 @@ export function ActionPopover({
               </span>
             </span>
           </div>
-          {onOpenBoard ? (
-            <button
-              type="button"
-              onClick={onOpenBoard}
-              className="inline-flex cursor-pointer items-center gap-1.5 self-start rounded-md px-1.5 py-1 text-[11px] font-medium text-brand-700 transition hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-500/10"
-            >
-              <BoardIcon />
-              View on Board
-            </button>
-          ) : null}
         </div>
 
         {!readOnly ? (
@@ -289,16 +276,6 @@ function WontDoIcon() {
     <Glyph size={11} units={16}>
       <circle cx="8" cy="8" r="5.5" />
       <path d="M4.2 11.8 11.8 4.2" />
-    </Glyph>
-  );
-}
-
-// Three columns: the Actions board.
-function BoardIcon() {
-  return (
-    <Glyph size={11} units={16}>
-      <rect x="2" y="2.5" width="12" height="11" rx="2" />
-      <path d="M6 2.5v11M10 2.5v11" />
     </Glyph>
   );
 }

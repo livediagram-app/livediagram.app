@@ -3,7 +3,6 @@
 import { describe, expect, it } from 'vitest';
 import { PALETTE_CATEGORIES } from './palette-categories';
 import { tilesForCategory } from './palette-tile-defs';
-import { paletteCategoriesFor } from './palette-layouts';
 import {
   STRIP_TILE_LIMIT,
   desktopStripTileLimit,
@@ -14,8 +13,10 @@ import {
 } from './toolbar-strip-tiles';
 
 const NONE = { hasImage: true };
-// Diagram mode's Popular, as its palette layout fills it.
-const diagramPopular = paletteCategoriesFor('diagram').find((c) => c.id === 'popular')!.tiles!;
+// The first Shapes, divided after the diamond (the third tile) alone.
+const dividedShapes = tilesForCategory('shapes')
+  .slice(0, 8)
+  .map(({ dividerAfter: _, ...t }, i) => (i === 2 ? { ...t, dividerAfter: true as const } : t));
 
 describe('stripTilesFor', () => {
   it('never shows more than the limit', () => {
@@ -67,7 +68,7 @@ describe('stripTilesFor', () => {
   it.each([
     ['shapes', ['shapes:diamond', 'shapes:stadium']],
     ['write', ['tools:text']],
-    ['draw', ['tools:highlighter', 'tools:polygon']],
+    ['draw', ['tools:polygon']],
     ['devices', ['devices:laptop']],
     ['media', ['media:tab-window', 'media:embed-website']],
     ['data', ['data:legend']],
@@ -92,9 +93,9 @@ describe('stripTilesFor', () => {
   });
 
   it('spends part-tile slack on a divider rather than a whole tile', () => {
-    // Diagram's Popular divides after the diamond (the third tile). With room
-    // for 4.26 tiles, four tiles and that divider (4.2) fit.
-    const popular = { ...NONE, tiles: diagramPopular };
+    // Divided after the diamond (the third tile). With room for 4.26 tiles,
+    // four tiles and that divider (4.2) fit.
+    const popular = { ...NONE, tiles: dividedShapes };
     const roomy = stripTilesFor('popular', { ...popular, limit: 4.26 });
     expect(roomy.tiles).toHaveLength(4);
     expect([...roomy.dividersAfter]).toEqual(['shapes:diamond']);

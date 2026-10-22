@@ -19,7 +19,6 @@ import {
   type Tab,
   tabWireframeFrameTheme,
 } from '@livepages/document';
-import type { Item, ItemTypeDef } from '@livepages/items';
 import { pageRulingOf, pageWritingBars } from '@/lib/article/article-export';
 import { articleOpsToSvg } from '@/lib/article/article-draw';
 import { CANVAS_PAPER } from '@/lib/page-paint';
@@ -32,8 +31,6 @@ export type SlideThumb = { markup: string; viewBox: string };
 export type SlideThumbOptions = {
   // Whether the icon catalogues have landed: until then icons draw as nothing.
   iconsLoaded: boolean;
-  items?: ReadonlyMap<string, Item>;
-  itemTypes?: readonly ItemTypeDef[];
   // The tab's arrow labels, laid out once for many slides of one tab; laid out here when absent.
   labels?: ReturnType<typeof arrowLabelPass>;
   // The canvas's surface: a page with no fill is drawn on the paper as the canvas shows it (slate
@@ -53,7 +50,6 @@ export function slideThumbFor(slide: Slide, tab: Tab, opts: SlideThumbOptions): 
   const art = opts.iconsLoaded
     ? { resolveIconArt: resolveIconArtLoaded, resolveStickerArt: resolveStickerArtLoaded }
     : {};
-  const { items, itemTypes } = opts;
   const elements = resolveSlide(slide, tab);
   // A page slide is its page: framed to it, painted on its background.
   const bounds = slideFrame(slide, tab);
@@ -97,8 +93,6 @@ export function slideThumbFor(slide: Slide, tab: Tab, opts: SlideThumbOptions): 
           surface,
           chartPalette,
           chartGrounds,
-          ...(items ? { items } : {}),
-          ...(itemTypes ? { itemTypes } : {}),
         }),
       );
     }

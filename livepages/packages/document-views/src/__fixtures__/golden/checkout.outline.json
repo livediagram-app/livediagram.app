@@ -20,7 +20,13 @@
       "open": 1,
       "total": 2
     },
-    "rev": 41
+    "rev": 41,
+    "pages": {
+      "pages": 1,
+      "kinds": {
+        "infographic": 1
+      }
+    }
   },
   "nodes": [
     {

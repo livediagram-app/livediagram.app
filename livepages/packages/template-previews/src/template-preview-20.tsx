@@ -2,7 +2,7 @@ import type { ReactElement } from 'react';
 import type { TemplateKind } from '@livepages/templates';
 import { pv } from './motion';
 
-// Group 20: the blanks of a page kind (docs/specs/007-editor/templates-by-mode.md "Blanks of a page kind"): Blank
+// Group 20: the blanks of a page kind (docs/specs/007-editor/start-diagramming.md "Recommended and groups"): Blank
 // Slide Deck, Blank Article, Blank Infographic and Blank Logo. Each draws its one empty page in its own proportions
 // (a 16:9 slide, an A4 page, the square artboard) with the dashed edge, faint guides and sky "+" of Blank
 // Illustration's page, so the Pages blanks read as a set. Hover story: the guides light up, what the page is for.

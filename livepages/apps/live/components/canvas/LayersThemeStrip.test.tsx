@@ -1,8 +1,7 @@
 // @vitest-environment jsdom
 
 // docs/specs/007-editor/live-app.md: Layers and the Theme & Canvas brush share one strip in every
-// mode, and a session without one of the two keeps the other. Diagram mode's Tidy Up leads it
-// (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button").
+// mode, and a session without one of the two keeps the other.
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -31,30 +30,5 @@ describe('LayersThemeStrip', () => {
     cleanup();
     const { container } = render(<LayersThemeStrip />);
     expect(container.innerHTML).toBe('');
-  });
-
-  it('puts Tidy Up first in the strip, left of Layers, and toggles its popover', () => {
-    const onTidy = vi.fn();
-    render(
-      <LayersThemeStrip
-        tidyUp={{ open: false, onToggle: onTidy }}
-        layers={{ open: false, onToggle: () => {} }}
-        onOpenTheme={() => {}}
-      />,
-    );
-    const strip = screen.getByRole('button', { name: 'Tidy Up' }).closest('[data-dock-button]')!;
-    const names = [...strip.querySelectorAll('button')].map((b) => b.getAttribute('aria-label'));
-    expect(names).toEqual(['Tidy Up', 'Open Layers', 'Theme and canvas']);
-    const tidy = screen.getByRole('button', { name: 'Tidy Up' });
-    expect(tidy.getAttribute('aria-expanded')).toBe('false');
-    fireEvent.click(tidy);
-    expect(onTidy).toHaveBeenCalledWith(tidy);
-  });
-
-  it('shows Tidy Up pressed while its popover is open', () => {
-    render(<LayersThemeStrip tidyUp={{ open: true, onToggle: () => {} }} />);
-    expect(screen.getByRole('button', { name: 'Tidy Up' }).getAttribute('aria-expanded')).toBe(
-      'true',
-    );
   });
 });

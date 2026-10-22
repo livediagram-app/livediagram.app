@@ -22,7 +22,7 @@ type SegmentProps = {
   onTogglePopover: (button: HTMLElement) => void;
   // The button itself, for a caller that opens its popover from elsewhere.
   buttonRef?: React.Ref<HTMLButtonElement>;
-  // A guided tour's anchor (docs/specs/026-plan/plan-tour.md).
+  // A guided tour's anchor.
   dataTourId?: string;
   // A segment after the first in a strip: a hairline parts it from the one before.
   divided?: boolean;

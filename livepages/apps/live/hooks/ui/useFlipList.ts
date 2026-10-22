@@ -1,6 +1,5 @@
-// FLIP reordering for a list (the form builder's questions, docs/specs/030-forms/forms.md "Building a form"): when
-// the order changes, each row slides from where it was to where it now is. A row new to the list can be told
-// (`onEnter`), once. Reduced motion moves nothing.
+// FLIP reordering for a list (the form builder's questions): when the order changes, each row slides from where it
+// was to where it now is. A row new to the list can be told (`onEnter`), once. Reduced motion moves nothing.
 //
 // Rows are measured with `measure`: by default `offsetTop`, layout units untouched by a transform on an ancestor, so
 // the delta is in the units the translate is applied in. A list whose rows have different offset parents (questions

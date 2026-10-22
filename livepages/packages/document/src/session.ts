@@ -192,11 +192,6 @@ const NON_VOTABLE_SHAPES = new Set([
   'comment-pin',
   // An action panel (docs/specs/012-collaboration/action-panel.md) is a task, not a candidate.
   'action-card',
-  // A Plan board or view is where the votes go, not a candidate: its cards take the dots
-  // (docs/specs/012-collaboration/session-tools.md "Voting on Plan cards").
-  'plan-board',
-  'plan-view',
-  'plan-sheet',
   // Readouts (docs/specs/012-collaboration/session-tools.md "Votable targets"): a stat row, a chart, a progress
   // bar or ring, a legend or key shows a number or a key to one; it is what a board says, not an idea to rank.
   'stat-row',
@@ -212,20 +207,8 @@ const NON_VOTABLE_SHAPES = new Set([
   'checklist',
 ]);
 
-// The key a Plan card's dots go under in `votes`: one per card, however many boards or card elements show it.
-const ITEM_VOTE_PREFIX = 'item:';
-export function itemVoteKey(itemId: string): string {
-  return `${ITEM_VOTE_PREFIX}${itemId}`;
-}
-// The card a vote key names, or null for an element's key.
-export function itemIdOfVoteKey(key: string): string | null {
-  return key.startsWith(ITEM_VOTE_PREFIX) ? key.slice(ITEM_VOTE_PREFIX.length) : null;
-}
-
-// The key an element's dots go under: a Plan card element votes on its card, any other element on itself.
+// The key an element's dots go under: the element itself.
 export function voteKeyOf(element: Element): string {
-  if (element.type === 'shape' && element.shape === 'plan-card' && element.planCard?.itemId)
-    return itemVoteKey(element.planCard.itemId);
   return element.id;
 }
 
@@ -257,21 +240,6 @@ export function isVotableInVote(
   const scope = vote?.voteLayerId;
   if (!scope) return true;
   return resolveLayerId(element.layerId, tabLayers(layers)) === scope;
-}
-
-// Can a card on this board take a dot in THIS vote (docs/specs/012-collaboration/session-tools.md "Voting on Plan
-// cards")? Not while it is face down for this person (hide writing), and, under a layer-scoped vote, only when
-// its board sits on that layer.
-export function isCardVotableInVote(
-  board: Element,
-  vote: TabVote | null | undefined,
-  layers: Layer[] | undefined,
-  faceDown: boolean,
-): boolean {
-  if (faceDown || !vote) return false;
-  const scope = vote.voteLayerId;
-  if (!scope) return true;
-  return resolveLayerId(board.layerId, tabLayers(layers)) === scope;
 }
 
 // Apply ONE dot to a vote: placed (`delta: 1`) or taken back (`delta: -1`).
@@ -383,6 +351,5 @@ export function voteResultsOf(
     seen.add(key);
   };
   for (const el of elements) if (isVotable(el)) take(voteKeyOf(el));
-  for (const key of Object.keys(vote.votes)) if (itemIdOfVoteKey(key)) take(key);
   return out.sort((a, b) => b.votes - a.votes);
 }

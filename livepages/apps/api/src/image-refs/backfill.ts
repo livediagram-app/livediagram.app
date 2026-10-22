@@ -1,4 +1,4 @@
-// The one-off indexing of tabs saved before migration 0050
+// The indexing of tabs saved while the reference index was not kept
 // (docs/specs/009-elements/images.md, "Reference index", Backfill). Tabs
 // saved since index themselves in their own batch; this reaches the rest.
 //

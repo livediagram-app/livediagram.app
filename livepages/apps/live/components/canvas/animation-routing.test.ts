@@ -11,7 +11,6 @@ describe('drawsShapeSvgOverlay', () => {
       'square',
       'circle',
       'page',
-      'plan-board',
       'timeline-rail',
       'code-block',
       'sticker',

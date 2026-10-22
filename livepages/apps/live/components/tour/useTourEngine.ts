@@ -7,9 +7,8 @@ import { findTour, waitForSelector } from './tour-dom';
 import { revealInScrollers } from './tour-reveal';
 import { hasAnchor, type TourStepOf } from './tour-step';
 
-// The step runner every guided tour shares (docs/specs/007-editor/editor-tour.md "Mechanics",
-// docs/specs/026-plan/blueprints/plan-tour.md "Engine"): the Diagram, Plan and Workshop tours each own
-// their offer, their steps and what ending means, and hand this the rest. Each step runs prepare
+// The step runner every guided tour shares (docs/specs/007-editor/pages-tour.md "Mechanics"): the Pages tour, Show Me and the
+// element tours each own their offer, their steps and what ending means, and hand this the rest. Each step runs prepare
 // (opening the real panel / dropdown / menu it explains), waits for its target node, then reports a
 // rect for the dimming highlight ring, scrolling the target into view first when it sits below a panel's fold
 // (tour-reveal.ts). A watcher re-measures the target every 150ms so the highlight
@@ -17,7 +16,7 @@ import { hasAnchor, type TourStepOf } from './tour-step';
 // closing a menu). The last rect is kept while the next step prepares, so the ring GLIDES between
 // targets (transition-all) instead of blinking out and back.
 //
-// Dialogs come first (docs/specs/007-editor/editor-tour.md "Dialogs come first"): the engine keeps a baseline of
+// Dialogs come first (docs/specs/007-editor/pages-tour.md "Dialogs come first"): the engine keeps a baseline of
 // the modal dialogs that are the tour's own (open when it started, or holding a step's target) and steps aside
 // (`yielded`: the stage draws nothing, tracking pauses) while more are open than that, except while a step is still
 // waiting for its target, which may be the tour opening its own dialog.

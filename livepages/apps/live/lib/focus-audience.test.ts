@@ -147,9 +147,8 @@ describe('focusPageAt', () => {
     expect(focusPageAt(tab(), { x: p1!.rect.x + p1!.rect.width + 1, y: 0 })).toBeNull();
   });
 
-  it('is null on a tab that is not showing pages', () => {
+  it('is null without a tab', () => {
     const [p1] = rects();
-    expect(focusPageAt(tab({ opensIn: 'diagram' }), middleOf(p1!.rect))).toBeNull();
     expect(focusPageAt(undefined, middleOf(p1!.rect))).toBeNull();
   });
 });

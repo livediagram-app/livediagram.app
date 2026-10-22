@@ -19,7 +19,6 @@ import {
   sendManyToBack,
   isBoxed,
   withMindBranches,
-  withSheetCharts,
   type Element,
   type Tab,
 } from '@livepages/document';
@@ -30,7 +29,6 @@ import { track, titleCaseType } from '@/lib/telemetry';
 import { trackDuplicated } from '@/lib/element-telemetry';
 import { announce } from '@/lib/announcer';
 import { describeMany, describeOne } from '@/lib/element-names';
-import type { SheetDeleteGuard } from '@/hooks/sheets/useSheetDeleteGuard';
 
 type EditorSelectionActionsDeps = {
   // The active selection resolved to ids (the single selection, or the
@@ -58,13 +56,7 @@ type EditorSelectionActionsDeps = {
   // Elements on a hidden OR locked layer (docs/specs/006-document/layers.md): a marquee never
   // selects them.
   layerInertIds: Set<string>;
-  // Asks before a delete takes Sheets' sheets with it (docs/specs/029-sheets/sheet-store.md "Deleting a sheet").
-  // Cut never asks: its sheets stay for the paste.
-  sheetDeleteGuard?: SheetDeleteGuard;
 };
-
-// How a delete was asked for: a Cut keeps the sheets of its Sheets, so it never asks.
-type DeleteOpts = { cut?: boolean };
 
 export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
   const {
@@ -79,24 +71,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     lockedByOther,
     layerLockedIds,
     layerInertIds,
-    sheetDeleteGuard,
   } = deps;
-
-  // Run a delete of `targetIds` now, or once the person confirms the sheets it takes (then deleting those after the
-  // elements, so the api sees the element go and the sheet together). `opts` may be a click event: only a literal
-  // `cut: true` counts.
-  const guarded = (targetIds: Set<string>, opts: DeleteOpts | undefined, run: () => void) => {
-    const asked = opts?.cut === true ? null : (sheetDeleteGuard?.(targetIds) ?? null);
-    if (!asked) {
-      run();
-      return;
-    }
-    void asked.then((answer) => {
-      if (!answer) return;
-      run();
-      answer.release();
-    });
-  };
 
   // The duplicate family (single + marquee cluster with arrow
   // re-pinning) — see useElementDuplication (mounted here so the
@@ -109,7 +84,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     setMultiSelectedIds,
   });
 
-  const deleteSelected = (opts?: DeleteOpts) => {
+  const deleteSelected = () => {
     // A locked tab protects everything on it — nothing is deletable.
     if (activeTab.locked === true) return;
     const ids = currentSelectionIds();
@@ -117,16 +92,11 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     // Locked elements can't be deleted: drop them from the delete set so
     // only the unlocked part of the selection (and arrows pinned to it)
     // goes. If the whole selection is locked, the delete is a no-op.
-    // A Sheet takes the charts anchored in it (docs/specs/029-sheets/sheet.md "Charts"), in the same undo step; a
-    // floating chart over it stays on the canvas. A mind node takes its branch (docs/specs/009-elements/mind-node.md
-    // "Deleting"); a locked node in it stays, as a root.
-    const targetIds = deletableIds(
-      withSheetCharts(activeTab.elements, withMindBranches(activeTab.elements, ids, isProtected), {
-        anchoredOnly: true,
-      }),
-    );
+    // A mind node takes its branch (docs/specs/009-elements/mind-node.md "Deleting"); a locked node in it stays, as a
+    // root.
+    const targetIds = deletableIds(withMindBranches(activeTab.elements, ids, isProtected));
     if (targetIds.size === 0) return;
-    guarded(targetIds, opts, () => removeSelected(targetIds));
+    removeSelected(targetIds);
   };
 
   const removeSelected = (targetIds: Set<string>) => {
@@ -213,7 +183,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
   // Multi-select delete: removes every marquee-selected element plus any
   // arrows that reference one of them. Falls back to single-element delete
   // when there's no active multi-selection.
-  const deleteMultiSelected = (opts?: DeleteOpts) => {
+  const deleteMultiSelected = () => {
     const { multiSelectedIds } = readSelection();
     if (multiSelectedIds.size === 0) return;
     if (activeTab.locked === true) return;
@@ -223,7 +193,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
       withMindBranches(activeTab.elements, multiSelectedIds, isProtected),
     );
     if (targetIds.size === 0) return;
-    guarded(targetIds, opts, () => removeMultiSelected(targetIds));
+    removeMultiSelected(targetIds);
   };
 
   const removeMultiSelected = (targetIds: Set<string>) => {
@@ -282,13 +252,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
       // Clone only, no connector arrow. Most duplicates don't need an arrow,
       // so adding one was usually noise to delete; draw one with the + menu's
       // Arrow action on the occasions you do want it.
-      // A Sheet's copy takes the charts it draws (docs/specs/029-sheets/sheet.md "Charts").
-      const { newElements, idMap } = duplicateElements(
-        activeTab.elements,
-        withSheetCharts(activeTab.elements, ids),
-        dx,
-        dy,
-      );
+      const { newElements, idMap } = duplicateElements(activeTab.elements, ids, dx, dy);
       const sourceCopyId = idMap.get(source.id);
       if (!sourceCopyId) return;
       commit((els) => [...els, ...newElements]);

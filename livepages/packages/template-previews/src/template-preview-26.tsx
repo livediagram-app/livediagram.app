@@ -2,7 +2,7 @@ import type { ReactElement, ReactNode } from 'react';
 import type { TemplateKind } from '@livepages/templates';
 import { pv } from './motion';
 
-// Group 26: the wireframes on wireframe pages (docs/specs/007-editor/templates-by-mode.md "Wireframe templates"):
+// Group 26: the wireframes on wireframe pages (docs/specs/007-editor/wireframe-pages.md "Templates"):
 // the five blank wireframes, each its device with an empty screen and the "+" that starts it, and the five flows,
 // each a row of its device holding screens. Hover story: the screens' primary buttons light up in turn.
 // Static SVG preview tiles, one branch per TemplateKind; TemplatePreview chains the groups with ??.

@@ -1,5 +1,3 @@
-import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { sqliteD1 } from '../test-sqlite-d1';
 import {
@@ -183,46 +181,5 @@ describe('rejected rows are records, not memberships', () => {
     expect(rowOf(db, member.id)).toBeUndefined();
     const joined = await getMembership(db.env, 't', 'user-a');
     expect(joined).toMatchObject({ status: 'joined', email: 'a@x.test' });
-  });
-});
-
-describe('migration 0095', () => {
-  // docs/specs/013-workspace/teams.md "Reminders and expiry": an invite already pending starts its clock at the
-  // deploy, so it gets the full series and is not rejected on the first run, however old it is.
-  it('starts the clock of an invite already pending at the deploy, and leaves other rows alone', () => {
-    const db = sqliteD1({}, { before: '0095' });
-    db.sql
-      .prepare(`INSERT INTO teams (id, name, created_at, updated_at) VALUES ('t', 'T', 0, 0)`)
-      .run();
-    const fortyDaysAgo = Date.now() - 40 * 24 * 60 * 60 * 1000;
-    db.sql
-      .prepare(
-        `INSERT INTO team_members (id, team_id, user_id, email, role, status, created_at, updated_at)
-         VALUES ('old', 't', NULL, 'a@x.test', 'member', 'invited', ?, 0),
-                ('in', 't', 'u', 'u@x.test', 'admin', 'joined', 0, 0)`,
-      )
-      .run(fortyDaysAgo);
-    const before = Date.now();
-    db.sql.exec(
-      readFileSync(
-        fileURLToPath(
-          new URL('../../migrations/0095_team_invite_decline_and_reminders.sql', import.meta.url)
-            .href,
-        ),
-        'utf8',
-      ),
-    );
-    const old = rowOf(db, 'old');
-    // strftime('%s') has whole-second precision.
-    expect(Number(old.clock_started_at)).toBeGreaterThanOrEqual(before - 1000);
-    expect(Number(old.clock_started_at)).toBeLessThanOrEqual(Date.now());
-    expect(old).toMatchObject({
-      created_at: fortyDaysAgo,
-      reminder1_sent_at: null,
-      reminder2_sent_at: null,
-      reminder3_sent_at: null,
-      reminder_attempts: 0,
-    });
-    expect(rowOf(db, 'in').clock_started_at).toBeNull();
   });
 });

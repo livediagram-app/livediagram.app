@@ -14,30 +14,28 @@ const scoped: LensContext = { view: 'scoped', teams: [] };
 
 describe('splitField', () => {
   it('puts token words in the pills and every other word in the draft', () => {
-    expect(splitField('template:kanban plan', aggregate, null)).toEqual({
-      tokens: 'template:kanban',
+    expect(splitField('people:others plan', aggregate, null)).toEqual({
+      tokens: 'people:others',
       draft: 'plan',
       draftCaret: 4,
     });
   });
 
   it('reads tokens wherever they stand, text first included', () => {
-    expect(splitField('plan template:kanban', aggregate, null).tokens).toBe('template:kanban');
-    expect(splitField('plan template:kanban', aggregate, null).draft).toBe('plan');
+    expect(splitField('plan people:others', aggregate, null).tokens).toBe('people:others');
+    expect(splitField('plan people:others', aggregate, null).draft).toBe('plan');
   });
 
   it('keeps the word under the caret in the draft while it is being typed', () => {
-    expect(splitField('template:kan', aggregate, 12)).toEqual({
+    expect(splitField('people:oth', aggregate, 10)).toEqual({
       tokens: '',
-      draft: 'template:kan',
-      draftCaret: 12,
+      draft: 'people:oth',
+      draftCaret: 10,
     });
   });
 
   it('merges every token of one dimension into one pill, values in their order', () => {
-    expect(splitField('template:kanban template:retrospective', aggregate, null).tokens).toBe(
-      'template:retrospective,kanban',
-    );
+    expect(splitField('people:others people:me', aggregate, null).tokens).toBe('people:me,others');
   });
 
   it('keeps a token that cannot apply here as a pill', () => {
@@ -49,7 +47,7 @@ describe('splitField', () => {
   });
 
   it('maps the caret into the draft past the cut tokens', () => {
-    const parts = splitField('foo template:kanban bar', aggregate, 23);
+    const parts = splitField('foo people:others bar', aggregate, 21);
     expect(parts.draft).toBe('foo bar');
     expect(parts.draftCaret).toBe(7);
   });
@@ -79,20 +77,20 @@ describe('composeField', () => {
 
 describe('writeDraft', () => {
   it('turns a token followed by a space into a pill', () => {
-    expect(writeDraft('', 'template:kanban ', 16, aggregate)).toEqual({
-      input: 'template:kanban ',
-      caret: 16,
+    expect(writeDraft('', 'people:others ', 14, aggregate)).toEqual({
+      input: 'people:others ',
+      caret: 14,
     });
-    expect(splitField('template:kanban ', aggregate, 16)).toEqual({
-      tokens: 'template:kanban',
+    expect(splitField('people:others ', aggregate, 14)).toEqual({
+      tokens: 'people:others',
       draft: '',
       draftCaret: 0,
     });
   });
 
   it('merges a typed token into the pill of its dimension', () => {
-    const next = writeDraft('template:kanban', 'template:retrospective ', 23, aggregate);
-    expect(next.input).toBe('template:retrospective,kanban ');
+    const next = writeDraft('people:others', 'people:me ', 10, aggregate);
+    expect(next.input).toBe('people:me,others ');
   });
 
   it('leaves a word still being typed in the draft', () => {
@@ -114,7 +112,7 @@ describe('settleField', () => {
 
 describe('removePill', () => {
   it('takes every token of the dimension away and keeps the draft', () => {
-    expect(removePill('template:kanban made-by:ai', 'plan', 'template', aggregate)).toBe(
+    expect(removePill('made-by:ai people:others', 'plan', 'people', aggregate)).toBe(
       'made-by:ai plan',
     );
   });
@@ -126,13 +124,13 @@ describe('removePill', () => {
 
 describe('chooseChipValue', () => {
   it('adds a value to its dimension, keeping the words', () => {
-    expect(chooseChipValue('template:kanban plan', 'template', 'retrospective', aggregate)).toBe(
-      'template:retrospective,kanban plan',
+    expect(chooseChipValue('people:others plan', 'people', 'me', aggregate)).toBe(
+      'people:me,others plan',
     );
   });
 
   it('takes a held value away again', () => {
-    expect(chooseChipValue('template:kanban plan', 'template', 'kanban', aggregate)).toBe('plan');
+    expect(chooseChipValue('people:others plan', 'people', 'others', aggregate)).toBe('plan');
   });
 
   it('writes the first token of a dimension before the words', () => {

@@ -24,10 +24,7 @@
     "@livepages/document": "workspace:*",
     "@livepages/document-views": "workspace:*",
     "@livepages/edit-operations": "workspace:*",
-    "@livepages/forms": "workspace:*",
-    "@livepages/items": "workspace:*",
     "@livepages/page-background": "workspace:*",
-    "@livepages/sheets": "workspace:*",
     "@livepages/templates": "workspace:*",
     "zod": "^4.6.7"
   },

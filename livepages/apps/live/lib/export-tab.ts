@@ -9,7 +9,6 @@
 // omitted in the visual ones (PNG, PDF) where they have no natural
 // rendering.
 
-import type { Item, ItemTypeDef } from '@livepages/items';
 import {
   arrowLabelFontStack,
   arrowLabelPass,
@@ -30,9 +29,7 @@ import {
   type Element,
   type LaidOutPage,
   type PageRect,
-  type ResolvePlanArt,
   type ResolveTabWindow,
-  type SheetRenderModel,
   type Tab,
 } from '@livepages/document';
 // Shared SVG render helpers (docs/specs/015-api/mcp-server.md §5): moved into the document package so the
@@ -107,17 +104,6 @@ export type ImageExportOpts = {
   // embedded. The Layouts tab's tiles pass it, as a full-size picture in each 120 px tile was
   // megabytes of markup for nothing seen.
   stillBackground?: boolean;
-  // The document's items, so Plan boards and cards export with their cards
-  // (docs/specs/026-plan/plan-board.md "Both elements everywhere").
-  items?: ReadonlyMap<string, Item>;
-  // And its item types (docs/specs/026-plan/item-types.md), so custom types keep their colour.
-  itemTypes?: readonly ItemTypeDef[];
-  // Each Sheet's window of cells by sheet id (docs/specs/029-sheets/sheet.md "Exports and images"), from the sheet
-  // store (plan-export-sheets.ts). Without it a Sheet draws its frame and headers alone.
-  sheets?: ReadonlyMap<string, SheetRenderModel>;
-  // A plan view's picture (docs/specs/026-plan/plan-tabs.md "Export"), drawn by the editor, which has the charts'
-  // models; without it a plan view draws as its labelled box.
-  resolvePlanArt?: ResolvePlanArt;
   // Each tab window's tab drawn (docs/specs/009-elements/tab-window.md "Exports"), and the typefaces those tabs write
   // in, so their words export in their own faces; without it a window draws its frame named for its tab.
   resolveTabWindow?: ResolveTabWindow;
@@ -397,7 +383,7 @@ export async function renderTabToCanvas(
   const fontCss =
     opts.fontCss ??
     (await embeddedFontFaceCss([
-      ...exportFontIds(els, tab.font, opts.sheets, tab.finish),
+      ...exportFontIds(els, tab.font, tab.finish),
       ...(opts.tabWindowFontIds ?? []),
     ]));
   // The canvas drawers paint through the DOM's own font set, so wait for it
@@ -434,10 +420,6 @@ export async function renderTabToCanvas(
         sketchBackdrop: backdrops.has(el.id),
         surface,
         ...chartInk,
-        items: opts.items,
-        itemTypes: opts.itemTypes,
-        sheets: opts.sheets,
-        resolvePlanArt: opts.resolvePlanArt,
         resolveTabWindow: opts.resolveTabWindow,
       })}</svg>`;
     try {
@@ -682,10 +664,7 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
     ? `<defs><style type="text/css">${opts.fontCss}</style></defs>`
     : svgFontDefs(
         withWritingFonts(
-          [
-            ...exportFontIds(els, tab.font, opts.sheets, tab.finish),
-            ...(opts.tabWindowFontIds ?? []),
-          ],
+          [...exportFontIds(els, tab.font, tab.finish), ...(opts.tabWindowFontIds ?? [])],
           writing ?? (estimated && opts.page ? { fonts: pageWritingFonts(tab, opts.page) } : null),
         ),
       );
@@ -744,10 +723,6 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
                 sketchBackdrop: backdrops.has(el.id),
                 surface,
                 ...chartInk,
-                items: opts.items,
-                itemTypes: opts.itemTypes,
-                sheets: opts.sheets,
-                resolvePlanArt: opts.resolvePlanArt,
                 resolveTabWindow: opts.resolveTabWindow,
               }),
             ),
@@ -799,10 +774,7 @@ export async function exportTabAsSvg(tab: Tab, opts: ImageExportOpts = {}): Prom
     opts.fontCss ??
     (await embeddedFontFaceCss(
       withWritingFonts(
-        [
-          ...exportFontIds(els, tab.font, opts.sheets, tab.finish),
-          ...(opts.tabWindowFontIds ?? []),
-        ],
+        [...exportFontIds(els, tab.font, tab.finish), ...(opts.tabWindowFontIds ?? [])],
         writing,
       ),
     ));
@@ -823,5 +795,5 @@ export async function exportTabAsPng(tab: Tab, opts: ImageExportOpts = {}): Prom
   });
 }
 
-// The download helper lives on its own (the Sheet's CSV uses it without the export code).
+// The download helper lives on its own, so a caller can save a file without the export code.
 export { downloadBlob } from './download-blob';

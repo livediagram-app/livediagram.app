@@ -1,7 +1,7 @@
 // One action on an Action panel (docs/specs/012-collaboration/action-panel.md "The card"): a round check that
 // completes or reopens it, its name (struck through once done), and who it is
 // for. Pressing the rest of the row edits it. The check pops green on done. A Won't Do action
-// (docs/specs/026-plan/linked-boards.md "On the canvas") wears a grey slashed circle that reopens it.
+// wears a grey slashed circle that reopens it.
 
 import { COLLAB_DONE_COLOR as ACTION_DONE, type ElementAction } from '@livepages/document';
 import { GlyphDisc } from '@livepages/ui';

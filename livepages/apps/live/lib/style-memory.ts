@@ -23,8 +23,8 @@ export type StyleMemory = Partial<Record<StyleKindKey, RememberedStyle>>;
 // The fields memory records and applies. The label colour and a preset's
 // binding ride with the colours, so a remembered background never lands under
 // unreadable text and a remembered preset look follows the theme.
-// `penColour` / `penTextColour`: a stock colour stored by name (docs/specs/007-editor/editor-modes.md
-// "One look"), checked against the names when read.
+// `penColour` / `penTextColour`: a stock colour stored by name (docs/specs/008-canvas/canvas-and-palette.md
+// "Colours"), checked against the names when read.
 const SHAPE_MEMORY_FIELDS = {
   strokeColor: 'string',
   penColour: 'string',

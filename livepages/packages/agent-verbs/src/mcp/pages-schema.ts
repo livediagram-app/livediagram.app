@@ -26,12 +26,7 @@ const layoutIds = (kind: Exclude<PageKind, 'article'>) =>
 
 const url = z.string().describe('Link that opens the document in the livepages editor.');
 const documentId = z.string().describe('The document (from find_documents).');
-const tabId = z
-  .string()
-  .optional()
-  .describe(
-    'The tab. Absent: the first tab in Pages mode. Naming a tab in another mode switches it into Pages.',
-  );
+const tabId = z.string().optional().describe('The tab. Absent: the first tab.');
 const pageRef = z
   .union([z.string(), z.number().int().min(1)])
   .describe('A page: its id, its place (1 is the first, as a number or text) or its name.');
@@ -228,7 +223,6 @@ const articleOut = z
 const answerOut = {
   documentId: z.string().describe('The document id.'),
   tabId: z.string().describe('The tab changed.'),
-  switched: z.boolean().describe('Whether the tab was switched into Pages mode.'),
   lines: z.array(z.string()).describe('What was done, one line each.'),
   pages: z.array(pageOut).describe('Every page of the tab as it now is.'),
   articles: z.array(articleOut).describe('Every article of the tab.'),

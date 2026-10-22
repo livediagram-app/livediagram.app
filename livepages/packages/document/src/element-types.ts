@@ -4,10 +4,8 @@
 // public `@livepages/document` surface is unchanged. ElementLink + the enums
 // stay in index.ts and are imported here (type-only, so no runtime cycle).
 import type { Finish } from './finish';
-import type { CardSearchFilter, PlanBoardSetup, PlanViewId, SwimlaneBy } from '@livepages/items';
 import type { TextRun } from './rich-text';
 import type { CommentThread } from './comments';
-import type { CellCommentThreads } from './cell-comments';
 import type { ElementAction } from './element-action';
 import type { BorderStroke, BorderStyle, BorderRadius } from './border-style';
 import type { ElementShadow } from './shadow';
@@ -34,7 +32,6 @@ import type {
   SankeyNodeStyle,
   SankeyValueLabel,
 } from './sankey-model';
-import type { ChartSource, SheetAnchor } from './chart-source';
 import type { PickerSource, SelectionMode, SessionButtonConfig } from './selection-mode';
 import type { IconSize } from './icon-size';
 import type { IconWeight } from './icon-weight';
@@ -173,13 +170,12 @@ export type ShapeElement = {
   finish?: Finish;
   fillColor?: string;
   strokeColor?: string;
-  // A whiteboard marker's named colour (docs/specs/023-draw-mode/draw-mode.md "The colour picker"):
-  // drawn in the version tuned for the viewer's board (penColourHex) when `strokeColor` is unset.
+  // A stock colour by name (docs/specs/008-canvas/canvas-and-palette.md "Colours"):
+  // drawn in the version tuned for the viewer's canvas (penColourHex) when `strokeColor` is unset.
   penColour?: PenColourName;
   textColor?: string;
-  // A whiteboard stock colour for the label's text (docs/specs/023-draw-mode/draw-mode.md
-  // "Imported and pasted content"): drawn in the version tuned for the viewer's board when
-  // `textColor` is unset.
+  // A stock colour for the label's text (docs/specs/008-canvas/canvas-and-palette.md "Colours"):
+  // drawn in the version tuned for the viewer's canvas when `textColor` is unset.
   penTextColour?: PenColourName;
   // Fill for an element's HEADING area, where it has one distinct from its
   // body: a table's header row (docs/specs/008-canvas/canvas-and-palette.md) and a lane's title gutter
@@ -366,12 +362,6 @@ export type ShapeElement = {
   // when they carry no colour of their own. Only meaningful on the chart
   // kinds; absent = the tab theme's palette, as before.
   chartPalette?: ChartPaletteId;
-  // A chart drawn from a sheet range (docs/specs/029-sheets/sheet.md "Charts"): its data is read live from there,
-  // the fields above holding the last read. Only meaningful on the pie, bar and line chart kinds.
-  chartSource?: ChartSource;
-  // Where a chart drawn from a sheet sits in its Sheet (docs/specs/029-sheets/sheet.md "Charts"): the Sheet draws it
-  // over its cells and the canvas does not. Only meaningful with chartSource; absent = it floats over the canvas.
-  sheetAnchor?: SheetAnchor;
   // Code block (docs/specs/009-elements/code-block.md): the snippet text + its highlight language. Only
   // meaningful on the 'code-block' kind; bounded in validate.ts.
   code?: string;
@@ -479,17 +469,6 @@ export type ShapeElement = {
   // Checklist (docs/specs/009-elements/checklist.md): the checkable rows. Only meaningful on the
   // 'checklist' kind; bounded in validate.ts.
   checklistItems?: ChecklistItem[];
-  // Plan board set-up and Plan card reference (docs/specs/026-plan/plan-board.md). Only meaningful on
-  // the 'plan-board' and 'plan-card' kinds; the items they show live in the document's item store.
-  planBoard?: PlanBoardSetup;
-  planCard?: PlanCardRef;
-  // Plan view (docs/specs/026-plan/plan-views.md): which view of the document's cards a 'plan-view' shows.
-  planView?: PlanViewRef;
-  // Sheet (docs/specs/029-sheets/sheet.md): which sheet of the document's sheet store a 'plan-sheet' frames.
-  planSheet?: PlanSheetRef;
-  // A Sheet's cell comment threads (docs/specs/029-sheets/sheet.md "Cell comments"), keyed `rowId:colId`. Only on
-  // a 'plan-sheet'; written by comment deltas, like `commentThread`.
-  cellComments?: CellCommentThreads;
   // Status marker (docs/specs/009-elements/shape-markers.md): a small glyph (traffic-light dot / checkbox) shown
   // just left of the label, or centred when the shape has no label. `markerSize`
   // is a TextSize preset where 'scale' tracks the element's text size (never a px: a marker is a dot).
@@ -584,8 +563,8 @@ export type TextElement = {
   fillColor?: string;
   strokeColor?: string;
   textColor?: string;
-  // A whiteboard stock colour for the text (docs/specs/023-draw-mode/draw-mode.md "Imported and
-  // pasted content"): drawn in the version tuned for the viewer's board when `textColor` is unset.
+  // A stock colour for the text (docs/specs/008-canvas/canvas-and-palette.md "Colours"):
+  // drawn in the version tuned for the viewer's canvas when `textColor` is unset.
   penTextColour?: PenColourName;
   // Quick-swatch binding (docs/specs/008-canvas/quick-style-panel.md): the slot (1-6) the text
   // colour was picked from in the quick style panel's Text colour row, so a
@@ -640,14 +619,13 @@ export type TextElement = {
   padding?: Padding;
   // Per-range label formatting (docs/specs/008-canvas/canvas-and-palette.md); see ShapeElement.richText.
   richText?: TextRun[];
-  // How the box sizes itself (docs/specs/007-editor/editor-modes.md "A text box's sizing"):
-  // 'fit', the width follows the words up to the wrap width and the height hugs the lines (clicked
-  // into place in Draw mode); 'wrap', the width is set and the height hugs the lines (dragged out
-  // or resized in Draw mode). Absent = a fixed box, its text wrapping inside it. Honoured in both
-  // editor modes and for everyone.
+  // How the box sizes itself (docs/specs/006-document/document-structure.md "Data model"):
+  // 'fit', the width follows the words up to the wrap width and the height hugs the lines; 'wrap',
+  // the width is set and the height hugs the lines. Absent = a fixed box, its text wrapping inside
+  // it. Honoured for everyone.
   sizing?: TextSizing;
-  // Multiplier on the label size, set by a Shift resize of a whiteboard text box
-  // (docs/specs/023-draw-mode/draw-mode.md "Text boxes"). Absent = 1.
+  // Multiplier on the label size, set by a Shift resize of a text box
+  // (docs/specs/006-document/document-structure.md "Data model"). Absent = 1.
   textScale?: number;
   // Wordmark type (docs/specs/007-editor/logo-pages.md "Wordmark type"), drawn wherever the text
   // is. Tracking: em added between letters, -0.2 to 1; absent is none.
@@ -840,8 +818,8 @@ export type StickyElement = {
   fillColor?: string;
   strokeColor?: string;
   textColor?: string;
-  // A whiteboard stock colour for the note's text (docs/specs/023-draw-mode/draw-mode.md
-  // "Imported and pasted content"), drawn in its board's version when `textColor` is unset.
+  // A stock colour for the note's text (docs/specs/008-canvas/canvas-and-palette.md "Colours"),
+  // drawn in its canvas's version when `textColor` is unset.
   penTextColour?: PenColourName;
   // Fill for an element's HEADING area, where it has one distinct from its
   // body: a table's header row (docs/specs/008-canvas/canvas-and-palette.md) and a lane's title gutter
@@ -1035,12 +1013,12 @@ export type FreehandElement = {
   // Marker stroke width in px (docs/specs/008-canvas/highlighter.md), chosen from the highlighter
   // banner's strength control at draw time. Absent = the default 14.
   penWidth?: number;
-  // A whiteboard pen stroke's perfect-freehand streamline (docs/specs/023-draw-mode/draw-mode.md
-  // "Pens"; absent: a stroke stored before it was recorded, drawn with none). Its pressures, when
+  // A pen stroke's perfect-freehand streamline (absent: a stroke stored before it was recorded,
+  // drawn with none). Its pressures, when
   // the pen reported them, ride in `packedPoints`. A pen stroke's points are its raw samples.
   streamline?: number;
-  // A whiteboard marker's named colour (docs/specs/023-draw-mode/draw-mode.md "The colour picker"):
-  // drawn in the version tuned for the viewer's board (penColourHex) when `strokeColor` is unset.
+  // A stock colour by name (docs/specs/008-canvas/canvas-and-palette.md "Colours"):
+  // drawn in the version tuned for the viewer's canvas (penColourHex) when `strokeColor` is unset.
   penColour?: PenColourName;
   // Polygon-tool paths (docs/specs/008-canvas/polygon-tool.md): the canvas renderer draws straight
   // M/L segments instead of Catmull-Rom smoothing, so deliberately
@@ -1380,12 +1358,6 @@ const UNTYPED_SHAPES = new Set<string>([
   'reaction-pad',
   'mode-button',
   'estimate',
-  // Plan boards, cards and views draw their own faces from the item store; a caret on one left a
-  // newly placed board stuck in label editing, unable to move until reselected.
-  'plan-board',
-  'plan-card',
-  'plan-view',
-  'plan-sheet',
   // A tab window shows another tab (docs/specs/009-elements/tab-window.md); there is nothing to write on it.
   'tab-window',
 ]);
@@ -1395,78 +1367,3 @@ export function takesTypedLabel(el: { type: string; shape?: string }): boolean {
   if (el.type !== 'shape') return true;
   return !UNTYPED_SHAPES.has(el.shape ?? '');
 }
-
-// What a Plan card points at: one item of the document's item store (docs/specs/026-plan/items.md).
-// `size`: how much of the card shows (docs/specs/026-plan/plan-board.md "The Plan card"), as a board's Card Size;
-// absent is Detailed.
-export type PlanCardRef = { itemId: string; size?: 'minimal' | 'compact' | 'detailed' };
-
-// What a Sheet element frames: one sheet of the document's sheet store (docs/specs/029-sheets/sheet-store.md).
-// `copyOf` marks a copy not yet made (a duplicate, a paste, a duplicated tab): the Sheet makes its sheet from that
-// one when it is first drawn, then drops the mark (docs/specs/029-sheets/sheet.md "Copying a Sheet element").
-// `fillTab`: the Sheet fills its tab (docs/specs/029-sheets/sheet.md "Fill Tab"), as a board can.
-// `start`: a template's Sheet not yet made (docs/specs/029-sheets/sheet-store.md "Template starts"): the template
-// start its sheet is made from, by whatever makes the tabs (or, failing that, the first editor to draw it), which then
-// drops the mark.
-export type PlanSheetRef = { sheetId: string; copyOf?: string; fillTab?: true; start?: string };
-
-// A template start's id (@livepages/sheets TEMPLATE_STARTS): kebab-case words.
-const PLAN_SHEET_START_PATTERN = /^[a-z][a-z-]{0,39}$/;
-
-// A fresh sheet id for a copy (the sheets engine's makeSheetId, without importing it).
-export function newPlanSheetId(): string {
-  return crypto.randomUUID().replace(/-/g, '').slice(0, 16);
-}
-
-// The sheet id pattern (@livepages/sheets SHEET_ID_PATTERN), repeated here so the document package never
-// imports the engine.
-export const PLAN_SHEET_ID_PATTERN = /^[A-Za-z0-9_-]{6,32}$/;
-
-export function isPlanSheetRef(v: unknown): v is PlanSheetRef {
-  if (typeof v !== 'object' || v === null) return false;
-  const {
-    sheetId: id,
-    copyOf,
-    fillTab,
-    start,
-    ...rest
-  } = v as {
-    sheetId?: unknown;
-    copyOf?: unknown;
-    fillTab?: unknown;
-    start?: unknown;
-  };
-  // An empty id is a Sheet element not yet given its sheet (the factory's), as a Plan card's empty item id.
-  const idOk = typeof id === 'string' && (id === '' || PLAN_SHEET_ID_PATTERN.test(id));
-  const copyOk =
-    copyOf === undefined || (typeof copyOf === 'string' && PLAN_SHEET_ID_PATTERN.test(copyOf));
-  return (
-    idOk &&
-    copyOk &&
-    (fillTab === undefined || fillTab === true) &&
-    (start === undefined || (typeof start === 'string' && PLAN_SHEET_START_PATTERN.test(start))) &&
-    Object.keys(rest).length === 0
-  );
-}
-
-// What a plan view shows (docs/specs/026-plan/plan-views.md): a metric or a visualisation.
-// The Gantt chart adds its swimlanes and its names column width (px), validated by isPlanViewSettings.
-export type PlanViewRef = {
-  view: PlanViewId;
-  // The card types the view shows (card type ids, docs/specs/026-plan/plan-views.md "Card types"); absent is every
-  // type it can show (for a Gantt chart, every type with a Start and a Due field).
-  types?: string[];
-  swimlaneBy?: SwimlaneBy;
-  swimlaneField?: string;
-  namesWidth?: number;
-  // The Gantt chart's own row order (card ids); absent is date order (docs/specs/026-plan/plan-views.md "Row order").
-  rowOrder?: string[];
-  // Card Search's filters, each a grouping (and field) and the lane a card must fall in (docs/specs/026-plan/plan-views.md
-  // "Card Search"); absent is every card.
-  filters?: CardSearchFilter[];
-  // The statuses a chart counts (status ids; docs/specs/026-plan/plan-views.md "Statuses"); absent is every card.
-  statuses?: string[];
-  // Its own title in place of the view's name (a Visualisation tab's chart, named with its tab,
-  // docs/specs/026-plan/plan-tabs.md "Names"); absent is the view's name.
-  title?: string;
-};

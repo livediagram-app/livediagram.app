@@ -1,5 +1,4 @@
-// A text box that fits or wraps hugs its text (docs/specs/023-draw-mode/draw-mode.md "Text boxes",
-// docs/specs/007-editor/editor-modes.md "A text box's sizing"), in either editor mode:
+// A text box that fits or wraps hugs its text (docs/specs/006-document/document-structure.md):
 // the box is the text's own line box plus a little padding, never a default size. This module
 // is the pure geometry: what the box is for a measured block of text, where a click or a drag
 // puts a new one, and what a resize handle does to it. The measuring itself is the DOM's

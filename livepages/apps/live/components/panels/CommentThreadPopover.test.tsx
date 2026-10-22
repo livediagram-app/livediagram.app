@@ -91,27 +91,3 @@ describe('CommentThreadPopover for a Viewer', () => {
     expect(screen.queryByRole('button', { name: /delete/i })).toBeNull();
   });
 });
-
-// docs/specs/029-sheets/sheet.md "Cell comments": a cell's thread sits beside its cell, titled for it.
-describe('CommentThreadPopover on a Sheet cell', () => {
-  it('anchors to the selector it is given and names itself', () => {
-    const cell = document.createElement('div');
-    cell.setAttribute('data-cell-comment-anchor', 'sheet:r1:c1');
-    document.body.appendChild(cell);
-    render(
-      <CommentThreadPopover
-        elementId="sheet"
-        anchorSelector='[data-cell-comment-anchor="sheet:r1:c1"]'
-        title="Cell Comments"
-        thread={undefined}
-        onAddComment={noop}
-        onDeleteComment={noop}
-        onResolve={noop}
-        onUnresolve={noop}
-        onClose={noop}
-        selfId="me"
-      />,
-    );
-    expect(screen.getByRole('dialog').textContent).toContain('Cell Comments');
-  });
-});

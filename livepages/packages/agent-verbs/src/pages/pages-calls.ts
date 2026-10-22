@@ -11,22 +11,13 @@ import {
   type PageChange,
   type TabResponse,
 } from '@livepages/api-schema';
-import {
-  articlesOf,
-  articleTitleOf,
-  articleToMarkdown,
-  opensInOf,
-  type Tab,
-} from '@livepages/document';
-import { apiRefusalOf } from '../plan/api-refusal';
+import { articlesOf, articleTitleOf, articleToMarkdown, type Tab } from '@livepages/document';
+import { apiRefusalOf } from '../api-refusal';
 import { tabPath } from '../verbs/shared';
 
 export type PagesRefused = { ok: false; code: string; message: string; change?: number };
 export type PagesDone = { ok: true; documentId: string; tabId: string } & PagesAnswer;
 type PagesDoor = 'mcp' | 'cli';
-
-// The most tabs read looking for the first in Pages mode.
-const TAB_SEARCH_MAX = 20;
 
 const documentPath = (id: string) => `/documents/${encodeURIComponent(id)}`;
 
@@ -51,44 +42,29 @@ const refusedBy = (err: unknown): PagesRefused => {
   return { ok: false, ...known };
 };
 
-/** The tab a Pages call acts on: the one named, else the document's first tab in Pages
- *  mode, else its first tab when that is empty. With none, a refusal that says how to get one, so a
- *  diagram is never switched unasked. */
+/** The tab a Pages call acts on: the one named, else the document's first tab. Every tab holds pages. */
 export async function pagesTabOf(
   api: ApiClient,
   documentId: string,
   tabId: string | undefined,
-  door: PagesDoor,
 ): Promise<{ tabId: string; tab: Tab } | PagesRefused> {
   try {
-    if (tabId) {
-      const { tab } = await api.json<TabResponse>(tabPath(documentId, tabId));
-      return { tabId, tab };
-    }
-    const { document } = await api.json<DocumentResponse>(documentPath(documentId));
-    let firstEmpty: { tabId: string; tab: Tab } | null = null;
-    const inOrder = document.tabs
-      .filter((t) => !t.outOfScope)
-      .sort((a, b) => a.orderIndex - b.orderIndex)
-      .slice(0, TAB_SEARCH_MAX);
-    for (const [i, summary] of inOrder.entries()) {
-      const { tab } = await api.json<TabResponse>(tabPath(documentId, summary.id));
-      if (opensInOf(tab) === 'pages') return { tabId: summary.id, tab };
-      if (i === 0 && tab.elements.length === 0) firstEmpty = { tabId: summary.id, tab };
-    }
-    // An empty first tab loses nothing by switching: a document just made for pages.
-    if (firstEmpty) return firstEmpty;
+    const id = tabId ?? (await firstTabId(api, documentId));
+    if (id === null)
+      return { ok: false, code: 'tab_needed', message: 'This document has no tab you can reach.' };
+    const { tab } = await api.json<TabResponse>(tabPath(documentId, id));
+    return { tabId: id, tab };
   } catch (err) {
     return refusedBy(err);
   }
-  return {
-    ok: false,
-    code: 'tab_needed',
-    message:
-      door === 'mcp'
-        ? 'No tab of this document is in Pages mode. Pass tabId to switch one into it, or add_tab with template "blank-illustration" for a new one.'
-        : 'No tab of this document is in Pages mode. Pass --tab to switch one into it, or add a tab with `tab add --template blank-illustration`.',
-  };
+}
+
+async function firstTabId(api: ApiClient, documentId: string): Promise<string | null> {
+  const { document } = await api.json<DocumentResponse>(documentPath(documentId));
+  const [first] = document.tabs
+    .filter((t) => !t.outOfScope)
+    .sort((a, b) => a.orderIndex - b.orderIndex);
+  return first?.id ?? null;
 }
 
 async function send(
@@ -117,7 +93,7 @@ export async function changePages(
   input: { tabId?: string; changes: PageChange[] },
   door: PagesDoor,
 ): Promise<PagesDone | PagesRefused> {
-  const found = await pagesTabOf(api, documentId, input.tabId, door);
+  const found = await pagesTabOf(api, documentId, input.tabId);
   if ('ok' in found) return found;
   return send(api, documentId, found.tabId, { pages: input.changes }, door);
 }
@@ -130,7 +106,7 @@ export async function writeArticle(
   door: PagesDoor,
 ): Promise<PagesDone | PagesRefused> {
   const { tabId, ...write } = input;
-  const found = await pagesTabOf(api, documentId, tabId, door);
+  const found = await pagesTabOf(api, documentId, tabId);
   if ('ok' in found) return found;
   return send(api, documentId, found.tabId, { article: write }, door);
 }
@@ -140,11 +116,10 @@ export async function readArticle(
   api: ApiClient,
   documentId: string,
   input: { tabId?: string; article?: string },
-  door: PagesDoor,
 ): Promise<
   { ok: true; tabId: string; flow: string; title: string; markdown: string } | PagesRefused
 > {
-  const found = await pagesTabOf(api, documentId, input.tabId, door);
+  const found = await pagesTabOf(api, documentId, input.tabId);
   if ('ok' in found) return found;
   const articles = articlesOf(found.tab);
   const flows = Object.keys(articles);

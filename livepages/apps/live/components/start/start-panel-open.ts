@@ -1,6 +1,6 @@
-// Whether a template start panel (Start Diagramming, Start a Workshop) is on screen
-// (docs/specs/007-editor/start-diagramming.md "The tours wait"): the Diagram and Workshop tours hold their offer
-// until it has gone, so the welcome card never lands over the panel. One panel shows at a time (the active tab's).
+// Whether the template start panel (Start Making Pages) is on screen (docs/specs/007-editor/start-diagramming.md "The
+// tours wait"): the tours hold their offer until it has gone, so the welcome card never lands over the panel. One
+// panel shows at a time (the active tab's).
 import { useSyncExternalStore } from 'react';
 import { createListeners } from '@/lib/listeners';
 
@@ -21,8 +21,8 @@ export function useStartPanelOpen(): boolean {
   );
 }
 
-// When a start panel last left the screen: one mounting within SWAP_MS of it is the same panel in another mode (a
-// mode change on an empty tab), and turns in place rather than flying up again (StartPanel).
+// When a start panel last left the screen: one mounting within SWAP_MS of it is the same panel on another empty tab,
+// and stays in place rather than flying up again (StartPanel).
 const SWAP_MS = 400;
 let leftAt = -Infinity;
 

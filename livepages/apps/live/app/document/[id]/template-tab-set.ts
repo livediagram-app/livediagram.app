@@ -1,6 +1,6 @@
-// Quick Start with a template of several tabs (docs/specs/026-plan/plan-templates.md "How a template with
-// tabs is made"): the first template tab lands on the tab Quick Start was opened on (useTemplateFlow), the
-// others go straight after it, in order, each with that tab's look and the template's canvas overrides.
+// Quick Start with a template of several tabs: the first template tab lands on the tab Quick Start was
+// opened on (useTemplateFlow), the others go straight after it, in order, each with that tab's look and
+// the template's canvas overrides.
 // Pure, so the placement rule is testable without the hook.
 
 import type { Tab } from '@livepages/document';
@@ -12,8 +12,8 @@ type TemplateTabContent = {
   elements: Tab['elements'];
   // The template's own fields for the tab (a Plan template's kind and Dashboard), over the overrides.
   fields?: Partial<Tab>;
-  // A companion Sheet (docs/specs/026-plan/plan-templates.md "How a template with tabs is made"): the theme's backdrop
-  // rather than the template's canvas overrides, which are its drawing's.
+  // A companion Sheet: the theme's backdrop rather than the template's canvas overrides, which are its
+  // drawing's.
   ownCanvas?: Partial<Tab>;
 };
 

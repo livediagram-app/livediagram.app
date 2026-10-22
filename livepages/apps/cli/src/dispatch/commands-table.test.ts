@@ -24,7 +24,7 @@ function commands(): { words: string[]; flags: string[]; source: string }[] {
       const tokens = source.split(' ');
       const words: string[][] = [];
       for (const token of tokens) {
-        // A command word may hold hyphens (`sheet insert-rows`); a flag starts with them.
+        // A command word may hold hyphens; a flag starts with them.
         if (!/^[a-z]+(-[a-z]+)*(\|[a-z]+(-[a-z]+)*)*$/.test(token)) break;
         words.push(token.split('|'));
       }

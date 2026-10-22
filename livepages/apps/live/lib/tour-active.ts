@@ -1,18 +1,11 @@
 import { useSyncExternalStore } from 'react';
 import { createListeners } from '@/lib/listeners';
 
-// Which guided tour is on screen (docs/specs/026-plan/plan-tour.md "Where it appears",
-// docs/specs/012-collaboration/workshop-tour.md): the welcome, Plan and Workshop tours never run at
-// once, so each host publishes itself here while it is active and waits for the others to clear. A module
-// store, like the modal guard: one editor per page.
+// Which guided tour is on screen (docs/specs/007-editor/pages-tour.md "Where it appears"): the Pages tour and
+// the element tours never run at once, so each host publishes itself here while it is active and waits for the
+// others to clear. A module store, like the modal guard: one editor per page.
 type ActiveTour =
-  | 'welcome'
-  | 'plan'
-  | 'dashboard'
-  | 'workshop'
-  | 'draw'
   | 'pages'
-  | 'form'
   | 'element'
   // Any Show Me running (ShowMeStage): an offer never comes up beside one.
   | 'show-me';

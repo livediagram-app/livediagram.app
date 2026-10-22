@@ -63,7 +63,7 @@ function withImages() {
   return { db, del };
 }
 
-describe('migration 0051 (diagrams.trashed_at)', () => {
+describe('diagrams.trashed_at', () => {
   it('adds a nullable trashed_at with a partial index', () => {
     const { sql } = sqliteD1();
     const col = sql

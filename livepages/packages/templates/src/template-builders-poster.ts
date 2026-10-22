@@ -1,5 +1,5 @@
-// Event Poster template (kind `event-poster`, docs/specs/007-editor/templates-by-mode.md
-// "Pages templates"): one A3 portrait page advertising a made-up community event, the
+// Event Poster template (kind `event-poster`, docs/specs/008-canvas/canvas-and-palette.md
+// "Templates"): one A3 portrait page advertising a made-up community event, the
 // Riverside Night Market, that opens in Pages ready to print. The page reads top to bottom
 // the way a poster is read from across a street: a night-sky band bleeding off the top edge with a
 // string of festoon lights, the organiser, the big title and the promise; then three cards for

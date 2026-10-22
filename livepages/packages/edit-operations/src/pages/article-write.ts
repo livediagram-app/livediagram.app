@@ -35,8 +35,7 @@ import {
 import { enterPages, type PagesIds } from './enter';
 
 type ArticleWriteOutcome =
-  | { tab: Tab; flow: string; created: boolean; lines: string[]; switched: boolean }
-  | { refusal: PagesRefusal };
+  { tab: Tab; flow: string; created: boolean; lines: string[] } | { refusal: PagesRefusal };
 
 const refuse = (code: PagesRefusal['code'], message: string) => ({
   refusal: { code, message },
@@ -53,10 +52,10 @@ export function applyArticleWrite(
   write: ArticleWrite,
   ids: PagesIds = {},
 ): ArticleWriteOutcome {
-  const entered = enterPages(tab);
-  if ('refusal' in entered) return entered;
-  let current = entered.tab;
-  const lines: string[] = entered.switched ? ['Switched the tab to Pages.'] : [];
+  const locked = enterPages(tab);
+  if (locked) return locked;
+  let current = tab;
+  const lines: string[] = [];
   const articles = articlesOf(current);
   const flows = Object.keys(articles);
   const titles = () => flows.map((f) => `"${articleTitleOf(articles[f]!)}" (${f})`).join(', ');
@@ -182,5 +181,5 @@ export function applyArticleWrite(
     lines.push(`Removed zones and what was in them: ${gone.map((z) => z.id).join(', ')}.`);
   if (markersGone) lines.push(`Removed margin notes whose text is gone (${markersGone}).`);
   // How many pages it takes is said by the caller, which estimates the layout (pages-summary.ts).
-  return { tab: current, flow: flow!, created, lines, switched: entered.switched };
+  return { tab: current, flow: flow!, created, lines };
 }

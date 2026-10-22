@@ -56,11 +56,9 @@ const DRAWINGS: Element[][] = [
     arrow('3', 'c', 'd', ['s', 'n']),
     arrow('ret', 'd', 'top', ['n', 's']),
   ],
-  [box('a', 0, 0), box('b', 600, 0), box('c', 1200, 0)],
-  [box('a', 0, 0, { fillColor: '#123456', strokeColor: '#654321' })],
 ];
 
-// The codes only a Pages tab is linted for, each on a page's text.
+// text-overflow, on a page's text.
 const PAGE_DRAWINGS: Element[][] = [
   [
     {
@@ -95,12 +93,7 @@ const PAGE_DRAWINGS: Element[][] = [
 describe('tab fixes', () => {
   const findings = [
     ...DRAWINGS.map((elements): Tab => ({ id: 't', name: 'T', theme: 'ocean', elements })),
-    ...PAGE_DRAWINGS.map((elements): Tab => ({
-      id: 't',
-      name: 'T',
-      opensIn: 'pages',
-      elements,
-    })),
+    ...PAGE_DRAWINGS.map((elements): Tab => ({ id: 't', name: 'T', elements })),
   ].flatMap((tab) => lint(tab).findings.map((finding) => ({ finding, tab })));
 
   it('cover every code', () => {

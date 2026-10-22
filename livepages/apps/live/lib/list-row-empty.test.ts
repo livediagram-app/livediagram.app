@@ -24,7 +24,7 @@ describe('emptyAfterSave', () => {
     expect(emptyAfterSave([tab('a', 0)], new Set(), undefined)).toBeUndefined();
   });
 
-  // docs/specs/030-forms/forms.md: a Form tab's form is not an element, yet it is drawn.
+  // A Form tab's form is not an element, yet it is drawn.
   it('reads a first tab holding a form as drawn', () => {
     const form = {
       ...tab('a', 0),

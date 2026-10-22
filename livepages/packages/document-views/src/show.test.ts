@@ -117,7 +117,6 @@ describe('person ids (security)', () => {
     actions: [action],
     responses: [{ participantId: secret, value: '3', at: 0 }],
     commentThread: { comments: [comment], resolved: false },
-    cellComments: { 'row001:col001': { comments: [comment], resolved: false } },
     addedBy: secret,
   } as unknown as Element;
 

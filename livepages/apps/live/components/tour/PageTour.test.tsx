@@ -169,10 +169,10 @@ const popover = (name: string) =>
 
 describe('Show Me on every page', () => {
   it.each([
-    ['slide', '/help/canvas/pages-mode/slide-pages/'],
-    ['infographic', '/help/canvas/pages-mode/infographic-layouts/'],
-    ['article', '/help/canvas/pages-mode/articles/'],
-    ['logo', '/help/canvas/pages-mode/logo-pages/'],
+    ['slide', '/help/pages/slide-pages/'],
+    ['infographic', '/help/pages/infographic-layouts/'],
+    ['article', '/help/pages/articles/'],
+    ['logo', '/help/pages/logo-pages/'],
   ] as const)('heads a %s page’s panel beside its own Help', (kind, href) => {
     render(<Page of={page(kind)} />);
     expect(screen.getByRole('button', { name: 'Show Me' })).toBeTruthy();
@@ -294,7 +294,7 @@ describe('a logo page’s Show Me', () => {
     await showMe();
     expect(track).toHaveBeenCalledWith('UI', 'Started', 'LogoTour');
     await shows(() =>
-      expect(stepDialog(/^Show Me step 1 of 4: Start From a Logo Layout/)).toBeTruthy(),
+      expect(stepDialog(/^Show Me step 1 of 3: Start From a Logo Layout/)).toBeTruthy(),
     );
     expect(screen.getByRole('button', { name: 'Layouts' }).getAttribute('aria-pressed')).toBe(
       'true',

@@ -8,10 +8,8 @@
 // drift, and the two ends would disagree about who was asked.
 
 import {
-  hasPageLook,
   pagesOf,
   layOutPages,
-  opensInOf,
   type LaidOutPage,
   type PageRect,
   type Tab,
@@ -31,14 +29,14 @@ type FocusView = {
 // tenth of a canvas at 10% zoom is not a difference anybody can see.
 const CENTRE_SLACK = 0.1;
 
-/** The page a press on a Pages tab points at (docs/specs/012-collaboration/bring-focus.md "On a
- *  page"): the one the point sits on, while the tab is in a mode that shows pages. Null anywhere else,
- *  including the surround between pages, where taking it centres the point as on any canvas. */
+/** The page a press on a tab points at (docs/specs/012-collaboration/bring-focus.md "On a page"): the one the
+ *  point sits on. Null anywhere else, including the surround between pages, where taking it centres the point as
+ *  on any canvas. */
 export function focusPageAt(
   tab: Tab | undefined,
   at: { x: number; y: number },
 ): LaidOutPage | null {
-  if (!tab || !hasPageLook(opensInOf(tab))) return null;
+  if (!tab) return null;
   return (
     layOutPages(pagesOf(tab)).find(
       ({ rect }) =>

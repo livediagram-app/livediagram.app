@@ -11,8 +11,7 @@ import {
   isFlowchartStep,
   isMindNode,
   joinsEntities,
-  takesAttachments,
-  threadAt,
+  type CommentThread,
   type Element,
 } from '@livepages/document';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
@@ -199,12 +198,7 @@ export function CanvasSelectionToolbars({
             // A Viewer writes no comment (docs/specs/013-workspace/share-roles.md): it reads the thread an
             // element has, behind Show Comments, and gets no button on one with none.
             onOpenComments={
-              // Never on a Plan item (docs/specs/026-plan/plan-mode.md "Nothing attached to Plan items").
-              readOnly &&
-              selected &&
-              commentsShown &&
-              takesAttachments(selected) &&
-              (props.takePart || hasComments(selected))
+              readOnly && selected && commentsShown && (props.takePart || hasComments(selected))
                 ? () => onOpenComments(selected.id)
                 : undefined
             }
@@ -283,5 +277,5 @@ export function CanvasSelectionToolbars({
 
 // Whether an element carries a comment thread to read (resolved ones included: a reader opens those too).
 function hasComments(el: Element): boolean {
-  return (threadAt(el)?.comments.length ?? 0) > 0;
+  return ((el as { commentThread?: CommentThread }).commentThread?.comments.length ?? 0) > 0;
 }

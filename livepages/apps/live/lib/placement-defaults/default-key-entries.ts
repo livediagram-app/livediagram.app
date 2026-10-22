@@ -1,11 +1,7 @@
 // What each default key is called (docs/specs/013-workspace/default-folders.md "Entry names"): the
-// label "New documents that open as" lists, and the plural a sentence uses. Typed per dimension, so
-// a new editor mode or template family does not compile until it is named here.
-import {
-  PLACEMENT_DEFAULT_KEYS,
-  type PlacementDefaultKey,
-  type TemplateFamily,
-} from '@livepages/api-schema';
+// label "New documents that open as" lists, and the plural a sentence uses. Typed by mode, so a new
+// editor mode does not compile until it is named here.
+import { PLACEMENT_DEFAULT_KEYS, type PlacementDefaultKey } from '@livepages/api-schema';
 import type { EditorMode } from '@livepages/document';
 
 type DefaultKeyEntry = { key: PlacementDefaultKey; label: string; noun: string };
@@ -13,22 +9,11 @@ type DefaultKeyEntry = { key: PlacementDefaultKey; label: string; noun: string }
 type Words = { label: string; noun: string };
 
 const MODE_WORDS: Record<EditorMode, Words> = {
-  diagram: { label: 'Diagrams', noun: 'diagrams' },
-  draw: { label: 'Whiteboards', noun: 'whiteboards' },
-  pages: { label: 'Pages documents', noun: 'Pages documents' },
-  plan: { label: 'Plan boards', noun: 'Plan boards' },
-  workshop: { label: 'Sessions', noun: 'sessions' },
-};
-
-const FAMILY_WORDS: Record<TemplateFamily, Words> = {
-  retrospective: { label: 'Retrospectives', noun: 'retrospectives' },
-  kanban: { label: 'Kanban boards', noun: 'Kanban boards' },
+  pages: { label: 'Documents', noun: 'documents' },
 };
 
 function wordsOf(key: PlacementDefaultKey): Words {
-  const [dimension, value] = key.split(':') as [string, string];
-  if (dimension === 'mode') return MODE_WORDS[value as EditorMode];
-  return FAMILY_WORDS[value as TemplateFamily];
+  return MODE_WORDS[key.slice('mode:'.length) as EditorMode];
 }
 
 /** Every entry, in the order the list shows them. */

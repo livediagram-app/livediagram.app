@@ -8,15 +8,11 @@ import {
 } from 'react';
 import { setRemoteBesideTab, syncRemoteBesideTabs } from '@/lib/split-presence';
 import { noteAccessEnded } from '@/lib/access-notice';
-import type { EditorMode, Tab } from '@livepages/document';
+import type { Tab } from '@livepages/document';
 import {
   parseArticleCaret,
   type AgentPresence,
   type ChangesetRoomOp,
-  type ItemsRoomOp,
-  type ItemTypesRoomOp,
-  type SheetPresenceOp,
-  type SheetsRoomOp,
   type FacilitatorReason,
 } from '@livepages/api-schema';
 import { nextFreeColor, type Participant } from '@/lib/identity';
@@ -33,7 +29,6 @@ import type { RemoteSelection } from '@/lib/presence-rows';
 import { pruneMapToPresent } from './editor-page-helpers';
 import { applyRoomOpToTabs, type PendingIdeaIds } from './room-op-apply';
 import { keepUnsavedTabChanges } from './meta-keep-local';
-import { peerModeSwitchOf } from '@/lib/peer-mode-switch';
 import { migrateRoomOp } from './room-op-migrate';
 import { roomOpIsWellFormed } from './room-op-shape';
 import { foldRemoteOpIntoBaseline, type SaveBaselineRefs } from './save-baseline';
@@ -150,26 +145,9 @@ export function useRoomConnection(opts: {
   // (docs/specs/012-collaboration/resync-without-reload.md). Stable, like the others, so it can't reopen the
   // socket — the effect's dep list stays [hydrated, documentId, shareable].
   resyncFromServer: () => Promise<void>;
-  // A peer switched a tab's editor mode (docs/specs/007-editor/editor-modes.md "Where the mode
-  // lives"): already applied with the op; told so the editor can say who switched. `name` is the
-  // peer's presence name, null when the room has not given one.
-  receivePeerModeSwitch?: (name: string | null, tabId: string, mode: EditorMode) => void;
   // An agent's changeset (docs/specs/024-agents/agent-changesets.md "In the editor"), relayed by the
   // worker; useChangesetFeed decides what to do with it.
   receiveChangeset: (op: ChangesetRoomOp) => void;
-  // Item writes the api made (docs/specs/026-plan/items.md "Live for everyone"). System-only.
-  receiveItems: (op: ItemsRoomOp) => void;
-  // A stored type catalogue (docs/specs/026-plan/item-types.md "Storage and sync"). System-only.
-  receiveItemTypes: (op: ItemTypesRoomOp) => void;
-  // A peer's hands on a Plan card (docs/specs/026-plan/plan-board.md). Presence.
-  receivePlanPresence: (
-    from: string,
-    op: { tabId: string; itemId: string | null; state?: 'drag' | 'view' },
-  ) => void;
-  // Sheet writes the api made (docs/specs/029-sheets/sheet-store.md "Live for everyone"). System-only.
-  receiveSheets: (op: SheetsRoomOp) => void;
-  // A peer's selection on a sheet (docs/specs/029-sheets/sheet.md "Collaboration"). Presence.
-  receiveSheetPresence: (from: string, op: SheetPresenceOp) => void;
   // The room has greeted this connection (its first presence list): what was relayed before it
   // joined is caught up through the api (useChangesetFeed's checkSinceLoad).
   onRoomJoined: () => void;
@@ -217,12 +195,6 @@ export function useRoomConnection(opts: {
     receiveDocumentTrashed,
     resyncFromServer,
     receiveChangeset,
-    receiveItems,
-    receiveItemTypes,
-    receivePlanPresence,
-    receiveSheets,
-    receiveSheetPresence,
-    receivePeerModeSwitch,
     onRoomJoined,
     onAdderKey,
   } = opts;
@@ -254,8 +226,6 @@ export function useRoomConnection(opts: {
   }, [picture]);
   // Each peer's server-verified role by presence id, refreshed with every presence list.
   const roleByPresenceRef = useRef<Map<string, string | undefined>>(new Map());
-  // Each peer's presence name, to say who switched a tab's mode.
-  const nameByPresenceRef = useRef<Map<string, string>>(new Map());
   // The facilitator token is read on demand by the room, always as it is now.
   const roomReadFacilitatorToken = useEffectEvent(() => readFacilitatorToken());
   const roomReadFollowing = useEffectEvent(() => readFollowing());
@@ -280,7 +250,6 @@ export function useRoomConnection(opts: {
       // Each peer's server-verified role, read when their drag preview arrives: only an editor's is
       // drawn (docs/specs/008-canvas/drag-preview.md).
       roleByPresenceRef.current = new Map(participants.map((p) => [p.id, p.role] as const));
-      nameByPresenceRef.current = new Map(participants.map((p) => [p.id, p.name] as const));
       setLivePresence(
         participants.map((p) => ({
           id: p.id,
@@ -425,11 +394,6 @@ export function useRoomConnection(opts: {
             : applyRoomOpToTabs(prev, op, pendingIdeaIds),
         );
         foldRemoteOpIntoBaseline(saveBaseline, op);
-        const switched = peerModeSwitchOf(op);
-        if (switched) {
-          const name = nameByPresenceRef.current.get(from) ?? null;
-          receivePeerModeSwitch?.(name, switched.tabId, switched.mode);
-        }
         // In the same batch as the tabs update, so the render that shows the op also counts it.
         countAppliedOp();
       } else if (op.kind === 'select') {
@@ -511,21 +475,6 @@ export function useRoomConnection(opts: {
         // An agent's changeset, applied, outlined and toasted by useChangesetFeed. System-only, like
         // the share ops: the room refuses one from a client socket.
         if (from === 'system') receiveChangeset(op);
-      } else if (op.kind === 'plan-presence') {
-        receivePlanPresence(from, op);
-      } else if (op.kind === 'sheet-presence') {
-        receiveSheetPresence(from, op);
-      } else if (op.kind === 'sheets') {
-        // Sheet writes (docs/specs/029-sheets/sheet-store.md). System-only, as items.
-        if (from === 'system') receiveSheets(op);
-      } else if (op.kind === 'items') {
-        // Item writes (docs/specs/026-plan/items.md). System-only: items change only through the api,
-        // and the room refuses this op from a client socket.
-        if (from === 'system') receiveItems(op);
-      } else if (op.kind === 'item-types') {
-        // The type catalogue (docs/specs/026-plan/item-types.md). System-only: it changes only through
-        // the api.
-        if (from === 'system') receiveItemTypes(op);
       } else if (op.kind === 'document-trashed') {
         // The document went to the Trash. System-only, like the share ops:
         // the room refuses it from a client socket.

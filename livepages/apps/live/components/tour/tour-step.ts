@@ -1,9 +1,8 @@
 import type { RevealBlock } from './tour-reveal';
 
-// The shape of a guided-tour step, shared by the Diagram tour (tour-steps.ts,
-// docs/specs/007-editor/editor-tour.md) and the Plan tour (plan-tour-steps.ts,
-// docs/specs/026-plan/plan-tour.md). `Api` is the facade each tour's host builds, so a step's prepare
-// and cleanup always see fresh editor handlers.
+// The shape of a guided-tour step, shared by every tour: the Pages tour, Show Me and the element tours
+// (docs/specs/007-editor/pages-tour.md "How a tour runs"). `Api` is the facade each tour's host builds, so a
+// step's prepare and cleanup always see fresh editor handlers.
 export type TourStepOf<Api> = {
   id: string;
   title: string;

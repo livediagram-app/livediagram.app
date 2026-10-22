@@ -6,11 +6,11 @@ describe('dropImportHint', () => {
     expect(dropImportHint({ name: 'Tab.JSON' })).toBe(
       'To bring in a livepages export, use Import in the tab menu.',
     );
-    expect(dropImportHint({ name: 'notes.md' })).toContain('a Markdown file');
   });
 
   it('says nothing for any other file', () => {
     expect(dropImportHint({ name: 'photo.jpg' })).toBeNull();
     expect(dropImportHint({ name: 'json' })).toBeNull();
+    expect(dropImportHint({ name: 'notes.md' })).toBeNull();
   });
 });

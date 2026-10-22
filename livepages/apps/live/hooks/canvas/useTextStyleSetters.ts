@@ -15,7 +15,7 @@ type TextStyleSetterDeps = {
   selectionPrimary: () => Element | null;
   commit: (mapElements: (els: Element[]) => Element[]) => void;
   // The tab being edited, for its font. A text box that fits or wraps hugs its text through every
-  // change to how it is drawn (docs/specs/007-editor/editor-modes.md "A text box's sizing").
+  // change to how it is drawn (docs/specs/006-document/document-structure.md).
   activeTab: Pick<Tab, 'font' | 'finish'>;
 };
 

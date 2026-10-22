@@ -8,22 +8,15 @@ import { openSearchWithPrefetch } from '@/lib/open-search';
 import { pastePointer } from '@/lib/canvas-pointer';
 import { dropThenDisarm } from '@/lib/palette-drop';
 import { describeOne } from '@/lib/element-names';
-import {
-  canvasSurface,
-  DEFAULT_BACKGROUND_COLOR,
-  buttonModeOf,
-} from '@livepages/document';
+import { canvasSurface, DEFAULT_BACKGROUND_COLOR, buttonModeOf } from '@livepages/document';
 import { createStockColourProjector } from '@/lib/stock-colour-projector';
 import { usePageView } from '@/hooks/canvas/usePageView';
 import { drawnArrowAsShown } from '@/lib/drawn-arrow-preview';
 import { useMemo, useState } from 'react';
-import { isBoxed, isVoteHost, threadAt } from '@livepages/document';
+import { isBoxed, isVoteHost } from '@livepages/document';
 import { commentPersisters } from '@/lib/comment-persistence';
 import { presentedPages } from '@/lib/presented-pages';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
-import { useElementMenuOpener } from '@/hooks/canvas/element-menu-opener';
-import { useSheetChartMenuSelection } from '@/hooks/sheets/useSheetChartMenuSelection';
-import { focusSheetCell } from '@/hooks/sheets/sheet-cell-refs';
 import { LockedElementMenu, type LockHolder } from '@/components/canvas/LockedElementMenu';
 import { answeringKeys, participantKey, selfInRoom } from '@/lib/identity';
 import { useQuickConnectStart } from '@/hooks/canvas/useQuickConnectStart';
@@ -33,7 +26,6 @@ import { useTeamFolderActions } from '@/hooks/ui/useTeamFolderActions';
 import { getTheme, themeChartPalette, themeViewMap, type ThemeId } from '@/lib/themes';
 import { labelsFollowCanvas } from '@/lib/tab-theme-apply';
 import { resolveViewBackdrop } from '@/lib/view-backdrop';
-import { readDrawPattern } from '@/lib/whiteboard-dock-prefs';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useIsLandscapePhone } from '@/hooks/ui/useIsMobileViewport';
 import { Canvas } from '@/components/canvas/Canvas';
@@ -234,7 +226,6 @@ export function EditorCanvasHost() {
     openAssignActionDialog,
     completeAction,
     reopenAction,
-    linkedActions,
     openCellLinkPicker,
     openComments,
     openDocument,
@@ -328,13 +319,7 @@ export function EditorCanvasHost() {
     drag,
     editorMode,
     pagesMode,
-    presentArticles,
     loadedTabIds,
-    autoAlignTab,
-    autoLayoutTab,
-    previewCleanup,
-    endCleanupPreview,
-    assessCleanupKind,
     isOutOfScope,
     tabLoadErrors,
   } = useEditorContext();
@@ -417,15 +402,11 @@ export function EditorCanvasHost() {
   });
   const threadOn = (elementId: string) => {
     const el = activeTab.elements.find((e) => e.id === elementId);
-    return el && isBoxed(el) ? threadAt(el) : undefined;
+    return el && isBoxed(el) ? el.commentThread : undefined;
   };
-  const backdrop = resolveViewBackdrop(
-    activeTab,
-    { mode: editorMode.mode, drawPattern: readDrawPattern(userPreferences) },
-    appearance,
-  );
-  // Stock colours stored by name are drawn in their version for this canvas, on every tab and in
-  // either mode (docs/specs/007-editor/editor-modes.md "One look"). Display only: the projector
+  const backdrop = resolveViewBackdrop(activeTab, appearance);
+  // Stock colours stored by name are drawn in their version for this canvas, on every tab
+  // (docs/specs/008-canvas/canvas-and-palette.md "Colours"). Display only: the projector
   // caches per element, so an unchanged element keeps its identity and the memoised views stay quiet.
   const [projectStockColours] = useState(createStockColourProjector);
   const surface = canvasSurface(backdrop.backgroundColor);
@@ -456,23 +437,6 @@ export function EditorCanvasHost() {
   const tabLoadState = activeTabLoadState;
   // Quick add + connect Arrow starter (docs/specs/008-canvas/canvas-and-palette.md) — see useQuickConnectStart.
   const { handleStartArrow } = useQuickConnectStart({ readSelection, beginAnchorDrag });
-
-  // A control inside an element (a board header's ⋯) opens this element menu under itself, selecting the element
-  // first as a right-click does (the menu acts on the selection); never on one a peer holds.
-  // A chart its Sheet draws is selected for its menu directly, and let go as the menu closes (sheet.md "Charts").
-  const selectForMenu = useSheetChartMenuSelection({
-    elements: activeTab.elements,
-    contextMenu,
-    readSelection,
-    selectElement,
-    setSelectedId,
-    setMultiSelectedIds,
-  });
-  useElementMenuOpener(setContextMenu, !isReadOnly, (id) => {
-    if (lockedByOther(id)) return false;
-    selectForMenu(id);
-    return true;
-  });
 
   // While a label is being edited, ride the element context menu alongside
   // the editor (docs/specs/008-canvas/canvas-and-palette.md) — see useEditModeContextMenu.
@@ -593,11 +557,7 @@ export function EditorCanvasHost() {
               editorMode={editorMode.mode}
               // No page while Start Making Pages is open (docs/specs/007-editor/start-diagramming.md "Start Making Pages"):
               // the tab's first page is drawn only once a template is picked or the panel closed, so nothing waits behind it.
-              pagesMode={
-                startPanelOpen && editorMode.mode === 'pages'
-                  ? null
-                  : presentedPages(pagesMode, activeTab, presentingPageId, presentArticles)
-              }
+              pagesMode={startPanelOpen ? null : presentedPages(pagesMode, presentingPageId)}
               previewDrawnArrow={(intent, startX, startY, endX, endY) =>
                 drawnArrowAsShown(intent, startX, startY, endX, endY, {
                   elements: activeTab.elements,
@@ -709,9 +669,6 @@ export function EditorCanvasHost() {
                       configure: openAssignActionDialog,
                       complete: completeAction,
                       reopen: reopenAction,
-                      ...(linkedActions.openOnBoard
-                        ? { openBoard: () => linkedActions.openOnBoard?.() }
-                        : {}),
                     }
               }
               // Everyone sees what a Picker holds; only an Editor spins it (ElementFaceRouter, share-roles.md).
@@ -876,22 +833,6 @@ export function EditorCanvasHost() {
                       track('UI', 'Opened', 'ThemePicker');
                     }
               }
-              // Diagram mode's Tidy Up button (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button"): an
-              // Editor's, so a Participant or Viewer (read-only for structure) and an embed get no button.
-              tidyUp={
-                isReadOnly || embedMode
-                  ? undefined
-                  : {
-                      run: (kind, judged) =>
-                        kind === 'align'
-                          ? autoAlignTab({ judged })
-                          : autoLayoutTab(kind, { judged }),
-                      preview: previewCleanup,
-                      endPreview: endCleanupPreview,
-                      assess: assessCleanupKind,
-                      blocked: activeTabLocked,
-                    }
-              }
               onSelectLayer={setActiveLayer}
               onAddLayer={addLayer}
               onRemoveLayer={removeLayer}
@@ -909,14 +850,8 @@ export function EditorCanvasHost() {
               commentsPanelPosition={commentsPanelPosition}
               onMoveCommentsPanel={(x, y) => setCommentsPanelPosition({ x, y })}
               onResetCommentsPanel={() => setCommentsPanelPosition(null)}
-              onOpenCommentsForElement={(id, cell) => {
+              onOpenCommentsForElement={(id) => {
                 setSelectedId(id);
-                // A Sheet cell's thread (docs/specs/029-sheets/sheet.md "Cell comments"): its cell selected, so the
-                // popover sits beside it.
-                if (cell !== undefined) {
-                  focusSheetCell(id, cell);
-                  return openComments(id, cell);
-                }
                 // A Comment panel IS the thread (docs/specs/012-collaboration/assigned-actions.md §5): go to it
                 // rather than open a popover repeating it beside the card.
                 if (!jumpToCard(id, 'comment-pin')) openComments(id);

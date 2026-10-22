@@ -52,21 +52,12 @@ const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
   // Warm stone: a quiet backstop, apart from Document's sky and Error's red.
   Trash: '#78716c',
   Mcp: '#f43f5e',
-  // Terminal ink: the command line, darker than the stone greys of Trash and Draw.
+  // Terminal ink: the command line, darker than Trash's stone grey.
   Cli: '#1e293b',
   // Burnt orange: the agents' changesets, apart from MCP's rose and Activity's amber.
   Agent: '#c2410c',
-  Plan: '#2563eb',
-  // Green, the spreadsheet's own.
-  Sheet: '#16a34a',
-  // Violet, the Event RSVP starter's: apart from Plan's blue and Sheet's green.
-  Form: '#7c3aed',
   Email: '#0d9488',
   Error: '#dc2626',
-  // Warm stone, the marker on a whiteboard: apart from every blue and green.
-  Draw: '#78716c',
-  // Deep violet: the mode switch, apart from Draw's stone beside it.
-  Editor: '#6d28d9',
   // Deep cyan: the Explorer's filters, apart from UI's lighter cyan and Search's indigo.
   Explorer: '#155e75',
   // Deep teal-green, a stopwatch: apart from Email's teal and Cta's green.

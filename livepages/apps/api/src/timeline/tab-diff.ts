@@ -18,23 +18,20 @@
 
 import {
   elementActions,
-  elementThreads,
   type Comment,
   type Element,
   type ElementAction,
 } from '@livepages/document';
+import { commentThreadOf } from '../comments';
 
 type ThreadView = { comments?: Comment[]; resolved?: boolean };
 
-// Every thread of the elements: each element's own and its cells' (docs/specs/029-sheets/sheet.md "Cell
-// comments"), each with the id the timeline keys it by: the element's id, or `<elementId>#<cell>` for a cell's.
+// Every thread of the elements, each with the id the timeline keys it by: its element's id.
 function threadsOf(elements: Element[]): { key: string; thread: ThreadView }[] {
-  return elements.flatMap((el) =>
-    elementThreads(el).map(({ cell, thread }) => ({
-      key: cell === undefined ? el.id : `${el.id}#${cell}`,
-      thread: thread as ThreadView,
-    })),
-  );
+  return elements.flatMap((el) => {
+    const thread = commentThreadOf(el);
+    return thread ? [{ key: el.id, thread }] : [];
+  });
 }
 
 // Every action on an element: an Action panel's list, or an ordinary

@@ -59,8 +59,7 @@ type PersistDelete = () => Promise<unknown>;
 
 type EditorCommentsApi = {
   commentThreadOpenId: string | null;
-  // The Sheet cell whose thread is open (docs/specs/029-sheets/sheet.md "Cell comments"), its key; null for the
-  // element's own thread.
+  // The Sheet cell whose thread is open, its key; null for the element's own thread.
   commentThreadOpenCell: string | null;
   // Toggle open / closed: clicking the same id (and cell) again closes the
   // popover (matches the existing behaviour). `cell` opens a Sheet cell's thread.

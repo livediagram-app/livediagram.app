@@ -113,18 +113,6 @@ describe('workbenchRouteVerdict', () => {
     ['POST', 'documents/doc1/tabs/t1/comments/c1/reopen'],
     ['DELETE', 'documents/doc1/tabs/t1/comments/c1'],
     ['POST', 'documents/doc1/room-ticket'],
-    ['GET', 'documents/doc1/items'],
-    ['POST', 'documents/doc1/items'],
-    ['POST', 'documents/doc1/items/bulk'],
-    ['POST', 'documents/doc1/items/i1'],
-    ['POST', 'documents/doc1/items/i1/move'],
-    ['POST', 'documents/doc1/items/i1/vote'],
-    ['POST', 'documents/doc1/items/i1/comments'],
-    ['POST', 'documents/doc1/items/i1/comments/resolve'],
-    ['POST', 'documents/doc1/items/i1/comments/reopen'],
-    ['DELETE', 'documents/doc1/items/i1'],
-    ['DELETE', 'documents/doc1/items/i1/comments/c1'],
-    ['PUT', 'documents/doc1/item-types'],
     ['DELETE', 'workbench/sessions/current'],
   ])('allows %s %s', (method, path) => {
     expect(verdict(method, path)).toBe('allow');
@@ -294,7 +282,6 @@ describe('workbenchRouteVerdict, workspace scope', () => {
     ['GET', 'teams/team1/invite-link'],
     ['GET', 'teams/invite-link/tok'],
     ['PUT', 'documents/any-doc/tabs/t1/presence'],
-    ['GET', 'forms/abc'],
     ['GET', 'telemetry'],
     ['PATCH', 'documents/any-doc'],
   ])('confines %s %s', (method, path) => {

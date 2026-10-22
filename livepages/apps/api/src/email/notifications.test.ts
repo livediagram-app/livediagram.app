@@ -10,7 +10,6 @@ vi.mock('../db', () => ({
   claimCommentNotify: vi.fn(),
   claimJoinNotify: vi.fn(),
   claimNotifyEmail: vi.fn(),
-  claimFormEmail: vi.fn(),
 }));
 vi.mock('./client', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./client')>()),
@@ -18,7 +17,6 @@ vi.mock('./client', async (importOriginal) => ({
 }));
 
 import {
-  claimFormEmail,
   claimCommentNotify,
   claimFirstShare,
   claimJoinNotify,
@@ -28,7 +26,7 @@ import {
   getOwnerEmail,
 } from '../db';
 import { sendEmail } from './client';
-import { actionAssignedEmail, commentNotificationEmail, formResponseEmail } from './templates';
+import { actionAssignedEmail, commentNotificationEmail } from './templates';
 import {
   notifyActionAssigned,
   notifyDocumentJoin,
@@ -36,7 +34,6 @@ import {
   notifyFirstShare,
   notifyMilestone,
   notifyNewComment,
-  notifyFormResponse,
   NOTIFY_EMAIL_DEDUPE_MS,
   NOTIFY_EMAILS_PER_SENDER_PER_HOUR,
 } from './notifications';
@@ -51,7 +48,6 @@ const allowAll = {
   notifyMilestones: true,
   notifyActionAssigned: true,
   notifyMentions: true,
-  notifyFormResponses: true,
 };
 
 afterEach(() => vi.clearAllMocks());
@@ -304,12 +300,6 @@ describe('notifyMentioned (docs/specs/012-collaboration/comment-mentions.md)', (
     expect(sent.html).toContain('Can you check this, @priya?');
   });
 
-  it("links a card's comment to the card", async () => {
-    vi.mocked(sendEmail).mockResolvedValue({ sent: true });
-    await notifyMentioned(env, { ...input, recipientUserId: null, itemId: 'item0001' });
-    expect(vi.mocked(sendEmail).mock.calls[0]![1].html).toContain('#item=item0001');
-  });
-
   it('writes to an invited member at their invite address, with no prefs to read', async () => {
     vi.mocked(sendEmail).mockResolvedValue({ sent: true });
     await notifyMentioned(env, { ...input, recipientUserId: null });
@@ -335,18 +325,6 @@ describe('notifyMentioned (docs/specs/012-collaboration/comment-mentions.md)', (
     const [first, second] = vi.mocked(claimNotifyEmail).mock.calls.map((c) => c[1]);
     expect(second!.key).toBe(first!.key);
     expect(first!.senderId).toBe('u1');
-  });
-
-  // A card's comment is claimed by its stored id, so the quoted text cannot vary the key.
-  it("claims a card's comment by its id, not its text", async () => {
-    vi.mocked(sendEmail).mockResolvedValue({ sent: true });
-    const card = { ...input, recipientUserId: null, itemId: 'item0001', commentId: 'c1' };
-    await notifyMentioned(env, card);
-    await notifyMentioned(env, { ...card, commentText: 'Reworded' });
-    await notifyMentioned(env, { ...card, commentId: 'c2' });
-    const [a, b, c] = vi.mocked(claimNotifyEmail).mock.calls.map((call) => call[1].key);
-    expect(b).toBe(a);
-    expect(c).not.toBe(a);
   });
 });
 
@@ -403,58 +381,6 @@ describe('notifyFirstShare (docs/specs/014-identity/transactional-email.md #6)',
     vi.mocked(getOwnerEmail).mockResolvedValue('owner@x.com');
     vi.mocked(getNotificationPrefs).mockResolvedValue({ ...allowAll, notifyMilestones: false });
     await notifyFirstShare(env, 'u1');
-    expect(sendEmail).not.toHaveBeenCalled();
-  });
-});
-
-describe('the form response email (docs/specs/030-forms/forms.md "Hearing about responses")', () => {
-  const form = { code: 'c'.repeat(22), heading: 'Bug Report' };
-
-  it('names the form and the card, links the document, and counts what was held', () => {
-    const e = formResponseEmail(
-      env,
-      { heading: 'Bug <Report>', documentId: 'd1', documentName: 'Ops' },
-      'Crash',
-      3,
-    );
-    expect(e.kind).toBe('FormResponse');
-    expect(e.subject).toBe('New response to Bug <Report>');
-    expect(e.html).toContain('Bug &lt;Report&gt;');
-    expect(e.html).toContain('<strong>Crash</strong>');
-    expect(e.html).toContain('And 3 more responses have arrived');
-    expect(e.html).toContain('https://app.test/document/d1');
-    expect(
-      formResponseEmail(env, { heading: '', documentId: 'd1', documentName: '' }, '', 1).html,
-    ).toContain('And 1 more response has arrived');
-  });
-
-  it('emails the owner when the per-form claim is won', async () => {
-    vi.mocked(getOwnerEmail).mockResolvedValue('owner@x.test');
-    vi.mocked(getNotificationPrefs).mockResolvedValue(allowAll);
-    vi.mocked(claimFormEmail).mockResolvedValue({ send: true, heldBefore: 2 });
-    vi.mocked(sendEmail).mockResolvedValue({ sent: true });
-    await notifyFormResponse(env, liveDoc, form, 'Crash on save');
-    expect(sendEmail).toHaveBeenCalledWith(
-      env,
-      expect.objectContaining({ to: 'owner@x.test', subject: 'New response to Bug Report' }),
-    );
-  });
-
-  it('holds the email inside the throttle, and respects the opt-out', async () => {
-    vi.mocked(getOwnerEmail).mockResolvedValue('owner@x.test');
-    vi.mocked(getNotificationPrefs).mockResolvedValue(allowAll);
-    vi.mocked(claimFormEmail).mockResolvedValue({ send: false });
-    await notifyFormResponse(env, liveDoc, form, 'Crash');
-    vi.mocked(getNotificationPrefs).mockResolvedValue({ ...allowAll, notifyFormResponses: false });
-    await notifyFormResponse(env, liveDoc, form, 'Crash');
-    expect(sendEmail).not.toHaveBeenCalled();
-    expect(claimFormEmail).toHaveBeenCalledTimes(1);
-  });
-
-  it('sends nothing without email or an owner address', async () => {
-    await notifyFormResponse({ APP_BASE_URL: 'x' } as unknown as Env, liveDoc, form, 'Crash');
-    vi.mocked(getOwnerEmail).mockResolvedValue(null);
-    await notifyFormResponse(env, liveDoc, form, 'Crash');
     expect(sendEmail).not.toHaveBeenCalled();
   });
 });

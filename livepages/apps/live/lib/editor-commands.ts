@@ -37,9 +37,6 @@ export type CommandContext = {
   // True when the single selection is a boxed element (rotation / note /
   // comment / animation all target boxed elements; arrows are excluded).
   singleIsBoxed: boolean;
-  // False when the single selection is a Plan item, which takes no note or comment (docs/specs/026-plan/plan-mode.md
-  // "Nothing attached to Plan items"); absent reads as true.
-  singleTakesAttachments?: boolean;
   // True when the single selection can be rotated (`supportsRotation`): boxed, minus an
   // annotation marker (docs/specs/009-elements/blueprints/annotations.md). Gates the Rotate commands.
   singleRotates: boolean;
@@ -74,9 +71,6 @@ export type CommandContext = {
   // Spotlight is desktop-only (hover + click-to-resize don't map to touch),
   // so it is withheld on a phone the same way the dropdown omits it.
   isMobile: boolean;
-  // Plan mode (docs/specs/026-plan/plan-mode.md) leaves Format out of the tool dropdown, so search
-  // does too.
-  planMode?: boolean;
   // A locked tab (docs/specs/008-canvas/canvas-and-palette.md "Locking") refuses every element edit, so search
   // offers none of them: no selection verbs, no layout cleanup, no Format.
   tabLocked?: boolean;
@@ -197,7 +191,7 @@ function toolCommands(ctx: CommandContext, h: CommandHandlers): EditorCommand[] 
       !(t.needsContent && ctx.canvasEmpty) &&
       !(t.desktopOnly && ctx.isMobile) &&
       !(t.mutates && ctx.isReadOnly) &&
-      !(t.editsElements && (ctx.tabLocked || ctx.planMode)),
+      !(t.editsElements && ctx.tabLocked),
   ).map((t) => ({
     id: `tool:${t.id}`,
     name: t.name,
@@ -273,7 +267,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   out.push({
     id: 'create-tab',
     name: 'Create New Tab',
-    keywords: 'new tab create add page sheet board',
+    keywords: 'new tab create add page',
     run: h.createTab,
   });
   out.push({

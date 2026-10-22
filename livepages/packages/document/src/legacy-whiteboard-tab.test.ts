@@ -10,8 +10,8 @@ import type {
 import { migrateWhiteboardKind } from './legacy-whiteboard-tab';
 import { encodeStrokePoints } from './stroke-points';
 
-// A stored whiteboard tab (docs/specs/007-editor/editor-modes.md "Existing whiteboards") reads as
-// a general tab that opens in Draw, looking exactly as it did ("One look").
+// A stored livediagram whiteboard tab (docs/specs/003-system-architecture/domain-language.md "Kind") reads as a general
+// tab stamped to open in Draw (which reads as Pages), looking exactly as it did.
 const board = (over: Record<string, unknown> = {}) =>
   ({ id: 't', name: 'Board', kind: 'whiteboard', elements: [], ...over }) as unknown as Tab;
 
@@ -148,7 +148,7 @@ describe('migrateWhiteboardKind', () => {
     expect(migrated(highlighter)).toEqual(highlighter);
   });
 
-  // docs/specs/007-editor/editor-modes.md "A text box's sizing": text hugged on a board.
+  // docs/specs/006-document/document-structure.md "Data model": text hugged on a board.
   it("keeps a board's text boxes hugging: set width wraps, an auto width fits", () => {
     expect((migrated(text()) as TextElement).sizing).toBe('wrap');
     const fit = migrated(text({ autoWidth: true } as Partial<TextElement>)) as TextElement;

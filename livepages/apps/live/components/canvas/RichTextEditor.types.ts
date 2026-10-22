@@ -1,10 +1,4 @@
-import type {
-  BoxedElement,
-  TextAlignX,
-  TextAlignY,
-  TextRun,
-  TextSize,
-} from '@livepages/document';
+import type { BoxedElement, TextAlignX, TextAlignY, TextRun, TextSize } from '@livepages/document';
 import type { LabelPadding } from './label-style';
 
 export type RichTextEditorProps = {
@@ -22,10 +16,10 @@ export type RichTextEditorProps = {
   alignX: TextAlignX;
   alignY: TextAlignY;
   padding: LabelPadding;
-  // A Shift-resized text box's scale on its text (docs/specs/023-draw-mode/draw-mode.md). Absent = 1.
+  // A Shift-resized text box's scale on its text. Absent = 1.
   textScale?: number;
-  // Called with the editor node on every change to its text (and once on opening), so a whiteboard
-  // text box can grow with what is typed (docs/specs/023-draw-mode/draw-mode.md "Text boxes").
+  // Called with the editor node on every change to its text (and once on opening), so a text box
+  // can grow with what is typed.
   onLiveText?: (editor: HTMLElement) => void;
   fontFamily?: string;
   multiline: boolean;

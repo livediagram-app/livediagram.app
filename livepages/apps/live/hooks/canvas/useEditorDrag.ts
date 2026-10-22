@@ -54,7 +54,6 @@ import { debugLog } from '@/lib/debug-log';
 import { beginCanvasGesture } from '@/lib/canvas-gesture';
 import { applyOverlay, clearLocalPreview, localPreview, setLocalPreview } from '@/lib/drag-preview';
 import { dragWaitsToEngage, gestureOfDrag } from './drag-gesture';
-import { planCardCanvasDropAt } from './plan-card-canvas-drop';
 
 // Screen-pixel distance the pointer must travel before a body drag
 // actually starts moving the element. Below this a press (even one that
@@ -359,8 +358,8 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
           });
           if (!resize) return;
           if (resize.guides !== null) scheduleGuides(resize.guides);
-          // A lone text box that fits or wraps hugs its text through the resize, in either
-          // editor mode (docs/specs/007-editor/editor-modes.md "A text box's sizing").
+          // A lone text box that fits or wraps hugs its text through the resize
+          // (docs/specs/006-document/document-structure.md, a text box's sizing).
           const textHug =
             drag.startBounds.size === 1
               ? {
@@ -516,27 +515,6 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       // The gesture's result, as the release logic below reads it, then written in one change before
       // anything else writes (docs/specs/008-canvas/drag-preview.md).
       const released = virtualTab();
-      // A Plan card released over a board's column files its item there (docs/specs/026-plan/plan-board.md
-      // "Working on a board"). Asked before the preview lands: a refused drop cancels the gesture, so the card
-      // goes back to where the drag started with no undo step left behind (docs/specs/026-plan/item-types.md).
-      const onPlanDrop = depsRef.current.onPlanCardDroppedOnBoard;
-      const planDrop =
-        drag?.kind === 'boxed' && drag.mode === 'move' && onPlanDrop
-          ? planCardCanvasDropAt(
-              released.elements,
-              drag.primaryId,
-              { x: drag.startClientX, y: drag.startClientY },
-              e.clientX,
-              e.clientY,
-            )
-          : null;
-      if (
-        planDrop &&
-        onPlanDrop?.(planDrop.card, planDrop.status, planDrop.boardId) === 'refused'
-      ) {
-        cancelDrag();
-        return;
-      }
       commitPreview();
       const d = { ...depsRef.current, activeTab: released };
       // Touch quick-connect tap (docs/specs/008-canvas/canvas-and-palette.md): the gesture entered a real drag so

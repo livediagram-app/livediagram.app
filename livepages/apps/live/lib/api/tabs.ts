@@ -303,7 +303,7 @@ export async function apiAddComment(
   shareCode: string | null = null,
   // Teammates the comment @-tags (docs/specs/012-collaboration/comment-mentions.md); cleaned server-side.
   mentions?: CommentMention[],
-  // A Sheet cell's thread (docs/specs/029-sheets/sheet.md "Cell comments"), by its cell key.
+  // A Sheet cell's thread, by its cell key.
   cell?: string,
 ): Promise<{
   id: string;

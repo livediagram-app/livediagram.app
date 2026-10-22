@@ -228,32 +228,6 @@ describe('DocumentRoom /broadcast endpoint', () => {
     });
   });
 
-  it('sequences an `ordered` system op into the catch-up log (docs/specs/026-plan/items.md)', async () => {
-    const { room, state } = newRoom();
-    const a = makeSocket();
-    seedSession(state, a, presence('p-a', 'view'));
-    const op = { kind: 'items', upserts: [], removed: ['i1'], rev: 1 };
-    await room.fetch(
-      new Request('https://room/broadcast', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ordered: true, op }),
-      }),
-    );
-    expect(received(a)[0]).toMatchObject({
-      kind: 'op',
-      from: 'system',
-      op,
-      seq: 1,
-      epoch: expect.any(String),
-    });
-    // A fresh client asking to catch up gets it replayed.
-    const b = makeSocket();
-    seedSession(state, b, presence('p-b', 'view'));
-    room.webSocketMessage(b as never, JSON.stringify({ kind: 'sync', epoch: null, lastSeq: 0 }));
-    expect(receivedOf(b, 'catchup')[0]?.ops).toEqual([{ from: 'system', seq: 1, op }]);
-  });
-
   it('returns 400 when the body is not valid JSON', async () => {
     const { room } = newRoom();
     const res = await room.fetch(

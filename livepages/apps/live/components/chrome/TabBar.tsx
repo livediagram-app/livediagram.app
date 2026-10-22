@@ -1,7 +1,5 @@
 import { useButtonLabelsSetting } from '@/hooks/ui/useDockNames';
 import dynamic from 'next/dynamic';
-import { tabDataRows } from './tab-data-rows';
-import { hasPlanContent } from '@/hooks/plan/usePlanNeeded';
 import { MenuErrorBoundary } from '@/components/primitives/MenuErrorBoundary';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { scrollLeftToReveal } from './tab-strip-scroll';
@@ -26,7 +24,6 @@ const PortalMenu = dynamic(() => import('./TabPortalMenu').then((m) => m.PortalM
 });
 import { TabPill, type TabPillCtx } from './TabPill';
 import type { AccessLevel } from '@livepages/api-schema';
-import { deleteTabWarning } from '@/hooks/forms/forms-feeding';
 
 // Canvas-scoped actions folded into the unified tab / canvas menu. (Add-element actions and the
 // Cleanup category used to live here too but were removed: the palette and quick-connect cover
@@ -216,14 +213,8 @@ export function TabBar({
   // onCloseCanvasMenu — so each caller passes its own.
   const tabMenuProps = (tab: Tab, close: () => void) => ({
     canDelete: tabs.length > 1,
-    // Deleting a board or sheet a form sends to unpublishes the form: its confirmation says so first.
-    deleteWarning: deleteTabWarning(tabs, tab.id),
     canClearContent: activeTabHasContent && !tab.locked,
     locked: tab.locked === true,
-    // A Plan tab's cards are its document's items: it is not added to another document
-    // (docs/specs/026-plan/plan-mode.md "Switching modes keeps the tab").
-    planTab: hasPlanContent(tab.elements, null),
-    dataRows: tabDataRows(tab),
     selfId,
     otherDocuments,
     folderNames,

@@ -20,7 +20,6 @@ function summary(overrides: Partial<DocumentSummary>): DocumentSummary {
     source: null,
     opensIn: null,
     tabKind: null,
-    templateFamily: null,
     savedAt: 1,
     createdAt: 1,
     empty: false,

@@ -1,15 +1,9 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { TabVote } from '@livepages/document';
+import { afterEach, describe, expect, it } from 'vitest';
+import type { Element, TabVote } from '@livepages/document';
 import { VotePanel } from './VotePanel';
 
-// docs/specs/012-collaboration/session-tools.md "Voting on Plan cards": the results name a card by its number and
-// title.
-const plan = {
-  items: new Map([['i1', { id: 'i1', key: 12, fields: { title: 'Ship it' } }]]),
-};
-vi.mock('@/components/plan/PlanContext', () => ({ usePlan: () => plan }));
 afterEach(cleanup);
 // jsdom has no ResizeObserver; the movable panel measures itself with one.
 globalThis.ResizeObserver ??= class {
@@ -22,19 +16,30 @@ const vote: TabVote = {
   active: false,
   revealed: true,
   votesPerPerson: 3,
-  votes: { 'item:i1': ['p', 'q'], 'item:gone': ['p'] },
+  votes: { e1: ['p', 'q'], gone: ['p'] },
 };
+const shipIt = {
+  id: 'e1',
+  type: 'shape',
+  shape: 'square',
+  x: 0,
+  y: 0,
+  width: 120,
+  height: 60,
+  label: 'Ship it',
+} as Element;
 
 describe('VotePanel results', () => {
-  it('names a card by its number and title, and a card no longer here as a card', () => {
+  // docs/specs/012-collaboration/session-tools.md: the results name each element its dots went to.
+  it('names an element by its label, and one no longer here as an element', () => {
     render(
       <VotePanel
         vote={vote}
-        elements={[]}
+        elements={[shipIt]}
         participantCount={2}
         results={[
-          { id: 'item:i1', votes: 2 },
-          { id: 'item:gone', votes: 1 },
+          { id: 'e1', votes: 2 },
+          { id: 'gone', votes: 1 },
         ]}
         reviewIndex={0}
         onJumpToResult={() => {}}
@@ -52,8 +57,8 @@ describe('VotePanel results', () => {
         onDoneReview={() => {}}
       />,
     );
-    expect(screen.getByText('#12 Ship it')).toBeTruthy();
-    expect(screen.getByText('Card')).toBeTruthy();
+    expect(screen.getByText('Ship it')).toBeTruthy();
+    expect(screen.getByText('Element')).toBeTruthy();
   });
 });
 

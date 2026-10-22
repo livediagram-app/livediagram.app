@@ -236,8 +236,8 @@ function behaviourSkin(
 export function defaultTextColor(element: BoxedElement, surface: CanvasSurface = 'light'): string {
   const skin = behaviourSkin(element, surface);
   if (skin) return skin.text;
-  // Text with no colour of its own is written in Ink, on every theme and in either editor mode
-  // (docs/specs/007-editor/editor-modes.md "One look").
+  // Text with no colour of its own is written in Ink, on every theme
+  // (docs/specs/008-canvas/canvas-and-palette.md "Colours").
   if (element.type === 'text') return PEN_INK[surface];
   // An accent-bar web component (docs/specs/009-elements/web-components-and-no-groups.md) writes white on its bar, on any
   // paper: the bar is the accent, not the surface.
@@ -376,8 +376,7 @@ export function defaultStrokeColor(
 ): string {
   const skin = behaviourSkin(element, surface);
   if (skin) return skin.stroke;
-  // A pen stroke with no colour of its own is drawn in Ink (docs/specs/007-editor/editor-modes.md
-  // "One look"); a highlighter keeps its own recipe.
+  // A pen stroke with no colour of its own is drawn in Ink; a highlighter keeps its own recipe.
   if (element.type === 'freehand' && element.pen !== 'highlighter') return PEN_INK[surface];
   if (surface === 'dark') {
     switch (element.type) {
@@ -485,9 +484,7 @@ export function supportsColours(element: Element): boolean {
 // distinct from ArrowElement's `strokeWidth: number` (raw px). A
 // non-narrowing predicate would let setters that write a BorderStroke
 // land on arrows, which TS would (correctly) reject.
-export function supportsBorder(
-  element: Element,
-): element is ShapeElement | FreehandElement {
+export function supportsBorder(element: Element): element is ShapeElement | FreehandElement {
   return element.type === 'shape' || element.type === 'freehand';
 }
 
@@ -539,11 +536,6 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   'line-chart',
   'code-block',
   'checklist',
-  // Plan board and card (docs/specs/026-plan/plan-board.md) paint their own surfaces and stripes.
-  'plan-board',
-  'plan-card',
-  'plan-view',
-  'plan-sheet',
   // Legend (docs/specs/009-elements/pie-chart.md): LegendView paints its own card and rows.
   'legend',
   // Sankey (docs/specs/009-elements/sankey.md): nodes and bands, coloured per node; no box to stroke.

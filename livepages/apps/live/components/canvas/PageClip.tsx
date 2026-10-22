@@ -12,7 +12,7 @@ import {
 import { ChartGroundsProvider, PageSurfacesProvider } from './CanvasSurfaceContext';
 import { usePageBackgroundPreview, withPreviewedBackgrounds } from '@/lib/page-background-preview';
 
-// Pages mode cuts elements off at the page edges (docs/specs/007-editor/editor-modes.md "The
+// Pages mode cuts elements off at the page edges (docs/specs/007-editor/pages-mode.md "The
 // pages"): whatever hangs off a page is hidden, and cannot be pressed, as if the pages were the
 // only paper. A layer over the canvas world clipped to the pages, holding the element views only:
 // the selection grips are portalled to their own layer above it, so an element hanging off a page

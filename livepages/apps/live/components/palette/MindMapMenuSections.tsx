@@ -19,7 +19,7 @@ import {
   lucideListTree,
   lucideNetwork,
 } from '@livepages/icons/lucide';
-import { OptionRows } from '@/components/plan/OptionRows';
+import { OptionRows } from '@/components/primitives/OptionRows';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { MENU_ICON_PX } from './context-menu-icons';

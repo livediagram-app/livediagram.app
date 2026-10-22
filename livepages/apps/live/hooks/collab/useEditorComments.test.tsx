@@ -116,8 +116,7 @@ describe('useEditorComments telemetry', () => {
   });
 });
 
-// A Sheet cell's thread (docs/specs/029-sheets/sheet.md "Cell comments"): every change names the cell, and opening
-// one is its own toggle beside the element's.
+// A Sheet cell's thread: every change names the cell, and opening one is its own toggle beside the element's.
 describe('useEditorComments on a Sheet cell', () => {
   beforeEach(() => {
     trackMock.mockReset();

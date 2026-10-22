@@ -7,17 +7,16 @@ import { closeStartForBlank } from './close-start-for-blank';
 afterEach(() => localStorage.clear());
 
 describe('closeStartForBlank', () => {
-  it('closes the start of a blank in its own mode', () => {
-    expect(closeStartForBlank('t', 'blank')).toBe(true);
-    expect(emptyCardDismissed('t:diagram')).toBe(true);
-    expect(closeStartForBlank('u', 'whiteboard')).toBe(true);
-    expect(emptyCardDismissed('u:draw')).toBe(true);
+  it('closes the start of a blank', () => {
+    expect(closeStartForBlank('t', 'blank-illustration')).toBe(true);
+    expect(emptyCardDismissed('t:pages')).toBe(true);
+    expect(closeStartForBlank('u', 'blank-slide-deck')).toBe(true);
+    expect(emptyCardDismissed('u:pages')).toBe(true);
   });
 
-  it('leaves a template, a Plan blank and no template alone', () => {
-    expect(closeStartForBlank('t', 'flowchart')).toBe(false);
-    expect(closeStartForBlank('t', 'blank-plan')).toBe(false);
+  it('leaves a template and no template alone', () => {
+    expect(closeStartForBlank('t', 'slide-deck')).toBe(false);
     expect(closeStartForBlank('t', null)).toBe(false);
-    expect(emptyCardDismissed('t:diagram')).toBe(false);
+    expect(emptyCardDismissed('t:pages')).toBe(false);
   });
 });

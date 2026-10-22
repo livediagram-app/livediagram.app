@@ -1,9 +1,7 @@
 // Text serialisation of a Tab: the non-visual export formats (JSON snapshot and Markdown outline), shared by the
 // editor's Export dialog and the CLI's export. They share nothing with a rasteriser beyond the Tab data model.
 
-import type { Item, ItemTypeCatalogue } from '@livepages/items';
 import { isBoxed, type ArrowElement, type BoxedElement, type Tab } from './index';
-import { tabExportItems, tabPlanMarkdown, type TabPlanData } from './export-tab-plan';
 
 // ---------------------------------------------------------------------
 // File (JSON)
@@ -25,25 +23,17 @@ export type ExportedTabEnvelope = {
   kind: 'livepages.tab';
   exportedAt: number;
   tab: Tab;
-  // The items the tab shows and the document's stored type catalogue (docs/specs/026-plan/items.md "Copies and
-  // exports"). Additive: absent when the tab shows no items, so the schema version holds.
-  items?: Item[];
-  itemTypes?: ItemTypeCatalogue;
 };
 
 // The JSON envelope as a string — shared by the Blob download and the
 // export dialog's view/copy panel (docs/specs/020-import-export/mermaid.md), which shows the same text
 // in an editable box.
-// `plan`: the document's items, so a tab with Plan boards or cards carries them.
-export function tabToJsonText(tab: Tab, plan?: TabPlanData): string {
-  const items = plan ? tabExportItems(tab, plan.items) : [];
+export function tabToJsonText(tab: Tab): string {
   const envelope: ExportedTabEnvelope = {
     schemaVersion: TAB_SCHEMA_VERSION,
     kind: 'livepages.tab',
     exportedAt: Date.now(),
     tab,
-    ...(items.length ? { items } : {}),
-    ...(items.length && plan?.catalogue ? { itemTypes: plan.catalogue } : {}),
   };
   return JSON.stringify(envelope, null, 2);
 }
@@ -67,8 +57,7 @@ export function tabToJsonText(tab: Tab, plan?: TabPlanData): string {
 // only the side branches (issue #985). A free line that joins nothing, with no label, says nothing and stays out.
 // The markdown outline as a string — shared by the Blob download and the
 // export dialog's view/copy panel (docs/specs/020-import-export/mermaid.md).
-// `plan`: the document's items, so Plan boards and cards list their cards.
-export function tabToMarkdownText(tab: Tab, plan?: TabPlanData): string {
+export function tabToMarkdownText(tab: Tab): string {
   const lines: string[] = [];
   lines.push(`# ${tab.name || 'Untitled tab'}`);
   lines.push('');
@@ -111,10 +100,7 @@ export function tabToMarkdownText(tab: Tab, plan?: TabPlanData): string {
     lines.push('');
   }
 
-  const planLines = plan ? tabPlanMarkdown(tab, plan) : [];
-  lines.push(...planLines);
-
-  if (labelledBoxed.length === 0 && connections.length === 0 && planLines.length === 0) {
+  if (labelledBoxed.length === 0 && connections.length === 0) {
     lines.push('_No labelled content._');
   }
   return lines.join('\n');

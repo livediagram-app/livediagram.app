@@ -1,5 +1,5 @@
-// Recipe Card template (kind `recipe-card`, docs/specs/007-editor/templates-by-mode.md
-// "Pages templates"): a recipe to share, a made-up weeknight bake, that opens in Pages
+// Recipe Card template (kind `recipe-card`, docs/specs/008-canvas/canvas-and-palette.md
+// "Templates"): a recipe to share, a made-up weeknight bake, that opens in Pages
 // on two pages sized for a feed: a Square page for the dish and a Portrait post (4:5) page for
 // the method, so the pair posts as a carousel.
 //

@@ -2,10 +2,10 @@ import type { Page } from '@playwright/test';
 import { penColourHex, WHITEBOARD_INK } from '@livepages/document';
 import { dismissQuickTour, expect, expectNoPageErrors, seedTab, test } from './fixtures';
 
-// The quick style panel on a mixed whiteboard selection (docs/specs/008-canvas/quick-style-panel.md
+// The quick style panel on a mixed selection (docs/specs/008-canvas/quick-style-panel.md
 // "Multi-selection"), as a pasted or imported board selects: every row styles what it fits,
-// stickies and images are passed over, named stock colours draw in the board's version
-// (docs/specs/023-draw-mode/draw-mode.md "Imported and pasted content"). Dark mode throughout.
+// stickies and images are passed over, named stock colours draw in the canvas's version
+// (docs/specs/008-canvas/canvas-and-palette.md). Dark mode throughout.
 
 const SHOTS = process.env.E2E_SHOTS_DIR;
 const panel = (page: Page) => page.getByRole('region', { name: 'Quick style' });

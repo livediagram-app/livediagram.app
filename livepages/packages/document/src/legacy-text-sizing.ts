@@ -1,5 +1,5 @@
-// Loading a text box saved with `autoWidth` (docs/specs/007-editor/editor-modes.md "A text box's
-// sizing"). One field, `sizing`, now says how a text box sizes itself: `autoWidth: true` was a box
+// Loading a text box saved with `autoWidth` (docs/specs/006-document/document-structure.md "Data
+// model"). One field, `sizing`, now says how a text box sizes itself: `autoWidth: true` was a box
 // whose width followed its words, so it becomes `'fit'`; `autoWidth: false` said nothing and is
 // dropped. A sizing already stored wins. Runs where stored elements enter (./stored-elements).
 import type { Element } from './index';

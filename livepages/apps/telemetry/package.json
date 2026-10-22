@@ -13,7 +13,6 @@
   },
   "dependencies": {
     "@livepages/api-schema": "workspace:*",
-    "@livepages/forms": "workspace:*",
     "@livepages/icons": "workspace:*",
     "@livepages/ui": "workspace:*",
     "next": "^16.4.1",
