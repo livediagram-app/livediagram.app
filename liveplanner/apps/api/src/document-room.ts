@@ -254,7 +254,6 @@ export class DocumentRoom implements DurableObject {
       v.verifiedRole,
       v.tabScope,
       v.shareCode,
-      v.account,
       v.personTag,
       v.workbenchPairing,
       v.adderKey,
@@ -298,7 +297,6 @@ export class DocumentRoom implements DurableObject {
     verifiedRole?: AccessLevel,
     tabScope: string | null = null,
     shareCode: string | null = null,
-    account = false,
     personTag: string | null = null,
     workbenchPairing: string | null = null,
     adderKey: string | null = null,
@@ -310,7 +308,6 @@ export class DocumentRoom implements DurableObject {
           verifiedRole,
           tabScope,
           shareCode,
-          account,
           personTag,
           workbenchPairing,
           adderKey,
@@ -502,17 +499,6 @@ export class DocumentRoom implements DurableObject {
     if (!decision.admit) return;
     const session = this.readSession(ws);
     if (!session) return;
-    if (msg.kind === 'identity') {
-      // An identity update (docs/specs/014-identity/profile-picture.md §4): the hello rules again,
-      // keeping the tab this session is on, then a fresh roster. Not a join, so none of the join's
-      // side effects run, and a session that never said hello has nothing to update.
-      if (!session.presence) return;
-      const next = helloPresence(msg.participant, session);
-      if (session.presence.tabId !== undefined) next.tabId = session.presence.tabId;
-      ws.serializeAttachment({ ...session, presence: next } satisfies SessionAttachment);
-      this.broadcastPresence();
-      return;
-    }
     if (msg.kind === 'hello') {
       // Force the server-resolved role AND the server-assigned ephemeral id
       // onto the stored presence: the hello frame's own `role` / `id` are
@@ -776,7 +762,6 @@ export class DocumentRoom implements DurableObject {
       entries.push({
         ws,
         presence: session?.presence ?? null,
-        account: session?.account === true,
         personTag: session?.personTag ?? null,
       });
     }

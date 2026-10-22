@@ -118,8 +118,6 @@ function stateOf(session: Session | null): DeferredAuthState {
       username: null,
       email: user.email,
       createdAt: null,
-      // The accounts Worker has no profile pictures yet: the initials avatar draws everyone.
-      pictureUrl: null,
     },
     getToken,
     // The landing page sign-out returns to must not show the account's recent diagrams

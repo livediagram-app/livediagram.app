@@ -34,7 +34,7 @@ function row(over: Partial<WhatHappenedRow> & Pick<WhatHappenedRow, 'eventId'>):
     description: null,
     snapshot: {},
     document: doc('d1'),
-    actor: { name: 'Priya', color: '#f00', pictureUrl: null },
+    actor: { name: 'Priya', color: '#f00' },
     ...over,
   };
 }
@@ -125,7 +125,7 @@ describe('groupWhatHappened', () => {
         row({
           eventId: 'a',
           actorId: 'sam',
-          actor: { name: 'Sam', color: null, pictureUrl: null },
+          actor: { name: 'Sam', color: null },
         }),
         row({ eventId: 'b', occurredAt: AT - HOUR }),
       ],
@@ -134,8 +134,8 @@ describe('groupWhatHappened', () => {
     );
     expect(many[0]!.summary).toBe(true);
     expect(many[0]!.people).toEqual([
-      { id: 'sam', name: 'Sam', color: null, pictureUrl: null },
-      { id: 'priya', name: 'Priya', color: '#f00', pictureUrl: null },
+      { id: 'sam', name: 'Sam', color: null },
+      { id: 'priya', name: 'Priya', color: '#f00' },
     ]);
   });
 

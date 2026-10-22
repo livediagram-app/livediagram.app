@@ -90,7 +90,6 @@ describe('AccountsBridge', () => {
         firstName: 'Ada',
         lastName: 'Lovelace',
         fullName: 'Ada Lovelace',
-        pictureUrl: null,
       },
     });
   });

@@ -145,7 +145,6 @@ export type WorkbenchPerson = {
   id: string;
   name: string | null;
   color: string | null;
-  pictureUrl: string | null;
 };
 export type WorkbenchSessionResponse = {
   session: string;

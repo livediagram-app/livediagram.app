@@ -20,9 +20,6 @@ type DeferredAuthUser = {
   username: string | null;
   email: string | null;
   createdAt: Date | null;
-  // The resolved profile picture (docs/specs/014-identity/profile-picture.md), or null for the
-  // initials avatar.
-  pictureUrl: string | null;
 };
 
 export type DeferredAuthState = {

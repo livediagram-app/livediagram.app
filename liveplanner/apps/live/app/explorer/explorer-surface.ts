@@ -19,8 +19,6 @@ export type ExplorerSurfaceFlags = {
   guestPrompts: boolean;
   // API tokens (the timeline's token cards' Revoke) and Teams administration (New team, Invites, team settings).
   administration: boolean;
-  // The profile picture publish the app runs for a signed-in person.
-  publishPicture: boolean;
 };
 
 export function explorerSurfaceFlags(surface: ExplorerSurface): ExplorerSurfaceFlags {
@@ -31,7 +29,6 @@ export function explorerSurfaceFlags(surface: ExplorerSurface): ExplorerSurfaceF
     appearance: app,
     guestPrompts: app,
     administration: app,
-    publishPicture: app,
   };
 }
 

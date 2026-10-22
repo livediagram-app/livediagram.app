@@ -11,7 +11,6 @@ describe('verifiedSessionOf', () => {
         'X-Verified-Role': 'participate',
         'X-Verified-Tab-Scope': 't1',
         'X-Verified-Share-Code': '',
-        'X-Verified-Account': '1',
         'X-Verified-Person': 'p',
         'X-Verified-Workbench-Pairing': 'w',
         'X-Verified-Adder': 'a',
@@ -22,7 +21,6 @@ describe('verifiedSessionOf', () => {
       verifiedRole: 'participate',
       tabScope: 't1',
       shareCode: null,
-      account: true,
       personTag: 'p',
       workbenchPairing: 'w',
       adderKey: 'a',
@@ -42,7 +40,6 @@ describe('newSessionAttachment', () => {
       {
         tabScope: null,
         shareCode: null,
-        account: false,
         personTag: long,
         workbenchPairing: long,
         adderKey: long,

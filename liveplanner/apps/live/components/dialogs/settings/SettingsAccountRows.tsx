@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
-import { Button, SOLID_BRAND_DARK, PictureDisc } from '@liveplanner/ui';
+import { Button, GlyphDisc, SOLID_BRAND_DARK } from '@liveplanner/ui';
 import { SettingsRowShell } from './SettingsRowShell';
 import { SettingsSignInLink } from './SettingsSignInLink';
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
@@ -36,7 +36,7 @@ export function SettingsIdentityRow({ row }: { row: SettingsIdentityRowSpec }) {
       })
     : null;
 
-  // Signed in, the row IS the account: the picture, the name, the email and when it joined.
+  // Signed in, the row IS the account: the initial, the name, the email and when it joined.
   // A guest gets the guest row and the way in.
   const shown = signedIn
     ? {
@@ -51,14 +51,13 @@ export function SettingsIdentityRow({ row }: { row: SettingsIdentityRowSpec }) {
       row={shown}
       leading={
         signedIn ? (
-          <PictureDisc
-            pictureUrl={user?.pictureUrl}
+          <GlyphDisc
             size={IDENTITY_AVATAR_PX}
             aria-hidden
             className={`bg-brand-700 text-lg font-semibold text-white ${SOLID_BRAND_DARK}`}
           >
             {accountInitial(user)}
-          </PictureDisc>
+          </GlyphDisc>
         ) : null
       }
       descriptionContent={

@@ -16,7 +16,6 @@ type CursorRow = {
   color: string;
   x: number;
   y: number;
-  picture?: string;
 };
 // `holds`: whether the selection locks the element against editing (docs/specs/013-workspace/share-roles.md): a
 // Viewer only looks, so its selection shows its badge and holds nothing. A peer with no role (an older room) holds.
@@ -146,14 +145,7 @@ export function buildRemoteCursorRows(
     if (pos.tabId !== activeId) continue;
     const p = livePresenceById.get(id);
     if (!p) continue;
-    rows.push({
-      id,
-      name: p.name,
-      color: p.color,
-      x: pos.x,
-      y: pos.y,
-      ...(p.picture ? { picture: p.picture } : {}),
-    });
+    rows.push({ id, name: p.name, color: p.color, x: pos.x, y: pos.y });
   }
   return rows;
 }

@@ -222,7 +222,7 @@ author redaction, and the same thread list, composer and resolve control the com
   - Once there is a comment, a quiet header row says how many (**1 comment**, **3 comments**) with **Resolve** (a
     check icon and the word) at its end. While resolved, the header shows a green **Resolved** badge with
     **Reopen** beside it, and the composer is hidden.
-  - Each comment is a row: the author's avatar (28 px, their picture where the canvas has one, else initials on
+  - Each comment is a row: the author's avatar (28 px, initials on
     their colour), their name in medium weight, the relative time muted ("2m ago"; the full date and time in a
     tooltip), and the text below at 13 px with relaxed line height, line breaks kept and @-mentions as chips.
     Rows sit a hairline apart. Delete is a quiet trash icon (with a tooltip) that shows on the row's hover or

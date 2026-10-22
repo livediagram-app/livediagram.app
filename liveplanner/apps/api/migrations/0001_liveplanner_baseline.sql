@@ -9,13 +9,12 @@
 -- Identity
 -- ---------------------------------------------------------------------------------------------------------------
 
--- A person's display name, presence colour and optional profile picture, by owner id.
+-- A person's display name and presence colour, by owner id.
 CREATE TABLE participants (
-  id          TEXT    PRIMARY KEY,
-  name        TEXT    NOT NULL,
-  color       TEXT    NOT NULL,
-  created_at  INTEGER NOT NULL,
-  picture_url TEXT    NULL
+  id         TEXT    PRIMARY KEY,
+  name       TEXT    NOT NULL,
+  color      TEXT    NOT NULL,
+  created_at INTEGER NOT NULL
 );
 
 -- The guest ids a signed-in account was migrated from (POST /api/migrate), so their history still reads as theirs.
@@ -315,7 +314,6 @@ CREATE TABLE ws_tickets (
   expires_at        INTEGER NOT NULL,
   tab_scope         TEXT    NULL,
   share_code        TEXT    NULL,
-  account           INTEGER NOT NULL DEFAULT 0,
   person_tag        TEXT,
   workbench_pairing TEXT    NULL,
   adder_key         TEXT    NULL,

@@ -41,10 +41,6 @@ export type SessionAttachment = {
   //     so revoking or rescoping that code can close exactly its sockets.
   tabScope?: string | null;
   shareCode?: string | null;
-  //   - `account`: a verified account holds this session, from X-Verified-Account
-  //     (docs/specs/014-identity/profile-picture.md §6). Only such a session may put a picture on the
-  //     roster, and only such a session receives the pictures on it.
-  account?: boolean;
   //   - `personTag`: the verified account's per-document person tag, from X-Verified-Person
   //     (docs/specs/024-agents/agent-changesets.md "Held elements", CS39): how the room tells an
   //     agent's owner's own sessions apart without holding an owner id. 64 hex characters.
@@ -72,7 +68,6 @@ type VerifiedSession = {
   verifiedRole?: AccessLevel;
   tabScope: string | null;
   shareCode: string | null;
-  account: boolean;
   personTag: string | null;
   workbenchPairing: string | null;
   adderKey: string | null;
@@ -92,7 +87,6 @@ export function verifiedSessionOf(request: Request): VerifiedSession {
     verifiedRole: isAccessLevel(role) ? role : undefined,
     tabScope: header('X-Verified-Tab-Scope'),
     shareCode: header('X-Verified-Share-Code'),
-    account: request.headers.get('X-Verified-Account') === '1',
     personTag: header('X-Verified-Person'),
     workbenchPairing: header('X-Verified-Workbench-Pairing'),
     adderKey: header('X-Verified-Adder'),
@@ -116,7 +110,6 @@ export function newSessionAttachment(v: VerifiedSession, presenceId: string): Se
     presence: null,
     tabScope: v.tabScope,
     shareCode: v.shareCode,
-    account: v.account,
     personTag: v.personTag?.slice(0, MAX_PERSON_TAG_LEN) ?? null,
     workbenchPairing: v.workbenchPairing?.slice(0, MAX_PAIRING_ID_LEN) ?? null,
     adderKey: v.adderKey?.slice(0, ADDER_KEY_LENGTH) ?? null,

@@ -1597,10 +1597,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone turned off the email that arrives when a teammate assigns them an action, in Settings > Notifications.',
   'UI|Toggled|NotifyActionAssignedOn':
     'Someone turned on the email that arrives when a teammate assigns them an action, in Settings > Notifications.',
-  'UI|Toggled|ShowProfilePictureOff':
-    'Someone stopped showing their profile picture to collaborators, in Settings > Account.',
-  'UI|Toggled|ShowProfilePictureOn':
-    'Someone started showing their profile picture to collaborators again, in Settings > Account.',
   'UI|Toggled|NotifyFormResponsesOff':
     'Someone turned off the email they get when somebody fills in one of their forms.',
   'UI|Toggled|NotifyFormResponsesOn':

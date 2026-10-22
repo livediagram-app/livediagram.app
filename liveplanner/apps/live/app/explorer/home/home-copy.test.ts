@@ -17,7 +17,6 @@ const person = (name: string | null): HomePerson => ({
   id: name ?? 'x',
   name,
   color: null,
-  pictureUrl: null,
 });
 const doc: HomeDocument = {
   documentId: 'd1',

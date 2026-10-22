@@ -22,7 +22,6 @@ describe('explorerSurfaceFlags', () => {
       appearance: false,
       guestPrompts: false,
       administration: false,
-      publishPicture: false,
     });
   });
 });

@@ -5195,11 +5195,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       name: {
         type: ['string', 'null'],
       },
-      pictureUrl: {
-        type: ['string', 'null'],
-      },
     },
-    required: ['id', 'name', 'color', 'pictureUrl'],
+    required: ['id', 'name', 'color'],
     type: 'object',
   },
   HomeResponse: {
@@ -7314,11 +7311,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       name: {
         type: 'string',
       },
-      pictureUrl: {
-        type: ['string', 'null'],
-      },
     },
-    required: ['id', 'name', 'color', 'createdAt', 'pictureUrl'],
+    required: ['id', 'name', 'color', 'createdAt'],
     type: 'object',
   },
   ParticipantResponse: {
@@ -10608,9 +10602,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       name: {
         type: ['string', 'null'],
       },
-      pictureUrl: {
-        type: ['string', 'null'],
-      },
       role: {
         $ref: '#/components/schemas/TeamRole',
       },
@@ -10635,7 +10626,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       'role',
       'status',
       'name',
-      'pictureUrl',
       'createdAt',
       'updatedAt',
     ],
@@ -11508,11 +11498,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       name: {
         type: ['string', 'null'],
       },
-      pictureUrl: {
-        type: ['string', 'null'],
-      },
     },
-    required: ['id', 'name', 'color', 'pictureUrl'],
+    required: ['id', 'name', 'color'],
     type: 'object',
   },
   WorkbenchRole: {

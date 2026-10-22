@@ -12,7 +12,7 @@ vi.mock('@/lib/api-client', () => ({
   apiCreateRoomTicket: vi.fn(async () => null),
   connectRoom: vi.fn((_doc: string, _self: unknown, handlers: RoomHandlers) => {
     room.handlers = handlers;
-    return { send: vi.fn(), close: vi.fn(), updateSelf: vi.fn() };
+    return { send: vi.fn(), close: vi.fn() };
   }),
 }));
 

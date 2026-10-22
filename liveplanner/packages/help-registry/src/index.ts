@@ -292,7 +292,7 @@ export const articles: Article[] = [
     title: 'Settings',
     description: 'Every preference toggle, what it does, and which device it follows you to.',
     keywords:
-      'settings preferences options config configure gear cog toggles panel opacity toolbar minimap welcome tour notifications toasts reduce motion animation accessibility ai assistant telemetry anonymous usage events privacy sync account device per device defaults turn off keyboard shortcuts hotkeys keybindings ui scale element indicators badges dock position draw default folders where new documents go plan email api tokens trash delete profile picture',
+      'settings preferences options config configure gear cog toggles panel opacity toolbar minimap welcome tour notifications toasts reduce motion animation accessibility ai assistant telemetry anonymous usage events privacy sync account device per device defaults turn off keyboard shortcuts hotkeys keybindings ui scale element indicators badges dock position draw default folders where new documents go plan email api tokens trash delete',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -472,10 +472,9 @@ export const articles: Article[] = [
   {
     slug: 'signing-in',
     title: 'Signing In',
-    description:
-      'Create an account, sign in, migrate your guest documents, and use your Google picture.',
+    description: 'Create an account, sign in, and migrate your guest documents.',
     keywords:
-      'login log in sign up register email code google oauth account create migrate avatar profile picture photo initials hide collaborators',
+      'login log in sign up register email code google oauth account create migrate avatar initials',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },
@@ -1636,7 +1635,7 @@ export const articles: Article[] = [
     description:
       'Your identity card, email-notification switches, and account deletion, in Settings.',
     keywords:
-      'account profile settings email delete avatar name preferences identity danger zone menu sign out picture mentions',
+      'account profile settings email delete avatar name preferences identity danger zone menu sign out mentions',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',

@@ -179,10 +179,6 @@ export type UserPreferences = {
   notifyMentions?: boolean;
   // "Someone fills in one of my forms" (docs/specs/030-forms/forms.md "Hearing about responses").
   notifyFormResponses?: boolean;
-  // "Show my profile picture" (docs/specs/014-identity/profile-picture.md §4): whether signed-in
-  // collaborators see this account's picture. Missing = SHOW_PROFILE_PICTURE_DEFAULT. The owner
-  // always sees their own picture whatever this says.
-  showProfilePicture?: boolean;
   // The Plan tour's seen-guard (docs/specs/026-plan/plan-tour.md): true counts both tracks as seen while Power user
   // mode is on (lib/tour-tracks.ts); set with every track by Power user mode.
   planTourSeen?: boolean;
@@ -261,14 +257,6 @@ export const PREFERENCES_CHANGED_EVENT = 'liveplanner:preferences-changed';
 // default, so only an explicit `false` turns the on-move rebind off. The
 // single home for the default: the Settings row and the editor-preferences
 // hook both call this instead of re-deriving it.
-/** The switch's default (docs/specs/014-identity/profile-picture.md §4): on, by operator decision. */
-export const SHOW_PROFILE_PICTURE_DEFAULT = true;
-
-/** Whether collaborators may see this account's profile picture. */
-export function showProfilePictureEnabled(prefs: UserPreferences): boolean {
-  return prefs.showProfilePicture ?? SHOW_PROFILE_PICTURE_DEFAULT;
-}
-
 export function autoRebindArrowsEnabled(prefs: UserPreferences): boolean {
   return prefs.autoRebindArrows !== false;
 }

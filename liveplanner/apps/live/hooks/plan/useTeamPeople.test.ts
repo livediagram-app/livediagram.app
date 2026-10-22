@@ -12,7 +12,6 @@ const member = (over: Partial<TeamMember>): TeamMember => ({
   role: 'member',
   status: 'joined',
   name: 'Sam Lee',
-  pictureUrl: null,
   createdAt: 0,
   updatedAt: 0,
   ...over,

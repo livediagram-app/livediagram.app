@@ -229,7 +229,6 @@ export async function addTeamMember(
     role: 'member',
     status: 'invited',
     name: null,
-    pictureUrl: null,
     createdAt: now,
     updatedAt: now,
   };

@@ -292,7 +292,7 @@ RETURNING ...`. No row: `SELECT used_at, expires_at` classifies `used`, `expired
    level is the ticket's `role` lowered by the grant (`edit` only when both are `edit`).
 5. Insert the session: `id` a UUID, the secret `lvw_` + 43 base64url characters (32 random bytes), its hash,
    `expires_at = min(now + WORKBENCH_SESSION_TTL_MS, token.expires_at)` (WB6).
-6. `person`: the owner's `participants` row as `{ id, name, color, pictureUrl }`; no row gives `name` and `color`
+6. `person`: the owner's `participants` row as `{ id, name, color }`; no row gives `name` and `color`
    null (WB7). Answer `201 WorkbenchSessionResponse`. Log `[workbench] session-opened`.
 
 ### A request bearing `lvw_` (the choke point, `index.ts`)
@@ -418,7 +418,7 @@ window.parent` and `parseWorkbenchMessage` gives `hello-ack`. None: `unbound`, `
 ### The editor in a workbench
 
 `WorkbenchAuthBridge` publishes `{ authLoaded: true, isSignedIn: true, userId: person.id, user: { id, firstName:
-person.name, lastName: null, fullName: person.name, username: null, email: null, createdAt: null, pictureUrl },
+person.name, lastName: null, fullName: person.name, username: null, email: null, createdAt: null },
 getToken: async () => currentSecret, signOut: noop, deleteAccount: null }` and registers
 `registerTokenProvider(() => currentSecret)` in a layout effect, before the editor's first fetch.
 
@@ -441,25 +441,25 @@ randomColor() }`; `apiSaveSelf` never runs (I9).
 
 The Surface table, every gate `workbenchMode` touches (`appChrome` is `surface === 'app'`):
 
-| Gate                                                                                                                      | File                                                         | In a workbench                                            |
-| ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ | --------------------------------------------------------- |
-| `EditorHeader` (and with it the account menu, Share, Make a copy, role pill)                                              | `EditorView.tsx`                                             | Not rendered                                              |
-| TabBar, palette, toolbars, Quick style, panels, search                                                                    | `EditorView.tsx`                                             | Rendered as in the app                                    |
-| `EmbedChrome`                                                                                                             | `EditorView.tsx`                                             | Not rendered; `WorkbenchChrome` instead                   |
-| Explorer (popover and status-screen panel)                                                                                | `useCanvasChromePanels.tsx`, `editor-page.tsx` status shells | Not rendered; status screens use `EmbedShell`             |
-| AI panel, AI palette entries                                                                                              | `CanvasAiPanel.tsx`, `useCapabilities` consumer              | `aiEnabled` read as false                                 |
-| Sign-in banner, theme-mode banner, power-user offer                                                                       | `EditorView.tsx`, `usePowerUserOffer`                        | Off                                                       |
-| Settings categories `ai`, `documents`, `account`, `tokens`; the Appearance choice                                         | `settings-catalogue.ts`                                      | Hidden                                                    |
-| Share, delete, move, take offline, copy, AI commands                                                                      | `editor-commands.ts`                                         | Absent                                                    |
-| TabBar "copy to another document"                                                                                         | `EditorView.tsx` `otherDocuments`                            | `[]`                                                      |
-| Custom theme writes (theme builder save and delete)                                                                       | their hosts                                                  | Absent; reads stay                                        |
-| `useFolders`, `useFavourites`, `useTeams`, `useTeamPeople`, `useTeamLibrariesSweep`, `useShareLinks`, `usePublishPicture` | `useEditorState.ts`                                          | `enabled: false`                                          |
-| `useCommentMentions`, `useAssigneeOptions`                                                                                | `hooks/collab`                                               | Candidates from presence only; no team read, no notify    |
-| Identity screen                                                                                                           | `useEditorState.ts` `joinScreenOpen`                         | Never                                                     |
-| `defaultPan`, `useModeDefaultTool` embed arguments                                                                        | `useEditorState.ts`                                          | As the app (`false`)                                      |
-| Element indicators, comment badges                                                                                        | `EditorView.tsx`                                             | As the app                                                |
-| `DocumentTrashedCard`                                                                                                     | `editor-page.tsx`                                            | `restorable={false}`                                      |
-| `LoadErrorCard`, `NotFound`                                                                                               | `editor-page.tsx`                                            | `embed` forms (no recovery card; create-new in a new tab) |
+| Gate                                                                                                 | File                                                         | In a workbench                                            |
+| ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ | --------------------------------------------------------- |
+| `EditorHeader` (and with it the account menu, Share, Make a copy, role pill)                         | `EditorView.tsx`                                             | Not rendered                                              |
+| TabBar, palette, toolbars, Quick style, panels, search                                               | `EditorView.tsx`                                             | Rendered as in the app                                    |
+| `EmbedChrome`                                                                                        | `EditorView.tsx`                                             | Not rendered; `WorkbenchChrome` instead                   |
+| Explorer (popover and status-screen panel)                                                           | `useCanvasChromePanels.tsx`, `editor-page.tsx` status shells | Not rendered; status screens use `EmbedShell`             |
+| AI panel, AI palette entries                                                                         | `CanvasAiPanel.tsx`, `useCapabilities` consumer              | `aiEnabled` read as false                                 |
+| Sign-in banner, theme-mode banner, power-user offer                                                  | `EditorView.tsx`, `usePowerUserOffer`                        | Off                                                       |
+| Settings categories `ai`, `documents`, `account`, `tokens`; the Appearance choice                    | `settings-catalogue.ts`                                      | Hidden                                                    |
+| Share, delete, move, take offline, copy, AI commands                                                 | `editor-commands.ts`                                         | Absent                                                    |
+| TabBar "copy to another document"                                                                    | `EditorView.tsx` `otherDocuments`                            | `[]`                                                      |
+| Custom theme writes (theme builder save and delete)                                                  | their hosts                                                  | Absent; reads stay                                        |
+| `useFolders`, `useFavourites`, `useTeams`, `useTeamPeople`, `useTeamLibrariesSweep`, `useShareLinks` | `useEditorState.ts`                                          | `enabled: false`                                          |
+| `useCommentMentions`, `useAssigneeOptions`                                                           | `hooks/collab`                                               | Candidates from presence only; no team read, no notify    |
+| Identity screen                                                                                      | `useEditorState.ts` `joinScreenOpen`                         | Never                                                     |
+| `defaultPan`, `useModeDefaultTool` embed arguments                                                   | `useEditorState.ts`                                          | As the app (`false`)                                      |
+| Element indicators, comment badges                                                                   | `EditorView.tsx`                                             | As the app                                                |
+| `DocumentTrashedCard`                                                                                | `editor-page.tsx`                                            | `restorable={false}`                                      |
+| `LoadErrorCard`, `NotFound`                                                                          | `editor-page.tsx`                                            | `embed` forms (no recovery card; create-new in a new tab) |
 
 Preferences: `fetchUserPreferences` runs; `writeUserPreferences` keeps the local write and the event and skips
 `apiPutPreferences` under confinement. Appearance: `liveplanner:theme` calls `setAppearanceOverride(scheme)`; before
@@ -706,7 +706,7 @@ Explorer view, the same control at the right end of the Explorer's bottom bar li
 | Settings dialog, `?settings=` links, `useOpenSettingsRequests`          | `useExplorerState.ts`, `ExplorerShell`  | Never opens                                                 |
 | Search panel's settings rows                                            | `ExplorerShell.tsx`                     | `[]`                                                        |
 | Sign-in banner, `LocalMovePrompt`                                       | `ExplorerShell.tsx`                     | Not rendered                                                |
-| `useTokens`, `usePublishPicture`                                        | `useExplorerState.ts`                   | `enabled: false`                                            |
+| `useTokens`                                                             | `useExplorerState.ts`                   | `enabled: false`                                            |
 | Teams administration: New team, the Invites row and view, team settings | `sidebar/*`, `TeamLibraryHeader`, views | Absent (WB62)                                               |
 | Timeline token cards' Revoke                                            | `timeline/*`                            | Absent                                                      |
 | Every `window.location.assign`, `<a href>`, `router.push`/`replace`     | the Explorer                            | Through `assignAppLocation` / `useAppNavigation`: the frame |
@@ -782,7 +782,6 @@ export type WorkbenchPerson = {
   id: string;
   name: string | null;
   color: string | null;
-  pictureUrl: string | null;
 };
 export type WorkbenchSessionResponse = {
   session: string;

@@ -234,13 +234,6 @@ export const NOTIFICATION_SETTINGS = settingsStack(
     ),
     toggle(
       'UI',
-      'ShowProfilePictureOn',
-      'ShowProfilePictureOff',
-      'Show My Profile Picture',
-      'Whether signed-in collaborators see your profile picture.',
-    ),
-    toggle(
-      'UI',
       'NotifyMentionsOn',
       'NotifyMentionsOff',
       'Someone Mentions Me in a Comment',
