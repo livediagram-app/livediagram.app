@@ -120,6 +120,7 @@ export function SessionButtonFace({
     const name = text || `${derived.kicker} ${derived.action}`;
     return (
       <div
+        role="button"
         aria-disabled
         aria-label={`${name}. ${
           canStart ? TOOL_BLURB[plan.tool] : 'Only people with edit access can start this.'

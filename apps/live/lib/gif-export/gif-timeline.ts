@@ -29,7 +29,7 @@ export const GIF_SIZES: readonly { id: GifSize; label: string }[] = [
   { id: 'large', label: 'Large' },
 ];
 
-// The presenting transitions' own curves (app/canvas-motion.css lvd-slide-forward, lvd-slide-fade).
+// The page transitions' curves: a slide eases in and out, a fade eases out.
 const SLIDE_EASE = cubicBezier(0.4, 0, 0.2, 1);
 const FADE_EASE = cubicBezier(0.25, 0.1, 0.25, 1);
 

@@ -92,7 +92,7 @@ A state change that swaps a whole surface animates as a React View Transition
 ([React state and effects](../003-system-architecture/react-state-and-effects.md) "Animating a state change").
 
 - **Its pace follows its surface.** A chrome surface (the start's mode switch) runs within the ceiling on a motion
-  token; a canvas surface (a slide move) follows its own spec.
+  token; a canvas surface follows its own spec.
 - **Only the named surface moves.** The document root takes no part (`view-transition-name: none` on `<html>`), so
   the rest of the page neither cross-fades nor freezes into a picture.
 - **Its animation classes** live beside the surface's other motion: the canvas's in `canvas-motion.css`, chrome's in
