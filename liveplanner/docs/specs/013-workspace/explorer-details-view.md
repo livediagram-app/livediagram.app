@@ -4,7 +4,7 @@ Status: shipped
 
 The Explorer's third way to show a folder: a dense table in the manner of a desktop file manager's
 details pane, one row per folder or document, with the facts that tell documents apart at a glance
-(what mode it was last worked in, how much talk is on it, what the reader may do with it, how big it
+(how much talk is on it, what the reader may do with it, how big it
 is, and when it was made and last changed). No categories and no grouping: one flat list, sorted
 by any column.
 
@@ -22,7 +22,7 @@ by any column.
 | Column   | A document shows                                                                   | A folder shows                          |
 | -------- | ---------------------------------------------------------------------------------- | --------------------------------------- |
 | Name     | Its name (a link that opens it), favourite star, This Browser and Made by AI pills | Its name (opens it), default marker     |
-| Type     | The mode its most recently written tab is in, as the mode's icon                   | The folder icon                         |
+| Type     | A document: Plan's icon (every tab is in Plan)                                     | The folder icon                         |
 | Comments | A speech bubble holding how many comments its tabs hold; empty for none            | Empty                                   |
 | Access   | The reader's level as a small, muted role icon: Editor, Participant or Viewer      | Empty                                   |
 | Size     | "N objects (S)": elements across all its tabs, and the stored size of those tabs   | "N items": its subfolders and documents |
@@ -36,7 +36,8 @@ by any column.
 - **Comments** show the count inside the bubble, up to 99, then "99+", centred on the bubble's body
   (not its tail). The bubble's outline is faint and the number in full contrast: the count is what
   matters.
-- **Type** is the mode of the tab written most recently, so a document worked in Draw last week and in Plan today reads Plan. The mode's icon and name are the editor's own ([Editor modes](../007-editor/editor-modes.md)).
+- **Type** tells a document from a folder: a document shows Plan's icon and name, the one editor mode
+  ([Editor mode](../007-editor/editor-modes.md)); a stored stats row of a retired mode reads as Plan.
 - **Access** is the reader's own level ([Share roles](share-roles.md)): their own documents, team
   documents and documents in this browser are Editor; a document shared with them is the role their
   link grants. The icon is the Share dialog's role icon, small and muted rather than in the role's
@@ -49,7 +50,6 @@ by any column.
   from") shows **–** in Type, Comments and Size, with the tooltip "Not counted yet". So does a document
   with no tabs, and a document shared with the reader, whose library is not the reader's.
 - **Documents in this browser** are counted in the browser from their own tabs, by the same rule.
-  This Browser keeps no time per tab, so their Type is the mode of their first tab.
 - A Created date the list does not carry (a document shared with the reader) shows **–** with the
   tooltip "Not known".
 - A `⋯` ends every row, shown on hover or keyboard focus (always on touch), opening the same menu

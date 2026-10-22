@@ -2,4 +2,4 @@
 
 Follow the references below only as needed; never upfront.
 
-- ./prototype-scope.md - when working on Build phase: Where we are now (apps, editor features, what localStorage holds) and what's still ahead (Next, Later)
+- ./prototype-scope.md - when asking where liveplanner is: not deployed yet, the apps and what the planner does, what localStorage holds, and what is still ahead (finishing the fork, launch, Later)

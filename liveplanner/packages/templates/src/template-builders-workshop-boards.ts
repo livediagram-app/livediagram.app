@@ -9,7 +9,7 @@
 //
 // Pure: takes a centre (cx, cy), returns a fresh Element[].
 
-import { agendaFitHeight, createShape, createText, type Element } from '@liveplanner/document';
+import { createShape, createText, type Element } from '@liveplanner/document';
 import {
   actionChecklist,
   checklistHeight,
@@ -214,11 +214,7 @@ export function buildWorkshopBoard(cx: number, cy: number): Element[] {
   // Goals: the checklist, then the out-of-scope heading and its notes.
   const goalsH = checklistHeight(WORKSHOP_GOALS.length);
   const scopeH = 36 + 8 + stickyGridHeight(WORKSHOP_OUT_OF_SCOPE.length, 1, ruleH);
-  const agendaH = agendaFitHeight({
-    width: inner,
-    height: 0,
-    agendaItems: WORKSHOP_AGENDA,
-  });
+  const agendaH = checklistHeight(WORKSHOP_AGENDA.length);
   const body = Math.max(parkingTop + parkingH, goalsH + sectionGap + scopeH, agendaH);
   const colH = retroNotesTop(0) + body + pad;
   const totalW = railW + (colW + gap) * 3;
@@ -292,20 +288,22 @@ export function buildWorkshopBoard(cx: number, cy: number): Element[] {
       top,
       colW,
       'Agenda',
-      'Press a segment to start its timer',
+      'Tick each segment as it ends',
       'clock',
       agendaHue.headerColor,
     ),
     {
-      ...createShape('agenda', agendaX + pad, notesTop),
+      ...createShape('checklist', agendaX + pad, notesTop),
       width: inner,
       height: agendaH,
       label: 'Run of show',
-      agendaItems: WORKSHOP_AGENDA.map((item) => ({ ...item })),
+      checklistItems: WORKSHOP_AGENDA.map((item) => ({
+        text: `${item.label} · ${item.minutes} min`,
+        done: false,
+      })),
       ...CONTENT,
     },
-    // Under the agenda, the one tool it does not run itself: the vote on the ideas (each segment, the
-    // break included, starts its own timer).
+    // Under the agenda, the vote on the ideas.
     {
       ...createShape('session-button', agendaX + pad, kitY),
       width: inner,

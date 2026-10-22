@@ -72,12 +72,6 @@ export const MCP_TOOL_METRICS: readonly Metric[] = [
   mcpTool('FindDocuments', 'Find Documents', 'Searching the user’s documents by name.'),
   mcpTool('ReadDocument', 'Read Document', 'Reading one document’s tabs and elements.'),
   mcpTool('ListTemplates', 'List Templates', 'Listing the templates a document can start from.'),
-  mcpTool('SearchIcons', 'Search Icons', 'Finding icons by name for diagram boxes.'),
-  mcpTool(
-    'ListImages',
-    'List Images',
-    'Listing the user’s image gallery, to place their pictures.',
-  ),
   mcpTool('CreateDocument', 'Create Document', 'Making a new document.'),
   mcpTool('AddTab', 'Add Tab', 'Adding a tab to an existing document.'),
   mcpTool('UpdateDocument', 'Update Document', 'Editing a document’s elements.'),
@@ -123,12 +117,6 @@ export const MCP_TOOL_METRICS: readonly Metric[] = [
     'Setting, clearing or formatting cells, or changing a sheet’s rows and columns.',
   ),
   mcpTool('AddSheet', 'Add Sheet', 'Putting a new Sheet on a tab, blank or from rows or CSV.'),
-  mcpTool(
-    'ChangePages',
-    'Change Pages',
-    'Adding, changing, laying out, moving or deleting pages: slides, logos, infographics.',
-  ),
-  mcpTool('WriteArticle', 'Write Article', 'Writing an article on pages from Markdown.'),
   mcpTool(
     'ReadForm',
     'Read Form',

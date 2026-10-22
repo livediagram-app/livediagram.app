@@ -24,7 +24,6 @@ Derived from [Plan tour](../plan-tour.md). The engine, popover and DOM helpers a
 | `apps/live/components/tour/useTourEngine.ts`      | The shared step runner: step index, direction, target rect, prepare / wait / heal                                                                                      |
 | `apps/live/components/tour/TourStage.tsx`         | The shared overlay: card backdrop, highlight ring, `TourPopover`                                                                                                       |
 | `apps/live/components/tour/TourPopover.tsx`       | `copy` (`TourCardCopy`), `welcomeArt` and `welcomeChoices` (`TourWelcomeChoice[]`, replacing accept)                                                                   |
-| `apps/live/components/tour/TourHost.tsx`          | The Diagram tour on the engine; publishes itself to `tour-active`                                                                                                      |
 | `apps/live/components/tour/plan-tour-steps.ts`    | `planTourSteps`, `PLAN_TOUR_STEPS` (Boards), `PlanTourApi`, `PlanTourOffer`, `boardRoot`, `sheetRoot`, `firstCardOn`, `visiblePlanWork`, `needsReveal`, telemetry type |
 | `apps/live/components/tour/PlanTourHost.tsx`      | Offer, subject, relaunch, end; builds `PlanTourApi`                                                                                                                    |
 | `apps/live/components/tour/art/plan-tour-art.tsx` | The welcome cards' illustrations: `BoardsTourArt`, `SheetsTourArt`, `PlanChoiceTourArt` (in `apps/live/components/tour/art/TourArtFrame.tsx`)                          |
@@ -186,7 +185,7 @@ another document is kept. Nothing writes a record any more.
 | The subject is deleted mid-tour                   | The tour ends as skipped                            |
 | The person switches tab or leaves Plan mid-tour   | The tour ends as skipped; the card panel is closed  |
 | A Sheet's toolbar or cog not shown to this person | Its step finds no target and is skipped             |
-| Diagram or Workshop tour on screen                | The Plan tour waits for `activeTour()` to clear     |
+| Diagram tour on screen                            | The Plan tour waits for `activeTour()` to clear     |
 | Locked tab                                        | No offer                                            |
 | A leftover record from the old tour               | Swept on the next visit to that document, as before |
 

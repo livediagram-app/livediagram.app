@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { editorModeLabel, type EditorMode, type Element } from '@liveplanner/document';
+import type { Element } from '@liveplanner/document';
 import { CompactEmptyState, HoverCard, NoMatches, SearchIcon } from '@liveplanner/ui';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { track } from '@/lib/telemetry';
@@ -13,9 +13,6 @@ import type { PaletteTileDef } from './palette-tile-defs';
 import { mergeByName, searchElementTiles } from './palette-tile-search';
 import { searchCatalogueTiles } from './palette-catalogue-search';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
-import { markerTiles } from './palette-marker-tiles';
-import { loadWhiteboardPrefs } from '@/lib/whiteboard-prefs';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 
 // The Toolbar strip's Search (docs/specs/007-editor/toolbar-layout.md "Search: every element type"):
 // a button at the strip's far right, and the body of the popover it opens. The popover's card,
@@ -56,7 +53,7 @@ export function ToolbarSearchButton({
     <HoverCard
       disabled={open}
       title="Search Elements"
-      description="Find any element by name, from every category and every mode. Shortcut: S."
+      description="Find any element by name, from every category. Shortcut: S."
     >
       {button}
     </HoverCard>
@@ -64,13 +61,11 @@ export function ToolbarSearchButton({
 }
 
 export function ToolbarSearchPanel({
-  mode,
   actions,
   pendingDraw,
   planCardTiles,
   tabElements,
 }: {
-  mode: EditorMode;
   // The tab's elements: before anything is typed, the panel lists the element types on it.
   tabElements: readonly Element[];
   actions: PaletteTileActions;
@@ -81,31 +76,21 @@ export function ToolbarSearchPanel({
   // Mounted only while the popover is open, so both reset each time it opens.
   const [query, setQuery] = useState('');
   const [othersOpen, setOthersOpen] = useState(false);
-  const [unavailableOpen, setUnavailableOpen] = useState(false);
-  // Draw mode's markers as this browser last set them, read once per opening.
-  const [pens] = useState(loadWhiteboardPrefs);
-  const surface = useCanvasSurface();
   // Icons, Stickers and Technology load as a chunk of their own: re-rendered when it lands.
   const cataloguesLoaded = useIconCatalogs();
   const elements = searchElementTiles({
     query,
-    mode,
-    hasImage: actions.hasImage,
     planCardTiles,
     tabElements,
-    drawTiles: markerTiles(pens, surface),
   });
-  const catalogues = searchCatalogueTiles({ query, mode, tabElements, loaded: cataloguesLoaded });
+  const catalogues = searchCatalogueTiles({ query, tabElements, loaded: cataloguesLoaded });
   // One ranking per section across element types and catalogue entries: name matches first.
   const here = mergeByName(query, elements.here, catalogues.here);
   const elsewhere = mergeByName(query, elements.elsewhere, catalogues.elsewhere);
-  // Another mode's own elements: found, greyed out, never added here (and so never Enter's pick).
-  const unavailable = elements.unavailable;
-  const below = elsewhere.length + unavailable.length;
+  const below = elsewhere.length;
   const browsing = !query.trim();
-  const modeName = editorModeLabel(mode);
 
-  // Enter uses the best match: this mode's first, else the open accordion's first.
+  // Enter uses the best match: Plan's first, else the open accordion's first.
   const best = here[0] ?? (othersOpen ? elsewhere[0] : undefined);
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key !== 'Enter' || !best) return;
@@ -136,24 +121,18 @@ export function ToolbarSearchPanel({
         <CompactEmptyState
           size="small"
           icon={<SearchIcon />}
-          title={
-            below > 0 ? `No ${modeName} elements on this tab yet` : 'No elements on this tab yet'
-          }
+          title={below > 0 ? 'No Plan elements on this tab yet' : 'No elements on this tab yet'}
           description="Type to find any element."
         />
       ) : below > 0 ? (
-        <NoMatches
-          things={`${modeName} elements`}
-          query={query}
-          hint={`Other modes have ${below} below.`}
-        />
+        <NoMatches things="Plan elements" query={query} hint={`${below} more below.`} />
       ) : (
         <NoMatches things="elements" query={query} onClear={() => setQuery('')} />
       )}
       {elsewhere.length > 0 ? (
         <ToolbarSearchAccordion
-          title="Elements From Other Modes"
-          description="Elements other modes offer. Any of them works here too."
+          title="More Elements"
+          description="Elements from beyond Plan's palette. Any of them works here too."
           count={elsewhere.length}
           open={othersOpen}
           onToggle={() => {
@@ -162,20 +141,6 @@ export function ToolbarSearchPanel({
           }}
         >
           <PaletteTileGrid tiles={elsewhere} actions={actions} pendingDraw={pendingDraw} />
-        </ToolbarSearchAccordion>
-      ) : null}
-      {unavailable.length > 0 ? (
-        <ToolbarSearchAccordion
-          title={`Not Available in ${modeName} Mode`}
-          description="Made for another mode's own tools, so only that mode adds them."
-          count={unavailable.length}
-          open={unavailableOpen}
-          onToggle={() => {
-            if (!unavailableOpen) track('UI', 'Opened', 'ToolbarSearchUnavailable');
-            setUnavailableOpen(!unavailableOpen);
-          }}
-        >
-          <PaletteTileGrid tiles={unavailable} actions={actions} pendingDraw={pendingDraw} />
         </ToolbarSearchAccordion>
       ) : null}
     </div>

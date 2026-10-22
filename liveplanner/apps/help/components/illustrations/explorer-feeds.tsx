@@ -1,5 +1,5 @@
 // Explorer feed illustrations (docs/specs/018-help/help-app.md): Home (Jump Back In and What
-// happened), the Timeline feed and its stacking, the Inbox, Recent, Shared With Me,
+// happened), a document's History feed and its stacking, the Inbox, Recent, Shared With Me,
 // and the Spaces group of the sidebar with its teams. Drawn from the real labels in apps/live
 // (sidebar-structure.ts, home-copy.ts, ActivityPane.tsx, views.tsx, the @liveplanner/ui timeline).
 // Composed from the shared primitives plus the Explorer parts, so the house style holds.
@@ -26,15 +26,17 @@ function Pane({ x = 16, y = 12, w = 388, h }: { x?: number; y?: number; w?: numb
 }
 
 /** A section heading with its quiet link at the right and the hairline rule under it (Home). */
-function SectionHeading({ y, title, link }: { y: number; title: string; link: string }) {
+function SectionHeading({ y, title, link }: { y: number; title: string; link?: string }) {
   return (
     <g>
       <Label x={32} y={y} size={12} weight={700} tone="strong">
         {title}
       </Label>
-      <Label x={388} y={y} size={10} weight={600} tone="accent" anchor="end">
-        {link}
-      </Label>
+      {link ? (
+        <Label x={388} y={y} size={10} weight={600} tone="accent" anchor="end">
+          {link}
+        </Label>
+      ) : null}
       <line x1={32} y1={y + 10} x2={388} y2={y + 10} className="stroke-slate-200" strokeWidth={1} />
     </g>
   );
@@ -420,7 +422,7 @@ export function HomeOverview() {
           </g>
         )),
       )}
-      <SectionHeading y={168} title="What Happened" link="See Timeline" />
+      <SectionHeading y={168} title="What Happened" />
       <Label x={32} y={192} size={10} weight={700} tone="muted">
         Today
       </Label>
@@ -446,14 +448,14 @@ export function HomeOverview() {
   );
 }
 
-/** The Timeline: the header's Cards / Calendar switch and Filter, the day rail, and one day's
+/** A document's History: the header's Cards / Calendar switch and Filter, the day rail, and one day's
  *  cards, each coloured by what happened (green made, amber changed, red removed). */
 export function TimelineFeed() {
   return (
     <Scene w={420} h={206} bg="plain">
       <Pane h={182} />
       <Label x={32} y={31} size={12} weight={700} tone="strong">
-        Timeline
+        History
       </Label>
       <Tabs x={232} y={20} items={['Cards', 'Calendar']} tabW={54} h={22} />
       <rect

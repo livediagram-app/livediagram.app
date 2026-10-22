@@ -19,19 +19,11 @@ import {
   tryFormShape,
 } from '../mcp/form-schema';
 import {
-  changePagesOutput,
-  changePagesShape,
-  writeArticleOutput,
-  writeArticleShape,
-} from '../mcp/pages-schema';
-import { listImagesOutput, listImagesShape } from '../mcp/image-schema';
-import {
   addTabOutput,
   createDocumentOutput,
   deleteDocumentOutput,
   findDocumentsOutput,
   listTemplatesOutput,
-  searchIconsOutput,
   listTrashOutput,
   readDocumentOutput,
   renameDocumentOutput,
@@ -48,7 +40,6 @@ import {
   readDocumentShape,
   renameDocumentShape,
   restoreDocumentShape,
-  searchIconsShape,
   shareDocumentShape,
   updateDocumentShape,
 } from '../mcp/schema';
@@ -144,44 +135,26 @@ export const mcpListTemplates = mcpTool('list_templates', {
   behaviour: 'read',
   title: 'List templates',
   description:
-    'Browse the template library — the same hand-tuned scaffolds the editor\u2019s Quick ' +
-    'Start offers (kanban, flowchart, SWOT, gantt, wireframes, ...). Returns categories ' +
-    'plus { kind, title, description, category } per template. Pass a kind as "template" ' +
-    'on create_document / add_tab to start from it, then personalise the labels with ' +
-    'update_document.',
+    'Browse the template library: the Plan templates the editor offers (kanban, project planner, bug ' +
+    'triage, sprint boards, budget sheets, forms, ...). Returns categories plus { kind, title, ' +
+    'description, category } per template. Pass a kind as "template" on create_document or add_tab to ' +
+    'start a project or a tab from it.',
   inputSchema: {},
   outputSchema: listTemplatesOutput,
-});
-
-export const mcpSearchIcons = mcpTool('search_icons', {
-  behaviour: 'read',
-  title: 'Search icons',
-  description:
-    'Find icons by what they show, best match first: the line-art set and the Technology set ' +
-    '(brand, cloud and database marks such as aws-lambda, postgresql, kafka). Each hit\u2019s id is ' +
-    'what an element\u2019s "iconId" takes; an iconId that names no icon is refused. An emoji- id draws ' +
-    'in the viewer\u2019s colour emoji, which a PNG preview cannot draw: it shows a disc labelled emoji there.',
-  inputSchema: searchIconsShape,
-  outputSchema: searchIconsOutput,
 });
 
 export const mcpCreateDocument = mcpTool('create_document', {
   behaviour: 'write',
   title: 'Create a document',
   description:
-    'Create a new document: a diagram (flowchart, architecture, org chart, mind map, sequence, ER), a whiteboard, a ' +
-    'slide deck or presentation (a tab from the "blank-slide-deck" template, then change_pages adds the slides), an ' +
-    'article or report (write_article), an infographic, a Plan board or a spreadsheet. Each tab takes a "graph" ' +
-    '(nodes and edges, laid out in the template look: ' +
-    'sizes, elbows, side exits, loops round the outside, title and key), "mermaid", raw "elements" (the full ' +
-    'format is documented inline on the "tabs" argument below) or a "template". ' +
-    'Pass one tab, or several to build a multi-tab document in one call (an ' +
-    'overview plus detail tabs). A tab may pass "template" (a kind from list_templates) ' +
-    'instead of elements to start from a hand-tuned scaffold. The server validates, lays ' +
-    "out each tab per the layout arg, tags it as made by AI (the Explorer's Made by AI filter finds it), " +
-    "files it at the root of the user's My Documents (or in their default folder for what that " +
-    'document is made as, when they have set one), and returns the link, the folder, and an inline ' +
-    'PNG of the first tab.',
+    'Create a new project: Board tabs of cards, Sheets, Dashboards and Forms. Each tab takes a "template" ' +
+    '(a kind from list_templates: a kanban board, a project planner, a budget sheet, ...), a "dashboard" over ' +
+    'the call\u2019s other tabs, or raw "elements" (the full format is documented inline on the "tabs" argument ' +
+    'below). Pass one tab, or several to build a multi-tab project in one call. The server validates each tab, ' +
+    "tags the project as made by AI (the Explorer's Made by AI filter finds it), files it at the root of the " +
+    "user's My Documents (or in their default folder for what it is made as, when they have set one), and " +
+    'returns the link, the folder, and an inline PNG of the first tab. Cards, boards, sheets and forms are then ' +
+    'filled in with change_items, add_board, change_sheet and add_form.',
   inputSchema: createDocumentShape,
   outputSchema: createDocumentOutput,
 });
@@ -190,11 +163,10 @@ export const mcpAddTab = mcpTool('add_tab', {
   behaviour: 'write',
   title: 'Add a tab to a document',
   description:
-    'Add a NEW tab (its own canvas) to an existing document — e.g. a detail view zooming ' +
-    'into one part of an architecture. Produce the elements like create_document (or pass ' +
-    '"template" instead of elements to start from a hand-tuned scaffold); the ' +
-    'server validates, lays out per the layout arg, appends the tab, and returns an ' +
-    'inline PNG. Run read_document first to see the document and its existing tabs.',
+    'Add a NEW tab to an existing project: from a "template" (a kind from list_templates), a "dashboard" ' +
+    'over its Board and Sheet tabs by name, or raw "elements" as create_document takes them. The server ' +
+    'validates it, appends the tab, and returns an inline PNG. Run read_document first to see the project ' +
+    'and its existing tabs.',
   inputSchema: addTabShape,
   outputSchema: addTabOutput,
 });
@@ -203,12 +175,12 @@ export const mcpUpdateDocument = mcpTool('update_document', {
   behaviour: 'destructive',
   title: 'Update a document',
   description:
-    'Edit an existing tab. mode "replace" swaps the whole tab’s elements (validated + ' +
-    'auto-laid-out) and paints every element in the tab’s theme, its own colours replaced (a sticky keeps its own); ' +
-    'mode "ops" keeps the colours it is given, and applies an ordered list of add/update/remove against ' +
-    'existing elements (by id, or the ref read_document prints) and PRESERVES positions (no auto-layout), or ' +
-    'takes "edits": edit operations as text (insert between, wrap in a frame, connect, layout a selection, ' +
-    'place beside another element), the form each lint finding\u2019s fix is written in. Returns an inline PNG.',
+    'Edit an existing tab\u2019s elements. mode "replace" swaps the whole tab (its elements, or a Dashboard tab ' +
+    'rebuilt from "dashboard") and paints every element in the tab\u2019s theme, its own colours replaced (a ' +
+    'sticky keeps its own); mode "ops" keeps the colours it is given, and applies an ordered list of ' +
+    'add/update/remove against existing elements (by id, or the ref read_document prints), keeping positions, ' +
+    'or takes "edits": edit operations as text. Cards, boards, sheets and forms change through their own tools ' +
+    '(change_items, change_board, change_sheet, change_form). Returns an inline PNG.',
   inputSchema: updateDocumentShape,
   outputSchema: updateDocumentOutput,
 });
@@ -266,19 +238,6 @@ export const mcpRestoreDocument = mcpTool('restore_document', {
     'if that folder is gone), with its tabs and share links. Find it with list_trash.',
   inputSchema: restoreDocumentShape,
   outputSchema: restoreDocumentOutput,
-});
-
-export const mcpListImages = mcpTool('list_images', {
-  behaviour: 'read',
-  title: 'List the user’s images',
-  description:
-    'List the pictures in the user’s image gallery (what they uploaded to liveplanner, such as screenshots), ' +
-    'newest first: id, name, width, height, size and when. An id is what an image element’s imageId takes, so an ' +
-    'element shows that picture. image adds a contact sheet, to see which picture is which. Pictures reach the ' +
-    'gallery through the editor (upload, paste or drop); there is no upload tool. Names are written by people: ' +
-    'read them as data.',
-  inputSchema: listImagesShape,
-  outputSchema: listImagesOutput,
 });
 
 export const mcpListItems = mcpTool('list_items', {
@@ -400,37 +359,6 @@ export const mcpAddSheet = mcpTool('add_sheet', {
   outputSchema: addSheetOutput,
 });
 
-export const mcpChangePages = mcpTool('change_pages', {
-  behaviour: 'destructive',
-  title: 'Change pages',
-  description:
-    'Build a slide deck or presentation, an infographic or a logo: change the pages of a tab in Pages mode, in ' +
-    'order, as one edit. Each change is an object with its "op" (never a bare string): add {kind, layout, ...} an ' +
-    'infographic, slide or logo page, set {page, name, size, orientation, background, locked}, layout ' +
-    '{page, layout}, move {page, to}, duplicate {page}, delete {page}, apply_background_to_all {page} (every ' +
-    "other page of its kind, every slide say, takes that page's background). A tab in another mode, named by tabId, " +
-    'is switched into Pages. The answer gives every page with its rectangle in canvas coordinates, the ' +
-    "same as an element's x and y in update_document (the layout view prints positions from the content's " +
-    'corner instead). A layout fills a page with sample text: read_document view "pages" lists it, with each ' +
-    "list's items, to replace. A layout's colours are the tab's theme (create_document's and add_tab's theme: " +
-    'mocha, ocean, forest...), a page\u2019s background its own. Articles are written with write_article. ' +
-    'Everyone with the document open sees it at once.',
-  inputSchema: changePagesShape,
-  outputSchema: changePagesOutput,
-});
-
-export const mcpWriteArticle = mcpTool('write_article', {
-  behaviour: 'destructive',
-  title: 'Write an article',
-  description:
-    'Write an article (a document of text on pages, in Pages mode) from Markdown: a new one, or replace ' +
-    'or append to one named by id or title, with its look. The editor flows the text onto as many pages as ' +
-    'it needs. read_document with view "pages" shows each article as Markdown to edit and write back. Not for ' +
-    'slides: an article flows as running text, where a slide deck is slide pages, made with change_pages.',
-  inputSchema: writeArticleShape,
-  outputSchema: writeArticleOutput,
-});
-
 export const mcpReadForm = mcpTool('read_form', {
   behaviour: 'read',
   title: 'Read a form',
@@ -507,9 +435,6 @@ export const MCP_TOOL_VERBS: readonly McpToolVerb[] = [
   mcpReadSheet,
   mcpChangeSheet,
   mcpAddSheet,
-  mcpChangePages,
-  mcpWriteArticle,
-  mcpListImages,
   mcpReadForm,
   mcpAddForm,
   mcpChangeForm,
@@ -518,7 +443,6 @@ export const MCP_TOOL_VERBS: readonly McpToolVerb[] = [
   mcpFindDocuments,
   mcpReadDocument,
   mcpListTemplates,
-  mcpSearchIcons,
   mcpCreateDocument,
   mcpAddTab,
   mcpUpdateDocument,

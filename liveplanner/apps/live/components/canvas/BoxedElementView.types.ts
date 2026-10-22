@@ -12,11 +12,6 @@ import type {
 import type { DragMode } from '@/lib/canvas';
 
 export type BoxedElementViewProps = {
-  // Reaction pad (docs/specs/009-elements/reaction-pad.md): set it off, plus the burst it is currently
-  // playing and the way to retire that burst when its animation ends.
-  onFireReaction?: (element: import('@liveplanner/document').ShapeElement) => void;
-  reactionBurst?: { reaction: import('@liveplanner/document').Reaction; seed: number };
-  onReactionBurstDone?: (elementId: string) => void;
   element: BoxedElement;
   isSelected: boolean;
   // True when this element is part of an active marquee multi-selection.
@@ -90,22 +85,12 @@ export type BoxedElementViewProps = {
   chartPalette?: readonly string[];
   onCancelEdit: () => void;
   onFollowLink: (link: import('@liveplanner/document').ElementLink) => void;
-  // Press a Mode Button element (docs/specs/009-elements/mode-button.md): switches the LOCAL participant into
-  // the mode the element carries. Optional — a surface that can't change tools
-  // (the read-only embed) leaves the face inert.
-  onPressModeButton?: (element: import('@liveplanner/document').ShapeElement) => void;
-  // Bring Focus (docs/specs/012-collaboration/bring-focus.md): ask everyone else in the room to come and look at
-  // this element. Absent on a surface with nobody to ask (an export, a solo
-  // canvas), which renders the face inert.
-  onPressFocusButton?: (element: import('@liveplanner/document').ShapeElement) => void;
   // Session button (docs/specs/012-collaboration/session-button.md): press it to start the tool it carries. Absent
   // on a surface with no session to run; `sessionStartBlocked` is the softer
   // case — there IS a session, but this viewer may not start things (view
   // role), so the face renders inert and explains rather than lying.
   onPressSessionButton?: (element: import('@liveplanner/document').ShapeElement) => void;
   sessionStartBlocked?: boolean;
-  // The facilitator's name when the face is blocked because somebody else runs the session.
-  sessionRunBy?: string | null;
   // What the tab's timer is doing, so a timer button can say "Pause" /
   // "Continue" instead of always promising a fresh countdown.
   timerState?: import('@/components/canvas/SessionButtonFace').TimerState;
@@ -154,10 +139,6 @@ export type BoxedElementViewProps = {
     // Change a running or paused countdown's length, restarting it there.
     setDuration?: (ms: number) => void;
   };
-  // Reveal zone (docs/specs/009-elements/reveal-zone.md): whether THIS viewer has lifted the cover (local,
-  // ephemeral — the shared state lives on the element), and the toggle.
-  revealedForMe?: boolean;
-  onToggleReveal?: (elementId: string) => void;
   // Picker (docs/specs/012-collaboration/picker.md): resolves what a roll can land on right now and performs
   // one, returning the result to animate towards. `shared` says whether this
   // viewer's roll is written back, so the face can tell its own landing apart
@@ -167,21 +148,10 @@ export type BoxedElementViewProps = {
     shared: boolean;
     roll: () => import('@/lib/picker').PickerCandidate | null;
   };
-  // The collaboration elements (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md): who the viewer is, who
-  // else is in the room, and the writes they may make. One prop for all five
-  // faces — see CollabFaceRouter. Absent on a surface with no session behind
-  // it, which renders them readable but inert.
+  // The collaboration elements (docs/specs/012-collaboration/temperature-check.md, decision-record.md): who the
+  // viewer is and the writes they may make. One prop for the faces — see CollabFaceRouter. Absent on a surface
+  // with no session behind it, which renders them readable but inert.
   collab?: import('@/components/canvas/collab/CollabFaceRouter').CollabApi;
-  // Chair (docs/specs/009-elements/chair.md): who peer presence says is seated on this chair right
-  // now. A function of the element id rather than a map prop so the common
-  // case (no chairs on the tab) costs nothing. Occupancy is never in the
-  // document, so a disconnected sitter vacates for free.
-  chairSitters?: (
-    elementId: string,
-  ) => import('@/components/canvas/collab/FurnitureView').ChairSitter[];
-  // The viewer's current mode, so a Selection Mode button offering it renders
-  // disabled (docs/specs/009-elements/mode-button.md).
-  activeMode?: import('@liveplanner/document').SelectionMode;
   // Portal (docs/specs/009-elements/portal-element.md): resolves a portal's pairing for the face — the paired portal's
   // name for the hover card, and the travel action (undefined when unpaired, so the
   // face renders inert and says why).
@@ -195,17 +165,6 @@ export type BoxedElementViewProps = {
   // view-role visitors) may open the popover, so this is not optional the
   // way onOpenNote is — mutations are gated inside the popover instead.
   onOpenAction: (id: string) => void;
-  // Image element context: the editor passes these so the inner
-  // ImageElementView can fetch the bitmap with the right
-  // owner / share / document identity (the bytes are auth-gated by
-  // the API, see docs/specs/009-elements/images.md). View-role visitors are still allowed to
-  // see images; they just can't upload new ones via the picker.
-  imageContext?: {
-    ownerId: string;
-    documentId: string;
-    shareCode: string | null;
-    onOpenPicker?: (elementId: string) => void;
-  };
   // Open the per-element note popover. Optional so read-only viewers
   // (who shouldn't see a clickable badge) can omit it. When omitted
   // the note badge does not render.

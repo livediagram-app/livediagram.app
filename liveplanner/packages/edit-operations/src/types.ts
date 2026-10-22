@@ -7,7 +7,6 @@ import type {
   ElementId,
   ElementOp,
   Finish,
-  GraphInput,
   Tab,
   ThemeDefinition,
 } from '@liveplanner/document';
@@ -143,8 +142,6 @@ export type ReplaceOptions = ApplyOptions & {
 };
 
 export type ReplaceBody =
-  | { graph: GraphInput }
-  | { mermaid: string }
   | { template: string }
   // A new Dashboard tab (docs/specs/026-plan/plan-agents.md "Making a dashboard"); never onto an existing tab.
   | { dashboard: DashboardSpec }

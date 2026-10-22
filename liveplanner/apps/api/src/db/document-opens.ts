@@ -1,5 +1,5 @@
-// document_opens — Explorer Home's last opens (migrations 0063 and 0065,
-// docs/specs/013-workspace/explorer-home.md "Opens"; blueprint "Data and persistence"). One row per
+// document_opens — Explorer Home's last opens
+// (docs/specs/013-workspace/explorer-home.md "Opens"; blueprint "Data and persistence"). One row per
 // person per document they have opened: the last open, which Jump back in's Recent reads, and its
 // UTC day, which gates the day's one `document_opened` event (the open-day record Most used counts).
 

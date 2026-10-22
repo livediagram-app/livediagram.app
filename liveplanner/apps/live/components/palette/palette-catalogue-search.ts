@@ -1,8 +1,8 @@
 // The Toolbar strip's Search over the open-ended catalogues (docs/specs/007-editor/toolbar-layout.md
 // "Search: every element type"): Icons, Stickers and Technology, each entry a dynamic tile
 // (palette-dynamic-tiles) so it places as its category's own tile does. Split like the element
-// tiles: a catalogue the mode's palette offers is this mode's, the rest another mode's.
-import type { EditorMode, Element } from '@liveplanner/document';
+// tiles: a catalogue Plan's palette offers is here, the rest elsewhere.
+import type { Element } from '@liveplanner/document';
 import { paletteRank, type IconDef, type StickerDef, type TechIconDef } from '@liveplanner/icons';
 import { getLineArtIconCatalog } from '@/lib/icons';
 import { getStickerCatalog } from '@/lib/stickers';
@@ -18,7 +18,7 @@ import type { ElementTileSearch } from './palette-tile-search';
 export const CATALOGUE_MATCH_LIMIT = 15;
 
 type Catalogue<T> = {
-  // The PALETTE_CATEGORIES id: whether the mode offers it decides its section.
+  // The PALETTE_CATEGORIES id: whether Plan's palette offers it decides its section.
   category: 'icons' | 'stickers' | 'technology';
   entries: () => readonly T[];
   id: (entry: T) => string;
@@ -91,28 +91,25 @@ function onTab<T>(cat: Catalogue<T>, ids: Set<string>): PaletteTileDef[] {
 }
 
 /** The catalogue tiles the Search lists: the query's matches, or before anything is typed, the
- *  entries already on the tab; each catalogue in this mode's section when the mode offers it. */
+ *  entries already on the tab; each catalogue here when Plan's palette offers it. */
 export function searchCatalogueTiles({
   query,
-  mode,
   tabElements = [],
   loaded = true,
 }: {
   query: string;
-  mode: EditorMode;
   tabElements?: readonly Element[];
   // Whether the catalogues have loaded (useIconCatalogs): a component passes the subscription's value so the React
   // Compiler re-runs this when they land. Before then they hold nothing to list.
   loaded?: boolean;
-  // No catalogue is bound to one mode's tools, so none is ever unavailable.
-}): Omit<ElementTileSearch, 'unavailable'> {
+}): ElementTileSearch {
   if (!loaded) return { here: [], elsewhere: [] };
   const browsing = !query.trim();
   const ids = browsing ? idsOnTab(tabElements) : null;
-  const out: Omit<ElementTileSearch, 'unavailable'> = { here: [], elsewhere: [] };
+  const out: ElementTileSearch = { here: [], elsewhere: [] };
   const add = <T>(cat: Catalogue<T>, onTabIds: Set<string> | undefined) => {
     const tiles = ids ? onTab(cat, onTabIds!) : matchesIn(cat, query);
-    (paletteCategoryOffered(mode, cat.category) ? out.here : out.elsewhere).push(...tiles);
+    (paletteCategoryOffered(cat.category) ? out.here : out.elsewhere).push(...tiles);
   };
   add(ICONS, ids?.icons);
   add(STICKERS, ids?.stickers);

@@ -95,9 +95,6 @@ describe('POST /api/documents with a tab id held elsewhere', () => {
           { id: 'shared', name: 'Glossary, edited offline', elements: [square('g')] },
           { id: 'own', name: 'own', elements: [square('s', 'shared')] },
         ],
-        presentation: JSON.stringify({
-          decks: [{ slides: [{ id: 's1', tabId: 'shared', elementIds: ['g'] }] }],
-        }),
       },
       { [DOCUMENT_CONVERSION_HEADER]: 'sync' },
     );
@@ -108,14 +105,9 @@ describe('POST /api/documents with a tab id held elsewhere', () => {
     const [fork, own] = tabsOf(db.sql, 'A');
     expect(fork!.id).not.toBe('shared');
     expect(fork!.name).toBe('Glossary, edited offline');
-    // The copy's own navigation and deck follow the fork.
+    // The copy's own navigation follows the fork.
     expect(own!.id).toBe('own');
     expect(own!.data.elements[0]?.link?.tabId).toBe(fork!.id);
-    const deck = db.sql.prepare("SELECT presentation FROM documents WHERE id = 'A'").get();
-    expect(JSON.parse(deck!.presentation as string)).toHaveProperty(
-      ['decks', 0, 'slides', 0, 'tabId'],
-      fork!.id,
-    );
   });
 
   it('never rewrites a tab in someone else’s document', async () => {
@@ -133,23 +125,6 @@ describe('POST /api/documents with a tab id held elsewhere', () => {
     expect(tabName(db.sql, 'vt')).toBe('Plans');
     expect(linksOf(db.sql, 'vt')).toEqual(['V']);
     expect(tabsOf(db.sql, 'X').map((t) => t.name)).toEqual(['Overwritten']);
-  });
-
-  it('keeps the deck a synced offline copy carries', async () => {
-    const db = sqliteD1();
-    const deck = JSON.stringify({
-      decks: [{ slides: [{ id: 's1', tabId: 'n1', elementIds: [] }] }],
-    });
-
-    await post(db, 'owner', {
-      id: 'N',
-      name: 'N',
-      tabs: [{ id: 'n1', name: 'One', elements: [] }],
-      presentation: deck,
-    });
-
-    const row = db.sql.prepare("SELECT presentation FROM documents WHERE id = 'N'").get();
-    expect(row!.presentation).toBe(deck);
   });
 
   it('keeps its tab ids when the same create is retried', async () => {

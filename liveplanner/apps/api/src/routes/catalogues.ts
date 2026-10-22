@@ -1,17 +1,15 @@
 // The public catalogues (docs/specs/015-api/blueprints/cli.md "Catalogue routes", CLI72): the template library and one
-// template as an outline, icon search, and the element format. Pure functions over bundled data; no identity, GET
+// template as an outline, and the element format. Pure functions over bundled data; no identity, GET
 // only, cached five minutes; each answer logs `[catalogues] <segment> <status>`.
 
-import type { IconSearchResponse, TemplateCatalogueResponse } from '@liveplanner/api-schema';
+import type { TemplateCatalogueResponse } from '@liveplanner/api-schema';
 import { renderView } from '@liveplanner/document-views';
 import { addableKinds, elementFormatText, elementKindsText } from '@liveplanner/edit-operations';
-import { ICON_QUERY_MAX, ICON_SEARCH_MAX_LIMIT, searchIcons } from '@liveplanner/icons/search';
 import { buildTemplateTab, templateCatalogue, templateKindOf } from '@liveplanner/templates';
 import { json, methodNotAllowed, notFound, textPlain } from '../responses';
 import type { RouteContext } from './context';
 
 export const CATALOGUE_CACHE_CONTROL = 'public, max-age=300';
-export const ICON_SEARCH_DEFAULT_LIMIT = 20;
 
 const cached = { 'Cache-Control': CATALOGUE_CACHE_CONTROL };
 
@@ -40,24 +38,6 @@ function templates(ctx: RouteContext): Response {
     : textPlain(view.text, { headers: cached });
 }
 
-function icons(ctx: RouteContext): Response {
-  if (ctx.segments.length !== 2) return notFound();
-  const query = ctx.url.searchParams.get('query') ?? '';
-  const rawLimit = ctx.url.searchParams.get('limit');
-  const limit = rawLimit === null ? ICON_SEARCH_DEFAULT_LIMIT : Number(rawLimit);
-  if (query.length < 1 || query.length > ICON_QUERY_MAX)
-    return json(
-      { error: 'invalid_value', message: `query is 1 to ${ICON_QUERY_MAX} characters` },
-      { status: 400 },
-    );
-  if (!Number.isInteger(limit) || limit < 1 || limit > ICON_SEARCH_MAX_LIMIT)
-    return json(
-      { error: 'invalid_value', message: `limit is 1 to ${ICON_SEARCH_MAX_LIMIT}` },
-      { status: 400 },
-    );
-  return json(searchIcons(query, limit) satisfies IconSearchResponse, { headers: cached });
-}
-
 function schema(ctx: RouteContext): Response {
   const kind = ctx.segments[2];
   if (kind === undefined) return textPlain(elementKindsText(), { headers: cached });
@@ -71,6 +51,6 @@ function schema(ctx: RouteContext): Response {
 export function handleCatalogues(ctx: RouteContext): Response {
   const segment = ctx.segments[1]!;
   if (ctx.request.method !== 'GET') return answered(segment, methodNotAllowed());
-  const route = segment === 'templates' ? templates : segment === 'icons' ? icons : schema;
+  const route = segment === 'templates' ? templates : schema;
   return answered(segment, route(ctx));
 }

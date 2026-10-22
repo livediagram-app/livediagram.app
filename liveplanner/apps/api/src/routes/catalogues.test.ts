@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { makeTestRouteContext } from './test-route-context';
-import { CATALOGUE_CACHE_CONTROL, handleCatalogues, ICON_SEARCH_DEFAULT_LIMIT } from './catalogues';
+import { CATALOGUE_CACHE_CONTROL, handleCatalogues } from './catalogues';
 
 const get = (path: string, method = 'GET') =>
   handleCatalogues(makeTestRouteContext(method, path, { clerkUserId: null, owner: null }));
@@ -39,34 +39,6 @@ describe('GET /api/templates', () => {
       kinds: expect.arrayContaining(['kanban']),
     });
     expect(get('/api/templates/kanban/x').status).toBe(404);
-  });
-});
-
-describe('GET /api/icons', () => {
-  it('searches both catalogues, the default limit applying', async () => {
-    const body = (await get('/api/icons?query=database').json()) as {
-      icons: unknown[];
-      more: number;
-    };
-    expect(body.icons.length).toBeLessThanOrEqual(ICON_SEARCH_DEFAULT_LIMIT);
-    expect(await get('/api/icons?query=database&limit=2').json<object>()).toMatchObject({
-      icons: [{}, {}],
-    });
-  });
-
-  it('refuses an empty or long query and a limit out of range', async () => {
-    for (const path of [
-      '/api/icons',
-      `/api/icons?query=${'x'.repeat(61)}`,
-      '/api/icons?query=db&limit=0',
-      '/api/icons?query=db&limit=51',
-      '/api/icons?query=db&limit=x',
-    ]) {
-      const res = get(path);
-      expect(res.status, path).toBe(400);
-      expect(await res.json(), path).toMatchObject({ error: 'invalid_value' });
-    }
-    expect(get('/api/icons/x').status).toBe(404);
   });
 });
 

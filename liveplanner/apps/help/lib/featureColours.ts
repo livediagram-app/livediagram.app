@@ -4,7 +4,7 @@ import { topCategorySlug } from '@liveplanner/help-registry';
 /** Feature slug → accent colour (hex). The home + features grid and the
  *  MDX <Feature> cards tint each feature with a distinct hue so the index
  *  reads as a colourful catalogue, the same way the Manager Toolkit help
- *  centre does. liveplanner's own brand is sky-blue (docs/specs/004-interface-design/color-scheme.md); these hues
+ *  centre does. liveplanner's own brand is violet (docs/specs/004-interface-design/color-scheme.md); these hues
  *  are drawn from a cool, on-brand palette (sky / indigo / teal / violet /
  *  emerald / amber / rose) so cards stay coherent with the product. */
 export const FEATURE_ENTITY_HEX: Record<string, string> = {
@@ -16,33 +16,21 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'quick-controls': '#6366f1',
   'the-canvas': '#0ea5e9',
   drawing: '#f97316',
-  highlighter: '#eab308',
   'selecting-and-grouping': '#8b5cf6',
   'text-and-fonts': '#0891b2',
   themes: '#d946ef',
   templates: '#14b8a6',
-  'editor-modes': '#4338ca',
-  'draw-mode': '#78716c',
   'plan-mode': '#2563eb',
-  'workshop-mode': '#c2410c',
   items: '#7c3aed',
   boards: '#4f46e5',
   cards: '#0d9488',
   'card-types': '#0891b2',
   'plan-tour': '#0284c7',
-  'workshop-tour': '#ea580c',
   'draw-tour': '#57534e',
-  'pages-tour': '#be123c',
   dashboards: '#0ea5e9',
   forms: '#7c3aed',
   sheets: '#16a34a',
   'sheet-functions': '#059669',
-  'pages-mode': '#e11d48',
-  'infographic-layouts': '#db2777',
-  'logo-pages': '#0891b2',
-  'wireframe-pages': '#7c3aed',
-  articles: '#0d9488',
-  'exporting-pages': '#9333ea',
   'tab-windows': '#4f46e5',
   'using-tabs': '#3b82f6',
   comments: '#f59e0b',
@@ -57,10 +45,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   ai: '#7c3aed',
   history: '#94a3b8',
   'session-tools': '#f43f5e',
-  // The last ten cards
-  'building-a-deck': '#0ea5e9',
-  presenting: '#6366f1',
-  'presenter-controls': '#8b5cf6',
   'locking-tabs': '#64748b',
   'side-by-side': '#0ea5e9',
   'ai-tools': '#7c3aed',
@@ -87,17 +71,9 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'style-presets': '#e11d48',
   'layout-cleanup': '#2563eb',
   annotations: '#eab308',
-  // Palette → Selection Modes
-  'avatar-mode': '#ec4899',
-  'avatar-tour': '#db2777',
-  'walking-together': '#a855f7',
-  'slide-deck': '#0ea5e9',
   select: '#0ea5e9',
   hand: '#0891b2',
-  eraser: '#f43f5e',
   'format-painter': '#8b5cf6',
-  laser: '#ef4444',
-  spotlight: '#f59e0b',
   'isometric-mode': '#9333ea',
   // Palette → Elements
   write: '#0891b2',
@@ -106,10 +82,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   flowcharts: '#0ea5e9',
   'edit-outline': '#7c3aed',
   collaborate: '#f59e0b',
-  chairs: '#a855f7',
-  fences: '#b45309',
-  'avatar-pads': '#0ea5e9',
-  'virtual-office': '#0f766e',
   lanes: '#3b82f6',
   entities: '#0284c7',
   'embed-elements': '#e11d48',
@@ -124,7 +96,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   technology: '#0ea5e9',
   // Collaboration guides
   timer: '#f43f5e',
-  polls: '#8b5cf6',
   voting: '#ef4444',
   'roles-and-invites': '#a855f7',
   'team-shared-documents': '#0ea5e9',
@@ -148,14 +119,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'bar-and-line-charts': '#6366f1',
   legend: '#a855f7',
   'timeline-rail': '#14b8a6',
-  // Palette → Behaviour elements
-  'bring-focus': '#0ea5e9',
-  facilitator: '#a855f7',
-  'mode-buttons': '#7c3aed',
   'session-buttons': '#f43f5e',
-  'done-checks': '#22c55e',
-  'reaction-pads': '#ec4899',
-  'reveal-zones': '#0891b2',
   pickers: '#f59e0b',
   // Palette → Tools elements
   tables: '#0ea5e9',
@@ -182,20 +146,11 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'concept-graphics': '#8b5cf6',
   website: '#0284c7',
   'shape-markers': '#f59e0b',
-  'shape-recognition': '#8b5cf6',
   // Palette → Collaborate elements
   'comment-panels': '#f59e0b',
   'action-panels': '#10b981',
-  'estimate-cards': '#8b5cf6',
-  quizzes: '#16a34a',
   'temperature-checks': '#ef4444',
-  'idea-boxes': '#eab308',
-  'qa-boards': '#6d5efc',
-  agendas: '#0891b2',
   'decision-records': '#14b8a6',
-  'roll-calls': '#a855f7',
-  // Canvas guides
-  'follow-along': '#06b6d4',
   notes: '#eab308',
   layers: '#6366f1',
   'layers-visibility-and-locking': '#64748b',
@@ -218,7 +173,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'toolbar-layout': '#0ea5e9',
   // Explorer section guides
   'list-and-card-views': '#0ea5e9',
-  timeline: '#8b5cf6',
+  home: '#8b5cf6',
   activity: '#f43f5e',
   folders: '#f59e0b',
   'default-folders': '#f59e0b',
@@ -228,7 +183,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'shared-with-you': '#10b981',
   'personal-space': '#f59e0b',
   'team-spaces': '#a855f7',
-  'image-gallery': '#ec4899',
   'themes-library': '#d946ef',
   'tab-folders': '#3b82f6',
   'linking-tabs': '#10b981',
@@ -250,7 +204,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   visualisations: '#6366f1',
   'colours-borders-opacity': '#9333ea',
   'formatting-label-text': '#0e7490',
-  'slide-pages': '#f97316',
 };
 
 /** Top-level feature category → accent hue, the fallback for a landing with no

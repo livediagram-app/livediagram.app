@@ -1,7 +1,7 @@
 import { FONT, TEAMMATE, YOU, at } from '@/components/art-tokens';
 import { CursorMark } from '@/components/hero-cursor';
 
-// The collaboration scene (docs/specs/019-marketing/marketing-site.md "Feature scenes"): a product launch's
+// The Dashboards scene (docs/specs/019-marketing/marketing-site.md "Feature scenes"): a product launch's
 // Dashboard tab (docs/specs/026-plan/plan-tabs.md) filling its tab, rows of live slots side by side. Its slots
 // land row by row: three figures (Completion, Due this week, Budget left), then the launch board beside a chart
 // of cards by status, then a checklist and the key date. A teammate carries a card from Doing to Done on the

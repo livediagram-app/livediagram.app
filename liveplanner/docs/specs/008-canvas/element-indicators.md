@@ -63,8 +63,7 @@ from the root's Mind Map menu section. A scale-to-fit label keeps its whole box.
 
 Both styles sit **inside the element's outline**, never across it, on every shape:
 
-- The outline is the one the canvas already hit-tests against
-  ([Draw mode](../023-draw-mode/draw-mode.md) "Selecting"): a circle's ellipse, a diamond's,
+- The outline is the shape's drawn outline (`shapeHitOutline`, `packages/document/src/shape-hit.ts`): a circle's ellipse, a diamond's,
   hexagon's or triangle's polygon, a cloud's curve, a pill's rounded ends, and for an element
   that paints its own face (a mind node, a card, a panel) its box with its own corner radius.
 - The cluster keeps **at least 6px clear of the outline** on every side.
@@ -124,10 +123,9 @@ device or from the keyboard.
   lock badge and the remote selectors.
 - An annotation's marker is its note, and a margin note shows its count on its own face, so
   neither shows a note indicator.
-- They are editor chrome: exports, thumbnails, embeds (view or edit role) and a slide being
-  **presented** ([Presentation mode](../012-collaboration/presentation-mode.md)) never draw them,
+- They are editor chrome: exports, thumbnails, and embeds (view or edit role) never draw them,
   whatever style the person chose (`SuppressElementIndicators` above the canvas reads as **Off**);
-  the lock badge hides with them, so a presented slide shows only what the audience should see.
+  the lock badge hides with them.
   The share view (`/document/shared`) is the editor reached by a share link, so it draws them like
   the editor.
 

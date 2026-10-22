@@ -122,7 +122,7 @@ describe('titleCaseType', () => {
 });
 
 describe('track gate', () => {
-  it('is a no-op when NEXT_PUBLIC_TELEMETRY_ENABLED is unset (self-host default)', async () => {
+  it('is a no-op when NEXT_PUBLIC_TELEMETRY_ENABLED is unset (the unconfigured default)', async () => {
     setUpBrowser();
     const { track } = await importWithEnv(false);
     track('Element', 'Added', 'Square');

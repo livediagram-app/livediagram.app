@@ -52,8 +52,7 @@ describe('the fan', () => {
         .map((t) => t.kind)
         .sort(),
     );
-    const modes = new Set(HERO_FAN_POOL.map((k) => heroTemplate(k).mode));
-    expect([...modes]).toEqual(['plan']);
+    for (const kind of HERO_FAN_POOL) expect(heroTemplate(kind).kind).toBe(kind);
     for (const kind of HERO_FAN_OPENING) expect(HERO_FAN_POOL).toContain(kind);
     expect(HERO_FAN_OPENING).toHaveLength(HERO_FAN_SLOTS);
   });

@@ -7,7 +7,7 @@ import type { ComponentType } from 'react';
 
 export type HeroMode = 'plan';
 
-// The mode's name and its glyph, the editor's own (EDITOR_MODE_ICONS).
+// The mode's name and its glyph, drawn from the editor's own icons.
 export const HERO_MODE: Record<HeroMode, { label: string; Icon: ComponentType<IconProps> }> = {
   plan: { label: 'Plan', Icon: EDITOR_MODE_ICONS.plan },
 };

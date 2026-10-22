@@ -7,13 +7,8 @@ import { debugLog } from '@/lib/debug-log';
 export const POWER_USER_PRESET = {
   alignmentGuides: { alignmentGuides: true },
   autoRebindArrows: { autoRebindArrows: true },
-  tourSeen: { tourSeen: true },
   planTourSeen: { planTourSeen: true },
-  workshopTourSeen: { workshopTourSeen: true },
-  drawTourSeen: { drawTourSeen: true },
   formTourSeen: { formTourSeen: true },
-  avatarTourSeen: { avatarTourSeen: true },
-  pagesTourSeen: { pagesTourSeen: true },
   elementToursSeen: { elementToursSeen: true },
   aiSuggestedPrompts: { aiSuggestedPrompts: false },
   minimalChrome: { minimalChrome: true },

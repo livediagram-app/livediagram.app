@@ -18,7 +18,7 @@ const GUEST: SidebarLayoutInput = {
   signInAvailable: true,
   pendingInvites: 0,
   offlineDocuments: 0,
-  selected: 'timeline',
+  selected: 'inbox',
 };
 const SIGNED_IN: SidebarLayoutInput = { ...GUEST, signedIn: true };
 
@@ -34,9 +34,9 @@ describe('sidebarGroups', () => {
     expect(SIDEBAR_GROUP_TITLES).toEqual({ overview: 'Overview', spaces: 'Spaces', more: 'More' });
   });
 
-  it('shows Home, Inbox, Timeline and Shared With Me to everyone', () => {
-    expect(rowsOf(GUEST, 'overview')).toEqual(['home', 'inbox', 'timeline', 'shared']);
-    expect(rowsOf(SIGNED_IN, 'overview')).toEqual(['home', 'inbox', 'timeline', 'shared']);
+  it('shows Home, Inbox and Shared With Me to everyone', () => {
+    expect(rowsOf(GUEST, 'overview')).toEqual(['home', 'inbox', 'shared']);
+    expect(rowsOf(SIGNED_IN, 'overview')).toEqual(['home', 'inbox', 'shared']);
   });
 
   it('gives a signed-in reader My Documents, teams and New Team last', () => {
@@ -96,7 +96,7 @@ describe('sidebarGroups in the floating Explorer panel', () => {
 
   it('keeps the same three groups and Overview rows', () => {
     expect(sidebarGroups(PANEL).map((g) => g.id)).toEqual(['overview', 'spaces', 'more']);
-    expect(rowsOf(PANEL, 'overview')).toEqual(['home', 'inbox', 'timeline', 'shared']);
+    expect(rowsOf(PANEL, 'overview')).toEqual(['home', 'inbox', 'shared']);
   });
 
   it('shows the spaces but no Invites or New Team', () => {
@@ -127,19 +127,19 @@ describe('sidebarDivider', () => {
 });
 
 describe('isLibraryView', () => {
-  it('recognises the two Library pages', () => {
-    expect(['gallery', 'themes'].every((k) => isLibraryView(k as never))).toBe(true);
+  it('recognises the Library page', () => {
+    expect(isLibraryView('themes')).toBe(true);
   });
 
   it('rejects every other view', () => {
     expect(isLibraryView('trash')).toBe(false);
-    expect(isLibraryView('timeline')).toBe(false);
+    expect(isLibraryView('inbox')).toBe(false);
   });
 });
 
 describe('initialExpanded', () => {
   it('opens My Documents by default', () => {
-    expect([...initialExpanded({ kind: 'timeline' })]).toEqual([MY_DOCUMENTS_EXPAND_KEY]);
+    expect([...initialExpanded({ kind: 'inbox' })]).toEqual([MY_DOCUMENTS_EXPAND_KEY]);
   });
 
   it('also opens Library when a Library page is the current view', () => {

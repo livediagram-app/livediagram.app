@@ -49,8 +49,8 @@ export type PaneDocument = DocumentListItem & {
 
 // A document shared WITH the viewer, as a pane row. It lives in the
 // sharer's library, not yours, so it carries no folder and an empty
-// owner; the share code is what makes it openable. One helper so Recent
-// and the Timeline's card menus build the same row.
+// owner; the share code is what makes it openable. One helper so every
+// view that lists one builds the same row.
 export function sharedToPaneDocument(s: SharedWithItem): PaneDocument {
   return {
     id: s.id,
@@ -69,12 +69,8 @@ export function sharedToPaneDocument(s: SharedWithItem): PaneDocument {
 // with no folder row behind them; `folder` is a real owned folder and
 // `team` a team the signed-in user belongs to (docs/specs/013-workspace/teams.md).
 export type SelectedNode =
-  // The landing view (docs/specs/013-workspace/explorer-home.md): Jump Back In, What Happened and
-  // the person's own Timeline.
+  // The landing view (docs/specs/013-workspace/explorer-home.md): Jump Back In and What Happened.
   | { kind: 'home' }
-  // The Timeline (docs/specs/013-workspace/timeline.md): the day-grouped feed of everything that
-  // happened, with its own sidebar row and Home's See Timeline link.
-  | { kind: 'timeline' }
   // The Inbox (docs/specs/013-workspace/inbox.md): what is outstanding for the reader across every
   // document, open actions assigned to / by them and unresolved threads they're in.
   | { kind: 'inbox' }
@@ -88,7 +84,6 @@ export type SelectedNode =
   | { kind: 'tags'; id?: string }
   | { kind: 'offline' }
   | { kind: 'shared' }
-  | { kind: 'gallery' }
   | { kind: 'themes' }
   // The Trash (docs/specs/013-workspace/trash.md): a route with no sidebar row,
   // reached from Settings.

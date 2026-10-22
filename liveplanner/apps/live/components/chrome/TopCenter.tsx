@@ -4,7 +4,6 @@ import type {
   PointerEvent as ReactPointerEvent,
   ReactNode,
 } from 'react';
-import { SOLID_BRAND_DARK } from '@liveplanner/ui';
 
 // Shared top-centre overlay region (docs/specs/008-canvas/canvas-and-palette.md). Every floating status pill
 // that belongs at the top middle of the canvas — the owner / role badge,
@@ -19,17 +18,13 @@ import { SOLID_BRAND_DARK } from '@liveplanner/ui';
 // "alongside, or under on mobile" behaviour the timer needs next to a
 // banner.
 
-type BannerTone = 'neutral' | 'brand' | 'live' | 'danger';
+type BannerTone = 'neutral' | 'brand' | 'danger';
 
 const TONE_CLASS: Record<BannerTone, string> = {
   neutral:
     'border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100',
   brand:
     'border-brand-200 bg-brand-50 text-brand-800 dark:border-brand-500/40 dark:bg-brand-500/15 dark:text-brand-100',
-  // Solid, for a pill that reports something HAPPENING to your view right now
-  // (being followed along, docs/specs/012-collaboration/follow-me-viewport.md) rather than a mode you turned on. It is
-  // meant to be the loudest thing on the canvas until you stop it.
-  live: `border-brand-700 bg-brand-700 text-white ${SOLID_BRAND_DARK}`,
   danger:
     'border-rose-300 bg-rose-50 text-rose-700 dark:border-rose-500/40 dark:bg-rose-500/15 dark:text-rose-200',
 };
@@ -40,13 +35,11 @@ const TONE_CLASS: Record<BannerTone, string> = {
 // top row of chrome; from `sm:` up it centres (`sm:left-1/2 -translate-x-1/2`). `pointer-events-none` so the
 // gaps between pills stay click-through; each pill re-enables pointer
 // events for itself.
-const STACK_TOP: Record<'toolbar' | 'tray' | 'dock' | 'none', string> = {
+const STACK_TOP: Record<'toolbar' | 'tray' | 'none', string> = {
   toolbar: 'top-[4.25rem]',
   // A message hangs from the strip as its tray (docs/specs/007-editor/toolbar-layout.md): the stack starts
   // under the tray (the strip's 58 px, the tray's 34 px, then the stack's 8 px gap).
   tray: 'top-[6.25rem]',
-  // The Draw dock is the strip's height now (docs/specs/023-draw-mode/draw-mode.md), so the same.
-  dock: 'top-[4.25rem]',
   none: 'top-[4.75rem] sm:top-3',
 };
 
@@ -56,10 +49,8 @@ export function TopCenterStack({
 }: {
   children: ReactNode;
   // A bar across the top of the canvas owns top-3, so the stack starts under it instead of on top
-  // of it: the Toolbar layout's strip (docs/specs/007-editor/toolbar-layout.md, 46 px), or a
-  // whiteboard's dock at the top (docs/specs/023-draw-mode/draw-mode.md "Where the dock sits",
-  // 54 px).
-  below?: 'toolbar' | 'tray' | 'dock';
+  // of it: the Toolbar layout's strip (docs/specs/007-editor/toolbar-layout.md, 46 px).
+  below?: 'toolbar' | 'tray';
 }) {
   return (
     // On mobile this stack starts BELOW the top row of chrome rather than

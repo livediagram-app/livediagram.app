@@ -25,9 +25,9 @@ import { useFrameBlocked } from '@/components/canvas/use-frame-blocked';
 //   always-mounted player would be a hole in the canvas you could not drag,
 //   select, or marquee over.
 // - youtube-nocookie.com sets nothing until playback starts, so opening a
-//   document that contains a video is not a tracked visit. The repo is public
-//   and self-hostable (docs/specs/002-project-scope/open-source-and-business-model.md); a self-hoster should not be silently
-//   shipping their users to Google on page load.
+//   document that contains a video is not a tracked visit. liveplanner carries no
+//   trackers (docs/specs/002-project-scope/business-model-and-licence.md), so a page load must not
+//   silently ship people to Google.
 
 export function VideoView({ element }: { element: VideoElement }) {
   const url = element.link?.kind === 'url' ? element.link.url : undefined;

@@ -2,7 +2,7 @@ import { Arrow, Label, Shape } from '@/components/illustrations/primitives';
 import { Chip, Stage, Window } from './parts';
 
 // About liveplanner: what it is in one picture. Three windows fanned out, one per way of working (planning on a
-// board, a diagram, a page to publish), under the two promises: free, and open source.
+// board, a diagram, a page to publish), under the two promises: free, and no trackers.
 export function AboutArt() {
   return (
     <Stage>
@@ -70,7 +70,7 @@ export function AboutArt() {
       </Window>
 
       <Chip x={118} y={12} label="Free for everyone" tone="emerald" h={20} size={10} />
-      <Chip x={236} y={12} label="Open source" tone="violet" h={20} size={10} />
+      <Chip x={236} y={12} label="No trackers" tone="violet" h={20} size={10} />
       <Label x={200} y={204} anchor="middle" size={9} weight={600} tone="muted">
         Diagram · Draw · Plan · Workshop · Pages
       </Label>

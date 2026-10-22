@@ -1,4 +1,4 @@
-import { lucidePenTool, lucideSparkles, lucideVote } from '@liveplanner/icons/lucide';
+import { lucideSparkles, lucideVote } from '@liveplanner/icons/lucide';
 import { Glyph } from '../icons/Glyph';
 import { Prims } from '../icons/Prims';
 // The palette category-tab glyphs (docs/specs/008-canvas/canvas-and-palette.md), shared so the editor's
@@ -12,15 +12,6 @@ export function PopularTabIcon() {
   return (
     <Glyph size={18} units={24}>
       <Prims prims={lucideSparkles} />
-    </Glyph>
-  );
-}
-
-// Logo (docs/specs/007-editor/logo-pages.md "The Logo palette"): a pen nib, what a mark is drawn with.
-export function LogoTabIcon() {
-  return (
-    <Glyph size={18} units={24}>
-      <Prims prims={lucidePenTool} />
     </Glyph>
   );
 }

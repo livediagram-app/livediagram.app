@@ -1,12 +1,11 @@
 // `applyReplace` (docs/specs/024-agents/blueprints/edit-operations.md "Replace"): the other changeset
-// body, a whole tab from a graph, Mermaid, a template, a dashboard, a form or raw elements, built exactly as the MCP's
+// body, a whole tab from a template, a dashboard, a form or raw elements, built exactly as the MCP's
 // `update_document` replace and `add_tab` build it, and answered with the same outcome as operations.
 // An existing tab keeps every tab field and swaps its elements (no theme repaint, EO41); a new tab is
 // built whole.
 
 import type { EditRejection } from '@liveplanner/api-schema';
 import {
-  buildGraphTab,
   buildTab,
   coerceShapeKind,
   contentOrigin,
@@ -16,11 +15,8 @@ import {
   invertElementOps,
   isValidTab,
   normaliseElements,
-  resolveGraphInput,
-  planOnlyAddedOutsidePlan,
   tabKindOf,
   type Element,
-  type GraphInput,
   type Tab,
 } from '@liveplanner/document';
 import {
@@ -34,21 +30,13 @@ import {
 import { readForm, type FormDefinition } from '@liveplanner/forms';
 import { dashboardSpecIssue } from './dashboard-body';
 import { tabRejection } from './finalise';
-import { graphBodyIssue } from './graph-body';
-import { invalidResult, planOnlyOutsidePlan, tabLocked } from './rejections';
+import { invalidResult, tabLocked } from './rejections';
 import { addedLine, lineNaming, removedLine } from './results';
 import type { ApplyOutcome, EditLog, ReplaceBody, ReplaceOptions } from './types';
 import type { DashboardSpec } from '@liveplanner/templates';
 
-type Source = 'graph' | 'mermaid' | 'template' | 'dashboard' | 'form' | 'elements';
-const SOURCES: readonly Source[] = [
-  'graph',
-  'mermaid',
-  'template',
-  'dashboard',
-  'form',
-  'elements',
-];
+type Source = 'template' | 'dashboard' | 'form' | 'elements';
+const SOURCES: readonly Source[] = ['template', 'dashboard', 'form', 'elements'];
 
 // What one source builds: the new elements, and for a tab that does not exist yet, the whole tab.
 // `newOnly`: the source makes a tab of its own kind (a Dashboard): a new tab, or that kind's own tab rebuilt.
@@ -70,7 +58,6 @@ function formTab(tabId: string, form: FormDefinition, themeId: string | undefine
     elements: [],
     defaultTextSize: 'sm',
     kind: 'form',
-    opensIn: 'plan',
     form,
     ...(themeId ? { theme: themeId } : {}),
   };
@@ -81,14 +68,6 @@ const invalidBody = (detail: string, hint?: string): EditRejection => ({
   details: [detail],
   ...(hint ? { hint } : {}),
 });
-
-// The elements a replace writes onto an existing tab are built exactly as a new tab's are, themed included: a
-// graph's tones and a template's presets are colour presets the theme resolves, and an existing tab took them
-// unresolved, so a replace drew every toned node plain.
-function fromGraph(graph: GraphInput, themeId: string | undefined): Built {
-  const tab = (tabId: string, name: string) => buildGraphTab(tabId, name, graph, themeId);
-  return { elements: tab('graph', 'graph').elements, tab };
-}
 
 function fromElements(
   raw: unknown,
@@ -125,19 +104,6 @@ function build(
   kept: ReadonlySet<string> = new Set(),
 ): Built {
   switch (source) {
-    case 'graph': {
-      const { graph } = body as { graph: unknown };
-      const issue = graphBodyIssue(graph);
-      return issue ? invalidBody(issue) : fromGraph(graph as GraphInput, themeId);
-    }
-    case 'mermaid': {
-      const { mermaid } = body as { mermaid: unknown };
-      if (typeof mermaid !== 'string') return invalidBody('mermaid: expected a string');
-      const resolved = resolveGraphInput({ mermaid });
-      return resolved.graph
-        ? fromGraph(resolved.graph, themeId)
-        : { code: 'parse_error', details: [resolved.error!] };
-    }
     case 'template': {
       const { template } = body as { template: unknown };
       const kind = typeof template === 'string' ? resolveTemplate(template) : null;
@@ -185,7 +151,7 @@ function nextTab(
 ): Tab {
   if (!tab) {
     const made = built.tab(options.tabId, options.name);
-    const kinded: Tab = options.kind ? { ...made, kind: options.kind, opensIn: 'plan' } : made;
+    const kinded: Tab = options.kind ? { ...made, kind: options.kind } : made;
     return options.finish ? { ...kinded, finish: options.finish } : kinded;
   }
   if (built.newOnly) {
@@ -234,8 +200,6 @@ export function applyReplace(
     );
   const next = nextTab(tab, built, options);
   if (!isValidTab(next)) return refuse(tabRejection(next));
-  const offPlan = planOnlyAddedOutsidePlan(tab?.elements ?? [], next);
-  if (offPlan.length) return refuse(planOnlyOutsidePlan(offPlan));
   log('[edit-ops] replace', { source, elements: next.elements.length });
   const before = tab?.elements ?? [];
   const elementOps = diffToElementOps(before, next.elements);

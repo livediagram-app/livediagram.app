@@ -87,8 +87,8 @@ export function usePaletteDrop({
     // drop over the Palette would still add an element behind it.
     if (overFloatingPanel(e.target)) return;
     // `kind` or `kind|choice` — the creation-time choice a split tile
-    // carries (docs/specs/009-elements/mode-button.md, /105, /123, /135). Without parsing it back out, a
-    // dragged Poll tile dropped a timer.
+    // carries (docs/specs/012-collaboration/session-button.md). Without parsing it back out, a
+    // dragged Vote tile dropped a timer.
     const file = onDropFile ? e.dataTransfer.files?.[0] : undefined;
     if (file) {
       e.preventDefault();

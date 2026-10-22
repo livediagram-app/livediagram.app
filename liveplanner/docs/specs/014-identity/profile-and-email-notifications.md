@@ -80,7 +80,7 @@ uses for AI) gains `emailEnabled: boolean`, true only when
 `emailEnabled(env)` (i.e. `RESEND_API_KEY` is set). `CapabilitiesResponse`
 and `useCapabilities()` carry it through. The profile page hides the Email
 notifications section entirely when it's false: with no email backend the
-toggles would be inert, and a self-host without Resend should not advertise a
+toggles would be inert, and a deployment without Resend should not advertise a
 setting it can't honour.
 
 ## 3. Email notification preferences
@@ -145,7 +145,7 @@ a guest visit is still recorded in `shared_with` and counted as
 - no-ops when the owner's `notifyDocumentJoin` pref is `false`;
 - no-ops unless it wins the per-document throttle: at most one join email per
   document per 15 minutes (`claimJoinNotify`, an atomic conditional `UPDATE` of
-  `documents.join_notified_at`, migration 0085; the new-comment email's rule
+  `documents.join_notified_at`; the new-comment email's rule
   on its own column);
 - otherwise sends the **document-joined** email: "Someone just opened
   _{document name}_", with a CTA back to the document.
@@ -192,8 +192,8 @@ transitions do.
   joiner name, a responder email, a team name) are HTML-escaped, and each is
   either the recipient's own content or already known to the recipient.
 - Off by default at the deployment level (no `RESEND_API_KEY` → no sends, no
-  UI), and off per-notification when the recipient opts out. Self-hosting
-  stays intact ([Open source + distribution](../002-project-scope/open-source-and-business-model.md)): no required SaaS call, the toggles just hide.
+  UI), and off per-notification when the recipient opts out. Nothing
+  breaks ([Business model + licence](../002-project-scope/business-model-and-licence.md)): no required SaaS call, the toggles just hide.
 
 ## 6. Out of scope (for now)
 

@@ -47,7 +47,7 @@ describe('rowToShareLink', () => {
   });
 
   it('normalises NULL / unrecognised expiry tokens to "never"', () => {
-    // Pre-0020 rows carry NULL in both columns; a corrupted token
+    // A never-expiring row carries NULL in both columns; a corrupted token
     // only changes what Extend re-applies — enforcement reads
     // expires_at in SQL, never this field.
     expect(rowToShareLink(row({ expiry: null })).expiry).toBe('never');
@@ -63,7 +63,7 @@ describe('rowToShareLink', () => {
     expect(rowToShareLink(row({ role: 'edit' })).role).toBe('edit');
   });
 
-  it('reads the 0080 level column over the legacy role', () => {
+  it('reads the level column over the legacy role', () => {
     expect(rowToShareLink(row({ role: 'view', level: 'participate' })).role).toBe('participate');
     expect(rowToShareLink(row({ role: 'edit', level: null })).role).toBe('edit');
   });

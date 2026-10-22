@@ -24,9 +24,8 @@ describe('buildReferenceBoard', () => {
     expect(board).toHaveLength(REFERENCE_COUNT);
     expect(count(board, 'shape')).toBe(400);
     expect(count(board, 'arrow')).toBe(300);
-    expect(count(board, 'freehand')).toBe(100);
+    expect(count(board, 'freehand')).toBe(150);
     expect(count(board, 'text')).toBe(100);
-    expect(count(board, 'path')).toBe(50);
     expect(count(board, 'sticky')).toBe(50);
   });
 

@@ -28,7 +28,7 @@ is the whole of what the repo enforces.
   TypeScript). Unused variables and arguments are allowed only when named with a leading `_`.
 - **typescript-eslint's recommended type-checked rules**, as oxlint's type-aware `typescript/*`
   rules (see [Type-aware rules](#type-aware-rules)), each at zero findings
-  ([#711](https://github.com/liveplanner-app/liveplanner.app/issues/711)); every rule of the set but
+  (issue #711); every rule of the set but
   `require-await`:
   - `await-thenable`
   - `no-array-delete`
@@ -56,7 +56,7 @@ is the whole of what the repo enforces.
   written to a function parameter and overwritten before it is read. oxc reports it from
   [oxc-project/oxc#27735](https://github.com/oxc-project/oxc/pull/27735) on; the gap closes when the repo
   takes the first oxlint release that contains it, and fixes what it finds
-  ([#721](https://github.com/liveplanner-app/liveplanner.app/issues/721)).
+  (issue #721).
 - **By language**: the rules TypeScript's compiler already enforces (`no-undef`, `no-dupe-keys`,
   `constructor-super` and the rest) run on JavaScript files only; `no-var`, `prefer-const`,
   `prefer-rest-params` and `prefer-spread` run on TypeScript files only. JavaScript files know the

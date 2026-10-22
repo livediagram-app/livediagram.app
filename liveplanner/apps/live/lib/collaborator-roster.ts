@@ -68,8 +68,7 @@ export function buildCollaboratorRoster<T extends RosterTab>(input: {
 
 // The chips beside a participant's name wherever they are listed (the
 // presence-stack hover card and the Collaborators modal row): "You" plus your
-// role, a peer's role when the room told us it, and "Following" for the
-// person we follow (docs/specs/012-collaboration/follow-me-viewport.md).
+// role, and a peer's role when the room told us it.
 // The badge each access level wears (docs/specs/013-workspace/share-roles.md).
 const LEVEL_BADGE: Record<AccessLevel, string> = {
   edit: 'Editor',
@@ -77,24 +76,10 @@ const LEVEL_BADGE: Record<AccessLevel, string> = {
   view: 'Viewer',
 };
 
-export function participantBadges(
-  p: Participant,
-  selfId: string,
-  selfRole: AccessLevel,
-  followingId?: string | null,
-  // Whether this person holds the facilitator baton (docs/specs/012-collaboration/facilitator.md). Passed in
-  // rather than read off the participant: the holder is a presence id, and
-  // your own row cannot be recognised by one.
-  // `followerCount`: how many follow you (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"),
-  // named on your own row so you know to narrate.
-  opts?: { isFacilitator?: boolean; followerCount?: number },
-): string[] {
+export function participantBadges(p: Participant, selfId: string, selfRole: AccessLevel): string[] {
   const badges: string[] = [];
   if (p.id === selfId) badges.push('You', LEVEL_BADGE[selfRole]);
-  if (p.id === selfId && opts?.followerCount) badges.push(`${opts.followerCount} Following You`);
   else if (p.role) badges.push(LEVEL_BADGE[parseStoredLevel(p.role)]);
-  if (opts?.isFacilitator) badges.push('Facilitating');
-  if (followingId && followingId === p.id) badges.push('Following');
   return badges;
 }
 

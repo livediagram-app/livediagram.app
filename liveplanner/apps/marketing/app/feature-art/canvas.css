@@ -140,8 +140,7 @@
   }
 }
 
-/* Canvas and collaboration card art, continued: the spotlight's tour of three steps, the laser's travelling streak (--dash
-   long, over a --len path), the expiry ring draining, and the marquee drawn out from its corner. */
+/* Canvas and collaboration card art, continued: the expiry ring draining, and the marquee drawn out from its corner. */
 .fa-a-drain {
   animation-duration: 6s;
   animation-iteration-count: infinite;

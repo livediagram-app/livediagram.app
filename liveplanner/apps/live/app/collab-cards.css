@@ -1,0 +1,92 @@
+/*
+ * The Collaborate cards' motion (docs/specs/012-collaboration/comment-pin.md, action-panel.md,
+ * temperature-check.md): the room watches these cards, so their movement carries meaning: a press pops, a new
+ * row settles in, an empty card breathes. Every animation here collapses under the reduced-motion rules in
+ * globals.css (both the OS setting and the per-user preference).
+ */
+
+/* A press: a quick overshoot so the count feels struck. */
+@keyframes collab-pop {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.22);
+  }
+  70% {
+    transform: scale(0.94);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.collab-pop {
+  animation: collab-pop 380ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* A freshly posted row settles into the list. */
+@keyframes collab-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+.collab-enter {
+  animation: collab-enter 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* An empty card's ghost rows breathe, so it reads as waiting, not broken. */
+@keyframes collab-ghost {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+.collab-ghost {
+  animation: collab-ghost 2.4s ease-in-out infinite;
+}
+
+/*
+ * Temperature check (docs/specs/012-collaboration/temperature-check.md "The face"): a bar eases to its new
+ * share as answers land, the mood meter's marker glides to the new average, and a face button lifts under the
+ * pointer.
+ */
+.mood-bar {
+  transition: height 500ms ease-out;
+}
+.mood-marker {
+  transition: left 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.mood-button {
+  transition:
+    transform 200ms ease,
+    background-color 200ms ease,
+    border-color 200ms ease,
+    box-shadow 200ms ease;
+}
+.mood-button:enabled:hover {
+  transform: translateY(-2px);
+}
+
+/* The burst of confetti a card throws once when it is finished (each particle's angle is set inline as
+ * --burst-angle). */
+@keyframes collab-burst {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(var(--burst-angle)) translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(var(--burst-angle)) translateY(-54px) scale(0.4);
+  }
+}
+.collab-burst {
+  animation: collab-burst 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}

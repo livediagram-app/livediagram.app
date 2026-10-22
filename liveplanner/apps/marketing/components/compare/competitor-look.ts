@@ -36,13 +36,13 @@ export const COMPETITOR_LOOK: Record<string, CompetitorLook> = {
     icon: lucideGlyph(lucideListChecks, 22),
     panel: 'from-rose-100 to-orange-50 dark:from-rose-500/15 dark:to-orange-500/5',
     glyph: 'text-rose-600 dark:text-rose-300',
-    highlights: ['No seats', 'Live Gantt chart', 'Open source'],
+    highlights: ['No seats', 'Live Gantt chart', 'No trackers'],
   },
   monday: {
     icon: lucideGlyph(lucideLayoutGrid, 22),
     panel: 'from-amber-100 to-yellow-50 dark:from-amber-500/15 dark:to-yellow-500/5',
     glyph: 'text-amber-600 dark:text-amber-300',
-    highlights: ['Free, no tiers', 'Live dashboards', 'Self-hostable'],
+    highlights: ['Free, no tiers', 'Live dashboards', 'Export anytime'],
   },
   notion: {
     icon: lucideGlyph(lucideBookOpen, 22),
@@ -72,6 +72,6 @@ export const COMPETITOR_LOOK: Record<string, CompetitorLook> = {
     icon: lucideGlyph(lucideTable, 22),
     panel: 'from-emerald-100 to-lime-50 dark:from-emerald-500/15 dark:to-lime-500/5',
     glyph: 'text-emerald-600 dark:text-emerald-300',
-    highlights: ['Gantt from your cards', 'Live dashboards', 'Open source'],
+    highlights: ['Gantt from your cards', 'Live dashboards', 'Free, no seats'],
   },
 };

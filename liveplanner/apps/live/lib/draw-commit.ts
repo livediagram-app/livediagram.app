@@ -8,11 +8,10 @@ import {
   planBoardWidthFor,
   planViewSize,
 } from '@liveplanner/items';
-import { defaultSessionConfig, isFixedSizeShape, REACTION_PAD_LABEL } from '@liveplanner/document';
+import { defaultSessionConfig, isFixedSizeShape } from '@liveplanner/document';
 import { ARROW_SNAP_THRESHOLD_PX, inheritedSizeFor } from '@/lib/canvas';
 import {
   createComponent,
-  createImage,
   createLinkCard,
   applyShapeVariant,
   createShape,
@@ -34,8 +33,6 @@ import type { ThemeDefinition } from '@liveplanner/document';
 import { isTechIconId } from '@/lib/tech-icons';
 import { getSticker, stickerDropSize } from '@/lib/stickers';
 import type { PendingDraw } from '@/lib/draw-mode';
-import { placedTextBox } from '@/lib/text-hug';
-import { boardShape } from '@/lib/whiteboard-tool';
 import { placeNewSheet, sheetTitleForTab } from '@/lib/sheet-seeds';
 
 // The pure element construction behind commitDraw (docs/specs/008-canvas/canvas-and-palette.md draw-to-add),
@@ -43,7 +40,7 @@ import { placeNewSheet, sheetTitleForTab } from '@/lib/sheet-seeds';
 // raw start + end canvas points for its intent kind (box vs line vs
 // composite) and returns the minted element(s). The hook stays the
 // owner of everything stateful — the functional commit, selection,
-// telemetry, and the image-picker follow-up.
+// and telemetry.
 
 // Stroke for a new arrow when the active theme has no explicit
 // `elementStroke` (the Brand theme). brand-500 — matches the shape
@@ -115,9 +112,8 @@ export function buildDrawnArrow(
   endY: number,
   elements: Element[],
   theme: ThemeDefinition,
-  // The whiteboard's Line / Arrow shapes (docs/specs/023-draw-mode/draw-mode.md): their heads, and
-  // no colour so the board's ink shows.
-  opts: { ends?: ArrowEnds; unpainted?: boolean } = {},
+  // The Line tile's heads (docs/specs/008-canvas/canvas-and-palette.md "Arrows and lines").
+  opts: { ends?: ArrowEnds } = {},
 ): ArrowElement {
   const isClick = isDrawTap(startX, startY, endX, endY);
   const arrowStartX = isClick ? startX - 80 : startX;
@@ -134,30 +130,25 @@ export function buildDrawnArrow(
     from: snapDrawn(arrowStartX, startY),
     to: snapDrawn(arrowEndX, arrowEndY),
     arrowEnds: opts.ends ?? 'none',
-    ...(opts.unpainted
-      ? {}
-      : { strokeColor: theme.elementStroke ?? NEW_ARROW_THEME_STROKE_FALLBACK }),
+    strokeColor: theme.elementStroke ?? NEW_ARROW_THEME_STROKE_FALLBACK,
   };
 }
 
-// The arrow a draw gesture lands, dressed as it lands (docs/specs/023-draw-mode/draw-mode.md
-// "Shapes"): unpainted on a whiteboard so the board's ink shows, then in its tool's remembered
-// style. The live preview and the commit both build it here, so what the drag shows is what the
-// release lands, down to the stroke width and the arrowhead.
+// The arrow a draw gesture lands, dressed as it lands: in its tool's remembered style. The live
+// preview and the commit both build it here, so what the drag shows is what the release lands,
+// down to the stroke width and the arrowhead.
 export function buildDressedDrawnArrow(
   intent: Extract<PendingDraw, { type: 'arrow' }>,
   startX: number,
   startY: number,
   endX: number,
   endY: number,
-  board: { elements: Element[]; theme: ThemeDefinition; whiteboard: boolean },
+  board: { elements: Element[]; theme: ThemeDefinition },
   styleNewElement: <T extends Element>(el: T) => T,
 ): ArrowElement {
-  const drawn = buildDrawnArrow(startX, startY, endX, endY, board.elements, board.theme, {
-    ends: intent.ends,
-    unpainted: board.whiteboard,
-  });
-  return styleNewElement(board.whiteboard ? boardShape(drawn) : drawn);
+  return styleNewElement(
+    buildDrawnArrow(startX, startY, endX, endY, board.elements, board.theme, { ends: intent.ends }),
+  );
 }
 
 // Component branch (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/009-elements/web-components-and-no-groups.md): build the component at the theme's
@@ -193,7 +184,7 @@ export function buildDrawnComponent(
   };
 }
 
-// Boxed branch (shape / text / sticky / image / table / link card / embed).
+// Boxed branch (shape / text / sticky / table / link card / embed).
 // A tap drops the element centred on the tap at its inherited size (the
 // armed-time selection's size, else the factory default; circle/diamond stay
 // square); a real drag sizes it to the dragged box (16px floor). Mirrors the
@@ -201,7 +192,7 @@ export function buildDrawnComponent(
 export function buildDrawnBoxed(
   intent: Extract<
     PendingDraw,
-    { type: 'shape' | 'text' | 'sticky' | 'image' | 'table' | 'link-card' | 'video' }
+    { type: 'shape' | 'text' | 'sticky' | 'table' | 'link-card' | 'video' }
   >,
   startX: number,
   startY: number,
@@ -209,8 +200,6 @@ export function buildDrawnBoxed(
   endY: number,
   inheritFrom: Element | null,
   activeTab: Tab,
-  // Drawn in Draw mode (docs/specs/007-editor/editor-modes.md): a text box hugs its text.
-  drawMode = false,
 ) {
   const isTap = isDrawTap(startX, startY, endX, endY);
   const base =
@@ -224,14 +213,12 @@ export function buildDrawnBoxed(
             ? createTable(startX, startY)
             : intent.type === 'link-card'
               ? createLinkCard(startX, startY)
-              : intent.type === 'video'
-                ? // The Media tab has a tile per service (docs/specs/009-elements/embed-providers.md), so the
-                  // choice arrives on the intent and lands on the element
-                  // here rather than leaving a bare embed to re-point.
-                  createVideo(startX, startY, intent.provider)
-                : createImage(startX, startY);
+              : // The Media tab has a tile per service (docs/specs/009-elements/embed-providers.md), so the
+                // choice arrives on the intent and lands on the element
+                // here rather than leaving a bare embed to re-point.
+                createVideo(startX, startY, intent.provider);
   const tapSize = inheritedSizeFor(base, inheritFrom);
-  // A fixed-size kind (docs/specs/009-elements/mode-button.md) ignores the drag entirely: dragging one out
+  // A fixed-size kind (docs/specs/012-collaboration/session-button.md) ignores the drag entirely: dragging one out
   // still places it, at the one size it is meant to be.
   const fixedSize = base.type === 'shape' && isFixedSizeShape(base.shape);
   // Shared with the live preview so the outline the user sizes against is the
@@ -270,12 +257,6 @@ export function buildDrawnBoxed(
   });
   // Seed the tab's default text size onto the new element (docs/specs/004-interface-design/fonts.md).
   const textSize = activeTab.defaultTextSize ? { textSize: activeTab.defaultTextSize } : {};
-  // A text box placed in Draw mode hugs its text (docs/specs/023-draw-mode/draw-mode.md "Text
-  // boxes"): it lands empty, one line tall, caret-sized at a click or at the dragged width.
-  const hugged =
-    base.type === 'text' && drawMode
-      ? placedTextBox({ ...base, ...textSize }, isTap, { x: startX, y: startY }, dragBox)
-      : {};
   return {
     ...base,
     ...colours,
@@ -284,7 +265,6 @@ export function buildDrawnBoxed(
     width,
     height,
     ...textSize,
-    ...hugged,
     // Icon draw intent: carry the chosen glyph id + seed label onto the
     // freshly-drawn 'icon' shape (so palette icons / tech icons draw to
     // size like any shape, see draw-mode.ts).
@@ -304,8 +284,7 @@ export function buildDrawnBoxed(
     ...(intent.type === 'shape' && intent.iconId && isTechIconId(intent.iconId)
       ? { aspectLocked: false }
       : {}),
-    // The palette offers a tile per session tool and per reaction (docs/specs/012-collaboration/session-button.md,
-    // docs/specs/009-elements/reaction-pad.md), so the choice arrives with the intent and is applied here
+    // The palette offers a tile per session tool (docs/specs/012-collaboration/session-button.md), so the choice arrives with the intent and is applied here
     // rather than left on the factory default for the user to go and change.
     ...(intent.type === 'shape' && intent.kind === 'session-button' && intent.session
       ? {
@@ -316,15 +295,7 @@ export function buildDrawnBoxed(
           // other. Only on a TAP — a deliberate drag is the user saying what
           // size they want.
           ...(intent.session === 'timer' && isTap ? { width: 224, height: 64 } : {}),
-          // A POLL carries the question on its face, and the default box is
-          // sized for "Start vote" — anything of a realistic length was
-          // clipped before it finished. Wider and a little taller so a
-          // sentence fits on two lines.
-          ...(intent.session === 'poll' && isTap ? { width: 240, height: 116 } : {}),
         }
-      : {}),
-    ...(intent.type === 'shape' && intent.kind === 'estimate' && intent.estimateScale
-      ? { estimateScale: intent.estimateScale }
       : {}),
     // A Plan board takes its tile's preset; a Plan card names a new item, which the editor makes in
     // the item store as the card lands (docs/specs/026-plan/plan-mode.md "The palette").
@@ -352,12 +323,6 @@ export function buildDrawnBoxed(
       : {}),
     ...(intent.type === 'shape' && intent.kind === 'plan-view' && isTap
       ? planViewSize(intent.plan)
-      : {}),
-    ...(intent.type === 'shape' && intent.kind === 'mode-button' && intent.mode
-      ? { mode: intent.mode }
-      : {}),
-    ...(intent.type === 'shape' && intent.kind === 'reaction-pad' && intent.reaction
-      ? { reaction: intent.reaction, label: REACTION_PAD_LABEL[intent.reaction] }
       : {}),
     // Sticker draw intent (docs/specs/010-palette/stickers.md): carry the chosen art. Lands SQUARE to
     // the canvas — an automatic tilt was tried and dropped, see the spec.

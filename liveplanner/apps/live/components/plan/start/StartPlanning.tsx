@@ -1,9 +1,9 @@
 'use client';
 
-// Start Planning (docs/specs/026-plan/plan-mode.md "Starting a board"): an empty Plan tab's start panel (StartPanel). A rail of
-// categories (Recommended, Boards, Spreadsheets, Dashboards, Inspiration) beside a grid of large cards, each a picture
-// of what it makes over its name, line and (a board's) card types; a search across all of them, and across every other
-// mode's templates (otherModeMatches). Choosing a card acts at once. In the tab's own light or dark look (planPalette).
+// Start Planning (docs/specs/026-plan/plan-mode.md "Starting a board"): an empty tab's start panel (StartPanel). A rail
+// of categories (Recommended, Boards, Spreadsheets, Dashboards, Inspiration) beside a grid of large cards, each a
+// picture of what it makes over its name, line and (a board's) card types; a search across all of them, which finds
+// only Plan's own. Choosing a card acts at once. In the tab's own light or dark look (planPalette).
 import { useEffect, useMemo, type ReactNode } from 'react';
 import { DASHBOARD_PRESETS } from '@liveplanner/document';
 import { lucideGlyph } from '@liveplanner/ui';
@@ -17,11 +17,9 @@ import {
   lucideStar,
 } from '@liveplanner/icons/lucide';
 import { StartPanel, type StartPanelCard } from '@/components/start/StartPanel';
-import type { PlanTemplateKind, TemplateKind } from '@liveplanner/templates';
-import type { EditorMode, Tab } from '@liveplanner/document';
-import { useEditorModeState } from '@/components/chrome/editor-mode/editor-mode-context';
-import { otherModeMatches } from '@/components/start/other-mode-matches';
-import { TemplatePicture, templateCard } from '@/components/start/template-card';
+import type { PlanTemplateKind } from '@liveplanner/templates';
+import type { Tab } from '@liveplanner/document';
+import { TemplatePicture } from '@/components/start/template-card';
 import { suggestedDashboards, type SuggestedDashboard } from '@/lib/suggested-dashboards';
 import type { PlacedSheetStart } from '@/lib/sheet-seeds';
 import { usePlan } from '../PlanContext';
@@ -41,7 +39,6 @@ import {
   type StartCategory,
   type StartItem,
 } from './start-planning-items';
-import { StartModeSwitch } from '@/components/start/StartModeSwitch';
 import { useStartPalette } from '@/components/start/useStartPalette';
 
 const RAIL_ICONS: Record<StartCategory, ReturnType<typeof lucideGlyph>> = {
@@ -141,7 +138,6 @@ export function StartPlanning({
   onPickBoard,
   onPickSheet,
   onDashboard,
-  onOtherModeTemplate,
   onTemplate,
   tabs,
   loadTabs,
@@ -154,9 +150,6 @@ export function StartPlanning({
   onPickSheet?: ((start?: PlacedSheetStart) => void) | undefined;
   // Absent where the tab cannot become a Dashboard: Dashboards is left out.
   onDashboard?: ((presetId: string) => void) | undefined;
-  // A template found in another mode (start-diagramming.md "Found in other modes"): it lands, switching the tab there.
-  // Absent, the search keeps to Plan.
-  onOtherModeTemplate?: ((mode: EditorMode, kind: TemplateKind) => void) | undefined;
   // Applies a Plan template to this tab (Inspiration); absent, Inspiration is left out.
   onTemplate?: ((kind: PlanTemplateKind) => void) | undefined;
   // The document's tabs, read for Dashboards built from its own work (suggested-dashboards.ts), and the fetch of
@@ -171,8 +164,6 @@ export function StartPlanning({
 }) {
   // The tab's own colours (start-palette.ts).
   const palette = useStartPalette();
-  // Other modes are searched only where the tab's mode may change (a Board or Sheet tab is always Plan).
-  const canSwitch = useEditorModeState()?.canSwitch === true;
   const plan = usePlan();
   const hasCards = (plan?.items.size ?? 0) > 0;
   // Fetched as the panel opens; the effect returns nothing (the fetch is a promise).
@@ -233,19 +224,6 @@ export function StartPlanning({
         }))
       }
       onChoose={choose}
-      elsewhere={
-        canSwitch && onOtherModeTemplate
-          ? (query) =>
-              otherModeMatches('plan', query).map((m) => ({
-                mode: m.mode,
-                cards: m.kinds.map(templateCard),
-              }))
-          : undefined
-      }
-      onChooseElsewhere={
-        onOtherModeTemplate ? (m, kind) => onOtherModeTemplate(m, kind as TemplateKind) : undefined
-      }
-      lead={<StartModeSwitch />}
     />
   );
 }

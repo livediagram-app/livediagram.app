@@ -9,9 +9,8 @@ const thread = (n: number, resolved = false) => ({
 });
 
 describe('tabStatsOf', () => {
-  it('counts elements, every comment and the stored bytes, in the tab mode', () => {
+  it('counts elements, every comment and the stored bytes', () => {
     const body = {
-      opensIn: 'draw',
       elements: [
         { id: 'a', type: 'shape', commentThread: thread(2) },
         { id: 'b', type: 'shape', commentThread: thread(1, true) },
@@ -20,7 +19,7 @@ describe('tabStatsOf', () => {
     };
     const data = JSON.stringify(body);
     expect(tabStatsOf(body, data)).toEqual({
-      mode: 'draw',
+      mode: 'plan',
       elementCount: 3,
       commentCount: 3,
       dataBytes: new TextEncoder().encode(data).length,
@@ -32,9 +31,8 @@ describe('tabStatsOf', () => {
     expect(tabStatsOf({ elements: [] }, data).dataBytes).toBe(data.length + 2);
   });
 
-  it('reads Diagram for a tab with no mode, and a legacy mode as today', () => {
-    expect(tabStatsOf({ elements: [] }, '{}').mode).toBe('diagram');
-    expect(tabStatsOf({ opensIn: 'infographic', elements: [] }, '{}').mode).toBe('pages');
+  it('reads every tab as in Plan', () => {
+    expect(tabStatsOf({ elements: [] }, '{}').mode).toBe('plan');
   });
 
   it('counts a body without an elements array as empty', () => {

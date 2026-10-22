@@ -1,51 +1,14 @@
 import { BADGE_PRESET_TILES, CARD_PRESET_TILES } from './palette-element-presets';
 import { BadgePresetGlyph } from './BadgePresetGlyph';
-import { badgePresetFace, type PenColour } from '@liveplanner/document';
-import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
+import { badgePresetFace } from '@liveplanner/document';
 import type { EmbedProvider } from '@liveplanner/document';
-import { REACTION_EMOJI } from '@liveplanner/document';
+import {} from '@liveplanner/document';
 
-import type {
-  ComponentKind,
-  EstimateScale,
-  Reaction,
-  SelectionMode,
-  SessionTool,
-  ShapeKind,
-} from '@liveplanner/document';
+import type { ComponentKind, SessionTool, ShapeKind } from '@liveplanner/document';
 import {
-  AgendaIcon,
-  AvatarModeIcon,
-  ChairIcon,
-  DeskIcon,
-  FenceIcon,
-  AvatarPadIcon,
-  RoomIcon,
-  MeetingTableIcon,
-  PlantIcon,
-  BookshelfIcon,
-  WaterCoolerIcon,
-  CoffeeMachineIcon,
-  RugIcon,
-  SofaIcon,
   DecisionIcon,
-  EraserIcon,
-  EstimateIcon,
-  FormatPainterIcon,
-  HighlighterIcon,
-  IsometricIcon,
-  LaserIcon,
-  PanIcon,
-  IdeaBoxIcon,
-  QaBoardIcon,
   PickerIcon,
-  SelectIcon,
-  ShapePenIcon,
-  SpotlightIcon,
-  SessionPollIcon,
   SessionVoteIcon,
-  RevealIcon,
-  RollCallIcon,
   TemperatureIcon,
   StopwatchIcon,
   TimerIcon,
@@ -55,7 +18,6 @@ import {
   lucideDiamond,
   lucideFileText,
   lucideGlobe,
-  lucideImage,
   lucideAppWindow,
   lucideMoveRight,
   lucidePanelTop,
@@ -66,7 +28,6 @@ import {
 } from '@liveplanner/icons/lucide';
 import { Glyph, Prims } from '@liveplanner/ui';
 import { PLAN_TILES } from './palette-plan-tiles';
-import { WIREFRAME_TILES } from './palette-wireframe-tiles';
 import { tileCaption } from './tile-caption';
 
 import {
@@ -120,21 +81,14 @@ export type PaletteTileSection =
   | 'dashboard-tabs'
   // A Dashboard's written cards (Status, Checklist, Key Date, Links), on a Dashboard tab alone.
   | 'dashboard-cards'
-  // A logo page's drawing tools (docs/specs/007-editor/logo-pages.md "The Logo palette").
-  | 'logo'
-  // A screen's parts (docs/specs/007-editor/wireframe-pages.md "The Elements palette").
-  | 'wireframe'
   | 'plan-sheets'
   | 'tools'
   | 'data'
-  // 'collaborate' is GONE (docs/specs/010-palette/palette-top-level-categories.md). The collaboration family (docs/specs/012-collaboration/estimate-card.md to
-  // docs/specs/012-collaboration/roll-call.md) had its own category on the reasoning that Behaviour is
-  // "pressing this does something to your session" while these are "the canvas
-  // is collecting an answer from everybody". In the picker that line never
-  // held: both are elements whose content arrives at runtime, both are reached
-  // for while facilitating, and a user looking for the Done check found it in
-  // one and the Estimate card in the other with nothing to tell them which.
-  // They are now Collaborate elements, offered as six categories: see COLLABORATE_CATEGORY_GROUPS.
+  // 'collaborate' is GONE (docs/specs/010-palette/palette-top-level-categories.md). The collaboration family
+  // (docs/specs/012-collaboration/temperature-check.md, decision-record.md) had its own category on the reasoning
+  // that Behaviour is "pressing this does something to your session" while these are "the canvas is collecting an
+  // answer from everybody". In the picker that line never held: both are elements whose content arrives at
+  // runtime. They are now Collaborate elements, offered as four categories: see COLLABORATE_CATEGORY_GROUPS.
   | 'media'
   | 'components'
   // Concept graphics (docs/specs/009-elements/concept-graphics.md).
@@ -148,17 +102,13 @@ export type PaletteTileSection =
 // drive the tile's drag-to-place payload + pending-draw highlight; the
 // singleton tools map one-to-one onto the editor's add-handlers.
 type PaletteTileAction =
-  // `session` / `reaction` are creation-time choices, not separate kinds: both
-  // elements are ONE kind with a mode field, and the palette offers a tile per
-  // mode inside an accordion (docs/specs/012-collaboration/session-button.md, docs/specs/009-elements/reaction-pad.md) the way Media does for embed
-  // providers. Placing "Poll" has to place a poll, not a timer to reconfigure.
+  // `session` is a creation-time choice, not a separate kind: the element is ONE kind with a tool field, and
+  // the palette offers a tile per tool (docs/specs/012-collaboration/session-button.md) the way Media does for
+  // embed providers. Placing "Dot Vote" has to place a vote, not a timer to reconfigure.
   | {
       type: 'shape';
       kind: ShapeKind;
       session?: SessionTool;
-      reaction?: Reaction;
-      mode?: SelectionMode;
-      estimateScale?: EstimateScale;
       // Plan board preset, or a Plan card's item type (docs/specs/026-plan/plan-mode.md "The palette").
       plan?: string;
       // A creation-time variant of the kind (packages/document shape-variants.ts): the Callout card, a Funnel.
@@ -167,43 +117,21 @@ type PaletteTileAction =
   | { type: 'text' }
   // An opener (palette-openers): stands for a category, or one group of a catalogue, and opens it; places nothing.
   | { type: 'open'; category: string; group?: string }
-  | { type: 'freehand' }
-  // Marker variant of the pencil (docs/specs/008-canvas/highlighter.md), the recognising pen
-  // (docs/specs/008-canvas/two-pens.md) and the click-to-place vertex tool (docs/specs/008-canvas/polygon-tool.md)
-  // are separate action types, so each tile maps to its own arm-handler and pressed state.
-  | { type: 'highlighter' }
-  | { type: 'shape-pen' }
   | { type: 'video'; provider?: EmbedProvider }
   | { type: 'sticker'; stickerId: string }
+  // The click-to-place vertex tool (docs/specs/008-canvas/polygon-tool.md).
   | { type: 'polygon' }
-  // The Path tool (docs/specs/023-draw-mode/path-tool.md): a logo page's Pen (logo-pages.md).
-  | { type: 'path' }
   // `ends`: the Line tile's `'none'`; the Arrow tile leaves it to the tool's pointer at its end.
   | { type: 'arrow'; ends?: import('@liveplanner/document').ArrowEnds }
   | { type: 'sticky' }
   | { type: 'table' }
-  | { type: 'image' }
   | { type: 'annotation' }
   | { type: 'link-card' }
   | { type: 'component'; kind: ComponentKind }
   // Dynamic icon tiles (palette-dynamic-tiles.tsx): a single line-art /
   // Technology catalogue entry as a tile.
   | { type: 'icon'; iconId: string }
-  | { type: 'tech-icon'; iconId: string }
-  // A Plan board's header widget (docs/specs/026-plan/board-widgets.md): placed in a board's header,
-  // never on the canvas.
-  // One of Draw mode's markers (docs/specs/023-draw-mode/draw-mode.md "Pens"), offered by the
-  // Toolbar strip's Search in the other modes (palette-marker-tiles.tsx): picked up as the dock
-  // picks it up, in its colour and width. Never in PALETTE_TILES: a marker's colour and width are
-  // the person's own, read when the Search opens.
-  | {
-      type: 'marker';
-      penId: WhiteboardPenId;
-      colour: PenColour | null;
-      width: number;
-      // Picked up for one stroke (a logo page's palette), as the pencil is.
-      once?: true;
-    };
+  | { type: 'tech-icon'; iconId: string };
 
 // Themed sub-groups within the Tools section (docs/specs/008-canvas/canvas-and-palette.md "Sub-categories"):
 // the Tools tab renders one labelled grid per group instead of a flat
@@ -233,7 +161,7 @@ export const TOOL_GROUPS: { id: ToolGroupId; label: string }[] = [
     id: 'draw',
     label: 'Draw',
   },
-  // Behaviour (docs/specs/009-elements/mode-button.md): elements that DO something when someone interacts
+  // Behaviour (docs/specs/012-collaboration/session-button.md): elements that DO something when someone interacts
   // with them, rather than elements that say something. Last, because a
   // diagram is drawn before it is wired up.
   {
@@ -252,12 +180,9 @@ export type PaletteTileDef = {
   toolGroup?: ToolGroupId;
   // Collapses this tile into a named group inside its category, rather than
   // showing it as a top-level row (docs/specs/009-elements/embed-providers.md). 'embed' = the Media tab's embed
-  // providers; 'web' = the Components tab's website composites; 'session' and
-  // 'reaction' = the Behaviour tab's session tools and reactions; 'mode' its
-  // selection-mode buttons; 'move' / 'tools' the rest of Behaviour; and
-  // 'ask' / 'record' the two halves of Collaborate.
-  tileGroup?:
-    'embed' | 'web' | 'session' | 'reaction' | 'mode' | 'move' | 'tools' | 'ask' | 'record';
+  // providers; 'web' = the Components tab's website composites; 'move' / 'tools' the
+  // Behaviour tab's groups; and 'ask' / 'record' the two halves of Collaborate.
+  tileGroup?: 'embed' | 'web' | 'move' | 'tools' | 'ask' | 'record';
   label: string;
   // Overrides the caption derived from `label` where that runs too long
   // for the tile (see IconButton).
@@ -274,9 +199,6 @@ export type PaletteTileDef = {
   // theme's element fill; `noTint` tiles keep fixed colours.
   filled?: boolean;
   noTint?: boolean;
-  // Tile only renders when the editor supplies onAddImage (image uploads
-  // available) — the Image / Avatar / Hero / Header tiles.
-  needsImage?: boolean;
   // Greyed out with its reason (no press, no drag, the reason in its hover card). A card tile no board on the tab
   // takes gets one at render (usePlanCardTileDisabled, docs/specs/026-plan/plan-mode.md "The palette").
   disabled?: { reason: string };
@@ -589,70 +511,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       </Glyph>
     ),
   },
-  // The Path tool as a logo page's Pen (docs/specs/007-editor/logo-pages.md "The Logo palette"):
-  // the same tool Draw mode's dock holds, in a logo page's Draw only.
-  {
-    id: 'logo:pen',
-    blurb: 'Click for corners, drag for curves',
-    section: 'logo',
-    caption: 'Pen',
-    label: 'Pen',
-    description:
-      'Draw a precise path: click to place corners, drag to pull out curves, and close it on its first point.',
-    action: { type: 'path' },
-    icon: <ShapePenIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    id: 'tools:pencil',
-    blurb: 'Sketch a stroke, left as drawn',
-    section: 'tools',
-    toolGroup: 'draw',
-    caption: 'Freehand',
-    label: 'Freehand Pencil',
-    description:
-      'Sketch a freehand stroke, kept exactly as you drew it. Drag to draw; release near the start to close the shape.',
-    shortcut: 'P',
-    action: { type: 'freehand' },
-    icon: (
-      <Glyph size={18} units={18}>
-        {/* Diagonal pencil. Body angled bottom-left to top-right, with a
-            separated tip + eraser segment so the silhouette reads as
-            "pencil" even at the 18 px palette size. Pairs with the cursor
-            glyph (also a diagonal nib) so the tool's two visual surfaces
-            stay in sync. */}
-        <path d="M2 16 L6 12" />
-        <path d="M5 13 L12 6 L14 8 L7 15 Z" />
-        <path d="M12 6 L15 3 L17 5 L14 8" />
-        <path d="M2 16 L5 13" />
-      </Glyph>
-    ),
-  },
-  {
-    id: 'tools:shape-pen',
-    blurb: 'A rough shape snaps to the real one',
-    section: 'tools',
-    toolGroup: 'draw',
-    caption: 'Shape Pen',
-    label: 'Shape Pen',
-    description:
-      'Draw a rough circle, square, triangle or line and it converts to the real shape on release.',
-    shortcut: '6',
-    action: { type: 'shape-pen' },
-    icon: <ShapePenIcon size={TILE_GLYPH_PX} />,
-  },
-  // The marker (docs/specs/008-canvas/highlighter.md): the third pen, one stroke per pick like the
-  // other two. No shortcut: only the common flowchart vocabulary gets letters.
-  {
-    id: 'tools:highlighter',
-    blurb: 'A wide translucent marker stroke',
-    section: 'tools',
-    toolGroup: 'draw',
-    label: 'Highlighter',
-    description: 'A wide translucent yellow marker. Drag to call attention to a region.',
-    dividerAfter: true,
-    action: { type: 'highlighter' },
-    icon: <HighlighterIcon size={TILE_GLYPH_PX} />,
-  },
   {
     id: 'tools:polygon',
     blurb: 'Straight edges, point by point',
@@ -750,146 +608,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     icon: <CodeBlockTileArt />,
   },
   {
-    // Selection Mode buttons (docs/specs/009-elements/mode-button.md): one tile per mode, grouped, so the
-    // button lands pointed at the mode you wanted rather than at the default
-    // you then have to change.
-    id: 'tools:mode-avatar',
-    tileGroup: 'mode',
-    blurb: 'Walk a character around the canvas',
-    caption: 'Avatar',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Avatar Mode Button',
-    description:
-      'A button that switches whoever presses it into Avatar mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
-    filled: true,
-    action: { type: 'shape', kind: 'mode-button', mode: 'avatar' },
-    // The mode's OWN glyph, the one the canvas-tool popover shows for it
-    // (buildCanvasToolOptions): eight identical pointers told the reader
-    // nothing about which mode a row would hand out.
-    icon: <AvatarModeIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    id: 'tools:mode-select',
-    tileGroup: 'mode',
-    blurb: 'The ordinary pointer',
-    caption: 'Select',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Select Mode Button',
-    description:
-      'A button that switches whoever presses it into Select mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
-    filled: true,
-    action: { type: 'shape', kind: 'mode-button', mode: 'select' },
-    // The mode's OWN glyph, the one the canvas-tool popover shows for it
-    // (buildCanvasToolOptions): eight identical pointers told the reader
-    // nothing about which mode a row would hand out.
-    icon: <SelectIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    id: 'tools:mode-pan',
-    tileGroup: 'mode',
-    blurb: 'Drag the canvas around',
-    caption: 'Hand',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Hand Mode Button',
-    description:
-      'A button that switches whoever presses it into Hand mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
-    filled: true,
-    action: { type: 'shape', kind: 'mode-button', mode: 'pan' },
-    // The mode's OWN glyph, the one the canvas-tool popover shows for it
-    // (buildCanvasToolOptions): eight identical pointers told the reader
-    // nothing about which mode a row would hand out.
-    icon: <PanIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    id: 'tools:mode-laser',
-    tileGroup: 'mode',
-    blurb: 'Point at things while you talk',
-    caption: 'Laser',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Laser Mode Button',
-    description:
-      'A button that switches whoever presses it into Laser mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
-    filled: true,
-    action: { type: 'shape', kind: 'mode-button', mode: 'laser' },
-    // The mode's OWN glyph, the one the canvas-tool popover shows for it
-    // (buildCanvasToolOptions): eight identical pointers told the reader
-    // nothing about which mode a row would hand out.
-    icon: <LaserIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    id: 'tools:mode-spotlight',
-    tileGroup: 'mode',
-    blurb: 'Dim everything but one patch',
-    caption: 'Spotlight',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Spotlight Mode Button',
-    description:
-      'A button that switches whoever presses it into Spotlight mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
-    filled: true,
-    action: { type: 'shape', kind: 'mode-button', mode: 'spotlight' },
-    // The mode's OWN glyph, the one the canvas-tool popover shows for it
-    // (buildCanvasToolOptions): eight identical pointers told the reader
-    // nothing about which mode a row would hand out.
-    icon: <SpotlightIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    id: 'tools:mode-eraser',
-    tileGroup: 'mode',
-    blurb: 'Rub things out by dragging',
-    caption: 'Eraser',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Eraser Mode Button',
-    description:
-      'A button that switches whoever presses it into Eraser mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
-    filled: true,
-    action: { type: 'shape', kind: 'mode-button', mode: 'eraser' },
-    // The mode's OWN glyph, the one the canvas-tool popover shows for it
-    // (buildCanvasToolOptions): eight identical pointers told the reader
-    // nothing about which mode a row would hand out.
-    icon: <EraserIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    id: 'tools:mode-format',
-    tileGroup: 'mode',
-    blurb: 'Copy one element\u2019s style onto others',
-    caption: 'Format',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Format Mode Button',
-    description:
-      'A button that switches whoever presses it into Format mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
-    filled: true,
-    action: { type: 'shape', kind: 'mode-button', mode: 'format' },
-    // The mode's OWN glyph, the one the canvas-tool popover shows for it
-    // (buildCanvasToolOptions): eight identical pointers told the reader
-    // nothing about which mode a row would hand out.
-    icon: <FormatPainterIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    id: 'tools:mode-isometric',
-    tileGroup: 'mode',
-    blurb: 'Tilt the canvas into 3D',
-    caption: 'Isometric',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Isometric Mode Button',
-    description:
-      'A button that switches whoever presses it into Isometric mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
-    filled: true,
-    dividerAfter: true,
-    action: { type: 'shape', kind: 'mode-button', mode: 'isometric' },
-    // The mode's OWN glyph, the one the canvas-tool popover shows for it
-    // (buildCanvasToolOptions): eight identical pointers told the reader
-    // nothing about which mode a row would hand out.
-    icon: <IsometricIcon size={TILE_GLYPH_PX} />,
-  },
-  {
     // Portal (docs/specs/009-elements/portal-element.md): step in here, come out of the portal it is linked to.
     // The tile id keeps its original 'door' word: ids are stable, since palette layouts and
     // search address tiles by them.
@@ -901,7 +619,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     label: 'Add Portal',
     caption: 'Portal',
     description:
-      'Click it, or walk your Avatar character into it, and you come out of the portal it is linked to. Link a pair from the element menu.',
+      'Click it and you come out of the portal it is linked to. Link a pair from the element menu.',
     filled: true,
     action: { type: 'shape', kind: 'portal' },
     icon: (
@@ -913,7 +631,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
-    // Session button (docs/specs/012-collaboration/session-button.md): starts a timer / vote / poll for the ro  {
     // Session tools (docs/specs/012-collaboration/session-button.md): one tile per tool, grouped, rather than one
     // button you place and then reconfigure. The tools have nothing in common
     // at the moment of choosing — you know whether you want a countdown or a
@@ -960,131 +677,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     icon: <SessionVoteIcon />,
   },
   {
-    id: 'tools:session-poll',
-    tileGroup: 'ask',
-    blurb: 'A question you write in advance',
-    caption: 'Poll',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Poll Button',
-    description:
-      'A button that opens a poll you have written in advance, so the press asks the question rather than opening a composer. Write it from its right-click menu.',
-    filled: true,
-    action: { type: 'shape', kind: 'session-button', session: 'poll' },
-    icon: <SessionPollIcon />,
-  },
-  {
-    // Reveal zone (docs/specs/009-elements/reveal-zone.md): a cover you click to see what is underneath.
-    id: 'tools:reveal',
-    tileGroup: 'tools',
-    blurb: 'Double-click to look underneath',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Reveal Zone',
-    caption: 'Reveal',
-    description:
-      'A cover over part of the canvas. Double-click it to uncover it just for you, or reveal it for everyone from the menu.',
-    filled: true,
-    action: { type: 'shape', kind: 'reveal' },
-    icon: <RevealIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    // Done check (docs/specs/012-collaboration/done-check.md): who has finished, live.
-    id: 'tools:done-check',
-    tileGroup: 'tools',
-    blurb: 'Everyone marks themselves finished',
-    caption: 'Done',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Done Check',
-    description:
-      'Everyone marks themselves done and the card shows who has and who has not, from whoever is actually in the room. It flashes when the last person finishes. Reset it for the next round from its own menu.',
-    filled: true,
-    action: { type: 'shape', kind: 'done-check' },
-    icon: (
-      <Glyph size={18} units={24}>
-        {/* Two ticked rows over one still waiting. */}
-        <path d="M3.2 7.2 4.6 8.6 7.4 5.8" />
-        <path d="M3.2 13 4.6 14.4 7.4 11.6" />
-        <circle cx="4.8" cy="19" r="1.5" />
-        <path d="M10.5 7.2h10.3M10.5 13h10.3M10.5 19h6.4" />
-      </Glyph>
-    ),
-  },
-  {
-    // Reaction pads (docs/specs/009-elements/reaction-pad.md): one tile per reaction, grouped, rather than one
-    // pad you place and then switch. Which reaction you want is the whole
-    // decision — a pad is not useful until it is the right one.
-    id: 'tools:reaction-confetti',
-    tileGroup: 'reaction',
-    blurb: 'A result worth celebrating',
-    caption: 'Confetti',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Confetti Pad',
-    description:
-      'Press it, or walk a character onto it in Avatar mode, and confetti bursts up and falls for everyone in the room. A result worth celebrating.',
-    filled: true,
-    action: { type: 'shape', kind: 'reaction-pad', reaction: 'confetti' },
-    icon: <span className="text-[15px] leading-none">{REACTION_EMOJI['confetti']}</span>,
-  },
-  {
-    id: 'tools:reaction-sparkles',
-    tileGroup: 'reaction',
-    blurb: 'A good idea, nicely done',
-    caption: 'Sparkles',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Sparkles Pad',
-    description:
-      'Press it, or walk a character onto it in Avatar mode, and a slow twinkle around the pad for everyone in the room. A good idea, nicely done.',
-    filled: true,
-    action: { type: 'shape', kind: 'reaction-pad', reaction: 'sparkles' },
-    icon: <span className="text-[15px] leading-none">{REACTION_EMOJI['sparkles']}</span>,
-  },
-  {
-    id: 'tools:reaction-hearts',
-    tileGroup: 'reaction',
-    blurb: 'Warmth for a person, not a result',
-    caption: 'Hearts',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Hearts Pad',
-    description:
-      'Press it, or walk a character onto it in Avatar mode, and hearts rise and drift for everyone in the room. Warmth for a person, not a result.',
-    filled: true,
-    action: { type: 'shape', kind: 'reaction-pad', reaction: 'hearts' },
-    icon: <span className="text-[15px] leading-none">{REACTION_EMOJI['hearts']}</span>,
-  },
-  {
-    id: 'tools:reaction-applause',
-    tileGroup: 'reaction',
-    blurb: 'Thanks for the talk or the demo',
-    caption: 'Applause',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Applause Pad',
-    description:
-      'Press it, or walk a character onto it in Avatar mode, and rings of sound spread out for everyone in the room. Thanks for the talk or the demo.',
-    filled: true,
-    action: { type: 'shape', kind: 'reaction-pad', reaction: 'applause' },
-    icon: <span className="text-[15px] leading-none">{REACTION_EMOJI['applause']}</span>,
-  },
-  {
-    id: 'tools:reaction-fireworks',
-    tileGroup: 'reaction',
-    blurb: 'It shipped',
-    caption: 'Fireworks',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Fireworks Pad',
-    description:
-      'Press it, or walk a character onto it in Avatar mode, and shells burst one after another for everyone in the room. It shipped.',
-    filled: true,
-    action: { type: 'shape', kind: 'reaction-pad', reaction: 'fireworks' },
-    icon: <span className="text-[15px] leading-none">{REACTION_EMOJI['fireworks']}</span>,
-  },
-  {
     // Picker (docs/specs/012-collaboration/picker.md): rolls a person or a written option.
     id: 'tools:picker',
     tileGroup: 'tools',
@@ -1099,215 +691,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     action: { type: 'shape', kind: 'picker' },
     icon: <PickerIcon size={TILE_GLYPH_PX} />,
   },
-  {
-    // Bring Focus (docs/specs/012-collaboration/bring-focus.md): Navigate, beside Portal and Chair, because all
-    // three take somebody somewhere. This is the one that takes everybody.
-    id: 'tools:focus-button',
-    tileGroup: 'move',
-    blurb: 'Ask everyone to look here',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Bring Focus',
-    caption: 'Bring Focus',
-    description:
-      'Bring Focus. Press it and everyone else in the room is offered a jump to it, on your tab.',
-    filled: true,
-    action: { type: 'shape', kind: 'focus-button' },
-    icon: (
-      <Glyph size={18} units={24} strokeLinejoin="miter">
-        <circle cx="12" cy="12" r="7.5" />
-        <circle cx="12" cy="12" r="2.2" fill="currentColor" stroke="none" />
-        <path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3" />
-      </Glyph>
-    ),
-  },
-  {
-    // Chair (docs/specs/009-elements/chair.md): Behaviour, because what it does only happens when
-    // somebody interacts with it — here by walking an Avatar-mode character
-    // into it rather than by pressing it.
-    id: 'tools:chair',
-    tileGroup: 'move',
-    blurb: 'A chair for Avatars to sit in',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Chair',
-    caption: 'Chair',
-    description:
-      'Furniture for Avatar mode: walk your character into one and it sits down. Give the room a seating plan.',
-    filled: true,
-    action: { type: 'shape', kind: 'chair' },
-    icon: <ChairIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    // Desk (docs/specs/009-elements/chair.md "Desk and sofa"): a chair pulled up to a desk with a
-    // computer on it; whoever sits faces the screen.
-    id: 'tools:desk',
-    tileGroup: 'move',
-    blurb: 'A desk with a computer for an Avatar to sit at',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Desk',
-    caption: 'Desk',
-    description:
-      'A desk with a computer and a chair for Avatar mode: walk your character in and it sits down facing the screen.',
-    filled: true,
-    action: { type: 'shape', kind: 'desk' },
-    icon: <DeskIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    // Sofa (docs/specs/009-elements/chair.md "Desk and sofa"): two seats side by side.
-    id: 'tools:sofa',
-    tileGroup: 'move',
-    blurb: 'A two-seater sofa for Avatars',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Sofa',
-    caption: 'Sofa',
-    description:
-      'A two-seater sofa for Avatar mode: walk your character in and it sits on the nearer cushion, room for two.',
-    filled: true,
-    action: { type: 'shape', kind: 'sofa' },
-    icon: <SofaIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    // Fence (docs/specs/009-elements/fence.md): Avatar-mode characters cannot walk through one.
-    id: 'tools:fence',
-    tileGroup: 'move',
-    blurb: 'A barrier Avatars cannot walk through',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Fence',
-    caption: 'Fence',
-    description:
-      'A fence Avatar-mode characters cannot cross. Join fences end to end to wall off an area: people can walk round it, not into it.',
-    filled: true,
-    action: { type: 'shape', kind: 'fence' },
-    icon: <FenceIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    // Avatar Pad (docs/specs/009-elements/avatar-pad.md): where everyone entering Avatar mode starts.
-    id: 'tools:avatar-pad',
-    tileGroup: 'move',
-    blurb: 'Where Avatars arrive',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Avatar Pad',
-    caption: 'Avatar Pad',
-    description:
-      "The board's entrance for Avatar mode: everyone who starts walking appears on the pad, beamed in, rather than wherever they were looking.",
-    filled: true,
-    action: { type: 'shape', kind: 'avatar-pad' },
-    icon: <AvatarPadIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    // Room (docs/specs/009-elements/office.md).
-    id: 'tools:room',
-    tileGroup: 'move',
-    blurb: 'A room with walls and a doorway',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Room',
-    caption: 'Room',
-    description:
-      'A room for a virtual office: walls Avatar-mode characters walk round, a doorway they walk through, and its name on the back wall. It goes in behind everything, so furniture stands on its floor.',
-    filled: true,
-    action: { type: 'shape', kind: 'room' },
-    icon: <RoomIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    // Meeting Table (docs/specs/009-elements/office.md).
-    id: 'tools:meeting-table',
-    tileGroup: 'move',
-    blurb: 'A table with six seats round it',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Meeting Table',
-    caption: 'Meeting Table',
-    description:
-      'A meeting table with six chairs for Avatar mode: walk your character in and it sits on the nearest seat, facing the table.',
-    filled: true,
-    action: { type: 'shape', kind: 'meeting-table' },
-    icon: <MeetingTableIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    // Plant (docs/specs/009-elements/office.md).
-    id: 'tools:plant',
-    tileGroup: 'move',
-    blurb: 'A potted plant Avatars walk round',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Plant',
-    caption: 'Plant',
-    description:
-      'A potted plant to make an office feel lived in. Avatar-mode characters walk round its pot.',
-    filled: true,
-    action: { type: 'shape', kind: 'plant' },
-    icon: <PlantIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    // Bookshelf (docs/specs/009-elements/office.md).
-    id: 'tools:bookshelf',
-    tileGroup: 'move',
-    blurb: 'Shelves of books Avatars walk round',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Bookshelf',
-    caption: 'Bookshelf',
-    description:
-      'A bookshelf to stand against a wall. Avatar-mode characters walk along in front of it, not through it.',
-    filled: true,
-    action: { type: 'shape', kind: 'bookshelf' },
-    icon: <BookshelfIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    // Water Cooler (docs/specs/009-elements/office.md).
-    id: 'tools:water-cooler',
-    tileGroup: 'move',
-    blurb: 'Walk up for a cup of water',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Water Cooler',
-    caption: 'Water Cooler',
-    description:
-      'A water cooler for Avatar mode: walk your character up to it and it gets a cup of water, sipping it for a minute where everyone can see.',
-    filled: true,
-    action: { type: 'shape', kind: 'water-cooler' },
-    icon: <WaterCoolerIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    // Coffee Machine (docs/specs/009-elements/office.md).
-    id: 'tools:coffee-machine',
-    tileGroup: 'move',
-    blurb: 'Walk up for a coffee',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Coffee Machine',
-    caption: 'Coffee Machine',
-    description:
-      'A coffee machine for Avatar mode: walk your character up to it and it gets a steaming coffee, sipping it for a minute where everyone can see.',
-    filled: true,
-    action: { type: 'shape', kind: 'coffee-machine' },
-    icon: <CoffeeMachineIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    // Rug (docs/specs/009-elements/office.md).
-    id: 'tools:rug',
-    tileGroup: 'move',
-    blurb: 'A rug on the floor',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Rug',
-    caption: 'Rug',
-    description:
-      'A rug that lies on the floor under the furniture, to mark out a lounge or a reception.',
-    filled: true,
-    action: { type: 'shape', kind: 'rug' },
-    icon: <RugIcon size={TILE_GLYPH_PX} />,
-  },
-  // --- Collaborate (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md) ----------------------------------
+  // --- Collaborate (docs/specs/012-collaboration/temperature-check.md, decision-record.md) -----------------------
   // Elements that collect what the ROOM thinks. Rows with a blurb, like
-  // Behaviour: none of these glyphs can say what the element does, and
-  // "everyone picks privately, then all at once" is the thing being chosen.
+  // Behaviour: none of these glyphs can say what the element does.
   {
     // Comment pin (docs/specs/012-collaboration/comment-pin.md): a remark about a PLACE rather than a shape.
     id: 'collab:comment-pin',
@@ -1351,52 +737,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
-    // Quiz (docs/specs/012-collaboration/quiz.md): one question with a right answer, opened on a timer and
-    // revealed by the facilitator. In Ask, beside the poll and the estimate,
-    // because it is putting a question to the room.
-    id: 'collab:quiz',
-    tileGroup: 'ask',
-    blurb: 'A timed question with a right answer',
-    caption: 'Quiz',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Quiz',
-    description:
-      'One multiple-choice question for the room. Start it and the answers fan out around the question for everyone to pick; it locks when the time runs out, then Reveal turns the right answer green and names who got it.',
-    filled: true,
-    action: { type: 'shape', kind: 'quiz' },
-    icon: (
-      <Glyph size={18} units={24}>
-        {/* A disc with a question mark, answers around it. */}
-        <circle cx="12" cy="12" r="4.6" />
-        <path d="M10.7 10.9a1.4 1.4 0 1 1 1.9 1.3c-.4.2-.6.5-.6.9" />
-        <circle cx="12" cy="14.5" r=".35" />
-        <circle cx="12" cy="2.8" r="1.4" />
-        <circle cx="21.2" cy="12" r="1.4" />
-        <circle cx="12" cy="21.2" r="1.4" />
-        <circle cx="2.8" cy="12" r="1.4" />
-      </Glyph>
-    ),
-  },
-  {
-    // Estimate card (docs/specs/012-collaboration/estimate-card.md): ONE tile. The three scales are the same
-    // card with different answers, so they are one entry here, and a new card
-    // asks for its scale on the canvas ("Choosing a scale"); the element
-    // menu's Scale changes it later.
-    id: 'collab:estimate',
-    tileGroup: 'ask',
-    blurb: 'Planning poker: pick a scale on the card',
-    caption: 'Estimate',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Estimate Card',
-    description:
-      'Planning poker on the canvas: everyone picks privately, then one Reveal shows every answer and the spread. Choose Fibonacci, T-shirt sizes or powers of two on the card once it is placed.',
-    filled: true,
-    action: { type: 'shape', kind: 'estimate' },
-    icon: <EstimateIcon size={TILE_GLYPH_PX} />,
-  },
-  {
     id: 'collab:temperature',
     tileGroup: 'ask',
     blurb: 'Fist of five: how does the room feel?',
@@ -1411,48 +751,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     icon: <TemperatureIcon size={TILE_GLYPH_PX} />,
   },
   {
-    id: 'collab:idea-box',
-    tileGroup: 'ask',
-    blurb: 'Anonymous ideas, held until you open it',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Idea Box',
-    caption: 'Idea Box',
-    description:
-      'Anyone can drop in an idea without their name on it. Nothing shows until you open the box.',
-    filled: true,
-    action: { type: 'shape', kind: 'idea-box' },
-    icon: <IdeaBoxIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    id: 'collab:qa-board',
-    tileGroup: 'ask',
-    blurb: 'Notes the room upvotes, best on top',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Q&A Board',
-    caption: 'Q&A Board',
-    description:
-      'Anyone can add a note, named or anonymous, and upvote others. The most wanted rise to the top; the facilitator spotlights one to discuss.',
-    filled: true,
-    action: { type: 'shape', kind: 'qa-board' },
-    icon: <QaBoardIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    id: 'collab:agenda',
-    tileGroup: 'record',
-    blurb: 'Segments with minutes that start the timer',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Agenda',
-    caption: 'Agenda',
-    description:
-      'The run of the session. Press a segment and it starts the tab timer for that long and marks where the room is.',
-    filled: true,
-    action: { type: 'shape', kind: 'agenda' },
-    icon: <AgendaIcon size={TILE_GLYPH_PX} />,
-  },
-  {
     id: 'collab:decision',
     tileGroup: 'record',
     blurb: 'What was decided, why, and whether it stands',
@@ -1465,20 +763,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'decision' },
     icon: <DecisionIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    id: 'collab:roll-call',
-    tileGroup: 'record',
-    blurb: 'Freezes who was in the room, right now',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Roll Call',
-    caption: 'Roll Call',
-    description:
-      'Press Take Roll and it records everyone in the room at that moment, and keeps them after they leave.',
-    filled: true,
-    action: { type: 'shape', kind: 'roll-call' },
-    icon: <RollCallIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'tools:checklist',
@@ -1496,22 +780,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
         <path d="M9 5 H15.5" />
         <rect x="2.5" y="10.5" width="4" height="4" rx="1" />
         <path d="M9 12.5 H15.5" />
-      </Glyph>
-    ),
-  },
-  {
-    id: 'tools:image',
-    blurb: 'Place an uploaded picture',
-    section: 'media',
-    label: 'Add Image',
-    description: 'Drop an image placeholder + pick / upload a file.',
-    shortcut: '9',
-    noTint: true,
-    needsImage: true,
-    action: { type: 'image' },
-    icon: (
-      <Glyph size={TILE_GLYPH_PX} units={24}>
-        <Prims prims={lucideImage} />
       </Glyph>
     ),
   },
@@ -1610,24 +878,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     icon: (
       <Glyph size={TILE_GLYPH_PX} units={24}>
         <Prims prims={lucideGlobe} />
-      </Glyph>
-    ),
-  },
-  {
-    id: 'tools:avatar',
-    blurb: 'A circular photo of a person',
-    section: 'media',
-    label: 'Add Avatar',
-    description:
-      'Avatar. A circular image. Tap to drop or drag to size; double-click it to pick / upload a photo.',
-    noTint: true,
-    needsImage: true,
-    action: { type: 'component', kind: 'avatar' },
-    icon: (
-      <Glyph size={18} units={24}>
-        <circle cx="12" cy="12" r="9" />
-        <circle cx="12" cy="9.5" r="3" />
-        <path d="M6.5 19a6 6 0 0 1 11 0" />
       </Glyph>
     ),
   },
@@ -1984,9 +1234,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'tools:link-card',
     blurb: 'A clickable preview of a link',
-    // Navigate (docs/specs/010-palette/palette-top-level-categories.md), beside Portal and Chair: the group is what an
-    // element DOES, and all three take you somewhere. A portal moves you to
-    // another tab, a chair seats your character, a link card sends you out to
+    // Navigate (docs/specs/010-palette/palette-top-level-categories.md), beside Portal: the group is what an
+    // element DOES, and both take you somewhere. A portal moves you to
+    // another tab, a link card sends you out to
     // the page. It sat under Components, which groups by what a thing looks
     // like — a ready-made composite you recolour — and a link card is neither
     // composite nor decoration.
@@ -2222,26 +1472,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
-    id: 'components:hero',
-    tileGroup: 'web',
-    blurb: 'A big image with a title card',
-    caption: 'Hero',
-    section: 'components',
-    label: 'Add Hero',
-    description:
-      'Hero. A large image with a title and supporting line on a themed caption card. Tap to drop or drag to size; double-click the image to set it, click the caption to edit it.',
-    noTint: true,
-    needsImage: true,
-    action: { type: 'component', kind: 'hero' },
-    icon: (
-      <Glyph size={18} units={24}>
-        <rect x="2.5" y="3.5" width="19" height="17" rx="2" />
-        <path d="M2.5 14l5-4 4 3 3-2.5 7 5.5" />
-        <path d="M7 17.5h10" strokeWidth="2.2" />
-      </Glyph>
-    ),
-  },
-  {
     id: 'components:header',
     tileGroup: 'web',
     blurb: 'A website-style nav bar',
@@ -2372,8 +1602,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   // Plan (docs/specs/026-plan/plan-mode.md): boards by preset, cards by item type.
   ...PLAN_TILES,
-  // A wireframe page's parts (docs/specs/007-editor/wireframe-pages.md "The Elements palette").
-  ...WIREFRAME_TILES,
 ];
 
 export function tilesInSection(section: PaletteTileSection): PaletteTileDef[] {
@@ -2398,17 +1626,14 @@ export function tileDisplayName(def: PaletteTileDef): string {
   return tileCaption(def.label, def.caption);
 }
 
-// The Collaborate elements' six categories (docs/specs/012-collaboration/workshop-mode.md "The palette"):
-// each holds the `behaviour` tool group's tiles of one `tileGroup`, in catalogue order. Workshop
-// offers them in place of one Collaborate category with a group browser inside it.
+// The Collaborate elements' four categories (docs/specs/010-palette/palette-top-level-categories.md):
+// each holds the `behaviour` tool group's tiles of one `tileGroup`, in catalogue order.
 export const COLLABORATE_CATEGORY_GROUPS: Readonly<
   Record<string, NonNullable<PaletteTileDef['tileGroup']>>
 > = {
   'collab-ask': 'ask',
   'collab-tools': 'tools',
   'collab-record': 'record',
-  'collab-react': 'reaction',
-  'collab-mode': 'mode',
   'collab-navigate': 'move',
 };
 
@@ -2432,7 +1657,7 @@ export function tileCategoryId(tile: PaletteTileDef): string {
  * palette actually shows.
  *
  * Most categories are a section. Write and Draw are not: they are tool GROUPS
- * inside the tools section, and the six Collaborate categories are `tileGroup`s of
+ * inside the tools section, and the four Collaborate categories are `tileGroup`s of
  * the Behaviour tool group (docs/specs/010-palette/palette-top-level-categories.md), so `tilesInSection('write')`
  * is empty and a caller that assumed otherwise silently showed nothing (the
  * since-removed Edit Favourites dialog did exactly that and dropped all three).

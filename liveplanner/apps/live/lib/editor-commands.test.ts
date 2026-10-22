@@ -11,8 +11,6 @@ function handlers(): CommandHandlers {
     bringToFront: vi.fn(),
     sendToBack: vi.fn(),
     rotate: vi.fn(),
-    combine: vi.fn(),
-    mirrorCopy: vi.fn(),
     clearAnimation: vi.fn(),
     renumberSteps: vi.fn(),
     setMarker: vi.fn(),
@@ -57,7 +55,6 @@ const base: CommandContext = {
   // assertions live; the tool commands have their own describe block.
   canvasTool: 'select',
   canvasEmpty: false,
-  isMobile: false,
 };
 
 const ids = (ctx: CommandContext) => buildEditorCommands(ctx, handlers()).map((c) => c.id);
@@ -253,7 +250,7 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
   it('read-only sessions get exactly the view-safe subset', () => {
     // The three view verbs plus the tools that only change how you LOOK at
     // the canvas. Nothing here writes to the document, which is the property
-    // this test exists to hold: the eraser and the format painter are
+    // this test exists to hold: the format painter is
     // withheld, and so is every command below the read-only return.
     expect(ids({ ...base, isReadOnly: true })).toEqual([
       'zen',
@@ -262,9 +259,6 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
       // Reads the room, writes nothing — a viewer may ask who else is here.
       'collaborators',
       'tool:pan',
-      'tool:laser',
-      'tool:spotlight',
-      // Slide Deck is an Editor's (docs/specs/013-workspace/share-roles.md).
       'tool:isometric',
     ]);
   });
@@ -328,20 +322,12 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
 });
 
 // Canvas-tool switches (docs/specs/008-canvas/canvas-and-palette.md "Search panel"). The palette's tool dropdown
-// was the only way to reach Hand / Eraser / Laser / Spotlight / Avatar /
+// was the only way to reach Hand / Laser / Spotlight / Avatar /
 // Isometric; the search panel offered none of them.
 describe('canvas tool commands', () => {
   it('offers every tool but the one already in force', () => {
     const got = ids(base).filter((id) => id.startsWith('tool:'));
-    expect(got).toEqual([
-      'tool:pan',
-      'tool:eraser',
-      'tool:format',
-      'tool:laser',
-      'tool:spotlight',
-      'tool:slide-deck',
-      'tool:isometric',
-    ]);
+    expect(got).toEqual(['tool:pan', 'tool:isometric']);
     // Select is the current tool, so it is not offered.
     expect(got).not.toContain('tool:select');
     // ...and it comes back once you are somewhere else.
@@ -351,9 +337,9 @@ describe('canvas tool commands', () => {
   it('runs the tool setter with the tool id', () => {
     const h = handlers();
     buildEditorCommands(base, h)
-      .find((c) => c.id === 'tool:laser')!
+      .find((c) => c.id === 'tool:isometric')!
       .run();
-    expect(h.setTool).toHaveBeenCalledWith('laser');
+    expect(h.setTool).toHaveBeenCalledWith('isometric');
   });
 
   it('drops the content-dependent tools on an empty canvas', () => {
@@ -363,54 +349,16 @@ describe('canvas tool commands', () => {
     expect(got).toEqual(['tool:pan']);
   });
 
-  it('withholds Spotlight on mobile', () => {
-    expect(ids({ ...base, isMobile: true })).not.toContain('tool:spotlight');
-    expect(ids({ ...base, isMobile: true })).toContain('tool:laser');
-  });
-
-  it('withholds Slide Deck on mobile', () => {
-    expect(ids({ ...base, isMobile: true })).not.toContain('tool:slide-deck');
-    expect(ids(base)).toContain('tool:slide-deck');
-  });
-
-  it('gives a read-only visitor the presenting tools but not the editing ones', () => {
+  it('gives a read-only visitor the viewing tools but not the editing ones', () => {
     const got = ids({ ...base, isReadOnly: true }).filter((id) => id.startsWith('tool:'));
-    expect(got).toContain('tool:laser');
     expect(got).toContain('tool:isometric');
-    expect(got).not.toContain('tool:eraser');
     expect(got).not.toContain('tool:format');
   });
 });
 
-describe('tool commands on a whiteboard (docs/specs/023-draw-mode/draw-mode.md)', () => {
+describe('tool commands', () => {
   it('offers no format painter', () => {
-    const onBoard = ids({ ...base, whiteboard: true });
-    expect(onBoard).not.toContain('tool:format');
-    expect(ids(base)).toContain('tool:format');
-  });
-
-  // docs/specs/008-canvas/highlighter.md "Not a selection mode": the marker is a Draw tile.
-  it('never offers the highlighter as a tool', () => {
-    expect(ids(base)).not.toContain('tool:highlighter');
-  });
-});
-
-// docs/specs/007-editor/logo-pages.md "Combine": the four operations, only while combinable.
-describe('combine commands', () => {
-  it('are offered only for a combinable selection, each running its operation', () => {
-    const h = handlers();
-    const none = buildEditorCommands({ ...base, selectionCount: 2 }, h);
-    expect(none.some((c) => c.id.startsWith('combine-'))).toBe(false);
-    const cmds = buildEditorCommands({ ...base, selectionCount: 2, canCombine: true }, h);
-    const combine = cmds.filter((c) => c.id.startsWith('combine-'));
-    expect(combine.map((c) => c.name)).toEqual([
-      'Unite Shapes',
-      'Subtract Shapes',
-      'Intersect Shapes',
-      'Exclude Shapes',
-    ]);
-    combine[1]!.run();
-    expect(h.combine).toHaveBeenCalledWith('subtract');
+    expect(ids(base)).not.toContain('tool:format');
   });
 });
 
@@ -425,35 +373,27 @@ describe('buildEditorCommands — Renumber Steps', () => {
 });
 
 // docs/specs/008-canvas/canvas-and-palette.md "Locking": a locked tab refuses every element edit, so search
-// offers none; docs/specs/026-plan/plan-mode.md: Plan mode has no Eraser or Format, in search as in the dropdown.
+// offers none; docs/specs/026-plan/plan-mode.md: Plan mode has no Format, in search as in the dropdown.
 describe('buildEditorCommands — locked tab and Plan mode', () => {
-  it('offers no element edits, layout cleanup, Eraser or Format on a locked tab', () => {
+  it('offers no element edits, layout cleanup or Format on a locked tab', () => {
     const got = ids({ ...base, tabLocked: true, selectionCount: 1, singleIsBoxed: true });
     expect(got).not.toContain('delete');
     expect(got).not.toContain('duplicate');
     expect(got.some((id) => id.startsWith('auto-layout'))).toBe(false);
     expect(got).not.toContain('auto-align');
-    expect(got).not.toContain('tool:eraser');
     expect(got).not.toContain('tool:format');
     // The document and the view stay workable.
     expect(got).toEqual(expect.arrayContaining(['create-tab', 'rename-document', 'fit-to-screen']));
   });
 
-  it('keeps them on an unlocked tab', () => {
+  it('keeps the element edits on an unlocked tab', () => {
     const got = ids({ ...base, selectionCount: 1, singleIsBoxed: true });
-    expect(got).toEqual(expect.arrayContaining(['auto-align', 'tool:eraser', 'tool:format']));
+    expect(got).toEqual(expect.arrayContaining(['delete', 'duplicate', 'auto-align']));
   });
 
-  it('leaves Eraser and Format out in Plan mode', () => {
-    const got = ids({ ...base, planMode: true });
-    expect(got).not.toContain('tool:eraser');
+  it('leaves Format out', () => {
+    const got = ids(base);
     expect(got).not.toContain('tool:format');
-    expect(got).toContain('tool:laser');
-  });
-
-  it('never offers Avatar Mode (docs/specs/008-canvas/avatar-mode.md "Where it lives")', () => {
-    expect(ids(base)).not.toContain('tool:avatar');
-    expect(ids({ ...base, isReadOnly: true })).not.toContain('tool:avatar');
-    expect(ids({ ...base, canvasTool: 'avatar' })).not.toContain('tool:avatar');
+    expect(got).toContain('tool:isometric');
   });
 });

@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { TEMPLATES, isBlankTemplate, templateEditorMode } from '@liveplanner/templates';
+import {
+  BLANK_TEMPLATES,
+  TEMPLATES,
+  isBlankTemplate,
+  isPlanTemplate,
+} from '@liveplanner/templates';
 import {
   filterGallery,
   galleryShelves,
@@ -12,7 +17,7 @@ describe('galleryTemplates (docs/specs/019-marketing/marketing-site.md)', () => 
   it('has one category card for every listed template but the blanks', () => {
     const kinds = galleryTemplates().map((t) => t.kind);
     const expected = TEMPLATES.filter(
-      (t) => !t.hidden && !isBlankTemplate(t.kind) && templateEditorMode(t.kind) === 'plan',
+      (t) => !t.hidden && !isBlankTemplate(t.kind) && isPlanTemplate(t.kind),
     ).map((t) => t.kind);
     expect(kinds).toEqual(expected);
     for (const blank of ['blank-plan', 'blank-spreadsheet', 'blank-form']) {
@@ -21,11 +26,8 @@ describe('galleryTemplates (docs/specs/019-marketing/marketing-site.md)', () => 
     expect(new Set(kinds).size).toBe(kinds.length);
   });
 
-  it('carries the mode each template opens in, and lists only Plan templates', () => {
-    for (const t of galleryTemplates()) {
-      expect(t.mode, t.kind).toBe(templateEditorMode(t.kind));
-      expect(t.mode, t.kind).toBe('plan');
-    }
+  it('lists only Plan templates', () => {
+    for (const t of galleryTemplates()) expect(isPlanTemplate(t.kind), t.kind).toBe(true);
     for (const kind of ['flowchart', 'mindmap', 'retrospective', 'slide-deck', 'whiteboard']) {
       expect(galleryTemplates().map((t) => t.kind)).not.toContain(kind);
     }
@@ -95,11 +97,10 @@ describe('the shelves, as the template step lays them out', () => {
   it('opens on Blank Slate, only the Plan blanks, then every category in catalogue order', () => {
     const shelves = galleryShelves();
     expect(shelves[0]?.id).toBe('popular');
-    expect(shelves[0]?.templates.map((t) => t.kind)).toEqual([
-      'blank-plan',
-      'blank-spreadsheet',
-      'blank-form',
-    ]);
+    const kinds = shelves[0]?.templates.map((t) => t.kind);
+    expect(kinds).toEqual(['blank-plan', 'blank-spreadsheet', 'blank-form']);
+    // In BLANK_TEMPLATES' own order.
+    expect(kinds).toEqual(BLANK_TEMPLATES.filter((k) => kinds?.includes(k)));
     for (const t of popularTemplates()) expect(isBlankTemplate(t.kind), t.kind).toBe(true);
     expect(shelves.slice(1).map((s) => s.id)).toEqual(
       groupGallery(galleryTemplates()).map((g) => g.id),

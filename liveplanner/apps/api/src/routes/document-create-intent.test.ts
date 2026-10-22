@@ -13,7 +13,7 @@ import { asUser } from './placement-test-support';
 let db: SqliteD1;
 
 const UNKNOWN = { opensIn: null, tabKind: null, templateFamily: null };
-const RETRO = { opensIn: 'diagram', tabKind: 'diagram', templateFamily: 'retrospective' };
+const RETRO = { opensIn: 'plan', tabKind: 'diagram', templateFamily: 'retrospective' };
 
 function create(id: string, extra: Record<string, unknown> = {}) {
   return handleDocuments(
@@ -43,9 +43,9 @@ afterEach(() => {
 
 describe('recorded creation intent', () => {
   it('records opens-in, tab kind and template family in the create insert', async () => {
-    await create('d1', { intent: { mode: 'diagram', templateFamily: 'retrospective' } });
+    await create('d1', { intent: { mode: 'plan', templateFamily: 'retrospective' } });
     expect({ ...stored('d1') }).toEqual({
-      opens_in: 'diagram',
+      opens_in: 'plan',
       tab_kind: 'diagram',
       template_family: 'retrospective',
     });
@@ -53,9 +53,9 @@ describe('recorded creation intent', () => {
   });
 
   it('records a known intent with no family as made from none', async () => {
-    await create('d1', { intent: { mode: 'draw' } });
+    await create('d1', { intent: { mode: 'plan' } });
     expect(await summary('d1')).toMatchObject({
-      opensIn: 'draw',
+      opensIn: 'plan',
       tabKind: 'diagram',
       templateFamily: null,
     });
@@ -67,18 +67,18 @@ describe('recorded creation intent', () => {
   });
 
   it('records the intent of a create filed at an explicit root', async () => {
-    await create('d1', { folderId: null, intent: { mode: 'draw' } });
-    expect(await summary('d1')).toMatchObject({ opensIn: 'draw', folderId: null });
+    await create('d1', { folderId: null, intent: { mode: 'plan' } });
+    expect(await summary('d1')).toMatchObject({ opensIn: 'plan', folderId: null });
   });
 
   it('never rewrites the record on a re-commit', async () => {
-    await create('d1', { intent: { mode: 'draw' } });
-    await create('d1', { intent: { mode: 'diagram', templateFamily: 'kanban' } });
-    expect(await summary('d1')).toMatchObject({ opensIn: 'draw', templateFamily: null });
+    await create('d1', { intent: { mode: 'plan' } });
+    await create('d1', { intent: { mode: 'plan', templateFamily: 'kanban' } });
+    expect(await summary('d1')).toMatchObject({ opensIn: 'plan', templateFamily: null });
   });
 
   it('exposes the record on the document as well as the summary', async () => {
-    await create('d1', { intent: { mode: 'diagram', templateFamily: 'retrospective' } });
+    await create('d1', { intent: { mode: 'plan', templateFamily: 'retrospective' } });
     expect(await getDocument(db.env, 'd1')).toMatchObject(RETRO);
   });
 
@@ -92,17 +92,28 @@ describe('recorded creation intent', () => {
     expect(await summary('old')).toMatchObject(UNKNOWN);
   });
 
-  it('reads a stored value outside the enums as unknown', async () => {
+  it('records a create naming a retired mode as Plan', async () => {
     await create('d1', { intent: { mode: 'draw' } });
+    expect({ ...stored('d1') }).toMatchObject({ opens_in: 'plan' });
+  });
+
+  it('reads a row recorded under a retired mode as Plan', async () => {
+    await create('d1', { intent: { mode: 'plan', templateFamily: 'retrospective' } });
+    db.sql.prepare("UPDATE documents SET opens_in = 'workshop' WHERE id = 'd1'").run();
+    expect(await summary('d1')).toMatchObject(RETRO);
+  });
+
+  it('reads a stored value outside the enums as unknown', async () => {
+    await create('d1', { intent: { mode: 'plan' } });
     db.sql.prepare("UPDATE documents SET opens_in = 'retired' WHERE id = 'd1'").run();
     expect(await summary('d1')).toMatchObject(UNKNOWN);
   });
 
   it("carries the source's record into a copy", async () => {
-    await create('d1', { intent: { mode: 'diagram', templateFamily: 'kanban' } });
+    await create('d1', { intent: { mode: 'plan', templateFamily: 'kanban' } });
     await copyDocument(db.env, 'd1', 'd2', 'user_alice', 'Copy');
     expect({ ...stored('d2') }).toEqual({
-      opens_in: 'diagram',
+      opens_in: 'plan',
       tab_kind: 'diagram',
       template_family: 'kanban',
     });

@@ -102,12 +102,13 @@ type Tab = {
 //   TextElement      (optionally sizing: 'fit' | 'wrap', how the box hugs its text, absent = a
 //                     fixed box, docs/specs/007-editor/editor-modes.md "A text box's sizing"; and
 //                     textScale, the Shift-resize scale. A stored autoWidth: true reads as 'fit')
-//   ImageElement     (boxed, references an R2-stored bitmap by imageId, see docs/specs/009-elements/images.md)
+//   ImageElement     (boxed, an empty picture placeholder left by diagram templates; imageId stays null,
+//                     liveplanner takes no image uploads)
 //   ArrowElement     (from + to Endpoints, arrowStyle, arrowheadSize, optional label)
 //   FreehandElement  (boxed, carries its points as one packed block, docs/specs/006-document/stroke-points.md,
 //                     + optional auto-close flag for
 //                     filled custom shapes; rendered as an SVG path inside its bounding box;
-//                     see docs/specs/008-canvas/canvas-and-palette.md's Pencil (freehand) subsection)
+//                     see docs/specs/008-canvas/canvas-and-palette.md's Freehand elements section)
 //
 // Most elements may carry `link?: ElementLink` for cross-tab navigation.
 type Element =
@@ -129,7 +130,7 @@ painted into CSS, some of it inside a `background` or a gradient. A colour that 
 the document (a `url(...)`, an `image-set(...)`, an escape, or anything that leaves its CSS value) is no colour:
 the stored-element migrations drop it wherever elements enter (a load, a peer's op, a paste, a file, an agent's
 write, the api's own reads and writes), and the element paints with that colour's default. Nothing in liveplanner
-fetches from outside a document ([Images](../009-elements/images.md) "External-URL images"), and a colour must not
+fetches from outside a document, and a colour must not
 become the way it does. The same rule holds for a participant's colour (refused by `PUT /api/participants/<id>`,
 blanked in a room hello) and a custom theme's colours (refused on save).
 

@@ -28,7 +28,7 @@ export async function apiListFavourites(ownerId: string): Promise<string[]> {
   try {
     return [...(await fetchCloudFavouriteIds(ownerId)), ...offline];
   } catch {
-    // Offline, or a pure-guest self-host with no /api configured. The local
+    // Offline, or a pure-guest deployment with no /api configured. The local
     // stars still stand; the cloud half degrades to "no favourites" rather
     // than breaking the Explorer.
     return offline;
@@ -54,7 +54,7 @@ export async function apiSetFavourite(
   favourite: boolean,
 ): Promise<void> {
   // An offline document has no row in `documents`, and the favourites table's
-  // document_id is a foreign key into it (migration 0040), so sending this
+  // document_id is a foreign key into it, so sending this
   // star to the server does not just go unused, it is REJECTED with
   // "FOREIGN KEY constraint failed". Keep it local, as docs/specs/006-document/offline-mode.md requires of
   // every offline row: no server fetch, "list, thumbnail, or otherwise".

@@ -33,7 +33,7 @@ Scope, by file:
 | `packages/api-schema/src/index.ts`                                                                                        | Re-exports the two new modules                                                                                                                          |
 | `packages/api-schema/src/telemetry-schema.ts`, `server-emitted-events.ts`                                                 | Action `Present` (category `Agent`); `Agent·Present` is server-emitted                                                                                  |
 | `packages/document/src/comments.ts`                                                                                       | `Comment.tokenId`; `withoutCommentAuthorId` strips it too                                                                                               |
-| `apps/api/migrations/0067_agent_changesets.sql`                                                                           | `ws_tickets.person_tag` (PR1), landed with agent changesets, whose held check reads it                                                                  |
+| `apps/api/migrations/0001_liveplanner_baseline.sql`                                                                       | `ws_tickets.person_tag` (PR1), which agent changesets' held check also reads                                                                            |
 | `apps/api/src/db/ws-tickets.ts`                                                                                           | `WsAdmission.personTag`; written at mint, returned at consume                                                                                           |
 | `apps/api/src/db/tabs.ts`                                                                                                 | `tabIdsWithComments(env, documentId)`                                                                                                                   |
 | `apps/api/src/person-tag.ts`                                                                                              | `personTagFor(documentId, ownerId)`                                                                                                                     |
@@ -55,10 +55,10 @@ Scope, by file:
 | `apps/live/lib/identity.ts`                                                                                               | `Participant.statusLine`, `Participant.agent`                                                                                                           |
 | `apps/live/lib/collaborator-roster.ts`                                                                                    | `peopleCount` and `peopleTabCount` leave agent rows out; `collaboratorRowDetail`; `participantBadges` reads the agent's level                           |
 | `apps/live/app/document/[id]/usePresenceState.ts`, `useRoomConnection.ts`                                                 | `liveAgents` state, set from the frame                                                                                                                  |
-| `apps/live/app/document/[id]/usePresenceRows.ts`, `useEditorState.ts`                                                     | Composes the fold and the focus map; the roll call reads `withoutAgentRows`                                                                             |
+| `apps/live/app/document/[id]/usePresenceRows.ts`, `useEditorState.ts`                                                     | Composes the fold and the focus map                                                                                                                     |
 | `apps/live/hooks/collab/useEditorComments.ts`, `components/panels/EditorAnchoredPopovers.tsx`, `CommentThreadPopover.tsx` | A non-edit session resolves and reopens through the endpoints; the toggle shows to anyone who may comment                                               |
 | `apps/live/components/primitives/ParticipantAvatar.tsx`                                                                   | The status line in the hover card and the accessible name                                                                                               |
-| `apps/live/components/dialogs/CollaboratorsDialog.tsx`                                                                    | The status line on a row; no Follow and no facilitator button on an agent row                                                                           |
+| `apps/live/components/dialogs/CollaboratorsDialog.tsx`                                                                    | The status line on a row                                                                                                                                |
 | `apps/live/components/canvas/AgentFocusOverlay.tsx` (+ test), `CanvasElementsLayer.tsx`, `EditorView.tsx`                 | `AgentFocusOverlay` beneath the remote cursors, fed by `AgentFocusContext`                                                                              |
 | `apps/telemetry/app/catalogue/`                                                                                           | The `Present` series on the Agent stack the agent-changesets blueprint adds                                                                             |
 | `packages/api-schema/src/index.ts`                                                                                        | `MAX_PARTICIPANT_NAME_LEN`, `MAX_COLOR_LEN`, moved from `apps/api/src/limits.ts` so the editor clamps to them                                           |
@@ -117,16 +117,15 @@ Threads are **open** or **resolved** (`commentThread.resolved`):
 Invariants:
 
 - **I1** An entry is never a session: it is absent from the frame's `participants`, from `/selections`, from the
-  editor's `livePresence`, from `multiplayerDecision`, from `rosterSummary`'s count, from the Done check's
-  `doneSplit` keys, from a roll call, a picker and every other reader of `livePresence`. Agents travel in their own
+  editor's `livePresence`, from `multiplayerDecision`, from `rosterSummary`'s count, from a picker and every other reader of `livePresence`. Agents travel in their own
   array (PR14), so this holds by construction.
 - **I2** An entry's name and colour are the token owner's participant record at its last set or refresh, never a
   value from the request.
 - **I3** `expiresAt - now <= AGENT_PRESENCE_MAX_TTL_MS` at every write.
 - **I4** `personTag` and `tokenId` never leave the room on the wire; `joins` names only presence ids the recipient
   already holds.
-- **I5** The room's one alarm is armed at the earliest of the facilitator grace deadline and every entry's
-  `expiresAt`, and cleared when there is neither (`armAlarm`, PR29).
+- **I5** The room's one alarm is armed at the earliest entry's `expiresAt`, and cleared when there is none
+  (`armAlarm`, PR29).
 - **I6** A room holds at most `AGENT_PRESENCE_ROOM_MAX` entries.
 - **I7** A comment's `tokenId` is set by the server only, kept by every later save, and seen only by its author.
 - **I8** Every comment write increments the tab's `rev` through `upsertTabAtRev`.
@@ -154,7 +153,7 @@ All `guest-or-clerk`; tab-scoped grants reach their own tab only; a trashed docu
 | GET    | `/api/documents/:id/comments?status=open\|resolved\|all`     | `gateGrant` (any level, any token) | 200 `{ threads: DocumentCommentThread[] }` |
 
 The six writes above are gated by `gateParticipate` and belong to the participation-class routes, beside the session
-tools share-roles owns (live polls, the Q&A board, dots, answers, the idea box). The choke point lets a token that
+tools share-roles owns (dots, answers). The choke point lets a token that
 passes `gateParticipate` but not `gateEdit` reach those routes and no other write; a token that fails
 `gateParticipate` reaches none of them. Every other write keeps `gateEdit`.
 
@@ -271,8 +270,7 @@ Internal, reached only through the stub:
 The room broadcasts presence after a set, a refresh that creates an entry or changes its name, colour or level, a
 clear and a sweep that removed anything. A refresh that only moves `expiresAt` broadcasts nothing, since `expiresAt`
 is not on the wire. Every write ends in `armAlarm()`: `storage.setAlarm(min(deadlines))`, or `storage.deleteAlarm()`
-when there is none. `startFacilitatorGrace` calls `armAlarm()` instead of setting the alarm itself, and `alarm()`
-sweeps entries, judges the baton unchanged, then calls `armAlarm()` (PR29).
+when there is none. `alarm()` sweeps entries, then calls `armAlarm()` (PR29).
 
 `room-client.ts`: `putAgentPresence(env, liveDoc, body)` returns the room's answer or throws `RoomUnavailableError`;
 `deleteAgentPresence(env, liveDoc, tokenId, tabId)` likewise; `refreshAgentPresence(env, liveDoc, tabId, agent)`
@@ -325,7 +323,7 @@ none, and the room pins it on the session attachment as `personTag`.
 - `buildAgentFocusByElement(agents, activeId, elementIds)` returns `Map<elementId, { name, color }[]>` for entries on
   the active tab, ids missing from the tab skipped, once per person. It reaches the canvas through `AgentFocusContext`,
   apart from `remoteSelectionsByElement`, and never reaches `isElementHeldByOther`.
-- `withoutAgentRows(rows)` drops standalone agent rows for the roll call and the Collaborators count.
+- `withoutAgentRows(rows)` drops standalone agent rows for the Collaborators count.
 - `apiSetThreadResolved(ownerId, documentId, tabId, commentId, resolved, shareCode)`: a session that may participate
   but not edit calls it from `resolveThread` / `unresolveThread` with the thread's first comment id, as its add calls
   `apiAddComment`; a session that may edit keeps the room path. A refused call puts the thread back (PR36).
@@ -342,7 +340,7 @@ none, and the room pins it on the session attachment as `personTag`.
 `AgentPresenceRecord = { id, documentId, tokenId, tabId, personTag, shareCode, name, color, role, status, focus,
 setAt, expiresAt }`.
 
-- Migration 0067 (agent changesets) adds the nullable column; existing tickets expire within a minute; no backfill.
+- The column is nullable and lives in the baseline migration.
 - The room restores every entry in its constructor (`storage.list({ prefix: 'agent-presence:' })` inside
   `blockConcurrencyWhile`), drops the expired ones and arms the alarm. Nothing about presence reaches D1.
 - `Comment.tokenId` is optional: every stored comment without one parses, an Offline Mode copy keeps it unread,
@@ -361,8 +359,6 @@ setAt, expiresAt }`.
 - **E7** A refresh that fails or finds the room full: logged, the changeset stands.
 - **E8** The alarm fires late or not before an eviction: every roster read sweeps first (PR30), and the constructor
   sweeps on wake.
-- **E9** The facilitator grace and an entry share the one alarm: `alarm()` sweeps entries, then judges the baton,
-  then re-arms.
 - **E10** A token revoked while present: refreshes fail at auth; the entry leaves on its ttl (PR15).
 - **E11** A tab deleted while an entry is on it: the entry expires on its ttl; editors skip it meanwhile.
 - **E12** A focused element removed later: no ring for it; the entry keeps the id until the next PUT.
@@ -478,9 +474,9 @@ client's copy.
 | Every changeset refreshes for `AGENT_PRESENCE_TTL_MS`            | `room-agent-presence.test.ts`; the changeset route test (agent-changesets)                                                                                                     |
 | PUT `status` (80), `focus` (20), `ttl` (max); DELETE clears      | `packages/api-schema/src/agent-presence.test.ts`, `agent-presence-routes.test.ts`                                                                                              |
 | The agent holds no socket                                        | `apps/api/src/document-room.test.ts` (agent presence) (entries with no socket, restored on wake)                                                                               |
-| The room expires entries on their ttl                            | `document-room.test.ts` (alarm, sweep, shared with the facilitator grace)                                                                                                      |
+| The room expires entries on their ttl                            | `document-room.test.ts` (alarm, sweep)                                                                                                                                         |
 | Never holds an element                                           | `document-room.test.ts` (`/selections`), `agent-presence-rows.test.ts` (lock map)                                                                                              |
-| Never in a head count, the Done check or a roll call             | `agent-presence-rows.test.ts` (`splitPresenceFrame`), `collaborator-roster.test.ts`, `document-room.test.ts` (multiplayer)                                                     |
+| Never in a head count                                            | `agent-presence-rows.test.ts` (`splitPresenceFrame`), `collaborator-roster.test.ts`, `document-room.test.ts` (multiplayer)                                                     |
 | An agent comments through the comment endpoints                  | `comment-routes.test.ts` (token caller)                                                                                                                                        |
 | Reply, resolve, reopen, each relayed as an `el-delta`            | `comment-routes.test.ts` (fake room stub records the deltas)                                                                                                                   |
 | Agents and people use the same endpoints                         | `comment-routes.test.ts` (session, guest Participant link, token); `apps/live/lib/api/tabs.test.ts`                                                                            |
@@ -507,7 +503,7 @@ Room and route tests run on the in-memory storage and SQLite fakes with a fixed 
 | `AGENT_PRESENCE_ROOM_MAX`   | 32     | Keeps `agents` under 96 KiB of a 256 KiB frame (PR12)     | 8 to 64         |
 | `COMMENT_TEXT_MAX`          | 2000   | The add route's existing literal, now named               | 500 to 5000     |
 
-No new environment variable or binding. Its one migration, the ticket column, landed in 0067.
+No new environment variable or binding. Its one column, the ticket's, is in the baseline migration.
 
 ## Assets and external resources
 

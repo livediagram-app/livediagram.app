@@ -116,7 +116,6 @@ function liveDoc(id: string) {
     folderId: null,
     teamId: null,
     source: null,
-    presentation: null,
     savedAt: 1,
     createdAt: 0,
     ownerName: null,

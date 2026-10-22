@@ -61,7 +61,7 @@ describe('confinementRefusal', () => {
     setWorkbenchConfinement(SESSION);
 
     expect(
-      confinementRefusal('http://localhost:8887/api/images/i1?d=doc-1', { headers: BEARER }),
+      confinementRefusal('http://localhost:8887/api/documents/doc-1?open=1', { headers: BEARER }),
     ).toBeNull();
     expect(
       confinementRefusal('http://localhost:8887/api/preferences', {

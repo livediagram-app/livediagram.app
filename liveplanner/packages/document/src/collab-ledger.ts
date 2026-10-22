@@ -9,7 +9,6 @@
 //
 // What is kept is the minimum that reproduces the state, not a log:
 //   - answers: each participant's LATEST cast or withdraw, this round;
-//   - ideas: the cards posted this round, in order;
 //   - ticks: each checklist row's latest state, by index and text;
 //   - dots: the round's votes map (a round starts empty, so its deltas are
 //     the whole map).
@@ -39,7 +38,6 @@ import {
 } from './element-deltas';
 import { RESPONSES_MAX, RESPONSE_VALUE_MAX } from './responses';
 import { isCellKey } from './cell-comments';
-import { IDEA_MAX_CARDS, IDEA_MAX_TEXT } from './collab-shapes';
 import { CHECKLIST_MAX_TEXT } from './data-shapes';
 import { applyVoteDelta, type TabVote } from './session';
 import { isPlanBoardPatch, type PlanBoardPatch } from './plan-board-patch';
@@ -67,7 +65,6 @@ export type ElementLedger = {
   // naming one is late and dropped. The round before the first one is '' here.
   retired?: string[];
   responses?: Record<string, { value: string | null; at: number; seq: number }>;
-  ideas?: string[];
   // Keyed `${index}\u0000${text}`, the row name a `check` delta carries.
   ticks?: Record<string, { done: boolean; seq: number }>;
   // The thread's changes. Comments have no round: a clear doesn't touch them.
@@ -185,7 +182,7 @@ function recordElement(
   const d = delta as Record<string, unknown>;
   if (d.round !== undefined && !isStr(d.round, COLLAB_ROUND_MAX)) return null;
   const round = d.round;
-  // Answers and ideas belong to a round; a delta for another one starts it,
+  // Answers belong to a round; a delta for another one starts it,
   // retiring the one it replaces. A delta naming a retired round is late and
   // dropped (null). Ticks and comments have no round and carry over.
   const inRound = (e: ElementLedger | undefined): ElementLedger | null => {
@@ -217,14 +214,6 @@ function recordElement(
           [d.participantId]: { value: d.value, at: d.at, seq },
         },
       };
-    }
-    case 'idea': {
-      if (!isStr(d.text, IDEA_MAX_TEXT) || !d.text.trim()) return null;
-      const base = inRound(prev);
-      if (!base) return null;
-      const ideas = base.ideas ?? [];
-      if (ideas.length >= IDEA_MAX_CARDS) return null;
-      return { ...base, ideas: [...ideas, d.text.trim()] };
     }
     case 'check': {
       if (typeof d.index !== 'number' || !Number.isInteger(d.index) || d.index < 0) return null;
@@ -395,9 +384,7 @@ export function tabLedgerFrom(tabId: string, entries: Iterable<[string, unknown]
 // Fold the ledger into a tab a client is saving, given the room seq that
 // client had caught up to (`since`). Everything the save carries stays, except
 // where the room knows something the saver didn't: answers and ticks set after
-// `since` are re-applied, ideas the snapshot is missing are appended (ideas are
-// only ever added, so there is nothing of the saver's to overrule), and the
-// round's dots replace the snapshot's if any changed after `since`. An entry
+// `since` are re-applied, and the round's dots replace the snapshot's if any changed after `since`. An entry
 // for a different round than the element (or vote) is ignored: the save
 // carries a clear the ledger hasn't seen a delta for yet.
 export function mergeLedgerIntoTab(tab: Tab, ledger: TabLedger, since: number): Tab {
@@ -423,7 +410,6 @@ export function mergeLedgerIntoTab(tab: Tab, ledger: TabLedger, since: number): 
           ...(round ? { round } : {}),
         }) as typeof el;
       }
-      next = appendMissingIdeas(next, entry.ideas ?? [], round);
     }
     for (const [key, tick] of Object.entries(entry.ticks ?? {})) {
       if (tick.seq <= since) continue;
@@ -456,18 +442,17 @@ export function mergeLedgerIntoTab(tab: Tab, ledger: TabLedger, since: number): 
 }
 
 // A Participant's answers into the STORED tab (docs/specs/013-workspace/share-roles.md "Integrity"): the room
-// writes a Participant's dots, responses and ideas itself, since a Participant never saves a whole tab. Only those
-// three are taken from the ledger, every one the room holds (they are idempotent: a response is the latest per
-// person, an idea is added once, the dots are the round's whole map), and only while the stored round still
+// writes a Participant's dots and responses itself, since a Participant never saves a whole tab. Only those
+// two are taken from the ledger, every one the room holds (they are idempotent: a response is the latest per
+// person, the dots are the round's whole map), and only while the stored round still
 // matches; ticks, threads and board changes stay with an Editor's save.
 export function mergeLedgerAnswersIntoTab(tab: Tab, ledger: TabLedger): Tab {
   const elements: Record<string, ElementLedger> = {};
   for (const [id, entry] of Object.entries(ledger.elements)) {
-    if (!entry.responses && !entry.ideas) continue;
+    if (!entry.responses) continue;
     elements[id] = {
       ...(entry.round !== undefined ? { round: entry.round } : {}),
-      ...(entry.responses ? { responses: entry.responses } : {}),
-      ...(entry.ideas ? { ideas: entry.ideas } : {}),
+      responses: entry.responses,
     };
   }
   return mergeLedgerIntoTab(tab, { ...(ledger.vote ? { vote: ledger.vote } : {}), elements }, 0);
@@ -523,27 +508,4 @@ export function ledgerCommentAuthors(
     }
   }
   return out;
-}
-
-// Cards have no ids, so the snapshot's cards are matched to the ledger's by
-// text: for each text, the ledger's count of it is how many the round holds
-// at least, and the shortfall is appended.
-function appendMissingIdeas<E extends Tab['elements'][number]>(
-  el: E,
-  ideas: string[],
-  round: string | undefined,
-): E {
-  if (el.type !== 'shape' || ideas.length === 0) return el;
-  const have = new Map<string, number>();
-  for (const text of el.ideaCards ?? []) have.set(text, (have.get(text) ?? 0) + 1);
-  let next: E = el;
-  for (const text of ideas) {
-    const n = have.get(text) ?? 0;
-    if (n > 0) {
-      have.set(text, n - 1);
-      continue;
-    }
-    next = applyElementDelta(next, { kind: 'idea', text, ...(round ? { round } : {}) }) as E;
-  }
-  return next;
 }

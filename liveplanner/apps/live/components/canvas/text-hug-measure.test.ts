@@ -14,7 +14,7 @@ import {
   measureTextHug,
 } from './text-hug-measure';
 
-// The DOM measure behind a whiteboard text box's hug (docs/specs/023-draw-mode/draw-mode.md
+// The DOM measure behind a whiteboard text box's hug (docs/specs/007-editor/editor-modes.md
 // "Text boxes"). jsdom lays nothing out, so these pin what the measurer lays in and how it is
 // sized; the real numbers are proven in a browser.
 const measurer = () => document.querySelector<HTMLElement>('[data-text-hug-measurer]')!;
@@ -35,22 +35,6 @@ const hello = (patch: Partial<TextElement> = {}): TextElement => ({
 afterEach(() => vi.restoreAllMocks());
 
 describe('measureTextHug', () => {
-  it('measures wordmark type as it draws: tracked, weighted and cased, reset for plain text', () => {
-    stubRect(10, 10);
-    measureTextHug(
-      hello({ letterSpacing: 0.2, fontWeight: 700, textCase: 'upper' }),
-      [{ text: 'a' }],
-      'serif',
-    )(400, false);
-    expect(measurer().style.letterSpacing).toBe('0.2em');
-    expect(measurer().style.fontWeight).toBe('700');
-    expect(measurer().style.textTransform).toBe('uppercase');
-    measureTextHug(hello(), [{ text: 'a' }], 'serif')(400, false);
-    expect(measurer().style.letterSpacing).toBe('');
-    expect(measurer().style.fontWeight).toBe('500');
-    expect(measurer().style.textTransform).toBe('');
-  });
-
   it('lays a label in as its runs, each a styled span, at the label px', () => {
     stubRect(35, 17.5);
     const el = hello({ textBold: true, textScale: 2 });

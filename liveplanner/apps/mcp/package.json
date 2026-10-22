@@ -2,6 +2,7 @@
   "name": "@liveplanner/mcp",
   "version": "0.0.0",
   "private": true,
+  "license": "UNLICENSED",
   "type": "module",
   "scripts": {
     "dev": "wrangler dev --inspector-port 9330",

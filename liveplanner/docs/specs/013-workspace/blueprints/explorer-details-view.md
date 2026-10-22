@@ -7,12 +7,12 @@ The spec decides; this file adds engineering precision. Defaults are ledgered in
 
 | File                                                          | Role                                                                                    |
 | ------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| `apps/api/migrations/0084_tab_stats.sql`                      | The `tab_stats` table                                                                   |
+| `apps/api/migrations/0001_liveplanner_baseline.sql`                      | The `tab_stats` table                                                                   |
 | `packages/document/src/tab-stats.ts`                          | `tabStatsOf`, `TabStats`: one counting rule for the api and the browser                 |
 | `apps/api/src/db/tab-stats.ts`                                | `tabStatsOfData`, `tabStatsStatement`, `documentStatsSql`, `readDocumentStats`          |
 | `apps/api/src/tab-stats-backfill.ts`                          | `runTabStatsBackfill`: the cron's bounded count of tabs without stats                   |
 | `apps/api/src/db/tabs.ts`, `apps/api/src/db/documents.ts`     | Every tab write batches `tabStatsStatement`; the summary projection selects `doc_stats` |
-| `apps/api/src/participant-write.ts`, `qa-board-write.ts`      | Hand `swapTabData` the next body's stats                                                |
+| `apps/api/src/participant-write.ts`                           | Hand `swapTabData` the next body's stats                                                |
 | `packages/api-schema/src/index.ts`                            | `DocumentStats`, `DocumentSummary.stats`                                                |
 | `packages/ui/src/hint/*`, `packages/ui/src/useRowPreview.tsx` | Hint kind `preview`: delay, per-kind warm-up (`isHintWarm`), look; `useRowPreview`      |
 | `apps/live/app/explorer/useExplorerViewMode.ts`               | `ExplorerViewMode` gains `'details'`                                                    |
@@ -48,7 +48,7 @@ The spec decides; this file adds engineering precision. Defaults are ledgered in
 
 ### Tab stats
 
-- `tabStatsOf(body, data)` (`@liveplanner/document`) is pure. `mode = opensInOf(body)`;
+- `tabStatsOf(body, data)` (`@liveplanner/document`) is pure. `mode = 'plan'` (the one editor mode);
   `elementCount = body.elements.length` (0 when not an array); `commentCount` sums
   `commentThread.comments.length` over the elements; `dataBytes` is the UTF-8 length of `data`.
 - `tabStatsOfData(data)` (api) parses a stored body and counts it; a body that is not a JSON object
@@ -151,17 +151,17 @@ CREATE TABLE tab_stats (
 
 ## Errors and edge cases
 
-| Case                                 | Handling                                                  |
-| ------------------------------------ | --------------------------------------------------------- |
-| Document with no tabs                | `stats: null`, cells `–`                                  |
-| Some tabs not yet counted            | `stats: null` until the backfill reaches them             |
-| Legacy mode `infographic`            | Pages (`opensInOf` reads through `parseEditorMode`)       |
-| Corrupt tab body in the backfill     | Counted empty, warned                                     |
-| Write racing the backfill            | The write's row wins (`DO NOTHING`)                       |
-| Shared row                           | No `stats`: `–`; no Created: `–` "Not known" (`D153`)     |
-| Offline row                          | Counted in the browser, the first tab's mode (`D152`)     |
-| Unknown stored sort or view mode     | Defaults                                                  |
-| Folder row in Type, Comments, Access | Type "Folder", the others empty; sorted by name for those |
+| Case                                 | Handling                                                   |
+| ------------------------------------ | ---------------------------------------------------------- |
+| Document with no tabs                | `stats: null`, cells `–`                                   |
+| Some tabs not yet counted            | `stats: null` until the backfill reaches them              |
+| A stored row of a retired mode       | Plan (`readDocumentStats` reads through `parseEditorMode`) |
+| Corrupt tab body in the backfill     | Counted empty, warned                                      |
+| Write racing the backfill            | The write's row wins (`DO NOTHING`)                        |
+| Shared row                           | No `stats`: `–`; no Created: `–` "Not known" (`D153`)      |
+| Offline row                          | Counted in the browser, the first tab's mode (`D152`)      |
+| Unknown stored sort or view mode     | Defaults                                                   |
+| Folder row in Type, Comments, Access | Type "Folder", the others empty; sorted by name for those  |
 
 ## Security and trust
 

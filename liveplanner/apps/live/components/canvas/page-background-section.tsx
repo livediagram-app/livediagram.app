@@ -1,23 +1,21 @@
 'use client';
 
-// The page panel's Background section (docs/specs/007-editor/pages-mode.md "Backgrounds"), for
-// every page kind: the kinds as tiles (page-background-kinds: Solid, Gradient, and Image but on a logo page,
-// page-background-image, and Animated on a slide page, page-background-animated) over that
+// A cover's Background section (docs/specs/030-forms/forms.md "The form card, top to bottom", Cover): the kinds as
+// tiles (page-background-kinds: Solid, Gradient and Animated, page-background-animated) over that
 // category's choices: Solid is the
 // one colour picker (docs/specs/004-interface-design/colour-picker.md), Paper leading the theme's
 // colours, then the soft and the strong standard colours and Custom colours with +; Gradient is the
 // theme's gradients, then the gradient presets, ending in a custom one,
-// whose editor (From, To, Angle, Swap) shows while the page's fill is one; then the Pattern (not on
-// a logo page). Each hover previews on the page itself (`onPreview`), and a press commits; leaving
-// the section drops the preview.
+// whose editor (From, To, Angle, Swap) shows while the fill is one; then the Pattern. Each hover
+// previews on the cover itself (`onPreview`), and a press commits; leaving the section drops the
+// preview.
 import { useState, type ReactNode } from 'react';
 import {
   PAGE_PATTERNS,
-  pageKindOf,
   pageIsDark,
-  type Page,
-  type PageBackground,
-  type PageFill,
+  sameFill,
+  type ColourBackground,
+  type PageColourFill,
   type PagePattern,
 } from '@liveplanner/document';
 import { CheckIcon, Tooltip } from '@liveplanner/ui';
@@ -30,7 +28,6 @@ import {
   PAGE_GRADIENT_PRESETS,
   PAGE_PATTERN_LABEL,
   pageSheetStyle,
-  sameFill,
   themePresetAccent,
   type BackgroundCategory,
   type ThemeBackgroundPreset,
@@ -39,26 +36,23 @@ import { PanelSection, tileClass } from './page-panel-sections';
 import { CustomGradientEditor, PAGE_COLOUR_GROUPS, RAINBOW } from './page-background-custom';
 import { AnimatedBackgroundChoices } from './page-background-animated';
 import { BackgroundKinds } from './page-background-kinds';
-import { ImageBackgroundChoices } from './page-background-image';
 import { ColourPicker } from '@/components/colour/ColourPicker';
 import { noColour, type ColourOption } from '@/components/colour/colour-options';
 import { useThemeColours } from '@/components/colour/useThemeColours';
 import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
 
-// Paper, the page's own default: no fill stored.
+// Paper, the default: no fill stored.
 const PAPER = 'paper';
-const solidOf = (id: string): PageFill | undefined =>
+const solidOf = (id: string): PageColourFill | undefined =>
   id === PAPER ? undefined : { kind: 'solid', color: id };
 
 // A row of swatches: the Light and Dark rows' ten. The Theme Palette row leads with Paper, so it
-// keeps nine of the theme's colours, never its white (Paper is the page's white already).
+// keeps nine of the theme's colours, never its white (Paper is the white already).
 const ROW = 10;
 const WHITE = /^#?f{3}(?:f{3})?$/i;
 export function pageThemeColours(theme: readonly ColourOption[]): ColourOption[] {
   return theme.filter((o) => !WHITE.test(o.colour)).slice(0, ROW - 1);
 }
-
-// The custom choices' swatch until one is the page's fill.
 
 function Swatch({
   label,
@@ -96,7 +90,7 @@ function Swatch({
   );
 }
 
-function SwatchCheck({ fill }: { fill: PageFill | undefined }) {
+function SwatchCheck({ fill }: { fill: PageColourFill | undefined }) {
   const dark = pageIsDark({ background: { fill } });
   return <CheckIcon className={`h-3.5 w-3.5 ${dark ? 'text-white' : 'text-slate-800'}`} />;
 }
@@ -126,48 +120,34 @@ function GradientGroup({
   );
 }
 
-const PATTERN_PREVIEW: Record<PagePattern | 'none', PageBackground> = {
+const PATTERN_PREVIEW: Record<PagePattern | 'none', ColourBackground> = {
   none: {},
   dots: { pattern: 'dots' },
   grid: { pattern: 'grid' },
   lines: { pattern: 'lines' },
 };
 
+// The categories a cover offers.
+const CATEGORIES: readonly BackgroundCategory[] = ['solid', 'gradient', 'animated'];
+
 export function BackgroundSection({
-  page,
+  background,
   themePresets,
   onBackground,
   onPreview,
-  only,
-  motionNote,
 }: {
-  page: Page;
-  // The categories offered, narrowing the page kind's own (a form's cover takes no picture).
-  only?: readonly BackgroundCategory[];
-  // The Animated category's note on when it moves, for something that is not a slide.
-  motionNote?: string;
+  background: ColourBackground | undefined;
   // The tab theme's own gradients (themeBackgroundPresets), offered first among the gradients.
   themePresets: readonly ThemeBackgroundPreset[];
-  onBackground: (patch: Partial<PageBackground>) => void;
-  onPreview: (patch: Partial<PageBackground> | null) => void;
+  onBackground: (patch: Partial<ColourBackground>) => void;
+  onPreview: (patch: Partial<ColourBackground> | null) => void;
 }) {
-  const fill = page.background?.fill;
-  const pattern = page.background?.pattern;
-  // A logo page takes no picture (docs/specs/007-editor/logo-pages.md "A logo page").
-  // A slide page and a wireframe page's screen move (docs/specs/007-editor/pages-mode.md "Animated
-  // backgrounds", wireframe-pages.md "The screen").
-  const kind = pageKindOf(page);
-  const offered: BackgroundCategory[] =
-    kind === 'logo'
-      ? ['solid', 'gradient']
-      : kind === 'slide' || kind === 'wireframe'
-        ? ['solid', 'gradient', 'image', 'animated']
-        : ['solid', 'gradient', 'image'];
-  const categories = only ? offered.filter((c) => only.includes(c)) : offered;
+  const fill = background?.fill;
+  const pattern = background?.pattern;
   // Opens on the current fill's category; choosing another changes nothing on the page.
   const [chosen, setChosen] = useState<BackgroundCategory | null>(null);
   const opened = backgroundCategoryOf(fill);
-  const category = chosen && categories.includes(chosen) ? chosen : opened;
+  const category = chosen && CATEGORIES.includes(chosen) ? chosen : opened;
   const yours = useDocumentColours();
   const themeColours = pageThemeColours(useThemeColours());
   // The custom gradient's editor shows for a gradient no preset names, or once Custom gradient is
@@ -175,10 +155,10 @@ export function BackgroundSection({
   const [customOpen, setCustomOpen] = useState(false);
   const customGradient =
     fill?.kind === 'gradient' && (customOpen || isCustomGradient(fill, themePresets)) ? fill : null;
-  const pick = (f: PageFill | undefined) => onBackground({ fill: f });
-  const preview = (f: PageFill | undefined) => onPreview({ fill: f });
+  const pick = (f: PageColourFill | undefined) => onBackground({ fill: f });
+  const preview = (f: PageColourFill | undefined) => onPreview({ fill: f });
   // A theme or preset gradient's swatch, ticked while it is the page's fill (and no custom one is).
-  const gradientSwatch = (id: string, label: string, gFill: PageFill) => {
+  const gradientSwatch = (id: string, label: string, gFill: PageColourFill) => {
     const on = !customGradient && sameFill(fill, gFill);
     return (
       <Swatch
@@ -206,7 +186,7 @@ export function BackgroundSection({
     >
       <PanelSection title="Background">
         <BackgroundKinds
-          categories={categories}
+          categories={CATEGORIES}
           value={category}
           current={opened}
           fill={fill}
@@ -223,14 +203,6 @@ export function BackgroundSection({
             themePresets={themePresets}
             onPick={pick}
             onPreview={preview}
-            {...(motionNote ? { note: motionNote } : {})}
-          />
-        ) : category === 'image' ? (
-          <ImageBackgroundChoices
-            page={page}
-            accent={themePresetAccent(themePresets)}
-            onPick={pick}
-            onPreview={(f) => (f === null ? onPreview(null) : preview(f))}
           />
         ) : category === 'solid' ? (
           <ColourPicker
@@ -277,39 +249,36 @@ export function BackgroundSection({
           </>
         )}
       </PanelSection>
-      {/* A logo page takes no pattern (docs/specs/007-editor/logo-pages.md "A logo page"). */}
-      {pageKindOf(page) === 'logo' ? null : (
-        <PanelSection title="Pattern">
-          <div role="radiogroup" aria-label="Pattern" className="grid grid-cols-4 gap-1">
-            {(['none', ...PAGE_PATTERNS] as const).map((p) => {
-              const on = (pattern ?? 'none') === p;
-              const value = p === 'none' ? undefined : p;
-              return (
-                <button
-                  key={p}
-                  type="button"
-                  role="radio"
-                  aria-checked={on}
-                  onClick={() => onBackground({ pattern: value })}
-                  onPointerEnter={() => onPreview({ pattern: value })}
-                  onFocus={() => onPreview({ pattern: value })}
-                  className={tileClass(on)}
-                >
-                  <span
-                    aria-hidden
-                    className="h-6 w-9 rounded-sm bg-white text-slate-900/25 ring-1 ring-inset ring-slate-900/10 dark:bg-slate-900 dark:text-white/25 dark:ring-white/15"
-                    style={{
-                      ...pageSheetStyle(PATTERN_PREVIEW[p]),
-                      backgroundSize: p === 'lines' ? '100% 6px' : '6px 6px',
-                    }}
-                  />
-                  {PAGE_PATTERN_LABEL[p]}
-                </button>
-              );
-            })}
-          </div>
-        </PanelSection>
-      )}
+      <PanelSection title="Pattern">
+        <div role="radiogroup" aria-label="Pattern" className="grid grid-cols-4 gap-1">
+          {(['none', ...PAGE_PATTERNS] as const).map((p) => {
+            const on = (pattern ?? 'none') === p;
+            const value = p === 'none' ? undefined : p;
+            return (
+              <button
+                key={p}
+                type="button"
+                role="radio"
+                aria-checked={on}
+                onClick={() => onBackground({ pattern: value })}
+                onPointerEnter={() => onPreview({ pattern: value })}
+                onFocus={() => onPreview({ pattern: value })}
+                className={tileClass(on)}
+              >
+                <span
+                  aria-hidden
+                  className="h-6 w-9 rounded-sm bg-white text-slate-900/25 ring-1 ring-inset ring-slate-900/10 dark:bg-slate-900 dark:text-white/25 dark:ring-white/15"
+                  style={{
+                    ...pageSheetStyle(PATTERN_PREVIEW[p]),
+                    backgroundSize: p === 'lines' ? '100% 6px' : '6px 6px',
+                  }}
+                />
+                {PAGE_PATTERN_LABEL[p]}
+              </button>
+            );
+          })}
+        </div>
+      </PanelSection>
     </div>
   );
 }

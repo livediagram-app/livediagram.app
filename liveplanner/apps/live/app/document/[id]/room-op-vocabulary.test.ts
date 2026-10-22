@@ -14,17 +14,13 @@ import {
 // (ephemeral: unordered, no seq, allowed from a view-role sender) or mutation
 // (sequenced, logged for reconnect catch-up, edit-role only). The mutation
 // branch is the FALL-THROUGH, so an op kind nobody classified is silently
-// treated as a mutation — and that is not a hypothetical: `viewport` shipped
-// missing from the presence list, and because the editor publishes it on every
-// pan at 10 Hz, about 26 seconds of one person scrolling filled all 256 slots of
-// the catch-up log with camera positions and pushed the replay floor past every
-// real mutation, so the next peer whose socket blipped was told to re-hydrate
-// every tab from D1. It also meant a view-only visitor could not be followed at
-// all, since the role gate drops non-presence ops.
+// treated as a mutation: a presence kind published at pan or cursor rates
+// would fill the catch-up log and push the replay floor past every real
+// mutation, and a view-role sender's op of that kind would be dropped.
 //
 // The room's own suite can only check the dangerous direction (no mutation kind
 // sitting in the presence set) because both lists are its own. This checks the
-// direction that let `viewport` through, which needs the third list: the kinds
+// other direction, which needs the third list: the kinds
 // the EDITOR actually speaks. Reading them off the source is deliberate — the
 // alternative is another hand-kept list, and a copy can only prove it agrees
 // with itself.
@@ -58,11 +54,8 @@ describe('room op vocabulary', () => {
     // ignores on arrival, which looks exactly like a feature that does not work
     // rather than one that was never wired up.
     const handled = new Set(handledKinds());
-    // Kinds the room keeps and never relays, so none ever arrives: a `follow` reaches the person followed as a
-    // `followers` frame instead (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom").
-    const roomKept = new Set(['follow']);
     const unhandled = [...PRESENCE_OP_KINDS, ...MUTATION_OP_KINDS, ...SYSTEM_OP_KINDS].filter(
-      (kind) => !handled.has(kind) && !roomKept.has(kind),
+      (kind) => !handled.has(kind),
     );
     expect(unhandled).toEqual([]);
   });

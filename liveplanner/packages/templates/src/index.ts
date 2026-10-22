@@ -8,12 +8,7 @@ export * from './template-modes';
 export * from './template-categories';
 export { templateKeywords } from './template-keywords';
 export { templateMatchesQuery, templateQueryWords } from './template-search';
-export {
-  POPULAR_BY_MODE,
-  POPULAR_PER_MODE,
-  POPULAR_TEMPLATE_KINDS,
-  popularKindsFor,
-} from './popular';
+export { POPULAR_TEMPLATE_KINDS } from './popular';
 export { isUntitledDocumentName, UNTITLED_DOCUMENT_NAME } from './legacy-untitled';
 export * from './template-layers';
 export { buildTemplate, templateTabs, type TemplateTabDef } from './build-template';
@@ -24,19 +19,12 @@ export {
   type PlanTemplateKind,
 } from './template-builders-plan';
 export { isSpreadsheetPlanTemplate, planTemplateTabCount } from './plan-template-catalogue';
-export * from './page-layouts';
-export * from './slide-layouts';
-export * from './logo-layouts';
-export * from './layout-catalogue';
-export { buildPageLayout, buildPageLayoutOver } from './page-layout-build';
-export { carryPageContent, warmLayoutPlaceholders } from './page-layout-carry';
 export * from './template-tab';
 export * from './dashboard-builder';
 export { templateCatalogue } from './template-catalogue';
 // The engine-free check; materialiseTemplateSheets (which carries the sheets engine) is the
 // '@liveplanner/templates/template-sheets' subpath, so only a caller making sheets bundles it.
 export { hasTemplateSheets } from './template-sheet-marks';
-export { withBlankPageThemed } from './blank-page-templates';
 
 export * from './form-templates';
 export * from './form-start';

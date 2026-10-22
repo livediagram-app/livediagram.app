@@ -76,14 +76,10 @@ export function collabCard(
   body: (w: number, h: number) => string,
 ): string {
   const design = SHAPE_DEFAULT_SIZE[el.shape] ?? { width: el.width, height: el.height };
-  // The Q&A board, the Idea box and the Comment and Action panels reflow
-  // rather than scale (docs/specs/012-collaboration/qa-board.md, idea-box.md, comment-pin.md, action-panel.md): a bigger board shows more rows at the same size, on the
-  // canvas and so in the export too.
+  // The Comment and Action panels reflow rather than scale (docs/specs/012-collaboration/comment-pin.md,
+  // action-panel.md): a bigger panel shows more rows at the same size, on the canvas and so in the export too.
   const scale =
-    el.shape === 'qa-board' ||
-    el.shape === 'idea-box' ||
-    el.shape === 'comment-pin' ||
-    el.shape === 'action-card'
+    el.shape === 'comment-pin' || el.shape === 'action-card'
       ? 1
       : Math.min(el.width / design.width, el.height / design.height);
   // The inner box in design units, so a card larger than its default still
@@ -117,7 +113,7 @@ export function collabCard(
 // ── Marks for the behaviour cards' modern look (docs/specs/020-import-export/export-fidelity.md) ──────────
 
 /** A person as a disc: their initials on their colour, or, with no name to
- *  go on (a Done check's or an Estimate's opaque key), a neutral disc with a
+ *  go on (an opaque key), a neutral disc with a
  *  head-and-shoulders mark. `ring` separates overlapping discs in a stack. */
 export function personDisc(
   cx: number,
@@ -189,7 +185,7 @@ export function moodFace(
 }
 
 /** A soft radial glow of `color` from a corner of the box (0..1 fractions),
- *  as the Reveal zone and the Idea box paint behind their content. The id
+ *  as the Decision record paints behind its content. The id
  *  must be unique in the document, so pass the element's. */
 export function glow(
   id: string,
@@ -254,7 +250,7 @@ export function wrapLines(body: string, width: number, size: number, max: number
 }
 
 // The accent a modern Collaborate card paints with, resolved the way the
-// canvas's CollabAccentScope does it (docs/specs/012-collaboration/idea-box.md "The look"): the element's
+// canvas's CollabAccentScope does it (docs/specs/012-collaboration/comment-pin.md "The look"): the element's
 // themed stroke IS the accent; `on` is the ink that reads on a solid accent
 // fill; `ink` is the accent as TEXT on the card, pulled 60% toward the text
 // colour when the accent sits on the same side of light as the card (where a

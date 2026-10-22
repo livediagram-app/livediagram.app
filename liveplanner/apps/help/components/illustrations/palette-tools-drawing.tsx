@@ -1,70 +1,9 @@
-// Drawing-gesture illustrations (docs/specs/008-canvas/highlighter.md + docs/specs/008-canvas/polygon-tool.md): the Highlighter
-// row in the palette's Draw category, its wide translucent marker stroke, and
-// the Polygon tool's click-to-place vertices.
+// Drawing-gesture illustrations (docs/specs/008-canvas/polygon-tool.md): the Polygon tool's
+// click-to-place vertices.
 // Split out from palette-tools.tsx (already at size) per the no-god-files
 // rule; composed only from the shared primitives.
 
-import { Scene, Shape, Cursor, Panel, Label, SelectionBox } from './primitives';
-import { PaletteCategoryPanel } from './palette-rows';
-
-/** The palette's Draw category with the Highlighter row armed, the "Drag to
- *  highlight" banner up, and the one stroke it lays down mid-drag across a
- *  label that stays legible through it. The rows are the real layout: caption,
- *  blurb and key (apps/live/components/palette/PaletteToolRows.tsx). */
-export function HighlighterTile() {
-  return (
-    <Scene w={420} h={258}>
-      <PaletteCategoryPanel x={10} y={14} w={250} category="Draw" active="Highlighter" />
-      {/* Mode banner, up until the one stroke lands */}
-      <Panel x={270} y={30} w={144} h={30}>
-        <Label x={280} y={46} size={10} weight={600} tone="body">
-          Drag to highlight
-        </Label>
-        <Label x={406} y={46} anchor="end" size={10} weight={600} tone="muted">
-          Cancel
-        </Label>
-      </Panel>
-      <Shape x={282} y={140} w={120} h={46} label="Checkout" />
-      {/* The marker is translucent, so the label stays legible through it. */}
-      <path
-        d="M290 168 C320 162 360 162 396 166"
-        fill="none"
-        className="stroke-yellow-300"
-        strokeOpacity={0.45}
-        strokeWidth={14}
-        strokeLinecap="round"
-        style={{ mixBlendMode: 'multiply' }}
-      />
-      <Cursor x={396} y={166} colour="brand" />
-    </Scene>
-  );
-}
-
-/** One committed highlighter stroke swiped around a shape: wide, translucent
- *  (the label underneath stays legible), and selected like any other element,
- *  because the tile puts itself down once the stroke lands. */
-export function HighlighterStroke() {
-  return (
-    <Scene w={420} h={220}>
-      {/* Diagram content being reviewed */}
-      <Shape x={70} y={92} w={120} h={52} label="Sign up" />
-      <Shape x={240} y={92} w={120} h={52} label="Checkout" />
-      {/* The marker swipe: wide, round-capped, translucent so the label shows through */}
-      <path
-        d="M232 120 C262 100 342 98 372 124 C344 148 254 152 222 132"
-        fill="none"
-        className="stroke-yellow-300"
-        strokeOpacity={0.45}
-        style={{ mixBlendMode: 'multiply' }}
-        strokeWidth={14}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      {/* Selected on release, ready to move, resize or recolour */}
-      <SelectionBox x={216} y={90} w={166} h={66} />
-    </Scene>
-  );
-}
+import { Scene, Cursor, Panel, Label } from './primitives';
 
 /** The Polygon tool mid-draw: placed vertices joined by straight segments, a
  *  dashed rubber-band segment to the cursor, and a snap ring on the start

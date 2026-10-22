@@ -170,8 +170,8 @@ export function deriveNewBoxedColours(
   if (base.type === 'shape' && base.shape === 'page') return colours;
   // The Behaviour and Collaborate elements used to opt OUT of theme tinting on
   // the reasoning that they are controls and scenery rather than nodes in the
-  // tab's theme. Dropped: it left a canvas where a mode button, a
-  // reveal cover and a comment panel each sat in their own palette while
+  // tab's theme. Dropped: it left a canvas where a session button and a
+  // comment panel each sat in their own palette while
   // everything around them followed the tab, which reads as an oversight
   // rather than as emphasis — the theme is the whole point of picking one.
   //

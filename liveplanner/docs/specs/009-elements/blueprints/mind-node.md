@@ -337,7 +337,7 @@ one, found through one parent-to-children index (linear), plus every arrow pinne
 set. `isProtected` (element `locked`, or on a locked layer) stops the walk, so a locked node and its own
 branch stay and become a root. One commit, so one undo restores the branch. **Cut** copies the same set
 first (`copySelection({ cut: true })`, the walk stopping at element-locked nodes); a plain Copy copies only
-the selection. The eraser removes only what it touches; a child whose parent is erased keeps a dangling
+the selection. A child whose parent is gone keeps a dangling
 `mindParentId` and is a root, with the default `tree` flow [QA18].
 
 Invariants:

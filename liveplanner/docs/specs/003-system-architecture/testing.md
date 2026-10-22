@@ -101,11 +101,6 @@ export default defineProject({ test: { environment: 'jsdom' } });
   in-memory SQLite (`node:sqlite`) with every migration applied and foreign
   keys on, as D1 has them. Use the second wherever the behaviour lives in the
   schema: cascades, primary-key collisions, `INSERT OR IGNORE` outcomes.
-  A migration that rebuilds a table is tested the same way: stop short of it
-  (`sqliteD1({}, { before: '0049' })`), seed rows under the old schema, run it
-  with `applyMigration`, and compare every row. A rebuilt **parent** table
-  cascades into its children on `DROP TABLE`, so this is the only test that
-  can see that loss.
 
 ## Scripts
 
@@ -144,16 +139,16 @@ tests," not a number.
 One set of files is the exception, held at **100% statements, branches,
 functions and lines** by per-glob thresholds in `apps/api/vitest.config.ts`:
 
-| Files                                                                                                  | Why                                                                                                                                                           |
-| ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/auth/**`                                                                                          | Decides WHO a request is — Clerk verification, guest-id signatures, api tokens, the read/edit gates                                                           |
-| `src/api-token-row.ts`, `src/db/api-tokens.ts`, `src/routes/tokens.ts`                                 | Mint, resolve and revoke the credentials that act as an account                                                                                               |
-| `src/db/share.ts`, `src/db/shared.ts`, `src/db/ws-tickets.ts`                                          | Share links, the "shared with you" record, and the one-time realtime room tickets                                                                             |
-| `src/routes/share.ts`, `src/routes/shared.ts`, `src/routes/document-share-routes.ts`                   | The only unauthenticated read path into a document, and the owner-only routes that grant it                                                                   |
-| `src/image-refs/**`, `src/db/image-refs.ts`, `src/db/image-retention.ts`, `src/db/document-removal.ts` | Decide whether an uploaded image is still placed anywhere, and so whether the daily sweep may delete it ([Images](../009-elements/images.md#reference-index)) |
+| Files                                                                                | Why                                                                                                                         |
+| ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| `src/auth/**`                                                                        | Decides WHO a request is — Clerk verification, guest-id signatures, api tokens, the read/edit gates                         |
+| `src/api-token-row.ts`, `src/db/api-tokens.ts`, `src/routes/tokens.ts`               | Mint, resolve and revoke the credentials that act as an account                                                             |
+| `src/db/share.ts`, `src/db/shared.ts`, `src/db/ws-tickets.ts`                        | Share links, the "shared with you" record, and the one-time realtime room tickets                                           |
+| `src/routes/share.ts`, `src/routes/shared.ts`, `src/routes/document-share-routes.ts` | The only unauthenticated read path into a document, and the owner-only routes that grant it                                 |
+| `src/db/document-removal.ts`                                                         | Decide which tabs and index rows a document delete drops with it, and so whether work another document still shows survives |
 
 The rest of the worker fails visibly. These fail by serving the right response
-to the **wrong person**, or by deleting a picture someone placed: an outcome no amount of production monitoring
+to the **wrong person**, or by deleting work another document still shows: an outcome no amount of production monitoring
 notices, because nothing errors. The thresholds are per-glob rather than
 per-directory-average, so a new module added under `src/auth/` is held to the
 bar on the commit that introduces it instead of being averaged away by its
@@ -197,8 +192,7 @@ Tests and each Editor unit tests job upload their `lcov` reports to
 [Codecov](https://app.codecov.io/gh/liveplanner-app/liveplanner.app), which merges the four uploads
 of a commit into one report (`codecov.yml`). It informs; it never gates: its statuses are
 informational, and the enforced bar stays the thresholds above. The upload authenticates with
-GitHub's OIDC token (`id-token: write`), so no Codecov secret exists; a pull request from a fork
-uploads tokenless. A failed upload logs its error and leaves the job green, so a Codecov outage never
+GitHub's OIDC token (`id-token: write`), so no Codecov secret exists. A failed upload logs its error and leaves the job green, so a Codecov outage never
 holds back a merge.
 
 The pull request's coverage report is ours, not Codecov's (`comment: false`): the organisation's
@@ -224,7 +218,7 @@ whose closing marker was edited away has everything from the opening marker repl
   better and `-` what got worse.
 
 It runs from `main`'s copy of the workflow and script and never checks out the pull request's code,
-so it writes to a pull request from a fork too. `workflow_dispatch` with a pull request number runs
+so it writes to every pull request. `workflow_dispatch` with a pull request number runs
 it by hand; `COVERAGE_REPORT_DRY_RUN=1` prints the report instead of writing it.
 
 ## Before a push
@@ -256,7 +250,7 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
   named workspace. This section records the SHAPE of coverage, not counts or
   filenames: `pnpm test` reports the counts, which change with every feature.
   A workspace that gains its first test file joins this list in the same change.
-  - `packages/document`: the data model end to end: element factories + defaults, geometry / anchor / snap math, arrow path + avoidance + endpoint-spread + auto-rebind and crossing swaps, arrow labels, layer mutations, auto-layout (clusters, styles, lanes, crossings), mind maps, Mermaid import/export (flowchart, state, ER), graph authoring, freehand + shape recognition, rich text, tables, comments + mentions, element ops and deltas, sessions (Q&A, polls, quizzes), slide decks, tab kinds, names, themes, element shadows, the headless SVG renderer's fidelity and coverage, validation.
+  - `packages/document`: the data model end to end: element factories + defaults, geometry / anchor / snap math, arrow path + avoidance + endpoint-spread + auto-rebind and crossing swaps, arrow labels, layer mutations, auto-layout (clusters, styles, lanes, crossings), mind maps, Mermaid import/export (flowchart, state, ER), graph authoring, freehand strokes, rich text, tables, comments + mentions, element ops and deltas, sessions (timer, votes), tab kinds, names, themes, element shadows, the headless SVG renderer's fidelity and coverage, validation.
   - `apps/live`: the lib layer's helpers (api client + Offline Mode store,
     auto-align, canvas geometry + backgrounds, export/import,
     search, templates + theme catalogues, user preferences, telemetry policy,
@@ -308,7 +302,7 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     both apps emit through: batching, caps, opt-in gates, page-hide beacon,
     error-tracking caps.
   - `apps/mcp`: tool argument schemas (and the name cap through the real MCP
-    SDK), tool registration + telemetry, graph input, element normalising, tab
+    SDK), tool registration + telemetry, element normalising, tab
     builders, the find-diagrams search, OAuth state handling, the request scope,
     and the api service-binding client.
   - `apps/router`: the dispatch table (prefix strips, clean live

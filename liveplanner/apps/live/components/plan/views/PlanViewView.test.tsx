@@ -30,7 +30,6 @@ function planWith(items: Item[], over: Partial<PlanContextValue> = {}): PlanCont
     items: new Map(items.map((i) => [i.id, i])),
     types: ITEM_TYPES,
     status: 'ready',
-    planInput: true,
     canEdit: true,
     openItem: vi.fn(),
     statusNames: new Map([
@@ -129,24 +128,6 @@ describe('plan views', () => {
     const before = firstTick();
     fireEvent.click(screen.getByRole('button', { name: 'Later' }));
     expect(firstTick()).not.toBe(before);
-  });
-
-  it('offers no scale or steps outside Plan mode', () => {
-    const p = item({ title: 'Quiet', due: '2026-10-20' }, 'project');
-    draw('gantt', planWith([p], { planInput: false, canEdit: false }));
-    expect(screen.queryByRole('button', { name: 'Year' })).toBeNull();
-  });
-
-  it('opens a card on a double-click only, outside Plan mode', () => {
-    const p = item({ title: 'Quiet' }, 'project');
-    const plan = planWith([p], { planInput: false, canEdit: false });
-    draw('gantt', plan);
-    expect(screen.queryByText(/No dates/)).toBeNull();
-    const row = screen.getByRole('button', { name: `#${p.key} Quiet` });
-    fireEvent.click(row);
-    expect(plan.openItem).not.toHaveBeenCalled();
-    fireEvent.doubleClick(row);
-    expect(plan.openItem).toHaveBeenCalledWith(p.id);
   });
 
   it('lists due cards on the calendar and steps months', () => {
@@ -271,8 +252,8 @@ describe('a maximised view', () => {
     expect(document.querySelector('[data-maximised-board]')).toBeNull();
   });
 
-  it('offers no Maximise outside Plan mode, or on a metric', () => {
-    draw('gantt', planWith([], { planInput: false }));
+  it('offers no Maximise without a plan, or on a metric', () => {
+    draw('gantt', undefined);
     expect(screen.queryByRole('button', { name: 'Maximise View' })).toBeNull();
     cleanup();
     draw('metric:progress', planWith([]));

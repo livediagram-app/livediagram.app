@@ -1,4 +1,3 @@
-import { isDeprecatedDescription, successorToolName } from './legacy-tool-names';
 import { describe, expect, it, vi } from 'vitest';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { Env } from './env';
@@ -72,8 +71,7 @@ const BOARD = {
     hideWriting: false,
   },
 };
-// In Pages mode, so the Pages tools find it (docs/specs/024-agents/pages-for-agents.md).
-const TAB = { id: 't_1', name: 'Tab 1', rev: 1, opensIn: 'pages', elements: [BOARD] };
+const TAB = { id: 't_1', name: 'Tab 1', rev: 1, elements: [BOARD] };
 const PLAN = {
   boards: [
     {
@@ -100,7 +98,6 @@ const FORM_TAB = {
   name: 'RSVP',
   rev: 1,
   kind: 'form',
-  opensIn: 'plan',
   elements: [],
   form: {
     v: 1,
@@ -145,19 +142,6 @@ function okResponse(request: Request): Response {
   if (path.endsWith('/restore')) return json({ document: LIVE_DOC });
   if (path.endsWith('/share')) {
     return json({ link: { code: 'abc', role: 'view', expiresAt: null } });
-  }
-  // A Pages edit (docs/specs/024-agents/pages-for-agents.md "The route").
-  if (path.endsWith('/pages')) {
-    const article = { flow: 'art-1', title: 'A', pages: [1], blocks: 1, words: 1, look: null };
-    return json({
-      tab: { id: 't_1', rev: 2 },
-      switched: false,
-      lines: [],
-      pages: [],
-      articles: [article],
-      article: { ...article, created: true },
-      changesetId: null,
-    });
   }
   // Tab writes are changesets and the tab name route (docs/specs/024-agents/agent-changesets.md).
   if (path.endsWith('/changesets')) {
@@ -213,13 +197,8 @@ function harness(api: 'ok' | 'down' = 'down') {
 // convention) and the telemetry token is PascalCase (docs/specs/017-telemetry/telemetry.md bounds `type` to a
 // short token), so the two spellings have to be derived from each other rather
 // than typed twice.
-function isDeprecated(r: Registered): boolean {
-  return isDeprecatedDescription(r.config.description);
-}
-
-// A deprecated alias counts as its successor, so the feature's history stays one line.
 function expectedToken(toolName: string): string {
-  return successorToolName(toolName)
+  return toolName
     .split('_')
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join('');
@@ -254,9 +233,9 @@ const AUTHED = { authInfo: { token: 'tok_test' } };
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 describe('registerTools', () => {
-  it('registers the twenty-nine documented tools, each with a description', () => {
+  it('registers the twenty-five documented tools, each with a description', () => {
     const { registered } = harness();
-    const current = registered.filter((r) => !isDeprecated(r));
+    const current = registered;
     expect(current.map((r) => r.name).sort()).toEqual([
       'add_board',
       'add_form',
@@ -266,12 +245,10 @@ describe('registerTools', () => {
       'change_card_types',
       'change_form',
       'change_items',
-      'change_pages',
       'change_sheet',
       'create_document',
       'delete_document',
       'find_documents',
-      'list_images',
       'list_items',
       'list_sheets',
       'list_templates',
@@ -281,12 +258,10 @@ describe('registerTools', () => {
       'read_sheet',
       'rename_document',
       'restore_document',
-      'search_icons',
       'share_document',
       'share_form',
       'try_form',
       'update_document',
-      'write_article',
     ]);
     // The description is what the calling model reads to pick a tool, so an
     // undescribed tool is effectively unreachable.
@@ -303,7 +278,7 @@ describe('registerTools', () => {
     const seen: Record<string, Emitted[]> = {};
     for (const tool of registered) {
       const before = emitted.length;
-      // A board or Sheet goes only on a tab in Plan: the Form tab is one, Tab 1 is in Pages.
+      // A board or Sheet goes only on a tab in Plan: the Form tab is one, Tab 1 is not.
       const planOnly = tool.name === 'add_sheet' || tool.name === 'add_board';
       const args = planOnly ? { ...ARGS, tabId: 'f_1' } : ARGS;
       const result = (await tool.handler(args, AUTHED)) as { isError?: boolean };
@@ -329,7 +304,7 @@ describe('registerTools', () => {
     const { registered, emitted } = harness('down');
     for (const tool of registered) {
       // These need no api, so cannot fail here.
-      if (tool.name === 'list_templates' || tool.name === 'search_icons') continue;
+      if (tool.name === 'list_templates') continue;
       await tool.handler(ARGS, AUTHED).catch(() => undefined);
     }
     await flush();
@@ -383,15 +358,12 @@ describe('tool annotations', () => {
     find_documents: 'read',
     read_document: 'read',
     list_templates: 'read',
-    search_icons: 'read',
     create_document: 'write',
     add_tab: 'write',
     share_document: 'write',
     rename_document: 'write',
     list_trash: 'read',
     restore_document: 'write',
-    // docs/specs/015-api/mcp-server.md §4.5b: the gallery is read, never written.
-    list_images: 'read',
     update_document: 'destructive',
     delete_document: 'destructive',
     // Items (docs/specs/026-plan/plan-mode.md "Agents"): change_items may delete.
@@ -406,10 +378,6 @@ describe('tool annotations', () => {
     read_sheet: 'read',
     change_sheet: 'destructive',
     add_sheet: 'write',
-    // docs/specs/024-agents/pages-for-agents.md: change_pages deletes pages and replaces their
-    // content; write_article replaces an article's text.
-    change_pages: 'destructive',
-    write_article: 'destructive',
     // docs/specs/030-forms/forms.md "Agents": change_form deletes questions and sections; share_form publishes.
     read_form: 'read',
     add_form: 'write',
@@ -434,8 +402,7 @@ describe('tool annotations', () => {
 
   it('annotates each tool with the behaviour docs/specs/015-api/mcp-server.md §4.14 assigns it', () => {
     const { registered } = harness();
-    // A deprecated alias carries its successor's annotations (checked above).
-    for (const r of registered.filter((r) => !isDeprecated(r))) {
+    for (const r of registered) {
       const behaviour = BEHAVIOURS[r.name];
       // A tool missing from the table is a new tool whose behaviour nobody has
       // decided yet. Decide it here and in the spec; don't delete this line.
@@ -451,13 +418,11 @@ describe('tool annotations', () => {
     // reverse) is a lie to the client either way.
     const { registered } = harness();
     const readOnly = registered
-      .filter((r) => !isDeprecated(r))
       .filter((r) => r.config.annotations?.readOnlyHint === true)
       .map((r) => r.name)
       .sort();
     expect(readOnly).toEqual([
       'find_documents',
-      'list_images',
       'list_items',
       'list_sheets',
       'list_templates',
@@ -465,7 +430,6 @@ describe('tool annotations', () => {
       'read_document',
       'read_form',
       'read_sheet',
-      'search_icons',
     ]);
 
     // Destructive is only meaningful on a writer, and MCP defaults it to TRUE
@@ -479,7 +443,6 @@ describe('tool annotations', () => {
     }
 
     const destructive = registered
-      .filter((r) => !isDeprecated(r))
       .filter((r) => r.config.annotations?.destructiveHint === true)
       .map((r) => r.name)
       .sort();
@@ -487,11 +450,9 @@ describe('tool annotations', () => {
       'change_card_types',
       'change_form',
       'change_items',
-      'change_pages',
       'change_sheet',
       'delete_document',
       'update_document',
-      'write_article',
     ]);
   });
 });

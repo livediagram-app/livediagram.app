@@ -1,12 +1,12 @@
 'use client';
 
 import type { RecentDiagram } from '@liveplanner/api-schema';
-import { EDITOR_MODE_ICONS } from '@liveplanner/ui';
+import { PlanIcon } from '@liveplanner/ui';
 import { useRecentThumb } from './useRecentDiagrams';
 
 // A recent diagram's preview (docs/specs/019-marketing/returning-visitor.md): its snapshot from this
 // browser's cache (the editor leaves one on each save) on the diagram's own background colour, as the
-// Explorer's cards draw it; with none, its mode glyph on a quiet tint. The caller sizes it. Shared by
+// Explorer's cards draw it; with none, Plan's glyph on a quiet tint. The caller sizes it. Shared by
 // the hero's recent row and its fan.
 export function RecentPreview({
   diagram,
@@ -16,7 +16,6 @@ export function RecentPreview({
   className?: string;
 }) {
   const thumb = useRecentThumb(diagram.id, diagram.savedAt);
-  const Icon = EDITOR_MODE_ICONS[diagram.mode ?? 'plan'];
   return (
     <span
       className={`relative block overflow-hidden bg-(--hero-thumb) ${className}`}
@@ -35,7 +34,7 @@ export function RecentPreview({
         />
       ) : thumb.status === 'none' ? (
         <span className="absolute inset-0 flex items-center justify-center text-(--hero-icon)">
-          <Icon size={28} />
+          <PlanIcon size={28} />
         </span>
       ) : null}
     </span>

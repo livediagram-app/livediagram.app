@@ -32,7 +32,7 @@ describe('panel-layout', () => {
     // Left its old corner...
     expect(next.corners['bottom-right']).toEqual(['collaborate']);
     // ...and joined below whatever is in the target corner.
-    expect(dockPanel(next, 'laser', 'top-right').corners['top-right']).toEqual(['ai', 'laser']);
+    expect(dockPanel(next, 'format', 'top-right').corners['top-right']).toEqual(['ai', 'format']);
   });
 
   it('a panel lives in exactly one place (free clears its corner)', () => {
@@ -57,10 +57,10 @@ describe('panel-layout', () => {
 
   it('reflow: removing a stacked panel shifts the rest up', () => {
     // Stack two in the bottom-right, then move the first away; the second leads the stack.
-    const stacked = dockPanel(defaultPanelLayout(), 'laser', 'bottom-right');
-    expect(stacked.corners['bottom-right']).toEqual(['collaborate', 'ai', 'laser']);
+    const stacked = dockPanel(defaultPanelLayout(), 'format', 'bottom-right');
+    expect(stacked.corners['bottom-right']).toEqual(['collaborate', 'ai', 'format']);
     const next = dockPanel(stacked, 'ai', 'top-left');
-    expect(next.corners['bottom-right']).toEqual(['collaborate', 'laser']);
+    expect(next.corners['bottom-right']).toEqual(['collaborate', 'format']);
   });
 
   it('resolves an unmentioned panel to its default corner', () => {
@@ -72,7 +72,7 @@ describe('panel-layout', () => {
   });
 
   it('homes every tool panel and the AI panel bottom-right', () => {
-    for (const id of ['ai', 'laser', 'spotlight', 'eraser', 'format', 'slide-deck'] as const)
+    for (const id of ['ai', 'format'] as const)
       expect(DEFAULT_PANEL_CORNER[id]).toBe('bottom-right');
   });
 
@@ -81,17 +81,17 @@ describe('panel-layout', () => {
       const layout = normalizePanelLayout({
         corners: {
           'top-left': ['ai', 'bogus', 'ai'],
-          'top-right': ['ai', 'laser'],
+          'top-right': ['ai', 'format'],
         },
         free: {},
       });
       expect(layout.corners['top-left']).toEqual(['ai']);
-      // ai already seen in top-left, so top-right keeps only laser.
-      expect(layout.corners['top-right']).toEqual(['laser']);
+      // ai already seen in top-left, so top-right keeps only format.
+      expect(layout.corners['top-right']).toEqual(['format']);
     });
 
-    // Poll and Vote moved to the Session strip (docs/specs/012-collaboration/session-tools.md).
-    it('ignores the Poll and Vote panels in a stored layout', () => {
+    // Panels a stored layout may still name, which are corner panels no longer.
+    it('ignores retired panels in a stored layout', () => {
       const layout = normalizePanelLayout({
         corners: { 'top-right': ['vote', 'poll', 'ai'] },
         free: { poll: { x: 1, y: 2 } },

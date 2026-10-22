@@ -14,7 +14,6 @@
 // grouping by `group` under the CATEGORY_BANDS headings.
 
 import dynamic from 'next/dynamic';
-import { PaletteLogoTab } from './PaletteLogoTab';
 import { PALETTE_CATEGORIES } from './palette-categories';
 import { IconPickerTab } from '@/components/palette/IconPickerTab';
 import { StickerPickerTab } from '@/components/palette/StickerPickerTab';
@@ -135,12 +134,7 @@ export function paletteCategoryTabs(
       case 'write':
         return <PaletteWriteTab {...tab} tiles={tiles} />;
       case 'draw':
-        // Logo's Draw holds this person's markers too, with their own flyouts (PaletteLogoTab).
-        return tiles.some((t) => t.action.type === 'marker') ? (
-          <PaletteLogoTab {...tab} tiles={tiles} />
-        ) : (
-          <PaletteDrawTab {...tab} tiles={tiles} />
-        );
+        return <PaletteDrawTab {...tab} tiles={tiles} />;
       case 'devices':
         return <DevicePickerTab {...tab} tiles={tiles} />;
       case 'media':
@@ -152,8 +146,6 @@ export function paletteCategoryTabs(
       case 'collab-ask':
       case 'collab-tools':
       case 'collab-record':
-      case 'collab-react':
-      case 'collab-mode':
       case 'collab-navigate':
         return <PaletteCollaborateTab {...tab} tiles={tiles} />;
       // Plan mode's cards follow the document's item types

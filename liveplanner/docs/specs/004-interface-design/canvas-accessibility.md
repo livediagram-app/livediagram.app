@@ -27,7 +27,7 @@ delete, undo, label edit via Space) that already work on a selection.
 - **F6 moves between regions.** Tab is busy inside the canvas, walking its elements, so on a real document the
   chrome after it in the tab order (the palette strip, the bottom controls, the tab bar) sat behind dozens of
   presses. F6 moves focus to the next region and Shift+F6 to the previous, wrapping round, in screen order:
-  **Header** (the document's title row), **Palette** (the strip or the Draw dock), **Canvas**, **Controls** (the
+  **Header** (the document's title row), **Palette** (the strip), **Canvas**, **Controls** (the
   bottom-right cluster: Undo, Tidy Up, Layers, Style, zoom) and **Tabs** (the tab bar). A region lands on its first
   control (the Canvas on the canvas itself); a region not on screen (a viewer has no Palette, Zen hides the chrome)
   is skipped. It works from anywhere on the page but a modal dialog (whose focus trap keeps it) and with focus in a
@@ -51,11 +51,10 @@ delete, undo, label edit via Space) that already work on a selection.
   `describeOne`): `Square "Login"`, `Sticky note`, `Arrow
 "yes"`. Arrows carry the same on their SVG group.
 - An element whose face holds controls of its own is a named `role="group"` instead (`elementRole`): the session
-  buttons (timer, vote, poll), checklists, temperature checks, agendas, Q&A boards, quizzes, reaction pads, pickers,
-  reveals, decision records and mode buttons, an embed, a link card, and an image still waiting for its picture. An
-  img's children are presentational, so as pictures their Start, tick and Ask buttons and the Q&A note field could
+  buttons (timer, vote), checklists, temperature checks, pickers, decision records, an embed, a link card, and an image still waiting for its picture. An
+  img's children are presentational, so as pictures their Start, tick and answer buttons could
   not be reached with a screen reader.
-- A session button is named by the tool it starts (`Timer`, `Stopwatch`, `Dot vote`, `Poll`), never the generic
+- A session button is named by the tool it starts (`Timer`, `Stopwatch`, `Dot vote`), never the generic
   "Session button".
 
 ## Live announcements

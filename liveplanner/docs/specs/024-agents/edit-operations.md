@@ -26,10 +26,10 @@ editing an existing tab use the same operations; a full rebuild uses `replace`. 
 | `layout`  | `layout <selector> [style=flow\|tree\|mindmap] [direction=down\|right]`           | Lays out only the selection, keeping its top-left corner                                          |
 | `test`    | `test <selector> key=value…`                                                      | Fails the changeset unless the element holds these values                                         |
 
-- **`replace`** is the other changeset body: a whole tab from `graph`, `mermaid`, `template`, `dashboard` (a new
+- **`replace`** is the other changeset body: a whole tab from exactly one of `template`, `dashboard` (a new
   Plan Dashboard tab, or a Dashboard tab rebuilt whole, [Plan agents](../026-plan/plan-agents.md) "Making a
-  dashboard") or `elements`, exactly
-  as the MCP takes them ([MCP server](../015-api/mcp-server.md) §4.7). It is still a changeset: previewed, based,
+  dashboard"), `form` (a new Form tab) or `elements`, as the MCP takes them
+  ([MCP server](../015-api/mcp-server.md) §4.7). It is still a changeset: previewed, based,
   attributed and revertable.
 - **Ids** given with `id=` name the new element, so later operations in the same changeset can refer to it. An id is
   a slug id (`^[a-z][a-z0-9_-]{0,23}$`, as [Document views](document-views.md#refs) defines it). Without one, a new
@@ -42,7 +42,7 @@ editing an existing tab use the same operations; a full rebuild uses `replace`. 
   `fill=green` (a theme slot: `theme`, the theme's own colour, or one of the six hues the quick style panel offers
   for that theme, which follow a theme change; a hex value is accepted with the warning `colour_overrides_theme`,
   a sticky's colours excepted, which take the sticky palette's names), `text=sm`, `note="…"`, `line=angled`. A shape's
-  label over 40 characters keeps the heading and moves the full text into the note, as graph input does; an arrow's
+  label over 40 characters keeps the heading and moves the full text into the note; an arrow's
   label is cut; a sticky's or a text's label is its content and is kept whole. Every style key a
   [view](document-views.md) prints (`stroke=`, `text-color=`, `border=`, `font=` beside `fill=`, `text=`, `line=`)
   writes back unchanged.
@@ -112,8 +112,7 @@ The layout an agent did not ask to change stays put:
   drawn flow is not a small box wrapping its label mid-word. Siblings shorter than the palette's box of their shape
   wear the template look, and the label is measured as that look measures, from their size: a short label takes
   their size exactly, never the palette's taller square, and keeps their height while its label holds one line. On
-  a tab with no box of that shape, it takes the template's proportions graph input draws
-  ([MCP server](../015-api/mcp-server.md) §4.7, 180×64 for a square). Either way the label is measured at the box's
+  a tab with no box of that shape, it takes the template's proportions (180×64 for a square). Either way the label is measured at the box's
   own text size, and a label written over several lines line by line.
 - **A new box placed beside a member joins its frame or lane**: `add` with a placement against an element inside a
   container grows that container (`widened`, `taller`) to hold the new box with its padding, as an insertion does,
@@ -121,7 +120,7 @@ The layout an agent did not ask to change stays put:
   container holds, and what sat past the container on the side it grew, within its span, moves on by the growth, never
   taken in. A box `inside:` a container that holds something grows it the same way.
 - **A new arrow takes the tab's line.** `connect` with no `line=` draws with the line most of the tab's pinned arrows
-  use: angled (anchors along the axis the two boxes lie on, bent twice as graph input bends an elbow) or curved; a
+  use: angled (anchors along the axis the two boxes lie on, bent twice, an elbow) or curved; a
   given `line=` wins. **An angled arrow joins its source's trunk**: where the source already sends an exact-ended
   angled arrow out of the side that faces the new target (a gateway fanning down to its services), the new arrow
   leaves from that point too and bends in the trunk's channel, into the target's facing side, so a service added
@@ -207,5 +206,5 @@ One pure engine, `@liveplanner/edit-operations`, on top of `@liveplanner/documen
   operations resolved, which the changeset fingerprints and checks for holds; `createdIds` are the elements it
   created.
 - Refs, slug ids, kind words, membership and the content origin come from `@liveplanner/document`, shared with the
-  views and the lint, as do graph input's label cap and the MCP's normalisation.
+  views and the lint, as do the label cap and the MCP's normalisation.
 - The api runs it for every changeset; the CLI runs it only to parse and to print.

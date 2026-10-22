@@ -10,7 +10,7 @@
 //   - refused: the correction to the sender alone; an element not saved yet, or no write at all (a failure, a
 //     flood past PARTICIPANT_PENDING_MAX), and the sender re-hydrates (`catchup { resync: true }`).
 //
-// Answers: a Participant's dot, response or idea relays and enters the ledger like an Editor's, and the room
+// Answers: a Participant's dot or response relays and enters the ledger like an Editor's, and the room
 // writes the ledger's answers into the stored tab ANSWERS_FLUSH_MS later, one write per tab for a burst.
 
 import { isRoomOpRef, type ServerMessage } from '@liveplanner/api-schema';
@@ -145,7 +145,7 @@ export class RoomParticipantWrites {
     });
   }
 
-  // A Participant's dot, response or idea has just entered the ledger: write the tab's answers soon.
+  // A Participant's dot or response has just entered the ledger: write the tab's answers soon.
   scheduleAnswers(documentId: string | null, tabId: unknown): void {
     if (!documentId || typeof tabId !== 'string' || this.flushes.has(tabId)) return;
     const timer = setTimeout(() => {

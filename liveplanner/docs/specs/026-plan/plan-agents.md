@@ -75,10 +75,8 @@ Every write takes what a person would say, and stores the ids:
 - **`add_board`** (MCP; the CLI's `board add`) puts a Plan board on a tab: a preset (`kanban` by default; `todo`,
   `sprint`, `bug-triage`, `retro`, `roadmap`, `weekly`, `archive`, `all-cards`, `blank`) or columns by name, with an
   optional title and the card types it takes (by name).
-- The tab must be in Plan ([Plan tabs](plan-tabs.md#only-in-plan)): the tab named, else the first tab holding a board,
-  else the first tab; one in another mode is refused `tab_not_plan` ("<name>" is not a Plan tab, and a board goes
-  only on a tab in Plan. Add a Board tab with add_tab and template "kanban" (or another board template).), read with
-  the tab the board is placed beside, so it costs no extra request.
+- The tab ([Plan tabs](plan-tabs.md#only-in-plan)): the tab named, else the first tab holding a board, else the first
+  tab, read with the board it is placed beside.
 - It is placed as the palette places one: a column named like a status the document's boards already use takes
   that status, so its cards show on both boards; any other column gets a status of its own and starts empty.
 - It goes on the tab named, else the first tab that already has a board, else the first tab, to the right of
@@ -119,7 +117,7 @@ Every write takes what a person would say, and stores the ids:
 ## Making a dashboard
 
 - A **Dashboard tab** ([Plan tabs](plan-tabs.md)) is made where a tab is made: `create_document`'s tabs and `add_tab`
-  take `dashboard` in place of a graph, Mermaid, elements or a template, and the tab is made as a template's
+  take `dashboard` in place of elements or a template, and the tab is made as a template's
   Dashboard is (the same row builder, `buildDashboardTab`):
   - `tabs`: the document's Board and Sheet tabs it shows, by name (in `create_document`, the other tabs of the same
     call), or `"every"` for each Board and Sheet tab in order; two to a row.

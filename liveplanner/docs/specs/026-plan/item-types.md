@@ -36,8 +36,8 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 - **Every type can be deleted, the last one too**: a document left with none stores an empty catalogue and shows
   the empty states below.
 - **Documents made before card types started empty** that have cards and never chose their types read as the five
-  default types, as they always did: D1 documents were given them, stored, by migration 0090; an offline record, a
-  Drive file or an exported tab with cards and no catalogue is read the same way (`legacyCatalogue`).
+  default types, as they always did: an offline record, a Drive file or an exported tab with cards and no catalogue
+  (`legacyCatalogue`).
 - Any change (a board choosing them, a type added, edited or deleted) stores the **whole catalogue** with the
   document. From then on the stored catalogue is the document's, whole; later releases do not change it.
 - **Add Default Types** adds any of the five default types the document lacks, as they are defined, after its

@@ -3,10 +3,10 @@
 // The paper kit: the textures that give each Behaviours element the look of a
 // particular OBJECT rather than of a generic card (docs/specs/012-collaboration/participant-responses.md).
 //
-// Being retired, element by element: the collab boards moved onto the Q&A
-// board's flat, accent-lit look, and their textures went with them. What is
-// left serves the three elements that have not moved yet (the Picker's reel
-// window, the Mode button's keycap edge, the Timer's dial ticks).
+// Being retired, element by element: the collab cards moved onto a flat,
+// accent-lit look, and their textures went with them. What is left serves the
+// two elements that have not moved yet (the Picker's reel window, the Timer's
+// dial ticks).
 //
 // Why this exists
 // ---------------
@@ -52,24 +52,6 @@ export function ReelWindow({ textColor }: { textColor: string }) {
       }}
     />
   );
-}
-
-/**
- * The moulded edge of a keycap: a lit top, a shaded skirt, and the drop that
- * makes it stand off the canvas.
- *
- * Applied to a Selection Mode button, which is the one element here that IS a
- * key — you press it and a tool comes out.
- */
-export function keycapEdge(textColor: string): React.CSSProperties {
-  return {
-    boxShadow: [
-      `inset 0 1px 0 ${tint(textColor, 0.28)}`,
-      `inset 0 -2px 0 ${tint(textColor, 0.14)}`,
-      `inset 0 0 0 1px ${tint(textColor, 0.1)}`,
-      `0 2px 0 ${tint(textColor, 0.16)}`,
-    ].join(', '),
-  };
 }
 
 /**

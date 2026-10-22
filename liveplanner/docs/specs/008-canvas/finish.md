@@ -76,7 +76,7 @@ element leaves unset, plus how a line is drawn (Sketch, Marker).
   Sketch picked on the element itself is more specific than the tab's font: that element is written by hand even
   on a tab with a typeface (Style → Finish on one heading of a Boardroom slide); its own font still wins. A code block keeps its monospace font.
   The face covers every word on the element, not only its label: a face that writes its own (a progress value, a
-  panel's rows, a button, a quiz) is lettered in it too, on the canvas and in exports. The same holds for a tab's
+  panel's rows, a button, a picker) is lettered in it too, on the canvas and in exports. The same holds for a tab's
   font and Professional's Inter.
 - **Arrows** are drawn as hand-drawn lines; a triangle, hollow triangle or line arrowhead is drawn as two loose
   strokes. Circle and diamond heads keep their shapes, because they carry meaning (UML composition, ER
@@ -91,9 +91,8 @@ element leaves unset, plus how a line is drawn (Sketch, Marker).
   same boxes and arrows the canvas draws ([The sequence diagram](../009-elements/sequence-diagram.md) "Look").
 - **Every other face is drawn by hand too.** Whatever an element draws beyond its sketched body is split into two
   layers: charts, legends, progress, rating, checklists, code blocks, concept graphics, Sankey,
-  badges, steps, cards, pointer notes, stacks, boundaries, diagram keys, people, web components, office furniture
-  and rooms, Plan boards, cards, views and sheets, collaboration panels, buttons, pickers, reveals, portals, quizzes,
-  a tab window's frame, link cards, a video's frame, annotation markers, a table's grid, a lane's gutter, a record's
+  badges, steps, cards, pointer notes, stacks, boundaries, diagram keys, people, web components, Plan boards,
+  cards, views and sheets, collaboration panels, buttons, pickers, portals, a tab window's frame, link cards, a video's frame, annotation markers, a table's grid, a lane's gutter, a record's
   rows, a page's fold, a browser's chrome and an inline icon beside a label.
   - Its **ink** (fills, outlines, bars, discs, rules, glyphs) is drawn through the same wobble as icons.
   - Its **words** sit above the ink, crisp, in the element's font. The wobble mangles small figures ("4,000" reads
@@ -101,9 +100,9 @@ element leaves unset, plus how a line is drawn (Sketch, Marker).
 
   The two layers line up exactly, so a face reads and behaves as in any finish: its controls are pressed and typed
   into as before. The ink is a still copy of the face, so a hover or press tint on a face's own control is not
-  drawn on a Sketch tab. A face's own animations (a quiz's answers fanning out from its disc) play in the copy in
+  drawn on a Sketch tab. A face's own animations (a picker's spin) play in the copy in
   step with the live face: each new copy picks up each animation where the live one is, never from the start, so a
-  face that keeps changing (a quiz's countdown) does not drag its moving parts back. Photos inside a face (an avatar, a link card's preview, a video's poster) are not wobbled,
+  face that keeps changing (a timer's countdown) does not drag its moving parts back. Photos inside a face (an avatar, a link card's preview, a video's poster) are not wobbled,
   and a tab window's content keeps the finish of the tab it shows. Exports draw the same two layers.
   A Plan board, view or sheet that fills its tab or is maximised is drawn over the canvas, outside its element's
   box, and keeps its finish there too: its face is split and wobbled as it is on the canvas.
@@ -113,7 +112,7 @@ element leaves unset, plus how a line is drawn (Sketch, Marker).
   keep theirs, drawn once into a still picture and redrawn only when the art changes. A face is not split: it draws
   as it does under Flexible, its lettering in the handwriting font, inside its hand-drawn outline and shading. Other
   browsers and every export are unchanged.
-- **Not affected:** pencil, pen and highlighter strokes (already hand-drawn) and images (photos, not drawings).
+- **Not affected:** freehand pen strokes and highlights (already hand-drawn) and images (photos, not drawings).
 - **Selection, hit testing, anchors and snapping** use the element's true geometry, never the wobble, so a
   sketched element is selected, connected and aligned exactly as a Flexible one.
 
@@ -162,7 +161,7 @@ Sketch is a pencil's wandering double line, Marker is one bold stroke per edge, 
     the frame size) keep their plain look, so the words in and around them stay easy to read.
   - The marker strokes are seeded by the element's id and the part's place in it, so a face looks the same on
     every screen and in every export.
-- **Not affected:** pencil, pen and highlighter strokes, images, photos inside a face, and a tab window's content (it keeps the
+- **Not affected:** freehand pen strokes and highlights, images, photos inside a face, and a tab window's content (it keeps the
   finish of the tab it shows).
 - **Selection, hit testing, anchors and snapping** use the element's true geometry, as under Sketch.
 
@@ -182,20 +181,18 @@ A sticker's emoji or word is art and is drawn as it is in every finish; its plat
 coloured pill) follows the finish like any frame: square and flat under Professional, outlined in marker with no
 shadow under Marker (a badge's pill coloured in), wobbled with its art under Sketch. Exports agree.
 
-### Polygons and paths
+### Polygons
 
-A Polygon-tool outline ([Polygon tool](polygon-tool.md)) and a Path-tool curve
-([Path tool](../023-draw-mode/path-tool.md)) are placed point by point, so they are drawings like a shape's outline,
-not a hand's stroke, and follow their tab's finish as a shape does:
+A Polygon-tool outline ([Polygon tool](polygon-tool.md)) is placed point by point, so it is a drawing like a shape's
+outline, not a hand's stroke, and follows its tab's finish as a shape does:
 
 - **Professional:** an unset line draws Thin (1 px).
 - **Sketch:** the line is drawn by hand (two wobbly strokes, seeded by the element's id); a closed one keeps its
   solid fill under pencil shading.
 - **Marker:** the line is one bold marker stroke, an unset or Thin one at the nib; a closed one is coloured in over
   its solid fill.
-- A path combined from several outlines keeps its holes: its fill is its own, and it is never shaded, since shading
-  across a hole would fill it.
-- Pencil, pen and highlighter strokes are already hand-drawn and stay as drawn in every finish.
+- Other freehand strokes (a template's or an import's pen strokes and highlights) are already hand-drawn and stay
+  as drawn in every finish.
 
 ### Flexible
 

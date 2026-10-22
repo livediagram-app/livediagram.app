@@ -109,12 +109,11 @@ describe('rowToTab', () => {
     expect(dto.elements[0]).not.toHaveProperty('esDock');
   });
 
-  it('reads a stored whiteboard as a general tab that opens in Draw (docs/specs/007-editor/editor-modes.md)', () => {
+  it('reads a stored whiteboard as a general tab', () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const elements = [{ id: 's', type: 'shape', shape: 'square', x: 0, y: 0, width: 9, height: 9 }];
     const dto = rowToTab(baseRow({ data: bodyJson({ kind: 'whiteboard', elements }) }));
     expect(dto.kind).toBe('diagram');
-    expect(dto.opensIn).toBe('draw');
     expect(dto.backgroundPattern).toBe('blank');
     expect(dto.elements[0]).toMatchObject({ penColour: 'ink', fillColor: 'transparent' });
   });

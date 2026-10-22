@@ -1,24 +1,17 @@
 import {
-  applyArticleOps,
-  pagesOf,
   settleTabFields,
-  isArticleId,
-  parseArticleOps,
   applyElementDelta,
-  articlesOf,
   applyElementOp,
   applyRoomElementOp,
   applyVoteDelta,
   mergeIncomingElement,
   voteDeltaApplies,
-  yieldIdeaToPeer,
   type ElementDelta,
   type ElementOp,
   type Tab,
 } from '@liveplanner/document';
 import type { RoomOp } from '@liveplanner/api-schema';
 import { META_SKIP, mergeRemoteTab, mergeRemoteVote } from './tab-broadcast-ops';
-import { markArticleGrow } from '@/lib/article/article-grow-store';
 
 // The document-changing room ops, as a pure function over a tab list.
 //
@@ -32,12 +25,7 @@ import { markArticleGrow } from '@/lib/article/article-grow-store';
 // Returns `tabs` itself when the op changes nothing (an op for a tab we don't
 // have, an update for a removed element, a dot for a closed round), so callers
 // keep identity and the autosave sees no phantom change.
-// This browser's own idea posts to a box the room has not answered yet, oldest first
-// (docs/specs/012-collaboration/idea-box.md "Racing for the last card"): only the tabs on screen pass it, so a
-// peer's card that reaches a full box takes the place of the newest of them. The baseline never does.
-export type PendingIdeaIds = (tabId: string, elementId: string) => readonly string[];
-
-export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp, pendingIdeaIds?: PendingIdeaIds): Tab[] {
+export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp): Tab[] {
   switch (op.kind) {
     case 'tab': {
       // A peer's whole tab. A tab we don't have yet (they just added it) is
@@ -49,7 +37,7 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp, pendingIdeaIds?: Pend
       // ONE element, applied by id (docs/specs/012-collaboration/realtime-conflict-resolution.md). An op for a tab we don't have is
       // dropped: a follow-up `tab` or `document-meta` op brings it in whole.
       return updateTab(tabs, op.tabId, (tab) => {
-        // An add / update is merged, not swapped in: answers, ideas, ticks and
+        // An add / update is merged, not swapped in: answers, ticks and
         // comments reached us as deltas and ours is the merged copy, where the
         // sender's is a snapshot from their last save (docs/specs/012-collaboration/collab-race-hardening.md).
         const elOp =
@@ -59,13 +47,7 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp, pendingIdeaIds?: Pend
         return elements === tab.elements ? tab : { ...tab, elements };
       });
     case 'el-delta':
-      return applyDeltaToTabs(
-        tabs,
-        op.tabId,
-        op.elementId,
-        op.delta,
-        op.delta.kind === 'idea' ? pendingIdeaIds?.(op.tabId, op.elementId) : undefined,
-      );
+      return applyDeltaToTabs(tabs, op.tabId, op.elementId, op.delta);
     case 'changeset': {
       // An agent's changeset (docs/specs/024-agents/agent-changesets.md "In the editor"): a tab it
       // created is appended first, then each element op applies exactly as case `el` does. An op
@@ -117,35 +99,6 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp, pendingIdeaIds?: Pend
         // A peer's patch is untrusted like any incoming tab: its raw-read fields are settled.
         return settleTabFields(merged);
       });
-    case 'article':
-      // ONE article's writing, block by block (docs/specs/007-editor/article-pages.md
-      // "Collaboration"): two people writing different blocks merge.
-      return updateTab(tabs, op.tabId, (tab) => {
-        if (!isArticleId(op.flow)) return tab;
-        const articles = { ...articlesOf(tab) };
-        if ('removed' in op) {
-          if (!Object.hasOwn(articles, op.flow)) return tab;
-          delete articles[op.flow];
-        } else {
-          // Read defensively: a malformed frame changes nothing.
-          const ops = parseArticleOps(op.ops);
-          if (!ops) return tab;
-          // Writing for an article this tab no longer has (removed while the writer typed) is
-          // dropped, unless the article is new or its pages are here.
-          const known =
-            Object.hasOwn(articles, op.flow) ||
-            op.created === true ||
-            pagesOf(tab).some((p) => p.flow === op.flow);
-          if (!known) return tab;
-          articles[op.flow] = applyArticleOps(articles[op.flow], ops);
-          // An agent's writing has no writer here to add the pages it needs: the next lay-out may.
-          if (op.agent === true) markArticleGrow(op.tabId, op.flow);
-        }
-        if (Object.keys(articles).length > 0) return { ...tab, articles };
-        const { articles: _drop, ...rest } = tab;
-        void _drop;
-        return rest;
-      });
     case 'document-meta': {
       // Rename / reorder / add / delete. Reorder to match; a new id lands as a
       // placeholder a follow-up `tab` op fills. Unchanged tabs keep identity
@@ -167,7 +120,7 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp, pendingIdeaIds?: Pend
   }
 }
 
-// ONE answer / idea / tick / comment on one element (docs/specs/012-collaboration/collab-race-hardening.md), through the
+// ONE answer / tick / comment on one element (docs/specs/012-collaboration/collab-race-hardening.md), through the
 // pure function every peer runs, so concurrent presses on the same card
 // commute. Shared by the receiver above and the sender (useElementDeltas), so
 // the two can't apply a delta differently.
@@ -176,15 +129,11 @@ export function applyDeltaToTabs(
   tabId: string,
   elementId: string,
   delta: ElementDelta,
-  // This browser's own unanswered idea posts to the element (applyRoomOpToTabs above).
-  pendingIdeas?: readonly string[],
 ): Tab[] {
   return updateTab(tabs, tabId, (tab) => {
     const i = tab.elements.findIndex((el) => el.id === elementId);
     if (i === -1) return tab;
-    const next = pendingIdeas?.length
-      ? yieldIdeaToPeer(tab.elements[i]!, delta, pendingIdeas).el
-      : applyElementDelta(tab.elements[i]!, delta);
+    const next = applyElementDelta(tab.elements[i]!, delta);
     if (next === tab.elements[i]) return tab;
     const elements = [...tab.elements];
     elements[i] = next;

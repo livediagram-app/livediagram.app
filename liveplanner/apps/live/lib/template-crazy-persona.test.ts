@@ -42,15 +42,12 @@ describe('crazy 8s template', () => {
     expect(labels(els)).toContain('make reordering a favourite meal take two taps?');
   });
 
-  it('opens with an 8-minute timer, a 3-dot vote and a done check', () => {
+  it('opens with an 8-minute timer and a 3-dot vote', () => {
     const tools = shapesOf(els, 'session-button').map((b) => b.session);
     expect(tools).toEqual([
       { tool: 'timer', minutes: 8 },
       { tool: 'vote', dots: 3 },
     ]);
-    const done = shapesOf(els, 'done-check');
-    expect(done).toHaveLength(1);
-    expect(done[0]!.label).toBe('Finished sketching?');
   });
 
   it('lists the four steps in running order', () => {

@@ -5,7 +5,6 @@
 // the scope in.
 
 import { isOpenTeamMember } from '@liveplanner/api-schema';
-import { legacyDocumentIdOf } from '../legacy-request-forms';
 import type { TeamMember } from '@liveplanner/api-schema';
 import { getDocumentMeta, getMembership, getParticipant, hasSharedAccess } from '../db';
 import { listTeamMembers } from '../db';
@@ -102,8 +101,7 @@ export async function handleTeamActionRoutes(
     const assigneeUserId = typeof body?.assigneeUserId === 'string' ? body.assigneeUserId : '';
     const assigneeMemberId =
       typeof body?.assigneeMemberId === 'string' ? body.assigneeMemberId : '';
-    const documentId =
-      typeof body?.documentId === 'string' ? body.documentId : legacyDocumentIdOf(body);
+    const documentId = typeof body?.documentId === 'string' ? body.documentId : '';
     const actionName = typeof body?.actionName === 'string' ? body.actionName.trim() : '';
     const description = typeof body?.description === 'string' ? body.description : null;
     if ((!assigneeUserId && !assigneeMemberId) || !documentId || !actionName) {

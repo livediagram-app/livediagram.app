@@ -7,8 +7,6 @@
 
 import type { Selection } from '@/lib/selection-store';
 import type { CanvasTool } from '@/components/palette/palette.types';
-import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
-import type { WhiteboardShapeId } from '@/lib/whiteboard-tool';
 import { requestToolbarSearch } from '@/lib/toolbar-search-request';
 
 // Shape kinds that have a single-key palette shortcut: the common
@@ -60,10 +58,10 @@ export type EditorKeyboardShortcutsDeps = {
   undo: () => void;
   redo: () => void;
   copySelection: () => void;
-  // Canvas tool setter. V / H / L cycle through select / pan /
-  // laser. Mirrors the in-canvas tool picker so a keyboard user
+  // Canvas tool setter. V / H / I switch between select / pan /
+  // isometric. Mirrors the in-canvas tool picker so a keyboard user
   // can switch tools without leaving home position. View-role
-  // visitors still get this (panning + lasering doesn't mutate
+  // visitors still get this (panning doesn't mutate
   // anything; selecting is harmless because the popover hides for
   // view-role).
   setCanvasTool: (t: CanvasTool) => void;
@@ -71,23 +69,13 @@ export type EditorKeyboardShortcutsDeps = {
   // persistent Format tool (back to Select) from either phase.
   canvasTool: CanvasTool;
   // Element-add callbacks. R / O / D / C / H / G fire addShape with the
-  // matching ShortcutShape; T / N / A fire the dedicated handlers; I opens
-  // the image picker. All five mirror their palette counterparts so
-  // the keyboard route reaches the same code path as the click route.
-  // onAddImage is nullable: pure-guest deploys without an api worker
-  // hide the palette button + null this prop, and the shortcut goes
-  // dormant to match.
+  // matching ShortcutShape; T / N / A fire the dedicated handlers. All
+  // mirror their palette counterparts so the keyboard route reaches the
+  // same code path as the click route.
   addShape: (kind: ShortcutShape) => void;
   addText: () => void;
   addSticky: () => void;
   addArrow: (ends?: import('@liveplanner/document').ArrowEnds) => void;
-  onAddImage: (() => void) | null;
-  // F enters the one-shot pencil (freehand) draw mode, mirroring the
-  // palette's Pencil button. Distinct from the element-add shortcuts
-  // above because the pencil is gestural (no element drops without a
-  // drag), but it lives next to them in the keyboard surface so the
-  // user reaches for the same row of letters for every tool.
-  onBeginFreehand: () => void;
   // Mind map (docs/specs/009-elements/mind-node.md): whether Tab / Enter should grow from this element,
   // and the grower itself. Asked per keystroke rather than held as a flag so
   // it can't go stale against the selection.
@@ -97,9 +85,6 @@ export type EditorKeyboardShortcutsDeps = {
   // removes it and selects its parent. False when that is not the case, so
   // Escape deselects as usual.
   onEscapeMindNode: (id: string) => boolean;
-  // S arms the shape pen — the same gesture as the pencil, but the stroke is
-  // run through shape recognition on release (docs/specs/008-canvas/two-pens.md).
-  onBeginShapePen: () => void;
   // Cmd/Ctrl+Shift+L: toggle lock on the current selection (single or
   // multi). On Shift+L rather than plain Cmd+L so it never fights the
   // browser's "focus the address bar" binding.
@@ -119,9 +104,6 @@ export type EditorKeyboardShortcutsDeps = {
   // Shift+1: fit all content on the active tab to the viewport. A pure
   // view action (allowed for view-role).
   onFitToScreen: () => void;
-  // Shift+D: move to the next editor mode (docs/specs/007-editor/editor-modes.md). Null where
-  // the mode switch is not offered (view role, Plan tabs).
-  onCycleEditorMode: (() => void) | null;
   // Escape with a live selection and no transient mode to cancel clears
   // the selection (single + multi). Mirrors clicking empty canvas.
   onDeselect: () => void;
@@ -138,9 +120,6 @@ export type EditorKeyboardShortcutsDeps = {
   // Shift) and which keys map to which axis; editor-page owns the
   // actual element transform + undo coalescing.
   onNudgeSelection: (dx: number, dy: number) => void;
-  // Pages mode (docs/specs/007-editor/pages-mode.md "Getting around the pages"): with nothing
-  // selected, an arrow goes to the next (1) or previous (-1) page; true when there was one.
-  onStepPage?: (dir: 1 | -1) => boolean;
   // Type-to-edit (docs/specs/008-canvas/canvas-and-palette.md Labels): a printable key on a single selected
   // element opens its label editor seeded with that character. Returns
   // true when it took over (so the listener swallows the key) and false
@@ -162,19 +141,6 @@ export type EditorKeyboardShortcutsDeps = {
   // Cmd/Ctrl+. opens the global search panel. Allowed for view-role
   // too (search only navigates, never mutates).
   onOpenSearch: () => void;
-  // On a whiteboard (docs/specs/023-draw-mode/draw-mode.md "Keyboard shortcuts"): the dock's tools,
-  // which then own the plain keys. Null on every other tab.
-  whiteboard: {
-    pickSelect: () => void;
-    pickPen: (id: WhiteboardPenId) => void;
-    pickEraser: () => void;
-    pickSticky: () => void;
-    pickText: () => void;
-    pickShape: (id: WhiteboardShapeId) => void;
-    pickPath: () => void;
-    // S: the Shapes flyout, opened as a hover opens it, its search field focused.
-    openShapes: () => void;
-  } | null;
   // Per-device disable flag. When false, every shortcut effect
   // below short-circuits before attaching its listener. The
   // checkbox lives in the keyboard-shortcuts modal; the storage
@@ -206,24 +172,12 @@ export const VIEW_TOOL_KEYS: Record<string, ShortcutAction> = {
   },
   '1': (l) => l.setCanvasTool('select'),
   h: (l) => l.setCanvasTool('pan'),
-  k: (l) => l.setCanvasTool('laser'),
   i: (l) => l.setCanvasTool('isometric'), // docs/specs/008-canvas/isometric-view.md: pans like Hand, non-mutating
-  // No key enters Avatar mode (docs/specs/008-canvas/avatar-mode.md "Where it lives"): a Selection Mode button on
-  // the board is its one way in. In the mode, W is the Wave (avatar-action-keys).
   z: (l) => l.onToggleZen(), // docs/specs/007-editor/zen-mode.md focus mode
 };
 
 export const EDIT_KEYS: Record<string, ShortcutAction> = {
-  e: (l) => l.setCanvasTool('eraser'),
-  '0': (l) => l.setCanvasTool('eraser'),
-  p: (l) => l.onBeginFreehand(), // Pencil (P is free now Hand owns H)
-  '7': (l) => l.onBeginFreehand(),
-  // Shape pen (docs/specs/008-canvas/two-pens.md): the same stroke as the pencil, recognised on
-  // release. A number rather than a letter because `s` is still the legacy
-  // Select alias, and 6 is the one gap in the numeric tool row — right beside
-  // the pencil's 7.
-  '6': (l) => l.onBeginShapePen(),
-  f: (l) => l.addShape('frame'), // Frame (was a pencil alias; P owns Pencil)
+  f: (l) => l.addShape('frame'),
   r: (l) => l.addShape('square'),
   '2': (l) => l.addShape('square'),
   o: (l) => l.addShape('circle'),
@@ -245,7 +199,6 @@ export const PARTICIPANT_KEYS: Record<string, ShortcutAction> = {
   n: (l) => l.addSticky(),
   t: (l) => l.addText(),
   '8': (l) => l.addText(),
-  '9': (l) => l.onAddImage?.(),
 };
 
 // Cmd / Ctrl modified shortcuts. Returns true when it consumed the event.
@@ -368,55 +321,8 @@ export function runModShortcut(e: KeyboardEvent, live: EditorKeyboardShortcutsDe
   return false;
 }
 
-// A whiteboard's plain keys (docs/specs/023-draw-mode/draw-mode.md "Keyboard shortcuts"): the dock's
-// tools, and only these. V is view-safe; the pens and the eraser mutate.
-export const WHITEBOARD_VIEW_KEYS: Record<string, ShortcutAction> = {
-  v: (l) => l.whiteboard?.pickSelect(),
-  h: (l) => l.setCanvasTool('pan'),
-  z: (l) => l.onToggleZen(),
-};
-
-export const WHITEBOARD_EDIT_KEYS: Record<string, ShortcutAction> = {
-  '1': (l) => l.whiteboard?.pickPen('main'),
-  '2': (l) => l.whiteboard?.pickPen('second'),
-  '3': (l) => l.whiteboard?.pickPen('third'),
-  // The Path tool (docs/specs/023-draw-mode/path-tool.md): P, which is the pencil on a diagram tab.
-  p: (l) => l.whiteboard?.pickPath(),
-  e: (l) => l.whiteboard?.pickEraser(),
-  n: (l) => l.whiteboard?.pickSticky(),
-  t: (l) => l.whiteboard?.pickText(),
-  // Shapes draw with the pen in hand, as the Shapes flyout does.
-  r: (l) => l.whiteboard?.pickShape('rectangle'),
-  o: (l) => l.whiteboard?.pickShape('ellipse'),
-  d: (l) => l.whiteboard?.pickShape('diamond'),
-  c: (l) => l.whiteboard?.pickShape('cylinder'),
-  l: (l) => l.whiteboard?.pickShape('line'),
-  a: (l) => l.whiteboard?.pickShape('arrow'),
-  // The Shapes flyout, its search focused: the next letters search at once.
-  s: (l) => l.whiteboard?.openShapes(),
-};
-
-// The key each whiteboard dock tool shows (and announces in aria-keyshortcuts).
-export const WHITEBOARD_TOOL_KEYS = {
-  select: 'V',
-  main: '1',
-  second: '2',
-  third: '3',
-  path: 'P',
-  eraser: 'E',
-  sticky: 'N',
-  text: 'T',
-  rectangle: 'R',
-  ellipse: 'O',
-  diamond: 'D',
-  cylinder: 'C',
-  line: 'L',
-  arrow: 'A',
-  shapes: 'S',
-} as const;
-
 // What a key does while a Plan board or view covers the canvas (docs/specs/026-plan/plan-board.md "Nothing under it
-// moves"): `run` leaves the canvas alone (undo, redo, search, zen, the mode switch, Escape) and is handled as usual;
+// moves"): `run` leaves the canvas alone (undo, redo, search, zen, Escape) and is handled as usual;
 // `swallow` is a canvas chord the browser would act on in its place (duplicate, select-all, lock, z-order, zoom), so it
 // is prevented and does nothing; `ignore` is every other key, left to the browser and the board (copy and cut of the
 // board's text included), never reaching the canvas.
@@ -443,6 +349,5 @@ export function coveredKeyRole(
   }
   if (e.key === 'Escape') return 'run';
   if (lower === 'z' && !e.shiftKey && !e.altKey) return 'run';
-  if (lower === 'd' && e.shiftKey && !e.altKey) return 'run';
   return 'ignore';
 }

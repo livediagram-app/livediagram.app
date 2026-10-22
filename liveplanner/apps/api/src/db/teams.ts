@@ -16,7 +16,6 @@ import type {
 } from '@liveplanner/api-schema';
 import type { Env } from '../types';
 import { getParticipant } from './participants';
-import { imageGrantOwnerChangeStatement } from './image-grants';
 
 // TEAM_COLS / JOINED_COUNT / TeamRow / rowToTeam are shared with the
 // invite machinery in team-invites.ts.
@@ -253,7 +252,7 @@ export async function updateTeamMemberRoleKeepingAdmin(
 /**
  * The member removed, unless that would leave the team no joined admin; whether it went. Every other
  * row the same user holds in that team goes with it, in the same batch and only once the guarded row
- * is gone, so a duplicate left over from before the unique (team_id, user_id) index (migration 0083)
+ * is gone, so a duplicate row (which the unique (team_id, user_id) index should already rule out)
  * cannot keep a removed person in the team.
  */
 export async function removeTeamMemberKeepingAdmin(
@@ -321,20 +320,9 @@ export async function listTeamAdminUserIds(env: Env, teamId: string): Promise<st
 // owned by somebody who has gone stays open to them. The folders go too, so
 // no team row is left owned by a departed (or deleted) account.
 async function moveTeamWork(env: Env, teamId: string, fromUserId: string, toUserId: string) {
-  // Their images in these documents keep serving once the documents are someone else's.
-  await env.DB.batch([
-    imageGrantOwnerChangeStatement(
-      env,
-      'd.owner_id = ?2 AND d.team_id = ?3',
-      [fromUserId, teamId],
-      Date.now(),
-    ),
-    env.DB.prepare('UPDATE documents SET owner_id = ? WHERE owner_id = ? AND team_id = ?').bind(
-      toUserId,
-      fromUserId,
-      teamId,
-    ),
-  ]);
+  await env.DB.prepare('UPDATE documents SET owner_id = ? WHERE owner_id = ? AND team_id = ?')
+    .bind(toUserId, fromUserId, teamId)
+    .run();
   await env.DB.prepare('UPDATE folders SET owner_id = ? WHERE owner_id = ? AND team_id = ?')
     .bind(toUserId, fromUserId, teamId)
     .run();

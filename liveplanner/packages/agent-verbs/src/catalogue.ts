@@ -23,17 +23,14 @@ import {
   telemetryOff,
   telemetryOn,
   exportAll,
-  graphRender,
   pull,
   push,
   tabRender,
   waitFor,
   watch,
 } from './verbs/local';
-import { iconSearch, schemaView, templateLs, templateView } from './verbs/catalogues';
-import { imageLs } from './verbs/image';
+import { schemaView, templateLs, templateView } from './verbs/catalogues';
 import { changesetApply, elementVerbs, tabDiff } from './verbs/edit';
-import { graphLintVerb } from './verbs/graph';
 import {
   documentCreate,
   documentRename,
@@ -49,7 +46,6 @@ import { itemVerbs } from './verbs/item';
 import { boardVerbs } from './verbs/board';
 import { cardTypeVerbs } from './verbs/card-type';
 import { sheetVerbs } from './verbs/sheet';
-import { pagesVerbs } from './verbs/pages';
 import { formVerbs } from './verbs/form';
 import { workbenchOpen, workbenchPair } from './verbs/workbench';
 import { folderCreate, folderLs } from './verbs/folder';
@@ -75,7 +71,6 @@ export const VERBS: readonly Verb[] = [
   ...boardVerbs,
   ...cardTypeVerbs,
   ...sheetVerbs,
-  ...pagesVerbs,
   ...formVerbs,
   changesetApply,
   changesetLs,
@@ -88,12 +83,8 @@ export const VERBS: readonly Verb[] = [
   commentReopen,
   presenceSet,
   presenceClear,
-  graphLintVerb,
-  graphRender,
   templateLs,
   templateView,
-  iconSearch,
-  imageLs,
   schemaView,
   guide,
   skillPrint,
@@ -128,20 +119,15 @@ export const RESOURCES: readonly { name: string; alias?: string; summary: string
   { name: 'board', summary: 'Plan boards: add one' },
   { name: 'type', summary: 'Card types and their fields' },
   { name: 'sheet', summary: 'Sheets: their cells by A1, rows and columns' },
-  { name: 'page', summary: 'Pages: slides, logos, infographics' },
-  { name: 'article', summary: 'Articles as Markdown' },
   { name: 'form', summary: 'Forms: build, read and publish one' },
   { name: 'changeset', summary: 'Changesets: what changed, by whom, and undoing one' },
   { name: 'comment', summary: 'Comment threads' },
   { name: 'presence', summary: 'What the agent is doing, shown on a tab' },
-  { name: 'graph', summary: 'Graph files: lint or draw one before writing it' },
   {
     name: 'workbench',
     summary: 'Workbenches: open a document in a developer tool, pair one',
   },
   { name: 'template', summary: 'Templates: the library, and one as an outline' },
-  { name: 'icon', summary: 'Icons: find one for iconId=' },
-  { name: 'image', summary: 'Images: the gallery imageId= takes' },
   { name: 'skill', summary: 'The agent skill file' },
   { name: 'auth', summary: 'Credentials' },
   { name: 'telemetry', summary: 'The usage count: on or off' },

@@ -16,11 +16,11 @@ import {
   CheckGlyph,
   DiscussGlyph,
   EmptyRows,
-  QA_ACCENT,
-  QA_ACCENT_INK,
+  COLLAB_ACCENT,
+  COLLAB_ACCENT_INK,
   ReopenGlyph,
   stopPointer,
-} from '@/components/canvas/collab/qa/qa-parts';
+} from '@/components/canvas/collab/collab-parts';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 
 // The face of a Comment panel (docs/specs/012-collaboration/comment-pin.md): a card on the canvas that carries a
@@ -38,7 +38,7 @@ import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 // a remark part of the document rather than a note somebody left.
 //
 // Built from the modern collab parts ("The look"): the accent scope, the
-// CollabPanel frame (reflowing, like the Q&A board: resizing makes room for
+// CollabPanel frame (reflowing: resizing makes room for
 // more of the thread, not bigger type), and the shared composer.
 
 // Same cap the api enforces on a comment (packages/document element-deltas).
@@ -148,7 +148,7 @@ export function CommentPanelFace({
 }
 
 // In the header's top-right slot: the thread's one other act, a small chip in
-// the accent (the Idea box's Anonymous badge's shape).
+// the accent.
 function ResolveChip({ onPress }: { onPress: () => void }) {
   const press = usePressWithoutDrag(onPress);
   return (
@@ -157,7 +157,7 @@ function ResolveChip({ onPress }: { onPress: () => void }) {
       {...press}
       {...stopPointer}
       className="pointer-events-auto inline-flex cursor-pointer items-center gap-1 rounded-full py-0.5 pl-1.5 pr-2 text-[10px] font-semibold transition hover:brightness-110"
-      style={{ color: QA_ACCENT_INK, backgroundColor: tint(QA_ACCENT, 0.14) }}
+      style={{ color: COLLAB_ACCENT_INK, backgroundColor: tint(COLLAB_ACCENT, 0.14) }}
     >
       <CheckGlyph size={10} />
       Resolve

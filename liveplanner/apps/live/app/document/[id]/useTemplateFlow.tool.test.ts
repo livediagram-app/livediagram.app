@@ -5,7 +5,7 @@ import type { Tab } from '@liveplanner/document';
 import type { TemplateKind } from '@liveplanner/templates';
 import { useTemplateFlow } from './useTemplateFlow';
 
-// docs/specs/023-draw-mode/draw-mode.md "Opening tool": a tab with content opens on Select. A template that lands
+// docs/specs/007-editor/editor-modes.md: a tab with content opens on Select. A template that lands
 // content makes the tab one, so the pen picked up for the empty tab is put down; Blank lands nothing and leaves it.
 
 async function pick(kind: TemplateKind): Promise<ReturnType<typeof vi.fn>> {

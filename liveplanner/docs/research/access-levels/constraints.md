@@ -57,24 +57,24 @@ Sources: [Team shared documents](../../specs/013-workspace/team-shared-documents
 
 ### What each link role can do today
 
-| Capability                                                           | Path                                                                            | view | edit |
-| -------------------------------------------------------------------- | ------------------------------------------------------------------------------- | ---- | ---- |
-| Open, read every admitted tab, pan, zoom, follow, be seen            | `gateRead`; presence ops                                                        | yes  | yes  |
-| Cursor, select, laser, avatar, reaction, viewport, Bring Focus       | presence ops (`PRESENCE_OP_KINDS`)                                              | yes  | yes  |
-| Answer a live poll                                                   | `poll-answer`, classed as **presence**                                          | yes  | yes  |
-| Add a comment (also how one replies), delete one's own               | REST, `gateRead`, author stamped server-side                                    | yes  | yes  |
-| Add to and upvote a Q&A board                                        | REST `POST .../qa`, `gateRead`; the room writes D1                              | yes  | yes  |
-| Resolve, reopen, delete others' comments                             | room `el-delta` or tab `PUT`                                                    | no   | yes  |
-| Dots, estimates, temperature checks, Done check, quiz answers, ideas | room `vote` / `el-delta` (mutation)                                             | no   | yes  |
-| Change elements, tabs, document                                      | room mutations, tab `PUT`                                                       | no   | yes  |
-| Run session tools, hold the facilitator baton                        | `canHold` is edit-only ([facilitator.ts](../../../apps/api/src/facilitator.ts)) | no   | yes  |
+| Capability                                                           | Path                                               | view | edit |
+| -------------------------------------------------------------------- | -------------------------------------------------- | ---- | ---- |
+| Open, read every admitted tab, pan, zoom, follow, be seen            | `gateRead`; presence ops                           | yes  | yes  |
+| Cursor, select, laser, avatar, reaction, viewport, Bring Focus       | presence ops (`PRESENCE_OP_KINDS`)                 | yes  | yes  |
+| Answer a live poll                                                   | `poll-answer`, classed as **presence**             | yes  | yes  |
+| Add a comment (also how one replies), delete one's own               | REST, `gateRead`, author stamped server-side       | yes  | yes  |
+| Add to and upvote a Q&A board                                        | REST `POST .../qa`, `gateRead`; the room writes D1 | yes  | yes  |
+| Resolve, reopen, delete others' comments                             | room `el-delta` or tab `PUT`                       | no   | yes  |
+| Dots, estimates, temperature checks, Done check, quiz answers, ideas | room `vote` / `el-delta` (mutation)                | no   | yes  |
+| Change elements, tabs, document                                      | room mutations, tab `PUT`                          | no   | yes  |
+| Run session tools, hold the facilitator baton                        | `canHold` is edit-only (facilitator.ts)            | no   | yes  |
 
 Sources: [room-messages.ts](../../../packages/api-schema/src/room-messages.ts) (op classes),
 [document-room.ts](../../../apps/api/src/document-room.ts) (`sender.role !== 'edit' && !isPresenceOp`),
 [API app](../../specs/015-api/api.md) (comment and Q&A rows),
 [Per-participant responses](../../specs/012-collaboration/participant-responses.md) ("Edit-role only"),
 [Session tools](../../specs/012-collaboration/session-tools.md) ("the facilitator and participants share an edit link"),
-[Quiz](../../specs/012-collaboration/quiz.md) ("View-role visitors cannot answer").
+Quiz ("View-role visitors cannot answer").
 
 The consequence: **a retrospective today needs an edit link for everybody who votes**, which is the
 problem a Participant level solves.
@@ -89,7 +89,7 @@ or opens a hole; "should" is a strong preference.
 - **C1. Bearer, not person.** Share links grant to whoever holds the code; holders are usually guests
   with no account ([Auth and guest access](../../specs/014-identity/auth-and-guest-access.md)). A level
   must live on the **link**, not on a person, and must work for guests. Per-person grants (Google
-  style) are impossible without accounts, and self-hosting without Clerk has none (C17).
+  style) are impossible without accounts, and a deployment without Clerk has none (C17).
 - **C2. Revocation is per link.** Removing one person from a level means revoking or rescoping the
   link. A level change on an existing link must end its live sessions, as revoke and rescope already
   do (`closeSessionsOfChangedLink`, `share-revoked`, `share-rescoped`), because a room session's role
@@ -145,7 +145,7 @@ or opens a hole; "should" is a strong preference.
 - **C12. The baton is edit-only and the owner bit is narrow.** `canHold` requires edit because
   "everything it governs writes to the document"; timers and vote rounds ride ordinary `tab` /
   `tab-meta` ops, which the room deliberately does not inspect
-  ([Facilitator](../../specs/012-collaboration/facilitator.md)). Granting facilitation to a non-editor
+  (Facilitator). Granting facilitation to a non-editor
   needs payload-level classification of those ops. Separately, the upgrade sets `X-Verified-Owner: 1`
   only on the bare-`o` path, which `isPersonalOwner` restricts to personal documents
   ([document-room-routes.ts](../../../apps/api/src/routes/document-room-routes.ts)); on a team
@@ -166,7 +166,7 @@ or opens a hole; "should" is a strong preference.
   pattern (REST endpoint writes D1, then relays the delta through `/mutation`) and the Q&A pattern
   (the room serialises writes and writes D1 itself with compare-and-swap). The worktree blueprint
   leaves this open (Open A5).
-- **C15. Poll answers are ephemeral by design** ([Live poll](../../specs/012-collaboration/live-poll.md));
+- **C15. Poll answers are ephemeral by design** (Live poll);
   they need no persistence path, only a role gate.
 
 ### API tokens and agents
@@ -187,11 +187,11 @@ or opens a hole; "should" is a strong preference.
   silently lose commenting; the default must be chosen deliberately, and MCP clients cache tool
   schemas, so an old schema may send `view` meaning the old thing.
 
-### Offline, self-hosting, telemetry
+### Offline, deployments without Clerk, telemetry
 
 - **C19. Offline documents have no server, no links, no room** ([Offline Mode](../../specs/006-document/offline-mode.md));
   their holder is always the owner. Level-derived editor flags must default to owner there.
-- **C20. Self-hosting without Clerk is guests only**: no teams, no tokens (a token's owner is always an
+- **C20. A deployment without Clerk is guests only**: no teams, no tokens (a token's owner is always an
   account). Every level must work through share links alone, and nothing may require an account.
 - **C21. Telemetry types are closed enum values.** `Document·Shared` (client, before the request) and
   `Document·Joined` (server, `link.role === 'edit' ? 'Edit' : 'View'` in
@@ -208,8 +208,8 @@ or opens a hole; "should" is a strong preference.
   Q&A (anything less is a loss). Gaining dots and answers is a widening that needs Webber's explicit
   consent (worktree Open A1).
 - **C23. The schema enforces two roles.** `share_links.role` and `shared_with.role` carry
-  `CHECK (role IN ('edit', 'view'))` ([0003](../../../apps/api/migrations/0003_share_links.sql),
-  [0010](../../../apps/api/migrations/0010_shared_with.sql)). SQLite cannot alter a CHECK in place; it
+  `CHECK (role IN ('edit', 'view'))` ([baseline migration](../../../apps/api/migrations/0001_liveplanner_baseline.sql)).
+  SQLite cannot alter a CHECK in place; it
   needs the table rebuild procedure ([SQLite: ALTER TABLE](https://www.sqlite.org/lang_altertable.html#otheralter)).
 - **C24. Old readers fail open.** During the deploy window the migration is applied just before the
   new api worker goes live ([Deployment](../../specs/016-platform/deployment.md)), so the old worker
@@ -282,7 +282,7 @@ ideas.
   "Commenter" undersells what the level does in a session: a retro participant does not think of a
   dot vote as a comment.
 - **Server gates.** `gateComment` beside `gateRead`/`gateEdit`; `minimumRoleForOp` with `poll-answer`,
-  `vote`, `response`, `idea` at comment; token classifier `requiredTokenRole`; migration 0067 rebuilds
+  `vote`, `response`, `idea` at comment; token classifier `requiredTokenRole`; a migration rebuilds
   two tables. All specified in the worktree blueprint.
 - **Risks.** The deploy window as drafted maps view to comment in the same deploy that introduces it,
   so the old `rowToShareLink` reads `comment` as edit (C24, worktree Open A7). C11 and C14 are not yet
@@ -332,7 +332,7 @@ ideas.
   which the room does not inspect (C12). A non-editor facilitator therefore needs payload-level
   classification of `tab-meta` (or new op kinds), plus REST Q&A running actions gated on the
   capability rather than `gateEdit`. Persistence of facilitator writes then joins C14.
-- **Risks.** Large room change for a case the [Facilitator](../../specs/012-collaboration/facilitator.md)
+- **Risks.** Large room change for a case the Facilitator
   spec explicitly scoped out ("who is driving, not who is allowed"). Worth keeping as a later layer
   over (2), not a prerequisite.
 

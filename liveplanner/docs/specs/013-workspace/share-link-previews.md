@@ -22,7 +22,7 @@ gave nobody a reason to tell them apart or click.
 | An unknown, revoked or expired code; a trashed document               | liveplanner         | The editor's pitch | The brand card         |
 | Any other editor address (`/document/<id>`, the Explorer, ...)        | liveplanner         | The editor's pitch | The brand card         |
 
-- **The share pitch** is `Open it in liveplanner: diagrams, whiteboards and documents, made together.`
+- **The share pitch** is `Open it in liveplanner: boards, sheets, dashboards and forms, planned together in real time.` (the site's `SITE_PITCH`)
 - **The editor's pitch** is the editor's own description, unchanged.
 - **The brand card** is the origin's shared Open Graph image (`/opengraph-image`, `/twitter-image`), the one the
   marketing site and the help centre use.
@@ -37,7 +37,7 @@ gave nobody a reason to tell them apart or click.
   first tab ([Live image share link](live-image-share.md)). The drawing is fitted inside the card with 48 px of margin, centred,
   never stretched or cropped, on the drawing's own background colour. A small drawing grows to
   at most twice its size, so a single box never reads as a blown-up blob.
-- **Nothing to draw** (an empty first tab, no image store on a self-host): the request is redirected (302) to the
+- **Nothing to draw** (an empty first tab, no image store on the deployment): the request is redirected (302) to the
   brand card, so the preview still has a picture.
 - **Withheld exactly where the live image is**: a password-protected document, an unknown, revoked or expired code
   and a trashed document answer 404, and the page names none of them.
@@ -57,7 +57,7 @@ The live app's worker fills in the shell's `<head>` for `/document/shared?s=<cod
 other row of the table above.
 
 - **The shell is fetched at the same time as the card**, so a visitor waits for whichever is slower, not both.
-- **The api has 1.5 s.** Slower, failing, or not bound at all (a self-host without the `API` service binding): the
+- **The api has 1.5 s.** Slower, failing, or not bound at all (a deployment without the `API` service binding): the
   shell goes out as built, with the brand card, and the editor works as before.
 - **The editor still sets its own title** once the document loads; the worker only decides what a crawler reads.
 

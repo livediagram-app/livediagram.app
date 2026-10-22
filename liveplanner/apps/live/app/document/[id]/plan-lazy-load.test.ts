@@ -26,14 +26,14 @@ describe('the editor’s first load', () => {
   });
 
   // docs/specs/007-editor/start-diagramming.md: the template starts carry every template's preview.
-  it('imports the template starts lazily, and nothing that draws a template preview', () => {
+  it('imports nothing that draws a template preview', () => {
     const imports = editorImports();
-    expect(imports).not.toContain('@/components/start/StartFromTemplates');
-    for (const always of [
-      'components/start/StartAgainTray.tsx',
-      'components/start/template-start-mode.ts',
-    ])
-      expect(staticImports(read(always))).not.toContain('@liveplanner/template-previews');
+    expect(imports).not.toContain('@liveplanner/template-previews');
+    expect(imports).not.toContain('@/components/start/template-card');
+    expect(imports).not.toContain('./template-card');
+    expect(staticImports(read('components/start/useTemplatePickMove.ts'))).not.toContain(
+      '@liveplanner/template-previews',
+    );
   });
 
   // docs/specs/013-workspace/default-folders.md "A template picked after creation": the mover reads the template
@@ -76,21 +76,7 @@ describe('the editor’s first load', () => {
     expect(imports).not.toContain('@/components/sheets/sheet-csv');
   });
 
-  // The page layouts and the template builders loaded with every editor until 2026-10-13
-  // (about 130 KiB compressed of the document page's first load): each came in through one small import.
-  it('loads the page layout builders only when a layout is applied', () => {
-    expect(staticImports(read('hooks/editor/page-edits.ts'))).not.toContain(
-      '@liveplanner/templates/page-layout-build',
-    );
-    expect(read('hooks/editor/page-edits.ts')).toContain(
-      "import('@liveplanner/templates/page-layout-build')",
-    );
-  });
-
-  it('keeps the template catalogue apart from the builders it names', () => {
-    const catalogue = staticImports(read('../../packages/templates/src/templates.ts'));
-    for (const heavy of ['./template-pages', './article-template', './blank-page-templates'])
-      expect(catalogue).not.toContain(heavy);
+  it('keeps the untitled name apart from the template catalogue', () => {
     // The untitled name is read on every load: it lives in its own leaf module.
     expect(staticImports(read('../../packages/templates/src/legacy-untitled.ts'))).toEqual([]);
   });

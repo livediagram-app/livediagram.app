@@ -56,7 +56,6 @@ const FIXED_SIGN: Partial<Record<DragMode, { sx: number; sy: number }>> = {
 // translation to apply to every member plus the guides to draw.
 export function resolveBoxedMove({
   elements,
-  pageSnapBoxes,
   startBounds,
   primaryId,
   dx,
@@ -72,9 +71,6 @@ export function resolveBoxedMove({
   // Cmd/Ctrl held: place freely — skip alignment + distribution snapping
   // and their guide lines for this gesture (docs/specs/008-canvas/snap-override.md).
   noSnap: boolean;
-  // Lines to snap to besides the elements' own (a page's edges and margins), as
-  // stand-in boxes: aligned to and guided by, never spaced against.
-  pageSnapBoxes?: Element[];
   // The user's alignment-guides preference (guides only; the snap still
   // applies when it's off).
   guidesOn: boolean;
@@ -93,8 +89,7 @@ export function resolveBoxedMove({
     width: primaryStart.width,
     height: primaryStart.height,
   };
-  const aligned = pageSnapBoxes?.length ? [...elements, ...pageSnapBoxes] : elements;
-  const snap = snapToAlignment(candidate, aligned, memberIds, ALIGN_SNAP_THRESHOLD);
+  const snap = snapToAlignment(candidate, elements, memberIds, ALIGN_SNAP_THRESHOLD);
   let snapDx = snap.dx;
   let snapDy = snap.dy;
   // Equal-spacing (distribution) snap fills the axes alignment didn't
@@ -121,7 +116,7 @@ export function resolveBoxedMove({
   const guides = guidesOn
     ? alignmentGuides(
         { ...candidate, x: candidate.x + snapDx, y: candidate.y + snapDy },
-        aligned,
+        elements,
         memberIds,
       )
     : [];
@@ -186,7 +181,6 @@ export function translateBoxedSelection(
 // resolve (no start bounds / no corner).
 export function resolveBoxedResize({
   elements,
-  pageSnapBoxes,
   startBounds,
   primaryId,
   mode,
@@ -213,11 +207,8 @@ export function resolveBoxedResize({
   // Cmd/Ctrl held: resize freely, with no edge / size snap and no guide lines
   // (docs/specs/008-canvas/snap-override.md).
   noSnap?: boolean;
-  // As resolveBoxedMove's: page lines to snap the resized edge to.
-  pageSnapBoxes?: Element[];
 }): { boundsById: Map<string, ShapeBounds>; guides: AlignmentGuide[] | null } | null {
   if (mode === 'move') return null;
-  const aligned = pageSnapBoxes?.length ? [...elements, ...pageSnapBoxes] : elements;
   const corner = cornerOf(mode);
   // Corner OR single edge — so edge resizes snap + dimension-match on
   // their axis (multi-member scaling below stays corner-only).
@@ -279,14 +270,14 @@ export function resolveBoxedResize({
               snapMode,
               leadingAxis(mode, dx, dy),
               (c, edge) =>
-                snapResizeBounds(c, edge, aligned, memberIds, ALIGN_SNAP_THRESHOLD, MIN_SIZE),
+                snapResizeBounds(c, edge, elements, memberIds, ALIGN_SNAP_THRESHOLD, MIN_SIZE),
               (minUniformScale(start) * start.width) / raw.width,
             )
-          : snapResizeBounds(raw, snapMode, aligned, memberIds, ALIGN_SNAP_THRESHOLD, MIN_SIZE);
+          : snapResizeBounds(raw, snapMode, elements, memberIds, ALIGN_SNAP_THRESHOLD, MIN_SIZE);
     // Guide off the snapped bounds (same rationale as move), so guides
     // only appear when an edge / centre genuinely lines up. Suppressed
     // when the user has turned alignment guides off.
-    const guides = guidesOn && !noSnap ? alignmentGuides(next, aligned, memberIds) : [];
+    const guides = guidesOn && !noSnap ? alignmentGuides(next, elements, memberIds) : [];
     return { boundsById: new Map([[primaryId, next]]), guides };
   }
 
@@ -319,7 +310,7 @@ export function resolveBoxedResize({
     if (!isBoxed(el)) continue;
     const start = startBounds.get(el.id);
     if (!start) continue;
-    // Fixed-size kinds (docs/specs/009-elements/mode-button.md) ride along with the union's MOVE but keep
+    // Fixed-size kinds (docs/specs/012-collaboration/session-button.md) ride along with the union's MOVE but keep
     // their own width / height, so scaling a selection can't quietly resize a
     // control that has no resize handles of its own.
     if (isFixedSizeElement(el)) {
@@ -345,7 +336,7 @@ function unionMinScale(elements: Element[], startBounds: ReadonlyMap<string, Sha
   return floor;
 }
 
-// How a resize frame's hugging text boxes are sized (docs/specs/023-draw-mode/draw-mode.md "Text
+// How a resize frame's hugging text boxes are sized (docs/specs/007-editor/editor-modes.md "Text
 // boxes"): the handle, whether the ratio is kept (Shift or the element's lock), and the DOM
 // measure. Given only for a single element; it applies to a text box that fits or wraps.
 type TextHugResize = {

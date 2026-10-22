@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createShape, type Element, type ShapeElement, type Tab } from '@liveplanner/document';
 import {
-  portalExitPoint,
   portalName,
   portalsOnTab,
   resolvePortalDestination,
@@ -20,7 +19,7 @@ describe('portalsOnTab', () => {
     const els: Element[] = [
       createShape('square', 0, 0),
       portal('a'),
-      createShape('mode-button', 0, 0),
+      createShape('session-button', 0, 0),
       portal('b'),
     ];
     expect(portalsOnTab(els).map((d) => d.id)).toEqual(['a', 'b']);
@@ -145,16 +144,6 @@ describe('resolvePortalDestination', () => {
         activeTabId: 't1',
       }),
     ).toBeNull();
-  });
-});
-
-describe('portalExitPoint', () => {
-  it('puts you centred in the portalway, on its threshold', () => {
-    // The avatar's position is its FEET, so the exit is the bottom edge.
-    expect(portalExitPoint({ x: 100, y: 200, width: 72, height: 112 })).toEqual({
-      x: 136,
-      y: 312,
-    });
   });
 });
 

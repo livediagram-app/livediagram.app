@@ -19,7 +19,7 @@ const withFolder = buildDefaultFolderIndex(
   [],
 );
 const without = buildDefaultFolderIndex([], {}, []);
-const defaults = new Map<PlacementDefaultKey, string>([['mode:draw', 'w']]);
+const defaults = new Map<PlacementDefaultKey, string>([['mode:plan', 'w']]);
 
 describe('default folder names', () => {
   it('remembers a visible default folder and keeps it once the folder is gone', () => {

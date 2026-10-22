@@ -11,8 +11,8 @@ import type { Env } from '../types';
 //   2. AI_REQUIRE_CLERK: when "true", the worker must reject the
 //      X-Owner-Id guest path with 401 sign_in_required.
 //
-// Both gates have safe defaults (unset = old open behaviour) so the OSS
-// self-host story stays intact. Each test sets OPENAI_API_KEY to a
+// Both gates have safe defaults (unset = old open behaviour) so an
+// unconfigured deployment keeps working. Each test sets OPENAI_API_KEY to a
 // non-empty stub so we never reach the ai_not_configured short-circuit
 // at the top of handleAi; the gates we care about run between that
 // check and the rate-limiter, and we assert they never proceed past
@@ -65,7 +65,7 @@ function makeCtx(opts: {
 }
 
 describe('handleAi origin allow-list (AI_ALLOWED_ORIGINS)', () => {
-  it('accepts requests when AI_ALLOWED_ORIGINS is unset (default OSS behaviour)', async () => {
+  it('accepts requests when AI_ALLOWED_ORIGINS is unset (the default)', async () => {
     const ctx = makeCtx({ env: {}, origin: 'https://random.example' });
     const res = await handleAi(ctx);
     expect(res.status).not.toBe(403);

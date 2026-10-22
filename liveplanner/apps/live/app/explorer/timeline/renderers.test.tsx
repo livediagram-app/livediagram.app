@@ -182,16 +182,4 @@ describe('team and account cards', () => {
     window.removeEventListener(OPEN_SETTINGS_EVENT, onOpen);
     expect(heard).toHaveBeenCalledWith('tokens');
   });
-
-  it('counts uploaded images in the subject', () => {
-    const r = render(
-      event({
-        sourceType: 'account',
-        eventType: 'image_uploaded',
-        title: 'Images Uploaded',
-        snapshot: { count: 3 },
-      }),
-    );
-    expect(r.subject).toBe('3 images');
-  });
 });

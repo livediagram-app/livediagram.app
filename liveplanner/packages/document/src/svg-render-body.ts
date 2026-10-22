@@ -43,7 +43,7 @@ import { svgSequencePicture } from './svg-render-sequence';
 import { isConceptShape } from './concept';
 import type { BoxedElement, ShapeKind } from './index';
 import { defaultTextColor, type CanvasSurface } from './colors';
-import type { ResolveEmojiArt, ResolveIconArt } from './svg-render-describe';
+import type { ResolveIconArt } from './svg-render-describe';
 
 /** The kinds whose body these emitters draw, rather than it being a box with a
  *  label. See the module comment: the PNG path reads this. */
@@ -84,16 +84,12 @@ export function svgElementBody(
     fill: string;
     /** The tab theme's categorical ramp, for the charts. */
     chartPalette?: readonly string[];
-    /** What a chart sits on, where a page's fill makes it matter (chartPageGrounds). */
-    chartGround?: readonly string[];
     /** The element's label text, for the faces that write their own title. */
     label: string;
     /** The paper under the element, for the faces whose base follows it. */
     surface?: CanvasSurface;
     /** Resolves an icon id to its art, for a card's media glyph. */
     resolveIconArt?: ResolveIconArt;
-    /** Resolves an emoji to its art, for a face that writes one (a reaction pad). */
-    resolveEmojiArt?: ResolveEmojiArt;
     // The tab's tag colours (docs/specs/009-elements/tag-colours.md), for a card's tinted tag chips.
     tagColours?: readonly TagColour[];
     /** The finish the element is drawn in (docs/specs/008-canvas/finish.md), for the faces that draw their own lines. */
@@ -101,15 +97,11 @@ export function svgElementBody(
   },
 ): string {
   if (el.type !== 'shape') return '';
-  const { labelColor, fontFamily, stroke, fill, chartPalette, chartGround, label } = o;
-  if (isPieShape(el.shape))
-    return svgPieChart(el, labelColor, chartPalette, fontFamily, chartGround);
-  if (isBarShape(el.shape))
-    return svgBarChart(el, labelColor, chartPalette, fontFamily, chartGround);
-  if (isLineShape(el.shape))
-    return svgLineChart(el, labelColor, chartPalette, fontFamily, chartGround);
-  if (isSankeyShape(el.shape))
-    return svgSankey(el, labelColor, chartPalette, fontFamily, chartGround);
+  const { labelColor, fontFamily, stroke, fill, chartPalette, label } = o;
+  if (isPieShape(el.shape)) return svgPieChart(el, labelColor, chartPalette, fontFamily);
+  if (isBarShape(el.shape)) return svgBarChart(el, labelColor, chartPalette, fontFamily);
+  if (isLineShape(el.shape)) return svgLineChart(el, labelColor, chartPalette, fontFamily);
+  if (isSankeyShape(el.shape)) return svgSankey(el, labelColor, chartPalette, fontFamily);
   // The empty track is the element's OWN fill, else the paper's default track,
   // the one the canvas's ProgressView draws (docs/specs/009-elements/progress.md).
   const track = progressTrackColour(el, o.surface);
@@ -164,11 +156,11 @@ export function svgElementBody(
     });
   if (el.shape === 'page')
     return svgPageMasthead(el, PADDING_PX[el.padding ?? defaultPadding(el)], fontFamily);
-  // The Behaviour + Collaborate faces (docs/specs/009-elements/mode-button.md to /137), which all exported
+  // The Behaviour + Collaborate faces (docs/specs/012-collaboration/session-button.md to /137), which all exported
   // as the same blank labelled box as each other.
   return svgFace(
-    svgBehaviourFace(el, label, labelColor, stroke, o.surface, o.fill, o.resolveEmojiArt) ??
-      svgCollabFace(el, label, labelColor, stroke, o.fill) ??
+    svgBehaviourFace(el, label, labelColor, stroke, o.surface, o.fill) ??
+      svgCollabFace(el, label, labelColor) ??
       '',
     fontFamily,
   );

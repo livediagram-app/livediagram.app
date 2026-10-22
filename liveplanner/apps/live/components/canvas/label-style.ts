@@ -70,7 +70,7 @@ export const MULTI_RUN_PX: Record<RunSize, number> = {
 
 // The base px a label is drawn at: a note's scale for a multi-line label, else the single-line
 // scale, where 'scale' is a middling fixed size (only a note fits its text to its box). A
-// Shift-resized text box multiplies it by its own scale (docs/specs/023-draw-mode/draw-mode.md).
+// Shift-resized text box multiplies it by its own scale (docs/specs/007-editor/editor-modes.md).
 // An exact size from the Size slider is its own px on either scale.
 export function labelBasePx(multiline: boolean, textSize: TextSize): number {
   return labelFontPx(textSize, multiline);
@@ -106,11 +106,6 @@ export type LabelTextStyle = {
   // label keeps the author's casing, and the live editor wears the same rule so typing
   // shows the label as it will read.
   uppercase?: boolean;
-  // Wordmark type (docs/specs/007-editor/logo-pages.md "Wordmark type"): shown in lower case,
-  // tracked (em between letters), and painted in its own weight over bold's.
-  lowercase?: boolean;
-  letterSpacing?: number;
-  weight?: number;
 };
 
 // Build the CSS payload for a LabelTextStyle. text-decoration combines
@@ -122,33 +117,10 @@ export function labelTextStyleCss(style: LabelTextStyle): React.CSSProperties {
   if (style.strikethrough) decorations.push('line-through');
   return {
     fontStyle: style.italic ? 'italic' : undefined,
-    fontWeight: style.weight ?? (style.bold ? 700 : undefined),
+    fontWeight: style.bold ? 700 : undefined,
     textDecoration: decorations.length > 0 ? decorations.join(' ') : undefined,
     fontFamily: style.fontFamily,
-    textTransform: style.uppercase ? 'uppercase' : style.lowercase ? 'lowercase' : undefined,
-    letterSpacing: style.letterSpacing ? `${style.letterSpacing}em` : undefined,
-  };
-}
-
-/** Only the CSS wordmark type adds (tracking, its own weight), for a surface that sets its own
- *  font, colour and case: never a key it would then override with undefined. */
-export function wordmarkTextCss(style: LabelTextStyle): React.CSSProperties {
-  return {
-    ...(style.letterSpacing ? { letterSpacing: `${style.letterSpacing}em` } : {}),
-    ...(style.weight ? { fontWeight: style.weight } : {}),
-  };
-}
-
-/** A text element's wordmark type as label style (docs/specs/007-editor/logo-pages.md "Wordmark
- *  type"); empty for every other element. The display label and the live editor both wear it, so
- *  editing never shifts the text. */
-export function wordmarkTextStyle(el: BoxedElement): LabelTextStyle {
-  if (el.type !== 'text') return {};
-  return {
-    ...(el.letterSpacing ? { letterSpacing: el.letterSpacing } : {}),
-    ...(el.fontWeight ? { weight: el.fontWeight } : {}),
-    ...(el.textCase === 'upper' ? { uppercase: true } : {}),
-    ...(el.textCase === 'lower' ? { lowercase: true } : {}),
+    textTransform: style.uppercase ? 'uppercase' : undefined,
   };
 }
 

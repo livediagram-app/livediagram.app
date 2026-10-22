@@ -18,11 +18,11 @@ Status: shipped
 4. **Try it** (`#prompts`): six starter prompts about planning (a launch board, notes into cards, a budget sheet, a feedback form, card types, catching up on a plan), each a card with a Copy button, each mapped to a shipped MCP tool.
 5. **What it can do**: a grid of the MCP's capabilities in plain words (boards and cards, card types and fields, sheets, forms, templates and tabs, find and read, share links, live changes in an open project with Undo).
 6. **In your control**: account needed (free), the approval page shows where access goes, Read-only access, revoke from Settings › Account › API Tokens, six-month tokens, liveplanner runs no AI model of its own.
-7. **If it doesn't connect**: the three failure lines from the help article (expired request, token limit, keeps asking to sign in) plus self-hosting (use your own MCP host), and a link to the full help article.
+7. **If it doesn't connect**: the three failure lines from the help article (expired request, token limit, keeps asking to sign in), and a link to the full help article.
 
 ## The clients
 
-`lib/ai-clients.ts` holds the clients as data: an `id` (the URL hash), a `name`, a `group`, a one-line `blurb`, and `steps`, each step a sentence with optional code (`{ lang, code }`) or a link button (`{ href, label }`). One address constant, `MCP_URL`, feeds every snippet: this deployment's MCP worker, read from `NEXT_PUBLIC_MCP_ORIGIN` through the resolver the live app's consent pages use (`resolveMcpOrigin`, `@liveplanner/api-schema`), so a self-hosted build shows its own address and the hosted one shows `https://mcp.liveplanner.app/mcp`.
+`lib/ai-clients.ts` holds the clients as data: an `id` (the URL hash), a `name`, a `group`, a one-line `blurb`, and `steps`, each step a sentence with optional code (`{ lang, code }`) or a link button (`{ href, label }`). One address constant, `MCP_URL`, feeds every snippet: this deployment's MCP worker, read from `NEXT_PUBLIC_MCP_ORIGIN` through the resolver the live app's consent pages use (`resolveMcpOrigin`, `@liveplanner/api-schema`), so a staging or local build shows its own address and the hosted one shows `https://mcp.liveplanner.app/mcp`.
 
 | id            | Name        | Group         | The way in                                                                                                                                                                                                       |
 | ------------- | ----------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

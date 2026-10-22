@@ -5,32 +5,27 @@ export const GUIDE_TOPIC_MAX_TOKENS = 1200;
 
 export const GUIDE_TOPICS = {
   build: {
-    summary: 'build a diagram from scratch',
-    text: `Build a diagram
+    summary: 'build a project from scratch',
+    text: `Build a project
 
-Write the structure, not the coordinates: a graph or Mermaid is laid out for you.
+Start from a Plan template, or empty, then add what the work needs:
 
-  liveplanner document create Shop -f arch.json   {"nodes": [...], "edges": [...], "direction": "right"}
-  liveplanner tab add Shop Flow -f flow.mmd       flowchart LR ...
+  liveplanner template ls                                  starting points for --template
+  liveplanner document create "Sprint 14" --template kanban
+  liveplanner board add "Sprint 14" --preset sprint        a Board tab
+  liveplanner sheet add "Sprint 14" --title Costs          a Sheet tab
+  liveplanner form add --starter rsvp --name "Summer Party"
 
-Or start empty and add with edit operations, each box placed beside the one it names:
+Cards are items on the project, shown on every board that takes their type:
 
-  liveplanner document create Shop
-  liveplanner edit Shop -f - <<'OPS'
-  add square id=web label="Web app"
-  add square id=api label=API right-of:web
-  connect web -> api
-  OPS
+  liveplanner type ls "Sprint 14"                          its card types and fields
+  liveplanner item add "Sprint 14" "Fix login" --type task --status todo
+  liveplanner item move "Sprint 14" "#12" done
 
-Look things up as you need them:
+Read what you made:
 
-  liveplanner schema code-block           a kind's fields and values
-  liveplanner template ls                 starting points for --template
-  liveplanner icon search database        an id for iconId=
-
-Check how it is drawn; each finding ends with a fix written as edit operations:
-
-  liveplanner tab lint Shop`,
+  liveplanner document view "Sprint 14"
+  liveplanner item ls "Sprint 14"`,
   },
   edit: {
     summary: 'change a tab with edit operations',

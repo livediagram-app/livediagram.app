@@ -10,17 +10,16 @@ import { documentRemovalStatements } from './document-removal';
 import { purgeRooms } from '../room-purge-client';
 import { detachUserFromTeams } from './teams';
 import { migrateTagStatements } from './tags';
-import { imageGrantOwnerChangeStatement } from './image-grants';
 import type { Env } from '../types';
 
 // R2 batch delete takes at most 1000 keys per call. An owner has no hard
 // cap on document count, so chunk the snapshot-key deletes to stay under
-// it (the image delete above relies on the per-owner gallery cap instead).
+// it.
 const R2_DELETE_CHUNK = 1000;
 
 // Wipe every row belonging to a given owner: every owner-keyed table in
-// docs/specs/015-api/api.md "Owner-keyed data", AND the R2 image bytes
-// (docs/specs/009-elements/images.md). account-owner-columns.test.ts holds
+// docs/specs/015-api/api.md "Owner-keyed data", AND the R2 snapshot objects
+// (docs/specs/006-document/document-snapshots.md). account-owner-columns.test.ts holds
 // both functions here to that list against the real schema. Called from
 // DELETE /api/account when the user opts in via the "Delete account"
 // dialog. The documents go through documentRemovalStatements, which drops
@@ -29,17 +28,15 @@ const R2_DELETE_CHUNK = 1000;
 // Folders carry their own owner_id and need their
 // own DELETE. Participants are owner-less in the schema but their id
 // IS the owner id, so a single id-match delete clears the display-
-// name / colour row too. Images carry owner_id on their D1 row and
-// the R2 object key matches the row id, so we enumerate before the
-// D1 wipe + bulk-delete from R2 + then drop the rows.
+// name / colour row too.
 //
-// Returns `{ documents, folders, images }` change counts for the
+// Returns `{ documents, folders }` change counts for the
 // caller's log line. Idempotent: re-running with the same owner id is a
 // no-op once the rows are gone.
 export async function deleteAccount(
   env: Env,
   ownerId: string,
-): Promise<{ documents: number; folders: number; images: number }> {
+): Promise<{ documents: number; folders: number }> {
   // Teams first (docs/specs/013-workspace/teams.md/35): transfer the user's team-library documents
   // to a remaining member, drop their memberships (promoting a new
   // admin when they were the last one), and delete teams they were the
@@ -47,35 +44,19 @@ export async function deleteAccount(
   // that wipe would otherwise destroy shared team work, and the dead
   // Clerk id would linger as a ghost (or sole-admin-blocking) member.
   await detachUserFromTeams(env, ownerId);
-  // R2 cleanup first. Enumerate the owner's image ids while the
-  // index row still exists, then delete each from R2. If R2 is
-  // unbound (self-host without R2), skip silently: the index rows
-  // come out via the DELETE FROM images below regardless. R2's
-  // batch delete takes up to 1000 keys per call which is well
-  // above any realistic per-owner gallery cap.
-  const imageRows = await env.DB.prepare('SELECT id FROM images WHERE owner_id = ?')
-    .bind(ownerId)
-    .all<{ id: string }>();
-  const imageIds = (imageRows.results ?? []).map((r) => r.id);
-  if (env.IMAGES && imageIds.length > 0) {
-    await env.IMAGES.delete(imageIds);
-  }
-  const imagesRes = await env.DB.prepare('DELETE FROM images WHERE owner_id = ?')
-    .bind(ownerId)
-    .run();
   // Document SVG snapshots (docs/specs/006-document/document-snapshots.md) live in R2 under thumb/<documentId>,
-  // keyed off the document id rather than carried on a D1 row, so — like
-  // the images above — the cascade can't reach them. Enumerate the
+  // keyed off the document id rather than carried on a D1 row, so the
+  // cascade can't reach them. Enumerate the
   // owner's document ids while the rows still exist, then bulk-delete
   // their snapshot objects before the documents DELETE drops the ids.
   const documentRows = await env.DB.prepare('SELECT id FROM documents WHERE owner_id = ?')
     .bind(ownerId)
     .all<{ id: string }>();
   const documentIds = (documentRows.results ?? []).map((r) => r.id);
-  if (env.IMAGES) {
+  if (env.SNAPSHOTS) {
     const thumbKeys = documentIds.flatMap(snapshotKeys);
     for (let i = 0; i < thumbKeys.length; i += R2_DELETE_CHUNK) {
-      await env.IMAGES.delete(thumbKeys.slice(i, i + R2_DELETE_CHUNK));
+      await env.SNAPSHOTS.delete(thumbKeys.slice(i, i + R2_DELETE_CHUNK));
     }
   }
   // Link-aware (docs/specs/006-document/tab-document-many-to-many.md): a tab
@@ -157,7 +138,6 @@ export async function deleteAccount(
   return {
     documents: documentsRes.meta.changes ?? 0,
     folders: foldersRes.meta.changes ?? 0,
-    images: imagesRes.meta.changes ?? 0,
   };
 }
 
@@ -166,8 +146,8 @@ export async function deleteAccount(
 // `toOwnerId`. Called
 // from POST /api/migrate when a guest signs up: their localStorage
 // participant id moves to their Clerk userId so the new account sees
-// the documents, folders, shared-with-them list, editor preferences,
-// AND uploaded images they built as a guest.
+// the documents, folders, shared-with-them list and editor preferences
+// they built as a guest.
 //
 // shared_with's primary key is (owner_id, document_id), so a naive
 // UPDATE could PK-collide if the visitor accepted the same share
@@ -179,41 +159,25 @@ export async function deleteAccount(
 // rows keep the role + last_seen they already had (which is the
 // more recent of the two paths the user actually used).
 //
-// images has a UNIQUE (owner_id, sha256) index that drives the
-// dedupe. UPDATE OR IGNORE skips rows whose sha256 already exists
-// on the Clerk side (the user uploaded the same bytes under both
-// identities). The skipped guest row stays at fromOwnerId, so a
-// formerly-guest document (now Clerk-owned) no longer serves it by
-// ownership. Before the documents move, every guest image those
-// documents place is granted to them, in the same batch
-// (docs/specs/009-elements/images.md "Placement grants"), so the
-// canvas keeps rendering the dedupe loser. Only the gallery list
-// filters by owner_id, so the dedupe loser stops showing up there,
-// which is the right outcome (the Clerk twin is identical bytes anyway).
-//
 // Other tables (`share_links`, `tabs`) don't carry
 // their own owner_id, they link via `document_id` which is
 // owner-bound, so updating the documents cascade-fixes them
 // implicitly.
 //
-// Returns `{ documents, folders, shared, images }`. Idempotent:
+// Returns `{ documents, folders, shared }`. Idempotent:
 // re-running with the same `fromOwnerId` is a no-op once the rows
 // have moved.
 export async function migrateOwnerId(
   env: Env,
   fromOwnerId: string,
   toOwnerId: string,
-): Promise<{ documents: number; folders: number; shared: number; images: number }> {
+): Promise<{ documents: number; folders: number; shared: number }> {
   // One batch: one round trip, and all or nothing, where it was a round trip per statement and a failure
   // part-way left a half-moved account. No foreign key reads an owner column, so only each table's own order
-  // matters, and the batch keeps it: the grant before the documents move (it joins the guest's documents),
-  // each INSERT OR IGNORE copy before its DELETE.
+  // matters, and the batch keeps it: each INSERT OR IGNORE copy before its DELETE.
   const now = Date.now();
   const move = (sql: string, ...binds: unknown[]) => env.DB.prepare(sql).bind(...binds);
   const statements = {
-    // The grant first, while the guest still owns the documents: an image left on the guest id by the
-    // dedupe below keeps serving in them.
-    grant: imageGrantOwnerChangeStatement(env, 'd.owner_id = ?2', [fromOwnerId], now),
     documents: move('UPDATE documents SET owner_id = ? WHERE owner_id = ?', toOwnerId, fromOwnerId),
     folders: move('UPDATE folders SET owner_id = ? WHERE owner_id = ?', toOwnerId, fromOwnerId),
     // tab_id carried too: a tab-scoped visit (docs/specs/013-workspace/tab-scoped-share-links.md) stays
@@ -306,16 +270,6 @@ export async function migrateOwnerId(
       fromOwnerId,
     ),
     participantDrop: move('DELETE FROM participants WHERE id = ?', fromOwnerId),
-    // images (docs/specs/009-elements/images.md). UPDATE OR IGNORE walks the unique (owner_id,
-    // sha256) collision case (same bytes on both identities) and
-    // leaves those guest rows in place; the grants written with the
-    // documents move above keep them served by every formerly-guest
-    // document that places them.
-    images: move(
-      'UPDATE OR IGNORE images SET owner_id = ? WHERE owner_id = ?',
-      toOwnerId,
-      fromOwnerId,
-    ),
     // custom_themes (docs/specs/011-theme/custom-themes.md): move the guest's saved themes onto the
     // authed identity so the documents that reference them keep their look
     // after sign-up. Plain UPDATE — the id is the PK (no per-owner unique
@@ -337,11 +291,8 @@ export async function migrateOwnerId(
   const results = await env.DB.batch(keys.map((key) => statements[key]));
   const changes = (key: keyof typeof statements) => results[keys.indexOf(key)]?.meta.changes ?? 0;
   // timeline (docs/specs/013-workspace/timeline.md §9): a week of drawing as a guest is history
-  // worth keeping, so the feed, the authored events, and the
-  // scope-state row all follow the user to their new account. The
-  // scope-state row matters as much as the events: without it the
-  // backfill would run again against the Clerk id and re-seed what
-  // just migrated.
+  // worth keeping, so the memberships, the authored events, and the
+  // scope-state row (Home's unread mark) all follow the user to their new account.
   await migrateTimelineOwner(env, fromOwnerId, toOwnerId);
   // Activity (docs/specs/013-workspace/inbox.md §2.2): the ids INSIDE the tab blobs (comment
   // authors, self-assigned actions) are not rewritten, so the old
@@ -356,6 +307,5 @@ export async function migrateOwnerId(
     documents: changes('documents'),
     folders: changes('folders'),
     shared: changes('shared'),
-    images: changes('images'),
   };
 }

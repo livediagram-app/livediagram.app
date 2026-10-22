@@ -111,7 +111,7 @@ function readSpaceValue(raw: string, context: LensContext): ValueReading {
 function readValue(dimension: LensDimension, raw: string, context: LensContext): ValueReading {
   if (raw === '') return problem('missing_value', dimension, null);
   if (dimension === 'space') return readSpaceValue(raw, context);
-  // A link shared before a mode's rename says `opens-in:facilitate`: read it as today's mode.
+  // A link shared before Plan was the only mode says `opens-in:draw`: read it as Plan.
   const lower = raw.toLowerCase();
   const value = dimension === 'opens-in' ? (parseEditorMode(lower) ?? lower) : lower;
   if (inOrder<string>(FIXED_VALUES[dimension], [value]).length === 0) {

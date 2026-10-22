@@ -1960,9 +1960,6 @@ importers:
       next:
         specifier: ^16.4.1
         version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
-      polygon-clipping:
-        specifier: 0.15.7
-        version: 0.15.7
       prosemirror-commands:
         specifier: ^1.7.2
         version: 1.7.2

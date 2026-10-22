@@ -15,7 +15,7 @@ which fixes what that tab is. A general tab is worked on in one of two
 | **tab kind**    | What a tab is for (`TabKind`, `packages/document/src/tab-kind.ts`).                              |
 | **diagram**     | The general tab kind: every element type, worked on in Diagram or Draw mode.                     |
 | **editor mode** | How a general tab is worked on: Diagram or Draw ([Editor modes](../007-editor/editor-modes.md)). |
-| **whiteboard**  | The activity of Draw mode ([Draw mode](../023-draw-mode/draw-mode.md)); not a tab kind.          |
+| **whiteboard**  | The activity of Draw mode ([Editor modes](../007-editor/editor-modes.md)); not a tab kind.       |
 
 - As a term, "diagram" names the tab kind, never the container. Prose may still say diagram
   where the text is about drawing ([Choosing the word in prose](#choosing-the-word-in-prose)).
@@ -54,12 +54,10 @@ The container was called a diagram until the domain language settled on document
 that named it moved in one change:
 
 - **Code:** identifiers, files and packages (`@liveplanner/document`, `apps/live/app/document/[id]`).
-- **Database:** migration `0055_documents.sql` renames `diagrams` → `documents`, `diagram_tabs` →
-  `document_tabs` and every `diagram_id` → `document_id`, keeps every foreign key and index, and
-  rewrites the stored values that named the container: timeline source, scope and event types,
-  titles and snapshot keys; element links to another document; the `notifyDiagramJoin`
-  preference; and the telemetry history, so the dashboard's lines continue. The tab kind
-  `'diagram'` and anything naming a drawing (`ErDiagram`) are left alone.
+- **Database:** the tables are `documents` and `document_tabs`, every foreign key is
+  `document_id`, and the stored values that name the container (timeline source, scope and event
+  types, titles and snapshot keys, the `notifyDocumentJoin` preference, telemetry types) use
+  document. The tab kind `'diagram'` and anything naming a drawing (`ErDiagram`) are left alone.
 - **Realtime:** the Durable Object class `DiagramRoom` is renamed to `DocumentRoom` by a
   `renamed_classes` migration (tag `v2`), which keeps every room's storage; the room ops are
   `document-meta` and `document-trashed`.
@@ -69,13 +67,8 @@ that named it moved in one change:
   store on the next visit), and stored names: a document still called "Untitled diagram" counts as
   untitled, exactly as "Untitled document" does.
 - **Addresses people already have** keep working: `/diagram/<id>` and six help articles redirect
-  for good ([Router app](../016-platform/router-app.md#legacy-editor-route)); the public API's
-  `/api/diagrams…` routes and the MCP `*_diagram` tools stay as deprecated aliases until 30 April
-  2027 ([Public API and API tokens §3.8](../015-api/public-api-and-tokens.md#38-deprecated-diagram-routes),
-  [MCP server §4.18](../015-api/mcp-server.md#418-deprecated-tool-names)).
-- **An editor left open across the deploy** runs the old code, which has no hook to reload it: it
-  keeps saving and connecting through the aliases, but stops seeing live name and tab-list
-  changes from others until it reloads.
+  for good ([Router app](../016-platform/router-app.md#legacy-editor-route)). liveplanner keeps no
+  `/api/diagrams…` routes and no MCP `*_diagram` tools: it has no clients from before the rename.
 
 Files that hold the old names on purpose are named `legacy-*`.
 <!-- /legacy-names -->

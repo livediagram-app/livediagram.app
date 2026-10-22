@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import {
   createAnnotation,
   createFreehand,
-  createPath,
   createShape,
   createSticky,
   createText,
@@ -79,16 +78,6 @@ describe('elementAriaLabel', () => {
   });
 });
 
-describe('a path (docs/specs/023-draw-mode/path-tool.md "Accessibility")', () => {
-  const corner = (x: number, y: number) => ({ x, y, mode: 'corner' as const });
-  it('is named by its points, open or closed', () => {
-    const open = createPath([corner(0, 0), corner(10, 0), corner(10, 10)], false);
-    expect(kindLabel(open)).toBe('Path');
-    expect(elementAriaLabel(open)).toBe('Path, 3 points');
-    expect(elementAriaLabel({ ...open, closed: true })).toBe('Closed path, 3 points');
-  });
-});
-
 describe('a chart', () => {
   it('is named by its chart type, as the palette names it', () => {
     expect(kindLabel(createShape('bar-chart', 0, 0))).toBe('Column chart');
@@ -154,7 +143,6 @@ describe('a session button’s kind', () => {
         ...(session ? { session } : {}),
       }) as Element;
     expect(kindLabel(button())).toBe('Timer');
-    expect(kindLabel(button({ tool: 'poll', question: 'Q' }))).toBe('Poll');
     expect(kindLabel(button({ tool: 'vote', dots: 3 }))).toBe('Dot vote');
     expect(kindLabel(button({ tool: 'stopwatch' }))).toBe('Stopwatch');
   });
@@ -179,14 +167,7 @@ describe('elementRole', () => {
   });
 
   it('makes an element with controls on its face a group', () => {
-    for (const kind of [
-      'session-button',
-      'checklist',
-      'qa-board',
-      'agenda',
-      'quiz',
-      'reaction-pad',
-    ])
+    for (const kind of ['session-button', 'checklist', 'temperature', 'picker', 'decision'])
       expect(elementRole(shape(kind))).toBe('group');
     expect(
       elementRole({

@@ -62,7 +62,6 @@ presence, CSV, telemetry and help. The model and pure behaviour are the engine's
 label: 'Sheet', group: 5 (the band headed "Spreadsheets" in `PaletteTabBar.tsx`), description: 'A spreadsheet tab: cells, formulas, formatting, sort and filter,
 worked on like a board.', icon: <SheetArt size={18} /> }` after `plan-visualisations`.
 - `palette-layouts.ts`: the Plan layout's categories add `{ id: 'plan-sheets' }` after Visualisations.
-- `whiteboard-shape-catalogue.ts` `EXCLUDED_CATEGORIES` adds it.
 - `components/palette/palette-plan-sheet-tiles.tsx`: `PLAN_SHEET_TILES = [{ id: 'plan:sheet', section:
 'plan-sheets', label: 'Add Sheet', caption: 'Sheet', ..., action: { type: 'shape', kind: 'plan-sheet' }, icon: <SheetArt size={18} /> }]`,
   spread into `PLAN_TILES`. `SheetArt` (`components/sheets/sheet-art.tsx`, main bundle) is a small grid with a
@@ -214,10 +213,10 @@ shares with DiagramBuildAnimation) and `packages/ui/src/LoadingSweep.tsx` (the p
 
 ### Input by mode
 
-- `interactive = plan.planInput` (Plan mode) as boards; `canEdit` from the bridge. Not interactive: the grid's
-  `pointer-events: none`, so the element moves and selects as any, and a double-click offers nothing (a Sheet goes
-  only on a tab in Plan: [Sheet](../sheet.md#only-in-plan)).
-- In Plan mode the header drags the element (as the board header); the grid takes pointer and wheel (wheel
+- `interactive` while a Plan context is provided (every tab, [Sheet](../sheet.md#only-in-plan)), as boards; `canEdit`
+  from the bridge. Not interactive (no Plan context, as in a preview): the grid's `pointer-events: none`, so the element
+  moves and selects as any, and a double-click offers nothing.
+- The header drags the element (as the board header); the grid takes pointer and wheel (wheel
   `stopPropagation` while the grid can scroll that way, else the canvas pans).
 
 ### Keyboard and focus

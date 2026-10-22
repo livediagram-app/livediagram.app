@@ -77,7 +77,7 @@ describe('canvas gesture store', () => {
   });
 
   it('names the gestures that change elements every frame', () => {
-    expect([...ELEMENT_GESTURES].sort()).toEqual(['erase', 'move', 'reshape', 'resize', 'stroke']);
+    expect([...ELEMENT_GESTURES].sort()).toEqual(['move', 'reshape', 'resize', 'stroke']);
   });
 
   it('counts move, resize and reshape as the selection moving', () => {

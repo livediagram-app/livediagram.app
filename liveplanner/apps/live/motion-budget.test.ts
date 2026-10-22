@@ -8,8 +8,8 @@ import { checkMotionBudget, formatViolations } from '@liveplanner/tailwind-confi
 // stylesheets listed here, which the guard does not read.
 const CANVAS_STYLESHEETS = [
   'app/canvas-motion.css',
-  'app/qa-board.css',
-  // A slide's animated backgrounds (docs/specs/007-editor/pages-mode.md "Animated backgrounds").
+  'app/collab-cards.css',
+  // A form cover's animated backgrounds (docs/specs/030-forms/forms.md "The form card, top to bottom").
   'app/motion-page.css',
   // The account and connect pages' entrance and lines (docs/specs/014-identity/auth-and-guest-access.md).
   'app/auth-motion.css',

@@ -2,6 +2,7 @@
   "name": "@liveplanner/live",
   "version": "0.0.0",
   "private": true,
+  "license": "UNLICENSED",
   "type": "module",
   "scripts": {
     "dev": "node ../../scripts/next-dev.mjs --port 3102",
@@ -40,7 +41,6 @@
     "@liveplanner/templates": "workspace:*",
     "@liveplanner/ui": "workspace:*",
     "next": "^16.4.1",
-    "polygon-clipping": "0.15.7",
     "prosemirror-commands": "^1.7.2",
     "prosemirror-gapcursor": "^1.4.1",
     "prosemirror-inputrules": "^1.5.1",

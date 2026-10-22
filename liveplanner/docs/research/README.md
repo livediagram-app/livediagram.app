@@ -4,18 +4,6 @@ Follow the references below only as needed; never upfront.
 
 Research holds dated measurements and experiment reports. They record what was measured and decided at the time; the specs state what the product does now.
 
-## Migration
-
-How boards from Google Drive, Miro and Microsoft Whiteboard can come into liveplanner: verified platform facts, costs and the decisions taken. The resulting specs live in docs/specs/020-import-export/.
-
-- ./migration-readiness.md - when designing a Miro or Whiteboard import: sourced findings, cost model
-
-## Pen input
-
-How a freehand stroke is smoothed live, so the line seen mid-stroke is the line that lands.
-
-- ./stroke-smoothing.md - when revisiting how the whiteboard pen smooths ink: techniques, measurements, the decision
-
 ## Canvas performance
 
 Where a large board spends its time during pan, zoom, drag, marquee and pen strokes.

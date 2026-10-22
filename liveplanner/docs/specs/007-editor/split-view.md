@@ -29,7 +29,7 @@ from browsers and code editors: drag the tab to where you want it.
 - **No quick style panel.** The [quick style panel](../008-canvas/quick-style-panel.md) stands down
   while a split shows: half a window has no room for it beside the selection. Every style stays in
   the element's menu.
-- **Steps aside, is kept.** Zen mode, embeds and presenting hide the split; leaving them brings it
+- **Steps aside, is kept.** Zen mode and embeds hide the split; leaving them brings it
   back. A window that becomes too narrow hides it the same way.
 - **Per browser.** The split is remembered on this device, per document. It is not shared with
   collaborators and not part of the document.
@@ -81,8 +81,7 @@ reads **Close Side by Side**.
 
 - **Body:** the tab drawn with the export renderer, in the viewer's appearance, with the document's
   Plan items and the tab's photos, on the tab's own paper and pattern (in the mode it opens in
-  here), laid out in canvas space exactly as the editor lays it out. A Pages tab is its pages, each
-  as its page export draws it (its sheet, background and writing) where it lies, and a Form tab is
+  here), laid out in canvas space exactly as the editor lays it out. A Form tab is
   its form as respondents see it, as a [tab window](../009-elements/tab-window.md) draws them. On
   opening it is fitted to the pane (never enlarged past 125%) and stays fitted as the tab grows until
   the person moves it.

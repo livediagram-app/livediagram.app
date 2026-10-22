@@ -3,11 +3,10 @@
 import diagram from './diagram.mjs';
 import workshop from './workshop.mjs';
 import forms from './forms.mjs';
-import pages from './pages.mjs';
 import plan from './plan.mjs';
 import sheets from './sheets.mjs';
 
-const AREAS = { diagram, plan, sheets, pages, workshop, forms };
+const AREAS = { diagram, plan, sheets, workshop, forms };
 
 export const TASKS = Object.entries(AREAS).flatMap(([area, tasks]) =>
   tasks.map((t) => ({ ...t, area })),

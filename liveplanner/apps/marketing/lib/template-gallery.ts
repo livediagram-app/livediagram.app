@@ -1,14 +1,12 @@
-import type { EditorMode } from '@liveplanner/document';
 import { seededRandom } from '@liveplanner/document';
 import {
-  BLANK_TEMPLATE_FOR_MODE,
-  EXTRA_BLANK_TEMPLATES,
+  BLANK_TEMPLATES,
   TEMPLATES,
   TEMPLATE_CATEGORIES,
   isBlankTemplate,
+  isPlanTemplate,
   templateCategories,
   templateCategoryLabel,
-  templateEditorMode,
   templateMatchesQuery,
   templateQueryWords,
   type TemplateCategory,
@@ -28,8 +26,6 @@ export type GalleryTemplate = TemplateDescriptor & {
   category: TemplateCategory | null;
   categories: readonly TemplateCategory[];
   categoryLabel: string;
-  // The editor mode the template opens in (docs/specs/007-editor/templates-by-mode.md).
-  mode: EditorMode;
 };
 
 // The open shelf: Blank Slate (its id `popular`, the shelf it replaced), or a category.
@@ -49,15 +45,11 @@ export function toGallery(t: TemplateDescriptor): GalleryTemplate {
     category,
     categories,
     categoryLabel: category ? templateCategoryLabel(category) : '',
-    mode: templateEditorMode(t.kind),
   };
 }
 
-// liveplanner is Plan mode alone (docs/specs/019-marketing/marketing-site.md "Template gallery"): the
-// catalogue still carries other modes' templates, so the gallery lists only those that open in Plan
-// (boards, sheets, forms and dashboards), by the catalogue's own mode for each kind.
-export const isPlanTemplate = (kind: TemplateDescriptor['kind']): boolean =>
-  templateEditorMode(kind) === 'plan';
+// The gallery lists only the templates Plan offers (docs/specs/019-marketing/marketing-site.md "Template gallery":
+// boards, sheets and forms; isPlanTemplate); the catalogue's other templates are never offered.
 
 // Every listed Plan template on a category shelf: hidden templates never appear in a listing, and the
 // blanks are only ever on Blank Slate, never on a category shelf
@@ -69,10 +61,7 @@ export function galleryTemplates(): GalleryTemplate[] {
 }
 
 // Blank Slate's blanks: Blank Plan, then the Plan blanks beside it (Blank Spreadsheet, Blank Form).
-const BLANK_SLATE_KINDS = [
-  BLANK_TEMPLATE_FOR_MODE.plan,
-  ...EXTRA_BLANK_TEMPLATES.filter(isPlanTemplate),
-];
+const BLANK_SLATE_KINDS = BLANK_TEMPLATES.filter(isPlanTemplate);
 
 // Blank Slate: every Plan blank and nothing else, in its fixed order.
 export function popularTemplates(): GalleryTemplate[] {

@@ -34,7 +34,6 @@ function planWith(items: Item[], over: Partial<PlanContextValue> = {}): PlanCont
     items: new Map(items.map((i) => [i.id, i])),
     types: ITEM_TYPES.map((t) => (t.id === 'task' ? { ...t, fields: [...t.fields, 'start'] } : t)),
     status: 'ready',
-    planInput: true,
     canEdit: true,
     canEditCards: true,
     openItem: vi.fn(),
@@ -160,9 +159,9 @@ describe('moving a card on the Due Calendar', () => {
     expect(plan.patchItem).not.toHaveBeenCalled();
   });
 
-  it('never lets a Viewer, or a view not taking input, move a card', () => {
+  it('never lets a Viewer move a card', () => {
     const card = item({ title: 'Ship it', due: '2026-10-05' });
-    for (const over of [{ canEditCards: false }, { planInput: false }]) {
+    for (const over of [{ canEditCards: false }]) {
       const plan = planWith([card], over);
       draw('calendar', plan);
       const el = entry(/Ship it/);

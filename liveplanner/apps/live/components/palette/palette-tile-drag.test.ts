@@ -41,8 +41,8 @@ describe('tileDragStart', () => {
   });
 
   it('carries a shape’s creation-time choice alongside its kind', () => {
-    const { data } = drag({ type: 'shape', kind: 'session-button', session: 'poll' });
-    expect(data.get(PALETTE_DND_MIME)).toBe('session-button|poll');
+    const { data } = drag({ type: 'shape', kind: 'session-button', session: 'vote' });
+    expect(data.get(PALETTE_DND_MIME)).toBe('session-button|vote');
   });
 
   it('carries a sticky note', () => {
@@ -66,7 +66,7 @@ describe('tileDragStart', () => {
   });
 
   it('offers no drag for tools that arm a gesture rather than place an element', () => {
-    for (const type of ['text', 'freehand', 'shape-pen', 'polygon', 'arrow'] as const) {
+    for (const type of ['text', 'polygon', 'arrow'] as const) {
       expect(tileDragStart({ type })).toBeUndefined();
     }
   });

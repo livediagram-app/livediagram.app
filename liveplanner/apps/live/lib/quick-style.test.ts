@@ -1,7 +1,6 @@
 import {
   ARROW_THICKNESS_PX,
   THEMES,
-  createPath,
   quickSwatchColor,
   type ArrowElement,
   type Element,
@@ -68,7 +67,7 @@ describe('quickStyleView: which sections show', () => {
   });
 
   it('offers no text alignment on a kind with its own face, but keeps it on a web component', () => {
-    for (const kind of ['qa-board', 'agenda', 'session-button', 'comment-pin'] as const) {
+    for (const kind of ['temperature', 'decision', 'session-button', 'comment-pin'] as const) {
       expect(sections([shape('a', { shape: kind })]), kind).not.toContain('textAlign');
     }
     expect(sections([shape('a', { shape: 'banner' })])).toContain('textAlign');
@@ -395,56 +394,6 @@ describe('Text colour: text elements', () => {
   });
 });
 
-describe('a path (docs/specs/023-draw-mode/path-tool.md "Style")', () => {
-  const open = createPath(
-    [
-      { x: 0, y: 0, mode: 'corner' },
-      { x: 40, y: 0, mode: 'corner' },
-      { x: 40, y: 40, mode: 'corner' },
-    ],
-    false,
-  );
-  const closed = { ...open, id: 'closed', closed: true };
-
-  it('styles its line, and its fill only when closed', () => {
-    expect(sections([open])).toEqual(['stroke', 'width', 'style']);
-    expect(sections([closed])).toEqual(['stroke', 'background', 'width', 'style']);
-    expect(quickStyleView([open], forest)!.sections.style!.options).toEqual([
-      'solid',
-      'dashed',
-      'dotted',
-    ]);
-  });
-
-  it('writes stroke, width and style, and a fill on a closed path only', () => {
-    expect(applyQuickWidth(open, 'thick')).toMatchObject({ strokeWidth: 'thick' });
-    expect(applyQuickStrokeStyle(open, 'dotted')).toMatchObject({ strokeStyle: 'dotted' });
-    expect(applyQuickStroke(open, forest, 2)).toMatchObject({
-      strokeColor: quickSwatchColor(forest, 'stroke', 2),
-      strokeSwatch: 2,
-    });
-    expect(applyQuickFill(open, forest, 2)).toBe(open);
-    expect(applyQuickFill(closed, forest, 2)).toMatchObject({ fillSwatch: 2 });
-  });
-
-  it('clears back to plain ink', () => {
-    const styled = {
-      ...closed,
-      strokeColor: '#f00',
-      fillColor: '#0f0',
-      strokeWidth: 'thick' as const,
-    };
-    const cleared = clearQuickStyle(styled, { ...forest, elementStroke: null, elementFill: null });
-    expect(cleared).not.toHaveProperty('strokeColor');
-    expect(cleared).not.toHaveProperty('fillColor');
-    expect(cleared).not.toHaveProperty('strokeWidth');
-  });
-
-  it('is left alone when locked', () => {
-    expect(quickStyleView([{ ...open, locked: true }], forest)).toBeNull();
-  });
-});
-
 // docs/specs/008-canvas/quick-style-panel.md "Multi-selection": a whiteboard stock colour stored by
 // name marks no theme swatch, and a choice or Clear Styles replaces it.
 describe('named stock colours', () => {
@@ -481,17 +430,6 @@ describe('named stock colours', () => {
       penTextColour: 'red',
     } as TextElement;
     expect((applyQuickTextColour(text, theme, 2) as TextElement).penTextColour).toBeUndefined();
-    const path = {
-      ...createPath(
-        [
-          { x: 0, y: 0, mode: 'corner' },
-          { x: 9, y: 9, mode: 'corner' },
-        ],
-        false,
-      ),
-      penColour: 'green' as const,
-    };
-    expect((applyQuickStroke(path, theme, 1) as typeof path).penColour).toBeUndefined();
   });
 
   it('clears names with Clear Styles', () => {

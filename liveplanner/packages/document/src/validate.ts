@@ -28,15 +28,6 @@ import { ELEMENT_KEY_FIELDS, ELEMENT_KEY_MAX, isElementKey } from './malformed-i
 import { parseStrokePoints } from './stroke-points';
 import { shapeValidationIssue } from './validate-shape';
 import {
-  FONT_WEIGHTS,
-  isFontWeight,
-  isTextCase,
-  LETTER_SPACING_MAX,
-  LETTER_SPACING_MIN,
-  TEXT_ARC_MAX,
-  TEXT_CASES,
-} from './wordmark';
-import {
   type ElementValidationIssue,
   type FieldCheck,
   boundedArray,
@@ -53,16 +44,11 @@ export type { ElementValidationIssue } from './validate-primitives';
 
 // Bounds. Generous vs any real document, tight vs an abuse payload.
 export const MAX_ELEMENTS_PER_TAB = 10_000;
-// A path (docs/specs/023-draw-mode/path-tool.md): a drawn one rarely passes 50 nodes.
-export const MAX_PATH_NODES = 5_000;
-// A normalised path coordinate: handles may reach beyond the box, never absurdly far.
-export const PATH_COORD_MAX = 1e6;
-// A Shift-resized text box's scale on its label (docs/specs/023-draw-mode/draw-mode.md "Text boxes"):
+// A Shift-resized text box's scale on its label (docs/specs/007-editor/editor-modes.md "A text box's sizing"):
 // a 14 px label reads from 1.4 px to 560 px, past any real board, short of an abuse payload.
 export const TEXT_SCALE_MIN = 0.1;
 export const TEXT_SCALE_MAX = 40;
 const isHeadingStr = (v: unknown) => typeof v === 'string' && v.length <= PAGE_HEADING_MAX;
-const PATH_HANDLE_MODES = new Set(['corner', 'mirrored', 'aligned']);
 // Exported so a caller building a table truncates to exactly what validation accepts.
 export const MAX_TABLE_ROWS = 1_000;
 export const MAX_TABLE_COLS = 1_000;
@@ -77,7 +63,6 @@ export const ELEMENT_TYPES = new Set([
   'sticky',
   'image',
   'freehand',
-  'path',
   'annotation',
   'link-card',
   'video',
@@ -128,54 +113,21 @@ export const SHAPE_KINDS = new Set<string>([
   'stat-row',
   'process',
   'site-header',
-  // Mode button (docs/specs/009-elements/mode-button.md): a pressable pill that switches whoever clicks it
-  // into a selection mode.
-  'mode-button',
   // Portal (docs/specs/009-elements/portal-element.md): a portal to the portal it is paired with.
   'portal',
   // Tab window (docs/specs/009-elements/tab-window.md): another tab of the document drawn inside it.
   'tab-window',
-  // Session button (docs/specs/012-collaboration/session-button.md): starts a timer / vote / poll for the room.
+  // Session button (docs/specs/012-collaboration/session-button.md): starts a timer / stopwatch / vote for the room.
   'session-button',
-  // Reveal zone (docs/specs/009-elements/reveal-zone.md): a cover you click to see what is underneath.
-  'reveal',
   // Picker (docs/specs/012-collaboration/picker.md): rolls a random person or option.
   'picker',
-  // Reaction pad (docs/specs/009-elements/reaction-pad.md).
-  'reaction-pad',
   // Comment pin (docs/specs/012-collaboration/comment-pin.md).
   'comment-pin',
   // Action panel (docs/specs/012-collaboration/action-panel.md).
   'action-card',
-  // Done check (docs/specs/012-collaboration/done-check.md).
-  'done-check',
-  // Chair (docs/specs/009-elements/chair.md): an Avatar-mode character sits down in one.
-  'chair',
-  // Fence (docs/specs/009-elements/fence.md): Avatar-mode characters cannot walk through one.
-  'fence',
-  // Avatar Pad (docs/specs/009-elements/avatar-pad.md): where Avatar-mode characters start.
-  'avatar-pad',
-  // Desk and sofa (docs/specs/009-elements/chair.md "Desk and sofa").
-  'desk',
-  'sofa',
-  // The virtual office (docs/specs/009-elements/office.md).
-  'room',
-  'meeting-table',
-  'plant',
-  'bookshelf',
-  'water-cooler',
-  'coffee-machine',
-  'rug',
-  // The collaboration family (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md).
-  'estimate',
+  // The collaboration family (docs/specs/012-collaboration/temperature-check.md, decision-record.md).
   'temperature',
-  'idea-box',
-  'qa-board',
-  'agenda',
   'decision',
-  'roll-call',
-  // Quiz (docs/specs/012-collaboration/quiz.md).
-  'quiz',
   'stadium',
   'actor',
   'final-state',
@@ -203,7 +155,6 @@ export const SHAPE_KINDS = new Set<string>([
   'checklist',
   'legend',
   'sankey',
-  'focus-button',
   'icon',
   'sticker',
   // Plan board and Plan card (docs/specs/026-plan/plan-board.md).
@@ -230,7 +181,7 @@ const COMMON_FIELD_CHECKS: readonly FieldCheck[] = [
   { field: 'fillSwatch', valid: isQuickSwatchSlot, rule: 'a quick-swatch slot 1 to 6' },
   { field: 'textSwatch', valid: isQuickSwatchSlot, rule: 'a quick-swatch slot 1 to 6' },
   // A marker's named colour, and a text's or label's stock colour
-  // (docs/specs/023-draw-mode/draw-mode.md "The colour picker", "Imported and pasted content").
+  // (docs/specs/004-interface-design/colour-picker.md).
   { field: 'penColour', valid: isPenColourName, rule: 'a pen colour name' },
   { field: 'penTextColour', valid: isPenColourName, rule: 'a pen colour name' },
   // Catalogue keys (docs/specs/010-palette/technology-icons.md): looked up as text everywhere.
@@ -346,7 +297,7 @@ function imageIssue(el: Record<string, unknown>): ElementValidationIssue | null 
   return firstFieldIssue(el, IMAGE_FIELD_CHECKS);
 }
 
-// Optional pen recipe (docs/specs/008-canvas/highlighter.md) and straight-edge flag
+// Optional pen recipe (docs/specs/006-document/stroke-points.md) and straight-edge flag
 // (docs/specs/008-canvas/polygon-tool.md).
 const FREEHAND_FIELD_CHECKS: readonly FieldCheck[] = [
   { field: 'pen', valid: (v) => v === 'highlighter', rule: oneOfRule(['highlighter']) },
@@ -382,73 +333,7 @@ const TEXT_FIELD_CHECKS: readonly FieldCheck[] = [
     valid: (v) => isNum(v) && v >= TEXT_SCALE_MIN && v <= TEXT_SCALE_MAX,
     rule: `a number from ${TEXT_SCALE_MIN} to ${TEXT_SCALE_MAX}`,
   },
-  // Wordmark type (docs/specs/007-editor/logo-pages.md "Wordmark type").
-  {
-    field: 'letterSpacing',
-    valid: (v) => isNum(v) && v >= LETTER_SPACING_MIN && v <= LETTER_SPACING_MAX,
-    rule: `a number from ${LETTER_SPACING_MIN} to ${LETTER_SPACING_MAX}`,
-  },
-  { field: 'fontWeight', valid: isFontWeight, rule: oneOfRule(FONT_WEIGHTS.map(String)) },
-  { field: 'textCase', valid: isTextCase, rule: oneOfRule([...TEXT_CASES]) },
-  {
-    field: 'textArc',
-    valid: (v) => isNum(v) && Math.abs(v) <= TEXT_ARC_MAX,
-    rule: `a number from -${TEXT_ARC_MAX} to ${TEXT_ARC_MAX}`,
-  },
 ];
-
-// A path's normalised coordinate pair: finite, and never absurdly far outside its box.
-function isPathPoint(p: unknown): boolean {
-  return (
-    isRecord(p) &&
-    isNum(p.nx) &&
-    isNum(p.ny) &&
-    Math.abs(p.nx) <= PATH_COORD_MAX &&
-    Math.abs(p.ny) <= PATH_COORD_MAX
-  );
-}
-
-function isPathNode(n: unknown): boolean {
-  if (!isPathPoint(n)) return false;
-  const { mode, handleIn, handleOut } = n as Record<string, unknown>;
-  return (
-    PATH_HANDLE_MODES.has(mode as string) &&
-    (handleIn === undefined || isPathPoint(handleIn)) &&
-    (handleOut === undefined || isPathPoint(handleOut))
-  );
-}
-
-// A path (docs/specs/023-draw-mode/path-tool.md "The path element"): 2 to MAX_PATH_NODES nodes of
-// known mode with optional handles; a closed pair needs a handle to be more than a line.
-function pathIssue(el: Record<string, unknown>): ElementValidationIssue | null {
-  if (!isBool(el.closed)) return issue('closed', 'a boolean');
-  const nodesRule = `2 to ${MAX_PATH_NODES} nodes { nx, ny, mode, handleIn?, handleOut? }`;
-  if (!boundedArray(el.nodes, MAX_PATH_NODES) || el.nodes.length < 2)
-    return issue('nodes', nodesRule);
-  if (!el.nodes.every(isPathNode)) return issue('nodes', nodesRule);
-  // A path's further contours (docs/specs/007-editor/logo-pages.md "Combine", "Mirror"): each
-  // closed like the path (three nodes or more) or open (two or more), every contour's nodes within
-  // the one budget.
-  if (el.subpaths !== undefined) {
-    const least = el.closed === true ? 3 : 2;
-    const rule = `contours of ${least} or more nodes, ${MAX_PATH_NODES} nodes in all`;
-    if (!Array.isArray(el.subpaths)) return issue('subpaths', rule);
-    let total = el.nodes.length;
-    for (const sub of el.subpaths) {
-      if (!Array.isArray(sub) || sub.length < least || !sub.every(isPathNode))
-        return issue('subpaths', rule);
-      total += sub.length;
-      if (total > MAX_PATH_NODES) return issue('subpaths', rule);
-    }
-  }
-  const handles = el.nodes.some((n) => {
-    const node = n as Record<string, unknown>;
-    return node.handleIn !== undefined || node.handleOut !== undefined;
-  });
-  if (el.closed && el.nodes.length < 3 && !handles)
-    return issue('nodes', 'a closed path needs 3 nodes, or a handle');
-  return null;
-}
 
 function boxedIssue(el: Record<string, unknown>): ElementValidationIssue | null {
   const box = boxIssue(el);
@@ -462,8 +347,6 @@ function boxedIssue(el: Record<string, unknown>): ElementValidationIssue | null 
       return imageIssue(el);
     case 'freehand':
       return freehandIssue(el);
-    case 'path':
-      return pathIssue(el);
     case 'text':
       return firstFieldIssue(el, TEXT_FIELD_CHECKS);
     // sticky / annotation / link-card / video carry no extra required fields.

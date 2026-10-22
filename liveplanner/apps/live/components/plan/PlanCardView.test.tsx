@@ -29,12 +29,11 @@ const card = {
   planCard: { itemId: item.id },
 } as ShapeElement;
 
-function setup(planInput = true, element: ShapeElement = card) {
+function setup(element: ShapeElement = card) {
   const openItem = vi.fn();
   const plan = {
     items: new Map([[item.id, item]]),
     types: ITEM_TYPES,
-    planInput,
     presence: new Map(),
     openItem,
   } as unknown as PlanContextValue;
@@ -57,16 +56,13 @@ function doublePress(face: HTMLElement, x = 10, y = 10) {
 }
 
 describe('PlanCardView', () => {
-  it('opens its item on a double press, in Plan mode and out of it', () => {
-    for (const planInput of [true, false]) {
-      const { openItem, face } = setup(planInput);
-      doublePress(face);
-      expect(openItem).toHaveBeenCalledWith(item.id);
-      cleanup();
-    }
+  it('opens its item on a double press', () => {
+    const { openItem, face } = setup();
+    doublePress(face);
+    expect(openItem).toHaveBeenCalledWith(item.id);
   });
 
-  it('stays shut on a single click or tap, even in Plan mode', () => {
+  it('stays shut on a single click or tap', () => {
     const { openItem, face } = setup();
     fireEvent.pointerDown(face, { clientX: 10, clientY: 10 });
     fireEvent.click(face, { clientX: 10, clientY: 10, timeStamp: 1000 });
@@ -84,7 +80,7 @@ describe('PlanCardView', () => {
   });
 
   it('draws at its own Card Size: Minimal leaves the number off, Detailed shows it', () => {
-    setup(true, { ...card, planCard: { itemId: item.id, size: 'minimal' } });
+    setup({ ...card, planCard: { itemId: item.id, size: 'minimal' } });
     expect(screen.queryByText('#3')).toBeNull();
     cleanup();
     setup();

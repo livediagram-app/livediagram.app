@@ -38,7 +38,6 @@ function setup(el: Element, tabLocked = false, editingId: string | null = null) 
       documentName: 'My document',
       tabs: [tab],
       activeTab: tab,
-      drawMode: true,
       editingId,
       commit: (fn) => {
         elements = fn(elements);
@@ -142,7 +141,7 @@ describe('on a locked tab', () => {
   });
 });
 
-// docs/specs/023-draw-mode/draw-mode.md "Text boxes": an empty text box that hugs its text is removed when it is
+// docs/specs/007-editor/editor-modes.md "A text box's sizing": an empty text box that hugs its text is removed when it is
 // left, by a click away or by Escape alike.
 describe('Escape on a text box', () => {
   const hugging = { ...createText(0, 0), id: 'hug', label: '', sizing: 'fit' } as Element;

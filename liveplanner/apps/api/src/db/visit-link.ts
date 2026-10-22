@@ -1,4 +1,4 @@
-// Leaf module, no imports: document-visibility.ts and image-grants.ts read it while shared.ts sits in an
+// Leaf module, no imports: document-visibility.ts reads it while shared.ts sits in an
 // import cycle with them (shared -> tabs -> collab-index -> document-visibility), so a SQL builder kept in
 // shared.ts could be read before it was defined, depending on which of them a bundle loads first.
 

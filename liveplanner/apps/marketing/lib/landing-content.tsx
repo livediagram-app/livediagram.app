@@ -4,6 +4,8 @@ import {
   BoardCsvArt,
   BoardImportArt,
   BoardWidgetsArt,
+  DashboardArrangeArt,
+  DashboardUtilitiesArt,
   CardCommentsArt,
   CardDetailArt,
   CardTypesArt,
@@ -28,6 +30,8 @@ import {
   SelectionGlowArt,
   ShareLinksArt,
   SharedItemsArt,
+  SuggestedDashboardsArt,
+  SheetFigureArt,
   SheetTogetherArt,
   SheetValidationArt,
   SheetsArt,
@@ -66,26 +70,26 @@ export type LandingSection = {
 
 /**
  * The feature categories, in the order the landing page tells them: the tabs of a project first
- * (Board and Dashboard tabs, then Sheet tabs, then Form tabs), then working on them together.
+ * (Board tabs, Dashboard tabs, Sheet tabs, then Form tabs), then working on them together.
  * `page.tsx` renders one beat per entry and alternates its background by index; `/features/<id>`
  * renders each one's cards.
  */
 export const LANDING_SECTIONS: LandingSection[] = [
   {
-    id: 'plan',
-    label: 'Boards & dashboards',
+    id: 'boards',
+    label: 'Boards',
     scene: 'plan',
-    cta: 'Explore boards and dashboards',
+    cta: 'Explore boards',
     title: 'Plan the work, then watch it move',
     description:
-      'A project holds the work on boards of cards: columns with WIP limits, swimlanes, card types with fields of your own, live charts of every card, and dashboards that bring it all onto one page.',
+      'A project holds the work on boards of cards: columns with WIP limits, swimlanes, card types with fields of your own, and one card that can sit on every board it belongs to.',
     metaDescription:
-      'Boards of cards with WIP limits, swimlanes and your own card types, live charts of every card, and dashboards that bring the work onto one page.',
+      'Boards of cards with WIP limits, swimlanes, your own card types and fields, comments on every card, and one card that sits on every board it belongs to.',
     highlights: [
       'Boards with WIP limits',
       'One card, every board',
       'Card types and fields of your own',
-      'Dashboards on one page',
+      'Widgets that narrow the board',
     ],
     items: [
       {
@@ -122,20 +126,6 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Card types and fields of your own',
         description:
           'Five built-in types (Project, Task, Note, Idea and Action), or make your own with the fields your team tracks: text, number, date, choice, a link to another card and more.',
-      },
-      {
-        art: <PlanViewsArt />,
-        href: '/help/canvas/plan-mode/visualisations/',
-        title: 'Live charts of every card',
-        description:
-          'A Gantt chart, due and start calendars you can drag cards across, cards by any field and priority by status, all drawn from the cards themselves, so a chart is never out of date. Give one a tab of its own and it fills the page, with a Chart Settings cog for which cards it shows and how it groups them.',
-      },
-      {
-        art: <DashboardArt />,
-        href: '/help/canvas/plan-mode/dashboards/',
-        title: 'Dashboards on one page',
-        description:
-          'Lay a Dashboard tab out as rows of slots and put one thing in each, live: a board you can work on, a Sheet you can edit, a chart, a figure like Completion or a column total, or a note, a checklist or a key date. Start from a layout such as Overview or Report, then add, move and resize slots as you go.',
       },
       {
         art: <BoardWidgetsArt />,
@@ -178,6 +168,67 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Agents that move the cards',
         description:
           'Your AI tools can read the plan and add, edit and move cards over MCP, the API or the CLI, naming columns and fields the way the board shows them.',
+      },
+    ],
+  },
+  {
+    id: 'dashboards',
+    label: 'Dashboards',
+    scene: 'dashboard',
+    cta: 'Explore dashboards',
+    title: 'See the whole project on one page',
+    description:
+      'Bring your boards, sheets, charts and notes side by side on a Dashboard tab, every slot live, so the picture is never out of date.',
+    metaDescription:
+      'Dashboard tabs put your boards, sheets, live charts of every card and notes side by side, in rows of slots you arrange, all of it live.',
+    highlights: [
+      'Dashboards on one page',
+      'Live charts of every card',
+      'Dashboards made from your work',
+      'Figures and charts from a Sheet',
+    ],
+    items: [
+      {
+        art: <DashboardArt />,
+        href: '/help/canvas/plan-mode/dashboards/',
+        title: 'Dashboards on one page',
+        description:
+          'Lay a Dashboard tab out as rows of slots and put one thing in each, live: a board you can work on, a Sheet you can edit, a chart, a figure like Completion or a column total, or a note, a checklist or a key date. Start from a layout such as Overview or Report, then add, move and resize slots as you go.',
+      },
+      {
+        art: <PlanViewsArt />,
+        href: '/help/canvas/plan-mode/visualisations/',
+        title: 'Live charts of every card',
+        description:
+          'A Gantt chart, due and start calendars you can drag cards across, cards by any field and priority by status, all drawn from the cards themselves, so a chart is never out of date. Give one a tab of its own and it fills the page, with a Chart Settings cog for which cards it shows and how it groups them.',
+      },
+      {
+        art: <SuggestedDashboardsArt />,
+        href: '/help/canvas/plan-mode/dashboards/',
+        title: 'Dashboards made from your work',
+        description:
+          'Once a project has boards, Start Planning offers dashboards built around them, badged For You: a Timeline for a board with dates, Sprint Health for one with estimates, Triage, a Team Overview of several boards, or a board beside a Sheet. Pick one and every slot arrives filled.',
+      },
+      {
+        art: <SheetFigureArt />,
+        href: '/help/canvas/plan-mode/dashboards/',
+        title: 'Figures and charts from a Sheet',
+        description:
+          'Show one cell against a target, a column’s total or average, a trend, or a chart of any range as columns, bars, lines, a pie or a doughnut, read live from a Sheet in the project. A form lends its figures too: its responses, the new ones, and when it closes.',
+      },
+      {
+        art: <DashboardUtilitiesArt />,
+        href: '/help/canvas/plan-mode/dashboards/',
+        title: 'Notes, status and key dates',
+        description:
+          'Write on the dashboard itself: a note, a title to name a section, a status of On Track, At Risk or Off Track, a checklist to tick off, a key date counted down to, or a set of links. Style each card to suit the page.',
+      },
+      {
+        art: <DashboardArrangeArt />,
+        href: '/help/canvas/plan-mode/dashboards/',
+        title: 'Arrange it your way',
+        description:
+          'Drag a slot by its grip to swap or move it, drag the bar between slots to share a row differently, or use the arrow keys; every change is one undo. On a phone the slots stack one under another, and a dashboard exports as a PNG, SVG or PDF.',
       },
     ],
   },
@@ -327,7 +378,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
   {
     id: 'collaboration',
     label: 'Collaborate',
-    scene: 'dashboard',
+    scene: 'together',
     cta: 'Explore collaboration',
     title: 'Plan it together, live',
     description:
@@ -375,11 +426,11 @@ export const LANDING_SECTIONS: LandingSection[] = [
       },
       {
         art: <TimelineFeedArt />,
-        href: '/help/explorer/timeline/',
+        href: '/help/explorer/home/',
         group: 'Work together live',
         title: 'See what happened while you were away',
         description:
-          'The Explorer opens on Home: the projects you return to most, and what your teammates commented and changed while you were away. The Timeline holds the full feed, and the Inbox gathers the threads and form answers still waiting on you, with a count in the sidebar so you can tell without looking.',
+          'The Explorer opens on Home: the projects you return to most, and what your teammates commented and changed while you were away. Every project and team keeps its own history, and the Inbox gathers the threads and form answers still waiting on you, with a count in the sidebar so you can tell without looking.',
       },
       {
         art: <ShareLinksArt />,

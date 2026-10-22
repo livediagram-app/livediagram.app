@@ -42,12 +42,7 @@ export const HELP_ARTICLES = {
   // One key per tool panel, so every mode's panel can point at the article
   // that explains it (docs/specs/018-help/contextual-help-links.md). Each of these resolves to a real page — a key
   // pointing at nothing is a bug, the same way an unregistered article is.
-  avatarMode: 'selection-modes/avatar-mode',
-  laser: 'selection-modes/laser',
-  spotlight: 'selection-modes/spotlight',
-  eraser: 'selection-modes/eraser',
   formatPainter: 'selection-modes/format-painter',
-  slideDeck: 'selection-modes/slide-deck',
   // AI
   aiTools: 'tools/ai/ai-tools',
   connectAiTool: 'account-and-data/connect-ai-mcp',
@@ -76,10 +71,6 @@ export const HELP_ARTICLES = {
   planDashboards: 'canvas/plan-mode/dashboards',
   planForms: 'canvas/plan-mode/forms',
   planTour: 'canvas/plan-mode/plan-tour',
-  workshopTour: 'canvas/workshop-mode/workshop-tour',
-  drawTour: 'canvas/draw-mode/draw-tour',
-  avatarTour: 'selection-modes/avatar-mode/avatar-tour',
-  pagesTour: 'canvas/pages-mode/pages-tour',
   links: 'canvas/links',
   comments: 'collaboration/comments',
   livePresence: 'collaboration/live-presence',
@@ -91,11 +82,9 @@ export const HELP_ARTICLES = {
   // The Tidy Up popover's tidiers (docs/specs/008-canvas/layout-cleanup.md).
   layoutCleanup: 'tools/layout-cleanup',
   minimap: 'user-interface/minimap',
-  sessionPolls: 'collaboration/session-tools/polls',
   sessionVoting: 'collaboration/session-tools/voting',
   sessionTimer: 'collaboration/session-tools/timer',
-  imageGallery: 'explorer/image-gallery',
-  timeline: 'explorer/timeline',
+  home: 'explorer/home',
   // The Inbox's article keeps the slug it had as Activity, so links already out there keep working.
   inbox: 'explorer/activity',
   recentDocuments: 'explorer/recent',
@@ -108,7 +97,7 @@ export const HELP_ARTICLES = {
   // The round-two element tours' closing cards (docs/specs/007-editor/element-tours.md).
   stacks: 'palette/stacks',
   entities: 'palette/entities',
-  tabWindows: 'canvas/pages-mode/tab-windows',
+  tabWindows: 'canvas/tab-windows',
   lanes: 'palette/lanes',
   boundaries: 'palette/boundaries',
   diagramKeys: 'palette/diagram-keys',
@@ -118,19 +107,9 @@ export const HELP_ARTICLES = {
   palette: 'palette',
   // Settings
   powerUserMode: 'user-interface/power-user-mode',
-  diagramTour: 'getting-started/diagram-tour',
   whatWeCollect: 'privacy-and-security/what-we-collect',
   offlineMode: 'privacy-and-security/offline-mode',
   // Onboarding / empty states
-  yourFirstDiagram: 'getting-started/your-first-diagram',
-  templates: 'canvas/templates',
-  drawMode: 'canvas/draw-mode',
-  logoPages: 'canvas/pages-mode/logo-pages',
-  wireframePages: 'canvas/pages-mode/wireframe-pages',
-  // Each page kind's Show Me links its own article (docs/specs/007-editor/pages-tour.md).
-  slidePages: 'canvas/pages-mode/slide-pages',
-  infographicLayouts: 'canvas/pages-mode/infographic-layouts',
-  articlePages: 'canvas/pages-mode/articles',
   keyboardShortcuts: 'tips-and-tricks/keyboard-shortcuts',
   guestVsAccount: 'getting-started/guest-vs-account',
   // Load recovery (docs/specs/007-editor/load-recovery.md).
@@ -175,22 +154,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about the Plan Tour',
     description: 'What the tour shows you and how replaying works.',
   },
-  workshopTour: {
-    title: 'Learn about the Workshop Tour',
-    description: 'What the tour shows you and how replaying works.',
-  },
-  drawTour: {
-    title: 'Learn about the Draw Tour',
-    description: 'What the tour shows you and how replaying works.',
-  },
-  avatarTour: {
-    title: 'Learn about the Avatar Tour',
-    description: 'What the tour shows you and how replaying works.',
-  },
-  pagesTour: {
-    title: 'Learn about the Pages Tour',
-    description: 'What the tour shows you and how replaying works.',
-  },
   sharing: {
     title: 'Learn about sharing',
     description: 'Roles, live collaboration, and how share links work.',
@@ -227,29 +190,9 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about the isometric view',
     description: 'How the isometric projection works and when to use it.',
   },
-  avatarMode: {
-    title: 'Learn about Avatar mode',
-    description: 'Tips for walking the canvas as an avatar and leading a session.',
-  },
-  laser: {
-    title: 'Learn about the Laser',
-    description: 'Tips for pointing things out to the room without touching the document.',
-  },
-  spotlight: {
-    title: 'Learn about the Spotlight',
-    description: 'Tips for dimming everything but the part you are talking about.',
-  },
-  eraser: {
-    title: 'Learn about the Eraser',
-    description: 'Tips for rubbing out sketches and elements without selecting them first.',
-  },
   formatPainter: {
     title: 'Learn about the Format Painter',
     description: "Tips for copying one element's look onto others.",
-  },
-  slideDeck: {
-    title: 'Learn about the Slide Deck',
-    description: 'Tips for building and presenting slides from your document.',
   },
   aiTools: {
     title: 'Learn about the AI tools',
@@ -349,10 +292,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about the Map',
     description: 'Tips for finding your way around a big canvas.',
   },
-  sessionPolls: {
-    title: 'Learn about polls',
-    description: 'Tips for asking the room a question and sharing the results.',
-  },
   sessionVoting: {
     title: 'Learn about voting',
     description: 'Tips for running a quick vote across the elements on the canvas.',
@@ -361,13 +300,9 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about the timer',
     description: 'Tips for keeping a session to time with a countdown or a stopwatch.',
   },
-  imageGallery: {
-    title: 'Learn about the Image Gallery',
-    description: 'How uploaded images are stored and reused across documents.',
-  },
-  timeline: {
-    title: 'Learn about Home and the Timeline',
-    description: 'Jump Back In, what others did while you were away, and your own Timeline.',
+  home: {
+    title: 'Learn about Home',
+    description: 'Jump Back In, and what others did while you were away.',
   },
   inbox: {
     title: 'Learn about the Inbox',
@@ -391,7 +326,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   defaultFolders: {
     title: 'Learn about default folders',
-    description: 'Where new diagrams, whiteboards and boards land when you pick no place.',
+    description: 'Where new projects land when you pick no place.',
   },
   explorerFilters: {
     title: 'Learn about search and filters',
@@ -415,7 +350,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   tabWindows: {
     title: 'Learn about tab windows',
-    description: 'Show another tab live on a slide, and keep it up to date.',
+    description: 'Show another tab live on the canvas, and keep it up to date.',
   },
   lanes: {
     title: 'Learn about lanes',
@@ -450,10 +385,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about power user mode',
     description: 'The recommended settings it applies, and Minimal chrome.',
   },
-  diagramTour: {
-    title: 'Learn about the Diagram Tour',
-    description: 'What the tour covers and how replaying works.',
-  },
   whatWeCollect: {
     title: 'Learn about what we collect',
     description: "Exactly which anonymous events are sent, and what isn't.",
@@ -461,38 +392,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   offlineMode: {
     title: 'Learn about Offline Mode',
     description: 'Documents saved only in this browser, and how to sync them.',
-  },
-  yourFirstDiagram: {
-    title: 'Learn about your first diagram',
-    description: 'A short walkthrough of building your first diagram.',
-  },
-  templates: {
-    title: 'Learn about templates',
-    description: 'How templates give you a themed starting point.',
-  },
-  drawMode: {
-    title: 'Learn about Draw mode',
-    description: 'Switching modes, the dock, its pens and shapes, and where it sits.',
-  },
-  logoPages: {
-    title: 'Learn about logo pages',
-    description: 'Guides, mirror drawing, wordmarks, combining shapes and the logo kit.',
-  },
-  wireframePages: {
-    title: 'Learn about wireframe pages',
-    description: 'Device frames, ready-made screens, the Elements palette and mockup export.',
-  },
-  slidePages: {
-    title: 'Learn about slide pages',
-    description: 'Slide layouts, backgrounds, the deck and presenting.',
-  },
-  infographicLayouts: {
-    title: 'Learn about infographic layouts',
-    description: 'Starting a page from a layout, its theme, and making it your own.',
-  },
-  articlePages: {
-    title: 'Learn about articles',
-    description: 'Writing, the page toolbar, article style and how pages flow.',
   },
   livePresence: {
     title: 'Learn about live presence',

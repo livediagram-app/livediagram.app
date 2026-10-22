@@ -26,8 +26,6 @@ import { RichTextEditor } from '@/components/canvas/RichTextEditor';
 import { fitMultilineFontPx } from '@/lib/fit-multiline-text';
 import { FixedSizeLabel, MultilineLabel, RichLabel, ScalingLabel } from './element-label-views';
 import type { TextHugLabel } from './useTextHug';
-import { wordmarkTextStyle } from './label-style';
-import { WordmarkArcLabel } from './WordmarkArcLabel';
 
 export function renderLabel(
   element: BoxedElement,
@@ -51,7 +49,7 @@ export function renderLabel(
   // place beside the text while typing; the inline-icon layout owns
   // positioning + padding.
   inlineIcon = false,
-  // A whiteboard text box hugging its text (docs/specs/023-draw-mode/draw-mode.md "Text boxes"):
+  // A whiteboard text box hugging its text (docs/specs/007-editor/editor-modes.md "A text box's sizing"):
   // its own padding, no placeholder (the caret is the whole box), its size preset drawn at a
   // fixed px rather than fitted, and the editor's live text reported so the box grows with it.
   hug?: TextHugLabel,
@@ -60,7 +58,7 @@ export function renderLabel(
   onLiveText?: (editor: HTMLElement) => void,
 ) {
   const isSticky = element.type === 'sticky';
-  // A Shift-resized whiteboard text box draws its text scaled (docs/specs/023-draw-mode/draw-mode.md).
+  // A Shift-resized whiteboard text box draws its text scaled (docs/specs/007-editor/editor-modes.md).
   const textScale = element.type === 'text' ? (element.textScale ?? 1) : 1;
   const textPadding = hug ? hug.padding : padding;
   // Shape elements don't carry a placeholder during edit. The user
@@ -71,19 +69,12 @@ export function renderLabel(
   // pre-edit affordance is just an empty rectangle / nothing.
   const placeholder = element.type === 'text' ? (hug ? '' : 'Text') : isSticky ? 'Note' : '';
 
-  const wordmark = wordmarkTextStyle(element);
-  // Capitals (a text's Upper case) are a presentation rule, so they ride the label STYLE (and the fit below)
-  // rather than touching the stored text. Display label, rich runs and the live editor all take the
-  // same flag, or the label would change case on double-click.
-  const caps = wordmark.uppercase === true;
   const textStyle = {
     bold: element.textBold,
     italic: element.textItalic,
     underline: element.textUnderline,
     strikethrough: element.textStrikethrough,
     fontFamily,
-    ...wordmark,
-    uppercase: caps,
   };
 
   const richText = (element as { richText?: TextRun[] }).richText;
@@ -104,7 +95,6 @@ export function renderLabel(
         padding,
         bold: !!element.textBold,
         italic: !!element.textItalic,
-        uppercase: caps,
         fontFamily,
       })
     : undefined;
@@ -134,28 +124,12 @@ export function renderLabel(
         onLiveText={hug?.onLiveText ?? onLiveText}
         fontFamily={fontFamily}
         multiline={isSticky}
-        uppercase={caps}
         cursorAtEnd={editCursorAtEnd}
         textClassName={textClass}
         onCommit={onCommitLabel}
         onCancel={onCancelEdit}
         onSetAlign={onSetAlign}
         inline={inlineIcon}
-      />
-    );
-  }
-
-  // Arched wordmark type (docs/specs/007-editor/logo-pages.md "Wordmark type"): one line along an
-  // arc, drawn as an SVG face. Editing shows it flat (above); the arc returns on commit.
-  if (element.type === 'text' && element.textArc) {
-    if (!label) return null;
-    return (
-      <WordmarkArcLabel
-        element={element}
-        text={label}
-        padding={padding}
-        fontFamily={fontFamily}
-        style={textStyle}
       />
     );
   }
@@ -176,8 +150,6 @@ export function renderLabel(
         textScale={textScale}
         fontFamily={fontFamily}
         multiline={isSticky}
-        uppercase={caps}
-        wordmark={wordmark}
       />
     );
   }

@@ -6,7 +6,6 @@
 import type { EditRejection } from '@liveplanner/api-schema';
 import {
   MAX_ELEMENTS_PER_TAB,
-  agendaFitHeight,
   coerceShapeKind,
   deriveContainers,
   isContainer,
@@ -83,18 +82,6 @@ function normaliseTouched(state: EditState, log: EditLog): void {
         });
         log('[edit-ops] coerced', { operation, field: 'shape' });
         normalised.shape = shape;
-      }
-      // An agenda given its segments grows down to draw every one, as a label grows its box, rather
-      // than the face leaving the last off (docs/specs/012-collaboration/agenda.md "The face").
-      if (
-        normalised.shape === 'agenda' &&
-        (!state.before.has(id) || written.includes('agendaItems'))
-      ) {
-        const height = agendaFitHeight(normalised as unknown as BoxedElement);
-        if (height !== normalised.height) {
-          normalised.height = height;
-          log('[edit-ops] agenda fitted', { operation, height });
-        }
       }
     }
     replaceElement(state, normalised as unknown as Element);

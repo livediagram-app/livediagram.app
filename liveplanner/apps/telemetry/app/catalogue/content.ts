@@ -6,7 +6,6 @@ import { FORM_STARTERS, QUESTION_TYPE_TELEMETRY } from '@liveplanner/forms';
 import { canonicalElementType, PALETTE_KINDS, type PaletteTab } from '../palette-types';
 import type { Metric, MetricStack } from '../metric-series';
 import { chart } from './helpers';
-import { LOGO_TOOL_TYPES } from '../logo-types';
 import { LOCAL_MOVE_OFFERED, TIDY_UP_OPENED } from './features';
 
 // The Element types that are a table's rows and columns, not elements, and
@@ -16,29 +15,11 @@ const TABLE_TOGGLES: readonly string[] = ['TableHeaderRow', 'TableHeaderColumn',
 const isTablePart = (type: string | null): boolean => TABLE_PARTS.includes(type ?? '');
 
 // Filling out existing stacks.
-export const JUST_DRAW = chart(
-  'UI',
-  'Used',
-  'Start Blank',
-  'Straight to a blank canvas, skipping the wizard: the Start Blank shortcut into /new, or Start Blank in the template picker.',
-  { types: ['JustDraw'] },
-);
-
-// Escape in the New Document wizard: back to where they came from, nothing made
-// (docs/specs/007-editor/new-document-route.md "Escape backs out").
-export const NEW_DOCUMENT_BACKED_OUT = chart(
-  'UI',
-  'Closed',
-  'New Document Backed Out',
-  'Escape or the X in the New Document wizard went back to the page that opened it, creating nothing.',
-  { types: ['NewDocument'] },
-);
-
 export const TEMPLATE_LINKS = chart(
   'UI',
   'Used',
   'Template Links',
-  'A document made straight from a template link into /new, skipping the wizard.',
+  'A project made straight from a template link into /new.',
   { types: ['TemplateLink'] },
 );
 
@@ -281,17 +262,15 @@ export const DOCUMENT_ACTIONS: MetricStack = {
   stack: true,
   title: 'Document Actions',
   blurb:
-    'Documents opened, made, renamed, deleted and duplicated, and how new ones were started: Start Blank, a template link, or in This Browser (those three are part of Documents Created), and how often the wizard was backed out of with Escape.',
+    'Documents opened, made, renamed, deleted and duplicated, and how new ones were started: a template link, or in This Browser (both part of Documents Created).',
   members: [
     DOCUMENTS_LOADED,
     DOCUMENTS_CREATED,
     DOCUMENTS_RENAMED,
     DOCUMENTS_DELETED,
     DOCUMENTS_DUPLICATED,
-    JUST_DRAW,
     TEMPLATE_LINKS,
     CREATED_OFFLINE,
-    NEW_DOCUMENT_BACKED_OUT,
   ],
   headline: [DOCUMENTS_CREATED, DOCUMENTS_RENAMED, DOCUMENTS_DELETED, DOCUMENTS_DUPLICATED],
 };
@@ -443,7 +422,7 @@ export const TOOLS_ADDED = addedFrom(
 export const COLLABORATE_ADDED = addedFrom(
   'collaborate',
   'Collaborate Added',
-  'Estimate cards, temperature checks, idea boxes, agendas, decisions and roll calls.',
+  'Temperature checks, decisions, comment and action panels.',
 );
 
 export const COMPONENTS_ADDED = addedFrom(
@@ -469,12 +448,10 @@ const DATA_MODEL_CHANGED = ['Entity', 'Cardinality'];
 export const OTHER_ELEMENTS_ADDED: Metric = {
   category: 'Element',
   action: 'Added',
-  // Article inserts (`Article…`) are their own card (Article Inserts, features.ts).
   typeIn: (type) =>
     !PALETTE_KINDS.has(canonicalElementType(type)) &&
     !isTablePart(type) &&
-    !DATA_MODEL_ADDED.includes(type ?? '') &&
-    !/^Article[A-Z]/.test(type ?? ''),
+    !DATA_MODEL_ADDED.includes(type ?? ''),
   title: 'Other Elements Added',
   blurb:
     'Kinds the palette catalogue does not list, such as pasted images. Table rows and columns are in Tables, entity fields in Data Models.',
@@ -507,15 +484,8 @@ export const ELEMENTS_CHANGED = chart(
   'Changed',
   'Elements Changed',
   'Restyled or edited: colour, text, arrow ends, size, presets, the format painter and more.',
-  // An article's writing formatted (`Article…`) is its own card (Article Formatting, features.ts),
-  // as are a logo page's tools (Logo Tools Used).
   // An entity's fields and a relationship's cardinality are Data Models'.
-  {
-    typeIn: (t) =>
-      !/^Article[A-Z]/.test(t ?? '') &&
-      !LOGO_TOOL_TYPES.includes(t ?? '') &&
-      !DATA_MODEL_CHANGED.includes(t ?? ''),
-  },
+  { typeIn: (t) => !DATA_MODEL_CHANGED.includes(t ?? '') },
 );
 
 export const ELEMENTS_DELETED = chart(

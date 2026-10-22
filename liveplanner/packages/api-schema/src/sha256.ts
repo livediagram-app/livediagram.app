@@ -1,17 +1,11 @@
-// Canonical SHA-256 hex digest used as the image dedupe key (see
-// docs/specs/009-elements/images.md): the live editor computes it from the file bytes before
-// posting to /api/images, stamps it on the `X-Image-Sha256` request
-// header, and the api worker re-hashes the body to verify. Both
-// sides have to produce byte-for-byte identical output or the
-// server rejects every legitimate upload with a hash mismatch, so
-// the function lives here alongside the wire-format types it backs.
+// Canonical SHA-256 hex digest, shared by the api worker (token, share-password and tag hashes) and the
+// CLI, so every side produces byte-for-byte identical output.
 //
 // Implementation: `sha256` from @liveplanner/items, Web Crypto wherever the
 // runtime has it (Node 22+, Cloudflare Workers, a secure browser page) and the
 // same digest in plain code in a page that is not a secure context
 // (docs/specs/016-platform/secure-context.md). Lowercase hex output,
-// 64 chars, no separator: matches the `images.sha256` column shape
-// in the api worker's D1 schema.
+// 64 chars, no separator.
 
 import { sha256 } from '@liveplanner/items';
 import { bytesToBase64Url } from './bytes';

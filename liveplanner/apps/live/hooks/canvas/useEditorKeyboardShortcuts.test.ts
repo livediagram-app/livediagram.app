@@ -6,7 +6,7 @@ import { runModShortcut } from './editor-shortcut-keys';
 // this workspace's node-env vitest doesn't run (see docs/specs/003-system-architecture/testing.md).
 // What we CAN test in node is the pure key -> action mapping: the lookup
 // tables that the effect dispatches through. These assertions pin the
-// standards-aligned remap (V = Select, H = Hand, K = Laser, P = Pencil,
+// standards-aligned remap (V = Select, H = Hand,
 // the shape letters, and the Excalidraw number-row aliases) so an
 // accidental swap or a dropped key is caught.
 
@@ -17,8 +17,6 @@ function spyLive() {
   const live = {
     setCanvasTool: (t: string) => calls.push(`tool:${t}`),
     onToggleZen: () => calls.push('zen'),
-    onBeginFreehand: () => calls.push('pencil'),
-    onBeginShapePen: () => calls.push('shape-pen'),
     addShape: (k: string) => calls.push(`shape:${k}`),
     addText: () => calls.push('text'),
     addSticky: () => calls.push('sticky'),
@@ -45,37 +43,21 @@ describe('VIEW_TOOL_KEYS (non-mutating tools)', () => {
     expect(fired(VIEW_TOOL_KEYS, '1')).toBe('tool:select');
   });
 
-  it('binds Hand to H (not P, which is now Pencil)', () => {
+  it('binds Hand to H (not P)', () => {
     expect(fired(VIEW_TOOL_KEYS, 'h')).toBe('tool:pan');
     expect(VIEW_TOOL_KEYS.p).toBeUndefined();
-  });
-
-  it('binds Laser to K (not L)', () => {
-    expect(fired(VIEW_TOOL_KEYS, 'k')).toBe('tool:laser');
-    expect(VIEW_TOOL_KEYS.l).toBeUndefined();
   });
 
   it('keeps Isometric on I and Zen on Z', () => {
     expect(fired(VIEW_TOOL_KEYS, 'i')).toBe('tool:isometric');
     expect(fired(VIEW_TOOL_KEYS, 'z')).toBe('zen');
   });
-
-  it('has no key into Avatar mode (a Selection Mode button is its one way in)', () => {
-    expect(VIEW_TOOL_KEYS.w).toBeUndefined();
-    expect(EDIT_KEYS.w).toBeUndefined();
-  });
 });
 
 describe('EDIT_KEYS (mutating tools / element adds)', () => {
-  it('binds Pencil to P and number 7, and Frame to F', () => {
-    expect(fired(EDIT_KEYS, 'p')).toBe('pencil');
-    expect(fired(EDIT_KEYS, '7')).toBe('pencil');
+  it('binds Frame to F, and nothing to P, 6, 7, E or 0', () => {
     expect(fired(EDIT_KEYS, 'f')).toBe('shape:frame');
-  });
-
-  it('binds Eraser to E and number 0', () => {
-    expect(fired(EDIT_KEYS, 'e')).toBe('tool:eraser');
-    expect(fired(EDIT_KEYS, '0')).toBe('tool:eraser');
+    for (const key of ['p', '6', '7', 'e', '0']) expect(EDIT_KEYS[key]).toBeUndefined();
   });
 
   it('maps the flowchart shape letters and their Excalidraw number aliases', () => {

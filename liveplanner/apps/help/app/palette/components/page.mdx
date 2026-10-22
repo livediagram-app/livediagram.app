@@ -1,12 +1,11 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { ComponentsCategory } from '@/components/illustrations/palette-pages-categories';
 
 export const metadata = helpMetadata({
   title: 'Components',
   description:
-    'Add cards, badges, step numbers and web components (banners, callouts, stat rows, heroes, headers) that re-flow as you resize, with every line of text editable.',
+    'Add cards, badges, step numbers and web components (banners, callouts, stat rows, headers) that re-flow as you resize, with every line of text editable.',
   path: '/help/palette/components/',
 });
 
@@ -22,15 +21,7 @@ The **Components** category holds ready-made web components. Instead of building
 
 ## Finding them
 
-Components are part of the [Pages mode](/help/canvas/pages-mode/) palette: rest on **Components** on the palette strip, or click it, to see its three groups. **Layout** comes first, with the **Hero**, **Header** and **Banner** a page is laid out with and the **Stack** that lines blocks up. **Page Blocks** holds the **Card**, **Badge** and **Step Number** ([Cards and Callouts](/help/palette/cards-and-callouts/), [Badges and Step Numbers](/help/palette/badges-and-step-numbers/)), the **Callout**, the **Stat Row** and **Process**. **Code and Lists** holds **Code** (a syntax-highlighted code card) and the **Checklist** (tickable to-do rows). Tap one to add it, or drag it to where you want it.
-
-On a wireframe page, Components comes first on the strip, before **Elements**. The Card, the Badge and the Checklist are in Elements there, so Components leaves them out.
-
-<Figure caption="The Components category in Pages mode: Layout, then Page Blocks, then Code and Lists.">
-  <ComponentsCategory />
-</Figure>
-
-The Diagram mode palette doesn't offer the category (its **Layout** category has the Card, Badge and Step Number, and **Write** has the Callout), but every component still works there: search for it by name in the editor's [Search panel](/help/search-panel/the-search-panel/search-add-to-canvas/) and add it from **Add to canvas**.
+The palette doesn't offer the category (the Diagram mode palette's **Layout** category has the Card, Badge and Step Number, and **Write** has the Callout), but every component still works: search for it by name in the editor's [Search panel](/help/search-panel/the-search-panel/search-add-to-canvas/) and add it from **Add to canvas**.
 
 ## What the category contains
 
@@ -38,12 +29,9 @@ The Diagram mode palette doesn't offer the category (its **Layout** category has
 - **Callout** is a soft note box with an icon badge, a heading, and a body. It is a [card](/help/palette/cards-and-callouts/) underneath, so it can take tags and a meta line too.
 - **Stat Row** is a row of KPI cards, each a big number over a caption.
 - **Process** is a row of numbered circles joined by arrows, with a caption under each.
-- **Hero** is a large image with a caption card over it.
 - **Header** is a website-style bar with a logo, a brand name, and navigation links.
 
-Hero builds on an image, so it only appears when image upload is available.
-
-The [Entity](/help/palette/entities/) also belongs to this category, but Pages mode leaves it out of its palette; in Diagram mode it is in **Diagrams**.
+The [Entity](/help/palette/entities/) also belongs to this category; in Diagram mode it is in **Diagrams**.
 
 ## Editing the text
 
@@ -79,7 +67,7 @@ Each component is one element that lays itself out, so resizing changes the room
 
 Components follow the tab theme when you drop them. A banner and a header paint their bar in the theme's accent and keep white text through a theme change; pick a **Background** colour in the right-click menu's **Style → Colours** section to use your own. A callout, a stat row and a process are ordinary cards that use the accent for the badge, the numbers and the step circles.
 
-Drop an icon on a header to make it the logo, or on a callout to replace its badge. To set a hero's picture, double-click the image; its caption card can be turned off (or added to any image) with **Caption Card** in the image's right-click menu, under **Image**.
+Drop an icon on a header to make it the logo, or on a callout to replace its badge.
 
 <Tip>
   Drop a component to get the structure right, then retype the placeholder text in place. It is

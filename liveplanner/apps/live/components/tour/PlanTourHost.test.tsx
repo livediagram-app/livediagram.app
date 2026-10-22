@@ -9,7 +9,6 @@ import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { requestPlanTourRelaunch } from '@/lib/plan-tour';
 import { setActiveTour } from '@/lib/tour-active';
-import { clearTourPending, markTourPending } from '@/lib/tour-pending';
 import type { TourEngine } from './useTourEngine';
 import type { PlanTourApi } from './plan-tour-steps';
 import { PlanTourHost } from './PlanTourHost';
@@ -69,7 +68,6 @@ const editor = (over: Record<string, unknown> = {}) => {
     anyWelcomeOpen: false,
     isReadOnly: false,
     embedMode: false,
-    editorMode: { mode: 'plan' },
     activeTab: { id: 'tab1', locked: false, elements: [BOARD] },
     userPreferences: {},
     setUserPreferences,
@@ -116,7 +114,6 @@ afterEach(() => {
   vi.useRealTimers();
   setActiveTour('welcome', false);
   setActiveTour('plan', false);
-  clearTourPending();
   document.body.innerHTML = '';
 });
 
@@ -133,39 +130,6 @@ describe('PlanTourHost offer', () => {
     });
     expect(offered()).toBe(true);
     expect(stage.engine?.active).toBe(true);
-  });
-
-  it('waits for the person to enter Plan', () => {
-    editor({ editorMode: { mode: 'diagram' } });
-    const { rerender } = render(<PlanTourHost />);
-    act(() => {
-      vi.advanceTimersByTime(2000);
-    });
-    expect(offered()).toBe(false);
-    editor();
-    rerender(<PlanTourHost />);
-    act(() => {
-      vi.advanceTimersByTime(800);
-    });
-    expect(offered()).toBe(true);
-  });
-
-  it.each([
-    ['an empty tab', onTab()],
-    ['a Dashboard', onTab({ id: 'd0', type: 'shape', shape: 'plan-dashboard' })],
-  ])('waits on %s for a board or Sheet, then offers itself', (_why, over) => {
-    editor(over);
-    const { rerender } = render(<PlanTourHost />);
-    act(() => {
-      vi.advanceTimersByTime(2000);
-    });
-    expect(offered()).toBe(false);
-    editor(onTab(SHEET));
-    rerender(<PlanTourHost />);
-    act(() => {
-      vi.advanceTimersByTime(800);
-    });
-    expect(offered()).toBe(true);
   });
 
   it('a Settings rerun on an empty tab places nothing and waits for a board or Sheet', () => {
@@ -219,17 +183,6 @@ describe('PlanTourHost offer', () => {
     expect(offered()).toBe(true);
   });
 
-  // The Diagram tour never runs in Plan, so its owed handoff no longer holds this one back.
-  it('does not wait for the Diagram tour still being owed', () => {
-    markTourPending();
-    editor();
-    render(<PlanTourHost />);
-    act(() => {
-      vi.advanceTimersByTime(800);
-    });
-    expect(offered()).toBe(true);
-  });
-
   it('reruns from Settings in Plan, and not outside it', () => {
     editor({ userPreferences: { planTourTracks: ['boards', 'sheets'] } });
     const { rerender } = render(<PlanTourHost />);
@@ -244,16 +197,6 @@ describe('PlanTourHost offer', () => {
       vi.advanceTimersByTime(800);
     });
     expect(offered()).toBe(true);
-  });
-
-  it('ignores a rerun outside Plan', () => {
-    editor({ editorMode: { mode: 'diagram' } });
-    render(<PlanTourHost />);
-    act(() => requestPlanTourRelaunch());
-    act(() => {
-      vi.advanceTimersByTime(2000);
-    });
-    expect(offered()).toBe(false);
   });
 });
 

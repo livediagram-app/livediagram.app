@@ -3,7 +3,7 @@ import { formLook } from './form-look';
 import { contrastRatio } from './colors';
 import { THEMES } from './themes-data';
 import { getBuiltInTheme } from './themes';
-import { themeAccent } from './page-default-background';
+import { themeAccent } from './colour-background';
 
 // A Form tab's look (docs/specs/030-forms/forms.md "Look").
 

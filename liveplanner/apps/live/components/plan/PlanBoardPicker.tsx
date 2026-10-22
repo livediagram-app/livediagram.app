@@ -1,7 +1,7 @@
 'use client';
 
-// A Plan tab with nothing on it (docs/specs/026-plan/plan-mode.md "Starting a board"): Start Planning, in the middle
-// of the canvas (StartPlanning), its search reaching every other mode's templates too. Boards offers the board types,
+// A tab with nothing on it (docs/specs/026-plan/plan-mode.md "Starting a board"): Start Planning, in the middle of the
+// canvas (StartPlanning). Boards offers the board types,
 // as a new infographic page offers its layouts. Each is a picture of the board
 // itself, drawn as what sets it apart (board-previews.tsx) over its name and what it is
 // for, in the tab's own light or dark look. Blank comes first; the Archive board, never a first board, is
@@ -20,8 +20,8 @@ import {
 import { accentOn, type PlanPalette } from './plan-palette';
 import { BOARD_PREVIEWS } from './board-previews';
 import { StartPlanning } from './start/StartPlanning';
-import type { PlanTemplateKind, TemplateKind } from '@liveplanner/templates';
-import type { EditorMode, Tab } from '@liveplanner/document';
+import type { PlanTemplateKind } from '@liveplanner/templates';
+import type { Tab } from '@liveplanner/document';
 import type { SuggestedDashboard } from '@/lib/suggested-dashboards';
 import type { PlanVisualisation } from '@liveplanner/items';
 
@@ -30,8 +30,12 @@ const PREVIEW_COLUMNS = 5;
 // Cards per preview column, a gentle pattern so each column reads as work in flight.
 const CARD_PATTERN = [3, 2, 3, 1, 2];
 
-// The Spreadsheets pictures live in sheet-previews.tsx; Start Planning and Add to Slot read them from here too.
-export { SHEET_TILES, SheetPreview } from './sheet-previews';
+// The Spreadsheets pictures live in sheet-previews.tsx; Start Planning and Add to Slot read them from here too. Their
+// tiles are the empty sheet, the card table, then every template in the catalogue's order (Budget and Tracker third
+// and fourth, where Add to Slot reads them): Start Planning's own list. Kept out of sheet-previews.tsx, so a picture
+// alone (Explorer Home's hero) never loads Start Planning's catalogue.
+export { SheetPreview } from './sheet-previews';
+export { SHEET_STARTS as SHEET_TILES } from './start/start-planning-items';
 
 export function BoardPreview({
   preset,
@@ -124,7 +128,6 @@ function GenericPreview({ preset, palette }: { preset: PlanBoardPresetId; palett
 export function PlanBoardPicker({
   onPick,
   onPickSheet,
-  onOtherModeTemplate,
   onDashboard,
   onTemplate,
   tabs,
@@ -148,8 +151,6 @@ export function PlanBoardPicker({
   onDashboard?: (presetId: string) => void;
   // An empty sheet, or one of Start Planning's sheet types (Setup Sheet then opens on it).
   onPickSheet?: (start?: PlacedSheetStart) => void;
-  // A template found in another mode (start-diagramming.md "Found in other modes"): it lands, switching the tab there.
-  onOtherModeTemplate?: (mode: EditorMode, kind: TemplateKind) => void;
 }) {
   // What Start Planning makes fills the tab: its view's chunk is fetched while the panel is read, so the choice
   // opens on the view rather than its loading cover (FillTabPending). Idle, so the panel's own paint is first.
@@ -171,7 +172,6 @@ export function PlanBoardPicker({
       onPickBoard={onPick}
       onPickSheet={onPickSheet}
       onDashboard={onDashboard}
-      onOtherModeTemplate={onOtherModeTemplate}
       onTemplate={onTemplate}
       tabs={tabs}
       loadTabs={loadTabs}

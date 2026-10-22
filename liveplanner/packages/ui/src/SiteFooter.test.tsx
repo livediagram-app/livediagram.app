@@ -26,7 +26,6 @@ describe('SiteFooter', () => {
       'Report a Vulnerability',
       'Licences',
       'Contact',
-      'GitHub',
     ]);
     expect(footerNav).toContain('href="/help/policies/report-a-vulnerability/"');
     expect(footerNav).toContain('href="/licences"');
@@ -36,17 +35,14 @@ describe('SiteFooter', () => {
     const withIcon = [...footerNav.matchAll(/<a [^>]*><svg[\s\S]*?<\/svg>([^<]+)<\/a>/g)].map(
       (m) => m[1],
     );
-    expect(withIcon).toEqual(['New Document', 'AI &amp; MCP', 'Help Centre', 'GitHub']);
+    expect(withIcon).toEqual(['New Project', 'AI &amp; MCP', 'Help Centre']);
   });
 });
 
 describe('SiteFooter credits', () => {
-  it('credits each human contributor by an inlined avatar, never a GitHub-hosted image', () => {
-    for (const login of ['tommcclean', 'webbertakken']) {
-      expect(html).toContain(`href="https://github.com/${login}"`);
-    }
-    expect(html.match(/<img src="data:image\/jpeg;base64,/g)).toHaveLength(2);
-    expect(html).not.toContain('githubusercontent');
+  it('links no source repository and makes no third-party image request', () => {
+    expect(html).not.toContain('github.com');
+    expect(html).not.toContain('<img');
   });
 });
 
@@ -54,7 +50,7 @@ describe('SiteFooter columns', () => {
   it('groups the links under titled categories below the brand', () => {
     const titles = [...footerNav.matchAll(/<h2[^>]*>([^<]+)<\/h2>/g)].map((m) => m[1]);
     expect(titles).toEqual(['Product', 'Resources', 'Legal', 'Connect']);
-    expect(html.indexOf('Free diagrams')).toBeLessThan(html.indexOf('aria-label="Footer"'));
+    expect(html.indexOf('Free planning')).toBeLessThan(html.indexOf('aria-label="Footer"'));
   });
 });
 
@@ -79,7 +75,7 @@ describe('SiteFooter year', () => {
     vi.stubEnv('NEXT_PUBLIC_BUILD_YEAR', '2026');
     vi.useFakeTimers({ now: new Date('2031-01-01T00:00:00Z') });
     try {
-      expect(render()).toContain('© 2026 liveplanner. MIT licensed.');
+      expect(render()).toContain('© 2026 liveplanner. All rights reserved.');
     } finally {
       vi.useRealTimers();
       vi.unstubAllEnvs();
@@ -89,7 +85,7 @@ describe('SiteFooter year', () => {
   it('shows no year rather than a wrong one when the build gave none', () => {
     vi.stubEnv('NEXT_PUBLIC_BUILD_YEAR', '');
     try {
-      expect(render()).toContain('© liveplanner. MIT licensed.');
+      expect(render()).toContain('© liveplanner. All rights reserved.');
     } finally {
       vi.unstubAllEnvs();
     }

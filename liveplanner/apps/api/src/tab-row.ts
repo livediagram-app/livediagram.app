@@ -4,9 +4,8 @@ import type { TabDTO, TabSummaryDTO } from './types';
 // tabs row shape as read from D1. The `data` column is the
 // JSON-serialised Tab body, MINUS the `id` and `name` fields, which
 // live as real columns alongside the document link's `order_index` and
-// the tab's `updated_at`. The split is historical (data was a single
-// column on diagrams before migration 0006 and grew its own columns
-// from there); the parser below reassembles the canonical Tab shape.
+// the tab's `updated_at`. The parser below reassembles the canonical
+// Tab shape.
 
 export type TabRow = {
   id: string;
@@ -27,7 +26,7 @@ export type TabRow = {
 // Pure mapper from D1 tab row to wire-format DTO. Pulled out of db.ts
 // so the JSON.parse + camelCase reassembly contract has a test surface
 // of its own without dragging the rest of the D1 module along (same
-// pattern as share-link-row.ts, image-strip.ts).
+// pattern as share-link-row.ts, folder-row.ts).
 //
 // Critical because every tab read in the editor passes through this:
 // a regression that dropped a field from the spread, swapped id with

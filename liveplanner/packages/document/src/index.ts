@@ -16,9 +16,6 @@ import type { TagColour } from './tag-colours';
 import { isSelfDrawingShape } from './data-shapes';
 import type { TabKind } from './tab-kind';
 import type { DashboardLayout } from './dashboard';
-import type { EditorMode } from './editor-mode';
-import type { Page, PageOrientation } from './page';
-import type { ArticleFlow } from './article-flow';
 import type { TabTimer, TabVote } from './session';
 
 // Layer type used by the `Tab.layers` field below (docs/specs/006-document/layers.md). Type-only
@@ -44,7 +41,6 @@ import type {
   StickyElement,
   ImageElement,
   FreehandElement,
-  PathElement,
   AnnotationElement,
   LinkCardElement,
   VideoElement,
@@ -59,10 +55,6 @@ export type {
   StickyElement,
   ImageElement,
   FreehandElement,
-  PathElement,
-  PathHandleMode,
-  PathNode,
-  PathPoint,
   AnnotationElement,
   LinkCardMeta,
   LinkCardElement,
@@ -312,7 +304,6 @@ export type BoxedElement =
   | StickyElement
   | ImageElement
   | FreehandElement
-  | PathElement
   | TableElement
   | AnnotationElement
   | LinkCardElement
@@ -336,21 +327,6 @@ export type Tab = {
   dashboard?: DashboardLayout;
   // A Form tab's form (docs/specs/030-forms/forms.md), read via `readForm` from @liveplanner/forms.
   form?: FormDefinition;
-  // The tab's editor mode, the same for everyone on it and the mode it opens in
-  // (docs/specs/007-editor/editor-modes.md "Where the mode lives"). Absent = 'diagram' (read via
-  // `opensInOf`); a switch sets it as one tab edit (withEditorModeSwitched).
-  opensIn?: EditorMode;
-  // Pages mode's pages (docs/specs/007-editor/editor-modes.md "The pages"): the A4 sheets,
-  // in row order, each portrait or landscape, that everyone lays the tab out on. Absent = one page
-  // (read via `pagesOf`).
-  pages?: Page[];
-  // The writing of the tab's article pages, by flow id (docs/specs/007-editor/article-pages.md):
-  // each document's blocks and style, shared by its pages (`Page.flow`). Read via
-  // `articlesOf`; synced block by block (the `article` room op), never in a `tab-meta` patch.
-  articles?: Record<string, ArticleFlow>;
-  // Legacy: a single page's orientation, from before multiple pages. Read as one page when `pages`
-  // is absent; dropped the first time the pages change (`withPages`).
-  pageOrientation?: PageOrientation;
   // The colours someone picked with + in a colour picker on this tab, newest first, lower-case
   // `#rrggbb` (docs/specs/004-interface-design/colour-picker.md "Custom colours"). Read via
   // `customColoursOf`; every picker in the document offers them as Custom Colours.
@@ -461,46 +437,8 @@ export * from './shape-variants';
 export * from './title-caption';
 export * from './editor-mode';
 export * from './tab-stats';
-export * from './page';
-export * from './wireframe-device';
-export * from './wireframe-page';
-export {
-  wireframeFrameOverSvg,
-  wireframeFrameTheme,
-  wireframeFrameUnderSvg,
-  type WireframeFrameTheme,
-} from './wireframe-device-svg';
-export * from './page-fit';
-export * from './page-image';
-export * from './page-lock';
-export * from './page-of';
-export * from './logo-page';
-export * from './element-mirror';
-export * from './element-symmetry';
-export * from './logo-guide-snap';
-export * from './wordmark';
-export * from './page-content';
-export * from './page-frame';
-export * from './page-ink';
-export * from './page-ink-contrast';
-export * from './page-ink-ground';
-export * from './page-ink-rules';
-export * from './paginate';
-export * from './editor-mode-switch';
-export * from './article-flow';
-export * from './article-flow-ops';
-export * from './article-pages';
-export * from './article-style';
-export * from './article-zones';
-export * from './article-notes';
-export * from './article-to-page';
-export * from './article-intake';
-export * from './article-markdown';
-export * from './article-markdown-io';
-export * from './page-paint';
-export * from './page-default-background';
-export * from './pages-edits';
-export * from './pages-background-copy';
+export * from './ink-legibility';
+export * from './colour-background';
 export * from './tab-window';
 export * from './tab-has-drawing';
 export { migrateWhiteboardKind } from './legacy-whiteboard-tab';
@@ -513,7 +451,6 @@ export function isBoxed(element: Element): element is BoxedElement {
     element.type === 'sticky' ||
     element.type === 'image' ||
     element.type === 'freehand' ||
-    element.type === 'path' ||
     element.type === 'table' ||
     element.type === 'annotation' ||
     element.type === 'link-card' ||
@@ -601,12 +538,9 @@ export * from './drawn-outline-finish';
 // Which elements can be rotated (an annotation marker cannot).
 export * from './rotation';
 export * from './shape-marker';
-// Selection modes a Mode Button can switch to (docs/specs/009-elements/mode-button.md).
-export * from './selection-mode';
+// The Behaviour elements' stored configuration (docs/specs/012-collaboration/session-button.md).
+export * from './behaviour-config';
 export * from './behaviour-skin';
-// How a poll's answers are shaped (docs/specs/012-collaboration/live-poll.md), shared by the Session button's
-// stored config below and by @liveplanner/api-schema's wire `LivePoll`.
-export * from './poll-style';
 export * from './comments';
 export * from './collab-index-rows';
 export * from './plan-board-rows';
@@ -642,36 +576,21 @@ export * from './entity-related';
 export * from './code-themes';
 export * from './chart-palettes';
 export * from './chart-frame';
-export * from './chart-ink';
 export * from './chart-types';
 export * from './chart-marks';
 export * from './chart-axis';
 export * from './chart-values';
 export * from './chart-source';
-export * from './plan-only';
 // Per-participant responses (docs/specs/012-collaboration/participant-responses.md) + the collaboration element family
-// (docs/specs/012-collaboration/estimate-card.md to docs/specs/009-elements/chair.md). Both leaf modules, for the factories cycle.
+// (docs/specs/012-collaboration/temperature-check.md, decision-record.md). Both leaf modules, for the factories cycle.
 export * from './responses';
 export * from './collab-shapes';
-export * from './agenda-current';
-// Quiz (docs/specs/012-collaboration/quiz.md). A leaf module, for the same cycle.
-export * from './quiz';
 export * from './shape-geometry';
-// Fence (docs/specs/009-elements/fence.md): the run, its posts and the line it blocks.
-export * from './fence';
-// The avatar sprite's palette and the Avatar Pad drawn in it (docs/specs/009-elements/avatar-pad.md).
-export * from './avatar-palette';
-export * from './avatar-pad';
-// Seating (docs/specs/009-elements/chair.md): the chair, desk and sofa drawings and every seat's feet point.
-export * from './seating';
-export * from './office';
 export * from './actor-figure';
 export * from './color-wash';
 export { labelOn } from './readable-colour';
 export * from './quick-swatches';
 export * from './quick-swatch-rederive';
-// The Q&A board (docs/specs/012-collaboration/qa-board.md)
-export * from './qa-board';
 export * from './web-components';
 // The Behaviours family (docs/specs/010-palette/palette-top-level-categories.md): which kinds are in it, and which of them
 // draw their own `…` rather than taking the shared settings one.
@@ -690,7 +609,7 @@ export * from './person-card';
 
 export * from './factories';
 export * from './whiteboard';
-export * from './whiteboard-stroke';
+export * from './segment-geometry';
 export * from './graph-authoring';
 export * from './mermaid';
 export * from './duplicate';
@@ -705,9 +624,6 @@ export * from './pen-colours';
 export * from './standard-colours';
 export * from './custom-colours';
 export * from './stock-colours';
-export * from './snap-colours';
-export * from './path-geometry';
-export * from './path-element';
 export * from './component-factories';
 export * from './table';
 
@@ -793,7 +709,6 @@ export * from './svg-path-outline';
 export * from './shape-hit';
 // The band a shape's label sits in (docs/specs/008-canvas/canvas-and-palette.md "Shape primitives").
 export * from './label-body';
-export * from './shape-area';
 export * from './indicator-placement';
 export * from './anchor-choice';
 export * from './arrow-body-drop';
@@ -837,7 +752,7 @@ export * from './adder';
 export * from './element-fingerprint';
 
 // Per-element deltas for the fields many participants write at once
-// (docs/specs/012-collaboration/collab-race-hardening.md): answers, ideas, checklist ticks, comments.
+// (docs/specs/012-collaboration/collab-race-hardening.md): answers, checklist ticks, comments.
 export * from './element-deltas';
 export * from './plan-board-patch';
 
@@ -855,12 +770,6 @@ export * from './tab-folders';
 // Tab fields above, plus the pure timer + vote helpers.
 export * from './session';
 
-// Pencil-tool shape recognition (docs/specs/008-canvas/canvas-and-palette.md Pencil (freehand)
-// subsection's recognise mode). Re-exported so callers import
-// from the package root the same way they do every other helper
-// here.
-export { recogniseShape, type RecognisedShape, type RecognisedShapeKind } from './recognise-shape';
-
 // The curated typefaces (docs/specs/004-interface-design/fonts.md): the catalogue, the id -> CSS stack
 // resolver, and the Google Fonts stylesheet href. Lives here rather than in
 // apps/live because the EXPORTS need it too — the SVG / PNG renderers have
@@ -868,11 +777,6 @@ export { recogniseShape, type RecognisedShape, type RecognisedShapeKind } from '
 // mcp worker as well as the browser.
 export * from './fonts';
 
-// Slide decks (docs/specs/012-collaboration/presentation-mode.md): the Slide / Deck types plus the pure resolution
-// helpers a presentation is built from. Kept here rather than in apps/live
-// because the api and the MCP worker can answer the same questions.
-export * from './slide-deck';
-export * from './slide-deck-pages';
 export * from './lane-seam-snapping';
 // Refs, slug ids, kind words, derived containment and the style keys (docs/specs/024-agents/document-views.md):
 // how views, edit operations and the lint name and place elements alike.
@@ -886,10 +790,6 @@ export * from './dashboard-cards';
 export * from './dashboard-card-style';
 export * from './tab-names';
 export { planBoardFitHeight } from './svg-render-plan';
-export * from './svg-render-pages';
-export * from './article-draw-ops';
-export * from './article-layout-estimate';
-export { agendaFitHeight } from './svg-render-agenda';
 export * from './session-button-text';
 export { lineChars } from './svg-render-web';
 export * from './drawn-count';

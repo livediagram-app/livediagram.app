@@ -4,11 +4,11 @@ import { AccordionSection } from '@/components/primitives/AccordionSection';
 import { HoverCard } from '@liveplanner/ui';
 
 // One collapsible row of mutually-exclusive choices, the shape every
-// tool-config panel is built from (docs/specs/008-canvas/avatar-mode.md, docs/specs/008-canvas/laser-panel.md, docs/specs/008-canvas/spotlight-panel.md, docs/specs/008-canvas/eraser-panel.md):
+// tool-config panel is built from (docs/specs/008-canvas/):
 // an uppercase title, the current value still readable while collapsed, and a
 // wrap of radio pills once open.
 //
-// Avatar, Eraser, Laser and Spotlight each carried their own copy of this,
+// The tool panels each carried their own copy of this,
 // under two different names (OptionSection / OptionRow), identical down to the
 // four AccordionSection class strings. They had not gone wrong yet, but they
 // had started to diverge: three grew per-option HoverCard hints, one grew a
@@ -31,8 +31,8 @@ export function ToolOptionRow<T extends string>({
 }: {
   label: string;
   options: readonly { id: T; label: string; hint?: string }[];
-  // Nullable because a row's value can sit off every preset: the Spotlight's
-  // Size says "Custom" once a click has nudged the radius between two of them.
+  // Nullable because a row's value can sit off every preset, which the header
+  // then says as "Custom".
   value: T | null;
   // What the collapsed header shows. Defaults to the current option's own
   // label, which is what a row whose value is always a preset wants.

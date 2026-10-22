@@ -96,7 +96,7 @@ Scope, by file:
 | Result line        | `ResultLine` (union on `mark`)                      | One line of a changeset's answer: `+ ~ - »`, a container line, `!`                                                           |
 | Warning            | `EditWarning`, `EDIT_WARNING_CODES`                 | A named note that does not reject                                                                                            |
 | Rejection          | `EditRejection`, `EDIT_REJECTION_CODES`             | A named refusal; the spec's code table                                                                                       |
-| Replace            | `ReplaceBody`, `applyReplace`                       | The other changeset body: a whole tab from graph, Mermaid, template, elements                                                |
+| Replace            | `ReplaceBody`, `applyReplace`                       | The other changeset body: a whole tab from a template, dashboard, form or elements                                           |
 
 Banned: "op" for an edit operation (that is a room `ElementOp`), "action", "command" (a CLI command is a front
 door), "batch", "patch", "query" or "filter" for a selector, "handle" or "alias" for a ref, "group" for a frame
@@ -440,15 +440,14 @@ On the working state, in order:
 ### Replace
 
 `applyReplace(tab | null, body, options)` builds the next tab as the MCP does and returns the same outcome shape
-(EO41). The api's `POST /api/documents` compiles each `graph`, `mermaid` or `template` tab through it with
+(EO41). The api's `POST /api/documents` compiles each `template` tab through it with
 `tab === null`, and a changeset with a `replace` body on a tab id the document lacks creates that tab.
 
-- `graph` / `mermaid`: `resolveGraphInput` then `layoutGraph` (the label cap included).
 - `elements`: `normaliseElements`, shape kinds coerced, `applyLayout(body.layout, elements)`, then `buildTab`'s
   facing bends (`withFacingBends`, [Layout cleanup](../../008-canvas/layout-cleanup.md) "Angled lines bend twice")
   and diagram keys settled.
 - `template`: `buildTemplateTab(...).elements`; on a new tab the whole `buildTemplateTab` result.
-- Existing tab: every tab field kept, `elements` replaced. A locked tab is `element_locked`. New tab (`tab === null`): `buildTab` / `buildGraphTab` / `buildTemplateTab` with `options.tabId`, `options.name` and the theme, as `add_tab` does.
+- Existing tab: every tab field kept, `elements` replaced. A locked tab is `element_locked`. New tab (`tab === null`): `buildTab` / `buildTemplateTab` with `options.tabId`, `options.name` and the theme, as `add_tab` does.
 - Validation, `elementOps` and `inverse` as for operations; the results are one line per added and removed element
   and no `»` lines; `targets` is empty; `createdIds` lists every element of the new tab not in the old one.
 
@@ -494,9 +493,9 @@ type ApplyOptions = {
 type ReplaceOptions = ApplyOptions & { tabId: string; name: string; themeId?: string };
 
 type ReplaceBody =
-  | { graph: GraphInput }
-  | { mermaid: string }
   | { template: string }
+  | { dashboard: DashboardSpec } // a new Dashboard tab, or a Dashboard tab rebuilt whole
+  | { form: unknown } // a new Form tab's form whole
   | { elements: unknown[]; layout?: 'auto' | 'preserve' };
 
 type ApplySuccess = {
@@ -703,11 +702,8 @@ Edge cases:
 - **E16** A `connect` whose `a` or `b` is an arrow: `invalid_value` ("arrows connect boxes").
 - **E17** `connect a->b->c` or `connect a -> b -> c`: `parse_error` at the second `->` word, expected
   `one -> in connect: <a> -> <b>`; the `<a>-><b>` selector term with a third end is a parse error too.
-- **E18** A result holding a board or Sheet the tab did not hold, on a tab not in Plan (operations after `finalise`,
-  replace after `nextTab`; `planOnlyAddedOutsidePlan`): `invalid_value` (`planOnlyOutsidePlan`), detail `a board or
-Sheet goes only on a tab in Plan: <ids>`, hint `add a Board tab or a Sheet tab with add_tab (template "kanban" or
-"blank-spreadsheet")` ([Agent changesets](../agent-changesets.md#boards-and-sheets-only-in-plan)). One the tab
-  already held passes.
+- **E18** Retired with the other editor modes: a board or Sheet on any tab passes
+  ([Agent changesets](../agent-changesets.md#boards-and-sheets-only-in-plan)).
 
 ## Security and trust
 
@@ -772,7 +768,7 @@ and changeset ids. Fields are counts, codes and names only.
 | `[edit-ops] selection-unread` | `selected` with `selected: null`             | `operation`                                                          |
 | `[edit-ops] locked`           | An operation refused for a lock              | `operation`, `op`, `scope` (tab, element, layer)                     |
 | `[edit-ops] theme-fallback`   | No theme passed and `tab.theme` not built in | (none)                                                               |
-| `[edit-ops] replace`          | `applyReplace` ran                           | `source` (graph, mermaid, template, elements), `elements`            |
+| `[edit-ops] replace`          | `applyReplace` ran                           | `source` (template, dashboard, form, elements), `elements`           |
 | `[edit-ops] laid-out`         | `layout` or `wrap tidy` laid boxes out       | `operation`, `boxes`, `arrows`, `style`                              |
 | `[edit-ops] test-failed`      | A `test` found other values                  | `operation`, `fields`                                                |
 
@@ -824,7 +820,7 @@ Every suite uses `packages/edit-operations/src/fixtures/checkout-flow.ts` and a 
 | Containers behind members; lanes first                                                                                   | `invariants.test.ts` › "lanes first, and every container behind its members" (I6)                                                     |
 | `too_large` over `CHANGESET_MAX_OPERATIONS`                                                                              | `parse.test.ts` › "caps the line length, the operation count"                                                                         |
 | Cost grows linearly with the tab and with the changeset                                                                  | `performance.test.ts`                                                                                                                 |
-| `replace` from graph, Mermaid, template, elements                                                                        | `replace.test.ts`                                                                                                                     |
+| `replace` from template, dashboard, form, elements                                                                       | `replace.test.ts`                                                                                                                     |
 | Moved MCP modules behave as before                                                                                       | `packages/document/src/{element-normalise,graph-input,tab-builders}.test.ts`                                                          |
 | Every stored field listed per type                                                                                       | `packages/document/src/element-fields.test.ts` (plus the compile-time `satisfies`)                                                    |
 | Validation names the field and rule                                                                                      | `packages/document/src/validate.test.ts` › "elementValidationIssue"                                                                   |
@@ -851,7 +847,7 @@ Every suite uses `packages/edit-operations/src/fixtures/checkout-flow.ts` and a 
 | `NEAREST_MAX_DISTANCE`     | 3                         | Typos and short slips, not other words (EO45)                                         | 2 to 5          |
 | `EDIT_APPLY_BUDGET_MS`     | 50                        | A tenth of a request's patience at the 500-operation cap; a measured aim, not in code | 20 to 200       |
 
-No environment variable, binding or secret; self-hosting needs nothing new.
+No environment variable, binding or secret; a deployment needs nothing new.
 
 ## Defaults ledger
 

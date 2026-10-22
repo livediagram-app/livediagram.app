@@ -103,7 +103,7 @@ export function RedirectingCard() {
 
 // ---------------------------------------------------------------------
 // Notice shown on the auth routes when Clerk isn't configured for the
-// deployment (self-host path, no NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY).
+// deployment (no NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY).
 // The editor still works — only sign-up / sign-in are off — so the
 // CTA points back to the editor's welcome flow.
 // ---------------------------------------------------------------------
@@ -117,7 +117,7 @@ export function AuthDisabledNotice() {
       pitch={false}
     >
       <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-        This liveplanner instance is running in <strong>guest-only</strong> mode: the canvas works
+        This liveplanner instance is running in <strong>guest-only</strong> mode: the planner works
         without an account. To enable sign-in, set{' '}
         <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs dark:bg-slate-900 dark:text-slate-200">
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY

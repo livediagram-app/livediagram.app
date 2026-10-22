@@ -30,7 +30,6 @@ function harness(createBlocked: boolean) {
       isReadOnly: false,
       createBlocked,
       explainCreateBlocked,
-      embedMode: false,
       readSelection: () => ({ selectedId: 'copied', multiSelectedIds: new Set<string>() }),
       editingId: null,
       setEditingId: () => {},
@@ -40,8 +39,6 @@ function harness(createBlocked: boolean) {
       },
       setSelectedId: () => {},
       setMultiSelectedIds: () => {},
-      ownerId: 'me',
-      documentId: 'd',
       toast: { error: vi.fn(), info: vi.fn() } as never,
     }),
   );

@@ -2,8 +2,8 @@ import type { Metadata, Viewport } from 'next';
 
 // The site-wide constants every public frontend shares. Before this each app
 // kept its own copy (marketing and help had a `lib/site.ts` apiece, telemetry
-// inlined the origin, the ShareRail and the editor's GitHub link hardcoded
-// theirs), so the origin and the repo URL lived in five places.
+// inlined the origin and the ShareRail hardcoded its own), so the origin
+// lived in several places.
 
 // The canonical origin. liveplanner.app is one origin: the router stitches
 // the apps together by path (docs/specs/016-platform/router-app.md), so every app's metadataBase, JSON-LD
@@ -17,19 +17,13 @@ export const SITE_NAME = 'liveplanner';
 // What liveplanner is, in the words every public surface uses (docs/specs/019-marketing/marketing-site.md
 // "SEO and metadata"), kept here so they can't drift: the landing page's title, its description
 // (also the web app manifest's), and the one-line pitch the share card, the share images' alt text
-// and the share rail build on. It names every kind of thing the canvas makes, not just diagrams.
-export const SITE_TITLE = 'liveplanner: Diagram, draw and make pages together, live';
+// and the share rail build on. It names every kind of thing a project holds: boards, sheets, dashboards and forms.
+export const SITE_TITLE = 'liveplanner: Plan the work together, live';
 export const SITE_DESCRIPTION =
-  'A free, real-time canvas for diagrams, whiteboards, mind maps, infographics and documents. Built for teams who think visually.';
+  'Free planning in real time, with no trackers: boards of cards, spreadsheets, dashboards and forms in one project, shared with one link.';
 // Lower case: it follows "liveplanner: " or starts a sentence through sentencePitch.
-export const SITE_PITCH =
-  'a real-time canvas for diagrams, whiteboards, illustrations and documents';
+export const SITE_PITCH = 'boards, sheets, dashboards and forms, planned together in real time';
 export const sentencePitch = () => `${SITE_PITCH[0]!.toUpperCase()}${SITE_PITCH.slice(1)}.`;
-
-// The open-source repository (docs/specs/002-project-scope/open-source-and-business-model.md: the codebase is public + MIT), linked
-// from the footer, the FAQ, the status page, the help centre's contact page,
-// the editor's bottom bar and Explorer menu, and the `sameAs` JSON-LD.
-export const REPO_URL = 'https://github.com/liveplanner-app/liveplanner.app';
 
 // The public contact form (a liveplanner Form, docs/specs/030-forms/forms.md), the one way to reach the
 // team; no email address is published. Linked from the help centre's contact page, the FAQ, the status
@@ -61,7 +55,7 @@ export const BRAND_ICONS: NonNullable<Metadata['icons']> = {
 // this hint (docs/specs/004-interface-design/appearance.md). The editor has its own
 // viewport (pinned zoom, docs/specs/007-editor/live-app.md) and doesn't use this.
 export const PUBLIC_VIEWPORT: Viewport = {
-  themeColor: '#0EA5E9',
+  themeColor: '#8B5CF6',
   colorScheme: 'light dark',
 };
 

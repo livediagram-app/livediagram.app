@@ -1,18 +1,12 @@
-// The tab-level settings a template ships with (templateCanvasOverrides): its backdrop, layers, mode, pages and
-// kind. Its own module, apart from the template catalogue in templates.ts: these read the template builders (a
-// template's pages are built here), and the editor reads the catalogue (a template's title) on every load, which
-// drew every builder into its first load while the two shared a module.
+// The tab-level settings a template ships with (templateCanvasOverrides): its backdrop, layers, mode and kind. Its own
+// module, apart from the template catalogue in templates.ts: the editor reads the catalogue (a template's title) on
+// every load, and these stay out of that first load.
 import {
   WHITEBOARD_DEFAULT_PATTERN,
   type BackgroundPattern,
   type Tab,
 } from '@liveplanner/document';
-import { articleTemplateOverrides } from './article-template';
-import { workingBackwardsOverrides } from './template-working-backwards';
-import { blankPageTemplateOverrides } from './blank-page-templates';
 import { templateLayers } from './template-layers';
-import { templateEditorMode } from './template-modes';
-import { templatePages } from './template-pages';
 import type { TemplateKind } from './templates';
 
 // The canvas backdrop pattern that best suits each template's layout.
@@ -23,10 +17,6 @@ import type { TemplateKind } from './templates';
 //     Gantt / kanban / wireframes) where boxes snap to a square grid,
 //   - a blank canvas for clean radial layouts (Venn, flywheel,
 //     pyramid) where the shapes should carry the page,
-//   - a crosshatch backdrop for the storyboard, so its scene frames
-//     read as cards lifted off a textured surface,
-//   - a blank surround for the templates that open on pages
-//     (Article, Slide deck, Logo design, Group card and the rest): the pages are the paper,
 //   - horizontal rules for the time-ordered timeline / journey,
 //   - the dot grid (explicit, so it survives even a blank-canvas theme)
 //     for the sticky-note / freeform boards.
@@ -75,9 +65,6 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   venn: 'blank',
   flywheel: 'blank',
   pyramid: 'blank',
-  // The templates on pages keep a plain surround, like the Article: the pages are the paper.
-  'slide-deck': 'blank',
-  'logo-design': 'blank',
   timeline: 'lines',
   'milestone-timeline': 'lines',
   // The vertical variant reads best on a clean canvas: horizontal ruled
@@ -86,7 +73,6 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   journey: 'lines',
   retrospective: 'grid',
   fishbone: 'grid',
-  'live-card': 'blank',
   mindmap: 'grid',
   // Tree map rides the dot grid like the radial map; the bubble map is a
   // clean radial layout, so it gets a blank canvas like Venn / pyramid.
@@ -100,9 +86,7 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'prioritization-matrix': 'graph',
   // The later batch splits the same three ways: alignment-heavy scaffolds
   // ride graph paper, sticky-note workshop boards pin the dot grid, and
-  // the funnel's clean stacked silhouette gets a blank canvas. The
-  // storyboard rides crosshatch so its scene frames read as cards on a
-  // textured board.
+  // the funnel's clean stacked silhouette gets a blank canvas.
   roadmap: 'graph',
   'raci-matrix': 'graph',
   'business-model-canvas': 'graph',
@@ -113,24 +97,13 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'state-machine': 'graph',
   'user-story-map': 'grid',
   'affinity-map': 'grid',
-  'lean-coffee': 'grid',
   brainstorm: 'grid',
   'workshop-board': 'grid',
-  'town-hall': 'grid',
-  'pub-quiz': 'grid',
-  'icebreaker-questions': 'grid',
   // Grid: an office's floor plan reads as one on gridded paper, the rooms carrying their own floors.
-  'virtual-office': 'grid',
-  'coworking-space': 'grid',
-  'team-pod': 'grid',
-  'all-hands-hall': 'grid',
-  'two-truths-and-a-lie': 'grid',
-  'would-you-rather': 'grid',
-  'people-bingo': 'grid',
   'empathy-map': 'grid',
   funnel: 'blank',
   sankey: 'blank',
-  // A new whiteboard starts on Grid (docs/specs/023-draw-mode/draw-mode.md "Board background").
+  // A new whiteboard starts on Grid (docs/specs/007-editor/editor-modes.md).
   whiteboard: WHITEBOARD_DEFAULT_PATTERN,
   // The Draw templates start on the whiteboard's board too.
   sketchnote: WHITEBOARD_DEFAULT_PATTERN,
@@ -157,8 +130,7 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'stakeholder-map': 'graph',
   'risk-matrix': 'graph',
   // The strategy and systems batch: the drawn notations ride graph paper; the Wardley map's axes are its page, so
-  // its canvas is blank; the Value Proposition Canvas is a sticky-note board on the dot grid; Working Backwards is an
-  // article, its page the paper.
+  // its canvas is blank; the Value Proposition Canvas is a sticky-note board on the dot grid.
   'threat-model': 'graph',
   'service-blueprint': 'graph',
   'metric-tree': 'graph',
@@ -166,39 +138,7 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'value-stream-map': 'graph',
   'wardley-map': 'blank',
   'value-proposition-canvas': 'grid',
-  'working-backwards': 'blank',
   'user-persona': 'grid',
-  'meeting-agenda': 'grid',
-  // An article's surround stays plain: the page is the paper.
-  article: 'blank',
-  // The other Pages templates: their pages are the paper.
-  'blank-illustration': 'blank',
-  'blank-slide-deck': 'blank',
-  'blank-article': 'blank',
-  'blank-infographic': 'blank',
-  'blank-logo': 'blank',
-  'blank-wireframe-phone': 'blank',
-  'blank-wireframe-tablet': 'blank',
-  'blank-wireframe-browser': 'blank',
-  'blank-wireframe-laptop': 'blank',
-  'blank-wireframe-watch': 'blank',
-  'wireframe-mobile-app': 'blank',
-  'wireframe-website': 'blank',
-  'wireframe-dashboard': 'blank',
-  'wireframe-tablet-app': 'blank',
-  'wireframe-watch-app': 'blank',
-  'event-poster': 'blank',
-  'year-in-review': 'blank',
-  resume: 'blank',
-  'recipe-card': 'blank',
-  'data-story': 'blank',
-  'how-it-works': 'blank',
-  versus: 'blank',
-  'social-carousel': 'blank',
-  'launch-keynote': 'blank',
-  'quarterly-review': 'blank',
-  'team-welcome': 'blank',
-  'workshop-kickoff': 'blank',
   // A personal planning sheet, read closely like a page: even dots behind
   // its cards read as noise, so it gets a clean canvas.
   'objectives-planner': 'blank',
@@ -234,10 +174,7 @@ export function templateCanvasOverrides(kind: TemplateKind): Partial<Tab> {
   // louder the pattern, the further it steps back (TEMPLATE_PATTERN_OPACITY);
   // a few radial / stage layouts soften further still, and the lower of the
   // two wins.
-  // A whiteboard draws its own quiet board pattern (docs/specs/023-draw-mode/draw-mode.md "Board
-  // background"), so it never takes a template's dimming.
-  const mode = templateEditorMode(kind);
-  const quiet = pattern && mode !== 'draw' ? TEMPLATE_PATTERN_OPACITY[pattern] : undefined;
+  const quiet = pattern ? TEMPLATE_PATTERN_OPACITY[pattern] : undefined;
   const soft =
     kind === 'mindmap' ||
     kind === 'mindmap-tree' ||
@@ -249,20 +186,5 @@ export function templateCanvasOverrides(kind: TemplateKind): Partial<Tab> {
   if (opacity < 1) overrides.backgroundOpacity = opacity;
   const layers = templateLayers(kind);
   if (layers) overrides.layers = layers;
-  // A template's mode (docs/specs/007-editor/templates-by-mode.md): the Draw templates are general
-  // tabs that OPEN in Draw mode (docs/specs/007-editor/editor-modes.md "Where the mode lives";
-  // whiteboarding is no kind), the Pages ones open in Pages (their pages below).
-  if (mode !== 'diagram') overrides.opensIn = mode;
-  // The Article opens in Pages on its one article page (docs/specs/007-editor/article-pages.md).
-  if (kind === 'article') Object.assign(overrides, articleTemplateOverrides());
-  // Working Backwards is an article too: its PR/FAQ flows onto pages in the Report look (template-working-backwards.ts).
-  if (kind === 'working-backwards') Object.assign(overrides, workingBackwardsOverrides());
-  // A blank of a page kind opens in Pages on its one page, its kind already chosen (blank-page-templates.ts).
-  const blankPage = blankPageTemplateOverrides(kind);
-  if (blankPage) Object.assign(overrides, blankPage);
-  // The Slide deck, Logo design and Group card open in Pages on their own pages
-  // (canvas-and-palette.md "Templates on pages"); their builders place every element on them.
-  const pages = templatePages(kind);
-  if (pages) Object.assign(overrides, { opensIn: 'pages', pages });
   return overrides;
 }

@@ -9,11 +9,11 @@ Two decisions, the second resting on the first:
    a layout that re-flows as it is resized and every piece of text editable in place.
 2. **The editor has no groups**: no `groupId` field, no Group / Ungroup actions or `⌘G`, no
    group mode, group selection or drill-in, no group toolbar actions, no group quick-connect or
-   `pinned-group` arrow endpoints, and no "whole group" option in the Eraser.
+   `pinned-group` arrow endpoints.
 
 ## Why
 
-Groups cost more than they give. Every selection, drag, delete, duplicate, lock, layer, eraser,
+Groups cost more than they give. Every selection, drag, delete, duplicate, lock, layer,
 quick-connect and clipboard path needs a group branch, and the interactions (select the group,
 click again to drill in, no resize, group mode to extend one) are a steady source of "why did
 that happen". What people actually wanted from them is covered by the marquee multi-selection
@@ -112,5 +112,4 @@ The editor has none of these:
 - Group selection, drill-in (`soloSelectedId`), and group-aware drag / delete / lock / layer /
   duplicate / clipboard / format-painter paths.
 - Group quick-connect and `pinned-group` endpoints (except the load-time migration above).
-- The Eraser Panel's "whole group" toggle ([Eraser Panel](../008-canvas/eraser-panel.md)).
 - A help article on groups.

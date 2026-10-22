@@ -6,7 +6,7 @@ A canvas element that **chooses at random when pressed** — one of the people i
 
 ## Why
 
-Every session has a moment where someone has to pick, and picking by hand is either slow ("who hasn't gone yet?") or loaded (the same two people always volunteer). A visible, obviously-random choice settles it in a second and takes the decision off whoever is facilitating.
+Every session has a moment where someone has to pick, and picking by hand is either slow ("who hasn't gone yet?") or loaded (the same two people always volunteer). A visible, obviously-random choice settles it in a second and takes the decision off whoever is running the session.
 
 It belongs on the canvas rather than in a menu for the same reason the other Behaviour elements do: the canvas is the shared surface everyone is already looking at, so the roll is something the room watches together rather than a result one person reads out.
 
@@ -26,9 +26,9 @@ It belongs on the canvas rather than in a menu for the same reason the other Beh
 
   Nothing extra goes over the wire: the element update the presser is already sending IS the cue, so this costs no new op, no ordering and nothing to persist. Every client runs its own reel from its own candidate list; they all end on the written result, so the guarantee above ("a peer never watches a different reel land on a different name") still holds.
 
-  The face tracks the last result it has accounted for as a VALUE rather than a "we just rolled" flag, because a re-roll landing on the same name changes nothing on the element: a flag armed by that press would sit there and swallow the next person's roll. It also needs to know whether OUR roll is written at all (`shared`): a non-facilitator Editor's private roll changes no result, so arming a skip for it would eat somebody else's landing.
+  The face tracks the last result it has accounted for as a VALUE rather than a "we just rolled" flag, because a re-roll landing on the same name changes nothing on the element: a flag armed by that press would sit there and swallow the next person's roll.
 
-- **Only an Editor can spin it.** Choosing who goes next runs the session, so a Participant and a Viewer see the result land but have no spin button ([Share roles](../013-workspace/share-roles.md), decided 2026-10-10). Under a facilitator, an Editor who is not them spins for themselves and the room's answer stays the facilitator's.
+- **Only an Editor can spin it.** Choosing who goes next runs the session, so a Participant and a Viewer see the result land but have no spin button ([Share roles](../013-workspace/share-roles.md), decided 2026-10-10).
 - **Participants** are read from live presence at press time, so it can only pick someone who is actually here. With nobody else in the room it picks you, because a picker that refuses to choose is a broken picker. Candidates are keyed by participant id: you appear once even though you arrive from both local identity and presence, and two people who happen to share a name are still two candidates.
 - Randomness comes from `apps/live/lib/random.ts` (`crypto.getRandomValues`), like every other roll in the editor.
 - **Dragging it does not roll it** (`usePressWithoutDrag`).

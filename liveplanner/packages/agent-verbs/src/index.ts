@@ -58,7 +58,6 @@ export {
   tabOf,
   tabPath,
 } from './verbs/shared';
-export { graphLint, graphOfSource } from './verbs/graph';
 export { tabListOf } from './verbs/tab';
 export { EXPORT_FORMATS } from './verbs/local';
 export { workbenchNameOf, workbenchOriginOf } from './verbs/workbench';
@@ -101,6 +100,5 @@ export {
   type SheetRead,
   type SheetRefusal,
 } from './sheets';
-export * from './pages';
 export * from './forms';
 export * from './images';

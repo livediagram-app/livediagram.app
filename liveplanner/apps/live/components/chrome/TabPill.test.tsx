@@ -6,8 +6,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Tab } from '@liveplanner/document';
-import { FlowchartIcon, MarkerIcon } from '@liveplanner/ui';
-import { EditorModeProvider } from './editor-mode/editor-mode-context';
+import { PlanIcon } from '@liveplanner/ui';
 import { TabPill, type TabPillCtx } from './TabPill';
 
 function ctx(over: Partial<TabPillCtx> = {}): TabPillCtx {
@@ -67,37 +66,14 @@ describe('TabPill out of scope', () => {
   });
 });
 
-// docs/specs/007-editor/editor-modes.md "The tab pill shows what it opens in".
-describe('TabPill opening-mode icon', () => {
-  it.each([
-    ['Diagram', undefined, FlowchartIcon],
-    ['Draw', 'draw' as const, MarkerIcon],
-  ])('leads with the %s mode icon', (_, opensIn, Icon) => {
-    const expected = render(<Icon size={12} />).container.querySelector('svg')!.innerHTML;
+// docs/specs/026-plan/plan-tabs.md "Tab kinds": a general tab's pill leads with Plan's mark.
+describe('TabPill leading icon', () => {
+  it("leads a general tab with Plan's mark", () => {
+    const expected = render(<PlanIcon size={12} />).container.querySelector('svg')!.innerHTML;
     cleanup();
-    render(<TabPill tab={{ ...tab('t2', 'Board'), opensIn }} ctx={ctx()} />);
+    render(<TabPill tab={tab('t2', 'Board')} ctx={ctx()} />);
     const button = screen.getByRole('button', { name: 'Board' });
     expect(button.querySelector('svg')!.innerHTML).toBe(expected);
-  });
-
-  // docs/specs/007-editor/editor-modes.md "Where the mode lives": nothing is remembered per person.
-  it("shows the tab's own mode, never one an earlier editor remembered in this browser", () => {
-    const expected = render(<FlowchartIcon size={12} />).container.querySelector('svg')!.innerHTML;
-    cleanup();
-    localStorage.setItem('liveplanner:v2:editor-mode:pill-switched', 'draw');
-    render(
-      <EditorModeProvider
-        value={{ mode: 'diagram', setMode: vi.fn(), canSwitch: true, canEdit: true }}
-      >
-        <TabPill
-          tab={tab('pill-switched', 'Board')}
-          ctx={ctx({ activeId: 'pill-switched', isOutOfScope: () => false })}
-        />
-      </EditorModeProvider>,
-    );
-    const button = screen.getByRole('button', { name: 'Board' });
-    expect(button.querySelector('svg')!.innerHTML).toBe(expected);
-    localStorage.clear();
   });
 });
 

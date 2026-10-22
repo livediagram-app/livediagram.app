@@ -1,11 +1,11 @@
 // Palette-category illustrations (docs/specs/018-help/help-app.md): the mode picker (Select, Hand,
-// Eraser, Format Painter, Laser, Spotlight, Avatar, Isometric) and the palette
+// Format Painter, Isometric) and the palette
 // settings (Auto-Attach Arrows, Alignment Guides, Panel Opacity). Composed only from the shared primitives so the house style
-// holds — except the Avatar sprite, which is deliberately pixel art.
+// holds.
 
 import { Scene, Shape, Arrow, SelectionBox, Panel } from './primitives';
 import { IsoCard, iso } from './palette-modes-parts';
-import { PickerTrigger, PixelCharacter } from './selection-modes';
+import { PickerTrigger } from './selection-modes';
 
 // --- Mode scenes ------------------------------------------------------------
 
@@ -52,54 +52,6 @@ export function HandMode() {
   );
 }
 
-/** Eraser mode: the picker set to Eraser and a drag across shapes, the ones
- *  already swept fading away. */
-export function EraserMode() {
-  return (
-    <Scene w={420} h={230}>
-      <PickerTrigger tool="eraser" />
-      {/* Erased (fading) */}
-      <Shape x={70} y={118} w={62} h={38} dashed fill="fill-slate-50" stroke="stroke-slate-300" />
-      <Shape x={150} y={150} w={62} h={38} dashed fill="fill-slate-50" stroke="stroke-slate-300" />
-      {/* Still present */}
-      <Shape x={244} y={132} w={62} h={38} kind="circle" label="C" />
-      <Shape x={320} y={172} w={62} h={38} accent label="D" />
-      {/* Eraser drag path */}
-      <path
-        d="M96 132 L184 168 L276 150"
-        className="stroke-rose-400"
-        strokeWidth={2.5}
-        fill="none"
-        strokeDasharray="6 5"
-        strokeLinecap="round"
-      />
-      {/* Eraser cursor */}
-      <g transform="translate(276 150)">
-        <rect
-          x={-9}
-          y={-5}
-          width={18}
-          height={11}
-          rx={2}
-          transform="rotate(-30)"
-          className="fill-white stroke-slate-500"
-          strokeWidth={1.8}
-        />
-        <rect
-          x={-9}
-          y={1}
-          width={18}
-          height={5}
-          rx={1}
-          transform="rotate(-30)"
-          className="fill-rose-300 stroke-slate-500"
-          strokeWidth={1.5}
-        />
-      </g>
-    </Scene>
-  );
-}
-
 /** Format Painter mode: the picker set to Format, copying one shape's style
  *  onto another via a brush cursor. */
 export function FormatPainterMode() {
@@ -119,72 +71,6 @@ export function FormatPainterMode() {
           strokeWidth={1.5}
         />
       </g>
-    </Scene>
-  );
-}
-
-/** Laser mode: the picker set to Laser and a fading laser trail across the
- *  canvas, brightening towards the cursor. */
-export function LaserMode() {
-  return (
-    <Scene w={420} h={230}>
-      <PickerTrigger tool="laser" />
-      <Shape x={84} y={120} w={76} h={44} label="A" />
-      <Shape x={264} y={150} w={76} h={44} accent label="B" />
-      {/* Fading laser trail, from under A to just short of B: faint tail to bright head,
-          clear of both labels. */}
-      <path
-        d="M100 186 q50 24 104 4"
-        className="stroke-rose-200"
-        strokeWidth={5}
-        fill="none"
-        strokeLinecap="round"
-      />
-      <path
-        d="M196 192 q26 -8 52 -20"
-        className="stroke-rose-400"
-        strokeWidth={3.5}
-        fill="none"
-        strokeLinecap="round"
-      />
-      {/* Bright head dot, pointing at B */}
-      <circle cx={250} cy={171} r={5} className="fill-rose-500" />
-      <circle cx={250} cy={171} r={9} className="fill-rose-400/30" />
-    </Scene>
-  );
-}
-
-/** Avatar mode: the picker set to Avatar, the pixel character standing on the
- *  shape being talked about (its feet inside it, which is what rings it), to the
- *  side of the label so both read, at the end of the dashed path it walked. */
-export function AvatarMode() {
-  return (
-    <Scene w={420} h={230}>
-      <PickerTrigger tool="avatar" />
-      <Shape x={68} y={150} w={76} h={44} label="A" />
-      <Shape x={226} y={128} w={140} h={54} label="B" />
-      {/* Walked path + the click that started it */}
-      <path
-        d="M150 178 q76 26 172 2"
-        className="stroke-brand-300"
-        strokeWidth={2}
-        fill="none"
-        strokeDasharray="4 5"
-        strokeLinecap="round"
-      />
-      <circle cx={150} cy={178} r={4} className="fill-brand-300/60" />
-      {/* "You are here" ring on the shape the avatar arrived at */}
-      <rect
-        x={222}
-        y={124}
-        width={148}
-        height={62}
-        rx={8}
-        className="fill-none stroke-brand-400"
-        strokeWidth={2}
-      />
-      {/* The character, feet inside the ringed shape where the path ends */}
-      <PixelCharacter fx={334} fy={178} />
     </Scene>
   );
 }

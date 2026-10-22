@@ -1,4 +1,4 @@
-// A text box that fits or wraps hugs its text (docs/specs/023-draw-mode/draw-mode.md "Text boxes",
+// A text box that fits or wraps hugs its text (docs/specs/007-editor/editor-modes.md "A text box's sizing",
 // docs/specs/007-editor/editor-modes.md "A text box's sizing"), in either editor mode:
 // the box is the text's own line box plus a little padding, never a default size. This module
 // is the pure geometry: what the box is for a measured block of text, where a click or a drag
@@ -80,30 +80,6 @@ export function hugCommittedText(
 ): TextElement | null {
   if ((el.label ?? '').trim() === '') return null;
   return { ...el, ...hugTextSize(el, measure(el)) };
-}
-
-// A new Draw mode text box, empty and about to be typed into. A click puts the caret at the
-// click (the box's left edge a padding to its left, its one line centred on it) and the box
-// widens with the text. A drag sets the width from the dragged box; the height is one line.
-export function placedTextBox(
-  el: TextElement,
-  tap: boolean,
-  start: { x: number; y: number },
-  drag: ShapeBounds,
-): Pick<TextElement, 'x' | 'y' | 'width' | 'height' | 'label' | 'sizing'> {
-  const pad = textHugPadding(el);
-  const height = Math.ceil(textHugFontPx(el) * TEXT_HUG_LEADING) + 2 * pad.y;
-  if (tap) {
-    return {
-      label: '',
-      sizing: 'fit',
-      x: start.x - pad.x,
-      y: start.y - height / 2,
-      width: 2 * pad.x,
-      height,
-    };
-  }
-  return { label: '', sizing: 'wrap', x: drag.x, y: drag.y, width: drag.width, height };
 }
 
 // One frame of a handle resize on a hugging text box. `next` is the frame's resolved bounds

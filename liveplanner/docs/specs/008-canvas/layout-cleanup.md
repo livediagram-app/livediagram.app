@@ -120,7 +120,7 @@ pick by angle (`reanchorArrow`'s `axis`).
 
 An angled arrow on its own is an L: from a parent's bottom to a child's top it
 runs down to the child's level and meets the child's top edge sideways. Laid-out
-graph input (the MCP's `graph` / `mermaid`, [MCP server](../015-api/mcp-server.md))
+graph input (the graph layout in `packages/document`)
 gives each angled arrow two bends through `curvePoints` (down to half height,
 across, down into the child), the shape an org chart is read in; one whose ends
 already line up runs straight rather than drawing a zero-length elbow with a
@@ -145,7 +145,7 @@ do not face each other keeps its L, which already meets both ends square.
 
 ### Two-way edges bow apart
 
-In laid-out graph input (a Mermaid import, the MCP's `graph` / `mermaid`), a
+In laid-out graph input (a Mermaid import), a
 pair of straight arrows between the same two boxes in opposite directions (a
 state diagram's Private -> Shared and Shared -> Private) is curved apart, each
 bowing to its own side of the line between the boxes (`arrow-reciprocal.ts`):

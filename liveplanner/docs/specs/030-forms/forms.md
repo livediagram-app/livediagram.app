@@ -20,7 +20,7 @@ document.
 | ------------------- | --------------------------------------------------------------------------------------------- | ----------------------------- |
 | **Form tab**        | A tab of kind `form`: one form, filling the tab                                               | form page, survey tab         |
 | **form**            | The definition a Form tab holds: its heading, sections, questions, look and where answers go  | survey, questionnaire         |
-| **section**         | One page of a form, shown alone with Next and Back; a form has at least one                   | page (Pages mode's), step     |
+| **section**         | One page of a form, shown alone with Next and Back; a form has at least one                   | page, step                    |
 | **question**        | One thing a form asks: a prompt, a question type, whether it is required, and its answer slot | field (that is a card's)      |
 | **question type**   | What a question takes (Short Answer, Multiple Choice...)                                      | field kind (that is a card's) |
 | **mapping**         | Where a question's answer is kept on the card: Title, Description or one custom field         | binding, link                 |
@@ -36,9 +36,7 @@ it is what the tab is and it brings its own behaviour. It is always in Plan mode
 ## The Form tab
 
 - A Form tab follows the Plan tab kinds' rules ([Plan tabs](../026-plan/plan-tabs.md#the-kinds)): always in Plan,
-  its mode switch reading Plan, picking another mode asks **Open a New <Mode> Tab?** ("A Form tab is always in Plan.
-  Its mode can’t change, but you can carry on in a new <Mode> tab."), no palette, Shift+D does nothing, its tab
-  menu lists no modes. Its pill leads with a clipboard-list glyph.
+  no palette, its tab menu lists no modes. Its pill leads with a clipboard-list glyph.
 - The tab and its form share one name ([Names](../026-plan/plan-tabs.md#names)): the form's **heading** is the tab's
   name. Renaming either renames both in one undo step. A Form tab still on its default name takes its starter's name
   ("Bug Report"); a tab with a name of its own gives it to the form.
@@ -131,12 +129,11 @@ previewing), the help link and the form's **cog**.
 
 ### The form card, top to bottom
 
-- **Cover**: a band 160 px tall (96 on a phone) across the top of the column, painted with a slide background in
-  colour, picked and drawn exactly as a slide's ([Pages](../007-editor/pages-mode.md)
-  "Backgrounds", "Animated backgrounds"): the slide's **Background** section with **Solid**, **Gradient** (the tab
-  theme's gradients first) and **Animated** (the slide motions, moving on screen; still under reduced motion), then
-  **Pattern**. No **Image**: a cover takes no picture. Stored as `form.cover` (`{ fill?, pattern? }`, the
-  `@liveplanner/page-background` shape a slide's colours share). A hover previews on the band; a press sets it.
+- **Cover**: a band 160 px tall (96 on a phone) across the top of the column, painted with a colour background
+  (`@liveplanner/page-background`): a **Background** section with **Solid**, **Gradient** (the tab theme's gradients
+  first) and **Animated** (the background motions, moving on screen; still under reduced motion), then **Pattern**.
+  No **Image**: a cover takes no picture. Stored as `form.cover` (`{ fill?, pattern? }`, the
+  `@liveplanner/page-background` shape). A hover previews on the band; a press sets it.
   Without a cover, a 10 px band of the form colour. **Add Cover** / **Change Cover** on hover (always shown on a
   touch screen, which has no hover) opens the cover popover, with **Remove Cover**.
 - **Heading**: the form's name (1 to 80 characters), edited in place (renaming it renames the board or sheet its
@@ -378,7 +375,7 @@ view as its ring lands, as every tour's is ([Mechanics](../007-editor/editor-tou
 Seen is `formTourSeen` (synced preferences); **Show Me Around** at the foot of the cog's panel reruns it at once, seen
 or not, as Settings' Tours › **Forms Tour** does. Its events are `UI` `Opened`/`Closed` `FormTourOffer`, `Started`
 `FormTour`, `View` `FormTourStep<Step>` and `Ended` `FormTourCompleted`/`FormTourSkipped`, charted as the **Forms
-Tour** stack beside the Draw tour's.
+Tour** stack.
 
 ## Publishing and the form link
 
@@ -590,7 +587,7 @@ board settings, for switching back.
 - **Email**: the document's owner gets "New response to Bug Report", naming the card's title and its document, with
   **Open the board**. At most one email per form per 15 minutes: the next one sent says "And 4 more responses have
   arrived since the last email." Turned off with **Someone Fills In My Form** in Settings' email notifications;
-  never sent where email is not configured (a self-hosted install without it).
+  never sent where email is not configured (a deployment without it).
 
 ## Who may do what
 
@@ -749,5 +746,5 @@ Every chart is on the public dashboard's **Forms** stack.
 - File uploads, logic that skips sections by an answer, quizzes and scores.
 - A responses summary of charts per question (a Dashboard over the board covers it for now).
 - A QR code of the form link, and importing questions from another form.
-- A cover image (a cover is a slide background in colour): an image would join the image store's reference index.
+- A cover image (a cover is a colour background): an image would join the image store's reference index.
 - Dragging a choice's options (Alt+Up and Alt+Down move them).

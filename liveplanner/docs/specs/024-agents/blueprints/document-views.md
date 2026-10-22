@@ -85,7 +85,7 @@ edited without it); the change names the gap.
 | Reading order   | `readingOrder`, `rowsOf`                                                 | Rows top to bottom, then left to right                                         |
 | Freehand run    | `FreehandRun`, `freehandRuns`                                            | Consecutive bare strokes in one container, printed as one counted line         |
 | Content summary | `contentSummaryOf`                                                       | What a content kind holds, briefly                                             |
-| State attribute | `stateAttributeOf`                                                       | The one attribute saying where a live element stands (`votes=4 revealed`)      |
+| State attribute | `stateAttributeOf`                                                       | The one attribute saying where a live element stands (`votes=4`)               |
 | Attribute       | `ViewAttribute { key, value }`, `attributesOf`                           | One `key=value` or flag after the label                                        |
 | Edge            | `ViewEdge`                                                               | An arrow as printed on its source line                                         |
 | Own-line arrow  | `ViewModel.ownLineArrows`                                                | An arrow without a printed source, on its own line                             |
@@ -293,8 +293,8 @@ style       := "~" (strokeStyle | "none" | "both" | "from")
 attribute   := key "=" attrValue | flag
 ```
 
-`kind=` prints only for a tab whose `tabKindOf` is not `diagram`; `mode=` only for a tab whose `opensInOf` is not
-`diagram` and that is not in Pages (whose pages segment already says so); `finish=` only when the tab sets one;
+`kind=` prints only for a tab whose `tabKindOf` is not `diagram` (the `mode=` segment went with the other editor
+modes: every tab is in Plan); `finish=` only when the tab sets one;
 `threads` only when the tab has a thread; `rev`
 only when the context gives one (`VW8`). A blank label (after trim) prints nothing (`VW17`).
 
@@ -338,29 +338,21 @@ The table line prints its label first when it has one. Every text a summary prin
 
 **State attributes** (`stateAttributeOf`), one per element of these kinds, printed after the summary (`VW22`):
 
-| Kind                    | State attribute                                                                       |
-| ----------------------- | ------------------------------------------------------------------------------------- |
-| `estimate`              | `votes=<responses.length>`, then `revealed` when `responsesRevealed`                  |
-| `temperature`           | `votes=<responses.length>`                                                            |
-| `done-check`            | `done=<responses.length>`                                                             |
-| `idea-box`              | `ideas=<ideaCards.length>`, then `revealed` when `ideasRevealed`                      |
-| `qa-board`              | `questions=<qaNotes.length>`                                                          |
-| `agenda`                | `item=<agendaCurrent + 1>/<n>` once started, else `items=<n>`; then `minutes=<total>` |
-| `session-button`        | `session=<tool>`, with `:<minutes>m` (timer), `:<dots>` (vote) or `:<style>` (poll)   |
-| `decision`              | `status=<decisionStatus>` when set                                                    |
-| `roll-call`             | `present=<rollCall.length>`                                                           |
-| `quiz`                  | `state=revealed`, `state=locked`, `state=open` (started) or `state=ready`             |
-| `picker`                | `picked=<attrValue(pickerResult)>` when set                                           |
-| `reveal`                | `revealed` when `revealed`                                                            |
-| `stat-row`              | `stats=<stats.length>`                                                                |
-| `process`               | `steps=<processSteps.length>`                                                         |
-| `site-header`           | `links=<navLinks.length>`                                                             |
-| `legend`                | `items=<legendItems.length>`                                                          |
-| `rating`                | `rating=<rating>/5`                                                                   |
-| `progress-bar`, `-ring` | `progress=<progress, else 50>`                                                        |
-| `timeline-rail`         | `points=<railCount>`                                                                  |
-| `page`, `card`          | `title=` the `pageTitle` cut at `NOTE_CUT_CHARS`, when set                            |
-| `badge`, `step`         | `attached` when `attachedTo` is set                                                   |
+| Kind                    | State attribute                                                  |
+| ----------------------- | ---------------------------------------------------------------- |
+| `temperature`           | `votes=<responses.length>`                                       |
+| `session-button`        | `session=<tool>`, with `:<minutes>m` (timer) or `:<dots>` (vote) |
+| `decision`              | `status=<decisionStatus>` when set                               |
+| `picker`                | `picked=<attrValue(pickerResult)>` when set                      |
+| `stat-row`              | `stats=<stats.length>`                                           |
+| `process`               | `steps=<processSteps.length>`                                    |
+| `site-header`           | `links=<navLinks.length>`                                        |
+| `legend`                | `items=<legendItems.length>`                                     |
+| `rating`                | `rating=<rating>/5`                                              |
+| `progress-bar`, `-ring` | `progress=<progress, else 50>`                                   |
+| `timeline-rail`         | `points=<railCount>`                                             |
+| `page`, `card`          | `title=` the `pageTitle` cut at `NOTE_CUT_CHARS`, when set       |
+| `badge`, `step`         | `attached` when `attachedTo` is set                              |
 
 Every other kind has no state attribute; `show` has its content.
 
@@ -460,7 +452,7 @@ Left out, and named on `omitted:`: `id`, `type`, `shape` and `label` (in the fir
 person id, listed in `PERSON_ID_FIELDS` (`commentThread.comments[].authorId`, the mentions' `userId` and
 `memberId` on `commentThread.comments[].mentions[]`, `action.assignerId`,
 `action.assignee.userId`, `action.assignee.memberId`, `action.teamId`, the same on `actions[]`,
-`responses[].participantId`, `qaNotes[].voters`). A test walks every element type's fields so a new person-id
+`responses[].participantId`). A test walks every element type's fields so a new person-id
 field fails until it is listed; `omitted:` names only the ones the element holds. The edges list both directions with arrow refs, in array order. `code` prints as a
 JSON string.
 
@@ -931,7 +923,7 @@ out of Prettier (`.prettierignore`).
 | `ELISION_CONTAINERS_NAMED`     | 3                             | A line that stays short (`VW60`)                                           | 1 to 10         |
 | `PROGRESS_DEFAULT`             | 50                            | Where the editor draws an unset progress                                   | fixed           |
 
-No environment variable or binding; self-hosting needs nothing new.
+No environment variable or binding; a deployment needs nothing new.
 
 ## Assets and external resources
 

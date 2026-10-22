@@ -59,22 +59,21 @@ team, not the individual.
   personal to each editor.
 - Sharing: editor, participant or view-only links, optionally for one tab,
   with expiry, revocable any time.
-- Teams with a shared folder of projects; folders and a Timeline and Inbox in
-  the Explorer.
+- Teams with a shared folder of projects; folders, Home (what happened) and an
+  Inbox in the Explorer; a history for every project and team.
 - Agents: AI tools can read and change boards, cards, sheets and forms over
   MCP, the API or the CLI.
 - Hybrid auth: guests get the full feature set keyed to a per-browser id;
   signed-in users (Clerk) add cross-device sync, teams and account self-delete.
 - Anonymous first-party telemetry. No third-party analytics, no identifiers on
-  the wire. Off in self-hosted forks unless configured.
+  the wire. Off in any deployment unless configured.
 
-## Open source and price
+## Licence and price
 
-- MIT-licensed, publicly viewable, self-hostable end to end.
-- Hosted free at liveplanner.app. No paid tier and no plan to introduce one.
-- The OSS core never calls home and never gates features behind a licence
-  check. Clerk auth is the one optional SaaS dependency; without it the app
-  degrades to full-featured guest mode.
+- Proprietary: the source is not public, and nobody else can run a copy.
+- Free at liveplanner.app. No paid tier and no plan to introduce one.
+- No ads and no third-party trackers. Boards and sheets export (CSV, image,
+  PDF, Markdown outline), so work is never locked in.
 
 ## Stack
 

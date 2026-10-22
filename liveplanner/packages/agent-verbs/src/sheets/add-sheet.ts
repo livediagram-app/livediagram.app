@@ -19,7 +19,6 @@ import {
   SHEET_HEADER_H,
   SHEET_ROW_HEAD_W,
   createShape,
-  tabTakesPlanOnly,
 } from '@liveplanner/document';
 import { placeBeside } from '@liveplanner/items';
 import {
@@ -177,14 +176,7 @@ export async function addSheet(
         code: 'tab_not_found',
         message: `No tab "${tabId}". Tabs: ${tabs.map((t) => `${t.name} (${t.id})`).join(', ')}.`,
       };
-    // A Sheet goes only on a tab in Plan (docs/specs/026-plan/plan-tabs.md "Only in Plan"): refused before a sheet is made.
     const { tab } = await api.json<TabResponse>(tabPath(documentId, tabId));
-    if (!tabTakesPlanOnly(tab))
-      return {
-        ok: false,
-        code: 'tab_not_plan',
-        message: `"${tab.name}" is not a Plan tab, and a Sheet goes only on a tab in Plan. Add a Sheet tab with add_tab and template "blank-spreadsheet", then fill it with change_sheet.`,
-      };
     const onTab = (all ?? (await readSheets(api, documentId, tabId))).filter(
       (s) => s.tabId === tabId,
     );

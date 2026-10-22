@@ -69,8 +69,6 @@ export function templateLayers(kind: TemplateKind): Layer[] | undefined {
       return layered('Map', 'Stream');
     case 'user-persona':
       return layered('Card', 'Details');
-    case 'meeting-agenda':
-      return layered('Board', 'Notes');
     case 'objectives-planner':
       return layered('Planner', 'Objectives');
     case 'prioritization-matrix':
@@ -95,19 +93,12 @@ export function templateLayers(kind: TemplateKind): Layer[] | undefined {
     // Tier lanes stay put while components and their wiring move.
     case 'system-architecture':
       return layered('Tiers', 'Components');
-    case 'slide-deck':
-    case 'storyboard':
-      return layered('Frames', 'Content');
     case 'timeline':
     case 'milestone-timeline':
     case 'milestone-timeline-vertical':
       return layered('Spine', 'Milestones');
     case 'journey':
       return layered('Stages', 'Notes');
-    // The shell (walls, doorways, room captions) stays put while the
-    // furniture is dragged around it.
-    case 'floor-plan':
-      return layered('Rooms', 'Furniture');
     default:
       return undefined;
   }

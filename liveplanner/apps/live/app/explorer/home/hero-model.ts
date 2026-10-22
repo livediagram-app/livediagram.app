@@ -1,25 +1,35 @@
 // Home's hero, pure (docs/specs/013-workspace/explorer-home.md "The hero"; blueprint
 // docs/specs/013-workspace/blueprints/explorer-home-view.md): the greeting by the reader's hour, the status pills'
-// words, and which documents the fanned sheets show.
+// words, and the features the fanned previews show.
 
-/** How many sheets fan out behind the hero's text. */
-export const HERO_SHEETS = 3;
+export type HeroFeature = { id: 'board' | 'sheet' | 'dashboard' | 'form'; label: string };
+
+/** The fanned previews, one per tab a project holds, in their places' order: Board and Sheet behind, Dashboard and
+ *  Form in front. The same for everyone, so nothing is read to draw them. */
+export const HERO_FEATURES: readonly HeroFeature[] = [
+  { id: 'board', label: 'Board' },
+  { id: 'sheet', label: 'Sheet' },
+  { id: 'dashboard', label: 'Dashboard' },
+  { id: 'form', label: 'Form' },
+];
 
 /** Morning runs from 5 to 11, afternoon from 12 to 17; the rest of the day is evening. */
 export function heroGreeting(hour: number): string {
-  if (hour >= 5 && hour < 12) return 'Good morning.';
-  if (hour >= 12 && hour < 18) return 'Good afternoon.';
-  return 'Good evening.';
+  if (hour >= 5 && hour < 12) return 'Good morning,';
+  if (hour >= 12 && hour < 18) return 'Good afternoon,';
+  return 'Good evening,';
 }
 
 export const HERO_COPY = {
-  question: 'What are we picking up?',
+  question: 'what are you planning today?',
   lead: 'Jump back into what you use most, or see what changed while you were away.',
   newDocument: 'New Document',
   // The page header's words for the same drawer button.
   openNav: 'Browse sections',
   // The banner's close (explorer-home.md "Hiding the banner"), and its Settings switch.
   hideBanner: 'Hide Home Banner',
+  // The fanned previews' group, for assistive technology.
+  featuresLabel: 'What a project can hold',
 } as const;
 
 export type HeroPill = { id: 'documents' | 'inbox'; label: string; tone: 'emerald' | 'sky' };
@@ -46,18 +56,4 @@ export function heroPills(input: {
     });
   }
   return pills;
-}
-
-/** The fanned sheets: My Documents' most recently saved, newest first, at most HERO_SHEETS. One pass that keeps the
- *  newest few, so a long list costs a scan, not a sort. Equal saves keep the list's order. */
-export function heroSheets<T extends { savedAt: number }>(documents: readonly T[]): T[] {
-  const top: T[] = [];
-  for (const doc of documents) {
-    let at = top.length;
-    while (at > 0 && top[at - 1]!.savedAt < doc.savedAt) at -= 1;
-    if (at >= HERO_SHEETS) continue;
-    top.splice(at, 0, doc);
-    if (top.length > HERO_SHEETS) top.pop();
-  }
-  return top;
 }

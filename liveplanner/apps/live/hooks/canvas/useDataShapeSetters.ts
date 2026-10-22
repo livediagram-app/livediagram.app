@@ -9,30 +9,19 @@ import {
   isEntity,
   withEntityFields,
   type FieldRemap,
-  AGENDA_MAX_ITEMS,
-  AGENDA_MAX_TEXT,
   DECISION_MAX_DRIVERS,
   DECISION_MAX_TEXT,
-  type AgendaItem,
-  type ChairFacing,
   type DecisionStatus,
-  type EstimateScale,
   type EntityField,
   clampPercent,
   CODE_MAX_LENGTH,
   isProgressShape,
   type AnimationSpeed,
   type ChecklistItem,
-  type SelectionMode,
   type CodeLanguage,
   type Element,
   type ProgressAnim,
   type ShapeElement,
-  turnsWithFacing,
-  seatingFacing,
-  turnedSeatingBox,
-  type SeatingKind,
-  type RoomDoor,
 } from '@liveplanner/document';
 import { track } from '@/lib/telemetry';
 import { useChartSetters } from '@/hooks/canvas/useChartSetters';
@@ -56,14 +45,6 @@ type DataShapeSetterDeps = {
 // looping animation + chart legend). Each kind has a private field setter the
 // public ones delegate to; all resolve the selection and commit through the
 // two shared handles, so they live together off useElementStyle.
-// The telemetry type a facing change reports, per piece of furniture (docs/specs/017-telemetry/telemetry.md).
-const SEATING_TELEMETRY: Record<SeatingKind, string> = {
-  chair: 'Chair',
-  desk: 'Desk',
-  sofa: 'Sofa',
-  'meeting-table': 'Meeting-table',
-};
-
 export function useDataShapeSetters({
   currentSelectionIds,
   commit,
@@ -214,9 +195,9 @@ export function useDataShapeSetters({
     track('Element', 'Changed', 'Entity');
   };
 
-  // --- The collaboration elements (docs/specs/012-collaboration/estimate-card.md, 127, 128, 130) ----------------
+  // --- The collaboration elements (docs/specs/012-collaboration/decision-record.md) ----------------
   // Selection-wide like every other setter here, each gated to its own kind so
-  // a multi-selection containing a chair and a chart only writes the chair.
+  // a multi-selection containing a decision and a chart only writes the decision.
   const setCollabFieldSelected = (
     kind: ShapeElement['shape'],
     patch: Partial<ShapeElement>,
@@ -230,39 +211,6 @@ export function useDataShapeSetters({
       ),
     );
     track('Element', 'Changed', telemetryType);
-  };
-
-  const setEstimateScaleSelected = (scale: EstimateScale) =>
-    setCollabFieldSelected('estimate', { estimateScale: scale }, 'Estimate');
-
-  // The current segment travels with its row (docs/specs/012-collaboration/agenda.md
-  // "The current segment"): `moveCurrent` says where a reorder or removal put
-  // it, and a current index past the new rows is cleared either way.
-  const setAgendaItemsSelected = (
-    items: AgendaItem[],
-    moveCurrent?: (current: number) => number | undefined,
-  ) => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    const agendaItems = items.slice(0, AGENDA_MAX_ITEMS).map((item) => ({
-      label: item.label.slice(0, AGENDA_MAX_TEXT),
-      minutes: item.minutes,
-    }));
-    commit((els) =>
-      els.map((el) => {
-        if (!ids.has(el.id) || el.type !== 'shape' || el.shape !== 'agenda') return el;
-        let current = el.agendaCurrent;
-        if (current !== undefined && moveCurrent) current = moveCurrent(current);
-        if (current !== undefined && current >= agendaItems.length) current = undefined;
-        return {
-          ...el,
-          agendaItems,
-          agendaCurrent: current,
-          ...(current === undefined ? { agendaTimerStartedAt: undefined } : {}),
-        };
-      }),
-    );
-    track('Element', 'Changed', 'Agenda');
   };
 
   const setDecisionStatusSelected = (status: DecisionStatus) =>
@@ -284,36 +232,6 @@ export function useDataShapeSetters({
       'Decision',
     );
 
-  // Chair, desk and sofa (docs/specs/009-elements/chair.md): one facing for all three. A desk or a
-  // sofa turned onto its side swaps its box about its centre, so the drawing keeps its proportions.
-  const setChairFacingSelected = (facing: ChairFacing) => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    // A meeting table in the selection never turns, so it neither takes the facing nor names the event.
-    const first = elements().find(
-      (el) => ids.has(el.id) && el.type === 'shape' && turnsWithFacing(el.shape),
-    );
-    if (!first || first.type !== 'shape' || !turnsWithFacing(first.shape)) return;
-    const turned: SeatingKind = first.shape;
-    commit((els) =>
-      els.map((el) => {
-        if (!ids.has(el.id) || el.type !== 'shape' || !turnsWithFacing(el.shape)) return el;
-        const seating = { ...el, shape: el.shape };
-        const box = turnedSeatingBox(seating, seatingFacing(seating), facing);
-        return { ...el, ...box, chairFacing: facing };
-      }),
-    );
-    track('Element', 'Changed', SEATING_TELEMETRY[turned]);
-  };
-
-  // Room (docs/specs/009-elements/office.md "Room"): which wall the doorway is in.
-  const setRoomDoorSelected = makeShapePatcher({
-    currentSelectionIds,
-    commit,
-    matches: (kind) => kind === 'room',
-  });
-  const setRoomDoor = (door: RoomDoor) => setRoomDoorSelected({ roomDoor: door }, 'Room');
-
   const setChecklistItemsSelected = (items: ChecklistItem[]) => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
@@ -328,20 +246,6 @@ export function useDataShapeSetters({
       ),
     );
     track('Element', 'Changed', 'Checklist');
-  };
-
-  // Mode button (docs/specs/009-elements/mode-button.md): which selection mode the button hands whoever
-  // presses it. Gated to the button kind, so a multi-selection of mixed
-  // elements only rewrites the buttons in it.
-  const setButtonModeSelected = (mode: SelectionMode) => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    commit((els) =>
-      els.map((el) =>
-        ids.has(el.id) && el.type === 'shape' && el.shape === 'mode-button' ? { ...el, mode } : el,
-      ),
-    );
-    track('Element', 'Changed', 'ModeButton');
   };
 
   // Rating (docs/specs/009-elements/rating.md) + the charts (docs/specs/009-elements/pie-chart.md) — see useChartSetters.
@@ -367,13 +271,8 @@ export function useDataShapeSetters({
     setPageHeading,
     setChecklistItemsSelected,
     setEntityFieldsSelected,
-    setEstimateScaleSelected,
-    setAgendaItemsSelected,
     setDecisionStatusSelected,
     setDecisionDateSelected,
     setDecisionDriversSelected,
-    setChairFacingSelected,
-    setRoomDoorSelected: setRoomDoor,
-    setButtonModeSelected,
   };
 }

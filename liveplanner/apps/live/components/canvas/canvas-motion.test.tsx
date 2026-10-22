@@ -2,9 +2,8 @@
 
 import { render, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createElement, type ReactNode } from 'react';
+import { createElement } from 'react';
 import { useElementPopIn } from './useElementPopIn';
-import { CanvasStillProvider } from './CanvasStillContext';
 import { CanvasArrivalProvider } from './CanvasArrivalContext';
 
 // Canvas motion is out of the chrome budget (docs/specs/004-interface-design/motion.md):
@@ -14,15 +13,6 @@ describe('canvas element entry', () => {
   it('pops a new element in with the canvas token, not the chrome one', () => {
     const { result } = renderHook(() => useElementPopIn());
     expect(result.current).toBe('animate-element-pop-in');
-  });
-});
-
-describe('a still canvas (a whiteboard, docs/specs/023-draw-mode/draw-mode.md)', () => {
-  it('lets a new element appear as drawn, with no entry animation', () => {
-    const wrapper = ({ children }: { children: ReactNode }) =>
-      createElement(CanvasStillProvider, { still: true, children });
-    const { result } = renderHook(() => useElementPopIn(), { wrapper });
-    expect(result.current).toBe('');
   });
 });
 
@@ -36,21 +26,16 @@ function Probe({ id, seen }: { id: string; seen: Map<string, string> }) {
 function Board({
   tabId,
   ids,
-  still = false,
   loaded = true,
   seen,
 }: {
   tabId: string;
   ids: string[];
-  still?: boolean;
   loaded?: boolean;
   seen: Map<string, string>;
 }) {
   const probes = ids.map((id) => createElement(Probe, { key: id, id, seen }));
-  return createElement(CanvasStillProvider, {
-    still,
-    children: createElement(CanvasArrivalProvider, { tabId, loaded, children: probes }),
-  });
+  return createElement(CanvasArrivalProvider, { tabId, loaded, children: probes });
 }
 
 describe('the board a tab opens with', () => {
@@ -92,26 +77,5 @@ describe('the board a tab opens with', () => {
     expect(seen.get('d')).toBe('');
     rerender(createElement(Board, { tabId: 't2', ids: ['c', 'd', 'e'], seen }));
     expect(seen.get('e')).toBe('animate-element-pop-in');
-  });
-
-  it('arms no timer for an element added to a still canvas', () => {
-    vi.useFakeTimers();
-    const seen = new Map<string, string>();
-    const { rerender } = render(
-      createElement(Board, { tabId: 't1', ids: ['a'], still: true, seen }),
-    );
-    rerender(createElement(Board, { tabId: 't1', ids: ['a', 'b'], still: true, seen }));
-    expect(seen.get('b')).toBe('');
-    expect(vi.getTimerCount()).toBe(0);
-  });
-
-  it('keeps an element drawn on a still canvas settled when the tab switches to Diagram mode', () => {
-    const seen = new Map<string, string>();
-    const { rerender } = render(
-      createElement(Board, { tabId: 't1', ids: ['a'], still: true, seen }),
-    );
-    rerender(createElement(Board, { tabId: 't1', ids: ['a', 'b'], still: true, seen }));
-    rerender(createElement(Board, { tabId: 't1', ids: ['a', 'b'], still: false, seen }));
-    expect(seen.get('b')).toBe('');
   });
 });

@@ -22,13 +22,10 @@ import { recordVisitorOpened, retractTabComments } from '../timeline';
 import { DOCUMENT_OPEN_HEADER, readDocumentOpen, tabEtag } from '@liveplanner/api-schema';
 import { recordDocumentOpen } from '../home/record-open';
 import { handleDocumentShareRoutes } from './document-share-routes';
-import { handleQaBoardRoute } from './qa-board-routes';
 import { handleFormLinkRoutes } from './form-link-routes';
-import { handleCommentPicturesRoute } from './comment-pictures-routes';
 import { handleTabPut, refuseTokenTabPut } from './tab-put-route';
 import { handleTabRename } from './tab-name-route';
 import { handleTabForm } from './tab-form-route';
-import { handleTabPages } from './tab-pages-route';
 import { handleChangesetRoutes } from './changesets';
 import { handleCommentRoutes } from './comment-routes';
 import { handleAgentPresenceRoute } from './agent-presence-routes';
@@ -58,15 +55,9 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
   // Agent changesets (docs/specs/024-agents/agent-changesets.md).
   const changesets = await handleChangesetRoutes(ctx);
   if (changesets) return changesets;
-  // /api/documents/<id>/tabs/<tabId>/qa — a Q&A board action (docs/specs/012-collaboration/qa-board.md).
-  const qa = await handleQaBoardRoute(ctx);
-  if (qa) return qa;
   // /api/documents/<id>/tabs/<tabId>/form-link and form-seen (docs/specs/030-forms/forms.md).
   const formLink = await handleFormLinkRoutes(ctx);
   if (formLink) return formLink;
-  // /api/documents/<id>/tabs/<tabId>/comment-pictures (docs/specs/014-identity/profile-picture.md §6).
-  const commentPictures = await handleCommentPicturesRoute(ctx);
-  if (commentPictures) return commentPictures;
   // /api/documents/<id>/tabs/<tabId>
   //   GET    — full tab payload. READ access: owner or ANY valid
   //            share code (view OR edit) for this document, so
@@ -78,17 +69,6 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
   //            through the existing row, or appends when new.
   //   DELETE — remove one tab.
   //   PUT / DELETE are writes: owner or edit-role only.
-  // /api/documents/<id>/tabs/<tabId>/name: a tab rename (docs/specs/024-agents/agent-changesets.md).
-  if (
-    segments.length === 6 &&
-    segments[3] === 'tabs' &&
-    // `illustrate`: the address before Illustrate mode became Pages mode, still sent by older
-    // CLI and MCP builds (docs/specs/024-agents/pages-for-agents.md).
-    (segments[5] === 'pages' || segments[5] === 'illustrate') &&
-    ctx.request.method === 'POST'
-  ) {
-    return handleTabPages(ctx, segments[2]!, segments[4]!);
-  }
   // /api/documents/<id>/tabs/<tabId>/form: an agent's form write (docs/specs/030-forms/forms.md "Agents").
   if (
     segments.length === 6 &&
@@ -98,6 +78,7 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
   ) {
     return handleTabForm(ctx, segments[2]!, segments[4]!);
   }
+  // /api/documents/<id>/tabs/<tabId>/name: a tab rename (docs/specs/024-agents/agent-changesets.md).
   if (
     segments.length === 6 &&
     segments[3] === 'tabs' &&

@@ -59,7 +59,6 @@ What stays, with where it runs, is the allow-list in `apps/live/render-browser-g
 
 | Site                                                      | The wrapper carried          | Becomes                                                          |
 | --------------------------------------------------------- | ---------------------------- | ---------------------------------------------------------------- |
-| `apps/live/components/canvas/whiteboard/ShapesFlyout.tsx` | focus for the search field   | `<Fragment ref>`; `FragmentInstance.focus()` lands on the input  |
 | `apps/live/components/panels/LayerRowMenu.tsx` (two rows) | the confirm popover's anchor | the click's `currentTarget` (`MenuActionRow` hands its click on) |
 
 Stay, carrying more than a ref: `packages/ui/src/Tooltip.tsx` (React pointer and focus handlers, capture-phase
@@ -107,8 +106,8 @@ export function ViewTransition(props: {
 
 ## Performance and limits
 
-- A View Transition captures its surface twice per change: it is used only for whole-surface swaps (a slide move,
-  the start's mode switch), never per keystroke or pointer move.
+- A View Transition captures its surface twice per change: it is used only for whole-surface swaps (a slide move
+  in a presentation), never per keystroke or pointer move.
 - `use(browser())` costs nothing in the browser; in the prerender it moves the content after hydration, so a site
   above the fold reserves its size (CLS stays 0).
 
@@ -139,7 +138,7 @@ No new log lines: a refused fullscreen and a Trusted Types violation are logged 
 | Footer year from the build               | `packages/ui` SiteFooter test renders `BUILD_YEAR`, and no year without it                       |
 | Reduced motion starts no transition      | The slide and mode-switch tests stub `prefersReducedMotion` and assert no `startTransition` type |
 | Steps count from `asked`                 | `PresentationHost` test: three quick steps land three slides on                                  |
-| Ref-only wrappers are gone               | `ShapesFlyout.test.tsx`, `LayerRowMenu.test.tsx`: focus and anchor with no bare node             |
+| Ref-only wrappers are gone               | `LayerRowMenu.test.tsx`: the anchor with no bare node                                            |
 
 ## Constants and configuration
 

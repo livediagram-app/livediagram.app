@@ -4,13 +4,9 @@ import {
   mergeIncomingElement,
   mergeIncomingVote,
   planBoardPatch,
-  preferNewerQa,
   type Tab,
 } from '@liveplanner/document';
-import { tabArticleOps, type RoomOp } from '@liveplanner/api-schema';
-
-// The article framing is shared with the api's relay of an agent's write.
-export { tabArticleOps } from '@liveplanner/api-schema';
+import type { RoomOp } from '@liveplanner/api-schema';
 
 // Turn the before/after of an autosaved tab into the realtime ops to
 // broadcast (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 0). The room used to send the whole `Tab` on
@@ -27,18 +23,13 @@ export { tabArticleOps } from '@liveplanner/api-schema';
 export const EL_OP_BROADCAST_LIMIT = 20;
 
 // Tab keys that never ride a `tab-meta` patch: `id` is immutable, `elements`
-// travels as `el` ops, `articles` as `article` ops (docs/specs/007-editor/article-pages.md
-// "Collaboration"), and `folder` is owned by the document-meta op (docs/specs/006-document/tab-folders.md)
+// travels as `el` ops, and `folder` is owned by the document-meta op (docs/specs/006-document/tab-folders.md)
 // so a content/meta edit can't clobber a concurrent folder move.
-export const META_SKIP: ReadonlySet<string> = new Set(['id', 'elements', 'articles', 'folder']);
+export const META_SKIP: ReadonlySet<string> = new Set(['id', 'elements', 'folder']);
 
-// A whole tab as one op, without its articles' writing: that always travels as `article` ops, so a
-// long document never makes a whole-tab op too big for the room to carry, and a receiver keeps its
-// own writing through the merge (mergeRemoteTab).
+// A whole tab as one op.
 function wholeTabOp(tab: Tab): RoomOp {
-  const { articles: _docs, ...rest } = tab;
-  void _docs;
-  return { kind: 'tab', tabId: tab.id, tab: rest };
+  return { kind: 'tab', tabId: tab.id, tab };
 }
 
 // Is this `vote` change nothing but dots moving?
@@ -116,8 +107,7 @@ function boardDeltaOps(before: Tab, after: Tab): RoomOp[] {
 //   - otherwise → a `tab-meta` patch (only if meta changed) followed by one
 //     `el` op per changed element, in the diff's order.
 export function tabBroadcastOps(before: Tab | undefined, after: Tab): RoomOp[] {
-  if (!before)
-    return [wholeTabOp(after), ...tabArticleOps({ ...after, articles: undefined }, after)];
+  if (!before) return [wholeTabOp(after)];
 
   // An element whose only change rode a delta (an answer, an idea, a tick, a
   // comment: docs/specs/012-collaboration/collab-race-hardening.md) has already been said; a whole-element update on top
@@ -132,7 +122,7 @@ export function tabBroadcastOps(before: Tab | undefined, after: Tab): RoomOp[] {
   // change goes as its delta on both paths.
   const boardOps = boardDeltaOps(before, after);
   if (elOps.length > EL_OP_BROADCAST_LIMIT) {
-    return [wholeTabOp(after), ...boardOps, ...tabArticleOps(before, after)];
+    return [wholeTabOp(after), ...boardOps];
   }
 
   const ops: RoomOp[] = [];
@@ -154,7 +144,6 @@ export function tabBroadcastOps(before: Tab | undefined, after: Tab): RoomOp[] {
   }
   for (const op of elOps) ops.push({ kind: 'el', tabId: after.id, op });
   ops.push(...boardOps);
-  ops.push(...tabArticleOps(before, after));
   return ops;
 }
 
@@ -190,16 +179,13 @@ export function mergeRemoteTab(local: Tab, incoming: Tab): Tab {
   const localById = new Map(local.elements.map((e) => [e.id, e]));
   const elements = incoming.elements.map((el) => {
     const mine = localById.get(el.id);
-    // Delta-carried fields stay ours (docs/specs/012-collaboration/collab-race-hardening.md); a Q&A board keeps the newer
-    // rev's notes (docs/specs/012-collaboration/qa-board.md), the same rule as an `el` op.
-    return mine ? preferNewerQa(mine, mergeIncomingElement(mine, el)) : el;
+    // Delta-carried fields stay ours (docs/specs/012-collaboration/collab-race-hardening.md).
+    return mine ? mergeIncomingElement(mine, el) : el;
   });
   return {
     ...rest,
     elements,
     folder: local.folder,
     ...(vote !== undefined ? { vote } : {}),
-    // The writing is the `article` ops' alone (wholeTabOp): ours stays through a whole-tab merge.
-    ...(local.articles !== undefined ? { articles: local.articles } : {}),
   };
 }

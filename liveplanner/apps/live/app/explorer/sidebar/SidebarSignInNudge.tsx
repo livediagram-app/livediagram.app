@@ -12,11 +12,11 @@ export function SidebarSignInNudge() {
   return (
     <Link
       href={signInHref}
-      className="relative mt-3 flex flex-col gap-1.5 overflow-hidden rounded-2xl bg-[#0b1230] p-4 text-left transition hover:bg-[#101a40] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400 dark:ring-1 dark:ring-sky-400/30"
+      className="relative mt-3 flex flex-col gap-1.5 overflow-hidden rounded-2xl bg-[#0b1230] p-4 text-left transition hover:bg-[#101a40] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400 dark:ring-1 dark:ring-brand-400/30"
     >
       <span
         aria-hidden
-        className="pointer-events-none absolute -right-8 -top-8 size-[120px] rounded-full bg-[radial-gradient(circle,rgba(56,189,248,0.45),transparent_70%)]"
+        className="pointer-events-none absolute -right-8 -top-8 size-[120px] rounded-full bg-[radial-gradient(circle,color-mix(in_oklab,var(--color-brand-400)_45%,transparent),transparent_70%)]"
       />
       <span className="relative flex items-center gap-2 text-sm font-semibold text-white">
         <BrandMark className="size-[18px] shrink-0" />

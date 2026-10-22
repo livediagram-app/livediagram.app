@@ -1,5 +1,5 @@
 // The Trash (docs/specs/013-workspace/trash.md): a deleted document keeps its
-// row with `trashed_at` stamped (migration 0051), stays restorable for 30
+// row with `trashed_at` stamped, stays restorable for 30
 // days, then the daily cron purges it through documentRemovalStatements.
 //
 // trashDocument / restoreDocument / purgeDocuments are plain calls with no HTTP
@@ -182,8 +182,8 @@ export async function purgeDocuments(env: Env, ids: string[]): Promise<number> {
     await purgeRooms(env, doomed);
     // Best effort, like deleteDocument's: a snapshot left behind is an orphan
     // R2 object, never a reason to fail the purge that already landed.
-    if (env.IMAGES) {
-      await env.IMAGES.delete(doomed.flatMap(snapshotKeys)).catch((err: unknown) => {
+    if (env.SNAPSHOTS) {
+      await env.SNAPSHOTS.delete(doomed.flatMap(snapshotKeys)).catch((err: unknown) => {
         console.warn('[trash] snapshot delete failed', doomed.length, err);
       });
     }

@@ -40,8 +40,8 @@ export function truncateName(raw: string): string {
 // Up to two characters for a person's avatar. Single-word names use the first
 // two letters; multi-word names use the first letter of the first and last
 // word ("Curious Falcon" -> "CF"). Here rather than in the editor so the
-// headless export draws the same initials the canvas does (a Roll call's
-// people, docs/specs/020-import-export/export-fidelity.md).
+// headless export draws the same initials the canvas does
+// (docs/specs/020-import-export/export-fidelity.md).
 export function initialsOf(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
   if (parts.length === 0) return '?';

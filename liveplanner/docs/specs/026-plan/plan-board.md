@@ -372,8 +372,7 @@ In Plan mode:
   away.
 - **Add a card**: each cell ends in a quiet **+ Add card** ("Add your first card" on an empty board). It opens
   the **Add a Card** menu (the shared anchored menu with an option list and no header, since it opens under its
-  own button; a bottom sheet titled "Add a Card" on a phone), as
-  Pages mode's + opens "Add a page": a row per card type the board shows, each its glyph on a tint of its
+  own button; a bottom sheet titled "Add a Card" on a phone): a row per card type the board shows, each its glyph on a tint of its
   colour and its name; choosing one adds a card of it ("New task"...) at the end of the cell, in the cell's row
   (taking the row's field). Arrow keys move between the rows as in every menu; Escape, a press anywhere
   else (the canvas included, mouse, pen or touch) or a wheel or trackpad pan outside it closes it. There is no typed title: the new card opens at once in its panel with its title selected, so
@@ -385,7 +384,6 @@ In Plan mode:
   `CardType`, as any new type.
 - **Right-click a card** for its menu (icon-left rows in sentence case, **Trash** last and styled as the rest, as the item panel's ⋯ menu): **Open**, **Duplicate** (a copy right after it, without its votes),
   **Archive** (or **Restore**; [Items](items.md#archive)),
-  **Add to Slides** (an item slide, [Presentation mode](../012-collaboration/presentation-mode.md#item-slides)),
   **Edit Card Type** (the card's type in the type editor),
   **Move to** another column of the board, and **Trash** (to the [Trash](items.md#trash), restorable there). Someone who may only view gets
   Open alone; a Participant gets Open, Duplicate, Move to and Flag (or Remove Flag), as the item panel's ⋯ menu gives it; a face-down card has no menu. It is the shared context menu, so it opens at the pointer, stays
@@ -616,7 +614,7 @@ A board can be maximised to work on it without the rest of the canvas around it.
   a Sheet zooms its cells: [Sheet](../029-sheets/sheet.md#zoom)), so restoring it gives back the view it covered. The canvas's
   own keyboard shortcuts stand down (no arrow nudge, Delete, select-all, duplicate, lock, z-order, zoom, paste or
   tool key; the chords the browser would take over, Cmd+D and Cmd+A among them, are prevented), while undo and redo
-  (Cmd+Z, Cmd+Shift+Z, Ctrl+Y), search (Cmd+K), zen (Z), the mode switch (Shift+D), Escape, the chrome (header, tab
+  (Cmd+Z, Cmd+Shift+Z, Ctrl+Y), search (Cmd+K), zen (Z), Escape, the chrome (header, tab
   bar, palette, panels, the bottom-right controls) and everything on the board keep working; copy and cut are left to
   the browser, for text on the board.
 - **No selection chrome over it**: while a board is maximised (or fills its tab, [Fill Tab](#fill-tab)), no selection

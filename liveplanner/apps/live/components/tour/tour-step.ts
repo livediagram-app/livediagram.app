@@ -19,8 +19,7 @@ export type TourStepOf<Api> = {
   // AND its portalled menu as one region, not the floating menu alone;
   // the tabs step wraps the active pill + the add button the same way.
   alsoHighlight?: string;
-  // Draw the ring above the open menu its target sits inside (one band of a dropdown, the Workshop
-  // tour's Collaborate step), so the dim spotlights part of the menu; otherwise the later-portalled menu
+  // Draw the ring above the open menu its target sits inside (one band of a dropdown), so the dim spotlights part of the menu; otherwise the later-portalled menu
   // paints over a ring at the same layer.
   ringOverMenu?: boolean;
   // The layer this step's ring draws at, over the stage's own: 'modal' for a step inside a dialog the tour opened

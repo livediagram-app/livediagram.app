@@ -3,9 +3,8 @@
 import { useDeferredValue, useEffect, useMemo, useState } from 'react';
 import { canvasSurface, tabWindowNames, type Tab } from '@liveplanner/document';
 import { tabAsSeen } from '@/lib/export-as-seen';
-import { loadTabImages, type renderTabToSvg } from '@/lib/export-tab';
+import type { renderTabToSvg } from '@/lib/export-tab';
 import { renderTabDrawingSvg } from '@/lib/tab-drawing';
-import { tabImageKey, type ExportImageMap } from '@/lib/export-tab-images';
 import type { SvgMotion } from '@/lib/export-tab';
 import { ensureIconCatalogs } from '@/lib/icon-registry';
 import { svgFrameOf } from '@/lib/svg-frame';
@@ -26,8 +25,7 @@ export type TabSvg = {
 };
 
 // A tab drawn as the editor would show it (docs/specs/007-editor/split-view.md "The right pane"):
-// the export renderer's SVG, in the viewer's appearance, with the document's Plan items and the
-// tab's photos. Re-rendered when the tab changes (an edit, a collaborator's op) at a deferred
+// the export renderer's SVG, in the viewer's appearance, with the document's Plan items. Re-rendered when the tab changes (an edit, a collaborator's op) at a deferred
 // priority, so a burst of remote edits never competes with the editor beside it.
 //
 // `motionFor` sets the drawing moving (a tab window, docs/specs/009-elements/tab-window.md "The drawing"): given the
@@ -44,7 +42,7 @@ export function useTabSvg(
   motionFor?: (surface: ReturnType<typeof canvasSurface>) => SvgMotion,
   planOpts?: Pick<NonNullable<Parameters<typeof renderTabToSvg>[1]>, 'sheets' | 'resolvePlanArt'>,
 ): TabSvg | null {
-  const { imageContext, tabs } = useEditorContext();
+  const { tabs } = useEditorContext();
   // A window inside this tab is named for the tab it shows, as the export names it. Keyed on the tabs' names, not the
   // tabs, so an edit anywhere in the document does not redraw this one.
   const nameKey = tabs.map((t) => `${t.id}\u0000${t.name}`).join('\u0001');
@@ -54,7 +52,6 @@ export function useTabSvg(
   const { appearance } = useAppearance();
   const deferredTab = useDeferredValue(tab);
   const [iconsReady, setIconsReady] = useState(false);
-  const [images, setImages] = useState<{ key: string; map: ExportImageMap } | null>(null);
 
   useEffect(() => {
     let live = true;
@@ -64,20 +61,6 @@ export function useTabSvg(
     };
   }, []);
 
-  const wantedImages = deferredTab ? tabImageKey(deferredTab) : '';
-  useEffect(() => {
-    if (!deferredTab || !wantedImages || !imageContext) return;
-    let live = true;
-    void loadTabImages(deferredTab, imageContext).then(
-      (map) => live && setImages({ key: wantedImages, map }),
-    );
-    return () => {
-      live = false;
-    };
-    // Keyed on the ids, not the tab: the bitmaps only change when the set of photos does.
-    // oxlint-disable-next-line react/exhaustive-deps
-  }, [wantedImages, imageContext]);
-
   return useMemo(() => {
     if (!deferredTab) return null;
     // `iconsReady` re-renders once the glyph catalogues land, so icons replace their placeholders.
@@ -86,7 +69,6 @@ export function useTabSvg(
     const markup = renderTabDrawingSvg(seen, {
       pattern: false,
       motion: motionFor?.(canvasSurface(seen.backgroundColor)),
-      images: images?.map,
       resolveTabWindow: windowNames,
       ...(plan ? { items: plan.items, itemTypes: plan.types } : {}),
       ...planOpts,
@@ -96,5 +78,5 @@ export function useTabSvg(
       ...svgFrameOf(markup),
       background: seen.backgroundColor ?? '#ffffff',
     };
-  }, [deferredTab, appearance, images, plan, iconsReady, windowNames, motionFor, planOpts]);
+  }, [deferredTab, appearance, plan, iconsReady, windowNames, motionFor, planOpts]);
 }

@@ -1,13 +1,4 @@
 import type { HelpArticleKey } from '@/lib/help-articles';
-import {
-  AUTO_ADVANCE_CHOICES,
-  readPresentationConfig,
-  SLIDE_SPEEDS,
-  SLIDE_TRANSITIONS,
-  SLIDE_ZOOMS,
-  withPresentationConfig,
-  type PresentationConfig,
-} from '@/lib/presentation-config';
 import type { SettingsCategoryId, SettingsIconId } from './settings-icons';
 import { titleCase, type TelemetryCategory } from '@liveplanner/api-schema';
 import {
@@ -19,8 +10,7 @@ import {
   type UserPreferences,
 } from '@/lib/user-preferences';
 import { isPowerUserMode, setPowerUserMode } from '@/lib/power-user-mode';
-import { PAGES_TOUR_KINDS, pagesKindSeen } from '@/lib/pages-tour';
-import { PLAN_TOUR_TRACKS, planTrackSeen } from '@/lib/plan-tour';
+import { PLAN_TOUR_TRACKS, planTrackSeen, type PlanTourTrack } from '@/lib/plan-tour';
 import {
   ELEMENT_TOUR_KINDS,
   elementTourSeen,
@@ -46,43 +36,9 @@ import {
   type UiScalePart,
 } from '@/lib/ui-scale';
 import { setUiScalePreview } from '@/lib/ui-scale-preview';
-import {
-  readWhiteboardDockPosition,
-  withWhiteboardDockPosition,
-  type WhiteboardDockPosition,
-} from '@/lib/whiteboard-dock-prefs';
-import {
-  readContentsPlacement,
-  withContentsPlacement,
-  type ContentsPlacement,
-} from '@/lib/contents-placement';
 import type { SettingsIllustrationId } from './settings-illustrations';
-import {
-  LOGO_GUIDE_PARTS,
-  readLogoGuideParts,
-  readLogoGuideStrength,
-  withLogoGuidePart,
-  type LogoGuidePart,
-  type LogoGuideStrength,
-} from '@/lib/logo-guide-prefs';
 import type { PlacementDefaultKey } from '@liveplanner/api-schema';
 import { DEFAULT_KEY_ENTRIES } from '@/lib/placement-defaults/default-key-entries';
-
-// One logo guide's switch (docs/specs/007-editor/logo-pages.md "Construction guides"): a tile in
-// Settings > Editor > Pages mode's Guides Shown grid, as in a logo page's Guides popover. The token
-// is written out per guide so the telemetry dashboard reads it.
-function logoGuidePart(
-  part: LogoGuidePart,
-  event: SettingsToggleOptionSpec['event'],
-): SettingsToggleOptionSpec {
-  return {
-    key: `logoGuide-${part}`,
-    label: LOGO_GUIDE_PARTS.find((p) => p.id === part)!.label,
-    read: (p) => readLogoGuideParts(p).has(part),
-    write: (p, v) => withLogoGuidePart(p, part, v),
-    event,
-  };
-}
 
 // One email notification switch (docs/specs/014-identity/profile-and-email-notifications.md): only
 // where the deployment sends email AND the reader is signed in, since a guest has no address.
@@ -127,8 +83,7 @@ function emailSwitch(
 // the Palette / Layers / AI / Map gear popovers that used to carry
 // them are gone (docs/specs/007-editor/user-preferences.md). One setting, one place. The panels kept their
 // reset-position button, which was the only non-preference thing those
-// popovers held, and the Slide Deck popover stays because its contents are
-// deck state rather than user preferences.
+// popovers held.
 //
 // This is a flat catalogue, so it stays one file however long it gets.
 
@@ -141,9 +96,9 @@ function emailSwitch(
 // `preferences` (the live values) lets a nested row follow its parent switch
 // for the same reason: a setting for a panel that is off has nothing to act on.
 // `authEnabled` is whether this deployment offers sign-in at all
-// (`clerkEnabled`): API tokens are Clerk-only, so on a no-auth self-host they
+// (`clerkEnabled`): API tokens are Clerk-only, so on a no-auth deployment they
 // are absent end to end rather than a sign-in prompt with nowhere to go
-// (docs/specs/015-api/public-api-and-tokens.md#37-self-hosting).
+// (docs/specs/015-api/public-api-and-tokens.md#37-deployments-without-sign-in).
 type SettingsRowContext = {
   emailEnabled: boolean;
   signedIn: boolean;
@@ -202,25 +157,6 @@ export type SettingsToggleRowSpec = RowBase & {
   // still meaning what they always did, so the dashboard's history stays
   // continuous across this rework.
   event: { category: TelemetryCategory; on: string; off: string };
-};
-
-// One switch inside a toggle group: its own preference and telemetry, like a toggle row, drawn as a
-// tile in the group's grid under the group's heading and description.
-export type SettingsToggleOptionSpec = {
-  key: string;
-  label: string;
-  // Linked from the group's description by this switch's label.
-  helpArticle?: HelpArticleKey;
-  read: (prefs: UserPreferences) => boolean;
-  write: (prefs: UserPreferences, next: boolean) => UserPreferences;
-  event: { category: TelemetryCategory; on: string; off: string };
-};
-
-// Several related switches as one control (the guided tours): one heading and one description over a
-// grid of switch tiles, where separate rows would repeat the same paragraph each time.
-export type SettingsToggleGroupRowSpec = RowBase & {
-  kind: 'toggleGroup';
-  toggles: SettingsToggleOptionSpec[];
 };
 
 export type SettingsChoiceRowSpec = RowBase & {
@@ -294,7 +230,7 @@ export type SettingsIdentityRowSpec = RowBase & { kind: 'identity' };
 export type SettingsDeleteAccountRowSpec = RowBase & { kind: 'deleteAccount' };
 
 // The Trash (docs/specs/013-workspace/trash.md): not a preference, a way in.
-// Here for everyone, guests and self-hosts without accounts included, because
+// Here for everyone, guests and deployments without accounts included, because
 // Settings is the one menu every deployment has.
 export type SettingsTrashRowSpec = RowBase & { kind: 'trash' };
 
@@ -312,7 +248,6 @@ export type SettingsPlacementDefaultRowSpec = RowBase & {
 
 export type SettingsRowSpec =
   | SettingsToggleRowSpec
-  | SettingsToggleGroupRowSpec
   | SettingsChoiceRowSpec
   | SettingsSliderRowSpec
   | SettingsAppearanceRowSpec
@@ -448,16 +383,16 @@ function elementTourSwitch(
 const ELEMENT_TOURS_SECTION = 'Show Me';
 
 // One track of a tour of several (lib/tour-tracks.ts), as its own row nested under the tour's switch over every track
-// (Plan Tours, Pages Tours): the Plan tour's Boards and Sheets, the Pages tour's page kinds
+// (Plan Tours): the Plan tour's Boards and Sheets
 // (docs/specs/007-editor/user-preferences.md "Tours"). On while the track is owed; off answers it, on forgets its
 // answer. Each track is named for itself ("Slides Tour"), never the mode. The tour's single seen flag (set by Power
 // user mode) is folded into the answered list first, so turning one track back on leaves the others as they were.
-function tourTrackSwitch<T extends string>(
-  key: 'planTourSeen' | 'pagesTourSeen',
-  tracksKey: 'planTourTracks' | 'pagesTourKinds',
-  tracks: readonly T[],
-  seen: (p: UserPreferences, track: T) => boolean,
-  track: T,
+function tourTrackSwitch(
+  key: 'planTourSeen',
+  tracksKey: 'planTourTracks',
+  tracks: readonly PlanTourTrack[],
+  seen: (p: UserPreferences, track: PlanTourTrack) => boolean,
+  track: PlanTourTrack,
   row: Pick<SettingsToggleRowSpec, 'label' | 'description' | 'helpArticle' | 'keywords' | 'event'>,
 ): SettingsToggleRowSpec {
   return {
@@ -479,8 +414,8 @@ function tourTrackSwitch<T extends string>(
 }
 
 function tourTracksSwitch(
-  key: 'planTourSeen' | 'pagesTourSeen' | 'elementToursSeen',
-  tracksKey: 'planTourTracks' | 'pagesTourKinds' | 'elementTourKinds',
+  key: 'planTourSeen' | 'elementToursSeen',
+  tracksKey: 'planTourTracks' | 'elementTourKinds',
   tracks: readonly string[],
   owed: (p: UserPreferences) => boolean,
   row: Pick<SettingsToggleRowSpec, 'label' | 'description' | 'helpArticle' | 'keywords' | 'event'>,
@@ -497,48 +432,7 @@ function tourTracksSwitch(
   };
 }
 
-type TourSeenKey =
-  | 'tourSeen'
-  | 'planTourSeen'
-  | 'workshopTourSeen'
-  | 'drawTourSeen'
-  | 'formTourSeen'
-  | 'avatarTourSeen'
-  | 'pagesTourSeen'
-  | 'elementToursSeen';
-
-// A presenter setting's row (docs/specs/012-collaboration/presentation-mode.md "Settings"): read and written through
-// lib/presentation-config, which keeps the whole config in one preference. The telemetry token is the one the
-// cog's change already sends, `Presentation-<field>`.
-type PresentingKey = Exclude<keyof PresentationConfig, 'autoAdvanceSeconds'>;
-function presentingToggle(
-  field: { [K in PresentingKey]: PresentationConfig[K] extends boolean ? K : never }[PresentingKey],
-  row: Pick<SettingsToggleRowSpec, 'section' | 'label' | 'description' | 'keywords' | 'alsoIn'>,
-): SettingsToggleRowSpec {
-  return {
-    kind: 'toggle',
-    key: `presentation-${field}`,
-    helpArticle: 'slideDeck',
-    ...row,
-    read: (p) => readPresentationConfig(p)[field],
-    write: (p, v) => withPresentationConfig(p, { [field]: v }),
-    event: { category: 'UI', on: `Presentation-${field}On`, off: `Presentation-${field}Off` },
-  };
-}
-function presentingChoice(
-  field: 'transition' | 'speed' | 'zoom',
-  row: Pick<SettingsChoiceRowSpec, 'section' | 'label' | 'description' | 'keywords' | 'options'>,
-): SettingsChoiceRowSpec {
-  return {
-    kind: 'choice',
-    key: `presentation-${field}`,
-    helpArticle: 'slideDeck',
-    ...row,
-    read: (p) => readPresentationConfig(p)[field],
-    write: (p, v) => withPresentationConfig(p, { [field]: v }),
-    event: { category: 'UI', changed: `Presentation-${field}` },
-  };
-}
+type TourSeenKey = 'planTourSeen' | 'formTourSeen' | 'elementToursSeen';
 
 export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
   {
@@ -661,225 +555,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         parent: 'powerUserMode',
         available: (ctx) => ctx.powerUserMode === true,
       },
-    ],
-  },
-  {
-    // Settings that apply only in Draw mode (docs/specs/007-editor/user-preferences.md):
-    // a setting that acts in both modes stays on Editor itself. Named Draw, as the mode
-    // switch names it (docs/specs/007-editor/editor-modes.md "Naming in the interface").
-    // There is no Diagram sibling while no setting applies only to Diagram mode.
-    id: 'draw',
-    label: 'Draw',
-    parent: 'editor',
-    rows: [
-      {
-        // docs/specs/023-draw-mode/draw-mode.md "Where the dock sits": only Draw mode has a dock,
-        // so only Draw mode moves with this.
-        kind: 'choice',
-        key: 'whiteboardDockPosition',
-        keywords:
-          'draw mode drawing mode whiteboard dock toolbar tools pens top bottom position tablet ipad drawing',
-        label: 'Dock Position',
-        description:
-          'Where the dock of pens, shapes and tools sits. Bottom is closer to hand on a tablet.',
-        helpArticle: 'drawMode',
-        options: [
-          { id: 'top', label: 'Top' },
-          { id: 'bottom', label: 'Bottom' },
-        ],
-        read: readWhiteboardDockPosition,
-        write: (p, v) => withWhiteboardDockPosition(p, v as WhiteboardDockPosition),
-        event: { category: 'UI', changed: 'WhiteboardDockPosition' },
-      },
-    ],
-  },
-  {
-    // Pages mode's own settings (docs/specs/007-editor/logo-pages.md "Construction guides"):
-    // the master switch, then how strong and which guides, nested under it.
-    id: 'pages',
-    label: 'Pages',
-    parent: 'editor',
-    rows: [
-      {
-        // docs/specs/007-editor/pages-mode.md "Contents": the sidebar's minimise and the
-        // popover's dock button write the same choice.
-        kind: 'choice',
-        key: 'contentsPlacement',
-        keywords:
-          'contents pages page list sidebar side bar left panel filmstrip slides navigator thumbnails minimise minimize maximise maximize dock button',
-        section: 'Pages',
-        label: 'Contents',
-        description:
-          'Where the list of pages sits on a computer: docked down the left, or tucked into its button. A phone always has the button.',
-        options: [
-          { id: 'sidebar', label: 'Sidebar' },
-          { id: 'button', label: 'Button' },
-        ],
-        read: readContentsPlacement,
-        write: (p, v) => withContentsPlacement(p, v as ContentsPlacement),
-        event: { category: 'UI', changed: 'ContentsPlacement' },
-      },
-      {
-        kind: 'toggle',
-        key: 'logoGuides',
-        keywords: 'logo guides construction grid keylines safe area centre lines snap artboard',
-        section: 'Logo Pages',
-        label: 'Logo Guides',
-        description:
-          'Draws centre lines, keylines, the safe area and a grid over a logo page; the keylines snap. A page you set on its own keeps its choice.',
-        helpArticle: 'logoPages',
-        alsoIn: "a logo page's Guides button",
-        read: (p) => p.logoGuides !== false,
-        write: (p, v) => ({ ...p, logoGuides: v }),
-        event: { category: 'UI', on: 'LogoGuidesOn', off: 'LogoGuidesOff' },
-      },
-      {
-        kind: 'choice',
-        key: 'logoGuideStrength',
-        keywords: 'logo guides strength opacity faint strong contrast',
-        section: 'Logo Pages',
-        parent: 'logoGuides',
-        label: 'Logo Guide Strength',
-        description: 'How strongly the guides show over the artwork.',
-        options: [
-          { id: 'faint', label: 'Faint' },
-          { id: 'medium', label: 'Medium' },
-          { id: 'strong', label: 'Strong' },
-        ],
-        read: readLogoGuideStrength,
-        write: (p, v) => ({ ...p, logoGuideStrength: v as LogoGuideStrength }),
-        event: { category: 'UI', changed: 'LogoGuideStrength' },
-      },
-      {
-        // One switch per guide (docs/specs/007-editor/logo-pages.md "Construction guides") as one
-        // grid; each event written out, so the telemetry dashboard reads its tokens.
-        kind: 'toggleGroup',
-        key: 'logoGuideParts',
-        keywords:
-          'logo guides centre lines diagonals safe area circles square grid construction keylines',
-        section: 'Logo Pages',
-        parent: 'logoGuides',
-        label: 'Guides Shown',
-        description: 'Which guides draw while they are on.',
-        toggles: [
-          logoGuidePart('centre', {
-            category: 'UI',
-            on: 'LogoGuideCentreLinesOn',
-            off: 'LogoGuideCentreLinesOff',
-          }),
-          logoGuidePart('diagonals', {
-            category: 'UI',
-            on: 'LogoGuideDiagonalsOn',
-            off: 'LogoGuideDiagonalsOff',
-          }),
-          logoGuidePart('safe', {
-            category: 'UI',
-            on: 'LogoGuideSafeAreaOn',
-            off: 'LogoGuideSafeAreaOff',
-          }),
-          logoGuidePart('circles', {
-            category: 'UI',
-            on: 'LogoGuideCirclesOn',
-            off: 'LogoGuideCirclesOff',
-          }),
-          logoGuidePart('square', {
-            category: 'UI',
-            on: 'LogoGuideSquareOn',
-            off: 'LogoGuideSquareOff',
-          }),
-          logoGuidePart('grid', { category: 'UI', on: 'LogoGuideGridOn', off: 'LogoGuideGridOff' }),
-        ],
-      },
-    ],
-  },
-  {
-    // The presenter settings (docs/specs/012-collaboration/presentation-mode.md "Settings"): how slides change, how
-    // the deck plays and what shows while presenting. They follow the account; the cog in a running presentation
-    // keeps only Transition, Speed and the two clocks, the things changed in front of the room.
-    id: 'presenting',
-    label: 'Presenting',
-    parent: 'editor',
-    rows: [
-      presentingChoice('transition', {
-        section: 'Slides',
-        label: 'Transition',
-        description: 'How one slide gives way to the next.',
-        keywords: 'slide transition animation fade cut move present presentation',
-        options: SLIDE_TRANSITIONS.map((t) => ({ id: t.id, label: t.label })),
-      }),
-      presentingChoice('speed', {
-        section: 'Slides',
-        label: 'Speed',
-        description: 'How long a transition takes.',
-        keywords: 'transition speed quick slow duration present presentation',
-        options: SLIDE_SPEEDS.map((t) => ({ id: t.id, label: t.label })),
-      }),
-      presentingChoice('zoom', {
-        section: 'Slides',
-        label: 'Slide Size',
-        description:
-          'Fill Screen blows a small slide up to fill the screen; Actual Size never zooms past 100%.',
-        keywords: 'zoom fill screen actual size scale present presentation',
-        options: SLIDE_ZOOMS.map((t) => ({ id: t.id, label: t.label })),
-      }),
-      {
-        kind: 'choice',
-        key: 'presentationAutoAdvance',
-        section: 'Playback',
-        label: 'Auto-Advance',
-        description:
-          'Move to the next slide on its own after this long; Off moves only when you say.',
-        keywords: 'auto advance timer kiosk loop slideshow seconds present presentation',
-        helpArticle: 'slideDeck',
-        options: AUTO_ADVANCE_CHOICES.map((c) => ({ id: String(c.seconds), label: c.label })),
-        read: (p) => String(readPresentationConfig(p).autoAdvanceSeconds),
-        write: (p, v) => withPresentationConfig(p, { autoAdvanceSeconds: Number(v) }),
-        event: { category: 'UI', changed: 'Presentation-autoAdvanceSeconds' },
-      },
-      presentingToggle('advanceOnClick', {
-        section: 'Playback',
-        label: 'Click to Advance',
-        description: "Off if you'd rather only the keys and buttons move the deck.",
-        keywords: 'click advance next mouse present presentation',
-      }),
-      presentingToggle('loop', {
-        section: 'Playback',
-        label: 'Loop the Deck',
-        description: 'After the last slide, start again rather than ending.',
-        keywords: 'loop repeat kiosk restart present presentation',
-      }),
-      presentingToggle('showPosition', {
-        section: 'While Presenting',
-        label: 'Show Position',
-        description: "The 7 / 23 counter and the slide's name.",
-        keywords: 'position counter slide number name hud present presentation',
-      }),
-      presentingToggle('keepControls', {
-        section: 'While Presenting',
-        label: 'Keep Controls Visible',
-        description: 'Stop the controls fading out when the pointer rests.',
-        keywords: 'controls hud fade visible present presentation',
-      }),
-      presentingToggle('hidePointer', {
-        section: 'While Presenting',
-        label: 'Hide the Pointer',
-        description: 'A still cursor left on a projector is a distraction.',
-        keywords: 'cursor pointer mouse hide projector present presentation',
-      }),
-      presentingToggle('showElapsed', {
-        section: 'While Presenting',
-        label: 'Show Elapsed Time',
-        description: 'A clock counting from the moment you started.',
-        keywords: 'clock timer elapsed time pacing present presentation',
-        alsoIn: "a presentation's cog",
-      }),
-      presentingToggle('showBudget', {
-        section: 'While Presenting',
-        label: 'Show Slide Budget',
-        description: 'Time on this slide against the minutes it was given.',
-        keywords: 'budget minutes pacing timer slide time present presentation',
-        alsoIn: "a presentation's cog",
-      }),
     ],
   },
   {
@@ -1171,15 +846,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       },
     },
     rows: [
-      tourSwitch('tourSeen', {
-        // The Diagram tour (docs/specs/007-editor/editor-tour.md; the welcome tour until October 2026).
-        label: 'Diagram Tour',
-        event: { category: 'UI', on: 'TourSeenOff', off: 'TourSeenOn' },
-        keywords:
-          'tour walkthrough onboarding tutorial intro welcome getting started diagram shapes arrows palette replay',
-        description: 'On a Diagram tab: the palette, selecting, the element menu and tabs.',
-        helpArticle: 'diagramTour',
-      }),
       // The Plan tour: one switch over both tracks, then each track's own row beneath it (docs/specs/026-plan/plan-tour.md).
       tourTracksSwitch(
         'planTourSeen',
@@ -1224,92 +890,12 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
           helpArticle: 'planDashboards',
         },
       ),
-      tourSwitch('workshopTourSeen', {
-        label: 'Workshop Tour',
-        event: { category: 'UI', on: 'WorkshopTourSeenOff', off: 'WorkshopTourSeenOn' },
-        keywords: 'tour walkthrough onboarding tutorial workshop facilitate session retro replay',
-        description: 'The first time you work in Workshop.',
-        helpArticle: 'workshopTour',
-      }),
-      tourSwitch('drawTourSeen', {
-        label: 'Draw Tour',
-        event: { category: 'UI', on: 'DrawTourSeenOff', off: 'DrawTourSeenOn' },
-        keywords: 'tour walkthrough onboarding tutorial draw whiteboard pen sketch replay',
-        description: 'The first time you work in Draw.',
-        helpArticle: 'drawTour',
-      }),
       tourSwitch('formTourSeen', {
         label: 'Forms Tour',
         event: { category: 'UI', on: 'FormTourSeenOff', off: 'FormTourSeenOn' },
         keywords: 'tour walkthrough onboarding tutorial form survey questions responses replay',
         description: 'The first time you open a Form tab.',
         helpArticle: 'planForms',
-      }),
-      tourSwitch('avatarTourSeen', {
-        label: 'Avatar Tour',
-        event: { category: 'UI', on: 'AvatarTourSeenOff', off: 'AvatarTourSeenOn' },
-        keywords:
-          'tour walkthrough onboarding tutorial avatar character walk speech message push replay',
-        description: 'The first time you walk as an avatar.',
-        helpArticle: 'avatarTour',
-      }),
-      // The Pages tour: one switch over every kind of page, then each kind's own row beneath it
-      // (docs/specs/007-editor/pages-tour.md).
-      tourTracksSwitch(
-        'pagesTourSeen',
-        'pagesTourKinds',
-        PAGES_TOUR_KINDS,
-        (p) => PAGES_TOUR_KINDS.some((k) => !pagesKindSeen(p, k)),
-        {
-          label: 'Pages Tours',
-          event: { category: 'UI', on: 'PagesTourSeenOff', off: 'PagesTourSeenOn' },
-          keywords:
-            'tour walkthrough onboarding tutorial pages slides infographic article logo all replay',
-          description: 'Every Pages tour at once: slides, infographics, articles and logos.',
-          helpArticle: 'pagesTour',
-        },
-      ),
-      tourTrackSwitch('pagesTourSeen', 'pagesTourKinds', PAGES_TOUR_KINDS, pagesKindSeen, 'slide', {
-        label: 'Slides Tour',
-        event: { category: 'UI', on: 'SlidesTourSeenOff', off: 'SlidesTourSeenOn' },
-        keywords: 'tour walkthrough onboarding tutorial pages slides deck present replay',
-        description: 'On a slide: layouts, backgrounds, the deck and presenting.',
-        helpArticle: 'pagesTour',
-      }),
-      tourTrackSwitch(
-        'pagesTourSeen',
-        'pagesTourKinds',
-        PAGES_TOUR_KINDS,
-        pagesKindSeen,
-        'infographic',
-        {
-          label: 'Infographic Tour',
-          event: { category: 'UI', on: 'InfographicTourSeenOff', off: 'InfographicTourSeenOn' },
-          keywords: 'tour walkthrough onboarding tutorial pages infographic poster layout replay',
-          description: 'On an infographic page: layouts, backgrounds, page size and presenting.',
-          helpArticle: 'pagesTour',
-        },
-      ),
-      tourTrackSwitch(
-        'pagesTourSeen',
-        'pagesTourKinds',
-        PAGES_TOUR_KINDS,
-        pagesKindSeen,
-        'article',
-        {
-          label: 'Article Tour',
-          event: { category: 'UI', on: 'ArticleTourSeenOff', off: 'ArticleTourSeenOn' },
-          keywords: 'tour walkthrough onboarding tutorial pages article document writing replay',
-          description: 'On an article: writing, the page toolbar, its style and fonts.',
-          helpArticle: 'pagesTour',
-        },
-      ),
-      tourTrackSwitch('pagesTourSeen', 'pagesTourKinds', PAGES_TOUR_KINDS, pagesKindSeen, 'logo', {
-        label: 'Logo Tour',
-        event: { category: 'UI', on: 'LogoTourSeenOff', off: 'LogoTourSeenOn' },
-        keywords: 'tour walkthrough onboarding tutorial pages logo artboard brand replay',
-        description: 'On a logo artboard: layouts, guides, mirroring and combining shapes.',
-        helpArticle: 'pagesTour',
       }),
       // Element tours (docs/specs/007-editor/element-tours.md "Settings"): their own closed section, one switch for
       // them all over one per toured kind.
@@ -1742,7 +1328,7 @@ export function settingsSectionId(section: string): string {
 
 // The categories actually offered right now, with each one's rows filtered to
 // those that apply. AI only appears when the api worker advertises the
-// capability, so a self-hosted deploy without it never shows an empty group ,
+// capability, so a deployment without it never shows an empty group ,
 // and a category left with no applicable rows drops out entirely rather than
 // becoming a row that pushes a blank pane.
 export function visibleCategories(

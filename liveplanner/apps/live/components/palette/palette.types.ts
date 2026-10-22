@@ -3,50 +3,28 @@ import type { ShapeKind } from '@liveplanner/document';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { PaletteTint } from '@/components/palette/palette-controls';
 
-export type CanvasTool =
-  | 'pan'
-  | 'select'
-  | 'laser'
-  | 'spotlight'
-  // Avatar mode (docs/specs/008-canvas/avatar-mode.md): a walking pixel character, read-only canvas.
-  | 'avatar'
-  | 'eraser'
-  | 'format'
-  | 'isometric'
-  // Slide Deck (docs/specs/012-collaboration/presentation-mode.md): opens the panel where a deck is built and started.
-  // Picking the tool does NOT start presenting; Start is a deliberate second
-  // act. Deliberately absent from SELECTION_MODES: there is no Mode Button
-  // for it, because handing somebody else's screen into a full-screen deck is
-  // not something one person should do to another.
-  | 'slide-deck';
+export type CanvasTool = 'pan' | 'select' | 'format' | 'isometric';
 
 // The palette strip's inputs (docs/specs/007-editor/toolbar-layout.md): the canvas tool, the add
 // handlers every tile calls, and the tab's state the tiles read.
 export type PaletteProps = {
   canvasTool: CanvasTool;
   onSetCanvasTool: (tool: CanvasTool) => void;
-  // Leaves Avatar mode (docs/specs/008-canvas/avatar-mode.md) for whichever tool preceded it. Fired when
-  // the user picks any palette tile while walking, so the add lands instead of
-  // being swallowed by the read-only canvas. Omit outside the editor.
-  onExitAvatarMode?: () => void;
   // Enter zen mode (docs/specs/007-editor/zen-mode.md), offered as a Zen entry in the canvas-tool
   // dropdown under Isometric. An action, not a tool: firing it leaves the
   // current tool selected. Omit to hide the entry; exit stays on the zoom
   // dock (the only chrome left in zen).
   onToggleZen?: () => void;
   // True when the active tab has no elements. Disables the canvas tools that
-  // need existing content (Eraser / Format / Laser / Spotlight / Isometric).
+  // need existing content (Format / Isometric).
   canvasEmpty?: boolean;
   // `opts` carries the creation-time choice for the kinds that have one
-  // (docs/specs/012-collaboration/session-button.md session tools, docs/specs/009-elements/reaction-pad.md reactions), so a tile per choice places
+  // (docs/specs/012-collaboration/session-button.md session tools), so a tile per choice places
   // that choice rather than the factory default.
   onAddShape: (
     kind: ShapeKind,
     opts?: {
       session?: import('@liveplanner/document').SessionTool;
-      reaction?: import('@liveplanner/document').Reaction;
-      mode?: import('@liveplanner/document').SelectionMode;
-      estimateScale?: import('@liveplanner/document').EstimateScale;
       plan?: string;
       variant?: string;
     },
@@ -72,9 +50,6 @@ export type PaletteProps = {
   onAddLinkCard: () => void;
   onAddVideo: (provider?: EmbedProvider) => void;
   // Composite "Components" (docs/specs/008-canvas/canvas-and-palette.md): each arms the tap-or-drag draw gesture.
-  // Banner / Callout / Stat row / Process need no image and always show; Hero
-  // / Header (and the Tools-tab Avatar) carry an image, so they're gated on
-  // image upload being available (onAddImage present).
   onAddBanner: () => void;
   onAddHero: () => void;
   onAddHeader: () => void;
@@ -83,35 +58,15 @@ export type PaletteProps = {
   onAddProcess: () => void;
   onAddFlowchart: () => void;
   onAddAvatar: () => void;
-  // Spawn an image placeholder + open the picker. Optional so
-  // deployments without R2 (or view-role visitors) can omit it; the
-  // Image palette entry hides when the handler is missing. See
-  // docs/specs/009-elements/images.md.
-  onAddImage?: () => void;
   // Drops a horizontal arrow at the viewport centre with no pointers
   // on either end by default (i.e. a plain line). Users can flip the
   // arrowEnds afterwards via the Pointer accordion.
   // `ends`: the Arrow tool's pointer at its end by default, `'none'` for the Line tool.
   onAddArrow: (ends?: import('@liveplanner/document').ArrowEnds) => void;
-  // Pencil tool: enters one-shot freehand draw mode. Unlike the
-  // other add-element callbacks, this never drops at the viewport
-  // centre, the pencil is gestural by design. See docs/specs/008-canvas/canvas-and-palette.md Pencil
-  // (freehand) subsection.
-  onBeginFreehand: () => void;
-  // Highlighter (docs/specs/008-canvas/highlighter.md): the pencil gesture with the marker
-  // variant. Same one-shot arm semantics as onBeginFreehand.
-  onBeginHighlighter: () => void;
-  // Picks up one of Draw mode's markers outside Draw mode (the Toolbar strip's Search,
-  // docs/specs/007-editor/toolbar-layout.md "Search: every element type").
-  // `once`: picked up for one stroke (a logo page's palette), else held until put down.
-  onBeginMarker: (penId: import('@/lib/whiteboard-prefs').WhiteboardPenId, once?: boolean) => void;
-  onBeginShapePen: () => void;
   // Disarm the armed tool: its tile pressed again (docs/specs/008-canvas/canvas-and-palette.md "Placement on add").
   onCancelDraw?: () => void;
   // Polygon tool (docs/specs/008-canvas/polygon-tool.md): arms the click-to-place-vertices mode.
   onBeginPolygon: () => void;
-  // The Path tool (docs/specs/023-draw-mode/path-tool.md), a logo page's Pen in the palette.
-  onBeginPath: () => void;
   // Currently-queued draw-to-size intent, or null. When set, the
   // matching palette button (shape, text, sticky, image, arrow)
   // renders pressed so the user can see what's queued for the next

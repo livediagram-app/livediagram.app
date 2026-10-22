@@ -32,11 +32,8 @@ function editor(over: Record<string, unknown> = {}) {
   return {
     isReadOnly: false,
     canShareDocument: true,
-    canCombine: () => false,
-    combineSelected: vi.fn(),
     documentId: 'd1',
     activeTab: { id: 't1', elements: [] },
-    editorMode: { mode: 'diagram', setMode: vi.fn(), canSwitch: true },
     canUndo: true,
     canRedo: false,
     zenMode: false,
@@ -105,15 +102,10 @@ describe('useEditorCommands', () => {
     expect(second).toHaveBeenCalledTimes(1);
   });
 
-  // docs/specs/007-editor/editor-modes.md: Draw mode has no format painter.
-  it('follows the editor mode, not the tab', () => {
-    ctx = editor({ editorMode: { mode: 'draw', setMode: vi.fn(), canSwitch: true } });
-    const draw = ids(run().result.current.commandItems);
-    expect(draw).not.toContain('tool:format');
-    // Format needs content to paint, so the diagram side has some.
+  // docs/specs/026-plan/plan-mode.md: Plan has no format painter, even with content to paint.
+  it('never offers the format painter', () => {
     const shape = { id: 's', type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10 };
     ctx = editor({ activeTab: { id: 't1', elements: [shape] } });
-    const diagram = ids(run().result.current.commandItems);
-    expect(diagram).toContain('tool:format');
+    expect(ids(run().result.current.commandItems)).not.toContain('tool:format');
   });
 });

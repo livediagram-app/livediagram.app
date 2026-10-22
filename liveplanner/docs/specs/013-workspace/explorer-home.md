@@ -7,14 +7,13 @@ brings, in one screen: "what was I working on?" and "what happened while I was a
 ## Route
 
 - Home lives at `/explorer/home`. `/explorer`, and any Explorer URL that names no view, lands on it.
-- The **Timeline** ([Timeline](timeline.md)) lives at `/explorer/timeline`, with a sidebar row of its own under the
-  Inbox ([Explorer structure](explorer-structure.md)). What Happened's **See Timeline** link also opens it; its
-  breadcrumb is its own (**Timeline**).
+- The Explorer has no Timeline section (it was removed, [Timeline events](timeline.md)); an old `/explorer/timeline`
+  link lands on Home too.
 
 ## Layout
 
 Home reads as the front page of the person's work, in the marketing site's visual language: the dotted
-backdrop, a heavy display heading, pills with a coloured dot, the glowing search field and fanned sheets
+backdrop, a heavy display heading, pills with a coloured dot, the glowing search field and fanned previews
 ([Design principles](../004-interface-design/design-principles.md)).
 
 - **The hero** opens the page ([The hero](#the-hero)): a full-width band under the Explorer header, above the
@@ -22,13 +21,14 @@ backdrop, a heavy display heading, pills with a coloured dot, the glowing search
 - **One column** under it, beside the sidebar, at every width: **Jump Back In**, then **What Happened**. It scrolls
   with the page.
 - **Display headings** set the sections apart. Each section opens with its heading row: the title (about 24 px,
-  extra bold, tight tracking) and the section's quiet link at the right end (**See More**, **See Timeline**). No rule
+  extra bold, tight tracking) and the section's quiet link at the right end (Jump Back In's **See More**). No rule
   runs under the row. Generous space (about 40 px) separates one section from the next.
 - Jump Back In's documents are **cards** ([Jump Back In](#jump-back-in)); What Happened's days sit in **one panel**
   (a white, rounded, hairline-bordered surface; the raised surface in dark mode).
 - Home has no import, no folder and no view switch.
 - The person's own history (what they created, updated or opened) is not on Home: Jump Back In holds what they
-  reach for, and the full record is the Timeline's.
+  reach for, and the full record of a document or a team is its History or Team Activity
+  ([Timeline events](timeline.md) §3.4).
 
 ## The hero
 
@@ -46,8 +46,8 @@ Top to bottom, left column:
     sidebar's Inbox count ([Inbox](inbox.md)), opening the **Inbox**; a sky dot.
   - A pill is drawn once its count is known: never "0 documents" while the lists load or after the list failed to, nor "Inbox is clear" for an
     Inbox that has not loaded or failed to.
-- **The greeting**, the page's `h1`: "Good morning.", "Good afternoon." or "Good evening." by the reader's local
-  hour (5 to 11 morning, 12 to 17 afternoon, else evening), then "What are we picking up?". Large display type
+- **The greeting**, the page's `h1`: "Good morning,", "Good afternoon," or "Good evening," by the reader's local
+  hour (5 to 11 morning, 12 to 17 afternoon, else evening), then "what are you planning today?". Large display type
   (about 56 px on a desktop, 36 px on a phone), extra bold, tight tracking. The tab's title stays **Home**.
 - **The lead**: "Jump back into what you use most, or see what changed while you were away."
 - **The search field**: the Explorer's lens field ([Explorer filters](explorer-filters.md#the-field)) drawn large
@@ -56,11 +56,15 @@ Top to bottom, left column:
   Search results, as the header's field does from Home, and the header's field there takes the focus with the caret
   after what was typed, so the typing carries on uninterrupted.
 
-The right column, on a wide screen only (`lg` and up), shows **fanned sheets**: the snapshot thumbnails of the
-person's three most recently saved documents of My Documents, the newest in front and the two behind turned out to
-either side, each on a white sheet with a soft shadow. They are decoration (hidden from assistive technology, not
-links): Jump Back In is the way in. With fewer than three, fewer sheets; with none, the column is empty and the text
-keeps its width.
+The right column, on a wide screen only (`lg` and up), shows **fanned previews** of what a project holds: a
+**Board**, a **Sheet**, a **Dashboard** and a **Form**, the Board and the Sheet behind turned out to either side, the
+Dashboard and the Form in front, each on a white sheet with a soft shadow and its name in a small pill. They are the
+same for everyone, on every Home, the first run's included: static art drawn from the pictures Start Planning offers
+([Plan mode](../026-plan/plan-mode.md) "Starting a board"), in the page's light or dark look, and **nothing is
+fetched** to draw them (no document's thumbnail is asked for). They are not links: Jump Back In is the way in. For
+assistive technology they are one group, "What a project can hold", of four images named Board, Sheet, Dashboard and
+Form. Their one motion is a short fade as they land, within the motion budget, and none under reduced motion. On a
+phone or a tablet the column is not drawn, so the hero keeps to its words and its field.
 
 **It comes and goes with Home.** Leaving Home for another Explorer page folds the hero away (its height to nothing as
 it fades), and the page under it slides up; returning to Home unfolds it again. Each runs over the `long` motion token
@@ -107,7 +111,7 @@ last answer stands for whoever is here. Only a first run fetches the welcome's t
 
 The hero speaks to a beginning:
 
-- **Pills** say what is true of every start and are not links: "Free and open source" (green dot) and, for a guest,
+- **Pills** say what is true of every start and are not links: "Free, no trackers" (green dot) and, for a guest,
   "No sign-up to start" (sky dot); for someone signed in, "Saved to your account".
 - **The greeting** is "Welcome to liveplanner. What are you making first?".
 - **The lead** is "Pick a starting point, or search the templates. Whatever you make lands here, ready to pick up
@@ -116,13 +120,12 @@ The hero speaks to a beginning:
   Enter opens the New Document wizard with the words in its template search (`/new?q=`). Inside its right end,
   **Start Blank** asks which mode, then makes that mode's blank with its start closed (`/new?start=blank`,
   [Start Blank after a mode](../007-editor/new-document-route.md#start-blank-after-a-mode)).
-- **The fanned sheets** show three template previews (Flowchart in front, Mind Map and Kanban Board behind), the
-  marketing hero's fan, so the page shows what can be made.
+- **The fanned previews** are every Home's: a Board, a Sheet, a Dashboard and a Form, so the page shows what can be
+  made.
 
 Under it, beside the sidebar, Home holds three sections in place of Jump Back In and What Happened:
 
-- **Start Blank**: the five blanks, one per mode (Blank Diagram, Blank Whiteboard, Blank Session, Blank
-  Illustration, Blank Plan), each a card with its preview, title and one-line description. Activating one makes
+- **Start Blank**: Plan's three blanks (Blank Plan, Blank Spreadsheet, Blank Form, `WELCOME_BLANKS`), each a card with its preview, title and one-line description. Activating one makes
   that blank at once (`/new?template=<kind>`).
 - **Popular Templates**: the first eight non-blank templates of the shared Popular list, as large cards with their
   previews, titles and descriptions; activating one makes it at once. A quiet **Browse All Templates** link in the
@@ -264,9 +267,6 @@ the **4 most used** and the **4 most recent**, no document twice.
 - **Nothing from anyone, no section.** When nobody else did anything in the window, What Happened is left out of the
   page entirely, heading included, rather than set a second empty state under Jump Back In's. While it loads, its
   heading and skeleton hold its place.
-- A quiet **See Timeline** link beside the section's heading opens the **Timeline**, shown only once What Happened
-  has an entry (not while it loads, not when it is empty), where
-  everything that happened, the person's own doings included, can be filtered and paged.
 - Every entry is **spot on**. It names:
   - who acted;
   - what they did, as a plain verb phrase (commented, replied, resolved a thread, edited, assigned you an action,
@@ -296,11 +296,10 @@ the **4 most used** and the **4 most recent**, no document twice.
 
 ## Unread
 
-Viewing Home counts as having looked: it moves the Timeline feed's unread mark exactly as the Timeline page does
-([Timeline](timeline.md) §2.5), once per visit, and says where the mark stood before, so what is new to the person
+Viewing Home counts as having looked: it moves the unread mark ([Timeline events](timeline.md) §2.5), once per visit, and says where the mark stood before, so what is new to the person
 can be marked.
 
-- In What Happened, an entry newer than that mark carries a **New** pill, as the Timeline's cards do: the word,
+- In What Happened, an entry newer than that mark carries a **New** pill: the word,
   never colour alone. A summary is new when its latest action is.
 - A person who has never looked sees none: marking a whole history new would be noise.
 - The mark is the one the first read of the visit reports; a retry does not move what is marked.
@@ -318,7 +317,7 @@ An **open** is the editor loading a document for a person to look at.
 - These are **not** opens: a snapshot or thumbnail, an embed ([Read-only embeds](embeds.md)), a duplicate, Take
   Offline, and any read through the public API or an AI tool.
 - Opens are **private**. Only the person who opened a document ever sees that they did: in their Jump Back In, never in What Happened, a document's
-  History, a team's feed, or the Timeline feed ([Timeline](timeline.md)).
+  History or a team's feed ([Timeline events](timeline.md)).
 - Offline Mode documents never reach the server, so the server records none of their opens. **This Browser counts
   them instead**: the editor opening a document stored only here adds the day to that document's own record in
   this browser, by the same once-per-UTC-day rule, keeping the days of the last 90, and moves its last open. Its
@@ -335,7 +334,7 @@ An **open** is the editor loading a document for a person to look at.
   open the later of the two.
 - Deleting the account deletes its opens. Deleting a document for good deletes everyone's opens of it; a document in
   the Trash only leaves Home until it is restored.
-- An open older than a year is forgotten, the Timeline's retention ([Timeline](timeline.md) §3.5).
+- An open older than a year is forgotten, the record's retention ([Timeline events](timeline.md) §3.5).
 
 ## States
 
@@ -372,7 +371,7 @@ One-liners on the closed vocabulary ([Telemetry](../017-telemetry/telemetry.md))
 
 ## Help
 
-The help centre's [Home](../../../apps/help/app/explorer/timeline/page.mdx) article describes Home (Jump Back In, What Happened) and the Timeline.
+The help centre's [Home](../../../apps/help/app/explorer/home/page.mdx) article describes Home (Jump Back In, What Happened) and a document's or a team's history.
 
 ## Accessibility
 

@@ -2,6 +2,7 @@
   "name": "@liveplanner/templates",
   "version": "0.0.0",
   "private": true,
+  "license": "UNLICENSED",
   "type": "module",
   "sideEffects": false,
   "main": "./src/index.ts",
@@ -9,8 +10,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./template-sheets": "./src/template-sheets.ts",
-    "./plan-template-seeds": "./src/plan-template-seeds.ts",
-    "./page-layout-build": "./src/page-layout-build.ts"
+    "./plan-template-seeds": "./src/plan-template-seeds.ts"
   },
   "scripts": {
     "lint": "oxlint",

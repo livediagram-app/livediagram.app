@@ -74,7 +74,7 @@ export function SettingsTokenPairings({
       {confirm ? (
         <ConfirmPopover
           anchor={confirm.anchor}
-          message={`Unpair ${confirm.pairing.name ?? UNNAMED}? Its open diagrams stop editing until you allow it again.`}
+          message={`Unpair ${confirm.pairing.name ?? UNNAMED}? Its open projects stop editing until you allow it again.`}
           confirmLabel="Unpair"
           onConfirm={() => {
             onUnpair(confirm.pairing.id);

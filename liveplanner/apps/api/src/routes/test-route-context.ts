@@ -34,7 +34,7 @@ export function makeTestRouteContext(
     // Sent as is, for a body that does not parse.
     rawBody?: string;
     headers?: Record<string, string>;
-    // Per-test bindings (e.g. the images tests' IMAGES stub); an empty
+    // Per-test bindings (e.g. a SNAPSHOTS stub); an empty
     // Env otherwise.
     env?: Env;
     // Provide to observe background dispatches; absent = the unit-test

@@ -6,7 +6,7 @@
 //
 // Pure: takes a centre (cx, cy), returns a fresh Element[].
 
-import { createShape, createText, type Element } from '@liveplanner/document';
+import { createShape, createSticky, createText, type Element } from '@liveplanner/document';
 import {
   actionsColumn,
   checklistHeight,
@@ -89,8 +89,7 @@ const MSG_ACTIONS = [
   'Design answers within two days · Ines · Wed',
 ];
 
-// Two cards already in the box, still sealed: the room sees a count, never
-// the words, until the facilitator opens it.
+// What nobody says out loud, written up without a name.
 const MSG_ANONYMOUS = [
   'I don’t feel I can push back on deadlines',
   'Can we talk about how on-call is paid?',
@@ -110,8 +109,8 @@ export function buildMadSadGlad(cx: number, cy: number): Element[] {
   const top = y0 + titleH + subtitleH + headGap;
   const notesTop = retroNotesTop(top);
 
-  // The rail opens on honesty: the mood check, then the anonymous box for
-  // what nobody will say out loud, then the writing and voting tools.
+  // The rail opens on honesty: the mood check, then a note for what nobody
+  // will say out loud, then the writing and voting tools.
   const tempH = 240;
   const boxY = top + tempH + 20;
   const buttonsY = top + colH - buttonH;
@@ -125,11 +124,11 @@ export function buildMadSadGlad(cx: number, cy: number): Element[] {
     ),
     moodCheck(x0, top, railW, tempH, 'How are you, really?'),
     {
-      ...createShape('idea-box', x0, boxY),
+      ...createSticky(x0, boxY),
       width: railW,
       height: buttonsY - 20 - boxY,
-      label: 'Say it anonymously',
-      ideaCards: MSG_ANONYMOUS,
+      label: ['Say it anonymously', ...MSG_ANONYMOUS].join('\n\n'),
+      textSize: 'sm',
       ...CONTENT,
     },
     ...sessionButtons(x0, buttonsY, railW, { minutes: 6, dots: 3 }),

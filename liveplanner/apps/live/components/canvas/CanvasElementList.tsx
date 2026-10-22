@@ -70,8 +70,6 @@ type CanvasElementListProps = Pick<
   | 'canWriteText'
   | 'canResize'
   | 'voteReview'
-  | 'revealedIds'
-  | 'reactionBursts'
   | 'tabFont'
   | 'tabFinish'
 > & {
@@ -117,8 +115,6 @@ export const CanvasElementList = memo(function CanvasElementList({
   voteReview,
   commentActionsFor,
   actionActionsFor,
-  revealedIds,
-  reactionBursts,
   tabFont,
   tabFinish,
   stackedIds,
@@ -228,8 +224,6 @@ export const CanvasElementList = memo(function CanvasElementList({
                 isVoteFocus={voteReview?.focusId === element.id}
                 commentActions={commentActionsFor?.(element.id)}
                 actionActions={actionActionsFor?.(element.id)}
-                revealedForMe={revealedIds?.has(element.id)}
-                reactionBurst={reactionBursts?.get(element.id)}
                 // An explicit per-element font outranks the tab default.
                 // Under the Sketch finish, the handwriting font (docs/specs/008-canvas/finish.md).
                 fontFamily={exportFontFamily(element, tabFont, tabFinish)}

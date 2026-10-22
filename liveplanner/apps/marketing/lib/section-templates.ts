@@ -5,13 +5,13 @@ import { toGallery, type GalleryTemplate } from '@/lib/template-gallery';
 // category pages"): the templates most worth starting from once you have read about the feature, best
 // first, so a visitor can dive straight into one. A hand-picked list per `LANDING_SECTIONS` id, never
 // more than SECTION_TEMPLATES_MAX (three rows of three); a category with fewer good fits lists fewer
-// rather than padding. section-templates.test.ts holds every id to a list and every kind to a listed
-// template.
+// rather than padding, and one with none shows no band. section-templates.test.ts holds every list to a
+// category and every kind to a listed template.
 
 export const SECTION_TEMPLATES_MAX = 9;
 
 export const SECTION_TEMPLATE_KINDS: Readonly<Record<string, readonly TemplateKind[]>> = {
-  plan: [
+  boards: [
     'kanban',
     'project-planner',
     'bug-triage',
@@ -21,6 +21,17 @@ export const SECTION_TEMPLATE_KINDS: Readonly<Record<string, readonly TemplateKi
     'content-calendar',
     'weekly-planner',
     'blank-plan',
+  ],
+  // Each of these opens with a Dashboard tab of its own (template-builders-plan.ts).
+  dashboards: [
+    'product-launch',
+    'project-planner',
+    'okrs',
+    'bug-triage',
+    'kanban',
+    'hiring-pipeline',
+    'weekly-planner',
+    'content-calendar',
   ],
   sheets: [
     'budget-planner',

@@ -55,7 +55,7 @@ function bucket(stored: Stored | null = null) {
 
 function call(path: string, opts: { images?: ReturnType<typeof bucket>; method?: string } = {}) {
   const waits: Promise<unknown>[] = [];
-  const env = (opts.images ? { IMAGES: opts.images } : {}) as unknown as Env;
+  const env = (opts.images ? { SNAPSHOTS: opts.images } : {}) as unknown as Env;
   const ctx = makeTestRouteContext(opts.method ?? 'GET', `/api${path}`, {
     env,
     waitUntil: (p) => void waits.push(p),

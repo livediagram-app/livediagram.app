@@ -8,24 +8,24 @@ Multi-user team permissions have been "still ahead" since [Build phase](../005-p
 
 ## Data model
 
-Two D1 tables, owned by the api worker (migration `0019_teams.sql`):
+Two D1 tables, owned by the api worker:
 
 - **`teams`**: `id`, `name`, `organisation` (free text, nullable), `created_at`, `updated_at`. No owner column: ownership is expressed through the Admin role in the link table, so a team survives its creator leaving.
-- **`team_members`** (the link table): `id`, `team_id`, `user_id` (nullable), `email` (nullable), `role` (`'admin' | 'member'`), `status` (`'invited' | 'joined'`, migration `0021`), `created_at`, `updated_at`. (Migration `0023` added an `invite_token` column for a shareable-link flow that was later dropped in favour of email matching; the column is retained but unused.)
+- **`team_members`** (the link table): `id`, `team_id`, `user_id` (nullable), `email` (nullable), `role` (`'admin' | 'member'`), `status` (`'invited' | 'joined'`), `created_at`, `updated_at`.
   - `user_id` is a Clerk user id. Null on a pending invite that hasn't connected yet.
   - `email` is the lowercased invite address. Unique per team. May be null only on the creator's row when the deployment's JWT carries no email claim.
   - One of `user_id` / `email` is always set.
-  - **One row per person per team**: a unique index on `(team_id, user_id) WHERE user_id IS NOT NULL` (migration `0082`) refuses a second membership row for the same user. The migration folded existing duplicates into one row first, keeping the joined (then oldest) row and any joined-admin role among them.
-  - `status` is the invite's state: `invited` (waiting for an answer), `joined` (a member), or one of the two **rejected** states, `declined` (the invitee said no, in the app or from the email) and `expired` (nobody answered within the invite's lifetime, see "Reminders and expiry"). Creator rows are born `joined`; invite rows are born `invited`. Rows that pre-date migration 0021 were backfilled `joined` (they joined under the old auto-join rules) except never-connected invites, which stayed `invited`.
+  - **One row per person per team**: a unique index on `(team_id, user_id) WHERE user_id IS NOT NULL` refuses a second membership row for the same user.
+  - `status` is the invite's state: `invited` (waiting for an answer), `joined` (a member), or one of the two **rejected** states, `declined` (the invitee said no, in the app or from the email) and `expired` (nobody answered within the invite's lifetime, see "Reminders and expiry"). Creator rows are born `joined`; invite rows are born `invited`.
   - A rejected row is a **record, not a membership**: it grants nothing (no team detail, no library, no accept), counts toward nothing, and stays on the member list only so an Admin can see the answer. It leaves the list when an Admin removes it, or when the same address is invited again (the old row is replaced by a fresh invite).
-  - Migration `0095_team_invite_decline_and_reminders.sql` adds the invite's email lifecycle: `decline_token_hashes` (the SHA-256 hashes of the decline tokens its emails carry, space-separated, at most four: the invite and its three reminders; they live as long as the row, so a link keeps saying what became of the invite), `reminder1_sent_at` / `reminder2_sent_at` / `reminder3_sent_at` (each reminder's stamp, `0` = skipped), `reminder_attempts` (failed reminder sends in a row), and `clock_started_at` (when the invite's reminder and expiry clock started: its `created_at` for a new invite). A partial index on `clock_started_at WHERE status = 'invited'` serves the daily sweep. Pending invites that already existed when the migration ran start their clock at the deploy (the migration's own time), so they get the full reminder series and expire 28 days after the deploy: none is rejected on the first run, however old.
+  - The invite's email lifecycle has its own columns: `decline_token_hashes` (the SHA-256 hashes of the decline tokens its emails carry, space-separated, at most four: the invite and its three reminders; they live as long as the row, so a link keeps saying what became of the invite), `reminder1_sent_at` / `reminder2_sent_at` / `reminder3_sent_at` (each reminder's stamp, `0` = skipped), `reminder_attempts` (failed reminder sends in a row), and `clock_started_at` (when the invite's reminder and expiry clock started: its `created_at` for a new invite). A partial index on `clock_started_at WHERE status = 'invited'` serves the daily sweep.
 
 ## Identity: signed-in only
 
 Teams are keyed by Clerk user ids and invites are keyed by email, so the whole feature requires a verified Clerk session:
 
 - Every `/api/teams*` endpoint requires a verified Clerk Bearer token. The guest `X-Owner-Id` path gets `401 sign_in_required`. This does NOT violate [Auth + guest access](../014-identity/auth-and-guest-access.md)'s no-sign-in-wall rule: the canvas and everything else stays guest-accessible; only the Teams surface asks for an account.
-- In the Explorer sidebar, guests see the sign-in nudge ("Sign in to access Teams") at the end of the Spaces group instead of team rows and New Team ([Explorer structure](explorer-structure.md)). Clerk-disabled self-host deployments ([Open source + distribution](../002-project-scope/open-source-and-business-model.md)) show neither.
+- In the Explorer sidebar, guests see the sign-in nudge ("Sign in to access Teams") at the end of the Spaces group instead of team rows and New Team ([Explorer structure](explorer-structure.md)). Deployments without Clerk ([Business model + licence](../002-project-scope/business-model-and-licence.md)) show neither.
 
 ### Email claim
 
@@ -67,7 +67,7 @@ The invite email (and every reminder) carries a **Decline invite** link, so some
   - **Invalid** (unknown token, removed or replaced invite): "This invite link isn't valid".
 - **Idempotent.** Declining an already-declined invite answers `200 { status: 'declined' }` again and changes nothing; an expired one answers `200 { status: 'expired' }`; a joined one answers `409 already_joined`. Only the request that flips `invited` to `declined` (guarded in the write) tells anyone.
 - **What a decline does**: the row becomes `declined` and reminders stop. Its links keep working only to say it was declined. The team's admins get the same Timeline card and invite-response email (opt-out per admin) an in-app decline sends.
-- **Rate limits.** Both the read and the decline sit outside the owner-keyed write limiter and are limited per network (`TEAM_INVITE_RATE_LIMITER`, 20 a minute per IPv4 /24 or IPv6 /56, keyed `invite-decline:<network>`), like the other unauthenticated door (forms). Absent binding: allowed (self-host). The 256-bit secret makes guessing hopeless either way; the limit bounds D1 reads.
+- **Rate limits.** Both the read and the decline sit outside the owner-keyed write limiter and are limited per network (`TEAM_INVITE_RATE_LIMITER`, 20 a minute per IPv4 /24 or IPv6 /56, keyed `invite-decline:<network>`), like the other unauthenticated door (forms). Absent binding: allowed. The 256-bit secret makes guessing hopeless either way; the limit bounds D1 reads.
 
 ## Reminders and expiry
 
@@ -78,13 +78,12 @@ An invite nobody answers is followed up three times, then closes on its own, so 
 - **Stops** the moment the row is not `invited`: accepted, declined (either way), withdrawn or removed by an Admin, or expired. Every reminder query reads `status = 'invited'`.
 - **Bounded and capped.** Each stage takes at most 100 invites a run, oldest first. A failed send leaves the stamp unset for tomorrow and adds one to `reminder_attempts`; at 3 (`MAX_SEND_ATTEMPTS`, as the onboarding series) the invite leaves the reminder queries for good, and a success resets the count.
 - **Expiry.** **28 days** after the clock started, a row still `invited` becomes `expired`: rejected, shown on the team page the same way as a decline; its decline links then only say it expired. Expiry runs in the same daily cron, at most 500 rows a run, oldest first, before the reminders, and runs **whether or not email is configured**, so every deployment follows one rule. Nobody is emailed about an expiry: the admins see it on the team page.
-- **Invites already pending at the deploy** (before migration 0095) start their clock at the deploy: reminders 1, 7 and 21 days after it, expiry 28 days after it. An invite sent 40 days before the deploy is still pending after the first run and hears its first reminder the next day.
 
 ## Shareable invite link
 
 A second way in, alongside per-address invites: a **shareable link** an admin actively turns on. Anyone signed in who opens it can join the team as a member. It's deliberately not on by default — the admin generates it — and it **expires after one week**.
 
-- **Data**: one regenerable token lives on the team itself (migration `0025`: `teams.invite_link_token` + `teams.invite_link_expires_at`, both nullable). NULL token = the link is off. This is distinct from the per-member `team_members` rows; it's a team-level credential. (The unused per-member `invite_token` column from migration `0023` is unrelated and stays dormant.)
+- **Data**: one regenerable token lives on the team itself (`teams.invite_link_token` + `teams.invite_link_expires_at`, both nullable). NULL token = the link is off. This is distinct from the per-member `team_members` rows; it's a team-level credential.
 - **Turn on / off (admin only)**: `POST /api/teams/:id/invite-link` mints a fresh token and sets the expiry to now + 7 days (regenerating while on rotates the token and resets the week); `DELETE /api/teams/:id/invite-link` turns it off. The team detail (`GET /api/teams/:id`) carries the current `inviteLink: { token, expiresAt } | null` **for admins in an interactive session only** (null for members, for every API token, and once expired): the token admits any account, so it is administration, which tokens never reach.
 - **Resolve (open)**: `GET /api/teams/invite-link/:token` returns `{ team, memberCount, alreadyMember }` when the token is on and unexpired, else `404`. This one endpoint sits **above** the sign-in gate — a token holder must see _what_ they're joining before they sign in, and the token is the credential, so naming the team to whoever holds it is fine. `alreadyMember` is computed against the caller's verified id when present, else false, and is true only for a **joined** membership: someone whose email invite is still pending is offered **Join**, which accepts it.
 - **Join (signed-in)**: `POST /api/teams/invite-link/:token/join` adds the caller as a **joined** member and returns `{ teamId, alreadyMember }`. Idempotent: an existing membership is a no-op, and a pending email invite for the caller is accepted in place rather than duplicated. Guests get `401` (teams are Clerk-only); an invalid/expired token `404`s.

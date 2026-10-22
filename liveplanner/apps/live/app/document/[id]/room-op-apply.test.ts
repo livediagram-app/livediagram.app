@@ -4,7 +4,6 @@ import { applyElementDelta, responseDeltaFor, type ShapeElement } from '@livepla
 import type { RoomOp } from '@liveplanner/api-schema';
 import { applyRoomOpToTabs } from './room-op-apply';
 import { tabBroadcastOps } from './tab-broadcast-ops';
-import { clearArticleGrow, isArticleGrowPending } from '@/lib/article/article-grow-store';
 
 const el = (id: string, over: Partial<Element> = {}): Element =>
   ({ id, type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10, ...over }) as Element;
@@ -26,34 +25,6 @@ const vote = (over: Partial<TabVote> = {}): TabVote => ({
 });
 
 describe('applyRoomOpToTabs', () => {
-  // docs/specs/012-collaboration/idea-box.md "Racing for the last card": only with an own pending post.
-  it("lets this browser's pending idea go for a peer's card at a full box, and only then", () => {
-    const full = el('box', {
-      shape: 'idea-box',
-      ideaCards: [...Array(299).fill('x'), 'mine'],
-      ideaCardIds: [...Array(299).fill(''), 'm1'],
-    });
-    const tabs = [tab({ elements: [full] })];
-    const op: RoomOp = {
-      kind: 'el-delta',
-      tabId: 't1',
-      elementId: 'box',
-      delta: { kind: 'idea', text: 'peer', id: 'p1' },
-    };
-    expect(applyRoomOpToTabs(tabs, op)).toBe(tabs);
-    expect(applyRoomOpToTabs(tabs, op, () => [])).toBe(tabs);
-    const asked: string[] = [];
-    const next = applyRoomOpToTabs(tabs, op, (tabId, elementId) => {
-      asked.push(`${tabId}/${elementId}`);
-      return ['m1'];
-    });
-    expect(asked).toEqual(['t1/box']);
-    const box = next[0]!.elements[0] as ShapeElement;
-    expect(box.ideaCards!.at(-1)).toBe('peer');
-    expect(box.ideaCards).not.toContain('mine');
-    expect(box.ideaCardIds!.at(-1)).toBe('p1');
-  });
-
   it('applies an element update by id and leaves the other element alone', () => {
     const tabs = [tab()];
     const next = applyRoomOpToTabs(tabs, {
@@ -175,16 +146,16 @@ describe('applyRoomOpToTabs', () => {
   });
 });
 
-// docs/specs/012-collaboration/collab-race-hardening.md, end to end: two people press the same done check in the same
-// instant, then each of their autosaves runs. Everybody must end up with
-// both marks.
-describe('two people pressing one done check', () => {
-  const check = (): ShapeElement => ({ ...el('card'), shape: 'done-check' }) as ShapeElement;
+// docs/specs/012-collaboration/collab-race-hardening.md, end to end: two people answer the same temperature check in
+// the same instant, then each of their autosaves runs. Everybody must end up with
+// both answers.
+describe('two people answering one temperature check', () => {
+  const check = (): ShapeElement => ({ ...el('card'), shape: 'temperature' }) as ShapeElement;
   const start = (): Tab[] => [tab({ elements: [check()] })];
 
   const press = (tabs: Tab[], who: string) => {
     const card = tabs[0]!.elements[0] as ShapeElement;
-    const delta = responseDeltaFor(card, who, 'done', 1);
+    const delta = responseDeltaFor(card, who, '4', 1);
     const op: RoomOp = { kind: 'el-delta', tabId: 't1', elementId: 'card', delta };
     return { tabs: [{ ...tabs[0]!, elements: [applyElementDelta(card, delta)] }], op };
   };
@@ -296,59 +267,5 @@ describe('applyRoomOpToTabs: changeset', () => {
         changeset({ tabId: 'nope', elementOps: [{ kind: 'remove', id: 'a' }] }),
       ),
     ).toBe(tabs);
-  });
-});
-
-describe('applyRoomOpToTabs: documents', () => {
-  const P = (id: string, text = id) => ({ id, type: 'paragraph' as const, runs: [{ text }] });
-
-  it("applies a peer's block ops, merging with ours", () => {
-    const base = tab({ articles: { f: { blocks: [P('a'), P('b')] } } });
-    const mine = tab({ articles: { f: { blocks: [P('a', 'mine'), P('b')] } } });
-    const theirs = tab({ articles: { f: { blocks: [P('a'), P('b', 'theirs')] } } });
-    let tabs = [mine];
-    for (const op of tabBroadcastOps(base, theirs)) tabs = applyRoomOpToTabs(tabs, op);
-    expect(tabs[0]!.articles!.f!.blocks).toEqual([P('a', 'mine'), P('b', 'theirs')]);
-  });
-
-  it('drops writing for an article this tab no longer has, unless it is new', () => {
-    const tabs = [tab()];
-    const late: RoomOp = {
-      kind: 'article',
-      tabId: 't1',
-      flow: 'f',
-      ops: [{ kind: 'put', block: P('a') }],
-    };
-    expect(applyRoomOpToTabs(tabs, late)[0]!.articles).toBeUndefined();
-    const created: RoomOp = { ...late, created: true };
-    expect(applyRoomOpToTabs(tabs, created)[0]!.articles!.f!.blocks).toEqual([P('a')]);
-  });
-
-  it('marks an agent’s writing for growing by whoever lays it out next', () => {
-    const tabs = [tab({ articles: { f: { blocks: [P('a')] } } })];
-    const op: RoomOp = {
-      kind: 'article',
-      tabId: 't1',
-      flow: 'f',
-      ops: [{ kind: 'put', block: P('b') }],
-    };
-    applyRoomOpToTabs(tabs, op);
-    expect(isArticleGrowPending('t1', 'f')).toBe(false);
-    applyRoomOpToTabs(tabs, { ...op, agent: true });
-    expect(isArticleGrowPending('t1', 'f')).toBe(true);
-    clearArticleGrow('t1', 'f');
-    expect(isArticleGrowPending('t1', 'f')).toBe(false);
-  });
-
-  it('ignores a malformed article frame', () => {
-    const tabs = [tab({ articles: { f: { blocks: [P('a')] } } })];
-    const bad = { kind: 'article', tabId: 't1', flow: 'f', ops: 'x' } as unknown as RoomOp;
-    expect(applyRoomOpToTabs(tabs, bad)).toBe(tabs);
-  });
-
-  it('removes an article, and drops the field with the last one', () => {
-    const tabs = [tab({ articles: { f: { blocks: [P('a')] } } })];
-    const op: RoomOp = { kind: 'article', tabId: 't1', flow: 'f', removed: true };
-    expect(applyRoomOpToTabs(tabs, op)[0]!.articles).toBeUndefined();
   });
 });

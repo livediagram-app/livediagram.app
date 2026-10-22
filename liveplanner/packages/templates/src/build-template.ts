@@ -5,13 +5,9 @@
 // top (apps/live/lib/template-builders.ts), and the MCP worker
 // materialises these directly (docs/specs/015-api/mcp-server.md §4.5).
 
-import { buildWireframeFlow } from './template-builders-wireframe-flows';
 import { isFormTemplateKind } from './form-templates';
-import { buildVirtualOffice } from './template-builders-office';
-import { buildAllHandsHall, buildCoworkingSpace, buildTeamPod } from './template-builders-spaces';
 import { settleChips, type Element, type Tab } from '@liveplanner/document';
 import type { TemplateKind } from './templates';
-import { buildSlideDeck } from './template-builders-slides';
 import { buildPlanTemplate, isPlanTemplateKind, planTemplateTabs } from './template-builders-plan';
 import { companionTemplateTabs } from './template-companions';
 import {
@@ -24,17 +20,6 @@ import {
   buildRichPicture,
   buildSketchnote,
 } from './template-builders-sketch';
-import { buildEventPoster } from './template-builders-poster';
-import { buildYearInReview } from './template-builders-year-review';
-import { buildResume } from './template-builders-resume';
-import { buildRecipeCard } from './template-builders-recipe';
-import { buildDataStory } from './template-builders-data-story';
-import { buildHowItWorks } from './template-builders-how-it-works';
-import { buildVersus } from './template-builders-versus';
-import { buildSocialCarousel } from './template-builders-social-carousel';
-import { buildLayoutDeck } from './template-builders-layout-decks';
-import { buildStoryboard } from './template-builders-storyboard';
-import { buildOnDesignPage } from './template-design-pages';
 import {
   buildPrioritizationMatrix,
   buildRetrospective,
@@ -46,24 +31,14 @@ import { buildErDiagram } from './template-builders-er';
 import { buildSequenceDiagram } from './template-builders-sequence';
 import { buildUmlClass } from './template-builders-uml';
 import { buildStateMachine } from './template-builders-state-machine';
-import { buildFloorPlan } from './template-builders-floorplan';
 import { buildBusinessModelCanvas, buildEmpathyMap } from './template-builders-canvases';
 import { buildAffinityMap, buildUserStoryMap } from './template-builders-workshops';
-import { buildLeanCoffee, buildTownHall } from './template-builders-sessions';
-import { buildIcebreakerQuestions, buildPubQuiz } from './template-builders-quiz-games';
-import {
-  buildPeopleBingo,
-  buildTwoTruthsAndALie,
-  buildWouldYouRather,
-} from './template-builders-party-games';
 import { buildBrainstorm, buildWorkshopBoard } from './template-builders-workshop-boards';
 import { buildOkrTree, buildSitemap } from './template-builders-hierarchies';
 import { buildFunnel } from './template-builders-funnel';
 import { buildSankey } from './template-builders-sankey';
 import { buildRoadmap } from './template-builders-roadmap';
-import { buildLogoDesign } from './template-builders-logo';
 import { buildGanttChart } from './template-builders-gantt';
-import { buildLiveCard } from './template-builders-livecard';
 import { buildComparisonTable, buildRaciMatrix } from './template-builders-table';
 import {
   buildFishbone,
@@ -96,7 +71,6 @@ import { buildOpportunitySolutionTree } from './template-builders-opportunity-tr
 import { buildStakeholderMap } from './template-builders-stakeholders';
 import { buildCrazyEights } from './template-builders-crazy-eights';
 import { buildUserPersona } from './template-builders-persona';
-import { buildMeetingAgenda } from './template-builders-meeting';
 import { buildObjectivesPlanner } from './template-builders-objectives';
 import { buildWardleyMap } from './template-builders-wardley';
 import { buildThreatModel } from './template-builders-threat-model';
@@ -184,16 +158,10 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
       return buildFishbone(cx, cy);
     case 'pyramid':
       return buildPyramid(cx, cy);
-    case 'slide-deck':
-      return buildSlideDeck(cx, cy);
     case 'flywheel':
       return buildFlywheel(cx, cy);
-    case 'logo-design':
-      return buildLogoDesign(cx, cy);
     case 'gantt':
       return buildGanttChart(cx, cy);
-    case 'live-card':
-      return buildLiveCard(cx, cy);
     case 'comparison-table':
       return buildComparisonTable(cx, cy);
     case 'system-architecture':
@@ -224,8 +192,6 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
       return buildCrazyEights(cx, cy);
     case 'user-persona':
       return buildUserPersona(cx, cy);
-    case 'meeting-agenda':
-      return buildMeetingAgenda(cx, cy);
     case 'objectives-planner':
       return buildObjectivesPlanner(cx, cy);
     case 'wardley-map':
@@ -250,32 +216,10 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
       return buildUserStoryMap(cx, cy);
     case 'affinity-map':
       return buildAffinityMap(cx, cy);
-    case 'lean-coffee':
-      return buildLeanCoffee(cx, cy);
     case 'brainstorm':
       return buildBrainstorm(cx, cy);
     case 'workshop-board':
       return buildWorkshopBoard(cx, cy);
-    case 'town-hall':
-      return buildTownHall(cx, cy);
-    case 'pub-quiz':
-      return buildPubQuiz(cx, cy);
-    case 'icebreaker-questions':
-      return buildIcebreakerQuestions(cx, cy);
-    case 'virtual-office':
-      return buildVirtualOffice(cx, cy);
-    case 'coworking-space':
-      return buildCoworkingSpace(cx, cy);
-    case 'team-pod':
-      return buildTeamPod(cx, cy);
-    case 'all-hands-hall':
-      return buildAllHandsHall(cx, cy);
-    case 'two-truths-and-a-lie':
-      return buildTwoTruthsAndALie(cx, cy);
-    case 'would-you-rather':
-      return buildWouldYouRather(cx, cy);
-    case 'people-bingo':
-      return buildPeopleBingo(cx, cy);
     case 'business-model-canvas':
       return buildBusinessModelCanvas(cx, cy);
     case 'empathy-map':
@@ -288,44 +232,16 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
       return buildOkrTree(cx, cy);
     case 'sitemap':
       return buildSitemap(cx, cy);
-    case 'storyboard':
-      return buildOnDesignPage('storyboard', buildStoryboard);
     case 'cloud-architecture':
       return buildCloudArchitecture(cx, cy);
     case 'uml-class':
       return buildUmlClass(cx, cy);
     case 'state-machine':
       return buildStateMachine(cx, cy);
-    case 'floor-plan':
-      return buildOnDesignPage('floor-plan', buildFloorPlan);
-    // A whiteboard is a clean board (docs/specs/023-draw-mode/draw-mode.md): what makes it one is its
-    // kind, which templateCanvasOverrides sets, not any seeded element. Workshop's blank is an empty
-    // tab too, opened in Workshop the same way.
+    // A whiteboard is a clean board (docs/specs/007-editor/editor-modes.md): what makes it one is its
+    // kind, which templateCanvasOverrides sets, not any seeded element.
     case 'whiteboard':
-    case 'blank-session':
       return [];
-    // An article's writing and page are tab data (templateCanvasOverrides), not elements; a blank
-    // illustration is its one empty page, which asks what it is for, and a blank of a page kind its one
-    // empty page of that kind (blank-page-templates.ts).
-    case 'article':
-    case 'working-backwards':
-    case 'blank-illustration':
-    case 'blank-slide-deck':
-    case 'blank-article':
-    case 'blank-infographic':
-    case 'blank-logo':
-    case 'blank-wireframe-phone':
-    case 'blank-wireframe-tablet':
-    case 'blank-wireframe-browser':
-    case 'blank-wireframe-laptop':
-    case 'blank-wireframe-watch':
-      return [];
-    case 'wireframe-mobile-app':
-    case 'wireframe-website':
-    case 'wireframe-dashboard':
-    case 'wireframe-tablet-app':
-    case 'wireframe-watch-app':
-      return buildWireframeFlow(kind);
     case 'sketchnote':
       return buildSketchnote(cx, cy);
     case 'rich-picture':
@@ -342,28 +258,6 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
       return buildPreMortem(cx, cy);
     case 'idea-garden':
       return buildIdeaGarden(cx, cy);
-    // Built on their own pages (template-pages.ts), whatever the centre.
-    case 'event-poster':
-      return buildEventPoster();
-    case 'year-in-review':
-      return buildYearInReview();
-    case 'resume':
-      return buildResume();
-    case 'recipe-card':
-      return buildRecipeCard();
-    case 'data-story':
-      return buildDataStory();
-    case 'how-it-works':
-      return buildHowItWorks();
-    case 'versus':
-      return buildVersus();
-    case 'social-carousel':
-      return buildSocialCarousel();
-    case 'launch-keynote':
-    case 'quarterly-review':
-    case 'team-welcome':
-    case 'workshop-kickoff':
-      return buildLayoutDeck(kind);
   }
 }
 
@@ -381,7 +275,7 @@ export type TemplateTabDef = {
   // (docs/specs/026-plan/plan-tabs.md "Templates").
   tab?: (ids: readonly string[]) => Partial<Tab>;
   // A companion Sheet (template-companions.ts): takes the theme but none of the template's canvas overrides
-  // (templateCanvasOverrides: its pattern, layers, mode and pages), which are the drawing's.
+  // (templateCanvasOverrides: its pattern, layers and mode), which are the drawing's.
   ownCanvas?: true;
 };
 

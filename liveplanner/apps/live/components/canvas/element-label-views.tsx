@@ -20,7 +20,6 @@ import {
   labelBasePx,
   labelRunPx,
   labelTextStyleCss,
-  wordmarkTextCss,
   TEXT_ALIGN,
   type LabelPadding,
   type LabelTextStyle,
@@ -55,8 +54,8 @@ export function ScalingLabel({
     if (!node) return;
     const b = node.getBBox();
     setBBox({ x: b.x, y: b.y, w: b.width || 1, h: b.height || 1 });
-    // Tracking, weight and case change the glyphs' extent too.
-  }, [text, style?.letterSpacing, style?.weight, style?.uppercase, style?.lowercase]);
+    // Case changes the glyphs' extent too.
+  }, [text, style?.uppercase]);
 
   const viewBox = bbox ? `${bbox.x} ${bbox.y} ${bbox.w} ${bbox.h}` : '0 0 100 24';
 
@@ -75,15 +74,8 @@ export function ScalingLabel({
           y="0"
           dominantBaseline="hanging"
           fontFamily={style?.fontFamily ?? 'ui-sans-serif, system-ui, sans-serif'}
-          fontWeight={style?.weight ?? (style?.bold ? 700 : 500)}
-          style={{
-            letterSpacing: style?.letterSpacing ? `${style.letterSpacing}em` : undefined,
-            textTransform: style?.uppercase
-              ? 'uppercase'
-              : style?.lowercase
-                ? 'lowercase'
-                : undefined,
-          }}
+          fontWeight={style?.bold ? 700 : 500}
+          style={{ textTransform: style?.uppercase ? 'uppercase' : undefined }}
           fontStyle={style?.italic ? 'italic' : undefined}
           textDecoration={
             style?.underline && style?.strikethrough
@@ -233,7 +225,6 @@ export function RichLabel({
   fontFamily,
   multiline,
   uppercase,
-  wordmark,
   className = '',
 }: {
   runs: TextRun[];
@@ -242,15 +233,13 @@ export function RichLabel({
   alignX: TextAlignX;
   alignY: TextAlignY;
   padding: LabelPadding;
-  // A Shift-resized text box's scale on every size (docs/specs/023-draw-mode/draw-mode.md).
+  // A Shift-resized text box's scale on every size (docs/specs/007-editor/editor-modes.md).
   textScale?: number;
   fontFamily?: string;
   multiline: boolean;
   // Paint in capitals (a text's Upper case) — whole-label, so
   // it sits on the wrapper rather than on each run's style.
   uppercase?: boolean;
-  // Wordmark type (docs/specs/007-editor/logo-pages.md): tracking, weight and case on the wrapper.
-  wordmark?: LabelTextStyle;
   className?: string;
 }) {
   const basePx = labelBasePx(multiline, textSize) * textScale;
@@ -267,13 +256,7 @@ export function RichLabel({
         style={{
           textAlign: TEXT_ALIGN[alignX],
           fontFamily,
-          ...(wordmark ? wordmarkTextCss(wordmark) : {}),
-          textTransform:
-            uppercase || wordmark?.uppercase
-              ? 'uppercase'
-              : wordmark?.lowercase
-                ? 'lowercase'
-                : undefined,
+          textTransform: uppercase ? 'uppercase' : undefined,
         }}
       >
         {runs.map((run, i) => (

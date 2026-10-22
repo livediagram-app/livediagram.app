@@ -59,9 +59,9 @@ test('the Explorer lands on Home: Jump Back In, then What Happened, no Timeline'
   await page.goto('/explorer');
   await expect(page).toHaveURL(/\/explorer\/home\/?$/);
   // The hero is Home's header: the greeting is the page's heading; the field and New Document sit in it.
-  const hero = page.getByRole('region', { name: /What are we picking up\?$/ });
+  const hero = page.getByRole('region', { name: /what are you planning today\?$/ });
   await expect(hero.getByRole('heading', { level: 1 })).toHaveText(
-    /^Good (morning|afternoon|evening)\. What are we picking up\?$/,
+    /^Good (morning|afternoon|evening), what are you planning today\?$/,
   );
   await expect(hero.getByRole('combobox', { name: 'Filter documents' })).toBeVisible();
   await expect(page.getByRole('combobox', { name: 'Filter documents' })).toHaveCount(1);
@@ -98,16 +98,9 @@ test('the Explorer lands on Home: Jump Back In, then What Happened, no Timeline'
 
   expect(await layoutShift(page)).toBe(0);
 
-  // See Timeline: the feed, titled Timeline, its sidebar row highlighted; Home's row leads back.
-  await happened.getByRole('link', { name: 'See Timeline' }).click();
-  await expect(page).toHaveURL(/\/explorer\/timeline\/?$/);
-  await expect(page.getByRole('heading', { level: 1, name: 'Timeline' })).toBeVisible();
-  await expect(page.getByRole('treeitem', { name: 'Timeline' })).toHaveAttribute(
-    'aria-selected',
-    'true',
-  );
-  await page.getByRole('treeitem', { name: /^Home/ }).click();
-  await expect(page).toHaveURL(/\/explorer\/home\/?$/);
+  // What Happened has no See Timeline link, and the sidebar no Timeline row: the Timeline is gone.
+  await expect(happened.getByRole('link', { name: 'See Timeline' })).toHaveCount(0);
+  await expect(page.getByRole('treeitem', { name: 'Timeline' })).toHaveCount(0);
   expectNoPageErrors(pageErrors);
 });
 
@@ -131,7 +124,7 @@ test('each section opens with a display heading and no rule, in dark and light',
     );
     for (const [name, link] of [
       ['Jump Back In', 'See More'],
-      ['What Happened', 'See Timeline'],
+      ['What Happened', null],
     ] as const) {
       const heading = page.getByRole('heading', { level: 2, name });
       const row = heading.locator('..');
@@ -146,9 +139,11 @@ test('each section opens with a display heading and no rule, in dark and light',
       expect(Math.round((await row.boundingBox())!.width)).toBe(
         Math.round((await section.boundingBox())!.width),
       );
-      const linkBox = await row.getByRole('link', { name: link }).boundingBox();
-      const rowBox = await row.boundingBox();
-      expect(Math.round(linkBox!.x + linkBox!.width)).toBe(Math.round(rowBox!.x + rowBox!.width));
+      if (link) {
+        const linkBox = await row.getByRole('link', { name: link }).boundingBox();
+        const rowBox = await row.boundingBox();
+        expect(Math.round(linkBox!.x + linkBox!.width)).toBe(Math.round(rowBox!.x + rowBox!.width));
+      }
       expect(await heading.evaluate((el) => Number.parseFloat(getComputedStyle(el).fontSize))).toBe(
         24,
       );

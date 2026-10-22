@@ -45,7 +45,6 @@ const OWNER_COLUMNS: OwnerColumn[] = [
   { table: 'custom_themes', column: 'owner_id', migrate: { kind: 'moves' } },
   // Explorer Home's opens (docs/specs/013-workspace/explorer-home.md): guests open documents too.
   { table: 'document_opens', column: 'owner_id', migrate: { kind: 'moves' } },
-  { table: 'images', column: 'owner_id', migrate: { kind: 'moves' } },
   { table: 'participants', column: 'id', migrate: { kind: 'moves' } },
   { table: 'timeline_events', column: 'actor_id', migrate: { kind: 'moves' } },
   {
@@ -159,7 +158,7 @@ function seedGuestHoldable(sql: DatabaseSync, id: string, peerDocument: string) 
   insert(sql, 'user_preferences', { owner_id: id, prefs: '{}', updated_at: T0 });
   insert(sql, 'placement_defaults', {
     owner_id: id,
-    default_key: 'mode:draw',
+    default_key: 'mode:plan',
     folder_id: `f-${id}`,
     updated_at: T0,
   });
@@ -180,16 +179,6 @@ function seedGuestHoldable(sql: DatabaseSync, id: string, peerDocument: string) 
     updated_at: T0,
   });
   insert(sql, 'document_tags', { tag_id: `tag-${id}`, document_id: peerDocument, created_at: T0 });
-  insert(sql, 'images', {
-    id: `i-${id}`,
-    owner_id: id,
-    content_type: 'image/png',
-    byte_size: 1,
-    width: 1,
-    height: 1,
-    sha256: `sha-${id}`,
-    created_at: T0,
-  });
   insert(sql, 'timeline_events', {
     id: `e-${id}`,
     actor_id: id,
@@ -207,7 +196,7 @@ function seedGuestHoldable(sql: DatabaseSync, id: string, peerDocument: string) 
     scope_id: id,
     added_at: T0,
   });
-  insert(sql, 'timeline_scope_state', { scope_type: 'user', scope_id: id, backfilled_at: T0 });
+  insert(sql, 'timeline_scope_state', { scope_type: 'user', scope_id: id, last_seen_at: T0 });
   insert(sql, 'collab_index_state', { owner_id: id, backfilled_at: T0 });
   insert(sql, 'owner_aliases', { owner_id: id, alias_id: `legacy-${id}`, created_at: T0 });
   // A changeset they wrote on the peer's document, which outlives their own documents.
@@ -481,7 +470,6 @@ describe('migrateOwnerId moves every guest-holdable row (docs/specs/015-api/api.
       documents: 0,
       folders: 0,
       shared: 0,
-      images: 0,
     });
     expect(sql.prepare('SELECT * FROM favourites ORDER BY document_id').all()).toEqual(before);
   });

@@ -50,11 +50,9 @@ describe('headerLine (R16, VW8)', () => {
     expect(line).toBe('tab f1 "RSVP" · 0 elements · kind=form (read_form) · rev 41');
   });
 
-  it('names a mode other than Diagram and a set finish', () => {
-    expect(
-      headerLine(facts({ mode: 'draw', finish: 'sketch', threads: { open: 0, total: 0 } })),
-    ).toBe(
-      'tab 0b34 "Checkout platform" · 30 elements: 16 boxes, 3 frames, 11 arrows · mode=draw · finish=sketch · rev 41',
+  it('names a set finish', () => {
+    expect(headerLine(facts({ finish: 'sketch', threads: { open: 0, total: 0 } }))).toBe(
+      'tab 0b34 "Checkout platform" · 30 elements: 16 boxes, 3 frames, 11 arrows · finish=sketch · rev 41',
     );
   });
 

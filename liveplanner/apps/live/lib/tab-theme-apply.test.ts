@@ -8,7 +8,7 @@ import {
   type Tab,
 } from '@liveplanner/document';
 import { getTheme } from '@/lib/themes';
-import { labelsFollowCanvas, withThemeApplied } from './tab-theme-apply';
+import { withThemeApplied } from './tab-theme-apply';
 
 // Applying a theme to a tab (docs/specs/011-theme/canvas-and-theme-dialog.md "Colours panel").
 const shape = (over: Partial<ShapeElement> = {}): Element => ({
@@ -81,11 +81,5 @@ describe('labels a pick sank', () => {
     expect(contrastRatio(ink, out.backgroundColor ?? '')).toBeGreaterThanOrEqual(
       LABEL_BACKDROP_CONTRAST,
     );
-  });
-
-  it('follows the canvas on every tab but a Pages one', () => {
-    expect(labelsFollowCanvas({})).toBe(true);
-    expect(labelsFollowCanvas({ opensIn: 'pages' })).toBe(false);
-    expect(labelsFollowCanvas({ pages: [{ id: 'p', orientation: 'portrait' }] })).toBe(false);
   });
 });

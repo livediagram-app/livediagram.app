@@ -43,7 +43,7 @@ sticky 0c84 "Payment retries are not idempotent yet!" comments=2 open
 
 The example is abridged; a real outline prints every element.
 
-- **Header** names the tab, its counts (boxes, frames, lanes, arrows), the tab kind when it is not a diagram, its mode when not Diagram and its finish when set (`mode=draw · finish=sketch`), a Pages tab's pages (`mode=pages · 4 pages: 3 slide, 1 article (view pages)`), elements on hidden layers and elements of unknown kinds, open threads and the revision.
+- **Header** names the tab, its counts (boxes, frames, lanes, arrows), the tab kind when it is not a diagram, its mode when not Diagram and its finish when set (`mode=draw · finish=sketch`), elements on hidden layers and elements of unknown kinds, open threads and the revision.
 - **Kind** is the shape for shapes (`square`, `cylinder`, `frame`, `lane`, `entity`), else the element type (`text`, `sticky`, `table`, `arrow`, `image`, `freehand`).
 - **Labels and notes** are JSON strings. Labels are cut at 60 characters, notes at 48, both on a word boundary
   with `…`.
@@ -55,9 +55,9 @@ The example is abridged; a real outline prints every element.
 - **Order** within a level is reading order: rows top to bottom, then left to right.
 - **Content kinds** say what they hold briefly: an entity its first 8 fields, a table its size and header row, a
   code block its language and line count, a chart its slice or series count, a checklist `done=2/5`.
-- **Live and structured kinds** carry one state attribute: an estimate card `votes=4 revealed`, a decision
+- **Live and structured kinds** carry one state attribute: a temperature check `votes=4`, a decision
   `status=accepted`, a progress bar `progress=40`, and likewise for the rest of the collaboration family, stat rows,
-  process steps, agendas, quizzes, legends, ratings, timelines and pages.
+  process steps, legends, ratings, timelines and pages.
 - **Bare strokes** (freehand with no label, note, comment, link or arrow) that sit next to each other fold into one
   line, `freehand ×12 (3 closed)`; `layout` lists each one with its ref.
 - **Left out**: coordinates, sizes, colours, fonts, anchors and routing (the `layout` view and `--style` have them),
@@ -76,7 +76,6 @@ The example is abridged; a real outline prints every element.
 | `find <text>`  | Where is this?                  | Matching elements with their containers                                                                                                                        |
 | `lint`         | Is the drawing sound?           | The [lint](diagram-lint.md) findings, refs first                                                                                                               |
 | `diff --since` | What changed since I last read? | Added, removed, changed and moved elements since a revision                                                                                                    |
-| `pages`        | What pages does this tab have?  | Its pages, each article as Markdown, the layouts on offer ([Pages for agents](pages-for-agents.md#reading-the-pages-view))                                     |
 
 Every view opens with a header line naming the tab, its counts and its `rev`, so a later write can carry it as a
 base. Every view takes `--json` for the same data as JSON; the stored tab itself is `--raw`.

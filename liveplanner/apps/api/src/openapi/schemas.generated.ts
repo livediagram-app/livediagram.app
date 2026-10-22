@@ -531,22 +531,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "AgendaItem": {
-    "additionalProperties": false,
-    "properties": {
-      "label": {
-        "type": "string"
-      },
-      "minutes": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "label",
-      "minutes"
-    ],
-    "type": "object"
-  },
   "AgentPresenceResult": {
     "additionalProperties": false,
     "properties": {
@@ -676,13 +660,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "properties": {
       "action": {
         "$ref": "#/components/schemas/ElementAction"
-      },
-      "articleNote": {
-        "enum": [
-          "comment",
-          "action"
-        ],
-        "type": "string"
       },
       "aspectLocked": {
         "type": "boolean"
@@ -1125,515 +1102,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
-  "ArticleAlign": {
-    "enum": [
-      "left",
-      "center",
-      "right",
-      "justify"
-    ],
-    "type": "string"
-  },
-  "ArticleBlock": {
-    "anyOf": [
-      {
-        "$ref": "#/components/schemas/ArticleParagraphBlock"
-      },
-      {
-        "$ref": "#/components/schemas/ArticleListBlock"
-      },
-      {
-        "$ref": "#/components/schemas/ArticleCodeBlock"
-      },
-      {
-        "$ref": "#/components/schemas/ArticleDividerBlock"
-      },
-      {
-        "$ref": "#/components/schemas/ArticlePageBreakBlock"
-      },
-      {
-        "$ref": "#/components/schemas/ArticleZoneBlock"
-      }
-    ]
-  },
-  "ArticleCodeBlock": {
-    "additionalProperties": false,
-    "properties": {
-      "id": {
-        "type": "string"
-      },
-      "text": {
-        "type": "string"
-      },
-      "type": {
-        "const": "code",
-        "type": "string"
-      }
-    },
-    "required": [
-      "id",
-      "type",
-      "text"
-    ],
-    "type": "object"
-  },
-  "ArticleDividerBlock": {
-    "additionalProperties": false,
-    "properties": {
-      "id": {
-        "type": "string"
-      },
-      "type": {
-        "const": "divider",
-        "type": "string"
-      }
-    },
-    "required": [
-      "id",
-      "type"
-    ],
-    "type": "object"
-  },
-  "ArticleFlow": {
-    "additionalProperties": false,
-    "properties": {
-      "blocks": {
-        "items": {
-          "$ref": "#/components/schemas/ArticleBlock"
-        },
-        "type": "array"
-      },
-      "style": {
-        "$ref": "#/components/schemas/ArticleStyle"
-      }
-    },
-    "required": [
-      "blocks"
-    ],
-    "type": "object"
-  },
-  "ArticleLineSpacing": {
-    "enum": [
-      "single",
-      "onehalf",
-      "double"
-    ],
-    "type": "string"
-  },
-  "ArticleListBlock": {
-    "additionalProperties": false,
-    "properties": {
-      "align": {
-        "$ref": "#/components/schemas/ArticleAlign"
-      },
-      "checked": {
-        "const": true,
-        "type": "boolean"
-      },
-      "id": {
-        "type": "string"
-      },
-      "level": {
-        "type": "number"
-      },
-      "list": {
-        "$ref": "#/components/schemas/ArticleListKind"
-      },
-      "runs": {
-        "items": {
-          "$ref": "#/components/schemas/ArticleRun"
-        },
-        "type": "array"
-      },
-      "type": {
-        "const": "list",
-        "type": "string"
-      }
-    },
-    "required": [
-      "id",
-      "type",
-      "list",
-      "runs"
-    ],
-    "type": "object"
-  },
-  "ArticleListKind": {
-    "enum": [
-      "bullet",
-      "numbered",
-      "todo"
-    ],
-    "type": "string"
-  },
-  "ArticleLookId": {
-    "enum": [
-      "clean",
-      "classic",
-      "report",
-      "notebook",
-      "bold"
-    ],
-    "type": "string"
-  },
-  "ArticleMargins": {
-    "enum": [
-      "narrow",
-      "normal",
-      "wide"
-    ],
-    "type": "string"
-  },
-  "ArticlePageBreakBlock": {
-    "additionalProperties": false,
-    "properties": {
-      "id": {
-        "type": "string"
-      },
-      "type": {
-        "const": "pageBreak",
-        "type": "string"
-      }
-    },
-    "required": [
-      "id",
-      "type"
-    ],
-    "type": "object"
-  },
-  "ArticleParagraphBlock": {
-    "additionalProperties": false,
-    "properties": {
-      "align": {
-        "$ref": "#/components/schemas/ArticleAlign"
-      },
-      "id": {
-        "type": "string"
-      },
-      "runs": {
-        "items": {
-          "$ref": "#/components/schemas/ArticleRun"
-        },
-        "type": "array"
-      },
-      "style": {
-        "$ref": "#/components/schemas/ArticleParagraphStyle"
-      },
-      "type": {
-        "const": "paragraph",
-        "type": "string"
-      }
-    },
-    "required": [
-      "id",
-      "type",
-      "runs"
-    ],
-    "type": "object"
-  },
-  "ArticleParagraphSpacing": {
-    "enum": [
-      "none",
-      "normal",
-      "wide"
-    ],
-    "type": "string"
-  },
-  "ArticleParagraphStyle": {
-    "enum": [
-      "body",
-      "title",
-      "subtitle",
-      "h1",
-      "h2",
-      "h3",
-      "quote"
-    ],
-    "type": "string"
-  },
-  "ArticleRules": {
-    "enum": [
-      "none",
-      "title",
-      "headings"
-    ],
-    "type": "string"
-  },
-  "ArticleRun": {
-    "additionalProperties": false,
-    "description": "A stretch of text with one formatting. `text` may hold '\\n', a line break inside the block.",
-    "properties": {
-      "b": {
-        "const": true,
-        "type": "boolean"
-      },
-      "code": {
-        "const": true,
-        "type": "boolean"
-      },
-      "color": {
-        "type": "string"
-      },
-      "hl": {
-        "type": "string"
-      },
-      "href": {
-        "type": "string"
-      },
-      "i": {
-        "const": true,
-        "type": "boolean"
-      },
-      "nk": {
-        "const": "action",
-        "type": "string"
-      },
-      "note": {
-        "type": "string"
-      },
-      "s": {
-        "const": true,
-        "type": "boolean"
-      },
-      "sub": {
-        "const": true,
-        "type": "boolean"
-      },
-      "sup": {
-        "const": true,
-        "type": "boolean"
-      },
-      "text": {
-        "type": "string"
-      },
-      "u": {
-        "const": true,
-        "type": "boolean"
-      }
-    },
-    "required": [
-      "text"
-    ],
-    "type": "object"
-  },
-  "ArticleStyle": {
-    "additionalProperties": false,
-    "description": "An article's look (docs/specs/007-editor/article-pages.md \"Article style\"). Every field is optional, absent being its default (`resolveArticleStyle`).",
-    "properties": {
-      "accent": {
-        "type": "string"
-      },
-      "accentHeadings": {
-        "type": "boolean"
-      },
-      "bodyFont": {
-        "type": "string"
-      },
-      "headingFont": {
-        "type": "string"
-      },
-      "lineSpacing": {
-        "$ref": "#/components/schemas/ArticleLineSpacing"
-      },
-      "look": {
-        "$ref": "#/components/schemas/ArticleLookId"
-      },
-      "margins": {
-        "$ref": "#/components/schemas/ArticleMargins"
-      },
-      "pageNumbers": {
-        "type": "boolean"
-      },
-      "paragraphSpacing": {
-        "$ref": "#/components/schemas/ArticleParagraphSpacing"
-      },
-      "rules": {
-        "$ref": "#/components/schemas/ArticleRules"
-      },
-      "textSize": {
-        "$ref": "#/components/schemas/ArticleTextSize"
-      }
-    },
-    "type": "object"
-  },
-  "ArticleSummary": {
-    "additionalProperties": false,
-    "properties": {
-      "blocks": {
-        "type": "number"
-      },
-      "estimatedPages": {
-        "type": "number"
-      },
-      "flow": {
-        "type": "string"
-      },
-      "look": {
-        "anyOf": [
-          {
-            "$ref": "#/components/schemas/ArticleLookId"
-          },
-          {
-            "type": "null"
-          }
-        ]
-      },
-      "pages": {
-        "items": {
-          "type": "number"
-        },
-        "type": "array"
-      },
-      "title": {
-        "type": "string"
-      },
-      "words": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "flow",
-      "title",
-      "pages",
-      "blocks",
-      "words",
-      "estimatedPages",
-      "look"
-    ],
-    "type": "object"
-  },
-  "ArticleTextSize": {
-    "enum": [
-      "small",
-      "normal",
-      "large"
-    ],
-    "type": "string"
-  },
-  "ArticleWrite": {
-    "additionalProperties": false,
-    "properties": {
-      "accent": {
-        "type": "string"
-      },
-      "article": {
-        "type": "string"
-      },
-      "look": {
-        "$ref": "#/components/schemas/ArticleLookId"
-      },
-      "markdown": {
-        "type": "string"
-      },
-      "mode": {
-        "$ref": "#/components/schemas/ArticleWriteMode"
-      },
-      "new": {
-        "type": "boolean"
-      },
-      "orientation": {
-        "$ref": "#/components/schemas/PageOrientation"
-      },
-      "pageNumbers": {
-        "type": "boolean"
-      },
-      "size": {
-        "$ref": "#/components/schemas/PageSizeId"
-      }
-    },
-    "required": [
-      "markdown"
-    ],
-    "type": "object"
-  },
-  "ArticleWriteMode": {
-    "enum": [
-      "replace",
-      "append"
-    ],
-    "type": "string"
-  },
-  "ArticleZoneAlign": {
-    "enum": [
-      "left",
-      "center",
-      "right"
-    ],
-    "type": "string"
-  },
-  "ArticleZoneAt": {
-    "additionalProperties": false,
-    "properties": {
-      "page": {
-        "type": "string"
-      },
-      "x": {
-        "type": "number"
-      },
-      "y": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "page",
-      "x",
-      "y"
-    ],
-    "type": "object"
-  },
-  "ArticleZoneBlock": {
-    "additionalProperties": false,
-    "properties": {
-      "align": {
-        "$ref": "#/components/schemas/ArticleZoneAlign"
-      },
-      "at": {
-        "$ref": "#/components/schemas/ArticleZoneAt"
-      },
-      "height": {
-        "type": "number"
-      },
-      "id": {
-        "type": "string"
-      },
-      "type": {
-        "const": "zone",
-        "type": "string"
-      },
-      "width": {
-        "type": "number"
-      },
-      "wrap": {
-        "$ref": "#/components/schemas/ArticleZoneWrap"
-      },
-      "zone": {
-        "$ref": "#/components/schemas/ArticleZoneKind"
-      }
-    },
-    "required": [
-      "id",
-      "type",
-      "zone",
-      "width",
-      "height"
-    ],
-    "type": "object"
-  },
-  "ArticleZoneKind": {
-    "enum": [
-      "object",
-      "drawing"
-    ],
-    "type": "string"
-  },
-  "ArticleZoneWrap": {
-    "enum": [
-      "inline",
-      "left",
-      "right"
-    ],
-    "type": "string"
-  },
   "AttachPoint": {
     "enum": [
       "top-left",
@@ -1779,9 +1247,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       {
         "$ref": "#/components/schemas/FreehandElement"
-      },
-      {
-        "$ref": "#/components/schemas/PathElement"
       },
       {
         "$ref": "#/components/schemas/TableElement"
@@ -2158,15 +1623,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     ]
   },
-  "ChairFacing": {
-    "enum": [
-      "n",
-      "e",
-      "s",
-      "w"
-    ],
-    "type": "string"
-  },
   "ChangesetAuthor": {
     "additionalProperties": false,
     "properties": {
@@ -2262,7 +1718,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "additionalProperties": {},
         "type": "object"
       },
-      "graph": {},
       "kind": {
         "enum": [
           "board",
@@ -2275,9 +1730,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "auto",
           "preserve"
         ],
-        "type": "string"
-      },
-      "mermaid": {
         "type": "string"
       },
       "name": {
@@ -3054,36 +2506,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
-          "agenda": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "avatar-pad": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
           "badge": {
             "additionalProperties": false,
             "properties": {
@@ -3115,21 +2537,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "object"
           },
           "bar-chart": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "bookshelf": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -3190,21 +2597,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "object"
           },
           "card": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "chair": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -3294,21 +2686,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
-          "coffee-machine": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
           "comment-pin": {
             "additionalProperties": false,
             "properties": {
@@ -3369,21 +2746,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
-          "desk": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
           "diagram-key": {
             "additionalProperties": false,
             "properties": {
@@ -3429,21 +2791,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
-          "done-check": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
           "entity": {
             "additionalProperties": false,
             "properties": {
@@ -3459,52 +2806,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
-          "estimate": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "fence": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
           "final-state": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "focus-button": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -3594,21 +2896,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
-          "idea-box": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
           "lane": {
             "additionalProperties": false,
             "properties": {
@@ -3684,37 +2971,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
-          "meeting-table": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
           "mind-node": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "mode-button": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -3894,21 +3151,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
-          "plant": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
           "pointer-note": {
             "additionalProperties": false,
             "properties": {
@@ -3999,112 +3241,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
-          "qa-board": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "quiz": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
           "rating": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "reaction-pad": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "reveal": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "roll-call": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "room": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "rug": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -4180,21 +3317,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "object"
           },
           "smartwatch": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "sofa": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -4405,21 +3527,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "object"
           },
           "triangle": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "water-cooler": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -4996,12 +4103,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "null"
         ]
       },
-      "presentation": {
-        "type": [
-          "string",
-          "null"
-        ]
-      },
       "savedAt": {
         "type": "number"
       },
@@ -5066,7 +4167,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "ownerColor",
       "ownerId",
       "ownerName",
-      "presentation",
       "savedAt",
       "shareCode",
       "shareable",
@@ -5353,13 +4453,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "type": "string"
   },
   "EditorMode": {
-    "enum": [
-      "diagram",
-      "draw",
-      "workshop",
-      "pages",
-      "plan"
-    ],
+    "const": "plan",
     "type": "string"
   },
   "Element": {
@@ -5756,14 +4850,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "fk",
       "pk-fk",
       "uk"
-    ],
-    "type": "string"
-  },
-  "EstimateScale": {
-    "enum": [
-      "fibonacci",
-      "tshirt",
-      "powers"
     ],
     "type": "string"
   },
@@ -7027,7 +6113,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "array"
       },
       "lastSeenAt": {
-        "description": "The Timeline feed's unread mark as it stood before this read (the read moves it, once per visit); null when the person had never looked. What happened after it is new to them.",
+        "description": "Home's unread mark as it stood before this read (the read moves it, once per visit); null when the person had never looked. What happened after it is new to them.",
         "type": [
           "number",
           "null"
@@ -7118,46 +6204,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "below"
     ],
     "type": "string"
-  },
-  "IconSearchResponse": {
-    "additionalProperties": false,
-    "properties": {
-      "icons": {
-        "items": {
-          "additionalProperties": false,
-          "properties": {
-            "id": {
-              "type": "string"
-            },
-            "label": {
-              "type": "string"
-            },
-            "set": {
-              "enum": [
-                "line",
-                "technology"
-              ],
-              "type": "string"
-            }
-          },
-          "required": [
-            "id",
-            "label",
-            "set"
-          ],
-          "type": "object"
-        },
-        "type": "array"
-      },
-      "more": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "icons",
-      "more"
-    ],
-    "type": "object"
   },
   "IconSize": {
     "enum": [
@@ -7340,41 +6386,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "width",
       "height",
       "imageId"
-    ],
-    "type": "object"
-  },
-  "ImageSummary": {
-    "additionalProperties": false,
-    "properties": {
-      "byteSize": {
-        "type": "number"
-      },
-      "contentType": {
-        "type": "string"
-      },
-      "createdAt": {
-        "type": "number"
-      },
-      "height": {
-        "type": "number"
-      },
-      "id": {
-        "type": "string"
-      },
-      "originalName": {
-        "type": "string"
-      },
-      "width": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "id",
-      "contentType",
-      "byteSize",
-      "width",
-      "height",
-      "createdAt"
     ],
     "type": "object"
   },
@@ -8134,8 +7145,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "token_revoked",
       "token_expiring",
       "theme_saved",
-      "theme_deleted",
-      "image_uploaded"
+      "theme_deleted"
     ],
     "type": "string"
   },
@@ -9323,46 +8333,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "hidden": {
             "type": "number"
           },
-          "mode": {
-            "$ref": "#/components/schemas/EditorMode"
-          },
           "outOfScope": {
             "const": false,
             "type": "boolean"
-          },
-          "pages": {
-            "additionalProperties": false,
-            "properties": {
-              "kinds": {
-                "additionalProperties": false,
-                "properties": {
-                  "article": {
-                    "type": "number"
-                  },
-                  "infographic": {
-                    "type": "number"
-                  },
-                  "logo": {
-                    "type": "number"
-                  },
-                  "slide": {
-                    "type": "number"
-                  },
-                  "wireframe": {
-                    "type": "number"
-                  }
-                },
-                "type": "object"
-              },
-              "pages": {
-                "type": "number"
-              }
-            },
-            "required": [
-              "pages",
-              "kinds"
-            ],
-            "type": "object"
           },
           "rev": {
             "type": [
@@ -9485,287 +8458,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
-  "Page": {
-    "additionalProperties": false,
-    "properties": {
-      "background": {
-        "$ref": "#/components/schemas/PageBackground"
-      },
-      "device": {
-        "$ref": "#/components/schemas/WireframeDeviceId"
-      },
-      "fit": {
-        "$ref": "#/components/schemas/PageSides"
-      },
-      "flow": {
-        "type": "string"
-      },
-      "frameLook": {
-        "$ref": "#/components/schemas/WireframeFrameLook"
-      },
-      "id": {
-        "type": "string"
-      },
-      "kind": {
-        "$ref": "#/components/schemas/PageKind"
-      },
-      "locked": {
-        "const": true,
-        "type": "boolean"
-      },
-      "name": {
-        "type": "string"
-      },
-      "orientation": {
-        "$ref": "#/components/schemas/PageOrientation"
-      },
-      "rowAt": {
-        "$ref": "#/components/schemas/RowAt"
-      },
-      "size": {
-        "$ref": "#/components/schemas/PageSizeId"
-      },
-      "startedBlank": {
-        "const": true,
-        "type": "boolean"
-      },
-      "systemBars": {
-        "const": false,
-        "type": "boolean"
-      }
-    },
-    "required": [
-      "id",
-      "orientation"
-    ],
-    "type": "object"
-  },
-  "PageBackground": {
-    "additionalProperties": false,
-    "properties": {
-      "fill": {
-        "$ref": "#/components/schemas/PageFill"
-      },
-      "pattern": {
-        "$ref": "#/components/schemas/PagePattern"
-      }
-    },
-    "type": "object"
-  },
-  "PageBackgroundInput": {
-    "additionalProperties": false,
-    "properties": {
-      "angle": {
-        "type": "number"
-      },
-      "color": {
-        "type": "string"
-      },
-      "gradient": {
-        "items": {
-          "type": "string"
-        },
-        "maxItems": 2,
-        "minItems": 2,
-        "type": "array"
-      },
-      "paper": {
-        "const": true,
-        "type": "boolean"
-      },
-      "pattern": {
-        "anyOf": [
-          {
-            "$ref": "#/components/schemas/PagePattern"
-          },
-          {
-            "const": "none",
-            "type": "string"
-          }
-        ]
-      }
-    },
-    "type": "object"
-  },
-  "PageChange": {
-    "anyOf": [
-      {
-        "additionalProperties": false,
-        "properties": {
-          "at": {
-            "type": "number"
-          },
-          "background": {
-            "$ref": "#/components/schemas/PageBackgroundInput"
-          },
-          "device": {
-            "$ref": "#/components/schemas/WireframeDeviceId"
-          },
-          "frameLook": {
-            "$ref": "#/components/schemas/WireframeFrameLook"
-          },
-          "kind": {
-            "$ref": "#/components/schemas/PageKind"
-          },
-          "layout": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "op": {
-            "const": "add",
-            "type": "string"
-          },
-          "orientation": {
-            "$ref": "#/components/schemas/PageOrientation"
-          },
-          "size": {
-            "$ref": "#/components/schemas/PageSizeId"
-          },
-          "systemBars": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "kind",
-          "op"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "background": {
-            "$ref": "#/components/schemas/PageBackgroundInput"
-          },
-          "frameLook": {
-            "$ref": "#/components/schemas/WireframeFrameLook"
-          },
-          "locked": {
-            "type": "boolean"
-          },
-          "name": {
-            "type": "string"
-          },
-          "op": {
-            "const": "set",
-            "type": "string"
-          },
-          "orientation": {
-            "$ref": "#/components/schemas/PageOrientation"
-          },
-          "page": {
-            "$ref": "#/components/schemas/PageRef"
-          },
-          "size": {
-            "$ref": "#/components/schemas/PageSizeId"
-          },
-          "systemBars": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "op",
-          "page"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "layout": {
-            "type": "string"
-          },
-          "op": {
-            "const": "layout",
-            "type": "string"
-          },
-          "page": {
-            "$ref": "#/components/schemas/PageRef"
-          }
-        },
-        "required": [
-          "op",
-          "page",
-          "layout"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "op": {
-            "const": "move",
-            "type": "string"
-          },
-          "page": {
-            "$ref": "#/components/schemas/PageRef"
-          },
-          "to": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "op",
-          "page",
-          "to"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "op": {
-            "const": "duplicate",
-            "type": "string"
-          },
-          "page": {
-            "$ref": "#/components/schemas/PageRef"
-          }
-        },
-        "required": [
-          "op",
-          "page"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "op": {
-            "const": "delete",
-            "type": "string"
-          },
-          "page": {
-            "$ref": "#/components/schemas/PageRef"
-          }
-        },
-        "required": [
-          "op",
-          "page"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "op": {
-            "const": "apply_background_to_all",
-            "type": "string"
-          },
-          "page": {
-            "$ref": "#/components/schemas/PageRef"
-          }
-        },
-        "required": [
-          "op",
-          "page"
-        ],
-        "type": "object"
-      }
-    ]
-  },
   "PageColourFill": {
     "anyOf": [
       {
@@ -9818,87 +8510,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     ]
   },
-  "PageFill": {
-    "anyOf": [
-      {
-        "$ref": "#/components/schemas/PageColourFill"
-      },
-      {
-        "$ref": "#/components/schemas/PageImageFill"
-      }
-    ]
-  },
-  "PageImageFill": {
-    "additionalProperties": false,
-    "properties": {
-      "imageId": {
-        "type": "string"
-      },
-      "kind": {
-        "const": "image",
-        "type": "string"
-      },
-      "overlay": {
-        "$ref": "#/components/schemas/PageImageOverlay"
-      },
-      "position": {
-        "$ref": "#/components/schemas/PageImagePosition"
-      },
-      "tone": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "kind",
-      "imageId"
-    ],
-    "type": "object"
-  },
-  "PageImageOverlay": {
-    "additionalProperties": false,
-    "properties": {
-      "color": {
-        "type": "string"
-      },
-      "kind": {
-        "$ref": "#/components/schemas/PageImageOverlayKind"
-      },
-      "strength": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "kind",
-      "strength"
-    ],
-    "type": "object"
-  },
-  "PageImageOverlayKind": {
-    "enum": [
-      "light",
-      "dark",
-      "tint",
-      "fade"
-    ],
-    "type": "string"
-  },
-  "PageImagePosition": {
-    "enum": [
-      "top",
-      "bottom"
-    ],
-    "type": "string"
-  },
-  "PageKind": {
-    "enum": [
-      "infographic",
-      "article",
-      "slide",
-      "logo",
-      "wireframe"
-    ],
-    "type": "string"
-  },
   "PageMotion": {
     "enum": [
       "flow",
@@ -9928,13 +8539,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
-  "PageOrientation": {
-    "enum": [
-      "portrait",
-      "landscape"
-    ],
-    "type": "string"
-  },
   "PagePattern": {
     "enum": [
       "dots",
@@ -9942,487 +8546,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "lines"
     ],
     "type": "string"
-  },
-  "PageRect": {
-    "additionalProperties": false,
-    "properties": {
-      "height": {
-        "type": "number"
-      },
-      "width": {
-        "type": "number"
-      },
-      "x": {
-        "type": "number"
-      },
-      "y": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "x",
-      "y",
-      "width",
-      "height"
-    ],
-    "type": "object"
-  },
-  "PageRef": {
-    "type": [
-      "string",
-      "number"
-    ]
-  },
-  "PageSides": {
-    "additionalProperties": false,
-    "properties": {
-      "height": {
-        "type": "number"
-      },
-      "width": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "width",
-      "height"
-    ],
-    "type": "object"
-  },
-  "PageSizeId": {
-    "enum": [
-      "a4",
-      "letter",
-      "a3",
-      "square",
-      "social",
-      "wide",
-      "slide",
-      "slide-classic",
-      "logo",
-      "device",
-      "fit"
-    ],
-    "type": "string"
-  },
-  "PageSummary": {
-    "additionalProperties": false,
-    "properties": {
-      "background": {
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "device": {
-        "$ref": "#/components/schemas/WireframeDeviceId"
-      },
-      "elements": {
-        "type": "number"
-      },
-      "flow": {
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "frameLook": {
-        "$ref": "#/components/schemas/WireframeFrameLook"
-      },
-      "id": {
-        "type": "string"
-      },
-      "kind": {
-        "$ref": "#/components/schemas/PageKind"
-      },
-      "locked": {
-        "type": "boolean"
-      },
-      "name": {
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "orientation": {
-        "anyOf": [
-          {
-            "$ref": "#/components/schemas/PageOrientation"
-          },
-          {
-            "type": "null"
-          }
-        ]
-      },
-      "place": {
-        "type": "number"
-      },
-      "rect": {
-        "$ref": "#/components/schemas/PageRect"
-      },
-      "screen": {
-        "$ref": "#/components/schemas/PageRect"
-      },
-      "size": {
-        "$ref": "#/components/schemas/PageSizeId"
-      },
-      "systemBars": {
-        "type": "boolean"
-      }
-    },
-    "required": [
-      "place",
-      "id",
-      "name",
-      "kind",
-      "size",
-      "orientation",
-      "rect",
-      "background",
-      "locked",
-      "flow",
-      "elements"
-    ],
-    "type": "object"
-  },
-  "PagesAnswer": {
-    "additionalProperties": false,
-    "properties": {
-      "article": {
-        "additionalProperties": false,
-        "properties": {
-          "blocks": {
-            "type": "number"
-          },
-          "created": {
-            "type": "boolean"
-          },
-          "estimatedPages": {
-            "type": "number"
-          },
-          "flow": {
-            "type": "string"
-          },
-          "look": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/ArticleLookId"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "pages": {
-            "items": {
-              "type": "number"
-            },
-            "type": "array"
-          },
-          "title": {
-            "type": "string"
-          },
-          "words": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "blocks",
-          "created",
-          "estimatedPages",
-          "flow",
-          "look",
-          "pages",
-          "title",
-          "words"
-        ],
-        "type": "object"
-      },
-      "articles": {
-        "items": {
-          "$ref": "#/components/schemas/ArticleSummary"
-        },
-        "type": "array"
-      },
-      "changesetId": {
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "lines": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "pages": {
-        "items": {
-          "$ref": "#/components/schemas/PageSummary"
-        },
-        "type": "array"
-      },
-      "switched": {
-        "type": "boolean"
-      },
-      "tab": {
-        "additionalProperties": false,
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "rev": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "id",
-          "rev"
-        ],
-        "type": "object"
-      }
-    },
-    "required": [
-      "tab",
-      "switched",
-      "lines",
-      "pages",
-      "articles",
-      "changesetId"
-    ],
-    "type": "object"
-  },
-  "PagesRequest": {
-    "anyOf": [
-      {
-        "additionalProperties": false,
-        "properties": {
-          "pages": {
-            "items": {
-              "$ref": "#/components/schemas/PageChange"
-            },
-            "type": "array"
-          }
-        },
-        "required": [
-          "pages"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "article": {
-            "$ref": "#/components/schemas/ArticleWrite"
-          }
-        },
-        "required": [
-          "article"
-        ],
-        "type": "object"
-      }
-    ]
-  },
-  "PagesView": {
-    "additionalProperties": false,
-    "properties": {
-      "articles": {
-        "items": {
-          "additionalProperties": false,
-          "properties": {
-            "blocks": {
-              "type": "number"
-            },
-            "estimatedPages": {
-              "type": "number"
-            },
-            "flow": {
-              "type": "string"
-            },
-            "look": {
-              "anyOf": [
-                {
-                  "$ref": "#/components/schemas/ArticleLookId"
-                },
-                {
-                  "type": "null"
-                }
-              ]
-            },
-            "markdown": {
-              "type": "string"
-            },
-            "pages": {
-              "items": {
-                "type": "number"
-              },
-              "type": "array"
-            },
-            "title": {
-              "type": "string"
-            },
-            "words": {
-              "type": "number"
-            }
-          },
-          "required": [
-            "blocks",
-            "estimatedPages",
-            "flow",
-            "look",
-            "markdown",
-            "pages",
-            "title",
-            "words"
-          ],
-          "type": "object"
-        },
-        "type": "array"
-      },
-      "elision": {
-        "$ref": "#/components/schemas/Elision"
-      },
-      "header": {
-        "$ref": "#/components/schemas/ViewHeader"
-      },
-      "layouts": {
-        "items": {
-          "additionalProperties": false,
-          "properties": {
-            "kind": {
-              "$ref": "#/components/schemas/PageKind"
-            },
-            "layouts": {
-              "items": {
-                "additionalProperties": false,
-                "properties": {
-                  "id": {
-                    "type": "string"
-                  },
-                  "label": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "id",
-                  "label"
-                ],
-                "type": "object"
-              },
-              "type": "array"
-            }
-          },
-          "required": [
-            "kind",
-            "layouts"
-          ],
-          "type": "object"
-        },
-        "type": "array"
-      },
-      "pages": {
-        "items": {
-          "additionalProperties": false,
-          "properties": {
-            "background": {
-              "type": [
-                "string",
-                "null"
-              ]
-            },
-            "device": {
-              "$ref": "#/components/schemas/WireframeDeviceId"
-            },
-            "elements": {
-              "type": "number"
-            },
-            "flow": {
-              "type": [
-                "string",
-                "null"
-              ]
-            },
-            "frameLook": {
-              "$ref": "#/components/schemas/WireframeFrameLook"
-            },
-            "id": {
-              "type": "string"
-            },
-            "kind": {
-              "$ref": "#/components/schemas/PageKind"
-            },
-            "locked": {
-              "type": "boolean"
-            },
-            "name": {
-              "type": [
-                "string",
-                "null"
-              ]
-            },
-            "orientation": {
-              "anyOf": [
-                {
-                  "$ref": "#/components/schemas/PageOrientation"
-                },
-                {
-                  "type": "null"
-                }
-              ]
-            },
-            "place": {
-              "type": "number"
-            },
-            "rect": {
-              "$ref": "#/components/schemas/PageRect"
-            },
-            "refs": {
-              "items": {
-                "type": "string"
-              },
-              "type": "array"
-            },
-            "screen": {
-              "$ref": "#/components/schemas/PageRect"
-            },
-            "size": {
-              "$ref": "#/components/schemas/PageSizeId"
-            },
-            "systemBars": {
-              "type": "boolean"
-            }
-          },
-          "required": [
-            "background",
-            "elements",
-            "flow",
-            "id",
-            "kind",
-            "locked",
-            "name",
-            "orientation",
-            "place",
-            "rect",
-            "refs",
-            "size"
-          ],
-          "type": "object"
-        },
-        "type": "array"
-      },
-      "pagesMode": {
-        "type": "boolean"
-      }
-    },
-    "required": [
-      "header",
-      "pagesMode",
-      "pages",
-      "articles",
-      "layouts",
-      "elision"
-    ],
-    "type": "object"
   },
   "PairingRequestStatus": {
     "enum": [
@@ -10481,199 +8604,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "participantId",
       "value",
       "at"
-    ],
-    "type": "object"
-  },
-  "PathElement": {
-    "additionalProperties": false,
-    "properties": {
-      "action": {
-        "$ref": "#/components/schemas/ElementAction"
-      },
-      "aspectLocked": {
-        "type": "boolean"
-      },
-      "borderRadius": {
-        "$ref": "#/components/schemas/BorderRadius"
-      },
-      "closed": {
-        "type": "boolean"
-      },
-      "commentThread": {
-        "$ref": "#/components/schemas/CommentThread"
-      },
-      "fillColor": {
-        "type": "string"
-      },
-      "fillSwatch": {
-        "$ref": "#/components/schemas/QuickSwatchSlot"
-      },
-      "font": {
-        "type": "string"
-      },
-      "height": {
-        "type": "number"
-      },
-      "id": {
-        "$ref": "#/components/schemas/ElementId"
-      },
-      "label": {
-        "type": "string"
-      },
-      "layerId": {
-        "type": "string"
-      },
-      "link": {
-        "$ref": "#/components/schemas/ElementLink"
-      },
-      "locked": {
-        "type": "boolean"
-      },
-      "nodes": {
-        "items": {
-          "$ref": "#/components/schemas/PathNode"
-        },
-        "type": "array"
-      },
-      "note": {
-        "type": "string"
-      },
-      "noteRich": {
-        "items": {
-          "$ref": "#/components/schemas/TextRun"
-        },
-        "type": "array"
-      },
-      "opacity": {
-        "type": "number"
-      },
-      "padding": {
-        "$ref": "#/components/schemas/Padding"
-      },
-      "penColour": {
-        "$ref": "#/components/schemas/PenColourName"
-      },
-      "rotation": {
-        "type": "number"
-      },
-      "strokeColor": {
-        "type": "string"
-      },
-      "strokeStyle": {
-        "$ref": "#/components/schemas/BorderStyle"
-      },
-      "strokeSwatch": {
-        "$ref": "#/components/schemas/QuickSwatchSlot"
-      },
-      "strokeWidth": {
-        "$ref": "#/components/schemas/BorderStroke"
-      },
-      "subpaths": {
-        "items": {
-          "items": {
-            "$ref": "#/components/schemas/PathNode"
-          },
-          "type": "array"
-        },
-        "type": "array"
-      },
-      "textAlignX": {
-        "$ref": "#/components/schemas/TextAlignX"
-      },
-      "textAlignY": {
-        "$ref": "#/components/schemas/TextAlignY"
-      },
-      "textBold": {
-        "type": "boolean"
-      },
-      "textColor": {
-        "type": "string"
-      },
-      "textItalic": {
-        "type": "boolean"
-      },
-      "textSize": {
-        "$ref": "#/components/schemas/TextSize"
-      },
-      "textStrikethrough": {
-        "type": "boolean"
-      },
-      "textUnderline": {
-        "type": "boolean"
-      },
-      "type": {
-        "const": "path",
-        "type": "string"
-      },
-      "width": {
-        "type": "number"
-      },
-      "x": {
-        "type": "number"
-      },
-      "y": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "id",
-      "type",
-      "x",
-      "y",
-      "width",
-      "height",
-      "nodes",
-      "closed"
-    ],
-    "type": "object"
-  },
-  "PathHandleMode": {
-    "enum": [
-      "corner",
-      "mirrored",
-      "aligned"
-    ],
-    "type": "string"
-  },
-  "PathNode": {
-    "additionalProperties": false,
-    "properties": {
-      "handleIn": {
-        "$ref": "#/components/schemas/PathPoint"
-      },
-      "handleOut": {
-        "$ref": "#/components/schemas/PathPoint"
-      },
-      "mode": {
-        "$ref": "#/components/schemas/PathHandleMode"
-      },
-      "nx": {
-        "type": "number"
-      },
-      "ny": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "mode",
-      "nx",
-      "ny"
-    ],
-    "type": "object"
-  },
-  "PathPoint": {
-    "additionalProperties": false,
-    "properties": {
-      "nx": {
-        "type": "number"
-      },
-      "ny": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "nx",
-      "ny"
     ],
     "type": "object"
   },
@@ -11211,17 +9141,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
-  "PollStyle": {
-    "enum": [
-      "yesNo",
-      "yesNoAbstain",
-      "choice",
-      "collaborators",
-      "rating",
-      "text"
-    ],
-    "type": "string"
-  },
   "ProgressAnim": {
     "enum": [
       "fill",
@@ -11416,62 +9335,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
-  "QaNote": {
-    "additionalProperties": false,
-    "properties": {
-      "at": {
-        "type": "number"
-      },
-      "author": {
-        "additionalProperties": false,
-        "properties": {
-          "color": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "name",
-          "color"
-        ],
-        "type": "object"
-      },
-      "doneAt": {
-        "type": "number"
-      },
-      "id": {
-        "type": "string"
-      },
-      "state": {
-        "$ref": "#/components/schemas/QaNoteState"
-      },
-      "text": {
-        "type": "string"
-      },
-      "voters": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      }
-    },
-    "required": [
-      "id",
-      "text",
-      "at",
-      "voters"
-    ],
-    "type": "object"
-  },
-  "QaNoteState": {
-    "enum": [
-      "discussing",
-      "done"
-    ],
-    "type": "string"
-  },
   "QuestionType": {
     "enum": [
       "short",
@@ -11532,16 +9395,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "twinkle",
       "pulse",
       "rock"
-    ],
-    "type": "string"
-  },
-  "Reaction": {
-    "enum": [
-      "confetti",
-      "sparkles",
-      "hearts",
-      "applause",
-      "fireworks"
     ],
     "type": "string"
   },
@@ -11896,52 +9749,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "RollCallEntry": {
-    "additionalProperties": false,
-    "properties": {
-      "at": {
-        "type": "number"
-      },
-      "color": {
-        "type": "string"
-      },
-      "name": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "name",
-      "color",
-      "at"
-    ],
-    "type": "object"
-  },
-  "RoomDoor": {
-    "enum": [
-      "n",
-      "e",
-      "s",
-      "w",
-      "none"
-    ],
-    "type": "string"
-  },
-  "RowAt": {
-    "additionalProperties": false,
-    "properties": {
-      "x": {
-        "type": "number"
-      },
-      "y": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "x",
-      "y"
-    ],
-    "type": "object"
-  },
   "RunHeading": {
     "enum": [
       1,
@@ -12090,19 +9897,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "SelectionMode": {
-    "enum": [
-      "select",
-      "pan",
-      "laser",
-      "spotlight",
-      "avatar",
-      "eraser",
-      "format",
-      "isometric"
-    ],
-    "type": "string"
-  },
   "SequenceElementMessage": {
     "additionalProperties": false,
     "properties": {
@@ -12163,18 +9957,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "minutes": {
         "type": "number"
       },
-      "options": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "question": {
-        "type": "string"
-      },
-      "style": {
-        "$ref": "#/components/schemas/PollStyle"
-      },
       "tool": {
         "$ref": "#/components/schemas/SessionTool"
       }
@@ -12188,8 +9970,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "enum": [
       "timer",
       "stopwatch",
-      "vote",
-      "poll"
+      "vote"
     ],
     "type": "string"
   },
@@ -12210,18 +9991,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "$ref": "#/components/schemas/ElementAction"
         },
         "type": "array"
-      },
-      "agendaCurrent": {
-        "type": "number"
-      },
-      "agendaItems": {
-        "items": {
-          "$ref": "#/components/schemas/AgendaItem"
-        },
-        "type": "array"
-      },
-      "agendaTimerStartedAt": {
-        "type": "number"
       },
       "aspectLocked": {
         "type": "boolean"
@@ -12246,9 +10015,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "cellComments": {
         "$ref": "#/components/schemas/CellCommentThreads"
-      },
-      "chairFacing": {
-        "$ref": "#/components/schemas/ChairFacing"
       },
       "chartAxis": {
         "type": "boolean"
@@ -12334,9 +10100,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
-      "estimateScale": {
-        "$ref": "#/components/schemas/EstimateScale"
-      },
       "fillColor": {
         "type": "string"
       },
@@ -12397,21 +10160,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "id": {
         "$ref": "#/components/schemas/ElementId"
       },
-      "ideaCardIds": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "ideaCards": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "ideasRevealed": {
-        "type": "boolean"
-      },
       "keyMeanings": {
         "additionalProperties": {
           "type": "string"
@@ -12471,9 +10219,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "mindSpacing": {
         "$ref": "#/components/schemas/MindSpacing"
-      },
-      "mode": {
-        "$ref": "#/components/schemas/SelectionMode"
       },
       "navLinks": {
         "items": {
@@ -12587,36 +10332,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "pyramidVariant": {
         "$ref": "#/components/schemas/PyramidVariant"
       },
-      "qaNotes": {
-        "items": {
-          "$ref": "#/components/schemas/QaNote"
-        },
-        "type": "array"
-      },
-      "qaRev": {
-        "type": "number"
-      },
-      "quizCorrect": {
-        "type": "number"
-      },
-      "quizLockedAt": {
-        "type": "number"
-      },
-      "quizOptions": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "quizRevealed": {
-        "type": "boolean"
-      },
-      "quizSeconds": {
-        "type": "number"
-      },
-      "quizStartedAt": {
-        "type": "number"
-      },
       "railCount": {
         "type": "number"
       },
@@ -12638,35 +10353,17 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "ratingAnimSpeed": {
         "$ref": "#/components/schemas/AnimationSpeed"
       },
-      "reaction": {
-        "$ref": "#/components/schemas/Reaction"
-      },
       "responses": {
         "items": {
           "$ref": "#/components/schemas/ParticipantResponse"
         },
         "type": "array"
       },
-      "responsesRevealed": {
-        "type": "boolean"
-      },
-      "revealed": {
-        "type": "boolean"
-      },
       "richText": {
         "items": {
           "$ref": "#/components/schemas/TextRun"
         },
         "type": "array"
-      },
-      "rollCall": {
-        "items": {
-          "$ref": "#/components/schemas/RollCallEntry"
-        },
-        "type": "array"
-      },
-      "roomDoor": {
-        "$ref": "#/components/schemas/RoomDoor"
       },
       "rotation": {
         "type": "number"
@@ -12880,36 +10577,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "stat-row",
       "process",
       "site-header",
-      "mode-button",
       "portal",
       "tab-window",
       "session-button",
-      "reveal",
       "picker",
-      "reaction-pad",
       "comment-pin",
       "action-card",
-      "done-check",
-      "chair",
-      "fence",
-      "avatar-pad",
-      "desk",
-      "sofa",
-      "room",
-      "meeting-table",
-      "plant",
-      "bookshelf",
-      "water-cooler",
-      "coffee-machine",
-      "rug",
-      "estimate",
       "temperature",
-      "idea-box",
-      "qa-board",
-      "agenda",
       "decision",
-      "roll-call",
-      "quiz",
       "stadium",
       "actor",
       "final-state",
@@ -12937,7 +10612,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "checklist",
       "legend",
       "sankey",
-      "focus-button",
       "icon",
       "sticker",
       "plan-board",
@@ -13983,12 +11657,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "Tab": {
     "additionalProperties": false,
     "properties": {
-      "articles": {
-        "additionalProperties": {
-          "$ref": "#/components/schemas/ArticleFlow"
-        },
-        "type": "object"
-      },
       "backgroundAnimationSpeed": {
         "type": "number"
       },
@@ -14052,18 +11720,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "name": {
         "type": "string"
       },
-      "opensIn": {
-        "$ref": "#/components/schemas/EditorMode"
-      },
-      "pageOrientation": {
-        "$ref": "#/components/schemas/PageOrientation"
-      },
-      "pages": {
-        "items": {
-          "$ref": "#/components/schemas/Page"
-        },
-        "type": "array"
-      },
       "patternColor": {
         "type": "string"
       },
@@ -14109,12 +11765,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "TabRecord": {
     "additionalProperties": false,
     "properties": {
-      "articles": {
-        "additionalProperties": {
-          "$ref": "#/components/schemas/ArticleFlow"
-        },
-        "type": "object"
-      },
       "backgroundAnimationSpeed": {
         "type": "number"
       },
@@ -14181,20 +11831,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "name": {
         "type": "string"
       },
-      "opensIn": {
-        "$ref": "#/components/schemas/EditorMode"
-      },
       "orderIndex": {
         "type": "number"
-      },
-      "pageOrientation": {
-        "$ref": "#/components/schemas/PageOrientation"
-      },
-      "pages": {
-        "items": {
-          "$ref": "#/components/schemas/Page"
-        },
-        "type": "array"
       },
       "patternColor": {
         "type": "string"
@@ -14874,7 +12512,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Folder",
       "Layer",
       "Session",
-      "Facilitator",
       "AI",
       "Team",
       "Participant",
@@ -15178,14 +12815,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "font": {
         "type": "string"
       },
-      "fontWeight": {
-        "enum": [
-          400,
-          500,
-          700
-        ],
-        "type": "number"
-      },
       "headerFill": {
         "type": "string"
       },
@@ -15200,9 +12829,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "layerId": {
         "type": "string"
-      },
-      "letterSpacing": {
-        "type": "number"
       },
       "link": {
         "$ref": "#/components/schemas/ElementLink"
@@ -15249,18 +12875,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "textAlignY": {
         "$ref": "#/components/schemas/TextAlignY"
       },
-      "textArc": {
-        "type": "number"
-      },
       "textBold": {
         "type": "boolean"
-      },
-      "textCase": {
-        "enum": [
-          "upper",
-          "lower"
-        ],
-        "type": "string"
       },
       "textColor": {
         "type": "string"
@@ -15889,43 +13505,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "hidden": {
         "type": "number"
       },
-      "mode": {
-        "$ref": "#/components/schemas/EditorMode"
-      },
-      "pages": {
-        "additionalProperties": false,
-        "properties": {
-          "kinds": {
-            "additionalProperties": false,
-            "properties": {
-              "article": {
-                "type": "number"
-              },
-              "infographic": {
-                "type": "number"
-              },
-              "logo": {
-                "type": "number"
-              },
-              "slide": {
-                "type": "number"
-              },
-              "wireframe": {
-                "type": "number"
-              }
-            },
-            "type": "object"
-          },
-          "pages": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "pages",
-          "kinds"
-        ],
-        "type": "object"
-      },
       "rev": {
         "type": [
           "number",
@@ -16001,31 +13580,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "show",
       "find",
       "diff",
-      "lint",
-      "pages"
-    ],
-    "type": "string"
-  },
-  "WireframeDeviceId": {
-    "enum": [
-      "iphone",
-      "iphone-duo",
-      "android",
-      "ipad",
-      "android-tablet",
-      "laptop",
-      "desktop",
-      "browser",
-      "watch"
-    ],
-    "type": "string"
-  },
-  "WireframeFrameLook": {
-    "enum": [
-      "theme",
-      "dark",
-      "light",
-      "outline"
+      "lint"
     ],
     "type": "string"
   },

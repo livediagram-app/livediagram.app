@@ -1,28 +1,26 @@
 # Plan mode
 
-**Plan mode** is the [editor mode](../007-editor/editor-modes.md) for running work on boards: Kanban boards,
-sprint boards, triage boards, retros, roadmaps. It narrows the palette to what a board needs and makes
-[Plan boards](plan-board.md) work like a planning tool (pick up a card, drop it in a column) instead of a drawing.
-Like every mode, it never decides what the tab is: Plan mode is how a person works on a general tab, its boards
-and cards are elements the other modes see too, and the work on them is [items](items.md) in the document's
-item store.
+**Plan mode** is the one [editor mode](../007-editor/editor-modes.md): every tab of every Project is worked on in
+Plan, for running work on boards: Kanban boards, sprint boards, triage boards, retros, roadmaps, and the Sheets,
+Dashboards and Forms beside them. It makes [Plan boards](plan-board.md) work like a planning tool (pick up a card,
+drop it in a column) instead of a drawing. It never decides what the tab is: a tab's kind does
+([Plan tabs](plan-tabs.md)), and the work on its boards is [items](items.md) in the document's item store.
 
 ## Domain language
 
-| Term          | Means                                                                        |
-| ------------- | ---------------------------------------------------------------------------- |
-| **Plan mode** | The editor mode `plan`, shown as **Plan**                                    |
-| **Plan**      | In the interface, the mode's name and its palette category; never a tab kind |
+| Term          | Means                                                   |
+| ------------- | ------------------------------------------------------- |
+| **Plan mode** | The editor mode `plan`, shown as **Plan**: the only one |
+| **Plan**      | In the interface, the mode's name; never a tab kind     |
 
 - "Board" alone keeps its old meanings elsewhere in the specs; in this folder it is always a **Plan board**.
 
-## Offering the mode
+## Plan's mark
 
-- Plan is the fifth mode, after Pages: a start's mode switch, **Shift+D** on an empty tab and the template
-  picker's mode filter list it in that order.
-- It is always offered, like every mode ([Editor modes](../007-editor/editor-modes.md#every-mode-always-offered)).
-  Its Settings › Experimental switch went when it graduated.
-- Its mark is a board: three columns, the middle one holding a raised card.
+Its mark is a board: three columns, the middle one holding a raised card (`PlanIcon`, `EDITOR_MODE_ICONS.plan`). A
+general tab's pill leads with it; a Board, Sheet, Dashboard or Form tab shows its kind's glyph instead
+([Plan tabs](plan-tabs.md#the-kinds)). There is no mode switch: the other editor modes were retired
+([Editor mode](../007-editor/editor-modes.md#retired-modes)).
 
 ## What the mode brings into focus
 
@@ -32,25 +30,23 @@ item store.
   bottom on a phone).
 - **No Quick Style panel**: a board's look comes from the tab's theme; its colours are still in its element
   menu's Style.
-- **The Layers panel is gone**, with its button: a board is worked by its columns and cards, not a stacking
-  order. The **Card Types** button stands where it was ([Item types](item-types.md)). Layers returns with any
-  other mode.
-- **Everything else is Diagram mode's**: selection, arrows, text, stickies, frames, snapping, history and
-  shortcuts, so notes and arrows around a board work as they always do.
-- **The canvas pattern and colours are the tab's**, as in Diagram mode.
+- **No Layers panel, Map or Tidy Up**: a board is worked by its columns and cards, not a stacking order. The **Card
+  Types** button stands in the bottom-right cluster ([Item types](item-types.md)).
+- **Everything else is the canvas's**: selection, arrows, text, stickies, frames, snapping, history and shortcuts, so
+  notes and arrows around a board work as they always do.
+- **The canvas colours are the tab's**, on a blank canvas while the tab keeps its theme's pattern
+  ([Editor mode](../007-editor/editor-modes.md#one-look)).
 
 ## Cost
 
-Plan must cost nothing to a document that does not use it:
+Every Project is a Plan document, so what Plan reads is read from the first load:
 
-- **No item requests without Plan content**: a document fetches its items only once the open tab has a Plan
-  board, card or view, opens in Plan (so its Cards and Trash panels list strays before it has a board), or its
-  deck has a card slide; from then on it keeps them for the session. A room join or resync
-  refetches only items already loaded.
+- **Items load with the document**: a document fetches its items once it has hydrated, so its Cards and Trash panels
+  list strays before it has a board. A room join or resync refetches only items already loaded.
 - **Plan's UI loads when drawn**: boards, cards, the item panel, the type editor, the Card Types panel, the board
   menu, the Cards category and card slides are separate chunks, fetched the first time one appears. The
-  [Plan tour](plan-tour.md) loads the first time the person enters Plan and stays loaded for the session, so
-  leaving Plan mid-tour still ends it (closing a card panel it opened).
+  [Plan tour](plan-tour.md) is its own chunk, mounted with the editor and offered only once a board or Sheet is on
+  the tab.
 - **Dashboards, Start Planning and the Sheet templates load when drawn too**: a Dashboard tab's page loads only for a
   Dashboard tab, Start Planning with the board picker, the Sheet templates' designs only when one is set up or drawn
   in a preview (the catalogue a menu names them from carries names and lines alone), and the tab menu's CSV writer
@@ -60,7 +56,7 @@ Plan must cost nothing to a document that does not use it:
 - **No re-render churn**: the Plan context keeps its identity across editor renders that change nothing Plan
   holds, so boards and cards re-render only when items, types, presence or the board change.
 - **Other tabs load once**: statuses are the document's ([Plan templates](plan-templates.md#hand-offs)), so a
-  document in Plan of 2 to 12 tabs loads its other tabs once a session in the background, as the search panel
+  document of 2 to 12 tabs loads its other tabs once a session in the background, as the search panel
   does; a larger one reads each tab's boards as it is opened.
 - **No presence chatter**: a card held (opened or dragged) is said to the room, and its release; nothing is sent
   by a person who never holds one. A holder says it once more when someone new joins, and when their own
@@ -70,7 +66,7 @@ Plan must cost nothing to a document that does not use it:
 
 ## Starting a board
 
-- An empty Plan tab (nothing on its canvas at all) shows, in the middle of the canvas, **Start Planning**: one wide
+- An empty tab (nothing on its canvas at all) shows, in the middle of the canvas, **Start Planning**: one wide
   panel (up to 1024 px, kept clear of the toolbar above and the bottom-right buttons below, scrolling inside itself)
   in which every way to start is one look away, without steps.
   - **Header**: **Start Planning** (20 px), "Pick how to run the work. You can add more boards, sheets and dashboards
@@ -142,43 +138,30 @@ Plan must cost nothing to a document that does not use it:
     "expenses"; every word typed must match, case ignored), across every category, the results
     grouped under **Boards**, **Spreadsheets**, **Dashboards** and **Inspiration**, after a **Best Match** of the choices whose name begins
     with what was typed ([Template starts → A title match leads](../007-editor/start-diagramming.md#the-panel)); the rail shows no choice while a search is typed, and
-    Escape clears it. Templates of the other modes that match follow, under **In Other Modes**, and choosing one switches the
-    tab to its mode ([Template starts → Found in other modes](../007-editor/start-diagramming.md#found-in-other-modes)). Nothing
-    found anywhere: the shared empty state, "No boards, sheets or layouts match “<text>”" ("Try another word.").
+    Escape clears it. It finds Plan's own choices only, never a template of a retired mode. Nothing
+    found: the shared empty state, "No boards, sheets or layouts match “<text>”" ("Try another word.").
   - The keyboard reaches everything in reading order; Enter or Space chooses. It is gone once the tab has anything on
     it, and never shown to someone who may only view (a Participant or a Viewer). In the tab's light or dark look.
 - Every list of board types (the palette's Boards, Start Planning) is one list (`PLAN_BOARD_TILES`), and **All
   Cards is always its last option**: a new board type goes before it (and before Archive, which sits just ahead of
   All Cards in the palette).
-- Plan mode has no empty-canvas card: Start Planning is its start. A diagram template or another mode's is found by
-  its search, or reached through the mode switch that leads the rail.
-- **A new tab from Plan stays Plan**: adding a tab (the tab bar's **+**) while in Plan mode opens it in Plan
-  (`opensIn` Plan, for everyone), straight to **Start Planning**. Every mode does the same: a
-  new tab opens in the mode it was made from ([Editor modes](../007-editor/editor-modes.md) "A new tab opens in the
-  mode it was made from").
+- There is no empty-canvas card: Start Planning is every empty tab's start, and it cannot be closed.
+- **A new tab opens on Start Planning**: adding a tab (the tab bar's **+**, the command palette's **Create New Tab**)
+  makes a general tab carrying the active tab's look, straight to **Start Planning**. A new Project opens the same way
+  ([New document route](../007-editor/new-document-route.md)).
 
-## Switching modes keeps the tab
+## Old documents
 
-- **A tab keeps its mode once it has content** ([Editor modes](../007-editor/editor-modes.md#the-mode-switch)), so
-  boards and Sheets go only on tabs in Plan ([Plan tabs](plan-tabs.md#only-in-plan)): a paste or an agent never puts
-  one on a tab in another mode. Their work is items in the document, which no mode touches.
-- **A board a tab in another mode already holds** (from before) is drawn with its columns and cards, live as items
-  change, and is selected, moved, resized, copied, styled and deleted as any element is. Its cards do not take the
-  pointer or the keyboard there.
-- **A diagram is welcome in Plan**: a tab's shapes, ink, arrows and pages stay on it in Plan mode, worked the Diagram
-  way (Plan's palette offers fewer of them, nothing more).
-- A start's mode switch and **Shift+D** switch an empty tab at once, with no question, as between any two modes;
-  Shift+D announces the mode it reached. A tab with content keeps its mode
-  ([Editor modes](../007-editor/editor-modes.md#the-mode-switch)).
+- **A tab a retired mode made** opens in Plan like any other ([Editor mode](../007-editor/editor-modes.md#retired-modes)):
+  its shapes, ink and arrows stay on it, worked as canvas elements; boards and Sheets on it work as on any tab.
 - A tab with Plan content is never added to another document: the tab menu's **Add to Document** is off for it,
   as its cards are this document's items.
-- Telemetry: a switch is the existing mode event (`Editor` · `Changed` · `ModePlan`, ...), nothing more.
 
 ## Tools
 
 - **Plan starts on the Hand tool**: a board's cards take the pointer themselves, so a drag on the canvas moves
   it. Select is one pick away, for moving or resizing a board.
-- **Eraser and Format are left out** of the tool picker and their shortcuts: they work on drawn content a Plan
+- **Format is left out** of the tool picker and its shortcuts: it works on drawn content a Plan
   tab does not hold.
 - **No Layers panel**, as below.
 
@@ -196,8 +179,7 @@ used:
 - **Metrics, visualisations, notes and the written cards**: a Dashboard's **Add to Slot** and its slot menu's **Add a
   Slot** ([Plan tabs](plan-tabs.md#dashboard-tab)).
 
-The Explorer menu keeps its corner on a phone, as on a whiteboard. Draw mode's shape dock leaves the Plan categories
-out: they frame items, not ink.
+The Explorer menu keeps its corner, on a phone too.
 
 A board placed by any of these paths takes its preset's set-up: a column takes the status the tab already has of its
 name, and any other column a status of its own, so it starts empty
@@ -218,10 +200,10 @@ name, and any other column a status of its own, so it starts empty
 
 ## Templates
 
-Templates that open in Plan mode set up a way of working across several tabs, with **no cards**:
-[Plan templates](plan-templates.md) holds the catalogue, how a template's tabs are made and how their boards
-hand cards to each other. Blank Plan is the mode's blank, as Blank Diagram is Diagram's: an empty Plan tab, no board, so it opens on **Start
-with a Board**.
+Plan's templates set up a way of working across several tabs, with **no cards**: [Plan templates](plan-templates.md)
+holds the catalogue, how a template's tabs are made and how their boards hand cards to each other; which templates
+are Plan's is `isPlanTemplate` ([Templates](../007-editor/templates-by-mode.md)). Blank Plan is an empty tab, no
+board, so it opens on **Start Planning**.
 
 ## Collaboration
 
@@ -233,12 +215,12 @@ with a Board**.
   rejoined connection a new presence id, which carries no hold until it is said). Nobody else sends anything: a
   person holding nothing stays silent. A holder who leaves or drops takes the ring with them, since rings are
   drawn only for people in the presence list.
-- Everyone on a tab works in its one mode, and sees the boards move as items change.
+- Everyone on a tab sees the boards move as items change.
 - Facilitation on a board (hide writing and reveal) lives in the board's set-up, and voting is the tab's session
   vote on the cards, so a retro needs nothing
   beyond the board and the tab's Vote.
-- **No participant cursors on a Plan tab but a Dashboard**: a Board tab, a Sheet tab, or any other tab worked on in
-  Plan mode shows no one else's cursor (or laser): the board or Sheet covers the canvas a cursor would point at, and
+- **No participant cursors on any tab but a Dashboard**: a Board tab, a Sheet tab, or any other tab shows no one
+  else's cursor: the board or Sheet covers the canvas a cursor would point at, and
   presence there is the avatars and each card's editing ring. A Dashboard (a Visualisation tab included) shows them,
   as a diagram does (`planHidesCursors`).
 
@@ -269,16 +251,16 @@ deleted or migrated), but its indicators are not drawn, so nothing invites addin
 
 ## Telemetry
 
-- Switching to Plan, Opens in Plan and the template filter fire the existing mode events with `ModePlan`,
-  `OpensInPlan` and `TemplateModePlan`.
+- The mode switch's `Editor` · `Changed` · `ModePlan`, Opens in's `OpensInPlan` and the template filter's
+  `TemplateModePlan` were retired with the switch ([Editor mode](../007-editor/editor-modes.md#telemetry-telemetry)).
 - The `Plan` category: `Added` (the item type, or `Card` for a Plan card), `Moved` (`Board`), `Opened` (`Item` from a board or a list; `Parent`, `ChildCard` or `Breadcrumb` from inside the item panel), `Deleted` (the item type), `Changed` (the set-up part), `Toggled` (`FlagOn` / `FlagOff`)
   and `Revealed` (`Board`), never content. A board placed from the palette counts as `Element` · `Added` · `PlanBoard`, a plan view as `PlanView`.
 - The header's Start Blank menu offered Blank Plan until it was retired, its funnel slot (`HeaderPlan`) kept for history.
 
 ## The Plan tour
 
-- The first time a person works in Plan with a board or Sheet open, a guided tour offers itself on that board or
-  Sheet, changing nothing on it: [Plan tour](plan-tour.md).
+- The first time a person has a board or Sheet open, a guided tour offers itself on that board or Sheet, changing
+  nothing on it: [Plan tour](plan-tour.md).
 
 ## Help
 

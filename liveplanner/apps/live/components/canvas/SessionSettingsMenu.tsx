@@ -1,11 +1,10 @@
 'use client';
-// The `…` quick settings on a vote / poll session element (docs/specs/012-collaboration/session-button.md).
+// The `…` quick settings on a vote / stopwatch session element (docs/specs/012-collaboration/session-button.md).
 //
-// A thin wrapper now. It used to carry its OWN forms — a list of dot presets
-// for a vote, a hand-rolled question-and-answers form for a poll — which were
-// a third design of controls the Session Studio and the element's right-click
-// Session category already had, and the three had drifted apart on the answer
-// cap, the control shape, and the wording.
+// A thin wrapper now. It used to carry its OWN form — a list of dot presets
+// for a vote — which was a third design of controls the Session Studio and the
+// element's right-click Session category already had, and the three had drifted
+// apart on the control shape and the wording.
 //
 // All three render `SessionElementSettings` now, so there is one UI per tool
 // and nothing left to keep in step. Timer elements are the exception only in
@@ -42,12 +41,7 @@ export function SessionSettingsMenu({
 }) {
   // A timer element has its own face and its own `…` (SessionTimerFace).
   if (config.tool === 'timer') return null;
-  const label =
-    config.tool === 'vote'
-      ? 'Dot vote options'
-      : config.tool === 'stopwatch'
-        ? 'Stopwatch options'
-        : 'Poll options';
+  const label = config.tool === 'vote' ? 'Dot vote options' : 'Stopwatch options';
   return (
     <ElementEllipsisMenu label={label} kind="control">
       {(close) => (

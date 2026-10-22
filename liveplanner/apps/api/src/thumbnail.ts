@@ -12,16 +12,11 @@
 // render, and every write path (editor, collaborators, MCP, API token)
 // invalidates the snapshot uniformly because they all bump saved_at.
 
-import { embedTabImages } from '@liveplanner/api-schema';
 import {
   drawnCount,
-  elementsOnPage,
   formLook,
-  laidOutPagesOf,
   migrateStoredTab,
-  pagesOf,
   renderElementsToSvg,
-  renderPageToSvg,
   resolveFontStack,
   tabKindOf,
   type Tab,
@@ -45,24 +40,13 @@ import {
   type StoredTabBody,
   listItems,
   listSheets,
-  servableImageIds,
 } from './db';
-import { imageRefIds } from './image-refs/extract';
 import type { DocumentDTO, Env } from './types';
 
 // Content type for the cached SVG snapshot. Local to this module — the
 // HTTP responses set their own header (responses.ts); this only stamps
 // the R2 object's metadata on write.
 const THUMBNAIL_CONTENT_TYPE = 'image/svg+xml; charset=utf-8';
-
-// Ceiling on the raw image bytes inlined into one snapshot. The renderer
-// embeds each referenced image as a base64 data URL (so the SVG is
-// self-contained for the Explorer preview + the public live image), which
-// inflates the cached/streamed SVG by ~1.33×. Without a cap a document full
-// of large photos would produce a multi-megabyte thumbnail that's slow to
-// cache and stream in the Explorer grid; images that would push past the
-// budget fall back to their placeholder instead.
-const IMAGE_EMBED_BUDGET_BYTES = 3 * 1024 * 1024;
 
 // The document fields a snapshot needs. `thumbRenderedAt` is optional: a
 // caller that already read it alongside the document row (the Explorer
@@ -84,7 +68,7 @@ export type ThumbnailOptions = { defer?: (write: Promise<unknown>) => void };
 
 // Resolve a document's cached SVG snapshot, rendering + caching it first
 // if stale. Returns null — caller should 404 / fall back to an icon —
-// when there's nothing to show: no R2 binding (self-host without
+// when there's nothing to show: no R2 binding (a deployment without
 // storage), no tab, or an empty / unparseable first tab.
 export async function getDocumentThumbnailSvg(
   env: Env,
@@ -92,9 +76,8 @@ export async function getDocumentThumbnailSvg(
   opts: ThumbnailOptions = {},
 ): Promise<string | null> {
   // No object store: nothing to cache into or read from. The endpoints
-  // 404 and the Explorer row keeps its generic icon, same graceful
-  // degradation as the image gallery (docs/specs/009-elements/images.md) on a binding-less deploy.
-  if (!env.IMAGES) return null;
+  // 404 and the Explorer row keeps its generic icon on a binding-less deploy.
+  if (!env.SNAPSHOTS) return null;
   const key = thumbnailKey(liveDoc.id);
 
   // Fresh = rendered at or after the last save. saved_at is bumped by
@@ -104,7 +87,7 @@ export async function getDocumentThumbnailSvg(
       ? liveDoc.thumbRenderedAt
       : await getThumbRenderedAt(env, liveDoc.id);
   if (renderedAt !== null && renderedAt >= liveDoc.savedAt) {
-    const cached = await env.IMAGES.get(key);
+    const cached = await env.SNAPSHOTS.get(key);
     // A present object is the happy path. A miss here means the object
     // was evicted / never written despite the freshness stamp, so we
     // fall through and re-render rather than 404 a document that has
@@ -120,10 +103,10 @@ export async function getDocumentThumbnailSvg(
   // so the next read renders again. Only stamp the row as fresh once the
   // object is actually in R2, or a later read would trust a stale/absent
   // object and skip the re-render.
-  const images = env.IMAGES;
+  const bucket = env.SNAPSHOTS;
   const write = (async () => {
     try {
-      await images.put(key, svg, { httpMetadata: { contentType: THUMBNAIL_CONTENT_TYPE } });
+      await bucket.put(key, svg, { httpMetadata: { contentType: THUMBNAIL_CONTENT_TYPE } });
       await markThumbRendered(env, liveDoc.id, Date.now());
     } catch {
       // Swallow: the SVG is still returned to the caller below.
@@ -150,13 +133,13 @@ export async function getDocumentTabImageSvg(
 ): Promise<string | null> {
   // Gate on the same optional R2 binding as the cached path, so the
   // whole live-image feature is uniformly off on a binding-less deploy.
-  if (!env.IMAGES) return null;
+  if (!env.SNAPSHOTS) return null;
   return renderTabBodyToSvg(env, liveDoc, await getTabBody(env, liveDoc.id, tabId));
 }
 
 // One tab drawn by the shared renderer, for `GET .../tabs/:tabId/render.svg` (docs/specs/015-api/api.md): the
-// CLI's pull --svg and tab render, and any script. Unlike a snapshot it draws an empty tab too, and with no image
-// store its images keep their placeholders. Null when the tab is not in the document or its body does not parse.
+// CLI's pull --svg and tab render, and any script. Unlike a snapshot it draws an empty tab too; an image element
+// draws its placeholder. Null when the tab is not in the document or its body does not parse.
 export async function renderTabSvg(
   env: Env,
   documentId: string,
@@ -171,16 +154,14 @@ export async function renderTabSvg(
   }
   if (!stored) return null;
   const tab = migrateStoredTab({ ...stored, elements: stored.elements ?? [] });
-  const images = await loadEmbeddedImages(env, documentId, tab);
   return renderElementsToSvg(tab, {
-    resolveImageHref: (id) => images.get(id),
     resolveIconArt: resolveIconExportArt,
     resolveStickerArt,
   });
 }
 
-// The lazy backfill of tabs.element_count (migration 0059): a tab stored before the count existed gets it
-// from the parse a render does anyway, so the lists know an old empty document after one ask. Best effort:
+// The lazy backfill of tabs.element_count: a tab whose count is still unknown (NULL) gets it
+// from the parse a render does anyway, so the lists know an empty document after one ask. Best effort:
 // a failed stamp leaves the count unknown, which only means the row asks again.
 function stampUnknownCount(
   env: Env,
@@ -232,26 +213,6 @@ async function renderTabBodyToSvg(
   // the parsed body.
   // Migrated like every other stored-tab read (docs/specs/011-theme/retired-schemes.md).
   const tab = migrateStoredTab({ id: liveDoc.id, name: liveDoc.name, ...parsed } as Tab);
-  // A Pages tab previews as its first page alone, drawn as an export draws it
-  // (docs/specs/006-document/document-snapshots.md "Pages tabs"): every page side by
-  // side on the canvas shrinks to a row of slivers nobody can read at thumbnail size.
-  const pages = laidOutPagesOf(tab);
-  const firstPage = pages[0];
-  // Inline referenced image bitmaps (read from R2) so the preview / live
-  // image renders the actual photos, matching the in-app PNG/SVG export.
-  // A first-page preview reads only that page's images: its elements' and its picture background.
-  const images = await loadEmbeddedImages(
-    env,
-    liveDoc.id,
-    firstPage
-      ? {
-          ...tab,
-          elements: elementsOnPage(tab.elements, pages, firstPage.id),
-          // Read as the pages are laid out (pagesOf), so a malformed stored entry is skipped.
-          pages: pagesOf(tab).filter((p) => p.id === firstPage.id),
-        }
-      : tab,
-  );
   // A Plan board or card draws its document's items (docs/specs/026-plan/plan-board.md).
   const plan = tab.elements.some(
     (el) => el.type === 'shape' && (el.shape === 'plan-board' || el.shape === 'plan-card'),
@@ -282,7 +243,6 @@ async function renderTabBodyToSvg(
       })
     : undefined;
   const drawWith = {
-    resolveImageHref: (id: string) => images.get(id),
     resolveIconArt: resolveIconExportArt,
     resolveStickerArt,
     items,
@@ -290,44 +250,5 @@ async function renderTabBodyToSvg(
     // Custom types keep their colours (docs/specs/026-plan/item-types.md).
     itemTypes: plan ? typesOf(catalogue) : undefined,
   };
-  return firstPage ? renderPageToSvg(tab, firstPage, drawWith) : renderElementsToSvg(tab, drawWith);
-}
-
-// Read each image element's bytes from R2 and return them keyed by imageId
-// as base64 data URLs, ready for the renderer to inline. The shared embedder
-// (@liveplanner/api-schema embedTabImages) reads ids in document order until
-// IMAGE_EMBED_BUDGET_BYTES is spent, after which (or on a missing object) the
-// element keeps its placeholder. R2 is the same store the authenticated image
-// endpoint reads (key = imageId), so a shared document's images embed without
-// re-auth, and the same rule decides which: only an image the document may serve
-// (docs/specs/009-elements/images.md, "Placement grants") is read, one query for the tab.
-async function loadEmbeddedImages(
-  env: Env,
-  documentId: string,
-  tab: Tab,
-): Promise<Map<string, string>> {
-  const images = env.IMAGES;
-  if (!images) return new Map();
-  // The elements' images and any page's picture background, as embedTabImages reads them.
-  const ids = imageRefIds(tab.elements, tab.pages);
-  const servable = await servableImageIds(env, documentId, ids);
-  if (servable.size < ids.length) {
-    console.warn('[images] not servable by document', {
-      documentId,
-      refused: ids.filter((id) => !servable.has(id)),
-    });
-  }
-  return embedTabImages(
-    tab,
-    async (id) => {
-      if (!servable.has(id)) return null;
-      const object = await images.get(id);
-      if (!object) return null;
-      return {
-        bytes: await object.arrayBuffer(),
-        contentType: object.httpMetadata?.contentType ?? null,
-      };
-    },
-    { totalBudgetBytes: IMAGE_EMBED_BUDGET_BYTES },
-  );
+  return renderElementsToSvg(tab, drawWith);
 }

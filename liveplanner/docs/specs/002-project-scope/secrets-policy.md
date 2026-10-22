@@ -1,6 +1,6 @@
 # Secrets policy
 
-**This repository is public.** Source code is visible to the world. Therefore:
+The repository is private, but source code is copied to every machine, CI runner and tool that builds it, and its history is permanent. Therefore:
 
 > **No secret may ever live in source code.** No API keys, no tokens, no passwords, no OAuth client secrets, no signing keys, no service-account JSON.
 
@@ -25,11 +25,11 @@ Required by the CI/CD pipeline (see [10-deployment.md](../016-platform/deploymen
 | `CF_API_TOKEN`  | Cloudflare API token scoped to the account that owns the workers. Required permissions: Workers Scripts:Edit, D1:Edit, Workers Routes:Edit, Account Settings:Read, User Details:Read. Full list in [10-deployment.md](../016-platform/deployment.md). |
 | `CF_ACCOUNT_ID` | Cloudflare account ID (not a secret per se, but kept in the same store).                                                                                                                                                                              |
 
-The deploy workflow also **syncs** two of the worker secrets below from GitHub repo secrets into `wrangler secret put` on every deploy, so they rotate by editing the GitHub secret: `CLERK_JWKS_URL` and `GUEST_ID_HMAC_SECRET`. Each sync step is guarded on the GitHub secret being non-empty, so a fork that sets neither still deploys.
+The deploy workflow also **syncs** two of the worker secrets below from GitHub repo secrets into `wrangler secret put` on every deploy, so they rotate by editing the GitHub secret: `CLERK_JWKS_URL` and `GUEST_ID_HMAC_SECRET`. Each sync step is guarded on the GitHub secret being non-empty, so an environment that sets neither still deploys.
 
 ## Worker secrets in use today
 
-Provisioned with `wrangler secret put` (production), `wrangler secret put --env staging` ([Staging environment](../016-platform/staging-environment.md) — worker secrets are per-environment, so staging's copy of a value is never production's), or `.dev.vars` (local dev, gitignored) — **never** `[vars]`, which is plain text in a public repo. Every one is optional: absent, its feature degrades rather than breaking, which is what keeps self-hosting viable (see [03](open-source-and-business-model.md)).
+Provisioned with `wrangler secret put` (production), `wrangler secret put --env staging` ([Staging environment](../016-platform/staging-environment.md) — worker secrets are per-environment, so staging's copy of a value is never production's), or `.dev.vars` (local dev, gitignored) — **never** `[vars]`, which is plain text in source. Every one is optional: absent, its feature degrades rather than breaking, which keeps local development and previews working without them (see [Business model + licence](business-model-and-licence.md)).
 
 | Secret                                                       | Worker          | Absent means                                                                                              |
 | ------------------------------------------------------------ | --------------- | --------------------------------------------------------------------------------------------------------- |
@@ -41,7 +41,7 @@ Provisioned with `wrangler secret put` (production), `wrangler secret put --env 
 
 `INTERNAL_EVENTS_KEY` is the only one that must hold the **same value on two workers**. A mismatch is silent — the caller simply lands back in the throttled bucket — so verify with `wrangler secret list` on both rather than assuming. Generate it, and `GUEST_ID_HMAC_SECRET`, with `openssl rand -hex 32`.
 
-Non-secret configuration (`TELEMETRY_ENABLED`, `AI_BASE_URL`, `AI_MODEL`, `AI_*`, `IMAGE_MAX_*`, `RESEND_FROM`, `APP_BASE_URL`, `CONSENT_BASE_URL`) lives in `[vars]` in the relevant `wrangler.toml`, in the open, documented alongside each entry there and in the per-app `.env.example`. What only liveplanner.app runs with (`TELEMETRY_ENABLED`, the `IMAGE_MAX_*` caps) is equally public but lives in the hosted profile, `apps/api/hosted-vars.json`, so it is not every fork's default ([Deployment](../016-platform/deployment.md) "Hosted profile").
+Non-secret configuration (`TELEMETRY_ENABLED`, `AI_BASE_URL`, `AI_MODEL`, `AI_*`, `RESEND_FROM`, `APP_BASE_URL`, `CONSENT_BASE_URL`) lives in `[vars]` in the relevant `wrangler.toml`, in plain text, documented alongside each entry there and in the per-app `.env.example`. What only liveplanner.app runs with (`TELEMETRY_ENABLED`, `APP_BASE_URL` per environment) is equally non-secret but lives in the hosted profile, `apps/api/hosted-vars.json`, so it is not every environment's default ([Deployment](../016-platform/deployment.md) "Hosted profile").
 
 `CLERK_SECRET_KEY` is **not** used: the api verifies session JWTs against the public JWKS and makes no Clerk Admin API calls.
 
@@ -80,7 +80,7 @@ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
 
 1. **Rotate immediately** in the relevant provider (Clerk, Cloudflare, etc.).
 2. Update the secret in the env-var store (`wrangler secret put`, Pages dashboard).
-3. Force-push and `git filter-repo` are **not** sufficient — rotation comes first because Git history is forever public.
+3. Force-push and `git filter-repo` are **not** sufficient — rotation comes first because Git history is permanent.
 4. Open a tracking note in specs (or wherever incidents live, TBD) to document what leaked, when, and what was rotated.
 
 ## Tooling (to be added)

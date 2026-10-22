@@ -24,7 +24,7 @@ keeps tokens off the spoofable guest-identity path entirely (the guest REST
 hardening in [§4](#4-x-owner-id-trust-change) is a separate track).
 
 This must not weaken the friction-free guest model ([Auth + guest access](../014-identity/auth-and-guest-access.md))
-or self-hosting ([Open source + distribution](../002-project-scope/open-source-and-business-model.md)).
+or the degrade-never-break rule ([Business model + licence](../002-project-scope/business-model-and-licence.md)).
 
 ## 2. Why the API wasn't safe to expose as-is (history)
 
@@ -172,7 +172,7 @@ source changes.
 
 A token grants its owner's **full** access — read AND write, the same surface
 the app has — **unless** it was minted **read-only** (the one scope that
-exists): a `read_only` column (migration 0039) that, when set, restricts the
+exists): a `read_only` column that, when set, restricts the
 token to `GET`/`HEAD`; the api worker rejects every write it presents at a
 single dispatch choke point with `403 read_only_token`
 ([MCP server §4.11](mcp-server.md)). The same choke point refuses it the one read that is a
@@ -323,11 +323,11 @@ out cleanly:
 
 Every other `/api/tokens` route stays session-only.
 
-### 3.7 Self-hosting
+### 3.7 Deployments without sign-in
 
 API tokens are gated on **auth being enabled**, exactly as teams and sign-in
 are ([Teams](../013-workspace/teams.md), [Auth + guest access](../014-identity/auth-and-guest-access.md)). A
-self-host that hasn't configured Clerk runs in pure-guest mode, and in that
+deployment that hasn't configured Clerk runs in pure-guest mode, and in that
 mode the feature is **absent end to end** — there is no API Tokens category to
 open and no way to mint one:
 
@@ -344,37 +344,9 @@ open and no way to mint one:
 
 So enabling tokens is opt-in with auth, and disabling auth removes them
 cleanly — no orphaned page, no half-working endpoint. This takes nothing away
-from a guest-only self-host, because the whole canvas / guest model stays fully
+from a guest-only deployment, because the whole canvas / guest model stays fully
 available without an account ([Auth + guest access](../014-identity/auth-and-guest-access.md)). No new
 SaaS dependency beyond the optional Clerk that teams already need.
-
-<!-- legacy-names -->
-
-### 3.8 Deprecated diagram routes
-
-The container was called a diagram before it became a document ([Document](../006-document/document.md)). The public routes moved from `/api/diagrams…` to `/api/documents…`; the old paths stay served until **30 April 2027** so scripts written against them keep working (`apps/api/src/legacy-documents-alias.ts`):
-
-- A request to `/api/diagrams…` is moved to the same path under `/api/documents…` before anything else runs, so authentication, the guest signature gate and rate limits apply to it exactly as to the current route.
-- The request body's keys `diagram`, `diagrams`, `diagramId`, `diagramName`, `diagramTeamId` and `diagramOwnerId` are renamed to their `document` forms; the response's keys are renamed back, at any depth. Values are never touched.
-- Element links cross in both directions: an old `{ kind: 'diagram', diagramId }` link in a request is
-  upgraded before the keys are renamed (`upgradeLegacyLinks`), and a response hands back the old
-  form (`downgradeLinks`), so neither side ever sees a half-renamed link.
-- An old client's `X-Diagram-Conversion` header travels on as `X-Document-Conversion`, and the
-  `document_trashed` error code goes back as `diagram_trashed`.
-- A body declared over the 8 MiB cap is refused with 413 before it is read, and the rewritten request
-  carries its own `Content-Length`, so the size gate behind the alias still applies.
-- Every aliased response carries `Deprecation: true`, `Sunset: Fri, 30 Apr 2027 00:00:00 GMT` and `Link: </api/documents>; rel="successor-version"`, and each call logs `[legacy-documents-alias] <method> <path>`, so the alias's remaining traffic is visible before it is removed.
-- A WebSocket upgrade on the old path passes through unchanged.
-
-Outside `/api/diagrams…` the paths never changed, so nothing marks a request as coming from an old
-client. Those routes accept the old **request** forms until the sunset (`apps/api/src/legacy-request-forms.ts`):
-the timeline's `scope=diagram:<id>`, and a `diagramId` in the team notification bodies. Their
-**responses** use the new names only (`document` in `/share/{code}` and `/trash/{id}/restore`, the
-`document_*` timeline types): repeating a whole document under two keys would double the largest
-payloads.
-
-After the sunset the alias module and this section go; `/api/diagrams…` then answers 404 like any unknown route.
-<!-- /legacy-names -->
 
 ## 4. `X-Owner-Id` trust change
 
@@ -415,7 +387,7 @@ its signature, so wiring it onto REST requests is incremental. API tokens
 external callers.
 
 **Compatibility — legacy unsigned guests (recommended approach).**
-`verifyOwnerId` returns true when `GUEST_ID_HMAC_SECRET` is unset, so self-hosts
+`verifyOwnerId` returns true when `GUEST_ID_HMAC_SECRET` is unset, so deployments
 without the secret opt out of the guard entirely (as today). Where the secret
 IS set, the migration follows from one hard truth: **an unsigned id can't be
 retroactively secured** — there is no proof bound to it, so the server cannot
@@ -513,7 +485,7 @@ hardening landed first:
 1. ✅ Input hardening (done).
 2. ✅ **The `X-Owner-Id` HMAC requirement ([§4](#4-x-owner-id-trust-change)).**
    Shipped behind the grace switch; the operator arms it by setting
-   `GUEST_SIG_ENFORCE_AFTER` ([Self-hosting](../../operations/self-hosting.md)).
+   `GUEST_SIG_ENFORCE_AFTER` ([Deployment](../016-platform/deployment.md)).
    **Not armed.** It is stated in `apps/api/wrangler.toml` `[vars]` (a
    dashboard-only value is wiped by every deploy), blank. It was armed in
    production on 2026-10-06 and un-armed the same day: `/new` mints a local
@@ -567,8 +539,8 @@ hardening landed first:
 4. ✅ The **Settings API Tokens category** (`SettingsTokensRow`) — the management
    UI ([§3.6](#36-management--the-settings-dialogs-api-tokens-category)); it
    replaced the original Explorer "API tokens" page,
-   rendered only when `clerkEnabled` so it's absent on a no-auth self-host
-   ([§3.7](#37-self-hosting)).
+   rendered only when `clerkEnabled` so it's absent on a deployment without sign-in
+   ([§3.7](#37-deployments-without-sign-in)).
 5. ✅ Wire token resolution into `resolveOwner`; enforce the read-only flag
    ([§3.4](#34-access--full-read--write-with-an-optional-read-only-flag)).
 6. ✅ **Docs + help, shipped WITH the feature** (help articles describe live
@@ -582,7 +554,7 @@ hardening landed first:
      `account-and-data/signing-in` article (next to teams + cross-device sync).
    - `docs/` updates: note the new `/api/tokens` surface + its account
      requirement in `docs/development/architecture.md`, and the Clerk-gated nature in
-     `docs/operations/self-hosting.md` (tokens need Clerk, like teams).
+     `docs/specs/016-platform/deployment.md` (tokens need Clerk, like teams).
    - ✅ Public API reference for the existing routes. Two layers, both
      shipped: the machine-readable `GET /api/openapi.json`
      ([API documentation (OpenAPI)](api-documentation.md)), and a human-facing **Developers**
@@ -594,7 +566,7 @@ hardening landed first:
 
 Finer-grained scopes — per-document / per-folder grants, per-verb permissions —
 plus webhooks and any billing or quota tiers (the product has no paid tier —
-[Open source + distribution](../002-project-scope/open-source-and-business-model.md)). (The one scope that DID land is
+[Business model + licence](../002-project-scope/business-model-and-licence.md)). (The one scope that DID land is
 the **read-only** flag, [§3.4](#34-access--full-read--write-with-an-optional-read-only-flag);
 OAuth / third-party app authorization landed in [MCP server](mcp-server.md).)
 Every full token inherits the owner's read+write access; finer grants come

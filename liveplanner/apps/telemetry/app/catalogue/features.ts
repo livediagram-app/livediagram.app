@@ -7,7 +7,6 @@ import { CUSTOM_THEME_TYPES, NON_PATTERN_CANVAS_TYPES, isNonThemePick } from '..
 import type { Metric, MetricStack } from '../metric-series';
 import { chart } from './helpers';
 import { elementTourTokens } from '../element-tour-kinds';
-import { LOGO_TOOL_TYPES } from '../logo-types';
 
 export const LAYERS_RENAMED = chart(
   'Layer',
@@ -135,8 +134,8 @@ export const MODE_OPTIONS = chart(
   'UI',
   'Changed',
   'Mode Options',
-  'Settings inside a canvas mode: eraser, laser, spotlight and format painter options.',
-  { typeIn: (t) => /^(Eraser|Laser|Spotlight|Format)/.test(t ?? '') },
+  'Settings inside a canvas mode: eraser and format painter options.',
+  { typeIn: (t) => /^(Eraser|Format)/.test(t ?? '') },
 );
 
 // AI assistance (Editing tab). Ask and Clean split AI Requests by mode.
@@ -174,43 +173,12 @@ export const AI_ASSISTANCE: MetricStack = {
   headline: AI_REQUESTS,
 };
 
-// Draw mode (docs/specs/023-draw-mode/draw-mode.md): Whiteboard tabs made, and which of the dock's
-// choices people reach for. Headed by the boards made; the rest are settings.
+// Draw mode (docs/specs/007-editor/editor-modes.md): Whiteboard tabs made.
 export const WHITEBOARDS_CREATED = chart(
   'Draw',
   'Created',
   'Whiteboards Created',
   'A whiteboard tab made, from the New Document wizard or as a new tab.',
-);
-
-export const WHITEBOARD_PENS = chart(
-  'Draw',
-  'Selected',
-  'Pens Picked',
-  'A whiteboard pen picked up: the main, second or third pen.',
-);
-
-export const WHITEBOARD_SETTINGS = chart(
-  'Draw',
-  'Changed',
-  'Pens, Eraser and Background',
-  "A whiteboard pen's colour or width, the eraser mode or the board background changed.",
-);
-
-export const WHITEBOARD_RECOGNITION = chart(
-  'Draw',
-  'Toggled',
-  'Shape Recognition',
-  'Shape recognition switched on or off on a whiteboard.',
-);
-
-// Editor modes (docs/specs/007-editor/editor-modes.md): switches between the editor modes.
-export const EDITOR_MODE_SWITCHES = chart(
-  'Editor',
-  'Changed',
-  'Editor Mode Switches',
-  'A tab switched to another editor mode by the person working on it.',
-  { types: ['ModeDiagram', 'ModeDraw', 'ModePages', 'ModePlan', 'ModeWorkshop'] },
 );
 
 // The mode a tab opens in, set from the tab menu's Opens in (docs/specs/007-editor/editor-modes.md).
@@ -222,308 +190,44 @@ export const TAB_OPENS_IN = chart(
   { types: ['OpensInDiagram', 'OpensInDraw', 'OpensInPages', 'OpensInPlan'] },
 );
 
-// Pages mode's A4 page turned portrait or landscape (docs/specs/007-editor/editor-modes.md "The page").
-export const PAGE_ORIENTATION = chart(
-  'Tab',
-  'Changed',
-  'Page Orientations Set',
-  "A Pages tab's A4 page turned to portrait or landscape, from the page's settings.",
-  { types: ['PagePortrait', 'PageLandscape'] },
-);
-
-// Pages added after the last one, or deleted (docs/specs/007-editor/editor-modes.md "The pages").
-export const PAGES = chart(
-  'Tab',
-  'Changed',
-  'Pages Added and Deleted',
-  'A page added to a Pages tab from the plus after its last page (an infographic page, a new article, or a slide), or deleted from its settings.',
-  {
-    types: [
-      'PageAdded',
-      'ArticleAdded',
-      'SlidePageAdded',
-      'PageRemoved',
-      'ArticlesToPages',
-      'PageKindInfographic',
-      'PageKindArticle',
-      'PageKindSlide',
-      'LogoPageAdded',
-      'PageKindLogo',
-      'WireframePageAdded',
-      'PageKindWireframe',
-      'PageAddedLikeLast',
-    ],
-  },
-);
-
-// A wireframe page's device and frame chosen (docs/specs/007-editor/wireframe-pages.md).
-export const WIREFRAME_DEVICES_CHOSEN = chart(
-  'Tab',
-  'Changed',
-  'Wireframe Devices',
-  'The device a wireframe page was framed as, chosen as it was added or afterwards, and its frame look.',
-  {
-    types: [
-      'WireframeDeviceIphone',
-      'WireframeDeviceIphoneDuo',
-      'WireframeDeviceAndroid',
-      'WireframeDeviceIpad',
-      'WireframeDeviceAndroidTablet',
-      'WireframeDeviceLaptop',
-      'WireframeDeviceDesktop',
-      'WireframeDeviceBrowser',
-      'WireframeDeviceWatch',
-      'WireframeFrameTheme',
-      'WireframeFrameDark',
-      'WireframeFrameLight',
-      'WireframeFrameOutline',
-    ],
-  },
-);
-
-// A wireframe page's system bars turned on or off.
-export const WIREFRAME_SYSTEM_BARS = chart(
-  'UI',
-  'Toggled',
-  'Wireframe System Bars',
-  'A wireframe page’s status bar and home indicator turned on or off.',
-  { types: ['WireframeSystemBarsOn', 'WireframeSystemBarsOff'] },
-);
-
-// A logo page's tools (docs/specs/007-editor/logo-pages.md): shapes combined into one, Mirror
-// Copy, and wordmark type set on a text.
-export const LOGO_TOOLS = chart(
-  'Element',
-  'Changed',
-  'Logo Tools Used',
-  'On a logo page: shapes combined (Unite, Subtract, Intersect, Exclude), a Mirror Copy, and wordmark type (tracking, weight, case, arc) set on a text.',
-  { types: [...LOGO_TOOL_TYPES] },
-);
-
-// Drawing with Mirror on: each drawing that got its reflected twin.
-export const LOGO_MIRROR_TWINS = chart(
-  'Element',
-  'Created',
-  'Mirrored Drawings',
-  'A shape, path or stroke drawn on a logo page with Mirror While Drawing on, so it got a reflected twin.',
-  { types: ['MirrorTwin'] },
-);
-
-// A logo page's own switches, each person's (Show Guides is a Setting, charted there).
-export const LOGO_SWITCHES = chart(
-  'UI',
-  'Toggled',
-  'Logo Mirror Switched',
-  'Mirror While Drawing turned on or off on a logo page.',
-  { types: ['LogoMirrorOn', 'LogoMirrorOff'] },
-);
-
-// How a logo page mirrors (docs/specs/007-editor/logo-pages.md "Mirror"): the axis, a radial
-// mirror's copies and Merge Into One, from the Mirror popover.
-export const LOGO_MIRROR_SETTINGS = chart(
-  'UI',
-  'Changed',
-  'Logo Mirror Set Up',
-  "A logo page's mirror axis, radial copies or Merge Into One changed in its Mirror popover.",
-  {
-    types: [
-      'LogoMirrorAxisVertical',
-      'LogoMirrorAxisHorizontal',
-      'LogoMirrorAxisBoth',
-      'LogoMirrorAxisRadial',
-      'LogoMirrorCopies3',
-      'LogoMirrorCopies4',
-      'LogoMirrorCopies5',
-      'LogoMirrorCopies6',
-      'LogoMirrorCopies8',
-      'LogoMirrorMergeOn',
-      'LogoMirrorMergeOff',
-    ],
-  },
-);
-
-// A page's own settings (docs/specs/007-editor/pages-mode.md).
-export const PAGE_SETUP = chart(
-  'Tab',
-  'Changed',
-  'Pages Set Up',
-  "A page's size, name, background or pattern changed from its panel (or a background given to every page of its kind, or painted from another page), or a page locked or unlocked.",
-  {
-    types: [
-      'PageSize',
-      'PageRenamed',
-      'PageBackground',
-      'PageBackgroundImage',
-      'PageBackgroundAnimated',
-      'PageBackgroundAnimatedSpeed',
-      'PageBackgroundAppliedToAll',
-      'PageBackgroundPainted',
-      'PagePattern',
-      'PageLocked',
-      'PageUnlocked',
-    ],
-  },
-);
-
-// Contents (docs/specs/007-editor/pages-mode.md "Contents"): a press on a page in the list,
-// going there, or a page dragged to a new place in it.
-export const PAGE_CONTENTS_JUMPS = chart(
-  'UI',
-  'Used',
-  'Contents Jumps and Reorders',
-  "A page pressed in Pages mode's Contents list (the canvas gliding to it), or dragged to a new place there.",
-  { types: ['PageContentsJump', 'PageContentsReorder'], rising: 'neutral' },
-);
-
-// The view rests on a page (docs/specs/007-editor/pages-mode.md "Getting around the pages"): a
-// short pan or a flick from a page seen whole turning to its neighbour.
-export const PAGE_SWIPES = chart(
-  'UI',
-  'Used',
-  'Page Swipes',
-  'A short pan or flick in Pages mode that turned the view to the next or previous page.',
-  { types: ['PageSwipe'], rising: 'neutral' },
-);
-
 // Tab windows (docs/specs/009-elements/tab-window.md): a window's tab chosen, and the tab opened from it.
 export const TAB_WINDOW_USE = chart(
   'UI',
   'Used',
   'Tab Windows Opened',
-  'A tab opened from a Tab Window showing it, on a slide or page.',
+  'A tab opened from a Tab Window showing it.',
   { types: ['TabWindowOpen'], rising: 'neutral' },
 );
 
-// Building pages: a layout placed, a page duplicated or moved.
-export const PAGE_BUILDING = chart(
+// A form cover's moving background (docs/specs/030-forms/forms.md "The form card, top to bottom"): set
+// moving, or its speed changed.
+export const ANIMATED_BACKGROUNDS = chart(
   'Tab',
   'Changed',
-  'Pages Built',
-  'A layout put onto a page, a page duplicated, moved or split, or a board put onto a page.',
-  {
-    types: [
-      'PageLayout',
-      'PageLayoutSurprise',
-      'PageDuplicated',
-      'PageMoved',
-      'PagesLaidOut',
-      'PageFitToContent',
-    ],
-  },
+  'Animated Backgrounds',
+  'A background set moving, or its speed changed.',
+  { types: ['PageBackgroundAnimated', 'PageBackgroundAnimatedSpeed'] },
 );
 
-// Leaving Pages past the pages warning (docs/specs/007-editor/editor-modes.md "Leaving
-// Pages"): how often people go on to Diagram or Draw once told their pages will not show.
-export const LEAVE_PAGES_CONFIRMED = chart(
-  'Editor',
-  'Changed',
-  'Pages Left Past the Warning',
-  'Someone switched a Pages tab with pages to Diagram or Draw after the warning that its pages do not show there.',
-  { types: ['LeavePagesConfirmed'] },
-);
-
-// An empty infographic page's in-page layout card hidden (docs/specs/007-editor/pages-mode.md
-// "Layouts"): set beside Page Layout to see whether the card helps or gets in the way.
-export const EMPTY_PAGE_LAYOUTS_HIDDEN = chart(
-  'UI',
-  'Closed',
-  'Empty Page Layouts Hidden',
-  'Someone hid the Start From a Layout card an empty page shows inside itself, or chose Start From Scratch on it.',
-  { types: ['EmptyPageLayouts', 'EmptyPageLayoutsBlank'] },
-);
-
-// Writing articles (docs/specs/007-editor/article-pages.md "Telemetry").
-export const ARTICLE_INSERTS = chart(
-  'Element',
-  'Added',
-  'Article Inserts',
-  'Something put into the writing of an article: an image, table, chart or drawing at the caret, an object or drawing taken in from the palette, or a divider, page break, quote or code block.',
-  {
-    types: [
-      'ArticleImage',
-      'ArticleTable',
-      'ArticleChart',
-      'ArticleCallout',
-      'ArticleSticky',
-      'ArticleDrawing',
-      'ArticleObject',
-      'ArticleDivider',
-      'ArticlePageBreak',
-      'ArticleQuote',
-      'ArticleCode',
-      'ArticleComment',
-      'ArticleAction',
-    ],
-  },
-);
-
-export const ARTICLE_FORMATTING = chart(
-  'Element',
-  'Changed',
-  'Article Formatting',
-  "The page toolbar used on an article's writing (a format, a text style or list, a link) and a zone in the writing wrapped, placed or deleted.",
-  {
-    types: [
-      'ArticleFormat',
-      'ArticleBlockStyle',
-      'ArticleLink',
-      'ArticlePaste',
-      'ArticleZoneWrap',
-      'ArticleZoneResized',
-      'ArticleZoneMoved',
-      'ArticleZoneFloat',
-      'ArticleZoneRemoved',
-    ],
-  },
-);
-
-export const ARTICLE_LOOKS = chart(
+// A board switched onto a page that fits it (docs/specs/007-editor/editor-modes.md).
+export const PAGE_FIT_TO_CONTENT = chart(
   'Tab',
   'Changed',
-  'Article Looks',
-  "An article's look chosen in its Style tab, or one of its style fields changed.",
-  {
-    types: [
-      'ArticleLookClean',
-      'ArticleLookClassic',
-      'ArticleLookReport',
-      'ArticleLookNotebook',
-      'ArticleLookBold',
-      'ArticleStyle',
-    ],
-  },
+  'Boards Put Onto Pages',
+  'A board put onto a page that fits it as its tab switched mode.',
+  { types: ['PageFitToContent'] },
 );
 
 export const WHITEBOARDS: MetricStack = {
   stack: true,
   title: 'Draw Mode',
-  blurb:
-    'Whiteboard tabs made, mode switches, and the pens, erasers, backgrounds and recognition people use in Draw mode.',
+  blurb: 'Whiteboard tabs made and mode switches.',
   members: [
     WHITEBOARDS_CREATED,
-    EDITOR_MODE_SWITCHES,
-    LEAVE_PAGES_CONFIRMED,
     TAB_OPENS_IN,
-    PAGE_ORIENTATION,
-    PAGES,
-    PAGE_SETUP,
-    PAGE_BUILDING,
-    PAGE_CONTENTS_JUMPS,
-    PAGE_SWIPES,
+    ANIMATED_BACKGROUNDS,
+    PAGE_FIT_TO_CONTENT,
     TAB_WINDOW_USE,
-    LOGO_TOOLS,
-    LOGO_MIRROR_TWINS,
-    LOGO_SWITCHES,
-    LOGO_MIRROR_SETTINGS,
-    WIREFRAME_DEVICES_CHOSEN,
-    WIREFRAME_SYSTEM_BARS,
-    EMPTY_PAGE_LAYOUTS_HIDDEN,
-    ARTICLE_INSERTS,
-    ARTICLE_FORMATTING,
-    ARTICLE_LOOKS,
-    WHITEBOARD_PENS,
-    WHITEBOARD_SETTINGS,
-    WHITEBOARD_RECOGNITION,
   ],
   headline: WHITEBOARDS_CREATED,
 };
@@ -863,8 +567,7 @@ export const PALETTE_GROUPS_OPENED = chart(
       type === 'ToolbarMore' ||
       type === 'ToolbarExplorer' ||
       type === 'ToolbarSearch' ||
-      type === 'ToolbarSearchOtherModes' ||
-      type === 'ToolbarSearchUnavailable',
+      type === 'ToolbarSearchOtherModes',
   },
 );
 
@@ -887,12 +590,8 @@ export const PALETTE_USE: MetricStack = {
 // The canvas selection modes, one chart per mode, and the options set inside
 // them (Canvas Modes tab has the rankings).
 const MODE_TITLES: Record<string, string> = {
-  Laser: 'Laser',
-  Spotlight: 'Spotlight',
-  Eraser: 'Eraser',
   FormatPainter: 'Format Painter',
   Isometric: 'Isometric',
-  AvatarMode: 'Avatar Mode',
 };
 
 export const MODE_METRICS: readonly Metric[] = SELECTION_MODES.map((mode) =>
@@ -905,40 +604,11 @@ export const MODE_METRICS: readonly Metric[] = SELECTION_MODES.map((mode) =>
   ),
 );
 
-// The office's machines (docs/specs/009-elements/office.md "Using it"): a drink taken in Avatar mode.
-export const OFFICE_DRINKS = chart(
-  'Canvas',
-  'Used',
-  'Office Drinks',
-  'A drink taken at a water cooler or a coffee machine in Avatar mode.',
-  { types: ['WaterCooler', 'CoffeeMachine'] },
-);
-
-// Avatar Pad arrivals (docs/specs/009-elements/avatar-pad.md "Telemetry"): an entry into Avatar mode that started on a
-// pad, once per entry, never per peer seen arriving.
-export const AVATAR_PAD_ARRIVALS = chart(
-  'Canvas',
-  'Used',
-  'Avatar Pad Arrivals',
-  'An entry into Avatar mode that started on an Avatar Pad, the character beamed in.',
-  { types: ['AvatarPadArrival'] },
-);
-
-// Avatar-mode speech bubbles (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): that somebody spoke, by
-// either door, never what they said.
-export const AVATAR_MESSAGES = chart(
-  'Canvas',
-  'Used',
-  'Avatar Messages',
-  'A message said in a speech bubble in Avatar mode, typed above the character or sent from the Avatar panel.',
-  { types: ['AvatarMessage', 'AvatarMessagePanel'] },
-);
-
 export const CANVAS_MODES: MetricStack = {
   stack: true,
   title: 'Canvas Modes',
   blurb: 'Ways of working on the canvas picked from the palette, and the options set inside them.',
-  members: [...MODE_METRICS, OFFICE_DRINKS, AVATAR_PAD_ARRIVALS, AVATAR_MESSAGES, MODE_OPTIONS],
+  members: [...MODE_METRICS, MODE_OPTIONS],
   // Modes switched into; tweaking an option inside one is not another use.
   headline: [...MODE_METRICS],
   seeAlso: { section: 'modes', label: 'See Each Mode in Features › Modes' },
@@ -1040,12 +710,6 @@ export const MIND_OUTLINE_OPENED = opened(
   (t) => t === 'MindOutline',
 );
 
-export const TOUR_OFFERED = opened(
-  'Tour Offered',
-  'The Diagram tour (the welcome tour until October 2026) offered.',
-  (t) => t === 'TourOffer',
-);
-
 // The Plan tour's offer (docs/specs/026-plan/plan-tour.md); charted in its funnel on the Visitors tab.
 export const PLAN_TOUR_OFFERED = opened(
   'Plan Tour Offered',
@@ -1053,40 +717,11 @@ export const PLAN_TOUR_OFFERED = opened(
   (t) => t === 'PlanTourOffer',
 );
 
-// The Workshop tour's offer (docs/specs/012-collaboration/workshop-tour.md); charted in its funnel on
-// the Visitors tab.
-export const WORKSHOP_TOUR_OFFERED = opened(
-  'Workshop Tour Offered',
-  'The Workshop tour offered, the first time someone works in Workshop mode.',
-  (t) => t === 'WorkshopTourOffer',
-);
-
-// The Draw tour's offer (docs/specs/023-draw-mode/draw-tour.md); charted in its funnel on the Visitors tab.
-export const DRAW_TOUR_OFFERED = opened(
-  'Draw Tour Offered',
-  'The Draw tour offered, the first time someone works in Draw mode.',
-  (t) => t === 'DrawTourOffer',
-);
-
 // The Forms tour's offer (docs/specs/030-forms/forms.md "The Forms tour"); charted in its funnel on the Visitors tab.
 export const FORM_TOUR_OFFERED = opened(
   'Forms Tour Offered',
   'The Forms tour offered, the first time an Editor opens a Form tab.',
   (t) => t === 'FormTourOffer',
-);
-
-// The Avatar tour's offer (docs/specs/008-canvas/avatar-tour.md); charted in its funnel on the Visitors tab.
-export const AVATAR_TOUR_OFFERED = opened(
-  'Avatar Tour Offered',
-  'The Avatar tour offered, the first time someone walks as an avatar.',
-  (t) => t === 'AvatarTourOffer',
-);
-
-// The Pages tour's offer (docs/specs/007-editor/pages-tour.md); charted in its funnel on the Visitors tab.
-export const PAGES_TOUR_OFFERED = opened(
-  'Pages Tour Offered',
-  'The Pages tour offered, the first time someone works in Pages mode.',
-  (t) => t === 'PagesTourOffer',
 );
 
 // The element tours' offers (docs/specs/007-editor/element-tours.md), any `<Kind>TourOffer`; charted in their funnel on
@@ -1113,12 +748,6 @@ export const NEW_VERSION_OFFERED = opened(
   (t) => t === 'NewVersionPrompt',
 );
 
-export const SLIDE_DECK_OPENED = opened(
-  'Slide Deck Opened',
-  'The Slide Deck panel or presentation settings opened.',
-  (t) => t === 'SlideDeck' || t === 'PresentationSettings',
-);
-
 export const EXPLORER_REASONS_OPENED = opened(
   'Explorer Banner: Learn More',
   'The Explorer\u2019s sign-in banner: Learn more opened the reasons to sign in.',
@@ -1143,12 +772,6 @@ export const SESSION_VOTE_OPENED = opened(
   'Vote Button Opened',
   'The Vote button in the bottom bar opened, to start a vote or to follow the one running.',
   (t) => t === 'SessionVote',
-);
-
-export const SESSION_POLL_OPENED = opened(
-  'Poll Button Opened',
-  'The Poll button in the bottom bar opened, to ask a question or to read the answers.',
-  (t) => t === 'SessionPoll',
 );
 
 // Diagram mode's Tidy Up button (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button"); what it then
@@ -1208,16 +831,6 @@ export const TEMPLATES_USED = chart(
   'A template picked to start a document or seed a tab.',
 );
 
-// A template a start's search found in another mode (docs/specs/007-editor/start-diagramming.md "Found in other
-// modes"), switching the tab to that mode: how often a search crosses modes. Each is a Template Used too.
-export const TEMPLATES_FROM_OTHER_MODES = chart(
-  'UI',
-  'Used',
-  'Templates From Other Modes',
-  "A template chosen from another mode's matches in a start's search, switching the tab to that mode.",
-  { types: ['StartOtherMode'] },
-);
-
 export const THEMES_CHOSEN = chart(
   'Theme',
   'Changed',
@@ -1260,16 +873,6 @@ export const CUSTOM_SWATCHES = chart(
   { types: ['QuickSwatchCustom', 'QuickSwatchReset'], rising: 'neutral' },
 );
 
-// The Highlighter's next-stroke settings (docs/specs/008-canvas/highlighter.md "Settings"), chosen in
-// the quick style panel while its tile is armed. Restyling a drawn highlight is an Element change.
-export const HIGHLIGHTER_SETTINGS = chart(
-  'UI',
-  'Changed',
-  'Highlighter Settings',
-  "The Highlighter's colour or width changed for the next stroke, in the quick style panel.",
-  { types: ['HighlighterColour', 'HighlighterWidth'], rising: 'neutral' },
-);
-
 // The Tab Style popover's Finish filter beside its Looks carousel (docs/specs/011-theme/
 // canvas-and-theme-dialog.md).
 export const LOOKS_FILTERED = chart(
@@ -1284,17 +887,15 @@ export const LOOK_AND_FEEL: MetricStack = {
   stack: true,
   title: 'Look & Feel',
   blurb:
-    "The visual presets people reach for: templates (and those found in another mode by a start's search), themes, canvas styles, and their own themes. Headed by themes and canvas styles picked: a template also applies its theme, so adding templates would count that pick twice.",
+    'The visual presets people reach for: templates, themes, canvas styles, and their own themes. Headed by themes and canvas styles picked: a template also applies its theme, so adding templates would count that pick twice.',
   members: [
     TEMPLATES_USED,
-    TEMPLATES_FROM_OTHER_MODES,
     THEMES_CHOSEN,
     CANVAS_STYLES_PICKED,
     CANVAS_CONTROLS_TWEAKED,
     CUSTOM_THEMES,
     CUSTOM_SWATCHES,
     LOOKS_FILTERED,
-    HIGHLIGHTER_SETTINGS,
   ],
   headline: [THEMES_CHOSEN, CANVAS_STYLES_PICKED],
   seeAlso: { section: 'lookfeel', label: 'See Each Preset in Features › Look & Feel' },

@@ -31,12 +31,6 @@ export type SessionAttachment = {
   presenceId: string;
   verifiedRole?: AccessLevel;
   presence: ParticipantPresence | null;
-  //   - `isOwner`: whether the api resolved this upgrade as the document's
-  //     OWNER (docs/specs/012-collaboration/facilitator.md). A boolean, never an id: it is the one thing the
-  //     facilitator baton needs that role alone cannot answer ("the owner can
-  //     always take it back"), and carrying it as a bit keeps docs/specs/015-api/public-api-and-tokens.md §6's
-  //     promise that no real identity reaches the room.
-  isOwner?: boolean;
   //   - `multiplayer`: this session belongs to a multiplayer session the
   //     room has already counted (Document·Used·Multiplayer, docs/specs/017-telemetry/telemetry.md). See
   //     room-multiplayer.ts for why the mark lives here.
@@ -55,15 +49,6 @@ export type SessionAttachment = {
   //     (docs/specs/024-agents/agent-changesets.md "Held elements", CS39): how the room tells an
   //     agent's owner's own sessions apart without holding an owner id. 64 hex characters.
   personTag?: string | null;
-  //   - `networkTag`: the caller's network, hashed with the document id, from X-Verified-Network
-  //     (docs/specs/012-collaboration/vote-integrity.md): what caps one network's poll answers. 32 hex characters.
-  networkTag?: string | null;
-  //   - `following`: the presence id this session follows (docs/specs/012-collaboration/follow-me-viewport.md
-  //     "Who follows whom"), from its `follow` op; absent when it follows nobody.
-  following?: string;
-  //   - `pollAnsweredAs`: the key this session answered the running poll under, so a socket cannot become a
-  //     second person in the same poll (docs/specs/012-collaboration/vote-integrity.md).
-  pollAnsweredAs?: { pollId: string; key: string } | null;
   //   - `workbenchPairing`: the workbench pairing that opened this session (docs/specs/013-workspace/workbench-embeds.md),
   //     from X-Verified-Workbench-Pairing, so unpairing or revoking its token closes exactly its sockets.
   workbenchPairing?: string | null;
@@ -81,18 +66,14 @@ const MAX_PERSON_TAG_LEN = 64;
 const MAX_PAIRING_ID_LEN = 36;
 // A document id is a UUID; the clamp keeps a forged header from bloating the attachment.
 const MAX_DOCUMENT_ID_LEN = 64;
-// A network tag is a 32-hex digest; the clamp keeps a forged header from bloating the attachment.
-const MAX_NETWORK_TAG_LEN = 32;
 
 /** The server-verified facts an upgrade carries, as the api worker set them (empty header = none). */
 type VerifiedSession = {
   verifiedRole?: AccessLevel;
-  isOwner: boolean;
   tabScope: string | null;
   shareCode: string | null;
   account: boolean;
   personTag: string | null;
-  networkTag: string | null;
   workbenchPairing: string | null;
   adderKey: string | null;
   documentId: string | null;
@@ -109,12 +90,10 @@ export function verifiedSessionOf(request: Request): VerifiedSession {
   const role = request.headers.get('X-Verified-Role');
   return {
     verifiedRole: isAccessLevel(role) ? role : undefined,
-    isOwner: request.headers.get('X-Verified-Owner') === '1',
     tabScope: header('X-Verified-Tab-Scope'),
     shareCode: header('X-Verified-Share-Code'),
     account: request.headers.get('X-Verified-Account') === '1',
     personTag: header('X-Verified-Person'),
-    networkTag: header('X-Verified-Network'),
     workbenchPairing: header('X-Verified-Workbench-Pairing'),
     adderKey: header('X-Verified-Adder'),
     documentId: header('X-Verified-Document'),
@@ -135,13 +114,10 @@ export function newSessionAttachment(v: VerifiedSession, presenceId: string): Se
     presenceId,
     verifiedRole: v.verifiedRole,
     presence: null,
-    isOwner: v.isOwner,
     tabScope: v.tabScope,
     shareCode: v.shareCode,
     account: v.account,
     personTag: v.personTag?.slice(0, MAX_PERSON_TAG_LEN) ?? null,
-    networkTag: v.networkTag?.slice(0, MAX_NETWORK_TAG_LEN) ?? null,
-    pollAnsweredAs: null,
     workbenchPairing: v.workbenchPairing?.slice(0, MAX_PAIRING_ID_LEN) ?? null,
     adderKey: v.adderKey?.slice(0, ADDER_KEY_LENGTH) ?? null,
     documentId: v.documentId?.slice(0, MAX_DOCUMENT_ID_LEN) ?? null,

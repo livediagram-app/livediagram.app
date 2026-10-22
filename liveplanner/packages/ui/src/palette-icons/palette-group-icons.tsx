@@ -1,6 +1,4 @@
-import { lucideSmile } from '@liveplanner/icons/lucide';
 import { Glyph } from '../icons/Glyph';
-import { lucideGlyph } from '../icons/lucide-glyph';
 // Glyphs for the collapsible tile groups inside a palette category
 // (PaletteTileGroup), and for the six Collaborate categories, which were groups
 // once (palette-categories.tsx). Kept beside the tab icons rather than inline in
@@ -25,18 +23,6 @@ export function WebGroupIcon() {
       <path d="M3 8h18" />
       <rect x="6" y="11" width="12" height="3.5" rx="1" fill="currentColor" stroke="none" />
       <path d="M6 17.5h7" />
-    </Glyph>
-  );
-}
-
-/** Behaviour → Reactions: a smile, the feeling every one of them throws. */
-export const ReactionGroupIcon = lucideGlyph(lucideSmile, 18);
-
-/** Behaviour → Selection Mode: a pointer, the thing being switched. */
-export function ModeGroupIcon() {
-  return (
-    <Glyph size={18} units={24}>
-      <path d="M5.5 3.5 18 11.2l-5.2 1.4-2.1 5.6z" />
     </Glyph>
   );
 }

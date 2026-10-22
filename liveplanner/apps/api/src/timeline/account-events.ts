@@ -79,46 +79,6 @@ export async function recordThemeSaved(
   );
 }
 
-// Coalesced per day like document editing: someone pasting a dozen
-// screenshots into a document is one moment, not twelve. The snapshot's
-// count is what the renderer reads to say "3 images uploaded".
-export async function recordImageUploaded(env: Env, ownerId: string): Promise<void> {
-  const now = Date.now();
-  const dedupeKey = dedupeKeyForDay(ownerId, now);
-  const previous = await env.DB.prepare(
-    `SELECT snapshot FROM timeline_events
-      WHERE source_type = 'account' AND source_id = ?1
-        AND event_type = 'image_uploaded' AND dedupe_key = ?2`,
-  )
-    .bind(ownerId, dedupeKey)
-    .first<{ snapshot: string }>();
-  let count = 1;
-  if (previous) {
-    try {
-      const parsed = JSON.parse(previous.snapshot) as { count?: unknown };
-      if (typeof parsed.count === 'number') count = parsed.count + 1;
-    } catch {
-      // Unparseable snapshot: start the count again rather than lose
-      // the event. The number is decoration, the event is the point.
-    }
-  }
-  await record(
-    env,
-    {
-      actorId: ownerId,
-      sourceType: 'account',
-      sourceId: ownerId,
-      eventType: 'image_uploaded',
-      dedupeKey,
-      title: 'Images Uploaded',
-      description: count === 1 ? '1 image' : `${count} images`,
-      occurredAt: now,
-      snapshot: { count },
-    },
-    [userScope(ownerId)],
-  );
-}
-
 export async function recordTokenRevoked(
   env: Env,
   token: { id: string; name: string },

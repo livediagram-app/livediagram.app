@@ -1,4 +1,4 @@
-// shared_with — "shared with you" tracking (migration 0010).
+// shared_with — "shared with you" tracking.
 
 import type { SharedWithItem } from '@liveplanner/api-schema';
 import type { Env, ShareRole } from '../types';
@@ -70,7 +70,7 @@ export async function hasSharedAccess(
 }
 
 // The visits a link granted end with it (docs/specs/013-workspace/share-roles.md "Share links"): called as
-// links are deleted, so every leg that reads shared_with (activity, image grants) forgets them too.
+// links are deleted, so every leg that reads shared_with (activity) forgets them too.
 export async function dropVisitsThroughLinks(
   env: Env,
   documentId: string,

@@ -4,12 +4,7 @@
 // during the deploy). An opt-out must never be lost on the way.
 const RENAMED: Readonly<Record<string, string>> = {
   notifyDiagramJoin: 'notifyDocumentJoin',
-  // Illustrate mode became Pages mode (docs/specs/007-editor/editor-modes.md "Naming in the interface";
-  // migration 0097): a lost seen-guard would offer the tour again.
-  illustrateTourSeen: 'pagesTourSeen',
-  illustrateTourKinds: 'pagesTourKinds',
-  // Facilitate mode became Workshop mode (migration 0098), for the same reason.
-  facilitateTourSeen: 'workshopTourSeen',
+  // Facilitate mode became Workshop mode: a lost seen-guard would offer the tour again.
 };
 
 // Preference keys whose feature is gone (docs/specs/007-editor/user-preferences.md "Retired keys"):
@@ -24,9 +19,24 @@ const RETIRED: ReadonlySet<string> = new Set([
   'illustrateModeEnabled',
   'infographicModeEnabled',
   'planModeEnabled',
+  // Pages mode's tour, its logo guides and where its Contents sat: the mode is gone.
+  'illustrateTourSeen',
+  'illustrateTourKinds',
+  'pagesTourSeen',
+  'pagesTourKinds',
+  'logoGuides',
+  'logoGuidesHidden',
+  'logoGuideStrength',
+  'contentsPlacement',
   // "Always save new documents in <place> and skip this step": the New Document wizard has no Location step to skip
   // (docs/specs/007-editor/new-document-route.md "One-step wizard").
   'skipLocationStep',
+  // The Workshop and Avatar tours' seen-guards (the Workshop tour was the Facilitate tour) and the presenter
+  // settings, gone with Workshop mode's facilitation features (docs/specs/012-collaboration/session-tools.md).
+  'facilitateTourSeen',
+  'workshopTourSeen',
+  'avatarTourSeen',
+  'presentation',
 ]);
 
 export function upgradeLegacyPreferences<T extends Record<string, unknown>>(prefs: T): T {

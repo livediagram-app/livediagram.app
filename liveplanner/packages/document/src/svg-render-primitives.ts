@@ -75,6 +75,8 @@ export function wrapLabel(
 // (docs/specs/024-agents/blueprints/diagram-lint.md, LN4). Headless renders and the diagram lint both wrap
 // with it, so the lint judges the text an agent's preview shows.
 export const LABEL_ESTIMATE_CHAR_EM = 0.55;
+// How much wider a bold glyph runs than a regular one, for an estimate of bold text.
+export const BOLD_EM = 1.06;
 export function estimatedLabelMeasure(size: number): (s: string) => number {
   return (s) => s.length * size * LABEL_ESTIMATE_CHAR_EM;
 }

@@ -19,11 +19,11 @@ describe('serialiseLens', () => {
 
   it('writes one token per dimension, in dimension order, then the text words', () => {
     const { lens } = parseLens(
-      'plan space:team:T1 edited:7d Q3 opens-in:draw made-by:ai template:kanban',
+      'plan space:team:T1 edited:7d Q3 opens-in:plan made-by:ai template:kanban',
       aggregate,
     );
     expect(serialiseLens(lens)).toBe(
-      'opens-in:draw template:kanban made-by:ai edited:7d space:team:T1 plan Q3',
+      'opens-in:plan template:kanban made-by:ai edited:7d space:team:T1 plan Q3',
     );
   });
 

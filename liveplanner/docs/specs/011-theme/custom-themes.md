@@ -24,7 +24,7 @@ The catalogue ships a fixed set of themes. Teams want their own palette (brand c
   CREATE INDEX custom_themes_owner_created_idx ON custom_themes (owner_id, created_at DESC);
   ```
 
-  (Migration `apps/api/migrations/0026_custom_themes.sql`, applied by CI on deploy like every other migration — never run against prod by hand.)
+  (In the baseline migration, `apps/api/migrations/0001_liveplanner_baseline.sql`, applied by CI on deploy like every migration — never run against prod by hand.)
 
 - The theme **id** for a custom theme is `custom:<uuid>`. The `custom:` prefix keeps it from ever colliding with a built-in `ThemeId`, and makes "is this a custom theme?" a cheap string check. It is stored on `Tab.theme` like any other theme id, so a document referencing a custom theme round-trips with no special-casing in the document model.
 
@@ -113,7 +113,7 @@ Colour inputs open the one [colour picker](../004-interface-design/colour-picker
 
 ## Managing themes — Explorer
 
-The Explorer ([Folders](../013-workspace/folders.md)) gains a **Themes** entry under its **Library** section (beside Image gallery):
+The Explorer ([Folders](../013-workspace/folders.md)) gains a **Themes** entry under its **Library** section:
 
 - Route `/explorer/themes`; sidebar row with a palette glyph; `SelectedNode` gains `{ kind: 'themes' }`.
 - The pane lists the owner's custom themes as cards (each a `ThemeSwatch` preview + name + element count), with **New Theme**, **Edit** (opens the same builder, presented as a standalone modal here), **Duplicate**, and **Delete** (confirm) actions.

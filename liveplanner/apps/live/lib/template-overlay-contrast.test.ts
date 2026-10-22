@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TEMPLATES, buildTemplate, templateCanvasOverrides } from '@liveplanner/templates';
+import { TEMPLATES, buildTemplate } from '@liveplanner/templates';
 import {
   THEMES,
   canvasSurface,
@@ -18,7 +18,6 @@ import { tabAsSeen } from './export-as-seen';
 // what is actually drawn behind it: its own fill when it has one, else the topmost filled element it sits on (a
 // panel, a lane, a card), else the canvas. A label with no colour of its own takes the half's ink, so a pale panel
 // under it sank its text on a dark canvas (the Flowchart's key, the Journey's row names, the Gantt's tasks).
-// Pages templates are left out: their words sit on pages with their own paper.
 
 /** The floor for a label against what is behind it: WCAG's large-text and non-text minimum. Below it a label is
  *  unreadable, not just quiet; quieter captions above it are a design choice. */
@@ -92,7 +91,6 @@ type CanvasSurface = ReturnType<typeof canvasSurface>;
 
 describe('template labels read against what is drawn behind them under every theme', () => {
   for (const { kind } of TEMPLATES) {
-    if (templateCanvasOverrides(kind).pages) continue;
     it(kind, () => {
       const elements = buildTemplate(kind, 0, 0);
       const problems: string[] = [];

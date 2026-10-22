@@ -1,9 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { isBlankTemplate, isTemplateKind } from '@liveplanner/templates';
+import { isBlankTemplate } from '@liveplanner/templates';
 import { isFirstRun, welcomeSearchHref } from './first-run';
 import {
   WELCOME_BLANKS,
-  WELCOME_FAN,
   WELCOME_POPULAR,
   WELCOME_TEMPLATES_MAX,
   welcomeStartHref,
@@ -41,29 +40,19 @@ describe('isFirstRun', () => {
 });
 
 describe('the starts', () => {
-  it('offers each mode its blank, in mode order', () => {
-    expect(WELCOME_BLANKS).toEqual([
-      'blank',
-      'whiteboard',
-      'blank-session',
-      'blank-illustration',
-      'blank-plan',
-    ]);
+  it("offers Plan's blanks", () => {
+    expect(WELCOME_BLANKS).toEqual(['blank-plan', 'blank-spreadsheet', 'blank-form']);
+    expect(WELCOME_BLANKS.every(isBlankTemplate)).toBe(true);
   });
 
-  it('offers the first eight Popular templates, none of them a blank', () => {
-    expect(WELCOME_POPULAR).toHaveLength(WELCOME_TEMPLATES_MAX);
+  it('offers the Popular templates, none of them a blank, at most eight', () => {
+    expect(WELCOME_POPULAR.length).toBeLessThanOrEqual(WELCOME_TEMPLATES_MAX);
     expect(WELCOME_POPULAR.some(isBlankTemplate)).toBe(false);
-    expect(WELCOME_POPULAR.slice(0, 3)).toEqual(['mindmap', 'flowchart', 'kanban']);
-  });
-
-  it('fans three real templates', () => {
-    expect(WELCOME_FAN).toHaveLength(3);
-    expect(WELCOME_FAN.every(isTemplateKind)).toBe(true);
+    expect(WELCOME_POPULAR.slice(0, 2)).toEqual(['project-planner', 'kanban']);
   });
 
   it('makes a start at once through /new', () => {
-    expect(welcomeStartHref('flowchart')).toBe('/new?template=flowchart');
+    expect(welcomeStartHref('kanban')).toBe('/new?template=kanban');
   });
 
   it('opens the wizard on the searched words, or plain for none', () => {

@@ -3,13 +3,11 @@ import { renderElementsToSvg } from './svg-render';
 import {
   BROWSER_CHROME,
   browserChromeLayout,
-  chairSeatFill,
   DIAMOND_POINTS,
   SHAPE_GEOMETRY_KINDS,
   shapeGeometry,
   type ShapePart,
 } from './shape-geometry';
-import { CHAIR_ART } from './seating';
 import { scaledPolygonPoints } from './svg-render-shapes';
 import { boxFit, fitShapePart } from './svg-shape-fit';
 import { SHAPE_KINDS } from './validate';
@@ -139,38 +137,5 @@ describe('the browser chrome strip', () => {
       `<svg x="84" y="35" width="${n.widthPx}" height="${n.heightPx}" viewBox="${n.viewBox}"`,
     );
     for (const d of n.paths) expect(svg).toContain(`<path d="${d}"`);
-  });
-});
-
-describe('the chair', () => {
-  it('the export draws the table chair, washed seat and all', () => {
-    const svg = renderElementsToSvg(
-      tabOf([
-        shapeAt('chair', {
-          width: 76,
-          height: 84,
-          fillColor: 'transparent',
-          strokeColor: '#94a3b8',
-        }),
-      ]),
-    );
-    // The chair is the furniture table's, drawn facing you (docs/specs/009-elements/chair.md "Facing").
-    expect(svg).toContain(`viewBox="0 0 ${CHAIR_ART.front.width} ${CHAIR_ART.front.height}"`);
-    for (const p of CHAIR_ART.front.parts)
-      if (p.tag === 'path') expect(svg).toContain(`<path d="${p.d}"`);
-    // Its default transparent fill washes its stroke, never an invisible seat.
-    expect(svg).toContain(`fill="${chairSeatFill('transparent', '#94a3b8')}"`);
-    expect(chairSeatFill('transparent', '#94a3b8')).toBe('rgba(148, 163, 184, 0.32)');
-    expect(chairSeatFill('#fde68a', '#94a3b8')).toBe('#fde68a');
-  });
-
-  it('draws the export for its facing, never rotated, mirroring facing right', () => {
-    const facing = (chairFacing: string) =>
-      renderElementsToSvg(tabOf([shapeAt('chair', { width: 80, height: 80, chairFacing })]));
-    for (const f of ['n', 'e', 's', 'w']) expect(facing(f)).not.toContain('rotate(');
-    expect(facing('w')).toContain('scale(-1 1)');
-    expect(facing('e')).not.toContain('scale(-1 1)');
-    // Facing up, the backrest's back is drawn, its slat lower than the front view's.
-    expect(facing('s')).toContain('<path d="M32 17v24"');
   });
 });

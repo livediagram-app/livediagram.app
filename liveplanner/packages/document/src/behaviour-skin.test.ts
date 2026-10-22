@@ -5,8 +5,8 @@ import { createShape } from './shape-factory';
 import type { ShapeElement, ShapeKind } from './index';
 
 // The control-like Behaviour elements store no colour and follow the surface
-// (docs/specs/009-elements/mode-button.md, behaviour-skin.ts).
-const KINDS: ShapeKind[] = ['mode-button', 'session-button', 'picker', 'reveal', 'chair'];
+// (docs/specs/012-collaboration/session-button.md, behaviour-skin.ts).
+const KINDS: ShapeKind[] = ['session-button', 'picker'];
 const resolved = (el: ShapeElement, surface: 'light' | 'dark') => {
   const own = ownColours(el);
   return {
@@ -48,8 +48,6 @@ describe('Behaviour element skins', () => {
     };
     expect(ownColours(old)).toEqual({ fill: undefined, stroke: undefined, text: undefined });
     expect(resolved(old, 'dark').fill).not.toBe('#ffffff');
-    const chair = { ...createShape('chair', 0, 0), strokeColor: '#94a3b8', textColor: '#0f172a' };
-    expect(ownColours(chair).text).toBeUndefined();
   });
 
   it('keep a colour the author picked', () => {

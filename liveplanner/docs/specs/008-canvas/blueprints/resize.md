@@ -3,8 +3,7 @@
 Derived from [Canvas and palette](../canvas-and-palette.md) "Resize", "Aspect ratio lock",
 "Rotation" and "Adding elements", for the resize of boxed elements and multi-selections, the
 Shift constraint on draw-to-size, and where every selection grip draws ("The handles are always on
-top"). Reshaping a recognised whiteboard shape is owned by the
-[whiteboard blueprint](../../023-draw-mode/blueprints/whiteboard-round-one.md).
+top").
 
 ## Domain and naming
 
@@ -64,7 +63,7 @@ snapEdge)` with `lead` from the raw pointer, so the square survives the snap; wi
   `UnionResizeHandles` all carry `data-canvas-handle`, so every handle reaches its resize with Shift.
 
 - Grips layer: `CanvasElementsLayer` draws it last in the transformed world, after every element,
-  the remote cursors and the laser, at `z-index: SELECTION_GRIPS_Z_INDEX`, `pointer-events: none`,
+  the remote cursors, at `z-index: SELECTION_GRIPS_Z_INDEX`, `pointer-events: none`,
   `inset: 0` (canvas coordinates). Inside it, in paint order: the canvas's own grips (quick-connect
   pluses, union border, union handles), an `<svg>` whose `<g>` hosts SVG
   grips, then a `<div>` host for HTML grips. Every pressable thing in the layer re-enables pointer
@@ -143,8 +142,6 @@ primaryId, mode, dx, dy, shiftHeld, dragAspectLocked, guidesOn })` returns `{ bo
   every tab kind, Shift pressed and released mid-drag.
 - `components/canvas/useCanvasDrawGesture.test.tsx` "with Shift": square, leading-axis snap, up-left,
   mid-drag toggle.
-- `hooks/canvas/useCanvasSurfaceGestures.whiteboard-handles.test.tsx`: Shift press on corner, edge
-  and union handles does not start a marquee.
 - `components/canvas/SelectionGripsLayer.test.tsx`: the layer draws last and above; a box's eight
   handles land in the layer and none in the element; the frame's box, rotation and shift; cursor
   and counter-scale kept; a handle press starts the resize without reaching the element body; an

@@ -343,8 +343,7 @@ is. `svgChecklistShape`, `svgLegendShape` and the empty tab window letter in the
   `<g data-marker-ink>` after it, and a `[data-marker-grid]` (a table)'s cell borders joined into whole rules.
 - A Plan body over the canvas (`MaximisableSlot`'s `OverFace`) carries `data-face-finish`, its own pass and a
   stable-tree `SketchFace` (`keepTree`).
-- `drawn-outline-finish.ts`: `isPolygonOutline`, `polygonStrokePx`, `handDrawnPolygonPaint`, `handDrawnPathPaint`
-  (line and shading only; a combined path is never shaded), `imageCornerPx`, `handDrawnImagePaint` (an edge round
+- `drawn-outline-finish.ts`: `isPolygonOutline`, `polygonStrokePx`, `handDrawnPolygonPaint`, `imageCornerPx`, `handDrawnImagePaint` (an edge round
   the picture), reached through `handDrawnElementPaint`. Marker's sticky is a colouring drawing over its paper.
 
 - Sketch's face shading: `sketchFacePart` (marker-face.ts) hatches a face's shapes (`SKETCH_FACE_HATCH_OPACITY` 0.4,

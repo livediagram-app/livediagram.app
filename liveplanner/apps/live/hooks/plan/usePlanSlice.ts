@@ -4,8 +4,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLatest } from '@/hooks/ui/useLatest';
 import {
   createShape,
-  hasPlanInput,
-  type EditorMode,
   type Element,
   type Tab,
   type PlanCardRef,
@@ -59,7 +57,6 @@ export function usePlanSlice(opts: {
   planItems: PlanItems;
   // The document's item types (docs/specs/026-plan/item-types.md).
   itemTypes: ItemTypesSlice;
-  editorMode: EditorMode;
   canEdit: boolean;
   // Cards, not structure (docs/specs/013-workspace/share-roles.md): an Editor's and a Participant's.
   canEditCards?: boolean;
@@ -73,7 +70,6 @@ export function usePlanSlice(opts: {
   commitTabs?: (mapTabs: (tabs: Tab[]) => Tab[]) => void;
   select: (elementId: string | null) => void;
   announce: (message: string) => void;
-  addItemSlide?: (itemId: string) => void;
   statusNames: ReadonlyMap<string, string>;
   // The phase the tab's boards give each status (the plan views).
   statusPhases?: ReadonlyMap<string, StatusPhase>;
@@ -90,7 +86,7 @@ export function usePlanSlice(opts: {
   // The Actions board's links (useLinkedActionCards); stable callbacks, placeOf changes with the tabs.
   linkedActions?: PlanContextValue['linkedActions'];
 }) {
-  const { planItems, itemTypes, editorMode, canEdit, canVote, presence } = opts;
+  const { planItems, itemTypes, canEdit, canVote, presence } = opts;
   const canEditCards = opts.canEditCards ?? canEdit;
   // The editor hands these over fresh each render; read through refs, so the callbacks built on them,
   // and the context value, keep their identity and boards re-render only when Plan state changes.
@@ -99,7 +95,6 @@ export function usePlanSlice(opts: {
   const selectRef = useLatest(opts.select);
   const announceRef = useLatest(opts.announce);
   const publishRef = useLatest(opts.publishPresence);
-  const slideRef = useLatest(opts.addItemSlide);
   const commit = useCallback(
     (mapElements: (els: Element[]) => Element[]) => commitRef.current(mapElements),
     [commitRef],
@@ -131,8 +126,6 @@ export function usePlanSlice(opts: {
     (itemId: string | null, state: 'drag' | 'view') => publishRef.current?.(itemId, state),
     [publishRef],
   );
-  const hasSlides = !!opts.addItemSlide;
-  const addItemSlide = useCallback((itemId: string) => slideRef.current?.(itemId), [slideRef]);
   const [openItemId, setOpenItemId] = useState<string | null>(null);
   // The card this person just made and opened (openNewItem): its panel selects its title so typing names it.
   const [freshItemId, setFreshItemId] = useState<string | null>(null);
@@ -518,7 +511,6 @@ export function usePlanSlice(opts: {
       status: planItems.status,
       self: planItems.self,
       people,
-      planInput: hasPlanInput(editorMode),
       canEdit,
       canEditCards,
       canVote,
@@ -553,7 +545,6 @@ export function usePlanSlice(opts: {
       statusPhases: opts.statusPhases ?? NO_PHASES,
       statusTypes: opts.statusTypes ?? NO_STATUS_TYPES,
       statusBoards: opts.statusBoards ?? NO_STATUS_BOARDS,
-      ...(hasSlides ? { addItemSlide } : {}),
     }),
     [
       planItems.items,
@@ -566,7 +557,6 @@ export function usePlanSlice(opts: {
       planItems.self,
       planItems.refetch,
       people,
-      editorMode,
       canEdit,
       canEditCards,
       canVote,
@@ -596,8 +586,6 @@ export function usePlanSlice(opts: {
       patchItems,
       restoreItem,
       emptyTrash,
-      addItemSlide,
-      hasSlides,
       opts.statusNames,
       opts.statusPhases,
       opts.statusTypes,

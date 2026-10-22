@@ -1,5 +1,5 @@
-// Statements by document id or author id seek an index (migration 0091), against the real migrations: each of
-// these tables is keyed by owner first, and these statements used to read the whole table. A document delete
+// Statements by document id or author id seek an index, against the real migrations: each of
+// these tables is keyed by owner first, so without its own index a statement would read the whole table. A document delete
 // cascades into the first four; the guest-to-account migration and account deletion run the last two.
 import { describe, expect, it } from 'vitest';
 import { sqliteD1 } from '../test-sqlite-d1';

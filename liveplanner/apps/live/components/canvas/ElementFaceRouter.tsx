@@ -5,16 +5,13 @@ import { TabWindowFace } from './tab-window/TabWindowFace';
 import type { CSSProperties, ReactNode } from 'react';
 import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE } from '@liveplanner/document';
 import {
-  DEFAULT_BUTTON_MODE,
   PADDING_PX,
-  reactionOf,
   defaultFillColor,
   defaultPadding,
   defaultStrokeColor,
   carriesSharedSettingsMenu,
   elementKindLabel,
   isCollabPanelShape,
-  ownColours,
   isSelfDrawingShape,
   isWebComponentShape,
   isChipShape,
@@ -31,20 +28,13 @@ import { AnnotationGlyph } from '@/components/canvas/AnnotationMarker';
 import { ElementSettingsButton } from '@/components/canvas/ElementEllipsisMenu';
 import { CollabSettingsSlot } from '@/components/canvas/collab/collab-chrome';
 import { CommentPanelFace } from '@/components/canvas/CommentPanelFace';
-import { ArticleNoteFace } from '@/components/canvas/article/ArticleNoteFace';
 import { ActionPanelFace } from '@/components/canvas/ActionPanelFace';
 import { FreehandSvg } from '@/components/canvas/boxed-element-overlays';
-import { PathSvg } from '@/components/canvas/path/PathSvg';
 import { ImageElementView } from '@/components/canvas/ImageElementView';
 import { LinkCardView } from '@/components/canvas/LinkCardView';
-import { ModeButtonFace } from '@/components/canvas/ModeButtonFace';
-import { PARTICIPANT_CANVAS_TOOLS } from '@/components/palette/palette-layouts';
 import { PageMasthead } from '@/components/canvas/PageMasthead';
-import { FocusButtonFace } from '@/components/canvas/FocusButtonFace';
 import { PickerFace } from '@/components/canvas/PickerFace';
 import { PortalFace } from '@/components/canvas/PortalFace';
-import { ReactionPadFace } from '@/components/canvas/ReactionPadFace';
-import { RevealFace } from '@/components/canvas/RevealFace';
 import { SessionButtonFace } from '@/components/canvas/SessionButtonFace';
 import { SessionTimerFace } from '@/components/canvas/SessionTimerFace';
 import { ShapeInlineIconLayout } from '@/components/canvas/shape-inline-icon-layout';
@@ -61,9 +51,9 @@ import { BoundaryFace } from '@/components/canvas/BoundaryFace';
 import { ConceptFace } from '@/components/canvas/ConceptFace';
 import { WebComponentFace } from '@/components/canvas/web/WebComponentFace';
 import type { BoxedElementViewProps } from './BoxedElementView.types';
-import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 
-// Tables and facilitation panels are on few boards, so their faces load on demand; their code is fetched
+// Tables and collaboration panels are on few boards, so their faces load on demand; their code is fetched
 // as the editor mounts (lib/editor-deferred-code.ts), so a board that has one finds it already in.
 const TableView = dynamic(loadTableView, { ssr: false });
 const CollabFaceRouter = dynamic(loadCollabFaceRouter, { ssr: false });
@@ -72,8 +62,7 @@ const CollabFaceRouter = dynamic(loadCollabFaceRouter, { ssr: false });
 //
 // One exclusive chain, ordered from the most specific face to the plain
 // label at the end. Nearly every branch is an element kind that draws its own
-// interactive face — a mode button, a session timer, a reveal cover, a picker,
-// a collaboration panel — and each one falls through to the ordinary label
+// interactive face — a session timer, a picker, a collaboration panel — and each one falls through to the ordinary label
 // editor while `isEditing`, so the title on a face is retyped exactly like the
 // label on a square.
 //
@@ -90,27 +79,20 @@ type ElementFaceRouterProps = Pick<
   | 'readOnly'
   | 'writable'
   | 'fontFamily'
-  | 'activeMode'
   | 'collab'
   | 'commentActions'
   | 'commentSelfId'
   | 'actionActions'
   | 'actionSelfId'
-  | 'imageContext'
   | 'tabSummaries'
   | 'tabTimer'
   | 'timerControls'
   | 'timerState'
   | 'sessionStartBlocked'
-  | 'sessionRunBy'
-  | 'revealedForMe'
   | 'onCommitTable'
   | 'onEnterPortal'
-  | 'onFireReaction'
   | 'onFollowLink'
   | 'onLinkCell'
-  | 'onPressModeButton'
-  | 'onPressFocusButton'
   | 'onPressSessionButton'
   | 'onRollPicker'
   | 'onSetPageHeading'
@@ -118,7 +100,6 @@ type ElementFaceRouterProps = Pick<
   | 'onSetHeroCaptionLine'
   | 'onSetSessionConfig'
   | 'onOpenElementSettings'
-  | 'onToggleReveal'
 > & {
   // Derived once by the host and shared with the branches here, rather than
   // recomputed per branch: several of them render the same label node.
@@ -138,39 +119,29 @@ type ElementFaceRouterProps = Pick<
   iconCaptionBand: string | null;
   // An upright lane title's turned frame (upright-title.ts), or null.
   labelFrame: CSSProperties | null;
-  // A pen stroke or a path is picked by its drawn line (selected, its box catches pointers too).
-  hitLine: boolean;
 };
 
 export function ElementFaceRouter({
-  hitLine,
   element,
   isEditing,
   isSelected,
   readOnly,
   writable = true,
   fontFamily,
-  activeMode,
   collab,
   commentActions,
   commentSelfId,
   actionActions,
   actionSelfId,
-  imageContext,
   tabSummaries,
   tabTimer,
   timerControls,
   timerState,
   sessionStartBlocked,
-  sessionRunBy,
-  revealedForMe,
   onCommitTable,
   onEnterPortal,
-  onFireReaction,
   onFollowLink,
   onLinkCell,
-  onPressModeButton,
-  onPressFocusButton,
   onPressSessionButton,
   onRollPicker,
   onSetPageHeading,
@@ -178,7 +149,6 @@ export function ElementFaceRouter({
   onSetHeroCaptionLine,
   onSetSessionConfig,
   onOpenElementSettings,
-  onToggleReveal,
   label,
   labelNode,
   contentInset,
@@ -193,10 +163,8 @@ export function ElementFaceRouter({
   iconCaptionBand,
   labelFrame,
 }: ElementFaceRouterProps) {
-  // The paper under this face, for colours the element doesn't carry (docs/specs/007-editor/live-app.md):
-  // its page's when the page has a fill of its own (pages-mode.md "A dark page has
-  // light ink"), as the label's ink already is, else the canvas's.
-  const surface = useElementSurface(element.id);
+  // The paper under this face, for colours the element doesn't carry (docs/specs/007-editor/live-app.md).
+  const surface = useCanvasSurface();
   // The shared settings `…` (docs/specs/008-canvas/canvas-and-palette.md), in the same corner on every Behaviours
   // element that has one: see carriesSharedSettingsMenu for who doesn't.
   const settingsButton =
@@ -224,29 +192,11 @@ export function ElementFaceRouter({
   return (
     <>
       {settingsMenu}
-      {/* Mode button (docs/specs/009-elements/mode-button.md): a pressable face instead of a plain label —
-          the mode's glyph plus the author's call to action. Mid-edit it falls
-          through to the normal label editor below, so the text is retyped like
-          any other shape's. */}
-      {element.type === 'shape' && element.shape === 'mode-button' && !isEditing ? (
-        <ModeButtonFace
-          mode={element.mode ?? DEFAULT_BUTTON_MODE}
-          label={label}
-          activeMode={activeMode}
-          textColor={textColor}
-          // A mode a read-only session lacks (the Eraser, Format Painter) draws an inert face for it.
-          onPress={
-            onPressModeButton &&
-            (!readOnly || PARTICIPANT_CANVAS_TOOLS.includes(element.mode ?? DEFAULT_BUTTON_MODE))
-              ? () => onPressModeButton(element)
-              : undefined
-          }
-        />
-      ) : element.type === 'shape' &&
-        element.shape === 'session-button' &&
-        element.session?.tool === 'timer' &&
-        !isEditing &&
-        timerControls ? (
+      {element.type === 'shape' &&
+      element.shape === 'session-button' &&
+      element.session?.tool === 'timer' &&
+      !isEditing &&
+      timerControls ? (
         /* A TIMER session element is the timer (docs/specs/012-collaboration/session-button.md), not a button that
            starts one elsewhere: same TabTimer, same tab field, same pure
            display maths as the top-of-page pill, so pausing here pauses
@@ -256,7 +206,6 @@ export function ElementFaceRouter({
           timer={tabTimer ?? null}
           durationMs={(element.session.minutes ?? 5) * 60_000}
           readOnly={!timerControls.pause}
-          runBy={sessionRunBy ?? null}
           borderPx={BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE]}
           onStart={
             onPressSessionButton && !sessionStartBlocked
@@ -284,13 +233,12 @@ export function ElementFaceRouter({
           }
         />
       ) : element.type === 'shape' && element.shape === 'session-button' && !isEditing ? (
-        /* Session button (docs/specs/012-collaboration/session-button.md): starts a vote / poll for the room. */
+        /* Session button (docs/specs/012-collaboration/session-button.md): starts a vote or a stopwatch for the room. */
         <SessionButtonFace
           config={element.session}
           label={label}
           textColor={textColor}
           canStart={!!onPressSessionButton && !sessionStartBlocked}
-          runBy={sessionRunBy ?? null}
           timerState={timerState}
           onPress={onPressSessionButton ? () => onPressSessionButton(element) : undefined}
           onSetConfig={
@@ -301,26 +249,6 @@ export function ElementFaceRouter({
           onOpenSettings={
             onOpenElementSettings ? () => onOpenElementSettings(element.id) : undefined
           }
-        />
-      ) : element.type === 'shape' && element.shape === 'focus-button' && !isEditing ? (
-        /* Bring Focus (docs/specs/012-collaboration/bring-focus.md): asks everyone else in the room to come and
-           look at this, on your tab. */
-        <FocusButtonFace
-          label={label}
-          textColor={textColor}
-          onPress={onPressFocusButton ? () => onPressFocusButton(element) : undefined}
-        />
-      ) : element.type === 'shape' && element.shape === 'reveal' && !isEditing ? (
-        /* Reveal zone (docs/specs/009-elements/reveal-zone.md): a cover, off for me / off for everyone. */
-        <RevealFace
-          label={label}
-          textColor={textColor}
-          strokeColor={
-            remoteBorderColor ?? ownColours(element).stroke ?? defaultStrokeColor(element, surface)
-          }
-          revealedForAll={element.revealed === true}
-          revealedForMe={!!revealedForMe}
-          onToggleForMe={onToggleReveal ? () => onToggleReveal(element.id) : undefined}
         />
       ) : element.type === 'shape' && element.shape === 'picker' && !isEditing ? (
         /* Picker (docs/specs/012-collaboration/picker.md): rolls a person or an option. */
@@ -334,9 +262,8 @@ export function ElementFaceRouter({
           onRoll={onRollPicker && !readOnly ? () => onRollPicker(element).roll() : undefined}
         />
       ) : element.type === 'shape' && isCollabPanelShape(element.shape) && !isEditing ? (
-        /* The collaboration panels (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md): an estimate card,
-           a temperature check, an idea box, an agenda, or a roll call. Like
-           every other face above, mid-edit it falls through to the ordinary
+        /* The collaboration panels (docs/specs/012-collaboration/temperature-check.md, decision-record.md): a
+           temperature check or a decision record. Like every other face above, mid-edit it falls through to the ordinary
            label editor below, so the title is retyped like any shape's. */
         <CollabSettingsSlot.Provider value={settingsButton}>
           <CollabFaceRouter
@@ -379,17 +306,6 @@ export function ElementFaceRouter({
           onReopen={actionActions?.reopen}
           onOpenBoard={actionActions?.openBoard}
         />
-      ) : element.type === 'shape' && element.shape === 'reaction-pad' && !isEditing ? (
-        /* Reaction pad (docs/specs/009-elements/reaction-pad.md): a pressable glyph. The burst it throws is
-           rendered OUTSIDE this label stack, below, so it can overflow the
-           element's box — a burst confined to the pad is a burst nobody
-           notices. */
-        <ReactionPadFace
-          label={label}
-          reaction={reactionOf(element.reaction)}
-          textColor={textColor}
-          onFire={onFireReaction ? () => onFireReaction(element) : undefined}
-        />
       ) : element.type === 'shape' && element.shape === 'portal' && !isEditing ? (
         /* Portal (docs/specs/009-elements/portal-element.md): the drawn portal + its label, pressable when paired. */
         <PortalFace
@@ -406,11 +322,9 @@ export function ElementFaceRouter({
           element={element}
           surface={surface}
           selected={isSelected}
-          // A locked window, or a read-only canvas (presenting, a viewer), keeps its tab: no Choose a Tab.
+          // A locked window, or a read-only canvas (a viewer), keeps its tab: no Choose a Tab.
           canChoose={!readOnly && !isLocked}
         />
-      ) : element.type === 'annotation' && element.articleNote ? (
-        <ArticleNoteFace element={element} />
       ) : element.type === 'annotation' ? (
         <AnnotationGlyph
           stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)}
@@ -423,16 +337,9 @@ export function ElementFaceRouter({
           tabs={tabSummaries}
           onFollow={element.link ? () => onFollowLink(element.link!) : undefined}
         />
-      ) : element.type === 'image' && imageContext ? (
+      ) : element.type === 'image' ? (
         <>
-          <ImageElementView
-            element={element}
-            ownerId={imageContext.ownerId}
-            documentId={imageContext.documentId}
-            shareCode={imageContext.shareCode}
-            onOpenPicker={imageContext.onOpenPicker}
-            fontFamily={fontFamily}
-          />
+          <ImageElementView element={element} fontFamily={fontFamily} />
           {/* A hero's caption card (docs/specs/009-elements/web-components-and-no-groups.md), over the image. */}
           {element.heroCaption ? (
             <HeroCaptionCard
@@ -452,7 +359,6 @@ export function ElementFaceRouter({
         <>
           <FreehandSvg
             element={element}
-            hitPenWidth={hitLine ? (element.penWidth ?? 0) : undefined}
             fill={element.fillColor ?? defaultFillColor(element, surface)}
             stroke={
               remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)
@@ -468,16 +374,6 @@ export function ElementFaceRouter({
               the drawn stroke. */}
           {isEditing || label.length > 0 ? labelNode : null}
         </>
-      ) : element.type === 'path' ? (
-        // A path (docs/specs/023-draw-mode/path-tool.md) draws its curve and takes no label.
-        <PathSvg
-          element={element}
-          hitPenWidth={
-            hitLine ? BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE] : undefined
-          }
-          fill={element.fillColor ?? defaultFillColor(element, surface)}
-          stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)}
-        />
       ) : element.type === 'table' ? (
         <TableView
           element={element}

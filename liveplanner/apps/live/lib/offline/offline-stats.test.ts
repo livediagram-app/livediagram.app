@@ -22,11 +22,11 @@ const bytesOf = (t: Tab) => {
 };
 
 describe('offlineDocumentStats', () => {
-  it('sums elements, comments and bytes over the tabs, in the first tab mode', () => {
-    const a = tab('a', { opensIn: 'draw' }, [2, 0]);
-    const b = tab('b', { opensIn: 'plan' }, [1]);
+  it('sums elements, comments and bytes over the tabs, in Plan', () => {
+    const a = tab('a', {}, [2, 0]);
+    const b = tab('b', {}, [1]);
     expect(offlineDocumentStats({ id: 'd', savedAt: 1, tabs: [a, b] })).toEqual({
-      mode: 'draw',
+      mode: 'plan',
       elements: 3,
       comments: 3,
       bytes: bytesOf(a) + bytesOf(b),

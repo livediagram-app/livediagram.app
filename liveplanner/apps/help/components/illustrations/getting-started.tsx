@@ -114,7 +114,7 @@ export function NewDocumentWelcome() {
 }
 
 /** Quick-connect: a selected shape shows + buttons on its sides; clicking one opens a card of
- *  icon buttons (Duplicate, Arrow, Pencil, Text), and dragging Arrow onto a second shape pins
+ *  icon buttons (Duplicate, Arrow, Text), and dragging Arrow onto a second shape pins
  *  an arrow to both. */
 export function QuickConnect() {
   const plus: [number, number][] = [
@@ -148,7 +148,7 @@ export function QuickConnect() {
         </g>
       ))}
       {/* The clicked + on the right opens one card of icon buttons beside it (QuickConnectRing):
-          Duplicate, Arrow, Pencil and Text, their names in hover cards. */}
+          Duplicate, Arrow and Text, their names in hover cards. */}
       <circle cx={158} cy={102} r={8} className="fill-brand-500" />
       <path
         d="M154 102 h8 M158 98 v8"
@@ -160,12 +160,12 @@ export function QuickConnect() {
         x={172}
         y={50}
         width={32}
-        height={106}
+        height={80}
         rx={8}
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
       />
-      {[0, 1, 2].map((i) => (
+      {[0, 1].map((i) => (
         <line
           key={i}
           x1={176}
@@ -190,16 +190,9 @@ export function QuickConnect() {
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      {/* Pencil */}
-      <path
-        d="M182 124 l9 -9 l3 3 l-9 9 h-3 Z"
-        className="fill-none stroke-slate-500"
-        strokeWidth={1.4}
-        strokeLinejoin="round"
-      />
       {/* Text */}
       <path
-        d="M182 137 h12 M188 137 v11"
+        d="M182 111 h12 M188 111 v11"
         className="fill-none stroke-slate-500"
         strokeWidth={1.6}
         strokeLinecap="round"
@@ -341,8 +334,7 @@ export function KeyboardEssentials() {
   const keys: { label: string; caption: string }[] = [
     { label: 'V', caption: 'Select' },
     { label: 'H', caption: 'Hand' },
-    { label: 'K', caption: 'Laser' },
-    { label: 'E', caption: 'Eraser' },
+    { label: 'I', caption: 'Isometric' },
     { label: 'Z', caption: 'Zen' },
   ];
   return (

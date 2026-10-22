@@ -8,7 +8,7 @@ import { lucideGlyph } from './lucide-glyph';
 // The three kinds of drawing a visitor can start (docs/specs/019-marketing/marketing-site.md "Hero"):
 // a marker for freehand drawing, a flowchart for a diagram, a mind map for a brainstorm.
 
-// The whiteboard dock's marker silhouette (docs/specs/023-draw-mode/draw-mode.md "Pens") on its
+// The whiteboard dock's marker silhouette (docs/specs/006-document/stroke-points.md) on its
 // 24-unit grid, body, nib and the band below, in the text colour and centred in its box.
 export function MarkerIcon({ size = 16, ...rest }: IconProps) {
   return (
@@ -49,8 +49,7 @@ export function PlanIcon({ size = 16, ...rest }: IconProps) {
   );
 }
 
-// Workshop mode's mark (docs/specs/012-collaboration/workshop-mode.md): a flipchart on an
-// easel, its pad holding two lines of writing, on the 24-unit grid.
+// A flipchart on an easel, its pad holding two lines of writing, on the 24-unit grid.
 export function FlipchartIcon({ size = 16, ...rest }: IconProps) {
   return (
     <Glyph size={size} units={24} {...rest}>
@@ -75,13 +74,8 @@ export function PlanCardsIcon({ size = 16, ...rest }: IconProps) {
   );
 }
 
-// Each editor mode's mark (docs/specs/007-editor/editor-modes.md "Each mode's mark"), keyed by the
-// mode's id: the same glyph on the mode switch, Opens in, the tab pill, the template mode filter
-// and the marketing site's mode pictures.
+// The editor mode's mark (docs/specs/026-plan/plan-mode.md "Plan's mark"), keyed by the mode's id: the glyph a
+// general tab's pill, a document's mode and a `mode:` default folder show.
 export const EDITOR_MODE_ICONS: Readonly<Record<EditorMode, ComponentType<IconProps>>> = {
-  diagram: FlowchartIcon,
-  draw: MarkerIcon,
-  pages: PagesIcon,
   plan: PlanIcon,
-  workshop: FlipchartIcon,
 };

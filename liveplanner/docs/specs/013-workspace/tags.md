@@ -110,7 +110,7 @@ At `/explorer/tags?id=<id>`, reached from a tag's sidebar row, a chip, or a sect
 
 ## The sidebar
 
-**Tags** is the first row inside **Library** (before Image Gallery and Themes), always shown (so it
+**Tags** is the first row inside **Library** (before Themes), always shown (so it
 can be found before the first tag). It opens the Tags page and expands to one child row per tag: a dot of the tag's
 colour, its name, and its document count as the badge. A tag's row opens its page. Library and Tags start collapsed
 unless a Tags page is the current view, which opens both. Tags' expanded state is the sidebar's (`more:tags`).
@@ -126,7 +126,7 @@ menu), so opening the editor costs no extra request.
 
 ## Storage
 
-Two tables (migration `0094_tags.sql`):
+Two tables:
 
 - `tags (id, owner_id, name, colour, created_at, updated_at)`, `id` a client-minted UUID; a unique index on
   `(owner_id, name COLLATE NOCASE)` enforces the one name per person.

@@ -1,8 +1,7 @@
 // Document views (docs/specs/024-agents/document-views.md): the view names, the query the api's two
 // doors take, and every view's JSON form, shared by the api, the MCP, the CLI and
 // `@liveplanner/document-views` (docs/specs/024-agents/blueprints/document-views.md, VW49).
-import type { EditorMode, Finish, PageKind, TabKind } from '@liveplanner/document';
-import type { ArticleSummary, PageSummary } from './pages';
+import type { Finish, TabKind } from '@liveplanner/document';
 
 // Every view. `lint` is answered by `@liveplanner/diagram-lint` (docs/specs/024-agents/diagram-lint.md), not
 // by `renderView`; it takes only `json`.
@@ -16,7 +15,6 @@ export const VIEW_NAMES = [
   'find',
   'diff',
   'lint',
-  'pages',
 ] as const;
 export const LINT_VIEW_NAME = 'lint' satisfies ViewName;
 export type ViewName = (typeof VIEW_NAMES)[number];
@@ -30,7 +28,6 @@ export const TAB_VIEW_NAMES = [
   'comments',
   'show',
   'find',
-  'pages',
 ] as const satisfies readonly ViewName[];
 export type DocumentViewName = (typeof DOCUMENT_VIEW_NAMES)[number];
 export type TabViewName = (typeof TAB_VIEW_NAMES)[number];
@@ -71,7 +68,6 @@ export const VIEW_PARAMETERS: Readonly<
   comments: [...COMMON_PARAMETERS, 'all'],
   show: [...COMMON_PARAMETERS, 'ref'],
   find: [...COMMON_PARAMETERS, 'q'],
-  pages: COMMON_PARAMETERS,
 };
 // Required on top of `view`.
 export const VIEW_REQUIRED: Readonly<Partial<Record<TabViewName, ViewQueryParameter>>> = {
@@ -103,13 +99,9 @@ export type ViewHeader = {
   unknown: number;
   threads: { open: number; total: number };
   rev: number | null;
-  // The tab's mode when it is not Diagram, and its finish when one is set (docs/specs/024-agents/blueprints/
-  // document-views.md "The outline grammar"), so a reader knows a Draw tab or a sketch finish took.
-  mode?: EditorMode;
+  // The tab's finish when one is set (docs/specs/024-agents/blueprints/document-views.md "The outline grammar"), so a
+  // reader knows a sketch finish took.
   finish?: Finish;
-  // A Pages tab's pages, by kind (docs/specs/024-agents/pages-for-agents.md "Reading");
-  // absent on a tab in another mode.
-  pages?: { pages: number; kinds: Partial<Record<PageKind, number>> };
 };
 
 export type ViewEnd = { ref: string } | { arrow: string } | { free: { x: number; y: number } };
@@ -249,15 +241,3 @@ export function isTabViewName(value: string): value is TabViewName {
 export function isViewDoor(value: string): value is ViewDoor {
   return VIEW_DOORS.some((door) => door === value);
 }
-
-// The `pages` view (docs/specs/024-agents/pages-for-agents.md "Reading: the pages view"): an
-// a Pages tab's pages, the refs of what is on each, its articles as Markdown, and the layouts on
-// offer. `pages` and `articles` are empty on a tab in another mode.
-export type PagesView = {
-  header: ViewHeader;
-  pagesMode: boolean;
-  pages: (PageSummary & { refs: string[] })[];
-  articles: (ArticleSummary & { markdown: string })[];
-  layouts: { kind: PageKind; layouts: { id: string; label: string }[] }[];
-  elision: Elision;
-};

@@ -99,11 +99,11 @@ export function wsUrl(path: string): string {
 }
 
 // Every api request goes through here rather than bare `fetch` so a
-// successful WRITE can be announced (write-signal.ts): the Timeline
-// re-reads itself off that signal, which is what lets a delete or a
-// rename show up on the feed without a browser refresh (docs/specs/013-workspace/timeline.md
-// §2.4b). Reads stay silent, and so do the feed's own endpoints —
-// dismissing a card must not make the feed re-read itself to notice.
+// successful WRITE can be announced (write-signal.ts): a document's History
+// and a team's Team Activity re-read themselves off that signal, which is what
+// lets a delete or a rename show up on them without a browser refresh
+// (docs/specs/013-workspace/timeline.md §2.4b). Reads stay silent, and so do
+// the feeds' own endpoints.
 //
 // Transparent otherwise: same arguments, same Response, and a network
 // failure still throws to the caller before any signal is raised.
@@ -322,7 +322,7 @@ export function identityHeaders(ownerId: string, token: string | null): Record<s
   // Proof of possession for the guest id (docs/specs/015-api/public-api-and-tokens.md
   // section 4): the api worker can require a valid signature on owner-scoped
   // routes, which a harvested id wouldn't have. Absent for legacy unsigned
-  // guests and self-hosts with signing disabled.
+  // guests and deployments with signing disabled.
   const sig = getGuestSelfSig();
   return sig ? { 'X-Owner-Id': ownerId, 'X-Owner-Sig': sig } : { 'X-Owner-Id': ownerId };
 }
@@ -491,7 +491,7 @@ export async function apiDelete(
     // conversion header — without one the worker cannot tell "take offline"
     // from a real delete and records the wrong timeline event.
     extra?: Record<string, string>;
-    // When this DELETE ends an entity the Timeline narrates (a document, a
+    // When this DELETE ends an entity the event feeds narrate (a document, a
     // folder, a theme, a team), name it in the feed's terms so the feed
     // can drop the entity's earlier cards at once, the way the worker's
     // cascade does server-side (docs/specs/013-workspace/timeline.md §3.5). Omit for a DELETE that

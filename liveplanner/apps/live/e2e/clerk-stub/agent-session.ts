@@ -83,7 +83,7 @@ export async function storedIds(page: Page, s: Setup): Promise<string[]> {
 export async function open(page: Page, s: Setup) {
   await page.addInitScript(() => {
     localStorage.setItem('liveplanner:v2:name-confirmed', '1');
-    localStorage.setItem('liveplanner:user-preferences:v1', JSON.stringify({ tourSeen: true }));
+    localStorage.setItem('liveplanner:user-preferences:v1', JSON.stringify({ planTourSeen: true }));
   });
   const socket = page.waitForEvent('websocket', (ws) => ws.url().includes(`/documents/${s.id}/ws`));
   await page.goto(`/document/${s.id}`);

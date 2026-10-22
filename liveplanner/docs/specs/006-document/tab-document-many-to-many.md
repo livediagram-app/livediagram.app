@@ -8,7 +8,7 @@ Originally every `tabs` row carried a single `document_id` FK — one tab belong
 - **A reference tab** that lives in several documents at once — e.g. a glossary, a shared timeline, an architecture diagram that's part of two product lines' workspaces.
 - **Change log without per-document scoping** (paired with item #14; the change log itself was removed on 2026-10-03, see [Collaboration](../012-collaboration/README.md)): once a tab can live in multiple documents, attributing a change to a single `(document_id, tab_id)` pair stops being meaningful. The change should be on the tab; consumers join through the link table when they care which documents it surfaces in.
 
-The migration sequences as items #13 → #14 → #15 → #16 in the post-prototype haul. #13 adds the link table; #14 drops the now-redundant `change_log.document_id`; #15 denormalises participant metadata out of `change_log`; #16 ages out old `change_log` rows on a cron. (Migration 0064 later dropped `change_log` outright along with the Activity panel.)
+The migration sequences as items #13 → #14 → #15 → #16 in the post-prototype haul. #13 adds the link table; #14 drops the now-redundant `change_log.document_id`; #15 denormalises participant metadata out of `change_log`; #16 ages out old `change_log` rows on a cron. (`change_log` has since gone, with the Activity panel.)
 
 ## Data model
 
@@ -29,16 +29,16 @@ CREATE INDEX document_tabs_by_document ON document_tabs(document_id, order_index
 CREATE INDEX document_tabs_by_tab     ON document_tabs(tab_id);
 ```
 
-`order_index` lives on the link, not on the tab — two documents that share a tab can order it independently. `added_at` lets us surface "added to this document on date X" later. A later migration (0018, [Tab folders](tab-folders.md)) adds a nullable `folder` column to this table for the same reason: tab-folder membership is per-document, so a shared tab can be foldered in one document and loose in another.
+`order_index` lives on the link, not on the tab — two documents that share a tab can order it independently. `added_at` lets us surface "added to this document on date X" later. A nullable `folder` column on this table ([Tab folders](tab-folders.md)) exists for the same reason: tab-folder membership is per-document, so a shared tab can be foldered in one document and loose in another.
 
-The link is the only place a tab meets a document. `tabs` holds the body (`id, name, data, updated_at`, [Per-tab storage](per-tab-storage.md)) and no pointer to any document: migration 0049 dropped the original `tabs.document_id` and `tabs.order_index`, which 0011 had backfilled `document_tabs` from. That column's `ON DELETE CASCADE` meant deleting the document a tab was created in destroyed the tab in every other document, even after it had been removed from that first document.
+The link is the only place a tab meets a document. `tabs` holds the body (`id, name, data, updated_at`, [Per-tab storage](per-tab-storage.md)) and no pointer to any document, so nothing cascades from the document a tab was created in: deleting it never destroys the tab in another document.
 
 ### Tab lifecycle
 
 - **Create tab** — insert one row into `tabs`, one row into `document_tabs` pointing it at the owning document.
 - **Add tab to another document** — `INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES (?, ?, ?, ?)`. No change to `tabs`. Edits to the tab propagate to every document referencing it.
-- **Remove tab from a document** — `DELETE FROM document_tabs WHERE document_id = ? AND tab_id = ?`. If no rows remain referencing the tab, the `tabs` row AND every collaboration-index and `image_refs` row keyed by that tab id are dropped in the same call (atomic on the server). When other documents still link the tab, the body stays, so any document that still surfaces the tab still surfaces its content. The server handles it with full knowledge of the link-count.
-- **Delete a document** — the document-scoped form of removing a tab, in one atomic batch (`documentRemovalStatements`, `apps/api/src/db/document-removal.ts`): every tab linked into the document that no other document links is dropped with its collaboration-index and `image_refs` rows, then the document row goes and `ON DELETE CASCADE` from `documents` removes its link rows. A tab another document still links survives whole there: body, index rows, and its order and folder in that document. Every path that removes a document takes this route: the [Trash](../013-workspace/trash.md) purge (a delete first moves the document to the Trash, touching no tab, and removal happens 30 days later, or at once on Delete permanently / Empty Trash / `?permanent=true`), Take Offline ([Offline Mode](offline-mode.md)), and account deletion (which keeps a tab shared into a document another owner holds). While a document waits in the Trash its tabs stay where they are, so a tab it shares carries on in the other document as before.
+- **Remove tab from a document** — `DELETE FROM document_tabs WHERE document_id = ? AND tab_id = ?`. If no rows remain referencing the tab, the `tabs` row AND every collaboration-index row keyed by that tab id are dropped in the same call (atomic on the server). When other documents still link the tab, the body stays, so any document that still surfaces the tab still surfaces its content. The server handles it with full knowledge of the link-count.
+- **Delete a document** — the document-scoped form of removing a tab, in one atomic batch (`documentRemovalStatements`, `apps/api/src/db/document-removal.ts`): every tab linked into the document that no other document links is dropped with its collaboration-index rows, then the document row goes and `ON DELETE CASCADE` from `documents` removes its link rows. A tab another document still links survives whole there: body, index rows, and its order and folder in that document. Every path that removes a document takes this route: the [Trash](../013-workspace/trash.md) purge (a delete first moves the document to the Trash, touching no tab, and removal happens 30 days later, or at once on Delete permanently / Empty Trash / `?permanent=true`), Take Offline ([Offline Mode](offline-mode.md)), and account deletion (which keeps a tab shared into a document another owner holds). While a document waits in the Trash its tabs stay where they are, so a tab it shares carries on in the other document as before.
 
 ### Shared-tab notice
 
@@ -69,16 +69,6 @@ SELECT t.id, t.name, dt.order_index
 `DELETE /api/documents/:id/tabs/:tabId` now removes the link row first, then drops the underlying `tabs` row only when no other `document_tabs` entries reference it. Unlinking a shared tab from one document leaves the body intact for the others.
 
 `POST /api/documents/:id/copy` (item #9) copies tab bodies into freshly minted tab rows — that doesn't change. The new tab rows get fresh ids and their own `document_tabs` entries pointing at the new document, and any tab / element link, and any Tab Window's tab, in a copied body is re-pointed from the source tab id to its copy's (`remapTabLinks`, `@liveplanner/document`). Cloning vs linking is a deliberate distinction: copy = independent content, link = shared content.
-
-## Phasing
-
-This spec describes the destination. The implementation lands in stages so each can be tested in isolation:
-
-1. **Migration 0011** — add `document_tabs`, backfill from `tabs.document_id` / `tabs.order_index`. Reads go through the link table; writes update both the link table AND the legacy columns. No surface change.
-2. **Item #14 — drop `change_log.document_id`** — change_log entries already key by `tab_id`; the `document_id` was just denormalisation. Migration drops the column, queries that filtered by `document_id` now derive the document set via `document_tabs`.
-3. **Item #15 — drop denormalised participant metadata from `change_log`** — `participant_name` and `participant_color` columns were copy-on-write snapshots for offline-friendly reads. Drop and join through `participants` on read instead.
-4. **Item #16 — 90-day `change_log` cron** — daily worker cron deletes `change_log` rows older than 90 days. Capacity guard against unbounded growth as collab traffic ramps up.
-5. **Migration 0049 — drop `tabs.document_id` + `tabs.order_index`.** A table rebuild; `tabs` is a parent table, so the migration parks and restores every `document_tabs`, `change_log` and collaboration-index row across the drop. Document deletion became link-aware first ("Delete a document" above), since with the column gone nothing else removes a tab its last document leaves behind.
 
 ## Cross-references
 

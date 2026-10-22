@@ -227,19 +227,16 @@ describe('copying and pasting a Sheet', () => {
     const { result } = renderHook(() =>
       useClipboard({
         isReadOnly: false,
-        embedMode: false,
         readSelection: () => ({ selectedId: 'sheet', multiSelectedIds: new Set() }),
         editingId: null,
         setEditingId: () => {},
         // A Sheet pastes only onto a tab in Plan (docs/specs/029-sheets/sheet.md "Only in Plan").
-        activeTab: { id: 't', name: 'Board', opensIn: 'plan', elements },
+        activeTab: { id: 't', name: 'Board', elements },
         commit: (m) => {
           elements = m(elements);
         },
         setSelectedId,
         setMultiSelectedIds: () => {},
-        ownerId: 'me',
-        documentId: 'd',
         toast: { error: vi.fn(), info: vi.fn() } as never,
       }),
     );

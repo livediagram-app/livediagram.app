@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Breadcrumb } from '@/components/Breadcrumb';
 import { helpMetadata } from '@/lib/seo';
-import { buttonClassName, CONTACT_FORM_URL, REPO_URL, ButtonContent } from '@liveplanner/ui';
+import { buttonClassName, CONTACT_FORM_URL, ButtonContent } from '@liveplanner/ui';
 import { ExternalLinkIcon } from '@/lib/chrome-icons';
 
 export const metadata: Metadata = helpMetadata({
@@ -48,22 +48,17 @@ export default function ContactPage() {
 
           <div className="rounded-xl border border-slate-200 bg-white p-5 transition-all duration-micro hover:border-slate-300 sm:p-6 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-600">
             <h2 className="mb-2 text-lg font-semibold text-slate-900 dark:text-slate-100">
-              Report a Bug or Request a Feature
+              Report a Security Issue
             </h2>
             <p className="mb-4 leading-relaxed text-slate-600 dark:text-slate-300">
-              liveplanner is open source. Open an issue on GitHub to report a bug, suggest an idea,
-              or follow along with development.
+              Found a vulnerability? Please tell us privately by email so we can fix it before
+              anyone else finds it.
             </p>
             <a
-              href={`${REPO_URL}/issues`}
-              target="_blank"
-              rel="noopener noreferrer"
+              href="/help/policies/report-a-vulnerability/"
               className={buttonClassName({ variant: 'secondary', size: 'cta-sm' })}
             >
-              <ButtonContent>
-                Open an issue on GitHub
-                {ExternalIcon}
-              </ButtonContent>
+              <ButtonContent>How to report a vulnerability</ButtonContent>
             </a>
           </div>
 

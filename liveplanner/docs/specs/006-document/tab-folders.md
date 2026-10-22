@@ -14,13 +14,13 @@ This is the editor's tab bar only. It is unrelated to [Folders](../013-workspace
 
 ## Data model
 
-Migration `0018` adds one nullable column to the link table from [Tab ↔ document many-to-many](tab-document-many-to-many.md):
+The link table from [Tab ↔ document many-to-many](tab-document-many-to-many.md) carries one nullable column:
 
 ```sql
-ALTER TABLE document_tabs ADD COLUMN folder TEXT;  -- NULL = loose (no folder)
+folder TEXT,  -- NULL = loose (no folder)
 ```
 
-No backfill (every existing tab is loose), no index (folders are derived by a client-side scan over the already-ordered read). The column is intentionally **not** mirrored onto the legacy `tabs` table the way `order_index` is (migration 0011) — folder membership is a document-link concept with no legacy equivalent.
+No index (folders are derived by a client-side scan over the already-ordered read). The column is intentionally **not** mirrored onto the `tabs` table: folder membership is a document-link concept.
 
 ## Ordering: one flat list, folders are contiguous runs
 

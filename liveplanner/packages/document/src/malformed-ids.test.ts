@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { createShape } from './shape-factory';
 import { migrateIncomingTab } from './stored-tab';
 import { elementValidationIssue, isValidTab } from './validate';
-import { inkKindOf } from './page-ink-rules';
 import { dropMalformedIds, ELEMENT_KEY_MAX } from './malformed-ids';
 import type { Element, Tab } from './index';
 
@@ -37,7 +36,5 @@ describe('a malformed key on the way in', () => {
   it('is dropped by the incoming-tab migration, so the canvas can read the icon', () => {
     const tab = migrateIncomingTab({ id: 't', name: 'T', elements: [icon({ iconId: [] })] }) as Tab;
     expect(isValidTab(tab)).toBe(true);
-    // The canvas's page re-inking read an emoji icon by its id's prefix, and threw on a list.
-    expect(() => inkKindOf(tab.elements[0]!)).not.toThrow();
   });
 });

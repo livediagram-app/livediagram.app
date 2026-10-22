@@ -1,8 +1,3 @@
-import {
-  fromLegacyRequest,
-  isLegacyDocumentsPath,
-  toLegacyResponse,
-} from './legacy-documents-alias';
 import { runTabStatsBackfill } from './tab-stats-backfill';
 import { getClerkIdentity } from './auth/clerk';
 import { noteAuthSighting } from './auth/session-telemetry';
@@ -12,7 +7,6 @@ import { runTokenExpirySweep } from './email/token-expiry';
 import { runTeamInviteSweep } from './email/team-invite-reminders';
 import { NOTIFY_EMAIL_DEDUPE_MS } from './email/notifications';
 import { runTimelineExpirySweep } from './timeline';
-import { runImageRetention } from './image-refs/retention';
 import {
   deleteOldEvents,
   deleteOldChangesets,
@@ -46,7 +40,7 @@ import { CORS_HEADERS, forbidden, json, notFound, payloadTooLarge, rateLimited }
 import { insertTelemetryEvents } from './db/telemetry';
 import { deleteOldDocumentOpens } from './db/document-opens';
 import { clientIp, clientNetwork, clientRateKey } from './client-ip';
-import { MAX_BODY_BYTES, MAX_IMAGE_BYTES } from './limits';
+import { MAX_BODY_BYTES } from './limits';
 import { handleAccount } from './routes/account';
 import { handleAi } from './routes/ai';
 import { handleCatalogues } from './routes/catalogues';
@@ -59,7 +53,6 @@ import { handleDocuments } from './routes/documents';
 import { handleEvents } from './routes/events';
 import { handleFolders } from './routes/folders';
 import { handleForms } from './routes/forms';
-import { handleImages } from './routes/images';
 import { handleMigrate } from './routes/migrate';
 import { handleGuestId } from './routes/guest-id';
 import { handleParticipants } from './routes/participants';
@@ -90,7 +83,7 @@ export { DocumentRoom };
 // when the caller is over the configured cap (wrangler.toml's
 // WRITE_RATE_LIMITER binding) so the endpoint can short-circuit
 // with a 429. Falls through to "allowed" when the binding is
-// absent so self-host deployments without the feature still serve.
+// absent so deployments without the feature still serve.
 async function isWriteRateLimited(env: Env, ownerId: string): Promise<boolean> {
   if (!env.WRITE_RATE_LIMITER) return false;
   const result = await env.WRITE_RATE_LIMITER.limit({ key: ownerId });
@@ -110,14 +103,6 @@ async function routeApiRequest(
   if (request.method === 'OPTIONS') {
     return new Response(null, { headers: CORS_HEADERS });
   }
-  // The deprecated /api/diagrams… alias: served by the /api/documents… routes, in the old shape.
-  if (isLegacyDocumentsPath(new URL(request.url).pathname)) {
-    console.warn('[legacy-documents-alias]', request.method, new URL(request.url).pathname);
-    const current = await fromLegacyRequest(request, MAX_BODY_BYTES);
-    if (!current) return payloadTooLarge();
-    return toLegacyResponse(await worker.fetch(current, env, executionCtx));
-  }
-
   const url = new URL(request.url);
   const segments = url.pathname.replace(/^\//, '').split('/');
   if (segments[0] !== 'api') return notFound();
@@ -271,7 +256,7 @@ async function routeApiRequest(
   // Per-owner write rate limit. Gates POST / PUT / DELETE at a
   // generous ceiling (wrangler.toml WRITE_RATE_LIMITER) so a bot
   // pacing under Cloudflare's DDoS threshold still can't spam
-  // document / image creation through to D1 / R2 quota
+  // document creation through to D1 quota
   // exhaustion. Reads pass through untouched. When neither a
   // Clerk token nor X-Owner-Id resolves the caller, fall back to
   // a literal 'anonymous' key so one unauthenticated client still
@@ -314,10 +299,7 @@ async function routeApiRequest(
   // in the routes catch the rest; this is the blunt outer bound.
   if (isWrite) {
     const len = Number(request.headers.get('content-length'));
-    // Image uploads carry raw bytes with their own, larger cap (docs/specs/009-elements/images.md);
-    // the route re-checks it and answers with file_too_large + limitBytes.
-    const cap = segments[1] === 'images' ? MAX_IMAGE_BYTES : MAX_BODY_BYTES;
-    if (Number.isFinite(len) && len > cap) {
+    if (Number.isFinite(len) && len > MAX_BODY_BYTES) {
       return payloadTooLarge();
     }
   }
@@ -376,7 +358,7 @@ async function routeApiRequest(
   }
   // Token-authed READS (docs/specs/015-api/public-api-and-tokens.md §3.5): GETs under a token aren't covered by
   // the write limiter, so an external integration's reads get their own
-  // per-token throttle. Optional binding → allow when absent (self-host).
+  // per-token throttle. Optional binding → allow when absent (a deployment without it).
   if (tokenAuth && request.method === 'GET' && env.API_TOKEN_READ_RATE_LIMITER) {
     const ok = await env.API_TOKEN_READ_RATE_LIMITER.limit({ key: `token:${tokenAuth.tokenId}` });
     if (!ok.success) return rateLimited();
@@ -385,7 +367,7 @@ async function routeApiRequest(
   // Throttle blind share-code / password guessing on the share-resolve
   // read (GET /api/share/<code>), which carries the optional share
   // password and is otherwise an unauthenticated read exempt from the
-  // write limiter above. Per-IP. Absent binding → allow (self-host).
+  // write limiter above. Per-IP. Absent binding → allow (a deployment without it).
   // A link preview's two reads (docs/specs/013-workspace/share-link-previews.md) take their own bucket, so a room
   // of people opening one link together never spends the editor's share resolve on previews.
   if (request.method === 'GET' && segments[1] === 'share' && env.SHARE_RATE_LIMITER) {
@@ -417,7 +399,6 @@ async function routeApiRequest(
       case 'capabilities':
         return handleCapabilities(ctx);
       case 'templates':
-      case 'icons':
       case 'schema':
         return handleCatalogues(ctx);
       case 'openapi.json':
@@ -436,8 +417,6 @@ async function routeApiRequest(
         return await handleShare(ctx);
       case 'shared':
         return await handleShared(ctx);
-      case 'images':
-        return await handleImages(ctx);
       case 'documents':
         return await handleDocuments(ctx);
       case 'folders':
@@ -519,8 +498,6 @@ const worker = {
   // `event.cron` for each pattern. Today's daily 03:00 UTC trigger
   // fires independent retention sweeps:
   //   - events,     60-day floor (docs/specs/017-telemetry/telemetry.md "Retention").
-  //   - images,     30-day floor, unused only, after the reference-index backfill
-  //                 (docs/specs/009-elements/images.md "Retention").
   //   - trash,      30 days after deletion (docs/specs/013-workspace/trash.md).
   //   - empty,      documents empty and unsaved for 30 days move to the Trash
   //                 (docs/specs/013-workspace/empty-document-cleanup.md).
@@ -597,7 +574,7 @@ const worker = {
       ctx.waitUntil(runTokenExpirySweep(env));
       // docs/specs/013-workspace/timeline.md §4.5: the same window, on the Timeline. Separate from
       // the email sweep above because that one no-ops without a Resend
-      // key, and a self-host with no email provider still needs to know
+      // key, and a deployment with no email provider still needs to know
       // its integration is about to break.
       ctx.waitUntil(
         runTimelineExpirySweep(env)
@@ -619,9 +596,6 @@ const worker = {
           .then((count) => console.log(`empty sweep: moved ${count} documents to the Trash`))
           .catch((err) => console.error('empty sweep failed', err)),
       );
-      // docs/specs/009-elements/images.md "Retention": advance the reference-index backfill,
-      // then reap unused images. runImageRetention logs its own outcome.
-      ctx.waitUntil(runImageRetention(env, now));
       // docs/specs/013-workspace/explorer-details-view.md "Counting the existing tabs": count the
       // tabs written before tab stats existed, a bounded number a run. Logs its own outcome.
       ctx.waitUntil(

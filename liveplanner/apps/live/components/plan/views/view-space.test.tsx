@@ -30,7 +30,6 @@ function planWith(items: Item[]): PlanContextValue {
     items: new Map(items.map((i) => [i.id, i])),
     types: ITEM_TYPES,
     status: 'ready',
-    planInput: true,
     canEdit: true,
     openItem: vi.fn(),
     updateView: vi.fn(),

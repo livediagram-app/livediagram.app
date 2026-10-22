@@ -6,7 +6,6 @@ import { track } from '@/lib/telemetry';
 export type SidebarTelemetryRow =
   | 'Home'
   | 'Inbox'
-  | 'Timeline'
   | 'SharedWithMe'
   | 'MyDocuments'
   | 'Folder'
@@ -16,7 +15,6 @@ export type SidebarTelemetryRow =
   | 'NewTeam'
   | 'ThisBrowser'
   | 'Library'
-  | 'ImageGallery'
   | 'Themes'
   | 'Tags'
   | 'Tag'

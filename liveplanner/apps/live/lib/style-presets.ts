@@ -46,11 +46,6 @@ import {
   type TextAlignY,
   type TextSize,
   type TextSizePreset,
-  clampLetterSpacing,
-  clampTextArc,
-  type FontWeight,
-  type TextCase,
-  type TextElement,
   withInlineIcon,
 } from '@liveplanner/document';
 import type { ShapeColorPreset } from './themes';
@@ -213,7 +208,7 @@ export function applyHeaderFillToEl(el: Element, color: string): Element {
 // Border weight / pattern apply to any border-bearing element (shapes + the
 // freehand pen) plus tables; radius is shape-only.
 export function applyBorderStrokeToEl(el: Element, value: BorderStroke): Element {
-  // A pen stroke's recorded width (docs/specs/023-draw-mode/draw-mode.md) outranks the preset when
+  // A pen stroke's recorded width (docs/specs/007-editor/editor-modes.md) outranks the preset when
   // drawn, so choosing a preset must drop it or the choice would do nothing.
   // A highlighter never draws the preset, so its width stays.
   if (el.type === 'freehand' && el.pen !== 'highlighter' && el.penWidth !== undefined) {
@@ -352,36 +347,4 @@ export function applyArrowPresetToEl(
     flow: p.flow,
     flowSpeed: p.flow ? (el.flowSpeed ?? DEFAULT_ANIMATION_SPEED) : el.flowSpeed,
   };
-}
-
-// Wordmark type (docs/specs/007-editor/logo-pages.md "Wordmark type"): a patch of tracking,
-// weight, case and arc for text elements; `null` clears a field. Choosing a weight clears bold
-// (the weight wins while set, and the Bold button clears it back).
-export type WordmarkPatch = {
-  letterSpacing?: number | null;
-  fontWeight?: FontWeight | null;
-  textCase?: TextCase | null;
-  textArc?: number | null;
-};
-
-export function applyWordmarkToEl(el: Element, patch: WordmarkPatch): Element {
-  if (el.type !== 'text') return el;
-  const next: TextElement = { ...el };
-  const set = <K extends keyof WordmarkPatch>(key: K, value: TextElement[K] | undefined) => {
-    if (value === undefined) delete next[key];
-    else next[key] = value;
-  };
-  if ('letterSpacing' in patch)
-    set(
-      'letterSpacing',
-      patch.letterSpacing == null ? undefined : clampLetterSpacing(patch.letterSpacing),
-    );
-  if ('textArc' in patch)
-    set('textArc', patch.textArc == null ? undefined : clampTextArc(patch.textArc));
-  if ('textCase' in patch) set('textCase', patch.textCase ?? undefined);
-  if ('fontWeight' in patch) {
-    set('fontWeight', patch.fontWeight ?? undefined);
-    if (patch.fontWeight != null) delete next.textBold;
-  }
-  return next;
 }

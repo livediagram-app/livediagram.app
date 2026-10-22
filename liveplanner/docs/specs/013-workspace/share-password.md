@@ -15,7 +15,7 @@ identity, share-code path) and [11-api](../015-api/api.md) (share links).
 - The password is a property of the **document**, not of individual links. One
   password covers every share link the owner mints (`docs/specs/015-api/api.md` lets a document
   have many). Column: `documents.share_password TEXT` (nullable; null / empty =
-  no password). Migration `0017_share_password.sql`.
+  no password).
 - **Stored hashed.** The column holds
   `pbkdf2-sha256$<iterations>$<salt>$<hash>` (base64url salt of 16 bytes, 32-byte
   derived key), written by `hashSharePassword` (`apps/api/src/auth/share-password-hash.ts`).

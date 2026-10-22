@@ -39,28 +39,20 @@ export function isSvgRenderedShape(kind: ShapeKind): boolean {
   // A page (docs/specs/009-elements/page-element.md) is a plain rectangle with a fill and a border, so it
   // belongs on the CSS box path with square — the SVG overlay has no case for
   // it and would draw an invisible element.
-  // A mode button (docs/specs/009-elements/mode-button.md) and a portal (docs/specs/009-elements/portal-element.md) are likewise plain filled
-  // rounded boxes with their own content drawn on top, so they belong on the CSS
-  // box path too. Left on the SVG path they rendered as a TRANSPARENT box — the
-  // overlay has no case for either kind, so nothing drew the fill at all.
+  // A portal (docs/specs/009-elements/portal-element.md) is likewise a plain filled
+  // rounded box with its own content drawn on top, so it belongs on the CSS
+  // box path too. Left on the SVG path it rendered as a TRANSPARENT box — the
+  // overlay has no case for the kind, so nothing drew the fill at all.
   return (
     kind !== 'square' &&
     kind !== 'circle' &&
     kind !== 'stadium' &&
     kind !== 'browser' &&
     kind !== 'page' &&
-    kind !== 'mode-button' &&
-    // Bring Focus (docs/specs/012-collaboration/bring-focus.md) is a filled rounded box with a glyph + label on
-    // top, same as the mode button beside it. This predicate is allow-BY-
-    // DEFAULT, so a new CSS-drawn kind left off it renders as a transparent
-    // nothing.
-    kind !== 'focus-button' &&
+    // This predicate is allow-BY-DEFAULT, so a new CSS-drawn kind left off it renders as a transparent nothing.
     kind !== 'portal' &&
     kind !== 'session-button' &&
-    kind !== 'reveal' &&
     kind !== 'picker' &&
-    // A reaction pad (docs/specs/009-elements/reaction-pad.md) is a filled rounded box with a glyph on top.
-    kind !== 'reaction-pad' &&
     // A comment pin (docs/specs/012-collaboration/comment-pin.md) draws its own bubble; the wrapper box behind it
     // must not also paint a square.
     kind !== 'comment-pin' &&
@@ -85,7 +77,7 @@ export function isSvgRenderedShape(kind: ShapeKind): boolean {
     kind !== 'sequence' &&
     // A record (docs/specs/009-elements/entity.md) is a filled box with rows drawn on top.
     kind !== 'entity' &&
-    // The collaboration elements (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md) are filled rounded
+    // The collaboration elements (docs/specs/012-collaboration/temperature-check.md, decision-record.md) are filled rounded
     // cards with their own face drawn on top — the CSS box path, like every
     // kind above. Left off this list they rendered as a transparent nothing,
     // exactly as the mind-node comment above warns.
@@ -94,14 +86,6 @@ export function isSvgRenderedShape(kind: ShapeKind): boolean {
     // content on top, and the rest paint their own surfaces (they are
     // self-painting, so the box path gives them a bare wrapper).
     !isWebComponentShape(kind) &&
-    // A chair (docs/specs/009-elements/chair.md) draws its own furniture and wants no box behind it.
-    kind !== 'chair' &&
-    // A fence, a desk and a sofa (docs/specs/009-elements/fence.md, chair.md) draw themselves too.
-    kind !== 'fence' &&
-    // An Avatar Pad (docs/specs/009-elements/avatar-pad.md) paints its own pixels.
-    kind !== 'avatar-pad' &&
-    kind !== 'desk' &&
-    kind !== 'sofa' &&
     // The Plan board, card and view (docs/specs/026-plan/plan-board.md, plan-views.md) paint their own surfaces.
     kind !== 'plan-board' &&
     kind !== 'plan-card' &&

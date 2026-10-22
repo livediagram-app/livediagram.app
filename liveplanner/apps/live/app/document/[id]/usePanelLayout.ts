@@ -17,17 +17,9 @@ export function usePanelLayout() {
   const [commentsPanelPosition, setCommentsPanelPosition] = useState<Pos | null>(null);
   const [aiPanelPosition, setAiPanelPosition] = useState<Pos | null>(null);
   const [aiPanelVisible, setAiPanelVisible] = useState(false);
-  // Laser Panel (docs/specs/008-canvas/laser-panel.md): present only while the Laser tool is active, so
-  // position only — there is nothing to minimise when leaving the tool dismisses the panel outright. (Poll and
-  // Vote open over the Session strip's buttons, and the Avatar panel over its own, so they keep no position:
-  // docs/specs/012-collaboration/session-tools.md, docs/specs/008-canvas/avatar-mode.md.)
-  const [laserPanelPosition, setLaserPanelPosition] = useState<Pos | null>(null);
-  // Spotlight Panel (docs/specs/008-canvas/spotlight-panel.md): the same.
-  const [spotlightPanelPosition, setSpotlightPanelPosition] = useState<Pos | null>(null);
-  // Eraser Panel (docs/specs/008-canvas/eraser-panel.md): the same.
-  const [eraserPanelPosition, setEraserPanelPosition] = useState<Pos | null>(null);
-  const [slideDeckPanelPosition, setSlideDeckPanelPosition] = useState<Pos | null>(null);
-  // Format Panel (docs/specs/008-canvas/format-panel.md): the same.
+  // Format Panel (docs/specs/008-canvas/format-panel.md): present only while the Format tool is active, so
+  // position only — there is nothing to minimise when leaving the tool dismisses the panel outright. (Timer and
+  // Vote open over the Session strip's buttons, so they keep no position: docs/specs/012-collaboration/session-tools.md.)
   const [formatPanelPosition, setFormatPanelPosition] = useState<Pos | null>(null);
   // Zen / focus mode (docs/specs/007-editor/zen-mode.md): hide all the chrome (header, tab
   // bar, panels, docks) so only the canvas content + zoom controls
@@ -45,14 +37,6 @@ export function usePanelLayout() {
     setAiPanelPosition,
     aiPanelVisible,
     setAiPanelVisible,
-    laserPanelPosition,
-    setLaserPanelPosition,
-    spotlightPanelPosition,
-    setSpotlightPanelPosition,
-    eraserPanelPosition,
-    setEraserPanelPosition,
-    slideDeckPanelPosition,
-    setSlideDeckPanelPosition,
     formatPanelPosition,
     setFormatPanelPosition,
     zenMode,

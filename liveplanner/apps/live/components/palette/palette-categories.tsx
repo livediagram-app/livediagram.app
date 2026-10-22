@@ -27,31 +27,14 @@ import {
   WriteTabIcon,
   ParticipateTabIcon,
 } from '@liveplanner/ui';
-import {
-  AskGroupIcon,
-  WorkshopGroupIcon,
-  ModeGroupIcon,
-  MoveGroupIcon,
-  ReactionGroupIcon,
-  RecordGroupIcon,
-} from '@liveplanner/ui';
+import { AskGroupIcon, WorkshopGroupIcon, MoveGroupIcon, RecordGroupIcon } from '@liveplanner/ui';
 import { PlanCardsIcon, PlanIcon } from '@liveplanner/ui';
 import { SheetArt } from '@/components/sheets/sheet-art';
-import { Glyph, lucideGlyph } from '@liveplanner/ui';
+import { lucideGlyph } from '@liveplanner/ui';
 import { lucidePanelTop, lucideRows2 } from '@liveplanner/icons/lucide';
 
 const DashboardLayoutIcon = lucideGlyph(lucideRows2, 18);
 
-// A phone with a screen being wireframed: a bar, a picture and a button.
-function WireframeTabIcon() {
-  return (
-    <Glyph size={18} units={24}>
-      <rect x="6" y="2.5" width="12" height="19" rx="2.5" />
-      <rect x="8.5" y="6.5" width="7" height="5" rx="0.75" />
-      <path d="M8.5 14.5h7M8.5 17.5h4" />
-    </Glyph>
-  );
-}
 const TabsIcon = lucideGlyph(lucidePanelTop, 18);
 
 /**
@@ -172,8 +155,7 @@ export const PALETTE_CATEGORIES: {
     id: 'plan-tools',
     label: 'Tools',
     group: 0,
-    description:
-      'Facilitation for the team: temperature, estimates, an idea box, a picker and timers.',
+    description: 'Facilitation for the team: a temperature check, a picker and timers.',
     icon: <BehaviourTabIcon />,
   },
   {
@@ -192,20 +174,10 @@ export const PALETTE_CATEGORIES: {
   },
 
   {
-    // Pages mode, while the tab has a wireframe page (docs/specs/007-editor/wireframe-pages.md "The
-    // Elements palette").
-    id: 'wireframe',
-    label: 'Elements',
-    group: 0,
-    description:
-      'The parts a screen is wireframed from: buttons, fields, badges, pictures, avatars, cards and lists.',
-    icon: <WireframeTabIcon />,
-  },
-  {
     id: 'draw',
     label: 'Draw',
     group: 0,
-    description: 'The gesture tools: pencil, shape pen, highlighter, polygon, and arrows.',
+    description: 'The gesture tools: polygon and arrows.',
     icon: <DrawTabIcon />,
   },
   {
@@ -249,7 +221,7 @@ export const PALETTE_CATEGORIES: {
     label: 'Components',
     group: 1,
     description:
-      'Ready-made blocks that follow the tab theme: the Card, Badge and Step number, the web components (Banner, Callout, Stat row, Process, Hero, Header) and the code block, checklist and entity. Each is one element that re-flows as you resize it, with every line of text editable in place.',
+      'Ready-made blocks that follow the tab theme: the Card, Badge and Step number, the web components (Banner, Callout, Stat row, Process, Header) and the code block, checklist and entity. Each is one element that re-flows as you resize it, with every line of text editable in place.',
     icon: <ComponentsTabIcon />,
   },
   {
@@ -287,8 +259,7 @@ export const PALETTE_CATEGORIES: {
     id: 'media',
     label: 'Media',
     group: 2,
-    description:
-      'Pictures and figures: an uploaded image or a circular avatar; in Pages, embeds and a Tab Window onto another tab.',
+    description: 'In Pages, embeds and a Tab Window onto another tab.',
     icon: <MediaTabIcon />,
   },
   {
@@ -301,56 +272,34 @@ export const PALETTE_CATEGORIES: {
   },
   // The Collaborate elements (docs/specs/010-palette/palette-top-level-categories.md): everything whose
   // content arrives at RUNTIME rather than being drawn by the author, the ones that do something when
-  // pressed and the ones that collect what the room thinks. Their own Collaborate band. Six categories, one per group, in
-  // room-first order: Workshop offers them in place of one Collaborate category with a group
-  // browser inside it, since every group is something a facilitator reaches for mid-session and a
-  // parent category was a click in front of each (docs/specs/012-collaboration/workshop-mode.md
-  // "The palette"). Their tiles: COLLABORATE_CATEGORY_GROUPS.
+  // pressed and the ones that collect what the room thinks. Their own Collaborate band. Four categories, one per
+  // group, in room-first order. Their tiles: COLLABORATE_CATEGORY_GROUPS.
   {
     id: 'collab-ask',
     label: 'Ask',
     group: 6,
-    description:
-      'Put a question to the room: dot votes, polls, quizzes, estimates, a temperature check, an idea box and a Q&A board.',
+    description: 'Put a question to the room: dot votes and a temperature check.',
     icon: <AskGroupIcon />,
   },
   {
     id: 'collab-tools',
     label: 'Tools',
     group: 6,
-    description:
-      'Run the session: a timer or a stopwatch, a reveal zone, a done check and a picker.',
+    description: 'Run the session: a timer or a stopwatch and a picker.',
     icon: <WorkshopGroupIcon />,
   },
   {
     id: 'collab-record',
     label: 'Record',
     group: 6,
-    description:
-      'Leave a record on the canvas: comments, actions, an agenda, decisions and a roll call.',
+    description: 'Leave a record on the canvas: comments, actions and decisions.',
     icon: <RecordGroupIcon />,
-  },
-  {
-    id: 'collab-react',
-    label: 'React',
-    group: 6,
-    description: 'Pads that throw confetti, sparkles, hearts, applause or fireworks for everyone.',
-    icon: <ReactionGroupIcon />,
-  },
-  {
-    id: 'collab-mode',
-    label: 'Selection Mode',
-    group: 6,
-    description:
-      'Buttons that hand everyone a selection mode: select, pan, laser, spotlight and more.',
-    icon: <ModeGroupIcon />,
   },
   {
     id: 'collab-navigate',
     label: 'Navigate',
     group: 6,
-    description:
-      'Take people somewhere and build an office: a portal, a bring-focus button, a chair, desk or sofa, a fence, an avatar pad, a link card, rooms, a meeting table, plants, shelves, a water cooler, a coffee machine and rugs.',
+    description: 'Take people somewhere: a portal and a link card.',
     icon: <MoveGroupIcon />,
   },
 ];

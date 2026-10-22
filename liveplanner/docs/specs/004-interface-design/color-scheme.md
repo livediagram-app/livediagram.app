@@ -220,7 +220,7 @@ Explorer panel and every other page keep Steel.
 - **Muted text in light mode** is `slate-500` on white or `slate-50` (4.8:1, 4.6:1) and `slate-600` on `slate-100` or a
   tint, never `slate-400` (2.6:1), which stays for icons, placeholders and disabled controls. The public sites
   (marketing, help, telemetry), the New Document wizard and the editor's small and uppercase labels follow
-  it ([#863](https://github.com/liveplanner-app/liveplanner.app/issues/863)), held by
+  it (issue #863), held by
   `apps/live/label-contrast.test.ts`, which fails a class string pairing a small size (`text-xs`, `text-sm`,
   `text-[9px]` to `text-[13px]`) or `uppercase` with a light-mode `text-slate-400`. Dark mode keeps `slate-400`.
 - **The active tab's label** is its tab's accent, nudged (hue kept, 10% at a time toward black, or white in dark) until
@@ -230,7 +230,7 @@ Explorer panel and every other page keep Steel.
   text node on the New Document wizard, the editor, its dialogs and panels, and the Explorer in dark mode, composites
   the real background under it, and fails below 4.5:1 (3:1 for large text: 24px, or 18.66px bold). It has no
   allow-list. It covers **dark mode only**: light mode's colours are owned by Thomas
-  ([@tommcclean](https://github.com/tommcclean)) under [#74](https://github.com/liveplanner-app/liveplanner.app/issues/74).
+  ([@tommcclean](https://github.com/tommcclean)) under issue #74.
 - **Contrast guard (light mode, brand ramp).** #74's light half is settled: white text on a solid brand fill and brand
   ink on white are both `brand-700` ([Usage rules](#usage-rules)), held by `apps/live/app/light-palette.test.ts`, which
   reads every app's and package's source and checks the light ramp's ratios against white.

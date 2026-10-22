@@ -1,6 +1,4 @@
 import type { ElementStyleOps } from '@/lib/element-style-ops';
-import type { CombineOp } from '@/lib/combine/combine';
-import type { WordmarkPatch } from '@/lib/style-presets';
 import type {
   AnimationSpeed,
   ArrowEnds,
@@ -17,10 +15,7 @@ import type {
   ChecklistItem,
   EntityField,
   FieldRemap,
-  AgendaItem,
-  ChairFacing,
   DecisionStatus,
-  EstimateScale,
   Element,
   ChartPaletteId,
   CodeThemeId,
@@ -86,10 +81,6 @@ export type EditorContextMenuProps = {
   // Remove an inline icon from the element. Only surfaced when the
   // clicked element actually carries one (a non-'icon' shape with iconId).
   onRemoveIcon: (elementId: string) => void;
-  // Image element actions (docs/specs/009-elements/images.md): open the picker (select / change) and
-  // clear the picked image back to a placeholder.
-  onOpenImagePicker: (elementId: string) => void;
-  onRemoveImage: (elementId: string) => void;
   // Clear the link off the selected element (docs/specs/009-elements/link-cards.md link-card "Remove Link").
   onRemoveLink: () => void;
   onBringToFront: () => void;
@@ -231,37 +222,23 @@ export type EditorContextMenuProps = {
   // caption card on or off.
   onSetWebRows: (rows: import('@liveplanner/document').WebRows) => void;
   onSetHeroCaption: (on: boolean) => void;
-  // Mode button (docs/specs/009-elements/mode-button.md): which selection mode pressing it hands out.
-  onSetButtonMode: (mode: import('@liveplanner/document').SelectionMode) => void;
   // Portal (docs/specs/009-elements/portal-element.md): which portal this one leads to; null unpairs it.
   onSetPortalTarget: (targetId: string | null) => void;
   // Portal (docs/specs/009-elements/portal-element.md): its name (menu-only — the canvas ring stays clean), and
   // "create the far end for me" for the common case where it doesn't exist yet.
   onSetPortalName: (name: string) => void;
   onCreateLinkedPortal: () => void;
-  // Session button (docs/specs/012-collaboration/session-button.md) / Reveal zone (docs/specs/009-elements/reveal-zone.md) / Picker (docs/specs/012-collaboration/picker.md):
-  // their settings, applied to the element the menu is acting on. The session button's and the cover's are
-  // absent while somebody else holds the baton (docs/specs/012-collaboration/facilitator.md), so neither section shows.
+  // Session button (docs/specs/012-collaboration/session-button.md) / Picker (docs/specs/012-collaboration/picker.md):
+  // their settings, applied to the element the menu is acting on. The session button's is absent for a session
+  // that may not edit, so its section does not show.
   onSetSession?: (config: import('@liveplanner/document').SessionButtonConfig) => void;
-  onSetRevealed?: (revealed: boolean) => void;
   onSetPickerSource: (source: import('@liveplanner/document').PickerSource) => void;
   onSetPickerOptions: (options: string[]) => void;
-  // Reaction pad (docs/specs/009-elements/reaction-pad.md): which burst the pad throws.
-  onSetReaction: (reaction: import('@liveplanner/document').Reaction) => void;
-  // The collaboration elements (docs/specs/012-collaboration/estimate-card.md, 127, 128, 130). The temperature
-  // check, idea box and roll call carry no settings — everything they do
-  // happens on their own faces — so they need no setter here.
-  onSetEstimateScale: (scale: EstimateScale) => void;
-  onSetAgendaItems: (
-    items: AgendaItem[],
-    moveCurrent?: (current: number) => number | undefined,
-  ) => void;
+  // The decision record (docs/specs/012-collaboration/decision-record.md). The temperature check carries no
+  // settings — everything it does happens on its own face — so it needs no setter here.
   onSetDecisionStatus: (status: DecisionStatus) => void;
   onSetDecisionDate: (date: string | undefined) => void;
   onSetDecisionDrivers: (drivers: string[]) => void;
-  onSetChairFacing: (facing: ChairFacing) => void;
-  // Room (docs/specs/009-elements/office.md): which wall its doorway is in.
-  onSetRoomDoor: (door: import('@liveplanner/document').RoomDoor) => void;
   // Every tab, because a portal link can cross tabs, plus which one is active
   // so the picker can mark the off-tab candidates.
   tabs: import('@liveplanner/document').Tab[];
@@ -332,17 +309,6 @@ export type EditorContextMenuProps = {
   onPreviewFont: (font: string | null) => void;
   onSetPadding: (padding: Padding) => void;
   onPreviewPadding: (padding: Padding) => void;
-  // Wordmark type (docs/specs/007-editor/logo-pages.md "Wordmark type"): offered for a text
-  // element on a logo page; tiles and sliders preview, a press or a let-go commits.
-  wordmarkOffered?: boolean;
-  // Combine (docs/specs/007-editor/logo-pages.md "Combine"): present only while the selection is
-  // combinable shapes on one logo page.
-  onCombine?: (op: CombineOp) => void;
-  // Mirror Copy (docs/specs/007-editor/logo-pages.md "Mirror"): present only while the selection
-  // has an element on a logo page to reflect.
-  onMirrorCopy?: () => void;
-  onSetWordmark?: (patch: WordmarkPatch) => void;
-  onPreviewWordmark?: (patch: WordmarkPatch) => void;
   // Arrow Line + Pointer controls (docs/specs/008-canvas/canvas-and-palette.md), surfaced for arrows via the
   // shared ArrowLine / Pointer controls.
   onSetArrowThickness: (v: ArrowThickness) => void;

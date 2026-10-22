@@ -20,10 +20,10 @@ export function liveImageUrlFor(origin: string, code: string, tabId?: string): s
 
 // GitHub / docs Markdown image syntax.
 export function liveImageMarkdown(origin: string, code: string, tabId?: string): string {
-  return `![diagram](${liveImageUrlFor(origin, code, tabId)})`;
+  return `![liveplanner tab](${liveImageUrlFor(origin, code, tabId)})`;
 }
 
 // Plain HTML <img> for wikis / sites that take raw HTML.
 export function liveImageHtml(origin: string, code: string, tabId?: string): string {
-  return `<img src="${liveImageUrlFor(origin, code, tabId)}" alt="diagram" />`;
+  return `<img src="${liveImageUrlFor(origin, code, tabId)}" alt="liveplanner tab" />`;
 }

@@ -4,13 +4,13 @@
 // the one that shows its feature (FeatureScene.tsx), so a scene is declared once, here.
 //
 // The data alone, without the boards: a page that shows one scene (FeatureScene) loads only that
-// scene's board, never all four. hero-scenes.tsx pairs each with its board for the hero stage.
+// scene's board, never all five. hero-scenes.tsx pairs each with its board for the hero stage.
 
 import type { TabDef } from './hero-editor-window';
 import type { HeroMode } from './hero-mode-palette';
 import type { PlanTab } from './hero-plan-bars';
 
-export type HeroSceneKey = 'plan' | 'sheet' | 'form' | 'dashboard';
+export type HeroSceneKey = 'plan' | 'sheet' | 'form' | 'dashboard' | 'together';
 
 export type HeroSceneData = {
   key: HeroSceneKey;
@@ -95,7 +95,7 @@ export const HERO_SCENE_DATA: HeroSceneData[] = [
   },
   {
     key: 'dashboard',
-    word: 'Together',
+    word: 'Overview',
     build: '/new?mode=plan&q=product%20launch',
     short: 'Dashboard',
     title: 'Product launch',
@@ -107,6 +107,23 @@ export const HERO_SCENE_DATA: HeroSceneData[] = [
       { name: 'Overview', color: '#8b5cf6', active: true },
       { name: 'Board', color: '#10b981' },
       { name: 'Budget', color: '#f59e0b' },
+    ],
+    shared: true,
+    portraitViewBox: PORTRAIT,
+  },
+  {
+    key: 'together',
+    word: 'Together',
+    build: '/new?mode=plan&q=kanban',
+    short: 'Together',
+    title: 'Sprint 12',
+    label:
+      'Together: three people on one board, a comment thread on a card and a card moving, all live',
+    mode: 'plan',
+    planTab: 'board',
+    tabs: [
+      { name: 'Sprint', color: '#8b5cf6', active: true },
+      { name: 'Overview', color: '#10b981' },
     ],
     shared: true,
     portraitViewBox: PORTRAIT,

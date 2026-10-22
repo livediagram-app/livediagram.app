@@ -24,12 +24,11 @@ import {
   normalizeFolderOrder,
   tabFolderName,
   truncateName,
-  type EditorMode,
   type Element,
   type Tab,
 } from '@liveplanner/document';
 import { apiLinkTab } from '@/lib/api-client';
-import { newTabOpening, newTabSeed } from '@/lib/new-tab-seed';
+import { newTabSeed } from '@/lib/new-tab-seed';
 import { track } from '@/lib/telemetry';
 import { remintTabElements, useTabImport } from './useTabImport';
 import { trackTabFolderTransition } from './tab-folder-reporting';
@@ -40,8 +39,6 @@ import { toastName } from '@/lib/toast-name';
 type TabActionsDeps = {
   tabs: Tab[];
   activeId: string;
-  // The viewer's editor mode on the active tab (docs/specs/007-editor/editor-modes.md): a new tab opens in it.
-  editorMode: EditorMode;
   // Whether the session may change the document's structure (its tabs): false for a view link and
   // for any tab-scoped link (docs/specs/013-workspace/tab-scoped-share-links.md).
   canEditStructure: boolean;
@@ -107,22 +104,15 @@ export function useTabActions(deps: TabActionsDeps) {
     toast,
   } = deps;
 
-  // `mode`: open it in that mode (a Plan tab's switch offering a new tab instead, plan-tabs.md); else in the active
-  // tab's mode, so a Pages tab's + makes a Pages tab (newTabOpening).
-  const addTab = (mode?: EditorMode) => {
+  // A new tab opens on Start Planning (docs/specs/026-plan/plan-tabs.md).
+  const addTab = () => {
     // A session that cannot change the document's tabs adds none, whichever control asked.
     if (!deps.canEditStructure) return;
-    // The new tab takes the active tab's look (newTabSeed); its mode is newTabOpening's.
+    // The new tab takes the active tab's look (newTabSeed).
     // Skips the look when the active tab can't be resolved (mid-mount, or removed in another
     // window), falling back to brand defaults the same way Tab 1 does.
     const seed = newTabSeed(tabs.find((t) => t.id === activeId));
-    // A new tab opens on its mode's own start (Start Diagramming, Start Drawing...) (newTabOpening).
-    const opening = newTabOpening(deps.editorMode, mode);
-    const tab: Tab = {
-      ...createTab(defaultTabName(tabs.length + 1)),
-      ...seed,
-      ...(opening.opensIn ? { opensIn: opening.opensIn } : {}),
-    };
+    const tab: Tab = { ...createTab(defaultTabName(tabs.length + 1)), ...seed };
     commitTabs((ts) => [...ts, tab]);
     markTabLoaded(tab.id);
     track('Tab', 'Created');

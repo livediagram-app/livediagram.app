@@ -10,7 +10,7 @@ import { EXIT } from '../output/exit-codes';
 import { tabHashes, type PulledTab } from '../sync/pull-file';
 
 type DocumentSnapshot = {
-  document: { id: string; name: string; presentation: string | null };
+  document: { id: string; name: string };
   // Each with its per-document folder when it has one.
   tabs: Tab[];
   pulled: Record<string, PulledTab>;
@@ -40,7 +40,7 @@ export async function readDocumentSnapshot(
     pulled[summary.id] = { rev: copy.rev, ...(await tabHashes(tab)) };
   }
   return {
-    document: { id: document.id, name: document.name, presentation: document.presentation ?? null },
+    document: { id: document.id, name: document.name },
     tabs,
     pulled,
   };

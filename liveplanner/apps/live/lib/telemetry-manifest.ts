@@ -56,15 +56,10 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Document·Removed',
   'Document·Renamed',
   'Document·Shared',
-  // Draw mode (docs/specs/023-draw-mode/draw-mode.md): a Whiteboard tab created (Template /
-  // NewTab / Import), a pen picked, the eraser mode or background changed, recognition toggled.
-  'Draw·Changed',
+  // Draw mode (docs/specs/007-editor/editor-modes.md): a Whiteboard tab created (Template /
+  // NewTab / Import).
   'Draw·Created',
-  'Draw·Selected',
-  'Draw·Toggled',
   'Document·Undone',
-  // Editor modes (docs/specs/007-editor/editor-modes.md): a tab switched to Diagram or Draw.
-  'Editor·Changed',
   // Explorer filters (docs/specs/013-workspace/explorer-filters.md "Telemetry"): a facet gained a value.
   'Explorer·Selected',
   // Tags (docs/specs/013-workspace/tags.md "Telemetry"): a tag made, put on or taken off a document, renamed,
@@ -96,11 +91,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Error·Client',
   // A degradation the load was carried through rather than stopped by (lib/api/error-report.ts).
   'Error·Warning',
-  // The facilitator baton (docs/specs/012-collaboration/facilitator.md): taken, handed on, stepped down. The
-  // question is whether rooms use the role at all, never who held it.
-  'Facilitator·Changed',
-  'Facilitator·Ended',
-  'Facilitator·Started',
   'Folder·Changed',
   'Folder·Cleared',
   'Folder·Created',
@@ -188,7 +178,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Tab·Started',
   'Tab·Toggled',
   'Tab·Unlocked',
-  'Tab·Voted',
   'Team·Added',
   'Team·Changed',
   'Team·Created',
@@ -204,16 +193,12 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Theme·Changed',
   'Theme·Created',
   'Theme·Deleted',
-  // Timeline (docs/specs/013-workspace/timeline.md): 'Opened' with type 'Landing' | 'Nav' | 'Stack'
-  // — the first two measure the landing-page change, the third tells us
-  // whether the stacking thresholds are right. 'Changed' carries the
-  // view mode, 'Selected' a filter chip's source type, 'Loaded'/'More'
-  // a Show-more click, 'Removed'/'Entry' a card taken off the feed
-  // (docs/specs/013-workspace/timeline.md §2.9).
+  // The scoped event feeds, History and Team Activity (docs/specs/013-workspace/timeline.md): 'Opened'
+  // with type 'Stack' tells us whether the stacking thresholds are right. 'Changed' carries the
+  // view mode, 'Selected' a filter chip's source type, 'Loaded'/'More' a Show-more click.
   'Timeline·Changed',
   'Timeline·Loaded',
   'Timeline·Opened',
-  'Timeline·Removed',
   'Timeline·Selected',
   'Token·Created',
   // A token's owner allowed a workbench on the pairing page (docs/specs/013-workspace/workbench-embeds.md).
@@ -225,7 +210,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Trash·Deleted',
   'Trash·Opened',
   'Trash·Restored',
-  'UI·Added',
   'UI·Changed',
   // A browser repair from the load-error screen (docs/specs/007-editor/load-recovery.md).
   'UI·Cleared',
@@ -236,7 +220,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'UI·Ended',
   'UI·Moved',
   'UI·Opened',
-  'UI·Removed',
   'UI·Searched',
   'UI·Selected',
   'UI·Started',

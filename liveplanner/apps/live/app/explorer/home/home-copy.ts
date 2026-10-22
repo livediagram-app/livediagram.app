@@ -16,7 +16,6 @@ export const HOME_COPY = {
   jumpBackIn: 'Jump Back In',
   whatHappened: 'What Happened',
   seeMore: 'See More',
-  seeTimeline: 'See Timeline',
   jumpBackInEmptyTitle: 'No documents yet',
   jumpBackInEmpty: 'The documents you use most and last will gather here.',
   // The editor pane leaves out the open document; when it was the only one, there is a document, just no other.

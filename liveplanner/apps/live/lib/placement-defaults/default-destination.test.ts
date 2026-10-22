@@ -26,16 +26,22 @@ const defaults = (entries: [PlacementDefaultKey, string][]) => new Map(entries);
 describe('workingDefault', () => {
   it('answers a personal or listed team folder', () => {
     const d = defaults([
-      ['mode:draw', 'workshops'],
-      ['mode:diagram', 'sprints'],
+      ['template:retrospective', 'workshops'],
+      ['mode:plan', 'sprints'],
     ]);
-    expect(workingDefault('mode:draw', d, index)?.name).toBe('Workshops');
-    expect(workingDefault('mode:diagram', d, index)?.teamId).toBe('team-a');
+    expect(workingDefault('template:retrospective', d, index)?.name).toBe('Workshops');
+    expect(workingDefault('mode:plan', d, index)?.teamId).toBe('team-a');
   });
 
   it('answers null for no default or a folder it cannot see', () => {
-    expect(workingDefault('mode:draw', defaults([]), index)).toBeNull();
-    expect(workingDefault('mode:draw', defaults([['mode:draw', 'gone']]), index)).toBeNull();
+    expect(workingDefault('template:retrospective', defaults([]), index)).toBeNull();
+    expect(
+      workingDefault(
+        'template:retrospective',
+        defaults([['template:retrospective', 'gone']]),
+        index,
+      ),
+    ).toBeNull();
   });
 });
 
@@ -43,10 +49,10 @@ describe('resolveDefaultFor', () => {
   it('tries kind, then template, then mode', () => {
     const d = defaults([
       ['template:retrospective', 'retros'],
-      ['mode:diagram', 'workshops'],
+      ['mode:plan', 'workshops'],
     ]);
     const retro = {
-      mode: 'diagram' as const,
+      mode: 'plan' as const,
       tabKind: 'diagram' as const,
       templateFamily: 'retrospective' as const,
     };
@@ -54,30 +60,26 @@ describe('resolveDefaultFor', () => {
       resolved: { key: 'template:retrospective', folder: { id: 'retros' } },
       skipped: [],
     });
-    expect(resolveDefaultFor({ mode: 'diagram', tabKind: 'diagram' }, d, index).resolved?.key).toBe(
-      'mode:diagram',
+    expect(resolveDefaultFor({ mode: 'plan', tabKind: 'diagram' }, d, index).resolved?.key).toBe(
+      'mode:plan',
     );
   });
 
   it('skips a default it cannot see and says so', () => {
     const d = defaults([
       ['template:kanban', 'gone'],
-      ['mode:diagram', 'workshops'],
+      ['mode:plan', 'workshops'],
     ]);
     expect(
-      resolveDefaultFor(
-        { mode: 'diagram', tabKind: 'diagram', templateFamily: 'kanban' },
-        d,
-        index,
-      ),
+      resolveDefaultFor({ mode: 'plan', tabKind: 'diagram', templateFamily: 'kanban' }, d, index),
     ).toMatchObject({
-      resolved: { key: 'mode:diagram' },
+      resolved: { key: 'mode:plan' },
       skipped: ['template:kanban'],
     });
   });
 
   it('resolves nothing with no defaults', () => {
-    expect(resolveDefaultFor({ mode: 'draw', tabKind: 'diagram' }, defaults([]), index)).toEqual({
+    expect(resolveDefaultFor({ mode: 'plan', tabKind: 'diagram' }, defaults([]), index)).toEqual({
       resolved: null,
       skipped: [],
     });
@@ -85,10 +87,10 @@ describe('resolveDefaultFor', () => {
 });
 
 describe('representativeIntent', () => {
-  it('reads template entries in Diagram mode', () => {
-    expect(representativeIntent('mode:draw')).toEqual({ mode: 'draw', tabKind: 'diagram' });
+  it('reads every entry in Plan', () => {
+    expect(representativeIntent('mode:plan')).toEqual({ mode: 'plan', tabKind: 'diagram' });
     expect(representativeIntent('template:kanban')).toEqual({
-      mode: 'diagram',
+      mode: 'plan',
       tabKind: 'diagram',
       templateFamily: 'kanban',
     });
@@ -97,11 +99,17 @@ describe('representativeIntent', () => {
 
 describe('destinationOf', () => {
   it('is the root without a default', () => {
-    expect(destinationOf('mode:draw', defaults([]), index)).toEqual({ kind: 'root' });
+    expect(destinationOf('template:retrospective', defaults([]), index)).toEqual({ kind: 'root' });
   });
 
   it('is the folder, with its team, when it works', () => {
-    expect(destinationOf('mode:draw', defaults([['mode:draw', 'sprints']]), index)).toMatchObject({
+    expect(
+      destinationOf(
+        'template:retrospective',
+        defaults([['template:retrospective', 'sprints']]),
+        index,
+      ),
+    ).toMatchObject({
       kind: 'folder',
       folder: { id: 'sprints' },
       teamName: 'Design team',
@@ -111,7 +119,7 @@ describe('destinationOf', () => {
   it('is dangling when deleted, naming where those documents go instead', () => {
     const d = defaults([
       ['template:kanban', 'gone'],
-      ['mode:diagram', 'workshops'],
+      ['mode:plan', 'workshops'],
     ]);
     expect(
       destinationOf('template:kanban', d, index, () => ({ name: 'Boards', teamId: null })),
@@ -122,9 +130,7 @@ describe('destinationOf', () => {
       reason: 'deleted',
       fallback: expect.objectContaining({ id: 'workshops' }),
     });
-    expect(
-      destinationOf('mode:diagram', defaults([['mode:diagram', 'gone']]), index),
-    ).toMatchObject({
+    expect(destinationOf('mode:plan', defaults([['mode:plan', 'gone']]), index)).toMatchObject({
       kind: 'dangling',
       name: null,
       fallback: null,
@@ -132,9 +138,12 @@ describe('destinationOf', () => {
   });
 
   it('is unavailable when its team is not among the reader’s', () => {
-    const d = defaults([['mode:draw', 'old-team-folder']]);
+    const d = defaults([['template:retrospective', 'old-team-folder']]);
     expect(
-      destinationOf('mode:draw', d, index, () => ({ name: 'Plans', teamId: 'team-left' })),
+      destinationOf('template:retrospective', d, index, () => ({
+        name: 'Plans',
+        teamId: 'team-left',
+      })),
     ).toMatchObject({ kind: 'dangling', reason: 'unavailable', name: 'Plans' });
   });
 });
@@ -143,10 +152,13 @@ describe('folderDefaultKeys', () => {
   it('lists the keys a folder holds, in list order', () => {
     const d = defaults([
       ['template:kanban', 'workshops'],
-      ['mode:draw', 'workshops'],
-      ['mode:diagram', 'retros'],
+      ['template:retrospective', 'workshops'],
+      ['mode:plan', 'retros'],
     ]);
-    expect(folderDefaultKeys('workshops', d)).toEqual(['mode:draw', 'template:kanban']);
+    expect(folderDefaultKeys('workshops', d)).toEqual([
+      'template:retrospective',
+      'template:kanban',
+    ]);
     expect(folderDefaultKeys('nothing', d)).toEqual([]);
   });
 });

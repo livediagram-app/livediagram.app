@@ -7,15 +7,11 @@ import { useStableCollab } from './element-layer-props';
 // docs/specs/008-canvas/canvas-performance.md: the collab bag the editor mints per render keeps its
 // identity while nothing a face shows changes, so every element view's memo holds.
 
-const me = { id: 'me', name: 'Me', color: '#111111', status: 'online' as const };
-const peer = { id: 'p', name: 'Peer', color: '#222222', status: 'online' as const };
-
 function collab(over: Partial<CollabApi> = {}): CollabApi {
   return {
     selfKey: 'me',
-    participants: [{ ...me }, { ...peer, lastActiveAt: Math.random() }],
     respond: vi.fn(),
-    addIdea: vi.fn(),
+    clearResponses: vi.fn(),
     ...over,
   };
 }
@@ -42,14 +38,6 @@ describe('useStableCollab', () => {
     expect(respond).toHaveBeenCalledWith({}, 'yes');
   });
 
-  it('changes when the roster changes what a face shows', () => {
-    const { result, rerender } = setup();
-    const first = result.current;
-    rerender({ c: collab({ participants: [{ ...me }, { ...peer, name: 'Renamed' }] }) });
-    expect(result.current).not.toBe(first);
-    expect(result.current.participants[1]!.name).toBe('Renamed');
-  });
-
   it('changes when a handler comes or goes', () => {
     const { result, rerender } = setup();
     const first = result.current;
@@ -61,7 +49,7 @@ describe('useStableCollab', () => {
   it('changes when its own data changes', () => {
     const { result, rerender } = setup();
     const first = result.current;
-    rerender({ c: collab({ selfName: 'Someone' }) });
+    rerender({ c: collab({ selfKey: 'someone' }) });
     expect(result.current).not.toBe(first);
   });
 });

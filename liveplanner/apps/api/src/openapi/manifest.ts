@@ -217,21 +217,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
-    path: '/icons',
-    segment: 'icons',
-    tag: 'Catalogues',
-    summary:
-      'Icons from the line-art and Technology catalogues for a query, best first, as the palette ranks them.',
-    auth: 'public',
-    query: [
-      { name: 'query', required: true, description: '1 to 60 characters.' },
-      { name: 'limit', required: false, description: '1 to 50; 20 by default.' },
-    ],
-    responseSchema: 'IconSearchResponse',
-    statuses: [200, 400, 405],
-  },
-  {
-    method: 'GET',
     path: '/schema',
     segment: 'schema',
     tag: 'Catalogues',
@@ -312,7 +297,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
         tabs: {
           type: 'array',
           description:
-            'The tabs to seed. A tab may give `graph`, `mermaid` or `template` in place of `elements`, compiled ' +
+            'The tabs to seed. A tab may give a `template` in place of `elements`, compiled ' +
             'by the edit-operations engine; a tab it refuses refuses the create (422, with `tabId`).',
           items: {
             anyOf: [
@@ -323,8 +308,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
                   id: { type: 'string' },
                   name: { type: 'string' },
                   theme: { type: 'string' },
-                  graph: { type: 'object' },
-                  mermaid: { type: 'string' },
                   template: { type: 'string' },
                 },
                 required: ['id'],
@@ -568,33 +551,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [200, 400, 401, 403, 404, 410],
   },
   {
-    method: 'POST',
-    path: '/documents/{id}/tabs/{tabId}/pages',
-    segment: 'documents',
-    tag: 'Documents',
-    summary:
-      'Change the pages of a tab (add, set, lay out, move, duplicate, delete; up to 50, as one edit) or write an article from Markdown. Switches the tab into Pages and reaches everyone with the document open. Answers each page with its rectangle on the canvas.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    requestSchema: ref('PagesRequest'),
-    responseSchema: 'PagesAnswer',
-    statuses: [200, 400, 401, 403, 404, 409, 410, 413],
-  },
-  {
-    method: 'POST',
-    path: '/documents/{id}/tabs/{tabId}/illustrate',
-    segment: 'documents',
-    tag: 'Documents',
-    summary:
-      'The address of the pages call before Illustrate mode became Pages mode, kept for older clients. Use /documents/{id}/tabs/{tabId}/pages.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    deprecated: true,
-    requestSchema: ref('PagesRequest'),
-    responseSchema: 'PagesAnswer',
-    statuses: [200, 400, 401, 403, 404, 409, 410, 413],
-  },
-  {
     method: 'DELETE',
     path: '/documents/{id}/tabs/{tabId}',
     segment: 'documents',
@@ -671,8 +627,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/documents/{id}/tabs/{tabId}/render.svg',
     segment: 'documents',
     tag: 'Documents',
-    summary:
-      'One tab drawn by the shared renderer (images inlined when the host stores them). Read-gated like the tab; never cached.',
+    summary: 'One tab drawn by the shared renderer. Read-gated like the tab; never cached.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: { type: 'string' },
@@ -976,20 +931,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     responseSchema: 'ItemResponse',
     statuses: [200, 204, 401, 403, 404, 405, 409, 410],
   },
-  {
-    method: 'GET',
-    path: '/documents/{id}/tabs/{tabId}/comment-pictures',
-    segment: 'documents',
-    tag: 'Documents',
-    summary:
-      "The published profile pictures of a tab's comment authors, keyed by comment id. Empty unless the caller is signed in.",
-    auth: 'guest-or-clerk',
-    responseSchema: {
-      type: 'object',
-      properties: { pictures: { type: 'object', additionalProperties: { type: 'string' } } },
-    },
-    statuses: [200, 403, 404],
-  },
   // ---- Form links (docs/specs/030-forms/forms.md) ----
   {
     method: 'POST',
@@ -1079,46 +1020,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     requestSchema: ref('FormResponseBody'),
     responseSchema: ref('FormResponseAccepted'),
     statuses: [201, 400, 403, 404, 409, 413, 429],
-  },
-  {
-    method: 'POST',
-    path: '/documents/{id}/tabs/{tabId}/qa',
-    segment: 'documents',
-    tag: 'Documents',
-    summary:
-      "Apply one action to a Q&A board element. Readers may add and vote; running the board needs edit access. The voter and author are derived from the caller, never read from the body. A guest's upvote answers 429 vote_limit once its network holds the most guest voters the document takes.",
-    auth: 'guest-or-clerk',
-    requestSchema: {
-      type: 'object',
-      properties: {
-        elementId: { type: 'string' },
-        action: {
-          type: 'object',
-          description:
-            'One of: add { id, text, anonymous }; vote { noteId, on }; discuss { noteId | null }; done, reopen or remove { noteId }; clear.',
-          properties: {
-            type: { enum: ['add', 'vote', 'discuss', 'done', 'reopen', 'remove', 'clear'] },
-            id: { type: 'string' },
-            text: { type: 'string' },
-            anonymous: { type: 'boolean' },
-            noteId: { type: ['string', 'null'] },
-            on: { type: 'boolean' },
-          },
-          required: ['type'],
-        },
-      },
-      required: ['elementId', 'action'],
-    },
-    responseSchema: {
-      type: 'object',
-      properties: {
-        notes: { type: 'array', items: ref('QaNote') },
-        rev: { type: 'integer' },
-        voterId: { type: 'string' },
-      },
-      required: ['notes', 'rev', 'voterId'],
-    },
-    statuses: [200, 400, 401, 403, 404, 409, 410, 413, 429],
   },
   {
     method: 'POST',
@@ -1258,7 +1159,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Documents',
     summary:
-      'WebSocket upgrade to the realtime room. The op protocol is documented in docs/specs/015-api/api.md, not here.',
+      'WebSocket upgrade to the realtime room. The op protocol is internal and not covered here.',
     auth: 'guest-or-clerk',
     query: [
       { name: 's', required: false, description: 'Share code, for non-owner collaborators.' },
@@ -1324,68 +1225,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     auth: 'guest-or-clerk',
     tokenUsable: true,
     statuses: [204, 401, 403, 404],
-  },
-
-  // ---- Images ----
-  {
-    method: 'GET',
-    path: '/images',
-    segment: 'images',
-    tag: 'Images',
-    summary: "List the caller's uploaded images.",
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    responseSchema: listOf('images', 'ImageSummary'),
-    statuses: [200, 401, 503],
-  },
-  {
-    method: 'POST',
-    path: '/images',
-    segment: 'images',
-    tag: 'Images',
-    summary: 'Upload an image (raw bytes; SHA-256 + dimensions in X-Image-* headers).',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    requestSchema: { type: 'string', format: 'binary' },
-    responseSchema: {
-      type: 'object',
-      properties: { image: ref('ImageSummary'), deduped: { type: 'boolean' } },
-      required: ['image', 'deduped'],
-    },
-    statuses: [200, 400, 401, 403, 409, 413, 415, 503],
-  },
-  {
-    method: 'GET',
-    path: '/images/usage',
-    segment: 'images',
-    tag: 'Images',
-    summary: 'Map each image to the documents that reference it.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    responseSchema: { type: 'object' },
-    statuses: [200, 401, 503],
-  },
-  {
-    method: 'GET',
-    path: '/images/{id}',
-    segment: 'images',
-    tag: 'Images',
-    summary: 'Download an image (owner, or a share-code reader).',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    query: [{ name: 'd', required: false, description: 'Document id, for share-code readers.' }],
-    responseSchema: { type: 'string', format: 'binary' },
-    statuses: [200, 404, 503],
-  },
-  {
-    method: 'DELETE',
-    path: '/images/{id}',
-    segment: 'images',
-    tag: 'Images',
-    summary: 'Delete an image from the gallery.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    statuses: [200, 401, 403, 503],
   },
 
   // ---- Custom themes ----
@@ -1948,14 +1787,14 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/timeline',
     segment: 'timeline',
     tag: 'Account',
-    summary: "The caller's activity feed, newest first. Keyset-paginated via nextCursor.",
+    summary:
+      "A document's history (scope=document:<id>) or a team's activity (scope=team:<id>), newest first. Keyset-paginated via nextCursor. The scope is required.",
     auth: 'guest-or-clerk',
     responseSchema: {
       type: 'object',
       properties: {
         items: { type: 'array', items: { $ref: '#/components/schemas/TimelineEvent' } },
         nextCursor: { type: 'string' },
-        lastSeenAt: { type: 'number' },
       },
     },
     statuses: [200, 400, 401, 403],
@@ -1965,45 +1804,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/timeline/unread',
     segment: 'timeline',
     tag: 'Account',
-    summary: "Count of other people's events since the caller last read their feed (capped at 99).",
+    summary: "Count of other people's events since the caller last viewed Home (capped at 99).",
     auth: 'guest-or-clerk',
     responseSchema: { type: 'object', properties: { count: { type: 'number' } } },
-    statuses: [200, 400, 401],
-  },
-  {
-    method: 'POST',
-    path: '/timeline/refresh',
-    segment: 'timeline',
-    tag: 'Account',
-    summary: 'Seed the feed on first use and mark it seen. Throttled to once every 5s.',
-    auth: 'guest-or-clerk',
-    responseSchema: { type: 'object', properties: { lastSeenAt: { type: 'number' } } },
-    statuses: [200, 400, 401],
-  },
-  {
-    method: 'DELETE',
-    path: '/timeline/events/{id}',
-    segment: 'timeline',
-    tag: 'Account',
-    summary:
-      "Remove one event from the caller's own feed. Other readers of the same event keep it. 404 when the feed never held it.",
-    auth: 'guest-or-clerk',
-    statuses: [204, 401, 404],
-  },
-  {
-    method: 'POST',
-    path: '/timeline/events/dismiss',
-    segment: 'timeline',
-    tag: 'Account',
-    summary:
-      "Remove several events (a whole stack) from the caller's own feed in one call. Up to 200 ids; unknown ids are ignored.",
-    auth: 'guest-or-clerk',
-    requestSchema: {
-      type: 'object',
-      required: ['ids'],
-      properties: { ids: { type: 'array', items: { type: 'string' } } },
-    },
-    responseSchema: { type: 'object', properties: { dismissed: { type: 'number' } } },
     statuses: [200, 400, 401],
   },
 
@@ -2360,7 +2163,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/ai',
     segment: 'ai',
     tag: 'AI',
-    summary: 'Generate or review a diagram with the optional AI assistant (streamed).',
+    summary: 'Ask about or clean up a tab with the optional AI assistant (streamed).',
     auth: 'guest-or-clerk',
     requestSchema: 'AiRequest',
     statuses: [200, 401, 403, 500, 502, 503],

@@ -17,7 +17,6 @@ const shape = (id: string, kind: string, x: number, y: number, extra: object = {
 const tab = (elements: Element[], over: Partial<Tab> = {}): Tab => ({
   id: 'p',
   name: 'Plan',
-  opensIn: 'plan',
   kind: 'diagram',
   elements,
   ...over,
@@ -30,7 +29,6 @@ describe('converting an old Plan tab', () => {
   it('converts only a Plan tab of the general kind holding Plan elements alone', () => {
     const board = shape('b', 'plan-board', 0, 0);
     expect(isConvertiblePlanTab(tab([board]))).toBe(true);
-    expect(isConvertiblePlanTab(tab([board], { opensIn: 'diagram' }))).toBe(false);
     expect(isConvertiblePlanTab(tab([board], { kind: 'board' }))).toBe(false);
     expect(isConvertiblePlanTab(tab([]))).toBe(false);
     expect(isConvertiblePlanTab(tab([board, shape('s', 'square', 0, 0)]))).toBe(false);
@@ -38,7 +36,7 @@ describe('converting an old Plan tab', () => {
 
   it('makes a tab of one board a Board tab, and of one Sheet a Sheet tab', () => {
     expect(convertPlanTab(tab([shape('b', 'plan-board', 0, 0)]), createTab, newId)).toEqual([
-      expect.objectContaining({ id: 'p', kind: 'board', opensIn: 'plan' }),
+      expect.objectContaining({ id: 'p', kind: 'board' }),
     ]);
     expect(convertPlanTab(tab([shape('s', 'plan-sheet', 0, 0)]), createTab, newId)![0]!.kind).toBe(
       'sheet',

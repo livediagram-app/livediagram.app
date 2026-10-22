@@ -8,6 +8,7 @@ import { DashboardBoard } from './hero-dashboard-board';
 import { FormBoard } from './hero-form-board';
 import { PlanBoard } from './hero-plan-board';
 import { SheetBoard } from './hero-sheet-board';
+import { TogetherBoard } from './hero-together-board';
 import { HERO_SCENE_DATA, type HeroSceneData, type HeroSceneKey } from './hero-scene-data';
 
 export type { HeroSceneKey } from './hero-scene-data';
@@ -20,6 +21,7 @@ const BOARDS: Record<HeroSceneKey, ComponentType<{ portrait?: boolean }>> = {
   sheet: SheetBoard,
   form: FormBoard,
   dashboard: DashboardBoard,
+  together: TogetherBoard,
 };
 
 export const HERO_SCENES: HeroScene[] = HERO_SCENE_DATA.map((scene) => ({

@@ -10,9 +10,8 @@ search box across every category.
 
 It is gone. Every editor mode's palette now opens on its own **Popular**: a
 fixed pick of twelve tiles from across that mode's categories, the same for
-everyone, not edited or reordered. Diagram mode's Popular is what the default
-Favourites were (Square, Circle, Diamond, Text, Arrow, Frame, Sticky note,
-Image, Shape pen, Table, Code block, Entity).
+everyone, not edited or reordered. Diagram mode's Popular is Square, Circle, Diamond,
+Text, Arrow, Frame, Mind node, Flowchart, Sankey, Table, AWS and Entity.
 
 What went with it:
 

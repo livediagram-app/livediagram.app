@@ -175,7 +175,7 @@ describe('submitting a changeset', () => {
       db,
       'POST',
       '/api/documents/D/tabs/t2/changesets',
-      { replace: { graph: { nodes: [{ id: 'x', label: 'X' }], edges: [] }, name: 'Detail' } },
+      { replace: { template: 'kanban', name: 'Detail' } },
       { token: true },
     );
     expect(res.status).toBe(200);

@@ -2,9 +2,8 @@ import { useEffect, useEffectEvent, useState, type RefObject } from 'react';
 import { snapResizeBounds, snapToAlignment, snapToArrowPoint } from '@liveplanner/document';
 import { ARROW_SNAP_THRESHOLD_PX, pointerToCanvas, snapLeadingAxis } from '@/lib/canvas';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
-import { isFreePenIntent, isPlanCardIntent, isWhiteboardPenIntent } from '@/lib/draw-mode';
+import { isPlanCardIntent } from '@/lib/draw-mode';
 import { usePlanCardPlacingGap } from '@/hooks/plan/usePlanCardPlacingGap';
-import { useWhiteboardPenGesture } from '@/components/canvas/useWhiteboardPenGesture';
 import { beginCanvasGesture } from '@/lib/canvas-gesture';
 
 const EMPTY_ID_SET: Set<string> = new Set();
@@ -13,17 +12,15 @@ const EMPTY_ID_SET: Set<string> = new Set();
 // hook can't drift from what Canvas passes.
 type CanvasDrawGestureDeps = Pick<
   CanvasProps,
-  'pendingDraw' | 'elements' | 'isPinchingRef' | 'onCommitDraw' | 'onCommitFreehand'
+  'pendingDraw' | 'elements' | 'isPinchingRef' | 'onCommitDraw'
 > & {
   // The zoom now (CanvasView reads it from the viewport store).
   viewportZoom: number;
   wrapperRef: RefObject<HTMLDivElement | null>;
-  // On a whiteboard (Draw mode) a pen draws freely; elsewhere a marker lines up like the pencil.
-  whiteboard: boolean;
 };
 
-// Canvas draw-to-size + freehand pen gesture, lifted out of Canvas.tsx. Owns
-// the in-progress draw state (box drag, pen polyline, pre-press snap hover)
+// Canvas draw-to-size gesture, lifted out of Canvas.tsx. Owns
+// the in-progress draw state (box drag, pre-press snap hover)
 // and the window-level pointer listeners that drive them, applying the same
 // alignment / arrow snapping as a move/resize. Returns the live state for the
 // preview overlay plus beginPendingDrawGesture, which the canvas pointer-down
@@ -35,8 +32,6 @@ export function useCanvasDrawGesture({
   viewportZoom,
   isPinchingRef,
   onCommitDraw,
-  onCommitFreehand,
-  whiteboard,
 }: CanvasDrawGestureDeps) {
   // Draw-to-size gesture state. Set when the user starts a drag on
   // the canvas while pendingDraw is set; cleared on pointer-up
@@ -52,29 +47,9 @@ export function useCanvasDrawGesture({
     currentY: number;
   } | null>(null);
 
-  // Pen gesture state. The freehand intent samples pointer positions
-  // for the whole drag (one polyline) rather than start + end like
-  // the box / line intents. Stored as a flat array of canvas-coord
-  // points; appended to on every pointermove (throttled to one append
-  // per frame via requestAnimationFrame so high-DPI / 120 Hz pointers
-  // can't push thousands of samples per second through React's
-  // reconciliation). Null when no pen drag is active.
-  const [penPoints, setPenPoints] = useState<{ x: number; y: number }[] | null>(null);
-
   // Drawing is a stroke gesture (docs/specs/008-canvas/canvas-performance.md), press to release.
-  const drawing = drawDrag !== null || penPoints !== null;
+  const drawing = drawDrag !== null;
   useEffect(() => (drawing ? beginCanvasGesture('stroke') : undefined), [drawing]);
-
-  // A whiteboard pen draws through the live stroke pipeline instead (its own hook: coalesced
-  // samples, no React state per sample; docs/specs/023-draw-mode/draw-mode.md "Pens").
-  const { penStroke, beginWhiteboardStroke } = useWhiteboardPenGesture({
-    pendingDraw,
-    wrapperRef,
-    viewportZoom,
-    isPinchingRef,
-    onCommitFreehand,
-    whiteboard,
-  });
 
   // Snap a draw gesture's START point to nearby element edge / centre
   // lines the same way the moving corner snaps: a 0×0 candidate snaps
@@ -92,13 +67,12 @@ export function useCanvasDrawGesture({
     return { x: px + snap.dx, y: py + snap.dy };
   };
 
-  // Starts a draw-to-size / freehand gesture from a primary-button
+  // Starts a draw-to-size gesture from a primary-button
   // pointer-down when an intent is pending, converting to canvas
   // coords first. Returns true once a gesture began so callers can
   // stop there. Shared by the capture-phase intercept (which fires
-  // over elements too) and the background bubble handlers; a freehand
-  // intent seeds the polyline accumulator, every other intent seeds
-  // the box / line drag.
+  // over elements too) and the background bubble handlers; every
+  // intent seeds the box / line drag.
   const beginPendingDrawGesture = (e: React.PointerEvent): boolean => {
     if (!pendingDraw) return false;
     const rect = wrapperRef.current?.getBoundingClientRect();
@@ -108,15 +82,6 @@ export function useCanvasDrawGesture({
       // A pressed Plan card lands in the column under the press, exactly there: no snap, no drag
       // (docs/specs/026-plan/plan-mode.md "The palette").
       onCommitDraw(pendingDraw, sx, sy, sx, sy);
-    } else if (isWhiteboardPenIntent(pendingDraw)) {
-      // A whiteboard pen starts where it touches (no guides for pens); off a whiteboard a marker
-      // starts from an aligned point, as the pencil does.
-      beginWhiteboardStroke(e, whiteboard ? { x: sx, y: sy } : snapDrawStart(sx, sy));
-    } else if (pendingDraw.type === 'freehand') {
-      // Snap the first stroke point to nearby alignments (same as a shape's
-      // first corner) so the sketch can begin from an aligned start.
-      const start = snapDrawStart(sx, sy);
-      setPenPoints([{ x: start.x, y: start.y }]);
     } else {
       const start = snapDrawStart(sx, sy);
       setDrawDrag({ startX: start.x, startY: start.y, currentX: start.x, currentY: start.y });
@@ -132,13 +97,7 @@ export function useCanvasDrawGesture({
   // in CanvasChrome) appears exactly when the start would latch.
   const [drawHover, setDrawHover] = useState<{ x: number; y: number } | null>(null);
   // The corner-snap dot is for shapes drawn to size. Out of that state, the dot goes at once.
-  // A whiteboard pen draws freely: no start snap, so no dot either.
-  const hoverSnaps =
-    !!pendingDraw &&
-    !drawDrag &&
-    !penPoints &&
-    !isFreePenIntent(pendingDraw, whiteboard) &&
-    !isPlanCardIntent(pendingDraw);
+  const hoverSnaps = !!pendingDraw && !drawDrag && !!isPlanCardIntent(pendingDraw);
   // A pressed Plan card opens the gap where it would land as the pointer crosses a board.
   usePlanCardPlacingGap(isPlanCardIntent(pendingDraw) ? (pendingDraw.plan ?? 'task') : null);
   if (!hoverSnaps && drawHover) setDrawHover(null);
@@ -312,63 +271,5 @@ export function useCanvasDrawGesture({
     };
   }, [dragging, pendingDraw]);
 
-  // Pen-gesture sampling loop (the diagram pencil and the highlighter). While
-  // penPoints is non-null and the freehand intent is the active pendingDraw, accumulate pointer
-  // samples into the polyline. Pointermove writes to a local mirror
-  // and schedules ONE setPenPoints per requestAnimationFrame, so a
-  // 120 Hz pointer doesn't pump thousands of React renders. On
-  // pointerup we hand the polyline to onCommitFreehand (which
-  // simplifies + smooths it) and clear the gesture state. As with the
-  // drag, the listeners attach once per stroke and read the zoom and the
-  // commit handler as they are now.
-  const penSample = useEffectEvent((e: PointerEvent): { x: number; y: number } | null => {
-    const rect = wrapperRef.current?.getBoundingClientRect();
-    if (!rect) return null;
-    // Stop sampling once a 2-finger pinch takes over, so the committed
-    // polyline doesn't pick up the pinch-warped finger-1 path.
-    if (isPinchingRef?.current) return null;
-    return pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom);
-  });
-  const commitPenStroke = useEffectEvent((stroke: { x: number; y: number }[]) => {
-    // Recognition is which PEN you picked, not a preference (docs/specs/008-canvas/two-pens.md):
-    // the Shape Pen converts, plain Freehand and the highlighter never do.
-    if (pendingDraw?.type !== 'freehand' || stroke.length < 2) return;
-    onCommitFreehand(stroke, pendingDraw.variant === 'shape-pen');
-  });
-  // The stroke as the press left it: where the sampling starts from.
-  const penAtPress = useEffectEvent(() => penPoints ?? []);
-  const penning = penPoints !== null && pendingDraw?.type === 'freehand';
-  useEffect(() => {
-    if (!penning) return;
-    let buffer = penAtPress();
-    let rafId: number | null = null;
-    const onMove = (e: PointerEvent) => {
-      const point = penSample(e);
-      if (!point) return;
-      buffer = [...buffer, point];
-      if (rafId !== null) return;
-      rafId = window.requestAnimationFrame(() => {
-        rafId = null;
-        setPenPoints(buffer);
-      });
-    };
-    const onUp = () => {
-      if (rafId !== null) {
-        window.cancelAnimationFrame(rafId);
-        rafId = null;
-      }
-      const snapshot = buffer;
-      setPenPoints(null);
-      commitPenStroke(snapshot);
-    };
-    window.addEventListener('pointermove', onMove);
-    window.addEventListener('pointerup', onUp);
-    return () => {
-      window.removeEventListener('pointermove', onMove);
-      window.removeEventListener('pointerup', onUp);
-      if (rafId !== null) window.cancelAnimationFrame(rafId);
-    };
-  }, [penning, pendingDraw]);
-
-  return { drawDrag, penPoints, penStroke, drawHover, beginPendingDrawGesture };
+  return { drawDrag, drawHover, beginPendingDrawGesture };
 }

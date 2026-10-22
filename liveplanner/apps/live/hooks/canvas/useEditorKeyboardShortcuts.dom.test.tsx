@@ -36,7 +36,6 @@ function deps(overrides: Overrides = {}) {
     canGrowMindNode: () => false,
     onEscapeMindNode: () => false,
     // An ordinary diagram tab unless a test says otherwise.
-    whiteboard: null,
     ...spies,
     ...overrides,
   };
@@ -171,199 +170,6 @@ describe('onShortcutUsed', () => {
   });
 });
 
-describe('whiteboard keys (docs/specs/023-draw-mode/draw-mode.md "Keyboard shortcuts")', () => {
-  const board = () => {
-    const wb = {
-      pickSelect: vi.fn(),
-      pickPen: vi.fn(),
-      pickEraser: vi.fn(),
-      pickSticky: vi.fn(),
-      pickText: vi.fn(),
-      pickShape: vi.fn(),
-      pickPath: vi.fn(),
-      openShapes: vi.fn(),
-    };
-    const addShape = vi.fn();
-    const setCanvasTool = vi.fn();
-    const { bag } = deps({ selectedId: null, whiteboard: wb, addShape, setCanvasTool });
-    renderHook(() => useEditorKeyboardShortcuts(bag));
-    return { wb, addShape, setCanvasTool };
-  };
-
-  it('picks the dock tools with V, 1, 2, 3 and E', () => {
-    const { wb } = board();
-    press('v');
-    press('1');
-    press('2');
-    press('3');
-    press('e');
-    expect(wb.pickSelect).toHaveBeenCalledTimes(1);
-    expect(wb.pickPen.mock.calls.map((c): unknown => c[0])).toEqual(['main', 'second', 'third']);
-    expect(wb.pickEraser).toHaveBeenCalledTimes(1);
-  });
-
-  it('adds notes, text and the dock shapes with N, T, R, O, D, C, L and A', () => {
-    const { wb, addShape } = board();
-    press('n');
-    press('t');
-    for (const k of ['r', 'o', 'd', 'c', 'l', 'a']) press(k);
-    expect(wb.pickSticky).toHaveBeenCalledTimes(1);
-    expect(wb.pickText).toHaveBeenCalledTimes(1);
-    expect(wb.pickShape.mock.calls.map((c): unknown => c[0])).toEqual([
-      'rectangle',
-      'ellipse',
-      'diamond',
-      'cylinder',
-      'line',
-      'arrow',
-    ]);
-    // The diagram tab's own shape adds never run on a whiteboard.
-    expect(addShape).not.toHaveBeenCalled();
-  });
-
-  it('opens the Shapes flyout with S', () => {
-    const { wb, addShape } = board();
-    press('s');
-    expect(wb.openShapes).toHaveBeenCalledTimes(1);
-    expect(addShape).not.toHaveBeenCalled();
-  });
-
-  it('picks up the Path tool with P, never the pencil', () => {
-    const { wb } = board();
-    press('p');
-    expect(wb.pickPath).toHaveBeenCalledTimes(1);
-  });
-
-  it('leaves the other diagram tab keys out: no laser on K, no parallelogram on G', () => {
-    const { wb, addShape, setCanvasTool } = board();
-    press('k');
-    press('g');
-    expect(addShape).not.toHaveBeenCalled();
-    expect(wb.pickShape).not.toHaveBeenCalled();
-    expect(setCanvasTool).not.toHaveBeenCalledWith('laser');
-  });
-
-  it('puts the eraser down before clearing a selection', () => {
-    const wb = {
-      pickSelect: vi.fn(),
-      pickPen: vi.fn(),
-      pickEraser: vi.fn(),
-      pickSticky: vi.fn(),
-      pickText: vi.fn(),
-      pickShape: vi.fn(),
-      pickPath: vi.fn(),
-      openShapes: vi.fn(),
-    };
-    const onDeselect = vi.fn();
-    const { bag } = deps({ selectedId: 'a', whiteboard: wb, canvasTool: 'eraser', onDeselect });
-    renderHook(() => useEditorKeyboardShortcuts(bag));
-    press('Escape');
-    expect(wb.pickSelect).toHaveBeenCalledTimes(1);
-    expect(onDeselect).not.toHaveBeenCalled();
-  });
-
-  it('puts the eraser down with Escape', () => {
-    const wb = {
-      pickSelect: vi.fn(),
-      pickPen: vi.fn(),
-      pickEraser: vi.fn(),
-      pickSticky: vi.fn(),
-      pickText: vi.fn(),
-      pickShape: vi.fn(),
-      pickPath: vi.fn(),
-      openShapes: vi.fn(),
-    };
-    const { bag } = deps({ selectedId: null, whiteboard: wb, canvasTool: 'eraser' });
-    renderHook(() => useEditorKeyboardShortcuts(bag));
-    press('Escape');
-    expect(wb.pickSelect).toHaveBeenCalledTimes(1);
-  });
-
-  it('keeps hand on H', () => {
-    const { setCanvasTool } = board();
-    press('h');
-    expect(setCanvasTool).toHaveBeenCalledWith('pan');
-  });
-
-  it('gives a view-role visitor V only', () => {
-    const wb = {
-      pickSelect: vi.fn(),
-      pickPen: vi.fn(),
-      pickEraser: vi.fn(),
-      pickSticky: vi.fn(),
-      pickText: vi.fn(),
-      pickShape: vi.fn(),
-      pickPath: vi.fn(),
-      openShapes: vi.fn(),
-    };
-    const { bag } = deps({ selectedId: null, whiteboard: wb, isReadOnly: true });
-    renderHook(() => useEditorKeyboardShortcuts(bag));
-    press('1');
-    press('e');
-    press('v');
-    expect(wb.pickPen).not.toHaveBeenCalled();
-    expect(wb.pickEraser).not.toHaveBeenCalled();
-    expect(wb.pickSelect).toHaveBeenCalledTimes(1);
-  });
-});
-
-// Shift+D moves to the next editor mode (docs/specs/007-editor/editor-modes.md "The mode switch").
-describe('Shift+D', () => {
-  it('cycles the editor mode where a switch is offered', () => {
-    const onCycleEditorMode = vi.fn();
-    const { bag, spies } = deps({ selectedId: null, onCycleEditorMode });
-    renderHook(() => useEditorKeyboardShortcuts(bag));
-    const e = press('D', { shiftKey: true });
-    expect(onCycleEditorMode).toHaveBeenCalledTimes(1);
-    expect(e.defaultPrevented).toBe(true);
-    expect(spies.onShortcutUsed).toHaveBeenCalledTimes(1);
-  });
-
-  it('does nothing where no switch is offered, and adds no diamond', () => {
-    const addShape = vi.fn();
-    const { bag } = deps({ selectedId: null, onCycleEditorMode: null, addShape });
-    renderHook(() => useEditorKeyboardShortcuts(bag));
-    const e = press('D', { shiftKey: true });
-    expect(e.defaultPrevented).toBe(false);
-    expect(addShape).not.toHaveBeenCalled();
-  });
-
-  it('still reaches Draw mode, whose dock owns the plain keys', () => {
-    const onCycleEditorMode = vi.fn();
-    const { bag } = deps({ selectedId: null, onCycleEditorMode, whiteboard: {} as never });
-    renderHook(() => useEditorKeyboardShortcuts(bag));
-    press('D', { shiftKey: true });
-    expect(onCycleEditorMode).toHaveBeenCalledTimes(1);
-  });
-
-  it('yields to type-to-edit on a selected labelled element', () => {
-    const onCycleEditorMode = vi.fn();
-    const onTypeIntoSelected = vi.fn(() => true);
-    const { bag } = deps({ onCycleEditorMode, onTypeIntoSelected });
-    renderHook(() => useEditorKeyboardShortcuts(bag));
-    press('D', { shiftKey: true });
-    expect(onTypeIntoSelected).toHaveBeenCalledWith('a', 'D');
-    expect(onCycleEditorMode).not.toHaveBeenCalled();
-  });
-
-  it('obeys the shortcuts switch', () => {
-    const onCycleEditorMode = vi.fn();
-    const { bag } = deps({ selectedId: null, onCycleEditorMode, enabled: false });
-    renderHook(() => useEditorKeyboardShortcuts(bag));
-    press('D', { shiftKey: true });
-    expect(onCycleEditorMode).not.toHaveBeenCalled();
-  });
-
-  it('leaves a modified D (duplicate) alone', () => {
-    const onCycleEditorMode = vi.fn();
-    const { bag } = deps({ selectedId: null, onCycleEditorMode });
-    renderHook(() => useEditorKeyboardShortcuts(bag));
-    press('D', { shiftKey: true, metaKey: true });
-    press('D', { shiftKey: true, altKey: true });
-    expect(onCycleEditorMode).not.toHaveBeenCalled();
-  });
-});
-
 // docs/specs/004-interface-design/menus.md: while focus is inside a menu of either kind the
 // canvas's shortcuts stand down.
 describe('inside a menu', () => {
@@ -410,13 +216,12 @@ describe('a covered canvas', () => {
     expect(spies.setCanvasTool).not.toHaveBeenCalled();
   });
 
-  it('still undoes, redoes, searches, toggles zen and switches mode, and keeps the browser off canvas chords', () => {
+  it('still undoes, redoes, searches and toggles zen, and keeps the browser off canvas chords', () => {
     const spies = {
       undo: vi.fn(),
       redo: vi.fn(),
       onOpenSearch: vi.fn(),
       onToggleZen: vi.fn(),
-      onCycleEditorMode: vi.fn(),
       onDuplicate: vi.fn(),
       onSelectAll: vi.fn(),
       copySelection: vi.fn(),
@@ -428,12 +233,10 @@ describe('a covered canvas', () => {
     press('y', { ctrlKey: true });
     press('k', { metaKey: true });
     press('z');
-    press('D', { shiftKey: true });
     expect(spies.undo).toHaveBeenCalledTimes(1);
     expect(spies.redo).toHaveBeenCalledTimes(2);
     expect(spies.onOpenSearch).toHaveBeenCalledTimes(1);
     expect(spies.onToggleZen).toHaveBeenCalledTimes(1);
-    expect(spies.onCycleEditorMode).toHaveBeenCalledTimes(1);
     // Duplicate and select-all are prevented (no bookmark, no page select) and do nothing.
     expect(press('d', { metaKey: true }).defaultPrevented).toBe(true);
     expect(press('a', { metaKey: true }).defaultPrevented).toBe(true);
@@ -573,36 +376,5 @@ describe('undo and redo from the start search', () => {
     pressIn(input, 'c', { metaKey: true });
     expect(copySelection).not.toHaveBeenCalled();
     input.remove();
-  });
-});
-
-// docs/specs/007-editor/pages-mode.md "Getting around the pages": with nothing selected, the arrows
-// go between pages.
-describe('arrow keys between pages', () => {
-  it('steps forward on Right and Down, back on Left and Up, for every role', () => {
-    const onStepPage = vi.fn(() => true);
-    const { bag } = deps({ selectedId: null, isReadOnly: true, onStepPage });
-    renderHook(() => useEditorKeyboardShortcuts(bag));
-    expect(press('ArrowRight').defaultPrevented).toBe(true);
-    press('ArrowDown');
-    press('ArrowLeft');
-    press('ArrowUp');
-    expect(onStepPage.mock.calls.map((c) => (c as unknown[])[0])).toEqual([1, 1, -1, -1]);
-  });
-
-  it('lets the key be at either end of the row', () => {
-    const { bag } = deps({ selectedId: null, onStepPage: () => false });
-    renderHook(() => useEditorKeyboardShortcuts(bag));
-    expect(press('ArrowRight').defaultPrevented).toBe(false);
-  });
-
-  it('nudges a selection instead', () => {
-    const onStepPage = vi.fn(() => true);
-    const onNudgeSelection = vi.fn();
-    const { bag } = deps({ onStepPage, onNudgeSelection });
-    renderHook(() => useEditorKeyboardShortcuts(bag));
-    press('ArrowRight');
-    expect(onNudgeSelection).toHaveBeenCalledWith(1, 0);
-    expect(onStepPage).not.toHaveBeenCalled();
   });
 });

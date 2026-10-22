@@ -18,7 +18,7 @@ Preferences live in **D1** as the source of truth, with
 `localStorage` as a fast warm cache so the editor never blocks on
 a network round-trip at boot.
 
-- **D1 table** `user_preferences` (migration `0016_user_preferences.sql`),
+- **D1 table** `user_preferences`,
   one row per owner (Clerk userId for signed-in users, the per-
   browser participant id for guests). Columns: `owner_id TEXT
 PRIMARY KEY`, `prefs TEXT NOT NULL` (serialised JSON blob),
@@ -48,10 +48,8 @@ PRIMARY KEY`, `prefs TEXT NOT NULL` (serialised JSON blob),
   - **It fits.** The blob is trimmed to the api's cap (4,096
     characters of `{"prefs":...}`) before it is cached or sent:
     the oldest hidden-from-Recent ids go first
-    ([Hide from Recent](../013-workspace/hide-from-recent.md)), then the
-    least recently used shape picks
-    ([Draw mode, Shape slots](../023-draw-mode/draw-mode.md)); every
-    other key stays whole. A full account measured 4,967 characters,
+    ([Hide from Recent](../013-workspace/hide-from-recent.md)); every
+    other key stays whole. A full account once measured 4,967 characters,
     past which every save was refused. A trim logs
     `[preferences] trimmed to fit dropped=<n> length=<n>`.
   - **One save at a time, the latest wins.** A save made while one
@@ -110,21 +108,20 @@ the same `guestOwnerId` moves zero rows.
 ### Renamed keys
 
 - **Renamed key.** `notifyDiagramJoin` became `notifyDocumentJoin` when the container became a
-  document. Migration 0055 renames it in D1; `upgradeLegacyPreferences`
+  document. `upgradeLegacyPreferences`
   (`packages/api-schema/src/legacy-preferences.ts`) renames it wherever an older copy can still
   arrive: the browser's cache on read, the server's copy before the merge, and the api's
   notification check. An opt-out is never lost; when both keys exist, the new one wins.
 
 <!-- /legacy-names -->
 
-### Self-host degradation
+### Degradation without the api
 
-When the api worker is unset (pure-guest self-host without a D1
+When the api worker is unset (a pure-guest deployment without a D1
 binding configured) the client treats the fetch as a no-op
 failure: the localStorage cache acts as the only persistence,
 which is the same behaviour as the original v1 design and works
-exactly like it did before. No required SaaS calls, self-hosting
-stays viable.
+exactly like it did before. No required SaaS calls.
 
 ## Schema
 
@@ -147,17 +144,6 @@ type UserPreferences = {
   // setting it to false is the only state that changes behaviour.
   // See docs/specs/017-telemetry/telemetry.md for the rest of the telemetry contract.
   telemetryEnabled?: boolean;
-  // Pencil tool's shape-recognition toggle (docs/specs/008-canvas/canvas-and-palette.md Pencil
-  // subsection). When true, every freehand commit while the
-  // pencil banner is up runs through recogniseShape and may
-  // mint a primitive instead of a FreehandElement. Deliberately
-  // DEAD as of docs/specs/008-canvas/two-pens.md. Shape recognition is now which pen you
-  // picked — Freehand or Shape Pen — rather than a persisted mode,
-  // so nothing reads this. It stays in the type because it is
-  // already stored for existing users and removing it would make a
-  // stored preference fail to parse rather than be ignored.
-  recogniseShapes?: boolean;
-
   // When true, the AI Assistant panel renders in the editor.
   // Defaults to false (opt-in). Only surfaced in the Settings
   // dialog when the api worker reports aiEnabled:true (an
@@ -264,33 +250,14 @@ type UserPreferences = {
   // The Plan tour tracks (Boards, Sheets, Dashboards) whose offer has been answered (taken, skipped or declined), so each offers
   // itself once ever. Settings' Boards Tour and Sheets Tour rows each add or remove their own track.
   planTourTracks?: PlanTourTrack[];
-  // The Workshop tour's seen-guard (docs/specs/012-collaboration/workshop-tour.md), as `planTourSeen`.
-  // Surfaced in Settings as Tours › "Workshop Tour" (inverted). Missing / undefined === not seen.
-  workshopTourSeen?: boolean;
-  // The Draw tour's seen-guard (docs/specs/023-draw-mode/draw-tour.md), as `workshopTourSeen`.
-  // Surfaced in Settings as Tours › "Draw Tour" (inverted). Missing / undefined === not seen.
-  drawTourSeen?: boolean;
-  // The Forms tour's seen-guard (docs/specs/030-forms/forms.md "The Forms tour"), as `drawTourSeen`; Show Me Around
+  // The Forms tour's seen-guard (docs/specs/030-forms/forms.md "The Forms tour"), as `planTourSeen`; Show Me Around
   // in the form's cog panel reruns it. Missing / undefined === not seen.
   formTourSeen?: boolean;
-  // The Avatar tour's seen-guard (docs/specs/008-canvas/avatar-tour.md), as `drawTourSeen`.
-  // Surfaced in Settings as Tours › "Avatar Tour" (inverted). Missing / undefined === not seen.
-  avatarTourSeen?: boolean;
-  // The Pages tour's seen-guard (docs/specs/007-editor/pages-tour.md), as `planTourSeen`: true counts every
-  // page kind's track as seen while Power user mode is on. Set with every kind by Power user mode.
-  pagesTourSeen?: boolean;
-  // The page kinds whose Pages tour track has been offered and answered (taken, skipped or declined), so each
-  // kind offers its own once ever. Settings' row per kind (Slides Tour, ...) adds or removes its own kind.
-  pagesTourKinds?: PageKind[];
   // Element tours (docs/specs/007-editor/element-tours.md): the toured element kinds whose offer has been answered
   // (Play or Cancel). Surfaced in Settings as Tours › Show Me, one switch per kind (inverted).
   elementTourKinds?: ElementTourKind[];
   // Counts every element tour as answered while Power user mode is on; written by its preset.
   elementToursSeen?: boolean;
-  // The presenter settings (docs/specs/012-collaboration/presentation-mode.md "Presenter settings"), as one object,
-  // read through lib/presentation-config. Surfaced in Settings as Editor › Presenting. Missing === what this
-  // browser kept before they followed the account, else the defaults.
-  presentation?: Record<string, unknown>;
   // DEAD (../004-interface-design/colour-picker.md "Custom colours"): Custom colours are kept with the document's tabs, not per user.
   // Nothing reads or writes this; it stays because it is already stored.
   customSwatches?: string[];
@@ -306,33 +273,15 @@ type UserPreferences = {
     s?: Record<1 | 2 | 3 | 4 | 5 | 6, string>;
     f?: Record<1 | 2 | 3 | 4 | 5 | 6, string>;
   }[];
-  // The whiteboard dock (../023-draw-mode/draw-mode.md "Shape slots"): up to
-  // seven pinned shape keys (unset is the default pins, an empty list an
-  // emptied side), and per shape key [times picked, last picked ms] for the
-  // Shapes flyout's slots, at most 20 kept. Keys outside the whiteboard's
-  // shape catalogue are dropped on read (lib/whiteboard-dock-prefs).
-  whiteboardPinnedShapes?: string[];
-  whiteboardShapePicks?: Record<string, [number, number]>;
-  // DEAD, like `customSwatches`: the markers' Custom colours are the document's
-  // (../004-interface-design/colour-picker.md). Kept because it is already stored.
-  whiteboardYourColours?: string[];
-  // Where a whiteboard's dock sits (../023-draw-mode/draw-mode.md "Where the
-  // dock sits"): 'top' or 'bottom'. Unset, or anything but 'bottom', is the
-  // top (lib/whiteboard-dock-prefs).
-  whiteboardDockPosition?: 'top' | 'bottom';
   // How an element shows its link, note, action and comments
   // (../008-canvas/element-indicators.md): glyphs inside its top-right corner
   // ('top'), a row along its bottom edge ('footer') or none ('off'). Unset, or anything
   // else, is Top (lib/element-indicator-style).
   elementIndicatorStyle?: 'top' | 'footer' | 'off';
   // Draw mode's pattern, the person's own (./editor-modes.md "One look"): Plain, Dots
-  // or Grid, as last chosen from the dock's Settings; never stored on a tab. Unset, or
-  // anything else, is Grid (lib/whiteboard-dock-prefs).
+  // or Grid; never stored on a tab. Unset, or
+  // anything else, is Grid (apps/live/lib/whiteboard-dock-prefs.ts).
   drawPattern?: 'blank' | 'grid' | 'graph';
-  // Where Pages mode's Contents sits on a desktop (./pages-mode.md "Contents"):
-  // docked as a sidebar beside the canvas, or minimised to its cluster button.
-  // Unset, or anything but 'button', is the sidebar (lib/contents-placement).
-  contentsPlacement?: 'sidebar' | 'button';
 
   // Power user mode (docs/specs/007-editor/power-user-mode.md). True while the mode is on.
   // Switching it on applies the preset once; see powerUserBaseline.
@@ -374,25 +323,11 @@ Missing key === undefined === default behaviour. Concretely:
   can't drift between consumers.
 - `telemetryEnabled` undefined → telemetry on (the default).
   Setting it to `false` is the only state that opts out.
-- `recogniseShapes` is ignored whatever its value ([Two pens instead of a pen and a mode](../008-canvas/two-pens.md)): the
-  Shape Pen recognises, Freehand does not, and no stored flag
-  changes either.
 - `aiAssistanceEnabled` undefined → AI panel hidden (the default).
   Setting it to `true` shows the panel; the toggle only appears in
   Settings when the api worker advertises AI capability.
 - `panelLayout` and `minimalPanels`, which older blobs still carry, are
   ignored: there is one panel layout ([Toolbar layout](toolbar-layout.md#one-layout)).
-- `whiteboardDockPosition` undefined → a whiteboard's dock at the top (the
-  default). Only `'bottom'` moves it to the bottom.
-- `contentsPlacement` undefined → Pages mode's Contents docked as a sidebar
-  flush against the canvas's edge on a desktop, with more than one page (the
-  default). `'button'` minimises it to its cluster button; a phone always has
-  the button. Which edge (left or right) is per device, kept in the browser
-  alone, never here
-  ([Pages](pages-mode.md#contents)). Written by the sidebar's
-  Minimise, the popover's Dock as Sidebar and Settings › Editor › Pages ›
-  Contents; emits `UI`/`Changed`/`ContentsPlacementSidebar` or
-  `ContentsPlacementButton`.
 - `elementIndicatorStyle` undefined → Top: an element's link, note, action
   and comment glyphs sit inside it along its top, top-right on a box and centred
   on a round or pointed shape (the default). `'footer'` moves them to a labelled
@@ -405,8 +340,7 @@ Missing key === undefined === default behaviour. Concretely:
   whatever it says, so its Settings row is desktop only. Emits
   `UI`/`Toggled`/`DockButtonNames{On,Off}`.
 - `drawPattern` undefined → Grid (`graph`) behind every tab the person works
-  on in Draw mode. The dock's Background row writes it; it emits the same
-  Background events as before and changes nothing on the tab.
+  on in Draw mode. It changes nothing on the tab.
 - `alignmentGuides` undefined → guides on (the default). Setting it
   to `false` hides the faint guide lines during a move / resize; the
   snap behaviour itself is unchanged.
@@ -448,6 +382,9 @@ Missing key === undefined === default behaviour. Concretely:
   Document wizard's Location step ([New document route](new-document-route.md#one-step-wizard)): the wizard
   never asks where a document goes, so a stored place is dropped the same way and new documents follow the
   [default folders](../013-workspace/default-folders.md).
+  `workshopTourSeen` (and its older name `facilitateTourSeen`), `avatarTourSeen` and the presenter settings'
+  `presentation` went with Workshop mode's facilitation features (removed 2026-10-22): the Workshop and Avatar
+  tours and Presentation mode are gone, so a stored value is dropped the same way.
 - `quickAddOnHover` undefined / false → click to open an element's quick-add
   `+` menu (the default; hover-open can feel twitchy, so it's opt-in). `true`
   opens it on hover instead, closing a beat after the pointer leaves both the
@@ -510,10 +447,7 @@ that is the only control.
   in-context control where that control is the thing itself rather than a
   settings menu: the Appearance cycle button in the footer, and each of those rows says
   **"Also in ..."** so the pair reads as deliberate.
-- There are no per-tool preferences left: the one there was
-  (`recogniseShapes`, flipped from the pencil's banner) became two palette
-  tiles instead ([Two pens instead of a pen and a mode](../008-canvas/two-pens.md)), which is that idea taken to its end: the setting
-  is not near the tool, it IS the tool.
+- There are no per-tool preferences.
 
 This **replaces the earlier plan to retire the Settings dialog entirely** by
 pushing every setting out to its own surface. That plan solved the wrong
@@ -530,13 +464,9 @@ and the dialog stays as the one complete, browsable index of them.
   (`MovablePanel`'s `onReset`, shown once the panel has left its default
   corner), which is the only non-preference thing the popovers held.
 
-  The **Slide Deck** popover stays: its contents (auto-advance, speed,
-  transition, slide size, loop, hide pointer) are deck state rather than user
-  preferences, so they have no home in Settings and should not get one.
-
 - **Settings dialog**: `apps/live/components/dialogs/SettingsDialog.tsx`,
   lazy-loaded via `next/dynamic` (matches the other on-demand
-  modals: ShareDialog, ExportTabDialog, ImagePicker). Trigger: a
+  modals: ShareDialog, ExportTabDialog). Trigger: a
   gear-icon button in the TabBar footer, sitting between Search and the
   dark-mode toggle. The "Keyboard Shortcuts" command in search
   ([Command palette (⌘K)](command-palette.md)) opens it on the **Keyboard** category; that category replaced the standalone
@@ -605,11 +535,7 @@ and the dialog stays as the one complete, browsable index of them.
   **Editor** (a **Canvas** section: alignment guides, auto-attach arrows,
   element indicators; a **Mouse** section: quick-add on hover, middle-mouse
   pan; then **Power User**: power user mode, with Minimal chrome and the preset
-  readout nested under it while the mode is on; with the sub-categories
-  **Draw** (dock position, Top or Bottom) and **Pages** (a **Pages**
-  section: Contents, Sidebar or Button; then a **Logo Pages** section: Logo Guides, with Logo Guide Strength and the Guides Shown chips
-  nested under it) and **Presenting** (the presenter settings: Slides, Playback and While Presenting,
-  [Presentation mode](../012-collaboration/presentation-mode.md) "Presenter settings")), **Appearance** (theme, then an **Interface** section:
+  readout nested under it while the mode is on), **Appearance** (theme, then an **Interface** section:
   Button Labels, and UI scale with a slider per part nested under it), **Keyboard**
   (the Keyboard Shortcuts on/off switch, then the full shortcut catalogue as
   collapsible groups), **Panels** (panel opacity; with the
@@ -645,15 +571,8 @@ and the dialog stays as the one complete, browsable index of them.
   only here - see **UI placement** below.
 
   A category can hold **sub-categories** (`parent` on the sub-category's
-  spec). **Editor** holds one per editor mode whose settings apply only to
-  that mode ([Editor modes](editor-modes.md)): **Draw** holds Dock Position,
-  since only Draw mode has a dock; **Pages** holds Contents and the logo
-  guides. A setting that applies in both modes
-  stays on Editor itself; quick-add on hover, alignment guides, auto-attach
-  arrows, middle-mouse pan and power user mode all act in both. There is no
-  **Diagram** sub-category while no setting applies only to Diagram mode: a
-  category with no rows is never shown, and one is added beside Draw the day
-  a Diagram-only setting lands. **Account** holds **Notifications** and
+  spec). **Editor** holds none today: every editor setting applies to every tab, and a
+  category with no rows is never shown. **Account** holds **Notifications** and
   **API Tokens**: both belong to the person rather than the editor. Their
   category ids (`notifications`, `tokens`) predate the nesting and are
   kept, so every `?settings=notifications` / `?settings=tokens` deep link
@@ -691,7 +610,7 @@ and the dialog stays as the one complete, browsable index of them.
   mark in the editor (Lucide layers for Layers, the Collaborate button's
   glyph; the Map and Quick Style, which have no
   toolbar button, take Lucide map and Lucide palette; Draw takes the
-  marker the editor mode switch shows for Draw mode; Notifications and
+  marker glyph; Notifications and
   API Tokens keep the bell and key they carried as top-level tiles). Search matches a
   sub-category's rows on its parent's name too, and the canvas search names
   it by path ("in Panels › Layers", "in Editor › Draw", "in Account ›
@@ -722,8 +641,7 @@ and the dialog stays as the one complete, browsable index of them.
 
   Row kinds: `toggle`, `choice` (a segmented control, e.g.
   the theme and the minimap size), `slider` (panel opacity, UI scale, committing on
-  release so one drag is not one PUT per pixel), `toggleGroup` (several
-  switches as one row of chips, see **Toggle groups** below), `appearance` (the one row
+  release so one drag is not one PUT per pixel), `appearance` (the one row
   backed by the device-local store, not `UserPreferences`), and `tokens` (the
   API token manager).
   A toggle row's control is one `role="switch"` button, named by the label
@@ -766,9 +684,8 @@ and the dialog stays as the one complete, browsable index of them.
   Pan): a phone has no hover and no middle button.
 
   **Tours** is a category of its own: one switch per guided tour, **Diagram
-  Tour**, **Plan Tours** (over **Boards Tour**, **Sheets Tour** and **Dashboards Tour**), **Workshop Tour**,
-  **Draw Tour**, **Forms Tour**, **Avatar Tour** and **Pages Tours** (over **Slides Tour**, **Infographic Tour**,
-  **Article Tour** and **Logo Tour**), each with a line saying where it offers itself and a **Learn more**
+  Tour**, **Plan Tours** (over **Boards Tour**, **Sheets Tour** and **Dashboards Tour**),
+  **Forms Tour** and **Avatar Tour**, each with a line saying where it offers itself and a **Learn more**
   to its article, under one **Offer Again** section note: each tour offers
   itself once; switch one back on and close Settings to take it again, straight
   away if you are in its mode, otherwise the next time you are. (The tours used
@@ -793,14 +710,9 @@ and the dialog stays as the one complete, browsable index of them.
   to `planTourTracks`, on removes it alone, and both clear the single `planTourSeen`, folding it into the list first
   so one track back on leaves the others answered. It needs no handoff flag (the Plan tour offers itself in Plan once
   a board or Sheet is open, the Dashboards tour on a dashboard), so closing the dialog only reruns it, when a track
-  became owed while it was open ([Plan tour](../026-plan/plan-tour.md)). **Workshop Tour** works the same way against
-  `workshopTourSeen` ([Workshop tour](../012-collaboration/workshop-tour.md)), **Draw Tour** against
-  `drawTourSeen` ([Draw tour](../023-draw-mode/draw-tour.md)), **Forms Tour** against `formTourSeen` ([Forms](../030-forms/forms.md) "The Forms tour"), **Avatar Tour** against `avatarTourSeen`
-  ([Avatar tour](../008-canvas/avatar-tour.md)), and the Pages tour is built as the Plan tour's
-  rows are ([Pages tour](pages-tour.md)): **Pages Tours** over one row per page kind (**Slides Tour**,
-  **Infographic Tour**, **Article Tour**, **Logo Tour**); `pagesTourKinds` lists the kinds answered. Power user
-  mode's readout lists each tour's switch over all its tracks (**Plan Tours**, **Pages Tours**).
-  A multi-track tour's old single flag (`planTourSeen`, `pagesTourSeen`) counts every track only while Power
+  became owed while it was open ([Plan tour](../026-plan/plan-tour.md)). **Forms Tour** works the same way against
+  `formTourSeen` ([Forms](../030-forms/forms.md) "The Forms tour"). Power user mode's readout lists the Plan tour's switch over all
+  its tracks (**Plan Tours**). The Plan tour's old single flag (`planTourSeen`) counts every track only while Power
   user mode is on, so an answer given before the tour split offers each track once more.
 
   Below the mode tours, **Show Me** (element tours, named Show Me in the interface) is its own section, a closed
@@ -809,14 +721,6 @@ and the dialog stays as the one complete, browsable index of them.
   kind nested under it, named for the element (**Sankey Diagram**). Element tours
   need no relaunch: the offer shows the next time such an element is selected. A category may mark any section
   closed this way (`collapsedSections`); Settings opened on one of its rows opens it.
-
-  **Toggle groups.** Several related switches that share one description are
-  one `toggleGroup` row: the label and description over a row of **chips**, one
-  per switch, ticked and tinted while on, each its own preference with its own
-  telemetry. Chips rather than a grid of switches, so short names fit without
-  truncating. Pages mode's **Guides Shown** (one chip per logo guide) is the one
-  today; six near-identical rows each saying "Shows the X among a logo page's
-  construction guides" read as clutter.
 
   **Button Labels** (Appearance › Interface, `dockButtonNames`, on by default)
   names the editor's bottom buttons beside their icons: the footer bar's Search,
@@ -863,12 +767,7 @@ and the dialog stays as the one complete, browsable index of them.
   Accessibility group holds `reduceMotion`, noting the OS setting is
   always respected and this only adds a user-forced override.
 
-- **Per-tool surfaces**: none today. The pencil's ModeBanner used to
-  carry a `recogniseShapes` toggle; [Two pens instead of a pen and a mode](../008-canvas/two-pens.md) replaced it with two
-  palette tiles, so no preference is set from a tool's own chrome any
-  more. The Highlighter's Colour and Width ([Highlighter](../008-canvas/highlighter.md)) are set from
-  the Quick style panel while its tile is armed, and are session-local editor state setting the next
-  stroke rather than a persisted preference.
+- **Per-tool surfaces**: none. No preference is set from a tool's own chrome.
 
 ## Read / write helpers
 

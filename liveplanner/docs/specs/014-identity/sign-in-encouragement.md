@@ -25,7 +25,7 @@ hides it everywhere.
 Common gate (all must hold):
 
 - Clerk is configured for the deployment (`clerkEnabled`). A
-  self-hosted, Clerk-less install ([Open source + distribution](../002-project-scope/open-source-and-business-model.md) + [Auth + guest access](auth-and-guest-access.md)) has no working
+  deployment without Clerk ([Business model + licence](../002-project-scope/business-model-and-licence.md) + [Auth + guest access](auth-and-guest-access.md)) has no working
   sign-in, so the banner never renders there.
 - The visitor is **not** signed in (no `clerkUserId`; a guest owner id
   doesn't count).
@@ -44,7 +44,7 @@ top instead of landing on its words, as a "Document deleted · Undo" once did.
 ~5 minute delay** into the session (`SIGNIN_BANNER_DELAY_MS`), so it
 never greets someone the instant they open a document. It **stands on the
 bottom chrome**, 8px above the tab bar, the bottom-right cluster (Undo / Redo, the
-Session strip's Timer, Vote and Poll, Layers, Zoom) and the whiteboard dock, measured as
+Session strip's Timer, Vote and Poll, Layers, Zoom), measured as
 the toast stack measures its floor (`useChromeFloor`, `BOTTOM_CHROME_SELECTOR`), so it never
 covers a control. It once sat over that cluster, and a guest Editor running a session had to
 dismiss it to reach the timer or the vote. It is drawn over the canvas, and is additionally hidden:

@@ -55,7 +55,7 @@ const WORKSPACE_ROOTS = [
 // two-files-in-one shorthand.
 //
 // `00NN_` used to sit here too, for a migration filename not yet minted. It
-// outlived its reason: docs/specs/011-theme/custom-themes.md's migration shipped as 0026_custom_themes.sql
+// outlived its reason: docs/specs/011-theme/custom-themes.md's migration shipped
 // and the spec kept quoting the placeholder for the whole of that time,
 // because the exemption is exactly what stops this test noticing. A
 // placeholder is only honest before the file exists, so it does not get a

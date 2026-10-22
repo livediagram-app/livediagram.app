@@ -21,12 +21,12 @@ Lifetimes are fixed ms constants (`SHARE_LINK_EXPIRY_MS` in `@liveplanner/api-sc
 
 ## Data model
 
-Migration `0020_share_link_expiry.sql` adds two nullable columns to `share_links`:
+`share_links` carries two nullable columns:
 
 - `expiry TEXT` — the chosen lifetime token (`week` / `month` / `sixMonths`); NULL = never. Kept so **Extend** knows what duration to re-apply.
 - `expires_at INTEGER` — the moment the link stops working (ms epoch); NULL = never. Set to `created_at + lifetime` at creation.
 
-Pre-existing rows have NULL in both → never expire. The `ShareLink` DTO gains `expiry` and `expiresAt`.
+NULL in both → never expires. The `ShareLink` DTO gains `expiry` and `expiresAt`.
 
 ## Enforcement
 

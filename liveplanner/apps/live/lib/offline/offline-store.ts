@@ -49,11 +49,6 @@ export type OfflineDocumentRecord = {
   createdAt: number;
   savedAt: number;
   tabs: Tab[];
-  // Slide deck (docs/specs/012-collaboration/presentation-mode.md), serialised StoredPresentation. Offline documents get
-  // decks for the same reason they get everything else: Offline Mode is the
-  // whole product minus the server, not a reduced one. Optional so records
-  // written before the field existed stay valid.
-  presentation?: string | null;
   // Starred in the Explorer (docs/specs/013-workspace/favourites.md). Cloud stars live in a D1 table whose
   // document_id is a foreign key into `documents`, which an offline document has
   // no row in, so its star has to live here instead. Optional so records
@@ -126,7 +121,6 @@ export function recordToDocument(rec: OfflineDocumentRecord): LiveDoc {
     ownerId: OFFLINE_OWNER_ID,
     name: rec.name,
     tabs: rec.tabs.map((t, i) => tabToSummary(t, rec.id, i, rec.savedAt)),
-    presentation: rec.presentation ?? null,
     itemTypes: legacyCatalogue(
       readItemTypeCatalogue(rec.itemTypes ?? null),
       (rec.items?.length ?? 0) > 0,
@@ -171,9 +165,6 @@ export function applyMeta(
   patch: {
     name?: string;
     tabs?: { id: string; folder?: string }[];
-    // Absent leaves the stored deck alone; null clears it. Same contract as
-    // the server's PUT, so an offline document behaves identically.
-    presentation?: string | null;
   },
   at: number,
 ): OfflineDocumentRecord {
@@ -192,7 +183,6 @@ export function applyMeta(
     ...rec,
     name: patch.name ?? rec.name,
     tabs,
-    ...(patch.presentation !== undefined ? { presentation: patch.presentation } : {}),
     savedAt: at,
   };
 }
@@ -361,7 +351,7 @@ export async function offlineCreateDocument(
 
 export async function offlineSaveDocumentMeta(
   id: string,
-  patch: { name?: string; tabs?: { id: string; folder?: string }[]; presentation?: string | null },
+  patch: { name?: string; tabs?: { id: string; folder?: string }[] },
   now: number,
 ): Promise<void> {
   await writeLive(id, (rec) => applyMeta(rec, patch, now));

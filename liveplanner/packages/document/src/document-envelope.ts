@@ -1,7 +1,7 @@
 // The whole-document envelope: the contents of a `.liveplanner` file, as the
 // CLI's pull files write it and read it back. The sibling of the per-tab `liveplanner.tab` envelope in
 // export-tab-text.ts: same shape (kind, schemaVersion, exportedAt), one
-// document with every tab, each tab's per-document folder, and the slide deck.
+// document with every tab and each tab's per-document folder.
 // Images stay references to liveplanner's image store; no bytes are embedded.
 
 import type { Tab } from './index';
@@ -19,7 +19,6 @@ export type DocumentEnvelope = {
   document: {
     id: string;
     name: string;
-    presentation: string | null;
     tabs: EnvelopeTab[];
     // The item store (docs/specs/026-plan/items.md "Copies and exports"). Optional and additive,
     // so a file written before items, or read by a build before them, stays version 1.
@@ -37,7 +36,7 @@ export type EnvelopeSheet = { id: string; tabId: string; title: string; [key: st
 type DocumentEnvelopeFailure = 'not_json' | 'wrong_kind' | 'unsupported_version' | 'malformed';
 
 export function documentToEnvelopeText(
-  liveDoc: { id: string; name: string; presentation: string | null },
+  liveDoc: { id: string; name: string },
   tabs: EnvelopeTab[],
   exportedAt: number,
   items: Item[] = [],
@@ -51,7 +50,6 @@ export function documentToEnvelopeText(
     document: {
       id: liveDoc.id,
       name: liveDoc.name,
-      presentation: liveDoc.presentation,
       tabs,
       ...(items.length ? { items } : {}),
       ...(itemTypes ? { itemTypes } : {}),
@@ -111,11 +109,6 @@ export function parseDocumentEnvelope(
     !d ||
     typeof d.id !== 'string' ||
     typeof d.name !== 'string' ||
-    !(
-      d.presentation === null ||
-      d.presentation === undefined ||
-      typeof d.presentation === 'string'
-    ) ||
     !Array.isArray(d.tabs) ||
     !d.tabs.every(isTab)
   ) {
@@ -131,7 +124,6 @@ export function parseDocumentEnvelope(
       document: {
         id: d.id,
         name: d.name,
-        presentation: d.presentation ?? null,
         tabs: d.tabs,
         // Items that do not look like items are left behind; the api validates the rest.
         ...(Array.isArray(d.items) ? { items: d.items.filter(isItemLike) } : {}),

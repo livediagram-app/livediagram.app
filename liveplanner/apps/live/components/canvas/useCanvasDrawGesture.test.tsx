@@ -8,17 +8,15 @@ import type { PendingDraw } from '@/lib/draw-mode';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { useCanvasDrawGesture } from './useCanvasDrawGesture';
 
-// The draw-to-size and pen gestures (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/008-canvas/two-pens.md):
-// a press starts one, window pointer moves drive it, and the release commits it.
+// The draw-to-size gesture (docs/specs/008-canvas/canvas-and-palette.md): a press starts one, window pointer
+// moves drive it, and the release commits it.
 
 const BOX: PendingDraw = { type: 'shape', kind: 'square' };
-const PEN: PendingDraw = { type: 'freehand' };
 
 type Props = {
   pendingDraw: PendingDraw | null;
   viewportZoom: number;
   onCommitDraw: CanvasProps['onCommitDraw'];
-  onCommitFreehand: CanvasProps['onCommitFreehand'];
 };
 
 function setup(initial: Partial<Props> = {}, elements: Element[] = []) {
@@ -33,15 +31,12 @@ function setup(initial: Partial<Props> = {}, elements: Element[] = []) {
         viewportZoom: p.viewportZoom,
         isPinchingRef: { current: false },
         onCommitDraw: p.onCommitDraw,
-        onCommitFreehand: p.onCommitFreehand,
-        whiteboard: false,
       }),
     {
       initialProps: {
         pendingDraw: BOX,
         viewportZoom: 1,
         onCommitDraw: vi.fn(),
-        onCommitFreehand: vi.fn(),
         ...initial,
       },
     },
@@ -64,7 +59,7 @@ describe('useCanvasDrawGesture box drag', () => {
   it('draws from the press to the pointer and commits on release', () => {
     const { result, rerender } = setup();
     const onCommitDraw = vi.fn();
-    rerender({ pendingDraw: BOX, viewportZoom: 1, onCommitDraw, onCommitFreehand: vi.fn() });
+    rerender({ pendingDraw: BOX, viewportZoom: 1, onCommitDraw });
     press(result, 100, 100);
     pointer('pointermove', 300, 250);
     expect(result.current.drawDrag).toEqual({
@@ -80,7 +75,7 @@ describe('useCanvasDrawGesture box drag', () => {
 
   it('reads the zoom as it is now when the view zooms mid-drag', () => {
     const { result, rerender } = setup();
-    const props = { pendingDraw: BOX, onCommitDraw: vi.fn(), onCommitFreehand: vi.fn() };
+    const props = { pendingDraw: BOX, onCommitDraw: vi.fn() };
     press(result, 100, 100);
     rerender({ ...props, viewportZoom: 2 });
     pointer('pointermove', 600, 500);
@@ -92,12 +87,7 @@ describe('useCanvasDrawGesture box drag', () => {
     const second = vi.fn();
     const { result, rerender } = setup({ onCommitDraw: first });
     press(result, 100, 100);
-    rerender({
-      pendingDraw: BOX,
-      viewportZoom: 1,
-      onCommitDraw: second,
-      onCommitFreehand: vi.fn(),
-    });
+    rerender({ pendingDraw: BOX, viewportZoom: 1, onCommitDraw: second });
     pointer('pointermove', 300, 250);
     pointer('pointerup');
     expect(first).not.toHaveBeenCalled();
@@ -146,51 +136,6 @@ describe('useCanvasDrawGesture with Shift', () => {
   });
 });
 
-describe('useCanvasDrawGesture pen', () => {
-  it('samples the stroke once per frame and commits it on release', () => {
-    const onCommitFreehand = vi.fn();
-    const { result } = setup({ pendingDraw: PEN, onCommitFreehand });
-    press(result, 10, 10);
-    pointer('pointermove', 20, 20);
-    pointer('pointermove', 30, 25);
-    expect(result.current.penPoints).toHaveLength(1);
-    act(() => {
-      vi.advanceTimersToNextFrame();
-    });
-    expect(result.current.penPoints).toEqual([
-      { x: 10, y: 10 },
-      { x: 20, y: 20 },
-      { x: 30, y: 25 },
-    ]);
-    pointer('pointerup');
-    expect(result.current.penPoints).toBeNull();
-    expect(onCommitFreehand).toHaveBeenCalledWith(
-      [
-        { x: 10, y: 10 },
-        { x: 20, y: 20 },
-        { x: 30, y: 25 },
-      ],
-      false,
-    );
-  });
-
-  it('reads the zoom as it is now when the view zooms mid-stroke', () => {
-    const onCommitFreehand = vi.fn();
-    const { result, rerender } = setup({ pendingDraw: PEN, onCommitFreehand });
-    press(result, 10, 10);
-    rerender({ pendingDraw: PEN, viewportZoom: 2, onCommitDraw: vi.fn(), onCommitFreehand });
-    pointer('pointermove', 60, 40);
-    pointer('pointerup');
-    expect(onCommitFreehand).toHaveBeenCalledWith(
-      [
-        { x: 10, y: 10 },
-        { x: 30, y: 20 },
-      ],
-      false,
-    );
-  });
-});
-
 describe('useCanvasDrawGesture hover snap', () => {
   it('shows no start-snap dot while a drag is in flight', () => {
     const { result } = setup();
@@ -208,14 +153,6 @@ describe('useCanvasDrawGesture gesture', () => {
     press(result, 100, 100);
     expect(canvasGestureNow()).toBe('stroke');
     pointer('pointermove', 300, 250);
-    pointer('pointerup');
-    expect(canvasGestureNow()).toBe('idle');
-  });
-
-  it('opens a stroke while the pen draws', () => {
-    const { result } = setup({ pendingDraw: PEN });
-    press(result, 10, 10);
-    expect(canvasGestureNow()).toBe('stroke');
     pointer('pointerup');
     expect(canvasGestureNow()).toBe('idle');
   });

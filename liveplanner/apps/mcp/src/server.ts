@@ -1,5 +1,5 @@
 // Build the MCP server for one request (stateless): the schema resource + the
-// four tools, closing over the worker env for api calls. The caller's Bearer
+// tools, closing over the worker env for api calls. The caller's Bearer
 // token arrives per-request via the transport's authInfo and is read inside
 // each tool, so a fresh server per request carries no cross-request state.
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -24,8 +24,8 @@ export function buildServer(env: Env): McpServer {
     {
       title: 'liveplanner element schema',
       description:
-        'Element types, shape vocabulary, pinned-arrow anchors, and design rules for ' +
-        'producing well-formed diagrams. Read before create_document / update_document.',
+        'Element types, shape vocabulary, pinned-arrow anchors, and the rules a tab\'s elements ' +
+        'follow. Read before create_document / update_document with raw elements.',
       mimeType: 'text/markdown',
     },
     async (uri) => ({

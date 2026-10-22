@@ -41,11 +41,7 @@ import {
   SizeMenuIcon,
   SquareMenuIcon,
 } from '@/components/palette/context-menu-icons';
-import {
-  MenuAccordionSection,
-  MenuActionRow,
-  MenuGroupSeparator,
-} from '@/components/primitives/PortalMenu';
+import { MenuAccordionSection, MenuGroupSeparator } from '@/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { ShapeIcon } from '@/components/primitives/shape-icon';
 import { SizeSection } from '@/components/palette/SizeSection';
@@ -58,7 +54,6 @@ import { useCoversCanvas } from '@/hooks/plan/plan-cover-store';
 import { ElementContentSections } from './ElementContentSections';
 import { ElementMenuQuickBar } from './ElementMenuQuickBar';
 import { ElementAppearanceSections } from './ElementAppearanceSections';
-import { MirrorCopyGlyph } from '@/components/canvas/logo-glyphs';
 import { MultiSelectionContextMenu } from './MultiSelectionContextMenu';
 
 import { shapeKindLabel } from '@/lib/element-names';
@@ -118,7 +113,6 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
     if (!target) return null;
     const boxed = isBoxed(target);
     const isIcon = target.type === 'shape' && target.shape === 'icon';
-    const hasImage = target.type === 'image' && target.imageId != null;
     const hasLink = target.link != null;
     // Regular shapes (not the dedicated icon glyph, not a frame container, not
     // a self-drawing data shape which carries its own data) can morph to
@@ -146,11 +140,6 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
     // Collaborate and Resources: never on a Plan item (docs/specs/026-plan/plan-mode.md "Nothing attached to Plan
     // items"), whoever opens the menu.
     const showCollaborateGroup = boxed && takesAttachments(target);
-    // A verb runs, then the menu gets out of the way (see the rows below).
-    const runAndClose = (action: () => void) => () => {
-      action();
-      onClose();
-    };
     return (
       <ContextMenu
         position={position}
@@ -211,7 +200,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             all answer "how big is this": the width / height boxes, the aspect
             lock (which lived in Layer) and the reset (which lived in Shape,
             so it only appeared for morphable kinds). */}
-        {/* Fixed-size elements (docs/specs/009-elements/mode-button.md buttons) have no size to edit — offering the boxes would advertise
+        {/* Fixed-size elements (docs/specs/012-collaboration/session-button.md buttons) have no size to edit — offering the boxes would advertise
             a resize the drag paths deliberately ignore. */}
         {boxed && !isFixedSizeElement(target) && !covering ? (
           <MenuAccordionSection title="Size" icon={<SizeMenuIcon />} {...sectionProps('size')}>
@@ -277,14 +266,6 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             </div>
           </MenuAccordionSection>
         ) : null}
-        {/* Mirror Copy on a logo page (docs/specs/007-editor/logo-pages.md "Mirror"). */}
-        {props.onMirrorCopy ? (
-          <MenuActionRow
-            icon={<MirrorCopyGlyph />}
-            label="Mirror Copy"
-            onClick={runAndClose(props.onMirrorCopy)}
-          />
-        ) : null}
         {/* ── Appearance group: Presets / Progress / Animation / Colours / Border ── */}
         {
           <ElementAppearanceSections
@@ -299,7 +280,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             headerFillHandlers={headerFillHandlers}
             arrowheadColorHandlers={arrowheadColorHandlers}
             strokeColorHandlers={strokeColorHandlers}
-            afterGroup={!covering || !!props.onMirrorCopy}
+            afterGroup={!covering}
           />
         }
         {showContentGroup ? <MenuGroupSeparator /> : null}
@@ -346,7 +327,6 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
           props={props}
           target={target}
           onClose={onClose}
-          hasImage={hasImage}
           hasLink={hasLink}
           sectionProps={sectionProps}
           colorProps={colorProps}

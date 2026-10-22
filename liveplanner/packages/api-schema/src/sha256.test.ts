@@ -1,12 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { pkceChallenge, sha256Hex } from './sha256';
 
-// sha256Hex is the load-bearing primitive for image dedup (docs/specs/009-elements/images.md):
-// the live editor hashes bytes before POSTing them and stamps the
-// digest on `X-Image-Sha256`; the api worker re-hashes the body and
-// rejects any mismatch. If the hex encoding ever drifts (a missing
-// leading-zero pad in bytesToHex, an uppercased character, a stray
-// separator), every legitimate upload bounces with a hash mismatch.
+// sha256Hex is the load-bearing primitive behind every stored hash (API tokens, share passwords,
+// tags): if the hex encoding ever drifts (a missing leading-zero pad in bytesToHex, an uppercased
+// character, a stray separator), every stored hash stops matching.
 // (Lived in apps/api until this package got its vitest harness.)
 //
 // Test vectors come from the SHA-256 reference suite (FIPS 180-4):
@@ -29,8 +26,8 @@ describe('sha256Hex', () => {
   it('returns the canonical FIPS digest for "abc"', async () => {
     // This vector is the standard NIST short-message test and the one
     // every cross-runtime SHA-256 implementation MUST round-trip: if
-    // either side produces something different, image dedup breaks
-    // silently the first time someone uploads a file. The digest
+    // either side produces something different, a stored hash stops
+    // matching. The digest
     // contains 0x01 and 0x03 as bytes, so a regression in bytesToHex's
     // leading-zero pad would drop a hex character from the output and
     // fail the 64-length invariant on the next test.

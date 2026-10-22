@@ -33,7 +33,6 @@ vi.mock('./routes/custom-themes', () => stub('handleCustomThemes'));
 vi.mock('./routes/documents', () => stub('handleDocuments'));
 vi.mock('./routes/folders', () => stub('handleFolders'));
 vi.mock('./routes/forms', () => stub('handleForms'));
-vi.mock('./routes/images', () => stub('handleImages'));
 vi.mock('./routes/migrate', () => stub('handleMigrate'));
 vi.mock('./routes/guest-id', () => stub('handleGuestId'));
 vi.mock('./routes/participants', () => stub('handleParticipants'));
@@ -116,8 +115,6 @@ describe('a workspace session at the front door', () => {
     ['GET', 'trash', 'handleTrash'],
     ['POST', 'trash/doc1/restore', 'handleTrash'],
     ['GET', 'placement-defaults', 'handlePlacementDefaults'],
-    ['GET', 'images', 'handleImages'],
-    ['POST', 'images', 'handleImages'],
     ['POST', 'custom-themes', 'handleCustomThemes'],
     ['GET', 'teams', 'handleTeams'],
     ['GET', 'teams/team1/library', 'handleTeams'],

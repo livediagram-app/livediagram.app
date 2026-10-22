@@ -1,12 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { EDITOR_MODES, editorModeLabel } from '@liveplanner/document';
-
 import { COMPETITOR_LOOK } from '@/components/compare/competitor-look';
 
 import { ALTERNATIVES } from './alternatives';
 import { FAQ_CATEGORIES, faqAnswerText } from './faq-content';
 import { LANDING_SECTIONS } from './landing-content';
+import { PROMISES } from './promises';
 import { MARKETING_DESCRIPTION, MARKETING_PITCH, MARKETING_TITLE } from './site-copy';
 
 // Claims marketing once made that the product has since outgrown or never matched. Each phrasing
@@ -53,7 +52,7 @@ const FALSE_CLAIMS: { pattern: RegExp; why: string }[] = [
   },
   {
     pattern: /nothing is sent to a server/i,
-    why: 'imported images go through the image upload pipeline',
+    why: 'projects save to the server; only a This Browser project stays local',
   },
 ];
 
@@ -84,10 +83,11 @@ describe('product claims in marketing copy', () => {
   }
 });
 
-// A sentence that walks through the modes lists them in the editor's own order (Workshop after
-// Draw since #548), the order the mode switch shows.
+// A sentence that walks through the modes lists them in the order the hero's mocks show them
+// (Workshop after Draw since #548). The editor now has only Plan; the copy keeps these until the
+// site is redesigned.
 describe('mode lists in marketing copy', () => {
-  const labels = EDITOR_MODES.map(editorModeLabel);
+  const labels = ['Diagram', 'Draw', 'Workshop', 'Pages', 'Plan'];
   // Every string on its own, so one field's sentence never runs into the next field's.
   const strings = (v: unknown): string[] =>
     typeof v === 'string'
@@ -148,5 +148,24 @@ describe('what the landing copy says liveplanner is', () => {
 
   it('calls the work a project, never a document', () => {
     expect(own.filter((c) => /\bdocuments?\b/i.test(c.text)).map((c) => c.where)).toEqual([]);
+  });
+});
+
+// liveplanner's source is not public (docs/specs/002-project-scope/business-model-and-licence.md): no
+// marketing surface says anyone can read its source or run their own copy.
+describe('the licence the marketing copy claims', () => {
+  const NOT_OPEN =
+    /open[ -]?source|\bMIT\b|self-host|github\.com\/liveplanner|read the source|see the code/i;
+  const everything = [
+    ...copy,
+    ...PROMISES.map((p) => ({ where: `promise/${p.id}`, text: JSON.stringify(p) })),
+    {
+      where: 'site-copy',
+      text: [MARKETING_TITLE, MARKETING_DESCRIPTION, MARKETING_PITCH].join(' '),
+    },
+  ];
+
+  it('never claims the source is public', () => {
+    expect(everything.filter((c) => NOT_OPEN.test(c.text)).map((c) => c.where)).toEqual([]);
   });
 });

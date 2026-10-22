@@ -4,8 +4,8 @@ import { freshUserId, installClerkStub, STUB_PICTURE_SVG, type StubUser } from '
 
 // Pictures between people (docs/specs/014-identity/profile-picture.md §5, §6), end to end: a real
 // document, a real realtime room and the api verifying each stub account's session token. Ann has
-// a picture. Bob, signed in, opens her share link and sees it on her presence avatar, her cursor
-// and her comment. An anonymous visitor on the same link sees her initials, and their browser is
+// a picture. Bob, signed in, opens her share link and sees it on her presence avatar and her
+// cursor; her comment shows her initials (comment authors' pictures are not looked up). An anonymous visitor on the same link sees her initials, and their browser is
 // never even given the URL. Ann turning the switch off takes it off Bob's screen at once.
 
 const CANVAS = '[data-canvas-a11y-root]';
@@ -41,7 +41,7 @@ async function personPage(browser: Browser, baseURL: string, who: StubUser | nul
   });
   await ctx.addInitScript(() => {
     localStorage.setItem('liveplanner:v2:name-confirmed', '1');
-    localStorage.setItem('liveplanner:user-preferences:v1', JSON.stringify({ tourSeen: true }));
+    localStorage.setItem('liveplanner:user-preferences:v1', JSON.stringify({ planTourSeen: true }));
   });
   const pictureRequests: string[] = [];
   await ctx.route('https://img.clerk.com/stub/**', (route) => {
@@ -140,7 +140,7 @@ test('signed-in collaborators see the picture; anonymous visitors see initials',
     })
     .toBe(ANN_PICTURE);
 
-  // Bob, signed in, joins by the link: Ann's presence avatar and comment carry her picture.
+  // Bob, signed in, joins by the link: Ann's presence avatar carries her picture, her comment her initials.
   const bob = await personPage(browser, baseURL!, { ...BOB, id: BOB_ID });
   await joinShared(bob.page, code);
   await expect(annAvatar(bob.page).locator('xpath=..').locator('img')).toHaveAttribute(
@@ -149,9 +149,7 @@ test('signed-in collaborators see the picture; anonymous visitors see initials',
   );
   const comment = bob.page.locator(CANVAS).getByText('Framing looks right now.');
   await expect(comment).toBeVisible();
-  await expect(
-    bob.page.locator(`${CANVAS} [data-avatar-state="picture"] img[src^="${ANN_PICTURE}?"]`).first(),
-  ).toBeVisible();
+  await expect(bob.page.locator(`${CANVAS} img[src^="${ANN_PICTURE}?"]`)).toHaveCount(0);
 
   // Ann moves over the canvas: her cursor on Bob's screen leads with her picture.
   const box = (await ann.page.locator(CANVAS).boundingBox())!;

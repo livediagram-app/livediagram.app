@@ -142,7 +142,6 @@ export function useFormActions({
                 ...t,
                 name,
                 kind: 'form' as const,
-                opensIn: 'plan' as const,
                 form,
                 dashboard: undefined,
               }
@@ -180,7 +179,6 @@ export function useFormActions({
         name,
         elements: [],
         kind: 'form',
-        opensIn: 'plan',
         ...(boardTab.theme ? { theme: boardTab.theme } : {}),
       };
       const plan = planFormStart({

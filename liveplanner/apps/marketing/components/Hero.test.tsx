@@ -77,7 +77,7 @@ describe('the hero', () => {
       'listitem',
     );
     expect(promises.map((p) => p.textContent)).toEqual([
-      'Free and open source',
+      'Free, no trackers',
       'No sign-up to start',
     ]);
   });

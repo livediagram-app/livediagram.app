@@ -101,15 +101,15 @@ describe('in WebKit', () => {
 
 describe("an element's words", () => {
   it("are all in the element's face, so a face that writes its own wears it", () => {
-    const { container } = draw(shape('idea-box'), "'Caveat', cursive");
-    const wrapper = container.querySelector<HTMLElement>('[data-element-id="idea-box"]');
+    const { container } = draw(shape('temperature'), "'Caveat', cursive");
+    const wrapper = container.querySelector<HTMLElement>('[data-element-id="temperature"]');
     expect(wrapper?.style.fontFamily).toContain('Caveat');
   });
 
   it('keep the editor default when nothing picks a face', () => {
-    const { container } = draw(shape('idea-box'));
+    const { container } = draw(shape('temperature'));
     expect(
-      container.querySelector<HTMLElement>('[data-element-id="idea-box"]')?.style.fontFamily,
+      container.querySelector<HTMLElement>('[data-element-id="temperature"]')?.style.fontFamily,
     ).toBe('');
   });
 });

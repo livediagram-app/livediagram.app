@@ -13,8 +13,7 @@ lets you jump the viewport anywhere with a tap or drag.
 - **When.** Shown when it's **enabled** (`showMinimap` preference, **on by
   default**), the tab has **at least 4 elements**, **on desktop** (hidden on
   mobile, where the canvas is already edge-to-edge), and **in Diagram, Draw and Workshop** only:
-  Pages has [Contents](../007-editor/pages-mode.md#contents) to find its pages, and a
-  Plan board is a list rather than a space to find your way round, so neither shows the Map. It stacks with any other panel docked bottom-left rather than hiding
+  a Plan board is a list rather than a space to find your way round, so it shows no Map. It stacks with any other panel docked bottom-left rather than hiding
   behind it (the docking layout reflows them).
 - **Enable / disable + reset.** The map's preferences (**Enable Map**, **Dim
   Outside the View**, **Map Size**) live in the **Settings** dialog
@@ -40,11 +39,7 @@ lets you jump the viewport anywhere with a tap or drag.
   element and arrow labels are left out of the picture. On a board of any size
   they come out a pixel or two tall, too small to read, while laying them out
   was half of the picture's cost (on a 1,000-element board, about 210 ms of the
-  browser's work at a slowed CPU, against 100 ms without). An **article page's writing**, which is
-  no element, is drawn as soft bars, one per line of text (headings thicker), read off the
-  writing as laid out ([Article pages](../007-editor/article-pages.md)); the picture redraws when
-  the articles change and once more when a writing is first laid out (and after web fonts land),
-  so a freshly opened article never shows a blank page. The
+  browser's work at a slowed CPU, against 100 ms without). The
   area **outside the current view is dimmed**, leaving a lit window (outlined
   in the tab theme's accent, matching the on-canvas selection) that reads at
   a glance as where you are. The window is coloured exactly like the canvas
@@ -59,8 +54,7 @@ lets you jump the viewport anywhere with a tap or drag.
   map's own background is the tab's resolved paper colour
   (`tabBackgroundColor`), not a fixed grey, and the dim outside the current
   view darkens rather than greys on dark paper. A kind whose look depends on
-  the paper keeps that dependency in ONE shared value both renderers read
-  (for example `REVEAL_COVER_BASE` for the Reveal cover), and a drift test
+  the paper keeps that dependency in ONE shared value both renderers read, and a drift test
   (`svg-render-surface.test.ts`) fails if any kind without a stored fill
   paints a light base on dark paper. The Layers panel's previews follow the
   same rule.

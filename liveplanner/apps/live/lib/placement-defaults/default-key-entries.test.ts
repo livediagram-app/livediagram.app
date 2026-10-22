@@ -17,18 +17,14 @@ describe('DEFAULT_KEY_ENTRIES', () => {
 
   it('names each entry as the list shows it', () => {
     expect(DEFAULT_KEY_ENTRIES.map((e) => e.label)).toEqual([
-      'Diagrams',
-      'Whiteboards',
-      'Sessions',
-      'Pages documents',
-      'Plan boards',
+      'Projects',
       'Retrospectives',
       'Kanban boards',
     ]);
   });
 
   it('gives each entry the plural a sentence uses', () => {
-    expect(defaultKeyEntry('mode:draw').noun).toBe('whiteboards');
+    expect(defaultKeyEntry('mode:plan').noun).toBe('Projects');
     expect(defaultKeyEntry('template:retrospective').noun).toBe('retrospectives');
     expect(defaultKeyEntry('template:kanban').noun).toBe('Kanban boards');
   });
@@ -46,9 +42,9 @@ describe('joinNouns', () => {
 
 describe('defaultFolderDescription', () => {
   it('says which new documents a folder receives, in list order', () => {
-    expect(defaultFolderDescription(['mode:draw'])).toBe('Default folder for new whiteboards');
-    expect(defaultFolderDescription(['template:retrospective', 'mode:diagram'])).toBe(
-      'Default folder for new diagrams and retrospectives',
+    expect(defaultFolderDescription(['mode:plan'])).toBe('Default folder for new Projects');
+    expect(defaultFolderDescription(['template:retrospective', 'mode:plan'])).toBe(
+      'Default folder for new Projects and retrospectives',
     );
   });
 

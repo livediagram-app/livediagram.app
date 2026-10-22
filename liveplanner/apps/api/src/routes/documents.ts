@@ -14,13 +14,7 @@ import {
 import type { Tab } from '@liveplanner/document';
 import { isValidTab, migrateIncomingTab } from '@liveplanner/document';
 import { capStoredName } from '../names';
-import {
-  MAX_DECK_LEN,
-  MAX_TAB_BYTES,
-  TabTooLargeError,
-  logTabRefused,
-  tabDataBytes,
-} from '../limits';
+import { MAX_TAB_BYTES, TabTooLargeError, logTabRefused, tabDataBytes } from '../limits';
 import {
   DOCUMENT_CONVERSION_HEADER,
   INTENT_INVALID,
@@ -46,7 +40,6 @@ import {
   readReorderEntries,
   reorderTabs,
   seedTabs,
-  setDocumentPresentation,
   tabIdsHeldElsewhere,
   upsertDocumentMeta,
 } from '../db';
@@ -152,7 +145,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
         logPlacementRejected('placement_invalid', placementScope(body.teamId));
         return placementRejected('placement_invalid');
       }
-      // Seeded tabs given as a graph, Mermaid or a template are compiled first (docs/specs/015-api/api.md);
+      // Seeded tabs given as a template are compiled first (docs/specs/015-api/api.md);
       // with no intent given, the first compiled tab supplies it, as the MCP derives it.
       let derivedIntent: CreationIntent | null = null;
       let templateElements: Tab['elements'] = [];
@@ -253,9 +246,6 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       // its owner hears the deleted state, anyone else the same refusal.
       const binned = clash ? null : await getTrashedDocumentMeta(env, body.id);
       if (binned) return binned.ownerId === owner ? documentTrashed() : forbidden();
-      if (typeof body.presentation === 'string' && body.presentation.length > MAX_DECK_LEN) {
-        return badRequest('presentation too large');
-      }
       // A type catalogue a copy or a sync carries (docs/specs/026-plan/item-types.md
       // "Storage and sync"), validated as the item-types route does; a bad one refuses the create.
       let itemTypes: ItemTypeCatalogue | null = null;
@@ -310,7 +300,6 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       const seeded = incomingTabs
         ? forkTakenTabIds(
             incomingTabs,
-            typeof body.presentation === 'string' ? body.presentation : null,
             await tabIdsHeldElsewhere(
               env,
               body.id,
@@ -330,11 +319,6 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
         shareCode: body.shareCode ?? null,
         folderId: placement.folderId,
         teamId: placement.teamId,
-        // Usually none. An Offline Mode sync carries the deck it built
-        // offline (docs/specs/006-document/offline-mode.md), which would otherwise be lost with the local copy.
-        presentation:
-          seeded?.presentation ??
-          (typeof body.presentation === 'string' ? body.presentation : null),
         itemTypes,
         // Provenance (docs/specs/013-workspace/folders.md): only the closed set of generated sources
         // is accepted; anything else (or absent) is a user-made document.
@@ -353,7 +337,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       // first per-tab fetch already has data.
       if (seeded) {
         try {
-          await seedTabs(env, body.id, seeded.tabs, savedAt);
+          await seedTabs(env, body.id, seeded, savedAt);
         } catch (error) {
           if (error instanceof TabTooLargeError) return payloadTooLarge();
           throw error;
@@ -440,10 +424,6 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
         name?: string;
         tabIds?: unknown;
         tabs?: unknown;
-        // Slide deck (docs/specs/012-collaboration/presentation-mode.md): serialised StoredPresentation, or null to
-        // clear. Absent leaves the stored deck alone, so an ordinary rename
-        // can never wipe it.
-        presentation?: string | null;
       };
       const owner = requireOwner(ctx);
       if (owner instanceof Response) return owner;
@@ -488,19 +468,9 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
         // Preserve provenance (the upsert never rewrites it anyway, but
         // pass the existing value so the DTO is complete).
         source: existing.source ?? null,
-        // The deck has its own write below; the meta upsert never touches it.
-        presentation: existing.presentation ?? null,
         savedAt: now,
         createdAt: existing.createdAt,
       });
-      // Only when the caller actually sent the field: `undefined` means "not
-      // my business", which is what every existing client sends.
-      if (body.presentation !== undefined) {
-        if (typeof body.presentation === 'string' && body.presentation.length > MAX_DECK_LEN) {
-          return badRequest('presentation too large');
-        }
-        await setDocumentPresentation(env, id, body.presentation);
-      }
       if (order) await reorderTabs(env, id, order);
       const liveDoc = await getDocument(env, id);
       // An agent's rename reaches the open editors (docs/specs/024-agents/agent-changesets.md "Whole-tab saves and tab

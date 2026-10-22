@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { createFreehand } from './factories';
-import { createPath } from './path-element';
 import { handDrawnElementPaint } from './hand-drawn';
 import { MARKER_LINE_PX } from './finish';
 import { isPolygonOutline, polygonStrokePx } from './drawn-outline-finish';
@@ -73,46 +72,5 @@ describe('a polygon drawn by hand', () => {
     expect(svgBoxed(polygon(), { tabFinish: 'sketch' })).toContain('data-finish="sketch"');
     expect(svgBoxed(polygon(), { tabFinish: 'marker' })).toContain('data-finish="marker"');
     expect(svgBoxed(polygon(), { tabFinish: 'professional' })).toContain('stroke-width="1"');
-  });
-});
-
-describe('a path drawn by hand', () => {
-  const path = (closed = true) => ({
-    ...createPath(
-      [
-        { x: 0, y: 0, mode: 'corner' },
-        { x: 220, y: 30, mode: 'corner' },
-        { x: 120, y: 160, mode: 'corner' },
-      ],
-      closed,
-    ),
-    id: 'path',
-  });
-
-  it('draws its line by hand and shades a closed path over its own fill, holes kept even-odd', () => {
-    const sketch = handDrawnElementPaint(path(), 'sketch', '#bae6fd');
-    if (sketch?.drawing.pen !== 'pencil') throw new Error('expected pencil');
-    expect(sketch.drawing.strokes).not.toBe('');
-    expect(sketch.drawing.hatch).not.toBe('');
-    expect(sketch.drawing.solid).not.toBe('');
-    expect(sketch.drawing.solidEvenOdd).toBe(true);
-    const marker = handDrawnElementPaint(path(), 'marker', '#bae6fd');
-    if (marker?.drawing.pen !== 'marker') throw new Error('expected marker');
-    expect(marker.drawing.streaks.join('')).not.toBe('');
-  });
-
-  it('never shades a combined shape, whose holes must show', () => {
-    const combined = { ...path(), subpaths: [[...path().nodes]] };
-    const paint = handDrawnElementPaint(combined, 'sketch', '#bae6fd');
-    if (paint?.drawing.pen !== 'pencil') throw new Error('expected pencil');
-    expect(paint.drawing.hatch).toBe('');
-  });
-
-  it('exports as its hand-drawn drawing in place of the plain path', () => {
-    const out = svgBoxed({ ...path(), fillColor: '#fde68a' }, { tabFinish: 'marker' });
-    expect(out).toContain('data-finish="marker"');
-    expect(out).toContain('fill-rule="evenodd"');
-    expect(out).not.toMatch(/stroke-width="2"/);
-    expect(svgBoxed(path(), { tabFinish: 'professional' })).toContain('stroke-width="1"');
   });
 });

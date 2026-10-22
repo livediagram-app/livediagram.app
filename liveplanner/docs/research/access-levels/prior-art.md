@@ -236,16 +236,16 @@ bound their access levels, and what that means for liveplanner's proposed four: 
   ([API app, op classes](../../specs/015-api/api.md)).
 - A `view` link can therefore already: read, comment and delete its own comment, add and upvote on the Q&A board,
   answer a live poll, follow and be followed, bring focus, and roll the picker locally
-  ([Q&A board](../../specs/012-collaboration/qa-board.md); [Live poll](../../specs/012-collaboration/live-poll.md);
-  [Follow-me viewport](../../specs/012-collaboration/follow-me-viewport.md)).
+  (Q&A board; Live poll;
+  Follow-me viewport).
 - A `view` link **cannot** cast dot votes, estimates, temperature checks or quiz answers, or drop a card in the idea
   box, because those travel as element mutations ([Session tools](../../specs/012-collaboration/session-tools.md);
   [Participant responses](../../specs/012-collaboration/participant-responses.md);
-  [Quiz](../../specs/012-collaboration/quiz.md); [Idea box](../../specs/012-collaboration/idea-box.md)).
+  Quiz; Idea box).
 - So today's `view` is neither "Viewer" nor "Participant": it is half of each, split by transport rather than by
   intent. That is the root the four-level model addresses.
 - The facilitator baton is edit-only and already behaves like the market's "role in the session"
-  ([Facilitator](../../specs/012-collaboration/facilitator.md)).
+  (Facilitator).
 - Tokens are full or read-only and act as their owner, through the same gates
   ([Public API and tokens](../../specs/015-api/public-api-and-tokens.md)).
 

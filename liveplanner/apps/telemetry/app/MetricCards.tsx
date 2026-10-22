@@ -163,7 +163,7 @@ function SeeAlsoLink({ label, onClick }: { label: string; onClick: () => void })
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-sky-600 transition-colors hover:border-sky-300 hover:bg-sky-50 dark:border-slate-700 dark:bg-slate-900 dark:text-brand-300 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10"
+      className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-brand-700 transition-colors hover:border-brand-300 hover:bg-brand-50 dark:border-slate-700 dark:bg-slate-900 dark:text-brand-300 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10"
     >
       {label}
       <Glyph size={16} units={24}>

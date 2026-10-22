@@ -13,11 +13,8 @@ the database clean without anyone having to tidy up.
 
 ## Which documents
 
-A document is **empty** when none of its tabs holds an element, an article or a form. An
-article's writing is stored on its tab beside the elements, not as elements
-([Article pages](../007-editor/article-pages.md)), so a tab with any article, even
-one still blank, keeps its document: someone made it to write in. A Form tab's form is
-stored the same way ([Forms](../030-forms/forms.md)), so a tab holding a form keeps its
+A document is **empty** when none of its tabs holds an element or a form. A Form tab's form is
+stored on its tab beside the elements, not as elements ([Forms](../030-forms/forms.md)), so a tab holding a form keeps its
 document too, even a form with no questions yet. A document with
 no tabs at all is empty too. Nothing else counts as content: a name, extra
 blank tabs, a tab's settings (background, grid), a share link, a star or a

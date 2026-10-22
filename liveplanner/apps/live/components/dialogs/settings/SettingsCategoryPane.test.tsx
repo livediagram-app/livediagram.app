@@ -133,7 +133,7 @@ describe('SettingsCategoryPane tours', () => {
     render(
       <SettingsCategoryPane
         category={TOURS}
-        settings={{ tourSeen: true, planTourSeen: true, planTourTracks: ['boards', 'sheets'] }}
+        settings={{ planTourSeen: true, planTourTracks: ['boards', 'sheets'] }}
         onChange={onChange}
       />,
     );
@@ -142,7 +142,7 @@ describe('SettingsCategoryPane tours', () => {
       'false',
     );
     expect(plan.getAttribute('aria-checked')).toBe('false');
-    expect(screen.getByRole('switch', { name: 'Workshop Tour' }).getAttribute('aria-checked')).toBe(
+    expect(screen.getByRole('switch', { name: 'Forms Tour' }).getAttribute('aria-checked')).toBe(
       'true',
     );
     // The shared explanation sits once, under the section heading.
@@ -151,7 +151,6 @@ describe('SettingsCategoryPane tours', () => {
     fireEvent.click(plan);
     expect(track).toHaveBeenCalledWith('UI', 'Toggled', 'BoardsTourSeenOff');
     expect(onChange).toHaveBeenCalledWith({
-      tourSeen: true,
       planTourSeen: false,
       planTourTracks: ['sheets'],
     });

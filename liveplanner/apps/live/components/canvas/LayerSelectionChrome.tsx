@@ -5,7 +5,7 @@
 // the store, so a selection change re-renders this and not the element layer around it.
 
 import type { ComponentProps } from 'react';
-import { logoPageAt, type Element, type LaidOutPage } from '@liveplanner/document';
+import type { Element } from '@liveplanner/document';
 import { UnionResizeHandles } from '@/components/canvas/element-parts';
 import { QuickConnectPluses } from '@/components/canvas/QuickConnectPluses';
 import {
@@ -20,21 +20,12 @@ const singleId = (s: Selection) => s.selectedId;
 
 type PlusesProps = ComponentProps<typeof QuickConnectPluses>;
 
-/** Whether a selection's centre sits on a logo page: no quick-connect pluses there. */
-export function onLogoPage(
-  pages: readonly LaidOutPage[] | null | undefined,
-  b: { x: number; y: number; width: number; height: number },
-): boolean {
-  return !!pages && !!logoPageAt(pages, { x: b.x + b.width / 2, y: b.y + b.height / 2 });
-}
-
 export function LayerSelectionChrome({
   selectionInput,
   tabId,
   elements,
   pluses,
   onBeginDrag,
-  pages,
 }: {
   selectionInput: CanvasSelectionInput;
   // The tab the selection is on, whose drag preview the selection follows.
@@ -42,9 +33,6 @@ export function LayerSelectionChrome({
   elements: Element[];
   pluses: Omit<PlusesProps, 'selectedElement' | 'bounds' | 'zoom'>;
   onBeginDrag: ComponentProps<typeof UnionResizeHandles>['onBeginDrag'];
-  // The pages: a selection on a logo page shows no quick-connect pluses
-  // (docs/specs/007-editor/logo-pages.md "A logo page"), a mark not a diagram.
-  pages?: readonly LaidOutPage[] | null;
 }) {
   const { selectionBounds, showPlus, showUnionResize, unionResizeBounds, unionResizePrimaryId } =
     useCanvasSelectionView(selectionInput, tabId);
@@ -53,7 +41,7 @@ export function LayerSelectionChrome({
   const zoom = useCanvasZoom();
   return (
     <>
-      {showPlus && selectionBounds && !onLogoPage(pages, selectionBounds) ? (
+      {showPlus && selectionBounds ? (
         <QuickConnectPluses
           {...pluses}
           selectedElement={selectedId ? elements.find((e) => e.id === selectedId) : undefined}

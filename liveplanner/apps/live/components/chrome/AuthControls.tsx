@@ -15,7 +15,7 @@
 // a "Sign in" link only to swap it for the user pill a tick later.
 //
 // When Clerk is disabled for the deployment (no publishable key set —
-// docs/specs/002-project-scope/open-source-and-business-model.md self-host path), the component is a no-op. Same module-load
+// docs/specs/002-project-scope/business-model-and-licence.md: Clerk is optional), the component is a no-op. Same module-load
 // hook-swap pattern as `useClerkApiBootstrap` — calling `useAuth`
 // outside a ClerkProvider would throw, so the disabled branch never
 // touches Clerk.

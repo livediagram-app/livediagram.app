@@ -10,7 +10,7 @@ import { ConfirmProvider } from '@/hooks/ui/useConfirm';
 import { ToastProvider } from '@/hooks/ui/useToast';
 import { googleFontsHref } from '@liveplanner/document';
 import { BRAND_OG_IMAGE, BRAND_TWITTER_IMAGE } from '@liveplanner/ui/seo';
-import { SITE_NAME } from '@liveplanner/ui/site';
+import { SITE_NAME, sentencePitch } from '@liveplanner/ui/site';
 import {
   APPEARANCE_BOOT_SCRIPT,
   BRAND_ICONS,
@@ -46,7 +46,7 @@ const TRUSTED_TYPES_BOOT = trustedTypesBootScript(
 );
 
 const TITLE = 'liveplanner';
-const DESCRIPTION = 'Diagrams, whiteboards, illustrations and documents. Multiplayer canvas.';
+const DESCRIPTION = sentencePitch();
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -134,7 +134,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             @font-face; browsers only fetch the families actually applied,
             and `display=swap` keeps text visible in the fallback stack
             while a face loads — so the editor still works if these are
-            blocked (self-host / offline). preconnect trims the round-trip.
+            blocked (by a network policy, or offline). preconnect trims the round-trip.
             Linked as print media and switched to all once loaded, so a
             cross-origin stylesheet never holds up first paint on any route;
             suppressHydrationWarning because that switch happens before

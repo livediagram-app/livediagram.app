@@ -15,9 +15,8 @@ import {
 
 // A small `…` menu attached to an element's own face.
 //
-// Extracted from the Done check (docs/specs/012-collaboration/done-check.md) when the Timer element needed the
-// same thing (docs/specs/012-collaboration/session-button.md): a couple of per-element settings that belong on the
-// element rather than three levels into the right-click menu.
+// For the Timer element and its siblings (docs/specs/012-collaboration/session-button.md): a couple of per-element
+// settings that belong on the element rather than three levels into the right-click menu.
 //
 // PORTALLED, measured from the trigger at open time.
 //
@@ -193,11 +192,11 @@ function SurfaceFrame({
         // double-click on this panel arrives at the canvas element that
         // rendered the `…` trigger, however far away it is on screen.
         //
-        // Double-click was the one that bit: the poll's panel has text
-        // inputs, and double-clicking to select a word in one put the
-        // element underneath into text-edit mode, which re-rendered the
-        // face and took the panel with it. So the gesture you make to edit
-        // a choice was the gesture that threw the panel away.
+        // Double-click was the one that bit: a panel with text inputs, where
+        // double-clicking to select a word put the element underneath into
+        // text-edit mode, which re-rendered the face and took the panel with
+        // it. So the gesture you make to edit a value was the gesture that
+        // threw the panel away.
         //
         // Click is stopped for the same reason, one event name away: a
         // press on the panel's own padding would otherwise reach the
@@ -311,7 +310,7 @@ export function ElementSettingsButton({
 /**
  * The last row of a quick `…` menu: the way through to everything else.
  *
- * An element with its own popover (the Timer's lengths, the poll's question)
+ * An element with its own popover (the Timer's lengths, the Vote's dots)
  * keeps it — those are the settings worth one press — and this row stops that
  * popover from being a dead end when the setting you want is not one of them.
  */

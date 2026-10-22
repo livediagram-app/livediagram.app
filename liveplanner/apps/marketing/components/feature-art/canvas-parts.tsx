@@ -1,6 +1,6 @@
 // The drawing parts the canvas feature illustrations (./canvas.tsx) are built from, all plain SVG
 // in the cards' 300 by 96 viewBox: a canvas shape in the Default scheme's ink, an editor panel,
-// presence avatars and cursors, chips, a handful of chrome glyphs, and the Avatar mode walker.
+// presence avatars and cursors, chips and a handful of chrome glyphs.
 //
 // Every colour follows the appearance: canvas marks read the --art-* palette
 // (app/hero-animations.css), chrome pairs each light fill with its dark: twin, and only the

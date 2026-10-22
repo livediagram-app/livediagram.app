@@ -14,10 +14,9 @@ export function legacyEditorRedirect(url: URL): Response | null {
 }
 
 // Renamed help articles: the ones about the container moved when it became a document,
-// Whiteboards became Draw mode, the Highlighter went from a selection mode to a Draw tile, and
-// the Activity Panel category went when the panel was removed (Undo and Redo moved to Canvas;
-// its other articles land on Undo), Infographics became Illustrate mode and then Pages mode,
-// Facilitate mode became Workshop mode, and the Welcome Tour became the Diagram Tour. The old
+// Whiteboards became Draw mode, whose pens, eraser, Highlighter, shape recognition and tour were then
+// retired (their articles land on the nearest article left), and the Activity Panel category went when the panel was removed (Undo and Redo moved to Canvas;
+// its other articles land on Undo), Facilitate mode became Workshop mode, and the Welcome Tour became the Diagram Tour. The old
 // addresses are links people have already shared (docs/specs/018-help/help-app.md, "Renamed articles").
 const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
   'tabs/add-to-diagram': 'tabs/add-to-document',
@@ -26,28 +25,21 @@ const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
   'search-panel/the-search-panel/search-diagrams': 'search-panel/the-search-panel/search-documents',
   'getting-started/sharing-your-diagram': 'getting-started/sharing-your-document',
   'developers/working-with-diagrams': 'developers/working-with-documents',
-  'canvas/whiteboards': 'canvas/draw-mode',
-  'canvas/infographics': 'canvas/pages-mode',
-  'canvas/infographics/infographic-layouts': 'canvas/pages-mode/infographic-layouts',
-  'canvas/infographics/exporting-infographics': 'canvas/pages-mode/exporting-pages',
-  'canvas/illustrate': 'canvas/pages-mode',
-  'canvas/illustrate/articles': 'canvas/pages-mode/articles',
-  'canvas/illustrate/exporting-pages': 'canvas/pages-mode/exporting-pages',
-  'canvas/illustrate/illustrate-tour': 'canvas/pages-mode/pages-tour',
-  'canvas/illustrate/infographic-layouts': 'canvas/pages-mode/infographic-layouts',
-  'canvas/illustrate/logo-pages': 'canvas/pages-mode/logo-pages',
-  'canvas/illustrate/slide-pages': 'canvas/pages-mode/slide-pages',
-  'canvas/illustrate/tab-windows': 'canvas/pages-mode/tab-windows',
+  'canvas/whiteboards': 'canvas/editor-modes',
+  'canvas/draw-mode': 'canvas/editor-modes',
+  'canvas/draw-mode/draw-tour': 'canvas/editor-modes',
+  'palette/tools/highlighter': 'palette/tools',
+  'palette/tools/drawing/shape-recognition': 'palette/tools/drawing',
+  'selection-modes/eraser': 'selection-modes',
   'canvas/facilitate-mode': 'canvas/workshop-mode',
-  'canvas/facilitate-mode/facilitate-tour': 'canvas/workshop-mode/workshop-tour',
-  'selection-modes/highlighter': 'palette/tools/highlighter',
+  'selection-modes/highlighter': 'palette/tools',
   'activity-panel': 'canvas/undo',
   'activity-panel/what-it-is': 'canvas/undo',
   'activity-panel/how-it-works': 'canvas/undo',
   'activity-panel/undo': 'canvas/undo',
   'activity-panel/redo': 'canvas/redo',
   'activity-panel/reverting-changes': 'canvas/undo',
-  'getting-started/welcome-tour': 'getting-started/diagram-tour',
+  'getting-started/welcome-tour': 'canvas/plan-mode/plan-tour',
 };
 
 export function legacyHelpRedirect(url: URL): Response | null {

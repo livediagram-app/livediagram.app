@@ -1,6 +1,6 @@
 // `crypto.randomUUID` outside a secure context (docs/specs/016-platform/secure-context.md). Browsers expose it only on
 // HTTPS or localhost, and only when every frame above is secure too, so an embed on a plain-http wiki or a
-// self-hosted instance on a LAN address threw "crypto.randomUUID is not a function" while it booted and showed
+// deployment on a plain-http LAN address threw "crypto.randomUUID is not a function" while it booted and showed
 // "This page couldn't load". `getRandomValues` is there in every context, so this mints the same RFC 4122 version 4
 // ids from it. Each app that mints ids in the browser (the editor) inlines it first in its layout, before
 // any app code; a browser that has the real one keeps it. A plain string in a module with no client boundary, like

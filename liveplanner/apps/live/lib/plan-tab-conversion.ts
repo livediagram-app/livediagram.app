@@ -6,7 +6,6 @@ import {
   DASHBOARD_ROWS_MAX,
   dashboardRowsOf,
   isPlanTabKind,
-  opensInOf,
   readDashboard,
   type DashboardContent,
   type Element,
@@ -17,10 +16,10 @@ const PLAN_SHAPES = new Set(['plan-board', 'plan-sheet', 'plan-view']);
 
 const shapeOf = (el: Element) => (el.type === 'shape' ? el.shape : null);
 
-// The tab is an old Plan tab this converts: in Plan, of the general kind, holding Plan elements and nothing else.
+// The tab is an old Plan tab this converts: of the general kind, holding Plan elements and nothing else.
 export function isConvertiblePlanTab(tab: Tab): boolean {
   if (isPlanTabKind(tab.kind) || (tab.kind && tab.kind !== 'diagram')) return false;
-  if (opensInOf(tab) !== 'plan' || tab.elements.length === 0) return false;
+  if (tab.elements.length === 0) return false;
   return tab.elements.every((el) => PLAN_SHAPES.has(shapeOf(el) ?? ''));
 }
 
@@ -49,9 +48,7 @@ export function convertPlanTab(
   const views = tab.elements.filter((el) => shapeOf(el) === 'plan-view').sort(readingOrder);
   // One board or Sheet alone: the tab becomes its kind.
   if (work.length === 1 && views.length === 0) {
-    return [
-      { ...tab, kind: shapeOf(work[0]!) === 'plan-board' ? 'board' : 'sheet', opensIn: 'plan' },
-    ];
+    return [{ ...tab, kind: shapeOf(work[0]!) === 'plan-board' ? 'board' : 'sheet' }];
   }
   const look: Partial<Tab> = {
     theme: tab.theme,
@@ -68,7 +65,6 @@ export function convertPlanTab(
       ...look,
       ...createTab(titleOf(el) ?? (isBoard ? 'Board' : 'Sheet')),
       kind: isBoard ? 'board' : 'sheet',
-      opensIn: 'plan',
       elements: [el],
     };
   });
@@ -104,7 +100,6 @@ export function convertPlanTab(
     {
       ...tab,
       kind: 'dashboard',
-      opensIn: 'plan',
       elements: views,
       ...(dashboard ? { dashboard } : {}),
     },

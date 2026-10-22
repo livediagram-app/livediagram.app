@@ -1,6 +1,6 @@
 // What each default key is called (docs/specs/013-workspace/default-folders.md "Entry names"): the
 // label "New documents that open as" lists, and the plural a sentence uses. Typed per dimension, so
-// a new editor mode or template family does not compile until it is named here.
+// a new or template family does not compile until it is named here.
 import {
   PLACEMENT_DEFAULT_KEYS,
   type PlacementDefaultKey,
@@ -12,12 +12,9 @@ type DefaultKeyEntry = { key: PlacementDefaultKey; label: string; noun: string }
 
 type Words = { label: string; noun: string };
 
+// Plan's key holds every new Project no more specific key does.
 const MODE_WORDS: Record<EditorMode, Words> = {
-  diagram: { label: 'Diagrams', noun: 'diagrams' },
-  draw: { label: 'Whiteboards', noun: 'whiteboards' },
-  pages: { label: 'Pages documents', noun: 'Pages documents' },
-  plan: { label: 'Plan boards', noun: 'Plan boards' },
-  workshop: { label: 'Sessions', noun: 'sessions' },
+  plan: { label: 'Projects', noun: 'Projects' },
 };
 
 const FAMILY_WORDS: Record<TemplateFamily, Words> = {

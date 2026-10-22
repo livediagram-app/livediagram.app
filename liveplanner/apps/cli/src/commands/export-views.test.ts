@@ -56,7 +56,6 @@ function host(docs: Record<string, HostDoc>, options: { limited?: number } = {})
         document: {
           id: m[1],
           name: doc.name,
-          presentation: null,
           tabs: doc.tabs.map((t, i) => ({
             id: t.id,
             name: t.name,
@@ -122,22 +121,19 @@ describe('export --all', () => {
     expect(envelope).not.toHaveProperty('liveplannerSync');
   });
 
-  it('writes each tab as SVG, Mermaid and Markdown, telling apart tabs of one name', async () => {
+  it('writes each tab as SVG and Markdown, telling apart tabs of one name', async () => {
     const one = { 'aaaa0001-doc': docs['aaaa0001-doc']! };
     const { out, io } = await cli(
-      ['export', '--all', '--to', 'out', '--format', 'svg, mermaid,md,svg'],
+      ['export', '--all', '--to', 'out', '--format', 'svg, md,svg'],
       host(one),
     );
     expect(out.trim().split('\n')).toEqual([
       'out/shop/flow-flow-0001.svg',
-      'out/shop/flow-flow-0001.mmd',
       'out/shop/flow-flow-0001.md',
       'out/shop/flow-flow-0002.svg',
-      'out/shop/flow-flow-0002.mmd',
       'out/shop/flow-flow-0002.md',
-      '1 document · 6 files',
+      '1 document · 4 files',
     ]);
-    expect(io.fileMap.get('out/shop/flow-flow-0001.mmd')!.data).toContain('Web app');
     expect(io.fileMap.get('out/shop/flow-flow-0001.md')!.data).toContain('Web app');
   });
 
@@ -182,7 +178,6 @@ describe('a pull file read offline', () => {
     document: {
       id: 'aaaa0001-doc',
       name: 'Shop',
-      presentation: null,
       tabs: [flow, { id: 'other-01', name: 'Other', elements: [] }],
     },
     liveplannerSync: {

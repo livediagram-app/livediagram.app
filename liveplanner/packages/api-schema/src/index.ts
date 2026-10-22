@@ -18,8 +18,6 @@ import type { BackgroundPattern, EditorMode, ShapeKind, Tab } from '@liveplanner
 import type { CreationTabKind, TemplateFamily } from './placement-defaults';
 import type { ItemTypeCatalogue } from '@liveplanner/items';
 
-export type { AvatarClothing, AvatarConfig, AvatarGender, AvatarHair, AvatarSize } from './avatar';
-
 // ---------------------------------------------------------------------
 // Documents
 // ---------------------------------------------------------------------
@@ -50,12 +48,6 @@ export type LiveDoc = {
   // Provenance (docs/specs/013-workspace/folders.md). null = made by a person; non-null = generated
   // (see DocumentSource). Set on create, never rewritten by meta updates.
   source: DocumentSource | null;
-  // Slide deck (docs/specs/012-collaboration/presentation-mode.md), serialised `StoredPresentation` JSON, or null when
-  // the document has no deck (every document until somebody builds one).
-  // Deliberately absent from DocumentSummary: the Explorer lists documents and
-  // has no use for their decks, and a deck is the one metadata field that can
-  // grow with the document.
-  presentation: string | null;
   // The document's type catalogue (docs/specs/026-plan/item-types.md): its own item types, or null
   // (or absent, from an older client or record) for the built-in ones. Written only by
   // PUT /documents/:id/item-types.
@@ -126,7 +118,7 @@ export type SharedTabsSummary = {
   documents: number;
 };
 
-// One row of the "Shared with you" list (shared_with, migration 0010):
+// One row of the "Shared with you" list (shared_with):
 // a document a non-owner has previously opened via a share link. The api
 // worker (`listSharedWith` in db/shared.ts) builds this by joining
 // shared_with → documents → participants; the live editor's Explorer
@@ -468,8 +460,8 @@ export type ParticipantPresence = {
   // no split.
   besideTabId?: string;
   // The id this participant WRITES INTO THE DOCUMENT for anything recorded
-  // per person — today the `responses` on a done check / estimate card /
-  // temperature check (docs/specs/012-collaboration/participant-responses.md).
+  // per person — today the `responses` on a temperature check
+  // (docs/specs/012-collaboration/participant-responses.md).
   //
   // It exists because `id` above cannot do that job. `id` is minted fresh by
   // the room for every socket (docs/specs/015-api/public-api-and-tokens.md §6), so it is unforgeable but also
@@ -492,39 +484,12 @@ export type ParticipantPresence = {
   picture?: string;
 };
 
-// ---------------------------------------------------------------------
-// Images (docs/specs/009-elements/images.md)
-// ---------------------------------------------------------------------
-
-// One row returned by `GET /api/images` (the gallery list) + the
-// inner shape of the `POST /api/images` response (`{ image, deduped }`).
-// The bytes themselves are fetched separately via
-// `GET /api/images/<id>?d=<documentId>` (owner or share-code gated).
-export type ImageSummary = {
-  id: string;
-  contentType: string;
-  byteSize: number;
-  width: number;
-  height: number;
-  originalName?: string;
-  createdAt: number;
-};
-
-// Canonical hash function for the X-Image-Sha256 wire-format header.
-// Lives here so the client and server can't drift on the dedup key
-// (see ./sha256.ts for the rationale).
+// Canonical SHA-256 hex digest and PKCE challenge, shared by the workers and the CLI (see ./sha256.ts).
 export { pkceChallenge, sha256Hex } from './sha256';
 
 // Worker-safe base64 / base64url encoders for raw bytes, shared by both
 // workers and the editor (see ./bytes.ts).
 export { base64ToBytes, bytesToBase64, bytesToBase64Url, randomBase64Url } from './bytes';
-
-// Image magic-number sniffing and the server-side image embedder both
-// workers render tabs with, and the header size it budgets pixels by (see ./image-sniff.ts, ./embed-images.ts,
-// ./image-size.ts).
-export { sniffImageType } from './image-sniff';
-export { imagePixelSize } from './image-size';
-export { embedTabImages, tabImageIds, type EmbedImageSource } from './embed-images';
 
 // Shared display-casing for preset values (template ids, theme names,
 // telemetry action / type enums). One definition so the live editor and
@@ -607,10 +572,8 @@ export type UnfurlResult = {
 };
 
 export * from './access-levels';
-export * from './image-limits';
 export * from './cta-sources';
 export * from './page-views';
-export * from './poll';
 export * from './room-messages';
 export * from './changesets';
 export * from './items';
@@ -647,8 +610,6 @@ export * from './placement-defaults';
 // Explorer Home: opens, Jump back in and What happened (docs/specs/013-workspace/explorer-home.md).
 export * from './home';
 export * from './drag-preview';
-export * from './article-caret';
-export * from './avatar-say';
 // Within reach: N most used plus N recent (docs/specs/004-interface-design/within-reach.md).
 export * from './within-reach';
 // Making a document is a use, a bulk import is not (docs/specs/013-workspace/explorer-home.md).
@@ -684,9 +645,6 @@ export * from './oauth-clients';
 // Workbench embeds (docs/specs/013-workspace/workbench-embeds.md).
 export * from './workbench';
 export * from './workbench-messages';
-export * from './pages';
-export * from './article-frames';
-export * from './pages-summary';
 export * from './mcp-origin';
 // Forms (docs/specs/030-forms/forms.md).
 export * from './forms';

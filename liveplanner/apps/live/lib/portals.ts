@@ -114,12 +114,6 @@ export function resolvePortalDestination(
   return target ? { portal: target, tabId: activeTabId, elements } : null;
 }
 
-// Where a character stands when it comes OUT of a portal: centred on the ring,
-// at its base (the bottom edge), since the avatar's position is its feet.
-export function portalExitPoint(portal: PortalBox): { x: number; y: number } {
-  return { x: portal.x + portal.width / 2, y: portal.y + portal.height };
-}
-
 // The viewport offset that centres `portal` in a viewport of `size` at `zoom`.
 // The canvas transform is `scale(zoom) translate(offset)`, so the offset is in
 // canvas px and the centring maths divides the viewport by the zoom.

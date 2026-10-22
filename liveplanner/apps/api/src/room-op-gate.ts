@@ -4,7 +4,6 @@ import {
   isParticipationOp,
   isPresenceOpKind,
   isSystemOpKind,
-  parseAvatarSay,
   parseStoredLevel,
 } from '@liveplanner/api-schema';
 import { answersAsSelf } from './document-room-rules';
@@ -28,7 +27,7 @@ export type GateSender = {
 };
 
 export function gateClientOp(op: unknown, sender: GateSender): OpGate {
-  // Presence ops (cursor / select / laser / tab-focus) are ephemeral
+  // Presence ops (cursor / select / tab-focus) are ephemeral
   // and mutate nothing, so they relay from ANY connected session —
   // that's how a view-only visitor still shows their cursor, current
   // selection, and which tab they're on to everyone else. Mutation
@@ -48,18 +47,9 @@ export function gateClientOp(op: unknown, sender: GateSender): OpGate {
   if (!scopedSenderMayRelay(op, sender.tabScope)) return DROP;
   const presence = isPresenceOpKind(opKind);
   // The level ladder (docs/specs/013-workspace/share-roles.md): presence from anyone; a Participant's dots,
-  // responses and ideas relay like an Editor's; its `el` op goes through the participant content rule and
+  // and responses relay like an Editor's; its `el` op goes through the participant content rule and
   // never relays as sent; everything else needs an Editor.
   const level = parseStoredLevel(sender.role);
-  // A Viewer only looks (docs/specs/013-workspace/share-roles.md): of the presence class, a poll answer and a
-  // reaction are taking part, so they need a Participant.
-  if (level === 'view' && (opKind === 'poll-answer' || opKind === 'reaction')) return DROP;
-  // Speaking is taking part too (docs/specs/008-canvas/avatar-mode.md "Who may speak"), and a message is held to
-  // the limits here as every receiver holds it, so a malformed one reaches nobody.
-  if (opKind === 'avatar-say' && (level === 'view' || !parseAvatarSay(op))) return DROP;
-  // Bring Focus moves everyone's view (docs/specs/012-collaboration/bring-focus.md): running the session, so an
-  // Editor's alone.
-  if (opKind === 'focus-here' && level !== 'edit') return DROP;
   let participantAnswers = false;
   if (!presence && level !== 'edit') {
     if (level !== 'participate') return DROP;

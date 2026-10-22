@@ -1,19 +1,17 @@
-// placement_defaults: per-person default folders (migration 0061,
-// docs/specs/013-workspace/default-folders.md). Rows are keyed on the resolved owner and a default
+// placement_defaults: per-person default folders
+// (docs/specs/013-workspace/default-folders.md). Rows are keyed on the resolved owner and a default
 // key; the folder is checked by the caller, on write and on every use, never by a foreign key.
 
 import {
   PLACEMENT_DEFAULT_KEYS,
-  legacyPlacementDefaultKeys,
-  parsePlacementDefaultKey,
+  isPlacementDefaultKey,
   type PlacementDefault,
   type PlacementDefaultKey,
 } from '@liveplanner/api-schema';
 import type { Env } from '../types';
 
-/** This owner's defaults for the keys in force, in key order. A row under a retired name reads as
- *  its key today (a row under today's name wins over it); a row whose key is no longer in force is
- *  left out. */
+/** This owner's defaults for the keys in force, in key order. A row whose key is no longer in force
+ *  (a retired mode's, such as `mode:diagram`) is left out. */
 export async function listPlacementDefaults(
   env: Env,
   ownerId: string,
@@ -25,9 +23,7 @@ export async function listPlacementDefaults(
     .all<{ default_key: string; folder_id: string }>();
   const byKey = new Map<PlacementDefaultKey, string>();
   for (const row of res.results ?? []) {
-    const key = parsePlacementDefaultKey(row.default_key);
-    if (!key) continue;
-    if (key === row.default_key || !byKey.has(key)) byKey.set(key, row.folder_id);
+    if (isPlacementDefaultKey(row.default_key)) byKey.set(row.default_key, row.folder_id);
   }
   return PLACEMENT_DEFAULT_KEYS.flatMap((key) => {
     const folderId = byKey.get(key);
@@ -52,15 +48,13 @@ export async function setPlacementDefault(
     .run();
 }
 
-/** Clear this owner's default for a key, under its retired names too. Silent when there was none. */
+/** Clear this owner's default for a key. Silent when there was none. */
 export async function clearPlacementDefault(
   env: Env,
   ownerId: string,
   key: PlacementDefaultKey,
 ): Promise<void> {
-  for (const k of [key, ...legacyPlacementDefaultKeys(key)]) {
-    await env.DB.prepare('DELETE FROM placement_defaults WHERE owner_id = ? AND default_key = ?')
-      .bind(ownerId, k)
-      .run();
-  }
+  await env.DB.prepare('DELETE FROM placement_defaults WHERE owner_id = ? AND default_key = ?')
+    .bind(ownerId, key)
+    .run();
 }

@@ -97,26 +97,21 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   shapes: 13,
   build: 11,
   write: 5,
-  draw: 6,
-  // A screen's parts (docs/specs/007-editor/wireframe-pages.md "The Elements palette"); the layout
-  // adds the Badge, the Card and the Checklist.
-  wireframe: 8,
+  draw: 3,
   devices: 7,
   icons: 0,
   stickers: 0,
   technology: 0,
-  media: 9,
-  components: 12,
+  media: 7,
+  components: 11,
   concepts: 8,
   data: 7,
-  // The Collaborate elements, one category per group (docs/specs/012-collaboration/workshop-mode.md
-  // "The palette"): 34 tiles between them.
-  'collab-ask': 7,
-  'collab-tools': 5,
-  'collab-record': 5,
-  'collab-react': 5,
-  'collab-mode': 8,
-  'collab-navigate': 15,
+  // The Collaborate elements, one category per group (docs/specs/010-palette/palette-top-level-categories.md):
+  // 10 tiles between them.
+  'collab-ask': 2,
+  'collab-tools': 3,
+  'collab-record': 3,
+  'collab-navigate': 2,
   // Plan mode's Boards and Cards (docs/specs/026-plan/plan-mode.md "The palette"): nine boards, one
   // card per item type.
   'plan-boards': 10,

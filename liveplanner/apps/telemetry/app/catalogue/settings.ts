@@ -75,34 +75,6 @@ export const EDITOR_SETTINGS = settingsStack(
       'Whiteboard Dock Position',
       'A whiteboard dock moved to the top or the bottom.',
     ),
-    changed(
-      'ContentsPlacement',
-      'Contents Placement',
-      "Pages mode's Contents docked as a sidebar or minimised to its button.",
-    ),
-    changed(
-      'ContentsSide',
-      'Contents Side',
-      "Pages mode's Contents sidebar dragged to the canvas's left or right edge.",
-    ),
-    toggle(
-      'UI',
-      'LogoGuidesOn',
-      'LogoGuidesOff',
-      'Logo Guides',
-      "A logo page's construction guides.",
-    ),
-    changed('LogoGuideStrength', 'Logo Guide Strength', 'Logo guides set Faint, Medium or Strong.'),
-    {
-      category: 'UI',
-      action: 'Toggled',
-      typeIn: (type) =>
-        /^LogoGuide(CentreLines|Diagonals|SafeArea|Circles|Square|Grid)(On|Off)$/.test(type ?? ''),
-      title: 'Logo Guide Parts',
-      blurb:
-        'One of the logo guides (centre lines, diagonals, safe area, circles, square, grid) shown or hidden.',
-      rising: 'neutral',
-    },
     toggle(
       'UI',
       'PowerUserModeOn',
@@ -306,15 +278,8 @@ export const ACCESSIBILITY_SETTINGS = settingsStack('Accessibility Settings', 'M
 // Tutorials before). Each switch's tokens track its PREFERENCE, so switching a tour on is `…SeenOff`.
 export const TOURS_SETTINGS = settingsStack(
   'Tours Settings',
-  'The Diagram, Plan, Workshop, Draw and Pages tours switched back on or off.',
+  'The Plan and Draw tours switched back on or off.',
   [
-    toggle(
-      'UI',
-      'TourSeenOff',
-      'TourSeenOn',
-      'Diagram Tour',
-      'The Diagram tour (the welcome tour until October 2026) switched back on or off.',
-    ),
     toggle(
       'UI',
       'PlanTourSeenOff',
@@ -342,62 +307,6 @@ export const TOURS_SETTINGS = settingsStack(
       'DashboardsTourSeenOn',
       'Dashboards Tour',
       "The Plan tour's dashboards track switched back on or off.",
-    ),
-    toggle(
-      'UI',
-      'WorkshopTourSeenOff',
-      'WorkshopTourSeenOn',
-      'Workshop Tour',
-      'The Workshop tour switched back on or off.',
-    ),
-    toggle(
-      'UI',
-      'DrawTourSeenOff',
-      'DrawTourSeenOn',
-      'Draw Tour',
-      'The Draw tour switched back on or off.',
-    ),
-    toggle(
-      'UI',
-      'AvatarTourSeenOff',
-      'AvatarTourSeenOn',
-      'Avatar Tour',
-      'The Avatar tour switched back on or off.',
-    ),
-    toggle(
-      'UI',
-      'PagesTourSeenOff',
-      'PagesTourSeenOn',
-      'Pages Tours',
-      'Every Pages tour (slides, infographics, articles and logos) switched back on or off at once.',
-    ),
-    toggle(
-      'UI',
-      'SlidesTourSeenOff',
-      'SlidesTourSeenOn',
-      'Slides Tour',
-      "The Pages tour's slides track switched back on or off.",
-    ),
-    toggle(
-      'UI',
-      'InfographicTourSeenOff',
-      'InfographicTourSeenOn',
-      'Infographic Tour',
-      "The Pages tour's infographic track switched back on or off.",
-    ),
-    toggle(
-      'UI',
-      'ArticleTourSeenOff',
-      'ArticleTourSeenOn',
-      'Article Tour',
-      "The Pages tour's article track switched back on or off.",
-    ),
-    toggle(
-      'UI',
-      'LogoTourSeenOff',
-      'LogoTourSeenOn',
-      'Logo Tour',
-      "The Pages tour's logo track switched back on or off.",
     ),
   ],
 );

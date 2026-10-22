@@ -4,7 +4,7 @@
 into the api worker so the product can send a small set of account emails. Like
 Clerk ([Auth + guest access](auth-and-guest-access.md)) and AI ([AI Assistance](../007-editor/ai-assistance.md)), it is **entirely gated on a secret**: when
 `RESEND_API_KEY` is absent the whole feature is inert — no sends, no new request
-work — and everything else behaves exactly as before. Guests and the canvas stay
+work — and everything else behaves exactly as before. Guests and the editor stay
 account-free and never receive email.
 
 ## 1. What we send
@@ -14,7 +14,7 @@ Five messages, two kinds:
 **Lifecycle (onboarding) — signed-in users only:**
 
 1. **Welcome** — sent the first time we see an authenticated user. Tips on
-   building a first diagram (shapes, arrows, templates).
+   starting a first project (a board of cards, the other tabs, templates).
 2. **Week 1** — ~7 days after the welcome. Tips on the Explorer (folders,
    search, recents, sharing from the grid).
 3. **Week 2** — ~14 days after the welcome. Introduces Teams (shared documents,
@@ -38,16 +38,16 @@ invite** — read from the [User preferences](../007-editor/user-preferences.md)
 
 6. **Activation nudge** (#4, onboarding) — ~3 days after sign-up, to anyone who
    still has zero documents (`dueForActivation`'s `NOT EXISTS` check). Daily cron,
-   opt-out `notifyTips`. `activation_sent_at`, migration 0031.
+   opt-out `notifyTips`. `activation_sent_at`.
 7. **Win-back** (#5, opt-out `notifyTips`) — one-shot for owners quiet ~4 weeks
    (last document activity via the newest `documents.saved_at`; zero-document owners are excluded,
-   that's #4's job). Daily cron. `winback_sent_at`, migration 0032.
+   that's #4's job). Daily cron. `winback_sent_at`.
 8. **Milestone** (#6, opt-out `notifyMilestones`) — a celebration when an owner's
    document count reaches 10, fired on a genuine create. Atomic `claimMilestone`
-   dedups a burst of saves. `milestone_sent_at`, migration 0033.
+   dedups a burst of saves. `milestone_sent_at`.
 9. **API-token expiry** (#3, transactional) — 7 days before a token's 6-month
    expiry, so a script / connected tool doesn't silently break. Daily cron.
-   `api_tokens.expiry_warned_at`, migration 0030.
+   `api_tokens.expiry_warned_at`.
 10. **New comment** (#1, opt-out `notifyComments`) — when someone other than the
     owner comments on a document (either comment path), the owner is emailed
     **immediately** (no cron). Never includes the comment text. On the tab save
@@ -66,7 +66,7 @@ invite** — read from the [User preferences](../007-editor/user-preferences.md)
     invite link. The invite expires (is rejected) 28 days after it was sent. Not
     opt-out: the recipient may have no account to hold a preference, and the
     Decline link is the one-click way to stop them. Stamps on the invite's own
-    `team_members` row (`reminder1_sent_at` to `reminder3_sent_at`, `reminder_attempts`, `clock_started_at`, migration 0095); see [Teams → Reminders and expiry](../013-workspace/teams.md#reminders-and-expiry).
+    `team_members` row (`reminder1_sent_at` to `reminder3_sent_at`, `reminder_attempts`, `clock_started_at`); see [Teams → Reminders and expiry](../013-workspace/teams.md#reminders-and-expiry).
 
 The three opt-out lifecycle/notification categories (`notifyComments`,
 `notifyTips`, `notifyMilestones`) join the [Account settings & email notifications](profile-and-email-notifications.md) pair in `getNotificationPrefs`
@@ -97,7 +97,7 @@ Production: `wrangler secret put RESEND_API_KEY`.
 ## 3. Data model
 
 One table, keyed by the owner id (the Clerk `sub` — lifecycle email is
-authenticated-only). Migration `0029_email_lifecycle.sql`:
+authenticated-only):
 
 ```sql
 CREATE TABLE IF NOT EXISTS email_lifecycle (
@@ -152,7 +152,7 @@ enough for onboarding; no per-user timers.
 
 A failed send (the welcome inline, or any stage in the sweep) leaves its stamp
 unset for the next run to retry, and counts against the row: `send_attempts`
-goes up by one and `last_attempt_at` records when (migration 0086). Once a row
+goes up by one and `last_attempt_at` records when. Once a row
 reaches `MAX_SEND_ATTEMPTS` (3, in `db/email-lifecycle.ts`) every due-query
 skips it, so an address that always fails (a deleted mailbox, a hard bounce)
 cannot hold a place in the oldest-first batch for good; the sweep logs
@@ -173,9 +173,9 @@ sighting with a changed address (§4), resets the count to zero.
   **Branding.** Every builder renders through one shell, so every email looks
   the same: a brand-gradient band across the top of the card (sky-400 to
   blue-700, flat `#0ea5e9` where a client drops gradients), the logo mark beside
-  the "live"/"diagram" wordmark in the header, a brand-50 page behind the card,
-  and a footer under the card with the lockup again, the tagline ("Diagram,
-  draw and make pages together, live. Free and open source.") and a link to the
+  the "live"/"planner" wordmark in the header, a brand-50 page behind the card,
+  and a footer under the card with the lockup again, the tagline ("Plan
+  the work together, live. Free, no trackers.") and a link to the
   site. Both lockups link to `APP_BASE_URL`. The mark is a transparent 64px PNG
   (`/email/liveplanner-mark-64.png`, shown at 28px in the header and 22px in
   the footer) served by the marketing app and written by `pnpm icons:brand`,
@@ -216,8 +216,8 @@ name, or a recipient count.
   have no account: that is why they carry no account footer, and why their only
   credential is the single-purpose decline token, stored hashed
   ([Teams → Declining from the email](../013-workspace/teams.md#declining-from-the-email)).
-- Off by default; self-hosters opt in by providing their own Resend key + domain
-  (keeps [Open source + distribution](../002-project-scope/open-source-and-business-model.md) self-hosting intact — no required SaaS call).
+- Off by default; a deployment opts in by providing a Resend key + domain
+  (keeps [Business model + licence](../002-project-scope/business-model-and-licence.md)'s degrade-never-break rule — no required SaaS call).
 
 ## 8. Out of scope (for now)
 

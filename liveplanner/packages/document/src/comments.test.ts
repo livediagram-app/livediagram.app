@@ -76,15 +76,10 @@ describe('graftLiveTabState session fields (docs/specs/012-collaboration/session
 describe('graftLiveTabState collaborative fields (docs/specs/012-collaboration/collab-race-hardening.md)', () => {
   // A snapshot taken before anybody answered: undoing some earlier edit
   // restores it, and must not take the room's answers with it.
-  it('keeps answers, ideas, the roll and the picker result through an undo', () => {
+  it('keeps answers and the picker result through an undo', () => {
     const answered: ShapeElement = {
       ...shape('card'),
-      responses: [{ participantId: 'k1', value: 'done', at: 1 }],
-      responsesRevealed: true,
-      ideaCards: ['more coffee'],
-      ideasRevealed: true,
-      rollCall: [{ name: 'Sam', color: '#f00', at: 1 }],
-      agendaCurrent: 2,
+      responses: [{ participantId: 'k1', value: '4', at: 1 }],
       pickerResult: 'Sam',
     };
     const restored = graftLiveTabState(
@@ -96,11 +91,6 @@ describe('graftLiveTabState collaborative fields (docs/specs/012-collaboration/c
     expect(card.x).toBe(40);
     // ...and nobody's answer is.
     expect(card.responses).toEqual(answered.responses);
-    expect(card.responsesRevealed).toBe(true);
-    expect(card.ideaCards).toEqual(['more coffee']);
-    expect(card.ideasRevealed).toBe(true);
-    expect(card.rollCall).toEqual(answered.rollCall);
-    expect(card.agendaCurrent).toBe(2);
     expect(card.pickerResult).toBe('Sam');
   });
 

@@ -4,8 +4,9 @@
 // editor and the MCP server send the creation intent; all read the keys and the intent from here.
 //
 // Two honest dimensions, most specific first: the template family it was made from (a
-// retrospective, a Kanban board), and the editor mode it opens in. Each comes from one closed list,
-// and the keys are generated from them, so a new editor mode adds its key here unasked.
+// retrospective, a Kanban board), and the editor mode it opens in (Plan, docs/specs/026-plan/plan-mode.md). Each comes from one closed list,
+// and the
+// keys are generated from them.
 
 import {
   DEFAULT_TAB_KIND,
@@ -64,28 +65,6 @@ export function isPlacementDefaultKey(value: unknown): value is PlacementDefault
   return isMember(PLACEMENT_DEFAULT_KEYS, value);
 }
 
-// Keys stored under a name since retired: Pages mode was Illustrate mode, and Infographic mode before;
-// Workshop mode was Facilitate mode.
-const LEGACY_PLACEMENT_DEFAULT_KEYS: Readonly<Record<string, PlacementDefaultKey>> = {
-  'mode:illustrate': 'mode:pages',
-  'mode:infographic': 'mode:pages',
-  'mode:facilitate': 'mode:workshop',
-};
-
-/** A stored or requested key as today's key: a current key as it is, a retired one renamed,
- *  anything else null. */
-export function parsePlacementDefaultKey(value: unknown): PlacementDefaultKey | null {
-  if (isPlacementDefaultKey(value)) return value;
-  return typeof value === 'string' ? (LEGACY_PLACEMENT_DEFAULT_KEYS[value] ?? null) : null;
-}
-
-/** The retired names a key may still be stored under, so clearing it clears them too. */
-export function legacyPlacementDefaultKeys(key: PlacementDefaultKey): string[] {
-  return Object.keys(LEGACY_PLACEMENT_DEFAULT_KEYS).filter(
-    (k) => LEGACY_PLACEMENT_DEFAULT_KEYS[k] === key,
-  );
-}
-
 export function isCreationTabKind(value: unknown): value is CreationTabKind {
   return isMember(CREATION_TAB_KINDS, value);
 }
@@ -108,15 +87,14 @@ export function placementDefaultTelemetryType(key: PlacementDefaultKey): string 
 
 /**
  * The creation intent of a new document, from its first tab and the family of the template it was
- * made from. Structural, so it reads a tab from before editor modes (a legacy `kind: 'whiteboard'`
- * opens in Draw mode) and one after (`opensIn`).
+ * made from. Structural; the tab kind is read the way the document model reads it.
  */
 export function creationIntentOf(
-  tab: { kind?: string; opensIn?: string } | undefined,
+  _tab: { kind?: string } | undefined,
   templateFamily: TemplateFamily | null = null,
 ): CreationIntent {
   const intent: CreationIntent = {
-    mode: parseEditorMode(tab?.opensIn) ?? (tab?.kind === 'whiteboard' ? 'draw' : 'diagram'),
+    mode: 'plan',
     tabKind: 'diagram',
   };
   return templateFamily ? { ...intent, templateFamily } : intent;
@@ -134,7 +112,7 @@ export function readCreationIntent(
     tabKind?: unknown;
     templateFamily?: unknown;
   };
-  // A create from a client from before a mode's rename still names it `illustrate`, `infographic` or `facilitate`.
+  // A create from an older client still names a retired mode, read as Plan.
   const parsedMode = parseEditorMode(mode);
   if (!parsedMode) return { ok: false };
   const kind = tabKind ?? DEFAULT_TAB_KIND;

@@ -7,7 +7,6 @@ import {
   elementKindLabel,
   elementSupportsText,
   isBoxed,
-  isCompoundPath,
   cardinalityLabel,
   isFlowchartStep,
   isMindNode,
@@ -81,7 +80,6 @@ export function CanvasSelectionToolbars({
   const {
     elements,
     readOnly,
-    canvasTool,
     onDuplicateSelected,
     onToggleLockSelected,
     onDeleteSelected,
@@ -108,7 +106,7 @@ export function CanvasSelectionToolbars({
           options own the space around the element, and a toolbar on top just
           competes for clicks. Kept mounted and faded out (not unmounted) so
           it animates away as the ring opens and back in when it closes. */}
-      {showPopover && selectionBounds && canvasTool !== 'spotlight' ? (
+      {showPopover && selectionBounds ? (
         <div
           className="pointer-events-none absolute inset-0 z-[var(--z-overlay)] origin-center"
           style={{
@@ -143,17 +141,6 @@ export function CanvasSelectionToolbars({
                 : undefined
             }
             hasText={selected ? elementHasText(selected) : false}
-            // A path's points (docs/specs/023-draw-mode/path-tool.md "Editing"): its edit mode, the
-            // Path tool put down first when it is still in hand.
-            onEditPoints={
-              // A combined shape edits as a whole (docs/specs/007-editor/logo-pages.md "Combine").
-              !readOnly && !selectedLocked && selected?.type === 'path' && !isCompoundPath(selected)
-                ? () => {
-                    if (props.pendingDraw) props.onCancelDraw();
-                    props.onBeginEdit(selected.id);
-                  }
-                : undefined
-            }
             // Mind map (docs/specs/009-elements/mind-node.md): Add child / Add sibling, the toolbar home
             // for Tab / Enter. Not on a locked node: growing re-lays the map. A Participant grows maps too
             // (docs/specs/013-workspace/share-roles.md).
@@ -256,7 +243,7 @@ export function CanvasSelectionToolbars({
           than the boxed-only resize box, so an arrow-only / mixed marquee still
           gets the toolbar — and its "More" entry into the Flow / animate menu.
           Gated on a true marquee multi-selection (2+), never in view-only. */}
-      {showMultiToolbar && multiToolbarBounds && canvasTool !== 'spotlight' ? (
+      {showMultiToolbar && multiToolbarBounds ? (
         <div
           className="pointer-events-none absolute inset-0 z-[var(--z-overlay)] origin-center"
           style={{
@@ -280,7 +267,6 @@ export function CanvasSelectionToolbars({
                 .every((el) => el.locked === true)}
               selectedElements={elements.filter((el) => multiSelectedIds.has(el.id))}
               onDuplicate={props.onDuplicateMultiSelected}
-              onCombine={!readOnly && props.canCombine?.() ? props.onCombine : undefined}
               onDelete={props.onDeleteMultiSelected}
               onToggleLock={props.onToggleLockMultiSelected}
               onFilter={readOnly ? undefined : props.onFilterMultiSelected}

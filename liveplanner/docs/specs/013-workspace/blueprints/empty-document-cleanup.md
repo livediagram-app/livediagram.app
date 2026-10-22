@@ -10,7 +10,7 @@ Scope, by file:
 | File                                                                      | Role                                                                                                         |
 | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
 | `packages/api-schema/src/trash.ts`                                        | `TrashReason`, `TrashedDocument.reason`, `EMPTY_DOCUMENT_STALE_DAYS` / `_MS`                                 |
-| `apps/api/migrations/0056_document_trash_reason.sql`                      | `documents.trash_reason`                                                                                     |
+| `apps/api/migrations/0001_liveplanner_baseline.sql`                       | `documents.trash_reason`                                                                                     |
 | `apps/api/src/db/empty-document-sweep.ts`                                 | `trashEmptyDocuments`: the set-based move, capped                                                            |
 | `apps/api/src/db/trash.ts`                                                | `listTrash` reads the reason; `restoreDocument` clears it and restarts stale                                 |
 | `apps/api/src/index.ts`                                                   | The 03:00 cron calls the sweep beside the purge                                                              |
@@ -55,8 +55,6 @@ Invariants:
 - **C3** Only live rows are selected (`trashed_at IS NULL`); a document already in the Trash keeps its
   first time and reason.
 - **C4** A tab row whose `data` is not valid JSON counts as content (D143): the sweep fails safe.
-- **C6** A tab with any entry in `articles` counts as content, whatever its elements: an article's
-  writing lives in `Tab.articles`, not in `elements` (spec "Which documents").
 - **C5** The sweep writes nothing else: no child row, no Timeline event, no room broadcast, no email.
 - **C6** Offline Mode records never reach the server, so the sweep cannot see them.
 
@@ -93,7 +91,6 @@ UPDATE documents SET trashed_at = ?1, trash_reason = 'empty'
            AND CASE
                  WHEN NOT json_valid(t.data) THEN 1
                  WHEN COALESCE(json_array_length(t.data, '$.elements'), 0) > 0 THEN 1
-                 WHEN EXISTS (SELECT 1 FROM json_each(t.data, '$.articles')) THEN 1
                  WHEN json_type(t.data, '$.form') = 'object' THEN 1
                  ELSE 0
                END = 1)
@@ -113,8 +110,7 @@ No new route, no new error.
 | `documents.trash_reason` | state | TEXT NULL; NULL or `'empty'`; meaningful only in the Trash |
 | `TrashedDocument.reason` | wire  | `'deleted' \| 'empty'`, derived                            |
 
-Migration 0056 adds the nullable column with no backfill: every row already in the Trash was deleted by a
-person, which NULL means (D141). No index: nothing filters on it. The sweep scans live rows; an index ordering them by `saved_at` would
+The column is nullable: NULL means a person deleted the document (D141). No index: nothing filters on it. The sweep scans live rows; an index ordering them by `saved_at` would
 cost every autosave a write to save a once-a-day scan (Performance). Account deletion and purges remove the row with the rest; guest-to-account
 migration moves `owner_id` only. Restore clears the column, so a live row's value is always NULL.
 
@@ -124,7 +120,6 @@ migration moves `owner_id` only. Restore clears the column, so a live row's valu
 - **X2** A tab shared with another document that has elements: neither document is empty.
 - **X3** A tab whose `data` lacks `elements`: `json_array_length` is NULL, coalesced to 0: empty.
 - **X4** Invalid JSON in a tab: content (C4).
-- **X5** A tab with an article and no elements: content (C6); an empty `articles` object is not.
 - **X5b** A tab holding a form (`$.form` an object) and no elements: content; a `form` that is not an object
   is not. The checks are one `CASE`, evaluated in order and stopped at the first match (an `OR` chain SQLite may
   evaluate whole), so a body that is not JSON never reaches `json_type` and a tab with elements is parsed at
@@ -202,7 +197,7 @@ limits; the cap bounds the writes at 2,000 per run, the same order as the Trash 
 | `EMPTY_SWEEP_BATCH`         | 500   | One bounded UPDATE; measured scan cost (D144)     | 50 to 1000 |
 | `EMPTY_SWEEP_MAX_BATCHES`   | 4     | 2,000 moves a run, the purge's order of magnitude | 1 to 20    |
 
-No new environment variable or binding; self-hosting needs only the migration.
+No new environment variable or binding; a deployment needs only the migration.
 
 ## Defaults ledger
 

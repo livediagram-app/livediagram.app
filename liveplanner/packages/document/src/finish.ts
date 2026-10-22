@@ -132,18 +132,10 @@ export const FACTORY_CORNERS: Readonly<Record<string, string>> = {
   boundary: 'md',
   'stat-row': 'md',
   'site-header': 'md',
-  'mode-button': 'lg',
   'session-button': 'lg',
-  reveal: 'lg',
   picker: 'lg',
-  'reaction-pad': 'lg',
-  estimate: 'lg',
   temperature: 'lg',
-  'idea-box': 'lg',
-  'qa-board': 'lg',
-  agenda: 'lg',
   decision: 'lg',
-  'roll-call': 'lg',
 };
 
 /** An element's own corner as its finish reads it: a corner picked on it wins, but under Professional the corner

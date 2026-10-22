@@ -1,9 +1,7 @@
 'use client';
 
-import { pageStep } from '@/lib/page-step';
 import { useFocusNewPlanElement } from '@/hooks/plan/useFocusNewPlanElement';
 import { contentAddBlocked } from '@/lib/editor-capabilities';
-import { tabsWithPageMoved, useDeckFollowsPages } from './useDeckFollowsPages';
 import { voteTallies } from '@/hooks/plan/vote-tally';
 import { useMergeDuplicateStatuses } from '@/hooks/plan/useMergeDuplicateStatuses';
 import { usePresetCardTypes } from '@/hooks/plan/usePresetCardTypes';
@@ -25,7 +23,6 @@ import { debugLog } from '@/lib/debug-log';
 import { usePlanItems } from '@/hooks/plan/usePlanItems';
 import { useLinkedActionCards, type LinkedActions } from '@/hooks/plan/useLinkedActionCards';
 import { actionsBoardIn } from '@/hooks/plan/linked-actions';
-import { usePlanNeeded } from '@/hooks/plan/usePlanNeeded';
 import { usePlanStatuses } from '@/hooks/plan/usePlanStatusNames';
 import { useFormActions } from '@/hooks/forms/useFormActions';
 import { makeFormSheet } from '@/lib/forms-make-sheet';
@@ -35,7 +32,7 @@ import { usePlanCoverWiring } from '@/hooks/plan/usePlanCoverWiring';
 import { usePlanTabSweep } from '@/hooks/plan/usePlanTabSweep';
 import { useTeamPeople } from '@/hooks/plan/useTeamPeople';
 import { useItemTypes } from '@/hooks/plan/useItemTypes';
-import { PLAN_LEFT_OUT_TOOLS, useModeDefaultTool } from '@/hooks/editor/useModeDefaultTool';
+import { PLAN_LEFT_OUT_TOOLS, usePlanDefaultTool } from '@/hooks/editor/usePlanDefaultTool';
 import { useItemUndo } from '@/hooks/plan/useItemUndo';
 import { useSheetCsvDrop } from '@/hooks/sheets/useSheetCsvDrop';
 import { useSheetChartInertIds } from '@/hooks/sheets/useSheetChartInertIds';
@@ -44,82 +41,38 @@ import { tabNamedForSheet } from '@/lib/tab-named-plan';
 import { useBoardDeleteGuard } from '@/hooks/plan/useBoardDeleteGuard';
 import { chainDeleteGuards } from '@/lib/delete-guards';
 import { useSheetDeleteGuard } from '@/hooks/sheets/useSheetDeleteGuard';
-import type { View } from '@/lib/viewport-store';
 import { useKeyboardAvoidance } from '@/hooks/canvas/useKeyboardAvoidance';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-  useEffectEvent,
-} from 'react';
-import {
-  pagesOf,
-  layOutPages,
   stampTabKind,
   isBoxed,
-  resolveSlide,
-  slideFrame,
   stampNewElementLayers,
   voteHidesCursors,
   elementActions,
   type BoxedElement,
   type CommentMention,
   type Element,
-  type ShapeElement,
-  type EditorMode,
   type Tab,
 } from '@liveplanner/document';
 
-import { useWhiteboard } from '@/hooks/canvas/useWhiteboard';
-import { useSnapColours } from '@/hooks/canvas/useSnapColours';
-import { isPathEditing } from '@/lib/path-edit';
-import { usePathCommits } from '@/hooks/canvas/usePathCommits';
-import { useCanvasEraser } from '@/hooks/canvas/useCanvasEraser';
 import { useCanvasTool } from '@/hooks/canvas/useCanvasTool';
 import { useCommentMentions } from '@/hooks/collab/useCommentMentions';
-import { useDesktopOnlyToolExit } from '@/hooks/canvas/useDesktopOnlyToolExit';
-import { isMobileViewportSync } from '@/lib/responsive';
-import { useLaserConfig } from '@/hooks/canvas/useLaserConfig';
-import { useEraserConfig } from '@/hooks/canvas/useEraserConfig';
 import { useFormatConfig } from '@/hooks/canvas/useFormatConfig';
 import { useStyleMemory } from '@/hooks/canvas/useStyleMemory';
-import type { QuickStyleDeps } from '@/hooks/canvas/useQuickStyle';
-import { useSwatchOverrides } from '@/hooks/canvas/useSwatchOverrides';
 import { getTheme } from '@/lib/themes';
-import { DEFAULT_SCHEME_ID, opensInOf, settleFlowcharts } from '@liveplanner/document';
+import { settleFlowcharts } from '@liveplanner/document';
 import { settleChipsInTabs } from '@/lib/settle-tabs';
 import { lockedElementIds } from '@/lib/tab-cleanup';
-import { useEditorMode } from '@/hooks/editor/useEditorMode';
-import { selectAllIds } from '@/lib/select-all-ids';
-import { currentPageIdNow } from '@/lib/current-page-kind';
-import { useArticles } from '@/hooks/editor/useArticles';
-import { usePagesMode } from '@/hooks/editor/usePagesMode';
-import { useLogoEditor } from '@/hooks/editor/useLogoEditor';
-import { editorModeShortcut } from '@/hooks/editor/editor-mode-shortcut';
 import { announce } from '@/lib/announcer';
-import { peerModeSwitchMessage } from '@/lib/peer-mode-switch';
 import { useAddCustomColour } from '@/hooks/editor/useAddCustomColour';
 import { useTagColourSetter } from '@/hooks/editor/useTagColourSetter';
-import { useLeavePages } from '@/hooks/editor/useLeavePages';
 import { usePortalSetters } from '@/hooks/canvas/usePortalSetters';
 import { useBehaviourElements } from '@/hooks/canvas/useBehaviourElements';
 import { useCollabElements } from '@/hooks/canvas/useCollabElements';
-import { useQuizElements } from '@/hooks/canvas/useQuizElements';
-import { useQaBoard } from '@/hooks/canvas/useQaBoard';
-import { useFollowMe } from '@/hooks/collab/useFollowMe';
-import { useShowFollowersMyView } from '@/hooks/collab/useShowFollowersMyView';
-import { useFacilitator } from '@/hooks/collab/useFacilitator';
-import { useFocusLanding } from '@/hooks/collab/useFocusLanding';
-import { useFocusInvite } from '@/hooks/collab/useFocusInvite';
-import { FOCUS_PRESS_MESSAGE, focusPageAt, focusPressOutcome } from '@/lib/focus-audience';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import { useCellLinkPicker } from '@/hooks/canvas/useCellLinkPicker';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { usePublishPicture } from '@/hooks/persistence/usePublishedPicture';
-import { useCommentPicturesLoader } from '@/lib/comment-pictures';
 import { useClipboard } from '@/hooks/canvas/useClipboard';
 import { useDocumentActions } from '@/hooks/canvas/useDocumentActions';
 import { useEditorContextMenu } from '@/hooks/canvas/useEditorContextMenu';
@@ -140,17 +93,12 @@ import {
   toggleRecentExcluded,
   writeUserPreferences,
 } from '@/lib/user-preferences';
-import type { PollCandidate } from '@/lib/poll-collaborators';
-import { withoutAgentRows } from '@/lib/agent-presence-rows';
 import { track } from '@/lib/telemetry';
-import { pollResultElement } from '@/lib/poll-capture';
 import { useEditorBroadcast } from '@/hooks/collab/useEditorBroadcast';
-import { useLivePoll } from '@/hooks/collab/useLivePoll';
 import { useFavourites } from '@/hooks/persistence/useFavourites';
 import { useShortcutsEnabled } from '@/hooks/ui/useShortcutsEnabled';
 import { useEditorComments } from '@/hooks/collab/useEditorComments';
 import { useEditorDrag } from '@/hooks/canvas/useEditorDrag';
-import { useEditorImages } from '@/hooks/canvas/useEditorImages';
 import { useEditorNotes } from '@/hooks/canvas/useEditorNotes';
 import { useElementLinks } from '@/hooks/canvas/useElementLinks';
 import { useElementSelectionActions } from '@/hooks/canvas/useElementSelectionActions';
@@ -168,14 +116,11 @@ import { useTabCanvas } from '@/hooks/canvas/useTabCanvas';
 import { useTabSession } from '@/hooks/persistence/useTabSession';
 import { useEditorKeyboardShortcuts } from '@/hooks/canvas/useEditorKeyboardShortcuts';
 import { useEditorViewport } from '@/hooks/canvas/useEditorViewport';
-import { useSlideDeck } from './useSlideDeck';
-import { slideFitOptions } from '@/lib/presentation-config';
-import { pageDeckControls } from '@/lib/page-deck-controls';
 import { useCanvasPinchZoom } from '@/hooks/canvas/useCanvasPinchZoom';
 import { useCapabilities } from '@/hooks/persistence/useCapabilities';
 import { participantKey, type Participant } from '@/lib/identity';
 import { markNameConfirmed } from '@/lib/local-identity';
-import { apiNotifyActionAssigned, apiSaveDocumentMeta, apiSaveSelf } from '@/lib/api-client';
+import { apiNotifyActionAssigned, apiSaveSelf } from '@/lib/api-client';
 import {
   actionRowsFromElements,
   commentRowsFromElements,
@@ -193,10 +138,8 @@ import { useSyncInPlace } from './useSyncInPlace';
 import { useAutosave } from './useAutosave';
 import { useDocumentTrashed } from './useDocumentTrashed';
 import { createRemoteOpJournal, type RemoteOpJournal } from './save-baseline';
-import { useIdeaPosts } from '@/hooks/collab/useIdeaPosts';
 import { useElementDeltas } from '@/hooks/collab/useElementDeltas';
 import { usePerTabLoad } from './usePerTabLoad';
-import { useReactionBursts } from '@/hooks/canvas/useReactionBursts';
 import { useRoomConnection } from './useRoomConnection';
 import { useRoomResync } from './useRoomResync';
 import { useIdentityBootstrap } from './useIdentityBootstrap';
@@ -229,16 +172,13 @@ import { useTabScope } from './useTabScope';
 import { useEditorPersistence } from './editor-persistence';
 import { useEditorRealtime } from './editor-realtime';
 import { useAssignRef, useLatest } from '@/hooks/ui/useLatest';
-import { announcePageLocked, guardLockedPagesIn, type PageLockGuard } from '@/lib/page-lock-guard';
-import { usePageLockedIds } from '@/hooks/editor/usePageLockedIds';
 import { boundsOfElements } from '@/lib/changeset-reveals';
 import { useChangesetFeed } from './useChangesetFeed';
 import { activeElementsCommit } from './active-elements-commit';
 import { useDragPreviewBroadcast } from '@/hooks/collab/useDragPreviewBroadcast';
-import { useArticleCaretBroadcast } from '@/hooks/collab/useArticleCaretBroadcast';
 
 // The open tab's elements before the tabs load.
-const NO_ELEMENTS: readonly Element[] = [];
+const NO_IDS: ReadonlySet<string> = new Set();
 
 export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Where the editor runs (editor-surface.ts). The read-only embed view (docs/specs/013-workspace/
@@ -300,23 +240,13 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     redo: redoHistory,
   } = itemUndo;
 
-  // Counts this person's own edits (never a remote op, an undo or a tick): what lets the documents
-  // take in what was just added to a page (useArticleIntake) without taking a peer's.
-  const localEditSeqRef = useRef(0);
-  // Set once Pages mode's pages are known (below): the tab the lock guard applies to, and how
-  // it says something was held back.
-  const pageLockGuardRef = useRef<PageLockGuard | null>(null);
-  // A tick (a drag landing, a nudge, a resize, a slider) passes the same lock guard as a commit.
+  // A tick (a drag landing, a nudge, a resize, a slider) settles chips as a commit does.
   // Stable, as the history's own tick is: effects and loaders depend on its identity.
   const tickTabs = useCallback(
-    (mapTabs: (ts: Tab[]) => Tab[]) =>
-      rawTickTabs((ts) =>
-        guardLockedPagesIn(ts, settleChipsInTabs(ts, mapTabs(ts)), pageLockGuardRef.current),
-      ),
+    (mapTabs: (ts: Tab[]) => Tab[]) => rawTickTabs((ts) => settleChipsInTabs(ts, mapTabs(ts))),
     [rawTickTabs],
   );
   const commitTabs = (mapTabs: (ts: Tab[]) => Tab[]) => {
-    localEditSeqRef.current += 1;
     // Layer stamping (docs/specs/006-document/layers.md): elements APPEARING in this commit without
     // a valid layerId land on the active layer. One choke point, so no
     // individual creation path (draw, paste, AI, template, Mermaid
@@ -345,11 +275,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
           : t.elements;
         return stampTabKind(settled === t.elements ? t : { ...t, elements: settled });
       });
-      // Locked pages (docs/specs/007-editor/pages-mode.md "Locking a page"): in Pages
-      // mode nothing is added to, moved onto, changed on or taken off a locked page.
       // Badges and step numbers (docs/specs/009-elements/badge.md "Attachment"), after any chart re-layout moved
       // their hosts.
-      const next = guardLockedPagesIn(ts, settleChipsInTabs(ts, mapped), pageLockGuardRef.current);
+      const next = settleChipsInTabs(ts, mapped);
       const stamp = activeLayerStampRef.current;
       if (!stamp) return next;
       return next.map((t) => {
@@ -437,23 +365,15 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // returned view-model (see the return below).
   const panelLayout = usePanelLayout();
   const dialogs = useEditorDialogs();
-  // Canvas tool (Pan / Select / Laser). See useCanvasTool: the raw
+  // Canvas tool (Pan / Select / ...). See useCanvasTool: the raw
   // setter serves internal auto-switches, the tracked selectCanvasTool
   // serves the user-facing pickers.
-  // The laser pen (docs/specs/008-canvas/laser-panel.md): persisted per browser, published with every
-  // laser sample, and edited from the Laser Panel.
-  const laserPen = useLaserConfig();
-  // The eraser's settings (docs/specs/008-canvas/eraser-panel.md): read by the erase gesture below and
-  // edited from the Eraser Panel.
-  const eraserSettings = useEraserConfig();
   // The format painter's settings (docs/specs/008-canvas/format-panel.md): which parts of a copied style
   // travel, read by the paint and edited from the Format Panel.
   const formatSettings = useFormatConfig();
-  const { canvasTool, setCanvasTool, selectCanvasTool, exitAvatarTool, toolBeforeCurrent } =
-    useCanvasTool({
-      defaultPan: embedMode,
-    });
-  useDesktopOnlyToolExit(canvasTool, setCanvasTool);
+  const { canvasTool, setCanvasTool, selectCanvasTool } = useCanvasTool({
+    defaultPan: embedMode,
+  });
   // Persistent Format painter tool (docs/specs/008-canvas/canvas-and-palette.md): the mode-boundary reset +
   // the exit that restores the pre-Format tool. See useFormatTool.
   const { formatToolActive, exitFormatTool } = useFormatTool({
@@ -488,17 +408,13 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // (no URL params → straight to welcome modal) or once the API call
   // resolves (params → load the document first).
   const [loadingDocument, setLoadingDocument] = useState(true);
-  // User-facing tool picker. Spotlight (docs/specs/008-canvas/canvas-and-palette.md) is a non-editing presenter
-  // mode, so entering it clears any selection: an element selected beforehand
-  // would otherwise keep its handles (dimmed under the shroud) and pop back
-  // on exit. Wraps the tracked selectCanvasTool so every entry point (palette
-  // dropdown, keyboard) routes through it; internal auto-switches keep using
-  // the raw setCanvasTool and are unaffected.
-  // Plan mode leaves Eraser and Format out (useModeDefaultTool); set once the mode is known, below.
-  const planModeRef = useRef(false);
+  // User-facing tool picker. Wraps the tracked selectCanvasTool so every entry
+  // point (palette dropdown, keyboard) routes through it; internal
+  // auto-switches keep using the raw setCanvasTool and are unaffected.
+  // Plan leaves Format out (usePlanDefaultTool).
   const pickCanvasTool = (tool: CanvasTool) => {
-    if (planModeRef.current && PLAN_LEFT_OUT_TOOLS.has(tool)) return;
-    // Eraser / Format / Laser / Spotlight / Isometric all act on existing
+    if (PLAN_LEFT_OUT_TOOLS.has(tool)) return;
+    // Format / Isometric all act on existing
     // content, so they're unavailable on an empty canvas — the palette greys
     // them out, and this guards the keyboard-shortcut path to match. Select +
     // Hand stay available.
@@ -506,41 +422,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     if (
       tabForTool &&
       tabForTool.elements.length === 0 &&
-      (tool === 'eraser' ||
-        tool === 'format' ||
-        tool === 'laser' ||
-        tool === 'spotlight' ||
-        tool === 'avatar' ||
-        tool === 'isometric')
+      (tool === 'format' || tool === 'isometric')
     ) {
       return;
     }
-    // A slide deck spans tabs, so a tab-scoped session has none
-    // (docs/specs/013-workspace/tab-scoped-share-links.md): the server withholds it and refuses writes.
-    if (tool === 'slide-deck' && tabScopeRef.current !== null) {
-      toast.info("The slide deck isn't shared with you");
-      return;
-    }
-    // Desktop-only (docs/specs/012-collaboration/presentation-mode.md): the pickers
-    // already hide it on a phone, so this catches any path that still asks.
-    if (tool === 'slide-deck' && isMobileViewportSync()) {
-      toast.info('Slide Deck is only available on a larger screen');
-      return;
-    }
-    // Spotlight and Avatar mode (docs/specs/008-canvas/avatar-mode.md) are both non-editing presenter
-    // modes, so both clear the selection on entry.
-    if (tool === 'spotlight' || tool === 'avatar') {
-      setSelectedId(null);
-      setMultiSelectedIds(new Set());
-    }
     selectCanvasTool(tool);
-  };
-  // Pressing a Selection Mode button (docs/specs/009-elements/mode-button.md). Pressing the button for the
-  // mode you are ALREADY in takes you back where you came from: on a read-only
-  // walkthrough the button may be the only control on screen, so it has to work
-  // in both directions. Everything else is an ordinary pick, guards included.
-  const pressModeButton = (mode: CanvasTool) => {
-    pickCanvasTool(canvasTool === mode ? toolBeforeCurrent() : mode);
   };
   // Local-session participant. Initialised to a stable placeholder so the
   // SSG output and the first client paint agree (Math.random() in a lazy
@@ -596,17 +482,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setSessionShareCode,
     sessionShareCodeRef,
   } = realtime;
-  // One answer / idea / tick / comment, applied here and sent to the room as
+  // One answer / tick / comment, applied here and sent to the room as
   // a delta ahead of the autosave (docs/specs/012-collaboration/collab-race-hardening.md). Shared by the comments, the
   // checklist and the collaboration elements below.
   const applyElementDelta = useElementDeltas({ activeId, tickTabs, roomRef });
-  // Idea posts held until the room answers them (docs/specs/012-collaboration/idea-box.md "Racing for the last card").
-  const ideaPosts = useIdeaPosts({
-    tabs,
-    tickTabs,
-    roomRef,
-    onRefused: (message) => toast.error(message),
-  });
   // The mention notify (useCommentMentions, below): declared first because the
   // comments hook takes it before the teams it depends on exist.
   const mentionNotifyRef = useRef<
@@ -709,8 +588,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setSavedAt,
     documentName,
     setDocumentName,
-    documentPresentation,
-    setDocumentPresentation,
     documentItemTypes,
     setDocumentItemTypes,
     documentList,
@@ -722,7 +599,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     refreshSharedList,
   } = persistence;
   // Realtime presence state (who's connected + their cursors / selections
-  // / laser trails / tab focus). See usePresenceState; the room writes it
+  // / tab focus). See usePresenceState; the room writes it
   // via the setters, the presence-row builders read the values.
   const {
     livePresence,
@@ -738,24 +615,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setRemoteSelections,
     remoteCursors,
     setRemoteCursors,
-    remoteLaserTrails,
-    setRemoteLaserTrails,
-    remoteAvatars,
-    setRemoteAvatars,
-    remoteViewports,
-    setRemoteViewports,
-    followerIds,
-    setFollowerIds,
   } = usePresenceState();
-  // Who we follow, for the room connection to say again on a new socket; filled once useFollowMe exists below.
-  const followingRef = useRef<string | null>(null);
-  // Local laser trail — held in state so the overlay re-renders when
-  // we append a point, but mutations stay cheap by always producing a
-  // bounded array.
-  // `localLaserTrail` now comes from useEditorBroadcast, declared
-  // further down once the WS gates (roomRef, documentShareable...)
-  // are in scope. Editor-page still reads it for the laserTrailRows
-  // aggregator that Canvas consumes.
   // Dismissing a "shared with you" row lives in useDocumentListActions
   // (via useDocumentActions below), shared with /explorer and /new.
   // Tab ids whose full payload has been fetched. Hydration loads the
@@ -936,8 +796,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     documentId,
     ownerId: selfParticipant.id,
     hasUnsavedChanges,
-    resetTabs,
-    lastSavedTabsRef,
     setDocumentServerStored: realtime.setDocumentServerStored,
     refreshDocumentList,
   });
@@ -976,7 +834,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       setActiveId,
       setDocumentId,
       setDocumentName,
-      setDocumentPresentation,
       setDocumentItemTypes,
       setDocumentNotFound,
       setLoadError,
@@ -1022,26 +879,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   useEffect(() => {
     selfParticipantRef.current = selfParticipant;
   }, [selfParticipant]);
-  // Live poll (docs/specs/012-collaboration/live-poll.md): the ephemeral pulse-check. Declared before the
-  // room connection because that's what feeds it inbound ops. Nothing it
-  // holds is persisted — no tab field, no autosave, no change log.
-  // Kept in step with the facilitator hook below, which cannot be declared up
-  // here: it needs the room, and the room needs this.
-  const sessionBlockedRef = useRef(false);
-  // The room's roster, for a `collaborators` poll (docs/specs/012-collaboration/live-poll.md). A ref because the
-  // presence rows it is filled from are derived much further down this file —
-  // they need the room, which needs the poll hook — and because the only
-  // moment its value matters is the instant somebody starts a poll.
-  const pollCollaboratorsRef = useRef<readonly PollCandidate[]>([]);
-  // Our collab key, for the poll's answers and host (docs/specs/012-collaboration/collab-race-hardening.md). A ref: the poll
-  // hook's handlers stay stable while identity hydrates.
-  const pollSelfKeyRef = useLatest(voteSelfId);
-  const livePoll = useLivePoll({
-    roomRef,
-    sessionBlockedRef,
-    collaboratorsRef: pollCollaboratorsRef,
-    selfKeyRef: pollSelfKeyRef,
-  });
   // In-place recovery when the room can't replay our reconnect gap
   // (docs/specs/012-collaboration/resync-without-reload.md), in place of the page reload this used to do.
   const resyncFromServer = useRoomResync({
@@ -1075,86 +912,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   });
   // Realtime room: WebSocket per shared document (presence + ops). See
   // useRoomConnection.
-  // Avatar mode (docs/specs/008-canvas/avatar-mode.md): a shove somebody sent us, bumped by a sequence
-  // number so two identical pushes both land. Canvas replays it onto our own
-  // character — a push is a request to its owner, never a remote write.
-  const [avatarShove, setAvatarShove] = useState<{ dx: number; dy: number; seq: number } | null>(
-    null,
-  );
-  const receiveAvatarPush = useCallback((dx: number, dy: number) => {
-    setAvatarShove((prev) => ({ dx, dy, seq: (prev?.seq ?? 0) + 1 }));
-  }, []);
-  // Reaction bursts (docs/specs/009-elements/reaction-pad.md): ephemeral, per-client, never document state.
-  const reactions = useReactionBursts();
-
-  // Who is running this session (docs/specs/012-collaboration/facilitator.md). Declared before the room
-  // connection because the socket hands it every answer and asks it for the
-  // token on each hello.
-  const facilitator = useFacilitator({
-    documentId,
-    send: (msg) => roomRef.current?.send(msg),
-    // toast.info, so the Show notifications preference (docs/specs/007-editor/user-preferences.md) governs these
-    // exactly as it governs every other announcement.
-    onNotice: (message) => toast.info(message),
-    // Names come from the roster we already hold, so a renamed participant's
-    // announcement reads correctly.
-    nameOf: (presenceId) => livePresence.find((p) => p.id === presenceId)?.name ?? null,
-  });
-  useAssignRef(sessionBlockedRef, facilitator.sessionToolsBlocked);
-
-  // The facilitator has freed an element we were holding (docs/specs/007-editor/live-app.md lock,
-  // docs/specs/012-collaboration/facilitator.md). Only our socket is sent this, so there is no target id to check.
-  //
-  // Clearing `selectedId` is the whole of it: usePresenceBroadcast already
-  // fires a `select` op on every change, so peers' locks fall away through the
-  // path that was there before this feature, and the room announces nothing to
-  // anyone else. Editing is dropped too — the lock exists precisely so two
-  // people don't type into one element, and leaving an open editor behind
-  // would hand back the thing the release was meant to take away.
-  const receiveSelectionReleased = useCallback(
-    ({ elementId }: { elementId: string; by: string }) => {
-      setSelectedId((current) => (current === elementId ? null : current));
-      setEditingId((current) => (current === elementId ? null : current));
-      setMultiSelectedIds((prev) => {
-        if (!prev.has(elementId)) return prev;
-        const next = new Set(prev);
-        next.delete(elementId);
-        return next;
-      });
-      // Said plainly, because an element vanishing from under you with no
-      // explanation reads as a bug rather than as somebody running a session.
-      toast.info('The facilitator freed an element you were holding');
-    },
-    [setSelectedId, setEditingId, setMultiSelectedIds, toast],
-  );
-
-  // The Q&A board (docs/specs/012-collaboration/qa-board.md). Up here, ahead of the room, because the room
-  // lands the server's `qa` ops through it.
-  const qaBoard = useQaBoard({
-    documentId,
-    activeId,
-    selfParticipant,
-    sessionShareCode,
-    applyRemoteTabs,
-    commitTabs,
-    lastSavedTabsRef,
-    onError: (message) => toast.error(message),
-  });
-
-  // The document's items (docs/specs/026-plan/items.md): what Plan boards and Plan cards draw.
-  // Items load only for a document with Plan content (docs/specs/026-plan/plan-mode.md "Cost").
-  const planOpenTab = tabs.find((t) => t.id === activeId) ?? tabs[0];
-  // A document with an Actions board keeps its cards with its actions from any tab
-  // (docs/specs/026-plan/linked-boards.md), so it reads its items wherever it is open.
-  const actionsBoard = useMemo(() => actionsBoardIn(tabs), [tabs]);
-  const planNeeded = usePlanNeeded(
-    planOpenTab?.elements ?? NO_ELEMENTS,
-    documentPresentation,
-    opensInOf(planOpenTab) === 'plan' || actionsBoard !== null,
-  );
+  // The document's items (docs/specs/026-plan/items.md): what Plan boards and Plan cards draw, read from the first
+  // load, every tab being in Plan.
   const planItems = usePlanItems({
     documentId,
-    ready: hydrated && planNeeded,
+    ready: hydrated,
     ownerId: selfParticipant.id,
     name: selfParticipant.name,
     color: selfParticipant.color,
@@ -1242,7 +1004,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     sessionShareCodeRef,
     roomRef,
     applyRemoteOp,
-    pendingIdeaIds: ideaPosts.pendingIdeaIds,
     loadedTabIdsRef,
     markTabLoaded,
     setLivePresence,
@@ -1250,30 +1011,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setRemoteSelections,
     setRemoteCursors,
     setRemoteTabFocus,
-    setRemoteLaserTrails,
-    setRemoteAvatars,
-    setRemoteViewports,
     setDocumentName,
     setSelfParticipant,
-    receiveAvatarPush,
-    receiveReaction: reactions.receive,
-    // Filled by the hook below, which cannot be declared up here because
-    // taking an invitation navigates through the viewport (declared later
-    // still). Same knot, and the same ref, as the portal's travel callback.
-    receiveFocusHere: (from, tabId, at) => receiveFocusRef.current?.(from, tabId, at),
-    receiveFacilitator: facilitator.receiveFacilitator,
-    receiveSelectionReleased,
-    // Everyone follows a collaborator's switch of the tab's mode; the one on this tab is said.
-    receivePeerModeSwitch: (name, tabId, mode) => {
-      if (tabId === activeId) toast.info(peerModeSwitchMessage(name, mode));
-    },
-    readFacilitatorToken: facilitator.readFacilitatorToken,
-    setFollowerIds,
-    readFollowing: () => followingRef.current,
-    receivePoll: livePoll.receivePoll,
-    receivePollAnswer: livePoll.receiveAnswer,
-    receivePollEnd: livePoll.receivePollEnd,
-    receiveQa: qaBoard.receiveQa,
     receiveDocumentTrashed: () => documentTrashed.setDocumentTrashed(true),
     resyncFromServer: async () => {
       planItems.refetch();
@@ -1326,7 +1065,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     noteChangesetSeen: realtime.changesetSeen.noteSeen,
   });
   // A Plan document's statuses are read from every tab: load the rest once (usePlanTabSweep).
-  usePlanTabSweep(hydrated && planNeeded, tabs.length, loadAllTabs);
+  usePlanTabSweep(hydrated, tabs.length, loadAllTabs);
 
   // Teams the signed-in user belongs to (docs/specs/013-workspace/teams.md), surfaced in the
   // search panel. Fetched lazily the first time search opens so
@@ -1362,33 +1101,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   });
 
   const activeTab = tabs.find((t) => t.id === activeId) ?? tabs[0]!;
-  // The tab's editor mode, the same for everyone on it (docs/specs/007-editor/editor-modes.md): every
-  // tool and rule gate keys on it, never on what the tab is. A switch is one tab edit.
-  // A new tab in a mode, for a Plan tab's switch (set once the tab actions exist, below).
-  const newTabInRef = useRef<((mode: EditorMode) => void) | null>(null);
-  const rawEditorMode = useEditorMode(activeTab, {
-    canEdit,
-    commitTabs,
-    toastInfo: toast.info,
-    // Only a session that may add tabs is offered one (a tab-scoped link edits its one tab).
-    ...(isStructureReadOnly ? {} : { newTabIn: (mode: EditorMode) => newTabInRef.current?.(mode) }),
-  });
   // A colour picked with + joins the tab's custom colours, which every picker offers.
   const addCustomColour = useAddCustomColour({ activeId: activeTab.id, canEdit, tickTabs });
   // A card tag's colour for the tab (docs/specs/009-elements/tag-colours.md).
   const setTagColour = useTagColourSetter({ activeTab, canEdit, commitTabs });
-  // Leaving Pages on a tab with articles asks first (turn them into Page elements, or keep).
-  // Plan asks nothing: a board outside Plan is an element like any other
-  // (docs/specs/026-plan/plan-mode.md "Switching modes keeps the tab").
-  const { editorMode, leave: leavePages } = useLeavePages(rawEditorMode, {
-    tab: activeTab,
-    canEdit,
-  });
-  const drawMode = editorMode.mode === 'draw';
-  // The tool a mode starts with: Select, or Hand in Plan and on a phone; Plan leaves Eraser and Format
-  // out (docs/specs/007-editor/editor-modes.md).
-  useModeDefaultTool(editorMode.mode, canvasTool, setCanvasTool, embedMode);
-  useAssignRef(planModeRef, editorMode.mode === 'plan');
+  // Plan starts on Hand and leaves Format out (docs/specs/026-plan/plan-mode.md "The tools").
+  usePlanDefaultTool(canvasTool, setCanvasTool);
   // A palette card goes into the board column at the point, or nowhere (docs/specs/026-plan/plan-mode.md
   // "The palette"): never a card on the canvas. A miss or a refusal is said.
   const placePaletteCard = (itemType: string | undefined, canvasX: number, canvasY: number) => {
@@ -1400,37 +1118,21 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     debugLog('[plan] palette card not placed', { outcome: result.outcome });
     toast.info(result.message);
   };
-  // Comment authors' pictures for the open tab (docs/specs/014-identity/profile-picture.md §5).
-  useCommentPicturesLoader(documentId, activeTab?.id, activeTab?.elements, sessionShareCode);
-
   // Vote privacy (docs/specs/012-collaboration/session-tools.md): while a hide-cursors vote is open on this tab,
-  // peer cursors + laser trails are neither sent nor drawn. Derived here so
+  // peer cursors are neither sent nor drawn. Derived here so
   // the outbound gate (useEditorBroadcast) and the render gate
   // (usePresenceRows) read the same value off the synced tab.
   const voteCursorsHidden = voteHidesCursors(activeTab.vote);
 
-  // Outbound realtime broadcasters (cursor + laser) and the local
-  // laser-trail buffer live in useEditorBroadcast. Same throttle,
-  // same gates, same trail-clears-on-tool-change behaviour as
-  // before, just out of the page file.
-  const {
-    broadcastCursor,
-    broadcastLaser,
-    broadcastAvatar,
-    broadcastAvatarPush,
-    broadcastAvatarSay,
-    broadcastReaction,
-    broadcastViewport,
-    broadcastFocusHere,
-    localLaserTrail,
-  } = useEditorBroadcast({
+  // The outbound cursor broadcaster lives in useEditorBroadcast. Same
+  // throttle, same gates as before, just out of the page file.
+  const { broadcastCursor } = useEditorBroadcast({
     roomRef,
     hydrated,
     documentId,
     documentShareable,
     documentTeamId,
     activeId,
-    canvasTool,
     // A vote hides them, and so does a Plan tab other than a Dashboard (plan-cursors.ts).
     cursorsHidden: voteCursorsHidden || planHidesCursors(activeTab),
   });
@@ -1440,36 +1142,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     live: hydrated && !!documentId && (documentShareable || !!documentTeamId),
     activeId,
   });
-  // Where we are writing in an article, live for collaborators (docs/specs/007-editor/article-pages.md).
-  useArticleCaretBroadcast({
-    roomRef,
-    live: hydrated && !!documentId && (documentShareable || !!documentTeamId),
-    activeId,
-    hidden: voteCursorsHidden,
-  });
   // Viewport state (pan offset, zoom, the canvas wrapper ref the
   // measurements read through, and a parallel zoomRef the drag hook
   // reads each pointer-move) lives in useEditorViewport. The hook
   // is invoked further down, once `activeTab` is in scope; it
   // also owns `getViewportCenter` and `fitToScreen`.
-
-  // Open or collapse a comment panel (docs/specs/012-collaboration/comment-pin.md). Persisted rather than local,
-  // so a facilitator opening the thread they want discussed opens it for the
-  // room instead of only for themselves.
-  // Set a reaction pad off (docs/specs/009-elements/reaction-pad.md): play it here, then tell the room.
-  //
-  // Local-first rather than round-tripping through the server: the press has
-  // to feel instant, and a burst is not shared state that could disagree — it
-  // is the same animation run independently on every machine.
-  const { play: playReaction } = reactions;
-  const fireReaction = useCallback(
-    (element: ShapeElement) => {
-      const played = playReaction(element.id, element.reaction);
-      broadcastReaction(element.id, played);
-      track('Element', 'Used', 'ReactionPad');
-    },
-    [playReaction, broadcastReaction],
-  );
 
   // Same trick for selfParticipant — the WS effect intentionally
   // omits selfParticipant from its dep list (re-opening the socket
@@ -1494,280 +1171,22 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setViewportOffset,
     setViewportZoom,
     zoomRef,
-    viewportOffsetRef,
     canvasMainRef,
     getViewportCenter,
     getViewportCanvasRect,
     fitToScreen,
     fitToBounds,
     focusOn,
-    centreOn,
-    isCentredOn,
     scrollIntoView,
   } = useEditorViewport({ activeTab, readSelection });
   // A phone's keyboard never hides the caret on the canvas (useKeyboardAvoidance).
   useKeyboardAvoidance({ canvasMainRef, zoomRef, setViewportOffset });
-
-  // Bring Focus (docs/specs/012-collaboration/bring-focus.md): ask everyone else to come and look at this
-  // element, on our tab, each at their own zoom.
-  //
-  // Sends the element's CENTRE rather than our pan: two people rarely have the
-  // same window size, so copying a pan lands the element off-centre for anyone
-  // whose canvas is a different shape. Our own view does not move — we are
-  // already looking at it.
-  const pressFocusButton = useCallback(
-    (element: ShapeElement) => {
-      const at = { x: element.x + element.width / 2, y: element.y + element.height / 2 };
-      const sent = broadcastFocusHere(at, zoomRef.current);
-      // A press that moves nobody is invisible from this side, so say which
-      // kind of nobody it was: an empty room, or a room already looking at it.
-      // `livePresence` is peers ONLY (the room excludes the asker from every
-      // presence list it sends), so one other person is length 1.
-      toast.info(
-        FOCUS_PRESS_MESSAGE[
-          focusPressOutcome({
-            sent,
-            peerIds: livePresence.map((p) => p.id),
-            viewports: remoteViewports,
-            tabId: activeId,
-            at,
-            page: focusPageAt(activeTab, at)?.rect,
-          })
-        ],
-      );
-      track('Element', 'Used', 'BringFocus');
-    },
-    [broadcastFocusHere, livePresence, remoteViewports, activeId, activeTab, zoomRef, toast],
-  );
-
-  // Slide deck (docs/specs/012-collaboration/presentation-mode.md). Owns the deck, the panel's editing verbs, and the
-  // presentation Start runs. Placed after the viewport because presenting
-  // frames each slide through it.
-  const slideThumbnailPlan = useMemo(
-    () => ({ items: planItems.items, types: itemTypes.types }),
-    [planItems.items, itemTypes.types],
-  );
-  // Set by the pages' hook (below): a page slide's row frames its page once its tab is open.
-  const framePageRef = useRef<((pageId: string) => void) | null>(null);
-  const slideDeck = useSlideDeck({
-    prefs: userPreferences,
-    // Built on this render's preferences: moved onto the freshest before the whole blob is written.
-    commitPrefs: (next) =>
-      setUserPreferences(commitUserPreferences(userPreferences, next, selfParticipant.id)),
-    tabs,
-    framePage: (_tabId, pageId) => framePageRef.current?.(pageId),
-    movePage: (tabId, pageId, unitIndex) =>
-      commitTabs((ts) => tabsWithPageMoved(ts, tabId, pageId, unitIndex)),
-    plan: slideThumbnailPlan,
-    activeTabId: activeId,
-    setActiveId,
-    readSelection,
-    setSelectedId,
-    setMultiSelectedIds,
-    isReadOnly,
-    saveDeck: (serialised) => {
-      if (!hydrated || !documentId) return;
-      setDocumentPresentation(serialised);
-      void apiSaveDocumentMeta(
-        selfParticipant.id,
-        { id: documentId, presentation: serialised },
-        sessionShareCode,
-      ).catch(() => {
-        // Best-effort, like every other metadata write: the deck is in
-        // state either way and the next edit retries.
-      });
-    },
-    loadAllTabs,
-  });
-  // Seed the deck once the document's stored blob arrives. Triggered only when a stored deck appears or
-  // the document changes: hydrating on every deck edit would fight the editing verbs, so the blob itself
-  // is read at that moment (an effect event), not depended on.
-  const hydrateStoredDeck = useEffectEvent(() => slideDeck.hydrateDeck(documentPresentation));
-  const hasStoredDeck = documentPresentation !== null;
-  useEffect(() => {
-    hydrateStoredDeck();
-  }, [hasStoredDeck, documentId]);
-  // After the hydration above, so the stored deck is what the deck's follow pass builds on.
-  useDeckFollowsPages({
-    tabs,
-    ready: hydrated,
-    hasStoredDeck,
-    documentId,
-    followPages: slideDeck.followPages,
-  });
-
-  // What the presentation is showing right now, if anything.
-  const presentingStep =
-    slideDeck.presentingAt !== null ? slideDeck.runnable[slideDeck.presentingAt] : undefined;
-  // The slide's elements, resolved fresh every render so an edit landing
-  // underneath a presentation shows through (references, never copies).
-  const presentingElements = useMemo(
-    () => (presentingStep ? resolveSlide(presentingStep.slide, presentingStep.tab) : null),
-    [presentingStep],
-  );
-
-  // Where the editor was looking before the deck took over, so exiting puts it
-  // back. Without this you left a presentation zoomed to whatever the last
-  // slide needed — often 250% on one box — and had to hunt around the canvas.
-  const [preShowView, setPreShowView] = useState<{ tabId: string } | null>(null);
-  const presenting = slideDeck.presentingAt !== null;
-  // Captured on the way in, restored on the way out: state adjusted during render on the transition
-  // (docs/specs/003-system-architecture/react-state-and-effects.md), so the restore lands in the same
-  // commit as the exit instead of one frame later.
-  const [wasPresenting, setWasPresenting] = useState(presenting);
-  if (presenting !== wasPresenting) {
-    setWasPresenting(presenting);
-    if (presenting) {
-      setPreShowView({ tabId: activeId });
-    } else if (preShowView) {
-      setPreShowView(null);
-      setActiveId(preShowView.tabId);
-    }
-  }
-  // The view itself (it lives in the viewport store, docs/specs/008-canvas/blueprints/viewport-store.md,
-  // never written during render) is captured as a deck starts and put back as it ends, in a layout
-  // effect: before the exit paints, and declared before the slide fit below, so the capture is the
-  // view from before the first slide was framed.
-  const viewBeforeShow = useRef<View | null>(null);
-  useLayoutEffect(() => {
-    if (presenting) {
-      viewBeforeShow.current = viewport.get();
-      return;
-    }
-    if (viewBeforeShow.current) {
-      viewport.setView(viewBeforeShow.current);
-      viewBeforeShow.current = null;
-    }
-  }, [presenting, viewport]);
-  // Every editor keyboard surface is off while a deck is running (docs/specs/012-collaboration/presentation-mode.md).
-  // The overlay owns the keyboard then — it consumes the keys it uses, but
-  // everything else fell straight through to the editor, so pressing G in
-  // front of a room armed a parallelogram on a canvas you cannot draw on.
-  // Gated here rather than by swallowing keys in the overlay: this is the
-  // switch the shortcut hooks already have, and it covers a surface added
-  // later without anybody remembering to.
-  const keyboardEnabled = shortcutsEnabled && !presenting;
-  // Presenting moves the editor to the slide's tab and frames the slide. Both
-  // are ordinary view state, and the effect above puts them back on exit.
-  //
-  // A LAYOUT effect, not an ordinary one: the canvas has already been handed
-  // the new slide's elements by the time this runs, so fitting after paint
-  // showed one frame of the new content under the OLD slide's camera. That is
-  // the flash of "small in the corner" a deferred fit produces.
-  const presentingSlideId = presentingStep?.slide.id;
-  const presentingTabId = presentingStep?.tab.id;
-  const [framedSlideId, setFramedSlideId] = useState(presentingSlideId);
-  if (presentingSlideId !== framedSlideId) {
-    setFramedSlideId(presentingSlideId);
-    if (presentingTabId !== undefined && presentingTabId !== activeId) setActiveId(presentingTabId);
-  }
-  // A slide fills the screen by default. The editor's own fit caps at 100%
-  // because a sparse canvas blown up looks broken in a workspace; a slide is
-  // the only thing on a projector, so a one-box slide SHOULD be a big box —
-  // unless the presenter has picked "Actual size" from the cog.
-  // A page slide frames to its page; any other to what it shows (slideFrame).
-  const frameSlide = useEffectEvent(() => {
-    if (!presentingStep) return;
-    const bounds = slideFrame(presentingStep.slide, presentingStep.tab);
-    if (bounds) fitToBounds(bounds, slideFitOptions(presentingStep.slide, slideDeck.config));
-  });
-  const slideZoom = slideDeck.config.zoom;
-  useLayoutEffect(() => {
-    if (presentingElements) frameSlide();
-  }, [presentingSlideId, presentingElements, slideZoom]);
-
-  // ...and fit again whenever the canvas CHANGES SIZE while presenting.
-  //
-  // Entering a presentation changes the size of the very box the fit measures,
-  // and all of it lands after the effect above: the browser goes fullscreen,
-  // and the header and tab bar leave with the zen treatment. Fitting against
-  // the pre-presentation rect centred slide one on a viewport that no longer
-  // existed by the time it painted, so it arrived shoved into a corner with
-  // its top clipped.
-  //
-  // A ResizeObserver rather than a window `resize` listener, because hiding
-  // the chrome changes the canvas's height without the WINDOW changing size at
-  // all. This covers that, fullscreen arriving late, fullscreen being refused,
-  // an ordinary resize, and a phone rotating.
-  const refitSlide = useEffectEvent(() => {
-    if (!presentingStep) return;
-    const bounds = slideFrame(presentingStep.slide, presentingStep.tab);
-    if (bounds) fitToBounds(bounds, slideFitOptions(presentingStep.slide, slideDeck.config));
-  });
-  useEffect(() => {
-    const node = canvasMainRef.current;
-    if (!presenting || !node || typeof ResizeObserver === 'undefined') return;
-    const observer = new ResizeObserver(() => refitSlide());
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, [presenting, canvasMainRef]);
-
-  // Publish where WE are looking, on change (docs/specs/012-collaboration/follow-me-viewport.md). Unsolicited by design
-  // — see the RoomOp comment — and throttled to ~10 Hz inside the broadcaster,
-  // so an idle participant sends nothing at all.
-  // `broadcastViewport` is re-created every render, so it is called through an effect event. It follows
-  // the viewport store (a pan or zoom renders no part of the editor) and sends again on a tab switch.
-  const publishViewNow = () => {
-    const view = viewport.get();
-    const node = canvasMainRef.current;
-    broadcastViewport(view.offset, view.zoom, {
-      width: node?.offsetWidth ?? 0,
-      height: node?.offsetHeight ?? 0,
-    });
-  };
-  const publishViewport = useEffectEvent(publishViewNow);
-  useEffect(() => {
-    publishViewport();
-    return viewport.subscribe(publishViewport);
-  }, [viewport, activeId]);
-  // A new follower is shown our view at once, not at our next pan.
-  useShowFollowersMyView(followerIds, publishViewNow);
-
-  // Follow-me viewport (docs/specs/012-collaboration/follow-me-viewport.md): pin our pan / zoom / tab to a peer's until
-  // we take the canvas back. View-role visitors can both follow and be
-  // followed — it mutates nothing, and the audience on a view link is exactly
-  // who most needs it.
-  const followMe = useFollowMe({
-    remoteViewports,
-    livePresenceIds: livePresence.map((p) => p.id),
-    activeId,
-    viewport,
-    onFollowTab: setActiveId,
-    onNotice: (message) => toast.info(message),
-    followerIds,
-    nameOf: (id) => livePresence.find((p) => p.id === id)?.name ?? 'Someone',
-    sendFollow: (target) => roomRef.current?.send({ kind: 'op', op: { kind: 'follow', target } }),
-  });
-  useAssignRef(followingRef, followMe.followingId);
 
   // A tab we are about to land on already aimed, so the tab-entry
   // fit-to-screen below leaves it alone (it runs a frame later and would
   // otherwise snap the view straight back off the element).
   const skipTabFitRef = useRef<string | null>(null);
 
-  // Bring Focus (docs/specs/012-collaboration/bring-focus.md): the invitation somebody else's press leaves on
-  // screen, and what taking it does. Placed after the viewport because taking
-  // one navigates through it.
-  // On a Pages tab a point on a page lands on that page, framed whole like its label's press frames
-  // it (docs/specs/012-collaboration/bring-focus.md "On a page"); anywhere else the point is centred.
-  const landFocus = useCallback(
-    (tabId: string, at: { x: number; y: number }) => {
-      const page = focusPageAt(
-        tabsRef.current.find((t) => t.id === tabId),
-        at,
-      );
-      if (page && framePageRef.current) framePageRef.current(page.id);
-      else centreOn(at);
-    },
-    [centreOn, tabsRef],
-  );
-  const focusLanding = useFocusLanding({ activeId, setActiveId, land: landFocus });
-  const focusInvite = useFocusInvite({
-    onFollowTab: focusLanding.onFollowTab,
-    onCentreOn: focusLanding.onCentreOn,
-    isAlreadyThere: (tabId, at) =>
-      tabId === activeId && isCentredOn(at, focusPageAt(activeTab, at)?.rect),
-  });
   // The toast's Show (docs/specs/024-agents/agent-changesets.md "In the editor", CS34): the tab, then
   // every element the changeset touched that is still there, framed no closer than 100%.
   const revealChangesetRef = useLatest((tabId: string, ids: readonly string[]) => {
@@ -1780,10 +1199,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     }
     fitToBounds(bounds, { maxZoom: 1 });
   });
-  const receiveFocusRef = useLatest<
-    ((from: string, tabId: string, at: { x: number; y: number }) => void) | null
-  >(focusInvite.receiveFocusHere);
-
   // Server capabilities (docs/specs/007-editor/ai-assistance.md). Fetched once at mount; determines
   // whether the AI panel option is shown in Settings and rendered.
   const capabilities = useCapabilities(sharePasswordGate === null);
@@ -1803,30 +1218,25 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const collabDeepLink = useCollabDeepLinkCapture();
 
   // Tab-entry side effects (URL #t= pin + fit-to-screen once per tab
-  // entry). See useTabEntryEffects. A tab showing pages frames the page you were
-  // last on (else its first) instead (set by usePagesMode below), never the whole row.
-  const frameFirstPageRef = useRef<(() => void) | null>(null);
+  // entry). See useTabEntryEffects.
   const { requestFit } = useTabEntryEffects({
     hydrated,
     activeId,
     elementCount: activeTab.elements.length,
     tabLoaded: loadedTabIds.has(activeId),
     fitToScreen: () => {
-      (frameFirstPageRef.current ?? fitToScreen)();
-      focusLanding.afterTabFit(activeId);
+      fitToScreen();
     },
     skipFitForTabRef: skipTabFitRef,
   });
 
   // Derived realtime presence rows (avatars per tab, remote cursors,
-  // laser trails, per-element selections) and the concurrent-selection
-  // lock (docs/specs/007-editor/live-app.md). Pure derivation over the usePresenceState values +
-  // the local laser trail. See usePresenceRows.
+  // per-element selections) and the concurrent-selection lock
+  // (docs/specs/007-editor/live-app.md). Pure derivation over the usePresenceState values.
+  // See usePresenceRows.
   const {
     participantsByTab,
     remoteCursorRows,
-    remoteAvatarRows,
-    laserTrailRows,
     remoteSelectionsByElement,
     agentFocusByElement,
     lockedByOther,
@@ -1842,35 +1252,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     remoteTabFocus,
     remoteCursors,
     remoteSelections,
-    remoteLaserTrails,
-    remoteAvatars,
-    localLaserTrail,
-    selfLaserConfig: laserPen.config,
-    // A presenter sees nobody else's cursor, laser or character: it is their screen on a projector
-    // (docs/specs/012-collaboration/presentation-mode.md). Inbound only; our own laser still broadcasts.
-    cursorsHidden: voteCursorsHidden || presenting,
+    cursorsHidden: voteCursorsHidden,
   });
-  // Everyone in the document, as poll candidates (docs/specs/012-collaboration/live-poll.md). Self first, then
-  // whoever is present on any tab — the order the Collaborators modal uses, so
-  // a roster poll's ballot reads the way the panel beside it does. Someone on
-  // two tabs appears twice here; de-duplicating is `pollCollaboratorOptions`'s
-  // job, along with numbering shared names and applying the cap, so the
-  // composer's preview and the frozen ballot cannot disagree.
-  const pollCollaborators = useMemo<readonly PollCandidate[]>(
-    () => [
-      { id: selfParticipant.id, name: selfParticipant.name },
-      ...withoutAgentRows([...participantsByTab.values()].flat()).map((p) => ({
-        id: p.id,
-        name: p.name,
-      })),
-    ],
-    [participantsByTab, selfParticipant],
-  );
-  // The poll hook reads the roster through a ref, because it is declared long
-  // before this point (see the note there).
-  useEffect(() => {
-    pollCollaboratorsRef.current = pollCollaborators;
-  }, [pollCollaborators]);
   // Comment-bearing element rows for the floating Comments panel.
   // Only the boxed elements carry threads (arrows can't), so the
   // filter walks `activeTab.elements` and routes the boxed ones
@@ -1985,46 +1368,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const anyWelcomeOpen = identityOnlyScreenOpen;
   // --- Element-scoped history helpers (active-tab aware) -------------------
 
-  // Pages mode's pages: their edits, and the view centred on them.
-  // Set once the documents' hook exists (below): a new document's title takes the caret.
-  const articleFocusRef = useRef<((flow: string) => void) | null>(null);
-  const pagesMode = usePagesMode({
-    activeTab,
-    mode: editorMode.mode,
-    canEdit: !isReadOnly,
-    tabLoaded: loadedTabIds.has(activeId),
-    commitTabs,
-    canvasMainRef,
-    setViewportZoom,
-    setViewportOffset,
-    getViewport: () => ({ zoom: zoomRef.current, offset: viewportOffsetRef.current }),
-    clearSelection: () => {
-      setSelectedId(null);
-      setMultiSelectedIds(new Set());
-    },
-    toastInfo: toast.info,
-    onArticleCreated: (flow) => articleFocusRef.current?.(flow),
-    framePageRef,
-    frameFirstPageRef,
-    documentId: documentId ?? undefined,
-    viewport,
-    snapSuspended: () => presenting || followingRef.current !== null,
-  });
-  // What a locked page holds is inert, as on a locked layer (Pages mode only).
-  const pageLockedIds = usePageLockedIds(activeTab.elements, pagesMode?.pages ?? null);
   const { inertIds: canvasInertIds, chartIds: sheetChartIds } = useSheetChartInertIds(
     activeTab.elements,
-    pageLockedIds,
-  );
-  useAssignRef(
-    pageLockGuardRef,
-    pagesMode
-      ? {
-          tabId: activeId,
-          // Said after the commit: the guard runs inside a state update, where no toast may be set.
-          onBlocked: () => queueMicrotask(() => announcePageLocked(toast.info)),
-        }
-      : null,
+    NO_IDS,
   );
 
   // A locked tab refuses every element mutation. Commit /
@@ -2058,9 +1404,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // below stays blocked with a single check, and the interaction
   // starters (beginDrag, beginEdit, ...) layer on their own isReadOnly
   // checks so a viewer can still select and inspect.
-  // Running a session (start, end, reveal, clear, pace) is an Editor's, whoever holds the baton
+  // Running a session (start, end, reveal, clear, pace) is an Editor's
   // (docs/specs/013-workspace/share-roles.md): a Participant's editsBlocked is false, so it is shut here.
-  const runsBlocked = facilitator.sessionToolsBlocked || isReadOnly;
+  const runsBlocked = isReadOnly;
   // A Participant commits too: every one of its commits passes participant.guardCommit.
   const editsBlocked =
     activeTabLocked || (isReadOnly && !participant.participating) || activeTabLoadState !== 'ready';
@@ -2136,7 +1482,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const styleMemory = useStyleMemory({
     documentId,
     theme: activeTheme,
-    board: drawMode,
   });
   const liveActiveElements = () =>
     (tabsRef.current.find((t) => t.id === activeId) ?? activeTab).elements;
@@ -2216,13 +1561,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   } = usePlanStatuses(
     tabs,
     activeId,
-    planNeeded,
     itemTypes.types.map((t) => t.id),
   );
   // One name, one state: duplicate states merge into the first. See useMergeDuplicateStatuses.
   useMergeDuplicateStatuses({
     tabs,
-    enabled: canEdit && planNeeded && tabs.every((t) => loadedTabIds.has(t.id)),
+    enabled: canEdit && tabs.every((t) => loadedTabIds.has(t.id)),
     itemsReady: planItems.status === 'ready',
     items: planItems.items,
     tickTabs,
@@ -2232,13 +1576,14 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const presetCardTypes = usePresetCardTypes({
     tabs,
     activeId,
-    enabled: planNeeded && hydrated && !isReadOnly,
+    enabled: hydrated && !isReadOnly,
     canBring: hydrated && !isReadOnly,
     itemsReady: planItems.status === 'ready',
     catalogue: itemTypes.catalogue,
     saveCatalogue: itemTypes.saveCatalogue,
   });
   // The Actions board (docs/specs/026-plan/linked-boards.md): every action has a card on it, kept together.
+  const actionsBoard = useMemo(() => actionsBoardIn(tabs), [tabs]);
   const editorLevel = hydrated && participant.can.level === 'edit' && !workbenchMode;
   const linkedActions = useLinkedActionCards({
     tabs,
@@ -2270,7 +1615,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     [linkedActions.placeOf, linkedActions.showOnCanvas],
   );
   // Assignees: the members of your teams (docs/specs/026-plan/items.md "Who may do what").
-  const teamPeople = useTeamPeople(selfParticipant.id, planNeeded && !workbenchMode, !!clerkUserId);
+  const teamPeople = useTeamPeople(selfParticipant.id, !workbenchMode, !!clerkUserId);
   // Whether a Plan board covers the canvas (docs/specs/026-plan/plan-board.md "Fill Tab"): see usePlanCoverWiring.
   const planCover = usePlanCoverWiring({ activeTab, tabs });
   // Board, Sheet and Dashboard tabs (docs/specs/026-plan/plan-tabs.md).
@@ -2306,7 +1651,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const plan = usePlanSlice({
     planItems,
     itemTypes,
-    editorMode: editorMode.mode,
     canEdit: !isReadOnly,
     canEditCards: participant.can.planCards,
     // Card votes and card comments are a Participant's (docs/specs/013-workspace/share-roles.md).
@@ -2318,7 +1662,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     commitTabs,
     select: setSelectedId,
     announce,
-    addItemSlide: slideDeck.newItemSlide,
     statusNames: planStatusNames,
     statusPhases: planStatusPhases,
     statusTypes: planStatusTypes,
@@ -2351,60 +1694,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     set: { setSelectedId, setEditingId, setFormatSourceId },
   });
   const { tick, undo, redo, canUndo, canRedo } = editorHistory;
-  // The writing of the active tab's article pages (docs/specs/007-editor/article-pages.md): in
-  // Pages mode, and while a page slide presents in any mode (read only, then: nothing is
-  // edited while presenting).
-  const presentingPage = presentingStep?.slide.pageId ?? null;
-  const presentPages = useMemo(
-    () => (!pagesMode && presentingPage ? layOutPages(pagesOf(activeTab)) : null),
-    [pagesMode, presentingPage, activeTab],
-  );
-  const articles = useArticles({
-    activeTab,
-    on: pagesMode !== null || presentingPage !== null,
-    pages: pagesMode?.pages ?? presentPages,
-    localEditSeq: localEditSeqRef,
-    placeAt: (intent, x, y) => placeIntentAtRef.current?.(intent, x, y),
-    canEdit: !isReadOnly,
-    commitTabs,
-    tickTabs,
-    undo,
-    redo,
-    clearSelection: () => {
-      setSelectedId(null);
-      setMultiSelectedIds(new Set());
-    },
-    openNote: (id, kind) => {
-      if (kind === 'comment') return openComments(id);
-      // An action already assigned shows in its popover; a new one opens the dialog to assign it.
-      const el = activeTab.elements.find((e) => e.id === id);
-      if (el && isBoxed(el) && elementActions(el).length > 0) openActionPopover(id);
-      else openAssignActionDialog(id);
-    },
-    reveal: (x, y, w, h) => scrollIntoView(x, y, w, h),
-  });
-  useAssignRef(articleFocusRef, (flow: string) => articles?.requestFocus(flow, 'start'));
-  // Set once element creation exists (below): an Insert at the caret places through it.
-  const placeIntentAtRef = useRef<
-    ((intent: Parameters<typeof placeIntentAt>[0], x: number, y: number) => void) | null
-  >(null);
-  // A slide page's add-to-deck / hide-from-deck button reaches the deck (pageDeckControls).
-  // Memoised so the pages' view keeps its identity across renders where nothing changed.
-  const { deck: currentDeck, newPageSlide, toggleSlideHidden, setSlideNotes } = slideDeck;
-  const pageDeck = useMemo(
-    () =>
-      pageDeckControls(currentDeck, activeId, !isReadOnly, {
-        newPageSlide,
-        toggleSlideHidden,
-        setSlideNotes,
-      }),
-    [currentDeck, activeId, isReadOnly, newPageSlide, toggleSlideHidden, setSlideNotes],
-  );
-  const pagesModeView = useMemo(
-    () =>
-      pagesMode ? { ...pagesMode, ...(articles ? { articles } : {}), deck: pageDeck } : pagesMode,
-    [pagesMode, articles, pageDeck],
-  );
   // --- Placement helpers ---------------------------------------------------
 
   // When a boxed element is selected, new elements inherit its size so a
@@ -2466,7 +1755,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   } = useTabActions({
     tabs,
     activeId,
-    editorMode: editorMode.mode,
     canEditStructure: !isStructureReadOnly,
     documentList,
     ownerId: selfParticipant.id,
@@ -2490,7 +1778,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   });
   // The menu box renames the open tab on a click on its name (active-tab-name-store).
   usePublishTabRename(activeId, renameTab, !isStructureReadOnly);
-  useAssignRef(newTabInRef, (mode: EditorMode) => addTab(mode));
 
   // Tab-folder membership (docs/specs/006-document/tab-folders.md), kept separate from the busy
   // useTabActions. Menu-only: drag-reorder lives above.
@@ -2657,7 +1944,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     checkpointBurst,
   });
 
-  // Live session tools (docs/specs/012-collaboration/session-tools.md): facilitator timer + dot-voting handlers.
+  // Live session tools (docs/specs/012-collaboration/session-tools.md): timer + dot-voting handlers.
   // State lives on the tab (`activeTab.timer` / `activeTab.vote`), so the
   // UI reads it straight off the tab; these are just the mutators.
   const {
@@ -2677,8 +1964,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     retractVote,
   } = useTabSession({
     editsBlocked,
-    sessionToolsBlocked: runsBlocked,
-    isFacilitator: facilitator.isFacilitator,
+    runsBlocked,
     activeId,
     activeTab,
     // The non-history mutator, per docs/specs/012-collaboration/session-tools.md: starting a timer or
@@ -2707,101 +1993,37 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   });
 
   // The interactive Behaviour elements that act on the SESSION rather than the
-  // document (docs/specs/012-collaboration/session-button.md, /106, /107): the session button's press, the reveal
-  // zone's local uncover, and the picker's roll.
-  const { pressSessionButton, revealedIds, toggleRevealForMe, pickerFor, setSessionConfigFor } =
-    useBehaviourElements({
-      activeId,
-      commitTabs,
-      tickTabs,
-      editsBlocked,
-      sessionToolsBlocked: runsBlocked,
-      selfParticipant,
-      livePresence,
-      activeTimer: activeTab.timer,
-      activeVote: activeTab.vote,
-      startTimer,
-      pauseTimer,
-      resumeTimer,
-      startVote,
-      startPoll: livePoll.startPoll,
-    });
-
-  // The collaboration elements (docs/specs/012-collaboration/participant-responses.md to docs/specs/012-collaboration/roll-call.md). Sibling of the
-  // behaviour hook above: these write to the document through `tickTabs`,
-  // which does NOT push undo history, so one person's Ctrl+Z can never
-  // retract another person's answer (docs/specs/012-collaboration/collab-race-hardening.md). Scatter alone commits.
-  const collabElements = useCollabElements({
+  // document (docs/specs/012-collaboration/session-button.md, /107): the session button's press and the
+  // picker's roll.
+  const { pressSessionButton, pickerFor, setSessionConfigFor } = useBehaviourElements({
     activeId,
     commitTabs,
     tickTabs,
-    applyElementDelta,
-    postIdea: ideaPosts.post,
-    activeElements: activeTab.elements,
     editsBlocked,
-    sessionToolsBlocked: runsBlocked,
     selfParticipant,
     livePresence,
+    activeTimer: activeTab.timer,
+    activeVote: activeTab.vote,
     startTimer,
+    pauseTimer,
+    resumeTimer,
+    startVote,
+  });
+
+  // The collaboration elements (docs/specs/012-collaboration/participant-responses.md). Sibling of the
+  // behaviour hook above: these write to the document through `tickTabs`,
+  // which does NOT push undo history, so one person's Ctrl+Z can never
+  // retract another person's answer (docs/specs/012-collaboration/collab-race-hardening.md).
+  const collabElements = useCollabElements({
+    activeId,
+    tickTabs,
+    applyElementDelta,
+    activeElements: activeTab.elements,
+    editsBlocked,
+    selfParticipant,
   });
   // A checklist tick is a room press like an answer (docs/specs/012-collaboration/collab-race-hardening.md).
   const { toggleChecklistItem } = collabElements;
-  // The Quiz (docs/specs/012-collaboration/quiz.md): its own verbs, on the same facilitator-gated patch.
-  const quiz = useQuizElements({
-    activeId,
-    commitTabs,
-    applyElementDelta,
-    patchAsFacilitator: collabElements.patchAsFacilitator,
-    editsBlocked,
-    sessionToolsBlocked: runsBlocked,
-    selfParticipant,
-  });
-
-  // Keeping a poll's results (docs/specs/012-collaboration/poll-result-capture.md). Ends the poll for the room through
-  // the SAME `endPoll` the plain End uses — one op, so a participant sees no
-  // difference and no new op kind exists — and additionally drops the tallies
-  // onto the canvas as an ordinary, undoable element.
-  // Keep Results (docs/specs/012-collaboration/poll-result-capture.md): drop a chart of the tallies so far onto the
-  // active tab. The poll keeps running, so it can be kept again later
-  // (a second chart), and End is still the only thing that ends it.
-  const keepPollResults = () => {
-    const poll = livePoll.poll;
-    if (!poll) return;
-    addBoxed((x, y) => pollResultElement(poll, livePoll.answers, x, y));
-    track('Element', 'Added', 'PollResult');
-  };
-
-  // Image domain (picker state, recent-images list, placement + fill
-  // handlers). Lives in its own hook so the page no longer carries
-  // that state or its six handlers — see useEditorImages + docs/specs/009-elements/images.md.
-  const {
-    imagePickerOpenFor,
-    imageContext,
-    addImageFromGallery,
-    applyImageToElement,
-    removeImageFromElement,
-    refreshRecentImages,
-    closeImagePicker,
-  } = useEditorImages({
-    // A Participant places images and swaps their pictures (docs/specs/013-workspace/share-roles.md).
-    editsBlocked: contentAddBlocked({
-      participating: participant.participating,
-      canAddContent: participant.can.addContent,
-      blocked: editsBlocked,
-      structureBlocked,
-    }),
-    isReadOnly: isReadOnly && !(participant.participating && participant.can.addContent),
-    embedMode,
-    // Upload only in a workbench: no gallery read.
-    galleryHidden: workbenchMode,
-    getViewportCenter,
-    commit,
-    setSelectedId,
-    documentId,
-    ownerId: selfParticipant.id,
-    sessionShareCode,
-  });
-
   // Per-element note popover (single plain-text paragraph; see
   // packages/document BoxedElement.note). State + handlers in
   // useEditorNotes.
@@ -2809,72 +2031,30 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
 
   // --- Element CRUD --------------------------------------------------------
 
-  // Draw-to-size + freehand pen tooling (pendingDraw state machine +
+  // Draw-to-size + polygon tooling (pendingDraw state machine +
   // commit handlers). beginDrawIfEnabled short-circuits the palette
   // adds below into draw mode; the rest is consumed by the Canvas +
   // keyboard hook. See useShapeDrawing.
-  // Logo pages (docs/specs/007-editor/logo-pages.md): the mirror-aware draw commit, the logo tools,
-  // previews, Combine and the keyline snaps. See useLogoEditor.
-  const logo = useLogoEditor({
-    pagesModeView,
-    pages: pagesMode?.pages ?? null,
-    activeTab,
-    commit,
-    currentSelectionIds,
-    setSelectedId,
-    setMultiSelectedIds,
-    prefs: userPreferences,
-    setPrefs: setUserPreferences,
-    selfId: selfParticipant.id,
-    toast,
-    readOnly: isReadOnly,
-    getZoom: () => zoomRef.current,
-  });
-  const { canCombine, combineSelected, canTidyUp, tidyUpSelected } = logo;
-  const {
-    pendingDraw,
-    beginDraw,
-    commitDraw,
-    cancelDrawShape,
-    beginFreehand,
-    beginHighlighter,
-    beginMarker,
-    beginShapePen,
-    beginPolygon,
-    beginPath,
-    commitFreehand,
-    commitPolygon,
-    highlighter,
-  } = useShapeDrawing({
-    editsBlocked: createBlocked,
-    readSelection,
-    canvasTool,
-    setCanvasTool,
-    activeTab,
-    drawMode,
-    commit: logo.drawCommit,
-    setSelectedId,
-    setMultiSelectedIds,
-    setEditingId,
-    zoomRef,
-    styleNewElement: styleMemory.styleNewElement,
-    onPlanCardPlace: placePaletteCard,
-  });
+  const { pendingDraw, beginDraw, commitDraw, cancelDrawShape, beginPolygon, commitPolygon } =
+    useShapeDrawing({
+      editsBlocked: createBlocked,
+      readSelection,
+      canvasTool,
+      setCanvasTool,
+      activeTab,
+      commit,
+      setSelectedId,
+      setMultiSelectedIds,
+      setEditingId,
+      styleNewElement: styleMemory.styleNewElement,
+      onPlanCardPlace: placePaletteCard,
+    });
   useEffect(() => {
     putToolDownRef.current = () => {
       cancelDrawShape();
       setCanvasTool('select');
     };
   });
-  // The Path tool (docs/specs/023-draw-mode/path-tool.md): a drawn path, a continued one, an edit.
-  const { commitPath, commitPathEdit } = usePathCommits({
-    editsBlocked: structureCreateBlocked,
-    commit: logo.drawCommit,
-    elements: () => activeTab.elements,
-    styleNewElement: styleMemory.styleNewElement,
-    setSelectedId,
-  });
-
   // Mind-map growth (docs/specs/009-elements/mind-node.md) and flowchart growth
   // (docs/specs/009-elements/flowchart.md): Tab / Enter / the "+" ring, routed through one API
   // (growth-routing.ts) so the keyboard and label-editor plumbing serves both.
@@ -2919,7 +2099,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     addAnnotation,
     addLinkCard,
     addVideo,
-    addImage,
     addBanner,
     addHero,
     addHeader,
@@ -2929,7 +2108,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     addFlowchart,
     addAvatar,
     dropPaletteItem,
-    placeIntentAt,
     addText,
     addSticky,
     addArrow,
@@ -2939,7 +2117,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     cancelConnect,
   } = useElementCreation({
     editsBlocked: createBlocked,
-    imagesBlocked: embedMode,
     activeId,
     activeTab,
     readSelection,
@@ -2951,9 +2128,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     beginDraw,
     styleNewElement: styleMemory.styleNewElement,
     onPlanCardPlace: placePaletteCard,
-    pages: pagesMode?.pages ?? null,
   });
-  useAssignRef(placeIntentAtRef, placeIntentAt);
 
   // Inline-icon attach/detach mutators (a shape's single inline icon).
   // Cohesive slice extracted to useInlineIconMutators: editsBlocked, commit and the elements.
@@ -3051,51 +2226,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     layerInertIds,
   });
 
-  // Snap colours (docs/specs/023-draw-mode/draw-mode.md "Snap colours"): one commit, one undo step.
-  const snapColours = useSnapColours({
-    elements: activeTab.elements,
-    inertIds: layerInertIds,
-    editsBlocked: structureBlocked,
-    commit,
-  });
-
-  // The whiteboard dock (docs/specs/023-draw-mode/draw-mode.md): device-local pens, recognition and
-  // eraser mode, and the dock presses turned into ordinary editor calls.
-  const whiteboardDock = useWhiteboard({
-    activeTab,
-    drawMode,
-    canvasTool,
-    pendingDraw,
-    editsBlocked: structureCreateBlocked,
-    setCanvasTool,
-    selectCanvasTool,
-    beginDraw,
-    cancelDraw: cancelDrawShape,
-    pathEditing: isPathEditing(activeTab.elements, editingId),
-    leavePathEdit: () => setEditingId(null),
-    snapColours,
-    userPreferences,
-    setUserPreferences,
-    writeUserPreferences,
-    ownerId: selfParticipant.id,
-  });
-
-  // Eraser canvas tool (docs/specs/008-canvas/canvas-and-palette.md): press / drag to delete any element the
-  // pointer touches, as a single-undo gesture. Canvas calls beginErase
-  // from its capture-phase pointerdown. See useCanvasEraser.
-  const { beginErase } = useCanvasEraser({
-    config: eraserSettings.config,
-    whiteboard: whiteboardDock.whiteboard ? { mode: whiteboardDock.prefs.eraserMode } : null,
-    editsBlocked: structureBlocked,
-    layerInertIds,
-    activeId,
-    activeTab,
-    tick,
-    markCheckpoint,
-    setSelectedId,
-    setEditingId,
-  });
-
   // Element styling / layering actions (lock, layer order, text size /
   // align / style, fill / stroke / text colour, opacity, padding, the
   // arrow + border presets, shape-kind morph, reset-to-theme). All
@@ -3159,14 +2289,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setHeroCaptionSelected,
     setChecklistItemsSelected,
     setEntityFieldsSelected,
-    setEstimateScaleSelected,
-    setAgendaItemsSelected,
     setDecisionStatusSelected,
     setDecisionDateSelected,
     setDecisionDriversSelected,
-    setChairFacingSelected,
-    setRoomDoorSelected,
-    setButtonModeSelected,
     setRatingSelected,
     setRatingAnimSelected,
     setRatingAnimSpeedSelected,
@@ -3223,34 +2348,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     notify: (tone, message) => toast[tone](message),
   });
 
-  // The quick style panel (docs/specs/008-canvas/quick-style-panel.md): its view of the selection and one
-  // action per choice. The panel itself decides where and whether it shows.
-  const swatchOverrides = useSwatchOverrides({
-    themeId: activeTab.theme ?? DEFAULT_SCHEME_ID,
-    userPreferences,
-    setUserPreferences,
-    writeUserPreferences,
-    ownerId: selfParticipant.id,
-  });
-  // Every input of the Quick Style view but the selection, which QuickStyleHost reads from the store.
-  const quickStyleDeps: QuickStyleDeps = {
-    activeTab,
-    drawMode,
-    theme: activeTheme,
-    editsBlocked: structureBlocked,
-    canStyle: participant.participating ? participant.can.recolour : undefined,
-    liveElements: liveActiveElements,
-    commit,
-    memory: styleMemory,
-    swatchOverrides,
-    pen: {
-      held: whiteboardDock.tool === 'pen' ? whiteboardDock.activePen : null,
-      update: whiteboardDock.updatePen,
-    },
-    highlighter,
-    toolIntent: pendingDraw,
-  };
-
   // Portal links (docs/specs/009-elements/portal-element.md) live off the style hook: a link can point at a
   // portal on ANOTHER tab, so these setters need the whole tab list and a
   // tabs-wide commit rather than the active tab's element mapper.
@@ -3259,9 +2356,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setPortalNameSelected,
     createLinkedPortal,
     setSessionConfigSelected,
-    setRevealedSelected,
     setPickerSourceSelected,
-    setReactionSelected,
     setPickerOptionsSelected,
   } = usePortalSetters({
     currentSelectionIds,
@@ -3270,7 +2365,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     tabs,
     activeId,
     setSelectedId,
-    sessionToolsBlocked: facilitator.sessionToolsBlocked,
   });
 
   // Hover-to-preview for the style-preset tiles (docs/specs/010-palette/style-presets.md): hovering a preset on
@@ -3333,8 +2427,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     previewTextAlign,
     commitTextAlign,
     previewTextSize,
-    previewWordmark,
-    commitWordmark,
     commitTextSize,
     previewFont,
     commitFont,
@@ -3406,7 +2498,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     documentName,
     tabs,
     activeTab,
-    drawMode,
     editingId,
     commit,
     discardLastStep: cancelToCheckpoint,
@@ -3428,7 +2519,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // traversal while the canvas surface is focused, plus SR live-region
   // announcements on selection changes. See useCanvasA11y.
   useCanvasA11y({
-    enabled: keyboardEnabled,
+    enabled: shortcutsEnabled,
     elements: activeTab.elements,
     selection: selectionStore,
     editingId,
@@ -3451,7 +2542,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   } = useVoteReview({
     activeTab,
     selfId: voteSelfId,
-    facilitating: facilitator.isFacilitator,
     scrollIntoView,
     clearVote,
     setVoteReviewIndex,
@@ -3532,9 +2622,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     autoRebindArrowsRef,
     styleNewElement: styleMemory.styleNewElement,
     alignmentGuidesRef,
-    // Every page's edges and margin, and a logo page's keylines (useLogoEditor).
-    pageSnapBoxes: logo.snapBoxes,
-    pagesMode: pagesMode?.pages ?? null,
     isPinchingRef,
   });
 
@@ -3563,7 +2650,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     isReadOnly,
     createBlocked,
     explainCreateBlocked: layersState.explainCreateBlocked,
-    embedMode,
     readSelection,
     editingId,
     setEditingId,
@@ -3571,15 +2657,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     commit,
     setSelectedId,
     setMultiSelectedIds,
-    addImageFromGallery,
-    ownerId: selfParticipant.id,
-    documentId,
     toast,
     getViewportCanvasRect,
   });
   // A CSV file dropped in Plan mode places a Sheet from it (docs/specs/029-sheets/sheet.md "Placing a sheet").
   const dropFileOnCanvas = useSheetCsvDrop({
-    planMode: editorMode.mode === 'plan',
     blocked: createBlocked,
     addBoxedAt,
     dropOther: dropBoardFile,
@@ -3620,21 +2702,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     addText,
     addSticky,
     addArrow,
-    onAddImage: addImage ?? null,
-    onBeginFreehand: beginFreehand,
     canGrowMindNode,
     onGrowMindNode: growMindNode,
     onEscapeMindNode: escapeGrownMindNode,
-    onBeginShapePen: beginShapePen,
     onBeginEditSelected: beginEdit,
     onNudgeSelection: nudgeSelection,
-    onStepPage: pagesMode
-      ? (dir) => {
-          const to = pageStep(pagesMode.pages, currentPageIdNow(), dir);
-          if (to) pagesMode.focusPage(to);
-          return !!to;
-        }
-      : undefined,
     onTypeIntoSelected: typeIntoSelected,
     pendingDraw,
     onCancelDraw: cancelDrawShape,
@@ -3646,8 +2718,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       }
     },
     onSelectAll: () => {
-      // Hidden / locked layers are left out; in Pages mode, every page but the one someone is on.
-      const allIds = selectAllIds(activeTab, editorMode.mode, layerInertIds, currentPageIdNow());
+      // Hidden / locked layers are left out (docs/specs/006-document/layers.md).
+      const allIds = new Set(
+        activeTab.elements.map((el) => el.id).filter((id) => !layerInertIds.has(id)),
+      );
       if (allIds.size === 0) return;
       setSelectedId(null);
       setMultiSelectedIds(allIds);
@@ -3671,9 +2745,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     },
     onBringToFront: bringSelectedToFront,
     onSendToBack: sendSelectedToBack,
-    // In Pages, Fit frames the page you are nearest, not the whole tab.
-    onFitToScreen: pagesMode ? pagesMode.fitPageInView : fitToScreen,
-    onCycleEditorMode: editorModeShortcut(editorMode, announce),
+    onFitToScreen: fitToScreen,
     onDeselect: () => {
       setSelectedId(null);
       setMultiSelectedIds(new Set());
@@ -3685,20 +2757,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     onToggleZen: toggleZenMode,
     onOpenSearch: () => openSearchWithPrefetch(dialogs.setSearchOpen, loadAllTabs),
     onShortcutUsed: powerUserOffer.onShortcutUsed,
-    enabled: keyboardEnabled,
-    // A whiteboard's keys are its dock's (docs/specs/023-draw-mode/draw-mode.md "Keyboard shortcuts").
-    whiteboard: whiteboardDock.whiteboard
-      ? {
-          pickSelect: whiteboardDock.pickSelect,
-          pickPen: whiteboardDock.pickPen,
-          pickEraser: whiteboardDock.pickEraser,
-          pickSticky: whiteboardDock.pickSticky,
-          pickText: whiteboardDock.pickText,
-          pickShape: whiteboardDock.pickShape,
-          pickPath: whiteboardDock.pickPath,
-          openShapes: whiteboardDock.openShapes,
-        }
-      : null,
+    enabled: shortcutsEnabled,
   });
 
   // The workbench's side of the conversation, and the ends the editor learns of.
@@ -3759,19 +2818,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     releaseSheets: sheets.releaseSheets,
     // A header's Focus: glide the view to fit an element (hooks/canvas/useCanvasFocus.tsx).
     focusBounds,
-    // The person's editor mode on the active tab, for the mode switch and the canvas.
-    editorMode,
-    leavePages,
-    pagesMode: logo.view,
-    canCombine,
-    combineSelected,
-    canTidyUp,
-    tidyUpSelected,
-    // Arms a draw tool: the Logo palette's markers, from the live pen (PaletteLogoTab).
-    beginDraw,
-    // A page slide presenting outside Pages draws its article's writing from these.
-    presentArticles: articles,
-    whiteboardDock,
     // Whether anything edited is still unsaved: the new version prompt reloads only once it is not
     // (docs/specs/016-platform/new-version-prompt.md).
     hasUnsavedChanges,
@@ -3798,12 +2844,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     dropBoardFile: dropFileOnCanvas,
     hasClipboard,
     ...panelLayout,
-    // Presenting wears the zen chrome treatment (docs/specs/012-collaboration/presentation-mode.md → docs/specs/007-editor/zen-mode.md): header,
-    // tab bar, panels and palette all gone, so a projector shows the document
-    // rather than the workbench. An OVERRIDE of the spread above rather than a
-    // write to zen state, so exiting a presentation restores whatever zen the
-    // user actually had.
-    zenMode: panelLayout.zenMode || slideDeck.presentingAt !== null,
     ...dialogs,
     ...uiState,
     ...persistence,
@@ -3819,7 +2859,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // The whole creation gate: a locked tab, a view-only session, or a
     // hidden / locked active layer.
     createBlocked,
-    quickStyleDeps,
     layerHiddenIds,
     layerLockedIds,
     layerInertIds,
@@ -3852,8 +2891,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     cancelConnect,
     dropIconOnElement,
     removeIconFromElement,
-    addImage,
-    addImageFromGallery,
     addShape,
     addSticky,
     addTable,
@@ -3876,14 +2913,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     aiCapable,
     anyWelcomeOpen,
     applyAiElements,
-    applyImageToElement,
     autoAlignTab,
     autoLayoutTab,
     previewCleanup,
     endCleanupPreview,
     assessCleanupKind,
-    // The facilitator baton (docs/specs/012-collaboration/facilitator.md): who is running this session.
-    facilitator,
     setTabFinish,
     applyTabLook,
     // Live session tools (docs/specs/012-collaboration/session-tools.md)
@@ -3914,24 +2948,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     pressArmedAction,
     beginEdit,
     beginEndpointDrag,
-    beginFreehand,
-    beginHighlighter,
-    beginMarker,
-    beginShapePen,
     beginPolygon,
-    beginPath,
     bringSelectedToFront,
-    broadcastAvatar,
-    broadcastAvatarPush,
-    broadcastAvatarSay,
-    avatarShove,
-    fireReaction,
-    pressFocusButton,
-    focusInvite,
-    reactionBursts: reactions.bursts,
-    clearReactionBurst: reactions.clear,
     broadcastCursor,
-    broadcastLaser,
     canvasPointerRef,
     canRedo,
     canUndo,
@@ -3941,25 +2960,19 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // Side by side (docs/specs/007-editor/split-view.md) hands the editor a tab already aimed.
     skipTabFitRef,
     canvasTool,
-    exitAvatarTool,
     exitFormatTool,
-    beginErase,
     chooseTemplate,
     clearTabContent,
     clerkDisplayName,
     clerkUserId,
     closeComments,
     closeContextMenu,
-    closeImagePicker,
     closeNote,
     commentRows,
     commentThreadOpenId,
     commentThreadOpenCell,
     commitDraw,
-    commitFreehand,
     commitPolygon,
-    commitPath,
-    commitPathEdit,
     styleNewElement: styleMemory.styleNewElement,
     commitLabel,
     commitTable,
@@ -3995,8 +3008,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     handleCanvasDoubleClick,
     hydrated,
     identityOnlyScreenOpen,
-    imageContext,
-    imagePickerOpenFor,
     importIntoActiveTab,
     importTextIntoActiveTab,
     isPinchingRef,
@@ -4004,7 +3015,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // What this session may do (docs/specs/013-workspace/share-roles.md): a Participant's content gestures.
     can: participant.can,
     participating: participant.participating,
-    laserTrailRows,
     linkActiveTabTo,
     linkPickerOpenForId,
     linkPickerInitialMode,
@@ -4015,25 +3025,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     openCellLinkPicker,
     applyCellLink,
     activeTabLoadState,
-    // Slide deck (docs/specs/012-collaboration/presentation-mode.md): the whole surface in one object, like livePoll —
-    // nothing outside the panel and the overlay reads into it.
-    slideDeck,
     commentMentions,
     // Bring an element into view (the Collaborate panel's jump to a card).
     scrollIntoView,
-    // What the presentation is showing, or null. The canvas renders THESE
-    // instead of the tab's elements while it is non-null, which is what makes
-    // a slide a slide.
-    presentingElements,
-    // The page a page slide is presenting (docs/specs/007-editor/pages-mode.md "Slides"):
-    // the canvas then shows that sheet alone, as it shows the slide's elements alone.
-    presentingPageId: presentingStep?.slide.pageId ?? null,
     livePresence,
-    // Live poll (docs/specs/012-collaboration/live-poll.md) — the whole ephemeral surface in one object
-    // rather than a dozen flattened keys, since nothing else reads into it.
-    livePoll,
-    keepPollResults,
-    followMe,
     loadAllTabs,
     loadedTabIds,
     loadingDocument,
@@ -4055,13 +3050,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     openNote,
     participantsByTab,
     pendingDraw,
-    pollCollaborators,
     redo,
-    refreshRecentImages,
-    remoteAvatarRows,
     remoteCursorRows,
     remoteSelectionsByElement,
-    removeImageFromElement,
     renameFolder,
     renameTab,
     renameTabFolder,
@@ -4128,8 +3119,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     previewTextAlign,
     commitTextAlign,
     previewTextSize,
-    previewWordmark,
-    commitWordmark,
     commitTextSize,
     previewFont,
     commitFont,
@@ -4196,30 +3185,19 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     mindOutline,
     setChecklistItemsSelected,
     setEntityFieldsSelected,
-    setEstimateScaleSelected,
-    setAgendaItemsSelected,
     setDecisionStatusSelected,
     setDecisionDateSelected,
     setDecisionDriversSelected,
-    setChairFacingSelected,
-    setRoomDoorSelected,
-    setButtonModeSelected,
     setPortalTargetSelected,
     setPortalNameSelected,
     createLinkedPortal,
     setSessionConfigSelected,
-    setRevealedSelected,
     setPickerSourceSelected,
-    setReactionSelected,
     setPickerOptionsSelected,
     pressSessionButton,
-    revealedIds,
-    toggleRevealForMe,
     setSessionConfigFor,
     pickerFor,
     collabElements,
-    quiz,
-    qaBoard,
     setRatingSelected,
     setRatingAnimSelected,
     setRatingAnimSpeedSelected,
@@ -4251,14 +3229,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setIconAnimationRepeatSelected,
     setFlowRepeatSelected,
     setCanvasTool: pickCanvasTool,
-    laserConfig: laserPen.config,
-    onChangeLaserField: laserPen.setField,
-    eraserConfig: eraserSettings.config,
-    onChangeEraserField: eraserSettings.setField,
     formatConfig: formatSettings.config,
     onToggleFormatGroup: formatSettings.toggleGroup,
     onSetFormatMode: formatSettings.setMode,
-    pressModeButton,
     setContextMenu,
     setDocumentSharePassword,
     setFillColorSelected,

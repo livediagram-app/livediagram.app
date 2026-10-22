@@ -36,7 +36,6 @@ export function useBoxedElementGestures({
   onEditLink,
   onOpenEditDialog,
   onOpenNote,
-  imageContext,
   onContextSelect,
 }: Pick<
   BoxedElementViewProps,
@@ -53,7 +52,6 @@ export function useBoxedElementGestures({
   | 'onEditLink'
   | 'onOpenEditDialog'
   | 'onOpenNote'
-  | 'imageContext'
   | 'onContextSelect'
 > & {
   wrapperRef: RefObject<HTMLDivElement | null>;
@@ -97,7 +95,7 @@ export function useBoxedElementGestures({
     // Dot-voting (docs/specs/012-collaboration/session-tools.md): while a vote is open, pressing a votable
     // element casts one of your dots instead of selecting / dragging it.
     // Non-votable elements (text / frame / arrow / …) still select, so
-    // the facilitator can keep arranging the canvas.
+    // the host can keep arranging the canvas.
     if (vote?.active && onCastVote && votableInVote) {
       e.stopPropagation();
       // A Plan card element votes on its card (voteKeyOf).
@@ -116,9 +114,6 @@ export function useBoxedElementGestures({
     });
     if (verdict.pairs) {
       e.stopPropagation();
-      // A path opens its edit mode on the pair itself: a double-tap brings no reliable dblclick
-      // (docs/specs/023-draw-mode/path-tool.md "Editing").
-      if (element.type === 'path') onBeginEdit(element.id);
       // A double-click's first click deselected the only selected element; its
       // second selects it again, as the editor opens.
       if (!isSelected && settlesClick) onPlainClick?.(element.id);
@@ -167,15 +162,8 @@ export function useBoxedElementGestures({
     if (isEditing) return;
     // Can't edit an element another participant holds.
     if (remotelyLocked) return;
-    // Image elements double-click to open the image picker (swap /
-    // upload). They have no inline label to edit, so the editor's
-    // beginEdit branch doesn't apply. A single click stays the
-    // selection / drag gesture so the user can move + resize the
-    // placeholder freely without the picker popping up.
-    if (element.type === 'image' && imageContext?.onOpenPicker) {
-      imageContext.onOpenPicker(element.id);
-      return;
-    }
+    // An image element has no inline label to edit (and no picture to pick).
+    if (element.type === 'image') return;
     // Tables edit per-cell (TableView handles the cell double-click),
     // so the element-level label editor never applies.
     if (element.type === 'table') return;
@@ -231,12 +219,9 @@ export function useBoxedElementGestures({
 
   // Right-click opens on release (see useRightClickRelease).
   //
-  // Deliberately NOT gated on `remotelyLocked` any more: whether a locked
-  // element has a menu now depends on who is asking (docs/specs/012-collaboration/facilitator.md — the
-  // facilitator gets a one-item menu to free it), and this hook does not know
-  // that. The host's `onElementContextMenu` owns the decision and still
-  // refuses for everybody else, so nothing changed for them. `onContextSelect`
-  // calls `onSelect` on the way through, which the lock already no-ops.
+  // Not gated on `remotelyLocked` here: the host's `onElementContextMenu` owns
+  // that decision and refuses a locked element. `onContextSelect` calls
+  // `onSelect` on the way through, which the lock already no-ops.
   const rightClick = useRightClickRelease(() => {
     if (isEditing) return;
     openContextMenuBesideElement();

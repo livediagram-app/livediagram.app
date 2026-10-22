@@ -9,8 +9,6 @@ import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
 import { tabAsSeen } from '@/lib/export-as-seen';
 import { panelEnabled } from '@/lib/user-preferences';
-import { LeavePagesDialog } from '@/components/dialogs/LeavePagesDialog';
-import { LeavePagesConfirm } from '@/components/dialogs/LeavePagesConfirm';
 
 const ExportTabDialog = dynamic(
   () => import('@/components/dialogs/ExportTabDialog').then((m) => m.ExportTabDialog),
@@ -35,12 +33,10 @@ export function EditorTabDialogs() {
     userPreferences,
     exportOpen,
     exportScope,
-    pagesMode,
     activeTab,
     tabs,
     loadAllTabs,
     documentName,
-    imageContext,
     setExportOpen,
     importOpen,
     importIntoActiveTab,
@@ -63,7 +59,6 @@ export function EditorTabDialogs() {
     setDocumentSharePassword,
     setShareDialogOpen,
     syncToCloud,
-    leavePages,
   } = useEditorContext();
   // The selection the export covers, read from the store while a selection export is open
   // (docs/specs/008-canvas/blueprints/selection-store.md).
@@ -85,8 +80,6 @@ export function EditorTabDialogs() {
 
   return (
     <>
-      <LeavePagesDialog leave={leavePages} />
-      <LeavePagesConfirm leave={leavePages} />
       {exportOpen ? (
         <ExportTabDialog
           // Export what the author is LOOKING at: a tab on the Default colour
@@ -101,14 +94,10 @@ export function EditorTabDialogs() {
               : {}),
           })}
           scope={exportScope}
-          // In Pages mode the whole tab exports as its pages
-          // (docs/specs/007-editor/pages-mode.md "Export").
-          pages={exportScope === 'tab' ? pagesMode?.pages : undefined}
           documentName={documentName}
           // A Dashboard's slots that show another tab draw it (docs/specs/026-plan/plan-tabs.md "Export").
           documentTabs={tabs}
           loadTabs={loadAllTabs}
-          imageContext={imageContext}
           offerHiddenLayers={panelEnabled(userPreferences, 'layersPanelEnabled')}
           onClose={() => setExportOpen(false)}
         />

@@ -12,8 +12,7 @@ import { BrandMark } from '@liveplanner/ui';
 import type { TemplateKind } from '@liveplanner/templates';
 import { track } from '@/lib/telemetry';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
-import { TemplatePicture } from '@/components/start/template-card';
-import { templateOf } from '@/components/start/start-template-items';
+import { TemplatePicture, templateOf } from '@/components/start/template-card';
 import { WELCOME_ALL_TEMPLATES_HREF, WELCOME_COPY } from '@/app/explorer/home/first-run';
 import {
   WELCOME_BLANKS,
@@ -108,10 +107,10 @@ function StartCard({ kind, size }: { kind: TemplateKind; size: 'blank' | 'templa
 function SignInCard() {
   const { signInHref } = useAuthHrefs();
   return (
-    <div className="relative flex flex-col gap-3 overflow-hidden rounded-[20px] bg-[#0b1230] p-5 dark:ring-1 dark:ring-sky-400/30">
+    <div className="relative flex flex-col gap-3 overflow-hidden rounded-[20px] bg-[#0b1230] p-5 dark:ring-1 dark:ring-brand-400/30">
       <span
         aria-hidden
-        className="pointer-events-none absolute -right-10 -top-10 size-[180px] rounded-full bg-[radial-gradient(circle,rgba(56,189,248,0.45),transparent_70%)]"
+        className="pointer-events-none absolute -right-10 -top-10 size-[180px] rounded-full bg-[radial-gradient(circle,color-mix(in_oklab,var(--color-brand-400)_45%,transparent),transparent_70%)]"
       />
       <h3 className="relative flex items-center gap-2.5 text-base font-bold text-white">
         <BrandMark className="size-6 shrink-0" />
@@ -121,7 +120,7 @@ function SignInCard() {
       <Link
         href={signInHref}
         onClick={() => track('Home', 'Selected', 'Welcome.SignIn')}
-        className="relative mt-auto inline-flex h-10 items-center self-start rounded-xl bg-white px-4 text-sm font-semibold text-[#0b1230] transition hover:bg-sky-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400"
+        className="relative mt-auto inline-flex h-10 items-center self-start rounded-xl bg-white px-4 text-sm font-semibold text-[#0b1230] transition hover:bg-brand-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
       >
         {WELCOME_COPY.signIn}
       </Link>

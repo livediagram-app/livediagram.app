@@ -8,7 +8,6 @@
 // context menu / toolbar / header calls), so behaviour + telemetry can't
 // drift between entry points.
 
-import type { CombineOp } from './combine/combine';
 import {
   AUTO_LAYOUT_CHOICES,
   AUTO_LAYOUT_STYLE_IDS,
@@ -44,11 +43,6 @@ export type CommandContext = {
   // True when the single selection can be rotated (`supportsRotation`): boxed, minus an
   // annotation marker (docs/specs/009-elements/blueprints/annotations.md). Gates the Rotate commands.
   singleRotates: boolean;
-  // True when the selection is combinable shapes on one logo page
-  // (docs/specs/007-editor/logo-pages.md "Combine"). Gates the four Combine commands.
-  canCombine?: boolean;
-  // True when the selection has an element on a logo page to reflect (Mirror Copy).
-  canMirrorCopy?: boolean;
   // True when the single selection is a plain shape (markers are shape-only).
   singleIsShape: boolean;
   // True when the single selection already carries a looping animation
@@ -75,17 +69,8 @@ export type CommandContext = {
   // content, so they disable on an empty canvas exactly as the palette's
   // tool dropdown disables them.
   canvasEmpty: boolean;
-  // Spotlight is desktop-only (hover + click-to-resize don't map to touch),
-  // so it is withheld on a phone the same way the dropdown omits it.
-  isMobile: boolean;
-  // A whiteboard (docs/specs/023-draw-mode/draw-mode.md): its dock replaces the format painter, so
-  // search does not offer it either.
-  whiteboard?: boolean;
-  // Plan mode (docs/specs/026-plan/plan-mode.md) leaves Eraser and Format out of the tool dropdown, so search
-  // does too.
-  planMode?: boolean;
   // A locked tab (docs/specs/008-canvas/canvas-and-palette.md "Locking") refuses every element edit, so search
-  // offers none of them: no selection verbs, no layout cleanup, no Eraser or Format.
+  // offers none of them: no selection verbs, no layout cleanup, no Format.
   tabLocked?: boolean;
 };
 
@@ -98,8 +83,6 @@ export type CommandHandlers = {
   bringToFront: () => void;
   sendToBack: () => void;
   rotate: (deg: number) => void;
-  combine: (op: CombineOp) => void;
-  mirrorCopy: () => void;
   clearAnimation: () => void;
   setMarker: (marker: ShapeMarker | null) => void;
   addComment: () => void;
@@ -134,8 +117,8 @@ export type CommandHandlers = {
 // the whole point is that a tool the palette offers is also typeable, and a
 // stale id would hand the setter a tool that does not exist.
 //
-// Only the id + the words are restated. The gating (empty canvas, mobile,
-// read-only) is expressed once, below.
+// Only the id + the words are restated. The gating (empty canvas, read-only)
+// is expressed once, below.
 export const CANVAS_TOOLS: {
   id: string;
   name: string;
@@ -144,20 +127,11 @@ export const CANVAS_TOOLS: {
   needsContent?: boolean;
   // Changes the document, so a view-only visitor never sees it.
   mutates?: boolean;
-  // Edits the tab's elements, so it goes on a locked tab and in Plan mode, as in the dropdown.
+  // Edits the tab's elements: Plan leaves it out (docs/specs/026-plan/plan-mode.md "The tools"), as the dropdown does.
   editsElements?: boolean;
-  desktopOnly?: boolean;
 }[] = [
   { id: 'select', name: 'Select Tool', keywords: 'select pointer arrow cursor pick v' },
   { id: 'pan', name: 'Hand Tool', keywords: 'hand pan grab drag move canvas scroll h' },
-  {
-    id: 'eraser',
-    name: 'Eraser Tool',
-    keywords: 'eraser erase rub out delete remove e',
-    needsContent: true,
-    mutates: true,
-    editsElements: true,
-  },
   {
     id: 'format',
     name: 'Format Painter',
@@ -165,33 +139,6 @@ export const CANVAS_TOOLS: {
     needsContent: true,
     mutates: true,
     editsElements: true,
-  },
-  {
-    id: 'laser',
-    name: 'Laser Pointer',
-    keywords: 'laser pointer present point highlight temporary trail k',
-    needsContent: true,
-  },
-  {
-    id: 'spotlight',
-    name: 'Spotlight',
-    keywords: 'spotlight focus dim darken present attention',
-    needsContent: true,
-    desktopOnly: true,
-  },
-
-  {
-    // Slide Deck (docs/specs/012-collaboration/presentation-mode.md). A presenter tool like the Laser and Spotlight,
-    // so it needs content for the same reason: there is nothing to put on a
-    // slide on an empty canvas. Picking it opens the panel; Start presents.
-    // Desktop-only: the deck workbench has no room beside a phone's canvas.
-    id: 'slide-deck',
-    name: 'Slide Deck',
-    keywords: 'slide deck present presentation slideshow slides talk demo walkthrough',
-    needsContent: true,
-    desktopOnly: true,
-    // Building and presenting a deck is an Editor's (docs/specs/013-workspace/share-roles.md).
-    mutates: true,
   },
   {
     id: 'isometric',
@@ -203,19 +150,16 @@ export const CANVAS_TOOLS: {
 
 // The tool switches, minus whichever tool is already in force. Grouped with
 // the view-safe commands because most of them only change how you LOOK at the
-// canvas; the two that change it (eraser, format painter) opt in via
-// `mutates` and drop out for a read-only visitor.
-const WHITEBOARD_ABSENT_TOOLS = new Set(['format']);
+// canvas; the one that changes it (the format painter) opts in via
+// `mutates` and drops out for a read-only visitor.
 
 function toolCommands(ctx: CommandContext, h: CommandHandlers): EditorCommand[] {
   return CANVAS_TOOLS.filter(
     (t) =>
       t.id !== ctx.canvasTool &&
       !(t.needsContent && ctx.canvasEmpty) &&
-      !(t.desktopOnly && ctx.isMobile) &&
       !(t.mutates && ctx.isReadOnly) &&
-      !(t.editsElements && (ctx.tabLocked || ctx.planMode)) &&
-      !(ctx.whiteboard && WHITEBOARD_ABSENT_TOOLS.has(t.id)),
+      !t.editsElements,
   ).map((t) => ({
     id: `tool:${t.id}`,
     name: t.name,
@@ -255,7 +199,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
       id: 'collaborators',
       name: 'Collaborators',
       keywords:
-        'collaborators people who is here participants presence roster online avatars following follow session',
+        'collaborators people who is here participants presence roster online avatars session',
       run: h.openCollaborators,
     },
     ...toolCommands(ctx, h),
@@ -303,14 +247,14 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   out.push({
     id: 'rename-document',
     name: 'Rename Document',
-    keywords: 'rename document diagram title name relabel',
+    keywords: 'rename document project title name relabel',
     run: h.renameDocument,
   });
   if (!ctx.workbench) {
     out.push({
       id: 'delete-document',
       name: 'Delete Document',
-      keywords: 'delete document diagram remove trash destroy',
+      keywords: 'delete document project remove trash destroy',
       run: h.deleteDocument,
     });
   }
@@ -330,7 +274,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
     out.push({
       id: 'share',
       name: 'Share Document',
-      keywords: 'share document diagram link invite collaborate publish embed export',
+      keywords: 'share document project link invite collaborate publish embed export',
       run: h.openShare,
     });
   }

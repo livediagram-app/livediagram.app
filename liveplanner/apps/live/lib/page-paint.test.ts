@@ -1,29 +1,21 @@
 import { describe, expect, it } from 'vitest';
-import { pageIsDark, type Page } from '@liveplanner/document';
+import { pageIsDark, sameFill } from '@liveplanner/document';
 import {
   fillCss,
   gradientFill,
   PAGE_GRADIENT_PRESETS,
   pageSheetStyle,
-  sameFill,
   themeBackgroundPresets,
-  withBackgroundPatch,
 } from './page-paint';
 
-// docs/specs/007-editor/pages-mode.md "Backgrounds".
-const page = (background?: Page['background']): Page => ({
-  id: 'p',
-  orientation: 'portrait',
-  ...(background ? { background } : {}),
-});
-
-describe('page paint', () => {
+// docs/specs/030-forms/forms.md "The form card, top to bottom", Cover.
+describe('colour background paint', () => {
   it('leaves the paper to the sheet, and paints a fill with its pattern over it', () => {
     expect(pageSheetStyle(undefined)).toEqual({});
     const style = pageSheetStyle({ fill: { kind: 'solid', color: '#0f172a' }, pattern: 'dots' });
     expect(style.backgroundColor).toBe('#0f172a');
     expect(style.backgroundImage).toContain('radial-gradient');
-    // Light ink on a dark page.
+    // Light ink on a dark fill.
     expect(style.color).toContain('255');
   });
 
@@ -34,16 +26,6 @@ describe('page paint', () => {
     });
     const layers = String(style.backgroundImage);
     expect(layers.indexOf('linear-gradient(160deg')).toBeGreaterThan(layers.indexOf('90deg'));
-  });
-
-  it('patches a background, dropping it once empty', () => {
-    const solid = { kind: 'solid', color: '#e0f2fe' } as const;
-    expect(withBackgroundPatch(page(), { fill: solid })).toEqual({ fill: solid });
-    expect(withBackgroundPatch(page({ fill: solid }), { fill: undefined })).toBeUndefined();
-    expect(withBackgroundPatch(page({ fill: solid }), { pattern: 'lines' })).toEqual({
-      fill: solid,
-      pattern: 'lines',
-    });
   });
 
   it('compares fills by value', () => {

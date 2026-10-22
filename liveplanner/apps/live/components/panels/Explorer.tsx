@@ -226,7 +226,7 @@ function ExplorerImpl({
     onCreateTeamChild: (teamId, parentId) => void handleCreateTeamChild(teamId, parentId),
   };
 
-  // Every document the reader can reach, by id: Home's and the Timeline's rows carry its menu.
+  // Every document the reader can reach, by id: Home's rows carry its menu.
   const documentsById = useMemo(() => {
     const byId = new Map<string, PaneDocument>();
     for (const d of liveDocs) byId.set(d.id, d);
@@ -338,7 +338,7 @@ function ExplorerImpl({
       onReset={onReset}
       onMoveTo={onMoveTo}
       // The ⋯ menu (docs/specs/013-workspace/folders.md): new / open, share / export, then search /
-      // GitHub / settings. It replaced a "+ New" chip whose popover held
+      // Licences / settings. It replaced a "+ New" chip whose popover held
       // only the first two.
       // A phone's sheet drops it: every entry is a tap away there already (the New chip, the footer's Explorer, the
       // top bar's Share, the toolbars' Search and Settings).
@@ -412,7 +412,6 @@ function ExplorerImpl({
                 ownerId={ownerId}
                 currentDocumentId={currentDocumentId}
                 onOpenDocument={onOpenDocument}
-                onPick={pick}
                 onNewFolder={newFolder}
                 inFolder={paneFolderId !== null}
                 onLibraryChanged={onLibraryChanged ?? NOOP}

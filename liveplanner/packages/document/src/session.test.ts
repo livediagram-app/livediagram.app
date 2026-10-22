@@ -79,18 +79,18 @@ describe('isVotable', () => {
     ).toBe(true);
   });
 
-  // Behaviour elements (docs/specs/009-elements/mode-button.md, docs/specs/009-elements/portal-element.md, docs/specs/012-collaboration/session-button.md, docs/specs/009-elements/reveal-zone.md, docs/specs/012-collaboration/picker.md) DO something when pressed. A votable
+  // Behaviour elements (docs/specs/009-elements/portal-element.md, docs/specs/012-collaboration/session-button.md, docs/specs/012-collaboration/picker.md) DO something when pressed. A votable
   // one would give the same tap two meanings, decided by whether a vote
   // happened to be running.
   it('rejects the interactive Behaviour shapes', () => {
-    for (const kind of ['mode-button', 'portal', 'session-button', 'reveal', 'picker'] as const) {
+    for (const kind of ['portal', 'session-button', 'picker'] as const) {
       expect(isVotable(shape(kind, { shape: kind }))).toBe(false);
     }
   });
 
   // The collaboration panels are controls too: a press on one answers it.
   it('rejects the collaboration panels', () => {
-    for (const kind of ['estimate', 'temperature', 'done-check', 'quiz', 'idea-box'] as const) {
+    for (const kind of ['temperature', 'decision'] as const) {
       expect(isVotable(shape(kind, { shape: kind }))).toBe(false);
     }
   });
@@ -163,14 +163,6 @@ describe('vote host (docs/specs/012-collaboration/session-tools.md)', () => {
     const v: TabVote = { ...base, startedBy: 'ann' };
     expect(isVoteHost(v, 'ann')).toBe(true);
     expect(isVoteHost(v, 'bob')).toBe(false);
-  });
-
-  it('the facilitator drives any vote, whoever started it', () => {
-    // The starter's key is per-browser: a vote started on another device
-    // would otherwise be stranded (docs/specs/012-collaboration/facilitator.md).
-    const v: TabVote = { ...base, startedBy: 'ann' };
-    expect(isVoteHost(v, 'bob', true)).toBe(true);
-    expect(isVoteHost(null, 'bob', true)).toBe(false);
   });
 
   it('a vote saved before hosts existed stays drivable by anyone', () => {

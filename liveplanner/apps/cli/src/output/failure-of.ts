@@ -10,7 +10,7 @@ import { EXIT, exitCodeForStatus } from './exit-codes';
 export const isNetworkFailure = (err: unknown): err is Error =>
   err instanceof Error && ['TypeError', 'TimeoutError', 'AbortError'].includes(err.name);
 
-export const ISSUES_URL = 'https://github.com/liveplanner-app/liveplanner.app/issues';
+export const SUPPORT_URL = 'https://liveplanner.app/help/contact/';
 
 function addressFailure(err: AddressError): CliFailure {
   const { kind, candidates, message, hint } = err.failure;
@@ -91,6 +91,6 @@ export function failureOf(err: unknown, host: string): CliFailure {
     exit: EXIT.failure,
     code: 'internal',
     message: `internal error (${err instanceof Error ? err.name : typeof err})`,
-    hint: `run again with LIVEPLANNER_DEBUG=1 and report it at ${ISSUES_URL}`,
+    hint: `run again with LIVEPLANNER_DEBUG=1 and report it at ${SUPPORT_URL}`,
   };
 }

@@ -1,8 +1,8 @@
 // Test support for metric-emitters.test.ts: the values each COMPUTED emitter
 // can send. The emitter scan (emitter-scan.ts) knows a computed emit site
 // exists but not what its type will be, and "some chart counts this
-// category·action" is not enough: `UI·Changed·Presentation-<field>` sat on
-// no chart at all, unseen because a chart existed on the pair.
+// category·action" is not enough: a computed type can sit on no chart at all, unseen because a chart
+// existed on the pair.
 //
 // So every computed site is declared here by `<path> <Category>·<Action>`,
 // with the values it can send. Where the set is closed and written down
@@ -87,57 +87,6 @@ const TRASH_TYPES = tokensAfter(read('live/lib/trash-groups.ts'), 'telemetryType
 // One closed value per default folder key (placementDefaultTelemetryType).
 const DEFAULT_FOLDER_TYPES = PLACEMENT_DEFAULT_KEYS.map(placementDefaultTelemetryType);
 
-// The presenter settings: `Presentation-<field>` per PresentationConfig key.
-const PRESENTATION_FIELDS = (() => {
-  const source = read('live/lib/presentation-config.ts');
-  const start = source.indexOf('export type PresentationConfig = {');
-  const block = source.slice(start, source.indexOf('\n};', start));
-  return [...block.matchAll(/^ {2}([a-zA-Z]+)\??:/gm)].map((m) => `Presentation-${m[1]}`);
-})();
-
-// The Settings dialog's presenter rows (settings-catalogue.ts presentingToggle / presentingChoice): a toggle sends
-// `Presentation-<field>On|Off` for each boolean field, a choice `Presentation-<field><Option>` (choiceTelemetryType).
-const PRESENTATION_SETTINGS = (() => {
-  const source = read('live/lib/presentation-config.ts');
-  const start = source.indexOf('export type PresentationConfig = {');
-  const block = source.slice(start, source.indexOf('\n};', start));
-  const fields = [...block.matchAll(/^ {2}([a-zA-Z]+)\??: ([A-Za-z]+);/gm)].map(
-    (m) => [m[1]!, m[2]!] as const,
-  );
-  const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-  const unionOf = (type: string) => {
-    const m = new RegExp(`export type ${type} = ([^;]+);`).exec(source);
-    return m ? [...m[1]!.matchAll(/'([^']+)'/g)].map((x) => x[1]!) : [];
-  };
-  const seconds = [...source.matchAll(/\{ seconds: (\d+),/g)].map((m) => m[1]!);
-  return {
-    toggled: fields
-      .filter(([, type]) => type === 'boolean')
-      .flatMap(([f]) => [`Presentation-${f}On`, `Presentation-${f}Off`]),
-    changed: [
-      ...fields
-        .filter(([, type]) => type !== 'boolean' && type !== 'number')
-        .flatMap(([f, type]) => unionOf(type).map((o) => `Presentation-${f}${cap(o)}`)),
-      ...seconds.map((n) => `Presentation-autoAdvanceSeconds${n}`),
-    ],
-  };
-})();
-
-// The welcome tour's steps, in order, as tourStepTelemetryType makes them
-// (apps/live tour-steps.ts). The welcome card sends no step view.
-export const TOUR_STEP_SOURCE: string[] = [
-  ...read('live/components/tour/tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm),
-]
-  .map((m) => m[1]!)
-  .filter((id) => id !== 'welcome')
-  .map(
-    (id) =>
-      `TourStep${id
-        .split('-')
-        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-        .join('')}`,
-  );
-
 // The Plan tour's steps, as planTourStepTelemetryType makes them (apps/live plan-tour-steps.ts,
 // docs/specs/026-plan/plan-tour.md), both tracks; the two outros share one id. The welcome card sends no step view.
 const PLAN_TOUR_STEP_SOURCE: string[] = [
@@ -156,23 +105,6 @@ const PLAN_TOUR_STEP_SOURCE: string[] = [
         .join('')}`,
   );
 
-// The Workshop tour's steps, as workshopTourStepTelemetryType makes them (apps/live
-// workshop-tour-steps.ts, docs/specs/012-collaboration/workshop-tour.md). The welcome card sends no step view.
-const WORKSHOP_TOUR_STEP_SOURCE: string[] = [
-  ...read('live/components/tour/workshop-tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm),
-]
-  .map((m) => m[1]!)
-  .filter((id) => id !== 'welcome')
-  .map(
-    (id) =>
-      `WorkshopTourStep${id
-        .split('-')
-        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-        .join('')}`,
-  );
-
-// The Draw tour's steps, as drawTourStepTelemetryType makes them (apps/live draw-tour-steps.ts,
-// docs/specs/023-draw-mode/draw-tour.md). The welcome card sends no step view.
 // The Sankey tour (docs/specs/007-editor/element-tours.md): its canvas steps, then the Flows dialog's Show Me steps
 // it runs inside the dialog (each `flows-` prefixed), then its closing card.
 const pascal = (id: string) =>
@@ -233,19 +165,6 @@ export const ELEMENT_TOUR_STEP_SOURCE: string[] = [
   ...conceptTourSteps('PortalTour', 'portal-tour-steps.ts'),
 ];
 
-const DRAW_TOUR_STEP_SOURCE: string[] = [
-  ...read('live/components/tour/draw-tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm),
-]
-  .map((m) => m[1]!)
-  .filter((id) => id !== 'welcome')
-  .map(
-    (id) =>
-      `DrawTourStep${id
-        .split('-')
-        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-        .join('')}`,
-  );
-
 // The Forms tour's steps, as formTourStepTelemetryType makes them (apps/live form-tour-steps.ts,
 // docs/specs/030-forms/forms.md "The Forms tour"). Its steps are top-level consts, so their ids sit two spaces in.
 // The welcome card sends no step view.
@@ -261,38 +180,6 @@ const FORM_TOUR_STEP_SOURCE: string[] = [
         .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
         .join('')}`,
   );
-
-// The Avatar tour's steps, as avatarTourStepTelemetryType makes them (apps/live avatar-tour-steps.ts,
-// docs/specs/008-canvas/avatar-tour.md). The welcome card sends no step view.
-const AVATAR_TOUR_STEP_SOURCE: string[] = [
-  ...read('live/components/tour/avatar-tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm),
-]
-  .map((m) => m[1]!)
-  .filter((id) => id !== 'welcome')
-  .map(
-    (id) =>
-      `AvatarTourStep${id
-        .split('-')
-        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-        .join('')}`,
-  );
-
-// The Pages tour's steps, as pagesTourStepTelemetryType makes them (apps/live PagesTourHost.tsx,
-// docs/specs/007-editor/pages-tour.md): each page kind's track names its kind before the step. The welcome card
-// sends no step view.
-const camel = (id: string) =>
-  id
-    .split('-')
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join('');
-const PAGES_TOUR_STEP_SOURCE: string[] = (
-  ['slide', 'infographic', 'article', 'logo'] as const
-).flatMap((kind) =>
-  [...read(`live/components/tour/${kind}-tour-steps.ts`).matchAll(/^ +id: '([a-z-]+)',/gm)]
-    .map((m) => m[1]!)
-    .filter((id, i, ids) => id !== 'welcome' && ids.indexOf(id) === i)
-    .map((id) => `PagesTourStep${camel(`${kind}-${id}`)}`),
-);
 
 // Plan items name their type (titleCaseType of an item type id); set-up changes name the part.
 const PLAN_ITEM_TYPES = ['Task', 'Story', 'Bug', 'Epic', 'Note', 'Idea', 'Action', 'Risk'];
@@ -393,7 +280,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: 'a kind, the page it happened on, and the error name',
   },
   'packages/ui/src/PageViewTracker.tsx Page·View': {
-    values: ['/', '/document', '/explorer/timeline', '/help/canvas/links', '/telemetry'],
+    values: ['/', '/document', '/explorer/home', '/help/canvas/links', '/telemetry'],
     open: 'the page path, ids and query strings stripped',
   },
 
@@ -401,21 +288,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/live/app/document/[id]/useElementCreation.ts Element·Added': {
     values: ELEMENT_KINDS,
     open: ELEMENT_WHY,
-  },
-  'apps/live/app/document/[id]/useSlideDeck.ts UI·Changed': { values: PRESENTATION_FIELDS },
-  'apps/live/components/dialogs/settings/settings-catalogue.ts UI·Toggled': {
-    values: PRESENTATION_SETTINGS.toggled,
-  },
-  'apps/live/components/dialogs/settings/settings-catalogue.ts UI·Changed': {
-    values: PRESENTATION_SETTINGS.changed,
-  },
-  // ARTICLE_BLOCK_INSERT_EVENT (apps/live/lib/article/article-telemetry.ts): a block put into an
-  // article from the page toolbar's Insert or the slash menu.
-  'apps/live/components/canvas/article/PageToolbar.tsx Element·Added': {
-    values: ['ArticleDivider', 'ArticlePageBreak', 'ArticleQuote', 'ArticleCode'],
-  },
-  'apps/live/components/canvas/article/ArticleEditor.tsx Element·Added': {
-    values: ['ArticleDivider', 'ArticlePageBreak', 'ArticleQuote', 'ArticleCode'],
   },
   'apps/live/app/document/[id]/useTemplateFlow.ts Template·Used': {
     values: TEMPLATES,
@@ -599,10 +471,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: API_ERROR_WHY,
   },
   'apps/live/components/tour/PlanTourHost.tsx UI·View': { values: PLAN_TOUR_STEP_SOURCE },
-  'apps/live/components/tour/WorkshopTourHost.tsx UI·View': {
-    values: WORKSHOP_TOUR_STEP_SOURCE,
-  },
-  'apps/live/components/tour/DrawTourHost.tsx UI·View': { values: DRAW_TOUR_STEP_SOURCE },
   'apps/live/components/tour/FormTourHost.tsx UI·View': { values: FORM_TOUR_STEP_SOURCE },
   'apps/live/components/tour/ElementTourHost.tsx UI·View': { values: ELEMENT_TOUR_STEP_SOURCE },
   'apps/live/components/tour/ElementTourHost.tsx UI·Started': { values: ELEMENT_TOUR_TOKENS },
@@ -614,15 +482,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
   'apps/live/components/tour/ElementTourHost.tsx UI·Closed': {
     values: ELEMENT_TOUR_TOKENS.map((t) => `${t}Offer`),
-  },
-  'apps/live/components/tour/AvatarTourHost.tsx UI·View': { values: AVATAR_TOUR_STEP_SOURCE },
-  'apps/live/components/tour/PagesTourHost.tsx UI·View': {
-    values: PAGES_TOUR_STEP_SOURCE,
-  },
-  'apps/live/components/tour/TourHost.tsx UI·View': { values: TOUR_STEP_SOURCE },
-  'apps/live/hooks/canvas/commit-freehand.ts Element·Added': {
-    values: ['Square', 'Circle', 'Diamond', 'Triangle'],
-    open: 'the shape the Shape Pen recognised',
   },
   'apps/live/hooks/canvas/useDebouncedCanvasTelemetry.ts Canvas·Changed': {
     values: Object.keys(CANVAS_CONTROLS),
@@ -639,48 +498,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: 'titleCaseType(pattern): a background pattern',
   },
   'apps/live/hooks/canvas/useTabTheme.ts Theme·Changed': { values: THEMES, open: THEME_WHY },
-  'apps/live/hooks/editor/useLogoTools.ts UI·Toggled': {
-    values: [
-      'LogoGuidesOn',
-      'LogoGuidesOff',
-      'LogoMirrorOn',
-      'LogoMirrorOff',
-      ...['CentreLines', 'Diagonals', 'SafeArea', 'Circles', 'Square', 'Grid'].flatMap((p) => [
-        `LogoGuide${p}On`,
-        `LogoGuide${p}Off`,
-      ]),
-    ],
-  },
-  'apps/live/hooks/editor/useLogoTools.ts UI·Changed': {
-    values: ['LogoGuideStrengthFaint', 'LogoGuideStrengthMedium', 'LogoGuideStrengthStrong'],
-  },
-  'apps/live/hooks/canvas/useStylePreview.ts Element·Changed': {
-    // The wordmark fields, and the types the element menu's generic style ops pass through it
-    // (apps/live/lib/element-style-ops.ts): the accent edge, card slots and chip looks.
-    values: [
-      'TextTracking',
-      'TextWeight',
-      'TextCase',
-      'TextArc',
-      'AccentEdge',
-      'CardSlots',
-      'ChipLook',
-      'ChipDetach',
-      'BoundaryStyle',
-      'BoundaryMeta',
-      'PyramidVariant',
-      'HubSpokes',
-      'PointerDetach',
-      'StackDirection',
-      'StackColumns',
-      'StackGap',
-      'StackPadding',
-      'StackAlign',
-      'SequenceNumbered',
-      'SequenceAnim',
-      'ConceptAnim',
-    ],
-  },
   // The Sequence dialog's writes (apps/live/hooks/canvas/useSequenceSetters.ts): which part of it changed.
   'apps/live/hooks/canvas/useSequenceSetters.ts Element·Changed': {
     values: ['SequenceParticipants', 'SequenceMessages', 'SequenceText'],
@@ -691,10 +508,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
   'apps/live/hooks/canvas/useTextStyleSetters.ts Element·Toggled': {
     values: ['Bold', 'Italic', 'Underline', 'Strikethrough'],
-  },
-  'apps/live/hooks/canvas/useWhiteboard.ts Draw·Selected': {
-    values: ['Main', 'Second', 'Third'],
-    open: 'penTelemetryType: the place of the pen in the dock, never its colour',
   },
   'apps/live/hooks/canvas/useWebComponentSetters.ts Element·Changed': {
     values: ['Banner', 'Callout', 'StatRow'],

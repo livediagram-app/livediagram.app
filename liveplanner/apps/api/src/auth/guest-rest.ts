@@ -15,7 +15,7 @@
 
 type SigEnv = { GUEST_ID_HMAC_SECRET?: string; GUEST_SIG_ENFORCE_AFTER?: string };
 
-// Whether the signature is required yet. OFF when there's no secret (self-host
+// Whether the signature is required yet. OFF when there's no secret (a deployment
 // opt-out, like the rest of the guest-signing model) OR no cutoff is set, OR
 // the cutoff is still in the future (the grace window). The operator sets
 // GUEST_SIG_ENFORCE_AFTER (epoch ms) to a past time to turn it on.
@@ -48,13 +48,12 @@ export function isLegacyGuestEra(
 export const OWNER_SCOPED_SEGMENTS = new Set([
   'documents',
   'folders',
-  'images',
   'custom-themes',
   'participants',
   'preferences',
   'shared',
-  // The feed is keyed on the resolved owner id and returns document
-  // names + comment text, so a harvested guest id must not read it.
+  // A document's History and Home's unread count are keyed on the resolved owner and return
+  // document names + comment text, so a harvested guest id must not read them.
   'timeline',
   // Same shape as the timeline: actions + comment threads (names, text)
   // keyed on the resolved owner, and the owner's starred documents.

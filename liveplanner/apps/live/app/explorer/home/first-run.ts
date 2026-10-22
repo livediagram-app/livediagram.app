@@ -39,7 +39,7 @@ export const WELCOME_COPY = {
   greeting: 'Welcome to liveplanner.',
   question: 'What are you making first?',
   lead: 'Pick a starting point, or search the templates. Whatever you make lands here, ready to pick up again.',
-  pillFree: 'Free and open source',
+  pillFree: 'Free, no trackers',
   pillGuest: 'No sign-up to start',
   pillSignedIn: 'Saved to your account',
   searchPlaceholder: 'Search templates',

@@ -15,7 +15,7 @@ export const metadata = helpMetadata({
   categorySlug="developers"
 >
 
-Everything the liveplanner editor does, it does by calling a REST API. That API is open to you too: with an [API token](/help/account-and-data/api-tokens/) your own scripts and integrations can read, create, and update documents, tabs, folders, images, themes and more, exactly as the app does. Account administration (teams, tokens, deleting the account) stays with the signed-in app.
+Everything the liveplanner editor does, it does by calling a REST API. That API is open to you too: with an [API token](/help/account-and-data/api-tokens/) your own scripts and integrations can read, create, and update documents, tabs, folders, themes and more, exactly as the app does. Account administration (teams, tokens, deleting the account) stays with the signed-in app.
 
 If you want to connect an AI assistant rather than write code, you usually want the [MCP server](/help/account-and-data/connect-ai-mcp/) instead. It wraps this API in tools Claude and other MCP clients can call directly. To work from a terminal or a coding agent without writing requests yourself, use [the liveplanner CLI](/help/developers/cli/).
 
@@ -27,7 +27,7 @@ The API lives under `/api` on your liveplanner host. On the hosted service that 
 https://liveplanner.app/api
 ```
 
-On a self-hosted instance it is `/api` on your own domain. Every path in these docs is relative to that base, so `GET /documents` means `GET https://liveplanner.app/api/documents`.
+Every path in these docs is relative to that base, so `GET /documents` means `GET https://liveplanner.app/api/documents`.
 
 ## Authenticating in one line
 
@@ -51,9 +51,9 @@ The token-callable surface mirrors the app:
 - **Forms**: build a Form tab's [form](/help/canvas/plan-mode/forms/), publish or close its link, and send a test response, the same calls the CLI's `form` commands make.
 - **Sharing**: create, list, extend and revoke share links, and set or remove a share password.
 - **Trash**: list what you can restore, restore it, or delete it for good.
-- **Images and themes**: upload and reference images, and manage your saved custom themes.
+- **Themes**: manage your saved custom themes.
 
-[Working with Documents](/help/developers/working-with-documents/) walks through the common calls with copy-pasteable examples. [Edit Operations Reference](/help/developers/working-with-documents/edit-operations/) lists the changeset vocabulary, [Plan Items, Sheets and Images](/help/developers/working-with-documents/plan-sheets-images/) covers cards, cells, uploads and pages, and [Comments and Presence for Agents](/help/developers/agent-comments-presence/) shows how an agent talks to people and shows what it is doing.
+[Working with Documents](/help/developers/working-with-documents/) walks through the common calls with copy-pasteable examples. [Edit Operations Reference](/help/developers/working-with-documents/edit-operations/) lists the changeset vocabulary, [Plan Items, Sheets and Pages](/help/developers/working-with-documents/plan-sheets-images/) covers cards, cells, uploads and pages, and [Comments and Presence for Agents](/help/developers/agent-comments-presence/) shows how an agent talks to people and shows what it is doing.
 
 ## The full reference
 

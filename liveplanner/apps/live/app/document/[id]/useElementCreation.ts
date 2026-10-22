@@ -14,12 +14,7 @@ import {
   createText,
   type BoxedElement,
   type Element,
-  type LaidOutPage,
   defaultSessionConfig,
-  REACTION_PAD_LABEL,
-  type EstimateScale,
-  type Reaction,
-  type SelectionMode,
   type SessionTool,
   type ShapeKind,
   type Tab,
@@ -57,9 +52,6 @@ function planViewPlacement(view: string | undefined) {
 
 export function useElementCreation(opts: {
   editsBlocked: boolean;
-  // Whether image placement is unavailable (embed chrome — see
-  // useEditorImages for why uploads stay off there). Gates addImage only.
-  imagesBlocked: boolean;
   activeId: string;
   activeTab: Tab;
   // The single-selected element id, so "add an icon" can drop it INSIDE
@@ -86,13 +78,9 @@ export function useElementCreation(opts: {
   // A palette card never lands on the canvas (docs/specs/026-plan/plan-mode.md "The palette"): it goes
   // into the board column at the point, or nowhere.
   onPlanCardPlace?: (itemType: string | undefined, canvasX: number, canvasY: number) => void;
-  // Pages mode's laid-out pages: a click-to-connect arrow never joins two pages
-  // (docs/specs/007-editor/pages-mode.md "Arrows stay on one page"). Null outside it.
-  pages?: readonly LaidOutPage[] | null;
 }) {
   const {
     editsBlocked,
-    imagesBlocked,
     activeId,
     activeTab,
     readSelection,
@@ -104,14 +92,13 @@ export function useElementCreation(opts: {
     beginDraw,
     styleNewElement,
     onPlanCardPlace,
-    pages,
   } = opts;
 
   // Telemetry for these arming handlers fires on commit (see
   // useShapeDrawing.commitDraw), once the tap / drag actually lands the
   // element — not here, where the gesture is only queued.
   // `opts` carries a creation-time choice for the kinds that have one: which
-  // session tool (docs/specs/012-collaboration/session-button.md), which reaction (docs/specs/009-elements/reaction-pad.md). The palette offers a
+  // session tool (docs/specs/012-collaboration/session-button.md). The palette offers a
   // tile per choice, so it has to survive the draw gesture and land on the
   // element rather than leaving the factory default in place.
   const addShape = (kind: ShapeKind, opts?: AddShapeOptions) => {
@@ -123,9 +110,6 @@ export function useElementCreation(opts: {
       kind,
       ...(opts?.plan ? { plan: opts.plan } : {}),
       ...(opts?.session ? { session: opts.session } : {}),
-      ...(opts?.reaction ? { reaction: opts.reaction } : {}),
-      ...(opts?.mode ? { mode: opts.mode } : {}),
-      ...(opts?.estimateScale ? { estimateScale: opts.estimateScale } : {}),
       ...(opts?.variant ? { variant: opts.variant } : {}),
       ...(opts?.name ? { name: opts.name } : {}),
     });
@@ -234,18 +218,6 @@ export function useElementCreation(opts: {
     beginDraw({ type: 'video', ...(provider ? { provider } : {}) });
   };
 
-  // An empty image placeholder (docs/specs/009-elements/images.md), drawn to size. Lives here rather
-  // than in useEditorImages (which owns the picker, the gallery, and the
-  // fill/clear mutators) because arming a draw needs `beginDraw`, and that
-  // hook runs before useShapeDrawing. The picker opens on commit, once the
-  // user has already said where the image goes and how big it is.
-  // `imagesBlocked` covers the embed case: uploads authorise by owner, and a
-  // partitioned third-party iframe is a throwaway guest (see useEditorImages).
-  const addImage = () => {
-    if (editsBlocked || imagesBlocked) return;
-    beginDraw({ type: 'image' });
-  };
-
   // Components (docs/specs/008-canvas/canvas-and-palette.md) arm the combined tap-or-drag draw gesture, exactly
   // like shapes: a tap drops the composite at its natural size on the tap
   // point, a drag scales the whole group to the dragged box. The build (theme
@@ -309,7 +281,6 @@ export function useElementCreation(opts: {
     beginDraw,
     commitTabs,
     styleNewElement,
-    pages,
   });
 
   // Drag-from-palette drop (docs/specs/008-canvas/canvas-and-palette.md): place the dragged kind centred on the
@@ -382,29 +353,14 @@ export function useElementCreation(opts: {
           : {
               // A creation-time variant (the Callout card, a Funnel) applies to its own kind only.
               ...applyShapeVariant(createShape(kind, x, y), art?.choice),
-              // The dragged tile's creation-time choice (docs/specs/009-elements/mode-button.md, /105, /123,
-              // /135). Applied by the kind that owns the field, so one payload
-              // serves all four without the drop path knowing which is which.
+              // The dragged tile's creation-time choice (docs/specs/012-collaboration/session-button.md): the
+              // session tool the tile places.
               ...(art?.choice && kind === 'session-button'
                 ? {
                     session: defaultSessionConfig(art.choice as SessionTool),
-                    // Same sizing the tap path applies (draw-commit): a timer is
-                    // a wide pill, a poll has to fit its question.
+                    // Same sizing the tap path applies (draw-commit): a timer is a wide pill.
                     ...(art.choice === 'timer' ? { width: 224, height: 64 } : {}),
-                    ...(art.choice === 'poll' ? { width: 240, height: 116 } : {}),
                   }
-                : {}),
-              ...(art?.choice && kind === 'reaction-pad'
-                ? {
-                    reaction: art.choice as Reaction,
-                    label: REACTION_PAD_LABEL[art.choice as Reaction],
-                  }
-                : {}),
-              ...(art?.choice && kind === 'mode-button'
-                ? { mode: art.choice as SelectionMode }
-                : {}),
-              ...(art?.choice && kind === 'estimate'
-                ? { estimateScale: art.choice as EstimateScale }
                 : {}),
               // A board wide enough for its columns (docs/specs/026-plan/plan-board.md).
               ...(kind === 'plan-board' ? planBoardPlacement(art?.choice, activeTab.name) : {}),
@@ -467,22 +423,7 @@ export function useElementCreation(opts: {
     track('Element', 'Added', 'Text');
   };
 
-  // An element of its default size put at a canvas point at once, as a tap with its tile would:
-  // an article page's Insert (docs/specs/007-editor/article-pages.md "The page toolbar") places
-  // a table, a chart or an image at the caret, and the writing takes it into a zone.
-  const placeIntentAt = (
-    intent: Extract<PendingDraw, { type: 'shape' | 'table' | 'image' | 'sticky' }>,
-    x: number,
-    y: number,
-  ) => {
-    if (editsBlocked) return;
-    addBoxedAt(x, y, (px, py) => buildDrawnBoxed(intent, px, py, px, py, null, activeTab), {
-      style: styleNewElement,
-    });
-  };
-
   return {
-    placeIntentAt,
     addShape,
     addIcon,
     addSticker,
@@ -491,7 +432,6 @@ export function useElementCreation(opts: {
     addAnnotation,
     addLinkCard,
     addVideo,
-    addImage,
     addBanner,
     addHero,
     addHeader,

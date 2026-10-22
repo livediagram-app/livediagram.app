@@ -39,7 +39,6 @@ const plan = {
   items: new Map(CARDS.map((c) => [c.id, c])),
   types: ITEM_TYPES,
   status: 'ready',
-  planInput: true,
   canEdit: true,
   canEditCards: true,
   openItem: vi.fn(),

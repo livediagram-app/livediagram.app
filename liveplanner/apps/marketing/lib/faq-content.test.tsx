@@ -3,7 +3,7 @@ import { render } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { describe, expect, it } from 'vitest';
 
-import { TEMPLATES, isBlankTemplate, templateEditorMode } from '@liveplanner/templates';
+import { TEMPLATES, isBlankTemplate, isPlanTemplate } from '@liveplanner/templates';
 
 import { COMPETITOR_LOOK } from '@/components/compare/competitor-look';
 
@@ -24,7 +24,7 @@ const visibleText = (node: ReactNode) => {
 
 // The templates marketing shows: the listed Plan ones (boards, sheets, dashboards and forms), blanks aside.
 const PLAN_TEMPLATES = TEMPLATES.filter(
-  (t) => !t.hidden && templateEditorMode(t.kind) === 'plan' && !isBlankTemplate(t.kind),
+  (t) => !t.hidden && isPlanTemplate(t.kind) && !isBlankTemplate(t.kind),
 );
 
 describe('FAQ content', () => {
@@ -77,7 +77,7 @@ describe('filterFaq', () => {
   });
 
   it('drops categories left empty, and everything for a query nothing matches', () => {
-    expect(filterFaq(FAQ_CATEGORIES, 'self-host').map((c) => c.id)).toContain('self-hosting');
+    expect(filterFaq(FAQ_CATEGORIES, 'paywall').map((c) => c.id)).toEqual(['free']);
     expect(filterFaq(FAQ_CATEGORIES, 'zzzqqq')).toEqual([]);
   });
 });

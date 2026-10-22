@@ -18,7 +18,7 @@ import type { PendingDraw } from '@/lib/draw-mode';
 import type { PaletteTileDef } from './palette-tile-defs';
 import { tileCaption } from './tile-caption';
 import { tileDragStart } from './palette-tile-drag';
-import { tileActive, tileHandler, visibleTiles, type PaletteTileActions } from './PaletteTileGrid';
+import { tileActive, tileHandler, type PaletteTileActions } from './PaletteTileGrid';
 import { PointerWords } from './PointerWords';
 
 export function PaletteToolRow({
@@ -27,9 +27,6 @@ export function PaletteToolRow({
   pendingDraw,
   id,
   highlighted = false,
-  onPress,
-  anchor,
-  expanded,
 }: {
   def: PaletteTileDef;
   actions: PaletteTileActions;
@@ -38,11 +35,6 @@ export function PaletteToolRow({
   // The keyboard-walked row (docs/specs/010-palette/palette-top-level-categories.md). Distinct from `armed`, which means a
   // draw gesture is queued: this is only "the arrow keys are pointing here".
   highlighted?: boolean;
-  // A press of the row's own (a marker held, pressed again, opens its flyout), else the tile's.
-  onPress?: () => void;
-  // The row as a flyout's opener: its `data-dock-item`, and whether the flyout is open.
-  anchor?: string;
-  expanded?: boolean;
 }) {
   const armed = tileActive(def, pendingDraw);
   const rowRef = useRef<HTMLButtonElement>(null);
@@ -52,7 +44,7 @@ export function PaletteToolRow({
     if (highlighted) rowRef.current?.scrollIntoView({ block: 'nearest' });
   }, [highlighted]);
 
-  const onClick = onPress ?? tileHandler(def, actions, pendingDraw);
+  const onClick = tileHandler(def, actions, pendingDraw);
   const dragStart = tileDragStart(def.action);
   return (
     <button
@@ -72,8 +64,6 @@ export function PaletteToolRow({
       onDragEnd={() => setPaletteDragPreview(null)}
       aria-label={def.label}
       aria-pressed={armed}
-      data-dock-item={anchor}
-      aria-expanded={expanded}
       className={`flex w-full items-center gap-2.5 rounded-lg border py-1.5 pl-2 pr-2 text-left transition ${
         armed
           ? 'border-brand-300 bg-brand-50 dark:border-brand-500 dark:bg-brand-950/40'
@@ -131,7 +121,7 @@ export function PaletteToolRows({
   // Prefix for the per-row DOM ids the caller points aria-activedescendant at.
   optionIdPrefix?: string;
 }) {
-  const defs = visibleTiles(tiles, actions.hasImage);
+  const defs = tiles;
   return (
     <div className="flex flex-col gap-0.5" role={optionIdPrefix ? 'listbox' : undefined}>
       {defs.map((def, i) => (

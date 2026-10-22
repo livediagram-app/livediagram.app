@@ -60,16 +60,8 @@ import {
 } from '@/hooks/plan/plan-cover-store';
 import { BoardCardsStrip } from './BoardCardsStrip';
 import { BrowseMemoryContext, useBrowseMemory } from './PaletteCategoryBrowser';
-import { CATEGORY_BAR_MODES } from './category-flyout-groups';
 import { setPalettePopoverOpen } from '@/lib/palette-popover-open';
-import { useBarLabels } from './useBarLabels';
 import { useStripCrowded } from './useStripCrowded';
-import { SessionBrowse } from './session-category';
-import { barCategoriesFor } from './bar-categories';
-import { CategoryBarButtons, CategoryBarFlyout, useCategoryBar } from './CategoryBar';
-import { usePaletteKindMotion } from './usePaletteKindMotion';
-import { ArticleDockSlot } from './ArticleDockSlot';
-import { usePaletteKind } from '@/lib/palette-kind';
 
 // The Toolbar layout's Palette (docs/specs/007-editor/toolbar-layout.md): one horizontal strip pinned to the
 // top centre of the canvas, the way Excalidraw's tool bar works. Selection
@@ -82,13 +74,7 @@ import { usePaletteKind } from '@/lib/palette-kind';
 
 type Props = Pick<
   PaletteProps,
-  | 'canvasTool'
-  | 'onSetCanvasTool'
-  | 'onExitAvatarMode'
-  | 'onToggleZen'
-  | 'canvasEmpty'
-  | 'pendingDraw'
-  | 'themeTint'
+  'canvasTool' | 'onSetCanvasTool' | 'onToggleZen' | 'canvasEmpty' | 'pendingDraw' | 'themeTint'
 > &
   PaletteAddHandlers & {
     // The chrome is hidden (zen, the welcome flow). Hidden rather than
@@ -171,31 +157,26 @@ export function ToolbarPalette(props: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
   const more = useStripPopover(rootRef, '[data-toolbar-more], [data-toolbar-more-button]');
   const search = useStripPopover(rootRef, TOOLBAR_SEARCH_SELECTOR);
-  // The category bar and its flyout (CategoryBar).
-  const bar = useCategoryBar(rootRef);
   // Icons, Stickers and Tech reopen on the group they were left on, for the page load (BrowseMemory).
   const browseMemory = useBrowseMemory();
   const moreOpen = more.open;
   // The template start steps aside while a popover hangs from the strip (palette-popover-open).
-  const popoverOpen = bar.popover.open || more.open || search.open;
+  const popoverOpen = more.open || search.open;
   useEffect(() => {
     setPalettePopoverOpen(popoverOpen);
     return () => setPalettePopoverOpen(false);
   }, [popoverOpen]);
   const setMoreOpen = more.setOpen;
-  const { tabs, tileActions, canvasToolOptions, onCanvasToolChange, editorMode } =
-    usePaletteCatalogue({
-      ...props,
-      // A tile used from the More or Search popover closes it, so the canvas is clear to draw on.
-      onTileUsed: () => {
-        more.setOpen(false);
-        search.setOpen(false);
-        bar.popover.setOpen(false);
-      },
-    });
-  // The landing rule (palette-layouts): the
-  // mode's Popular; Plan's Cards, or Boards while the tab has no board
-  // (docs/specs/026-plan/plan-mode.md "The palette"). A Participant lands on Participate.
+  const { tabs, tileActions, canvasToolOptions, onCanvasToolChange } = usePaletteCatalogue({
+    ...props,
+    // A tile used from the More or Search popover closes it, so the canvas is clear to draw on.
+    onTileUsed: () => {
+      more.setOpen(false);
+      search.setOpen(false);
+    },
+  });
+  // The landing rule (palette-layouts): Cards, or Boards while the tab has no board (docs/specs/026-plan/plan-mode.md
+  // "The palette"). A Participant lands on Participate.
   const hasPlanBoard = useMemo(
     () => (props.tabElements ?? []).some((el) => el.type === 'shape' && el.shape === 'plan-board'),
     [props.tabElements],
@@ -203,31 +184,21 @@ export function ToolbarPalette(props: Props) {
   // A Dashboard opens on its Popular (palette-layouts DASHBOARD) and offers no selection modes: its page covers the
   // canvas, so there is nothing for a mode to act on (docs/specs/026-plan/plan-tabs.md).
   const dashboardTab = usePlanTabKind() === 'dashboard';
-  // Diagram shows its categories on the strip, each opening a flyout of its tiles, rather than one category's tiles
-  // (docs/specs/007-editor/toolbar-layout.md "The category bar"). Not for a Participant, whose palette is one
-  // category.
-  const categoryBar = CATEGORY_BAR_MODES.has(editorMode) && !participant && !dashboardTab;
-  // In Pages mode with the palette's kind Article, the strip holds the article's formatting in place of the bar.
-  const paletteKind = usePaletteKind();
-  const articleDock = categoryBar && editorMode === 'pages' && paletteKind === 'article';
-  // A change of kind cascades its categories in (usePaletteKindMotion).
-  usePaletteKindMotion(editorMode === 'pages' ? paletteKind : editorMode, rootRef);
   const defaultId = participant
     ? 'participate'
     : dashboardTab
       ? DASHBOARD_PALETTE_LANDING
-      : paletteLandingCategory(editorMode, hasPlanBoard);
+      : paletteLandingCategory(hasPlanBoard);
   const [categoryId, setCategoryId] = useState(defaultId);
-  // A Plan tab gaining its first board moves the palette on from Boards to Cards, and losing its last moves it
-  // back; a category the person picked otherwise stays. Adjusted during render.
+  // A tab gaining its first board moves the palette on from Boards to Cards, and losing its last moves it back; a
+  // category the person picked otherwise stays. Adjusted during render.
   const [hadPlanBoard, setHadPlanBoard] = useState(hasPlanBoard);
   if (hadPlanBoard !== hasPlanBoard) {
     setHadPlanBoard(hasPlanBoard);
-    const from = paletteLandingCategory('plan', hadPlanBoard);
-    if (editorMode === 'plan' && categoryId === from)
-      setCategoryId(paletteLandingCategory('plan', hasPlanBoard));
+    if (categoryId === paletteLandingCategory(hadPlanBoard))
+      setCategoryId(paletteLandingCategory(hasPlanBoard));
   }
-  // Arriving on a Dashboard opens its Popular; leaving one, the mode's landing (adjusted during render).
+  // Arriving on a Dashboard opens its Popular; leaving one, Plan's landing (adjusted during render).
   const [wasDashboard, setWasDashboard] = useState(dashboardTab);
   if (wasDashboard !== dashboardTab) {
     setWasDashboard(dashboardTab);
@@ -241,16 +212,7 @@ export function ToolbarPalette(props: Props) {
       }),
     [tabs],
   );
-  // The bar has no Popular: with every category one press away, a pick from across them adds nothing.
-  // The bar's categories (bar-categories): no Popular, one-word names, Session.
-  const barCategories = useMemo(
-    () =>
-      barCategoriesFor(tabs, (groups) => (
-        <SessionBrowse groups={groups} actions={tileActions} pendingDraw={pendingDraw ?? null} />
-      )),
-    [tabs, tileActions, pendingDraw],
-  );
-  // A category this mode does not offer (one picked in another mode) shows the mode's landing.
+  // A category the palette does not offer (one asked for from a Dashboard's) shows the landing.
   const category =
     tabs.find((t) => t.id === categoryId) ?? tabs.find((t) => t.id === defaultId) ?? tabs[0];
 
@@ -261,16 +223,8 @@ export function ToolbarPalette(props: Props) {
   // UI scale (docs/specs/007-editor/ui-scale.md): the strip zooms at its root,
   // so a scaled tile takes more of the window.
   const scale = useUiScale('toolbar');
-  // The category bar names its categories where the window has room for every name; glyphs alone otherwise.
-  // Measured from the strip itself (useStripTileLimit); the estimate only
-  // covers the first paint.
+  // Measured from the strip itself (useStripTileLimit); the estimate only covers the first paint.
   const cardRef = useRef<HTMLDivElement>(null);
-  // The category bar names its categories while the strip has room for the names (useBarLabels).
-  const barLabels = useBarLabels(cardRef, {
-    enabled: categoryBar && !isMobile,
-    categoriesKey: barCategories.map((c) => c.label).join('|'),
-    scale,
-  });
   const leadingRef = useRef<HTMLDivElement>(null);
   // Too wide to centre between the menu card's sides (a tablet): the strip sits at the right instead.
   const crowded = useStripCrowded(cardRef, leading == null);
@@ -287,20 +241,18 @@ export function ToolbarPalette(props: Props) {
   // still decides whether More is needed for what is out of view.
   const swipe = phoneRow;
   const tileLimit = swipe ? Infinity : stripLimit;
-  // Plan mode's Cards follow the document's item types (docs/specs/026-plan/item-types.md).
+  // Plan's Cards follow the document's item types (docs/specs/026-plan/item-types.md).
   const plan = usePlan();
   const planCardTiles = plan?.types.map(planCardTile);
   const categoryTiles =
     category?.id === 'plan-cards' && planCardTiles ? planCardTiles : category?.tiles;
   const fitted = stripTilesFor(category?.id ?? defaultId, {
-    hasImage: tileActions.hasImage,
     limit: stripLimit,
-    // The category's tiles in this mode's layout (palette-layouts).
+    // The category's tiles in Plan's layout (palette-layouts).
     tiles: categoryTiles,
   });
   const { tiles, dividersAfter } = swipe
     ? stripTilesFor(category?.id ?? defaultId, {
-        hasImage: tileActions.hasImage,
         limit: tileLimit,
         tiles: categoryTiles,
       })
@@ -357,7 +309,6 @@ export function ToolbarPalette(props: Props) {
   const leavingGroups = leavingId ? catalogueStripGroups(leavingId) : null;
   const leaving = leavingId
     ? stripTilesFor(leavingId, {
-        hasImage: tileActions.hasImage,
         limit: tileLimit,
         tiles: tabs.find((t) => t.id === leavingId)?.tiles,
       })
@@ -376,7 +327,6 @@ export function ToolbarPalette(props: Props) {
     );
     if (!button || search.open) return;
     more.setOpen(false);
-    bar.popover.setOpen(false);
     beforeSearch();
     track('UI', 'Opened', 'ToolbarSearch');
     search.openFrom(button);
@@ -509,94 +459,75 @@ export function ToolbarPalette(props: Props) {
                             {swipe ? null : <Divider />}
                           </>
                         )}
-                        {articleDock ? (
-                          // The article's formatting, docked (lib/article/article-dock.ts).
-                          <ArticleDockSlot />
-                        ) : categoryBar ? (
-                          <CategoryBarButtons
-                            bar={bar}
-                            categories={barCategories}
-                            labels={barLabels}
-                            scrollable={swipe}
-                          />
-                        ) : (
-                          <>
-                            {/* The category picker sits between the selection mode and the
+                        {/* The category picker sits between the selection mode and the
                     tiles it chooses, so it reads as a label for them (docs/specs/007-editor/toolbar-layout.md).
                     Its width follows its label's text, which is fractional:
                     snapped, so the tiles after it stay on whole pixels. */}
-                            <SnapWidth>
-                              <PaletteDropdown
-                                ariaLabel="Palette category"
-                                dataTourId="palette-category"
-                                value={category?.id ?? defaultId}
-                                variant="toolbar"
-                                // A phone shows the category's icon alone, so the
-                                // strip has room for more tiles.
-                                iconOnly={isMobile}
-                                autoHeight
-                                grid
-                                menuClassName=""
-                                groupLabels={CATEGORY_BANDS}
-                                onChange={switchCategory}
-                                options={tabs.map((tab) => ({
-                                  id: tab.id,
-                                  label: tab.label,
-                                  icon: tab.icon,
-                                  group: tab.group,
-                                  fullWidth: tab.fullWidth,
-                                }))}
-                              />
-                            </SnapWidth>
-                          </>
-                        )}
-                        {/* The bar ends on its last category; Search brings its own divider. */}
-                        {categoryBar ? null : <Divider />}
+                        <SnapWidth>
+                          <PaletteDropdown
+                            ariaLabel="Palette category"
+                            dataTourId="palette-category"
+                            value={category?.id ?? defaultId}
+                            variant="toolbar"
+                            // A phone shows the category's icon alone, so the
+                            // strip has room for more tiles.
+                            iconOnly={isMobile}
+                            autoHeight
+                            grid
+                            menuClassName=""
+                            groupLabels={CATEGORY_BANDS}
+                            onChange={switchCategory}
+                            options={tabs.map((tab) => ({
+                              id: tab.id,
+                              label: tab.label,
+                              icon: tab.icon,
+                              group: tab.group,
+                              fullWidth: tab.fullWidth,
+                            }))}
+                          />
+                        </SnapWidth>
+                        <Divider />
                       </>
                     }
-                    {categoryBar ? null : (
-                      <>
-                        <ToolbarStripRail
-                          scrollable={swipe}
-                          railKey={category?.id ?? defaultId}
-                          items={
-                            groups && category
-                              ? groupItems(category.id, groups, openers)
-                              : tileItems(
-                                  tiles,
-                                  dividersAfter,
-                                  tileActions,
-                                  pendingDraw ?? null,
-                                  openers,
-                                )
-                          }
-                          leavingItems={
-                            leavingId && leavingGroups
-                              ? groupItems(leavingId, leavingGroups)
-                              : leaving
-                                ? tileItems(leaving.tiles, leaving.dividersAfter, tileActions, null)
-                                : null
-                          }
-                        />
-                        {/* Outside the rail so it rides the rail's width change rather
+                    <ToolbarStripRail
+                      scrollable={swipe}
+                      railKey={category?.id ?? defaultId}
+                      items={
+                        groups && category
+                          ? groupItems(category.id, groups, openers)
+                          : tileItems(
+                              tiles,
+                              dividersAfter,
+                              tileActions,
+                              pendingDraw ?? null,
+                              openers,
+                            )
+                      }
+                      leavingItems={
+                        leavingId && leavingGroups
+                          ? groupItems(leavingId, leavingGroups)
+                          : leaving
+                            ? tileItems(leaving.tiles, leaving.dividersAfter, tileActions, null)
+                            : null
+                      }
+                    />
+                    {/* Outside the rail so it rides the rail's width change rather
                 than popping out and back in with the tiles. Only there when
                 the category has more than the strip shows. Never on a phone (showMore). */}
-                        {showMore ? (
-                          <>
-                            <Divider />
-                            {/* Switched off while open rather than left out, so the button is not remounted as
+                    {showMore ? (
+                      <>
+                        <Divider />
+                        {/* Switched off while open rather than left out, so the button is not remounted as
                                 More opens: Escape hands focus back to it (ToolbarStripPopover). */}
-                            <HoverCard
-                              disabled={moreShown}
-                              title={`More ${category?.label ?? ''}`.trim()}
-                              description={category?.description ?? 'Everything in this category.'}
-                            >
-                              {moreButton}
-                            </HoverCard>
-                          </>
-                        ) : null}
+                        <HoverCard
+                          disabled={moreShown}
+                          title={`More ${category?.label ?? ''}`.trim()}
+                          description={category?.description ?? 'Everything in this category.'}
+                        >
+                          {moreButton}
+                        </HoverCard>
                       </>
-                    )}
+                    ) : null}
                     {/* Not on a phone: the strip has no room to spare, and the row's own + (after the
                     last page) adds one there. */}
                     {category?.id === 'plan-cards' && plan?.canEdit && !isMobile ? (
@@ -605,7 +536,7 @@ export function ToolbarPalette(props: Props) {
                         <EditCardsStripButton />
                       </>
                     ) : null}
-                    {/* Search, last: any element type, this mode's and the others' (docs/specs/007-editor/toolbar-layout.md
+                    {/* Search, last: any element type, Plan's and every other category's (docs/specs/007-editor/toolbar-layout.md
                     "Search: every element type"). */}
                     {participant ? null : (
                       <>
@@ -619,18 +550,7 @@ export function ToolbarPalette(props: Props) {
                 </CardWidth>
               )}
             </StripRow>
-            {categoryBar ? (
-              <CategoryBarFlyout
-                bar={bar}
-                categories={barCategories}
-                mode={editorMode}
-                actions={tileActions}
-                pendingDraw={pendingDraw ?? null}
-                isMobile={isMobile}
-                scale={scale}
-              />
-            ) : null}
-            {moreOpen && category && !categoryBar ? (
+            {moreOpen && category ? (
               // The category's full Palette body (usePaletteCatalogue), or what a group tile or an opener opened.
               <StripPopover
                 right={more.right}
@@ -665,10 +585,9 @@ export function ToolbarPalette(props: Props) {
                 dataAttr="data-toolbar-search"
               >
                 <ToolbarSearchPanel
-                  mode={editorMode}
                   actions={tileActions}
                   pendingDraw={pendingDraw}
-                  planCardTiles={editorMode === 'plan' && plan ? planCardTiles : undefined}
+                  planCardTiles={plan ? planCardTiles : undefined}
                   tabElements={props.tabElements ?? []}
                 />
               </StripPopover>

@@ -29,9 +29,8 @@ export type TabTimer = {
   // countdown, elapsed ms for a stopwatch. Undefined before the first run.
   frozenMs?: number;
   // The instant this run was started (`startTimer`), carried unchanged through
-  // pause, resume and extend, so something that started it (an Agenda
-  // segment, docs/specs/012-collaboration/agenda.md) can tell it is still the
-  // same run. Absent on a timer started before this existed.
+  // pause, resume and extend, so something that started it can tell it is
+  // still the same run. Absent on a timer started before this existed.
   startedAt?: number;
 };
 
@@ -79,7 +78,7 @@ export type TabVote = {
   // read through the two helpers below rather than tested directly, so the
   // "only while it matters" phase check lives in one place.
   //
-  // Suppress peer cursors + laser trails while casting is open, so nobody
+  // Suppress peer cursors while casting is open, so nobody
   // can watch the room converge on a favourite before the vote closes.
   hideCursors?: boolean;
   // Withhold OTHER participants' dots until the results are revealed, so a
@@ -116,24 +115,15 @@ export type TabVote = {
 };
 
 // May this participant drive the vote (end / reveal / clear it, and move
-// the results focus)? The starter can, and so can whoever holds the
-// facilitator baton (docs/specs/012-collaboration/facilitator.md): the
-// starter's collab key is per-browser, so a vote started on another device,
-// or before the browser's storage was cleared, would otherwise be unendable,
-// and taking the baton is the documented way to take the room back. A vote
-// written before `startedBy` existed has no host, so anyone may drive it.
-export function isVoteHost(
-  vote: TabVote | null | undefined,
-  selfId: string,
-  facilitating = false,
-): boolean {
+// the results focus)? The starter can. A vote written before `startedBy`
+// existed has no host, so anyone may drive it.
+export function isVoteHost(vote: TabVote | null | undefined, selfId: string): boolean {
   if (!vote) return false;
-  if (facilitating) return true;
   if (vote.startedBy === undefined) return true;
   return vote.startedBy === selfId;
 }
 
-// The privacy choices a facilitator makes BEFORE starting a vote, passed
+// The privacy choices the host makes BEFORE starting a vote, passed
 // to `startVote` and baked into the resulting `TabVote`. Separate from the
 // optional flags on `TabVote` itself (which are optional for back-compat)
 // because a fresh vote always states both answers explicitly.
@@ -142,7 +132,7 @@ export type VotePrivacy = {
   hideCounts: boolean;
 };
 
-// Everything the facilitator chooses BEFORE starting a vote: the privacy
+// Everything the host chooses BEFORE starting a vote: the privacy
 // switches plus the optional layer scope (docs/specs/012-collaboration/vote-layer-scope.md). One object because
 // they share a lifecycle — all of it is baked into the TabVote at start
 // and none of it can change while the vote runs.
@@ -155,7 +145,7 @@ export type VoteSetup = VotePrivacy & {
   onePerElement?: boolean;
 };
 
-// Should peer cursors / laser trails be withheld right now? Only while
+// Should peer cursors be withheld right now? Only while
 // casting is OPEN: ending the vote restores them, ahead of the reveal
 // (docs/specs/012-collaboration/session-tools.md — "hidden" means exactly "while the vote is open").
 export function voteHidesCursors(vote: TabVote | null | undefined): boolean {
@@ -172,22 +162,17 @@ export function voteHidesTallies(vote: TabVote | null | undefined): boolean {
 // Which element kinds a dot-vote can land on (docs/specs/012-collaboration/session-tools.md): stickies, images,
 // and shapes — but NOT a `frame` (it's a section backdrop, not content),
 // and not text / freehand / table / arrow / annotation.
-// Interactive Behaviour elements (docs/specs/009-elements/mode-button.md, /104, /105, /106, /107): a mode
-// button, portal, session button, reveal, picker or reaction pad DOES
-// something when you
-// press it. Voting turns a press into a dot, so a votable behaviour element
+// Interactive Behaviour elements (docs/specs/009-elements/portal-element.md, /105, /107): a portal,
+// session button or picker DOES something when you press it. Voting turns a press into a dot, so a votable behaviour element
 // would have two conflicting meanings for the same tap — and the one the user
 // gets would depend on whether a vote happens to be running. They are
 // controls, not candidates.
 const NON_VOTABLE_SHAPES = new Set([
   // A section backdrop, not content.
   'frame',
-  'mode-button',
   'portal',
   'session-button',
-  'reveal',
   'picker',
-  'reaction-pad',
   // A comment pin (docs/specs/012-collaboration/comment-pin.md) IS a remark; a dot on one means nothing.
   'comment-pin',
   // An action panel (docs/specs/012-collaboration/action-panel.md) is a task, not a candidate.
@@ -231,9 +216,9 @@ export function voteKeyOf(element: Element): string {
 
 export function isVotable(element: Element): boolean {
   if (element.type === 'sticky' || element.type === 'image') return true;
-  // The collaboration panels (estimate, quiz, idea box, ...) are controls for the same reason as the Behaviour
-  // elements above: their buttons let the press through to the element, so pressing an estimate mid-vote both
-  // answered and spent a dot.
+  // The collaboration panels (the temperature check, the decision record) are controls for the same reason as
+  // the Behaviour elements above: their buttons let the press through to the element, so pressing a temperature
+  // check mid-vote both answered and spent a dot.
   return (
     element.type === 'shape' &&
     !NON_VOTABLE_SHAPES.has(element.shape) &&

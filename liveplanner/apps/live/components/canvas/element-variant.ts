@@ -243,8 +243,7 @@ export function describeVariant(
         },
       };
     }
-    case 'freehand':
-    case 'path': {
+    case 'freehand': {
       // The freehand element renders its SVG path as the child
       // content. The wrapper here just contributes the selection
       // ring + remote-selector outline, with a transparent
@@ -274,21 +273,6 @@ export function describeVariant(
       };
     }
     case 'annotation': {
-      // An article's margin note (docs/specs/007-editor/article-pages.md "Comments and actions"): a
-      // small rounded chip in its note's colour, matching the tint on its text.
-      if (element.articleNote) {
-        const action = element.articleNote === 'action';
-        return {
-          className: `shadow-sm ${`${singleRing('ring-2 ring-brand-200')} ${multiRing}`.trim()}`,
-          style: {
-            borderRadius: 9,
-            backgroundColor: action ? '#f0f9ff' : '#fffbeb',
-            borderColor: remoteBorderColor ?? (action ? '#7dd3fc' : '#fcd34d'),
-            borderWidth: remoteBorderColor ? remoteBorderWidth : 1.5,
-            borderStyle: 'solid',
-          },
-        };
-      }
       // A themed circle marker (docs/specs/009-elements/annotations.md): fill + ring from the element's
       // colours, fully round. The note glyph paints as the child content.
       const ring = `${singleRing('ring-2 ring-brand-200')} ${multiRing}`.trim();
@@ -326,15 +310,4 @@ export function describeVariant(
       };
     }
   }
-}
-
-// How an element in its edit mode sits on the canvas. A label being typed rises above its
-// neighbours and wears the text cursor; a path in its edit mode (docs/specs/023-draw-mode/path-tool.md
-// "Editing") does neither: its points are edited, never typed, and its nodes must stay above it.
-export function editingLook(
-  element: { type: string },
-  isEditing: boolean,
-): { raise: boolean; textCursor: boolean } {
-  const typing = isEditing && element.type !== 'path';
-  return { raise: typing, textCursor: typing };
 }

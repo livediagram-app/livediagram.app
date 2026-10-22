@@ -157,9 +157,7 @@ export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
     'sankeyLeftoverName',
     'chartPalette',
   ],
-  agenda: ['agendaItems'],
   decision: ['decisionStatus', 'decisionDate', 'decisionDrivers'],
-  quiz: ['quizOptions', 'quizCorrect', 'quizSeconds'],
   picker: ['pickerOptions', 'pickerSource'],
   'stat-row': ['stats'],
   process: ['processSteps'],
@@ -176,12 +174,6 @@ export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
   ),
   icon: ['iconSize', 'iconWeight'],
   sticker: ['stickerId'],
-  estimate: ['estimateScale'],
-  chair: ['chairFacing'],
-  desk: ['chairFacing'],
-  sofa: ['chairFacing'],
-  // docs/specs/009-elements/office.md: which wall a room's doorway is in.
-  room: ['roomDoor'],
   portal: ['portalTarget'],
   // docs/specs/009-elements/tab-window.md: which tab the window shows.
   'tab-window': ['windowTabId'],

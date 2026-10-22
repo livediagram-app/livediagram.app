@@ -2,8 +2,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { PALETTE_CATEGORIES } from './palette-categories';
-import { tilesForCategory } from './palette-tile-defs';
-import { paletteCategoriesFor } from './palette-layouts';
+import { tileById, tilesForCategory, type PaletteTileDef } from './palette-tile-defs';
 import {
   STRIP_TILE_LIMIT,
   desktopStripTileLimit,
@@ -13,9 +12,16 @@ import {
   stripTilesFor,
 } from './toolbar-strip-tiles';
 
-const NONE = { hasImage: true };
-// Diagram mode's Popular, as its palette layout fills it.
-const diagramPopular = paletteCategoriesFor('diagram').find((c) => c.id === 'popular')!.tiles!;
+const NONE = {};
+// A layout's own list that divides after its third tile, the diamond.
+const dividedPopular = [
+  'shapes:square',
+  'shapes:circle',
+  'shapes:diamond',
+  'tools:text',
+  'tools:arrow',
+  'tools:frame',
+].map((id) => ({ ...tileById(id)!, dividerAfter: id === 'shapes:diamond' }) as PaletteTileDef);
 
 describe('stripTilesFor', () => {
   it('never shows more than the limit', () => {
@@ -50,7 +56,7 @@ describe('stripTilesFor', () => {
 
   it("shows the tiles a mode's layout hands it, in the layout's order", () => {
     const [a, b] = tilesForCategory('shapes');
-    const strip = stripTilesFor('popular', { hasImage: true, tiles: [b!, a!] });
+    const strip = stripTilesFor('popular', { tiles: [b!, a!] });
     expect(strip.tiles.map((t) => t.id)).toEqual([b!.id, a!.id]);
     expect(strip.hasMore).toBe(false);
   });
@@ -67,20 +73,22 @@ describe('stripTilesFor', () => {
   it.each([
     ['shapes', ['shapes:diamond', 'shapes:stadium']],
     ['write', ['tools:text']],
-    ['draw', ['tools:highlighter', 'tools:polygon']],
+    ['draw', ['tools:polygon']],
     ['devices', ['devices:laptop']],
-    ['media', ['media:tab-window', 'media:embed-website']],
+    ['media', ['media:tab-window']],
     ['data', ['data:legend']],
   ])('divides %s into its groups', (category, after) => {
     expect([...stripTilesFor(category, NONE).dividersAfter]).toEqual(after);
   });
 
   it('drops the dividers of a category that exactly fills the strip, keeping every tile', () => {
-    // Components holds the strip's full twelve tiles (with the Card, Badge and Step number), so its
-    // divider after the entity gives way rather than a tile.
-    const components = stripTilesFor('components', NONE);
-    expect(components.tiles).toHaveLength(STRIP_TILE_LIMIT);
+    // Components' eleven tiles on a strip with room for exactly eleven: the divider after the entity gives way
+    // rather than a tile. With the strip's usual twelve slots there is room for both.
+    const components = stripTilesFor('components', { ...NONE, limit: 11 });
+    expect(components.tiles).toHaveLength(11);
+    expect(components.hasMore).toBe(false);
     expect([...components.dividersAfter]).toEqual([]);
+    expect([...stripTilesFor('components', NONE).dividersAfter]).toEqual(['tools:entity']);
     // Build, short of it since the Timeline moved to Concepts, keeps every tile on the strip.
     expect(stripTilesFor('build', NONE).tiles).toHaveLength(11);
   });
@@ -92,9 +100,9 @@ describe('stripTilesFor', () => {
   });
 
   it('spends part-tile slack on a divider rather than a whole tile', () => {
-    // Diagram's Popular divides after the diamond (the third tile). With room
+    // The list divides after the diamond (the third tile). With room
     // for 4.26 tiles, four tiles and that divider (4.2) fit.
-    const popular = { ...NONE, tiles: diagramPopular };
+    const popular = { ...NONE, tiles: dividedPopular };
     const roomy = stripTilesFor('popular', { ...popular, limit: 4.26 });
     expect(roomy.tiles).toHaveLength(4);
     expect([...roomy.dividersAfter]).toEqual(['shapes:diamond']);
@@ -115,16 +123,6 @@ describe('stripTilesFor', () => {
       expect(tilesForCategory(c.id).filter((t) => t.dividerAfter).length, c.id).toBeLessThanOrEqual(
         2,
       );
-    }
-  });
-
-  it('drops image tiles when uploads are unavailable', () => {
-    for (const c of PALETTE_CATEGORIES) {
-      const strip = stripTilesFor(c.id, { hasImage: false });
-      expect(
-        strip.tiles.some((t) => t.needsImage),
-        c.id,
-      ).toBe(false);
     }
   });
 });

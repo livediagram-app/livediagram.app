@@ -1,23 +1,14 @@
 'use client';
 
-// The start panel (docs/specs/026-plan/plan-mode.md "Starting a board", docs/specs/007-editor/start-diagramming.md):
-// an empty tab's one wide panel. A rail of categories beside a grid of large cards (StartCard), each a picture of what
-// it makes over its name and line; a search across all of them, and across every other mode's templates
-// (StartOtherModes). Choosing a card acts at once. Shared by Start Planning and Start Diagramming, which say what the
-// categories and cards are; this draws them, in the tab's own light or dark look (the palette).
-import {
-  useEffect,
-  useRef,
-  useState,
-  type CSSProperties,
-  type KeyboardEvent,
-  type ReactNode,
-} from 'react';
+// The start panel (docs/specs/026-plan/plan-mode.md "Starting a board"): an empty tab's one wide panel. A rail of
+// categories beside a grid of large cards (StartCard), each a picture of what it makes over its name and line; a
+// search across all of them. Choosing a card acts at once. Start Planning says what the categories and cards are; this
+// draws them, in the tab's own light or dark look (the palette).
+import { useEffect, useRef, useState, type CSSProperties, type KeyboardEvent } from 'react';
 import {
   CompactEmptyState,
   CountBadge,
   SearchIcon,
-  Tooltip,
   lucideGlyph,
   noMatchTitle,
   safeInset,
@@ -26,12 +17,10 @@ import {
 } from '@liveplanner/ui';
 import { lucideSearch, lucideX } from '@liveplanner/icons/lucide';
 import { useChromeFloor } from '@/components/toast/useToastFloor';
-import type { EditorMode } from '@liveplanner/document';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import type { PlanPalette } from '@/components/plan/plan-palette';
 import { StartCardGrid, startTint, type StartPanelCard } from './StartCard';
-import { StartOtherModes, type StartPanelElsewhere } from './StartOtherModes';
 import { takeStartQuery } from './start-query';
 import { liftBestMatch } from './best-match';
 import { isStartCardKey, nextCardIndex } from './start-card-keys';
@@ -40,9 +29,11 @@ import { usePalettePopoverOpen } from '@/lib/palette-popover-open';
 
 const TAB_BAR_SELECTOR = '[data-editor-tabbar]';
 
+// Start Planning cannot close: a drag down on its phone sheet settles back.
+const STAYS_OPEN = () => {};
+
 const SearchGlyph = lucideGlyph(lucideSearch, 15);
 const ClearGlyph = lucideGlyph(lucideX, 13);
-const CloseGlyph = lucideGlyph(lucideX, 16);
 
 type Glyph = ReturnType<typeof lucideGlyph>;
 
@@ -72,10 +63,6 @@ export function StartPanel<C extends string>({
   cardsIn,
   search,
   onChoose,
-  elsewhere,
-  onChooseElsewhere,
-  onClose,
-  lead,
 }: {
   titleId: string;
   title: string;
@@ -93,20 +80,12 @@ export function StartPanel<C extends string>({
   // Every match, grouped by category, in rail order.
   search: (query: string) => readonly StartPanelResult<C>[];
   onChoose: (cardId: string) => void;
-  // Found in other modes (start-diagramming.md): the other modes' matches for a search, and choosing one, which
-  // switches the tab to that mode. Absent where the tab's mode may not change: the search keeps to its own mode.
-  elsewhere?: ((query: string) => readonly StartPanelElsewhere[]) | undefined;
-  onChooseElsewhere?: ((mode: EditorMode, cardId: string) => void) | undefined;
-  // Absent where the panel cannot be closed: no × in its header.
-  onClose?: (() => void) | undefined;
-  // Leading the rail, over a hairline: the mode switch.
-  lead?: ReactNode;
 }) {
   // A category's flyout, More or Search hangs from the palette: the start steps aside for it (palette-popover-open).
   const paletteOpen = usePalettePopoverOpen();
-  // Another start panel was on screen a moment ago: the tab changed mode under it. The frame stays put (no fly-up) and
-  // its content arrives whole, nothing fading up from nothing or cascading in, so a mode change never blinks; the
-  // switch crossfades the two (StartModeSwitch's View Transition). `calm` lasts until the category or search changes.
+  // Another start panel was on screen a moment ago (another empty tab's): the frame stays put (no fly-up) and its
+  // content arrives whole, nothing fading up from nothing or cascading in, so a change of tab never blinks. `calm`
+  // lasts until the category or search changes.
   const [swapped] = useState(() => startPanelJustLeft());
   const [calm, setCalm] = useState(swapped);
   useEffect(() => () => noteStartPanelLeft(), []);
@@ -121,9 +100,9 @@ export function StartPanel<C extends string>({
     if (window.matchMedia?.('(pointer: fine)').matches)
       searchInput.current?.focus({ preventScroll: true });
   }, []);
-  // On a phone the panel is a sheet risen from the bottom edge; one that can close drags down to close (Dialog's
-  // phoneSheet, BottomSheet).
-  const sheet = useSheetDrag(onClose ?? (() => {}));
+  // On a phone the panel is a sheet risen from the bottom edge, its handle settling back when dragged: Start Planning
+  // cannot close (Dialog's phoneSheet, BottomSheet).
+  const sheet = useSheetDrag(STAYS_OPEN);
   // Where the tab bar stands, for the phone and short-window sheet to stand on (useChromeFloor, as toasts do).
   const tabBarFloor = useChromeFloor(true, 0, TAB_BAR_SELECTOR);
   const searching = query.trim().length > 0;
@@ -131,7 +110,6 @@ export function StartPanel<C extends string>({
   const { best, groups: results } = searching
     ? liftBestMatch<StartPanelCard, StartPanelResult<C>>(search(query), query)
     : { best: [], groups: [] };
-  const others = searching && elsewhere && onChooseElsewhere ? elsewhere(query) : [];
   const nameOf = (id: C) => categories.find((c) => c.id === id)?.name ?? id;
   // The cards' scroller: a category picked opens at its top, never part way down the last one's cards.
   const cardsScroller = useRef<HTMLDivElement>(null);
@@ -256,14 +234,6 @@ export function StartPanel<C extends string>({
     >
       <section
         aria-labelledby={titleId}
-        // Escape closes a start that can close, as its × does, once the search has nothing to clear (the search box
-        // takes the first Escape) and outside an open menu (the mode menu's Escape closes only the menu).
-        onKeyDown={(e) => {
-          if (e.key !== 'Escape' || !onClose || e.defaultPrevented) return;
-          if ((e.target as HTMLElement).closest?.('[role="menu"]')) return;
-          e.stopPropagation();
-          onClose();
-        }}
         // One height whatever the category shows, so the panel never jumps as it changes.
         className={`pointer-events-auto flex h-full max-h-[46rem] w-full max-w-5xl flex-col overflow-hidden rounded-3xl border shadow-2xl max-sm:max-h-none max-sm:rounded-b-none max-sm:rounded-t-2xl max-sm:border-b-0 short-window:pb-[var(--start-inset)] ${
           swapped ? '' : 'animate-dialog-in max-sm:animate-sheet-up'
@@ -329,7 +299,7 @@ export function StartPanel<C extends string>({
                   e.stopPropagation();
                   setQuery('');
                 }
-                // Down moves to the first card the search found (its own, else another mode's).
+                // Down moves to the first card the search found.
                 if (e.key === 'ArrowDown' && searching) {
                   const first =
                     cardsScroller.current?.querySelector<HTMLElement>('[data-start-card]');
@@ -353,27 +323,9 @@ export function StartPanel<C extends string>({
               </button>
             ) : null}
           </label>
-          {/* Help and ×, pinned to the panel's top right corner. */}
+          {/* Help, pinned to the panel's top right corner. */}
           <div className="absolute right-3 top-3 flex items-center gap-1 max-sm:top-0">
             <HelpArticleLink article={helpArticle} variant="icon" />
-            {onClose ? (
-              <Tooltip label="Close">
-                <button
-                  type="button"
-                  aria-label="Close"
-                  onClick={onClose}
-                  className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg transition hover:bg-[var(--start-hover)]"
-                  style={
-                    {
-                      color: palette.muted,
-                      '--start-hover': startTint(palette, 7),
-                    } as CSSProperties
-                  }
-                >
-                  <CloseGlyph />
-                </button>
-              </Tooltip>
-            ) : null}
           </div>
         </header>
         <div className="flex min-h-0 flex-1 max-sm:flex-col">
@@ -382,11 +334,6 @@ export function StartPanel<C extends string>({
             className="flex shrink-0 flex-col max-sm:contents sm:w-60 sm:border-r"
             style={{ borderColor: palette.border }}
           >
-            {lead ? (
-              <div className="shrink-0 border-b" style={{ borderColor: palette.border }}>
-                {lead}
-              </div>
-            ) : null}
             <nav
               aria-label="Categories"
               className="flex shrink-0 gap-1 overflow-x-auto p-3 sm:min-h-0 sm:flex-1 sm:flex-col sm:overflow-y-auto sm:overflow-x-hidden sm:p-4 max-sm:border-b max-sm:px-2 max-sm:py-2 max-sm:[scrollbar-width:none]"
@@ -420,7 +367,7 @@ export function StartPanel<C extends string>({
             className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 max-sm:p-3"
           >
             {searching ? (
-              best.length === 0 && results.length === 0 && others.length === 0 ? (
+              best.length === 0 && results.length === 0 ? (
                 // The shared empty state in the board's colours (docs/specs/004-interface-design/empty-states.md).
                 <CompactEmptyState
                   role="status"
@@ -432,38 +379,8 @@ export function StartPanel<C extends string>({
                 />
               ) : (
                 <>
-                  {best.length === 0 && results.length === 0 ? (
-                    // Nothing of this mode, something of another's: one line, then the other modes' blocks.
-                    <p
-                      role="status"
-                      className="mb-5 flex items-start gap-2.5 rounded-xl px-3 py-2.5 text-[13px]"
-                      style={{ backgroundColor: palette.column }}
-                    >
-                      <span aria-hidden className="mt-px shrink-0" style={{ color: palette.muted }}>
-                        <SearchGlyph />
-                      </span>
-                      <span>
-                        <span className="font-semibold">{noMatchTitle(noMatchNoun, query)}.</span>{' '}
-                        <span style={{ color: palette.muted }}>Found in other modes.</span>
-                      </span>
-                    </p>
-                  ) : (
-                    <>
-                      {best.length > 0 ? section('best-match', 'Best Match', best) : null}
-                      {results.map((g) => section(g.category, nameOf(g.category), g.cards))}
-                    </>
-                  )}
-                  {others.length && onChooseElsewhere ? (
-                    <StartOtherModes
-                      // A new search starts folded.
-                      key={query.trim().toLowerCase()}
-                      groups={others}
-                      palette={palette}
-                      divided={best.length + results.length > 0}
-                      cascade={!calm}
-                      onChoose={onChooseElsewhere}
-                    />
-                  ) : null}
+                  {best.length > 0 ? section('best-match', 'Best Match', best) : null}
+                  {results.map((g) => section(g.category, nameOf(g.category), g.cards))}
                 </>
               )
             ) : (

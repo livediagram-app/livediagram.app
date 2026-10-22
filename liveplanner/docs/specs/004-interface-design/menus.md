@@ -134,12 +134,11 @@ Anchor", "A List".
 The same rule covers the close cousins of a menu item, the controls that name an action on an
 element or add one:
 
-- **Palette tiles**: every add-tile's name and caption ("Add Sticky Note" captioned "Sticky Note"), the Toolbar strip's **Add Page**, and the Draw dock's shapes. A catalogue entry keeps its own sentence-case name and its tile Title Cases it on the way (`headlineCase` in `@liveplanner/api-schema`).
+- **Palette tiles**: every add-tile's name and caption ("Add Sticky Note" captioned "Sticky Note"), and the Toolbar strip's **Add Page**, and . A catalogue entry keeps its own sentence-case name and its tile Title Cases it on the way (`headlineCase` in `@liveplanner/api-schema`).
 - **The quick-add ring's options**: "Add Row", "Add Column", "Add Child", "Add Sibling", "Add
   Point", "Add Stat".
 - **Buttons drawn on an element**: the selection toolbar ("Bring to Front", "Edit Points", "Add
-  Text"), the path toolbar ("Delete Point", "Close Path"), a facilitator's accent bar ("Open the
-  Box", "New Round", "Take Roll") and a Q&A note's row actions ("Discuss Now", "Mark Done"). An
+  Text") and a card's accent bar ("Reset Answers"). An
   export draws an accent bar with the same words.
 - **Command palette names**: every command search offers ("Bring to Front", "Create New Tab",
   "Hand Tool", "Add Green Status Marker"), so an action reads the same in search as on the toolbar.
@@ -150,9 +149,9 @@ element or add one:
   controls' tooltips, keep sentence case.
 
 Captions inside a section ("Picks from", "Move to layer"), hints, a tooltip that is not the
-control's only name (the page lock, the slide deck eye), descriptions, aria-labels written only
+control's only name (the page lock), descriptions, aria-labels written only
 for a screen reader, and the Explorer's folder actions are not item labels and keep sentence
-case. An element's own name in prose ("a Done check") stays sentence case too. A help article
+case. An element's own name in prose ("a temperature check") stays sentence case too. A help article
 that names an item in bold spells it exactly as the editor does
 (`apps/help/lib/ui-labels-in-articles.test.ts`).
 
@@ -166,7 +165,6 @@ Each menu, how it opens, what it holds, and what the keyboard could do before th
 | --------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------ | --------------------------------------------------- |
 | Document menu         | ⋯ on an Explorer row, card or tree row; right-click; Shift+F10 | Name header, verbs, Delete or Dismiss under a separator                  | Tab only; no Escape; buttons in a `menu`            |
 | Folder menu           | Same, on a folder; My Documents in the sidebar and panel       | Name header, verbs, **Use as Default for** ▸ (checkable entries), Delete | Tab only; submenu unreachable by arrows             |
-| Timeline card menu    | ⋯ on a Timeline card                                           | Verbs                                                                    | Tab only                                            |
 | Explorer More menu    | More in the Explorer panel header                              | Verbs in bands                                                           | Tab only                                            |
 | New menus             | + in the Explorer pane header and a team library header        | Document, Folder tiles                                                   | Tab only                                            |
 | Team menu             | ⋯ on a team in the Teams pane                                  | Tiles                                                                    | Tab only                                            |
@@ -178,8 +176,7 @@ Each menu, how it opens, what it holds, and what the keyboard could do before th
 | Zoom menu             | Hovering or focusing the zoom percentage                       | One-of-a-set zoom levels, Fit to screen                                  | Opened on focus; Tab through; no arrows             |
 | Account menu          | The account pill                                               | Name header, Account, Sign out                                           | Tab only; trigger had no `aria-haspopup`; no Escape |
 | Embed tab menu        | The tab pill on an embedded document                           | One-of-a-set tabs                                                        | Tab, Escape                                         |
-| Element quick menus   | ⋯ on a Q&A board, Done check, Idea box, Quiz                   | Verbs, All Settings… under a separator                                   | Tab only                                            |
-| Locked element menu   | Right-click on an element someone else holds                   | "In use" header, Release rows, a note                                    | Escape only                                         |
+| Element quick menus   | ⋯ on a Session button, Temperature check                       | Verbs, All Settings… under a separator                                   | Tab only                                            |
 | Product switcher      | The section name in the help, telemetry and marketing headers  | Section links                                                            | Tab only                                            |
 | Telemetry view picker | The view button on the sticky window bar                       | Views                                                                    | Tab only                                            |
 

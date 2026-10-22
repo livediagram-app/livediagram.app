@@ -26,7 +26,6 @@ import { iconCaptionBand } from './icon-size';
 import { fontSizeFor, labelMaxWidth } from './svg-render-primitives';
 import { BEHAVIOUR_FACE_SHAPES } from './svg-render-faces';
 import { isCollabPanelShape } from './collab-shapes';
-import { isSeatingShape } from './seating';
 import { isSelfDrawingShape } from './data-shapes';
 import { isWebComponentShape } from './web-components';
 import type { ExportLabel, ExportRun } from './svg-render-labels';
@@ -97,10 +96,6 @@ export type ResolveIconArt = (iconId: string) => ExportIconArt | undefined;
 export type ExportStickerArt = { viewBox: string; markup: string };
 export type ResolveStickerArt = (stickerId: string) => ExportStickerArt | undefined;
 
-// An emoji's own drawing, by its glyph, for a render with no emoji font (a Worker's preview): a face that writes an
-// emoji (a reaction pad's) draws it from this instead of as text. Absent, or answering nothing, the glyph is text.
-export type ResolveEmojiArt = (glyph: string) => { viewBox: string; markup: string } | undefined;
-
 type BoxedExport = { opacity: number; shape: ExportShape; label: ExportLabel | null };
 
 // What an export needs from its caller beyond the element itself: the three
@@ -113,7 +108,6 @@ export type BoxedExportOptions = {
   tagColours?: readonly TagColour[];
   resolveIconArt?: ResolveIconArt;
   resolveStickerArt?: ResolveStickerArt;
-  resolveEmojiArt?: ResolveEmojiArt;
   tabFont?: string;
   // The tab's finish (docs/specs/008-canvas/finish.md), for elements without their own.
   tabFinish?: Finish;
@@ -129,10 +123,6 @@ export type BoxedExportOptions = {
   // canvas hands its charts the same list; without it they fall back to the
   // built-in one, which is what a caller with no theme in hand wants.
   chartPalette?: readonly string[];
-  // What each chart on a filled page sits on, by element id (chartPageGrounds): its series and text
-  // are drawn adapted to it, as the canvas draws them (docs/specs/007-editor/pages-mode.md
-  // "Charts adapt as they are drawn"). Absent, a chart is drawn in its colours as they are.
-  chartGrounds?: ReadonlyMap<string, readonly string[]>;
   // The document's items, for the Plan board and Plan card (docs/specs/026-plan/plan-board.md). Without
   // them a board draws its columns empty and a card a neutral placeholder.
   items?: ReadonlyMap<string, Item>;
@@ -328,7 +318,7 @@ export function describeBoxedExport(
   // smaller at every preset. The canvas decides that the same way (its
   // `multiline` flag is `type === 'sticky'`).
   const multiline = el.type === 'sticky';
-  // A Shift-resized text box draws its text scaled (docs/specs/023-draw-mode/draw-mode.md).
+  // A Shift-resized text box draws its text scaled (docs/specs/007-editor/editor-modes.md).
   const textScale = el.type === 'text' ? (el.textScale ?? 1) : 1;
   const baseSize = fontSizeFor(el.textSize, multiline) * textScale;
   const richText = (el as { richText?: TextRun[] }).richText;
@@ -424,14 +414,13 @@ export function describeBoxedExport(
 }
 
 // A shape that writes its own text, so no centred label is printed over it: a self-drawing shape
-// (charts; the legend is its own case), a Collaborate panel, a Behaviour face other than the chair, a
-// web component.
+// (charts; the legend is its own case), a Collaborate panel, a Behaviour face, a web component.
 export function selfLabelled(el: BoxedElement): boolean {
   if (el.type !== 'shape') return false;
   return (
     (isSelfDrawingShape(el.shape) && el.shape !== 'legend') ||
     isCollabPanelShape(el.shape) ||
-    (BEHAVIOUR_FACE_SHAPES.has(el.shape) && !isSeatingShape(el.shape) && el.shape !== 'room') ||
+    BEHAVIOUR_FACE_SHAPES.has(el.shape) ||
     isWebComponentShape(el.shape) ||
     // A boundary writes its own title in its tab or corner (docs/specs/009-elements/boundary.md).
     el.shape === 'boundary' ||
@@ -448,9 +437,9 @@ export function selfLabelled(el: BoxedElement): boolean {
 }
 
 // Whether an export prints the element's label as the ordinary centred, wrapped label: not a table,
-// stroke, path, code block, legend or checklist (each draws its own), nor a self-labelled shape.
+// stroke, code block, legend or checklist (each draws its own), nor a self-labelled shape.
 export function drawsStandardLabel(el: BoxedElement): boolean {
-  if (el.type === 'table' || el.type === 'freehand' || el.type === 'path') return false;
+  if (el.type === 'table' || el.type === 'freehand') return false;
   if (
     el.type === 'shape' &&
     (el.shape === 'code-block' ||

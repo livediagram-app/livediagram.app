@@ -3,17 +3,13 @@
 import type { TelemetrySummary, TelemetryWindowKey } from '@liveplanner/api-schema';
 import { HelpView } from './HelpView';
 import {
-  AVATAR_TOUR,
-  DRAW_TOUR,
   ELEMENT_TOURS,
-  WORKSHOP_TOUR,
   FORM_TOUR,
-  PAGES_TOUR,
   NEW_VERSION_PROMPT,
   PLAN_TOUR,
   POWER_USER_OFFER,
   SHOW_ME_TOURS,
-  WELCOME_TOUR,
+  WELCOME_DIALOG_CLOSED,
 } from './metric-catalogue';
 import { MetricGroups, type MetricGroup } from './MetricCards';
 import { PagesView } from './PagesView';
@@ -27,17 +23,7 @@ import { windowLabel } from './windows';
 export const TOURS_GROUPS: MetricGroup[] = [
   {
     title: 'Tours',
-    metrics: [
-      WELCOME_TOUR,
-      PLAN_TOUR,
-      WORKSHOP_TOUR,
-      DRAW_TOUR,
-      FORM_TOUR,
-      AVATAR_TOUR,
-      PAGES_TOUR,
-      ELEMENT_TOURS,
-      SHOW_ME_TOURS,
-    ],
+    metrics: [WELCOME_DIALOG_CLOSED, PLAN_TOUR, FORM_TOUR, ELEMENT_TOURS, SHOW_ME_TOURS],
   },
   { title: 'Prompts', metrics: [POWER_USER_OFFER, NEW_VERSION_PROMPT] },
 ];

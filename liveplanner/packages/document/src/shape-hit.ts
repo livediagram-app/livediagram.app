@@ -1,4 +1,4 @@
-// A whiteboard shape's hit outline (docs/specs/023-draw-mode/draw-mode.md
+// A whiteboard shape's hit outline (docs/specs/007-editor/editor-modes.md
 // "Selecting" and "Eraser"): the line the shape is drawn with, as polylines in
 // the element's local, unrotated px (0..width, 0..height), plus the regions a
 // visible fill covers. Selecting draws these polylines as the shape's
@@ -27,7 +27,7 @@ import {
 import type { ShapeKind } from './shape-kind';
 import { boxFit } from './svg-shape-fit';
 import { PATH_ARC_SEGMENTS, PATH_CURVE_SEGMENTS, svgPathSubpaths } from './svg-path-outline';
-import { insidePolygon, segmentDistance } from './whiteboard-stroke';
+import { insidePolygon, segmentDistance } from './segment-geometry';
 
 type HitLine = { readonly points: readonly Point[]; readonly closed: boolean };
 

@@ -13,7 +13,6 @@ import {
   ShareIcon,
   TagIcon,
   ThisBrowserIcon,
-  TimelineIcon,
   TrashIcon,
   TeamIcon,
   PlusIcon,
@@ -33,7 +32,6 @@ import {
 const ICONS: Record<PanelSection['kind'], () => ReactNode> = {
   home: () => <HomeIcon />,
   inbox: () => <InboxIcon />,
-  timeline: () => <TimelineIcon />,
   shared: () => <ShareIcon />,
   mine: () => <MyDocumentsIcon />,
   team: () => <TeamIcon />,

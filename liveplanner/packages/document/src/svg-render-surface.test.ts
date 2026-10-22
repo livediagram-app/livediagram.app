@@ -1,6 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { REVEAL_COVER_BASE } from './colors';
-import { ROOM_FLOOR, RUG_FILL } from './office';
 import { createShape, SHAPE_DEFAULT_SIZE } from './shape-factory';
 import { svgBoxed } from './svg-render';
 import type { ShapeKind } from './index';
@@ -9,8 +7,8 @@ import type { ShapeKind } from './index';
 // renderer draws the Map, the layer thumbnails and the exports, and it has to
 // paint an element on dark paper the way the canvas does. The canvas never
 // shows a light card on a dark canvas unless the element stores that colour
-// itself, so neither may the renderer: a hard-coded light base is how the
-// Reveal cover came out as a white panel on a dark canvas's map.
+// itself, so neither may the renderer: a hard-coded light base would come out
+// as a white panel on a dark canvas's map.
 
 const KINDS = Object.keys(SHAPE_DEFAULT_SIZE) as ShapeKind[];
 
@@ -50,21 +48,5 @@ describe('svgBoxed on dark paper', () => {
       return light.length ? [`${kind}: ${light.join(',')}`] : [];
     });
     expect(offenders).toEqual([]);
-  });
-
-  it('draws the Reveal cover on the base the canvas face uses for each paper', () => {
-    const el = createShape('reveal', 0, 0);
-    for (const surface of ['light', 'dark'] as const) {
-      expect(svgBoxed(el, { surface })).toContain(`fill="${REVEAL_COVER_BASE[surface]}"`);
-    }
-  });
-
-  it('lays an uncoloured room and rug deep on dark paper, as the canvas does', () => {
-    const room = svgBoxed(createShape('room', 0, 0), { surface: 'dark' });
-    expect(room).toContain('fill="#292524"');
-    expect(room).not.toContain(`fill="${ROOM_FLOOR}"`);
-    const rug = svgBoxed(createShape('rug', 0, 0), { surface: 'dark' });
-    expect(rug).toContain('fill="#713f12"');
-    expect(rug).not.toContain(`fill="${RUG_FILL}"`);
   });
 });

@@ -43,13 +43,6 @@ export const TELEMETRY_CATEGORIES = [
   // to-layer, 'Opened' for the panel. Never layer names in `type`.
   'Layer',
   'Session',
-  // The facilitator baton (docs/specs/012-collaboration/facilitator.md): who is running a live session.
-  // 'Started' when somebody takes a free one, 'Changed' when it is handed on
-  // or taken back, 'Ended' when the holder steps down. `type` is the shape of
-  // the move ('Claimed' / 'Granted' / 'Released'), or 'Unlocked' when the
-  // facilitator frees an element somebody was holding (docs/specs/007-editor/live-app.md lock) — never a
-  // name: the question is whether rooms use the role at all, not who held it.
-  'Facilitator',
   'AI',
   'Team',
   // Participant lifecycle (docs/specs/017-telemetry/telemetry.md): 'Participant'/'Created' fires
@@ -89,16 +82,13 @@ export const TELEMETRY_CATEGORIES = [
   // 'Uncaught', 'UnhandledRejection', 'AiQuota.BrowserReader') — never a
   // message, stack, or URL.
   'Error',
-  // Timeline (docs/specs/013-workspace/timeline.md): the Explorer's landing feed. 'Opened' with
-  // `type` 'Landing' | 'Nav' separates the new default landing view
-  // from a deliberate visit, so the landing-page change is measurable;
-  // 'Opened'/'Stack' counts stacked-run expansions, which is how we
-  // learn whether the stacking thresholds are right. 'Changed' carries
-  // the view mode, 'Selected' a filter chip's source type, and 'Loaded'
-  // 'More' | 'Retry' — the second being a read that failed hard enough
+  // Timeline (docs/specs/013-workspace/timeline.md): the scoped feeds, a document's History and a
+  // team's Activity. 'Opened'/'Stack' counts stacked-run expansions, which is how we learn whether
+  // the stacking thresholds are right. 'Changed' carries the view mode, 'Selected' a filter chip's
+  // source type, and 'Loaded' 'More' | 'Retry' — the second being a read that failed hard enough
   // that the reader pressed Try again (docs/specs/013-workspace/timeline.md §2.4), which is the
-  // only signal we get for a feed nobody could load. Never a document
-  // name, team name, or comment text.
+  // only signal we get for a feed nobody could load. Never a document name, team name, or comment
+  // text.
   'Timeline',
   // Explorer Home (docs/specs/013-workspace/explorer-home.md): the landing view. 'Opened' with
   // `type` 'Landing' | 'Nav' (the page the Explorer opened on, or a later visit) and 'Group' (a
@@ -135,17 +125,13 @@ export const TELEMETRY_CATEGORIES = [
   // 'Local'). Whether people ever come back for a deleted document is the
   // question; never a document or team name.
   'Trash',
-  // Draw mode (docs/specs/023-draw-mode/draw-mode.md), named 'Whiteboard' until its stored
-  // history was rewritten (migration 0061): a Whiteboard tab 'Created' (`type` how:
-  // 'Template' | 'NewTab'), a pen 'Selected' ('Main' | 'Second' | 'Third'),
-  // a pen, the eraser mode and the background 'Changed' ('PenColour' | 'PenWidth' |
-  // 'PenReset', 'CursorDot' | 'CursorCrosshair', 'EraserStroke' | 'EraserPartial', 'BackgroundPlain' | 'BackgroundDots' |
-  // 'BackgroundGrid', 'SnapColours') and shape recognition 'Toggled' ('RecognitionOn' |
-  // 'RecognitionOff', and for one stroke 'RecogniseOnceKey' | 'RecogniseOnceChip' |
-  // 'BreakShapeKey' | 'BreakShapeChip'). Presets only; never content.
+  // Draw mode (docs/specs/007-editor/editor-modes.md), named 'Whiteboard' until its stored
+  // history was rewritten: a Whiteboard tab 'Created' (`type` how:
+  // 'Template' | 'NewTab'). Never content.
   'Draw',
-  // Editor modes (docs/specs/007-editor/editor-modes.md): a person switched a tab's editor mode,
-  // 'Changed' with 'ModeDiagram' | 'ModeDraw' | 'ModePages', fired before the mode applies.
+  // Editor modes: a person switched a tab's editor mode, 'Changed' with 'ModeDiagram' | 'ModeDraw' | 'ModePages'.
+  // No longer sent since every tab is a Plan tab (docs/specs/017-telemetry/telemetry.md "Retired features"); kept
+  // so the stored rows still validate and chart as retired until retention ages them out.
   'Editor',
   // The Explorer's filters (docs/specs/013-workspace/explorer-filters.md "Telemetry"): 'Selected' with
   // `type` the facet that gained a value ('Text' | 'OpensIn' | 'Kind' | 'Template' | 'MadeBy' |
@@ -257,7 +243,7 @@ export const TELEMETRY_ACTIONS = [
   'Present',
   'Held',
   // Document views (docs/specs/024-agents/document-views.md): a view the api answered, typed by the
-  // view ('Overview' | 'Outline' | 'Graph' | 'Layout' | 'Comments' | 'Show' | 'Find' | 'Pages' | 'Lint').
+  // view ('Overview' | 'Outline' | 'Graph' | 'Layout' | 'Comments' | 'Show' | 'Find' | 'Lint').
   'Viewed',
   // Email (docs/specs/014-identity/transactional-email.md): a transactional / lifecycle email left the worker for
   // the provider. Only ever paired with the 'Email' category.
@@ -453,38 +439,11 @@ export const PALETTE_TELEMETRY_TYPES = {
     'PlanCard',
     'PlanView',
     'PlanSheet',
-    'ModeButton',
     'Portal',
     // Tab window (docs/specs/009-elements/tab-window.md).
     'TabWindow',
     'SessionButton',
-    'Reveal',
     'Picker',
-    'ReactionPad',
-    // Done check (docs/specs/012-collaboration/done-check.md): a Behaviour element by its palette home.
-    'DoneCheck',
-    // Quiz (docs/specs/012-collaboration/quiz.md): a Behaviour element by its palette home.
-    'Quiz',
-    // Chair (docs/specs/009-elements/chair.md): a Behaviour element, so it ranks with them.
-    'Chair',
-    // Desk, sofa and fence (docs/specs/009-elements/chair.md, fence.md): beside the chair in Navigate.
-    'Desk',
-    'Sofa',
-    'Fence',
-    // Avatar Pad (docs/specs/009-elements/avatar-pad.md): beside the fence in Navigate.
-    'Avatar-pad',
-    // The virtual office (docs/specs/009-elements/office.md), in Navigate.
-    'Room',
-    'Meeting-table',
-    'Plant',
-    'Bookshelf',
-    'Water-cooler',
-    'Coffee-machine',
-    'Rug',
-    // Bring Focus (docs/specs/012-collaboration/bring-focus.md): likewise Behaviour, in the Navigate group. The
-    // token is what elementTelemetryType actually emits for the kind, which
-    // for a hyphenated one is the hyphen kept (see Pie-chart above).
-    'Focus-button',
     'Pie-chart',
     'Bar-chart',
     'Line-chart',
@@ -495,20 +454,12 @@ export const PALETTE_TELEMETRY_TYPES = {
     // Sankey diagram (docs/specs/009-elements/sankey.md): a Build element; its kind has no hyphen to keep.
     'Sankey',
   ],
-  // The Collaborate category (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md) — its own bucket rather
-  // than more entries under `tools`, because the palette gave it its own
-  // category and the dashboard's cards are the palette's own tabs. The Chair
-  // (docs/specs/009-elements/chair.md) is NOT here: it ships in Behaviour, so it buckets with the
-  // other behaviour elements under `tools` above.
+  // The Collaborate category (docs/specs/012-collaboration/temperature-check.md, decision-record.md) — its own
+  // bucket rather than more entries under `tools`, because the palette gave it its own category and the
+  // dashboard's cards are the palette's own tabs.
   collaborate: [
-    'Estimate',
     'Temperature',
-    'Idea-box',
-    // Q&A board (docs/specs/012-collaboration/qa-board.md).
-    'Qa-board',
-    'Agenda',
     'Decision',
-    'Roll-call',
     // Comment pin (docs/specs/012-collaboration/comment-pin.md).
     'CommentPin',
     // Action panel (docs/specs/012-collaboration/action-panel.md).

@@ -1,6 +1,6 @@
 # Third-party licences
 
-liveplanner is MIT, and every app it deploys carries other people's open-source work. The licences
+liveplanner is proprietary, and every app it deploys carries other people's third-party work. The licences
 of that work (MIT, BSD, ISC, Apache-2.0 and the rest) ask for their copyright and licence text to
 travel with every copy, and our production bundles strip the comments that would otherwise carry
 them. So liveplanner publishes one **licences page**, generated at build time from what each app
@@ -27,8 +27,8 @@ reach a deployed artefact, and nothing else.
   deployed; its bundle ships its own `THIRD_PARTY_LICENSES` beside the code, generated from its
   esbuild metafile ([CLI blueprint](../015-api/blueprints/cli.md)), so the page leaves it out.
   `DISTRIBUTED_APPS` names it, so every directory in `apps/` is still accounted for.
-- **First-party code is not listed.** The `@liveplanner/*` workspaces are this repo, under its MIT
-  licence.
+- **First-party code is not listed.** The `@liveplanner/*` workspaces are this repo, proprietary
+  and `UNLICENSED` ([Business model + licence](business-model-and-licence.md)).
 - **Vendored works.** A directory inside a package that carries its own `package.json` name and its
   own licence file is a separate work. Next vendors React, React DOM, the scheduler and a few
   polyfills this way; each is listed by its directory name, "bundled in next".
@@ -83,8 +83,8 @@ reach a deployed artefact, and nothing else.
 - **Accessible.** WCAG 2.2 AA: native `details`/`summary` for keyboard and screen readers, a visible
   focus ring, each scrollable text box focusable and labelled, AA contrast in light and dark.
 - **Links.** The shared site footer (marketing, help centre, telemetry) links "Licences". In the
-  editor, the Explorer panel's ⋯ menu has a "Licences" row beside GitHub, opening the page in a new
-  tab like GitHub does.
+  editor, the Explorer panel's ⋯ menu has a "Licences" row, opening the page in a new
+  tab so the open document stays put.
 
 ## Keeping it current
 
@@ -111,6 +111,6 @@ reach a deployed artefact, and nothing else.
 
 ## Related
 
-- [Open source + distribution](open-source-and-business-model.md)
+- [Business model + licence](business-model-and-licence.md)
 - [Router app](../016-platform/router-app.md)
 - [Folders](../013-workspace/folders.md) (the Explorer ⋯ menu)

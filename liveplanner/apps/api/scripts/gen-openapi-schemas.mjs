@@ -35,8 +35,6 @@ export const ROOT_TYPES = [
   'Tab',
   'TabRecord',
   'ChangesetRequest',
-  'PagesRequest',
-  'PagesAnswer',
   'ItemsResponse',
   'FormLinkResponse',
   'PublicFormResponse',
@@ -64,7 +62,6 @@ export const ROOT_TYPES = [
   'ChangesetDetail',
   'RevertResponse',
   'OutlineView',
-  'PagesView',
   'GraphView',
   'LayoutView',
   'CommentsView',
@@ -98,7 +95,6 @@ export const ROOT_TYPES = [
   'ActivityCard',
   'ActivityCardThread',
   'HomeResponse',
-  'ImageSummary',
   'SharedWithItem',
   'ParticipantRecord',
   'Team',
@@ -117,7 +113,6 @@ export const ROOT_TYPES = [
   'DocumentCommentThread',
   'AgentPresenceResult',
   'TemplateCatalogueResponse',
-  'IconSearchResponse',
   'UnfurlResult',
 ];
 

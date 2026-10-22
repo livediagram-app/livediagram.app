@@ -61,7 +61,7 @@ this way. Where switching to one must stay instant, its code is fetched once the
 `apps/live/lib/editor-deferred-code.ts` names every module the editor loads on demand, so a surface's
 `next/dynamic` and the prefetch below share one import:
 
-- **Content a board may draw on open**: Pages mode's pages and their writing, the Draw dock, tables
+- **Content a board may draw on open**: the Draw dock, tables
   and facilitation panels. Fetched as the editor mounts (`prefetchWhenIdle`), alongside the document
   request, so a board that has one finds its code already in, while the first load does not carry it.
 - **Surfaces someone opens**: the Explorer and Layers popovers (mounted from their first opening on,
@@ -70,8 +70,7 @@ this way. Where switching to one must stay instant, its code is fetched once the
 - **At the press**: a template's canvas overrides load with its builders when one is applied.
 - **What waits for on-demand code.** Starting a deck waits for the presentation overlay's code (with
   the deck's unvisited tabs), and the overlay draws in the first slide's commit, so the deck's keys
-  listen from its first frame. The top corners give way to a top Draw dock from the commit the dock is
-  first drawn in, measured then rather than before it is on the page.
+  listen from its first frame.
 - A panel whose code cannot load (offline behind the load-error card) draws nothing rather than
   throwing into the screen around it.
 - `apps/live/app/document/[id]/document-lazy-load.test.ts` fails if any of these become static

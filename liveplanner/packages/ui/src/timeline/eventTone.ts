@@ -81,7 +81,6 @@ const TONE_BY_EVENT: Record<KnownTimelineEventType, TimelineTone> = {
   action_completed: 'create',
   token_created: 'create',
   theme_saved: 'create',
-  image_uploaded: 'create',
   folder_created: 'create',
   // Somebody reaching your work is the good kind of news, and the whole
   // reason to share a link in the first place.

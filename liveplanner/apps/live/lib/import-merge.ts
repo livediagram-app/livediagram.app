@@ -29,8 +29,6 @@ function mergeFields(receiving: Tab, imported: Tab): Tab {
     // a Form tab with no form. Its link stays the original's; the copy is unpublished, its destination chosen again
     // when the document does not hold it.
     ...(imported.kind === 'form' && imported.form ? { form: imported.form } : {}),
-    // The mode the tab opens in travels with it (docs/specs/007-editor/editor-modes.md).
-    opensIn: imported.opensIn ?? receiving.opensIn,
     layers: imported.layers ?? receiving.layers,
     theme: imported.theme ?? receiving.theme,
     backgroundColor: imported.backgroundColor ?? receiving.backgroundColor,

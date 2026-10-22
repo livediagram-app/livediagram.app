@@ -16,7 +16,6 @@ import { isBoxed, renumberSteps, supportsRotation, takesAttachments } from '@liv
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import {
   buildEditorCommands,
   type CommandContext,
@@ -36,8 +35,6 @@ const INERT_HANDLERS: CommandHandlers = {
   bringToFront: noop,
   sendToBack: noop,
   rotate: noop,
-  combine: noop,
-  mirrorCopy: noop,
   clearAnimation: noop,
   renumberSteps: noop,
   setMarker: noop,
@@ -76,9 +73,6 @@ export function useEditorCommands(open: boolean): {
   const { selectedId, multiSelectedIds } = useSelectionOf(
     useCallback((s: Selection) => (open ? s : EMPTY_SELECTION), [open]),
   );
-  // Draw mode (docs/specs/007-editor/editor-modes.md) has no format painter.
-  const whiteboard = ctx.editorMode.mode === 'draw';
-  const planMode = ctx.editorMode.mode === 'plan';
   const {
     isReadOnly,
     canShareDocument,
@@ -121,17 +115,11 @@ export function useEditorCommands(open: boolean): {
     canvasTool,
     setCanvasTool,
     workbenchMode,
-    canCombine,
-    combineSelected,
-    pagesMode,
   } = ctx;
 
   // Offline documents (docs/specs/006-document/offline-mode.md) have nothing on the server to share, so the
   // Share command is withheld the same way the header hides its button.
   const isOffline = useIsOfflineDocument(documentId);
-  // Spotlight is desktop-only, so the tool commands need the same viewport
-  // answer the palette's tool dropdown uses.
-  const isMobile = useIsMobileViewport();
 
   const isMulti = multiSelectedIds.size > 0;
   const selectionCount = isMulti ? multiSelectedIds.size : selectedId ? 1 : 0;
@@ -143,8 +131,6 @@ export function useEditorCommands(open: boolean): {
   const singleTakesAttachments = single ? takesAttachments(single) : true;
   const singleIsShape = single?.type === 'shape';
   const singleRotates = single ? supportsRotation(single) : false;
-  const combinable = isMulti && canCombine();
-  const mirrorable = selectionCount > 0 && !!pagesMode?.logo?.canMirrorCopy();
   const marker = single?.type === 'shape' ? (single.marker ?? null) : null;
   const hasAnimation = single?.type === 'arrow' && !!single.flow;
 
@@ -163,8 +149,6 @@ export function useEditorCommands(open: boolean): {
       singleIsBoxed,
       singleTakesAttachments,
       singleRotates,
-      canCombine: combinable,
-      canMirrorCopy: mirrorable,
       singleIsShape,
       hasAnimation,
       tabHasSteps,
@@ -177,9 +161,6 @@ export function useEditorCommands(open: boolean): {
       // content-dependent tools, so search can never offer a tool the palette
       // has greyed out.
       canvasEmpty,
-      isMobile,
-      whiteboard,
-      planMode,
       tabLocked,
     }),
     [
@@ -191,8 +172,6 @@ export function useEditorCommands(open: boolean): {
       singleIsBoxed,
       singleTakesAttachments,
       singleRotates,
-      combinable,
-      mirrorable,
       singleIsShape,
       hasAnimation,
       tabHasSteps,
@@ -202,9 +181,6 @@ export function useEditorCommands(open: boolean): {
       workbenchMode,
       canvasTool,
       canvasEmpty,
-      isMobile,
-      whiteboard,
-      planMode,
       tabLocked,
     ],
   );
@@ -219,8 +195,6 @@ export function useEditorCommands(open: boolean): {
     bringToFront: bringSelectedToFront,
     sendToBack: sendSelectedToBack,
     rotate: setRotationSelected,
-    combine: (op) => void combineSelected(op),
-    mirrorCopy: () => pagesMode?.logo?.mirrorCopy(),
     clearAnimation: () => setArrowFlowSelected(null),
     setMarker: setMarkerSelected,
     // The step menu's own write (ChipMenuSection), one history step over the tab, with its telemetry.

@@ -12,7 +12,6 @@ const OUTSIDE_RENDER: Record<string, string> = {
     'clampFree, called from handlers and an effect',
   'apps/live/components/primitives/PagedCarousel.tsx':
     'prefersReducedMotion, called from a scroll handler',
-  'apps/live/components/canvas/ReactionBurst.tsx': 'inside the drawing effect',
   'apps/live/components/canvas/arrow-flow.tsx': 'inside the pinning effect',
   // Hooks: read in effects, handlers, store snapshots and subscriptions, or module state the browser-only Explorer reads.
   'packages/ui/src/useBrandShimmer.ts': 'inside an effect',
@@ -24,13 +23,10 @@ const OUTSIDE_RENDER: Record<string, string> = {
   'packages/ui/src/useVisualViewportBand.ts': 'subscribe and snapshot of an external store',
   'apps/live/app/document/[id]/useTabEntryEffects.ts': 'inside an effect',
   'apps/live/app/document/[id]/useCollabDeepLink.ts': 'inside an effect',
-  'apps/live/app/explorer/useTimelineFeed.ts':
-    'ENTRY_HASH, module state; the Explorer renders in the browser only',
   'apps/live/hooks/ui/usePanelDock.ts': 'inside an effect',
   'apps/live/hooks/canvas/useDocumentActions.ts': 'inside a handler',
   'apps/live/hooks/canvas/useClipboard.ts': 'inside a handler',
   'apps/live/hooks/persistence/useDocumentListActions.ts': 'inside handlers',
-  'apps/live/hooks/collab/useFacilitator.ts': 'readToken and writeToken, called from callbacks',
   'apps/live/components/primitives/useHandleReorder.ts':
     'prefersReducedMotion, called from a drag handler',
   'apps/live/components/primitives/useMovablePanelMeasure.ts': 'inside an effect',

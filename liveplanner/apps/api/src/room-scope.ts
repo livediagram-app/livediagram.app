@@ -6,11 +6,8 @@
 // withheld from, and refused from, a scoped session.
 
 // Ops that carry no tab and say nothing about one, which a scoped session
-// still receives: session tools and the worker's share-link and Trash notices.
+// still receives: the worker's share-link and Trash notices.
 const TAB_LESS_DELIVERED = new Set([
-  'poll-start',
-  'poll-answer',
-  'poll-end',
   'share-revoked',
   'share-rescoped',
   'document-trashed',
@@ -18,10 +15,6 @@ const TAB_LESS_DELIVERED = new Set([
   // (docs/specs/026-plan/item-types.md "Storage and sync").
   'item-types',
 ]);
-
-// The tab-less ops a scoped session may itself send.
-// A follow (docs/specs/012-collaboration/follow-me-viewport.md) names a person, not a tab, so a scoped visitor may follow too.
-const TAB_LESS_SENDABLE = new Set(['poll-start', 'poll-answer', 'poll-end', 'follow']);
 
 type LooseOp = { kind?: unknown; tabId?: unknown; tabs?: unknown };
 
@@ -54,15 +47,13 @@ export function opForScope(op: unknown, tabScope: string | null): unknown {
   return typeof o.kind === 'string' && TAB_LESS_DELIVERED.has(o.kind) ? op : null;
 }
 
-// Whether a session scoped to `tabScope` may put this op into the room.
+// Whether a session scoped to `tabScope` may put this op into the room: only an op about its own tab.
 // The role gate runs separately; this only confines the tab.
 export function scopedSenderMayRelay(op: unknown, tabScope: string | null): boolean {
   if (tabScope === null) return true;
   const o = asOp(op);
   if (!o || o.kind === 'document-meta') return false;
-  const mine = onScope(o, tabScope);
-  if (mine !== undefined) return mine;
-  return typeof o.kind === 'string' && TAB_LESS_SENDABLE.has(o.kind);
+  return onScope(o, tabScope) === true;
 }
 
 // document-meta carries every tab's name and folder. Other tabs keep their id

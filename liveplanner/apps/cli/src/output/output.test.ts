@@ -3,7 +3,7 @@ import { AddressError, verbById, VerbRefusal } from '@liveplanner/agent-verbs';
 import { ApiError } from '@liveplanner/api-client';
 import { CliError, formatError } from './cli-error';
 import { EXIT, exitCodeForStatus } from './exit-codes';
-import { failureOf, ISSUES_URL } from './failure-of';
+import { failureOf, SUPPORT_URL } from './failure-of';
 import { render } from './print';
 
 const HOST = 'https://liveplanner.app';
@@ -140,7 +140,7 @@ describe('failureOf', () => {
       exit: EXIT.failure,
       code: 'internal',
       message: 'internal error (RangeError)',
-      hint: `run again with LIVEPLANNER_DEBUG=1 and report it at ${ISSUES_URL}`,
+      hint: `run again with LIVEPLANNER_DEBUG=1 and report it at ${SUPPORT_URL}`,
     });
     expect(failureOf('boom', HOST).message).toBe('internal error (string)');
   });

@@ -21,7 +21,7 @@ import {
 const card: ShapeElement = {
   id: 'card',
   type: 'shape',
-  shape: 'done-check',
+  shape: 'temperature',
   x: 0,
   y: 0,
   width: 100,
@@ -31,7 +31,7 @@ const tab: Tab = { id: 't1', name: 'T', elements: [card] };
 
 // The room's answer: b cast at seq 5.
 const ledger: TabLedger = {
-  elements: { card: { responses: { b: { value: 'done', at: 1, seq: 5 } } } },
+  elements: { card: { responses: { b: { value: '4', at: 1, seq: 5 } } } },
 };
 
 function envWith(fetch: (url: string, init?: RequestInit) => Promise<Response>) {

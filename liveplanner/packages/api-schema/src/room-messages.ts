@@ -1,9 +1,6 @@
 import type { AgentPresence } from './agent-presence';
-import type { ArticleOp, ElementDelta, QaNote, RoomElementOp, Tab } from '@liveplanner/document';
+import type { ElementDelta, RoomElementOp, Tab } from '@liveplanner/document';
 import type { ParticipantPresence } from './index';
-import type { AvatarConfig } from './avatar';
-import type { AvatarSayOp } from './avatar-say';
-import type { LivePoll } from './poll';
 import type { DragPreviewPatch } from './drag-preview';
 import type { ChangesetRoomOp } from './changesets';
 import type { ItemsRoomOp, ItemTypesRoomOp } from './items';
@@ -13,77 +10,12 @@ import type { SheetsRoomOp } from './sheets';
 // Realtime room messages
 // ---------------------------------------------------------------------
 
-// One participant's Avatar-mode character (docs/specs/008-canvas/avatar-mode.md), as it travels over the
-// presence channel. Position is the character's FEET in canvas coords; the
-// animation inputs and the costume ride along so a peer draws the same
-// character, walk cycle, hop, and flag wave the sender sees. Deliberately
-// small — this goes out at cursor rates.
-
-// The statuses a character can show in Avatar mode (docs/specs/008-canvas/avatar-mode.md "Status"), the one list both
-// ends of the wire read: the editor's picker and labels are keyed to it, so a status can never be sent that a
-// receiver's type does not name.
-export const AVATAR_STATUS_IDS = ['available', 'focus', 'meeting', 'away'] as const;
-export type AvatarStatus = (typeof AVATAR_STATUS_IDS)[number];
-
-export type AvatarPresence = {
-  x: number;
-  y: number;
-  facing: 'down' | 'up' | 'left' | 'right';
-  // The sender's costume (docs/specs/008-canvas/avatar-mode.md): gender / clothing / hair / size, each a
-  // preset token from a closed set. Optional so a packet from an older client
-  // still parses — the receiver falls back to the default character. Purely
-  // cosmetic, and never an identity claim.
-  config?: AvatarConfig;
-  // A reaction in progress (docs/specs/008-canvas/avatar-mode.md): which one, and how far into it the
-  // sender is. The pose is derived from these two by a pure function on both
-  // ends, so the wire carries a kind and a clock rather than a pose.
-  reaction?: {
-    kind: 'jumping-jacks' | 'wave' | 'spin' | 'cheer' | 'dance';
-    elapsedMs: number;
-  };
-  walking: boolean;
-  // Two-frame leg swing (0 | 1).
-  stepFrame: number;
-  // Height above the ground mid-hop, in canvas px (0 = standing).
-  lift: number;
-  // Flag-wave frame, or null when the flag is down.
-  wave: number | null;
-  // Chair (docs/specs/009-elements/chair.md): the element id of the chair this character is sitting
-  // on, or null / absent when standing.
-  //
-  // Occupancy rides HERE, on ephemeral presence, and is deliberately never
-  // written to the document: a chair therefore cannot be left permanently
-  // occupied by somebody who closed their laptop, cannot conflict between two
-  // clients, and reaches D1 and undo not at all. Optional so a
-  // packet from an older client still parses as "standing".
-  seatedOn?: string | null;
-  // A drink in the hand (docs/specs/009-elements/office.md "Using it"), from a water cooler or a coffee machine,
-  // or none. Presence like the seat: put down after a minute or on leaving the mode, never in the document.
-  // Optional so an older client's packet parses as empty-handed; anything else draws nothing.
-  holding?: 'water' | 'coffee' | null;
-  // How the person is (docs/specs/008-canvas/avatar-mode.md "Status"), or none. Presence for the session only;
-  // a receiver draws only a status it knows. Optional so an older client's packet parses as no status.
-  status?: AvatarStatus | null;
-};
-
 // Room op kinds that are ephemeral signals: they mutate no document state,
 // so they relay unordered (no seq) and from any role.
 //
-// `poll-answer` (docs/specs/012-collaboration/live-poll.md) is here for the ROLE half rather than the
-// presence half: answering a poll changes nothing on the document, and a
-// presenter pulse-checking an audience on a view link is the main thing
-// polls are for, so a view-role participant must be able to send one.
-// `poll-start` / `poll-end` are deliberately NOT here — they stay behind
-// the edit-role gate below, so an audience member can answer a poll but
-// can't start one or end someone else's.
-// `avatar` (docs/specs/008-canvas/avatar-mode.md) is presence in the plainest sense: someone's walking
-// character, at cursor rates, mutating nothing. View-role senders included —
-// an audience member walking around a document they were shown a link to is
-// the same kind of harmless as their cursor.
 // This classification used to live inside the room worker while the editor kept
 // its own list of the kinds it sends and handles, in another app, with nothing
-// comparing them. That is how `viewport` shipped absent from here (see its note
-// below): the mutation branch is the fall-through, so a presence kind nobody
+// comparing them, and the mutation branch is the fall-through, so a presence kind nobody
 // classified silently becomes a logged, ordered, replayed mutation. The
 // dangerous direction is worse — a MUTATION kind added to this list hands
 // view-role visitors a write path, because the role gate only stops non-presence
@@ -92,53 +24,12 @@ export type AvatarPresence = {
 export const PRESENCE_OP_KINDS = [
   'cursor',
   'select',
-  'laser',
   'tab-focus',
-  'poll-answer',
-  'avatar',
-  // A shove (docs/specs/008-canvas/avatar-mode.md) moves nothing on the server and nothing in the
-  // document — it asks one peer to step aside. Same trust level as `avatar`.
-  'avatar-push',
-  // A character saying something (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): a message that floats
-  // away in seconds, so nothing to order, log or replay. The room relays it from an Editor or a Participant only.
-  'avatar-say',
-  // A reaction burst (docs/specs/009-elements/reaction-pad.md) is pure theatre: nothing on the server,
-  // nothing in the document, and nothing worth replaying to somebody who
-  // arrives after it finished.
-  'reaction',
-  // Where the sender is looking, for anyone following them (docs/specs/012-collaboration/follow-me-viewport.md). Its
-  // own wire contract calls it "ephemeral presence exactly like cursor /
-  // laser / avatar: throttled, never logged, never ordered (no `seq`), never
-  // replayed to a reconnecting client" — and while it was missing from this
-  // set it was all four of those things, because the mutation branch is the
-  // fall-through.
-  //
-  // The client publishes it on every pan or zoom, throttled to 10 Hz, so ~26
-  // seconds of one editor navigating filled all 256 slots of the catch-up log
-  // with camera positions and pushed `floor` past every real mutation. The
-  // next peer whose socket blipped then failed the `lastSeq + 1 >= floor`
-  // check and was sent `resync`, re-hydrating every loaded tab from D1 —
-  // exactly the storm the comment below this block says was hunted down once
-  // already, reopened by somebody merely scrolling. It also cost a
-  // `storage.put` per frame, 10 a second per navigating editor.
-  //
-  // And because the role gate drops any non-presence op from a view-role
-  // sender, a view-only visitor could not be FOLLOWED at all, contradicting
-  // docs/specs/012-collaboration/follow-me-viewport.md's "the audience on a view link is exactly who most needs it".
-  'viewport',
-  // "Come and look at this" (docs/specs/012-collaboration/bring-focus.md). Ephemeral for the same reason a laser
-  // is: a request to look somewhere is about a moment, and one replayed to a
-  // late joiner is answering a sentence nobody is still saying.
-  'focus-here',
   // A dragger's preview (docs/specs/008-canvas/drag-preview.md): where the elements they are moving are
   // right now, at cursor rates, writing nothing; the real change follows on release as element ops.
   // The room relays it only from an editor (receivers check too): a viewer must never make others'
   // elements appear to move.
   'drag-preview',
-  // Where someone is writing in an article (docs/specs/007-editor/article-pages.md "Collaboration"):
-  // their caret, as a block id and a character offset, at cursor rates, writing nothing. From any
-  // session, like the cursor: a viewer's writing takes no caret, so a viewer never sends one.
-  'article-caret',
   // Whose hands are on a Plan board's card (docs/specs/026-plan/plan-board.md "What the board shows"):
   // the card someone is dragging or reading, so peers ring it in their colour. Ephemeral, never
   // logged, from any session (a viewer reads items too).
@@ -146,19 +37,11 @@ export const PRESENCE_OP_KINDS = [
   // Someone's selection on a sheet (docs/specs/029-sheets/sheet.md "Collaboration"): outlined in their colour.
   // Ephemeral, never logged, from any session (a viewer selects too).
   'sheet-presence',
-  // Who the sender is following (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"). The room
-  // keeps it on the session and is the only one who reads it: it tells each person, on their own socket, who
-  // follows them (`followers`). Never relayed, from any session (a viewer follows too).
-  'follow',
 ] as const;
 
 // Room op kinds that DO change the document: they get a monotonic `seq` within
 // the room's epoch, land in the bounded catch-up log so a reconnecting peer can
 // replay them (docs/specs/012-collaboration/realtime-conflict-resolution.md), and are refused from a view-role sender.
-//
-// `poll-start` / `poll-end` sit here rather than with `poll-answer` above on
-// purpose: an audience member on a view link may answer a poll but must not be
-// able to start one or end someone else's (docs/specs/012-collaboration/live-poll.md).
 export const MUTATION_OP_KINDS = [
   'tab',
   'tab-meta',
@@ -171,11 +54,6 @@ export const MUTATION_OP_KINDS = [
   // (docs/specs/012-collaboration/collab-race-hardening.md). A mutation for the same reasons as a dot.
   'el-delta',
   'document-meta',
-  // One article's writing changing, block by block (docs/specs/007-editor/article-pages.md
-  // "Collaboration"): two people writing different paragraphs merge, as `el` does for elements.
-  'article',
-  'poll-start',
-  'poll-end',
 ] as const;
 
 // Op kinds only the WORKER may originate, stamped `from: 'system'` and pushed
@@ -183,12 +61,6 @@ export const MUTATION_OP_KINDS = [
 // arrive on a client socket: without that, any edit-role peer could forge
 // `share-revoked` carrying the code from their own URL and force-redirect every
 // collaborator out of the session (docs/specs/013-workspace/share-password.md).
-//
-// `qa` (docs/specs/012-collaboration/qa-board.md) is here for the same reason: it is the api's authoritative
-// word on a Q&A board after a write it has already persisted. A client that
-// could send one could rewrite every peer's board without touching D1. Unlike
-// `share-revoked` it is SEQUENCED into the catch-up log (the worker asks for
-// that on the /broadcast body), because it changes the document.
 //
 // `share-rescoped` (docs/specs/013-workspace/tab-scoped-share-links.md) for the same reason as
 // `share-revoked`: a forged one would reload every holder of a code.
@@ -206,7 +78,6 @@ export const MUTATION_OP_KINDS = [
 export const SYSTEM_OP_KINDS = [
   'share-revoked',
   'share-rescoped',
-  'qa',
   'document-trashed',
   'changeset',
   'items',
@@ -242,7 +113,7 @@ export function isPresenceOpKind(kind: unknown): kind is PresenceOpKind {
 // A Participant's socket may send these beside presence; every other mutation from it is dropped, except an `el`
 // op, which the room applies through the participant content rule instead of relaying.
 const PARTICIPATION_OP_KINDS = ['vote'] as const;
-const PARTICIPATION_DELTA_KINDS = ['response', 'idea'] as const;
+const PARTICIPATION_DELTA_KINDS = ['response'] as const;
 
 export function isParticipationOp(op: unknown): boolean {
   if (typeof op !== 'object' || op === null) return false;
@@ -258,45 +129,6 @@ export function isSystemOpKind(kind: unknown): kind is (typeof SYSTEM_OP_KINDS)[
   return typeof kind === 'string' && (SYSTEM_OP_KINDS as readonly string[]).includes(kind);
 }
 
-// ---------------------------------------------------------------------
-// Facilitator (docs/specs/012-collaboration/facilitator.md)
-// ---------------------------------------------------------------------
-
-// Why this is a MESSAGE and not a room op: an op is relayed, and the baton is
-// arbitrated. Only the room can say who holds it, because only the room can see
-// every socket, and only the room can mint a token no other peer ever receives.
-// A relayed "I am the facilitator now" would be a claim anybody could make.
-
-/** What moved the baton, which is what lets each client word its own toast. */
-export type FacilitatorReason =
-  // Somebody took a free baton.
-  | 'claim'
-  // Somebody handed it to somebody else (or the owner took it back).
-  | 'grant'
-  // The holder stepped down.
-  | 'release'
-  // The holder left and did not come back inside the grace period.
-  | 'left'
-  // The state a joiner is told on connect. Announces nothing: the room is
-  // catching them up, not reporting an event.
-  | 'state';
-
-export type FacilitatorAction =
-  // Take a free baton (or, as the owner, take a held one).
-  | { action: 'claim' }
-  // Hand it to a presence id: the owner, or the holder passing it on.
-  | { action: 'grant'; to: string }
-  // Step down.
-  | { action: 'release' }
-  // Free an element somebody else is holding through the concurrent-selection
-  // lock (docs/specs/007-editor/live-app.md), so the room can get on. USING the baton rather than moving
-  // it, but it rides the same arbitrated channel for the same reason the
-  // others do: relayed, it would be a command any peer could issue against any
-  // other, and the point is that only the person running the session can.
-  //
-  // `target` is the holder's presence id, `elementId` what they are holding.
-  | { action: 'unlock'; target: string; elementId: string };
-
 // Outgoing WebSocket frames the room sends to clients.
 // `presence` is the full participant list refreshed on join / leave;
 // `op` is an arbitrary document change rebroadcast from another client.
@@ -309,7 +141,7 @@ export type ServerMessage =
   // `seq`/`epoch` ride mutation ops only (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1): the room
   // assigns each mutation a monotonic sequence within an `epoch` (a random
   // id minted per DO instantiation) so a reconnecting client can ask what
-  // it missed. Presence ops (cursor/select/laser/tab-focus) carry neither —
+  // it missed. Presence ops (cursor/select/tab-focus) carry neither —
   // they're ephemeral and unordered. Both fields absent = an older room or
   // a presence op; clients treat that as "no ordering info", unchanged.
   | { kind: 'op'; from: string; op: unknown; seq?: number; epoch?: string }
@@ -324,35 +156,6 @@ export type ServerMessage =
       ops: { from: string; op: unknown; seq: number }[];
       resync: boolean;
     }
-  // Who holds the facilitator baton (docs/specs/012-collaboration/facilitator.md), broadcast on every change and
-  // sent once to each joiner with `reason: 'state'`.
-  //
-  // `token` rides ONLY the copy sent to the new holder, and is the whole
-  // security model: the room knows no identities (docs/specs/015-api/public-api-and-tokens.md §6), so the holder
-  // proves itself by presenting the token on its next `hello` rather than by
-  // being anybody in particular. A refresh therefore keeps the baton, and no
-  // other peer can claim it, because no other peer was ever sent it.
-  | {
-      kind: 'facilitator';
-      holder: string | null;
-      by?: string;
-      reason: FacilitatorReason;
-      token?: string;
-    }
-  // "Your hold on this element has been released" (docs/specs/007-editor/live-app.md + docs/specs/012-collaboration/facilitator.md), sent
-  // to the HOLDER'S SOCKET ALONE. Being sent it is the whole of the addressing:
-  // the room mints a presence id per socket and never tells a client which one
-  // is its own (docs/specs/015-api/public-api-and-tokens.md §6), so a broadcast carrying a target id would reach
-  // nobody able to recognise themselves in it. Same trick as the baton token.
-  //
-  // The receiver drops the selection and re-broadcasts its own `select` op, so
-  // every other peer's lock clears through the ordinary path and the room needs
-  // to tell nobody else anything.
-  | { kind: 'selection-released'; elementId: string; by: string }
-  // Who is following you (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"): their presence
-  // ids, sent to YOUR SOCKET ALONE whenever the list changes, the same addressing as `selection-released`. It is
-  // how a client counts its followers and refuses to follow one of them back.
-  | { kind: 'followers'; ids: string[] }
   // The ordering cursor this session has reached (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1), sent on
   // `hello` and to the SENDER of each ordered op, which the relay skips. Without
   // it a client only learned seqs from other people's ops, so a reconnect
@@ -380,15 +183,9 @@ export type FormatMessage = { kind: 'format'; format: number; build?: string };
 // `hello` identifies the participant on connect; `op` is any local
 // mutation the client wants rebroadcast to peers.
 export type ClientMessage =
-  // `facilitatorToken` (docs/specs/012-collaboration/facilitator.md) is the baton coming home after a refresh:
-  // the room checks it against the one it issued and, if it still matches,
-  // hands the baton to this new socket. Absent on every ordinary hello.
-  | { kind: 'hello'; participant: ParticipantPresence; facilitatorToken?: string }
+  | { kind: 'hello'; participant: ParticipantPresence }
   // `ref`: asks the room to echo it on this op's `cursor` frame (CursorMessage).
   | { kind: 'op'; op: unknown; ref?: number }
-  // Ask the room to move the baton (docs/specs/012-collaboration/facilitator.md). The room decides; the client
-  // learns the answer from the `facilitator` frame like everybody else.
-  | ({ kind: 'facilitator' } & FacilitatorAction)
   // Sent right after re-connecting (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1): "here's the last
   // epoch+seq I applied — tell me what I missed, or that I must re-hydrate".
   // `epoch` is null on a client that hasn't seen an ordered op yet.
@@ -468,22 +265,6 @@ export type RoomOp =
   // element fields: a whole-element `el` update replaced a peer's copy with the
   // sender's snapshot, so two people pressing the same done check lost a mark.
   | { kind: 'el-delta'; tabId: string; elementId: string; delta: ElementDelta }
-  // An article's writing on a tab changed (docs/specs/007-editor/article-pages.md
-  // "Collaboration"): its block ops, applied by block id, or the whole document gone (`removed`).
-  // `Tab.articles` never rides a `tab-meta` patch, which would replace every document wholesale.
-  // `created`: the article is new (its first frames): a receiver without it takes it, where puts
-  // for an article it no longer has (removed meanwhile) are dropped. `agent`: an agent wrote it (set
-  // by the api relay alone), so an editor that is not its writer still grows its pages
-  // (docs/specs/024-agents/pages-for-agents.md "Pages for the writing").
-  | {
-      kind: 'article';
-      tabId: string;
-      flow: string;
-      ops: ArticleOp[];
-      created?: true;
-      agent?: true;
-    }
-  | { kind: 'article'; tabId: string; flow: string; removed: true }
   | {
       kind: 'vote';
       tabId: string;
@@ -523,66 +304,6 @@ export type RoomOp =
   // active tab id is included so we only render cursors of
   // participants who are looking at the same tab as us.
   | { kind: 'cursor'; tabId: string; x: number | null; y: number | null }
-  // The sender's caret in an article's writing (docs/specs/007-editor/article-pages.md
-  // "Collaboration"): the top-level block it is in, by id, and how many characters into that
-  // block's text it sits, so a receiver places it in their own copy of the writing whatever they
-  // typed elsewhere. `flow: null` means the sender's writing lost the caret, so peers drop it.
-  // Throttled like the cursor; parsed with parseArticleCaret.
-  | { kind: 'article-caret'; tabId: string; flow: string; blockId: string; offset: number }
-  | { kind: 'article-caret'; tabId: string; flow: null }
-  // One sample of the sender's laser-pointer trail (canvas-coords).
-  // Sent on every pointer move while the sender is in laser tool
-  // mode, throttled like cursor. Receivers append to a per-
-  // participant buffer and fade the trail out over ~1 s — see
-  // LaserOverlay. The active tab id scopes the rendering so peers on
-  // a different tab don't see the laser.
-  | {
-      kind: 'laser';
-      tabId: string;
-      x: number;
-      y: number;
-      // The sender's pen (docs/specs/008-canvas/laser-panel.md): width / colour / trail / effect, each a
-      // preset token. Optional, so a packet from an older client still parses
-      // and simply draws the original laser. It rides the sample rather than a
-      // separate op because a second packet would need ordering against the
-      // samples it describes, for a couple of dozen bytes on a frame that is
-      // already throttled to ~30 Hz. Receivers parse it field by field.
-      look?: {
-        width: 'fine' | 'medium' | 'bold';
-        // 'presence', a standard colour's name ('red', 'grey'...) or a custom '#rrggbb'
-        // (docs/specs/004-interface-design/colour-picker.md); older clients sent
-        // 'cyan' and 'white', which receivers read as 'teal' and 'ink'.
-        colour: string;
-        trail: 'quick' | 'normal' | 'long';
-        effect: 'beam' | 'glow' | 'comet' | 'spark';
-      };
-    }
-  // The sender's Avatar-mode character (docs/specs/008-canvas/avatar-mode.md), so everyone in the room
-  // sees everyone else walking around. Ephemeral presence exactly like
-  // cursor / laser: throttled to ~30 Hz, never logged, never replayed to a
-  // reconnecting client, and `avatar: null` means "I left the mode, drop my
-  // character". The tab id scopes rendering to peers looking at the same tab.
-  | { kind: 'avatar'; tabId: string; avatar: AvatarPresence | null }
-  // One character SHOVES another (docs/specs/008-canvas/avatar-mode.md). Sent by the pusher when their
-  // character reaches the person they clicked; only the participant named in
-  // `targetId` acts on it, by sliding their own character a short way along
-  // (`dx`, `dy`) — a unit vector. Everyone's character stays authoritative on
-  // its owner's machine, so a push is a request, never a remote write, and a
-  // peer who has left the mode simply ignores it.
-  | { kind: 'avatar-push'; tabId: string; targetId: string; dx: number; dy: number }
-  // A character SAYS something (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): `id` names the bubble,
-  // `x, y` the canvas point above the speaker's head it rises from. Parsed by `parseAvatarSay` at both ends.
-  | AvatarSayOp
-  // Somebody set off a REACTION PAD (docs/specs/009-elements/reaction-pad.md). Ephemeral exactly like cursor
-  // / laser / avatar: never logged, never ordered, never replayed to a
-  // reconnecting client — a burst you missed is a burst that is over.
-  //
-  // Carries the pad's id rather than coordinates: the burst is drawn around
-  // the element, and the element is where everyone already agrees it is.
-  // Sending x/y would mean a peer who has since moved the pad draws confetti
-  // over empty canvas. The reaction rides along so a peer plays the right one
-  // even if the pad's field changed under them mid-flight.
-  | { kind: 'reaction'; tabId: string; elementId: string; reaction: string }
   // A dragger's live preview (docs/specs/008-canvas/drag-preview.md): one geometry patch per changed
   // element; `end` says the preview is over, `landed` that it was written (the real change follows as
   // element ops, after the autosave's wait), so receivers keep drawing it until then.
@@ -598,72 +319,6 @@ export type RoomOp =
       ranges: { r1: string; c1: string; r2: string; c2: string }[] | null;
       editing: boolean;
     }
-  // The sender's VIEWPORT (docs/specs/012-collaboration/follow-me-viewport.md): where they are looking, so anyone who
-  // has chosen to follow them can mirror it. Ephemeral presence exactly like
-  // cursor / laser / avatar: throttled, never logged, never ordered (no
-  // `seq`), never replayed to a reconnecting client.
-  //
-  // Sent by everyone on change rather than on request. The alternative — a
-  // follower asks, the presenter starts publishing — needs a second op kind, a
-  // re-request on every reconnect, and a rule for what happens when the
-  // presenter reloads mid-follow, all for three numbers on an
-  // already-throttled channel. The cost is accepted and written down: a room
-  // where nobody follows anybody still carries these while people scroll.
-  //
-  // `size` is the sender's canvas, so Bring Focus can tell a presser whether
-  // the room is already looking at a point on each viewer's own screen
-  // (docs/specs/012-collaboration/bring-focus.md). Optional: a client from before it
-  // sends none, and a viewport without one counts as unknown.
-  | {
-      kind: 'viewport';
-      tabId: string;
-      pan: { x: number; y: number };
-      zoom: number;
-      size?: { width: number; height: number };
-    }
-  // Who the sender follows (a presence id), or null when they stop: to the room, never relayed.
-  | { kind: 'follow'; target: string | null }
-  // --- Bring Focus (docs/specs/012-collaboration/bring-focus.md) ----------------------------------------
-  // Somebody pressed a Bring Focus element: offer everyone else a jump to it.
-  //
-  // Carries the element's CENTRE, not the presser's pan. Two people rarely
-  // have the same window size, so copying a pan lands the element off-centre
-  // (or off-screen) for anyone whose canvas is a different shape; centring the
-  // point is the correct translation of "come and look at this". The
-  // presser's `zoom` still rides along for clients from before receivers kept
-  // their own zoom; a receiver ignores it.
-  //
-  // No sender name: the envelope already identifies the sender and the
-  // receiver resolves the name from the presence list it holds, so a renamed
-  // participant's invitation reads correctly.
-  | { kind: 'focus-here'; tabId: string; at: { x: number; y: number }; zoom: number }
-  // --- Live poll (docs/specs/012-collaboration/live-poll.md) -------------------------------------------
-  // Deliberately NOT a Tab field like the timer / dot-vote: a poll is
-  // ephemeral, so nothing here reaches D1 or undo. The
-  // room keeps the running poll and its answers in its own storage and
-  // replays them on hello (docs/specs/012-collaboration/live-poll.md).
-  // `poll-start` / `poll-end` are sequenced mutations; `poll-answer` relays
-  // unordered, like presence.
-  //
-  // The host opened a poll. Replaces any poll already on screen (one at a
-  // time per document).
-  | { kind: 'poll-start'; poll: LivePoll }
-  // One participant's answer; `null` means they skipped. Keyed by sender
-  // on receipt, so re-sending REPLACES that person's earlier answer
-  // rather than stacking a second one. Allowed from view-role senders
-  // too (docs/specs/012-collaboration/live-poll.md) — polling an audience on a view link is the point.
-  //
-  // `key` is the answerer's collab key (docs/specs/012-collaboration/collab-race-hardening.md): answers used to be keyed
-  // by the per-socket presence id, so re-answering after a reconnect counted
-  // twice. Optional so an older client still parses.
-  //
-  // `proof` is the sender's per-browser collab secret (docs/specs/012-collaboration/vote-integrity.md): it proves the
-  // key is the sender's own. The room checks it and NEVER relays it; a relayed or replayed answer carries the key the
-  // room decided and no proof.
-  | { kind: 'poll-answer'; pollId: string; value: string | null; key?: string; proof?: string }
-  // The host ended the poll: drop the question, the answers, and the
-  // panel everywhere. Edit-role only, like poll-start.
-  | { kind: 'poll-end'; pollId: string }
   // A share link was revoked by the document owner. Every connected
   // peer using that share code (the `X-Share-Code` they handed in to
   // hydrate) should hard-redirect to a "share revoked" surface so
@@ -675,9 +330,6 @@ export type RoomOp =
   // hydrated with that code reload into the new scope; the room closes their
   // sockets. Worker-originated, like share-revoked.
   | { kind: 'share-rescoped'; code: string }
-  // A Q&A board's whole state after a server write (docs/specs/012-collaboration/qa-board.md). Replaces the
-  // element's notes when `rev` is newer than the local `qaRev`.
-  | { kind: 'qa'; tabId: string; elementId: string; notes: QaNote[]; rev: number }
   // One changeset the api applied (docs/specs/024-agents/agent-changesets.md "What the room does").
   // Worker-originated through /mutation.
   | ChangesetRoomOp
@@ -699,11 +351,10 @@ export type RoomOp =
 // The room itself still operates on `op: unknown` — the agnosticism
 // stays at the worker boundary.
 export type RoomOutgoing =
-  | { kind: 'hello'; participant: ParticipantPresence; facilitatorToken?: string }
+  | { kind: 'hello'; participant: ParticipantPresence }
   | { kind: 'op'; op: RoomOp; ref?: number }
   | { kind: 'sync'; epoch: string | null; lastSeq: number }
-  | { kind: 'identity'; participant: ParticipantPresence }
-  | ({ kind: 'facilitator' } & FacilitatorAction);
+  | { kind: 'identity'; participant: ParticipantPresence };
 
 export type RoomIncoming =
   | { kind: 'presence'; participants: ParticipantPresence[]; agents?: AgentPresence[] }
@@ -715,16 +366,6 @@ export type RoomIncoming =
       ops: { from: string; op: RoomOp; seq: number }[];
       resync: boolean;
     }
-  | {
-      kind: 'facilitator';
-      holder: string | null;
-      by?: string;
-      reason: FacilitatorReason;
-      token?: string;
-    }
-  // Addressed by being sent at all — see ServerMessage above.
-  | { kind: 'selection-released'; elementId: string; by: string }
-  | { kind: 'followers'; ids: string[] }
   | CursorMessage
   | FormatMessage;
 

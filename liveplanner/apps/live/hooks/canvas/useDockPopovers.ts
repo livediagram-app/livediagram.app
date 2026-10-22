@@ -19,10 +19,6 @@ const POPOVER_WIDTHS: Partial<Record<string, number>> = {
   'plan-trash': 352,
   // The Layers popover's `w-[22rem]`: roomy rows (docs/specs/006-document/layers.md).
   layers: 352,
-  // The Slide Deck popover's `w-[420px]` (docs/specs/012-collaboration/presentation-mode.md).
-  slides: 420,
-  // The Contents popover's `w-[380px]` (docs/specs/007-editor/pages-mode.md "Contents").
-  contents: 380,
   // CardFinderPanel's `sm:w-[44rem]`: wide enough for each row's state, priority, due date and assignee.
   'plan-cards': 704,
   // CardTypesPanel's `sm:w-[34rem]`, two types to a row.
@@ -32,34 +28,26 @@ const POPOVER_WIDTHS: Partial<Record<string, number>> = {
   // The Session strip's popovers, `w-72` each (docs/specs/012-collaboration/session-tools.md).
   'session-timer': 288,
   'session-vote': 288,
-  'session-poll': 288,
   // The Tidy Up popover's `w-80`: two tiles to a row (docs/specs/008-canvas/layout-cleanup.md).
   'tidy-up': 320,
   // The Explorer's `w-[38rem]`: its rail beside a pane (docs/specs/013-workspace/explorer-structure.md).
   explorer: 608,
 };
 
-// 'slides': the Slide Deck panel over its cluster button in Pages mode. 'card-types': the Card
-// Types panel over its cluster button in Plan mode (docs/specs/026-plan/item-types.md).
+// 'card-types': the Card Types panel over its cluster button in Plan mode (docs/specs/026-plan/item-types.md).
 export type DockPanel =
   | 'explorer'
   | 'layers'
   | 'collaborate'
-  | 'slides'
-  // Pages mode's Contents (docs/specs/007-editor/pages-mode.md "Contents").
-  | 'contents'
   | 'card-types'
   | 'plan-trash'
   | 'plan-cards'
   | 'plan-new-card'
-  // The Session strip's Timer, Vote and Poll (docs/specs/012-collaboration/session-tools.md "The Session strip").
+  // The Session strip's Timer and Vote (docs/specs/012-collaboration/session-tools.md "The Session strip").
   | 'session-timer'
   | 'session-vote'
-  | 'session-poll'
   // Diagram mode's Tidy Up popover (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button").
-  | 'tidy-up'
-  // Avatar mode's character sheet (docs/specs/008-canvas/avatar-mode.md "The Avatar Panel").
-  | 'avatar';
+  | 'tidy-up';
 
 export type { DockAnchor };
 
@@ -69,16 +57,12 @@ export type { DockAnchor };
 function trackDockPanelOpened(id: DockPanel): void {
   if (id === 'layers') track('Layer', 'Opened', 'Panel');
   else if (id === 'collaborate') track('UI', 'Opened', 'Collaborate');
-  else if (id === 'slides') track('UI', 'Opened', 'SlideDeck');
-  else if (id === 'contents') track('UI', 'Opened', 'PageContents');
   else if (id === 'card-types') track('Plan', 'Opened', 'CardTypes');
   else if (id === 'plan-trash') track('Plan', 'Opened', 'Trash');
   else if (id === 'plan-cards') track('Plan', 'Opened', 'CardFinder');
   else if (id === 'session-timer') track('UI', 'Opened', 'SessionTimer');
   else if (id === 'session-vote') track('UI', 'Opened', 'SessionVote');
-  else if (id === 'session-poll') track('UI', 'Opened', 'SessionPoll');
   else if (id === 'tidy-up') track('UI', 'Opened', 'TidyUp');
-  else if (id === 'avatar') track('UI', 'Opened', 'AvatarPanel');
 }
 
 export function useDockPopovers(mainRef: Ref<HTMLElement>) {

@@ -1,9 +1,10 @@
 # Profile picture
 
 **Status: shipped.** A signed-in user's avatar shows their profile picture:
-a picture they uploaded, else their Google picture. They see it in their own
-chrome, and signed-in collaborators see it on presence avatars, cursors,
-comments and team member lists, unless they turn it off. Anonymous share-link
+their Google (sign-in provider) picture; liveplanner takes no picture
+uploads. They see it in their own chrome, and signed-in collaborators see it
+on presence avatars, cursors and team member lists, unless they turn it off.
+Comment authors show initials. Anonymous share-link
 visitors always see initials. Without a picture, or when it cannot be shown,
 the avatar is the initial on its disc, exactly as before. Builds on [Auth + guest access](auth-and-guest-access.md)
 (Clerk is optional) and the identity card of
@@ -65,29 +66,27 @@ Google external account points at **Google's live URL**
 account is the fresher of the two.
 
 Because the format is undocumented, it is used only to recognise a manual
-upload, and only in the safe direction: a URL that does not decode to
-`images.clerk.dev/uploaded/…` is treated as not a manual upload, so if Clerk
-ever changes the format the Google picture simply wins again, as it would
-have without this rule.
+upload so it is never shown: `user.imageUrl` decoding to
+`images.clerk.dev/uploaded/…` counts as no picture. The Google account's own
+picture is read first and needs no decoding, so a format change at Clerk can
+only affect someone without a Google account.
 
 ## 2. Which picture wins
 
-The **profile picture URL** is resolved, in order (a manual choice goes over
-an automatic one):
+The **profile picture URL** is resolved, in order:
 
-1. **A picture the person uploaded to Clerk**: `user.hasImage` is true and
-   `user.imageUrl` decodes to `images.clerk.dev/uploaded/…` (§1).
-2. **The Google account's picture**: the first `externalAccounts` entry with
+1. **The Google account's picture**: the first `externalAccounts` entry with
    `provider === 'google'` and a non-empty `imageUrl`: Google's live picture
    as of the last Google sign-in.
-3. **Clerk's copy**: `user.imageUrl` when `user.hasImage` is true (a copy
-   from Google or another provider, with no Google account to prefer).
-4. **None**: the initials avatar.
+2. **Clerk's copy**: `user.imageUrl` when `user.hasImage` is true and it is a
+   copy from Google or another sign-in provider, never a picture uploaded to
+   Clerk (`user.imageUrl` decoding to `images.clerk.dev/uploaded/…`, §1).
+3. **None**: the initials avatar.
 
 Only `https:` URLs on Clerk's image host `img.clerk.com` are accepted; any
 other URL counts as no picture. That is also the host Clerk's own CSP guide
 names for `img-src` ([CSP headers](https://clerk.com/docs/guides/secure/best-practices/csp-headers)).
-The picture is fetched through Clerk, framed exactly as Google (or the upload)
+The picture is fetched through Clerk, framed exactly as Google
 frames it: Clerk is asked for a **size only**, `width=N&height=N`, never
 `fit=crop`. Measured on 2026-09-29 against a public Clerk proxy of a Google
 picture (source 1000x1000, Google's own `=s1000-c` square):
@@ -99,8 +98,9 @@ matches Google's rendering (RMSE 0.004). Each disc offers a 96px and a 192px
 source (`srcset` with `sizes` set to the disc's size), so a 44px disc is
 crisp at 2x and 3x and the smaller discs reuse the 96px download.
 
-liveplanner offers no upload of its own; an upload made through Clerk (its
-account portal, or an app on the same Clerk instance) is honoured.
+liveplanner offers no upload of its own, and an upload made through Clerk (its
+account portal, or an app on the same Clerk instance) is ignored: image uploads
+are not part of liveplanner.
 
 ## 3. What "automatically" means
 
@@ -135,7 +135,7 @@ account across devices. Its default is one named constant,
 | Header account button, Settings > Account card                                          | always           | n/a                     | n/a                           |
 | Presence avatars (header, tab bar, Collaborators, and every roster built from presence) | always           | when your switch is on  | initials                      |
 | Live cursor labels                                                                      | n/a              | when your switch is on  | initials                      |
-| Comment authors (thread popover, on-canvas bubbles)                                     | always           | when your switch is on  | initials                      |
+| Comment authors (thread popover, on-canvas bubbles)                                     | initials         | initials                | initials                      |
 | Team member lists                                                                       | always           | when your switch is on  | n/a (teams are signed-in)     |
 
 **Signed-in collaborator** means a viewer whose own session is a verified
@@ -150,17 +150,10 @@ The picture is a URL, never bytes: nothing is proxied, and nothing is stored
 in R2. Two server-side places hold it, both set only by the person's own
 verified Clerk session and both cleared when the switch is off:
 
-- **The participant record** (`participants.picture_url`, D1 migration
-  `0058`). `PUT /api/participants/<id>/picture` sets or clears it; the caller
+- **The participant record** (`participants.picture_url`). `PUT /api/participants/<id>/picture` sets or clears it; the caller
   must be that id's verified Clerk session (a guest header or an API token is
   refused). `GET /api/participants/<id>` returns `pictureUrl` only to a
   signed-in caller, and team member lists carry it for joined members.
-- **Comment authors** are looked up by the server, because a reader never
-  holds other people's comment author ids (they are owner ids, a guest's
-  credential, redacted on every read).
-  `GET /api/documents/<id>/tabs/<tabId>/comment-pictures` answers a reader
-  with read access with comment id to picture URL, and an anonymous reader
-  with an empty map. Your own comments show your own picture to you.
 - **The realtime room's presence.** A signed-in client's room join mints a
   one-time room ticket over authenticated REST, which records that the
   session is a verified account (`ws_tickets.account`, same migration). The
@@ -179,16 +172,15 @@ already present somebody else's name.
 
 ## 7. States and fallbacks
 
-| State                                                                                     | Avatar                                                               |
-| ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| Clerk disabled for the deployment (self-host)                                             | Initials everywhere, exactly as before; no image request is made.    |
-| Guest                                                                                     | Initials; a guest has no picture and never sees anybody else's.      |
-| Signed in, no picture resolved                                                            | Initial on the disc, exactly as before.                              |
-| Picture loading                                                                           | Initial on the disc; the picture has not painted yet.                |
-| Picture loaded                                                                            | The picture, cropped to the disc.                                    |
-| Picture failed to load                                                                    | Initial on the disc, for the rest of that URL's life on the page.    |
-| Picture URL changes                                                                       | Starts again from "loading"; a previous failure does not carry over. |
-| A comment whose author id is not known yet (it arrived live and the author has not saved) | Initial, until the next load.                                        |
+| State                             | Avatar                                                               |
+| --------------------------------- | -------------------------------------------------------------------- |
+| Clerk disabled for the deployment | Initials everywhere, exactly as before; no image request is made.    |
+| Guest                             | Initials; a guest has no picture and never sees anybody else's.      |
+| Signed in, no picture resolved    | Initial on the disc, exactly as before.                              |
+| Picture loading                   | Initial on the disc; the picture has not painted yet.                |
+| Picture loaded                    | The picture, cropped to the disc.                                    |
+| Picture failed to load            | Initial on the disc, for the rest of that URL's life on the page.    |
+| Picture URL changes               | Starts again from "loading"; a previous failure does not carry over. |
 
 **No layout shift.** Every disc has the same fixed size in every state
 ([Layout stability](../004-interface-design/layout-stability.md)): the
@@ -228,10 +220,7 @@ initials underneath keep their existing contrast.
 One request per distinct person per page for a 96px crop (a few kilobytes)
 from Clerk's CDN, after auth has settled. The picture adds at most 512 bytes
 to a presence entry and one D1 column read to the member-list and participant
-reads that already happen. Comment pictures are one
-`comment-pictures` request per tab per page (again only when a comment the
-page has not seen appears), made only for signed-in readers, reading at most
-50 distinct authors' records. Images decode off the main thread (`decoding="async"`).
+reads that already happen. Images decode off the main thread (`decoding="async"`).
 
 ## 11. Observability and telemetry
 
@@ -245,8 +234,9 @@ page has not seen appears), made only for signed-in readers, reading at most
 
 ## 12. Out of scope
 
-- Uploading or changing the picture inside liveplanner; it is managed at
-  Google (or in Clerk).
+- Uploading or changing the picture, inside liveplanner or through Clerk; it
+  is managed at Google.
+- Pictures on comment authors: comments show initials.
 - Refreshing a Google picture between sign-ins (it would need a server call
   to Google with the person's OAuth token, and a Clerk secret key the api
   does not hold).

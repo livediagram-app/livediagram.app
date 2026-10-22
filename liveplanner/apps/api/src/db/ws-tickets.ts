@@ -1,4 +1,4 @@
-// ws_tickets — one-time WebSocket room tickets (migration 0037).
+// ws_tickets — one-time WebSocket room tickets.
 //
 // The WS upgrade can't carry the Bearer token or the guest signature
 // (browser limitation), so role resolution for identified callers runs
@@ -36,9 +36,6 @@ type WsAdmission = {
   // A Participant's adder key (adderKeyFor; docs/specs/013-workspace/share-roles.md "Integrity"), which the room
   // stamps on the stickies and text it adds. Null for every other level and when no identity resolved.
   adderKey: string | null;
-  // Whether the mint resolved the caller as the document's owner (ownsDocument): the room's `X-Verified-Owner`
-  // bit, which lets the owner always take the facilitator baton back (docs/specs/012-collaboration/facilitator.md).
-  owner: boolean;
 };
 
 export async function createWsTicket(
@@ -52,7 +49,7 @@ export async function createWsTicket(
   await env.DB.prepare('DELETE FROM ws_tickets WHERE expires_at <= ?').bind(now).run();
   const ticket = crypto.randomUUID();
   await env.DB.prepare(
-    'INSERT INTO ws_tickets (ticket, document_id, role, expires_at, tab_scope, share_code, account, person_tag, workbench_pairing, adder_key, owner) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    'INSERT INTO ws_tickets (ticket, document_id, role, expires_at, tab_scope, share_code, account, person_tag, workbench_pairing, adder_key) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
   )
     .bind(
       ticket,
@@ -65,7 +62,6 @@ export async function createWsTicket(
       admission.personTag,
       admission.workbenchPairing,
       admission.adderKey,
-      admission.owner ? 1 : 0,
     )
     .run();
   return ticket;
@@ -82,7 +78,7 @@ export async function consumeWsTicket(
   now = Date.now(),
 ): Promise<WsAdmission | null> {
   const row = await env.DB.prepare(
-    'DELETE FROM ws_tickets WHERE ticket = ? AND document_id = ? AND expires_at > ? RETURNING role, tab_scope, share_code, account, person_tag, workbench_pairing, adder_key, owner',
+    'DELETE FROM ws_tickets WHERE ticket = ? AND document_id = ? AND expires_at > ? RETURNING role, tab_scope, share_code, account, person_tag, workbench_pairing, adder_key',
   )
     .bind(ticket, documentId, now)
     .first<{
@@ -93,7 +89,6 @@ export async function consumeWsTicket(
       person_tag?: string | null;
       workbench_pairing?: string | null;
       adder_key?: string | null;
-      owner?: number | null;
     }>();
   // A ticket names a level this worker knows, or admits nobody.
   if (!row || !isAccessLevel(row.role)) return null;
@@ -105,6 +100,5 @@ export async function consumeWsTicket(
     personTag: row.person_tag ?? null,
     workbenchPairing: row.workbench_pairing ?? null,
     adderKey: row.adder_key ?? null,
-    owner: row.owner === 1,
   };
 }

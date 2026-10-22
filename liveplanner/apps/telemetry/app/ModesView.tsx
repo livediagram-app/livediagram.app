@@ -12,7 +12,7 @@ import { rankTrend, windowLabel } from './windows';
 // Palette tab, which ranks the elements people add: a mode is a way of working
 // on the canvas, not a thing put on it.
 
-const MODE_OPTION = /^(Eraser|Laser|Spotlight|Format)/;
+const MODE_OPTION = /^(Eraser|Format)/;
 
 export function ModesView({
   summary,
@@ -43,7 +43,7 @@ export function ModesView({
           <RankCard
             trend={trend}
             title="Selection Modes"
-            subtitle="Laser, spotlight, eraser, format painter, isometric, avatar"
+            subtitle="Eraser, format painter, isometric"
             category="Canvas"
             action="Used"
             items={modes}
@@ -53,7 +53,7 @@ export function ModesView({
           <RankCard
             trend={trend}
             title="Mode Options"
-            subtitle="Settings inside a mode: eraser size and target, laser colour and trail, spotlight shape, format painter copies"
+            subtitle="Settings inside a mode: eraser size and target, format painter copies"
             category="UI"
             action="Changed"
             items={options}

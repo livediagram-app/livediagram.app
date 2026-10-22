@@ -11,7 +11,6 @@ import { apiLoadDocument, apiLoadTab, fetchCloudFavouriteIds } from '@/lib/api-c
 import { fetchCloudTags } from '@/lib/api/tags';
 import { DOCUMENT_CONVERSION_HEADER } from '@liveplanner/api-schema';
 import { API_BASE, ApiError, apiDelete } from '@/lib/api/core';
-import { embedTabImages, isDataImageId, tabImageIds } from './offline-images';
 import {
   offlineCreateDocument,
   offlineDeleteDocument,
@@ -53,8 +52,8 @@ async function oneAtATime<T>(documentId: string, run: () => Promise<T>): Promise
   }
 }
 
-// Offline → Cloud ("Sync Document"), in ./offline-sync. Returns the (unchanged) document id and the images it
-// re-homed (data URI -> gallery id), for an editor syncing in place.
+// Offline → Cloud ("Sync Document"), in ./offline-sync. Returns the (unchanged) document id, for an editor
+// syncing in place.
 export function saveOfflineToCloud(offlineId: string, ownerId: string): Promise<OfflineSyncResult> {
   return oneAtATime(offlineId, () => syncOfflineDocument(offlineId, ownerId));
 }
@@ -94,27 +93,14 @@ async function downloadAndRemoveCloudCopy(
   //
   // The best-effort filter is borrowed from duplicate-document.ts, where it's
   // correct because duplication leaves the source intact. Here the source is
-  // destroyed, which inverts the trade. Abort exactly as the image-embed guard
-  // below does, and for a stronger reason: that one protects bytes a reaper
-  // might collect in 30 days, this one protects content that would be gone
-  // immediately.
+  // destroyed, which inverts the trade: the content would be gone immediately.
   if (fetchedTabs.length !== liveDoc.tabs.length) throw new Error('tab load incomplete');
   // The item store too, all or nothing, for the same reason: the server copy is deleted below
   // (docs/specs/026-plan/items.md "Offline documents"). A failed fetch throws and aborts.
   const itemStore = await fetchItems({ ownerId, documentId, shareCode, tabId: null });
   // And the sheet store, all or nothing (docs/specs/029-sheets/sheet-store.md "Offline documents").
   const sheets = await fetchAllSheets({ ownerId, documentId, shareCode, tabId: null });
-  // Embed referenced R2 images as data URIs BEFORE the server delete below:
-  // once the document row is gone, its images count as unused and the api's
-  // 30-day retention reaper would delete the bytes the offline document still
-  // points at (docs/specs/009-elements/images.md + /76).
-  const tabs = await embedTabImages(fetchedTabs, { ownerId, documentId, shareCode });
-  // Embedding is best-effort per image, but the DELETE below is not: if any
-  // image failed to embed, aborting here keeps the server copy (and its
-  // images) alive instead of quietly signing the stragglers up for the
-  // 30-day reaper. The caller surfaces the failure; the user can retry.
-  const unembedded = tabs.some((t) => tabImageIds(t).some((id) => !isDataImageId(id)));
-  if (unembedded) throw new Error('image embed incomplete');
+  const tabs = fetchedTabs;
 
   // The cloud star is a row keyed on the document, so the server delete below
   // takes it too; carry it onto the offline record (docs/specs/013-workspace/favourites.md). A failed
@@ -129,14 +115,13 @@ async function downloadAndRemoveCloudCopy(
   const rec: OfflineDocumentRecord = {
     id: liveDoc.id,
     name: liveDoc.name,
-    // Keep its place and its deck: the server row, the only other copy, is
+    // Keep its place: the server row, the only other copy, is
     // deleted below. A team folder isn't a place in the personal tree the
     // offline record lives in, so a team document lands at the root of My Documents.
     folderId: liveDoc.teamId ? null : (liveDoc.folderId ?? null),
     createdAt: liveDoc.createdAt ?? now,
     savedAt: now,
     tabs,
-    ...(liveDoc.presentation ? { presentation: liveDoc.presentation } : {}),
     ...(starred ? { favourite: true } : {}),
     ...(tagIds.length ? { tagIds } : {}),
     ...(liveDoc.itemTypes ? { itemTypes: liveDoc.itemTypes } : {}),

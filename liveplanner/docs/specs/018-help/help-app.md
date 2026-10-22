@@ -4,7 +4,7 @@ A standalone help centre at `/help`, modelled on the Manager Toolkit help centre
 
 ## Why
 
-The editor is friction-free and discoverable, but there's no place that explains features in depth, answers "how do I…", or covers account/privacy/self-hosting questions. A searchable help centre fills that gap and doubles as SEO surface (every article is an indexable static page).
+The editor is friction-free and discoverable, but there's no place that explains features in depth, answers "how do I…", or covers account and privacy questions. A searchable help centre fills that gap and doubles as SEO surface (every article is an indexable static page).
 
 ## Shape
 
@@ -14,11 +14,11 @@ A new Next.js app, `apps/help`, deployed as the `liveplanner-help` Worker and st
 - The router strips `/help` and forwards to the worker, which serves `./out`.
 - Content is **MDX** (`@next/mdx`) plus a TypeScript article index (`lib/articles.ts`). Navigation/index pages are TSX.
 
-It started as a copy of the Manager Toolkit help centre and has since been redesigned in the marketing site's language; what each page looks like (the home page's sections, category art, grouped category pages, article navigation, search keys) is [Help pages](help-pages.md). The building blocks below stay: hero + client-side search, category cards, article pages with an auto-generated table of contents, breadcrumbs, "Was this helpful?" feedback, reading time, related-guide sidebar, and a back-to-top button. An article's sections (the tinted bands between its `##` headings) are grouped while it renders, so the static HTML already has them, and the reading-time row holds its height before the time is counted: nothing moves after the page appears. The difference is the categories/content (liveplanner's) and the **brand**: liveplanner is sky-blue (`brand-500`, see [Theme](../004-interface-design/color-scheme.md)) on light or dark chrome ([Appearance](../004-interface-design/appearance.md)), not MT's dark purple, so every surface uses the shared `@liveplanner/tailwind-config` brand ramp and slate neutrals to match `apps/marketing` and `apps/telemetry`.
+It started as a copy of the Manager Toolkit help centre and has since been redesigned in the marketing site's language; what each page looks like (the home page's sections, category art, grouped category pages, article navigation, search keys) is [Help pages](help-pages.md). The building blocks below stay: hero + client-side search, category cards, article pages with an auto-generated table of contents, breadcrumbs, "Was this helpful?" feedback, reading time, related-guide sidebar, and a back-to-top button. An article's sections (the tinted bands between its `##` headings) are grouped while it renders, so the static HTML already has them, and the reading-time row holds its height before the time is counted: nothing moves after the page appears. The difference is the categories/content (liveplanner's) and the **brand**: liveplanner is violet (`brand-500`, see [Theme](../004-interface-design/color-scheme.md)) on light or dark chrome ([Appearance](../004-interface-design/appearance.md)), not MT's dark purple, so every surface uses the shared `@liveplanner/tailwind-config` brand ramp and slate neutrals to match `apps/marketing` and `apps/telemetry`.
 
 ### No paid tier
 
-liveplanner is free and MIT-licensed with no plan for a paid tier (see [Open source + distribution](../002-project-scope/open-source-and-business-model.md)). So the help centre has **no "Accounts and Billing" category and no "Pro" callouts**. Instead it carries a **Self-hosting** category, reflecting that anyone can run their own instance.
+liveplanner is free with no plan for a paid tier (see [Business model + licence](../002-project-scope/business-model-and-licence.md)). So the help centre has **no "Accounts and Billing" category and no "Pro" callouts**.
 
 ## Information architecture
 
@@ -32,7 +32,7 @@ Categories fall into two kinds. The **support** categories carry standalone arti
 
 **Developers.** A support category for the public REST API ([Public API and API tokens](../015-api/public-api-and-tokens.md)). Standalone articles — _The liveplanner API_ (overview + base URL), _Authentication_ (bearer API tokens vs the guest path), _Working with Documents_ (worked `curl` examples), and _Errors and Rate Limits_ — that tell an integrator how to call the API a token unlocks. The human-facing companion to the machine-readable `GET /api/openapi.json` ([API documentation (OpenAPI)](../015-api/api-documentation.md)), which the articles link out to rather than duplicate.
 
-**Policies.** A support category, not a feature one. It is the home for the hosted service's legal pages: the **Terms of Service**, the **Privacy Policy** and **Reporting a Vulnerability** (the vulnerability disclosure policy, [Vulnerability disclosure](../002-project-scope/vulnerability-disclosure.md), which the marketing `/security` route, `/.well-known/security.txt` and the repo's `SECURITY.md` all point at). The Terms and Privacy Policy govern only the hosted service at liveplanner.app (a self-hosted copy is the operator's responsibility). These were standalone marketing routes (`/terms`, `/privacy`); they now live as help articles under `/help/policies/`, and the old marketing routes stay alive as thin client redirects so historical links keep resolving. (The Privacy Policy previously sat in `privacy-and-security`; it moved here so the two policies sit together, and the old help URL redirects to the new one.)
+**Policies.** A support category, not a feature one. It is the home for the hosted service's legal pages: the **Terms of Service**, the **Privacy Policy** and **Reporting a Vulnerability** (the vulnerability disclosure policy, [Vulnerability disclosure](../002-project-scope/vulnerability-disclosure.md), which the marketing `/security` route, `/.well-known/security.txt` and the repo's `SECURITY.md` all point at). The Terms and Privacy Policy govern the hosted service at liveplanner.app. These were standalone marketing routes (`/terms`, `/privacy`); they now live as help articles under `/help/policies/`, and the old marketing routes stay alive as thin client redirects so historical links keep resolving. (The Privacy Policy previously sat in `privacy-and-security`; it moved here so the two policies sit together, and the old help URL redirects to the new one.)
 
 | slug                   | title                | icon      | kind    |
 | ---------------------- | -------------------- | --------- | ------- |
@@ -41,7 +41,6 @@ Categories fall into two kinds. The **support** categories carry standalone arti
 | `tips-and-tricks`      | Tips and Tricks      | lightbulb | support |
 | `account-and-data`     | Account and Data     | user      | support |
 | `privacy-and-security` | Privacy and Security | shield    | support |
-| `self-hosting`         | Self-Hosting         | server    | support |
 | `developers`           | Developers           | code      | support |
 | `troubleshooting`      | Troubleshooting      | wrench    | support |
 | `supported-devices`    | Supported Devices    | devices   | support |
@@ -57,8 +56,8 @@ Categories fall into two kinds. The **support** categories carry standalone arti
 
 The feature categories group the feature guides by area:
 
-- **Explorer** — the document library (explorer/15, teams/32+35): The Explorer overview, Home (the Timeline), Recent, Shared With Me, My Documents and folders, Team Spaces, Image Gallery, and Saved Themes, one guide per sidebar row.
-- **Palette** — the palette strip, in three sub-categories grouped on the index (see "Sub-category grouping" below): **Selection Modes** (one guide per tool-picker mode: Select, Hand, Eraser, Format Painter, Laser, Spotlight, Isometric), **Elements** (one guide per palette tab: Shapes (+ shape markers, style presets 48), Arrows (+ arrow styles, curve/elbow handles, arrow-to-arrow), Tools (+ drawing/shape-recognition, images, data elements 46+51+52+53), Components, Devices, Icons, Technology 41), and **Palette Settings** (one guide per palette setting: Auto-Attach Arrows, Alignment Guides, Panel Opacity, Quick-add on Hover, Toolbar Layout).
+- **Explorer** — the document library (explorer/14, teams/32+35): The Explorer overview, Home, Recent, Shared With Me, My Documents and folders, Team Spaces, and Saved Themes, one guide per sidebar row.
+- **Palette** — the palette strip, in three sub-categories grouped on the index (see "Sub-category grouping" below): **Selection Modes** (one guide per tool-picker mode: Select, Hand, Format Painter, Isometric), **Elements** (one guide per palette tab: Shapes (+ shape markers, style presets 48), Arrows (+ arrow styles, curve/elbow handles, arrow-to-arrow), Tools (+ drawing, images, data elements 46+51+52+53), Components, Devices, Icons, Technology 41), and **Palette Settings** (one guide per palette setting: Auto-Attach Arrows, Alignment Guides, Panel Opacity, Quick-add on Hover, Toolbar Layout).
 - **Canvas** — the infinite canvas (09), selecting many elements (multi-select), links and link cards (40), annotations (38), themes (29+42+44), templates, text and fonts (28), Undo and Redo.
 - **Tabs** — multiple canvases (13+17+30): Tabs, Tab Folders, Linking Across Tabs, Add a Tab to Another Document, Importing (27), Exporting, and Cleanup (47), one guide per tab-menu action.
 - **Collaboration** — comments, live presence (07: live cursors / selections / per-tab presence), teams (32+35), sharing and embeds (24+33+34), session tools (39).
@@ -66,8 +65,6 @@ The feature categories group the feature guides by area:
 - **Search Panel** — the global search (09): an overview landing plus sub-articles for each thing search does, finding documents/folders, teams, tabs and elements, adding palette items to the canvas, and the Create-new-tab action.
 
 Where a feature's name would equal its category slug, the landing slug is distinguished (`the-canvas`, `the-explorer`, `using-tabs`) so a feature slug never equals a category slug (which would break the breadcrumb's parent link).
-
-There is **no Presentation Mode guide**: [Presentation mode](../012-collaboration/presentation-mode.md) is a draft and the feature is not built, so the article was unpublished rather than ship documentation for a non-existent feature.
 
 **Troubleshooting tools.** One Troubleshooting article is a working tool, not only text: _Repair This Browser_ renders `BrowserRepairTool` (`apps/help/components/`), the shared `BrowserRepairPanel` from `@liveplanner/ui` plus the browser checks, so a person whose editor will not start can still clear its stuck settings from the help centre, which shares the editor's origin ([Load recovery](../007-editor/load-recovery.md)).
 
@@ -140,8 +137,8 @@ then, hatched, as the motion lines on `animations`. `shadows` is the one glyph
 that fills and fades, because it is the only one whose subject IS a fill and a
 fade; every stroke-only version of it meant something else. The Collaborate
 batch cost two: a tick drawn inside a circle rendered as a prohibition sign,
-which is the opposite of "decided", and a roll call drawn as circles beside
-lines read as a bulleted list until the circles became heads and shoulders.
+which is the opposite of "decided", and people drawn as circles beside lines
+read as a bulleted list until the circles became heads and shoulders.
 
 The pattern in every redraw so far is worth stating, since it is not what you
 would guess: none was wrong on its own terms. Each had either landed on a glyph
@@ -204,7 +201,7 @@ Two mechanical checks earn their keep alongside the render, because both catch
 things the eye skims: every path must parse (a leading moveto, seven-parameter
 arcs, correct arity elsewhere), and every anchor point must sit far enough inside
 the 24-unit box that its stroke does not clip the edge. The second one found a
-sparkle on Shape Recognition sitting low enough to be shaved. Note that any such
+sparkle on one glyph sitting low enough to be shaved. Note that any such
 checker has to split ARC parameters properly — SVG allows the two flags to be
 glued to the following coordinate (`0 1 4.5` written `014.5`), and a naive number
 scan reads that as one value and then reports perfectly good glyphs as broken.
@@ -214,7 +211,7 @@ The system has three layers, all under `apps/help`:
 - **`components/illustrations/primitives.tsx`** — the shared SVG kit (`Scene`,
   `Shape`, `Arrow`, `SelectionBox`, `Cursor`, `Avatar`, `Panel`, `Dialog`,
   `Button`, `Tabs`, `Menu`, `Tile`, `Label`, `TextBar`). Every figure composes
-  from these so the house style (white panels, slate borders, sky-blue `brand`
+  from these so the house style (white panels, slate borders, violet `brand`
   accents) lands in one place. This is the no-duplication rule applied to art.
 - **`components/illustrations/<area>.tsx`** — one file per area (canvas, palette,
   collaboration, ...) exporting named **scene** components (e.g.
@@ -249,7 +246,7 @@ the same surface recurs rather than redrawn.
 
 ## Renamed articles
 
-Six articles about the container moved when it became a document ([Document](../006-document/document.md)), **Whiteboards** became **Draw mode** when whiteboarding became an editor mode ([Editor modes](../007-editor/editor-modes.md#naming-in-the-interface)), the **Highlighter** moved from Selection Modes to the palette's Tools when it became a Draw tile ([Highlighter](../008-canvas/highlighter.md)), the **Activity Panel** category went with the panel on 2026-10-03 (Undo and Redo moved to Canvas; its other articles and the category page land on Undo), **The Welcome Tour** became **The Diagram Tour** when the tour became Diagram mode's alone ([Diagram tour](../007-editor/editor-tour.md)), and **Infographics**, then **Illustrate Mode**, became **Pages Mode**, its section moving to `/help/canvas/pages-mode/` and **The Illustrate Tour** becoming **The Pages Tour** ([Editor modes](../007-editor/editor-modes.md#naming-in-the-interface)), and **Facilitate Mode** became **Workshop Mode**, its section moving to `/help/canvas/workshop-mode/` and **The Facilitate Tour** becoming **The Workshop Tour**; each old address answers a permanent `308` from the router ([Router app, Legacy editor route](../016-platform/router-app.md#legacy-editor-route)):
+Six articles about the container moved when it became a document ([Document](../006-document/document.md)), **Whiteboards** and **Draw mode** land on **Editor modes** ([Editor modes](../007-editor/editor-modes.md#naming-in-the-interface)), the Highlighter, Shape Recognition and Eraser guides on their categories, the **Activity Panel** category went with the panel on 2026-10-03 (Undo and Redo moved to Canvas; its other articles and the category page land on Undo), **The Welcome Tour** became **The Diagram Tour** when the tour became Diagram mode's alone ([Diagram tour](../007-editor/editor-tour.md)), and **; each old address answers a permanent `308` from the router ([Router app, Legacy editor route](../016-platform/router-app.md#legacy-editor-route)):
 
 | Old address                                            | New address                                             |
 | ------------------------------------------------------ | ------------------------------------------------------- |
@@ -259,8 +256,13 @@ Six articles about the container moved when it became a document ([Document](../
 | `/help/search-panel/the-search-panel/search-diagrams/` | `/help/search-panel/the-search-panel/search-documents/` |
 | `/help/getting-started/sharing-your-diagram/`          | `/help/getting-started/sharing-your-document/`          |
 | `/help/developers/working-with-diagrams/`              | `/help/developers/working-with-documents/`              |
-| `/help/canvas/whiteboards/`                            | `/help/canvas/draw-mode/`                               |
-| `/help/selection-modes/highlighter/`                   | `/help/palette/tools/highlighter/`                      |
+| `/help/canvas/whiteboards/`                            | `/help/canvas/editor-modes/`                            |
+| `/help/canvas/draw-mode/`                              | `/help/canvas/editor-modes/`                            |
+| `/help/canvas/draw-mode/draw-tour/`                    | `/help/canvas/editor-modes/`                            |
+| `/help/selection-modes/highlighter/`                   | `/help/palette/tools/`                                  |
+| `/help/palette/tools/highlighter/`                     | `/help/palette/tools/`                                  |
+| `/help/palette/tools/drawing/shape-recognition/`       | `/help/palette/tools/drawing/`                          |
+| `/help/selection-modes/eraser/`                        | `/help/selection-modes/`                                |
 | `/help/activity-panel/`                                | `/help/canvas/undo/`                                    |
 | `/help/activity-panel/what-it-is/`                     | `/help/canvas/undo/`                                    |
 | `/help/activity-panel/how-it-works/`                   | `/help/canvas/undo/`                                    |
@@ -268,14 +270,6 @@ Six articles about the container moved when it became a document ([Document](../
 | `/help/activity-panel/redo/`                           | `/help/canvas/redo/`                                    |
 | `/help/activity-panel/reverting-changes/`              | `/help/canvas/undo/`                                    |
 | `/help/getting-started/welcome-tour/`                  | `/help/getting-started/diagram-tour/`                   |
-| `/help/canvas/infographics/`                           | `/help/canvas/pages-mode/`                              |
-| `/help/canvas/infographics/infographic-layouts/`       | `/help/canvas/pages-mode/infographic-layouts/`          |
-| `/help/canvas/infographics/exporting-infographics/`    | `/help/canvas/pages-mode/exporting-pages/`              |
-| `/help/canvas/illustrate/`                             | `/help/canvas/pages-mode/`                              |
-| `/help/canvas/illustrate/<article>/`                   | `/help/canvas/pages-mode/<article>/`                    |
-| `/help/canvas/illustrate/illustrate-tour/`             | `/help/canvas/pages-mode/pages-tour/`                   |
-| `/help/canvas/facilitate-mode/`                        | `/help/canvas/workshop-mode/`                           |
-| `/help/canvas/facilitate-mode/facilitate-tour/`        | `/help/canvas/workshop-mode/workshop-tour/`             |
 
 "Your First Diagram" and "Exporting Diagrams" keep their addresses: they are about drawing a diagram and getting the drawing out, not about the container.
 <!-- /legacy-names -->
@@ -299,7 +293,7 @@ One rule for every public page, shared with the marketing site ([Marketing site]
 
 ## In-editor entry point
 
-The editor's `TabBar` gains a **Help** link on its right edge, beside the existing GitHub link — a plain `<a href="/help/" target="_blank">` (same convention as the GitHub link, no editor-page wiring). It fires `track('UI', 'Opened', 'Help')` (see [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md); reuses existing `UI`/`Opened` enum pair). A "Help" link also lives in the help app's own header/footer.
+The editor's `TabBar` gains a **Help** link on its right edge — a plain `<a href="/help/" target="_blank">` (no editor-page wiring). It fires `track('UI', 'Opened', 'Help')` (see [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md); reuses existing `UI`/`Opened` enum pair). A "Help" link also lives in the help app's own header/footer.
 
 ### Help in global search
 
@@ -321,7 +315,7 @@ but only for surfaces that link ONE article contextually — see [Contextual hel
 
 ## Analytics
 
-The help centre emits through the first-party pipeline ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)): `Help·View·<slug>` per article read, the settled search outcome, article votes, window-level errors, and page views ([Page view telemetry](../017-telemetry/page-view-telemetry.md)). It uses the public sites' shared `siteTrack` from `@liveplanner/telemetry-client` (the `NEXT_PUBLIC_TELEMETRY_ENABLED` build gate plus the [User preferences](../007-editor/user-preferences.md) opt-out), the same instance the shared `PageViewBoot` reports page views through, so it runs one buffer. No third-party scripts; off by default, which keeps it self-host-clean.
+The help centre emits through the first-party pipeline ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)): `Help·View·<slug>` per article read, the settled search outcome, article votes, window-level errors, and page views ([Page view telemetry](../017-telemetry/page-view-telemetry.md)). It uses the public sites' shared `siteTrack` from `@liveplanner/telemetry-client` (the `NEXT_PUBLIC_TELEMETRY_ENABLED` build gate plus the [User preferences](../007-editor/user-preferences.md) opt-out), the same instance the shared `PageViewBoot` reports page views through, so it runs one buffer. No third-party scripts; off by default, so a deployment without it sends nothing.
 
 ## Deployment
 

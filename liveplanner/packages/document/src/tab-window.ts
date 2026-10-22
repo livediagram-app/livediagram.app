@@ -18,7 +18,7 @@ export const TAB_WINDOW_EMPTY = {
   dark: { fill: '#1e293b', ink: '#94a3b8' },
 } as const;
 
-type TabLike = { id: string; kind?: string; opensIn?: string };
+type TabLike = { id: string; kind?: string };
 
 /** Whether a window on `ownTabId` may show this tab: any tab of the document but its own, a Plan tab (a Board, Sheet
  *  or Dashboard tab, or any tab in Plan mode) included. */

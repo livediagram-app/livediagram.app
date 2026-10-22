@@ -1,7 +1,7 @@
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
-import { CONTACT_FORM_URL, pageMetadata, REPO_URL } from '@liveplanner/ui';
+import { CONTACT_FORM_URL, pageMetadata } from '@liveplanner/ui';
 
 const STATUS_TITLE = 'Status · liveplanner';
 const STATUS_DESCRIPTION =
@@ -64,9 +64,9 @@ const COMPONENTS: Component[] = [
       'Cloudflare D1 (SQLite at the edge). Holds projects, tabs, change logs, share links, telemetry events.',
   },
   {
-    name: 'Image storage',
+    name: 'Snapshot cache',
     description:
-      'Cloudflare R2. Stores uploaded image blobs (content-addressed, indexed in D1) and cached project snapshots.',
+      "Cloudflare R2. Caches each project's rendered snapshot and share-link card. liveplanner takes no image uploads.",
   },
   {
     name: 'Edge router',
@@ -140,15 +140,6 @@ export default function StatusPage() {
             className="underline hover:text-slate-800 dark:hover:text-slate-100"
           >
             contact form
-          </a>{' '}
-          or file an issue on{' '}
-          <a
-            href={`${REPO_URL}/issues`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline hover:text-slate-800 dark:hover:text-slate-100"
-          >
-            GitHub
           </a>
           .
         </p>

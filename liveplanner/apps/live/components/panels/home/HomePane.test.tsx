@@ -4,8 +4,8 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Home's layout (docs/specs/013-workspace/explorer-home.md "Layout"): one column at every width,
-// Jump Back In then What Happened, each a landmark opened by a display heading and its quiet
-// link. No Timeline column and no switch. A failed read says so and retries.
+// Jump Back In then What Happened, each a landmark opened by a display heading (Jump Back In's
+// with its quiet link). No Timeline column and no switch. A failed read says so and retries.
 
 const { track, useHome, wide } = vi.hoisted(() => ({
   track: vi.fn(),
@@ -40,14 +40,7 @@ const data = (over = {}) => ({
 
 function renderIt() {
   return render(
-    <HomePane
-      ownerId="me"
-      onSeen={vi.fn()}
-      timelineHref="/explorer/timeline"
-      onSeeTimeline={vi.fn()}
-      recentHref="/explorer/recent"
-      onSeeMore={vi.fn()}
-    />,
+    <HomePane ownerId="me" onSeen={vi.fn()} recentHref="/explorer/recent" onSeeMore={vi.fn()} />,
   );
 }
 
@@ -89,7 +82,7 @@ describe('HomePane', () => {
     expect(track).toHaveBeenCalledWith('Home', 'Opened', expect.stringMatching(/^(Landing|Nav)$/));
   });
 
-  it('opens each section with a display heading, its link at the end of the row, no rule', () => {
+  it('opens each section with a display heading, Jump Back In its link at the end of the row, no rule', () => {
     wide.value = true;
     // Each section has something to show, so each carries its link.
     useHome.mockReturnValue(
@@ -106,7 +99,7 @@ describe('HomePane', () => {
     renderIt();
     for (const [name, link] of [
       ['Jump Back In', 'See More'],
-      ['What Happened', 'See Timeline'],
+      ['What Happened', 'What Happened'],
     ] as const) {
       const heading = screen.getByRole('heading', { level: 2, name });
       const row = heading.parentElement!;
@@ -139,14 +132,7 @@ describe('HomePane', () => {
     } as unknown as ExplorerStateValue;
     const { container } = render(
       <ExplorerProvider value={explorer}>
-        <HomePane
-          ownerId="me"
-          onSeen={vi.fn()}
-          timelineHref="/explorer/timeline"
-          onSeeTimeline={vi.fn()}
-          recentHref="/explorer/recent"
-          onSeeMore={vi.fn()}
-        />
+        <HomePane ownerId="me" onSeen={vi.fn()} recentHref="/explorer/recent" onSeeMore={vi.fn()} />
       </ExplorerProvider>,
     );
     await vi.waitFor(() => expect(container.querySelector('[data-home-welcome]')).not.toBeNull());

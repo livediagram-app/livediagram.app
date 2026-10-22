@@ -287,7 +287,6 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
             dy,
             noSnap,
             guidesOn: depsRef.current.alignmentGuidesRef.current ?? true,
-            pageSnapBoxes: depsRef.current.pageSnapBoxes ?? undefined,
           });
           scheduleGuides(move.guides, move.distGuides);
           tick((els) => {
@@ -355,7 +354,6 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
             dragAspectLocked: drag.aspectLocked,
             guidesOn: depsRef.current.alignmentGuidesRef.current ?? true,
             noSnap,
-            pageSnapBoxes: depsRef.current.pageSnapBoxes ?? undefined,
           });
           if (!resize) return;
           if (resize.guides !== null) scheduleGuides(resize.guides);
@@ -407,7 +405,6 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
         shiftHeld: e.shiftKey,
         elements: activeTab.elements,
         guidesOn: depsRef.current.alignmentGuidesRef.current ?? true,
-        pages: depsRef.current.pagesMode,
         tick,
         scheduleGuides,
         scheduleSnapTargets,

@@ -78,7 +78,7 @@ describe('readForm', () => {
     expect(read.heading).toBe('Bug Report');
     // A colour an earlier build stored is dropped: the form wears its tab theme's.
     expect(read).not.toHaveProperty('accent');
-    // The cover is a slide background in colour (@liveplanner/page-background), a moving one included.
+    // The cover is a colour background (@liveplanner/page-background), a moving one included.
     expect(read.cover).toEqual({
       fill: { kind: 'gradient', from: '#ABCDEF', to: '#000000', angle: 120, motion: 'aurora' },
     });

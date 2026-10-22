@@ -32,38 +32,35 @@ const icons = (root: HTMLElement) => root.querySelectorAll('[data-default-marker
 
 describe('DefaultFolderMarker', () => {
   it('shows nothing for a folder that is no default', async () => {
-    await withDefaults([{ key: 'mode:draw', folderId: 'elsewhere' }]);
+    await withDefaults([{ key: 'template:kanban', folderId: 'elsewhere' }]);
     const { container } = render(<DefaultFolderMarker folderId="w" />);
     expect(container.innerHTML).toBe('');
   });
 
   it('shows the key’s icon and says what it means', async () => {
-    await withDefaults([{ key: 'mode:draw', folderId: 'w' }]);
+    await withDefaults([{ key: 'template:kanban', folderId: 'w' }]);
     const { container } = render(<DefaultFolderMarker folderId="w" />);
     expect(icons(container)).toBe(1);
-    expect(screen.getByText('Default folder for new whiteboards')).toBeTruthy();
+    expect(screen.getByText('Default folder for new Kanban boards')).toBeTruthy();
   });
 
   it('shows two icons, then +N, and names every key', async () => {
     await withDefaults([
-      { key: 'mode:diagram', folderId: 'w' },
-      { key: 'mode:draw', folderId: 'w' },
+      { key: 'mode:plan', folderId: 'w' },
       { key: 'template:retrospective', folderId: 'w' },
       { key: 'template:kanban', folderId: 'w' },
     ]);
     const { container } = render(<DefaultFolderMarker folderId="w" />);
     expect(icons(container)).toBe(2);
-    expect(container.textContent).toContain('+2');
+    expect(container.textContent).toContain('+1');
     expect(
-      screen.getByText(
-        'Default folder for new diagrams, whiteboards, retrospectives and Kanban boards',
-      ),
+      screen.getByText('Default folder for new Projects, retrospectives and Kanban boards'),
     ).toBeTruthy();
   });
 
   it('leaves the words to the host when asked', async () => {
-    await withDefaults([{ key: 'mode:draw', folderId: 'w' }]);
+    await withDefaults([{ key: 'template:kanban', folderId: 'w' }]);
     render(<DefaultFolderMarker folderId="w" withWords={false} />);
-    expect(screen.queryByText('Default folder for new whiteboards')).toBeNull();
+    expect(screen.queryByText('Default folder for new Kanban boards')).toBeNull();
   });
 });

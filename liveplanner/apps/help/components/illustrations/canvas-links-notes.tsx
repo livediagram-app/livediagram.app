@@ -1,64 +1,9 @@
-// Illustrations for the Canvas articles on Following someone, Notes, Links and Link Cards
-// (docs/specs/018-help/help-app.md). Each draws the real surface with its real labels: the Following
-// pill at the top of the canvas (chrome/TopCenterChrome.tsx), the note popover (notes/NotePopover.tsx)
-// and the Link element dialog (dialogs/LinkPickerDialog.tsx).
+// Illustrations for the Canvas articles on Notes, and Links and Link Cards (docs/specs/018-help/help-app.md).
+// Each draws the real surface with its real labels: the note popover (notes/NotePopover.tsx) and the Link
+// element dialog (dialogs/LinkPickerDialog.tsx).
 
-import { Scene, Label, Shape, Avatar, Cursor, TextBar, Dialog, Tabs, Button } from './primitives';
+import { Scene, Label, Shape, TextBar, Dialog, Tabs, Button } from './primitives';
 import { Glyph } from './element-indicators';
-
-// --- Following someone -------------------------------------------------------------------------
-
-/** The tab bar's presence stack with the followed person's avatar ringed, the Following pill at
- *  the top of the canvas with its Stop, and their cursor on the part of the canvas you now see. */
-export function FollowingScene() {
-  return (
-    <Scene w={420} h={210}>
-      {/* The tab bar, with the presence stack beside the tab name */}
-      <rect x={0} y={0} width={420} height={34} className="fill-slate-50" />
-      <line x1={0} y1={34} x2={420} y2={34} className="stroke-slate-200" strokeWidth={1.2} />
-      <rect
-        x={14}
-        y={6}
-        width={130}
-        height={24}
-        rx={7}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.2}
-      />
-      <Label x={26} y={18.5} size={11} weight={600} tone="strong">
-        Checkout
-      </Label>
-      <circle cx={110} cy={18} r={9.5} fill="none" className="stroke-brand-500" strokeWidth={2} />
-      <Avatar cx={110} cy={18} r={7.5} initial="S" colour="emerald" />
-      <Avatar cx={124} cy={18} r={7.5} initial="A" colour="violet" />
-      {/* The Following pill */}
-      <g>
-        <rect x={130} y={46} width={166} height={24} rx={12} className="fill-brand-500" />
-        <circle cx={144} cy={58} r={3} className="fill-white help-art-as-drawn" />
-        <Label x={153} y={58.5} size={11} weight={600} tone="onAccent">
-          Following Sam
-        </Label>
-        <rect
-          x={255}
-          y={51}
-          width={30}
-          height={14}
-          rx={7}
-          className="fill-white/25 help-art-as-drawn"
-        />
-        <Label x={270} y={58.5} anchor="middle" size={10} weight={700} tone="onAccent">
-          Stop
-        </Label>
-      </g>
-      {/* Sam's view, now yours */}
-      <Shape x={92} y={112} w={90} h={48} kind="rect" label="Basket" />
-      <Shape x={238} y={112} w={90} h={48} kind="rect" accent label="Payment" />
-      <path d="M182 136 h52" className="stroke-brand-400" strokeWidth={2.4} />
-      <path d="M227 130 l7 6 l-7 6" fill="none" className="stroke-brand-400" strokeWidth={2.4} />
-      <Cursor x={300} y={160} name="Sam" colour="emerald" />
-    </Scene>
-  );
-}
 
 // --- Notes -------------------------------------------------------------------------------------
 

@@ -31,33 +31,14 @@ export type TemplateKind =
   | 'journey'
   | 'fishbone'
   | 'pyramid'
-  // UI wireframes (use the device-frame shapes added in docs/specs/008-canvas/canvas-and-palette.md's
-  // Devices accordion). Situational starters for design / product work,
-  // which is why they are extras rather than defaults.
-  | 'slide-deck'
   // A growth / momentum flywheel: a spinning hub and four hue-tinted
   // stage wheels on a flowing clockwise loop, each with its metric, plus
   // push / friction stickies. An extra.
   | 'flywheel'
-  // Logo-design exploration sheet: six labelled artboards (horizontal /
-  // stacked lockups with and without a tagline, the mark as an app icon,
-  // a one-colour version) plus the brand palette, so a designer picks
-  // the composition that fits, deletes the rest, and iterates.
-  | 'logo-design'
-  // Wireframe templates (docs/specs/007-editor/templates-by-mode.md "Wireframe templates"): flows
-  // of wireframe pages, each screen a wireframe layout in its device.
-  | 'wireframe-mobile-app'
-  | 'wireframe-website'
-  | 'wireframe-dashboard'
-  | 'wireframe-tablet-app'
-  | 'wireframe-watch-app'
   // Gantt chart: a twelve-week plan on a month + week calendar, grouped
   // by workstream, with owners, progress bars, dependencies, a milestone
   // and a Today line. A project-planning starter, and an extra.
   | 'gantt'
-  // Group card: a greeting card the whole team signs (cover + message
-  // wall). The kind id predates the name. An extra.
-  | 'live-card'
   // Comparison table: a plan-buying decision on the table element, with
   // ticks / crosses and the recommended plan highlighted.
   | 'comparison-table'
@@ -85,27 +66,8 @@ export type TemplateKind =
   // Affinity map: research notes grouped under insight headers and
   // themes, with dot-vote tallies and an unsorted pile still to place.
   | 'affinity-map'
-  // Lean Coffee (docs/specs/012-collaboration/qa-board.md): an agenda-less meeting run on a Q&A board, with
-  // its four-step loop drawn out, timebox timers, a keep-going poll and takeaways.
-  | 'lean-coffee'
   | 'brainstorm'
   | 'workshop-board'
-  // Town Hall Q&A (docs/specs/012-collaboration/qa-board.md): an audience Q&A board beside the panel, a
-  // run-of-show agenda, a facilitator kit and a follow-ups checklist.
-  | 'town-hall'
-  // Quizzes & Games (docs/specs/012-collaboration/quiz-and-game-templates.md): a pub quiz on Quiz cards with a
-  // scoreboard, icebreakers spun on Pickers, and three party games run on polls, timers and reaction pads.
-  | 'pub-quiz'
-  | 'icebreaker-questions'
-  // A whole office to walk round in Avatar mode (docs/specs/012-collaboration/virtual-office-template.md).
-  | 'virtual-office'
-  // Its siblings, the spaces to walk round together (docs/specs/012-collaboration/virtual-office-template.md "Spaces").
-  | 'coworking-space'
-  | 'team-pod'
-  | 'all-hands-hall'
-  | 'two-truths-and-a-lie'
-  | 'would-you-rather'
-  | 'people-bingo'
   // The classic nine-block Business Model Canvas, coloured by area,
   // numbered in fill order and seeded with worked sticky notes.
   | 'business-model-canvas'
@@ -124,12 +86,6 @@ export type TemplateKind =
   // Sitemap: a website's page hierarchy (home, nav sections, pages with
   // their routes, footer and utility pages) drawn with elbow connectors.
   | 'sitemap'
-  // Web page wireframe in a browser frame: an annotated landing page (nav,
-  // hero, product shot, social proof, benefits, footer) with pinned notes.
-  // The landing-page sibling of the mobile / laptop wireframes.
-  // Storyboard: numbered shots of a short ad, each with a shot + timing
-  // chip, a sketch, and action + sound lines beneath.
-  | 'storyboard'
   // Cloud architecture (Technology icons, docs/specs/010-palette/technology-icons.md): an AWS stack with
   // its services grouped into edge, region, VPC and subnet frames.
   | 'cloud-architecture'
@@ -139,11 +95,6 @@ export type TemplateKind =
   // UML state machine: initial / final pseudostates, a composite state and
   // transitions labelled event [guard] / action.
   | 'state-machine'
-  // Floor plan: rooms drawn to a real metric scale (80px = 1m), furnished
-  // with the top-down Furniture icons, zone-tinted, dimensioned and keyed.
-  // The only template whose geometry means something in the world, so its
-  // scale is captioned on the canvas.
-  | 'floor-plan'
   // Retro formats (docs/specs/008-canvas/canvas-and-palette.md "Templates"): the Retrospective's siblings, run
   // with the same opening rail and closing actions so a team can rotate
   // formats without relearning the ritual. Columns (Start / Stop /
@@ -164,49 +115,26 @@ export type TemplateKind =
   // Power / interest stakeholder grid with stances and an engagement plan.
   | 'stakeholder-map'
   // The strategy and systems batch (docs/specs/008-canvas/canvas-and-palette.md "Templates"): a Wardley map, a
-  // STRIDE threat model, a service blueprint, a north-star metric tree, the Value Proposition Canvas, Amazon's
-  // Working Backwards PR/FAQ (an article), a family tree and a value stream map. The threat model, metric tree and
-  // value stream map make a companion Sheet tab after the drawing (template-companions.ts).
+  // STRIDE threat model, a service blueprint, a north-star metric tree, the Value Proposition Canvas, a family tree
+  // and a value stream map. The threat model, metric tree and value stream map make a companion Sheet tab after the drawing (template-companions.ts).
   | 'wardley-map'
   | 'threat-model'
   | 'service-blueprint'
   | 'metric-tree'
   | 'value-proposition-canvas'
-  | 'working-backwards'
   | 'family-tree'
   | 'value-stream-map'
   // 5x5 likelihood x impact heatmap beside a risk register.
   | 'risk-matrix'
   // A research-backed user persona laid out as a profile sheet.
   | 'user-persona'
-  // A meeting that runs itself: purpose, attendees, a live agenda element,
-  // and the parking lot, decisions and actions it produces.
-  | 'meeting-agenda'
   // Personal objectives, written with a sentence formula and a SMART check,
   // balanced across life areas, with key results and a check-in rhythm.
   | 'objectives-planner'
-  // Whiteboard (docs/specs/023-draw-mode/draw-mode.md): a blank tab of the whiteboard KIND, drawn on
+  // Whiteboard (docs/specs/007-editor/editor-modes.md): a blank tab of the whiteboard KIND, drawn on
   // with a dock of pens rather than the palette. Shown beside Blank as a
   // quick-pick, never inside a category grid.
   | 'whiteboard'
-  // Article (docs/specs/007-editor/article-pages.md): a tab that opens in Pages mode on one
-  // article page, written as a short project brief.
-  | 'article'
-  // Blank Illustration (docs/specs/007-editor/templates-by-mode.md "Five blanks"): a tab that opens
-  // in Pages on one empty page, which asks what it is for. A quick-pick beside the other two
-  // blanks, never inside a category grid.
-  | 'blank-illustration'
-  // The blanks of a page kind (docs/specs/007-editor/templates-by-mode.md "Blanks of a page kind"): one empty page
-  // whose kind is already chosen (blank-page-templates.ts), so it never asks what it is for.
-  | 'blank-slide-deck'
-  | 'blank-article'
-  | 'blank-infographic'
-  | 'blank-logo'
-  | 'blank-wireframe-phone'
-  | 'blank-wireframe-tablet'
-  | 'blank-wireframe-browser'
-  | 'blank-wireframe-laptop'
-  | 'blank-wireframe-watch'
   // Draw templates (docs/specs/007-editor/templates-by-mode.md "Draw templates"): boards drawn with
   // freehand strokes, stickies, text and stickers, opening in Draw mode.
   | 'sketchnote'
@@ -217,23 +145,6 @@ export type TemplateKind =
   | 'journey-doodle'
   | 'pre-mortem'
   | 'idea-garden'
-  // Pages templates (docs/specs/007-editor/templates-by-mode.md "Pages templates"):
-  // documents of pages, opening in Pages on pages of their own (template-pages.ts).
-  | 'event-poster'
-  | 'year-in-review'
-  | 'resume'
-  | 'recipe-card'
-  | 'data-story'
-  | 'how-it-works'
-  | 'versus'
-  | 'social-carousel'
-  // Slide decks built from the slide layouts (template-builders-layout-decks.ts).
-  | 'launch-keynote'
-  | 'quarterly-review'
-  | 'team-welcome'
-  | 'workshop-kickoff'
-  // Workshop mode's blank (docs/specs/012-collaboration/workshop-mode.md "Templates").
-  | 'blank-session'
   // Plan templates (docs/specs/026-plan/plan-templates.md): a way of working across several tabs,
   // each opening in Plan mode, with no cards. The Kanban board ('kanban', above) is one of them;
   // Blank Plan is the mode's blank.
@@ -303,66 +214,6 @@ export const TEMPLATES: TemplateDescriptor[] = [
     description: 'Free drawing without distractions',
   },
   {
-    kind: 'blank-illustration',
-    title: 'Blank Illustration',
-    description: 'An empty page for an infographic, an article, a slide, a logo or a wireframe.',
-    extra: true,
-  },
-  {
-    kind: 'blank-slide-deck',
-    title: 'Blank Slide Deck',
-    description: 'One empty 16:9 slide, ready for your first idea.',
-    extra: true,
-  },
-  {
-    kind: 'blank-article',
-    title: 'Blank Article',
-    description: 'One empty article page: a title and a first paragraph to write.',
-    extra: true,
-  },
-  {
-    kind: 'blank-infographic',
-    title: 'Blank Infographic',
-    description: 'One empty A4 infographic page: lay it out yourself or start from a layout.',
-    extra: true,
-  },
-  {
-    kind: 'blank-logo',
-    title: 'Blank Logo',
-    description: 'One empty square artboard for a mark, a wordmark or a lockup.',
-    extra: true,
-  },
-  {
-    kind: 'blank-wireframe-phone',
-    title: 'Blank Phone Wireframe',
-    description: 'One empty iPhone screen to wireframe a mobile app on.',
-    extra: true,
-  },
-  {
-    kind: 'blank-wireframe-tablet',
-    title: 'Blank Tablet Wireframe',
-    description: 'One empty iPad screen to wireframe a tablet app on.',
-    extra: true,
-  },
-  {
-    kind: 'blank-wireframe-browser',
-    title: 'Blank Website Wireframe',
-    description: 'One empty browser window to wireframe a web page on.',
-    extra: true,
-  },
-  {
-    kind: 'blank-wireframe-laptop',
-    title: 'Blank Laptop Wireframe',
-    description: 'One empty laptop screen to wireframe a web or desktop app on.',
-    extra: true,
-  },
-  {
-    kind: 'blank-wireframe-watch',
-    title: 'Blank Watch Wireframe',
-    description: 'One empty watch face to wireframe a watch app on.',
-    extra: true,
-  },
-  {
     kind: 'blank-plan',
     title: 'Blank Plan',
     description: 'An empty Plan tab: pick the board that fits the work, or build your own.',
@@ -372,12 +223,6 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'blank-spreadsheet',
     title: 'Blank Spreadsheet',
     description: 'An empty spreadsheet: cells, formulas and charts, ready to type into.',
-    extra: true,
-  },
-  {
-    kind: 'blank-session',
-    title: 'Blank Session',
-    description: 'An empty tab to run a session on: timers, votes, polls and reveals to hand.',
     extra: true,
   },
   {
@@ -642,13 +487,6 @@ export const TEMPLATES: TemplateDescriptor[] = [
     extra: true,
   },
   {
-    kind: 'slide-deck',
-    title: 'Slide Deck',
-    description:
-      'A six-slide pitch (title, problem, solution, traction, team, the ask) on 16:9 slide pages, with speaker notes.',
-    extra: true,
-  },
-  {
     kind: 'flywheel',
     title: 'Flywheel',
     description:
@@ -656,56 +494,10 @@ export const TEMPLATES: TemplateDescriptor[] = [
     extra: true,
   },
   {
-    kind: 'logo-design',
-    title: 'Logo Design',
-    description:
-      'A brand exploration on Square pages: six lockups (horizontal, stacked, app icon, one colour), each on its own artboard, plus a palette page. Pick one, delete the rest, swap in your own mark.',
-    extra: true,
-  },
-  {
-    kind: 'wireframe-mobile-app',
-    title: 'Mobile App Wireframe',
-    description:
-      'Five iPhone screens of a shopping app, from onboarding and sign in to the home feed, a product and checkout.',
-    extra: true,
-  },
-  {
-    kind: 'wireframe-website',
-    title: 'Website Wireframe',
-    description: 'Three browser pages of a product site: a landing page, pricing and sign in.',
-    extra: true,
-  },
-  {
-    kind: 'wireframe-dashboard',
-    title: 'Web App Wireframe',
-    description:
-      'Three laptop screens of a web app: an overview dashboard, an orders table and settings.',
-    extra: true,
-  },
-  {
-    kind: 'wireframe-tablet-app',
-    title: 'Tablet App Wireframe',
-    description: 'Three iPad screens: a discovery feed, messages and a profile.',
-    extra: true,
-  },
-  {
-    kind: 'wireframe-watch-app',
-    title: 'Watch App Wireframe',
-    description: 'Three watch faces: a glance, a list and a notification.',
-    extra: true,
-  },
-  {
     kind: 'gantt',
     title: 'Gantt Chart',
     description:
       'A twelve-week launch plan: workstreams, owners, progress bars, dependencies, a launch milestone and a Today line.',
-    extra: true,
-  },
-  {
-    kind: 'live-card',
-    title: 'Group Card',
-    description:
-      'A greeting card the whole team signs, on two card pages: a cover with a photo, and an inside of signed notes with a slot for yours.',
     extra: true,
   },
   {
@@ -769,13 +561,6 @@ export const TEMPLATES: TemplateDescriptor[] = [
     extra: true,
   },
   {
-    kind: 'lean-coffee',
-    title: 'Lean Coffee',
-    description:
-      'The four-step loop drawn out, a topics board, and the timers and poll that run it.',
-    extra: true,
-  },
-  {
     kind: 'brainstorm',
     title: 'Brainstorm Board',
     description:
@@ -787,75 +572,6 @@ export const TEMPLATES: TemplateDescriptor[] = [
     title: 'Workshop Board',
     description:
       'The kickoff wall for a longer session: a check-in and icebreaker, goals, a timed agenda and ground rules.',
-    extra: true,
-  },
-  {
-    kind: 'town-hall',
-    title: 'Town Hall Q&A',
-    description: 'An upvoted audience Q&A beside the panel, a run of show and a facilitator kit.',
-    extra: true,
-  },
-  {
-    kind: 'pub-quiz',
-    title: 'Pub Quiz',
-    description:
-      'Three rounds of timed quiz questions, a team scoreboard, a quizmaster kit and a tie-breaker under a cover.',
-    extra: true,
-  },
-  {
-    kind: 'icebreaker-questions',
-    title: 'Icebreaker Questions',
-    description:
-      'Spin a question and a person, two minutes each on the clock, then everyone says hello on the wall.',
-    extra: true,
-  },
-  {
-    kind: 'virtual-office',
-    title: 'Virtual Office',
-    description:
-      'Rooms to walk round in Avatar mode: a reception, desks, a meeting room, a kitchen with coffee, a lounge and a focus room.',
-    extra: true,
-  },
-  {
-    kind: 'coworking-space',
-    title: 'Coworking Space',
-    description:
-      'An open floor to walk round in Avatar mode: hot desks, two phone booths, a coffee bar and a lounge.',
-    extra: true,
-  },
-  {
-    kind: 'team-pod',
-    title: 'Team Pod',
-    description:
-      'A small team’s corner in Avatar mode: four desks together, a table for the stand-up and a team board.',
-    extra: true,
-  },
-  {
-    kind: 'all-hands-hall',
-    title: 'All-Hands Hall',
-    description:
-      'A hall for town halls and demos in Avatar mode: a stage, rows of seats facing it and Bring Focus.',
-    extra: true,
-  },
-  {
-    kind: 'two-truths-and-a-lie',
-    title: 'Two Truths and a Lie',
-    description:
-      'Each player writes three statements, one of them false, and the room votes on the lie in a live poll.',
-    extra: true,
-  },
-  {
-    kind: 'would-you-rather',
-    title: 'Would You Rather',
-    description:
-      'Six light dilemmas, each with a ready-made poll, so the room picks a side and argues its case.',
-    extra: true,
-  },
-  {
-    kind: 'people-bingo',
-    title: 'Find Someone Who Bingo',
-    description:
-      'A 4 by 4 bingo card of things to find in a teammate, a ten-minute timer and a Bingo! button.',
     extra: true,
   },
   {
@@ -901,13 +617,6 @@ export const TEMPLATES: TemplateDescriptor[] = [
     extra: true,
   },
   {
-    kind: 'storyboard',
-    title: 'Storyboard',
-    description:
-      'A 30-second ad in six shots: shot and timing chips, sketches, action and sound lines.',
-    extra: true,
-  },
-  {
     kind: 'cloud-architecture',
     title: 'Cloud Architecture',
     description:
@@ -926,13 +635,6 @@ export const TEMPLATES: TemplateDescriptor[] = [
     title: 'State Machine',
     description:
       'A delivery order’s UML lifecycle: a composite state, guards, a timeout and three final states.',
-    extra: true,
-  },
-  {
-    kind: 'floor-plan',
-    title: 'Floor Plan',
-    description:
-      'A two-bed flat with study drawn to scale: furniture, colour zones, dimensions and a key.',
     extra: true,
   },
   {
@@ -1034,13 +736,6 @@ export const TEMPLATES: TemplateDescriptor[] = [
     extra: true,
   },
   {
-    kind: 'working-backwards',
-    title: 'Working Backwards',
-    description:
-      'Amazon’s PR/FAQ: the launch press release written before anything is built, then the customer and internal FAQs.',
-    extra: true,
-  },
-  {
     kind: 'family-tree',
     title: 'Family Tree',
     description:
@@ -1060,20 +755,6 @@ export const TEMPLATES: TemplateDescriptor[] = [
     title: 'User Persona',
     description:
       'A research-backed persona: profile and quote, goals, frustrations, behaviours, personality and how we help.',
-    extra: true,
-  },
-  {
-    kind: 'meeting-agenda',
-    title: 'Meeting Agenda',
-    description:
-      'A weekly sync that runs itself: purpose and roles, a timed agenda, then parking lot, decisions and actions.',
-    extra: true,
-  },
-  {
-    kind: 'article',
-    title: 'Project Brief',
-    description:
-      'A project brief, written on pages like a doc: headings and lists to write over, room for charts and drawings in the text.',
     extra: true,
   },
   {
@@ -1139,90 +820,6 @@ export const TEMPLATES: TemplateDescriptor[] = [
       'Grow ideas as a drawn tree: the question at the roots, themes as branches, ideas as leaves and the best ones as fruit.',
     extra: true,
   },
-  {
-    kind: 'event-poster',
-    title: 'Event Poster',
-    description:
-      'An A3 poster for a community night market: a bold title, the date, time and place, a photo and three highlights.',
-    extra: true,
-  },
-  {
-    kind: 'year-in-review',
-    title: 'Year in Review',
-    description:
-      "A four-page team report: a cover, the year's headline numbers, a timeline of its moments and a thank-you.",
-    extra: true,
-  },
-  {
-    kind: 'resume',
-    title: 'Résumé',
-    description:
-      'A one-page A4 résumé: name and role, a short profile, an experience timeline, skills and education.',
-    extra: true,
-  },
-  {
-    kind: 'recipe-card',
-    title: 'Recipe Card',
-    description:
-      'A recipe to share in two pages: the dish with serves and timings, then the ingredients and the method in steps.',
-    extra: true,
-  },
-  {
-    kind: 'data-story',
-    title: 'Data Story',
-    description:
-      'An A4 infographic that tells one story in numbers: a headline stat, pictograms, a then-and-now comparison and a source line.',
-    extra: true,
-  },
-  {
-    kind: 'how-it-works',
-    title: 'How It Works',
-    description:
-      'A tall explainer for a story or a phone screen: five illustrated steps down a winding path, from first tap to done.',
-    extra: true,
-  },
-  {
-    kind: 'versus',
-    title: 'Versus',
-    description:
-      'Two options side by side on a social post: a split page, matched rows of pros and cons, and a verdict at the foot.',
-    extra: true,
-  },
-  {
-    kind: 'social-carousel',
-    title: 'Social Carousel',
-    description:
-      'Five square slides for a LinkedIn or Instagram carousel: a hook, three tips and a call to action, swipe cues included.',
-    extra: true,
-  },
-  {
-    kind: 'launch-keynote',
-    title: 'Launch Keynote',
-    description:
-      'A six-slide launch keynote on an animated aurora: the hook, what is new, the beta in three numbers, the launch plan and the ask.',
-    extra: true,
-  },
-  {
-    kind: 'quarterly-review',
-    title: 'Quarterly Review',
-    description:
-      'A six-slide quarterly business review on a moving mesh: the agenda, the quarter in a chart, goals as progress rings and the roadmap.',
-    extra: true,
-  },
-  {
-    kind: 'team-welcome',
-    title: 'Team Welcome',
-    description:
-      'A six-slide welcome for a new joiner on floating bokeh: their manager, their first week, how the team works and who to ask.',
-    extra: true,
-  },
-  {
-    kind: 'workshop-kickoff',
-    title: 'Workshop Kickoff',
-    description:
-      'A six-slide workshop opener on rolling waves: the outcomes, the agenda, how each round runs, the one rule and the close.',
-    extra: true,
-  },
   ...FORM_TEMPLATES,
 ];
 
@@ -1233,22 +830,10 @@ export function isTemplateKind(value: unknown): value is TemplateKind {
   return typeof value === 'string' && TEMPLATES.some((t) => t.kind === value);
 }
 
-// Templates retired for a better one, by their old kind: a link, an agent or a seed naming one makes
-// its replacement. The diagram-mode device wireframes became wireframe pages in their devices
-// (docs/specs/007-editor/templates-by-mode.md "Wireframe templates").
-const RETIRED_TEMPLATE_KINDS: Readonly<Record<string, TemplateKind>> = {
-  'mobile-wireframe': 'wireframe-mobile-app',
-  'laptop-wireframe': 'wireframe-dashboard',
-  'browser-wireframe': 'wireframe-website',
-};
-
-/** The template a kind names: itself, a retired kind's replacement, else null. For a kind that
- *  arrives as a plain string from outside (a link, an agent, a seed). */
+/** The template a kind names, else null. For a kind that arrives as a plain string from outside (a link,
+ *  an agent, a seed). */
 export function templateKindOf(value: unknown): TemplateKind | null {
-  if (isTemplateKind(value)) return value;
-  return typeof value === 'string' && Object.hasOwn(RETIRED_TEMPLATE_KINDS, value)
-    ? RETIRED_TEMPLATE_KINDS[value]!
-    : null;
+  return isTemplateKind(value) ? value : null;
 }
 
 // The editor URL that creates this template without the wizard and opens it

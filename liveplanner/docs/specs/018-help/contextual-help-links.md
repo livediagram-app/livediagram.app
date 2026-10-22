@@ -110,7 +110,6 @@ Grouped by priority; each links the keyed article.
 - Canvas/Theme dialog -> `changing-the-background` / `changing-theme`
 - Link picker -> `links` (tab links -> `linking-tabs`)
 - Themes pane empty state -> `custom-themes`
-- Image gallery pane -> `image-gallery`
 - Line/chart data editor -> `data-elements`
 - Settings - telemetry -> `what-we-collect`
 
@@ -142,9 +141,8 @@ help button that moves around teaches people not to look for it. It renders in
 both the panel header and the popover band, and stops the pointer so
 pressing it opens the article rather than starting a panel drag.
 
-Wired: Palette, Explorer, Activity, Layers, Map, Collaborate, Poll, Vote, and
-the six tool panels (Avatar, Laser, Spotlight, Eraser, Format, Slide Deck)
-(a seventh, the Highlighter's, went when the Highlighter became a Draw tile). This closed the gap the feature was written for and had never
+Wired: Palette, Explorer, Activity, Layers, Map, Collaborate, Vote, and
+the Format tool panel. This closed the gap the feature was written for and had never
 reached: 21 surfaces linked an article, and every one of them was a dialog, so
 a panel you were looking at could not tell you there was a page about it.
 

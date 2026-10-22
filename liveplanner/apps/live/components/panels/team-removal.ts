@@ -42,7 +42,7 @@ export function teamRemovalTelemetryType(
 }
 
 // What the confirm dialog says before a team goes. Read by the team
-// pane and the Timeline's team-card menu.
+// pane.
 export function teamDeleteCopy(teamName: string | undefined) {
   return {
     title: 'Delete Team?',

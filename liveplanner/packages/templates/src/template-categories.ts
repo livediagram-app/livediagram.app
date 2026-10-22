@@ -18,8 +18,7 @@ export type TemplateCategory =
   | 'hierarchies'
   | 'design'
   | 'presentations'
-  | 'technical'
-  | 'games';
+  | 'technical';
 
 // Declared in any order: TEMPLATE_CATEGORIES below sorts them by label, so a new category lands in place. Descriptions are kept to a similar length (40 to 50 characters) so the folded
 // category tiles read as an even set. Ids survive where the meaning did (links, tests and the agents' catalogue name
@@ -60,7 +59,7 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
     id: 'meetings',
     label: 'Workshops',
     searchWords: 'meetings',
-    description: 'Agendas, retros, Q&A and workshop formats.',
+    description: 'Retros, brainstorms and workshop formats.',
   },
   {
     id: 'mindmaps',
@@ -95,24 +94,18 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
     id: 'design',
     label: 'Design',
     searchWords: 'ux',
-    description: 'Wireframes, prototypes, personas and journeys.',
+    description: 'Prototypes, personas, journeys and story maps.',
   },
   {
     id: 'presentations',
     label: 'Presentations',
     searchWords: 'content',
-    description: 'Slides, articles, posters and social posts.',
+    description: 'Comic strips and stories made to be shared.',
   },
   {
     id: 'technical',
     label: 'Technical',
     description: 'Architecture, schema and sequence diagrams.',
-  },
-  {
-    id: 'games',
-    label: 'Quizzes & Games',
-    searchWords: 'quiz trivia icebreaker icebreakers warm up energiser fun team building',
-    description: 'Quizzes, icebreakers and games for the room.',
   },
 ];
 
@@ -125,25 +118,9 @@ export const TEMPLATE_CATEGORIES: readonly Omit<CategoryInfo, 'searchWords'>[] =
   .sort((a, b) => a.label.localeCompare(b.label, 'en', { sensitivity: 'base' }))
   .map(({ id, label, description }) => ({ id, label, description }));
 
-// The blanks: in no category, reached from Popular or by search (docs/specs/007-editor/templates-by-mode.md "The blanks").
-// Mirrors isBlankTemplate (BLANK_TEMPLATE_FOR_MODE and EXTRA_BLANK_TEMPLATES); the categories test pins them together.
-type BlankKind =
-  | 'blank'
-  | 'whiteboard'
-  | 'blank-illustration'
-  | 'blank-slide-deck'
-  | 'blank-article'
-  | 'blank-infographic'
-  | 'blank-logo'
-  | 'blank-wireframe-phone'
-  | 'blank-wireframe-tablet'
-  | 'blank-wireframe-browser'
-  | 'blank-wireframe-laptop'
-  | 'blank-wireframe-watch'
-  | 'blank-plan'
-  | 'blank-spreadsheet'
-  | 'blank-session'
-  | 'blank-form';
+// The blanks: in no category, reached from Popular or by search (docs/specs/026-plan/plan-templates.md "The blanks").
+// Mirrors isBlankTemplate (BLANK_TEMPLATES); the categories test pins them together.
+type BlankKind = 'blank' | 'whiteboard' | 'blank-plan' | 'blank-spreadsheet' | 'blank-form';
 
 // Every non-blank template's primary category.
 const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCategory> = {
@@ -177,12 +154,9 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'rsvp-form': 'forms',
   'job-application-form': 'forms',
   'contact-form': 'forms',
-  // Meetings and Workshops: agendas, retros, live Q&A and the boards a team runs together.
-  'meeting-agenda': 'meetings',
-  'lean-coffee': 'meetings',
+  // Meetings and Workshops: retros and the boards a team runs together.
   brainstorm: 'meetings',
   'workshop-board': 'meetings',
-  'town-hall': 'meetings',
   retrospective: 'meetings',
   'start-stop-continue': 'meetings',
   'mad-sad-glad': 'meetings',
@@ -191,11 +165,6 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'team-retro': 'meetings',
   'pre-mortem': 'meetings',
   'feedback-board': 'meetings',
-  // The spaces to walk round in Avatar mode (docs/specs/012-collaboration/virtual-office-template.md).
-  'virtual-office': 'meetings',
-  'coworking-space': 'meetings',
-  'team-pod': 'meetings',
-  'all-hands-hall': 'meetings',
   // Brainstorm: getting ideas out of heads.
   mindmap: 'mindmaps',
   'mindmap-tree': 'mindmaps',
@@ -234,7 +203,6 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'rich-picture': 'strategy',
   'wardley-map': 'strategy',
   'value-proposition-canvas': 'strategy',
-  'working-backwards': 'strategy',
   // Org and Structure: top-down structure.
   orgchart: 'hierarchies',
   pyramid: 'hierarchies',
@@ -245,37 +213,13 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'family-tree': 'hierarchies',
   // Design and UX: screens, research and the spaces people move through.
   'paper-prototype': 'design',
-  storyboard: 'design',
   journey: 'design',
   'journey-doodle': 'design',
   'user-persona': 'design',
   'empathy-map': 'design',
   'user-story-map': 'design',
-  'floor-plan': 'design',
   'service-blueprint': 'design',
-  // Presentations and Content: pages made to be read or shared.
-  'slide-deck': 'presentations',
-  article: 'presentations',
-  'how-it-works': 'presentations',
-  'data-story': 'presentations',
-  'year-in-review': 'presentations',
-  versus: 'presentations',
-  'social-carousel': 'presentations',
-  'launch-keynote': 'presentations',
-  'quarterly-review': 'presentations',
-  'team-welcome': 'presentations',
-  'workshop-kickoff': 'presentations',
-  'event-poster': 'presentations',
-  'logo-design': 'presentations',
-  // Design: the wireframe flows sit with the other wireframes.
-  'wireframe-mobile-app': 'design',
-  'wireframe-website': 'design',
-  'wireframe-dashboard': 'design',
-  'wireframe-tablet-app': 'design',
-  'wireframe-watch-app': 'design',
-  resume: 'presentations',
-  'recipe-card': 'presentations',
-  'live-card': 'presentations',
+  // Presentations and Content: made to be read or shared.
   'comic-strip': 'presentations',
   // Technical: developer diagrams.
   'system-architecture': 'technical',
@@ -287,12 +231,6 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'incident-postmortem': 'technical',
   'threat-model': 'technical',
   'value-stream-map': 'technical',
-  // Quizzes and Games: the lighter end of running a room.
-  'pub-quiz': 'games',
-  'icebreaker-questions': 'games',
-  'two-truths-and-a-lie': 'games',
-  'would-you-rather': 'games',
-  'people-bingo': 'games',
 };
 
 // Cross-listing: the other categories a template is also shown in, where someone would genuinely look for it there.
@@ -326,7 +264,7 @@ export const TEMPLATE_ALSO_IN: Readonly<
   'prioritization-matrix': ['planning'],
   // Workshop formats.
   'crazy-eights': ['meetings', 'design'],
-  'doodle-warmup': ['meetings', 'games'],
+  'doodle-warmup': ['meetings'],
   'incident-postmortem': ['meetings'],
   // Research synthesis and site structure are design work too.
   'affinity-map': ['design'],
@@ -340,9 +278,8 @@ export const TEMPLATE_ALSO_IN: Readonly<
   // A blueprint and a value stream are processes across lanes and steps.
   'service-blueprint': ['flowcharts'],
   'value-stream-map': ['flowcharts'],
-  // A value proposition is product design; a PR/FAQ is a document to share.
+  // A value proposition is product design.
   'value-proposition-canvas': ['design'],
-  'working-backwards': ['presentations'],
 };
 
 /** A template's primary category; null for the blanks, which are in none. */

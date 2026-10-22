@@ -2,6 +2,7 @@
   "name": "liveplanner",
   "version": "0.0.0",
   "private": true,
+  "license": "UNLICENSED",
   "type": "module",
   "scripts": {
     "build": "turbo run build --filter=@liveplanner/*",

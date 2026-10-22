@@ -3,7 +3,6 @@
 // the ~1000-line budget. Pure types; re-exported through index.ts so the
 // public `@liveplanner/document` surface is unchanged. ElementLink + the enums
 // stay in index.ts and are imported here (type-only, so no runtime cycle).
-import type { RoomDoor } from './office';
 import type { Finish } from './finish';
 import type { CardSearchFilter, PlanBoardSetup, PlanViewId, SwimlaneBy } from '@liveplanner/items';
 import type { TextRun } from './rich-text';
@@ -36,26 +35,18 @@ import type {
   SankeyValueLabel,
 } from './sankey-model';
 import type { ChartSource, SheetAnchor } from './chart-source';
-import type { PickerSource, SelectionMode, SessionButtonConfig } from './selection-mode';
+import type { PickerSource, SessionButtonConfig } from './behaviour-config';
 import type { IconSize } from './icon-size';
 import type { IconWeight } from './icon-weight';
 import type { EmbedProvider } from './youtube';
 import type { ParticipantResponse } from './responses';
-import type { QaNote } from './qa-board';
 import type { HeroCaption, StatItem } from './web-components';
-import type {
-  AgendaItem,
-  ChairFacing,
-  DecisionStatus,
-  EstimateScale,
-  RollCallEntry,
-} from './collab-shapes';
+import type { DecisionStatus } from './collab-shapes';
 import type {
   AnimationSpeed,
   ChecklistItem,
   EntityField,
   LegendItem,
-  Reaction,
   CodeLanguage,
   ElementId,
   ElementLink,
@@ -176,11 +167,11 @@ export type ShapeElement = {
   finish?: Finish;
   fillColor?: string;
   strokeColor?: string;
-  // A whiteboard marker's named colour (docs/specs/023-draw-mode/draw-mode.md "The colour picker"):
+  // A whiteboard marker's named colour (docs/specs/004-interface-design/colour-picker.md):
   // drawn in the version tuned for the viewer's board (penColourHex) when `strokeColor` is unset.
   penColour?: PenColourName;
   textColor?: string;
-  // A whiteboard stock colour for the label's text (docs/specs/023-draw-mode/draw-mode.md
+  // A whiteboard stock colour for the label's text (docs/specs/007-editor/editor-modes.md
   // "Imported and pasted content"): drawn in the version tuned for the viewer's board when
   // `textColor` is unset.
   penTextColour?: PenColourName;
@@ -213,9 +204,9 @@ export type ShapeElement = {
   // Stroke + text still theme normally.
   themeLockFill?: boolean;
   // The element is one size for life: no resize handles, union-scales move
-  // it without scaling it, and the menu's Size category stays away. The fixed-size SHAPE kinds
-  // (mode-button / session-button, docs/specs/009-elements/mode-button.md) get the same treatment
-  // from their kind. See isFixedSizeElement.
+  // it without scaling it, and the menu's Size category stays away. The fixed-size SHAPE kinds (the session
+  // button, docs/specs/012-collaboration/session-button.md) get the same treatment from their kind. See
+  // isFixedSizeElement.
   fixedSize?: boolean;
   // Border styling (shapes + stickies). Each is a preset bucket so
   // saved documents round-trip without carrying arbitrary numeric
@@ -244,11 +235,6 @@ export type ShapeElement = {
   // same slot. Cleared the moment that colour is set any other way.
   strokeSwatch?: QuickSwatchSlot;
   fillSwatch?: QuickSwatchSlot;
-  // Mode Button (docs/specs/009-elements/mode-button.md): which selection mode pressing this element hands
-  // whoever clicked it. Only meaningful on the 'mode-button' kind, and absent
-  // means DEFAULT_BUTTON_MODE ('avatar') — so a button authored without one
-  // still does the thing it looks like it should.
-  mode?: SelectionMode;
   // Portal (docs/specs/009-elements/portal-element.md): the id of the portal this one leads to, on the same tab.
   // Only meaningful on the 'portal' kind. Absent = an unpaired portal, which is
   // inert and says so — a portal to nowhere shouldn't silently swallow clicks.
@@ -261,84 +247,29 @@ export type ShapeElement = {
   // absent means a default five-minute timer, so a button authored without one
   // still does something sensible.
   session?: SessionButtonConfig;
-  // Reveal zone (docs/specs/009-elements/reveal-zone.md): whether the cover is off FOR EVERYONE. A viewer
-  // uncovering it for themselves is local and ephemeral and never touches this.
-  // Only meaningful on the 'reveal' kind.
-  revealed?: boolean;
   // Picker (docs/specs/012-collaboration/picker.md): where the candidates come from, the written list when
   // that source is 'options', and the last result — kept on the element so the
   // canvas still shows it after a reload. Only meaningful on the 'picker' kind.
   pickerSource?: PickerSource;
   pickerOptions?: string[];
   pickerResult?: string;
-  // Chair (docs/specs/009-elements/chair.md): which way the seat points. Only meaningful on the
-  // 'chair' kind; absent = DEFAULT_CHAIR_FACING ('n'). WHO is sitting in it is
-  // deliberately NOT here — occupancy rides the avatar presence op, so a chair
-  // can't be left stuck by someone who disconnected.
-  chairFacing?: ChairFacing;
-  // Room (docs/specs/009-elements/office.md "Room"): the wall its doorway is in, or 'none' for a closed room.
-  // Absent = DEFAULT_ROOM_DOOR ('s', the front wall).
-  roomDoor?: RoomDoor;
-  // --- The collaboration family (docs/specs/012-collaboration/participant-responses.md to docs/specs/012-collaboration/roll-call.md) ---------------------
-  // One value per participant (docs/specs/012-collaboration/participant-responses.md), shared by the estimate card and the
-  // temperature check. At most one entry per participant: re-casting REPLACES,
+  // --- The collaboration family (docs/specs/012-collaboration/participant-responses.md, decision-record.md) ---------------------
+  // One value per participant (docs/specs/012-collaboration/participant-responses.md), the temperature check's
+  // readings. At most one entry per participant: re-casting REPLACES,
   // via `setResponse`. Bounded in validate.ts.
   responses?: ParticipantResponse[];
-  // Whether the values are out, for everyone (docs/specs/012-collaboration/estimate-card.md). Only meaningful on
-  // 'estimate' — the temperature check is deliberately never hidden.
-  responsesRevealed?: boolean;
-  // Estimate card (docs/specs/012-collaboration/estimate-card.md): which ladder of values the card offers. Absent =
-  // DEFAULT_ESTIMATE_SCALE ('fibonacci').
-  estimateScale?: EstimateScale;
-  // Idea box (docs/specs/012-collaboration/idea-box.md): the anonymous submissions, in submission order, and
-  // whether the box is open. There is NO author field, and adding one would
-  // undo the feature — the anonymity guarantee is that the schema has nowhere
-  // to record who wrote a card. Bounded in validate.ts.
-  ideaCards?: string[];
-  // Each card's random id, by position (`ideaCardIds[i]` names `ideaCards[i]`; '' or missing is an id-less
-  // card). Minted fresh per card by the posting browser, so it names the card, never the person
-  // (docs/specs/012-collaboration/idea-box.md "Anonymity is structural").
-  ideaCardIds?: string[];
-  ideasRevealed?: boolean;
-  // Q&A board (docs/specs/012-collaboration/qa-board.md): the notes, in submission order (the sort is a view,
-  // never stored), and the server-bumped revision every whole-element sync
-  // path compares so a stale snapshot can't roll the board back
-  // (preferNewerQa). Only the qa endpoint writes these.
-  qaNotes?: QaNote[];
-  qaRev?: number;
-  // Which round of answers / ideas this card is on (docs/specs/012-collaboration/collab-race-hardening.md): a random id
-  // minted by each clear or reset. Answers and ideas travel as their own
+  // Which round of answers this card is on (docs/specs/012-collaboration/collab-race-hardening.md): a random id
+  // minted by each clear or reset. Answers travel as their own
   // element deltas stamped with it, so one cast before a clear can't land in
   // the round after, and an element update for the SAME round leaves the
   // receiver's answers alone. Absent until the first clear.
   collabRound?: string;
-  // Agenda (docs/specs/012-collaboration/agenda.md): the ordered segments, and the index of the one the room
-  // is in (absent = not started). Only meaningful on 'agenda'.
-  agendaItems?: AgendaItem[];
-  agendaCurrent?: number;
-  // The `startedAt` of the tab timer the current segment started, so the face
-  // shows that timer's time left only while it is still that run.
-  agendaTimerStartedAt?: number;
   // Decision record (docs/specs/012-collaboration/decision-record.md): the status chip, the day it was taken
   // (`YYYY-MM-DD`, a date rather than a timestamp), and the reasons. The
   // element's `label` is the decision STATEMENT, so it needs no extra field.
   decisionStatus?: DecisionStatus;
   decisionDate?: string;
   decisionDrivers?: string[];
-  // Roll call (docs/specs/012-collaboration/roll-call.md): a FROZEN snapshot of who was in the room when the
-  // roll was taken — names and colours copied, never re-joined to the live
-  // participant. Only meaningful on 'roll-call'.
-  rollCall?: RollCallEntry[];
-  // Quiz (docs/specs/012-collaboration/quiz.md): the answers, which one is right, the round's length in
-  // seconds, and the round's state (started / locked early / revealed). The
-  // question is the label; each person's pick rides `responses` as the
-  // answer's index. Only meaningful on 'quiz'.
-  quizOptions?: string[];
-  quizCorrect?: number;
-  quizSeconds?: number;
-  quizStartedAt?: number;
-  quizLockedAt?: number;
-  quizRevealed?: boolean;
   // A timeline rail saved before the Timeline (docs/specs/009-elements/concept-graphics.md "Timeline"): its point count
   // and labels, read once to make its milestones (element-normalise railToTimeline) and never written again.
   railCount?: number;
@@ -416,9 +347,6 @@ export type ShapeElement = {
   // meaningful on the 'entity' kind; bounded in validate.ts. The element's
   // `label` is the record's TITLE, so a record needs no extra name field.
   entityFields?: EntityField[];
-  // Reaction pad (docs/specs/009-elements/reaction-pad.md): which burst this pad throws. Absent falls back to
-  // REACTION_DEFAULT at render, so a pad from an older file still works.
-  reaction?: Reaction;
   // Mind node (docs/specs/009-elements/mind-node.md): which node owns this one. Absent = a root.
   //
   // A child pointer rather than a `children[]` array: single-valued, so it
@@ -596,7 +524,7 @@ export type TextElement = {
   fillColor?: string;
   strokeColor?: string;
   textColor?: string;
-  // A whiteboard stock colour for the text (docs/specs/023-draw-mode/draw-mode.md "Imported and
+  // A whiteboard stock colour for the text (docs/specs/007-editor/editor-modes.md "Imported and
   // pasted content"): drawn in the version tuned for the viewer's board when `textColor` is unset.
   penTextColour?: PenColourName;
   // Quick-swatch binding (docs/specs/008-canvas/quick-style-panel.md): the slot (1-6) the text
@@ -645,18 +573,8 @@ export type TextElement = {
   // editor modes and for everyone.
   sizing?: TextSizing;
   // Multiplier on the label size, set by a Shift resize of a whiteboard text box
-  // (docs/specs/023-draw-mode/draw-mode.md "Text boxes"). Absent = 1.
+  // (docs/specs/007-editor/editor-modes.md "A text box's sizing"). Absent = 1.
   textScale?: number;
-  // Wordmark type (docs/specs/007-editor/logo-pages.md "Wordmark type"), drawn wherever the text
-  // is. Tracking: em added between letters, -0.2 to 1; absent is none.
-  letterSpacing?: number;
-  // The weight it paints in; wins over `textBold` while set. Absent follows `textBold`.
-  fontWeight?: 400 | 500 | 700;
-  // Shown in capitals or lower case; the label keeps what was typed. Absent is as typed.
-  textCase?: 'upper' | 'lower';
-  // Bends the text along a circle, -360 to 360 degrees: positive bows up, negative down. Absent is
-  // flat. Arched text is one line.
-  textArc?: number;
 };
 
 // --- Tables ----------------------------------------------------------------
@@ -824,7 +742,7 @@ export type StickyElement = {
   fillColor?: string;
   strokeColor?: string;
   textColor?: string;
-  // A whiteboard stock colour for the note's text (docs/specs/023-draw-mode/draw-mode.md
+  // A whiteboard stock colour for the note's text (docs/specs/007-editor/editor-modes.md
   // "Imported and pasted content"), drawn in its board's version when `textColor` is unset.
   penTextColour?: PenColourName;
   // Fill for an element's HEADING area, where it has one distinct from its
@@ -868,12 +786,9 @@ export type StickyElement = {
 
 // --- Images ---------------------------------------------------------------
 
-// See docs/specs/009-elements/images.md. A boxed element that renders user-uploaded
-// image bytes inside its bounding box. The bytes themselves live in
-// R2 (server-side); the element carries only the opaque id the API
-// resolves to a `GET /api/images/<id>` URL, so the document payload
-// stays small + a future "delete from gallery" can break the
-// reference without rewriting every document.
+// An empty picture placeholder used by diagram and Pages templates. liveplanner keeps no uploaded
+// pictures, so `imageId` is never resolved to bytes and the element always draws its empty face;
+// the kind goes with the other diagram kinds.
 export type ImageElement = {
   id: ElementId;
   type: 'image';
@@ -986,19 +901,19 @@ export type FreehandElement = {
   // True when the path auto-closes (release-near-start). The
   // renderer adds `Z` + a fill; open paths render stroke-only.
   closed: boolean;
-  // Highlighter strokes (docs/specs/008-canvas/highlighter.md): the renderers swap the border
+  // Highlighter strokes (docs/specs/006-document/stroke-points.md): the renderers swap the border
   // presets for the marker recipe — a wide round stroke, translucent
   // multiply blend, never filled. The stroke colour stays
   // user-overridable; the recipe owns translucency.
   pen?: 'highlighter';
-  // Marker stroke width in px (docs/specs/008-canvas/highlighter.md), chosen from the highlighter
+  // Marker stroke width in px (docs/specs/006-document/stroke-points.md), chosen from the highlighter
   // banner's strength control at draw time. Absent = the default 14.
   penWidth?: number;
-  // A whiteboard pen stroke's perfect-freehand streamline (docs/specs/023-draw-mode/draw-mode.md
+  // A whiteboard pen stroke's perfect-freehand streamline (docs/specs/007-editor/editor-modes.md
   // "Pens"; absent: a stroke stored before it was recorded, drawn with none). Its pressures, when
   // the pen reported them, ride in `packedPoints`. A pen stroke's points are its raw samples.
   streamline?: number;
-  // A whiteboard marker's named colour (docs/specs/023-draw-mode/draw-mode.md "The colour picker"):
+  // A whiteboard marker's named colour (docs/specs/004-interface-design/colour-picker.md):
   // drawn in the version tuned for the viewer's board (penColourHex) when `strokeColor` is unset.
   penColour?: PenColourName;
   // Polygon-tool paths (docs/specs/008-canvas/polygon-tool.md): the canvas renderer draws straight
@@ -1057,79 +972,6 @@ export type FreehandElement = {
   noteRich?: TextRun[];
 };
 
-// --- Paths -----------------------------------------------------------------
-
-// A path's node (docs/specs/023-draw-mode/path-tool.md "The path element"): corner (no handles, or
-// independent ones), mirrored (collinear, equal length) or aligned (collinear, own lengths).
-export type PathHandleMode = 'corner' | 'mirrored' | 'aligned';
-
-// A position normalised to the element's box, like a freehand point. May lie outside 0 to 1: a
-// handle can reach beyond the drawn curve the box wraps.
-export type PathPoint = { nx: number; ny: number };
-
-// An anchor point and its optional handles, stored as absolute normalised positions so a resize
-// scales the whole path, handles included.
-export type PathNode = PathPoint & {
-  mode: PathHandleMode;
-  handleIn?: PathPoint;
-  handleOut?: PathPoint;
-};
-
-// The Path tool's element (docs/specs/023-draw-mode/path-tool.md): an ordered list of nodes joined
-// by cubic Béziers, open or closed, editable point by point. The box wraps the drawn curve. Styled
-// like a shape: stroke, fill (drawn only when closed), border width and style. A path takes no
-// typed label; the label fields stay declared for the union code paths, as on a freehand.
-export type PathElement = {
-  id: ElementId;
-  type: 'path';
-  // Layer membership (docs/specs/006-document/layers.md) — see ShapeElement.layerId.
-  layerId?: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  nodes: PathNode[];
-  closed: boolean;
-  // Further contours after `nodes`, closed or open as the path is (docs/specs/007-editor/
-  // logo-pages.md "Combine", "Mirror"): a combined shape's islands and holes, filled even-odd, or a
-  // mirrored line's two halves. Such a path moves and restyles as a whole and its points are not
-  // edited one by one.
-  subpaths?: PathNode[][];
-  fillColor?: string;
-  strokeColor?: string;
-  // A whiteboard stock colour (docs/specs/023-draw-mode/draw-mode.md "Imported and pasted
-  // content"): drawn in the version tuned for the viewer's board when `strokeColor` is unset.
-  penColour?: PenColourName;
-  // Quick-swatch bindings (docs/specs/008-canvas/quick-style-panel.md), as a shape carries them.
-  strokeSwatch?: QuickSwatchSlot;
-  fillSwatch?: QuickSwatchSlot;
-  strokeWidth?: BorderStroke;
-  strokeStyle?: BorderStyle;
-  label?: string;
-  textSize?: TextSize;
-  textAlignX?: TextAlignX;
-  textAlignY?: TextAlignY;
-  textBold?: boolean;
-  textItalic?: boolean;
-  textUnderline?: boolean;
-  textStrikethrough?: boolean;
-  font?: string;
-  textColor?: string;
-  borderRadius?: BorderRadius;
-  padding?: Padding;
-  locked?: boolean;
-  aspectLocked?: boolean;
-  opacity?: number;
-  // Clockwise rotation in degrees about the element's centre. Absent or 0 means unrotated.
-  rotation?: number;
-  link?: ElementLink;
-  commentThread?: CommentThread;
-  // Assigned action (docs/specs/012-collaboration/assigned-actions.md).
-  action?: ElementAction;
-  note?: string;
-  noteRich?: TextRun[];
-};
-
 // --- Annotations -----------------------------------------------------------
 
 // See docs/specs/009-elements/annotations.md. A fixed-size themed circle holding a note
@@ -1157,10 +999,6 @@ export type AnnotationElement = {
   // always === runsPlainText(noteRich). Absent = an unformatted note, which
   // renders exactly as it always did.
   noteRich?: TextRun[];
-  // A margin note of an article (docs/specs/007-editor/article-pages.md "Comments and actions"):
-  // the marker in a page's margin beside the text its comment thread or action is on, kept beside
-  // that text as the writing moves. Its glyph says which: a speech bubble, or a tick for an action.
-  articleNote?: 'comment' | 'action';
   // fillColor tints the circle; strokeColor draws the ring + the note glyph.
   // textColor is unused (no inline label) but declared for the generic
   // colour code paths.
@@ -1370,20 +1208,12 @@ export type VideoElement = {
 // Does this element take a TYPED label — i.e. is dropping one an invitation
 // to start writing? True for the paper-and-text kinds (sticky, shape, text,
 // icon), false for the ones whose face is a picture or a control the user
-// configures instead of writes: a sticker is artwork, a session button /
-// reaction pad / mode button / estimate all render their own caption from
-// their setting, so opening a text caret on them would offer to edit
-// something that isn't theirs to edit.
+// configures instead of writes: a sticker is artwork, a session button
+// renders its own caption from its setting, so opening a text caret on it
+// would offer to edit something that isn't its to edit.
 const UNTYPED_SHAPES = new Set<string>([
   'sticker',
-  // A fence (docs/specs/009-elements/fence.md) carries no label.
-  'fence',
-  // An Avatar Pad (docs/specs/009-elements/avatar-pad.md) carries no label.
-  'avatar-pad',
   'session-button',
-  'reaction-pad',
-  'mode-button',
-  'estimate',
   // Plan boards, cards and views draw their own faces from the item store; a caret on one left a
   // newly placed board stuck in label editing, unable to move until reselected.
   'plan-board',

@@ -79,7 +79,6 @@ const TAB = {
   id: 't1',
   name: 'Tab 1',
   rev: 3,
-  opensIn: 'pages',
   elements: [BOARD_ELEMENT, SHEET_ELEMENT],
 };
 // What the changeset route answers (docs/specs/024-agents/agent-changesets.md).
@@ -90,31 +89,6 @@ const CHANGESET = {
   text: 'rev 3→4 · cs_0000000001',
   warnings: [],
   lint: null,
-};
-// What the pages route answers (docs/specs/024-agents/pages-for-agents.md "The route").
-const ARTICLE = { flow: 'art-1', title: 'Brief', pages: [2], blocks: 3, words: 9, look: null };
-const PAGES = {
-  tab: { id: 't1', rev: 4 },
-  switched: false,
-  lines: ['Added page 1 (slide, Slide (16:9)).'],
-  pages: [
-    {
-      place: 1,
-      id: 'page-1',
-      name: null,
-      kind: 'slide',
-      size: 'slide',
-      orientation: null,
-      rect: { x: -960, y: -540, width: 1920, height: 1080 },
-      background: null,
-      locked: false,
-      flow: null,
-      elements: 0,
-    },
-  ],
-  articles: [ARTICLE],
-  article: { ...ARTICLE, created: true },
-  changesetId: null,
 };
 const ITEM = {
   id: 'item123abc',
@@ -142,7 +116,6 @@ const FORM_TAB = {
   name: 'Bug Report',
   rev: 2,
   kind: 'form',
-  opensIn: 'plan',
   elements: [],
   form: {
     v: 1,
@@ -271,7 +244,6 @@ async function api(request: Request): Promise<Response> {
   if (path.endsWith('/restore')) return json({ document: LIVE_DOC });
   if (path.endsWith('/share'))
     return json({ link: { code: 'abc', role: 'view', expiresAt: null } });
-  if (path.endsWith('/pages')) return json(PAGES);
   if (path.endsWith('/changesets')) return json(CHANGESET);
   if (path.endsWith('/name')) return json({ tab: { id: 't1', name: 'Renamed', orderIndex: 0 } });
   if (path.endsWith('/form-link')) return json(FORM_LINK);
@@ -325,7 +297,6 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
     args: { documentId: 'd1', format: 'json' },
   },
   { tool: 'list_templates', output: 'listTemplatesOutput', args: {} },
-  { tool: 'search_icons', output: 'searchIconsOutput', args: { query: 'database' } },
   {
     tool: 'create_document',
     output: 'createDocumentOutput',
@@ -359,7 +330,6 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
     args: { documentId: 'd1', tabId: 't1' },
   },
   { tool: 'list_trash', output: 'listTrashOutput', args: {} },
-  { tool: 'list_images', output: 'listImagesOutput', args: { query: 'shot' } },
   { tool: 'restore_document', output: 'restoreDocumentOutput', args: { documentId: 'd2' } },
   { tool: 'list_items', output: 'listItemsOutput', args: { documentId: 'd1' } },
   {
@@ -423,16 +393,6 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
     output: 'addSheetOutput',
     // A Sheet goes only on a tab in Plan: the Form tab is one.
     args: { documentId: 'd1', tabId: 'f1', title: 'Costs', csv: 'a,b\n1,2' },
-  },
-  {
-    tool: 'change_pages',
-    output: 'changePagesOutput',
-    args: { documentId: 'd1', changes: [{ op: 'add', kind: 'slide', layout: 'slide-title' }] },
-  },
-  {
-    tool: 'write_article',
-    output: 'writeArticleOutput',
-    args: { documentId: 'd1', markdown: '# Brief', look: 'report' },
   },
 ];
 

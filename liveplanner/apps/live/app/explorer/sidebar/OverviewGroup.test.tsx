@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 
-// The sidebar's Overview group (docs/specs/013-workspace/explorer-structure.md#overview): Home, Inbox,
-// Timeline and Shared With Me, each opening its view, with the Inbox's badge counting what is
-// assigned to the reader and the Timeline's unread count staying on Home.
+// The sidebar's Overview group (docs/specs/013-workspace/explorer-structure.md#overview): Home, Inbox
+// and Shared With Me, each opening its view, with the Inbox's badge counting what is assigned to
+// the reader and the unread count on Home.
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -60,9 +60,9 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe('OverviewGroup', () => {
-  it('lists Home, Inbox, Timeline and Shared With Me, in that order', () => {
+  it('lists Home, Inbox and Shared With Me, in that order, with no Timeline row', () => {
     renderGroup();
-    expect(rows()).toEqual(['Home', 'Inbox', 'Timeline', 'Shared With Me']);
+    expect(rows()).toEqual(['Home', 'Inbox', 'Shared With Me']);
   });
 
   it('opens the Inbox and reports Sidebar.Inbox', () => {
@@ -72,29 +72,21 @@ describe('OverviewGroup', () => {
     expect(track).toHaveBeenCalledWith('UI', 'Selected', 'Sidebar.Inbox');
   });
 
-  it('opens the Timeline and reports Sidebar.Timeline, leaving the unread count to Home', () => {
-    renderGroup();
-    activate('Timeline');
-    expect(go).toHaveBeenCalledWith({ kind: 'timeline' });
-    expect(track).toHaveBeenCalledWith('UI', 'Selected', 'Sidebar.Timeline');
-    expect(clearUnread).not.toHaveBeenCalled();
-  });
-
   it('highlights the row of the current view', () => {
     renderGroup({ kind: 'inbox' });
     expect(item('Inbox').getAttribute('aria-selected')).toBe('true');
-    expect(item('Timeline').getAttribute('aria-selected')).toBe('false');
+    expect(item('Home').getAttribute('aria-selected')).toBe('false');
     cleanup();
-    renderGroup({ kind: 'timeline' });
-    expect(item('Timeline').getAttribute('aria-selected')).toBe('true');
+    renderGroup({ kind: 'shared' });
+    expect(item('Shared With Me').getAttribute('aria-selected')).toBe('true');
     expect(item('Inbox').getAttribute('aria-selected')).toBe('false');
   });
 
-  it('badges Home with the unread count and the Inbox with what is assigned, never the Timeline', () => {
+  it('badges Home with the unread count and the Inbox with what is assigned', () => {
     renderGroup({ kind: 'home' }, 3, 2);
     expect(labelOf('Home')).toBe('Home (3)');
     expect(labelOf('Inbox')).toBe('Inbox (2)');
-    expect(labelOf('Timeline')).toBe('Timeline');
+    expect(labelOf('Shared With Me')).toBe('Shared With Me');
   });
 
   it('shows the Inbox badge at zero', () => {

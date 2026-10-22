@@ -1,13 +1,8 @@
-// Working together: live sessions, sharing, discussion, the Timeline, teams and the facilitation tools (docs/specs/017-telemetry/telemetry.md).
+// Working together: live sessions, sharing, discussion, History and team Activity, teams and the session tools (docs/specs/017-telemetry/telemetry.md).
 // Part of the metric catalogue: import from ../metric-catalogue.
 
 import type { Metric, MetricStack } from '../metric-series';
-import {
-  SESSION_POLL_OPENED,
-  SESSION_TIMER_OPENED,
-  SESSION_VOTE_OPENED,
-  SLIDE_DECK_OPENED,
-} from './features';
+import { SESSION_TIMER_OPENED, SESSION_VOTE_OPENED } from './features';
 import { chart } from './helpers';
 
 export const VOTES_ENDED = chart(
@@ -59,28 +54,6 @@ export const SHARE_LINKS_REMOVED = chart(
   { rising: 'neutral' },
 );
 
-export const FACILITATOR_CLAIMED = chart(
-  'Facilitator',
-  'Started',
-  'Facilitator Claimed',
-  'Someone asked to take the facilitator role. Counted on the ask, so a refused claim counts too.',
-);
-
-export const FACILITATOR_RELEASED = chart(
-  'Facilitator',
-  'Ended',
-  'Facilitator Released',
-  'The facilitator handed the role back.',
-);
-
-export const AVATARS_CUSTOMISED = chart(
-  'UI',
-  'Changed',
-  'Avatars Customised',
-  'Someone changed their avatar: randomised, clothing, or figure.',
-  { typeIn: (t) => (t ?? '').startsWith('Avatar') },
-);
-
 export const FEED_RETRIES = chart(
   'Activity',
   'Loaded',
@@ -92,22 +65,22 @@ export const FEED_RETRIES = chart(
 export const TIMELINE_LOADS = chart(
   'Timeline',
   'Loaded',
-  'Timeline Loads',
-  'More of the Timeline loaded, or a failed load retried.',
+  'History Loads',
+  "More of a document's History or a team's Activity loaded, or a failed load retried.",
 );
 
 export const TIMELINE_VIEW_SWITCHED = chart(
   'Timeline',
   'Changed',
-  'Timeline View Switched',
-  'The Timeline switched between its list and calendar.',
+  'History View Switched',
+  "A document's History or a team's Activity switched between its list and calendar.",
 );
 
 export const TIMELINE_FILTERED = chart(
   'Timeline',
   'Selected',
-  'Timeline Filtered',
-  'The Timeline narrowed to everyone, others, or a kind of event.',
+  'History Filtered',
+  "A document's History or a team's Activity narrowed to everyone, others, or a kind of event.",
 );
 
 export const COMMENTS_DELETED = chart(
@@ -124,13 +97,6 @@ export const COMMENTS_REOPENED = chart(
   'Comments Reopened',
   'A resolved thread opened again.',
   { rising: 'neutral' },
-);
-
-export const FACILITATOR_CONTROLS = chart(
-  'Facilitator',
-  'Changed',
-  'Facilitator Controls',
-  'The facilitator handed the role to someone, or released a participant\u2019s lock on an element. Counted on the ask.',
 );
 
 export const EMBEDS_VIEWED = chart(
@@ -192,14 +158,6 @@ export const INVITE_LINKS_SHARED = chart(
   'A team invite link made to share.',
 );
 
-export const SLIDE_NOTES = chart(
-  'UI',
-  'Changed',
-  'Slide Notes',
-  'Speaker notes on a slide edited.',
-  { types: ['SlideNotes'] },
-);
-
 export const LIVE_IMAGE_TABS = chart(
   'UI',
   'Selected',
@@ -210,9 +168,9 @@ export const LIVE_IMAGE_TABS = chart(
 
 // ---- Collaboration tab -------------------------------------------------------
 // Everything but Live Together counts an INVITATION (a link made, a member
-// added, a poll opened); Live Together counts two people on one canvas at the
+// added, a vote opened); Live Together counts two people on one canvas at the
 // same moment, which is what the rest is FOR, so read the rest against it. The
-// facilitation tools (docs/specs/012-collaboration/session-tools.md + docs/specs/012-collaboration/live-poll.md) are read by their drop-off: votes
+// session tools (docs/specs/012-collaboration/session-tools.md) are read by their drop-off: votes
 // started vs revealed, dots cast vs retracted, timers started vs finished.
 
 export const MULTIPLAYER_SESSIONS: Metric = {
@@ -222,15 +180,6 @@ export const MULTIPLAYER_SESSIONS: Metric = {
   title: 'Multiplayer Sessions',
   blurb:
     'A document was open with at least one other person live in the room. Counted once per document per visit, however many people turn up.',
-};
-
-export const VIEWPORTS_FOLLOWED: Metric = {
-  category: 'Canvas',
-  action: 'Used',
-  type: 'FollowMe',
-  title: 'Viewports Followed',
-  blurb:
-    "Someone pinned their view to a teammate's, following their pan, zoom and tab: the strongest signal that a session is being presented rather than just co-edited.",
 };
 
 export const EDIT_LINKS_SHARED: Metric = {
@@ -373,7 +322,7 @@ export const VOTES_STARTED: Metric = {
   action: 'Started',
   type: 'Vote',
   title: 'Votes Started',
-  blurb: 'A facilitator opened a dot-vote on a tab.',
+  blurb: 'Someone opened a dot-vote on a tab.',
 };
 
 export const PRIVATE_VOTES: Metric = {
@@ -408,8 +357,7 @@ export const RESULTS_REVEALED: Metric = {
   action: 'Revealed',
   type: 'Vote',
   title: 'Results Revealed',
-  blurb:
-    'The facilitator showed the tallies. A vote started but never revealed is one that fizzled.',
+  blurb: 'The host showed the tallies. A vote started but never revealed is one that fizzled.',
 };
 
 export const VOTES_DISCARDED: Metric = {
@@ -420,30 +368,6 @@ export const VOTES_DISCARDED: Metric = {
   title: 'Votes Discarded',
   blurb:
     'The whole round was thrown away, dots and all. Distinct from ending it, which keeps the tallies.',
-};
-
-export const POLLS_STARTED: Metric = {
-  category: 'Tab',
-  action: 'Started',
-  type: 'Poll',
-  title: 'Polls Started',
-  blurb: 'A live pulse-check was opened on a tab. Nothing about a poll is persisted.',
-};
-
-export const POLL_ANSWERS: Metric = {
-  category: 'Tab',
-  action: 'Voted',
-  type: 'Poll',
-  title: 'Poll Answers',
-  blurb: 'A participant answered. Read against polls started for average turnout.',
-};
-
-export const POLLS_ENDED: Metric = {
-  category: 'Tab',
-  action: 'Ended',
-  type: 'Poll',
-  title: 'Polls Ended',
-  blurb: 'The facilitator closed the poll.',
 };
 
 export const COUNTDOWNS_STARTED: Metric = {
@@ -510,15 +434,8 @@ export const STOPWATCHES_FINISHED: Metric = {
 export const LIVE_TOGETHER: MetricStack = {
   stack: true,
   title: 'Live Together',
-  blurb: 'Two or more people on one canvas at the same moment, and sessions being presented.',
-  members: [
-    MULTIPLAYER_SESSIONS,
-    VIEWPORTS_FOLLOWED,
-    FACILITATOR_CLAIMED,
-    FACILITATOR_RELEASED,
-    AVATARS_CUSTOMISED,
-    FACILITATOR_CONTROLS,
-  ],
+  blurb: 'Two or more people on one canvas at the same moment.',
+  members: [MULTIPLAYER_SESSIONS],
   headline: MULTIPLAYER_SESSIONS,
 };
 
@@ -606,14 +523,6 @@ export const VOTING: MetricStack = {
   headline: VOTES_STARTED,
 };
 
-export const POLLS: MetricStack = {
-  stack: true,
-  title: 'Polls',
-  blurb: 'Live pulse-checks opened, answered, and closed.',
-  members: [POLLS_STARTED, POLL_ANSWERS, POLLS_ENDED, SESSION_POLL_OPENED],
-  headline: POLLS_STARTED,
-};
-
 // Countdowns and stopwatches are different tools, so different stacks. The
 // editor reports Paused and Reset without saying which kind (useTabSession
 // tracks the gesture, not the mode), so those two sit in both stacks, each
@@ -649,49 +558,14 @@ export const STOPWATCHES: MetricStack = {
   headline: STOPWATCHES_STARTED,
 };
 
-// The Explorer Timeline (docs/specs/013-workspace/timeline.md) and the Explorer's Inbox (docs/specs/013-workspace/inbox.md).
-// Timeline·Opened carries four things by type: two ways of arriving on the
-// feed (Landing, the Explorer's default page, and Nav, a deliberate visit),
-// which is how the landing-page change is measured, and two things done in it
-// (a card or stack menu opened, a stacked run expanded).
-export const TIMELINE_LANDINGS = chart(
-  'Timeline',
-  'Opened',
-  'Timeline Landings',
-  'A page load that started on the Timeline.',
-  { types: ['Landing'] },
-);
-
-export const TIMELINE_VISITS = chart(
-  'Timeline',
-  'Opened',
-  'Timeline Visits',
-  "The Timeline opened after starting elsewhere: its sidebar row, or Home's See Timeline.",
-  { types: ['Nav'] },
-);
-
-export const TIMELINE_MENUS = chart(
-  'Timeline',
-  'Opened',
-  'Timeline Card Menus',
-  'The menu on a Timeline card or stack opened, by its button or a right-click.',
-  { types: ['Menu'] },
-);
-
+// History and team Activity (docs/specs/013-workspace/timeline.md) and the Explorer's Inbox
+// (docs/specs/013-workspace/inbox.md).
 export const TIMELINE_STACKS_EXPANDED = chart(
   'Timeline',
   'Opened',
   'Stacks Expanded',
-  'A stacked run of changes on the Timeline opened up to show each one.',
+  "A stacked run of changes in a document's History or a team's Activity opened up to show each one.",
   { types: ['Stack'] },
-);
-
-export const TIMELINE_ENTRIES_REMOVED = chart(
-  'Timeline',
-  'Removed',
-  'Timeline Entries Removed',
-  'An entry or a whole stack removed from the feed.',
-  { rising: 'neutral' },
 );
 
 export const ACTIVITY_OPENED = chart(
@@ -753,9 +627,9 @@ export const HOME_LOADS = chart('Home', 'Loaded', 'Home Retries', 'A failed read
 
 export const TIMELINE_AND_ACTIVITY: MetricStack = {
   stack: true,
-  title: 'Timeline & Activity',
+  title: 'Home & Activity',
   blurb:
-    "Keeping up with what changed: Explorer Home, the Explorer Timeline and the Explorer's Inbox.",
+    "Keeping up with what changed: Explorer Home, the Explorer's Inbox, and a document's History or a team's Activity.",
   members: [
     HOME_LANDINGS,
     HOME_VISITS,
@@ -763,11 +637,7 @@ export const TIMELINE_AND_ACTIVITY: MetricStack = {
     HOME_DOCUMENTS_OPENED,
     HOME_GROUPS_EXPANDED,
     HOME_LOADS,
-    TIMELINE_LANDINGS,
-    TIMELINE_VISITS,
-    TIMELINE_MENUS,
     TIMELINE_STACKS_EXPANDED,
-    TIMELINE_ENTRIES_REMOVED,
     ACTIVITY_OPENED,
     ACTIVITY_THREADS,
     TIMELINE_LOADS,
@@ -775,90 +645,4 @@ export const TIMELINE_AND_ACTIVITY: MetricStack = {
     TIMELINE_FILTERED,
     FEED_RETRIES,
   ],
-};
-
-// Presentations (docs/specs/012-collaboration/presentation-mode.md).
-export const SLIDES_REORDERED = chart(
-  'UI',
-  'Moved',
-  'Slides Reordered',
-  'Slides dragged into a new order in the deck.',
-  { types: ['Slide'] },
-);
-export const PRESENTATIONS_STARTED = chart(
-  'UI',
-  'Started',
-  'Presentations Started',
-  'A slide deck presented full screen.',
-  { types: ['Presentation'] },
-);
-
-export const PRESENTATIONS_CLOSED = chart(
-  'UI',
-  'Closed',
-  'Presentations Closed',
-  'A presentation ended.',
-  { types: ['Presentation'] },
-);
-
-export const SLIDES_ADDED = chart(
-  'UI',
-  'Added',
-  'Slides Added',
-  'A slide added to a deck: from a selection, a page, a Plan card or a whole Plan board as a slide.',
-  { types: ['Slide', 'PageSlide', 'ItemSlide', 'BoardSlide', 'AllPageSlides'] },
-);
-
-export const SLIDES_REMOVED = chart(
-  'UI',
-  'Removed',
-  'Slides Removed',
-  'A slide taken out of a deck.',
-  { types: ['Slide'], rising: 'neutral' },
-);
-
-export const SLIDES_SHOWN_HIDDEN = chart(
-  'UI',
-  'Toggled',
-  'Slides Shown & Hidden',
-  'A slide hidden from the deck or shown again.',
-  { types: ['SlideShown', 'SlideHidden'], rising: 'neutral' },
-);
-
-// The presenter settings (transition, speed, auto-advance, loop and the
-// rest) send UI·Changed·Presentation-<field>: which setting, never its value.
-export const PRESENTER_SETTINGS_CHANGED = chart(
-  'UI',
-  'Changed',
-  'Presenter Settings Changed',
-  'A presentation setting changed: the transition, speed, auto-advance, loop, zoom, or what the presenter sees.',
-  { typeIn: (type) => (type ?? '').startsWith('Presentation-') },
-);
-
-// The Settings dialog's presenter switches send UI·Toggled·Presentation-<field>On|Off.
-export const PRESENTER_SETTINGS_TOGGLED = chart(
-  'UI',
-  'Toggled',
-  'Presenter Settings Switched',
-  'A presentation switch turned on or off in Settings: advance on click, loop, or what the presenter sees.',
-  { typeIn: (type) => (type ?? '').startsWith('Presentation-') },
-);
-
-export const PRESENTATIONS: MetricStack = {
-  stack: true,
-  title: 'Presentations',
-  blurb: 'Slide decks built from element sets and presented full screen.',
-  members: [
-    PRESENTATIONS_STARTED,
-    PRESENTATIONS_CLOSED,
-    SLIDE_DECK_OPENED,
-    SLIDES_ADDED,
-    SLIDES_REMOVED,
-    SLIDES_SHOWN_HIDDEN,
-    SLIDE_NOTES,
-    SLIDES_REORDERED,
-    PRESENTER_SETTINGS_CHANGED,
-    PRESENTER_SETTINGS_TOGGLED,
-  ],
-  headline: PRESENTATIONS_STARTED,
 };

@@ -1,18 +1,15 @@
-import { lucideBookOpen, lucidePenTool, lucideSparkles } from '@liveplanner/icons/lucide';
+import { lucideBookOpen, lucideSparkles, lucideSquareKanban } from '@liveplanner/icons/lucide';
 
 import { Brand } from './Brand';
-import { CONTRIBUTORS } from './contributors';
-import { Glyph } from './icons/Glyph';
 import { lucideGlyph } from './icons/lucide-glyph';
-import { REPO_URL } from './site';
 
 // NEXT_PUBLIC_BUILD_YEAR (docs/specs/016-platform/nextjs.md "One configuration"); empty outside a Next build.
 const buildYear = () => process.env.NEXT_PUBLIC_BUILD_YEAR ?? '';
 
 // The public site footer shared by the marketing landing page, the help centre and the telemetry dashboard.
-// Brand + tagline on top, the site links grouped into titled columns below, and a thin legal/credits
-// strip at the bottom crediting the human contributors by their avatars. Only the key links carry an icon (the
-// first action, AI, help and the source); the rest stay plain text so the columns read quietly.
+// Brand + tagline on top, the site links grouped into titled columns below, and a thin copyright strip at
+// the bottom. Only the key links carry an icon (the first action, AI and help); the rest stay plain text so
+// the columns read quietly.
 // On a touch screen each link is a 44px-tall row (touch-targets.md) and the column drops its gap, so
 // the rows abut and every tap lands on a link; a mouse keeps the compact 28px rhythm.
 const LINK =
@@ -21,13 +18,11 @@ const ICON_SIZE = 16;
 
 type FooterLink = { href: string; label: string; icon?: ReturnType<typeof lucideGlyph> };
 
-const GITHUB = 'github';
-
-const COLUMNS: { title: string; links: (FooterLink | typeof GITHUB)[] }[] = [
+const COLUMNS: { title: string; links: FooterLink[] }[] = [
   {
     title: 'Product',
     links: [
-      { href: '/new', label: 'New Document', icon: lucideGlyph(lucidePenTool, ICON_SIZE) },
+      { href: '/new', label: 'New Project', icon: lucideGlyph(lucideSquareKanban, ICON_SIZE) },
       {
         href: '/ai',
         label: 'AI & MCP',
@@ -60,7 +55,7 @@ const COLUMNS: { title: string; links: (FooterLink | typeof GITHUB)[] }[] = [
   },
   {
     title: 'Connect',
-    links: [{ href: '/help/contact/', label: 'Contact' }, GITHUB],
+    links: [{ href: '/help/contact/', label: 'Contact' }],
   },
 ];
 
@@ -71,7 +66,7 @@ export function SiteFooter() {
         <div>
           <Brand href="/" size="lg" className="relative touch-target-y" />
           <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-            Free diagrams, whiteboards and pages for teams who think together.
+            Free planning for teams who work together, live.
           </p>
         </div>
         <nav
@@ -85,19 +80,6 @@ export function SiteFooter() {
               </h2>
               <div className="mt-3 flex flex-col items-start gap-2 pointer-coarse:mt-0.5 pointer-coarse:gap-0">
                 {column.links.map((link) => {
-                  if (link === GITHUB)
-                    return (
-                      <a
-                        key={link}
-                        href={REPO_URL}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={LINK}
-                      >
-                        <GitHubIcon />
-                        GitHub
-                      </a>
-                    );
                   const Icon = link.icon;
                   return (
                     <a key={link.href} href={link.href} className={LINK}>
@@ -116,44 +98,10 @@ export function SiteFooter() {
           <p>
             {/* The build's year, inlined at build (@liveplanner/next-config), never the clock: the prerender and
                 the browser render the same text whatever the date. */}
-            <span>{`© ${buildYear() ? `${buildYear()} ` : ''}liveplanner. MIT licensed.`}</span>
-          </p>
-          <p className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
-            <span className="inline-flex items-center gap-1.5">
-              Built by
-              <span className="inline-flex items-center gap-x-2.5">
-                {CONTRIBUTORS.map((c) => (
-                  <a
-                    key={c.login}
-                    href={`https://github.com/${c.login}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 font-medium text-slate-500 hover:text-brand-700 pointer-coarse:py-3 dark:text-slate-400 dark:hover:text-brand-200"
-                  >
-                    {/* Decorative: the name beside it carries the link's meaning. */}
-                    <img
-                      src={c.avatar}
-                      alt=""
-                      width={20}
-                      height={20}
-                      className="size-5 rounded-full ring-1 ring-slate-200 dark:ring-slate-700"
-                    />
-                    {c.name}
-                  </a>
-                ))}
-              </span>
-            </span>
+            <span>{`© ${buildYear() ? `${buildYear()} ` : ''}liveplanner. All rights reserved.`}</span>
           </p>
         </div>
       </div>
     </footer>
-  );
-}
-
-function GitHubIcon() {
-  return (
-    <Glyph size={ICON_SIZE} units={24} filled>
-      <path d="M12 0C5.37 0 0 5.373 0 12c0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.385-1.335-1.755-1.335-1.755-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.305-5.467-1.335-5.467-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.4 3-.405 1.02.005 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.605-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.298 24 12c0-6.627-5.373-12-12-12z" />
-    </Glyph>
   );
 }

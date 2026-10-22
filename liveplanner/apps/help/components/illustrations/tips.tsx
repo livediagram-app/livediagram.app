@@ -1,6 +1,5 @@
 // Tips-and-tricks illustrations (docs/specs/018-help/help-app.md): keyboard shortcuts and their toggle,
-// the palette strip as a quick-add launchpad, and the presenting surfaces
-// (Zen mode and the laser pointer). Format-painter and theme scenes are reused
+// the palette strip as a quick-add launchpad, and Zen mode. Format-painter and theme scenes are reused
 // from canvas.tsx, not redrawn. Composed only from the shared primitives.
 
 import { Scene, Shape, Arrow, Panel, Label, TextBar } from './primitives';
@@ -34,8 +33,7 @@ export function KeyboardShortcuts() {
   const rows: [string, string][] = [
     ['V', 'Select Tool (or 1)'],
     ['H', 'Hand Tool'],
-    ['K', 'Laser Pointer'],
-    ['E', 'Eraser (click / drag to delete)'],
+    ['I', 'Isometric View'],
     ['Z', 'Zen Mode (focus)'],
   ];
   return (
@@ -131,38 +129,6 @@ export function ZenMode() {
           strokeLinejoin="round"
         />
       </Panel>
-    </Scene>
-  );
-}
-
-/** The laser pointer: a fading glowing trail sweeping across the canvas in the
- *  presenter's participant colour, ending at the cursor. */
-export function LaserPointer() {
-  return (
-    <Scene w={420} h={210}>
-      <Shape x={48} y={56} w={84} h={46} kind="rect" label="Step 1" />
-      <Shape x={170} y={120} w={84} h={46} kind="rect" label="Step 2" />
-      <Shape x={296} y={56} w={84} h={46} kind="rect" accent label="Step 3" />
-      {/* Fading laser trail, swept under Step 2 (clear of its label): thick faint to thin bright
-          toward the cursor at Step 3 */}
-      <path
-        d="M90 108 Q132 192 212 184 Q292 176 330 108"
-        fill="none"
-        className="stroke-rose-300"
-        strokeWidth={9}
-        strokeLinecap="round"
-        opacity={0.35}
-      />
-      <path
-        d="M262 180 Q304 168 330 108"
-        fill="none"
-        className="stroke-rose-500"
-        strokeWidth={5}
-        strokeLinecap="round"
-      />
-      {/* Glowing pointer dot */}
-      <circle cx={331} cy={106} r={9} className="fill-rose-500/30" />
-      <circle cx={331} cy={106} r={4.5} className="fill-rose-500" />
     </Scene>
   );
 }

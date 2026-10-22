@@ -1,5 +1,5 @@
 // tabs — one row per tab, linked to documents through the
-// document_tabs many-to-many table (migration 0011 / docs/specs/006-document/tab-document-many-to-many.md).
+// document_tabs many-to-many table (docs/specs/006-document/tab-document-many-to-many.md).
 
 import { capElementActions, drawnCount, type Tab } from '@liveplanner/document';
 import { rowToTab, type TabRow } from '../tab-row';
@@ -16,16 +16,9 @@ function assertTabDataFits(tabId: string, data: string, write: string): void {
 }
 import type { SharedTabsSummary } from '@liveplanner/api-schema';
 import type { Env, TabDTO } from '../types';
-import { imageRefIds, imageRefIdsFromData } from '../image-refs/extract';
 import { tabStatsOf, tabStatsStatement, type TabStats } from './tab-stats';
-import { imageGrantLinkStatement, imageGrantPlacementStatements } from './image-grants';
 import { collabIndexStatements } from './collab-index';
 import { sheetRefIds, sheetRefReplaceStatements, sheetSettleStatements } from './sheet-refs';
-import {
-  imageRefAddStatements,
-  imageRefPruneTabStatement,
-  imageRefReplaceStatements,
-} from './image-refs';
 
 // Whether `tabId` is a tab that exists but is not one of `documentId`'s: a save must never adopt it. A save
 // upserts by tab id, so without this a tab id seen elsewhere (a share link) could
@@ -124,7 +117,7 @@ export async function tabBodiesInOrder(
 // reads the single `data` column rather than going through getTab.
 // The `empty` column of a document list (docs/specs/006-document/document-snapshots.md): the element
 // count of the document's first tab, or of `scopeTabSql`'s tab when that is not null. Reads the
-// count each tab write binds (migration 0059), never a tab body. NULL = no tab, -1 = not yet known.
+// count each tab write binds, never a tab body. NULL = no tab, -1 = not yet known.
 export function firstTabCountSql(documentIdSql: string, scopeTabSql: string | null = null): string {
   const scope = scopeTabSql ? ` AND (${scopeTabSql} IS NULL OR dt.tab_id = ${scopeTabSql})` : '';
   return `(SELECT COALESCE(t.element_count, -1)
@@ -140,7 +133,7 @@ export function isEmptyCount(firstTabCount: number | null | undefined): boolean 
   return firstTabCount == null || firstTabCount === 0;
 }
 
-// A stored tab body with its id and its element count (null until known, migration 0059).
+// A stored tab body with its id and its element count (null until known).
 export type StoredTabBody = { id: string; data: string; elementCount: number | null };
 
 // The document's first tab, or `tabId`'s tab when given, as the snapshot renderer reads it.
@@ -163,7 +156,7 @@ export async function getTabBody(
 }
 
 // How much the document's first tab has to draw (drawnCount): its stored count, or a parse of its body while the count is
-// not yet known (migration 0059). Zero with no tab or an unreadable body. Needs no snapshot store, unlike a render.
+// not yet known. Zero with no tab or an unreadable body. Needs no snapshot store, unlike a render.
 export async function firstTabElementCount(env: Env, documentId: string): Promise<number> {
   const body = await getTabBody(env, documentId);
   if (!body) return 0;
@@ -175,7 +168,7 @@ export async function firstTabElementCount(env: Env, documentId: string): Promis
   }
 }
 
-// The lazy backfill (migration 0059): a reader that has parsed a body whose count is still unknown
+// The lazy backfill of tabs.element_count: a reader that has parsed a body whose count is still unknown
 // records it. Only ever fills a null, so it can never undo a write's own count.
 export async function stampTabElementCount(env: Env, tabId: string, count: number): Promise<void> {
   await env.DB.prepare('UPDATE tabs SET element_count = ? WHERE id = ? AND element_count IS NULL')
@@ -216,7 +209,7 @@ type TabRevWrite = { advance: true } | { expected: number };
 // blob (everything except id + name) so list queries can return summaries without parsing element
 // trees. The body goes to `tabs` (RETURNING its new `rev`, always first), this document's position
 // to its `document_tabs` link (docs/specs/006-document/tab-document-many-to-many.md), the
-// document's `saved_at`, and the collaboration and image reference indexes, replaced in the SAME
+// document's `saved_at`, and the collaboration and sheet reference indexes, replaced in the SAME
 // batch as the blob they mirror so they can never drift. Exported so a changeset batches its
 // record beside the write: a lost compare-and-swap then aborts the whole batch.
 export function tabWriteStatements(
@@ -260,14 +253,8 @@ export function tabWriteStatements(
     // The collaboration index (docs/specs/013-workspace/inbox.md §2.1), after the tabs
     // upsert, which the rows' FK needs.
     ...collabIndexStatements(env, id, tab.elements),
-    // The image reference index (docs/specs/009-elements/images.md, "Reference index"): a reference
-    // this batch missed is an image the retention sweep reaps.
-    ...imageRefReplaceStatements(env, id, imageRefIds(tab.elements, tab.pages)),
-    // Placement grants (docs/specs/009-elements/images.md, "Placement grants"), after the
-    // document_tabs upsert above, which they read.
-    ...imageGrantPlacementStatements(env, id, imageRefIds(tab.elements, tab.pages), now),
     // The sheet reference index (docs/specs/029-sheets/sheet-store.md "Deleting a sheet"), after the tabs and
-    // document_tabs upserts, which the rows' FK and the settling triggers (migration 0079) read. A write whose
+    // document_tabs upserts, which the rows' FK and the settling triggers read. A write whose
     // references are unchanged touches no row, so the triggers cost it nothing.
     ...sheetRefReplaceStatements(env, id, sheetRefIds(tab.elements)),
   ];
@@ -379,10 +366,6 @@ export async function seedTabs(
   // copy from a share link can carry actions and threads in on create.
   for (const tab of capped) {
     stmts.push(...collabIndexStatements(env, tab.id, tab.elements));
-    stmts.push(...imageRefReplaceStatements(env, tab.id, imageRefIds(tab.elements, tab.pages)));
-    stmts.push(
-      ...imageGrantPlacementStatements(env, tab.id, imageRefIds(tab.elements, tab.pages), now),
-    );
     // A seed's sheets come after its tabs (routes/documents.ts), so they find these references on create.
     stmts.push(...sheetRefReplaceStatements(env, tab.id, sheetRefIds(tab.elements)));
   }
@@ -434,11 +417,7 @@ export async function deleteTabRow(
     .bind(tabId)
     .first<{ n: number }>();
   if ((remaining?.n ?? 0) === 0) {
-    // image_refs has no FK to cascade from `tabs`, so its rows go explicitly.
-    await env.DB.batch([
-      imageRefPruneTabStatement(env, tabId),
-      env.DB.prepare('DELETE FROM tabs WHERE id = ?').bind(tabId),
-    ]);
+    await env.DB.prepare('DELETE FROM tabs WHERE id = ?').bind(tabId).run();
   }
   // The tab's references are gone (by the FK cascade, or by the unlink the reference join reads), with the link
   // the triggers would find the document by, so the document's sheets settle here.
@@ -481,8 +460,6 @@ export async function linkTabToDocument(
   await env.DB.prepare('UPDATE documents SET saved_at = ? WHERE id = ?')
     .bind(now, documentId)
     .run();
-  // Placement grants (docs/specs/009-elements/images.md): the new holder serves what the tab showed.
-  await imageGrantLinkStatement(env, documentId, tabId, now).run();
   return true;
 }
 
@@ -590,17 +567,15 @@ export async function reorderTabs(
     .run();
 }
 
-// Compare-and-swap one tab's `data` blob (docs/specs/012-collaboration/qa-board.md). Writes `nextData` only
-// if the row still holds exactly `expectedData`, the string the caller read,
-// and reports whether it did. The Q&A board's endpoint loops on this so a
-// room voting in the same second can't lose a vote to the read-modify-write
+// Compare-and-swap one tab's `data` blob (docs/specs/013-workspace/share-roles.md "Integrity"). Writes `nextData`
+// only if the row still holds exactly `expectedData`, the string the caller read,
+// and reports whether it did. A Participant's write loops on this so a room
+// answering in the same second can't lose an answer to the read-modify-write
 // race a plain upsert would have.
 //
-// Only `data` and `updated_at` move: a board write never renames, reorders or
+// Only `data` and `updated_at` move: a participant write never renames, reorders or
 // relinks the tab, and it touches no action or thread, so the collaboration
-// index (docs/specs/013-workspace/inbox.md) has nothing to mirror. The
-// image reference index is only ever ADDED to here: the swap can lose to a
-// concurrent save, and a delete would then drop references the winner wrote.
+// index (docs/specs/013-workspace/inbox.md) has nothing to mirror.
 export async function swapTabData(
   env: Env,
   documentId: string,
@@ -608,7 +583,7 @@ export async function swapTabData(
   expectedData: string,
   nextData: string,
   // `nextData`'s stats (tabStatsOf), from the tab the caller parsed to build it; its element count
-  // is also the tab's element_count (migration 0059).
+  // is also the tab's element_count.
   nextStats: TabStats,
 ): Promise<boolean> {
   assertTabDataFits(tabId, nextData, 'swapTabData');
@@ -619,8 +594,6 @@ export async function swapTabData(
     ).bind(nextData, now, nextStats.elementCount, tabId, expectedData),
     // Only if the swap above won: then the tab stores exactly `nextData`.
     tabStatsStatement(env, tabId, nextStats, now, nextData),
-    ...imageRefAddStatements(env, tabId, imageRefIdsFromData(nextData)),
-    ...imageGrantPlacementStatements(env, tabId, imageRefIdsFromData(nextData), now),
   ]);
   if ((res?.meta?.changes ?? 0) === 0) return false;
   await env.DB.prepare('UPDATE documents SET saved_at = ? WHERE id = ?')

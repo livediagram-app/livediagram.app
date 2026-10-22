@@ -20,20 +20,16 @@ const GROUPED_ROWS = [
   },
   {
     words: ['pull', 'push'],
-    after: 'graph',
+    after: 'workbench',
     summary: 'one document to a file and back; export --all',
   },
 ] as const;
 const NAMED_ONLY = [
   'board',
   'sheet',
-  'page',
-  'article',
   'form',
   'type',
   'template',
-  'icon',
-  'image',
   'schema',
   'guide',
   'skill',

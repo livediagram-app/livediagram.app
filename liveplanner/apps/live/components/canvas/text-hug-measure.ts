@@ -1,4 +1,4 @@
-// Measures a whiteboard text box's text with the real DOM (docs/specs/023-draw-mode/draw-mode.md
+// Measures a whiteboard text box's text with the real DOM (docs/specs/007-editor/editor-modes.md
 // "Text boxes"), so the box hugs the words exactly in whatever face and size they are drawn in.
 //
 // One hidden block, kept off-screen under <body>, is laid out the way the label and its editor
@@ -64,8 +64,7 @@ export function measureTextHug(
 
 // The same measure for any boxed element's single-line-style label (medium weight, tight
 // leading) drawn at `fontPx`, its runs' own sizes scaled by `runScale`. A mind node's label
-// measures through it to grow to fit (lib/mind-label-fit.ts). Wordmark fields are a text box's;
-// on any other element they read as unset.
+// measures through it to grow to fit (lib/mind-label-fit.ts).
 export function measureLabelBlock(
   el: BoxedElement,
   content: TextRun[] | HTMLElement,
@@ -73,7 +72,6 @@ export function measureLabelBlock(
   fontPx: number,
   runScale = 1,
 ): MeasureTextBlock {
-  const word = el as Partial<Pick<TextElement, 'letterSpacing' | 'fontWeight' | 'textCase'>>;
   return (width, fixed) => {
     const node = measurer();
     const runPx = labelRunPx(false, runScale);
@@ -81,12 +79,7 @@ export function measureLabelBlock(
     node.style.fontFamily = fontFamily ?? '';
     node.style.width = fixed ? `${width}px` : 'max-content';
     node.style.maxWidth = `${width}px`;
-    // Wordmark type (docs/specs/007-editor/logo-pages.md): tracked, weighted and cased text hugs
-    // the width it draws at. Reset every time: the measurer is shared.
-    node.style.letterSpacing = word.letterSpacing ? `${word.letterSpacing}em` : '';
-    node.style.fontWeight = String(word.fontWeight ?? 500);
-    node.style.textTransform =
-      word.textCase === 'upper' ? 'uppercase' : word.textCase === 'lower' ? 'lowercase' : '';
+    node.style.fontWeight = '500';
     if (Array.isArray(content)) {
       node.replaceChildren(
         ...content.map((run) => {

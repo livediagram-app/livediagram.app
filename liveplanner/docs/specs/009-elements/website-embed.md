@@ -49,8 +49,8 @@ which is never us.
 
 As in [More than YouTube](embed-providers.md), and load-bearing: the iframe is not mounted until the
 user presses **Load embed**. Opening a document containing five website embeds
-must not fetch five third-party pages, and a self-hoster ([Open source + distribution](../002-project-scope/open-source-and-business-model.md)) should not
-be silently shipping their users anywhere on page load.
+must not fetch five third-party pages, and liveplanner ([Business model + licence](../002-project-scope/business-model-and-licence.md): no trackers) should not
+be silently shipping its users anywhere on page load.
 
 ## Honest about framing
 

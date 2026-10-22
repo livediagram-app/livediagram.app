@@ -34,7 +34,6 @@ describe('drawsStandardLabel', () => {
   it('is true for ordinary shapes and stickies', () => {
     expect(drawsStandardLabel(shape('square'))).toBe(true);
     expect(drawsStandardLabel(createSticky(0, 0))).toBe(true);
-    expect(drawsStandardLabel(shape('chair'))).toBe(true);
   });
 
   it('is false for elements that draw their own text', () => {
@@ -48,11 +47,9 @@ describe('drawsStandardLabel', () => {
     expect(selfLabelled(createSticky(0, 0))).toBe(false);
   });
 
-  it('is false for a stroke or a path', () => {
+  it('is false for a stroke', () => {
     const stroke = { id: 's', type: 'freehand', x: 0, y: 0, width: 10, height: 10, points: [] };
-    const path = { id: 'p', type: 'path', x: 0, y: 0, width: 10, height: 10, nodes: [] };
     expect(drawsStandardLabel(stroke as unknown as BoxedElement)).toBe(false);
-    expect(drawsStandardLabel(path as unknown as BoxedElement)).toBe(false);
   });
 });
 

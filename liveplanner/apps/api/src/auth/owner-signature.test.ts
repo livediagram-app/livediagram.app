@@ -31,7 +31,7 @@ describe('owner-signature', () => {
     expect(await verifyOwnerId(SECRET, 'id', '')).toBe(false);
   });
 
-  it('disables signing when no secret is configured (self-host)', async () => {
+  it('disables signing when no secret is configured (a deployment without it)', async () => {
     expect(await signOwnerId(undefined, 'id')).toBeNull();
     // Verification is a no-op (true) so callers that gate on the secret
     // keep their legacy unsigned behaviour.

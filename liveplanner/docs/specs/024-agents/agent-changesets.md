@@ -22,25 +22,25 @@ persistence boundary"). That write never reached the room, so:
 
 ## What a changeset is
 
-| Field        | Meaning                                                                                                                                                                                                 |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `id`         | `cs_` and 10 base32 characters, minted by the api                                                                                                                                                       |
-| `documentId` | The document                                                                                                                                                                                            |
-| `tabId`      | The one tab it writes; a changeset never spans tabs                                                                                                                                                     |
-| `agent`      | The token id and the owner id; absent when a signed-in session writes                                                                                                                                   |
-| `summary`    | Optional, up to 80 characters, written by the agent ("add payment service"); shown in the toast and the history                                                                                         |
-| `body`       | Either ordered [edit operations](edit-operations.md), or one `replace` (graph, Mermaid, template, dashboard, a new Form tab's `form`, or elements, which may make a new Board or Sheet tab with `kind`) |
-| `base`       | Optional: the tab revision the agent read, and a fingerprint of every element the operations target                                                                                                     |
-| `results`    | The result lines it printed, kept for `GET /api/documents/:id/changesets/:changesetId` and `changeset show`                                                                                             |
-| `rev`        | The tab revision the changeset produced                                                                                                                                                                 |
-| `elementOps` | The `ElementOp`s it compiled to (`add`, `update`, `remove`, `reorder`), the unit the room and editors apply                                                                                             |
-| `inverse`    | The element ops that undo it, computed from the before-images                                                                                                                                           |
+| Field        | Meaning                                                                                                                                                                                                    |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`         | `cs_` and 10 base32 characters, minted by the api                                                                                                                                                          |
+| `documentId` | The document                                                                                                                                                                                               |
+| `tabId`      | The one tab it writes; a changeset never spans tabs                                                                                                                                                        |
+| `agent`      | The token id and the owner id; absent when a signed-in session writes                                                                                                                                      |
+| `summary`    | Optional, up to 80 characters, written by the agent ("add payment service"); shown in the toast and the history                                                                                            |
+| `body`       | Either ordered [edit operations](edit-operations.md), or one `replace` (exactly one of a template, a dashboard, a new Form tab's `form`, or elements, which may make a new Board or Sheet tab with `kind`) |
+| `base`       | Optional: the tab revision the agent read, and a fingerprint of every element the operations target                                                                                                        |
+| `results`    | The result lines it printed, kept for `GET /api/documents/:id/changesets/:changesetId` and `changeset show`                                                                                                |
+| `rev`        | The tab revision the changeset produced                                                                                                                                                                    |
+| `elementOps` | The `ElementOp`s it compiled to (`add`, `update`, `remove`, `reorder`), the unit the room and editors apply                                                                                                |
+| `inverse`    | The element ops that undo it, computed from the before-images                                                                                                                                              |
 
 - **Atomic.** Every operation lands or none does. A rejected changeset writes nothing and says why.
 - **One tab, one changeset.** A new tab is a changeset that creates it (`replace` on a tab id the document lacks).
   A `replace`'s name names the tab it creates; on an existing tab it is ignored.
 - **A new document** is not a changeset: nothing else can hold it yet. `POST /api/documents` creates it, compiling
-  graph, Mermaid or template tabs with the same engine.
+  template tabs with the same engine.
 - **A fingerprint** covers the element without its live multi-writer fields (`LIVE_ELEMENT_FIELDS`: comments,
   answers, ideas, ticks and the like), which people change through deltas that never conflict with an agent's
   edit.
@@ -93,7 +93,7 @@ editor that was offline when it landed.
 
 An editor connects to its document's room for every server-stored document it has open, personal ones included.
 A document in Offline Mode or This Browser has no room and no agent can reach it. On a personal document that is
-neither shared nor in a team the editor sends only its selection and its tab focus; cursors, laser, viewport and
+neither shared nor in a team the editor sends only its selection and its tab focus; cursors and
 drag previews stay for documents with an audience.
 
 ## Whole-tab saves and tab renames
@@ -142,12 +142,9 @@ The room's answer is the source; when the room cannot be reached, nothing counts
 
 ## Boards and Sheets only in Plan
 
-A Plan board or a Sheet goes only on a tab in Plan ([Plan tabs](../026-plan/plan-tabs.md#only-in-plan)). A changeset,
-operations or replace, whose result holds a board or Sheet the tab did not hold before, on a tab not in Plan, is
-refused `422 invalid_value`, naming each such element, with the hint to add a Board or Sheet tab with `add_tab`
-instead; nothing is applied. So is a Plan template replaced over an existing tab not in Plan. Boards and Sheets a tab
-already holds are left alone, and a replace that makes a new tab from a Plan template passes, the template making it a
-Plan tab.
+Every tab is in Plan, so a changeset may add a Plan board or a Sheet to any tab
+([Plan tabs](../026-plan/plan-tabs.md#only-in-plan)). Until the other editor modes were retired (2026-10-22) one that
+left a new board or Sheet on a tab not in Plan was refused `422 invalid_value`.
 
 ## Revert
 

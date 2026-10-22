@@ -13,17 +13,6 @@
 // bodyExceedsCap at the bottom of this file.
 export const MAX_BODY_BYTES = 8 * 1024 * 1024; // 8 MB
 
-// A single uploaded image's raw bytes (docs/specs/009-elements/images.md). Larger than MAX_BODY_BYTES,
-// so the pre-dispatch gate must use THIS cap on the image-upload route — an
-// 8 MB outer bound would silently make the documented 10 MB image limit
-// unreachable (and return the generic payload_too_large instead of the image
-// route's file_too_large + limitBytes envelope).
-//
-// Defined in @liveplanner/api-schema, not here: the editor pre-validates a
-// picked file against the same number, and two copies drift into a client
-// that accepts what the server rejects.
-export { MAX_IMAGE_BYTES } from '@liveplanner/api-schema';
-
 // A single tab's data (the element + comment tree), held to D1's row cap less headroom
 // (docs/specs/015-api/api.md "Tab size"). Defined in @liveplanner/api-schema, so the editor checks
 // the same number before it sends. The body cap above bounds one request; this bounds one tab.
@@ -67,12 +56,6 @@ export class TabTooLargeError extends Error {
 // token / OAuth client. Document and tab names are shortened to the far tighter
 // NAME_MAX_LENGTH instead (names.ts, docs/specs/006-document/name-length.md).
 export const MAX_NAME_LEN = 500;
-
-// A document's slide deck (docs/specs/012-collaboration/presentation-mode.md). Slides hold element REFERENCES, never
-// element copies, so a deck stays tiny however large the document is: a few
-// hundred bytes per slide. 256KB is roughly a thousand slides and exists to
-// bound a hostile payload, not to constrain any real deck.
-export const MAX_DECK_LEN = 256 * 1024;
 
 // A custom theme's JSON definition (palette + per-shape colours).
 export const MAX_THEME_DEF_BYTES = 256 * 1024;
@@ -124,8 +107,7 @@ export function declaredBodyBytes(request: Request): number | null {
  * Trusting a present header is sound here: a client that under-declares gets
  * its body truncated by the runtime (and then fails structural validation),
  * and one that over-declares only trips its own 413. Callers handling raw
- * bytes rather than JSON should re-check after buffering instead — see the
- * image route, which does exactly that.
+ * bytes rather than JSON should re-check after buffering instead.
  */
 export function bodyExceedsCap(request: Request, body: unknown, cap: number): boolean {
   return (declaredBodyBytes(request) ?? byteLength(JSON.stringify(body))) > cap;

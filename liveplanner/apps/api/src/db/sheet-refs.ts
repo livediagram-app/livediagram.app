@@ -1,6 +1,6 @@
 // The sheet reference index (docs/specs/029-sheets/sheet-store.md "Deleting a sheet", blueprint sheet-store.md
 // "Deleting a sheet"). Every tab write replaces the tab's rows: one per Sheet element's `sheetId` and per copy not yet
-// made's `copyOf`. As a row goes or comes, the triggers of migration 0079 settle its sheet: unreferenced from then
+// made's `copyOf`. As a row goes or comes, the sheet_refs triggers settle its sheet: unreferenced from then
 // (`unreferenced_since`), deleted at once when the editor deleted it with its element, referenced again; an
 // unreferenced sheet otherwise waits to expire (sheet-sweep.ts).
 import type { Element } from '@liveplanner/document';
@@ -43,8 +43,8 @@ export function sheetRefReplaceStatements(
 }
 
 // Settle every sheet of a document at once: delete what was deleted with its element and is now unreferenced, note
-// what is unreferenced, and clear what is referenced again. A tab write needs none of it (the triggers of migration
-// 0079 settle each reference as it changes); a removed tab does, as its link to the document goes first.
+// what is unreferenced, and clear what is referenced again. A tab write needs none of it (the sheet_refs triggers
+// settle each reference as it changes); a removed tab does, as its link to the document goes first.
 export function sheetSettleStatements(
   env: Env,
   documentId: string,

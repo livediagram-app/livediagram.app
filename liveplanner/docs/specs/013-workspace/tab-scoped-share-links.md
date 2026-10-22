@@ -16,9 +16,9 @@ Owners sometimes want to show one tab of a document, not the whole thing: the ro
 
 ## Data model
 
-Migration `0048_tab_scoped_share_links.sql`:
+Columns:
 
-- `share_links.tab_id TEXT NULL`: the tab the link is scoped to; NULL = All tabs. Existing rows are NULL, so every existing link keeps its meaning.
+- `share_links.tab_id TEXT NULL`: the tab the link is scoped to; NULL = All tabs.
 - `shared_with.tab_id TEXT NULL`: the scope the visitor was last granted, written alongside `role` on every share resolve (last visit wins, the rule `role` already follows).
 - `ws_tickets.tab_scope TEXT NULL` and `ws_tickets.share_code TEXT NULL`: a room ticket carries the scope and the admitting code from the mint to the upgrade (see [Realtime](#realtime)).
 
@@ -37,8 +37,6 @@ A scoped link grants its role **on its tab only**. The worker enforces this in o
 | Comment `POST`/`DELETE`                                       | Their tab only; otherwise 404.                                                                                                                                               |
 | `POST /api/documents/:id/copy`                                | A copy holding **only their tab**.                                                                                                                                           |
 | `GET /api/documents/:id/thumbnail`                            | Their tab's image, not the first-tab snapshot.                                                                                                                               |
-| `GET /api/images/:id?d=`                                      | Only images referenced by their tab.                                                                                                                                         |
-| Q&A board `POST .../tabs/:tabId/qa`                           | Their tab only.                                                                                                                                                              |
 | Document timeline feed                                        | Refused: it spans every tab.                                                                                                                                                 |
 | `GET /api/share/:code/image.svg`                              | Always their tab. A `?tab=` naming another tab is a 404.                                                                                                                     |
 | Room ticket / WS upgrade                                      | Admitted with the role and the scope (see [Realtime](#realtime)).                                                                                                            |
@@ -54,7 +52,6 @@ A scoped link is only valid while its tab is still in the document. Deleting tha
 A scoped visitor's copy of the document:
 
 - `tabs`: every tab keeps its `id` and `orderIndex`, so the bar can draw it in place. The other tabs carry `name: ''`, no `folder`, `updatedAt: 0` and `outOfScope: true`. (Not `locked`: `Tab.locked` is the existing user-toggled read-only lock, a different thing.) Their tab is unchanged.
-- `presentation`: `null`. A slide deck spans tabs.
 - The document's name, owner name and colour stay: the visitor sees those when resolving any link.
 
 ### Shared with you and the Inbox

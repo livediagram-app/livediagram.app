@@ -19,7 +19,6 @@ import {
   lucideArrowRight,
   lucideBaseline,
   lucideBringToFront,
-  lucideChartNoAxesColumnIncreasing,
   lucideCircleCheck,
   lucideClipboardPaste,
   lucideImage,
@@ -78,9 +77,6 @@ export const PaletteMenuIcon = lucideGlyph(lucidePalette, MENU_ICON_PX);
 export const TimerMenuIcon = lucideGlyph(lucideTimer, MENU_ICON_PX);
 // The Vote session-tool category glyph (a cast dot-vote).
 export const VoteMenuIcon = lucideGlyph(lucideCircleCheck, MENU_ICON_PX);
-// The Poll session-tool category glyph (docs/specs/012-collaboration/live-poll.md, a live tally),
-// distinct from Vote's check: a poll counts answers from people.
-export const PollMenuIcon = lucideGlyph(lucideChartNoAxesColumnIncreasing, MENU_ICON_PX);
 
 // A small arrow pointing in `dir` (one up-arrow path, rotated). Used by the
 // inline-icon placement picker's cross of direction cells.

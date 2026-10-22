@@ -1,8 +1,5 @@
-import type { PaletteTileDef } from './palette-tile-defs';
-import { usePaletteKind } from '@/lib/palette-kind';
-import { DEFAULT_EDITOR_MODE, type EmbedProvider } from '@liveplanner/document';
-import { useEffect, useState } from 'react';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import type { EmbedProvider } from '@liveplanner/document';
+import { useState } from 'react';
 import type { PaletteTileActions } from '@/components/palette/PaletteTileGrid';
 import { getLineArtIconCatalog } from '@/lib/icons';
 import { searchStickers } from '@/lib/stickers';
@@ -13,7 +10,6 @@ import { buildCanvasToolOptions } from './canvas-tool-options';
 import { restoresMaximised, withTileActionPreamble } from './palette-tile-actions';
 import { paletteCategoryTabs } from './palette-category-tabs';
 import type { PaletteAddHandlers } from './palette-add-handlers';
-import { useLogoMarkerTiles } from './PaletteLogoTab';
 import {
   coveredPaletteCategories,
   dashboardPaletteCategories,
@@ -25,9 +21,7 @@ import { useBoardFillingTab, usePlanTabKind } from '@/hooks/plan/plan-cover-stor
 import { usePlanTabList } from '@/hooks/plan/plan-tab-list-store';
 import { dashboardTabTiles } from './palette-dashboard-tiles';
 import { getMaximisedPlanId, restorePlanElement } from '@/hooks/plan/maximised-plan';
-import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
 import type { AddShapeOptions } from '@/lib/draw-mode';
-import { useEditorModeState } from '@/components/chrome/editor-mode/editor-mode-context';
 
 // Everything a palette SURFACE needs that isn't how it is drawn: the tile
 // add-handler bundle, the category catalogue with each category's body, the
@@ -40,13 +34,7 @@ import { useEditorModeState } from '@/components/chrome/editor-mode/editor-mode-
 // from any category and any surface.
 type Deps = Pick<
   PaletteProps,
-  | 'canvasTool'
-  | 'onSetCanvasTool'
-  | 'onExitAvatarMode'
-  | 'onToggleZen'
-  | 'canvasEmpty'
-  | 'pendingDraw'
-  | 'onTileUsed'
+  'canvasTool' | 'onSetCanvasTool' | 'onToggleZen' | 'canvasEmpty' | 'pendingDraw' | 'onTileUsed'
 > &
   PaletteAddHandlers & {
     // A Participant (docs/specs/013-workspace/share-roles.md): the Participate category alone, and its selection
@@ -55,9 +43,7 @@ type Deps = Pick<
   };
 
 export function usePaletteCatalogue({
-  canvasTool,
   onSetCanvasTool,
-  onExitAvatarMode,
   onToggleZen,
   canvasEmpty,
   onAddShape,
@@ -78,41 +64,19 @@ export function usePaletteCatalogue({
   onAddProcess,
   onAddFlowchart,
   onAddAvatar,
-  onAddImage,
   onAddArrow,
-  onBeginFreehand,
-  onBeginHighlighter,
-  onBeginMarker,
   onCancelDraw,
-  onBeginShapePen,
   onBeginPolygon,
-  onBeginPath,
   pendingDraw,
   onTileUsed,
   participant = false,
 }: Deps) {
-  // Spotlight (docs/specs/008-canvas/canvas-and-palette.md) is desktop-only: it relies on hover-tracking the
-  // cursor and on left/right-click to resize the light, none of which map to
-  // touch — so drop it from the tool picker on mobile viewports. Reactive
-  // (the shared useIsMobileViewport, as MovablePanel uses) so the option
-  // appears / disappears as the viewport crosses the breakpoint; a client
-  // mount reads it synchronously, so there's no flicker.
-  // The viewer's editor mode picks the palette layout (palette-layouts).
-  const editorMode = useEditorModeState()?.mode ?? DEFAULT_EDITOR_MODE;
-  const isMobile = useIsMobileViewport();
-  // If the viewport shrinks into mobile while Spotlight is active (desktop ->
-  // resize / rotate), revert to Select: the option has just left the picker,
-  // so leaving the tool on spotlight would strand it (the trigger would
-  // mislabel as Select while the canvas stayed shrouded).
-  useEffect(() => {
-    if (isMobile && canvasTool === 'spotlight') onSetCanvasTool('select');
-  }, [isMobile, canvasTool, onSetCanvasTool]);
   // Close a popover palette after adding a shape / tool so the user can draw
   // immediately without dismissing it manually.
   // `opts` is the creation-time choice for the kinds that have one: which
-  // session tool, which reaction (docs/specs/012-collaboration/session-button.md, docs/specs/009-elements/reaction-pad.md). It has to be forwarded
+  // session tool (docs/specs/012-collaboration/session-button.md). It has to be forwarded
   // rather than dropped — this adapter silently swallowing it is what made
-  // every session tile place a timer and every reaction tile place confetti.
+  // every session tile place a timer.
   const armed = (fn: () => void) => () => {
     fn();
     onTileUsed?.();
@@ -136,14 +100,7 @@ export function usePaletteCatalogue({
   // palette so the canvas is clear to draw on.
   const addArrow = (ends?: import('@liveplanner/document').ArrowEnds) =>
     armed(() => onAddArrow(ends))();
-  const beginFreehand = armed(onBeginFreehand);
-  const beginHighlighter = armed(onBeginHighlighter);
-  const beginMarker = (penId: WhiteboardPenId, once?: boolean) =>
-    armed(() => (once ? onBeginMarker(penId, true) : onBeginMarker(penId)))();
-  const beginShapePen = armed(onBeginShapePen);
   const beginPolygon = armed(onBeginPolygon);
-  const beginPath = armed(onBeginPath);
-  const addImage = armed(() => onAddImage?.());
   // One handler per composite-component kind, so the tile catalogue can
   // address them by kind (see PaletteTileGrid).
   const addComponent = (kind: import('@liveplanner/document').ComponentKind) => {
@@ -161,25 +118,16 @@ export function usePaletteCatalogue({
   };
   // The add-handler bundle every catalogue-driven tile grid consumes
   // (palette-tile-defs). All handlers above already wrap the mobile-close /
-  // draw-armed behaviour, so a tile behaves the same from any tab.
-  // Avatar mode (docs/specs/008-canvas/avatar-mode.md) is read-only, so reaching for a tile means the user
-  // wants to edit again: every add leaves the mode first (back to whichever
-  // tool preceded it) and then drops as normal. Wrapping the bundle covers
-  // every tile, including ones added later.
+  // draw-armed behaviour, so a tile behaves the same from any tab. Wrapping the
+  // bundle covers every tile, including ones added later.
   const tileActions: PaletteTileActions = withTileActionPreamble<PaletteTileActions>(
     {
       addShape,
       addText,
-      beginFreehand,
-      beginHighlighter,
-      beginMarker,
-      beginShapePen,
       beginPolygon,
-      beginPath,
       addArrow,
       addSticky,
       addTable,
-      addImage,
       addAnnotation,
       addLinkCard,
       addVideo,
@@ -188,10 +136,8 @@ export function usePaletteCatalogue({
       addIcon,
       addTechIcon,
       cancelDraw: onCancelDraw,
-      hasImage: !!onAddImage,
     },
     (action, args) => {
-      if (canvasTool === 'avatar') onExitAvatarMode?.();
       // A maximised board, view or Sheet gives the canvas back for anything but a card (docs/specs/026-plan/
       // plan-board.md "The palette follows what fills the screen"), so the tool is ready where it lands.
       if (getMaximisedPlanId() !== null && restoresMaximised(action, args)) restorePlanElement();
@@ -230,19 +176,13 @@ export function usePaletteCatalogue({
   // (the headings CATEGORY_BANDS names).
   // It renders the dropdown straight from this order, so the array IS
   // the grid layout.
-  // The mode's palette layout (palette-layouts): its categories, in order, with their tiles.
-  // A board filling its tab: cards land only on a board (a maximised one keeps the mode's palette).
+  // Plan's palette layout (palette-layouts): its categories, in order, with their tiles.
+  // A board filling its tab: cards land only on a board (a maximised one keeps the palette).
   const boardFillingTab = useBoardFillingTab();
   // A Dashboard tab's palette is what fills a slot (docs/specs/026-plan/plan-tabs.md "Dashboard tab").
   const dashboardTab = usePlanTabKind() === 'dashboard';
   // Its Tabs category: the document's Board and Sheet tabs (plan-tab-list-store), gone while it has none.
   const planTabList = usePlanTabList();
-  // In Pages mode, the palette's kind (lib/palette-kind.ts): the page someone is on's. Each kind is its own layout
-  // (palette-layouts.ts).
-  const paletteKind = usePaletteKind();
-  const pages = editorMode === 'pages';
-  // Logo's Draw takes this person's markers, as tiles in their colours and widths (useLogoMarkerTiles).
-  const markers = useLogoMarkerTiles(pages && paletteKind === 'logo');
   // While a Plan board fills its tab, only Cards (coveredPaletteCategories).
   const categories = participant
     ? participantPaletteCategories()
@@ -256,11 +196,7 @@ export function usePaletteCatalogue({
                 ? [{ ...c, tiles: dashboardTabTiles(planTabList) }]
                 : [],
           )
-        : paletteCategoriesFor(editorMode, pages ? { pagesKind: paletteKind } : {}).map((c) =>
-            c.id === 'draw' && markers.length
-              ? { ...c, tiles: [...withGroupEnd(c.tiles ?? []), ...markers] }
-              : c,
-          );
+        : paletteCategoriesFor();
   const tabs = paletteCategoryTabs({
     categories,
     pendingDraw,
@@ -285,10 +221,7 @@ export function usePaletteCatalogue({
   // tool selected (see canvas-tool-options).
   const allCanvasToolOptions = buildCanvasToolOptions({
     canvasEmpty,
-    isMobile,
     includeZen: !!onToggleZen,
-    planMode: editorMode === 'plan',
-    currentTool: canvasTool,
   });
   const canvasToolOptions = participant
     ? allCanvasToolOptions.filter((o) => PARTICIPANT_CANVAS_TOOLS.includes(o.id))
@@ -301,17 +234,8 @@ export function usePaletteCatalogue({
   return {
     tileActions,
     tabs,
-    editorMode,
     canvasToolOptions,
     onCanvasToolChange,
     iconCatalogsLoaded,
   };
-}
-
-// `tiles` with its last ending a group, so what is added after it (Logo's markers) is a group of its own.
-function withGroupEnd(tiles: readonly PaletteTileDef[]): PaletteTileDef[] {
-  const last = tiles.at(-1);
-  return last && !last.dividerAfter
-    ? [...tiles.slice(0, -1), { ...last, dividerAfter: true }]
-    : [...tiles];
 }

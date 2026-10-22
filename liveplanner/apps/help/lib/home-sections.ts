@@ -42,9 +42,9 @@ export const HOME_SECTIONS: HomeSection[] = [
   {
     id: 'build',
     eyebrow: 'Build and Run',
-    heading: 'Developers and self-hosting',
-    lede: 'Drive liveplanner from your own code, or run your own copy of it.',
-    categories: ['developers', 'self-hosting'],
+    heading: 'Developers',
+    lede: 'Drive liveplanner from your own code, scripts and AI tools.',
+    categories: ['developers'],
   },
 ];
 

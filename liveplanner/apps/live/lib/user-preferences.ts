@@ -21,12 +21,9 @@ export type MapSize = 'short' | 'medium' | 'tall';
 // render would otherwise be undone.
 
 import { upgradeLegacyPreferences } from '@liveplanner/api-schema';
-import type { PageKind } from '@liveplanner/document';
 import type { ElementTourKind } from './element-tours';
 import type { PlanTourTrack } from './plan-tour';
 import type { SwatchOverrideStore } from './swatch-overrides';
-import type { WhiteboardShapeKey } from './whiteboard-shape-catalogue';
-import type { ShapePicks } from './whiteboard-shape-slots';
 import { USER_PREFERENCES_STORAGE_KEY } from '@liveplanner/telemetry-client';
 import { apiGetPreferences } from './api-client';
 import { fitPreferences, preferencesUnsynced, savePreferences } from './preferences-sync';
@@ -46,12 +43,6 @@ export type UserPreferences = {
   // NEXT_PUBLIC_TELEMETRY_ENABLED gate and the api worker's
   // TELEMETRY_ENABLED gate. Missing / undefined === on.
   telemetryEnabled?: boolean;
-  // DEAD as of docs/specs/008-canvas/two-pens.md: shape recognition is now which pen you picked
-  // (Freehand or Shape Pen), not a persisted mode. Nothing reads this any
-  // more. It stays in the type because it is already stored in D1 for
-  // existing users, and removing it would make a stored preference fail to
-  // parse rather than simply be ignored.
-  recogniseShapes?: boolean;
   // Map panel options (docs/specs/008-canvas/minimap.md). Both default ON / medium via `!== false`
   // and `?? 'medium'`, so an existing user's map is unchanged.
   //
@@ -128,14 +119,6 @@ export type UserPreferences = {
   // unaffected; only the visual hint is suppressed). Missing /
   // undefined === guides on, the default.
   alignmentGuides?: boolean;
-  // Construction guides on a logo page (docs/specs/007-editor/logo-pages.md "Construction guides"):
-  // its centre lines, keylines, safe area and grid, and snapping to its keylines. Missing /
-  // undefined === on, the default; `false` hides them (and the keyline snaps with them).
-  logoGuides?: boolean;
-  // Which construction guides a logo page hides (docs/specs/007-editor/logo-pages.md), and how
-  // strongly the rest show. Read through lib/logo-guide-prefs.ts; absent is every part, Medium.
-  logoGuidesHidden?: string[];
-  logoGuideStrength?: 'faint' | 'medium' | 'strong';
   // Reduce motion (accessibility, docs/specs/007-editor/user-preferences.md). When `true`, the editor adds
   // `.reduce-motion` to <html> so the CSS in globals.css collapses every
   // decorative animation + transition to ~instant. Independent of the OS
@@ -200,38 +183,15 @@ export type UserPreferences = {
   // collaborators see this account's picture. Missing = SHOW_PROFILE_PICTURE_DEFAULT. The owner
   // always sees their own picture whatever this says.
   showProfilePicture?: boolean;
-  // The Diagram tour's seen-guard (docs/specs/007-editor/editor-tour.md; named for the welcome tour it was
-  // until October 2026, so earlier answers still hold). True once the
-  // tour's welcome offer has been answered (taken, skipped, or declined),
-  // so the offer never re-appears for this user — synced, so it follows
-  // the account across devices like every other preference. Surfaced in
-  // Settings as Tours › "Diagram Tour" (inverted); turning it on there and
-  // closing Settings replays the tour. Missing / undefined === not seen.
-  tourSeen?: boolean;
   // The Plan tour's seen-guard (docs/specs/026-plan/plan-tour.md): true counts both tracks as seen while Power user
   // mode is on (lib/tour-tracks.ts); set with every track by Power user mode.
   planTourSeen?: boolean;
   // The Plan tour tracks (Boards, Sheets, Dashboards) whose offer has been answered (taken, skipped or declined), so each offers
   // itself once ever. Cleared with `planTourSeen` when the Settings switch is turned on.
   planTourTracks?: PlanTourTrack[];
-  // The Workshop tour's seen-guard (docs/specs/012-collaboration/workshop-tour.md), as `planTourSeen`.
-  // Surfaced in Settings as Tours › "Workshop Tour" (inverted). Missing / undefined === not seen.
-  workshopTourSeen?: boolean;
-  // The Draw tour's seen-guard (docs/specs/023-draw-mode/draw-tour.md), as `workshopTourSeen`.
-  // Surfaced in Settings as Tours › "Draw Tour" (inverted). Missing / undefined === not seen.
-  drawTourSeen?: boolean;
-  // The Forms tour's seen-guard (docs/specs/030-forms/forms.md "The Forms tour"), as `drawTourSeen`; Show Me in the
+  // The Forms tour's seen-guard (docs/specs/030-forms/forms.md "The Forms tour"), as `planTourSeen`; Show Me in the
   // form's cog panel reruns it. Missing / undefined === not seen.
   formTourSeen?: boolean;
-  // The Avatar tour's seen-guard (docs/specs/008-canvas/avatar-tour.md), as `drawTourSeen`.
-  // Surfaced in Settings as Tours › "Avatar Tour" (inverted). Missing / undefined === not seen.
-  avatarTourSeen?: boolean;
-  // The Pages tour's seen-guard (docs/specs/007-editor/pages-tour.md), as `planTourSeen`: true counts every
-  // page kind's track as seen while Power user mode is on. Set with every kind by Power user mode.
-  pagesTourSeen?: boolean;
-  // The page kinds whose Pages tour track has been offered and answered (taken, skipped or declined), so each
-  // kind offers its own once ever. Cleared with `pagesTourSeen` when the Settings switch is turned on.
-  pagesTourKinds?: PageKind[];
   // Element tours (docs/specs/007-editor/element-tours.md): the toured element kinds whose offer has been answered
   // (Play or Cancel), so each offers itself once ever. Surfaced in Settings as Tours › Show Me, one switch
   // per kind (inverted). Read through lib/element-tours.
@@ -269,28 +229,9 @@ export type UserPreferences = {
   minimalChrome?: boolean;
   // One-way latch: the power user mode offer has been shown to this account.
   powerUserOfferShown?: boolean;
-  // The whiteboard dock (docs/specs/023-draw-mode/draw-mode.md "Shape slots"): the pinned shape
-  // kinds and the pick counts behind the Shapes flyout's slots. Read and written through
-  // lib/whiteboard-dock-prefs, which parses them. Missing === the default pins, no history.
-  whiteboardPinnedShapes?: WhiteboardShapeKey[];
-  whiteboardShapePicks?: ShapePicks;
-  // DEAD as of docs/specs/004-interface-design/colour-picker.md, like `customSwatches`: the markers'
-  // Custom colours are the document's. Kept in the type because it is already stored.
-  whiteboardYourColours?: string[];
-  // Where a whiteboard's dock sits (docs/specs/023-draw-mode/draw-mode.md "Where the dock sits").
-  // Read through lib/whiteboard-dock-prefs. Missing (or anything but 'bottom') === the top.
-  whiteboardDockPosition?: 'top' | 'bottom';
   // Draw mode's pattern, the person's own (docs/specs/007-editor/editor-modes.md "One look"):
   // Plain, Dots or Grid. Read through lib/whiteboard-dock-prefs. Missing === Grid.
   drawPattern?: 'blank' | 'grid' | 'graph';
-  // How Pages mode's Contents shows on a desktop (docs/specs/007-editor/pages-mode.md
-  // "Contents"): docked as a sidebar down the canvas's left, or minimised to its cluster button. Read
-  // through lib/contents-placement. Missing (or anything but 'button') === the sidebar.
-  contentsPlacement?: 'sidebar' | 'button';
-  // The presenter settings (docs/specs/012-collaboration/presentation-mode.md "Settings"): transition, speed,
-  // playback and display, as one object. Read through lib/presentation-config, which trusts it only once parsed.
-  // Missing === what this browser kept before they followed the account, else the defaults.
-  presentation?: Record<string, unknown>;
 };
 
 // How many excluded ids we keep. A document id is a 36-char UUID, so 200

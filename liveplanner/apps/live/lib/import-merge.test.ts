@@ -16,14 +16,11 @@ describe('mergeImportedTab', () => {
     expect(out.kind).toBe('sheet');
   });
 
-  // docs/specs/007-editor/editor-modes.md: an exported tab that opens in Draw still does, and an
-  // exported whiteboard from before editor modes comes back as one.
-  it('carries the opening mode, and reads an old whiteboard export as opening in Draw', () => {
-    expect(mergeImportedTab(tab(), tab({ opensIn: 'draw' })).opensIn).toBe('draw');
-    expect(mergeImportedTab(tab({ opensIn: 'draw' }), tab()).opensIn).toBe('draw');
+  // An exported whiteboard from before editor modes comes back as an ordinary tab.
+  it('reads an old whiteboard export as a diagram tab', () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const old = { ...tab(), kind: 'whiteboard' } as unknown as Tab;
-    expect(mergeImportedTab(tab(), old)).toMatchObject({ kind: 'diagram', opensIn: 'draw' });
+    expect(mergeImportedTab(tab(), old).kind).toBe('diagram');
   });
 
   it('carries a Form tab’s form, so an imported Form tab is not left without one', () => {
@@ -31,10 +28,10 @@ describe('mergeImportedTab', () => {
     // the tab read as a Form tab holding no form.
     const form = { v: 1, heading: 'Contact', sections: [{ id: 's1', title: '', questions: [] }] };
     const out = mergeImportedTab(tab(), {
-      ...tab({ kind: 'form', opensIn: 'plan' }),
+      ...tab({ kind: 'form' }),
       form,
     } as unknown as Tab);
-    expect(out).toMatchObject({ kind: 'form', opensIn: 'plan', form });
+    expect(out).toMatchObject({ kind: 'form', form });
     // Any other import leaves a receiving Form tab's form alone.
     expect(
       mergeImportedTab({ ...tab({ kind: 'form' }), form } as unknown as Tab, tab()).form,

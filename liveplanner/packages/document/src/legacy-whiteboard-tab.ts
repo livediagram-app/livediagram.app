@@ -40,8 +40,6 @@ function inkPatch(el: Element): ColourFields {
         ...unfilled,
         ...(unset(c.textColor, c.penTextColour) ? { penTextColour: INK_PEN_COLOUR } : {}),
       };
-    case 'path':
-      return { ...line, ...unfilled };
     case 'arrow':
       return line;
     case 'freehand':
@@ -77,7 +75,6 @@ export function migrateWhiteboardKind<T extends Pick<Tab, 'elements' | 'backgrou
   return {
     ...tab,
     kind: 'diagram',
-    opensIn: 'draw',
     backgroundPattern: tab.backgroundPattern ?? WHITEBOARD_UNSET_PATTERN,
     elements,
   };

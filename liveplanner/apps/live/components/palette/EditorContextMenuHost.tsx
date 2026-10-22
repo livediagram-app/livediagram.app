@@ -8,7 +8,6 @@ import {
   DEFAULT_MIND_FLOW,
   DEFAULT_MIND_SPACING,
   isMindNode,
-  logoPageAt,
   mindFlowOf,
   mindRootOf,
   mindSpacingOf,
@@ -45,7 +44,6 @@ const EditorContextMenu = dynamic(
 export function EditorContextMenuHost() {
   const {
     contextMenu,
-    facilitator,
     userPreferences,
     activeTab,
     isReadOnly,
@@ -54,8 +52,6 @@ export function EditorContextMenuHost() {
     closeContextMenu,
     openLinkPicker,
     removeIconFromElement,
-    imageContext,
-    removeImageFromElement,
     applyElementLink,
     commitInlineIcon,
     previewInlineIcon,
@@ -146,21 +142,14 @@ export function EditorContextMenuHost() {
     setEntityFieldsSelected,
     setWebRowsSelected,
     setHeroCaptionSelected,
-    setEstimateScaleSelected,
-    setAgendaItemsSelected,
     setDecisionStatusSelected,
     setDecisionDateSelected,
     setDecisionDriversSelected,
-    setChairFacingSelected,
-    setRoomDoorSelected,
-    setButtonModeSelected,
     setPortalTargetSelected,
     setPortalNameSelected,
     createLinkedPortal,
     setSessionConfigSelected,
-    setRevealedSelected,
     setPickerSourceSelected,
-    setReactionSelected,
     setPickerOptionsSelected,
     tabs,
     commitShapeColorPreset,
@@ -190,11 +179,6 @@ export function EditorContextMenuHost() {
     toggleTextStyleSelected,
     commitTextSize,
     previewTextSize,
-    commitWordmark,
-    previewWordmark,
-    pagesMode,
-    canCombine,
-    combineSelected,
     commitFont,
     previewFont,
     commitPadding,
@@ -304,16 +288,6 @@ export function EditorContextMenuHost() {
   );
   const selectionLayerId = ctxLayerIds.size === 1 ? [...ctxLayerIds][0]! : null;
 
-  // Wordmark type is offered for a text element whose centre is on a logo page
-  // (docs/specs/007-editor/logo-pages.md "Wordmark type").
-  const wordmarkOffered =
-    !!pagesMode &&
-    ctxSelectedEl?.type === 'text' &&
-    !!logoPageAt(pagesMode.pages, {
-      x: ctxSelectedEl.x + ctxSelectedEl.width / 2,
-      y: ctxSelectedEl.y + ctxSelectedEl.height / 2,
-    });
-
   return (
     <EditorContextMenu
       // Remount when the menu changes target: a right-click on a DIFFERENT
@@ -330,8 +304,6 @@ export function EditorContextMenuHost() {
       onClose={closeContextMenu}
       onLinkElement={openLinkPicker}
       onRemoveIcon={removeIconFromElement}
-      onOpenImagePicker={(id) => imageContext?.onOpenPicker?.(id)}
-      onRemoveImage={removeImageFromElement}
       onRemoveLink={() => applyElementLink(null)}
       onSetIconPosition={commitInlineIcon}
       onPreviewIconPosition={previewInlineIcon}
@@ -434,21 +406,14 @@ export function EditorContextMenuHost() {
       onSetEntityFields={setEntityFieldsSelected}
       onSetWebRows={setWebRowsSelected}
       onSetHeroCaption={setHeroCaptionSelected}
-      onSetEstimateScale={setEstimateScaleSelected}
-      onSetAgendaItems={setAgendaItemsSelected}
       onSetDecisionStatus={setDecisionStatusSelected}
       onSetDecisionDate={setDecisionDateSelected}
       onSetDecisionDrivers={setDecisionDriversSelected}
-      onSetChairFacing={setChairFacingSelected}
-      onSetRoomDoor={setRoomDoorSelected}
-      onSetButtonMode={setButtonModeSelected}
       onSetPortalTarget={setPortalTargetSelected}
       onSetPortalName={setPortalNameSelected}
       onCreateLinkedPortal={createLinkedPortal}
-      onSetSession={facilitator.sessionToolsBlocked ? undefined : setSessionConfigSelected}
-      onSetRevealed={facilitator.sessionToolsBlocked ? undefined : setRevealedSelected}
+      onSetSession={setSessionConfigSelected}
       onSetPickerSource={setPickerSourceSelected}
-      onSetReaction={setReactionSelected}
       onSetPickerOptions={setPickerOptionsSelected}
       tabs={tabs}
       activeTabId={activeTab.id}
@@ -497,11 +462,6 @@ export function EditorContextMenuHost() {
       onToggleTextStrikethrough={() => toggleTextStyleSelected('textStrikethrough')}
       onSetTextSize={commitTextSize}
       onPreviewTextSize={previewTextSize}
-      wordmarkOffered={wordmarkOffered}
-      onCombine={canCombine() ? (op) => void combineSelected(op) : undefined}
-      onMirrorCopy={pagesMode?.logo?.canMirrorCopy() ? pagesMode.logo.mirrorCopy : undefined}
-      onSetWordmark={commitWordmark}
-      onPreviewWordmark={previewWordmark}
       onSetFont={commitFont}
       onPreviewFont={previewFont}
       onSetPadding={commitPadding}

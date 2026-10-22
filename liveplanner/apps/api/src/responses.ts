@@ -27,15 +27,14 @@ export const CORS_HEADERS = {
   // to JS as "Failed to fetch", which was hiding behind DELETE
   // /api/account and any other authed call from localhost:3102 to
   // localhost:8887 in dev.
-  // Image upload uses custom X-Image-* headers (docs/specs/009-elements/images.md). The browser
-  // rejects the POST preflight if any header the client sends isn't
+  // The browser rejects a preflight if any header the client sends isn't
   // in this list, which surfaces as "Failed to fetch" with no other
   // signal, so each new header has to land here too. Take Offline and Sync
   // Diagram declare themselves with DOCUMENT_CONVERSION_HEADER.
-  'Access-Control-Allow-Headers': `Authorization, Content-Type, X-Owner-Id, X-Owner-Sig, X-Share-Code, X-Share-Password, X-Allow-Empty, X-Room-Cursor, X-Image-Sha256, X-Image-Width, X-Image-Height, X-Image-Original-Name, ${DOCUMENT_CONVERSION_HEADER}, ${DOCUMENT_OPEN_HEADER}, ${CHANGESET_SEEN_HEADER}, ${CLIENT_HEADER}`,
+  'Access-Control-Allow-Headers': `Authorization, Content-Type, X-Owner-Id, X-Owner-Sig, X-Share-Code, X-Share-Password, X-Allow-Empty, X-Room-Cursor, ${DOCUMENT_CONVERSION_HEADER}, ${DOCUMENT_OPEN_HEADER}, ${CHANGESET_SEEN_HEADER}, ${CLIENT_HEADER}`,
   'Access-Control-Max-Age': '86400',
   // The server release signal (docs/specs/016-platform/new-version-prompt.md, stale-builds.md), readable
-  // by an editor on another origin (local dev, a self-host with a separate api host).
+  // by an editor on another origin (local dev, a deployment with a separate api host).
   // The tab revision as an ETag (docs/specs/024-agents/agent-changesets.md).
   'Access-Control-Expose-Headers': `${DOCUMENT_FORMAT_HEADER}, ${BUILD_ID_HEADER}, ETag`,
 };
@@ -128,7 +127,6 @@ export function methodNotAllowed(): Response {
 // 413 for a body over a route's size cap. Canonical home for the
 // `{ error: 'payload_too_large' }` literal the body gate in index.ts and the
 // per-field / per-tab caps in the document, tab, and custom-theme routes share.
-// Image uploads answer with their own `file_too_large` + `limitBytes` instead.
 export function payloadTooLarge(): Response {
   return json({ error: 'payload_too_large' }, { status: 413 });
 }
@@ -138,10 +136,6 @@ export function payloadTooLarge(): Response {
 // "try again" state; the specific cause goes to the worker log instead.
 export function aiError(): Response {
   return json({ error: 'ai_error' }, { status: 502 });
-}
-
-export function imagesUnavailable(): Response {
-  return json({ error: 'images_unavailable' }, { status: 503 });
 }
 
 export function rateLimited(): Response {

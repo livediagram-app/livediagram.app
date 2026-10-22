@@ -43,7 +43,6 @@ export function EditorSearchPanel() {
     addIcon,
     addSticker,
     addTechIcon,
-    addImage,
     setSearchOpen,
     openSettingsAt,
   } = useEditorContext();
@@ -98,9 +97,7 @@ export function EditorSearchPanel() {
         setSelectedId(elementId);
       }}
       paletteItems={
-        isReadOnly
-          ? undefined
-          : buildPaletteSearchItems({ hasImage: !!addImage, catalogues: cataloguesLoaded })
+        isReadOnly ? undefined : buildPaletteSearchItems({ catalogues: cataloguesLoaded })
       }
       onAddPaletteItem={
         isReadOnly
@@ -109,9 +106,6 @@ export function EditorSearchPanel() {
               if (add.type === 'shape')
                 addShape(add.shapeKind, {
                   session: add.session,
-                  reaction: add.reaction,
-                  mode: add.mode,
-                  estimateScale: add.estimateScale,
                   plan: add.plan,
                   variant: add.variant,
                 });

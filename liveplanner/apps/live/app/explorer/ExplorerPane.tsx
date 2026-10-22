@@ -14,22 +14,23 @@ import { ViewInfo } from './ViewInfo';
 import { PaneLensBar } from './lens/PaneLensBar';
 import { FilteredEmpty, LoadFailed } from './lens/LensStates';
 import { narrowRows } from './lens/pane-lens';
-import { TimelineControls } from '@liveplanner/ui';
 import { DocumentHistoryDialog } from '@/components/panels/DocumentHistoryDialog';
 import { isOfflineIdSync } from '@/lib/offline/offline-store';
-import { useTimelineFeed } from './useTimelineFeed';
 import { explorerPathFor } from './routes';
 import { rowLocation } from './row-location';
 import { paneHeaderActions } from './pane-header-actions';
 import { useTagsPage } from './tags/useTagsPage';
 import { homeBannerShown } from '@/lib/home-banner';
 import { assignAppLocation } from '@/lib/app-location';
+// Evaluated with the eager Explorer chunk, so the load's own path is captured before any in-app navigation
+// (entry-path.ts); Home's pane reads it lazily.
+import './entry-path';
 
 // The three layouts of a browse section, by the toggle.
 const VIEW_COMPONENTS = { list: ListView, card: CardView, details: DetailsView } as const;
 
 // The browse sections that render a folders + documents grid the List/Card
-// toggle (docs/specs/006-document/document-snapshots.md) can swap. Other sections (gallery, themes,
+// toggle (docs/specs/006-document/document-snapshots.md) can swap. Other sections (themes,
 // profile, team, invites, shared) have their own fixed layout.
 const BROWSE_KINDS = new Set([
   'recent',
@@ -46,13 +47,10 @@ const BROWSE_KINDS = new Set([
 // from HELP_LINK_COPY. Sections without a guide (team, invites) simply omit
 // it.
 const SECTION_HELP: Partial<Record<string, HelpArticleKey>> = {
-  // The Home article covers Home and the Timeline (docs/specs/013-workspace/explorer-home.md).
-  home: 'timeline',
-  timeline: 'timeline',
+  home: 'home',
   inbox: 'inbox',
   recent: 'recentDocuments',
   shared: 'sharedWithYou',
-  gallery: 'imageGallery',
   themes: 'customThemes',
   trash: 'trash',
   offline: 'offlineMode',
@@ -64,10 +62,6 @@ const SECTION_HELP: Partial<Record<string, HelpArticleKey>> = {
 
 // Lazy-load the heavier panes — each is only mounted on its own
 // route, so none of them sit in the shared explorer chunk.
-const GalleryPane = dynamic(
-  () => import('@/components/panels/GalleryPane').then((m) => m.GalleryPane),
-  { ssr: false },
-);
 const TrashSection = dynamic(() => import('./TrashSection').then((m) => m.TrashSection), {
   ssr: false,
 });
@@ -80,15 +74,6 @@ const TeamPane = dynamic(() => import('@/components/panels/TeamPane').then((m) =
 });
 const TeamInvitesPane = dynamic(
   () => import('@/components/panels/TeamInvitesPane').then((m) => m.TeamInvitesPane),
-  { ssr: false },
-);
-// The Timeline is the landing route, so it's the one lazy pane most
-// visitors DO load. Split anyway: the calendar grid + filter popover
-// are only reached by someone who switches modes, and holding them out
-// of the shared explorer chunk keeps the other sections' first paint
-// unaffected by a feature they don't use.
-const TimelinePane = dynamic(
-  () => import('@/components/panels/TimelinePane').then((m) => m.TimelinePane),
   { ssr: false },
 );
 // Home is the landing route (docs/specs/013-workspace/explorer-home.md), lazy like every pane so
@@ -204,11 +189,6 @@ export function ExplorerPane() {
   // The toggle only appears on the browse sections (the ones the
   // List/Card swap below applies to).
   const isBrowse = BROWSE_KINDS.has(selected.kind);
-  // The Timeline's data + control state lives here rather than inside
-  // its pane, because its controls render in the header row below while
-  // its feed renders in the body. Gated like the other section hooks so
-  // visiting Recent doesn't fetch a feed nobody is looking at.
-  const timeline = useTimelineFeed(ownerId, selected.kind === 'timeline');
   // Which document's history dialog is open, if any (docs/specs/013-workspace/timeline.md §3.4).
   const [historyFor, setHistoryFor] = useState<{ id: string; name: string } | null>(null);
   // Home's Jump Back In cards carry each document's Explorer menu (docs/specs/013-workspace/explorer-home.md).
@@ -273,16 +253,7 @@ export function ExplorerPane() {
           crumbs={hideTeamTitle ? [] : (tagsPage.crumbs ?? paneCrumbs)}
           onOpenNav={() => setMobileNavOpen(true)}
           helpArticle={sectionHelp}
-          headerActions={
-            selected.kind === 'timeline' || tagsPage.headerActions ? (
-              <>
-                {selected.kind === 'timeline' ? (
-                  <TimelineControls controls={timeline.controls} />
-                ) : null}
-                {tagsPage.headerActions}
-              </>
-            ) : undefined
-          }
+          headerActions={tagsPage.headerActions}
           viewMode={isBrowse ? viewMode : undefined}
           onSetViewMode={isBrowse ? setViewMode : undefined}
           onCreateDocument={newDocument}
@@ -304,33 +275,20 @@ export function ExplorerPane() {
         />
       ) : null}
 
-      {/* Timeline runs ahead of the `loading` gate on purpose: that flag
-          tracks the DOCUMENT lists, which this section doesn't read, and
-          waiting on them would show document skeletons on the landing
-          page before the feed's own skeleton. */}
+      {/* Home runs ahead of the `loading` gate on purpose: that flag tracks the DOCUMENT lists, which Home doesn't
+          read, and waiting on them would show document skeletons on the landing page before Home's own. */}
       {selected.kind === 'home' ? (
-        // Ahead of the `loading` gate, like the Timeline: Home reads its own data.
         ownerId ? (
           <HomePane
             ownerId={ownerId}
             onSeen={timelineUnread.clear}
-            timelineHref={explorerPathFor({ kind: 'timeline' })}
-            onSeeTimeline={() => go({ kind: 'timeline' })}
             recentHref={explorerPathFor({ kind: 'recent' })}
             onSeeMore={() => go({ kind: 'recent' })}
             documentMenus={homeDocumentMenus}
           />
         ) : null
-      ) : selected.kind === 'timeline' ? (
-        ownerId ? (
-          <TimelinePane
-            feed={timeline}
-            ownerId={ownerId}
-            onShowHistory={(id, name) => setHistoryFor({ id, name })}
-          />
-        ) : null
       ) : selected.kind === 'inbox' ? (
-        // Like the Timeline, ahead of the document-list `loading` gate: the
+        // Like Home, ahead of the document-list `loading` gate: the
         // section reads its own feed (docs/specs/013-workspace/inbox.md §5).
         <ActivityPane feed={activity} />
       ) : loading ? (
@@ -371,10 +329,6 @@ export function ExplorerPane() {
               clear: () => lens.setInput(''),
             }}
           />
-        ) : null
-      ) : selected.kind === 'gallery' ? (
-        ownerId ? (
-          <GalleryPane ownerId={ownerId} />
         ) : null
       ) : selected.kind === 'themes' ? (
         <ThemesPane />

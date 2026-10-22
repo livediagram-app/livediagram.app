@@ -8,24 +8,21 @@ describe('VIEW_TITLES', () => {
   it('names each view with a row by that row', () => {
     expect(VIEW_TITLES.home).toBe(SIDEBAR_LABELS.home);
     expect(VIEW_TITLES.inbox).toBe(SIDEBAR_LABELS.inbox);
-    expect(VIEW_TITLES.timeline).toBe(SIDEBAR_LABELS.timeline);
     expect(VIEW_TITLES.shared).toBe(SIDEBAR_LABELS.shared);
     expect(VIEW_TITLES.all).toBe(SIDEBAR_LABELS.myDocuments);
     expect(VIEW_TITLES.offline).toBe(SIDEBAR_LABELS.thisBrowser);
-    expect(VIEW_TITLES.gallery).toBe(SIDEBAR_LABELS.gallery);
     expect(VIEW_TITLES.themes).toBe(SIDEBAR_LABELS.themes);
     expect(VIEW_TITLES.trash).toBe(SIDEBAR_LABELS.trash);
     expect(VIEW_TITLES.invites).toBe(SIDEBAR_LABELS.invites);
   });
 
-  it('reads Home, Inbox, Timeline, Shared With Me and This Browser', () => {
-    expect([
-      VIEW_TITLES.home,
-      VIEW_TITLES.inbox,
-      VIEW_TITLES.timeline,
-      VIEW_TITLES.shared,
-      VIEW_TITLES.offline,
-    ]).toEqual(['Home', 'Inbox', 'Timeline', 'Shared With Me', 'This Browser']);
+  it('reads Home, Inbox, Shared With Me and This Browser', () => {
+    expect([VIEW_TITLES.home, VIEW_TITLES.inbox, VIEW_TITLES.shared, VIEW_TITLES.offline]).toEqual([
+      'Home',
+      'Inbox',
+      'Shared With Me',
+      'This Browser',
+    ]);
   });
 
   it('keeps their own names for the views without a row', () => {
@@ -43,9 +40,5 @@ describe('leadsBackHome', () => {
     expect(leadsBackHome('home')).toBe(false);
     expect(leadsBackHome('favourites')).toBe(false);
     expect(leadsBackHome('folder')).toBe(false);
-  });
-
-  it('gives the Timeline, which has a row of its own, its own breadcrumb', () => {
-    expect(leadsBackHome('timeline')).toBe(false);
   });
 });

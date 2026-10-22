@@ -92,8 +92,8 @@ describe('eventExplanation', () => {
     expect(eventExplanation('UI', 'Selected', 'Sidebar.Inbox')).toBe(
       "Someone picked the inbox row in the Explorer's sidebar.",
     );
-    expect(eventExplanation('UI', 'Selected', 'Sidebar.Timeline')).toBe(
-      "Someone picked the timeline row in the Explorer's sidebar.",
+    expect(eventExplanation('UI', 'Selected', 'Sidebar.Trash')).toBe(
+      "Someone picked the trash row in the Explorer's sidebar.",
     );
     expect(eventExplanation('UI', 'Selected', 'Sidebar.Activity')).toBe(
       EXACT['UI|Selected|Sidebar.Activity'],

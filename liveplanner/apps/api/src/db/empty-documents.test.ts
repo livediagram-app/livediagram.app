@@ -4,7 +4,7 @@
 
 import type { Tab } from '@liveplanner/document';
 import { describe, expect, it } from 'vitest';
-import { migrateFrom, sqliteD1 } from '../test-sqlite-d1';
+import { sqliteD1 } from '../test-sqlite-d1';
 import { copyDocument, listDocumentsByOwner, listDocumentsByTeam } from './documents';
 import { listSharedWith } from './shared';
 import { seedTabs, stampTabElementCount, swapTabData, upsertTab } from './tabs';
@@ -126,9 +126,9 @@ describe('a document list says which documents are empty', () => {
   });
 });
 
-describe('migration 0059 adds the count without reading a body', () => {
-  it('leaves every stored tab unknown, which reads as not empty until it is stamped', async () => {
-    const { env, sql } = sqliteD1({}, { before: '0059' });
+describe('a tab stored without its count', () => {
+  it('reads as not empty until it is stamped', async () => {
+    const { env, sql } = sqliteD1();
     sql.exec(`INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at)
               VALUES ('old-blank', '${OWNER}', 'a', 0, 1, 1), ('old-drawn', '${OWNER}', 'b', 0, 1, 1),
                      ('old-odd', '${OWNER}', 'c', 0, 1, 1)`);
@@ -137,8 +137,6 @@ describe('migration 0059 adds the count without reading a body', () => {
                      ('oo', 'x', 'not json', 1)`);
     sql.exec(`INSERT INTO document_tabs (document_id, tab_id, order_index, added_at)
               VALUES ('old-blank', 'ob', 0, 1), ('old-drawn', 'od', 0, 1), ('old-odd', 'oo', 0, 1)`);
-    // 0059 and every migration after it: the list projection below reads today's schema.
-    migrateFrom(sql, '0059');
     const counts = sql.prepare('SELECT id, element_count FROM tabs ORDER BY id').all();
     expect(counts.map((c) => ({ ...c }))).toEqual([
       { id: 'ob', element_count: null },
