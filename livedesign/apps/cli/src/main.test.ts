@@ -31,25 +31,17 @@ const library: Route = (_, url) => {
     });
   if (url.pathname === `/api/documents/${DOC}/tabs/tab1-0000` && url.searchParams.get('json'))
     return Response.json({
-      measures: {
-        crossings: 0,
-        behind: 0,
-        overlaps: 1,
-        extent: { width: 10, height: 10 },
-        arrows: 0,
-        boxes: 2,
-      },
+      measures: { extent: { width: 10, height: 10 }, boxes: 0, texts: 2 },
       findings: [
         {
-          code: 'box-overlap',
+          code: 'text-overflow',
           severity: 'error',
           refs: ['a', 'b'],
-          message: 'a overlaps b',
-          fix: 'move b right-of:a',
+          message: 'a prints over b',
+          fix: 'move b below:a',
         },
       ],
       counts: { error: 1, warning: 0, info: 0 },
-      skipped: { crossings: false },
     });
   return undefined;
 };
@@ -99,14 +91,14 @@ describe('run', () => {
   it('exits 1 on a lint error finding, after printing the report', async () => {
     const { code, out } = await cli(['tab', 'lint', 'Auth flow']);
     expect(code).toBe(1);
-    expect(out).toContain('E box-overlap');
+    expect(out).toContain('E text-overflow');
   });
 
   it('picks fields of each finding, and asks the api for JSON when a verb takes --json', async () => {
     const lint = await cli(['tab', 'lint', 'auth flow', '--json=code,fix']);
     expect(lint.code).toBe(1);
     expect(JSON.parse(lint.out)).toHaveProperty('findings', [
-      { code: 'box-overlap', fix: 'move b right-of:a' },
+      { code: 'text-overflow', fix: 'move b below:a' },
     ]);
     const view = await cli(['tab', 'view', 'auth flow', '--json']);
     expect(view.io.requests.some((r) => /view=outline&json=1$/.test(r.url))).toBe(true);

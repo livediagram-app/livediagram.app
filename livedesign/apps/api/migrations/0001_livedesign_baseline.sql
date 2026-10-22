@@ -383,7 +383,7 @@ CREATE TABLE timeline_events (
   id          TEXT    PRIMARY KEY,
   -- Who did it; NULL for a system event with no person behind it (a token-expiry warning).
   actor_id    TEXT,
-  -- The thing it is about: 'diagram' (a document) | 'team' | 'account'.
+  -- The thing it is about: 'document' | 'team' | 'account'.
   source_type TEXT    NOT NULL,
   source_id   TEXT    NOT NULL,
   event_type  TEXT    NOT NULL,

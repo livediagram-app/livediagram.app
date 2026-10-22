@@ -1,9 +1,8 @@
 // The benchmark's task bank, every area in one list. Ids are stable across rounds: a round is only comparable with
 // another on the ids they share.
-import diagram from './diagram.mjs';
 import pages from './pages.mjs';
 
-const AREAS = { diagram, pages };
+const AREAS = { pages };
 
 export const TASKS = Object.entries(AREAS).flatMap(([area, tasks]) =>
   tasks.map((t) => ({ ...t, area })),
@@ -17,7 +16,7 @@ export function taskById(id) {
   return task;
 }
 
-// `all`, an area name, or ids, comma-separated and mixed ("pages,D2,D3").
+// `all`, an area name, or ids, comma-separated and mixed ("pages,I1,I3").
 export function selectTasks(spec = 'all') {
   const picked = new Map();
   for (const part of spec

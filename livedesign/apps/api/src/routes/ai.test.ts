@@ -188,7 +188,7 @@ describe('handleAi element payload size', () => {
     expect(globalThis.fetch).not.toHaveBeenCalled();
   });
 
-  it('serves an ordinary diagram', async () => {
+  it('serves an ordinary design', async () => {
     const res = await call('A normal label');
     expect(res.status).toBe(200);
     expect(globalThis.fetch).toHaveBeenCalledTimes(1);

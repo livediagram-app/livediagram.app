@@ -216,7 +216,7 @@ packages/
   api-client/     # the api client the MCP server and the CLI share (fetch, timeouts, ApiError)
   agent-verbs/    # the verbs the CLI routes to: schemas, handlers, compact text, addressing, guides
   edit-operations/ # the engine agent changesets run on: edit operations and replace, into element ops (pure)
-  diagram-lint/   # checks how a tab is laid out (overlaps, crossings, arrows behind boxes), with a fix each
+  page-lint/      # checks a tab's text fits where it is drawn, with a fix each
   render-png/     # SVG to PNG with resvg (wasm) + Inter, for MCP previews, share cards and the CLI's renders
   telemetry-client/ # shared browser telemetry emitter (buffer/flush/beacon engine)
   licences/     # build-time generator of the /licences page from what each app bundles

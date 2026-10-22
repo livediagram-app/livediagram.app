@@ -20,7 +20,6 @@ export type MapSize = 'short' | 'medium' | 'tall';
 // snapshot (see rebaseUserPreferences): another tab's write since that
 // render would otherwise be undone.
 
-import { upgradeLegacyPreferences } from '@livedesign/api-schema';
 import type { PageKind } from '@livedesign/document';
 import type { ElementTourKind } from './element-tours';
 import type { SwatchOverrideStore } from './swatch-overrides';
@@ -301,7 +300,7 @@ export function readUserPreferences(): UserPreferences {
     if (typeof parsed !== 'object' || parsed === null) return {};
     // Keep unknown keys: forward-compat for future-versioned flags
     // a different client may have written.
-    return upgradeLegacyPreferences(parsed as Record<string, unknown>);
+    return parsed;
   } catch {
     return {};
   }
@@ -383,7 +382,7 @@ export async function fetchUserPreferences(ownerId: string): Promise<UserPrefere
   const remote = await apiGetPreferences(ownerId);
   if (remote === null) return null;
   const local = readUserPreferences();
-  const server = upgradeLegacyPreferences(remote) as UserPreferences;
+  const server = remote as UserPreferences;
   const unsynced = preferencesUnsynced(ownerId);
   const merged = fitPreferences(unsynced ? { ...server, ...local } : { ...local, ...server });
   writeLocalStorageSafe(STORAGE_KEY, JSON.stringify(merged));

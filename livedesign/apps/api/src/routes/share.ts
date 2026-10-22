@@ -112,7 +112,7 @@ export async function handleShare(ctx: RouteContext): Promise<Response> {
     // No active link resolves this code: expired, revoked, or never
     // existed. `getShareLink` (above) is the single authority — it
     // filters on expiry and carries the link's real role. A defensive
-    // `diagrams.shareable` fallback used to live here, but it resolved
+    // `documents.shareable` fallback used to live here, but it resolved
     // ANY code on a still-shareable document regardless of the link's
     // expiry or role and handed back a hardcoded 'edit' — an expiry +
     // view->edit escalation. Removed: an unresolved code now 404s.

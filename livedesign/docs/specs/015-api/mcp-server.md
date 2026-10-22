@@ -175,7 +175,7 @@ browser. A token minted for the CLI is named "livedesign CLI".
 
 ## 4. Tools
 
-Fourteen tools: thirteen for documents and one for pages ([§4.9d](#49d-the-pages-tools)), besides the deprecated names ([§4.18](#418-deprecated-tool-names)). The search/view capability is two tools (find, then read); create,
+Fourteen tools: thirteen for documents and one for pages ([§4.9d](#49d-the-pages-tools)),. The search/view capability is two tools (find, then read); create,
 add_tab, and update are separate because their inputs and intent differ;
 list_templates exposes the template catalogue ([§4.5](#45-list_templates)), search_icons the icon catalogue
 ([§4.5a](#45a-search_icons)) and list_images the user's image gallery ([§4.5b](#45b-list_images));
@@ -296,7 +296,7 @@ keeps it through their next save. `ops` mode sends its ops as
 [edit operations](../024-agents/edit-operations.md) based on the revision
 `read_document` returned, so nothing a person saved in between is overwritten: a
 touched element that changed is a conflict, an element a person has selected is
-refused as held. Both return the changeset's result lines, its [lint](../024-agents/diagram-lint.md) summary line
+refused as held. Both return the changeset's result lines, its [lint](../024-agents/page-lint.md) summary line
 (also as its own text block; `create_document` carries one per created tab) and
 the rendered PNG of the result. The model picks the mode: rebuild → `replace`;
 tweak → `ops`.
@@ -304,7 +304,7 @@ tweak → `ops`.
 **Edits.** `ops` mode takes `edits` instead of `ops` (`mode: "edits"` names the same mode, as agents read it): [edit operations](../024-agents/edit-operations.md) in the line
 form, one a line, sent as the changeset's operations text for the api to parse and apply all or nothing. They reach
 what JSON ops cannot say in one step (`insert … between a b` making room, `wrap … in frame`, `connect a -> b`, `layout`
-of a selection, placement beside another element), and they are the language each [lint](../024-agents/diagram-lint.md)
+of a selection, placement beside another element), and they are the language each [lint](../024-agents/page-lint.md)
 finding's fix is written in, so a finding in a write's result can be applied as printed. The base is the revision the
 model read (else the tab as loaded) and every element's fingerprint as loaded, since the text may name any of them.
 Coordinates in edits are relative to the content origin, as views print them. `ops` and `edits` together are refused.
@@ -755,26 +755,6 @@ directories prefer dot-notation trees (`document.create`); it is not adopted,
 because several clients restrict a tool name to `[a-zA-Z0-9_-]`, and a rename
 would break every existing connection and the cross-references between tool
 descriptions.
-
-<!-- legacy-names -->
-
-### 4.18 Deprecated tool names
-
-The tools named for the container were `*_diagram` / `find_diagrams` before it became a document ([Document](../006-document/document.md)). Each `*_document` tool is also registered under its old name until **30 April 2027** (`apps/mcp/src/legacy-tool-names.ts`, wired in `registerTool`):
-
-- The alias is the same tool: the same handler, behaviour annotations and output schema, and its input checked
-  against the same schema, refused in the SDK's own words (`Input validation error: Invalid arguments for tool <old
-name>: ...`).
-- Its title ends in "(deprecated)" and its description is one line: "Deprecated: use `<new name>` instead; this name
-  is removed on 2027-04-30. It takes the same input as `<new name>`.", so a model reading the tool list prefers the
-  new name.
-- It lists an open input (any object), so the tool list carries each input schema once. The element format inside
-  `create_document` and `update_document` is most of the list: listing it again under the old names made them 22% of
-  every tool list (67,937 of 308,741 characters); without it they are 4% (10,733 of 251,537).
-- A call logs `[mcp] deprecated tool name <old> -> <new>` and counts as `Mcp·Used·<NewName>`, so the feature's history stays one line.
-
-The output literals that named the container changed with it: `renamed`, `deleted` and `restored` report `document` where they reported `diagram`.
-<!-- /legacy-names -->
 
 - **Previews**: `read_document` with `image` draws a Pages tab as its pages, each as the editor exports it
   (`svg-render-pages.ts` over `page-frame.ts`): its background, gradient, pattern or picture, the elements

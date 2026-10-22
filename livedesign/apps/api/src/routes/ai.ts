@@ -1,7 +1,7 @@
 import { aiError, badRequest, CORS_HEADERS } from '../responses';
 import { aiGate } from './ai-gate';
 import { chatCompletions, providerOf } from '../ai-client';
-import { buildSystemPrompt, diagramTypeHint, extractExistingStyle } from '../ai-prompt';
+import { buildSystemPrompt, extractExistingStyle } from '../ai-prompt';
 import type { RouteContext } from './context';
 import {
   AI_MAX_ELEMENTS as MAX_ELEMENTS,
@@ -126,16 +126,14 @@ export async function handleAi(ctx: RouteContext): Promise<Response> {
     prompt,
   );
 
-  const typeHint = !isTextMode ? diagramTypeHint(prompt) : '';
   const existingStyle = !isTextMode ? extractExistingStyle(safe) : '';
 
   const userContent = isTextMode
-    ? `Diagram elements:\n${elementsJson}\n\n${prompt.trim() || 'Answer any questions about this diagram.'}`
+    ? `Elements:\n${elementsJson}\n\n${prompt.trim() || 'Answer any questions about this design.'}`
     : [
-        `Existing diagram elements:\n${elementsJson}`,
+        `Existing elements:\n${elementsJson}`,
         existingStyle && `Style to match: ${existingStyle}`,
-        typeHint && `Layout guidance: ${typeHint}`,
-        `Request: ${prompt.trim() || 'Clean up this diagram.'}`,
+        `Request: ${prompt.trim() || 'Clean up this design.'}`,
       ]
         .filter(Boolean)
         .join('\n\n');

@@ -6,9 +6,9 @@ ledger merge of [Collaboration race hardening](../../012-collaboration/collab-ra
 [Realtime conflict resolution](../../012-collaboration/realtime-conflict-resolution.md) (locked decision 3), the
 attribution and person tag of [Agent presence](../agent-presence.md), the gates of
 [Share roles](../../013-workspace/share-roles.md) and the `Agent` telemetry of
-[Telemetry](../../017-telemetry/telemetry.md). The edit-operations engine and the diagram lint are dependencies,
+[Telemetry](../../017-telemetry/telemetry.md). The edit-operations engine and the page lint are dependencies,
 consumed through the interfaces their blueprints export ([edit operations](edit-operations.md),
-[diagram lint](diagram-lint.md)). The spec decides; this file only adds engineering precision. Defaults applied
+[page lint](page-lint.md)). The spec decides; this file only adds engineering precision. Defaults applied
 where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `CSn`.
 
 Scope, by file:

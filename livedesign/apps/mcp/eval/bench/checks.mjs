@@ -2,9 +2,6 @@
 // tools) and its transcript (what was said). A check states one requirement of the prompt and answers yes or no, so
 // a round's score is a count, never an opinion. Pure: no server, no clock.
 
-// Shapes that hold a node's words; frames, key swatches and the like are containers or decoration.
-const DECOR_SHAPES = new Set(['frame']);
-
 export const lc = (s) => (s ?? '').toString().toLowerCase();
 
 function asRegex(word) {
@@ -13,7 +10,7 @@ function asRegex(word) {
     : new RegExp(word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
 }
 
-// ---- diagrams -----------------------------------------------------------------------------------------------
+// ---- what was made ---------------------------------------------------------------------------------------------
 
 export function tabsOf(snap) {
   return (snap.documents ?? []).flatMap((d) =>
@@ -40,68 +37,13 @@ export function wordsOf(el) {
   return parts.filter((p) => typeof p === 'string' && p.trim()).join(' ');
 }
 
-// The labelled boxes on the tabs: shapes that are not containers, with words.
-export function boxes(snap) {
-  return elementsOf(snap).filter(
-    (e) => e.type === 'shape' && !DECOR_SHAPES.has(e.shape) && wordsOf(e),
-  );
-}
-
-export function arrows(snap) {
-  return elementsOf(snap).filter(
-    (e) => e.type === 'arrow' || e.type === 'line' || e.type === 'connector',
-  );
-}
-
-const endId = (end) => end?.elementId ?? end?.id ?? null;
-
-// The boxes whose words match.
+// The elements whose words match.
 export function find(snap, word) {
   const re = asRegex(word);
   return elementsOf(snap).filter((e) => re.test(wordsOf(e)));
 }
 
-// An arrow joins something matching `a` to something matching `b` (either way round unless `directed`).
-export function linked(snap, a, b, { directed = false } = {}) {
-  const as = new Set(find(snap, a).map((e) => e.id));
-  const bs = new Set(find(snap, b).map((e) => e.id));
-  return arrows(snap).some((x) => {
-    const f = endId(x.from);
-    const t = endId(x.to);
-    return (as.has(f) && bs.has(t)) || (!directed && as.has(t) && bs.has(f));
-  });
-}
-
-// An arrow runs from something matching `a` to something matching `b`.
-export function flows(snap, a, b) {
-  return linked(snap, a, b, { directed: true });
-}
-
-// Elements of one kind: a shape name ("frame", "icon", "bar-chart") or an element type ("sticky", "arrow").
-export function shapes(snap, kind) {
-  return elementsOf(snap).filter((e) => e.shape === kind || (e.type === kind && !e.shape));
-}
-
-// Something matching `word` sits inside a frame whose words match `group`: by bounds, or by its parent.
-export function inside(snap, word, group) {
-  const groups = find(snap, group).filter(
-    (g) => g.type === 'shape' && (DECOR_SHAPES.has(g.shape) || g.width),
-  );
-  return find(snap, word).some((e) =>
-    groups.some(
-      (g) =>
-        g.id !== e.id &&
-        (e.parentId === g.id ||
-          e.frameId === g.id ||
-          (e.x >= g.x &&
-            e.y >= g.y &&
-            e.x + (e.width ?? 0) <= g.x + g.width &&
-            e.y + (e.height ?? 0) <= g.y + g.height)),
-    ),
-  );
-}
-
-// A Pages tab's pages, from its pages view: `page 2 "Tip 2" page-99 · infographic Square · at … · 16 elements`
+// A tab's pages, from its pages view: `page 2 "Tip 2" page-99 · wireframe iPhone · at … · 16 elements`
 // (a logo page adds `· background #fff` before its count).
 // A page line's rectangle on the canvas: `at -960,-540 1920x1080`.
 function rectOf(line) {
@@ -130,11 +72,6 @@ export function pagesOf(snap) {
   return out;
 }
 
-// The tab is drawn hand-made: a sketch finish.
-export function sketched(tab) {
-  return /finish=sketch/.test(tab.outline?.split('\n')[0] ?? '');
-}
-
 // ---- everything as text ---------------------------------------------------------------------------------------
 
 // One lowercase string of every word the run made, wherever it sits (elements, pages).
@@ -148,12 +85,6 @@ function allText(snap) {
     }
   }
   return lc(out.filter(Boolean).join('\n'));
-}
-
-// Every word appears somewhere in what was made.
-export function mentions(snap, ...words) {
-  const text = allText(snap);
-  return words.every((w) => asRegex(w).test(text));
 }
 
 // ---- checks with a reason --------------------------------------------------------------------------------------
@@ -170,34 +101,8 @@ export function mentionsAll(snap, words) {
   };
 }
 
-// Every word has an element of its own (a box, a sticky, a frame) holding it.
-export function elementsFor(snap, words) {
-  const missing = words.filter((w) => find(snap, w).length === 0);
-  return {
-    pass: missing.length === 0,
-    detail: missing.length ? `no element for: ${missing.map(show).join(', ')}` : null,
-  };
-}
-
-// Every pair is joined by an arrow ([a, b] directed a to b when `directed`).
-export function allLinked(snap, pairs, { directed = false } = {}) {
-  const missing = pairs.filter(([a, b]) => !linked(snap, a, b, { directed }));
-  return {
-    pass: missing.length === 0,
-    detail: missing.length
-      ? `not joined: ${missing.map(([a, b]) => `${show(a)} ${directed ? '→' : '–'} ${show(b)}`).join(', ')}`
-      : null,
-  };
-}
-
 export function atLeast(n, have, what) {
   return { pass: have >= n, detail: have >= n ? null : `${have} ${what}, wanted ${n}+` };
-}
-
-// ---- the reply ---------------------------------------------------------------------------------------------------
-
-export function replied(run, word) {
-  return asRegex(word).test(run.finalText ?? '');
 }
 
 // ---- running a task's checks ---------------------------------------------------------------------------------------

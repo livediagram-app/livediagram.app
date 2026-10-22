@@ -18,7 +18,7 @@ export function clientRateKey(request: Request, fallback = 'anonymous'): string 
   return hextets ? `${hextets.slice(0, 4).join(':')}::/64` : ip;
 }
 
-// The network a caller comes from, for the anonymous rate limiters (forms, invite declines): the caller's address
+// The network a caller comes from, for the anonymous rate limiters (invite declines): the caller's address
 // range rather than the exact address, so one person cannot pass for many by rotating addresses inside what they
 // hold (an IPv6 user typically holds a whole /56 or /64, and an IPv4 one can often hop within a /24). IPv4 keeps its
 // /24, IPv6 its /56. Anything unparseable is its own network.

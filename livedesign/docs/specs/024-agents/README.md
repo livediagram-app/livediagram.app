@@ -13,5 +13,5 @@ changes and discusses a document, alone or beside people editing it live. The fr
 - ./document-views.md - when an agent reads a tab as text: refs, the outline and the other views, budgets
 - ./edit-operations.md - when an agent edits elements: the operation vocabulary, selectors, placement, errors
 - ./pages-for-agents.md - when an agent reads or makes pages (infographic, logo, wireframe)
-- ./diagram-lint.md - when checking a diagram without looking at it: the findings, their codes and output
+- ./page-lint.md - when checking a tab's text fits without looking at it: the findings, their codes and output
 - ./blueprints/README.md - when implementing an agents spec from its blueprint

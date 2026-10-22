@@ -18,7 +18,7 @@ import {
   type ViewDoor,
   type ViewQueryParameter,
 } from '@livedesign/api-schema';
-import { formatLintReport, lintTab } from '@livedesign/diagram-lint';
+import { formatLintReport, lintTab } from '@livedesign/page-lint';
 import { lintLog } from '../changesets/lint';
 import { isKnownElement } from '@livedesign/document';
 import {
@@ -43,7 +43,7 @@ import type { DocumentDTO, Env, TabDTO } from '../types';
 import type { RouteContext } from './context';
 
 export type ParsedView = { request: ViewRequest; json: boolean };
-// `view=lint` (docs/specs/024-agents/diagram-lint.md): answered by the lint, not by `renderView`.
+// `view=lint` (docs/specs/024-agents/page-lint.md): answered by the lint, not by `renderView`.
 type ParsedLintView = { lint: true; json: boolean };
 
 type Scope = 'tab' | 'document';
@@ -209,7 +209,7 @@ function logUnknownKinds(tab: TabDTO): void {
     viewsLog('info', '[views] unknown kinds', { tab: tab.id, ...Object.fromEntries(unknown) });
 }
 
-// The lint of a tab (docs/specs/024-agents/diagram-lint.md "Where it runs"), as text or (`json=1`) the
+// The lint of a tab (docs/specs/024-agents/page-lint.md "Where it runs"), as text or (`json=1`) the
 // report. A lint that throws answers 500 with `lint unavailable` and logs `[lint] failed` (LN23).
 function answerLintView(
   ctx: RouteContext,

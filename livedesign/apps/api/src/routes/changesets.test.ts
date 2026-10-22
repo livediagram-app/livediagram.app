@@ -271,7 +271,7 @@ describe('submitting a changeset', () => {
     expect(body.text.split('\n').at(-1)).toMatch(
       /^rev 1→2 · cs_\w+ · lint (clean|\d+ \w+(, \d+ \w+)*) · revert: /,
     );
-    expect(body.lint).toMatchObject({ measures: { boxes: 2, arrows: 1 } });
+    expect(body.lint).toMatchObject({ measures: { boxes: 2 } });
     expect(body.text.split('\n').slice(0, 2)).toEqual([
       '~ a  fill →green · textSize →md',
       '+ next  a→b "next"',

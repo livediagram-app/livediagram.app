@@ -63,7 +63,7 @@
 - [x] Constants and configuration
 - [x] Defaults ledger
 
-## diagram-lint
+## page-lint
 
 - [x] Domain and naming
 - [x] Behaviour and state

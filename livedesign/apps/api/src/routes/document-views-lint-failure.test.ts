@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('@livedesign/diagram-lint', () => ({
+vi.mock('@livedesign/page-lint', () => ({
   formatLintReport: () => '',
   lintTab: () => {
     throw new Error('boom');
@@ -9,7 +9,7 @@ vi.mock('@livedesign/diagram-lint', () => ({
 
 const { answerTabView } = await import('./document-views-route');
 
-// A lint that throws answers 500 with `lint unavailable` and logs `[lint] failed` (diagram-lint LN23).
+// A lint that throws answers 500 with `lint unavailable` and logs `[lint] failed` (page-lint LN23).
 describe('the lint view when the lint fails', () => {
   it('answers 500 and logs the failure', async () => {
     const errors: unknown[][] = [];

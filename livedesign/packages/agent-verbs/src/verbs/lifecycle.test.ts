@@ -48,7 +48,7 @@ describe('document create', () => {
       readInput: async (p) => files[p]!,
     });
     const out = await documentCreate.run!(ctx, { name: 'Shop', file: 'a.json' });
-    await documentCreate.run!(ctx, { name: 'Retro', tab: 'Board', template: 'kanban' });
+    await documentCreate.run!(ctx, { name: 'Retro', tab: 'Board', template: 'logo-design' });
     await documentCreate.run!(ctx, { name: 'Blank' });
     await documentCreate.run!(ctx, { name: 'R', file: 'r.json' });
     expect(seen.map((s) => s.body)).toEqual([
@@ -62,7 +62,7 @@ describe('document create', () => {
         id: 'new-3',
         name: 'Retro',
         source: 'cli',
-        tabs: [{ id: 'new-4', name: 'Board', template: 'kanban' }],
+        tabs: [{ id: 'new-4', name: 'Board', template: 'logo-design' }],
       },
       {
         id: 'new-5',
@@ -112,7 +112,7 @@ describe('document create', () => {
       await documentCreate.run!(ctx, { name: 'S', file: 'x.json' }).catch((e: unknown) => e),
     ).toMatchObject({ code: 'unknown_source', message: "can't tell what x.json holds" });
     expect(
-      await documentCreate.run!(ctx, { name: 'S', file: 'x.json', template: 'kanban' }).catch(
+      await documentCreate.run!(ctx, { name: 'S', file: 'x.json', template: 'logo-design' }).catch(
         (e: unknown) => e,
       ),
     ).toMatchObject({ message: 'give -f or --template, not both' });
@@ -226,10 +226,15 @@ describe('tab add, rename and rm', () => {
     });
     const out = await tabAdd.run!(
       contextOf(api),
-      tabAdd.input.parse({ doc: 'Auth flow', name: 'Board', template: 'kanban', summary: 'Board' }),
+      tabAdd.input.parse({
+        doc: 'Auth flow',
+        name: 'Board',
+        template: 'logo-design',
+        summary: 'Board',
+      }),
     );
     expect(seen[0]!.body).toEqual({
-      replace: { template: 'kanban', name: 'Board' },
+      replace: { template: 'logo-design', name: 'Board' },
       base: { rev: 0 },
       summary: 'Board',
     });

@@ -1,11 +1,11 @@
 // Removing documents without taking shared tabs with them
-// (docs/specs/006-document/tab-document-many-to-many.md, "Delete a diagram").
+// (docs/specs/006-document/tab-document-many-to-many.md "Tab lifecycle").
 //
 // A tab can sit in several documents, so deleting a container is the
 // document-scoped form of deleteTabRow: the doomed documents' links go, a tab
 // with no link left goes with its history and index rows (their FKs cascade
 // from `tabs`; `image_refs` has none, so it is pruned first), and a tab still linked elsewhere stays exactly as it is there.
-// Nothing cascades from `diagrams` into `tabs` (the baseline migration), so a tab this
+// Nothing cascades from `documents` into `tabs` (the baseline migration), so a tab this
 // doesn't drop would be stranded with no document to reach it from.
 
 import type { Env } from '../types';

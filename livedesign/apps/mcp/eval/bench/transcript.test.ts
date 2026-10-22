@@ -69,14 +69,17 @@ const transcript = [
   line({
     type: 'assistant',
     message: {
-      content: [{ type: 'tool_use', id: 't3', name: 'mcp__livedesign__find_diagrams', input: {} }],
+      content: [{ type: 'tool_use', id: 't3', name: 'mcp__livedesign__find_documents', input: {} }],
     },
   }),
   line({
     type: 'user',
     message: { content: [{ type: 'tool_result', tool_use_id: 't3', content: '[]' }] },
   }),
-  line({ type: 'assistant', message: { content: [{ type: 'text', text: 'Here is your deck.' }] } }),
+  line({
+    type: 'assistant',
+    message: { content: [{ type: 'text', text: 'Here are your screens.' }] },
+  }),
   'not json',
   line({
     type: 'result',
@@ -84,7 +87,7 @@ const transcript = [
     num_turns: 4,
     duration_ms: 1200,
     total_cost_usd: 0.1,
-    result: 'Here is your deck.',
+    result: 'Here are your screens.',
     usage: {
       input_tokens: 5,
       cache_creation_input_tokens: 100,
@@ -101,7 +104,7 @@ describe('parseTranscript', () => {
     expect(run.calls.map((c) => [c.tool, c.isError])).toEqual([
       ['change_pages', true],
       ['change_pages', false],
-      ['find_diagrams', false],
+      ['find_documents', false],
     ]);
     expect(run.calls[0].error).toBe('Give a layout or elements, not both.');
     expect(run.calls[1].images).toBe(1);
@@ -118,7 +121,7 @@ describe('parseTranscript', () => {
     expect(run.model).toBe('claude-haiku-5-5');
     expect(run.sessionId).toBe('s-1');
     expect(run.mcpConnected).toBe(true);
-    expect(run.finalText).toBe('Here is your deck.');
+    expect(run.finalText).toBe('Here are your screens.');
     expect(run.result).toMatchObject({
       turns: 4,
       inputTokens: 155,
@@ -129,7 +132,7 @@ describe('parseTranscript', () => {
 
   it('falls back to the last text when there is no result line', () => {
     const cut = transcript.split('\n').slice(0, -1).join('\n');
-    expect(parseTranscript(cut).finalText).toBe('Here is your deck.');
+    expect(parseTranscript(cut).finalText).toBe('Here are your screens.');
     expect(metricsOf(parseTranscript(cut)).finished).toBe(false);
   });
 });
@@ -148,7 +151,7 @@ describe('mcpConnected', () => {
 
 describe('metricsOf', () => {
   it('counts errors, retries of the failed tool and deprecated calls', () => {
-    const m = metricsOf(parseTranscript(transcript), new Set(['find_diagrams']));
+    const m = metricsOf(parseTranscript(transcript), new Set(['find_documents']));
     expect(m).toMatchObject({
       calls: 3,
       errors: 1,

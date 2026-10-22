@@ -107,7 +107,7 @@ const VIEW_COMMON_QUERY = [
 const TAB_VIEW_QUERY = [
   {
     ...VIEW_COMMON_QUERY[0]!,
-    description: `A view instead of the plain read: ${[...TAB_VIEW_NAMES, LINT_VIEW_NAME].join(', ')}. \`lint\` (the diagram lint) takes only \`json\`.`,
+    description: `A view instead of the plain read: ${[...TAB_VIEW_NAMES, LINT_VIEW_NAME].join(', ')}. \`lint\` (the page lint) takes only \`json\`.`,
   },
   ...VIEW_COMMON_QUERY.slice(1),
   {
@@ -558,20 +558,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       'Change the pages of a tab (add, set, lay out, move, duplicate, delete; up to 50, as one edit). Switches the tab into Pages and reaches everyone with the document open. Answers each page with its rectangle on the canvas.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
-    requestSchema: ref('PagesRequest'),
-    responseSchema: 'PagesAnswer',
-    statuses: [200, 400, 401, 403, 404, 409, 410, 413],
-  },
-  {
-    method: 'POST',
-    path: '/documents/{id}/tabs/{tabId}/illustrate',
-    segment: 'documents',
-    tag: 'Documents',
-    summary:
-      'The address of the pages call before Illustrate mode became Pages mode, kept for older clients. Use /documents/{id}/tabs/{tabId}/pages.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    deprecated: true,
     requestSchema: ref('PagesRequest'),
     responseSchema: 'PagesAnswer',
     statuses: [200, 400, 401, 403, 404, 409, 410, 413],
@@ -1404,9 +1390,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/placement-defaults',
     segment: 'placement-defaults',
     tag: 'Folders',
-    summary:
-      "The caller's default folders, one per key (mode:diagram, mode:draw, " +
-      'template:retrospective, template:kanban), dangling ones included.',
+    summary: "The caller's default folders, one per key (mode:pages), dangling ones included.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: {
@@ -1912,7 +1896,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/ai',
     segment: 'ai',
     tag: 'AI',
-    summary: 'Generate or review a diagram with the optional AI assistant (streamed).',
+    summary: 'Tidy or ask about a tab with the optional AI assistant (streamed).',
     auth: 'guest-or-clerk',
     requestSchema: 'AiRequest',
     statuses: [200, 401, 403, 500, 502, 503],

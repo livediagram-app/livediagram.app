@@ -72,7 +72,7 @@ export function wrapLabel(
 }
 
 // The width of a label with no canvas to measure it: a rough share of the font size a character
-// (docs/specs/024-agents/blueprints/diagram-lint.md, LN4). Headless renders and the diagram lint both wrap
+// (docs/specs/024-agents/blueprints/page-lint.md, LN4). Headless renders and the page lint both wrap
 // with it, so the lint judges the text an agent's preview shows.
 export const LABEL_ESTIMATE_CHAR_EM = 0.55;
 export function estimatedLabelMeasure(size: number): (s: string) => number {

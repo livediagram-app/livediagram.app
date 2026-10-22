@@ -11,8 +11,6 @@ export const LIVE_ROUTE_SEGMENTS: ReadonlySet<string> = new Set([
   'document',
   'embed',
   'explorer',
-  // A form link's page, /form/<code>.
-  'form',
   'get-started',
   'join',
   'new',
@@ -69,8 +67,6 @@ export function pageViewPath(pathname: string): string | null {
   // Every `/document/...` URL is the editor on one document (docs/specs/007-editor/new-document-route.md), and
   // whatever follows the segment is the document's id.
   if (segments[0] === 'document') segments = ['document'];
-  // A form link's page: whatever follows is the form's code, never recorded.
-  if (segments[0] === 'form') segments = ['form'];
   const last = segments[segments.length - 1];
   if (last === 'index.html') segments.pop();
   else if (last?.endsWith('.html')) segments[segments.length - 1] = last.slice(0, -5);

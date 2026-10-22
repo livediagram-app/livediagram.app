@@ -8,16 +8,16 @@ describe('template ls and view', () => {
       '/templates': {
         categories: [],
         templates: [
-          { kind: 'kanban', title: 'Kanban board', description: 'd', category: 'planning' },
+          { kind: 'logo-design', title: 'Logo design', description: 'd', category: 'logos' },
         ],
       },
-      '/templates/kanban': { text: 'tab kanban "Kanban board"' },
+      '/templates/logo-design': { text: 'tab logo-design "Logo design"' },
     });
     const ls = await templateLs.run!(contextOf(api), {});
-    expect(templateLs.text!(ls)).toEqual(['kanban  "Kanban board"  planning']);
-    expect(templateLs.quiet!(ls)).toEqual(['kanban']);
-    const view = await templateView.run!(contextOf(api), { kind: 'kanban' });
-    expect(templateView.text!(view)).toEqual(['tab kanban "Kanban board"']);
+    expect(templateLs.text!(ls)).toEqual(['logo-design  "Logo design"  logos']);
+    expect(templateLs.quiet!(ls)).toEqual(['logo-design']);
+    const view = await templateView.run!(contextOf(api), { kind: 'logo-design' });
+    expect(templateView.text!(view)).toEqual(['tab logo-design "Logo design"']);
   });
 });
 
@@ -64,8 +64,11 @@ describe('an unknown name', () => {
     const api = fakeApi({
       '/schema/rect': unknown(['square', 'rectangle-ish', 'circle']),
       '/schema/zzz': unknown(['square', 'circle']),
-      '/templates/kanbn': () =>
-        Response.json({ error: 'unknown_template', kinds: ['kanban', 'swot'] }, { status: 404 }),
+      '/templates/logo-desgn': () =>
+        Response.json(
+          { error: 'unknown_template', kinds: ['logo-design', 'wireframe-website'] },
+          { status: 404 },
+        ),
       '/templates/x': () => Response.json({ error: 'not_found' }, { status: 404 }),
       '/schema/plain': () => new Response('gone', { status: 404 }),
       '/schema/boom': () => Response.json({ error: 'x' }, { status: 500 }),
@@ -81,8 +84,10 @@ describe('an unknown name', () => {
     expect(await schemaView.run!(ctx, { kind: 'zzz' }).catch((e: unknown) => e)).toMatchObject({
       lines: ['square', 'circle'],
     });
-    expect(await templateView.run!(ctx, { kind: 'kanbn' }).catch((e: unknown) => e)).toMatchObject({
-      lines: ['kanban'],
+    expect(
+      await templateView.run!(ctx, { kind: 'logo-desgn' }).catch((e: unknown) => e),
+    ).toMatchObject({
+      lines: ['logo-design'],
       hint: 'livedesign template ls',
     });
     expect(await templateView.run!(ctx, { kind: 'x' }).catch((e: unknown) => e)).toMatchObject({

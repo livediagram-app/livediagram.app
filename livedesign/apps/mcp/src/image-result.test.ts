@@ -30,12 +30,12 @@ const { imageResult, tabFontIds, tabPreview } = await import('./image-result');
 describe('imageResult', () => {
   it('puts the structured result first, then the notes, then the preview', async () => {
     const result = await imageResult({ id: 'd' }, { id: 't', name: 'T', elements: [] }, undefined, [
-      '0 crossings · 0 behind · 0 overlaps · empty → clean',
+      'empty · 0 boxes · 0 texts → clean',
     ]);
     expect(result.content.map((block) => block.type)).toEqual(['text', 'text', 'image']);
     expect(result.content[1]).toEqual({
       type: 'text',
-      text: '0 crossings · 0 behind · 0 overlaps · empty → clean',
+      text: 'empty · 0 boxes · 0 texts → clean',
     });
     expect(result.structuredContent).toEqual({ id: 'd' });
   });

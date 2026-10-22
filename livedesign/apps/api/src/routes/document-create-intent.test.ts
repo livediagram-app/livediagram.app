@@ -48,9 +48,11 @@ describe('recorded creation intent', () => {
     expect(await summary('d1')).toMatchObject(PAGES);
   });
 
-  it('records a livediagram mode as Pages', async () => {
-    await create('d1', { intent: { mode: 'draw' } });
-    expect(await summary('d1')).toMatchObject(PAGES);
+  it('refuses a mode livedesign does not have, writing nothing', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const res = await create('d1', { intent: { mode: 'draw' } });
+    expect(res.status).toBe(400);
+    expect(await summary('d1')).toBeUndefined();
   });
 
   it('records nothing for a create without an intent', async () => {

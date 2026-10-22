@@ -105,18 +105,6 @@ describe('page changes', () => {
     );
   });
 
-  it('still answers at the address before the rename, and reads a stored `illustrate` as Pages', async () => {
-    vi.spyOn(console, 'info').mockImplementation(() => {});
-    const { db } = await setUp(204, { opensIn: 'illustrate' });
-    const res = await call(
-      db,
-      { pages: [{ op: 'add', kind: 'logo' }] },
-      { path: '/api/documents/D/tabs/t1/illustrate' },
-    );
-    expect(res.status).toBe(200);
-    expect(stored(db).pages).toHaveLength(1);
-  });
-
   it('lands a layout’s elements as a changeset, relayed before the pages', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const { db, room } = await setUp();

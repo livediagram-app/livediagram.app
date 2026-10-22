@@ -127,27 +127,19 @@ describe('tab view', () => {
 });
 
 const report = (errors: number): LintReport => ({
-  measures: {
-    crossings: 0,
-    behind: 0,
-    overlaps: errors,
-    extent: { width: 400, height: 200 },
-    arrows: 1,
-    boxes: 2,
-  },
+  measures: { extent: { width: 400, height: 200 }, boxes: 2, texts: 1 },
   findings: errors
     ? [
         {
-          code: 'box-overlap',
+          code: 'text-overflow',
           severity: 'error',
           refs: ['n1', 'n2'],
-          message: 'n1 overlaps n2',
-          fix: 'move n2 right-of:n1',
+          message: 'n1 prints over n2',
+          fix: 'move n2 below:n1',
         },
       ]
     : [],
   counts: { error: errors, warning: 0, info: 0 },
-  skipped: { crossings: false },
 });
 
 describe('tab lint', () => {
@@ -155,7 +147,7 @@ describe('tab lint', () => {
     const api = fakeApi({ ...library, ...tabsOfA, [`${tabPath}?view=lint&json=1`]: report(1) });
     const out = await tabLint.run!(contextOf(api), { doc: 'Auth flow' });
     expect(out.errors).toBe(1);
-    expect(tabLint.text!(out)[0]).toContain('n1 overlaps n2');
+    expect(tabLint.text!(out)[0]).toContain('n1 prints over n2');
     expect(tabLint.exitCode!(out)).toBe(1);
     expect(tabLint.exitCode!({ ...out, errors: 0 })).toBe(0);
   });

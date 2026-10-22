@@ -288,17 +288,9 @@ describe('the tools on changesets', () => {
             text: 'done',
             warnings: [],
             lint: {
-              measures: {
-                crossings: 1,
-                behind: 0,
-                overlaps: 0,
-                extent: { width: 300, height: 200 },
-                arrows: 2,
-                boxes: 3,
-              },
+              measures: { extent: { width: 300, height: 200 }, boxes: 3, texts: 2 },
               findings: [],
               counts: { error: 0, warning: 1, info: 0 },
-              skipped: { crossings: false },
             },
           })
         : undefined,
@@ -317,7 +309,7 @@ describe('the tools on changesets', () => {
       },
     });
     expect(sent.some((s) => s.method === 'PUT' && /\/tabs\/[^/]+$/.test(s.path))).toBe(false);
-    const line = '1 crossing · 0 behind · 0 overlaps · 300×200 → 1 warning';
+    const line = '300×200 · 3 boxes · 2 texts → 1 warning';
     expect(result.structuredContent).toMatchObject({
       changesetId: 'cs_0000000001',
       text: 'done',

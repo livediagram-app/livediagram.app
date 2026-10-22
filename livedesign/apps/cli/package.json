@@ -18,7 +18,7 @@
     "@livedesign/agent-verbs": "workspace:*",
     "@livedesign/api-client": "workspace:*",
     "@livedesign/api-schema": "workspace:*",
-    "@livedesign/diagram-lint": "workspace:*",
+    "@livedesign/page-lint": "workspace:*",
     "@livedesign/document": "workspace:*",
     "@livedesign/document-views": "workspace:*",
     "@livedesign/icons": "workspace:*",

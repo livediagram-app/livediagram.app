@@ -298,7 +298,7 @@ describe('getDocumentThumbnailSvg', () => {
 // so it runs the same stored-tab migration as every other read.
 // docs/specs/006-document/document-snapshots.md "Pages tabs": the first page alone, as an export draws it.
 describe('a thumbnail of a Pages tab', () => {
-  const A4 = { orientation: 'portrait', size: 'a4', kind: 'infographic' };
+  const A4 = { orientation: 'portrait', size: 'a4' };
   const PICTURE = 'b'.repeat(32);
   const ON_FIRST = 'c'.repeat(32);
   const ON_SECOND = 'd'.repeat(32);

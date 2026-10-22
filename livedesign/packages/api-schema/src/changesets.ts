@@ -13,7 +13,7 @@ import { TRASH_RETENTION_DAYS } from './trash';
 // Limits
 // ---------------------------------------------------------------------
 
-// A full tab rebuild of a large diagram fits; a runaway loop does not.
+// A full tab rebuild of a large wireframe fits; a runaway loop does not.
 export const CHANGESET_MAX_OPERATIONS = 500;
 // Under the room's 256 KiB frame cap with room for the op's metadata.
 export const CHANGESET_RELAY_MAX_BYTES = 192 * 1024;
@@ -218,7 +218,7 @@ export type ChangesetResponse = {
   // The result lines and the footer as text: the same for a dry run and a write.
   text: string;
   warnings: string[];
-  // The diagram lint's report of the result tab (docs/specs/024-agents/diagram-lint.md); null when nothing was
+  // The page lint's report of the result tab (docs/specs/024-agents/page-lint.md); null when nothing was
   // written or the lint failed.
   lint: LintReport | null;
 };
