@@ -127,8 +127,6 @@ export const HELP_ARTICLES = {
   whatWeCollect: 'privacy-and-security/what-we-collect',
   offlineMode: 'privacy-and-security/offline-mode',
   // Onboarding / empty states
-  yourFirstDiagram: 'getting-started/your-first-diagram',
-  templates: 'canvas/templates',
   drawMode: 'canvas/draw-mode',
   logoPages: 'canvas/pages-mode/logo-pages',
   wireframePages: 'canvas/pages-mode/wireframe-pages',
@@ -481,14 +479,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   offlineMode: {
     title: 'Learn about Offline Mode',
     description: 'Documents saved only in this browser, and how to sync them.',
-  },
-  yourFirstDiagram: {
-    title: 'Learn about your first diagram',
-    description: 'A short walkthrough of building your first diagram.',
-  },
-  templates: {
-    title: 'Learn about templates',
-    description: 'How templates give you a themed starting point.',
   },
   drawMode: {
     title: 'Learn about Draw mode',

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TEMPLATES, isBlankTemplate, templateEditorMode } from '@liveplanner/templates';
+import { BLANK_TEMPLATES, TEMPLATES, isBlankTemplate } from '@liveplanner/templates';
 import {
   filterGallery,
   galleryShelves,
@@ -19,10 +19,6 @@ describe('galleryTemplates (docs/specs/019-marketing/marketing-site.md)', () => 
       expect(kinds).not.toContain(blank);
     }
     expect(new Set(kinds).size).toBe(kinds.length);
-  });
-
-  it('carries the mode each template opens in', () => {
-    for (const t of galleryTemplates()) expect(t.mode, t.kind).toBe(templateEditorMode(t.kind));
   });
 
   it('labels every card with its category', () => {
@@ -87,10 +83,14 @@ describe('groupGallery', () => {
 // docs/specs/019-marketing/marketing-site.md "Template gallery": the editor's template step's
 // structure, Popular first.
 describe('the shelves, as the template step lays them out', () => {
-  it('opens on Blank Slate, only the blanks in mode order, then every category in catalogue order', () => {
+  it('opens on Blank Slate, only the blanks in catalogue order, then every category in catalogue order', () => {
     const shelves = galleryShelves();
     expect(shelves[0]?.id).toBe('popular');
-    expect(shelves[0]?.templates.map((t) => t.kind)).toEqual([
+    const kinds = shelves[0]?.templates.map((t) => t.kind);
+    expect(kinds).toEqual([
+      'blank-plan',
+      'blank-spreadsheet',
+      'blank-form',
       'blank',
       'whiteboard',
       'blank-session',
@@ -99,10 +99,9 @@ describe('the shelves, as the template step lays them out', () => {
       'blank-article',
       'blank-logo',
       'blank-wireframe-phone',
-      'blank-plan',
-      'blank-spreadsheet',
-      'blank-form',
     ]);
+    // In BLANK_TEMPLATES' own order.
+    expect(kinds).toEqual(BLANK_TEMPLATES.filter((k) => kinds?.includes(k)));
     for (const t of popularTemplates()) expect(isBlankTemplate(t.kind), t.kind).toBe(true);
     expect(shelves.slice(1).map((s) => s.id)).toEqual(
       groupGallery(galleryTemplates()).map((g) => g.id),

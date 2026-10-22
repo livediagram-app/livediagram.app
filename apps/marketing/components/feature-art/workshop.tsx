@@ -4,16 +4,15 @@
 // with the shared fa-pop and features' fa-b-* loops, which settle to the finished frame under
 // reduced motion.
 
-import { EDITOR_MODES, editorModeLabel } from '@liveplanner/document';
-
 import { PANEL, PanelShadow, STRONG, SUBTLE, VoteSticky } from './features-parts';
 import { Frame } from './shared';
+import { HERO_MODE } from '../hero-mode-palette';
 
 // sky-700: white text on it reads at AA, where sky-500 does not.
 const PICKED = '#0369a1';
 const VIEW = '0 0 300 96';
-// The editor's own modes, in its order (Workshop after Draw), so the menu never drifts from the app.
-const MODES = EDITOR_MODES.map(editorModeLabel);
+// The hero's illustrative modes, in their order (Workshop after Draw), as the hero's mocks show them.
+const MODES = Object.values(HERO_MODE).map((m) => m.label);
 const ROW = 14.4;
 
 /** The tab's mode menu, Workshop picked; the stickies and the Session strip it brings. */

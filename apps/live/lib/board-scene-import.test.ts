@@ -164,7 +164,7 @@ describe('importBoardsAsDocuments', () => {
       ...seams,
     });
     expect(made[0]!.folderId).toBeUndefined();
-    expect(made[0]!.tabs[0]).toMatchObject({ opensIn: 'draw' });
+    expect(made[0]!.tabs).toHaveLength(1);
   });
 });
 
@@ -245,15 +245,15 @@ describe('importDocuments', () => {
 
   it("sends the creation intent of each document's first tab (docs/specs/013-workspace/default-folders.md)", async () => {
     const made: NewBoardDocument[] = [];
-    const board = { ...tab('Board'), opensIn: 'draw' as const };
+    const board = tab('Board');
     await importDocuments([source('Sketch', [board]), source('Plan', [tab('Overview')])], {
       ownerId: 'o',
       offline: false,
       createDocument: async (doc) => void made.push(doc),
     });
     expect(made.map((d) => d.intent)).toEqual([
-      { mode: 'draw', tabKind: 'diagram' },
-      { mode: 'diagram', tabKind: 'diagram' },
+      { mode: 'plan', tabKind: 'diagram' },
+      { mode: 'plan', tabKind: 'diagram' },
     ]);
   });
 

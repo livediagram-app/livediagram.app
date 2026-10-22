@@ -68,7 +68,6 @@ const editor = (over: Record<string, unknown> = {}) => {
     anyWelcomeOpen: false,
     isReadOnly: false,
     embedMode: false,
-    editorMode: { mode: 'plan' },
     activeTab: { id: 'tab1', locked: false, elements: [BOARD] },
     userPreferences: {},
     setUserPreferences,
@@ -131,39 +130,6 @@ describe('PlanTourHost offer', () => {
     });
     expect(offered()).toBe(true);
     expect(stage.engine?.active).toBe(true);
-  });
-
-  it('waits for the person to enter Plan', () => {
-    editor({ editorMode: { mode: 'diagram' } });
-    const { rerender } = render(<PlanTourHost />);
-    act(() => {
-      vi.advanceTimersByTime(2000);
-    });
-    expect(offered()).toBe(false);
-    editor();
-    rerender(<PlanTourHost />);
-    act(() => {
-      vi.advanceTimersByTime(800);
-    });
-    expect(offered()).toBe(true);
-  });
-
-  it.each([
-    ['an empty tab', onTab()],
-    ['a Dashboard', onTab({ id: 'd0', type: 'shape', shape: 'plan-dashboard' })],
-  ])('waits on %s for a board or Sheet, then offers itself', (_why, over) => {
-    editor(over);
-    const { rerender } = render(<PlanTourHost />);
-    act(() => {
-      vi.advanceTimersByTime(2000);
-    });
-    expect(offered()).toBe(false);
-    editor(onTab(SHEET));
-    rerender(<PlanTourHost />);
-    act(() => {
-      vi.advanceTimersByTime(800);
-    });
-    expect(offered()).toBe(true);
   });
 
   it('a Settings rerun on an empty tab places nothing and waits for a board or Sheet', () => {
@@ -231,16 +197,6 @@ describe('PlanTourHost offer', () => {
       vi.advanceTimersByTime(800);
     });
     expect(offered()).toBe(true);
-  });
-
-  it('ignores a rerun outside Plan', () => {
-    editor({ editorMode: { mode: 'diagram' } });
-    render(<PlanTourHost />);
-    act(() => requestPlanTourRelaunch());
-    act(() => {
-      vi.advanceTimersByTime(2000);
-    });
-    expect(offered()).toBe(false);
   });
 });
 

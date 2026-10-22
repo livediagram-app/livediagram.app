@@ -338,8 +338,6 @@ describe('canvas tool commands', () => {
     const got = ids(base).filter((id) => id.startsWith('tool:'));
     expect(got).toEqual([
       'tool:pan',
-      'tool:eraser',
-      'tool:format',
       'tool:laser',
       'tool:spotlight',
       'tool:slide-deck',

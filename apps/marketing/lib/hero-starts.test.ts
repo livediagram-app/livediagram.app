@@ -45,15 +45,14 @@ describe('heroSearch', () => {
 });
 
 describe('the fan', () => {
-  it('deals from every listed template but the blanks, each once, across every mode', () => {
+  it('deals from every listed template but the blanks, each once', () => {
     expect(new Set(HERO_FAN_POOL).size).toBe(HERO_FAN_POOL.length);
     expect([...HERO_FAN_POOL].sort()).toEqual(
       galleryTemplates()
         .map((t) => t.kind)
         .sort(),
     );
-    const modes = new Set(HERO_FAN_POOL.map((k) => heroTemplate(k).mode));
-    expect([...modes].sort()).toEqual(['diagram', 'draw', 'pages', 'plan', 'workshop']);
+    for (const kind of HERO_FAN_POOL) expect(heroTemplate(kind).kind).toBe(kind);
     for (const kind of HERO_FAN_OPENING) expect(HERO_FAN_POOL).toContain(kind);
     expect(HERO_FAN_OPENING).toHaveLength(HERO_FAN_SLOTS);
   });

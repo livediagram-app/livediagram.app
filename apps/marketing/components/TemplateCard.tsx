@@ -1,7 +1,6 @@
 import { TemplatePreview } from '@liveplanner/template-previews';
 import { ctaHref, type CtaSource } from '@liveplanner/api-schema';
 import { templateCreateHref } from '@liveplanner/templates';
-import { EDITOR_MODE_ICONS } from '@liveplanner/ui';
 import type { GalleryTemplate } from '@/lib/template-gallery';
 import { BAND_CARD, BAND_CONTROL_HOVER } from '@/components/band-classes';
 import { createLabelPrefix } from '@/lib/create-label';
@@ -9,7 +8,7 @@ import { createLabelPrefix } from '@/lib/create-label';
 // One template as a card that creates that document straight away and opens it in the editor
 // (/new?template=<kind>, docs/specs/007-editor/new-document-route.md): the editor picker's own preview
 // (@liveplanner/template-previews), so a template looks the same here as it does in the app, then its
-// mode's glyph beside its title, then its description. Shared by the landing gallery and each category
+// title, then its description. Shared by the landing gallery and each category
 // page's "Start from a template" band; `source` is the CTA slot the click is counted under.
 export function TemplateCard({
   template,
@@ -18,7 +17,6 @@ export function TemplateCard({
   template: GalleryTemplate;
   source: CtaSource;
 }) {
-  const ModeIcon = EDITOR_MODE_ICONS[template.mode];
   return (
     <a
       href={ctaHref(templateCreateHref(template.kind), source)}
@@ -30,9 +28,6 @@ export function TemplateCard({
         <TemplatePreview kind={template.kind} />
       </span>
       <span className="mt-3 flex items-center gap-1.5 text-sm font-semibold text-slate-900 dark:text-slate-100">
-        {/* The mode the template opens in, as the editor's cards show it (the link's own name
-            already says what it makes). */}
-        <ModeIcon size={14} aria-hidden className="shrink-0 text-slate-500 dark:text-slate-400" />
         {/* The link's name is its own text, "Create a Blank Diagram" and the description, so its
             visible title is part of it (WCAG 2.5.3). */}
         <span className="sr-only">{createLabelPrefix(template.title)}</span>

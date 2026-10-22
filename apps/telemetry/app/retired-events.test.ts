@@ -85,6 +85,18 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('UI', 'Opened', 'ToolbarSearch')).toBe(false);
   });
 
+  it("retires the removed modes' help articles, not the Plan tour's", () => {
+    for (const id of ['editor-modes', 'diagram-tour']) {
+      expect(isRetiredEvent('Help', 'View', id)).toBe(true);
+      expect(isRetiredEvent('Help', 'Helpful', id)).toBe(true);
+      expect(isRetiredEvent('Help', 'Unhelpful', id)).toBe(true);
+      expect(isRetiredEvent('UI', 'Opened', id)).toBe(true);
+    }
+    expect(isRetiredEvent('Help', 'View', 'plan-tour')).toBe(false);
+    expect(isRetiredEvent('Help', 'View', 'plan-mode')).toBe(false);
+    expect(isRetiredEvent('UI', 'Opened', 'plan-tour')).toBe(false);
+  });
+
   it('retires the Diagram tour, not the tours that carry on', () => {
     expect(isRetiredEvent('UI', 'Opened', 'TourOffer')).toBe(true);
     expect(isRetiredEvent('UI', 'Closed', 'TourOffer')).toBe(true);

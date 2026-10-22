@@ -210,7 +210,6 @@ describe('settings catalogue', () => {
     const tours = SETTINGS_CATEGORIES.find((c) => c.id === 'tours')!;
     expect(tours.rows.map((r) => (r.kind === 'toggle' ? [r.event.on, r.event.off] : null))).toEqual(
       [
-        ['TourSeenOff', 'TourSeenOn'],
         ['PlanTourSeenOff', 'PlanTourSeenOn'],
         ['BoardsTourSeenOff', 'BoardsTourSeenOn'],
         ['SheetsTourSeenOff', 'SheetsTourSeenOn'],

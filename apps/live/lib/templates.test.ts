@@ -265,6 +265,7 @@ describe('templateCanvasOverrides', () => {
     // worker); the tab stays a general one.
     expect(templateCanvasOverrides('whiteboard')).toEqual({
       backgroundPattern: 'graph',
+      backgroundOpacity: 0.4,
     });
   });
 

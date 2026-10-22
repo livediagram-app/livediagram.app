@@ -79,10 +79,7 @@ describe('Page edits', () => {
   });
 
   // docs/specs/007-editor/start-diagramming.md "Start Making Pages": the last page can go too.
-  it('deletes the last page with everything on the tab, and brings Start Making Pages back', async () => {
-    const { dismissEmptyCard, emptyCardDismissed } =
-      await import('@/components/canvas/empty-card-dismissed');
-    dismissEmptyCard('t:pages');
+  it('deletes the last page with everything on the tab', () => {
     const h = harness({
       id: 't',
       name: 'T',
@@ -93,7 +90,6 @@ describe('Page edits', () => {
     expect(h.tab().elements).toEqual([]);
     expect(pagesOf(h.tab())).toHaveLength(1);
     expect(pagesOf(h.tab())[0]!.kind).toBeUndefined();
-    expect(emptyCardDismissed('t:pages')).toBe(false);
   });
 
   it('deletes a page with its content, and the next page closes the gap', () => {

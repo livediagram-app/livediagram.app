@@ -111,6 +111,10 @@ const DIAGRAM_TOUR_UI = new Set([
   'Toggled|TourSeenOn',
 ]);
 
+// The help articles that went with them: canvas/editor-modes and getting-started/diagram-tour (the welcome tour's
+// old address now redirects to the Plan tour's article, which reports under its own slug).
+const EDITOR_MODES_HELP_IDS = new Set(['editor-modes', 'diagram-tour']);
+
 function isRetiredEditorModeEvent(category: string, action: string, type: string | null): boolean {
   if (category === 'Editor') return true;
   if (category === 'Tab') return action === 'Changed' && type === 'ArticlesToPages';
@@ -137,13 +141,19 @@ export function isRetiredEvent(category: string, action: string, type: string | 
   if (category === 'UI' && LOCATION_STEP_AND_QUICK_START_UI.has(`${action}|${type ?? ''}`))
     return true;
   if (category === 'Help') {
-    return ACTIVITY_PANEL_HELP_IDS.has(type ?? '') || type === PALETTE_FAVOURITES_HELP_ID;
+    return (
+      ACTIVITY_PANEL_HELP_IDS.has(type ?? '') ||
+      type === PALETTE_FAVOURITES_HELP_ID ||
+      EDITOR_MODES_HELP_IDS.has(type ?? '')
+    );
   }
   if (category === 'UI' && (action === 'Opened' || action === 'Toggled')) {
     if (ACTIVITY_PANEL_UI_TYPES.has(type ?? '')) return true;
     return (
       action === 'Opened' &&
-      (ACTIVITY_PANEL_HELP_IDS.has(type ?? '') || type === PALETTE_FAVOURITES_HELP_ID)
+      (ACTIVITY_PANEL_HELP_IDS.has(type ?? '') ||
+        type === PALETTE_FAVOURITES_HELP_ID ||
+        EDITOR_MODES_HELP_IDS.has(type ?? ''))
     );
   }
   return false;
