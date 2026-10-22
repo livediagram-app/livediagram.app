@@ -2,6 +2,7 @@
   "name": "@liveplanner/api",
   "version": "0.0.0",
   "private": true,
+  "license": "UNLICENSED",
   "type": "module",
   "scripts": {
     "dev": "wrangler dev --var AI_ALLOWED_ORIGINS: --var GUEST_SIG_ENFORCE_AFTER:",

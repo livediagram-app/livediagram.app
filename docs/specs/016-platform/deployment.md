@@ -46,8 +46,6 @@ CI is the gate you check before deploying to production, but it does **not** tri
 
 `pnpm staging:check` runs `wrangler deploy --dry-run --env staging` for the three workers that carry bindings (api, mcp, router). Wrangler does not inherit bindings into a named environment, so a binding missing from an `[env.staging]` block — or a `service =` that lost its `-staging` suffix, pointing the staging router at **production** — is neither a type error nor a test failure. Without this step the first sign of either is a deploy.
 
-`.github/workflows/codeql.yml` runs CodeQL (advanced setup) on every PR, every push to `main`, and weekly. A single `Analyze` job scans both `actions` and `javascript-typescript`, so it shows as one check. The repository's CodeQL default setup stays disabled: GitHub rejects advanced-setup uploads while it is on. GitHub Code Quality remains a separate, GitHub-managed check.
-
 `.github/workflows/canvas-perf.yml` runs the canvas performance probe nightly against `main` ([Canvas performance](../008-canvas/canvas-performance.md)), skipping a night `main` has not moved. It never blocks anything: the budget table goes to the job summary, traces and screenshots to a 14-day artefact, and a miss opens or comments on one issue, **Canvas performance budget**, which the first all-pass run closes. It needs no secrets, only `issues: write`.
 
 `.github/workflows/mcp-registry.yml` publishes the root `server.json` to the official MCP Registry when that file changes on `main`, or on manual dispatch. It authenticates with GitHub OIDC, so it needs no secret. See [MCP server §4.16](../015-api/mcp-server.md#416-registry-listing).
@@ -56,9 +54,9 @@ CI is the gate you check before deploying to production, but it does **not** tri
 
 ### Runs on main are never cancelled
 
-`ci.yml`, `e2e.yml` and `codeql.yml` cancel a run only on a pull request, where a newer push makes the older run moot. On `main` every commit runs to the end, each in a concurrency group of its own (keyed by the commit), because a shared group keeps only one pending run and a burst of merges would still drop the middle ones. Cancelling there left most merges without a result (37 of 42 CI runs on `main` cancelled in the 11 hours to 2026-10-15), so a failure could not be pinned on its commit, and a pull request whose base had no finished run had no Codecov base to compare against, failing its [Coverage report](../003-system-architecture/testing.md#coverage-report) with a 404.
+`ci.yml` and `e2e.yml` cancel a run only on a pull request, where a newer push makes the older run moot. On `main` every commit runs to the end, each in a concurrency group of its own (keyed by the commit), because a shared group keeps only one pending run and a burst of merges would still drop the middle ones. Cancelling there left most merges without a result (37 of 42 CI runs on `main` cancelled in the 11 hours to 2026-10-15), so a failure could not be pinned on its commit, and a pull request whose base had no finished run had no Codecov base to compare against, failing its [Coverage report](../003-system-architecture/testing.md#coverage-report) with a 404.
 
-The cost is runner time: a merge on `main` is about a dozen jobs (CI's six, E2E's shards, CodeQL), so a burst of merges queues for runners alongside open pull requests' runs. Runs on `main` finishing out of order is handled by the staging deploy, which deploys only `main`'s tip ([Staging environment](staging-environment.md)).
+The cost is runner time: a merge on `main` is about a dozen jobs (CI's six, E2E's shards), so a burst of merges queues for runners alongside open pull requests' runs. Runs on `main` finishing out of order is handled by the staging deploy, which deploys only `main`'s tip ([Staging environment](staging-environment.md)).
 
 ## Deploy
 
@@ -108,14 +106,14 @@ There is no down migration; a problem after a renaming migration is fixed forwar
 
 ## Hosted profile
 
-Some configuration is what **liveplanner.app** runs with, not what the software defaults to. Committed `[vars]` would make it every fork's default; a value set only in the Cloudflare dashboard would be wiped by the next `wrangler deploy`, which replaces a worker's plain vars with exactly the ones it declares ([Staging environment](staging-environment.md) "Known sharp edge"). So it has a seam of its own: the **hosted profile**.
+Some configuration is what **liveplanner.app** runs with, not what the software defaults to. Committed `[vars]` would make it every environment's default (local development, previews); a value set only in the Cloudflare dashboard would be wiped by the next `wrangler deploy`, which replaces a worker's plain vars with exactly the ones it declares ([Staging environment](staging-environment.md) "Known sharp edge"). So it has a seam of its own: the **hosted profile**.
 
 - **What it holds.** `apps/api/hosted-vars.json`: `TELEMETRY_ENABLED = "true"` ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)) and the per-owner image gallery caps `IMAGE_MAX_PER_OWNER = "100"` and `IMAGE_MAX_BYTES_PER_OWNER = "104857600"` ([Image element + per-owner gallery](../009-elements/images.md)). Its frontend mirror, `NEXT_PUBLIC_TELEMETRY_ENABLED`, is derived from it rather than stated twice. A few vars are **per environment**, under `environments.production` and `environments.staging`, such as `APP_BASE_URL`: the canonical public origin that email, workbench and pairing links are built from (`https://www.liveplanner.app` in production, never the apex that redirects to it; [Workbench embeds](../013-workspace/workbench-embeds.md)). An empty per-environment value is unset there.
-- **Who gets it.** The reusable workflow resolves `HOSTED` from the repository ID of `liveplanner-app/liveplanner.app`, so production and staging both apply it, a rename or transfer keeps it, and no fork matches. A fork's deploy applies nothing, so a fork is **telemetry-off and uncapped** until it opts in by declaring the vars in its own `[vars]`.
+- **Who gets it.** The reusable workflow resolves `HOSTED` from the repository ID of `liveplanner-app/liveplanner.app`, so production and staging both apply it, a rename or transfer keeps it, and no other repository matches. A deploy from anywhere else applies nothing, so it is **telemetry-off and uncapped**.
 - **How it is applied.** On every hosted deploy, not once: the build step appends the frontend mirror to `$GITHUB_ENV`, and the api deploy passes each var as `wrangler deploy --var NAME:VALUE` (`node scripts/hosted-vars.mjs flags`). Every command takes the environment as `--env staging` (none is production), so a deploy only ever applies its own environment's entries.
 - **How it is checked.** After the api deploy, `node scripts/hosted-vars.mjs verify` reads the plain vars off every version serving traffic (`wrangler deployments status` + `wrangler versions view`) and fails the run on any hosted var that is missing or different, or that its environment leaves unset but the worker still holds. In CI, `apps/api/src/hosted-vars.test.ts` fails when the profile stops turning telemetry on, stops capping galleries (by the worker's own cap parser), names a var the worker does not read, or when `wrangler.toml` commits a hosted-only var as a default.
 
-`AI_ALLOWED_ORIGINS` is deliberately **not** in the profile. It names liveplanner.app's origins but fails closed, so a fork that forgets to change it gets an AI endpoint that refuses its own origin rather than one open to every page.
+`AI_ALLOWED_ORIGINS` is deliberately **not** in the profile. It names liveplanner.app's origins but fails closed, so a deployment that forgets to change it gets an AI endpoint that refuses its own origin rather than one open to every page.
 
 ## Required GitHub Action secrets
 
@@ -126,7 +124,7 @@ Set in the repo under **Settings → Secrets and variables → Actions**:
 | `CF_API_TOKEN`  | A Cloudflare API token with permissions to deploy Workers and apply migrations. |
 | `CF_ACCOUNT_ID` | The Cloudflare account ID the workers belong to.                                |
 
-**Optional**, each synced into `wrangler secret put` by the deploy workflow and skipped when unset, so a fork that sets none still deploys:
+**Optional**, each synced into `wrangler secret put` by the deploy workflow and skipped when unset, so an environment that sets none still deploys:
 
 | Secret                 | Synced to       | See                                                                                      |
 | ---------------------- | --------------- | ---------------------------------------------------------------------------------------- |

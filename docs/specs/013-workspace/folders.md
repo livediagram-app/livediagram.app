@@ -296,17 +296,16 @@ split by separators:
 The panel does not carry the import entry: its header holds only
 **⋯** and **?**, and a row of source icons would crowd it. Importing boards
 from other tools lives on the full-page Explorer (below). 2. **Share** (the owner, or any joined member of a team document's team: the header Share button's gate) and
-**Export** (the active tab, as the tab menu's Export). 3. **Search**, **GitHub** (the open-source repo, new tab), **Licences** (the
+**Export** (the active tab, as the tab menu's Export). 3. **Search**, **Licences** (the
 third-party licences page, new tab, see
 [Third-party licences](../002-project-scope/third-party-licences.md)), **Settings**.
 
 A row whose handler the host doesn't pass is absent, and a band left
 empty takes its separator with it (the Explorer behind an error screen
 has no document, so no Share / Export). This replaced a **+ New** chip
-whose hover-open popover held only band 1, and took GitHub off the
-editor's bottom bar, which keeps Search, Settings and the appearance
-toggle ([Live app](../007-editor/live-app.md)). The full-page Explorer's bottom bar keeps its GitHub
-link.
+whose hover-open popover held only band 1. The
+editor's bottom bar keeps Search, Settings and the appearance
+toggle ([Live app](../007-editor/live-app.md)). Neither carries a link to the source code: it is not public.
 
 - A "Current Document" card sits at the top. Beneath it, the panel shows
   the sidebar's three groups, Overview, Spaces and More, built from the
@@ -372,7 +371,7 @@ modelled on Windows Explorer: a sidebar tree drives navigation, a
 breadcrumb + list view on the right shows the focused folder's
 contents. A **bottom bar** mirrors the editor's tab-bar strip (minus the
 tabs): the shared right-hand control cluster (`ChromeControls` — search,
-the open-source GitHub link, Settings, dark-mode toggle). It's sticky so
+Settings, dark-mode toggle). It's sticky so
 it stays in view as the dashboard scrolls; Settings opens the same synced
 `UserPreferences` dialog the editor uses ([User preferences](../007-editor/user-preferences.md)).
 
@@ -382,7 +381,7 @@ it stays in view as the dashboard scrolls; Settings opens the same synced
   folders, New Team), and More (This Browser, Tags, Library, Trash). Each folder
   row carries an ellipsis menu with Rename, New subfolder, Change Folder,
   Use as Default for ([Default folders](default-folders.md#use-as-default-for)), Delete. The Image gallery (under Library) degrades to an empty state
-  when the api worker reports 503, e.g. a self-host without R2.
+  when the api worker reports 503, e.g. a deployment without R2.
 - **Right pane:**
   - Breadcrumb showing the path from "My Documents" through every
     ancestor of the focused folder. Each segment is a button that

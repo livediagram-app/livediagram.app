@@ -260,7 +260,7 @@ room`; open sessions still stop at their next save (I5).
 | `TRASH_PURGE_MAX_BATCHES` | 20    | Well inside one invocation's query budget | 1 to 200     |
 | `DOCUMENT_TRASHED_CLOSE`  | 4004  | Next free code beside 4003                | 4000 to 4999 |
 
-No new environment variable or binding; self-hosting needs only the migration.
+No new environment variable or binding; a deployment needs only the migration.
 
 ## Defaults ledger
 

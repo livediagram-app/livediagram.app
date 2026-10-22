@@ -272,7 +272,7 @@ becomes a step if staging is ever moved to a Clerk production instance.
 `wrangler deploy` replaces a worker's plain `[vars]` with whatever the config file
 declares, so any var set **only** in the Cloudflare dashboard is wiped on the next
 deploy unless `keep_vars = true`. So nothing is set only in the dashboard: a var is
-either committed (`[vars]` / `[env.staging.vars]`, every fork's default too) or part of
+either committed (`[vars]` / `[env.staging.vars]`, every environment's default too) or part of
 the hosted profile, which the deploy sends with `--var` on every run and then reads back
 off the live worker ([Deployment](deployment.md) "Hosted profile"). Either way the
 environment is reproducible from the repo alone.

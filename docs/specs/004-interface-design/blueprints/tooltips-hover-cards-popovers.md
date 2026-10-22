@@ -34,7 +34,7 @@ One term, one identifier. The left column is the only spelling used in code, tes
 | Preview       | `useRowPreview`, `data-hint="preview"`                     | A picture of what the control opens, after 600 ms                  |
 | Popover       | (unchanged homes)                                          | Click-opened and interactive; never a hint                         |
 | Hint surface  | `HintSurface`                                              | The portalled box that paints either hint                          |
-| Open source   | `HintOpenSource` (`'pointer' \| 'focus' \| 'touch'`)       | What opened the hint                                               |
+| Open trigger  | `HintOpenTrigger` (`'pointer' \| 'focus' \| 'touch'`)      | What opened the hint                                               |
 | Warm-up       | `isHintWarm(kind, now)`                                    | A tooltip or a preview may skip its delay                          |
 | Grace         | `HINT_CLOSE_GRACE_MS`                                      | Time the pointer has to cross from trigger to surface              |
 | Dismissed     | `dismissed` (ref in `useHint`)                             | Escape or a press closed it; stays closed until leave or blur      |
@@ -50,7 +50,7 @@ Banned: "tooltip" for anything with a description, "hover tooltip", "info popove
 
 ## Behaviour and state
 
-`useHint(kind)` owns one hint. React state is `open: boolean` and `source: HintOpenSource | null`; everything else is a
+`useHint(kind)` owns one hint. React state is `open: boolean` and `source: HintOpenTrigger | null`; everything else is a
 ref, so pointer traffic re-renders nothing until the hint actually opens or closes.
 
 One `Machine` ref holds the rest: the wrapper element, `open`, `source`, `overTrigger`, `overSurface`, `focused`
@@ -120,7 +120,7 @@ export function HoverCard(props: HoverCardProps): JSX.Element;
 // The engine both components share; exported inside the package only.
 export function useHint(kind: HintKind): {
   open: boolean;
-  source: HintOpenSource | null;
+  source: HintOpenTrigger | null;
   attach: (el: HTMLSpanElement | null) => void; // callback ref for the wrapper
   anchor: () => Element | null;
   triggerProps: HintTriggerProps; // spread on the wrapper

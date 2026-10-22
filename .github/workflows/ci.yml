@@ -147,7 +147,7 @@ jobs:
           pnpm --filter @liveplanner/live exec vitest run --coverage
           --shard=${{ matrix.shard }}/${{ strategy.job-total }}
 
-      # OIDC, so no Codecov secret; a pull request from a fork uploads tokenless instead. A Codecov
+      # OIDC, so no Codecov secret. A Codecov
       # outage must not hold back a merge: the upload logs its error and the job still passes.
       - name: Upload coverage
         uses: codecov/codecov-action@v7

@@ -1,7 +1,7 @@
 name: E2E Smoke
 
 # Browser E2E (docs/specs/003-system-architecture/e2e-smoke.md "When it runs"): a per-PR merge gate.
-# Every job is a required check on main; none needs a secret, so fork PRs run them too. The suite is
+# Every job is a required check on main; none needs a secret. The suite is
 # spread over parallel jobs so the run stays within 5 minutes. A job renamed or a shard added here
 # changes its check's name: update the main ruleset's required checks in the same change.
 on:

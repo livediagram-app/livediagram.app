@@ -1,6 +1,6 @@
-# Contributing
+# Engineering notes
 
-External contributions are welcome under the [MIT license](../../LICENSE). This doc covers the practical workflow; the conceptual rules live in [`AGENTS.md`](../../AGENTS.md) and [`docs/specs/`](../specs/).
+Internal notes on how we change the code: the practical workflow. The conceptual rules live in [`AGENTS.md`](../../AGENTS.md) and [`docs/specs/`](../specs/).
 
 ## Before you write code: specs first
 
@@ -22,7 +22,7 @@ See [Local development](local-development.md). The short version: clone, `pnpm i
 - **Tabs are spaces**: 2-space indent, Prettier-enforced.
 - **No em dashes**. Use commas, colons, or parentheses. (The repo has a hard rule against em dashes in code, comments, commits, and copy.)
 - **Reuse over duplication**. If two apps need the same thing (UI component, util, type, schema), it lives in [`packages/`](../../packages/), not copied into each app. Extract on first cross-app occurrence.
-- **No secrets in source**. The repo is public. All secrets travel via env vars, `wrangler secret put`, or GitHub Actions secrets. See [`docs/specs/002-project-scope/secrets-policy.md`](../specs/002-project-scope/secrets-policy.md).
+- **No secrets in source**, ever. All secrets travel via env vars, `wrangler secret put`, or GitHub Actions secrets. See [`docs/specs/002-project-scope/secrets-policy.md`](../specs/002-project-scope/secrets-policy.md).
 - **Comments explain WHY, not WHAT.** A comment that describes what the next line does is noise; a comment that explains a non-obvious constraint, a workaround for a specific bug, or a behaviour that would surprise a reader is gold.
 
 ## Before you commit
@@ -56,13 +56,13 @@ Drop an entry once an upstream release makes it redundant.
 A merge to `main` that passes CI **deploys automatically to staging** —
 [staging.liveplanner.app](https://staging.liveplanner.app), a complete copy of the
 platform with its own database ([Staging environment](../specs/016-platform/staging-environment.md)). Nobody
-presses anything. Within a few minutes your change is running somewhere public, and any
+presses anything. Within a few minutes your change is running on a reachable host, and any
 D1 migration in it has been applied to a real remote database.
 
 Production is **not** affected: that deploy stays manual (`Deploy Production` in the
 Actions tab) and someone decides when to press it.
 
-Two things follow for you as a contributor:
+Two things follow for whoever lands a change:
 
 - **Check staging after your PR lands.** It is the cheapest place to notice that
   something works in tests but not in a browser.
@@ -153,18 +153,3 @@ A few hard rules from [`AGENTS.md`](../../AGENTS.md) that constrain PRs:
 - **The router worker holds no business logic.** Only service bindings. If you're tempted to add logic, it belongs in whichever app the router forwards to.
 - **New Next.js apps spread the shared config.** Dev servers run through `scripts/next-dev.mjs` with an isolated `.next-dev/`; a new app's `next.config` spreads `liveplannerNextConfig()` (which reads `NEXT_DISTDIR`) or builds and dev race on `.next/` again, and `packages/next-config/apps-use-shared.test.js` lists the app.
 - **Markup and parsed files go through a Trusted Types policy.** Every page enforces Trusted Types ([Trusted Types](../specs/016-platform/trusted-types.md)): `dangerouslySetInnerHTML` takes `trustedHtml(markup)` from `@liveplanner/ui`, and only for markup our own escaping builders made, and nothing parses with `DOMParser`. A new app puts the boot script first in its `<head>` and the header in its `public/_headers`; `packages/ui/src/trusted-types-sinks.test.ts` checks all of it.
-
-## Reporting issues
-
-Open a [GitHub issue](https://github.com/liveplanner-app/liveplanner.app/issues). For bugs include:
-
-- What you expected vs what happened.
-- The browser / OS if visible UI is involved.
-- A document id, share code, or repro steps if applicable.
-- Whether you're on the hosted liveplanner.app or a self-host.
-
-For feature requests, link to (or propose) a spec entry. A new feature without a spec is hard to review meaningfully; one with a spec is straightforward.
-
-## Code of conduct
-
-Be kind, be specific, be honest. The maintainers will close issues and PRs that drift from those.

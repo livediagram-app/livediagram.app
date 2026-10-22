@@ -181,7 +181,7 @@ already present somebody else's name.
 
 | State                                                                                     | Avatar                                                               |
 | ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| Clerk disabled for the deployment (self-host)                                             | Initials everywhere, exactly as before; no image request is made.    |
+| Clerk disabled for the deployment                                                         | Initials everywhere, exactly as before; no image request is made.    |
 | Guest                                                                                     | Initials; a guest has no picture and never sees anybody else's.      |
 | Signed in, no picture resolved                                                            | Initial on the disc, exactly as before.                              |
 | Picture loading                                                                           | Initial on the disc; the picture has not painted yet.                |

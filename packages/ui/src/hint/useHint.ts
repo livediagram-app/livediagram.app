@@ -13,7 +13,7 @@ import {
 import { claimHint, isHintWarm, releaseHint, type HintToken } from './hint-registry';
 import { hasVisibleText } from './trigger-text';
 
-type HintOpenSource = 'pointer' | 'focus' | 'touch';
+type HintOpenTrigger = 'pointer' | 'focus' | 'touch';
 
 // Presses are heard in the capture phase: many canvas controls stop their
 // pointer events from bubbling, and the hint must still see them.
@@ -41,7 +41,7 @@ export type HintSurfaceProps = {
 
 type HintState = {
   open: boolean;
-  source: HintOpenSource | null;
+  source: HintOpenTrigger | null;
   // Callback ref for the wrapper around the trigger.
   attach: (el: HTMLElement | null) => void;
   // The element the hint describes and is placed against (D7).
@@ -65,7 +65,7 @@ type TimerName = 'openTimer' | 'closeTimer' | 'pressTimer' | 'lingerTimer';
 type Machine = {
   wrapper: HTMLElement | null;
   open: boolean;
-  source: HintOpenSource | null;
+  source: HintOpenTrigger | null;
   overTrigger: boolean;
   overSurface: boolean;
   focused: boolean;
@@ -117,7 +117,7 @@ const stop = (e: React.SyntheticEvent) => e.stopPropagation();
 // press does. Transitions T1-T15 in
 // docs/specs/004-interface-design/blueprints/tooltips-hover-cards-popovers.md.
 export function useHint(kind: HintKind): HintState {
-  const [source, setSource] = useState<HintOpenSource | null>(null);
+  const [source, setSource] = useState<HintOpenTrigger | null>(null);
   const [token] = useState<HintToken>(() => ({}));
   const machine = useRef<Machine>(newMachine());
 
@@ -132,7 +132,7 @@ export function useHint(kind: HintKind): HintState {
   }, [kind, token]);
 
   const show = useCallback(
-    (from: HintOpenSource) => {
+    (from: HintOpenTrigger) => {
       const m = machine.current;
       clearTimers(m, 'openTimer', 'closeTimer', 'lingerTimer');
       m.source = from;

@@ -129,7 +129,7 @@ It provides these names to sibling blueprints ([CLI](../../015-api/blueprints/cl
 | `apps/live/e2e/workbench-embed.spec.ts`, `apps/live/e2e/workbench-support.ts`, `apps/live/e2e/fixtures/fake-workbench.html`, `playwright.config.ts`, `scripts/e2e-stack.mjs` | Project `workbench` (dark), opt-in `E2E_WORKBENCH=1`                                                                                                                                                                      |
 | `docs/specs/015-api/api.md`                                                                                                                                                  | Segment row `workbench`; four Owner-keyed data rows; rate-limiting row; Auth's third bearer                                                                                                                               |
 | `docs/specs/017-telemetry/telemetry.md`                                                                                                                                      | The three types                                                                                                                                                                                                           |
-| `docs/operations/self-hosting.md`, `docs/development/local-development.md`, `README.md`                                                                                      | `APP_BASE_URL` builds workbench and pairing URLs; the rate-limiter binding; the e2e flag                                                                                                                                  |
+| `docs/specs/016-platform/deployment.md`, `docs/development/local-development.md`, `README.md`                                                                                | `APP_BASE_URL` builds workbench and pairing URLs; the rate-limiter binding; the e2e flag                                                                                                                                  |
 | `apps/help/app/**`, `packages/help-registry`                                                                                                                                 | The workbench help article, registered per `docs/instructions/register-a-help-article.md` (plan phase 8)                                                                                                                  |
 
 The workspace scope adds or changes, by file:
@@ -1136,7 +1136,7 @@ CREATE TABLE workbench_session_rooms (
 - **E28** A selected element with no label (a line, a freehand stroke): ref and kind only.
 - **E29** Unknown message type, or `v: 2`: ignored, `[workbench] message-ignored <type>` once per type.
 - **E30** Rate limit on the mint: 429, the CLI exits 6.
-- **E31** `APP_BASE_URL` unset on a self-host: the URLs use `DEFAULT_BASE_URL`; the self-hosting doc says to set it.
+- **E31** `APP_BASE_URL` unset on a deployment: the URLs use `DEFAULT_BASE_URL`; the hosted profile sets it ([Deployment](../../016-platform/deployment.md) "Hosted profile").
 - **E32** A host without Clerk: no tokens, so no mint; the page can only reach `refused('no-ticket')` or
   `refused('ticket')`; the pair page says pairing is not available.
 - **E33** Two frames of one pairing on one document: two sessions, two sockets, one person tag; presence shows the
@@ -1453,7 +1453,7 @@ and sets `APP_BASE_URL` to the live server; `test:e2e:workbench` builds with `NE
 | `WORKBENCH_TICKET_RATE_LIMITER`     | namespace `1010`, 30 / 60 s  | Spec; its own binding (WB41)                                     | as above            |
 
 Configuration: `APP_BASE_URL` (existing var) builds the URLs; `WORKBENCH_TICKET_RATE_LIMITER` added to production and
-`[env.staging]` (`pnpm staging:check`); both optional on a self-host (absent limiter allows).
+`[env.staging]` (`pnpm staging:check`); both optional on a deployment (absent limiter allows).
 
 ## Assets and external resources
 

@@ -2,11 +2,11 @@
 
 Follow the references below only as needed; never upfront.
 
-Documentation for liveplanner, the open-source real-time diagram editor.
+Documentation for liveplanner, the free real-time planning tool.
 
-liveplanner is a multiplayer canvas in the browser: teams build diagrams, whiteboards, mind maps, infographics and documents together in real time, with shared cursors and live selections. The canvas works without signing in, so starting is "open the link, start drawing". The hosted product runs free at [liveplanner.app](https://liveplanner.app), and the MIT-licensed codebase is self-hostable end to end. Who it is for lives in [Purpose](./specs/001-project-vision/purpose.md), what is built and still ahead in [Build phase](./specs/005-project-roadmap/prototype-scope.md).
+liveplanner is a multiplayer canvas in the browser: teams build diagrams, whiteboards, mind maps, infographics and documents together in real time, with shared cursors and live selections. The canvas works without signing in, so starting is "open the link, start drawing". The product runs free at [liveplanner.app](https://liveplanner.app), with no trackers and no ads. Who it is for lives in [Purpose](./specs/001-project-vision/purpose.md), what is built and still ahead in [Build phase](./specs/005-project-roadmap/prototype-scope.md).
 
-These docs are the practical guide: what the app does, how to run it locally, how to host it on your own Cloudflare account, and how to contribute. For the why-behind-the-what (product decisions, constraints, behaviour contracts), read the [specs](specs/). Specs are normative; these docs explain.
+These docs are the practical guide: what the app does, how to run it locally, and how we change the code. For the why-behind-the-what (product decisions, constraints, behaviour contracts), read the [specs](specs/). Specs are normative; these docs explain.
 
 ## Contents
 
@@ -14,18 +14,17 @@ These docs are the practical guide: what the app does, how to run it locally, ho
 - ./instructions/README.md - when repeating a known process, such as registering a help article
 - ./development/architecture.md - when you need the repo shape: nine apps, twenty-three packages, Cloudflare-only deploys
 - ./development/local-development.md - when cloning, installing, and running the apps locally
-- ./development/contributing.md - when proposing a change: specs-first workflow, code style, tests, PRs
-- ./operations/self-hosting.md - when running your own copy on Cloudflare Workers + D1, optionally with Clerk
+- ./development/engineering-notes.md - when changing the code: specs-first workflow, code style, tests, PRs
 - ./research/README.md - when you need measurements and experiment reports
 - ./research/migration-readiness.md - when importing boards from Miro or Microsoft Whiteboard
 
 ## How docs relate to specs
 
-- **Docs** (this folder): user-facing + contributor-facing instructions. How to do things.
+- **Docs** (this folder): engineering instructions. How to do things.
 - **[Specs](specs/)**: product source of truth. Why the app behaves the way it does, what the contracts are, what's in scope.
 
 If a doc disagrees with a spec, the spec wins (and the doc is the bug). Docs link out to specs when readers should go deeper.
 
-## License
+## Licence
 
-[MIT](../LICENSE). Self-host, fork, embed, modify, commercial or otherwise. The hosted version at [liveplanner.app](https://liveplanner.app) runs alongside the open-source codebase; see [Open source + distribution](./specs/002-project-scope/open-source-and-business-model.md) for the OSS / hosted split.
+Proprietary, all rights reserved ([LICENSE](../LICENSE)). liveplanner is free to use at [liveplanner.app](https://liveplanner.app); see [Business model + licence](./specs/002-project-scope/business-model-and-licence.md). Third-party components keep their own licences ([THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md)).

@@ -209,7 +209,7 @@ RDP commit and uniform Catmull-Rom stay.
 
 ## Licences
 
-- Recommended implementation: our own code, MIT with the repository. No dependency needed.
+- Recommended implementation: our own code. No dependency needed.
 - If adopted instead:
   - perfect-freehand: MIT.
   - lazy-brush: MIT.
@@ -218,7 +218,7 @@ RDP commit and uniform Catmull-Rom stay.
   - simplify-js: BSD-2-Clause.
   - 1eurofilter (npm): BSD-3-Clause.
   - Graphics Gems `FitCurves.c`: permissive EULA (use in any product, no credit required).
-  - Google ink-stroke-modeler and the ink-stroke-modeler-ts port: Apache-2.0, compatible with an MIT codebase when the licence and NOTICE travel with it. Any adopted package appears on `/licences` through `packages/licences`.
+  - Google ink-stroke-modeler and the ink-stroke-modeler-ts port: Apache-2.0, usable when the licence and NOTICE travel with it. Any adopted package appears on `/licences` through `packages/licences`.
 
 ## Sources
 

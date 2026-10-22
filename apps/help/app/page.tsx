@@ -1,12 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import {
-  buttonClassName,
-  ButtonContent,
-  CONTACT_FORM_URL,
-  GlyphDisc,
-  REPO_URL,
-} from '@liveplanner/ui';
+import { buttonClassName, ButtonContent, CONTACT_FORM_URL, GlyphDisc } from '@liveplanner/ui';
 import { SearchInput } from '@/components/SearchInput';
 import { CategoryCard, guideCount } from '@/components/CategoryCard';
 import { CategoryArt } from '@/components/category-art';
@@ -22,7 +16,7 @@ import {
 } from '@/lib/articles';
 import { HOME_SECTIONS, POPULAR_TOPICS, START_HERE, STILL_STUCK } from '@/lib/home-sections';
 import { helpMetadata } from '@/lib/seo';
-import { ArrowRightIcon, ExternalLinkIcon, MessageIcon } from '@/lib/chrome-icons';
+import { ArrowRightIcon, MessageIcon } from '@/lib/chrome-icons';
 
 // The one page that spells out the " | liveplanner" suffix: the root layout's title template only reaches child
 // segments, not this root index.
@@ -222,15 +216,6 @@ export default function HelpHome() {
                     <MessageIcon />
                     Contact us
                   </ButtonContent>
-                </a>
-                <a
-                  href={`${REPO_URL}/issues`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-lg border border-slate-600 px-4 py-2 text-sm font-semibold text-slate-100 transition-colors hover:border-slate-400 hover:bg-white/5"
-                >
-                  Report a bug on GitHub
-                  <ExternalLinkIcon size={14} />
                 </a>
               </div>
             </div>

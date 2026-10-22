@@ -2,7 +2,6 @@ import {
   lucideArrowUpDown,
   lucideGift,
   lucideMessagesSquare,
-  lucidePackage,
   lucideShare2,
   lucideShieldCheck,
   lucideSparkles,
@@ -11,7 +10,7 @@ import {
   lucideUsers,
   lucideZap,
 } from '@liveplanner/icons/lucide';
-import { CONTACT_FORM_URL, lucideGlyph, REPO_URL } from '@liveplanner/ui';
+import { CONTACT_FORM_URL, lucideGlyph } from '@liveplanner/ui';
 import type { ReactNode } from 'react';
 
 // The /faq page's content (docs/specs/019-marketing/marketing-site.md "Content pages (FAQ)"): questions grouped
@@ -48,7 +47,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'What is liveplanner?',
-        a: 'A free, open-source planner you work on together in real time. Every project is a stack of tabs: Board tabs hold kanban-style boards of cards, Sheet tabs hold spreadsheets with real formulas and charts, Dashboard tabs bring boards, sheets, charts and notes onto one page, and Form tabs collect answers that turn into cards or rows. Share a link and your team works on it with you, live.',
+        a: 'A free planner you work on together in real time, with no ads and no trackers. Every project is a stack of tabs: Board tabs hold kanban-style boards of cards, Sheet tabs hold spreadsheets with real formulas and charts, Dashboard tabs bring boards, sheets, charts and notes onto one page, and Form tabs collect answers that turn into cards or rows. Share a link and your team works on it with you, live.',
       },
       {
         q: 'Do I need an account to use liveplanner?',
@@ -82,8 +81,8 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     ],
   },
   {
-    id: 'free-and-open-source',
-    title: 'Free and open source',
+    id: 'free',
+    title: 'Free to use',
     blurb: 'No paid tier, no catch.',
     icon: lucideGlyph(lucideGift, ICON),
     items: [
@@ -92,22 +91,21 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         a: 'Yes. Every feature is free for everyone, with no paid tier, no trial and no plan to introduce one. If we ship it, every user gets it.',
       },
       {
-        q: 'Is the code open source?',
+        q: 'How is it free? What is the catch?',
         a: (
           <>
-            Yes. The whole codebase is MIT-licensed and{' '}
-            <a href={REPO_URL} target="_blank" rel="noopener noreferrer">
-              public on GitHub
-            </a>
-            . You can read it, run your own copy, or contribute.
+            There is no catch. liveplanner shows no ads, runs no third-party trackers and never
+            sells your data. The <a href="/help/policies/privacy-policy/">privacy policy</a> sets
+            out what the service does with your data, and you can export your work whenever you
+            like.
           </>
         ),
         aText:
-          'Yes. The whole codebase is MIT-licensed and public on GitHub. You can read it, run your own copy, or contribute.',
+          'There is no catch. liveplanner shows no ads, runs no third-party trackers and never sells your data. The privacy policy sets out what the service does with your data, and you can export your work whenever you like.',
       },
       {
         q: 'Will features ever move behind a paywall?',
-        a: 'No. There are no "Pro" features and no billing anywhere in the code. The free hosted version and a self-hosted copy run the same software.',
+        a: 'No. There are no "Pro" features and no billing anywhere in liveplanner. Everyone gets the same product.',
       },
     ],
   },
@@ -508,33 +506,6 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     ],
   },
   {
-    id: 'self-hosting',
-    title: 'Self-hosting',
-    blurb: 'Run your own copy.',
-    icon: lucideGlyph(lucidePackage, ICON),
-    items: [
-      {
-        q: 'Can I self-host liveplanner?',
-        a: (
-          <>
-            Yes. It is MIT-licensed and the source is{' '}
-            <a href={REPO_URL} target="_blank" rel="noopener noreferrer">
-              on GitHub
-            </a>
-            . Deploy the static frontends and the Cloudflare Workers backend to your own Cloudflare
-            account and you get every feature.
-          </>
-        ),
-        aText:
-          'Yes. It is MIT-licensed and the source is on GitHub. Deploy the static frontends and the Cloudflare Workers backend to your own Cloudflare account and you get every feature.',
-      },
-      {
-        q: 'Do I need sign-in to self-host?',
-        a: 'No. Without sign-in configured, your copy runs in guest mode with saving, sharing and real-time collaboration all working. Teams, API tokens and the MCP server need accounts, and email switches on once sign-in and its own key are set up.',
-      },
-    ],
-  },
-  {
     id: 'support',
     title: 'Help and support',
     blurb: 'When something is not right.',
@@ -557,21 +528,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Who makes liveplanner?',
-        a: (
-          <>
-            It is built in the open by{' '}
-            <a href="https://github.com/tommcclean" target="_blank" rel="noopener noreferrer">
-              Tom McClean
-            </a>{' '}
-            and{' '}
-            <a href="https://github.com/webbertakken" target="_blank" rel="noopener noreferrer">
-              Webber
-            </a>
-            , with contributions welcome on GitHub.
-          </>
-        ),
-        aText:
-          'It is built in the open by Tom McClean and Webber, with contributions welcome on GitHub.',
+        a: 'liveplanner is made by Tom McClean and Webber.',
       },
       {
         q: 'How do I get in touch?',
@@ -581,11 +538,11 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
             <a href={CONTACT_FORM_URL} target="_blank" rel="noopener noreferrer">
               contact form
             </a>
-            . Bug reports and ideas are welcome on GitHub too.
+            . Bug reports and ideas are welcome there too.
           </>
         ),
         aText:
-          'Use the contact page, or send us a message through the contact form. Bug reports and ideas are welcome on GitHub too.',
+          'Use the contact page, or send us a message through the contact form. Bug reports and ideas are welcome there too.',
       },
     ],
   },

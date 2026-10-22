@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Env } from '../types';
 
 // Characterisation tests for handleImages' authorisation surface
-// (docs/specs/009-elements/images.md). Covers: the 503 fallback when R2 is absent (self-host), the
+// (docs/specs/009-elements/images.md). Covers: the 503 fallback when R2 is absent (a deployment without it), the
 // owner gate on the gallery list / usage / delete, and the byte-read
 // access policy (image owner OR a share-readable document that references
 // the image). Pins behaviour ahead of the requireOwner extraction.
@@ -64,7 +64,7 @@ beforeEach(() => {
 });
 
 describe('handleImages', () => {
-  it('503 when the R2 binding is absent (self-host without R2)', async () => {
+  it('503 when the R2 binding is absent (a deployment without R2)', async () => {
     const res = await handleImages(makeCtx('GET', '/api/images', { images: null }));
     expect(res.status).toBe(503);
   });

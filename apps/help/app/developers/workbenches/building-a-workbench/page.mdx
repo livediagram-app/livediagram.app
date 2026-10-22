@@ -80,7 +80,7 @@ Inside the frame the person browses, opens documents (with a **Back**) and makes
 
 Frame `url` exactly as printed. It has the form `<app origin>/embed/workbench?d=<documentId>#ticket=<ticket>`: the document id is not a secret, and the ticket travels in the fragment, which no server, log or `Referer` sees. The page reads the ticket and removes it from its address before doing anything else.
 
-A ticket works **once**, within **one minute**. On a self-hosted instance the app origin is whatever that instance serves the app from. Take it from `new URL(url).origin` and accept messages only from that origin.
+A ticket works **once**, within **one minute**. Take the app origin from `new URL(url).origin` and accept messages only from that origin.
 
 If the ticket has expired or was already used, the frame shows **Open this diagram from your workbench** and sends no messages: mint a fresh one. If the page is not framed, or framed by another origin, it says "This view opens only inside" your origin, and does nothing else.
 
@@ -108,20 +108,20 @@ The name (1 to 40 characters) appears in the editor's copy, such as "Reconnect i
 
 Every message is an object `{ type, v: 1, ... }`. The page sends only to your origin and accepts only messages from its parent window at that origin. A message with an unknown type, a different `v`, or a field that fails validation is ignored (and logged once per type in the page's console), so check your payloads against this table.
 
-| Type                    | Direction    | Payload                                                                                                                 |
-| ----------------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------- |
-| `liveplanner:hello`     | Page to tool | Nothing: asks the tool to answer                                                                                        |
-| `liveplanner:hello-ack` | Tool to page | `name`: 1 to 40 characters                                                                                              |
-| `liveplanner:ready`     | Page to tool | `documentId`, `documentName`, `tabId`, `tabName`, `role` (`view`, `participate` or `edit`), once the document is loaded |
-| `liveplanner:tab`       | Page to tool | `tabId`, `tabName`: the tab now shown, after each later tab change                                                      |
-| `liveplanner:selection` | Page to tool | `documentId`, `documentName`, `tabId`, `rev`, `count` (`0` for nothing selected), `reference`: the selection reference  |
-| `liveplanner:renew`     | Page to tool | Nothing: asks for a fresh ticket                                                                                        |
-| `liveplanner:ticket`    | Tool to page | `ticket`: the 22-character ticket from a new `workbench open` link                                                      |
-| `liveplanner:reveal`    | Tool to page | `refs`: 1 to 20 element refs, each 1 to 64 characters; brings them into view on the current tab and outlines them       |
-| `liveplanner:theme`     | Tool to page | `colourScheme`: `light` or `dark`; until one arrives, the editor follows the system                                     |
-| `liveplanner:ended`     | Page to tool | `reason`: `expired`, `revoked`, `trashed` or `refused`                                                                  |
+| Type                    | Direction    | Payload                                                                                                                                                                                     |
+| ----------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `liveplanner:hello`     | Page to tool | Nothing: asks the tool to answer                                                                                                                                                            |
+| `liveplanner:hello-ack` | Tool to page | `name`: 1 to 40 characters                                                                                                                                                                  |
+| `liveplanner:ready`     | Page to tool | `documentId`, `documentName`, `tabId`, `tabName`, `role` (`view`, `participate` or `edit`), once the document is loaded                                                                     |
+| `liveplanner:tab`       | Page to tool | `tabId`, `tabName`: the tab now shown, after each later tab change                                                                                                                          |
+| `liveplanner:selection` | Page to tool | `documentId`, `documentName`, `tabId`, `rev`, `count` (`0` for nothing selected), `reference`: the selection reference                                                                      |
+| `liveplanner:renew`     | Page to tool | Nothing: asks for a fresh ticket                                                                                                                                                            |
+| `liveplanner:ticket`    | Tool to page | `ticket`: the 22-character ticket from a new `workbench open` link                                                                                                                          |
+| `liveplanner:reveal`    | Tool to page | `refs`: 1 to 20 element refs, each 1 to 64 characters; brings them into view on the current tab and outlines them                                                                           |
+| `liveplanner:theme`     | Tool to page | `colourScheme`: `light` or `dark`; until one arrives, the editor follows the system                                                                                                         |
+| `liveplanner:ended`     | Page to tool | `reason`: `expired`, `revoked`, `trashed` or `refused`                                                                                                                                      |
 | `liveplanner:place`     | Page to tool | Workspace only, on every move: `view` (`home`, `folder`, `recent`, ..., or `document`), `folderId`, `folderName`, `documentCount`, `documentId`, `documentName`, `tabId`, `tabName`, `role` |
-| `liveplanner:open`      | Tool to page | Workspace only: `to` is `{ view: 'home' }`, `{ folderId }` or `{ documentId, tabId? }`                                 |
+| `liveplanner:open`      | Tool to page | Workspace only: `to` is `{ view: 'home' }`, `{ folderId }` or `{ documentId, tabId? }`                                                                                                      |
 
 A `liveplanner:selection` is sent once the selection has been still for a quarter of a second, and only when its text changed, so a marquee drag is one message. After `ready` and after each `tab`, the page sends the selection for the tab now shown. A `reveal` skips refs it cannot find on the current tab.
 

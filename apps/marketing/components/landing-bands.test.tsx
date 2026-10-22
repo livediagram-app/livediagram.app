@@ -1,7 +1,6 @@
 // @vitest-environment jsdom
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { REPO_URL } from '@liveplanner/ui';
 import { PROMISES } from '@/lib/promises';
 import { PromisePrism } from './PromisePrism';
 import { StartPlanningCta } from './StartPlanningCta';
@@ -14,8 +13,9 @@ describe('the promises', () => {
       expect(screen.getByText(p.title)).toBeTruthy();
       expect(screen.getByText(p.value)).toBeTruthy();
     }
-    expect(screen.getByRole('link', { name: /Read the source/ }).getAttribute('href')).toBe(
-      REPO_URL,
+    expect(screen.queryByRole('link', { name: /source/i })).toBeNull();
+    expect(screen.getByRole('link', { name: /How export works/ }).getAttribute('href')).toBe(
+      '/help/tabs/export-tabs/',
     );
     expect(screen.getByRole('link', { name: /See what we measure/ }).getAttribute('href')).toBe(
       '/telemetry/',

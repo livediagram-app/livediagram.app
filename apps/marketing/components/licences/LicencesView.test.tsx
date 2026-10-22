@@ -49,7 +49,7 @@ const html = renderToStaticMarkup(<LicencesView manifest={manifest} />);
 describe('LicencesView', () => {
   it('titles the page and names both sections with their counts', () => {
     expect(html).toContain('<h1');
-    expect(html).toContain('Open-source licences');
+    expect(html).toContain('Third-party licences');
     expect(html).toMatch(/<h2[^>]*>In your browser<\/h2>/);
     expect(html).toMatch(/<h2[^>]*>On our servers<\/h2>/);
     expect(html).toContain('2 works');

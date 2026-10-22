@@ -851,7 +851,7 @@ Every suite uses `packages/edit-operations/src/fixtures/checkout-flow.ts` and a 
 | `NEAREST_MAX_DISTANCE`     | 3                         | Typos and short slips, not other words (EO45)                                         | 2 to 5          |
 | `EDIT_APPLY_BUDGET_MS`     | 50                        | A tenth of a request's patience at the 500-operation cap; a measured aim, not in code | 20 to 200       |
 
-No environment variable, binding or secret; self-hosting needs nothing new.
+No environment variable, binding or secret; a deployment needs nothing new.
 
 ## Defaults ledger
 

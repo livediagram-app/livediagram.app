@@ -31,7 +31,7 @@ const LOGO_SIZE = 28;
 // account). The invite + account-deleted builders pass their own, since those
 // recipients may not have (or no longer have) an account.
 const ACCOUNT_FOOTER =
-  'You’re receiving this because you have a liveplanner account. The editor is free and open source.';
+  'You’re receiving this because you have a liveplanner account. liveplanner is free, with no ads and no trackers.';
 
 // docs/specs/014-identity/transactional-email.md: footer for an opt-out notification email, the reason plus a link to
 // the settings where the recipient can turn the category off in one click.
@@ -165,7 +165,7 @@ function shell(env: Env, section: Section): string {
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px">
       <tr><td align="center" style="padding:20px 32px 0">
         ${lockup(base, 14, true)}
-        <p style="margin:8px 0 0;color:#94a3b8;font-size:12px;line-height:1.6">Diagram, draw and make pages together, live. Free and open source. <a href="${base}" style="color:${WORDMARK_ACCENT};text-decoration:none">${base.replace(/^https?:\/\//, '')}</a></p>
+        <p style="margin:8px 0 0;color:#94a3b8;font-size:12px;line-height:1.6">Diagram, draw and make pages together, live. Free, with no trackers. <a href="${base}" style="color:${WORDMARK_ACCENT};text-decoration:none">${base.replace(/^https?:\/\//, '')}</a></p>
       </td></tr>
     </table>
   </td></tr></table>

@@ -50,7 +50,7 @@ describe('insertImage with caps', () => {
     expect(await insertImage(db.env, row('a'), { maxImages: 1, maxBytes: null })).not.toBeNull();
   });
 
-  it('inserts without limit when no cap is set (self-host default)', async () => {
+  it('inserts without limit when no cap is set (the unconfigured default)', async () => {
     const db = sqliteD1();
     for (const id of ['a', 'b', 'c']) {
       expect(

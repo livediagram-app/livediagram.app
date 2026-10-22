@@ -338,7 +338,7 @@ function ExplorerImpl({
       onReset={onReset}
       onMoveTo={onMoveTo}
       // The ⋯ menu (docs/specs/013-workspace/folders.md): new / open, share / export, then search /
-      // GitHub / settings. It replaced a "+ New" chip whose popover held
+      // Licences / settings. It replaced a "+ New" chip whose popover held
       // only the first two.
       // A phone's sheet drops it: every entry is a tap away there already (the New chip, the footer's Explorer, the
       // top bar's Share, the toolbars' Search and Settings).

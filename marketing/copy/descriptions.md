@@ -1,7 +1,7 @@
 # Descriptions
 
 Longer blurbs grouped by budget, for the description fields on directories, app
-stores, GitHub, Product Hunt, and similar. Pick the one whose limit matches the
+stores, Product Hunt, and similar. Pick the one whose limit matches the
 field, then trim to taste. Counts in brackets are approximate (characters for
 the short ones, words for the long ones).
 
@@ -15,12 +15,12 @@ native apps: not shipped.
 For HTML `<meta name="description">` and search snippets.
 
 > Plan work with your team in real time: boards of cards, spreadsheets,
-> dashboards and forms. No sign-up to start. Free and open source. [137]
+> dashboards and forms. No sign-up to start. Free, with no trackers. [139]
 
 Alternate:
 
 > Boards, sheets and forms that share one set of cards, live for everyone. No
-> sign-up wall, no paid tier. Open source and self-hostable. [134]
+> sign-up wall, no paid tier, no trackers. [117]
 
 ---
 
@@ -31,7 +31,7 @@ For social posts and short "about" fields.
 > liveplanner is a real-time planner in the browser. Open a link and put the
 > work on a board with your team: cards with your own fields, spreadsheets,
 > dashboards and forms whose answers become cards. No sign-up wall.
-> MIT-licensed, free, and self-hostable. [247]
+> Free, with no ads and no trackers. [243]
 
 ---
 
@@ -42,7 +42,7 @@ For directory cards and "short pitch" fields.
 > liveplanner is a real-time planner for teams that works without signing up.
 > Open a link and plan together: kanban boards with WIP limits, spreadsheets
 > with real formulas, live dashboards and public forms, all sharing one set of
-> cards. MIT-licensed, free forever, and self-hostable on Cloudflare. [46 words]
+> cards. Free for everyone, with no ads and no trackers. [44 words]
 
 ---
 
@@ -61,8 +61,8 @@ For Product Hunt, app store short descriptions, README intros.
 > Planner, Bug Triage or Budget Planner, and let your AI tools move cards over
 > MCP.
 >
-> It is MIT-licensed, free for everyone with no paid tier, and self-hostable end
-> to end on Cloudflare. [108 words]
+> It is free for everyone with no paid tier, no ads and no third-party
+> trackers. [107 words]
 
 ---
 
@@ -94,15 +94,15 @@ For longer listing bodies and "about this project" sections.
 > RSVP form. Share editor, participant or view-only links, and let AI agents
 > read and change the plan over MCP, the API or the CLI.
 >
-> liveplanner is MIT-licensed, free for everyone with no paid tier and no plan
-> for one, and self-hostable end to end on Cloudflare. [256 words]
+> liveplanner is free for everyone with no paid tier and no plan for one, no
+> ads and no third-party trackers. [254 words]
 
 ---
 
 ## Full description, ~500 words
 
 For directories with a generous body field, a landing-page "about" block, or a
-detailed GitHub / Product Hunt write-up.
+detailed Product Hunt write-up.
 
 > ### liveplanner: plan the work together, no sign-up required
 >
@@ -156,12 +156,12 @@ detailed GitHub / Product Hunt write-up.
 > and change forms over MCP, the API or the CLI, naming columns and fields the
 > way the board shows them.
 >
-> #### Free, open, and yours
+> #### Free, private, and yours
 >
-> liveplanner is MIT-licensed and publicly viewable. The hosted version at
-> liveplanner.app is free for everyone, with no paid tier and no plan to
-> introduce one. You can self-host the entire stack on your own Cloudflare
-> account; the open-source core never calls home and never gates features
-> behind a licence check.
+> liveplanner at liveplanner.app is free for everyone, with no paid tier and
+> no plan to introduce one. There are no ads and no third-party trackers, only
+> anonymous first-party counts listed publicly on /telemetry. Export a board as
+> CSV, an image, a PDF or a Markdown outline, and a sheet as CSV, whenever you
+> like.
 >
 > Open a link, plan, share. That is the whole pitch. [503 words]

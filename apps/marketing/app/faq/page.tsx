@@ -10,7 +10,7 @@ import { FAQ_CATEGORIES, faqAnswerText } from '@/lib/faq-content';
 
 const FAQ_TITLE = 'FAQ · liveplanner';
 const FAQ_DESCRIPTION =
-  'Answers to common questions about liveplanner: boards and cards, sheets, dashboards and forms, collaboration, sharing, AI and MCP, privacy, and self-hosting.';
+  'Answers to common questions about liveplanner: boards and cards, sheets, dashboards and forms, collaboration, sharing, AI and MCP, and privacy.';
 
 export const metadata = pageMetadata({
   title: FAQ_TITLE,
