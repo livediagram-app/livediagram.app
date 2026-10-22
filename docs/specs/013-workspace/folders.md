@@ -83,7 +83,6 @@ Every Explorer section is its own page under `/explorer` (the chrome — header,
 | A team ([Teams](teams.md))                                     | `/explorer/team?id=<id>`                                           |
 | Invites ([Teams](teams.md))                                    | `/explorer/invites`                                                |
 | This Browser ([Offline Mode](../006-document/offline-mode.md)) | `/explorer/offline`                                                |
-| Image gallery                                                  | `/explorer/images`                                                 |
 | Themes                                                         | `/explorer/themes`                                                 |
 | Trash ([Trash](trash.md))                                      | `/explorer/trash`                                                  |
 
@@ -365,8 +364,8 @@ link.
 This is the full-page library view. Open to both guests and signed-in
 users: the owner id resolves the same way every other surface in the
 live app does (Clerk userId when signed in, the `liveplanner:v2:self-id`
-localStorage UUID otherwise), so a guest sees the documents + folders +
-Image Gallery their per-browser id owns. AuthControls in the page header
+localStorage UUID otherwise), so a guest sees the documents + folders
+their per-browser id owns. AuthControls in the page header
 surfaces a "Sign in" CTA for guests who want to upgrade. The page is
 modelled on Windows Explorer: a sidebar tree drives navigation, a
 breadcrumb + list view on the right shows the focused folder's
@@ -381,8 +380,7 @@ it stays in view as the dashboard scrolls; Settings opens the same synced
   its root folders beneath it, each team with its
   folders, New Team), and More (This Browser, Tags, Library, Trash). Each folder
   row carries an ellipsis menu with Rename, New subfolder, Change Folder,
-  Use as Default for ([Default folders](default-folders.md#use-as-default-for)), Delete. The Image gallery (under Library) degrades to an empty state
-  when the api worker reports 503, e.g. a self-host without R2.
+  Use as Default for ([Default folders](default-folders.md#use-as-default-for)), Delete.
 - **Right pane:**
   - Breadcrumb showing the path from "My Documents" through every
     ancestor of the focused folder. Each segment is a button that
@@ -395,14 +393,6 @@ it stays in view as the dashboard scrolls; Settings opens the same synced
     Folder rows open the folder; document rows open the document.
   - "Shared With Me" replaces the list with a Role + Updated table
     of accepted shares; each row is a link into the shared document.
-  - "Image Gallery" replaces the list with a drop-zone (upload via
-    drag, paste, or click) above a grid of thumbnails. Each tile
-    shows the file name, dimensions, byte size, a delete action,
-    and a "Used in N documents" badge backed by `GET /api/images/usage`
-    (see [11-api.md](../015-api/api.md)). The badge expands inline to a
-    list of links into those documents so the user can spot
-    orphaned bytes that are safe to delete. Upload validation +
-    hashing share the editor's path via `apps/live/lib/upload-image.ts`.
 - **Create:** a single floating action button at the bottom-right
   opens a popover with "New Document" and "New folder" (or "New
   subfolder" when a folder is focused). The documents-page FAB on the

@@ -752,7 +752,6 @@ the Explorer's own handlers (`useTimelineEntityMenus`):
 | Team (created, renamed, members, role) | Open Team · Edit Team _(admin)_ · Leave Team · Delete Team _(admin)_                                     |
 | Invite received                        | Open Invites · **Accept Invite** · **Decline Invite**                                                    |
 | Theme saved                            | Open Themes · Edit Theme (the same builder modal the Themes pane opens) · Delete Theme                   |
-| Images uploaded                        | Open Images                                                                                              |
 | Document the Explorer can't resolve    | Open Document                                                                                            |
 
 Plus **Remove from Timeline** on all of them (§2.9), and the destructive
@@ -861,7 +860,7 @@ rather than duplicating it.
 `dedupe_key` is empty for events that happen **once per source** (a
 document is created once; a tombstone is written once; an invite arrives
 once). It carries `<actorId>:<YYYY-MM-DD>` for the coalesced events —
-the editing event (§4.2), image uploads, and a theme's saves — which
+the editing event (§4.2) and a theme's saves — which
 deliberately extend one row through the day.
 
 **Events that can recur on the same source get a fresh key every time**
@@ -1268,7 +1267,6 @@ Teams are Clerk-only, so none of these events ever reach a guest scope.
 | `theme_deleted`       | `DELETE /api/custom-themes/:id`: "Theme Deleted" / the theme's name                   | Tombstone: the theme's `theme_saved` rows go first ("reads its name first" below) |
 | `folder_created`      | `POST /api/folders`, personal or team: "Folder Created" / the folder's name           | The person who made it only                                                       |
 | `folder_deleted`      | `DELETE /api/folders/:id`: "Folder Deleted" / the folder's name                       | The person who deleted it only; tombstone like `theme_deleted`                    |
-| `image_uploaded`      | image upload ([Image element + per-owner gallery](../009-elements/images.md))         | Coalesced per day like editing                                                    |
 
 **A warning that stops being true is withdrawn, not corrected.** The two
 future-dated rows above are the only events the feed states before they

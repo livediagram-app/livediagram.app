@@ -157,7 +157,7 @@ export const categories: Category[] = [
     title: 'Explorer',
     description:
       'Organise everything you build: how the Explorer keeps your documents, folders, teams, and assets easy to find and manage.',
-    articleCount: 15,
+    articleCount: 14,
     kind: 'feature',
     groups: ['Your Library', 'Activity', 'Assets and Imports'],
   },
@@ -615,10 +615,10 @@ export const articles: Article[] = [
   },
   {
     slug: 'plan-sheets-images',
-    title: 'Plan Items, Sheets and Images',
-    description: 'API examples for Plan cards, Sheets, images, pages, copies and themes.',
+    title: 'Plan Items, Sheets and Pages',
+    description: 'API examples for Plan cards, Sheets, pages, copies and themes.',
     keywords:
-      'items cards plan board card types sheets cells spreadsheet images upload pages pages article render svg copy custom themes api',
+      'items cards plan board card types sheets cells spreadsheet pages article render svg copy custom themes api',
     category: 'Developers',
     categorySlug: 'developers/working-with-documents',
     parentSlug: 'working-with-documents',
@@ -2004,15 +2004,6 @@ export const articles: Article[] = [
     group: 'Your Library',
   },
   {
-    slug: 'image-gallery',
-    title: 'Image Gallery',
-    description: 'Every image you have uploaded, with where each is used and how to delete them.',
-    keywords: 'uploads pictures photos assets manage delete media guest upload used unused',
-    category: 'Explorer',
-    categorySlug: 'explorer',
-    group: 'Assets and Imports',
-  },
-  {
     slug: 'themes-library',
     title: 'Saved Themes',
     description: 'Your custom themes as swatch previews, ready to edit, duplicate, or reuse.',
@@ -2382,15 +2373,6 @@ export const articles: Article[] = [
     description: 'Lay a wide, translucent marker stroke from the Draw category, in five colours.',
     keywords:
       'highlighter highlight marker mark up markup annotate emphasise emphasize pen draw attention translucent transparent yellow green pink blue orange colour color width thin medium bold strength quick style review workshop underline circle',
-    category: 'Palette',
-    categorySlug: 'palette/tools',
-    parentSlug: 'tools',
-  },
-  {
-    slug: 'images',
-    title: 'Images',
-    description: 'Add images to the canvas by uploading, or from your gallery.',
-    keywords: 'picture photo upload png jpg insert logo screenshot gallery reuse',
     category: 'Palette',
     categorySlug: 'palette/tools',
     parentSlug: 'tools',

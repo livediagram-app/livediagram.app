@@ -12,4 +12,3 @@ One row per default applied where a spec is silent or qualitative.
 | D6  | profile-picture | Several Google accounts linked              | The first in Clerk's `externalAccounts` order                                                          |
 | D7  | profile-picture | Whether a picture fades in                  | No transition: a small swap reads as a flicker when faded                                              |
 | D8  | profile-picture | How a hook reads module-level picture state | Through the `useSyncExternalStore` snapshot, never beside it: the React Compiler memoizes module reads |
-| D9  | profile-picture | How many comment authors one request reads  | 50 (`MAX_COMMENT_PICTURE_AUTHORS`); later authors show initials                                        |

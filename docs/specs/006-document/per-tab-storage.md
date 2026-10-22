@@ -41,7 +41,7 @@ CREATE TABLE tabs (
 );
 ```
 
-A `tabs` row is the tab's body and nothing else. Which documents contain it, and its order and folder in each, live on the `document_tabs` link ([Tab ↔ document many-to-many](tab-document-many-to-many.md)). Nothing on the row points at a document, so nothing cascades from `documents` into `tabs`: removing a tab from a document, deleting a document and deleting an account each drop a tab explicitly once no document links it. `collab_actions` and `collab_threads` cascade from `tabs(id)`, so a dropped tab takes its index rows with it. `image_refs` has no foreign key ([Images, Reference index](../009-elements/images.md#reference-index)), so each delete path prunes a dropped tab's image references in the same batch.
+A `tabs` row is the tab's body and nothing else. Which documents contain it, and its order and folder in each, live on the `document_tabs` link ([Tab ↔ document many-to-many](tab-document-many-to-many.md)). Nothing on the row points at a document, so nothing cascades from `documents` into `tabs`: removing a tab from a document, deleting a document and deleting an account each drop a tab explicitly once no document links it. `collab_actions` and `collab_threads` cascade from `tabs(id)`, so a dropped tab takes its index rows with it.
 
 The table was introduced by `0005_tabs.sql` and has this shape since `0049_tabs_drop_legacy_columns.sql`, which removed the original `document_id` + `order_index` columns and the `document_id` foreign key.
 

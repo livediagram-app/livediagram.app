@@ -24,7 +24,7 @@ as a 36px list thumbnail and as a full-size embed — there is no separate
 
 ## Render-on-read, cached in R2
 
-The snapshot bytes live in R2 (the existing `IMAGES` bucket, key
+The snapshot bytes live in R2 (the `SNAPSHOTS` bucket, `liveplanner-snapshots`, key
 `thumb/<documentId>`); a `documents.thumb_rendered_at` column records when
 they were last rendered.
 
@@ -40,13 +40,9 @@ On a read of either delivery path:
   `thumb_rendered_at`, and return it. Icon elements render their real
   glyph (line art + Technology brand tiles) via the
   `@liveplanner/icons/resolve` resolver the worker passes in — see
-  [Technology icons](../010-palette/technology-icons.md) "Rendering". Image elements render their real picture: the
-  worker reads each upload from R2 and inlines it as a base64 data URL
-  through `embedTabImages` (`@liveplanner/api-schema`, shared with the
-  MCP preview, [MCP server](../015-api/mcp-server.md) §5), in document order under a 3 MB total budget
-  so a tab of large photos can't produce a multi-megabyte snapshot. An
-  image past the budget, missing from R2, or not a recognised raster
-  format keeps its placeholder box.
+  [Technology icons](../010-palette/technology-icons.md) "Rendering". liveplanner takes no image uploads, so an image
+  placeholder left by a diagram template draws as its empty placeholder box
+  and a snapshot reads nothing but the document's own rows.
 
 This is **render-on-read**, not render-on-save, on purpose:
 
@@ -74,9 +70,7 @@ instead put every page side by side, which at thumbnail size shrank to a
 row of slivers nobody could recognise; a deck is recognised by its cover.
 The same rule holds wherever this renderer serves a preview: the Explorer
 thumbnail, the default live image, a `?tab=` live image of a Pages
-tab. Only the first page's images are read for
-it (its elements' images and its picture background), so a long deck of
-photos costs one page's R2 reads.
+tab.
 
 Measured on the renderer alone (Node, warm): a 12-slide deck of 10 shapes
 a slide drew in 1.33 ms as a 42 KB whole canvas and draws in 0.14 ms as a
@@ -96,8 +90,7 @@ document renders lazily.
 - Read-gated exactly like `GET /api/documents/:id`: the owner, a joined
   team member, or a valid share-code visitor.
 - A native `<img>` can't send auth headers, so the live app fetches this
-  through the authenticated client and wraps the bytes in a blob URL
-  (the same pattern image elements use, [Image element + per-owner gallery](../009-elements/images.md)). `?v=<savedAt>` busts
+  through the authenticated client and wraps the bytes in a blob URL. `?v=<savedAt>` busts
   the browser cache when the document changes; the worker ignores it.
   `Cache-Control: private, max-age=86400`.
 - One D1 read gates it: `getDocumentThumbMeta` returns the owner, team,
@@ -308,6 +301,6 @@ document, so a per-card badge is noise — the team list omits it as well).
 
 ## Self-hosting
 
-The whole feature is gated on the optional `IMAGES` R2 binding, exactly
-like the image gallery ([Image element + per-owner gallery](../009-elements/images.md)): with no bucket, both endpoints 404 and
+The whole feature is gated on the optional `SNAPSHOTS` R2 binding (it caches
+nothing but snapshots and share cards): with no bucket, both endpoints 404 and
 the Explorer row shows its icon. No new binding, no required SaaS.

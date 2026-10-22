@@ -228,7 +228,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'shared-with-you': '#10b981',
   'personal-space': '#f59e0b',
   'team-spaces': '#a855f7',
-  'image-gallery': '#ec4899',
   'themes-library': '#d946ef',
   'tab-folders': '#3b82f6',
   'linking-tabs': '#10b981',

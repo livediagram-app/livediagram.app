@@ -64,9 +64,9 @@ const COMPONENTS: Component[] = [
       'Cloudflare D1 (SQLite at the edge). Holds projects, tabs, change logs, share links, telemetry events.',
   },
   {
-    name: 'Image storage',
+    name: 'Snapshot cache',
     description:
-      'Cloudflare R2. Stores uploaded image blobs (content-addressed, indexed in D1) and cached project snapshots.',
+      "Cloudflare R2. Caches each project's rendered snapshot and share-link card. liveplanner takes no image uploads.",
   },
   {
     name: 'Edge router',

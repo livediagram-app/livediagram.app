@@ -53,7 +53,7 @@ const FALSE_CLAIMS: { pattern: RegExp; why: string }[] = [
   },
   {
     pattern: /nothing is sent to a server/i,
-    why: 'imported images go through the image upload pipeline',
+    why: 'projects save to the server; only a This Browser project stays local',
   },
 ];
 

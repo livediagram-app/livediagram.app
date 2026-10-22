@@ -33,9 +33,8 @@ of infographic pages applies to a logo page except where this spec says otherwis
   other size and no orientation; a stored logo page in any other size is read as the artboard.
   The page label reads `<name or Page n> · 1024 x 1024 · Logo`.
 - **Background**: the Background swatches as on any page. A logo page offers **no pattern** (a
-  pattern is a page decoration, never part of a mark) and **no picture** (its Background has no
-  Image category, [Pages](pages-mode.md) "Image backgrounds"); a stored pattern or
-  picture on a logo page is dropped.
+  pattern is a page decoration, never part of a mark) and **no picture** (no page takes one, [Pages](pages-mode.md) "No image backgrounds"); a stored
+  pattern or picture on a logo page is dropped.
 - **Margin**: a logo page's margin is its **safe area**, 10% of its side (102 px), in place of the
   7% other pages use. Layouts fit it and snapping offers it.
 - **Re-fitting and laying out**: a logo page never changes size, so it never re-fits. Laying loose

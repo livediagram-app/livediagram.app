@@ -277,12 +277,12 @@ a slide of a deleted page can never find a new page under the old id.
 
 Every page kind (infographic, article, slide and logo) is painted the same way, except that a logo
 page takes no pattern and no picture ([Logo pages](logo-pages.md) "A logo page"). The page panel's
-**Background** section sorts its fills into three **categories**, a row of tiles at its top read like the
+**Background** section sorts its fills into two **categories**, a row of tiles at its top read like the
 Pattern tiles: each a small sheet picturing what it makes (the page's own fill on its category's tile, else
-the theme's colour, a theme gradient, a sky over a meadow with a picture glyph), its name under it:
-**Solid**, **Gradient** and **Image** (the tab theme's own colours lead the first two, so no
-separate Theme category; a logo page shows Solid and Gradient only). It opens on the category of
-the page's current fill (any gradient's on Gradient, a picture's on Image, else Solid); moving
+the theme's colour or a theme gradient), its name under it:
+**Solid** and **Gradient** (the tab theme's own colours lead both, so no
+separate Theme category). It opens on the category of
+the page's current fill (any gradient's on Gradient, else Solid); moving
 between categories changes nothing on the page.
 
 - **Solid**: one colour, from the one colour picker drawn in the panel
@@ -321,8 +321,6 @@ between categories changes nothing on the page.
   popover closes the popover only, dropping its preview, and never the panel.
 - **Pattern**, over either: **None** (default), **Dots**, **Grid** or **Lines** (horizontal ruled
   lines), drawn faintly in the page's ink at 24 px pitch.
-- **Image**: a picture covering the page, under an overlay that keeps what is on it readable
-  ("Image backgrounds" below).
 - **A dark page has light ink.** A page is dark when its background (a gradient's mean of its two
   stops, a picture's tone under its overlay) is dark by the canvas's own rule (`canvasSurface`). Every element whose centre lies on a
   dark page and that carries no colour of its own is drawn as on a dark canvas, on screen and in
@@ -511,62 +509,16 @@ press sets it (`Tab · Changed · PageBackgroundAnimated`).
 - Infographic, article and logo pages offer no Animated category.
 - **Share roles**: as any background, an Editor's alone.
 
-### Image backgrounds
+### No image backgrounds
 
-An infographic, slide or article page can be painted with a picture:
-`PageFill` `{ kind: 'image', imageId, tone?, overlay?, position? }`. A logo page offers no
-Image category: a logo goes over other things, so its artboard stays a colour or the paper.
-
-- **The Image category**, while the page has no picture: **Choose From My Images** (the person's own gallery, three tiles across, in a popover that
-  opens beside the panel so the panel stays in view; one press picks and closes it; an offline
-  document embeds the picture as the picker's Gallery does) and **Upload an Image** (a file, as
-  the picker's Upload takes one: the same types and size limit). Once the page has a picture: the picture in a strip with **Remove** (back to the paper,
-  one edit), then **Overlay**, **Strength** and **Position**, then Choose From My Images and
-  Upload again under **Replace Image**.
-- **One edit**: a pick or an upload commits the fill with its tone, and the overlay.
-- **Fit**: the picture **covers** the sheet, cropped and never stretched, centred across.
-  **Position** (**Top**, **Centre**, **Bottom**) keeps that band of a taller picture when it is
-  cropped; Centre is the default and is not stored.
-- **Overlay**, over the picture and under the pattern and everything on the page: **None**,
-  **Light** (a white wash), **Dark** (a slate-900, `#0f172a`, wash), **Tint** (the tab theme's
-  accent, taken when chosen and stored as a hex, so a theme change leaves it), **Fade** (white,
-  clear at the top and at its strength at the bottom). **Strength** is a slider, 0% to 90% in
-  steps of 5, previewed while dragged and one edit on release; it is hidden for None. An overlay
-  tile previews on hover and commits on a press.
-- **A picture is readable by default.** A new picture takes **Light 60%** on a light canvas and
-  **Dark 60%** on a dark one; replacing a picture keeps the overlay in force.
-- **Tone and ink.** `tone` is the picture's average colour, sampled once when it is picked (drawn
-  down to 16 x 16 px) and stored as a hex. The page's tone, what "A dark page has light ink" and
-  the re-inking read, is that tone mixed toward the overlay's colour by its strength (a Fade by
-  half its strength). A picture whose tone could not be sampled reads as mid grey (`#808080`). So a
-  Dark wash makes a dark page with light ink, a Light wash a light page with dark ink.
-- **On the canvas** the sheet paints the picture as CSS background layers (the pattern, the
-  overlay, the picture, and its tone under them while it loads). Its bytes are fetched once per
-  picture while the editor is open, never per frame, pan or zoom.
-- **Exports** (PNG, PDF, SVG) embed the picture, cropped the same way, under its overlay. The Map,
-  slide thumbnails and layout previews paint the page in its tone: a picture at their size is a
-  smudge, and they draw without the image store.
-- **Stored like an image element's picture**, never as a web address: `imageId` is a gallery id
-  (1 to 128 letters, digits, `-` or `_`) or an Offline Mode document's base64 PNG, JPEG, GIF or WebP
-  data URI. A fill with anything else, or an overlay or position it does not know, is dropped on
-  read (the overlay's strength is clamped to 0 to 0.9). A page background counts as a reference in
-  the image reference index ([Images](../009-elements/images.md) "Reference index"), so retention
-  keeps its bytes and a share visitor can load it; Take Offline embeds it and Sync Document uploads
-  it, as for image elements. A new page carries it over with the rest of the background.
-- **The credit** stays on the fill while its picture does; replacing or removing the picture
-  replaces or drops it. Exports do not print it, as for image elements.
-- **Share roles**: an Editor sets, changes and removes it, as every background; a Participant or a
-  Viewer sees the picture and no controls.
-- **Agents** read it on `change_pages` as `image` with its overlay ("image, light 60%") and can
-  replace it with a colour, a gradient or the paper; they cannot set one (they have no way to put a
-  picture in the gallery).
-- **Telemetry**: `Tab · Changed · PageBackgroundImage` when a picked or uploaded picture lands
-  (beside the background's own `PageBackground`).
+liveplanner takes no image uploads, so a page offers no Image category: its background is a
+colour, a gradient (on a slide, an animated one) or the paper, under its pattern, and no picture
+can be put on a page.
 
 ### Copying a background
 
 A page's **format** is its background: its fill (a colour, a gradient, an animated background with
-its speed, or a picture with its overlay and position) and its pattern. Its size, orientation,
+its speed) and its pattern. Its size, orientation,
 content, name and lock stay its own. A deck or a set of pages often wears one background, so it is
 given in one go rather than page by page.
 
@@ -1490,7 +1442,7 @@ mode.
 ## Telemetry
 
 `Tab · Changed ·` `PageAdded`, `PageRemoved`, `PagePortrait`, `PageLandscape`, `PageSize`,
-`PageBackground`, `PageBackgroundImage`, `PagePattern`, `PageBackgroundAppliedToAll` (Apply to All),
+`PageBackground`, `PagePattern`, `PageBackgroundAppliedToAll` (Apply to All),
 `PageBackgroundPainted` (the Format tool, page onto page), `PageRenamed`, `PageDuplicated`, `PageMoved`, `PageLayout`,
 `PageLayoutSurprise` (the layout gallery's Surprise Me), `PageLocked`, `PageUnlocked`,
 `PageFitToContent` (a board put onto a page on entering the mode), `PagesLaidOut` (Split Into Pages), `SlidePageAdded`

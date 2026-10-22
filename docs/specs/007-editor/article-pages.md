@@ -134,7 +134,7 @@ http, https or mailto address), a **text colour** and a **highlight** (each a he
 - **Paste**: from a web page or another editor, its headings, lists, quotes, code, links and
   bold / italic / underline / strike are kept, everything else dropped; Markdown text is read as
   Markdown (headings, lists, to-dos, quotes, code fences, dividers, inline marks, links); other
-  plain text pastes as paragraphs, one per line. Pasted images go into object zones. A paste of
+  plain text pastes as paragraphs, one per line. A pasted image is ignored. A paste of
   canvas elements (copied from a canvas) lands as a drawing zone holding them.
 - **Links**: ⌘K or the toolbar opens a small field under the selection (address, then Enter).
   Hovering a link shows its address with **Open**, **Edit** and **Remove**; ⌘-press opens it in

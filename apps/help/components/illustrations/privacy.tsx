@@ -57,7 +57,7 @@ export function DocumentStorage() {
       </Label>
       <Shape x={284} y={54} w={100} h={30} kind="cylinder" label="D1" labelTone="strong" />
       <Shape x={284} y={94} w={100} h={30} kind="rect" label="Room" labelTone="strong" />
-      <Shape x={284} y={134} w={100} h={30} kind="rect" label="Images (R2)" labelTone="strong" />
+      <Shape x={284} y={134} w={100} h={30} kind="rect" label="Snapshots (R2)" labelTone="strong" />
       {/* One bus out of the API, one level arrowhead per store. */}
       <path
         d="M228 120 H252 M252 69 V149"

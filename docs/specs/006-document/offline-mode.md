@@ -37,7 +37,7 @@ have cloud documents and offline documents side by side.
 ## Where offline documents live
 
 - Stored in **IndexedDB** in the browser (roomy + async; `localStorage`'s ~5 MB
-  synchronous cap is too small for image-bearing documents). One record per
+  synchronous cap is too small for large documents). One record per
   document holds its meta + tabs, keyed by the document id.
 - The app keeps a small **local index** of offline document ids (also in
   IndexedDB) so the Explorer can list them and the persistence layer knows which
@@ -98,13 +98,6 @@ _require the server_, which are hidden or gated (not broken) for an offline docu
 | Folders                                                                   | Personal-tree placement stored in the record; team moves are impossible (the shared library is server-side).                                                                                                                                                                    |
 | Tab linking ([Tab ↔ document many-to-many](tab-document-many-to-many.md)) | Unavailable in either direction — linked tabs are one shared server row.                                                                                                                                                                                                        |
 | Thumbnails                                                                | A fixed **offline illustration** in the Explorer — there's no server snapshot ([Live image share link](../013-workspace/live-image-share.md)).                                                                                                                                  |
-| Images                                                                    | **Embedded locally** — see below.                                                                                                                                                                                                                                               |
-
-**Images embed locally ([Image element + per-owner gallery](../009-elements/images.md)).** In a cloud document, an added image uploads
-to R2 and is referenced by URL. In an offline document it can't — so an image is
-stored **inline as a `data:` URI** inside the document. Rendering is unchanged
-(`<img>` reads a data URI fine). This costs local storage, which is the accepted
-trade for staying fully offline. (Conversion re-homes images — see below.)
 
 Autosave still runs for an offline document ([Per-tab storage](per-tab-storage.md)) — it writes to IndexedDB
 instead of the API, and the "Saved" indicator means _saved on this device_.
@@ -122,8 +115,8 @@ auth has settled, the path names a document registered in the local index
   `'self'` placeholder participant.
 - **Owner-scoped work waits for the real reader.** Under `'self'`, nothing is
   read or written as an owner: the participant record is not saved, preferences
-  stay local (`writeUserPreferences`), and the custom themes,
-  recent images and Explorer lists load only once the reader is known. Sync
+  stay local (`writeUserPreferences`), and the custom themes
+  and Explorer lists load only once the reader is known. Sync
   Document from the Share dialog waits too (the gate's `ready`).
 - **The reader resolves in the background** once auth answers, exactly as a
   cloud open resolves it (`resolveParticipant` in
@@ -267,17 +260,14 @@ reload:
    `SYNC_SAVE_WAIT_MS` (5 s), so the record it uploads is what is on screen and no
    save lands in a record about to be deleted. Past that it refuses with
    `SyncStillSavingError` ("Still saving this document. Try again in a moment.").
-2. **It uploads** with `saveOfflineToCloud`, which returns the images it re-homed
-   (data URI → gallery id).
+2. **It uploads** with `saveOfflineToCloud`.
 3. **The offline index announces the move** (`subscribeOfflineIds` in
    `lib/offline/offline-store.ts`, told on every create, sync and Take Offline).
    What reads offline-ness follows it: the header badge and every
    `useIsOfflineDocument` (so the Share dialog swaps the gate for its options), the
    Plan board's items (`usePlanItems` loads the server's store and revision) and
    the sheets (`SheetStore.resync`, so confirmed revisions are the server's).
-4. **The open tabs' images are re-pointed** at their gallery copies, in the editor
-   and in its last-saved copy, so the next save does not write the data URIs back.
-5. **The room opens** (`documentServerStored` turns true) and the Explorer list
+4. **The room opens** (`documentServerStored` turns true) and the Explorer list
    refreshes.
 
 The Explorer's row menu and the move prompt after signing in still reload after a
@@ -291,11 +281,6 @@ Share dialog gate, Share Form's, and the move prompt after signing in).
 - Uploads the document's meta + tabs to the API ([API app](../015-api/api.md)), creating a normal
   cloud document owned by the current identity (signed-in account, or the guest
   `X-Owner-Id` if not signed in — [Auth + guest access](../014-identity/auth-and-guest-access.md)).
-- **Images re-home:** each embedded `data:` URI is uploaded to the gallery
-  (SHA-256 dedupe server-side, [Image element + per-owner gallery](../009-elements/images.md)) and the element's reference swaps to
-  the returned R2 id, so the cloud copy carries real gallery images instead of
-  bloated tab JSON. A failed transfer keeps the data URI (it still renders
-  anywhere); the per-tab byte cap surfaces a hard failure to the caller.
 - **Everything on the record travels**, not just tabs: the slide deck
   ([Presentation mode](../012-collaboration/presentation-mode.md)), the created date, the folder (kept only when it is one of the
   caller's own personal folders, else the root of My Documents) and the star ([Favourite documents](../013-workspace/favourites.md)). The
@@ -347,10 +332,7 @@ confirmation:
 - On confirm: download the document's tabs + meta into IndexedDB, register it in
   the local index, then **delete the server record** (via a raw delete so the
   now-offline id isn't re-routed to the local store) and any share links. The
-  badge flips to **This Browser**. Referenced R2 images are downloaded and embedded
-  as `data:` URIs BEFORE the server copy is deleted (the deletion would make
-  them "unused" and the retention reaper would eventually take the bytes); an
-  incomplete embed aborts the conversion and the document stays on the server.
+  badge flips to **This Browser**.
 - **The deck, star and personal folder come along** for the same reason: the
   server row they live on is about to be deleted. The star is read from the account's
   favourites; if that read fails the conversion aborts before anything is written,
@@ -513,9 +495,7 @@ Track adoption without content, reusing the closed vocabulary:
 - The move prompt after signing in: `components/dialogs/LocalMovePrompt.tsx`,
   `hooks/persistence/useLocalMovePrompt.ts`, `lib/offline/local-move-dismissal.ts`.
 - Conversion actions (Explorer row menu + the Share dialog's offline gate):
-  "Sync Document" and "Take Offline" (with confirmation + image re-homing).
-- Image handling ([Image element + per-owner gallery](../009-elements/images.md)) — embed `data:` URIs offline; upload-on-save,
-  download-on-take-offline.
+  "Sync Document" and "Take Offline" (with confirmation).
 - `apps/marketing` — the privacy-area mention + small asset ([Marketing site](../019-marketing/marketing-site.md), /23).
 - `apps/help` — the "Offline Mode" article + its `articles.ts` registry entry
   ([Help app](../018-help/help-app.md)).
@@ -530,7 +510,6 @@ See [Open source + distribution](../002-project-scope/open-source-and-business-m
 [Per-tab storage](per-tab-storage.md) (per-tab storage + autosave),
 [Dedicated route for new-document creation](../007-editor/new-document-route.md) (New Document),
 [Marketing site](../019-marketing/marketing-site.md) + [Marketing assets](../019-marketing/marketing-assets.md) (landing),
-[Image element + per-owner gallery](../009-elements/images.md) (images),
 [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) (events),
 [Help app](../018-help/help-app.md) + [Contextual help links](../018-help/contextual-help-links.md) (help),
 [Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md) (realtime — the separate concern),

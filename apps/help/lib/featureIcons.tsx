@@ -1724,13 +1724,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M16 6.5a3 3 0 0 1 0 5.8M17 19a5.5 5.5 0 0 0-3-4.9" />
     </Glyph>
   ),
-  'image-gallery': (
-    <Glyph>
-      <rect x="3" y="5" width="18" height="14" rx="2" />
-      <circle cx="8.5" cy="10" r="1.5" />
-      <path d="M21 16l-5-5-7 7" />
-    </Glyph>
-  ),
   'themes-library': (
     <Glyph>
       <Prims prims={lucidePalette} />

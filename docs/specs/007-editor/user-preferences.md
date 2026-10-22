@@ -536,7 +536,7 @@ and the dialog stays as the one complete, browsable index of them.
 
 - **Settings dialog**: `apps/live/components/dialogs/SettingsDialog.tsx`,
   lazy-loaded via `next/dynamic` (matches the other on-demand
-  modals: ShareDialog, ExportTabDialog, ImagePicker). Trigger: a
+  modals: ShareDialog, ExportTabDialog). Trigger: a
   gear-icon button in the TabBar footer, sitting between Search and the
   dark-mode toggle. The "Keyboard Shortcuts" command in search
   ([Command palette (⌘K)](command-palette.md)) opens it on the **Keyboard** category; that category replaced the standalone
