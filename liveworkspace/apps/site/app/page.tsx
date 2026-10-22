@@ -42,7 +42,7 @@ export default function Home() {
                 <span className="flex size-6 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
                   <BrandMark accentColor={PLATFORM_SITE.accent} className="size-4" />
                 </span>
-                One account, every editor app
+                One free account, every app included
               </p>
               <h1 className="mt-6 text-4xl leading-[1.05] font-semibold tracking-[-0.03em] text-slate-900 sm:text-6xl lg:text-[4.25rem] dark:text-white">
                 Everything your team makes,{' '}
