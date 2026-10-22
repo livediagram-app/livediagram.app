@@ -18,8 +18,8 @@ describe('contents placement', () => {
   });
 
   it('writes the choice and keeps every other preference', () => {
-    const next = withContentsPlacement({ drawPattern: 'grid' }, 'button');
-    expect(next).toEqual({ drawPattern: 'grid', contentsPlacement: 'button' });
+    const next = withContentsPlacement({ alignmentGuides: true }, 'button');
+    expect(next).toEqual({ alignmentGuides: true, contentsPlacement: 'button' });
     expect(readContentsPlacement(withContentsPlacement(next, 'sidebar'))).toBe('sidebar');
   });
 });

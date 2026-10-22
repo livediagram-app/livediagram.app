@@ -8,9 +8,9 @@ anywhere an image does (a chat message, an email, a README, a social post), whic
 
 ## Where it is offered
 
-- **Pages mode only.** The Export dialog's Pages formats ([Pages](../007-editor/pages-mode.md)
-  "Export") gain a **GIF** card after SVG: PDF, PNG, SVG, GIF, JSON (then Logo Kit while the tab has a logo page).
-  Outside Pages the card is never shown.
+- **Tabs with pages.** The Export dialog's formats ([Pages](../007-editor/pages-mode.md) "Export") include a **GIF**
+  card after SVG: PDF, PNG, SVG, GIF, JSON (then Logo Kit while the tab has a logo page). A tab with no page yet, and
+  an export of a selection, show no GIF card.
 - Card copy: **GIF**, "An animated image of the pages, moving as they move on the canvas."
 - Every page kind exports: infographic, logo and wireframe pages. A logo page's see-through paper exports white
   (GIF transparency is one bit and would fringe every soft edge).
@@ -69,7 +69,7 @@ The GIF card opens an options-and-download panel, like PNG's, with the shared ba
   background mid-motion), pattern, picture, writing and every element on it, clipped to its edges, inked for its
   surface. It is drawn from the canvas's own rendering, not the image exporter's, so an element animates in the GIF
   exactly as it does on the canvas.
-- **Never** what is only the editor's: a selection, grips, hover, cursors and remote presence, comment pins, page
+- **Never** what is only the editor's: a selection, grips, hover, cursors and remote presence, page
   headers and toolbars, the in-page **Start From a Layout** card, the laser. The panel clears the person's own
   selection as it opens, so no element is ringed; a collaborator's selection colour is drawn into the element itself
   on the canvas, so it shows in the GIF while it lasts (a known gap).
@@ -102,4 +102,4 @@ The GIF card opens an options-and-download panel, like PNG's, with the shared ba
 
 - A hold per page: one hold applies to every page.
 - A transition chosen in the export: the deck's own transition is used.
-- Frame rate or colour count options; video formats (MP4, WebM); a GIF of a diagram tab.
+- Frame rate or colour count options; video formats (MP4, WebM); a GIF of a selection.

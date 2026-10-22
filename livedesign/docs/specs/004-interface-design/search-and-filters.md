@@ -5,7 +5,7 @@ filters live in the search. The box always reads as the whole query.
 
 ## The field
 
-- A search glyph, then a **chip** per filter ("Card Type: Bug", its cross to remove it), then the words being typed,
+- A search glyph, then a **chip** per filter ("Category: Covers", its cross to remove it), then the words being typed,
   wrapping onto more lines when the chips need them.
 - Inside the box's right edge: **Clear Search** (a cross, while there are words or filters), which clears both, and
   the control that adds a filter (**Add Filter**, a quiet button: a field, then a value with its count).
@@ -15,9 +15,9 @@ filters live in the search. The box always reads as the whole query.
 
 ## Where it is used
 
-- Plan's Cards panel and Setup Sheet's Cards step ([Finding a card](../026-plan/items.md),
-  [Setup Sheet](../029-sheets/sheet.md#setup-sheet)), through `CardSearchControls`.
-- A surface whose filters are not a search's (Card Search, a view of filters alone) keeps its filter bar.
+- The page layout gallery's search ([Pages mode](../007-editor/pages-mode.md)), whose category chips sit under the
+  box as a choice of section rather than a filter of the words.
+- A surface whose filters are not a search's (a view of filters alone) keeps its filter bar.
 
 ## Building it
 

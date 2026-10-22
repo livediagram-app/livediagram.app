@@ -1,10 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import {
-  ToolbarCategoryFlyout,
-  ToolbarLayoutOverview,
-} from '@/components/illustrations/toolbar-layout';
+import { ToolbarCategoryFlyout } from '@/components/illustrations/toolbar-layout';
 
 export const metadata = helpMetadata({
   title: 'Toolbar Layout',
@@ -27,19 +24,13 @@ The editor lays its tools out the same way on every device, a computer, a tablet
 
 The palette is a single strip pinned to the top centre of the canvas. From left to right it holds:
 
-- **Selection mode**: Select, Hand, Eraser, Laser and the rest.
-- **The categories**, by name: in Diagram mode **Shapes**, **Write**, **Draw**, **Diagrams**, **Concepts**, **Layout**, **Icons**, **Tech** and **Media**. Rest the pointer on one, or click it, and its elements open in a panel underneath.
+- **Selection mode**: Select, Hand, Format, Laser and the rest.
+- **The categories**, by name: on an infographic page **Popular**, **Shapes**, **Write**, **Concepts**, **Components**, **Devices**, **Icons**, **Stickers**, **Media** and **Data**. Rest the pointer on one, or click it, and its elements open in a panel underneath.
 - **Search** (the magnifier, or press **S**), last on the strip, to find any element, icon or sticker by name.
 
-Plan mode has no strip at all: a Plan tab is worked by its boards, sheets and dashboards, which carry their own tools. See [Plan Mode](/help/canvas/plan-mode/).
+In the top-left corner, in a card of their own, sit the **menu button** and the tab's name. The menu button opens the [Explorer](/help/explorer/explorer-panel/) as a popover under it, and clicking it again closes it.
 
-In the top-left corner, in a card of their own, sit the **menu button** and the tab's name. A tab's editor mode (Diagram, Draw, Workshop, Pages or Plan) is chosen on its start while it is empty, see [Editor Modes](/help/canvas/editor-modes/#choosing-a-mode). The menu button opens the [Explorer](/help/explorer/explorer-panel/) as a popover under it, and clicking it again closes it.
-
-**Layers**, **Collaborate** and the Session buttons' **Poll** and **Vote** open just above their buttons in the bottom row, and close when you click the button again. Every other panel (the AI assistant, the Map and the tool panels) docks in a corner of the canvas, and you can drag it to another (see [Panel Layout](/help/user-interface/panel-layout/)). Undo and Redo stay in the bottom-right corner.
-
-<Figure caption="The editor: the menu button and tab name top-left, the strip across the top, and the usual bottom row.">
-  <ToolbarLayoutOverview />
-</Figure>
+**Collaborate** opens just above its button in the bottom row, and closes when you click the button again. Every other panel (the AI assistant, the Map and the tool panels) docks in a corner of the canvas, and you can drag it to another (see [Panel Layout](/help/user-interface/panel-layout/)). Undo and Redo stay in the bottom-right corner.
 
 Only one of the strip's menus is open at a time: opening the selection mode, a category, More or Search closes whichever other was open, and a click anywhere outside closes it.
 
@@ -51,10 +42,18 @@ Each category on the strip opens a panel of its elements under its name:
 - **Its elements come in named groups**, such as **Basics**, **Flowchart** and **More Shapes** in Shapes. Shapes shows them as pictures; the other categories as cards with a line on what each one is for. A tile's keyboard shortcut shows beside its name.
 - **Click an element to add it, or drag it onto the canvas.** The panel closes once you have used one, so the canvas is clear. The strip at the bottom of the panel says what the element under your pointer does.
 - **Card** and **Badge** open their presets in a second panel beside the first, which stays open behind it.
-- **Icons**, **Stickers**, **Tech** and **Session** list their groups down the left, with the open group's entries on the right and a search box across the top that looks through every group. Each reopens on the group you last had open.
+- **Icons** and **Stickers** list their groups down the left, with the open group's entries on the right and a search box across the top that looks through every group. Each reopens on the group you last had open.
 - With the keyboard: the **Left** and **Right** arrows move along the strip, **Down** or **Enter** opens a category, the arrows move through its elements, and **Escape** closes it.
 
-The names on the strip are one word each, and the editor modes offer different categories: **Write** holds the words (Text, notes and comments) and **Draw** the pens (Freehand, Highlighter, Arrow and Line), and in Workshop mode **Ask** puts a question to the room while **Session** holds the timers, reveals, records, reactions, selection-mode buttons and the places Avatars walk to. On a window too narrow for the names, the strip shows the categories' icons alone.
+The names on the strip are one word each. **Write** holds the words (Text, the Sticky Note and the Pointer Note). On a window too narrow for the names, the strip shows the categories' icons alone.
+
+## Each kind of page
+
+The strip offers what the page you are working on is made of:
+
+- **A blank page** has the categories above.
+- **A wireframe** opens on **Elements**, the parts a screen is built from (buttons, fields, chips, badges, pictures, avatars, cards and lists), beside **Components**; it has no **Concepts** or **Devices**.
+- **A logo page** opens on **Draw**, which holds the **Pen**, the **Freehand** pencil, the **Shape Pen** and the **Polygon**, then **Shapes**, **Write** (Text and the Sticky Note), **Icons** and **Media** (an image to trace).
 
 <Figure caption="Rest on Shapes and its panel opens under it, its elements in named groups.">
   <ToolbarCategoryFlyout />
@@ -62,13 +61,9 @@ The names on the strip are one word each, and the editor modes offer different c
 
 ## Search
 
-**Search** finds an element without knowing which category holds it. Before you type, it shows the kinds of element already on your tab, so the ones you are using are one click away. Type a name, or a word you would use for it ("database" finds the cylinder, a database icon and the database brands), and matching tiles, icons, stickers and technology marks appear in one list, the best name matches first; where two match equally well, the tiles your current editor mode offers lead. The × at the end of the box clears it. Click one to add it, or press Enter to add the best match.
+**Search** finds an element without knowing which category holds it. Before you type, it shows the kinds of element already on your tab, so the ones you are using are one click away. Type a name, or a word you would use for it ("database" finds the cylinder and a database icon), and matching tiles, icons and stickers appear in one list, the best name matches first. The × at the end of the box clears it. Click one to add it, or press Enter to add the best match.
 
-Each editor mode keeps its palette to the tools that suit it, so a Diagram has no charts and a page has no pens. Search still finds those: they wait below, under **Elements From Other Modes**, closed until you open it, and every one of them works in any mode. That includes Draw mode's **Marker 1, 2 and 3**, in the colours and widths you gave them there: pick one and draw, and press Escape to put it down.
-
-Plan's own elements (its cards, boards, metrics, charts of cards and sheets) are made for Plan's boards, so only Plan mode adds them. Elsewhere, Search lists them last, under **Not Available in Diagram Mode** (or whichever mode you are in), greyed out so you can see where they live. Switch the tab to Plan mode to add one.
-
-Search is not there for a Participant, whose strip holds only the Participate tiles, and Draw mode shows its own dock instead of the strip. Wherever the strip's Search isn't shown, **S** keeps its old meaning and picks the Select tool.
+Search is not there for a Participant, whose strip holds only the Participate tiles. Wherever the strip's Search isn't shown, **S** keeps its old meaning and picks the Select tool.
 
 ## The order of the tiles
 
@@ -76,7 +71,6 @@ Each category keeps its own order: adding something never moves it, and its grou
 
 ## What else the strip shows
 
-- **Plan mode** has no strip: its boards, sheets and dashboards carry their own tools.
 - **Viewers** who can't edit have no strip, since there is nothing to add; the menu button still shows.
 - **Zen mode** hides the strip and the menu button with the rest of the editor's chrome.
 
@@ -86,7 +80,7 @@ On a phone the strip is narrower:
 
 - The **menu button** sits in a card of its own at the left of the strip.
 - The **categories** show their icons only, a little further apart. Swipe them sideways to reach the rest; the selection mode and Search stay put. A category's panel opens across the width of the screen.
-- **Layers** and **Collaborate** open above their buttons in the bottom row, as on a computer. Pinch to zoom; the **Fit** button is there too.
+- **Collaborate** opens above its button in the bottom row, as on a computer. Pinch to zoom; the **Fit** button is there too.
 
 A phone held sideways counts as a phone too.
 

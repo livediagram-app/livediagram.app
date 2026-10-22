@@ -6,8 +6,8 @@ There is a second environment, **staging**, which does deploy on its own: every 
 
 ## Apps and their Cloudflare Workers
 
-| App              | Cloudflare Worker       | Type                                                                                                               |
-| ---------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| App              | Cloudflare Worker      | Type                                                                                                               |
+| ---------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | `apps/marketing` | `livedesign-marketing` | Static assets only (Next.js `output: 'export'`).                                                                   |
 | `apps/live`      | `livedesign-live`      | Static assets + a tiny path-rewrite worker.                                                                        |
 | `apps/telemetry` | `livedesign-telemetry` | Static assets only (public dashboard, [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)). |
@@ -38,7 +38,7 @@ Three jobs run in parallel, each after its own `pnpm install --frozen-lockfile`,
 - **Editor unit tests i/3**: the editor's suite (`apps/live`) under coverage, a third of its files per job (`vitest run --shard=i/3`), each uploading its coverage to Codecov ([Coverage report](../003-system-architecture/testing.md#coverage-report)). Each suite runs exactly once; `scripts/ci-test-filters.mjs` derives the exclusions from the manifests, so adding or removing a coverage script needs no CI edit.
 - **Build**: `pnpm build`, then `pnpm staging:check`.
 
-No job needs another's output: only the nine apps have a `build` script, and no workspace depends on an app, so checks and tests build nothing. The `main` ruleset requires all three checks by name.
+No job needs another's output: only the eight apps have a `build` script, and no workspace depends on an app, so checks and tests build nothing. The `main` ruleset requires all three checks by name.
 
 The two test steps run two packages at a time. `pnpm test` cannot carry the flag: it is pnpm's built-in test command, so CI calls turbo directly.
 
@@ -98,8 +98,7 @@ versions briefly serve side by side. The deploy keeps that window short and reco
   so the window is the deploy itself.
 - **deploy-live** waits for **deploy-api**, so a new editor never calls an api that lacks its routes;
   **deploy-router** still waits for the six it binds.
-- The editor serves its old address during the overlap ([Router app](router-app.md#legacy-editor-route)),
-  and a save that fails in the window is retried on its own
+- A save that fails in the window is retried on its own
   ([Per-tab storage](../006-document/per-tab-storage.md#retrying-a-failed-save)).
 - Deploy a renaming migration to **staging first**, and to production at a quiet hour: for a minute or
   so, api calls from open editors can fail and are retried.

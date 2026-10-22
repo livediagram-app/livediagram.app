@@ -1,19 +1,13 @@
 // @vitest-environment jsdom
 
-// The element-menu row editors (docs/specs/009-elements/pie-chart.md, entity.md, checklist.md): each
+// The element-menu row editors (docs/specs/009-elements/pie-chart.md, checklist.md): each
 // keeps a local draft while typing, and follows the element's rows when they change.
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ReactElement } from 'react';
-import type { ChecklistItem, EntityField, LegendItem, PieSlice } from '@livedesign/document';
-import {
-  ChecklistRowsEditor,
-  LegendDataEditor,
-  LinkedChartData,
-  PieDataEditor,
-} from './context-menu-data-editors';
-import { EntityFieldsEditor } from './EntityFieldsEditor';
+import type { ChecklistItem, LegendItem, PieSlice } from '@livedesign/document';
+import { ChecklistRowsEditor, LegendDataEditor, PieDataEditor } from './context-menu-data-editors';
 
 afterEach(() => cleanup());
 
@@ -44,14 +38,6 @@ const cases = [
     valueOf: (rows: LegendItem[]) => rows[0]!.label,
   } satisfies Case<LegendItem>,
   {
-    name: 'EntityFieldsEditor',
-    editor: (rows: EntityField[]) => <EntityFieldsEditor fields={rows} onChange={vi.fn()} />,
-    rows: [{ name: 'id', type: 'uuid' }],
-    changed: [{ name: 'email', type: 'text' }],
-    input: () => screen.getByLabelText('Field 1 name'),
-    valueOf: (rows: EntityField[]) => rows[0]!.name,
-  } satisfies Case<EntityField>,
-  {
     name: 'ChecklistRowsEditor',
     editor: (rows: ChecklistItem[]) => <ChecklistRowsEditor items={rows} onChange={vi.fn()} />,
     rows: [{ text: 'Plan', done: false }],
@@ -76,15 +62,5 @@ describe.each(cases)('$name', (c) => {
     fireEvent.change(c.input(), { target: { value: 'typed' } });
     rerender(editor(c.changed));
     expect(c.input().value).toBe((c.valueOf as (rows: unknown[]) => string)(c.changed));
-  });
-});
-
-describe('a chart drawn from a sheet', () => {
-  it('says where its data comes from and unlinks', () => {
-    const onUnlink = vi.fn();
-    render(<LinkedChartData onUnlink={onUnlink} />);
-    expect(screen.getByText(/Drawn live from a Sheet/)).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Unlink From Sheet' }));
-    expect(onUnlink).toHaveBeenCalledOnce();
   });
 });

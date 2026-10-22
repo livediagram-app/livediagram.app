@@ -14,10 +14,10 @@ Derived from [The badge](../badge.md) and [The step number](../step-number.md). 
 | `packages/document/src/layers.ts`                                                                                       | `paintTier`: an attached chip paints in the top tier                     |
 | `packages/document/src/duplicate.ts`                                                                                    | `attachedTo` follows a copied host, else the copy is detached            |
 | `packages/document/src/svg-render-chip.ts`                                                                              | `svgChip`: the headless body                                             |
-| `apps/live/app/document/[id]/useEditorState.ts`                                                                         | `settleChips(prev, next)` at the commit choke point, after flowcharts    |
+| `apps/live/app/document/[id]/useEditorState.ts`                                                                         | `settleChips(prev, next)` at the commit choke point                      |
 | `apps/live/components/canvas/ChipFace.tsx`                                                                              | The pill / disc face                                                     |
 | `apps/live/components/palette/ChipMenuSection.tsx`                                                                      | Look tiles, Detach, Renumber Steps, Play in Order                        |
-| `apps/live/hooks/canvas/useBoxedDragHandlers.ts`, `useNudgeSelection.ts`, `useClipboard.ts`, `useElementDuplication.ts` | `withAttached` beside `withSheetCharts`                                  |
+| `apps/live/hooks/canvas/useBoxedDragHandlers.ts`, `useNudgeSelection.ts`, `useClipboard.ts`, `useElementDuplication.ts` | `withAttached`                                                           |
 
 ## Domain and naming
 
@@ -31,7 +31,7 @@ Derived from [The badge](../badge.md) and [The step number](../step-number.md). 
 | Point       | `AttachPoint`                                                     | One of eight: corners and edge midpoints            |
 | Host        | `canHost(el)`                                                     | The element an attachment names                     |
 
-Banned: "pin" (the comment pin), "dock" (legacy docks), "group".
+Banned: "pin", "dock" (legacy docks), "group".
 
 ## Behaviour and state
 

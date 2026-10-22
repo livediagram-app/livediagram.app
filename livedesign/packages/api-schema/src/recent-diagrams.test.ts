@@ -15,7 +15,7 @@ const doc = (id: string, savedAt: number, extra: { empty?: boolean } = {}) => ({
   name: `Doc ${id}`,
   savedAt,
   empty: extra.empty ?? false,
-  opensIn: 'diagram' as const,
+  opensIn: 'pages' as const,
 });
 
 describe('pickRecentDiagrams', () => {
@@ -39,7 +39,7 @@ describe('pickRecentDiagrams', () => {
       id: 'a',
       name: 'Doc a',
       savedAt: 1,
-      mode: 'diagram',
+      mode: 'pages',
       teamName: null,
     });
   });
@@ -78,9 +78,9 @@ describe('parseRecentDiagrams', () => {
     expect(parseRecentDiagrams(raw).map((d) => d.teamName)).toEqual(['Design', null, null]);
   });
 
-  it("reads a mode stored under its old name as today's", () => {
+  it('reads a mode livediagram stored as Pages', () => {
     const raw = '{"v":1,"diagrams":[{"id":"a","name":"A","savedAt":1,"mode":"facilitate"}]}';
-    expect(parseRecentDiagrams(raw)[0]?.mode).toBe('workshop');
+    expect(parseRecentDiagrams(raw)[0]?.mode).toBe('pages');
   });
 
   it('drops an unknown mode to null', () => {

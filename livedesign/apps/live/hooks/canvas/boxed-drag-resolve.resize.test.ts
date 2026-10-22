@@ -128,8 +128,8 @@ describe('resolveBoxedResize, a multi-selection with Shift', () => {
   });
 });
 
-// A text box that fits or wraps hugs its text through a resize (docs/specs/023-draw-mode/
-// draw-mode.md "Text boxes"), in either editor mode: the frame's bounds set the width, the height
+// A text box that fits or wraps hugs its text through a resize
+// (docs/specs/006-document/document-structure.md): the frame's bounds set the width, the height
 // is the text's, and Shift scales the text instead.
 describe('resizedElement', () => {
   const hello = {
@@ -158,7 +158,7 @@ describe('resizedElement', () => {
     expect(out).toMatchObject({ width: 28, height: 39, sizing: 'wrap' });
   });
 
-  // docs/specs/007-editor/editor-modes.md "A text box's sizing": a fixed box stays fixed.
+  // docs/specs/006-document/document-structure.md (a text box's sizing): a fixed box stays fixed.
   it('gives a fixed text box the bounds as they are', () => {
     const hug = { mode: 'resize-e' as const, constrain: false, measure };
     const bounds = { x: 0, y: 0, width: 28, height: 90 };

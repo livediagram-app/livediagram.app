@@ -20,7 +20,7 @@ hand with their geometry off the centre of their own viewBox. A row of stacked a
 label) drifts a third way: when one action's icon is taller, its label drops.
 
 Each offset is one or two pixels. Together they make the chrome look careless, which is the
-opposite of what a diagramming tool has to look like.
+opposite of what a design tool has to look like.
 
 One drift is the browser's own and stays out of reach: Chromium paints every text baseline on a
 whole CSS pixel, at any pixel density, and no CSS opts out. A shape at a fractional position shows
@@ -45,7 +45,7 @@ transform moves text after the snap, so the snap follows the layout, not the tra
 - **Tolerance.** Every optical offset is at most **0.5 CSS px** on each axis.
 - **Text centres on its cap band.** Text in a shape is trimmed to cap height and baseline (CSS
   `text-box: trim-both cap alphabetic`, through the shared `text-optical-centre` utility), so flex
-  centring lands on the letters. This covers initials, step numbers, counts, poll letters and
+  centring lands on the letters. This covers initials, step numbers, counts and
   all-caps chips. Mixed-case text is centred the same way: descenders hang below the band, as in
   type.
 - **Horizontal centring is by ink, except where the typeface decides.** Each edge of the content is

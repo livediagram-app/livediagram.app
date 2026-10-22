@@ -1,7 +1,7 @@
 import { StrokeWeightIcon } from '@/components/palette/palette-style-previews';
 import type { PenWidthId } from '@/lib/quick-style-pen';
 
-// A marker width as a picture (docs/specs/023-draw-mode/draw-mode.md "Pens"), the same wherever a
+// A marker width as a picture (docs/specs/023-draw-mode/drawing-tools.md "Markers"), the same wherever a
 // width is chosen: the marker's own popover and the quick style panel's Marker width row. The
 // widths themselves (1 to 9 px) bunch up at the thin end drawn to scale (1 and 1.5 px look the
 // same), so each is drawn as an evenly stepped line, thinnest first.

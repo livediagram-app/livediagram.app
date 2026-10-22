@@ -20,31 +20,29 @@ export const metadata = helpMetadata({
 
 ## Importing JSON
 
-Open the tab's menu (the **⋯** button on the active tab, or right-click the tab) and choose **Import**. You can also run **Import…** from the [command palette](/help/search-panel/the-search-panel/command-palette/). The **Import to Tab** dialog opens at **JSON**, which reads a livedesign tab export (a `.livedesign-tab.json` file) and restores its elements exactly, the highest-fidelity round trip. Plan cards in the file are added to this document, along with any card types it doesn't have yet; cards the document already holds are left as they are, so importing a tab back into its own document never doubles them.
+Open the tab's menu (the **⋯** button on the active tab, or right-click the tab) and choose **Import**. You can also run **Import…** from the [command palette](/help/search-panel/the-search-panel/command-palette/). The **Import to Tab** dialog opens at **JSON**, which reads a livedesign tab export (a `.livedesign-tab.json` file) and restores it exactly, pages and all, the highest-fidelity round trip.
 
 <Figure caption="The tab menu holds Import, beside Export and Clear.">
   <ImportMenu />
 </Figure>
 
-**Paste or write** the content into the box and press **Import**, or press **Import a file instead** to pick one from disk. Either way the tab updates once it parses.
+**Paste or write** the text into the box and press **Import**, or press **Import a file instead** to pick one from disk. Either way the tab updates once it parses.
 
-On a [Dashboard](/help/canvas/plan-mode/dashboards/) tab, Import takes a Dashboard's own JSON export only (**Export** › **JSON** on a Dashboard tab): it opens straight at JSON and replaces the dashboard's rows, slots and what they hold, one step to undo. Anything else (a file that isn't JSON, or a tab that isn't a Dashboard) is turned away with a message, and the dashboard is left as it was. A slot that showed one of the document's other tabs reads as deleted when the file comes from another document; clear it or fill it again.
-
-Dropping a `.json` or `.md` file straight onto the canvas doesn't import it: a small note points you to **Import** in the tab menu, since importing replaces the tab.
+Dropping a `.json` file straight onto the canvas doesn't import it: a small note points you to **Import** in the tab menu, since importing replaces the tab.
 
 ## Import replaces the tab
 
-Importing **replaces the active tab's contents** with what comes in, it does not merge. Because that is destructive, the dialog leads with an amber warning naming the tab about to be overwritten, so you can back out before committing. If you change your mind afterwards, undo (`Cmd` / `Ctrl` + `Z`) brings the previous canvas back. To keep the current canvas as it is, add a new tab first and import into that.
+Importing **replaces the active tab's contents** with what comes in, it does not merge. Because that is destructive, the dialog leads with an amber warning naming the tab about to be overwritten, so you can back out before committing. If you change your mind afterwards, undo (`Cmd` / `Ctrl` + `Z`) brings the previous pages back. To keep the current tab as it is, add a new tab first and import into that.
 
 **Import** is greyed out while a tab is [locked](/help/tabs/locking-tabs/), since a locked tab is protected from edits, and the tab menu isn't offered on a view-only share link.
 
-<Figure caption="Because importing overwrites the tab, the Import to Tab dialog leads with a warning naming the tab, above the import panel.">
+<Figure caption="Because importing overwrites the tab, the Import to Tab dialog leads with a warning naming the tab, above the paste box.">
   <ImportWarning />
 </Figure>
 
 <Tip>
-  Want to combine boards instead of replacing one? Import into a fresh tab, then copy the elements
-  you want across to your working tab.
+  Want to combine tabs instead of replacing one? Import into a fresh tab, then copy the elements you
+  want across to your working tab.
 </Tip>
 
 </ArticleLayout>

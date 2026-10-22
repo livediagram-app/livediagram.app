@@ -52,10 +52,4 @@ describe('arrow-dangling', () => {
     };
     expect(of(lint(tab), 'arrow-dangling')).toEqual([]);
   });
-
-  it('says remove the edge for a graph source', () => {
-    expect(
-      of(lint(tabOf(arrow('gone', 'a', 'b')), { source: 'graph' }), 'arrow-dangling')[0]!.fix,
-    ).toBe('remove the edge');
-  });
 });

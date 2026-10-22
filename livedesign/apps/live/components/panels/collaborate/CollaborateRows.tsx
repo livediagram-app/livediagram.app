@@ -19,7 +19,6 @@ import { formatRelativeTimeCompact, useRelativeNow } from '@/lib/relative-time';
 import { initialsOf } from '@/lib/identity';
 import type { ActionRow, CommentRow } from '@/components/panels/CollaboratePanel';
 import { firstName } from './collaborate-model';
-import { useCellRef } from '@/hooks/sheets/sheet-cell-refs';
 
 // A comment author's colour as ink: as chosen on light, lifted toward white on
 // dark, where a deep blue or purple name would sink into the panel.
@@ -87,7 +86,7 @@ export function ActionRowItem({
 }) {
   const now = useRelativeNow();
   const [pressed, setPressed] = useState(false);
-  // Closed: done, or Won't Do (docs/specs/026-plan/linked-boards.md "On the canvas"), which wears slate, not green.
+  // Closed: done, or Won't Do (docs/specs/012-collaboration/assigned-actions.md), which wears slate, not green.
   const done = row.status !== 'open';
   const wontDo = row.status === 'wont-do';
   const shownDone = pressed ? !done : done;
@@ -99,7 +98,7 @@ export function ActionRowItem({
           : shownDone
             ? 'border-emerald-500 bg-emerald-500 text-white'
             : 'border-slate-300 text-transparent group-hover/check:border-brand-500 group-hover/check:text-brand-700 dark:border-slate-600'
-      } ${pressed ? 'qa-pop' : ''}`}
+      } ${pressed ? 'collab-pop' : ''}`}
     >
       <CheckIcon size={11} />
     </span>
@@ -173,12 +172,11 @@ export function CommentRowItem({
 }) {
   const now = useRelativeNow();
   const color = row.latestAuthorColor;
-  const label = useCommentRowLabel(row);
   return (
     <RowShell
       index={index}
       onClick={onClick}
-      label={`Open the comment thread on ${label}`}
+      label={`Open the comment thread on ${row.label}`}
       lead={
         <HoverCard
           title={row.count === 1 ? '1 comment' : `${row.count} comments`}
@@ -210,7 +208,7 @@ export function CommentRowItem({
               row.resolved ? 'text-slate-400' : 'text-slate-800 dark:text-slate-100'
             }`}
           >
-            {label}
+            {row.label}
           </span>
           <span className="shrink-0 text-[11px] text-slate-500 dark:text-slate-400">
             {formatRelativeTimeCompact(now - row.latestAt)}
@@ -225,14 +223,4 @@ export function CommentRowItem({
       </span>
     </RowShell>
   );
-}
-
-// A row's name: its element's label, and for a Sheet cell's thread (docs/specs/029-sheets/sheet.md "Cell comments")
-// the cell, `Budget!B4` once the Sheet is drawn, "(Deleted Cell)" when its row or column is gone; a Sheet not drawn
-// yet is named alone.
-export function useCommentRowLabel(row: Pick<CommentRow, 'elementId' | 'cell' | 'label'>): string {
-  const ref = useCellRef(row.elementId, row.cell);
-  if (row.cell === undefined || ref === undefined) return row.label;
-  if (ref === null) return `${row.label} (Deleted Cell)`;
-  return `${row.label}!${ref}`;
 }

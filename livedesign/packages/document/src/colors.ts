@@ -13,20 +13,13 @@ import {
 import type { BorderRadius } from './border-style';
 import { ACCENT_BAR_TEXT, isAccentBarShape } from './web-components';
 import { PEN_INK } from './pen-colours';
-import { MODE_BUTTON_SKIN } from './selection-mode';
-import { hasOwnFace } from './collab-shapes';
 import { isConceptShape } from './concept';
-import { FENCE_WOOD } from './fence';
-import { isOfficeShape, ROOM_FLOOR, RUG_FILL } from './office';
-import { isSeatingShape } from './seating';
 
 // Per-type default padding bucket (was beside the Padding type).
 export function defaultPadding(element: BoxedElement): Padding {
   switch (element.type) {
     case 'shape':
-      // A room's name sits in its back wall's face (docs/specs/009-elements/office.md "Room"): the roomier
-      // padding clears the wall's top.
-      return element.shape === 'room' ? 'md' : 'sm';
+      return 'sm';
     case 'text':
       return 'none';
     case 'sticky':
@@ -173,17 +166,14 @@ export function canvasSurface(backgroundColor: string | undefined | null): Canva
   return isLightColor(backgroundColor) ? 'light' : 'dark';
 }
 
-// The ink that reads on a SOLID fill of `color`: whichever of white and the app's near-black reads better (bestInk). The Collaborate cards' accent buttons use
-// it on the canvas (CollabAccentScope) and in the export
-// (svg-render-panel-faces), so a pale theme accent never carries white text in
-// either.
+// The ink that reads on a SOLID fill of `color`: whichever of white and the app's near-black reads better
+// (bestInk), so a pale theme accent never carries white text.
 export function inkOn(color: string): string {
   return bestInk(color, '#0f172a', '#ffffff');
 }
 
-// The green that means FINISHED on the Collaborate cards: a resolved comment
-// thread, a done action (docs/specs/012-collaboration/comment-pin.md, action-panel.md). One value, so the
-// canvas and the export agree on what done looks like.
+// The green that means FINISHED: a resolved comment thread, a done action
+// (docs/specs/012-collaboration/assigned-actions.md). One value, so every surface agrees on what done looks like.
 export const COLLAB_DONE_COLOR = '#16a34a';
 
 // The ink for dark paper: the blue-slate set of the Default scheme's dark half
@@ -201,76 +191,9 @@ export const DARK_INK = {
   annotationFill: '#1c2533',
 } as const;
 
-// The Behaviour elements that look like controls or furniture store no
-// colour (behaviour-skin.ts); these are their unstyled looks per surface. The
-// buttons (mode, session: the timer, vote and poll; picker) wear a real UI
-// button's skin, a light card on light paper and a raised slate one on dark,
-// never the shape default, so they read as pressable before anyone styles
-// them. The reveal cover and the chair paint themselves; only their outline
-// and label ink follow the paper.
-// The Reveal cover's opaque base, from the PAPER under it rather than the
-// app's appearance, so a dark theme in light mode still gets a dark cover
-// (docs/specs/009-elements/reveal-zone.md "The look"). Shared by the canvas
-// face and the headless renderer (exports, the minimap), so the two cannot
-// drift: the renderer once hard-coded the light base and drew a white cover
-// on a dark canvas's map.
-export const REVEAL_COVER_BASE: Record<CanvasSurface, string> = {
-  light: '#f1f5f9',
-  dark: '#172131',
-};
-const CONTROL_SKIN_DARK = { fill: '#1e293b', stroke: '#475569', text: '#f1f5f9' } as const;
-const OUTLINE_SKIN_LIGHT = { stroke: '#94a3b8', text: '#0f172a' } as const;
-
-function behaviourSkin(
-  element: BoxedElement,
-  surface: CanvasSurface,
-): { fill: string; stroke: string; text: string } | null {
-  if (element.type !== 'shape') return null;
-  const kind = element.shape;
-  if (kind === 'mode-button' || kind === 'session-button' || kind === 'picker') {
-    return surface === 'dark' ? CONTROL_SKIN_DARK : MODE_BUTTON_SKIN;
-  }
-  // A fence (docs/specs/009-elements/fence.md) is timber: a wood brown on each paper, no box.
-  // An Avatar Pad (docs/specs/009-elements/avatar-pad.md) paints its own pixels in the sprite's palette, no box.
-  if (kind === 'avatar-pad') {
-    return { fill: 'transparent', stroke: 'transparent', text: OUTLINE_SKIN_LIGHT.text };
-  }
-  if (kind === 'fence') {
-    return { fill: 'transparent', stroke: FENCE_WOOD[surface], text: OUTLINE_SKIN_LIGHT.text };
-  }
-  // A room's floor and a rug are the element's fill (docs/specs/009-elements/office.md): warm on light paper,
-  // deep on dark. Their outlines are the furniture's.
-  if (kind === 'room' || kind === 'rug') {
-    const fill =
-      kind === 'room'
-        ? surface === 'dark'
-          ? '#292524'
-          : ROOM_FLOOR
-        : surface === 'dark'
-          ? '#713f12'
-          : RUG_FILL;
-    return surface === 'dark'
-      ? { fill, stroke: DARK_INK.stroke, text: DARK_INK.text }
-      : { fill, ...OUTLINE_SKIN_LIGHT };
-  }
-  if (kind === 'reveal' || isSeatingShape(kind) || isOfficeShape(kind)) {
-    if (surface === 'dark') {
-      return { fill: 'transparent', stroke: DARK_INK.stroke, text: DARK_INK.text };
-    }
-    // The reveal cover's stroke is its ACCENT (docs/specs/009-elements/reveal-zone.md "The look"), so on
-    // light paper it takes the shape accent, not the chair's grey outline.
-    return kind === 'reveal'
-      ? { fill: 'transparent', stroke: '#0ea5e9', text: OUTLINE_SKIN_LIGHT.text }
-      : { fill: 'transparent', ...OUTLINE_SKIN_LIGHT };
-  }
-  return null;
-}
-
 export function defaultTextColor(element: BoxedElement, surface: CanvasSurface = 'light'): string {
-  const skin = behaviourSkin(element, surface);
-  if (skin) return skin.text;
-  // Text with no colour of its own is written in Ink, on every theme and in either editor mode
-  // (docs/specs/007-editor/editor-modes.md "One look").
+  // Text with no colour of its own is written in Ink, on every theme
+  // (docs/specs/008-canvas/canvas-and-palette.md "Colours").
   if (element.type === 'text') return PEN_INK[surface];
   // An accent-bar web component (docs/specs/009-elements/web-components-and-no-groups.md) writes white on its bar, on any
   // paper: the bar is the accent, not the surface.
@@ -355,15 +278,9 @@ export function defaultFillColor(element: BoxedElement, surface: CanvasSurface =
   // did nothing, and the headless renderer (exports, the minimap) never got
   // the memo and filled every frame with the shape default, so a frame that
   // was transparent on the canvas exported pale blue.
-  // A boundary's face paints its tint, deeper as it nests (docs/specs/009-elements/boundary.md).
   // A stack is a target to drop into, drawn as an outline (docs/specs/009-elements/stack.md).
-  if (
-    element.type === 'shape' &&
-    (element.shape === 'frame' || element.shape === 'boundary' || element.shape === 'stack')
-  )
+  if (element.type === 'shape' && (element.shape === 'frame' || element.shape === 'stack'))
     return 'transparent';
-  const skin = behaviourSkin(element, surface);
-  if (skin) return skin.fill;
   if (surface === 'dark') {
     switch (element.type) {
       case 'shape':
@@ -413,10 +330,7 @@ export function defaultStrokeColor(
   element: BoxedElement,
   surface: CanvasSurface = 'light',
 ): string {
-  const skin = behaviourSkin(element, surface);
-  if (skin) return skin.stroke;
-  // A pen stroke with no colour of its own is drawn in Ink (docs/specs/007-editor/editor-modes.md
-  // "One look"); a highlighter keeps its own recipe.
+  // A pen stroke with no colour of its own is drawn in Ink; a highlighter keeps its own recipe.
   if (element.type === 'freehand' && element.pen !== 'highlighter') return PEN_INK[surface];
   if (surface === 'dark') {
     switch (element.type) {
@@ -479,11 +393,9 @@ export function supportsFillColor(element: Element): boolean {
 }
 
 // Whether an element has a HEADING area distinct from its body, and so
-// exposes a heading-background control: a table's header row and a lane's
-// title gutter (docs/specs/009-elements/lane.md). Everything else is one surface.
+// exposes a heading-background control: a table's header row. Everything else is one surface.
 export function hasHeadingBand(element: Element): boolean {
-  if (element.type === 'table') return true;
-  return element.type === 'shape' && element.shape === 'lane';
+  return element.type === 'table';
 }
 
 export function supportsColours(element: Element): boolean {
@@ -541,17 +453,13 @@ export function supportsBorder(
 // Shape kinds that DRAW THEIR OWN BODY, so the wrapper carries no border or
 // background and every border control is dead for them. One list, exported,
 // because the renderer and the menu were each keeping their own and drifted:
-// the menu still offered Border on a code block, a checklist, a portal and a
-// reveal long after the renderer stopped painting one.
+// the menu still offered Border on a code block and a checklist long after the
+// renderer stopped painting one.
 //
-// The actor, icons and stickers are here for a different reason — a stick
-// figure, a glyph and a die-cut plate have no enclosing outline to stroke —
-// but the outcome is the same, so they share the predicate rather than a
-// second condition.
+// Icons and stickers are here for a different reason — a glyph and a die-cut
+// plate have no enclosing outline to stroke — but the outcome is the same, so
+// they share the predicate rather than a second condition.
 export const SELF_PAINTING_SHAPES = new Set<string>([
-  'actor',
-  // A UML final state draws its ring and dot itself (shape-geometry.ts): no box to border.
-  'final-state',
   // Badge and Step number (docs/specs/009-elements/badge.md): the face paints the pill / disc in its look.
   'badge',
   'step',
@@ -581,40 +489,12 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   'line-chart',
   'code-block',
   'checklist',
-  // Plan board and card (docs/specs/026-plan/plan-board.md) paint their own surfaces and stripes.
-  'plan-board',
-  'plan-card',
-  'plan-view',
-  'plan-sheet',
   // Legend (docs/specs/009-elements/pie-chart.md): LegendView paints its own card and rows.
   'legend',
   // Sankey (docs/specs/009-elements/sankey.md): nodes and bands, coloured per node; no box to stroke.
   'sankey',
-  // Behaviour elements (docs/specs/009-elements/portal-element.md, /106): the ring / cover IS the element.
-  'portal',
   // A tab window (docs/specs/009-elements/tab-window.md) draws its own rounded frame round the tab it shows.
   'tab-window',
-  'reveal',
-  // A chair (docs/specs/009-elements/chair.md) draws its own furniture and wants no box behind it,
-  // which is what the canvas does too (isSvgRenderedShape excludes it).
-  'chair',
-  // A fence, a desk and a sofa (docs/specs/009-elements/fence.md, chair.md) draw themselves too.
-  'fence',
-  'desk',
-  'sofa',
-  // An Avatar Pad (docs/specs/009-elements/avatar-pad.md) is its pixels.
-  'avatar-pad',
-  // The office pieces (docs/specs/009-elements/office.md) draw themselves, the room its own floor.
-  'room',
-  'meeting-table',
-  'plant',
-  'bookshelf',
-  'water-cooler',
-  'coffee-machine',
-  'rug',
-  // A quiz (docs/specs/012-collaboration/quiz.md) paints its own disc and ring of answers; a box behind
-  // them would frame a circle in a square.
-  'quiz',
   // Web components (docs/specs/009-elements/web-components-and-no-groups.md) that lay out their own surfaces: an accent bar
   // (banner, header), a row of cards, circles and connectors. A callout is
   // NOT here: its card is an ordinary bordered box with content inside.
@@ -642,20 +522,11 @@ export function supportsBorderControls(element: Element): boolean {
 // Of the web components (docs/specs/009-elements/web-components-and-no-groups.md), the header takes the icon as its logo
 // and the callout as its badge glyph; the banner, stat row and process have
 // nowhere to put one, so an icon dropped on them stands alone.
-//
-// Nor do the Behaviour and Collaborate elements that draw their own face
-// (hasOwnFace: the collaboration cards, the buttons, the picker, the reveal
-// cover, the chair...): their face never renders an inline icon, so one folded
-// in would be invisible. Dropped on them, it stands alone too.
+
 // Kinds that take an inline icon but place it themselves, so its position (`iconPosition`) is not the user's to set:
-// a card's media slot and a callout's badge (docs/specs/009-elements/card.md), a header's logo, a boundary's tab
-// (docs/specs/009-elements/boundary.md). Their Icon position controls would write a field nothing reads.
-const SELF_PLACED_ICON_SHAPES: ReadonlySet<string> = new Set([
-  'card',
-  'callout',
-  'site-header',
-  'boundary',
-]);
+// a card's media slot and a callout's badge (docs/specs/009-elements/card.md), a header's logo. Their Icon position
+// controls would write a field nothing reads.
+const SELF_PLACED_ICON_SHAPES: ReadonlySet<string> = new Set(['card', 'callout', 'site-header']);
 
 /** Whether a shape's inline icon goes where `iconPosition` says, so offering that choice does something. */
 export function positionsInlineIcon(element: Element): boolean {
@@ -663,24 +534,20 @@ export function positionsInlineIcon(element: Element): boolean {
 }
 
 // The kinds whose own face never draws an inline icon: a badge or step number (chip.ts, its number or text), a concept
-// graphic (its rows), a sequence diagram, a Diagram key, a tab window, and a mind node drawn as a person (its initials).
+// graphic (its rows) and a tab window.
 // The chip kinds are named here rather than read from chip.ts, which imports this file.
 function drawsNoInlineIcon(element: ShapeElement): boolean {
   return (
     element.shape === 'badge' ||
     element.shape === 'step' ||
     isConceptShape(element.shape) ||
-    element.shape === 'sequence' ||
-    element.shape === 'diagram-key' ||
-    element.shape === 'tab-window' ||
-    (element.shape === 'mind-node' && element.mindLook === 'person')
+    element.shape === 'tab-window'
   );
 }
 
 export function acceptsInlineIcon(element: Element): element is ShapeElement {
   return (
     element.type === 'shape' &&
-    !hasOwnFace(element.shape) &&
     // Faces drawn whole, with no place for an icon: a dropped one would vanish (docs/specs/009-elements).
     !drawsNoInlineIcon(element) &&
     element.shape !== 'icon' &&
@@ -697,16 +564,14 @@ export function acceptsInlineIcon(element: Element): element is ShapeElement {
 // free-corner rectangles qualify: the plain square and the browser
 // frame, both of which render as a CSS rounded rectangle so a real
 // pixel radius applies. Every other shape either bakes its rounding
-// into the silhouette (circle / stadium / cloud / actor) or is an SVG
+// into the silhouette (circle / stadium / cloud) or is an SVG
 // outline (diamond / cylinder / hexagon / document / parallelogram and
 // the monitor / laptop / phone / tablet device frames) where a corner
 // radius is meaningless, so the Radius control is hidden for them.
 //
 // The web components with a rectangular surface (docs/specs/009-elements/web-components-and-no-groups.md) take it too: the
 // banner and header bar, the callout card, and each of a stat row's cards.
-//
-// So does a mind node (docs/specs/009-elements/mind-node.md "Round nodes"): a CSS box like the
-// square, whose corner the canvas and the export both read from `borderRadius`.
+
 export function supportsBorderRadius(element: Element): element is ShapeElement {
   return element.type === 'shape' && RADIUS_SHAPES.has(element.shape);
 }
@@ -718,14 +583,12 @@ const RADIUS_SHAPES = new Set<string>([
   'card',
   'site-header',
   'stat-row',
-  'mind-node',
 ]);
 
 // The corner preset the Radius control highlights: the element's own, else the preset nearest
-// its kind's default corner (docs/specs/008-canvas/corner-radius.md). A mind node's 12 px default
-// is Medium; every other kind shows Small, as before.
+// its kind's default corner (docs/specs/008-canvas/corner-radius.md): Small.
 export function shownBorderRadius(element: ShapeElement): BorderRadius {
-  return element.borderRadius ?? (element.shape === 'mind-node' ? 'md' : 'sm');
+  return element.borderRadius ?? 'sm';
 }
 
 // Default arrow stroke colour when the element has no explicit one set.

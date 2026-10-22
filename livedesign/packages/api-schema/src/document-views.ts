@@ -98,7 +98,7 @@ export type ViewHeader = {
   view: ViewName;
   tab: { id: string; ref: string; name: string; kind: TabKind };
   elements: number;
-  counts: { boxes: number; frames: number; lanes: number; arrows: number };
+  counts: { boxes: number; frames: number; arrows: number };
   hidden: number;
   unknown: number;
   threads: { open: number; total: number };
@@ -178,8 +178,6 @@ export type CommentsView = {
     ref: string;
     kind: string;
     label: string | null;
-    // A Sheet cell's thread (docs/specs/029-sheets/sheet.md "Cell comments"): its cell key, `rowId:colId`.
-    cell?: string;
     resolved: boolean;
     comments: { authorName: string; createdAt: number; text: string }[];
   }[];
@@ -205,7 +203,6 @@ export const FIND_FIELDS = [
   'note',
   'edge',
   'cell',
-  'field',
   'item',
   'node',
   'code',

@@ -49,7 +49,7 @@ export const groupSplitEdges: Check = (ctx) =>
         code: 'group-split-edges' as const,
         refs: [ref],
         message: `${ref}: ${crossing} of ${total} arrows cross its border`,
-        fix: fixes.groupSplitEdges(ctx.source, ref),
+        fix: fixes.groupSplitEdges(ref),
         at: { x: frame.x, y: frame.y },
       },
     ];

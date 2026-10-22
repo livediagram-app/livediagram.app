@@ -7,19 +7,19 @@ import { FormatPanelScene } from '@/components/illustrations/selection-modes';
 export const metadata = helpMetadata({
   title: 'Format Painter',
   description:
-    "Use the Format Painter mode to copy one element's style and paint it onto others, keeping a diagram visually consistent in a couple of clicks.",
+    "Use the Format Painter mode to copy one element's style and paint it onto others, keeping a document visually consistent in a couple of clicks.",
   path: '/help/selection-modes/format-painter/',
 });
 
 <ArticleLayout
   title="Format Painter"
-  description="Copy one element's style and paint it onto other elements, keeping a diagram visually consistent."
+  description="Copy one element's style and paint it onto other elements, keeping a document visually consistent."
   categoryTitle="Selection Modes"
   categorySlug="selection-modes"
   subArticles={getSubArticles("format-painter")}
 >
 
-The Format Painter mode copies the look of one element (its colours, line, text styling and more) and applies it to others, so a set of shapes can share a consistent style without setting each one by hand. Choose it from the tool picker at the start of the palette strip, where it appears simply as **Format**. It has no keyboard shortcut (`F` adds a frame and `P` picks up the pencil).
+The Format Painter mode copies the look of one element (its colours, line, text styling and more) and applies it to others, so a set of shapes can share a consistent style without setting each one by hand. Choose it from the tool picker at the start of the palette strip, where it appears simply as **Format**. It has no keyboard shortcut.
 
 ## How to use it
 
@@ -62,7 +62,7 @@ The format painter is most useful when you have several elements to bring into l
 
 ## Format painter and themes
 
-The format painter copies the exact look of one element onto another, which is perfect for matching a handful of shapes. When you want to restyle the entire diagram at once, reach for a [theme](/help/canvas/themes/) instead, which recolours every element together. And for quick emphasis on a single shape, the [style presets](/help/palette/shapes/style-presets/) in the right-click menu offer one-click colour and border variations derived from the active theme.
+The format painter copies the exact look of one element onto another, which is perfect for matching a handful of shapes. When you want to restyle a whole tab at once, reach for a [theme](/help/canvas/themes/) instead, which recolours every element together. And for quick emphasis on a single shape, the [style presets](/help/palette/shapes/style-presets/) in the right-click menu offer one-click colour and border variations derived from the active theme.
 
 <Tip>
   Style one element carefully, then let the format painter do the repetitive work. It is far quicker
@@ -74,7 +74,6 @@ The format painter copies the exact look of one element onto another, which is p
 
 - **On an empty canvas** Format is greyed out, as there is nothing to copy from.
 - **On a view-only link** it is not offered, because painting changes the document.
-- **In [Plan mode](/help/canvas/plan-mode/) and [Draw mode](/help/canvas/draw-mode/)** it is left out.
-- An element someone else has selected, or one on a hidden or locked layer, cannot be painted.
+- An element someone else has selected cannot be painted.
 
 </ArticleLayout>

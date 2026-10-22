@@ -10,7 +10,6 @@ import {
   TEXT_SCALE_MAX,
   TEXT_SCALE_MIN,
 } from './validate';
-import { SELECTION_MODES } from './selection-mode';
 import { IMAGE_CREDIT_TEXT_MAX, IMAGE_CREDIT_URL_MAX } from './image-credit';
 import { MAX_FREEHAND_POINTS, encodeStrokePoints } from './stroke-points';
 
@@ -38,12 +37,6 @@ describe('isValidElement', () => {
         to: { kind: 'free', x: 10, y: 20 },
       }),
     ).toBe(true);
-  });
-
-  it('reads the orientation of a lane title as upright or nothing', () => {
-    const lane = { id: 'l', type: 'shape', shape: 'lane', ...box };
-    expect(isValidElement({ ...lane, titleOrientation: 'upright' })).toBe(true);
-    expect(isValidElement({ ...lane, titleOrientation: 'sideways' })).toBe(false);
   });
 
   it('bounds the exact end of an arrow and its own label width', () => {
@@ -100,7 +93,7 @@ describe('isValidElement', () => {
   });
 
   it('accepts a whiteboard pen stroke\u2019s packed pressures and streamline, rejects junk', () => {
-    // docs/specs/023-draw-mode/draw-mode.md "Pens": a pressure per point, 0 to 1, packed.
+    // docs/specs/006-document/stroke-points.md: a pressure per point, 0 to 1, packed.
     const points = [
       { nx: 0, ny: 0 },
       { nx: 1, ny: 1 },
@@ -113,7 +106,7 @@ describe('isValidElement', () => {
   });
 
   it('accepts a marker\u2019s named colour on a stroke, a shape or a line, rejects any other', () => {
-    // docs/specs/023-draw-mode/draw-mode.md "The colour picker": stored by name.
+    // docs/specs/008-canvas/canvas-and-palette.md "Colours": stored by name.
     const packedPoints = encodeStrokePoints([
       { nx: 0, ny: 0 },
       { nx: 1, ny: 1 },
@@ -143,14 +136,14 @@ describe('isValidElement', () => {
     }
   });
 
-  // docs/specs/023-draw-mode/draw-mode.md "Imported and pasted content": a text box's and a
-  // shape label's stock colour, stored by name.
+  // docs/specs/008-canvas/canvas-and-palette.md "Colours": a text box's and a shape label's stock
+  // colour, stored by name.
   it('accepts a named text colour and rejects anything else in its place', () => {
     const text = { id: 't', type: 'text', label: 'Hi', ...box };
     const shape = { id: 's', type: 'shape', shape: 'square', label: 'Hi', ...box };
     for (const el of [text, shape]) {
       expect(isValidElement({ ...el, penTextColour: 'green' })).toBe(true);
-      // Ink is a stock colour by name (docs/specs/007-editor/editor-modes.md "One look").
+      // Ink is a stock colour by name (docs/specs/004-interface-design/colour-picker.md).
       expect(isValidElement({ ...el, penTextColour: 'ink' })).toBe(true);
       expect(isValidElement({ ...el, penTextColour: 'chalk' })).toBe(false);
       expect(isValidElement({ ...el, penTextColour: '#2f9e44' })).toBe(false);
@@ -393,33 +386,6 @@ describe('coerceShapeKind', () => {
   });
 });
 
-describe('mode button validation (docs/specs/009-elements/mode-button.md)', () => {
-  const button = {
-    id: 'b1',
-    type: 'shape',
-    shape: 'mode-button',
-    x: 0,
-    y: 0,
-    width: 180,
-    height: 44,
-  };
-
-  it('accepts a button with no mode (it falls back to the Avatar default)', () => {
-    expect(isValidElement(button)).toBe(true);
-  });
-
-  it('accepts every selection mode the editor can switch to', () => {
-    for (const mode of SELECTION_MODES) {
-      expect(isValidElement({ ...button, mode })).toBe(true);
-    }
-  });
-
-  it('rejects a mode outside the vocabulary rather than silently rewriting it', () => {
-    expect(isValidElement({ ...button, mode: 'teleport' })).toBe(false);
-    expect(isValidElement({ ...button, mode: 42 })).toBe(false);
-  });
-});
-
 describe('quick-swatch bindings (docs/specs/008-canvas/quick-style-panel.md)', () => {
   const shape = { id: 's', type: 'shape', shape: 'square', ...box };
   const arrow = {
@@ -441,7 +407,7 @@ describe('quick-swatch bindings (docs/specs/008-canvas/quick-style-panel.md)', (
   });
 });
 
-// docs/specs/007-editor/editor-modes.md "A text box's sizing": a text box's sizing and Shift scale.
+// docs/specs/006-document/document-structure.md: a text box's sizing and Shift scale.
 describe('text box validation', () => {
   const text = { id: 't', type: 'text', x: 0, y: 0, width: 40, height: 22, label: 'Hi' };
 
@@ -552,23 +518,5 @@ describe('elementValidationIssue', () => {
       { id: 'a', type: 'image', imageId: 3, ...box },
     ];
     for (const el of cases) expect(isValidElement(el)).toBe(elementValidationIssue(el) === null);
-  });
-});
-
-describe('flowchart step validation (docs/specs/009-elements/flowchart.md)', () => {
-  const step = { id: 's1', type: 'shape', shape: 'diamond', x: 0, y: 0, width: 200, height: 120 };
-
-  it('accepts a step with its chart, direction and lane', () => {
-    expect(
-      isValidElement({ ...step, flowchartId: 's1', flowDirection: 'right', flowLaneId: 'l1' }),
-    ).toBe(true);
-    expect(isValidElement({ ...step, flowDirection: 'down' })).toBe(true);
-  });
-
-  it('rejects an empty chart or lane id and an unknown direction', () => {
-    expect(isValidElement({ ...step, flowchartId: '' })).toBe(false);
-    expect(isValidElement({ ...step, flowLaneId: '' })).toBe(false);
-    expect(isValidElement({ ...step, flowDirection: 'up' })).toBe(false);
-    expect(isValidElement({ ...step, flowchartId: 7 })).toBe(false);
   });
 });

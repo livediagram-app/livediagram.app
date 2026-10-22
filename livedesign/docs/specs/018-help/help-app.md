@@ -26,7 +26,7 @@ The **`@livedesign/help-registry` package** is the single source of truth for ca
 
 **Search keywords.** Every article carries a required `keywords` field: space-separated, lowercase synonyms for the vocabulary users actually type when they don't know the article's title — synonyms ("transparency" for opacity, "hotkey" for keyboard shortcuts), adjacent spellings ("color" beside "colour"), and concept words the copy doesn't happen to use. `searchArticles` matches case-insensitively on **title + description + keywords**, and the editor's search panel matches the same fields, so an article is findable by the concept it discusses, not only by an exact title match. A test enforces that no article ships without keywords. (Born from a user report: searching "Opacity" found nothing because the element-opacity article is titled "Layer Order and Opacity" and the in-editor catalogue didn't cover it.)
 
-**Sub-category grouping.** A feature category's landing cards can be split into labelled sub-category sections on its index page via an optional `group` field on each landing (e.g. Palette's `Selection Modes` / `Elements` / `Palette Settings`). `getCategoryGroups` buckets the category's landings by `group` in first-appearance order, and `FeatureCategoryIndex` renders one card grid per group under a heading. Landings without a `group` render in a single ungrouped grid, so other feature categories are unchanged.
+**Sub-category grouping.** A feature category's landing cards can be split into labelled sub-category sections on its index page via an optional `group` field on each landing (e.g. Pages' `Basics` / `Kinds of Page`). `getCategoryGroups` buckets the category's landings by `group` in first-appearance order, and `FeatureCategoryIndex` renders one card grid per group under a heading. Landings without a `group` render in a single ungrouped grid, so other feature categories are unchanged.
 
 Categories fall into two kinds. The **support** categories carry standalone articles; the **feature** categories (`kind: 'feature'`) carry the in-depth feature guides and are grouped under a separate "Editor Guides" heading on the home page and listed on the `/features` index. Each feature category has a card-grid index page at `/help/<slug>/` (shared `FeatureCategoryIndex` component), and within it each feature has its own landing page plus optional sub-articles.
 
@@ -34,40 +34,44 @@ Categories fall into two kinds. The **support** categories carry standalone arti
 
 **Policies.** A support category, not a feature one. It is the home for the hosted service's legal pages: the **Terms of Service**, the **Privacy Policy** and **Reporting a Vulnerability** (the vulnerability disclosure policy, [Vulnerability disclosure](../002-project-scope/vulnerability-disclosure.md), which the marketing `/security` route, `/.well-known/security.txt` and the repo's `SECURITY.md` all point at). The Terms and Privacy Policy govern only the hosted service at livedesign.app (a self-hosted copy is the operator's responsibility). These were standalone marketing routes (`/terms`, `/privacy`); they now live as help articles under `/help/policies/`, and the old marketing routes stay alive as thin client redirects so historical links keep resolving. (The Privacy Policy previously sat in `privacy-and-security`; it moved here so the two policies sit together, and the old help URL redirects to the new one.)
 
-| slug                   | title                | icon      | kind    |
-| ---------------------- | -------------------- | --------- | ------- |
-| `about`                | About livedesign     | info      | support |
-| `getting-started`      | Getting Started      | rocket    | support |
-| `tips-and-tricks`      | Tips and Tricks      | lightbulb | support |
-| `account-and-data`     | Account and Data     | user      | support |
-| `privacy-and-security` | Privacy and Security | shield    | support |
-| `self-hosting`         | Self-Hosting         | server    | support |
-| `developers`           | Developers           | code      | support |
-| `troubleshooting`      | Troubleshooting      | wrench    | support |
-| `supported-devices`    | Supported Devices    | devices   | support |
-| `policies`             | Policies             | document  | support |
-| `contact`              | Contact              | mail      | support |
-| `explorer`             | Explorer             | folder    | feature |
-| `palette`              | Palette              | palette   | feature |
-| `canvas`               | Canvas               | frame     | feature |
-| `tabs`                 | Tabs                 | tabs      | feature |
-| `collaboration`        | Collaboration        | users     | feature |
-| `tools`                | Tools                | tools     | feature |
-| `search-panel`         | Search Panel         | search    | feature |
+| slug                   | title                | kind    |
+| ---------------------- | -------------------- | ------- |
+| `about`                | About livedesign     | support |
+| `getting-started`      | Getting Started      | support |
+| `tips-and-tricks`      | Tips and Tricks      | support |
+| `account-and-data`     | Account and Data     | support |
+| `privacy-and-security` | Privacy and Security | support |
+| `self-hosting`         | Self-Hosting         | support |
+| `developers`           | Developers           | support |
+| `troubleshooting`      | Troubleshooting      | support |
+| `supported-devices`    | Supported Devices    | support |
+| `policies`             | Policies             | support |
+| `contact`              | Contact              | support |
+| `pages`                | Pages                | feature |
+| `user-interface`       | User Interface       | feature |
+| `explorer`             | Explorer             | feature |
+| `selection-modes`      | Selection Modes      | feature |
+| `palette`              | Palette              | feature |
+| `canvas`               | Canvas               | feature |
+| `tabs`                 | Tabs                 | feature |
+| `collaboration`        | Collaboration        | feature |
+| `tools`                | Tools                | feature |
+| `search-panel`         | Search Panel         | feature |
 
-The feature categories group the feature guides by area:
+The feature categories group the feature guides by area. **Pages is the first**: it is what livedesign is for.
 
-- **Explorer** — the document library (explorer/15, teams/32+35): The Explorer overview, Home (the Timeline), Recent, Shared With Me, My Documents and folders, Team Spaces, Image Gallery, and Saved Themes, one guide per sidebar row.
-- **Palette** — the palette strip, in three sub-categories grouped on the index (see "Sub-category grouping" below): **Selection Modes** (one guide per tool-picker mode: Select, Hand, Eraser, Format Painter, Laser, Spotlight, Isometric), **Elements** (one guide per palette tab: Shapes (+ shape markers, style presets 48), Arrows (+ arrow styles, curve/elbow handles, arrow-to-arrow), Tools (+ drawing/shape-recognition, images, data elements 46+51+52+53), Components, Devices, Icons, Technology 41), and **Palette Settings** (one guide per palette setting: Auto-Attach Arrows, Alignment Guides, Panel Opacity, Quick-add on Hover, Toolbar Layout).
-- **Canvas** — the infinite canvas (09), selecting many elements (multi-select), links and link cards (40), annotations (38), themes (29+42+44), templates, text and fonts (28), Undo and Redo.
-- **Tabs** — multiple canvases (13+17+30): Tabs, Tab Folders, Linking Across Tabs, Add a Tab to Another Document, Importing (27), Exporting, and Cleanup (47), one guide per tab-menu action.
-- **Collaboration** — comments, live presence (07: live cursors / selections / per-tab presence), teams (32+35), sharing and embeds (24+33+34), session tools (39).
-- **Tools** — AI assistance (25), zen mode (26), appearance / light-dark-system (07), layout cleanup (47).
-- **Search Panel** — the global search (09): an overview landing plus sub-articles for each thing search does, finding documents/folders, teams, tabs and elements, adding palette items to the canvas, and the Create-new-tab action.
+- **Pages** — the pages a document is made of, in two groups: **Basics** (Working with Pages, exporting pages, the Pages tour) and **Kinds of Page** (logo pages and wireframe pages).
+- **User Interface** — the panels, toolbar, context menus, the Map, zoom and tab bars, quick controls and power user mode.
+- **Explorer** — the document library: The Explorer overview, Home (the Timeline), Recent, Shared With Me, My Documents and folders, Team Spaces, Image Gallery, and Saved Themes, one guide per sidebar row.
+- **Selection Modes** — one guide per tool-picker mode: Select, Hand, Format Painter, Laser, Spotlight, Isometric.
+- **Palette** — the palette strip: one guide per palette category (Shapes and arrows, Text, Media and images, Data elements, Concepts, Components, Devices, Icons, Stickers) and one per palette setting.
+- **Canvas** — the canvas around the pages, selecting many elements, links and link cards, themes, templates, text and fonts, layers, animations, Undo and Redo.
+- **Tabs** — a document's tabs: Tabs, Tab Folders, Linking Across Tabs, Add a Tab to Another Document, Importing and Exporting, one guide per tab-menu action.
+- **Collaboration** — comments, live presence (live cursors, selections, per-tab presence), following a presenter, teams, sharing and embeds.
+- **Tools** — AI assistance, zen mode and appearance (light, dark, system).
+- **Search Panel** — the global search: an overview landing plus sub-articles for each thing search does, finding documents/folders, teams, tabs and elements, adding palette items to the canvas, and the Create-new-tab action.
 
 Where a feature's name would equal its category slug, the landing slug is distinguished (`the-canvas`, `the-explorer`, `using-tabs`) so a feature slug never equals a category slug (which would break the breadcrumb's parent link).
-
-There is **no Presentation Mode guide**: [Presentation mode](../012-collaboration/presentation-mode.md) is a draft and the feature is not built, so the article was unpublished rather than ship documentation for a non-existent feature.
 
 **Troubleshooting tools.** One Troubleshooting article is a working tool, not only text: _Repair This Browser_ renders `BrowserRepairTool` (`apps/help/components/`), the shared `BrowserRepairPanel` from `@livedesign/ui` plus the browser checks, so a person whose editor will not start can still clear its stuck settings from the help centre, which shares the editor's origin ([Load recovery](../007-editor/load-recovery.md)).
 
@@ -93,11 +97,10 @@ to the glyph, `lib/featureColours.ts` to the hue, and the two maps are kept
 fallback hue reads as an oversight.
 
 Both fall back **to the article's top-level feature category**, not to a single
-default. That matters more than it sounds: when the fallback landed, 107 of the
-172 landing cards under the ten feature categories had no bespoke entry, so with
-one default nearly two thirds of the catalogue drew the same sky-blue canvas
-frame in the same grey tile. **None still take it.** All 172 cards under
-the ten feature categories now have a glyph and a hue of their own, so the
+default. That matters more than it sounds: when the fallback landed, nearly two
+thirds of the landing cards had no bespoke entry, so with one default they drew the
+same sky-blue canvas frame in the same grey tile. **None still take it.** Every
+card under the feature categories now has a glyph and a hue of its own, so the
 category fallback has become what it should be: the safety net a NEW card lands
 on before someone draws it, rather than something a reader sees. Keep it that
 way — a new landing page should arrive with its own entry in both maps, the way
@@ -138,25 +141,13 @@ Canvas batch cost two more, both from colliding with a glyph already in the set 
 a magnet drawn as a shield, and a drop shadow that read first as "duplicate" and
 then, hatched, as the motion lines on `animations`. `shadows` is the one glyph
 that fills and fades, because it is the only one whose subject IS a fill and a
-fade; every stroke-only version of it meant something else. The Collaborate
-batch cost two: a tick drawn inside a circle rendered as a prohibition sign,
-which is the opposite of "decided", and a roll call drawn as circles beside
-lines read as a bulleted list until the circles became heads and shoulders.
+fade; every stroke-only version of it meant something else.
 
 The pattern in every redraw so far is worth stating, since it is not what you
 would guess: none was wrong on its own terms. Each had either landed on a glyph
-already in the set, or landed on a completely different idiom's meaning. Portals
-took three attempts for exactly that reason — two rings joined by a line is the
-chain that `links` means, and joined by an arc it is a pair of headphones — and
-settled on the single ring with an arrow entering it, accepting that the pairing
-lives in the label rather than the picture.
+already in the set, or landed on a completely different idiom's meaning.
 
-One rule fell out of the Behaviour batch and is worth keeping: **draw what the
-element DOES, never the control itself.** Every Behaviour element is physically a
-button, and the family glyph already draws a button, so six glyphs of buttons
-would have been six copies of one picture. What separates them is the play
-triangle, the tick, the burst, the mosaic and the die.
-
+One rule is worth keeping: **draw what the thing DOES, never the control itself.**
 Applied up front, that rule is also what made the Search Panel's six the first
 batch to need no redraw at all: six articles about one control, and not one of
 them draws a magnifier. They draw what you find — documents in a folder, a team,
@@ -176,29 +167,16 @@ the bar only. Rating hit the same collision rule from the other side — stars, 
 a star reads as a favourite — so it draws the SCALE, a row part-filled, rather
 than the symbol.
 
-Voting's five are the clearest case of the whole exercise, and needed no redraw
-because the rule was applied first: five articles about ONE feature, where every
-single one could have been drawn as "some dots". They draw spending a dot,
-restricting to a layer, hiding the count, tracking the room, and what won.
-`casting-dots` has no box around its dots for the same reason Rating has no star:
-dots in a box is the die that `pickers` already draws. The four Arrow guides are
-the same shape of problem — four articles about arrows, next to an `arrows` family
+The four Arrow guides are the same shape of problem — four articles about arrows, next to an `arrows` family
 glyph that is already an arrow — so they draw the three shapes, the handle you
 drag, the obstacle, and the other arrow. The Sharing guides ran into it a third
 way: the obvious drawing for each was already spoken for somewhere else in the
 set — a padlock is `locking`, a chain is `links`, a picture is `images` — so they
-draw the password field, the deadline, the page the diagram sits inside, and the
-refresh. Avatar Mode and Walking Together met it a fourth way: the set already
-had five person glyphs and every one was a head-and-shoulders bust, so these two
-are whole figures mid-stride — which happens to be exactly what the feature is.
-And Changing the Theme is the plainest collision of the lot: a wheel of hues
+draw the password field, the deadline, the page the document sits inside, and the
+refresh. And Changing the Theme is the plainest collision of the lot: a wheel of hues
 rendered as the `pie-chart` glyph exactly, while `themes` already owned the paint
 palette and `custom-themes` owned swatches-with-a-plus, so what was left to draw
-was the browsing itself. By the Collaboration batch every one of the six had its
-obvious drawing already spoken for, so each took the next detail down: a stopwatch
-rather than a clock, a question in a bubble rather than cards, dots landing on
-something rather than dots, an envelope rather than people, a folder handed
-outward rather than a folder holding people.
+was the browsing itself.
 
 Two mechanical checks earn their keep alongside the render, because both catch
 things the eye skims: every path must parse (a leading moveto, seven-parameter
@@ -227,8 +205,7 @@ The system has three layers, all under `apps/help`:
   their subject, never after the batch of work that produced them.
 - **`components/illustrations/<area>-parts.tsx`** — an area's own building
   blocks, when it grows enough of them to interleave with its scenes (the
-  Explorer's sidebar row and document card; the palette's per-mode glyphs and
-  shared mode-row). Distinct from `primitives.tsx`, which is the house style
+  Explorer's sidebar row and document card). Distinct from `primitives.tsx`, which is the house style
   every area shares: these are wanted by one area only. The split exists so an
   `<area>.tsx` reads as a uniform list of complete scenes rather than
   alternating between two kinds of thing — an area with one or two helpers
@@ -244,41 +221,6 @@ Figures are added to the sections that genuinely benefit (a concrete UI surface,
 a before/after, a spatial relationship), not to every section; reference-only or
 purely conceptual sections stay text. Scenes are reused across articles wherever
 the same surface recurs rather than redrawn.
-
-<!-- legacy-names -->
-
-## Renamed articles
-
-Six articles about the container moved when it became a document ([Document](../006-document/document.md)), **Whiteboards** became **Draw mode** when whiteboarding became an editor mode ([Editor modes](../007-editor/editor-modes.md#naming-in-the-interface)), the **Highlighter** moved from Selection Modes to the palette's Tools when it became a Draw tile ([Highlighter](../008-canvas/highlighter.md)), the **Activity Panel** category went with the panel on 2026-10-03 (Undo and Redo moved to Canvas; its other articles and the category page land on Undo), **The Welcome Tour** became **The Diagram Tour** when the tour became Diagram mode's alone ([Diagram tour](../007-editor/editor-tour.md)), and **Infographics**, then **Illustrate Mode**, became **Pages Mode**, its section moving to `/help/canvas/pages-mode/` and **The Illustrate Tour** becoming **The Pages Tour** ([Editor modes](../007-editor/editor-modes.md#naming-in-the-interface)), and **Facilitate Mode** became **Workshop Mode**, its section moving to `/help/canvas/workshop-mode/` and **The Facilitate Tour** becoming **The Workshop Tour**; each old address answers a permanent `308` from the router ([Router app, Legacy editor route](../016-platform/router-app.md#legacy-editor-route)):
-
-| Old address                                            | New address                                             |
-| ------------------------------------------------------ | ------------------------------------------------------- |
-| `/help/tabs/add-to-diagram/`                           | `/help/tabs/add-to-document/`                           |
-| `/help/troubleshooting/diagram-not-loading/`           | `/help/troubleshooting/document-not-loading/`           |
-| `/help/collaboration/teams/team-shared-diagrams/`      | `/help/collaboration/teams/team-shared-documents/`      |
-| `/help/search-panel/the-search-panel/search-diagrams/` | `/help/search-panel/the-search-panel/search-documents/` |
-| `/help/getting-started/sharing-your-diagram/`          | `/help/getting-started/sharing-your-document/`          |
-| `/help/developers/working-with-diagrams/`              | `/help/developers/working-with-documents/`              |
-| `/help/canvas/whiteboards/`                            | `/help/canvas/draw-mode/`                               |
-| `/help/selection-modes/highlighter/`                   | `/help/palette/tools/highlighter/`                      |
-| `/help/activity-panel/`                                | `/help/canvas/undo/`                                    |
-| `/help/activity-panel/what-it-is/`                     | `/help/canvas/undo/`                                    |
-| `/help/activity-panel/how-it-works/`                   | `/help/canvas/undo/`                                    |
-| `/help/activity-panel/undo/`                           | `/help/canvas/undo/`                                    |
-| `/help/activity-panel/redo/`                           | `/help/canvas/redo/`                                    |
-| `/help/activity-panel/reverting-changes/`              | `/help/canvas/undo/`                                    |
-| `/help/getting-started/welcome-tour/`                  | `/help/getting-started/diagram-tour/`                   |
-| `/help/canvas/infographics/`                           | `/help/canvas/pages-mode/`                              |
-| `/help/canvas/infographics/infographic-layouts/`       | `/help/canvas/pages-mode/`                              |
-| `/help/canvas/infographics/exporting-infographics/`    | `/help/canvas/pages-mode/exporting-pages/`              |
-| `/help/canvas/illustrate/`                             | `/help/canvas/pages-mode/`                              |
-| `/help/canvas/illustrate/<article>/`                   | `/help/canvas/pages-mode/<article>/`                    |
-| `/help/canvas/illustrate/illustrate-tour/`             | `/help/canvas/pages-mode/pages-tour/`                   |
-| `/help/canvas/facilitate-mode/`                        | `/help/canvas/workshop-mode/`                           |
-| `/help/canvas/facilitate-mode/facilitate-tour/`        | `/help/canvas/workshop-mode/workshop-tour/`             |
-
-"Your First Diagram" and "Exporting Diagrams" keep their addresses: they are about drawing a diagram and getting the drawing out, not about the container.
-<!-- /legacy-names -->
 
 ## Header
 

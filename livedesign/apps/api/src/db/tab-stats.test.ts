@@ -43,7 +43,7 @@ function arrange() {
     tabStatsStatement(
       db.env,
       tabId,
-      { mode: mode as 'diagram', elementCount: elements, commentCount: comments, dataBytes: bytes },
+      { mode: mode as 'pages', elementCount: elements, commentCount: comments, dataBytes: bytes },
       at,
     ).run();
   return { db, doc, tab, stats };
@@ -57,24 +57,19 @@ function docStats(sql: DatabaseSync, id: string) {
 }
 
 describe('documentStatsSql', () => {
-  it('sums every tab and takes the mode of the tab written last', async () => {
+  it('sums every tab', async () => {
     const { db, doc, tab, stats } = arrange();
     doc('D');
     tab('D', 't1', 0);
     tab('D', 't2', 1);
-    await stats('t1', 'draw', 4, 1, 1000, T0 + 2);
-    await stats('t2', 'plan', 6, 2, 500, T0 + 1);
-    expect(docStats(db.sql, 'D')).toEqual({ mode: 'draw', elements: 10, comments: 3, bytes: 1500 });
-  });
-
-  it('breaks a tie in written time by the tab order', async () => {
-    const { db, doc, tab, stats } = arrange();
-    doc('D');
-    tab('D', 't1', 1);
-    tab('D', 't2', 0);
-    await stats('t1', 'draw', 1, 0, 1, T0);
-    await stats('t2', 'plan', 1, 0, 1, T0);
-    expect(docStats(db.sql, 'D')?.mode).toBe('plan');
+    await stats('t1', 'pages', 4, 1, 1000, T0 + 2);
+    await stats('t2', 'pages', 6, 2, 500, T0 + 1);
+    expect(docStats(db.sql, 'D')).toEqual({
+      mode: 'pages',
+      elements: 10,
+      comments: 3,
+      bytes: 1500,
+    });
   });
 
   it('is null while a tab is not counted yet', async () => {
@@ -82,7 +77,7 @@ describe('documentStatsSql', () => {
     doc('D');
     tab('D', 't1', 0);
     tab('D', 't2', 1);
-    await stats('t1', 'draw', 4, 1, 1000, T0);
+    await stats('t1', 'pages', 4, 1, 1000, T0);
     expect(docStats(db.sql, 'D')).toBeNull();
   });
 
@@ -96,9 +91,9 @@ describe('documentStatsSql', () => {
     const { db, doc, tab, stats } = arrange();
     doc('D');
     tab('D', 't1', 0);
-    await stats('t1', 'draw', 4, 1, 1000, T0);
-    await stats('t1', 'plan', 2, 0, 200, T0 + 5);
-    expect(docStats(db.sql, 'D')).toEqual({ mode: 'plan', elements: 2, comments: 0, bytes: 200 });
+    await stats('t1', 'pages', 4, 1, 1000, T0);
+    await stats('t1', 'pages', 2, 0, 200, T0 + 5);
+    expect(docStats(db.sql, 'D')).toEqual({ mode: 'pages', elements: 2, comments: 0, bytes: 200 });
   });
 });
 
@@ -114,16 +109,16 @@ describe('readDocumentStats', () => {
 
 describe('tabStatsOfData', () => {
   it('counts a stored body', () => {
-    const data = JSON.stringify({ opensIn: 'plan', elements: [{ id: 'a' }] });
+    const data = JSON.stringify({ opensIn: 'pages', elements: [{ id: 'a' }] });
     expect(tabStatsOfData(data)).toEqual({
-      stats: { mode: 'plan', elementCount: 1, commentCount: 0, dataBytes: data.length },
+      stats: { mode: 'pages', elementCount: 1, commentCount: 0, dataBytes: data.length },
       corrupt: false,
     });
   });
 
-  it('counts a corrupt body as an empty Diagram tab, its bytes measured', () => {
+  it('counts a corrupt body as an empty Pages tab, its bytes measured', () => {
     expect(tabStatsOfData('{not json')).toEqual({
-      stats: { mode: 'diagram', elementCount: 0, commentCount: 0, dataBytes: 9 },
+      stats: { mode: 'pages', elementCount: 0, commentCount: 0, dataBytes: 9 },
       corrupt: true,
     });
     expect(tabStatsOfData('null').corrupt).toBe(true);

@@ -7,7 +7,7 @@ import { balanceColumns, weightOf } from './CardColumns';
 
 describe('balanceColumns', () => {
   it('gives a card as tall as the rest a column of its own', () => {
-    // Palette's shape: Shapes, Collaborate, Tools, Devices, Icons.
+    // Palette's shape: Shapes, Components, Tools, Devices, Icons.
     expect(balanceColumns([10, 8, 31, 6, 6])).toEqual([[2], [0, 1, 3, 4]]);
   });
 

@@ -1,8 +1,7 @@
-// Draw mode's markers as palette tiles, for the Toolbar strip's Search in the other modes
-// (docs/specs/007-editor/toolbar-layout.md "Search: every element type"). Draw mode has no palette:
-// its pens live in the whiteboard dock (docs/specs/023-draw-mode/draw-mode.md "Pens"), each with the
-// colour and width this person gave it. A tile here is that pen as it is now, picked up exactly as
-// the dock picks it up (onBeginMarker), so a stroke drawn from it is the dock's stroke.
+// The three markers as palette tiles (docs/specs/023-draw-mode/drawing-tools.md "Markers"), for a
+// logo page's Draw and the Toolbar strip's Search (docs/specs/007-editor/toolbar-layout.md "Search:
+// every element type"), each with the colour and width this person gave it. A tile is that marker
+// as it is now, picked up through onBeginMarker.
 import { penColourCss, type CanvasSurface } from '@livedesign/document';
 import { PenGlyph } from '@/components/canvas/whiteboard/whiteboard-icons';
 import {
@@ -14,7 +13,7 @@ import {
 } from '@/lib/whiteboard-prefs';
 import type { PaletteTileDef } from './palette-tile-defs';
 
-/** One tile per marker, left to right as in the dock. `surface` picks a stock colour's version
+/** One tile per marker, in palette order. `surface` picks a stock colour's version
  *  for the canvas; Marker 1's ink draws in the tile's own text colour. */
 export function markerTiles(prefs: WhiteboardPrefs, surface: CanvasSurface): PaletteTileDef[] {
   return prefs.pens.map((pen) => {
@@ -27,9 +26,9 @@ export function markerTiles(prefs: WhiteboardPrefs, surface: CanvasSurface): Pal
       toolGroup: 'draw',
       label: name,
       caption: name,
-      // "marker pen whiteboard" so the words someone brings from Draw mode find it.
-      blurb: `A whiteboard marker pen from Draw mode (${look}).`,
-      description: `${name} from Draw mode, in its colour and width (${look}). It stays in your hand until you pick another tool or press Escape.`,
+      // "marker pen" so the words someone brings find it.
+      blurb: `A marker pen (${look}).`,
+      description: `${name}, in its colour and width (${look}). It stays in your hand until you pick another tool or press Escape.`,
       // Its own colour, never the theme's tint.
       noTint: true,
       action: { type: 'marker', penId: pen.id, colour: pen.colour, width: pen.width },

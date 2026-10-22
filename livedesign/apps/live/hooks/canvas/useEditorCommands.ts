@@ -12,7 +12,7 @@
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import { EMPTY_SELECTION, type Selection } from '@/lib/selection-store';
 import { useCallback, useMemo } from 'react';
-import { isBoxed, renumberSteps, supportsRotation, takesAttachments } from '@livedesign/document';
+import { isBoxed, renumberSteps, supportsRotation } from '@livedesign/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
@@ -76,9 +76,6 @@ export function useEditorCommands(open: boolean): {
   const { selectedId, multiSelectedIds } = useSelectionOf(
     useCallback((s: Selection) => (open ? s : EMPTY_SELECTION), [open]),
   );
-  // Draw mode (docs/specs/007-editor/editor-modes.md) has no format painter.
-  const whiteboard = ctx.editorMode.mode === 'draw';
-  const planMode = ctx.editorMode.mode === 'plan';
   const {
     isReadOnly,
     canShareDocument,
@@ -141,7 +138,6 @@ export function useEditorCommands(open: boolean): {
   const single =
     !isMulti && selectedId ? (activeTab.elements.find((e) => e.id === selectedId) ?? null) : null;
   const singleIsBoxed = single ? isBoxed(single) : false;
-  const singleTakesAttachments = single ? takesAttachments(single) : true;
   const singleIsShape = single?.type === 'shape';
   const singleRotates = single ? supportsRotation(single) : false;
   const combinable = isMulti && canCombine();
@@ -167,7 +163,6 @@ export function useEditorCommands(open: boolean): {
       zenMode,
       selectionCount,
       singleIsBoxed,
-      singleTakesAttachments,
       singleRotates,
       canCombine: combinable,
       canMirrorCopy: mirrorable,
@@ -184,8 +179,6 @@ export function useEditorCommands(open: boolean): {
       // has greyed out.
       canvasEmpty,
       isMobile,
-      whiteboard,
-      planMode,
       tabLocked,
     }),
     [
@@ -195,7 +188,6 @@ export function useEditorCommands(open: boolean): {
       zenMode,
       selectionCount,
       singleIsBoxed,
-      singleTakesAttachments,
       singleRotates,
       combinable,
       mirrorable,
@@ -209,8 +201,6 @@ export function useEditorCommands(open: boolean): {
       canvasTool,
       canvasEmpty,
       isMobile,
-      whiteboard,
-      planMode,
       tabLocked,
     ],
   );
@@ -235,12 +225,12 @@ export function useEditorCommands(open: boolean): {
       commitElements(renumberSteps);
       track('Element', 'Changed', 'RenumberSteps');
     },
-    // Never on a Plan item (docs/specs/026-plan/plan-mode.md "Nothing attached to Plan items").
+    // Never on a Plan item.
     addComment: () => {
-      if (selectedId && singleTakesAttachments) openComments(selectedId);
+      if (selectedId) openComments(selectedId);
     },
     editNote: () => {
-      if (selectedId && singleTakesAttachments) openNote(selectedId);
+      if (selectedId) openNote(selectedId);
     },
     createTab: addTab,
     renameDocument: requestRenameDocument,

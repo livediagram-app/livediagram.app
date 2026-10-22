@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import type { QuickStyleView } from '@/lib/quick-style';
-import { heldPenStyle, stockOptions } from '@/lib/quick-style-pen';
+import { heldPenStyle } from '@/lib/quick-style-pen';
 import { toolHighlighterStyle } from '@/lib/quick-style-highlighter';
 import { DEFAULT_WHITEBOARD_PREFS } from '@/lib/whiteboard-prefs';
 import { describe, expect, it, vi } from 'vitest';
@@ -216,14 +216,11 @@ describe('QuickStylePanel under Minimal chrome (docs/specs/007-editor/power-user
     setStrokeStyle: vi.fn(),
     setTextAlign: vi.fn(),
     setIconAlign: vi.fn(),
-    setCorners: vi.fn(),
     setTextColour: vi.fn(),
     setPenColour: vi.fn(),
     setPenWidth: vi.fn(),
     setHighlighterColour: vi.fn(),
     setHighlighterWidth: vi.fn(),
-    setBoardStroke: vi.fn(),
-    setBoardTextColour: vi.fn(),
     clearStyles: vi.fn(),
     setSwatchOverride: vi.fn(),
     clearSwatchOverride: vi.fn(),
@@ -261,14 +258,11 @@ describe('QuickStylePanel on a whiteboard: the marker rows', () => {
     setStrokeStyle: vi.fn(),
     setTextAlign: vi.fn(),
     setIconAlign: vi.fn(),
-    setCorners: vi.fn(),
     setTextColour: vi.fn(),
     setPenColour: vi.fn(),
     setPenWidth: vi.fn(),
     setHighlighterColour: vi.fn(),
     setHighlighterWidth: vi.fn(),
-    setBoardStroke: vi.fn(),
-    setBoardTextColour: vi.fn(),
     clearStyles: vi.fn(),
     setSwatchOverride: vi.fn(),
     clearSwatchOverride: vi.fn(),
@@ -299,50 +293,6 @@ describe('QuickStylePanel on a whiteboard: the marker rows', () => {
     expect(screen.queryByTestId('quick-style-clear')).toBeNull();
   });
 
-  it('offers the whiteboard’s colours on Stroke and Text colour, one row each', () => {
-    // docs/specs/023-draw-mode/draw-mode.md "The quick style panel stays".
-    const board = { value: 'blue' as const, options: stockOptions(PALETTE) };
-    const quickStyle = {
-      ...api(undefined, ['s1']),
-      view: {
-        targetIds: ['s1'],
-        sections: { boardStroke: board, boardText: { ...board, value: null } },
-      },
-    };
-    render(<QuickStylePanel quickStyle={quickStyle} hidden={false} />);
-    const stroke = screen.getByRole('group', { name: 'Stroke' });
-    // The nine stock colours and More colours (docs/specs/004-interface-design/colour-picker.md).
-    expect(within(stroke).getAllByRole('button')).toHaveLength(10);
-    expect(within(stroke).getByRole('button', { name: 'Blue' }).getAttribute('aria-pressed')).toBe(
-      'true',
-    );
-    fireEvent.click(within(stroke).getByRole('button', { name: 'Teal' }));
-    expect(quickStyle.setBoardStroke).toHaveBeenCalledWith('teal');
-    // Custom colours live one press deeper, in More colours: no second row.
-    expect(screen.queryByRole('group', { name: 'Custom text colours' })).toBeNull();
-    expect(screen.queryByRole('group', { name: 'Custom stroke colours' })).toBeNull();
-  });
-
-  it('offers Corners as four quick choices, marking the shared one', () => {
-    // docs/specs/008-canvas/quick-style-panel.md "Corners".
-    const quickStyle = {
-      ...api(undefined, ['q1']),
-      view: { targetIds: ['q1'], sections: { corners: { value: 'md' as const } } },
-    };
-    render(<QuickStylePanel quickStyle={quickStyle} hidden={false} />);
-    const row = screen.getByRole('radiogroup', { name: 'Corners' });
-    expect(
-      within(row)
-        .getAllByRole('radio')
-        .map((r) => r.getAttribute('aria-label')),
-    ).toEqual(['None', 'Small', 'Medium', 'Large']);
-    expect(within(row).getByRole('radio', { name: 'Medium' }).getAttribute('aria-checked')).toBe(
-      'true',
-    );
-    fireEvent.click(within(row).getByRole('radio', { name: 'Large' }));
-    expect(quickStyle.setCorners).toHaveBeenCalledWith('lg');
-  });
-
   it('drops the pen name in power user mode', () => {
     render(<QuickStylePanel quickStyle={api(second)} hidden={false} powerUser />);
     expect(screen.queryByText('Marker 2')).toBeNull();
@@ -350,7 +300,7 @@ describe('QuickStylePanel on a whiteboard: the marker rows', () => {
   });
 
   it('offers the nine stock colours and More colours in one row, with no Custom colours row', () => {
-    // docs/specs/023-draw-mode/draw-mode.md "The quick style panel stays": quick choices only; the
+    // docs/specs/023-draw-mode/drawing-tools.md "The quick style panel": quick choices only; the
     // colour picker behind More colours holds the custom colours.
     render(<QuickStylePanel quickStyle={api(second)} hidden={false} />);
     const colour = screen.getByRole('group', { name: 'Marker colour' });
@@ -435,8 +385,8 @@ describe('panelFrame', () => {
   });
 });
 
-// docs/specs/007-editor/editor-modes.md "One look": Ink is the eighth swatch of the Stroke and Text
-// colour rows in Diagram mode, after the theme's colours.
+// docs/specs/008-canvas/quick-style-panel.md "Colours": Ink is the eighth swatch of the Stroke and
+// Text colour rows, after the theme's colours.
 describe('QuickStylePanel: the Ink swatch', () => {
   const swatches = Array.from({ length: 7 }, (_, slot) => ({
     slot: slot as 0,
@@ -458,14 +408,11 @@ describe('QuickStylePanel: the Ink swatch', () => {
     setStrokeStyle: vi.fn(),
     setTextAlign: vi.fn(),
     setIconAlign: vi.fn(),
-    setCorners: vi.fn(),
     setTextColour: vi.fn(),
     setPenColour: vi.fn(),
     setPenWidth: vi.fn(),
     setHighlighterColour: vi.fn(),
     setHighlighterWidth: vi.fn(),
-    setBoardStroke: vi.fn(),
-    setBoardTextColour: vi.fn(),
     clearStyles: vi.fn(),
     setSwatchOverride: vi.fn(),
     clearSwatchOverride: vi.fn(),
@@ -549,14 +496,11 @@ describe('QuickStylePanel: the Highlighter rows', () => {
     setStrokeStyle: vi.fn(),
     setTextAlign: vi.fn(),
     setIconAlign: vi.fn(),
-    setCorners: vi.fn(),
     setTextColour: vi.fn(),
     setPenColour: vi.fn(),
     setPenWidth: vi.fn(),
     setHighlighterColour: vi.fn(),
     setHighlighterWidth: vi.fn(),
-    setBoardStroke: vi.fn(),
-    setBoardTextColour: vi.fn(),
     clearStyles: vi.fn(),
     setSwatchOverride: vi.fn(),
     clearSwatchOverride: vi.fn(),

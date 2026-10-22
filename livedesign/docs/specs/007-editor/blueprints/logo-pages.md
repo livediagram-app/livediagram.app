@@ -134,13 +134,15 @@ Exclude), **Wordmark**, **Logo Kit**.
 - Merged and combined pen strokes: `combine.ts` `styleOf` gives a freehand without a `strokeColor`
   its `penColour` (else `INK_PEN_COLOUR`) and `strokeWidth: 'none'`; `resolveStockColours` fills a
   closed path with no outline from its `penColour` per surface.
-- `PALETTE_CATEGORIES` gains `logo` (Common band, `LogoTabIcon`, a pen nib); the Pages layout lists it after Popular with `tiles: ['logo:pen', 'tools:pencil', 'tools:text', 'shapes:square', 'shapes:circle', 'shapes:diamond']` and `logoOnly: true`. `paletteCategoriesFor` drops a `logoOnly` entry unless `logoPages`. `PaletteProps.logoPages` (picked by `ToolbarPalette`) is `pagesMode.pages.some(kind === 'logo')`, passed by `CanvasChrome`.
+- The Pages layout's Logo kind (`components/palette/palette-layouts.ts`, `PAGES_LOGO`) lands on **Draw**:
+  `['logo:pen', 'tools:pencil', 'tools:shape-pen', DIVIDE, 'tools:polygon']`, then the person's markers
+  (`useLogoMarkerTiles`, below); its Popular holds `logo:pen`, `tools:pencil`, `tools:text` and five shapes.
 - `logo:pen` (section `logo`, `ShapePenIcon`): action `{ type: 'path' }`, handled by
   `PaletteTileActions.beginPath`, threaded from `useShapeDrawing.beginPath` (`beginDraw({ type:
 'path' })`) through `useEditorState`, `EditorCanvasHost`, `onBeginPath` and
   `usePaletteCatalogue`.
 - Markers: `useLogoMarkerTiles(logoPages)` (`components/palette/PaletteLogoTab.tsx`) appends
-  `markerTiles` of the live dock model's pens (else `loadWhiteboardPrefs`) to the category, each
+  `markerTiles` of the person's pens (the live pen model, else `loadWhiteboardPrefs`) to the category, each
   action `once: true`; `tileHandler` calls `beginMarker(penId, true)`, so the strip's markers arm
   for one stroke. The intent's `once` makes `commit-freehand` put the pen down after its stroke and select it.
 - The strip's marker tiles: `PaletteTile` hands a marker tile to `MarkerPaletteTile`
@@ -151,24 +153,22 @@ Exclude), **Wordmark**, **Logo Kit**.
 - The category's tab body is `PaletteLogoTab`: the non-marker tiles as `PaletteToolRows`, then
   **Markers**, each a `MarkerRow` over `PaletteToolRow` (now exported, with `onPress`, `anchor`
   and `expanded`): not held, `beginDraw({ ...whiteboardPenIntent(pen, recognise), once: true })`
-  from the model's pen; held (`markerArmed`), toggles Draw mode's `WhiteboardFlyout`
-  (`placement: 'below'`, `scope: [data-palette-logo]`, opener `data-dock-item`
-  `logo-marker-<id>`) with `PenFlyoutBody`, its `updatePen` wrapped to re-arm with the patch.
-- Alignment off a whiteboard: `isFreePenIntent(intent, whiteboard)` (`lib/draw-mode.ts`).
-  `useCanvasDrawGesture({ whiteboard })` starts a marker's stroke at `snapDrawStart` and shows the
-  pre-press dot unless free; `Canvas` passes the live stroke's points as `penPoints` off a
-  whiteboard, and `computeDrawGuides({ whiteboard })` guides off their box.
+  from the model's pen; held (`markerArmed`), toggles the pen's `WhiteboardFlyout`
+  (`placement: 'below'`, `scope: [data-palette-logo]`, opener `logo-marker-<id>`) with `PenFlyoutBody`, its `updatePen` wrapped to re-arm with the patch.
+- Alignment: `useCanvasDrawGesture` starts a marker's stroke at `snapDrawStart` and shows the
+  pre-press dot; `Canvas` passes the live stroke's points as `penPoints`, and `computeDrawGuides`
+  guides off their box.
 - `useLogoPaletteSwitch(pages, active)` (`hooks/canvas/useLogoPaletteSwitch.ts`), called by
   `CanvasPages` (an editor, not bare), returns `pageShown(page)`, which `CanvasPages`'
   `goToPage` (the page label and the `PageNavigator`) calls after `focusPage`. It keeps the page
   someone was last on (a press off every page keeps it) and, when that changes, asks
   (`requestPaletteCategory`, in a zero timeout, after React renders; a timeout so a background
-  tab answers) for `'logo'` on a logo page, else `'popular'`: on `pageShown` and a capture-phase
+  tab answers) for the kind's landing category (`PALETTE_KIND_LANDING`: `'draw'` on a logo page), else `'popular'`: on `pageShown` and a capture-phase
   window `pointerdown` on a sheet (`[data-page-id]`), counted only when its target is
   the canvas itself (inside `[data-canvas-content]`, or `[data-canvas-a11y-root]`), never chrome
-  floating over a page. A logo page id not seen before asks for `'logo'`. On the first render
+  floating over a page. A logo page id not seen before asks for `'draw'`. On the first render
   with pages, the page under the canvas centre (`[data-canvas-a11y-root]`), else the first, asks
-  for `'logo'` only (again after `LOGO_PALETTE_OPEN_RETRY_MS`, 400, for a palette that mounts
+  for `'draw'` only (again after `LOGO_PALETTE_OPEN_RETRY_MS`, 400, for a palette that mounts
   later); any other page asks nothing.
 
 ### Beside the cog (`apps/live/components/canvas/LogoTitleBar.tsx`)
@@ -196,8 +196,7 @@ buildPageLayout(layout, page) }, { page })`, memoised on the layout, the page's 
   tile's width and the page's aspect. Measured 0.04 ms a layout.
 - The in-page card is sized by `layoutCardSize` and holds `LayoutGallery` (pages-mode blueprint
   "In-page layout card"); too small on screen, `EmptyPageInvite` stands in for it.
-- Start From Scratch: `EmptyPageLayouts` renders `DashedAddButton` (`components/primitives/
-DashedAddButton.tsx`, shared with `AddCardTypeButton`) labelled **Start From Scratch** on a logo page,
+- Start From Scratch: `EmptyPageLayouts` renders `DashedAddButton` (`components/primitives/DashedAddButton.tsx`) labelled **Start From Scratch** on a logo page,
   calling `onBlank`: `CanvasPages` tracks `UI · Closed · EmptyPageLayoutsBlank` and calls
   `edit.startBlank(pageId)`, which sets `Page.startedBlank: true` (refused on a locked
   page); `showsLayoutCard` skips a page with it. Hide stays the session-only `layoutsHidden`.

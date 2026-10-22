@@ -41,20 +41,25 @@ describe('isFirstRun', () => {
 });
 
 describe('the starts', () => {
-  it('offers each mode its blank, in mode order', () => {
+  it("offers Pages' blank, then the first blanks of a page kind", () => {
     expect(WELCOME_BLANKS).toEqual([
-      'blank',
-      'whiteboard',
-      'blank-session',
       'blank-illustration',
-      'blank-plan',
+      'blank-logo',
+      'blank-wireframe-phone',
+      'blank-wireframe-tablet',
+      'blank-wireframe-browser',
     ]);
   });
 
-  it('offers the first eight Popular templates, none of them a blank', () => {
-    expect(WELCOME_POPULAR).toHaveLength(WELCOME_TEMPLATES_MAX);
+  it('offers the first Popular templates, at most eight, none of them a blank', () => {
+    expect(WELCOME_POPULAR.length).toBeGreaterThan(0);
+    expect(WELCOME_POPULAR.length).toBeLessThanOrEqual(WELCOME_TEMPLATES_MAX);
     expect(WELCOME_POPULAR.some(isBlankTemplate)).toBe(false);
-    expect(WELCOME_POPULAR.slice(0, 3)).toEqual(['mindmap', 'flowchart', 'kanban']);
+    expect(WELCOME_POPULAR.slice(0, 3)).toEqual([
+      'logo-design',
+      'wireframe-mobile-app',
+      'wireframe-website',
+    ]);
   });
 
   it('fans three real templates', () => {
@@ -63,7 +68,7 @@ describe('the starts', () => {
   });
 
   it('makes a start at once through /new', () => {
-    expect(welcomeStartHref('flowchart')).toBe('/new?template=flowchart');
+    expect(welcomeStartHref('wireframe-mobile-app')).toBe('/new?template=wireframe-mobile-app');
   });
 
   it('opens the wizard on the searched words, or plain for none', () => {

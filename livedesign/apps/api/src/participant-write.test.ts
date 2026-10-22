@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { TabLedger } from '@livedesign/document';
 
 // A Participant's writes (docs/specs/013-workspace/share-roles.md "Integrity"): the participant content rule
 // applied to what D1 holds, and a compare-and-swap that re-reads when another writer got to the row first.
@@ -9,11 +8,7 @@ vi.mock('./db', () => db);
 
 import { TabTooLargeError } from './limits';
 import { tabStatsOfData } from './db/tab-stats';
-import {
-  TAB_CAS_MAX_ATTEMPTS,
-  writeParticipantAnswers,
-  writeParticipantOp,
-} from './participant-write';
+import { TAB_CAS_MAX_ATTEMPTS, writeParticipantOp } from './participant-write';
 
 const ME = 'a'.repeat(32);
 const box = { x: 0, y: 0, width: 100, height: 80 };
@@ -87,33 +82,5 @@ describe('writeParticipantOp', () => {
     db.getTabData.mockResolvedValue(stored([]));
     db.swapTabData.mockRejectedValue(new TabTooLargeError('t1', 3_000_000, 'swapTabData'));
     expect(await writeParticipantOp({} as never, op)).toEqual({ ok: false, status: 413 });
-  });
-});
-
-describe('writeParticipantAnswers', () => {
-  const ledger: TabLedger = {
-    vote: { round: 'r1', votes: { s1: ['k1'] }, seq: 3 },
-    elements: {},
-  };
-  const vote = { active: true, revealed: false, votesPerPerson: 3, votes: {}, round: 'r1' };
-
-  it("folds the room's dots into the stored tab", async () => {
-    db.getTabData.mockResolvedValue(stored([sticky('s1')], { vote }));
-    expect(
-      await writeParticipantAnswers({} as never, { documentId: 'd1', tabId: 't1', ledger }),
-    ).toEqual({ ok: true, changed: true });
-    expect(JSON.parse(db.swapTabData.mock.calls[0]![4] as string)).toHaveProperty('vote.votes', {
-      s1: ['k1'],
-    });
-  });
-
-  it('writes nothing when the row already holds them', async () => {
-    db.getTabData.mockResolvedValue(
-      stored([sticky('s1')], { vote: { ...vote, votes: { s1: ['k1'] } } }),
-    );
-    expect(
-      await writeParticipantAnswers({} as never, { documentId: 'd1', tabId: 't1', ledger }),
-    ).toEqual({ ok: true, changed: false });
-    expect(db.swapTabData).not.toHaveBeenCalled();
   });
 });

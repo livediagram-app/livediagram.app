@@ -9,7 +9,6 @@ import { checkMotionBudget, formatViolations } from '@livedesign/tailwind-config
 // listed here.
 const CONTENT_STYLESHEETS = [
   'app/hero-animations.css',
-  'app/hero-mode-animations.css',
   // The hero fan's swap: a card dealt out and in, paced as an illustration.
   'app/hero-fan.css',
   // Each hero scene's own keyframes, one stylesheet per scene.

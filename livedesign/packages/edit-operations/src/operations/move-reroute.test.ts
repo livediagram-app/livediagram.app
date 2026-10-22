@@ -3,37 +3,16 @@
 import { describe, expect, it } from 'vitest';
 import {
   arrowPolyline,
-  buildGraphTab,
   elementIndexFor,
-  resolveGraphInput,
   type ArrowElement,
   type BoxedElement,
   type Tab,
 } from '@livedesign/document';
 import { applied } from '../fixtures/outcomes';
+import { laidOutTab } from '../fixtures/laid-out-tabs';
 import { run } from '../fixtures/run';
 
-const fan = (): Tab =>
-  buildGraphTab(
-    't',
-    'T',
-    resolveGraphInput({
-      graph: {
-        style: 'flow',
-        direction: 'down',
-        nodes: [
-          { id: 'gw', label: 'Gateway' },
-          { id: 'b', label: 'Service B' },
-          { id: 'c', label: 'Service C' },
-        ],
-        edges: [
-          { from: 'gw', to: 'b' },
-          { from: 'gw', to: 'c' },
-        ],
-      },
-    }).graph!,
-    undefined,
-  );
+const fan = (): Tab => laidOutTab('fan');
 
 const into = (tab: Tab, id: string) =>
   tab.elements.find(

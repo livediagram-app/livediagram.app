@@ -17,7 +17,7 @@ describe('help social cards', () => {
     for (const a of articles) expect(HELP_CARDS.has(cardRoute(articleHref(a))), a.slug).toBe(true);
     for (const c of categories)
       expect(HELP_CARDS.has(cardRoute(categoryHref(c.slug))), c.slug).toBe(true);
-    expect(HELP_CARDS.size).toBeGreaterThan(250);
+    expect(HELP_CARDS.size).toBeGreaterThan(220);
   });
 
   it("titles an article's card with the article, under its top category", () => {

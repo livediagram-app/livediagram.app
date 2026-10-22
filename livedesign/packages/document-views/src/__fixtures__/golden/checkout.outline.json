@@ -11,7 +11,6 @@
     "counts": {
       "boxes": 16,
       "frames": 3,
-      "lanes": 0,
       "arrows": 11
     },
     "hidden": 0,
@@ -20,7 +19,11 @@
       "open": 1,
       "total": 2
     },
-    "rev": 41
+    "rev": 41,
+    "pages": {
+      "pages": 1,
+      "kinds": {}
+    }
   },
   "nodes": [
     {
@@ -48,7 +51,7 @@
         {
           "ref": "b811",
           "id": "b8110000-0000-4000-8000-000000000005",
-          "kind": "actor",
+          "kind": "circle",
           "unknown": false,
           "label": "Customer",
           "summary": null,
@@ -420,10 +423,10 @@
     {
       "ref": "cb02",
       "id": "cb020000-0000-4000-8000-000000000011",
-      "kind": "entity",
+      "kind": "square",
       "unknown": false,
       "label": "Order",
-      "summary": "{id uuid PK; customer_id uuid FK; status text; total_cents int}",
+      "summary": null,
       "attributes": [],
       "edges": [],
       "children": [],

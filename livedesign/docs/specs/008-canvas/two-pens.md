@@ -4,7 +4,7 @@ Status: shipped
 
 ## What
 
-The Pencil splits into two palette tiles in the **Draw** category:
+The Pencil splits into two palette tiles in the **Draw** category (a logo page's, [Logo pages](../007-editor/logo-pages.md) "The Logo palette"):
 
 - **Freehand Pencil** (`P` or `7`): the stroke is kept exactly as you drew it.
 - **Shape Pen** (`6`) — a rough circle, square, triangle or line converts to

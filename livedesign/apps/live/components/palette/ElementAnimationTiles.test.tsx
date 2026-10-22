@@ -1,7 +1,6 @@
 // @vitest-environment jsdom
 
-// The Concept and Sequence categories of the menu's Animation row (docs/specs/009-elements/concept-graphics.md
-// "Animation", docs/specs/009-elements/sequence-diagram.md "Animation").
+// The Concept category of the menu's Animation row (docs/specs/009-elements/concept-graphics.md "Animation").
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -11,7 +10,7 @@ import {
   type Element,
   type ShapeElement,
 } from '@livedesign/document';
-import { ConceptAnimTiles, SequenceAnimTiles } from './ElementAnimationTiles';
+import { ConceptAnimTiles } from './ElementAnimationTiles';
 import type { ElementStyleOps } from '@/lib/element-style-ops';
 
 afterEach(cleanup);
@@ -47,16 +46,5 @@ describe('ConceptAnimTiles', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Build Animation' }));
     const square = createShape('square', 0, 0);
     expect(lastMap(o)(square)).toBe(square);
-  });
-});
-
-describe('SequenceAnimTiles', () => {
-  it('Play commits to the sequence', () => {
-    const o = ops();
-    const seq = createShape('sequence', 0, 0);
-    render(<SequenceAnimTiles target={seq} ops={o} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Play Animation' }));
-    expect(o.commit).toHaveBeenCalledWith(expect.any(Function), 'SequenceAnim');
-    expect(lastMap(o)(seq).sequenceAnim).toBe('play');
   });
 });

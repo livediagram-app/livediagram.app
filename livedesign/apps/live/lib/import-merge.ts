@@ -6,8 +6,8 @@ import { migrateStoredTab, type Tab } from '@livedesign/document';
 // the import brings, what the receiving tab keeps, and — the part that was
 // silently wrong — what must travel or the round trip loses meaning.
 //
-// `kind` and `layers` are in that last group. An exported Plan tab re-imported without its kind came back
-// as an ordinary diagram (docs/specs/026-plan/plan-tabs.md). Without `layers`, every imported
+// `kind` and `layers` are in that last group. An exported tab re-imported without its kind came back as
+// another kind of tab. Without `layers`, every imported
 // element's `layerId` dangles and the bands it was organised into are lost.
 // A file is a stored tab like any other, so it takes the same migrations on
 // the way in (retired schemes, retired groups and docks).
@@ -20,18 +20,11 @@ function mergeFields(receiving: Tab, imported: Tab): Tab {
     ...receiving,
     elements: imported.elements,
     kind: imported.kind ?? receiving.kind,
-    // A Dashboard's rows and slots travel with its elements (docs/specs/026-plan/plan-tabs.md "Import and Export of a
-    // Dashboard"); any other import leaves the receiving tab's layout alone.
-    ...(imported.kind === 'dashboard' && imported.dashboard
-      ? { dashboard: imported.dashboard }
-      : {}),
-    // A Form tab's form travels too (docs/specs/030-forms/forms.md "restored from a file"): without it the tab came in as
-    // a Form tab with no form. Its link stays the original's; the copy is unpublished, its destination chosen again
-    // when the document does not hold it.
-    ...(imported.kind === 'form' && imported.form ? { form: imported.form } : {}),
-    // The mode the tab opens in travels with it (docs/specs/007-editor/editor-modes.md).
+    // The mode the tab opens in travels with it (docs/specs/007-editor/pages-mode.md "One mode").
     opensIn: imported.opensIn ?? receiving.opensIn,
     layers: imported.layers ?? receiving.layers,
+    // A Pages tab's pages: without them an imported tab's elements would sit on the receiving tab's pages.
+    pages: imported.pages ?? receiving.pages,
     theme: imported.theme ?? receiving.theme,
     backgroundColor: imported.backgroundColor ?? receiving.backgroundColor,
     backgroundPattern: imported.backgroundPattern ?? receiving.backgroundPattern,

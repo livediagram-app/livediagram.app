@@ -1,19 +1,18 @@
 'use client';
 
-// A tour's bookend cards as a banner (docs/specs/007-editor/editor-tour.md "The bookend cards ask nothing of the
-// editor"): the offer ("Getting started with ...?") and the last card, laid out as the sign-in banner is, a wide row
-// standing on the bottom chrome with the tour's picture, its words and its buttons side by side. It asks nothing of
+// A tour's bookend cards as a banner (docs/specs/007-editor/pages-tour.md "The steps"): the offer ("Getting
+// started with ...?") and the last card, laid out as the sign-in banner is, a wide row standing on the bottom
+// chrome with the tour's picture, its words and its buttons side by side. It asks nothing of
 // the editor: no backdrop, no focus taken, Escape only from inside it, so someone carrying on working leaves it there.
 // The sign-in banner steps aside while it is up (TOUR_CARD_ATTR), so the two never show together.
 import { useEffect, useEffectEvent, useRef, type ReactNode } from 'react';
-import type { PlanPalette } from '@livedesign/document';
 import { lucideCircleHelp } from '@livedesign/icons/lucide';
 import { lucideGlyph } from '@livedesign/ui';
 import { announceToastFloorChange, BOTTOM_CHROME_SELECTOR } from '@/components/toast/toast-floor';
 import { useChromeFloor } from '@/components/toast/useToastFloor';
-import { tourColourVars } from './tour-colours';
+import { tourColourVars, type TourPalette } from './tour-colours';
 import { TourHelpArt } from './TourHelpArt';
-import type { TourCardCopy, TourWelcomeChoice } from './tour-card-copy';
+import type { TourCardCopy } from './tour-card-copy';
 import { TourWelcomeArt } from './TourWelcomeArt';
 
 // On the body while a bookend banner is up (SignInBanner steps aside).
@@ -29,7 +28,6 @@ export function TourBanner({
   body,
   copy,
   welcomeArt,
-  welcomeChoices,
   palette,
   onNext,
   onSkip,
@@ -39,8 +37,7 @@ export function TourBanner({
   body: string;
   copy: TourCardCopy;
   welcomeArt?: ReactNode;
-  welcomeChoices?: readonly TourWelcomeChoice[];
-  palette: PlanPalette;
+  palette: TourPalette;
   onNext: () => void;
   onSkip: () => void;
 }) {
@@ -126,15 +123,7 @@ export function TourBanner({
             >
               {copy.decline}
             </button>
-            {welcomeChoices ? (
-              welcomeChoices.map((choice) => (
-                <BannerButton key={choice.id} onClick={choice.onPick}>
-                  {choice.label}
-                </BannerButton>
-              ))
-            ) : (
-              <BannerButton onClick={onNext}>{copy.accept}</BannerButton>
-            )}
+            <BannerButton onClick={onNext}>{copy.accept}</BannerButton>
           </div>
         ) : (
           <div className="flex shrink-0 items-center justify-end gap-3 whitespace-nowrap">

@@ -1,7 +1,7 @@
 # Palette Favourites (removed)
 
 Status: removed 2026-10-03, superseded by **Popular**
-([Editor modes, "The palette per mode"](../007-editor/editor-modes.md#the-palette-per-mode)).
+(Editor modes, "The palette per mode").
 
 The palette used to open on **Favourites**: a per-browser grid of the person's
 go-to tiles, with an **Edit Favourites** dialog to add and remove them, a
@@ -10,9 +10,7 @@ search box across every category.
 
 It is gone. Every editor mode's palette now opens on its own **Popular**: a
 fixed pick of twelve tiles from across that mode's categories, the same for
-everyone, not edited or reordered. Diagram mode's Popular is what the default
-Favourites were (Square, Circle, Diamond, Text, Arrow, Frame, Sticky note,
-Image, Shape pen, Table, Code block, Entity).
+everyone, not edited or reordered.
 
 What went with it:
 

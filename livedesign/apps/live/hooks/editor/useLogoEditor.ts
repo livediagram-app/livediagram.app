@@ -45,9 +45,9 @@ export function useLogoEditor<V extends PagesModeView>({
   readOnly,
   getZoom,
 }: {
-  // The pages' view while in Pages mode, and its laid-out pages; null otherwise.
-  pagesModeView: V | null;
-  pages: readonly LaidOutPage[] | null;
+  // The pages' view, and its laid-out pages.
+  pagesModeView: V;
+  pages: readonly LaidOutPage[];
   activeTab: Tab;
   commit: Commit;
   currentSelectionIds: () => Set<string>;
@@ -98,21 +98,21 @@ export function useLogoEditor<V extends PagesModeView>({
   });
   // The logo pages showing their guides (Show Guides is per page): what draws snap to.
   const guidedPages = useMemo(
-    () => pages?.filter((p) => p.kind === 'logo' && tools.guidesOn(p.id)) ?? null,
+    () => pages.filter((p) => p.kind === 'logo' && tools.guidesOn(p.id)),
     [pages, tools],
   );
   // The guides a Pen click and a stroke's ends snap to: the shown ones, on the pages showing them.
   const snapPoint = useMemo(
     () =>
       logoGuideSnapper(guidedPages, {
-        on: !!guidedPages?.length,
+        on: guidedPages.length > 0,
         parts: tools.guideParts,
       }),
     [guidedPages, tools.guideParts],
   );
   useAssignRef(snapRef, snapPoint);
   const view = useMemo(
-    () => (pagesModeView ? { ...pagesModeView, logo: { ...tools, snapPoint } } : pagesModeView),
+    () => ({ ...pagesModeView, logo: { ...tools, snapPoint } }),
     [pagesModeView, tools, snapPoint],
   );
 
@@ -137,9 +137,7 @@ export function useLogoEditor<V extends PagesModeView>({
   });
 
   // Every page's edges, centre and margin, and a logo page's keylines while its guides show.
-  const snapBoxes = pages
-    ? [...pageSnapBoxes(pages), ...logoPageSnapBoxes(guidedPages ?? [])]
-    : null;
+  const snapBoxes = [...pageSnapBoxes(pages), ...logoPageSnapBoxes(guidedPages)];
 
   return {
     drawCommit,

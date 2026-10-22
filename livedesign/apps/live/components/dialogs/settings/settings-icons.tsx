@@ -31,7 +31,6 @@ export type SettingsIconId =
 
 // The sub-categories, nested under a top-level category (Editor, Panels, Account).
 export type SettingsSubcategoryId =
-  | 'draw'
   | 'pages'
   | 'presenting'
   | 'layers'
@@ -200,18 +199,16 @@ export const CATEGORY_GLYPHS: Record<SettingsIconId, ReactNode> = {
 // are the toolbar's own (Lucide layers, as LayersStackIcon; the Collaborate
 // button's glyph), at 16px. The Map and Quick Style
 // have no toolbar button, so they take Lucide's map and palette from the
-// same family. Draw is the marker the editor mode switch shows for Draw
-// mode, so the row reads as that mode's settings. Notifications and API
+// same family. Pages is the mark Pages mode carries, so the row reads as
+// that mode's settings. Notifications and API
 // Tokens keep the bell and key they carried as top-level tiles. Plain and untinted, not a tile: the tile belongs to
 // the top-level category above, and a second column of tiles would read as
 // more top-level categories.
 const LayersSubGlyph = lucideGlyph(lucideLayers, 16);
 const MapSubGlyph = lucideGlyph(lucideMap, 16);
 const QuickStyleSubGlyph = lucideGlyph(lucidePalette, 16);
-const DrawSubGlyph = EDITOR_MODE_ICONS.draw;
 const PagesSubGlyph = EDITOR_MODE_ICONS.pages;
 const SUBCATEGORY_GLYPHS: Record<SettingsSubcategoryId, () => ReactNode> = {
-  draw: () => <DrawSubGlyph size={16} />,
   pages: () => <PagesSubGlyph size={16} />,
   presenting: () => <SlideDeckIcon />,
   layers: () => <LayersSubGlyph />,

@@ -59,8 +59,8 @@ export function ColourRow({
   onPreview?: (color: string) => void;
   onCommit?: (color: string) => void;
   onPreviewEnd?: () => void;
-  // Set where the row can store a stock colour by name (docs/specs/007-editor/editor-modes.md
-  // "One look"): the standard colours are then picked by name, Ink included, and adapt per canvas.
+  // Set where the row can store a stock colour by name (docs/specs/008-canvas/canvas-and-palette.md
+  // "Colours"): the standard colours are then picked by name, Ink included, and adapt per canvas.
   ink?: string;
   // Lines and text take the strong colours; backgrounds the soft ones.
   tone?: StandardTone;

@@ -430,7 +430,7 @@ through `elementTelemetryType`), `Element·Used·Video` on play or load.
 | `TAP_TRAVEL_PX`       | `16`                                                                                      | `draw-commit.ts`; tap versus drag, canvas px             |
 | Poster variant        | `hqdefault.jpg`                                                                           | Exists for every video, unlike `maxresdefault`           |
 | Player query          | `autoplay=1&rel=0`                                                                        | `youtubeEmbedUrl` [QC8]                                  |
-| Figma `embed_host`    | `livedesign`                                                                             | `embedTargetFor` [QC8]                                   |
+| Figma `embed_host`    | `livedesign`                                                                              | `embedTargetFor` [QC8]                                   |
 | Website sandbox       | see the iframe contract                                                                   | Never add `allow-top-navigation`                         |
 | Frame radius          | `10px`                                                                                    | `element-variant.ts`                                     |
 

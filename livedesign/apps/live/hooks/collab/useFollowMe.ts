@@ -80,7 +80,7 @@ export function useFollowMe({
       // Seeded so the first frame we apply isn't mistaken for a user gesture.
       appliedRef.current = null;
       setFollowingId(participantId);
-      // docs/specs/017-telemetry/telemetry.md: the other "look at this" tools (laser, spotlight, avatar mode)
+      // docs/specs/017-telemetry/telemetry.md: the other "look at this" tools (laser, spotlight)
       // all report as Canvas·Used, so following ranks beside them on the
       // dashboard's Selection-modes list instead of being the one pointing tool
       // nobody can see the usage of. Entering the mode only, never per frame —

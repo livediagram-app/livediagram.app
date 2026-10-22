@@ -141,7 +141,7 @@ export function PaletteDropdown({
   // SELECTED option is filtered out of the menu — hang the label on an option
   // and it disappears exactly when that option is the current one.
   groupLabels?: Record<number, string>;
-  // Interactive-tour anchor (docs/specs/007-editor/editor-tour.md): rendered as data-tour-id on the
+  // Interactive-tour anchor (docs/specs/007-editor/pages-tour.md "Mechanics"): rendered as data-tour-id on the
   // trigger and `<id>-menu` on the portalled listbox so tour steps can open
   // this dropdown and anchor to its menu.
   dataTourId?: string;
@@ -204,7 +204,7 @@ export function PaletteDropdown({
     const onDown = (e: PointerEvent) => {
       const t = e.target as Node;
       if (triggerRef.current?.contains(t) || menuRef.current?.contains(t)) return;
-      // The tour popover (docs/specs/007-editor/editor-tour.md) anchors to this menu while explaining it;
+      // The tour popover (docs/specs/007-editor/pages-tour.md) anchors to this menu while explaining it;
       // its Next/Back buttons must not count as an outside click (the tour
       // closes the menu itself when the step ends).
       if (t instanceof Element && t.closest('[data-tour-popover]')) return;
@@ -316,7 +316,7 @@ export function PaletteDropdown({
             // The open animation unfolds the menu toward the trigger
             // (dropdown-down below it, dropdown-up when flipped), so opening
             // reads as motion rather than a pop — including when the editor
-            // tour opens these programmatically (docs/specs/007-editor/editor-tour.md).
+            // tour opens these programmatically (docs/specs/007-editor/pages-tour.md "Mechanics").
             className={`fixed z-[var(--z-overlay)] w-max border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-900 ${
               // The grid needs its own columns + a floor width; the list keeps
               // hugging its content as before.

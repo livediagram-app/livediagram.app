@@ -91,16 +91,15 @@ describe('useTabWindowExport', () => {
     expect(loadTabs).toHaveBeenCalledTimes(1);
   });
 
-  // "Exports": a Plan tab draws as unavailable, so its content is never fetched for the export.
-  it('fetches each tab a window shows, a Plan tab included', async () => {
-    const slide = { id: 's', name: 'S', elements: [win('f'), win('b')] } as Tab;
+  it('fetches each tab a window shows', async () => {
+    const slide = { id: 's', name: 'S', elements: [win('f'), win('d')] } as Tab;
     const flow = { id: 'f', name: 'Flow', elements: [box] } as Tab;
-    const board = { id: 'b', name: 'Board', kind: 'board', elements: [] } as unknown as Tab;
+    const deck = { id: 'd', name: 'Deck', elements: [] } as Tab;
     const loadTabs = vi.fn(async (_: readonly string[]) => [] as string[]);
     const { result } = renderHook(() =>
-      useTabWindowExport({ tab: slide, tabs: [slide, flow, board], loadTabs, active: true }),
+      useTabWindowExport({ tab: slide, tabs: [slide, flow, deck], loadTabs, active: true }),
     );
     await waitFor(() => expect(result.current.ready).toBe(true));
-    expect(loadTabs).toHaveBeenCalledWith(['f', 'b']);
+    expect(loadTabs).toHaveBeenCalledWith(['f', 'd']);
   });
 });

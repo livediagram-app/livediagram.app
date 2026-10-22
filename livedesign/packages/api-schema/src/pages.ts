@@ -106,7 +106,6 @@ export type PageSummary = {
 
 export type PagesAnswer = {
   tab: { id: string; rev: number };
-  switched: boolean;
   lines: string[];
   pages: PageSummary[];
   changesetId: string | null;

@@ -5,9 +5,8 @@
 //
 // Split from FeatureArt.tsx; see ./shared for Frame and the colour constants.
 
-import type { ReactNode } from 'react';
 import { Arrow, MiniWindow, Node, PANEL, PanelShadow, STRONG, SUBTLE } from './features-parts';
-import { EMERALD, Frame, MONO, PINK, SKY, VIOLET } from './shared';
+import { EMERALD, Frame, MONO, SKY, VIOLET } from './shared';
 
 const VIEW = '0 0 300 96';
 
@@ -202,89 +201,6 @@ export function McpArt() {
             <Arrow d="M240 70 H232" head={[227, 70, 180]} />
           </g>
         </MiniWindow>
-      </svg>
-    </Frame>
-  );
-}
-
-// The diagram drawn on the canvas and again in each exported file, mark for mark.
-function ExportDiagram({ x, y, s = 1 }: { x: number; y: number; s?: number }) {
-  return (
-    <g transform={`translate(${x} ${y}) scale(${s})`}>
-      <Node x={0} y={0} w={30} h={13} label="Plan" r={3} />
-      <Node x={44} y={0} w={30} h={13} label="Build" r={3} />
-      <Node x={22} y={28} w={30} h={13} label="Ship" r={3} />
-      <Arrow d="M30 6.5 H38" head={[43, 6.5, 0]} />
-      <Arrow d="M59 13 L44 24" head={[48, 27, 144]} />
-      <circle cx="66" cy="34" r="5" fill={PINK} fillOpacity="0.85" />
-    </g>
-  );
-}
-
-// An exported file: a page with a folded corner and its format on a tab.
-function FileCard({
-  x,
-  y,
-  label,
-  color,
-  children,
-  className,
-  delay,
-}: {
-  x: number;
-  y: number;
-  label: string;
-  color: string;
-  children?: ReactNode;
-  className?: string;
-  delay?: string;
-}) {
-  return (
-    <g className={className} style={delay ? { animationDelay: delay } : undefined}>
-      <PanelShadow x={x} y={y} w={66} h={54} r={4} />
-      <path
-        className="fill-white stroke-slate-200 dark:fill-slate-900 dark:stroke-slate-700"
-        d={`M${x + 4} ${y} H${x + 56} L${x + 66} ${y + 10} V${y + 50} a4 4 0 0 1 -4 4 H${x + 4} a4 4 0 0 1 -4 -4 V${y + 4} a4 4 0 0 1 4 -4 Z`}
-        strokeWidth="1"
-      />
-      <path
-        className="fill-slate-100 stroke-slate-200 dark:fill-slate-800 dark:stroke-slate-700"
-        d={`M${x + 56} ${y} V${y + 6} a4 4 0 0 0 4 4 H${x + 66}`}
-        strokeWidth="1"
-      />
-      <rect x={x + 5} y={y + 3} width="20" height="8.5" rx="2" fill={color} />
-      <text x={x + 15} y={y + 9.4} textAnchor="middle" fontSize="5.8" fontWeight="700" fill="#fff">
-        {label}
-      </text>
-      {children}
-    </g>
-  );
-}
-
-/** Export: the canvas leaves as PNG, SVG or PDF, the same marks in the same places. */
-export function ExportArt() {
-  return (
-    <Frame canvas>
-      <svg viewBox={VIEW} className="absolute inset-0 h-full w-full">
-        {/* On the canvas. */}
-        <ExportDiagram x={24} y={26} s={1.15} />
-
-        {/* Out. */}
-        <path
-          className="stroke-slate-400 dark:stroke-slate-500"
-          d="M122 48 H146"
-          strokeWidth="1.3"
-          strokeLinecap="round"
-          strokeDasharray="2.5 2.5"
-        />
-        <path className="fill-slate-400 dark:fill-slate-500" d="M151 48 l-5 -3 v6 z" />
-
-        {/* The files, fanned. */}
-        <FileCard x={214} y={10} label="PDF" color="#ef4444" className="fa-pop" delay="0.5s" />
-        <FileCard x={188} y={23} label="SVG" color={VIOLET} className="fa-pop" delay="0.3s" />
-        <FileCard x={162} y={36} label="PNG" color={SKY} className="fa-pop" delay="0.1s">
-          <ExportDiagram x={168} y={52} s={0.7} />
-        </FileCard>
       </svg>
     </Frame>
   );

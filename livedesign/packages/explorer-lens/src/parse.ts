@@ -11,7 +11,6 @@ import {
   PEOPLE_VALUES,
   SPACE_FIXED_VALUES,
   SPACE_TEAM_PREFIX,
-  TEMPLATE_VALUES,
   isLensDimension,
   type LensDimension,
 } from './dimensions';
@@ -43,7 +42,6 @@ type ValueReading = { ok: true; value: string } | { ok: false; problem: WordProb
 
 const NO_FILTERS: LensFilters = {
   'opens-in': [],
-  template: [],
   'made-by': [],
   edited: [],
   people: [],
@@ -143,7 +141,6 @@ function filtersOf(applied: ReadonlyMap<LensDimension, readonly string[]>): Lens
   const of = (dimension: LensDimension) => applied.get(dimension) ?? [];
   return {
     'opens-in': inOrder(OPENS_IN_VALUES, of('opens-in')),
-    template: inOrder(TEMPLATE_VALUES, of('template')),
     'made-by': inOrder(MADE_BY_VALUES, of('made-by')),
     edited: inOrder(EDITED_VALUES, of('edited')),
     people: inOrder(PEOPLE_VALUES, of('people')),

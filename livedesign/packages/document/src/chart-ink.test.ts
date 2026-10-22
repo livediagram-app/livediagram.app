@@ -201,7 +201,7 @@ describe('chartPageGrounds', () => {
   it('leaves a chart over a surface of unknown tone as it is', () => {
     const page = pageWith({ kind: 'solid', color: NAVY });
     const image = {
-      ...createShape('plan-sheet', page.rect.x, page.rect.y + 260),
+      ...createShape('legend', page.rect.x, page.rect.y + 260),
       id: 'widget',
       width: 500,
       height: 300,

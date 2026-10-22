@@ -112,7 +112,7 @@ Timers of every other kind are not touched. That covers `GRACE_MS`, `CLOSE_DELAY
 | `fly-up-in`                 | 420ms  | `long`  | Banners, search, template picker             |
 | `dialog-in` (new)           |        | `long`  | The shared Dialog shell's centred panel      |
 | `fade-in` on the backdrop   |        | `micro` | The shared Dialog shell's dim                |
-| `sheet-up`                  | 340ms  | `long`  | Poll prompt sheet                            |
+| `sheet-up`                  | 340ms  | `long`  | Bottom sheets and phone dialogs              |
 | `slide-row-in` / `-out`     | 220ms  | `micro` | Explorer rows, back bar, placement list (D4) |
 | `slide-in-left`             | 240ms  | `short` | Mobile Explorer drawer                       |
 | `tip-next` / `tip-prev`     | 260ms  | `short` | Tour steps, template-picker phases           |
@@ -149,7 +149,7 @@ Every chrome `duration-<n>` becomes a token. Hover-driven ones become `duration-
     `TimelineLanesOverlay`, and the `MovablePanel` fade.
   - `short`: `ToolbarStripRail`, `AccordionSection`,
     `MovablePanel` rows, `AnimatedHeightBox`, the `PortalMenu` body and chevron, the
-    `template-picker-wizard` progress bar, the `PollPanel` and `VotePanel` bars, and `NoteBox`.
+    `template-picker-wizard` progress bar and `NoteBox`.
   - `long`: `TourPopover`, `TourHost`, `PresentationHud`.
   - Inline: the `CanvasSelectionToolbars` fades take `micro`. `QuickConnectRing` takes `micro`
     for the plus and opacity, and `short` for the ring's transform. `explorer-icons` takes `micro`.
@@ -174,21 +174,17 @@ Every chrome `duration-<n>` becomes a token. Hover-driven ones become `duration-
 
 Canvas and content durations above the ceiling move into their stylesheets, unchanged:
 
-- The `QaNoteRow` heat bar (500ms) becomes `.qa-heat` in `qa-board.css`.
-- The `useFlipList` play transition (420ms) becomes `.qa-flip-move` in `qa-board.css`. The hook
-  adds the class instead of writing the transition inline. Like the old inline value, it stays on
-  the row.
 - The `HeroIllustration` card dim (500ms) becomes `.hero-card-dim` in `hero-animations.css`.
 
 ### `canvas-motion.css`
 
-This is a pure move out of `globals.css` into a new file, imported right after `qa-board.css`. It
+This is a pure move out of `globals.css` into a new file, imported right after `collab-cards.css`. It
 takes these blocks:
 
 - The animated elements: `lvd-anim-*`, `lvd-text-*`, `lvd-svg-*`, `lvd-trace-run`, `lvd-grad-*`,
-  `lvd-vote-*`, `lvd-arrow-*`, `lvd-icon-*`, `lvd-prog-*`, `lvd-rating-*` and `lvd-pie-*`, with
+  `lvd-arrow-*`, `lvd-icon-*`, `lvd-prog-*`, `lvd-rating-*` and `lvd-pie-*`, with
   their reduced-motion block.
-- `[data-insert-shift]` and `lvd-done-*`.
+- `[data-insert-shift]`.
 - The presentation slide transitions (`lvd-slide-*`, `[data-slide-move]` and the reduced-motion
   fade).
 - `longpress-hold` and the new `element-pop-in`.

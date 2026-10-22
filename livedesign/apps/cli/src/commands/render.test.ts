@@ -3,7 +3,7 @@ import { run } from '../main';
 import { fakeIo, NOW, TOKEN, type FakeIo, type Route } from '../testing/fake-io';
 import { svgSize } from '../render/png';
 
-// `tab render`, `graph render` and `export --format png` (docs/specs/015-api/blueprints/cli.md "Previews", CLI30,
+// `tab render` and `export --format png` (docs/specs/015-api/blueprints/cli.md "Previews", CLI30,
 // CLI31): real PNGs from the shared renderer, on a fake host.
 
 const DOC = 'aaaa1111-0000-4000-8000-000000000001';
@@ -77,36 +77,6 @@ describe('tab render', () => {
     expect([code, err]).toEqual([
       7,
       expect.stringMatching(/(resvg\.wasm|Inter-Regular\.ttf) is missing beside the CLI/),
-    ]);
-  });
-});
-
-describe('graph render', () => {
-  it('draws a Mermaid file offline as the api would lay it out', async () => {
-    const io = fakeIo({ files: { '/work/flow.mmd': 'flowchart LR\n  web[Web app] --> api[API]' } });
-    const png = await cli(['graph', 'render', 'flow.mmd', '--png', 'flow.png'], io);
-    expect(png.code).toBe(0);
-    expect([...io.byteMap.get('flow.png')!.slice(0, 4)]).toEqual(PNG);
-    await cli(['graph', 'render', 'flow.mmd', '--png', 'again.png'], io);
-    expect(io.byteMap.has('again.png')).toBe(true);
-    await cli(['graph', 'render', 'flow.mmd', '--svg', 'flow.svg'], io);
-    const svg = io.fileMap.get('flow.svg')!.data;
-    expect(svg).toContain('Web app');
-    expect(io.requests).toEqual([]);
-  });
-
-  it('reads the graph from stdin', async () => {
-    const io = fakeIo({ stdin: 'flowchart TD\n  a --> b' });
-    const { code, out } = await cli(['graph', 'render', '-', '--svg', 'g.svg'], io);
-    expect([code, out]).toEqual([0, expect.stringMatching(/^g\.svg {2}\d+×\d+ · 1 KB\n$/)]);
-  });
-
-  it('refuses a file that holds no graph', async () => {
-    const io = fakeIo({ files: { '/work/notes.txt': 'hello' } });
-    const { code, err } = await cli(['graph', 'render', 'notes.txt', '--svg', 'x.svg'], io);
-    expect([code, err]).toEqual([
-      1,
-      expect.stringContaining('notes.txt holds no graph or Mermaid'),
     ]);
   });
 });

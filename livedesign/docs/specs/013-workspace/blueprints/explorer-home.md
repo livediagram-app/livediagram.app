@@ -17,8 +17,8 @@ Scope, by file:
 | `packages/api-schema/src/within-reach.ts`                                      | `withinReach`, `utcDay`; shared with the view and the Shapes flyout                            |
 | `packages/api-schema/src/creation-use.ts`                                      | `readMarkUsed`, `MARK_USED_INVALID`                                                            |
 | `packages/api-schema/src/error-telemetry.ts`                                   | `home` resource                                                                                |
-| `apps/api/migrations/0063_document_opens.sql`                                  | `document_opens`, its indexes, `timeline_events_actor_idx`                                     |
-| `apps/api/migrations/0065_within_reach.sql`                                    | Drops frecency: the rank index, `frecency_key`, `open_days`, `first_opened_at`, the seed stamp |
+| `apps/api/migrations/0001_livedesign_baseline.sql`                             | `document_opens`, its indexes, `timeline_events_actor_idx`                                     |
+| `apps/api/migrations/0001_livedesign_baseline.sql`                             | Drops frecency: the rank index, `frecency_key`, `open_days`, `first_opened_at`, the seed stamp |
 | `apps/api/src/home/local-day.ts`                                               | `parseTimeZone`, `localDay`                                                                    |
 | `apps/api/src/home/what-happened.ts`                                           | `verbOf`, `groupWhatHappened` (pure)                                                           |
 | `apps/api/src/home/record-open.ts`                                             | `recordDocumentOpen`: the dedupe, the write, the last open, the fingerprints                   |
@@ -189,9 +189,7 @@ DESC`, limit `HOME_WHAT_HAPPENED_ACTION_MAX` (`D68`).
 The Timeline backfill writes its `document_edited` with `snapshot.backfilled = true` and `keepExisting` (the
 upsert does nothing when the day's row already exists), so it never marks a real edit. A real edit landing on a
 backfilled row replaces the snapshot and so clears the mark. `REAL_EDIT` (`db/home.ts`) is the one predicate:
-`json_extract(snapshot, '$.backfilled') IS NOT 1`. Within reach counts only real edits as use days. Migration 0063 marks the rows backfilled before the mark
-existed: `document_edited` rows whose `created_at` is more than `LEGACY_BACKFILL_SKEW_MS` (60 s) after their
-`occurred_at` (a live edit is stored within milliseconds of the time it claims; `D79`).
+`json_extract(snapshot, '$.backfilled') IS NOT 1`. Within reach counts only real edits as use days.
 
 ### Home read side effects
 
@@ -300,18 +298,8 @@ unparseable body), never an empty Home, as `apiListTimeline` does.
 
 ## Data and persistence
 
-Migration `0063_document_opens.sql` (`D65`) created `document_opens`, `timeline_events_actor_idx` and the seed
-stamp, and marked legacy reconstructed edits. Migration `0065_within_reach.sql` (`D127`) retires frecency:
-
-```sql
-DROP INDEX IF EXISTS document_opens_rank_idx;
-ALTER TABLE document_opens DROP COLUMN frecency_key;
-ALTER TABLE document_opens DROP COLUMN open_days;
-ALTER TABLE document_opens DROP COLUMN first_opened_at;
-ALTER TABLE timeline_scope_state DROP COLUMN frecency_seeded_at;
-```
-
-What remains:
+The baseline migration, `0001_livedesign_baseline.sql`, creates `document_opens` and `timeline_events_actor_idx`
+(`D65`, `D127`):
 
 ```sql
 CREATE TABLE document_opens (
@@ -463,7 +451,7 @@ stay on their own lazy route.
 | `create_document` passes `markUsed` through only when given                             | `apps/mcp/src/create-document-placement.test.ts`                                          |
 | Signed in: an API create is in Jump Back In unopened; one with `markUsed: false` is not | `apps/live/e2e/clerk-stub/creation-use.spec.ts`                                           |
 | Reads: others only, opens private, rejections, rate limit, the unread mark, no timeline | `apps/api/src/routes/home.test.ts` (real SQLite)                                          |
-| The backfill marks its edit, never marks a real one; migration 0063 marks legacy rows   | `apps/api/src/home/real-edits.test.ts` (real SQLite)                                      |
+| The backfill marks its edit, never marks a real one                                     | `apps/api/src/home/real-edits.test.ts` (real SQLite)                                      |
 | The feed and the unread count leave opens out                                           | `apps/api/src/db/timeline-opens.test.ts` (real SQLite)                                    |
 | Migration merge and account deletion                                                    | `apps/api/src/db/document-opens.test.ts`, `account-owner-columns.test.ts`                 |
 | Reply flag on both comment paths, `assigneeId` on assignment                            | `apps/api/src/timeline/tab-diff.test.ts`, `apps/api/src/routes/home-snapshots.test.ts`    |
@@ -476,17 +464,16 @@ stay on their own lazy route.
 
 ## Constants and configuration
 
-| Constant                        | Value     | Where                                         | Provenance                                   | Safe range     |
-| ------------------------------- | --------- | --------------------------------------------- | -------------------------------------------- | -------------- |
-| `HOME_WITHIN_REACH_PER_ROW`     | 4         | `packages/api-schema/src/home.ts`             | Spec (4 most used, 4 recent)                 | 3 to 6         |
-| `WITHIN_REACH_USE_WINDOW_DAYS`  | 90        | same                                          | Spec ("the last 90 days")                    | 30 to 365      |
-| `HOME_WHAT_HAPPENED_DAYS`       | 14        | same                                          | Spec                                         | 7 to 30        |
-| `HOME_WHAT_HAPPENED_ACTION_MAX` | 200       | same                                          | `D68`                                        | 100 to 500     |
-| `HOME_TZ_MAX_LENGTH`            | 64        | same                                          | Longest IANA name is 32; double for headroom | 32 to 128      |
-| `TIMELINE_RETENTION_MS`         | 365 days  | `packages/api-schema/src/timeline.ts`         | Spec (the Timeline's retention), reused      | fixed          |
-| `LEGACY_BACKFILL_SKEW_MS`       | 60 s      | `apps/api/migrations/0063_document_opens.sql` | `D79`                                        | 10 s to 10 min |
-| `SEEN_WINDOW_MS`                | 60 s      | `apps/api/src/timeline/seen.ts`               | [Timeline](../timeline.md) §2.5, reused      | fixed          |
-| `HOME_RATE_LIMITER`             | 60 / 60 s | `apps/api/wrangler.toml`, namespace `1008`    | `D73`                                        | 30 to 120      |
+| Constant                        | Value     | Where                                      | Provenance                                   | Safe range |
+| ------------------------------- | --------- | ------------------------------------------ | -------------------------------------------- | ---------- |
+| `HOME_WITHIN_REACH_PER_ROW`     | 4         | `packages/api-schema/src/home.ts`          | Spec (4 most used, 4 recent)                 | 3 to 6     |
+| `WITHIN_REACH_USE_WINDOW_DAYS`  | 90        | same                                       | Spec ("the last 90 days")                    | 30 to 365  |
+| `HOME_WHAT_HAPPENED_DAYS`       | 14        | same                                       | Spec                                         | 7 to 30    |
+| `HOME_WHAT_HAPPENED_ACTION_MAX` | 200       | same                                       | `D68`                                        | 100 to 500 |
+| `HOME_TZ_MAX_LENGTH`            | 64        | same                                       | Longest IANA name is 32; double for headroom | 32 to 128  |
+| `TIMELINE_RETENTION_MS`         | 365 days  | `packages/api-schema/src/timeline.ts`      | Spec (the Timeline's retention), reused      | fixed      |
+| `SEEN_WINDOW_MS`                | 60 s      | `apps/api/src/timeline/seen.ts`            | [Timeline](../timeline.md) §2.5, reused      | fixed      |
+| `HOME_RATE_LIMITER`             | 60 / 60 s | `apps/api/wrangler.toml`, namespace `1008` | `D73`                                        | 30 to 120  |
 
 No environment variable. The rate limiter binding is optional; absent means allow.
 

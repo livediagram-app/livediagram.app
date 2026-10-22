@@ -52,19 +52,6 @@ export function BuildTabIcon() {
   );
 }
 
-// Diagrams (Diagram mode's half of Build, docs/specs/010-palette/build-category.md): a node branching into two, the
-// structures that grow as you type (a mind map, an org chart, a flowchart).
-export function DiagramsTabIcon() {
-  return (
-    <Glyph size={18} units={18} strokeLinecap="butt">
-      <rect x="6" y="1.8" width="6" height="4.2" rx="1" />
-      <path d="M9 6v2.6M4.2 11V8.6h9.6V11" />
-      <rect x="1.6" y="11" width="5.2" height="4.2" rx="1" />
-      <rect x="11.2" y="11" width="5.2" height="4.2" rx="1" />
-    </Glyph>
-  );
-}
-
 // Concepts (docs/specs/009-elements/concept-graphics.md): a small pyramid of stacked tiers, the shape ideas come in.
 export function ConceptsTabIcon() {
   return (

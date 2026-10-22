@@ -8,7 +8,6 @@ export type LintLogger = (
 
 const LEVELS: Readonly<Record<string, 'info' | 'warn' | 'debug'>> = {
   '[lint] crossings skipped': 'warn',
-  '[lint] theme unresolved': 'debug',
 };
 
 export const consoleLintLogger: LintLogger = (fingerprint, fields) => {

@@ -86,7 +86,6 @@ const COMPASS_ANCHORS = ORDER.filter((a) => TABLE[a].cls !== 'quarter');
 const OFFERED: Partial<Record<ShapeKind, readonly Anchor[]>> = {
   circle: COMPASS_ANCHORS,
   diamond: COMPASS_ANCHORS,
-  actor: COMPASS_ANCHORS,
   // Three per face (left, right, base); no corners, nothing at the apex.
   triangle: ['ene', 'e', 'ese', 'sse', 's', 'ssw', 'wsw', 'w', 'wnw'],
   // The wavy bottom edge has no corners worth pinning to.

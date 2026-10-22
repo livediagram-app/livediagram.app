@@ -455,7 +455,7 @@ describe('usePathDrawGesture', () => {
       expect(s.chord('z').defaultPrevented).toBe(false);
     });
 
-    it('gives the dock the same undo and redo', () => {
+    it('gives the Undo and Redo buttons the same undo and redo', () => {
       const s = setup();
       s.click(0, 0);
       s.click(100, 0);

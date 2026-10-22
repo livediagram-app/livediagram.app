@@ -148,8 +148,8 @@ export function applyFillColorToEl(el: Element, color: string): Element {
   return el;
 }
 
-// A colour row's choice on an element that stores stock colours by name (docs/specs/007-editor/
-// editor-modes.md "One look"): a standard colour (Ink, Grey, Red ...) is stored as its name and
+// A colour row's choice on an element that stores stock colours by name (docs/specs/008-canvas/
+// canvas-and-palette.md "Colours"): a standard colour (Ink, Grey, Red ...) is stored as its name and
 // drawn in its version for the canvas; any other colour replaces the name.
 const lineColour = (color: string): { strokeColor?: string; penColour?: PenColourName } =>
   isPenColourName(color)
@@ -201,19 +201,18 @@ export function applyArrowheadColorToEl(el: Element, color: string): Element {
 }
 
 // The heading band's fill, for the elements that HAVE a heading distinct from
-// their body: a table's header row and a lane's title gutter. A no-op on
+// their body: a table's header row. A no-op on
 // anything else, so a multi-selection containing a mix only paints the ones
 // with a heading rather than parking a dead field on the rest.
 export function applyHeaderFillToEl(el: Element, color: string): Element {
   if (el.type === 'table') return { ...el, headerFill: color, tablePreset: undefined };
-  if (el.type === 'shape' && el.shape === 'lane') return { ...el, headerFill: color };
   return el;
 }
 
 // Border weight / pattern apply to any border-bearing element (shapes + the
 // freehand pen) plus tables; radius is shape-only.
 export function applyBorderStrokeToEl(el: Element, value: BorderStroke): Element {
-  // A pen stroke's recorded width (docs/specs/023-draw-mode/draw-mode.md) outranks the preset when
+  // A pen stroke's recorded width outranks the preset when
   // drawn, so choosing a preset must drop it or the choice would do nothing.
   // A highlighter never draws the preset, so its width stays.
   if (el.type === 'freehand' && el.pen !== 'highlighter' && el.penWidth !== undefined) {

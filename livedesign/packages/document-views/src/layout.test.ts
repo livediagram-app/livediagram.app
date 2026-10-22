@@ -94,10 +94,10 @@ describe('layoutView (R17)', () => {
     expect(exact.text.split('\n').at(-1)).toMatch(
       /^… \d+ boxes hidden; 11 arrows hidden: view --budget \d+$/,
     );
-    const partArrows = layoutView(checkout(), { budget: 190 }).json;
+    const partArrows = layoutView(checkout(), { budget: 200 }).json;
     expect(partArrows.boxes).toHaveLength(19);
     expect(partArrows.arrows.length).toBeLessThan(11);
-    const coarse = layoutView(checkout(), { coarse: true, budget: 75 });
+    const coarse = layoutView(checkout(), { coarse: true, budget: 85 });
     expect(coarse.json.rows?.length).toBeLessThan(4);
     expect(coarse.json.rows?.length).toBeGreaterThan(0);
     expect(coarse.text.split('\n').at(-1)).toMatch(/^… \d containers? hidden: view --budget \d+$/);

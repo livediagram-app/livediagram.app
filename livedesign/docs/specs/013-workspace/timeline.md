@@ -829,7 +829,7 @@ for a run (§10).
 
 <!-- legacy-names -->
 
-Migration `0042_timeline.sql`. Three tables, owned by the api worker. Migration `0055_documents.sql` renamed the `diagram` source and scope types, the `diagram_*` and `team_diagram_*` event types, the stored titles ("Diagram Created" and so on) and the snapshot keys `diagramId` / `diagramName` to their document forms ([Document](../006-document/document.md#renaming-from-diagram)).
+The baseline migration, `0001_livedesign_baseline.sql`. Three tables, owned by the api worker.
 <!-- /legacy-names -->
 
 ### 3.1 `timeline_events`
@@ -838,7 +838,7 @@ Migration `0042_timeline.sql`. Three tables, owned by the api worker. Migration 
 CREATE TABLE timeline_events (
   id           TEXT PRIMARY KEY,          -- UUID
   actor_id     TEXT,                      -- owner id of who did it; NULL for system events
-  source_type  TEXT NOT NULL,             -- 'diagram' | 'team' | 'account' | ...
+  source_type  TEXT NOT NULL,             -- 'document' | 'team' | 'account' | ...
   source_id    TEXT NOT NULL,
   event_type   TEXT NOT NULL,             -- 'document_created' | 'comment_added' | ...
   dedupe_key   TEXT NOT NULL DEFAULT '',  -- '' for one-shot events; see §4.2
@@ -887,10 +887,10 @@ column has no such failure mode; use it.
 ```sql
 CREATE TABLE timeline_event_scopes (
   event_id   TEXT NOT NULL REFERENCES timeline_events(id) ON DELETE CASCADE,
-  scope_type TEXT NOT NULL,               -- v1: 'user'. Reserved: 'diagram', 'team'.
+  scope_type TEXT NOT NULL,               -- v1: 'user'. Reserved: 'document', 'team'.
   scope_id   TEXT NOT NULL,               -- an owner id when scope_type = 'user'
   added_at   INTEGER NOT NULL,
-  deleted_at INTEGER,                     -- set by Remove from Timeline (§2.9); migration 0044
+  deleted_at INTEGER,                     -- set by Remove from Timeline (§2.9)
   PRIMARY KEY (scope_type, scope_id, event_id)
 );
 
@@ -996,12 +996,11 @@ Favourites are not built. Everything here is additive.
   links to a 404.
   **And a deleted document leaves no tombstone.** From the Timeline's
   point of view it never existed: nothing is written in its place, and
-  there is no `document_deleted` event type. There was one — "Diagram
+  there is no `document_deleted` event type. There was one — "Document
   Deleted / Payments architecture", in danger red, surviving the sweep
   by being written after it — and it was noise the reader had asked to
   be rid of: the delete was their own act, and a red card for it told
-  them nothing they didn't know. Migration `0045` swept the rows already
-  written. (Folders, themes and teams keep their tombstones: those are
+  them nothing they didn't know. (Folders, themes and teams keep their tombstones: those are
   the one row that answers "what happened to it?" for a container other
   people may have relied on.)
   `markTimelineEventsDeletedBySource(env, sourceType, sourceId)` is the
@@ -1054,7 +1053,7 @@ loss, a failed save is not.
 One helper decides who sees a document event:
 
 ```ts
-audienceForDocument(env, diagram): Promise<string[]>   // owner ids
+audienceForDocument(env, document): Promise<string[]>   // owner ids
 ```
 
 - Always the document's `owner_id`.
@@ -1199,15 +1198,14 @@ author id other than the saver's is never trusted as an actor.
 **A deleted comment takes its words with it.** Every path that removes a comment
 deletes its `comment_added` event, and, when it opened its thread, the thread's
 `comment_resolved` event, whose description is that opening comment's text: the
-delete-own comment route, a Plan card's comment delete, and a tab save that drops
+delete-own comment route and a tab save that drops
 comment ids (one by one, or with their element), diffed by `removedComments`. A
 comment that comes back (an undo) is new again to the next save and is recorded
 afresh.
 
-Deleting a whole tab or a whole Plan card retracts every comment it held the same
-way (`retractTabComments`, `retractCardComments`): the tab delete route unlinks the
-tab and reads its stored body in one statement (`deleteTabRow`), and the card delete
-route reads the card as it deletes it (`deleteItemRow`), so a comment written a
+Deleting a whole tab retracts every comment it held the same
+way (`retractTabComments`): the tab delete route unlinks the
+tab and reads its stored body in one statement (`deleteTabRow`), so a comment written a
 moment before can never slip between a read and the delete. Every comment event is
 pinned to the document whose write recorded it, so a tab unlinked from one document
 loses only that document's events; another document still holding the tab keeps
@@ -1366,9 +1364,7 @@ documents is a broken-looking feature. On the first read of a scope
   `backfilled: true`, and it never overwrites a real edit already
   recorded for that day. A real edit landing on it later replaces the
   snapshot and so the mark. [Explorer Home](explorer-home.md) counts
-  only real edits; rows backfilled before the mark existed were marked
-  once by migration 0063 (an edit stored more than a minute after the
-  time it claims to have happened).
+  only real edits.
 - For each team the caller has joined: a `team_member_joined` event at
   their `team_members.created_at`.
 - Nothing else. Comments and actions are inside tab JSON and
@@ -1409,7 +1405,7 @@ Response:
   "items": [
     {
       "id": "...",
-      "sourceType": "diagram",
+      "sourceType": "document",
       "sourceId": "...",
       "eventType": "comment_added",
       "title": "Comment Added",

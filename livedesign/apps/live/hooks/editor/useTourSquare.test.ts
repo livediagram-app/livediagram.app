@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { createShape, type Tab } from '@livedesign/document';
 import { useTourSquare } from './useTourSquare';
 
-// The welcome tour's demonstration square (docs/specs/007-editor/editor-tour.md): placed on the active tab,
+// A tour's demonstration square (docs/specs/007-editor/pages-tour.md): placed on the active tab,
 // taken away when the tour ends, and nothing else touched.
 function harness(initial: Tab[]) {
   let tabs = initial;

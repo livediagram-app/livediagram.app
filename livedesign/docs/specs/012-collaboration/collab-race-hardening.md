@@ -2,12 +2,10 @@
 
 Status: **implemented** (phases 1 to 5).
 
-A room of people pressing the same cards at once must not lose, duplicate or
-retract anybody's action. The dot-vote was fixed for this first ([Session tools (timer + voting)](session-tools.md),
-"Casting a dot"). A review of every element used during collaboration found
-the same failure in the done check, estimate, temperature, idea box,
-checklist and comment threads, plus a handful of transport bugs underneath
-all of them. This spec records what the review found and the order it is
+A room of people pressing the same elements at once must not lose, duplicate or
+retract anybody's action. A review of every element several people write at once found
+the same failure in checklist ticks and comment threads, plus a handful of transport bugs underneath
+both. This spec records what the review found and the order it is
 being fixed in.
 
 ## Why presses were lost
@@ -17,18 +15,15 @@ Six shared causes. Most element bugs are one of these showing through.
 1. **A press ships the whole element, late.** An element change only leaves
    the browser through the autosave (600 ms debounce, then the D1 PUT, then
    the broadcast), as an `el` `update` op that replaces the whole element on
-   every receiver ([Realtime conflict resolution](realtime-conflict-resolution.md)). Two presses on one card inside that window
+   every receiver ([Realtime conflict resolution](realtime-conflict-resolution.md)). Two presses on one element inside that window
    overwrite each other.
 2. **Collaborative presses pushed undo history.** `useCollabElements` wrote
-   through `commitTabs`, which pushes an undo step, although [Per-participant responses](participant-responses.md) said it
-   must not. Undo re-grafted only comment threads, actions, the timer and the
-   vote, so Ctrl+Z withdrew your own answer and anyone else's that had
-   arrived since the snapshot, for the whole room.
+   through `commitTabs`, which pushes an undo step, although a press several people make must not be undoable. Ctrl+Z withdrew your own
+   tick and anyone else's that had arrived since the snapshot, for the whole room.
 3. **The save baseline ignored remote ops.** `lastSavedTabsRef` was not
    updated when a peer's op was applied, so the next local save diffed
    against a pre-remote snapshot and re-broadcast the peer's elements in the
-   local, possibly stale, form. It also made every participant's first save
-   after a vote started re-send the whole dots map.
+   local, possibly stale, form.
 4. **A remote op cancelled the pending local save.** The autosave skipped
    one run whenever `remoteUpdateRef` was set. A peer's op arriving within
    600 ms of a local press cancelled the press's save and broadcast
@@ -39,21 +34,16 @@ Six shared causes. Most element bugs are one of these showing through.
    landed last. (Multi-writer fields merge since phase 3; element content is
    written again by the saver that may have landed last, see
    [A save that wrote over a peer's change writes again](#a-save-that-wrote-over-a-peers-change-writes-again).)
-6. **Whole-tab fallbacks.** A cleared field (Clear Timer, Clear Vote) or a
+6. **Whole-tab fallbacks.** A cleared tab field (a reset background) or a
    change of more than 20 elements travels as a whole `tab` op, which
    replaces every element on receivers, wiping their unsaved presses.
 
 ## Phase 1 (shipped): stop the client losing its own and its peers' work
 
-- **Collaborative presses do not push undo** (causes 2). Casting or
-  withdrawing a response, revealing, clearing, adding an idea, taking the
-  roll, pressing an agenda row and the picker's roll all go through the
-  non-history `tickTabs`, as the vote does. Scatter still commits: it
-  creates stickies, which is authoring.
-- **Undo re-grafts every live collaborative field** (cause 2). The fields a
-  press writes (`responses`, `responsesRevealed`, `ideaCards`,
-  `ideasRevealed`, `rollCall`, `agendaCurrent`, `pickerResult`) join
-  `commentThread` and `action` in `LIVE_ELEMENT_FIELDS`, so restoring a
+- **Collaborative presses do not push undo** (cause 2). Ticking a checklist
+  row and changing a comment thread go through the non-history `tickTabs`.
+- **Undo re-grafts every live collaborative field** (cause 2). `commentThread`,
+  `action` and the checklist ticks are in `LIVE_ELEMENT_FIELDS`, so restoring a
   snapshot keeps their present values.
 - **The save baseline follows remote ops** (causes 3 and 4). Every applied
   remote op is also folded into `lastSavedTabsRef` through the same pure
@@ -63,38 +53,20 @@ Six shared causes. Most element bugs are one of these showing through.
   CONTENT when identity differs (a remote op makes a new tab object), so a
   remote-only change is not a local change and the `remoteUpdateRef` skip is
   gone from the autosave. Nothing cancels a local save any more.
-- **A vote has a round** ([Session tools (timer + voting)](session-tools.md)). `TabVote.round` is minted at Start and
-  carried on every `vote` op. A dot for a different round, or for a vote
-  that is not open, is dropped. Within one round the votes map only ever
-  moves by deltas: a lifecycle patch (End, Reveal, the walkthrough) or a
-  whole-tab op for the SAME round keeps the receiver's map, so it can no
-  longer erase dots still in flight.
 
 ## Phase 2 (shipped): per-participant fields travel as their own ops
 
-The dot-vote pattern for every field many people write at once. A new room
+For every field many people write at once, a room
 op, `{ kind: 'el-delta', tabId, elementId, delta }` (a MUTATION: sequenced,
 logged for catch-up, refused from a view-role sender), carries ONE change,
 applied by the sender and every receiver through the same pure
 `applyElementDelta` (`packages/document/src/element-deltas.ts`):
 
-- `response`: one participant's answer set, or withdrawn with `null`, keyed
-  by `participantKey` (done check, estimate, temperature).
-- `idea`: one anonymous card appended, with the random `id` its poster
-  minted for it (`ideaCardIds`). No author, still ([Idea box](idea-box.md)). The box
-  refuses a card past `IDEA_MAX_CARDS`, at the press and on apply, so a
-  full box can no longer fail the tab's validation on save; a card whose id
-  the box already holds is a replay, and a no-op. Two posts racing for the
-  last card settle in the room's order ([Idea box](idea-box.md) "Racing for the last card").
 - `check`: one checklist row ticked or unticked. Rows have no ids, so the
   row is named by index AND text; a peer who moved or retitled rows gets the
   row with that text, or nothing. A tick is no longer undoable.
 - `comment-add` / `comment-remove` / `comment-rekey` / `comment-resolve`:
-  one change to a thread, by comment id, so a replay is a no-op. An add and a
-  resolve may name a Sheet cell (`cell`), for that cell's thread
-  ([Cell comments](../029-sheets/sheet.md#cell-comments)); a remove and a rekey
-  find their comment in whichever thread holds it. The ledger keeps an add's
-  cell and each cell's latest resolve.
+  one change to a thread, by comment id, so a replay is a no-op.
 
 Every delta is idempotent or order-free, so concurrent presses commute, and
 a malformed frame is dropped rather than applied.
@@ -103,25 +75,13 @@ Two rules keep the whole-element path from undoing it:
 
 - **Receivers keep their own copy of these fields.** An `el` add/update or
   an element inside a whole `tab` op is merged over the local element
-  (`mergeIncomingElement`): everything else is taken, but answers, ideas,
-  checklist ticks and the comment thread stay ours, because every change to
+  (`mergeIncomingElement`): everything else is taken, but checklist ticks and the comment thread stay ours, because every change to
   them reached us as a delta. The sender's copy is a snapshot from their
   last save and can be missing somebody.
 - **Senders don't restate them.** The autosave drops an `el` update whose
   only change is in those fields (`elementChangeIsDeltaOnly`).
 
-**A round per card.** `ShapeElement.collabRound` is a random id minted by
-Clear (estimate, done check) and by emptying an idea box. Answer and idea
-deltas carry it; one naming another round is dropped, so a press from before
-a clear can't land in the next round or re-open it. A whole-element update
-with a DIFFERENT round replaces the answers and ideas (that is how a clear
-reaches everyone). Undo re-grafts `collabRound` and the checklist ticks with
-the other live fields.
-
-Decisions against the plan above: checklist rows are matched by index and
-text rather than given ids (no schema change). Idea cards first went without
-ids too, and gained them (`ideaCardIds`, beside the plain string list) when a
-poster's card had to be taken back after losing the race for the last card.
+Checklist rows are matched by index and text rather than given ids (no schema change).
 
 Still open until phase 4: a view-role comment goes through its REST
 endpoint, not a delta (the room drops view-role mutations), so editors still
@@ -131,28 +91,18 @@ don't see it live.
 
 Phase 2 made the room converge, but every client still PUT whole tabs and
 the api replaced the stored blob, so D1 held whichever save landed last. A
-save snapshotted before somebody's answer arrived erased it from D1, and a
+save snapshotted before somebody's tick arrived erased it from D1, and a
 reload showed fewer marks than the room had seen.
 
-**The room keeps a ledger.** For every `el-delta` and `vote` op it
+**The room keeps a ledger.** For every `el-delta` op it
 sequences, the Durable Object records the change in a small per-element
 ledger in its own storage (`packages/document/src/collab-ledger.ts`, pure;
 the DO only stores it):
 
-- answers: each participant's LATEST cast or withdraw in the element's
-  current round;
-- ideas: the cards posted this round, in order;
 - checklist ticks: each row's latest state, by index and text;
-- dots: the round's votes map, rebuilt from its deltas (a round always
-  starts empty, so the deltas are the whole map).
+- comments: adds, removes and each thread's latest resolve (since phase 5).
 
-A delta for a new round replaces that element's answers and ideas (ticks
-carry over, since rows have no round) and retires the round it replaced; a
-`vote` op for a new vote round does the same to the dots. The entry keeps the
-last `RETIRED_ROUNDS_MAX` (16) retired rounds, and an op naming one is late
-and dropped: before, a late answer, idea, dot or even a withdraw from the
-previous round flipped the entry back to it and lost the current round's
-answers or dots. One storage key per element, and
+One storage key per element, and
 a ledger that would outgrow the storage value limit stops recording rather
 than failing.
 
@@ -164,12 +114,8 @@ only the entries sequenced after that cursor (`fetchRoomLedger` + `applyRoomLedg
 `room-client.ts`, `mergeLedgerIntoTab` in `collab-ledger.ts`) before writing.
 A save with no cursor (the unload beacon, an API token, the MCP server), or a
 cursor from another epoch, isn't merged. Each ledger entry is re-applied through `applyElementDelta`, so
-the merge is exactly what a peer receiving those deltas would do: answers
-are re-set or withdrawn, ticks re-set, votes replaced for the same round,
-and ideas the snapshot is missing appended (per text, as many copies as
-the ledger holds, since cards have no ids). A ledger for another round
-than the incoming element's is ignored: the save carries a clear the
-ledger hasn't seen a delta for yet.
+the merge is exactly what a peer receiving those deltas would do: ticks are re-set and
+comments the snapshot is missing are added.
 
 If the room can't be reached, the save goes through unmerged, as before.
 Every server-stored document has a room, since an agent is a second writer
@@ -189,7 +135,7 @@ and the next save from anybody repairs it.
 
 - **A cleared tab field travels by name.** A `tab-meta` op carries a
   `clear` list of the fields the sender removed, and receivers delete them.
-  Clear Timer and Clear Vote (and a reset background) used to fall back to a
+  A reset background used to fall back to a
   whole-`tab` op, which replaced every element on every receiver and wiped
   their unsaved presses. Whole-tab ops remain only for a new tab and a bulk
   change.
@@ -202,24 +148,6 @@ and the next save from anybody repairs it.
   comment carries no `authorId` (the author's owner id, which a tab GET
   redacts for everyone else); the author's own browser keeps it when it swaps
   its local comment id for the server's.
-- **The idea box refuses a card past `IDEA_MAX_CARDS`** at the press
-  (shipped with phase 2).
-- **A session button can't start a vote over a running one.** Pressing a
-  vote button mid-vote used to start a fresh vote, which reset every dot on
-  the canvas. It is now a no-op; ending the vote stays with the vote's own
-  controls.
-- **The live poll survives a socket.** The room keeps the running poll and
-  every answer (`live-poll` in its storage) and replays them to each session
-  on hello, so a late joiner, a refresh and a reconnecting host all catch up.
-  Answers are keyed by the answerer's collab key (`poll-answer.key`), so a
-  re-answer after a reconnect replaces the first instead of counting twice. A
-  poll records its starter's key (`LivePoll.hostKey`), so the host can still
-  end it after a refresh. Two polls started at once converge: the room and
-  every client keep the newer start (`pollSupersedes`, then id), so the
-  starter of the loser switches rather than answering the other poll alone.
-- **Votes are keyed by the collab key.** Dots, the budget and the host
-  (`startedBy`) use `participantKey`, not the owner id, which is a guest's
-  credential and which every dot op broadcast to the whole room.
 
 ## Phase 5 (shipped): the loose ends
 
@@ -244,7 +172,7 @@ and the next save from anybody repairs it.
   lets the author's own save (the only copy carrying their id) claim it. A
   comment that already has an author id is never re-claimed.
 - **Ops sent while the socket is down are held, not dropped.** The room
-  client keeps an outbox of document ops and poll answers (bounded at 500)
+  client keeps an outbox of document ops (bounded at 500)
   and flushes it, in order, right after the reconnect's hello and sync.
   Cursors, selections and other presence ops are not held.
 
@@ -253,61 +181,14 @@ are on the participant record the api used before; what changed is that a
 comment now carries the name of the session that posted it rather than of
 whoever saved first.
 
-## Phase 6 (shipped): a Plan board's set-up travels as deltas
-
-A [Plan board](../026-plan/plan-board.md) keeps its whole set-up (title, columns, rows, card fields,
-widgets, voting) in one element field, `planBoard`, and its column cogs and its menu's board rows edit it
-WITHOUT selecting the board, so the selection lock never heads off a collision. Two people setting
-up one board at once, say one renaming To do while the other renames Review, each sent a
-whole-element `update`, each receiver took the other's copy, and the two screens ended up holding
-different boards (each with only the other's rename), while D1 kept whichever save landed last. A
-whole-element update is not last-writer-wins in room order on the sender's own screen, because the
-room never sends a sender its own op back: it is last-writer-wins on every OTHER screen.
-
-The set-up now moves the way the other multi-writer fields do:
-
-- **A `board` delta carries the change, not the set-up.** `planBoardPatch(before, after)`
-  (`packages/document/src/plan-board-patch.ts`) names only what changed: the top-level fields set
-  or cleared, each column's changed fields (by column id), columns added (whole) and removed (by
-  id), and the new column order when it moved. Applied through `applyPlanBoardPatch`, so edits to
-  different fields, or to different columns, or a field and a column, commute: every peer lands on
-  one board. A malformed patch, or one whose result is not a readable set-up
-  (`normaliseBoardSetup`), is dropped.
-- **Derived in the autosave, so every path sends it.** `tabBroadcastOps` emits one `el-delta` per
-  board whose `planBoard` changed, beside the element ops, in the granular path and the bulk
-  (whole-tab) path alike. A column cog, the Board and Cards flyouts, a widget added from the
-  palette, and undo or redo all reach peers the same way.
-- **The room has the delta before the save is written.** The ledger can only protect a change it
-  holds when a peer's save reads it, so a save sends every op the ledger records (`el-delta`,
-  `vote`) first, waits until the room confirms it sequenced each one, and only then PUTs; its
-  element ops still follow the PUT. The other deltas meet this by going out at the press, 600 ms
-  before any save. Sent after the PUT, as the board delta first was, two people saving at once
-  could each write before either delta reached the room: the later write merged nothing and erased
-  the earlier rename from D1, while both screens, converged by the deltas, never saved again.
-  The confirmation is the `cursor` frame the room already sends the sender of each ordered op,
-  carrying back the `ref` the client put on the op. A room that does not confirm within
-  `ROOM_SEQUENCE_ACK_TIMEOUT_MS` (a socket down or a slow room) does not hold the save back; it is
-  logged, and the save goes through as before. Peers therefore see a board change before D1 holds
-  it; a save that then fails sends the same delta again with its retry, and applying it twice
-  lands on the same board.
-- **A column move keeps a concurrent add.** The order names the columns the sender had; a column
-  only the receiver has (added meanwhile by someone else) stays beside the column it followed.
-- **Receivers keep their own set-up through a peer's whole-element copy** (`mergeIncomingElement`),
-  as they keep answers and ticks, and the sender drops an element update whose only change was
-  the set-up (`elementChangeIsDeltaOnly`). An agent's changeset is the exception: it is a writer
-  with no deltas, so its copy of the set-up is taken.
-- **The ledger records it.** For each board, the latest value of every top-level field and every
-  column field, each column added or removed, and the latest order, each with the seq that set it.
-  A save merges in only the entries the saver had not seen (phase 3), so D1 keeps both renames.
-
-Residual, stated plainly: two people changing the SAME field of the same column (both renaming To
-do) in the same moment still each see the other's value, exactly as a same-element collision on
-any shape does; the next change to that field from either side settles it.
-
 ## Saves
 
-A tab's writes are queued per tab (`tab-save-queue.ts`): a save holding Plan ledger changes waits up to
-`ROOM_SEQUENCE_ACK_TIMEOUT_MS` for the room before its PUT, and a newer save of the same tab used to overtake it, so
+A save sends every op the ledger records first and waits, up to `ROOM_SEQUENCE_ACK_TIMEOUT_MS`, until the room
+confirms it sequenced each one (the `cursor` frame the room sends the sender of each ordered op, carrying back the op's
+`ref`), and only then PUTs, so a peer's save always finds the change in the ledger. A room that does not confirm in
+time does not hold the save back; it is logged, and the save goes through.
+
+A tab's writes are queued per tab (`tab-save-queue.ts`): a save waiting on the room, and a newer save of the same tab used to overtake it, so
 the server kept the older snapshot while the client believed the newer one saved and peers received the older
 element ops last. Each save or delete of a tab now starts only once that tab's previous one has settled, landed or
 failed; different tabs never wait on each other.

@@ -23,7 +23,6 @@ import { rankTrend, windowLabel } from './windows';
 const {
   shapes: SHAPES,
   tools: TOOLS,
-  collaborate: COLLABORATE,
   components: COMPONENTS,
   devices: DEVICES,
   icons: ICONS,
@@ -45,7 +44,6 @@ export function PaletteView({
   const trend = rankTrend(summary, active);
   const shapes = rank(rows, addedIn(SHAPES), PALETTE_TYPE_ALIASES);
   const tools = rank(rows, addedIn(TOOLS), PALETTE_TYPE_ALIASES);
-  const collaborate = rank(rows, addedIn(COLLABORATE), PALETTE_TYPE_ALIASES);
   const components = rank(rows, addedIn(COMPONENTS), PALETTE_TYPE_ALIASES);
   const devices = rank(rows, addedIn(DEVICES), PALETTE_TYPE_ALIASES);
   const icons = rank(rows, addedIn(ICONS), PALETTE_TYPE_ALIASES);
@@ -62,24 +60,13 @@ export function PaletteView({
           <RankCard
             trend={trend}
             title="Shapes"
-            subtitle="Boxes, circles, flowchart symbols and other primitives"
+            subtitle="Boxes, circles, stars, speech bubbles and other primitives"
             category="Element"
             action="Added"
             items={shapes}
             daily={summary.daily}
             aliases={PALETTE_TYPE_ALIASES}
             emptyLabel="No shapes were added in this window yet."
-          />
-          <RankCard
-            trend={trend}
-            title="Collaborate"
-            subtitle="Estimate cards, temperature checks, idea boxes, agendas, decisions and roll calls"
-            category="Element"
-            action="Added"
-            items={collaborate}
-            daily={summary.daily}
-            aliases={PALETTE_TYPE_ALIASES}
-            emptyLabel="No collaboration elements were added in this window yet."
           />
           <RankCard
             trend={trend}

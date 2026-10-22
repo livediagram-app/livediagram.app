@@ -1,6 +1,3 @@
-import { dashboardItemOf, placeOnDashboard } from '@/hooks/plan/dashboard-drop';
-import { planBoardPlacement } from '@/lib/plan-board-placement';
-import { isPlanViewId, planViewSize } from '@livedesign/items';
 import type { Selection } from '@/lib/selection-store';
 import { type Dispatch, type SetStateAction } from 'react';
 import {
@@ -15,12 +12,6 @@ import {
   type BoxedElement,
   type Element,
   type LaidOutPage,
-  defaultSessionConfig,
-  REACTION_PAD_LABEL,
-  type EstimateScale,
-  type Reaction,
-  type SelectionMode,
-  type SessionTool,
   type ShapeKind,
   type Tab,
   withVariantColours,
@@ -31,12 +22,6 @@ import { getSticker, stickerDropSize } from '@/lib/stickers';
 import { track, titleCaseType } from '@/lib/telemetry';
 import type { AddShapeOptions, PendingDraw } from '@/lib/draw-mode';
 import { useArrowConnect } from '@/app/document/[id]/useArrowConnect';
-import {
-  BLANK_SHEET_CHOICE,
-  isPlacedSheetStart,
-  placeNewSheet,
-  sheetTitleForTab,
-} from '@/lib/sheet-seeds';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
 
@@ -46,14 +31,6 @@ type SetState<T> = Dispatch<SetStateAction<T>>;
 // sizes it on a drag. The ANNOTATION alone drops at the viewport centre via
 // addBoxed (from useElementHelpers): a fixed 44x44 marker has no box to size,
 // so there is nothing for the drag to decide (docs/specs/008-canvas/canvas-and-palette.md "Placement on add").
-
-// A plan view placed from the palette (docs/specs/026-plan/plan-views.md): its tile's view, at its size.
-function planViewPlacement(view: string | undefined) {
-  return {
-    ...(isPlanViewId(view) ? { planView: { view } } : {}),
-    ...planViewSize(view),
-  };
-}
 
 export function useElementCreation(opts: {
   editsBlocked: boolean;
@@ -83,9 +60,6 @@ export function useElementCreation(opts: {
   // Style memory (docs/specs/008-canvas/quick-style-panel.md) for the user-drawn adds made here: a palette
   // drop and a click-to-connect arrow.
   styleNewElement: <T extends Element>(el: T) => T;
-  // A palette card never lands on the canvas (docs/specs/026-plan/plan-mode.md "The palette"): it goes
-  // into the board column at the point, or nowhere.
-  onPlanCardPlace?: (itemType: string | undefined, canvasX: number, canvasY: number) => void;
   // Pages mode's laid-out pages: a click-to-connect arrow never joins two pages
   // (docs/specs/007-editor/pages-mode.md "Arrows stay on one page"). Null outside it.
   pages?: readonly LaidOutPage[] | null;
@@ -103,7 +77,6 @@ export function useElementCreation(opts: {
     addBoxedAt,
     beginDraw,
     styleNewElement,
-    onPlanCardPlace,
     pages,
   } = opts;
 
@@ -111,21 +84,14 @@ export function useElementCreation(opts: {
   // useShapeDrawing.commitDraw), once the tap / drag actually lands the
   // element — not here, where the gesture is only queued.
   // `opts` carries a creation-time choice for the kinds that have one: which
-  // session tool (docs/specs/012-collaboration/session-button.md), which reaction (docs/specs/009-elements/reaction-pad.md). The palette offers a
-  // tile per choice, so it has to survive the draw gesture and land on the
-  // element rather than leaving the factory default in place.
+  // variant (the Callout card, a Funnel). The palette offers a tile per choice,
+  // so it has to survive the draw gesture and land on the element rather than
+  // leaving the factory default in place.
   const addShape = (kind: ShapeKind, opts?: AddShapeOptions) => {
     if (editsBlocked) return;
-    // On a Dashboard a plan view, board or Sheet fills a slot (hooks/plan/dashboard-drop.ts).
-    if (placeOnDashboard(dashboardItemOf(kind, opts?.plan))) return;
     beginDraw({
       type: 'shape',
       kind,
-      ...(opts?.plan ? { plan: opts.plan } : {}),
-      ...(opts?.session ? { session: opts.session } : {}),
-      ...(opts?.reaction ? { reaction: opts.reaction } : {}),
-      ...(opts?.mode ? { mode: opts.mode } : {}),
-      ...(opts?.estimateScale ? { estimateScale: opts.estimateScale } : {}),
       ...(opts?.variant ? { variant: opts.variant } : {}),
       ...(opts?.name ? { name: opts.name } : {}),
     });
@@ -281,11 +247,6 @@ export function useElementCreation(opts: {
     if (editsBlocked) return;
     beginDraw({ type: 'component', kind: 'avatar' });
   };
-  // A flowchart's first step (docs/specs/009-elements/flowchart.md).
-  const addFlowchart = () => {
-    if (editsBlocked) return;
-    beginDraw({ type: 'component', kind: 'flowchart' });
-  };
 
   const addText = () => {
     if (editsBlocked) return;
@@ -293,8 +254,6 @@ export function useElementCreation(opts: {
   };
   const addSticky = () => {
     if (editsBlocked) return;
-    // On a Dashboard a sticky is a note in a slot.
-    if (placeOnDashboard(dashboardItemOf('sticky'))) return;
     beginDraw({ type: 'sticky' });
   };
 
@@ -322,10 +281,6 @@ export function useElementCreation(opts: {
     art?: { iconId?: string; stickerId?: string; choice?: string },
   ) => {
     if (editsBlocked) return;
-    if (kind === 'plan-card') {
-      onPlanCardPlace?.(art?.choice, canvasX, canvasY);
-      return;
-    }
     const iconId = art?.iconId;
     const stickerId = art?.stickerId;
     if (kind === 'sticky') {
@@ -382,47 +337,9 @@ export function useElementCreation(opts: {
           : {
               // A creation-time variant (the Callout card, a Funnel) applies to its own kind only.
               ...applyShapeVariant(createShape(kind, x, y), art?.choice),
-              // The dragged tile's creation-time choice (docs/specs/009-elements/mode-button.md, /105, /123,
-              // /135). Applied by the kind that owns the field, so one payload
-              // serves all four without the drop path knowing which is which.
-              ...(art?.choice && kind === 'session-button'
-                ? {
-                    session: defaultSessionConfig(art.choice as SessionTool),
-                    // Same sizing the tap path applies (draw-commit): a timer is
-                    // a wide pill, a poll has to fit its question.
-                    ...(art.choice === 'timer' ? { width: 224, height: 64 } : {}),
-                    ...(art.choice === 'poll' ? { width: 240, height: 116 } : {}),
-                  }
-                : {}),
-              ...(art?.choice && kind === 'reaction-pad'
-                ? {
-                    reaction: art.choice as Reaction,
-                    label: REACTION_PAD_LABEL[art.choice as Reaction],
-                  }
-                : {}),
-              ...(art?.choice && kind === 'mode-button'
-                ? { mode: art.choice as SelectionMode }
-                : {}),
-              ...(art?.choice && kind === 'estimate'
-                ? { estimateScale: art.choice as EstimateScale }
-                : {}),
-              // A board wide enough for its columns (docs/specs/026-plan/plan-board.md).
-              ...(kind === 'plan-board' ? planBoardPlacement(art?.choice, activeTab.name) : {}),
-              ...(kind === 'plan-view' ? planViewPlacement(art?.choice) : {}),
-              // A Sheet names a new sheet (docs/specs/029-sheets/sheet.md "Placing a sheet").
-              ...(kind === 'plan-sheet'
-                ? {
-                    // Named after its tab (docs/specs/029-sheets/sheet.md "Placing a sheet").
-                    planSheet: placeNewSheet({
-                      title: sheetTitleForTab(activeTab.name, art?.choice),
-                      ...(isPlacedSheetStart(art?.choice) ? { start: art.choice } : {}),
-                      ...(art?.choice === BLANK_SHEET_CHOICE ? { blank: true as const } : {}),
-                    }),
-                  }
-                : {}),
             },
       // Shapes and icons open for typing too; takesTypedLabel filters out the
-      // kinds whose face isn't text (stickers, session buttons, ...). A preset's own colour (the Warning badge's
+      // kinds whose face isn't text (stickers, charts, ...). A preset's own colour (the Warning badge's
       // rose) is put back after the theme and the remembered style.
       {
         edit: true,
@@ -483,7 +400,6 @@ export function useElementCreation(opts: {
     addCallout,
     addStatRow,
     addProcess,
-    addFlowchart,
     addAvatar,
     dropPaletteItem,
     addText,

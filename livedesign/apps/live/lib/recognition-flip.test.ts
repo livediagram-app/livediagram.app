@@ -5,7 +5,7 @@ import { track } from './telemetry';
 
 vi.mock('./telemetry', () => ({ track: vi.fn() }));
 
-// docs/specs/023-draw-mode/draw-mode.md "Shape recognition": Alt (Option), or the chip on a
+// docs/specs/023-draw-mode/drawing-tools.md "Shape recognition": Alt (Option), or the chip on a
 // touch screen, flips the stroke being drawn between ink and the shape it reads as.
 type P = { x: number; y: number };
 const square = (): P[] => {
@@ -29,14 +29,12 @@ describe('flipRecognition', () => {
     const stroke = liveStrokeOf(square());
     expect(flipRecognition(stroke, 1.5)).toBe('recognised');
     expect(stroke.shaped()?.kind).toBe('square');
-    expect(stroke.keepsInk()).toBe(false);
   });
 
   it('leaves ink that reads as no shape as ink', () => {
     const stroke = liveStrokeOf(scribble());
     expect(flipRecognition(stroke, 1.5)).toBeNull();
     expect(stroke.shaped()).toBeNull();
-    expect(stroke.keepsInk()).toBe(false);
   });
 
   it('breaks a shown shape back to ink, which lands as drawn', () => {
@@ -44,7 +42,6 @@ describe('flipRecognition', () => {
     flipRecognition(stroke, 1.5);
     expect(flipRecognition(stroke, 1.5)).toBe('broken');
     expect(stroke.shaped()).toBeNull();
-    expect(stroke.keepsInk()).toBe(true);
   });
 
   it('flips back to the shape on the next press', () => {

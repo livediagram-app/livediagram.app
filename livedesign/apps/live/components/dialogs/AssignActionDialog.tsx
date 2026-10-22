@@ -74,8 +74,8 @@ type AssignActionDialogProps = {
   // retry-able error line).
   onMoveToTeam?: (teamId: string) => Promise<boolean>;
   onSubmit: (input: SaveActionInput) => void;
-  // Editing one of an Action panel's actions (docs/specs/012-collaboration/action-panel.md): the card has no
-  // popover, so its two-step delete lives here. Absent everywhere else.
+  // A two-step delete inside the dialog, for an action with no popover of its own to hold one. No caller
+  // passes it today.
   onDelete?: () => void;
   onClose: () => void;
 };
@@ -98,7 +98,7 @@ export function AssignActionDialog({
 }: AssignActionDialogProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  // Editing: Open, Done or Won't Do (docs/specs/026-plan/linked-boards.md "On the canvas"), saved with the rest.
+  // Editing: Open, Done or Won't Do (docs/specs/012-collaboration/assigned-actions.md), saved with the rest.
   const [status, setStatus] = useState<ElementActionStatus>('open');
   const [assignee, setAssignee] = useState<PickableMember | null>(null);
   const [notifyEmail, setNotifyEmail] = useState(true);

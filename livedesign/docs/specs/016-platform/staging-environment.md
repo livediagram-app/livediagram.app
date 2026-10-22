@@ -12,13 +12,13 @@ runs against the one holding people's documents.
 
 |              | Production                           | Staging                                    |
 | ------------ | ------------------------------------ | ------------------------------------------ |
-| Hostname     | `livedesign.app`                    | `staging.livedesign.app`                  |
-| MCP host     | `mcp.livedesign.app`                | `mcp-staging.livedesign.app`              |
+| Hostname     | `livedesign.app`                     | `staging.livedesign.app`                   |
+| MCP host     | `mcp.livedesign.app`                 | `mcp-staging.livedesign.app`               |
 | Trigger      | Manual (`workflow_dispatch`)         | Automatic, on every green CI run on `main` |
 | Workflow     | `deploy.yml` (**Deploy Production**) | `deploy-staging.yml` (**Deploy Staging**)  |
-| Worker names | `livedesign-<app>`                  | `livedesign-<app>-staging`                |
-| D1           | `livedesign`                        | `livedesign-staging`                      |
-| R2           | `livedesign-images`                 | `livedesign-images-staging`               |
+| Worker names | `livedesign-<app>`                   | `livedesign-<app>-staging`                 |
+| D1           | `livedesign`                         | `livedesign-staging`                       |
+| R2           | `livedesign-images`                  | `livedesign-images-staging`                |
 | Indexable    | Yes                                  | **No** — `X-Robots-Tag: noindex, nofollow` |
 
 ### "live" is an app, not an environment
@@ -126,9 +126,9 @@ Two deliberate non-changes:
 its own build** — the two workflows never share an artifact. Staging's build differs
 from production's in exactly two values:
 
-| Variable                            | Production                                        | Staging                               |
-| ----------------------------------- | ------------------------------------------------- | ------------------------------------- |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | `pk_live_*` (production tenant)                   | `pk_test_*` (test tenant)             |
+| Variable                            | Production                                       | Staging                              |
+| ----------------------------------- | ------------------------------------------------ | ------------------------------------ |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | `pk_live_*` (production tenant)                  | `pk_test_*` (test tenant)            |
 | `NEXT_PUBLIC_MCP_ORIGIN`            | empty (blank falls back to `mcp.livedesign.app`) | `https://mcp-staging.livedesign.app` |
 
 Everything else matches, on purpose: `NEXT_PUBLIC_API_BASE` stays unset so staging
@@ -145,12 +145,12 @@ set. `GET /api/capabilities` is the authoritative answer at any moment; as of th
 first deploy it returns `{"aiEnabled":false,"emailEnabled":false}` on staging against
 `{"aiEnabled":true,"emailEnabled":true}` on production.
 
-| Integration        | Staging setup                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Integration        | Staging setup                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Clerk** — ON     | A separate **development tenant** (`ethical-crane-19.clerk.accounts.dev`), `pk_test_*` key, its own JWKS URL. Staging sign-in cannot touch a production user. Needs **no origin configuration**: Clerk dev instances reflect any `Origin` back, which is why localhost works unconfigured. Isolation here comes from being a separate tenant, not from an allow-list. Pointing staging at a Clerk _production_ instance would change that — those do lock origins down, and `staging.livedesign.app` would need adding under Domains. |
-| **Telemetry** — ON | Events land in staging's own D1, so the **public** `/telemetry` dashboard on production is unaffected; staging's dashboard shows staging's own traffic, which is how you verify a new event actually lands.                                                                                                                                                                                                                                                                                                                            |
-| **Resend** — OFF   | Wired but keyless. `APP_BASE_URL` and `RESEND_FROM` are set, so setting `RESEND_API_KEY --env staging` turns it on and every link points back at staging. Left unset on purpose: staging runs the same daily lifecycle cron as production, from the same verified domain, so switching it on mails **real people** (see the warning below). Turn it on for a specific test, then take the key off again.                                                                                                                               |
-| **AI models** — ON | Keyed by hand, as production is: `wrangler secret put OPENAI_API_KEY --env staging` and/or `GOOGLE_AI_STUDIO_API_KEY`; one key serves both AI features, two split them ([AI Assistance](../007-editor/ai-assistance.md)). `AI_ALLOWED_ORIGINS` restricts the endpoint to the staging origin. It spends real money per request; `GET /api/capabilities` reports whether it is on.                                                                                                                                                       |
+| **Telemetry** — ON | Events land in staging's own D1, so the **public** `/telemetry` dashboard on production is unaffected; staging's dashboard shows staging's own traffic, which is how you verify a new event actually lands.                                                                                                                                                                                                                                                                                                                           |
+| **Resend** — OFF   | Wired but keyless. `APP_BASE_URL` and `RESEND_FROM` are set, so setting `RESEND_API_KEY --env staging` turns it on and every link points back at staging. Left unset on purpose: staging runs the same daily lifecycle cron as production, from the same verified domain, so switching it on mails **real people** (see the warning below). Turn it on for a specific test, then take the key off again.                                                                                                                              |
+| **AI models** — ON | Keyed by hand, as production is: `wrangler secret put OPENAI_API_KEY --env staging` and/or `GOOGLE_AI_STUDIO_API_KEY`; one key serves both AI features, two split them ([AI Assistance](../007-editor/ai-assistance.md)). `AI_ALLOWED_ORIGINS` restricts the endpoint to the staging origin. It spends real money per request; `GET /api/capabilities` reports whether it is on.                                                                                                                                                      |
 
 > **Email warning.** Staging runs the same daily lifecycle-email cron as production
 > (welcome / week-1 / week-2, token-expiry warnings). With `RESEND_API_KEY` set, any
@@ -210,11 +210,11 @@ Deploys fail loudly until these exist. Resource ids are committed to `wrangler.t
 
 **Done** — the three data stores exist, and their ids are committed:
 
-| Resource | Name                         | Where the id lives       |
-| -------- | ---------------------------- | ------------------------ |
+| Resource | Name                        | Where the id lives       |
+| -------- | --------------------------- | ------------------------ |
 | D1       | `livedesign-staging`        | `apps/api/wrangler.toml` |
 | R2       | `livedesign-images-staging` | bound by name, no id     |
-| KV       | `mcp-oauth-kv-staging`       | `apps/mcp/wrangler.toml` |
+| KV       | `mcp-oauth-kv-staging`      | `apps/mcp/wrangler.toml` |
 
 Both were created in `ENAM`, Cloudflare's default for the account rather than a
 deliberate choice; production's region was not readable from the API to mirror. If
@@ -225,10 +225,10 @@ It is not `OAUTH_KV` — that is the binding name inside `wrangler.toml`, a diff
 thing, and `wrangler kv namespace create OAUTH_KV --env staging` would have produced
 `livedesign-mcp-staging-OAUTH_KV` instead.
 
-The **workers** are not on this list: a worker is its uploaded script, so all eight
+The **workers** are not on this list: a worker is its uploaded script, so all seven
 `livedesign-*-staging` workers come into existence on the first staging deploy. The
-job graph bootstraps them in the right order — the six path-routed workers first,
-then mcp (service binding to api), then router (service bindings to the six) — exactly
+job graph bootstraps them in the right order — the five path-routed workers first,
+then mcp (service binding to api), then router (service bindings to the five) — exactly
 as production's first deploy did ([Deployment](deployment.md) "First deploy").
 
 Still outstanding:

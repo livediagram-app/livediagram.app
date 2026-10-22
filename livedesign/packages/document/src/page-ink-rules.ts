@@ -48,9 +48,6 @@ const BOX_KINDS = new Set<string>([
   'hexagon',
   'document',
   'page',
-  'mind-node',
-  'lane',
-  'entity',
   'callout',
   'card',
   'stadium',
@@ -65,7 +62,6 @@ const BOX_KINDS = new Set<string>([
 // Shapes drawn straight onto what they sit on, in their stroke (the accent) and text colours.
 const ACCENT_INK_KINDS = new Set<string>([
   'icon',
-  'actor',
   'progress-bar',
   'progress-ring',
   'timeline-rail',
@@ -146,14 +142,6 @@ export function boxBorder(el: BoxedElement, surface: CanvasSurface): string | nu
   if ('strokeWidth' in el && el.strokeWidth === 'none') return null;
   const stroke = el.strokeColor ?? defaultStrokeColor(el, surface);
   return isOpaqueHex(stroke) ? stroke : null;
-}
-
-/** The fill a box's label sits on: a lane's title strip when it has one of its own, else the
- *  box's fill. */
-export function labelFill(el: BoxedElement, fill: string): string {
-  if (el.type === 'shape' && el.shape === 'lane' && isOpaqueHex(el.headerFill))
-    return el.headerFill;
-  return fill;
 }
 
 /** Whether an element carries a label of its own. */

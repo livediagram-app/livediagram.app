@@ -24,8 +24,8 @@ describe('pruneCustomThemeSwatchOverrides', () => {
   });
 
   it('writes nothing when there is nothing to prune', () => {
-    writeUserPreferences({ tourSeen: true });
+    writeUserPreferences({ alignmentGuides: true });
     pruneCustomThemeSwatchOverrides('owner', () => false);
-    expect(readUserPreferences()).toEqual({ tourSeen: true });
+    expect(readUserPreferences()).toEqual({ alignmentGuides: true });
   });
 });

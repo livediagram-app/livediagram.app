@@ -13,7 +13,7 @@ The pattern grid, canvas/pattern colour pickers, opacity slider, and theme grid 
   **Fine-tune** list. The tab / canvas context menu carries no Look & Feel or Font category: the dock button is
   the one entry point.
 - A **dock button** ("Theme & canvas") sits in the bottom-right chrome cluster, **in one strip with the Layers
-  button** (Layers on its left) in every mode ([Live app](../007-editor/live-app.md) "Mobile chrome"), and opens
+  button** (Layers on its left) ([Live app](../007-editor/live-app.md) "Mobile chrome"), and opens
   the dialog on its home. Its icon is a painter's palette with filled paint wells, in the button's own colour like every other chrome icon, so it reads as "how this tab
   looks" at a glance. It shows on **every viewport, mobile included**, and stays hidden in zen mode and in
   read-only / embed views.

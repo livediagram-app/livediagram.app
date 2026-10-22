@@ -5,12 +5,10 @@
 // (The ./index import below is type-only — erased at compile — so it can't
 // re-introduce the runtime module cycle this split avoided.)
 
-import type { Element, ShapeElement, Tab } from './index';
+import type { Element, Tab } from './index';
 import type { ElementAction } from './element-action';
 import type { CommentMention } from './comment-mentions';
 import { isComment, keepLocalTicks } from './element-deltas';
-import { reconcileRestoredElement } from './undo-live-reconcile';
-import { mapElementThreads, type CellCommentThreads } from './cell-comments';
 
 // A single comment inside a thread. The author is the participant who
 // wrote it (per `apps/live/lib/identity.ts`). The participant model is
@@ -83,11 +81,12 @@ export function withoutCommentAuthorId(comment: Comment): Comment {
 }
 
 function withoutCommentAuthorIds<E extends Element>(el: E): E {
-  return mapElementThreads(el, (thread) =>
-    thread.comments.some((c) => c.authorId !== undefined || c.tokenId !== undefined)
-      ? { ...thread, comments: thread.comments.map(withoutCommentAuthorId) }
-      : thread,
-  ) as E;
+  const thread = (el as { commentThread?: CommentThread }).commentThread;
+  if (!thread?.comments.some((c) => c.authorId !== undefined || c.tokenId !== undefined)) return el;
+  return {
+    ...el,
+    commentThread: { ...thread, comments: thread.comments.map(withoutCommentAuthorId) },
+  };
 }
 
 // A room op with every comment author id taken out, whichever kind carries
@@ -153,63 +152,18 @@ export function stampCommentAuthor(
 
 // The per-element fields that mutate OUTSIDE undo history and therefore
 // need re-grafting onto restored snapshots: comment threads (docs/specs/008-canvas/canvas-and-palette.md),
-// assigned actions (docs/specs/012-collaboration/assigned-actions.md: Cmd+Z must never silently unassign work), and
-// everything a collaborative press writes (docs/specs/012-collaboration/collab-race-hardening.md): answers, reveals, idea
-// cards, the roll, the agenda's current row and the picker's result. A
-// snapshot from before somebody answered would otherwise take their answer
+// and assigned actions (docs/specs/012-collaboration/assigned-actions.md: Cmd+Z must never silently unassign work).
+// A snapshot from before somebody commented would otherwise take their comment
 // away from the whole room the moment anyone pressed undo.
 //
 // Also what an element fingerprint leaves out (docs/specs/024-agents/agent-changesets.md): people
 // change these through deltas that never conflict with an agent's edit.
-export const LIVE_ELEMENT_FIELDS = [
-  'commentThread',
-  // A Sheet's cell threads (docs/specs/029-sheets/sheet.md "Cell comments"), as `commentThread`.
-  'cellComments',
-  'action',
-  'actions',
-  'responses',
-  'responsesRevealed',
-  'collabRound',
-  'ideaCards',
-  'ideaCardIds',
-  'ideasRevealed',
-  'rollCall',
-  'agendaCurrent',
-  'agendaTimerStartedAt',
-  'pickerResult',
-  // A quiz round's state (docs/specs/012-collaboration/quiz.md): started, locked and revealed are room
-  // presses, not edits, so an undo must not un-start somebody's round.
-  'quizStartedAt',
-  'quizLockedAt',
-  'quizRevealed',
-  // The Q&A board's notes (docs/specs/012-collaboration/qa-board.md) are written by its endpoint, never by
-  // an undoable edit, so a snapshot's copy is only ever older.
-  'qaNotes',
-  'qaRev',
-] as const;
+export const LIVE_ELEMENT_FIELDS = ['commentThread', 'action', 'actions'] as const;
 type LiveFieldBag = {
   commentThread?: CommentThread;
-  cellComments?: CellCommentThreads;
   action?: ElementAction;
   actions?: ElementAction[];
-} & Pick<
-  ShapeElement,
-  | 'responses'
-  | 'responsesRevealed'
-  | 'collabRound'
-  | 'ideaCards'
-  | 'ideaCardIds'
-  | 'ideasRevealed'
-  | 'rollCall'
-  | 'agendaCurrent'
-  | 'agendaTimerStartedAt'
-  | 'pickerResult'
-  | 'quizStartedAt'
-  | 'quizLockedAt'
-  | 'quizRevealed'
-  | 'qaNotes'
-  | 'qaRev'
->;
+};
 
 function applyLiveField<K extends keyof LiveFieldBag>(
   target: LiveFieldBag,
@@ -221,19 +175,10 @@ function applyLiveField<K extends keyof LiveFieldBag>(
 }
 
 // Full live-state graft for undo/redo: comment threads + assigned actions
-// (above) PLUS the per-tab session tools (docs/specs/012-collaboration/session-tools.md `timer` / `vote`), which
-// also mutate outside undo history — a timer start or a vote dot isn't
-// undoable, so a restored snapshot predates them and would silently wipe
-// them for the whole room (autosave persists + broadcasts the restored tab).
-export function graftLiveTabState(
-  from: Tab[],
-  onto: Tab[],
-  // `mintRound` makes the new round id a reset needs (a quiz whose edit is
-  // undone); a test passes a fixed one.
-  opts: { sessionFields?: boolean; mintRound?: () => string } = {},
-): Tab[] {
-  const sessionFields = opts.sessionFields !== false;
-  const mintRound = opts.mintRound ?? (() => crypto.randomUUID());
+// (above), which mutate outside undo history, so a restored snapshot predates
+// them and would silently wipe them for the whole room (autosave persists +
+// broadcasts the restored tab).
+export function graftLiveTabState(from: Tab[], onto: Tab[]): Tab[] {
   return onto.map((tab) => {
     const src = from.find((t) => t.id === tab.id);
     if (!src) return tab;
@@ -275,24 +220,8 @@ export function graftLiveTabState(
           next = { ...next, checklistItems: items };
         }
       }
-      // Presses that were about the authored fields follow them back.
-      if (next.type === 'shape' && liveEl?.type === 'shape') {
-        const reconciled = reconcileRestoredElement(next, liveEl, mintRound);
-        if (reconciled !== next) {
-          changed = true;
-          next = reconciled;
-        }
-      }
       return next;
     });
-    let next = changed ? { ...tab, elements } : tab;
-    if (sessionFields && (src.timer !== tab.timer || src.vote !== tab.vote)) {
-      next = next === tab ? { ...tab } : next;
-      if (src.timer !== undefined) next.timer = src.timer;
-      else delete next.timer;
-      if (src.vote !== undefined) next.vote = src.vote;
-      else delete next.vote;
-    }
-    return next;
+    return changed ? { ...tab, elements } : tab;
   });
 }

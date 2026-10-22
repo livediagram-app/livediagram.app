@@ -5,16 +5,10 @@ import { gateClientOp, type GateSender } from './room-op-gate';
 const as = (role: unknown, over: Partial<GateSender> = {}): GateSender => ({
   role,
   tabScope: null,
-  key: 'me',
   ...over,
 });
-const relay = (presence: boolean, participantAnswers = false) => ({
-  kind: 'relay',
-  presence,
-  participantAnswers,
-});
+const relay = (presence: boolean) => ({ kind: 'relay', presence });
 const DROP = { kind: 'drop' };
-const say = { kind: 'avatar-say', tabId: 't', id: 'a', text: 'hi', x: 0, y: 0 };
 
 describe('gateClientOp', () => {
   it('never relays a system op from a client, whatever the role', () => {
@@ -29,26 +23,11 @@ describe('gateClientOp', () => {
     expect(gateClientOp({ kind: 'tab', tabId: 't' }, as('admin'))).toEqual(DROP);
   });
 
-  it('keeps a viewer from taking part: answers, reactions, speech and focus', () => {
-    for (const op of [{ kind: 'poll-answer' }, { kind: 'reaction' }, say, { kind: 'focus-here' }])
-      expect(gateClientOp(op, as('view'))).toEqual(DROP);
-    expect(gateClientOp({ kind: 'reaction' }, as('participate'))).toEqual(relay(true));
-    expect(gateClientOp(say, as('participate'))).toEqual(relay(true));
-    expect(gateClientOp({ kind: 'focus-here' }, as('participate'))).toEqual(DROP);
-  });
-
-  it('drops a malformed speech bubble from anyone', () => {
-    expect(gateClientOp({ ...say, text: '' }, as('edit'))).toEqual(DROP);
-  });
-
-  it("routes a participant's element op through the content rule, and relays its own answers", () => {
+  it("routes a participant's element op through the content rule, and drops its other mutations", () => {
     expect(gateClientOp({ kind: 'el', tabId: 't' }, as('participate'))).toEqual({
       kind: 'participant-content',
     });
-    expect(gateClientOp({ kind: 'vote', voter: 'me' }, as('participate'))).toEqual(
-      relay(false, true),
-    );
-    expect(gateClientOp({ kind: 'vote', voter: 'you' }, as('participate'))).toEqual(DROP);
+    expect(gateClientOp({ kind: 'vote', voter: 'me' }, as('participate'))).toEqual(DROP);
     expect(gateClientOp({ kind: 'tab', tabId: 't' }, as('participate'))).toEqual(DROP);
   });
 

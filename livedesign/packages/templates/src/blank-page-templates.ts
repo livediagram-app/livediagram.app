@@ -1,4 +1,4 @@
-// The blanks of a page kind (docs/specs/007-editor/templates-by-mode.md "Blanks of a page kind"): Blank Logo and the
+// The blanks of a page kind: Blank Logo and the
 // blank wireframes, each a tab that opens in Pages on exactly one empty page whose
 // kind is already chosen. The page is made the way the first page's What Is This Page For? makes it
 // (withPageKindChosen on an unchosen page), so a blank of a kind and a chosen Blank Illustration are the same page.
@@ -22,7 +22,7 @@ export const BLANK_PAGE_TEMPLATE_KINDS = {
   'blank-wireframe-watch': 'wireframe',
 } as const satisfies Partial<Record<TemplateKind, PageKind>>;
 
-// Each blank wireframe's device (docs/specs/007-editor/templates-by-mode.md "Blanks of a page kind").
+// Each blank wireframe's device (docs/specs/007-editor/wireframe-pages.md "Templates").
 const BLANK_WIREFRAME_DEVICES: Partial<Record<TemplateKind, WireframeDeviceId>> = {
   'blank-wireframe-phone': 'iphone',
   'blank-wireframe-tablet': 'ipad',

@@ -34,9 +34,9 @@ untouched here.
 `RunHeading` is `1 | 2 | 3`. Two levels would leave the third option
 conspicuously missing from a list that otherwise reads like a word processor's.
 
-**Labels and pages render headings**, as notes do ([Rich-text notes](rich-text-notes.md)). The label
+**Labels render headings**, as notes do ([Rich-text notes](rich-text-notes.md)). The label
 renderer sizes them in `em` rather than the note renderer's fixed px, because a
-label, a sticky and a Page ([The Page element](page-element.md)) carry different base sizes and a
+label, a sticky and a card carry different base sizes and a
 pinned 17px H1 would come out _smaller_ than the body on a large element.
 
 ## Detecting the current type

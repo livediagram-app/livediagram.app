@@ -11,7 +11,7 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Ask and Clean" description="The two AI modes, what each one does, and when to use it." categoryTitle="Tools" categorySlug="tools" parentArticle={{ title: "AI Assistance", slug: "ai" }} subArticles={getSubArticles("ai").filter((a) => a.slug !== "ai-tools")}>
 
-The AI Assistant panel has two modes, picked from the buttons at the top: **Ask** and **Clean**. Both use the same prompt box, but they treat the diagram differently: Ask only reads the diagram, Clean changes it. If the panel isn't on your canvas, see [AI Assistance](/help/tools/ai/) for how to turn it on.
+The AI Assistant panel has two modes, picked from the buttons at the top: **Ask** and **Clean**. Both use the same prompt box, but they treat the tab differently: Ask only reads it, Clean changes it. If the panel isn't on your canvas, see [AI Assistance](/help/tools/ai/) for how to turn it on.
 
 <Figure caption="Both modes share one prompt box; the buttons at the top switch between them.">
   <AiPanel />
@@ -23,13 +23,13 @@ Type into the prompt box and press **Send**, or press ⌘Enter (Ctrl+Enter on Wi
 
 ## Ask: questions, no changes
 
-**Ask** answers questions about the diagram without touching it. Use it to get your bearings on a diagram someone else made, or to check your own: "what happens if the payment fails?" or "which steps have no outgoing arrow?". The answer streams into the panel as text, and nothing on the canvas changes.
+**Ask** answers questions about the tab without touching it. Use it to get your bearings on a document someone else made, or to check your own: "what is this slide saying?" or "which steps have no outgoing arrow?". The answer streams into the panel as text, and nothing on the canvas changes.
 
 Ask remembers the last few exchanges, so you can follow up ("and which of those is the riskiest?") without repeating yourself. **Clear context** forgets them, and switching to another tab starts afresh.
 
 ## Clean: tidy what's there
 
-**Clean** works on what is already on the tab. It fixes label typos and normalises sizes, positions, and styles so a diagram that grew messily reads consistently. The prompt is optional: leave it blank for a general tidy, or say what you want ("Even out the box sizes"). Clean leaves colours alone; the tab's theme sets them. Clean respects your layout rather than re-flowing it, and it never changes what an element is (a checklist stays a checklist, a diamond stays a diamond), so it is the safe choice once a diagram is arranged the way you like.
+**Clean** works on what is already on the tab. It fixes label typos and normalises sizes, positions, and styles so a tab that grew messily reads consistently. The prompt is optional: leave it blank for a general tidy, or say what you want ("Even out the box sizes"). Clean leaves colours alone; the tab's theme sets them. Clean respects your layout rather than re-flowing it, and it never changes what an element is (a checklist stays a checklist, a diamond stays a diamond), so it is the safe choice once a page is arranged the way you like.
 
 While it works, the panel shows how many elements it has processed so far. When it finishes, the changes land in a single step, so one **Undo** (⌘Z / Ctrl+Z) reverses the whole operation.
 

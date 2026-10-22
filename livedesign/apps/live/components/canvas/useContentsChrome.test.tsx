@@ -107,7 +107,7 @@ describe('useContentsChrome', () => {
   });
 
   it('keeps the choice in the synced preferences, telling telemetry first', () => {
-    writeUserPreferences({ drawPattern: 'grid' });
+    writeUserPreferences({ alignmentGuides: true });
     const docked = chrome();
     const write = vi.fn();
     vi.mocked(track).mockImplementation(() => {
@@ -117,7 +117,7 @@ describe('useContentsChrome', () => {
     expect(track).toHaveBeenCalledWith('UI', 'Changed', 'ContentsPlacementButton');
     // Sent before the change was kept.
     expect(write).toHaveBeenCalledWith(undefined);
-    expect(readUserPreferences()).toEqual({ drawPattern: 'grid', contentsPlacement: 'button' });
+    expect(readUserPreferences()).toEqual({ alignmentGuides: true, contentsPlacement: 'button' });
 
     const button = chrome({
       userPreferences: { contentsPlacement: 'button' },

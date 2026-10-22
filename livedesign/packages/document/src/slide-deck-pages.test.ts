@@ -25,8 +25,13 @@ const infoPage = (id: string): Page => ({
   id,
   orientation: 'portrait',
 });
-const deckTab = (id: string, pages: Page[] | undefined, mode = 'pages'): Tab =>
-  ({ id, name: id, elements: [], opensIn: mode, ...(pages ? { pages } : {}) }) as Tab;
+const deckTab = (id: string, pages: Page[] | undefined): Tab => ({
+  id,
+  name: id,
+  elements: [],
+  opensIn: 'pages',
+  ...(pages ? { pages } : {}),
+});
 const pageSlide = (tabId: string, pageId: string, extra: Partial<Slide> = {}): Slide => ({
   id: `s-${tabId}-${pageId}`,
   tabId,
@@ -115,10 +120,9 @@ describe('deckFollowingPages', () => {
     expect(deckFollowingPages(before, [deckTab('t', [slidePage('a')])])).toBe(before);
   });
 
-  it('leaves alone a tab not in Pages, a tab not yet loaded, and a deck already in step', () => {
+  it('leaves alone a tab not yet loaded, and a deck already in step', () => {
     const before: Deck = { slides: [pageSlide('t', 'b'), pageSlide('t', 'a')] };
     const pages = [slidePage('a'), slidePage('b')];
-    expect(deckFollowingPages(before, [deckTab('t', pages, 'diagram')])).toBe(before);
     expect(deckFollowingPages(before, [deckTab('t', undefined)])).toBe(before);
     const inStep: Deck = { slides: [pageSlide('t', 'a'), pageSlide('t', 'b')] };
     expect(deckFollowingPages(inStep, [deckTab('t', pages)])).toBe(inStep);
@@ -142,7 +146,8 @@ describe('deckPagesKey', () => {
     expect(deckPagesKey([deckTab('t', [slidePage('a'), slidePage('b')])])).toBe(one);
     expect(deckPagesKey([deckTab('t', [infoPage('b'), slidePage('a')])])).not.toBe(one);
     expect(deckPagesKey([deckTab('t', [slidePage('a')])])).not.toBe(one);
-    expect(deckPagesKey([deckTab('t', [slidePage('a')], 'diagram')])).toBe('');
+    // A tab whose pages have not loaded is not followed yet.
+    expect(deckPagesKey([deckTab('t', undefined)])).toBe('');
   });
 });
 
@@ -193,7 +198,7 @@ describe('pageMoveForDeckOrder', () => {
 });
 
 describe('slidePageOwnSlideIds', () => {
-  it("holds a page's only slide, not a copy's pair, a gone page's, or an unfollowed tab's", () => {
+  it("holds a page's only slide, not a copy's pair, a gone page's, or a loading tab's", () => {
     const tab = deckTab('t', [slidePage('a'), infoPage('i'), slidePage('b')]);
     const deck: Deck = {
       slides: [
@@ -206,7 +211,7 @@ describe('slidePageOwnSlideIds', () => {
       ],
     };
     expect([...slidePageOwnSlideIds(deck, [tab])]).toEqual(['s-t-a', 's-t-i']);
-    expect(slidePageOwnSlideIds(deck, [deckTab('t', [slidePage('a')], 'diagram')]).size).toBe(0);
+    expect(slidePageOwnSlideIds(deck, [deckTab('t', undefined)]).size).toBe(0);
   });
 });
 

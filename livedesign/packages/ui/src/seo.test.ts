@@ -94,7 +94,7 @@ describe('pageMetadata', () => {
         url: 'https://livedesign.app/opengraph-image',
         width: 1200,
         height: 630,
-        alt: 'livedesign: a real-time canvas for diagrams, whiteboards, illustrations and documents',
+        alt: 'livedesign: a real-time editor for articles, slide decks, infographics and logos',
       },
     ]);
     const tw = md.twitter as Record<string, unknown> | undefined;

@@ -20,15 +20,14 @@ describe('parseLens', () => {
 
   it('reads every dimension from its token', () => {
     const { lens, issues } = parseLens(
-      'opens-in:draw template:retrospective made-by:ai edited:7d people:me space:team:T1',
+      'opens-in:pages made-by:ai edited:7d people:me space:team:T1',
       aggregate,
     );
     expect(issues).toEqual([]);
     expect(lens).toEqual({
       text: [],
       filters: {
-        'opens-in': ['draw'],
-        template: ['retrospective'],
+        'opens-in': ['pages'],
         'made-by': ['ai'],
         edited: ['7d'],
         people: ['me'],
@@ -37,30 +36,31 @@ describe('parseLens', () => {
     });
   });
 
-  // docs/specs/007-editor/editor-modes.md "Naming in the interface": a link from before a rename.
-  it("reads a mode's old name as today's mode", () => {
-    const { lens, issues } = parseLens('opens-in:facilitate,illustrate', aggregate);
+  // docs/specs/007-editor/pages-mode.md "One mode": a link from livediagram, or from before a rename, names a mode
+  // Pages took over.
+  it("reads livediagram's modes and Pages' old names as Pages", () => {
+    const { lens, issues } = parseLens('opens-in:draw,illustrate', aggregate);
     expect(issues).toEqual([]);
-    expect(lens.filters['opens-in']).toEqual(['workshop', 'pages']);
+    expect(lens.filters['opens-in']).toEqual(['pages']);
   });
 
   it('keeps free words as text, in order, as typed', () => {
-    const { lens, terms } = parseLens(' Q3  plan template:kanban Café ', aggregate);
+    const { lens, terms } = parseLens(' Q3  plan edited:today Café ', aggregate);
     expect(lens.text).toEqual(['Q3', 'plan', 'Café']);
-    expect(lens.filters.template).toEqual(['kanban']);
+    expect(lens.filters.edited).toEqual(['today']);
     expect(terms.map((t) => [t.kind, t.raw, t.start, t.end])).toEqual([
       ['text', 'Q3', 1, 3],
       ['text', 'plan', 5, 9],
-      ['token', 'template:kanban', 10, 25],
-      ['text', 'Café', 26, 30],
+      ['token', 'edited:today', 10, 22],
+      ['text', 'Café', 23, 27],
     ]);
   });
 
   it('reads keys and fixed values without regard to case and writes them lower case', () => {
-    const { lens, terms } = parseLens('Template:KANBAN SPACE:Mine', aggregate);
-    expect(lens.filters.template).toEqual(['kanban']);
+    const { lens, terms } = parseLens('Edited:TODAY SPACE:Mine', aggregate);
+    expect(lens.filters.edited).toEqual(['today']);
     expect(lens.filters.space).toEqual(['mine']);
-    expect(terms[0]).toMatchObject({ kind: 'token', values: ['kanban'], raw: 'Template:KANBAN' });
+    expect(terms[0]).toMatchObject({ kind: 'token', values: ['today'], raw: 'Edited:TODAY' });
   });
 
   it('keeps the case of a team id and compares it exactly', () => {
@@ -78,24 +78,24 @@ describe('parseLens', () => {
 
   describe('several values', () => {
     it('reads a comma list as one token of several values, in the dimension’s order', () => {
-      const { lens, terms } = parseLens('template:kanban,retrospective', aggregate);
-      expect(lens.filters.template).toEqual(['retrospective', 'kanban']);
+      const { lens, terms } = parseLens('edited:30d,today', aggregate);
+      expect(lens.filters.edited).toEqual(['today', '30d']);
       expect(terms).toEqual([
         {
           kind: 'token',
-          raw: 'template:kanban,retrospective',
+          raw: 'edited:30d,today',
           start: 0,
-          end: 29,
-          dimension: 'template',
-          values: ['retrospective', 'kanban'],
+          end: 16,
+          dimension: 'edited',
+          values: ['today', '30d'],
           state: 'applied',
         },
       ]);
     });
 
     it('joins the values of a repeated dimension, exactly as a comma list does', () => {
-      const repeated = parseLens('template:kanban plan template:retrospective', aggregate).lens;
-      const listed = parseLens('template:retrospective,kanban plan', aggregate).lens;
+      const repeated = parseLens('edited:30d plan edited:today', aggregate).lens;
+      const listed = parseLens('edited:today,30d plan', aggregate).lens;
       expect(repeated).toEqual(listed);
     });
 
@@ -113,13 +113,13 @@ describe('parseLens', () => {
     it.each([
       ['colour:red', 'unknown_dimension', null, null],
       ['http://example.com', 'unknown_dimension', null, null],
-      ['template:', 'missing_value', 'template', null],
+      ['made-by:', 'missing_value', 'made-by', null],
       ['edited:7d,', 'missing_value', 'edited', null],
       ['edited:,7d', 'missing_value', 'edited', null],
       ['people:me,,others', 'missing_value', 'people', null],
       ['space:team:', 'missing_value', 'space', null],
-      ['template:mindmap', 'unknown_value', 'template', 'mindmap'],
-      ['template:kanban,mindmap,x', 'unknown_value', 'template', 'mindmap'],
+      ['template:retrospective', 'unknown_dimension', null, null],
+      ['edited:7d,yesterday,x', 'unknown_value', 'edited', 'yesterday'],
       ['made-by:me', 'unknown_value', 'made-by', 'me'],
       ['board:kanban', 'unknown_dimension', null, null],
       ['edited:year', 'unknown_value', 'edited', 'year'],
@@ -172,27 +172,27 @@ describe('parseLens', () => {
 
   describe('the word being typed', () => {
     it('holds a token-shaped word with a dimension key under the caret as pending', () => {
-      const input = 'plan template:retrospective,ka';
+      const input = 'plan edited:today,7';
       const { lens, terms, issues } = parseLens(input, aggregate, input.length);
       expect(terms[1]).toEqual({
         kind: 'pending',
-        raw: 'template:retrospective,ka',
+        raw: 'edited:today,7',
         start: 5,
-        end: 30,
-        dimension: 'template',
+        end: 19,
+        dimension: 'edited',
       });
       expect(lens.text).toEqual(['plan']);
-      expect(lens.filters.template).toEqual([]);
+      expect(lens.filters.edited).toEqual([]);
       expect(issues).toEqual([]);
     });
 
     it('holds even a complete token under the caret until the caret leaves it', () => {
-      expect(parseLens('template:kanban', aggregate, 3).terms[0]?.kind).toBe('pending');
-      expect(parseLens('template:kanban ', aggregate, 16).lens.filters.template).toEqual(['kanban']);
+      expect(parseLens('edited:today', aggregate, 3).terms[0]?.kind).toBe('pending');
+      expect(parseLens('edited:today ', aggregate, 13).lens.filters.edited).toEqual(['today']);
     });
 
     it('reads words away from the caret as usual', () => {
-      expect(parseLens('template:mindmap plan', aggregate, 21).issues).toMatchObject([
+      expect(parseLens('edited:yesterday plan', aggregate, 21).issues).toMatchObject([
         { reason: 'unknown_value' },
       ]);
     });
@@ -207,14 +207,14 @@ describe('parseLens', () => {
   describe('over-long input', () => {
     it('cuts at the last whitespace within the limit and reports the rest', () => {
       const head = 'a'.repeat(LENS_MAX_INPUT_LENGTH - 2);
-      const input = `${head} template:kanban`;
+      const input = `${head} edited:today`;
       const { lens, issues } = parseLens(input, aggregate);
       expect(lens.text).toEqual([head]);
-      expect(lens.filters.template).toEqual([]);
+      expect(lens.filters.edited).toEqual([]);
       expect(issues).toEqual([
         {
           reason: 'too_long',
-          raw: ' template:kanban',
+          raw: ' edited:today',
           start: LENS_MAX_INPUT_LENGTH - 2,
           end: input.length,
           dimension: null,
@@ -272,6 +272,6 @@ describe('orderValues', () => {
 
 describe('normaliseInput', () => {
   it('collapses whitespace and trims', () => {
-    expect(normaliseInput('  plan \n\t template:kanban  ')).toBe('plan template:kanban');
+    expect(normaliseInput('  plan \n\t edited:today  ')).toBe('plan edited:today');
   });
 });

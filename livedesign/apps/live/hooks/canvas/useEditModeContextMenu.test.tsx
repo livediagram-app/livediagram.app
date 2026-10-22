@@ -100,35 +100,17 @@ describe('a path in its edit mode (docs/specs/023-draw-mode/path-tool.md "Editin
   });
 });
 
-// docs/specs/023-draw-mode/draw-mode.md "Text boxes": a whiteboard text box starts caret-sized and
-// grows with the words, so a menu opened at its corner would sit on the line being typed.
-describe('a whiteboard text box being typed into', () => {
+// A text box being typed into still opens the element menu beside it.
+describe('a text box being typed into', () => {
   const text = { id: 't1', type: 'text', x: 0, y: 0, width: 8, height: 22 } as Element;
 
-  it('never opens the element menu beside it', () => {
-    const setContextMenu = vi.fn();
+  it('opens the element menu beside it', () => {
     const measure = vi.spyOn(document, 'querySelector');
     renderHook(() =>
       useEditModeContextMenu({
         editingId: 't1',
         elements: [text],
         isReadOnly: false,
-        whiteboard: true,
-        setContextMenu,
-      }),
-    );
-    expect(measure).not.toHaveBeenCalledWith('[data-element-id="t1"]');
-    measure.mockRestore();
-  });
-
-  it('still opens it for a text box on a diagram tab', () => {
-    const measure = vi.spyOn(document, 'querySelector');
-    renderHook(() =>
-      useEditModeContextMenu({
-        editingId: 't1',
-        elements: [text],
-        isReadOnly: false,
-        whiteboard: false,
         setContextMenu: vi.fn(),
       }),
     );

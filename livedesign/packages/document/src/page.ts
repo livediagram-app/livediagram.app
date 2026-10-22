@@ -1,5 +1,5 @@
-// The pages Pages mode draws on the canvas (docs/specs/007-editor/editor-modes.md "The
-// pages", docs/specs/007-editor/pages-mode.md): sheets in a row, each its own size
+// The pages Pages mode draws on the canvas (docs/specs/007-editor/pages-mode.md "The
+// pages"): sheets in a row, each its own size
 // (A4 unless it says otherwise), orientation, background and name. The first is centred on the
 // row anchor (the canvas origin unless a page carries one) and each further one sits a gap to the right of the one before. The pages are the
 // tab's (`Tab.pages`), so everyone lays out on the same ones; the sheets themselves are a view,

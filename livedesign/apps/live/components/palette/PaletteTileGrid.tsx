@@ -6,7 +6,6 @@ import { tileCaption } from './tile-caption';
 import { IconButton } from '@/components/palette/palette-controls';
 import type { PaletteTileDef } from './palette-tile-defs';
 import { tileDragStart } from './palette-tile-drag';
-import { usePlanCardTileDisabled } from '@/hooks/plan/card-types-taken';
 import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
 import { MarkerPaletteTile } from './MarkerPaletteTile';
 
@@ -38,7 +37,7 @@ export type PaletteTileActions = {
   // Technology catalogue icon, same handlers the Icons / Technology tabs use.
   addIcon: (iconId: string) => void;
   addTechIcon: (iconId: string) => void;
-  // Picks up one of Draw mode's markers (the Toolbar strip's Search, palette-marker-tiles).
+  // Picks up one of the markers (a logo page's Draw, the Toolbar strip's Search, palette-marker-tiles).
   beginMarker: (penId: WhiteboardPenId, once?: boolean) => void;
   // Puts the armed tool down (its tile pressed again).
   cancelDraw?: () => void;
@@ -61,15 +60,9 @@ export function tileHandler(
   }
   switch (a.type) {
     case 'shape':
-      // The creation-time choice rides along, so "Add poll" places a poll and
-      // a confetti tile places a confetti pad (docs/specs/012-collaboration/session-button.md, docs/specs/009-elements/reaction-pad.md).
+      // The creation-time choice rides along, so a Funnel tile places a funnel rather than a pyramid.
       return () =>
         actions.addShape(a.kind, {
-          session: a.session,
-          reaction: a.reaction,
-          mode: a.mode,
-          estimateScale: a.estimateScale,
-          plan: a.plan,
           variant: a.variant,
           name: tileCaption(def.label, def.caption),
         });
@@ -127,16 +120,11 @@ export function tileActive(
   const a = def.action;
   switch (a.type) {
     case 'shape':
-      // Matched on the CHOICE too, or all five reaction tiles would light up
+      // Matched on the CHOICE too, or every variant of a kind would light up
       // together while one of them was armed.
       return (
         pendingDraw.type === 'shape' &&
         pendingDraw.kind === a.kind &&
-        pendingDraw.session === a.session &&
-        pendingDraw.reaction === a.reaction &&
-        pendingDraw.mode === a.mode &&
-        pendingDraw.estimateScale === a.estimateScale &&
-        pendingDraw.plan === a.plan &&
         pendingDraw.variant === a.variant
       );
     case 'component':
@@ -235,9 +223,8 @@ function TileButton({
   // Shape tiles drag through IconButton's dragKind (which also picks their theme tint); every other
   // placeable tile (sticky, icons, sticker) carries the shared payload from tileDragStart.
   const otherDrag = a.type === 'shape' ? undefined : tileDragStart(a);
-  // Greyed out with a reason: the def's own, or a card tile no board on the tab takes.
-  const cardRefusal = usePlanCardTileDisabled(a);
-  const disabledReason = (def.disabled ?? cardRefusal)?.reason;
+  // Greyed out with a reason: the def's own.
+  const disabledReason = def.disabled?.reason;
   return (
     <IconButton
       disabledReason={disabledReason}
@@ -246,11 +233,7 @@ function TileButton({
       description={def.description}
       onClick={onClick}
       dragKind={a.type === 'shape' ? a.kind : undefined}
-      dragChoice={
-        a.type === 'shape'
-          ? (a.session ?? a.reaction ?? a.mode ?? a.estimateScale ?? a.plan ?? a.variant)
-          : undefined
-      }
+      dragChoice={a.type === 'shape' ? a.variant : undefined}
       draggable={otherDrag !== undefined || undefined}
       onDragStart={otherDrag}
       filled={def.filled}

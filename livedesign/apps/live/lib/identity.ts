@@ -20,18 +20,9 @@ export const OFFLINE_AFTER_MS = 60 * 60 * 1000;
 
 export type Participant = {
   id: string;
-  // The id this person writes into the DOCUMENT for anything recorded
-  // per participant — a done check's mark, an estimate, a temperature
-  // (docs/specs/012-collaboration/participant-responses.md). Separate from `id` because `id` cannot do that job: for
-  // ourselves it is the owner id, which must never be published, and for
-  // a peer it is the room's per-socket presence id, which changes on
-  // every reconnect and matches nothing that was saved.
-  //
-  // Optional so a peer on an older client (whose hello carried no key)
-  // still renders in the roster — they simply match no saved answer,
-  // which is the behaviour before this existed. Read through
-  // `participantKey` rather than directly, so the fallback lives in one
-  // place.
+  // This browser's key (lib/local-identity.ts `ensureCollabKey`): stable across reconnects and shared by every tab in
+  // the browser, unlike `id`, which is our owner id for ourselves and a per-socket presence id for a peer. Optional so
+  // a peer whose hello carried none still renders. Read through `participantKey`.
   key?: string;
   name: string;
   color: string; // hex
@@ -61,43 +52,11 @@ export type Participant = {
   agent?: true;
 };
 
-// How this participant is recorded in the document (docs/specs/012-collaboration/participant-responses.md). Falls back
-// to `id` for a peer whose client is too old to publish a key: they then
-// match no saved answer, which is no worse than before the key existed and
-// is a great deal better than crashing the join on an undefined.
+// This participant's browser key, falling back to `id` for a peer whose client published none. Every tab in a browser
+// shares the key, so presence collapses on it (lib/presence-rows.ts, docs/specs/012-collaboration/
+// collaborator-enhancements.md "One person, one avatar").
 export function participantKey(participant: Participant): string {
   return participant.key ?? participant.id;
-}
-
-// One row per person, by `participantKey`: the same person in two tabs (or
-// re-joined on a new socket) shares a key but not an id, so deduping on `id`
-// counted them twice (docs/specs/012-collaboration/participant-responses.md).
-// The first row for a key wins, so ourselves (listed first) stays ourselves.
-export function uniqueParticipants(participants: readonly Participant[]): Participant[] {
-  const seen = new Set<string>();
-  return participants.filter((p) => {
-    const key = participantKey(p);
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-}
-
-// Ourselves as a row of the room, carrying our own level as every peer's row carries theirs (the room stamps a
-// peer's server-verified role on presence; our own row is local and had none). Without it a Viewer's own screen
-// counted the Viewer among those who can answer, so its Done check waited on it forever.
-export function selfInRoom(self: Participant, level: AccessLevel): Participant {
-  return { ...self, role: level };
-}
-
-// The keys of everyone in the room who CAN answer a per-participant card
-// (docs/specs/012-collaboration/participant-responses.md "Who counts"): one per
-// person, leaving out view-link guests (who can't write) and agent rows (never
-// counted as a person). What a Done check waits on and an Estimate counts.
-export function answeringKeys(participants: readonly Participant[]): string[] {
-  return uniqueParticipants(participants)
-    .filter((p) => p.role !== 'view' && !p.agent)
-    .map(participantKey);
 }
 
 // What a screen reader hears for an avatar: "Webber (Online)", and their agent's status line after it

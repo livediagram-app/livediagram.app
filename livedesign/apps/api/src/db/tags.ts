@@ -1,4 +1,4 @@
-// tags — per-person document tags (migration 0094, docs/specs/013-workspace/tags.md).
+// tags — per-person document tags (the baseline migration, docs/specs/013-workspace/tags.md).
 
 import { TAG_LIMIT, type Tag, type TagLink, type TagsList } from '@livedesign/api-schema';
 import type { Env } from '../types';

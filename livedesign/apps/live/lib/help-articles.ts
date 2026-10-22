@@ -23,18 +23,9 @@ export const HELP_ARTICLES = {
   sharePasswords: 'collaboration/sharing/share-passwords',
   // Palette behaviour
   autoAttachArrows: 'palette/auto-attach-arrows',
-  // Of the elements added in docs/specs/009-elements/youtube-video.md and docs/specs/009-elements/mind-node.md, docs/specs/009-elements/lane.md, docs/specs/009-elements/entity.md, docs/specs/009-elements/embed-providers.md, only the embed has a
-  // surface that links its article (the link picker, when it is restricted to
-  // a URL). Lanes and entities had keys here and no placement, so they were
-  // removed; their element tours brought them back, below. The mind map's Edit
-  // Outline dialog links its own sub-article from its header, and the mind
-  // map's, the flowchart's and the org chart's element tours (docs/specs/007-editor/element-tours.md) link their
-  // articles.
+  // The embed's article is linked from the link picker, when it is restricted to a URL
+  // (docs/specs/009-elements/embed-providers.md).
   embedElements: 'palette/embed-elements',
-  mindMaps: 'palette/mind-maps',
-  flowcharts: 'palette/flowcharts',
-  orgCharts: 'palette/org-charts',
-  mindMapOutline: 'palette/mind-maps/edit-outline',
   alignmentGuides: 'palette/alignment-guides',
   panelOpacity: 'palette/panel-opacity',
   quickAddOnHover: 'palette/quick-add-on-hover',
@@ -42,7 +33,6 @@ export const HELP_ARTICLES = {
   // One key per tool panel, so every mode's panel can point at the article
   // that explains it (docs/specs/018-help/contextual-help-links.md). Each of these resolves to a real page — a key
   // pointing at nothing is a bug, the same way an unregistered article is.
-  avatarMode: 'selection-modes/avatar-mode',
   laser: 'selection-modes/laser',
   spotlight: 'selection-modes/spotlight',
   eraser: 'selection-modes/eraser',
@@ -52,7 +42,7 @@ export const HELP_ARTICLES = {
   aiTools: 'tools/ai/ai-tools',
   connectAiTool: 'account-and-data/connect-ai-mcp',
   // Tabs / import-export
-  exportingDiagrams: 'account-and-data/exporting-diagrams',
+  exportingDiagrams: 'account-and-data/exporting-documents',
   apiTokens: 'account-and-data/api-tokens',
   trash: 'account-and-data/trash',
   importTabs: 'tabs/import-tabs',
@@ -68,18 +58,7 @@ export const HELP_ARTICLES = {
   customThemes: 'canvas/themes/custom-themes',
   choosingFonts: 'canvas/text-and-fonts/choosing-fonts',
   // Links / activity / comments
-  // Plan mode's card types (docs/specs/026-plan/item-types.md).
-  planCardTypes: 'canvas/plan-mode/card-types',
-  planBoards: 'canvas/plan-mode/boards',
-  planCards: 'canvas/plan-mode/cards',
-  planSheets: 'canvas/plan-mode/sheets',
-  planDashboards: 'canvas/plan-mode/dashboards',
-  planForms: 'canvas/plan-mode/forms',
-  planTour: 'canvas/plan-mode/plan-tour',
-  workshopTour: 'canvas/workshop-mode/workshop-tour',
-  drawTour: 'canvas/draw-mode/draw-tour',
-  avatarTour: 'selection-modes/avatar-mode/avatar-tour',
-  pagesTour: 'canvas/pages-mode/pages-tour',
+  pagesTour: 'pages/pages-tour',
   links: 'canvas/links',
   comments: 'collaboration/comments',
   livePresence: 'collaboration/live-presence',
@@ -88,12 +67,7 @@ export const HELP_ARTICLES = {
   // Standing panels.
   explorerPanel: 'explorer/explorer-panel',
   layers: 'canvas/layers',
-  // The Tidy Up popover's tidiers (docs/specs/008-canvas/layout-cleanup.md).
-  layoutCleanup: 'tools/layout-cleanup',
   minimap: 'user-interface/minimap',
-  sessionPolls: 'collaboration/session-tools/polls',
-  sessionVoting: 'collaboration/session-tools/voting',
-  sessionTimer: 'collaboration/session-tools/timer',
   imageGallery: 'explorer/image-gallery',
   timeline: 'explorer/timeline',
   // The Inbox's article keeps the slug it had as Activity, so links already out there keep working.
@@ -104,29 +78,20 @@ export const HELP_ARTICLES = {
   defaultFolders: 'explorer/folders/default-folders',
   explorerFilters: 'explorer/filters',
   dataElements: 'palette/tools/data-elements',
-  sankeyDiagram: 'palette/build/sankey-diagram',
+  sankeyDiagram: 'palette/concept-graphics/sankey-diagram',
   // The round-two element tours' closing cards (docs/specs/007-editor/element-tours.md).
   stacks: 'palette/stacks',
-  entities: 'palette/entities',
-  tabWindows: 'canvas/pages-mode/tab-windows',
-  lanes: 'palette/lanes',
-  boundaries: 'palette/boundaries',
-  diagramKeys: 'palette/diagram-keys',
-  portals: 'palette/tools/portals',
-  sequenceDiagram: 'palette/sequence-diagrams',
+  tabWindows: 'pages/tab-windows',
   conceptGraphics: 'palette/concept-graphics',
   palette: 'palette',
   // Settings
   powerUserMode: 'user-interface/power-user-mode',
-  diagramTour: 'getting-started/diagram-tour',
   whatWeCollect: 'privacy-and-security/what-we-collect',
   offlineMode: 'privacy-and-security/offline-mode',
   // Onboarding / empty states
-  yourFirstDiagram: 'getting-started/your-first-diagram',
   templates: 'canvas/templates',
-  drawMode: 'canvas/draw-mode',
-  logoPages: 'canvas/pages-mode/logo-pages',
-  wireframePages: 'canvas/pages-mode/wireframe-pages',
+  logoPages: 'pages/logo-pages',
+  wireframePages: 'pages/wireframe-pages',
   // Each page kind's Show Me links its own article (docs/specs/007-editor/pages-tour.md).
   keyboardShortcuts: 'tips-and-tricks/keyboard-shortcuts',
   guestVsAccount: 'getting-started/guest-vs-account',
@@ -143,47 +108,6 @@ export type HelpArticleKey = keyof typeof HELP_ARTICLES;
 // the same article say the same thing, and a `?` never falls back to a bare
 // "Learn more" that tells the reader nothing about where it goes.
 export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description: string }> = {
-  planCardTypes: {
-    title: 'Learn about card types',
-    description: 'Add your own kinds of card, with the fields each one holds.',
-  },
-  planBoards: {
-    title: 'Learn about boards',
-    description: 'Columns, swimlanes, widgets, and the cards each board takes.',
-  },
-  planCards: {
-    title: 'Learn about cards',
-    description: 'Open a card, fill it in, and archive, trash or present it.',
-  },
-  planSheets: {
-    title: 'Learn about sheets',
-    description: 'Cells, formulas, charts, setup and settings.',
-  },
-  planDashboards: {
-    title: 'Learn about dashboards',
-    description: 'Rows of slots, what a slot can show, and arranging them.',
-  },
-  planForms: {
-    title: 'Learn about forms',
-    description: 'Questions, where answers go, publishing and responses.',
-  },
-
-  planTour: {
-    title: 'Learn about the Plan Tour',
-    description: 'What the tour shows you and how replaying works.',
-  },
-  workshopTour: {
-    title: 'Learn about the Workshop Tour',
-    description: 'What the tour shows you and how replaying works.',
-  },
-  drawTour: {
-    title: 'Learn about the Draw Tour',
-    description: 'What the tour shows you and how replaying works.',
-  },
-  avatarTour: {
-    title: 'Learn about the Avatar Tour',
-    description: 'What the tour shows you and how replaying works.',
-  },
   pagesTour: {
     title: 'Learn about the Pages Tour',
     description: 'What the tour shows you and how replaying works.',
@@ -223,10 +147,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   isometricMode: {
     title: 'Learn about the isometric view',
     description: 'How the isometric projection works and when to use it.',
-  },
-  avatarMode: {
-    title: 'Learn about Avatar mode',
-    description: 'Tips for walking the canvas as an avatar and leading a session.',
   },
   laser: {
     title: 'Learn about the Laser',
@@ -317,46 +237,13 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about the Explorer',
     description: 'Tips and tricks to help you get the most out of the Explorer.',
   },
-  layoutCleanup: {
-    title: 'Learn about tidying a layout',
-    description:
-      'Tips for laying a diagram out in one press, and choosing the style that suits it.',
-  },
   layers: {
     title: 'Learn about layers',
     description: 'Tips and tricks for stacking, hiding and locking parts of a tab.',
   },
-  orgCharts: {
-    title: 'Learn about org charts',
-    description: 'People and roles in a tree: reports, peers, and the downward flow.',
-  },
-  flowcharts: {
-    title: 'Learn about flowcharts',
-    description: 'Growing a chart a step at a time, step types, swimlanes and direction.',
-  },
-  mindMaps: {
-    title: 'Learn about mind maps',
-    description: 'Growing a map with Tab and Enter, its branching shapes, spacing and Tidy Map.',
-  },
-  mindMapOutline: {
-    title: 'Learn about editing an outline',
-    description: 'Rewrite a mind map as an indented list and save it back in one go.',
-  },
   minimap: {
     title: 'Learn about the Map',
     description: 'Tips for finding your way around a big canvas.',
-  },
-  sessionPolls: {
-    title: 'Learn about polls',
-    description: 'Tips for asking the room a question and sharing the results.',
-  },
-  sessionVoting: {
-    title: 'Learn about voting',
-    description: 'Tips for running a quick vote across the elements on the canvas.',
-  },
-  sessionTimer: {
-    title: 'Learn about the timer',
-    description: 'Tips for keeping a session to time with a countdown or a stopwatch.',
   },
   imageGallery: {
     title: 'Learn about the Image Gallery',
@@ -406,38 +293,14 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about stacks',
     description: 'Rows, columns and grids that lay out what you drop in them.',
   },
-  entities: {
-    title: 'Learn about entities',
-    description: 'UML classes and ER tables: a title over name and type fields.',
-  },
   tabWindows: {
     title: 'Learn about tab windows',
     description: 'Show another tab live on a slide, and keep it up to date.',
-  },
-  lanes: {
-    title: 'Learn about lanes',
-    description: 'Swimlanes: title gutters, seams, and columns as well as rows.',
-  },
-  boundaries: {
-    title: 'Learn about boundaries',
-    description: 'Zones that hold what is inside them: regions, VPCs, C4 systems.',
-  },
-  diagramKeys: {
-    title: 'Learn about diagram keys',
-    description: 'A legend that lists the line styles and tag colours you use.',
-  },
-  portals: {
-    title: 'Learn about portals',
-    description: 'Linked rings that take you across the canvas or to another tab.',
   },
   conceptGraphics: {
     title: 'Learn about concept graphics',
     description:
       'Stacks, pyramids, funnels, cycles, hubs, onions and chevrons, and editing their rows.',
-  },
-  sequenceDiagram: {
-    title: 'Learn about sequence diagrams',
-    description: 'Writing participants and messages, and the three kinds of arrow.',
   },
   palette: {
     title: 'Learn about the Palette',
@@ -447,10 +310,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about power user mode',
     description: 'The recommended settings it applies, and Minimal chrome.',
   },
-  diagramTour: {
-    title: 'Learn about the Diagram Tour',
-    description: 'What the tour covers and how replaying works.',
-  },
   whatWeCollect: {
     title: 'Learn about what we collect',
     description: "Exactly which anonymous events are sent, and what isn't.",
@@ -459,17 +318,9 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about Offline Mode',
     description: 'Documents saved only in this browser, and how to sync them.',
   },
-  yourFirstDiagram: {
-    title: 'Learn about your first diagram',
-    description: 'A short walkthrough of building your first diagram.',
-  },
   templates: {
     title: 'Learn about templates',
     description: 'How templates give you a themed starting point.',
-  },
-  drawMode: {
-    title: 'Learn about Draw mode',
-    description: 'Switching modes, the dock, its pens and shapes, and where it sits.',
   },
   logoPages: {
     title: 'Learn about logo pages',

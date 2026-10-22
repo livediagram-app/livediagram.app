@@ -52,9 +52,7 @@ describe('attachment points (docs/specs/009-elements/badge.md "Attachment")', ()
     expect(canHost(host())).toBe(true);
     expect(canHost(badge())).toBe(false);
     expect(canHost(host({ shape: 'frame' }))).toBe(false);
-    expect(canHost(host({ shape: 'boundary' as never }))).toBe(false);
     expect(canHost(host({ shape: 'stack' as never }))).toBe(false);
-    expect(canHost(host({ shape: 'diagram-key' as never }))).toBe(false);
   });
 });
 

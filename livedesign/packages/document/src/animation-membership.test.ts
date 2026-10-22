@@ -63,7 +63,7 @@ describe('carriesWords', () => {
   });
 
   it('is false for shapes whose words are art or drawn by the shape', () => {
-    for (const kind of ['icon', 'sticker', 'chair', 'pie-chart', 'progress-bar'] as const) {
+    for (const kind of ['icon', 'sticker', 'pie-chart', 'progress-bar'] as const) {
       expect(carriesWords(createShape(kind, 0, 0))).toBe(false);
     }
   });
@@ -116,7 +116,6 @@ describe('Shape motions', () => {
       createShape('progress-bar', 0, 0),
       createShape('rating', 0, 0),
       createShape('chevrons', 0, 0),
-      createShape('sequence', 0, 0),
     ]) {
       expect(takesShapeMotions(el), el.type).toBe(true);
       expect(inAnimationSet('shape', el), el.type).toBe(true);

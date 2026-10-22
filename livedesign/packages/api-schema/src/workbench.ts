@@ -265,24 +265,13 @@ const WORKBENCH_ROUTES: readonly RouteShape[] = [
   shape('POST', 'documents/:doc/tabs/:p/comments/:p/resolve'),
   shape('POST', 'documents/:doc/tabs/:p/comments/:p/reopen'),
   shape('DELETE', 'documents/:doc/tabs/:p/comments/:p'),
-  shape('POST', 'documents/:doc/tabs/:p/qa'),
   shape('POST', 'documents/:doc/room-ticket'),
-  shape('GET,POST', 'documents/:doc/items'),
-  shape('POST', 'documents/:doc/items/bulk'),
-  shape('POST,DELETE', 'documents/:doc/items/:p'),
-  shape('POST', 'documents/:doc/items/:p/move'),
-  shape('POST', 'documents/:doc/items/:p/vote'),
-  shape('POST', 'documents/:doc/items/:p/comments'),
-  shape('POST', 'documents/:doc/items/:p/comments/resolve'),
-  shape('POST', 'documents/:doc/items/:p/comments/reopen'),
-  shape('DELETE', 'documents/:doc/items/:p/comments/:p'),
-  shape('PUT', 'documents/:doc/item-types'),
   shape('DELETE', 'workbench/sessions/current'),
 ];
 
 // The workspace scope: everything the Explorer does, and the editor of every document in it. Never the account
 // (profile, preferences' writes, the guest migration, tokens and pairings, team administration, the account, the AI
-// assistant), and never a route the minting token could not call (Drive: Clerk only, WB51).
+// assistant), and never a route the minting token could not call (Clerk only, WB51).
 const WORKSPACE_ROUTES: readonly RouteShape[] = [
   shape('GET', 'capabilities'),
   shape('GET', 'openapi.json'),

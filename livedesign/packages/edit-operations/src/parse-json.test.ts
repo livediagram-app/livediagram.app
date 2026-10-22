@@ -58,7 +58,7 @@ describe('validateEditOperations', () => {
       { op: 'connect', from: 'n3', to: 'verify', id: 'a9', fields: { label: 'ok' }, again: true },
       { op: 'rewire', target: 'a3', to: 'verify' },
       { op: 'insert', kind: 'diamond', between: ['n3', 'n4'], fields: { label: 'Valid?' } },
-      { op: 'wrap', targets: ['n3', 'type:sticky'], in: 'lane', tidy: true, makeRoom: true },
+      { op: 'wrap', targets: ['n3', 'type:sticky'], in: 'frame', tidy: true, makeRoom: true },
       { op: 'unwrap', target: 'f2' },
       { op: 'order', target: 'n3', to: 'front' },
       { op: 'order', target: 'n3', below: 'n4' },
@@ -156,7 +156,7 @@ describe('validateEditOperations', () => {
       [6, 'member "by": expected [dx, dy] numbers'],
       [7, 'member "between": expected [a, b] selectors'],
       [8, 'member "targets": expected a non-empty array of selectors'],
-      [9, 'member "in": expected frame or lane'],
+      [9, 'member "in": expected frame'],
       [10, 'member "to": expected front or back'],
     ]);
     expect(

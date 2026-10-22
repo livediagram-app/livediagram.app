@@ -33,7 +33,7 @@ function place(el: BoxedElement, cornerPx: number, anchor: Parameters<typeof pla
 
 describe('placeIndicators', () => {
   it('sits tight in the top-right of a rounded box, clear of its corner', () => {
-    const box = place(shape('mind-node', 250, 116), 14, 'top-right');
+    const box = place(shape('square', 250, 116), 14, 'top-right');
     expect(box).not.toBeNull();
     expect(box!.y).toBeGreaterThanOrEqual(INDICATOR_OUTLINE_CLEARANCE_PX);
     expect(box!.y).toBeLessThanOrEqual(12);
@@ -72,7 +72,7 @@ describe('placeIndicators', () => {
   });
 
   it('starts a box footer at the bottom-left and a circle footer at the bottom centre', () => {
-    const rect = shape('mind-node', 250, 116);
+    const rect = shape('square', 250, 116);
     const left = place(rect, 14, footerAnchor(rect))!;
     expect(left.x).toBe(116 - (left.y + left.height));
     const circle = shape('circle', 180, 180);
@@ -94,13 +94,13 @@ describe('placeIndicators', () => {
   });
 
   it('puts the pip on a rounded box’s corner curve', () => {
-    const inset = pipInset(indicatorRings(shape('mind-node', 250, 116), 14), 250, 116, false)!;
+    const inset = pipInset(indicatorRings(shape('square', 250, 116), 14), 250, 116, false)!;
     expect(inset.x).toBeGreaterThan(2);
     expect(inset.x).toBeLessThan(6);
   });
 
   it('fits a short node whose fixed-size label leaves the corner free', () => {
-    const el = shape('mind-node', 220, 76);
+    const el = shape('square', 220, 76);
     const rings = indicatorRings(el, 12);
     const one = { width: 24, height: 24 };
     expect(placeIndicators(rings, 220, 76, one, 'top-right')).toBeNull();
@@ -117,7 +117,7 @@ describe('placeIndicators', () => {
   });
 
   it('keeps clear of a fixed-size label that reaches the corner', () => {
-    const el = shape('mind-node', 220, 76);
+    const el = shape('square', 220, 76);
     const text = contentBox({
       width: 220,
       height: 76,
@@ -150,7 +150,7 @@ describe('placeIndicators', () => {
       expect(topAnchor(shape(kind, 200, 200))).toBe('top-centre');
       expect(footerAnchor(shape(kind, 200, 200))).toBe('bottom-centre');
     }
-    for (const kind of ['square', 'mind-node', 'stadium', 'browser'] as const) {
+    for (const kind of ['square', 'stadium', 'browser'] as const) {
       expect(topAnchor(shape(kind, 200, 200))).toBe('top-right');
       expect(footerAnchor(shape(kind, 200, 200))).toBe('bottom-left');
     }

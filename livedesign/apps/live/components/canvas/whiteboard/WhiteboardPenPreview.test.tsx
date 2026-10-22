@@ -11,12 +11,13 @@ import type { PendingDraw } from '@/lib/draw-mode';
 import { RECOGNITION_PREVIEW_DWELL_MS } from '@/lib/recognition-preview';
 import type { LiveStroke } from '@/lib/live-stroke';
 import { liveStrokeOf } from '@/lib/live-stroke-test-utils';
+import { flipRecognition } from '@/lib/recognition-flip';
 import { FreehandSvg } from '@/components/canvas/boxed-element-overlays';
 import { WhiteboardPenPreview } from './WhiteboardPenPreview';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
-// The whiteboard pen's in-flight preview (docs/specs/023-draw-mode/draw-mode.md "Pens"): drawn
+// A marker's in-flight preview (docs/specs/023-draw-mode/drawing-tools.md "Markers"): drawn
 // inside the canvas's own transformed layer as exactly the stroke it lands as (the same box, svg
 // and filled perfect-freehand outline), so the same layer rasterises both. The landed stroke's
 // packed points are within STROKE_POINT_MAX_ERROR of the box of the raw samples the preview draws
@@ -28,7 +29,6 @@ const pen = (over: Partial<Pen> = {}): Pen => ({
   variant: 'whiteboard',
   colour: '#e5484d',
   width: 1.5,
-  recognise: false,
   ...over,
 });
 const wave = Array.from({ length: 60 }, (_, i) => ({
@@ -134,27 +134,23 @@ describe('WhiteboardPenPreview', () => {
     );
   });
 
-  describe('the recognition preview (docs/specs/023-draw-mode/draw-mode.md "Shape recognition")', () => {
+  describe('the recognition preview (docs/specs/023-draw-mode/drawing-tools.md "Shape recognition")', () => {
     const square: { x: number; y: number }[] = [];
     for (let i = 0; i <= 20; i++) square.push({ x: i * 10, y: 0 });
     for (let i = 1; i <= 20; i++) square.push({ x: 200, y: i * 10 });
     for (let i = 1; i <= 20; i++) square.push({ x: 200 - i * 10, y: 200 });
     for (let i = 1; i <= 20; i++) square.push({ x: 0, y: 200 - i * 10 });
 
-    it('swaps the stroke for the clean shape, in canvas px, once the pen holds still', () => {
-      vi.useFakeTimers();
+    it('swaps the stroke for the clean shape, in canvas px, once Alt recognises it', () => {
       vi.spyOn(console, 'info').mockImplementation(() => {});
+      const stroke = liveStrokeOf(square);
       const { container } = render(
-        <WhiteboardPenPreview
-          stroke={liveStrokeOf(square)}
-          pen={pen({ recognise: true })}
-          ink="#1c1917"
-          zoom={2}
-        />,
+        <WhiteboardPenPreview stroke={stroke} pen={pen()} ink="#1c1917" zoom={2} />,
       );
       expect(container.querySelector('[data-recognition-preview]')).toBeNull();
       act(() => {
-        vi.advanceTimersByTime(RECOGNITION_PREVIEW_DWELL_MS + 10);
+        flipRecognition(stroke, 1.5);
+        stroke.notify();
       });
       const preview = container.querySelector(
         '[data-recognition-preview="square"]',
@@ -167,7 +163,7 @@ describe('WhiteboardPenPreview', () => {
       expect(frameOf(container).style.visibility).toBe('hidden');
     });
 
-    it('never previews with recognition off', () => {
+    it('never previews a shape by holding still', () => {
       vi.useFakeTimers();
       const { container } = render(
         <WhiteboardPenPreview stroke={liveStrokeOf(square)} pen={pen()} ink="#1c1917" zoom={1} />,
@@ -179,7 +175,7 @@ describe('WhiteboardPenPreview', () => {
     });
   });
 
-  // docs/specs/023-draw-mode/draw-mode.md "Shape recognition": the chip on a touch screen.
+  // docs/specs/023-draw-mode/drawing-tools.md "Shape recognition": the chip on a touch screen.
   describe('the chip', () => {
     const square: { x: number; y: number }[] = [];
     for (let i = 0; i <= 20; i++) square.push({ x: i * 10, y: 0 });
@@ -187,12 +183,12 @@ describe('WhiteboardPenPreview', () => {
     for (let i = 1; i <= 20; i++) square.push({ x: 200 - i * 10, y: 200 });
     for (let i = 1; i <= 19; i++) square.push({ x: 0, y: 200 - i * 10 });
 
-    const held = (pointerType: string, recognise = false) => {
+    const held = (pointerType: string) => {
       vi.useFakeTimers();
       vi.spyOn(console, 'info').mockImplementation(() => {});
       const stroke = liveStrokeOf(square, { pointerType });
       const view = render(
-        <WhiteboardPenPreview stroke={stroke} pen={pen({ recognise })} ink="#1c1917" zoom={2} />,
+        <WhiteboardPenPreview stroke={stroke} pen={pen()} ink="#1c1917" zoom={2} />,
       );
       act(() => {
         vi.advanceTimersByTime(RECOGNITION_PREVIEW_DWELL_MS + 10);
@@ -220,7 +216,6 @@ describe('WhiteboardPenPreview', () => {
         pointerId: 7,
       });
       expect(stroke.shaped()).toBeNull();
-      expect(stroke.keepsInk()).toBe(true);
       expect(container.querySelector('[data-recognition-preview]')).toBeNull();
     });
 
@@ -240,7 +235,7 @@ describe('WhiteboardPenPreview', () => {
     });
 
     it('is never offered to a mouse', () => {
-      held('mouse', true);
+      held('mouse');
       expect(screen.queryByRole('button')).toBeNull();
     });
   });

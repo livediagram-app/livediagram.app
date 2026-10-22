@@ -123,7 +123,7 @@ describe('searchArticles', () => {
 
   it('finds an article holding every word of a query, wherever they sit', () => {
     const titles = searchArticles('export png').map((a) => a.title);
-    expect(titles).toContain('Exporting Diagrams');
+    expect(titles).toContain('Exporting Documents');
     // Every word must be there: a word no article holds finds nothing.
     expect(searchArticles('export zzqqxx')).toEqual([]);
   });

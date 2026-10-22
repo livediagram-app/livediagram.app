@@ -12,17 +12,17 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Zen Mode" description="Hide every toolbar and panel to leave just the canvas, while keeping pan and zoom." categoryTitle="Tools" categorySlug="tools" subArticles={getSubArticles("zen-mode")}>
 
-Zen mode is a distraction-free focus mode for the editor. It hides the toolbars and panels so only the canvas remains (in Workshop and Plan mode the Session strip stays, so a facilitator can still run the session, and so does the Following banner while you follow someone), which is ideal for reading, sharing your screen, or thinking without the toolbars in the way. It is purely a view setting: it changes nothing on the canvas and is not synced to anyone else, so each person can focus independently.
+Zen mode is a distraction-free focus mode for the editor. It hides the toolbars and panels so only the canvas remains (the Following banner stays while you follow someone), which is ideal for reading, sharing your screen, or thinking without the toolbars in the way. It is purely a view setting: it changes nothing on the canvas and is not synced to anyone else, so each person can focus independently.
 
 ## What it hides and keeps
 
-When zen mode is on, the editor hides the header, the tab bar, the palette strip, the menu button, the inspector and the panels such as Layers and the minimap, the Explorer, the Collaborate panel, the AI Assistant panel, your role badge, the empty-canvas prompt, and the undo/redo dock.
+When zen mode is on, the editor hides the header, the tab bar, the palette strip, the menu button, the inspector and the panels such as the minimap, the Explorer, the Collaborate panel, the AI Assistant panel, your role badge, the empty-canvas prompt, and the undo/redo dock.
 
 <Figure caption="Outside zen mode the canvas is framed by the header, tab bar, palette, and zoom dock.">
   <ZenBefore />
 </Figure>
 
-<Figure caption="In Diagram mode, zen hides every panel and leaves just the canvas and a lone zoom dock that now exits zen.">
+<Figure caption="Zen hides every panel and leaves just the canvas and a lone zoom dock that now exits zen.">
   <ZenAfter />
 </Figure>
 
@@ -38,7 +38,7 @@ Interaction is unaffected, so you can still pan, zoom, and (if your role allows)
 
 There are three ways to turn zen mode on:
 
-- **The canvas-tool dropdown.** Open the **Selection Mode** picker at the left of the toolbar and choose **Zen**, in the Preview group under Isometric. It acts immediately and leaves your current tool selected. Viewers and Participants also have a Zen button on the zoom controls. On a Draw tab there is no picker, so use **Z** or the command palette.
+- **The canvas-tool dropdown.** Open the **Selection Mode** picker at the left of the toolbar and choose **Zen**, in the Preview group under Isometric. It acts immediately and leaves your current tool selected. Viewers and Participants also have a Zen button on the zoom controls.
 - **The keyboard.** Press **Z**. It never fires while you are typing into a label or text field, and it is listed under Tools in the shortcut reference (the **Keyboard** category in **Settings**). If you have switched keyboard shortcuts off there, use one of the other routes.
 - **The command palette.** Press ⌘K (Ctrl+K on Windows and Linux) and run "Enter zen mode". See [The Command Palette](/help/search-panel/the-search-panel/command-palette/).
 

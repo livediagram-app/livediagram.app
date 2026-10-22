@@ -100,9 +100,8 @@ export function getTheme(
 // The backdrop a tab actually PAINTS, which is not always the backdrop it
 // stores. A tab whose canvas is still its scheme's own (nobody has hand-picked a colour) follows the viewer's
 // appearance instead: the scheme's light half in light chrome, its dark half in dark
-// (docs/specs/011-theme/light-and-dark.md). It is the same in both editor modes
-// (docs/specs/007-editor/editor-modes.md "One look"); a viewer's Draw pattern is laid over it by
-// resolveViewBackdrop. Nothing is written back —
+// (docs/specs/011-theme/light-and-dark.md). The viewer's canvas lays the surround's pattern over it
+// in resolveViewBackdrop. Nothing is written back —
 // the document keeps whichever half was current when the scheme was applied,
 // and every other viewer resolves it to their own.
 //
@@ -168,17 +167,6 @@ export function deriveNewBoxedColours(
   // reading as a page at all, so it keeps the fill / stroke createShape gave
   // it. The user can still recolour it from the menu like anything else.
   if (base.type === 'shape' && base.shape === 'page') return colours;
-  // The Behaviour and Collaborate elements used to opt OUT of theme tinting on
-  // the reasoning that they are controls and scenery rather than nodes in the
-  // tab's theme. Dropped: it left a canvas where a mode button, a
-  // reveal cover and a comment panel each sat in their own palette while
-  // everything around them followed the tab, which reads as an oversight
-  // rather than as emphasis — the theme is the whole point of picking one.
-  //
-  // A portal is the exception that stays, because its ring IS the element and
-  // is drawn from its own stroke colour; tinting it from the backdrop would
-  // recolour the energy rather than a box around it.
-  if (base.type === 'shape' && base.shape === 'portal') return colours;
   if (base.type === 'shape' || base.type === 'annotation') {
     // Annotation markers derive fill + stroke from the backdrop like a shape
     // does (text isn't used — the note is plain). See docs/specs/009-elements/annotations.md.

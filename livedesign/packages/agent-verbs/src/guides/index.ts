@@ -8,12 +8,9 @@ export const GUIDE_TOPICS = {
     summary: 'build a diagram from scratch',
     text: `Build a diagram
 
-Write the structure, not the coordinates: a graph or Mermaid is laid out for you.
+Start from a template, or empty, and add with edit operations, each box placed beside the one it names:
 
-  livedesign document create Shop -f arch.json   {"nodes": [...], "edges": [...], "direction": "right"}
-  livedesign tab add Shop Flow -f flow.mmd       flowchart LR ...
-
-Or start empty and add with edit operations, each box placed beside the one it names:
+  livedesign document create Shop --template kanban
 
   livedesign document create Shop
   livedesign edit Shop -f - <<'OPS'

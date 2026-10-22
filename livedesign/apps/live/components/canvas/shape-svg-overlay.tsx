@@ -1,7 +1,6 @@
 import {
   SHAPE_DETAIL_STROKE_PX,
   SHAPE_KINDS,
-  isCollabPanelShape,
   isWebComponentShape,
   shapeGeometry,
   type ShapeKind,
@@ -45,76 +44,22 @@ export function isSvgRenderedShape(kind: ShapeKind): boolean {
   if (!SHAPE_KINDS.has(kind)) return false;
   // A page (docs/specs/009-elements/page-element.md) is a plain rectangle with a fill and a border, so it
   // belongs on the CSS box path with square — the SVG overlay has no case for
-  // it and would draw an invisible element.
-  // A mode button (docs/specs/009-elements/mode-button.md) and a portal (docs/specs/009-elements/portal-element.md) are likewise plain filled
-  // rounded boxes with their own content drawn on top, so they belong on the CSS
-  // box path too. Left on the SVG path they rendered as a TRANSPARENT box — the
-  // overlay has no case for either kind, so nothing drew the fill at all.
+  // it and would draw an invisible element. This predicate is allow-BY-DEFAULT,
+  // so a new CSS-drawn kind left off it renders as a transparent nothing.
   return (
     kind !== 'square' &&
     kind !== 'circle' &&
     kind !== 'stadium' &&
     kind !== 'browser' &&
     kind !== 'page' &&
-    kind !== 'mode-button' &&
-    // Bring Focus (docs/specs/012-collaboration/bring-focus.md) is a filled rounded box with a glyph + label on
-    // top, same as the mode button beside it. This predicate is allow-BY-
-    // DEFAULT, so a new CSS-drawn kind left off it renders as a transparent
-    // nothing.
-    kind !== 'focus-button' &&
-    kind !== 'portal' &&
-    kind !== 'session-button' &&
-    kind !== 'reveal' &&
-    kind !== 'picker' &&
-    // A reaction pad (docs/specs/009-elements/reaction-pad.md) is a filled rounded box with a glyph on top.
-    kind !== 'reaction-pad' &&
-    // A comment pin (docs/specs/012-collaboration/comment-pin.md) draws its own bubble; the wrapper box behind it
-    // must not also paint a square.
-    kind !== 'comment-pin' &&
-    // An action panel (docs/specs/012-collaboration/action-panel.md) is the same card, for an assigned action.
-    kind !== 'action-card' &&
-    // A mind node (docs/specs/009-elements/mind-node.md) is a rounded filled box with a label, same as
-    // the four above. This predicate is allow-BY-DEFAULT, so a new CSS-drawn
-    // kind that isn't listed here renders as a transparent nothing.
-    kind !== 'mind-node' &&
-    // A lane (docs/specs/009-elements/lane.md) is a filled band with a gutter drawn on top — CSS box
-    // path, same as the rest of this list.
-    kind !== 'lane' &&
-    // A boundary (docs/specs/009-elements/boundary.md) is a CSS box like the lane, its face drawn on top.
-    kind !== 'boundary' &&
     // A pointer note (docs/specs/009-elements/pointer-note.md) is a CSS box, its leader drawn by an overlay.
     kind !== 'pointer-note' &&
-    // A diagram key (docs/specs/009-elements/diagram-key.md) is a CSS box with its rows on top.
-    kind !== 'diagram-key' &&
     // A stack (docs/specs/009-elements/stack.md) is a CSS box (a dashed outline) behind what it holds.
     kind !== 'stack' &&
-    // A sequence diagram (docs/specs/009-elements/sequence-diagram.md) is a CSS box with its picture on top.
-    kind !== 'sequence' &&
-    // A record (docs/specs/009-elements/entity.md) is a filled box with rows drawn on top.
-    kind !== 'entity' &&
-    // The collaboration elements (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md) are filled rounded
-    // cards with their own face drawn on top — the CSS box path, like every
-    // kind above. Left off this list they rendered as a transparent nothing,
-    // exactly as the mind-node comment above warns.
-    !isCollabPanelShape(kind) &&
     // The web components (docs/specs/009-elements/web-components-and-no-groups.md): a callout is a bordered card with its
     // content on top, and the rest paint their own surfaces (they are
     // self-painting, so the box path gives them a bare wrapper).
-    !isWebComponentShape(kind) &&
-    // A chair (docs/specs/009-elements/chair.md) draws its own furniture and wants no box behind it.
-    kind !== 'chair' &&
-    // A fence, a desk and a sofa (docs/specs/009-elements/fence.md, chair.md) draw themselves too.
-    kind !== 'fence' &&
-    // An Avatar Pad (docs/specs/009-elements/avatar-pad.md) paints its own pixels.
-    kind !== 'avatar-pad' &&
-    kind !== 'desk' &&
-    kind !== 'sofa' &&
-    // The Plan board, card and view (docs/specs/026-plan/plan-board.md, plan-views.md) paint their own surfaces.
-    kind !== 'plan-board' &&
-    kind !== 'plan-card' &&
-    kind !== 'plan-view' &&
-    // The Sheet (docs/specs/029-sheets/sheet.md) paints its own grid.
-    kind !== 'plan-sheet'
+    !isWebComponentShape(kind)
   );
 }
 
@@ -126,7 +71,6 @@ export function ShapeSvgOverlay({
   strokeDasharray,
   aspect = 1.6,
   animation,
-  figure,
 }: {
   shape: ShapeKind;
   fill: string;
@@ -146,9 +90,6 @@ export function ShapeSvgOverlay({
   // copies of the outline (useShapeSvgAnimation). Other motions are shape-agnostic and stay on the
   // wrapper. Undefined for the draw preview and unanimated elements.
   animation?: ShapeSvgAnimation;
-  // An actor's figure rect in element px (actor-figure.ts in @livedesign/document), clear of its
-  // name; absent fills the box.
-  figure?: { x: number; y: number; width: number; height: number };
 }) {
   // Gradient / trace / pulse-glow plumbing (docs/specs/008-canvas/canvas-and-palette.md) — see
   // useShapeSvgAnimation.
@@ -186,30 +127,13 @@ export function ShapeSvgOverlay({
       vectorEffect: 'non-scaling-stroke',
       strokeLinejoin: 'round',
     },
-    limb: {
-      fill: 'none',
-      stroke,
-      strokeWidth,
-      strokeDasharray: dash,
-      strokeLinecap: 'round',
-      strokeLinejoin: 'round',
-      vectorEffect: 'non-scaling-stroke',
-    },
-    head: {},
   };
-  paint.head = { ...paint.limb, fill: effectiveFill };
   return (
     <svg
       className="pointer-events-none absolute inset-0 h-full w-full overflow-visible"
       viewBox={geometry?.viewBox ?? '0 0 100 100'}
       preserveAspectRatio={geometry?.preserveAspectRatio ?? 'none'}
-      style={
-        figure
-          ? { left: figure.x, top: figure.y, width: figure.width, height: figure.height }
-          : geometry?.strokeInside
-            ? strokeInsideBox(strokeWidth)
-            : undefined
-      }
+      style={geometry?.strokeInside ? strokeInsideBox(strokeWidth) : undefined}
       aria-hidden
     >
       {gradientDefs}

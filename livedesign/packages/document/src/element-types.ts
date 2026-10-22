@@ -3,12 +3,9 @@
 // the ~1000-line budget. Pure types; re-exported through index.ts so the
 // public `@livedesign/document` surface is unchanged. ElementLink + the enums
 // stay in index.ts and are imported here (type-only, so no runtime cycle).
-import type { RoomDoor } from './office';
 import type { Finish } from './finish';
-import type { CardSearchFilter, PlanBoardSetup, PlanViewId, SwimlaneBy } from '@livedesign/items';
 import type { TextRun } from './rich-text';
 import type { CommentThread } from './comments';
-import type { CellCommentThreads } from './cell-comments';
 import type { ElementAction } from './element-action';
 import type { BorderStroke, BorderStyle, BorderRadius } from './border-style';
 import type { ElementShadow } from './shadow';
@@ -17,13 +14,10 @@ import type { AccentEdge } from './accent-edge';
 import type { CardMedia } from './card';
 import type { ChipLook } from './chip';
 import type { AttachPoint } from './attachment';
-import type { BoundaryStyle } from './boundary';
 import type { ConceptAnim, ConceptRow, PyramidVariant } from './concept';
 import type { PenColourName } from './pen-colours';
 import type { QuickSwatchSlot } from './quick-swatches';
 import type { CodeThemeId } from './code-themes';
-import type { MindFlow, MindSpacing } from './mind-flow';
-import type { FlowchartDirection } from './flowchart';
 import type { ChartPaletteId } from './chart-palettes';
 import type { ChartVariant } from './chart-types';
 import type {
@@ -35,28 +29,15 @@ import type {
   SankeyNodeStyle,
   SankeyValueLabel,
 } from './sankey-model';
-import type { ChartSource, SheetAnchor } from './chart-source';
-import type { PickerSource, SelectionMode, SessionButtonConfig } from './selection-mode';
 import type { IconSize } from './icon-size';
 import type { IconWeight } from './icon-weight';
 import type { EmbedProvider } from './youtube';
-import type { ParticipantResponse } from './responses';
-import type { QaNote } from './qa-board';
 import type { HeroCaption, StatItem } from './web-components';
 import type { ImageCredit } from './image-credit';
 import type {
-  AgendaItem,
-  ChairFacing,
-  DecisionStatus,
-  EstimateScale,
-  RollCallEntry,
-} from './collab-shapes';
-import type {
   AnimationSpeed,
   ChecklistItem,
-  EntityField,
   LegendItem,
-  Reaction,
   CodeLanguage,
   ElementAnimation,
   TextAnimation,
@@ -76,9 +57,6 @@ import type {
   TextSize,
   TextSizePreset,
 } from './index';
-import type { KeyRow } from './diagram-key';
-import type { MindLook } from './person-node';
-import type { SequenceElementMessage, SequenceElementParticipant } from './sequence-element';
 import type { StackAlign, StackDirection } from './stack';
 
 // Where a chart's legend sits relative to the plot (docs/specs/009-elements/pie-chart.md). 'off' is modelled
@@ -181,34 +159,20 @@ export type ShapeElement = {
   finish?: Finish;
   fillColor?: string;
   strokeColor?: string;
-  // A whiteboard marker's named colour (docs/specs/023-draw-mode/draw-mode.md "The colour picker"):
-  // drawn in the version tuned for the viewer's board (penColourHex) when `strokeColor` is unset.
+  // A stock colour by name (docs/specs/008-canvas/canvas-and-palette.md "Colours"):
+  // drawn in the version tuned for the viewer's canvas (penColourHex) when `strokeColor` is unset.
   penColour?: PenColourName;
   textColor?: string;
-  // A whiteboard stock colour for the label's text (docs/specs/023-draw-mode/draw-mode.md
-  // "Imported and pasted content"): drawn in the version tuned for the viewer's board when
-  // `textColor` is unset.
+  // A stock colour for the label's text (docs/specs/008-canvas/canvas-and-palette.md "Colours"):
+  // drawn in the version tuned for the viewer's canvas when `textColor` is unset.
   penTextColour?: PenColourName;
   // Fill for an element's HEADING area, where it has one distinct from its
-  // body: a table's header row (docs/specs/008-canvas/canvas-and-palette.md) and a lane's title gutter
-  // (docs/specs/009-elements/lane.md). Unset falls back to each one's own historical default, a
-  // tint of the grid stroke for a table and a 10% wash of the lane's stroke
-  // for a lane, so an unset heading looks exactly as it always did.
+  // body: a table's header row (docs/specs/008-canvas/canvas-and-palette.md). Unset falls back to
+  // a tint of the grid stroke, so an unset heading looks exactly as it always did.
   //
-  // Separate from `fillColor` because they are separate surfaces: a lane's
-  // body and its title strip are the two halves a swimlane is made of, and
-  // wanting a coloured heading over a plain body is the normal case, not an
-  // exotic one.
+  // Separate from `fillColor` because they are separate surfaces: wanting a
+  // coloured heading over a plain body is the normal case, not an exotic one.
   headerFill?: string;
-  // Thickness of that heading area in element-space px: a lane's gutter is
-  // 132 wide down a side and 64 tall across the top by default, and those
-  // numbers only ever suited the titles they were measured against. Drag the
-  // seam to change it. Unset keeps the default for the lane's orientation, so
-  // an untouched lane is exactly as it was.
-  headerSize?: number;
-  // A lane's title turned a quarter to read bottom to top in its side strip
-  // (docs/specs/009-elements/lane.md "Upright titles"). Absent reads across.
-  titleOrientation?: 'upright';
   // When set, theme transforms (recolour / switch / reset) leave this
   // shape's `fillColor` alone, so an intrinsic fill survives a theme
   // change the way a sticky note keeps its amber. Used by template
@@ -219,8 +183,8 @@ export type ShapeElement = {
   themeLockFill?: boolean;
   // The element is one size for life: no resize handles, union-scales move
   // it without scaling it, and the menu's Size category stays away. The fixed-size SHAPE kinds
-  // (mode-button / session-button, docs/specs/009-elements/mode-button.md) get the same treatment
-  // from their kind. See isFixedSizeElement.
+  // (the badge, docs/specs/009-elements/badge.md) get the same treatment from their kind. See
+  // isFixedSizeElement.
   fixedSize?: boolean;
   // Border styling (shapes + stickies). Each is a preset bucket so
   // saved documents round-trip without carrying arbitrary numeric
@@ -249,101 +213,9 @@ export type ShapeElement = {
   // same slot. Cleared the moment that colour is set any other way.
   strokeSwatch?: QuickSwatchSlot;
   fillSwatch?: QuickSwatchSlot;
-  // Mode Button (docs/specs/009-elements/mode-button.md): which selection mode pressing this element hands
-  // whoever clicked it. Only meaningful on the 'mode-button' kind, and absent
-  // means DEFAULT_BUTTON_MODE ('avatar') — so a button authored without one
-  // still does the thing it looks like it should.
-  mode?: SelectionMode;
-  // Portal (docs/specs/009-elements/portal-element.md): the id of the portal this one leads to, on the same tab.
-  // Only meaningful on the 'portal' kind. Absent = an unpaired portal, which is
-  // inert and says so — a portal to nowhere shouldn't silently swallow clicks.
-  portalTarget?: ElementId;
   // Tab window (docs/specs/009-elements/tab-window.md): the id of the tab of this document it shows. Only meaningful
   // on the 'tab-window' kind. Absent until chosen; a tab that is gone (or not shared) shows as unavailable.
   windowTabId?: string;
-  // Session button (docs/specs/012-collaboration/session-button.md): which session tool pressing this element starts
-  // for the room, and its one setting. Only meaningful on 'session-button';
-  // absent means a default five-minute timer, so a button authored without one
-  // still does something sensible.
-  session?: SessionButtonConfig;
-  // Reveal zone (docs/specs/009-elements/reveal-zone.md): whether the cover is off FOR EVERYONE. A viewer
-  // uncovering it for themselves is local and ephemeral and never touches this.
-  // Only meaningful on the 'reveal' kind.
-  revealed?: boolean;
-  // Picker (docs/specs/012-collaboration/picker.md): where the candidates come from, the written list when
-  // that source is 'options', and the last result — kept on the element so the
-  // canvas still shows it after a reload. Only meaningful on the 'picker' kind.
-  pickerSource?: PickerSource;
-  pickerOptions?: string[];
-  pickerResult?: string;
-  // Chair (docs/specs/009-elements/chair.md): which way the seat points. Only meaningful on the
-  // 'chair' kind; absent = DEFAULT_CHAIR_FACING ('n'). WHO is sitting in it is
-  // deliberately NOT here — occupancy rides the avatar presence op, so a chair
-  // can't be left stuck by someone who disconnected.
-  chairFacing?: ChairFacing;
-  // Room (docs/specs/009-elements/office.md "Room"): the wall its doorway is in, or 'none' for a closed room.
-  // Absent = DEFAULT_ROOM_DOOR ('s', the front wall).
-  roomDoor?: RoomDoor;
-  // --- The collaboration family (docs/specs/012-collaboration/participant-responses.md to docs/specs/012-collaboration/roll-call.md) ---------------------
-  // One value per participant (docs/specs/012-collaboration/participant-responses.md), shared by the estimate card and the
-  // temperature check. At most one entry per participant: re-casting REPLACES,
-  // via `setResponse`. Bounded in validate.ts.
-  responses?: ParticipantResponse[];
-  // Whether the values are out, for everyone (docs/specs/012-collaboration/estimate-card.md). Only meaningful on
-  // 'estimate' — the temperature check is deliberately never hidden.
-  responsesRevealed?: boolean;
-  // Estimate card (docs/specs/012-collaboration/estimate-card.md): which ladder of values the card offers. Absent =
-  // DEFAULT_ESTIMATE_SCALE ('fibonacci').
-  estimateScale?: EstimateScale;
-  // Idea box (docs/specs/012-collaboration/idea-box.md): the anonymous submissions, in submission order, and
-  // whether the box is open. There is NO author field, and adding one would
-  // undo the feature — the anonymity guarantee is that the schema has nowhere
-  // to record who wrote a card. Bounded in validate.ts.
-  ideaCards?: string[];
-  // Each card's random id, by position (`ideaCardIds[i]` names `ideaCards[i]`; '' or missing is an id-less
-  // card). Minted fresh per card by the posting browser, so it names the card, never the person
-  // (docs/specs/012-collaboration/idea-box.md "Anonymity is structural").
-  ideaCardIds?: string[];
-  ideasRevealed?: boolean;
-  // Q&A board (docs/specs/012-collaboration/qa-board.md): the notes, in submission order (the sort is a view,
-  // never stored), and the server-bumped revision every whole-element sync
-  // path compares so a stale snapshot can't roll the board back
-  // (preferNewerQa). Only the qa endpoint writes these.
-  qaNotes?: QaNote[];
-  qaRev?: number;
-  // Which round of answers / ideas this card is on (docs/specs/012-collaboration/collab-race-hardening.md): a random id
-  // minted by each clear or reset. Answers and ideas travel as their own
-  // element deltas stamped with it, so one cast before a clear can't land in
-  // the round after, and an element update for the SAME round leaves the
-  // receiver's answers alone. Absent until the first clear.
-  collabRound?: string;
-  // Agenda (docs/specs/012-collaboration/agenda.md): the ordered segments, and the index of the one the room
-  // is in (absent = not started). Only meaningful on 'agenda'.
-  agendaItems?: AgendaItem[];
-  agendaCurrent?: number;
-  // The `startedAt` of the tab timer the current segment started, so the face
-  // shows that timer's time left only while it is still that run.
-  agendaTimerStartedAt?: number;
-  // Decision record (docs/specs/012-collaboration/decision-record.md): the status chip, the day it was taken
-  // (`YYYY-MM-DD`, a date rather than a timestamp), and the reasons. The
-  // element's `label` is the decision STATEMENT, so it needs no extra field.
-  decisionStatus?: DecisionStatus;
-  decisionDate?: string;
-  decisionDrivers?: string[];
-  // Roll call (docs/specs/012-collaboration/roll-call.md): a FROZEN snapshot of who was in the room when the
-  // roll was taken — names and colours copied, never re-joined to the live
-  // participant. Only meaningful on 'roll-call'.
-  rollCall?: RollCallEntry[];
-  // Quiz (docs/specs/012-collaboration/quiz.md): the answers, which one is right, the round's length in
-  // seconds, and the round's state (started / locked early / revealed). The
-  // question is the label; each person's pick rides `responses` as the
-  // answer's index. Only meaningful on 'quiz'.
-  quizOptions?: string[];
-  quizCorrect?: number;
-  quizSeconds?: number;
-  quizStartedAt?: number;
-  quizLockedAt?: number;
-  quizRevealed?: boolean;
   // A timeline rail saved before the Timeline (docs/specs/009-elements/concept-graphics.md "Timeline"): its point count
   // and labels, read once to make its milestones (element-normalise railToTimeline) and never written again.
   railCount?: number;
@@ -398,12 +270,6 @@ export type ShapeElement = {
   // when they carry no colour of their own. Only meaningful on the chart
   // kinds; absent = the tab theme's palette, as before.
   chartPalette?: ChartPaletteId;
-  // A chart drawn from a sheet range (docs/specs/029-sheets/sheet.md "Charts"): its data is read live from there,
-  // the fields above holding the last read. Only meaningful on the pie, bar and line chart kinds.
-  chartSource?: ChartSource;
-  // Where a chart drawn from a sheet sits in its Sheet (docs/specs/029-sheets/sheet.md "Charts"): the Sheet draws it
-  // over its cells and the canvas does not. Only meaningful with chartSource; absent = it floats over the canvas.
-  sheetAnchor?: SheetAnchor;
   // Code block (docs/specs/009-elements/code-block.md): the snippet text + its highlight language. Only
   // meaningful on the 'code-block' kind; bounded in validate.ts.
   code?: string;
@@ -417,34 +283,6 @@ export type ShapeElement = {
   // the card is usually narrower than the code someone pastes into it. Set
   // false to keep long lines on one line (and off the card).
   codeWrap?: boolean;
-  // Record (docs/specs/009-elements/entity.md): the rows of a UML class / ER entity box. Only
-  // meaningful on the 'entity' kind; bounded in validate.ts. The element's
-  // `label` is the record's TITLE, so a record needs no extra name field.
-  entityFields?: EntityField[];
-  // Reaction pad (docs/specs/009-elements/reaction-pad.md): which burst this pad throws. Absent falls back to
-  // REACTION_DEFAULT at render, so a pad from an older file still works.
-  reaction?: Reaction;
-  // Mind node (docs/specs/009-elements/mind-node.md): which node owns this one. Absent = a root.
-  //
-  // A child pointer rather than a `children[]` array: single-valued, so it
-  // cannot disagree with itself, and deleting a parent leaves a dangling id
-  // (which reads as "this is a root now") rather than a corrupt tree.
-  mindParentId?: ElementId;
-  // The shape the map grows in (docs/specs/009-elements/mind-node.md). Read off the tree's ROOT and
-  // applied to the whole tree; absent = 'tree', the one arrangement growth
-  // shipped with, so every map already drawn keeps its shape.
-  mindFlow?: MindFlow;
-  // How far apart the map's nodes sit (docs/specs/009-elements/mind-node.md "Spacing"). Read off the ROOT like
-  // `mindFlow`; absent = 'comfortable', the gaps every map had before, so no map moves.
-  mindSpacing?: MindSpacing;
-  // Flowchart (docs/specs/009-elements/flowchart.md): the chart this step or lane belongs to, minted as the
-  // id of its first step. The ONLY thing that makes a shape a step: a diamond without it is a diamond.
-  flowchartId?: string;
-  // Which way the chart flows, written to every step together so no single delete loses it. Absent =
-  // down, or right once the chart has lanes.
-  flowDirection?: FlowchartDirection;
-  // The chart's lane this step sits in. Absent, or naming a lane that is gone, reads as the first lane.
-  flowLaneId?: ElementId;
   // Page masthead (docs/specs/009-elements/page-element.md): the fixed heading + subtitle above the body.
   // Meaningful on the 'page' kind, and reused by two web components
   // (docs/specs/009-elements/web-components-and-no-groups.md) for the same job — a single-line heading beside the
@@ -473,26 +311,12 @@ export type ShapeElement = {
   stepSequence?: boolean;
   // A pointer note's tip, relative to its top-left (docs/specs/009-elements/pointer-note.md).
   pointerTip?: { x: number; y: number };
-  // A diagram key's derived rows and the author's meaning per row id (docs/specs/009-elements/diagram-key.md).
-  keyRows?: KeyRow[];
-  keyMeanings?: Record<string, string>;
   // A stack's arrangement (docs/specs/009-elements/stack.md); each absent = its default.
   stackDirection?: StackDirection;
   stackAlign?: StackAlign;
   stackGap?: number;
   stackPadding?: number;
   stackColumns?: number;
-  // A sequence diagram's rows, Numbered and Play (docs/specs/009-elements/sequence-diagram.md).
-  sequenceParticipants?: SequenceElementParticipant[];
-  sequenceMessages?: SequenceElementMessage[];
-  sequenceNumbered?: boolean;
-  sequenceAnim?: 'play';
-  sequenceAnimSpeed?: AnimationSpeed;
-  sequenceAnimRepeat?: boolean;
-  // A mind node drawn as a person (docs/specs/009-elements/org-chart.md); absent = an ordinary mind node.
-  mindLook?: MindLook;
-  // A boundary's look (docs/specs/009-elements/boundary.md); absent = Tab.
-  boundaryStyle?: BoundaryStyle;
   // Concept graphics (docs/specs/009-elements/concept-graphics.md): the rows (a layer, tier or step each, with an
   // optional note), a pyramid's variant (absent = pyramid) and the Concept animation with its speed and repeat.
   conceptRows?: ConceptRow[];
@@ -511,17 +335,6 @@ export type ShapeElement = {
   // Checklist (docs/specs/009-elements/checklist.md): the checkable rows. Only meaningful on the
   // 'checklist' kind; bounded in validate.ts.
   checklistItems?: ChecklistItem[];
-  // Plan board set-up and Plan card reference (docs/specs/026-plan/plan-board.md). Only meaningful on
-  // the 'plan-board' and 'plan-card' kinds; the items they show live in the document's item store.
-  planBoard?: PlanBoardSetup;
-  planCard?: PlanCardRef;
-  // Plan view (docs/specs/026-plan/plan-views.md): which view of the document's cards a 'plan-view' shows.
-  planView?: PlanViewRef;
-  // Sheet (docs/specs/029-sheets/sheet.md): which sheet of the document's sheet store a 'plan-sheet' frames.
-  planSheet?: PlanSheetRef;
-  // A Sheet's cell comment threads (docs/specs/029-sheets/sheet.md "Cell comments"), keyed `rowId:colId`. Only on
-  // a 'plan-sheet'; written by comment deltas, like `commentThread`.
-  cellComments?: CellCommentThreads;
   // Status marker (docs/specs/009-elements/shape-markers.md): a small glyph (traffic-light dot / checkbox) shown
   // just left of the label, or centred when the shape has no label. `markerSize`
   // is a TextSize preset where 'scale' tracks the element's text size (never a px: a marker is a dot).
@@ -553,8 +366,8 @@ export type ShapeElement = {
   // Assigned action (docs/specs/012-collaboration/assigned-actions.md): at most one per element, non-undoable like
   // the comment thread. See element-action.ts.
   action?: ElementAction;
-  // An Action panel's list (docs/specs/012-collaboration/action-panel.md "The data"): the card holds many
-  // actions where an ordinary element holds one. Read through elementActions.
+  // A list of actions, where an ordinary element holds one `action`. Nothing in the editor writes it
+  // today. Read through elementActions.
   actions?: ElementAction[];
   // Optional note. Distinct from `commentThread`: one note per
   // element, no author / timestamp / multi-message structure, just a
@@ -616,23 +429,19 @@ export type TextElement = {
   fillColor?: string;
   strokeColor?: string;
   textColor?: string;
-  // A whiteboard stock colour for the text (docs/specs/023-draw-mode/draw-mode.md "Imported and
-  // pasted content"): drawn in the version tuned for the viewer's board when `textColor` is unset.
+  // A stock colour for the text (docs/specs/008-canvas/canvas-and-palette.md "Colours"):
+  // drawn in the version tuned for the viewer's canvas when `textColor` is unset.
   penTextColour?: PenColourName;
   // Quick-swatch binding (docs/specs/008-canvas/quick-style-panel.md): the slot (1-6) the text
   // colour was picked from in the quick style panel's Text colour row, so a
   // theme change re-derives it. Cleared the moment the colour is set any other way.
   textSwatch?: QuickSwatchSlot;
   // Fill for an element's HEADING area, where it has one distinct from its
-  // body: a table's header row (docs/specs/008-canvas/canvas-and-palette.md) and a lane's title gutter
-  // (docs/specs/009-elements/lane.md). Unset falls back to each one's own historical default, a
-  // tint of the grid stroke for a table and a 10% wash of the lane's stroke
-  // for a lane, so an unset heading looks exactly as it always did.
+  // body: a table's header row (docs/specs/008-canvas/canvas-and-palette.md). Unset falls back to
+  // a tint of the grid stroke, so an unset heading looks exactly as it always did.
   //
-  // Separate from `fillColor` because they are separate surfaces: a lane's
-  // body and its title strip are the two halves a swimlane is made of, and
-  // wanting a coloured heading over a plain body is the normal case, not an
-  // exotic one.
+  // Separate from `fillColor` because they are separate surfaces: wanting a
+  // coloured heading over a plain body is the normal case, not an exotic one.
   headerFill?: string;
   aspectLocked?: boolean;
   opacity?: number; // 0..1, defaults to 1
@@ -672,14 +481,13 @@ export type TextElement = {
   padding?: Padding;
   // Per-range label formatting (docs/specs/008-canvas/canvas-and-palette.md); see ShapeElement.richText.
   richText?: TextRun[];
-  // How the box sizes itself (docs/specs/007-editor/editor-modes.md "A text box's sizing"):
-  // 'fit', the width follows the words up to the wrap width and the height hugs the lines (clicked
-  // into place in Draw mode); 'wrap', the width is set and the height hugs the lines (dragged out
-  // or resized in Draw mode). Absent = a fixed box, its text wrapping inside it. Honoured in both
-  // editor modes and for everyone.
+  // How the box sizes itself (docs/specs/006-document/document-structure.md "Data model"):
+  // 'fit', the width follows the words up to the wrap width and the height hugs the lines; 'wrap',
+  // the width is set and the height hugs the lines. Absent = a fixed box, its text wrapping inside
+  // it. Honoured for everyone.
   sizing?: TextSizing;
-  // Multiplier on the label size, set by a Shift resize of a whiteboard text box
-  // (docs/specs/023-draw-mode/draw-mode.md "Text boxes"). Absent = 1.
+  // Multiplier on the label size, set by a Shift resize of a text box
+  // (docs/specs/006-document/document-structure.md "Data model"). Absent = 1.
   textScale?: number;
   // Wordmark type (docs/specs/007-editor/logo-pages.md "Wordmark type"), drawn wherever the text
   // is. Tracking: em added between letters, -0.2 to 1; absent is none.
@@ -750,8 +558,7 @@ export type TableElement = {
   cellStyles?: (TableCellStyle | null)[][];
   // Header-band TEXT colour, independent of the body cells. Unset = the cell
   // text colour. (The band's FILL is the shared `headerFill` on the base
-  // element: a table's header row and a lane's title gutter are the same
-  // idea, so they are the same field.)
+  // element.)
   headerTextColor?: string;
   // Per-column width override in element-space px. An entry of
   // null / undefined (or a short array) means "auto": that column
@@ -790,15 +597,11 @@ export type TableElement = {
   strokeColor?: string;
   textColor?: string;
   // Fill for an element's HEADING area, where it has one distinct from its
-  // body: a table's header row (docs/specs/008-canvas/canvas-and-palette.md) and a lane's title gutter
-  // (docs/specs/009-elements/lane.md). Unset falls back to each one's own historical default, a
-  // tint of the grid stroke for a table and a 10% wash of the lane's stroke
-  // for a lane, so an unset heading looks exactly as it always did.
+  // body: a table's header row (docs/specs/008-canvas/canvas-and-palette.md). Unset falls back to
+  // a tint of the grid stroke, so an unset heading looks exactly as it always did.
   //
-  // Separate from `fillColor` because they are separate surfaces: a lane's
-  // body and its title strip are the two halves a swimlane is made of, and
-  // wanting a coloured heading over a plain body is the normal case, not an
-  // exotic one.
+  // Separate from `fillColor` because they are separate surfaces: wanting a
+  // coloured heading over a plain body is the normal case, not an exotic one.
   headerFill?: string;
   strokeWidth?: BorderStroke;
   strokeStyle?: BorderStyle;
@@ -872,19 +675,15 @@ export type StickyElement = {
   fillColor?: string;
   strokeColor?: string;
   textColor?: string;
-  // A whiteboard stock colour for the note's text (docs/specs/023-draw-mode/draw-mode.md
-  // "Imported and pasted content"), drawn in its board's version when `textColor` is unset.
+  // A stock colour for the note's text (docs/specs/008-canvas/canvas-and-palette.md "Colours"),
+  // drawn in its canvas's version when `textColor` is unset.
   penTextColour?: PenColourName;
   // Fill for an element's HEADING area, where it has one distinct from its
-  // body: a table's header row (docs/specs/008-canvas/canvas-and-palette.md) and a lane's title gutter
-  // (docs/specs/009-elements/lane.md). Unset falls back to each one's own historical default, a
-  // tint of the grid stroke for a table and a 10% wash of the lane's stroke
-  // for a lane, so an unset heading looks exactly as it always did.
+  // body: a table's header row (docs/specs/008-canvas/canvas-and-palette.md). Unset falls back to
+  // a tint of the grid stroke, so an unset heading looks exactly as it always did.
   //
-  // Separate from `fillColor` because they are separate surfaces: a lane's
-  // body and its title strip are the two halves a swimlane is made of, and
-  // wanting a coloured heading over a plain body is the normal case, not an
-  // exotic one.
+  // Separate from `fillColor` because they are separate surfaces: wanting a
+  // coloured heading over a plain body is the normal case, not an exotic one.
   headerFill?: string;
   aspectLocked?: boolean;
   opacity?: number; // 0..1, defaults to 1
@@ -1067,12 +866,12 @@ export type FreehandElement = {
   // Marker stroke width in px (docs/specs/008-canvas/highlighter.md), chosen from the highlighter
   // banner's strength control at draw time. Absent = the default 14.
   penWidth?: number;
-  // A whiteboard pen stroke's perfect-freehand streamline (docs/specs/023-draw-mode/draw-mode.md
-  // "Pens"; absent: a stroke stored before it was recorded, drawn with none). Its pressures, when
+  // A pen stroke's perfect-freehand streamline (absent: a stroke stored before it was recorded,
+  // drawn with none). Its pressures, when
   // the pen reported them, ride in `packedPoints`. A pen stroke's points are its raw samples.
   streamline?: number;
-  // A whiteboard marker's named colour (docs/specs/023-draw-mode/draw-mode.md "The colour picker"):
-  // drawn in the version tuned for the viewer's board (penColourHex) when `strokeColor` is unset.
+  // A stock colour by name (docs/specs/008-canvas/canvas-and-palette.md "Colours"):
+  // drawn in the version tuned for the viewer's canvas (penColourHex) when `strokeColor` is unset.
   penColour?: PenColourName;
   // Polygon-tool paths (docs/specs/008-canvas/polygon-tool.md): the canvas renderer draws straight
   // M/L segments instead of Catmull-Rom smoothing, so deliberately
@@ -1178,8 +977,8 @@ export type PathElement = {
   subpaths?: PathNode[][];
   fillColor?: string;
   strokeColor?: string;
-  // A whiteboard stock colour (docs/specs/023-draw-mode/draw-mode.md "Imported and pasted
-  // content"): drawn in the version tuned for the viewer's board when `strokeColor` is unset.
+  // A stock colour by name (docs/specs/023-draw-mode/path-tool.md "Style"): drawn in the version
+  // tuned for the viewer's canvas when `strokeColor` is unset.
   penColour?: PenColourName;
   // Quick-swatch bindings (docs/specs/008-canvas/quick-style-panel.md), as a shape carries them.
   strokeSwatch?: QuickSwatchSlot;
@@ -1249,15 +1048,11 @@ export type AnnotationElement = {
   strokeColor?: string;
   textColor?: string;
   // Fill for an element's HEADING area, where it has one distinct from its
-  // body: a table's header row (docs/specs/008-canvas/canvas-and-palette.md) and a lane's title gutter
-  // (docs/specs/009-elements/lane.md). Unset falls back to each one's own historical default, a
-  // tint of the grid stroke for a table and a 10% wash of the lane's stroke
-  // for a lane, so an unset heading looks exactly as it always did.
+  // body: a table's header row (docs/specs/008-canvas/canvas-and-palette.md). Unset falls back to
+  // a tint of the grid stroke, so an unset heading looks exactly as it always did.
   //
-  // Separate from `fillColor` because they are separate surfaces: a lane's
-  // body and its title strip are the two halves a swimlane is made of, and
-  // wanting a coloured heading over a plain body is the normal case, not an
-  // exotic one.
+  // Separate from `fillColor` because they are separate surfaces: wanting a
+  // coloured heading over a plain body is the normal case, not an exotic one.
   headerFill?: string;
   // An annotation has no editable label; declared always-undefined so the
   // generic "boxed element has a label" paths compile (mirrors Table/Image).
@@ -1334,15 +1129,11 @@ export type LinkCardElement = {
   strokeColor?: string;
   textColor?: string;
   // Fill for an element's HEADING area, where it has one distinct from its
-  // body: a table's header row (docs/specs/008-canvas/canvas-and-palette.md) and a lane's title gutter
-  // (docs/specs/009-elements/lane.md). Unset falls back to each one's own historical default, a
-  // tint of the grid stroke for a table and a 10% wash of the lane's stroke
-  // for a lane, so an unset heading looks exactly as it always did.
+  // body: a table's header row (docs/specs/008-canvas/canvas-and-palette.md). Unset falls back to
+  // a tint of the grid stroke, so an unset heading looks exactly as it always did.
   //
-  // Separate from `fillColor` because they are separate surfaces: a lane's
-  // body and its title strip are the two halves a swimlane is made of, and
-  // wanting a coloured heading over a plain body is the normal case, not an
-  // exotic one.
+  // Separate from `fillColor` because they are separate surfaces: wanting a
+  // coloured heading over a plain body is the normal case, not an exotic one.
   headerFill?: string;
   // The URL source + everyday boxed fields.
   link?: ElementLink;
@@ -1422,15 +1213,11 @@ export type VideoElement = {
   strokeColor?: string;
   textColor?: string;
   // Fill for an element's HEADING area, where it has one distinct from its
-  // body: a table's header row (docs/specs/008-canvas/canvas-and-palette.md) and a lane's title gutter
-  // (docs/specs/009-elements/lane.md). Unset falls back to each one's own historical default, a
-  // tint of the grid stroke for a table and a 10% wash of the lane's stroke
-  // for a lane, so an unset heading looks exactly as it always did.
+  // body: a table's header row (docs/specs/008-canvas/canvas-and-palette.md). Unset falls back to
+  // a tint of the grid stroke, so an unset heading looks exactly as it always did.
   //
-  // Separate from `fillColor` because they are separate surfaces: a lane's
-  // body and its title strip are the two halves a swimlane is made of, and
-  // wanting a coloured heading over a plain body is the normal case, not an
-  // exotic one.
+  // Separate from `fillColor` because they are separate surfaces: wanting a
+  // coloured heading over a plain body is the normal case, not an exotic one.
   headerFill?: string;
   // The URL source + everyday boxed fields.
   link?: ElementLink;
@@ -1475,26 +1262,10 @@ export type VideoElement = {
 // Does this element take a TYPED label — i.e. is dropping one an invitation
 // to start writing? True for the paper-and-text kinds (sticky, shape, text,
 // icon), false for the ones whose face is a picture or a control the user
-// configures instead of writes: a sticker is artwork, a session button /
-// reaction pad / mode button / estimate all render their own caption from
-// their setting, so opening a text caret on them would offer to edit
-// something that isn't theirs to edit.
+// configures instead of writes: a sticker is artwork, so opening a text caret
+// on it would offer to edit something that isn't its to edit.
 const UNTYPED_SHAPES = new Set<string>([
   'sticker',
-  // A fence (docs/specs/009-elements/fence.md) carries no label.
-  'fence',
-  // An Avatar Pad (docs/specs/009-elements/avatar-pad.md) carries no label.
-  'avatar-pad',
-  'session-button',
-  'reaction-pad',
-  'mode-button',
-  'estimate',
-  // Plan boards, cards and views draw their own faces from the item store; a caret on one left a
-  // newly placed board stuck in label editing, unable to move until reselected.
-  'plan-board',
-  'plan-card',
-  'plan-view',
-  'plan-sheet',
   // A tab window shows another tab (docs/specs/009-elements/tab-window.md); there is nothing to write on it.
   'tab-window',
 ]);
@@ -1504,78 +1275,3 @@ export function takesTypedLabel(el: { type: string; shape?: string }): boolean {
   if (el.type !== 'shape') return true;
   return !UNTYPED_SHAPES.has(el.shape ?? '');
 }
-
-// What a Plan card points at: one item of the document's item store (docs/specs/026-plan/items.md).
-// `size`: how much of the card shows (docs/specs/026-plan/plan-board.md "The Plan card"), as a board's Card Size;
-// absent is Detailed.
-export type PlanCardRef = { itemId: string; size?: 'minimal' | 'compact' | 'detailed' };
-
-// What a Sheet element frames: one sheet of the document's sheet store (docs/specs/029-sheets/sheet-store.md).
-// `copyOf` marks a copy not yet made (a duplicate, a paste, a duplicated tab): the Sheet makes its sheet from that
-// one when it is first drawn, then drops the mark (docs/specs/029-sheets/sheet.md "Copying a Sheet element").
-// `fillTab`: the Sheet fills its tab (docs/specs/029-sheets/sheet.md "Fill Tab"), as a board can.
-// `start`: a template's Sheet not yet made (docs/specs/029-sheets/sheet-store.md "Template starts"): the template
-// start its sheet is made from, by whatever makes the tabs (or, failing that, the first editor to draw it), which then
-// drops the mark.
-export type PlanSheetRef = { sheetId: string; copyOf?: string; fillTab?: true; start?: string };
-
-// A template start's id (@livedesign/sheets TEMPLATE_STARTS): kebab-case words.
-const PLAN_SHEET_START_PATTERN = /^[a-z][a-z-]{0,39}$/;
-
-// A fresh sheet id for a copy (the sheets engine's makeSheetId, without importing it).
-export function newPlanSheetId(): string {
-  return crypto.randomUUID().replace(/-/g, '').slice(0, 16);
-}
-
-// The sheet id pattern (@livedesign/sheets SHEET_ID_PATTERN), repeated here so the document package never
-// imports the engine.
-export const PLAN_SHEET_ID_PATTERN = /^[A-Za-z0-9_-]{6,32}$/;
-
-export function isPlanSheetRef(v: unknown): v is PlanSheetRef {
-  if (typeof v !== 'object' || v === null) return false;
-  const {
-    sheetId: id,
-    copyOf,
-    fillTab,
-    start,
-    ...rest
-  } = v as {
-    sheetId?: unknown;
-    copyOf?: unknown;
-    fillTab?: unknown;
-    start?: unknown;
-  };
-  // An empty id is a Sheet element not yet given its sheet (the factory's), as a Plan card's empty item id.
-  const idOk = typeof id === 'string' && (id === '' || PLAN_SHEET_ID_PATTERN.test(id));
-  const copyOk =
-    copyOf === undefined || (typeof copyOf === 'string' && PLAN_SHEET_ID_PATTERN.test(copyOf));
-  return (
-    idOk &&
-    copyOk &&
-    (fillTab === undefined || fillTab === true) &&
-    (start === undefined || (typeof start === 'string' && PLAN_SHEET_START_PATTERN.test(start))) &&
-    Object.keys(rest).length === 0
-  );
-}
-
-// What a plan view shows (docs/specs/026-plan/plan-views.md): a metric or a visualisation.
-// The Gantt chart adds its swimlanes and its names column width (px), validated by isPlanViewSettings.
-export type PlanViewRef = {
-  view: PlanViewId;
-  // The card types the view shows (card type ids, docs/specs/026-plan/plan-views.md "Card types"); absent is every
-  // type it can show (for a Gantt chart, every type with a Start and a Due field).
-  types?: string[];
-  swimlaneBy?: SwimlaneBy;
-  swimlaneField?: string;
-  namesWidth?: number;
-  // The Gantt chart's own row order (card ids); absent is date order (docs/specs/026-plan/plan-views.md "Row order").
-  rowOrder?: string[];
-  // Card Search's filters, each a grouping (and field) and the lane a card must fall in (docs/specs/026-plan/plan-views.md
-  // "Card Search"); absent is every card.
-  filters?: CardSearchFilter[];
-  // The statuses a chart counts (status ids; docs/specs/026-plan/plan-views.md "Statuses"); absent is every card.
-  statuses?: string[];
-  // Its own title in place of the view's name (a Visualisation tab's chart, named with its tab,
-  // docs/specs/026-plan/plan-tabs.md "Names"); absent is the view's name.
-  title?: string;
-};

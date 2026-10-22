@@ -3,9 +3,8 @@
 ## What
 
 A **Page** in the palette's **Write** category: a large, paper-proportioned
-element you write into with the rich-text editor, for the prose a diagram
-needs but a label can't hold — a brief, a decision record, the notes a
-workshop board is built around.
+element you write into with the rich-text editor, for the prose a page
+needs but a label can't hold — a brief, a summary, a page of notes.
 
 Everything on the canvas so far is a label on a thing: short, centred, sized
 to its box. A sticky note is the closest, and it is deliberately a scrap. When
@@ -15,7 +14,7 @@ whole artefact.
 ## It is a shape kind, not a new element type
 
 `shape: 'page'`. The alternative, a new `BoxedElement` member, would mean
-touching validation, both export renderers, Mermaid, Markdown,
+touching validation, both export renderers, Markdown,
 the MCP tools and the API schema, to arrive at something that
 behaves like a shape in every one of them.
 
@@ -35,7 +34,7 @@ a palette tile. Nothing downstream learns a new element.
 
 It is **Page**, in the palette and in the selection toolbar and in the code.
 
-"Document" would be wrong twice over. The palette has **Document** in Shapes — the flowchart output symbol with the wavy bottom
+"Document" would be wrong twice over. The palette has **Document** in Shapes — the output-document symbol with the wavy bottom
 (`shape: 'document'`) — so two unrelated things would share a name in
 one search box. And the selection toolbar names an element by its kind, so a
 tile called Document selecting into "Selected Page" made the editor look like
@@ -44,8 +43,8 @@ it disagreed with itself.
 Page is also simply more accurate: it is one sheet, not a document that flows
 across sheets (see Out of scope).
 
-The flowchart shape keeps its name: palette layouts and search address it by id,
-and "Document" is its correct name in flowchart vocabulary.
+The shape keeps its name: palette layouts and search address it by id,
+and "Document" is its usual name in diagram vocabulary.
 
 ## The masthead
 

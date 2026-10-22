@@ -39,10 +39,8 @@ control. The Size row always renders, dimmed and inert until a marker is set
 ([Menu flyouts must not resize under the pointer](../004-interface-design/flyout-height-stability.md)).
 Hovering a tile or a size previews it on the canvas; a click commits. Shapes
 only; not offered for arrows / text / images / tables, nor on a shape kind where
-a marker would never show (`supportsMarkers` in `@livedesign/document`): the
-self-drawing kinds, which have no label, and the kinds with their own face
-(the Behaviour and Collaborate elements such as the Temperature check, the Q&A
-board and the Idea box), whose label is a title the face draws. The same
+a marker would never show (`isSelfDrawingShape` in `@livedesign/document`): the
+self-drawing kinds, which have no label. The same
 reasoning, and the same list, as the Text alignment gate. The multi-selection
 menu offers markers too, for every marker-capable shape in the selection with
 text.

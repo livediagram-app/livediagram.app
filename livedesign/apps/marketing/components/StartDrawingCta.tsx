@@ -4,7 +4,7 @@ import { CheckIcon, ChevronRightIcon } from '@livedesign/ui';
 // The closing call to action (docs/specs/019-marketing/marketing-site.md "Closing CTA"), shared by the
 // landing page and every feature category page, so a visitor who drilled into a category can start
 // without going home, and its copy lives in one place. On the promises' deep indigo, so the page ends
-// on a strong note: the invitation and its two ways in (Start drawing, /new, where the visitor picks
+// on a strong note: the invitation and its two ways in (Start creating, /new, where the visitor picks
 // what they are making, worded the same on every page; Browse templates, the landing gallery).
 // `surface` is the page it closes, for the landing funnel (docs/specs/019-marketing/landing-funnel.md);
 // the link into the editor reports as its Closing slot.
@@ -41,15 +41,15 @@ export function StartDrawingCta({ surface }: { surface: 'Home' | 'Feature' }) {
           Your next idea is one click away
         </h2>
         <p className="mx-auto mt-5 max-w-lg text-pretty text-lg leading-relaxed text-slate-300">
-          No sign-up, no paywall, nothing to install. Open a canvas, and share the link when you are
-          ready for company.
+          No sign-up, no paywall, nothing to install. Open a blank page, and share the link when you
+          are ready for company.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <a
             href={ctaHref('/new', source)}
             className="inline-flex h-12 items-center gap-1.5 rounded-full bg-white px-6 text-base font-semibold text-[#0b1026] shadow-[0_10px_30px_-10px_rgb(251_191_36/0.6)] transition-colors hover:bg-rose-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
-            <span className="text-optical-centre">Start drawing</span>
+            <span className="text-optical-centre">Start creating</span>
             <ChevronRightIcon size={16} aria-hidden />
           </a>
           <a

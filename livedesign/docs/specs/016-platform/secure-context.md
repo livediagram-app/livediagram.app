@@ -23,13 +23,12 @@ first id the editor minted threw `crypto.randomUUID is not a function` while it 
   `crypto.randomUUID` when the browser left it out. It mints RFC 4122 version 4 ids from
   `crypto.getRandomValues`, which every context has, so the ids are as random as the real ones. A browser that
   has `randomUUID` keeps its own. Call sites keep calling `crypto.randomUUID()`: one shim, no second id helper.
-- **Hashes work everywhere.** Every SHA-256 the code computes (a Plan card person's id, a Q&A board's voter id,
-  an image's content address, the CLI's PKCE challenge) goes through `sha256` in `@livedesign/items`
-  (`packages/items/src/sha256.ts`, the dependency-free package both `@livedesign/document` and
-  `@livedesign/api-schema` already use). It calls `crypto.subtle.digest` wherever the context has it and
+- **Hashes work everywhere.** Every SHA-256 the code computes (an image's content address,
+  the CLI's PKCE challenge) goes through `sha256` in `@livedesign/api-schema`
+  (`packages/api-schema/src/sha256-digest.ts`). It calls `crypto.subtle.digest` wherever the context has it and
   otherwise computes the same FIPS 180-4 digest in plain code (about 24 ms per MB, measured on Node 22, so a 5 MB
   image costs about 120 ms, and only outside a secure context). The two must match byte for byte: the server
-  re-hashes an upload, and clients compare person and voter ids.
+  re-hashes an upload.
 - **The clipboard is the one thing left that needs HTTPS.** `navigator.clipboard` is secure-context only, with no
   fallback a page can build. Every copy button already wraps its write in `try` and says when the copy did not
   happen ("Could not copy the link. Select it to copy manually."), so outside a secure context the buttons
@@ -40,5 +39,5 @@ first id the editor minted threw `crypto.randomUUID is not a function` while it 
 `packages/ui/src/random-uuid-boot.test.ts` runs the script as the browser does (`runInlineScript`) with a
 `crypto` that lacks `randomUUID` and checks the ids it mints are version 4 and distinct, that a real `randomUUID`
 is kept, and that it never throws without `crypto`. `apps/live/app/pre-hydration-scripts.test.ts` checks the layout inlines it before any app code.
-`packages/items/src/sha256.test.ts` checks the plain-code digest against the FIPS 180-4 vectors and against Web
+`packages/api-schema/src/sha256-digest.test.ts` checks the plain-code digest against the FIPS 180-4 vectors and against Web
 Crypto at every length across the padding boundaries, and that `sha256` picks Web Crypto when it is there.

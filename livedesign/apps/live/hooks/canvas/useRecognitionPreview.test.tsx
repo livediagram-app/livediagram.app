@@ -16,104 +16,71 @@ const square = (): P[] => {
   for (let i = 1; i <= 20; i++) pts.push({ x: 0, y: 200 - i * 10 });
   return pts;
 };
+const scribble = (): P[] => Array.from({ length: 30 }, (_, i) => ({ x: i * 7, y: (i * 37) % 23 }));
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
-describe('useRecognitionPreview', () => {
-  beforeEach(() => {
-    vi.useFakeTimers();
-    vi.spyOn(console, 'info').mockImplementation(() => {});
+beforeEach(() => {
+  vi.useFakeTimers();
+  vi.spyOn(console, 'info').mockImplementation(() => {});
+});
+afterEach(() => {
+  vi.useRealTimers();
+  vi.restoreAllMocks();
+});
+
+const hook = (stroke: LiveStroke | null) =>
+  renderHook((p: { stroke: LiveStroke | null }) => useRecognitionPreview(p.stroke, 1, 1.5), {
+    initialProps: { stroke },
   });
-  afterEach(() => {
-    vi.useRealTimers();
-    vi.restoreAllMocks();
+const flip = (stroke: LiveStroke) =>
+  act(() => {
+    flipRecognition(stroke, 1.5);
+    stroke.notify();
+  });
+const move = (stroke: LiveStroke, x: number, y: number) =>
+  act(() => {
+    stroke.push(x, y);
+    stroke.notify();
+  });
+const wait = (ms = RECOGNITION_PREVIEW_DWELL_MS + 10) =>
+  act(() => {
+    vi.advanceTimersByTime(ms);
   });
 
-  const hook = (stroke: LiveStroke | null, active = true) =>
-    renderHook(
-      (p: { stroke: LiveStroke | null; active: boolean }) =>
-        useRecognitionPreview(p.stroke, p.active, 1, 1.5),
-      { initialProps: { stroke, active } },
-    );
-
-  it('shows the shape once the pen has held still for the delay, not before', () => {
+// docs/specs/023-draw-mode/drawing-tools.md "Shape recognition": Alt (or the chip) flips the stroke.
+describe('useRecognitionPreview, flipped', () => {
+  it('never snaps a mouse stroke by holding still', () => {
     const { result } = hook(liveStrokeOf(square()));
-    act(() => {
-      vi.advanceTimersByTime(RECOGNITION_PREVIEW_DWELL_MS - 50);
-    });
+    wait(RECOGNITION_PREVIEW_DWELL_MS * 3);
     expect(result.current.shape).toBeNull();
-    act(() => {
-      vi.advanceTimersByTime(60);
-    });
-    expect(result.current.shape?.kind).toBe('square');
+    expect(result.current.chip).toBeNull();
   });
 
-  it('keeps the shape once shown: dragging on resizes it, and the stroke never comes back', () => {
+  it('shows the shape at once when Alt recognises it, and dragging on reshapes it', () => {
     const stroke = liveStrokeOf(square());
     const { result } = hook(stroke);
-    act(() => {
-      vi.advanceTimersByTime(RECOGNITION_PREVIEW_DWELL_MS + 10);
-    });
-    const shown = result.current.shape!;
-    expect(shown.kind).toBe('square');
-    // The pen rests at the top-left corner; dragging it 50 px up and left grows the box there.
-    act(() => {
-      stroke.push(-50, -50);
-      stroke.notify();
-    });
+    flip(stroke);
     expect(result.current.shape?.kind).toBe('square');
-    expect(result.current.shape!.bbox.x).toBeCloseTo(shown.bbox.x - 50, 5);
-    expect(result.current.shape!.bbox.width).toBeCloseTo(shown.bbox.width + 50, 5);
+    move(stroke, -50, -50);
+    expect(result.current.shape!.bbox.x).toBeLessThan(-40);
     expect(stroke.shaped()).toEqual(result.current.shape);
   });
 
-  it('keeps it while the pen only trembles within the still radius', () => {
+  it('shows the ink again when Alt breaks out', () => {
     const stroke = liveStrokeOf(square());
     const { result } = hook(stroke);
-    act(() => {
-      vi.advanceTimersByTime(RECOGNITION_PREVIEW_DWELL_MS + 10);
-    });
-    act(() => {
-      stroke.push(2, 1);
-      stroke.notify();
-    });
-    expect(result.current.shape?.kind).toBe('square');
-  });
-
-  it('does nothing with recognition off', () => {
-    const { result } = hook(liveStrokeOf(square()), false);
-    act(() => {
-      vi.advanceTimersByTime(RECOGNITION_PREVIEW_DWELL_MS * 2);
-    });
+    flip(stroke);
+    flip(stroke);
     expect(result.current.shape).toBeNull();
-  });
-
-  it('forgets it when the stroke ends', () => {
-    const { result, rerender } = hook(liveStrokeOf(square()));
-    act(() => {
-      vi.advanceTimersByTime(RECOGNITION_PREVIEW_DWELL_MS + 10);
-    });
-    rerender({ stroke: null, active: true });
+    wait(RECOGNITION_PREVIEW_DWELL_MS * 3);
     expect(result.current.shape).toBeNull();
-  });
-
-  it('shows the shape perfect at once when Shift is already held as it locks', () => {
-    const stroke = liveStrokeOf(square());
-    stroke.constrain(true);
-    const { result } = hook(stroke);
-    act(() => {
-      vi.advanceTimersByTime(RECOGNITION_PREVIEW_DWELL_MS + 10);
-    });
-    expect(result.current.shape!.bbox.width).toBe(result.current.shape!.bbox.height);
-    expect(stroke.shaped()).toEqual(result.current.shape);
   });
 
   it('reshapes perfect once Shift is held: what shows is what shaped() commits', () => {
     const stroke = liveStrokeOf(square());
     const { result } = hook(stroke);
-    act(() => {
-      vi.advanceTimersByTime(RECOGNITION_PREVIEW_DWELL_MS + 10);
-    });
+    flip(stroke);
     act(() => {
       stroke.constrain(true);
       stroke.push(-50, -20);
@@ -122,106 +89,21 @@ describe('useRecognitionPreview', () => {
     expect(result.current.shape!.bbox.width).toBeCloseTo(result.current.shape!.bbox.height, 9);
     expect(stroke.shaped()).toEqual(result.current.shape);
   });
-});
 
-// docs/specs/023-draw-mode/draw-mode.md "Shape recognition": Alt (or the chip) flips the stroke.
-describe('useRecognitionPreview, flipped', () => {
-  beforeEach(() => {
-    vi.useFakeTimers();
-    vi.spyOn(console, 'info').mockImplementation(() => {});
-  });
-  afterEach(() => {
-    vi.useRealTimers();
-    vi.restoreAllMocks();
-  });
-
-  const hook = (stroke: LiveStroke, active: boolean) =>
-    renderHook(() => useRecognitionPreview(stroke, active, 1, 1.5));
-  const flip = (stroke: LiveStroke) =>
-    act(() => {
-      flipRecognition(stroke, 1.5);
-      stroke.notify();
-    });
-  const move = (stroke: LiveStroke, x: number, y: number) =>
-    act(() => {
-      stroke.push(x, y);
-      stroke.notify();
-    });
-  const wait = (ms = RECOGNITION_PREVIEW_DWELL_MS + 10) =>
-    act(() => {
-      vi.advanceTimersByTime(ms);
-    });
-
-  it('shows the shape at once when Alt recognises it with recognition off', () => {
+  it('forgets it when the stroke ends', () => {
     const stroke = liveStrokeOf(square());
-    const { result } = hook(stroke, false);
+    const { result, rerender } = hook(stroke);
     flip(stroke);
-    expect(result.current.shape?.kind).toBe('square');
-    // Dragging on reshapes it, as after the dwell.
-    move(stroke, -50, -50);
-    expect(result.current.shape!.bbox.x).toBeLessThan(-40);
-  });
-
-  it('shows the ink again when Alt breaks out, and holding still does not snap it again', () => {
-    const stroke = liveStrokeOf(square());
-    const { result } = hook(stroke, true);
-    wait();
-    expect(result.current.shape?.kind).toBe('square');
-    flip(stroke);
-    expect(result.current.shape).toBeNull();
-    wait(RECOGNITION_PREVIEW_DWELL_MS * 3);
-    expect(result.current.shape).toBeNull();
-  });
-
-  it('snaps again on the next pause once the pen moves on', () => {
-    const stroke = liveStrokeOf(square());
-    const { result } = hook(stroke, true);
-    wait();
-    flip(stroke);
-    move(stroke, 0, 30);
-    wait();
-    expect(result.current.shape).not.toBeNull();
-  });
-
-  it('never snaps while the ink is held (Alt down), even after moving on', () => {
-    const stroke = liveStrokeOf(square());
-    const { result } = hook(stroke, true);
-    wait();
-    flip(stroke);
-    stroke.holdInk(true);
-    move(stroke, 0, 30);
-    wait();
-    expect(result.current.shape).toBeNull();
-    // Releasing Alt changes nothing by itself.
-    stroke.holdInk(false);
-    wait();
+    rerender({ stroke: null });
     expect(result.current.shape).toBeNull();
   });
 });
 
-// docs/specs/023-draw-mode/draw-mode.md "Shape recognition": the chip on a touch screen.
+// docs/specs/023-draw-mode/drawing-tools.md "Shape recognition": the chip on a touch screen.
 describe('useRecognitionPreview, the chip', () => {
-  beforeEach(() => {
-    vi.useFakeTimers();
-    vi.spyOn(console, 'info').mockImplementation(() => {});
-  });
-  afterEach(() => {
-    vi.useRealTimers();
-    vi.restoreAllMocks();
-  });
-
-  const hook = (stroke: LiveStroke, active: boolean) =>
-    renderHook(() => useRecognitionPreview(stroke, active, 1, 1.5));
-  const wait = () =>
-    act(() => {
-      vi.advanceTimersByTime(RECOGNITION_PREVIEW_DWELL_MS + 10);
-    });
-  const scribble = (): P[] =>
-    Array.from({ length: 30 }, (_, i) => ({ x: i * 7, y: (i * 37) % 23 }));
-
   for (const pointerType of ['pen', 'touch']) {
-    it(`offers Make shape at the ${pointerType}'s tip once it holds still, with recognition off`, () => {
-      const { result } = hook(liveStrokeOf(square(), { pointerType }), false);
+    it(`offers Make shape at the ${pointerType}'s tip once it holds still`, () => {
+      const { result } = hook(liveStrokeOf(square(), { pointerType }));
       expect(result.current.chip).toBeNull();
       wait();
       expect(result.current.chip).toEqual({ action: 'make', at: { x: 0, y: 0 } });
@@ -229,8 +111,10 @@ describe('useRecognitionPreview, the chip', () => {
     });
   }
 
-  it('offers Keep drawing once a shape has snapped', () => {
-    const { result } = hook(liveStrokeOf(square(), { pointerType: 'pen' }), true);
+  it('offers Keep drawing while the stroke shows a shape', () => {
+    const stroke = liveStrokeOf(square(), { pointerType: 'pen' });
+    const { result } = hook(stroke);
+    flip(stroke);
     wait();
     expect(result.current.shape?.kind).toBe('square');
     expect(result.current.chip?.action).toBe('keep');
@@ -238,54 +122,35 @@ describe('useRecognitionPreview, the chip', () => {
 
   it('flips its offer with the stroke, while the pen stays still', () => {
     const stroke = liveStrokeOf(square(), { pointerType: 'touch' });
-    const { result } = hook(stroke, false);
+    const { result } = hook(stroke);
     wait();
-    act(() => {
-      flipRecognition(stroke, 1.5);
-      stroke.notify();
-    });
+    flip(stroke);
     expect(result.current.shape?.kind).toBe('square');
     expect(result.current.chip?.action).toBe('keep');
-    act(() => {
-      flipRecognition(stroke, 1.5);
-      stroke.notify();
-    });
+    flip(stroke);
     expect(result.current.shape).toBeNull();
     expect(result.current.chip?.action).toBe('make');
   });
 
   it('leaves when the pen moves on', () => {
     const stroke = liveStrokeOf(square(), { pointerType: 'pen' });
-    const { result } = hook(stroke, false);
+    const { result } = hook(stroke);
     wait();
-    act(() => {
-      stroke.push(0, 40);
-      stroke.notify();
-    });
+    move(stroke, 0, 40);
     expect(result.current.chip).toBeNull();
   });
 
   it('stays while the pen only trembles', () => {
     const stroke = liveStrokeOf(square(), { pointerType: 'pen' });
-    const { result } = hook(stroke, false);
+    const { result } = hook(stroke);
     wait();
-    act(() => {
-      stroke.push(1, 1);
-      stroke.notify();
-    });
+    move(stroke, 1, 1);
     expect(result.current.chip?.action).toBe('make');
   });
 
   it('is not offered for a stroke that reads as no shape', () => {
-    const { result } = hook(liveStrokeOf(scribble(), { pointerType: 'pen' }), false);
+    const { result } = hook(liveStrokeOf(scribble(), { pointerType: 'pen' }));
     wait();
-    expect(result.current.chip).toBeNull();
-  });
-
-  it('is never offered to a mouse, which has Alt', () => {
-    const { result } = hook(liveStrokeOf(square(), { pointerType: 'mouse' }), true);
-    wait();
-    expect(result.current.shape?.kind).toBe('square');
     expect(result.current.chip).toBeNull();
   });
 });

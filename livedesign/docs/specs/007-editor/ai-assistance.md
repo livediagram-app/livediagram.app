@@ -23,7 +23,7 @@ answering questions and tidying.
 
 | Mode      | What it does                                         | Response                                           |
 | --------- | ---------------------------------------------------- | -------------------------------------------------- |
-| **Ask**   | Answers questions about the diagram (read-only Q&A)  | `text/event-stream` SSE (text deltas)              |
+| **Ask**   | Answers questions about the document (read-only)     | `text/event-stream` SSE (text deltas)              |
 | **Clean** | Fixes label typos, normalises sizes/positions/styles | `text/event-stream` SSE; client parses JSON on end |
 
 Both modes stream: the worker pipes OpenAI's SSE through unchanged so the panel can render progress (text deltas for Ask, a "thinking" indicator for the JSON Clean mode). The client buffers the Clean stream until completion, parses it, then applies the elements via `commit()` so undo still treats the change as one block.
@@ -139,7 +139,7 @@ of things Clean tidies. This is load-bearing, not tidiness: the client coerces a
 outside its accept-set to `square` so a node the model _invented_ off-vocabulary still
 renders rather than being dropped, and Clean asks the model to return every element with
 its real `shape` forwarded. Unpinned, one Clean flattened every composite in the tab —
-checklists, code blocks, charts, lanes, entities, progress rings, 30 of the 51 ShapeKinds —
+checklists, code blocks, charts, progress rings and most other ShapeKinds —
 and autosaved and broadcast the result. The coercion is right for an
 invented element and has no business touching one the user already had.
 
@@ -156,7 +156,7 @@ to the same structural guard every save is: `isValidElement` from `@livedesign/d
 limited to the four types the assistant may add (shape, text, sticky, arrow). A looser local
 check used to live in the client and let through what the api then refused on save (an
 arrow with a junk endpoint, a non-finite coordinate). Renamed additions carry every
-reference kind with them (arrow ends, mind-map parents, portal partners) through the shared
+reference kind with them (arrow ends, element links) through the shared
 `remapElementRefs`.
 
 Error responses follow the standard worker envelope, `{ "error": "<token>" }`. The route emits
@@ -234,13 +234,13 @@ validate every field regardless.
 
 ## Environment variables
 
-| Variable                                                     | Where                     | Purpose                                                                                                                                                                                                               |
-| ------------------------------------------------------------ | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GOOGLE_AI_STUDIO_API_KEY` / `OPENAI_API_KEY` / `AI_API_KEY` | Worker secret             | The model keys; any one enables AI (see "Which key wins"). None = every AI surface hidden.                                                                                                                            |
-| `AI_BASE_URL`                                                | Worker var (generic only) | The OpenAI-COMPATIBLE chat-completions base for `AI_API_KEY`: a laptop points it at llama.cpp or Ollama. The google and openai keys bring their own.                                                                  |
-| `AI_MODEL`                                                   | Worker var (optional)     | Model id for the assistant. Defaults per provider (table above); required for the generic key.                                                                                                                        |
+| Variable                                                     | Where                     | Purpose                                                                                                                                                                                                                |
+| ------------------------------------------------------------ | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GOOGLE_AI_STUDIO_API_KEY` / `OPENAI_API_KEY` / `AI_API_KEY` | Worker secret             | The model keys; any one enables AI (see "Which key wins"). None = every AI surface hidden.                                                                                                                             |
+| `AI_BASE_URL`                                                | Worker var (generic only) | The OpenAI-COMPATIBLE chat-completions base for `AI_API_KEY`: a laptop points it at llama.cpp or Ollama. The google and openai keys bring their own.                                                                   |
+| `AI_MODEL`                                                   | Worker var (optional)     | Model id for the assistant. Defaults per provider (table above); required for the generic key.                                                                                                                         |
 | `AI_ALLOWED_ORIGINS`                                         | Worker var (optional)     | Comma-separated `Origin` values that may call `/api/ai`. Unset = no check. Example: `https://livedesign.app,http://localhost:3302`. Entries are matched case-sensitive against the request's `Origin` header verbatim. |
-| `AI_REQUIRE_CLERK`                                           | Worker var (optional)     | Set to `"true"` to require a verified Clerk JWT on `/api/ai` (rejects the `X-Owner-Id` guest path with 401). Unset / any other value = guests allowed.                                                                |
+| `AI_REQUIRE_CLERK`                                           | Worker var (optional)     | Set to `"true"` to require a verified Clerk JWT on `/api/ai` (rejects the `X-Owner-Id` guest path with 401). Unset / any other value = guests allowed.                                                                 |
 
 Set via `wrangler secret put <the key var>` for production; drop into `apps/api/.dev.vars`
 for local dev (gitignored). The two `AI_*` flags are plain `[vars]` (no secret value), so

@@ -59,11 +59,9 @@ export const BORDER_RADIUS_PX: Record<BorderRadius, number> = {
 };
 
 // The kinds' own corners when none is set: a box on the canvas (element-variant.ts) and in the
-// export, an image (ImageElementView), a mind node (docs/specs/009-elements/mind-node.md "Round
-// nodes").
+// export, and an image (ImageElementView).
 export const DEFAULT_BOX_RADIUS_PX = 8;
 export const IMAGE_DEFAULT_RADIUS_PX = 4;
-export const MIND_NODE_RADIUS_PX = 12;
 
 // Corners scale down on small shapes (docs/specs/008-canvas/corner-radius.md): never more than this
 // share of the box's shorter side. Excalidraw's roundness is 25% of the shorter side, so a small

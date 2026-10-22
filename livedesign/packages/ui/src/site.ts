@@ -17,13 +17,12 @@ export const SITE_NAME = 'livedesign';
 // What livedesign is, in the words every public surface uses (docs/specs/019-marketing/marketing-site.md
 // "SEO and metadata"), kept here so they can't drift: the landing page's title, its description
 // (also the web app manifest's), and the one-line pitch the share card, the share images' alt text
-// and the share rail build on. It names every kind of thing the canvas makes, not just diagrams.
-export const SITE_TITLE = 'livedesign: Diagram, draw and make pages together, live';
+// and the share rail build on. It names every kind of page a document is made of.
+export const SITE_TITLE = 'livedesign: Write, present and design on pages together, live';
 export const SITE_DESCRIPTION =
-  'A free, real-time canvas for diagrams, whiteboards, mind maps, infographics and documents. Built for teams who think visually.';
+  'A free, real-time editor for documents made of pages: articles, slide decks, infographics and logos. Built for teams who write and present together.';
 // Lower case: it follows "livedesign: " or starts a sentence through sentencePitch.
-export const SITE_PITCH =
-  'a real-time canvas for diagrams, whiteboards, illustrations and documents';
+export const SITE_PITCH = 'a real-time editor for articles, slide decks, infographics and logos';
 export const sentencePitch = () => `${SITE_PITCH[0]!.toUpperCase()}${SITE_PITCH.slice(1)}.`;
 
 // The open-source repository (docs/specs/002-project-scope/open-source-and-business-model.md: the codebase is public + MIT), linked
@@ -31,10 +30,10 @@ export const sentencePitch = () => `${SITE_PITCH[0]!.toUpperCase()}${SITE_PITCH.
 // the editor's bottom bar and Explorer menu, and the `sameAs` JSON-LD.
 export const REPO_URL = 'https://github.com/livedesign-app/livedesign.app';
 
-// The public contact form (a livedesign Form, docs/specs/030-forms/forms.md), the one way to reach the
-// team; no email address is published. Linked from the help centre's contact page, the FAQ, the status
-// page and the Terms and Privacy Policy.
-export const CONTACT_FORM_URL = 'https://www.livedesign.app/form/90Bgj5sY9eTpVrjhx9tTZj';
+// The public contact form, the one way to reach the team; no email address is published. livedesign has no
+// Forms, so it is the shared form hosted on livediagram. Linked from the help centre's contact page, the FAQ,
+// the status page and the Terms and Privacy Policy.
+export const CONTACT_FORM_URL = 'https://www.livediagram.app/form/90Bgj5sY9eTpVrjhx9tTZj';
 
 // Favicon set for the apps that serve their pages from the origin root (or
 // reference the root's assets): the SVG mark, a raster PNG fallback for

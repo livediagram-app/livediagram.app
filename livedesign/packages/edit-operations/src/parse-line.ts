@@ -302,7 +302,7 @@ export function parseOperationWords(
   if (name === 'wrap') {
     const at = rest.findIndex((w) => !hasQuotes(w) && w.value === 'in');
     const container = at >= 0 ? rest[at + 1] : undefined;
-    if (!container) return fail(rest[at] ?? rest.at(-1), end, 'in frame or in lane');
+    if (!container) return fail(rest[at] ?? rest.at(-1), end, 'in frame');
     const members = rest.slice(0, at);
     if (!members.length) return fail(rest[0], end, 'the members to wrap');
     const c = collect(name, rest.slice(at + 2));

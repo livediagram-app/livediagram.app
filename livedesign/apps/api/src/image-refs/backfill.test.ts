@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
-import { applyMigration, sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
+import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import {
   isImageRefIndexComplete,
   readImageRefsBackfill,
@@ -13,7 +13,7 @@ import {
   runImageRefsBackfill,
 } from './backfill';
 
-// The one-off indexing of tabs saved before migration 0050
+// The indexing of tabs saved while the reference index was not kept
 // (docs/specs/009-elements/images.md, "Reference index", Backfill). Until it
 // completes the sweep deletes nothing, so what matters is that it reaches
 // every tab, survives being cut short, and keeps a corrupt tab's images.
@@ -33,11 +33,11 @@ function refCount(sql: DatabaseSync): number {
   return Number(sql.prepare('SELECT COUNT(*) AS n FROM image_refs').get()!.n);
 }
 
-// A database that had `tabs` before 0050 ran, so the backfill starts pending.
+// A database holding unindexed tabs with the backfill restarted over them, so it starts pending.
 function legacy(tabs: Record<string, string>): SqliteD1 {
-  const db = sqliteD1({}, { before: '0050' });
+  const db = sqliteD1();
   for (const [id, data] of Object.entries(tabs)) tabRow(db.sql, id, data);
-  applyMigration(db.sql, '0050');
+  db.sql.exec('UPDATE image_refs_backfill SET cursor = 0, completed_at = NULL');
   return db;
 }
 

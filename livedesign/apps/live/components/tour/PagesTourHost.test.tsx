@@ -1,15 +1,13 @@
 // @vitest-environment jsdom
 
 // The Pages tour's offer (docs/specs/007-editor/pages-tour.md "Where it appears"): on entering Pages,
-// once per page kind, on its own (the Diagram tour never runs in Pages), never with another tour, and rerun from
-// Settings. The tour page's kind picks the track.
+// once per page kind, never with another tour, and rerun from Settings. The tour page's kind picks the track.
 
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { requestPagesTourRelaunch } from '@/lib/pages-tour';
 import { setActiveTour } from '@/lib/tour-active';
 import { setStartPanelOpen } from '@/components/start/start-panel-open';
-import { clearTourPending, markTourPending } from '@/lib/tour-pending';
 import type { TourEngine } from './useTourEngine';
 import type { PageTourApi } from './page-tour-api';
 import type { TourPage } from './pages-tour-page';
@@ -73,7 +71,7 @@ const editor = (over: Record<string, unknown> = {}) => {
       locked: false,
       pages: [{ id: 'p1', orientation: 'landscape', kind: 'wireframe' }],
     },
-    userPreferences: { tourSeen: true },
+    userPreferences: {},
     setUserPreferences,
     writeUserPreferences,
     // The demonstration elements a tour places (useTourSquare).
@@ -104,13 +102,9 @@ afterEach(() => {
   document.body.innerHTML = '';
   vi.clearAllMocks();
   vi.useRealTimers();
-  setActiveTour('welcome', false);
-  setActiveTour('plan', false);
-  setActiveTour('workshop', false);
-  setActiveTour('draw', false);
+  setActiveTour('element', false);
   setActiveTour('pages', false);
   setStartPanelOpen(false);
-  clearTourPending();
 });
 
 describe('PagesTourHost offer', () => {
@@ -125,7 +119,7 @@ describe('PagesTourHost offer', () => {
     expect(offered()).toBe(true);
     expect(stage.engine?.active).toBe(true);
     expect(stage.engine?.step?.title).toBe('Getting started with wireframes?');
-    expect(stage.helpHref).toBe('/help/canvas/pages-mode/wireframe-pages/');
+    expect(stage.helpHref).toBe('/help/pages/wireframe-pages/');
   });
 
   it('waits for the person to enter Pages', async () => {
@@ -144,7 +138,6 @@ describe('PagesTourHost offer', () => {
       'seen',
       {
         userPreferences: {
-          tourSeen: true,
           pagesTourKinds: ['wireframe', 'logo'],
         },
       },
@@ -162,9 +155,8 @@ describe('PagesTourHost offer', () => {
     expect(offered()).toBe(false);
   });
 
-  // docs/specs/007-editor/pages-tour.md "Where it appears": on its own, whatever other tours.
-  it('offers itself to someone who has not done the Diagram tour, even with its handoff owed', async () => {
-    markTourPending();
+  // docs/specs/007-editor/pages-tour.md "Where it appears": a first-time person is offered it, welcome card first.
+  it('offers itself to someone with no tours done yet', async () => {
     editor({ userPreferences: {} });
     render(<PagesTourHost />);
     await wait(800);
@@ -172,29 +164,20 @@ describe('PagesTourHost offer', () => {
     expect(stage.engine?.hasWelcome).toBe(true);
   });
 
-  it('waits while the Diagram tour is on screen, then follows it', async () => {
-    setActiveTour('welcome', true);
+  it('waits while an element tour is on screen, then follows it', async () => {
+    setActiveTour('element', true);
     editor();
     render(<PagesTourHost />);
     await wait(2000);
     expect(offered()).toBe(false);
-    act(() => setActiveTour('welcome', false));
+    act(() => setActiveTour('element', false));
     await wait(800);
     expect(offered()).toBe(true);
-  });
-
-  it('never runs beside the Draw tour', async () => {
-    setActiveTour('draw', true);
-    editor();
-    render(<PagesTourHost />);
-    await wait(2000);
-    expect(offered()).toBe(false);
   });
 
   it('reruns from Settings in Pages', async () => {
     editor({
       userPreferences: {
-        tourSeen: true,
         pagesTourKinds: ['wireframe', 'logo'],
       },
     });
@@ -228,10 +211,7 @@ describe('PagesTourHost end', () => {
   it('declining marks its kind seen and sends the decline', async () => {
     await start();
     act(() => stage.engine!.skip());
-    expect(writeUserPreferences).toHaveBeenCalledWith(
-      { tourSeen: true, pagesTourKinds: ['wireframe'] },
-      'me',
-    );
+    expect(writeUserPreferences).toHaveBeenCalledWith({ pagesTourKinds: ['wireframe'] }, 'me');
     expect(track).toHaveBeenCalledWith('UI', 'Closed', 'PagesTourOffer');
   });
 
@@ -245,10 +225,7 @@ describe('PagesTourHost end', () => {
     expect(stage.engine?.step?.id).toBe('outro');
     act(() => stage.engine!.next());
     expect(track).toHaveBeenCalledWith('UI', 'Ended', 'PagesTourCompleted');
-    expect(writeUserPreferences).toHaveBeenCalledWith(
-      { tourSeen: true, pagesTourKinds: ['wireframe'] },
-      'me',
-    );
+    expect(writeUserPreferences).toHaveBeenCalledWith({ pagesTourKinds: ['wireframe'] }, 'me');
   });
 
   it('adds the last kind answered to the list', async () => {
@@ -263,7 +240,7 @@ describe('PagesTourHost end', () => {
   });
 
   it('offers again to someone who answered the single tour before it split', async () => {
-    await start({ userPreferences: { tourSeen: true, pagesTourSeen: true } });
+    await start({ userPreferences: { pagesTourSeen: true } });
     expect(track).toHaveBeenCalledWith('UI', 'Opened', 'PagesTourOffer');
   });
 
@@ -282,7 +259,7 @@ describe('PagesTourHost end', () => {
       },
     });
     expect(stage.engine?.step?.title).toBe('Getting started with Logos?');
-    expect(stage.helpHref).toBe('/help/canvas/pages-mode/logo-pages/');
+    expect(stage.helpHref).toBe('/help/pages/logo-pages/');
   });
 
   it('counts the infographic’s steps on screen', async () => {

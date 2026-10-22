@@ -7,7 +7,6 @@ import { vi } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
 import type { Tab } from '@livedesign/document';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
-import { insertDocumentRow } from './legacy-test-schema';
 import type { Env } from '../types';
 
 export const DAY = 86_400_000;
@@ -18,17 +17,30 @@ export const YOUNG = CUTOFF + DAY;
 
 type Bucket = { delete: ReturnType<typeof vi.fn> };
 
-export function setup(opts: { before0050?: boolean } = {}): SqliteD1 & { bucket: Bucket } {
+// `indexPending` leaves the reference index's backfill to run, as a restart of it does.
+export function setup(opts: { indexPending?: boolean } = {}): SqliteD1 & { bucket: Bucket } {
   const bucket: Bucket = { delete: vi.fn(async () => {}) };
-  const db = sqliteD1(
-    { IMAGES: bucket } as unknown as Partial<Env>,
-    opts.before0050 ? { before: '0050' } : {},
-  );
+  const db = sqliteD1({ IMAGES: bucket } as unknown as Partial<Env>);
+  if (opts.indexPending) {
+    db.sql.exec('UPDATE image_refs_backfill SET cursor = 0, completed_at = NULL');
+  }
   return { ...db, bucket };
 }
 
+export function linkDocumentTab(sql: DatabaseSync, documentId: string, tabId: string) {
+  sql
+    .prepare(
+      'INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES (?, ?, 0, 0)',
+    )
+    .run(documentId, tabId);
+}
+
 export function liveDoc(sql: DatabaseSync, id: string, ownerId = 'owner', name = id) {
-  insertDocumentRow(sql, id, ownerId, name);
+  sql
+    .prepare(
+      'INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, ?, ?, 0, 0, 0)',
+    )
+    .run(id, ownerId, name);
 }
 
 export function images(sql: DatabaseSync, createdAt: number, ...ids: string[]) {

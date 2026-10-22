@@ -291,14 +291,14 @@ export const push = defineVerb({
 });
 
 // Every document to files, read-only, for backups and docs (blueprint "Pull and push", CLI29).
-export const EXPORT_FORMATS = ['json', 'svg', 'png', 'mermaid', 'md'] as const;
+export const EXPORT_FORMATS = ['json', 'svg', 'png', 'md'] as const;
 
 export const exportAll = defineVerb({
   id: 'export',
   files: true,
   summary: 'Every document to files, for backups and docs',
   description:
-    'Writes every document the token can read: <slug>.livedesign.json (json, the default), and per tab <slug>/<tab-slug>.svg, .png, .mmd or .md. Prints the paths written, then the totals.',
+    'Writes every document the token can read: <slug>.livedesign.json (json, the default), and per tab <slug>/<tab-slug>.svg, .png or .md. Prints the paths written, then the totals.',
   behaviour: 'read',
   local: true,
   input: z.object({
@@ -326,7 +326,7 @@ export const exportAll = defineVerb({
   },
 });
 
-// A picture of a tab or a graph file (blueprint "Previews"): the CLI rasterises, so it runs them.
+// A picture of a tab (blueprint "Previews"): the CLI rasterises, so it runs them.
 const pictureFlags = {
   png: z.string().optional().describe('Write a PNG here'),
   svg: z.string().optional().describe('Write an SVG here'),
@@ -352,30 +352,6 @@ export const tabRender = defineVerb({
     examples: [
       'livedesign tab render "Shop" --png shop.png',
       'livedesign tab render 3f9c --tab Flow --svg flow.svg',
-    ],
-    prints: '<path>  <width>×<height> · <n> KB',
-  },
-});
-
-export const graphRender = defineVerb({
-  id: 'graph.render',
-  summary: 'A picture of a graph or Mermaid file, before writing it',
-  description:
-    'Lays a graph or Mermaid file out as the api would and writes it to --png or --svg (one of them), at scale 1. Nothing is sent.',
-  behaviour: 'read',
-  local: true,
-  offline: true,
-  input: z.object({
-    file: z.string().describe('The graph or Mermaid file, or - for stdin'),
-    ...pictureFlags,
-  }),
-  output: pictureOutput,
-  text: ({ lines }) => lines,
-  cli: {
-    positionals: ['file'],
-    examples: [
-      'livedesign graph render arch.json --png arch.png',
-      'livedesign graph render flow.mmd --svg flow.svg',
     ],
     prints: '<path>  <width>×<height> · <n> KB',
   },

@@ -1,7 +1,6 @@
 'use client';
 
-// Reorder a list by dragging a row's handle (docs/specs/026-plan/item-types.md "Editing a type": a field's
-// handle). Pointer events, not HTML5 drag-and-drop, so it works the same with a mouse, a pen and a finger: the
+// Reorder a list by dragging a row's handle (a field's handle, for one). Pointer events, not HTML5 drag-and-drop, so it works the same with a mouse, a pen and a finger: the
 // handle sets `touch-action: none` (HANDLE_TOUCH) so a touch drag moves the row instead of scrolling, and
 // captures the pointer so the drag follows it outside the handle. While dragging, the row follows the pointer
 // and the rows it passes slide aside to show where it will land; release places it, Escape or a cancelled

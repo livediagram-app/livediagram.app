@@ -68,27 +68,17 @@ describe('buildPaletteSearchItems', () => {
     // regression that dropped these from the PALETTE_TILES filter still fails
     // rather than agreeing with itself.
     const ids = new Set(buildPaletteSearchItems().map((i) => i.id));
-    for (const kind of ['lane', 'entity', 'mind-node', 'page', 'phone', 'bar-chart', 'portal']) {
+    for (const kind of ['page', 'phone', 'bar-chart', 'tab-window']) {
       expect(ids.has(`shape:${kind}`)).toBe(true);
-    }
-    // And the split kinds, one entry per choice (docs/specs/012-collaboration/session-button.md, docs/specs/009-elements/reaction-pad.md).
-    for (const id of [
-      'shape:session-button:timer',
-      'shape:session-button:vote',
-      'shape:session-button:poll',
-      'shape:reaction-pad:confetti',
-      'shape:reaction-pad:fireworks',
-    ]) {
-      expect(ids.has(id)).toBe(true);
     }
   });
 
   it('names each entry from the tile, not from its id', () => {
-    const lane = buildPaletteSearchItems().find((i) => i.id === 'shape:lane');
-    expect(lane?.name).toBe('Lane');
+    const cylinder = buildPaletteSearchItems().find((i) => i.id === 'shape:cylinder');
+    expect(cylinder?.name).toBe('Cylinder');
     // The tile's description feeds the keywords, so the sentence the palette
     // already writes about an element is searchable without being restated.
-    expect(lane?.keywords).toContain('swimlane');
+    expect(cylinder?.keywords).toContain('database');
   });
 
   it('emits no duplicate ids', () => {

@@ -1,9 +1,9 @@
 // An element's catalogue keys that are not text, dropped where stored elements enter (./stored-elements): from
-// storage, a peer, a paste, a file or an agent's write. An icon's `iconId`, a sticker's `stickerId` and a flowchart
-// step's `flowchartId` are looked up and compared as text all over the canvas and its exports (an emoji icon is
-// told by its `emoji-` prefix), so a number or a list in one threw while the canvas rendered. Without it the
-// element reads as it does with a key this build does not know: an icon its placeholder glyph, a sticker nothing,
-// a shape no flowchart step (docs/specs/010-palette/technology-icons.md "iconId stays a plain string").
+// storage, a peer, a paste, a file or an agent's write. An icon's `iconId` and a sticker's `stickerId` are looked up
+// and compared as text all over the canvas and its exports (an emoji icon is told by its `emoji-` prefix), so a
+// number or a list in one threw while the canvas rendered. Without it the element reads as it does with a key this
+// build does not know: an icon its placeholder glyph, a sticker nothing
+// (docs/specs/010-palette/technology-icons.md "iconId stays a plain string").
 
 import type { Element } from './index';
 
@@ -11,7 +11,7 @@ import type { Element } from './index';
 export const ELEMENT_KEY_MAX = 256;
 
 /** The fields that hold a catalogue key. */
-export const ELEMENT_KEY_FIELDS = ['iconId', 'stickerId', 'flowchartId'] as const;
+export const ELEMENT_KEY_FIELDS = ['iconId', 'stickerId'] as const;
 
 /** Whether a value is a catalogue key: text of at most ELEMENT_KEY_MAX characters. */
 export function isElementKey(v: unknown): v is string {

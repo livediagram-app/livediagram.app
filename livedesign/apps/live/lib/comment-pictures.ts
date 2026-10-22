@@ -8,7 +8,7 @@
 
 import { useEffect, useSyncExternalStore } from 'react';
 import { isProfilePictureUrl } from '@livedesign/api-schema';
-import { elementThreads, type Element } from '@livedesign/document';
+import type { CommentThread, Element } from '@livedesign/document';
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import { API_BASE, apiFetch, apiHeaders } from '@/lib/api/core';
 import { createListeners } from '@/lib/listeners';
@@ -30,9 +30,9 @@ export function resetCommentPictures(): void {
 /** Every comment id in a tab's elements. */
 function commentIdsOf(elements: readonly Element[] | undefined): string[] {
   const ids: string[] = [];
-  // Every thread: each element's own and a Sheet's cells' (docs/specs/029-sheets/sheet.md "Cell comments").
-  for (const { thread } of (elements ?? []).flatMap(elementThreads)) {
-    for (const c of thread.comments ?? []) ids.push(c.id);
+  for (const el of elements ?? []) {
+    const thread = (el as { commentThread?: CommentThread }).commentThread;
+    for (const c of thread?.comments ?? []) ids.push(c.id);
   }
   return ids;
 }

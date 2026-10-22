@@ -101,7 +101,7 @@ Grouped by priority; each links the keyed article.
 - AI panel - **Connect agent** button (on the Ask / Clean row) -> `connect-ai-mcp`. Uses the
   `button` variant with a custom `label` + plug `icon` (the variant now accepts both; absent
   a custom label it still reads "Help").
-- Export dialog header -> `exporting-diagrams` (isometric toggle -> `isometric-mode`)
+- Export dialog header -> `exporting-documents` (isometric toggle -> `isometric-mode`)
 - Import dialog header -> `import-tabs`.
 - Team form / invite -> `team-roles-and-invites`
 
@@ -116,8 +116,8 @@ Grouped by priority; each links the keyed article.
 
 **Onboarding / empty states**
 
-- Empty-canvas card -> `your-first-diagram`
-- Template starts -> `templates` (Start a Workshop, Start Making Pages)
+- Empty-canvas card -> `your-first-document`
+- Template starts -> `templates` (Start Making Pages)
 - Settings - Keyboard category (was the Shortcuts dialog) -> `keyboard-shortcuts`
 - Sign-in reasons modal -> `guest-vs-account`
 
@@ -142,9 +142,8 @@ help button that moves around teaches people not to look for it. It renders in
 both the panel header and the popover band, and stops the pointer so
 pressing it opens the article rather than starting a panel drag.
 
-Wired: Palette, Explorer, Activity, Layers, Map, Collaborate, Poll, Vote, and
-the six tool panels (Avatar, Laser, Spotlight, Eraser, Format, Slide Deck)
-(a seventh, the Highlighter's, went when the Highlighter became a Draw tile). This closed the gap the feature was written for and had never
+Wired: Palette, Explorer, Activity, Layers, Map, and the tool panels
+(Laser, Spotlight, Format, Slide Deck). This closed the gap the feature was written for and had never
 reached: 21 surfaces linked an article, and every one of them was a dialog, so
 a panel you were looking at could not tell you there was a page about it.
 

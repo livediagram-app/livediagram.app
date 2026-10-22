@@ -5,28 +5,26 @@ import { TabBarOverview, RenamingTab, TabMenu } from '@/components/illustrations
 export const metadata = helpMetadata({
   title: 'Using Tabs',
   description:
-    'Split a livedesign document into tabs, each its own canvas: add, name, reorder, delete and switch tabs on the tab bar, with every action in the tab menu.',
+    'Split a livedesign document into tabs, each its own row of pages: add, name, reorder, delete and switch tabs on the tab bar, with every action in the tab menu.',
   path: '/help/tabs/using-tabs/',
 });
 
 <ArticleLayout
   title="Tabs"
-  description="One document, many canvases. Tabs let you split a project across several boards, each with its own elements, theme, and background."
+  description="One document, many tabs. Tabs let you split a project across several rows of pages, each with its own elements, theme, and background."
   categoryTitle="Tabs"
   categorySlug="tabs"
 >
 
-A document is not a single canvas. It is a collection of **tabs**, each with its own canvas, elements, layout, theme, and background. A new document usually starts with one tab, and you add more whenever a piece of work deserves its own space. The tab bar sits along the bottom of the editor, and the active tab fills the canvas area above it.
+A document is not a single canvas. It is a collection of **tabs**, each with its own pages, elements, layout, theme, and background. A new document usually starts with one tab, and you add more whenever a piece of work deserves its own space. The tab bar sits along the bottom of the editor, and the active tab fills the canvas area above it.
 
 ## What a tab is
 
-Each tab is a self-contained canvas inside the document. A tab carries its own elements, its own theme and background pattern, and an optional lock, all independent of the other tabs around it. Common ways people split work across tabs:
+Each tab is a self-contained row of [pages](/help/pages/working-with-pages/) inside the document. A tab carries its own elements, its own theme and background pattern, and an optional lock, all independent of the other tabs around it. Common ways people split work across tabs:
 
 - An **Overview** tab with the high-level picture, and detail tabs behind it.
 - One tab per system, team, or phase of a project.
 - A scratch tab for ideas you are not ready to file yet.
-
-Each tab also has its own [mode](/help/canvas/editor-modes/) (Diagram, Draw, Workshop, Pages or Plan), the same for everyone on it, chosen on its start while it is empty. The small icon at the start of a tab's name shows it.
 
 <Figure caption="The tab bar runs along the bottom of the editor: the active tab is raised with its ⋯ menu button, and the plus button adds another tab.">
   <TabBarOverview />
@@ -38,8 +36,7 @@ Press the **+** button at the end of the tab bar, or run **Create New Tab** from
 
 - is named `Tab 2`, `Tab 3` and so on, after the number of tabs in the document;
 - takes the theme, background and font of the tab you were on, so it matches the work around it;
-- opens in the same mode as the tab you were on: made from a Pages tab it is a Pages tab, from a Draw tab a Draw tab, and from a Plan tab a Plan tab;
-- starts on that mode's own start, such as **Start Making Pages** or **Start Planning**, so you can begin from a template or close it to keep the tab blank.
+- starts on **Start Making Pages**, so you can begin from a template or close it to keep the tab blank.
 
 **Duplicate** in the tab menu makes a copy instead: it is named after the original with "copy" on the end, sits right after it, and is a separate tab with its own elements from then on.
 
@@ -72,8 +69,6 @@ Along the top sits a row of quick actions: **Rename**, **Duplicate**, **Paste** 
 
 To tidy a tab's layout, search for **Auto Layout** or **Auto-align** in the [command palette](/help/search-panel/the-search-panel/command-palette/). See [Cleaning Up a Tab](/help/tabs/tab-cleanup/).
 
-The [session tools](/help/collaboration/session-tools/) (timer, vote and poll) are not in this menu: they have their own buttons in the bottom bar.
-
 <Figure caption="The tab menu: quick actions along the top, then full-width rows for folders and documents, and content.">
   <TabMenu />
 </Figure>
@@ -81,8 +76,6 @@ The [session tools](/help/collaboration/session-tools/) (timer, vote and poll) a
 ## Deleting a tab
 
 Choose **Delete** in the tab menu. The tab goes straight away, and **Undo** brings it back. Once you reload or leave the document it is gone, unless another document also holds it ([Add to Document](/help/tabs/add-to-document/)), so export or duplicate anything you might want later. A few things to know:
-
-- Delete asks first only when it does something Undo can't take back: a [form](/help/canvas/plan-mode/forms/)'s tab deletes the form's link with it, and a board or sheet that forms send their responses to stops them taking responses.
 
 - A document always keeps at least one tab, so Delete is greyed out on the last one.
 - A [locked tab](/help/tabs/locking-tabs/) can't be deleted until you unlock it.
@@ -102,7 +95,7 @@ Each tab also carries its own menu of actions, covered in their own guides:
 - **[Linking Across Tabs](/help/tabs/linking-tabs/)** turns any element into a jump point to another tab.
 - **[Add a Tab to Another Document](/help/tabs/add-to-document/)** shares a tab into a different document: it is the same tab in both places, not a copy, so edits appear everywhere it lives.
 - **[Importing](/help/tabs/import-tabs/)** and **[Exporting](/help/tabs/export-tabs/)** move a tab's contents in and out as a file.
-- **[Locking a Tab](/help/tabs/locking-tabs/)** makes a whole canvas read-only.
+- **[Locking a Tab](/help/tabs/locking-tabs/)** makes a whole tab read-only.
 - **[Cleaning Up a Tab](/help/tabs/tab-cleanup/)** tidies a tab's layout in one click.
 
 <Tip>

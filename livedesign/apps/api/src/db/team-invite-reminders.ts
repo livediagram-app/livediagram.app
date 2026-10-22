@@ -1,7 +1,7 @@
 // Team invite reminders and expiry (docs/specs/013-workspace/teams.md "Reminders and expiry"): the daily
-// sweep's reads and writes on `team_members` (migration 0095). An invite still 'invited' is reminded 1, 7
+// sweep's reads and writes on `team_members` (the baseline migration). An invite still 'invited' is reminded 1, 7
 // and 21 days after its clock started, and becomes 'expired' (rejected) 28 days after. The clock
-// (`clock_started_at`) is the invite's creation, or the deploy of migration 0095 for an invite already pending.
+// (`clock_started_at`) is the invite's creation, or the deploy of the baseline migration for an invite already pending.
 
 import type { Env } from '../types';
 import { MAX_SEND_ATTEMPTS } from './email-lifecycle';

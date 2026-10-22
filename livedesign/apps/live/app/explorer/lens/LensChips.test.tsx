@@ -41,28 +41,28 @@ describe('LensChips', () => {
   });
 
   it('names a set chip by its values and shows them as text', () => {
-    renderChips('template:retrospective,kanban');
-    const chip = screen.getByRole('button', { name: 'Template: Retrospective, Kanban' });
+    renderChips('people:me,others');
+    const chip = screen.getByRole('button', { name: 'People: Me, Others' });
     expect(chip.getAttribute('aria-haspopup')).toBe('listbox');
-    expect(chip.textContent).toContain('Retrospective, Kanban');
+    expect(chip.textContent).toContain('Me, Others');
   });
 
   it('opens a multi-select listbox whose options toggle their value and stay open', () => {
-    const { onChoose } = renderChips('template:kanban');
-    const chip = screen.getByRole('button', { name: 'Template: Kanban' });
+    const { onChoose } = renderChips('people:others');
+    const chip = screen.getByRole('button', { name: 'People: Others' });
     fireEvent.click(chip);
     expect(chip.getAttribute('aria-expanded')).toBe('true');
-    const listbox = screen.getByRole('listbox', { name: 'Template' });
+    const listbox = screen.getByRole('listbox', { name: 'People' });
     expect(listbox.getAttribute('aria-multiselectable')).toBe('true');
     const options = screen.getAllByRole('option');
     expect(options.map((o) => [o.textContent, o.getAttribute('aria-selected')])).toEqual([
       ['Any', 'false'],
-      ['Retrospective', 'false'],
-      ['Kanban', 'true'],
+      ['Me', 'false'],
+      ['Others', 'true'],
     ]);
     fireEvent.click(options[1]!);
-    expect(onChoose).toHaveBeenCalledWith('template', 'retrospective');
-    expect(screen.getByRole('listbox', { name: 'Template' })).toBeTruthy();
+    expect(onChoose).toHaveBeenCalledWith('people', 'me');
+    expect(screen.getByRole('listbox', { name: 'People' })).toBeTruthy();
   });
 
   it('walks the options with the arrows, toggles with Enter, closes with Escape', () => {

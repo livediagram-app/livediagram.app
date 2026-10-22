@@ -4,8 +4,12 @@
 // a text size off the scale and an icon id that names no icon all used to be stored and drawn wrong in silence
 // (a question mark for the icon, tiny text for the size).
 
-import { withArticle } from '@livedesign/items';
-import { ELEMENT_FIELD_NAMES, fieldValueIssue, type Element } from '@livedesign/document';
+import {
+  ELEMENT_FIELD_NAMES,
+  fieldValueIssue,
+  withArticle,
+  type Element,
+} from '@livedesign/document';
 import { iconsLike, isIconId } from '@livedesign/icons/search';
 
 // The fields shown beside an unknown one: those sharing its words, else none.
@@ -67,19 +71,4 @@ export function elementsIssue(elements: readonly unknown[]): string | null {
     if (issue) return issue;
   }
   return null;
-}
-
-// A graph node whose icon names no icon, as a sentence; null when every icon is one.
-export function graphIconIssue(
-  nodes: readonly { id: string; icon?: string | undefined }[],
-): string | null {
-  const bad = nodes.find((n) => n.icon !== undefined && !isIconId(n.icon));
-  if (!bad) return null;
-  const like = iconsLike(bad.icon!).map((i) => i.id);
-  return (
-    `node "${bad.id}": icon ${JSON.stringify(bad.icon)} is not an icon` +
-    (like.length
-      ? `; icons like it: ${like.join(', ')}.`
-      : '; search_icons finds one by what it shows.')
-  );
 }

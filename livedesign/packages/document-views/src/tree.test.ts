@@ -14,12 +14,12 @@ const outline = (items: ViewItem[]): unknown[] =>
 describe('buildViewTree', () => {
   it('nests by derived containment, reading order per level, arrows left out', () => {
     const frame = shapeAt('frame', 'frame', 0, 0, 500, 300);
-    const lane = shapeAt('lane', 'lane', 0, 150, 500, 150);
+    const inner = shapeAt('frame', 'inner', 0, 150, 500, 150);
     const tree = buildViewTree(
       [
         shapeAt('square', 'far', 900, 0),
-        lane,
-        shapeAt('square', 'in-lane', 10, 200),
+        inner,
+        shapeAt('square', 'in-inner', 10, 200),
         frame,
         shapeAt('square', 'b', 300, 10),
         shapeAt('square', 'a', 10, 10),
@@ -30,12 +30,12 @@ describe('buildViewTree', () => {
       new Set(['a', 'b']),
     );
     expect(outline(tree.roots)).toEqual([
-      { frame: ['a', 'b', { lane: ['in-lane'] }] },
+      { frame: ['a', 'b', { inner: ['in-inner'] }] },
       'far',
       'run×2',
     ]);
     expect(tree.nodes.has('arr')).toBe(false);
-    expect(tree.nodes.get('in-lane')?.container).toBe('lane');
+    expect(tree.nodes.get('in-inner')?.container).toBe('inner');
   });
 
   it('has no roots for an empty tab', () => {

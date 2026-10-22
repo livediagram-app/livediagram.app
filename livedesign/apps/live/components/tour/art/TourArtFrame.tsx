@@ -2,8 +2,8 @@
 
 import type { ReactNode } from 'react';
 
-// The frame every track's welcome card hero sits in (docs/specs/007-editor/editor-tour.md "Look"): the welcome art's
-// recipe (TourWelcomeArt, DrawTourArt) in one place. Pure inline SVG on a 304 x 104 stage + CSS keyframes, Tailwind
+// The frame every track's welcome card hero sits in (docs/specs/007-editor/pages-tour.md "Look and motion"): the welcome art's
+// recipe (TourWelcomeArt) in one place. Pure inline SVG on a 304 x 104 stage + CSS keyframes, Tailwind
 // fill/stroke classes for light and dark, looping with the `animation` shorthand and `infinite`, and still under
 // reduced motion (the global collapse in globals.css, plus each art's own `animation: none`). The tour's spark
 // twinkles in the top-right corner of every one.

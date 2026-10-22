@@ -1,5 +1,5 @@
 // The canvas's stock-colour resolution over a whole element list (docs/specs/007-editor/
-// editor-modes.md "One look"): every colour stored by name drawn in its version for the canvas
+// 023-draw-mode/path-tool.md "Style"): every colour stored by name drawn in its version for the canvas
 // surface, on every tab and in either editor mode. Cached per source object, so an unchanged
 // element keeps its identity between renders and the memoised element views stay quiet.
 //

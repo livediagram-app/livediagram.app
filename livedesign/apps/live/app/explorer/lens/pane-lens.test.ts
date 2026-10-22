@@ -23,16 +23,12 @@ function doc(id: string, over: Record<string, unknown> = {}) {
 describe('lensSubjectOf', () => {
   it('reads one of my own documents as mine, by me, with its recorded intent', () => {
     expect(
-      lensSubjectOf(
-        doc('a', { source: 'mcp', opensIn: 'draw', tabKind: 'diagram', templateFamily: 'kanban' }),
-        'me',
-      ),
+      lensSubjectOf(doc('a', { source: 'mcp', opensIn: 'pages', tabKind: 'diagram' }), 'me'),
     ).toMatchObject({
       space: 'mine',
       people: 'me',
       madeByAi: true,
-      opensIn: 'draw',
-      template: 'kanban',
+      opensIn: 'pages',
     });
   });
 
@@ -100,7 +96,7 @@ describe('scopeDocuments', () => {
 describe('narrowRows', () => {
   const rows = [
     doc('Roadmap', { source: 'mcp' }),
-    doc('Retro notes', { templateFamily: 'retrospective', opensIn: 'diagram', tabKind: 'diagram' }),
+    doc('Retro notes', { opensIn: 'pages', tabKind: 'diagram' }),
   ];
 
   it('keeps the rows the lens matches', () => {

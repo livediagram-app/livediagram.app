@@ -7,7 +7,7 @@ import { isBlankTemplate, templateEditorMode } from './template-modes';
 import { templateCanvasOverrides } from './template-canvas-overrides';
 import { untitledNameForTemplate } from './templates';
 
-// docs/specs/007-editor/templates-by-mode.md "Blanks of a page kind".
+// docs/specs/007-editor/start-diagramming.md "Recommended and groups".
 const KINDS = Object.keys(BLANK_PAGE_TEMPLATE_KINDS) as (keyof typeof BLANK_PAGE_TEMPLATE_KINDS)[];
 
 describe('blanks of a page kind', () => {

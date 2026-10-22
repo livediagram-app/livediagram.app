@@ -12,7 +12,7 @@ export const SIBLING_GAP = 56; // gap between peers within a rank (cross axis)
 export const COMPONENT_GAP = 120; // gap between disconnected sub-diagrams
 
 // Shapes whose silhouette assumes a 1:1 aspect ratio — sized as a square.
-const SQUARE_SHAPES = new Set(['circle', 'diamond', 'final-state']);
+const SQUARE_SHAPES = new Set(['circle', 'diamond']);
 
 const round10 = (n: number) => Math.round(n / 10) * 10;
 

@@ -20,10 +20,7 @@ import { documentOf } from './shared';
 
 const docArg = z.string().describe('A name, id prefix or livedesign URL');
 const sourceFlags = {
-  file: z
-    .string()
-    .optional()
-    .describe('A graph, Mermaid or elements file to fill it from, or - for stdin'),
+  file: z.string().optional().describe('An elements file to fill it from, or - for stdin'),
   template: z.string().optional().describe('A template kind to build it from'),
 };
 
@@ -38,7 +35,7 @@ async function send(ctx: VerbContext, path: string, init: RequestInit): Promise<
 
 const docPath = (id: string) => `/documents/${encodeURIComponent(id)}`;
 
-// What a new tab is made from: a file's graph, Mermaid or elements, a template, or nothing (an empty tab).
+// What a new tab is made from: a file's elements, a template, or nothing (an empty tab).
 async function replaceSourceOf(
   ctx: VerbContext,
   input: { file?: string; template?: string },
@@ -68,7 +65,7 @@ async function replaceSourceOf(
       status: 400,
       code: 'unknown_source',
       message: `can't tell what ${named} holds`,
-      hint: 'expected a graph, Mermaid or elements: livedesign guide build',
+      hint: 'expected elements: livedesign guide build',
     });
   return source.body.replace!;
 }
@@ -79,9 +76,9 @@ const quietId = ({ id }: { id: string }) => [id];
 
 export const documentCreate = defineVerb({
   id: 'document.create',
-  summary: 'Create a document, empty or from a graph, Mermaid, elements or a template',
+  summary: 'Create a document, empty or from elements or a template',
   description:
-    'Creates a document with one tab, compiled by the api from -f (a graph, Mermaid or elements) or --template; empty without either. Prints its ref, name and link.',
+    'Creates a document with one tab, compiled by the api from -f (elements) or --template; empty without either. Prints its ref, name and link.',
   behaviour: 'write',
   input: z.object({
     name: z.string().min(1).describe('The new document\u2019s name'),
@@ -118,7 +115,7 @@ export const documentCreate = defineVerb({
     flags: { file: { short: 'f' } },
     examples: [
       'livedesign document create "Shop" -f arch.json',
-      'livedesign document create "Retro" --template start-stop-continue',
+      'livedesign document create "Pitch" --template slide-deck',
     ],
     prints: '+ document <ref> "<name>" · <n> tabs · <link>',
   },
@@ -270,9 +267,9 @@ export const documentRestore = defineVerb({
 
 export const tabAdd = defineVerb({
   id: 'tab.add',
-  summary: 'Add a tab, empty or from a graph, Mermaid, elements or a template',
+  summary: 'Add a tab, empty or from elements or a template',
   description:
-    'Adds a tab to a document as one changeset on a new tab, filled from -f (a graph, Mermaid or elements) or --template; empty without either. Prints the tab, the result lines and the tab rm that undoes it.',
+    'Adds a tab to a document as one changeset on a new tab, filled from -f (elements) or --template; empty without either. Prints the tab, the result lines and the tab rm that undoes it.',
   behaviour: 'write',
   input: z.object({
     doc: docArg,
@@ -324,7 +321,7 @@ export const tabAdd = defineVerb({
     flags: { file: { short: 'f' } },
     examples: [
       'livedesign tab add "Auth flow" Details -f detail.mmd',
-      'livedesign tab add 3f9c Board --template kanban',
+      'livedesign tab add 3f9c Logo --template blank-logo',
     ],
     prints:
       '+ tab <id> "<name>", the result lines, then the revision, lint verdict and the tab rm that undoes it',

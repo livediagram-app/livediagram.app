@@ -2,7 +2,6 @@
 // configuration"), with its provenance in the blueprint's table.
 
 export const LINT_CROSSINGS_PER_ARROW = 0.25;
-export const LINT_MAX_ASPECT = 3;
 export const LINT_MAX_ARROWS = 300;
 // Touching is not overlapping (LN3).
 export const LINT_OVERLAP_TOLERANCE_PX = 2;
@@ -20,8 +19,6 @@ export const LINT_GROUP_SPLIT_MIN_ARROWS = 3;
 export const LINT_FLOW_MIN_ARROWS = 3;
 export const LINT_FLOW_MIN_SHARE = 0.6;
 export const LINT_FLOW_TOLERANCE_PX = 8;
-// One or two boxes have a shape, not a layout (LN16).
-export const LINT_ASPECT_MIN_BOXES = 3;
 // The text report stays near 100 tokens (LN20).
 export const LINT_MAX_LINES_PER_CODE = 10;
 // Arrows named in an `edge-crossings` message; the JSON lists all (LN9).
@@ -35,7 +32,7 @@ export const LINT_BUDGET_CPU_MS = 50;
 // A hub's ring (node-isolated): how far any connected box may stray from their mean distance to it, as a share.
 export const LINT_RING_SPREAD = 0.35;
 
-// Room a label keeps either end of its run (graph input's LABEL_RUN_MARGIN), for the characters a run holds.
+// Room a label keeps either end of its run, for the characters a run holds.
 export const LINT_LABEL_RUN_PAD = 16;
 
 // How far clear of a line arrow-behind-box's move puts the box (a label plate's height and some).

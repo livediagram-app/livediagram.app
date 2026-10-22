@@ -43,12 +43,8 @@ export const TELEMETRY_CATEGORIES = [
   // to-layer, 'Opened' for the panel. Never layer names in `type`.
   'Layer',
   'Session',
-  // The facilitator baton (docs/specs/012-collaboration/facilitator.md): who is running a live session.
-  // 'Started' when somebody takes a free one, 'Changed' when it is handed on
-  // or taken back, 'Ended' when the holder steps down. `type` is the shape of
-  // the move ('Claimed' / 'Granted' / 'Released'), or 'Unlocked' when the
-  // facilitator frees an element somebody was holding (docs/specs/007-editor/live-app.md lock) — never a
-  // name: the question is whether rooms use the role at all, not who held it.
+  // Freeing an element somebody was holding (docs/specs/007-editor/live-app.md lock): 'Changed' with `type`
+  // 'Unlocked'. Named for the facilitator baton it once belonged to.
   'Facilitator',
   'AI',
   'Team',
@@ -111,8 +107,8 @@ export const TELEMETRY_CATEGORIES = [
   // retried). Never a document name or a person.
   'Home',
   // Inbox (docs/specs/013-workspace/inbox.md): the Explorer's cross-document inbox of open
-  // actions, Plan cards + comment threads. 'Opened' once per visit; 'Selected' with
-  // `type` 'Action' | 'Thread' | 'Card' on a row click (which kind of row sends
+  // actions + comment threads. 'Opened' once per visit; 'Selected' with
+  // `type` 'Action' | 'Thread' on a row click (which kind of row sends
   // people back into a document); 'Loaded'/'Retry' when a failed read is
   // retried. Never an action name, comment text, or document name.
   'Activity',
@@ -135,18 +131,10 @@ export const TELEMETRY_CATEGORIES = [
   // 'Local'). Whether people ever come back for a deleted document is the
   // question; never a document or team name.
   'Trash',
-  // Draw mode (docs/specs/023-draw-mode/draw-mode.md), named 'Whiteboard' until its stored
-  // history was rewritten (migration 0061): a Whiteboard tab 'Created' (`type` how:
-  // 'Template' | 'NewTab'), a pen 'Selected' ('Main' | 'Second' | 'Third'),
-  // a pen, the eraser mode and the background 'Changed' ('PenColour' | 'PenWidth' |
-  // 'PenReset', 'CursorDot' | 'CursorCrosshair', 'EraserStroke' | 'EraserPartial', 'BackgroundPlain' | 'BackgroundDots' |
-  // 'BackgroundGrid', 'SnapColours') and shape recognition 'Toggled' ('RecognitionOn' |
-  // 'RecognitionOff', and for one stroke 'RecogniseOnceKey' | 'RecogniseOnceChip' |
-  // 'BreakShapeKey' | 'BreakShapeChip'). Presets only; never content.
+  // The markers (docs/specs/023-draw-mode/drawing-tools.md): a marker 'Changed' ('PenColour' |
+  // 'PenWidth') and a stroke flipped between ink and a shape, 'Toggled' ('RecogniseOnceKey' |
+  // 'RecogniseOnceChip' | 'BreakShapeKey' | 'BreakShapeChip'). Presets only; never content.
   'Draw',
-  // Editor modes (docs/specs/007-editor/editor-modes.md): a person switched a tab's editor mode,
-  // 'Changed' with 'ModeDiagram' | 'ModeDraw' | 'ModePages', fired before the mode applies.
-  'Editor',
   // The Explorer's filters (docs/specs/013-workspace/explorer-filters.md "Telemetry"): 'Selected' with
   // `type` the facet that gained a value ('Text' | 'OpensIn' | 'Kind' | 'Template' | 'MadeBy' |
   // 'Edited' | 'People' | 'Space', LENS_TELEMETRY_TYPES), from a chip, a suggestion or a typed token.
@@ -158,17 +146,6 @@ export const TELEMETRY_CATEGORIES = [
   // see what changed; 'Viewed' for a document view the api answered, typed by the view. Never
   // content, never an id.
   'Agent',
-  // Plan mode (docs/specs/026-plan/plan-mode.md "Telemetry"): items made, moved, opened, voted on and
-  // deleted, and board set-up changed or revealed. `type` is the item type, the set-up part or the
-  // gesture ('Board', 'Keyboard', 'Card'), never item content.
-  'Plan',
-  // Sheets (docs/specs/029-sheets/sheet.md "Telemetry"): a change by kind, CSV in and out, Find opened, and a
-  // function's first use by name (names from the closed function list only, never content).
-  'Sheet',
-  // Forms (docs/specs/030-forms/forms.md "Telemetry"): a form started (its starter), a question added (its type),
-  // published ('Link'), opened or closed, and a response sent ('Response', or 'Dropped' for the hidden field, written
-  // server-side; 'Preview' for a builder Preview's card) or reported (its reason). Never a form's words.
-  'Form',
   // Timings (docs/specs/017-telemetry/timing-telemetry.md): how long a key moment of the experience took
   // (a document opening, a tab switch, a save, the live room connecting, a page's Web Vitals). Only ever
   // 'Measured', `type` the metric and the bucket its value fell in ('DocumentLoad.Under1000ms'), checked
@@ -230,12 +207,9 @@ export const TELEMETRY_ACTIONS = [
   'SignedIn',
   'SignedUp',
   'SignedOut',
-  // Live session tools (docs/specs/012-collaboration/session-tools.md): a timer / vote started or ended, vote
-  // results revealed, and a dot cast on an element.
+  // Something with a beginning and an end: a presentation or a tour started, a tour ended.
   'Started',
   'Ended',
-  'Revealed',
-  'Voted',
   // Help centre (docs/specs/017-telemetry/telemetry.md + docs/specs/018-help/help-app.md): an article was viewed, and the
   // reader rated it helpful / not-really via the article feedback widget.
   'View',
@@ -269,8 +243,6 @@ export const TELEMETRY_ACTIONS = [
   'Api',
   'Client',
   'Warning',
-  // Forms (docs/specs/030-forms/forms.md "Abuse and limits"): a form link reported, typed by reason.
-  'Reported',
   // Timing (docs/specs/017-telemetry/timing-telemetry.md): a key moment was timed. Only ever paired with the
   // 'Timing' category.
   'Measured',
@@ -400,8 +372,6 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Trapezoid',
     'Star',
     'Speech-bubble',
-    // The UML final state (a state machine's end), made by graph input and Mermaid.
-    'Final-state',
   ],
   tools: [
     'Text',
@@ -411,7 +381,6 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Table',
     'Image',
     'Avatar',
-    'Actor',
     'Frame',
     'Annotation',
     // Pointer note (docs/specs/009-elements/pointer-note.md): a Write element beside Annotation.
@@ -428,63 +397,11 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Timeline-rail',
     'CodeBlock',
     'Page',
-    // Mind node (docs/specs/009-elements/mind-node.md).
-    'MindNode',
-    // Flowchart (docs/specs/009-elements/flowchart.md): the palette's Start, and every grown step.
-    'Flowchart',
-    'FlowchartStep',
-    // Lane (docs/specs/009-elements/lane.md).
-    'Lane',
-    // Boundary (docs/specs/009-elements/boundary.md): a Build container beside Frame and Lane.
-    'Boundary',
-    // Org chart (docs/specs/009-elements/org-chart.md): a person mind node, after Mind node.
-    'OrgChart',
     // Stack (docs/specs/009-elements/stack.md): a Build container after Frame.
     'Stack',
-    // Sequence diagram (docs/specs/009-elements/sequence-diagram.md): a Build element after Flowchart.
-    'Sequence',
-    // Diagram key (docs/specs/009-elements/diagram-key.md): a Build element after Boundary.
-    'DiagramKey',
-    // Entity (docs/specs/009-elements/entity.md).
-    'Entity',
     'Checklist',
-    // Plan board and Plan card (docs/specs/026-plan/plan-mode.md "Telemetry").
-    'PlanBoard',
-    'PlanCard',
-    'PlanView',
-    'PlanSheet',
-    'ModeButton',
-    'Portal',
     // Tab window (docs/specs/009-elements/tab-window.md).
     'TabWindow',
-    'SessionButton',
-    'Reveal',
-    'Picker',
-    'ReactionPad',
-    // Done check (docs/specs/012-collaboration/done-check.md): a Behaviour element by its palette home.
-    'DoneCheck',
-    // Quiz (docs/specs/012-collaboration/quiz.md): a Behaviour element by its palette home.
-    'Quiz',
-    // Chair (docs/specs/009-elements/chair.md): a Behaviour element, so it ranks with them.
-    'Chair',
-    // Desk, sofa and fence (docs/specs/009-elements/chair.md, fence.md): beside the chair in Navigate.
-    'Desk',
-    'Sofa',
-    'Fence',
-    // Avatar Pad (docs/specs/009-elements/avatar-pad.md): beside the fence in Navigate.
-    'Avatar-pad',
-    // The virtual office (docs/specs/009-elements/office.md), in Navigate.
-    'Room',
-    'Meeting-table',
-    'Plant',
-    'Bookshelf',
-    'Water-cooler',
-    'Coffee-machine',
-    'Rug',
-    // Bring Focus (docs/specs/012-collaboration/bring-focus.md): likewise Behaviour, in the Navigate group. The
-    // token is what elementTelemetryType actually emits for the kind, which
-    // for a hyphenated one is the hyphen kept (see Pie-chart above).
-    'Focus-button',
     'Pie-chart',
     'Bar-chart',
     'Line-chart',
@@ -494,25 +411,6 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Legend',
     // Sankey diagram (docs/specs/009-elements/sankey.md): a Build element; its kind has no hyphen to keep.
     'Sankey',
-  ],
-  // The Collaborate category (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md) — its own bucket rather
-  // than more entries under `tools`, because the palette gave it its own
-  // category and the dashboard's cards are the palette's own tabs. The Chair
-  // (docs/specs/009-elements/chair.md) is NOT here: it ships in Behaviour, so it buckets with the
-  // other behaviour elements under `tools` above.
-  collaborate: [
-    'Estimate',
-    'Temperature',
-    'Idea-box',
-    // Q&A board (docs/specs/012-collaboration/qa-board.md).
-    'Qa-board',
-    'Agenda',
-    'Decision',
-    'Roll-call',
-    // Comment pin (docs/specs/012-collaboration/comment-pin.md).
-    'CommentPin',
-    // Action panel (docs/specs/012-collaboration/action-panel.md).
-    'ActionPanel',
   ],
   components: [
     'Banner',
@@ -534,32 +432,6 @@ export const PALETTE_TELEMETRY_TYPES = {
 // Every palette token, flattened — the set an emitter can be checked against.
 export const ALL_PALETTE_TELEMETRY_TYPES: readonly string[] =
   Object.values(PALETTE_TELEMETRY_TYPES).flat();
-
-// The kinds of Sheet change `Sheet · Changed` names (docs/specs/029-sheets/sheet.md "Telemetry"): one per change,
-// never content. Closed, so the dashboard charts each.
-export const SHEET_CHANGE_KINDS = [
-  'Cell',
-  'Formula',
-  'Format',
-  'Rows',
-  'Columns',
-  'Merge',
-  'Freeze',
-  'Sort',
-  'Filter',
-  'Replace',
-  'Fill',
-  'Paste',
-  'Title',
-  'Clear',
-  'Shift',
-  'Settings',
-  'Setup',
-  'Name',
-  'Validation',
-  'ConditionalFormat',
-] as const;
-export type SheetChangeKind = (typeof SHEET_CHANGE_KINDS)[number];
 
 export type TelemetrySummary = {
   enabled: boolean;

@@ -38,7 +38,7 @@ import {
 } from '@livedesign/document';
 
 import { track } from '@/lib/telemetry';
-import { useSlideThumbnails, type ThumbnailPlan } from '@/hooks/ui/useSlideThumbnails';
+import { useSlideThumbnails } from '@/hooks/ui/useSlideThumbnails';
 import {
   readPresentationConfig,
   withPresentationConfig,
@@ -88,7 +88,6 @@ export function useSlideDeck({
   isReadOnly,
   saveDeck,
   loadAllTabs,
-  plan,
   framePage,
   movePage,
   prefs,
@@ -109,8 +108,6 @@ export function useSlideDeck({
   saveDeck?: (serialised: string | null) => void;
   /** Pulls every not-yet-loaded tab, so a deck can reach a tab nobody visited. */
   loadAllTabs?: () => Promise<unknown>;
-  /** The document's items and types, for a Plan board's thumbnail. */
-  plan?: ThumbnailPlan;
   /** Frames a page of a tab in the view (as its label's press does), once that tab is
    *  the active one. Absent where nothing frames pages. */
   framePage?: (tabId: string, pageId: string) => void;
@@ -219,7 +216,7 @@ export function useSlideDeck({
     [runnableRef],
   );
   // Row previews, from the same headless renderer the Layers panel uses.
-  const thumbs = useSlideThumbnails(deck, tabs, plan);
+  const thumbs = useSlideThumbnails(deck, tabs);
   // Each page slide's page, named from its own tab (null once the page is gone).
   const pageLabels = useMemo(() => pageSlideLabels(deck, tabs), [deck, tabs]);
   // What each slide is about, for a row whose slide has no name: its largest text.
@@ -249,30 +246,6 @@ export function useSlideDeck({
       commitDeck((prev) => ({ slides: [...prev.slides, slide] }));
       setOpenSlideId(slide.id);
       track('UI', 'Added', 'PageSlide');
-    },
-    [activeTabId, commitDeck, isReadOnly],
-  );
-
-  // A Plan card as a slide (docs/specs/012-collaboration/presentation-mode.md "Item slides"): the slide
-  // is the item, presented as a card and resolved live. It belongs to the tab the card is on.
-  const newItemSlide = useCallback(
-    (itemId: string) => {
-      if (isReadOnly) return;
-      const slide: Slide = { id: crypto.randomUUID(), tabId: activeTabId, elementIds: [], itemId };
-      commitDeck((prev) => ({ slides: [...prev.slides, slide] }));
-      track('UI', 'Added', 'ItemSlide');
-    },
-    [activeTabId, commitDeck, isReadOnly],
-  );
-
-  // A whole Plan board as a slide (docs/specs/012-collaboration/presentation-mode.md "Board slides"): an
-  // ordinary slide naming the board element, so presenting frames the live board on the canvas.
-  const newBoardSlide = useCallback(
-    (boardId: string) => {
-      if (isReadOnly) return;
-      const slide: Slide = { id: crypto.randomUUID(), tabId: activeTabId, elementIds: [boardId] };
-      commitDeck((prev) => ({ slides: [...prev.slides, slide] }));
-      track('UI', 'Added', 'BoardSlide');
     },
     [activeTabId, commitDeck, isReadOnly],
   );
@@ -418,7 +391,6 @@ export function useSlideDeck({
       });
       // Literal types, so the telemetry dashboard's emitter scan reads each one.
       if (original?.pageId) track('UI', 'Added', 'PageSlide');
-      else if (original?.itemId) track('UI', 'Added', 'ItemSlide');
       else if (original) track('UI', 'Added', 'Slide');
     },
     [commitDeck, deckRef, isReadOnly],
@@ -530,8 +502,6 @@ export function useSlideDeck({
     headlines,
     newSlideFromSelection,
     newPageSlide,
-    newItemSlide,
-    newBoardSlide,
     addSelectionToSlide,
     removeFromSlide,
     renameSlide,

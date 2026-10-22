@@ -91,7 +91,6 @@ const BOARD: Element[] = [a, b, c, ab];
 const NONE = { layout: null, knockouts: [] };
 const STABLE = {
   arrowLabels: { renderOf: () => NONE, labelRectOf: () => null, draftLayout: () => null },
-  collab: { selfKey: 'me', participants: [] },
   chairSitters: () => [],
   selfParticipant: { id: 'me', name: 'Me', color: '#000000' },
   settings: {},
@@ -107,8 +106,8 @@ const STABLE = {
   },
 };
 
-// What one editor render hands the layer: the same data, every handler a fresh closure, the panel
-// action bags fresh objects, as the editor mints them per render.
+// What one editor render hands the layer: the same data, every handler a fresh closure,
+// as the editor mints them per render.
 function layerProps(over: { elements?: Element[]; zoom?: number } = {}) {
   const fresh = () => vi.fn();
   return {
@@ -125,20 +124,6 @@ function layerProps(over: { elements?: Element[]; zoom?: number } = {}) {
     drawDrag: null,
     quickRingOpen: null,
     setQuickRingOpen: fresh(),
-    commentSelfId: 'me',
-    commentPanelActions: { add: fresh(), remove: fresh(), resolve: fresh(), unresolve: fresh() },
-    actionSelfId: 'me',
-    actionPanelActions: { configure: fresh(), complete: fresh(), reopen: fresh() },
-    onPauseTimer: fresh(),
-    onResumeTimer: fresh(),
-    onResetTimer: fresh(),
-    onClearTimer: fresh(),
-    onSetTimerDuration: fresh(),
-    onSetSessionConfig: fresh(),
-    onOpenElementSettings: fresh(),
-    onEnterPortal: fresh(),
-    onFireReaction: fresh(),
-    onReactionBurstDone: fresh(),
     handleArrowSelect: fresh(),
     handleElementClick: fresh(),
     handleElementContextSelect: fresh(),
@@ -356,27 +341,5 @@ describe('the element plane', () => {
     expect(plane!.querySelectorAll('[data-arrow-svg]').length).toBe(1);
     expect(container.querySelectorAll('[data-element-plane]').length).toBe(1);
     expect(plane!.querySelector('[data-selection-grips]')).toBeNull();
-  });
-});
-
-// docs/specs/029-sheets/sheet.md "Charts": a chart that sits in a Sheet on the tab is the Sheet's to draw.
-describe('charts that sit in a Sheet', () => {
-  it('are not drawn on the canvas while their Sheet is on the tab; floating and orphaned ones are', () => {
-    const range = { r1: 'aaaa', c1: 'bbbb', r2: 'cccc', c2: 'dddd' };
-    const sheet = { ...createShape('plan-sheet', 0, 0), planSheet: { sheetId: 'sheet0001' } };
-    const chartOf = (sheetId: string, anchored: boolean) => ({
-      ...createShape('bar-chart', 0, 0),
-      chartSource: { sheetId, range },
-      ...(anchored ? { sheetAnchor: { x: 0, y: 0 } } : {}),
-    });
-    const inSheet = chartOf('sheet0001', true);
-    const floating = chartOf('sheet0001', false);
-    const orphan = chartOf('sheet0002', true);
-    drawnAs.clear();
-    mount(layerProps({ elements: [sheet, inSheet, floating, orphan] as Element[] }));
-    expect(drawnAs.has(sheet.id)).toBe(true);
-    expect(drawnAs.has(inSheet.id)).toBe(false);
-    expect(drawnAs.has(floating.id)).toBe(true);
-    expect(drawnAs.has(orphan.id)).toBe(true);
   });
 });

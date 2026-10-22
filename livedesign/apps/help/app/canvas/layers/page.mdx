@@ -12,15 +12,15 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Layers" description="Split a tab into named stacking layers you can hide, lock, dim, restack, and merge, managed from the Layers panel." categoryTitle="Canvas" categorySlug="canvas" subArticles={getSubArticles("layers")}>
 
-Every tab starts with a single layer, and for many diagrams that's all you need. When a tab grows busy (a background grid, the main content, a pass of review notes), layers let you split it into named bands you can hide, lock, dim, and restack independently, just like an image editor. Layers are saved with the tab and sync live, so everyone sees the same stack.
+Every tab starts with a single layer, and for many pages that's all you need. When a tab grows busy (a background grid, the main content, a pass of review notes), layers let you split it into named bands you can hide, lock, dim, and restack independently, just like an image editor. Layers are saved with the tab and sync live, so everyone sees the same stack.
 
 ## Opening the Panel
 
-Open the panel with the **Layers button next to the zoom controls** (bottom-right). It opens as a popover above the button, on a computer and a phone alike; press the button again, or tap the canvas, to close it. See [Panel Layout](/help/user-interface/panel-layout/) for where everything else sits.
+The panel opens as a popover, on a computer and a phone alike; tap the canvas to close it. See [Panel Layout](/help/user-interface/panel-layout/) for where everything else sits.
 
-The panel is for Editors: Viewers and Participants get no panel or button, though hidden and locked layers still apply to what they see. It is not offered in [Pages mode](/help/canvas/pages-mode/), where the **Slides** button takes its place, in [Plan mode](/help/canvas/plan-mode/), where a board is worked by its columns, nor in Zen mode.
+The panel is for Editors: Viewers and Participants get no panel, though hidden and locked layers still apply to what they see. It is not offered in Zen mode.
 
-Its settings live in [Settings](/help/user-interface/settings/) under **Panels**, then **Layers**: **Layer Thumbnails** (the row previews), **Layer Element Counts** (how many elements each layer holds, beside its name) and **Preview Layer on Hover**. **Enable Layers Panel** turns the panel, its button and the menu's **Move to layer** tiles off altogether; layers keep working underneath, with their order, visibility and lock still applied.
+Its settings live in [Settings](/help/user-interface/settings/) under **Panels**, then **Layers**: **Layer Thumbnails** (the row previews), **Layer Element Counts** (how many elements each layer holds, beside its name) and **Preview Layer on Hover**. **Enable Layers Panel** turns the panel and the menu's **Move to layer** tiles off altogether; layers keep working underneath, with their order, visibility and lock still applied.
 
 ## Reading the Panel
 
@@ -59,7 +59,7 @@ The eye hides a layer everywhere, including exports and embeds; the lock makes a
 
 ## Layers and Exports
 
-Exports match what you see: hidden layers are left out of PNG, SVG and PDF [exports](/help/account-and-data/exporting-diagrams/), and out of shared thumbnails, while layer opacity carries through. If you want hidden layers included in an image export anyway, the export options screen offers a **Hidden layers** toggle whenever at least one layer is hidden and the Layers panel is switched on (it is never offered in Pages).
+Exports match what you see: hidden layers are left out of PNG, SVG and PDF [exports](/help/account-and-data/exporting-documents/), and out of shared thumbnails, while layer opacity carries through. If you want hidden layers included in an image export anyway, the export options screen offers a **Hidden layers** toggle whenever at least one layer is hidden and the Layers panel is switched on.
 
 <Note>
   You never have to manage layers to use livedesign: a tab with one layer behaves exactly as it
@@ -67,14 +67,8 @@ Exports match what you see: hidden layers are left out of PNG, SVG and PDF [expo
 </Note>
 
 <Tip>
-  Keep review feedback on its own layer. Reviewers can sketch and annotate freely, you can hide the
-  layer for a clean export, and one delete clears the whole pass when it's dealt with.
-</Tip>
-
-<Tip>
-  Layers and [dot voting](/help/collaboration/session-tools/voting/) work together: a vote can be
-  scoped to one layer, which dims everything else and rings the elements that can take a dot. Useful
-  when the ideas being voted on share a canvas with a background frame or last round's output.
+  Keep review feedback on its own layer. Reviewers can add notes and comments freely, you can hide
+  the layer for a clean export, and one delete clears the whole pass when it's dealt with.
 </Tip>
 
 </ArticleLayout>

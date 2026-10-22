@@ -226,7 +226,7 @@ describe('slugIdFor (R7)', () => {
   });
 
   it('always yields a slug id', () => {
-    const labels = ['', '9', 'Ünïcødé', '日本語', 'a'.repeat(80), '-x-', 'Q&A board'];
+    const labels = ['', '9', 'Ünïcødé', '日本語', 'a'.repeat(80), '-x-', 'Idea box'];
     const taken = new Set<string>();
     for (const label of labels) {
       const id = slugIdFor(label, 'domain-event', taken);
@@ -241,7 +241,6 @@ describe('kindWordOf (R9)', () => {
   it('names a shape by its kind', () => {
     expect(kindWordOf(createShape('cylinder', 0, 0))).toBe('cylinder');
     expect(kindWordOf(createShape('frame', 0, 0))).toBe('frame');
-    expect(kindWordOf(createShape('actor', 0, 0))).toBe('actor');
   });
 
   it('names an element by its type', () => {

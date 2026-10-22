@@ -8,19 +8,18 @@ between two others and the rest reflow, so a row of cards never needs nudging in
 
 ## Why
 
-Most diagrams have a row or grid of like things: four services in a tier, six features on a slide, a column of steps.
+Most pages have a row or grid of like things: four features on a slide, six people on a team page, a column of steps.
 Placing them evenly by hand is fiddly, and the first edit (a longer label, one more card) undoes it. Alignment guides
 help once; a stack keeps the arrangement as the content changes.
 
 ## The element
 
-- **What it holds**: the elements whose centre is inside it, the containers' rule ([The boundary](boundary.md) "A
-  container"): a stack carries them when it is dragged and paints behind them. A stack nested in a frame, a boundary
-  or another stack works as any nested container.
+- **What it holds**: the elements whose centre is inside it, the containers' rule, as for a frame: a stack carries them when it is dragged and paints behind them. A stack nested in a frame or another
+  stack works as any nested container.
 - **Order** is position: in a row, left to right by each child's centre; in a column, top to bottom; in a grid,
   reading order (top to bottom in rows, then left to right). Dragging a child past a sibling moves it to that slot.
-  A mark is never a child: a badge, step or pointer note attached to something rides on its host, and a comment pin
-  stays where it was put, so neither takes a slot.
+  A mark is never a child: a badge, step or pointer note attached to something rides on its host, so it takes no
+  slot.
 - **Arrangement** (`stackDirection`): **Row** (the default), **Column** or **Grid**. A grid takes `stackColumns`
   (2 to 6, 2 by default); its cells are as wide as its widest child and as tall as its tallest.
 - **Gap** (`stackGap`, 0 to 64 px, 16 by default) between children, and **Padding** (`stackPadding`, 0 to 64 px, 16 by
@@ -45,16 +44,11 @@ stepper), **Gap** and **Padding** as sliders, and **Align** as three tiles.
 
 When a stack reflows, each child glides from where it was to its new slot over 160 ms (CSS, on the canvas only; reduced
 motion jumps straight there). A child being dragged does not glide. The stack itself takes the **Shape** set limited to
-the motions that do not move it, like a boundary's.
+the motions that do not move it, like a frame's.
 
 ## Palette
 
-| Mode     | Where                                   |
-| -------- | --------------------------------------- |
-| Diagram  | **Build**: Stack, after Frame           |
-| Pages    | **Build**: Stack                        |
-| Plan     | none                                    |
-| Workshop | none (Search still finds and places it) |
+**Components**: Stack, in the Layout group with the Hero, Header and Banner.
 
 A new stack is a row, 360 × 160, empty, drawn as a faint dashed outline so it reads as a target.
 

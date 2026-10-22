@@ -1,10 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { ShapeElement, Tab, TabLedger } from '@livedesign/document';
+import { commentThreadOf } from './comments';
 import type { Env } from './types';
 import {
   broadcastShareOp,
-  relayItems,
-  relayItemTypes,
   relayElementDelta,
   deleteAgentPresence,
   putAgentPresence,
@@ -21,7 +20,7 @@ import {
 const card: ShapeElement = {
   id: 'card',
   type: 'shape',
-  shape: 'done-check',
+  shape: 'square',
   x: 0,
   y: 0,
   width: 100,
@@ -29,9 +28,10 @@ const card: ShapeElement = {
 };
 const tab: Tab = { id: 't1', name: 'T', elements: [card] };
 
-// The room's answer: b cast at seq 5.
+// The room's answer: a comment posted at seq 5.
+const posted = { id: 'c1', text: 'Looks good', createdAt: 1, authorName: 'B', authorColor: '#00f' };
 const ledger: TabLedger = {
-  elements: { card: { responses: { b: { value: 'done', at: 1, seq: 5 } } } },
+  elements: { card: { comments: { adds: { c1: { comment: posted, seq: 5 } }, removes: {} } } },
 };
 
 function envWith(fetch: (url: string, init?: RequestInit) => Promise<Response>) {
@@ -50,12 +50,10 @@ const mergeRoomLedger = async (env: Env, documentId: string, t: Tab, cursor: str
   applyRoomLedger(t, await fetchRoomLedger(env, documentId, t.id, cursor));
 
 describe('the room ledger merge (docs/specs/012-collaboration/collab-race-hardening.md phase 3)', () => {
-  it("merges the room's answers the saver hadn't seen", async () => {
+  it("merges the room's comments the saver hadn't seen", async () => {
     const { env, stubFetch } = envWith(async () => Response.json(ledger));
     const { tab: merged } = await mergeRoomLedger(env, 'd1', tab, 'ep:4');
-    expect((merged.elements[0] as ShapeElement).responses?.map((r) => r.participantId)).toEqual([
-      'b',
-    ]);
+    expect(commentThreadOf(merged.elements[0]!)?.comments?.map((c) => c.id)).toEqual(['c1']);
     expect(stubFetch.mock.calls[0]![0]).toBe('https://room/ledger?tab=t1&epoch=ep');
   });
 
@@ -119,36 +117,6 @@ describe('broadcastShareOp', () => {
       'd1',
       expect.any(Error),
     );
-    warn.mockRestore();
-  });
-});
-
-// The item store's relays are ordered broadcasts (docs/specs/026-plan/items.md "Live for everyone").
-describe('relayItems and relayItemTypes', () => {
-  it('post an ordered op to the room', async () => {
-    const { env, stubFetch } = envWith(async () => new Response(null, { status: 204 }));
-    await relayItems(env, 'd1', { kind: 'items', upserts: [], removed: ['i1'], rev: 3 });
-    await relayItemTypes(env, 'd1', { kind: 'item-types', itemTypes: null });
-    const bodies = stubFetch.mock.calls.map(
-      (c) => JSON.parse((c as unknown as [string, RequestInit])[1].body as string) as unknown,
-    );
-    expect(bodies).toEqual([
-      { op: { kind: 'items', upserts: [], removed: ['i1'], rev: 3 }, ordered: true },
-      { op: { kind: 'item-types', itemTypes: null }, ordered: true },
-    ]);
-  });
-
-  it('log and carry on when the room cannot be reached', async () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const { env } = envWith(async () => {
-      throw new Error('room down');
-    });
-    await relayItems(env, 'd1', { kind: 'items', upserts: [], removed: [], rev: 1 });
-    await relayItemTypes(env, 'd1', { kind: 'item-types', itemTypes: null });
-    expect(warn.mock.calls.map((c): unknown => c[0])).toEqual([
-      '[room-broadcast] items did not reach the room',
-      '[room-broadcast] item types did not reach the room',
-    ]);
     warn.mockRestore();
   });
 });

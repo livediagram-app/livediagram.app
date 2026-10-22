@@ -1,6 +1,5 @@
 // The shape vocabulary: every kind a shape element can be, from the basic
-// geometry through the flowchart set, the UML set, the device frames and the
-// self-drawing data shapes.
+// geometry through the device frames and the self-drawing data shapes.
 //
 // Split out of index.ts the same way element-types.ts and arrow-types.ts were,
 // and it is the easiest of the three to justify: one union, ~100 members, and
@@ -23,13 +22,6 @@ export type ShapeKind =
   // Document element (docs/specs/009-elements/page-element.md). Named 'page' because 'document' above is
   // the flowchart output symbol.
   | 'page'
-  // Mind node (docs/specs/009-elements/mind-node.md): a labelled node that knows its parent, grown from
-  // the keyboard with Tab (child) and Enter (sibling).
-  | 'mind-node'
-  // Lane (docs/specs/009-elements/lane.md): a titled horizontal band that carries its contents.
-  | 'lane'
-  // Record (docs/specs/009-elements/entity.md): a UML class / ER entity box — a title over rows.
-  | 'entity'
   // The web components (docs/specs/009-elements/web-components-and-no-groups.md): single elements that lay themselves out,
   // replacing the grouped composites the Components palette used to build.
   // Banner: an accent bar, title (the label) over a subtitle line.
@@ -45,14 +37,8 @@ export type ShapeKind =
   | 'step'
   // Pointer note (docs/specs/009-elements/pointer-note.md): a note with a leader to a tip that may attach to a point.
   | 'pointer-note'
-  // Diagram key (docs/specs/009-elements/diagram-key.md): a legend of the tab's line patterns and tag colours.
-  | 'diagram-key'
   // Stack (docs/specs/009-elements/stack.md): a container that lays out what it holds in a row, column or grid.
   | 'stack'
-  // Sequence diagram (docs/specs/009-elements/sequence-diagram.md): participants and messages laid out as UML.
-  | 'sequence'
-  // Boundary (docs/specs/009-elements/boundary.md): a titled, tinted container (a region, a VPC, a C4 system).
-  | 'boundary'
   // Concept graphics (docs/specs/009-elements/concept-graphics.md): one element laying out its own rows
   // (`conceptRows`): a stack of layers, a pyramid (or inverted, or a funnel), a cycle of steps.
   | 'layer-stack'
@@ -69,98 +55,10 @@ export type ShapeKind =
   | 'process'
   // Header: a website header bar, logo + brand (the label) + `navLinks`.
   | 'site-header'
-  // Mode button (docs/specs/009-elements/mode-button.md): a pressable pill that switches whoever clicks it
-  // into a selection mode — Avatar by default. Which mode lives in the
-  // element's `mode` field.
-  | 'mode-button'
-  // Portal (docs/specs/009-elements/portal-element.md): a portal. Clicking one — or walking an Avatar-mode
-  // character into it — takes you to the portal it is paired with, in
-  // `portalTarget`.
-  | 'portal'
   // Tab window (docs/specs/009-elements/tab-window.md): another tab of the document drawn live inside it, fitted;
   // which tab lives in `windowTabId`.
   | 'tab-window'
-  // Session button (docs/specs/012-collaboration/session-button.md): pressing it starts a session tool for the room
-  // — a timer, a dot vote, or a live poll. Which one lives in `session`.
-  | 'session-button'
-  // Reveal zone (docs/specs/009-elements/reveal-zone.md): a cover over part of the canvas. Click it to
-  // uncover it for yourself; `revealed` uncovers it for everyone.
-  | 'reveal'
-  // Picker (docs/specs/012-collaboration/picker.md): press it to choose a person or an option at random.
-  | 'picker'
-  // Reaction pad (docs/specs/009-elements/reaction-pad.md): press it, or walk an Avatar-mode character onto
-  // it, and a burst of reaction plays over the pad. Which reaction lives in
-  // the element's `reaction` field.
-  | 'reaction-pad'
-  // Comment pin (docs/specs/012-collaboration/comment-pin.md): a standalone marker whose whole job is to carry a
-  // comment thread. Every element can already hold one; this one exists ONLY
-  // to hold one, so a remark can be pinned to a spot on the canvas rather than
-  // to whichever shape happens to be nearest.
-  | 'comment-pin'
-  // Action panel (docs/specs/012-collaboration/action-panel.md): the Comment panel's sibling for assigned
-  // actions. A card whose whole job is to carry ONE `action` (docs/specs/012-collaboration/assigned-actions.md) and
-  // show it on the canvas, so a follow-up can live where the room can read it.
-  | 'action-card'
-  // Done check (docs/specs/012-collaboration/done-check.md): everyone marks themselves finished, and the card
-  // shows who has and who has not. Live: the not-yet list is read from who is
-  // actually in the room, so it shrinks as people leave rather than accusing
-  // somebody who went home.
-  | 'done-check'
-  // Chair (docs/specs/009-elements/chair.md): furniture an Avatar-mode character sits down in when it
-  // walks into one. Which way the seat points lives in `chairFacing`.
-  | 'chair'
-  // Fence (docs/specs/009-elements/fence.md): one straight run of posts and rails an Avatar-mode
-  // character cannot walk through. The run lies along the longer side; no fields of its own.
-  | 'fence'
-  // Avatar Pad (docs/specs/009-elements/avatar-pad.md): where Avatar-mode characters start. A pixel teleport platform
-  // drawn in the sprite's palette; no fields of its own.
-  | 'avatar-pad'
-  // Desk and sofa (docs/specs/009-elements/chair.md "Desk and sofa"): seating like the chair, with
-  // the chair's `chairFacing`. A desk seats one at a computer; a sofa seats two side by side.
-  | 'desk'
-  | 'sofa'
-  // The virtual office (docs/specs/009-elements/office.md): a room (walls, a doorway, `roomDoor`), a meeting table
-  // with six seats, scenery that blocks (plant, bookshelf), machines that give a character a drink (water
-  // cooler, coffee machine), and a rug on the floor.
-  | 'room'
-  | 'meeting-table'
-  | 'plant'
-  | 'bookshelf'
-  | 'water-cooler'
-  | 'coffee-machine'
-  | 'rug'
-  // The collaboration family — elements that record what the ROOM thinks
-  // rather than what one author drew.
-  //
-  // Estimate card (docs/specs/012-collaboration/estimate-card.md): planning poker. Everyone picks privately from
-  // `estimateScale`, and `responsesRevealed` shows every answer at once.
-  | 'estimate'
-  // Temperature check (docs/specs/012-collaboration/temperature-check.md): a fist-of-five gauge. Same `responses`
-  // primitive, deliberately never hidden.
-  | 'temperature'
-  // Idea box (docs/specs/012-collaboration/idea-box.md): anonymous submissions in `ideaCards`, held until
-  // `ideasRevealed`. There is nowhere to put an author, on purpose.
-  | 'idea-box'
-  // Q&A board (docs/specs/012-collaboration/qa-board.md): a self-sorting list of upvotable notes in
-  // `qaNotes`, owned by the server so view links can add and vote.
-  | 'qa-board'
-  // Agenda (docs/specs/012-collaboration/agenda.md): ordered `agendaItems` with minutes; pressing one starts
-  // the tab timer and sets `agendaCurrent`.
-  | 'agenda'
-  // Decision record (docs/specs/012-collaboration/decision-record.md): the statement (the label) plus a status chip,
-  // a date and the drivers.
-  | 'decision'
-  // Roll call (docs/specs/012-collaboration/roll-call.md): a frozen snapshot of who was in the room, in
-  // `rollCall`.
-  | 'roll-call'
-  // Quiz (docs/specs/012-collaboration/quiz.md): one multiple-choice question the facilitator opens for
-  // the room, locks on a timer and reveals, naming who answered correctly.
-  | 'quiz'
   | 'stadium'
-  | 'actor'
-  // UML final state (docs/specs/008-canvas/canvas-and-palette.md "UML"): a ring around a solid dot, one element, so the
-  // bullseye moves, pins and lints as one stop.
-  | 'final-state'
   | 'cloud'
   | 'triangle'
   | 'trapezoid'
@@ -209,9 +107,6 @@ export type ShapeKind =
   // Sankey diagram (docs/specs/009-elements/sankey.md): flows between named nodes, each band as wide as
   // the amount it carries. Carries `sankeyFlows` (below); lays itself out in columns.
   | 'sankey'
-  // Bring Focus (docs/specs/012-collaboration/bring-focus.md): press it and everyone else in the room is offered
-  // a jump to it, on your tab.
-  | 'focus-button'
   // Curated single-colour glyph from the icon catalogue. Which glyph
   // is carried by `iconId` (a registry key resolved in the live app's
   // icon catalogue, NOT a closed enum here, so adding icons is a
@@ -225,16 +120,4 @@ export type ShapeKind =
   // `iconId`). Deliberately NOT an icon: it paints its own plate + shadow,
   // is never tinted by the theme, carries no caption, and never folds into
   // another shape as an inline glyph.
-  | 'sticker'
-  // Plan board (docs/specs/026-plan/plan-board.md): columns of cards drawn from the document's item
-  // store. Carries its set-up in `planBoard` (below); the cards are items, not elements.
-  | 'plan-board'
-  // Plan card (docs/specs/026-plan/plan-board.md "The Plan card"): one item placed on the canvas,
-  // named by `planCard.itemId`.
-  | 'plan-card'
-  // Plan view (docs/specs/026-plan/plan-views.md): a metric or a visualisation of every card,
-  // named by `planView.view`.
-  | 'plan-view'
-  // Sheet (docs/specs/029-sheets/sheet.md): a spreadsheet tab framing one sheet of the document's sheet
-  // store, named by `planSheet.sheetId`.
-  | 'plan-sheet';
+  | 'sticker';

@@ -8,7 +8,7 @@ inside a category that has to be opened first.
 
 - At the left, what attaches to the element, in this order:
   - **Assign Action**, reading **View Action** once the element has one ([Assigned actions](../012-collaboration/assigned-actions.md)).
-  - **Add Comment**, reading **View Comments** once it has a thread ([Comment pins](../012-collaboration/comment-pin.md)).
+  - **Add Comment**, reading **View Comments** once it has a thread ([Comments](canvas-and-palette.md#comments)).
   - **Add Link**, reading **Edit Link** once it has one. Not on a link card or a video, whose link is their own
     **Link** category's.
   - **Add Note**, reading **Edit Note** once it has one.
@@ -19,8 +19,7 @@ inside a category that has to be opened first.
   pressed (`aria-pressed`), so the bar also says what the element carries.
 - Each button has a Tooltip naming it, runs its action and closes the menu, as the tiles it replaced did.
 
-The four attachments are offered only on boxed elements other than Plan items, as before
-([Plan mode](../026-plan/plan-mode.md) "Nothing attached to Plan items"); arrows take none. With nothing to offer (an
+The four attachments are offered on boxed elements; arrows take none. With nothing to offer (an
 arrow that takes no quick style) the bar is not drawn.
 
 They had their own categories, **Collaborate** (Assign Action, Add Comment) and **Resources** (Add Link, Add Note), at

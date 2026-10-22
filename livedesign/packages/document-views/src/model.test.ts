@@ -20,11 +20,11 @@ describe('buildViewModel', () => {
     ],
   };
 
-  it('carries the mode when it is not Diagram, and the finish when one is set', () => {
-    expect(buildViewModel(tab).facts).not.toHaveProperty('mode');
+  it('carries the finish when one is set, and never a mode', () => {
     expect(buildViewModel(tab).facts).not.toHaveProperty('finish');
-    const drawn = buildViewModel({ ...tab, opensIn: 'draw', finish: 'sketch' }).facts;
-    expect([drawn.mode, drawn.finish]).toEqual(['draw', 'sketch']);
+    const drawn = buildViewModel({ ...tab, finish: 'sketch' }).facts;
+    expect(drawn).not.toHaveProperty('mode');
+    expect(drawn.finish).toBe('sketch');
   });
 
   it('counts printed, hidden and unknown elements and carries the revision', () => {

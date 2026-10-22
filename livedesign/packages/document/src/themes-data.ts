@@ -357,7 +357,6 @@ export const THEMES: ThemeDefinition[] = [
       stadium: { fill: '#dcfce7', stroke: '#16a34a', text: '#14532d' },
       // Initial / final state node — rose.
       circle: { fill: '#ffe4e6', stroke: '#e11d48', text: '#881337' },
-      'final-state': { fill: '#ffe4e6', stroke: '#e11d48', text: '#881337' },
       // Datastore / database — purple.
       cylinder: { fill: '#ede9fe', stroke: '#7c3aed', text: '#4c1d95' },
       // Input / output data — teal.

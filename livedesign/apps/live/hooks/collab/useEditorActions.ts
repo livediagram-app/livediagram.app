@@ -15,14 +15,11 @@
 // live-state graft in @livedesign/document carries `action` across
 // undo/redo restores for the same reason.
 //
-// An Action panel holds a LIST (docs/specs/012-collaboration/action-panel.md "The data"), so every mutation
-// takes an optional action id. On an ordinary element it is ignored (there is
-// only the one); on a card it names which of the card's actions to touch, and
-// a save with none appends a new one.
+// Every mutation takes an optional action id, naming which of the element's
+// actions to touch; an element carries one, so a save with none edits it.
 
 import { useState } from 'react';
 import {
-  ACTION_CARD_MAX,
   createElementAction,
   elementActions,
   isBoxed,
@@ -32,7 +29,6 @@ import {
 } from '@livedesign/document';
 import type { Tab } from '@livedesign/document';
 import { track } from '@/lib/telemetry';
-import { debugLog } from '@/lib/debug-log';
 
 export type SaveActionInput = {
   name: string;
@@ -43,24 +39,20 @@ export type SaveActionInput = {
   // The dialog's "Email {name} about this action" checkbox. Only consulted
   // when it can matter: on create, and on an edit that changes the assignee.
   notifyEmail: boolean;
-  // An edit's new status, when the dialog's Status changed it (docs/specs/026-plan/linked-boards.md "On the canvas").
+  // An edit's new status, when the dialog's Status changed it.
   status?: ElementActionStatus;
 };
 
 type EditorActionsDeps = {
   activeId: string;
-  // A new action was saved (the Actions board is made on the first, docs/specs/026-plan/linked-boards.md).
+  // A new action was saved (the Actions board is made on the first).
   onCreated?: (elementId: string) => void;
   // The history hook's element-only setter (no snapshot), per the
   // non-undoable rule above.
   tickTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
-  // Current action for an element on the active tab (undefined when none):
-  // the named one on an Action panel, else the element's single action.
+  // Current action for an element on the active tab (undefined when none): the named one, else the element's
+  // single action.
   getAction: (elementId: string, actionId?: string | null) => ElementAction | undefined;
-  // Whether the element is an Action panel, which holds a list.
-  isActionCard: (elementId: string) => boolean;
-  // How many actions the element carries now (elementActions): an Action panel takes no more past ACTION_CARD_MAX.
-  actionCount: (elementId: string) => number;
   // The assigner: the signed-in account, or the guest participant
   // identity for a signed-out self-assignment. Null only before the
   // identity has hydrated.
@@ -92,7 +84,7 @@ type EditorActionsApi = {
   saveAction: (elementId: string, input: SaveActionInput, actionId?: string | null) => void;
   completeAction: (elementId: string, actionId?: string | null) => void;
   reopenAction: (elementId: string, actionId?: string | null) => void;
-  // Won't Do (docs/specs/026-plan/linked-boards.md "On the canvas"): closed without being done.
+  // Won't Do: closed without being done.
   wontDoAction: (elementId: string, actionId?: string | null) => void;
   deleteAction: (elementId: string, actionId?: string | null) => void;
 };
@@ -102,10 +94,8 @@ export function useEditorActions(deps: EditorActionsDeps): EditorActionsApi {
   const [assignActionFor, setAssignActionFor] = useState<string | null>(null);
   const [assignActionId, setAssignActionId] = useState<string | null>(null);
 
-  // Per-element mutator over the element's action LIST (elementActions): an
-  // Action panel writes it back as `actions` (a card saved before the list
-  // existed is migrated on this first edit, its lone `action` dropped); an
-  // ordinary element keeps at most one, as `action`.
+  // Per-element mutator over the element's action (elementActions reads it as a list of at most
+  // one); written back as `action`.
   const updateActions = (elementId: string, fn: (list: ElementAction[]) => ElementAction[]) => {
     deps.tickTabs((ts) =>
       ts.map((t) =>
@@ -123,9 +113,6 @@ export function useEditorActions(deps: EditorActionsDeps): EditorActionsApi {
                 } = el as typeof el & {
                   actions?: ElementAction[];
                 };
-                if (el.type === 'shape' && el.shape === 'action-card') {
-                  return { ...rest, actions: next } as typeof el;
-                }
                 return next[0] ? { ...rest, action: next[0] } : rest;
               }),
             },
@@ -165,12 +152,6 @@ export function useEditorActions(deps: EditorActionsDeps): EditorActionsApi {
   };
 
   const openAssignAction = (elementId: string) => {
-    // An Action panel has no popover: its actions are on its face, so the
-    // tile adds another.
-    if (deps.isActionCard(elementId)) {
-      openAssignActionDialog(elementId, null);
-      return;
-    }
     if (deps.getAction(elementId)) {
       setAssignActionFor(null);
       setActionPopoverOpenId(elementId);
@@ -181,10 +162,8 @@ export function useEditorActions(deps: EditorActionsDeps): EditorActionsApi {
   };
 
   const saveAction = (elementId: string, input: SaveActionInput, actionId?: string | null) => {
-    // On an Action panel, no id means "add another"; elsewhere the element's
-    // one action (if any) is the one being edited.
-    const card = deps.isActionCard(elementId);
-    const existing = card && !actionId ? undefined : deps.getAction(elementId, actionId);
+    // The element's one action (if any) is the one being edited.
+    const existing = deps.getAction(elementId, actionId);
     // Editing an action that is gone (a teammate deleted it while this
     // dialog was open): saving must not quietly re-create it as a new one.
     if (actionId && !existing) {
@@ -197,13 +176,6 @@ export function useEditorActions(deps: EditorActionsDeps): EditorActionsApi {
       // Assigning needs a signed-in assigner; the tile is hidden for
       // guests so this is belt-and-braces.
       if (!deps.self.userId) return;
-      // A full panel takes no more (docs/specs/012-collaboration/action-panel.md "The data"): the add is refused
-      // before anything is written or emailed, rather than trimmed off the list after its email went out.
-      if (card && deps.actionCount(elementId) >= ACTION_CARD_MAX) {
-        debugLog('[actions] add refused: the panel is full', { max: ACTION_CARD_MAX });
-        closeAssignActionDialog();
-        return;
-      }
       const action = createElementAction({
         name,
         description: input.description.trim(),
@@ -211,9 +183,7 @@ export function useEditorActions(deps: EditorActionsDeps): EditorActionsApi {
         teamId: input.teamId,
         assigner: { id: deps.self.userId, name: deps.self.name },
       });
-      updateActions(elementId, (list) =>
-        card ? [...list, action].slice(0, ACTION_CARD_MAX) : [action],
-      );
+      updateActions(elementId, () => [action]);
       track('Action', 'Created', input.notifyEmail ? 'EmailOn' : 'EmailOff');
       deps.onCreated?.(elementId);
       // Email needs a team context (the endpoint verifies shared

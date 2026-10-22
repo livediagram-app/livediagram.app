@@ -5,7 +5,6 @@ import { ChevronRightIcon, Tooltip } from '@livedesign/ui';
 import { useMinimalChrome } from '@/components/providers/minimal-chrome';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { setPaletteDragPreview } from '@/lib/palette-drag-preview';
-import { usePlanCardTileDisabled } from '@/hooks/plan/card-types-taken';
 import { tileDisplayName, type PaletteTileDef } from './palette-tile-defs';
 import { tileActive, type PaletteTileActions } from './PaletteTileGrid';
 import { tileDragStart } from './palette-tile-drag';
@@ -41,8 +40,7 @@ type ItemProps = {
  *  refused states, and its glyph's theme tint, all as the strip's own tile has them. */
 function useFlyoutItem({ def, pendingDraw, onPress, onHover, sideOpenId }: ItemProps) {
   const a = def.action;
-  const refusal = usePlanCardTileDisabled(a);
-  const disabledReason = (def.disabled ?? refusal)?.reason;
+  const disabledReason = def.disabled?.reason;
   const side = opensSide(def);
   const active = tileActive(def, pendingDraw) || (side && sideOpenId === def.id);
   const drag = disabledReason || side ? undefined : tileDragStart(a);

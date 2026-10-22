@@ -2,8 +2,6 @@ import { isDeprecatedDescription, successorToolName } from './legacy-tool-names'
 import { describe, expect, it, vi } from 'vitest';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { Env } from './env';
-import { ITEM_TYPES } from '@livedesign/items';
-import { emptySheet, sheetToJson } from '@livedesign/sheets';
 // `./image-result` reaches the resvg WASM renderer, which cannot load in the
 // plain-node test environment — the reason that file exists as its own module in
 // the first place (see its header). Stubbing it is what makes tools.ts
@@ -54,78 +52,12 @@ type Registered = {
 
 type Emitted = { category: string; action: string; type: string };
 
-// The tab holds one Plan board, so change_board has a board to change.
-const BOARD = {
-  id: 'b_1',
-  type: 'shape',
-  shape: 'plan-board',
-  x: 0,
-  y: 0,
-  width: 800,
-  height: 500,
-  planBoard: {
-    title: 'Sprint',
-    columns: [{ id: 'todo', status: 'todo', name: 'To Do' }],
-    swimlaneBy: 'none',
-    cardFields: ['key'],
-    voting: { on: false },
-    hideWriting: false,
-  },
-};
-// In Pages mode, so the Pages tools find it (docs/specs/024-agents/pages-for-agents.md).
-const TAB = { id: 't_1', name: 'Tab 1', rev: 1, opensIn: 'pages', elements: [BOARD] };
-const PLAN = {
-  boards: [
-    {
-      tabId: 't_1',
-      tabName: 'Tab 1',
-      elementId: 'b_1',
-      title: 'Sprint',
-      kind: 'board',
-      types: null,
-      columns: [{ status: 'todo', name: 'To Do' }],
-    },
-  ],
-  statuses: [{ status: 'todo', name: 'To Do' }],
-  types: ITEM_TYPES,
-  tabs: [
-    { id: 't_1', name: 'Tab 1', kind: 'diagram' },
-    { id: 'f_1', name: 'RSVP', kind: 'form' },
-  ],
-};
-// A Form tab, published and taking responses, so the form tools have a form to name (docs/specs/030-forms/forms.md
-// "Agents").
-const FORM_TAB = {
-  id: 'f_1',
-  name: 'RSVP',
-  rev: 1,
-  kind: 'form',
-  opensIn: 'plan',
-  elements: [],
-  form: {
-    v: 1,
-    heading: 'RSVP',
-    sections: [{ id: 's-1', title: '', questions: [{ id: 'q-1', type: 'short', prompt: 'Name' }] }],
-    destination: { tabId: 't_1', typeId: 'task', status: 'todo' },
-  },
-};
-const FORM_LINK = {
-  link: { code: 'AbCdEfGhIjKlMnOpQrStUv', open: true, createdAt: 1 },
-  responses: 2,
-  unseen: 1,
-  suspendedAt: null,
-  canPublish: true,
-};
+const TAB = { id: 't_1', name: 'Tab 1', rev: 1, elements: [] };
 const LIVE_DOC = {
   id: 'd_1',
   name: 'A diagram',
-  tabs: [
-    { id: 't_1', name: 'Tab 1', orderIndex: 0 },
-    { id: 'f_1', name: 'RSVP', orderIndex: 1 },
-  ],
+  tabs: [{ id: 't_1', name: 'Tab 1', orderIndex: 0 }],
 };
-// One blank sheet on the tab, so the sheet tools have a sheet to name.
-const SHEET = sheetToJson(emptySheet({ id: 'sheet_budget', tabId: 't_1', title: 'Budget' }));
 
 // A plausible api: enough of each route's response shape for every tool to
 // run to its success result.
@@ -138,8 +70,6 @@ function okResponse(request: Request): Response {
   if (request.method === 'DELETE') return new Response(null, { status: 204 });
   const json = (body: unknown) => Response.json(body);
   if (path === '/documents' && request.method === 'GET') return json({ documents: [] });
-  if (path.endsWith('/sheets'))
-    return request.method === 'POST' ? json({ sheet: SHEET }) : json({ sheets: [SHEET] });
   if (path === '/teams') return json({ teams: [] });
   if (path === '/trash') return json({ trash: [] });
   if (path.endsWith('/restore')) return json({ document: LIVE_DOC });
@@ -150,7 +80,6 @@ function okResponse(request: Request): Response {
   if (path.endsWith('/pages')) {
     return json({
       tab: { id: 't_1', rev: 2 },
-      switched: false,
       lines: [],
       pages: [],
       changesetId: null,
@@ -168,13 +97,8 @@ function okResponse(request: Request): Response {
     });
   }
   if (path.endsWith('/name')) return json({ tab: { id: 't_1', name: 'A diagram', orderIndex: 0 } });
-  if (path.endsWith('/form-link')) return json(FORM_LINK);
-  if (path.endsWith('/tabs/f_1/form')) return json({ tabId: 'f_1', rev: 2, name: 'RSVP' });
-  if (path.endsWith('/tabs/f_1')) return json({ tab: FORM_TAB });
   if (/\/tabs\/[^/]+$/.test(path)) return json({ tab: TAB });
   if (/^\/documents\/[^/]+$/.test(path)) return json({ document: LIVE_DOC });
-  if (path.endsWith('/items') && request.method === 'GET') return json({ items: [], rev: 0 });
-  if (path.endsWith('/plan')) return json(PLAN);
   return json({});
 }
 
@@ -236,9 +160,6 @@ const ARGS = {
   ops: [],
   limit: 5,
   changes: [],
-  board: 'Sprint',
-  sheet: 'Budget',
-  action: 'close',
 };
 
 const AUTHED = { authInfo: { token: 'tok_test' } };
@@ -251,37 +172,23 @@ const AUTHED = { authInfo: { token: 'tok_test' } };
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 describe('registerTools', () => {
-  it('registers the twenty-nine documented tools, each with a description', () => {
+  it('registers the fifteen documented tools, each with a description', () => {
     const { registered } = harness();
     const current = registered.filter((r) => !isDeprecated(r));
     expect(current.map((r) => r.name).sort()).toEqual([
-      'add_board',
-      'add_form',
-      'add_sheet',
       'add_tab',
-      'change_board',
-      'change_card_types',
-      'change_form',
-      'change_items',
       'change_pages',
-      'change_sheet',
       'create_document',
       'delete_document',
       'find_documents',
       'list_images',
-      'list_items',
-      'list_sheets',
       'list_templates',
       'list_trash',
       'read_document',
-      'read_form',
-      'read_sheet',
       'rename_document',
       'restore_document',
       'search_icons',
       'share_document',
-      'share_form',
-      'try_form',
       'update_document',
     ]);
     // The description is what the calling model reads to pick a tool, so an
@@ -299,10 +206,7 @@ describe('registerTools', () => {
     const seen: Record<string, Emitted[]> = {};
     for (const tool of registered) {
       const before = emitted.length;
-      // A board or Sheet goes only on a tab in Plan: the Form tab is one, Tab 1 is in Pages.
-      const planOnly = tool.name === 'add_sheet' || tool.name === 'add_board';
-      const args = planOnly ? { ...ARGS, tabId: 'f_1' } : ARGS;
-      const result = (await tool.handler(args, AUTHED)) as { isError?: boolean };
+      const result = (await tool.handler(ARGS, AUTHED)) as { isError?: boolean };
       // Guards the harness itself: a tool that failed here would pass the
       // "no emit" half vacuously.
       expect(result.isError, tool.name).not.toBe(true);
@@ -390,27 +294,9 @@ describe('tool annotations', () => {
     list_images: 'read',
     update_document: 'destructive',
     delete_document: 'destructive',
-    // Items (docs/specs/026-plan/plan-mode.md "Agents"): change_items may delete.
-    list_items: 'read',
-    change_items: 'destructive',
-    // docs/specs/026-plan/plan-agents.md: a board is added; deleting a card type trashes its cards.
-    add_board: 'write',
-    change_board: 'write',
-    change_card_types: 'destructive',
-    // docs/specs/029-sheets/sheet-store.md "Agents": change_sheet clears and deletes cells, rows and columns.
-    list_sheets: 'read',
-    read_sheet: 'read',
-    change_sheet: 'destructive',
-    add_sheet: 'write',
     // docs/specs/024-agents/pages-for-agents.md: change_pages deletes pages and replaces their
     // content.
     change_pages: 'destructive',
-    // docs/specs/030-forms/forms.md "Agents": change_form deletes questions and sections; share_form publishes.
-    read_form: 'read',
-    add_form: 'write',
-    change_form: 'destructive',
-    share_form: 'write',
-    try_form: 'write',
   };
 
   it('gives every tool one of the three documented presets', () => {
@@ -453,13 +339,9 @@ describe('tool annotations', () => {
     expect(readOnly).toEqual([
       'find_documents',
       'list_images',
-      'list_items',
-      'list_sheets',
       'list_templates',
       'list_trash',
       'read_document',
-      'read_form',
-      'read_sheet',
       'search_icons',
     ]);
 
@@ -478,15 +360,7 @@ describe('tool annotations', () => {
       .filter((r) => r.config.annotations?.destructiveHint === true)
       .map((r) => r.name)
       .sort();
-    expect(destructive).toEqual([
-      'change_card_types',
-      'change_form',
-      'change_items',
-      'change_pages',
-      'change_sheet',
-      'delete_document',
-      'update_document',
-    ]);
+    expect(destructive).toEqual(['change_pages', 'delete_document', 'update_document']);
   });
 });
 

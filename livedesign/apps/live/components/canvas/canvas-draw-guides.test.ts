@@ -21,19 +21,18 @@ const guides = (pendingDraw: PendingDraw, hover: { x: number; y: number } | null
   }).alignGuides;
 
 describe('computeDrawGuides for pens', () => {
-  it('guides a pencil stroke on a diagram', () => {
+  it('guides a pencil stroke', () => {
     expect(guides({ type: 'freehand' }).length).toBeGreaterThan(0);
   });
 
-  it('draws no guides for a whiteboard pen (docs/specs/023-draw-mode/draw-mode.md "No guides for pens")', () => {
+  it('guides a marker as it does the pencil (docs/specs/023-draw-mode/drawing-tools.md "Markers")', () => {
     const pen: PendingDraw = {
       type: 'freehand',
       variant: 'whiteboard',
       colour: null,
       width: 1.5,
-      recognise: false,
     };
-    expect(guides(pen)).toEqual([]);
-    expect(guides(pen, { x: 100, y: 250 })).toEqual([]);
+    expect(guides(pen)).toEqual(guides({ type: 'freehand' }));
+    expect(guides(pen).length).toBeGreaterThan(0);
   });
 });

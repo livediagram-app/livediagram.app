@@ -6,7 +6,6 @@ import {
   isChartShape,
   isChecklistShape,
   isLegendShape,
-  isPlanShape,
   isCodeBlockShape,
   isLineShape,
   isPieShape,
@@ -45,7 +44,6 @@ const FAMILIES: { name: string; guard: (k: ShapeKind) => boolean }[] = [
   { name: 'checklist', guard: isChecklistShape },
   { name: 'legend', guard: isLegendShape },
   { name: 'sankey', guard: isSankeyShape },
-  { name: 'plan', guard: isPlanShape },
 ];
 
 const kindsMatching = (guard: (k: ShapeKind) => boolean) => ALL.filter(guard).sort();
@@ -69,13 +67,6 @@ describe('the self-drawing shape family', () => {
     fromMembers.add('tab-window');
     fromMembers.add('onion');
     fromMembers.add('chevrons');
-    // docs/specs/009-elements/fence.md: a fence is posts and rails, with nothing to write on.
-    fromMembers.add('fence');
-    // docs/specs/009-elements/avatar-pad.md: an Avatar Pad is pixels, with nothing to write on.
-    fromMembers.add('avatar-pad');
-    // docs/specs/009-elements/office.md: the scenery and machines have nothing to write on.
-    for (const k of ['plant', 'bookshelf', 'water-cooler', 'coffee-machine', 'rug'] as const)
-      fromMembers.add(k);
     expect(kindsMatching(isSelfDrawingShape)).toEqual([...fromMembers].sort());
   });
 

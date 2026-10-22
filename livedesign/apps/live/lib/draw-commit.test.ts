@@ -1,8 +1,6 @@
 import type { ArrowElement, Element, Tab, ThemeDefinition } from '@livedesign/document';
 import { COMPONENT_SIZE } from '@livedesign/document';
 import { describe, expect, it } from 'vitest';
-import { PLAN_SHEET_ID_PATTERN } from '@livedesign/document';
-import { takePlacedSheet } from './sheet-seeds';
 import {
   buildDrawnArrow,
   buildDressedDrawnArrow,
@@ -27,45 +25,17 @@ const tab = (overrides: Partial<Tab> = {}): Tab => ({
   ...overrides,
 });
 
-// docs/specs/023-draw-mode/draw-mode.md "Shapes": the preview and the commit build one arrow.
+// The preview and the commit build one arrow.
 describe('buildDressedDrawnArrow', () => {
   const thick = <T extends Element>(el: T): T => ({
     ...el,
     strokeWidth: 6,
     arrowheadSize: 'large',
   });
-  const board = { elements: [] as Element[], theme: themed, whiteboard: true };
-
-  // Written in Ink by name (docs/specs/007-editor/editor-modes.md "One look").
-  it('is the drawn arrow in its tool style, in Ink in Draw mode', () => {
-    const out = buildDressedDrawnArrow(
-      { type: 'arrow', ends: 'to', board: true },
-      10,
-      20,
-      150,
-      90,
-      board,
-      thick,
-    );
-    const { id: _id, ...rest } = out;
-    const { id: _raw, ...raw } = buildDrawnArrow(10, 20, 150, 90, [], themed, {
-      ends: 'to',
-      unpainted: true,
-    });
-    expect(rest).toEqual({ ...raw, penColour: 'ink', strokeWidth: 6, arrowheadSize: 'large' });
-    expect(out.strokeColor).toBeUndefined();
-  });
+  const board = { elements: [] as Element[], theme: themed };
 
   it('paints a diagram arrow in the theme stroke, then dresses it', () => {
-    const out = buildDressedDrawnArrow(
-      { type: 'arrow' },
-      0,
-      0,
-      100,
-      0,
-      { ...board, whiteboard: false },
-      thick,
-    );
+    const out = buildDressedDrawnArrow({ type: 'arrow' }, 0, 0, 100, 0, board, thick);
     expect(out.strokeColor).toBe('#123456');
     expect(out.strokeWidth).toBe(6);
     expect(out.arrowEnds).toBe('none');
@@ -92,12 +62,11 @@ describe('buildDrawnArrow', () => {
     expect(out.strokeColor).toBe(NEW_ARROW_THEME_STROKE_FALLBACK);
   });
 
-  it('draws a whiteboard line or arrow with the asked-for heads and no colour', () => {
-    // docs/specs/023-draw-mode/draw-mode.md: unpainted, so it takes the board's ink.
-    const arrow = buildDrawnArrow(10, 20, 150, 90, [], themed, { ends: 'to', unpainted: true });
+  it('draws the asked-for heads in the theme stroke', () => {
+    const arrow = buildDrawnArrow(10, 20, 150, 90, [], themed, { ends: 'to' });
     expect(arrow.arrowEnds).toBe('to');
-    expect(arrow.strokeColor).toBeUndefined();
-    const line = buildDrawnArrow(10, 20, 150, 90, [], themed, { ends: 'none', unpainted: true });
+    expect(arrow.strokeColor).toBe('#123456');
+    const line = buildDrawnArrow(10, 20, 150, 90, [], themed, { ends: 'none' });
     expect(line.arrowEnds).toBe('none');
   });
 
@@ -147,19 +116,7 @@ describe('buildDrawnComponent', () => {
 describe('buildDrawnBoxed', () => {
   const shapeIntent = { type: 'shape', kind: 'square' } as const;
 
-  // docs/specs/023-draw-mode/draw-mode.md "Text boxes": in Draw mode a text box hugs its text.
-  it('places a Draw mode text box empty, caret-sized, at the click', () => {
-    const out = buildDrawnBoxed({ type: 'text' }, 500, 300, 502, 301, null, tab(), true);
-    // 14 px text in a 1.25 line: 17.5, rounded up, plus 2 px above and below.
-    expect(out).toMatchObject({ label: '', sizing: 'fit', x: 496, y: 289, width: 8, height: 22 });
-  });
-
-  it('sets a dragged Draw mode text box to the dragged width and one line', () => {
-    const out = buildDrawnBoxed({ type: 'text' }, 100, 50, 340, 200, null, tab(), true);
-    expect(out).toMatchObject({ label: '', sizing: 'wrap', x: 100, y: 50, width: 240, height: 22 });
-  });
-
-  it('keeps a Diagram mode text box at its default size, whatever the tab opens in', () => {
+  it('keeps a text box at its default size, whatever the tab opens in', () => {
     const out = buildDrawnBoxed(
       { type: 'text' },
       500,
@@ -167,7 +124,7 @@ describe('buildDrawnBoxed', () => {
       502,
       301,
       null,
-      tab({ opensIn: 'draw' }),
+      tab({ opensIn: 'pages' }),
     );
     expect(out).toMatchObject({ label: 'Text', width: 220, height: 64 });
     expect(out).not.toHaveProperty('sizing');
@@ -254,41 +211,5 @@ describe('buildDrawnBoxed', () => {
       width: 200,
       height: 100,
     });
-  });
-});
-
-// docs/specs/029-sheets/sheet.md "Placing a sheet": a drawn or tapped Sheet names a new sheet the Sheet then makes.
-describe('buildDrawnBoxed for a Sheet', () => {
-  it('names a new sheet after its tab, placed and waiting to be made', () => {
-    const out = buildDrawnBoxed(
-      { type: 'shape', kind: 'plan-sheet' },
-      100,
-      100,
-      100,
-      100,
-      null,
-      tab(),
-    ) as {
-      shape: string;
-      planSheet: { sheetId: string };
-    };
-    expect(out.shape).toBe('plan-sheet');
-    expect(out.planSheet.sheetId).toMatch(PLAN_SHEET_ID_PATTERN);
-    expect(takePlacedSheet(out.planSheet.sheetId)).toEqual({ title: tab().name });
-    expect(takePlacedSheet(out.planSheet.sheetId)).toBeNull();
-  });
-
-  // docs/specs/026-plan/plan-board.md "The board set-up": a board drawn on a tab is named after it.
-  it('names a new board after its tab', () => {
-    const out = buildDrawnBoxed(
-      { type: 'shape', kind: 'plan-board', plan: 'kanban' },
-      100,
-      100,
-      100,
-      100,
-      null,
-      { ...tab(), name: 'Launch' },
-    ) as { planBoard: { title: string } };
-    expect(out.planBoard.title).toBe('Launch');
   });
 });

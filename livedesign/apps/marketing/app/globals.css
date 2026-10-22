@@ -5,14 +5,8 @@
 @import '@livedesign/ui/hero-band.css';
 @import './hero-fan.css';
 @import './hero-animations.css';
-@import './hero-mode-animations.css';
-@import './hero-scenes/diagram.css';
-@import './hero-scenes/draw.css';
-@import './hero-scenes/mindmap.css';
-@import './hero-scenes/infographic.css';
+@import './hero-scenes/pages.css';
 @import './hero-scenes/article.css';
-@import './hero-scenes/plan.css';
-@import './hero-scenes/townhall.css';
 @import './promises.css';
 @import './feature-art/core.css';
 @import './feature-art/content.css';
@@ -49,26 +43,14 @@
   .fa-grow,
   .fa-hl,
   .fa-spin,
-  .fa-rotate,
-  .fa-swap-a,
   .fa-fade,
-  .fa-ripple,
   .fa-flow,
-  .fa-glow,
-  .fa-spin-cont,
-  .fa-beat,
   .tg-reveal,
   .tg-reveal .tg-reveal-track > li {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;
     stroke-dashoffset: 0 !important;
-  }
-
-  /* the "after" half of a cross-fade stays hidden */
-  .fa-swap-b {
-    animation: none !important;
-    opacity: 0 !important;
   }
 }
 

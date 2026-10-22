@@ -2,7 +2,8 @@ import type { EditorMode } from '@livedesign/document';
 
 // What the editor's mode controls show for each editor mode beyond the words, which come from the
 // document's one mode catalogue (editorModeLabel / editorModeDescription), and the shortcut that
-// moves to the next mode (docs/specs/007-editor/editor-modes.md "The mode switch").
+// moves to the next mode. Nothing shows them: Pages is the one mode, with no mode switch
+// (docs/specs/007-editor/pages-mode.md "One mode").
 
 // Shift+D, as `aria-keyshortcuts` spells it and as the interface shows it.
 export const EDITOR_MODE_KEYSHORTCUT = 'Shift+D';

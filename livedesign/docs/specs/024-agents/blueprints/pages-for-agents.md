@@ -48,8 +48,8 @@ Banned synonyms: "slide deck" for a tab of pages (it is a tab of pages; the deck
 
 `page-changes.ts` `applyPageChanges(tab, changes, { themeId, newId })`:
 
-2. `switched = opensInOf(tab) !== 'pages'`; if so `tab = withEditorModeSwitched(tab, 'pages')`.
-3. For each change `i` in order, against the current `tab`:
+1. A locked tab → `tab_locked`.
+2. For each change `i` in order, against the current `tab`:
    - resolve `page` (`resolvePage`: id, then integer place 1..n, then name by `nameKey`) else `page_unknown` listing
      `1 Cover (infographic), 2 (infographic)`;
    - `add`: if the only page is unchosen and empty
@@ -73,7 +73,7 @@ which change 1 made the page it added; nothing deleted.`; otherwise `pageRemoved
      unit is left. Line: `Deleted page 2 and 4 elements on it`;
    - a `refused` from a pure edit maps to its code (`unknown_page` → `page_unknown`, `locked` → `page_locked`,
      the rest the same name) and stops: `{ refusal: { code, message, change: i } }`, nothing to write.
-4. Answer `{ tab, lines, switched }`; the route adds the summaries (`pageSummaries`).
+3. Answer `{ tab, lines }`; the route adds the summaries (`pageSummaries`).
 
 ## Interfaces and contracts
 
@@ -104,7 +104,7 @@ PageBackgroundInput = { color?: string; gradient?: [string, string]; angle?: num
 Answer `200`:
 
 ```ts
-{ tab: { id, rev }, switched: boolean, lines: string[], pages: PageSummary[], changesetId: string | null }
+{ tab: { id, rev }, lines: string[], pages: PageSummary[], changesetId: string | null }
 ```
 
 Refusals: `400 { error, message, change? }` for every engine code and `invalid_body`, `403` gate, `404` document or
@@ -117,10 +117,9 @@ tab, `409 tab_busy`, `413 tab_too_large`.
 ### MCP
 
 - `change_pages` `{ documentId, tabId?, changes: PageChange[] (1..50) }`, behaviour `destructive`, output
-  `{ documentId, tabId, switched, lines, pages, rev, url }`; a refusal is a tool error, `Change n: …`
+  `{ documentId, tabId, lines, pages, rev, url }`; a refusal is a tool error, `Change n: …`
   counting from 1.
-- Which tab, before the route (`pagesTabOf`): the one named, else the first in Pages mode, else the first
-  tab when it is empty, else `tab_needed` saying to name a tab or `add_tab` with `blank-illustration`.
+- Which tab, before the route (`pagesTabOf`): the one named, else the first.
 - Every input and output property `.describe()`d; layout ids described by kind in `change_pages`'s `layout`
   description, generated from `layoutCatalogueFor`.
 - `read_document` `view` enum gains `pages`.
@@ -139,7 +138,7 @@ tab, `409 tab_busy`, `413 tab_too_large`.
 
 ## Data and persistence
 
-- Stored fields touched: `Tab.opensIn`, `Tab.pages`, `Tab.elements`. No new field, no migration.
+- Stored fields touched: `Tab.pages`, `Tab.elements`. No new field, no migration.
 - One write per call: `writeChangeset` when the elements changed (its batch writes the whole next tab, pages
   included, and records and relays the element ops), else `upsertTabAtRev`. The tab passes
   `withServerRules` first, as a changeset's does.
@@ -150,7 +149,6 @@ tab, `409 tab_busy`, `413 tab_too_large`.
 
 | Case                                                          | Handling                                                             |
 | ------------------------------------------------------------- | -------------------------------------------------------------------- |
-| Diagram tab                                                   | switched, `switched: true`, line "Switched the tab to Pages"         |
 | Fresh tab whose only page is unchosen and empty               | first `add` takes that page                                          |
 | Only page already of the kind added, unnamed and empty        | first `add` of that kind takes that page (its fields and layout set) |
 | Size not offered / `fit`                                      | `size_not_offered` with the kind's sizes                             |
@@ -166,7 +164,6 @@ tab, `409 tab_busy`, `413 tab_too_large`.
 | Tab bytes over `MAX_TAB_BYTES` after the edit                 | `413 tab_too_large`                                                  |
 | Revision moved twice                                          | `409 tab_busy`                                                       |
 | Relay fails                                                   | logged `[pages-agent] relay-missed`, the write stands                |
-| No tab named, no Pages tab, first tab not empty               | `tab_needed` (verbs), saying how to get one                          |
 | An `iconId` that names no icon (any edit operation)           | `invalid_value` "is not an icon", hint: icons like it (`iconsLike`)  |
 
 ## Security and trust
@@ -189,7 +186,7 @@ tab, `409 tab_busy`, `413 tab_too_large`.
 
 ## Observability
 
-- `[pages-agent] applied` `{ documentId, tabId, changes, rev, switched }`.
+- `[pages-agent] applied` `{ documentId, tabId, changes, rev }`.
 - `[pages-agent] refused` `{ documentId, tabId, code, change }`.
 - `[pages-agent] stale-retry` `{ documentId, tabId }`; `[pages-agent] busy`.
 - `[pages-agent] relay-missed` `{ documentId, tabId, op }`.
@@ -216,7 +213,7 @@ Not unit tested: the route's stale retry and `tab_busy` (they follow the changes
 
 | Constant              | Value | Provenance                                              | Safe range |
 | --------------------- | ----- | ------------------------------------------------------- | ---------- |
-| `PAGE_CHANGES_MAX`    | 50    | Matches `change_items` and `change_sheet`               | 1 to 100   |
+| `PAGE_CHANGES_MAX`    | 50    | A batch large enough for a whole deck                   | 1 to 100   |
 | `PAGES_REF_MAX`       | 64    | The longest page ref or layout id taken                 | fixed      |
 | `PAGE_GRADIENT_ANGLE` | 160   | The page panel's gradients (moved to packages/document) | 0 to 359   |
 

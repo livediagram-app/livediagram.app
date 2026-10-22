@@ -57,7 +57,6 @@ const local = (
     source: null,
     opensIn: null,
     tabKind: null,
-    templateFamily: null,
     savedAt,
     createdAt: 1,
     empty: true,

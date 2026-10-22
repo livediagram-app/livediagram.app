@@ -6,12 +6,7 @@
 // handful of them, and never grows into the old Editor panel.
 
 import { useRef, useState, type PointerEvent } from 'react';
-import {
-  BorderRadiusIcon,
-  BorderStrokeIcon,
-  BorderStyleIcon,
-} from '@/components/palette/palette-style-previews';
-import { QUICK_CORNERS } from '@/lib/quick-style-whiteboard';
+import { BorderStrokeIcon, BorderStyleIcon } from '@/components/palette/palette-style-previews';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { useQuickStylePlacement } from '@/hooks/ui/useQuickStylePlacement';
 import { useUiScale } from '@/components/providers/ui-scale';
@@ -20,7 +15,6 @@ import {
   QUICK_ICON_ALIGNS,
   QUICK_TEXT_ALIGNS,
   QUICK_WIDTHS,
-  type QuickCorners,
   type QuickIconAlign,
   type QuickStrokeStyle,
   QUICK_INK,
@@ -38,7 +32,7 @@ import {
 } from '@livedesign/document';
 import type { ShownSwatch } from '@/lib/swatch-overrides';
 import { SwatchOverridePopover } from './SwatchOverridePopover';
-import { BoardColourRow, QuickPenRows } from './QuickPenRows';
+import { QuickPenRows } from './QuickPenRows';
 import { QuickHighlighterRows } from './QuickHighlighterRows';
 import { QuickMoreColours } from './QuickMoreColours';
 import { standardGroup } from '@/components/colour/colour-options';
@@ -70,13 +64,6 @@ const TEXT_ALIGN_NAMES: Record<TextAlignX, string> = {
   center: 'Align centre',
   right: 'Align right',
 };
-// The Corners row (docs/specs/008-canvas/quick-style-panel.md "Corners"), whiteboards only.
-const CORNER_NAMES: Record<QuickCorners, string> = {
-  none: 'None',
-  sm: 'Small',
-  md: 'Medium',
-  lg: 'Large',
-};
 const ICON_ALIGN_NAMES: Record<QuickIconAlign, string> = {
   left: 'Icon before label',
   above: 'Icon above label',
@@ -84,7 +71,7 @@ const ICON_ALIGN_NAMES: Record<QuickIconAlign, string> = {
 };
 
 // A colour row's options: the theme's seven swatches, then, on the Stroke and Text colour rows,
-// Ink (docs/specs/007-editor/editor-modes.md "One look"), stored by name.
+// Ink (docs/specs/008-canvas/quick-style-panel.md "Colours"), stored by name.
 const swatchOptions = (
   swatches: ShownSwatch[],
   ink?: string,
@@ -204,7 +191,7 @@ export function QuickStylePanel({
       aria-label="Quick style"
       data-quick-style-panel=""
       data-testid="quick-style-panel"
-      // The Draw tour's anchor (docs/specs/023-draw-mode/draw-tour.md "The steps").
+      // A guided tour's anchor.
       data-tour-id="quick-style"
       // A panel, so the panel-opacity preference (docs/specs/007-editor/user-preferences.md) applies to it.
       data-panel-translucent=""
@@ -308,7 +295,7 @@ function QuickStyleSections({
     (role: QuickSwatchRole) => (slot: QuickColourValue, anchor: HTMLButtonElement) => {
       if (isQuickSwatchSlot(slot)) onEditSwatch(role, slot, anchor);
     };
-  const { width, style, textAlign, iconAlign, corners } = view.sections;
+  const { width, style, textAlign, iconAlign } = view.sections;
   const surface = useCanvasSurface();
   // Whose style this is when it is not plainly the selection: the pen in hand,
   // the selected strokes, or a tool's next mark. Power user mode leaves it out.
@@ -329,27 +316,6 @@ function QuickStyleSections({
         />
       ) : null}{' '}
       {COLOUR_ROWS.map((row) => {
-        // A whiteboard's Stroke and Text colour rows are the whiteboard's colours.
-        const board =
-          row.role === 'stroke'
-            ? view.sections.boardStroke
-            : row.role === 'text'
-              ? view.sections.boardText
-              : undefined;
-        if (board) {
-          return (
-            <BoardColourRow
-              key={row.role}
-              title={row.title}
-              testId={row.testId}
-              section={board}
-              showTitles={showTitles}
-              onChoose={
-                row.role === 'stroke' ? quickStyle.setBoardStroke : quickStyle.setBoardTextColour
-              }
-            />
-          );
-        }
         const colours = view.sections[row.section];
         return colours ? (
           <QuickRadioRow<QuickColourValue | typeof QUICK_TRANSPARENT>
@@ -427,21 +393,6 @@ function QuickStyleSections({
           }))}
           value={style.value}
           onChoose={quickStyle.setStrokeStyle}
-        />
-      ) : null}
-      {corners ? (
-        <QuickRadioRow
-          title="Corners"
-          testId="quick-style-corners"
-          showTitle={showTitles}
-          columns={QUICK_CORNERS.length}
-          options={QUICK_CORNERS.map((c) => ({
-            value: c,
-            name: CORNER_NAMES[c],
-            content: <BorderRadiusIcon value={c} />,
-          }))}
-          value={corners.value}
-          onChoose={quickStyle.setCorners}
         />
       ) : null}
       {textAlign ? (

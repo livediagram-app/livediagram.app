@@ -63,7 +63,7 @@ function elementEvent(op: unknown, tabId: string): RoomEvent[] {
     : [{ kind: 'element', tabId, elementId, change: ELEMENT_CHANGES[kind] }];
 }
 
-// One comment change, an answer, an idea or a tick on one element. Only a new comment is a comment event; a comment
+// One comment change, or any other change, on one element. Only a new comment is a comment event; a comment
 // removed, re-keyed, resolved or reopened is neither a comment nor a change (blueprint "The room stream").
 function deltaEvent(op: Record<string, unknown>, tabId: string): RoomEvent[] {
   const elementId = str(op, 'elementId');
@@ -111,10 +111,6 @@ export function classifyRoomOp(op: unknown): RoomEvent[] {
       return elementEvent(op.op, tabId);
     case 'el-delta':
       return deltaEvent(op, tabId);
-    case 'vote': {
-      const elementId = str(op, 'elementId');
-      return elementId === null ? [] : [{ kind: 'element', tabId, elementId, change: 'changed' }];
-    }
     case 'tab':
     case 'tab-meta':
       return [{ kind: 'tab', tabId }];

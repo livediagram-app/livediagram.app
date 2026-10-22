@@ -16,7 +16,12 @@ const transcript = [
     type: 'assistant',
     message: {
       content: [
-        { type: 'tool_use', id: 't1', name: 'mcp__livedesign__add_form', input: { name: 'RSVP' } },
+        {
+          type: 'tool_use',
+          id: 't1',
+          name: 'mcp__livedesign__change_pages',
+          input: { documentId: 'd1' },
+        },
       ],
     },
   }),
@@ -28,7 +33,7 @@ const transcript = [
           type: 'tool_result',
           tool_use_id: 't1',
           is_error: true,
-          content: [{ type: 'text', text: 'Give a starter or questions, not both.\nmore' }],
+          content: [{ type: 'text', text: 'Give a layout or elements, not both.\nmore' }],
         },
       ],
     },
@@ -37,7 +42,12 @@ const transcript = [
     type: 'assistant',
     message: {
       content: [
-        { type: 'tool_use', id: 't2', name: 'mcp__livedesign__add_form', input: { name: 'RSVP' } },
+        {
+          type: 'tool_use',
+          id: 't2',
+          name: 'mcp__livedesign__change_pages',
+          input: { documentId: 'd1' },
+        },
       ],
     },
   }),
@@ -66,7 +76,7 @@ const transcript = [
     type: 'user',
     message: { content: [{ type: 'tool_result', tool_use_id: 't3', content: '[]' }] },
   }),
-  line({ type: 'assistant', message: { content: [{ type: 'text', text: 'Here is your form.' }] } }),
+  line({ type: 'assistant', message: { content: [{ type: 'text', text: 'Here is your deck.' }] } }),
   'not json',
   line({
     type: 'result',
@@ -74,7 +84,7 @@ const transcript = [
     num_turns: 4,
     duration_ms: 1200,
     total_cost_usd: 0.1,
-    result: 'Here is your form.',
+    result: 'Here is your deck.',
     usage: {
       input_tokens: 5,
       cache_creation_input_tokens: 100,
@@ -89,11 +99,11 @@ describe('parseTranscript', () => {
 
   it('reads each MCP call without its prefix, with its outcome', () => {
     expect(run.calls.map((c) => [c.tool, c.isError])).toEqual([
-      ['add_form', true],
-      ['add_form', false],
+      ['change_pages', true],
+      ['change_pages', false],
       ['find_diagrams', false],
     ]);
-    expect(run.calls[0].error).toBe('Give a starter or questions, not both.');
+    expect(run.calls[0].error).toBe('Give a layout or elements, not both.');
     expect(run.calls[1].images).toBe(1);
     // A successful result's text is kept for checks; a refusal's is not.
     expect(run.calls[1].result).toBe(`{"documentId":"${DOC}"}`);
@@ -108,7 +118,7 @@ describe('parseTranscript', () => {
     expect(run.model).toBe('claude-haiku-5-5');
     expect(run.sessionId).toBe('s-1');
     expect(run.mcpConnected).toBe(true);
-    expect(run.finalText).toBe('Here is your form.');
+    expect(run.finalText).toBe('Here is your deck.');
     expect(run.result).toMatchObject({
       turns: 4,
       inputTokens: 155,
@@ -119,7 +129,7 @@ describe('parseTranscript', () => {
 
   it('falls back to the last text when there is no result line', () => {
     const cut = transcript.split('\n').slice(0, -1).join('\n');
-    expect(parseTranscript(cut).finalText).toBe('Here is your form.');
+    expect(parseTranscript(cut).finalText).toBe('Here is your deck.');
     expect(metricsOf(parseTranscript(cut)).finished).toBe(false);
   });
 });
@@ -144,7 +154,7 @@ describe('metricsOf', () => {
       errors: 1,
       retries: 1,
       deprecatedCalls: 1,
-      firstTool: 'add_form',
+      firstTool: 'change_pages',
       finished: true,
     });
   });

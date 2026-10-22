@@ -59,11 +59,6 @@ describe('VIEW_TOOL_KEYS (non-mutating tools)', () => {
     expect(fired(VIEW_TOOL_KEYS, 'i')).toBe('tool:isometric');
     expect(fired(VIEW_TOOL_KEYS, 'z')).toBe('zen');
   });
-
-  it('has no key into Avatar mode (a Selection Mode button is its one way in)', () => {
-    expect(VIEW_TOOL_KEYS.w).toBeUndefined();
-    expect(EDIT_KEYS.w).toBeUndefined();
-  });
 });
 
 describe('EDIT_KEYS (mutating tools / element adds)', () => {

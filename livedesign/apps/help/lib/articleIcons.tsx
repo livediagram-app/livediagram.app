@@ -211,7 +211,7 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
       <path d="M10 16l4-4-4-4M14 12H3" />
     </Glyph>
   ),
-  'exporting-diagrams': (
+  'exporting-documents': (
     <Glyph>
       <path d="M12 15V3M8 7l4-4 4 4" />
       <path d="M4 13v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6" />
@@ -380,7 +380,7 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
       <path d="M6.5 9.5h6M6.5 12h4" />
     </Glyph>
   ),
-  'plan-sheets-images': (
+  'images-and-pages': (
     <Glyph>
       <rect x="2.5" y="3.5" width="19" height="17" rx="2" />
       <path d="M2.5 9.5h19M12 3.5v17M2.5 15h9.5" />

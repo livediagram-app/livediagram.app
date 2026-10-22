@@ -5,7 +5,7 @@ import { migrateLegacyTextSizing } from './legacy-text-sizing';
 const text = (over: Record<string, unknown> = {}) =>
   ({ id: 't', type: 'text', x: 0, y: 0, width: 40, height: 22, label: 'Hi', ...over }) as Element;
 
-// docs/specs/007-editor/editor-modes.md "A text box's sizing": `sizing` replaces `autoWidth`.
+// docs/specs/006-document/document-structure.md "Data model": `sizing` replaces `autoWidth`.
 describe('migrateLegacyTextSizing', () => {
   it('reads a stored auto width as a text box that fits its words', () => {
     const [out] = migrateLegacyTextSizing([text({ autoWidth: true })]);

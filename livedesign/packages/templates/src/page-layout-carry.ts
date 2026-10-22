@@ -33,11 +33,9 @@ const SHAPE_CONTENT = [
   'lineSeries',
   'legendItems',
   'conceptRows',
-  'agendaItems',
   'sankeyFlows',
   'sankeyNodes',
   'sankeyUnit',
-  'chartSource',
 ] as const satisfies readonly (keyof ShapeElement)[];
 
 // What a picture carries into a picture place: the picture itself and what credits it.

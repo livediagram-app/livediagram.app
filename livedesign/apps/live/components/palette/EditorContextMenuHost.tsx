@@ -4,30 +4,12 @@ import { useCallback } from 'react';
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import { EMPTY_SELECTION, type Selection } from '@/lib/selection-store';
 import dynamic from 'next/dynamic';
-import {
-  DEFAULT_MIND_FLOW,
-  DEFAULT_MIND_SPACING,
-  isMindNode,
-  logoPageAt,
-  mindFlowOf,
-  mindRootOf,
-  mindSpacingOf,
-  resolveLayerId,
-  withMindBranches,
-  type ShapeElement,
-  flowchartDirectionOf,
-  flowchartStepTypeOf,
-  isFlowchartLane,
-  isFlowchartStep,
-  tagColoursOf,
-} from '@livedesign/document';
-import type { FlowchartMenuHandlers } from '@/components/flowchart/FlowchartMenuSections';
+import { logoPageAt, resolveLayerId, tagColoursOf } from '@livedesign/document';
 import { track } from '@/lib/telemetry';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useColourPalette } from '@/hooks/ui/useColourPalette';
 import { getTheme, shapeColorPresets, tableColorPresets, themeChartPalette } from '@/lib/themes';
 import { canEditSankey } from '@/lib/sankey-edit';
-import { canEditSequence } from '@/lib/sequence-edit';
 import { panelEnabled } from '@/lib/user-preferences';
 
 // Lazy like the other heavy editor chrome: the menu's chunk loads on the
@@ -45,7 +27,6 @@ const EditorContextMenu = dynamic(
 export function EditorContextMenuHost() {
   const {
     contextMenu,
-    facilitator,
     userPreferences,
     activeTab,
     isReadOnly,
@@ -126,43 +107,17 @@ export function EditorContextMenuHost() {
     setChartRightAxisSelected,
     setChartLegendPositionSelected,
     setChartTypeSelected,
-    unlinkChartSelected,
     setLineDataOpenForId,
     setCodeEditOpenForId,
     setCodeWrapSelected,
     setLegendItemsSelected,
     sankey,
     setSankeyFlowsOpenForId,
-    setSequenceOpenForId,
     can,
-    setMindFlowSelected,
-    setMindSpacingSelected,
-    flowchartActions,
-    selectMarquee,
-    tidyMindMapSelected,
-    mindOutline,
     setChecklistItemsSelected,
     toggleChecklistItem,
-    setEntityFieldsSelected,
     setWebRowsSelected,
     setHeroCaptionSelected,
-    setEstimateScaleSelected,
-    setAgendaItemsSelected,
-    setDecisionStatusSelected,
-    setDecisionDateSelected,
-    setDecisionDriversSelected,
-    setChairFacingSelected,
-    setRoomDoorSelected,
-    setButtonModeSelected,
-    setPortalTargetSelected,
-    setPortalNameSelected,
-    createLinkedPortal,
-    setSessionConfigSelected,
-    setRevealedSelected,
-    setPickerSourceSelected,
-    setReactionSelected,
-    setPickerOptionsSelected,
-    tabs,
     commitShapeColorPreset,
     previewShapeColorPreset,
     resetShapeStyleSelected,
@@ -208,7 +163,6 @@ export function EditorContextMenuHost() {
     setArrowStrokeStyleSelected,
     setArrowRouteBehindSelected,
     setArrowExactStartSelected,
-    setLaneUprightTitleSelected,
     setArrowEndsSelected,
     setArrowheadSizeSelected,
     setArrowheadShapeSelected,
@@ -258,45 +212,6 @@ export function EditorContextMenuHost() {
         }
       : undefined;
 
-  // The Flowchart section (docs/specs/009-elements/flowchart.md): on a step or a chart's lane, for an
-  // Editor on an unlocked element; the step's type and its chart's direction resolved here.
-  const flowchartMenu: FlowchartMenuHandlers | undefined =
-    ctxSelectedEl &&
-    (isFlowchartStep(ctxSelectedEl) || isFlowchartLane(ctxSelectedEl)) &&
-    can.level === 'edit' &&
-    ctxSelectedEl.locked !== true
-      ? {
-          stepType: isFlowchartStep(ctxSelectedEl)
-            ? flowchartStepTypeOf(ctxSelectedEl.shape)
-            : undefined,
-          direction: flowchartDirectionOf(activeTab.elements, ctxSelectedEl.flowchartId!),
-          onSetStepType: flowchartActions.setStepTypeSelected,
-          onSetDirection: flowchartActions.setDirectionSelected,
-          onAddLane: flowchartActions.addLaneSelected,
-          onTidy: flowchartActions.tidySelected,
-        }
-      : undefined;
-
-  // The flow the selected node's MAP grows in (docs/specs/009-elements/mind-node.md). Resolved here
-  // because it lives on the tree's root, which the menu cannot walk to from
-  // the node in hand.
-  const menuMindNode = ctxSelectedEl && isMindNode(ctxSelectedEl) ? ctxSelectedEl : null;
-  const menuMindFlow = menuMindNode
-    ? mindFlowOf(activeTab.elements, menuMindNode)
-    : DEFAULT_MIND_FLOW;
-  // Its spacing, from the same root (docs/specs/009-elements/mind-node.md "Spacing").
-  const menuMindSpacing = menuMindNode
-    ? mindSpacingOf(activeTab.elements, menuMindNode)
-    : DEFAULT_MIND_SPACING;
-  // Select Branch / Select Whole Map: the node (or its root) with everything under it and the lines between, through
-  // the marquee commit, so a one-node branch is a single selection and a locked-by-other node is left out.
-  const selectMindBranchOf = (node: ShapeElement | null) => {
-    if (!node) return;
-    selectMarquee(new Set(withMindBranches(activeTab.elements, new Set([node.id]))));
-    track('Element', 'Selected', 'MindBranch');
-  };
-  const menuMindRoot = menuMindNode ? mindRootOf(activeTab.elements, menuMindNode) : null;
-
   // The selection's layer for the Layer section's move-to dropdown
   // (docs/specs/006-document/layers.md): the single resolved layer every member shares, or null
   // when the selection spans layers.
@@ -345,7 +260,6 @@ export function EditorContextMenuHost() {
       onPreviewIconWeight={previewIconWeight}
       onSetTextAlign={commitTextAlign}
       onPreviewTextAlign={previewTextAlign}
-      onSetLaneUprightTitle={setLaneUprightTitleSelected}
       onBringToFront={bringSelectedToFront}
       onSendToBack={sendSelectedToBack}
       layers={layers}
@@ -406,56 +320,16 @@ export function EditorContextMenuHost() {
       onSetChartRightAxis={setChartRightAxisSelected}
       onSetChartLegendPosition={setChartLegendPositionSelected}
       onSetChartType={setChartTypeSelected}
-      onUnlinkChart={unlinkChartSelected}
       onEditLineData={setLineDataOpenForId}
       onEditCodeBlock={setCodeEditOpenForId}
       onSetCodeWrap={setCodeWrapSelected}
       onSetLegendItems={setLegendItemsSelected}
       sankey={sankeyMenu}
-      onEditSequence={
-        ctxSelectedEl?.type === 'shape' &&
-        ctxSelectedEl.shape === 'sequence' &&
-        canEditSequence(can, ctxSelectedEl)
-          ? setSequenceOpenForId
-          : undefined
-      }
       chartThemeRamp={themeChartPalette(getTheme(activeTab.theme))}
-      flowchart={flowchartMenu}
-      mindFlow={menuMindFlow}
-      onSetMindFlow={setMindFlowSelected}
-      onTidyMindMap={tidyMindMapSelected}
-      onEditMindOutline={
-        menuMindRoot && mindOutline.canEdit(menuMindRoot.id)
-          ? () => mindOutline.open(menuMindRoot.id)
-          : undefined
-      }
-      mindSpacing={menuMindSpacing}
-      onSetMindSpacing={setMindSpacingSelected}
-      onSelectMindBranch={() => selectMindBranchOf(menuMindNode)}
-      onSelectMindMap={() => selectMindBranchOf(menuMindRoot)}
       onSetChecklistItems={setChecklistItemsSelected}
       onToggleChecklistItem={toggleChecklistItem}
-      onSetEntityFields={setEntityFieldsSelected}
       onSetWebRows={setWebRowsSelected}
       onSetHeroCaption={setHeroCaptionSelected}
-      onSetEstimateScale={setEstimateScaleSelected}
-      onSetAgendaItems={setAgendaItemsSelected}
-      onSetDecisionStatus={setDecisionStatusSelected}
-      onSetDecisionDate={setDecisionDateSelected}
-      onSetDecisionDrivers={setDecisionDriversSelected}
-      onSetChairFacing={setChairFacingSelected}
-      onSetRoomDoor={setRoomDoorSelected}
-      onSetButtonMode={setButtonModeSelected}
-      onSetPortalTarget={setPortalTargetSelected}
-      onSetPortalName={setPortalNameSelected}
-      onCreateLinkedPortal={createLinkedPortal}
-      onSetSession={facilitator.sessionToolsBlocked ? undefined : setSessionConfigSelected}
-      onSetRevealed={facilitator.sessionToolsBlocked ? undefined : setRevealedSelected}
-      onSetPickerSource={setPickerSourceSelected}
-      onSetReaction={setReactionSelected}
-      onSetPickerOptions={setPickerOptionsSelected}
-      tabs={tabs}
-      activeTabId={activeTab.id}
       shapeColorPresets={shapeColorPresets(getTheme(activeTab.theme))}
       onApplyShapeColorPreset={commitShapeColorPreset}
       onPreviewShapeColorPreset={previewShapeColorPreset}

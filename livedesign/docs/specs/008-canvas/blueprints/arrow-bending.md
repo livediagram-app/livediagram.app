@@ -21,7 +21,6 @@ Scope, by file:
 | `apps/live/components/canvas/CanvasElementsLayer.tsx`    | Mounts `FreeArrowSelection` beside a selected free arrow's `<svg>`                              |
 | `apps/live/components/canvas/element-parts.tsx`          | Resize handles refuse a paired press (`handlePressStarts`)                                      |
 | `apps/live/components/canvas/useBoxedElementGestures.ts` | Body presses are recorded; a paired press starts no drag                                        |
-| `apps/live/hooks/ui/usePressWithoutDrag.ts`              | Reads `DOUBLE_PRESS_MS` from the ledger module                                                  |
 
 ## Domain and naming
 
@@ -69,7 +68,6 @@ curve, elbow, label, translate) except the endpoint of an arrow being drawn.
   lets the browser's default focus move blur, and so commit, the new editor at once.
 - **Boxed elements**: a paired press on the body or a resize handle starts nothing; the browser's
   `dblclick` then reaches the element wrapper, which opens its editor as before.
-- Dot votes are cast before the ledger is consulted, so two quick presses during a vote cast two.
 
 **Move frame.** Shown when a single free arrow is selected, editable, not locked and not being
 edited. Rect = route bounding box inflated by `MOVE_FRAME_PAD_PX`, drawn as HTML with the shape
@@ -115,7 +113,7 @@ scales a free arrow.
 | Name                   | Value | Provenance / safe range                               |
 | ---------------------- | ----- | ----------------------------------------------------- |
 | `BEND_T_MIN`           | 0.2   | Keeps a grab beside a head from exploding; 0.1 to 0.3 |
-| `DOUBLE_PRESS_MS`      | 450   | Existing (usePressWithoutDrag), moved to double-press |
+| `DOUBLE_PRESS_MS`      | 450   | Existing, moved to double-press                       |
 | `DOUBLE_PRESS_SLOP_PX` | 8     | Screen px between the two presses; 4 to 16            |
 | `MOVE_FRAME_PAD_PX`    | 12    | Frame clearance round the route; 8 to 24              |
 | `MOVE_FRAME_HIT_PX`    | 10    | Grab band width of the frame edge; 8 to 16            |

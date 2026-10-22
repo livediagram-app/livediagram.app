@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { applyMigration, sqliteD1 } from '../test-sqlite-d1';
+import { sqliteD1 } from '../test-sqlite-d1';
 import { connectInvitesByEmail } from './team-invites';
 import { removeTeamMemberKeepingAdmin } from './teams';
 
 // One membership row per person per team (docs/specs/013-workspace/teams.md "Members"): the lazy
-// invite claim skips teams the user already belongs to, the database refuses a second row, removal
-// takes every row the user holds, and migration 0083 folds existing duplicates into one.
+// invite claim skips teams the user already belongs to, the database refuses a second row, and removal
+// takes the user's row in that team only.
 
 type Row = { id: string; team: string; user: string | null; email?: string | null };
 type Extra = { role?: string; status?: string; created?: number };
@@ -67,49 +67,16 @@ describe('the unique (team_id, user_id) index', () => {
 });
 
 describe('removal', () => {
-  it('takes every row the user holds in that team, and none elsewhere', async () => {
-    const db = sqliteD1({}, { before: '0083' });
+  it('takes the row the user holds in that team, and none elsewhere', async () => {
+    const db = sqliteD1();
     seed(db, [
       { id: 'admin', team: 't', user: 'boss', role: 'admin' },
       { id: 'one', team: 't', user: 'u' },
-      { id: 'two', team: 't', user: 'u', status: 'invited' },
       { id: 'elsewhere', team: 't2', user: 'u' },
     ]);
     expect(
       await removeTeamMemberKeepingAdmin(db.env, { id: 'one', teamId: 't', userId: 'u' }),
     ).toBe(true);
     expect(rowsFor(db, 'u').map((r) => r.id)).toEqual(['elsewhere']);
-  });
-
-  it('never counts a second row of the same person as another admin', async () => {
-    const db = sqliteD1({}, { before: '0083' });
-    seed(db, [
-      { id: 'one', team: 't', user: 'u', role: 'admin' },
-      { id: 'two', team: 't', user: 'u', role: 'admin' },
-      { id: 'm', team: 't', user: 'm' },
-    ]);
-    expect(
-      await removeTeamMemberKeepingAdmin(db.env, { id: 'one', teamId: 't', userId: 'u' }),
-    ).toBe(false);
-    expect(rowsFor(db, 'u')).toHaveLength(2);
-  });
-});
-
-describe('migration 0083', () => {
-  it('keeps the joined (then oldest) row of each duplicate set, with its admin role', () => {
-    const db = sqliteD1({}, { before: '0083' });
-    seed(db, [
-      { id: 'invited-old', team: 't', user: 'u', status: 'invited', created: 1 },
-      { id: 'joined-new', team: 't', user: 'u', status: 'joined', created: 5 },
-      { id: 'joined-newer', team: 't', user: 'u', status: 'joined', role: 'admin', created: 9 },
-      { id: 'single', team: 't2', user: 'u', created: 3 },
-      { id: 'pending', team: 't', user: null, email: 'p@x.io' },
-    ]);
-    applyMigration(db.sql, '0083');
-    expect(rowsFor(db, 'u')).toEqual([
-      { id: 'joined-new', team_id: 't', role: 'admin', status: 'joined' },
-      { id: 'single', team_id: 't2', role: 'member', status: 'joined' },
-    ]);
-    expect(db.sql.prepare("SELECT 1 FROM team_members WHERE id = 'pending'").get()).toBeDefined();
   });
 });

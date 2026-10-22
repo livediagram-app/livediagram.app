@@ -150,7 +150,7 @@ export function SearchPanel({
   }, []);
 
   // A full-screen modal that does not use the Dialog shell, so it registers with the modal guard itself: the
-  // canvas shortcuts behind it go quiet and the tours wait for it (docs/specs/007-editor/editor-tour.md).
+  // canvas shortcuts behind it go quiet and the tours wait for it (docs/specs/007-editor/pages-tour.md "Dialogs come first").
   useModalGuard(true);
 
   // Esc closes. Capture phase + stopPropagation so the modal owns

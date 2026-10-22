@@ -92,7 +92,7 @@ describe('AssignActionDialog seed', () => {
   });
 });
 
-// docs/specs/026-plan/linked-boards.md "On the canvas": an edit picks Open, Done or Won't Do, saved with the rest.
+// docs/specs/012-collaboration/assigned-actions.md: an edit picks Open, Done or Won't Do, saved with the rest.
 describe('AssignActionDialog status', () => {
   it('offers a status only when editing, and sends it only when it changed', () => {
     const onSubmit = vi.fn<(input: SaveActionInput) => void>();

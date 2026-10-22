@@ -462,7 +462,7 @@ export function usePathDrawGesture({
     shift,
     dragIndex,
     editPointer: armed && editPointer,
-    // The dock's Undo and Redo while a path is being drawn step through its nodes.
+    // The Undo and Redo buttons, while a path is being drawn, step through its nodes.
     history:
       armed && draft
         ? { canUndo: true, canRedo: redoCount > 0, undo: undoNode, redo: redoNode }

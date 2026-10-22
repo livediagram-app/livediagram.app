@@ -51,7 +51,7 @@ describe('diffView (R17, VW36)', () => {
       checklistItems: [{ text: 'x', done: false }],
     });
     const c = shapeAt('square', 'c', 600, 0, 100, 50, { note: 'old' });
-    const d = shapeAt('estimate', 'd', 700, 0, 100, 50, { responses: [] });
+    const d = shapeAt('rating', 'd', 700, 0, 100, 50, { rating: 2 });
     expect(
       changeLines(
         [frame, a, b, c, d],
@@ -60,14 +60,14 @@ describe('diffView (R17, VW36)', () => {
           { ...a, shape: 'circle', label: undefined, note: undefined, x: 900 },
           { ...b, checklistItems: [{ text: 'x', done: true }] },
           { ...c, note: 'new', locked: true, label: 'C' },
-          { ...d, responses: [{ participantId: 'p', value: '3', at: 0 }], responsesRevealed: true },
+          { ...d, rating: 4 },
         ],
       ),
     ).toEqual([
       '~ circle a kind square → circle · label "A" → none · note removed · in f → canvas · moved +890,+0',
       '~ checklist b done=0/1 → done=1/1',
       '~ square c label none → "C" · note changed · locked none → on',
-      '~ estimate d votes 0 → 1 · revealed none → on',
+      '~ rating d rating 2/5 → 4/5',
     ]);
     expect(
       changeLines(
@@ -123,17 +123,6 @@ describe('diffView (R17, VW36)', () => {
     expect(
       changeLines(before, [a!, b!, ab, ba, { ...rides, to: { ...rides.to, arrowId: 'ba' } }]),
     ).toEqual(['~ arrow r to arrow:ab → arrow:ba']);
-  });
-
-  // A card's id moves with its card: the ideas count speaks for both, no "other field".
-  it('reads an idea with its card id as one change to the ideas', () => {
-    const box = { ...shapeAt('idea-box', 'i', 0, 0), ideaCards: ['a'] } as Element;
-    const lines = changeLines(
-      [box],
-      [{ ...box, ideaCards: ['a', 'b'], ideaCardIds: ['', 'x'] } as Element],
-    );
-    expect(lines).toHaveLength(1);
-    expect(lines[0]).not.toContain('other field');
   });
 
   it('lists removals in the before order and additions under an unlabelled container', () => {

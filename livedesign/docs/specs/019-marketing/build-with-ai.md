@@ -2,7 +2,7 @@
 
 Status: shipped
 
-`/ai` is the marketing page that gets a visitor from "I use an AI tool" to "my AI just made a diagram in livedesign" in the fewest possible steps. It is the front door to the [MCP server](../015-api/mcp-server.md): one address, one approval, then a prompt. The [help article](../../../apps/help/app/account-and-data/connect-ai-mcp/ai-clients/page.mdx) stays the reference; this page is the guided path, and links to it for everything past the first connection.
+`/ai` is the marketing page that gets a visitor from "I use an AI tool" to "my AI just made a deck in livedesign" in the fewest possible steps. It is the front door to the [MCP server](../015-api/mcp-server.md): one address, one approval, then a prompt. The [help article](../../../apps/help/app/account-and-data/connect-ai-mcp/ai-clients/page.mdx) stays the reference; this page is the guided path, and links to it for everything past the first connection.
 
 ## Entry points
 
@@ -16,7 +16,7 @@ Status: shipped
 2. **Three steps** (`#how-it-works`), one row: **Add livedesign** (paste the address into your tool), **Approve** (a livedesign page opens: sign in or create a free account, check where access goes, Connect), **Ask** (request a diagram, board, sheet or deck; it lands in your account).
 3. **Pick your tool** (`#connect`): a tab list of clients, grouped Chat apps, Coding agents, Editors, Anything else. Selecting one shows its steps. The choice is mirrored into the URL hash (`/ai#cursor`) with `history.replaceState`, and a hash on arrival selects that client, so a link can open straight onto one tool. Every panel is in the HTML (inactive ones `hidden`), so the instructions are indexable and work before hydration (the first client shows until then).
 4. **Try it** (`#prompts`): starter prompts, each a card with a Copy button, each mapped to a shipped MCP tool.
-5. **What it can do**: a grid of the MCP's capabilities in plain words (diagrams from a description or Mermaid, templates and Plan boards, Sheets, slides and logos, find and read with a picture, share links, live changes on an open canvas with Undo).
+5. **What it can do**: a grid of the MCP's capabilities in plain words (logos and wireframes, templates, find and read with a picture, share links, live changes on an open document with Undo).
 6. **In your control**: account needed (free), the approval page shows where access goes, Read-only access, revoke from Settings › Account › API Tokens, six-month tokens, livedesign runs no AI model of its own.
 7. **If it doesn't connect**: the three failure lines from the help article (expired request, token limit, keeps asking to sign in) plus self-hosting (use your own MCP host), and a link to the full help article.
 

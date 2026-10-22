@@ -9,8 +9,7 @@
 export type ImportOutcome =
   | {
       status: 'done';
-      // What could not land (the rest did): a file's Plan cards the store refused, or a Markdown outline's
-      // nodes past the import cap.
+      // What could not land (the rest did): a Markdown outline's nodes past the import cap.
       failures?: { title: string; message: string }[];
     }
   | { status: 'cancelled' }
@@ -24,13 +23,6 @@ export type ImportOutcome =
 // parseImportedTab that walks old shapes forward.
 
 import {
-  legacyCatalogue,
-  readItemTypeCatalogue,
-  type Item,
-  type ItemTypeCatalogue,
-} from '@livedesign/items';
-import {
-  isItemLike,
   isValidElement,
   migrateIncomingElements,
   type Tab,
@@ -38,11 +30,7 @@ import {
   type ExportedTabEnvelope,
 } from '@livedesign/document';
 
-// The Plan items a tab export carries (docs/specs/026-plan/items.md "Copies and exports"), and its stored type
-// catalogue (null: the default types).
-export type ImportedPlanItems = { items: Item[]; itemTypes: ItemTypeCatalogue | null };
-
-type ImportResult = { ok: true; tab: Tab; plan?: ImportedPlanItems } | { ok: false; error: string };
+type ImportResult = { ok: true; tab: Tab } | { ok: false; error: string };
 
 // Parse text from a chosen `.json` file. Returns a discriminated
 // union — callers branch on `.ok` and surface the error string to
@@ -89,15 +77,7 @@ export function parseImportedTab(text: string): ImportResult {
   // threw in the id re-mint (leaving the Import dialog stuck on busy), the
   // others landed on the canvas as junk.
   const elements = migrateIncomingElements(tab.elements).filter(isValidElement);
-  // Items that do not look like items are left behind, as the document envelope does; the store validates the rest.
-  const items = Array.isArray(env.items) ? env.items.filter(isItemLike) : [];
-  if (items.length === 0) return { ok: true, tab: { ...tab, elements } };
-  return {
-    ok: true,
-    tab: { ...tab, elements },
-    // A tab exported before card types started empty carries cards and no catalogue: the default types.
-    plan: { items, itemTypes: legacyCatalogue(readItemTypeCatalogue(env.itemTypes), true) },
-  };
+  return { ok: true, tab: { ...tab, elements } };
 }
 
 // Open the browser's file picker and resolve with the chosen file's name

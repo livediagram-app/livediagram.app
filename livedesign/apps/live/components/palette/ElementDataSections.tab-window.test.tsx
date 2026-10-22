@@ -41,7 +41,6 @@ const flags = {
   isEstimate: false,
   isAgenda: false,
   isDecision: false,
-  isChair: false,
 };
 
 it("offers a tab window's Shows list, so its tab can be changed", () => {

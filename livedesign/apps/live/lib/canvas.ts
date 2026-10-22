@@ -58,27 +58,19 @@ export function inheritedSizeFor(
   // A table drops as its 3 x 3 grid at 360 x 150 (docs/specs/008-canvas/canvas-and-palette.md Table): its size is its
   // grid's, not the selection's.
   if (base.type === 'table') return { width: base.width, height: base.height };
-  // Same for the kinds whose silhouette IS the element: a portal's ring
-  // (docs/specs/009-elements/portal-element.md) and the fixed-size Selection Mode button (docs/specs/009-elements/mode-button.md). Inheriting
-  // whatever box happened to be selected — a wide banner, a thin rail — hands
-  // you something that doesn't read as the thing you asked for, and for a
-  // fixed-size control it is simply not resizable afterwards.
-  if (
-    base.type === 'shape' &&
-    (base.shape === 'portal' || base.shape === 'reveal' || isFixedSizeShape(base.shape))
-  ) {
+  // Same for a fixed-size kind (a badge fits its text). Inheriting whatever box happened to be selected — a wide
+  // banner, a thin rail — hands you something that doesn't read as the thing you asked for, and for a fixed-size
+  // element it is simply not resizable afterwards.
+  if (base.type === 'shape' && isFixedSizeShape(base.shape)) {
     return { width: base.width, height: base.height };
   }
   // And the kinds drawn to their own proportions or placed around other things: a step number (a disc), a container
-  // (a boundary, a stack: a box to put things in), a concept graphic, a sequence diagram, a Diagram key and a tab
-  // window. A step tapped while a 300 x 150 card is selected came out a 300 x 150 "disc".
+  // (a stack: a box to put things in), a concept graphic and a tab window. A step tapped while a 300 x 150 card is selected came out a 300 x 150 "disc".
   if (
     base.type === 'shape' &&
     (isChipShape(base.shape) ||
       isContainerKind(base.shape) ||
       isConceptShape(base.shape) ||
-      base.shape === 'sequence' ||
-      base.shape === 'diagram-key' ||
       base.shape === 'tab-window' ||
       // A chart, a meter, a rating, a timeline rail, a legend, a sticker: each draws its own content to its own
       // proportions. A progress bar tapped while a legend was selected came out a 200 x 170 blob.
@@ -86,15 +78,15 @@ export function inheritedSizeFor(
   ) {
     return { width: base.width, height: base.height };
   }
-  // A CONTAINER never donates its size. A frame, a lane or a boundary (docs/specs/009-elements/lane.md) is a big
+  // A CONTAINER never donates its size. A frame or a stack is a big
   // backdrop you put things in, so a square added while one is selected came
-  // out 900x200 — the size of the lane, which is never what anyone meant. The
+  // out 900x200 — the size of the frame, which is never what anyone meant. The
   // rule reads the other way round from the guards above: those are about what
   // the NEW element is, this is about what the selected one is.
   // The same holds for a self-drawing donor: a square added while a rating or a progress bar was selected came out as
   // thin as the bar.
   const donor = selected && isBoxed(selected) ? selected : null;
-  // A table's size is its rows': a mind node tapped while a table was selected came out 360 x 150.
+  // A table's size is its rows': a square tapped while a table was selected came out 360 x 150.
   const keepsOwnSize =
     donor?.type === 'table' ||
     (donor?.type === 'shape' && (isContainerKind(donor.shape) || isSelfDrawingShape(donor.shape)));

@@ -10,12 +10,6 @@ describe('label-collision', () => {
       message: 'a→b label overlaps a, b',
       fix: 'set a->b label="<at most 3 characters>"',
     });
-    expect(
-      of(
-        lint(tabOf(box('a', 0, 0), box('b', 160, 0), labelled), { source: 'graph' }),
-        'label-collision',
-      )[0]!.fix,
-    ).toBe('shorten the edge label to 3 characters');
   });
 
   it('reads lines as drawn, fanned off a shared anchor: a label between two fanned drops is not struck', () => {
@@ -128,7 +122,7 @@ describe('label-collision', () => {
   });
 
   it('moves a label off another label along its own line, rather than shortening it', () => {
-    // Two long level arrows a few pixels apart, each label placed at its middle (as the graph look places them): the
+    // Two long level arrows a few pixels apart, each label placed at its middle (as the label pass places them): the
     // plates overlap.
     const tab = tabOf(
       box('a', 0, 0),

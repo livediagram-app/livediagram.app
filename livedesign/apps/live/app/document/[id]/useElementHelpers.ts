@@ -1,4 +1,3 @@
-import { isFloorShape } from '@livedesign/document';
 import type { Dispatch, SetStateAction } from 'react';
 import {
   takesTypedLabel,
@@ -143,10 +142,7 @@ export function useElementHelpers(opts: {
     // and immediately work with it matches every other editor; the
     // Layer accordion's "Send to back" covers the rarer reverse case.
     const before = activeTab.elements;
-    // A room or a rug is the floor (docs/specs/009-elements/office.md): it goes in behind everything, so the
-    // furniture already there, and any dropped on it later, stands on it.
-    const onFloor = el.type === 'shape' && isFloorShape(el.shape);
-    const after = onFloor ? [el, ...before] : [...before, el];
+    const after = [...before, el];
     commitTabs((ts) => patchTab(ts, activeId, { elements: after, templateChosen: true }));
     if (select) setSelectedId(el.id);
     // Only kinds that take typed text: a sticker or a session button renders

@@ -3,8 +3,7 @@
 // builds these from D1 and the editor renders them, so the shapes, the verbs, the limits and the
 // refusals live here once.
 
-import { utcDay } from './within-reach';
-import { DAY_MS } from '@livedesign/items';
+import { DAY_MS, utcDay } from './within-reach';
 
 /** N of Jump back in's Within reach set: 4 most used and 4 recent (spec). */
 export const HOME_WITHIN_REACH_PER_ROW = 4;

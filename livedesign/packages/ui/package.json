@@ -43,7 +43,6 @@
     "@livedesign/document": "workspace:*",
     "@livedesign/help-registry": "workspace:*",
     "@livedesign/icons": "workspace:^",
-    "@livedesign/items": "workspace:*",
     "@livedesign/tailwind-config": "workspace:*",
     "@livedesign/telemetry-client": "workspace:*"
   }

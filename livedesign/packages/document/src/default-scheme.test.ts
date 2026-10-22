@@ -25,7 +25,7 @@ describe('the Default colour scheme', () => {
     expect(light.id).toBe(dark.id);
     expect(light.label).toBe(dark.label);
     // Different canvas.
-    // The light canvas is the board's off-white (docs/specs/007-editor/editor-modes.md "One look").
+    // The light canvas is an off-white (docs/specs/011-theme/retired-schemes.md "Default's previous light half").
     expect(light.backgroundColor).toBe('#fbfaf7');
     expect(dark.backgroundColor).toBe('#0d121a');
     expect(light.patternColor).not.toBe(dark.patternColor);

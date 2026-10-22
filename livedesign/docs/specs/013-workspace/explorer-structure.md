@@ -57,7 +57,7 @@ Top to bottom. "Opens" names the view a row selects; every view keeps its own ro
 | Row            | Opens                                                | Badge                                                                             |
 | -------------- | ---------------------------------------------------- | --------------------------------------------------------------------------------- |
 | Home           | `/explorer/home` ([Explorer Home](explorer-home.md)) | Other people's events since the reader last looked ([Timeline](timeline.md) §2.5) |
-| Inbox          | `/explorer/inbox` ([Inbox](inbox.md))                | Open actions and Plan cards assigned to the reader, always shown, 0 included      |
+| Inbox          | `/explorer/inbox` ([Inbox](inbox.md))                | Open actions assigned to the reader, always shown, 0 included                     |
 | Timeline       | `/explorer/timeline` ([Timeline](timeline.md))       | None: the unread count sits on Home                                               |
 | Shared With Me | `/explorer/shared`                                   | Documents shared with the reader                                                  |
 
@@ -116,8 +116,7 @@ The group's title is **More**.
 
 ## Dragging to the Trash
 
-The sidebar's **Trash** row takes a document or a folder dragged onto it, the way Plan mode's Trash takes a card
-([Plan items: Trash](../026-plan/items.md)).
+The sidebar's **Trash** row takes a document or a folder dragged onto it.
 
 - **What drags.** Every document that drags to a folder today (its own, a team's, one in this browser; never one shared
   with the reader, nor one being renamed), and the reader's own folders: a folder card or folder row in the pane, and

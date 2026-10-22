@@ -63,21 +63,21 @@ sticker classes a kept Shape value still draws.
 
 `bodyAnimationSetOf(el)`:
 
-| Element                                                                | Set                  |
-| ---------------------------------------------------------------------- | -------------------- |
-| `sticky`                                                               | `sticky`             |
-| `freehand`, `path`                                                     | `drawing`            |
-| `image`, `video`                                                       | `media`              |
-| `table`                                                                | `table`              |
-| `text`                                                                 | undefined            |
-| `shape` that is an icon, chart, progress or rating                     | undefined (own sets) |
-| `shape` that is a concept graphic or a sequence diagram (words: Text)  | undefined (own sets) |
-| any other `shape` (stickers and chairs too), `annotation`, `link-card` | `shape`              |
+| Element                                            | Set                  |
+| -------------------------------------------------- | -------------------- |
+| `sticky`                                           | `sticky`             |
+| `freehand`, `path`                                 | `drawing`            |
+| `image`, `video`                                   | `media`              |
+| `table`                                            | `table`              |
+| `text`                                             | undefined            |
+| `shape` that is an icon, chart, progress or rating | undefined (own sets) |
+| `shape` that is a concept graphic (words: Text)    | undefined (own sets) |
+| any other `shape` (stickers too), `link-card`      | `shape`              |
 
 `takesShapeMotions(el)` is true for `sticky`, `freehand`, `path`, `image`, `video`, `table`, and a `shape` with a set
 of its own (`hasOwnShapeSet` or `hasOwnBodySet`) other than `icon`. `inAnimationSet('shape', el)` is
 `bodyAnimationSetOf(el) === 'shape' || takesShapeMotions(el)`, and `animationSetsOf` adds `shape` for such an element.
-`shapeAnimationsFor(el)` is `CONTAINER_ANIMATIONS` for a boundary, `SHAPE_ANIMATIONS` for any other Shape member,
+`shapeAnimationsFor(el)` is `SHAPE_ANIMATIONS` for a Shape member,
 `SHAPE_MOTIONS` for an element that takes the motions, else `[]`.
 
 `animationSectionOf(el, value)` is `shape` when the element takes the motions and the value is a motion, or when it
@@ -85,12 +85,12 @@ has no body set and no `hasOwnBodySet` (a chart's older Shape value, shown as th
 `bodyAnimationSetOf(el)`.
 
 `carriesWords(el)`: `text`, `sticky` and `table` are true; a `shape` is true when `takesTypedLabel(el)`, not
-`selfLabelled(el)`, not icon / chart / progress / rating, and not `chair` or `sticker`; everything else is false.
+`selfLabelled(el)`, not icon / chart / progress / rating, and not `sticker`; everything else is false.
 
 `animationCategoriesOf(elements)` adds each element's own category (`ownCategoryOf`: icon, chart, sankey, progress,
-rating, concept, sequence, arrow) to `animationSetsOf` and orders all by
-`shape, sticky, drawing, media, table, icon, chart, sankey, progress, rating, concept, sequence, text, arrow`. Concept
-and Sequence render `ConceptAnimTiles` / `SequenceAnimTiles` (`apps/live/components/palette/ElementAnimationTiles.tsx`)
+rating, concept, arrow) to `animationSetsOf` and orders all by
+`shape, sticky, drawing, media, table, icon, chart, sankey, progress, rating, concept, text, arrow`. Concept
+renders `ConceptAnimTiles` (`apps/live/components/palette/ElementAnimationTiles.tsx`)
 through the menu's `elementStyle` ops; Progress and Rating render `ProgressAnimTiles` / `RatingAnimTiles` with their
 `onSet*Anim*` handlers.
 
@@ -140,12 +140,12 @@ trio onto a target without words.
 
 `wrapperShapeAnimation(el)` is the Shape value the wrapper draws: a Shape member's own value; on a sticky or table
 the shared Pulse / Glow / Highlight (a note and a table are rectangles); a kept value (a motion among them) on any set;
-on a concept graphic or sequence a motion only; and a text
-element's legacy value unless it has a `textAnimation`. Annotations, stickers and chairs draw Pulse,
-Glow, Trace and Gradient on their silhouette (the `lvd-anim-text-*` / sticker classes: on the art for a sticker or
-chair, on the element for a pin or rail); shapes ShapeSvgOverlay really draws (`drawsShapeSvgOverlay`: SVG-rendered
+on a concept graphic a motion only; and a text
+element's legacy value unless it has a `textAnimation`. Stickers draw Pulse,
+Glow, Trace and Gradient on their silhouette (the `lvd-anim-text-*` / sticker classes: on the art for a sticker, on
+the element for a pin or rail); shapes ShapeSvgOverlay really draws (`drawsShapeSvgOverlay`: SVG-rendered
 and not claimed by a face of its own) in the overlay; every other element on `AnimationLayer`, rendered after its
-face so an opaque face (a plan board, a code block) cannot hide it. Gradient's band multiplies over the face.
+face so an opaque face (a code block) cannot hide it. Gradient's band multiplies over the face.
 
 The wrapper carries `--lvd-anim-speed`, `--lvd-anim-iter`, `--lvd-anim-color` (the stroke as drawn, or a text
 element's ink), `--lvd-anim-size` (`min(w, h)`, unitless px), `--lvd-w`, `--lvd-h`, and `--lvd-anim-bg` for Gradient
@@ -187,8 +187,7 @@ runs on words (Scramble as Typewriter); past `TEXT_ANIM_MAX_WORDS` everything ru
 loops as Glow). Whitespace stays plain text; in letters mode each word is a no-wrap `lvd-tx-word`. Rich runs split in
 turn with a shared counter; a table's cells start where the previous cell ended (`unitCount`).
 
-A page's masthead (`PageMasthead`) plans its title and subtitle as one label and lays an animated copy over each
-`InlineTextLine` while it is not being edited. Auto-fit (`scale`) labels keep their SVG `<text>` to measure the fit, painted transparent, and draw the animated
+Auto-fit (`scale`) labels keep their SVG `<text>` to measure the fit, painted transparent, and draw the animated
 words as HTML in a `foreignObject` over the measured box, at the same 20px, line height 1.2, no wrapping.
 
 The content node carries the full text as `aria-label`; units (or their word groups) are `aria-hidden`; the DOM
@@ -314,7 +313,7 @@ in `apps/telemetry/app/event-explanations.ts`.
 | One category per set present                                        | `apps/live/components/palette/AnimationSections.test.tsx` |
 | Tiles, labels, kept tile                                            | `apps/live/components/palette/AnimationSetTiles.test.tsx` |
 | Writes act on members only; None per section; Text clears legacy    | `apps/live/lib/animation-set-writes.test.ts`              |
-| A motion plays on a photo, a chart, a concept graphic, a sequence   | `apps/live/components/canvas/animation-routing.test.ts`   |
+| A motion plays on a photo, a chart, a concept graphic               | `apps/live/components/canvas/animation-routing.test.ts`   |
 | Painter copies within a set, a motion to its takers, Text to words  | `apps/live/lib/format-painter.test.ts`                    |
 | Granularity, fallbacks, counting, determinism, aria, budget         | `apps/live/components/canvas/animated-words.test.tsx`     |
 | New stylesheets kept out of the chrome motion budget                | `apps/live/motion-budget.test.ts`                         |

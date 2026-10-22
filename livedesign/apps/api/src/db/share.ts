@@ -1,4 +1,4 @@
-// share_links — per-document, per-role short codes (migration 0003,
+// share_links — per-document, per-role short codes (the baseline migration,
 // expiry columns from 0020 / docs/specs/013-workspace/share-link-expiry.md). Row shape + role normalisation
 // live in share-link-row.ts so the defensive mapper has its own test
 // surface.

@@ -24,9 +24,12 @@ describe('heroSearch', () => {
   });
 
   it('puts a title match before one found only through its description or category', () => {
-    const kinds = heroSearch('retro').map((t) => t.kind);
-    expect(kinds[0]).toBe('retrospective');
-    const titled = heroSearch('retro', 50).map((t) => t.title.toLowerCase().includes('retro'));
+    // A blank phone wireframe is found by its search word "app" and comes first in the catalogue, but the
+    // templates with App in their title rank ahead of it.
+    const kinds = heroSearch('app').map((t) => t.kind);
+    expect(kinds[0]).toBe('wireframe-mobile-app');
+    expect(heroSearch('app', 50).map((t) => t.kind)).toContain('blank-wireframe-phone');
+    const titled = heroSearch('app', 50).map((t) => t.title.toLowerCase().includes('app'));
     // Every title match comes before every other match.
     expect(titled.indexOf(false) === -1 || titled.lastIndexOf(true) < titled.indexOf(false)).toBe(
       true,
@@ -34,8 +37,8 @@ describe('heroSearch', () => {
   });
 
   it('finds the blanks too, and through search words, as the editor does', () => {
-    expect(heroSearch('whiteboard').map((t) => t.kind)).toContain('whiteboard');
-    expect(heroSearch('mortgage').map((t) => t.kind)).toContain('loan-calculator');
+    expect(heroSearch('blank logo').map((t) => t.kind)).toContain('blank-logo');
+    expect(heroSearch('iphone').map((t) => t.kind)).toContain('blank-wireframe-phone');
   });
 
   it('never lists a template twice', () => {
@@ -45,17 +48,19 @@ describe('heroSearch', () => {
 });
 
 describe('the fan', () => {
-  it('deals from every listed template but the blanks, each once, across every mode', () => {
+  it('deals from every listed template but the blanks, each once, across every category', () => {
     expect(new Set(HERO_FAN_POOL).size).toBe(HERO_FAN_POOL.length);
     expect([...HERO_FAN_POOL].sort()).toEqual(
       galleryTemplates()
         .map((t) => t.kind)
         .sort(),
     );
-    const modes = new Set(HERO_FAN_POOL.map((k) => heroTemplate(k).mode));
-    expect([...modes].sort()).toEqual(['diagram', 'draw', 'pages', 'plan', 'workshop']);
+    const categories = new Set(HERO_FAN_POOL.map((k) => heroTemplate(k).category));
+    expect([...categories].sort()).toEqual(['design', 'presentations']);
     for (const kind of HERO_FAN_OPENING) expect(HERO_FAN_POOL).toContain(kind);
     expect(HERO_FAN_OPENING).toHaveLength(HERO_FAN_SLOTS);
+    // Fewer slots than templates, so a swap always has another one to deal in.
+    expect(HERO_FAN_SLOTS).toBeLessThan(HERO_FAN_POOL.length);
   });
 
   it('shuffles the whole pool, differently for a different random source', () => {
@@ -67,10 +72,13 @@ describe('the fan', () => {
   });
 
   it('deals the next kind not already showing, wrapping round the pool', () => {
-    const pool = ['kanban', 'flowchart', 'mindmap'] as const;
-    expect(nextFanKind(pool, ['kanban'], 0)).toEqual({ kind: 'flowchart', at: 1 });
-    expect(nextFanKind(pool, ['flowchart'], 0)).toEqual({ kind: 'mindmap', at: 2 });
-    expect(nextFanKind(pool, ['flowchart'], 2)).toEqual({ kind: 'kanban', at: 0 });
+    const pool = ['logo-design', 'wireframe-mobile-app', 'wireframe-website'] as const;
+    expect(nextFanKind(pool, ['logo-design'], 0)).toEqual({ kind: 'wireframe-mobile-app', at: 1 });
+    expect(nextFanKind(pool, ['wireframe-mobile-app'], 0)).toEqual({
+      kind: 'wireframe-website',
+      at: 2,
+    });
+    expect(nextFanKind(pool, ['wireframe-mobile-app'], 2)).toEqual({ kind: 'logo-design', at: 0 });
   });
 
   it('throws for a kind the catalogue does not list', () => {

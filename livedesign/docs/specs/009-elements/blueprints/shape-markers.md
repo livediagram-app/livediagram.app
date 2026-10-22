@@ -10,7 +10,7 @@ Scope, by file:
 | ------------------------------------------------------------ | -------------------------------------------------------------------------- |
 | `packages/document/src/shape-marker.ts`                      | `ShapeMarker`, `SHAPE_MARKERS` (offer order)                               |
 | `packages/document/src/element-types.ts`                     | `ShapeElement.marker`, `ShapeElement.markerSize`                           |
-| `packages/document/src/collab-shapes.ts`                     | `supportsMarkers`: the menu gate, beside `hasOwnFace`                      |
+| `packages/document/src/data-shapes.ts`                       | `isSelfDrawingShape`: the menu gate                                        |
 | `apps/live/components/canvas/ShapeMarker.tsx`                | `ShapeMarkerGlyph`, `MARKER_LABELS`, the circle fills                      |
 | `apps/live/components/canvas/shape-inline-icon-layout.tsx`   | `ShapeInlineIconLayout`: marker + label group, `MARKER_FIXED_PX`           |
 | `apps/live/components/canvas/BoxedElementView.tsx`           | Resolves `marker` (none for self-drawing shapes)                           |
@@ -33,8 +33,7 @@ Scope, by file:
 | Marker glyph | `ShapeMarkerGlyph`     | The one drawing, shared by canvas and menu tiles                                        |
 | Tile label   | `MARKER_LABELS`        | Green, Orange, Red, To do, Done                                                         |
 
-Banned synonyms: "status dot" in code (say marker), "badge", "tick box" (say checkbox marker),
-"annotation marker" (that is the annotation element).
+Banned synonyms: "status dot" in code (say marker), "badge", "tick box" (say checkbox marker).
 
 ## Behaviour and state
 
@@ -59,9 +58,8 @@ max(16, min(min(w, h) * 0.32, 48))`; fixed buckets from `MARKER_FIXED_PX` (sm 12
 
 ### Menu
 
-1. Single element: `showMarkers = target.type === 'shape' && supportsMarkers(target.shape) &&
-hasText`, `hasText` = trimmed label non-empty or the element is being edited.
-   `supportsMarkers(kind) = !isSelfDrawingShape(kind) && !hasOwnFace(kind)`; it admits the web
+1. Single element: `showMarkers = target.type === 'shape' && !isSelfDrawingShape(target.shape) &&
+hasText`, `hasText` = trimmed label non-empty or the element is being edited. It admits the web
    components that carry a label (banner, callout, header), whose face never draws a marker
    [GE16], and the page and icon kinds [QE12].
 2. Placement: the Text flyout, after Typography and Alignment.
@@ -69,7 +67,7 @@ hasText`, `hasText` = trimmed label non-empty or the element is being edited.
    renders, inert and dimmed at 40 % until a marker is set.
 4. Hover previews (`previewMarker`, `previewMarkerSize`), click commits (`commitMarker`,
    `commitMarkerSize`) as one history step with telemetry `Marker` / `MarkerSize`.
-5. Multi-selection: shown when any member is a shape passing `supportsMarkers` with a trimmed
+5. Multi-selection: shown when any member is a shape that is not self-drawing (`!isSelfDrawingShape`) with a trimmed
    label (`markerSrc`, which also seeds the tiles), writing to every selected shape.
 6. The quick style panel has no marker section.
 7. Command palette, any single shape selected (`singleIsShape`, no kind or text gate): "Clear
@@ -94,7 +92,7 @@ export function ShapeMarkerGlyph(props: {
   size: number;
   color?: string; // checkbox tint; defaults to currentColor
 }): JSX.Element;
-export function supportsMarkers(kind: ShapeKind): boolean;
+export function isSelfDrawingShape(kind: ShapeKind): boolean;
 export function applyMarkerToEl(el: Element, marker: ShapeMarker | null): Element;
 export function applyMarkerSizeToEl(el: Element, size: TextSize): Element;
 ```
@@ -154,17 +152,17 @@ Telemetry `track('Element', 'Changed', 'Marker' | 'MarkerSize')` from `commitSty
 
 ## Testing
 
-| Rule                                         | Test                                                                                    | File                                             |
-| -------------------------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| Set and clear a marker                       | sets and clears a marker on the selected shape                                          | `apps/live/hooks/canvas/useElementStyle.test.ts` |
-| Set the size bucket                          | sets the marker size bucket                                                             | `apps/live/hooks/canvas/useElementStyle.test.ts` |
-| Command palette offers / clears markers      | offers the marker catalogue; offers Clear marker and hides the current                  | `apps/live/lib/editor-commands.test.ts`          |
-| Not offered for non-shapes (palette)         | does not offer markers for a non-shape boxed element                                    | `apps/live/lib/editor-commands.test.ts`          |
-| Self-drawing shapes never draw a marker      | none [GE11]                                                                             |                                                  |
-| Marker sits left of the label, centred alone | none [GE11]                                                                             |                                                  |
-| Menu gate: no self-drawing or own-face kind  | is off for kinds with their own face and for self-drawing kinds; is on for plain shapes | `packages/document/src/collab-shapes.test.ts`    |
-| Menu shown only with text; multi-select      | none [GE11]                                                                             |                                                  |
-| Export draws the marker                      | none [QE11]                                                                             |                                                  |
+| Rule                                         | Test                                                                   | File                                             |
+| -------------------------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------ |
+| Set and clear a marker                       | sets and clears a marker on the selected shape                         | `apps/live/hooks/canvas/useElementStyle.test.ts` |
+| Set the size bucket                          | sets the marker size bucket                                            | `apps/live/hooks/canvas/useElementStyle.test.ts` |
+| Command palette offers / clears markers      | offers the marker catalogue; offers Clear marker and hides the current | `apps/live/lib/editor-commands.test.ts`          |
+| Not offered for non-shapes (palette)         | does not offer markers for a non-shape boxed element                   | `apps/live/lib/editor-commands.test.ts`          |
+| Self-drawing shapes never draw a marker      | none [GE11]                                                            |                                                  |
+| Marker sits left of the label, centred alone | none [GE11]                                                            |                                                  |
+| Menu gate: no self-drawing kind              | none [GE11]                                                            |                                                  |
+| Menu shown only with text; multi-select      | none [GE11]                                                            |                                                  |
+| Export draws the marker                      | none [QE11]                                                            |                                                  |
 
 ## Constants and configuration
 

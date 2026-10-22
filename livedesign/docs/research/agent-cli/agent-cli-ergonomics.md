@@ -163,21 +163,21 @@ numbers, but the ratios hold. All local, read-only.
 
 ### 3.1 Help text sizes
 
-| Command                                     | Tokens  | Lines |
-| ------------------------------------------- | ------- | ----- |
-| `gh --help`                                 | 485     | 65    |
-| `gh pr --help`                              | 386     | 47    |
-| `gh pr list --help`                         | 465     | 52    |
-| `gh pr view --help`                         | 242     | 28    |
-| `git --help`                                | 509     | 45    |
-| `git commit -h`                             | 900     | 65    |
-| `kubectl --help`                            | 678     | 73    |
-| `kubectl get --help`                        | 1,473   | 126   |
-| `wrangler --help`                           | 854     | 64    |
-| `wrangler d1 --help`                        | 378     | 24    |
-| `wrangler d1 execute --help`                | 381     | 28    |
-| `jq --help`                                 | 649     | 63    |
-| playwright-cli command list                 | 2,243   | 155   |
+| Command                                    | Tokens  | Lines |
+| ------------------------------------------ | ------- | ----- |
+| `gh --help`                                | 485     | 65    |
+| `gh pr --help`                             | 386     | 47    |
+| `gh pr list --help`                        | 465     | 52    |
+| `gh pr view --help`                        | 242     | 28    |
+| `git --help`                               | 509     | 45    |
+| `git commit -h`                            | 900     | 65    |
+| `kubectl --help`                           | 678     | 73    |
+| `kubectl get --help`                       | 1,473   | 126   |
+| `wrangler --help`                          | 854     | 64    |
+| `wrangler d1 --help`                       | 378     | 24    |
+| `wrangler d1 execute --help`               | 381     | 28    |
+| `jq --help`                                | 649     | 63    |
+| playwright-cli command list                | 2,243   | 155   |
 | **mock `livedesign --help`** (§6.1)        | **380** | 32    |
 | **mock `livedesign el --help`** (§6.2)     | **162** | 14    |
 | **mock `livedesign el add --help`** (§6.3) | **349** | 28    |
@@ -197,7 +197,7 @@ a huge API at 485 at the top. Past about 900 tokens, the help is a manual.
 | the other eight                                                   | 257 to 384 each |
 | **11 current tools**                                              | **≈12.2k**      |
 | **all 19 advertised (with `*_diagram` aliases until 2027-04-30)** | **21.5k**       |
-| schema resource `livedesign://schema/elements`                   | 1,898           |
+| schema resource `livedesign://schema/elements`                    | 1,898           |
 
 The element format is repeated inline in each of the three element-taking tools, about 2k tokens each time.
 With a CLI, the agent reads `livedesign schema sticky` (about 100 tokens) only when it places a sticky.
@@ -266,9 +266,9 @@ needs a **default field set**, not "everything".
 
 ### 4.2 Progressive help, with token budgets
 
-| Level | Command                                | Content                                                                   | Budget       |
-| ----- | -------------------------------------- | ------------------------------------------------------------------------- | ------------ |
-| 0     | skill frontmatter                      | when to use the CLI                                                       | ≤ 80         |
+| Level | Command                               | Content                                                                   | Budget       |
+| ----- | ------------------------------------- | ------------------------------------------------------------------------- | ------------ |
+| 0     | skill frontmatter                     | when to use the CLI                                                       | ≤ 80         |
 | 1     | `livedesign` / `--help`               | resources with their verbs, ref syntax, output contract, 4 starting moves | ≤ 500        |
 | 2     | `livedesign <resource> --help`        | verbs, one line each                                                      | ≤ 250        |
 | 3     | `livedesign <resource> <verb> --help` | usage, flags, 2-3 examples, what it prints                                | ≤ 400        |

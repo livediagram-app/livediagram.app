@@ -70,17 +70,12 @@ export function useColorStyleSetters(deps: {
   const setTextColorSelected = (color: string) =>
     commitSelectedStyle('textColor', (el) => applyTextColorToEl(el, color));
 
-  // Heading-band colour (debounced like the other colour pickers), for the
-  // elements that have a heading distinct from their body: a table's header
-  // row and a lane's title gutter (docs/specs/009-elements/lane.md). One field and one setter,
-  // because it is one idea wearing two silhouettes.
+  // Heading-band colour (debounced like the other colour pickers), for a table's header row. Hand-picking the
+  // band breaks a table's preset binding, like every other colour on it (docs/specs/010-palette/style-presets.md).
   const setHeaderFillSelected = (color: string) =>
-    commitSelectedStyle('headerFill', (el) => {
-      // Hand-picking the band breaks a table's preset binding, like every
-      // other colour on it (docs/specs/010-palette/style-presets.md).
-      if (el.type === 'table') return { ...el, headerFill: color, tablePreset: undefined };
-      return el.type === 'shape' && el.shape === 'lane' ? { ...el, headerFill: color } : el;
-    });
+    commitSelectedStyle('headerFill', (el) =>
+      el.type === 'table' ? { ...el, headerFill: color, tablePreset: undefined } : el,
+    );
   const setTableHeaderTextColorSelected = (color: string) =>
     commitSelectedStyle('headerTextColor', (el) =>
       el.type === 'table' ? { ...el, headerTextColor: color, tablePreset: undefined } : el,

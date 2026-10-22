@@ -7,7 +7,6 @@ import { TabLockIcon } from '@/components/chrome/tab-bar-icons';
 import { SideBySideIcon } from '@livedesign/ui';
 import { useSplitViewContext } from '@/components/split/SplitViewContext';
 import { TabPresenceStack } from '@/components/chrome/TabPresenceStack';
-import { TabModeIcon } from './editor-mode/TabModeIcon';
 import { EllipsisMenuButton } from './EllipsisMenuButton';
 import { OutOfScopeTabPill } from './OutOfScopeTabPill';
 import type { useTabReorderDrag } from './useTabReorderDrag';
@@ -98,8 +97,7 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
   return (
     <div
       key={tab.id}
-      // Tour anchor (docs/specs/007-editor/editor-tour.md): the Tabs step highlights the active pill
-      // together with the add button.
+      // Tour anchor: the active pill.
       data-tour-id={isActive ? 'active-tab' : undefined}
       draggable={!isEditing && !readOnly}
       {...reorderDrag.handlersFor(tab.id)}
@@ -121,8 +119,7 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
       }
       // Active tab: a raised card (bar-contrasting surface + accent ring +
       // accent text) so it can't blend into the bar; inactive tabs use
-      // neutral slate text — readable on the bar whatever the tab's theme —
-      // with the theme accent kept on the opening-mode icon inside the label.
+      // neutral slate text — readable on the bar whatever the tab's theme.
       // color-mix keeps the ring legible for non-hex accents too.
       style={
         isActive && !isEditing
@@ -175,10 +172,6 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
           aria-current={isActive ? 'page' : undefined}
           className="relative flex h-7 items-center gap-1.5 rounded-lg text-sm font-medium outline-none touch-target-y focus-visible:ring-2 focus-visible:ring-brand-400"
         >
-          {/* The mode you work in on this tab (docs/specs/007-editor/editor-modes.md), tinted with
-              the tab theme's accent; the pill text itself stays neutral so it reads on the bar for
-              ANY theme. */}
-          <TabModeIcon tab={tab} style={{ color: legibleTabAccent(tab, isDark) }} />
           {tab.locked ? <TabLockIcon /> : null}
           {/* Trimmed to its cap band so the name centres on its letters; the button's height is
               pinned because the trimmed name no longer props it open. */}

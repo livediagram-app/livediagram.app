@@ -17,8 +17,8 @@ function arrange() {
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('t2', 'Pricing', '{"elements":[]}', 1);
     INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1);
     INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('d1', 't2', 1, 1);
-    INSERT INTO share_links (code, document_id, role, created_at, purpose, tab_id)
-      VALUES ('SCOPED2345', 'd1', 'view', 1, 'share', 't2');
+    INSERT INTO share_links (code, document_id, role, created_at, tab_id)
+      VALUES ('SCOPED2345', 'd1', 'view', 1, 't2');
   `);
   return db;
 }
@@ -129,11 +129,9 @@ const join = (r: DocumentRoom, ws: Socket, tabScope: string | null, code: string
   r.acceptSession(
     ws as unknown as WebSocket,
     'view',
-    false,
     tabScope,
     code,
     false,
-    null,
     null,
     null,
     null,

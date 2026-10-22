@@ -15,27 +15,22 @@ type WhiteboardPenGestureDeps = Pick<
 > & {
   viewportZoom: number;
   wrapperRef: RefObject<HTMLDivElement | null>;
-  // Whether the tab is in Draw mode. Leaving it mid-stroke finishes the stroke.
-  whiteboard: boolean;
 };
 
-// The whiteboard pen's gesture (docs/specs/023-draw-mode/draw-mode.md "Pens", "Touch and pen
-// input"; blueprint whiteboard-round-one "Pen ink"). The press makes one LiveStroke and sets it as
+// A marker's gesture (docs/specs/023-draw-mode/drawing-tools.md "Markers"). The press makes one
+// LiveStroke and sets it as
 // state once; after that every move adds its raw sample and pressure straight to the stroke and
 // notifies its subscribers (the ink, the recognition dwell), so drawing costs no React render. One
 // sample per move, as Excalidraw takes them: its streamline values are tuned to that rate. Release
 // commits the very samples the stroke showed, so what was drawn is what lands. Alt (Option) pressed
-// while the stroke is live flips it between ink and a shape ("Shape recognition"). A switch out of
-// Draw mode mid-stroke (one's own Shift+D, or a collaborator's) finishes the stroke first, as
-// docs/specs/007-editor/editor-modes.md "Everyone follows a switch" says; putting the pen down
-// (Escape, another tool) discards it.
+// while the stroke is live flips it between ink and a shape ("Shape recognition"). Putting the pen
+// down (Escape, another tool) discards it.
 export function useWhiteboardPenGesture({
   pendingDraw,
   wrapperRef,
   viewportZoom,
   isPinchingRef,
   onCommitFreehand,
-  whiteboard,
 }: WhiteboardPenGestureDeps) {
   const [penStroke, setPenStroke] = useState<LiveStroke | null>(null);
   // A pen stroke is a stroke gesture (docs/specs/008-canvas/canvas-performance.md), however it ends.
@@ -44,7 +39,7 @@ export function useWhiteboardPenGesture({
 
   // The pen was put down mid-stroke (Escape, another tool): the stroke goes with it.
   if (penStroke && !isWhiteboardPenIntent(pendingDraw)) {
-    debugLog('[whiteboard] stroke discarded: pen put down');
+    debugLog('[marker] stroke discarded: pen put down');
     setPenStroke(null);
   }
 
@@ -67,35 +62,19 @@ export function useWhiteboardPenGesture({
   });
   const pinchingNow = useEffectEvent(() => isPinchingRef?.current === true);
   const commitStroke = useEffectEvent((stroke: LiveStroke) => {
-    // A tap is one point, and lands as a dot (docs/specs/023-draw-mode/draw-mode.md "Pens").
+    // A tap is one point, and lands as a dot (docs/specs/023-draw-mode/drawing-tools.md "Markers").
     if (stroke.points.length === 0) return;
     debugLog(
-      `[whiteboard] stroke ${stroke.pointer} samples=${stroke.points.length} pressure=${stroke.pressures ? 'yes' : 'no'}`,
+      `[marker] stroke ${stroke.pointer} samples=${stroke.points.length} pressure=${stroke.pressures ? 'yes' : 'no'}`,
     );
     const snapped = stroke.shaped();
     onCommitFreehand(stroke.points.slice(), false, {
       ...(stroke.pressures ? { pressures: stroke.pressures.slice() } : {}),
       streamline: stroke.streamline,
-      // Lifting lands what shows: the shape, or ink broken out of one, never re-read as a shape.
-      ...(snapped ? { snapped } : stroke.keepsInk() ? { keepInk: true as const } : {}),
+      // Lifting lands what shows: the shape, or the ink, never re-read as a shape.
+      ...(snapped ? { snapped } : {}),
     });
   });
-
-  // The tab left Draw mode with a stroke live: it lands as drawn so far. This runs before the
-  // editor's own effect puts the pen down (a child's effects run first), so the commit still sees
-  // the pen in hand, and the render-time discard above never fires for a mode switch.
-  const wasWhiteboard = useRef(whiteboard);
-  const finishOnLeave = useEffectEvent(() => {
-    if (!penStroke) return;
-    debugLog('[whiteboard] stroke finished: mode switched');
-    setPenStroke(null);
-    commitStroke(penStroke);
-  });
-  useEffect(() => {
-    const left = wasWhiteboard.current && !whiteboard;
-    wasWhiteboard.current = whiteboard;
-    if (left) finishOnLeave();
-  }, [whiteboard]);
 
   const penWidth = useEffectEvent(() =>
     isWhiteboardPenIntent(pendingDraw) ? pendingDraw.width : 0,
@@ -126,7 +105,7 @@ export function useWhiteboardPenGesture({
       if (!mine(e)) return;
       if (pinchingNow()) pinched = true;
       if (pinched) return;
-      // Shift reshapes a locked shape perfect, from this move on (draw-mode.md "Shape
+      // Shift reshapes a locked shape perfect, from this move on (drawing-tools.md "Shape
       // recognition"); a move that only changes Shift still redraws.
       const shiftChanged = stroke.constrain(e.shiftKey);
       const p = canvasPoint(e);
@@ -138,7 +117,7 @@ export function useWhiteboardPenGesture({
       if (pinchingNow()) pinched = true;
       setPenStroke(null);
       if (pinched) {
-        debugLog('[whiteboard] stroke discarded: pinch');
+        debugLog('[marker] stroke discarded: pinch');
         return;
       }
       // Where the pen lifted, if it moved since the last sample. A lifted pen reports no
@@ -150,37 +129,27 @@ export function useWhiteboardPenGesture({
     };
     const onCancel = (e: PointerEvent) => {
       if (!mine(e)) return;
-      debugLog('[whiteboard] stroke discarded: cancel');
+      debugLog('[marker] stroke discarded: cancel');
       setPenStroke(null);
     };
-    // Each Alt press flips the stroke (docs/specs/023-draw-mode/draw-mode.md "Shape recognition");
-    // while it is held, holding still does not snap the stroke again, and releasing it changes
-    // nothing else.
+    // Each Alt press flips the stroke (docs/specs/023-draw-mode/drawing-tools.md "Shape recognition");
+    // releasing it changes nothing.
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key !== 'Alt') return;
       e.preventDefault();
       swallowAltUp.current = true;
       if (e.repeat || pinched) return;
-      stroke.holdInk(true);
       flipStrokeRecognition(stroke, penWidth(), 'key');
     };
-    const onKeyUp = (e: KeyboardEvent) => {
-      if (e.key === 'Alt') stroke.holdInk(false);
-    };
-    const onBlur = () => stroke.holdInk(false);
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
     window.addEventListener('pointercancel', onCancel);
     window.addEventListener('keydown', onKeyDown);
-    window.addEventListener('keyup', onKeyUp);
-    window.addEventListener('blur', onBlur);
     return () => {
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
       window.removeEventListener('pointercancel', onCancel);
       window.removeEventListener('keydown', onKeyDown);
-      window.removeEventListener('keyup', onKeyUp);
-      window.removeEventListener('blur', onBlur);
     };
   }, [penStroke]);
 

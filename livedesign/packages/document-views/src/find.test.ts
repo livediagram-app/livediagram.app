@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livedesign/document';
+import { createTable, type Element } from '@livedesign/document';
 import { arrowBetween, shapeAt } from './__fixtures__/build';
 import { CHECKOUT_REV, checkoutTab } from './__fixtures__/checkout-tab';
 import { golden } from './__fixtures__/golden-path';
@@ -38,10 +38,7 @@ describe('findView (R17, VW35)', () => {
     const elements = [
       shapeAt('frame', 'outer', 0, 0, 2000, 2000, { label: 'Outer' }),
       shapeAt('frame', 'inner', 0, 0, 900, 900, { label: 'Inner' }),
-      shapeAt('entity', 'ent', 10, 10, 100, 50, {
-        label: 'E',
-        entityFields: [{ name: 'needle_id', type: 'uuid' }],
-      }),
+      { ...createTable(10, 10), id: 'ent', width: 100, height: 50, cells: [['needle_id', 'uuid']] },
       shapeAt('checklist', 'list', 300, 10, 100, 50, {
         checklistItems: [{ text: 'thread the needle', done: false }],
       }),
@@ -64,14 +61,14 @@ describe('findView (R17, VW35)', () => {
     expect(lines.map((l) => /^ *\S+ ?\S*/.exec(l)![0])).toEqual([
       'frame outer',
       '  frame inner',
-      '    entity ent',
+      '    table ent',
       '    checklist list',
       '  code-block code',
       'square talk',
       'arrow free',
       '5 matches:',
     ]);
-    expect(lines.at(-1)).toBe('5 matches: 1 edge, 1 field, 1 item, 1 code, 1 comment');
+    expect(lines.at(-1)).toBe('5 matches: 1 edge, 1 cell, 1 item, 1 code, 1 comment');
   });
 
   // Whatever the budget, the totals stay, and a cut answer always says so: never a silent truncation.

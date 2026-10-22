@@ -16,9 +16,7 @@ export const CTA_SOURCES = {
     // Retired with the Start Blank menu (October 2026), on every surface below too: the header and the
     // hero's bar now link /new only. The slots stay so their stored history still reads on the dashboard.
     'HeaderDraw',
-    'HeaderWhiteboard',
     'HeaderIllustration',
-    'HeaderPlan',
     'HeaderSession',
     // Retired with the hero's old buttons and launch window: nothing links them now, but they stay
     // so a page a browser still has cached reports, and the dashboard labels the rows they left.
@@ -33,10 +31,8 @@ export const CTA_SOURCES = {
     'HeroSearch',
     'HeroBlank',
     'HeroBlankDraw',
-    'HeroBlankWhiteboard',
     'HeroBlankSession',
     'HeroBlankIllustration',
-    'HeroBlankPlan',
     'HeroFan',
     'Gallery',
     // Retired when the gallery's search moved to the hero (October 2026): its no-match blank link.
@@ -47,73 +43,21 @@ export const CTA_SOURCES = {
     'Header',
     'HeaderBlank',
     'HeaderDraw',
-    'HeaderWhiteboard',
     'HeaderIllustration',
-    'HeaderPlan',
     'HeaderSession',
     'Hero',
     // A card in a category page's "Start from a template" band (docs/specs/019-marketing/marketing-site.md).
     'Templates',
     'Closing',
   ],
-  Compare: [
-    'Header',
-    'HeaderBlank',
-    'HeaderDraw',
-    'HeaderWhiteboard',
-    'HeaderIllustration',
-    'HeaderPlan',
-    'HeaderSession',
-    'Card',
-  ],
-  Faq: [
-    'Header',
-    'HeaderBlank',
-    'HeaderDraw',
-    'HeaderWhiteboard',
-    'HeaderIllustration',
-    'HeaderPlan',
-    'HeaderSession',
-    'Card',
-  ],
+  Compare: ['Header', 'HeaderBlank', 'HeaderDraw', 'HeaderIllustration', 'HeaderSession', 'Card'],
+  Faq: ['Header', 'HeaderBlank', 'HeaderDraw', 'HeaderIllustration', 'HeaderSession', 'Card'],
   // The Build with AI page (docs/specs/019-marketing/build-with-ai.md): its header only. Its own buttons open
   // a third-party tool or sign-up, never /new, so they are not funnel sources.
-  Ai: [
-    'Header',
-    'HeaderBlank',
-    'HeaderDraw',
-    'HeaderWhiteboard',
-    'HeaderIllustration',
-    'HeaderPlan',
-    'HeaderSession',
-  ],
-  Status: [
-    'Header',
-    'HeaderBlank',
-    'HeaderDraw',
-    'HeaderWhiteboard',
-    'HeaderIllustration',
-    'HeaderPlan',
-    'HeaderSession',
-  ],
-  Dashboard: [
-    'Header',
-    'HeaderBlank',
-    'HeaderDraw',
-    'HeaderWhiteboard',
-    'HeaderIllustration',
-    'HeaderPlan',
-    'HeaderSession',
-  ],
-  Help: [
-    'Header',
-    'HeaderBlank',
-    'HeaderDraw',
-    'HeaderWhiteboard',
-    'HeaderIllustration',
-    'HeaderPlan',
-    'HeaderSession',
-  ],
+  Ai: ['Header', 'HeaderBlank', 'HeaderDraw', 'HeaderIllustration', 'HeaderSession'],
+  Status: ['Header', 'HeaderBlank', 'HeaderDraw', 'HeaderIllustration', 'HeaderSession'],
+  Dashboard: ['Header', 'HeaderBlank', 'HeaderDraw', 'HeaderIllustration', 'HeaderSession'],
+  Help: ['Header', 'HeaderBlank', 'HeaderDraw', 'HeaderIllustration', 'HeaderSession'],
 } as const satisfies Record<string, readonly string[]>;
 
 export type CtaSurface = keyof typeof CTA_SOURCES;

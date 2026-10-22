@@ -9,7 +9,6 @@ import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
 import { tabAsSeen } from '@/lib/export-as-seen';
 import { panelEnabled } from '@/lib/user-preferences';
-import { LeavePagesConfirm } from '@/components/dialogs/LeavePagesConfirm';
 
 const ExportTabDialog = dynamic(
   () => import('@/components/dialogs/ExportTabDialog').then((m) => m.ExportTabDialog),
@@ -62,7 +61,6 @@ export function EditorTabDialogs() {
     setDocumentSharePassword,
     setShareDialogOpen,
     syncToCloud,
-    leavePages,
     setSelectedId,
     setMultiSelectedIds,
   } = useEditorContext();
@@ -86,14 +84,13 @@ export function EditorTabDialogs() {
 
   return (
     <>
-      <LeavePagesConfirm leave={leavePages} />
       {exportOpen ? (
         <ExportTabDialog
           // Export what the author is LOOKING at: a tab on the Default colour
           // scheme paints in the viewer's appearance (docs/specs/007-editor/live-app.md), so the export
           // takes the resolved backdrop rather than the stored one — and, from
           // it, the ink for every element that carries no colours of its own. It is the tab's
-          // Diagram backdrop in either mode (docs/specs/007-editor/editor-modes.md "One look").
+          // canvas backdrop as the viewer sees it (docs/specs/011-theme/light-and-dark.md "What a viewer sees").
           tab={tabAsSeen({
             ...activeTab,
             ...(exportScope === 'selection'
@@ -105,7 +102,7 @@ export function EditorTabDialogs() {
           // (docs/specs/007-editor/pages-mode.md "Export").
           pages={exportScope === 'tab' ? pagesMode?.pages : undefined}
           documentName={documentName}
-          // A Dashboard's slots that show another tab draw it (docs/specs/026-plan/plan-tabs.md "Export").
+          // A tab window draws the tab it shows (docs/specs/009-elements/tab-window.md "Exports").
           documentTabs={tabs}
           loadTabs={loadAllTabs}
           onClearSelection={() => {
@@ -122,10 +119,6 @@ export function EditorTabDialogs() {
           tabName={activeTab.name}
           onImportFile={importIntoActiveTab}
           onImportText={importTextIntoActiveTab}
-          // Pages mode and a Dashboard tab import a livedesign tab only: Markdown builds a diagram
-          // (docs/specs/007-editor/pages-mode.md "Import", docs/specs/026-plan/plan-tabs.md "Import and
-          // Export of a Dashboard").
-          formats={pagesMode || activeTab.kind === 'dashboard' ? ['json'] : undefined}
           onClose={() => setImportOpen(false)}
         />
       ) : null}

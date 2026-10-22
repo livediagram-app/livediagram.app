@@ -1,13 +1,21 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { planPalette } from '@livedesign/document';
 import { TOUR_CARD_ATTR, TourBanner } from './TourBanner';
 import { WELCOME_TOUR_COPY } from './tour-card-copy';
+import type { TourPalette } from './tour-colours';
 
-// docs/specs/007-editor/editor-tour.md "The bookend cards ask nothing of the editor": the offer and the last card are a
-// banner at the bottom, as the sign-in banner is.
+// The bookend cards ask nothing of the editor (docs/specs/007-editor/pages-tour.md "The steps"): the offer and the
+// last card are a banner at the bottom, as the sign-in banner is.
 afterEach(cleanup);
+
+const PALETTE: TourPalette = {
+  card: '#ffffff',
+  border: '#e2e8f0',
+  text: '#0f172a',
+  muted: '#5d6d83',
+  focus: '#2563eb',
+};
 
 const open = (card: 'welcome' | 'outro' = 'welcome') => {
   const onNext = vi.fn();
@@ -18,7 +26,7 @@ const open = (card: 'welcome' | 'outro' = 'welcome') => {
       title="Getting started with Diagrams?"
       body="Want a quick tour?"
       copy={WELCOME_TOUR_COPY}
-      palette={planPalette('light')}
+      palette={PALETTE}
       onNext={onNext}
       onSkip={onSkip}
     />,

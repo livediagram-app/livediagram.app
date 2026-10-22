@@ -15,13 +15,12 @@ Scope, by file:
 | `packages/document/src/element-refs.ts`                                 | Refs, slug ids and kind words: `computeRefs`, `resolveRef`, `isSlugId`, `slugIdFor`, `kindWordOf`, `isKnownElement`         |
 | `packages/document/src/containment.ts`                                  | The centre rule and the content origin: `boxCentre`, `boxHoldsPoint`, `smallestHolder`, `deriveContainers`, `contentOrigin` |
 | `packages/document/src/style-keys.ts`                                   | `STYLE_KEYS`, `styleKeysFor`: the style keys views print and edit operations write                                          |
-| `packages/document/src/mermaid-serialise.ts`                            | `mermaidFromTab` calls `smallestHolder` over frames; its output is byte-identical                                           |
 | `packages/document/src/index.ts`                                        | Re-exports `./element-refs`, `./containment` and `./style-keys`                                                             |
 | `packages/api-schema/src/document-views.ts`                             | `VIEW_NAMES`, `ViewName`, `VIEW_QUERY`, `ViewDoor`, every view's JSON wire type, `UNKNOWN_VIEW_ERROR`                       |
 | `packages/api-schema/src/ref-errors.ts`                                 | `TARGET_NOT_FOUND_ERROR`, `TARGET_AMBIGUOUS_ERROR`, `RefCandidate`, `RefErrorBody`                                          |
 | `packages/api-schema/src/telemetry-schema.ts`                           | `TELEMETRY_ACTIONS` gains `Viewed`                                                                                          |
 | `packages/api-schema/src/index.ts`                                      | Re-exports both new files                                                                                                   |
-| `packages/document-views/{package.json,tsconfig.json,oxlint.config.ts}` | The new package `@livedesign/document-views` (depends on `document`, `api-schema`), shaped like `explorer-lens`            |
+| `packages/document-views/{package.json,tsconfig.json,oxlint.config.ts}` | The new package `@livedesign/document-views` (depends on `document`, `api-schema`), shaped like `explorer-lens`             |
 | `packages/document-views/vitest.config.ts`                              | 100% line, branch, function and statement thresholds                                                                        |
 | `packages/document-views/src/index.ts`                                  | The public surface: `renderView`, every view function, the budget                                                           |
 | `packages/document-views/src/constants.ts`                              | The view constants in [Constants and configuration](#constants-and-configuration)                                           |
@@ -48,7 +47,7 @@ Scope, by file:
 | `packages/document-views/src/performance.test.ts`                       | A 10,000-element tab with 100 containers renders and fits within a second                                                   |
 | `packages/document-views/src/__fixtures__/*.ts`                         | The checkout tab, its "after" twin, the three-tab document, the agent-built tab, the 300-element tab, the edge cases        |
 | `packages/document-views/src/__fixtures__/golden/*`                     | One golden file per view (see [Testing](#testing))                                                                          |
-| `apps/api/package.json`                                                 | Depends on `@livedesign/document-views`                                                                                    |
+| `apps/api/package.json`                                                 | Depends on `@livedesign/document-views`                                                                                     |
 | `apps/api/src/responses.ts`                                             | `textPlain(body, init)`                                                                                                     |
 | `apps/api/src/routes/document-views-route.ts`                           | `parseViewQuery`, `answerTabView` (+ the selection for `show selected`), `answerOverview`, the `Agent·Viewed` event         |
 | `apps/api/src/room-client.ts`                                           | `readRoomSelections(env, documentId, tabId, personTag, reader)`: the warning names its reader                               |
@@ -64,8 +63,8 @@ Scope, by file:
 | `apps/mcp/src/image-result.ts`                                          | `tabPreview`: the PNG on its own, which `imageResult` and `readDocument` attach                                             |
 | `apps/telemetry/app/catalogue/connections.ts`                           | The `Agent·Viewed` chart, by view                                                                                           |
 | `docs/development/architecture.md`, `README.md`                         | The new package in the layout and the package list                                                                          |
-| `@livedesign/edit-operations`, `@livedesign/diagram-lint` (own)       | Import refs, slug ids, kind words, `deriveContainers` and `contentOrigin` from `@livedesign/document`                      |
-| The cross-tab comments route (agent-presence's blueprint)               | Imports `computeRefs` from `@livedesign/document`                                                                          |
+| `@livedesign/edit-operations`, `@livedesign/diagram-lint` (own)         | Import refs, slug ids, kind words, `deriveContainers` and `contentOrigin` from `@livedesign/document`                       |
+| The cross-tab comments route (agent-presence's blueprint)               | Imports `computeRefs` from `@livedesign/document`                                                                           |
 
 The repo layout block in `AGENTS.md` gains the package only with the operator's permission (agent files are not
 edited without it); the change names the gap.
@@ -80,8 +79,8 @@ edited without it); the change names the gap.
 | Slug id         | `isSlugId`, `SLUG_ID_PATTERN`, `slugIdFor`                               | An id matching `^[a-z][a-z0-9_-]{0,23}$`; printed verbatim as its ref          |
 | Resolve         | `resolveRef(input, refs) → RefResolution`                                | Input to one element, or a named refusal                                       |
 | Kind word       | `kindWordOf(el)`                                                         | The first word of a line: the shape, the notation, or the element type         |
-| Unknown kind    | `isKnownElement`, `UNKNOWN_KIND_MARK` (`?`)                              | An element type or shape kind `@livedesign/document` does not know            |
-| Container       | `deriveContainers`, `ViewNode.container`                                 | The frame, lane or mind-map parent an element nests under                      |
+| Unknown kind    | `isKnownElement`, `UNKNOWN_KIND_MARK` (`?`)                              | An element type or shape kind `@livedesign/document` does not know             |
+| Container       | `deriveContainers`, `ViewNode.container`                                 | The frame an element nests under                                               |
 | Reading order   | `readingOrder`, `rowsOf`                                                 | Rows top to bottom, then left to right                                         |
 | Freehand run    | `FreehandRun`, `freehandRuns`                                            | Consecutive bare strokes in one container, printed as one counted line         |
 | Content summary | `contentSummaryOf`                                                       | What a content kind holds, briefly                                             |
@@ -90,7 +89,7 @@ edited without it); the change names the gap.
 | Edge            | `ViewEdge`                                                               | An arrow as printed on its source line                                         |
 | Own-line arrow  | `ViewModel.ownLineArrows`                                                | An arrow without a printed source, on its own line                             |
 | Header line     | `viewHeader`, `headerLine`, `ViewHeader`                                 | The first line of every tab view                                               |
-| Counts          | `ElementCounts { boxes, frames, lanes, arrows }`                         | The header's element buckets                                                   |
+| Counts          | `ElementCounts { boxes, frames, arrows }`                                | The header's element buckets                                                   |
 | Hidden          | `ViewModel.hidden`                                                       | Elements left out because they sit on a hidden layer                           |
 | Budget          | `budget` (tokens), `estimateTokens`, `fitOutline`, `fitLines`            | The token ceiling a view is fitted to                                          |
 | Elision line    | `elisionLine`, `Elision`                                                 | The one closing line naming what was left out and how to see it                |
@@ -100,7 +99,7 @@ edited without it); the change names the gap.
 
 Banned: "handle", "alias", "short id", "short code" (for a ref); "mode", "format", "snapshot", "render" (for a view;
 "render" stays the image preview's verb, and `format` names only `read_document`'s choice between a view and the
-elements); "parent" for a frame or lane (it is the container; only `mindParentId` is a parent); "group",
+elements); "parent" for a frame (it is the container); "group",
 "cluster" (a frame is a container; a cluster is graph input's word); "query" or "filter" (those are selectors and
 Explorer lenses); "token" for a kind word (a token is an API token); "truncate" in copy ("hidden", "left out").
 
@@ -175,7 +174,7 @@ non-empty unique ids. The round-trip tests in [Testing](#testing) hold this.
 | Element                                   | Kind word                                                                     |
 | ----------------------------------------- | ----------------------------------------------------------------------------- |
 | The notation `actor`                      | `es:actor`, so it never reads as the `actor` shape                            |
-| `type: 'shape'`, `shape` in `SHAPE_KINDS` | the shape (`square`, `frame`, `lane`, `entity`, `mind-node`, `actor`, …)      |
+| `type: 'shape'`, `shape` in `SHAPE_KINDS` | the shape (`square`, `frame`, `cylinder`, …)                                  |
 | `type` in `ELEMENT_TYPES`, not a shape    | the type (`text`, `sticky`, `table`, `image`, `freehand`, `path`, `arrow`, …) |
 | `type: 'shape'`, unknown `shape`          | `? <shape>` (`VW12`); `? shape` when it has none                              |
 | unknown `type`                            | `? <type>`                                                                    |
@@ -190,20 +189,15 @@ An unknown name prints bare when it matches `^[A-Za-z0-9_.:-]+$`, else as a JSON
 container; views, the edit-operations membership reports, the lint and the editor's frame drag (through
 `containerContents`) all read it.
 
-1. **Mind parent first.** A `mind-node` whose `mindParentId` names a `mind-node` in the input nests under it.
-   Following parent links from any node, a link that returns to a node already on the chain is ignored at the node
-   with the lowest array index, which becomes a root of its tree (`VW24`).
-2. **Geometry otherwise.** Candidates are `frame` and `lane` shapes other than the element itself whose stored box
-   holds the element's centre (`boxHoldsPoint`, edges inclusive) and whose area is strictly greater than the
-   element's (`VW23`). The smallest candidate by area wins; equal areas go to the earlier in array order.
-   `smallestHolder(point, holders)` is that point query alone, the rule `mermaidFromTab` applies (smallest frame
-   holding the centre, inclusive, the earlier on a tie); `deriveContainers` passes it only the strictly larger
-   candidates, and that guard makes nesting acyclic. Rotation is ignored: centres and boxes are the stored
-   axis-aligned ones.
-3. Elements without numeric `x`, `y`, `width`, `height` (only unknown kinds can lack them) sit at the root.
+Candidates are `frame` shapes other than the element itself whose stored box
+holds the element's centre (`boxHoldsPoint`, edges inclusive) and whose area is strictly greater than the
+element's (`VW23`). The smallest candidate by area wins; equal areas go to the earlier in array order.
+`smallestHolder(point, holders)` is that point query alone (smallest frame
+holding the centre, inclusive, the earlier on a tie); `deriveContainers` passes it only the strictly larger
+candidates, and that guard makes nesting acyclic. Rotation is ignored: centres and boxes are the stored
+axis-aligned ones. 3. Elements without numeric `x`, `y`, `width`, `height` (only unknown kinds can lack them) sit at the root.
 
-Views pass printed elements only, so a hidden frame contains nothing. Containers nest to any depth. `mermaidFromTab`
-keeps its one-level, frames-only output by calling `smallestHolder` with frames only.
+Views pass printed elements only, so a hidden frame contains nothing. Containers nest to any depth.
 
 `contentOrigin(elements)`: the rounded minimum `x` and `y` over boxed elements, `(0, 0)` when there are none. Views
 pass printed elements; the edit-operations engine reads and writes coordinates against the same origin.
@@ -276,11 +270,11 @@ Invariants:
 
 ```text
 header      := "tab" SP tabRef SP jsonString(name) " · " total " element" ["s"] [": " buckets]
-               [" · kind=" tabKind] [" · mode=" editorMode] [" · finish=" finish]
+               [" · finish=" finish] [" · " pages " pages: " byKind " (view pages)"]
                [" · " hidden " hidden"] [" · " unknown " unknown"]
                [" · threads " open " open/" threadTotal] [" · rev " rev]
-buckets     := bucket {", " bucket}                       (non-zero only, in the order boxes, frames, lanes, arrows)
-bucket      := count SP ("box" | "boxes" | "frame" | "frames" | "lane" | "lanes" | "arrow" | "arrows")
+buckets     := bucket {", " bucket}                       (non-zero only, in the order boxes, frames, arrows)
+bucket      := count SP ("box" | "boxes" | "frame" | "frames" | "arrow" | "arrows")
 line        := indent kindWord SP ref [SP label] [SP summary] {SP attribute} [SP "→" SP edge {", " edge}]
 runLine     := indent "freehand ×" count [" (" closed " closed)"]
 ownLine     := "arrow" SP ref SP end SP "→" SP end [SP label] {SP style}
@@ -293,12 +287,11 @@ style       := "~" (strokeStyle | "none" | "both" | "from")
 attribute   := key "=" attrValue | flag
 ```
 
-`kind=` prints only for a tab whose `tabKindOf` is not `diagram`; `mode=` only for a tab whose `opensInOf` is not
-`diagram` and that is not in Pages (whose pages segment already says so); `finish=` only when the tab sets one;
+`finish=` only when the tab sets one; the pages segment only when the tab has pages;
 `threads` only when the tab has a thread; `rev`
 only when the context gives one (`VW8`). A blank label (after trim) prints nothing (`VW17`).
 
-**Buckets** (`VW9`): `frames` and `lanes` are those shapes; `arrows` are arrows; `boxes` is every other printed
+**Buckets** (`VW9`): `frames` are those shapes; `arrows` are arrows; `boxes` is every other printed
 element, unknown kinds included. `total` is the printed count; `hidden` and `unknown` are counted apart from it
 (`unknown` is also inside `total`).
 
@@ -320,7 +313,6 @@ are escaped as `\;` and `\}` too.
 
 | Element                           | Summary                                                                                                                      | Ledger |
 | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------ |
-| `entity`                          | `{` first `ENTITY_FIELDS_SHOWN` fields as `name[ type]`, joined `; ` (`; +N` when more) `}`                                  | `VW19` |
 | `table`                           | `<rows>x<cols>` then the first row's cells joined `\|`; `0x0` when empty                                                     | `VW18` |
 | `code-block`                      | `lang=<codeLanguage, else plain> lines=<line count, 0 when empty>`                                                           | `VW20` |
 | `pie-chart`, `bar-chart`          | `slices=<pieSlices.length>`                                                                                                  | `VW21` |
@@ -328,39 +320,23 @@ are escaped as `\;` and `\}` too.
 | `checklist`                       | `done=<done>/<total>`                                                                                                        |        |
 | `sankey`                          | `flows=<sankeyFlows.length> nodes=<distinct from / to names, trimmed and space-collapsed>`                                   |        |
 | `layer-stack`, `pyramid`, `cycle` | `rows=` then each row's `label` (`?` when it has none) as `cellText`, joined `\|`; then ` variant=<pyramidVariant>` when set |        |
-| `plan-board`                      | `columns=` then each column's `name` (`?` when it has none) as `cellText`, joined `\|`                                       |        |
-| `plan-card`                       | `item=<planCard.itemId as cellText>`, `item=none` when absent or empty                                                       |        |
-| `plan-view`                       | `view=<planView.view as cellText>`, `view=none` when absent                                                                  |        |
-| `plan-sheet`                      | `sheet=<planSheet.sheetId as cellText>`, `sheet=none` when absent or empty                                                   |        |
 
 The table line prints its label first when it has one. Every text a summary prints from the document goes through
 `cellText` (JSON escapes, `|` escaped), so a newline in a column name can never forge a line of the view.
 
 **State attributes** (`stateAttributeOf`), one per element of these kinds, printed after the summary (`VW22`):
 
-| Kind                    | State attribute                                                                       |
-| ----------------------- | ------------------------------------------------------------------------------------- |
-| `estimate`              | `votes=<responses.length>`, then `revealed` when `responsesRevealed`                  |
-| `temperature`           | `votes=<responses.length>`                                                            |
-| `done-check`            | `done=<responses.length>`                                                             |
-| `idea-box`              | `ideas=<ideaCards.length>`, then `revealed` when `ideasRevealed`                      |
-| `qa-board`              | `questions=<qaNotes.length>`                                                          |
-| `agenda`                | `item=<agendaCurrent + 1>/<n>` once started, else `items=<n>`; then `minutes=<total>` |
-| `session-button`        | `session=<tool>`, with `:<minutes>m` (timer), `:<dots>` (vote) or `:<style>` (poll)   |
-| `decision`              | `status=<decisionStatus>` when set                                                    |
-| `roll-call`             | `present=<rollCall.length>`                                                           |
-| `quiz`                  | `state=revealed`, `state=locked`, `state=open` (started) or `state=ready`             |
-| `picker`                | `picked=<attrValue(pickerResult)>` when set                                           |
-| `reveal`                | `revealed` when `revealed`                                                            |
-| `stat-row`              | `stats=<stats.length>`                                                                |
-| `process`               | `steps=<processSteps.length>`                                                         |
-| `site-header`           | `links=<navLinks.length>`                                                             |
-| `legend`                | `items=<legendItems.length>`                                                          |
-| `rating`                | `rating=<rating>/5`                                                                   |
-| `progress-bar`, `-ring` | `progress=<progress, else 50>`                                                        |
-| `timeline-rail`         | `points=<railCount>`                                                                  |
-| `page`, `card`          | `title=` the `pageTitle` cut at `NOTE_CUT_CHARS`, when set                            |
-| `badge`, `step`         | `attached` when `attachedTo` is set                                                   |
+| Kind                    | State attribute                                            |
+| ----------------------- | ---------------------------------------------------------- |
+| `stat-row`              | `stats=<stats.length>`                                     |
+| `process`               | `steps=<processSteps.length>`                              |
+| `site-header`           | `links=<navLinks.length>`                                  |
+| `legend`                | `items=<legendItems.length>`                               |
+| `rating`                | `rating=<rating>/5`                                        |
+| `progress-bar`, `-ring` | `progress=<progress, else 50>`                             |
+| `timeline-rail`         | `points=<railCount>`                                       |
+| `page`, `card`          | `title=` the `pageTitle` cut at `NOTE_CUT_CHARS`, when set |
+| `badge`, `step`         | `attached` when `attachedTo` is set                        |
 
 Every other kind has no state attribute; `show` has its content.
 
@@ -402,7 +378,7 @@ is the full view's estimate and the step it took (a ladder state, or `lines-drop
 | `comments` | `commentsView`                          | api, CLI offline         | Open threads, every comment in full; `all` adds resolved ones                           |
 | `show`     | `showView` (`ref`), `showSelectedView`  | api, CLI offline         | One element in full                                                                     |
 | `find`     | `findView` (`q` required)               | api, CLI offline         | Matches with their container chains                                                     |
-| `lint`     | `@livedesign/diagram-lint` (not built) | api, CLI offline         | The lint's own output ([Diagram lint](../diagram-lint.md)) under the same header        |
+| `lint`     | `@livedesign/diagram-lint` (not built)  | api, CLI offline         | The lint's own output ([Diagram lint](../diagram-lint.md)) under the same header        |
 | `diff`     | `diffView(before, after, context)`      | CLI only, from its cache | Added, removed, changed and moved elements                                              |
 | `overview` | `overviewView(document, tabs, options)` | api, CLI offline         | One line per tab                                                                        |
 
@@ -460,7 +436,7 @@ Left out, and named on `omitted:`: `id`, `type`, `shape` and `label` (in the fir
 person id, listed in `PERSON_ID_FIELDS` (`commentThread.comments[].authorId`, the mentions' `userId` and
 `memberId` on `commentThread.comments[].mentions[]`, `action.assignerId`,
 `action.assignee.userId`, `action.assignee.memberId`, `action.teamId`, the same on `actions[]`,
-`responses[].participantId`, `qaNotes[].voters`). A test walks every element type's fields so a new person-id
+`responses[].participantId`). A test walks every element type's fields so a new person-id
 field fails until it is listed; `omitted:` names only the ones the element holds. The edges list both directions with arrow refs, in array order. `code` prints as a
 JSON string.
 
@@ -548,7 +524,7 @@ type ViewHeader = {
   view: ViewName;
   tab: { id: string; ref: string; name: string; kind: TabKind };
   elements: number;
-  counts: { boxes: number; frames: number; lanes: number; arrows: number };
+  counts: { boxes: number; frames: number; arrows: number };
   hidden: number;
   unknown: number;
   threads: { open: number; total: number };
@@ -858,7 +834,7 @@ Every rule maps to a deterministic test; the spec's rules are numbered here.
 | R8 One line per element, indentation is containment                  | `packages/document-views/src/outline.test.ts`, golden `checkout.outline.txt`                                                             |
 | R9 Kind words, notations, `es:actor`                                 | `element-refs.test.ts` (kind words)                                                                                                      |
 | R10 JSON strings, cut 60 / 48 on a word boundary                     | `text.test.ts`                                                                                                                           |
-| R11 Smallest frame or lane holding the centre; mind parent wins      | `packages/document/src/containment.test.ts`; `mermaid.test.ts` unchanged; `tree.test.ts`                                                 |
+| R11 Smallest frame holding the centre                                | `packages/document/src/containment.test.ts`                                                                                              |
 | R12 Arrows on the source line; free ends on their own                | `edges.test.ts`                                                                                                                          |
 | R13 Reading order                                                    | `reading-order.test.ts`                                                                                                                  |
 | R14 Content summaries and state attributes                           | `content-summary.test.ts`, `state-attribute.test.ts` (every kind in the table)                                                           |
@@ -908,28 +884,28 @@ out of Prettier (`.prettierignore`).
 
 ## Constants and configuration
 
-| Constant                       | Value                         | Provenance                                                                 | Safe range      |
-| ------------------------------ | ----------------------------- | -------------------------------------------------------------------------- | --------------- |
+| Constant                       | Value                         | Provenance                                                                | Safe range      |
+| ------------------------------ | ----------------------------- | ------------------------------------------------------------------------- | --------------- |
 | `SLUG_ID_PATTERN`              | `^[a-z][a-z0-9_-]{0,23}$`     | Spec, "Refs" (in `@livedesign/document`)                                  | fixed           |
-| `SLUG_ID_MAX_LENGTH`           | 24                            | Spec (the pattern's bound)                                                 | fixed           |
-| `REF_MIN_LENGTH`               | 4                             | Spec                                                                       | fixed           |
-| `LABEL_CUT_CHARS`              | 60                            | Spec                                                                       | fixed           |
-| `NOTE_CUT_CHARS`               | 48                            | Spec                                                                       | fixed           |
-| `ENTITY_FIELDS_SHOWN`          | 8                             | Spec                                                                       | fixed           |
-| `CHARS_PER_TOKEN`              | 3                             | Spec (measured 3.07 for the outline)                                       | fixed           |
-| `READ_DOCUMENT_DEFAULT_BUDGET` | 8,000                         | Spec, "Budgets" (in `packages/agent-verbs/src/mcp/schema.ts`)              | 2,000 to 32,000 |
-| `ALT_CUT_CHARS`                | 48                            | As notes (`VW53`)                                                          | 24 to 120       |
-| `ACTION_CUT_CHARS`             | 48                            | As notes (`VW53`)                                                          | 24 to 120       |
-| `ATTR_BARE_PATTERN`            | `^[A-Za-z0-9._:/#?&=%+@~-]+$` | URL-safe without quotes or spaces (`VW15`)                                 | narrower only   |
-| `REF_NEAREST_MAX`              | 5                             | Enough to choose from (`VW53`)                                             | 1 to 20         |
+| `SLUG_ID_MAX_LENGTH`           | 24                            | Spec (the pattern's bound)                                                | fixed           |
+| `REF_MIN_LENGTH`               | 4                             | Spec                                                                      | fixed           |
+| `LABEL_CUT_CHARS`              | 60                            | Spec                                                                      | fixed           |
+| `NOTE_CUT_CHARS`               | 48                            | Spec                                                                      | fixed           |
+| `ENTITY_FIELDS_SHOWN`          | 8                             | Spec                                                                      | fixed           |
+| `CHARS_PER_TOKEN`              | 3                             | Spec (measured 3.07 for the outline)                                      | fixed           |
+| `READ_DOCUMENT_DEFAULT_BUDGET` | 8,000                         | Spec, "Budgets" (in `packages/agent-verbs/src/mcp/schema.ts`)             | 2,000 to 32,000 |
+| `ALT_CUT_CHARS`                | 48                            | As notes (`VW53`)                                                         | 24 to 120       |
+| `ACTION_CUT_CHARS`             | 48                            | As notes (`VW53`)                                                         | 24 to 120       |
+| `ATTR_BARE_PATTERN`            | `^[A-Za-z0-9._:/#?&=%+@~-]+$` | URL-safe without quotes or spaces (`VW15`)                                | narrower only   |
+| `REF_NEAREST_MAX`              | 5                             | Enough to choose from (`VW53`)                                            | 1 to 20         |
 | `REF_INPUT_MAX_LENGTH`         | 256                           | Above any stored id in practice (`VW53`); in `@livedesign/api-schema`     | 64 to 1,024     |
-| `SELECTED_REF`                 | `selected`                    | Spec: the edit operations' selector                                        | fixed           |
+| `SELECTED_REF`                 | `selected`                    | Spec: the edit operations' selector                                       | fixed           |
 | `FIND_QUERY_MAX_LENGTH`        | 200                           | A phrase, not a document (`VW53`); in `@livedesign/api-schema`            | 50 to 1,000     |
 | `VIEW_BUDGET_MAX`              | 1,000,000                     | Above a full 10,000-element outline (`VW53`); in `@livedesign/api-schema` | 200,000 and up  |
-| `OVERVIEW_TAB_BATCH`           | 8                             | About 15 MB of bodies at the tab cap (`VW47`)                              | 1 to 16         |
-| `VIEW_SLOW_MS`                 | 100                           | Well above a 1,000-element render (`VW53`)                                 | 50 to 1,000     |
-| `ELISION_CONTAINERS_NAMED`     | 3                             | A line that stays short (`VW60`)                                           | 1 to 10         |
-| `PROGRESS_DEFAULT`             | 50                            | Where the editor draws an unset progress                                   | fixed           |
+| `OVERVIEW_TAB_BATCH`           | 8                             | About 15 MB of bodies at the tab cap (`VW47`)                             | 1 to 16         |
+| `VIEW_SLOW_MS`                 | 100                           | Well above a 1,000-element render (`VW53`)                                | 50 to 1,000     |
+| `ELISION_CONTAINERS_NAMED`     | 3                             | A line that stays short (`VW60`)                                          | 1 to 10         |
+| `PROGRESS_DEFAULT`             | 50                            | Where the editor draws an unset progress                                  | fixed           |
 
 No environment variable or binding; self-hosting needs nothing new.
 

@@ -3,7 +3,6 @@ import type { PathElement, PathNode } from './element-types';
 import { isCompoundPath, pathContours, pathElementD, pathOfContours } from './path-element';
 import { svgPathElementShape } from './svg-render-shapes';
 import { elementValidationIssue } from './validate';
-import { pathTouchesBrush } from './whiteboard-stroke';
 
 // docs/specs/007-editor/logo-pages.md "Combine": a combined shape is a closed path of several
 // contours, filled even-odd so its holes show through.
@@ -41,11 +40,6 @@ describe('combined paths', () => {
     const svg = svgPathElementShape(ring, '#111111', '#000000');
     expect(svg).toContain('fill-rule="evenodd"');
     expect(svg).toContain('M 25 25');
-  });
-
-  it('are picked by their filled band, not their hole', () => {
-    expect(pathTouchesBrush(ring, { x: 10, y: 50 }, { x: 10, y: 50 }, 1)).toBe(true);
-    expect(pathTouchesBrush(ring, { x: 50, y: 50 }, { x: 50, y: 50 }, 1)).toBe(false);
   });
 
   it('validate: three nodes a closed contour, two an open one, within the node budget', () => {

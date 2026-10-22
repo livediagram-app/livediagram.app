@@ -57,7 +57,7 @@ describe('set', () => {
     tab.elements.push({
       id: 'l1',
       type: 'shape',
-      shape: 'lane',
+      shape: 'frame',
       x: 0,
       y: 900,
       width: 800,

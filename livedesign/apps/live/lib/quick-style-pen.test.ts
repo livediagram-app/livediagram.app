@@ -10,7 +10,7 @@ import {
   type PenPalette,
 } from './quick-style-pen';
 
-// docs/specs/023-draw-mode/draw-mode.md "The quick style panel stays": pen strokes and the pen in
+// docs/specs/023-draw-mode/drawing-tools.md "The quick style panel": pen strokes and the pen in
 // hand take their colour and width from the panel: quick choices only, the nine stock colours (Ink
 // first), adaptive, custom colours a press deeper in the colour picker; the pens' named widths.
 const INK = '#1c1917';

@@ -70,7 +70,7 @@ describe('recordSharedAccess (docs/specs/014-identity/profile-and-email-notifica
     ]);
   });
 
-  // docs/specs/013-workspace/share-roles.md (migration 0080): a Participant's visit keeps view in the legacy column.
+  // docs/specs/013-workspace/share-roles.md (the baseline migration): a Participant's visit keeps view in the legacy column.
   it('records a Participant visit as role view with level participate', async () => {
     const db = fakeD1(({ sql }) => (sql.includes('INSERT OR IGNORE') ? { changes: 1 } : {}));
     await recordSharedAccess(db.env, 'visitor-1', 'diag-1', 'participate', null, 'CODE2345');

@@ -15,12 +15,6 @@ import type {
   ChartLegendPosition,
   ChartType,
   ChecklistItem,
-  EntityField,
-  FieldRemap,
-  AgendaItem,
-  ChairFacing,
-  DecisionStatus,
-  EstimateScale,
   Element,
   ChartPaletteId,
   CodeThemeId,
@@ -28,8 +22,6 @@ import type {
   Finish,
   Layer,
   LegendItem,
-  MindFlow,
-  MindSpacing,
   AnimationSetId,
   IconAnimation,
   IconPosition,
@@ -122,7 +114,7 @@ export type EditorContextMenuProps = {
   onCommitTextColor: (color: string) => void;
   onPreviewFillColor: (color: string) => void;
   onCommitFillColor: (color: string) => void;
-  // Heading band (a table's header row, a lane's title gutter).
+  // Heading band (a table's header row).
   // The arrowhead's own colour, for a head that should not match its line.
   onSetArrowheadColor: (color: string) => void;
   onPreviewArrowheadColor: (color: string) => void;
@@ -181,8 +173,6 @@ export type EditorContextMenuProps = {
   onSetChartLegendPosition: (position: ChartLegendPosition) => void;
   // Chart type (docs/specs/009-elements/pie-chart.md "Chart types"): Column, Bar, Line, Area, Scatter, Pie, Doughnut.
   onSetChartType: (type: ChartType) => void;
-  // A chart drawn from a sheet range: make it an ordinary chart, keeping its last read.
-  onUnlinkChart: () => void;
   // Line chart (docs/specs/009-elements/pie-chart.md): open the data modal for the given element (the 2-D
   // grid is too wide for the menu, which just summarises the series).
   onEditLineData: (elementId: string) => void;
@@ -196,77 +186,19 @@ export type EditorContextMenuProps = {
   // Sankey diagram (docs/specs/009-elements/sankey.md): its edits, present only when this session may make
   // them (an Editor, on an unlocked diagram), so the menu shows no Sankey section otherwise.
   sankey?: import('./SankeyMenuSection').SankeyMenuHandlers;
-  // A sequence diagram's Edit Sequence (docs/specs/009-elements/sequence-diagram.md "The menu"): present only when this
-  // session may edit it (an Editor, on an unlocked diagram), so the section shows no button otherwise.
-  onEditSequence?: (elementId: string) => void;
   // The tab theme's chart ramp (themeChartPalette), so a chart or legend's data-row swatches show the colours the
   // canvas draws (chartRamp). Absent falls back to the built-in ramp.
   chartThemeRamp?: readonly string[];
-  // Flowchart (docs/specs/009-elements/flowchart.md): present only for an Editor on an unlocked step or
-  // chart lane, so the menu shows no Flowchart section otherwise.
-  flowchart?: import('@/components/flowchart/FlowchartMenuSections').FlowchartMenuHandlers;
-  // Mind-map flow (docs/specs/009-elements/mind-node.md): the shape the selected node's whole map grows
-  // in. Resolved here rather than in the menu because it is stored on the
-  // tree's ROOT, which the menu has no way to walk to.
-  mindFlow: MindFlow;
-  onSetMindFlow: (flow: MindFlow) => void;
-  // Lay the selected node's whole map out tidily in its flow (docs/specs/009-elements/mind-node.md "Tidy Map").
-  onTidyMindMap: () => void;
-  // Edit Outline (docs/specs/009-elements/mind-node.md): the outline of the node's map; absent while it cannot be
-  // edited (a locked tab, edits blocked).
-  onEditMindOutline?: () => void;
-  // Spacing (docs/specs/009-elements/mind-node.md "Spacing"): read off the map's root, like the flow.
-  mindSpacing: MindSpacing;
-  onSetMindSpacing: (spacing: MindSpacing) => void;
-  // Select the node's branch, or its whole map (docs/specs/009-elements/mind-node.md "The Mind Map menu").
-  onSelectMindBranch: () => void;
-  onSelectMindMap: () => void;
   // Checklist (docs/specs/009-elements/checklist.md): replace the selected checklist's rows.
   onSetChecklistItems: (items: ChecklistItem[]) => void;
   // Tick one row, as the on-canvas checkbox does: a delta the room merges,
   // not a rewrite of every row (docs/specs/012-collaboration/collab-race-hardening.md).
   onToggleChecklistItem?: (elementId: string, index: number) => void;
-  onSetEntityFields: (fields: EntityField[], remap?: FieldRemap) => void;
   // Web components (docs/specs/009-elements/web-components-and-no-groups.md): the rows of the selected stat row / process /
   // header (each field only lands on its own kind), and an image's hero
   // caption card on or off.
   onSetWebRows: (rows: import('@livedesign/document').WebRows) => void;
   onSetHeroCaption: (on: boolean) => void;
-  // Mode button (docs/specs/009-elements/mode-button.md): which selection mode pressing it hands out.
-  onSetButtonMode: (mode: import('@livedesign/document').SelectionMode) => void;
-  // Portal (docs/specs/009-elements/portal-element.md): which portal this one leads to; null unpairs it.
-  onSetPortalTarget: (targetId: string | null) => void;
-  // Portal (docs/specs/009-elements/portal-element.md): its name (menu-only — the canvas ring stays clean), and
-  // "create the far end for me" for the common case where it doesn't exist yet.
-  onSetPortalName: (name: string) => void;
-  onCreateLinkedPortal: () => void;
-  // Session button (docs/specs/012-collaboration/session-button.md) / Reveal zone (docs/specs/009-elements/reveal-zone.md) / Picker (docs/specs/012-collaboration/picker.md):
-  // their settings, applied to the element the menu is acting on. The session button's and the cover's are
-  // absent while somebody else holds the baton (docs/specs/012-collaboration/facilitator.md), so neither section shows.
-  onSetSession?: (config: import('@livedesign/document').SessionButtonConfig) => void;
-  onSetRevealed?: (revealed: boolean) => void;
-  onSetPickerSource: (source: import('@livedesign/document').PickerSource) => void;
-  onSetPickerOptions: (options: string[]) => void;
-  // Reaction pad (docs/specs/009-elements/reaction-pad.md): which burst the pad throws.
-  onSetReaction: (reaction: import('@livedesign/document').Reaction) => void;
-  // The collaboration elements (docs/specs/012-collaboration/estimate-card.md, 127, 128, 130). The temperature
-  // check, idea box and roll call carry no settings — everything they do
-  // happens on their own faces — so they need no setter here.
-  onSetEstimateScale: (scale: EstimateScale) => void;
-  onSetAgendaItems: (
-    items: AgendaItem[],
-    moveCurrent?: (current: number) => number | undefined,
-  ) => void;
-  onSetDecisionStatus: (status: DecisionStatus) => void;
-  onSetDecisionDate: (date: string | undefined) => void;
-  onSetDecisionDrivers: (drivers: string[]) => void;
-  onSetChairFacing: (facing: ChairFacing) => void;
-  // Room (docs/specs/009-elements/office.md): which wall its doorway is in.
-  onSetRoomDoor: (door: import('@livedesign/document').RoomDoor) => void;
-  // Every tab, because a portal link can cross tabs, plus which one is active
-  // so the picker can mark the off-tab candidates.
-  tabs: import('@livedesign/document').Tab[];
-  activeTabId: string;
   // Style presets (docs/specs/010-palette/style-presets.md): one-click colour + border looks for the selected
   // shape, plus a reset back to the theme default. `shapeColorPresets` are
   // theme-derived (see shapeColorPresets in lib/themes).
@@ -402,8 +334,6 @@ export type EditorContextMenuProps = {
   // Commit + hover-preview pair.
   onSetTextAlign: (x: TextAlignX, y: TextAlignY) => void;
   onPreviewTextAlign: (x: TextAlignX, y: TextAlignY) => void;
-  // A lane title turned upright in its side strip (docs/specs/009-elements/lane.md "Upright titles").
-  onSetLaneUprightTitle: (upright: boolean) => void;
   onOpenNote: (elementId: string) => void;
   onOpenComments: (elementId: string) => void;
   // Assigned actions (docs/specs/012-collaboration/assigned-actions.md): the Collaborate category's Assign Action

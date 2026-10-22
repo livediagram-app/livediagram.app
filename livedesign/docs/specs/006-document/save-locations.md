@@ -13,7 +13,7 @@ anything on the canvas. A document in This Browser still says what it is on the 
 
 | Location         | What it means                                                                                                |
 | ---------------- | ------------------------------------------------------------------------------------------------------------ |
-| **livedesign**  | A normal cloud document, saved to the api (D1), reachable from any device.                                   |
+| **livedesign**   | A normal cloud document, saved to the api (D1), reachable from any device.                                   |
 | **This Browser** | Offline Mode ([Offline Mode](offline-mode.md)): saved only in this browser's IndexedDB, never to the server. |
 
 ## The default depends on who is creating
@@ -21,8 +21,8 @@ anything on the canvas. A document in This Browser still says what it is on the 
 | Who                               | Default          |
 | --------------------------------- | ---------------- |
 | A guest, with sign-in enabled     | **This Browser** |
-| A signed-in person                | **livedesign**  |
-| Anyone on a guest-only deployment | **livedesign**  |
+| A signed-in person                | **livedesign**   |
+| Anyone on a guest-only deployment | **livedesign**   |
 
 Why a guest starts local: [Auth + guest access → Guest documents start local](../014-identity/auth-and-guest-access.md#guest-documents-start-local).
 

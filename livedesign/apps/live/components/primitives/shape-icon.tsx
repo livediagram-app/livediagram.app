@@ -38,18 +38,6 @@ const SHAPE_GLYPH: Partial<Record<ShapeKind, { sw: number; body: ReactNode }>> =
     body: <path d="M3 3 L13 3 L13 12 C11 13.4 9.5 11.5 8 12.6 C6.5 13.7 5 11.5 3 12.6 Z" />,
   },
   stadium: { sw: 1.5, body: <rect x="2" y="5" width="12" height="6" rx="3" /> },
-  actor: {
-    sw: 1.3,
-    body: (
-      <>
-        <circle cx="8" cy="3.4" r="2" />
-        <path d="M8 5.4 L8 10" />
-        <path d="M4.5 7.2 L11.5 7.2" />
-        <path d="M8 10 L5.5 13.6" />
-        <path d="M8 10 L10.5 13.6" />
-      </>
-    ),
-  },
   cloud: {
     sw: 1.3,
     body: (

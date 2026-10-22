@@ -4,7 +4,6 @@
 
 import {
   ELEMENT_FIELD_NAMES,
-  FLOWCHART_STEP_KIND,
   LIVE_ELEMENT_FIELDS,
   SHAPE_KINDS,
   STICKY_PRESETS,
@@ -108,16 +107,7 @@ export const SHAPE_COMMON_FIELDS = [
 
 export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
   'code-block': ['code', 'codeLanguage', 'codeTheme', 'codeWrap'],
-  entity: ['entityFields'],
-  'pie-chart': [
-    'pieSlices',
-    'chartVariant',
-    'chartLegend',
-    'chartValues',
-    'chartPalette',
-    'chartSource',
-    'sheetAnchor',
-  ],
+  'pie-chart': ['pieSlices', 'chartVariant', 'chartLegend', 'chartValues', 'chartPalette'],
   'bar-chart': [
     'pieSlices',
     'chartVariant',
@@ -125,8 +115,6 @@ export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
     'chartValues',
     'chartAxis',
     'chartPalette',
-    'chartSource',
-    'sheetAnchor',
   ],
   'line-chart': [
     'lineCategories',
@@ -136,12 +124,9 @@ export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
     'chartValues',
     'chartAxis',
     'chartPalette',
-    'chartSource',
-    'sheetAnchor',
   ],
   checklist: ['checklistItems'],
-  lane: ['headerFill', 'headerSize', 'titleOrientation', 'flowchartId'],
-  frame: ['headerFill', 'headerSize'],
+  frame: ['headerFill'],
   'progress-bar': ['progress'],
   'progress-ring': ['progress'],
   rating: ['rating'],
@@ -157,42 +142,14 @@ export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
     'sankeyLeftoverName',
     'chartPalette',
   ],
-  agenda: ['agendaItems'],
-  decision: ['decisionStatus', 'decisionDate', 'decisionDrivers'],
-  quiz: ['quizOptions', 'quizCorrect', 'quizSeconds'],
-  picker: ['pickerOptions', 'pickerSource'],
   'stat-row': ['stats'],
   process: ['processSteps'],
   'site-header': ['navLinks'],
   page: ['pageTitle', 'pageSubtitle'],
-  'mind-node': ['mindParentId', 'mindFlow', 'mindSpacing'],
-  // docs/specs/009-elements/flowchart.md: any of the step-type kinds is a step once it carries a chart (a lane
-  // joins one by `flowchartId` too, above).
-  ...Object.fromEntries(
-    Object.values(FLOWCHART_STEP_KIND).map((k) => [
-      k,
-      ['flowchartId', 'flowDirection', 'flowLaneId'],
-    ]),
-  ),
   icon: ['iconSize', 'iconWeight'],
   sticker: ['stickerId'],
-  estimate: ['estimateScale'],
-  chair: ['chairFacing'],
-  desk: ['chairFacing'],
-  sofa: ['chairFacing'],
-  // docs/specs/009-elements/office.md: which wall a room's doorway is in.
-  room: ['roomDoor'],
-  portal: ['portalTarget'],
   // docs/specs/009-elements/tab-window.md: which tab the window shows.
   'tab-window': ['windowTabId'],
-  // docs/specs/026-plan/plan-board.md: the board's set-up and the card's item; items change through
-  // the item verbs, never through element fields.
-  'plan-board': ['planBoard'],
-  'plan-card': ['planCard'],
-  // docs/specs/026-plan/plan-views.md: which view of the cards it shows.
-  'plan-view': ['planView'],
-  // docs/specs/029-sheets/sheet.md: the sheet it frames; cells change through the sheet verbs.
-  'plan-sheet': ['planSheet'],
 };
 
 function storedFieldsOf(kind: string, el: Element): readonly string[] {

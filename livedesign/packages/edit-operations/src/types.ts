@@ -3,16 +3,8 @@
 // @livedesign/api-schema, where the changeset response carries them.
 
 import type { EditRejection, EditWarning, JsonValue, ResultLine } from '@livedesign/api-schema';
-import type {
-  ElementId,
-  ElementOp,
-  Finish,
-  GraphInput,
-  Tab,
-  ThemeDefinition,
-} from '@livedesign/document';
+import type { ElementId, ElementOp, Finish, Tab, ThemeDefinition } from '@livedesign/document';
 import type { PlacementRelation } from './vocabulary';
-import type { DashboardSpec } from '@livedesign/templates';
 
 // A ref, a quoted label, or `key:value` terms joined by spaces, all of which must match.
 export type Selector = string;
@@ -23,7 +15,7 @@ export type Fields = Readonly<Record<string, FieldValue>>;
 
 // Where `add` and `move` put an element: beside, after, inside or aligned with a reference, or at a
 // point relative to the content origin.
-// `within` (a frame or lane, from `inside:<frame> right-of:<x>`) says the reference must be inside it; `alignTo`
+// `within` (a frame or stack, from `inside:<frame> right-of:<x>`) says the reference must be inside it; `alignTo`
 // (from `below:<frame> align:<x>`) centres the placed box on x across the side.
 export type Placement =
   | { rel: PlacementRelation; ref: Selector; gap?: number; within?: Selector; alignTo?: Selector }
@@ -77,7 +69,7 @@ export type InsertOperation = {
 export type WrapOperation = {
   op: 'wrap';
   targets: Selector[];
-  in: 'frame' | 'lane';
+  in: 'frame';
   id?: string;
   fields?: Fields;
   tidy?: true;
@@ -138,19 +130,10 @@ export type ReplaceOptions = ApplyOptions & {
   themeId?: string;
   // The new tab's finish (docs/specs/008-canvas/finish.md); only a replace that creates the tab sets one.
   finish?: Finish;
-  // A new tab of elements made a Board or Sheet tab (a form's responses, docs/specs/030-forms/forms.md "Agents").
-  kind?: 'board' | 'sheet';
 };
 
 export type ReplaceBody =
-  | { graph: GraphInput }
-  | { mermaid: string }
-  | { template: string }
-  // A new Dashboard tab (docs/specs/026-plan/plan-agents.md "Making a dashboard"); never onto an existing tab.
-  | { dashboard: DashboardSpec }
-  // A new Form tab's form whole (docs/specs/030-forms/forms.md "Agents"); an existing form changes through its route.
-  | { form: unknown }
-  | { elements: unknown[]; layout?: 'auto' | 'preserve' };
+  { template: string } | { elements: unknown[]; layout?: 'auto' | 'preserve' };
 
 export type ApplySuccess = {
   tab: Tab;

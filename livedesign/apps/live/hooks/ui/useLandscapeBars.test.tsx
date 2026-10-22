@@ -13,7 +13,7 @@ vi.mock('@/lib/telemetry', () => ({ track }));
 afterEach(() => {
   cleanup();
   track.mockClear();
-  act(() => setActiveTour('welcome', false));
+  act(() => setActiveTour('pages', false));
 });
 
 describe('useLandscapeBars', () => {
@@ -62,18 +62,18 @@ describe('useLandscapeBars', () => {
 
   it('keeps the bars shown while a tour is on screen, and folds them after it', () => {
     const { result } = renderHook(() => useLandscapeBars([0, 0]));
-    act(() => setActiveTour('welcome', true));
+    act(() => setActiveTour('pages', true));
     expect(result.current.shown).toBe(true);
-    act(() => setActiveTour('welcome', false));
+    act(() => setActiveTour('pages', false));
     expect(result.current.shown).toBe(false);
   });
 
   it('a press during a tour folds from what is on screen', () => {
     const { result } = renderHook(() => useLandscapeBars([0, 0]));
-    act(() => setActiveTour('plan', true));
+    act(() => setActiveTour('element', true));
     act(() => result.current.toggle());
     expect(track).toHaveBeenLastCalledWith('UI', 'Toggled', 'LandscapeBarsOff');
-    act(() => setActiveTour('plan', false));
+    act(() => setActiveTour('element', false));
     expect(result.current.shown).toBe(false);
   });
 });

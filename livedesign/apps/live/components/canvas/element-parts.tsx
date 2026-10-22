@@ -181,8 +181,7 @@ export function UnionResizeHandles({
       {HANDLE_POSITIONS.map((pos) => (
         <div
           key={pos}
-          // Marks a resize grip, so a whiteboard's Shift + press resizes here
-          // rather than dragging a selection box (useCanvasSurfaceGestures).
+          // Marks a resize grip.
           data-canvas-handle=""
           onPointerDown={(e) => {
             e.stopPropagation();

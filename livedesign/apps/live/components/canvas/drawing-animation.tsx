@@ -10,7 +10,7 @@ import {
 import { bodySetClass } from '@/lib/animation-classes';
 
 // The Drawing animation set (docs/specs/028-animation/element-animations.md "Drawing") for freehand
-// strokes and paths. Three kinds of line are drawn three ways: a whiteboard pen stroke is a FILLED
+// strokes and paths. Three kinds of line are drawn three ways: a marker stroke is a FILLED
 // outline in canvas coordinates; any other freehand stroke is a stroked line in a 100-unit view box
 // with a non-scaling stroke; a path is a stroked line in its own px box. So every effect works
 // from the stroke's CENTRE LINE, in two spaces:

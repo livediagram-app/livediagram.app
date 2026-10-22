@@ -1,6 +1,6 @@
 # Multi-colour (rainbow) themes
 
-Most themes in the catalogue ([Canvas and palette](../008-canvas/canvas-and-palette.md), `packages/document/src/themes-data.ts`) paint every element one colour — a single fill / stroke / text triple applied uniformly. **Multi-colour themes** instead carry a _palette_ of several colour triples and assign each branch of the diagram's hierarchy a different one, the way XMind's "Rainbow" theme tints each main branch of a mind map a distinct hue.
+Most themes in the catalogue ([Canvas and palette](../008-canvas/canvas-and-palette.md), `packages/document/src/themes-data.ts`) paint every element one colour — a single fill / stroke / text triple applied uniformly. **Multi-colour themes** instead carry a _palette_ of several colour triples and assign each branch of the tab's hierarchy a different one, the way XMind's "Rainbow" theme tints each main branch of a mind map a distinct hue.
 
 ## What they are
 
@@ -28,9 +28,9 @@ The catalogue ships three multi-colour themes, all extra:
 The document model has no explicit parent/child field; hierarchy is **implicit in pinned arrows** ([Document structure](../006-document/document-structure.md), `Endpoint.kind === 'pinned'`). `packages/document/src/hierarchy.ts` derives branches from them:
 
 1. Each arrow whose **both** endpoints pin to **boxed** elements defines a directed edge `from → to` (parent → child). Free-floating arrows, arrows pinned to another arrow or to an element no longer on the tab, and self-loops contribute nothing.
-2. **Roots** are boxed elements with no incoming pinned edge but at least one outgoing one (the centre of a mind map, the CEO of an org chart). Roots get the sentinel `ROOT_BRANCH`.
-3. Each root's **direct children** seed a fresh branch index, in document order, and that index propagates down the whole subtree (a depth-first walk). So a top-level limb of a mind map and all its sub-topics share one hue. Shared/diamond descendants keep the first index that reaches them.
-4. **Loose** elements — boxed elements no pinned arrow touches — each take the next branch index in document order. This means a flat canvas with no hierarchy (scattered shapes, a kanban) still gets rainbow variety rather than collapsing to one colour. Loose elements continue the same counter as the root branches, so once the palette wraps a loose element can share a limb's hue; that is accepted, since any fixed palette repeats.
+2. **Roots** are boxed elements with no incoming pinned edge but at least one outgoing one (the hub of a process, the top of a hierarchy). Roots get the sentinel `ROOT_BRANCH`.
+3. Each root's **direct children** seed a fresh branch index, in document order, and that index propagates down the whole subtree (a depth-first walk). So a top-level limb and all its sub-topics share one hue. Shared/diamond descendants keep the first index that reaches them.
+4. **Loose** elements — boxed elements no pinned arrow touches — each take the next branch index in document order. This means a flat canvas with no hierarchy (scattered shapes, a page of cards) still gets rainbow variety rather than collapsing to one colour. Loose elements continue the same counter as the root branches, so once the palette wraps a loose element can share a limb's hue; that is accepted, since any fixed palette repeats.
 5. **Rootless** elements — in the graph but unreachable from any root, as in a loop `A → B → C → A` — take the trunk colour. A loop has no natural limb to name.
 6. **Arrows** themselves take the colour of the branch they feed _into_ (their `to` element's branch), falling back to the `from` element's branch, then the trunk — so a connector matches the limb it draws.
 

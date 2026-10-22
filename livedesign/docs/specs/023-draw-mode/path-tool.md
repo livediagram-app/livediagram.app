@@ -2,32 +2,26 @@
 
 Status: specified
 
-The **Path tool** is a vector pen for whiteboards, in the manner of Figma's and Illustrator's pen
-tools: click to place corner points, drag to pull out curves, and edit every point and handle
-afterwards. It is a new tool, built apart from the Shape Pen
-([Two pens instead of a pen and a mode](../008-canvas/two-pens.md)), whose icon it wears.
+The **Pen** (the Path tool) is a vector pen in the manner of Figma's and Illustrator's: click to
+place corner points, drag to pull out curves, and edit every point and handle afterwards. It is
+built apart from the Shape Pen ([Two pens instead of a pen and a mode](../008-canvas/two-pens.md)),
+whose icon it wears.
 
 ## Why
 
-Markers draw by hand and shapes are fixed forms. Between them sits the deliberate line: a clean
-curve round a group of notes, a smooth arrow path, a custom outline traced over a sketch. The
-polygon tool ([Multi-point line / polygon tool](../008-canvas/polygon-tool.md)) places straight
-segments only and cannot be reshaped; the Path tool places true Bézier curves and keeps them
+Markers draw by hand ([Drawing tools](drawing-tools.md)) and shapes are fixed forms. Between them
+sits the deliberate line: a clean curve, a custom outline traced over a sketch, the contour of a
+mark. The polygon tool ([Multi-point line / polygon tool](../008-canvas/polygon-tool.md)) places
+straight segments only and cannot be reshaped; the Pen places true Bézier curves and keeps them
 editable.
 
 ## Where it lives
 
-- **Whiteboards only.** The Path tool is a dock button and a key on a whiteboard; diagram tabs do
-  not offer it. A path element that reaches a diagram tab (paste, a tab that stops being a
-  whiteboard) renders, selects, moves, styles and edits there like any element.
-- **Dock:** in the Shapes group, after the sticky note (see
-  [Draw mode](draw-mode.md) "What a whiteboard shows"), labelled **Path tool**, key **P**
-  (shown on the button and in `aria-keyshortcuts`). Its icon is **the Shape Pen's own palette
-  icon**, unchanged: the same component, at the dock's icon size, never a
-  redrawn copy.
-- **Key P** picks it from anywhere on a whiteboard (not while typing). On diagram tabs P stays the
-  pencil.
-- Picking it puts any marker, shape or eraser down, like every dock tool.
+- **A logo page's Draw**, first among its **Pens** ([Logo pages](../007-editor/logo-pages.md) "The
+  Logo palette"), labelled **Pen**, with the Shape Pen's own palette icon. It puts itself down after
+  one path, as the palette's other tools do.
+- A path element anywhere (paste, a page that stops being a logo page) renders, selects, moves,
+  styles and edits like any element.
 
 ## The path element
 
@@ -70,10 +64,10 @@ With the Path tool in hand:
   shows a closing ring; a click closes the path, a drag closes it and shapes the closing segment's
   handle.
 - **Backspace / Delete** removes the last placed node and keeps drawing; with none left, it cancels.
-- **Undo while drawing** (Ctrl+Z / Cmd+Z, or the dock's Undo) steps back **one node at a time**
+- **Undo while drawing** (Ctrl+Z / Cmd+Z, or the Undo button) steps back **one node at a time**
   on the path being drawn: it removes the last placed node (with its handles) and keeps drawing,
   and with none left it cancels the path, never touching the board's history. **Redo** (Ctrl+Shift+Z
-  / Cmd+Shift+Z, Ctrl+Y, or the dock's Redo) puts back the nodes undone this way, in order, until a
+  / Cmd+Shift+Z, Ctrl+Y, or the Redo button) puts back the nodes undone this way, in order, until a
   new node is placed. Once the path is committed, undo and redo work on the board as usual (the
   committed path is one step).
 - **Finishing an open path:** **Enter**, **Escape**, **double-click**, or picking another tool
@@ -82,7 +76,9 @@ With the Path tool in hand:
 - **Continuing a path:** with the tool in hand, the pointer over an **end node of an open path**
   shows a continue ring; a click resumes drawing from that end, appending to that same element.
   Clicking the other end node of the path being continued closes it.
-- The tool **stays in hand** after a path is committed, so the next click starts a new path.
+- A committed path is **selected**, so it can be edited at once (Edit Points, Enter).
+- **Onto the guides:** on a logo page with Show Guides on, a click lands on a shown guide within
+  reach ([Logo pages](../007-editor/logo-pages.md) "Construction guides").
 - Every committed path, continuation or close is **one undo step**.
 
 ## Editing
@@ -93,8 +89,8 @@ corner and handle can be adjusted, by mouse, pen, finger and keyboard.
 - **Enter** by double-clicking (double-tapping) a path with Select, pressing **Enter** with one
   path selected, or pressing **Edit Points** in a selected path's selection toolbar. A path just
   finished with the Path tool can be edited at once the same ways.
-  **Leave** with **Escape**, **Enter**, or a click outside the path. The dock shows the edit mode
-  by pressing Select with a path glyph; the rest of the canvas stays visible and inert.
+  **Leave** with **Escape**, **Enter**, or a click outside the path. The rest of the canvas stays
+  visible and inert.
 - Edit mode shows every node; the handles of selected nodes and of their neighbours' facing sides.
   Corner nodes draw as squares, smooth ones (mirrored or aligned) as circles, so the kind of every
   node reads at a glance.
@@ -153,21 +149,20 @@ corner and handle can be adjusted, by mouse, pen, finger and keyboard.
 
 ## Style
 
-- A path is plain ink by default, like the dock shapes: the board's ink at the default border
-  width, **no fill**.
+- A path lands as plain ink: an **Ink** outline stored by name, at the default border width, **no
+  fill**, so it looks the same to every collaborator and in both appearances.
 - The **quick style panel** styles it as it does a shape: **Stroke**, **Background** (a fill, shown
-  for a closed path only), **Stroke width** and **Stroke style**. With the Path tool in hand and
-  nothing selected, it styles the **next path** ("Next path"), remembered in the board's own style
-  memory like every other tool.
+  for a closed path only), **Stroke width** and **Stroke style**. A restyle is remembered for the
+  next path in the style memory, under its own kind (`path`).
 - Markers never colour it.
 
 ## Selecting and erasing
 
 - A path is picked **by its drawn line** (6 screen px either side, like a marker stroke), and a
   filled path by its fill too; clicks elsewhere in its box pass through.
-- The eraser removes a path whole in either mode (a partial erase of a path is not offered in round
-  one).
-- The Shift selection box and Shift-click behave as for every whiteboard element.
+- The eraser removes a path whole ([Eraser panel](../008-canvas/eraser-panel.md)).
+- A combined path ([Logo pages](../007-editor/logo-pages.md) "Combine") draws every contour,
+  even-odd, and is picked by its filled band, not its holes.
 
 ## Export, sharing and import
 
@@ -178,25 +173,22 @@ corner and handle can be adjusted, by mouse, pen, finger and keyboard.
 
 ## Accessibility
 
-- The dock button is a toggle with its name ("Path tool") and key. While drawing, a polite live
-  message says "Path started", "3 points", "Path closed", "Path finished".
+- The palette tile is named **Pen**. While drawing, a polite live message says "Path started",
+  "3 points", "Path closed", "Path finished".
 - A path's accessible name is "Path, N points" (closed: "Closed path, N points").
 - Edit mode is reachable from the keyboard (Enter), nodes move with the arrow keys, Escape leaves.
 - Nodes and handles have at least 24 × 24 px hit targets on screen.
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
-| Event                       | Action     | Type                   |
-| --------------------------- | ---------- | ---------------------- |
-| The Path tool picked        | `Selected` | `Draw` · `Path`        |
-| A path committed            | `Added`    | `Element` · `Path`     |
-| A path edited in edit mode  | `Changed`  | `Element` · `PathEdit` |
-| A path closed while editing | `Changed`  | `Element` · `PathJoin` |
+| Event                       | Action    | Type                   |
+| --------------------------- | --------- | ---------------------- |
+| A path committed            | `Added`   | `Element` · `Path`     |
+| A path edited in edit mode  | `Changed` | `Element` · `PathEdit` |
+| A path closed while editing | `Changed` | `Element` · `PathJoin` |
 
-## Non-goals (round one)
+## Non-goals
 
-- Boolean operations, compound paths (several subpaths in one element), text on a path.
-- Stroke caps, joins, arrowheads and variable width on paths.
-- Pressure, and a pen-pressure-aware Path tool.
-- The Path tool on diagram tabs.
+- Text on a path; stroke caps, joins, arrowheads and variable width on paths.
+- Pressure, and a pen-pressure-aware Pen.
 - Partial erasing of paths.

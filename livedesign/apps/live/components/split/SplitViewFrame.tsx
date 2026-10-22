@@ -9,7 +9,6 @@ import {
   type ReactNode,
   type RefObject,
 } from 'react';
-import { tabHasDrawing } from '@livedesign/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useSelectTab } from '@/app/document/[id]/useSelectTab';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
@@ -76,7 +75,6 @@ export function SplitViewFrame({
     canvasMainRef,
     skipTabFitRef,
     fitToScreen,
-    activeTab,
   } = ctx;
   const selectTab = useSelectTab();
   const isMobile = useIsMobileViewport();
@@ -289,7 +287,6 @@ export function SplitViewFrame({
               onReset={split.resetWidth}
             />
             <SplitSeamControls
-              canFit={(!!staticTab && tabHasDrawing(staticTab)) || tabHasDrawing(activeTab)}
               // Both sides at once: the editor's canvas and the other pane.
               onFit={() => {
                 fitToScreen();

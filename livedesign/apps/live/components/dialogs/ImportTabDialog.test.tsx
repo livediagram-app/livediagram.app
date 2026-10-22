@@ -48,7 +48,7 @@ describe('ImportTabDialog', () => {
     expect(onImportText).toHaveBeenCalledWith('json', JSON_TEXT);
   });
 
-  it('shows the report instead of closing when part of the import was left out (docs/specs/026-plan/items.md)', async () => {
+  it('shows the report instead of closing when part of the import was left out', async () => {
     const { onClose } = open({
       status: 'done',
       failures: [{ title: 'Plan Cards', message: "2 cards couldn't be added to this document." }],

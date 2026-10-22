@@ -49,17 +49,20 @@ describe('parseChangesetRequest', () => {
       const out = parseChangesetRequest({ replace: r });
       return out.ok ? out.value.body : out.refusal.body.error;
     };
-    expect(replace({ mermaid: 'graph TD; a-->b', name: 'Flow', theme: 'ocean' })).toEqual({
+    expect(replace({ template: 'blank-logo', name: 'Logo', theme: 'ocean' })).toEqual({
       kind: 'replace',
-      replace: { mermaid: 'graph TD; a-->b' },
-      name: 'Flow',
+      replace: { template: 'blank-logo' },
+      name: 'Logo',
       theme: 'ocean',
     });
     expect(replace({ elements: [], layout: 'auto' })).toEqual({
       kind: 'replace',
       replace: { elements: [], layout: 'auto' },
     });
-    expect(replace({ mermaid: 'x', template: 'kanban' })).toBe('invalid_body');
+    expect(replace({ elements: [], template: 'blank-logo' })).toBe('invalid_body');
+    // A graph or Mermaid source went with the diagram builders: it is no source at all now.
+    expect(replace({ mermaid: 'graph TD; a-->b' })).toBe('invalid_body');
+    expect(replace({ graph: { nodes: [], edges: [] } })).toBe('invalid_body');
     expect(replace({ elements: {} })).toBe('invalid_body');
     expect(replace({ elements: [], layout: 'sideways' })).toBe('invalid_body');
     expect(replace({ elements: [], finish: 'sketch' })).toEqual({

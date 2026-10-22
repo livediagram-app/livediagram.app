@@ -14,7 +14,7 @@ import {
 import { track } from '@/lib/telemetry';
 import type { PathCommit } from '@/components/canvas/path/usePathDrawGesture';
 import { debugLog } from '@/lib/debug-log';
-import { boardShape } from '@/lib/whiteboard-tool';
+import { inkPath } from '@/lib/whiteboard-tool';
 
 export type PathEditKind = 'edit' | 'join';
 
@@ -44,8 +44,8 @@ export function usePathCommits({
       debugLog('[path] refused: too few nodes');
       return;
     }
-    // The Path tool is a Draw mode tool: its path is written in Ink, unfilled (boardShape).
-    const fresh = styleNewElement(boardShape(createPath(anchors, closed)));
+    // The Pen writes its path in Ink, unfilled (inkPath).
+    const fresh = styleNewElement(inkPath(createPath(anchors, closed)));
     const continued =
       !!continuing && elements().some((el) => el.id === continuing.id && el.type === 'path');
     commit((els) => {

@@ -19,7 +19,6 @@ describe('panel-layout', () => {
     const layout = defaultPanelLayout();
     // The top-left holds the menu button, not a panel (docs/specs/007-editor/toolbar-layout.md).
     expect(layout.corners['top-left']).toEqual([]);
-    // Vote and Poll open over the Session strip (docs/specs/012-collaboration/session-tools.md), not here.
     // The AI panel and the tool panels home bottom-right (docs/specs/007-editor/panel-docking.md "Default layout").
     expect(layout.corners['top-right']).toEqual([]);
     expect(layout.corners['bottom-left']).toEqual(['minimap']);
@@ -90,7 +89,7 @@ describe('panel-layout', () => {
       expect(layout.corners['top-right']).toEqual(['laser']);
     });
 
-    // Poll and Vote moved to the Session strip (docs/specs/012-collaboration/session-tools.md).
+    // Poll and Vote are retired panels.
     it('ignores the Poll and Vote panels in a stored layout', () => {
       const layout = normalizePanelLayout({
         corners: { 'top-right': ['vote', 'poll', 'ai'] },

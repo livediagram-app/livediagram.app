@@ -168,7 +168,7 @@ curl -X POST https://livedesign.app/api/documents/$DOC/tabs/$TAB/changesets \
   }'
 ```
 
-Elements are named by the refs a [text view](#read-a-tab-as-text) prints, or picked by what they are: `"Orders API"` by label, `type:sticky`, `in:f2` for what a frame holds, `n3->n4` for an arrow. [Edit Operations Reference](/help/developers/working-with-documents/edit-operations/) lists every operation, selector, placement and flag. Besides `add`, `set` and `rm` there are `move`, `connect`, `rewire`, `insert` (a step between two connected ones, making room for it), `wrap` and `unwrap` (frames and lanes), `order`, `layout`, and `test`, which refuses the changeset unless an element still holds the values you read. New boxes are sized for their label and placed beside what you name, and the answer has one line per element changed:
+Elements are named by the refs a [text view](#read-a-tab-as-text) prints, or picked by what they are: `"Orders API"` by label, `type:sticky`, `in:f2` for what a frame holds, `n3->n4` for an arrow. [Edit Operations Reference](/help/developers/working-with-documents/edit-operations/) lists every operation, selector, placement and flag. Besides `add`, `set` and `rm` there are `move`, `connect`, `rewire`, `insert` (a step between two connected ones, making room for it), `wrap` and `unwrap` (frames), `order`, `layout`, and `test`, which refuses the changeset unless an element still holds the values you read. New boxes are sized for their label and placed beside what you name, and the answer has one line per element changed:
 
 ```text
 ~ n2  label "API"→"Orders API"
@@ -176,7 +176,7 @@ Elements are named by the refs a [text view](#read-a-tab-as-text) prints, or pic
 + arrow  n2→db
 ```
 
-To rebuild a whole tab, send `"replace"` instead of `"operations"`, with `elements` (or a `graph`, `mermaid` text or a `template`). A replace on a tab id the document doesn't have yet creates that tab.
+To rebuild a whole tab, send `"replace"` instead of `"operations"`, with `elements` (or a `template`). A replace on a tab id the document doesn't have yet creates that tab.
 
 <Note>
   Every tab read returns the tab's `rev`. Send it back as `"base": { "rev": 7 }` and the changeset is
@@ -189,7 +189,7 @@ To rename a tab, `PUT` its name: `PUT /documents/$DOC/tabs/$TAB/name` with `{ "n
 
 `GET /documents/$DOC/changesets` lists the recent changesets, and `POST /documents/$DOC/changesets/<id>/revert` undoes one, leaving any element somebody changed since.
 
-Plan cards, Sheet cells, images and pages have endpoints of their own: see [Plan Items, Sheets and Images](/help/developers/working-with-documents/plan-sheets-images/).
+Images, pages and articles have endpoints of their own: see [Images, Pages and More](/help/developers/working-with-documents/images-and-pages/).
 
 ## Organise into folders
 

@@ -11,26 +11,6 @@ import {
 import { arrowBetween, shapeAt, strokeAt } from './build';
 
 const STATE_KINDS: [ShapeKind, Record<string, unknown>][] = [
-  ['estimate', { responses: [{ participantId: 'p', value: '5', at: 0 }], responsesRevealed: true }],
-  ['temperature', { responses: [] }],
-  ['done-check', { responses: [{ participantId: 'p', value: 'done', at: 0 }] }],
-  ['idea-box', { ideaCards: ['a', 'b'] }],
-  ['qa-board', { qaNotes: [] }],
-  [
-    'agenda',
-    {
-      agendaItems: [
-        { label: 'Intro', minutes: 5 },
-        { label: 'Demo', minutes: 10 },
-      ],
-      agendaCurrent: 1,
-    },
-  ],
-  ['decision', { decisionStatus: 'accepted' }],
-  ['roll-call', { rollCall: [] }],
-  ['quiz', { quizStartedAt: 1 }],
-  ['picker', { pickerResult: 'Sam' }],
-  ['reveal', { revealed: true }],
   ['stat-row', {}],
   ['process', {}],
   ['site-header', {}],
@@ -86,10 +66,6 @@ export function edgeCasesTab(): Tab {
     strokeAt('run-1', ...cell(14)),
     strokeAt('run-2', ...cell(15)),
     strokeAt('run-3', cell(15)[0] + 30, cell(15)[1], true),
-    shapeAt('mind-node', 'mind-a', ...cell(16), 100, 50, { label: 'A', mindParentId: 'mind-c' }),
-    shapeAt('mind-node', 'mind-b', ...cell(17), 100, 50, { label: 'B', mindParentId: 'mind-a' }),
-    shapeAt('mind-node', 'mind-c', ...cell(18), 100, 50, { label: 'C', mindParentId: 'mind-b' }),
-    shapeAt('mind-node', 'mind-d', ...cell(19), 100, 50, { label: 'D', mindParentId: 'gone' }),
     ...STATE_KINDS.map(([kind, state], i) =>
       shapeAt(kind, `state-${kind}`, ...cell(24 + i), 100, 50, state),
     ),

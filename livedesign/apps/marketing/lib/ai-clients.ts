@@ -240,33 +240,28 @@ export const AI_CLIENTS: readonly AiClient[] = [
 
 type StarterPrompt = { title: string; prompt: string };
 
-// Each maps to a shipped MCP tool (docs/specs/015-api/mcp-server.md §4): create_document with a graph,
-// a Plan template, change_pages, find + read_document, add_sheet.
+// Each maps to a shipped MCP tool (docs/specs/015-api/mcp-server.md §4): change_pages for wireframe
+// and logo pages, create_document from a template, find + read_document, share_document.
 export const STARTER_PROMPTS: readonly StarterPrompt[] = [
   {
-    title: 'Map a codebase',
+    title: 'Wireframe a website',
     prompt:
-      'Read this repository and draw its architecture as a livedesign diagram: the main services, what each one owns, and how requests flow between them.',
-  },
-  {
-    title: 'Turn steps into a flowchart',
-    prompt:
-      'Make a livedesign flowchart of how a new customer signs up, from landing page to first invoice, with a decision for each place they can drop off.',
-  },
-  {
-    title: 'Plan a launch',
-    prompt:
-      'Create a livedesign kanban board for launching our new website, with cards for design, copy, build, testing and go-live, and share a link I can send the team.',
-  },
-  {
-    title: 'Build a deck',
-    prompt:
-      'Build a five-slide livedesign deck that explains our product to a new hire: the problem, who it is for, how it works, what is next, and how to get help.',
+      'Wireframe our product site as livedesign website pages in a browser frame: a landing page, pricing and sign in.',
   },
   {
     title: 'Sketch the screen',
     prompt:
       'Wireframe the sign-up screen we just discussed as a livedesign phone wireframe: the fields, the button and the error states.',
+  },
+  {
+    title: 'Sketch a logo',
+    prompt:
+      'Add a livedesign logo page for a bakery called Bloom: a simple symmetrical mark above the name, in warm colours.',
+  },
+  {
+    title: 'Start from a template',
+    prompt:
+      'Start a livedesign document from the template that suits an app launch, fill it in from the notes I paste below, and share a link I can send.',
   },
   {
     title: 'Find and improve',

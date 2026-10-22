@@ -13,7 +13,7 @@ import {
 // Decorative "someone is filling in a sheet" loop, DiagramBuildAnimation's sibling for data: the same "You" cursor
 // types a value into each row of a small table, a bar in the next column growing with it; then it drags down the
 // column, and the total lands with its own bar, before the table's numbers dissolve and the loop restarts. A Sheet
-// shows it while it loads (docs/specs/029-sheets/sheet.md "Loading").
+// shows it while it loads.
 //
 // Pure SVG + CSS keyframes generated once at module load, one shared timeline. The base styles show the finished
 // table with no cursor, so prefers-reduced-motion gets a complete, still picture; the loop only runs when motion is

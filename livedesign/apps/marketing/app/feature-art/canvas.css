@@ -6,7 +6,6 @@
  * ───────────────────────────────────────────────────────────────── */
 .fa-a-in,
 .fa-a-pop,
-.fa-a-draw,
 .fa-a-late,
 .fa-a-out,
 .fa-a-move,
@@ -25,10 +24,6 @@
 .fa-a-pop {
   animation-name: fa-a-pop;
   animation-timing-function: cubic-bezier(0.2, 0.9, 0.3, 1.2);
-}
-.fa-a-draw {
-  stroke-dasharray: var(--len, 200);
-  animation-name: fa-a-draw;
 }
 .fa-a-late {
   animation-name: fa-a-late;
@@ -77,25 +72,6 @@
   100% {
     opacity: 0;
     transform: scale(0.9);
-  }
-}
-@keyframes fa-a-draw {
-  0% {
-    opacity: 0;
-    stroke-dashoffset: var(--len, 200);
-  }
-  2% {
-    opacity: 1;
-  }
-  24%,
-  88% {
-    opacity: 1;
-    stroke-dashoffset: 0;
-  }
-  96%,
-  100% {
-    opacity: 0;
-    stroke-dashoffset: 0;
   }
 }
 /* The "after" half of a swap: in at mid-cycle, out before the loop. */
@@ -169,7 +145,6 @@
 @media (prefers-reduced-motion: reduce) {
   .fa-a-in,
   .fa-a-pop,
-  .fa-a-draw,
   .fa-a-late,
   .fa-a-move,
   .fa-a-blink,
@@ -190,8 +165,7 @@
    long, over a --len path), the expiry ring draining, and the marquee drawn out from its corner. */
 .fa-a-tour,
 .fa-a-streak,
-.fa-a-drain,
-.fa-a-marquee {
+.fa-a-drain {
   animation-duration: 6s;
   animation-iteration-count: infinite;
   animation-timing-function: ease-in-out;
@@ -210,11 +184,6 @@
 .fa-a-drain {
   animation-name: fa-a-drain;
   animation-timing-function: linear;
-}
-.fa-a-marquee {
-  transform-box: fill-box;
-  transform-origin: left top;
-  animation-name: fa-a-marquee;
 }
 @keyframes fa-a-tour {
   0%,
@@ -260,26 +229,8 @@
     stroke-dashoffset: 27;
   }
 }
-@keyframes fa-a-marquee {
-  0%,
-  6% {
-    opacity: 1;
-    transform: scale(0);
-  }
-  34%,
-  88% {
-    opacity: 1;
-    transform: none;
-  }
-  96%,
-  100% {
-    opacity: 0;
-    transform: none;
-  }
-}
 @media (prefers-reduced-motion: reduce) {
-  .fa-a-tour,
-  .fa-a-marquee {
+  .fa-a-tour {
     animation: none !important;
     transform: none !important;
     opacity: 1 !important;

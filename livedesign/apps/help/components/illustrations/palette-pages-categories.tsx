@@ -144,8 +144,8 @@ function Row({
 
 const g = { className: 'fill-none stroke-brand-600', strokeWidth: 1.4 } as const;
 
-/** The Components category as Pages mode's palette shows it: its Layout group first (Hero, Header, Banner and
- *  the Stack), then Page Blocks, then Code and Lists. (Pages leaves the category's Entity tile out.) */
+/** The Components category as the Pages palette shows it: its Layout group first (Hero, Header, Banner and
+ *  the Stack), then Page Blocks, then Code and Lists. */
 export function ComponentsCategory() {
   const x = PX + 12;
   const groups: [string, [string, string, ReactNode][]][] = [

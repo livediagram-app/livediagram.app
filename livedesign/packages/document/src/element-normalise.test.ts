@@ -1,11 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createShape, entityHeight, isValidElement, isValidTab } from './index';
-import {
-  lanesToFront,
-  mergeElementUpdate,
-  normaliseElement,
-  normaliseElements,
-} from './element-normalise';
+import { createShape, isValidElement, isValidTab } from './index';
+import { mergeElementUpdate, normaliseElement, normaliseElements } from './element-normalise';
 
 // docs/specs/015-api/mcp-server.md §4.7a: the content-carrying kinds are made safe before validation.
 
@@ -41,27 +36,15 @@ describe('content kinds', () => {
     expect(valid(els)).toBe(true);
   });
 
-  it('aligns an entity title top-left and grows the box to its rows', () => {
-    const fields = Array.from({ length: 6 }, (_, i) => ({ name: `f${i}`, type: 'text' }));
-    const [e] = normaliseElements([
-      { id: 'e', type: 'shape', shape: 'entity', ...box, label: 'User', entityFields: fields },
-    ]);
-    expect(e).toMatchObject({
-      textAlignX: 'left',
-      textAlignY: 'top',
-      height: entityHeight(6, 'md'),
-    });
-  });
-
   it('keeps an alignment the model chose', () => {
-    const lane = normaliseElement({
-      id: 'l',
+    const frame = normaliseElement({
+      id: 'f',
       type: 'shape',
-      shape: 'lane',
+      shape: 'frame',
       ...box,
       textAlignX: 'right',
     });
-    expect(lane).toMatchObject({ textAlignX: 'right', padding: 'lg' });
+    expect(frame).toMatchObject({ textAlignX: 'right' });
   });
 
   it('coerces chart data and fits each series to the categories', () => {
@@ -142,16 +125,6 @@ describe('content kinds', () => {
     expect(text).toMatchObject({ textSize: 'sm' });
     expect(sticky).toMatchObject({ textSize: 'md' });
     expect(sized).toMatchObject({ textSize: 'scale' });
-  });
-
-  it('moves lanes to the front, keeping their order', () => {
-    const ids = lanesToFront([
-      { id: 'a', type: 'shape', shape: 'square' },
-      { id: 'l1', type: 'shape', shape: 'lane' },
-      { id: 'b', type: 'sticky' },
-      { id: 'l2', type: 'shape', shape: 'lane' },
-    ]).map((e) => e.id);
-    expect(ids).toEqual(['l1', 'l2', 'a', 'b']);
   });
 
   it('leaves anything that is not an element list for validation to reject', () => {

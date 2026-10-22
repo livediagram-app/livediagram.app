@@ -74,8 +74,6 @@ export type EmailKind =
   | 'CommentNotification'
   | 'ActionAssigned'
   | 'Mentioned'
-  | 'FormResponse'
-  | 'FormSuspended'
   | 'TokenExpiring'
   | 'AccountDeleted';
 
@@ -186,7 +184,7 @@ export function welcomeEmail(env: Env): RenderedEmail {
       points: [
         '<strong>Drop a shape</strong> from the palette, double-click it to type, and drag the corners to resize.',
         '<strong>Connect things</strong> by hovering an element’s edge and dragging an arrow to another, and the arrow stays pinned as you move them.',
-        '<strong>Start from a template</strong> (flowchart, mind map, kanban, SWOT and more) or pick one of the built-in themes for an instant look.',
+        '<strong>Start from a template</strong> (logo designs, app and website wireframes and more) or pick one of the built-in themes for an instant look.',
       ],
       outro: 'Everything autosaves as you go, so you can just start and come back later.',
       ctaText: 'Start drawing',
@@ -493,8 +491,6 @@ export function mentionedEmail(
   documentName: string,
   documentId: string,
   commentText: string,
-  // A Plan card's comment: the button opens the card (docs/specs/012-collaboration/comment-mentions.md).
-  itemId?: string,
 ): RenderedEmail {
   const base = appBaseUrl(env);
   const docHref = `${base}/document/${encodeURIComponent(documentId)}`;
@@ -511,8 +507,8 @@ export function mentionedEmail(
       heading: 'You were mentioned',
       intro: `<strong>${who}</strong> mentioned you in a comment on <strong>${liveDoc}</strong>:`,
       outro: `“${escapeHtml(mentionQuote(commentText))}”`,
-      ctaText: itemId ? 'Open the card' : 'Open the document',
-      ctaHref: itemId ? `${docHref}#item=${encodeURIComponent(itemId)}` : docHref,
+      ctaText: 'Open the document',
+      ctaHref: docHref,
       footer: manageNotificationsFooter(
         env,
         'You’re receiving this because a teammate mentioned you in a comment.',
@@ -589,7 +585,7 @@ export function activationEmail(env: Env): RenderedEmail {
       intro:
         'You signed up for livedesign but haven’t made a diagram yet. It takes about thirty seconds to get going:',
       points: [
-        'Open a blank canvas and drop a shape, or start from a template (flowchart, mind map, kanban and more).',
+        'Open a blank canvas and drop a shape, or start from a template (logo designs, wireframes and more).',
         'Double-click to type, drag from an edge to connect, and it all autosaves as you go.',
         'Pick a theme for an instant look you can change any time.',
       ],
@@ -633,66 +629,6 @@ export function commentNotificationEmail(
       ),
     }),
     unsubscribeUrl: profilePath(env),
-  };
-}
-
-// A form's new response (docs/specs/030-forms/forms.md "Hearing about responses"): the card's title and a button
-// to its board. `more`: responses that arrived while the last email held the throttle. Opt-out (notifyFormResponses).
-export function formResponseEmail(
-  env: Env,
-  form: { heading: string; documentId: string; documentName: string },
-  cardTitle: string,
-  more: number,
-): RenderedEmail {
-  const base = appBaseUrl(env);
-  const headingText = escapeText(form.heading.trim() || 'your form');
-  const heading = escapeHtml(form.heading.trim() || 'your form');
-  const title = escapeHtml(cardTitle.trim() || 'A new response');
-  const docName = escapeHtml(form.documentName.trim() || 'your document');
-  const since =
-    more > 0
-      ? ` And ${more} more ${more === 1 ? 'response has' : 'responses have'} arrived since the last email.`
-      : '';
-  return {
-    kind: 'FormResponse',
-    subject: `New response to ${headingText}`,
-    html: shell(env, {
-      heading: `New response to ${heading}`,
-      intro: `<strong>${title}</strong> just arrived on your board in <strong>${docName}</strong>.${since}`,
-      ctaText: 'Open the board',
-      ctaHref: `${base}/document/${encodeURIComponent(form.documentId)}`,
-      footer: manageNotificationsFooter(
-        env,
-        'You’re receiving this because someone filled in a form in a document you own.',
-      ),
-    }),
-    unsubscribeUrl: profilePath(env),
-  };
-}
-
-// A form's link suspended after reports (docs/specs/030-forms/forms.md "Report This Form"). Not opt-out: it is about
-// something the owner published, and the link has stopped working.
-export function formSuspendedEmail(
-  env: Env,
-  form: { heading: string; documentId: string; documentName: string },
-): RenderedEmail {
-  const base = appBaseUrl(env);
-  const headingText = escapeText(form.heading.trim() || 'your form');
-  const heading = escapeHtml(form.heading.trim() || 'your form');
-  const docName = escapeHtml(form.documentName.trim() || 'your document');
-  return {
-    kind: 'FormSuspended',
-    subject: `The link to ${headingText} was suspended`,
-    html: shell(env, {
-      heading: 'Your form’s link was suspended',
-      intro: `People who were sent the link to <strong>${heading}</strong> in <strong>${docName}</strong> reported it, so the link has stopped working. Its responses stay on your board. You can publish the form again, which makes a new link.`,
-      ctaText: 'Open the document',
-      ctaHref: `${base}/document/${encodeURIComponent(form.documentId)}`,
-      footer: manageNotificationsFooter(
-        env,
-        'You’re receiving this because a form you published was reported by the people it was sent to.',
-      ),
-    }),
   };
 }
 

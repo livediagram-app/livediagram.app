@@ -8,9 +8,9 @@ import {
   arrowThicknessOf,
   canvasSurface,
   defaultArrowStrokeColor,
+  isSelfDrawingShape,
   INK_PEN_COLOUR,
   PEN_INK,
-  supportsTextAlign,
   quickSwatches,
   supportsBorderControls,
   supportsColours,
@@ -27,20 +27,14 @@ import {
   type ThemeDefinition,
 } from '@livedesign/document';
 import { applySwatchOverrides, type ShownSwatch, type SwatchOverrides } from './swatch-overrides';
-import type { PenColourChoice, PenColourOption, QuickPenStyle } from './quick-style-pen';
-
-// The whiteboard's colours as a row: the choice the targets share and the stock options.
-export type BoardColourSection = {
-  value: PenColourChoice | null;
-  options: PenColourOption[];
-};
+import type { QuickPenStyle } from './quick-style-pen';
 
 export type QuickStyleTarget = ShapeElement | ArrowElement | TextElement | PathElement;
 type QuickSectionId =
   'stroke' | 'background' | 'textColour' | 'width' | 'style' | 'textAlign' | 'iconAlign';
 export type QuickSwatchValue = 0 | QuickSwatchSlot;
-// Ink, the eighth choice of the Stroke and Text colour rows (docs/specs/007-editor/editor-modes.md
-// "One look"): stored by name, drawn in its version for the canvas.
+// Ink, the eighth choice of the Stroke and Text colour rows (docs/specs/008-canvas/quick-style-panel.md
+// "Colours"): stored by name, drawn in its version for the canvas.
 export const QUICK_INK = INK_PEN_COLOUR;
 export type QuickColourValue = QuickSwatchValue | typeof QUICK_INK;
 // The Background row's Transparent (docs/specs/008-canvas/quick-style-panel.md "Background"): no
@@ -50,8 +44,6 @@ export type QuickFillValue = QuickSwatchValue | typeof QUICK_TRANSPARENT;
 export type QuickWidth = 'thin' | 'medium' | 'thick';
 export type QuickStrokeStyle = 'solid' | 'dashed' | 'dotted' | 'flowing';
 export type QuickIconAlign = 'left' | 'above' | 'right';
-// The Corners row's choices: the corner presets but Full, which is a pill rather than a corner.
-export type QuickCorners = 'none' | 'sm' | 'md' | 'lg';
 
 export const QUICK_WIDTHS: readonly QuickWidth[] = ['thin', 'medium', 'thick'];
 export const QUICK_TEXT_ALIGNS: readonly TextAlignX[] = ['left', 'center', 'right'];
@@ -71,19 +63,13 @@ export type QuickStyleView = {
     style?: { value: QuickStrokeStyle | null; options: readonly QuickStrokeStyle[] };
     textAlign?: { value: TextAlignX | null };
     iconAlign?: { value: QuickIconAlign | null };
-    // A whiteboard's Stroke and Text colour rows (lib/quick-style-whiteboard): the whiteboard's
-    // colours in place of `stroke` and `textColour`.
-    boardStroke?: BoardColourSection;
-    boardText?: BoardColourSection;
-    // A whiteboard's Corners row (docs/specs/008-canvas/corner-radius.md): the shared preset.
-    corners?: { value: QuickCorners | null };
   };
-  // A whiteboard's pen rows (lib/quick-style-pen): the selected strokes, or the pen in hand.
+  // The marker rows (lib/quick-style-pen): the selected marker strokes, or the marker in hand.
   pen?: QuickPenStyle;
   // The Highlighter rows (lib/quick-style-highlighter): the selected highlights, or the armed
   // Highlighter tile's next stroke (docs/specs/008-canvas/highlighter.md "Settings").
   highlighter?: import('./quick-style-highlighter').QuickHighlighterStyle;
-  // Names whose style this is when it is not a selection: a tool's next mark.
+  // Names whose style this is when it is not plainly the selection.
   caption?: string;
 };
 
@@ -121,7 +107,7 @@ export function supportsQuickSection(el: QuickStyleTarget, section: QuickSection
       );
     case 'textAlign':
       // Only once the shape has words to align: an empty label has nothing to move.
-      return el.type === 'shape' && supportsTextAlign(el.shape) && !!el.label?.trim();
+      return el.type === 'shape' && !isSelfDrawingShape(el.shape) && !!el.label?.trim();
     case 'iconAlign':
       // Not on a card, callout, header or boundary: they place their icon themselves.
       return el.type === 'shape' && positionsInlineIcon(el) && !!el.iconId;

@@ -1,25 +1,21 @@
 // A label's plate keeps clear of every frame's border (docs/specs/015-api/mcp-server.md "Groups keep their lines
-// clear"): on the architecture with an event bus (an evaluator's D2), "publish" sat on the Services frame's edge.
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+// clear"): on the architecture with an event bus (an evaluator's D2, kept laid out as data), "publish" sat on the
+// Services frame's edge.
 import { describe, expect, it } from 'vitest';
 import {
   arrowLabelPass,
-  buildGraphTab,
-  resolveGraphInput,
   type ArrowElement,
   type BoxedElement,
+  type Tab,
 } from '@livedesign/document';
+import eventBus from './event-bus-tab.json';
 
 // How far a plate keeps off a border across it: at least this, in px (the look keeps 6; a pixel's rounding aside).
 const MIN_CLEAR = 5;
 
 describe('label plates and frame borders', () => {
   it('keeps every publish label off the Services frame border', () => {
-    const input = JSON.parse(
-      readFileSync(join(__dirname, 'routing/graph-flow-13-bus.json'), 'utf8'),
-    ) as Parameters<typeof resolveGraphInput>[0];
-    const tab = buildGraphTab('t', 'T', resolveGraphInput(input).graph!, undefined);
+    const tab = eventBus as unknown as Tab;
     const frames = tab.elements.filter(
       (e): e is BoxedElement => e.type === 'shape' && e.shape === 'frame',
     );

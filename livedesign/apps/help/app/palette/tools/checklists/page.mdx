@@ -20,7 +20,7 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles('tools').filter((a) => a.slug !== 'checklists')}
 >
 
-A checklist is a card of checkable to-do rows, a visual home for the task lists that end up on agile boards, retros, and project plans. It is a real canvas element, so you can place, resize, recolour, lock and move it like anything else, and its colours follow the tab's [theme](/help/canvas/themes/) like any shape.
+A checklist is a card of checkable to-do rows, a visual home for the task lists that end up in briefs, launch plans and project updates. It is a real canvas element, so you can place, resize, recolour, lock and move it like anything else, and its colours follow the tab's [theme](/help/canvas/themes/) like any shape.
 
 <Figure caption="A checklist card with two rows ticked off: done rows strike through, and the footer counts progress.">
   <ChecklistCard />
@@ -29,10 +29,9 @@ A checklist is a card of checkable to-do rows, a visual home for the task lists 
 ## Adding one
 
 <Step n={1}>
-  In [Pages](/help/canvas/pages-mode/), open the **Components** category on the palette strip. In
-  Diagram mode there is no Components category: open the [search
-  panel](/help/search-panel/the-search-panel/search-add-to-canvas/) (`⌘K` or `Ctrl+K`), type
-  "checklist" and pick it under **Add to canvas**.
+  Open the **Components** category on the palette strip (**Elements** on a wireframe page). On a
+  logo page, open the [search panel](/help/search-panel/the-search-panel/search-add-to-canvas/)
+  (`⌘K` or `Ctrl+K`), type "checklist" and pick it under **Add to canvas**.
 </Step>
 <Step n={2}>
   Pick **Checklist**, then tap the canvas to drop one, or drag to draw it at a size. It starts with
@@ -44,7 +43,7 @@ A checklist is a card of checkable to-do rows, a visual home for the task lists 
 
 Clicking a checkbox on the canvas toggles that row, no edit mode needed. Done rows tick the box, **strike through** the text, and mute it, and a **done count** (for example "2/5") appears in the card's bottom-right corner once at least one row is done.
 
-Ticks **sync live**, so in a shared session everyone sees a box tick the moment it is clicked, and two people ticking different rows at once both land. A tick is the room's answer rather than an edit, so it is **not undoable**: click the box again to untick it. Only people who can edit the document can tick; with view-only access, or on a locked checklist, tab or layer, the boxes don't respond.
+Ticks **sync live**, so in a shared session everyone sees a box tick the moment it is clicked, and two people ticking different rows at once both land. A tick is the room's answer rather than an edit, so it is **not undoable**: click the box again to untick it. Only people who can edit the document can tick; with view-only access, or on a locked checklist or tab, the boxes don't respond.
 
 ## Editing the rows
 

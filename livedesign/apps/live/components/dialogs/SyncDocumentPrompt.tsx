@@ -7,9 +7,8 @@ import { syncFailureMessage } from '@/lib/offline/offline-convert';
 import { Spinner } from '@/components/palette/template-picker-icons';
 
 // The offer to move a document in This Browser onto livedesign (docs/specs/006-document/offline-mode.md "Sharing a
-// document in This Browser"), drawn inside a dialog: the document Share dialog's gate and Share Form's
-// (docs/specs/030-forms/forms.md "Publishing and the form link"). It says the document is offline and offers Sync
-// Document; the sync converts the open document in place, and the dialog around it swaps this prompt for what it was
+// document in This Browser"), drawn inside a dialog: the document Share dialog's gate and Share Form's. It says
+// the document is offline and offers Sync Document; the sync converts the open document in place, and the dialog around it swaps this prompt for what it was
 // opened for as the document stops being offline. Sync waits for `ready` (the reader is known).
 export function SyncDocumentPrompt({
   onSyncToCloud,

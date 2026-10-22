@@ -23,7 +23,6 @@
   },
   "dependencies": {
     "@livedesign/document": "workspace:*",
-    "@livedesign/forms": "workspace:*",
     "@livedesign/icons": "workspace:*",
     "@livedesign/templates": "workspace:*",
     "@livedesign/ui": "workspace:*"

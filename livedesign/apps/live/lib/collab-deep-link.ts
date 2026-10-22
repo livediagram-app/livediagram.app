@@ -3,8 +3,6 @@
 // back with.
 //
 //   /document/<id>[?s=<code>]#t=<tabId>&el=<elementId>&open=action|comments
-//   /document/<id>[?s=<code>]#t=<tabId>&el=<boardId>&item=<itemId>   (a Plan card, §2.4)
-//   /document/<id>[?s=<code>]#item=<itemId>                           (a card no board shows)
 //
 // `t` is the tab pin the editor already writes on every tab switch
 // (docs/specs/006-document/per-tab-storage.md, useTabEntryEffects); `el` and `open` ride beside it and are
@@ -12,16 +10,14 @@
 // builds the link) and the editor (which reads it), so the two halves
 // cannot drift on the parameter names.
 
-import type { ActivityCard, ActivityFormResponses, ActivityPlace } from '@livedesign/api-schema';
+import type { ActivityPlace } from '@livedesign/api-schema';
 
 export type CollabPopover = 'action' | 'comments';
 
-// `at` is the element to arrive at; null only for a card no board shows, which opens on the document's
-// usual tab. `itemId` is the Plan card to open in the item panel.
+// `at` is the element to arrive at.
 export type CollabDeepLink = {
-  at: { tabId: string; elementId: string } | null;
+  at: { tabId: string; elementId: string };
   open: CollabPopover | null;
-  itemId: string | null;
 };
 
 type Reachable = Pick<ActivityPlace, 'documentId' | 'via' | 'shareCode'>;
@@ -39,29 +35,7 @@ export function collabDeepLinkHref(place: ActivityPlace, open: CollabPopover): s
   return documentHref(place, `${pin(place.tabId, place.elementId)}&open=${open}`);
 }
 
-// A Plan card's row (docs/specs/013-workspace/inbox.md §1, §2.5): the board it is on, and the card.
-export function cardDeepLinkHref(
-  card: Pick<ActivityCard, 'id' | 'board' | 'documentId' | 'via' | 'shareCode'>,
-): string {
-  const item = `item=${encodeURIComponent(card.id)}`;
-  return documentHref(
-    card,
-    card.board ? `${pin(card.board.tabId, card.board.elementId)}&${item}` : item,
-  );
-}
-
-// A form's responses (docs/specs/030-forms/forms.md "Hearing about responses"): the board they land on, else the
-// Form tab. A plain tab pin, so the editor opens that tab.
-export function formResponsesHref(
-  form: Pick<ActivityFormResponses, 'documentId' | 'tabId' | 'boardTabId'>,
-): string {
-  return documentHref(
-    { documentId: form.documentId, via: 'own', shareCode: null },
-    `t=${encodeURIComponent(form.boardTabId ?? form.tabId)}`,
-  );
-}
-
-// Null unless the fragment names a tab AND an element, or a card: a plain
+// Null unless the fragment names a tab AND an element: a plain
 // `#t=` pin is the ordinary refresh case and is not a deep link. An
 // unknown `open` value still selects the element, it just opens no
 // popover, so a typo degrades to "show me the element".
@@ -71,13 +45,10 @@ export function parseCollabDeepLink(hash: string): CollabDeepLink | null {
   const params = new URLSearchParams(raw);
   const tabId = params.get('t');
   const elementId = params.get('el');
-  const itemId = params.get('item') || null;
-  const at = tabId && elementId ? { tabId, elementId } : null;
-  if (!at && !itemId) return null;
+  if (!tabId || !elementId) return null;
   const open = params.get('open');
   return {
-    at,
+    at: { tabId, elementId },
     open: open === 'action' || open === 'comments' ? open : null,
-    itemId,
   };
 }

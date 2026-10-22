@@ -2,7 +2,6 @@
 // re-exports this module, and a value-shaped import here is what made that
 // cycle observable at runtime.
 import type { Element, ElementId, Tab } from './index';
-import { isFloorShape } from './office';
 
 // Photoshop-style layers (docs/specs/006-document/layers.md). A tab optionally carries an ordered
 // `layers` array (BOTTOM -> TOP: index 0 paints lowest) and each element
@@ -64,22 +63,13 @@ export function resolveLayerId(layerId: string | undefined, layers: Layer[]): st
 }
 
 // The paint tier of an element within its band, back to front:
-// - frames, and an office's rooms and rugs, are backdrops that paint below their band-mates
+// - frames are backdrops that paint below their band-mates
 //   (docs/specs/008-canvas/canvas-and-palette.md), the larger first;
 // - attached badges and step numbers sit in front of everything else.
 // Array order decides within a tier.
 function paintTier(el: Element): number {
-  // Frames and boundaries are backdrops (docs/specs/009-elements/boundary.md "A container"), and so are an office's
-  // floors (docs/specs/009-elements/office.md): a room and a rug lie under the furniture however they were added (drawn
-  // to size, pasted, by an agent), and the larger paints first, so a rug lies on its room's floor.
-  if (
-    el.type === 'shape' &&
-    (el.shape === 'frame' ||
-      el.shape === 'boundary' ||
-      el.shape === 'stack' ||
-      isFloorShape(el.shape))
-  )
-    return 0;
+  // Frames and stacks are backdrops, however they were added, and the larger paints first.
+  if (el.type === 'shape' && (el.shape === 'frame' || el.shape === 'stack')) return 0;
   // An attached badge or step number (docs/specs/009-elements/badge.md) sits above everything in its band, so a
   // later element never covers the mark on its host.
   if (
@@ -144,7 +134,7 @@ function bandsOf(elements: Element[], layers: Layer[]): Element[][] {
 }
 
 // The tab's elements minus hidden layers, in ARRAY order (not band
-// order) — for bounds, Mermaid export, and any "what exists" filter
+// order) — for bounds, exports, and any "what exists" filter
 // where paint order doesn't matter. Returns the input array unchanged
 // when nothing is hidden.
 export function visibleLayerElements(elements: Element[], layers: Layer[] | undefined): Element[] {
@@ -231,7 +221,7 @@ export function isDefaultLayerName(name: string): boolean {
 // Stamp the active layer onto elements that appeared in a commit without
 // a valid layer (docs/specs/006-document/layers.md: "every new element lands on the active layer").
 // Called at the editor's single commit choke point so no individual
-// creation path (draw, paste, AI, template, Mermaid import) carries layer
+// creation path (draw, paste, AI, template, import) carries layer
 // logic. A tab that has never materialised `layers` is left untouched —
 // everything there is implicitly on the one default layer. Elements that
 // already carry a KNOWN layerId (duplicates, cross-tab paste from a tab

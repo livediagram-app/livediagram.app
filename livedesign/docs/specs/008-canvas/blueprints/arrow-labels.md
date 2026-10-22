@@ -75,7 +75,7 @@ An arrow with empty text has no entry.
    before `-` (D20). A candidate is taken when the block centred at `pointAt(s)` fits
    (`footprintAlong <= 2 * min(s - s0, s1 - s)`), and its knockout rect hits no obstacle. None
    taken → the centre candidate.
-8. **Obstacles.** Boxed elements except `frame` and `lane` shapes (containers, D21), and knockouts
+8. **Obstacles.** Boxed elements except `frame` shapes (containers, D21), and knockouts
    already placed. The arrow's own endpoint elements are obstacles too, so a short arrow's label
    does not sit on a box it connects.
 9. **Beside.** Anchor at the route point at `L / 2`, direction `u`, left normal `n = (-u.y, u.x)`.

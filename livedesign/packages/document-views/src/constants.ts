@@ -3,7 +3,6 @@
 // Spec, "The outline".
 export const LABEL_CUT_CHARS = 60;
 export const NOTE_CUT_CHARS = 48;
-export const ENTITY_FIELDS_SHOWN = 8;
 // Spec, "Budgets": measured 3.07 characters per token for the outline.
 export const CHARS_PER_TOKEN = 3;
 // As notes (VW53).

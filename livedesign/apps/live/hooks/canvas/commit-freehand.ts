@@ -12,7 +12,6 @@ import {
   type Element,
   type FreehandElement,
   type PenColour,
-  type PenStroke,
   type Endpoint,
   type ShapeElement,
 } from '@livedesign/document';
@@ -25,7 +24,7 @@ import { titleCaseType, track } from '@/lib/telemetry';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { HIGHLIGHTER_COLOR, HIGHLIGHTER_WIDTH } from '@/lib/highlighter-config';
 import { simplifyPenStroke } from '@/lib/pen-smoothing';
-import { RECOGNITION_THRESHOLD, recogniseBoardStroke } from '@/lib/recognition-preview';
+import { RECOGNITION_THRESHOLD } from '@/lib/recognition-preview';
 
 // WHAT A PEN STROKE BECOMES (docs/specs/008-canvas/two-pens.md's two pens, docs/specs/008-canvas/highlighter.md's highlighter).
 //
@@ -66,7 +65,7 @@ export function makeCommitFreehand({
 }) {
   // Canvas-driven commit for the pen gesture. A whiteboard pen's raw samples land as they
   // are, with their pressures and streamline (`ink`), and draw as the same perfect-freehand
-  // outline the stroke showed while drawn (docs/specs/023-draw-mode/draw-mode.md "Pens"),
+  // outline the stroke showed while drawn (docs/specs/023-draw-mode/drawing-tools.md "Markers"),
   // so release reshapes nothing. The diagram pencil and the highlighter hand over raw pointer
   // samples in canvas coords, which get:
   //   1. Ramer-Douglas-Peucker simplification with a tolerance
@@ -83,13 +82,13 @@ export function makeCommitFreehand({
   //   3. createFreehand to mint the element + commit.
   return (rawPoints: { x: number; y: number }[], recogniseShapesMode: boolean, drawn?: PenInk) => {
     // Disarm on a gesture too short to be a stroke, unless a whiteboard pen is HELD
-    // (docs/specs/023-draw-mode/draw-mode.md "Pens"), where a stray tap must not silently put it down.
+    // (docs/specs/023-draw-mode/drawing-tools.md "Markers"), where a stray tap must not silently put it down.
     const whiteboardPen =
       pendingDraw?.type === 'freehand' && pendingDraw.variant === 'whiteboard' ? pendingDraw : null;
     const disarm = () => {
       if (!whiteboardPen) setPendingDraw(null);
     };
-    // A whiteboard pen's tap is a dot: one point is a stroke (docs/specs/023-draw-mode/draw-mode.md
+    // A whiteboard pen's tap is a dot: one point is a stroke (docs/specs/023-draw-mode/drawing-tools.md
     // "Pens"). Every other pen needs a line.
     const fewestPoints = whiteboardPen ? 1 : 2;
     if (editsBlocked || rawPoints.length < fewestPoints) {
@@ -243,17 +242,15 @@ export function makeCommitFreehand({
 
 type WhiteboardPenIntent = Extract<PendingDraw, { variant: 'whiteboard' }>;
 // A whiteboard pen stroke's ink beyond its points: a pressure per point (a pen) and the streamline.
-// What the pen drew with, and, when the stroke locked to a recognised shape (held still, or Alt),
-// that shape as the pen reshaped it: it lands as is, never re-read from the stroke. `keepInk`: the
-// stroke was broken out of a shape (Alt, or the chip), so it lands as drawn, never recognised.
+// What the pen drew with, and, when the stroke locked to a recognised shape (Alt, or the chip),
+// that shape as the pen reshaped it: it lands as is, never re-read from the stroke.
 export type PenInk = Pick<FreehandElement, 'streamline'> & {
   pressures?: number[];
   snapped?: RecognisedShape;
-  keepInk?: true;
 };
 
-// What a whiteboard pen stroke becomes (docs/specs/023-draw-mode/draw-mode.md "Pens", "Shape
-// recognition"): with recognition on, a stroke that reads as a shape is the
+// What a whiteboard pen stroke becomes (docs/specs/023-draw-mode/drawing-tools.md "Markers", "Shape
+// recognition"): a stroke locked to a shape is the
 // clean shape, unfilled, in the pen's colour and nearest weight; otherwise an
 // OPEN stroke (a written "o" is ink, not a filled shape) carrying the pen's
 // width. The main pen records no colour, so its marks follow the board; a named colour is recorded
@@ -273,19 +270,11 @@ function whiteboardStroke(
   ink: PenInk | undefined,
 ): Element {
   const colour = penColourFields(pen.colour);
-  const stroke: PenStroke = {
-    points,
-    pressures: ink?.pressures,
-    width: pen.width,
-    streamline: ink?.streamline ?? 0,
-  };
-  // The same test on the same stroke the hold-still preview runs (lib/recognition-preview), so
-  // it is what lands.
-  const detected =
-    ink?.snapped ?? (pen.recognise && !ink?.keepInk ? recogniseBoardStroke(stroke) : null);
+  // The shape the stroke was locked to while drawn (Alt, or the chip), so it is what lands.
+  const detected = ink?.snapped ?? null;
   if (detected) {
-    // A recognised shape or line is written in its pen's colour, the main pen's Ink by name
-    // (docs/specs/007-editor/editor-modes.md "One look"), so it is Ink in Diagram mode too.
+    // A recognised shape or line is written in its pen's colour, the main pen's Ink by name, so it
+    // looks the same to every collaborator.
     const lined = penColourFields(pen.colour ?? INK_PEN_COLOUR);
     track('Element', 'Added', detected.kind === 'line' ? 'Arrow' : titleCaseType(detected.kind));
     if (detected.kind === 'line') {

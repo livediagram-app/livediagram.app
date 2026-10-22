@@ -3,41 +3,34 @@ import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { activeTour, setActiveTour, useActiveTour } from './tour-active';
 
-// One guided tour at a time (docs/specs/026-plan/plan-tour.md "Where it appears").
+// One guided tour at a time (docs/specs/007-editor/pages-tour.md "Where it appears").
 
 afterEach(() => {
-  setActiveTour('welcome', false);
-  setActiveTour('plan', false);
-  setActiveTour('workshop', false);
+  setActiveTour('pages', false);
+  setActiveTour('element', false);
 });
 
 describe('tour-active', () => {
   it('starts empty, and holds the tour that claimed it', () => {
     expect(activeTour()).toBeNull();
-    setActiveTour('welcome', true);
-    expect(activeTour()).toBe('welcome');
+    setActiveTour('pages', true);
+    expect(activeTour()).toBe('pages');
   });
 
   it('is released only by the tour holding it', () => {
-    setActiveTour('welcome', true);
-    setActiveTour('plan', false);
-    expect(activeTour()).toBe('welcome');
-    setActiveTour('welcome', false);
+    setActiveTour('pages', true);
+    setActiveTour('element', false);
+    expect(activeTour()).toBe('pages');
+    setActiveTour('pages', false);
     expect(activeTour()).toBeNull();
-  });
-
-  it('holds the Workshop tour like the others', () => {
-    setActiveTour('workshop', true);
-    setActiveTour('welcome', false);
-    expect(activeTour()).toBe('workshop');
   });
 
   it('re-renders a reader when it changes', () => {
     const { result } = renderHook(() => useActiveTour());
     expect(result.current).toBeNull();
-    act(() => setActiveTour('plan', true));
-    expect(result.current).toBe('plan');
-    act(() => setActiveTour('plan', false));
+    act(() => setActiveTour('element', true));
+    expect(result.current).toBe('element');
+    act(() => setActiveTour('element', false));
     expect(result.current).toBeNull();
   });
 });

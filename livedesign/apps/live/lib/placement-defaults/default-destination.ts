@@ -85,16 +85,9 @@ export function resolveDefaultFor(
   return { resolved: null, skipped };
 }
 
-/** What a new document of this entry is made as. Every family template opens in Diagram mode
- *  (blueprint D112). */
+/** What a new document of this entry is made as. */
 export function representativeIntent(key: PlacementDefaultKey): CreationIntent {
-  const [dimension, value] = key.split(':') as [string, string];
-  if (dimension === 'mode') return { mode: value as EditorMode, tabKind: 'diagram' };
-  return {
-    mode: 'diagram',
-    tabKind: 'diagram',
-    templateFamily: value as 'retrospective' | 'kanban',
-  };
+  return { mode: key.slice('mode:'.length) as EditorMode, tabKind: 'diagram' };
 }
 
 export type RememberedFolder = { name: string; teamId: string | null };

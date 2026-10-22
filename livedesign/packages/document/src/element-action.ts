@@ -41,7 +41,7 @@ export type ElementAction = {
   // signed-out self-assignment).
   assignerId: string;
   assignerName: string | null;
-  // 'wont-do' (docs/specs/026-plan/linked-boards.md "On the canvas"): decided against, closed without being done.
+  // 'wont-do' (docs/specs/012-collaboration/assigned-actions.md): decided against, closed without being done.
   status: ElementActionStatus;
   createdAt: number; // unix ms
   updatedAt: number; // unix ms
@@ -69,7 +69,7 @@ export function createElementAction(input: {
   };
 }
 
-// An Action panel holds at most this many (docs/specs/012-collaboration/action-panel.md "The data").
+// An element's `actions` list holds at most this many.
 export const ACTION_CARD_MAX = 50;
 
 // Every action an element carries, as a list: an Action panel's `actions`,

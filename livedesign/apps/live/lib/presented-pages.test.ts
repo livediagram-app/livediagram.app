@@ -1,28 +1,25 @@
 import { describe, expect, it } from 'vitest';
-import type { Tab } from '@livedesign/document';
+import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import { presentedPages } from './presented-pages';
 
 // docs/specs/007-editor/pages-mode.md "Slides": a presenting page slide shows its page alone.
-const tab = {
-  id: 't',
-  name: 'T',
-  elements: [],
+const view = {
   pages: [
     { id: 'a', orientation: 'portrait' },
-    { id: 'b', orientation: 'landscape' },
+    { id: 'c', orientation: 'portrait', kind: 'logo' },
   ],
-} as unknown as Tab;
+} as unknown as PagesModeView;
 
 describe('presentedPages', () => {
   it('passes the view through when no page slide presents', () => {
-    expect(presentedPages(null, tab, null)).toBeNull();
+    expect(presentedPages(view, null)).toBe(view);
   });
 
-  it('builds the presented sheet from the tab outside Pages mode', () => {
-    const view = presentedPages(null, tab, 'b')!;
-    expect(view.pages.map((p) => p.id)).toEqual(['b']);
-    expect(view.edit).toBeUndefined();
+  it('narrows the view to the presented page', () => {
+    const shown = presentedPages(view, 'c');
+    expect(shown.pages.map((p) => p.id)).toEqual(['c']);
+    expect(shown.rowPages?.map((p) => p.id)).toEqual(['a', 'c']);
     // The surround is blacked out round the presented sheet.
-    expect(view.letterbox).toBe(true);
+    expect(shown.letterbox).toBe(true);
   });
 });

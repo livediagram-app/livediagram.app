@@ -1,4 +1,4 @@
-// DOM plumbing for the interactive editor tour (docs/specs/007-editor/editor-tour.md). The tour drives
+// DOM plumbing for the interactive tours (docs/specs/007-editor/pages-tour.md "Mechanics"). The tour drives
 // the real chrome (panels, dropdowns, menus) through the same buttons a
 // user would press, so these helpers resolve tour anchors (`data-tour-id`)
 // and wait out lazy-loaded menus instead of assuming synchronous DOM.

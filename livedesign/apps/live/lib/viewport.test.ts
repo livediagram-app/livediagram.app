@@ -153,7 +153,7 @@ describe('isContentOffScreen', () => {
 });
 
 // Pages mode centres its page below the Toolbar layout's strip
-// (docs/specs/007-editor/editor-modes.md "The pages").
+// (docs/specs/007-editor/pages-mode.md "The pages").
 describe('besideSideInsets', () => {
   // A canvas x on screen, with the centred transform (lib/viewport.ts).
   const screenX = (x: number, w: number, f: { zoom: number; offset: { x: number } }) =>

@@ -6,14 +6,14 @@
 // server rejects every legitimate upload with a hash mismatch, so
 // the function lives here alongside the wire-format types it backs.
 //
-// Implementation: `sha256` from @livedesign/items, Web Crypto wherever the
+// Implementation: `sha256` from ./sha256-digest, Web Crypto wherever the
 // runtime has it (Node 22+, Cloudflare Workers, a secure browser page) and the
 // same digest in plain code in a page that is not a secure context
 // (docs/specs/016-platform/secure-context.md). Lowercase hex output,
 // 64 chars, no separator: matches the `images.sha256` column shape
 // in the api worker's D1 schema.
 
-import { sha256 } from '@livedesign/items';
+import { sha256 } from './sha256-digest';
 import { bytesToBase64Url } from './bytes';
 
 function bytesToHex(buf: Uint8Array): string {

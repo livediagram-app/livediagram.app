@@ -2,7 +2,7 @@
 
 Status: **implemented**.
 
-While the **Format** painter ([Canvas and palette](canvas-and-palette.md)) is active, a **Format** panel is present: which parts of the copied style actually get painted, and whether the brush stays loaded after a paint. The fifth mode panel, after [Avatar](avatar-mode.md), [Laser](laser-panel.md), [Spotlight](spotlight-panel.md), and [Eraser](eraser-panel.md).
+While the **Format** painter ([Canvas and palette](canvas-and-palette.md)) is active, a **Format** panel is present: which parts of the copied style actually get painted, and whether the brush stays loaded after a paint. The third mode panel, after [Laser](laser-panel.md) and [Spotlight](spotlight-panel.md).
 
 ## Why
 
@@ -15,7 +15,7 @@ A short list of what-to-copy toggles turns the painter from one blunt action int
 ## The settings
 
 - **Copies** — five toggles, all on by default (which is exactly today's painter):
-  - **Fill** — the fill colour, a table header's or lane gutter's fill, its theme-preset binding ([Style presets](../010-palette/style-presets.md)), and the fill's theme lock.
+  - **Fill** — the fill colour, a table header's fill, its theme-preset binding ([Style presets](../010-palette/style-presets.md)), and the fill's theme lock.
   - **Border** — stroke colour, width, pattern, corner radius; on an arrow, the line's look including arrowheads (and their colour), path style, and route-behind.
   - **Text** — colour, size, weight, italic / underline / strikethrough, font, alignment, a table header's text colour, and an arrow label's backing plate.
   - **Effects** — shadow ([Element shadows](element-shadows.md)), finish ([Finish](finish.md)), opacity, and the looping / icon / flow animations.

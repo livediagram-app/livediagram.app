@@ -16,7 +16,6 @@ const refusalText = (r: { message: string; change?: number }) =>
 const answerOf = (env: Env, done: PagesDone) => ({
   documentId: done.documentId,
   tabId: done.tabId,
-  switched: done.switched,
   lines: done.lines,
   pages: done.pages,
   rev: done.tab.rev,

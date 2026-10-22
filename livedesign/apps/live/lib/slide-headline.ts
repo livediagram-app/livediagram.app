@@ -29,7 +29,7 @@ function sizeWeight(size: TextSize | undefined): number {
 }
 
 export function slideHeadline(slide: Slide, tab: Tab | undefined): string | null {
-  if (!tab || slide.itemId) return null;
+  if (!tab) return null;
   let best: { label: string; size: number; y: number } | null = null;
   for (const el of resolveSlide(slide, tab)) {
     if (el.type !== 'text') continue;
@@ -58,18 +58,11 @@ export function slideHeadlines(deck: Deck, tabs: readonly Tab[]): Map<string, st
   return out;
 }
 
-/** What a presented slide is called (presentation-mode.md "Jump to a slide"): its own name, an item slide's
- *  card, the headline on it, the name of the page it shows, the name of the tab it comes from, and only then
+/** What a presented slide is called (presentation-mode.md "Jump to a slide"): its own name, the headline on it, the name of the page it shows, the name of the tab it comes from, and only then
  *  its position, so the deck's list reads as the talk does rather than "Slide 1, Slide 2". */
-export function presentedSlideName(
-  slide: Slide,
-  tab: Tab | undefined,
-  index: number,
-  cardTitle?: string,
-): string {
+export function presentedSlideName(slide: Slide, tab: Tab | undefined, index: number): string {
   const own = slide.name?.trim();
   if (own) return own;
-  if (cardTitle?.trim()) return cardTitle.trim();
   const headline = slideHeadline(slide, tab);
   if (headline) return headline;
   const page = slide.pageId && tab ? pagesOf(tab).find((p) => p.id === slide.pageId) : undefined;

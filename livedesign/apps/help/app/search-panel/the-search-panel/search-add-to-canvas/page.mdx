@@ -6,7 +6,7 @@ import { SearchAddToCanvas } from '@/components/illustrations/search-panel';
 export const metadata = helpMetadata({
   title: 'Adding Elements from Search',
   description:
-    'Add elements to the canvas from search: find a shape, table, icon, sticker or technology logo by name and drop it in place without opening the palette.',
+    'Add elements to the canvas from search: find a shape, table, chart, icon or sticker by name and drop it in place without opening the palette.',
   path: '/help/search-panel/the-search-panel/search-add-to-canvas/',
 });
 
@@ -23,7 +23,7 @@ Inside the editor, the [search panel](/help/search-panel/the-search-panel/) is n
 
 ## Add to canvas
 
-When a search matches a palette item, it appears in an **Add to canvas** group, each row marked with a plus-in-a-box. Every palette tile is searchable: shapes, text, arrows, sticky notes, tables, images, embeds, web components, the pens, Plan's boards and cards, plus every icon, sticker, and technology icon. Picking one closes the panel and does what pressing the tile does: most arm the same tap-or-drag placement the palette uses, so you then drop the element exactly where you want it, and a pen arms drawing. It is the quickest route from "I need an AWS Lambda icon" to having it on the board.
+When a search matches a palette item, it appears in an **Add to canvas** group, each row marked with a plus-in-a-box. Every palette tile is searchable: shapes, text, sticky notes, tables, charts, images, embeds, concept graphics and components, plus every icon and sticker. Picking one closes the panel and does what pressing the tile does: most arm the same tap-or-drag placement the palette uses, so you then drop the element exactly where you want it. It is the quickest route from "I need a rocket icon" to having it on the page.
 
 <Figure caption="Palette matches appear under Add to canvas, below any document or element that also matches.">
   <SearchAddToCanvas />
@@ -33,13 +33,13 @@ Picking a result does exactly what clicking the same tile in the palette does, s
 
 ## How matches are ranked
 
-Items match on their name and on everyday synonyms, so "database" finds the cylinder and "swimlane" finds the lane. The element you actually named comes first: an exact name match, then names that start with what you typed, then names that contain it, and finally items that only match on a synonym. That is why "table" lists the Table before anything whose description merely mentions tables. Up to 10 items are listed; type a little more to narrow a long list.
+Items match on their name and on everyday synonyms, so "database" finds the cylinder. The element you actually named comes first: an exact name match, then names that start with what you typed, then names that contain it, and finally items that only match on a synonym. That is why "table" lists the Table before anything whose description merely mentions tables. Up to 10 items are listed; type a little more to narrow a long list.
 
 The group only appears once you have typed something (an empty box never dumps the whole palette), and it sits below the documents, tabs, elements and actions that match, so `Enter` still goes to a real match first. Arrow down to the item you want, or click it.
 
 ## Why search the palette
 
-The palette groups its contents into categories (Shapes, Components, Devices, Icons, Tech and more), which is great for browsing but slower when you already know what you want. Searching by name skips the browsing: type "cylinder", "table", "arrow", or a cloud service name, and place it. For the palette and its categories, see [The Palette](/help/palette/) and [Technology Icons](/help/palette/technology/).
+The palette groups its contents into categories (Shapes, Components, Devices, Icons, Media and more), which is great for browsing but slower when you already know what you want. Searching by name skips the browsing: type "cylinder", "table", "pie" or an icon's name, and place it. For the palette and its categories, see [The Palette](/help/palette/).
 
 ## When it is not offered
 

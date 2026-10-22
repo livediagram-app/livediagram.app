@@ -17,9 +17,6 @@ describe('label-overflow', () => {
     expect(of(lint(tabOf(small)), 'label-overflow')[0]!.fix).toBe(
       'set b label="<text>" note="<text>"',
     );
-    expect(of(lint(tabOf(small), { source: 'graph' }), 'label-overflow')[0]!.fix).toBe(
-      'shorten the label; detail goes in note',
-    );
   });
 
   it('stays quiet for a fitting label, a blank one, a scaled one, and a shape that draws its own text (N11)', () => {
@@ -35,7 +32,7 @@ describe('label-overflow', () => {
     expect(of(lint(tabOf(box('a', 0, 0, { label: undefined }))), 'label-overflow')).toEqual([]);
   });
 
-  it('never fires on a box sized for its label, as graph authoring sizes it', () => {
+  it('never fires on a box sized for its label, as labelBoxSize sizes it', () => {
     const corpus = [
       'Orders',
       'Payments service',
@@ -67,9 +64,6 @@ describe('label-overflow on a card', () => {
     const width = Number(/width=(\d+)/.exec(f!.fix)![1]);
     expect(of(lint(tabOf(card(width))), 'label-overflow')).toEqual([]);
     expect(of(lint(tabOf(card(400))), 'label-overflow')).toEqual([]);
-    expect(of(lint(tabOf(card(140)), { source: 'graph' }), 'label-overflow')[0]!.fix).toBe(
-      'shorten the title, or widen the card',
-    );
     const both = of(
       lint(tabOf(card(120, { pageSubtitle: 'A subtitle far too long to fit' }))),
       'label-overflow',

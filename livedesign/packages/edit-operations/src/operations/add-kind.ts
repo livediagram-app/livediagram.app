@@ -72,14 +72,14 @@ export function buildKind(kind: string): Built | { refusal: string } {
 }
 
 // The look the tab's boxes of a shape share: their most common text size and their median size; null when the tab
-// has none of that shape (frames and lanes never count, they are containers).
+// has none of that shape (frames never count, they are containers).
 function peerLook(
   state: EditState,
   shape: string,
 ): { textSize: TextSize; width: number; height: number } | null {
   const peers = [...state.byId.values()].filter(
     (e): e is Extract<Element, { type: 'shape' }> =>
-      e.type === 'shape' && e.shape === shape && shape !== 'frame' && shape !== 'lane',
+      e.type === 'shape' && e.shape === shape && shape !== 'frame',
   );
   if (peers.length === 0) return null;
   // A preset or an exact px size, counted as it is stored.
@@ -231,7 +231,7 @@ export function applyAddKind(
   return null;
 }
 
-// A box placed beside a member of a frame or lane joins it: the container grows to hold it, as an insertion grows
+// A box placed beside a member of a frame or stack joins it: the container grows to hold it, as an insertion grows
 // one (docs/specs/024-agents/edit-operations.md "Layout on edit"), instead of the new box landing just outside, and
 // what sat past it moves on rather than being taken in (grow-container.ts).
 function growToHold(

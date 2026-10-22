@@ -38,9 +38,6 @@ export type CommandContext = {
   // True when the single selection is a boxed element (rotation / note /
   // comment / animation all target boxed elements; arrows are excluded).
   singleIsBoxed: boolean;
-  // False when the single selection is a Plan item, which takes no note or comment (docs/specs/026-plan/plan-mode.md
-  // "Nothing attached to Plan items"); absent reads as true.
-  singleTakesAttachments?: boolean;
   // True when the single selection can be rotated (`supportsRotation`): boxed, minus an
   // annotation marker (docs/specs/009-elements/blueprints/annotations.md). Gates the Rotate commands.
   singleRotates: boolean;
@@ -78,12 +75,6 @@ export type CommandContext = {
   // Spotlight is desktop-only (hover + click-to-resize don't map to touch),
   // so it is withheld on a phone the same way the dropdown omits it.
   isMobile: boolean;
-  // A whiteboard (docs/specs/023-draw-mode/draw-mode.md): its dock replaces the format painter, so
-  // search does not offer it either.
-  whiteboard?: boolean;
-  // Plan mode (docs/specs/026-plan/plan-mode.md) leaves Eraser and Format out of the tool dropdown, so search
-  // does too.
-  planMode?: boolean;
   // A locked tab (docs/specs/008-canvas/canvas-and-palette.md "Locking") refuses every element edit, so search
   // offers none of them: no selection verbs, no layout cleanup, no Eraser or Format.
   tabLocked?: boolean;
@@ -205,8 +196,6 @@ export const CANVAS_TOOLS: {
 // the view-safe commands because most of them only change how you LOOK at the
 // canvas; the two that change it (eraser, format painter) opt in via
 // `mutates` and drop out for a read-only visitor.
-const WHITEBOARD_ABSENT_TOOLS = new Set(['format']);
-
 function toolCommands(ctx: CommandContext, h: CommandHandlers): EditorCommand[] {
   return CANVAS_TOOLS.filter(
     (t) =>
@@ -214,8 +203,7 @@ function toolCommands(ctx: CommandContext, h: CommandHandlers): EditorCommand[] 
       !(t.needsContent && ctx.canvasEmpty) &&
       !(t.desktopOnly && ctx.isMobile) &&
       !(t.mutates && ctx.isReadOnly) &&
-      !(t.editsElements && (ctx.tabLocked || ctx.planMode)) &&
-      !(ctx.whiteboard && WHITEBOARD_ABSENT_TOOLS.has(t.id)),
+      !(t.editsElements && ctx.tabLocked),
   ).map((t) => ({
     id: `tool:${t.id}`,
     name: t.name,
@@ -291,7 +279,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   out.push({
     id: 'create-tab',
     name: 'Create New Tab',
-    keywords: 'new tab create add page sheet board',
+    keywords: 'new tab create add page',
     run: h.createTab,
   });
   out.push({

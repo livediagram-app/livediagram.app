@@ -6,7 +6,6 @@
 import { broadcastShareOp } from '../room-client';
 import { redactCommentAuthorIds } from '../comments';
 import {
-  deleteFormLinksForTab,
   deleteShareLinksForTab,
   deleteTabRow,
   documentsContainingTab,
@@ -22,21 +21,14 @@ import { recordVisitorOpened, retractTabComments } from '../timeline';
 import { DOCUMENT_OPEN_HEADER, readDocumentOpen, tabEtag } from '@livedesign/api-schema';
 import { recordDocumentOpen } from '../home/record-open';
 import { handleDocumentShareRoutes } from './document-share-routes';
-import { handleQaBoardRoute } from './qa-board-routes';
-import { handleFormLinkRoutes } from './form-link-routes';
 import { handleCommentPicturesRoute } from './comment-pictures-routes';
 import { handleTabPut, refuseTokenTabPut } from './tab-put-route';
 import { handleTabRename } from './tab-name-route';
-import { handleTabForm } from './tab-form-route';
 import { handleTabPages } from './tab-pages-route';
 import { handleChangesetRoutes } from './changesets';
 import { handleCommentRoutes } from './comment-routes';
 import { handleAgentPresenceRoute } from './agent-presence-routes';
 import { handleTabRender } from './tab-render-route';
-import { handleItemRoutes } from './item-routes';
-import { handleSheetRoutes } from './sheet-routes';
-import { handleItemTypeRoutes } from './item-type-routes';
-import { handlePlanRoute } from './plan-route';
 import {
   deniedOnTab,
   gateEdit,
@@ -48,7 +40,6 @@ import {
   type RouteContext,
 } from './context';
 import { answerTabView, parseViewQuery } from './document-views-route';
-import { pauseFormsFeeding } from '../forms/form-tab';
 
 // Tab-content sub-resource routes for /api/documents/<id>/...,
 // split out of documents.ts. Returns a Response when it handles the path, or
@@ -58,12 +49,6 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
   // Agent changesets (docs/specs/024-agents/agent-changesets.md).
   const changesets = await handleChangesetRoutes(ctx);
   if (changesets) return changesets;
-  // /api/documents/<id>/tabs/<tabId>/qa — a Q&A board action (docs/specs/012-collaboration/qa-board.md).
-  const qa = await handleQaBoardRoute(ctx);
-  if (qa) return qa;
-  // /api/documents/<id>/tabs/<tabId>/form-link and form-seen (docs/specs/030-forms/forms.md).
-  const formLink = await handleFormLinkRoutes(ctx);
-  if (formLink) return formLink;
   // /api/documents/<id>/tabs/<tabId>/comment-pictures (docs/specs/014-identity/profile-picture.md §6).
   const commentPictures = await handleCommentPicturesRoute(ctx);
   if (commentPictures) return commentPictures;
@@ -88,15 +73,6 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
     ctx.request.method === 'POST'
   ) {
     return handleTabPages(ctx, segments[2]!, segments[4]!);
-  }
-  // /api/documents/<id>/tabs/<tabId>/form: an agent's form write (docs/specs/030-forms/forms.md "Agents").
-  if (
-    segments.length === 6 &&
-    segments[3] === 'tabs' &&
-    segments[5] === 'form' &&
-    ctx.request.method === 'POST'
-  ) {
-    return handleTabForm(ctx, segments[2]!, segments[4]!);
   }
   if (
     segments.length === 6 &&
@@ -209,10 +185,6 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
       for (const code of revoked) {
         ctx.waitUntil?.(broadcastShareOp(env, id, { kind: 'share-revoked', code }));
       }
-      // A Form tab's link goes with it, and a form whose board or sheet it was stops taking responses (its link kept)
-      // (docs/specs/030-forms/forms.md "Publishing and the form link").
-      await deleteFormLinksForTab(env, id, tabId);
-      await pauseFormsFeeding(env, id, tabId);
       return noContent();
     }
   }
@@ -226,19 +198,6 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
   // One tab drawn by the shared renderer (docs/specs/015-api/api.md).
   const rendered = await handleTabRender(ctx);
   if (rendered) return rendered;
-
-  // The item store (docs/specs/026-plan/items.md).
-  const items = await handleItemRoutes(ctx);
-  if (items) return items;
-  // The sheet store (docs/specs/029-sheets/sheet-store.md).
-  const sheets = await handleSheetRoutes(ctx);
-  if (sheets) return sheets;
-  // The document's type catalogue (docs/specs/026-plan/item-types.md).
-  const itemTypes = await handleItemTypeRoutes(ctx);
-  if (itemTypes) return itemTypes;
-  // The document's plan for agents (docs/specs/026-plan/plan-agents.md).
-  const plan = await handlePlanRoute(ctx);
-  if (plan) return plan;
 
   // /api/documents/<id>/tabs/<tabId>/link — owner only.
   //   POST — add an existing tab to this document (docs/specs/006-document/tab-document-many-to-many.md).

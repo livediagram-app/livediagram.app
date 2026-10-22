@@ -26,14 +26,11 @@ import {
   coveredKeyRole,
   PARTICIPANT_KEYS,
   VIEW_TOOL_KEYS,
-  WHITEBOARD_EDIT_KEYS,
-  WHITEBOARD_VIEW_KEYS,
   type EditorKeyboardShortcutsDeps,
 } from './editor-shortcut-keys';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { arrowPageDir } from '@/lib/page-step';
 import { isTypingTarget, passesHistoryChords } from '@/lib/typing-target';
-import { avatarActionForKey } from '@/lib/avatar-action-keys';
 import { altGraphHeld } from '@/lib/composed-key';
 
 // Re-exported so existing importers (the unit test) keep resolving.
@@ -45,8 +42,6 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
   // callback. This is the React canon for "I want fresh references
   // but I don't want to re-attach the listener on every render."
   const liveRef = useLatest(deps);
-  // Re-arms the Escape listener when the tab turns into (or out of) a whiteboard.
-  const onWhiteboard = deps.whiteboard !== null;
 
   // Escape cancels whichever transient editor mode is active:
   // format-painter, or a pending draw-to-size shape.
@@ -56,16 +51,11 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
   useEffect(() => {
     const { formatSourceId, pendingDraw, canvasTool, enabled } = liveRef.current;
     if (!enabled) return;
-    // A whiteboard's eraser is a held tool too: Escape puts it down
-    // (docs/specs/023-draw-mode/draw-mode.md "Keyboard shortcuts").
-    const whiteboardEraser = liveRef.current.whiteboard !== null && canvasTool === 'eraser';
     if (
       formatSourceId === null &&
       pendingDraw === null &&
       canvasTool !== 'format' &&
-      canvasTool !== 'isometric' &&
-      canvasTool !== 'avatar' &&
-      !whiteboardEraser
+      canvasTool !== 'isometric'
     )
       return;
     const onKey = (e: KeyboardEvent) => {
@@ -80,21 +70,14 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       if (e.key === 'Escape') {
         const live = liveRef.current;
         // Claim the key when it cancelled something, so a later listener
-        // (the non-modal poll sheet's Escape-to-skip) knows it's spoken for.
+        // knows it's spoken for.
         if (
           live.formatSourceId !== null ||
           live.pendingDraw !== null ||
           live.canvasTool === 'format' ||
-          live.canvasTool === 'isometric' ||
-          live.canvasTool === 'avatar' ||
-          (live.whiteboard !== null && live.canvasTool === 'eraser')
+          live.canvasTool === 'isometric'
         ) {
           e.preventDefault();
-        }
-        // Whiteboard: back to Select from any tool in hand.
-        if (live.whiteboard !== null && live.canvasTool === 'eraser') {
-          live.whiteboard.pickSelect();
-          return;
         }
         liveRef.current.setFormatSourceId(null);
         // Persistent Format tool: Escape exits the tool entirely (back to
@@ -106,11 +89,6 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         if (liveRef.current.canvasTool === 'isometric') {
           liveRef.current.setCanvasTool(isMobileViewportSync() ? 'pan' : 'select');
         }
-        // Avatar mode (docs/specs/008-canvas/avatar-mode.md): Escape puts the walking character away and
-        // hands editing back, same revert rule as Isometric.
-        if (liveRef.current.canvasTool === 'avatar') {
-          liveRef.current.setCanvasTool(isMobileViewportSync() ? 'pan' : 'select');
-        }
         if (liveRef.current.pendingDraw !== null) {
           liveRef.current.onCancelDraw();
         }
@@ -118,7 +96,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [deps.enabled, deps.formatSourceId, deps.pendingDraw, deps.canvasTool, onWhiteboard, liveRef]);
+  }, [deps.enabled, deps.formatSourceId, deps.pendingDraw, deps.canvasTool, liveRef]);
 
   // Everything else: Delete / Backspace, Cmd-Z / Cmd-Y / Cmd-Shift-Z,
   // Cmd-C / Cmd-V, V / H / L tool switches. One listener for the
@@ -133,8 +111,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       // BEHIND the modal.
       if (anyModalOpen()) return;
       // While focus is inside a menu of either kind the canvas stands down: an arrow there never
-      // nudges, Delete never deletes, Tab never grows a mind map
-      // (docs/specs/004-interface-design/menus.md).
+      // nudges, Delete never deletes (docs/specs/004-interface-design/menus.md).
       if (isInMenuSurface(e.target)) return;
       // A closer handler already claimed this keystroke — the table's
       // selected-cell layer prevents default on the keys it consumes
@@ -156,50 +133,6 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       const key = e.key;
       const lower = key.toLowerCase();
 
-      // --- A Plan board covers the canvas (docs/specs/026-plan/plan-board.md "Nothing under it moves") ---
-      // Nothing on the canvas changes from the keyboard; undo, redo, search, zen, the mode switch and Escape still
-      // work, and a canvas chord the browser would take over (Cmd+D, Cmd+A...) is prevented.
-      if (live.canvasCovered?.()) {
-        if (inText) return;
-        const role = coveredKeyRole(e);
-        if (role === 'swallow') e.preventDefault();
-        if (role !== 'run') return;
-        if (mod) {
-          runModShortcut(e, live);
-          return;
-        }
-        if (key !== 'Escape') {
-          e.preventDefault();
-          if (lower === 'z') live.onToggleZen();
-          else live.onCycleEditorMode?.();
-          return;
-        }
-      }
-
-      // --- Mind map growth (docs/specs/009-elements/mind-node.md) ---
-      // Tab adds a child, Enter a sibling, both off the selected mind node.
-      // Placed before every other branch because Tab is otherwise the
-      // browser's focus key: left to bubble it would walk the chrome behind
-      // the canvas, which is never what someone mid-mind-map wants.
-      //
-      // Only ever fires with a single mind node selected and no editor open,
-      // so Tab keeps its normal meaning everywhere else in the app.
-      if (
-        (key === 'Tab' || key === 'Enter') &&
-        !inText &&
-        !mod &&
-        !e.shiftKey &&
-        (!live.isReadOnly || live.participant) &&
-        live.editingId === null &&
-        selectedId !== null &&
-        multiSelectedIds.size === 0 &&
-        live.canGrowMindNode(selectedId)
-      ) {
-        e.preventDefault();
-        live.onGrowMindNode(selectedId, key === 'Tab' ? 'child' : 'sibling');
-        return;
-      }
-
       // --- Zen mode exit (docs/specs/007-editor/zen-mode.md) ---
       // Escape leaves zen mode. Only when actually in zen, not mid-
       // edit / typing (there Escape cancels the label edit instead),
@@ -217,27 +150,11 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         live.pendingDraw === null &&
         live.canvasTool !== 'format' &&
         live.canvasTool !== 'isometric' &&
-        live.canvasTool !== 'avatar' &&
-        !(live.whiteboard !== null && live.canvasTool === 'eraser') &&
         selectedId === null &&
         multiSelectedIds.size === 0
       ) {
         e.preventDefault();
         live.onToggleZen();
-        return;
-      }
-
-      // --- Escape drops an empty, just-grown mind node ---
-      // (docs/specs/009-elements/mind-node.md "Escape keeps what you typed")
-      if (
-        key === 'Escape' &&
-        !inText &&
-        live.editingId === null &&
-        selectedId !== null &&
-        multiSelectedIds.size === 0 &&
-        live.onEscapeMindNode(selectedId)
-      ) {
-        e.preventDefault();
         return;
       }
 
@@ -256,9 +173,6 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         live.pendingDraw === null &&
         live.canvasTool !== 'format' &&
         live.canvasTool !== 'isometric' &&
-        live.canvasTool !== 'avatar' &&
-        // A whiteboard eraser in hand is put down first (the narrow listener).
-        !(live.whiteboard !== null && live.canvasTool === 'eraser') &&
         (selectedId !== null || multiSelectedIds.size > 0)
       ) {
         e.preventDefault();
@@ -322,9 +236,6 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       // arrows keep their default page behaviour). Placed before the
       // letter shortcuts; arrow keys never collide with them.
       if (key === 'ArrowUp' || key === 'ArrowDown' || key === 'ArrowLeft' || key === 'ArrowRight') {
-        // Avatar mode (docs/specs/008-canvas/avatar-mode.md) owns the arrow keys: they steer the walking
-        // character (useAvatarWalk), and the mode is read-only anyway.
-        if (live.canvasTool === 'avatar') return;
         const hasSelection = multiSelectedIds.size > 0 || selectedId !== null;
         // With nothing selected in Pages mode, an arrow goes to the next or previous page (for every
         // role: it only moves the view).
@@ -375,36 +286,6 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         }
       }
 
-      // --- Editor mode (Shift+D, docs/specs/007-editor/editor-modes.md) ---
-      // After type-to-edit, so a capital D still types into a selected
-      // label; before the dock keys, so it works in Draw mode too. Where no
-      // switch is offered it does nothing (it is never Diamond's D).
-      if (e.shiftKey && !e.altKey && lower === 'd') {
-        if (!live.onCycleEditorMode) return;
-        e.preventDefault();
-        live.onCycleEditorMode();
-        return;
-      }
-
-      // Walking, the Avatar Panel's action keys are the character's (docs/specs/008-canvas/avatar-mode.md
-      // "Keyboard actions", useAvatarActionKeys): S spins rather than searching, 1 throws confetti rather than
-      // picking Select. V / H / K / I / Z and Escape stay the way out.
-      if (live.canvasTool === 'avatar' && avatarActionForKey(e)) return;
-
-      // A whiteboard's keys are its dock's, and only these
-      // (docs/specs/023-draw-mode/draw-mode.md "Keyboard shortcuts"): the diagram tab's element and
-      // mode keys have no palette to mirror there.
-      if (live.whiteboard) {
-        const action =
-          WHITEBOARD_VIEW_KEYS[lower] ??
-          (live.isReadOnly ? undefined : WHITEBOARD_EDIT_KEYS[lower]);
-        if (action) {
-          e.preventDefault();
-          action(live);
-        }
-        return;
-      }
-
       // Non-mutating view tools (Select / Hand / Laser / Isometric /
       // Zen): before the read-only gate so view-role visitors get them.
       const viewAction = VIEW_TOOL_KEYS[lower];
@@ -416,20 +297,13 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
 
       if (live.isReadOnly) {
         // A Participant's tiles show their keys, and each tile works as an Editor's does (share-roles.md).
-        const add =
-          live.participant && live.canvasTool !== 'avatar' ? PARTICIPANT_KEYS[lower] : undefined;
+        const add = live.participant ? PARTICIPANT_KEYS[lower] : undefined;
         if (add) {
           e.preventDefault();
           add(live);
         }
         return;
       }
-      // Avatar mode (docs/specs/008-canvas/avatar-mode.md) is read-only FOR THE PRESENTER too: the
-      // element-add / Eraser / Pencil keys stay dormant while walking, so a
-      // stray keypress can't drop a shape mid-narration. The view tools above
-      // already ran, so V / H / K / I / Z remain the way out.
-      if (live.canvasTool === 'avatar') return;
-
       // Image (`9`): separate from EDIT_KEYS because its callback is
       // nullable on guest deploys without an api worker.
       if (lower === '9' && live.onAddImage) {

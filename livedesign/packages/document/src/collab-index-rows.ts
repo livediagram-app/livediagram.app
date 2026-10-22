@@ -69,7 +69,7 @@ export function collabIndexRowsFromElements(elements: Element[]): CollabIndexRow
     // Actions and threads only ever hang off boxed elements (docs/specs/012-collaboration/assigned-actions.md
     // §1, docs/specs/008-canvas/canvas-and-palette.md), which is also what gives them a display label.
     if (!isBoxed(el)) continue;
-    // One row per action: an Action panel holds a list (docs/specs/012-collaboration/action-panel.md).
+    // One row per action elementActions reads.
     // Capped like the stored list, so the index stays bounded even for a tab
     // written before the cap existed.
     for (const action of elementActions(el).slice(0, ACTION_CARD_MAX)) {
@@ -79,7 +79,7 @@ export function collabIndexRowsFromElements(elements: Element[]): CollabIndexRow
         elementLabel: elementDisplayLabel(el),
         name: action.name,
         description: action.description ?? '',
-        // Won't Do is closed too (docs/specs/026-plan/linked-boards.md "On the canvas"): never listed as open.
+        // Won't Do is closed too (docs/specs/012-collaboration/assigned-actions.md): never listed as open.
         status: isClosedAction(action) ? 'done' : 'open',
         assigneeUserId: action.assignee.userId ?? null,
         assigneeMemberId: action.assignee.memberId ?? null,

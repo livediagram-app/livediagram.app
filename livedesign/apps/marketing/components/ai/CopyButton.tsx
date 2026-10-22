@@ -21,7 +21,7 @@ export function CopyButton({
 }: {
   text: string;
   label?: string;
-  /** What is copied, after the label in the accessible name ("Copy the address", "Copy prompt: Map a codebase"). */
+  /** What is copied, after the label in the accessible name ("Copy the address", "Copy prompt: Build a deck"). */
   what: string;
   tone?: 'light' | 'dark' | 'brand';
   size?: 'sm' | 'xs';

@@ -8,12 +8,7 @@ import {
   elementSupportsText,
   isBoxed,
   isCompoundPath,
-  cardinalityLabel,
-  isFlowchartStep,
-  isMindNode,
-  joinsEntities,
-  takesAttachments,
-  threadAt,
+  type CommentThread,
   type Element,
 } from '@livedesign/document';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
@@ -27,7 +22,6 @@ import { selectionMoving, useCanvasGesture } from '@/lib/canvas-gesture';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { FloatingToolbar } from '@/components/chrome/FloatingToolbar';
 import { MultiSelectionToolbar } from '@/components/canvas/MultiSelectionToolbar';
-import { flowchartStepToolbarFor } from '@/components/flowchart/flowchart-step-toolbar';
 import { SelectionPopover } from '@/components/canvas/SelectionPopover';
 import { useElementTourOffer } from '@/lib/element-tour-offer';
 import { ElementTourOffer } from '@/components/tour/ElementTourOffer';
@@ -154,47 +148,6 @@ export function CanvasSelectionToolbars({
                   }
                 : undefined
             }
-            // Mind map (docs/specs/009-elements/mind-node.md): Add child / Add sibling, the toolbar home
-            // for Tab / Enter. Not on a locked node: growing re-lays the map. A Participant grows maps too
-            // (docs/specs/013-workspace/share-roles.md).
-            {...((!readOnly || !!props.participantPalette) &&
-            !selectedLocked &&
-            selected &&
-            isMindNode(selected)
-              ? {
-                  onAddMindChild: () => props.onGrowMindNode(selected.id, 'child'),
-                  onAddMindSibling: () => props.onGrowMindNode(selected.id, 'sibling'),
-                }
-              : {})}
-            // Flowchart (docs/specs/009-elements/flowchart.md): Add Step / Add Branch for whoever grows
-            // the chart; Step Type and Lane for an Editor. Not on a locked step: growing re-lays the chart.
-            {...((!readOnly || !!props.participantPalette) &&
-            !selectedLocked &&
-            selected &&
-            isFlowchartStep(selected)
-              ? {
-                  flowchartStep: flowchartStepToolbarFor(
-                    props.elements,
-                    selected,
-                    props.onGrowMindNode,
-                    props.flowchartActions,
-                  ),
-                }
-              : {})}
-            // A relationship (docs/specs/009-elements/entity.md "Cardinality ends"): an Editor's arrow
-            // joining two entities offers the cardinality presets.
-            cardinality={
-              !readOnly &&
-              !selectedLocked &&
-              props.entityActions &&
-              selected?.type === 'arrow' &&
-              joinsEntities(selected, elements)
-                ? {
-                    current: cardinalityLabel(selected),
-                    onPick: props.entityActions.setCardinalitySelected,
-                  }
-                : undefined
-            }
             onDuplicate={readOnly ? undefined : selected ? onDuplicateSelected : undefined}
             // Intra-layer z-order (docs/specs/006-document/layers.md): stack within the element's own
             // band. The element menu's Bring to Front moves LAYERS; these
@@ -211,12 +164,7 @@ export function CanvasSelectionToolbars({
             // A Viewer writes no comment (docs/specs/013-workspace/share-roles.md): it reads the thread an
             // element has, behind Show Comments, and gets no button on one with none.
             onOpenComments={
-              // Never on a Plan item (docs/specs/026-plan/plan-mode.md "Nothing attached to Plan items").
-              readOnly &&
-              selected &&
-              commentsShown &&
-              takesAttachments(selected) &&
-              (props.takePart || hasComments(selected))
+              readOnly && selected && commentsShown && (props.takePart || hasComments(selected))
                 ? () => onOpenComments(selected.id)
                 : undefined
             }
@@ -296,5 +244,5 @@ export function CanvasSelectionToolbars({
 
 // Whether an element carries a comment thread to read (resolved ones included: a reader opens those too).
 function hasComments(el: Element): boolean {
-  return (threadAt(el)?.comments.length ?? 0) > 0;
+  return ((el as { commentThread?: CommentThread }).commentThread?.comments.length ?? 0) > 0;
 }

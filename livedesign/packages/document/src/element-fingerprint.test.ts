@@ -60,7 +60,6 @@ describe('elementFingerprint', () => {
         resolved: false,
         comments: [{ id: 'c', text: 'hi', createdAt: 1, authorName: 'Bea', authorColor: '#f00' }],
       },
-      responses: [{ participantId: 'p', value: 'done', at: 1 }],
     };
     expect(elementFingerprint(live)).toBe(elementFingerprint(square));
     const list = (done: boolean): ShapeElement => ({

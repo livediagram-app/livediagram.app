@@ -2,7 +2,7 @@ import type { Page } from '@playwright/test';
 import { dismissQuickTour, expect, expectNoPageErrors, seedTab, test } from './fixtures';
 
 // docs/specs/008-canvas/canvas-performance.md "A still canvas does nothing": with a board open and a
-// selection showing its toolbar (and, on a whiteboard, the Quick Style panel), a still second asks
+// selection showing its toolbar, a still second asks
 // for no animation frames. Counted, not timed, so it is deterministic. Dark mode; synthesised board.
 
 const square = (i: number) => ({
@@ -66,15 +66,6 @@ const framesOverAStillSecond = async (page: Page) => {
 };
 
 test.describe('a still canvas', () => {
-  test('asks for no frames on a still whiteboard with a selection', async ({
-    page,
-    pageErrors,
-  }) => {
-    await openStill(page, '/new?template=whiteboard');
-    expect(await framesOverAStillSecond(page)).toBe(0);
-    expectNoPageErrors(pageErrors);
-  });
-
   test('asks for no frames on a still diagram with a selection', async ({ page, pageErrors }) => {
     await openStill(page, '/new?blank=1');
     expect(await framesOverAStillSecond(page)).toBe(0);

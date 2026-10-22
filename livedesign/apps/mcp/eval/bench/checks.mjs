@@ -3,7 +3,7 @@
 // a round's score is a count, never an opinion. Pure: no server, no clock.
 
 // Shapes that hold a node's words; frames, key swatches and the like are containers or decoration.
-const DECOR_SHAPES = new Set(['frame', 'plan-board', 'plan-sheet', 'lane', 'pool']);
+const DECOR_SHAPES = new Set(['frame']);
 
 export const lc = (s) => (s ?? '').toString().toLowerCase();
 
@@ -34,8 +34,6 @@ export function wordsOf(el) {
   if (Array.isArray(el.attributes))
     parts.push(...el.attributes.map((a) => (typeof a === 'string' ? a : a?.name)));
   if (Array.isArray(el.data)) parts.push(...el.data.map((d) => d?.label ?? d?.name));
-  if (Array.isArray(el.entityFields))
-    parts.push(...el.entityFields.flatMap((f) => [f?.name, f?.type]));
   if (Array.isArray(el.pieSlices)) parts.push(...el.pieSlices.map((d) => d?.label));
   if (Array.isArray(el.lineCategories)) parts.push(...el.lineCategories);
   if (Array.isArray(el.lineSeries)) parts.push(...el.lineSeries.map((d) => d?.name));
@@ -79,12 +77,12 @@ export function flows(snap, a, b) {
   return linked(snap, a, b, { directed: true });
 }
 
-// Elements of one kind: a shape name ("lane", "entity", "bar-chart") or an element type ("sticky", "arrow").
+// Elements of one kind: a shape name ("frame", "icon", "bar-chart") or an element type ("sticky", "arrow").
 export function shapes(snap, kind) {
   return elementsOf(snap).filter((e) => e.shape === kind || (e.type === kind && !e.shape));
 }
 
-// Something matching `word` sits inside a frame or lane whose words match `group`: by bounds, or by its parent.
+// Something matching `word` sits inside a frame whose words match `group`: by bounds, or by its parent.
 export function inside(snap, word, group) {
   const groups = find(snap, group).filter(
     (g) => g.type === 'shape' && (DECOR_SHAPES.has(g.shape) || g.width),
@@ -132,31 +130,22 @@ export function pagesOf(snap) {
   return out;
 }
 
-// The tab is drawn hand-made: a Draw tab, or a sketch finish.
+// The tab is drawn hand-made: a sketch finish.
 export function sketched(tab) {
-  return /finish=sketch|mode=draw/.test(tab.outline?.split('\n')[0] ?? '');
+  return /finish=sketch/.test(tab.outline?.split('\n')[0] ?? '');
 }
 
 // ---- everything as text ---------------------------------------------------------------------------------------
 
-function sheetText(sheet) {
-  return (sheet.read?.cells ?? []).map((c) => c.display ?? c.input).join(' ');
-}
-
-// One lowercase string of every word the run made, wherever it sits (elements, cards, sheets, forms, pages).
+// One lowercase string of every word the run made, wherever it sits (elements, pages).
 function allText(snap) {
   const out = [];
   for (const d of snap.documents ?? []) {
     out.push(d.name);
     for (const t of d.tabs ?? []) {
       out.push(t.name, ...t.elements.map(wordsOf));
-      if (t.form) out.push(JSON.stringify(t.form));
       if (t.pages) out.push(t.pages);
     }
-    for (const it of d.items?.items ?? []) out.push(it.title, JSON.stringify(it.fields ?? {}));
-    for (const b of d.items?.boards ?? [])
-      out.push(b.title, ...(b.columns ?? []).map((c) => c.name));
-    for (const s of d.sheets ?? []) out.push(s.title, sheetText(s));
   }
   return lc(out.filter(Boolean).join('\n'));
 }
@@ -165,128 +154,6 @@ function allText(snap) {
 export function mentions(snap, ...words) {
   const text = allText(snap);
   return words.every((w) => asRegex(w).test(text));
-}
-
-// ---- plan ---------------------------------------------------------------------------------------------------------
-
-export function itemsOf(snap) {
-  return (snap.documents ?? []).flatMap((d) => d.items?.items ?? []);
-}
-
-export function boardsOf(snap) {
-  return (snap.documents ?? []).flatMap((d) => d.items?.boards ?? []);
-}
-
-export function typesOf(snap) {
-  return (snap.documents ?? []).flatMap((d) => d.items?.types ?? []);
-}
-
-// A card type, by name.
-export function typeNamed(snap, word) {
-  const re = asRegex(word);
-  return typesOf(snap).find((t) => re.test(t.name)) ?? null;
-}
-
-export function hasField(type, word) {
-  const re = asRegex(word);
-  return (type?.custom ?? []).some((f) => re.test(f.name));
-}
-
-export function fieldOf(type, word) {
-  const re = asRegex(word);
-  return (type?.custom ?? []).find((f) => re.test(f.name)) ?? null;
-}
-
-// A card's people, from its assignee field (one or many).
-export function assigneesOf(item) {
-  const a = item.fields?.assignee ?? item.fields?.assignees;
-  const list = Array.isArray(a) ? a : a ? [a] : [];
-  return list.map((p) => lc(p?.name ?? p));
-}
-
-export function columnNames(board) {
-  return (board?.columns ?? []).map((c) => lc(c.name));
-}
-
-// ---- sheets -------------------------------------------------------------------------------------------------------
-
-export function sheetsOf(snap) {
-  return (snap.documents ?? []).flatMap((d) => d.sheets ?? []);
-}
-
-// A sheet's cells as read_sheet answers them: [{at: "B4", input, value, display}].
-export function cellsOf(sheet) {
-  return sheet.read?.cells ?? [];
-}
-
-function formulasOf(sheet) {
-  return cellsOf(sheet).filter((c) => typeof c.input === 'string' && c.input.startsWith('='));
-}
-
-export function allFormulas(snap) {
-  return sheetsOf(snap).flatMap(formulasOf);
-}
-
-// Cells whose worked-out value is a spreadsheet error (#REF!, #DIV/0!, #NAME?, #VALUE!, #N/A, #CYCLE!).
-export function errorCells(snap) {
-  return sheetsOf(snap)
-    .flatMap(cellsOf)
-    .filter((c) => typeof c.value === 'string' && /^#[A-Z/0!?]+/.test(c.value));
-}
-
-export function validationsOf(snap) {
-  return sheetsOf(snap).flatMap((s) => s.read?.validation ?? []);
-}
-
-export function conditionalFormatsOf(snap) {
-  return sheetsOf(snap).flatMap((s) => s.read?.conditionalFormats ?? []);
-}
-
-const colOf = (at) => /^[A-Z]+/.exec(at)?.[0] ?? '';
-const rowOf = (at) => Number(/\d+$/.exec(at)?.[0] ?? 0);
-
-// The header cell whose text matches, on any sheet: {sheet, at, col, row}.
-export function header(snap, word) {
-  const re = asRegex(word);
-  for (const sheet of sheetsOf(snap))
-    for (const c of cellsOf(sheet))
-      if (
-        typeof c.input === 'string' &&
-        !c.input.startsWith('=') &&
-        re.test(c.input) &&
-        c.input.length <= 40
-      )
-        return { sheet, at: c.at, col: colOf(c.at), row: rowOf(c.at) };
-  return null;
-}
-
-// The cells under a header, down its column, to the first gap.
-export function below(found) {
-  if (!found) return [];
-  const byAt = new Map(cellsOf(found.sheet).map((c) => [c.at, c]));
-  const out = [];
-  for (let r = found.row + 1; byAt.has(`${found.col}${r}`); r++)
-    out.push(byAt.get(`${found.col}${r}`));
-  return out;
-}
-
-// ---- forms ------------------------------------------------------------------------------------------------------
-
-export function formsOf(snap) {
-  return tabsOf(snap)
-    .map((t) => t.form)
-    .filter(Boolean);
-}
-
-export function questionsOf(form) {
-  return (form?.sections ?? []).flatMap((s) => s.questions ?? []);
-}
-
-// The question about something: by its wording, else by the field its answer goes to ("How severe is it?" → Severity).
-export function questionAbout(form, word) {
-  const re = asRegex(word);
-  const qs = questionsOf(form);
-  return qs.find((q) => re.test(q.prompt ?? '')) ?? qs.find((q) => re.test(q.goesTo ?? '')) ?? null;
 }
 
 // ---- checks with a reason --------------------------------------------------------------------------------------
@@ -303,7 +170,7 @@ export function mentionsAll(snap, words) {
   };
 }
 
-// Every word has an element of its own (a box, a sticky, an entity, a lane) holding it.
+// Every word has an element of its own (a box, a sticky, a frame) holding it.
 export function elementsFor(snap, words) {
   const missing = words.filter((w) => find(snap, w).length === 0);
   return {

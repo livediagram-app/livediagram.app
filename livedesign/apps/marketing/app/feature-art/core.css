@@ -111,41 +111,6 @@
   animation: fa-spin 5s ease-in-out infinite;
 }
 
-/* name shuffle, two generated names cross-fade */
-@keyframes fa-swap-a {
-  0%,
-  42% {
-    opacity: 1;
-  }
-  50%,
-  92% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-@keyframes fa-swap-b {
-  0%,
-  42% {
-    opacity: 0;
-  }
-  50%,
-  92% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-.fa-swap-a {
-  animation: fa-swap-a 6s ease-in-out infinite;
-}
-.fa-swap-b {
-  opacity: 0;
-  animation: fa-swap-b 6s ease-in-out infinite;
-}
-
 /* gentle fade-in loop for static-ish panels (popovers, labels) */
 @keyframes fa-fade {
   0% {
@@ -165,45 +130,6 @@
   animation: fa-fade 6s ease-in-out infinite;
 }
 
-/* click ripple, an expanding ring, for the icon-badge glyphs */
-@keyframes fa-ripple {
-  0% {
-    transform: scale(0.3);
-    opacity: 0.7;
-  }
-  70% {
-    opacity: 0;
-  }
-  100% {
-    transform: scale(2.2);
-    opacity: 0;
-  }
-}
-.fa-ripple {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: fa-ripple 2.4s ease-out infinite;
-}
-
-/* shape rotation, a snap to the 45° preset angle and back (the origin
-   is set inline on the rotating <g> so it pivots about the shape's centre). */
-@keyframes fa-rotate {
-  0%,
-  16% {
-    transform: rotate(0deg);
-  }
-  44%,
-  70% {
-    transform: rotate(45deg);
-  }
-  92%,
-  100% {
-    transform: rotate(0deg);
-  }
-}
-.fa-rotate {
-  animation: fa-rotate 5s ease-in-out infinite;
-}
 /* ─────────────────────────────────────────────────────────────────
  * Motion-feature illustrations (docs/specs/008-canvas/canvas-and-palette.md "Animated elements" + the
  * animated background patterns). These mirror the editor's own looping
@@ -220,61 +146,6 @@
 .fa-flow {
   stroke-dasharray: 7 6;
   animation: fa-flow 1s linear infinite;
-}
-
-/* glow: a soft halo breathing in and out around an element */
-@keyframes fa-glow {
-  0%,
-  100% {
-    opacity: 0.2;
-    transform: scale(0.94);
-  }
-  50% {
-    opacity: 0.7;
-    transform: scale(1.06);
-  }
-}
-.fa-glow {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: fa-glow 2.2s ease-in-out infinite;
-}
-
-/* continuous spin for animated icons (spinner / gear) */
-@keyframes fa-spin-cont {
-  to {
-    transform: rotate(360deg);
-  }
-}
-.fa-spin-cont {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: fa-spin-cont 2.4s linear infinite;
-}
-
-/* heartbeat: a double-thump scale pulse */
-@keyframes fa-beat {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  14% {
-    transform: scale(1.22);
-  }
-  28% {
-    transform: scale(1);
-  }
-  42% {
-    transform: scale(1.14);
-  }
-  56% {
-    transform: scale(1);
-  }
-}
-.fa-beat {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: fa-beat 1.8s ease-in-out infinite;
 }
 
 /* Template gallery (docs/specs/019-marketing/marketing-site.md): a category opened from the chip cloud, or by a

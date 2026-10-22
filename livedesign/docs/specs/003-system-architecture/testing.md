@@ -256,7 +256,7 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
   named workspace. This section records the SHAPE of coverage, not counts or
   filenames: `pnpm test` reports the counts, which change with every feature.
   A workspace that gains its first test file joins this list in the same change.
-  - `packages/document`: the data model end to end: element factories + defaults, geometry / anchor / snap math, arrow path + avoidance + endpoint-spread + auto-rebind and crossing swaps, arrow labels, layer mutations, auto-layout (clusters, styles, lanes, crossings), mind maps, Mermaid import/export (flowchart, state, ER), graph authoring, freehand + shape recognition, rich text, tables, comments + mentions, element ops and deltas, sessions (Q&A, polls, quizzes), slide decks, tab kinds, names, themes, element shadows, the headless SVG renderer's fidelity and coverage, validation.
+  - `packages/document`: the data model end to end: element factories + defaults, geometry / anchor / snap math, arrow path + avoidance + endpoint-spread + auto-rebind and crossing swaps, arrow labels, layer mutations, pages and articles, rich text, tables, comments + mentions, element ops and deltas, slide decks, tab kinds, names, themes, element shadows, the headless SVG renderer's fidelity and coverage, validation.
   - `apps/live`: the lib layer's helpers (api client + Offline Mode store,
     auto-align, canvas geometry + backgrounds, export/import,
     search, templates + theme catalogues, user preferences, telemetry policy,
@@ -275,15 +275,14 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     (cascades, migrations), the `DocumentRoom` Durable Object's rules, ledger
     and multiplayer paths, every route family (documents, tabs, share, images,
     thumbnails, folders, teams, trash, timeline, activity, tokens, OAuth, unfurl,
-    events, AI incl. the photo reader), the Timeline's writers and its catalogue
+    events, AI), the Timeline's writers and its catalogue
     against its spec, the image reference index, email lifecycle, the OpenAPI
     manifest ↔ dispatch drift guards, response helpers, MIME sniffing.
   - `packages/api-schema`: the wire contracts both sides share: the SHA-256
     contract (FIPS 180-4 vectors), the telemetry-event validator's closed
-    vocabulary + type-pattern gate, request auth, image limits, trash and poll
+    vocabulary + type-pattern gate, request auth, image limits, trash
     shapes, error telemetry and page views.
   - `packages/explorer-lens`: the Explorer filter lens, at 100 % coverage
-  - `packages/items`: items and the Plan board projection, at 95 % lines
     enforced by its config: the token grammar and every rejection, canonical
     form and chip writes, matching per dimension, suggestions and their marks,
     view-model copy, `?q=` and carry-over, the telemetry facets.
@@ -308,8 +307,8 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     both apps emit through: batching, caps, opt-in gates, page-hide beacon,
     error-tracking caps.
   - `apps/mcp`: tool argument schemas (and the name cap through the real MCP
-    SDK), tool registration + telemetry, graph input, element normalising, tab
-    builders, the find-diagrams search, OAuth state handling, the request scope,
+    SDK), tool registration + telemetry, element normalising, tab
+    builders, the find-documents search, OAuth state handling, the request scope,
     and the api service-binding client.
   - `apps/router`: the dispatch table (prefix strips, clean live
     routes, origin fallback, 503) plus the drift guard that every top-level

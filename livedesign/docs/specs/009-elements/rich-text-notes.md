@@ -1,8 +1,8 @@
 # Rich-text notes
 
 The per-element **note** (`note?` on every boxed element, opened from the
-element menu's Resources band, the on-element note badge, or an annotation
-marker — see [Annotations](annotations.md), [Assigned actions](../012-collaboration/assigned-actions.md))
+element menu's Resources band or the on-element note badge, see
+[Assigned actions](../012-collaboration/assigned-actions.md))
 is a **small rich-text document**: a note is often the place a reviewer writes
 several points, a checklist of caveats, or a link to the source material, and
 a plain-text paragraph in a small popover is too cramped for that.
@@ -47,12 +47,12 @@ and does not expose `link`; nothing stops a label from carrying one.
 ## Data model
 
 `noteRich?: TextRun[]` sits beside `note?: string` on every boxed element
-(`isBoxed`: shape, text, sticky, image, freehand, table, annotation, link-card,
+(`isBoxed`: shape, text, sticky, image, freehand, table, link-card,
 video), mirroring how `richText` sits beside `label`:
 
 - **`note` stays the plain-text mirror**, always `=== runsPlainText(noteRich)`.
   Everything that reads a note — the badge's "has a note" test, the
-  menu's Add / Edit Note label, search, the JSON / Excalidraw round-trip, the
+  menu's Add / Edit Note label, search, the JSON round-trip, the
   MCP and API payloads — reads the mirror alone.
 - **`noteRich` is absent when the note carries no formatting** (no runs, or a
   single delta-free run). A note without formatting stores only `note`.
@@ -106,8 +106,7 @@ arrived by some other path still cannot execute. Links open in a new tab with
 
 One renderer, `NoteRichText`, draws a note wherever a note is shown:
 
-- the **read-only popover** body (view-role share participants),
-- the **annotation hover preview** ([Annotations](annotations.md)), which floats above the canvas.
+- the **read-only popover** body (view-role share participants).
 
 It splits the runs on `\n` into lines, and paints each run as a `<span>` — or
 an `<a>` when the run carries a safe `link`. Base size is 13px; a run `size`
@@ -116,7 +115,7 @@ maps to 10 / 11 / 13 / 16px (`xs` / `sm` / `md` / `lg`), `heading: 1` to 17px/70
 run.
 
 Notes are **not drawn in visual exports** (PNG / SVG) — they are an
-on-demand affordance, not page content, per [Annotations](annotations.md).
+on-demand affordance, not page content.
 
 ## Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))
 

@@ -45,7 +45,7 @@ export const labelOverflow: Check = (ctx) =>
           code: 'label-overflow' as const,
           refs: [ref],
           message: `${ref} ${cuts.map((c) => c.line).join(' and ')} cut short`,
-          fix: fixes.cardTextCut(ctx.source, ref, width),
+          fix: fixes.cardTextCut(ref, width),
           at: { x: box.x, y: box.y },
         },
       ];
@@ -66,7 +66,7 @@ export const labelOverflow: Check = (ctx) =>
         code: 'label-overflow' as const,
         refs: [ref],
         message: `${ref} needs ${lines} lines, holds ${holds}`,
-        fix: fixes.labelOverflow(ctx.source, ref, larger),
+        fix: fixes.labelOverflow(ref, larger),
         at: { x: box.x, y: box.y },
       },
     ];

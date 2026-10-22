@@ -5,7 +5,7 @@ import {
   type ShareLinkExpiry,
 } from '@livedesign/api-schema';
 
-// share_links row shape as read from D1 (migration 0003 + the expiry
+// share_links row shape as read from D1 (the baseline migration + the expiry
 // columns from 0020, the tab scope from 0048, the level from 0080). `role` and `level` arrive as free-form
 // strings here, but the wire-format DTO carries an AccessLevel. The mapper below normalises. `expiry` / `expires_at` are NULL on every
 // pre-0020 row (= never expires).
@@ -14,7 +14,7 @@ export type ShareLinkRow = {
   code: string;
   document_id: string;
   role: string;
-  // The access level (migration 0080, docs/specs/013-workspace/share-roles.md); NULL on a row written before it,
+  // The access level (the baseline migration, docs/specs/013-workspace/share-roles.md); NULL on a row written before it,
   // which reads as its `role`.
   level: string | null;
   created_at: number;
@@ -59,7 +59,7 @@ export function storedLevelOf(row: { role: string; level?: string | null }): Acc
 }
 
 // What a level is written as in the legacy two-valued `role` column: anything below edit is 'view', so a reader
-// that predates the `level` column reads a Participant link as a Viewer and fails closed (migration 0080).
+// that predates the `level` column reads a Participant link as a Viewer and fails closed (the baseline migration).
 export function legacyRoleColumn(level: AccessLevel): 'edit' | 'view' {
   return level === 'edit' ? 'edit' : 'view';
 }

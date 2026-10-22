@@ -41,6 +41,9 @@ describe('renderView', () => {
       expect(json).toContain('"elements":30');
       const textRefs = new Set(result.text.match(/\b[0-9a-f]{4}\b/g));
       const jsonRefs = new Set(json.match(/"[0-9a-f]{4}"/g)?.map((r) => r.slice(1, -1)));
+      // pages lists each page's refs in its JSON, arrows among them, while its text prints a box's arrows as the ends
+      // they reach, which may be off the page: the two name the same elements in different terms.
+      if (view === 'pages') continue;
       // find's text carries each match's whole outline line; its JSON lists the matches.
       const [from, to] = view === 'find' ? [jsonRefs, textRefs] : [textRefs, jsonRefs];
       for (const ref of from) if (ELEMENT_REFS.has(ref)) expect(to).toContain(ref);

@@ -81,14 +81,12 @@ describe('tabWindowState', () => {
       name: 'Flow',
     });
     expect(tabWindowState('flow', tab('flow', 'Flow'), 'failed')).toMatchObject({ kind: 'failed' });
-    expect(tabWindowState('b', tab('b', 'B', 0), 'loaded')).toEqual({ kind: 'empty', name: 'B' });
-    // A Pages tab always has a page and a Form tab its form, though neither holds an element.
-    expect(
-      tabWindowState('p', { ...tab('p', 'Deck', 0), opensIn: 'pages' }, 'loaded'),
-    ).toMatchObject({ kind: 'drawing' });
-    expect(
-      tabWindowState('f', { ...tab('f', 'Survey', 0), kind: 'form', form: {} }, 'loaded'),
-    ).toMatchObject({ kind: 'drawing' });
+    // A tab always has a page, though it holds no element.
+    expect(tabWindowState('b', tab('b', 'B', 0), 'loaded')).toEqual({
+      kind: 'drawing',
+      name: 'B',
+      tabId: 'b',
+    });
     expect(tabWindowState('flow', tab('flow', ''), 'loaded')).toMatchObject({
       kind: 'drawing',
       name: 'Untitled tab',
@@ -153,16 +151,13 @@ describe('TabWindowFace', () => {
     expect(plan.request).toHaveBeenCalled();
   });
 
-  it('waits, offers Retry, says when the tab is empty or not available', () => {
+  it('waits, offers Retry, says when the tab is not available', () => {
     show(windowEl('flow'), { status: () => 'loading' });
     expect(screen.getByText('Loading Flow…')).toBeTruthy();
     cleanup();
     const ctx = show(windowEl('flow'), { status: () => 'failed' });
     fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
     expect(ctx.retry).toHaveBeenCalledWith('flow');
-    cleanup();
-    show(windowEl('blank'));
-    expect(screen.getByText('Nothing on Blank yet.')).toBeTruthy();
     cleanup();
     show(windowEl('gone'));
     expect(screen.getByText("This tab isn't available.")).toBeTruthy();

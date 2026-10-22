@@ -1,6 +1,6 @@
 import type { CustomThemeDTO, CustomThemeDefinition } from './types';
 
-// custom_themes row shape as read from D1 (migration 0026). The
+// custom_themes row shape as read from D1 (the baseline migration). The
 // `definition` column is a JSON string (the themable payload); every
 // read parses it here so the rest of the worker handles a structured
 // `CustomThemeDefinition`, not raw text. Pulled into its own module

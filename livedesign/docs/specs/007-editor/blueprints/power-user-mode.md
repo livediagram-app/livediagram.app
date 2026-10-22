@@ -86,12 +86,6 @@ Banned: "pro mode", "expert mode", "compact chrome", "clean mode"; "badge" for t
 const POWER_USER_PRESET = {
   alignmentGuides: { alignmentGuides: true },
   autoRebindArrows: { autoRebindArrows: true },
-  tourSeen: { tourSeen: true },
-  planTourSeen: { planTourSeen: true },
-  workshopTourSeen: { workshopTourSeen: true },
-  drawTourSeen: { drawTourSeen: true },
-  formTourSeen: { formTourSeen: true },
-  avatarTourSeen: { avatarTourSeen: true },
   pagesTourSeen: { pagesTourSeen: true },
   elementToursSeen: { elementToursSeen: true },
   aiSuggestedPrompts: { aiSuggestedPrompts: false },
@@ -216,7 +210,7 @@ mapped long press, so one handler covers every input.
 
 Inside the main keydown listener: `const claimed = e.defaultPrevented` before dispatch; after dispatch,
 `if (!claimed && e.defaultPrevented) live.onShortcutUsed?.()`. Every handled branch already calls `preventDefault`, so
-this counts exactly the keys the editor acted on (D4). The mind-map Tab / Enter growth counts too.
+this counts exactly the keys the editor acted on (D4).
 
 ## Interfaces and contracts
 
@@ -324,8 +318,8 @@ export function AppearanceToggle(props: { labelled?: boolean; quick?: boolean })
 - Offer copy: message "Power user mode: fewer labels, faster defaults.", actions "No Thanks" and
   "Try It" (primary, last).
 - Settings copy:
-  - **Power User Mode**: "Applies a set of recommended settings for people who know their way around: alignment guides and auto-attach arrows on, the welcome, Plan and Workshop tours marked as seen, and AI suggested prompts off.
-    Change any of them afterwards and the mode stays on. Switching it off puts back the settings you did not change."
+  - **Power User Mode**: "Applies recommended settings for experienced users and hides the tours. Switching it off puts back whatever
+    you did not change since."
   - **Minimal Chrome**: "Hides labels and hints you no longer need: palette captions, panel titles, the selection
     caption, status bar text and onboarding notices. Every control stays; its name shows when you hover or focus it."
 - Help row in the Explorer menu: the help glyph, label "Help".
@@ -394,12 +388,12 @@ export function AppearanceToggle(props: { labelled?: boolean; quick?: boolean })
 
 ## Constants and configuration
 
-| Constant                     | Value                             | Provenance               | Safe range |
-| ---------------------------- | --------------------------------- | ------------------------ | ---------- |
-| `POWER_USER_OFFER_DAYS`      | 20                                | Operator decision (spec) | 5..60      |
-| `POWER_USER_OFFER_SHORTCUTS` | 50                                | Operator decision (spec) | 20..500    |
+| Constant                     | Value                            | Provenance               | Safe range |
+| ---------------------------- | -------------------------------- | ------------------------ | ---------- |
+| `POWER_USER_OFFER_DAYS`      | 20                               | Operator decision (spec) | 5..60      |
+| `POWER_USER_OFFER_SHORTCUTS` | 50                               | Operator decision (spec) | 20..500    |
 | `OFFER_COUNTERS_KEY`         | `livedesign:power-user-offer:v1` | House key scheme         | fixed      |
-| `POWER_USER_PRESET`          | see Behaviour                     | Operator decision (spec) | fixed      |
+| `POWER_USER_PRESET`          | see Behaviour                    | Operator decision (spec) | fixed      |
 
 ## Defaults ledger
 

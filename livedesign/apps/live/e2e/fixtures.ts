@@ -7,7 +7,6 @@ import {
 } from '@playwright/test';
 import type { StoredDocument, StoredTab } from './stored';
 import { DEBUG_STORAGE_KEY } from '../lib/debug-log';
-import { TOUR_PENDING_KEY } from '../lib/tour-pending';
 
 // Shared fixture (docs/specs/003-system-architecture/e2e-smoke.md): every smoke test fails on an uncaught
 // exception or unhandled rejection surfaced to the page — the class the
@@ -56,9 +55,9 @@ export async function enableDebugLogs(context: BrowserContext): Promise<void> {
   );
 }
 
-// The Draw, Avatar, Forms, Pages and element tours (docs/specs/023-draw-mode/draw-tour.md, docs/specs/008-canvas/avatar-tour.md,
-// docs/specs/030-forms/forms.md, docs/specs/007-editor/pages-tour.md) offer themselves 800 ms into their modes and their overlays would take the presses of every spec there; they have
-// their own unit tests. Marked seen for every page of the context.
+// The Pages and element tours (docs/specs/007-editor/pages-tour.md) offer themselves 800 ms into a tab and their
+// overlays would take the presses of every spec there; they have their own unit tests. Marked seen (with the old
+// Draw and Forms tour flags) for every page of the context.
 async function markModeToursSeen(context: BrowserContext): Promise<void> {
   await context.addInitScript(() => {
     const key = 'livedesign:user-preferences:v1';
@@ -67,7 +66,6 @@ async function markModeToursSeen(context: BrowserContext): Promise<void> {
       // The Pages tour offers each page kind once (lib/tour-tracks.ts): every kind answered.
       if (
         prefs.drawTourSeen !== true ||
-        prefs.avatarTourSeen !== true ||
         prefs.formTourSeen !== true ||
         !Array.isArray(prefs.pagesTourKinds) ||
         !Array.isArray(prefs.elementTourKinds)
@@ -77,7 +75,6 @@ async function markModeToursSeen(context: BrowserContext): Promise<void> {
           JSON.stringify({
             ...prefs,
             drawTourSeen: true,
-            avatarTourSeen: true,
             formTourSeen: true,
             pagesTourSeen: true,
             pagesTourKinds: ['infographic', 'logo'],
@@ -91,18 +88,9 @@ async function markModeToursSeen(context: BrowserContext): Promise<void> {
               'hub',
               'onion',
               'chevrons',
-              'mind-node',
-              'flowchart',
-              'org-chart',
-              'sequence',
               'chart',
               'stack',
-              'entity',
               'tab-window',
-              'lane',
-              'boundary',
-              'diagram-key',
-              'portal',
             ],
           }),
         );
@@ -189,30 +177,18 @@ export async function startTemplateDocument(
   await start.waitFor({ state: 'detached' });
 }
 
-// Dismiss the Diagram tour's offer (docs/specs/007-editor/editor-tour.md) when this page is owed one.
-// It lands a BEAT AFTER the canvas does, and its modal overlay swallows pointer events, so a test that
-// merely checks whether it is showing YET races it and then finds its drags going nowhere, silently.
-// The offer comes only while /new's handoff flag is in sessionStorage (lib/tour-pending.ts): without
-// the flag (a reload after declining it, a document opened by URL) nothing is owed, and this returns
-// at once instead of waiting out a timeout. With it, wait until the offer shows, or until the flag
-// clears without one (the tour already seen). The offer is the Diagram tour's, so a tab in another mode
-// keeps it owed without showing it (the editor marks which mode the tab is in).
+// Skip the Pages tour when it offers itself. It lands a BEAT AFTER the canvas does, and its card swallows pointer
+// events, so wait a short settle for it rather than checking once; a page whose tour is seen (pagesTourSeen) never
+// shows one, and this returns after the settle.
 export async function dismissQuickTour(page: Page): Promise<void> {
-  const decline = page.getByRole('button', { name: /^no$/i }).first();
-  const owed = () => page.evaluate((key) => sessionStorage.getItem(key) === '1', TOUR_PENDING_KEY);
-  const elsewhere = () =>
-    page.evaluate(() => {
-      const mode = document.querySelector('[data-editor-mode]')?.getAttribute('data-editor-mode');
-      return mode !== undefined && mode !== null && mode !== 'diagram';
-    });
-  await expect
-    .poll(async () => (await decline.isVisible()) || !(await owed()) || (await elsewhere()), {
-      message: 'the owed tour offer never showed',
-    })
-    .toBe(true);
-  if (!(await decline.isVisible())) return;
-  await decline.click();
-  await decline.waitFor({ state: 'detached' });
+  const skip = page.getByRole('button', { name: /^skip tour$/i }).first();
+  const shown = await skip
+    .waitFor({ state: 'visible', timeout: 2_000 })
+    .then(() => true)
+    .catch(() => false);
+  if (!shown) return;
+  await skip.click();
+  await skip.waitFor({ state: 'detached' });
 }
 
 // A blank canvas straight away: /new?blank=1, the wizard bypass Start Blank
@@ -223,9 +199,7 @@ export async function openStartBlank(page: Page): Promise<void> {
   await dismissQuickTour(page);
 }
 
-// A blank tab in Workshop mode straight away: /new?template=blank-session creates it with no wizard
-// (docs/specs/012-collaboration/workshop-mode.md "Templates"). Where the session kit lives: the
-// Collaborate and Stickers categories and the Session strip.
+// A blank session tab straight away: /new?template=blank-session creates it with no wizard.
 export async function openBlankSession(page: Page): Promise<void> {
   // The Workshop tour offers itself 800 ms into Workshop (WorkshopTourHost OFFER_DELAY_MS) and its
   // overlay would take these specs' presses; it has its own unit tests.

@@ -82,10 +82,10 @@ describe('LensField', () => {
 
   it('offers the dimensions a word starts, and accepts one with Down and Enter', () => {
     render(<Harness />);
-    type('temp');
+    type('peo');
     expect(field().getAttribute('aria-expanded')).toBe('true');
     expect(screen.getAllByRole('option').map((o) => o.getAttribute('aria-label'))).toEqual([
-      'Template',
+      'People',
     ]);
     // No suggestion is active until one is pressed.
     expect(field().getAttribute('aria-activedescendant')).toBeNull();
@@ -94,21 +94,21 @@ describe('LensField', () => {
       screen.getAllByRole('option')[0]!.id,
     );
     fireEvent.keyDown(field(), { key: 'Enter' });
-    expect((field() as HTMLInputElement).value).toBe('template:');
+    expect((field() as HTMLInputElement).value).toBe('people:');
   });
 
   it('turns an accepted value into a pill and keeps typing after it', () => {
     render(<Harness />);
-    type('template:k');
+    type('people:o');
     expect(screen.getAllByRole('option').map((o) => o.getAttribute('aria-label'))).toEqual([
       // Nothing is listed in this harness, so every value is marked.
-      'Kanban, Template, no matches',
+      'Others, People, no matches',
     ]);
     fireEvent.click(screen.getAllByRole('option')[0]!);
-    expect(lensString()).toBe('template:kanban ');
+    expect(lensString()).toBe('people:others ');
     expect((field() as HTMLInputElement).value).toBe('');
-    expect(screen.getByText('Template: Kanban')).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Remove filter Template: Kanban' })).toBeTruthy();
+    expect(screen.getByText('People: Others')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Remove filter People: Others' })).toBeTruthy();
   });
 
   it('makes a typed token a pill once a space follows it', () => {
@@ -151,8 +151,8 @@ describe('LensField', () => {
   });
 
   it('removes a pill with its button', () => {
-    render(<Harness initial="template:kanban plan" />);
-    fireEvent.click(screen.getByRole('button', { name: 'Remove filter Template: Kanban' }));
+    render(<Harness initial="people:others plan" />);
+    fireEvent.click(screen.getByRole('button', { name: 'Remove filter People: Others' }));
     expect(lensString()).toBe('plan');
   });
 

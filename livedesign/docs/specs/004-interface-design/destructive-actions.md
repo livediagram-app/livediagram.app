@@ -10,8 +10,8 @@ the same row, tile, icon button or button as its neighbours.
   confirmation's Delete is the dialog's primary button (`ConfirmDialog`, `ConfirmPopover`, `useConfirm`).
 - **Menus**: a Delete or Trash row (`MenuActionRow`), tile (`MenuTile`) or tool button (`MenuToolButton`) is styled
   as the rest of its menu; there is no `danger` flag. It is placed last, after a separator, so it is found on
-  purpose (the card panel's ⋯ menu ends in Trash).
+  purpose (a tab's ⋯ menu ends in Delete).
 - **Toolbars and panels**: the element toolbars' Delete, a row's remove cross, a Trash drop target and the Trash
-  count badge use the neutral or brand tones their neighbours use (the Plan Trash badge is grey).
+  count badge use the neutral or brand tones their neighbours use.
 - **Still red**: errors and validation (an invalid field, a failed import, an expired stamp) and states that mean
   something went wrong or is refused (a refused drop); never a control because it deletes.

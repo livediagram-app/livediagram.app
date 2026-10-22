@@ -12,19 +12,16 @@ describe('trackLensChange', () => {
   beforeEach(() => vi.mocked(track).mockClear());
 
   it('counts each facet that gained a value, by its closed type', () => {
-    trackLensChange(emptyLens(), lensOf('plan template:kanban made-by:ai'));
+    trackLensChange(emptyLens(), lensOf('plan people:others made-by:ai'));
     expect(vi.mocked(track).mock.calls).toEqual([
       ['Explorer', 'Selected', 'Text'],
-      ['Explorer', 'Selected', 'Template'],
       ['Explorer', 'Selected', 'MadeBy'],
+      ['Explorer', 'Selected', 'People'],
     ]);
   });
 
   it('counts nothing when values are only taken away or words added to words', () => {
-    trackLensChange(
-      lensOf('plan template:kanban,retrospective'),
-      lensOf('plan roadmap template:kanban'),
-    );
+    trackLensChange(lensOf('plan people:me,others'), lensOf('plan roadmap people:others'));
     expect(track).not.toHaveBeenCalled();
   });
 });

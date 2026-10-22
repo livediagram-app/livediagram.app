@@ -150,16 +150,14 @@ export async function readDocument(
   return { ...result, content: [...result.content, ...(await tabPreview(plain.tab, auth, page))] };
 }
 
-// The page `page` names on a Pages tab, laid out; undefined when none is asked for; a refusal in words when the
-// tab has no pages or none by that name, naming the pages there are.
+// The page `page` names on the tab, laid out; undefined when none is asked for; a refusal in words when the
+// tab has none by that name, naming the pages there are.
 export function pageAsked(
   tab: Tab,
   ref: string | number | undefined,
 ): LaidOutPage | undefined | string {
   if (ref === undefined) return undefined;
   const pages = laidOutPagesOf(tab);
-  if (pages.length === 0)
-    return 'That tab has no pages: page draws one page of a tab in Pages mode.';
   const found = resolvePage(pages, ref);
   if (found) return pages.find((p) => p.id === found.id);
   const named = pages

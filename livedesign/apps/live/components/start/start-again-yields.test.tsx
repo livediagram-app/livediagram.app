@@ -9,7 +9,8 @@ import { usePaletteStripBox } from '@/components/chrome/PaletteTray';
 import { StartAgainTray } from './StartAgainTray';
 
 // docs/specs/007-editor/start-diagramming.md "Bringing it back": an empty tab's Show Templates steps aside while a
-// mode's message (an armed tool's Cancel) is up, as both stand in the same place under the strip or the Draw dock.
+// mode's message (an armed tool's Cancel) is up, as both stand in the same place, under the strip or below the top
+// chrome.
 afterEach(() => {
   cleanup();
   localStorage.clear();
@@ -38,11 +39,11 @@ function TrayBanner() {
 }
 
 describe('Show Templates and a mode message', () => {
-  it('without a strip (Draw), the pill yields and the mode banner marks itself', () => {
-    dismissEmptyCard('t:draw');
+  it('without a strip, the pill yields and the mode banner marks itself', () => {
+    dismissEmptyCard('t:pages');
     render(
       <>
-        <StartAgainTray mode="draw" tabId="t" tabName="Tab 2" />
+        <StartAgainTray mode="pages" tabId="t" tabName="Tab 2" />
         <ModeBanner icon={<span>✎</span>} message="Click to place text" onAction={() => {}} />
       </>,
     );
@@ -55,10 +56,10 @@ describe('Show Templates and a mode message', () => {
 
   it('under the strip, the start-again tray yields and the mode tray marks itself', () => {
     mountStrip();
-    dismissEmptyCard('t:diagram');
+    dismissEmptyCard('t:pages');
     render(
       <>
-        <StartAgainTray mode="diagram" tabId="t" tabName="Tab 2" />
+        <StartAgainTray mode="pages" tabId="t" tabName="Tab 2" />
         <TrayBanner />
       </>,
     );

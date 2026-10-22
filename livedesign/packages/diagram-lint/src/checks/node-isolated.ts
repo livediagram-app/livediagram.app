@@ -47,7 +47,7 @@ export const nodeIsolated: Check = (ctx) => {
         code: 'node-isolated' as const,
         refs: [ref],
         message: `${ref} has no arrows`,
-        fix: fixes.nodeIsolated(ctx.source, ref),
+        fix: fixes.nodeIsolated(ref),
         at: { x: box.x, y: box.y },
       };
     });

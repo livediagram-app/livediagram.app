@@ -64,7 +64,6 @@ const AI_SHAPE_KINDS = new Set([
   'hexagon',
   'document',
   'stadium',
-  'actor',
   'cloud',
   'triangle',
   'trapezoid',

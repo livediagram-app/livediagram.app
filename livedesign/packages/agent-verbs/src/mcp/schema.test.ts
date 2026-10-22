@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import {
-  GRAPH_LAYOUT_MAX_EDGES,
-  GRAPH_LAYOUT_MAX_NODES,
-  NAME_MAX_LENGTH,
-} from '@livedesign/document';
+import { NAME_MAX_LENGTH } from '@livedesign/document';
 import {
   addTabShape,
   createDocumentShape,
@@ -141,60 +137,19 @@ describe('name fields', () => {
   });
 });
 
-// The graph input is held to the layout's caps (docs/specs/015-api/mcp-server.md §4.7): a model
-// asking for a larger graph hears so from the schema rather than stalling the worker on the layout.
-describe('graph input caps', () => {
-  const s = z.object(addTabShape);
-  const nodes = (n: number) => Array.from({ length: n }, (_, i) => ({ id: `n${i}` }));
-  const edges = (n: number) => Array.from({ length: n }, () => ({ from: 'n0', to: 'n1' }));
-
-  it('accepts a graph at the caps', () => {
-    expect(() =>
-      s.parse({
-        documentId: 'd',
-        name: 't',
-        graph: { nodes: nodes(GRAPH_LAYOUT_MAX_NODES), edges: edges(GRAPH_LAYOUT_MAX_EDGES) },
-      }),
-    ).not.toThrow();
-  });
-
-  it('refuses one node or one edge more', () => {
-    expect(() =>
-      s.parse({
-        documentId: 'd',
-        name: 't',
-        graph: { nodes: nodes(GRAPH_LAYOUT_MAX_NODES + 1), edges: [] },
-      }),
-    ).toThrow();
-    expect(() =>
-      s.parse({
-        documentId: 'd',
-        name: 't',
-        graph: { nodes: nodes(2), edges: edges(GRAPH_LAYOUT_MAX_EDGES + 1) },
-      }),
-    ).toThrow();
-  });
-});
-
 // The benchmark's F1: the instructions once gave "retro" as an example, and models passed it as a template kind.
-// A model read "flowchart roles toned (start, end, decision)" as the node's `role` field, which draws a person card:
-// the instructions name a flowchart step's kind by its shape, and say what `role` is for.
-describe('SERVER_INSTRUCTIONS on flowchart steps', () => {
-  it('names a step by its shape and keeps "role" for a person', () => {
-    expect(SERVER_INSTRUCTIONS).not.toMatch(/flowchart roles/);
-    expect(SERVER_INSTRUCTIONS).toMatch(/flowchart steps toned by their "shape"/);
-    expect(SERVER_INSTRUCTIONS).toMatch(/"role" is a person's job title/);
-  });
-});
-
 describe('SERVER_INSTRUCTIONS template examples', () => {
   it('names only kinds create_document takes', () => {
-    const list = /not a node\/edge graph \(([^)]*)\)/.exec(SERVER_INSTRUCTIONS)?.[1] ?? '';
+    const list = /the other templates \(([^)]*)\)/.exec(SERVER_INSTRUCTIONS)?.[1] ?? '';
     const examples = list
       .split(/,\s*/)
       .map((s) => s.trim())
       .filter((s) => s && s !== '...');
     expect(examples.length).toBeGreaterThan(3);
     for (const kind of examples) expect(resolveTemplate(kind), kind).not.toBeNull();
+    // The blank templates it starts each kind of document from.
+    const blanks = [...SERVER_INSTRUCTIONS.matchAll(/"(blank-[a-z-]+)"/g)].map((m) => m[1]!);
+    expect(blanks.length).toBeGreaterThan(3);
+    for (const kind of blanks) expect(resolveTemplate(kind), kind).not.toBeNull();
   });
 });

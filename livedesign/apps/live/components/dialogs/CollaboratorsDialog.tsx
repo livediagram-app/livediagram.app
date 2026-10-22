@@ -4,7 +4,6 @@ import { useEffect, useRef } from 'react';
 import type { Tab } from '@livedesign/document';
 import { Button, DialogHeader, DialogCloseButton } from '@livedesign/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
-import { FacilitatorButton } from '@/components/dialogs/CollaboratorFacilitatorButton';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { ParticipantAvatar } from '@/components/primitives/ParticipantAvatar';
 import { useAppearance } from '@/hooks/ui/useAppearance';
@@ -37,17 +36,6 @@ type CollaboratorsDialogProps = {
   onGoToTab: (tabId: string) => void;
   onFollow: (participantId: string) => void;
   onStopFollowing: () => void;
-  // The facilitator baton (docs/specs/012-collaboration/facilitator.md). `facilitatorId` is a presence id, which
-  // is why our OWN row reads `isFacilitator` instead: a client cannot
-  // recognise its own presence id, so the two answers arrive by different
-  // routes and the row asks the one that applies to it.
-  facilitatorId: string | null;
-  isFacilitator: boolean;
-  /** Whether we own this document: the one person who can take a held baton. */
-  isOwner: boolean;
-  onMakeFacilitator: (participantId: string) => void;
-  onTakeFacilitation: () => void;
-  onStepDown: () => void;
   onClose: () => void;
 };
 
@@ -64,12 +52,6 @@ export function CollaboratorsDialog({
   onGoToTab,
   onFollow,
   onStopFollowing,
-  facilitatorId,
-  isFacilitator,
-  isOwner,
-  onMakeFacilitator,
-  onTakeFacilitation,
-  onStepDown,
   onClose,
 }: CollaboratorsDialogProps) {
   // Keeps each row's "Active 2 mins ago" honest while the modal stays open.
@@ -149,9 +131,7 @@ export function CollaboratorsDialog({
                         <span className="truncate text-sm font-medium text-slate-800 dark:text-slate-100">
                           {p.name}
                         </span>
-                        {participantBadges(p, selfId, selfRole, followingId, {
-                          isFacilitator: isSelf ? isFacilitator : p.id === facilitatorId,
-                        }).map((b) => (
+                        {participantBadges(p, selfId, selfRole, followingId).map((b) => (
                           <span
                             key={b}
                             className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300"
@@ -164,43 +144,18 @@ export function CollaboratorsDialog({
                         {collaboratorRowDetail(p, isSelf, now)}
                       </p>
                     </div>
-                    {/* Two verbs on a person's row, and on your own the one
-                        that moves the baton to or from you. Self rows carried
-                        no button at all before this: taking the baton and
-                        stepping down had to live somewhere, and the row for
-                        the person doing it is the honest place. */}
-                    {/* An agent's row has no socket to follow and cannot hold the baton. */}
-                    {p.agent ? null : (
+                    {/* Follow, on another person's row. An agent's row has no socket to follow. */}
+                    {p.agent || isSelf ? null : (
                       <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
-                        <FacilitatorButton
-                          isSelf={isSelf}
-                          name={p.name}
-                          canHold={(isSelf ? selfRole : (p.role ?? 'edit')) === 'edit'}
-                          iCanHold={selfRole === 'edit'}
-                          theyHoldIt={isSelf ? isFacilitator : p.id === facilitatorId}
-                          batonFree={facilitatorId === null && !isFacilitator}
-                          iHoldIt={isFacilitator}
-                          isOwner={isOwner}
-                          onPress={() => {
-                            if (isSelf) {
-                              if (isFacilitator) onStepDown();
-                              else onTakeFacilitation();
-                            } else {
-                              onMakeFacilitator(p.id);
-                            }
-                          }}
-                        />
-                        {isSelf ? null : (
-                          <Button
-                            variant={following ? 'primary' : 'secondary'}
-                            size="xs"
-                            aria-pressed={following}
-                            aria-label={following ? `Stop following ${p.name}` : `Follow ${p.name}`}
-                            onClick={() => (following ? onStopFollowing() : onFollow(p.id))}
-                          >
-                            {following ? 'Stop Following' : 'Follow'}
-                          </Button>
-                        )}
+                        <Button
+                          variant={following ? 'primary' : 'secondary'}
+                          size="xs"
+                          aria-pressed={following}
+                          aria-label={following ? `Stop following ${p.name}` : `Follow ${p.name}`}
+                          onClick={() => (following ? onStopFollowing() : onFollow(p.id))}
+                        >
+                          {following ? 'Stop Following' : 'Follow'}
+                        </Button>
                       </div>
                     )}
                   </li>

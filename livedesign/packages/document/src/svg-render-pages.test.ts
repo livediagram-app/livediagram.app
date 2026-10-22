@@ -30,10 +30,8 @@ describe('a Pages tab drawn as its pages', () => {
     expect(svg).toContain('data:image/png;base64,QUJD');
   });
 
-  it('has pages only in Pages', () => {
-    expect(laidOutPagesOf({ id: 't', name: 'T', elements: [] })).toEqual([]);
+  it("lays out a tab's pages", () => {
     expect(laidOutPagesOf(tab([portrait('a')])).map((p) => p.id)).toEqual(['a']);
-    expect(renderPagesToSvg({ id: 't', name: 'T', elements: [] })).toBeNull();
   });
 
   it('draws one page as its sheet: its background, and only what reaches onto it', () => {

@@ -8,15 +8,15 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { clamp, type PlanPalette } from '@livedesign/document';
-import { tourColourVars } from './tour-colours';
+import { clamp } from '@livedesign/document';
+import { tourColourVars, type TourPalette } from './tour-colours';
 import { glideTransition } from './tour-motion';
 import { placeTourPopover } from './tour-position';
 import type { TourTargetRect } from './useTourEngine';
 
-export { WELCOME_TOUR_COPY, type TourCardCopy, type TourWelcomeChoice } from './tour-card-copy';
+export { WELCOME_TOUR_COPY, type TourCardCopy } from './tour-card-copy';
 
-// The tour's step card (docs/specs/007-editor/editor-tour.md): step count, title, copy, dots, Back / Next / Skip,
+// The tour's step card (docs/specs/007-editor/pages-tour.md): step count, title, copy, dots, Back / Next / Skip,
 // anchored to the highlighted target. The bookend cards (the offer and the last card) are TourBanner's.
 // Positioning is measured two-pass (render off-screen, measure, place) against the current target rect, before the
 // first paint. One card for the whole run: it fades in on the first step (dialog-in), then glides beside the ring to
@@ -57,7 +57,7 @@ export function TourPopover({
   // The dialog label's lead ("Tour step 2 of 7: ...").
   ariaPrefix?: string;
   // The active tab's colours (tour-colours.ts): the card, its text and its accent wear them.
-  palette: PlanPalette;
+  palette: TourPalette;
   onBack?: () => void;
   onNext: () => void;
   onSkip: () => void;
@@ -71,8 +71,8 @@ export function TourPopover({
     // centre even after viewport clamping. Null = centred card, no caret.
     caret: { edge: 'top' | 'bottom' | 'left' | 'right'; offset: number } | null;
   } | null>(null);
-  // The card's keys (docs/specs/007-editor/editor-tour.md "Keyboard"): Escape skips the tour, as Skip tour does (the
-  // bookend banners take it from inside themselves, TourBanner); the right and left arrows are Next and Back. Not
+  // The card's keys (docs/specs/007-editor/pages-tour.md): Escape skips the tour, as Skip tour does (the bookend banners
+  // take it from inside themselves, TourBanner); the right and left arrows are Next and Back. Not
   // while the key is editing something, where Escape puts the text back and the arrows move the caret (an element
   // tour asks for exactly that), nor when something else already took it, nor with a modifier held.
   const onKey = useEffectEvent((e: KeyboardEvent) => {

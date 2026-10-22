@@ -71,11 +71,6 @@ export const EDITOR_SETTINGS = settingsStack(
       'Arrows re-attaching to the nearest shape.',
     ),
     changed(
-      'WhiteboardDockPosition',
-      'Whiteboard Dock Position',
-      'A whiteboard dock moved to the top or the bottom.',
-    ),
-    changed(
       'ContentsPlacement',
       'Contents Placement',
       "Pages mode's Contents docked as a sidebar or minimised to its button.",
@@ -276,13 +271,6 @@ export const NOTIFICATION_SETTINGS = settingsStack(
     ),
     toggle(
       'UI',
-      'NotifyFormResponsesOn',
-      'NotifyFormResponsesOff',
-      'Someone Fills In My Form',
-      'The new form response email.',
-    ),
-    toggle(
-      'UI',
       'NotifyTipsOn',
       'NotifyTipsOff',
       'Tips and Check-Ins',
@@ -306,64 +294,8 @@ export const ACCESSIBILITY_SETTINGS = settingsStack('Accessibility Settings', 'M
 // Tutorials before). Each switch's tokens track its PREFERENCE, so switching a tour on is `…SeenOff`.
 export const TOURS_SETTINGS = settingsStack(
   'Tours Settings',
-  'The Diagram, Plan, Workshop, Draw and Pages tours switched back on or off.',
+  'The Pages and element tours switched back on or off.',
   [
-    toggle(
-      'UI',
-      'TourSeenOff',
-      'TourSeenOn',
-      'Diagram Tour',
-      'The Diagram tour (the welcome tour until October 2026) switched back on or off.',
-    ),
-    toggle(
-      'UI',
-      'PlanTourSeenOff',
-      'PlanTourSeenOn',
-      'Plan Tours',
-      'Every Plan tour (boards, sheets and dashboards) switched back on or off at once.',
-    ),
-    toggle(
-      'UI',
-      'BoardsTourSeenOff',
-      'BoardsTourSeenOn',
-      'Boards Tour',
-      "The Plan tour's boards track switched back on or off.",
-    ),
-    toggle(
-      'UI',
-      'SheetsTourSeenOff',
-      'SheetsTourSeenOn',
-      'Sheets Tour',
-      "The Plan tour's sheets track switched back on or off.",
-    ),
-    toggle(
-      'UI',
-      'DashboardsTourSeenOff',
-      'DashboardsTourSeenOn',
-      'Dashboards Tour',
-      "The Plan tour's dashboards track switched back on or off.",
-    ),
-    toggle(
-      'UI',
-      'WorkshopTourSeenOff',
-      'WorkshopTourSeenOn',
-      'Workshop Tour',
-      'The Workshop tour switched back on or off.',
-    ),
-    toggle(
-      'UI',
-      'DrawTourSeenOff',
-      'DrawTourSeenOn',
-      'Draw Tour',
-      'The Draw tour switched back on or off.',
-    ),
-    toggle(
-      'UI',
-      'AvatarTourSeenOff',
-      'AvatarTourSeenOn',
-      'Avatar Tour',
-      'The Avatar tour switched back on or off.',
-    ),
     toggle(
       'UI',
       'PagesTourSeenOff',

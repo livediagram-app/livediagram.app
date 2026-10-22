@@ -65,17 +65,13 @@ The Behaviour and Collaborate elements sit on a canvas people are working
 across, so a card that opens on every pass gets in the way. On them a hover
 card is kept **only where it says something the face cannot**:
 
-- an **icon-only control** (the Q&A board's per-row Discuss / Done / Remove);
 - **a person** (an avatar's name card);
-- something the face deliberately **does not draw** (where a Portal leads, since
-  the ring carries no caption);
-- a control whose press is **not what it looks like** (a dot-vote tally, where a
-  click takes your dot back).
+- something the face deliberately **does not draw**;
+- a control whose press is **not what it looks like**.
 
-Never on a **labelled button** (Reveal, New round, Open the box, Take roll,
-I'm done, Pick, Hide: the label is the whole story), never on a vote arrow or a
-chip, and never over a **whole element** (the Reaction pad's card covered the
-pad, so it opened every time the pointer crossed it). Anything worth saying
+Never on a **labelled button** (the label is the whole story), never on a
+chip, and never over a **whole element** (a card covering an element opens every
+time the pointer crosses it). Anything worth saying
 about a removed one lives in the element's help article and its accessible
 name.
 
@@ -134,7 +130,7 @@ hidden. A control that shows its own text needs no hint on touch, and its long p
 ## On-screen keyboard
 
 A touch screen's keyboard covers the bottom of the screen, but a popover, menu, floating panel or bottom sheet is placed
-against the whole window, so a field in one low on the screen (a Sheet chart's **Range** in a slot's picker) went
+against the whole window, so a field in one low on the screen (a chart's data field in its menu) went
 under the keyboard the moment it was tapped. Every floating surface stays in view while the keyboard opens and closes:
 
 - While a text field inside a floating surface (`[data-anchored-popover]`, `[data-floating-panel]`,

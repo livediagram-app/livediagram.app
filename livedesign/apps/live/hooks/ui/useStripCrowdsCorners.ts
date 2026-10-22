@@ -1,8 +1,7 @@
 'use client';
 
 // Whether a bar across the top of the canvas reaches into a top-corner panel stack, MEASURED: the
-// Toolbar strip (docs/specs/007-editor/toolbar-layout.md "The top corners give way to the strip") or
-// a whiteboard's dock at the top (docs/specs/023-draw-mode/draw-mode.md "Where the dock sits").
+// Toolbar strip (docs/specs/007-editor/toolbar-layout.md "The top corners give way to the strip").
 // The bar's real extent against each top corner's real extent, re-checked whenever
 // either resizes (a panel docks, the strip gains a tile) or the window does.
 // Moving the corners below the strip changes neither extent horizontally, so

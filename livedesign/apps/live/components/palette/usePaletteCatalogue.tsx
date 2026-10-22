@@ -10,21 +10,14 @@ import { searchTechIcons } from '@/lib/tech-icons';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 import type { CanvasTool, PaletteProps } from './palette.types';
 import { buildCanvasToolOptions } from './canvas-tool-options';
-import { restoresMaximised, withTileActionPreamble } from './palette-tile-actions';
 import { paletteCategoryTabs } from './palette-category-tabs';
 import type { PaletteAddHandlers } from './palette-add-handlers';
 import { useLogoMarkerTiles } from './PaletteLogoTab';
 import {
-  coveredPaletteCategories,
-  dashboardPaletteCategories,
   paletteCategoriesFor,
   participantPaletteCategories,
   PARTICIPANT_CANVAS_TOOLS,
 } from './palette-layouts';
-import { useBoardFillingTab, usePlanTabKind } from '@/hooks/plan/plan-cover-store';
-import { usePlanTabList } from '@/hooks/plan/plan-tab-list-store';
-import { dashboardTabTiles } from './palette-dashboard-tiles';
-import { getMaximisedPlanId, restorePlanElement } from '@/hooks/plan/maximised-plan';
 import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
 import type { AddShapeOptions } from '@/lib/draw-mode';
 import { useEditorModeState } from '@/components/chrome/editor-mode/editor-mode-context';
@@ -40,13 +33,7 @@ import { useEditorModeState } from '@/components/chrome/editor-mode/editor-mode-
 // from any category and any surface.
 type Deps = Pick<
   PaletteProps,
-  | 'canvasTool'
-  | 'onSetCanvasTool'
-  | 'onExitAvatarMode'
-  | 'onToggleZen'
-  | 'canvasEmpty'
-  | 'pendingDraw'
-  | 'onTileUsed'
+  'canvasTool' | 'onSetCanvasTool' | 'onToggleZen' | 'canvasEmpty' | 'pendingDraw' | 'onTileUsed'
 > &
   PaletteAddHandlers & {
     // A Participant (docs/specs/013-workspace/share-roles.md): the Participate category alone, and its selection
@@ -57,7 +44,6 @@ type Deps = Pick<
 export function usePaletteCatalogue({
   canvasTool,
   onSetCanvasTool,
-  onExitAvatarMode,
   onToggleZen,
   canvasEmpty,
   onAddShape,
@@ -76,7 +62,6 @@ export function usePaletteCatalogue({
   onAddCallout,
   onAddStatRow,
   onAddProcess,
-  onAddFlowchart,
   onAddAvatar,
   onAddImage,
   onAddArrow,
@@ -110,9 +95,7 @@ export function usePaletteCatalogue({
   // Close a popover palette after adding a shape / tool so the user can draw
   // immediately without dismissing it manually.
   // `opts` is the creation-time choice for the kinds that have one: which
-  // session tool, which reaction (docs/specs/012-collaboration/session-button.md, docs/specs/009-elements/reaction-pad.md). It has to be forwarded
-  // rather than dropped — this adapter silently swallowing it is what made
-  // every session tile place a timer and every reaction tile place confetti.
+  // variant (a Funnel, the Callout card). It has to be forwarded rather than dropped.
   const armed = (fn: () => void) => () => {
     fn();
     onTileUsed?.();
@@ -155,48 +138,35 @@ export function usePaletteCatalogue({
       callout: onAddCallout,
       stat: onAddStatRow,
       process: onAddProcess,
-      flowchart: onAddFlowchart,
     } as const;
     armed(byKind[kind])();
   };
   // The add-handler bundle every catalogue-driven tile grid consumes
   // (palette-tile-defs). All handlers above already wrap the mobile-close /
   // draw-armed behaviour, so a tile behaves the same from any tab.
-  // Avatar mode (docs/specs/008-canvas/avatar-mode.md) is read-only, so reaching for a tile means the user
-  // wants to edit again: every add leaves the mode first (back to whichever
-  // tool preceded it) and then drops as normal. Wrapping the bundle covers
-  // every tile, including ones added later.
-  const tileActions: PaletteTileActions = withTileActionPreamble<PaletteTileActions>(
-    {
-      addShape,
-      addText,
-      beginFreehand,
-      beginHighlighter,
-      beginMarker,
-      beginShapePen,
-      beginPolygon,
-      beginPath,
-      addArrow,
-      addSticky,
-      addTable,
-      addImage,
-      addAnnotation,
-      addLinkCard,
-      addVideo,
-      addSticker,
-      addComponent,
-      addIcon,
-      addTechIcon,
-      cancelDraw: onCancelDraw,
-      hasImage: !!onAddImage,
-    },
-    (action, args) => {
-      if (canvasTool === 'avatar') onExitAvatarMode?.();
-      // A maximised board, view or Sheet gives the canvas back for anything but a card (docs/specs/026-plan/
-      // plan-board.md "The palette follows what fills the screen"), so the tool is ready where it lands.
-      if (getMaximisedPlanId() !== null && restoresMaximised(action, args)) restorePlanElement();
-    },
-  );
+  const tileActions: PaletteTileActions = {
+    addShape,
+    addText,
+    beginFreehand,
+    beginHighlighter,
+    beginMarker,
+    beginShapePen,
+    beginPolygon,
+    beginPath,
+    addArrow,
+    addSticky,
+    addTable,
+    addImage,
+    addAnnotation,
+    addLinkCard,
+    addVideo,
+    addSticker,
+    addComponent,
+    addIcon,
+    addTechIcon,
+    cancelDraw: onCancelDraw,
+    hasImage: !!onAddImage,
+  };
   // Icon-picker search query (Icons tab). Filters the catalogue
   // by label / keyword as the user types.
   const [iconQuery, setIconQuery] = useState('');
@@ -231,36 +201,19 @@ export function usePaletteCatalogue({
   // It renders the dropdown straight from this order, so the array IS
   // the grid layout.
   // The mode's palette layout (palette-layouts): its categories, in order, with their tiles.
-  // A board filling its tab: cards land only on a board (a maximised one keeps the mode's palette).
-  const boardFillingTab = useBoardFillingTab();
-  // A Dashboard tab's palette is what fills a slot (docs/specs/026-plan/plan-tabs.md "Dashboard tab").
-  const dashboardTab = usePlanTabKind() === 'dashboard';
-  // Its Tabs category: the document's Board and Sheet tabs (plan-tab-list-store), gone while it has none.
-  const planTabList = usePlanTabList();
   // In Pages mode, the palette's kind (lib/palette-kind.ts): the page someone is on's. Each kind is its own layout
   // (palette-layouts.ts).
   const paletteKind = usePaletteKind();
   const pages = editorMode === 'pages';
   // Logo's Draw takes this person's markers, as tiles in their colours and widths (useLogoMarkerTiles).
   const markers = useLogoMarkerTiles(pages && paletteKind === 'logo');
-  // While a Plan board fills its tab, only Cards (coveredPaletteCategories).
   const categories = participant
     ? participantPaletteCategories()
-    : boardFillingTab
-      ? coveredPaletteCategories()
-      : dashboardTab
-        ? dashboardPaletteCategories().flatMap((c) =>
-            c.id !== 'dashboard-tabs'
-              ? [c]
-              : planTabList.length
-                ? [{ ...c, tiles: dashboardTabTiles(planTabList) }]
-                : [],
-          )
-        : paletteCategoriesFor(editorMode, pages ? { pagesKind: paletteKind } : {}).map((c) =>
-            c.id === 'draw' && markers.length
-              ? { ...c, tiles: [...withGroupEnd(c.tiles ?? []), ...markers] }
-              : c,
-          );
+    : paletteCategoriesFor(editorMode, pages ? { pagesKind: paletteKind } : {}).map((c) =>
+        c.id === 'draw' && markers.length
+          ? { ...c, tiles: [...withGroupEnd(c.tiles ?? []), ...markers] }
+          : c,
+      );
   const tabs = paletteCategoryTabs({
     categories,
     pendingDraw,
@@ -287,8 +240,6 @@ export function usePaletteCatalogue({
     canvasEmpty,
     isMobile,
     includeZen: !!onToggleZen,
-    planMode: editorMode === 'plan',
-    currentTool: canvasTool,
   });
   const canvasToolOptions = participant
     ? allCanvasToolOptions.filter((o) => PARTICIPANT_CANVAS_TOOLS.includes(o.id))

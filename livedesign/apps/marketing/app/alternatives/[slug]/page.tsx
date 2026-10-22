@@ -227,7 +227,7 @@ export default async function AlternativePage({ params }: { params: Promise<{ sl
 
             <TryItCard
               title="See how it feels"
-              body="No sign-up, nothing to install, free forever. Open a canvas and judge for yourself."
+              body="No sign-up, nothing to install, free forever. Open a page and judge for yourself."
               source="Compare.Card"
             />
 

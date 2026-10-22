@@ -45,7 +45,7 @@ export default function FaqPage() {
         <FaqBrowser
           eyebrow="FAQ"
           title="Questions, answered"
-          lede="Everything you might want to know about livedesign, from your first diagram to running your own copy."
+          lede="Everything you might want to know about livedesign, from your first document to running your own copy."
         />
 
         <section aria-labelledby="faq-more-title" className="mx-auto mt-20 max-w-6xl px-6">

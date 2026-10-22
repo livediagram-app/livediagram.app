@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // A Participant in the room (docs/specs/013-workspace/share-roles.md "Integrity"): content ops go through the
-// participant content rule against what D1 holds and only the rule's result reaches anyone; dots, responses and
-// ideas relay like an Editor's and reach D1 without one; everything else from a Participant is dropped.
+// participant content rule against what D1 holds and only the rule's result reaches anyone; everything else from a
+// Participant is dropped.
 
 const { store } = vi.hoisted(() => {
   const store: { data: string | null; writes: number } = { data: '', writes: 0 };
@@ -20,7 +20,6 @@ vi.mock('./db', async (orig) => ({
 }));
 
 import { DocumentRoom } from './document-room';
-import { ANSWERS_FLUSH_MS } from './room-participant';
 
 const ME = 'a'.repeat(32);
 const box = { x: 0, y: 0, width: 100, height: 80 };
@@ -233,7 +232,6 @@ describe('DocumentRoom: a Participant adds and writes', () => {
         elementId: 'col',
         delta: { kind: 'check', index: 0, text: 'a', done: true },
       },
-      { kind: 'poll-start', poll: {} },
       { kind: 'drag-preview', tabId: 't1', ids: ['col'] },
     ]) {
       await send(room, part, op);
@@ -252,7 +250,7 @@ describe('DocumentRoom: a Participant adds and writes', () => {
     expect(store.writes).toBe(0);
   });
 
-  it('drops every content op and answer from a Viewer', async () => {
+  it('drops every content op from a Viewer', async () => {
     const { room, join } = newRoom();
     const editor = join('E', 'edit');
     const viewer = join('V', 'view');
@@ -264,34 +262,5 @@ describe('DocumentRoom: a Participant adds and writes', () => {
     await send(room, viewer, { kind: 'vote', tabId: 't1', elementId: 'ed', voter: 'V', delta: 1 });
     expect(ops(editor)).toEqual([]);
     expect(store.writes).toBe(0);
-  });
-});
-
-describe("DocumentRoom: a Participant's answers", () => {
-  it('relays a dot like an Editor and writes it to D1 without one', async () => {
-    vi.useFakeTimers();
-    store.data = JSON.stringify({
-      elements: [sticky('ed')],
-      vote: { active: true, revealed: false, votesPerPerson: 3, votes: {}, round: 'r1' },
-    });
-    const { room, join } = newRoom();
-    const editor = join('E', 'edit');
-    const part = join('P', 'participate', ME);
-    const dot = {
-      kind: 'vote',
-      tabId: 't1',
-      elementId: 'ed',
-      voter: 'key-P',
-      delta: 1,
-      round: 'r1',
-    };
-    // A dot in someone else's name goes nowhere.
-    const forged = { ...dot, voter: 'key-E' };
-    room.webSocketMessage(wsOf(part), JSON.stringify({ kind: 'op', op: forged }));
-    room.webSocketMessage(wsOf(part), JSON.stringify({ kind: 'op', op: dot }));
-    expect(ops(editor)).toEqual([expect.objectContaining({ from: 'P', op: dot })]);
-    expect(store.writes).toBe(0);
-    await vi.advanceTimersByTimeAsync(ANSWERS_FLUSH_MS);
-    expect(JSON.parse(store.data)).toHaveProperty('vote.votes', { ed: ['key-P'] });
   });
 });

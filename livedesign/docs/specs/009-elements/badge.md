@@ -9,9 +9,9 @@ This spec also defines **attachment**, which the step number shares ([The step n
 
 ## Why
 
-Diagrams carry small facts about a node: its stage, its version, a warning, a count. Written into the label they
-compete with the name; drawn as a separate shape they drift off the node the first time it moves. A badge sits on
-the node's corner where people expect a status mark, and stays there.
+Pages carry small facts about a block: its stage, its version, a warning, a count. Written into the label they
+compete with the name; drawn as a separate shape they drift off the block the first time it moves. A badge sits on
+the block's corner where people expect a status mark, and stays there.
 
 ## The element
 
@@ -47,11 +47,10 @@ attachAt?: 'top-left' | 'top' | 'top-right' | 'right' | 'bottom-right' | 'bottom
   element attaches it there, centred on the point.
 - **Detaching.** Dragging an attached badge away from its point (further than 16px) detaches it; dropping it on
   another point re-attaches it there, possibly on another element.
-- **Hosts.** Any boxed element except a badge, a step number, an annotation, a comment pin, and the containers
-  (frame, lane, boundary, stack, diagram key), whose corners are too far from what they hold to read as a mark on them (and a stack reflows under them). Arrows are not
+- **Hosts.** Any boxed element except a badge, a step number and the containers (frame, stack), whose corners are too far from what they hold to read as a mark on them (and a stack reflows under them). Arrows are not
   hosts.
-- **Following the host.** An attached badge moves with its host in a drag, a nudge and every layout (mind map,
-  flowchart, tidy) and re-settles on its point when the host is resized or rotated. It is **deleted** with its host
+- **Following the host.** An attached badge moves with its host in a drag, a nudge and every layout (tidy,
+  a stack's reflow) and re-settles on its point when the host is resized or rotated. It is **deleted** with its host
   and **copied and duplicated** with it (the copy attaches to the host's copy). Undo restores both together.
 - **Above its host.** An attached badge draws above its host whatever the layer order, so a later shape never covers
   it.
@@ -66,7 +65,7 @@ an API reader that knows nothing of attachment still draws it in the right place
 
 ## Connectors
 
-A badge takes no connectors: no anchors, no quick-connect ring, not an arrow end. It is a mark on a node, not a node.
+A badge takes no connectors: no anchors, no quick-connect ring, not an arrow end. It is a mark on an element, not an element of its own.
 
 ## Animation
 
@@ -75,12 +74,7 @@ Pulse and Heartbeat suit "New" and alerts. Its text is too small to animate on i
 
 ## Palette
 
-| Mode     | Where                                   |
-| -------- | --------------------------------------- |
-| Diagram  | **Build**: Badge                        |
-| Pages    | **Components**: Badge                   |
-| Plan     | none                                    |
-| Workshop | none (Search still finds and places it) |
+**Components**: Badge (on a wireframe page, **Elements**).
 
 ## Badge presets
 

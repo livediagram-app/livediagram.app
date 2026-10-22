@@ -25,7 +25,7 @@ import { track, titleCaseType } from '@/lib/telemetry';
 import { isTechIconId } from '@/lib/tech-icons';
 import { opensForTyping, type PendingDraw } from '@/lib/draw-mode';
 import { HIGHLIGHTER_COLOR, HIGHLIGHTER_WIDTH } from '@/lib/highlighter-config';
-import { boardShape, whiteboardPenIntent } from '@/lib/whiteboard-tool';
+import { whiteboardPenIntent } from '@/lib/whiteboard-tool';
 import { loadWhiteboardPrefs, type WhiteboardPenId } from '@/lib/whiteboard-prefs';
 import { buildDressedDrawnArrow, buildDrawnBoxed, buildDrawnComponent } from '@/lib/draw-commit';
 import type { CanvasTool } from '@/components/palette/palette.types';
@@ -41,9 +41,6 @@ type ShapeDrawingDeps = {
   canvasTool: CanvasTool;
   setCanvasTool: (tool: CanvasTool) => void;
   activeTab: Tab;
-  // The viewer works in Draw mode (docs/specs/007-editor/editor-modes.md): what is drawn is
-  // written the Draw way (unpainted ink, no fill, hugging text, a sticky open for typing).
-  drawMode: boolean;
   // Every draw lands through the functional `commit` (live elements): the
   // commit closure is frozen for the whole
   // gesture, so a wholesale write of gesture-start elements would
@@ -57,9 +54,6 @@ type ShapeDrawingDeps = {
   // Style memory (docs/specs/008-canvas/quick-style-panel.md): dresses every user-drawn shape and arrow in
   // the remembered style of its kind. Identity for anything memory does not know.
   styleNewElement: <T extends Element>(el: T) => T;
-  // A palette card never lands on the canvas (docs/specs/026-plan/plan-mode.md "The palette"): it goes
-  // into the board column at the point, or nowhere.
-  onPlanCardPlace?: (itemType: string | undefined, canvasX: number, canvasY: number) => void;
 };
 
 export function useShapeDrawing(deps: ShapeDrawingDeps) {
@@ -69,14 +63,12 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     canvasTool,
     setCanvasTool,
     activeTab,
-    drawMode,
     commit,
     setSelectedId,
     setMultiSelectedIds,
     setEditingId,
     zoomRef,
     styleNewElement,
-    onPlanCardPlace,
   } = deps;
 
   // Pending draw-to-size intent. Picking a palette element stashes it here;
@@ -95,9 +87,8 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
   const inheritSizeRef = useRef<Element | null>(null);
 
   // The canvas tool an armed draw cannot share the pointer with: laser goes to pan (it swallows pointer-down to paint
-  // trail dots and would block the draw), and the eraser and the format painter to select, as a whiteboard's pens
-  // put them down (useWhiteboard armPen). With the eraser still held, A said "drag to draw an arrow" and the drag
-  // erased what it crossed.
+  // trail dots and would block the draw), and the eraser and the format painter to select. With the eraser still
+  // held, A said "drag to draw an arrow" and the drag erased what it crossed.
   const putDownPressTool = () => {
     if (canvasTool === 'laser') setCanvasTool('pan');
     else if (canvasTool === 'eraser' || canvasTool === 'format') setCanvasTool('select');
@@ -148,12 +139,6 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     // frozen for the whole gesture, so writing gesture-start elements
     // wholesale would revert anything that landed mid-drag. New
     // elements default to the FRONT of z-order (see addBoxed).
-    // A shape drawn in Draw mode starts as plain ink, unfilled (a pen never colours
-    // it), then wears the style chosen for its tool, which Draw mode keeps
-    // apart from Diagram mode's (docs/specs/023-draw-mode/draw-mode.md "Shapes").
-    const whiteboard = drawMode;
-    const dress = <T extends Element>(el: T): T =>
-      styleNewElement(whiteboard ? boardShape(el) : el);
     if (intent.type === 'arrow') {
       // Built exactly as the canvas previews it while the drag is in flight.
       const arrow = buildDressedDrawnArrow(
@@ -162,7 +147,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
         startY,
         endX,
         endY,
-        { elements: activeTab.elements, theme: getTheme(activeTab.theme), whiteboard },
+        { elements: activeTab.elements, theme: getTheme(activeTab.theme) },
         styleNewElement,
       );
       commit((els) => [...els, arrow]);
@@ -192,22 +177,8 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
       track('Element', 'Added', componentTelemetryType(intent.kind));
       return;
     }
-    if (intent.type === 'shape' && intent.kind === 'plan-card') {
-      setPendingDraw(null);
-      onPlanCardPlace?.(intent.plan, endX, endY);
-      return;
-    }
-    const dressed = dress(
-      buildDrawnBoxed(
-        intent,
-        startX,
-        startY,
-        endX,
-        endY,
-        inheritSizeRef.current,
-        activeTab,
-        drawMode,
-      ),
+    const dressed = styleNewElement(
+      buildDrawnBoxed(intent, startX, startY, endX, endY, inheritSizeRef.current, activeTab),
     );
     // A preset's own colour (the Warning badge's rose) outlasts the theme and the remembered style it was dressed in.
     const sized =
@@ -224,7 +195,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     // an empty text box is only useful once you type into it, so save the
     // user the extra click. Other element kinds stay selected-but-not-
     // editing so their format popover is the immediate next interaction.
-    if (opensForTyping(intent, whiteboard)) setEditingId(sized.id);
+    if (opensForTyping(intent)) setEditingId(sized.id);
     setPendingDraw(null);
     const label =
       intent.type === 'shape'
@@ -236,7 +207,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
             ? // Stickers are their own element kind (docs/specs/010-palette/stickers.md), so their own
               // dashboard token rather than riding Icon's.
               'Sticker'
-            : // Hyphenated kinds ('mind-node', 'session-button', ...) need
+            : // Hyphenated kinds ('code-block', 'tab-window', ...) need
               // their spelled-out token or they split from the copy path's.
               shapeTelemetryToken(intent.kind)
         : intent.type === 'text'
@@ -290,14 +261,13 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
       colour: highlighterColour,
       width: highlighterWidth,
     });
-  // One of Draw mode's markers, picked up in another mode from the Toolbar strip's Search
-  // (docs/specs/007-editor/toolbar-layout.md "Search: every element type"): the dock's own pen
-  // intent, in the pen's colour and width as this browser last set them, held until put down.
+  // One of the three markers (docs/specs/023-draw-mode/drawing-tools.md "Markers"), picked up from
+  // a logo page's Draw (`once`: for one stroke) or the Toolbar strip's Search
+  // (docs/specs/007-editor/toolbar-layout.md "Search: every element type", held until put down), in
+  // the marker's colour and width as this browser last set them.
   const beginMarker = (penId: WhiteboardPenId, once?: boolean) => {
-    const prefs = loadWhiteboardPrefs();
-    const pen = prefs.pens.find((p) => p.id === penId);
-    if (pen)
-      armFreehand({ ...whiteboardPenIntent(pen, prefs.recognise), ...(once ? { once } : {}) });
+    const pen = loadWhiteboardPrefs().pens.find((p) => p.id === penId);
+    if (pen) armFreehand({ ...whiteboardPenIntent(pen), ...(once ? { once } : {}) });
   };
   // A setting chosen while the tile is armed reaches the armed stroke too, so the very next drag
   // (and its preview) lands in it.
@@ -321,8 +291,8 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
   // Polygon tool entry (docs/specs/008-canvas/polygon-tool.md): queues the click-to-place-vertices
   // intent. The vertex accumulation lives canvas-side
   // (useCanvasPolygonGesture); this just arms the mode.
-  // The Path tool from a palette (a logo page's, docs/specs/007-editor/logo-pages.md "The Logo
-  // palette"): the same tool Draw mode's dock holds.
+  // The Pen (the Path tool, docs/specs/023-draw-mode/path-tool.md) from a logo page's palette
+  // (docs/specs/007-editor/logo-pages.md "The Logo palette").
   const beginPath = () => {
     if (editsBlocked) return;
     beginDraw({ type: 'path' });

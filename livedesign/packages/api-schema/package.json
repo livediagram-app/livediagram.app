@@ -16,10 +16,7 @@
     "clean": "rm -rf node_modules .turbo"
   },
   "dependencies": {
-    "@livedesign/document": "workspace:*",
-    "@livedesign/forms": "workspace:*",
-    "@livedesign/items": "workspace:*",
-    "@livedesign/sheets": "workspace:*"
+    "@livedesign/document": "workspace:*"
   },
   "devDependencies": {
     "@livedesign/oxlint-config": "workspace:*",

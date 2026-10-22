@@ -2,7 +2,7 @@
 
 ## What
 
-A **Card**: one diagram node with slots you switch on. In reading order:
+A **Card**: one block on a page with slots you switch on. In reading order:
 
 - a **header band** across the top (on or off);
 - **media** at the top left: an icon badge, an icon tile, or an initial (or none);
@@ -16,9 +16,9 @@ and undo.
 
 ## Why
 
-A diagram node is usually more than one line: a service has a name, what it runs on and a couple of facts; a persona
-has a role, a context line and a need. Today that is a square with a label, so every line has the same weight and
-the node looks like a box with words in it. People who want it to look designed reach for a stack of loose shapes,
+A block on a page is usually more than one line: a feature has a name, a line about it and a couple of facts; a
+person has a role, a context line and a need. A square with a label gives every line the same weight and looks like
+a box with words in it. People who want it to look designed reach for a stack of loose shapes,
 which comes apart on the first stray drag, which is exactly what made the grouped web components fail
 ([Web components are elements](web-components-and-no-groups.md)).
 
@@ -43,8 +43,7 @@ rule as the web components: the first click selects, the next one edits, Enter c
 **Media** draws `iconId` when it is set:
 
 - **Badge**: a filled accent disc with the glyph in white (an "i" with no icon). This is the Callout's badge.
-- **Tile**: a rounded square in a soft tint of the accent with the glyph in the accent. A Technology icon draws as its
-  own brand tile instead ([Technology icons](../010-palette/technology-icons.md)).
+- **Tile**: a rounded square in a soft tint of the accent with the glyph in the accent.
 - **Initial**: a soft accent disc carrying the first letter of the title (a "?" with no title). It ignores `iconId`.
 
 Dropping an icon on a card sets `iconId` and, when the card has no media, turns on Tile. The media slot places the icon, so a card offers no Icon position (the quick style panel's Icon alignment
@@ -91,12 +90,8 @@ their own.
 
 ## Palette
 
-| Mode     | Where                                                       |
-| -------- | ----------------------------------------------------------- |
-| Diagram  | **Build**: Card; **Write**: Callout (the preset)            |
-| Pages    | **Components**: Card and Callout; **Popular** keeps Callout |
-| Plan     | none                                                        |
-| Workshop | none (Search still finds and places it)                     |
+**Components**: Card and Callout; **Popular** keeps Callout. A wireframe page's **Elements** holds the Card instead
+([Wireframe pages](../007-editor/wireframe-pages.md)).
 
 The Card tile drops a card with a tile, a title, a meta line, a body and two tags, so the first one shows what the
 slots are; switching a slot off is quicker than discovering one exists.
@@ -105,7 +100,7 @@ slots are; switching a slot off is quicker than discovering one exists.
 
 A card has many possible shapes, so the palette offers a few to start close to what you want. On the Toolbar strip the
 Card tile is drawn as an opener (its glyph with a caret, as the Icons groups are) and pressing it opens a popover below
-it of the presets, two to a row (the same panel as Workshop's openers): each places or drags exactly as a tile does,
+it of the presets, two to a row: each places or drags exactly as a tile does,
 and using one closes the popover.
 
 | Preset  | Variant   | Slots                                                                      | Size      |
@@ -146,5 +141,5 @@ in-place lines render inert for a Participant and a Viewer.
 
 ## Agents
 
-The MCP server and the REST API take `card` with these fields. An agent building an architecture diagram uses cards
-for its service nodes: title the service, meta line the product or runtime, tags for the facts.
+The MCP server and the REST API take `card` with these fields. An agent building a page of
+features or people uses cards for them: the title, a meta line for the role or product, tags for the facts.

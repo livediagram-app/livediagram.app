@@ -155,7 +155,7 @@ export function paintableBoxedFields(source: BoxedElement): Partial<BoxedElement
     ...base,
     fillColor: source.fillColor,
     strokeColor: source.strokeColor,
-    // A table's header row / a lane's title gutter (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/009-elements/lane.md).
+    // A table's header row (docs/specs/008-canvas/canvas-and-palette.md).
     headerFill: ext.headerFill,
     textColor: uniformRunValue(rt, 'color') ?? source.textColor,
     textSize: uniformRunValue(rt, 'size') ?? source.textSize,

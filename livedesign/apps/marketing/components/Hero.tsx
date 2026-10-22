@@ -4,7 +4,7 @@ import { HeroSearch } from './HeroSearch';
 
 // The landing page's hero (docs/specs/019-marketing/marketing-site.md "Hero"), intent-led: it asks
 // what the visitor is making and takes them straight to a starting point, so it grows with the product
-// instead of naming one mode. A band in the brand mark's colours (@livedesign/ui hero-band.css, shared with the help centre): the promise
+// instead of naming one kind of page. A band in the brand mark's colours (@livedesign/ui hero-band.css, shared with the help centre): the promise
 // badge, the question, the template search, then a fan along its foot:
 // templates dealt every few seconds, or a returning visitor's own documents (HeroFanMine).
 const BADGE =
@@ -41,8 +41,8 @@ export function Hero() {
           data-hero-anchor="lead"
           className="mx-auto mt-6 max-w-2xl text-pretty text-lg leading-relaxed text-(--hero-muted) sm:text-xl"
         >
-          Pick a starting point and release what&rsquo;s inside your mind. Diagram, sketch, plan,
-          run a session or publish, then share one link and build it together.
+          Pick a starting point and make it on pages. Write an article, build a deck, lay out an
+          infographic or design a logo, then share one link and finish it together.
         </p>
         <HeroSearch />
       </div>

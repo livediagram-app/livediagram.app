@@ -6,7 +6,6 @@ import { useSelectionEditing } from './useSelectionEditing';
 
 vi.mock('@/components/canvas/text-hug-measure', () => ({
   measureDrawnText: () => () => 0,
-  measureDrawnMindLabel: () => () => () => ({ width: 1, height: 0 }),
 }));
 
 // docs/specs/008-canvas/canvas-and-palette.md "Type-to-edit": a printable key on a selected element opens its
@@ -47,7 +46,6 @@ function setup(label: string, richText?: { text: string; bold?: boolean }[]) {
       documentName: 'My document',
       tabs: [tab],
       activeTab: tab,
-      drawMode: false,
       editingId: null,
       commit,
       discardLastStep,
@@ -71,7 +69,10 @@ function setup(label: string, richText?: { text: string; bold?: boolean }[]) {
     hook,
     discardLastStep,
     label: () => (elements[0] as Element & { label?: string }).label,
-    element: () => elements[0] as Element & { headerSize?: number; richText?: unknown },
+    element: () => elements[0] as Element & { fillColor?: string; richText?: unknown },
+    // Another change to the element, committed as its own step.
+    recolour: (fillColor: string) =>
+      commit((els) => els.map((el) => ({ ...el, fillColor }) as Element)),
     undo: () => {
       elements = past.pop() ?? elements;
       return (elements[0] as Element & { label?: string }).label;
@@ -125,20 +126,20 @@ describe('type-to-edit, then Escape', () => {
     const s = setup('Old');
     s.hook.result.current.typeIntoSelected(s.id, 'N');
     s.hook.rerender();
-    // A later step changed the same element (its header size): popping the newest step would undo that instead.
-    s.hook.result.current.commitHeaderSize(s.id, 10);
+    // A later step changed the same element (its fill): popping the newest step would undo that instead.
+    s.recolour('#ff0000');
     s.hook.rerender();
     s.hook.result.current.cancelEdit();
     expect(s.discardLastStep).not.toHaveBeenCalled();
     expect(s.label()).toBe('Old');
-    expect(s.element().headerSize).toBe(10);
+    expect(s.element().fillColor).toBe('#ff0000');
   });
 
   it('keeps the formatting the seed dropped', () => {
     const s = setup('Bold', [{ text: 'Bold', bold: true }]);
     s.hook.result.current.typeIntoSelected(s.id, 'N');
     s.hook.rerender();
-    s.hook.result.current.commitHeaderSize(s.id, 10);
+    s.recolour('#ff0000');
     s.hook.rerender();
     s.hook.result.current.cancelEdit();
     expect(s.element().richText).toEqual([{ text: 'Bold', bold: true }]);

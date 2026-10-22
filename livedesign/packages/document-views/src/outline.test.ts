@@ -23,8 +23,14 @@ describe('outlineView on the checkout tab (R8)', () => {
       'utf8',
     );
     const block = research.split('### 4.1 Rendered\n\n```text\n')[1]!.split('\n```')[0]!;
-    const [header, ...rest] = block.split('\n');
-    expect(outlineView(checkout()).text).toBe([`${header} · rev 41`, ...rest].join('\n'));
+    // The research drew an actor and an entity, kinds since retired: the fixture holds a circle and a square there.
+    const [header, ...rest] = block
+      .replace('actor b811', 'circle b811')
+      .replace(/entity cb02 "Order" \{.*\}/, 'square cb02 "Order"')
+      .split('\n');
+    // The research drew a diagram tab; every tab now has pages, which the header counts before its threads.
+    const paged = header!.replace(' · threads', ' · 1 page: 1 blank (view pages) · threads');
+    expect(outlineView(checkout()).text).toBe([`${paged} · rev 41`, ...rest].join('\n'));
   });
 
   it('matches its goldens', async () => {
@@ -43,9 +49,9 @@ describe('outlineView on the checkout tab (R8)', () => {
     expect(result.json.elision).toBeNull();
   });
 
-  it('costs at most 400 estimated tokens, a tenth of the pretty JSON or less', () => {
+  it('costs at most 420 estimated tokens, a tenth of the pretty JSON or less', () => {
     const text = outlineView(checkout()).text;
-    expect(estimateTokens(text)).toBeLessThanOrEqual(400);
+    expect(estimateTokens(text)).toBeLessThanOrEqual(420);
     // read_document's text block before views, as the research measured it.
     const json = JSON.stringify({ tab: checkoutTab() }, null, 2);
     expect(estimateTokens(text) * 10).toBeLessThanOrEqual(estimateTokens(json));
@@ -66,7 +72,7 @@ describe('outlineView on the checkout tab (R8)', () => {
 
 describe('outline budgets (R20, R21)', () => {
   it('steps down the ladder: notes, attributes, containers, then the root', () => {
-    const states = [400, 380, 300, 200, 60].map(
+    const states = [420, 380, 300, 210, 60].map(
       (budget) => outlineView(checkout(), { budget }).state,
     );
     expect(states).toEqual([
@@ -85,7 +91,7 @@ describe('outline budgets (R20, R21)', () => {
   });
 
   it('says what it dropped in one closing line, naming the largest collapsed container', () => {
-    const { text, json } = outlineView(checkout(), { budget: 200 });
+    const { text, json } = outlineView(checkout(), { budget: 210 });
     expect(text.split('\n').at(-1)).toBe(
       '… notes hidden; attributes hidden; 13 elements in frame c991 hidden: view --only c991',
     );
@@ -126,13 +132,13 @@ describe('outline budgets (R20, R21)', () => {
 });
 
 describe('outline budgets over nested containers', () => {
-  // Two equal frames, the first holding a lane; each holds strokes and boxes.
+  // Two equal frames, the first holding a smaller one; each holds strokes and boxes.
   const elements: Element[] = [
     shapeAt('frame', 'left', 0, 0, 1000, 1000),
-    shapeAt('lane', 'lane', 0, 500, 1000, 400),
-    shapeAt('square', 'in-lane-1', 10, 550, 100, 50, { label: 'A long label '.repeat(4) }),
-    shapeAt('square', 'in-lane-3', 600, 550, 100, 50, { label: 'Another long label '.repeat(3) }),
-    shapeAt('square', 'in-lane-2', 300, 550),
+    shapeAt('frame', 'inner', 0, 500, 1000, 400),
+    shapeAt('square', 'in-inner-1', 10, 550, 100, 50, { label: 'A long label '.repeat(4) }),
+    shapeAt('square', 'in-inner-3', 600, 550, 100, 50, { label: 'Another long label '.repeat(3) }),
+    shapeAt('square', 'in-inner-2', 300, 550),
     shapeAt('square', 'in-left', 10, 10),
     shapeAt('frame', 'right', 2000, 0, 1000, 1000),
     shapeAt('square', 'r1', 2010, 10),
@@ -152,21 +158,23 @@ describe('outline budgets over nested containers', () => {
   });
 
   it('collapses the earlier of equal containers first, never a container inside a collapsed one', () => {
-    const budgets = Array.from({ length: 80 }, (_, i) => i + 1);
+    const budgets = Array.from({ length: 100 }, (_, i) => i + 1);
     const collapsedRefs = budgets.map((budget) => {
       const { json } = outlineView(model, { budget });
       return (json.elision?.collapsed ?? []).map((c) => c.ref).join(',');
     });
     expect(collapsedRefs).toContain('left');
     expect(collapsedRefs).toContain('left,right');
-    expect(collapsedRefs.some((refs) => refs.includes('lane'))).toBe(false);
+    expect(collapsedRefs.some((refs) => refs.includes('inner'))).toBe(false);
     expect(collapsedRefs.includes('right')).toBe(false);
   });
 });
 
 describe('outline edge cases', () => {
   it('prints an empty tab as its header alone (E1)', () => {
-    expect(outlineView(buildViewModel(tabOf([]))).text).toBe('tab tab-1 "T" · 0 elements');
+    expect(outlineView(buildViewModel(tabOf([]))).text).toBe(
+      'tab tab-1 "T" · 0 elements · 1 page: 1 blank (view pages)',
+    );
   });
 
   it('prints unknown kinds with ?, counted and contained by geometry, never dropped (R25, E12)', () => {
@@ -185,7 +193,7 @@ describe('outline edge cases', () => {
     const { text, json } = outlineView(model);
     expect(text).toBe(
       [
-        'tab tab-1 "T" · 3 elements: 2 boxes, 1 frame · 2 unknown',
+        'tab tab-1 "T" · 3 elements: 2 boxes, 1 frame · 1 page: 1 blank (view pages) · 2 unknown',
         'frame frame "Frame"',
         '  ? hologram holo "Hi"',
         '? blob blob',

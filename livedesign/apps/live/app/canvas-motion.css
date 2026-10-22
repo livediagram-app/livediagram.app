@@ -3,8 +3,7 @@
  *
  * Motion OF the canvas, not of the chrome around it: element entry, the
  * animated-element set, arrow flow, icon / progress / rating / pie
- * animations, the done-check flash,
- * presentation slide transitions and the touch long-press ring. Each follows
+ * animations, presentation slide transitions and the touch long-press ring. Each follows
  * its own spec, so this stylesheet is the one the chrome motion budget does
  * not read (the guard in apps/live/motion-budget.test.ts lists it as canvas).
  * The global reduced-motion collapse in globals.css still applies to all of it.
@@ -184,44 +183,6 @@
   color: transparent;
   animation: lvd-gradient-shift calc(5s * var(--lvd-anim-speed, 1)) ease-in-out
     var(--lvd-anim-iter, infinite);
-}
-
-/* Vote-results walkthrough focus (docs/specs/012-collaboration/session-tools.md): the currently-reviewed top pick
- * pulses an amber halo so it stands out even on a busy canvas. Rides the
- * winner-ring overlay div (ring-2 amber), adding the breathing glow. */
-@keyframes lvd-vote-focus {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 rgb(251 191 36 / 0.55);
-  }
-  50% {
-    box-shadow: 0 0 22px 8px rgb(251 191 36 / 0.5);
-  }
-}
-.lvd-vote-focus {
-  animation: lvd-vote-focus 1.4s ease-in-out infinite;
-}
-
-/* Vote stepper (docs/specs/012-collaboration/session-tools.md): translucent at rest so the label underneath stays
- * readable on a small box — during a vote the label is what you're choosing
- * between — and solid on hover so it's clear what you're aiming at. Hover is
- * taken from the ELEMENT (`.group`), not the stepper, which is far too small
- * a target to require landing on first.
- *
- * Gated on a genuine hover pointer. On touch there is nothing to restore the
- * opacity with, so a permanently faded control would be worse than an
- * occluding one; a coarse pointer keeps the plain opaque stepper. Written
- * here rather than as a Tailwind variant chain because it needs the
- * two-condition media query AND an ancestor-hover selector. */
-@media (hover: hover) and (pointer: fine) {
-  .lvd-vote-stepper {
-    opacity: 0.45;
-  }
-  .group:hover .lvd-vote-stepper,
-  .lvd-vote-stepper:hover,
-  .lvd-vote-stepper:focus-within {
-    opacity: 1;
-  }
 }
 
 /* Flowing arrows: marching dashes (stroke-dashoffset) + a travelling dot
@@ -1095,44 +1056,6 @@
   animation: lvd-pointer-tip-pulse 1.6s ease-out infinite;
 }
 
-/* A sequence diagram's Play (docs/specs/009-elements/sequence-diagram.md "Animation"): the picture is uncovered top
- * to bottom, 0.4 s per message scaled by Speed (--lvd-seq-dur, set by the face), so messages appear in the order they
- * happen. Once, or with Repeat a reveal, hold and clear on a loop. A clip-path on one layer per diagram. */
-@keyframes lvd-seq-play {
-  from {
-    clip-path: inset(0 0 100% 0);
-  }
-  to {
-    clip-path: inset(0 0 0 0);
-  }
-}
-@keyframes lvd-seq-play-loop {
-  0% {
-    clip-path: inset(0 0 100% 0);
-  }
-  70%,
-  92% {
-    clip-path: inset(0 0 0 0);
-    opacity: 1;
-  }
-  100% {
-    clip-path: inset(0 0 0 0);
-    opacity: 0;
-  }
-}
-.lvd-seq-play {
-  animation: lvd-seq-play var(--lvd-seq-dur, 2s) linear 1 both;
-}
-.lvd-seq-play-loop {
-  animation: lvd-seq-play-loop calc(var(--lvd-seq-dur, 2s) / 0.7) linear infinite both;
-}
-@media (prefers-reduced-motion: reduce) {
-  .lvd-seq-play,
-  .lvd-seq-play-loop {
-    animation: none;
-  }
-}
-
 @keyframes lvd-concept-flow {
   to {
     stroke-dashoffset: -24;
@@ -1220,117 +1143,6 @@
   transition:
     left 160ms ease-out,
     top 160ms ease-out;
-}
-
-/* Done check: the all-done flash (docs/specs/012-collaboration/done-check.md).
-   A pulse of the card's own ring rather than a colour wash, so it reads on a
-   card of any theme colour, and it RUNS OUT after a few cycles: a card that
-   flashed forever would be noise on a canvas somebody left open, and the state
-   is still legible from the roster and the count once it stops. */
-@keyframes lvd-done-flash {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 rgb(34 197 94 / 0);
-  }
-  50% {
-    box-shadow: 0 0 0 6px rgb(34 197 94 / 0.45);
-  }
-}
-
-.lvd-done-complete {
-  animation: lvd-done-flash 900ms ease-in-out 4;
-  border-radius: inherit;
-}
-@media (prefers-reduced-motion: reduce) {
-  /* The completion is information, so it stays visible — as a steady ring
-     rather than a pulsing one. */
-  .lvd-done-complete {
-    animation: none;
-    box-shadow: 0 0 0 3px rgb(34 197 94 / 0.45);
-  }
-}
-
-/* Quiz (docs/specs/012-collaboration/quiz.md). Three motions, all driven by
-   classes so the reduced-motion block below can reach every one:
-   - the answers FAN OUT from the disc when a round opens, one after another
-     (each pill sets --lvd-quiz-dx / --lvd-quiz-dy to the offset back to the
-     centre and --lvd-quiz-delay for its place in the order);
-   - the right answer POPS and glows green on the reveal;
-   - the countdown ring drains, which is a transition on stroke-dashoffset
-     rather than an animation, so a late joiner lands on the right fraction. */
-@keyframes lvd-quiz-fan {
-  from {
-    opacity: 0;
-    transform: translate(var(--lvd-quiz-dx, 0), var(--lvd-quiz-dy, 0)) scale(0.3);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-.lvd-quiz-fan {
-  animation: lvd-quiz-fan 520ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
-  animation-delay: var(--lvd-quiz-delay, 0ms);
-}
-
-@keyframes lvd-quiz-correct {
-  0% {
-    transform: scale(1);
-    box-shadow: 0 0 0 0 rgb(22 163 74 / 0);
-  }
-  40% {
-    transform: scale(1.14);
-    box-shadow: 0 0 0 10px rgb(22 163 74 / 0.35);
-  }
-  100% {
-    transform: scale(1.06);
-    box-shadow: 0 0 0 5px rgb(22 163 74 / 0.25);
-  }
-}
-
-.lvd-quiz-correct {
-  animation: lvd-quiz-correct 700ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
-}
-
-.lvd-quiz-ring {
-  transition: stroke-dashoffset 250ms linear;
-}
-
-/* Who picked each answer, arriving just after the right one pops. */
-@keyframes lvd-quiz-pickers {
-  from {
-    opacity: 0;
-    transform: scale(0.6);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-.lvd-quiz-pickers {
-  animation: lvd-quiz-pickers 360ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
-  animation-delay: var(--lvd-quiz-delay, 0ms);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  /* Every state stays; only the motion goes. The answers are simply in place
-     and the right one is simply green, with its ring held steady. */
-  .lvd-quiz-fan {
-    animation: none;
-  }
-  .lvd-quiz-correct {
-    animation: none;
-    transform: scale(1.06);
-    box-shadow: 0 0 0 5px rgb(22 163 74 / 0.25);
-  }
-  .lvd-quiz-ring {
-    transition: none;
-  }
-  .lvd-quiz-pickers {
-    animation: none;
-  }
 }
 
 /* Slide moves and the entrance are React View Transitions (docs/specs/012-collaboration/presentation-mode.md
@@ -1446,7 +1258,7 @@ html[data-presenting][data-slide-move='pending'] [data-canvas-a11y-root] {
   }
 }
 
-/* A Plan card gliding to where it now sits (docs/specs/026-plan/plan-board.md "Cards move visibly"): set by
+/* A Plan card gliding to where it now sits: set by
    usePlanCardFlip after it puts the card back where it was, so it travels from there. */
 .plan-card-flip {
   transition: transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -1461,108 +1273,5 @@ html[data-presenting][data-slide-move='pending'] [data-canvas-a11y-root] {
    cover's own layer (TabPatternLayer), so the canvas's copy beneath it stops rather than animate unseen
    (docs/specs/008-canvas/canvas-and-palette.md "Canvas"). */
 [data-canvas-root]:has(> [data-canvas-cover]) > [data-animated-pattern] {
-  display: none;
-}
-
-/* The Avatar Pad (docs/specs/009-elements/avatar-pad.md). Pixel motion: every keyframe is stepped, never smooth, so
-   it moves the way the sprite does, and a stepped animation restyles only on its steps. The ring's shimmer is one
-   opacity loop on one group per pad. The arrival is one beam, a floor flash and six sparks per arriving person,
-   capped at AVATAR_PAD_MAX_ARRIVALS on screen, unmounted when the beam is over (AVATAR_PAD_ARRIVAL_MS = 900ms). */
-@keyframes avatar-pad-shimmer {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  25% {
-    opacity: 0.72;
-  }
-  50% {
-    opacity: 0.88;
-  }
-  75% {
-    opacity: 0.64;
-  }
-}
-.avatar-pad-shimmer {
-  animation: avatar-pad-shimmer 2.4s steps(1, end) infinite;
-}
-@keyframes avatar-pad-beam {
-  0% {
-    opacity: 1;
-    transform: scaleY(0.05);
-  }
-  22% {
-    opacity: 1;
-    transform: scaleY(1);
-  }
-  62% {
-    opacity: 1;
-    transform: scaleX(0.7) scaleY(1);
-  }
-  100% {
-    opacity: 0;
-    transform: scaleX(0.15) scaleY(1.15);
-  }
-}
-.avatar-pad-beam {
-  animation: avatar-pad-beam 900ms steps(9, end) both;
-}
-@keyframes avatar-pad-flash {
-  0% {
-    opacity: 1;
-    transform: scale(0.6);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(1.7);
-  }
-}
-.avatar-pad-flash {
-  animation: avatar-pad-flash 700ms steps(7, end) both;
-}
-@keyframes avatar-pad-spark {
-  0% {
-    opacity: 0;
-    transform: translateY(0);
-  }
-  20% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(-40px);
-  }
-}
-.avatar-pad-spark {
-  animation: avatar-pad-spark 800ms steps(8, end) both;
-}
-.avatar-pad-spark:nth-child(2) {
-  animation-delay: 60ms;
-}
-.avatar-pad-spark:nth-child(3) {
-  animation-delay: 140ms;
-}
-.avatar-pad-spark:nth-child(4) {
-  animation-delay: 30ms;
-}
-.avatar-pad-spark:nth-child(5) {
-  animation-delay: 100ms;
-}
-.avatar-pad-spark:nth-child(6) {
-  animation-delay: 170ms;
-}
-/* Reduced motion: no shimmer and no beam. The arrival is decoration, so the character simply appears on the pad. */
-@media (prefers-reduced-motion: reduce) {
-  .avatar-pad-shimmer {
-    animation: none !important;
-  }
-  .avatar-pad-arrival {
-    display: none;
-  }
-}
-:root.reduce-motion .avatar-pad-shimmer {
-  animation: none !important;
-}
-:root.reduce-motion .avatar-pad-arrival {
   display: none;
 }

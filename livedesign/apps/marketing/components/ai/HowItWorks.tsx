@@ -21,7 +21,7 @@ const STEPS = [
   {
     icon: lucideGlyph(lucideWandSparkles, 20),
     title: 'Ask',
-    body: 'Ask for a diagram, a board, a sheet or a deck. It lands in your account, ready to edit and share.',
+    body: 'Ask for an article, a slide deck, an infographic or a logo. It lands in your account, ready to edit and share.',
   },
 ];
 

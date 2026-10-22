@@ -24,8 +24,6 @@ export function CollaboratorsHost() {
     selfParticipant,
     sessionRole,
     followMe,
-    facilitator,
-    isOwner,
   } = useEditorContext();
   const selectTab = useSelectTab();
   if (!collaborators) return null;
@@ -47,12 +45,6 @@ export function CollaboratorsHost() {
         closeCollaborators();
       }}
       onStopFollowing={followMe.stopFollowing}
-      facilitatorId={facilitator.facilitatorId}
-      isFacilitator={facilitator.isFacilitator}
-      isOwner={isOwner}
-      onMakeFacilitator={facilitator.grantFacilitator}
-      onTakeFacilitation={facilitator.claimFacilitator}
-      onStepDown={facilitator.releaseFacilitator}
       onClose={closeCollaborators}
     />
   );

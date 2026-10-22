@@ -7,38 +7,33 @@ const VIEWPORT_MARGIN_PX = 12;
 // How close the tip may come to a corner of the card (its rounding is 12px).
 const TIP_INSET_PX = 14;
 
-// The flyout's tip: a small rotated square on the edge facing its opener, with the card's own
-// border on its two outer sides, so it reads as part of the card pointing at the button.
+// The flyout's tip: a small rotated square on its top edge, with the card's own border on its two
+// outer sides, so it reads as part of the card pointing at the button.
 function FlyoutTip({
-  edge,
   offset,
 }: {
-  edge: 'top' | 'bottom';
   // Along the edge, in px from the card's left edge.
   offset: number;
 }) {
-  const place = edge === 'top' ? '-top-[6px] border-l border-t' : '-bottom-[6px] border-b border-r';
   // Centred on the offset: the square is 10px.
   const at = offset - 5;
   return (
     <span
       aria-hidden
-      data-flyout-tip={edge}
+      data-flyout-tip="top"
       style={{ left: at }}
-      className={`pointer-events-none absolute h-2.5 w-2.5 rotate-45 border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900 ${place}`}
+      className="pointer-events-none absolute -top-[6px] h-2.5 w-2.5 rotate-45 border-l border-t border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900"
     />
   );
 }
 
-// A flyout off the dock (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows", "Where
-// the dock sits"): on the board side of the dock (below a dock at the top, above one at the
-// bottom), a gap away, centred on its opener and kept inside the viewport; its tip on the edge
-// facing the dock, over the opener. Pure, from screen rects and the flyout's layout size.
-export function offDock(
-  dock: { top: number; bottom: number },
+// Where a flyout sits below the toolbar it opens from (docs/specs/023-draw-mode/drawing-tools.md
+// "Markers"): a gap below it, centred on its opener and kept inside the viewport; its tip on the top
+// edge, over the opener. Pure, from screen rects and the flyout's layout size.
+export function belowToolbar(
+  toolbar: { bottom: number },
   opener: { left: number; width: number },
-  flyout: { offsetWidth: number; offsetHeight: number },
-  below: boolean,
+  flyout: { offsetWidth: number },
   viewport: { width: number } = { width: window.innerWidth },
 ): { left: number; top: number; tipLeft: number } {
   const centre = opener.left + opener.width / 2;
@@ -49,70 +44,38 @@ export function offDock(
       viewport.width - VIEWPORT_MARGIN_PX - flyout.offsetWidth,
     ),
   );
-  const top = below
-    ? dock.bottom + OFF_DOCK_GAP_PX
-    : dock.top - OFF_DOCK_GAP_PX - flyout.offsetHeight;
   const tipLeft = Math.max(
     TIP_INSET_PX,
     Math.min(centre - left, flyout.offsetWidth - TIP_INSET_PX),
   );
-  return { left, top, tipLeft };
+  return { left, top: toolbar.bottom + GAP_PX, tipLeft };
 }
 
-// The gap between the dock and a flyout off it.
-const OFF_DOCK_GAP_PX = 8;
+// The gap between the toolbar and a flyout below it.
+const GAP_PX = 8;
 
-type FlyoutPlacement = 'below' | 'above';
+type Place = { left: number; top: number; tip: number };
 
-type Place = {
-  left: number;
-  top: number;
-  tip: { edge: 'top' | 'bottom'; offset: number };
-};
-
-// A Draw tool's settings (a pen, the eraser, Shapes, a slot's menu, Settings). Always portalled
-// and placed in screen px from its opener, so it draws at design size whatever the toolbar UI
-// scale zooms the dock to (docs/specs/007-editor/ui-scale.md) and escapes the dock's scroll clip:
-// off the dock's board side. The dock never moves for it. Focus
-// moves into it on open; Escape closes it and hands focus back to its opener; a press outside
-// closes it without stealing focus.
+// A marker's settings (its colour and width). Always portalled and placed in screen px from its
+// opener, so it draws at design size whatever the toolbar UI scale zooms the palette to
+// (docs/specs/007-editor/ui-scale.md) and escapes the palette's scroll clip. Focus moves into it on
+// open; Escape closes it and hands focus back to its opener; a press outside closes it without
+// stealing focus.
 export function WhiteboardFlyout({
   id,
   label,
   anchor,
-  placement,
-  revision,
   onClose,
-  onPointerEnter,
-  onPointerLeave,
-  takeFocus = true,
-  restoreFocus = false,
-  hideTitle = false,
-  scope = '[data-whiteboard-dock]',
+  scope,
   children,
 }: {
   id: string;
   label: string;
   // The opener's data-dock-item: the flyout is placed against it and points at it.
   anchor: string;
-  placement: FlyoutPlacement;
-  // Changes when the opener moves under an open flyout (the dock's groups scrolled): placed again.
-  revision?: number;
   onClose: (returnFocus: boolean) => void;
-  // A hover-opened flyout stays while the pointer is over it.
-  onPointerEnter?: () => void;
-  onPointerLeave?: () => void;
-  // False for a flyout the pointer opened: hovering never moves the keyboard focus (the Shapes
-  // flyout's field is the one exception).
-  takeFocus?: boolean;
-  // On closing, give the focus back to the board when it is still in the flyout or nowhere: a
-  // hover-opened Shapes flyout took it without being asked.
-  restoreFocus?: boolean;
-  // A flyout whose sections carry their own headings shows no title (it keeps
-  // `label` as its accessible name).
-  hideTitle?: boolean;
-  // The toolbar its opener sits in: the whiteboard dock, or a logo page's toolbars.
-  scope?: string;
+  // The toolbar its opener sits in: a logo page's Draw, or a marker's tile.
+  scope: string;
   children: ReactNode;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -125,40 +88,27 @@ export function WhiteboardFlyout({
     const wrapEl = document.querySelector<HTMLElement>(scope);
     const opener = wrapEl?.querySelector<HTMLElement>(`[data-dock-item="${anchor}"]`);
     if (!node || !wrapEl || !opener) return;
-    const wrap = wrapEl.getBoundingClientRect();
-    const btn = opener.getBoundingClientRect();
-    const below = placement === 'below';
-    const at = offDock(wrap, btn, node, below);
-    setPlace({
-      left: at.left,
-      top: at.top,
-      tip: { edge: below ? 'top' : 'bottom', offset: at.tipLeft },
-    });
-  }, [anchor, placement, revision, scope]);
+    const at = belowToolbar(wrapEl.getBoundingClientRect(), opener.getBoundingClientRect(), node);
+    setPlace({ left: at.left, top: at.top, tip: at.tipLeft });
+  }, [anchor, scope]);
   const onCloseRef = useRef(onClose);
   useEffect(() => {
     onCloseRef.current = onClose;
   });
 
-  const restoreRef = useRef(restoreFocus);
-  useEffect(() => {
-    restoreRef.current = restoreFocus;
-  });
-
   // The focus moves in once the flyout is placed: it is hidden for its first, unmeasured frame, and a
   // browser will not focus a hidden element, which would leave the focus (and so Escape) on the
-  // opener. Once only: a re-place (`revision`) keeps the focus where the user has taken it.
+  // opener.
   const placed = place !== null;
   useEffect(() => {
-    if (!placed || !takeFocus) return;
+    if (!placed) return;
     const node = ref.current;
-    // A field first (More shapes opens typing), then the choice in force, then the first button.
+    // The choice in force, then the first button.
     const initial =
-      node?.querySelector<HTMLElement>('input') ??
       node?.querySelector<HTMLElement>('[aria-pressed="true"]') ??
       node?.querySelector<HTMLElement>('button');
     initial?.focus({ preventScroll: true });
-  }, [placed, takeFocus]);
+  }, [placed]);
 
   useEffect(() => {
     const node = ref.current;
@@ -173,14 +123,8 @@ export function WhiteboardFlyout({
       onCloseRef.current(false);
     };
     document.addEventListener('pointerdown', onDown, true);
-    return () => {
-      document.removeEventListener('pointerdown', onDown, true);
-      if (!restoreRef.current || !takeFocus) return;
-      const now = document.activeElement as HTMLElement | null;
-      if (now && now !== document.body && !node?.contains(now)) return;
-      now?.blur?.();
-    };
-  }, [id, takeFocus]);
+    return () => document.removeEventListener('pointerdown', onDown, true);
+  }, [id]);
 
   return (
     <Portal>
@@ -190,15 +134,13 @@ export function WhiteboardFlyout({
         role="group"
         aria-label={label}
         data-floating-panel=""
-        data-side={placement}
+        data-side="below"
         onKeyDown={(e) => {
           if (e.key !== 'Escape') return;
           e.stopPropagation();
           onClose(true);
         }}
         onPointerDown={(e) => e.stopPropagation()}
-        onPointerEnter={(e) => (e.pointerType !== 'touch' ? onPointerEnter?.() : undefined)}
-        onPointerLeave={(e) => (e.pointerType !== 'touch' ? onPointerLeave?.() : undefined)}
         style={{
           left: place?.left ?? 0,
           top: place?.top ?? 0,
@@ -207,30 +149,26 @@ export function WhiteboardFlyout({
         className="pointer-events-auto fixed z-[var(--z-popover)] w-max max-w-[min(20rem,calc(100vw-1.5rem))] animate-pop-in rounded-xl border border-slate-200 bg-white p-3 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
       >
         {/* The tip points at the button that opened it, wherever the card sits. */}
-        {place ? <FlyoutTip edge={place.tip.edge} offset={place.tip.offset} /> : null}
-        {hideTitle ? null : <FlyoutHeading className="mb-2">{label}</FlyoutHeading>}
+        {place ? <FlyoutTip offset={place.tip} /> : null}
+        <FlyoutHeading className="mb-2">{label}</FlyoutHeading>
         {children}
       </div>
     </Portal>
   );
 }
 
-// A row of choices in a flyout. `selected` drives aria-pressed and the ring.
 export function FlyoutOption({
   label,
   selected,
   onPick,
   children,
   wide = false,
-  shortcut,
 }: {
   label: string;
   selected: boolean;
   onPick: () => void;
   children: ReactNode;
   wide?: boolean;
-  // The key that picks this option from anywhere on the board.
-  shortcut?: string;
 }) {
   return (
     <Tooltip label={label}>
@@ -238,19 +176,10 @@ export function FlyoutOption({
         type="button"
         aria-label={label}
         aria-pressed={selected}
-        aria-keyshortcuts={shortcut}
         onClick={onPick}
         className={`relative flex h-10 shrink-0 items-center justify-center gap-2 rounded-lg text-sm text-slate-700 transition focus-visible:outline-2 focus-visible:outline-brand-500 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800 ${wide ? 'px-3' : 'w-10'} ${selected ? 'bg-brand-50 ring-2 ring-brand-500 dark:bg-brand-500/15' : ''}`}
       >
         {children}
-        {shortcut ? (
-          <span
-            aria-hidden
-            className="pointer-events-none absolute bottom-0.5 right-1 text-[8px] font-medium uppercase leading-none text-slate-500 pointer-coarse:hidden dark:text-slate-400"
-          >
-            {shortcut}
-          </span>
-        ) : null}
       </button>
     </Tooltip>
   );

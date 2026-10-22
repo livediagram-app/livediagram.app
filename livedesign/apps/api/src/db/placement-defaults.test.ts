@@ -32,24 +32,22 @@ describe('placement defaults store', () => {
     expect(await listPlacementDefaults(db.env, 'user_a')).toEqual([]);
   });
 
-  it('lists the defaults in key order', async () => {
-    await setPlacementDefault(db.env, 'user_a', 'mode:draw', 'f-sketch');
-    await setPlacementDefault(db.env, 'user_a', 'mode:diagram', 'f-diagram');
+  it('lists the default', async () => {
+    await setPlacementDefault(db.env, 'user_a', 'mode:pages', 'f-pages');
     expect(await listPlacementDefaults(db.env, 'user_a')).toEqual([
-      { key: 'mode:diagram', folderId: 'f-diagram' },
-      { key: 'mode:draw', folderId: 'f-sketch' },
+      { key: 'mode:pages', folderId: 'f-pages' },
     ]);
   });
 
   it("lists only the person's own defaults", async () => {
-    await setPlacementDefault(db.env, 'user_b', 'mode:draw', 'f-b');
+    await setPlacementDefault(db.env, 'user_b', 'mode:pages', 'f-b');
     expect(await listPlacementDefaults(db.env, 'user_a')).toEqual([]);
   });
 
   it('replaces the folder when a key is set again', async () => {
-    await setPlacementDefault(db.env, 'user_a', 'mode:draw', 'f-old');
-    await setPlacementDefault(db.env, 'user_a', 'mode:draw', 'f-new');
-    expect(rows()).toEqual([{ owner_id: 'user_a', default_key: 'mode:draw', folder_id: 'f-new' }]);
+    await setPlacementDefault(db.env, 'user_a', 'mode:pages', 'f-old');
+    await setPlacementDefault(db.env, 'user_a', 'mode:pages', 'f-new');
+    expect(rows()).toEqual([{ owner_id: 'user_a', default_key: 'mode:pages', folder_id: 'f-new' }]);
   });
 
   it('leaves out a stored key that is not in force', async () => {
@@ -57,41 +55,36 @@ describe('placement defaults store', () => {
       .prepare(
         'INSERT INTO placement_defaults (owner_id, default_key, folder_id, updated_at) VALUES (?, ?, ?, ?)',
       )
-      .run('user_a', 'kind:mindmap', 'f-mind', T0);
+      .run('user_a', 'template:kanban', 'f-kanban', T0);
     expect(await listPlacementDefaults(db.env, 'user_a')).toEqual([]);
   });
 
-  it('clears one key and keeps the other', async () => {
-    await setPlacementDefault(db.env, 'user_a', 'mode:draw', 'f-sketch');
-    await setPlacementDefault(db.env, 'user_a', 'mode:diagram', 'f-diagram');
-    await clearPlacementDefault(db.env, 'user_a', 'mode:draw');
-    expect(await listPlacementDefaults(db.env, 'user_a')).toEqual([
-      { key: 'mode:diagram', folderId: 'f-diagram' },
-    ]);
+  it('clears the key', async () => {
+    await setPlacementDefault(db.env, 'user_a', 'mode:pages', 'f-pages');
+    await clearPlacementDefault(db.env, 'user_a', 'mode:pages');
+    expect(await listPlacementDefaults(db.env, 'user_a')).toEqual([]);
   });
 
   it('clears a key that has no default without complaint', async () => {
-    await expect(clearPlacementDefault(db.env, 'user_a', 'mode:draw')).resolves.toBeUndefined();
+    await expect(clearPlacementDefault(db.env, 'user_a', 'mode:pages')).resolves.toBeUndefined();
   });
 });
 
 describe('placement defaults on sign-up', () => {
   it("carries a guest's defaults into the account", async () => {
-    await setPlacementDefault(db.env, 'guest-1', 'mode:draw', 'f-guest');
+    await setPlacementDefault(db.env, 'guest-1', 'mode:pages', 'f-guest');
     await migrateOwnerId(db.env, 'guest-1', 'user_a');
     expect(rows()).toEqual([
-      { owner_id: 'user_a', default_key: 'mode:draw', folder_id: 'f-guest' },
+      { owner_id: 'user_a', default_key: 'mode:pages', folder_id: 'f-guest' },
     ]);
   });
 
   it("keeps the account's own default for a key both identities set", async () => {
-    await setPlacementDefault(db.env, 'user_a', 'mode:draw', 'f-account');
-    await setPlacementDefault(db.env, 'guest-1', 'mode:draw', 'f-guest');
-    await setPlacementDefault(db.env, 'guest-1', 'mode:diagram', 'f-guest-diagram');
+    await setPlacementDefault(db.env, 'user_a', 'mode:pages', 'f-account');
+    await setPlacementDefault(db.env, 'guest-1', 'mode:pages', 'f-guest');
     await migrateOwnerId(db.env, 'guest-1', 'user_a');
     expect(rows()).toEqual([
-      { owner_id: 'user_a', default_key: 'mode:diagram', folder_id: 'f-guest-diagram' },
-      { owner_id: 'user_a', default_key: 'mode:draw', folder_id: 'f-account' },
+      { owner_id: 'user_a', default_key: 'mode:pages', folder_id: 'f-account' },
     ]);
   });
 });

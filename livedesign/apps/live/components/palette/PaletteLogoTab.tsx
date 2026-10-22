@@ -2,15 +2,15 @@
 
 // A logo page's Draw (docs/specs/007-editor/logo-pages.md "The Logo palette"), the body Pages
 // mode's Draw shows while it holds markers: the Pen, the Pencil, the Shape Pen and the Polygon, then
-// Draw mode's three markers in this person's colours and widths. A marker is picked up for one
-// stroke; pressed again while held, it opens Draw mode's own flyout for it (colour and width), whose
+// the three markers in this person's colours and widths. A marker is picked up for one
+// stroke; pressed again while held, it opens its flyout (colour and width), whose
 // changes re-arm it at once.
 import { useContext, useState } from 'react';
 import { EditorContext } from '@/app/document/[id]/EditorContext';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { PenFlyoutBody, penFlyoutLabel } from '@/components/canvas/whiteboard/dock-flyouts';
 import { WhiteboardFlyout } from '@/components/canvas/whiteboard/WhiteboardFlyout';
-import type { WhiteboardDockModel } from '@/hooks/canvas/useWhiteboard';
+import type { MarkerPensModel } from '@/hooks/canvas/useMarkerPens';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { loadWhiteboardPrefs, type WhiteboardPen } from '@/lib/whiteboard-prefs';
 import { whiteboardPenIntent } from '@/lib/whiteboard-tool';
@@ -22,7 +22,7 @@ import { PaletteToolRow, PaletteToolRows } from './PaletteToolRows';
 // The tab's own box: the markers' flyout is placed against it.
 const SCOPE = '[data-palette-logo]';
 
-/** Whether the armed tool is this marker (Draw mode's pen, picked up with its colour and width). */
+/** Whether the armed tool is this marker, picked up with its colour and width. */
 function markerArmed(pending: PendingDraw | null | undefined, pen: WhiteboardPen): boolean {
   return (
     pending?.type === 'freehand' &&
@@ -44,7 +44,7 @@ function MarkerRow({
 }: {
   def: PaletteTileDef;
   pen: WhiteboardPen;
-  model: WhiteboardDockModel;
+  model: MarkerPensModel;
   actions: PaletteTileActions;
   pendingDraw: PendingDraw | null | undefined;
   beginDraw: (intent: PendingDraw) => void;
@@ -53,9 +53,8 @@ function MarkerRow({
   const held = markerArmed(pendingDraw, pen);
   const key = `logo-marker-${pen.id}`;
   // From the model's own pen (what the row shows and the flyout edits), for one stroke.
-  const arm = (p: WhiteboardPen) =>
-    beginDraw({ ...whiteboardPenIntent(p, model.prefs.recognise), once: true });
-  const live: WhiteboardDockModel = {
+  const arm = (p: WhiteboardPen) => beginDraw({ ...whiteboardPenIntent(p), once: true });
+  const live: MarkerPensModel = {
     ...model,
     updatePen: (id, patch) => {
       model.updatePen(id, patch);
@@ -77,7 +76,6 @@ function MarkerRow({
           id={`${key}-flyout`}
           label={penFlyoutLabel(pen)}
           anchor={key}
-          placement="below"
           scope={SCOPE}
           onClose={() => setOpen(false)}
         >
@@ -88,17 +86,17 @@ function MarkerRow({
   );
 }
 
-/** A logo page's Draw marker tiles: Draw mode's markers, for one stroke each, in the live colours
- *  and widths (the dock model's; outside an editor, as this browser last set them). None while the
+/** A logo page's Draw marker tiles: the three markers, for one stroke each, in the live colours
+ *  and widths (the editor's; outside an editor, as this browser last set them). None while the
  *  category is not offered. */
 export function useLogoMarkerTiles(on: boolean): PaletteTileDef[] {
   const editor = useContext(EditorContext);
   const surface = useCanvasSurface();
   if (!on) return [];
-  const prefs = editor?.whiteboardDock.prefs ?? loadWhiteboardPrefs();
+  const prefs = editor?.markerPens.prefs ?? loadWhiteboardPrefs();
   return markerTiles(prefs, surface).map((def): PaletteTileDef =>
     def.action.type === 'marker'
-      ? { ...def, action: { ...def.action, once: true }, blurb: 'Your Draw mode marker' }
+      ? { ...def, action: { ...def.action, once: true }, blurb: 'Your marker' }
       : def,
   );
 }
@@ -113,7 +111,7 @@ export function PaletteLogoTab({
   pendingDraw: PendingDraw | null | undefined;
 }) {
   const editor = useContext(EditorContext);
-  const model = editor?.whiteboardDock;
+  const model = editor?.markerPens;
   const tools = tiles.filter((t) => t.action.type !== 'marker');
   const markers = tiles.filter((t) => t.action.type === 'marker');
   return (

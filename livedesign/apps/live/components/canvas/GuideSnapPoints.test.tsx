@@ -91,7 +91,6 @@ describe('GuideSnapPoints', () => {
         variant: 'whiteboard',
         colour: null,
         width: 4,
-        recognise: false,
       }),
     ).toBe(true);
     expect(drawsOntoGuides({ type: 'freehand', variant: 'highlighter' })).toBe(false);

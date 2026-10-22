@@ -495,8 +495,7 @@ export type TablePreset = {
   fill: string;
   stroke: string;
   text: string;
-  /** The header band. Its fill is the shared `headerFill`, since a table's
-   *  header row and a lane's title gutter are one idea (docs/specs/009-elements/lane.md). */
+  /** The header band: a table's header row, filled with the shared `headerFill`. */
   headerFill: string;
   headerText: string;
   /** Alternating body-row tint. */

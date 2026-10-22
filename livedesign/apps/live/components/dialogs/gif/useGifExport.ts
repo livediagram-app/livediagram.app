@@ -225,7 +225,7 @@ export function useGifExport({
 // The tab's faces: the GIF's fonts travel in it.
 function gifFontIds(tab: Tab): string[] {
   const els = visibleLayerElements(tab.elements, tab.layers);
-  return [...new Set(exportFontIds(els, tab.font, undefined, tab.finish))];
+  return [...new Set(exportFontIds(els, tab.font, tab.finish))];
 }
 
 const errorCode = (err: unknown): GifExportErrorCode =>

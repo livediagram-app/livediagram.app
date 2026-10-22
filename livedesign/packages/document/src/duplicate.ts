@@ -4,12 +4,9 @@
 // factories; re-exported from ./index so the public surface is
 // unchanged.
 
-import { copiedSheetId, relinkCopiedCharts } from './chart-source';
 import {
   isBoxed,
-  newPlanSheetId,
   type ArrowElement,
-  type PlanSheetRef,
   type BoxedElement,
   type Element,
   type ElementId,
@@ -22,26 +19,16 @@ import {
 // Editor's copy of a Participant's sticky is not that Participant's to delete. A Participant's own copy is stamped
 // afresh by the room.
 // What belongs to the original rather than to the shape, so no copy carries it: a comment thread is a conversation
-// about that element, `responses` were cast in a session (docs/specs/012-collaboration/participant-responses.md),
-// and an assigned action is work handed to a person under its own id (docs/specs/012-collaboration/assigned-actions.md
+// about that element, and an assigned action is work handed to a person under its own id (docs/specs/012-collaboration/assigned-actions.md
 // "A copy doesn't carry the action"): a duplicate under the same id is a second action nobody assigned, which the
-// timeline never sees added. A Sheet's cell threads go the same way (docs/specs/029-sheets/sheet.md "Cell comments").
+// timeline never sees added. A Sheet's cell threads go the same way.
 // The clipboard strips the same list on the way out (stripIdentity in apps/live).
-export const ORIGINAL_ONLY_FIELDS = [
-  'commentThread',
-  'cellComments',
-  'responses',
-  'action',
-  'actions',
-] as const;
+export const ORIGINAL_ONLY_FIELDS = ['commentThread', 'action', 'actions'] as const;
 
 export function freshCopyFields(el: Element): {
   rotation?: number;
-  planSheet?: PlanSheetRef;
   addedBy?: undefined;
   commentThread?: undefined;
-  cellComments?: undefined;
-  responses?: undefined;
   action?: undefined;
   actions?: undefined;
 } {
@@ -50,17 +37,6 @@ export function freshCopyFields(el: Element): {
   } = {};
   if ('addedBy' in el) fresh.addedBy = undefined;
   for (const field of ORIGINAL_ONLY_FIELDS) if (field in el) fresh[field] = undefined;
-  // A copied Sheet frames a new sheet, made from the original's when it is first drawn
-  // (docs/specs/029-sheets/sheet.md "Copying a Sheet element"). A copy of a copy not yet made copies the original.
-  // A template's Sheet not yet made (sheet-store.md "Template starts") has nothing to copy yet: the copy is made from
-  // the same start.
-  if (el.type === 'shape' && el.shape === 'plan-sheet' && el.planSheet?.start)
-    return { ...fresh, planSheet: { sheetId: newPlanSheetId(), start: el.planSheet.start } };
-  if (el.type === 'shape' && el.shape === 'plan-sheet' && el.planSheet?.sheetId)
-    return {
-      ...fresh,
-      planSheet: { sheetId: newPlanSheetId(), copyOf: el.planSheet.copyOf ?? el.planSheet.sheetId },
-    };
   return fresh;
 }
 
@@ -78,20 +54,15 @@ export function duplicateElements(
   dy: number,
 ): { newElements: Element[]; idMap: Map<ElementId, ElementId> } {
   const idMap = new Map<ElementId, ElementId>();
-  let newBoxed: BoxedElement[] = [];
-  const sheetIds = new Map<string, string>();
+  const newBoxed: BoxedElement[] = [];
 
   for (const el of elements) {
     if (!ids.has(el.id) || !isBoxed(el)) continue;
     const newId = crypto.randomUUID();
     idMap.set(el.id, newId);
     const copy = { ...el, id: newId, x: el.x + dx, y: el.y + dy, ...freshCopyFields(el) };
-    const sheet = copiedSheetId(el, copy);
-    if (sheet) sheetIds.set(sheet[0], sheet[1]);
     newBoxed.push(copy);
   }
-  // A chart copied with its Sheet reads the Sheet's copy (docs/specs/029-sheets/sheet.md "Charts").
-  newBoxed = relinkCopiedCharts(newBoxed, sheetIds);
 
   const existingIds = new Set(elements.map((e) => e.id));
 
@@ -178,46 +149,14 @@ export function duplicateElements(
   }
 
   // Element-to-element references on the BOXED copies, rewired last because
-  // they need the finished idMap (a mind child and its parent are both in it,
-  // and a portal's partner may be an arrow's id).
+  // they need the finished idMap.
   //
-  // These were missed for a long time, and the failure was quiet in the way
-  // duplicate bugs usually are: the copy looked right and behaved wrong.
-  // Duplicating a mind-map subtree gave you nodes whose `mindParentId` still
-  // named the ORIGINAL parent, so the copy re-parented itself onto the tree it
-  // came from; duplicating a linked pair of portals gave you two portals that
-  // both stepped through to the originals. Paste made it worse, because a
-  // cross-tab paste points those ids at elements that are not in the tab at
-  // all.
-  //
-  // A reference to something OUTSIDE the copied set is left alone: copying one
-  // child of a mind map and pasting it back should still hang off that parent.
-  // Only references whose target was itself copied follow the copy.
-  // A copied chart is a new chart (docs/specs/009-elements/flowchart.md, blueprint D172): each source
-  // chart maps to ONE fresh id, the copy of its first step when that was copied, else the first copy's
-  // id. Leaving the old id would graft the copies onto the original, unconnected, and its next layout
-  // would rake them into a column beside it.
-  const chartIds = new Map<string, string>();
-  for (const el of newBoxed) {
-    if (el.type !== 'shape' || el.flowchartId === undefined || chartIds.has(el.flowchartId))
-      continue;
-    chartIds.set(el.flowchartId, idMap.get(el.flowchartId) ?? el.id);
-  }
+  // A reference to something OUTSIDE the copied set is left alone. Only
+  // references whose target was itself copied follow the copy.
   const rewired = newBoxed.map((el) => {
     let next = { ...el };
-    // mindParentId (docs/specs/009-elements/mind-node.md) and portalTarget (docs/specs/009-elements/portal-element.md) live on the shape
-    // element only, so narrow before reaching for them.
     if (next.type === 'shape') {
       const shape = { ...next };
-      if (shape.mindParentId !== undefined) {
-        const mapped = idMap.get(shape.mindParentId);
-        if (mapped !== undefined) shape.mindParentId = mapped;
-      }
-      if (shape.portalTarget !== undefined) {
-        const mapped = idMap.get(shape.portalTarget);
-        if (mapped !== undefined) shape.portalTarget = mapped;
-      }
-      if (shape.flowchartId !== undefined) shape.flowchartId = chartIds.get(shape.flowchartId)!;
       // An attached badge or step (docs/specs/009-elements/badge.md) follows its host's copy; copied alone it lands
       // detached.
       if (shape.attachedTo !== undefined) {
@@ -227,13 +166,6 @@ export function duplicateElements(
           delete shape.attachedTo;
           delete shape.attachAt;
         }
-      }
-      // The lane follows the copy when it was copied too; otherwise the copy is in no lane of its
-      // new chart.
-      if (shape.flowLaneId !== undefined) {
-        const lane = idMap.get(shape.flowLaneId);
-        if (lane !== undefined) shape.flowLaneId = lane;
-        else delete shape.flowLaneId;
       }
       next = shape;
     }
@@ -252,8 +184,7 @@ export function duplicateElements(
 
 // Re-point element-to-element references after a caller has renamed some
 // element ids (old → new in `idMap`): arrow endpoints pinned to an element or
-// hung off another arrow (docs/specs/008-canvas/arrow-to-arrow.md), a mind-map node's parent (docs/specs/009-elements/mind-node.md) and a
-// portal's partner (docs/specs/009-elements/portal-element.md). A reference whose target isn't in the map is
+// hung off another arrow (docs/specs/008-canvas/arrow-to-arrow.md). A reference whose target isn't in the map is
 // left alone. Element links are deliberately NOT touched: a link names its
 // tab as well as its element, and that is still the source tab.
 //
@@ -284,20 +215,7 @@ export function remapElementRefs<E extends Element>(
       const to = endpoint(el.to);
       return from === el.from && to === el.to ? el : { ...el, from, to };
     }
-    if (el.type !== 'shape') return el;
-    const parent = el.mindParentId !== undefined ? idMap.get(el.mindParentId) : undefined;
-    const portal = el.portalTarget !== undefined ? idMap.get(el.portalTarget) : undefined;
-    // A flowchart's id is its first step's, so it renames with it; so does a step's lane.
-    const chart = el.flowchartId !== undefined ? idMap.get(el.flowchartId) : undefined;
-    const lane = el.flowLaneId !== undefined ? idMap.get(el.flowLaneId) : undefined;
-    if (!parent && !portal && !chart && !lane) return el;
-    return {
-      ...el,
-      ...(parent ? { mindParentId: parent } : {}),
-      ...(portal ? { portalTarget: portal } : {}),
-      ...(chart ? { flowchartId: chart } : {}),
-      ...(lane ? { flowLaneId: lane } : {}),
-    };
+    return el;
   });
 }
 

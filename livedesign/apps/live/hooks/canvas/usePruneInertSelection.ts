@@ -9,7 +9,7 @@ import { useLayoutEffect } from 'react';
 import type { SelectionStore } from '@/lib/selection-store';
 
 // `kept`: inert ids that are selected another way and stay selected (a chart its Sheet draws, selected there to open
-// its element menu: docs/specs/029-sheets/sheet.md "Charts").
+// its element menu).
 export function usePruneInertSelection(
   inertIds: ReadonlySet<string>,
   selection: SelectionStore,

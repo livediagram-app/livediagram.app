@@ -2,10 +2,18 @@
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { planPalette } from '@livedesign/document';
 import { TourPopover } from './TourPopover';
+import type { TourPalette } from './tour-colours';
 
-// docs/specs/007-editor/editor-tour.md: a step card leaves focus on the control it points at.
+const PALETTE: TourPalette = {
+  card: '#ffffff',
+  border: '#e2e8f0',
+  text: '#0f172a',
+  muted: '#5d6d83',
+  focus: '#2563eb',
+};
+
+// docs/specs/007-editor/pages-tour.md: a step card leaves focus on the control it points at.
 const props = {
   stepNumber: 0,
   stepCount: 5,
@@ -13,7 +21,7 @@ const props = {
   title: 'Getting started with Diagrams?',
   body: 'Want a quick tour?',
   targetRect: null,
-  palette: planPalette('light'),
+  palette: PALETTE,
   onNext: () => undefined,
   onSkip: () => undefined,
 };
@@ -35,7 +43,7 @@ describe('TourPopover focus', () => {
   });
 });
 
-// docs/specs/007-editor/editor-tour.md "Keyboard": Escape skips, the arrows step.
+// The card's keys (docs/specs/007-editor/pages-tour.md): Escape skips, the arrows step.
 describe('TourPopover keys', () => {
   afterEach(cleanup);
 

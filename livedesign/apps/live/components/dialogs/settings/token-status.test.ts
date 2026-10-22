@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { DAY_MS } from '@livedesign/items';
 import {
+  DAY_MS,
   expiryFrom,
   lifetimeElapsed,
   relativeTime,

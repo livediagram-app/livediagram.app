@@ -8,8 +8,6 @@ export type CanvasTool =
   | 'select'
   | 'laser'
   | 'spotlight'
-  // Avatar mode (docs/specs/008-canvas/avatar-mode.md): a walking pixel character, read-only canvas.
-  | 'avatar'
   | 'eraser'
   | 'format'
   | 'isometric'
@@ -25,10 +23,6 @@ export type CanvasTool =
 export type PaletteProps = {
   canvasTool: CanvasTool;
   onSetCanvasTool: (tool: CanvasTool) => void;
-  // Leaves Avatar mode (docs/specs/008-canvas/avatar-mode.md) for whichever tool preceded it. Fired when
-  // the user picks any palette tile while walking, so the add lands instead of
-  // being swallowed by the read-only canvas. Omit outside the editor.
-  onExitAvatarMode?: () => void;
   // Enter zen mode (docs/specs/007-editor/zen-mode.md), offered as a Zen entry in the canvas-tool
   // dropdown under Isometric. An action, not a tool: firing it leaves the
   // current tool selected. Omit to hide the entry; exit stays on the zoom
@@ -37,16 +31,11 @@ export type PaletteProps = {
   // True when the active tab has no elements. Disables the canvas tools that
   // need existing content (Eraser / Format / Laser / Spotlight / Isometric).
   canvasEmpty?: boolean;
-  // `opts` carries the creation-time choice for the kinds that have one
-  // (docs/specs/012-collaboration/session-button.md session tools, docs/specs/009-elements/reaction-pad.md reactions), so a tile per choice places
+  // `opts` carries the creation-time choice for the kinds that have one, so a tile per choice places
   // that choice rather than the factory default.
   onAddShape: (
     kind: ShapeKind,
     opts?: {
-      session?: import('@livedesign/document').SessionTool;
-      reaction?: import('@livedesign/document').Reaction;
-      mode?: import('@livedesign/document').SelectionMode;
-      estimateScale?: import('@livedesign/document').EstimateScale;
       plan?: string;
       variant?: string;
     },
@@ -81,7 +70,6 @@ export type PaletteProps = {
   onAddCallout: () => void;
   onAddStatRow: () => void;
   onAddProcess: () => void;
-  onAddFlowchart: () => void;
   onAddAvatar: () => void;
   // Spawn an image placeholder + open the picker. Optional so
   // deployments without R2 (or view-role visitors) can omit it; the
@@ -101,7 +89,7 @@ export type PaletteProps = {
   // Highlighter (docs/specs/008-canvas/highlighter.md): the pencil gesture with the marker
   // variant. Same one-shot arm semantics as onBeginFreehand.
   onBeginHighlighter: () => void;
-  // Picks up one of Draw mode's markers outside Draw mode (the Toolbar strip's Search,
+  // Picks up one of the markers (a logo page's Draw, or the Toolbar strip's Search,
   // docs/specs/007-editor/toolbar-layout.md "Search: every element type").
   // `once`: picked up for one stroke (a logo page's palette), else held until put down.
   onBeginMarker: (penId: import('@/lib/whiteboard-prefs').WhiteboardPenId, once?: boolean) => void;

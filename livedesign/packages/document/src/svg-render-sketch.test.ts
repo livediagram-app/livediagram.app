@@ -140,13 +140,13 @@ describe('a face\'s words under Sketch (docs/specs/008-canvas/finish.md "Letteri
   });
 
   it('gives words that name no face the element’s, through its group', () => {
-    for (const kind of ['idea-box', 'quiz', 'mode-button', 'picker', 'reaction-pad']) {
+    for (const kind of ['stat-row', 'card']) {
       expect(words(kind), kind).toMatch(/<g font-family="[^"]*Caveat/);
     }
   });
 
   it('leaves a Flexible tab with no font to the default face', () => {
-    const svg = renderElementsToSvg(tabOf([{ ...createShape('idea-box', 0, 0), id: 'x' }]));
+    const svg = renderElementsToSvg(tabOf([{ ...createShape('stat-row', 0, 0), id: 'x' }]));
     expect(svg).not.toContain('Caveat');
   });
 });

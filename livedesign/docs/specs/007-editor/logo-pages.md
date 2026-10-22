@@ -1,7 +1,6 @@
 # Logo pages
 
-A **logo page** is the fourth kind of page in Pages mode ([Pages](pages-mode.md)
-"Page kinds"): a square artboard to design a logo on. It is laid out like an infographic page,
+A **logo page** is one of the kinds of page ([Pages](pages-mode.md) "Page kinds"): a square artboard to design a logo on. It is laid out like an infographic page,
 with ordinary elements, and adds tools a logo needs and an infographic does not: **construction
 guides** to build a balanced mark, **mirror** drawing for symmetry, **wordmark** type (tracking,
 weight, case, text on an arc), **combining** shapes into one mark, and a **logo
@@ -26,9 +25,9 @@ of infographic pages applies to a logo page except where this spec says otherwis
 
 ## A logo page
 
-- **Adding one**: the **Add a page** popover and the first page's choice offer a second card,
-  **Logo**: "A square artboard for a logo, with guides and drawing tools." The cards sit in a two-column
-  grid (Infographic / Logo, then Wireframe across both columns). A new logo page is the artboard on plain paper.
+- **Adding one**: the **Add a Page** list offers a **Logo** row ("A square artboard for a mark."), and the first
+  page's choice a **Logo** card ("A square artboard for a logo, with guides and drawing tools."). A new logo page
+  is the artboard on plain paper.
 - **Size**: the artboard is the `logo` size, **1024 x 1024**, labelled `1024 x 1024`. It offers no
   other size and no orientation; a stored logo page in any other size is read as the artboard.
   The page label reads `<name or Page n> · 1024 x 1024 · Logo`.
@@ -45,25 +44,25 @@ of infographic pages applies to a logo page except where this spec says otherwis
 
 ## The Logo palette
 
-In Pages mode, while the palette's kind is **Logo** ([Pages mode](pages-mode.md) "The palette's
+While the palette's kind is **Logo** ([Pages](pages-mode.md) "The palette's
 kind"; a logo page's own), the palette is made for drawing a mark. There is no Logo category: its
 tools are where they belong.
 
 - **Draw**, which the palette opens on: **Pens** (the **Pen**, the Path tool, click for corners
-  and drag for curves, the same tool Draw mode's dock holds; the **Freehand Pencil**; the **Shape
-  Pen**), **Outlines** (the **Polygon**) and **Markers** (Draw mode's three, **Marker 1**,
-  **Marker 2**, **Marker 3**, each in the colour and width the person gave it).
+  and drag for curves, [Path tool](../023-draw-mode/path-tool.md); the **Freehand Pencil**; the **Shape
+  Pen**), **Outlines** (the **Polygon**) and **Markers** (three, **Marker 1**, **Marker 2**, **Marker 3**,
+  each in the colour and width the person gave it, [Drawing tools](../023-draw-mode/drawing-tools.md)).
 - **Shapes**, every one; **Write**, **Text** for a wordmark and a **Sticky Note** for a comment on
-  the design; **Icons**, a glyph to start from; **Library**; and **Media**, an **Image** to trace
+  the design; **Icons**, a glyph to start from; and **Media**, an **Image** to trace
   or set the mark beside.
 - No charts, blocks, device frames, stickers or embeds: a logo has no use for them.
 
 Each tool puts itself down after one use and selects what it drew, as the pencil does, a marker
-included (a marker picked up
-in Draw mode, or from the Toolbar strip's Search elsewhere, stays in hand as before). Off a
-whiteboard a marker lines up as the pencil does: its first point snaps to nearby alignments (the
-dot shows before the press) and its stroke shows alignment guides as it grows. In the palette a
-held marker pressed again opens Draw mode's own flyout for it below its tile (colour and width); its changes are the marker's everywhere and re-arm it at once.
+included (a marker picked up from the Toolbar strip's Search stays in hand as before). A marker
+lines up as the pencil does: its first point snaps to nearby alignments (the dot shows before the
+press) and its stroke shows alignment guides as it grows. In the palette a held marker pressed
+again opens its flyout below its tile (colour and width); its changes are the marker's everywhere
+and re-arm it at once.
 
 The palette follows the page someone moves to: its kind is Logo on a logo page, opening on **Draw**, and **Popular** on any other.
 They move to a page by going to it with its label or the page navigator, by a view that comes to rest on it, or by pressing on a page
@@ -78,8 +77,7 @@ nothing.
 A logo page's title bar holds, before its cog and each the cog's size with a tooltip, for someone
 who may edit:
 
-- **Tidy**, while the selection holds a hand-drawn line: the mind map's tidy wand ("Tidy Up"
-  below).
+- **Tidy**, while the selection holds a hand-drawn line: a tidy wand ("Tidy" below).
 - **Mirror**, pressed while Mirror While Drawing is on, its icon showing the page's axis, opening
   a popover anchored to it: a **Mirror While Drawing** switch for this page at the top, then
   **Axis** tiles (**Vertical**, **Horizontal**, **Both**, **Radial**), **Copies** (**3**, **4**,
@@ -103,13 +101,11 @@ cog).
 
 - **Background**: the **Background** swatches, no Pattern. It has no Size or Orientation to choose, so no
   **Page** tab.
-- **Layouts**: the **logo layouts** (below), in the same browser as the infographic layouts
-  (the layout gallery: search, Surprise Me, category chips and large tiles, placed at once with the content carried over, and hover previews). Each
+- **Layouts**: the **logo layouts** (below), in the layout gallery ( search, Surprise Me, category chips and large tiles, placed at once with the content carried over, and hover previews). Each
   tile is the layout exactly as it lands: built for this page and drawn by the export renderer in
   the tab's theme and font, on the page's background, its words and icon included (a wireframe
   outside an editor). An empty logo page shows them inside itself (**Start From a Layout**) as an empty
-  infographic page does, with **Start From Scratch** at the card's foot, in the look of Plan's **Add New
-  Card Type** (a full-width dashed row with a plus, quiet until hovered): it puts the card away for good on that page (the page is marked started blank, for everyone, in the same undoable edit), leaving the artboard to start from nothing. Hide puts it away until the tab is next opened. Either way the page's layouts stay in its panel's Layouts tab.
+  infographic page does, with **Start From Scratch** at the card's foot, a full-width dashed row with a plus, quiet until hovered: it puts the card away for good on that page (the page is marked started blank, for everyone, in the same undoable edit), leaving the artboard to start from nothing. Hide puts it away until the tab is next opened. Either way the page's layouts stay in its panel's Layouts tab.
 - The cog opens the panel on Background (a logo page has no Page tab); the layout invite on Layouts.
 
 ### Show Me
@@ -195,7 +191,7 @@ page's Guides popover and in Settings, under Editor, then Pages.
 The parts, as the tiles name them: **Centre Lines**, **Diagonals**, **Safe Area**, **Circles** (the
 keyline and inner circles), **Square** and **Grid**.
 
-Guides are a view: never stored, never exported, never in a slide or a preview, and not shown in
+Guides are a view: never stored, never exported, never in a preview, and not shown in
 zen, presenting or the isometric view, nor to a viewer.
 
 **Snapping**: on a logo page an element also snaps (as it snaps to every page's edges, centre lines
@@ -251,8 +247,8 @@ Layout card is open. In screen px at any zoom; they take no presses.
     so it stays selected. Where they cannot be merged (the combining engine has not loaded, a shape
     has no outline, or the result is too detailed), the twins are added as their own elements.
   - A marker's stroke merges as a line, as a pencil stroke does: one path of open lines in the
-    marker's colour (Ink for one with none) and the thinnest stroke width at least as wide, so Tidy
-    Up can take it. (Combine still unites marker strokes as areas, filled in their pen colour.)
+    marker's colour (Ink for one with none) and the thinnest stroke width at least as wide, so
+    Tidy can take it. (Combine still unites marker strokes as areas, filled in their pen colour.)
   - The combining engine starts loading when Mirror is turned on (or Merge Into One chosen), so
     the merge is ready on the first release.
   - A twin that would land on the drawing itself (its centre moved by no more than 2% of the
@@ -267,7 +263,7 @@ Layout card is open. In screen px at any zoom; they take no presses.
 ## Wordmark type
 
 A text element carries four optional fields for wordmark type. They render wherever the text is
-(on any page, any mode, every export); the controls for them appear in a **Wordmark** section of a
+(on any page, every export); the controls for them appear in a **Wordmark** section of a
 text element's **Text** options (its element menu) while its centre is on a logo page. A value out of
 its range is refused by the document's validation, as any malformed field is.
 
@@ -289,12 +285,12 @@ its range is refused by the document's validation, as any malformed field is.
 
 ## Combine
 
-- **Where**: in Pages mode, when the selection is two or more **combinable** elements on the
+- **Where**: when the selection is two or more **combinable** elements on the
   same logo page: the multi-selection toolbar shows a **Combine** button opening the four
   operations, the multi-selection context menu has a **Combine** section with them, and the command
   palette offers each (`Unite Shapes`, `Subtract Shapes`, `Intersect Shapes`, `Exclude Shapes`).
 - **Combinable**: a shape whose kind has an outline (not a data shape, chart, or self-painting
-  widget), a closed path (with its contours), a closed freehand stroke and a whiteboard pen stroke
+  widget), a closed path (with its contours), a closed freehand stroke and a marker stroke
   (by its outline). A selection holding anything else offers no Combine.
 - **Operations**, over the elements in their stacking order:
   - **Unite**: everything any of them covers.
@@ -303,7 +299,7 @@ its range is refused by the document's validation, as any malformed field is.
   - **Exclude**: what an odd number of them cover.
 - **The result** is one **path** in the bottom-most element's place in the stacking order and its
   layer, with its fill, stroke, stroke width and style and opacity (as stored: a colour left to the
-  theme stays the theme's). A pen stroke at the bottom gives its colour as the fill, with no line.
+  theme stays the theme's). A marker stroke at the bottom gives its colour as the fill, with no line.
   Shapes combine by their filled area whether or not they show a fill (an outlined ring combines as
   its disc). Rotations are applied to the outlines; the result is unrotated. Its
   contours are closed and filled even-odd, so holes show through. The inputs are removed (with the
@@ -381,6 +377,6 @@ clean, as one edit:
 - Editing a combined path's points one by one; a mirror axis or centre anywhere but the artboard's
   centre lines and centre; Mirror Copy across any line but the vertical centre line;
   linked twins that follow each other's edits.
-- Combining on pages other than logo pages, or outside Pages mode.
+- Combining on pages other than logo pages.
 - A brand palette or colour generator; the tab's theme and the colour pickers do this job.
 - An SVG favicon or a web manifest in the kit.

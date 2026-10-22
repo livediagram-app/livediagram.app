@@ -13,13 +13,7 @@ import {
   type EditOperation,
   type ReplaceBody,
 } from '@livedesign/edit-operations';
-import {
-  isFinish,
-  isRecord,
-  ELEMENT_FINGERPRINT_LENGTH,
-  type Finish,
-  type GraphInput,
-} from '@livedesign/document';
+import { isFinish, isRecord, ELEMENT_FINGERPRINT_LENGTH, type Finish } from '@livedesign/document';
 
 // A changeset request as the route receives it (docs/specs/024-agents/blueprints/agent-changesets.md
 // "Interfaces and contracts"), checked member by member before anything is read. Pure.
@@ -32,8 +26,6 @@ export type ChangesetBody =
       theme?: string;
       finish?: Finish;
       name?: string;
-      // A new tab of elements made a Board or Sheet tab (docs/specs/030-forms/forms.md "Agents").
-      tabKind?: 'board' | 'sheet';
     };
 
 export type ParsedChangeset = {
@@ -47,7 +39,7 @@ export type Refusal = { status: number; body: Record<string, unknown> };
 
 export type ParseResult = { ok: true; value: ParsedChangeset } | { ok: false; refusal: Refusal };
 
-const REPLACE_SOURCES = ['graph', 'mermaid', 'template', 'dashboard', 'form', 'elements'] as const;
+const REPLACE_SOURCES = ['template', 'elements'] as const;
 const FINGERPRINT = new RegExp(`^[0-9a-f]{${ELEMENT_FINGERPRINT_LENGTH}}$`);
 
 const refuse = (status: number, body: Record<string, unknown>): ParseResult => ({
@@ -153,10 +145,7 @@ function parseReplace(raw: unknown): ChangesetBody | { refusal: Refusal } {
   });
   if (!isRecord(raw)) return bad('"replace" must be an object');
   const sources = REPLACE_SOURCES.filter((s) => raw[s] !== undefined);
-  if (sources.length !== 1)
-    return bad(
-      '"replace" takes exactly one of graph, mermaid, template, dashboard, form or elements',
-    );
+  if (sources.length !== 1) return bad('"replace" takes exactly one of template or elements');
   if (raw.layout !== undefined && raw.layout !== 'auto' && raw.layout !== 'preserve') {
     return bad('"replace.layout" is "auto" or "preserve"');
   }
@@ -166,9 +155,6 @@ function parseReplace(raw: unknown): ChangesetBody | { refusal: Refusal } {
     return bad('"replace.finish" is "flexible", "professional", "sketch" or "marker"');
   if (raw.name !== undefined && typeof raw.name !== 'string')
     return bad('"replace.name" must be a string');
-  const kind = raw.kind === 'board' || raw.kind === 'sheet' ? raw.kind : undefined;
-  if (raw.kind !== undefined && !(kind && sources[0] === 'elements'))
-    return bad('"replace.kind" is "board" or "sheet", with elements');
   const layout = raw.layout === 'auto' || raw.layout === 'preserve' ? raw.layout : undefined;
   // The engine checks each source's shape itself (applyReplace), naming what is wrong.
   const replace = replaceBodyOf(sources[0]!, raw, layout);
@@ -179,7 +165,6 @@ function parseReplace(raw: unknown): ChangesetBody | { refusal: Refusal } {
     ...(typeof raw.theme === 'string' ? { theme: raw.theme } : {}),
     ...(isFinish(raw.finish) ? { finish: raw.finish } : {}),
     ...(typeof raw.name === 'string' ? { name: raw.name } : {}),
-    ...(kind ? { tabKind: kind } : {}),
   };
 }
 
@@ -189,18 +174,8 @@ function replaceBodyOf(
   layout: 'auto' | 'preserve' | undefined,
 ): ReplaceBody | null {
   switch (source) {
-    case 'graph':
-      return isRecord(raw.graph) ? { graph: raw.graph as GraphInput } : null;
-    case 'mermaid':
-      return typeof raw.mermaid === 'string' ? { mermaid: raw.mermaid } : null;
     case 'template':
       return typeof raw.template === 'string' ? { template: raw.template } : null;
-    // Checked whole by the engine (dashboard-body.ts), which names each problem.
-    case 'dashboard':
-      return isRecord(raw.dashboard) ? { dashboard: raw.dashboard } : null;
-    // Read whole by the engine (readForm), as the editor reads a stored form.
-    case 'form':
-      return isRecord(raw.form) ? { form: raw.form } : null;
     case 'elements':
       return Array.isArray(raw.elements)
         ? { elements: raw.elements, ...(layout ? { layout } : {}) }

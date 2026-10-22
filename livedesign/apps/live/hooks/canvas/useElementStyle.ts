@@ -18,7 +18,6 @@
 // Keeping that policy in one file makes it auditable.
 
 import { useSankeySetters } from '@/hooks/canvas/useSankeySetters';
-import { useSequenceSetters } from '@/hooks/canvas/useSequenceSetters';
 import type { Selection } from '@/lib/selection-store';
 import {
   bringElementsToFrontLayer,
@@ -77,8 +76,6 @@ type EditorElementStyleDeps = {
   // single drag). Keyed by field name.
   tickTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
   checkpointBurst: (key: string) => void;
-  // An in-page notification (the editor's toast), for actions that say what they did.
-  notify: (tone: 'success' | 'info', message: string) => void;
 };
 
 export function useElementStyle(deps: EditorElementStyleDeps) {
@@ -93,7 +90,6 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     commitActiveTab,
     tickTabs,
     checkpointBurst,
-    notify,
   } = deps;
 
   const { setArrowFieldSelected, ...arrowStyle } = useArrowStyleSetters({
@@ -105,7 +101,6 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     currentSelectionIds,
     commit,
     elements: () => activeTab.elements,
-    notify,
   });
 
   const shapeStyle = useShapeStyleSetters({
@@ -117,8 +112,6 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
 
   // The Sankey diagram's writes (docs/specs/009-elements/sankey.md), kept together as one object.
   const sankey = useSankeySetters({ currentSelectionIds, commit });
-  // The sequence diagram dialog's writes (docs/specs/009-elements/sequence-diagram.md).
-  const sequence = useSequenceSetters({ commit });
 
   const textStyle = useTextStyleSetters({
     currentSelectionIds,
@@ -294,7 +287,6 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     ...textStyle,
     ...colorStyle,
     sankey,
-    sequence,
     toggleLockSelected,
     toggleAspectLockSelected,
     bringSelectedToFront,

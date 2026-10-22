@@ -33,10 +33,10 @@ export type FaqCategory = {
 const ICON = 18;
 // Written out rather than read from @livedesign/templates: this module ships in the FAQ's client bundle, and the
 // catalogue is ~15 KB for one number. faq-content.test.tsx pins it to TEMPLATES.length.
-export const TEMPLATE_COUNT = 125;
+export const TEMPLATE_COUNT = 14;
 // The template categories, pinned to TEMPLATE_CATEGORIES.length by faq-content.test.tsx the same way.
-export const TEMPLATE_CATEGORY_COUNT = 14;
-// Pages mode's logo layouts, pinned the same way.
+export const TEMPLATE_CATEGORY_COUNT = 2;
+// The logo layouts, pinned the same way.
 export const LOGO_LAYOUT_COUNT = 25;
 
 export const FAQ_CATEGORIES: FaqCategory[] = [
@@ -48,38 +48,37 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'What is livedesign?',
-        a: 'A free, real-time canvas for diagrams, whiteboards, illustrations and plans. Every document is a stack of tabs, and each tab can be worked on in five modes: Diagram for shapes and arrows, Draw for freehand whiteboarding, Workshop for running a session with your team, Pages for slides, articles, posters and logos, and Plan for boards of cards, spreadsheets and forms. Your team can join any of them live.',
+        a: 'A free, real-time editor for designing on pages: logos on a square artboard and wireframes framed by their device, presented as a deck or exported as PDF, PNG or SVG. Every document is a stack of tabs, each holding its pages, and your team can work on any of them with you live.',
       },
       {
         q: 'Do I need an account to use livedesign?',
         a: (
           <>
-            No. Open the editor and start drawing straight away, with no sign-up. Your work saves in
-            your browser as you go, and pressing Share puts it online for others to join. Signing in
+            No. Open the editor and start straight away, with no sign-up. Your work saves in your
+            browser as you go, and pressing Share puts it online for others to join. Signing in
             (also free) keeps your documents with you across devices and unlocks teams, API tokens
             and the AI connection. See{' '}
             <a href="/help/getting-started/guest-vs-account/">guest vs account</a>.
           </>
         ),
         aText:
-          'No. Open the editor and start drawing straight away, with no sign-up. Your work saves in your browser as you go, and pressing Share puts it online for others to join. Signing in (also free) keeps your documents with you across devices and unlocks teams, API tokens and the AI connection. See guest vs account.',
+          'No. Open the editor and start straight away, with no sign-up. Your work saves in your browser as you go, and pressing Share puts it online for others to join. Signing in (also free) keeps your documents with you across devices and unlocks teams, API tokens and the AI connection. See guest vs account.',
       },
       {
         q: 'How do I start my first document?',
-        a: `Press Start drawing and choose what you are making: Diagram, Draw, Workshop, Pages or Plan. The document opens straight away on that mode's start, where you begin from a blank canvas or one of ${TEMPLATE_COUNT} templates, and a short tour offers to show you round.`,
+        a: `Press Start and choose what you are making: a logo or a wireframe. Begin from a blank page or one of ${TEMPLATE_COUNT} templates, and a short tour offers to show you round.`,
       },
       {
         q: 'Does it work on my phone or tablet?',
         a: (
           <>
             It runs in any modern browser, with nothing to install. A laptop, desktop or tablet
-            gives you the full editor, and a tablet with a pen is lovely in Draw mode. Small phone
-            screens are best for viewing and light edits. See{' '}
-            <a href="/help/supported-devices/">supported devices</a>.
+            gives you the full editor. Small phone screens are best for reading, presenting and
+            light edits. See <a href="/help/supported-devices/">supported devices</a>.
           </>
         ),
         aText:
-          'It runs in any modern browser, with nothing to install. A laptop, desktop or tablet gives you the full editor, and a tablet with a pen is lovely in Draw mode. Small phone screens are best for viewing and light edits. See supported devices.',
+          'It runs in any modern browser, with nothing to install. A laptop, desktop or tablet gives you the full editor. Small phone screens are best for reading, presenting and light edits. See supported devices.',
       },
       {
         q: 'Are there keyboard shortcuts?',
@@ -152,66 +151,58 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
   {
     id: 'creating',
     title: 'Creating',
-    blurb: 'Shapes, templates, themes and modes.',
+    blurb: 'Logos, wireframes and presenting them.',
     icon: lucideGlyph(lucideShapes, ICON),
     items: [
       {
         q: 'What can I make with it?',
-        a: 'Flowcharts, mind maps, org charts, retrospectives in five formats, Lean Coffee and town hall Q&A boards, kanban and Plan boards, spreadsheets, roadmaps, story maps, SWOT grids, Business Model Canvases, timelines, Gantt charts, funnels, flywheels, infographics, posters, logos, tables, pie, bar and line charts, UML class, sequence and state diagrams, system architecture, incident postmortems, risk matrices, stakeholder maps, user personas, meeting agendas, UI wireframes, Sankey diagrams, forms and surveys, slide decks, articles and a to-scale floor plan.',
+        a: 'Logos, wordmarks and brand marks, and wireframes for phone, tablet, watch and web apps and websites, each framed by its device. Pages hold shapes, text, pictures, icons, tables and charts, and every page presents as a slide.',
       },
       {
         q: 'How many templates and themes are there?',
-        a: `${TEMPLATE_COUNT} starter templates across ${TEMPLATE_CATEGORY_COUNT} categories, and twenty-four themes that recolour every shape and arrow in one click, including dark and multi-colour schemes. You can also build and save a colour scheme of your own.`,
+        a: `${TEMPLATE_COUNT} starter templates across ${TEMPLATE_CATEGORY_COUNT} categories, and twenty-four themes that recolour every page in one click, including dark and multi-colour schemes. On top of the templates, a logo page starts from one of ${LOGO_LAYOUT_COUNT} logo layouts. You can also build and save a colour scheme of your own.`,
       },
       {
-        q: 'Can I make a diagram look hand-drawn?',
+        q: 'Can I present my pages as a slide deck?',
         a: (
           <>
-            Yes. Every tab has a finish: Flexible (the everyday look), Professional (crisp and
-            print-ready), Sketch (wobbly pencil lines and handwriting) or Marker (bold felt-tip,
-            like a flip chart). Switch it from the tab's style, or set it on one element, and
-            nothing about the diagram changes underneath. Ready-made looks set the theme, finish,
-            font and canvas pattern in one click. See{' '}
-            <a href="/help/canvas/finish/">choosing a finish</a>.
+            Yes. Every page joins the deck, from any tab, and presents full screen. Each slide can
+            carry presenter notes and a time budget, and a laser pointer and spotlight help you
+            guide the room. Presenting happens on your screen only, so collaborators carry on
+            working. See <a href="/help/selection-modes/slide-deck/presenting/">presenting</a>.
           </>
         ),
         aText:
-          "Yes. Every tab has a finish: Flexible (the everyday look), Professional (crisp and print-ready), Sketch (wobbly pencil lines and handwriting) or Marker (bold felt-tip, like a flip chart). Switch it from the tab's style, or set it on one element, and nothing about the diagram changes underneath. Ready-made looks set the theme, finish, font and canvas pattern in one click. See choosing a finish.",
+          'Yes. Every page joins the deck, from any tab, and presents full screen. Each slide can carry presenter notes and a time budget, and a laser pointer and spotlight help you guide the room. Presenting happens on your screen only, so collaborators carry on working. See presenting.',
       },
       {
-        q: 'What are the five modes?',
-        a: 'Diagram is for structured shapes, connectors and layouts. Draw is a freehand whiteboard with pressure-sensitive markers. Workshop runs a session with your team, with timers, dot votes, polls and reveals to hand. Pages lays out designed pages like posters and slides. Plan turns a tab into boards of cards with columns, WIP limits and quick add, beside spreadsheets with formulas. A mode belongs to the tab, so everyone on it works in the same one, and each tab of a document can have its own.',
+        q: 'Can I design a logo?',
+        a: (
+          <>
+            Yes. A logo page is a square artboard with {LOGO_LAYOUT_COUNT} logo layouts,
+            construction guides, mirror drawing and wordmark type, and it exports a logo kit. Any
+            page exports print-ready as PDF, PNG or SVG. See{' '}
+            <a href="/help/pages/logo-pages/">logo pages</a>.
+          </>
+        ),
+        aText: `Yes. A logo page is a square artboard with ${LOGO_LAYOUT_COUNT} logo layouts, construction guides, mirror drawing and wordmark type, and it exports a logo kit. Any page exports print-ready as PDF, PNG or SVG. See logo pages.`,
+      },
+      {
+        q: 'Can I wireframe an app or a website?',
+        a: (
+          <>
+            Yes. A wireframe page draws a phone, a tablet, a browser, a laptop or a watch round the
+            screen you are planning, and starts from a ready-made screen. Five templates lay out
+            whole flows, from a mobile app to a web dashboard. See{' '}
+            <a href="/help/pages/wireframe-pages/">wireframe pages</a>.
+          </>
+        ),
+        aText:
+          'Yes. A wireframe page draws a phone, a tablet, a browser, a laptop or a watch round the screen you are planning, and starts from a ready-made screen. Five templates lay out whole flows, from a mobile app to a web dashboard. See wireframe pages.',
       },
       {
         q: 'Can I organise a big document?',
-        a: 'Yes. A document holds as many tabs as you need, which you can group into folders, link between and open two at a time side by side. Each tab has Photoshop-style layers you can hide, lock and restack, and your documents live in nested folders in the Explorer, shown as a list, as cards or as a sortable Details table. Drag a document onto a folder to file it.',
-      },
-      {
-        q: 'Can I make mind maps?',
-        a: (
-          <>
-            Yes. Press Tab to add a child and Enter to add a sibling, so a map grows without the
-            mouse. Pick a Tree, Leftward, Balanced, Downward, Upward or Bubble layout, tidy it in
-            one click, or open Edit Outline to rewrite the whole map as an indented list. See{' '}
-            <a href="/help/palette/mind-maps/">mind maps</a>.
-          </>
-        ),
-        aText:
-          'Yes. Press Tab to add a child and Enter to add a sibling, so a map grows without the mouse. Pick a Tree, Leftward, Balanced, Downward, Upward or Bubble layout, tidy it in one click, or open Edit Outline to rewrite the whole map as an indented list. See mind maps.',
-      },
-      {
-        q: 'Can I plan projects with it?',
-        a: (
-          <>
-            Yes. Switch a tab to Plan for boards of cards with columns, swimlanes and WIP limits.
-            Card types carry your own fields, the same card can sit on two boards, and charts of the
-            cards (a Gantt chart, due and start calendars, counts by person or priority) can fill a
-            tab of their own. A Dashboard puts boards, Sheets, charts and figures side by side. See{' '}
-            <a href="/help/canvas/plan-mode/">Plan mode</a>.
-          </>
-        ),
-        aText:
-          'Yes. Switch a tab to Plan for boards of cards with columns, swimlanes and WIP limits. Card types carry your own fields, the same card can sit on two boards, and charts of the cards (a Gantt chart, due and start calendars, counts by person or priority) can fill a tab of their own. A Dashboard puts boards, Sheets, charts and figures side by side. See Plan mode.',
+        a: 'Yes. A document holds as many tabs as you need, which you can group into folders, and a Contents sidebar lists every page with a picture of it. Your documents live in nested folders in the Explorer, shown as a list, as cards or as a sortable Details table, with favourites and tags to find them again. Drag a document onto a folder to file it.',
       },
       {
         q: 'Can I add pictures?',
@@ -230,106 +221,12 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         a: (
           <>
             Yes. Add a table and paste cells straight in from a spreadsheet, or place a pie, bar or
-            line chart, a progress bar, a rating or a timeline. For real formulas, put a Sheet on a
-            Plan tab. See <a href="/help/palette/tools/data-elements/">data elements</a>.
+            line chart, a progress bar, a rating or a timeline on a page. See{' '}
+            <a href="/help/palette/tools/data-elements/">data elements</a>.
           </>
         ),
         aText:
-          'Yes. Add a table and paste cells straight in from a spreadsheet, or place a pie, bar or line chart, a progress bar, a rating or a timeline. For real formulas, put a Sheet on a Plan tab. See data elements.',
-      },
-      {
-        q: 'Can I animate things?',
-        a: (
-          <>
-            Yes. Right-click an element and pick an animation that suits it: a shape can pulse, a
-            label can type itself in, and a drawing can draw itself. Hover a choice to preview it on
-            your selection first. See <a href="/help/canvas/animations/">animations</a>.
-          </>
-        ),
-        aText:
-          'Yes. Right-click an element and pick an animation that suits it: a shape can pulse, a label can type itself in, and a drawing can draw itself. Hover a choice to preview it on your selection first. See animations.',
-      },
-      {
-        q: 'Can I use the same tab in two documents?',
-        a: (
-          <>
-            Yes. Add to Document puts the tab you are on into another of your documents. It is the
-            same tab in both places, not a copy, so an edit in one shows up in the other. See{' '}
-            <a href="/help/tabs/add-to-document/">Add to Document</a>.
-          </>
-        ),
-        aText:
-          'Yes. Add to Document puts the tab you are on into another of your documents. It is the same tab in both places, not a copy, so an edit in one shows up in the other. See Add to Document.',
-      },
-      {
-        q: 'Is there a 3D view?',
-        a: (
-          <>
-            Yes. Isometric mode tilts the whole tab and raises each box into a solid block, for an
-            architecture walkthrough or a screenshot. It is a way to look at a diagram rather than
-            edit it. See <a href="/help/selection-modes/isometric-mode/">Isometric mode</a>.
-          </>
-        ),
-        aText:
-          'Yes. Isometric mode tilts the whole tab and raises each box into a solid block, for an architecture walkthrough or a screenshot. It is a way to look at a diagram rather than edit it. See Isometric mode.',
-      },
-      {
-        q: 'Can I design a logo?',
-        a: (
-          <>
-            Yes, in Pages. A logo page is a square artboard with {LOGO_LAYOUT_COUNT} logo layouts,
-            construction guides, mirror drawing and wordmark type, and it exports a logo kit. See{' '}
-            <a href="/help/canvas/pages-mode/">Pages mode</a>.
-          </>
-        ),
-        aText: `Yes, in Pages. A logo page is a square artboard with ${LOGO_LAYOUT_COUNT} logo layouts, construction guides, mirror drawing and wordmark type, and it exports a logo kit. See Pages mode.`,
-      },
-      {
-        q: 'Can I use it as a whiteboard?',
-        a: (
-          <>
-            Yes. Switch a tab to Draw for a plain whiteboard: three pressure-sensitive markers,
-            text, an eraser and shapes, on a plain, dotted or grid board in light or dark. With a
-            stylus, a resting palm never leaves a mark. See{' '}
-            <a href="/help/canvas/draw-mode/">Draw mode</a>.
-          </>
-        ),
-        aText:
-          'Yes. Switch a tab to Draw for a plain whiteboard: three pressure-sensitive markers, text, an eraser and shapes, on a plain, dotted or grid board in light or dark. With a stylus, a resting palm never leaves a mark. See Draw mode.',
-      },
-      {
-        q: 'Is there a spreadsheet?',
-        a: (
-          <>
-            Yes. Put a Sheet on a Plan tab: cells with over 150 functions, number formats, sort,
-            filter and freeze, edited live by everyone on the tab. Formulas can read the cards on
-            the board, or list the cards as rows that stay linked both ways. Select some cells to
-            chart them in a bar, line or pie chart that sits in the Sheet over its cells. CSV files
-            come in and go out, and twelve templates start you off, from a Budget Planner and an
-            Invoice to a Loan Calculator and a Habit Tracker. See{' '}
-            <a href="/help/canvas/plan-mode/sheets/">Sheets</a>.
-          </>
-        ),
-        aText:
-          'Yes. Put a Sheet on a Plan tab: cells with over 150 functions, number formats, sort, filter and freeze, edited live by everyone on the tab. Formulas can read the cards on the board, or list the cards as rows that stay linked both ways. Select some cells to chart them in a bar, line or pie chart that sits in the Sheet over its cells. CSV files come in and go out, and twelve templates start you off, from a Budget Planner and an Invoice to a Loan Calculator and a Habit Tracker. See Sheets.',
-      },
-      {
-        q: 'Can I make a form or survey?',
-        a: (
-          <>
-            Yes. In Plan mode, start a form from a starter such as Feedback, Bug Report or Event
-            RSVP, or a blank one, and build it in place. Share its link and anyone can fill it in
-            without an account; every response lands as a card on a board or a row in a Sheet, so
-            the answers turn straight into work. See{' '}
-            <a href="/help/canvas/plan-mode/forms/">forms</a>.
-          </>
-        ),
-        aText:
-          'Yes. In Plan mode, start a form from a starter such as Feedback, Bug Report or Event RSVP, or a blank one, and build it in place. Share its link and anyone can fill it in without an account; every response lands as a card on a board or a row in a Sheet, so the answers turn straight into work. See forms.',
-      },
-      {
-        q: 'Can I present from it?',
-        a: `Yes. Presentation mode builds a slide deck from elements across your tabs and runs it full screen. Slides point at the real elements, so editing a shape updates every slide it appears on. Every page of a design joins the same deck, in order. Each slide can carry presenter notes and a time budget, transitions slide or fade between them, and a laser pointer and spotlight help you guide the room.`,
+          'Yes. Add a table and paste cells straight in from a spreadsheet, or place a pie, bar or line chart, a progress bar, a rating or a timeline on a page. See data elements.',
       },
       {
         q: 'Can I undo a mistake?',
@@ -349,7 +246,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'Can I work with my team in real time?',
-        a: 'Yes, that is the point. Share a link and teammates join the same document in real time, whatever mode a tab is in, with live cursors, selection rings, presence on each tab, comments and a laser pointer. If you have not signed in, a new document starts in your browser, and the first Share syncs it in one step.',
+        a: 'Yes, that is the point. Share a link and teammates join the same document in real time, with live cursors, selection rings, presence on each tab, comments and a laser pointer. If you have not signed in, a new document starts in your browser, and the first Share syncs it in one step.',
       },
       {
         q: 'What happens if two people edit the same thing at once?',
@@ -357,7 +254,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Can I leave comments and assign follow-ups?',
-        a: 'Yes. Comment on any element and reply in threads, then resolve them when they are done. You can also attach an action to an element and assign it to a teammate, so the follow-ups a meeting produces stay with the document instead of getting lost.',
+        a: 'Yes. Comment on anything on a page and reply in threads, then resolve them when they are done. You can also attach an action and assign it to a teammate, so the follow-ups stay with the document instead of getting lost.',
       },
       {
         q: 'Can I set up a team with shared documents?',
@@ -376,20 +273,6 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           'Yes. Open Collaborators from the avatars on the tab bar and press Follow beside a teammate: your view goes wherever theirs goes, until you move away yourself. See following along.',
       },
       {
-        q: 'Can we walk around a board together?',
-        a: (
-          <>
-            Yes. Put an Avatar button on a board and everyone who presses it walks a little pixel
-            character around the canvas, with speech bubbles, a status and reactions. The Virtual
-            Office, Coworking Space and All-Hands Hall templates turn a tab into rooms, desks and a
-            coffee machine to meet at. See{' '}
-            <a href="/help/selection-modes/avatar-mode/">Avatar mode</a>.
-          </>
-        ),
-        aText:
-          'Yes. Put an Avatar button on a board and everyone who presses it walks a little pixel character around the canvas, with speech bubbles, a status and reactions. The Virtual Office, Coworking Space and All-Hands Hall templates turn a tab into rooms, desks and a coffee machine to meet at. See Avatar mode.',
-      },
-      {
         q: 'Can I stop a finished tab being changed?',
         a: (
           <>
@@ -405,29 +288,14 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'How do I keep up with what changed?',
         a: (
           <>
-            Your Inbox gathers the actions, Plan cards and comment threads waiting on you across
-            every document, and Home shows what other people did while you were away. Once you sign
-            in, emails can tell you too, and you choose which in Settings. See{' '}
+            Your Inbox gathers the actions and comment threads waiting on you across every document,
+            and Home shows what other people did while you were away. Once you sign in, emails can
+            tell you too, and you choose which in Settings. See{' '}
             <a href="/help/explorer/activity/">the Inbox</a>.
           </>
         ),
         aText:
-          'Your Inbox gathers the actions, Plan cards and comment threads waiting on you across every document, and Home shows what other people did while you were away. Once you sign in, emails can tell you too, and you choose which in Settings. See the Inbox.',
-      },
-      {
-        q: 'Is it good for running workshops and retros?',
-        a: (
-          <>
-            Very. Switch a tab to Workshop, the mode for running a session, or start from a
-            retrospective, Lean Coffee or town hall Q&amp;A template, which opens there. Whoever
-            holds the facilitator role runs the room’s timer, votes, polls and reveals. Estimate
-            cards run planning poker, a temperature check shows how the room feels, a quiz asks what
-            it knows, and an idea box collects anonymous ideas. See{' '}
-            <a href="/help/canvas/workshop-mode/">Workshop mode</a>.
-          </>
-        ),
-        aText:
-          'Very. Switch a tab to Workshop, the mode for running a session, or start from a retrospective, Lean Coffee or town hall Q&A template, which opens there. Whoever holds the facilitator role runs the room’s timer, votes, polls and reveals. Estimate cards run planning poker, a temperature check shows how the room feels, a quiz asks what it knows, and an idea box collects anonymous ideas. See Workshop mode.',
+          'Your Inbox gathers the actions and comment threads waiting on you across every document, and Home shows what other people did while you were away. Once you sign in, emails can tell you too, and you choose which in Settings. See the Inbox.',
       },
     ],
   },
@@ -439,7 +307,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'How do share links work?',
-        a: 'From a document you own, create an editor link (full edit access), a participant link (add stickies, write and vote, without reshaping the board) or a view-only link. Anyone with the link can join. Give a link an expiry of a week, a month or six months so it stops working on its own, or revoke it at any time and it stops working immediately.',
+        a: 'From a document you own, create an editor link (full edit access) or a view-only link. Anyone with the link can join. Give a link an expiry of a week, a month or six months so it stops working on its own, or revoke it at any time and it stops working immediately.',
       },
       {
         q: 'Can I password-protect a document?',
@@ -450,19 +318,19 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         a: (
           <>
             Yes. When a document has more than one tab, the Share dialog lets a link open a single
-            tab, as an editor, participant or view-only link, and the rest of the document stays
-            private. See <a href="/help/collaboration/sharing/one-tab/">sharing one tab</a>.
+            tab, as an editor or view-only link, and the rest of the document stays private. See{' '}
+            <a href="/help/collaboration/sharing/one-tab/">sharing one tab</a>.
           </>
         ),
         aText:
-          'Yes. When a document has more than one tab, the Share dialog lets a link open a single tab, as an editor, participant or view-only link, and the rest of the document stays private. See sharing one tab.',
+          'Yes. When a document has more than one tab, the Share dialog lets a link open a single tab, as an editor or view-only link, and the rest of the document stays private. See sharing one tab.',
       },
       {
-        q: 'Can I embed a diagram in my docs or wiki?',
-        a: 'Yes. Any share link can be embedded as a live-updating iframe: an editor link embeds an editable canvas, and a participant or view-only link a read-only one. Copy the snippet from the Share dialog and paste it into Notion, Confluence, a wiki or any page that allows iframes; it always shows the current state of the diagram.',
+        q: 'Can I embed a document in my docs or wiki?',
+        a: 'Yes. Any share link can be embedded as a live-updating iframe: an editor link embeds an editable document, and a view-only link a read-only one. Copy the snippet from the Share dialog and paste it into Notion, Confluence, a wiki or any page that allows iframes; it always shows the current state of the pages.',
       },
       {
-        q: 'Can I show a diagram where iframes are blocked, like a README?',
+        q: 'Can I show a page where iframes are blocked, like a README?',
         a: (
           <>
             Yes. A live image is a plain image URL that follows your document, redrawn after each
@@ -487,18 +355,14 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           <>
             Yes. livedesign runs an MCP server at mcp.livedesign.app. Connect a compatible AI tool
             and, after a one-time authorisation, it can find, read, create and edit the documents in
-            your account, including writing articles, building slide decks and designing logos. Its
-            changes appear live for anyone on the tab, outlined so you can see them and undo them.{' '}
+            your account, including designing logos and wireframing screens. Its changes appear live
+            for anyone on the tab, outlined so you can see them and undo them.{' '}
             <a href="/ai">Build with AI</a> walks you through connecting Claude, ChatGPT, Cursor and
             more.
           </>
         ),
         aText:
-          'Yes. livedesign runs an MCP server at mcp.livedesign.app. Connect a compatible AI tool and, after a one-time authorisation, it can find, read, create and edit the documents in your account, including writing articles, building slide decks and designing logos. Its changes appear live for anyone on the tab, outlined so you can see them and undo them. Build with AI walks you through connecting Claude, ChatGPT, Cursor and more.',
-      },
-      {
-        q: 'Is there AI built into the editor?',
-        a: 'Optionally. Turn on AI assistance in Settings for an in-editor panel with two modes: Ask answers questions about the tab in front of you, and Clean fixes typos and tidies sizes, positions and styles. It is off by default.',
+          'Yes. livedesign runs an MCP server at mcp.livedesign.app. Connect a compatible AI tool and, after a one-time authorisation, it can find, read, create and edit the documents in your account, including designing logos and wireframing screens. Its changes appear live for anyone on the tab, outlined so you can see them and undo them. Build with AI walks you through connecting Claude, ChatGPT, Cursor and more.',
       },
       {
         q: 'Is there an API?',
@@ -526,11 +390,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'Can I export my work?',
-        a: 'Yes. Export a diagram or whiteboard tab as PNG, SVG, PDF, Markdown or a portable JSON file, pages as PNG, SVG, one print-ready PDF or an animated GIF, a logo page as a logo kit, and a Plan board or a Sheet as CSV. Hidden layers stay out of image exports unless you switch them on.',
-      },
-      {
-        q: 'Does it work with Mermaid?',
-        a: 'Yes, through the API, the CLI and AI assistants. Hand over a Mermaid flowchart, state diagram, ER diagram or sequence diagram and livedesign lays it out on the canvas with every connection intact; the CLI exports a tab back to Mermaid text for your READMEs and issues. Other Mermaid types, such as class, Gantt, pie and mind map, are not supported.',
+        a: 'Yes. Export pages as PNG, SVG or one print-ready PDF, a logo page as a logo kit, and any tab as a portable JSON file to import back with full fidelity. Hidden layers stay out of image exports unless you switch them on.',
       },
     ],
   },
@@ -623,7 +483,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Do I need sign-in or an AI key to self-host?',
-        a: 'No. Without sign-in configured, your copy runs in guest mode with persistence, sharing and real-time collaboration all working. AI assistance switches on when you add an AI key (photo import works without one, reading the notes in the browser), and email once sign-in and its own key are set up.',
+        a: 'No. Without sign-in configured, your copy runs in guest mode with persistence, sharing and real-time collaboration all working. AI assistance switches on when you add an AI key, and email once sign-in and its own key are set up.',
       },
     ],
   },

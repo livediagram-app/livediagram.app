@@ -1,5 +1,5 @@
-// The whiteboard markers' stock colours (docs/specs/023-draw-mode/draw-mode.md "The colour
-// picker"): Ink (the board's own, WHITEBOARD_INK), then eight named colours, each stored by name
+// The stock colours (docs/specs/004-interface-design/colour-picker.md "The colours"): Ink
+// (the board's own, WHITEBOARD_INK), then eight named colours, each stored by name
 // ("blue") and drawn in the version tuned for the board it is shown on: darker on the light board,
 // lighter on the dark one. Each version is found in OKLCH: the hue and chroma stay, the lightness
 // walks in from the board's far end until the colour would drop under its contrast on that board
@@ -43,7 +43,7 @@ export const PEN_COLOURS = [
 /** The eight hued stock colours, each tuned per board. */
 export type HuedPenColourName = (typeof PEN_COLOURS)[number]['id'];
 
-// Ink by name (docs/specs/007-editor/editor-modes.md "One look"): the board's own drawing colour,
+// Ink by name (docs/specs/008-canvas/canvas-and-palette.md "Colours"): the board's own drawing colour,
 // a stock colour like the eight, drawn in PEN_INK for each appearance.
 export const INK_PEN_COLOUR = 'ink';
 // Grey (docs/specs/004-interface-design/colour-picker.md "The colours"): a neutral stock colour,
@@ -232,7 +232,7 @@ export function hexOklch(hex: string): { l: number; c: number; h: number } | nul
   return rgb ? rgbOklch(rgb) : null;
 }
 
-// Snap colours (docs/specs/023-draw-mode/draw-mode.md "Snap colours"): under this OKLCH chroma a
+// Snap colours: under this OKLCH chroma a
 // colour is neutral (black, grey, white, slate) and becomes the ink. Greys measure 0 to 0.03 and
 // slates about 0.04; dusty pastels start near 0.06. Safe range 0.03 to 0.08.
 export const PEN_NEUTRAL_CHROMA = 0.05;

@@ -21,8 +21,8 @@ import {
   readablePenColour,
 } from './index';
 
-// docs/specs/023-draw-mode/draw-mode.md "The colour picker": Ink and eight stock colours, each
-// stored by name and drawn in the version tuned for the board it is shown on.
+// docs/specs/004-interface-design/colour-picker.md "The colours": Ink and eight stock colours, each
+// stored by name and drawn in the version tuned for the canvas it is shown on.
 describe('pen stock colours', () => {
   it('names eight colours after the ink: Blue, Red, Orange, Yellow, Green, Teal, Violet, Pink', () => {
     expect(PEN_COLOUR_NAMES).toEqual([
@@ -92,7 +92,7 @@ describe('pen stock colours', () => {
     expect(penColourCss(null, 'dark', '#e2e8f0')).toBe('#e2e8f0');
   });
 
-  // Ink is a stock colour too (docs/specs/007-editor/editor-modes.md "One look"): stored by name, drawn
+  // Ink is a stock colour too (docs/specs/008-canvas/canvas-and-palette.md "Colours"): stored by name, drawn
   // in the board's ink for each appearance, never one of the eight hued picks.
   it("stores Ink by name and draws it in each board's ink", () => {
     expect(isPenColourName('ink')).toBe(true);
@@ -115,7 +115,7 @@ describe('pen stock colours', () => {
   });
 });
 
-// docs/specs/023-draw-mode/draw-mode.md "Snap colours": a neutral custom colour becomes the ink,
+// Snap colours: a neutral custom colour becomes the ink,
 // any other the stock colour nearest in hue.
 describe('nearestPenColour', () => {
   it('reads a colour in OKLCH', () => {

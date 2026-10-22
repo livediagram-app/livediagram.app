@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { glyphWidth } from './graph-authoring';
+import { glyphWidth } from './label-box';
 import { barMarks, lineMarks, pieMarks } from './chart-marks';
 import {
   barValueLabels,

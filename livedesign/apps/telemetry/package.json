@@ -13,7 +13,6 @@
   },
   "dependencies": {
     "@livedesign/api-schema": "workspace:*",
-    "@livedesign/forms": "workspace:*",
     "@livedesign/icons": "workspace:*",
     "@livedesign/ui": "workspace:*",
     "next": "^16.4.1",

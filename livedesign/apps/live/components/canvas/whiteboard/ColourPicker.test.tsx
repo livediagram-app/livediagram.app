@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { penColourHex, standardColours, type PenColour } from '@livedesign/document';
 import { ColourPicker } from './ColourPicker';
 
-// docs/specs/023-draw-mode/draw-mode.md "The colour picker", on the one colour picker
+// docs/specs/023-draw-mode/drawing-tools.md "The colour picker", on the one colour picker
 // (docs/specs/004-interface-design/colour-picker.md).
 function setup(value: PenColour | null = 'blue') {
   const onPick = vi.fn();

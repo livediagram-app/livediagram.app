@@ -14,7 +14,7 @@ import {
 // What a tab opens with (docs/specs/008-canvas/canvas-and-palette.md "Motion and animations"): the
 // elements in the commit that shows a tab arrive with the board and appear at once; an element
 // mounted after that commit was added and pops in. A context rather than a prop, for the reason
-// CanvasStillContext is one: the element views are memoised.
+// CanvasSurfaceContext is one: the element views are memoised.
 
 // One per canvas: the tab whose first commit has landed. Written only in an effect, after that
 // commit, so every element mounted in it still reads the tab as arriving.

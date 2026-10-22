@@ -147,7 +147,6 @@ describe('duplicateDocument placement and recorded intent', () => {
       folderId: null,
       opensIn: null,
       tabKind: null,
-      templateFamily: null,
       ...over,
     }) as Awaited<ReturnType<typeof apiLoadDocument>>;
 
@@ -175,14 +174,11 @@ describe('duplicateDocument placement and recorded intent', () => {
   });
 
   it("records the source's recorded intent, unchanged", async () => {
-    mLoadDocument.mockResolvedValue(
-      placed({ opensIn: 'diagram', tabKind: 'diagram', templateFamily: 'retrospective' }),
-    );
+    mLoadDocument.mockResolvedValue(placed({ opensIn: 'pages', tabKind: 'diagram' }));
     await duplicateDocument('owner', 'src');
     expect(mCreate.mock.calls[0]![1].intent).toEqual({
-      mode: 'diagram',
+      mode: 'pages',
       tabKind: 'diagram',
-      templateFamily: 'retrospective',
     });
   });
 

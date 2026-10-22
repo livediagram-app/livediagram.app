@@ -1,4 +1,4 @@
-// favourites — per-user document stars (migration 0040, docs/specs/013-workspace/favourites.md).
+// favourites — per-user document stars (the baseline migration, docs/specs/013-workspace/favourites.md).
 
 import type { Env } from '../types';
 

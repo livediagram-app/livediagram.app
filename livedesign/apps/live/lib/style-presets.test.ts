@@ -195,13 +195,10 @@ describe("colour field setters clear a table's preset binding", () => {
     });
   });
 
-  it('applyHeaderFillToEl, and leaves a lane gutter untouched', () => {
+  it('applyHeaderFillToEl', () => {
     expect(applyHeaderFillToEl(bound(), '#c')).toMatchObject({
       headerFill: '#c',
       tablePreset: undefined,
-    });
-    expect(applyHeaderFillToEl(el('shape', { shape: 'lane' }), '#c')).toMatchObject({
-      headerFill: '#c',
     });
   });
 });
@@ -421,7 +418,7 @@ describe('applyIconWeightToEl', () => {
   });
 });
 
-// docs/specs/007-editor/editor-modes.md "One look": the element menu's Ink swatch stores Ink by
+// docs/specs/008-canvas/canvas-and-palette.md "Colours": the element menu's Ink swatch stores Ink by
 // name; any other colour replaces a stored name.
 describe('Ink by name from the colour rows', () => {
   it('stores Ink as the line\u2019s name on a shape, an arrow and a pen stroke', () => {

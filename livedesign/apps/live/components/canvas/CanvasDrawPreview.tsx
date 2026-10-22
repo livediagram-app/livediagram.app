@@ -1,16 +1,10 @@
 import { useCanvasViewKey } from '@/hooks/canvas/useViewportStore';
 import type { RefObject } from 'react';
-import {
-  BORDER_STROKE_PX,
-  DEFAULT_BORDER_STROKE,
-  isSelfDrawingShape,
-  type MirroredPage,
-} from '@livedesign/document';
+import { isSelfDrawingShape, type MirroredPage } from '@livedesign/document';
 import { isSvgRenderedShape, ShapeSvgOverlay } from '@/components/canvas/shape-svg-overlay';
 import { POLYGON_CLOSE_PX } from '@/components/canvas/useCanvasPolygonGesture';
 import { isWhiteboardPenIntent, type PendingDraw } from '@/lib/draw-mode';
 import { drawnDragBox } from '@/lib/draw-commit';
-import { PenShapePreview } from '@/components/canvas/whiteboard/BoardShapePreview';
 import { useCanvasClientOrigin } from '@/hooks/canvas/useCanvasClientOrigin';
 import { HIGHLIGHTER_COLOR, HIGHLIGHTER_WIDTH } from '@/lib/highlighter-config';
 import { draftMirrorMaps, pointsBox, SymmetryCopies, toScreen } from './MirrorReflection';
@@ -25,9 +19,6 @@ type CanvasDrawPreviewProps = {
   // The canvas size. With the view, read from the viewport store here, it is what the wrapper's
   // origin follows (useCanvasViewKey), so the chrome around this takes no view.
   mainSize: { width: number; height: number };
-  // The board's ink on a whiteboard (docs/specs/023-draw-mode/draw-mode.md), what the main pen
-  // previews in. Absent elsewhere.
-  whiteboardInk?: string;
   // The pages while Mirror While Drawing is on (docs/specs/007-editor/logo-pages.md
   // "Mirror"): a drawing on a logo page previews its twin too. Absent otherwise.
   mirrorPages?: readonly MirroredPage[] | null;
@@ -44,22 +35,18 @@ export function CanvasDrawPreview({
   pendingDraw,
   wrapperRef,
   mainSize,
-  whiteboardInk,
   mirrorPages,
 }: CanvasDrawPreviewProps) {
   const { viewportZoom, viewKey } = useCanvasViewKey(mainSize);
-  // A whiteboard shape or line previews as it will land (docs/specs/023-draw-mode/draw-mode.md
-  // "Shapes"): in the board's ink, solid, unfilled.
-  const inkOf = (colour: string | null) => colour ?? whiteboardInk ?? 'currentColor';
-  // A whiteboard pen draws inside the canvas layer (whiteboard/WhiteboardPenPreview), not here.
+  // A marker draws inside the canvas layer (whiteboard/WhiteboardPenPreview), not here.
   const showsPen =
     !isWhiteboardPenIntent(pendingDraw) &&
     !!penPoints &&
     pendingDraw?.type === 'freehand' &&
     penPoints.length >= 2;
   const showsPolygon = pendingDraw?.type === 'polygon' && polygonVertices.length > 0;
-  // A line or an arrow previews as the element it lands, in the canvas layer
-  // (DrawnArrowPreview, docs/specs/023-draw-mode/draw-mode.md "Shapes"), not here.
+  // A line or an arrow previews as the element it lands, in the canvas layer (DrawnArrowPreview),
+  // not here.
   const showsBox = !!drawDrag && !!pendingDraw && pendingDraw.type !== 'arrow';
   // Where canvas (0, 0) sits on screen, measured only while a preview shows.
   const origin = useCanvasClientOrigin(wrapperRef, showsPen || showsPolygon || showsBox, viewKey);
@@ -221,17 +208,7 @@ export function CanvasDrawPreview({
                   height: heightPx,
                 }}
               >
-                {pendingDraw.type === 'shape' && pendingDraw.board ? (
-                  <PenShapePreview
-                    kind={pendingDraw.kind}
-                    colour={inkOf(null)}
-                    widthPx={BORDER_STROKE_PX[DEFAULT_BORDER_STROKE]}
-                    usesSvg={usesSvg}
-                    radius={radius}
-                    zoom={viewportZoom}
-                    aspect={heightPx > 0 ? widthPx / heightPx : 1}
-                  />
-                ) : usesSvg && pendingDraw.type === 'shape' ? (
+                {usesSvg && pendingDraw.type === 'shape' ? (
                   <ShapeSvgOverlay
                     shape={pendingDraw.kind}
                     fill="rgba(14, 165, 233, 0.10)"

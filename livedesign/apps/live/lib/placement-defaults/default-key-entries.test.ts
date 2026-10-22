@@ -16,21 +16,11 @@ describe('DEFAULT_KEY_ENTRIES', () => {
   });
 
   it('names each entry as the list shows it', () => {
-    expect(DEFAULT_KEY_ENTRIES.map((e) => e.label)).toEqual([
-      'Diagrams',
-      'Whiteboards',
-      'Sessions',
-      'Pages documents',
-      'Plan boards',
-      'Retrospectives',
-      'Kanban boards',
-    ]);
+    expect(DEFAULT_KEY_ENTRIES.map((e) => e.label)).toEqual(['Documents']);
   });
 
   it('gives each entry the plural a sentence uses', () => {
-    expect(defaultKeyEntry('mode:draw').noun).toBe('whiteboards');
-    expect(defaultKeyEntry('template:retrospective').noun).toBe('retrospectives');
-    expect(defaultKeyEntry('template:kanban').noun).toBe('Kanban boards');
+    expect(defaultKeyEntry('mode:pages').noun).toBe('documents');
   });
 });
 
@@ -45,11 +35,8 @@ describe('joinNouns', () => {
 });
 
 describe('defaultFolderDescription', () => {
-  it('says which new documents a folder receives, in list order', () => {
-    expect(defaultFolderDescription(['mode:draw'])).toBe('Default folder for new whiteboards');
-    expect(defaultFolderDescription(['template:retrospective', 'mode:diagram'])).toBe(
-      'Default folder for new diagrams and retrospectives',
-    );
+  it('says which new documents a folder receives', () => {
+    expect(defaultFolderDescription(['mode:pages'])).toBe('Default folder for new documents');
   });
 
   it('is empty for a folder that is no default', () => {

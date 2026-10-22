@@ -31,17 +31,7 @@
 
 import type { Selection } from '@/lib/selection-store';
 import { useEffect, useRef, useState } from 'react';
-import {
-  duplicateElements,
-  sheetDrawnChartIds,
-  tabTakesPlanOnly,
-  withMindBranches,
-  withSheetCharts,
-  withAttached,
-  withoutPlanOnly,
-  type Element,
-  type Tab,
-} from '@livedesign/document';
+import { duplicateElements, withAttached, type Element, type Tab } from '@livedesign/document';
 import { anyModalOpen } from '@/lib/modal-guard';
 import { watchPrimarySelectionPaste } from '@/lib/primary-selection-paste';
 import {
@@ -50,12 +40,10 @@ import {
   IN_APP_COPY_ELSEWHERE,
   inAppCopyIdOf,
   parseElementsPayload,
-  takeSheetSeeds,
   stripIdentity,
 } from '@/lib/clipboard-payload';
 import { pasteTranslation } from '@/lib/paste-placement';
 import { addImageFileForDocument } from '@/lib/upload-image';
-import { debugLog } from '@/lib/debug-log';
 import { track } from '@/lib/telemetry';
 import { trackDuplicated } from '@/lib/element-telemetry';
 import type { useToast } from '@/hooks/ui/useToast';
@@ -158,10 +146,8 @@ export function useClipboard(deps: ClipboardDeps) {
   // this window's own and not another's.
   const copyId = useRef('');
 
-  // A Cut copies what its delete takes: a mind node's branch with it (docs/specs/009-elements/mind-node.md
-  // "Deleting"), so the paste puts the whole branch back. A plain Copy takes only what is selected. `opts` may be a
-  // click event: only a literal `cut: true` counts.
-  const copySelection = (opts?: { cut?: boolean }) => {
+  // Copy and Cut both take what is selected.
+  const copySelection = () => {
     if (isReadOnly) return;
     const { selectedId, multiSelectedIds } = readSelection();
     const idSet =
@@ -171,25 +157,15 @@ export function useClipboard(deps: ClipboardDeps) {
           ? new Set([selectedId])
           : null;
     if (!idSet || idSet.size === 0) return;
-    // A Sheet carries the charts it draws (docs/specs/029-sheets/sheet.md "Charts"): they are never selectable on
-    // the canvas, so the copy takes them here, and the paste relinks them to the Sheet's copy.
     // A host's badges and step numbers copy with it (docs/specs/009-elements/badge.md).
-    const withCharts = withAttached(
-      activeTab.elements,
-      withSheetCharts(
-        activeTab.elements,
-        opts?.cut === true
-          ? withMindBranches(activeTab.elements, idSet, (el) => el.locked === true)
-          : idSet,
-      ),
-    );
+    const withCharts = withAttached(activeTab.elements, idSet);
     const snapshot = activeTab.elements
       .filter((el) => withCharts.has(el.id))
       // Deep clone so a later edit to the originals doesn't bleed
       // into a future paste.
       .map((el) => JSON.parse(JSON.stringify(el)) as Element)
       // Same stripping as the OS clipboard copy: the in-app buffer is the
-      // fallback paste, and it used to carry comments, poll answers and
+      // fallback paste, and it used to carry comments, answers and
       // assigned actions onto the copies.
       .map(stripIdentity);
     if (snapshot.length === 0) return;
@@ -222,17 +198,6 @@ export function useClipboard(deps: ClipboardDeps) {
     track('Element', 'Copied');
   };
 
-  // A board or Sheet goes only on a tab in Plan (docs/specs/026-plan/plan-tabs.md "Only in Plan"): onto any other tab a
-  // paste leaves out its boards, its Sheets and the charts they draw, and says so.
-  const onlyWhatTheTabTakes = (copied: Element[]): Element[] => {
-    if (tabTakesPlanOnly(activeTab)) return copied;
-    const { kept, boards, sheets } = withoutPlanOnly(copied);
-    if (boards + sheets === 0) return copied;
-    debugLog('[clipboard] plan work left out', { boards, sheets });
-    toast.info(planOnlyLeftOutMessage(boards, sheets));
-    return kept;
-  };
-
   // `source` is what the OS clipboard carried, when it carried ours. Absent
   // for a paste that found nothing on the system clipboard, which falls back
   // to the in-app buffer.
@@ -241,31 +206,26 @@ export function useClipboard(deps: ClipboardDeps) {
     const copied = source && source.length > 0 ? source : clipboard;
     if (!copied || copied.length === 0) return;
     if (refuseCreate()) return;
-    const pasting = onlyWhatTheTabTakes(copied);
-    if (pasting.length === 0) return;
-    const { dx, dy } = pasteTranslation(pasting, getViewportCanvasRect?.() ?? null);
-    const clipIds = new Set(pasting.map((el) => el.id));
+    const { dx, dy } = pasteTranslation(copied, getViewportCanvasRect?.() ?? null);
+    const clipIds = new Set(copied.map((el) => el.id));
     // Clipboard ids may not exist in the current tab (the source
     // was deleted, the user pasted into a different tab, etc.).
     // Temporarily merge them in so duplicateElements can do
     // its id-remap + arrow-rewire. Only the freshly-minted copies
     // get committed back, not the merged sources. The SNAPSHOT copy
-    // wins over a live element with the same id — pasting must
+    // wins over a live element with the same id — copied must
     // reproduce what was copied, not the element as it has since
     // been edited (that's what the copy-time deep clone is for).
-    const merged = [...activeTab.elements.filter((el) => !clipIds.has(el.id)), ...pasting];
+    const merged = [...activeTab.elements.filter((el) => !clipIds.has(el.id)), ...copied];
     const { newElements } = duplicateElements(merged, clipIds, dx, dy);
     if (newElements.length === 0) return;
     commit((els) => [...els, ...newElements]);
-    // The charts a pasted Sheet draws are its, not the canvas's to select.
-    const drawn = sheetDrawnChartIds(newElements);
-    const selectable = newElements.filter((el) => !drawn.has(el.id));
-    if (selectable.length === 1) {
-      setSelectedId(selectable[0]!.id);
+    if (newElements.length === 1) {
+      setSelectedId(newElements[0]!.id);
       setMultiSelectedIds(new Set());
     } else {
       setSelectedId(null);
-      setMultiSelectedIds(new Set(selectable.map((el) => el.id)));
+      setMultiSelectedIds(new Set(newElements.map((el) => el.id)));
     }
     trackDuplicated(newElements);
   };
@@ -442,7 +402,6 @@ export function useClipboard(deps: ClipboardDeps) {
       const text = e.clipboardData?.getData('text/plain') ?? '';
       const fromOs = parseElementsPayload(text);
       if (fromOs) {
-        takeSheetSeeds(text);
         e.preventDefault();
         pasteRef.current.pasteFromClipboard(fromOs);
         return;
@@ -491,7 +450,6 @@ export function useClipboard(deps: ClipboardDeps) {
       const elements = parseElementsPayload(text);
       const inAppCopy = elements ? null : inAppCopyIdOf(text);
       if (!elements && inAppCopy === null) return;
-      takeSheetSeeds(text);
       e.preventDefault();
       e.stopPropagation();
       setEditingId(null);
@@ -514,14 +472,4 @@ export function useClipboard(deps: ClipboardDeps) {
     dropBoardFile,
     hasClipboard: (clipboard?.length ?? 0) > 0,
   };
-}
-
-// "Boards and sheets stay on Plan tabs, so the board and the sheets were left out".
-export function planOnlyLeftOutMessage(boards: number, sheets: number): string {
-  const named = [
-    ...(boards ? [boards === 1 ? 'the board' : 'the boards'] : []),
-    ...(sheets ? [sheets === 1 ? 'the sheet' : 'the sheets'] : []),
-  ];
-  const many = boards + sheets > 1;
-  return `Boards and sheets stay on Plan tabs, so ${named.join(' and ')} ${many ? 'were' : 'was'} left out`;
 }

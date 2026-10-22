@@ -4,18 +4,12 @@ An **element tour** teaches one complex element type, on the element itself: wha
 how to change it. It is offered from a small toolbar beside the selected element's toolbar, the first time a person
 selects an element of that type, and it walks through the real element the person selected, not a sample.
 
-It sits between the mode tours (the [Diagram tour](editor-tour.md) and its siblings, which offer themselves once
-with a centred card) and [Show Me](show-me.md) (never offered, started from a button on one surface). An element
+It sits between the [Pages tour](pages-tour.md) (which offers itself once with a centred card) and [Show Me](show-me.md) (never offered, started from a button on one surface). An element
 tour offers itself, but quietly: a small toolbar that waits beside the selection, never a card over the canvas.
 
 The toured kinds: the [Sankey diagram](../009-elements/sankey.md), and the
-[concept graphics](../009-elements/concept-graphics.md) layer stack, pyramid, funnel, cycle, hub and spoke, onion and chevron process; the
-[mind node](../009-elements/mind-node.md); the [flowchart](../009-elements/flowchart.md) step; the
-[org chart](../009-elements/org-chart.md)'s person node; the [sequence diagram](../009-elements/sequence-diagram.md); the
-[data charts](../009-elements/pie-chart.md); the [stack](../009-elements/stack.md); the
-[entity](../009-elements/entity.md); the [tab window](../009-elements/tab-window.md); the
-[lane](../009-elements/lane.md); the [boundary](../009-elements/boundary.md); the
-[diagram key](../009-elements/diagram-key.md); and the [portal](../009-elements/portal-element.md).
+[concept graphics](../009-elements/concept-graphics.md) layer stack, pyramid, funnel, cycle, hub and spoke, onion,
+timeline and chevron process; the [data charts](../009-elements/pie-chart.md); and the [stack](../009-elements/stack.md).
 
 ## Domain language
 
@@ -55,7 +49,7 @@ section. "Element tour" is the code's and the specs' word only.
   - the person has not answered this kind's tour (below);
   - the editor is usable: hydrated, the synced preferences in, no welcome overlay, not an embed, not on a phone;
   - no guided tour is running (`useActiveTour`), no start panel is open, and no dialog is open (the modal guard,
-    [Diagram tour](editor-tour.md) "Dialogs come first"): the offer comes back once the last dialog closes.
+    [Pages tour](pages-tour.md#dialogs-come-first)): the offer comes back once the last dialog closes.
 - **It fades in** with the selection toolbar, and away with it (a move, a quick-connect ring).
 - **Play** answers the offer and starts the tour on its first step. **Cancel** answers it and the offer goes. Either
   way, the kind is never offered again, on any device, until Settings offers it again. Simply deselecting is not an
@@ -70,7 +64,7 @@ section. "Element tour" is the code's and the specs' word only.
 
 ## Settings
 
-Settings' **Tours** category holds element tours in their own section, **Show Me**, below the mode tours'
+Settings' **Tours** category holds element tours in their own section, **Show Me**, below the Pages tours'
 **Offer Again** section. It is a closed accordion (people rarely look for it): its header names the section and
 how many are on (`1 of 1 On`). Opened, it shows the section's line ("The first time you select a complex element, a
 small Show Me toolbar beside it offers to show how it works. Switch one back on to be offered it again."), then
@@ -91,8 +85,8 @@ followed (a row missing) highlights the deepest part it reached.
 
 ## The page waits
 
-While an element tour's step is up the page takes no clicks or wheel, only the step card does, as on the
-[Diagram tour](editor-tour.md#the-page-waits).
+While an element tour's step is up the page takes no clicks or wheel, only the step card does, ([Pages
+tour](pages-tour.md#the-page-waits)).
 
 ## The tour
 
@@ -260,80 +254,9 @@ the canvas, not in a Rows section.
 6. **Run the Pipeline**: plays **Pulse** along the stages as a preview while the step is up.
 7. **That Is a Chevron Process**: the closing card.
 
-## The Mind Map tour
+## Menu steps on the chart and stack
 
-On a selected mind node (not a person node: that is the org chart's), from `mind-node-tour-steps.ts`. It points at the
-node and its selection toolbar; it never grows the map itself.
-
-1. **A Node That Knows Its Parent**: rings the node; every node grown from it is joined to it, and the map keeps
-   itself tidy.
-2. **Grow a Child**: rings the toolbar's **Add Child**. With a keyboard: "Tab, or Add Child here", and typing names
-   the new node; on a touch screen, the button alone.
-3. **Add a Sibling**: rings **Add Sibling**. With a keyboard it names Enter and Shift+Enter (a new line while typing);
-   on a touch screen, the button alone.
-4. **Move a Whole Branch** (a node with nodes grown from it; otherwise **Branches Move as One**): rings the node;
-   dragging it carries its branch.
-5. **The Mind Map Menu** (only while More shows): rings More. Branching (the shape it grows in), Spacing, Tidy Map
-   and Edit Outline.
-6. **That Is a Mind Map**: the closing card, with **Mind Maps Help**.
-
-The steps' environment carries the tab's elements, so a step can read past its own element (here, whether the node has
-children).
-
-## The Flowchart tour
-
-On a selected flowchart step, from `flowchart-tour-steps.ts`. It points at the step and its toolbar; it never grows or
-re-lays the chart itself.
-
-1. **A Step in a Flowchart**: rings the step; every change lays the chart out again.
-2. **The Next Step**: rings the toolbar's **Add Step** ("Tab, or Add Step here" with a keyboard; the button alone on a
-   touch screen).
-3. **Add a Branch**: rings **Add Branch** (Enter with a keyboard): a step beside this one, from the same step.
-4. **Change Its Type**: rings **Step Type**; the type is the shape, the words are kept, the chart re-lays.
-5. **Its Lane** (only on a chart with swimlanes): rings **Lane**.
-6. **The Flowchart Menu** (only while More shows): rings More. Add Lane, Tidy Flowchart, Direction.
-7. **That Is a Flowchart**: the closing card, with **Flowcharts Help**.
-
-## The Org Chart tour
-
-On a selected person node (a mind node with the person look), from `org-chart-tour-steps.ts`. It points at the node,
-its parts (`data-tour-part="person-role"`, `"person-initials"`) and its toolbar; it never grows the chart itself.
-
-1. **A Person in the Chart**: rings the node: name, role and initials; double-click (double-tap) to change the name.
-2. **Their Role**: rings the role line; click (tap) to write it.
-3. **Initials, Made for You**: rings the disc; the first letters of the name's first two words, following the name.
-4. **Add a Report**: rings **Add Child** (Tab on a keyboard); a new person under this one, on the same trunk.
-5. **Add a Peer**: rings **Add Sibling** (Enter on a keyboard); a new person reporting to the same manager.
-6. **Move a Whole Team** (a person with reports; otherwise **Teams Move Together**): rings the node.
-7. **The Mind Map Menu** (only while More shows): rings More; an org chart is a mind map flowing down: Tidy Map,
-   Spacing, Edit Outline.
-8. **That Is an Org Chart**: the closing card, with **Org Charts Help**.
-
-## The Sequence tour
-
-On a selected sequence diagram, from `sequence-tour-steps.ts`. Like the Sankey tour it reads the diagram on the canvas,
-then opens its Sequence dialog and carries on inside it, every step ringing a real control (each anchor a
-`data-tour-id`: `sequence-participants`, `-messages`, `-kind` on the first message's kind, `-add-message`, `-text`,
-`-preview`, `-numbered`). Each dialog step opens the dialog (again, if it was closed) on the tab it is about; a canvas
-step puts it away. While it runs, Escape is the tour's and never closes the dialog.
-
-1. **Who Calls Whom**: rings the diagram; lifelines, a row per message, a bar while a call waits for its reply.
-2. **The Sequence Menu** (only while More shows): rings More. Edit Sequence, Numbered, and Play under Animation.
-3. **Write It as a List**: rings the diagram; double-click (double-tap) to write it. Next opens the dialog.
-4. **The Participants**: the strip; rename, actor, move, remove with its messages.
-5. **A Row a Message**: the messages. With a keyboard it names Enter (the next message, from whoever was called) and
-   Backspace (an empty one removed); on a touch screen, the move arrows.
-6. **Call, Async or Reply** (only with a message): the first message's kind button.
-7. **Add a Message**: the Add Message row, up to sixty.
-8. **Or Type It**: brings the Text tab forward and rings it; put back to the messages on leaving.
-9. **Live Preview**: the preview.
-10. **Number Them**: the Numbered switch.
-11. **That Is a Sequence Diagram**: the closing card, with **Sequence Diagrams Help**. **Done** closes the dialog with
-    the tour, storing what is being typed as the dialog's own Done does; Skip leaves it open.
-
-## Menu steps on the elements of round two
-
-The chart, stack, entity, tab window, lane, boundary and portal are edited mostly from their own section of the
+The chart and stack are edited mostly from their own section of the
 element menu (More, then **Tools**). Their tours keep that step for everyone: it rings **More** while More shows, and
 otherwise the element itself, with "Right-click it" in place of "More" (a power user on a desktop has no More button).
 The tour points at the section by name; it never opens the menu itself.
@@ -352,9 +275,8 @@ Escape is the tour's and never closes the dialog.
 3. **Make It Grow**: rings the chart and previews **Grow** on it, looping while the step is up, never stored. Grow and
    Pop play once as it appears; Spin and Pulse loop.
 4. **The Chart's Own Menu**: the menu step. Chart Type (keeps the data), Data, Chart (the legend, Show Values, Show
-   Axis), Presets (a palette). On a pie or column chart, Data is a row per mark; on a chart drawn from a Sheet, Data
-   reads the Sheet and **Unlink From Sheet** keeps today's numbers.
-5. **A Row per Category** (a line, area or scatter chart not drawn from a Sheet): opens **Chart Data** and rings its
+   Axis), Presets (a palette). On a pie or column chart, Data is a row per mark.
+5. **A Row per Category** (a line, area or scatter chart): opens **Chart Data** and rings its
    table; the chart behind redraws as the numbers change.
 6. **Series Across the Top**: rings the series header row; rename, remove, or **+** for another series.
 7. **Add a Row**: rings **+ Add row**: a category at the end, every series at 0.
@@ -375,80 +297,6 @@ On a selected stack, from `stack-tour-steps.ts`.
 4. **The Stack Menu**: the menu step. Row, Column or Grid (with Columns), Gap, Padding, Align.
 5. **That Is a Stack**: the closing card, with **Stacks Help**.
 
-## The Entity tour
-
-On a selected entity, from `entity-tour-steps.ts`. Its fields carry `data-entity-fields` for the tour to ring.
-
-1. **A Title Over Its Fields**: rings the entity; one box for a UML class or an ER table.
-2. **Rename It**: rings the entity; double-click (double-tap) on the title bar types over the title, which formats
-   like any label.
-3. **name: Type** (an entity with fields): rings the fields; each is a name, an optional type and a key (PK, FK,
-   UK), and a double-click (double-tap) edits one in place, Enter moving to the next and adding one past the last.
-4. **Edit the Fields**: the menu step. Fields: a key, a name and a type per row, a cross to remove one, Add Field, up
-   to forty.
-5. **Join Them Up**: rings the entity; a "+" adds a related entity already joined, or a drag from the dot beside a
-   field to another entity's field draws a one-to-many relationship, which the Cardinality button changes.
-6. **That Is an Entity**: the closing card, with **Entities Help**.
-
-## The Tab Window tour
-
-On a selected tab window, from `tab-window-tour-steps.ts`.
-
-1. **Another Tab, Live**: rings the window; it shows a tab of this document, fitted, following every change there.
-2. **Open It to Edit** (a window showing a tab): rings its **Open** button (`data-tab-window-open`); the window is a
-   picture, so changes are made on the tab. A window with no tab yet instead has **Choose a Tab**, ringing its
-   button (`data-tab-window-choose`): any tab but this one and Plan tabs.
-3. **The Tab Window Menu**: the menu step. Shows (another tab) and Open.
-4. **Any Size**: rings the window; resized, the tab stays fitted and never cropped.
-5. **That Is a Tab Window**: the closing card, with **Tab Windows Help**.
-
-## The Lane tour
-
-On a selected lane, from `lane-tour-steps.ts`. Its gutter carries `data-lane-gutter`.
-
-1. **A Band for Each Role**: rings the lane; a role, a team or a system per lane, lanes butting edge to edge.
-2. **The Title Gutter**: rings the gutter; double-click (double-tap) to name it, its colour is Heading under Colours.
-3. **Drag the Seam** (rings the seam): more or less room for the title, snapping to the seams of the lanes around it.
-4. **Carries Its Steps**: rings the lane; dragging it brings everything inside, as a frame does.
-5. **Rows or Columns**: the menu step. Centring the title at the top turns the lane into a column; Upright Title
-   (Text) turns a side title to read bottom to top.
-6. **That Is a Lane**: the closing card, with **Lanes Help**.
-
-## The Boundary tour
-
-On a selected boundary, from `boundary-tour-steps.ts`.
-
-1. **A Zone That Holds Things**: rings the boundary; everything whose centre is inside moves with it, and nesting
-   deepens the tint.
-2. **Its Title**: rings the boundary; double-click (double-tap) to rename it, and an icon dropped on it goes before
-   the title (Tab and Inset styles; the C4 style names the C4 corner title instead).
-3. **The Meta Line** (a boundary showing one): rings it; a CIDR range or a C4 type, clicked (tapped) to type over.
-4. **Three Styles**: the menu step. Tab, Inset (nested), C4, and Meta Line on or off.
-5. **That Is a Boundary**: the closing card, with **Boundaries Help**.
-
-## The Diagram Key tour
-
-On a selected diagram key, from `diagram-key-tour-steps.ts`. It has no menu section, so no menu step.
-
-1. **It Builds Itself**: rings the key; a row for every line style the tab's arrows use and every mapped tag colour.
-2. **Say What It Means** (a key with rows): rings its first row's meaning (`data-key-meaning`); click (tap) the words to write the
-   meaning, Enter keeps it, Escape puts it back. An empty key instead has **Nothing to Key Yet** on the key: two
-   arrows in different line styles bring their rows.
-3. **Its Title**: rings the key; "Key" by default, double-click (double-tap) to rename; it grows downward on its own.
-4. **That Is a Diagram Key**: the closing card, with **Diagram Keys Help**.
-
-## The Portal tour
-
-On a selected portal, from `portal-tour-steps.ts`.
-
-1. **A Way Through**: rings the portal; two linked portals are a shortcut across the canvas or to another tab.
-2. **Step Through** (a linked portal, this one's link or one into it): rings it; a click (tap) comes out of the other,
-   a drag only moves it. An unlinked portal instead has **Not Linked Yet**: a dim ring leads nowhere until linked.
-3. **Link It**: the menu step. Portal: Name, Leads To (a link works both ways), Create Portal (a linked partner
-   beside it).
-4. **Walk Into It**: rings the portal; an Avatar-mode character walking in steps out of the other.
-5. **That Is a Portal**: the closing card, with **Portals Help**.
-
 ## Share roles
 
 | Role        | Element tours                                                                                  |
@@ -458,14 +306,12 @@ On a selected portal, from `portal-tour-steps.ts`.
 | Viewer      | Never offered                                                                                  |
 
 The gate is the toured kind's own edit check on the session's `can` (for a Sankey, `canEditSankey`; for a concept
-graphic, a mind node (a person node included) or a flowchart step, an Editor on an unlocked element; for a sequence
-diagram, `canEditSequence`; for a chart, a stack, an entity, a tab window, a lane, a boundary, a diagram key or a
-portal, an Editor on an unlocked element, since its data, its arrangement, its fields, the tab it shows, its gutter,
-its style, its meanings and its link are an Editor's), never `isReadOnly` alone.
+graphic, a chart or a stack, an Editor on an unlocked element, since its data and its arrangement are an Editor's),
+never `isReadOnly` alone.
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
-Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour`, `PyramidTour`, `FunnelTour`, `CycleTour`, `HubTour`, `OnionTour`, `ChevronsTour`, `TimelineTour`, `MindMapTour`, `FlowchartTour`, `OrgChartTour`, `SequenceTour`, `ChartTour`, `StackTour`, `EntityTour`, `TabWindowTour`, `LaneTour`, `BoundaryTour`, `DiagramKeyTour`, `PortalTour`), named in its registry entry:
+Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour`, `PyramidTour`, `FunnelTour`, `CycleTour`, `HubTour`, `OnionTour`, `ChevronsTour`, `TimelineTour`, `ChartTour`, `StackTour`), named in its registry entry:
 
 - **Offer**: `UI` · `Opened` · `<Kind>TourOffer` the first time the offer shows in a page load;
   `UI` · `Closed` · `<Kind>TourOffer` on Cancel.
@@ -481,19 +327,9 @@ Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour
   `...Outro`; the Onion's `OnionTourStepRings`, `...Core`, `...Outer`, `...Add`, `...Rows`, `...Animate` and
   `...Outro`; the Chevrons' `ChevronsTourStepStages`, `...Edit`, `...Bar`, `...Notes`, `...Add`, `...Animate` and
   `...Outro`; the Timeline's `TimelineTourStepLine`, `...Name`, `...When`, `...Add`, `...Rows`, `...Animate` and
-  `...Outro`; the Mind Map's `MindMapTourStepNode`, `...Child`, `...Sibling`, `...Branch`, `...Menu` and `...Outro`;
-  the Flowchart's `FlowchartTourStepStep`, `...Next`, `...Branch`, `...Type`, `...Lane`, `...Menu` and `...Outro`;
-  the Org Chart's `OrgChartTourStepPerson`, `...Role`, `...Initials`, `...Report`, `...Peer`, `...Team`, `...Menu` and
-  `...Outro`; the Sequence's `SequenceTourStepDiagram`, `...Menu`, `...Write`, `...Participants`, `...Messages`,
-  `...Kind`, `...Add`, `...Text`, `...Preview`, `...Numbered` and `...Outro`; the Chart's `ChartTourStepChart`,
+  `...Outro`; the Chart's `ChartTourStepChart`,
   `...Readout`, `...Animate`, `...Menu`, `...Data`, `...Series`, `...AddRow`, `...Import` and `...Outro`; the Stack's
-  `StackTourStepStack`, `...Child`, `...Drop`, `...Carry`, `...Menu` and `...Outro`; the Entity's
-  `EntityTourStepEntity`, `...Title`, `...Rows`, `...Menu`, `...Relate` and `...Outro`; the Tab Window's
-  `TabWindowTourStepWindow`, `...Open`, `...Choose`, `...Menu`, `...Size` and `...Outro`; the Lane's
-  `LaneTourStepLane`, `...Gutter`, `...Seam`, `...Carry`, `...Menu` and `...Outro`; the Boundary's
-  `BoundaryTourStepZone`, `...Title`, `...Meta`, `...Menu` and `...Outro`; the Diagram Key's `DiagramKeyTourStepKey`,
-  `...Meaning`, `...Empty`, `...Title` and `...Outro`; the Portal's `PortalTourStepPortal`, `...Travel`,
-  `...Unlinked`, `...Menu`, `...Walk` and `...Outro`.
+  `StackTourStepStack`, `...Child`, `...Drop`, `...Carry`, `...Menu` and `...Outro`.
 - **End**: `UI` · `Ended` · `<Kind>TourCompleted` | `<Kind>TourSkipped`.
 - **Settings row**: `UI` · `Toggled` · `<Kind>TourSeenOn` | `<Kind>TourSeenOff`; the switch over them all
   `ElementToursSeenOn` | `ElementToursSeenOff`.
@@ -522,13 +358,10 @@ help article's tour section; and a section here.
 - `apps/live/components/tour/sankey-element-tour-steps.ts`: the Sankey tour's steps.
 - `apps/live/components/tour/concept-element-tour-steps.ts`: the steps every concept graphic's tour is built from;
   `layer-stack-tour-steps.ts`, `pyramid-tour-steps.ts`, `funnel-tour-steps.ts`, `cycle-tour-steps.ts`, `hub-tour-steps.ts`, `onion-tour-steps.ts`, `chevrons-tour-steps.ts`, `timeline-tour-steps.ts`: each kind's own.
-- `apps/live/components/tour/mind-node-tour-steps.ts`, `flowchart-tour-steps.ts`, `org-chart-tour-steps.ts`,
-  `sequence-tour-steps.ts`: the Mind Map, Flowchart, Org Chart and Sequence tours' steps.
-- `apps/live/components/tour/chart-tour-steps.ts`, `stack-tour-steps.ts`, `entity-tour-steps.ts`,
-  `tab-window-tour-steps.ts`, `lane-tour-steps.ts`, `boundary-tour-steps.ts`, `diagram-key-tour-steps.ts`,
-  `portal-tour-steps.ts`: the round-two tours' steps; `menu-tour-step.ts`: their menu step.
+- `apps/live/components/tour/chart-tour-steps.ts`, `stack-tour-steps.ts`: the Chart and Stack tours' steps;
+  `menu-tour-step.ts`: their menu step.
 - `apps/live/lib/dialog-handle.ts`: the slot an open dialog registers its tabs and close in, for a tour that runs inside
-  it (`sankey-flows-dialog-handle.ts`, `sequence-dialog-handle.ts`, `chart-data-dialog-handle.ts`).
+  it (`sankey-flows-dialog-handle.ts`, `chart-data-dialog-handle.ts`).
 - `apps/live/lib/sankey-tour-focus.ts`: the band or node a step lifts on a Sankey.
 - `apps/live/lib/concept-tour-preview.ts`: what a step shows on a concept graphic or a chart: an animation previewed
   (a chart's Grow), or a chevron stage's bar held open.

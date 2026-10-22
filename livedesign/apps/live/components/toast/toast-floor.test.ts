@@ -52,24 +52,19 @@ describe('toastFloor', () => {
     expect(toastFloor({ viewportWidth: 390, viewportHeight: 844, obstacles: [cluster] })).toBe(108);
   });
 
-  it('skips chrome with no size, off screen, or in the top half (a dock moved to the top)', () => {
+  it('skips chrome with no size, off screen, or in the top half ', () => {
     const obstacles = [rect(0, 700, 0, 0), rect(0, 900, 1280, 40), rect(300, 80, 600, 60)];
     expect(toastFloor({ viewportWidth: 1280, viewportHeight: 800, obstacles })).toBe(TOAST_EDGE_PX);
   });
 
   it('names the editor and Explorer bottom chrome', () => {
-    for (const hook of [
-      'data-toast-floor',
-      'data-editor-tabbar',
-      'data-zoom-cluster',
-      'data-whiteboard-dock',
-    ]) {
+    for (const hook of ['data-toast-floor', 'data-editor-tabbar', 'data-zoom-cluster']) {
       expect(TOAST_FLOOR_SELECTOR).toContain(`[${hook}]`);
     }
   });
 
   // The sign-in banner stands on the editor's bottom chrome too (docs/specs/014-identity/sign-in-encouragement.md),
-  // with its own wider column: the Undo / Timer / Vote / Poll cluster beside a toast's column is under the banner's.
+  // with its own wider column: the Undo / Timer / Vote cluster beside a toast's column is under the banner's.
   it('measures a wider column when asked, so the sign-in banner clears the session cluster', () => {
     const cluster = { top: 790, left: 1060, right: 1424, width: 364, height: 46 };
     const at = { viewportWidth: 1440, viewportHeight: 900, obstacles: [cluster] };

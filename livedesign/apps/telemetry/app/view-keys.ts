@@ -10,7 +10,7 @@ export type SectionKey =
   | 'modes'
   | 'lookfeel'
   | 'settings'
-  | 'facilitation'
+  | 'teamwork'
   | 'connections'
   | 'pages'
   | 'help'
@@ -24,7 +24,7 @@ export const SECTION_TAB: Record<SectionKey, ViewKey> = {
   modes: 'features',
   lookfeel: 'features',
   settings: 'features',
-  facilitation: 'features',
+  teamwork: 'features',
   connections: 'features',
   pages: 'pages',
   help: 'pages',

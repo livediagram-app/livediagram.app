@@ -6,17 +6,17 @@ import { TEMPLATE_CATEGORIES } from './template-categories';
 describe('templateCatalogue', () => {
   it('lists the categories and every visible template with its category', () => {
     const { categories, templates } = templateCatalogue();
-    // Every category but one holding only editor-only templates (Forms), in order.
-    expect(categories.slice(0, -1)).toEqual(TEMPLATE_CATEGORIES.filter((c) => c.id !== 'forms'));
+    // Every category, in order, then the blanks.
+    expect(categories.slice(0, -1)).toEqual([...TEMPLATE_CATEGORIES]);
     expect(categories.every((c) => templates.some((t) => t.category === c.id))).toBe(true);
     expect(categories.at(-1)!.id).toBe('blanks');
     expect(templates.find((t) => t.kind === 'blank')!.category).toBe('blanks');
-    expect(templates.find((t) => t.kind === 'invoice')!.category).toBe('finance');
+    expect(templates.find((t) => t.kind === 'blank-illustration')!.category).toBe('blanks');
+    expect(templates.find((t) => t.kind === 'logo-design')!.category).toBe('presentations');
+    expect(templates.find((t) => t.kind === 'wireframe-website')!.category).toBe('design');
     expect(templates.map((t) => t.kind)).toEqual(
-      TEMPLATES.filter((t) => !t.hidden && !t.editorOnly).map((t) => t.kind),
+      TEMPLATES.filter((t) => !t.hidden).map((t) => t.kind),
     );
-    // A form template is the editor's to start: never offered to an agent.
-    expect(templates.some((t) => t.kind.endsWith('-form'))).toBe(false);
     expect(templates.every((t) => categories.some((c) => c.id === t.category))).toBe(true);
   });
 });

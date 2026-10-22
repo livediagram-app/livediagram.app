@@ -1,4 +1,4 @@
-// The Comment panel's thread as a conversation (docs/specs/012-collaboration/comment-pin.md "The look"):
+// A comment thread as a conversation, as presenting shows it (docs/specs/012-collaboration/presentation-mode.md):
 // bubbles under their author, your own on the right in the accent, everyone
 // else's on the left. Consecutive comments by one author group under one
 // name, the way a chat does, so a three-part remark reads as one voice.
@@ -8,8 +8,10 @@ import { Glyph, GlyphDisc, IDENTITY_FILL, identityVars } from '@livedesign/ui';
 import { AuthorDisc } from '@/components/primitives/AuthorDisc';
 import { relativeSince } from '@/lib/relative-time';
 import { MentionText } from '@/components/primitives/MentionText';
-import { tint } from '../collab-chrome';
-import { QA_ACCENT, stopPointer } from '../qa/qa-parts';
+import { tint } from '@/lib/element-tint';
+
+// Your own bubbles in the accent, read from `--collab-accent` where a scope sets it.
+const COLLAB_ACCENT = 'var(--collab-accent)';
 
 const CrossGlyph = () => (
   <Glyph size={8} units={16}>
@@ -91,10 +93,10 @@ export function CommentBubbles({
                     key={c.id}
                     className={`group/bubble relative max-w-full whitespace-pre-wrap break-words px-2.5 py-1.5 text-[11.5px] leading-snug ${
                       mine ? 'rounded-2xl rounded-tr-md' : 'rounded-2xl rounded-tl-md'
-                    } ${fresh ? 'qa-enter' : ''}`}
+                    } ${fresh ? 'collab-enter' : ''}`}
                     style={{
                       color: textColor,
-                      backgroundColor: mine ? tint(QA_ACCENT, 0.16) : tint(textColor, 0.06),
+                      backgroundColor: mine ? tint(COLLAB_ACCENT, 0.16) : tint(textColor, 0.06),
                     }}
                   >
                     <MentionText
@@ -103,8 +105,8 @@ export function CommentBubbles({
                       // Falls back to the text colour where no card accent is in
                       // scope (the presentation popover reuses these bubbles).
                       chipStyle={{
-                        color: `var(--qa-accent-ink, ${textColor})`,
-                        backgroundColor: tint(`var(--qa-accent, ${textColor})`, 0.16),
+                        color: `var(--collab-accent-ink, ${textColor})`,
+                        backgroundColor: tint(`var(--collab-accent, ${textColor})`, 0.16),
                       }}
                     />
                     {/* Your own comments only: the rule the popover applies,
@@ -115,7 +117,8 @@ export function CommentBubbles({
                         as="button"
                         type="button"
                         aria-label="Delete this comment"
-                        {...stopPointer}
+                        // A press on a control must not also select what it sits on.
+                        onPointerDown={(e) => e.stopPropagation()}
                         onClick={(e: React.MouseEvent) => {
                           e.stopPropagation();
                           onDelete(c.id);

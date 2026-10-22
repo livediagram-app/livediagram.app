@@ -62,7 +62,7 @@ and the rows menu, and only what differs is written here.
 
 - Badge: disc `r = m / 2` filled with the accent; glyph `iconId` in `ACCENT_BAR_TEXT`, else "i".
 - Tile: rounded square (`rx = m * 0.24`) filled `colorWash(accent, 0.16)` over the card fill; line-art glyph in the
-  accent; a Technology `iconId` draws its own tile at the same rect.
+  accent.
 - Initial: disc filled with the same wash; the title's first letter, upper-cased, in the accent ("?" with no title).
 
 ### Writes

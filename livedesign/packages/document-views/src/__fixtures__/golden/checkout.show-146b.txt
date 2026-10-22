@@ -1,4 +1,4 @@
-tab 0b34 "Checkout platform" · 30 elements: 16 boxes, 3 frames, 11 arrows · threads 1 open/2 · rev 41
+tab 0b34 "Checkout platform" · 30 elements: 16 boxes, 3 frames, 11 arrows · 1 page: 1 blank (view pages) · threads 1 open/2 · rev 41
 square 146b "Orders service" in frame c991 "Services"
   at 680,130 200x72
   iconId: "server"

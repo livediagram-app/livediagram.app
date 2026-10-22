@@ -1,10 +1,10 @@
 # Multi-point line / polygon tool
 
-A click-to-place vertex tool that fills the geometry gap between the Pencil (freehand only) and the fixed shape kinds: clean irregular regions (zones on an architecture diagram, floor plans, highlighted areas) and straight multi-segment polylines.
+A click-to-place vertex tool that fills the geometry gap left by the fixed shape kinds: clean irregular regions (zones on an architecture diagram, floor plans, highlighted areas) and straight multi-segment polylines.
 
 ## Model
 
-A committed polygon **is a `FreehandElement`** — normalised `points`, `closed` flag, everything inherited (selection, resize, rotate, lock, layers, theming via `strokeColor`/`fillColor`, history, sync, export, eraser). No new element type and no new fields: a polygon is just a freehand whose points happen to be sparse straight-line vertices.
+A committed polygon **is a `FreehandElement`** — normalised `points`, `closed` flag, everything inherited (selection, resize, rotate, lock, layers, theming via `strokeColor`/`fillColor`, history, sync, export). No new element type and no new fields: a polygon is just a freehand whose points happen to be sparse straight-line vertices.
 
 One rendering nuance: freehand paths are smoothed through `catmullRomToBezierPath`, which would round off deliberate corners. Both renderers (canvas `FreehandSvg`, headless `svgFreehandShape`) therefore render **straight `M/L` segments when the element has ≤ some vertex-count heuristic?** No — heuristics drift. Instead the element carries one new optional field:
 
@@ -12,7 +12,7 @@ One rendering nuance: freehand paths are smoothed through `catmullRomToBezierPat
 straightEdges?: boolean; // true = render M/L segments, no Catmull-Rom smoothing
 ```
 
-Set by this tool at commit; absent on pencil/highlighter strokes. Both renderers branch on it: `straightEdges` draws `M/L` segments, anything else goes through the same `catmullRomToBezierPath` smoothing, so an export draws a pen stroke with the curve the canvas shows. (The headless renderer used to draw straight segments for every freehand, which made an exported pen stroke visibly more jagged than the canvas; it now matches.) A freehand of fewer than two points draws nothing on either. Wire validation accepts the optional boolean.
+Set by this tool at commit; absent on other freehand elements (an imported or older stroke). Both renderers branch on it: `straightEdges` draws `M/L` segments, anything else goes through the same `catmullRomToBezierPath` smoothing, so an export draws a pen stroke with the curve the canvas shows. (The headless renderer used to draw straight segments for every freehand, which made an exported pen stroke visibly more jagged than the canvas; it now matches.) A freehand of fewer than two points draws nothing on either. Wire validation accepts the optional boolean.
 
 ## Gesture
 
@@ -25,7 +25,7 @@ Set by this tool at commit; absent on pencil/highlighter strokes. Both renderers
 - Banner copy: "Click to place points, click the start to close, double-click to finish". Mobile taps behave as clicks; the banner keeps the shorter mobile copy convention.
 - A minimum of 2 vertices is required to commit an open line, 3 to close; anything less on finish is a cancel, not a degenerate element.
 
-Commit runs through `createFreehand(vertices, closed)` (no RDP simplification — the user placed exactly the vertices they want), spreads theme colours the same way the pencil does (fill only when closed), selects the new element, and pushes one history entry.
+Commit runs through `createFreehand(vertices, closed)` (no RDP simplification — the user placed exactly the vertices they want), spreads theme colours (fill only when closed), selects the new element, and pushes one history entry.
 
 ## Telemetry
 

@@ -16,7 +16,7 @@ export type SaveRoom = {
 // by then the baseline may hold a peer's newer copy of an element, and diffing our snapshot against it
 // would broadcast our older copy over theirs.
 //
-// The ops the room's ledger records (a Plan board's `board` delta) go FIRST, and the write waits for the
+// The ops the room's ledger records (collab-ledger's ledgerKey) go FIRST, and the write waits for the
 // room to sequence them: a peer's save that lands after ours then merges them from the ledger. Sent after
 // the write, a peer saving at the same moment wrote before the ledger had them and erased them from D1.
 // Element ops still follow the write, so peers never hold an element D1 has not.

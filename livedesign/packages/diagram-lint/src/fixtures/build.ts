@@ -1,4 +1,4 @@
-// Small builders for lint fixtures: boxes, frames, lanes and pinned arrows on a tab, and a quiet lint.
+// Small builders for lint fixtures: boxes, frames, stacks and pinned arrows on a tab, and a quiet lint.
 
 import type { LintCode, LintReport } from '@livedesign/api-schema';
 import type { Anchor, Element, Tab } from '@livedesign/document';
@@ -52,7 +52,7 @@ export const tabOf = (...elements: Element[]): Pick<Tab, 'elements' | 'layers' |
 export const quiet = () => {};
 
 export const lint = (
-  tab: Pick<Tab, 'elements' | 'layers' | 'theme'> & Partial<Pick<Tab, 'opensIn'>>,
+  tab: Pick<Tab, 'elements' | 'layers' | 'theme'>,
   options: LintOptions = {},
 ): LintReport => lintTab(tab, { log: quiet, ...options });
 

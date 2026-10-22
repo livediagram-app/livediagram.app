@@ -4,7 +4,6 @@ import type { ArrowElement, Element, ShapeElement, Tab } from '@livedesign/docum
 // own (it just closes over the passed deps), so calling it outside a
 // component is fine — the alias keeps react-hooks/rules-of-hooks quiet.
 import { useElementSelectionActions as buildSelectionActions } from './useElementSelectionActions';
-import type { SheetDeleteGuard } from '@/hooks/sheets/useSheetDeleteGuard';
 
 // track() fires telemetry over the network; stub it out for the unit test.
 vi.mock('@/lib/telemetry', () => ({ track: () => {} }));
@@ -29,10 +28,7 @@ const pinnedArrow = (id: string, fromId: string, toId: string): ArrowElement => 
 
 // Build the hook over fake deps. `commit` synchronously applies the
 // mapper to `elements` and stashes the result so a test can assert on it.
-function setup(
-  elements: Element[],
-  opts: { tabLocked?: boolean; selection?: string[]; guard?: SheetDeleteGuard } = {},
-) {
+function setup(elements: Element[], opts: { tabLocked?: boolean; selection?: string[] } = {}) {
   const activeTab: Tab = {
     id: 't1',
     name: 'Tab',
@@ -55,7 +51,6 @@ function setup(
     lockedByOther: () => false,
     layerLockedIds: new Set<string>(),
     layerInertIds: new Set<string>(),
-    ...(opts.guard ? { sheetDeleteGuard: opts.guard } : {}),
   });
   return { actions, getResult: () => result };
 }
@@ -115,89 +110,5 @@ describe('deleteMultiSelected lock protection', () => {
     const { actions, getResult } = setup(els, { selection: ['a', 'b'] });
     actions.deleteMultiSelected();
     expect(getResult()).toBeNull();
-  });
-});
-
-// Deleting a Sheet asks first when it takes the sheet (docs/specs/029-sheets/sheet-store.md "Deleting a sheet").
-describe('deleting with the sheet guard', () => {
-  const answering = (answer: { release: () => void } | null) =>
-    vi.fn<SheetDeleteGuard>(() => Promise.resolve(answer));
-
-  it('deletes after the person confirms, then releases the sheets', async () => {
-    const release = vi.fn();
-    const guard = answering({ release });
-    const { actions, getResult } = setup([shape('a'), shape('b')], { selection: ['a'], guard });
-    actions.deleteSelected();
-    expect(guard).toHaveBeenCalledWith(new Set(['a']));
-    expect(getResult()).toBeNull();
-    await Promise.resolve();
-    expect(ids(getResult())).toEqual(['b']);
-    expect(release).toHaveBeenCalledOnce();
-  });
-
-  it('deletes nothing when the person cancels', async () => {
-    const guard = answering(null);
-    const { actions, getResult } = setup([shape('a'), shape('b')], {
-      selection: ['a', 'b'],
-      guard,
-    });
-    actions.deleteMultiSelected();
-    await Promise.resolve();
-    expect(getResult()).toBeNull();
-  });
-
-  it('deletes at once when the guard has nothing to ask', () => {
-    const guard = vi.fn<SheetDeleteGuard>(() => null);
-    const { actions, getResult } = setup([shape('a'), shape('b')], { selection: ['a'], guard });
-    actions.deleteSelected();
-    expect(ids(getResult())).toEqual(['b']);
-  });
-
-  it('never asks for a Cut, nor for a click event passed as the options', () => {
-    const guard = answering(null);
-    const cut = setup([shape('a'), shape('b')], { selection: ['a', 'b'], guard });
-    cut.actions.deleteMultiSelected({ cut: true });
-    expect(ids(cut.getResult())).toEqual([]);
-    const single = setup([shape('a')], { selection: ['a'], guard });
-    single.actions.deleteSelected({ cut: true });
-    expect(ids(single.getResult())).toEqual([]);
-    expect(guard).not.toHaveBeenCalled();
-    const clicked = setup([shape('a')], { selection: ['a'], guard });
-    clicked.actions.deleteSelected({ type: 'click' } as never);
-    expect(guard).toHaveBeenCalledOnce();
-  });
-});
-
-// A mind node takes its branch (docs/specs/009-elements/mind-node.md "Deleting").
-describe('deleting a mind node', () => {
-  const mind = (id: string, parent?: string, extra: Partial<ShapeElement> = {}) =>
-    shape(id, { shape: 'mind-node', ...(parent ? { mindParentId: parent } : {}), ...extra });
-  const map = (): Element[] => [
-    mind('root'),
-    mind('a', 'root'),
-    mind('a1', 'a'),
-    mind('b', 'root'),
-    pinnedArrow('root-a', 'root', 'a'),
-    pinnedArrow('a-a1', 'a', 'a1'),
-    pinnedArrow('root-b', 'root', 'b'),
-  ];
-
-  it('deletes the node, everything under it and their connectors', () => {
-    const { actions, getResult } = setup(map(), { selection: ['a'] });
-    actions.deleteSelected();
-    expect(ids(getResult())).toEqual(['b', 'root', 'root-b']);
-  });
-
-  it('cascades from each node of a multi-selection', () => {
-    const { actions, getResult } = setup([...map(), shape('loose')], { selection: ['a', 'loose'] });
-    actions.deleteMultiSelected();
-    expect(ids(getResult())).toEqual(['b', 'root', 'root-b']);
-  });
-
-  it('spares a locked node in the branch, and the nodes under it', () => {
-    const els = map().map((el) => (el.id === 'a' ? { ...el, locked: true } : el));
-    const { actions, getResult } = setup(els, { selection: ['root'] });
-    actions.deleteSelected();
-    expect(ids(getResult())).toEqual(['a', 'a-a1', 'a1']);
   });
 });

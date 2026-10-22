@@ -2,8 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { resolveTemplate } from './template-tab';
 import { isTemplateKind, templateKindOf, TEMPLATES } from './templates';
 
-// docs/specs/007-editor/templates-by-mode.md "Design templates": the retired device wireframes make
-// their wireframe-page replacements.
+// The retired device wireframes make their wireframe-page replacements.
 describe('retired templates', () => {
   it.each([
     ['mobile-wireframe', 'wireframe-mobile-app'],
@@ -17,7 +16,12 @@ describe('retired templates', () => {
   });
 
   it('passes a live kind through and refuses anything else', () => {
-    expect(templateKindOf('kanban')).toBe('kanban');
+    expect(templateKindOf('logo-design')).toBe('logo-design');
+    // Cut with the slide page kind and the infographics.
+    expect(templateKindOf('slide-deck')).toBeNull();
+    expect(templateKindOf('event-poster')).toBeNull();
+    // livediagram's other templates are no kind here.
+    expect(templateKindOf('kanban')).toBeNull();
     expect(templateKindOf('not-a-template')).toBeNull();
     expect(templateKindOf(42)).toBeNull();
     expect(templateKindOf('hasOwnProperty')).toBeNull();

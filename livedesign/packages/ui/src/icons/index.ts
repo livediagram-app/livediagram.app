@@ -39,17 +39,9 @@ export {
   TabsLabelIcon,
   TeamIcon,
 } from './status';
-export {
-  ActionIcon,
-  CommentIcon,
-  LinkIcon,
-  MindOutlineIcon,
-  NoteIcon,
-  TidyMapIcon,
-} from './badges';
+export { ActionIcon, CommentIcon, LinkIcon, NoteIcon } from './badges';
 export {
   EDITOR_MODE_ICONS,
-  FlowchartIcon,
   PagesIcon,
   PlanCardsIcon,
   PlanIcon,

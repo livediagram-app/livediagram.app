@@ -51,16 +51,13 @@ describe('preview hover stories', () => {
 });
 
 // An arriving group scales from its own box: without transform-box: fill-box a <g> scales from the view box's corner,
-// so the character flew in from the top left instead of walking in (story-parts.tsx FILL_BOX).
+// so it flies in from the top left.
 describe('a group that arrives', () => {
   it('scales from its own box on every template', () => {
-    let seen = 0;
     for (const { kind, svg } of markup) {
       for (const g of svg.match(/<g [^>]*class="[^"]*\bpv-arrive\b[^"]*"[^>]*>/g) ?? []) {
-        seen++;
         expect(g, kind).toContain('transform-box:fill-box');
       }
     }
-    expect(seen).toBeGreaterThan(0);
   });
 });

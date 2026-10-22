@@ -6,7 +6,6 @@ import type { SlideDeckState } from '@/app/document/[id]/useSlideDeck';
 import { SlideDeckPanel } from './SlideDeckPanel';
 
 // docs/specs/007-editor/pages-mode.md "Slides": the Slide Deck panel on a Pages tab.
-vi.mock('@/components/plan/PlanContext', () => ({ usePlan: () => undefined }));
 vi.mock('@/hooks/canvas/useSelectionStore', () => ({ useSelectionOf: () => new Set() }));
 vi.mock('@/lib/telemetry', () => ({ track: () => {} }));
 

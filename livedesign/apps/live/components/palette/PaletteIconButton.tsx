@@ -1,5 +1,4 @@
 import { SHAPE_DEFAULT_SIZE, type ShapeKind } from '@livedesign/document';
-import { planViewSize } from '@livedesign/items';
 import { PALETTE_DND_MIME } from '@/lib/icons';
 import { setPaletteDragPreview, suppressNativeDragImage } from '@/lib/palette-drag-preview';
 import { tileCaption } from './tile-caption';
@@ -61,7 +60,7 @@ type IconButtonProps = {
   onClick: () => void;
   children: React.ReactNode;
   disabled?: boolean;
-  // Greyed out with a reason (docs/specs/026-plan/plan-mode.md "The palette"): dimmed, no press and no drag, but
+  // Greyed out with a reason: dimmed, no press and no drag, but
   // still focusable (aria-disabled), with the reason in its hover card.
   disabledReason?: string | undefined;
   // Pressed-state styling. Used by the shape buttons during draw-to-
@@ -162,9 +161,9 @@ export function IconButton({
   const effectiveDragStart = dragKind
     ? (e: React.DragEvent) => {
         // `kind` alone, or `kind|choice` where the tile carries a
-        // creation-time one (docs/specs/009-elements/mode-button.md, /105, /123, /135). Without it a
-        // dragged Poll tile dropped a timer, because every session tile is
-        // the same shape kind and the choice lived only on the click path.
+        // creation-time variant. Without it a dragged tile dropped its kind's
+        // default, because tiles sharing a shape kind differ only by the choice,
+        // which otherwise lives only on the click path.
         e.dataTransfer.setData(
           PALETTE_DND_MIME,
           dragChoice ? `${dragKind}|${dragChoice}` : dragKind,
@@ -172,14 +171,11 @@ export function IconButton({
         e.dataTransfer.effectAllowed = 'copy';
         // Publish the footprint so the canvas ghost (docs/specs/010-palette/palette-drag-ghost.md) can preview
         // where this shape will land.
-        // A plan view's footprint is its view's (docs/specs/026-plan/plan-views.md).
-        const { width, height } =
-          dragKind === 'plan-view' ? planViewSize(dragChoice) : SHAPE_DEFAULT_SIZE[dragKind];
+        const { width, height } = SHAPE_DEFAULT_SIZE[dragKind];
         setPaletteDragPreview({
           kind: dragKind,
           width,
           height,
-          ...(dragKind === 'plan-card' && dragChoice ? { planType: dragChoice } : {}),
           ...(dragChoice ? { choice: dragChoice } : {}),
         });
       }

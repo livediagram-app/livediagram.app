@@ -15,6 +15,7 @@ vi.mock('@/components/chrome/auth-shared', () => ({
   useAuthHrefs: () => ({ signInHref: '/sign-in?return=home' }),
 }));
 
+import { WELCOME_POPULAR } from '@/app/explorer/home/first-run-starts';
 import { HomeWelcome } from './HomeWelcome';
 
 beforeEach(() => track.mockReset());
@@ -28,27 +29,26 @@ describe('HomeWelcome', () => {
     expect(track).toHaveBeenCalledWith('Home', 'Opened', 'Welcome');
   });
 
-  it('starts each mode blank at once', () => {
+  it('starts each kind of page blank at once', () => {
     render(<HomeWelcome offerSignIn={false} />);
     const links = within(section('Start Blank')).getAllByRole('link');
     expect(links.map((l) => l.getAttribute('href'))).toEqual([
-      '/new?template=blank',
-      '/new?template=whiteboard',
-      '/new?template=blank-session',
       '/new?template=blank-illustration',
-      '/new?template=blank-plan',
+      '/new?template=blank-logo',
+      '/new?template=blank-wireframe-phone',
+      '/new?template=blank-wireframe-tablet',
+      '/new?template=blank-wireframe-browser',
     ]);
-    expect(links[0]!.textContent).toContain('Blank Diagram');
     fireEvent.click(links[0]!);
     expect(track).toHaveBeenLastCalledWith('Home', 'Selected', 'Welcome.Blank');
   });
 
-  it('offers eight popular templates and a way to all of them', () => {
+  it('offers the popular templates and a way to all of them', () => {
     render(<HomeWelcome offerSignIn={false} />);
     const popular = section('Popular Templates');
     const starts = popular.querySelectorAll('[data-welcome-start]');
-    expect(starts).toHaveLength(8);
-    expect(starts[0]!.getAttribute('href')).toBe('/new?template=mindmap');
+    expect(starts).toHaveLength(WELCOME_POPULAR.length);
+    expect(starts[0]!.getAttribute('href')).toBe('/new?template=logo-design');
     fireEvent.click(starts[0]!);
     expect(track).toHaveBeenLastCalledWith('Home', 'Selected', 'Welcome.Template');
     const all = within(popular).getByRole('link', { name: 'Browse All Templates' });

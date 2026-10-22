@@ -17,7 +17,7 @@ describe('upgradeLegacyPreferences', () => {
     });
   });
 
-  // docs/specs/007-editor/editor-modes.md "Naming in the interface": Illustrate mode became Pages mode.
+  // docs/specs/007-editor/pages-mode.md "One mode": Illustrate mode became Pages mode.
   it("carries the Illustrate tour's seen-guard and tracks to the Pages names", () => {
     expect(
       upgradeLegacyPreferences({ illustrateTourSeen: true, illustrateTourKinds: ['slide'] }),
@@ -25,19 +25,6 @@ describe('upgradeLegacyPreferences', () => {
     expect(upgradeLegacyPreferences({ illustrateTourSeen: true, pagesTourSeen: false })).toEqual({
       pagesTourSeen: false,
     });
-  });
-
-  // docs/specs/007-editor/editor-modes.md "Naming in the interface": Facilitate mode became Workshop mode.
-  it("carries the Facilitate tour's seen-guard to the Workshop name", () => {
-    expect(upgradeLegacyPreferences({ facilitateTourSeen: true, theme: 'dark' })).toEqual({
-      workshopTourSeen: true,
-      theme: 'dark',
-    });
-    expect(upgradeLegacyPreferences({ facilitateTourSeen: true, workshopTourSeen: false })).toEqual(
-      {
-        workshopTourSeen: false,
-      },
-    );
   });
 
   it('drops the retired mode switches under every name', () => {

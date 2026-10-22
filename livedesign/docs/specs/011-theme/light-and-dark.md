@@ -41,13 +41,6 @@ does too, so the editor never asks anyone to switch mode to suit a tab.
   pair does, the box keeps its stored fill and text instead (its outline still follows the half). `packages/document/src/theme-halves.test.ts` covers the rule, and
   `apps/live/lib/template-theme-contrast.test.ts` every template under every theme, for a light- and a dark-mode
   viewer.
-- **A label reads against what is drawn behind it.** A template opened on the Default scheme keeps every label at
-  3:1 or more against what is behind it in either half: its own fill, else the topmost filled element it sits on (a
-  translucent wash mixed over what is under it), else the canvas. A label with no colour of its own takes the viewer's
-  ink, light on the dark canvas, so words on a panel whose fill the template fixes (a pale key, a pastel lane) carry a
-  dark ink (`PAPER_INK`), and coloured words straight on the canvas take a tone that reads on both halves'
-  (`CANVAS_TONES`), both in `packages/templates/src/template-inks.ts`. `apps/live/lib/template-overlay-contrast.test.ts`
-  checks every template but the Pages ones, whose words sit on pages with their own paper.
 - **A theme never sinks a label into what is behind it.** Picking a theme or a look, or drawing a tab in the other
   half, repaints each colour on its own, so it can move a label's backdrop (a panel the theme paints, the canvas)
   without its ink, or the ink without the backdrop: a template's dark `PAPER_INK` on a panel a dark theme repaints
@@ -59,7 +52,7 @@ does too, so the editor never asks anyone to switch mode to suit a tab.
   their words sit on pages with their own paper. `apps/live/lib/template-overlay-contrast.test.ts` holds every
   template's labels at 3:1 under every theme, picked in either half and seen in either
   ([#819](https://github.com/livedesign-app/livedesign.app/issues/819)).
-- **A page's own paper.** In Pages mode, an element on a page with a fill of its own (a solid, a gradient, an
+- **A page's own paper.** An element on a page with a fill of its own (a solid, a gradient, an
   image) is drawn for that page, not for the viewer's chrome: its theme colours in the half whose surface matches
   the page's (a light slide takes the light half, a dark one the dark half), its stock colours for that surface. A
   layout placed on a light slide in Steel keeps its dark words in dark chrome, where the dark half's light ink would
@@ -67,8 +60,7 @@ does too, so the editor never asks anyone to switch mode to suit a tab.
   (`usePageView`, `apps/live/lib/stock-colour-projector.ts`) and every export (`tabAsSeen`) draw it the same way.
 - **A Border-tier preset is a line drawing on the paper.** Hairline, Outline, Dotted, Dash-Dot and Frame sit on white
   in a light half and, in a dark half, on that half's element fill (the dark ink's for a theme that paints none, as
-  Default), their lines and labels lightened to read there. A white card on a dark canvas glared, as the flowchart
-  template's error step did. A preset-styled box is redrawn by the preset it wears (`colorPreset`), not only by its
+  Default), their lines and labels lightened to read there. A white card on a dark canvas glared. A preset-styled box is redrawn by the preset it wears (`colorPreset`), not only by its
   colours, so a white that two presets share (Paper keeps its white in both halves) maps to the right one.
 - **A shape styled with an earlier preset follows too.** A shape styled before presets met the floor stores the
   colours they had then; those are read as the same preset, so the box is drawn as today's version of it (a stored

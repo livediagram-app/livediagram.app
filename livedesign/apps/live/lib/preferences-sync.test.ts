@@ -23,7 +23,6 @@ import {
   writeUserPreferences,
   type UserPreferences,
 } from './user-preferences';
-import type { ShapePicks } from './whiteboard-shape-slots';
 
 // Saving preferences to the server (docs/specs/007-editor/user-preferences.md "Saving to the server").
 
@@ -32,34 +31,11 @@ const mockedPut = vi.mocked(apiPutPreferences);
 
 const uuid = (i: number) => `00000000-0000-4000-8000-${String(i).padStart(12, '0')}`;
 
-// A full account, as measured: 60 hidden documents, a busy shape history and the usual flags
-// came to 4,967 characters, past the api's cap, after which every save was refused.
+// A full account: 60 hidden documents and the usual flags, past the api's cap, after which every
+// save was refused.
 function fullAccount(): UserPreferences {
-  const kinds = [
-    'rectangle',
-    'ellipse',
-    'diamond',
-    'triangle',
-    'hexagon',
-    'star',
-    'arrow',
-    'line',
-    'cloud',
-    'cylinder',
-    'parallelogram',
-    'trapezoid',
-    'pentagon',
-    'octagon',
-    'cross',
-    'heart',
-  ];
-  const picks = Object.fromEntries(
-    kinds.map((k, i) => [k, [i + 1, 1_760_000_000_000 + i * 1000]]),
-  ) as ShapePicks;
   return {
     recentExcludedIds: Array.from({ length: RECENT_EXCLUDED_LIMIT }, (_, i) => uuid(i)),
-    whiteboardShapePicks: picks,
-    whiteboardPinnedShapes: ['arrow', 'rectangle'],
     quickSwatchOverrides: { brand: { fill: ['#112233', null, '#445566'] } } as never,
     logoGuidesHidden: ['centre', 'keylines', 'safe', 'grid'],
     powerUserBaseline: {
@@ -67,16 +43,12 @@ function fullAccount(): UserPreferences {
       notificationsEnabled: { before: {}, applied: { notificationsEnabled: false } },
     },
     // Stored by older clients and kept (docs/specs/004-interface-design/colour-picker.md).
-    customSwatches: Array.from({ length: 100 }, (_, i) => `#${String(i).padStart(6, '0')}`),
-    whiteboardYourColours: Array.from({ length: 50 }, (_, i) => `#${String(i).padStart(6, 'a')}`),
+    customSwatches: Array.from({ length: 220 }, (_, i) => `#${String(i).padStart(6, '0')}`),
     telemetryEnabled: false,
-    tourSeen: true,
-    planTourSeen: true,
-    workshopTourSeen: true,
+    alignmentGuides: true,
     uiScale: 1.1,
     panelOpacity: 0.85,
     elementIndicatorStyle: 'footer',
-    drawPattern: 'graph',
     reduceMotion: true,
     powerUserMode: true,
     notifyTips: false,
@@ -98,42 +70,34 @@ afterEach(() => {
 
 describe('fitPreferences', () => {
   it('leaves a blob that fits as it is', () => {
-    const prefs = { tourSeen: true };
+    const prefs = { alignmentGuides: true };
     expect(fitPreferences(prefs)).toBe(prefs);
   });
 
-  it('trims the oldest hidden ids, then the oldest shape picks, until it fits', () => {
+  it('keeps every other key whole when the hidden ids cannot make room', () => {
     const full = fullAccount();
     // Pad the rest so the hidden list alone cannot make room.
-    const prefs = { ...full, customSwatches: Array.from({ length: 280 }, () => '#abcdef') };
+    const prefs = { ...full, customSwatches: Array.from({ length: 400 }, () => '#abcdef') };
     expect(preferencesBodyLength(prefs)).toBeGreaterThan(PREFERENCES_BODY_MAX);
     const fitted = fitPreferences(prefs);
-    expect(preferencesBodyLength(fitted)).toBeLessThanOrEqual(PREFERENCES_BODY_MAX);
     expect(fitted.recentExcludedIds).toEqual([]);
-    // The newest picks stay: what went was the least recently used.
-    const left = Object.values(fitted.whiteboardShapePicks ?? {}).map((p) => p![1]);
-    const all = Object.values(full.whiteboardShapePicks ?? {}).map((p) => p![1]);
-    expect(left.length).toBeLessThan(all.length);
-    expect(Math.min(...left)).toBeGreaterThan(Math.max(...all.filter((t) => !left.includes(t))));
-    expect(fitted.customSwatches).toHaveLength(280);
+    expect(fitted.customSwatches).toHaveLength(400);
   });
 
-  it('fits the measured full account by dropping only its oldest hidden ids', () => {
+  it('fits a full account by dropping only its oldest hidden ids', () => {
     const prefs = fullAccount();
-    // Within a few characters of the 4,967 measured.
-    expect(preferencesBodyLength(prefs)).toBeGreaterThan(4900);
+    expect(preferencesBodyLength(prefs)).toBeGreaterThan(PREFERENCES_BODY_MAX);
     const fitted = fitPreferences(prefs);
     expect(preferencesBodyLength(fitted)).toBeLessThanOrEqual(PREFERENCES_BODY_MAX);
     const kept = fitted.recentExcludedIds ?? [];
     expect(kept.length).toBeGreaterThan(0);
     expect(kept).toEqual(prefs.recentExcludedIds!.slice(0, kept.length));
-    expect(fitted.whiteboardShapePicks).toEqual(prefs.whiteboardShapePicks);
   });
 
   it('stays fast on the largest blob it can be handed', () => {
     const prefs = {
       ...fullAccount(),
-      customSwatches: Array.from({ length: 280 }, () => '#abcdef'),
+      customSwatches: Array.from({ length: 400 }, () => '#abcdef'),
     };
     const start = performance.now();
     for (let i = 0; i < 20; i++) fitPreferences(prefs);
@@ -187,10 +151,10 @@ describe('fetchUserPreferences after a save that did not land', () => {
   it('keeps the device copy over the server and sends it again', async () => {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ showMinimap: false, uiScale: 1.2 }));
     window.localStorage.setItem(PREFERENCES_UNSYNCED_KEY, 'owner-1');
-    mockedGet.mockResolvedValue({ showMinimap: true, uiScale: 1, tourSeen: true });
+    mockedGet.mockResolvedValue({ showMinimap: true, uiScale: 1, alignmentGuides: true });
     mockedPut.mockResolvedValue(true);
     const merged = await fetchUserPreferences('owner-1');
-    expect(merged).toEqual({ showMinimap: false, uiScale: 1.2, tourSeen: true });
+    expect(merged).toEqual({ showMinimap: false, uiScale: 1.2, alignmentGuides: true });
     expect(mockedPut).toHaveBeenCalledWith('owner-1', merged);
   });
 
@@ -216,17 +180,20 @@ describe('rebaseUserPreferences', () => {
   });
 
   it('removes a key the change removed', () => {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ uiScale: 1.1, tourSeen: true }));
-    const { uiScale: _gone, ...rest } = { uiScale: 1.1, tourSeen: true };
-    expect(rebaseUserPreferences({ uiScale: 1.1, tourSeen: true }, rest)).toEqual({
-      tourSeen: true,
+    window.localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ uiScale: 1.1, alignmentGuides: true }),
+    );
+    const { uiScale: _gone, ...rest } = { uiScale: 1.1, alignmentGuides: true };
+    expect(rebaseUserPreferences({ uiScale: 1.1, alignmentGuides: true }, rest)).toEqual({
+      alignmentGuides: true,
     });
   });
 
   it('builds on the snapshot when there is no cache yet', () => {
-    expect(rebaseUserPreferences({ uiScale: 1 }, { uiScale: 1, tourSeen: true })).toEqual({
+    expect(rebaseUserPreferences({ uiScale: 1 }, { uiScale: 1, alignmentGuides: true })).toEqual({
       uiScale: 1,
-      tourSeen: true,
+      alignmentGuides: true,
     });
   });
 });

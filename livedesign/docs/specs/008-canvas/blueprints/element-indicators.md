@@ -4,19 +4,19 @@ Derived from [Element indicators](../element-indicators.md). Defaults in [DEFAUL
 
 ## Domain and naming
 
-| Term          | Identifier                                                                                 | Not                        |
-| ------------- | ------------------------------------------------------------------------------------------ | -------------------------- |
-| Indicator     | `IndicatorItem` with `kind` `link` / `note` / `action` / `comment`                         | badge, segment             |
-| Command       | `IndicatorItem` with `kind` `outline` / `tidy`, `command: true`                            | badge                      |
-| Style         | `ElementIndicatorStyle` = `'top' \| 'footer' \| 'off'`                                     | layout, mode, corner       |
-| Form          | `IndicatorForm` = `'top' \| 'footer' \| 'footer-compact' \| 'pip'`                         | variant                    |
-| Cluster       | the laid-out run of items for one element                                                  | strip, chip                |
-| Pip           | the fallback cluster on the outline (`pipInset`)                                           | badge pill                 |
-| Anchor        | `IndicatorAnchor` = `'top-right' \| 'top-centre' \| 'bottom-left' \| 'bottom-centre'`      | position                   |
-| Centred shape | `centredIndicators(el)`: circle, diamond, hexagon, cloud, triangle, trapezoid, star, actor | round shape                |
-| Content       | the label's text plus an inline icon (`contentBox`)                                        | label box                  |
-| Content inset | `ContentInset` = `{ top, bottom }`: how far the content area pulls in                      | reserve, padding           |
-| Outline rings | `indicatorRings(el, cornerPx)`: closed polylines, local px                                 | hit outline (that's lines) |
+| Term          | Identifier                                                                            | Not                        |
+| ------------- | ------------------------------------------------------------------------------------- | -------------------------- |
+| Indicator     | `IndicatorItem` with `kind` `link` / `note` / `action` / `comment`                    | badge, segment             |
+| Command       | `IndicatorItem` with `kind` `outline` / `tidy`, `command: true`                       | badge                      |
+| Style         | `ElementIndicatorStyle` = `'top' \| 'footer' \| 'off'`                                | layout, mode, corner       |
+| Form          | `IndicatorForm` = `'top' \| 'footer' \| 'footer-compact' \| 'pip'`                    | variant                    |
+| Cluster       | the laid-out run of items for one element                                             | strip, chip                |
+| Pip           | the fallback cluster on the outline (`pipInset`)                                      | badge pill                 |
+| Anchor        | `IndicatorAnchor` = `'top-right' \| 'top-centre' \| 'bottom-left' \| 'bottom-centre'` | position                   |
+| Centred shape | `centredIndicators(el)`: circle, diamond, hexagon, cloud, triangle, trapezoid, star   | round shape                |
+| Content       | the label's text plus an inline icon (`contentBox`)                                   | label box                  |
+| Content inset | `ContentInset` = `{ top, bottom }`: how far the content area pulls in                 | reserve, padding           |
+| Outline rings | `indicatorRings(el, cornerPx)`: closed polylines, local px                            | hit outline (that's lines) |
 
 ## Files
 
@@ -120,8 +120,7 @@ export function contentShift(
 
 ## Behaviour and state
 
-- Items, in order: commands first (`outline`, `tidy`, only for a mind root from
-  `useMindOutlineBadge`), then `link`, `note`, `action`, `comment`. Footer renders commands **last**.
+- Items, in order: `link`, `note`, `action`, `comment`.
 - `placeCluster(element, cornerPx, items, style, content)`, forms in order (Top → `top`; Footer →
   `footer` then `footer-compact`), for each:
   1. With a content box: `placeIndicators(..., contentBox)` → found: inset `{ 0, 0 }`.
@@ -153,7 +152,7 @@ export function contentShift(
   text colour at 15%, `rounded-full` on rounded elements else `rounded-md`, 11px glyphs.
 - Content inset: `InsetContent` is an `absolute inset-x-0` box with `top` / `bottom` from the inset,
   around the inline-icon layout and the plain label (both `absolute inset-0` inside it). Web
-  components, pages, lanes and icon captions lay out their own content and are not moved.
+  components, pages and icon captions lay out their own content and are not moved.
 - All glyphs inherit the element's text colour (`currentColor`).
 
 ## Accessibility

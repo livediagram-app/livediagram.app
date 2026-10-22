@@ -53,7 +53,8 @@ async function seed(page: Page, baseURL: string, owner: string, tab: Tab): Promi
     data: {
       id,
       name: `Reference board (${tab})`,
-      // The whiteboard series is a general tab opening in Draw mode (docs/specs/007-editor/editor-modes.md).
+      // The whiteboard series stores `opensIn: 'draw'` on its tab, which opens in Pages like every tab
+      // (docs/specs/007-editor/pages-mode.md "One mode").
       tabs: [
         {
           id: crypto.randomUUID(),
@@ -231,9 +232,7 @@ async function targets(page: Page): Promise<{ shape: Point; bare: Point }> {
         return (
           !!hit &&
           !!hit.closest('[data-canvas-a11y-root]') &&
-          !hit.closest(
-            '[data-element-id], [data-floating-panel], [data-whiteboard-dock], header, nav',
-          )
+          !hit.closest('[data-element-id], [data-floating-panel], header, nav')
         );
       };
       for (let y = 220; y < h - 260; y += 37)

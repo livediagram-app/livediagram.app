@@ -16,10 +16,6 @@ export type ElementTourApi = SankeyFlowsTourApi & {
   // A line, area or scatter chart: open its Chart Data dialog, or close it as its Done does.
   openChartData: () => void;
   closeChartData: () => void;
-  // A sequence diagram: open its Sequence dialog, close it as its Done does, or bring a tab forward.
-  openSequence: () => void;
-  closeSequence: () => void;
-  showSequenceTab: (tab: 'messages' | 'text') => void;
   // A chevron process: hold one stage's bar open, as if pointed at.
   showStageBar: (index: number) => void;
   clearPreview: () => void;

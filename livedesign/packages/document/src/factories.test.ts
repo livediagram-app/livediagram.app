@@ -1,8 +1,5 @@
-import { defaultFillColor, defaultTextColor } from './colors';
-import { isLegacyModeButtonSkin } from './selection-mode';
 import { describe, expect, it } from 'vitest';
 import {
-  DEFAULT_BUTTON_MODE,
   createLinkCard,
   activeCommentCount,
   createAnnotation,
@@ -140,38 +137,6 @@ describe('duplicateElements', () => {
     width: 50,
     height: 50,
     ...overrides,
-  });
-
-  // Element-to-element references on the copies. These were unmapped for a
-  // long time and the bug was quiet: the copy looked right and pointed at the
-  // original. A copied mind-map subtree re-parented itself onto the tree it
-  // came from; a copied portal pair stepped through to the originals.
-  it('re-parents a copied mind child onto its copied parent', () => {
-    const parent = shape('p');
-    const child = shape('c', { mindParentId: 'p' });
-    const { newElements, idMap } = duplicateElements([parent, child], new Set(['p', 'c']), 10, 10);
-    const dupChild = newElements.find((el) => el.id === idMap.get('c')) as ShapeElement;
-    expect(dupChild.mindParentId).toBe(idMap.get('p'));
-    expect(dupChild.mindParentId).not.toBe('p');
-  });
-
-  it('leaves a mind parent OUTSIDE the copied set alone', () => {
-    // Copying one child and pasting it back should still hang off that parent
-    // — only a reference whose target was itself copied follows the copy.
-    const parent = shape('p');
-    const child = shape('c', { mindParentId: 'p' });
-    const { newElements } = duplicateElements([parent, child], new Set(['c']), 10, 10);
-    expect((newElements[0] as ShapeElement).mindParentId).toBe('p');
-  });
-
-  it('links a copied portal to its copied partner', () => {
-    const a = shape('a', { shape: 'portal', portalTarget: 'b' });
-    const b = shape('b', { shape: 'portal', portalTarget: 'a' });
-    const { newElements, idMap } = duplicateElements([a, b], new Set(['a', 'b']), 0, 0);
-    const dupA = newElements.find((el) => el.id === idMap.get('a')) as ShapeElement;
-    const dupB = newElements.find((el) => el.id === idMap.get('b')) as ShapeElement;
-    expect(dupA.portalTarget).toBe(idMap.get('b'));
-    expect(dupB.portalTarget).toBe(idMap.get('a'));
   });
 
   it('points an element link at the copy when its target was copied', () => {
@@ -429,76 +394,6 @@ describe('comment helpers', () => {
 // Sanity: the Element union import is exercised so the type stays referenced.
 const _typecheck: Element = createShape('square', 0, 0);
 void _typecheck;
-
-describe('createShape (mode button, docs/specs/009-elements/mode-button.md)', () => {
-  it('arrives looking like a real button, not a themed box', () => {
-    const button = createShape('mode-button', 10, 20);
-    expect(button.shape).toBe('mode-button');
-    // It has to read as pressable before anyone styles it: a button skin (the
-    // kind's default per surface, not a stored colour, so it follows dark
-    // mode), a lift off the surface, and rounded corners.
-    expect(defaultFillColor(button, 'light')).toBe('#ffffff');
-    expect(defaultTextColor(button, 'dark')).not.toBe(defaultTextColor(button, 'light'));
-    expect(button.shadow).toBeTruthy();
-    expect(button.borderRadius).toBe('lg');
-    expect(button.textBold).toBe(true);
-    // Avatar is the default because walkthroughs are what the element is for.
-    expect(button.mode).toBe(DEFAULT_BUTTON_MODE);
-    expect(button.mode).toBe('avatar');
-  });
-
-  it('carries no label, so the face can say "Switch to <Mode>" instead', () => {
-    // A hardcoded label would go stale the moment the button is re-pointed at
-    // a different mode.
-    expect(createShape('mode-button', 0, 0).label).toBeUndefined();
-  });
-
-  it('is a square-ish tile, big enough to hit with a thumb', () => {
-    const button = createShape('mode-button', 0, 0);
-    expect(button.height).toBeGreaterThanOrEqual(72);
-    expect(button.width).toBeGreaterThanOrEqual(72);
-    // Roughly square — an icon over a label, not a wide pill.
-    expect(Math.abs(button.width - button.height)).toBeLessThan(40);
-  });
-
-  it('treats the pre-redesign button skin as unset, not as a colour choice', () => {
-    const fresh = createShape('mode-button', 0, 0);
-    // Today's button stores no colour (its skin is the kind's per-surface
-    // default, behaviour-skin.ts), so it is never mistaken for the legacy one.
-    expect(fresh.fillColor).toBeUndefined();
-    expect(isLegacyModeButtonSkin(fresh)).toBe(false);
-    // A button saved before the redesign wore white-on-brand-blue.
-    expect(
-      isLegacyModeButtonSkin({
-        shape: 'mode-button',
-        fillColor: '#0ea5e9',
-        strokeColor: '#0284c7',
-        textColor: '#ffffff',
-      }),
-    ).toBe(true);
-    // A deliberate blue on a modern button (dark text) is a real choice.
-    expect(
-      isLegacyModeButtonSkin({
-        shape: 'mode-button',
-        fillColor: '#0ea5e9',
-        strokeColor: '#0284c7',
-        textColor: '#0f172a',
-      }),
-    ).toBe(false);
-  });
-
-  it('makes a portal portal-shaped and unpaired (docs/specs/009-elements/portal-element.md)', () => {
-    const portal = createShape('portal', 0, 0);
-    expect(portal.shape).toBe('portal');
-    expect(portal.height).toBeGreaterThan(portal.width);
-    // Nothing to pair with until a second portal exists.
-    expect(portal.portalTarget).toBeUndefined();
-    // Unlabelled on purpose: the name is positional until someone types one.
-    expect(portal.label).toBeUndefined();
-    // Stretched wide it stops reading as a portal, so the aspect is locked.
-    expect(portal.aspectLocked).toBe(true);
-  });
-});
 
 describe('duplicateElements — rotation', () => {
   const note = {

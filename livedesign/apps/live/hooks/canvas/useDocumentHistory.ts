@@ -25,7 +25,7 @@ export type History = {
   // How many steps lie behind the present, uncapped (the cap drops the oldest snapshots, never
   // this count), and which branch of edits the present is on (raised by every new step, which
   // clears redo). Item undo steps sit between snapshots by these two counters
-  // (docs/specs/026-plan/items.md "Undo"; useItemUndo). Absent = 0.
+  // (useItemUndo). Absent = 0.
   depth?: number;
   branch?: number;
 };
@@ -98,9 +98,8 @@ function historyClearRedo(h: History): History {
 
 // Undo / redo re-graft the LIVE non-undoable state onto the restored
 // snapshot: comment threads (docs/specs/008-canvas/canvas-and-palette.md — typing a comment then Ctrl+Z
-// mustn't wipe it) AND the session tools' `timer` / `vote` tab fields
-// (docs/specs/012-collaboration/session-tools.md — not undoable, mutated via tick so no snapshot ever holds
-// them). Restoring a snapshot verbatim silently dropped both (then
+// mustn't wipe it) and the other live element fields (graftLiveTabState). Restoring a snapshot verbatim
+// silently dropped them (then
 // autosave persisted + broadcast the stripped tab to every peer).
 
 export function historyUndo(h: History): History {
@@ -149,8 +148,7 @@ export function historyReset(h: History, tabs: Tab[] | ((prev: Tab[]) => Tab[]))
   return { past: [], present: next, future: [], depth: 0, branch: branchOf(h) + 1 };
 }
 
-// Replace the present with content from elsewhere (a resync's fetched tabs, a Q&A board's own
-// write) WITHOUT touching the undo / redo stacks. A peer's op goes through historyApplyRemoteOp
+// Replace the present with content from elsewhere (a resync's fetched tabs) WITHOUT touching the undo / redo stacks. A peer's op goes through historyApplyRemoteOp
 // instead, so undo never brings back what a peer changed.
 export function historyApplyRemote(h: History, tabs: Tab[] | ((prev: Tab[]) => Tab[])): History {
   const next = typeof tabs === 'function' ? tabs(h.present) : tabs;

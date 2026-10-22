@@ -124,7 +124,6 @@ function liveDoc(id: string) {
     // No recorded creation intent (docs/specs/013-workspace/default-folders.md).
     opensIn: null,
     tabKind: null,
-    templateFamily: null,
   };
 }
 

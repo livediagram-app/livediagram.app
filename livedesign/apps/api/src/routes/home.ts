@@ -7,6 +7,7 @@
 // guest id. Opens are recorded on the tab read, not here (routes/document-subresource-routes.ts).
 
 import {
+  DAY_MS,
   HOME_WHAT_HAPPENED_ACTION_MAX,
   HOME_WHAT_HAPPENED_DAYS,
   type HomeRejection,
@@ -20,7 +21,6 @@ import { parseTimeZone } from '../home/local-day';
 import { json, missingAuth, notFound, rateLimited } from '../responses';
 import { userScope } from '../timeline';
 import type { RouteContext } from './context';
-import { DAY_MS } from '@livedesign/items';
 
 function rejected(reason: HomeRejection): Response {
   console.warn(`home: rejected reason=${reason}`);

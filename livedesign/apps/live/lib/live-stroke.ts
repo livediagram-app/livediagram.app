@@ -1,4 +1,4 @@
-// The stroke being drawn with a whiteboard pen (docs/specs/023-draw-mode/draw-mode.md "Pens";
+// The stroke being drawn with a whiteboard pen (docs/specs/023-draw-mode/drawing-tools.md "Markers";
 // blueprint whiteboard-round-one "Pen ink"). One object per stroke, made on the press: its raw
 // samples in canvas px (only exact repeats dropped, as Excalidraw does), a pressure per sample when
 // the pointer is a pen, the streamline its pointer draws with, and the subscribers that draw it, so
@@ -35,7 +35,7 @@ export type LiveStroke = {
   notify(): void;
   /**
    * Locks the stroke to the shape it was recognised as, with the pen where it is now: from then on
-   * the stroke IS that shape, and dragging on reshapes it (docs/specs/023-draw-mode/draw-mode.md
+   * the stroke IS that shape, and dragging on reshapes it (docs/specs/023-draw-mode/drawing-tools.md
    * "Shape recognition").
    */
   snapTo(shape: RecognisedShape): void;
@@ -44,12 +44,6 @@ export type LiveStroke = {
    * so far, and lands as ink unless it locks again. False when no shape was locked.
    */
   unsnap(): boolean;
-  /** True once broken out of a shape and not locked since: it lands as drawn, never recognised. */
-  keepsInk(): boolean;
-  /** Sets whether Alt is held: while it is, holding still does not lock the stroke. */
-  holdInk(on: boolean): void;
-  /** Whether Alt holds the stroke as ink. */
-  inkHeld(): boolean;
   /**
    * Sets whether Shift is held, as the latest pointer event says: while it is, reshaping keeps the
    * shape perfect, held to the `shiftRatio` of the shape as it is when Shift takes effect (as
@@ -71,8 +65,6 @@ export function createLiveStroke(
   const pressures: number[] | null = pointer === 'pen' ? [] : null;
   const listeners = createListeners();
   let snap: { shape: RecognisedShape; grab: Point } | null = null;
-  let broken = false;
-  let held = false;
   let constrained = false;
   // Width over height while Shift holds a locked shape; undefined while free or unlocked.
   let ratio: number | undefined;
@@ -106,21 +98,14 @@ export function createLiveStroke(
       const grab = points[points.length - 1];
       if (!grab) return;
       snap = { shape, grab };
-      broken = false;
       if (constrained) ratio = shiftRatio(shape);
     },
     unsnap() {
       if (!snap) return false;
       snap = null;
       ratio = undefined;
-      broken = true;
       return true;
     },
-    keepsInk: () => broken,
-    holdInk(on) {
-      held = on;
-    },
-    inkHeld: () => held,
     constrain(on) {
       if (on === constrained) return false;
       constrained = on;

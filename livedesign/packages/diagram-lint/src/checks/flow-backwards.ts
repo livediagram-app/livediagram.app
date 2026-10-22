@@ -63,7 +63,7 @@ export const flowBackwards: Check = (ctx) => {
         code: 'flow-backwards' as const,
         refs: [ref],
         message: `${arrowName(ctx, d.arrow)} points ${directionOf(v)}, against the flow ${flow}`,
-        fix: fixes.flowBackwards(ctx.source, ref, refOf(ctx, d.from!.id), refOf(ctx, d.to!.id)),
+        fix: fixes.flowBackwards(ref, refOf(ctx, d.from!.id), refOf(ctx, d.to!.id)),
         at: d.polyline[0]!,
       },
     ];

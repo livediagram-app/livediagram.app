@@ -39,9 +39,6 @@ a wrong obstacle **erases a line that should be visible**:
   inside it sits on top by design — so treating one as an obstacle would break
   every arrow drawn within a section. The single worst failure this feature
   could have.
-- **Swimlanes (`lane` shapes) never cut**, for the same reason: a lane paints
-  behind everything and holds the steps of its row, so an arrow handing off from
-  one lane to another crosses lanes by design and must stay whole.
 - **`text` and `annotation` never cut.** They have no fill to hide behind, so
   a gap under a transparent label reads as a bug, not as depth.
 - **Arrows and freehand never cut**: not boxes. A freehand stroke is a boxed

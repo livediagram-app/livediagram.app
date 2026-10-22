@@ -32,7 +32,7 @@ export function tabStatsOf(body: TabStatsBody, data: string): TabStats {
     } | null;
     const comments = host?.commentThread?.comments;
     if (Array.isArray(comments)) commentCount += comments.length;
-    // A Sheet's cell threads (docs/specs/029-sheets/sheet.md "Cell comments") count too.
+    // A Sheet's cell threads count too.
     const cells = host?.cellComments;
     if (cells && typeof cells === 'object') {
       for (const thread of Object.values(cells)) {

@@ -290,12 +290,12 @@ export function resolvePlacement(
   });
   if (!refBox) return refusal('is an arrow; place against a box');
   if (moving.has(ref.id)) return refusal('moves with it');
-  // `inside:<frame> right-of:<x>`: x must be inside that frame or lane, at any depth.
+  // `inside:<frame> right-of:<x>`: x must be inside that frame or stack, at any depth.
   if (placement.within !== undefined) {
     const holder = resolveOne(state, placement.within, operation);
     if ('rejection' in holder) return holder;
     if (!isContainer(holder.el))
-      return refusal(`is placed inside ${placement.within}, which is not a frame or lane`);
+      return refusal(`is placed inside ${placement.within}, which is not a frame or stack`);
     const holders = holdersOf(state);
     const inside = (id: ElementId): boolean => {
       const h = holders.get(id);
@@ -307,7 +307,7 @@ export function resolvePlacement(
   const taken = occupiers(state, moving);
   switch (placement.rel) {
     case 'inside': {
-      if (!isContainer(ref)) return refusal('is not a frame or lane');
+      if (!isContainer(ref)) return refusal('is not a frame or stack');
       const slot = insideSlot(refBox, size, taken, PLACEMENT_GAP);
       return {
         x: Math.round(slot.box.x),

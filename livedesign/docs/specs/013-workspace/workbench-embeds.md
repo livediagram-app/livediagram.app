@@ -17,7 +17,7 @@ A workbench embed has a **scope**, chosen when it is minted and fixed for the li
 | `document`  | `/embed/workbench?d=<id>`                 | that document (or its asked tab)   | one document                                       |
 | `workspace` | `/embed/workbench/explorer[/folder/<id>]` | Explorer Home, or the asked folder | the person's whole workspace, as the Explorer does |
 
-The **workspace** scope is the Explorer itself inside the workbench: a workbench keeps the person's diagrams one
+The **workspace** scope is the Explorer itself inside the workbench: a workbench keeps the person's documents one
 click away, and a project's folder beside its code.
 It never starts on `/new` or the landing page: a frame with no folder starts on Explorer Home
 ([Explorer Home](explorer-home.md)). Where this page says "the document" without a scope, it means the document
@@ -156,8 +156,8 @@ started on a folder shows that folder; its empty state is the Explorer's own, wi
 `window.postMessage` between the page and its workbench, each `{ type, v: 1, ... }`, sent only to the bound origin
 and accepted only from it. Unknown types are ignored, and logged once each.
 
-| Type                    | From      | Carries                                                              |
-| ----------------------- | --------- | -------------------------------------------------------------------- |
+| Type                   | From      | Carries                                                              |
+| ---------------------- | --------- | -------------------------------------------------------------------- |
 | `livedesign:hello`     | page      | Nothing; asks the workbench to answer                                |
 | `livedesign:hello-ack` | workbench | The workbench's name, shown in copy ("Reconnect in Acme Editor")     |
 | `livedesign:ready`     | page      | `documentId`, `documentName`, `tabId`, `tabName`, `role`             |
@@ -198,7 +198,7 @@ read: livedesign tab view 3h9x2a --tab 0b34 --view show --ref 146b
 
 - The header names the document, tab, ids and revision the selection was made on. Refs are element ids, so they stay
   valid after later edits; the agent reads what they hold now.
-- Labels are quoted as JSON strings, as the outline prints them: they are the diagram's content, possibly written by
+- Labels are quoted as JSON strings, as the outline prints them: they are the document's content, possibly written by
   other people, and an agent treats them as data, never as instructions.
 - `selected` lists each element as the outline prints it (kind, ref, label cut at 60 characters), up to
   `WORKBENCH_SELECTION_MAX_REFS`, then `… and <n> more: livedesign tab view <doc> --tab <t> --view show --ref selected`.
@@ -219,10 +219,10 @@ What a workbench does to fit this contract (its own documentation holds the deta
   shows the one command that fixes a missing CLI or sign-in.
 - **Pairing.** Unpaired, it runs `livedesign workbench pair --origin <its origin> --name <its name>` and shows the
   printed URL as an "Approve in livedesign" button, then opens the frame once paired.
-- **The selection.** While a diagram is in view, the place the person types to their agent names the document and
+- **The selection.** While a document is in view, the place the person types to their agent names the document and
   what is selected ("Home screen · 3 selected", or "Home screen · whole tab"). Sending attaches the selection
   reference to the message as text, and the person can leave it off any one message.
-- **Reveal.** A ref the agent prints (`146b`) can post `livedesign:reveal` to the open diagram.
+- **Reveal.** A ref the agent prints (`146b`) can post `livedesign:reveal` to the open document.
 
 ## Limits
 

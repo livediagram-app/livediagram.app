@@ -135,9 +135,6 @@ export async function deleteAccount(
   await env.DB.prepare('DELETE FROM favourites WHERE owner_id = ?').bind(ownerId).run();
   // tags (docs/specs/013-workspace/tags.md): every tag they made; the links, on anyone's documents, cascade.
   await env.DB.prepare('DELETE FROM tags WHERE owner_id = ?').bind(ownerId).run();
-  // form_reads (docs/specs/030-forms/forms.md "Hearing about responses"): what they had seen of other people's forms;
-  // reads of forms on their own documents cascade with the documents.
-  await env.DB.prepare('DELETE FROM form_reads WHERE owner_id = ?').bind(ownerId).run();
   // placement_defaults (docs/specs/013-workspace/default-folders.md): no foreign key reaches them.
   await env.DB.prepare('DELETE FROM placement_defaults WHERE owner_id = ?').bind(ownerId).run();
   // agent_changesets (docs/specs/024-agents/agent-changesets.md, CS27): the ones they wrote on other
@@ -266,17 +263,6 @@ export async function migrateOwnerId(
     // tags (docs/specs/013-workspace/tags.md "Tags follow the owner"): a guest tag whose name the account uses
     // merges into the account's, the rest move over.
     ...migrateTagStatements(env, fromOwnerId, toOwnerId),
-    // form_reads (docs/specs/030-forms/forms.md): the primary key is (code, owner_id); where both identities read
-    // one form, the account's row stays.
-    formReads: move(
-      `INSERT OR IGNORE INTO form_reads (code, owner_id, seen_number)
-       SELECT code, ?, seen_number
-       FROM form_reads
-       WHERE owner_id = ?`,
-      toOwnerId,
-      fromOwnerId,
-    ),
-    formReadsDrop: move('DELETE FROM form_reads WHERE owner_id = ?', fromOwnerId),
     // placement_defaults (docs/specs/013-workspace/default-folders.md): the primary key is
     // (owner_id, default_key), so INSERT OR IGNORE then DELETE: where both identities set a default
     // for one key, the account's stays. The guest's folders move above, so its defaults stay valid.

@@ -1,12 +1,10 @@
 // Pure aggregation of realtime presence state into the row shapes the
 // editor renders: per-tab presence buckets, remote cursor rows, laser-trail
-// rows, peer Avatar-mode characters (docs/specs/008-canvas/avatar-mode.md), and the per-element
-// remote-selection map. Lifted out of
+// rows, and the per-element remote-selection map. Lifted out of
 // useEditorState so this join logic (presence x tab-focus x idle, scoped
 // to the active tab and filtered to live participants) is unit-testable
 // without standing up the room. `now` and the last-seen map are passed in
 // rather than read from Date.now() / a ref, keeping the functions pure.
-import type { AvatarPresence } from '@livedesign/api-schema';
 import { participantKey, statusFromIdleMs, type Participant } from './identity';
 import type { LaserPoint } from './laser-buffer';
 import type { LaserConfig } from './laser-config';
@@ -166,27 +164,6 @@ export function buildRemoteCursorRows(
       y: pos.y,
       ...(p.picture ? { picture: p.picture } : {}),
     });
-  }
-  return rows;
-}
-
-// Peer Avatar-mode characters to draw (docs/specs/008-canvas/avatar-mode.md), joined with presence so each
-// one carries a live name + colour (the wire packet carries neither). Same
-// filters as cursors: never yourself, only the active tab, only participants
-// still in the room.
-export function buildRemoteAvatarRows(
-  remoteAvatars: Map<string, { tabId: string; avatar: AvatarPresence }>,
-  livePresenceById: Map<string, Participant>,
-  selfId: string,
-  activeId: string,
-): { id: string; name: string; color: string; avatar: AvatarPresence }[] {
-  const rows: { id: string; name: string; color: string; avatar: AvatarPresence }[] = [];
-  for (const [id, entry] of remoteAvatars) {
-    if (id === selfId) continue;
-    if (entry.tabId !== activeId) continue;
-    const p = livePresenceById.get(id);
-    if (!p) continue;
-    rows.push({ id, name: p.name, color: p.color, avatar: entry.avatar });
   }
   return rows;
 }

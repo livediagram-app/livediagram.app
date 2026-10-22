@@ -4,23 +4,11 @@ Follow the references below only as needed; never upfront.
 
 Research holds dated measurements and experiment reports. They record what was measured and decided at the time; the specs state what the product does now.
 
-## Migration
-
-How boards from Google Drive, Miro and Microsoft Whiteboard can come into livedesign: verified platform facts, costs and the decisions taken. The resulting specs live in docs/specs/020-import-export/.
-
-- ./migration-readiness.md - when designing a Miro or Whiteboard import: sourced findings, cost model
-
-## Pen input
-
-How a freehand stroke is smoothed live, so the line seen mid-stroke is the line that lands.
-
-- ./stroke-smoothing.md - when revisiting how the whiteboard pen smooths ink: techniques, measurements, the decision
-
 ## Canvas performance
 
-Where a large board spends its time during pan, zoom, drag, marquee and pen strokes.
+Where a large tab spends its time during pan, zoom, drag and marquee.
 
-- ./canvas-performance.md - when a large board feels slow: method, per-gesture breakdown, named hot spots
+- ./canvas-performance.md - when a large tab feels slow: method, per-gesture breakdown, named hot spots
 
 ## Agent CLI
 
@@ -30,7 +18,7 @@ The resulting specs live in docs/specs/024-agents/ and docs/specs/015-api/cli.md
 - ./agent-cli/agent-cli-ergonomics.md - when shaping CLI help, output, refs, errors or exit codes for agents
 - ./agent-cli/compact-representations.md - when choosing how a tab reads as text: token counts per format, views
 - ./agent-cli/editing-models.md - when designing how agents edit: op vocabulary, selectors, layout on edit, conflicts
-- ./agent-cli/authoring-from-scratch.md - when building diagrams from nothing: layout experiment, lint checks, preview
+- ./agent-cli/authoring-from-scratch.md - when building a tab from nothing: layout experiment, lint checks, preview
 - ./agent-cli/live-collaboration.md - when an agent edits beside a person: presence, changesets, revert, comments
 - ./agent-cli/shared-core-architecture.md - when deciding what the api, MCP and CLI each own; auth, distribution
 

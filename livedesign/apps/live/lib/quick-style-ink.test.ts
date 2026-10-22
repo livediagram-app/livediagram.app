@@ -8,7 +8,7 @@ import {
 import { describe, expect, it } from 'vitest';
 import { applyQuickStroke, applyQuickTextColour, quickStyleView, QUICK_INK } from './quick-style';
 
-// docs/specs/007-editor/editor-modes.md "One look": in Diagram mode Ink is the eighth swatch of the
+// docs/specs/008-canvas/quick-style-panel.md "Colours": Ink is the eighth swatch of the
 // Stroke and Text colour rows, after the theme's colours, stored by name.
 
 const forest = THEMES.find((t) => t.id === 'forest')!;

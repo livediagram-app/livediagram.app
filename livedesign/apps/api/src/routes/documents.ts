@@ -3,14 +3,6 @@
 // upgrade. The largest resource: every sub-path
 // under a document id lives here.
 
-import { readSeedItems, seedItems } from './item-routes';
-import { readSeedSheets, seedSheets } from './sheet-routes';
-import {
-  catalogueWithBoardTypes,
-  legacyCatalogue,
-  validateItemTypeCatalogue,
-  type ItemTypeCatalogue,
-} from '@livedesign/items';
 import type { Tab } from '@livedesign/document';
 import { isValidTab, migrateIncomingTab } from '@livedesign/document';
 import { capStoredName } from '../names';
@@ -79,8 +71,6 @@ import { relayDocumentRename } from '../room-client';
 import { handleDocumentRoomRoutes } from './document-room-routes';
 import { handleDocumentSubresources } from './document-subresource-routes';
 import { compileSeededTabs } from './document-seed';
-import { hasTemplateSheets } from '@livedesign/templates';
-import { materialiseTemplateSheets } from '@livedesign/templates/template-sheets';
 import { parsePlacement, resolvePlacement } from '../placement/resolve-placement';
 import { placementLookups } from '../placement/placement-lookups';
 import {
@@ -133,8 +123,6 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
         tabs?: Tab[];
         intent?: unknown;
         markUsed?: unknown;
-        items?: unknown;
-        sheets?: unknown;
       };
       const owner = requireOwner(ctx);
       if (owner instanceof Response) return owner;
@@ -152,16 +140,14 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
         logPlacementRejected('placement_invalid', placementScope(body.teamId));
         return placementRejected('placement_invalid');
       }
-      // Seeded tabs given as a graph, Mermaid or a template are compiled first (docs/specs/015-api/api.md);
+      // Seeded tabs given as a template are compiled first (docs/specs/015-api/api.md);
       // with no intent given, the first compiled tab supplies it, as the MCP derives it.
       let derivedIntent: CreationIntent | null = null;
-      let templateElements: Tab['elements'] = [];
       if (Array.isArray(body.tabs)) {
         const seed = compileSeededTabs(body.tabs, body.id);
         if ('refusal' in seed) return json(seed.refusal.body, { status: seed.refusal.status });
         body.tabs = seed.tabs as Tab[];
         derivedIntent = seed.intent;
-        templateElements = seed.templateElements;
       }
       // The creation intent (docs/specs/013-workspace/default-folders.md): which default folder a
       // create at the root of My Documents lands in. Malformed, it refuses the create.
@@ -197,34 +183,6 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
           }
         }
       }
-      // A template's Sheets (docs/specs/029-sheets/sheet-store.md "Template starts"), however the tabs came (the
-      // wizard, an agent, a template compiled above), on the validated tabs: made into seed sheets now, so the sheet exists the moment the
-      // document does, the mark dropped from each Sheet. Validated with the rest of the seed sheets below.
-      let templateSheets: unknown[] = [];
-      if (Array.isArray(body.tabs) && hasTemplateSheets(body.tabs)) {
-        const made = materialiseTemplateSheets(body.tabs, Date.now());
-        body.tabs = made.tabs;
-        templateSheets = made.sheets;
-        console.info('[documents] template sheets made', {
-          documentId: body.id,
-          count: made.sheets.length,
-        });
-      }
-      // Seed items (docs/specs/026-plan/items.md): an offline document's, on sync. Validated whole
-      // before anything is written.
-      const seedItemCreates = readSeedItems(body.items, owner);
-      if (seedItemCreates instanceof Response) return seedItemCreates;
-      // Seed sheets (docs/specs/029-sheets/sheet-store.md "Offline documents", "Copies"), validated the same way.
-      // The request's own sheets, then the template's; anything that is not a list is refused below.
-      const withTemplate = (asked: unknown): unknown => {
-        if (templateSheets.length === 0) return asked;
-        if (asked === undefined) return templateSheets;
-        if (!Array.isArray(asked)) return asked;
-        const own: readonly unknown[] = asked;
-        return [...own, ...templateSheets];
-      };
-      const seedSheetCreates = readSeedSheets(withTemplate(body.sheets));
-      if (seedSheetCreates instanceof Response) return seedSheetCreates;
       // Ownership guard (security): upsertDocumentMeta is INSERT ... ON
       // CONFLICT(id) DO UPDATE owner_id = excluded.owner_id, so a POST with an
       // id that already exists under a DIFFERENT owner would silently transfer
@@ -255,31 +213,6 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       if (binned) return binned.ownerId === owner ? documentTrashed() : forbidden();
       if (typeof body.presentation === 'string' && body.presentation.length > MAX_DECK_LEN) {
         return badRequest('presentation too large');
-      }
-      // A type catalogue a copy or a sync carries (docs/specs/026-plan/item-types.md
-      // "Storage and sync"), validated as the item-types route does; a bad one refuses the create.
-      let itemTypes: ItemTypeCatalogue | null = null;
-      if (body.itemTypes !== undefined && body.itemTypes !== null) {
-        const checked = validateItemTypeCatalogue(body.itemTypes);
-        if (!checked.ok)
-          return json({ error: 'item_types_invalid', reason: checked.reason }, { status: 400 });
-        itemTypes = checked.catalogue;
-      }
-      // A seeded Plan template's boards bring their card types (docs/specs/026-plan/item-types.md "The type
-      // catalogue"): they join the catalogue given (none: they are its card types). Cards carried with no catalogue
-      // come from a document made before card types started empty: they keep the default types (legacyCatalogue).
-      itemTypes = legacyCatalogue(itemTypes, (seedItemCreates?.length ?? 0) > 0);
-      const brought = catalogueWithBoardTypes(itemTypes, templateElements);
-      // Checked as a catalogue the item-types route takes; one that would break a rule (its size) keeps the given one.
-      if (brought && !validateItemTypeCatalogue(brought).ok) {
-        console.warn('[item-types] brought invalid', { documentId: body.id });
-      } else if (brought) {
-        console.info('[item-types] brought', {
-          documentId: body.id,
-          chosen: itemTypes === null,
-          types: brought.types.length,
-        });
-        itemTypes = brought;
       }
       // Where the document is filed, decided before the write and written by it
       // (docs/specs/013-workspace/folders.md "Placement on create"). An invalid placement refuses
@@ -335,7 +268,6 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
         presentation:
           seeded?.presentation ??
           (typeof body.presentation === 'string' ? body.presentation : null),
-        itemTypes,
         // Provenance (docs/specs/013-workspace/folders.md): only the closed set of generated sources
         // is accepted; anything else (or absent) is a user-made document.
         source: isDocumentSource(body.source) ? body.source : null,
@@ -345,7 +277,6 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
         // "Recorded intent"); null without one. A re-commit's upsert never rewrites it.
         opensIn: intent.intent?.mode ?? null,
         tabKind: intent.intent?.tabKind ?? null,
-        templateFamily: intent.intent?.templateFamily ?? null,
       });
       // Seed tabs if the caller provided them. The live app's
       // welcome flow uses this when it commits a fresh document
@@ -358,15 +289,6 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
           if (error instanceof TabTooLargeError) return payloadTooLarge();
           throw error;
         }
-      }
-      // Items only on a genuine create: a re-commit of an id never re-seeds its store.
-      if (!clash && seedItemCreates.length > 0) {
-        const refused = await seedItems(ctx, body.id, owner, seedItemCreates);
-        if (refused) return refused;
-      }
-      if (!clash && seedSheetCreates.length > 0) {
-        const refused = await seedSheets(ctx, body.id, owner, seedSheetCreates);
-        if (refused) return refused;
       }
       const liveDoc = await getDocument(env, body.id);
       // docs/specs/013-workspace/timeline.md §4.2: only a GENUINE create earns a timeline event. A

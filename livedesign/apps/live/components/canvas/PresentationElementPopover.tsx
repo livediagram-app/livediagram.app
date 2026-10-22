@@ -69,8 +69,7 @@ export function PresentationElementPopover({
   const now = useRelativeNow();
   const note = element.note?.trim();
   const comments = activeCommentCount(element.commentThread);
-  // An element's actions: one on an ordinary element, an Action panel's list
-  // on a card (docs/specs/012-collaboration/action-panel.md), read the one way.
+  // The action assigned to this element (docs/specs/012-collaboration/assigned-actions.md).
   const actions = elementActions(element);
 
   // Clamped so a click near an edge still opens a fully visible card.

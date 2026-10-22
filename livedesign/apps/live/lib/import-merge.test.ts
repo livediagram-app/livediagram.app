@@ -11,34 +11,10 @@ describe('mergeImportedTab', () => {
     expect(out.name).toBe('Mine');
   });
 
-  it('carries the tab KIND, so an imported Plan tab is still one', () => {
-    const out = mergeImportedTab(tab(), tab({ kind: 'sheet' }));
-    expect(out.kind).toBe('sheet');
-  });
-
-  // docs/specs/007-editor/editor-modes.md: an exported tab that opens in Draw still does, and an
-  // exported whiteboard from before editor modes comes back as one.
-  it('carries the opening mode, and reads an old whiteboard export as opening in Draw', () => {
-    expect(mergeImportedTab(tab(), tab({ opensIn: 'draw' })).opensIn).toBe('draw');
-    expect(mergeImportedTab(tab({ opensIn: 'draw' }), tab()).opensIn).toBe('draw');
-    vi.spyOn(console, 'info').mockImplementation(() => {});
-    const old = { ...tab(), kind: 'whiteboard' } as unknown as Tab;
-    expect(mergeImportedTab(tab(), old)).toMatchObject({ kind: 'diagram', opensIn: 'draw' });
-  });
-
-  it('carries a Form tab’s form, so an imported Form tab is not left without one', () => {
-    // docs/specs/030-forms/forms.md: a form restored from a file comes back as a copy. Only the kind came across, so
-    // the tab read as a Form tab holding no form.
-    const form = { v: 1, heading: 'Contact', sections: [{ id: 's1', title: '', questions: [] }] };
-    const out = mergeImportedTab(tab(), {
-      ...tab({ kind: 'form', opensIn: 'plan' }),
-      form,
-    } as unknown as Tab);
-    expect(out).toMatchObject({ kind: 'form', opensIn: 'plan', form });
-    // Any other import leaves a receiving Form tab's form alone.
-    expect(
-      mergeImportedTab({ ...tab({ kind: 'form' }), form } as unknown as Tab, tab()).form,
-    ).toEqual(form);
+  // docs/specs/007-editor/pages-mode.md "One mode": the mode a tab opens in travels with it.
+  it('carries the opening mode', () => {
+    expect(mergeImportedTab(tab(), tab({ opensIn: 'pages' })).opensIn).toBe('pages');
+    expect(mergeImportedTab(tab({ opensIn: 'pages' }), tab()).opensIn).toBe('pages');
   });
 
   it('carries the imported LAYERS, so element layerIds still resolve', () => {
@@ -63,12 +39,12 @@ describe('mergeImportedTab', () => {
   it('keeps what the import does not specify', () => {
     const mine = tab({
       theme: 'midnight',
-      kind: 'board',
+      kind: 'diagram',
       layers: [{ id: 'a', name: 'A' }],
     });
     const out = mergeImportedTab(mine, tab());
     expect(out.theme).toBe('midnight');
-    expect(out.kind).toBe('board');
+    expect(out.kind).toBe('diagram');
     expect(out.layers).toEqual([{ id: 'a', name: 'A' }]);
   });
 

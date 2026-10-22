@@ -4,36 +4,30 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { RECENT_DIAGRAMS_KEY, RECENT_FAN_MIN } from '@livedesign/api-schema';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { seededRandom } from '@livedesign/document';
-import {
-  HERO_FAN_FULL_MIN_PX,
-  HERO_FAN_OPENING,
-  HERO_FAN_SLOTS,
-  heroTemplate,
-  shuffleFan,
-} from '@/lib/hero-starts';
+import { HERO_FAN_OPENING, HERO_FAN_SLOTS, heroTemplate, shuffleFan } from '@/lib/hero-starts';
 import { Hero } from './Hero';
 import { HERO_FAN_SWAP_MS } from './HeroFan';
 import { PHONE_RECENT } from './HeroFanMine';
 
 // docs/specs/019-marketing/marketing-site.md "Hero": the badge and the question, the template search
-// with Start Blank in its bar, a returning visitor's recent diagrams, and the dealing fan.
+// with Start Blank in its bar, a returning visitor's recent documents, and the dealing fan.
 
 let reduceMotion = false;
-// Whether the window is wide enough for the whole fan (HERO_FAN_FULL_MIN_PX).
-let fullWidth = true;
+// Whether the window is wider than a phone (the fan's outer pair shows).
+let wideScreen = true;
 let observed: ((entries: { isIntersecting: boolean }[]) => void) | null = null;
 
 beforeEach(() => {
   reduceMotion = false;
-  fullWidth = true;
+  wideScreen = true;
   vi.stubGlobal(
     'matchMedia',
     (query: string) =>
       ({
         matches: query.includes('reduce')
           ? reduceMotion
-          : query.includes(`${HERO_FAN_FULL_MIN_PX}px`)
-            ? fullWidth
+          : query.includes('640px')
+            ? wideScreen
             : true,
         media: query,
         addEventListener() {},
@@ -87,11 +81,13 @@ describe('the hero', () => {
     const box = screen.getByLabelText('Search templates');
     fireEvent.focus(box);
     expect(screen.queryByRole('list', { name: 'Matching templates' })).toBeNull();
-    fireEvent.change(box, { target: { value: 'retro' } });
+    fireEvent.change(box, { target: { value: 'website' } });
     const list = screen.getByRole('list', { name: 'Matching templates' });
     const links = within(list).getAllByRole('link');
     expect(links.length).toBeGreaterThan(0);
-    expect(links[0]!.getAttribute('href')).toBe('/new?template=retrospective&via=Home.HeroSearch');
+    expect(links[0]!.getAttribute('href')).toBe(
+      '/new?template=wireframe-website&via=Home.HeroSearch',
+    );
     expect(screen.getByRole('link', { name: /Browse every template/ }).getAttribute('href')).toBe(
       '#templates',
     );
@@ -103,7 +99,7 @@ describe('the hero', () => {
     render(<Hero />);
     const box = screen.getByLabelText('Search templates') as HTMLInputElement;
     box.focus();
-    fireEvent.change(box, { target: { value: 'kanban' } });
+    fireEvent.change(box, { target: { value: 'logo design' } });
     fireEvent.keyDown(box, { key: 'ArrowDown' });
     const first = within(screen.getByRole('list', { name: 'Matching templates' })).getAllByRole(
       'link',
@@ -112,7 +108,7 @@ describe('the hero', () => {
     fireEvent.keyDown(first, { key: 'ArrowUp' });
     expect(document.activeElement).toBe(box);
     fireEvent.submit(box.form!);
-    expect(assign).toHaveBeenCalledWith('/new?template=kanban&via=Home.HeroSearch');
+    expect(assign).toHaveBeenCalledWith('/new?template=logo-design&via=Home.HeroSearch');
     fireEvent.keyDown(box, { key: 'Escape' });
     expect(box.value).toBe('');
   });
@@ -121,7 +117,7 @@ describe('the hero', () => {
     render(<Hero />);
     const box = screen.getByLabelText('Search templates');
     fireEvent.focus(box);
-    fireEvent.change(box, { target: { value: 'retro' } });
+    fireEvent.change(box, { target: { value: 'website' } });
     expect(screen.getByRole('list', { name: 'Matching templates' })).toBeTruthy();
     const blank = within(screen.getByRole('search')).getByRole('link', { name: 'Start Blank' });
     fireEvent.focus(blank);
@@ -139,12 +135,12 @@ describe('the hero', () => {
     render(<Hero />);
     const box = screen.getByLabelText('Search templates');
     fireEvent.focus(box);
-    fireEvent.change(box, { target: { value: 'retro' } });
+    fireEvent.change(box, { target: { value: 'website' } });
     expect(scrollIntoView).toHaveBeenCalledWith({ block: 'start' });
     rect.mockReturnValue({ bottom: 10 } as DOMRect);
     scrollIntoView.mockClear();
     fireEvent.change(box, { target: { value: '' } });
-    fireEvent.change(box, { target: { value: 'kanban' } });
+    fireEvent.change(box, { target: { value: 'logo design' } });
     expect(scrollIntoView).not.toHaveBeenCalled();
     rect.mockRestore();
   });
@@ -166,15 +162,15 @@ describe('the hero', () => {
     );
   });
 
-  it('keeps the template fan below RECENT_FAN_MIN recent diagrams, then deals theirs and Explorer Home', () => {
+  it('keeps the template fan below RECENT_FAN_MIN recent documents, then deals theirs and Explorer Home', () => {
     const note = (n: number) =>
       JSON.stringify({
         v: 1,
         diagrams: Array.from({ length: n }, (_, i) => ({
           id: `d${i + 1}`,
-          name: `Diagram ${i + 1}`,
+          name: `Document ${i + 1}`,
           savedAt: Date.now() - (i + 1) * 3600e3,
-          mode: 'diagram',
+          mode: 'pages',
         })),
       });
     localStorage.setItem(RECENT_DIAGRAMS_KEY, note(RECENT_FAN_MIN - 1));
@@ -196,7 +192,7 @@ describe('the hero', () => {
       .getAllByRole('link')
       .find((l) => l.getAttribute('href') === '/document/d1')!;
     expect(card.lastElementChild?.textContent).toMatch(/ago$/);
-    expect(card.firstElementChild?.textContent).toBe('Diagram 1');
+    expect(card.firstElementChild?.textContent).toBe('Document 1');
     expect(screen.getByRole('link', { name: /Explorer Home/ }).getAttribute('href')).toBe(
       '/explorer/home',
     );
@@ -259,28 +255,27 @@ describe('the fan', () => {
     expect(fanTitles()).toEqual(again);
   });
 
-  it('shows all seven only on a very wide screen, and never swaps a card out of sight', () => {
-    fullWidth = false;
+  it('shows all five only wider than a phone, and never swaps a card out of sight', () => {
+    wideScreen = false;
     vi.useFakeTimers();
     render(<Hero />);
     const cards = () =>
       screen
         .getAllByRole('link')
         .filter((a) => a.getAttribute('href')?.includes('via=Home.HeroFan'));
-    // The outer pair hides below the full width, the next pair on a phone.
-    const full = `max-[${HERO_FAN_FULL_MIN_PX}px]:hidden`;
+    // The outer pair hides on a phone.
     const hides = cards().map((a) => {
       const words = a.parentElement!.className.split(' ');
-      return words.includes(full) ? 'full' : words.includes('max-sm:hidden') ? 'phone' : 'always';
+      return words.includes('max-sm:hidden') ? 'phone' : 'always';
     });
-    expect(hides).toEqual(['full', 'phone', 'always', 'always', 'always', 'phone', 'full']);
+    expect(hides).toEqual(['phone', 'always', 'always', 'always', 'phone']);
     const first = fanTitles();
     act(() => {
       vi.advanceTimersByTime(HERO_FAN_SWAP_MS * 12);
     });
     const after = fanTitles();
-    expect([after[0], after[6]]).toEqual([first[0], first[6]]);
-    expect(after.slice(1, 6)).not.toEqual(first.slice(1, 6));
+    expect([after[0], after[4]]).toEqual([first[0], first[4]]);
+    expect(after.slice(1, 4)).not.toEqual(first.slice(1, 4));
   });
 
   it('never swaps under reduced motion', () => {

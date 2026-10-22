@@ -14,7 +14,7 @@ Scope, by file:
 | `packages/document/src/chart-types.ts`                                                    | `ChartType`, `CHART_TYPES`, `CHART_TYPE_LABELS`, `ChartVariant`, `chartTypeOf`, `chartShapeOf`, `chartTypeChange`, `lineVariantOf`, `variantFitsKind`                   |
 | `packages/document/src/chart-marks.ts`                                                    | `pieMarks`, `barMarks`, `lineMarks`, `scatterX`: every type's geometry, for the views and the exporter                                                                  |
 | `apps/live/components/palette/ChartTypeTiles.tsx`                                         | The Chart Type section's seven tiles                                                                                                                                    |
-| `apps/live/components/primitives/ChartTypeIcon.tsx`                                       | One glyph per chart type (menus, tiles, the Dashboard picker)                                                                                                           |
+| `apps/live/components/primitives/ChartTypeIcon.tsx`                                       | One glyph per chart type (menus, tiles)                                                                                                                                 |
 | `packages/document/src/chart-palettes.ts`                                                 | `ChartPaletteId`, `CHART_PALETTES`, `chartPaletteColors`, `isChartPaletteId`                                                                                            |
 | `packages/document/src/theme-presets.ts`                                                  | `themeChartPalette`: the tab theme's categorical ramp                                                                                                                   |
 | `packages/document/src/label-font.ts`                                                     | `LEGEND_FONT_PX`, `legendFontPx`                                                                                                                                        |
@@ -274,7 +274,7 @@ CSS. CSV import runs locally on a user-picked file; nothing is uploaded.
 
 Worst case `MAX_DATA_ARRAY` (5 000) data per array: one path or rect per datum, one key row per
 datum (clipped by `overflow-hidden`). CSV caps keep an import at 12 × 200. The layout is a pure
-function per render; hover state is per view. A Sheet's chart reads at most 500 categories × 12 series: exporting
+function per render; hover state is per view. A chart of 500 categories × 12 series: exporting
 one measured 8.3 ms (Line), 10.5 ms (Area) and 3.3 ms (Scatter) on a laptop (October 2026); a guard test holds the
 Area and Scatter export under 80 ms.
 

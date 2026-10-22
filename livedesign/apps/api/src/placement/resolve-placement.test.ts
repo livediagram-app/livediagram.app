@@ -257,22 +257,20 @@ describe('resolvePlacement', () => {
 describe('resolvePlacement with default folders', () => {
   // No choice: neither a team nor the folderId key in the body.
   const root = { teamId: null, folderId: null, chosen: false };
-  const diagram = { mode: 'diagram', tabKind: 'diagram' } as const;
-  const draw = { mode: 'draw', tabKind: 'diagram' } as const;
-  const retro = { mode: 'diagram', tabKind: 'diagram', templateFamily: 'retrospective' } as const;
+  const pages = { mode: 'pages', tabKind: 'diagram' } as const;
   const defaults = (entries: [PlacementDefaultKey, string][]) =>
     vi.fn(async (): Promise<ReadonlyMap<PlacementDefaultKey, string>> => new Map(entries));
 
   it("files into the caller's personal default for the intent's mode", async () => {
     const l = lookups({
-      getPlacementDefaults: defaults([['mode:diagram', 'f-diagrams']]),
+      getPlacementDefaults: defaults([['mode:pages', 'f-pages']]),
       getFolder: vi.fn(async () => ({ ownerId: 'user_alice', teamId: null })),
     });
-    expect(await resolvePlacement(root, alice, l, diagram)).toEqual({
+    expect(await resolvePlacement(root, alice, l, pages)).toEqual({
       ok: true,
-      placement: { teamId: null, folderId: 'f-diagrams' },
+      placement: { teamId: null, folderId: 'f-pages' },
       via: 'default',
-      key: 'mode:diagram',
+      key: 'mode:pages',
       skipped: [],
     });
     expect(l.getPlacementDefaults).toHaveBeenCalledWith('user_alice');
@@ -280,94 +278,36 @@ describe('resolvePlacement with default folders', () => {
 
   it('files into a team folder default of a team the caller has joined', async () => {
     const l = lookups({
-      getPlacementDefaults: defaults([['mode:draw', 'tf-sketches']]),
+      getPlacementDefaults: defaults([['mode:pages', 'tf-pages']]),
       getFolder: vi.fn(async () => ({ ownerId: 'user_bob', teamId: 't1' })),
       isJoinedMember: vi.fn(async () => true),
     });
-    expect(await resolvePlacement(root, alice, l, draw)).toEqual({
+    expect(await resolvePlacement(root, alice, l, pages)).toEqual({
       ok: true,
-      placement: { teamId: 't1', folderId: 'tf-sketches' },
+      placement: { teamId: 't1', folderId: 'tf-pages' },
       via: 'default',
-      key: 'mode:draw',
+      key: 'mode:pages',
       skipped: [],
     });
     expect(l.isJoinedMember).toHaveBeenCalledWith('t1', 'user_alice');
   });
 
-  it("uses the key of the intent's mode, not another", async () => {
-    const l = lookups({
-      getPlacementDefaults: defaults([['mode:diagram', 'f-diagrams']]),
-      getFolder: vi.fn(async () => ({ ownerId: 'user_alice', teamId: null })),
-    });
-    const outcome = await resolvePlacement(root, alice, l, draw);
-    expect(outcome).toMatchObject({ ok: true, via: 'root', skipped: [] });
-    expect(l.getFolder).not.toHaveBeenCalled();
-  });
-
   it('files a guest into its personal default', async () => {
     const l = lookups({
-      getPlacementDefaults: defaults([['mode:draw', 'f-guest']]),
+      getPlacementDefaults: defaults([['mode:pages', 'f-guest']]),
       getFolder: vi.fn(async () => ({ ownerId: 'guest-uuid', teamId: null })),
     });
-    expect(await resolvePlacement(root, guest, l, draw)).toMatchObject({
+    expect(await resolvePlacement(root, guest, l, pages)).toMatchObject({
       ok: true,
       placement: { teamId: null, folderId: 'f-guest' },
       via: 'default',
     });
   });
 
-  it('lets a template default win over the mode default', async () => {
-    const l = lookups({
-      getPlacementDefaults: defaults([
-        ['mode:diagram', 'f-diagrams'],
-        ['template:retrospective', 'f-retros'],
-      ]),
-      getFolder: vi.fn(async () => ({ ownerId: 'user_alice', teamId: null })),
-    });
-    expect(await resolvePlacement(root, alice, l, retro)).toEqual({
-      ok: true,
-      placement: { teamId: null, folderId: 'f-retros' },
-      via: 'default',
-      key: 'template:retrospective',
-      skipped: [],
-    });
-  });
-
-  it('falls through a dangling template default to the mode default', async () => {
-    const l = lookups({
-      getPlacementDefaults: defaults([
-        ['mode:diagram', 'f-diagrams'],
-        ['template:retrospective', 'f-gone'],
-      ]),
-      getFolder: vi.fn(async (id: string) =>
-        id === 'f-diagrams' ? { ownerId: 'user_alice', teamId: null } : null,
-      ),
-    });
-    expect(await resolvePlacement(root, alice, l, retro)).toEqual({
-      ok: true,
-      placement: { teamId: null, folderId: 'f-diagrams' },
-      via: 'default',
-      key: 'mode:diagram',
-      skipped: [{ key: 'template:retrospective', reason: 'folder_missing' }],
-    });
-  });
-
-  it('files a document with no template default in its mode default', async () => {
-    const l = lookups({
-      getPlacementDefaults: defaults([['mode:diagram', 'f-diagrams']]),
-      getFolder: vi.fn(async () => ({ ownerId: 'user_alice', teamId: null })),
-    });
-    expect(await resolvePlacement(root, alice, l, retro)).toMatchObject({
-      via: 'default',
-      key: 'mode:diagram',
-      skipped: [],
-    });
-  });
-
   it('files at an explicit root of My Documents without reading the defaults', async () => {
-    const l = lookups({ getPlacementDefaults: defaults([['mode:diagram', 'f-diagrams']]) });
+    const l = lookups({ getPlacementDefaults: defaults([['mode:pages', 'f-pages']]) });
     const explicitRoot = { teamId: null, folderId: null, chosen: true };
-    expect(await resolvePlacement(explicitRoot, alice, l, diagram)).toEqual({
+    expect(await resolvePlacement(explicitRoot, alice, l, pages)).toEqual({
       ok: true,
       placement: { teamId: null, folderId: null },
       via: 'explicit',
@@ -377,23 +317,18 @@ describe('resolvePlacement with default folders', () => {
   });
 
   it('never reads the defaults without an intent', async () => {
-    const l = lookups({ getPlacementDefaults: defaults([['mode:diagram', 'f-diagrams']]) });
+    const l = lookups({ getPlacementDefaults: defaults([['mode:pages', 'f-pages']]) });
     expect(await resolvePlacement(root, alice, l, null)).toMatchObject({ ok: true, via: 'root' });
     expect(l.getPlacementDefaults).not.toHaveBeenCalled();
   });
 
   it('lets an explicit folder win without reading the defaults', async () => {
     const l = lookups({
-      getPlacementDefaults: defaults([['mode:diagram', 'f-diagrams']]),
+      getPlacementDefaults: defaults([['mode:pages', 'f-pages']]),
       getFolder: vi.fn(async () => ({ ownerId: 'user_alice', teamId: null })),
     });
     expect(
-      await resolvePlacement(
-        { teamId: null, folderId: 'f-picked', chosen: true },
-        alice,
-        l,
-        diagram,
-      ),
+      await resolvePlacement({ teamId: null, folderId: 'f-picked', chosen: true }, alice, l, pages),
     ).toMatchObject({ ok: true, placement: { folderId: 'f-picked' }, via: 'explicit' });
     expect(l.getPlacementDefaults).not.toHaveBeenCalled();
   });
@@ -401,10 +336,10 @@ describe('resolvePlacement with default folders', () => {
   it("lets an explicit team's root win without reading the defaults", async () => {
     const l = lookups({
       isJoinedMember: vi.fn(async () => true),
-      getPlacementDefaults: defaults([['mode:diagram', 'f-diagrams']]),
+      getPlacementDefaults: defaults([['mode:pages', 'f-pages']]),
     });
     expect(
-      await resolvePlacement({ teamId: 't1', folderId: null, chosen: true }, alice, l, diagram),
+      await resolvePlacement({ teamId: 't1', folderId: null, chosen: true }, alice, l, pages),
     ).toEqual({
       ok: true,
       placement: { teamId: 't1', folderId: null },
@@ -415,49 +350,49 @@ describe('resolvePlacement with default folders', () => {
   });
 
   it('skips a default whose folder is gone and files at the root', async () => {
-    const l = lookups({ getPlacementDefaults: defaults([['mode:diagram', 'f-gone']]) });
-    expect(await resolvePlacement(root, alice, l, diagram)).toEqual({
+    const l = lookups({ getPlacementDefaults: defaults([['mode:pages', 'f-gone']]) });
+    expect(await resolvePlacement(root, alice, l, pages)).toEqual({
       ok: true,
       placement: { teamId: null, folderId: null },
       via: 'root',
-      skipped: [{ key: 'mode:diagram', reason: 'folder_missing' }],
+      skipped: [{ key: 'mode:pages', reason: 'folder_missing' }],
     });
   });
 
   it("skips a personal default that is no longer the caller's", async () => {
     const l = lookups({
-      getPlacementDefaults: defaults([['mode:diagram', 'f-carol']]),
+      getPlacementDefaults: defaults([['mode:pages', 'f-carol']]),
       getFolder: vi.fn(async () => ({ ownerId: 'user_carol', teamId: null })),
     });
-    expect(await resolvePlacement(root, alice, l, diagram)).toMatchObject({
+    expect(await resolvePlacement(root, alice, l, pages)).toMatchObject({
       ok: true,
       via: 'root',
-      skipped: [{ key: 'mode:diagram', reason: 'folder_not_visible' }],
+      skipped: [{ key: 'mode:pages', reason: 'folder_not_visible' }],
     });
   });
 
   it('skips a default in a team the caller has left', async () => {
     const l = lookups({
-      getPlacementDefaults: defaults([['mode:draw', 'tf-old']]),
+      getPlacementDefaults: defaults([['mode:pages', 'tf-old']]),
       getFolder: vi.fn(async () => ({ ownerId: 'user_bob', teamId: 't9' })),
     });
-    expect(await resolvePlacement(root, alice, l, draw)).toMatchObject({
+    expect(await resolvePlacement(root, alice, l, pages)).toMatchObject({
       ok: true,
       placement: { teamId: null, folderId: null },
       via: 'root',
-      skipped: [{ key: 'mode:draw', reason: 'team_not_joined' }],
+      skipped: [{ key: 'mode:pages', reason: 'team_not_joined' }],
     });
   });
 
   it('skips a team default on the guest path without reading membership', async () => {
     const l = lookups({
-      getPlacementDefaults: defaults([['mode:draw', 'tf']]),
+      getPlacementDefaults: defaults([['mode:pages', 'tf']]),
       getFolder: vi.fn(async () => ({ ownerId: 'user_bob', teamId: 't1' })),
       isJoinedMember: vi.fn(async () => true),
     });
-    expect(await resolvePlacement(root, guest, l, draw)).toMatchObject({
+    expect(await resolvePlacement(root, guest, l, pages)).toMatchObject({
       via: 'root',
-      skipped: [{ key: 'mode:draw', reason: 'team_not_joined' }],
+      skipped: [{ key: 'mode:pages', reason: 'team_not_joined' }],
     });
     expect(l.isJoinedMember).not.toHaveBeenCalled();
   });

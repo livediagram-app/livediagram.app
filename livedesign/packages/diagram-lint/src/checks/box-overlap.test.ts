@@ -39,13 +39,4 @@ describe('box-overlap', () => {
     const graph = [box('a', 0, 0), box('b', 300, 0), arrow('x', 'a', 'b'), badge];
     expect(of(lint(tabOf(...graph)), 'box-overlap')).toEqual([]);
   });
-
-  it('suggests a graph source compare', () => {
-    expect(
-      of(
-        lint(tabOf(box('a', 0, 0), box('b', 60, 20), arrow('x', 'a', 'b')), { source: 'graph' }),
-        'box-overlap',
-      )[0]!.fix,
-    ).toBe('graph lint --compare direction,groups');
-  });
 });

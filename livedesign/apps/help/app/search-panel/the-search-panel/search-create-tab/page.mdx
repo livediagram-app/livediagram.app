@@ -19,11 +19,11 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles('the-search-panel').filter((a) => a.slug !== 'search-create-tab')}
 >
 
-As well as finding things, the [search panel](/help/search-panel/the-search-panel/) can run **actions**: editor commands offered as results. One of the handiest is creating a [tab](/help/tabs/using-tabs/): when you are inside a document and your query looks like you want a new board, search offers a **Create New Tab** result.
+As well as finding things, the [search panel](/help/search-panel/the-search-panel/) can run **actions**: editor commands offered as results. One of the handiest is creating a [tab](/help/tabs/using-tabs/): when you are inside a document and your query looks like you want a new tab, search offers a **Create New Tab** result.
 
 ## When it appears
 
-The action surfaces when your query matches its name or keywords, for example typing `tab`, `new`, `create`, `add`, `page`, `sheet` or `board`. It only shows inside a document you can edit, where there is something to add a tab to: never from the Explorer page, and never for a Viewer or Participant.
+The action surfaces when your query matches its name or keywords, for example typing `tab`, `new`, `create`, `add` or `page`. It only shows inside a document you can edit, where there is something to add a tab to: never from the Explorer page, and never for a Viewer or Participant.
 
 **Create New Tab** is an ordinary editor command, listed in the **Actions** group of the results. That group sits below the navigation and element matches, so an actual match still wins the default `Enter`, and you arrow down to the command to choose it deliberately. When nothing else matches, the action is the first result and `Enter` runs it straight away.
 
@@ -37,9 +37,9 @@ Picking **Create New Tab** does exactly what the `+` button at the end of the ta
 
 - It adds a new tab named "Tab" plus one more than the number of tabs (Tab 3, Tab 4, ...) at the end of the tab bar, and switches to it.
 - The new tab takes the current tab's look (its theme, canvas background and font), so it matches the rest of the document.
-- It opens in the current tab's mode (a Pages tab makes a Pages tab, a Plan tab a Plan tab), on that mode's own start, so you can begin from a template or close it for a blank canvas.
+- It opens on **Start Making Pages**, so you can begin from a template or close it for one empty page. See [Working with Pages](/help/pages/working-with-pages/).
 
-From there it is an ordinary tab: rename it, fold it into a [folder](/help/tabs/tab-folders/), or start placing elements. Changed your mind? Delete the tab from its tab menu.
+From there it is an ordinary tab: rename it, fold it into a [folder](/help/tabs/tab-folders/), or start adding pages. Changed your mind? Delete the tab from its tab menu.
 
 <Tip>
   Think of search actions as shortcuts for "I know what I want to do". The panel doubles as a

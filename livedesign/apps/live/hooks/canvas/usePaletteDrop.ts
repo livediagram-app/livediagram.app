@@ -7,7 +7,6 @@
 // onDragOver / onDrop handlers to spread onto the
 // canvas <main>.
 
-import { endPlanCardDrag, planCardDragOver } from '@/hooks/plan/plan-card-drop';
 import type { DragEvent as ReactDragEvent, RefObject } from 'react';
 import type { ShapeKind } from '@livedesign/document';
 import { pointerToCanvas } from '@/lib/canvas';
@@ -54,12 +53,8 @@ export function usePaletteDrop({
     // not just the MIME type.
     if (overFloatingPanel(e.target)) {
       e.dataTransfer.dropEffect = 'none';
-      endPlanCardDrag();
       return;
     }
-    // A Plan card from the palette opens a gap in the board column under the pointer
-    // (docs/specs/026-plan/plan-mode.md "The palette").
-    planCardDragOver(e.clientX, e.clientY);
     // A file (an image) is accepted the same way a tile is,
     // so the cursor says it will land rather than showing the no-drop sign.
     if (onDropFile && e.dataTransfer.types.includes('Files')) {
@@ -79,16 +74,14 @@ export function usePaletteDrop({
     }
   };
   const onDrop = (e: ReactDragEvent<HTMLElement>) => {
-    endPlanCardDrag();
     // Handled by a target inside the canvas (as above).
     if (e.defaultPrevented) return;
     // Dropped back onto a floating panel (the Palette) — cancel: the drop event
     // bubbles up from the panel to this canvas handler, so without this guard a
     // drop over the Palette would still add an element behind it.
     if (overFloatingPanel(e.target)) return;
-    // `kind` or `kind|choice` — the creation-time choice a split tile
-    // carries (docs/specs/009-elements/mode-button.md, /105, /123, /135). Without parsing it back out, a
-    // dragged Poll tile dropped a timer.
+    // `kind` or `kind|choice` — the creation-time variant a split tile
+    // carries. Without parsing it back out, a dragged Funnel tile dropped a pyramid.
     const file = onDropFile ? e.dataTransfer.files?.[0] : undefined;
     if (file) {
       e.preventDefault();

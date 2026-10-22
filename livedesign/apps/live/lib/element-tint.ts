@@ -8,10 +8,9 @@
 // opposite. Tying them to the text colour makes every part of a card agree
 // with the card, whichever way either setting is pointed.
 //
-// It lives in lib/ rather than beside the collab chrome because the paper kit
-// (docs/specs/012-collaboration/participant-responses.md) draws every one of its textures out of it, and that kit is used
-// by the behaviour faces too — a shared helper reached from one family's
-// folder is a dependency pointing the wrong way.
+// It lives in lib/ rather than beside any one family's faces because it is
+// shared: a helper reached from one family's folder is a dependency pointing
+// the wrong way.
 
 // The wash itself is the shared colorWash (@livedesign/document), which the
 // headless export uses too, so a chair's seat or a card's chip washes the

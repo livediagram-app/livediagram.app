@@ -149,7 +149,7 @@ function errorKind(kind: string | undefined): string {
   return 'an error';
 }
 
-// 'TechIcon' / 'Idea-box' / 'tables_row' read as 'tech icon' / 'idea box'.
+// 'TechIcon' / 'Speech-bubble' / 'tables_row' read as 'tech icon' / 'speech bubble'.
 export function words(token: string): string {
   return token
     .replace(/([a-z0-9])([A-Z])/g, '$1 $2')

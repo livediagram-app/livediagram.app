@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { Element, Tab, TabVote } from '@livedesign/document';
-import { applyElementDelta, responseDeltaFor, type ShapeElement } from '@livedesign/document';
+import type { Element, Tab } from '@livedesign/document';
+import { applyElementDelta, checklistDeltaFor, type ShapeElement } from '@livedesign/document';
 import type { RoomOp } from '@livedesign/api-schema';
 import { applyRoomOpToTabs } from './room-op-apply';
 import { tabBroadcastOps } from './tab-broadcast-ops';
@@ -15,44 +15,7 @@ const tab = (over: Partial<Tab> = {}): Tab => ({
   ...over,
 });
 
-const vote = (over: Partial<TabVote> = {}): TabVote => ({
-  active: true,
-  revealed: false,
-  votesPerPerson: 3,
-  votes: {},
-  round: 'r1',
-  ...over,
-});
-
 describe('applyRoomOpToTabs', () => {
-  // docs/specs/012-collaboration/idea-box.md "Racing for the last card": only with an own pending post.
-  it("lets this browser's pending idea go for a peer's card at a full box, and only then", () => {
-    const full = el('box', {
-      shape: 'idea-box',
-      ideaCards: [...Array(299).fill('x'), 'mine'],
-      ideaCardIds: [...Array(299).fill(''), 'm1'],
-    });
-    const tabs = [tab({ elements: [full] })];
-    const op: RoomOp = {
-      kind: 'el-delta',
-      tabId: 't1',
-      elementId: 'box',
-      delta: { kind: 'idea', text: 'peer', id: 'p1' },
-    };
-    expect(applyRoomOpToTabs(tabs, op)).toBe(tabs);
-    expect(applyRoomOpToTabs(tabs, op, () => [])).toBe(tabs);
-    const asked: string[] = [];
-    const next = applyRoomOpToTabs(tabs, op, (tabId, elementId) => {
-      asked.push(`${tabId}/${elementId}`);
-      return ['m1'];
-    });
-    expect(asked).toEqual(['t1/box']);
-    const box = next[0]!.elements[0] as ShapeElement;
-    expect(box.ideaCards!.at(-1)).toBe('peer');
-    expect(box.ideaCards).not.toContain('mine');
-    expect(box.ideaCardIds!.at(-1)).toBe('p1');
-  });
-
   it('applies an element update by id and leaves the other element alone', () => {
     const tabs = [tab()];
     const next = applyRoomOpToTabs(tabs, {
@@ -78,59 +41,15 @@ describe('applyRoomOpToTabs', () => {
     ).toBe(tabs);
   });
 
-  it('adds a dot for the open round', () => {
-    const tabs = [tab({ vote: vote() })];
-    const next = applyRoomOpToTabs(tabs, {
-      kind: 'vote',
-      tabId: 't1',
-      elementId: 'a',
-      voter: 'pete',
-      delta: 1,
-      round: 'r1',
-    });
-    expect(next[0]!.vote?.votes).toEqual({ a: ['pete'] });
-  });
-
-  it('drops a dot from another round or for a closed vote (docs/specs/012-collaboration/collab-race-hardening.md)', () => {
-    const open = [tab({ vote: vote() })];
-    const dot = { kind: 'vote', tabId: 't1', elementId: 'a', voter: 'pete', delta: 1 } as const;
-    expect(applyRoomOpToTabs(open, { ...dot, round: 'r0' })).toBe(open);
-    const closed = [tab({ vote: vote({ active: false }) })];
-    expect(applyRoomOpToTabs(closed, { ...dot, round: 'r1' })).toBe(closed);
-  });
-
-  // THE bug: the host's End carried their map as of their save, so a dot
-  // still in flight vanished for everybody else.
-  it('an End for the same round keeps our dots', () => {
-    const tabs = [tab({ vote: vote({ votes: { a: ['ariel', 'pete'] } }) })];
-    const next = applyRoomOpToTabs(tabs, {
-      kind: 'tab-meta',
-      tabId: 't1',
-      patch: { vote: vote({ active: false, votes: { a: ['ariel'] } }) },
-    });
-    expect(next[0]!.vote?.active).toBe(false);
-    expect(next[0]!.vote?.votes).toEqual({ a: ['ariel', 'pete'] });
-  });
-
-  it('a new round replaces the map', () => {
-    const tabs = [tab({ vote: vote({ votes: { a: ['ariel'] } }) })];
-    const next = applyRoomOpToTabs(tabs, {
-      kind: 'tab-meta',
-      tabId: 't1',
-      patch: { vote: vote({ round: 'r2' }) },
-    });
-    expect(next[0]!.vote?.votes).toEqual({});
-  });
-
   it("a clear removes the field and keeps everybody's elements (docs/specs/012-collaboration/collab-race-hardening.md)", () => {
-    const mine = tab({ timer: { mode: 'stopwatch', running: true, anchorAt: 1 } });
+    const mine = tab({ backgroundColor: '#fff' });
     const next = applyRoomOpToTabs([mine], {
       kind: 'tab-meta',
       tabId: 't1',
       patch: {},
-      clear: ['timer', 'elements', 'id'],
+      clear: ['backgroundColor', 'elements', 'id'],
     });
-    expect('timer' in next[0]!).toBe(false);
+    expect('backgroundColor' in next[0]!).toBe(false);
     expect(next[0]!.elements).toBe(mine.elements);
     expect(next[0]!.id).toBe('t1');
   });
@@ -174,23 +93,33 @@ describe('applyRoomOpToTabs', () => {
   });
 });
 
-// docs/specs/012-collaboration/collab-race-hardening.md, end to end: two people press the same done check in the same
-// instant, then each of their autosaves runs. Everybody must end up with
-// both marks.
-describe('two people pressing one done check', () => {
-  const check = (): ShapeElement => ({ ...el('card'), shape: 'done-check' }) as ShapeElement;
-  const start = (): Tab[] => [tab({ elements: [check()] })];
+// docs/specs/012-collaboration/collab-race-hardening.md, end to end: two people tick different rows of one checklist
+// in the same instant, then each of their autosaves runs. Everybody must end up with both ticks.
+describe('two people ticking one checklist', () => {
+  const list = (): ShapeElement =>
+    ({
+      ...el('card'),
+      shape: 'checklist',
+      checklistItems: [
+        { text: 'a', done: false },
+        { text: 'b', done: false },
+      ],
+    }) as ShapeElement;
+  const start = (): Tab[] => [tab({ elements: [list()] })];
 
-  const press = (tabs: Tab[], who: string) => {
+  // `a` ticks the first row, `b` the second.
+  const press = (tabs: Tab[], who: 'a' | 'b') => {
     const card = tabs[0]!.elements[0] as ShapeElement;
-    const delta = responseDeltaFor(card, who, 'done', 1);
+    const delta = checklistDeltaFor(card, who === 'a' ? 0 : 1)!;
     const op: RoomOp = { kind: 'el-delta', tabId: 't1', elementId: 'card', delta };
     return { tabs: [{ ...tabs[0]!, elements: [applyElementDelta(card, delta)] }], op };
   };
   const marks = (tabs: Tab[]) =>
-    ((tabs[0]!.elements[0] as ShapeElement).responses ?? []).map((r) => r.participantId).sort();
+    ((tabs[0]!.elements[0] as ShapeElement).checklistItems ?? [])
+      .filter((i) => i.done)
+      .map((i) => i.text);
 
-  it('converges on both marks, and neither autosave re-sends the card', () => {
+  it('converges on both ticks, and neither autosave re-sends the card', () => {
     const saved = start();
     const a = press(start(), 'a');
     const b = press(start(), 'b');
@@ -199,14 +128,14 @@ describe('two people pressing one done check', () => {
     const bTabs = applyRoomOpToTabs(b.tabs, a.op);
     expect(marks(aTabs)).toEqual(['a', 'b']);
     expect(marks(bTabs)).toEqual(['a', 'b']);
-    // Their saves: the only change is an answer, which the delta already said.
+    // Their saves: the only change is a tick, which the delta already said.
     expect(tabBroadcastOps(saved[0], a.tabs[0]!)).toEqual([]);
   });
 
-  it("a peer's whole-element update (they moved the card) keeps both marks", () => {
+  it("a peer's whole-element update (they moved the card) keeps both ticks", () => {
     const a = press(start(), 'a');
     const bothMarked = applyRoomOpToTabs(a.tabs, press(start(), 'b').op);
-    // Their copy was saved with only their own mark, before a's arrived.
+    // Their copy was saved with only their own tick, before a's arrived.
     const theirs = { ...(press(start(), 'b').tabs[0]!.elements[0] as ShapeElement), x: 80 };
     const next = applyRoomOpToTabs(bothMarked, {
       kind: 'el',
@@ -217,7 +146,7 @@ describe('two people pressing one done check', () => {
     expect(marks(next)).toEqual(['a', 'b']);
   });
 
-  it('a whole-tab op keeps both marks too', () => {
+  it('a whole-tab op keeps both ticks too', () => {
     const bothMarked = applyRoomOpToTabs(press(start(), 'a').tabs, press(start(), 'b').op);
     const theirTab = press(start(), 'b').tabs[0]!;
     const next = applyRoomOpToTabs(bothMarked, { kind: 'tab', tabId: 't1', tab: theirTab });

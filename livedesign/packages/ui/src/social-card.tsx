@@ -124,7 +124,7 @@ export function renderSocialCard(opts?: SocialCardOptions) {
               <span>{opts.title}</span>
             ) : (
               <>
-                <span>Diagram together,&nbsp;</span>
+                <span>Make pages together,&nbsp;</span>
                 <span style={{ color: '#be123c' }}>live</span>
                 <span>.</span>
               </>
@@ -163,7 +163,7 @@ export function renderSocialCard(opts?: SocialCardOptions) {
           >
             livedesign.app
           </div>
-          <div>{opts?.footer ?? 'No sign-up. Open the link, start drawing.'}</div>
+          <div>{opts?.footer ?? 'No sign-up. Open the link and start writing.'}</div>
         </div>
       </div>
     </div>

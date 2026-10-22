@@ -44,7 +44,6 @@ export {
 export * from './api/documents';
 export * from './api/tabs';
 export * from './api/changesets';
-export * from './api/qa-board';
 export * from './api/share';
 export * from './api/folders';
 export * from './api/custom-themes';

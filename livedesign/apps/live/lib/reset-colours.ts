@@ -2,8 +2,8 @@
 // category): every colour override goes, so the element falls back to what the tab's theme
 // dictates. A theme with its own element colours writes them, since `addBoxed` is what normally
 // writes them on create; the brand default (all null) just deletes the overrides. Bindings go
-// with the colours they bound, and so does a whiteboard stock colour stored by name
-// (docs/specs/023-draw-mode/draw-mode.md "Imported and pasted content"), which would otherwise
+// with the colours they bound, and so does a stock colour stored by name
+// (docs/specs/008-canvas/canvas-and-palette.md "Colours"), which would otherwise
 // show again the moment the explicit colour is cleared.
 import type { Element, ThemeDefinition } from '@livedesign/document';
 

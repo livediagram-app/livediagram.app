@@ -31,7 +31,7 @@ import { KNOCKOUT_RADIUS_PX, arrowLabelPass, type ArrowLabelPass } from './arrow
 import type { Rect } from './geometry-primitives';
 import { resolveFontStack } from './fonts';
 import { elementFontId, finishArrowWidthPx, resolveFinish, type Finish } from './finish';
-import { finishArrowEnds } from './mind-connector-route';
+import { spreadArrowEnds } from './arrow-endpoint-spread';
 import { handDrawnArrow } from './hand-drawn';
 import { r2, xmlEscape } from './svg-render-primitives';
 import type { ArrowElement, Element } from './index';
@@ -194,12 +194,13 @@ export function svgArrow(
 ): string {
   // A stock colour stored by name is drawn in its version for this page.
   const stocked = resolveStockColours(source, surface);
-  // Professional thins an arrow that sets no width and draws a mind map's connectors right-angled; Sketch and
-  // Marker draw it by hand (docs/specs/008-canvas/finish.md).
+  // Professional thins an arrow that sets no width; Sketch and Marker draw it by hand
+  // (docs/specs/008-canvas/finish.md).
   const finish = resolveFinish(stocked.finish, tabFinish);
-  // The same ends the live canvas resolves (the converging-fan offset of arrow-endpoint-spread.ts, or a
-  // finish's exact route), so exports match what's on screen.
-  const { arrow, from, to } = finishArrowEnds(stocked, elements, finish);
+  // The same ends the live canvas resolves (the converging-fan offset of arrow-endpoint-spread.ts), so exports
+  // match what's on screen.
+  const arrow = stocked;
+  const { from, to } = spreadArrowEnds(arrow, elements);
   const stroke = arrow.strokeColor ?? defaultArrowStrokeColor(surface);
   const lw = finishArrowWidthPx(arrow.strokeWidth, finish);
   const op = arrow.opacity ?? 1;

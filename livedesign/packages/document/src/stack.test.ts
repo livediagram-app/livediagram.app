@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import {
-  createArrow,
   createShape,
   isValidElement,
   layoutStack,
@@ -54,8 +53,8 @@ describe('a stack', () => {
     expect(at(out, 's')).toMatchObject({ w: 16 + 80 + 16 + 80 + 16, h: 16 + 60 + 16 });
   });
 
-  // A badge riding on a child, or a comment pin, is a mark on the board, never a slot of its own.
-  it('leaves attached marks and comment pins out of its children', () => {
+  // A badge riding on a child is a mark on the board, never a slot of its own.
+  it('leaves attached marks out of its children', () => {
     const badge = {
       ...createShape('badge', 0, 0),
       id: 'k',
@@ -64,13 +63,7 @@ describe('a stack', () => {
       attachedTo: 'a',
       attachAt: 'top-right',
     } as ShapeElement;
-    const pin = {
-      ...createShape('comment-pin', 0, 0),
-      id: 'p',
-      x: 300,
-      y: 80,
-    } as ShapeElement;
-    const els = [stack(), box('a', 30, 40), badge, pin];
+    const els = [stack(), box('a', 30, 40), badge];
     expect(stackChildren(els, els[0] as ShapeElement).map((k) => k.id)).toEqual(['a']);
   });
 
@@ -145,23 +138,6 @@ describe('a stack', () => {
       elements: Element[];
     };
     expect(at(tab.elements, 'a')).toMatchObject({ x: 16, y: 16 });
-  });
-
-  it('lays out a key it holds at the height its rows give it, on read', () => {
-    const key = { ...createShape('diagram-key', 0, 0), id: 'k', x: 40, y: 40 };
-    const solid = { ...createArrow(500, 500, 600, 600), id: 'x' };
-    const tab = migrateStoredTab({
-      theme: 'default',
-      elements: [
-        stack({ stackDirection: 'column' }),
-        key,
-        box('q', 40, 150),
-        solid,
-        { ...solid, id: 'y', strokeStyle: 'dashed' },
-      ],
-    } as never) as { elements: Element[] };
-    const k = at(tab.elements, 'k');
-    expect(at(tab.elements, 'q').y).toBe(k.y + k.h + 16);
   });
 
   it('keeps a title band above its children when it has a title', () => {

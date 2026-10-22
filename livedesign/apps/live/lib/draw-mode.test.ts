@@ -5,7 +5,6 @@ import {
   drawIntentCursor,
   isHeldPenIntent,
   isPathIntent,
-  isPlanCardIntent,
   opensForTyping,
   type PendingDraw,
 } from './draw-mode';
@@ -20,7 +19,7 @@ type FreehandVariant = NonNullable<Extract<PendingDraw, { type: 'freehand' }>['v
 const FREEHAND_VARIANTS: Record<FreehandVariant, PendingDraw> = {
   highlighter: { type: 'freehand', variant: 'highlighter' },
   'shape-pen': { type: 'freehand', variant: 'shape-pen' },
-  whiteboard: { type: 'freehand', variant: 'whiteboard', colour: null, width: 4, recognise: false },
+  whiteboard: { type: 'freehand', variant: 'whiteboard', colour: null, width: 4 },
 };
 
 // One sample per discriminant. Typing it as a Record over PendingDraw['type']
@@ -54,12 +53,7 @@ const INTENT_SAMPLES: Record<PendingDraw['type'], PendingDraw[]> = {
 const ALL_INTENTS: PendingDraw[] = Object.values(INTENT_SAMPLES).flat();
 
 describe('drawBannerMessage', () => {
-  it('tells a pressed Plan card where it goes, or that a board comes first', () => {
-    const card = { type: 'shape', kind: 'plan-card' } as const;
-    expect(drawBannerMessage(card, false, { hasPlanBoard: true })).toBe(
-      'Select the board column you want this card to appear in',
-    );
-    expect(drawBannerMessage(card, false)).toBe('Add a board first in order to use cards');
+  it('asks to drop or drag a shape', () => {
     expect(drawBannerMessage({ type: 'shape', kind: 'square' }, false)).toContain('Tap to drop');
   });
 
@@ -119,19 +113,13 @@ describe('drawBannerMessage', () => {
   });
 
   // The banner names the shape as the tile just picked does: the palette's Square and Circle (and the selection
-  // badge's), Draw mode's dock its Rectangle and Ellipse. Its own aliases (Rectangle, Oval) matched neither.
+  // badge's). Its own aliases (Rectangle, Oval) matched neither.
   it('names the shape as the tile that armed it', () => {
     expect(drawBannerMessage({ type: 'shape', kind: 'square' }, false)).toBe(
       'Tap to drop or drag to draw Square',
     );
     expect(drawBannerMessage({ type: 'shape', kind: 'circle' }, false)).toBe(
       'Tap to drop or drag to draw Circle',
-    );
-    expect(drawBannerMessage({ type: 'shape', kind: 'square', board: true }, false)).toBe(
-      'Tap to drop or drag to draw Rectangle',
-    );
-    expect(drawBannerMessage({ type: 'shape', kind: 'circle', board: true }, false)).toBe(
-      'Tap to drop or drag to draw Ellipse',
     );
     expect(drawBannerMessage({ type: 'shape', kind: 'diamond' }, false)).toBe(
       'Tap to drop or drag to draw Diamond',
@@ -142,11 +130,7 @@ describe('drawBannerMessage', () => {
   });
 
   it('spells out a hyphenated kind instead of leaving the hyphen in', () => {
-    // 'Mode-button' / 'Code-block' is the capitalise-the-first-letter fallback
-    // showing through; these are two-word names.
-    expect(drawBannerMessage({ type: 'shape', kind: 'mode-button' }, false)).toBe(
-      'Tap to drop or drag to draw Mode button',
-    );
+    // 'Code-block' is the capitalise-the-first-letter fallback showing through; it is a two-word name.
     expect(drawBannerMessage({ type: 'shape', kind: 'code-block' }, false)).toBe(
       'Tap to drop or drag to draw Code block',
     );
@@ -289,17 +273,13 @@ describe('drawIntentCursor', () => {
 });
 
 describe('opensForTyping', () => {
-  it('opens a drawn text box for typing everywhere', () => {
-    expect(opensForTyping({ type: 'text' }, false)).toBe(true);
+  it('opens a drawn text box for typing', () => {
+    expect(opensForTyping({ type: 'text' })).toBe(true);
   });
 
-  it('opens a sticky for typing on a whiteboard only (docs/specs/023-draw-mode/draw-mode.md)', () => {
-    expect(opensForTyping({ type: 'sticky' }, true)).toBe(true);
-    expect(opensForTyping({ type: 'sticky' }, false)).toBe(false);
-  });
-
-  it('leaves shapes selected, not typing', () => {
-    expect(opensForTyping({ type: 'shape', kind: 'square' }, true)).toBe(false);
+  it('leaves a sticky and a shape selected, not typing', () => {
+    expect(opensForTyping({ type: 'sticky' })).toBe(false);
+    expect(opensForTyping({ type: 'shape', kind: 'square' })).toBe(false);
   });
 });
 
@@ -319,14 +299,5 @@ describe('the Path tool (docs/specs/023-draw-mode/path-tool.md)', () => {
   it('has its own cursor and screen-reader copy', () => {
     expect(drawIntentCursor({ type: 'path' })).toMatch(/^url\(/);
     expect(drawBannerMessage({ type: 'path' }, false)).toBe('Click to place points, drag to curve');
-  });
-});
-
-describe('a pressed Plan card (docs/specs/026-plan/plan-mode.md "The palette")', () => {
-  it('is told apart from every other shape in hand', () => {
-    expect(isPlanCardIntent({ type: 'shape', kind: 'plan-card', plan: 'task' })).toBe(true);
-    expect(isPlanCardIntent({ type: 'shape', kind: 'plan-board' })).toBe(false);
-    expect(isPlanCardIntent({ type: 'text' })).toBe(false);
-    expect(isPlanCardIntent(null)).toBe(false);
   });
 });

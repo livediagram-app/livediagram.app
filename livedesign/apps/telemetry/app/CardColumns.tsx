@@ -7,7 +7,7 @@ import { Children, isValidElement, type ReactNode } from 'react';
 //
 // Placed, not flowed. CSS `columns` fills top to bottom in source order, so a
 // long card late in the list piled onto an already-long column (Tools under
-// Shapes and Collaborate on Palette). Instead the cards go biggest first, each
+// Shapes and Components on Palette). Instead the cards go biggest first, each
 // into whichever column is shorter so far, which keeps the two close to even.
 // Below `lg` it is one column in the same order.
 //

@@ -128,32 +128,28 @@ describe('SettingsCategoryPane link rows', () => {
 describe('SettingsCategoryPane tours', () => {
   const TOURS = SETTINGS_CATEGORIES.find((c) => c.id === 'tours')!;
 
-  it('turns the Boards tour back on alone, leaving the Sheets tour answered', () => {
+  it('turns the Wireframe tour back on alone, leaving the Logo tour answered', () => {
     const onChange = vi.fn();
     render(
       <SettingsCategoryPane
         category={TOURS}
-        settings={{ tourSeen: true, planTourSeen: true, planTourTracks: ['boards', 'sheets'] }}
+        settings={{ pagesTourSeen: true, pagesTourKinds: ['wireframe', 'logo'] }}
         onChange={onChange}
       />,
     );
-    const plan = screen.getByRole('switch', { name: 'Boards Tour' });
-    expect(screen.getByRole('switch', { name: 'Sheets Tour' }).getAttribute('aria-checked')).toBe(
+    const wireframe = screen.getByRole('switch', { name: 'Wireframe Tour' });
+    expect(screen.getByRole('switch', { name: 'Logo Tour' }).getAttribute('aria-checked')).toBe(
       'false',
     );
-    expect(plan.getAttribute('aria-checked')).toBe('false');
-    expect(screen.getByRole('switch', { name: 'Workshop Tour' }).getAttribute('aria-checked')).toBe(
-      'true',
-    );
+    expect(wireframe.getAttribute('aria-checked')).toBe('false');
     // The shared explanation sits once, under the section heading.
     expect(screen.getByRole('heading', { name: 'Offer Again' })).toBeTruthy();
     expect(screen.getAllByText(/Each tour offers itself once/)).toHaveLength(1);
-    fireEvent.click(plan);
-    expect(track).toHaveBeenCalledWith('UI', 'Toggled', 'BoardsTourSeenOff');
+    fireEvent.click(wireframe);
+    expect(track).toHaveBeenCalledWith('UI', 'Toggled', 'WireframeTourSeenOff');
     expect(onChange).toHaveBeenCalledWith({
-      tourSeen: true,
-      planTourSeen: false,
-      planTourTracks: ['sheets'],
+      pagesTourSeen: false,
+      pagesTourKinds: ['logo'],
     });
   });
 });

@@ -2,11 +2,9 @@
 // generic renderer used to flatten into plain rectangles. The silhouettes
 // come from the shared geometry table (shape-geometry.ts), the same data the
 // editor's ShapeSvgOverlay draws from, mapped into the element box
-// (svg-shape-fit.ts) with the same fit the canvas uses (stretched for most,
-// `meet` for the proportional actor), so they match it at any aspect ratio
+// (svg-shape-fit.ts) with the same fit the canvas uses, so they match it at any aspect ratio
 // without a scaled stroke. A silhouette changes in the table, never here.
 import { BORDER_DASH_ARRAY, BORDER_STROKE_PX } from './border-style';
-import { actorFigureRect } from './actor-figure';
 import { finishBorderStroke, type Finish } from './finish';
 import type { BoxedElement, FreehandElement, PathElement, ShapeKind } from './index';
 import { isCompoundPath, pathElementD } from './path-element';
@@ -18,7 +16,6 @@ import { freehandCanvasPoints, freehandStrokePoints } from './freehand-points';
 import { isPolygonOutline, polygonStrokePx } from './drawn-outline-finish';
 import { codeTheme } from './code-themes';
 import { chartRamp } from './chart-palettes';
-import { isLaneBand, laneEdgeOfElement, laneSizeOfElement } from './lane-gutter';
 import { legendFontPx } from './label-font';
 import {
   BROWSER_CHROME,
@@ -59,9 +56,6 @@ function roleAttrs(
       return ` fill="${f}" stroke="${s}" stroke-width="${strokeWidth}"${d} vector-effect="non-scaling-stroke"`;
     case 'detail':
       return ` fill="none" stroke="${s}" stroke-width="${SHAPE_DETAIL_STROKE_PX}" stroke-linejoin="round" vector-effect="non-scaling-stroke"`;
-    case 'limb':
-    case 'head':
-      return ` fill="${role === 'head' ? f : 'none'}" stroke="${s}" stroke-width="${strokeWidth}"${d} stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"`;
   }
 }
 
@@ -129,14 +123,11 @@ export function svgShapeSilhouette(
   // A stroke-inside silhouette lands in the box inset by half the stroke, so
   // its outline stays inside the box like the canvas overlay's.
   const inset = geometry.strokeInside ? strokeWidth / 2 : 0;
-  // An actor's figure has its own rect, clear of its name (actor-figure.ts).
-  const area =
-    el.shape === 'actor' ? actorFigureRect(el) : { x: 0, y: 0, width: el.width, height: el.height };
   const fit = boxFit(geometry, {
-    x: el.x + area.x + inset,
-    y: el.y + area.y + inset,
-    width: Math.max(0, area.width - 2 * inset),
-    height: Math.max(0, area.height - 2 * inset),
+    x: el.x + inset,
+    y: el.y + inset,
+    width: Math.max(0, el.width - 2 * inset),
+    height: Math.max(0, el.height - 2 * inset),
   });
   return `<g data-silhouette="${el.shape}">${geometry.parts
     .map((part) => svgShapePart(fitShapePart(part, fit), fill, stroke, strokeWidth, dash))
@@ -155,8 +146,8 @@ export function svgFreehandShape(
   finish: Finish = 'flexible',
 ): string {
   if (freehandStrokePoints(el).count < 2) return '';
-  // A whiteboard pen stroke (docs/specs/023-draw-mode/draw-mode.md "Pens"): the filled
-  // perfect-freehand outline FreehandSvg draws, from the same function (pen-stroke.ts).
+  // A pen stroke: the filled perfect-freehand outline FreehandSvg draws, from the same
+  // function (pen-stroke.ts).
   if (isPenStroke(el)) {
     const ink = penStrokePath(freehandPenStroke(el, { x: el.x, y: el.y }), r2);
     return `<path d="${ink}" fill="${xmlEscape(stroke)}" stroke="none"/>`;
@@ -177,7 +168,7 @@ export function svgFreehandShape(
       ` stroke-linecap="round" stroke-linejoin="round"/>`
     );
   }
-  // A recorded pen width (a whiteboard pen, docs/specs/023-draw-mode/draw-mode.md) wins over the preset; a
+  // A pen stroke's recorded width wins over the preset; a
   // Polygon-tool outline's unset width follows its finish (Professional's Thin).
   const strokeWidth = isPolygonOutline(el)
     ? polygonStrokePx(el, finish)
@@ -380,49 +371,6 @@ export function svgLegendShape(
     })
     .join('');
   return card + rows;
-}
-
-// A lane's title gutter (docs/specs/009-elements/lane.md): the tinted strip behind the title, on
-// whichever edge the title is pinned to, with the rule where it meets the
-// body. Without it an exported swimlane is a plain box with its title
-// floating in the middle of the work.
-export function svgLaneGutter(el: BoxedElement & { type: 'shape' }, stroke: string): string {
-  const edge = laneEdgeOfElement(el);
-  const size = Math.min(laneSizeOfElement(el), (isLaneBand(edge) ? el.height : el.width) - 1);
-  // An explicit heading colour paints at full strength (you picked it, you
-  // get it); with none set it is the 10% wash of the lane's own stroke the
-  // canvas falls back to, so a recoloured lane keeps its gutter in the family.
-  const fill = el.headerFill ?? stroke;
-  const wash = el.headerFill ? '' : ' opacity="0.1"';
-  const strip = (x: number, y: number, w: number, h: number) =>
-    `<rect x="${r2(x)}" y="${r2(y)}" width="${r2(w)}" height="${r2(h)}" fill="${xmlEscape(fill)}"${wash}/>`;
-  const rule = (x1: number, y1: number, x2: number, y2: number) =>
-    `<path d="M ${r2(x1)} ${r2(y1)} L ${r2(x2)} ${r2(y2)}" stroke="${xmlEscape(stroke)}" stroke-width="1"/>`;
-  if (edge === 'left')
-    return (
-      strip(el.x, el.y, size, el.height) + rule(el.x + size, el.y, el.x + size, el.y + el.height)
-    );
-  if (edge === 'right')
-    return (
-      strip(el.x + el.width - size, el.y, size, el.height) +
-      rule(el.x + el.width - size, el.y, el.x + el.width - size, el.y + el.height)
-    );
-  if (edge === 'top')
-    return (
-      strip(el.x, el.y, el.width, size) + rule(el.x, el.y + size, el.x + el.width, el.y + size)
-    );
-  if (edge === 'bottom')
-    return (
-      strip(el.x, el.y + el.height - size, el.width, size) +
-      rule(el.x, el.y + el.height - size, el.x + el.width, el.y + el.height - size)
-    );
-  // A centred strip has two seams with the body, not one.
-  const left = el.x + el.width / 2 - size / 2;
-  return (
-    strip(left, el.y, size, el.height) +
-    rule(left, el.y, left, el.y + el.height) +
-    rule(left + size, el.y, left + size, el.y + el.height)
-  );
 }
 
 // A browser frame's chrome (docs/specs/008-canvas/canvas-and-palette.md Devices): the fixed-height strip pinned to

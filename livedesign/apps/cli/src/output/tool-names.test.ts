@@ -17,19 +17,19 @@ describe('the CLI words for MCP tools', () => {
   });
 
   it('writes a tool in a message as the command', () => {
-    expect(inCliWords('That document has no Form tab. Make one with add_form.')).toBe(
-      'That document has no Form tab. Make one with livedesign form add.',
+    expect(inCliWords('That document has no page 4. Add one with change_pages.')).toBe(
+      'That document has no page 4. Add one with livedesign page set.',
     );
-    expect(inCliWords('read_form lists its problems; not_a_form_tab stays')).toBe(
-      'livedesign form get lists its problems; not_a_form_tab stays',
+    expect(inCliWords('read_document lists its pages; read_documents stays')).toBe(
+      'livedesign document view lists its pages; read_documents stays',
     );
   });
 
   it('prints an error in those words, text and JSON alike', () => {
-    const failure = { exit: 3 as const, code: 'form_tab_none', message: 'Make one with add_form.' };
-    expect(formatError(failure, false)).toBe('error: Make one with livedesign form add.\n');
+    const failure = { exit: 3 as const, code: 'page_none', message: 'Add one with change_pages.' };
+    expect(formatError(failure, false)).toBe('error: Add one with livedesign page set.\n');
     expect((JSON.parse(formatError(failure, true)) as { message: string }).message).toBe(
-      'Make one with livedesign form add.',
+      'Add one with livedesign page set.',
     );
   });
 });

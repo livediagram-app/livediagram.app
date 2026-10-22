@@ -2,14 +2,13 @@
 
 // A tab window on the canvas (docs/specs/009-elements/tab-window.md): another tab of the document drawn inside a
 // rounded frame, live, zoomed to fit; or what it is waiting for (no tab chosen, the tab's content on its way or failed,
-// nothing on it, the tab gone or not shared). Choose a Tab is an Editor's; Open <name> is everyone's who sees the tab.
+// the tab gone or not shared). Every tab draws, as its pages, whatever is on them. Choose a Tab is an Editor's; Open <name> is everyone's who sees the tab.
 import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 import {
   TAB_WINDOW_EMPTY,
   TAB_WINDOW_HAIRLINE,
   TAB_WINDOW_RADIUS,
-  tabHasDrawing,
   tabWindowMayShow,
   type CanvasSurface,
   type ShapeElement,
@@ -37,12 +36,11 @@ type TabWindowState =
   | { kind: 'unavailable' }
   | { kind: 'loading'; name: string }
   | { kind: 'failed'; name: string; tabId: string }
-  | { kind: 'empty'; name: string }
   | { kind: 'drawing'; name: string; tabId: string };
 
 export function tabWindowState(
   windowTabId: string | undefined,
-  tab: (Parameters<typeof tabHasDrawing>[0] & { id: string; name: string }) | undefined,
+  tab: { id: string; name: string } | undefined,
   status: 'loaded' | 'loading' | 'failed',
 ): TabWindowState {
   if (!windowTabId) return { kind: 'unchosen' };
@@ -50,7 +48,6 @@ export function tabWindowState(
   const name = tab.name || 'Untitled tab';
   if (status === 'failed') return { kind: 'failed', name, tabId: tab.id };
   if (status === 'loading') return { kind: 'loading', name };
-  if (!tabHasDrawing(tab)) return { kind: 'empty', name };
   return { kind: 'drawing', name, tabId: tab.id };
 }
 
@@ -149,9 +146,7 @@ export function TabWindowFace({
             Retry
           </button>,
         )
-      ) : (
-        message(`Nothing on ${state.name} yet.`)
-      )}
+      ) : null}
       {/* The frame's edge over the drawing, as on export. */}
       <div
         aria-hidden

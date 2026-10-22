@@ -1,14 +1,11 @@
 import type { Dispatch, PointerEvent as ReactPointerEvent, RefObject, SetStateAction } from 'react';
 import {
   containerContents,
-  withSheetCharts,
   withAttached,
   anchorOutward,
   anchorPosition,
-  fieldEndPosition,
   isBoxed,
   nearestOfferedAnchor,
-  withMindSubtrees,
   type Anchor,
   type ArrowElement,
 } from '@livedesign/document';
@@ -96,29 +93,16 @@ export function useBoxedDragHandlers({
       ? unlocked(multiSelectedIds)
       : new Set<string>([elementId]);
 
-    // Frames and lanes (docs/specs/008-canvas/canvas-and-palette.md): MOVING one carries what it holds by
+    // Frames (docs/specs/008-canvas/canvas-and-palette.md): MOVING one carries what it holds by
     // the centre rule agents' `move` uses (`containerContents`): every element whose centre it holds,
     // nested frames with their contents, and loose arrows whose free ends lie inside (pinned arrows
     // follow via the rebind pass). Resizing is deliberately excluded — a frame
     // resize re-sizes the section outline and leaves its contents put.
-    //
-    // A mind node (docs/specs/009-elements/mind-node.md "Moving a branch") carries its whole subtree
-    // the same way: a branch is one idea, and its points follow its heading. A Sheet carries the charts drawn
-    // from it that sit on it.
     const ids =
       mode === 'move'
         ? unlocked(
             // A host's badges and step numbers ride its drag (docs/specs/009-elements/badge.md).
-            withAttached(
-              d.activeTab.elements,
-              withSheetCharts(
-                d.activeTab.elements,
-                withMindSubtrees(
-                  d.activeTab.elements,
-                  containerContents(d.activeTab.elements, baseIds),
-                ),
-              ),
-            ),
+            withAttached(d.activeTab.elements, containerContents(d.activeTab.elements, baseIds)),
           )
         : baseIds;
 
@@ -164,8 +148,6 @@ export function useBoxedDragHandlers({
       clickToPlace?: boolean;
       placeOutPx?: number;
       tapPlaceOutPx?: number;
-      // Start from one of an entity's fields (docs/specs/009-elements/entity.md "Field to field").
-      field?: number;
     },
   ) => {
     const d = depsRef.current;
@@ -176,13 +158,8 @@ export function useBoxedDragHandlers({
     // A side without anchors (a triangle's top) starts from the nearest one
     // the shape offers (docs/specs/008-canvas/arrow-anchors.md).
     const anchor = nearestOfferedAnchor(element, sideAnchor);
-    const fromEnd: ArrowElement['from'] =
-      opts?.field !== undefined
-        ? { kind: 'pinned', elementId, anchor, field: opts.field }
-        : { kind: 'pinned', elementId, anchor };
-    const start =
-      (opts?.field !== undefined && fieldEndPosition(element, anchor, opts.field)) ||
-      anchorPosition(element, anchor);
+    const fromEnd: ArrowElement['from'] = { kind: 'pinned', elementId, anchor };
+    const start = anchorPosition(element, anchor);
     // A connector drawn FROM a shape takes the TAB THEME's stroke, not the
     // shape's own. It used to copy the shape's stroke so the pair matched,
     // but a red box then sprouted red arrows, a green box green ones, and

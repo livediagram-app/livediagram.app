@@ -1,10 +1,10 @@
-// Scenes for the palette's Popular, Write, Stickers and Technology articles: the palette body
+// Scenes for the palette's Popular and Stickers articles: the palette body
 // (as More opens it) showing each category. Tile captions are the real ones (palette-tile-defs `caption`, or
 // the label less "Add"), Popular's twelve come from palette-layouts, the sticker badges from
 // packages/icons/src/sticker-catalog.ts, and the technology marks from tech-icon-catalog.ts.
 
 import type { ReactNode } from 'react';
-import { Label, Panel, Scene, Tile } from './primitives';
+import { Label, Panel, Scene } from './primitives';
 
 /** The palette body as a panel: its title bar, then the header band (selection mode on the
  *  left, the category picker on the right) the body hangs under. */
@@ -62,89 +62,6 @@ function PaletteFrame({
       />
       {children}
     </Panel>
-  );
-}
-
-const g = {
-  className: 'fill-none stroke-slate-500',
-  strokeWidth: 1.6,
-  strokeLinecap: 'round',
-  strokeLinejoin: 'round',
-} as const;
-
-/** Write: rows, not tiles, each with the one-line blurb that tells the five apart. */
-export function WriteRows() {
-  const rows: { name: string; blurb: string; key?: string; glyph: ReactNode }[] = [
-    {
-      name: 'Page',
-      blurb: 'A paper-shaped page for prose',
-      glyph: <path d="M-5 -7 h10 v14 h-10 Z M-2.5 -3 h5 M-2.5 0 h5 M-2.5 3 h3" {...g} />,
-    },
-    {
-      name: 'Text',
-      blurb: 'A free-standing text label',
-      key: 'T',
-      glyph: <path d="M-5 -5h10M0 -5v11" {...g} />,
-    },
-    {
-      name: 'Note',
-      blurb: 'A coloured note card',
-      key: 'N',
-      glyph: <path d="M-6 -6 h12 v7 l-5 5 h-7 Z M1 6 v-5 h5" {...g} />,
-    },
-    {
-      name: 'Annotation',
-      blurb: 'A marker that holds a note',
-      glyph: <path d="M-7 -5 h14 v8 h-8 l-3 3 v-3 h-3 Z" {...g} />,
-    },
-    {
-      name: 'Pointer Note',
-      blurb: 'A note with a line to one spot',
-      glyph: (
-        <path
-          d="M-7 -7 h9 v6 h-9 Z M-2 -1 L5 5 M5 5 m-1.5 0 a1.5 1.5 0 1 0 3 0 a1.5 1.5 0 1 0 -3 0"
-          {...g}
-        />
-      ),
-    },
-  ];
-  return (
-    <Scene w={420} h={290} bg="plain">
-      <PaletteFrame category="Write" h={270}>
-        {rows.map((r, i) => {
-          const ry = 80 + i * 40;
-          return (
-            <g key={r.name}>
-              <Tile x={76} y={ry} size={30}>
-                {r.glyph}
-              </Tile>
-              <Label x={118} y={ry + 10} size={11} weight={600} tone="strong">
-                {r.name}
-              </Label>
-              <Label x={118} y={ry + 24} size={10} tone="muted">
-                {r.blurb}
-              </Label>
-              {r.key && (
-                <g>
-                  <rect
-                    x={322}
-                    y={ry + 6}
-                    width={18}
-                    height={18}
-                    rx={4}
-                    className="fill-slate-50 stroke-slate-200"
-                    strokeWidth={1}
-                  />
-                  <Label x={331} y={ry + 16} size={10} anchor="middle" weight={600} tone="muted">
-                    {r.key}
-                  </Label>
-                </g>
-              )}
-            </g>
-          );
-        })}
-      </PaletteFrame>
-    </Scene>
   );
 }
 
@@ -259,108 +176,6 @@ export function StickersSheet() {
             );
           })}
         </g>
-      </PaletteFrame>
-    </Scene>
-  );
-}
-
-/** Tech, drilled into AWS: a breadcrumb back to the providers, then three brand tiles across,
- *  each captioned. */
-export function TechGrid() {
-  const w = {
-    className: 'stroke-white',
-    strokeWidth: 1.6,
-    fill: 'none',
-    strokeLinecap: 'round',
-    strokeLinejoin: 'round',
-  } as const;
-  const tiles: { label: string; fill: string; glyph: ReactNode }[] = [
-    {
-      label: 'S3',
-      fill: 'fill-emerald-500',
-      glyph: (
-        <path d="M-7 -5 a7 3 0 0 0 14 0 v10 a7 3 0 0 1 -14 0 Z M-7 -5 a7 3 0 0 0 14 0" {...w} />
-      ),
-    },
-    {
-      label: 'EC2',
-      fill: 'fill-amber-500',
-      glyph: (
-        <g {...w}>
-          <rect x={-6} y={-6} width={12} height={12} rx={1.5} />
-          <path d="M-3 -9 V-6 M3 -9 V-6 M-3 6 V9 M3 6 V9" />
-        </g>
-      ),
-    },
-    {
-      label: 'Lambda',
-      fill: 'fill-amber-500',
-      glyph: <path d="M-6 7 L-1 -7 M-4 -7 H0 L6 7" {...w} />,
-    },
-    {
-      label: 'RDS',
-      fill: 'fill-indigo-500',
-      glyph: (
-        <path
-          d="M-6 -4 a6 3 0 0 0 12 0 v8 a6 3 0 0 1 -12 0 Z M-6 -4 a6 3 0 0 0 12 0 M-6 0 a6 3 0 0 0 12 0"
-          {...w}
-        />
-      ),
-    },
-    {
-      label: 'DynamoDB',
-      fill: 'fill-indigo-500',
-      glyph: <path d="M-6 -6 H6 V6 H-6 Z M-6 0 H6 M0 -6 V6" {...w} />,
-    },
-    {
-      label: 'API Gateway',
-      fill: 'fill-violet-500',
-      glyph: <path d="M-7 0 H7 M-3 -5 L-7 0 L-3 5 M3 -5 L7 0 L3 5" {...w} />,
-    },
-  ];
-  return (
-    <Scene w={420} h={262} bg="plain">
-      <PaletteFrame category="Tech" h={244}>
-        <SearchField y={76} text="Search tech" />
-        <Label x={76} y={116} size={10} weight={600} tone="accent">
-          Tech
-        </Label>
-        <Label x={102} y={116} size={10} tone="muted">
-          ›
-        </Label>
-        <Label x={114} y={116} size={10} weight={700} tone="strong">
-          AWS
-        </Label>
-        <g className="help-art-as-drawn">
-          {tiles.map((t, i) => {
-            const col = i % 3;
-            const row = Math.floor(i / 3);
-            const tx = 104 + col * 82;
-            const ty = 130 + row * 58;
-            return (
-              <g key={t.label}>
-                <rect x={tx} y={ty} width={36} height={36} rx={8} className={t.fill} />
-                <g transform={`translate(${tx + 18} ${ty + 18})`}>{t.glyph}</g>
-              </g>
-            );
-          })}
-        </g>
-        {tiles.map((t, i) => {
-          const col = i % 3;
-          const row = Math.floor(i / 3);
-          return (
-            <Label
-              key={t.label}
-              x={122 + col * 82}
-              y={176 + row * 58}
-              anchor="middle"
-              size={10}
-              tone="body"
-            >
-              {t.label}
-            </Label>
-          );
-        })}
       </PaletteFrame>
     </Scene>
   );

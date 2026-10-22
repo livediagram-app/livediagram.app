@@ -1,26 +1,20 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { QuickConnect } from '@/components/illustrations/getting-started';
-import { ToolbarCategoryFlyout } from '@/components/illustrations/toolbar-layout';
 
 export const metadata = helpMetadata({
   title: 'Adding Shapes and Arrows',
   description:
-    'Drop shapes from the Palette and connect them with arrows using quick-connect, the two building blocks of every livedesign.',
+    'Drop shapes from the Palette and connect them with arrows using quick-connect, the building blocks of an infographic, a slide or a wireframe.',
   path: '/help/getting-started/adding-shapes-and-arrows/',
 });
 
-<ArticleLayout title="Adding Shapes and Arrows" description="The two building blocks of every diagram: dropping shapes from the Palette and connecting them with arrows." categoryTitle="Getting Started" categorySlug="getting-started">
+<ArticleLayout title="Adding Shapes and Arrows" description="Dropping shapes from the Palette onto a page and connecting them with arrows, for a process, a flow or a how-to." categoryTitle="Getting Started" categorySlug="getting-started">
 
-Almost every diagram is shapes joined by arrows. livedesign makes both fast: shapes come from the **Palette**, and arrows snap between shapes with quick-connect. This article covers the basics; for the full catalogue see [Shapes](/help/palette/shapes/) and [Arrows](/help/palette/arrows/).
+A lot of what goes on a page is shapes, often joined by arrows: a process on an infographic, a flow on a slide, a box on a wireframe. livedesign makes both fast: shapes come from the **Palette**, and arrows snap between shapes with quick-connect. This article covers the basics; for the full catalogue see [Shapes](/help/palette/shapes/) and [Arrows](/help/palette/arrows/).
 
 ## Adding shapes
 
-The **Palette**, the strip across the top of the canvas, holds everything you can add. It starts with the selection mode (Select, Hand, Eraser and the rest), then the palette's categories by name: in Diagram mode **Shapes**, **Write**, **Draw**, **Diagrams**, **Concepts**, **Layout**, **Icons**, **Tech** and **Media** ([Plan mode](/help/canvas/plan-mode/) has no palette). Rest the pointer on a category, or click it, and its elements open in a panel underneath. See [where each one lives](/help/palette/tools/) for the full map.
-
-<Figure caption="Rest on Shapes and its panel opens under it: the basics, the flowchart shapes and more.">
-  <ToolbarCategoryFlyout />
-</Figure>
+The **Palette**, the strip across the top of the editor, holds everything you can add to a page. It starts with the selection mode (Select, Hand and the rest), then the palette's categories by name. On an infographic page they are **Popular**, **Shapes**, **Write**, **Concepts**, **Components**, **Devices**, **Icons**, **Stickers**, **Media** and **Data**; a slide, a wireframe and a logo page each arrange theirs for what that page is made of, and on an article page the strip holds the article's formatting. Rest the pointer on a category, or click it, and its elements open in a panel underneath. See [where each one lives](/help/palette/tools/) for the full map.
 
 <Step n={1}>
   Rest on **Shapes** in the palette, or click it: its panel opens with the square, circle, diamond,
@@ -28,8 +22,8 @@ The **Palette**, the strip across the top of the canvas, holds everything you ca
 </Step>
 
 <Step n={2}>
-  **Click the canvas** to drop the shape there at its natural size, or **drag on the canvas** to
-  draw it at exactly the size you want. You can also drag the tile straight onto the canvas.
+  **Click the page** to drop the shape there at its natural size, or **drag on the page** to draw it
+  at exactly the size you want. You can also drag the tile straight onto the page.
 </Step>
 
 <Step n={3}>
@@ -40,31 +34,24 @@ The **Palette**, the strip across the top of the canvas, holds everything you ca
 
 Common shapes have their own keys, too: `R` square, `O` circle, `D` diamond, `C` cylinder and `G` parallelogram (see [Keyboard Shortcuts](/help/tips-and-tricks/keyboard-shortcuts/)).
 
-The categories sit in groups along the strip, a thin line between each. In Diagram mode **Shapes**, **Write** (text, notes and comments) and **Draw** (the pencil, highlighter and arrows) come first; then **Diagrams** (mind maps, flowcharts, tables), **Concepts** (pyramids, funnels, cycles and the Sankey) and **Layout** (frames, lanes, cards); then **Icons**, **Tech** (the full-colour cloud and infrastructure marks, see [Technology icons](/help/palette/technology/)) and Media. Stickers are in [Workshop mode](/help/canvas/workshop-mode/)'s and Pages mode's palettes, and the workshop elements in Workshop's **Ask** and **Session**. The wireframing kit (**Components** and **Devices**: browser, phone and laptop frames) and the **Data** charts live in [Pages mode](/help/canvas/pages-mode/)'s palette.
+The categories sit in groups along the strip, a thin line between each. **Popular** comes first, a pick of the tiles a page is most often built from, and every one of them is also in its own category: **Write** holds Text, the Sticky Note and the Pointer Note; **Concepts** the concept graphics, the Timeline and the Sankey; **Components** the ready-made blocks (Hero, Header, Banner, Card, Callout, Stat and more); **Media** pictures and embeds; and **Data** the charts, meters and the Table. There is no arrow tile on the strip: arrows come from quick-connect, or the `A` key.
 
 ## Connecting with arrows
 
 The fastest way to draw an arrow is **quick-connect**:
 
-<Figure caption="Click a selected shape's + to open its options, then drag Arrow onto a second shape to pin an arrow.">
-  <QuickConnect />
-</Figure>
-
 <Step n={1}>Select a shape. Small **+** buttons appear on its sides.</Step>
 
 <Step n={2}>
   Drag a **+** onto another shape, or click it to open its options (**Duplicate**, **Arrow**,
-  **Pencil**, **Text**) and drag **Arrow** onto another shape. livedesign draws an arrow pinned to
-  both, so the arrow follows whenever you move either shape. On a phone, tap **Arrow**, then tap the
-  target shape.
+  **Text**) and drag **Arrow** onto another shape. livedesign draws an arrow pinned to both, so the
+  arrow follows whenever you move either shape. On a phone, tap **Arrow**, then tap the target
+  shape.
 </Step>
 
-<Step n={3}>
-  To draw a free connector instead, pick **Add Arrow** (in the **Draw** category), or press `A`, and
-  drag between any two points.
-</Step>
+<Step n={3}>To draw a free connector instead, press `A` and drag between any two points.</Step>
 
-**Duplicate** in the same options drops a connected copy of the shape beside it, the quickest way to grow a flow one step at a time. Turn on **Quick-Add on Hover** in Settings and the options open as soon as you hover a **+**. See [Quick-Add on Hover](/help/palette/quick-add-on-hover/).
+**Duplicate** in the same options drops a connected copy of the shape beside it, the quickest way to grow a process one step at a time. Turn on **Quick-Add on Hover** in Settings and the options open as soon as you hover a **+**. See [Quick-Add on Hover](/help/palette/quick-add-on-hover/).
 
 ## Styling arrows
 
@@ -78,7 +65,7 @@ The fastest way to draw an arrow is **quick-connect**:
 Drag an arrow's line to bend it where you grabbed it, and use the handles on curved and angled arrows to shape the path exactly. See [Arrow Styles](/help/palette/arrows/arrow-styles/).
 
 <Tip>
-  Working in a flow? Drop a shape, label it, quick-connect to the next spot, and repeat. Because a
+  Building a process? Drop a shape, label it, quick-connect to the next spot, and repeat. Because a
   new shape can inherit the selected one's size, chained nodes stay tidy without fiddling.
 </Tip>
 

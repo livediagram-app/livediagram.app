@@ -14,13 +14,7 @@ describe('lint wire types', () => {
       'group-escape',
       'text-overflow',
     ]);
-    expect(by('info')).toEqual([
-      'group-split-edges',
-      'duplicate-label',
-      'flow-backwards',
-      'aspect-extreme',
-      'colour-on-themed',
-    ]);
+    expect(by('info')).toEqual(['group-split-edges', 'duplicate-label', 'flow-backwards']);
   });
 
   it('tells a code from anything else', () => {

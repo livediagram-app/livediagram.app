@@ -252,7 +252,7 @@ export function facePartRole(
   if (long <= (disc ? MARKER_FACE_DISC_MIN_PX - 0.5 : MARKER_FACE_SHAPE_MIN_PX)) return null;
   const closed = (shape.kind !== 'path' && shape.kind !== 'polyline') || outline.area !== null;
   if (shape.kind === 'rect') {
-    // The face's own box (a banner, a timer, a panel): coloured in and edged in marker, as a shape's body is, whether
+    // The face's own box (a banner, a panel): coloured in and edged in marker, as a shape's body is, whether
     // it is outlined or only filled.
     const body =
       Math.abs(shape.width - face.width) <= MARKER_FACE_BODY_SLACK_PX &&

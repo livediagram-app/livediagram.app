@@ -1,5 +1,5 @@
 // A step on a button that opens something (a popover, a menu, a panel) shows what it opens rather than the button alone
-// (docs/specs/007-editor/editor-tour.md "Steps open what they explain"): it presses the button as the step starts,
+// (docs/specs/007-editor/pages-tour.md "Mechanics"): it presses the button as the step starts,
 // rings what opened, and presses it again as the step ends, so the person sees the real thing and is left as they were.
 import type { TourStepOf } from './tour-step';
 
@@ -90,7 +90,7 @@ export function opensFrom<Api, S extends TourStepOf<Api>>(
       if (!button) return;
       const before = new Set(document.querySelectorAll(OPENABLE));
       if (button.getAttribute('aria-expanded') !== 'true') button.click();
-      // What it opens, by the id it names (aria-controls: the Draw dock's flyouts), else the newest popover or menu.
+      // What it opens, by the id it names (aria-controls), else the newest popover or menu.
       const controls = button.getAttribute('aria-controls');
       const opened = controls
         ? await waitForElement(() => document.getElementById(controls), CONTROLS_WAIT_MS)

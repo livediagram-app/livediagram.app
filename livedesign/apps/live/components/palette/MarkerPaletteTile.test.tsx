@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 // A marker's tile, anywhere the palette shows it (docs/specs/007-editor/logo-pages.md "The Logo
-// palette"): pressed again while held, it opens Draw mode's colour and width.
+// palette"): pressed again while held, it opens its colour and width.
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ReactNode } from 'react';
@@ -21,10 +21,9 @@ const def: PaletteTileDef = {
   icon: <span />,
 };
 const ctx = {
-  whiteboardDock: {
-    prefs: { pens: [{ id: 'second', colour: 'blue', width: 4 }], recognise: false },
+  markerPens: {
+    prefs: { pens: [{ id: 'second', colour: 'blue', width: 4 }] },
     updatePen: vi.fn(),
-    colourMemory: { yours: [], forget: vi.fn(), remember: vi.fn() },
   },
 };
 const held: PendingDraw = {
@@ -32,7 +31,6 @@ const held: PendingDraw = {
   variant: 'whiteboard',
   colour: 'blue',
   width: 4,
-  recognise: false,
   penId: 'second',
   once: true,
 };

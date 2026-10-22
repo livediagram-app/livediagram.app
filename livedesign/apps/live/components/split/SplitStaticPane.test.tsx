@@ -70,14 +70,8 @@ describe('SplitStaticPane', () => {
   });
 
   // A Pages tab always has a page, and a Form tab its form: neither is "nothing on this tab".
-  it('draws an empty Pages or Form tab, and says an empty canvas has nothing on it', () => {
-    pane({ loaded: true, shown: { ...tab, opensIn: 'pages' } });
-    expect(screen.getByTestId('drawing')).toBeTruthy();
-    cleanup();
-    pane({ loaded: true, shown: { ...tab, kind: 'form', form: {} } as unknown as Tab });
-    expect(screen.getByTestId('drawing')).toBeTruthy();
-    cleanup();
+  it('draws a tab with nothing on it as its pages', () => {
     pane({ loaded: true });
-    expect(screen.getByText('Nothing on this tab yet. Click to start on it.')).toBeTruthy();
+    expect(screen.getByTestId('drawing')).toBeTruthy();
   });
 });

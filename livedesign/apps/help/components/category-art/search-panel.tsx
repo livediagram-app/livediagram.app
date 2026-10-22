@@ -39,7 +39,7 @@ const GROUPS: {
           />
         ),
         title: 'Roadmap Q3',
-        where: 'Launch plan',
+        where: 'Launch deck',
       },
     ],
   },
@@ -79,7 +79,7 @@ const GROUPS: {
             <circle cy={3.4} r={0.7} className="fill-current" />
           </>
         ),
-        title: 'Plan Mode: Roadmaps',
+        title: 'Timeline: Roadmaps',
         where: 'Help Centre',
       },
     ],

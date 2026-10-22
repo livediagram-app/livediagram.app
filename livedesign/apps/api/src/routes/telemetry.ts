@@ -1,6 +1,7 @@
 // /api/telemetry/summary — public usage dashboard data (docs/specs/017-telemetry/telemetry.md).
 
 import {
+  DAY_MS,
   metricKey,
   TELEMETRY_WINDOW_DAYS,
   type TelemetryCount,
@@ -12,7 +13,6 @@ import {
 import { telemetryDailyCountsSince } from '../db';
 import { json, notFound } from '../responses';
 import type { RouteContext } from './context';
-import { DAY_MS } from '@livedesign/items';
 
 const SERIES_DAYS = TELEMETRY_WINDOW_DAYS.last30;
 

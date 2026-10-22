@@ -24,28 +24,24 @@ Scope, by file (all under `packages/explorer-lens/src/`):
 
 ## Domain and naming
 
-| Term            | Identifier                                                | Meaning                                                                                 |
-| --------------- | --------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| Lens            | `Lens` `{ text, filters }`                                | The one filter state; `filters[d]` is the list of `d`'s values, empty when unset        |
-| Lens string     | `input` (functions), `q` (URL)                            | The lens written as words and tokens                                                    |
-| Dimension       | `LensDimension`, `LENS_DIMENSIONS`                        | One closed axis: `opens-in`, `kind`, `template`, `made-by`, `edited`, `people`, `space` |
-| Facet           | `LensFacet` = `'text' \| LensDimension`                   | A dimension or the text: what telemetry names                                           |
-| Token           | `LensTerm` with `kind: 'token'`                           | A word `<key>:<values>` naming one or several values of one dimension                   |
-| Value list      | `LensTerm.values`, `LENS_VALUE_SEPARATOR`                 | A token's values, comma-separated; they combine with or                                 |
-| Text            | `LensTerm` with `kind: 'text'`, `Lens.text`               | Every other word                                                                        |
-| Pending         | `LensTerm` with `kind: 'pending'`                         | A token-shaped word with a dimension key under the caret                                |
-| Term state      | `TokenState`: `applied`, `inert`                          | Whether a token narrows the list; `inert` is a Space token on a scoped view             |
-| Issue           | `LensIssue`, `LensIssueReason`                            | A named report about one term                                                           |
-| Scope / view    | `LensView`: `aggregate` \| `scoped`                       | Whether the current view has a scope (breadcrumb)                                       |
-| Subject         | `LensSubject`                                             | One listed row, reduced to what the lens reads                                          |
-| Tab kind        | `kind` dimension, `KIND_VALUES`, `tabKind` on the summary | The first tab's kind at creation; only specific kinds are values                        |
-| Template family | `template` dimension, `TEMPLATE_VALUES`, `templateFamily` | The template family a document was made from                                            |
-| Suggestion      | `LensSuggestion`                                          | One autocomplete option with its replacement range                                      |
-| Chip / pill     | `LensChip`, `LensPill`                                    | View models for the chip row and the field                                              |
+| Term         | Identifier                                  | Meaning                                                                          |
+| ------------ | ------------------------------------------- | -------------------------------------------------------------------------------- |
+| Lens         | `Lens` `{ text, filters }`                  | The one filter state; `filters[d]` is the list of `d`'s values, empty when unset |
+| Lens string  | `input` (functions), `q` (URL)              | The lens written as words and tokens                                             |
+| Dimension    | `LensDimension`, `LENS_DIMENSIONS`          | One closed axis: `opens-in`, `made-by`, `edited`, `people`, `space`              |
+| Facet        | `LensFacet` = `'text' \| LensDimension`     | A dimension or the text: what telemetry names                                    |
+| Token        | `LensTerm` with `kind: 'token'`             | A word `<key>:<values>` naming one or several values of one dimension            |
+| Value list   | `LensTerm.values`, `LENS_VALUE_SEPARATOR`   | A token's values, comma-separated; they combine with or                          |
+| Text         | `LensTerm` with `kind: 'text'`, `Lens.text` | Every other word                                                                 |
+| Pending      | `LensTerm` with `kind: 'pending'`           | A token-shaped word with a dimension key under the caret                         |
+| Term state   | `TokenState`: `applied`, `inert`            | Whether a token narrows the list; `inert` is a Space token on a scoped view      |
+| Issue        | `LensIssue`, `LensIssueReason`              | A named report about one term                                                    |
+| Scope / view | `LensView`: `aggregate` \| `scoped`         | Whether the current view has a scope (breadcrumb)                                |
+| Subject      | `LensSubject`                               | One listed row, reduced to what the lens reads                                   |
+| Suggestion   | `LensSuggestion`                            | One autocomplete option with its replacement range                               |
+| Chip / pill  | `LensChip`, `LensPill`                      | View models for the chip row and the field                                       |
 
-Banned: "type" for an editor mode or a template family (they are Opens in, Template); "board" or
-"board type" for a dimension ("board type" means a board outside the general diagram tab's environment, and is no
-filter); "Generated" for made by AI; "query" for the lens (the URL parameter is the only `q`); "filter state" for the
+Banned: "type" for an editor mode (it is Opens in); "Generated" for made by AI; "query" for the lens (the URL parameter is the only `q`); "filter state" for the
 lens.
 
 ## Grammar
@@ -56,11 +52,10 @@ Case-insensitive for keys and fixed values. `ws` is any run of Unicode whitespac
 lens            = [ ws ] , [ word , { ws , word } ] , [ ws ] ;
 word            = token | text ;
 token           = key , ":" , value , { "," , value } ;  (* every value of the key's list *)
-key             = "opens-in" | "template" | "made-by" | "edited" | "people" | "space" ;
-value           = opens-in-value | template-value | made-by-value | edited-value | people-value
+key             = "opens-in" | "made-by" | "edited" | "people" | "space" ;
+value           = opens-in-value | made-by-value | edited-value | people-value
                 | space-value ;
-opens-in-value  = "diagram" | "draw" ;
-template-value  = "retrospective" | "kanban" ;
+opens-in-value  = "pages" ;
 made-by-value   = "ai" ;
 edited-value    = "today" | "7d" | "30d" | "12m" | "this-year" ;
 people-value    = "me" | "others" ;
@@ -70,7 +65,7 @@ token-shaped    = letter , { letter | "-" } , ":" , { nonspace } ;
 text            = nonspace , { nonspace } ;           (* any word that is not a token *)
 ```
 
-Every value must belong to its key (`template:draw` is no token). A repeated key joins its tokens' values. A word is **token-shaped** when it matches
+Every value must belong to its key (`made-by:7d` is no token). A repeated key joins its tokens' values. A word is **token-shaped** when it matches
 `^[A-Za-z][A-Za-z-]*:` (`D41`); only token-shaped words can be reported.
 
 ## Behaviour and state
@@ -85,7 +80,7 @@ Every value must belong to its key (`template:draw` is no token). A repeated key
    - token-shaped, key not a dimension → text, `unknown_dimension`;
    - pending: `caret` given, `start ≤ caret ≤ end`, key a dimension → `pending`, no issue;
    - otherwise the value part is split on `,` and each entry read in turn; the first bad entry makes the whole word
-     text with its reason: an empty entry (`template:`, `edited:7d,`, `space:team:`) `missing_value`; an entry outside
+     text with its reason: an empty entry (`edited:`, `edited:7d,`, `space:team:`) `missing_value`; an entry outside
      the key's list `unknown_value`; `team:<id>` with no team of that id (exact, case kept, `D53`) `unknown_team`;
    - every entry good → a token whose `values` are the entries written lower case (a team id keeps its case),
      deduplicated and in canonical order (`orderValues`).
@@ -115,9 +110,9 @@ except the cut tail, which is always reported; repeating a dimension and listing
 
 `documentSubject(summary, viewerId)`: `space` is `team:<teamId>` when the summary has a team, else `mine` (a document in
 this browser included, as the spec decides); `people` is `me` when `ownerId === viewerId`; `madeByAi` is
-`isMadeByAiSource(source)` (`ai` or `mcp`, never `cli`); `opensIn`, `kind` (from `tabKind`) and `template` (from `templateFamily`) are the summary's values
-when in their lists, else `null`, so the general diagram tab reads as no kind. `sharedSubject(item)`:
-`space: 'shared'`, `people: 'others'`, `madeByAi`, `opensIn`, `kind` and `template` all `null`.
+`isMadeByAiSource(source)` (`ai` or `mcp`, never `cli`); `opensIn` is the summary's value
+when in its list, else `null`. `sharedSubject(item)`:
+`space: 'shared'`, `people: 'others'`, `madeByAi`, and `opensIn` `null`.
 
 Serialising: `serialiseLens(lens)` writes one token per set dimension, `<key>:<v1>,<v2>…` in canonical value order,
 in `LENS_DIMENSIONS` order, then the text words, joined by one space.
@@ -214,26 +209,26 @@ row with `documentSubject` / `sharedSubject` and keeps its row on the subject (`
 
 ## Errors and edge cases
 
-| Case                                                              | Handling                                                            |
-| ----------------------------------------------------------------- | ------------------------------------------------------------------- |
-| `colour:red`, `http://x`                                          | Text, `unknown_dimension`                                           |
-| `10:30`, `:x`, `3d:x`                                             | Text, no issue (not token-shaped, `D41`)                            |
-| `template:`, `edited:7d,`, `people:me,,others`, `space:team:`     | Text, `missing_value`                                               |
-| `template:mindmap`, `made-by:me`, `edited:year`, `space:everyone` | Text, `unknown_value`                                               |
-| `template:kanban,mindmap`                                         | Text, whole, `unknown_value` naming `mindmap`                       |
-| `board:kanban`                                                    | Text, `unknown_dimension`: there is no Board dimension              |
-| `space:team:<unknown id>`                                         | Text, `unknown_team`                                                |
-| `Template:KANBAN`                                                 | Token `template:kanban`                                             |
-| Two `template:` tokens, or a value listed twice                   | Values joined, each once (or)                                       |
-| `edited:today,30d`                                                | The widest: the last 30 days                                        |
-| `space:` on a scoped view                                         | `inert`, `space_not_here`; kept in the string                       |
-| Input over 512 characters                                         | Cut at a word boundary, `too_long`                                  |
-| Empty or whitespace-only input                                    | The empty lens; no terms, no issues                                 |
-| Unknown or retired `opensIn` / `tabKind` / `templateFamily`       | Subject `null`: matches no value, shown when the dimension is unset |
-| `savedAt` in the future                                           | Counts as edited for every value                                    |
-| A shared row and `made-by:ai`                                     | Not matched (`madeByAi` unknown)                                    |
-| Caret outside the input                                           | Clamped                                                             |
-| Fragment `<unknown key>:…`, or space when scoped                  | No suggestions                                                      |
+| Case                                                           | Handling                                                            |
+| -------------------------------------------------------------- | ------------------------------------------------------------------- |
+| `colour:red`, `http://x`                                       | Text, `unknown_dimension`                                           |
+| `10:30`, `:x`, `3d:x`                                          | Text, no issue (not token-shaped, `D41`)                            |
+| `edited:`, `edited:7d,`, `people:me,,others`, `space:team:`    | Text, `missing_value`                                               |
+| `opens-in:draw`, `made-by:me`, `edited:year`, `space:everyone` | Text, `unknown_value`                                               |
+| `edited:7d,never`                                              | Text, whole, `unknown_value` naming `never`                         |
+| `board:x`                                                      | Text, `unknown_dimension`: there is no Board dimension              |
+| `space:team:<unknown id>`                                      | Text, `unknown_team`                                                |
+| `Edited:TODAY`                                                 | Token `edited:today`                                                |
+| Two `edited:` tokens, or a value listed twice                  | Values joined, each once (or)                                       |
+| `edited:today,30d`                                             | The widest: the last 30 days                                        |
+| `space:` on a scoped view                                      | `inert`, `space_not_here`; kept in the string                       |
+| Input over 512 characters                                      | Cut at a word boundary, `too_long`                                  |
+| Empty or whitespace-only input                                 | The empty lens; no terms, no issues                                 |
+| Unknown `opensIn`                                              | Subject `null`: matches no value, shown when the dimension is unset |
+| `savedAt` in the future                                        | Counts as edited for every value                                    |
+| A shared row and `made-by:ai`                                  | Not matched (`madeByAi` unknown)                                    |
+| Caret outside the input                                        | Clamped                                                             |
+| Fragment `<unknown key>:…`, or space when scoped               | No suggestions                                                      |
 
 ## Security and trust
 
@@ -260,15 +255,15 @@ Copy is the spec's, in one place (`view-models.ts`, labels in `labels.ts`):
 - A pill reads `<Dimension>: <label>, <label>…`, except Made by AI, which reads "Made by AI". A muted pill's note is
   its issue message.
 - Chips are `multiple` (a multi-select listbox) except Made by AI, a `toggle` named "Made by AI". A chip is named
-  "Template: Retrospective, Kanban" when set and "Template, any" when not; its first option is "Any" (`value: null`),
+  "Edited: Today, Last 7 days" when set and "Edited, any" when not; its first option is "Any" (`value: null`),
   selected only when no value is, and every chosen value's option is selected.
 - the Edited options read Today, Last 7 days, Last 30 days, Last 12 months, This year, in that order (`D58`).
 - The field stays one line high; pills and text scroll sideways inside it (`D50`).
 
 ## Accessibility
 
-The view models carry every accessible name the spec lists: pill `name` ("Filter Template: Retrospective, Kanban",
-plus ", not applied: <message>"), pill `removeName` ("Remove filter Template: Retrospective, Kanban"), chip `name`, option `name` ("Last 7 days, Edited",
+The view models carry every accessible name the spec lists: pill `name` ("Filter Edited: Today, Last 7 days",
+plus ", not applied: <message>"), pill `removeName` ("Remove filter Edited: Today, Last 7 days"), chip `name`, option `name` ("Last 7 days, Edited",
 plus ", no matches"), chip `control` deciding `aria-multiselectable` or `aria-pressed`, and `id`s fit for
 `aria-activedescendant`. Roles, focus, contrast and target size are the page's,
 as the spec states them.
@@ -347,7 +342,7 @@ The lens on `/explorer`, over `@livedesign/explorer-lens`. Files:
 | `apps/live/app/explorer/ExplorerShell.tsx`             | Mounts `LensField` in the header and `LensAnnouncer` beside it                                             |
 | `apps/live/app/explorer/ExplorerPane.tsx`              | `PaneLensBar` under the header; Failed, Empty, Filtered empty, the list; the folder chips                  |
 | `apps/live/components/panels/TeamSharedDocuments.tsx`  | Narrows the team library it reads (`LibraryLens`), its own announcer and filtered-empty state              |
-| `apps/live/hooks/persistence/useTeamLibrariesSweep.ts` | Team rows carry `source`, `opensIn`, `tabKind`, `templateFamily`                                           |
+| `apps/live/hooks/persistence/useTeamLibrariesSweep.ts` | Team rows carry `source`, `opensIn`, `tabKind`                                                             |
 | `apps/live/lib/api/documents.ts`                       | `DocumentListItem` carries the recorded intent, optional                                                   |
 | `packages/api-schema/src/telemetry-schema.ts`          | The `Explorer` category                                                                                    |
 | `apps/telemetry/app/catalogue/features.ts`             | `EXPLORER_FILTERS_PICKED`, in the Organisation stack                                                       |

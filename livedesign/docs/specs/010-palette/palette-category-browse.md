@@ -4,20 +4,20 @@ Status: shipped
 
 ## What
 
-The Icons and Technology tabs browse the same way the Tools tab does: a grid of
+The Icons and Stickers tabs browse the same way the Tools tab did: a grid of
 category tiles, click one to open it, a breadcrumb back, and a search box that
 cuts across every category at once.
 
-The category **filter dropdowns** those two tabs used ("Filter icons by
-category", "Filter technology icons by provider") are gone, along with their
+The category **filter dropdown** the Icons tab used ("Filter icons by
+category") is gone, along with their
 "All" entry.
 
 ## Why
 
 All three tabs hold a catalogue too big for one screen — Tools has ~25 tiles,
-Icons 183 glyphs, Technology a few dozen brand marks — and all three were
+Icons 183 glyphs, Stickers ~190 — and all three were
 answering that in different ways. Tools drilled in ([Canvas and palette](../008-canvas/canvas-and-palette.md) "Sub-categories");
-Icons and Technology showed a flat scroll behind a dropdown.
+Icons showed a flat scroll behind a dropdown.
 
 The dropdown made the catalogue's own structure invisible. That there **is** a
 People set, a Furniture set, an Emoji set is the single most useful thing to
@@ -28,13 +28,13 @@ Category tiles put that structure on the first screen, and each tile carries the
 category's **first glyph** as its artwork — so a category looks like what it
 holds, and no separate icon set can drift from the contents.
 
-## No descriptions on Icons / Technology
+## No descriptions on Icons / Stickers
 
 Tool categories get a hover card describing what's inside ("Blocks: code blocks,
 checklists, …"), because the label alone doesn't answer "is the thing I want in
 here?".
 
-"People", "Arrows", "AWS" and "Azure" already answer it. A hover card that restates
+"People", "Arrows", "Feelings" and "Work" already answer it. A hover card that restates
 the label under the glyph is a delay in exchange for nothing, so `description`
 on a category is now optional and those two tabs omit it — no hover card renders at
 all.
@@ -52,8 +52,8 @@ the breadcrumb would be lying about where the results came from.
 
 ## Two panes in the category bar's flyouts
 
-On the category bar ([Toolbar layout](../007-editor/toolbar-layout.md#the-category-bar)), Icons, Stickers, Technology
-and Session browse as **two panes** instead of the drill-in: the groups down a rail on the left (each its glyph,
+On the category bar ([Toolbar layout](../007-editor/toolbar-layout.md#the-category-bar)), Icons and Stickers
+browse as **two panes** instead of the drill-in: the groups down a rail on the left (each its glyph,
 name and count badge, the open one raised with a brand edge), the open group's entries on the right under a sticky
 heading, and the search across the top. There is no breadcrumb and no grid of group tiles: every group is in view
 and one press away, so there is nothing to back out of. It opens on the first group, and after that on the one it

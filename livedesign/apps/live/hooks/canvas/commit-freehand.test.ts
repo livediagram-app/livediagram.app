@@ -14,7 +14,7 @@ import { makeCommitFreehand } from './commit-freehand';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn(), titleCaseType: (s: string) => s }));
 
-const board: Tab = { id: 't', name: 'Board', opensIn: 'draw', elements: [] };
+const board: Tab = { id: 't', name: 'Board', opensIn: 'pages', elements: [] };
 
 function setup(pendingDraw: PendingDraw) {
   let elements: Element[] = [];
@@ -46,7 +46,6 @@ const pen = (over: Partial<Extract<PendingDraw, { variant: 'whiteboard' }>> = {}
   variant: 'whiteboard',
   colour: null,
   width: 4,
-  recognise: false,
   ...over,
 });
 
@@ -62,7 +61,7 @@ const scribble = [
   { x: 90, y: 20 },
 ];
 
-describe('a whiteboard pen stroke', () => {
+describe('a marker stroke', () => {
   // docs/specs/006-document/stroke-points.md "Limits": a stroke longer than a stroke can store is
   // simplified to fit on release, never lost.
   it('keeps a stroke drawn with more samples than a stroke can store, with its pressures', () => {
@@ -130,7 +129,7 @@ describe('a whiteboard pen stroke', () => {
     expect(s.setSelectedId).not.toHaveBeenCalled();
   });
 
-  // docs/specs/023-draw-mode/draw-mode.md "Pens": a tap with a pen leaves a dot.
+  // docs/specs/023-draw-mode/drawing-tools.md "Markers": a tap with a pen leaves a dot.
   it('lands a tap as a dot: a one-point stroke in the pen, with the pen kept in hand', () => {
     const s = setup(pen({ colour: 'blue' }));
     s.commit([{ x: 40, y: 60 }], false, { pressures: [0.7], streamline: 0.5 });
@@ -146,8 +145,8 @@ describe('a whiteboard pen stroke', () => {
     expect(s.setSelectedId).not.toHaveBeenCalled();
   });
 
-  it('never reads a dot as a shape, even with recognition on', () => {
-    const s = setup(pen({ recognise: true }));
+  it('never reads a dot as a shape', () => {
+    const s = setup(pen());
     s.commit([{ x: 40, y: 60 }], false);
     expect(s.elements[0]?.type).toBe('freehand');
   });
@@ -159,9 +158,15 @@ describe('a whiteboard pen stroke', () => {
     expect(s.setPendingDraw).not.toHaveBeenCalledWith(null);
   });
 
+  const circle = {
+    kind: 'circle' as const,
+    bbox: { x: 50, y: 50, width: 100, height: 100 },
+    confidence: 1,
+  };
+
   it('turns a recognised stroke into a clean unfilled shape in the pen\u2019s colour and weight', () => {
-    const s = setup(pen({ colour: 'blue', width: 8, recognise: true }));
-    s.commit(loop, false);
+    const s = setup(pen({ colour: 'blue', width: 8 }));
+    s.commit(loop, false, { snapped: circle });
     const shape = s.elements[0] as ShapeElement;
     expect(shape.type).toBe('shape');
     expect(shape).toMatchObject({
@@ -172,10 +177,10 @@ describe('a whiteboard pen stroke', () => {
     expect(s.setPendingDraw).not.toHaveBeenCalledWith(null);
   });
 
-  // docs/specs/007-editor/editor-modes.md "One look": a shape made in Draw mode is written in Ink.
+  // A recognised shape is written in Ink by name, so it looks the same to every collaborator.
   it('writes a main-pen shape in Ink by name', () => {
-    const s = setup(pen({ recognise: true }));
-    s.commit(loop, false);
+    const s = setup(pen());
+    s.commit(loop, false, { snapped: circle });
     const shape = s.elements[0] as ShapeElement;
     expect(shape.type).toBe('shape');
     expect(shape.strokeColor).toBeUndefined();
@@ -183,7 +188,7 @@ describe('a whiteboard pen stroke', () => {
   });
 
   it('writes a main-pen line in Ink by name', () => {
-    const s = setup(pen({ recognise: true }));
+    const s = setup(pen());
     const snapped = {
       kind: 'line' as const,
       bbox: { x: 0, y: 0, width: 300, height: 40 },
@@ -222,7 +227,7 @@ describe('a whiteboard pen stroke', () => {
   });
 
   it('lands the shape the pen locked to and reshaped, not a fresh reading of the stroke', () => {
-    const s = setup(pen({ recognise: true }));
+    const s = setup(pen());
     const snapped = {
       kind: 'line' as const,
       bbox: { x: 0, y: 0, width: 300, height: 40 },
@@ -239,15 +244,8 @@ describe('a whiteboard pen stroke', () => {
     expect('snapped' in s.elements[0]!).toBe(false);
   });
 
-  it('lands a stroke broken out of its shape as ink, even with recognition on', () => {
-    const s = setup(pen({ recognise: true }));
-    s.commit(loop, false, { streamline: 0.2, keepInk: true });
-    expect(s.elements[0]!.type).toBe('freehand');
-    expect('keepInk' in s.elements[0]!).toBe(false);
-  });
-
-  it('lands a stroke Alt recognised as the shape, even with recognition off', () => {
-    const s = setup(pen({ recognise: false }));
+  it('lands a stroke Alt recognised as the shape', () => {
+    const s = setup(pen());
     const snapped = {
       kind: 'circle' as const,
       bbox: { x: 50, y: 50, width: 100, height: 100 },
@@ -257,8 +255,8 @@ describe('a whiteboard pen stroke', () => {
     expect(s.elements[0]).toMatchObject({ type: 'shape', x: 50, y: 50, width: 100, height: 100 });
   });
 
-  it('keeps strokes as drawn with recognition off', () => {
-    const s = setup(pen({ recognise: false }));
+  it('keeps a stroke nothing recognised as drawn', () => {
+    const s = setup(pen());
     s.commit(loop, false);
     expect(s.elements[0]!.type).toBe('freehand');
   });

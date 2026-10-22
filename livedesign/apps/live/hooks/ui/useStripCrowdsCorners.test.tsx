@@ -2,11 +2,9 @@
 import { renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { STRIP_SELECTOR, useStripCrowdsCorners } from './useStripCrowdsCorners';
-import { WHITEBOARD_DOCK_SELECTOR } from '@/lib/whiteboard-dock-prefs';
 
-// Whether a bar across the top (the Toolbar strip, or a whiteboard dock at the top) reaches into a
-// top-corner panel stack (docs/specs/007-editor/toolbar-layout.md, docs/specs/023-draw-mode/draw-mode.md
-// "Where the dock sits").
+// Whether a bar across the top (the Toolbar strip) reaches into a top-corner panel stack
+// (docs/specs/007-editor/toolbar-layout.md).
 
 function boxed(el: HTMLElement, left: number, right: number) {
   el.getBoundingClientRect = () =>
@@ -23,7 +21,6 @@ function mount(html: string, bar: [number, number]) {
 }
 
 const STRIP_HTML = '<div data-toolbar-palette><div data-bar data-tour-id="palette"></div></div>';
-const DOCK_HTML = '<div data-whiteboard-dock data-bar></div>';
 
 beforeEach(() => {
   vi.stubGlobal(
@@ -46,24 +43,14 @@ describe('useStripCrowdsCorners', () => {
     expect(result.current).toBe(true);
   });
 
-  it('measures a whiteboard dock at the top', () => {
-    const corners = mount(DOCK_HTML, [200, 900]);
-    const { result } = renderHook(() =>
-      useStripCrowdsCorners(corners, WHITEBOARD_DOCK_SELECTOR, 'l', '1'),
-    );
-    expect(result.current).toBe(true);
-  });
-
   it('is clear when the bar stays out of the corners', () => {
-    const corners = mount(DOCK_HTML, [400, 900]);
-    const { result } = renderHook(() =>
-      useStripCrowdsCorners(corners, WHITEBOARD_DOCK_SELECTOR, 'l', '1'),
-    );
+    const corners = mount(STRIP_HTML, [400, 900]);
+    const { result } = renderHook(() => useStripCrowdsCorners(corners, STRIP_SELECTOR, 'l', '1'));
     expect(result.current).toBe(false);
   });
 
   it('is never crowded without a bar to measure', () => {
-    const corners = mount(DOCK_HTML, [200, 900]);
+    const corners = mount(STRIP_HTML, [200, 900]);
     const { result } = renderHook(() => useStripCrowdsCorners(corners, null, 'l', '1'));
     expect(result.current).toBe(false);
   });

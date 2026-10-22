@@ -35,11 +35,8 @@ import { useSelectionOf, useSelectionStore } from '@/hooks/canvas/useSelectionSt
 import type { CanvasSelectionInput } from '@/hooks/canvas/useCanvasSelectionView';
 import type { Selection } from '@/lib/selection-store';
 import { withStableEventProps } from '@/components/primitives/withStableEventProps';
-import { MindGrowProvider } from '@/components/canvas/MindGrowContext';
-import { MindOutlineProvider, useMindOutlineBadges } from '@/components/canvas/MindOutlineContext';
 import { ElementIndicatorStyleProvider } from '@/components/canvas/ElementIndicatorStyleContext';
 import { readElementIndicatorStyle } from '@/lib/element-indicator-style';
-import { CanvasStillProvider } from '@/components/canvas/CanvasStillContext';
 import { CanvasArrivalProvider } from '@/components/canvas/CanvasArrivalContext';
 import { CanvasLiveRegion } from '@/components/canvas/CanvasLiveRegion';
 import { IsometricDepthLayer } from '@/components/canvas/IsometricDepthLayer';
@@ -47,26 +44,9 @@ import { useIsometricView } from '@/hooks/canvas/useIsometricView';
 import { SpotlightOverlay } from '@/components/canvas/SpotlightOverlay';
 import { EraserBrushRing } from '@/components/canvas/EraserBrushRing';
 import { DEFAULT_ERASER_CONFIG, eraserRadius } from '@/lib/eraser-config';
-import { WHITEBOARD_ERASER_RADIUS_PX } from '@/lib/whiteboard-tool';
-import { routeBoardDoubleClick } from '@/lib/whiteboard-edit-target';
-import { useWhiteboardPenCursor } from '@/hooks/canvas/useWhiteboardPenCursor';
-import { AvatarWalker } from '@/components/canvas/AvatarWalker';
-import { AvatarPadArrivals } from '@/components/canvas/AvatarPadArrivals';
-import { parseAvatarStatus } from '@/lib/avatar-status';
-import { headPoint } from '@/lib/avatar-speech';
-import { avatarScale } from '@/lib/avatar-config';
-import { ReactionBurst } from '@/components/canvas/ReactionBurst';
-
-// The footprint a burst is scaled against when it comes from the avatar panel
-// rather than a pad: roughly a character, so the particles read as thrown by a
-// person rather than by whatever size of pad last set one off.
-import { useCanvasAvatar } from './useCanvasAvatar';
 import { useCanvasPointer } from './useCanvasPointer';
 import { useCanvasDrawTools } from './useCanvasDrawTools';
 
-const AVATAR_BURST_PX = 120;
-import { parseAvatarConfig } from '@/lib/avatar-config';
-import { reactionPose } from '@/lib/avatar-reactions';
 import { useOffscreenContent } from '@/hooks/canvas/useOffscreenContent';
 import { TabLoadOverlay } from '@/components/canvas/TabLoadOverlay';
 import { PaletteDragGhost } from '@/components/canvas/PaletteDragGhost';
@@ -79,7 +59,7 @@ import { useCanvasSurfaceGestures } from '@/hooks/canvas/useCanvasSurfaceGesture
 import { useCanvasSelectHandlers } from '@/hooks/canvas/useCanvasSelectHandlers';
 import { useArrowLabelLayouts } from '@/hooks/canvas/useArrowLabelLayouts';
 import { useFontEpoch } from '@/components/canvas/useFontEpoch';
-import { loadAvatarSpeechLayer, loadCanvasPages } from '@/lib/editor-deferred-code';
+import { loadCanvasPages } from '@/lib/editor-deferred-code';
 import { GifOmit } from './GifOmit';
 import { SLIDE_VIEW_TRANSITION_UPDATE } from './slide-transition';
 import { useStickyPeelVars } from '@/lib/sticky-peel-image';
@@ -87,9 +67,6 @@ import { useStickyPeelVars } from '@/lib/sticky-peel-image';
 // Pages mode's pages draw only on a tab that has pages, so their code loads on demand
 // (lib/editor-deferred-code.ts fetches it as the editor mounts).
 const CanvasPages = dynamic(loadCanvasPages, { ssr: false });
-// Speech bubbles (docs/specs/008-canvas/avatar-mode.md "Speech bubbles") load the first time somebody speaks:
-// nothing on the canvas needs them before then.
-const AvatarSpeechLayer = dynamic(loadAvatarSpeechLayer, { ssr: false });
 
 // The canvas boundary (docs/specs/008-canvas/canvas-performance.md "The canvas re-renders only for what it
 // shows"): memoised, its `on…` props stable, so an editor render that changes nothing it shows stops here.
@@ -105,7 +82,6 @@ function CanvasView(props: CanvasProps) {
     readOnly,
     tabBackgroundPattern,
     tabBackgroundColor,
-    tabLayers,
     tabBackgroundOpacity,
     tabBackgroundPatternScale,
     tabBackgroundAnimationSpeed,
@@ -134,17 +110,9 @@ function CanvasView(props: CanvasProps) {
     onRetryTabLoad,
   } = props;
   const { zoom: viewportZoom, offset: viewportOffset } = useViewportOf(wholeView);
-  // The zoom when a handler runs, for what is handed down and must keep its identity across zooms.
   const viewportStore = useViewportStore();
-  const readZoom = useCallback(() => viewportStore.get().zoom, [viewportStore]);
 
   const wrapperRef = useRef<HTMLDivElement>(null);
-  // A whiteboard pen's own cursor, as chosen in the dock's More flyout.
-  const penCursorValue = useWhiteboardPenCursor(
-    pendingDraw,
-    props.whiteboardDock?.prefs.cursor,
-    viewportZoom,
-  );
 
   // Paint mode is the Format canvas tool: it reads as paint mode from its
   // first click (copy cursor, handles/label-drag/dblclick suppressed on boxed
@@ -197,11 +165,6 @@ function CanvasView(props: CanvasProps) {
     wrapperRef,
     onDeselect,
     onSelectMarquee,
-    onShiftSelect,
-    currentSelection: () => {
-      const { selectedId, multiSelectedIds } = selectionStore.get();
-      return new Set([...multiSelectedIds, ...(selectedId ? [selectedId] : [])]);
-    },
     isPinchingRef,
   });
 
@@ -209,15 +172,7 @@ function CanvasView(props: CanvasProps) {
   // usePaletteDrop so the canvas body keeps to layout + pointer routing.
   const paletteDrop = usePaletteDrop({
     onDropFile: props.onDropFile,
-    // A tile DRAGGED onto the canvas is an edit too (docs/specs/008-canvas/avatar-mode.md), so it leaves
-    // Avatar mode the same way a tile click does — otherwise the element
-    // landed while the canvas still read as read-only.
-    onDropPalette: props.onDropPalette
-      ? (kind, x, y, art) => {
-          if (canvasTool === 'avatar') props.onExitAvatarMode?.();
-          props.onDropPalette?.(kind, x, y, art);
-        }
-      : undefined,
+    onDropPalette: props.onDropPalette,
     viewportZoom,
     wrapperRef,
   });
@@ -277,34 +232,6 @@ function CanvasView(props: CanvasProps) {
 
   const { spotlightLook, spotlight, eraserPos, handlePointerMoveCanvas, handlePointerLeaveCanvas } =
     useCanvasPointer({ canvasTool, mainRef, onCanvasPointerMove, wrapperRef, viewportZoom });
-
-  const {
-    avatar,
-    avatarBurst,
-    avatarLook,
-    avatarStandingOn,
-    avatarStatus,
-    padArrivals,
-    playAvatarBurst,
-    pressModeButton,
-    resolvePortal,
-    setAvatarBurst,
-    setAvatarStatus,
-    sittersOf,
-    speech,
-    speechBubbles,
-  } = useCanvasAvatar({
-    props,
-    canvasTool,
-    elements,
-    tabLayers,
-    mainRef,
-    wrapperRef,
-    viewportOffset,
-    viewportZoom,
-    setViewportOffset,
-    readZoom,
-  });
 
   // Isometric view (docs/specs/008-canvas/isometric-view.md): the orbit-able camera + the innermost
   // transform fragment, pivoted on the content centre — see
@@ -373,7 +300,6 @@ function CanvasView(props: CanvasProps) {
     canvasTool,
     middleMousePan: props.settings?.middleMousePan !== false,
     pendingDraw,
-    whiteboard: props.whiteboardDock !== undefined,
     viewportOffset,
     viewportZoom,
     mainRef,
@@ -382,32 +308,16 @@ function CanvasView(props: CanvasProps) {
     setPan,
     setMarquee,
     spotlight,
-    avatar,
-    peerAvatars: props.remoteAvatars,
-    onPushPeer: props.onAvatarPush,
     isoCamera,
     beginPendingDrawGesture: beginPendingDrawOrPolygon,
     interceptPress: (e) => formatPagePress(e) || pathTool.beginEditPress(e),
     onEraseStart: props.onEraseStart,
     onCanvasContextMenu,
     onDeselect,
-    // On a whiteboard a double-click inside a shape edits it (lib/whiteboard-edit-target). On the bare board a
-    // finger's double-tap zooms in on the spot, a mouse's double-click drops text
+    // A finger's double-tap zooms in on the spot, a mouse's double-click drops text
     // (docs/specs/008-canvas/canvas-and-palette.md "Double-tap to zoom").
     onCanvasDoubleClick: (x, y, byFinger) =>
-      routeBoardDoubleClick(
-        {
-          whiteboard: props.editorMode === 'draw',
-          elements,
-          layers: tabLayers,
-          inertIds: props.layerInertIds,
-        },
-        { x, y },
-        {
-          edit: props.onBeginEdit,
-          board: byFinger ? (bx, by) => doubleTap.onCanvas({ x: bx, y: by }) : onCanvasDoubleClick,
-        },
-      ),
+      byFinger ? doubleTap.onCanvas({ x, y }) : onCanvasDoubleClick(x, y),
   });
 
   // Auto-focus the canvas surface on mount so clipboard paste works
@@ -421,19 +331,6 @@ function CanvasView(props: CanvasProps) {
     const node = mainRef && 'current' in mainRef ? mainRef.current : null;
     node?.focus({ preventScroll: true });
   }, [mainRef]);
-  // Mind map (docs/specs/009-elements/mind-node.md): the growers the label editor and the "+" reach.
-  const { onGrowMindNode, onAbandonMindNode } = props;
-  const mindGrow = useMemo(
-    () => ({ grow: onGrowMindNode, abandon: onAbandonMindNode }),
-    [onGrowMindNode, onAbandonMindNode],
-  );
-  // The Edit Outline badge on each map root (MindOutlineContext).
-  const mindOutlineBadges = useMindOutlineBadges(
-    elements,
-    props.canEditMindOutline,
-    props.onEditMindOutline,
-    props.onTidyMindMap,
-  );
   return (
     // This canvas's tab's finish (docs/specs/008-canvas/finish.md), over the editor's active tab's.
     <CanvasFinishProvider finish={props.tabFinish}>
@@ -511,7 +408,7 @@ function CanvasView(props: CanvasProps) {
               // surrounding "letterbox" gap falls through to <main>. Without
               // setting cursor here too, the user would see the OS default
               // arrow in that gap while a draw-to-size intent is pending.
-              ...(pendingDraw ? { cursor: penCursorValue ?? drawIntentCursor(pendingDraw) } : null),
+              ...(pendingDraw ? { cursor: drawIntentCursor(pendingDraw) } : null),
               ...(pathTool.cursor ? { cursor: pathTool.cursor } : null),
             }}
           >
@@ -555,11 +452,8 @@ function CanvasView(props: CanvasProps) {
               // pointer-events-none so NO element kind can be selected / dragged —
               // it's a read-only view tool. Clicks fall through to <main>, where a
               // drag pans (canvasTool === 'isometric' is added to `wantsPan`).
-              // Avatar mode (docs/specs/008-canvas/avatar-mode.md): same treatment for the same reason — the mode
-              // is read-only, so the canvas layer goes inert and every click falls
-              // through to <main>, where the capture handler turns it into a walk.
               className={`absolute inset-0 origin-center touch-none ${
-                canvasTool === 'spotlight' || canvasTool === 'isometric' || canvasTool === 'avatar'
+                canvasTool === 'spotlight' || canvasTool === 'isometric'
                   ? 'pointer-events-none'
                   : ''
               } ${pendingDraw ? '' : cursorClass}`}
@@ -568,7 +462,7 @@ function CanvasView(props: CanvasProps) {
               // (flicker) with the coplanar contents above them.
               data-iso={canvasTool === 'isometric' ? '' : undefined}
               // A whiteboard pen draws wherever it presses, so nothing under it swaps
-              // the pen cursor for its own (globals.css, docs/specs/023-draw-mode/draw-mode.md "Pens").
+              // the pen cursor for its own (globals.css, docs/specs/023-draw-mode/drawing-tools.md "Markers").
               data-pen-in-hand={
                 (pendingDraw?.type === 'freehand' && pendingDraw.variant === 'whiteboard') ||
                 pendingDraw?.type === 'path'
@@ -595,9 +489,7 @@ function CanvasView(props: CanvasProps) {
                 // intents inherited the default arrow cursor because the
                 // wrapper drops its Tailwind cursor- class above when
                 // pendingDraw is set, leaving no cursor specified at all.
-                ...(pendingDraw
-                  ? { cursor: penCursorValue ?? drawIntentCursor(pendingDraw) }
-                  : null),
+                ...(pendingDraw ? { cursor: drawIntentCursor(pendingDraw) } : null),
                 // A path in its edit mode says what a press would do (usePathTool).
                 ...(pathTool.cursor ? { cursor: pathTool.cursor } : null),
               }}
@@ -624,58 +516,35 @@ function CanvasView(props: CanvasProps) {
                   />
                 </PageImageAccessProvider>
               ) : null}
-              <CanvasStillProvider still={props.editorMode === 'draw'}>
-                <CanvasArrivalProvider
-                  tabId={props.activeTabId ?? ''}
-                  loaded={props.activeTabLoaded ?? true}
-                >
-                  {/* The zoom reaches only the counter-scaled parts of each element
+              <CanvasArrivalProvider
+                tabId={props.activeTabId ?? ''}
+                loaded={props.activeTabLoaded ?? true}
+              >
+                {/* The zoom reaches only the counter-scaled parts of each element
               (docs/specs/008-canvas/canvas-performance.md). */}
-                  <CanvasZoomProvider zoom={viewportZoom}>
-                    <MindGrowProvider value={mindGrow}>
-                      <MindOutlineProvider value={mindOutlineBadges}>
-                        <ElementIndicatorStyleProvider
-                          style={readElementIndicatorStyle(props.settings)}
-                        >
-                          <CanvasElementsLayer
-                            {...props}
-                            elements={pathTool.elements}
-                            // Portal travel is resolved HERE (Canvas owns the viewport + the avatar),
-                            // so the prop from the host is overridden with the local resolver.
-                            onEnterPortal={resolvePortal}
-                            onFireReaction={props.onFireReaction}
-                            reactionBursts={props.reactionBursts}
-                            onReactionBurstDone={props.onReactionBurstDone}
-                            // Chair (docs/specs/009-elements/chair.md): occupancy resolved here, where peer presence
-                            // lives, rather than threaded from the page.
-                            chairSitters={sittersOf}
-                            // Pressing a Selection Mode button that hands out Avatar mode drops
-                            // the character at THAT button (see avatarSpawn), not the viewport
-                            // centre: you pressed a thing on the canvas, so the character should
-                            // appear where you pressed it.
-                            onPressModeButton={pressModeButton}
-                            onPressFocusButton={props.onPressFocusButton}
-                            hasArrows={hasArrows}
-                            arrowLabels={arrowLabels}
-                            selectionInput={selectionInput}
-                            isPaintMode={isPaintMode}
-                            handleArrowSelect={handleArrowSelect}
-                            handleElementClick={handleElementClick}
-                            handleElementContextSelect={handleElementContextSelect}
-                            quickRingOpen={quickRingOpen}
-                            setQuickRingOpen={setQuickRingOpen}
-                            drawDrag={drawDrag}
-                          />
-                        </ElementIndicatorStyleProvider>
-                      </MindOutlineProvider>
-                    </MindGrowProvider>
-                  </CanvasZoomProvider>
-                </CanvasArrivalProvider>
-              </CanvasStillProvider>
-              {/* Drafts, the logo page's guides and the avatars: editor-only, left out of an animated GIF
+                <CanvasZoomProvider zoom={viewportZoom}>
+                  <ElementIndicatorStyleProvider style={readElementIndicatorStyle(props.settings)}>
+                    <CanvasElementsLayer
+                      {...props}
+                      elements={pathTool.elements}
+                      hasArrows={hasArrows}
+                      arrowLabels={arrowLabels}
+                      selectionInput={selectionInput}
+                      isPaintMode={isPaintMode}
+                      handleArrowSelect={handleArrowSelect}
+                      handleElementClick={handleElementClick}
+                      handleElementContextSelect={handleElementContextSelect}
+                      quickRingOpen={quickRingOpen}
+                      setQuickRingOpen={setQuickRingOpen}
+                      drawDrag={drawDrag}
+                    />
+                  </ElementIndicatorStyleProvider>
+                </CanvasZoomProvider>
+              </CanvasArrivalProvider>
+              {/* Drafts and the logo page's guides: editor-only, left out of an animated GIF
             (GifOmit). */}
               <GifOmit>
-                {/* The whiteboard pen's stroke being drawn (docs/specs/023-draw-mode/draw-mode.md "Pens"):
+                {/* The whiteboard pen's stroke being drawn (docs/specs/023-draw-mode/drawing-tools.md "Markers"):
             in this transformed layer, after the elements, laid out as the stroke it lands as, so
             the same layer rasterises both and release changes no pixel. */}
                 {penStroke && isWhiteboardPenIntent(pendingDraw) ? (
@@ -702,105 +571,6 @@ function CanvasView(props: CanvasProps) {
                   />
                 ) : null}
                 {pathTool.editView ? <PathEditLayer {...pathTool.editView} /> : null}
-                {/* Avatar mode (docs/specs/008-canvas/avatar-mode.md): the walking characters, INSIDE the
-            transformed wrapper so they pan / zoom with the canvas, and after
-            the element layer so they stand in front of the content they walk
-            over. Peers' characters render whether or not WE are in the mode —
-            someone else walking the canvas is worth seeing regardless. */}
-                {props.remoteAvatars.map((peer) => (
-                  <AvatarWalker
-                    key={peer.id}
-                    pos={{ x: peer.avatar.x, y: peer.avatar.y }}
-                    facing={peer.avatar.facing}
-                    // Parsed, not trusted: an older peer omits the costume entirely and
-                    // a future one may send an option this build doesn't know.
-                    config={parseAvatarConfig(peer.avatar.config)}
-                    walking={peer.avatar.walking}
-                    stepFrame={peer.avatar.stepFrame}
-                    lift={peer.avatar.lift}
-                    wave={peer.avatar.wave}
-                    seated={!!peer.avatar.seatedOn}
-                    // Parsed, not trusted: anything but the two drinks draws an empty hand.
-                    holding={
-                      peer.avatar.holding === 'water' || peer.avatar.holding === 'coffee'
-                        ? peer.avatar.holding
-                        : null
-                    }
-                    status={parseAvatarStatus(peer.avatar.status)}
-                    // Replayed locally from the kind + elapsed time in their packet, by
-                    // the same pure function the sender used (docs/specs/008-canvas/avatar-mode.md).
-                    pose={
-                      peer.avatar.reaction
-                        ? reactionPose(peer.avatar.reaction.kind, peer.avatar.reaction.elapsedMs)
-                        : null
-                    }
-                    shirt={peer.color}
-                    name={peer.name}
-                    standingOn={null}
-                  />
-                ))}
-                {/* A Reaction Pad burst (docs/specs/009-elements/reaction-pad.md) thrown around the CHARACTER rather
-            than around a pad. Same engine, same particles: the pad and the
-            avatar panel are two ways to set off one effect, not two effects.
-            Positioned at the character's canvas point, inside the transformed
-            wrapper, so it pans and zooms with the canvas it is celebrating. */}
-                {avatar.pos && avatarBurst ? (
-                  <div
-                    className="pointer-events-none absolute"
-                    style={{ left: avatar.pos.x, top: avatar.pos.y, width: 0, height: 0 }}
-                  >
-                    <ReactionBurst
-                      reaction={avatarBurst.reaction}
-                      seed={avatarBurst.seed}
-                      // The character's own footprint, so the burst is scaled to a
-                      // person rather than to whatever pad happened to throw it.
-                      width={AVATAR_BURST_PX}
-                      height={AVATAR_BURST_PX}
-                      onDone={() => setAvatarBurst(null)}
-                    />
-                  </div>
-                ) : null}
-                {avatar.pos ? (
-                  <AvatarWalker
-                    pos={avatar.pos}
-                    facing={avatar.facing}
-                    config={avatarLook.config}
-                    walking={avatar.walking}
-                    stepFrame={avatar.stepFrame}
-                    lift={avatar.lift}
-                    wave={avatar.wave}
-                    pose={avatar.pose}
-                    seated={avatar.seatedOn !== null}
-                    holding={avatar.holding}
-                    status={avatarStatus}
-                    shirt={props.selfParticipant.color}
-                    standingOn={avatarStandingOn}
-                    onStand={avatar.standUp}
-                  />
-                ) : null}
-                {/* Arrival beams on an Avatar Pad (docs/specs/009-elements/avatar-pad.md), over the characters. */}
-                <AvatarPadArrivals arrivals={padArrivals} />
-                {/* Speech bubbles, in front of every character: yours and everyone's, and the composer above your
-              own head while you type. */}
-                {speechBubbles.length > 0 || speech.composerOpen ? (
-                  <AvatarSpeechLayer
-                    bubbles={speechBubbles}
-                    activeTabId={props.activeTabId ?? ''}
-                    zoom={viewportZoom}
-                    peers={props.remoteAvatars}
-                    self={{ name: props.selfParticipant.name, colour: props.selfParticipant.color }}
-                    composer={
-                      speech.composerOpen && avatar.pos
-                        ? {
-                            head: headPoint(avatar.pos, avatarScale(avatarLook.config.size)),
-                            coolingDown: speech.coolingDown,
-                            onSend: (text) => speech.send(text, 'composer'),
-                            onCancel: speech.closeComposer,
-                          }
-                        : null
-                    }
-                  />
-                ) : null}
               </GifOmit>
             </div>
 
@@ -815,16 +585,8 @@ function CanvasView(props: CanvasProps) {
             {canvasTool === 'eraser' ? (
               <EraserBrushRing
                 pos={eraserPos}
-                // A whiteboard's brush is fixed per mode (docs/specs/023-draw-mode/draw-mode.md "Eraser").
-                radius={
-                  props.whiteboardDock
-                    ? WHITEBOARD_ERASER_RADIUS_PX[props.whiteboardDock.prefs.eraserMode]
-                    : eraserRadius(props.eraserConfig ?? DEFAULT_ERASER_CONFIG)
-                }
-                filtered={
-                  !props.whiteboardDock &&
-                  (props.eraserConfig ?? DEFAULT_ERASER_CONFIG).target !== 'anything'
-                }
+                radius={eraserRadius(props.eraserConfig ?? DEFAULT_ERASER_CONFIG)}
+                filtered={(props.eraserConfig ?? DEFAULT_ERASER_CONFIG).target !== 'anything'}
               />
             ) : null}
             {canvasTool === 'spotlight' ? (
@@ -850,7 +612,7 @@ function CanvasView(props: CanvasProps) {
 
             <CanvasChrome
               {...props}
-              // While a path is being drawn, Undo and Redo (the dock's and the corner's) step through its
+              // While a path is being drawn, Undo and Redo (the keys and the corner's buttons) step through its
               // nodes, not the board (docs/specs/023-draw-mode/path-tool.md "Drawing").
               {...(pathTool.history
                 ? {
@@ -861,8 +623,6 @@ function CanvasView(props: CanvasProps) {
                   }
                 : null)}
               mainSize={mainSize}
-              avatarConfig={avatarLook.config}
-              onChangeAvatarField={avatarLook.setField}
               laserConfig={props.laserConfig}
               onChangeLaserField={props.onChangeLaserField}
               spotlightConfig={spotlightLook.config}
@@ -887,24 +647,12 @@ function CanvasView(props: CanvasProps) {
               laserPanelPosition={props.laserPanelPosition}
               onMoveLaserPanel={props.onMoveLaserPanel}
               onResetLaserPanel={props.onResetLaserPanel}
-              onRandomiseAvatar={avatarLook.randomise}
-              avatarStatus={avatarStatus}
-              onSetAvatarStatus={setAvatarStatus}
-              onSendAvatarMessage={
-                speech.speaking ? (text: string) => speech.send(text, 'panel') : undefined
-              }
-              avatarSpeechCooling={speech.coolingDown}
-              onAvatarReaction={avatar.playReaction}
-              onAvatarBurst={playAvatarBurst}
               offscreenContent={offscreenContent}
               marquee={marquee}
               drawDrag={drawDrag}
               drawHover={drawHover}
-              // Off a whiteboard, a marker's live stroke guides off its box as the pencil's does.
-              penPoints={
-                penPoints ??
-                (penStroke && props.editorMode !== 'draw' ? penStroke.points.slice() : null)
-              }
+              // A marker's live stroke guides off its box as the pencil's does.
+              penPoints={penPoints ?? (penStroke ? penStroke.points.slice() : null)}
               polygonVertices={polygonVertices}
               polygonCursor={polygonCursor}
               wrapperRef={wrapperRef}

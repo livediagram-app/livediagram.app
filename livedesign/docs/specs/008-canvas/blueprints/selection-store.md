@@ -84,8 +84,7 @@ multiSelectedIds.size === 0`. Element views compare the three booleans.
 - `useStableEventProps(props)`: every own property whose
   key matches `/^on[A-Z]/` and whose value is a function becomes one forwarder per key for the boundary's
   lifetime, calling the newest value. An `undefined` handler stays `undefined` (children branch on
-  presence). Every other prop, including functions not named `on…` (`chairSitters`,
-  `previewDrawnArrow`, the viewport setters), passes through untouched: those are read in render.
+  presence). Every other prop, including functions not named `on…` (`previewDrawnArrow`, the viewport setters), passes through untouched: those are read in render.
 - No `on…` prop is called during render; the audit in the plan confirms it, and any found is renamed
   out of the convention rather than wrapped.
 - Object props built in the host per render (`slideDeck`) pass through

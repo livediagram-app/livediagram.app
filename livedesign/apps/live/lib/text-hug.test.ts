@@ -5,7 +5,6 @@ import {
   hugResizedText,
   hugsText,
   hugTextSize,
-  placedTextBox,
   TEXT_HUG_MAX_WIDTH,
   textHugFontPx,
   textHugPadding,
@@ -29,8 +28,7 @@ function text(patch: Partial<TextElement> = {}): TextElement {
 }
 
 describe('hugsText', () => {
-  // docs/specs/007-editor/editor-modes.md "A text box's sizing": keyed on the element, in both
-  // editor modes, never on the mode.
+  // docs/specs/006-document/document-structure.md: keyed on the element's sizing alone.
   it('holds for a text box that fits or wraps, and never for a fixed box', () => {
     expect(hugsText(text({ sizing: 'fit' }))).toBe(true);
     expect(hugsText(text({ sizing: 'wrap' }))).toBe(true);
@@ -78,20 +76,6 @@ describe('hugTextSize', () => {
   it('keeps a set width and hugs the height', () => {
     const el = text({ sizing: 'wrap', width: 28, label: 'Hello' }); // 20 px of text area, 35 of text
     expect(hugTextSize(el, fakeMeasure(el))).toEqual({ width: 28, height: 35 + 4 });
-  });
-});
-
-describe('placedTextBox', () => {
-  const drag = { x: 10, y: 20, width: 200, height: 90 };
-
-  it('puts a click-placed box empty, fitting its words, with the caret at the click', () => {
-    const box = placedTextBox(text({ textSize: 'sm' }), true, { x: 100, y: 50 }, drag);
-    expect(box).toEqual({ label: '', sizing: 'fit', x: 96, y: 39, width: 8, height: 22 });
-  });
-
-  it('takes the dragged width, wrapping, and one line of height from a drag', () => {
-    const box = placedTextBox(text({ textSize: 'sm' }), false, { x: 10, y: 20 }, drag);
-    expect(box).toEqual({ label: '', sizing: 'wrap', x: 10, y: 20, width: 200, height: 22 });
   });
 });
 

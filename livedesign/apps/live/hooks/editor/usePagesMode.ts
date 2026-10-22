@@ -1,7 +1,7 @@
 // Pages mode's pages (docs/specs/007-editor/pages-mode.md): the active tab's pages
 // laid out in their row, the edits to them (page-edits) and framing one in the view. It
-// also centres the view on the page you were last on (the first, the first time) whenever the mode
-// or the tab changes.
+// also centres the view on the page you were last on (the first, the first time) whenever the
+// tab changes.
 import type { LogoToolsView } from './useLogoTools';
 import {
   useCallback,
@@ -15,7 +15,6 @@ import {
   type RefObject,
 } from 'react';
 import {
-  hasPageLook,
   pageFitBox,
   pagesOf,
   layOutPages,
@@ -23,7 +22,6 @@ import {
   withContentOnAPage,
   tabWireframeFrameTheme,
   type WireframeFrameTheme,
-  type EditorMode,
   type Element,
   type LaidOutPage,
   type Tab,
@@ -99,7 +97,6 @@ export type PageDeckControls = {
 
 export function usePagesMode(deps: {
   activeTab: Tab;
-  mode: EditorMode;
   canEdit: boolean;
   tabLoaded: boolean;
   commitTabs: (map: (ts: Tab[]) => Tab[]) => void;
@@ -111,9 +108,9 @@ export function usePagesMode(deps: {
   clearSelection: () => void;
   toastInfo: (message: string) => void;
   // Given the page-framing call, so a page slide's row frames its page, on this tab or (once it is
-  // open) another; set whether or not this tab is in Pages mode.
+  // open) another.
   framePageRef?: RefObject<((pageId: string) => void) | null>;
-  // Given the landing framing while the tab shows pages (null otherwise), so the fit on landing
+  // Given the landing framing, so the fit on landing
   // on a tab (useTabEntryEffects) frames the page you were last on (else the first), not the
   // whole row of pages.
   frameFirstPageRef?: RefObject<(() => void) | null>;
@@ -123,9 +120,8 @@ export function usePagesMode(deps: {
   viewport?: { get: () => View; subscribe: (listener: () => void) => () => void };
   // The view is not this person's to snap onto a page: following someone, or presenting.
   snapSuspended?: () => boolean;
-}): PagesModeView | null {
-  const { activeTab, mode, canEdit, tabLoaded, commitTabs } = deps;
-  const on = hasPageLook(mode);
+}): PagesModeView {
+  const { activeTab, canEdit, tabLoaded, commitTabs } = deps;
   const tabId = activeTab.id;
 
   // Frames a page (the first by default) below a top strip, seen whole, whatever its kind: the page
@@ -198,7 +194,7 @@ export function usePagesMode(deps: {
   // The view rests on a page once a pan or a zoom lets go (docs/specs/007-editor/pages-mode.md
   // "Getting around the pages").
   usePageSnap({
-    on,
+    on: true,
     pages,
     viewport: deps.viewport,
     measure: () => {
@@ -228,7 +224,7 @@ export function usePagesMode(deps: {
   // The page you were last on, remembered as the view rests (docs/specs/007-editor/
   // pages-mode.md "Back to the page you were on").
   const last = useLastPage({
-    on,
+    on: true,
     storeKey: deps.documentId ? lastPageKey(deps.documentId, tabId) : undefined,
     pages,
     canvasMainRef: deps.canvasMainRef,
@@ -262,17 +258,17 @@ export function usePagesMode(deps: {
   // so whichever lands last, the view ends on the page rather than the whole row.
   const { frameFirstPageRef } = deps;
   useInsertionEffect(() => {
-    if (frameFirstPageRef) frameFirstPageRef.current = on ? frameLanding : null;
+    if (frameFirstPageRef) frameFirstPageRef.current = frameLanding;
   });
   useEffect(() => {
-    if (!on || !tabLoaded) return;
+    if (!tabLoaded) return;
     const raf = requestAnimationFrame(() => centre());
     return () => cancelAnimationFrame(raf);
-  }, [on, tabLoaded, tabId]);
+  }, [tabLoaded, tabId]);
   // Its own effect so an editor role that resolves after the tab has loaded still gets the page.
   useEffect(() => {
-    if (on && tabLoaded && canEdit) putOnAPage();
-  }, [on, tabLoaded, tabId, canEdit]);
+    if (tabLoaded && canEdit) putOnAPage();
+  }, [tabLoaded, tabId, canEdit]);
 
   // Edit rights now, for a commit made as the panel closes (layout phase: current before any
   // passive cleanup of that render runs).
@@ -307,7 +303,6 @@ export function usePagesMode(deps: {
     };
   }, [framePageRef]);
 
-  if (!on) return null;
   const focusPage = (pageId: string) => {
     const page = pages.find((p) => p.id === pageId);
     // Gone to: the page someone is on now (Select All's reach, the palette's page).

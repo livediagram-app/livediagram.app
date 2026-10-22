@@ -1,5 +1,5 @@
-// Freeing an element somebody left selected (docs/specs/012-collaboration/facilitator.md "Freeing
-// somebody's lock", apps/live/components/canvas/LockedElementMenu.tsx). Composed only from the
+// Freeing an element somebody left selected (docs/specs/007-editor/live-app.md's concurrent-selection lock,
+// apps/live/components/canvas/LockedElementMenu.tsx). Composed only from the
 // shared primitives so the house style holds.
 
 import { Scene, Shape, Avatar, Cursor, Label } from './primitives';

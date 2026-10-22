@@ -1,15 +1,14 @@
 'use client';
 
-// The quick style panel's marker rows on a whiteboard (docs/specs/023-draw-mode/draw-mode.md "The
-// quick style panel stays"): colour and width for the selected marker strokes, or for the marker in
+// The quick style panel's marker rows (docs/specs/023-draw-mode/drawing-tools.md "The quick style
+// panel"): colour and width for the selected marker strokes, or for the marker in
 // hand when nothing is selected, so picking up a marker already offers its style. Quick choices
 // only, one row each: Marker colour is the nine stock colours, Ink first, then More colours (the
 // colour picker, where the document's custom colours live); then Marker width.
 
 import { PenWidthIcon } from './whiteboard/PenWidthIcon';
 import type { QuickStyleApi } from '@/hooks/canvas/useQuickStyle';
-import type { PenColourChoice, QuickPenStyle } from '@/lib/quick-style-pen';
-import type { BoardColourSection } from '@/lib/quick-style';
+import type { QuickPenStyle } from '@/lib/quick-style-pen';
 import { WHITEBOARD_PEN_WIDTHS } from '@/lib/whiteboard-prefs';
 import { QuickRadioRow } from './quick-style-rows';
 import { QUICK_ROW_TARGETS } from './quick-style-metrics';
@@ -40,7 +39,7 @@ export function QuickPenRows({
         value={pen.colour.value}
         onChoose={quickStyle.setPenColour}
         more={
-          // The main pen keeps the board's ink: its row is the ink alone, with nothing more.
+          // The main marker keeps the canvas ink: its row is the ink alone, with nothing more.
           pen.colour.options.length > 1 ? (
             <QuickMoreColours
               rowTitle="Marker colour"
@@ -66,45 +65,5 @@ export function QuickPenRows({
         onChoose={quickStyle.setPenWidth}
       />
     </>
-  );
-}
-
-// A whiteboard's Stroke or Text colour row (docs/specs/023-draw-mode/draw-mode.md "The quick style
-// panel stays"): the whiteboard's colours, as Marker colour offers them, custom colours in More
-// colours.
-export function BoardColourRow({
-  title,
-  testId,
-  section,
-  onChoose,
-  showTitles,
-}: {
-  title: string;
-  testId: string;
-  section: BoardColourSection;
-  onChoose: (colour: PenColourChoice) => void;
-  showTitles: boolean;
-}) {
-  const surface = useCanvasSurface();
-  const swatches = (options: BoardColourSection['options']) =>
-    options.map((o) => ({ ...o, content: null }));
-  return (
-    <QuickRadioRow
-      title={title}
-      testId={testId}
-      showTitle={showTitles}
-      options={swatches(section.options)}
-      columns={QUICK_ROW_TARGETS}
-      value={section.value}
-      onChoose={onChoose}
-      more={
-        <QuickMoreColours
-          rowTitle={title}
-          value={section.value}
-          standard={standardGroup('strong', surface, 'name')}
-          onPick={onChoose}
-        />
-      }
-    />
   );
 }

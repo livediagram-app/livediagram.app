@@ -1,5 +1,5 @@
 // The Trash (docs/specs/013-workspace/trash.md): a deleted document keeps its
-// row with `trashed_at` stamped (migration 0051), stays restorable for 30
+// row with `trashed_at` stamped (the baseline migration), stays restorable for 30
 // days, then the daily cron purges it through documentRemovalStatements.
 //
 // trashDocument / restoreDocument / purgeDocuments are plain calls with no HTTP

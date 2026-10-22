@@ -19,14 +19,6 @@ describe('duplicate-label', () => {
         fix: 'set b label="<text>"',
       },
     ]);
-    expect(
-      of(
-        lint(tabOf(box('a', 0, 0, { label: 'X' }), box('b', 300, 0, { label: 'x' })), {
-          source: 'graph',
-        }),
-        'duplicate-label',
-      )[0]!.fix,
-    ).toBe('rename one, or merge the nodes');
   });
 
   it("counts a card's title and subtitle", () => {

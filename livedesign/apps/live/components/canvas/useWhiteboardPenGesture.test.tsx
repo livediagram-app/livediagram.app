@@ -9,15 +9,13 @@ import { useWhiteboardPenGesture } from './useWhiteboardPenGesture';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
-// The whiteboard pen gesture (docs/specs/023-draw-mode/draw-mode.md "Pens", "Touch and pen input";
-// blueprint whiteboard-round-one "Pen ink").
+// The marker gesture (docs/specs/023-draw-mode/drawing-tools.md "Markers").
 
 const PEN: PendingDraw = {
   type: 'freehand',
   variant: 'whiteboard',
   colour: null,
   width: 1.5,
-  recognise: false,
 };
 
 type Init = { x: number; y: number; id?: number; pressure?: number; shift?: boolean };
@@ -40,7 +38,7 @@ function setup(zoom = 1) {
   const onCommitFreehand =
     vi.fn<Parameters<typeof useWhiteboardPenGesture>[0]['onCommitFreehand']>();
   let renders = 0;
-  type Props = { pendingDraw: PendingDraw | null; whiteboard?: boolean };
+  type Props = { pendingDraw: PendingDraw | null };
   const initialProps: Props = { pendingDraw: PEN };
   const hook = renderHook(
     (p: Props) => {
@@ -51,7 +49,6 @@ function setup(zoom = 1) {
         viewportZoom: zoom,
         isPinchingRef,
         onCommitFreehand,
-        whiteboard: p.whiteboard ?? true,
       });
     },
     { initialProps },
@@ -124,7 +121,7 @@ describe('useWhiteboardPenGesture', () => {
     expect(s.onCommitFreehand.mock.calls[0]![0]).toHaveLength(2);
   });
 
-  // docs/specs/023-draw-mode/draw-mode.md "Pens": a tap with a pen leaves a dot.
+  // docs/specs/023-draw-mode/drawing-tools.md "Markers": a tap with a pen leaves a dot.
   it('commits a tap, a press lifted where it went down, as a one-point stroke', () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const s = setup();
@@ -156,7 +153,7 @@ describe('useWhiteboardPenGesture', () => {
     s.send(pointer('pointerup', { x: 30, y: 20 }));
     expect(s.onCommitFreehand).not.toHaveBeenCalled();
     expect(s.hook.result.current.penStroke).toBeNull();
-    expect(debug).toHaveBeenCalledWith('[whiteboard] stroke discarded: cancel');
+    expect(debug).toHaveBeenCalledWith('[marker] stroke discarded: cancel');
   });
 
   it('discards a stroke a second finger turned into a pinch', () => {
@@ -179,32 +176,7 @@ describe('useWhiteboardPenGesture', () => {
     expect(s.hook.result.current.penStroke).toBeNull();
     s.send(pointer('pointerup', { x: 30, y: 20 }));
     expect(s.onCommitFreehand).not.toHaveBeenCalled();
-    expect(debug).toHaveBeenCalledWith('[whiteboard] stroke discarded: pen put down');
-  });
-
-  // docs/specs/007-editor/editor-modes.md "Everyone follows a switch": a stroke in progress is
-  // finished first.
-  it('lands the stroke drawn so far when the tab leaves Draw mode mid-stroke', () => {
-    const debug = vi.spyOn(console, 'info').mockImplementation(() => {});
-    const s = setup();
-    s.press(10, 20);
-    s.send(pointer('pointermove', { x: 30, y: 20 }));
-    s.send(pointer('pointermove', { x: 50, y: 20 }));
-    // The switch reaches the canvas with the pen still in hand; the editor puts it down after.
-    s.hook.rerender({ pendingDraw: PEN, whiteboard: false });
-    expect(s.onCommitFreehand).toHaveBeenCalledTimes(1);
-    expect(s.onCommitFreehand.mock.calls[0]![0]).toEqual([
-      { x: 0, y: 0 },
-      { x: 20, y: 0 },
-      { x: 40, y: 0 },
-    ]);
-    expect(s.hook.result.current.penStroke).toBeNull();
-    s.hook.rerender({ pendingDraw: null, whiteboard: false });
-    // The lift that follows adds nothing.
-    s.send(pointer('pointerup', { x: 70, y: 20 }));
-    expect(s.onCommitFreehand).toHaveBeenCalledTimes(1);
-    expect(debug).toHaveBeenCalledWith('[whiteboard] stroke finished: mode switched');
-    expect(debug).not.toHaveBeenCalledWith('[whiteboard] stroke discarded: pen put down');
+    expect(debug).toHaveBeenCalledWith('[marker] stroke discarded: pen put down');
   });
 
   it('logs each committed stroke with its pointer, samples and pressure', () => {
@@ -214,10 +186,10 @@ describe('useWhiteboardPenGesture', () => {
     s.send(pointer('pointermove', { x: 20, y: 20, pressure: 0.5 }));
     s.send(pointer('pointermove', { x: 30, y: 20, pressure: 0.5 }));
     s.send(pointer('pointerup', { x: 30, y: 20 }));
-    expect(debug).toHaveBeenCalledWith('[whiteboard] stroke pen samples=3 pressure=yes');
+    expect(debug).toHaveBeenCalledWith('[marker] stroke pen samples=3 pressure=yes');
   });
 
-  // docs/specs/023-draw-mode/draw-mode.md "Shape recognition": Shift while reshaping.
+  // docs/specs/023-draw-mode/drawing-tools.md "Shape recognition": Shift while reshaping.
   describe('with Shift while reshaping a locked shape', () => {
     const circle = {
       kind: 'circle' as const,
@@ -310,7 +282,7 @@ describe('useWhiteboardPenGesture', () => {
   });
 });
 
-// docs/specs/023-draw-mode/draw-mode.md "Shape recognition": Alt (Option) flips the stroke.
+// docs/specs/023-draw-mode/drawing-tools.md "Shape recognition": Alt (Option) flips the stroke.
 describe('useWhiteboardPenGesture, with Alt', () => {
   /** A key event as the browser sends it; `defaultPrevented` says whether the page kept it. */
   const key = (type: 'keydown' | 'keyup', k = 'Alt', repeat = false) =>
@@ -331,7 +303,7 @@ describe('useWhiteboardPenGesture, with Alt', () => {
     vi.mocked(track).mockClear();
   });
 
-  it('recognises the stroke at once with recognition off, and it lands as the shape', () => {
+  it('recognises the stroke at once, and it lands as the shape', () => {
     const s = setup();
     const stroke = drawSquare(s);
     const down = key('keydown');
@@ -347,36 +319,20 @@ describe('useWhiteboardPenGesture, with Alt', () => {
     s.send(pointer('pointerup', { x: 10, y: 30 }));
     const ink = inkOf(s);
     expect(ink.snapped?.kind).toBe('square');
-    expect(ink.keepInk).toBeUndefined();
   });
 
-  it('breaks a shown shape back to ink, held while Alt is, and it lands as ink', () => {
+  it('breaks a shown shape back to ink, and it lands as ink', () => {
     const s = setup();
     const stroke = drawSquare(s);
     s.send(key('keydown'));
     s.send(key('keyup'));
     s.send(key('keydown'));
     expect(stroke.shaped()).toBeNull();
-    expect(stroke.inkHeld()).toBe(true);
     expect(track).toHaveBeenLastCalledWith('Draw', 'Toggled', 'BreakShapeKey');
     s.send(key('keyup'));
-    expect(stroke.inkHeld()).toBe(false);
     s.send(pointer('pointerup', { x: 10, y: 30 }));
     const ink = inkOf(s);
     expect(ink.snapped).toBeUndefined();
-    expect(ink.keepInk).toBe(true);
-  });
-
-  it('holds the ink from any Alt press, so the dwell does not snap while it is down', () => {
-    const s = setup();
-    s.press(10, 20);
-    s.send(pointer('pointermove', { x: 40, y: 50 }));
-    const stroke = s.hook.result.current.penStroke!;
-    s.send(key('keydown'));
-    expect(stroke.inkHeld()).toBe(true);
-    // A window losing focus never leaves Alt stuck down.
-    s.send(new FocusEvent('blur'));
-    expect(stroke.inkHeld()).toBe(false);
   });
 
   it('flips once per press: a held key repeating changes nothing', () => {

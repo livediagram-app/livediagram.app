@@ -48,7 +48,7 @@ describe('openRoomStream', () => {
     socket.send({ kind: 'presence', participants: [] });
     socket.send({ kind: 'op', from: 'p', op: { kind: 'tab', tabId: 't1' } });
     socket.send({ kind: 'op' });
-    socket.send({ kind: 'facilitator' });
+    socket.send({ kind: 'selection-released' });
     socket.send(null);
     expect(ops).toEqual([{ kind: 'tab', tabId: 't1' }]);
     stream.stop();

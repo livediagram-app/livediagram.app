@@ -125,17 +125,4 @@ describe('BoxedElementView indicators', () => {
     expect(container.querySelector('[data-indicators]')).not.toBeNull();
     expect(getByText('Box')).toBeTruthy();
   });
-
-  it('draws indicators on a lane with an upright title', () => {
-    const lane = {
-      ...createShape('lane', 0, 0),
-      width: 600,
-      height: 200,
-      label: 'Lane',
-      titleOrientation: 'upright',
-      padding: 'lg',
-      note: 'n',
-    } as BoxedElement;
-    expect(draw(lane).container.querySelector('[data-indicators]')).not.toBeNull();
-  });
 });

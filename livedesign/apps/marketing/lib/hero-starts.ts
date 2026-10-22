@@ -20,7 +20,7 @@ type HeroMatch = (typeof ALL)[number];
 
 // The best matches for a query, by the editor's own search (filterGallery): a template whose title
 // holds every typed word ranks before one found only through its description, category or search
-// words, then the catalogue's order. "retro" puts Retrospective ahead of a board that mentions one.
+// words, then the catalogue's order. "app" puts Mobile App Wireframe ahead of a blank phone wireframe found by its words.
 export function heroSearch(query: string, limit = HERO_SEARCH_LIMIT): HeroMatch[] {
   const words = templateQueryWords(query);
   if (words.length === 0) return [];
@@ -37,23 +37,18 @@ export function heroSearch(query: string, limit = HERO_SEARCH_LIMIT): HeroMatch[
 
 // The fan along the hero's foot (components/HeroFan.tsx). It deals from every listed template but the
 // blanks, in a fresh random order on each visit, so a visitor keeps seeing something new. The static
-// HTML (no script) shows this opening hand, left to right: all seven on a very wide screen
-// (HERO_FAN_FULL_MIN_PX), the middle five on a laptop, the middle three on a phone.
+// HTML (no script) shows this opening hand, left to right: all five from a laptop's width up, the middle
+// three on a phone.
 export const HERO_FAN_OPENING: readonly TemplateKind[] = [
-  'retrospective',
-  'kanban',
-  'flowchart',
-  'mindmap',
+  'wireframe-tablet-app',
+  'wireframe-mobile-app',
   'logo-design',
-  'budget-planner',
-  'sketchnote',
+  'wireframe-website',
+  'wireframe-watch-app',
 ];
 
-// How many cards the fan holds at once, and the window width from which all of them show: seven
-// full-size cards (14 rem each, 1.25 rem apart, 1 rem padding either side) take 1720 px, and the
-// outer two lean out about 35 px each, so below 1800 px the outer pair hides.
-export const HERO_FAN_SLOTS = 7;
-export const HERO_FAN_FULL_MIN_PX = 1800;
+// How many cards the fan holds at once: fewer than the pool, so there is always another template to deal in.
+export const HERO_FAN_SLOTS = 5;
 
 // Every template the fan can deal: the gallery's own catalogue, so it never shows one that is not
 // listed.
@@ -84,7 +79,7 @@ export function nextFanKind(
   return { kind: pool[from]!, at: from };
 }
 
-// A curated kind's descriptor (its title, description and mode), from the same catalogue.
+// A curated kind's descriptor (its title, description and category), from the same catalogue.
 export function heroTemplate(kind: TemplateKind): HeroMatch {
   const t = ALL.find((m) => m.kind === kind);
   if (!t) throw new Error(`hero template not listed: ${kind}`);

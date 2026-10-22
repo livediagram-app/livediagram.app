@@ -27,7 +27,6 @@ function setup(commit = vi.fn<Commit>(), setCanvasTool = vi.fn()) {
         canvasTool: tool,
         setCanvasTool,
         activeTab: { id: 't1', name: 'Tab', elements: [] },
-        drawMode: false,
         commit,
         setSelectedId: selection.setSelectedId,
         setMultiSelectedIds: selection.setMultiSelectedIds,
@@ -94,12 +93,10 @@ describe('useShapeDrawing highlighter', () => {
 });
 
 // docs/specs/007-editor/toolbar-layout.md "Search: every element type": a marker picked from the
-// strip's Search outside Draw mode is the dock's own pen, as this browser last set it.
+// strip's Search is the marker as this browser last set it.
 describe('useShapeDrawing marker', () => {
-  it("picks up the pen in its saved colour and width, with the pen's recognition", () => {
+  it('picks up the pen in its saved colour and width', () => {
     saveWhiteboardPrefs({
-      ...DEFAULT_WHITEBOARD_PREFS,
-      recognise: true,
       pens: DEFAULT_WHITEBOARD_PREFS.pens.map((p) =>
         p.id === 'second' ? { ...p, colour: 'green', width: 2.5 } : p,
       ),
@@ -111,7 +108,6 @@ describe('useShapeDrawing marker', () => {
       variant: 'whiteboard',
       colour: 'green',
       width: 2.5,
-      recognise: true,
       penId: 'second',
     });
     expect(result.current.selectedId).toBeNull();
@@ -159,7 +155,6 @@ describe('placing a badge preset', () => {
         canvasTool: 'select',
         setCanvasTool: vi.fn(),
         activeTab: { id: 't1', name: 'Tab', theme: 'ocean', elements: [] },
-        drawMode: false,
         commit,
         setSelectedId: selection.setSelectedId,
         setMultiSelectedIds: selection.setMultiSelectedIds,

@@ -1,12 +1,9 @@
 // Pure tab builders (docs/specs/015-api/mcp-server.md, docs/specs/024-agents/edit-operations.md):
-// validated elements or a node/edge graph turned into a finished, themed, persistable Tab. Render-free, so the MCP, the api and the CLI
+// validated elements turned into a finished, themed, persistable Tab. Render-free, so the MCP, the api and the CLI
 // all build tabs the same way. Template tabs are `buildTemplateTab` in @livedesign/templates.
 
 import { withFacingBends } from './arrow-orthogonal';
-import { settleDiagramKeys } from './diagram-key';
 import { autoLayoutElements, isLayoutCandidate, nodesLookUnplaced } from './auto-layout';
-import { layoutGraph, type GraphInput } from './graph-input';
-import { agendaFitHeight } from './svg-render-agenda';
 import { recolourElementsForTheme } from './theme-graph';
 import { getBuiltInTheme } from './themes';
 import { coerceShapeKind } from './validate';
@@ -40,15 +37,11 @@ export function buildTab(
   const theme = getBuiltInTheme(themeId);
   // Coerce off-vocabulary shape kinds (e.g. a model emitting "rectangle", which
   // isn't a kind — the box is "square") so every node actually renders a box.
-  // An agenda grows to draw every segment it is given (docs/specs/012-collaboration/agenda.md "The face").
-  const coerced = elements.map((el) => {
-    if (el.type !== 'shape') return el;
-    const shape = coerceShapeKind(el.shape);
-    return shape === 'agenda' ? { ...el, shape, height: agendaFitHeight(el) } : { ...el, shape };
-  });
+  const coerced = elements.map((el) =>
+    el.type === 'shape' ? { ...el, shape: coerceShapeKind(el.shape) } : el,
+  );
   // An angled arrow left as an L between ends that face each other bends twice instead (layout-cleanup.md).
-  // A diagram key's rows follow the tab's lines (diagram-key.md), settled as the editor settles them on commit.
-  const laidOut = settleDiagramKeys(withFacingBends(applyLayout(layout, coerced)));
+  const laidOut = withFacingBends(applyLayout(layout, coerced));
   return {
     id: tabId,
     name,
@@ -59,16 +52,4 @@ export function buildTab(
     patternColor: theme.patternColor,
     ...(theme.backgroundOpacity != null ? { backgroundOpacity: theme.backgroundOpacity } : {}),
   };
-}
-
-// Build a tab from a node/edge graph (docs/specs/015-api/mcp-server.md §4.7): capped, laid out in its
-// chosen style and direction, arrows routed (graph-input.ts), then themed. The
-// layout is already done, so buildTab keeps it.
-export function buildGraphTab(
-  tabId: string,
-  name: string,
-  graph: GraphInput,
-  themeId: string | undefined,
-): Tab {
-  return buildTab(tabId, name, layoutGraph(graph), 'preserve', themeId);
 }

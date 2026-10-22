@@ -11,10 +11,10 @@ const HOME = { kind: 'explorer', node: { kind: 'home' } } as const;
 
 describe('createInPlaceOf', () => {
   it('takes the wizard href’s place and template first', () => {
-    expect(createInPlaceOf('/new?folder=f1&template=kanban', ORIGIN, HOME)).toEqual({
+    expect(createInPlaceOf('/new?folder=f1&template=wireframe-mobile-app', ORIGIN, HOME)).toEqual({
       folderId: 'f1',
       teamId: null,
-      templateKind: 'kanban',
+      templateKind: 'wireframe-mobile-app',
     });
     expect(createInPlaceOf('/new?team=t1', ORIGIN, HOME)).toEqual({
       folderId: undefined,
@@ -66,7 +66,7 @@ describe('createDocumentInPlace', () => {
     await createDocumentInPlace('user_1', {
       folderId: undefined,
       teamId: null,
-      templateKind: 'kanban',
+      templateKind: 'wireframe-mobile-app',
     });
 
     const [, made] = api.apiCreateDocument.mock.calls[0]!;

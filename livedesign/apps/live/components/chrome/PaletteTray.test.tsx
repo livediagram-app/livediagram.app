@@ -107,18 +107,17 @@ describe('the palette tray', () => {
     expect(document.querySelector('[data-palette-tray]')).toBeNull();
   });
 
-  // docs/specs/007-editor/start-diagramming.md "Bringing it back": an empty Draw tab's pill stands clear of the dock,
-  // which mounts a beat after the pill asks where it is. Only a resize measured it again, so the pill kept its no-dock
-  // place and sat on the dock's tools.
+  // A toolbar can mount a beat after something asks where it is; only a resize measured it again, so whatever stood
+  // clear of it kept its no-toolbar place and sat on its tools.
   it('measures a toolbar that arrives after it was first asked for', async () => {
     function Probe() {
-      const box = useToolbarBox('[data-whiteboard-dock]');
+      const box = useToolbarBox('[data-test-toolbar]');
       return <output data-testid="box">{box ? `${box.top}-${box.bottom}` : 'none'}</output>;
     }
     render(<Probe />);
     expect(screen.getByTestId('box').textContent).toBe('none');
     const dock = document.createElement('div');
-    dock.setAttribute('data-whiteboard-dock', '');
+    dock.setAttribute('data-test-toolbar', '');
     vi.spyOn(dock, 'getBoundingClientRect').mockReturnValue(new DOMRect(300, 12, 600, 46));
     await act(async () => {
       document.body.append(dock);

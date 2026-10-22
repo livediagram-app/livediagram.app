@@ -1,7 +1,7 @@
 'use client';
 
 // Home's first run (docs/specs/013-workspace/explorer-home.md "First run"): for a person with nothing yet, three
-// sections in place of Jump Back In and What Happened. Start Blank (each mode's blank), Popular Templates (the shared
+// sections in place of Jump Back In and What Happened. Start Blank (the Pages blanks), Popular Templates (the shared
 // Popular list's first eight), and Already Have Work? (the way back for someone signed out, and the Explorer's own
 // imports). Each start makes its document at once through /new. Loaded only for a first run (HomePane), so the
 // template previews never weigh on anyone else's Home.

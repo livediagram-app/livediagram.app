@@ -1,6 +1,6 @@
 import { useRightClickRelease } from '@/hooks/canvas/useRightClickRelease';
 import { useRef, type PointerEvent as ReactPointerEvent, type RefObject } from 'react';
-import { opensInlineLabelEditor, voteKeyOf } from '@livedesign/document';
+import { isSelfDrawingShape } from '@livedesign/document';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
 import { useLongPress } from '@/hooks/ui/useLongPress';
 import { pressLedger } from '@/lib/double-press';
@@ -11,8 +11,7 @@ import type { BoxedElementViewProps } from './BoxedElementView.types';
 
 // The boxed element's press / double-click / context-menu routing,
 // lifted out of BoxedElementView: which gesture wins for this element
-// kind and session state (dot-vote cast, shift multi-select toggle,
-// drag, the plain click on a selected element, per-kind double-click actions, the beside-the-element context
+// kind and state (shift multi-select toggle, drag, the plain click on a selected element, per-kind double-click actions, the beside-the-element context
 // menu and its touch long-press twin). The view owns the wrapper node
 // and mounts the returned handlers; every callback comes from its
 // props unchanged.
@@ -25,9 +24,6 @@ export function useBoxedElementGestures({
   isMultiSelected,
   isSelected,
   isPaintMode,
-  vote,
-  votableInVote,
-  onCastVote,
   onShiftSelect,
   onPlainClick,
   onPressArmedAction,
@@ -42,9 +38,6 @@ export function useBoxedElementGestures({
   BoxedElementViewProps,
   | 'element'
   | 'isEditing'
-  | 'vote'
-  | 'votableInVote'
-  | 'onCastVote'
   | 'onShiftSelect'
   | 'onPlainClick'
   | 'onPressArmedAction'
@@ -94,19 +87,8 @@ export function useBoxedElementGestures({
     }
     heldRef.current = false;
     // Every press below is the element's, so it stops here, except one that pans through to the canvas.
-    // Dot-voting (docs/specs/012-collaboration/session-tools.md): while a vote is open, pressing a votable
-    // element casts one of your dots instead of selecting / dragging it.
-    // Non-votable elements (text / frame / arrow / …) still select, so
-    // the facilitator can keep arranging the canvas.
-    if (vote?.active && onCastVote && votableInVote) {
-      e.stopPropagation();
-      // A Plan card element votes on its card (voteKeyOf).
-      onCastVote(voteKeyOf(element));
-      return;
-    }
     // The double-press rule (docs/specs/008-canvas/arrow-bending.md): the second press of a
-    // double-click never drags; the dblclick that follows edits. After the
-    // vote branch, so two quick presses during a vote still cast two dots.
+    // double-click never drags; the dblclick that follows edits.
     const verdict = pressLedger.press({
       id: element.id,
       t: e.timeStamp,
@@ -191,12 +173,12 @@ export function useBoxedElementGestures({
       onOpenNote?.(element.id);
       return;
     }
-    // A code block, a Sankey and a sequence diagram have no inline label — double-click opens their edit
-    // dialog (docs/specs/009-elements/code-block.md, sankey.md, sequence-diagram.md), the way a link
+    // A code block and a Sankey have no inline label — double-click opens their edit
+    // dialog (docs/specs/009-elements/code-block.md, sankey.md), the way a link
     // card opens the link picker.
     if (
       element.type === 'shape' &&
-      (element.shape === 'code-block' || element.shape === 'sankey' || element.shape === 'sequence')
+      (element.shape === 'code-block' || element.shape === 'sankey')
     ) {
       onOpenEditDialog?.(element.id);
       return;
@@ -206,7 +188,7 @@ export function useBoxedElementGestures({
     // double-click never enters text-edit mode for them — it would pop an
     // empty, confusing editor. (beginEdit also guards this; belt-and-braces
     // so no entry point slips through.)
-    if (element.type === 'shape' && !opensInlineLabelEditor(element.shape)) {
+    if (element.type === 'shape' && isSelfDrawingShape(element.shape)) {
       return;
     }
     // Don't gate on isPaintMode here (the page-level beginEdit decides whether
@@ -231,11 +213,9 @@ export function useBoxedElementGestures({
 
   // Right-click opens on release (see useRightClickRelease).
   //
-  // Deliberately NOT gated on `remotelyLocked` any more: whether a locked
-  // element has a menu now depends on who is asking (docs/specs/012-collaboration/facilitator.md — the
-  // facilitator gets a one-item menu to free it), and this hook does not know
-  // that. The host's `onElementContextMenu` owns the decision and still
-  // refuses for everybody else, so nothing changed for them. `onContextSelect`
+  // Deliberately NOT gated on `remotelyLocked`: an Editor gets a one-item menu to free a locked
+  // element, and the host's `onElementContextMenu` owns that decision (a read-only session gets
+  // none). `onContextSelect`
   // calls `onSelect` on the way through, which the lock already no-ops.
   const rightClick = useRightClickRelease(() => {
     if (isEditing) return;

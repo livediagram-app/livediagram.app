@@ -191,7 +191,7 @@ avatars, badges, cards and lists." Its tiles:
 
 - **Button** (a filled rounded button labelled Button), **Outline Button**, **Text Field** (an
   outlined field with a muted placeholder, left aligned), **Search Field** (a pill field with its
-  glass and a placeholder), **Chip**, **Badge** (Diagram mode's badge, with its presets: New,
+  glass and a placeholder), **Chip**, **Badge** (the [badge](../009-elements/badge.md), with its presets: New,
   Beta, Version, Count, Draft, Warning), **Image Placeholder** (a grey block with the picture
   glyph), **Avatar** (a circle of initials), **Card**, **Checklist** and **Divider** (a thin rule).
 - Each tile is in one category: Text and the Sticky Note are **Write**'s, and while Elements is
@@ -210,8 +210,8 @@ other kinds.
 
 ## Templates
 
-Start Making Pages has a **Wireframes** group, and the template catalogue a wireframe template per
-flow ([Templates by mode](templates-by-mode.md) "Wireframe templates"):
+Start Making Pages ([Template start](start-diagramming.md)) holds a wireframe template per flow in its **Design**
+group:
 
 - **Blank wireframes**, one empty wireframe page in a device, its kind already chosen: **Blank Phone
   Wireframe** (iPhone), **Blank Tablet Wireframe** (iPad), **Blank Website Wireframe** (Browser),

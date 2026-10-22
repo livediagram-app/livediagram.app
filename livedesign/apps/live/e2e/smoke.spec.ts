@@ -3,7 +3,7 @@ import {
   expect,
   dismissQuickTour,
   expectNoPageErrors,
-  openBlankSession,
+  openStartBlank,
   startBlankDocument,
   paletteTile,
 } from './fixtures';
@@ -82,12 +82,7 @@ test('create a blank document, add a shape, and it survives a reload', async ({
 // a popover that only OVERLAPS its host when the viewport is too narrow to
 // put it alongside, and so only then has to win the stacking contest.
 //
-// The bug it guards: the bottom-right cluster gained the Session strip (Timer, Vote, Poll), and at
-// phone width one row could no longer hold it beside Undo, Redo, Layers, the brush and Fit, so Undo
-// was pushed off the left edge. On a phone the cluster's buttons now share the row's width, so the
-// strip fits beside Undo (docs/specs/012-collaboration/session-tools.md "The Session strip"), and the
-// empty-canvas hint rides just above that one row, clear of the strip's popovers. A desktop run is
-// blind to both.
+// The bottom-right cluster stays one row at phone width, with Undo on screen. A desktop run is blind to it.
 test.describe('mobile', () => {
   // Only the properties that create the condition — a narrow viewport and a
   // real touch pointer. Spreading a whole `devices[...]` entry would also set
@@ -99,20 +94,15 @@ test.describe('mobile', () => {
     deviceScaleFactor: 3,
   });
 
-  test('the Session strip keeps Undo on screen and opens its tools on top', async ({
-    page,
-    pageErrors,
-  }) => {
-    // The strip is Workshop's (docs/specs/012-collaboration/workshop-mode.md), so a Blank Session.
-    await openBlankSession(page);
+  test('the cluster keeps Undo on screen in one row', async ({ page, pageErrors }) => {
+    await openStartBlank(page);
 
     // Every cluster button is inside the viewport: nothing pushed off the left edge.
     const undo = page.getByRole('button', { name: /^undo/i });
     await expect(undo).toBeVisible();
     const undoBox = await undo.boundingBox();
     expect(undoBox && undoBox.x >= 0).toBe(true);
-    // And the whole cluster is one row at phone width, the Session strip beside Undo
-    // (docs/specs/012-collaboration/session-tools.md "The Session strip").
+    // And the whole cluster is one row at phone width.
     const rows = await page.locator('[data-zoom-cluster] button').evaluateAll((buttons) => [
       ...new Set(
         buttons
@@ -122,24 +112,6 @@ test.describe('mobile', () => {
       ),
     ]);
     expect(rows).toHaveLength(1);
-
-    // The Timer opens its set-up as a popover that is genuinely on top, not just present.
-    await page.getByRole('button', { name: 'Open Timer' }).tap();
-    const start = page.getByRole('button', { name: /Start 5 min countdown/ });
-    await expect(start).toBeVisible();
-    const onTop = await start.evaluate((el) => {
-      const r = el.getBoundingClientRect();
-      const hit = document.elementFromPoint(
-        Math.round(r.x + r.width / 2),
-        Math.round(r.y + r.height / 2),
-      );
-      return !!hit && el.contains(hit);
-    });
-    expect(onTop).toBe(true);
-
-    // Starting it puts the clock on the button.
-    await start.tap();
-    await expect(page.getByRole('button', { name: /^Timer \d+:\d\d$/ })).toBeVisible();
 
     expectNoPageErrors(pageErrors);
   });

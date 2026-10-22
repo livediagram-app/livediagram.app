@@ -9,8 +9,6 @@ import {
   isBoxed,
   takesChartPalette,
   isSelfDrawingShape,
-  supportsMarkers,
-  supportsTextAlign,
   supportsBorderControls,
   supportsBorderRadius,
   supportsColours,
@@ -55,13 +53,7 @@ import {
 import { presetPxFor, TextSizeControl } from '@/components/palette/TextSizeControl';
 import { TypographySections } from './TypographySections';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
-import {
-  ArrowPresetsSection,
-  isPlanPresetShape,
-  PlanPresetsSection,
-  ShapePresetsSection,
-  shapeSupportsPresets,
-} from './PresetSections';
+import { ArrowPresetsSection, ShapePresetsSection, shapeSupportsPresets } from './PresetSections';
 import { MultiPlacementSections } from './MultiPlacementSections';
 import { MultiStyleSections } from './MultiStyleSections';
 import { useContextMenuScaffold } from './useContextMenuScaffold';
@@ -168,7 +160,7 @@ export function MultiSelectionContextMenu({
         const markerSrc = boxedSel.find(
           (el) =>
             el.type === 'shape' &&
-            supportsMarkers(el.shape) &&
+            !isSelfDrawingShape(el.shape) &&
             // Markers decorate the label (docs/specs/009-elements/shape-markers.md): only offer them when a
             // member actually has text.
             (el.label ?? '').trim().length > 0,
@@ -179,7 +171,7 @@ export function MultiSelectionContextMenu({
         const alignSrc = boxedSel.find(
           (el) =>
             el.type !== 'image' &&
-            !(el.type === 'shape' && !supportsTextAlign(el.shape)) &&
+            !(el.type === 'shape' && isSelfDrawingShape(el.shape)) &&
             // Only offer alignment when a member actually has text.
             ((el as { label?: string }).label ?? '').trim().length > 0,
         );
@@ -208,20 +200,7 @@ export function MultiSelectionContextMenu({
                   "Style" flyout row, matching the single-element menu. ── */}
             {showStyleFlyout ? (
               <MenuFlyoutSection title="Style" icon={<StyleMenuGlyph />} {...flyoutProps('style')}>
-                {presetShapeSrc &&
-                sel.every(
-                  (el) =>
-                    el.type !== 'shape' || !shapeSupportsPresets(el) || isPlanPresetShape(el.shape),
-                ) ? (
-                  // Only boards and sheets: their calm presets (docs/specs/010-palette/style-presets.md).
-                  <PlanPresetsSection
-                    target={presetShapeSrc}
-                    props={props}
-                    accordion={sectionProps('m-shape-presets')}
-                    onClose={onClose}
-                    title={arrowSrc ? 'Shape Presets' : 'Presets'}
-                  />
-                ) : presetShapeSrc ? (
+                {presetShapeSrc ? (
                   <ShapePresetsSection
                     shape={presetShapeSrc.shape}
                     current={{

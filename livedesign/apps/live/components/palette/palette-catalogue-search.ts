@@ -1,7 +1,7 @@
 // The Toolbar strip's Search over the open-ended catalogues (docs/specs/007-editor/toolbar-layout.md
 // "Search: every element type"): Icons, Stickers and Technology, each entry a dynamic tile
-// (palette-dynamic-tiles) so it places as its category's own tile does. Split like the element
-// tiles: a catalogue the mode's palette offers is this mode's, the rest another mode's.
+// (palette-dynamic-tiles) so it places as its category's own tile does. Only the catalogues the
+// mode's palette offers are searched.
 import type { EditorMode, Element } from '@livedesign/document';
 import { paletteRank, type IconDef, type StickerDef, type TechIconDef } from '@livedesign/icons';
 import { getLineArtIconCatalog } from '@/lib/icons';
@@ -11,14 +11,13 @@ import { isTechIconId } from '@/lib/tech-icons';
 import { paletteCategoryOffered } from './palette-layouts';
 import { iconTileDef, stickerTileDef, techTileDef } from './palette-dynamic-tiles';
 import type { PaletteTileDef } from './palette-tile-defs';
-import type { ElementTileSearch } from './palette-tile-search';
 
 // Matches shown per catalogue: five rows of the popover's three-wide grid. The catalogue's own
 // category has the rest, with its browse.
 export const CATALOGUE_MATCH_LIMIT = 15;
 
 type Catalogue<T> = {
-  // The PALETTE_CATEGORIES id: whether the mode offers it decides its section.
+  // The PALETTE_CATEGORIES id: whether the mode offers it decides whether it is searched.
   category: 'icons' | 'stickers' | 'technology';
   entries: () => readonly T[];
   id: (entry: T) => string;
@@ -91,7 +90,7 @@ function onTab<T>(cat: Catalogue<T>, ids: Set<string>): PaletteTileDef[] {
 }
 
 /** The catalogue tiles the Search lists: the query's matches, or before anything is typed, the
- *  entries already on the tab; each catalogue in this mode's section when the mode offers it. */
+ *  entries already on the tab; from each catalogue the mode offers. */
 export function searchCatalogueTiles({
   query,
   mode,
@@ -104,15 +103,14 @@ export function searchCatalogueTiles({
   // Whether the catalogues have loaded (useIconCatalogs): a component passes the subscription's value so the React
   // Compiler re-runs this when they land. Before then they hold nothing to list.
   loaded?: boolean;
-  // No catalogue is bound to one mode's tools, so none is ever unavailable.
-}): Omit<ElementTileSearch, 'unavailable'> {
-  if (!loaded) return { here: [], elsewhere: [] };
+}): PaletteTileDef[] {
+  if (!loaded) return [];
   const browsing = !query.trim();
   const ids = browsing ? idsOnTab(tabElements) : null;
-  const out: Omit<ElementTileSearch, 'unavailable'> = { here: [], elsewhere: [] };
+  const out: PaletteTileDef[] = [];
   const add = <T>(cat: Catalogue<T>, onTabIds: Set<string> | undefined) => {
-    const tiles = ids ? onTab(cat, onTabIds!) : matchesIn(cat, query);
-    (paletteCategoryOffered(mode, cat.category) ? out.here : out.elsewhere).push(...tiles);
+    if (!paletteCategoryOffered(mode, cat.category)) return;
+    out.push(...(ids ? onTab(cat, onTabIds!) : matchesIn(cat, query)));
   };
   add(ICONS, ids?.icons);
   add(STICKERS, ids?.stickers);

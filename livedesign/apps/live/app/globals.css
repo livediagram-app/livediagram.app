@@ -2,8 +2,7 @@
 @import '@livedesign/tailwind-config';
 @import '@livedesign/template-previews/preview-art-tile.css';
 @import '@livedesign/template-previews/preview-motion.css';
-@import './qa-board.css';
-@import './forms.css';
+@import './collab-cards.css';
 @import './canvas-motion.css';
 @import './motion-shape.css';
 @import './motion-text.css';
@@ -176,13 +175,6 @@
   --animate-nudge-down: nudge-down 0.9s ease-in-out infinite;
   --animate-nudge-left: nudge-left 0.9s ease-in-out infinite;
   --animate-nudge-right: nudge-right 0.9s ease-in-out infinite;
-  /* A drink in an Avatar-mode character's hand (docs/specs/009-elements/office.md "Using it"): a sip every
-     8 seconds, and a coffee's steam. Looping; reduced motion stops them. */
-  --animate-avatar-sip: avatar-sip 8s ease-in-out infinite;
-  --animate-avatar-steam: avatar-steam 2.4s ease-out infinite;
-  /* An Away Avatar-mode character's Zz (docs/specs/008-canvas/avatar-mode.md "Status"): rising and fading.
-     Looping; reduced motion stops it. */
-  --animate-avatar-zz: avatar-zz 3s ease-out infinite;
   --animate-pop-out: pop-out var(--transition-duration-micro) cubic-bezier(0.4, 0, 1, 1) forwards;
   /* The template picker's open shelf arriving (docs/specs/008-canvas/canvas-and-palette.md
      "Templates section"): a longer rise than fly-up-in, so opening a tile below
@@ -273,46 +265,6 @@
 }
 
 /* The waiting arrow drifts up and back: about a pixel on screen at 14px. */
-@keyframes avatar-sip {
-  0%,
-  84%,
-  100% {
-    transform: translateY(0);
-  }
-  88%,
-  95% {
-    transform: translateY(-5px);
-  }
-}
-
-@keyframes avatar-steam {
-  0% {
-    transform: translateY(0);
-    opacity: 0;
-  }
-  30% {
-    opacity: 0.8;
-  }
-  100% {
-    transform: translateY(-4px);
-    opacity: 0;
-  }
-}
-
-@keyframes avatar-zz {
-  0% {
-    transform: translateY(4px);
-    opacity: 0;
-  }
-  30% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(-8px);
-    opacity: 0;
-  }
-}
-
 @keyframes sync-rise {
   0%,
   100% {
@@ -561,20 +513,13 @@
   animation: none !important;
 }
 
-/* The direction nudges and a held drink's sip and steam (above) loop, so reduced motion stops them outright
-   rather than freezing a frame. */
+/* The direction nudges (above) loop, so reduced motion stops them outright rather than freezing a frame. */
 @media (prefers-reduced-motion: reduce) {
-  [class*='animate-nudge-'],
-  .animate-avatar-sip,
-  .animate-avatar-steam,
-  .animate-avatar-zz {
+  [class*='animate-nudge-'] {
     animation: none !important;
   }
 }
-:root.reduce-motion [class*='animate-nudge-'],
-:root.reduce-motion .animate-avatar-sip,
-:root.reduce-motion .animate-avatar-steam,
-:root.reduce-motion .animate-avatar-zz {
+:root.reduce-motion [class*='animate-nudge-'] {
   animation: none !important;
 }
 
@@ -965,10 +910,9 @@ html[data-presenting][data-hide-pointer][data-pointer-idle] [data-presentation-s
   cursor: auto;
 }
 
-/* A whiteboard pen in hand draws wherever it presses (docs/specs/023-draw-mode/draw-mode.md "Pens"):
-   elements, handles and labels under it keep the pen cursor instead of their own. A path in its
-   edit mode owns the cursor the same way (docs/specs/023-draw-mode/path-tool.md "Cursors in edit
-   mode"): no label, element or overlay underneath lends its own, a text cursor least of all. */
+/* A pen in hand draws wherever it presses: elements, handles and labels under it keep the pen
+   cursor instead of their own. A path in its edit mode owns the cursor the same way: no label,
+   element or overlay underneath lends its own, a text cursor least of all. */
 [data-pen-in-hand] *,
 [data-path-cursor] * {
   cursor: inherit !important;
@@ -1045,13 +989,4 @@ html[data-presenting][data-hide-pointer][data-pointer-idle] [data-presentation-s
    motion adds nothing here: the handlers start no View Transition then (lib/view-transition.ts). */
 html {
   view-transition-name: none;
-}
-
-/* The start's mode switch (docs/specs/007-editor/start-diagramming.md "Changing mode"): the browser's own
-   cross-fade, on the short token and the ease-out curve, so the panel turns in place. */
-::view-transition-group(.start-mode),
-::view-transition-old(.start-mode),
-::view-transition-new(.start-mode) {
-  animation-duration: var(--transition-duration-short);
-  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
 }

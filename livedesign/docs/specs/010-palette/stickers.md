@@ -5,7 +5,7 @@ Status: shipped
 ## What
 
 A **Stickers** category in the palette, in the **Decorate** band ([Palette top-level categories and bands](palette-top-level-categories.md)),
-between Icons and Tech — and a **`sticker` shape kind** behind it.
+between Icons and Media — and a **`sticker` shape kind** behind it.
 
 A sticker is the thing you slap on a canvas: a die-cut plate with a soft shadow,
 in colours that are its own. Two flavours:

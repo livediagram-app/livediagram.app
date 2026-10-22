@@ -6,7 +6,7 @@ import { ZOOM_OFF_REASON, ZoomControls } from './ZoomControls';
 const touch = vi.hoisted(() => ({ coarse: false }));
 vi.mock('@/hooks/ui/useCoarsePointer', () => ({ useCoarsePointer: () => touch.coarse }));
 
-// docs/specs/026-plan/plan-board.md "Maximised board", "Zoom stands down": the controls stay, disabled, saying why.
+// While zoom is off the controls stay, disabled, saying why.
 
 afterEach(cleanup);
 
@@ -46,7 +46,7 @@ describe('ZoomControls', () => {
     expect(ZOOM_OFF_REASON).toMatch(/^Zoom is off while/);
   });
 
-  // docs/specs/026-plan/plan-tabs.md "On a phone": with pinch zoom and zoom off, nothing is left to offer.
+  // With pinch zoom and zoom off, nothing is left to offer.
   it('goes on a touch screen while zoom is off, and stays while it is on', () => {
     const h = handlers();
     const { container, rerender } = render(<ZoomControls zoom={1} {...h} pinchOnly zoomOff />);
@@ -69,7 +69,7 @@ describe('ZoomControls', () => {
   });
 });
 
-// docs/specs/029-sheets/sheet.md "Zoom": a Sheet zooms 50% to 200%, so its presets stop at 50%.
+// A Sheet zooms 50% to 200%, so its presets stop at 50%.
 describe('ZoomControls presets', () => {
   const levels = () =>
     screen.getAllByRole('menuitemradio').map((b) => b.textContent?.replace(/\D/g, ''));

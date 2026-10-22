@@ -1,12 +1,16 @@
 // @vitest-environment jsdom
 import { fireEvent, render, screen } from '@testing-library/react';
-import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { Layer } from '@livedesign/document';
 
-import { stubResizeObserver } from '@/components/sheets/sheet-ui-test-utils';
 import { LayersPanel, SINGLE_LAYER_HINT } from './LayersPanel';
 
-beforeAll(stubResizeObserver);
+// jsdom has no ResizeObserver; the movable panel measures itself with one.
+globalThis.ResizeObserver ??= class {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+} as unknown as typeof ResizeObserver;
 
 // docs/specs/006-document/layers.md "The Layers panel": header bar, single-layer hint, footer.
 

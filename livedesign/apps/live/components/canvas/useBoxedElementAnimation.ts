@@ -6,8 +6,6 @@ import {
   defaultFillColor,
   defaultStrokeColor,
   hasOwnBodySet,
-  isOfficeShape,
-  isSeatingShape,
   keptAnimation,
   SHAPE_MOTIONS,
   type BoxedElement,
@@ -18,9 +16,7 @@ import {
 import { drawsShapeSvgOverlay } from '@/components/canvas/ShapeContentRouter';
 import { bodySetClass } from '@/lib/animation-classes';
 import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
-import { useCanvasStill } from '@/components/canvas/CanvasStillContext';
 import { useArrivesWithBoard } from '@/components/canvas/CanvasArrivalContext';
-import { COVERING_SHAPES, useCoversCanvas } from '@/hooks/plan/plan-cover-store';
 
 // The looping-animation slice (docs/specs/008-canvas/canvas-and-palette.md), lifted out of BoxedElementView:
 // which surface each animation kind rides (the wrapper box, the rendered
@@ -74,17 +70,10 @@ function stepSequenceDelay(element: BoxedElement): React.CSSProperties {
 }
 
 export function useBoxedElementAnimation(element: BoxedElement, textColor: string) {
-  // A board, view or Sheet filling the canvas (maximised, or Fill Tab) holds still: its animation plays only in
-  // its place on the canvas (docs/specs/028-animation/element-animations.md).
-  const covering = useCoversCanvas(
-    element.type === 'shape' && COVERING_SHAPES.has(element.shape) ? element.id : null,
-  );
-  const animation = covering ? undefined : wrapperShapeAnimation(element);
+  const animation = wrapperShapeAnimation(element);
   // The gradient animation blends the element's fill, which falls back to the
   // canvas's own ink when the element carries none (docs/specs/007-editor/live-app.md).
   const surface = useElementSurface(element.id);
-  // A still canvas (a whiteboard) shows a new element as drawn: no pop-in.
-  const still = useCanvasStill();
   // A standalone text element has no fill or border, so the box-shadow / ring /
   // background animations (glow / pulse / trace / gradient) would animate an
   // invisible bounding rectangle around the words. For those, ride the rendered
@@ -99,10 +88,6 @@ export function useBoxedElementAnimation(element: BoxedElement, textColor: strin
   // drop the class on the assumption ShapeSvgOverlay would paint it — and the
   // overlay never renders for a sticker, so glow and pulse did nothing at all.
   // Routing it down this same filter path is what makes them appear.
-  //
-  // A CHAIR (docs/specs/009-elements/chair.md) is the same case again: furniture drawn edge to edge in
-  // its own svg over a transparent box, so the box-shadow versions ringed and
-  // filled an invisible rectangle around it.
   const silhouetteAnim =
     animation === 'glow' ||
     animation === 'pulse' ||
@@ -110,14 +95,7 @@ export function useBoxedElementAnimation(element: BoxedElement, textColor: strin
     animation === 'gradient';
   // An ANNOTATION is a drawn pin in a transparent box, the same case again.
   const isDrawnArt =
-    element.type === 'annotation' ||
-    (element.type === 'shape' &&
-      (element.shape === 'sticker' ||
-        isSeatingShape(element.shape) ||
-        element.shape === 'fence' ||
-        element.shape === 'avatar-pad' ||
-        // An office's furniture, rooms and rugs (docs/specs/009-elements/office.md), drawn as a chair is.
-        isOfficeShape(element.shape)));
+    element.type === 'annotation' || (element.type === 'shape' && element.shape === 'sticker');
   const isTextNativeAnim = (element.type === 'text' || isDrawnArt) && silhouetteAnim;
   // `gradient` is a background clipped to the glyphs, which drawn art has
   // nothing to clip to, so it gets a hue cycle over its own colours instead,
@@ -128,19 +106,11 @@ export function useBoxedElementAnimation(element: BoxedElement, textColor: strin
       ? 'lvd-anim-sticker-gradient'
       : `lvd-anim-text-${animation}`;
   // Text wears it on its glyphs; drawn art wears it on the drawing, which the
-  // art's own view mounts (StickerView, FurnitureView), not on the label under it.
-  // A sticker and a chair mount it on their art (StickerView, FurnitureView); an annotation pin and a
+  // art's own view mounts (StickerView), not on the label under it.
+  // A sticker mounts it on its art (StickerView); an annotation pin and a
   // timeline rail have no art view to mount it, so it sits on the element itself, where a
   // drop-shadow follows the drawing's silhouette just the same over its transparent box.
-  const hasArtView =
-    element.type === 'shape' &&
-    (element.shape === 'sticker' ||
-      isSeatingShape(element.shape) ||
-      element.shape === 'fence' ||
-      // AvatarPadView mounts it on its pixels (docs/specs/009-elements/avatar-pad.md).
-      element.shape === 'avatar-pad' ||
-      // FurnitureView and RoomView mount it on their art.
-      isOfficeShape(element.shape));
+  const hasArtView = element.type === 'shape' && element.shape === 'sticker';
   const labelAnimClass = isDrawnArt ? undefined : silhouetteAnimClass;
   const artAnimClass = isDrawnArt && hasArtView ? silhouetteAnimClass : undefined;
   const ownAnimClass = isDrawnArt && !hasArtView ? silhouetteAnimClass : undefined;
@@ -169,10 +139,9 @@ export function useBoxedElementAnimation(element: BoxedElement, textColor: strin
   // reorders (bring to front / send to back) move every keyed sibling — so
   // a lingering pop-in class made unrelated elements visibly re-enter.
   // An element that never pops starts entered and arms nothing: one the board arrives with
-  // (docs/specs/008-canvas/canvas-and-palette.md "Motion and animations"), and one mounted on a still
-  // canvas, which stays settled if the tab later switches to Diagram mode.
+  // (docs/specs/008-canvas/canvas-and-palette.md "Motion and animations").
   const arrivesWithBoard = useArrivesWithBoard();
-  const [entered, setEntered] = useState(() => still || arrivesWithBoard);
+  const [entered, setEntered] = useState(() => arrivesWithBoard);
   const [pops] = useState(!entered);
   useEffect(() => {
     if (!pops) return;
@@ -197,7 +166,7 @@ export function useBoxedElementAnimation(element: BoxedElement, textColor: strin
       ? stickyClass
       : // Nothing else on the wrapper drives `animation` (a Drawing, Media or Table animation
         // sits on an inner node), so a new element still pops in.
-        entered || still
+        entered
         ? ''
         : 'animate-element-pop-in';
 

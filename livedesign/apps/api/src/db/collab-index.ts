@@ -9,33 +9,16 @@
 // keeps the index in the same transaction as the blob it mirrors. The
 // read is the Inbox's one query per kind.
 
-import { FORM_RESPONSES_SQL, formResponsesFromRows, type FormResponsesRow } from './activity-forms';
 import { collabIndexRowsFromElements, type Element } from '@livedesign/document';
 import type { ActivityAction, ActivityReadResult, ActivityThread } from '@livedesign/api-schema';
 import { VISIBLE_DOCUMENTS_CTES } from './document-visibility';
-import {
-  CARDS_CTES,
-  CARDS_SELECT,
-  cardsFromRows,
-  planBoardIndexCopyStatement,
-  planBoardIndexStatements,
-  readerPersonIds,
-  type CardRow,
-} from './plan-board-index';
-import {
-  CARD_THREADS_CTES,
-  CARD_THREADS_SELECT,
-  cardThreadsFromRows,
-  type CardThreadRow,
-} from './plan-card-threads';
 import { revGuardAnd, revGuardBinds, revGuardValues, type TabRevGuard } from './tab-rev-guard';
 import type { Env } from '../types';
 
 // ---------- Writes ----------------------------------------------------
 
 // The statements one tab save contributes: a full replace of the tab's
-// rows, Plan boards' column statuses included (§2.4). On a tab with nothing
-// to index that is three DELETEs touching nothing, which is cheap enough
+// rows. On a tab with nothing to index that is two DELETEs touching nothing, which is cheap enough
 // to run on every ~600ms autosave.
 export function collabIndexStatements(
   env: Env,
@@ -50,7 +33,6 @@ export function collabIndexStatements(
   const stmts: D1PreparedStatement[] = [
     env.DB.prepare(`DELETE FROM collab_actions WHERE tab_id = ?${and}`).bind(tabId, ...g),
     env.DB.prepare(`DELETE FROM collab_threads WHERE tab_id = ?${and}`).bind(tabId, ...g),
-    ...planBoardIndexStatements(env, tabId, elements, guard),
   ];
   for (const a of rows.actions) {
     stmts.push(
@@ -137,7 +119,6 @@ export function collabIndexCopyStatements(
               latest_at
          FROM collab_threads WHERE tab_id = ?2`,
     ).bind(toTabId, fromTabId),
-    planBoardIndexCopyStatement(env, fromTabId, toTabId),
   ];
 }
 
@@ -225,13 +206,7 @@ const ACTIONS_SQL = `${SCOPE_CTES}
    ORDER BY ca.updated_at DESC
    LIMIT ?3`;
 
-// Exported for the query-plan guard in activity-cards.test.ts.
-export const CARDS_SQL = `${SCOPE_CTES}${CARDS_CTES}${CARDS_SELECT}`;
-
-// A Plan card's comment threads (§2.5), read from the item store like the cards.
-export const CARD_THREADS_SQL = `${SCOPE_CTES}${CARD_THREADS_CTES}${CARD_THREADS_SELECT}`;
-
-// Exported for the query-plan guard in activity-plans.test.ts.
+// Exported for the query-plan guard in home-plans.test.ts.
 export const THREADS_SQL = `${SCOPE_CTES}
   SELECT ct.tab_id, ct.element_id, ct.element_label, ct.comment_count,
          ct.latest_text, ct.latest_author_name, ct.latest_author_color, ct.first_at, ct.latest_at,
@@ -271,7 +246,7 @@ function dedupePlaces<R extends PlaceRow>(rows: R[]): R[] {
   for (const row of rows) {
     if (row.via === 'shared' && !row.share_code) continue;
     // An action row is one of possibly many on its element (an Action panel,
-    // docs/specs/012-collaboration/action-panel.md), so its own id is part of what makes it one row.
+    // docs/specs/012-collaboration/assigned-actions.md), so its own id is part of what makes it one row.
     const actionId = (row as { action_id?: string }).action_id;
     const key = `${row.tab_id}:${row.element_id}${actionId ? `:${actionId}` : ''}`;
     const cur = best.get(key);
@@ -300,14 +275,9 @@ export async function readActivity(
   opts: { limit: number },
 ): Promise<ActivityReadResult> {
   const now = Date.now();
-  // Cards are matched on hashed ids (§2.4), which SQL cannot compute: the reader's aliases are read first.
-  const personIds = await readerPersonIds(env, ownerId);
-  const [actionsRes, threadsRes, cardsRes, cardThreadsRes, formsRes] = await env.DB.batch([
+  const [actionsRes, threadsRes] = await env.DB.batch([
     env.DB.prepare(ACTIONS_SQL).bind(ownerId, now, opts.limit),
     env.DB.prepare(THREADS_SQL).bind(ownerId, now, opts.limit),
-    env.DB.prepare(CARDS_SQL).bind(ownerId, now, opts.limit, JSON.stringify(personIds)),
-    env.DB.prepare(CARD_THREADS_SQL).bind(ownerId, now, opts.limit),
-    env.DB.prepare(FORM_RESPONSES_SQL).bind(ownerId, now, opts.limit),
   ]);
   const actions: ActivityAction[] = dedupePlaces((actionsRes?.results ?? []) as ActionRow[]).map(
     (r) => ({
@@ -339,10 +309,7 @@ export async function readActivity(
       mentionsYou: r.mentions_you === 1,
     }),
   );
-  const cards = cardsFromRows((cardsRes?.results ?? []) as CardRow[]);
-  const cardThreads = cardThreadsFromRows((cardThreadsRes?.results ?? []) as CardThreadRow[]);
-  const formResponses = formResponsesFromRows((formsRes?.results ?? []) as FormResponsesRow[]);
-  return { actions, threads, cards, cardThreads, formResponses };
+  return { actions, threads };
 }
 
 // ---------- Backfill state + aliases ----------------------------------
@@ -369,7 +336,7 @@ export async function markCollabIndexBackfilled(env: Env, ownerId: string): Prom
 }
 
 // The tabs the backfill has to parse: every tab of every document the
-// reader can see whose JSON even mentions a thread, an action or a Plan board. The
+// reader can see whose JSON even mentions a thread or an action. The
 // LIKE pre-filter runs in SQLite so the (usually large) majority of tabs
 // with neither never leave the database. Newest first, capped.
 export async function listCollabTabsToBackfill(
@@ -386,8 +353,7 @@ export async function listCollabTabsToBackfill(
       WHERE (d.owner_id = ?1
              OR d.team_id IN (SELECT team_id FROM team_members WHERE user_id = ?1 AND status = 'joined')
              OR s.owner_id IS NOT NULL)
-        AND (t.data LIKE '%"commentThread":%' OR t.data LIKE '%"action":%'
-             OR t.data LIKE '%"planBoard":%')
+        AND (t.data LIKE '%"commentThread":%' OR t.data LIKE '%"action":%')
       ORDER BY t.updated_at DESC
       LIMIT ?2`,
   )

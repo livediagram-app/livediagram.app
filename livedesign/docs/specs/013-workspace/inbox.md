@@ -49,7 +49,7 @@ outstanding for me right now.**
 ## 1. What the user sees
 
 An **Inbox** row in the sidebar's **Overview** group ([Explorer structure](explorer-structure.md)), directly
-under Home and above the Timeline, with a badge counting the open actions and open Plan cards **assigned to
+under Home and above the Timeline, with a badge counting the open actions **assigned to
 the reader**. The badge always shows, **0** included, so an empty Inbox reads as done at a glance; it
 shows nothing only while the Inbox is loading or failed to load, so it never claims a false 0. The
 count only covers work waiting on the reader, not work they handed out.
@@ -58,27 +58,17 @@ The pane is a single page of three sections, each a card-list of rows
 (the same container the List view uses), each with a heading and a
 count, and each hidden entirely when empty:
 
-1. **Assigned to You** — open actions whose assignee is the reader,
-   and open Plan cards ([Items](../026-plan/items.md)) whose Assignee is the reader (§2.4), in
-   one list. A self-assignment ([Assigned actions](../012-collaboration/assigned-actions.md): the Myself row, the guest to-do case)
+1. **Assigned to You** — open actions whose assignee is the reader. A self-assignment ([Assigned actions](../012-collaboration/assigned-actions.md): the Myself row, the guest to-do case)
    lands here and only here.
 2. **You Assigned** — open actions the reader assigned to _somebody
    else_. Self-assignments are excluded so one action never appears
    twice.
-3. **Form Responses** — forms with responses the reader has not seen, in documents they own or reach through a
-   team ([Forms](../030-forms/forms.md#hearing-about-responses)): "3 new responses to **Bug Report**", opening the
-   board they land on. Listed between Assigned to You and You Assigned; the Inbox badge does not count them.
-4. **Open Comment Threads** — unresolved threads the reader is in.
+3. **Open Comment Threads** — unresolved threads the reader is in.
    "In" means one of two things, and the row says which:
    - the reader wrote at least one comment in the thread, or
    - the thread is on a document the reader **owns** (owners are
      already treated as included: [Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md) emails them every new
      comment). The row carries a quiet **Your document** hint.
-
-   A Plan card's comment thread lists here too (§2.5), by the same rules, newest comment first among the
-   element threads. Its row is a card row (its type's glyph, **#key title**, **board title · tab name** or
-   **Not on a board**) whose detail is the latest comment and whose avatar is its latest author, with the same
-   **Mentioned You** / **Your document** hints; it opens the card (the `#item=` link, §1).
 
 Rows share one anatomy with the Collaborate Panel's ([Assigned actions](../012-collaboration/assigned-actions.md) §5) so a
 user recognises them: kind glyph far left (the action clipboard, the
@@ -91,15 +81,9 @@ that is the reader, labelled "You"); a **You Assigned** row shows the
 assignee's avatar with "Assigned to <name>" on hover. A thread row's
 title is the element label, its detail the latest comment's text, its
 avatar the latest author's colour, with the comment count on hover.
-A card row's glyph is its card type's (the built-in type's glyph, else a
-generic square); its title is **#key title**; its detail is the card's
-type ("Card" for a type a document added); its "where" is **board title ·
-tab name**, or **Not on a board**; its avatar is the reader ("You",
-brand-tinted) with "Assigned to you" on hover.
 
 Ordering within a section is **newest activity first**: an action's
-`updatedAt` (a reassignment or edit bumps it), a card's `updatedAt`
-(any write to the item bumps it), a thread's latest
+`updatedAt` (a reassignment or edit bumps it), a thread's latest
 comment. The page is capped at 100 rows per kind; the cap is a
 ceiling on a page nobody scrolls that far down, not a paging design.
 
@@ -109,17 +93,7 @@ with a fragment the editor reads on load:
 
 ```
 /document/<id>[?s=<code>]#t=<tabId>&el=<elementId>&open=action|comments
-/document/<id>[?s=<code>]#t=<tabId>&el=<boardId>&item=<itemId>
 ```
-
-A card row's link names the board it is on (§2.4): the editor selects
-the board, scrolls it into view and opens the card in the item panel
-([Items](../026-plan/items.md)), as clicking the card on the board does. A card no board in
-its document shows has no tab to land on; its link is
-`#item=<itemId>` alone, which opens the document on its usual tab and
-opens the card once the item store has loaded (when the tab has no Plan
-content the store is not read, and the link degrades to opening the
-document).
 
 `#t=` is the existing tab pin ([Per-tab storage](../006-document/per-tab-storage.md)); `el` and `open` are new. Once
 the pinned tab's elements have loaded the editor selects the element,
@@ -137,8 +111,8 @@ States:
 
 - **Loading**: the Explorer's skeleton rows.
 - **Empty** (nothing open in any section): one `EmptyState` — "Nothing
-  waiting on you", with a line explaining what lands here (actions and
-  Plan cards assigned to you, actions you assigned, threads you're in) and a link to
+  waiting on you", with a line explaining what lands here (actions
+  assigned to you, actions you assigned, threads you're in) and a link to
   the assigned-actions help article. No New Document CTA: a new document
   does not put anything on this page.
 - **Failed**: "Couldn't load your activity" with **Try again**. Distinct
@@ -150,7 +124,7 @@ States:
 carries the [This Browser pill](../006-document/offline-mode.md#this-browser-pill) in its "where" line, after the document
 chip, as a label (the row is already a link): the same amber words and glyph, and on hover "Lives only in this browser.
 Clearing this browser's site data deletes it." Nobody reads such a row as saved on livedesign or visible to anyone
-else. Its rows are found in the browser (§2.6) and listed among the server's, in the same sections and the same
+else. Its rows are found in the browser (§2.4) and listed among the server's, in the same sections and the same
 order; the badge counts them.
 
 Coming back to a tab that has been open a while re-reads the list
@@ -196,9 +170,8 @@ CREATE TABLE collab_threads (
   ([Tab ↔ document many-to-many](../006-document/tab-document-many-to-many.md)); the document is resolved at read time through
   `document_tabs`, which is also what makes deletion free: a tab's rows
   die with it (FK cascade), and a document's tabs die with the document.
-- **One row per action, one per thread.** An ordinary element carries at most
-  one action and an Action panel a list ([The Action Panel](../012-collaboration/action-panel.md)), so `collab_actions` is keyed
-  `(tab_id, element_id, action_id)` (migration 0053); an element has one
+- **One row per action, one per thread.** An element carries at most
+  one action, keyed `(tab_id, element_id, action_id)` in `collab_actions`, and one
   thread. Either way a save is a full replace of the
   tab's rows: `DELETE … WHERE tab_id = ?` for each table, then one
   `INSERT` per element that carries the thing. Idempotent, and it
@@ -233,7 +206,7 @@ by accident without also forgetting to write the tab:
 | tab link into another document ([Tab ↔ document many-to-many](../006-document/tab-document-many-to-many.md)) | rows are per tab           | nothing to do                                |
 
 The rows are derived by a pure function over the tab's elements
-(`collabIndexRowsFromElements` in `packages/document`, shared with the browser's read of documents in This Browser, §2.6), which reuses the element-label rule
+(`collabIndexRowsFromElements` in `packages/document`, shared with the browser's read of documents in This Browser, §2.4), which reuses the element-label rule
 the Collaborate Panel already applies (`elementDisplayLabel`, moved
 into `packages/document` so the panel and the index cannot disagree on
 what a row is called).
@@ -287,100 +260,20 @@ skipped rather than written over it. The
 same state row moves with the owner on migration so the seed does not
 run twice against the new id.
 
-### 2.4 Plan cards
-
-Plan cards are items in the document's item store ([Items](../026-plan/items.md), table `items`),
-not element JSON, so they need no blob projection: the read filters
-`items` directly. Two pieces make that cheap and correct:
-
-- **An expression index on the assignee.** Migration 0073 adds
-  `CREATE INDEX items_assignee ON items (json_extract(fields, '$.assignee.id'))`.
-  An item's assignee id is `itemPersonId(userId)`, a one-way hash
-  ([Item store blueprint](../026-plan/blueprints/item-store.md) "Security and trust"); the worker hashes the reader's
-  `me` set (§2.2) and the read matches the index with `IN`.
-- **`plan_board_statuses`: which statuses a board shows, and which of
-  them are Done.** Whether a card is open is a property of the boards,
-  not of the card: a status is Done when a board's done column, or a
-  column after it, holds it ([Plan views](../026-plan/plan-views.md) "What a plan view reads"). The
-  boards live in tab JSON, so they get the same treatment as actions:
-  a per-tab projection written in the tab save's batch by
-  `collabIndexStatements` (so every path in §2.1 writes it, and the copy
-  path copies it).
-
-```sql
-CREATE TABLE plan_board_statuses (
-  tab_id TEXT NOT NULL, element_id TEXT NOT NULL,
-  board_title TEXT NOT NULL,
-  status TEXT NOT NULL,      -- a column's status; '*' for an All Cards board
-  done INTEGER NOT NULL,     -- 1 when the column is the done column or after it
-  board_order INTEGER NOT NULL, -- the board's index among the tab's boards
-  position INTEGER NOT NULL, -- the column's index on its board
-  PRIMARY KEY (tab_id, status, element_id), -- the Done check seeks (tab, status)
-  FOREIGN KEY (tab_id) REFERENCES tabs(id) ON DELETE CASCADE
-);
-```
-
-An Archive board writes no rows (it shows only archived cards, which
-are never listed). An All Cards board writes one `'*'` row, never Done.
-
-A card is listed when, in a document the reader can open (§4):
-
-- its `assignee.id` is the hash of an identity in `me`;
-- it is not a linked card (`linked` is absent): a linked card's action is listed already
-  ([Linked boards](../026-plan/linked-boards.md) "The Inbox");
-- it is not archived (`archived` is not `true`) and not in the Trash
-  (`status` is not `trash`);
-- no board on any tab of its document marks its status Done. A card
-  whose status no board holds (a stray, or a document with no board) is
-  open: nothing says it is finished.
-
-Its place is the first board, in tab order then board order, that
-holds its status; failing that, an All Cards board; failing that, any
-board in the document; failing that, none (the `#item=` link, §1).
-
-Cards the reader assigned to somebody else are **not** listed: an
-item records who last wrote it, not who assigned it, so "You Assigned"
-stays actions only.
-
-The migration also clears `collab_index_state`, so each reader's next
-visit re-runs the §2.3 backfill and indexes the boards saved before
-this shipped. The backfill's pre-filter matches `"planBoard":` too.
-
-### 2.5 Card comment threads
-
-A Plan card's comments live in its item (`fields.comments`, [Items](../026-plan/items.md) "Comments"), not in tab
-JSON, so like §2.4 they need no projection: the read filters `items` directly, in the documents the reader can
-open (§4). A card's thread is listed when:
-
-- it holds at least one comment and is not resolved;
-- the card is neither archived nor in the Trash;
-- the reader wrote a comment in it (a comment's `authorId` ∈ `me`), is mentioned in it (a mention's `userId` ∈
-  `me`, or its `memberId` is one of the reader's `team_members` rows), or owns the document;
-- on a tab-scoped share, a board on the scoped tab shows the card (the same rule as §2.4).
-
-It is placed on a board exactly as §2.4 places a card. The read takes the newest `ACTIVITY_LIST_MAX` by latest
-comment. Migration 0074 adds a partial index, `items_open_threads ON items (document_id) WHERE
-json_extract(fields, '$.comments.resolved') = 0`, so the read seeks only cards with an open thread in each
-visible document (measured: 20,000 cards, 2,000 open 20-comment threads, ~106ms; ~200ms without it). Author ids never leave the worker: the row carries the latest author's name and colour only.
-
-### 2.6 documents in This Browser
+### 2.4 documents in This Browser
 
 A document in This Browser ([Offline Mode](../006-document/offline-mode.md)) never reaches the worker, so the index above
 never holds it. The editor reads those documents itself, from the browser's offline store, and lists what it finds with
 the server's rows (`readOfflineActivity`, `apps/live/lib/offline/offline-activity.ts`):
 
-- **The same derivation.** Actions and element threads come from `collabIndexRowsFromElements`, Plan boards' statuses
-  from `planBoardRowsFromElements` (both in `packages/document`), so a document in This Browser lists exactly what the same
+- **The same derivation.** Actions and element threads come from `collabIndexRowsFromElements` (in
+  `packages/document`), so a document in This Browser lists exactly what the same
   document would list once synced.
 - **Who "me" is.** The reader's owner id and, when this browser still holds one, its guest participant id: a guest's
-  self-assignments and comments carry the guest id, and stay theirs after signing in on the same browser. Cards match
-  the hashes of those ids (`itemPersonId`), as §2.4 does. There are no team members offline, so no member-id match.
-- **What is listed.** The rules of §2.4, §2.5 and §4 with the reader as the owner of every document in This Browser: an open
-  action assigned to or by the reader; every unresolved thread, an element's or a card's ("Your document"); an open card
-  assigned to the reader that is not linked, not archived, not in the Trash and in no Done column, placed on a board by
-  the same preference (a board holding its status, then an All Cards board, then any board, by tab then board order).
-  Documents in the local Trash are skipped. Forms take responses through the worker, so a document in This Browser has none
-  to list.
+  self-assignments and comments carry the guest id, and stay theirs after signing in on the same browser. There are no team members offline, so no member-id match.
+- **What is listed.** The rules of §4 with the reader as the owner of every document in This Browser: an open
+  action assigned to or by the reader, and every unresolved thread ("Your document"). Documents in the local Trash are
+  skipped.
 - **The shape.** The same wire types, `via: 'own'`, no team and no share code (the plain document URL opens it), marked
   local in the editor so the row shows the pill (§1). Capped at `ACTIVITY_LIST_MAX` per kind, like the server read.
 - **Failure.** The offline store failing to answer is logged (`[inbox] offline-read-failed`) and lists nothing local;
@@ -390,8 +283,7 @@ the server's rows (`readOfflineActivity`, `apps/live/lib/offline/offline-activit
 ## 3. API
 
 ```
-GET /api/activity   -> { actions: ActivityAction[], threads: ActivityThread[], cards: ActivityCard[],
-                         cardThreads: ActivityCardThread[] }
+GET /api/activity   -> { actions: ActivityAction[], threads: ActivityThread[] }
 ```
 
 Hybrid identity (Clerk user or `X-Owner-Id`); guests get their own
@@ -435,32 +327,6 @@ type ActivityThread = ActivityPlace & {
   onYourDocument: boolean;
   mentionsYou: boolean; // an entry of mentioned_ids ∈ me ∪ my team_members rows
 };
-// An open Plan card assigned to the reader (§2.4). Not an ActivityPlace:
-// a card is not an element, and it may have no board to land on.
-type ActivityCard = {
-  documentId: string;
-  documentName: string;
-  teamId: string | null;
-  via: 'own' | 'team' | 'shared';
-  shareCode: string | null;
-  board: { tabId: string; tabName: string; elementId: string; title: string } | null;
-  id: string; // the item id
-  key: number; // the #number
-  type: string; // the item type id
-  title: string;
-  status: string | null;
-  updatedAt: number;
-};
-// A Plan card's unresolved comment thread the reader is in (§2.5): the card's identity and place, and the
-// thread's facts as ActivityThread has them.
-type ActivityCardThread = Omit<ActivityCard, 'status' | 'updatedAt'> & {
-  commentCount: number;
-  latest: { text: string; authorName: string; authorColor: string; at: number };
-  firstAt: number;
-  youCommented: boolean;
-  onYourDocument: boolean;
-  mentionsYou: boolean;
-};
 ```
 
 ## 4. The read, and who sees what
@@ -480,11 +346,6 @@ live. Only then is the involvement test applied:
   their `team_members` rows ([Comment mentions](../012-collaboration/comment-mentions.md)). The row carries
   `mentionsYou`, and its hint reads **Mentioned You** (it wins over "Your
   document").
-- a Plan card is theirs when its `assignee.id` is the hash of an id in
-  me (§2.4). On a document shared with them through a **tab-scoped**
-  link ([Tab-scoped share links](tab-scoped-share-links.md)) they see only the cards that tab's boards
-  show: the card's board must be on the scoped tab and hold its status
-  (or be an All Cards board).
 
 That order is the security boundary: a name can never leak a row from
 a document the reader has lost access to, and it is what keeps the
@@ -516,7 +377,7 @@ and the badge cannot disagree with the list.
 A new `Activity` category in `TELEMETRY_CATEGORIES` ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)):
 
 - `Activity` / `Opened` when the section renders (once per visit);
-- `Activity` / `Selected` with type `Action` | `Thread` | `Card` on a row click;
+- `Activity` / `Selected` with type `Action` | `Thread` on a row click;
 - `Activity` / `Loaded` / `Retry` when a failed read is retried.
 
 The category keeps the data layer's name. Picking the sidebar row is `UI` / `Selected` / `Sidebar.Inbox`
@@ -536,19 +397,11 @@ Never an action name, comment text, document name, or any identity.
 - The OpenAPI drift test ([API documentation (OpenAPI)](../015-api/api-documentation.md)) pins the new route + schemas.
 - `routes.test.ts` round-trips the new section.
 - `collab-deep-link.test.ts`: the fragment parser (tab only, tab +
-  element, unknown `open`, junk, a card's `item` with and without a
-  board).
-- `plan-board-rows.test.ts`: the board projection (done column and
-  after, All Cards `'*'`, Archive skipped, junk set-ups).
-- `activity-cards.test.ts` (db, against real SQLite): assigned to me
-  and to an alias, someone else's card, archived, trashed, Done on any
-  board, stray status still open, place preference, scoped share,
-  a document the reader cannot open.
+  element, unknown `open`, junk).
 - `useActivityFeed.test.tsx`: sections split from one read, error vs
   empty, retry, rows in This Browser merged in order and counted.
-- `offline-activity.test.ts`: the browser read of documents in This Browser (§2.6): assigned to and by the reader, the
-  guest id, threads, open and finished cards, linked cards, trashed documents, placement, the cap.
-- `collab-index-rows.test.ts` and `plan-board-rows.test.ts` live in `packages/document` with the functions.
+- `offline-activity.test.ts`: the browser read of documents in This Browser (§2.4): assigned to and by the reader, the
+  guest id, threads, trashed documents, the cap.
 - Help: the registry / icon / colour / articleCount tests pick the new
   article up automatically.
 

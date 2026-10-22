@@ -15,7 +15,7 @@ Follow the references below only as needed; never upfront.
 - ./toasts.md - when raising, styling or placing a toast (`useToast`): one line by default, the four tones, timing, the stack's place above bottom chrome and banners, its motion and copy rules
 - ./tooltips-hover-cards-popovers.md - when adding a hover or focus hint, a `title`, or a click-opened panel: Tooltip (name, 1 s), Hover card (title + description, instant), Popover (click, interactive), and their WCAG 1.4.13 behaviour
 - ./menus.md - when building or changing any menu: command menus (role menu, roving keys, typeahead, submenus) vs control menus (non-modal dialog), focus in and back, the inset focus ring
-- ./within-reach.md - when a surface offers a short "what you want next" list: N most used plus N recent, none twice (Jump Back In, Shape slots)
+- ./within-reach.md - when a surface offers a short "what you want next" list: N most used plus N recent, none twice (Jump Back In)
 - ./blueprints/README.md - when implementing a 004-interface-design spec: engineering detail derived from the specs
 - ./dropdown-tile-grid.md - when working on Tile grids for the palette dropdowns: The canvas-tool and palette-category pickers lay their options out as an icon-over-label tile grid instead of a long column, matching the context menus' MenuTileGrid
 - ./iconography.md - when drawing, adding or changing any icon: Lucide vocabulary, 1.5px on-screen weight, one home, icon weight on canvas
@@ -25,7 +25,7 @@ Follow the references below only as needed; never upfront.
 - ./back-bar.md - when building a drill-in (a level with a way back): the shared back bar, sticky and flush at the top of its scroller
 - ./forced-colors.md - when a control shows its state with a fill, or a surface is painted with a gradient or shows real colours: how every app reads under Windows contrast themes (`forced-colors: active`)
 - ./scrollbars.md - when anything scrolls: the themed scrollbar is the default everywhere, one slim variant, and the thumb contrast rule
-- ./date-fields.md - when adding, styling or saving a date or time input: it fits its column on phones and iPads, saves only a whole date (`DateInput`), a dropdown opens the picker, and how a card's date reads
+- ./date-fields.md - when adding, styling or saving a date or time input: it fits its column on phones and iPads, saves only a whole date (`DateInput`) and a dropdown opens the picker
 - ./empty-states.md - when a list, picker, panel or search can show nothing: the "No <things>" copy, the regular and small sizes (CompactEmptyState, NoMatches), never a bare grey line
 - ./search-and-filters.md - when a search can also be narrowed by filters: one field, the filters as chips inside it (FilterSearchBox), never a filter row under the box
 - ./colour-picker.md - when adding or changing anything that chooses a colour: the one picker, its standard colours (strong and soft), Custom Colours, the custom colour editor, keyboard and skins; read before building anything colour-related, never a new picker

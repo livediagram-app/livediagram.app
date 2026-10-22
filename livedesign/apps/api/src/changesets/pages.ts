@@ -125,13 +125,11 @@ export async function submitPages(args: PagesArgs): Promise<PagesResult> {
       ...where,
       changes: request.pages.length,
       rev,
-      switched: out.switched,
     });
     return {
       status: 200,
       body: {
         tab: { id: tabId, rev },
-        switched: out.switched,
         lines: out.lines,
         pages: pageSummaries(next),
         changesetId,

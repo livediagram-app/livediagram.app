@@ -15,7 +15,7 @@ type TextStyleSetterDeps = {
   selectionPrimary: () => Element | null;
   commit: (mapElements: (els: Element[]) => Element[]) => void;
   // The tab being edited, for its font. A text box that fits or wraps hugs its text through every
-  // change to how it is drawn (docs/specs/007-editor/editor-modes.md "A text box's sizing").
+  // change to how it is drawn (docs/specs/006-document/document-structure.md).
   activeTab: Pick<Tab, 'font' | 'finish'>;
 };
 
@@ -90,23 +90,6 @@ export function useTextStyleSetters({
     track('Element', 'Changed', 'TextAlign');
   };
 
-  // A lane title turned upright in its side strip, or back across (docs/specs/009-elements/lane.md
-  // "Upright titles"). Lanes only; one commit.
-  const setLaneUprightTitleSelected = (upright: boolean) => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    commit((els) =>
-      els.map((el) => {
-        if (!ids.has(el.id) || el.type !== 'shape' || el.shape !== 'lane') return el;
-        if (upright) return { ...el, titleOrientation: 'upright' as const };
-        const { titleOrientation: _turned, ...across } = el;
-        void _turned;
-        return across;
-      }),
-    );
-    track('Element', 'Changed', 'LaneUprightTitle');
-  };
-
   // Generic helper for the inline label styles. Each toggle flips the
   // matching boolean on every member of the current selection. We
   // derive the next value from the primary so a partially-applied
@@ -133,7 +116,6 @@ export function useTextStyleSetters({
     setTextSizeSelected,
     setFontSelected,
     setTextAlignSelected,
-    setLaneUprightTitleSelected,
     toggleTextStyleSelected,
   };
 }

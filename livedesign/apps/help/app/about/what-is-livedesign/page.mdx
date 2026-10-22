@@ -1,39 +1,43 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { CanvasOverview } from '@/components/illustrations/canvas';
+import { PagesScene } from '@/components/illustrations/pages';
 import { LiveCursors } from '@/components/illustrations/collaboration';
 
 export const metadata = helpMetadata({
   title: 'What is livedesign?',
   description:
-    'livedesign is a free, open-source, real-time multiplayer diagram editor that runs in your browser, with no sign-in needed to start.',
+    'livedesign is a free, open-source, real-time multiplayer editor for logos and wireframes, right in your browser.',
   path: '/help/about/what-is-livedesign/',
 });
 
-<ArticleLayout title="What is livedesign?" description="A free, open-source canvas where teams build diagrams, whiteboards, mind maps, infographics and documents together, in real time, right in the browser." categoryTitle="About livedesign" categorySlug="about">
+<ArticleLayout title="What is livedesign?" description="A free, open-source editor where teams design logos and wireframes together, in real time, right in the browser." categoryTitle="About livedesign" categorySlug="about">
 
-livedesign is a web app where people build **diagrams, whiteboards, mind maps, infographics and documents together in real time**. It is a multiplayer canvas in the browser: anyone with access to a document can join, see other collaborators' cursors and edits live, and contribute at the same time. The result is a shared visual artifact, a flowchart, an architecture diagram, a mind map, or a brainstorm board, that a team builds together rather than one person authoring and the rest reviewing.
+livedesign is a web app where people design **pages together in real time**: logos and wireframes. Anyone with access to a document can join, see other collaborators' cursors and edits live, and contribute at the same time. The result is something finished to share, a logo or a set of screens, that a team builds together rather than one person authoring and the rest reviewing.
 
-## A multiplayer canvas
+## A document of pages
 
-The heart of livedesign is the [canvas](/help/canvas/the-canvas/). You drop down shapes, connect them with arrows, drag things around, and the diagram takes shape as you work. When more than one person is in the same document, everyone sees live cursors, who has what selected, and every change as it happens.
+A document holds [tabs](/help/tabs/using-tabs/), and every tab is a row of **pages**. Each page is one of a few kinds, chosen when you make it. See [Working with Pages](/help/pages/working-with-pages/).
 
-<Figure caption="The editor at a glance: a canvas with shapes and arrows, the shape palette, and your live cursor.">
-  <CanvasOverview />
+<Figure caption="Pages in a row on a tab, each labelled above its corner, with the buttons to add another after the last.">
+  <PagesScene />
 </Figure>
 
-- **Shapes and arrows** for flowcharts, system diagrams, and process maps. See [Shapes](/help/palette/shapes/) and [Arrows](/help/palette/arrows/).
-- **Mind maps and brainstorms** built from quick, keyboard-driven nodes: Tab adds a child, Enter a sibling. See [Mind Maps](/help/palette/mind-maps/).
-- **Real-time presence** so collaborators rarely overwrite each other: an element someone else has selected is locked for everyone else.
-- **Tabs** to keep related views of one document in a single place. See [Tabs](/help/tabs/using-tabs/).
-- **Modes** for different kinds of work on a tab: Diagram for shapes and arrows, [Draw](/help/canvas/draw-mode/) for freehand whiteboarding, [Pages](/help/canvas/pages-mode/) for laying a tab out as pages (infographics, posters, handouts and articles), [Plan](/help/canvas/plan-mode/) for boards of cards you drag through columns, and [Workshop](/help/canvas/workshop-mode/) for running a session such as a retro or workshop, with timers, votes and polls to hand. A mode is how a tab is worked on, so everyone on the tab shares it. See [Editor Modes](/help/canvas/editor-modes/).
-- **Templates** for retrospectives, Kanban boards, flowcharts and more, so you rarely start from a blank page. See [Templates](/help/canvas/templates/).
+- **Logos** on a square artboard, with guides, mirror drawing and a logo kit export. See [Logo Pages](/help/pages/logo-pages/).
+- **Wireframes**, each screen framed by the device it is for. See [Wireframe Pages](/help/pages/wireframe-pages/).
 
-## Built for teams who think visually
+You build a page from the [palette](/help/palette/): text, shapes, icons, pictures, charts, ready-made components and more. [Templates](/help/canvas/templates/) start a tab from ready-made pages, so you rarely begin from a blank one.
 
-livedesign is aimed at people who need to think together, visually: engineering teams sketching architecture and sequence flows, product and design teams mapping journeys and information architecture, and cross-functional groups in workshops, planning sessions, and retrospectives. The unit of value is the team, not the single author.
+## Presenting, exporting and AI
 
-To make that frictionless, the canvas **always works without signing in**. You can land on a blank diagram, build something real, and hand the link to a colleague who edits it straight away, no account required. See [Sharing your document](/help/getting-started/sharing-your-document/).
+- **Present** your pages full screen as a deck, with the [laser](/help/selection-modes/laser/) and the [spotlight](/help/selection-modes/spotlight/) to point things out. See [Presenting](/help/selection-modes/slide-deck/presenting/).
+- **Export** pages as a PDF, PNG or SVG. See [Exporting and Presenting Pages](/help/pages/exporting-pages/).
+- **AI**, where the people running livedesign have set it up, works alongside you on a tab, and AI tools can work on your documents over MCP. See [AI Assistance](/help/tools/ai/) and [Connect an AI Tool](/help/account-and-data/connect-ai-mcp/).
+
+## Built for working together
+
+When more than one person is in the same document, everyone sees live cursors, who has what selected, and every change as it happens. An element someone else has selected is locked for everyone else, so collaborators rarely overwrite each other. [Comments](/help/collaboration/comments/), [teams](/help/collaboration/teams/) and [sharing](/help/collaboration/sharing/) are built in.
+
+To make that frictionless, the editor **always works without signing in**. You can open a new document, build something real, and hand the link to a colleague who edits it straight away, no account required. See [Sharing your document](/help/getting-started/sharing-your-document/).
 
 <Figure caption="Everyone in a document sees each other's live cursors and presence at once.">
   <LiveCursors />
@@ -44,8 +48,8 @@ To make that frictionless, the canvas **always works without signing in**. You c
 livedesign is **MIT-licensed** and **free for everyone**. There is no paid tier and no plan to introduce one. A free hosted version runs at livedesign.app, and because the whole codebase is open, anyone can self-host it on their own infrastructure. Every feature is available to every user. See [Why use livedesign?](/help/about/why-livedesign/).
 
 <Tip>
-  The fastest way to understand livedesign is to use it. Open a [new diagram](/new) and drop in a
-  couple of shapes, no sign-up needed.
+  The fastest way to understand livedesign is to use it. Open a [new document](/new) and make your
+  first page, no sign-up needed.
 </Tip>
 
 </ArticleLayout>

@@ -7,14 +7,14 @@ import { FeatureScene } from './FeatureScene';
 // its finished frame before the build; the veil rests clear.
 describe('FeatureScene', () => {
   it('renders the window and its aspect-ratio canvas without the scene', () => {
-    const markup = renderToStaticMarkup(<FeatureScene scene="plan" />);
-    expect(markup).toContain('Launch');
+    const markup = renderToStaticMarkup(<FeatureScene scene="logo" />);
+    expect(markup).toContain('Bloom brand');
     expect(markup).toContain('aspect-[16/10]');
-    expect(markup).not.toContain('Pricing page');
+    expect(markup).not.toContain('BLOOM');
   });
 
   it('rests with a clear veil, never the stage veil that flashes grey', () => {
-    const markup = renderToStaticMarkup(<FeatureScene scene="plan" />);
+    const markup = renderToStaticMarkup(<FeatureScene scene="logo" />);
     expect(markup).toContain('opacity-0');
     expect(markup).not.toMatch(/hero-fade(-out)?\b/);
   });

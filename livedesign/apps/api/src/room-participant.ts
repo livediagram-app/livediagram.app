@@ -9,21 +9,12 @@
 //   - applied with nothing to change: nothing;
 //   - refused: the correction to the sender alone; an element not saved yet, or no write at all (a failure, a
 //     flood past PARTICIPANT_PENDING_MAX), and the sender re-hydrates (`catchup { resync: true }`).
-//
-// Answers: a Participant's dot, response or idea relays and enters the ledger like an Editor's, and the room
-// writes the ledger's answers into the stored tab ANSWERS_FLUSH_MS later, one write per tab for a burst.
 
 import { isRoomOpRef, type ServerMessage } from '@livedesign/api-schema';
-import type { ElementOp, TabLedger } from '@livedesign/document';
-import {
-  writeParticipantAnswers,
-  writeParticipantOp,
-  type ParticipantWriteResult,
-} from './participant-write';
+import type { ElementOp } from '@livedesign/document';
+import { writeParticipantOp, type ParticipantWriteResult } from './participant-write';
 import type { Env } from './types';
 
-// How soon a Participant's answers reach D1 (blueprint SR9).
-export const ANSWERS_FLUSH_MS = 1500;
 // How many of one socket's writes may wait on the queue (blueprint SR12): far above a person's pace (the autosave
 // sends one op per changed element every 600 ms), and a crafted flood is refused rather than starving everyone.
 export const PARTICIPANT_PENDING_MAX = 64;
@@ -37,7 +28,6 @@ type ParticipantRoomHooks = {
   sendTo: (ws: WebSocket, payload: ServerMessage) => void;
   // Where the ordered stream stands.
   position: () => { epoch: string; seq: number };
-  readLedger: (tabId: string) => Promise<TabLedger>;
 };
 
 type ParticipantSender = {
@@ -62,8 +52,6 @@ function sameOp(a: unknown, b: unknown): boolean {
 }
 
 export class RoomParticipantWrites {
-  private flushes = new Map<string, { documentId: string; timer: ReturnType<typeof setTimeout> }>();
-
   private readonly hooks: ParticipantRoomHooks;
 
   constructor(hooks: ParticipantRoomHooks) {
@@ -143,34 +131,5 @@ export class RoomParticipantWrites {
       ops: [],
       resync: true,
     });
-  }
-
-  // A Participant's dot, response or idea has just entered the ledger: write the tab's answers soon.
-  scheduleAnswers(documentId: string | null, tabId: unknown): void {
-    if (!documentId || typeof tabId !== 'string' || this.flushes.has(tabId)) return;
-    const timer = setTimeout(() => {
-      this.flushes.delete(tabId);
-      void this.flushAnswers(documentId, tabId);
-    }, ANSWERS_FLUSH_MS);
-    this.flushes.set(tabId, { documentId, timer });
-  }
-
-  async flushAnswers(documentId: string, tabId: string): Promise<void> {
-    const env = this.hooks.env;
-    if (!env) return;
-    try {
-      const result = await this.hooks.enqueue(async () =>
-        writeParticipantAnswers(env, {
-          documentId,
-          tabId,
-          ledger: await this.hooks.readLedger(tabId),
-        }),
-      );
-      if (result.ok) console.debug('[participant-write] answers', { documentId, tabId, ok: true });
-      else
-        console.error('[participant-write] failed', { documentId, tabId, status: result.status });
-    } catch (error) {
-      console.error('[participant-write] failed', { documentId, tabId, error: String(error) });
-    }
   }
 }

@@ -2,9 +2,9 @@ import type { ReactElement } from 'react';
 import type { TemplateKind } from '@livedesign/templates';
 import { pv } from './motion';
 
-// Group 20: the blanks of a page kind (docs/specs/007-editor/templates-by-mode.md "Blanks of a page kind"): Blank
-// Infographic and Blank Logo. Each draws its one empty page in its own proportions (an A4 page, the square
-// artboard) with the dashed edge, faint guides and sky "+" of Blank
+// Group 20: the blanks of a page kind (docs/specs/007-editor/start-diagramming.md "Recommended and groups"): Blank
+// Logo. It draws its one empty page in its own proportions (the square artboard) with the dashed edge, faint guides
+// and sky "+" of Blank
 // Illustration's page, so the Pages blanks read as a set. Hover story: the guides light up, what the page is for.
 // Static SVG preview tiles, one branch per TemplateKind; TemplatePreview chains the groups with ??.
 

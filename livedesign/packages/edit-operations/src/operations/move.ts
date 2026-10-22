@@ -1,6 +1,6 @@
 // `move <selector> <placement> | by=dx,dy [all]` (docs/specs/024-agents/blueprints/edit-operations.md
 // "Placement", "Carry"): the targets' bounding box is placed as one box, or shifted by exactly
-// `by`, and every element in the moving set (the targets and what a moved frame or lane carries)
+// `by`, and every element in the moving set (the targets and what a moved frame or stack carries)
 // translates by the same delta. Pinned arrows follow by construction; finalise re-anchors them.
 
 import type { EditRejection } from '@livedesign/api-schema';
@@ -106,7 +106,7 @@ function giveBackRoom(
   goneId: ElementId,
   operation: number,
 ): void {
-  // A holder is a frame or lane, always a box.
+  // A holder is a frame or stack, always a box.
   if (state.locked.has(holderId)) return;
   const c = state.byId.get(holderId) as BoxedElement;
   const holders = holdersOf(state);

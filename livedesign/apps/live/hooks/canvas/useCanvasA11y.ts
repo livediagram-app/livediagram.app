@@ -55,11 +55,6 @@ type CanvasA11yDeps = {
   // traversal exactly like remotely-locked ones.
   layerInertIds: Set<string>;
   scrollIntoView: (x: number, y: number, w: number, h: number) => void;
-  // Elements that claim Tab for themselves. A selected mind node grows a
-  // child on Tab (docs/specs/009-elements/mind-node.md), and both handlers listen on window: this one
-  // is mounted first, so without the check it consumed every Tab and the
-  // selection walked the tab instead of the branch growing.
-  ownsTabKey: (id: string) => boolean;
 };
 
 export function useCanvasA11y(deps: CanvasA11yDeps): void {
@@ -68,14 +63,6 @@ export function useCanvasA11y(deps: CanvasA11yDeps): void {
   const ref = useLatest(deps);
 
   useEffect(() => {
-    // The element this walk last selected. Tab grows a selected mind node or flowchart step, but not one the
-    // walk just landed on: there Tab walks on, or every keyboard user reaching a step would be trapped on it,
-    // a new step per press (docs/specs/004-interface-design/canvas-accessibility.md "No wrap, no trap"). A
-    // pointer press hands the selection back to growth.
-    let walkedTo: string | null = null;
-    const onPointer = () => {
-      walkedTo = null;
-    };
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Tab' || e.metaKey || e.ctrlKey || e.altKey) return;
       if (e.defaultPrevented) return;
@@ -88,17 +75,7 @@ export function useCanvasA11y(deps: CanvasA11yDeps): void {
       // browser's normal Tab order.
       const active = document.activeElement;
       if (!(active instanceof HTMLElement) || active.dataset.canvasA11yRoot === undefined) return;
-      // Shift+Tab still walks backwards through the elements: only plain
-      // Tab is the growth key, so reverse traversal never had a rival.
-      const { selectedId, multiSelectedIds } = live.selection.get();
-      if (
-        !e.shiftKey &&
-        selectedId !== null &&
-        selectedId !== walkedTo &&
-        multiSelectedIds.size === 0 &&
-        live.ownsTabKey(selectedId)
-      )
-        return;
+      const { selectedId } = live.selection.get();
       const els = live.elements;
       const dir = e.shiftKey ? -1 : 1;
       const i = nextTraversalIndex(
@@ -109,23 +86,15 @@ export function useCanvasA11y(deps: CanvasA11yDeps): void {
       );
       // Past either end: leave the event to the browser so focus moves
       // on to the next control — deliberately no wrap.
-      if (i === null) {
-        walkedTo = null;
-        return;
-      }
+      if (i === null) return;
       const next = els[i]!;
       e.preventDefault();
-      walkedTo = next.id;
       live.selectElement(next.id);
       if (isBoxed(next)) live.scrollIntoView(next.x, next.y, next.width, next.height);
       track('Element', 'Selected', 'Keyboard');
     };
     window.addEventListener('keydown', onKey);
-    window.addEventListener('pointerdown', onPointer, true);
-    return () => {
-      window.removeEventListener('keydown', onKey);
-      window.removeEventListener('pointerdown', onPointer, true);
-    };
+    return () => window.removeEventListener('keydown', onKey);
   }, [ref]);
 
   // Announce selection changes: single ("Selected 'Login'"), multi (a

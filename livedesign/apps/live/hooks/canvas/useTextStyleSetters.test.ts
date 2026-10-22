@@ -19,7 +19,7 @@ vi.mock('@/components/canvas/text-hug-measure', () => ({
 }));
 
 // A text box whose edits land through the setters. Whether it hugs is its own sizing, whatever the
-// editor mode (docs/specs/007-editor/editor-modes.md "A text box's sizing").
+// editor mode (docs/specs/006-document/document-structure.md).
 function setup(el: TextElement) {
   let els: Element[] = [el];
   const commit = (map: (els: Element[]) => Element[]) => {
@@ -46,8 +46,8 @@ const hello = (patch: Partial<TextElement> = {}): TextElement => ({
   ...patch,
 });
 
-// docs/specs/023-draw-mode/draw-mode.md "Text boxes": the box hugs its text through every
-// change to how the text is drawn.
+// docs/specs/006-document/document-structure.md (a text box's sizing): the box hugs its text through
+// every change to how the text is drawn.
 describe('useTextStyleSetters on a hugging text box', () => {
   it('re-hugs the box when the text size changes, and drops a Shift scale', () => {
     const { setters, current } = setup(hello({ textScale: 2 }));

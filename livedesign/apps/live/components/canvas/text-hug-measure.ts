@@ -1,5 +1,5 @@
-// Measures a whiteboard text box's text with the real DOM (docs/specs/023-draw-mode/draw-mode.md
-// "Text boxes"), so the box hugs the words exactly in whatever face and size they are drawn in.
+// Measures a text box's text with the real DOM, so the box hugs the words exactly in whatever
+// face and size they are drawn in.
 //
 // One hidden block, kept off-screen under <body>, is laid out the way the label and its editor
 // lay their text out: the single-line label typography (medium weight, tight leading), pre-wrap
@@ -21,7 +21,6 @@ import {
 import { applyCss } from '@/components/rich-text/rich-text-format';
 import { effectiveRunStyle, labelRunPx } from '@/components/canvas/label-style';
 import { TEXT_HUG_LEADING, textHugFontPx, type MeasureTextBlock } from '@/lib/text-hug';
-import { mindLabelFontPx } from '@/lib/mind-label-fit';
 
 const MEASURER_ATTR = 'data-text-hug-measurer';
 
@@ -63,9 +62,8 @@ export function measureTextHug(
 }
 
 // The same measure for any boxed element's single-line-style label (medium weight, tight
-// leading) drawn at `fontPx`, its runs' own sizes scaled by `runScale`. A mind node's label
-// measures through it to grow to fit (lib/mind-label-fit.ts). Wordmark fields are a text box's;
-// on any other element they read as unset.
+// leading) drawn at `fontPx`, its runs' own sizes scaled by `runScale`. Wordmark fields are a
+// text box's; on any other element they read as unset.
 export function measureLabelBlock(
   el: BoxedElement,
   content: TextRun[] | HTMLElement,
@@ -127,19 +125,4 @@ export function measureDrawnText(
   tabFinish?: Finish,
 ): (el: TextElement) => MeasureTextBlock {
   return (el) => measureTextHug(el, labelRuns(el), drawnLabelFont(el, tabFont, tabFinish));
-}
-
-// The same for a mind node's label, at the size it draws (or, sized Auto, types) at
-// (docs/specs/009-elements/mind-node.md "A node grows to fit its label").
-export function measureDrawnMindLabel(
-  tabFont: string | undefined,
-  tabFinish?: Finish,
-): (el: ShapeElement) => MeasureTextBlock {
-  return (el) =>
-    measureLabelBlock(
-      el,
-      labelRuns(el),
-      drawnLabelFont(el, tabFont, tabFinish),
-      mindLabelFontPx(el),
-    );
 }

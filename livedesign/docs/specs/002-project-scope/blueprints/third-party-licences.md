@@ -39,20 +39,20 @@ silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 
 ## Domain and naming
 
-| Term          | Identifier                                           | Meaning                                                                                                       |
-| ------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| App           | `LicenceApp`, `AppId`                                | One deployed app: `live`, `marketing`, `help`, `telemetry`, `api`, `mcp`, `router`                            |
-| Side          | `Side` = `'browser' \| 'server'`                     | Where an app's bundle runs                                                                                    |
-| Bundle        | `AppBundle`                                          | One app's shipped `sources` (repo-relative paths) and `assets` (emitted file basenames)                       |
-| Work          | `WorkRecord` (collect), `WorkEntry` (manifest)       | Third-party material with its own licence                                                                     |
-| Work kind     | `WorkKind` = `'package' \| 'vendored' \| 'embedded'` | npm package, vendored inside a package, inside a binary or our source                                         |
+| Term          | Identifier                                           | Meaning                                                                                          |
+| ------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| App           | `LicenceApp`, `AppId`                                | One deployed app: `live`, `marketing`, `help`, `telemetry`, `api`, `mcp`, `router`               |
+| Side          | `Side` = `'browser' \| 'server'`                     | Where an app's bundle runs                                                                       |
+| Bundle        | `AppBundle`                                          | One app's shipped `sources` (repo-relative paths) and `assets` (emitted file basenames)          |
+| Work          | `WorkRecord` (collect), `WorkEntry` (manifest)       | Third-party material with its own licence                                                        |
+| Work kind     | `WorkKind` = `'package' \| 'vendored' \| 'embedded'` | npm package, vendored inside a package, inside a binary or our source                            |
 | Carrier       | `carrier`                                            | What holds a vendored or embedded work (`next 16.3.6`, `@resvg/resvg-wasm`, `livedesign source`) |
-| Licence text  | `LicenceText` `{ label, text }`                      | One licence or notice file's normalised content                                                               |
-| Text hash     | `hash`                                               | First 16 hex of the sha256 of a normalised text; its file name                                                |
-| Override      | `Override`                                           | Committed texts for one exact package version                                                                 |
-| Embedded work | `EmbeddedWork`                                       | A reviewed table entry for material the bundler cannot see                                                    |
-| Binary asset  | (a basename)                                         | Emitted file with an extension in `BINARY_ASSET_EXTENSIONS`                                                   |
-| Manifest      | `LicencesManifest`                                   | What the page renders                                                                                         |
+| Licence text  | `LicenceText` `{ label, text }`                      | One licence or notice file's normalised content                                                  |
+| Text hash     | `hash`                                               | First 16 hex of the sha256 of a normalised text; its file name                                   |
+| Override      | `Override`                                           | Committed texts for one exact package version                                                    |
+| Embedded work | `EmbeddedWork`                                       | A reviewed table entry for material the bundler cannot see                                       |
+| Binary asset  | (a basename)                                         | Emitted file with an extension in `BINARY_ASSET_EXTENSIONS`                                      |
+| Manifest      | `LicencesManifest`                                   | What the page renders                                                                            |
 
 Banned: "licence" and "license" as synonyms of each other in identifiers; the code spells the
 British `licence` everywhere except the npm `license` field and file names.

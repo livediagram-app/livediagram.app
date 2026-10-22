@@ -1,4 +1,3 @@
-import type { SavedItemTypes } from '@/lib/api/item-types';
 import {
   useLayoutEffect,
   useRef,
@@ -86,7 +85,6 @@ export function useIdentityBootstrap(opts: {
     setDocumentId: SetState<string | null>;
     setDocumentName: SetState<string>;
     setDocumentPresentation: SetState<string | null>;
-    setDocumentItemTypes: SetState<SavedItemTypes>;
     setDocumentNotFound: SetState<boolean>;
     setLoadError: SetState<boolean>;
     // The document is in the Trash (docs/specs/013-workspace/trash.md).
@@ -165,7 +163,6 @@ export function useIdentityBootstrap(opts: {
       setDocumentId,
       setDocumentName,
       setDocumentPresentation,
-      setDocumentItemTypes,
       setDocumentNotFound,
       setLoadError,
       setDocumentTrashed,
@@ -207,7 +204,6 @@ export function useIdentityBootstrap(opts: {
       setActiveId,
       setDocumentName,
       setDocumentPresentation,
-      setDocumentItemTypes,
       setDocumentOwnerColor,
       setDocumentOwnerId,
       setDocumentOwnerName,
@@ -353,10 +349,9 @@ export function useIdentityBootstrap(opts: {
           clerkDisplayName,
           onParticipantStep: () => setLoadStep('participant'),
         });
-        // The document-write key (docs/specs/012-collaboration/participant-responses.md) is stamped onto the LOCAL
-        // participant only, never onto `self` as it goes to `apiSaveSelf`: it belongs to this browser,
-        // not to the account. A second device signed in as the same person is a second person as far
-        // as a done check is concerned — and it is a second presence entry too, so that stays consistent.
+        // The browser key (lib/local-identity.ts) is stamped onto the LOCAL participant only, never onto `self` as it
+        // goes to `apiSaveSelf`: it belongs to this browser, not to the account, so a second device signed in as the
+        // same person is a second presence entry.
         setSelfParticipant({ ...self, key: ensureCollabKey(), status: 'online' });
         // Seed the persistence guard so the post-hydration effect doesn't
         // immediately echo the same name/color back via PUT.

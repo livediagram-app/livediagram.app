@@ -106,15 +106,7 @@ export function EditorSearchPanel() {
         isReadOnly
           ? undefined
           : (add) => {
-              if (add.type === 'shape')
-                addShape(add.shapeKind, {
-                  session: add.session,
-                  reaction: add.reaction,
-                  mode: add.mode,
-                  estimateScale: add.estimateScale,
-                  plan: add.plan,
-                  variant: add.variant,
-                });
+              if (add.type === 'shape') addShape(add.shapeKind, { variant: add.variant });
               else if (add.type === 'icon') addIcon(add.iconId);
               else if (add.type === 'sticker') addSticker(add.stickerId);
               else if (add.type === 'tile') {

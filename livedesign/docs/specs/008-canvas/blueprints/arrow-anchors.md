@@ -14,7 +14,6 @@ Scope, by file:
 | `packages/document/src/shape-outline.ts`                      | Anchoring outlines, outline projection, point-inside test                                          |
 | `packages/document/src/svg-path-outline.ts`                   | `sampleSvgPath`: an outline polygon from a drawn path (cloud, document)                            |
 | `packages/document/src/anchor-layouts.ts`                     | `anchorLayoutPoint`: face-placed anchors of triangle, hexagon, parallelogram, trapezoid            |
-| `packages/document/src/shape-geometry.ts`                     | `ACTOR_HULL`, the actor's anchoring hull (D8)                                                      |
 | `packages/document/src/geometry.ts`                           | `anchorPosition`                                                                                   |
 | `packages/document/src/anchor-choice.ts`                      | `exitSideTowards`, `facingSideTowards`, `anchorAimPoint`, `bestAnchorTowards`                      |
 | `packages/document/src/arrow-path.ts`                         | `arrowPathPolyline` (exported centreline), side-aware curve/elbow rules                            |
@@ -96,7 +95,7 @@ One `Record<Anchor, AnchorInfo>`; every helper reads it.
 ### Offered anchors (`anchors.ts`)
 
 - `OFFERED`: `Partial<Record<ShapeKind, readonly Anchor[]>>`, in table order:
-  - `circle`, `diamond`, `actor`: the corners and middles (`COMPASS_ANCHORS`);
+  - `circle`, `diamond`: the corners and middles (`COMPASS_ANCHORS`);
   - `triangle`: `ene e ese sse s ssw wsw w wnw`;
   - `document`: all sixteen but `se` and `sw`.
 - `offeredAnchors(el)`: `OFFERED[el.shape]` for a shape, else `ALL_ANCHORS`.
@@ -150,7 +149,6 @@ from `shapePolygonVertices(kind)` (D15). `mid(a, b)` is the midpoint, `lerp(a, b
 | `diamond`, `parallelogram`, `hexagon`, `triangle`, `trapezoid` | `shapePolygonVertices(kind)` mapped from 0..100 to the box                                                                       |
 | `cylinder`                                                     | Body with half-ellipse top (centre y 15, ry 12) and bottom (centre y 85, ry 12), each `ARC_SEGMENTS` segments, in the 0..100 box |
 | `stadium`                                                      | Capsule polygon: `r = min(w, h)/2`, two half circles of `ARC_SEGMENTS` segments on the short axis ends (D8)                      |
-| `actor`                                                        | `ACTOR_HULL` (viewBox 90 × 130) fitted "meet": `k = min(w/90, h/130)`, centred (D8)                                              |
 | `cloud`, `document`                                            | `sampleSvgPath(d)` of the kind's single main path in the shape-geometry table, mapped from 0..100 to the box                     |
 | anything else                                                  | `null`: the connector box is the outline                                                                                         |
 
@@ -490,7 +488,7 @@ swaps log, plus the anchor fallbacks (O5, O6, prefix `[arrow-anchors]`); never a
 | -------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
 | 16 anchors, clockwise, old 8 kept                                                                        | ids, order, uniqueness                                                                    | `anchors.test.ts`                                                |
 | Class, sides, primary side, `anchorsOf`                                                                  | whole table                                                                               | `anchors.test.ts`                                                |
-| Offered anchors per kind, I7, class fallback on a side                                                   | circle / diamond / actor 8, triangle 9, document 14, square 16; triangle corner → quarter | `anchors.test.ts`                                                |
+| Offered anchors per kind, I7, class fallback on a side                                                   | circle / diamond 8, triangle 9, document 14, square 16; triangle corner → quarter         | `anchors.test.ts`                                                |
 | Snapping and markers honour the offer (I8)                                                               | no quarter snap on a circle; 8 markers                                                    | `anchor-geometry.test.ts`, `apps/live/lib/drag-geometry.test.ts` |
 | Face-placed anchors                                                                                      | parallelogram, trapezoid, hexagon, triangle points; star on its box; cylinder on its caps | `anchor-geometry.test.ts`                                        |
 | A side without anchors                                                                                   | triangle target above: facing side falls to w / e; creation anchor never `n`              | `anchor-geometry.test.ts`, `arrow-rebind.test.ts`                |
@@ -499,7 +497,7 @@ swaps log, plus the anchor fallbacks (O5, O6, prefix `[arrow-anchors]`); never a
 | A quarter on a circle re-anchors to a corner                                                             | morphed-circle end flips side                                                             | `arrow-rebind.test.ts`                                           |
 | Cloud and document outlines, path sampler, O4                                                            | anchors on the outline; unsupported command → null + warn                                 | `anchor-geometry.test.ts`                                        |
 | Box positions                                                                                            | all 16 on a box                                                                           | `anchor-geometry.test.ts`                                        |
-| Outline projection incl. quarters                                                                        | circle, diamond, star, stadium, actor points lie on the outline                           | `anchor-geometry.test.ts`                                        |
+| Outline projection incl. quarters                                                                        | circle, diamond, star, stadium points lie on the outline                                  | `anchor-geometry.test.ts`                                        |
 | Rotation                                                                                                 | a quarter on a 90° element                                                                | `anchor-geometry.test.ts`                                        |
 | Caption push by side                                                                                     | `ssw`, `s`, `sse` pushed for a bottom caption                                             | `anchor-geometry.test.ts`                                        |
 | Inside test                                                                                              | box, ellipse, polygon, inset, rotated                                                     | `anchor-geometry.test.ts`                                        |
@@ -532,16 +530,15 @@ swaps log, plus the anchor fallbacks (O5, O6, prefix `[arrow-anchors]`); never a
 
 ## Constants and configuration
 
-| Name                             | Value    | Provenance                                                        | Safe range   | Home                       |
-| -------------------------------- | -------- | ----------------------------------------------------------------- | ------------ | -------------------------- |
-| `PATH_INSIDE_INSET_PX`           | `2`      | Grazing tolerance, about a medium stroke width (D1)               | `[0.5, 6]`   | `arrow-path-hits.ts`       |
-| `PATH_SAMPLE_STEP_PX`            | `2`      | Not coarser than the inset (D2)                                   | `[0.5, 4]`   | `arrow-path-hits.ts`       |
-| `PATH_MAX_SAMPLES_PER_SEGMENT`   | `512`    | Covers a 1,000 px clip at the step (D2)                           | `[64, 4096]` | `arrow-path-hits.ts`       |
-| `CROSSING_ENDPOINT_TOLERANCE_PX` | `1`      | Sub-pixel: two paths into one anchor meet, not cross (D4)         | `[0.1, 4]`   | `arrow-path-hits.ts`       |
-| `CLOSENESS_TIE_PX`               | `0.5`    | Below a rendered pixel (D3)                                       | `[0, 2]`     | `arrow-rebind.ts`          |
-| `SWAP_MAX_PASSES`                | `8`      | Uncrossing converges in a pass or two in practice (D5)            | `[1, 32]`    | `arrow-rebind-swap.ts`     |
-| `SWAP_MAX_ENDS_PER_SIDE`         | `32`     | Bounds the pair count at 496 (D5)                                 | `[8, 128]`   | `arrow-rebind-swap.ts`     |
-| `ARC_SEGMENTS`                   | `16`     | Sub-pixel error at 200 px (D8)                                    | `[8, 64]`    | `shape-outline.ts`         |
-| `ACTOR_HULL`                     | 9 points | Convex hull of the actor's head, arm tips and feet, to y 130 (D8) | n/a          | `shape-geometry.ts`        |
-| `QUARTER_FAN_ROOM`               | `0.5`    | A quarter's fan stays between its corner and its middle (spec)    | `(0, 0.5]`   | `arrow-endpoint-spread.ts` |
-| `PATH_CURVE_SEGMENTS`            | `12`     | Under half a pixel of error on a 200 px cloud bump (D13)          | `[4, 64]`    | `svg-path-outline.ts`      |
+| Name                             | Value | Provenance                                                     | Safe range   | Home                       |
+| -------------------------------- | ----- | -------------------------------------------------------------- | ------------ | -------------------------- |
+| `PATH_INSIDE_INSET_PX`           | `2`   | Grazing tolerance, about a medium stroke width (D1)            | `[0.5, 6]`   | `arrow-path-hits.ts`       |
+| `PATH_SAMPLE_STEP_PX`            | `2`   | Not coarser than the inset (D2)                                | `[0.5, 4]`   | `arrow-path-hits.ts`       |
+| `PATH_MAX_SAMPLES_PER_SEGMENT`   | `512` | Covers a 1,000 px clip at the step (D2)                        | `[64, 4096]` | `arrow-path-hits.ts`       |
+| `CROSSING_ENDPOINT_TOLERANCE_PX` | `1`   | Sub-pixel: two paths into one anchor meet, not cross (D4)      | `[0.1, 4]`   | `arrow-path-hits.ts`       |
+| `CLOSENESS_TIE_PX`               | `0.5` | Below a rendered pixel (D3)                                    | `[0, 2]`     | `arrow-rebind.ts`          |
+| `SWAP_MAX_PASSES`                | `8`   | Uncrossing converges in a pass or two in practice (D5)         | `[1, 32]`    | `arrow-rebind-swap.ts`     |
+| `SWAP_MAX_ENDS_PER_SIDE`         | `32`  | Bounds the pair count at 496 (D5)                              | `[8, 128]`   | `arrow-rebind-swap.ts`     |
+| `ARC_SEGMENTS`                   | `16`  | Sub-pixel error at 200 px (D8)                                 | `[8, 64]`    | `shape-outline.ts`         |
+| `QUARTER_FAN_ROOM`               | `0.5` | A quarter's fan stays between its corner and its middle (spec) | `(0, 0.5]`   | `arrow-endpoint-spread.ts` |
+| `PATH_CURVE_SEGMENTS`            | `12`  | Under half a pixel of error on a 200 px cloud bump (D13)       | `[4, 64]`    | `svg-path-outline.ts`      |

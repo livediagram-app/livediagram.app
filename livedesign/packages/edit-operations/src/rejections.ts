@@ -149,15 +149,6 @@ export function elementLocked(operation: number, el: Element, lock: LockReason):
   };
 }
 
-// A board or Sheet left on a tab not in Plan (docs/specs/026-plan/plan-tabs.md "Only in Plan"), by id.
-export function planOnlyOutsidePlan(ids: readonly string[]): EditRejection {
-  return {
-    code: 'invalid_value',
-    details: [`a board or Sheet goes only on a tab in Plan: ${ids.join(', ')}`],
-    hint: 'add a Board tab or a Sheet tab with add_tab (template "kanban" or "blank-spreadsheet")',
-  };
-}
-
 export function invalidResult(
   subject: string,
   kind: string | undefined,
@@ -166,9 +157,7 @@ export function invalidResult(
   return {
     code: 'invalid_result',
     details: [`${subject} ${issue.field}: ${issue.rule}`],
-    hint: kind
-      ? `see the format: livedesign schema ${kind}`
-      : 'see the format: livedesign schema',
+    hint: kind ? `see the format: livedesign schema ${kind}` : 'see the format: livedesign schema',
   };
 }
 

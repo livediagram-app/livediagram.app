@@ -10,12 +10,9 @@ import { pageLs, pageSet } from './pages';
 const ONE = 'tab-one-0000';
 const TWO = 'tab-two-0000';
 const tabPath = (id: string) => `/documents/${DOC_A}/tabs/${id}`;
-// A diagram with something on it: never switched unasked.
-const DRAWN = [{ id: 'box', type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10 }];
 
 const ANSWER: PagesAnswer = {
   tab: { id: ONE, rev: 5 },
-  switched: false,
   lines: ['Added page 2 (logo, 1024 x 1024).'],
   pages: [
     {
@@ -37,7 +34,6 @@ const ANSWER: PagesAnswer = {
 const PAGES_TAB = {
   id: ONE,
   rev: 4,
-  opensIn: 'pages',
   elements: [],
   pages: [{ id: 'a1', orientation: 'portrait', kind: 'logo', size: 'logo' }],
 };
@@ -62,35 +58,15 @@ function setUp(
 }
 
 describe('which tab', () => {
-  it('is the one named, else the first in Pages mode', async () => {
+  it('is the one named, else the first', async () => {
     const { api } = setUp();
-    expect(await pagesTabOf(api, DOC_A, TWO, 'mcp')).toMatchObject({ tabId: TWO });
-    expect(await pagesTabOf(api, DOC_A, undefined, 'mcp')).toMatchObject({ tabId: ONE });
-  });
-
-  it('takes an empty first tab, a document just made for pages', async () => {
-    const { api } = setUp({
-      [TWO]: { id: TWO, elements: DRAWN },
-      [ONE]: { id: ONE, elements: [] },
-    });
-    expect(await pagesTabOf(api, DOC_A, undefined, 'mcp')).toMatchObject({ tabId: ONE });
-  });
-
-  it('refuses rather than switching a diagram unasked, in each door’s words', async () => {
-    const { api } = setUp({
-      [TWO]: { id: TWO, elements: [] },
-      [ONE]: { id: ONE, elements: DRAWN },
-    });
-    const mcp = await pagesTabOf(api, DOC_A, undefined, 'mcp');
-    expect(mcp).toMatchObject({ ok: false, code: 'tab_needed' });
-    expect((mcp as { message: string }).message).toContain('add_tab');
-    const cli = await pagesTabOf(api, DOC_A, undefined, 'cli');
-    expect((cli as { message: string }).message).toContain('--tab');
+    expect(await pagesTabOf(api, DOC_A, TWO)).toMatchObject({ tabId: TWO });
+    expect(await pagesTabOf(api, DOC_A, undefined)).toMatchObject({ tabId: ONE });
   });
 
   it('turns a missing document into the api’s refusal', async () => {
     const { api } = setUp();
-    expect(await pagesTabOf(api, 'nope', undefined, 'mcp')).toMatchObject({
+    expect(await pagesTabOf(api, 'nope', undefined)).toMatchObject({
       ok: false,
       code: 'not_found',
     });
@@ -128,16 +104,20 @@ describe('the calls', () => {
 
 describe('the calls with no tab to act on', () => {
   it('answer the refusal rather than send anything', async () => {
-    const { api, sent } = setUp({
-      [TWO]: { id: TWO, elements: DRAWN },
-      [ONE]: { id: ONE, elements: DRAWN },
+    // Every tab of the document out of reach: no tab to fall back on.
+    const doc = tabsOfA[`/documents/${DOC_A}`].document;
+    const unreachable = fakeApi({
+      ...library,
+      [`/documents/${DOC_A}`]: {
+        document: { ...doc, tabs: doc.tabs.map((t) => ({ ...t, outOfScope: true })) },
+      },
     });
     expect(
-      await changePages(api, DOC_A, { changes: [{ op: 'add', kind: 'logo' }] }, 'mcp'),
+      await changePages(unreachable, DOC_A, { changes: [{ op: 'add', kind: 'logo' }] }, 'mcp'),
     ).toMatchObject({
       code: 'tab_needed',
     });
-    expect(sent).toEqual([]);
+    expect(unreachable.calls.filter((c) => c.endsWith('/pages'))).toEqual([]);
   });
 });
 
@@ -148,16 +128,6 @@ describe('page ls and page set', () => {
     expect(pageLs.text!(out)).toEqual(['tab one · pages']);
     const fitted = await pageLs.run!(ctx, pageLs.input.parse({ doc: DOC_A, budget: 50 }));
     expect(fitted.text).toBe('tab one · fitted');
-  });
-
-  it('refuses page ls with no Pages tab', async () => {
-    const { ctx } = setUp({
-      [TWO]: { id: TWO, elements: DRAWN },
-      [ONE]: { id: ONE, elements: DRAWN },
-    });
-    await expect(pageLs.run!(ctx, pageLs.input.parse({ doc: DOC_A }))).rejects.toBeInstanceOf(
-      VerbRefusal,
-    );
   });
 
   it('makes one change from the flags', async () => {

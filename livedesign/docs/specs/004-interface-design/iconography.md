@@ -8,7 +8,6 @@ Every icon livedesign draws follows one grammar, so a glyph looks the same weigh
 - **On-screen stroke**: the stroke width a person sees, in CSS pixels: `strokeWidth × renderedSize / viewBox`. Weight is specified in on-screen pixels, never in viewBox units.
 - **Chrome icon**: an icon in the application interface (toolbars, menus, panels, dialogs, the help centre, marketing, telemetry).
 - **Canvas icon**: a line-art glyph from the Icons catalogue placed on the canvas (`shape: 'icon'`), or shown as a palette thumbnail.
-- **Technology tile**: a coloured tile with a white generic glyph ([Technology icons](../010-palette/technology-icons.md)).
 - **Art**: pictures that are not icons: marketing feature art, background-pattern thumbnails, style swatches, effect previews, brand marks. Art is outside this grammar.
 
 ## Source
@@ -53,22 +52,16 @@ Every icon livedesign draws follows one grammar, so a glyph looks the same weigh
 
 - The Icons catalogue holds, besides the editor's general glyphs (people, devices, files, actions, furniture),
   subjects: food and drink, shops and money, travel, nature and weather, people and pets, learning, health, media and
-  work (`icon-catalog-3.ts`), each Lucide's glyph vendored through the manifest, so a page or diagram about a bakery, a
+  work (`icon-catalog-3.ts`), each Lucide's glyph vendored through the manifest, so a page about a bakery, a
   startup or a trip has an icon of its subject in the line-art set rather than an emoji. The palette's Icons tab browses them in their
   own categories: Food & Drink, Shopping & Money, Business, Travel, Nature & Weather, Life & Health, Learning &
   Media (the code-review glyphs in Tech, the verified shield in Security).
 
-## Technology tiles
-
-- Tiles keep generic glyphs; vendor trademarks are not used. Vercel's mark is replaced by a generic glyph for the same reason.
-- The white glyph on a tile follows the outline grammar at the chrome weight for the tile's rendered size.
-- Two services of the same provider never share a glyph.
-
 ## Guarding
 
 - A glyph's drawn geometry (bounding-box centre, stroke included) sits within 0.5px of its viewBox centre at its rendered size. Glyphs asymmetric by design (the play triangle) carry a named, logged exception.
-- Unit tests enforce the centring rule over the shared icons, the Icons catalogue, the technology tiles, the context-menu icons and the Settings category glyphs.
-- Unit tests pin the size steps: every context-menu icon at its step, every palette tile glyph at 18px, except the Plan card tiles (a card picture with its type's glyph on the face) at 26px.
+- Unit tests enforce the centring rule over the shared icons, the Icons catalogue, the context-menu icons and the Settings category glyphs.
+- Unit tests pin the size steps: every context-menu icon at its step, every palette tile glyph at 18px.
 - A lint rule rejects raw `<svg>` outside the icon homes and the art allow-list.
 - A contact sheet of every icon (`pnpm icons:sheet`) renders each glyph at 1x and 4x for review on demand. It is not a CI snapshot: pixel output varies across machines, and the code diff already carries the drawing.
 

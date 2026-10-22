@@ -25,17 +25,17 @@ design decision.
 
 ## Constants and configuration
 
-| Constant                        | Value                           | Where                          | Provenance                                       |
-| ------------------------------- | ------------------------------- | ------------------------------ | ------------------------------------------------ |
-| `LOAD_TIMEOUT_MS`               | `30_000`                        | `lib/load-progress.ts`         | Spec: 30 seconds                                 |
-| `AUTO_RELOAD_DELAY_MS`          | `1_500`                         | `lib/load-progress.ts`         | Default D63                                      |
-| `AUTO_RELOAD_WINDOW_MS`         | `600_000`                       | `lib/load-progress.ts`         | Spec: 10 minutes                                 |
+| Constant                        | Value                          | Where                          | Provenance                                       |
+| ------------------------------- | ------------------------------ | ------------------------------ | ------------------------------------------------ |
+| `LOAD_TIMEOUT_MS`               | `30_000`                       | `lib/load-progress.ts`         | Spec: 30 seconds                                 |
+| `AUTO_RELOAD_DELAY_MS`          | `1_500`                        | `lib/load-progress.ts`         | Default D63                                      |
+| `AUTO_RELOAD_WINDOW_MS`         | `600_000`                      | `lib/load-progress.ts`         | Spec: 10 minutes                                 |
 | `AUTO_RELOAD_KEY`               | `livedesign:load-auto-reloads` | sessionStorage                 | Default D64                                      |
-| `OFFLINE_STORE_OPEN_TIMEOUT_MS` | `4_000`                         | `lib/offline/offline-store.ts` | Spec: 4 seconds; = `INDEXED_DB_PROBE_TIMEOUT_MS` |
-| `SESSION_TOKEN_TIMEOUT_MS`      | `10_000`                        | `lib/api/core.ts`              | Spec: 10 seconds per attempt                     |
-| `GUEST_ID_PREFIX_LENGTH`        | `8`                             | `packages/ui/.../identity.ts`  | Spec: first 8 characters                         |
-| `COPIED_FOR_MS`                 | `2_000`                         | `BrowserRepairPanel.tsx`       | Default D65                                      |
-| `SLOW_AFTER_MS`                 | `10_000`                        | `DocumentLoading.tsx`          | Unchanged                                        |
+| `OFFLINE_STORE_OPEN_TIMEOUT_MS` | `4_000`                        | `lib/offline/offline-store.ts` | Spec: 4 seconds; = `INDEXED_DB_PROBE_TIMEOUT_MS` |
+| `SESSION_TOKEN_TIMEOUT_MS`      | `10_000`                       | `lib/api/core.ts`              | Spec: 10 seconds per attempt                     |
+| `GUEST_ID_PREFIX_LENGTH`        | `8`                            | `packages/ui/.../identity.ts`  | Spec: first 8 characters                         |
+| `COPIED_FOR_MS`                 | `2_000`                        | `BrowserRepairPanel.tsx`       | Default D65                                      |
+| `SLOW_AFTER_MS`                 | `10_000`                       | `DocumentLoading.tsx`          | Unchanged                                        |
 
 ## Behaviour and state
 
@@ -101,9 +101,7 @@ Invariant: on every path the bootstrap leaves `loadingDocument` false or the wat
 - Writes one sessionStorage key, `AUTO_RELOAD_KEY` (page → time map, entries older than the window
   dropped by `claimReloadIn`).
 - A repair removes keys; it never writes. Scope: keys starting `livedesign:` or `livedesign-`.
-  Kept: `REPAIR_KEPT_KEYS` (the four guest-identity keys, `collab-key`, `collab-secret`) and
-  `REPAIR_KEPT_PREFIXES` (`livedesign:v2:drive-`, `livedesign:drive-mirror`). IndexedDB and cookies
-  are never touched.
+  Kept: `REPAIR_KEPT_KEYS` (the four guest-identity keys, `collab-key`). IndexedDB and cookies are never touched.
 - The browser probe opens and deletes its own database, `livedesign-probe`.
 
 ## Errors and edge cases

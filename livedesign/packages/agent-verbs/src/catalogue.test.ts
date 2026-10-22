@@ -29,7 +29,6 @@ import {
   apiCall,
   telemetryOn,
   exportAll,
-  graphRender,
   pull,
   push,
   tabRender,
@@ -101,8 +100,6 @@ describe('the catalogue', () => {
     expect(counted).not.toContain('telemetry.off');
     expect(counted).toContain('tab.view');
     expect(VERBS.filter((v) => v.offline).map((v) => v.id)).toEqual([
-      'graph.lint',
-      'graph.render',
       'guide',
       'skill.print',
       'skill.install',
@@ -217,10 +214,7 @@ describe('the verbs the CLI handles', () => {
       1,
     ]);
     expect([pull.text!({ paths: ['a'] }), pull.quiet!({ paths: ['a'] })]).toEqual([['a'], ['a']]);
-    expect([tabRender.text!({ lines: ['p'] }), graphRender.text!({ lines: ['q'] })]).toEqual([
-      ['p'],
-      ['q'],
-    ]);
+    expect(tabRender.text!({ lines: ['p'] })).toEqual(['p']);
     expect(exportAll.text!({ paths: ['a'], documents: 1, exit: 0 })).toEqual([
       'a',
       '1 document · 1 file',

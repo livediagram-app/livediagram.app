@@ -5,7 +5,7 @@ import { inkSwatch, shownColour } from './ink-row';
 const el = (type: string, over: Record<string, unknown> = {}): Element =>
   ({ id: 'e', type, x: 0, y: 0, width: 9, height: 9, ...over }) as unknown as Element;
 
-// docs/specs/007-editor/editor-modes.md "One look": the element menu offers Ink where the element
+// docs/specs/008-canvas/canvas-and-palette.md "Colours": the element menu offers Ink where the element
 // can store it by name, and shows a stored name in its version for the canvas.
 describe('inkSwatch', () => {
   it('offers Ink on the lines and text that store it by name', () => {

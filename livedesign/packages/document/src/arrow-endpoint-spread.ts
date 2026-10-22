@@ -188,3 +188,21 @@ export function arrowEndpointSpread(
 ): Point {
   return spreadMapFor(elements).get(`${arrowId}:${end}`) ?? { x: 0, y: 0 };
 }
+
+/**
+ * The two points an arrow's line runs between: its anchors, slid along the edge by the converging-fan
+ * spread above. One resolution for the canvas and every export, so the two agree.
+ */
+export function spreadArrowEnds(
+  arrow: { id: ElementId; from: Endpoint; to: Endpoint },
+  elements: Element[] | ElementIndex,
+): { from: Point; to: Point } {
+  const from = endpointPosition(arrow.from, elements);
+  const to = endpointPosition(arrow.to, elements);
+  const fromSpread = arrowEndpointSpread(arrow.id, 'from', elements);
+  const toSpread = arrowEndpointSpread(arrow.id, 'to', elements);
+  return {
+    from: { x: from.x + fromSpread.x, y: from.y + fromSpread.y },
+    to: { x: to.x + toSpread.x, y: to.y + toSpread.y },
+  };
+}

@@ -7,7 +7,7 @@ import { useCallback, useEffect, useRef } from 'react';
 // can drag the element (docs/specs/008-canvas/canvas-and-palette.md#touch-ios--ipad).
 // That turns the browser's own touch scrolling off, so this puts it back by
 // hand, but ONLY for a finger that lands on the content: the cards inside
-// (a Q&A note, a comment). A finger on the body's own padding or the gaps
+// (an idea, a comment). A finger on the body's own padding or the gaps
 // between cards, like one on the header or footer, still drags the element,
 // and so does any finger when there is nothing to scroll. Mouse and pen are
 // untouched: a wheel already scrolls the body.

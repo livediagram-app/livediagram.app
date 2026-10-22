@@ -22,7 +22,7 @@ Scope, by file:
 | `packages/document/src/element-fingerprint.ts`                                     | `canonicalElementJson`, `elementFingerprint`                                                                                       |
 | `packages/document/src/comments.ts`                                                | Exports `LIVE_ELEMENT_FIELDS`; `opForTheWire` strips comment author ids from a `changeset` op                                      |
 | `packages/document/src/element-ops.ts`                                             | `invertElementOps(before, ops)`, shared by the engine and the revert                                                               |
-| `apps/api/migrations/0067_agent_changesets.sql`                                    | `tabs.rev`, the `tabs_rev_advances` trigger, `agent_changesets`, `agent_changeset_parts`                                           |
+| `apps/api/migrations/0001_livedesign_baseline.sql`                                 | `tabs.rev`, the `tabs_rev_advances` trigger, `agent_changesets`, `agent_changeset_parts`                                           |
 | `apps/api/src/tab-row.ts`                                                          | `TabRow.rev`; `rowToTab` returns it                                                                                                |
 | `apps/api/src/db/tabs.ts`                                                          | `getTab` reads `rev`; `upsertTab`, `seedTabs`, `swapTabData` advance it; new `upsertTabAtRev`, `renameTab`                         |
 | `apps/api/src/db/documents.ts`                                                     | The copy's tab insert starts at `rev` 1                                                                                            |
@@ -50,7 +50,7 @@ Scope, by file:
 | `apps/api/src/room-selections.ts`                                                  | `RoomSelectionStore`: each session's selection in DO storage                                                                       |
 | `apps/api/src/person-tag.ts`, `db/ws-tickets.ts`, `routes/document-room-routes.ts` | The person tag ([agent presence](agent-presence.md)): minted into the ticket, forwarded on the upgrade                             |
 | `apps/api/src/document-room.ts`, `room-internal.ts`                                | `/mutation` accepts `changeset` and `tab-meta`; `GET /selections`; `select` recorded; close prunes                                 |
-| `apps/api/src/responses.ts`                                                        | CORS allows `X-Changeset-Seen`, `X-Livedesign-Client`; exposes `ETag`                                                             |
+| `apps/api/src/responses.ts`                                                        | CORS allows `X-Changeset-Seen`, `X-Livedesign-Client`; exposes `ETag`                                                              |
 | `apps/api/src/openapi/{manifest,document}.ts`, `scripts/gen-openapi-schemas`       | The five routes, `Tab.rev`, the header, the error bodies, the PUT's 405                                                            |
 | `apps/mcp/src/changeset-client.ts`                                                 | `submitChangeset`, `mcpOpsToEditOperations`, `changesetErrorText`                                                                  |
 | `apps/mcp/src/tools.ts`, `schema.ts`, `output-schema.ts`, `api.ts`                 | `add_tab`, `update_document` on changesets; `rename_document` on the name route; `rev`; the client header                          |
@@ -74,33 +74,33 @@ Scope, by file:
 
 ## Domain and naming
 
-| Term                 | Identifier                                                                   | Meaning                                                                       |
-| -------------------- | ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| Changeset            | `agent_changesets` row, `ChangesetRecord`, room op `changeset`               | One write to one tab through the changeset route                              |
-| Changeset id         | `id`, `cs_` + 10 Crockford base32, `CHANGESET_ID_PATTERN`                    | Minted by the api (CS7)                                                       |
-| Part                 | `agent_changeset_parts` row, `part` = `ops` \| `inverse` \| `results`        | One large body of a changeset, beside its record                              |
-| Agent changeset      | `token_id IS NOT NULL`, `agent: true` on the wire                            | One a token submitted                                                         |
-| Author               | `author_id`, `author_name`, `author_color`                                   | The resolved owner of the request; the token's owner for an agent             |
-| Edit operation       | `EditOperation` (engine)                                                     | One step of the body                                                          |
-| Replace              | `ChangesetRequest.replace` (`ReplaceBody`)                                   | The whole-tab body                                                            |
+| Term                 | Identifier                                                                  | Meaning                                                                       |
+| -------------------- | --------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| Changeset            | `agent_changesets` row, `ChangesetRecord`, room op `changeset`              | One write to one tab through the changeset route                              |
+| Changeset id         | `id`, `cs_` + 10 Crockford base32, `CHANGESET_ID_PATTERN`                   | Minted by the api (CS7)                                                       |
+| Part                 | `agent_changeset_parts` row, `part` = `ops` \| `inverse` \| `results`       | One large body of a changeset, beside its record                              |
+| Agent changeset      | `token_id IS NOT NULL`, `agent: true` on the wire                           | One a token submitted                                                         |
+| Author               | `author_id`, `author_name`, `author_color`                                  | The resolved owner of the request; the token's owner for an agent             |
+| Edit operation       | `EditOperation` (engine)                                                    | One step of the body                                                          |
+| Replace              | `ChangesetRequest.replace` (`ReplaceBody`)                                  | The whole-tab body                                                            |
 | Element op           | `ElementOp` (`@livedesign/document`)                                        | The compiled unit the room and editors apply                                  |
-| Inverse              | `inverse`                                                                    | Element ops that undo it, from the before-images                              |
-| Tab revision         | `tabs.rev`, `TabRecord.rev`, `ETag: W/"<rev>"`                               | Advanced by every write of the tab                                            |
-| Base                 | `ChangesetBase { rev, elements? }`                                           | The revision read and the fingerprints of the targets as read                 |
-| Fingerprint          | `elementFingerprint(element)`                                                | 16 hex characters over the canonical element, live fields left out (CS6)      |
-| Live fields          | `LIVE_ELEMENT_FIELDS`                                                        | Multi-writer fields (comments, answers, ...) a fingerprint ignores            |
-| Before / after image | `fingerprints.before[id]`, `fingerprints.after[id]`                          | An element as the changeset found it / left it                                |
-| Target               | `targets` (engine `OperationTargets[]`), `createdIds`                        | Ids an operation addressed by selector; never a make-room shift               |
-| Held                 | `HeldElement { id, by: { name, color } }`, `409 elements_held`               | Selected by a person in an open editor, other than the agent's owner          |
-| Person tag           | `personTagFor(documentId, ownerId)`, attachment `personTag`                  | The room's opaque stand-in for an owner ([agent presence](agent-presence.md)) |
-| Seen revision        | `X-Changeset-Seen`, `ChangesetSeen`                                          | The highest changeset revision an editor has applied to a tab                 |
-| Merge on save        | `mergeChangesetsIntoSave`                                                    | Step 8 of the spec                                                            |
-| Superseded           | `superseded` count                                                           | A changeset's version not taken because a person changed it after             |
-| Revert               | `POST .../changesets/:id/revert`, `planRevert`, `revert_of`                  | The inverse as a new changeset                                                |
-| Kept                 | `kept: { id, reason }[]`                                                     | An element a revert leaves because it changed since                           |
-| Reveal               | `ChangesetRevealOverlay`, `CHANGESET_REVEAL_MS`                              | The outline in the author's colour                                            |
+| Inverse              | `inverse`                                                                   | Element ops that undo it, from the before-images                              |
+| Tab revision         | `tabs.rev`, `TabRecord.rev`, `ETag: W/"<rev>"`                              | Advanced by every write of the tab                                            |
+| Base                 | `ChangesetBase { rev, elements? }`                                          | The revision read and the fingerprints of the targets as read                 |
+| Fingerprint          | `elementFingerprint(element)`                                               | 16 hex characters over the canonical element, live fields left out (CS6)      |
+| Live fields          | `LIVE_ELEMENT_FIELDS`                                                       | Multi-writer fields (comments, answers, ...) a fingerprint ignores            |
+| Before / after image | `fingerprints.before[id]`, `fingerprints.after[id]`                         | An element as the changeset found it / left it                                |
+| Target               | `targets` (engine `OperationTargets[]`), `createdIds`                       | Ids an operation addressed by selector; never a make-room shift               |
+| Held                 | `HeldElement { id, by: { name, color } }`, `409 elements_held`              | Selected by a person in an open editor, other than the agent's owner          |
+| Person tag           | `personTagFor(documentId, ownerId)`, attachment `personTag`                 | The room's opaque stand-in for an owner ([agent presence](agent-presence.md)) |
+| Seen revision        | `X-Changeset-Seen`, `ChangesetSeen`                                         | The highest changeset revision an editor has applied to a tab                 |
+| Merge on save        | `mergeChangesetsIntoSave`                                                   | Step 8 of the spec                                                            |
+| Superseded           | `superseded` count                                                          | A changeset's version not taken because a person changed it after             |
+| Revert               | `POST .../changesets/:id/revert`, `planRevert`, `revert_of`                 | The inverse as a new changeset                                                |
+| Kept                 | `kept: { id, reason }[]`                                                    | An element a revert leaves because it changed since                           |
+| Reveal               | `ChangesetRevealOverlay`, `CHANGESET_REVEAL_MS`                             | The outline in the author's colour                                            |
 | Front door           | `frontDoorOf`, `X-Livedesign-Client`, type `Mcp` / `Cli` / `Api` / `Editor` | Which surface submitted it                                                    |
-| Server-stored        | `documentServerStored`                                                       | Saved on the server: has a room                                               |
+| Server-stored        | `documentServerStored`                                                      | Saved on the server: has a room                                               |
 
 Banned: "batch", "commit", "patch" for a changeset; "op" for an edit operation (an op is a room op); "version" or
 "etag" for the tab revision in copy and identifiers other than the header; "lock" for held (the selection lock is
@@ -230,7 +230,7 @@ rename sends (tabs in order, with their folders), through `/mutation`; a failure
 - The editor opens its room when `hydrated && documentId && documentServerStored`, where
   `documentServerStored = fetched.ownerId !== OFFLINE_OWNER_ID` (set in `useIdentityBootstrap`, false for a
   never-saved draft). `useRoomConnection` and `usePresenceBroadcast` use it. The presence streams
-  (`useEditorBroadcast`, `useDragPreviewBroadcast`), the presence rows and the poll audience keep the audience gate
+  (`useEditorBroadcast`, `useDragPreviewBroadcast`), and the presence rows keep the audience gate
   `documentShareable || documentTeamId`.
 
 ### The editor
@@ -301,7 +301,7 @@ submit answers the same 200 shape with `dryRun: true`, `changeset: null`; any ot
 type ChangesetBase = { rev: number; elements?: Record<string, string> }; // id -> fingerprint
 type ChangesetRequest = {
   operations?: unknown[] | string; // JSON form (validateEditOperations) or line form (parseEditOperations) (CS8)
-  replace?: ReplaceBody; // { graph | mermaid | template | elements, layout?, theme?, name? }; exactly one of the two
+  replace?: ReplaceBody; // { template | elements, layout?, theme?, name? }; exactly one of the two
   base?: ChangesetBase;
   strict?: boolean;
   summary?: string; // trimmed, control characters removed, at most CHANGESET_SUMMARY_MAX (CS10)
@@ -354,11 +354,11 @@ codes), `cap` (413), `message` (405, CS45). `now` elements pass `redactCommentAu
 
 ### Headers
 
-| Header                 | Direction              | Value                                          | Absent / invalid                                          |
-| ---------------------- | ---------------------- | ---------------------------------------------- | --------------------------------------------------------- |
-| `X-Changeset-Seen`     | editor → tab PUT       | decimal integer 0 to `Number.MAX_SAFE_INTEGER` | window rule; invalid also logs `[changeset] seen-invalid` |
+| Header                | Direction              | Value                                          | Absent / invalid                                          |
+| --------------------- | ---------------------- | ---------------------------------------------- | --------------------------------------------------------- |
+| `X-Changeset-Seen`    | editor → tab PUT       | decimal integer 0 to `Number.MAX_SAFE_INTEGER` | window rule; invalid also logs `[changeset] seen-invalid` |
 | `X-Livedesign-Client` | MCP, CLI, editor → api | `mcp`, `cli` or `editor`                       | front door `Api` (CS25)                                   |
-| `ETag`                 | api → tab GET          | `W/"<rev>"`                                    | never absent                                              |
+| `ETag`                | api → tab GET          | `W/"<rev>"`                                    | never absent                                              |
 
 ### Room
 
@@ -416,10 +416,10 @@ before)`. Derived by diffing back rather than op by op, so removes, adds and a r
 ### MCP
 
 - No tool does a whole-tab save.
-- `add_tab`: `POST .../tabs/<newTabId>/changesets` with `{ replace: { template | graph | mermaid | elements,
+- `add_tab`: `POST .../tabs/<newTabId>/changesets` with `{ replace: { template | elements,
 layout, theme, name } }`, no base; then reads the tab to render the PNG (CS36). Structured output gains
   `changesetId`, `rev`, `text`, `lint`.
-- `update_document` `replace`: `{ replace: { graph | mermaid | elements, layout } }`, no base.
+- `update_document` `replace`: `{ replace: { elements, layout } }`, no base.
 - `update_document` `ops`: `mcpOpsToEditOperations(args.ops)` in the JSON form: `add` → `add` of the whole element; `update` → `set` with the element's given fields; `remove` → `rm` (pinned arrows go too and are listed). `elementId` is an id or a ref as `read_document` prints it, resolved with `resolveRef` against the loaded tab; the target is that element's always-safe `id:"…"` ref, and a word naming nothing goes as given for the engine to refuse (EO54). Base: `{ rev: args.rev ?? loaded.rev, elements }` with the fingerprints of the elements the ops name, from the tab the tool loads at call time. Input gains optional `rev`, the revision `read_document` returned.
 - `rename_document` with `tabId`: `PUT .../tabs/:tabId/name { name }`.
 - A 4xx from the route returns `errorResult(changesetErrorText(err))` (the route's `text` or `message`, never
@@ -557,10 +557,6 @@ rows wait with their document and go with its purge (cascade). A tab unlinked fr
   `CHANGESET_MAX_OPERATIONS`, `MAX_BODY_BYTES` and `CHANGESET_PART_MAX_BYTES` bound the work; `MAX_SELECTION_IDS`
   bounds a hostile `select`.
 - A forged `X-Changeset-Seen` can only make its own save drop or keep changesets; it reaches no other tab.
-- A `replace` compiles graph and Mermaid text from any token holder inside the worker, so the label cap and the
-  Mermaid parser read it in linear time: no pattern that backtracks over a run of one character
-  (`packages/document/src/mermaid-scan.ts`; `graph-input-redos.test.ts` times growth and checks each scan
-  against the pattern it replaced).
 
 ## Performance and limits
 
@@ -711,25 +707,25 @@ keeps it, and Undo reverts it.
 
 In `packages/api-schema/src/changesets.ts` (CS35):
 
-| Constant                         | Value                  | Provenance                                           | Safe range        |
-| -------------------------------- | ---------------------- | ---------------------------------------------------- | ----------------- |
-| `CHANGESET_MAX_OPERATIONS`       | 500                    | Spec                                                 | 100 to 2,000      |
-| `CHANGESET_RELAY_MAX_BYTES`      | 196,608                | Spec (192 KiB, under the 256 KiB frame)              | 64 KiB to 224 KiB |
-| `CHANGESET_MERGE_WINDOW_MS`      | 600,000                | Spec (10 minutes)                                    | 5 to 60 minutes   |
-| `CHANGESET_RETENTION_DAYS`       | 30                     | Spec (matches `TRASH_RETENTION_DAYS`)                | 7 to 90           |
-| `CHANGESET_REVEAL_MS`            | 2,000                  | Spec                                                 | 1,000 to 5,000    |
-| `CHANGESET_TOAST_COALESCE_MS`    | 10,000                 | Spec                                                 | 2,000 to 60,000   |
-| `CHANGESET_SUMMARY_MAX`          | 80                     | Spec                                                 | 40 to 200         |
-| `CHANGESET_PART_MAX_BYTES`       | 1,991,808              | `MAX_TAB_BYTES`: one D1 row per part (CS43)          | fixed by D1       |
-| `CHANGESET_MERGE_PAGE`           | 20                     | CS18                                                 | 5 to 50           |
-| `CHANGESET_LIST_DEFAULT`, `_MAX` | 20, 100                | CS26                                                 | 10 to 500         |
-| `CHANGESET_ID_LENGTH`            | 10                     | Spec; 50 bits                                        | 10 to 16          |
-| `ELEMENT_FINGERPRINT_LENGTH`     | 16                     | CS6 (64 bits)                                        | 12 to 32          |
-| `ROOM_SELECTIONS_TIMEOUT_MS`     | 1,500                  | CS20                                                 | 500 to 5,000      |
-| `ROOM_RELAY_TIMEOUT_MS`          | 2,000                  | CS20                                                 | 500 to 5,000      |
-| `MAX_SELECTION_IDS`              | 500                    | CS38                                                 | 100 to 2,000      |
-| `TAB_SAVE_CAS_ATTEMPTS`          | 2                      | Spec's "once" for changesets, applied to saves (CS4) | 2 to 3            |
-| `CHANGESET_SEEN_HEADER`          | `X-Changeset-Seen`     | Spec                                                 | fixed             |
+| Constant                         | Value                 | Provenance                                           | Safe range        |
+| -------------------------------- | --------------------- | ---------------------------------------------------- | ----------------- |
+| `CHANGESET_MAX_OPERATIONS`       | 500                   | Spec                                                 | 100 to 2,000      |
+| `CHANGESET_RELAY_MAX_BYTES`      | 196,608               | Spec (192 KiB, under the 256 KiB frame)              | 64 KiB to 224 KiB |
+| `CHANGESET_MERGE_WINDOW_MS`      | 600,000               | Spec (10 minutes)                                    | 5 to 60 minutes   |
+| `CHANGESET_RETENTION_DAYS`       | 30                    | Spec (matches `TRASH_RETENTION_DAYS`)                | 7 to 90           |
+| `CHANGESET_REVEAL_MS`            | 2,000                 | Spec                                                 | 1,000 to 5,000    |
+| `CHANGESET_TOAST_COALESCE_MS`    | 10,000                | Spec                                                 | 2,000 to 60,000   |
+| `CHANGESET_SUMMARY_MAX`          | 80                    | Spec                                                 | 40 to 200         |
+| `CHANGESET_PART_MAX_BYTES`       | 1,991,808             | `MAX_TAB_BYTES`: one D1 row per part (CS43)          | fixed by D1       |
+| `CHANGESET_MERGE_PAGE`           | 20                    | CS18                                                 | 5 to 50           |
+| `CHANGESET_LIST_DEFAULT`, `_MAX` | 20, 100               | CS26                                                 | 10 to 500         |
+| `CHANGESET_ID_LENGTH`            | 10                    | Spec; 50 bits                                        | 10 to 16          |
+| `ELEMENT_FINGERPRINT_LENGTH`     | 16                    | CS6 (64 bits)                                        | 12 to 32          |
+| `ROOM_SELECTIONS_TIMEOUT_MS`     | 1,500                 | CS20                                                 | 500 to 5,000      |
+| `ROOM_RELAY_TIMEOUT_MS`          | 2,000                 | CS20                                                 | 500 to 5,000      |
+| `MAX_SELECTION_IDS`              | 500                   | CS38                                                 | 100 to 2,000      |
+| `TAB_SAVE_CAS_ATTEMPTS`          | 2                     | Spec's "once" for changesets, applied to saves (CS4) | 2 to 3            |
+| `CHANGESET_SEEN_HEADER`          | `X-Changeset-Seen`    | Spec                                                 | fixed             |
 | `CLIENT_HEADER`                  | `X-Livedesign-Client` | CS25                                                 | fixed             |
 
 No new binding or environment variable; self-hosting needs only the migration. Staging needs no `[env.staging]`

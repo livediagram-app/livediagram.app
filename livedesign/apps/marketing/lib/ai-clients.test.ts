@@ -87,7 +87,7 @@ describe('one-click install links', () => {
 
 describe('starter prompts', () => {
   it('name livedesign, so the AI picks the right tool', () => {
-    expect(STARTER_PROMPTS.length).toBe(6);
+    expect(STARTER_PROMPTS.length).toBe(5);
     for (const p of STARTER_PROMPTS) expect(p.prompt).toMatch(/livedesign/);
   });
 });

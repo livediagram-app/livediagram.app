@@ -52,18 +52,12 @@ const KEYS = {
   // signal (docs/specs/017-telemetry/telemetry.md) so a returning visitor counts once per UTC day,
   // not once per page load. Written by lib/daily-return.ts only.
   lastActiveDay: `${NS}last-active-day`,
-  // Per-browser random used as the participant id in anything the
-  // DOCUMENT records per person — the `responses` on a done check,
-  // estimate card or temperature check (docs/specs/012-collaboration/participant-responses.md).
+  // Per-browser random that ties this browser's tabs together in presence (one person, one avatar).
   //
-  // Deliberately NOT `selfId`: that is the guest's owner id, an
-  // `X-Owner-Id` credential, and writing it into a shared document would
-  // hand it to every co-viewer. Deliberately not the room's presence id
-  // either — that one is minted per socket (docs/specs/015-api/public-api-and-tokens.md §6), so it changes
-  // on reconnect and matches nothing that was saved. This sits between
-  // the two: stable like the owner id, worthless like the presence id.
+  // Deliberately NOT `selfId`: that is the guest's owner id, an `X-Owner-Id` credential, and publishing it would hand
+  // it to every co-viewer. Deliberately not the room's presence id either: that one is minted per socket
+  // (docs/specs/015-api/public-api-and-tokens.md §6), so it changes on every reconnect and tab.
   collabKey: `${NS}collab-key`,
-  collabSecret: `${NS}collab-secret`,
 } as const;
 
 // The keys, for the guard that every one a browser repair must keep is on its kept list
@@ -172,30 +166,13 @@ export function reportParticipantCreated(): void {
   track('Participant', 'Created');
 }
 
-// Read the existing document-write key, or mint + persist a fresh one
-// (see KEYS.collabKey). Called wherever a per-participant answer is
-// written or matched, so both ends of that join always agree.
-//
-// Same SSR-safe fallback as the guest id above: with storage
-// unavailable the mint still returns a usable one-shot value, and the
-// only cost is that this browser's own answers don't survive a reload —
-// which is exactly what happens to its documents too.
+// Read this browser's key, or mint and persist a fresh one (see KEYS.collabKey). With storage unavailable the mint
+// still returns a usable one-shot value; the only cost is that this tab shows as its own avatar.
 export function ensureCollabKey(): string {
   const stored = readLocalStorageSafe(KEYS.collabKey);
   if (stored) return stored;
   const fresh = crypto.randomUUID();
   writeLocalStorageSafe(KEYS.collabKey, fresh);
-  return fresh;
-}
-
-// The secret half of the collab key (docs/specs/012-collaboration/vote-integrity.md): a per-browser random that
-// proves a live poll answer under our collab key is ours. The key is public (it rides the roster); this never leaves
-// the browser except inside our own poll answers, which the room checks and never relays.
-export function ensureCollabSecret(): string {
-  const stored = readLocalStorageSafe(KEYS.collabSecret);
-  if (stored) return stored;
-  const fresh = crypto.randomUUID();
-  writeLocalStorageSafe(KEYS.collabSecret, fresh);
   return fresh;
 }
 

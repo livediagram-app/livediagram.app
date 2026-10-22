@@ -2,12 +2,7 @@
 // a definition, a token of its own, and steps that end on a closing card.
 
 import { describe, expect, it, vi } from 'vitest';
-import {
-  applyShapeVariant,
-  createShape,
-  type Element,
-  type ShapeElement,
-} from '@livedesign/document';
+import { applyShapeVariant, createShape, type Element } from '@livedesign/document';
 import { ELEMENT_TOUR_KINDS } from '@/lib/element-tours';
 import { ELEMENT_TOUR_DEFS, elementTourStepTelemetryType } from './element-tour-defs';
 import type { ElementTourApi } from './element-tour-api';
@@ -22,22 +17,9 @@ const SAMPLE: Record<(typeof ELEMENT_TOUR_KINDS)[number], Element> = {
   onion: createShape('onion', 0, 0),
   chevrons: createShape('chevrons', 0, 0),
   timeline: createShape('timeline-rail', 0, 0),
-  'mind-node': createShape('mind-node', 0, 0),
-  flowchart: { ...createShape('square', 0, 0), flowchartId: 'f1' },
-  'org-chart': {
-    ...createShape('mind-node', 0, 0),
-    mindLook: 'person',
-    label: 'Ana Kim',
-  },
-  sequence: createShape('sequence', 0, 0),
   chart: createShape('line-chart', 0, 0),
   stack: createShape('stack', 0, 0),
-  entity: createShape('entity', 0, 0),
   'tab-window': createShape('tab-window', 0, 0),
-  lane: createShape('lane', 0, 0),
-  boundary: createShape('boundary', 0, 0),
-  'diagram-key': createShape('diagram-key', 0, 0),
-  portal: createShape('portal', 0, 0),
 };
 
 describe('ELEMENT_TOUR_DEFS', () => {
@@ -62,12 +44,6 @@ describe('ELEMENT_TOUR_DEFS', () => {
     },
   );
 
-  it('puts away the Sequence dialog on Done', () => {
-    const api = { closeSequence: vi.fn() } as unknown as ElementTourApi;
-    ELEMENT_TOUR_DEFS.sequence.onDone?.(api);
-    expect(api.closeSequence).toHaveBeenCalled();
-  });
-
   it('puts away the Chart Data dialog on Done', () => {
     const api = { closeChartData: vi.fn() } as unknown as ElementTourApi;
     ELEMENT_TOUR_DEFS.chart.onDone?.(api);
@@ -90,17 +66,12 @@ describe('ELEMENT_TOUR_DEFS', () => {
     ).toContain('drop');
   });
 
-  it('reads a chart as its own type, and a sheet chart as having no data of its own', () => {
+  it('reads a chart as its own type', () => {
     const pie = createShape('pie-chart', 0, 0) as Element;
     const env = { hasMore: true, touch: false, elements: [pie] };
     expect(ELEMENT_TOUR_DEFS.chart.steps(pie, env)[0]!.body).toContain('Pie chart');
     const line = createShape('line-chart', 0, 0);
     expect(ELEMENT_TOUR_DEFS.chart.steps(line, env).map((s) => s.id)).toContain('data');
-    const fromSheet: ShapeElement = {
-      ...line,
-      chartSource: { sheetId: 's', range: { r1: 'a', c1: 'a', r2: 'b', c2: 'b' } },
-    };
-    expect(ELEMENT_TOUR_DEFS.chart.steps(fromSheet, env).map((s) => s.id)).not.toContain('data');
   });
 
   it('puts away the Sankey Flows dialog on Done', () => {

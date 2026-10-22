@@ -250,7 +250,7 @@ export function refsOf(state: EditState): RefTable {
   return state.memo.refs;
 }
 
-// Each working element's container (the smallest frame or lane holding its centre), or null.
+// Each working element's container (the smallest frame or stack holding its centre), or null.
 export function holdersOf(state: EditState): ReadonlyMap<ElementId, ElementId | null> {
   state.memo.holders ??= deriveContainers(currentElements(state));
   return state.memo.holders;

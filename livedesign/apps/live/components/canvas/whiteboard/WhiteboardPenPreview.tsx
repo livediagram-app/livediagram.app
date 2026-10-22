@@ -18,7 +18,7 @@ type WhiteboardPenPreviewProps = {
   zoom: number;
 };
 
-// What a whiteboard pen shows while it draws (docs/specs/023-draw-mode/draw-mode.md "Pens",
+// What a whiteboard pen shows while it draws (docs/specs/023-draw-mode/drawing-tools.md "Markers",
 // "Shape recognition"), rendered INSIDE the canvas's transformed layer beside the committed
 // elements, in canvas px: the live ink, laid out as the stroke it lands as, and, with recognition
 // on and the pen held still (or Alt pressed), the shape the stroke reads as in its place, and on a
@@ -26,10 +26,10 @@ type WhiteboardPenPreviewProps = {
 // lands, so release changes no pixel.
 export function WhiteboardPenPreview({ stroke, pen, ink, zoom }: WhiteboardPenPreviewProps) {
   // A named colour in its version for this board, as the stroke that lands is drawn.
-  // The canvas the stock colours are drawn for (docs/specs/007-editor/editor-modes.md "One look").
+  // The canvas the stock colours are drawn for (docs/specs/023-draw-mode/path-tool.md "Style").
   const appearance = useCanvasSurface();
   const colour = penColourCss(pen.colour, appearance, ink);
-  const { shape: recognised, chip } = useRecognitionPreview(stroke, pen.recognise, zoom, pen.width);
+  const { shape: recognised, chip } = useRecognitionPreview(stroke, zoom, pen.width);
   return (
     <>
       <LiveInk stroke={stroke} colour={colour} width={pen.width} hidden={!!recognised} />

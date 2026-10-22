@@ -2,8 +2,7 @@ import { useEffect, useEffectEvent, useState, type RefObject } from 'react';
 import { snapResizeBounds, snapToAlignment, snapToArrowPoint } from '@livedesign/document';
 import { ARROW_SNAP_THRESHOLD_PX, pointerToCanvas, snapLeadingAxis } from '@/lib/canvas';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
-import { isFreePenIntent, isPlanCardIntent, isWhiteboardPenIntent } from '@/lib/draw-mode';
-import { usePlanCardPlacingGap } from '@/hooks/plan/usePlanCardPlacingGap';
+import { isWhiteboardPenIntent } from '@/lib/draw-mode';
 import { useWhiteboardPenGesture } from '@/components/canvas/useWhiteboardPenGesture';
 import { beginCanvasGesture } from '@/lib/canvas-gesture';
 
@@ -18,8 +17,6 @@ type CanvasDrawGestureDeps = Pick<
   // The zoom now (CanvasView reads it from the viewport store).
   viewportZoom: number;
   wrapperRef: RefObject<HTMLDivElement | null>;
-  // On a whiteboard (Draw mode) a pen draws freely; elsewhere a marker lines up like the pencil.
-  whiteboard: boolean;
 };
 
 // Canvas draw-to-size + freehand pen gesture, lifted out of Canvas.tsx. Owns
@@ -36,7 +33,6 @@ export function useCanvasDrawGesture({
   isPinchingRef,
   onCommitDraw,
   onCommitFreehand,
-  whiteboard,
 }: CanvasDrawGestureDeps) {
   // Draw-to-size gesture state. Set when the user starts a drag on
   // the canvas while pendingDraw is set; cleared on pointer-up
@@ -65,15 +61,14 @@ export function useCanvasDrawGesture({
   const drawing = drawDrag !== null || penPoints !== null;
   useEffect(() => (drawing ? beginCanvasGesture('stroke') : undefined), [drawing]);
 
-  // A whiteboard pen draws through the live stroke pipeline instead (its own hook: coalesced
-  // samples, no React state per sample; docs/specs/023-draw-mode/draw-mode.md "Pens").
+  // A marker draws through the live stroke pipeline instead (its own hook: coalesced samples, no
+  // React state per sample; docs/specs/023-draw-mode/drawing-tools.md "Markers").
   const { penStroke, beginWhiteboardStroke } = useWhiteboardPenGesture({
     pendingDraw,
     wrapperRef,
     viewportZoom,
     isPinchingRef,
     onCommitFreehand,
-    whiteboard,
   });
 
   // Snap a draw gesture's START point to nearby element edge / centre
@@ -104,14 +99,9 @@ export function useCanvasDrawGesture({
     const rect = wrapperRef.current?.getBoundingClientRect();
     if (!rect) return false;
     const { x: sx, y: sy } = pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom);
-    if (isPlanCardIntent(pendingDraw)) {
-      // A pressed Plan card lands in the column under the press, exactly there: no snap, no drag
-      // (docs/specs/026-plan/plan-mode.md "The palette").
-      onCommitDraw(pendingDraw, sx, sy, sx, sy);
-    } else if (isWhiteboardPenIntent(pendingDraw)) {
-      // A whiteboard pen starts where it touches (no guides for pens); off a whiteboard a marker
-      // starts from an aligned point, as the pencil does.
-      beginWhiteboardStroke(e, whiteboard ? { x: sx, y: sy } : snapDrawStart(sx, sy));
+    if (isWhiteboardPenIntent(pendingDraw)) {
+      // A marker starts from an aligned point, as the pencil does.
+      beginWhiteboardStroke(e, snapDrawStart(sx, sy));
     } else if (pendingDraw.type === 'freehand') {
       // Snap the first stroke point to nearby alignments (same as a shape's
       // first corner) so the sketch can begin from an aligned start.
@@ -132,15 +122,7 @@ export function useCanvasDrawGesture({
   // in CanvasChrome) appears exactly when the start would latch.
   const [drawHover, setDrawHover] = useState<{ x: number; y: number } | null>(null);
   // The corner-snap dot is for shapes drawn to size. Out of that state, the dot goes at once.
-  // A whiteboard pen draws freely: no start snap, so no dot either.
-  const hoverSnaps =
-    !!pendingDraw &&
-    !drawDrag &&
-    !penPoints &&
-    !isFreePenIntent(pendingDraw, whiteboard) &&
-    !isPlanCardIntent(pendingDraw);
-  // A pressed Plan card opens the gap where it would land as the pointer crosses a board.
-  usePlanCardPlacingGap(isPlanCardIntent(pendingDraw) ? (pendingDraw.plan ?? 'task') : null);
+  const hoverSnaps = !!pendingDraw && !drawDrag && !penPoints;
   if (!hoverSnaps && drawHover) setDrawHover(null);
   useEffect(() => {
     if (!hoverSnaps) return;

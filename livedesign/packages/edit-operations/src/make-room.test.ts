@@ -146,24 +146,6 @@ describe('make room', () => {
     ]);
   });
 
-  it('grows a mind map parent no room, but still makes room past it', () => {
-    const flow = checkoutFlow();
-    const mind = flow.elements.map((el) =>
-      el.id === 'n5'
-        ? ({ ...el, shape: 'mind-node', mindParentId: 'n4' } as Element)
-        : el.id === 'n4'
-          ? ({ ...el, shape: 'mind-node' } as Element)
-          : el,
-    );
-    const out = applied(
-      run('connect n5 -> n6 again\nrm a5\ninsert square width=140 height=120 between n5 n6', {
-        ...flow,
-        elements: mind,
-      }),
-    ).tab;
-    expect(boxIn(out, 'n6')[1]).toBeGreaterThan(500);
-  });
-
   it('grows a container rightwards when the flow runs right', () => {
     const row = flowWith((el) => {
       if (el.id === 'f2') return { ...el, x: 200, y: 580, width: 400, height: 140 } as Element;

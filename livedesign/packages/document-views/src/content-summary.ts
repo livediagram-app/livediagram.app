@@ -1,25 +1,9 @@
 // What a content kind holds, briefly (docs/specs/024-agents/blueprints/document-views.md "Content
 // summaries", VW18 to VW21).
-import { ENTITY_KEY_LABELS, type Element } from '@livedesign/document';
-import { ENTITY_FIELDS_SHOWN } from './constants';
+import type { Element } from '@livedesign/document';
 import { arrayField, flagField, isObject, listOf, stringField } from './fields';
 import { cellText } from './text';
 import { shapeKindOf } from './view-attribute';
-
-function entitySummary(el: Element): string {
-  const fields = arrayField(el, 'entityFields').filter(isObject);
-  const shown = fields.slice(0, ENTITY_FIELDS_SHOWN).map((field) => {
-    const name = cellText(stringField(field, 'name') ?? '', true);
-    const type = stringField(field, 'type');
-    const key = stringField(field, 'key');
-    const typed = type ? `${name} ${cellText(type, true)}` : name;
-    return key && key in ENTITY_KEY_LABELS
-      ? `${typed} ${ENTITY_KEY_LABELS[key as keyof typeof ENTITY_KEY_LABELS]}`
-      : typed;
-  });
-  if (fields.length > ENTITY_FIELDS_SHOWN) shown.push(`+${fields.length - ENTITY_FIELDS_SHOWN}`);
-  return `{${shown.join('; ')}}`;
-}
 
 // Columns are the longest row's length (E26); the first row's missing cells print empty.
 function tableSummary(el: Element): string {
@@ -44,14 +28,6 @@ function checklistSummary(el: Element): string {
   return `done=${items.filter((item) => flagField(item, 'done')).length}/${items.length}`;
 }
 
-// A Plan board (docs/specs/026-plan/plan-board.md): its columns by name; its cards are items.
-function planBoardSummary(el: Element): string {
-  const setup = (el as { planBoard?: { columns?: unknown } }).planBoard;
-  const columns = Array.isArray(setup?.columns) ? setup.columns.filter(isObject) : [];
-  // Each name escaped as a table cell: a newline or `|` in a name never forges a line or a column.
-  return `columns=${columns.map((c) => cellText(stringField(c, 'name') ?? '?')).join('|')}`;
-}
-
 // A Sankey's size (docs/specs/009-elements/sankey.md): its flows, and the distinct node names they join.
 function sankeySummary(el: Element): string {
   const flows = arrayField(el, 'sankeyFlows').filter(isObject);
@@ -73,19 +49,8 @@ function conceptSummary(el: Element): string {
   return `rows=${labels}${variant ? ` variant=${cellText(variant)}` : ''}`;
 }
 
-// A sequence diagram (docs/specs/009-elements/sequence-diagram.md): its participants in order and its message count.
-function sequenceSummary(el: Element): string {
-  const people = arrayField(el, 'sequenceParticipants')
-    .filter(isObject)
-    .map((p) => cellText(stringField(p, 'label') ?? '?'))
-    .join('|');
-  return `participants=${people} messages=${arrayField(el, 'sequenceMessages').length}`;
-}
-
 export function contentSummaryOf(el: Element): string | null {
   switch (shapeKindOf(el)) {
-    case 'entity':
-      return entitySummary(el);
     case 'table':
       return tableSummary(el);
     case 'code-block':
@@ -107,24 +72,8 @@ export function contentSummaryOf(el: Element): string | null {
     case 'chevrons':
     case 'timeline-rail':
       return conceptSummary(el);
-    case 'sequence':
-      return sequenceSummary(el);
     case 'stack':
       return `direction=${cellText(stringField(el, 'stackDirection') ?? 'row')}`;
-    case 'plan-board':
-      return planBoardSummary(el);
-    case 'plan-card': {
-      const card = (el as { planCard?: { itemId?: unknown } }).planCard;
-      return `item=${typeof card?.itemId === 'string' && card.itemId ? cellText(card.itemId) : 'none'}`;
-    }
-    case 'plan-view': {
-      const view = (el as { planView?: { view?: unknown } }).planView?.view;
-      return `view=${typeof view === 'string' ? cellText(view) : 'none'}`;
-    }
-    case 'plan-sheet': {
-      const sheet = (el as { planSheet?: { sheetId?: unknown } }).planSheet;
-      return `sheet=${typeof sheet?.sheetId === 'string' && sheet.sheetId ? cellText(sheet.sheetId) : 'none'}`;
-    }
     default:
       return null;
   }

@@ -18,11 +18,11 @@ gave nobody a reason to tell them apart or click.
 | Link                                                                  | Title               | Description        | Image                  |
 | --------------------------------------------------------------------- | ------------------- | ------------------ | ---------------------- |
 | A working share link (`/document/shared?s=<code>`), no share password | The document's name | The share pitch    | The share card (below) |
-| A share link to a document with a share password                      | livedesign         | The editor's pitch | The brand card         |
-| An unknown, revoked or expired code; a trashed document               | livedesign         | The editor's pitch | The brand card         |
-| Any other editor address (`/document/<id>`, the Explorer, ...)        | livedesign         | The editor's pitch | The brand card         |
+| A share link to a document with a share password                      | livedesign          | The editor's pitch | The brand card         |
+| An unknown, revoked or expired code; a trashed document               | livedesign          | The editor's pitch | The brand card         |
+| Any other editor address (`/document/<id>`, the Explorer, ...)        | livedesign          | The editor's pitch | The brand card         |
 
-- **The share pitch** is `Open it in livedesign: diagrams, whiteboards and documents, made together.`
+- **The share pitch** is `Open it in livedesign: decks, infographics and articles, made together.`
 - **The editor's pitch** is the editor's own description, unchanged.
 - **The brand card** is the origin's shared Open Graph image (`/opengraph-image`, `/twitter-image`), the one the
   marketing site and the help centre use.

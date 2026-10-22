@@ -5,7 +5,7 @@ import { TOUR_GLIDE_MS } from './tour-motion';
 import type { TourStepOf } from './tour-step';
 import type { TourEngine } from './useTourEngine';
 
-// What the tour's card says and whether it is mid-glide (docs/specs/007-editor/editor-tour.md "Motion"). The card keeps
+// What the tour's card says and whether it is mid-glide (docs/specs/007-editor/pages-tour.md "Look and motion"). The card keeps
 // showing the step it last landed on while the next one prepares (its menu opening, its panel scrolling), so a step's
 // words never sit beside the previous step's target; when the next step lands, its words come in as the ring and the
 // card glide to it together. The glide is the only time either animates its position: a target that moves while its

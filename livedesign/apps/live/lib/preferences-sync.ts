@@ -9,7 +9,6 @@
 //   local cache win over the server's (now older) blob and sends it again, rather than the
 //   server reverting the settings it never received.
 
-import type { WhiteboardShapeKey } from './whiteboard-shape-catalogue';
 import type { UserPreferences } from './user-preferences';
 import { apiPutPreferences } from './api-client';
 import {
@@ -31,13 +30,6 @@ export function preferencesBodyLength(prefs: UserPreferences): number {
   return JSON.stringify({ prefs }).length;
 }
 
-type PickEntry = [WhiteboardShapeKey, readonly [number, number]];
-
-// The shape picks, least recently used first.
-function picksOldestFirst(picks: UserPreferences['whiteboardShapePicks']): PickEntry[] {
-  return (Object.entries(picks ?? {}) as PickEntry[]).sort((x, y) => x[1][1] - y[1][1]);
-}
-
 // How many entries, taken in order, free at least `excess` characters: each costs its serialised
 // size plus a comma. Off by at most one character (the last entry has no comma), which the next
 // measurement catches.
@@ -48,12 +40,10 @@ function entriesFreeing(sizes: readonly number[], excess: number): number {
   return n;
 }
 
-// The blob, trimmed to fit the api's cap: the oldest hidden-from-Recent ids go first (newest are
-// kept at the front, docs/specs/013-workspace/hide-from-recent.md), then the least recently used
-// shape picks (docs/specs/023-draw-mode/draw-mode.md "Shape slots"). Every other key is a choice
-// the person made once and stays whole. Unchanged (the same object) when it already fits; when
-// trimming both lists cannot make it fit, the save is refused and the device copy is kept (see
-// above). Each pass drops as many entries as the excess needs and measures once, so trimming is
+// The blob, trimmed to fit the api's cap: the oldest hidden-from-Recent ids go (newest are kept at
+// the front, docs/specs/013-workspace/hide-from-recent.md). Every other key is a choice the person
+// made once and stays whole. Unchanged (the same object) when it already fits; when trimming the
+// list cannot make it fit, the save is refused and the device copy is kept (see above). Each pass drops as many entries as the excess needs and measures once, so trimming is
 // linear in the blob rather than one serialisation per dropped entry.
 export function fitPreferences(prefs: UserPreferences): UserPreferences {
   let length = preferencesBodyLength(prefs);
@@ -63,16 +53,10 @@ export function fitPreferences(prefs: UserPreferences): UserPreferences {
   while (length > PREFERENCES_BODY_MAX) {
     const excess = length - PREFERENCES_BODY_MAX;
     const hidden = next.recentExcludedIds ?? [];
-    const picks = picksOldestFirst(next.whiteboardShapePicks);
     if (hidden.length > 0) {
       const oldestFirst = [...hidden].reverse().map((id) => JSON.stringify(id).length);
       const n = entriesFreeing(oldestFirst, excess);
       next = { ...next, recentExcludedIds: hidden.slice(0, hidden.length - n) };
-      dropped += n;
-    } else if (picks.length > 0) {
-      const sizes = picks.map(([k, v]) => JSON.stringify(k).length + 1 + JSON.stringify(v).length);
-      const n = entriesFreeing(sizes, excess);
-      next = { ...next, whiteboardShapePicks: Object.fromEntries(picks.slice(n)) };
       dropped += n;
     } else {
       break;

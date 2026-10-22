@@ -13,13 +13,6 @@ import type { TypeAliases } from './rank';
 // only under its new name, not at all). Safe to delete once no stored row is
 // older than the emitter fix.
 export const PALETTE_TYPE_ALIASES: TypeAliases = {
-  'Mind-node': 'MindNode',
-  'Session-button': 'SessionButton',
-  'Comment-pin': 'CommentPin',
-  'Done-check': 'DoneCheck',
-  'Reaction-pad': 'ReactionPad',
-  'Mode-button': 'ModeButton',
-  'Action-card': 'ActionPanel',
   'Code-block': 'CodeBlock',
 };
 
@@ -43,5 +36,4 @@ export const SELECTION_MODES: readonly string[] = [
   'Eraser',
   'FormatPainter',
   'Isometric',
-  'AvatarMode',
 ];

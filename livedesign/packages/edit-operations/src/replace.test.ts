@@ -11,13 +11,6 @@ import { applied, refused } from './fixtures/outcomes';
 import { applyReplace } from './replace';
 import type { EditLog, ReplaceBody, ReplaceOptions } from './types';
 
-const graph = {
-  nodes: [
-    { id: 'a', label: 'Start' },
-    { id: 'b', label: 'Done' },
-  ],
-  edges: [{ from: 'a', to: 'b' }],
-};
 const options: ReplaceOptions = { tabId: 'new-tab', name: 'Fresh', makeId: fixedIds() };
 const arrowBetween = (id: string, from: string, to: string) => ({
   id,
@@ -25,6 +18,15 @@ const arrowBetween = (id: string, from: string, to: string) => ({
   from: { kind: 'pinned', elementId: from, anchor: 's' },
   to: { kind: 'pinned', elementId: to, anchor: 'n' },
 });
+// Two boxes and the arrow between them, laid out.
+const pair: ReplaceBody = {
+  elements: [
+    { id: 'a', type: 'shape', shape: 'square', label: 'Start', x: 0, y: 0, width: 120, height: 60 },
+    { id: 'b', type: 'shape', shape: 'square', label: 'Done', x: 0, y: 0, width: 120, height: 60 },
+    arrowBetween('e1', 'a', 'b'),
+  ],
+  layout: 'auto',
+};
 const themed = (theme: string): Tab => ({ ...checkoutFlow(), theme, font: 'serif' });
 
 const recording = () => {
@@ -73,9 +75,9 @@ describe('applyReplace: elements sent back', () => {
 });
 
 describe('applyReplace on an existing tab', () => {
-  it('swaps the elements for a laid-out graph, keeping every tab field', () => {
+  it('swaps the elements for laid-out ones, keeping every tab field', () => {
     const tab = themed('ocean');
-    const outcome = applyReplace(tab, { graph }, options);
+    const outcome = applyReplace(tab, pair, options);
     const { tab: next, targets, createdIds, results } = applied(outcome);
     expect(next).toMatchObject({
       id: 'main',
@@ -91,37 +93,17 @@ describe('applyReplace on an existing tab', () => {
     expect(results.filter((line) => line.mark === '-')).toHaveLength(tab.elements.length);
   });
 
-  it("keeps a graph's tones: the presets resolve with the tab's theme, as on a new tab", () => {
-    const toned = {
-      nodes: [
-        { id: 'go', label: 'Go', shape: 'stadium', tone: 'strong' as const },
-        { id: 'end', label: 'Stop', shape: 'stadium' },
-      ],
-      edges: [{ from: 'go', to: 'end' }],
-    };
-    const { tab: next } = applied(applyReplace(themed('ocean'), { graph: toned }, options));
-    const go = next.elements.find((el) => el.id === 'go') as { fillColor?: string };
-    const end = next.elements.find((el) => el.id === 'end') as { fillColor?: string };
-    expect(go.fillColor).toBeDefined();
-    expect(go.fillColor).not.toBe(end.fillColor);
-  });
-
   it('round trips through its element ops and their inverse', () => {
     const tab = checkoutFlow();
-    const { tab: next, elementOps, inverse } = applied(applyReplace(tab, { graph }, options));
+    const { tab: next, elementOps, inverse } = applied(applyReplace(tab, pair, options));
     expect(applyElementOps(tab.elements, elementOps)).toEqual(next.elements);
     expect(applyElementOps(next.elements, inverse)).toEqual(tab.elements);
   });
 
-  it('takes Mermaid through the same graph path', () => {
-    const { tab } = applied(
-      applyReplace(checkoutFlow(), { mermaid: 'flowchart TD\n  a --> b' }, options),
-    );
-    expect(tab.elements.filter((el) => el.type === 'arrow')).toHaveLength(1);
-  });
-
   it('builds a template with the tab theme', () => {
-    const { tab } = applied(applyReplace(themed('ocean'), { template: 'swot' }, options));
+    const { tab } = applied(
+      applyReplace(themed('ocean'), { template: 'wireframe-mobile-app' }, options),
+    );
     expect(tab.elements.length).toBeGreaterThan(0);
     expect(tab.name).toBe('Checkout flow');
   });
@@ -144,8 +126,7 @@ describe('applyReplace on an existing tab', () => {
   it('refuses a locked tab', () => {
     const { calls, log } = recording();
     expect(
-      refused(applyReplace({ ...checkoutFlow(), locked: true }, { graph }, { ...options, log }))
-        .code,
+      refused(applyReplace({ ...checkoutFlow(), locked: true }, pair, { ...options, log })).code,
     ).toBe('element_locked');
     expect(calls[0]).toEqual(['[edit-ops] locked', { operation: 0, op: 'replace', scope: 'tab' }]);
   });
@@ -153,15 +134,15 @@ describe('applyReplace on an existing tab', () => {
 
 describe('applyReplace for a new tab', () => {
   it('gives the new tab the finish asked for (docs/specs/008-canvas/finish.md)', () => {
-    expect(
-      applied(applyReplace(null, { graph }, { ...options, finish: 'sketch' })).tab.finish,
-    ).toBe('sketch');
-    expect(applied(applyReplace(null, { graph }, options)).tab.finish).toBeUndefined();
+    expect(applied(applyReplace(null, pair, { ...options, finish: 'sketch' })).tab.finish).toBe(
+      'sketch',
+    );
+    expect(applied(applyReplace(null, pair, options)).tab.finish).toBeUndefined();
   });
 
-  it('builds a graph tab with the given id, name and theme', () => {
+  it('builds a tab with the given id, name and theme', () => {
     const { tab, createdIds } = applied(
-      applyReplace(null, { graph }, { ...options, theme: getBuiltInTheme('ocean') }),
+      applyReplace(null, pair, { ...options, theme: getBuiltInTheme('ocean') }),
     );
     expect(tab).toMatchObject({ id: 'new-tab', name: 'Fresh', theme: 'ocean' });
     expect(createdIds).toEqual(tab.elements.map((el) => el.id));
@@ -169,19 +150,15 @@ describe('applyReplace for a new tab', () => {
 
   it('names the theme by id, as the MCP passes the document theme to add_tab', () => {
     const { tab } = applied(
-      applyReplace(
-        null,
-        { graph },
-        { ...options, themeId: 'ocean', theme: getBuiltInTheme('brand') },
-      ),
+      applyReplace(null, pair, { ...options, themeId: 'ocean', theme: getBuiltInTheme('brand') }),
     );
     expect(tab.theme).toBe('ocean');
   });
 
-  it('builds a template tab whole, with its canvas and kind', () => {
-    // Kanban's first tab is a Board tab (docs/specs/026-plan/plan-tabs.md "Templates").
-    const { tab } = applied(applyReplace(null, { template: 'kanban' }, options));
-    expect(tab).toMatchObject({ id: 'new-tab', templateChosen: true, kind: 'board' });
+  it('builds a template tab whole, with its pages', () => {
+    const { tab } = applied(applyReplace(null, { template: 'logo-design' }, options));
+    expect(tab).toMatchObject({ id: 'new-tab', templateChosen: true });
+    expect(tab.pages?.length).toBeGreaterThan(0);
   });
 
   it('builds an elements tab as add_tab does, themed', () => {
@@ -194,18 +171,14 @@ describe('applyReplace for a new tab', () => {
 
   it('logs the source and the element count, and a custom theme it could not paint', () => {
     const { calls, log } = recording();
-    applyReplace(
-      null,
-      { graph },
-      {
-        ...options,
-        log,
-        theme: { ...getBuiltInTheme('ocean'), id: 'mine' } as unknown as ThemeDefinition,
-      },
-    );
+    applyReplace(null, pair, {
+      ...options,
+      log,
+      theme: { ...getBuiltInTheme('ocean'), id: 'mine' } as unknown as ThemeDefinition,
+    });
     expect(calls).toEqual([
       ['[edit-ops] theme-fallback', {}],
-      ['[edit-ops] replace', { source: 'graph', elements: 3 }],
+      ['[edit-ops] replace', { source: 'elements', elements: 3 }],
     ]);
   });
 });
@@ -214,43 +187,15 @@ describe('applyReplace refusals', () => {
   const refusal = (body: unknown) => refused(applyReplace(null, body as ReplaceBody, options));
 
   it('needs exactly one source', () => {
-    expect(refusal({}).details).toEqual([
-      'replace takes exactly one of graph, mermaid, template, dashboard, form, elements',
-    ]);
-    expect(refusal({ graph, mermaid: 'x' }).code).toBe('invalid_value');
-  });
-
-  it('names a malformed graph member', () => {
-    expect(refusal({ graph: { nodes: 'a', edges: [] } }).details[0]).toMatch(/^graph.nodes/);
-  });
-
-  it('refuses a graph it cannot draw as asked, as the MCP does', () => {
-    const graph = {
-      style: 'lanes',
-      nodes: [{ id: 'a' }, { id: 'b' }],
-      edges: [],
-      groups: [{ id: 'g', label: 'Lane', members: ['a'] }],
-    };
-    expect(refusal({ graph }).details[0]).toMatch(/every node in a lane: "b"/);
-  });
-
-  it('refuses Mermaid it cannot read as parse_error, and Mermaid that is not text', () => {
-    expect(refusal({ mermaid: 'not a diagram' }).code).toBe('parse_error');
-    expect(refusal({ mermaid: 42 }).details).toEqual(['mermaid: expected a string']);
+    expect(refusal({}).details).toEqual(['replace takes exactly one of template, elements']);
+    expect(refusal({ template: 'x', elements: [] }).code).toBe('invalid_value');
   });
 
   it('names the templates for an unknown one', () => {
     const rejection = refusal({ template: 'nope' });
     expect(rejection.details).toEqual(['template="nope": not a template']);
-    expect(rejection.hint).toContain('kanban');
+    expect(rejection.hint).toContain('logo-design');
     expect(refusal({ template: 7 }).code).toBe('invalid_value');
-  });
-
-  // docs/specs/030-forms/forms.md "As templates": a form template starts a form, which only the editor makes.
-  it('refuses a form template as made in the editor only, saying how its form is made', () => {
-    const rejection = refusal({ template: 'contact-form' });
-    expect(rejection.details).toEqual(['template="contact-form": made in the editor only']);
-    expect(rejection.hint).toContain('make it with add_form (starter "contact")');
   });
 
   it('refuses elements that are not a list, or an element the format does not allow', () => {

@@ -319,7 +319,7 @@ export function resolveBoxedResize({
     if (!isBoxed(el)) continue;
     const start = startBounds.get(el.id);
     if (!start) continue;
-    // Fixed-size kinds (docs/specs/009-elements/mode-button.md) ride along with the union's MOVE but keep
+    // Fixed-size kinds (docs/specs/009-elements/badge.md) ride along with the union's MOVE but keep
     // their own width / height, so scaling a selection can't quietly resize a
     // control that has no resize handles of its own.
     if (isFixedSizeElement(el)) {
@@ -345,8 +345,8 @@ function unionMinScale(elements: Element[], startBounds: ReadonlyMap<string, Sha
   return floor;
 }
 
-// How a resize frame's hugging text boxes are sized (docs/specs/023-draw-mode/draw-mode.md "Text
-// boxes"): the handle, whether the ratio is kept (Shift or the element's lock), and the DOM
+// How a resize frame's hugging text boxes are sized (docs/specs/006-document/document-structure.md):
+// the handle, whether the ratio is kept (Shift or the element's lock), and the DOM
 // measure. Given only for a single element; it applies to a text box that fits or wraps.
 type TextHugResize = {
   mode: DragMode;

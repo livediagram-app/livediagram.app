@@ -8,7 +8,7 @@ illustration kit; this spec owns the layout and journeys built on them.
 
 The help centre had fallen behind the marketing site it sits beside. Its category art was a 64px strip of small
 motifs, the home page was one flat grid of twenty cards in registry order, the biggest categories (Canvas 31 cards,
-Palette 35) were long unsorted grids that hid whole editor modes, and an article page ended in a dead end with no
+Palette 35) were long unsorted grids that hid whole features, and an article page ended in a dead end with no
 way on but the browser's back button. A reader should be able to tell what each area is from its picture, find the
 path that fits who they are (new, stuck, managing data, building on the API), and keep reading without hunting.
 
@@ -48,8 +48,8 @@ Top to bottom:
 
 1. **Hero.** The canvas wash; two pills (the guide count, "Search them from inside the editor too"); the display
    heading "How can we help?"; one line of lede; the large search box; and a row of **popular topics**, chips that
-   link straight to the articles most readers come for (Your First Diagram, Sharing Your Document, Keyboard
-   Shortcuts, Templates, Exporting Diagrams, Plan Mode). The list is `POPULAR_TOPICS` in `lib/home-sections.ts`
+   link straight to the articles most readers come for (Working with Pages, Sharing Your Document, Keyboard
+   Shortcuts, Templates, Exporting Pages, Slide Pages). The list is `POPULAR_TOPICS` in `lib/home-sections.ts`
    and a test checks every entry names a real article.
 2. **Start here.** A full-width card, the Getting Started scene beside the first four Getting Started guides as
    numbered steps and a link to the rest, then About livedesign and Tips and Tricks as two wide cards.
@@ -74,11 +74,12 @@ so the page reads as a table of contents rather than a wall. A group is the arti
 registry; a category's `groups` field fixes the order its groups appear in (otherwise first appearance). From `lg`
 up, a page with groups shows a sticky **jump list** of its groups beside the grids.
 
-| Category | Groups, in order                                                               |
-| -------- | ------------------------------------------------------------------------------ |
-| Canvas   | Basics, Modes and Boards, Text and Notes, Styling Elements, Layers and Locking |
-| Palette  | Everyday Elements, Diagram Kits, Workshop Kits, Palette Settings               |
-| Explorer | Your Library, Activity, Assets and Imports                                     |
+| Category | Groups, in order                                             |
+| -------- | ------------------------------------------------------------ |
+| Pages    | Basics, Kinds of Page                                        |
+| Canvas   | Basics, Text and Notes, Styling Elements, Layers and Locking |
+| Palette  | Everyday Elements, Page Blocks, Palette Settings             |
+| Explorer | Your Library, Activity, Assets and Imports                   |
 
 The remaining categories have twelve or fewer cards and stay one grid.
 
@@ -103,7 +104,7 @@ with nothing else to tell a screen reader they came.
 **Ranking.** Matches are best first: a title that starts with the query, then a title with a word starting with
 it, then a title containing it, then a description match, then a keyword match alone, then, for a query of
 several words, an article holding every word somewhere across its title, description and keywords (more of them in
-the title first: "export png" finds Exporting Diagrams); registry order breaks ties (`searchArticles` in
+the title first: "export png" finds Exporting Pages); registry order breaks ties (`searchArticles` in
 `@livedesign/help-registry`). The editor's Help group in global search keeps its own flat matching, every word
 across title and keywords ([Help app](help-app.md), "Out of scope").
 

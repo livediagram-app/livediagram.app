@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { EDIT_KEYS, VIEW_TOOL_KEYS } from '@/hooks/canvas/editor-shortcut-keys';
 import { SHORTCUT_SECTIONS } from './shortcut-sections';
-import { avatarActionForKey } from '@/lib/avatar-action-keys';
 
 // The Keyboard settings list and the key maps are two hand-kept lists of one thing.
 // The list calls itself "a reference card of every binding the editor knows"
@@ -27,10 +26,8 @@ const handledKeys = new Set([
 // deliberately outside the editor's maps — while a deck runs, the editor's
 // shortcuts are dead. So its rows describe real bindings that `handledKeys`
 // will never contain, and checking them against it would fail on the truth.
-// Avatar mode's keys are the same: the walk's own listeners (useAvatarKeys, useAvatarActionKeys) bind them.
 const EDITOR_SECTIONS = SHORTCUT_SECTIONS.filter(
-  (section) =>
-    section.heading !== 'While presenting' && !section.heading.startsWith('While walking'),
+  (section) => section.heading !== 'While presenting',
 );
 
 // Rows whose `keys` are a single printable character: the ones that name one
@@ -50,7 +47,7 @@ describe('the Keyboard settings list matches the keys the editor binds', () => {
   it('reads real rows (guard against this test going blind)', () => {
     expect(SHORTCUT_SECTIONS.length).toBeGreaterThan(3);
     expect(singleKeyRows.length).toBeGreaterThan(15);
-    expect(handledKeys.size).toBeGreaterThan(25);
+    expect(handledKeys.size).toBeGreaterThan(20);
   });
 
   it('lists no key the editor does not bind', () => {
@@ -79,41 +76,5 @@ describe('the Keyboard settings list matches the keys the editor binds', () => {
       (key) => !documented.has(key) && !(numberRowSummarised && /^[0-9]$/.test(key)),
     );
     expect(undocumented.sort()).toEqual([]);
-  });
-});
-
-describe('the editor mode key', () => {
-  it('lists Shift+D as moving to the next editor mode', () => {
-    const rows = EDITOR_SECTIONS.flatMap((section) => section.rows);
-    expect(rows).toContainEqual({
-      keys: ['⇧', 'D'],
-      label: 'Next Editor Mode (Diagram, Draw, Workshop, Pages)',
-    });
-  });
-});
-
-// docs/specs/009-elements/mind-node.md "New lines": Enter grows a mind map, so the key for a new
-// line in a node's label has a row of its own, beside Tab and Enter.
-describe('the mind node keys', () => {
-  it('lists Tab, Enter and Shift+Enter together', () => {
-    const rows = EDITOR_SECTIONS.flatMap((section) => section.rows);
-    const at = (label: string) => rows.findIndex((row) => row.label === label);
-    const newLine = at('In a mind node’s label: new line');
-    expect(rows[newLine]?.keys).toEqual(['⇧', 'Enter']);
-    expect(at('On a mind node: add a sibling')).toBe(newLine - 1);
-    expect(at('On a mind node: add a child')).toBe(newLine - 2);
-  });
-});
-
-describe('the While walking rows match the Avatar action keys', () => {
-  it('lists each action key once, on a key that plays it', () => {
-    const walking = SHORTCUT_SECTIONS.find((s) => s.heading.startsWith('While walking'))!;
-    const actionRows = walking.rows.filter((row) => /^[A-Z0-9]$/.test(row.keys[0]!));
-    expect(actionRows).toHaveLength(10);
-    for (const row of actionRows) {
-      const key = row.keys[0]!.toLowerCase();
-      const plain = { key, metaKey: false, ctrlKey: false, altKey: false, shiftKey: false };
-      expect(avatarActionForKey(plain), row.label).not.toBeNull();
-    }
   });
 });

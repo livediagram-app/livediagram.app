@@ -21,7 +21,7 @@ import { searchArticles } from './articles';
 // contributes its label with the "Add " stripped.
 //
 // Other sections' labels are deliberately NOT checked. Theirs are phrases
-// ("Add Avatar Mode Button"), nobody searches a whole sentence, and requiring
+// ("Add Laser Mode Button"), nobody searches a whole sentence, and requiring
 // them would push noise into the keywords rather than find real gaps. The
 // first version of this guard checked captions alone and would have passed
 // while "hexagon" returned nothing, which is what prompted the split.
@@ -33,10 +33,17 @@ const TILE_DEFS = fileURLToPath(
   new URL('../../live/components/palette/palette-tile-defs.tsx', import.meta.url),
 );
 
+// The Behaviour tool group (the Collaborate kit, reactions, focus and mode buttons, pickers) is livediagram's: no
+// kind of page offers it and livedesign has no articles for it, so its captions are not held to a help result.
+const UNDOCUMENTED_SECTION = /toolGroup: 'behaviour'/;
+
 function paletteNames(): string[] {
   const src = readFileSync(TILE_DEFS, 'utf8');
-  const names = [...src.matchAll(/caption: '([^']+)'/g)].map((m) => m[1]!);
+  const names: string[] = [];
   for (const tile of src.split(/\n {2}\{\n/)) {
+    if (UNDOCUMENTED_SECTION.test(tile)) continue;
+    const caption = /caption: '([^']+)'/.exec(tile);
+    if (caption) names.push(caption[1]!);
     if (!/id: 'shapes:/.test(tile)) continue;
     const label = /label: 'Add ([^']+)'/.exec(tile);
     if (label) names.push(label[1]!);

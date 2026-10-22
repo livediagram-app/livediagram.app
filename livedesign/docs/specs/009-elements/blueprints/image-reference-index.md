@@ -7,20 +7,20 @@ Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS
 
 Scope, by file (all under `apps/api/`):
 
-| File                                   | Role                                                                           |
-| -------------------------------------- | ------------------------------------------------------------------------------ |
-| `migrations/0050_image_refs.sql`       | `image_refs`, `image_refs_image_idx`, `image_refs_backfill` and its single row |
-| `src/image-refs/extract.ts`            | The JavaScript extractor: what a reference is                                  |
-| `src/db/image-refs.ts`                 | Every statement on `image_refs` / `image_refs_backfill`; the SQL extractor     |
-| `src/image-refs/backfill.ts`           | One backfill run                                                               |
-| `src/image-refs/retention.ts`          | The daily image job: backfill, then sweep                                      |
-| `src/db/image-retention.ts`            | The sweep and its tripwire                                                     |
-| `src/db/images.ts`                     | The usage map and the share-read check, reading the index                      |
-| `src/db/tabs.ts`                       | `upsertTab`, `seedTabs`, `swapTabData`, `deleteTabRow` carry index statements  |
-| `src/db/documents.ts`                  | `copyDocument` carries index statements                                        |
-| `src/db/document-removal.ts`           | `documentRemovalStatements` prunes the dropped tabs' references                |
-| `src/index.ts`                         | `scheduled()` hands the daily run to `runImageRetention`                       |
-| `src/image-refs/writer-census.test.ts` | Fails when SQL writing `tabs` appears outside the known writers                |
+| File                                               | Role                                                                           |
+| -------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `apps/api/migrations/0001_livedesign_baseline.sql` | `image_refs`, `image_refs_image_idx`, `image_refs_backfill` and its single row |
+| `src/image-refs/extract.ts`                        | The JavaScript extractor: what a reference is                                  |
+| `src/db/image-refs.ts`                             | Every statement on `image_refs` / `image_refs_backfill`; the SQL extractor     |
+| `src/image-refs/backfill.ts`                       | One backfill run                                                               |
+| `src/image-refs/retention.ts`                      | The daily image job: backfill, then sweep                                      |
+| `src/db/image-retention.ts`                        | The sweep and its tripwire                                                     |
+| `src/db/images.ts`                                 | The usage map and the share-read check, reading the index                      |
+| `src/db/tabs.ts`                                   | `upsertTab`, `seedTabs`, `swapTabData`, `deleteTabRow` carry index statements  |
+| `src/db/documents.ts`                              | `copyDocument` carries index statements                                        |
+| `src/db/document-removal.ts`                       | `documentRemovalStatements` prunes the dropped tabs' references                |
+| `src/index.ts`                                     | `scheduled()` hands the daily run to `runImageRetention`                       |
+| `src/image-refs/writer-census.test.ts`             | Fails when SQL writing `tabs` appears outside the known writers                |
 
 ## Domain and naming
 

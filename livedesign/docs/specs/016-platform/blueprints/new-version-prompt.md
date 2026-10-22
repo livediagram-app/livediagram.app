@@ -7,7 +7,7 @@ Derived from [New version prompt](../new-version-prompt.md).
 | Term                   | Identifier                   | Meaning                                                   |
 | ---------------------- | ---------------------------- | --------------------------------------------------------- |
 | Document format number | `DOCUMENT_FORMAT`            | The version of the stored document shapes                 |
-| Format header          | `DOCUMENT_FORMAT_HEADER`     | `X-Livedesign-Format`, on every api response             |
+| Format header          | `DOCUMENT_FORMAT_HEADER`     | `X-Livedesign-Format`, on every api response              |
 | Room format message    | `{ kind: 'format'; format }` | The room's number, sent to each socket on `hello`         |
 | Server format          | `serverDocumentFormat()`     | The highest number this page has heard from the server    |
 | Outdated editor        | `newVersionAvailable()`      | Server format greater than the editor's `DOCUMENT_FORMAT` |

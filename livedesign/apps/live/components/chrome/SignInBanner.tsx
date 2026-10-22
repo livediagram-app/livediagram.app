@@ -52,8 +52,8 @@ export function SignInBanner({
   surface: 'Explorer' | 'Editor';
   onDismiss: () => void;
   placementClassName?: string;
-  // The editor's banner stands 8px above its bottom chrome (the tab bar, the Undo / Timer / Vote / Poll cluster, the
-  // whiteboard dock) instead of a fixed lift, so it never covers a control somebody is running a session with.
+  // The editor's banner stands 8px above its bottom chrome (the tab bar, the Undo / Timer / Vote cluster)
+  // instead of a fixed lift, so it never covers a control somebody is running a session with.
   standOnChrome?: boolean;
 }) {
   const chromeFloor = useChromeFloor(standOnChrome, 0, BOTTOM_CHROME_SELECTOR, BANNER_MAX_WIDTH_PX);

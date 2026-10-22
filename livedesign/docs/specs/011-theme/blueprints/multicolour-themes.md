@@ -33,8 +33,7 @@ One term, one identifier. The left column is the only spelling used in code, tes
 | Rootless element | (internal)                                     | Element in the graph that no root reaches                |
 | Palette theme    | `theme.palette !== undefined`                  | A multi-colour theme                                     |
 
-Banned synonyms: "rainbow theme" outside user-facing labels, "colour group", "hue index". Also "lane",
-which is an element kind ([Lane](../../009-elements/lane.md)).
+Banned synonyms: "rainbow theme" outside user-facing labels, "colour group", "hue index".
 
 ## Behaviour and state
 
@@ -245,7 +244,7 @@ Each spec rule maps to one test, and every test is deterministic.
 | Built-in contrast ≥ 4.5                                  | every palette entry + `rootColor` of every built-in             | `themes-data.test.ts` (new)                 |
 | api rejects empty palette (E6) + O3                      | POST and PUT, 400, no write                                     | `apps/api/src/routes/custom-themes.test.ts` |
 | Five built-ins, 26 total                                 | counts                                                          | `apps/live/lib/themes.test.ts` (exists)     |
-| Colours reach the canvas + O1 in the browser             | Rainbow on a mind map: ≥ 3 palette hues, switch log             | `apps/live/e2e/multicolour-theme.spec.ts`   |
+| Colours reach the canvas + O1 in the browser             | Rainbow on a diagram: ≥ 3 palette hues, switch log              | `apps/live/e2e/multicolour-theme.spec.ts`   |
 
 ## Constants and configuration
 

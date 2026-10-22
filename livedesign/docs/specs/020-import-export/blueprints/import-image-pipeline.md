@@ -18,7 +18,7 @@ Scope, by file (all under `apps/live/lib/import-images/`):
 | `report.ts`       | `emptyImportImageReport`, `describeImportImageReport`: tallies and the dialog copy             |
 | `webp.ts`         | `createWebpEncoder`: canvas WebP, else the on-demand WASM encoder, detection remembered        |
 | `browser.ts`      | `browserImageCodec`, `createBrowserImportImageSession`: the DOM codec + the api/offline wiring |
-| `index.ts`        | Public surface for importers (everything but the browser wiring)                               |
+| `index.ts`        | Public surface for callers (everything but the browser wiring)                                 |
 | `test-fakes.ts`   | Fake codec and typed image blobs for the unit tests; imported by tests only                    |
 
 Only `browser.ts` touches the DOM or the network; every other module runs in Node under Vitest.
@@ -210,7 +210,7 @@ resolves `null`. For `image/webp` it hands `createWebpEncoder` the canvas encode
 isOfflineIdSync(documentId)`; `upload` computes `sha256Hex` and calls `apiUploadImage` with the
 prepared type, dimensions and the source `name` as `originalName`; `toDataUrl` is `FileReader`.
 
-Importers depend on `index.ts` (the types, `attachImportImages`, `describeImportImageReport`,
+Callers depend on `index.ts` (the types, `attachImportImages`, `describeImportImageReport`,
 `emptyImportImageReport`, `importImageReportTotal`, `importImagePlaceholderCount`) and lazy-import
 `browser.ts` for `createBrowserImportImageSession`, so no DOM code reaches the first bundle.
 

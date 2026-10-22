@@ -3,14 +3,14 @@ import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 
 export const metadata = helpMetadata({
-  title: 'Diagrams in Your Developer Tools',
+  title: 'Documents in Your Developer Tools',
   description:
     'Open a livedesign document live inside your developer tool, signed in as you: pair once, then draw, select and talk to your coding agent about it.',
   path: '/help/developers/workbenches/',
 });
 
 <ArticleLayout
-  title="Diagrams in Your Developer Tools"
+  title="Documents in Your Developer Tools"
   description="Draw in a document inside your developer tool, signed in, and talk to your agent about what you select."
   categoryTitle="Developers"
   categorySlug="developers"
@@ -37,7 +37,7 @@ Pairing belongs to one CLI sign-in and one address. If someone obtained your tok
 
 ## Open a Document
 
-The workbench does this for you when you open a diagram in it. By hand:
+The workbench does this for you when you open a document in it. By hand:
 
 ```bash
 livedesign workbench open "Home screen" --origin https://127.0.0.1:5175 --json
@@ -73,6 +73,6 @@ With nothing selected, it names the whole tab. The block is plain text in your m
 
 ## Stop or Unpair
 
-A workbench session lasts a working day and renews itself while the tool is open. To stop a tool for good, go to **Settings**, then **API Tokens** under **Account**: each token lists its **Paired workbenches**, each with what it may open (**One document at a time** or **Whole workspace**), and **Unpair** turns their open diagrams read-only straight away. Revoking the token does the same for every tool it paired.
+A workbench session lasts a working day and renews itself while the tool is open. To stop a tool for good, go to **Settings**, then **API Tokens** under **Account**: each token lists its **Paired workbenches**, each with what it may open (**One document at a time** or **Whole workspace**), and **Unpair** turns their open documents read-only straight away. Revoking the token does the same for every tool it paired.
 
 </ArticleLayout>

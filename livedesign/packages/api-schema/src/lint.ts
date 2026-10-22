@@ -14,8 +14,6 @@ export const LINT_CODES = [
   'group-split-edges',
   'duplicate-label',
   'flow-backwards',
-  'aspect-extreme',
-  'colour-on-themed',
   // A Pages tab only (its pages' text).
   'text-overflow',
 ] as const;
@@ -37,15 +35,13 @@ export const LINT_SEVERITY: Readonly<Record<LintCode, LintSeverity>> = {
   'group-split-edges': 'info',
   'duplicate-label': 'info',
   'flow-backwards': 'info',
-  'aspect-extreme': 'info',
-  'colour-on-themed': 'info',
   'text-overflow': 'warning',
 };
 
 export type LintFinding = {
   code: LintCode;
   severity: LintSeverity;
-  // Every ref involved, primary first; empty only for `aspect-extreme`.
+  // Every ref involved, primary first.
   refs: string[];
   // Refs first, as printed.
   message: string;

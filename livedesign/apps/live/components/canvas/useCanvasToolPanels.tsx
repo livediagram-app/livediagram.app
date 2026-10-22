@@ -10,7 +10,6 @@ import type { CanvasChromeProps } from './CanvasChrome';
 
 // Each panel shows only while its tool is active, so they load on demand, together (./tool-panels); the editor
 // fetches them once idle (lib/editor-deferred-code.ts), so picking a tool does not wait.
-const AvatarPanel = dynamic(() => loadToolPanels().then((m) => m.AvatarPanel), { ssr: false });
 const LaserPanel = dynamic(() => loadToolPanels().then((m) => m.LaserPanel), { ssr: false });
 const SpotlightPanel = dynamic(() => loadToolPanels().then((m) => m.SpotlightPanel), {
   ssr: false,
@@ -21,7 +20,7 @@ const SlideDeckPanel = dynamic(() => loadToolPanels().then((m) => m.SlideDeckPan
   ssr: false,
 });
 
-// The six tool-config panels (docs/specs/008-canvas/avatar-mode.md, docs/specs/008-canvas/laser-panel.md, docs/specs/008-canvas/spotlight-panel.md, docs/specs/008-canvas/eraser-panel.md,
+// The five tool-config panels (docs/specs/008-canvas/laser-panel.md, docs/specs/008-canvas/spotlight-panel.md, docs/specs/008-canvas/eraser-panel.md,
 // docs/specs/008-canvas/format-panel.md, docs/specs/012-collaboration/presentation-mode.md), lifted out of useCanvasChromePanels. They are siblings in
 // every respect that matters: each is mounted ONLY while its own canvas
 // tool is active, so unlike the standing panels (Explorer, Palette,
@@ -30,24 +29,19 @@ const SlideDeckPanel = dynamic(() => loadToolPanels().then((m) => m.SlideDeckPan
 // because the tool itself is. Grouping them keeps that shared contract in
 // one place, and keeps the chrome host to the panels that are always
 // candidates to be on screen. Every one of them takes the identical
-// wiring bundle below, so a seventh tool panel is a copy of its neighbour.
+// wiring bundle below, so a sixth tool panel is a copy of its neighbour.
 export function useCanvasToolPanels({
   props,
   chromeHidden,
   panelWiringFor,
   slidesPopover,
-  avatarPopover,
 }: {
   props: CanvasChromeProps;
-  // The Avatar panel as a popover over its cluster button (docs/specs/008-canvas/avatar-mode.md "The Avatar
-  // Panel"), while open: it has no corner form.
-  avatarPopover?: { anchor: DockAnchor | undefined; onClose: () => void } | null;
   // The Slide Deck as a popover over its cluster button (Pages mode), while open.
   slidesPopover?: { anchor: DockAnchor | undefined; onClose: () => void } | null;
   chromeHidden: boolean;
   panelWiringFor: ReturnType<typeof useCornerDocking>['panelWiringFor'];
 }): {
-  avatarEl: ReactNode;
   laserEl: ReactNode;
   spotlightEl: ReactNode;
   eraserEl: ReactNode;
@@ -57,15 +51,6 @@ export function useCanvasToolPanels({
   const {
     canvasTool,
     selfParticipant,
-    avatarConfig,
-    onChangeAvatarField,
-    onRandomiseAvatar,
-    onAvatarReaction,
-    onAvatarBurst,
-    onSendAvatarMessage,
-    avatarStatus,
-    onSetAvatarStatus,
-    avatarSpeechCooling,
     laserConfig,
     onChangeLaserField,
     laserPanelPosition,
@@ -98,9 +83,6 @@ export function useCanvasToolPanels({
     activeTabId,
     readOnly,
   } = props;
-  // Draw mode keeps its eraser settings in the dock's flyouts
-  // and has no format painter (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows").
-  const whiteboard = props.editorMode === 'draw';
 
   const laserWiring = panelWiringFor('laser', laserPanelPosition ?? null, () =>
     onResetLaserPanel?.(),
@@ -118,45 +100,8 @@ export function useCanvasToolPanels({
     onResetSlideDeckPanel?.(),
   );
 
-  // Avatar Panel (docs/specs/008-canvas/avatar-mode.md "The Avatar Panel"): the character sheet, a popover over the
-  // Avatar button, mounted only while Avatar mode is active and the popover open. Available to view-role too
-  // (the mode is); only someone who may speak gets Send a Message. Shown in Zen, as its button is (the mode's one
-  // piece of chrome there); only the welcome flow hides it.
-  const avatarEl =
-    !props.welcomeOpen && canvasTool === 'avatar' && avatarConfig && avatarPopover ? (
-      <AvatarPanel
-        config={avatarConfig}
-        onChange={(field, value) => onChangeAvatarField?.(field, value)}
-        onRandomise={onRandomiseAvatar}
-        onReaction={onAvatarReaction}
-        onBurst={onAvatarBurst}
-        shirt={selfParticipant?.color}
-        onSendMessage={
-          onSendAvatarMessage
-            ? (text) => {
-                const sent = onSendAvatarMessage(text);
-                // Close the panel so the bubble is seen rising (docs/specs/008-canvas/avatar-mode.md).
-                if (sent) avatarPopover.onClose();
-                return sent;
-              }
-            : undefined
-        }
-        speechCooling={!!avatarSpeechCooling}
-        status={avatarStatus ?? null}
-        onSetStatus={onSetAvatarStatus}
-        position={null}
-        onMoveTo={() => {}}
-        asPopover
-        popoverOpen
-        popoverAnchor={avatarPopover.anchor}
-        dismissOnOutside
-        onPopoverClose={avatarPopover.onClose}
-      />
-    ) : null;
-
   // Laser Panel (docs/specs/008-canvas/laser-panel.md): the pen's settings, mounted only while the Laser
-  // tool is active — the avatar panel's twin in every respect, including the
-  // view-role availability (the laser is theirs too).
+  // tool is active, available to view-role visitors too (the laser is theirs too).
   const laserEl =
     !chromeHidden && canvasTool === 'laser' && laserConfig ? (
       <LaserPanel
@@ -189,7 +134,7 @@ export function useCanvasToolPanels({
   // Eraser Panel (docs/specs/008-canvas/eraser-panel.md): the brush's settings, mounted only while the
   // Eraser tool is active.
   const eraserEl =
-    !chromeHidden && !whiteboard && canvasTool === 'eraser' && eraserConfig ? (
+    !chromeHidden && canvasTool === 'eraser' && eraserConfig ? (
       <EraserPanel
         config={eraserConfig}
         onChange={(field, value) => onChangeEraserField?.(field, value)}
@@ -203,7 +148,7 @@ export function useCanvasToolPanels({
   // Format Panel (docs/specs/008-canvas/format-panel.md): what the painter copies, mounted only while the
   // Format tool is active.
   const formatEl =
-    !chromeHidden && !whiteboard && canvasTool === 'format' && formatConfig ? (
+    !chromeHidden && canvasTool === 'format' && formatConfig ? (
       <FormatPanel
         config={formatConfig}
         onToggleGroup={(group) => onToggleFormatGroup?.(group)}
@@ -244,5 +189,5 @@ export function useCanvasToolPanels({
       />
     ) : null;
 
-  return { avatarEl, laserEl, spotlightEl, eraserEl, formatEl, slideDeckEl };
+  return { laserEl, spotlightEl, eraserEl, formatEl, slideDeckEl };
 }

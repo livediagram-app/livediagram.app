@@ -113,8 +113,7 @@ Chart" and a screen reader hears "Column chart", as the palette's tile says, nev
 - **Changing type** keeps the chart's size, style, palette, legend and animation. Within a kind it only sets
   `chartVariant`. Across kinds it moves the data: a pie or bar chart's slices become one series named **Series 1**
   over their labels (their colours dropped, so the series takes the palette's first), and a line chart's first
-  series becomes the slices over its categories (below zero read as zero on a pie). A chart drawn from a Sheet
-  re-reads its range as the new type at once.
+  series becomes the slices over its categories (below zero read as zero on a pie).
 - Who may: as every other chart change, someone who may edit the canvas (an Editor); a Participant and a Viewer get
   no Chart Type section.
 
@@ -166,14 +165,6 @@ groups all three (they're all in `isSelfDrawingShape` too).
 Follows the composite-component pattern ([Timeline rail](timeline-rail.md)): a dedicated
 `ShapeKind` + small `ShapeElement` fields + a bespoke `*View` + a borderless variant + a
 context-menu category. New chart kinds reuse it under the same Data palette category.
-
-## Charts drawn from a sheet
-
-A chart may carry `chartSource` (a sheet and a range of it): its data is then read live from that Sheet's cells and
-the element's own data is the last read ([Sheet charts](../029-sheets/sheet.md#charts)). Its Data menu offers
-**Unlink From Sheet** in place of the data editor. A Scatter chart from a Sheet whose first column holds numbers (so
-the read numbers its categories `1, 2, …` and makes that column a series) takes that column as its x and the other
-columns as its series, as a spreadsheet's scatter chart does.
 
 ## Chart palettes
 

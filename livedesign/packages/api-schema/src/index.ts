@@ -15,10 +15,7 @@
 import type { AccessLevel } from './access-levels';
 import type { DocumentSource } from './document-source';
 import type { BackgroundPattern, EditorMode, ShapeKind, Tab } from '@livedesign/document';
-import type { CreationTabKind, TemplateFamily } from './placement-defaults';
-import type { ItemTypeCatalogue } from '@livedesign/items';
-
-export type { AvatarClothing, AvatarConfig, AvatarGender, AvatarHair, AvatarSize } from './avatar';
+import type { CreationTabKind } from './placement-defaults';
 
 // ---------------------------------------------------------------------
 // Documents
@@ -56,12 +53,6 @@ export type LiveDoc = {
   // has no use for their decks, and a deck is the one metadata field that can
   // grow with the document.
   presentation: string | null;
-  // The document's type catalogue (docs/specs/026-plan/item-types.md): its own item types, or null
-  // (or absent, from an older client or record) for the built-in ones. Written only by
-  // PUT /documents/:id/item-types.
-  itemTypes?: ItemTypeCatalogue | null;
-  // The catalogue's revision (ItemTypesRequest `expectedRev`): 0 until its first write.
-  itemTypesRev?: number;
   savedAt: number;
   createdAt: number;
   // Owner's display name + avatar colour, joined server-side from the
@@ -76,13 +67,11 @@ export type LiveDoc = {
 
 // The creation intent recorded on a document when it was created, written once by the create and
 // never re-derived (docs/specs/013-workspace/default-folders.md "Recorded intent"). A null `opensIn`
-// is unknown (made before intents were recorded, or by a create without one), never Diagram, and
-// the other two are then unknown too; with a known `opensIn`, `tabKind` is known and a null
-// `templateFamily` means made from no family.
+// is unknown (made before intents were recorded, or by a create without one), and `tabKind` is
+// then unknown too.
 export type RecordedIntent = {
   opensIn: EditorMode | null;
   tabKind: CreationTabKind | null;
-  templateFamily: TemplateFamily | null;
 };
 
 // Lightweight list projection — drops `tabs` so listing 100 documents
@@ -467,24 +456,10 @@ export type ParticipantPresence = {
   // "Presence"), remembered from the same tab-focus ops so a late joiner sees it too. Undefined with
   // no split.
   besideTabId?: string;
-  // The id this participant WRITES INTO THE DOCUMENT for anything recorded
-  // per person — today the `responses` on a done check / estimate card /
-  // temperature check (docs/specs/012-collaboration/participant-responses.md).
-  //
-  // It exists because `id` above cannot do that job. `id` is minted fresh by
-  // the room for every socket (docs/specs/015-api/public-api-and-tokens.md §6), so it is unforgeable but also
-  // unrecognisable: it changes on reconnect and matches nothing that was ever
-  // saved. Joining a saved answer back to the person in the roster needs an
-  // id that is STABLE across connections, and the owner id can't be it —
-  // publishing that is exactly what §6 forbids.
-  //
-  // So this is a separate, per-browser random the client mints and keeps
-  // (`livedesign:v2:collab-key`), relayed VERBATIM: unlike `id` and `role`
-  // it is claimed, not verified. That is deliberate and costs nothing — it is
-  // not a credential and grants nothing, and any edit-role peer could already
-  // write any participant id straight into the document. Optional, so an
-  // older client's hello still parses (the roster falls back to `id`, which
-  // simply matches nothing — the behaviour before this field existed).
+  // A per-browser random the client mints and keeps (`livedesign:v2:collab-key`), shared by every tab in that browser
+  // so the roster shows one avatar per person (docs/specs/012-collaboration/collaborator-enhancements.md). `id` above
+  // can't do it: the room mints that per socket. Relayed VERBATIM: claimed, not verified, and it grants nothing.
+  // Optional, so a hello without one still parses (the roster falls back to `id`).
   key?: string;
   // The participant's published profile picture (docs/specs/014-identity/profile-picture.md §6). The
   // room keeps it only from a verified account session and sends it only to account sessions;
@@ -514,6 +489,8 @@ export type ImageSummary = {
 // Lives here so the client and server can't drift on the dedup key
 // (see ./sha256.ts for the rationale).
 export { pkceChallenge, sha256Hex } from './sha256';
+// The digest itself, for a hash that is not hex (docs/specs/016-platform/secure-context.md).
+export { sha256 } from './sha256-digest';
 
 // Worker-safe base64 / base64url encoders for raw bytes, shared by both
 // workers and the editor (see ./bytes.ts).
@@ -610,11 +587,8 @@ export * from './access-levels';
 export * from './image-limits';
 export * from './cta-sources';
 export * from './page-views';
-export * from './poll';
 export * from './room-messages';
 export * from './changesets';
-export * from './items';
-export * from './sheets';
 export * from './telemetry-schema';
 export * from './timing-telemetry';
 export * from './server-emitted-events';
@@ -647,7 +621,6 @@ export * from './placement-defaults';
 // Explorer Home: opens, Jump back in and What happened (docs/specs/013-workspace/explorer-home.md).
 export * from './home';
 export * from './drag-preview';
-export * from './avatar-say';
 // Within reach: N most used plus N recent (docs/specs/004-interface-design/within-reach.md).
 export * from './within-reach';
 // Making a document is a use, a bulk import is not (docs/specs/013-workspace/explorer-home.md).
@@ -686,5 +659,3 @@ export * from './workbench-messages';
 export * from './pages';
 export * from './pages-summary';
 export * from './mcp-origin';
-// Forms (docs/specs/030-forms/forms.md).
-export * from './forms';

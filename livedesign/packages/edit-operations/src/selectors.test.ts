@@ -67,22 +67,22 @@ describe('selector rows', () => {
     expect(ids('Type:frame')).toEqual(['f2']);
   });
 
-  it('in: the members of a frame or lane, never arrows', () => {
+  it('in: the members of a frame or stack, never arrows', () => {
     expect(ids('in:f2')).toEqual(['n4', 'n5']);
     expect(ids('in:"Payment"')).toEqual(['n4', 'n5']);
   });
 
   it('in: through nested containers', () => {
-    const lane = {
+    const stack = {
       id: 'l1',
       type: 'shape',
-      shape: 'lane',
+      shape: 'stack',
       x: -100,
       y: 250,
       width: 400,
       height: 300,
     } as Element;
-    expect(ids('in:l1', stateOf(withElements(lane)))).toEqual(['f2', 'n4', 'n5', 'n6']);
+    expect(ids('in:l1', stateOf(withElements(stack)))).toEqual(['f2', 'n4', 'n5', 'n6']);
   });
 
   it('arrows by their ends', () => {
@@ -145,13 +145,13 @@ describe('selector refusals', () => {
   it('refuses in: on what is not a container, naming the containers', () => {
     expect(refusal('in:n3')).toMatchObject({
       code: 'invalid_value',
-      details: ['in:n3: n3 is not a frame or lane', 'containers: f2'],
+      details: ['in:n3: n3 is not a frame or stack', 'containers: f2'],
     });
     const tab = {
       ...checkoutFlow(),
       elements: checkoutFlow().elements.filter((el) => el.id !== 'f2'),
     };
-    expect(refusal('in:n3', stateOf(tab)).details).toEqual(['in:n3: n3 is not a frame or lane']);
+    expect(refusal('in:n3', stateOf(tab)).details).toEqual(['in:n3: n3 is not a frame or stack']);
   });
 
   it('needs a word inside a term to name one element', () => {

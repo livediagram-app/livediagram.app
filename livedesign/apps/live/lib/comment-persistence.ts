@@ -1,7 +1,7 @@
 import type { CommentMention } from '@livedesign/document';
 import { apiAddComment, apiDeleteComment, apiSetThreadResolved } from '@/lib/api-client';
 
-// How a comment change is kept (docs/specs/012-collaboration/comment-pin.md, docs/specs/013-workspace/share-roles.md):
+// How a comment change is kept (docs/specs/008-canvas/canvas-and-palette.md "Comments", docs/specs/013-workspace/share-roles.md):
 // an Editor's rides the room and the tab autosave; a read-only session (a Participant, or a Viewer the popover lets
 // read) has no autosave, so its add, delete, resolve and reopen go through the dedicated comment endpoints. Shared by
 // every surface that drives the thread machinery, so none of them can forget it: the Comment panel did, and a

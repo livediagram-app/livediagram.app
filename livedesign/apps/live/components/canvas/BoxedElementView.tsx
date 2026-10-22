@@ -2,7 +2,6 @@ import { memo, useRef, useState } from 'react';
 import {
   BORDER_DASH_ARRAY,
   DEFAULT_BOX_RADIUS_PX,
-  MIND_NODE_RADIUS_PX,
   cornerRadiusPx,
   finishBorderStroke,
   finishCornerFallbackPx,
@@ -15,12 +14,8 @@ import {
   defaultStrokeColor,
   defaultTextAlign,
   defaultTextColor,
-  ownColours,
   isSelfDrawingShape,
-  isUprightTitle,
   labelBodyInset,
-  uprightTitleStrip,
-  voteKeyOf,
   type ShapeMarker,
   type TextSize,
   withTagAccent,
@@ -30,25 +25,13 @@ import {
 } from '@livedesign/document';
 import { renderLabel } from '@/components/canvas/element-labels';
 import { ElementFaceRouter } from '@/components/canvas/ElementFaceRouter';
-import { LaneGutter } from '@/components/canvas/LaneGutter';
-import { uprightTitleFrame } from '@/components/canvas/upright-title';
-import { EntityView } from '@/components/canvas/entity/EntityView';
-import { openEntityFieldAt } from '@/components/canvas/entity/entity-double-click';
 import { elementAriaLabel, elementRole } from '@/lib/element-names';
 import { captionBandAlignY, captionBandClass } from '@/components/primitives/icon-band';
 import { LockBadge, SelectionChromeLayer } from '@/components/canvas/element-parts';
 import { isSvgRenderedShape } from '@/components/canvas/shape-svg-overlay';
-import { ShapeHitOutline, outlineHit } from '@/components/canvas/ShapeHitOutline';
-import { useCanvasPicksByOutline } from '@/components/canvas/CanvasStillContext';
 import { BoxBorderOverlay } from '@/components/canvas/BoxBorderOverlay';
 import { useTextHug } from '@/components/canvas/useTextHug';
-import { useMindLabelFit } from '@/components/canvas/useMindLabelFit';
 import { PageCornerFold } from '@/components/canvas/PageCornerFold';
-import { ReactionBurst } from '@/components/canvas/ReactionBurst';
-import { FenceView } from '@/components/canvas/collab/FenceView';
-import { AvatarPadView } from '@/components/canvas/collab/AvatarPadView';
-import { FurnitureView, isFurnitureViewShape } from '@/components/canvas/collab/FurnitureView';
-import { RoomView } from '@/components/canvas/collab/RoomView';
 import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
 import { describeVariant, editingLook } from '@/components/canvas/element-variant';
 import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
@@ -72,7 +55,6 @@ import { useBoxedElementAnimation } from '@/components/canvas/useBoxedElementAni
 import { useLabelTextAnimation } from '@/components/canvas/useTextAnimation';
 import { AnimationLayer } from '@/components/canvas/AnimationLayer';
 import { IconDropPreview, useIconDropTarget } from '@/components/canvas/useIconDropTarget';
-import { ElementVoteOverlay } from '@/components/canvas/ElementVoteOverlay';
 import { ShapeContentRouter } from '@/components/canvas/ShapeContentRouter';
 import { clearingInset } from '@/components/canvas/InsetContent';
 import { BrowserChrome } from '@/components/canvas/boxed-element-overlays';
@@ -89,10 +71,6 @@ import { isPanThrough } from '@/hooks/canvas/pan-through';
 // the function body (rather than the destructure) so the memo's
 // shallow check sees the underlying undefined vs concrete value
 // rather than the defaulted boolean.
-// How far a non-votable element recedes during a layer-scoped vote.
-// Enough to push it back clearly, not so far it stops being legible
-// context for the elements you ARE voting on.
-const VOTE_DIMMED_OPACITY = 0.35;
 
 function BoxedElementViewImpl({
   element,
@@ -108,16 +86,11 @@ function BoxedElementViewImpl({
   onBeginDrag,
   onShiftSelect,
   layerOpacity,
-  votableInVote,
   onBeginEdit,
   onCommitLabel,
   onSetTextAlign,
   onCommitTable,
-  onCommitHeaderSize,
-  onSnapSeam,
   onToggleChecklistItem,
-  onSetEntityFields,
-  onStartFieldArrow,
   onSetPageHeading,
   onSetWebRows,
   onSetPointerTip,
@@ -127,42 +100,11 @@ function BoxedElementViewImpl({
   chartPalette,
   onCancelEdit,
   onFollowLink,
-  onPressModeButton,
-  onPressFocusButton,
-  onPressSessionButton,
-  sessionStartBlocked,
-  sessionRunBy,
-  timerState,
-  tabTimer,
-  timerControls,
-  onSetSessionConfig,
-  onOpenElementSettings,
-  commentSelfId,
-  commentActions,
-  actionSelfId,
-  actionActions,
-  revealedForMe,
-  onToggleReveal,
-  onRollPicker,
-  collab,
-  chairSitters,
-  onEnterPortal,
-  onFireReaction,
-  reactionBurst,
-  onReactionBurstDone,
-  activeMode,
   onOpenComments,
   onOpenAction,
   onOpenNote,
   onEditLink,
   onOpenEditDialog,
-  vote,
-  selfId,
-  voteMax,
-  voteReviewActive,
-  isVoteFocus,
-  onCastVote,
-  onRetractVote,
   onDropIcon,
   onLinkCell,
   imageContext,
@@ -192,23 +134,17 @@ function BoxedElementViewImpl({
   // skips the axis-aligned snap. `isRotated` drives the wrapper transform.
   const rotation = rotationOf(element);
   const isRotated = rotation % 360 !== 0;
-  // Layer-scoped vote (docs/specs/012-collaboration/vote-layer-scope.md). Only while casting is OPEN: after End
-  // vote the canvas goes back to normal so the results walkthrough reads
-  // against the full canvas. `votableInVote` already folds in the kind
-  // rule, so a text element on the votable layer dims too — correct, it
-  // can't take a dot either.
-  const voteScoped = vote?.active === true && !!vote.voteLayerId;
-  const voteDimmed = voteScoped && !votableInVote;
-  const voteHighlighted = voteScoped && votableInVote === true;
   const label = element.label ?? '';
   const textSize: TextSize = element.textSize ?? 'scale';
   const defaultAlign = defaultTextAlign(element);
   const alignX = element.textAlignX ?? defaultAlign.x;
   const alignY = element.textAlignY ?? defaultAlign.y;
-  // A skin a Behaviour element was once created with (the old light button
-  // skin, the pre-redesign blue) reads as unset, so it follows the surface
-  // like the fill and border do (behaviour-skin.ts).
-  const own = ownColours(element);
+  // The colours the element carries itself; each missing one follows the surface.
+  const own = {
+    fill: 'fillColor' in element ? element.fillColor : undefined,
+    stroke: 'strokeColor' in element ? element.strokeColor : undefined,
+    text: 'textColor' in element ? element.textColor : undefined,
+  };
   const textColor = own.text ?? defaultTextColor(element, surface);
   // The drawing style (docs/specs/008-canvas/finish.md): its own, else the tab's. Under Sketch the body is
   // the SketchOverlay below, in place of the wrapper's border and background.
@@ -263,9 +199,6 @@ function BoxedElementViewImpl({
       isMultiSelected,
       isSelected,
       isPaintMode,
-      vote,
-      votableInVote,
-      onCastVote,
       onShiftSelect,
       onPlainClick,
       onPressArmedAction,
@@ -289,11 +222,6 @@ function BoxedElementViewImpl({
         : isLocked || !movable
           ? 'cursor-default'
           : 'cursor-move';
-  // A Quiz (docs/specs/012-collaboration/quiz.md) is a disc in a square box:
-  // the box itself takes no presses, so the empty corners and the gaps between
-  // its answers behave as bare canvas. The face re-enables the disc, which is
-  // the one place that selects and drags it.
-  const bodyPassesThrough = element.type === 'shape' && element.shape === 'quiz';
 
   // When at least one remote participant has selected this element, the
   // border / stroke colour is overridden with the first remote selector's
@@ -317,8 +245,8 @@ function BoxedElementViewImpl({
     surface,
     finish,
   );
-  // A whiteboard pen stroke and a path are picked by their drawn line, not their box
-  // (docs/specs/023-draw-mode/draw-mode.md "Selecting", path-tool.md "Selecting and erasing");
+  // A marker stroke and a path are picked by their drawn line, not their box
+  // (docs/specs/023-draw-mode/drawing-tools.md "Selecting", path-tool.md "Selecting and erasing");
   // once selected, the box drags either as any element, and the line still catches pointers
   // outside the box, so a press on its outer half never falls to the board.
   const selected = isSelected || isMultiSelected;
@@ -327,11 +255,8 @@ function BoxedElementViewImpl({
       element.penWidth !== undefined &&
       element.pen !== 'highlighter') ||
     (element.type === 'path' && !isEditing);
-  // A whiteboard shape likewise, by its drawn outline (ShapeHitOutline, below).
-  const onWhiteboard = useCanvasPicksByOutline();
-  const shapeHit = outlineHit(element, { onWhiteboard, selected });
   // Not yet selected, only the drawn line picks it: the rest of its box lets pointers through.
-  const passThrough = (hitLine && !selected) || shapeHit === 'outline';
+  const passThrough = hitLine && !selected;
 
   // The element's drawn corner, which its border overlay and its indicators both follow.
   const shapeKind = element.type === 'shape' ? element.shape : undefined;
@@ -339,12 +264,8 @@ function BoxedElementViewImpl({
     element.type === 'shape' ? finishOwnCorner(element, finish) : undefined,
     element.width,
     element.height,
-    // A mind node's default corner (docs/specs/009-elements/mind-node.md "Round nodes"), sharper under
-    // Professional (docs/specs/008-canvas/finish.md).
-    finishCornerFallbackPx(
-      shapeKind === 'mind-node' ? MIND_NODE_RADIUS_PX : DEFAULT_BOX_RADIUS_PX,
-      finish,
-    ),
+    // Sharper under Professional (docs/specs/008-canvas/finish.md).
+    finishCornerFallbackPx(DEFAULT_BOX_RADIUS_PX, finish),
   );
 
   // An inline icon sits beside the label on a regular shape (the
@@ -371,23 +292,10 @@ function BoxedElementViewImpl({
   const iconCaptionBand =
     element.type === 'shape' && element.shape === 'icon' ? captionBandClass(alignX, alignY) : null;
 
-  // An upright lane title turns in its strip; inside the turned frame it reads along the strip,
-  // centred across it (docs/specs/009-elements/lane.md "Upright titles").
-  const uprightStrip =
-    element.type === 'shape' && element.shape === 'lane' && isUprightTitle(element)
-      ? uprightTitleStrip(element, element.width, element.height)
-      : null;
-  const labelFrame = uprightStrip ? uprightTitleFrame(uprightStrip) : null;
-
-  // A whiteboard text box hugs its text, growing with it while typed (useTextHug).
+  // A text box that fits or wraps hugs its text, growing with it while typed (useTextHug).
   const textHug = useTextHug(element, isEditing, fontFamily);
-  // A mind node grows taller with its label's lines while typed (useMindLabelFit).
-  const mindFit = useMindLabelFit(element, isEditing, fontFamily);
 
-  const labelPadding = uprightStrip
-    ? // A one-line strip has no room for a roomy padding across it.
-      Math.min(PADDING_PX.sm, PADDING_PX[element.padding ?? defaultPadding(element)])
-    : PADDING_PX[element.padding ?? defaultPadding(element)];
+  const labelPadding = PADDING_PX[element.padding ?? defaultPadding(element)];
   // The element's indicators, placed before the label so the content can move out of their way.
   const indicators = useElementIndicators(
     element,
@@ -405,8 +313,8 @@ function BoxedElementViewImpl({
     element,
     label,
     textSize,
-    uprightStrip ? uprightStrip.alongAlign : alignX,
-    uprightStrip ? 'middle' : iconCaptionBand ? captionBandAlignY(alignX, alignY) : alignY,
+    alignX,
+    iconCaptionBand ? captionBandAlignY(alignX, alignY) : alignY,
     labelPadding,
     isEditing,
     (next, runs) => onCommitLabel(element.id, next, runs),
@@ -423,7 +331,6 @@ function BoxedElementViewImpl({
     labelAnimClass,
     textHug.label,
     textAnim,
-    mindFit.onLiveText,
   );
 
   // Palette-icon drop target (docs/specs/008-canvas/canvas-and-palette.md inline icons) — see
@@ -455,25 +362,7 @@ function BoxedElementViewImpl({
         longPress.onPointerDown(e);
         handleShapeDown(e);
       }}
-      onDoubleClick={(e) => {
-        // An Editor's double-click on an entity's fields edits that field in place
-        // (docs/specs/009-elements/entity.md "Editing on the canvas"); on its title, the title.
-        if (
-          element.type === 'shape' &&
-          element.shape === 'entity' &&
-          !readOnly &&
-          !isLocked &&
-          !remotelyLocked &&
-          !element.rotation &&
-          onSetEntityFields &&
-          wrapperRef.current &&
-          openEntityFieldAt(element, wrapperRef.current.getBoundingClientRect(), e.clientY)
-        ) {
-          e.stopPropagation();
-          return;
-        }
-        handleDoubleClick(e);
-      }}
+      onDoubleClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
       onPointerUp={handlePointerUp}
       onPointerEnter={isAnnotation ? () => setHovering(true) : undefined}
@@ -481,32 +370,24 @@ function BoxedElementViewImpl({
       onDragOver={acceptsIconDrop ? handleIconDragOver : undefined}
       onDragLeave={acceptsIconDrop ? handleIconDragLeave : undefined}
       onDrop={acceptsIconDrop ? handleIconDrop : undefined}
-      // `group` so the vote stepper inside can fade up on element hover
-      // (docs/specs/012-collaboration/session-tools.md) without threading a hover state through props.
       className={`group group/el absolute origin-center touch-none select-none ${
         // A looping animation (docs/specs/008-canvas/canvas-and-palette.md) replaces the one-shot pop-in entry
         // class (both drive the `animation` property, so they can't co-exist).
         wrapperAnimClass
-      } ${variant.className} ${cursor} ${bodyPassesThrough ? 'pointer-events-none' : ''}`}
+      } ${variant.className} ${cursor}`}
       style={{
         // Isometric depth stagger (docs/specs/008-canvas/isometric-view.md) — see globals.css [data-iso].
         ...({ '--iso-z': isoDepth } as React.CSSProperties),
         left: element.x,
         top: element.y,
         width: textHug.box?.width ?? element.width,
-        height: textHug.box?.height ?? mindFit.height ?? element.height,
+        height: textHug.box?.height ?? element.height,
         color: textColor,
         // Every word on the element in its face, so a face that writes its own (a progress value, a panel's
         // rows, a button) wears the tab's font and finish like its label does (docs/specs/008-canvas/finish.md).
         // Unset when nothing picks one, so the editor default still applies.
         ...(fontFamily ? { fontFamily } : {}),
-        // Layer-scoped vote (docs/specs/012-collaboration/vote-layer-scope.md): elements off the votable layer stay
-        // VISIBLE — you still need the canvas's context to judge what
-        // you're voting on — but drop back so the votable set reads as the
-        // foreground. Only while casting is open; once the vote ends the
-        // canvas returns to normal for the results walkthrough.
-        opacity:
-          (element.opacity ?? 1) * (layerOpacity ?? 1) * (voteDimmed ? VOTE_DIMMED_OPACITY : 1),
+        opacity: (element.opacity ?? 1) * (layerOpacity ?? 1),
         ...variant.style,
         ...animStyle,
         // Spin about the centre (the wrapper already has origin-center).
@@ -532,7 +413,7 @@ function BoxedElementViewImpl({
         // selection handles live in the grips layer, SelectionChromeLayer.)
         ...(editLook.raise ? { zIndex: 10 } : {}),
         // Only the drawn line picks an element not yet selected (its hit
-        // line, in FreehandSvg / ShapeHitOutline); the rest of its box lets pointers through.
+        // line, in FreehandSvg); the rest of its box lets pointers through.
         ...(passThrough ? { pointerEvents: 'none' as const } : {}),
       }}
     >
@@ -593,80 +474,6 @@ function BoxedElementViewImpl({
               radiusPx={cornerPx}
             />
           ) : null}
-          {/* A Record's rows (docs/specs/009-elements/entity.md), under its title label. */}
-          {element.type === 'shape' && element.shape === 'entity' ? (
-            <EntityView
-              element={element}
-              textColor={textColor}
-              fontFamily={fontFamily}
-              stroke={own.stroke ?? defaultStrokeColor(element, surface)}
-              actions={
-                // An Editor's selected, unlocked, upright entity edits in place (docs/specs/009-elements/entity.md).
-                isSelected &&
-                !readOnly &&
-                !isLocked &&
-                !remotelyLocked &&
-                !element.rotation &&
-                onSetEntityFields &&
-                onStartFieldArrow
-                  ? { setFields: onSetEntityFields, startFieldArrow: onStartFieldArrow }
-                  : undefined
-              }
-            />
-          ) : null}
-          {/* A chair, a desk or a sofa (docs/specs/009-elements/chair.md "Facing"): the furniture itself,
-          drawn for its facing, plus whoever presence says is sitting in it. */}
-          {element.type === 'shape' && isFurnitureViewShape(element.shape) ? (
-            <FurnitureView
-              element={element}
-              stroke={own.stroke ?? defaultStrokeColor(element, surface)}
-              fill={own.fill ?? defaultFillColor(element, surface)}
-              sitters={chairSitters?.(element.id) ?? []}
-              animClass={artAnimClass}
-            />
-          ) : null}
-          {/* A room (docs/specs/009-elements/office.md "Room"): its floor, walls and doorway, its name on the
-          back wall (the ordinary label, which sits there). */}
-          {element.type === 'shape' && element.shape === 'room' ? (
-            <RoomView
-              element={element}
-              stroke={own.stroke ?? defaultStrokeColor(element, surface)}
-              floor={own.fill ?? defaultFillColor(element, surface)}
-              animClass={artAnimClass}
-            />
-          ) : null}
-          {/* A fence (docs/specs/009-elements/fence.md): posts and rails. */}
-          {element.type === 'shape' && element.shape === 'fence' ? (
-            <FenceView
-              element={element}
-              stroke={own.stroke ?? defaultStrokeColor(element, surface)}
-              animClass={artAnimClass}
-            />
-          ) : null}
-          {/* An Avatar Pad (docs/specs/009-elements/avatar-pad.md): the pixel platform characters start on. */}
-          {element.type === 'shape' && element.shape === 'avatar-pad' ? (
-            <AvatarPadView animClass={artAnimClass} />
-          ) : null}
-          {/* A Lane's title gutter (docs/specs/009-elements/lane.md), behind the label. */}
-          {element.type === 'shape' && element.shape === 'lane' ? (
-            <LaneGutter
-              stroke={element.strokeColor ?? defaultStrokeColor(element, surface)}
-              headerFill={element.headerFill}
-              headerSize={element.headerSize}
-              titleOrientation={element.titleOrientation}
-              width={element.width}
-              height={element.height}
-              onCommitSize={
-                onCommitHeaderSize ? (px) => onCommitHeaderSize(element.id, px) : undefined
-              }
-              onSnapSeam={onSnapSeam}
-              elementId={element.id}
-              elementX={element.x}
-              elementY={element.y}
-              alignX={alignX}
-              alignY={alignY}
-            />
-          ) : null}
           {/* A Page's turned-back bottom-right corner (docs/specs/009-elements/page-element.md). */}
           {element.type === 'shape' && element.shape === 'page' ? (
             <PageCornerFold
@@ -699,35 +506,14 @@ function BoxedElementViewImpl({
             readOnly={readOnly}
             writable={writable}
             fontFamily={fontFamily}
-            activeMode={activeMode}
-            collab={collab}
-            commentActions={commentActions}
-            actionSelfId={actionSelfId}
-            actionActions={actionActions}
-            commentSelfId={commentSelfId}
             imageContext={imageContext}
             tabSummaries={tabSummaries}
-            tabTimer={tabTimer}
-            timerControls={timerControls}
-            timerState={timerState}
-            sessionStartBlocked={sessionStartBlocked}
-            sessionRunBy={sessionRunBy}
-            revealedForMe={revealedForMe}
             onCommitTable={onCommitTable}
-            onEnterPortal={onEnterPortal}
-            onFireReaction={onFireReaction}
             onFollowLink={onFollowLink}
             onLinkCell={onLinkCell}
-            onPressModeButton={onPressModeButton}
-            onPressFocusButton={onPressFocusButton}
-            onPressSessionButton={onPressSessionButton}
-            onRollPicker={onRollPicker}
             onSetPageHeading={onSetPageHeading}
             onSetWebRows={onSetWebRows}
             onSetHeroCaptionLine={onSetHeroCaptionLine}
-            onSetSessionConfig={onSetSessionConfig}
-            onOpenElementSettings={onOpenElementSettings}
-            onToggleReveal={onToggleReveal}
             label={label}
             labelNode={labelNode}
             // Clear of the indicators and on the label body (a cylinder's, under its lid).
@@ -741,18 +527,10 @@ function BoxedElementViewImpl({
             inlineIcon={inlineIcon}
             marker={marker}
             iconCaptionBand={iconCaptionBand}
-            labelFrame={labelFrame}
           />
         </SketchFace>
       </FaceFinishProvider>
       {element.type === 'image' ? sketchOverlay() : null}
-
-      {shapeHit && element.type === 'shape' ? (
-        <ShapeHitOutline
-          element={element}
-          borderPx={typeof variant.style.borderWidth === 'number' ? variant.style.borderWidth : 0}
-        />
-      ) : null}
 
       {/* The Shape set's ring / halo / trace / gradient layer (AnimationLayer): over the face. */}
       {layer && layerAnim ? (
@@ -773,19 +551,6 @@ function BoxedElementViewImpl({
           land. Cleared on drop / drag-leave. */}
       {dropSide ? <IconDropPreview side={dropSide} /> : null}
 
-      {/* The burst (docs/specs/009-elements/reaction-pad.md), a sibling of the label stack rather than a
-          child of it: the particles leave the pad's box on purpose, and the
-          face above clips to its own rounded corners. */}
-      {reactionBurst ? (
-        <ReactionBurst
-          reaction={reactionBurst.reaction}
-          seed={reactionBurst.seed}
-          width={element.width}
-          height={element.height}
-          onDone={() => onReactionBurstDone?.(element.id)}
-        />
-      ) : null}
-
       {isLocked ? <LockBadge /> : null}
 
       {remoteSelectors.length > 0 ? <RemoteSelectorsStrip selectors={remoteSelectors} /> : null}
@@ -802,34 +567,6 @@ function BoxedElementViewImpl({
           placed={indicators.layout}
         />
       ) : null}
-
-      {/* Layer-scoped vote (docs/specs/012-collaboration/vote-layer-scope.md): a soft brand ring marking what CAN
-          take a dot. Paired with the dimming of everything else — the two
-          together answer "where do I click" without the user having to
-          work out which layer each element is on. Pointer-events-none so
-          it never intercepts the cast. */}
-      {voteHighlighted ? (
-        <div
-          className="pointer-events-none absolute -inset-0.5 ring-2 ring-brand-400/70"
-          style={{ borderRadius: 'inherit' }}
-          aria-hidden
-        />
-      ) : null}
-
-      {/* Dot-vote tally pill + winner ring (docs/specs/012-collaboration/session-tools.md) — see
-          ElementVoteOverlay. */}
-      <ElementVoteOverlay
-        voteKey={voteKeyOf(element)}
-        name={element.label ?? 'this element'}
-        vote={vote}
-        selfId={selfId}
-        voteMax={voteMax}
-        votableInVote={votableInVote}
-        voteReviewActive={voteReviewActive}
-        isVoteFocus={isVoteFocus}
-        onRetractVote={onRetractVote}
-        onCastVote={onCastVote}
-      />
 
       {/* Selection chrome (resize / edge-grip handles), portalled into the
           grips layer above every element — see SelectionChromeLayer for the

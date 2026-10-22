@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { reorderSlot } from './useHandleReorder';
 
-// The slot a dragged row lands in, from the rows' middles (docs/specs/026-plan/item-types.md "Editing a type").
+// The slot a dragged row lands in, from the rows' middles.
 describe('reorderSlot', () => {
   const mids = [10, 50, 90, 130];
 

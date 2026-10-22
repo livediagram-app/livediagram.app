@@ -13,15 +13,13 @@ the database clean without anyone having to tidy up.
 
 ## Which documents
 
-A document is **empty** when none of its tabs holds an element or a form. A Form tab's form is
-stored on its tab beside the elements, not as elements ([Forms](../030-forms/forms.md)), so a tab
-holding a form keeps its document, even a form with no questions yet. A document with
+A document is **empty** when none of its tabs holds an element. A document with
 no tabs at all is empty too. Nothing else counts as content: a name, extra
 blank tabs, a tab's settings (background, grid), a share link, a star or a
 folder never keep a document. Comments and actions live on elements, so an
 empty document has none. A tab shared with another document
 ([Tab ↔ document many-to-many](../006-document/tab-document-many-to-many.md))
-counts in every document that holds it: if it has elements or a form,
+counts in every document that holds it: if it has elements,
 none of those documents is empty.
 
 A document is **stale** when it was created at least 30 days ago and has not

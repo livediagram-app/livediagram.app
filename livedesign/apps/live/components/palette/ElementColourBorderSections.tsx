@@ -38,7 +38,6 @@ import { BorderControls } from '@/components/palette/BorderControls';
 import { AccentEdgeRow } from '@/components/palette/AccentEdgeRow';
 import { ShadowSection } from '@/components/palette/ShadowSection';
 import { FinishSection, resolveOwnFinish } from '@/components/palette/FinishSection';
-import { useCoversCanvas } from '@/hooks/plan/plan-cover-store';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import type { useContextMenuScaffold } from './useContextMenuScaffold';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
@@ -77,8 +76,6 @@ export function ElementColourBorderSections({
   arrowheadColorHandlers: Scaffold['arrowheadColorHandlers'];
   strokeColorHandlers: Scaffold['strokeColorHandlers'];
 }) {
-  // A board, view or Sheet covering the canvas casts no shadow anyone sees: none offered (plan-board.md "Maximised board").
-  const covering = useCoversCanvas(target.id);
   // A swatch shows the colour the element is ACTUALLY drawn in, so an element
   // that carries no colour of its own must read the canvas's ink here too
   // (docs/specs/007-editor/live-app.md) — otherwise the menu offers a light-canvas blue beside a grey
@@ -253,7 +250,7 @@ export function ElementColourBorderSections({
       ) : null}
       {/* Shadow (docs/specs/008-canvas/element-shadows.md) — presets + sliders, for the body-drawing boxed
           types. Sits after Border in the style band. */}
-      {supportsShadow(target) && !covering ? (
+      {supportsShadow(target) ? (
         <ShadowSection
           shadow={(target as { shadow?: ElementShadow }).shadow}
           section={sectionProps('shadow')}

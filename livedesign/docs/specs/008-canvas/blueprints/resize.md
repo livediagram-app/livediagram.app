@@ -3,8 +3,7 @@
 Derived from [Canvas and palette](../canvas-and-palette.md) "Resize", "Aspect ratio lock",
 "Rotation" and "Adding elements", for the resize of boxed elements and multi-selections, the
 Shift constraint on draw-to-size, and where every selection grip draws ("The handles are always on
-top"). Reshaping a recognised whiteboard shape is owned by the
-[whiteboard blueprint](../../023-draw-mode/blueprints/whiteboard-round-one.md).
+top").
 
 ## Domain and naming
 
@@ -80,7 +79,7 @@ snapEdge)` with `lead` from the raw pointer, so the square survives the snap; wi
   the element's resting box, turned and shifted as the wrapper is. The frame is
   `pointer-events: none`; each grip re-enables them, so the body beneath stays draggable.
 - The element's own content keeps its paint order; nothing about selection raises it.
-- A grip is not affected by the element's opacity, a layer's opacity, a vote's dimming or a looping
+- A grip is not affected by the element's opacity, a layer's opacity or a looping
   animation's motion: it draws opaque on the resting box.
 
 ## Interfaces and contracts
@@ -118,7 +117,7 @@ primaryId, mode, dx, dy, shiftHeld, dragAspectLocked, guidesOn })` returns `{ bo
   `translate: 0 0 calc(2px + var(--iso-z) * 0.01px)` with `--iso-z` one past the top element's
   paint index (above the arrows' `1px` nudge).
 - A later element that forms its own stacking context, or a descendant with its own z-index (a
-  lane's gutter and a face's settings button, both `z-10`), stays under the layer.
+  face's settings button, `z-10`), stays under the layer.
 - Remote cursors (`z-index: 40`) stay above the grips.
 
 ## Performance and limits
@@ -143,8 +142,6 @@ primaryId, mode, dx, dy, shiftHeld, dragAspectLocked, guidesOn })` returns `{ bo
   every tab kind, Shift pressed and released mid-drag.
 - `components/canvas/useCanvasDrawGesture.test.tsx` "with Shift": square, leading-axis snap, up-left,
   mid-drag toggle.
-- `hooks/canvas/useCanvasSurfaceGestures.whiteboard-handles.test.tsx`: Shift press on corner, edge
-  and union handles does not start a marquee.
 - `components/canvas/SelectionGripsLayer.test.tsx`: the layer draws last and above; a box's eight
   handles land in the layer and none in the element; the frame's box, rotation and shift; cursor
   and counter-scale kept; a handle press starts the resize without reaching the element body; an

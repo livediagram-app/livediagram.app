@@ -6,20 +6,14 @@
 // full palette, connectors, frames, layers, templates) stays shut without a change; these flags open the few
 // content gestures a Participant has.
 
-import {
-  addedByAdder,
-  isMindNode,
-  isParticipantPlaceable,
-  participantWritesOn,
-  type Element,
-} from '@livedesign/document';
+import { addedByAdder, isParticipantPlaceable, type Element } from '@livedesign/document';
 import type { AccessLevel } from '@livedesign/api-schema';
 
 export type EditorCapabilities = {
   level: AccessLevel;
-  // Session tools: dots, estimates, temperature checks, the Done check, quizzes, ideas.
+  // Take part in the room: comment on elements.
   takePart: boolean;
-  // Add a sticky, text or image, or grow a mind map (PARTICIPANT_ADDABLE_TYPES, `addableOn`).
+  // Add a sticky, text or image (PARTICIPANT_ADDABLE_TYPES, `addableOn`).
   addContent: boolean;
   // Every content flag is an Editor's beyond this point; for a Participant it follows the participant rule.
   writeText: (el: Element) => boolean;
@@ -78,19 +72,19 @@ export function resolveEditorCapabilities(input: {
     takePart: true,
     // Nothing added without a key could be proven the Participant's later, so the room refuses it (SR5).
     addContent: adderKey !== null,
-    writeText: (el) => !isLocked(el) && participantWritesOn(el),
-    move: (el) => !isLocked(el) && (isParticipantPlaceable(el) || isMindNode(el) || own(el)),
+    writeText: (el) => !isLocked(el),
+    move: (el) => !isLocked(el) && (isParticipantPlaceable(el) || own(el)),
     resize: (el) => !isLocked(el) && (isParticipantPlaceable(el) || own(el)),
     recolour: (el) => !isLocked(el) && (el.type === 'sticky' || own(el)),
-    // Its own work, and any mind node (its connector goes with it; the room checks that part).
-    remove: (el) => !isLocked(el) && (own(el) || isMindNode(el)),
+    // Its own work.
+    remove: (el) => !isLocked(el) && own(el),
     planCards: true,
     sheetCells: true,
   };
 }
 
 /**
- * The guard a content-adding hook takes (images, mind and flowchart growth, the placement helpers a dragged palette
+ * The guard a content-adding hook takes (images, the placement helpers a dragged palette
  * tile lands through): a Participant that may add content is held only by the session's own guard (`blocked`: a
  * locked tab or layer, a tab still loading); every other read-only session stays shut (`structureBlocked`).
  */

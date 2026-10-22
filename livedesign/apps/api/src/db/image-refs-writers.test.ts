@@ -129,7 +129,7 @@ describe('copyDocument (Copy to my files)', () => {
   });
 });
 
-describe('swapTabData (Q&A board)', () => {
+describe('swapTabData (participant writes)', () => {
   const body = (...imageIds: string[]) =>
     JSON.stringify({ elements: imageIds.map((iid, i) => image(`el-${i}`, iid)) });
 

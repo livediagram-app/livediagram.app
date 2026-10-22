@@ -1,13 +1,12 @@
 'use client';
 
-// What a whiteboard pen stroke shows while it is drawn, beyond its ink (docs/specs/023-draw-mode/
-// draw-mode.md "Shape recognition"): the shape it is locked to, and on a pen or touch stroke the
-// chip that flips it. Subscribed to the live stroke: each update checks only the samples added
-// since the last one, and any sample beyond the still radius moves the anchor, sends the chip
-// away and restarts the dwell timer. When it fires with recognition on, the stroke's centre line
-// is recognised and the stroke locks to that shape: dragging on reshapes it (LiveStroke.shaped).
-// Whatever locks or breaks the stroke (the dwell, Alt, the chip) the shown shape follows
-// `shaped()`, so what shows is what lands.
+// What a marker stroke shows while it is drawn, beyond its ink (docs/specs/023-draw-mode/
+// drawing-tools.md "Shape recognition"): the shape it is locked to, and on a pen or touch stroke
+// held still the chip that flips it. Subscribed to the live stroke: each update checks only the
+// samples added since the last one, and any sample beyond the still radius moves the anchor, sends
+// the chip away and restarts the dwell timer. When it fires, the stroke's centre line is read and
+// the chip offers the shape (or, locked, the ink back). Whatever locks or breaks the stroke (Alt,
+// the chip) the shown shape follows `shaped()`, so what shows is what lands.
 
 import { useEffect, useState } from 'react';
 import type { RecognisedShape } from '@livedesign/document';
@@ -39,7 +38,6 @@ type Shown = RecognitionView & { stroke: LiveStroke };
 
 export function useRecognitionPreview(
   stroke: LiveStroke | null,
-  active: boolean,
   zoom: number,
   penWidth: number,
 ): RecognitionView {
@@ -49,8 +47,6 @@ export function useRecognitionPreview(
     if (!stroke) return;
     // A mouse has Alt; a pen or a finger gets the chip.
     const chips = stroke.pointer !== 'mouse';
-    // Recognition off on a mouse: nothing to wait for, Alt alone locks it.
-    const dwells = active || chips;
     let timer: ReturnType<typeof setTimeout> | null = null;
     let anchor: Point | null = null;
     // Samples already checked against the anchor.
@@ -71,15 +67,8 @@ export function useRecognitionPreview(
     const fire = () => {
       timer = null;
       const read = stroke.shaped() ? null : recogniseBoardStroke(stroke.ink(penWidth));
-      // Alt held keeps it ink: holding still does not snap it again.
-      if (read && active && !stroke.inkHeld()) {
-        debugLog('[whiteboard] recognition preview', read.kind);
-        // The stroke is the shape from here on: dragging on reshapes it. Shown as shaped() reads,
-        // so a Shift already held shows it perfect, as release would land it.
-        stroke.snapTo(read);
-      }
-      chip = !chips ? null : stroke.shaped() ? 'keep' : read ? 'make' : null;
-      if (chip) debugLog('[whiteboard] recognition chip', chip);
+      chip = stroke.shaped() ? 'keep' : read ? 'make' : null;
+      if (chip) debugLog('[marker] recognition chip', chip);
       publish();
     };
     const onUpdate = () => {
@@ -98,9 +87,8 @@ export function useRecognitionPreview(
         anchor = stroke.points[count - 1]!;
         chip = null;
         if (timer) clearTimeout(timer);
-        // A locked mouse stroke has nothing left to wait for.
-        const waits = dwells && (chips || !stroke.shaped());
-        timer = waits ? setTimeout(fire, RECOGNITION_PREVIEW_DWELL_MS) : null;
+        // A mouse has no chip to wait for.
+        timer = chips ? setTimeout(fire, RECOGNITION_PREVIEW_DWELL_MS) : null;
       }
       publish();
     };
@@ -110,7 +98,7 @@ export function useRecognitionPreview(
       unsubscribe();
       if (timer) clearTimeout(timer);
     };
-  }, [stroke, active, zoom, penWidth]);
+  }, [stroke, zoom, penWidth]);
 
   return shown && shown.stroke === stroke ? shown : NOTHING;
 }

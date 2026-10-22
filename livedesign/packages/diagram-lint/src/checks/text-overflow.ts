@@ -1,7 +1,6 @@
-// `text-overflow` (warning): on a page (a Pages tab) text is the content rather than a caption, so a text
-// element whose words, wrapped as every headless render wraps them, need more lines than its box holds runs into what
-// is under it. On every tab, two text elements whose lines are drawn over each other print over each other (a board's
-// column heading wrapped onto its subtitle): `textOverprint` alone, as a caption's own box is not linted elsewhere.
+// `text-overflow` (warning): on a page text is the content rather than a caption, so a text element whose words,
+// wrapped as every headless render wraps them, need more lines than its box holds runs into what is under it, and
+// two text elements whose lines are drawn over each other print over each other.
 
 import {
   defaultPadding,
@@ -93,11 +92,6 @@ export const textOverflow: Check = (ctx) => {
   const texts = textsOf(ctx);
   const inks = new Map(texts.map((t) => [t.id, inkOf(t)]));
   return [...linesOver(ctx, texts, inks), ...overprints(ctx, texts, inks)];
-};
-
-export const textOverprint: Check = (ctx) => {
-  const texts = textsOf(ctx);
-  return overprints(ctx, texts, new Map(texts.map((t) => [t.id, inkOf(t)])));
 };
 
 type Text = BoxedElement & { label: string };

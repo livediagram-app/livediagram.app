@@ -3,7 +3,6 @@
 import { describe, expect, it } from 'vitest';
 import { PALETTE_CATEGORIES } from './palette-categories';
 import { tilesForCategory } from './palette-tile-defs';
-import { paletteCategoriesFor } from './palette-layouts';
 import {
   STRIP_TILE_LIMIT,
   desktopStripTileLimit,
@@ -14,8 +13,10 @@ import {
 } from './toolbar-strip-tiles';
 
 const NONE = { hasImage: true };
-// Diagram mode's Popular, as its palette layout fills it.
-const diagramPopular = paletteCategoriesFor('diagram').find((c) => c.id === 'popular')!.tiles!;
+// The first Shapes, divided after the diamond (the third tile) alone.
+const dividedShapes = tilesForCategory('shapes')
+  .slice(0, 8)
+  .map(({ dividerAfter: _, ...t }, i) => (i === 2 ? { ...t, dividerAfter: true as const } : t));
 
 describe('stripTilesFor', () => {
   it('never shows more than the limit', () => {
@@ -75,14 +76,11 @@ describe('stripTilesFor', () => {
     expect([...stripTilesFor(category, NONE).dividersAfter]).toEqual(after);
   });
 
-  it('drops the dividers of a category that exactly fills the strip, keeping every tile', () => {
-    // Components holds the strip's full twelve tiles (with the Card, Badge and Step number), so its
-    // divider after the entity gives way rather than a tile.
+  it('keeps every tile of a category short of the strip', () => {
     const components = stripTilesFor('components', NONE);
-    expect(components.tiles).toHaveLength(STRIP_TILE_LIMIT);
-    expect([...components.dividersAfter]).toEqual([]);
-    // Build, short of it since the Timeline moved to Concepts, keeps every tile on the strip.
-    expect(stripTilesFor('build', NONE).tiles).toHaveLength(11);
+    expect(components.tiles).toHaveLength(tilesForCategory('components').length);
+    expect(components.hasMore).toBe(false);
+    expect(stripTilesFor('build', NONE).tiles).toHaveLength(4);
   });
 
   it('gives a divided category one tile less when it overflows, to make room', () => {
@@ -92,9 +90,9 @@ describe('stripTilesFor', () => {
   });
 
   it('spends part-tile slack on a divider rather than a whole tile', () => {
-    // Diagram's Popular divides after the diamond (the third tile). With room
-    // for 4.26 tiles, four tiles and that divider (4.2) fit.
-    const popular = { ...NONE, tiles: diagramPopular };
+    // Divided after the diamond (the third tile). With room for 4.26 tiles,
+    // four tiles and that divider (4.2) fit.
+    const popular = { ...NONE, tiles: dividedShapes };
     const roomy = stripTilesFor('popular', { ...popular, limit: 4.26 });
     expect(roomy.tiles).toHaveLength(4);
     expect([...roomy.dividersAfter]).toEqual(['shapes:diamond']);

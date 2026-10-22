@@ -9,11 +9,11 @@ Two decisions, the second resting on the first:
    a layout that re-flows as it is resized and every piece of text editable in place.
 2. **The editor has no groups**: no `groupId` field, no Group / Ungroup actions or `⌘G`, no
    group mode, group selection or drill-in, no group toolbar actions, no group quick-connect or
-   `pinned-group` arrow endpoints, and no "whole group" option in the Eraser.
+   `pinned-group` arrow endpoints.
 
 ## Why
 
-Groups cost more than they give. Every selection, drag, delete, duplicate, lock, layer, eraser,
+Groups cost more than they give. Every selection, drag, delete, duplicate, lock, layer,
 quick-connect and clipboard path needs a group branch, and the interactions (select the group,
 click again to drill in, no resize, group mode to extend one) are a steady source of "why did
 that happen". What people actually wanted from them is covered by the marquee multi-selection
@@ -22,8 +22,7 @@ that happen". What people actually wanted from them is covered by the marquee mu
 The one real dependency is the palette's Components. A component built as grouped primitives
 comes apart the moment a user drags the wrong piece, resizes as a
 uniform zoom of loose boxes (so text and padding scale together), and can only be edited by
-drilling into the group. The Entity ([The entity](entity.md)) shows the better answer for the UML
-class box: make it one element.
+drilling into the group. The better answer is to make it one element.
 
 ## The elements
 
@@ -45,8 +44,7 @@ shadow, comments, links, copy / paste, undo.
 
 **The label is the main text wherever there is one**, so double-click edits it with the normal
 label editor (rich text, alignment, size, bold) exactly like any shape. The masthead lines
-(`pageTitle` / `pageSubtitle`) are the same single-line plain strings the Page element uses
-([The Page element](page-element.md)), reusing its field names, bound and setter rather than inventing a parallel pair.
+(`pageTitle` / `pageSubtitle`) are single-line plain strings with one bound and one setter, shared by every element that carries them.
 
 **Every other piece of text edits in place** once the element is selected: click a stat's value,
 a step's caption or a nav link and type. Enter commits, Escape restores. Before the element is
@@ -54,7 +52,7 @@ selected the text is inert, so a press anywhere on it still selects and drags it
 selects, the second edits, the same rule the timeline rail uses).
 
 **Rows are added and removed from the context menu** (a Stats / Steps / Links section in the
-Tools flyout, beside the checklist and entity editors), and from a **+** on the canvas at the end
+Tools flyout, beside the checklist editor), and from a **+** on the canvas at the end
 of the row while a stat row or process is selected.
 
 ## Resizing
@@ -92,9 +90,9 @@ embedding and the image menu all keep working with no second image pipeline. The
 can be turned off and on from the image's context menu, which also means any image can become a
 hero.
 
-## Existing diagrams
+## Existing documents
 
-- Components already on a board were built as loose primitives and **stay as they are**: they
+- Components already on a tab were built as loose primitives and **stay as they are**: they
   are simply separate elements. We do not try to recognise and fuse them.
 - `groupId` on stored elements is **ignored** and stripped on load.
 - A legacy `pinned-group` arrow end is **frozen to a free endpoint** at the position it resolved
@@ -112,5 +110,4 @@ The editor has none of these:
 - Group selection, drill-in (`soloSelectedId`), and group-aware drag / delete / lock / layer /
   duplicate / clipboard / format-painter paths.
 - Group quick-connect and `pinned-group` endpoints (except the load-time migration above).
-- The Eraser Panel's "whole group" toggle ([Eraser Panel](../008-canvas/eraser-panel.md)).
 - A help article on groups.

@@ -167,8 +167,8 @@ const shows = (check: () => void) => waitFor(check);
 
 describe('Show Me on every page', () => {
   it.each([
-    ['wireframe', '/help/canvas/pages-mode/wireframe-pages/'],
-    ['logo', '/help/canvas/pages-mode/logo-pages/'],
+    ['wireframe', '/help/pages/wireframe-pages/'],
+    ['logo', '/help/pages/logo-pages/'],
   ] as const)('heads a %s page’s panel beside its own Help', (kind, href) => {
     render(<Page of={page(kind)} />);
     expect(screen.getByRole('button', { name: 'Show Me' })).toBeTruthy();

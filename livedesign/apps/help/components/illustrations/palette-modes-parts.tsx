@@ -5,7 +5,7 @@
 //
 // Split out of palette-modes.tsx, which labelled these "Mode glyphs" and
 // "Shared mode-row" and then ran them ahead of its scenes — with the isometric
-// helpers stranded mid-file between Spotlight and Avatar, next to the one
+// helpers stranded mid-file after Spotlight, next to the one
 // scene that first needed them.
 //
 // Palette-specific by design: ./primitives holds the house style every
@@ -107,19 +107,6 @@ export function SpotlightGlyph({ on = false }: { on?: boolean }) {
         strokeWidth={1.5}
       />
       <circle r={2} className={on ? 'fill-white' : 'fill-amber-400'} />
-    </g>
-  );
-}
-
-/** A mid-stride walking figure (Avatar mode). */
-export function AvatarGlyph({ on = false }: { on?: boolean }) {
-  const cls = on ? 'stroke-white' : 'stroke-slate-500';
-  return (
-    <g className={cls} strokeWidth={1.5} fill="none" strokeLinecap="round">
-      <circle r={2} cx={0.5} cy={-5} className={on ? 'stroke-white' : 'stroke-slate-500'} />
-      <path d="M0.5 -2.4 v4" />
-      <path d="M0.5 1.6 l-3 4.4 M0.5 1.6 l3.2 4.4" />
-      <path d="M0.5 -1.2 l-3.4 1.6 M0.5 -1.2 l3.4 1.2" />
     </g>
   );
 }

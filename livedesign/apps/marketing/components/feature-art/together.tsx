@@ -20,7 +20,6 @@ import {
   ON_CANVAS,
   Panel,
   Pill,
-  PixelWalker,
   Pointer,
   RULE,
   SAM,
@@ -462,62 +461,6 @@ export function LaserArt() {
         strokeWidth="3.4"
         strokeLinecap="round"
       />
-    </Scene>
-  );
-}
-
-/** Avatar mode: your character walks to the step you are talking about, and the room celebrates. */
-export function AvatarModeArt() {
-  const confetti: [number, number, string][] = [
-    [-16, -6, '#f43f5e'],
-    [-8, -14, '#f59e0b'],
-    [2, -17, '#10b981'],
-    [11, -12, '#8b5cf6'],
-    [18, -4, '#0ea5e9'],
-    [-22, 2, '#ec4899'],
-    [24, 4, '#f59e0b'],
-  ];
-  return (
-    <Scene>
-      <Flow
-        y={14}
-        steps={[
-          [26, 56, 'Plan'],
-          [122, 56, 'Build'],
-          [218, 56, 'Launch'],
-        ]}
-      />
-      <rect
-        className="fa-a-late fill-none stroke-sky-500"
-        style={at(0)}
-        x="213"
-        y="9"
-        width="66"
-        height="34"
-        rx="9"
-        strokeWidth="2"
-        strokeOpacity="0.7"
-      />
-      <g className="fa-a-late" style={at(0)}>
-        {confetti.map(([dx, dy, c], i) => (
-          <rect
-            key={i}
-            x={246 + dx}
-            y={8 + dy}
-            width="3"
-            height="3"
-            rx="0.6"
-            fill={c}
-            transform={`rotate(${i * 37} ${247.5 + dx} ${9.5 + dy})`}
-          />
-        ))}
-      </g>
-      {/* Jordan, waving their flag by the plan. */}
-      <PixelWalker x={54} y={86} shirt={JORDAN} flag />
-      {/* You, walking over to the launch. */}
-      <g className="fa-a-move" style={from(-96, 0, 0)}>
-        <PixelWalker x={246} y={86} shirt={YOU} />
-      </g>
     </Scene>
   );
 }

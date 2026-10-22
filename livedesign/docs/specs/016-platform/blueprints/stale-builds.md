@@ -4,17 +4,17 @@ Derived from [Stale builds](../stale-builds.md).
 
 ## Domain and naming
 
-| Term              | Identifier                              | Meaning                                                        |
-| ----------------- | --------------------------------------- | -------------------------------------------------------------- |
-| Build id          | `NEXT_PUBLIC_BUILD_ID`, `BUILD_ID`      | The deploy's commit, in the editor build and the api worker    |
+| Term              | Identifier                              | Meaning                                                       |
+| ----------------- | --------------------------------------- | ------------------------------------------------------------- |
+| Build id          | `NEXT_PUBLIC_BUILD_ID`, `BUILD_ID`      | The deploy's commit, in the editor build and the api worker   |
 | Build header      | `BUILD_ID_HEADER`                       | `X-Livedesign-Build`, on every api response beside the format |
-| Editor build      | `EDITOR_BUILD_ID`                       | The id this page was built with                                |
-| Server build      | `serverBuild()`                         | The latest id the server release signal carried                |
-| Stale             | `runningStaleBuild()`                   | Both known and different                                       |
-| Navigation intent | `navigationIntents`                     | Where the app was last asked to go, and when                   |
-| Chunk failure     | `isChunkLoadError`                      | A code chunk or module that could not be fetched               |
-| Recovery          | `recoverFromChunkError`                 | A full page load of the destination, guarded                   |
-| Unsaved work      | `registerUnsavedWork`, `hasUnsavedWork` | What a full page load the app starts waits for                 |
+| Editor build      | `EDITOR_BUILD_ID`                       | The id this page was built with                               |
+| Server build      | `serverBuild()`                         | The latest id the server release signal carried               |
+| Stale             | `runningStaleBuild()`                   | Both known and different                                      |
+| Navigation intent | `navigationIntents`                     | Where the app was last asked to go, and when                  |
+| Chunk failure     | `isChunkLoadError`                      | A code chunk or module that could not be fetched              |
+| Recovery          | `recoverFromChunkError`                 | A full page load of the destination, guarded                  |
+| Unsaved work      | `registerUnsavedWork`, `hasUnsavedWork` | What a full page load the app starts waits for                |
 
 ## Modules
 

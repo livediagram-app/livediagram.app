@@ -29,7 +29,7 @@ export function imageRefReplaceStatements(
   ];
 }
 
-// Add only: for a write that may have lost a race (the Q&A swap, the
+// Add only: for a write that may have lost a race (a participant swap, the
 // backfill), where deleting could remove a reference the winner wrote.
 export function imageRefAddStatements(
   env: Env,

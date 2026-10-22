@@ -1,21 +1,12 @@
 // One element in full (docs/specs/024-agents/blueprints/document-views.md "show", VW34): its container,
-// geometry or ends, every stored field, a table's cells, an entity's fields, its comments and its
+// geometry or ends, every stored field, a table's cells, its comments and its
 // arrows both ways. Mirrors, packed points and person ids are left out and named.
 import type { ShowView, ViewDoor } from '@livedesign/api-schema';
 import { contentOrigin, type Element, type Endpoint } from '@livedesign/document';
 import { fitLines, fitOf, type ViewLine, type ViewResult } from './budget';
 import { LABEL_CUT_CHARS } from './constants';
 import { edgeJson, endText, type ViewEdge } from './edges';
-import {
-  arrayField,
-  boxOf,
-  isObject,
-  numberField,
-  stringField,
-  textField,
-  threadOf,
-  cellThreadsOf,
-} from './fields';
+import { arrayField, boxOf, isObject, numberField, textField, threadOf } from './fields';
 import { headerLine, viewHeader } from './header';
 import { layoutEndText } from './layout';
 import type { ViewModel } from './model';
@@ -40,7 +31,7 @@ const SHOWN_ELSEWHERE = new Set([
   'from',
   'to',
 ]);
-const BLOCK_FIELDS = new Set(['cells', 'entityFields', 'commentThread', 'cellComments']);
+const BLOCK_FIELDS = new Set(['cells', 'commentThread']);
 // Plain-text mirrors' runs and packed geometry: noise beside the fields they mirror.
 const MIRROR_FIELDS = ['richText', 'noteRich', 'packedPoints'];
 
@@ -49,10 +40,6 @@ export const PERSON_ID_FIELDS = [
   'commentThread.comments[].authorId',
   'commentThread.comments[].mentions[].userId',
   'commentThread.comments[].mentions[].memberId',
-  // A Sheet's cell threads (docs/specs/029-sheets/sheet.md "Cell comments"): `{}` is each value of a record.
-  'cellComments{}.comments[].authorId',
-  'cellComments{}.comments[].mentions[].userId',
-  'cellComments{}.comments[].mentions[].memberId',
   'action.assignerId',
   'action.assignee.userId',
   'action.assignee.memberId',
@@ -61,24 +48,21 @@ export const PERSON_ID_FIELDS = [
   'actions[].assignee.userId',
   'actions[].assignee.memberId',
   'actions[].teamId',
-  'responses[].participantId',
-  'qaNotes[].voters',
   // Which Participant added a sticky or text (docs/specs/013-workspace/share-roles.md): the room's record, a key
   // that ties one person's additions together, so it never leaves through a view either.
   'addedBy',
 ] as const;
 
-// `each`: every item of a list (`[]`); `values`: every value of a record (`{}`).
-type Segment = { key: string; each: boolean; values?: boolean };
+// `each`: every item of a list (`[]`).
+type Segment = { key: string; each: boolean };
 type Path = readonly [Segment, ...Segment[]];
 type Stripped<T> = { value: T; removed: boolean };
 
-// `qaNotes[].voters` → [{ qaNotes, each }, { voters }].
+// `actions[].assignerId` → [{ actions, each }, { assignerId }].
 function pathOf(field: string): Path {
   const [first, ...rest] = field.split('.').map((part) => ({
-    key: part.replace(/(\[\]|\{\})$/, ''),
+    key: part.replace(/\[\]$/, ''),
     each: part.endsWith('[]'),
-    values: part.endsWith('{}'),
   }));
   return [first!, ...rest];
 }
@@ -104,12 +88,6 @@ function stripRecord(
     return { value: copy, removed: true };
   }
   const child = copy[segment.key];
-  if (segment.values) {
-    if (!isObject(child) || Array.isArray(child)) return { value: copy, removed: false };
-    const entries = Object.entries(child).map(([k, v]) => [k, stripValue(v, rest)] as const);
-    copy[segment.key] = Object.fromEntries(entries.map(([k, v]) => [k, v.value]));
-    return { value: copy, removed: entries.some(([, v]) => v.removed) };
-  }
   if (segment.each) {
     if (!Array.isArray(child)) return { value: copy, removed: false };
     const items = child.map((item: unknown) => stripValue(item, rest));
@@ -208,15 +186,6 @@ function blockLines(el: Element, fields: Record<string, unknown>): ViewLine[] {
       lines.push({ text: `    | ${cells.join(' | ')} |`, noun: LINE });
     }
   }
-  const entityFields = arrayField(fields, 'entityFields').filter(isObject);
-  if (entityFields.length > 0) {
-    lines.push({ text: '  fields:', noun: LINE });
-    for (const field of entityFields) {
-      const type = stringField(field, 'type');
-      const name = cellText(stringField(field, 'name') ?? '');
-      lines.push({ text: `    - ${name}${type === null ? '' : ` ${cellText(type)}`}`, noun: LINE });
-    }
-  }
   const thread = threadOf(el);
   if (thread !== null) {
     lines.push({
@@ -224,15 +193,6 @@ function blockLines(el: Element, fields: Record<string, unknown>): ViewLine[] {
       noun: LINE,
     });
     for (const c of thread.comments) {
-      lines.push({ text: `    ${commentText(readComment(c))}`, noun: LINE });
-    }
-  }
-  for (const cell of cellThreadsOf(el)) {
-    lines.push({
-      text: `  cell ${cell.cell} comments: ${cell.resolved ? 'resolved' : 'open'} · ${cell.comments.length}`,
-      noun: LINE,
-    });
-    for (const c of cell.comments) {
       lines.push({ text: `    ${commentText(readComment(c))}`, noun: LINE });
     }
   }

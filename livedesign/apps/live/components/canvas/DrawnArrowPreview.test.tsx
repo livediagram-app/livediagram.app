@@ -5,8 +5,9 @@ import { arrowheadShapeOf, arrowheadSizeOf, type ArrowElement } from '@livedesig
 import { arrowheadMarkerId } from './arrow-defs';
 import { DrawnArrowPreview } from './DrawnArrowPreview';
 
-// docs/specs/023-draw-mode/draw-mode.md "Shapes": a line or an arrow previews as exactly the one
-// that lands, drawn by the same arrow renderer in the canvas layer.
+// docs/specs/008-canvas/canvas-and-palette.md "Adding elements — tap-to-drop or drag-to-draw": a
+// line or an arrow previews as exactly the one that lands, drawn by the same arrow renderer in the
+// canvas layer.
 
 const arrow = (over: Partial<ArrowElement> = {}): ArrowElement => ({
   id: 'drawn',

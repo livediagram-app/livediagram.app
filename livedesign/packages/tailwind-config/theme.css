@@ -2,8 +2,8 @@
  * `dark:bg-slate-900` (etc.) lights up when documentElement carries
  * `.dark`, regardless of the user's OS prefers-color-scheme. See
  * docs/specs/007-editor/live-app.md "UI light / dark mode" for the policy.
- * An element marked `.light` (or `.dark`) is an island of that appearance inside the other: a Dashboard card filled
- * in a light colour draws its contents light in dark mode (docs/specs/026-plan/plan-tabs.md "Card style"). */
+ * An element marked `.light` (or `.dark`) is an island of that appearance inside the other: a card filled in a light
+ * colour draws its contents light in dark mode. */
 @custom-variant dark (&:where(.dark, .dark *):not(:where(.light, .light *)));
 
 /* Motion tokens (docs/specs/004-interface-design/motion.md). Every chrome
@@ -69,9 +69,6 @@
   /* The layout gallery's Surprise Me: its dice tumble once as it picks. */
   --animate-dice-roll: dice-roll var(--transition-duration-long) cubic-bezier(0.34, 1.56, 0.64, 1);
   --animate-fly-up-in: fly-up-in var(--transition-duration-long) cubic-bezier(0.16, 1, 0.3, 1);
-  /* An Avatar-mode speech bubble opening above a character's head (docs/specs/008-canvas/avatar-mode.md "Speech
-   * bubbles"): it pops, growing from 60% with a little overshoot. Long motion token. */
-  --animate-speech-pop: speech-pop var(--transition-duration-long) cubic-bezier(0.34, 1.56, 0.64, 1);
   --animate-sheet-up: sheet-up var(--transition-duration-long) cubic-bezier(0.16, 1, 0.3, 1);
   /* A toast arriving and leaving (docs/specs/004-interface-design/toasts.md "Motion"): it rises 8px and fades in
    * from 98% over short, and leaves over micro, fading and dropping 4px. `forwards` holds the last frame until the
@@ -87,10 +84,11 @@
   --animate-view-forward: view-forward var(--transition-duration-short)
     cubic-bezier(0.16, 1, 0.3, 1);
   --animate-view-back: view-back var(--transition-duration-short) cubic-bezier(0.16, 1, 0.3, 1);
-  /* A guided tour's spotlight opening on a step's target (docs/specs/007-editor/editor-tour.md "Motion"): the ring
-   * fades in and draws in from a little wider, so the eye is led onto the target. Long motion token. */
-  /* A tour's arrival (docs/specs/007-editor/editor-tour.md "Motion"), staged: the dim settles in first, the step card
-   * after it. Slower than a dialog: it changes the whole screen, and should feel like the lights dimming, not a cut. */
+  /* A guided tour's spotlight opening on a step's target (docs/specs/007-editor/pages-tour.md "Look and motion"): the
+   * ring fades in and draws in from a little wider, so the eye is led onto the target. Long motion token. */
+  /* A tour's arrival (docs/specs/007-editor/pages-tour.md "Look and motion"), staged: the dim settles in first, the
+   * step card after it. Slower than a dialog: it changes the whole screen, and should feel like the lights dimming,
+   * not a cut. */
   --animate-tour-dim-in: fade-in var(--transition-duration-long) cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-tour-card-in: dialog-in var(--transition-duration-short) cubic-bezier(0.16, 1, 0.3, 1)
     50ms both;
@@ -141,16 +139,6 @@
   }
   to {
     transform: translateY(0) scale(1);
-  }
-}
-
-@keyframes speech-pop {
-  from {
-    transform: scale(0.6);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
   }
 }
 
@@ -486,9 +474,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  /* A dialog only fades in: no rise, no scale. So does a speech bubble (no pop) and a tour's step card (no rise). */
+  /* A dialog only fades in: no rise, no scale. So does a tour's step card (no rise). */
   .animate-dialog-in,
-  .animate-speech-pop,
   .animate-tour-card-in {
     animation-name: fade-in;
   }

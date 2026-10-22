@@ -8,8 +8,6 @@ import {
   resetCanvasGesturesForTests,
 } from '@/lib/canvas-gesture';
 import { useCanvasPinchZoom } from './useCanvasPinchZoom';
-import { maximisePlanElement, releasePlanElement } from '@/hooks/plan/maximised-plan';
-import { getSheetZoom, setSheetZoom } from '@/hooks/sheets/sheet-zoom';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
@@ -103,7 +101,7 @@ describe('useCanvasPinchZoom view', () => {
   });
 });
 
-// An element that scrolls sideways itself (the Gantt timeline) keeps a sideways or Shift wheel.
+// An element that scrolls sideways itself (data-own-wheel-x) keeps a sideways or Shift wheel.
 describe('useCanvasPinchZoom and a sideways scroller', () => {
   it('leaves a sideways or Shift wheel to it, and still pans on a vertical one', () => {
     setup();
@@ -130,8 +128,7 @@ describe('useCanvasPinchZoom and a sideways scroller', () => {
   });
 });
 
-// A Sheet's grid or a board's body scrolls itself: a plain wheel there is theirs, but a Ctrl or Cmd wheel still zooms
-// the canvas.
+// An element that scrolls itself keeps a plain wheel, but a Ctrl or Cmd wheel still zooms the canvas.
 describe('useCanvasPinchZoom over an element that scrolls', () => {
   it('leaves a plain wheel to it and zooms on a Ctrl or Cmd wheel', () => {
     setup();
@@ -154,38 +151,6 @@ describe('useCanvasPinchZoom over an element that scrolls', () => {
     const z = viewport.get().zoom;
     on({ deltaY: -40, metaKey: true });
     expect(viewport.get().zoom).toBeGreaterThan(z);
-  });
-});
-
-// docs/specs/026-plan/plan-board.md "Nothing under it moves", docs/specs/029-sheets/sheet.md "Zoom": while a board,
-// view or Sheet covers the canvas, no wheel moves the canvas behind it; a Ctrl wheel zooms a covering Sheet's cells.
-describe('useCanvasPinchZoom under a covering element', () => {
-  afterEach(() => {
-    act(() => {
-      releasePlanElement('s1');
-      setSheetZoom(1);
-    });
-  });
-
-  it('zooms a maximised Sheet’s cells, never the canvas, and never pans it', () => {
-    setup();
-    act(() => maximisePlanElement('s1', 'Sheet'));
-    wheel({ deltaY: -100, ctrlKey: true, clientX: 0, clientY: 0 });
-    expect(viewport.get().zoom).toBe(1);
-    expect(getSheetZoom()).toBeGreaterThan(1);
-    wheel({ deltaX: 20, deltaY: 40 });
-    act(() => {
-      vi.advanceTimersByTime(20);
-    });
-    expect(viewport.get().offset).toEqual({ x: 0, y: 0 });
-  });
-
-  it('leaves the canvas still under a maximised board', () => {
-    setup();
-    act(() => maximisePlanElement('s1', 'Board'));
-    wheel({ deltaY: -100, ctrlKey: true, clientX: 0, clientY: 0 });
-    expect(viewport.get().zoom).toBe(1);
-    expect(getSheetZoom()).toBe(1);
   });
 });
 

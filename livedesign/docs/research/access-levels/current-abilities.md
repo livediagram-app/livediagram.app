@@ -38,12 +38,12 @@ The precise answer to the question. A view link (role `view`, all tabs, no accou
   (concurrent-selection lock, `usePresenceBroadcast.ts`; `selectElement` in `useSelectionEditing.ts` has no role
   check).
 - **Take part, partly**: answer a live poll (`poll-answer` is presence-class; `PollPromptSheet` is shown to every
-  role), add a note to a Q&A board and upvote or withdraw an upvote (`routes/qa-board-routes.ts`,
+  role), add a note to a Q&A board and upvote or withdraw an upvote (the Q&A board routes, since removed,
   `isParticipantQaAction` goes through `gateRead`).
 - **Comment, partly**: add a comment to any element's unresolved thread from the anchored popover
   (`POST .../tabs/:tabId/comments`, `gateRead`), and delete their own comment (`DELETE .../comments/:id`, author
   check). Not from a comment panel (`commentPanelActions` is undefined when `isReadOnly`).
-- **Roll the picker for themselves** (the result is not written, `docs/specs/012-collaboration/picker.md`).
+- **Roll the picker for themselves** (the result is not written).
 - **Make a copy** of the document into their own files (`routes/documents.ts` `/copy`, a read gate).
 - **Be recorded**: their visit seeds "Shared with you" (`routes/share.ts`, `recordSharedAccess`), and the owner's
   Timeline reports their opens and copies.

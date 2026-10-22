@@ -5,14 +5,14 @@ import { Portal } from '@livedesign/ui';
 import { useStartPalette } from '@/components/start/useStartPalette';
 import { TourBanner } from './TourBanner';
 import { TourPopover } from './TourPopover';
-import { WELCOME_TOUR_COPY, type TourCardCopy, type TourWelcomeChoice } from './tour-card-copy';
+import { WELCOME_TOUR_COPY, type TourCardCopy } from './tour-card-copy';
 import { TOUR_DIM } from './tour-motion';
 import { TourSpotlight } from './TourSpotlight';
 import { TourShield } from './TourShield';
 import { useTourGlide } from './useTourGlide';
 import type { TourEngine } from './useTourEngine';
 
-// What a running tour draws (docs/specs/007-editor/editor-tour.md "The steps"), shared by every tour:
+// What a running tour draws (docs/specs/007-editor/pages-tour.md "The steps"), shared by every tour:
 // the subtle backdrop behind a bookend card, the dimming highlight ring around a step's target, and the
 // step popover. Nothing while the tour is not running. The card and the ring wear the active tab's colours, as the
 // start panels do (useStartPalette, tour-colours.ts).
@@ -26,25 +26,22 @@ export function TourStage<Api>({
   ariaPrefix,
   copy,
   welcomeArt,
-  welcomeChoices,
   layer = 'overlay',
   pad = 6,
   blockInput = false,
 }: {
   engine: TourEngine<Api>;
-  // The popover's label before "step N of M" ("Tour", "Plan tour").
+  // The popover's label before "step N of M" ("Tour", "Slides tour").
   ariaPrefix?: string;
   copy?: Partial<TourCardCopy>;
   welcomeArt?: ReactNode;
-  // The welcome card's ways in, when it has more than one (the Plan tour's tracks).
-  welcomeChoices?: readonly TourWelcomeChoice[];
   // 'modal' draws the ring over a dialog, for a tour of one (the card type editor's Show Me): just above the
   // dialog, just below the menus its controls open (AnchoredPopover), which stay lit.
   layer?: 'overlay' | 'modal';
   // The room between the target and its ring, in px (a dialog's tightly packed rows want more).
   pad?: number;
-  // A step takes no clicks on the page, only on its card (the Diagram tour): a press on what a step opened (a palette
-  // category's shape) closed it, and the step reopened it, flickering the page.
+  // A step takes no clicks on the page, only on its card (an element tour): a press on what a step opened closed it,
+  // and the step reopened it, flickering the page.
   blockInput?: boolean;
 }) {
   const palette = useStartPalette();
@@ -90,7 +87,6 @@ export function TourStage<Api>({
           copy={{ ...WELCOME_TOUR_COPY, ...copy }}
           palette={palette}
           {...(welcomeArt ? { welcomeArt } : {})}
-          {...(welcomeChoices ? { welcomeChoices } : {})}
           onNext={engine.next}
           onSkip={engine.skip}
         />

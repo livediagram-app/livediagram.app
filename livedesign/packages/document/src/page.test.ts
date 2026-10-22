@@ -20,7 +20,7 @@ import {
 import { FIT_PAGE_MAX_SIDE, FIT_PAGE_MIN_SIDE } from './page-fit';
 import type { Element } from './index';
 
-// Pages mode's pages (docs/specs/007-editor/editor-modes.md "The pages").
+// Pages mode's pages (docs/specs/007-editor/pages-mode.md "The pages").
 const P = (id: string, orientation: 'portrait' | 'landscape' = 'portrait'): Page => ({
   id,
   orientation,

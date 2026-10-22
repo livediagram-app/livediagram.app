@@ -256,49 +256,6 @@ export function ElementLink() {
   );
 }
 
-/** A link card: the page's preview image on top, then the row that follows the link: the
- *  favicon, the page's title, its full address and the arrow. */
-export function LinkCard() {
-  return (
-    <Scene w={420} h={180}>
-      <rect
-        x={100}
-        y={24}
-        width={220}
-        height={132}
-        rx={10}
-        className="fill-white stroke-slate-200"
-        strokeWidth={2}
-      />
-      {/* The preview image: a simple picture in brand tints. */}
-      <g className="help-art-as-drawn">
-        <path
-          d="M101 34 a9 9 0 0 1 9 -9 h200 a9 9 0 0 1 9 9 V104 H101 Z"
-          className="fill-brand-100"
-        />
-        <circle cx={268} cy={50} r={10} className="fill-brand-200" />
-        <path d="M101 104 L150 66 L184 90 L214 70 L262 104 Z" className="fill-brand-300" />
-      </g>
-      <line x1={101} y1={104} x2={319} y2={104} className="stroke-slate-200" strokeWidth={1} />
-      <rect x={114} y={118} width={14} height={14} rx={3} className="fill-brand-500" />
-      <Label x={138} y={122} size={11.5} weight={700} tone="strong">
-        Release notes, v2.4
-      </Label>
-      <Label x={138} y={139} size={9.5} tone="muted">
-        https://example.com/notes
-      </Label>
-      <path
-        d="M292 130 h10 M298 125.5 l4.5 4.5 l-4.5 4.5"
-        fill="none"
-        className="stroke-slate-400"
-        strokeWidth={1.6}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </Scene>
-  );
-}
-
 /** Dragging an element snaps it into line with a neighbour; the dashed guide
  * shows the matched edge. Holding Cmd / Ctrl skips snapping for a free drop. */
 export function SnappingGuides() {

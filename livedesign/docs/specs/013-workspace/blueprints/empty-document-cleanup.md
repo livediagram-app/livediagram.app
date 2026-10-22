@@ -10,7 +10,7 @@ Scope, by file:
 | File                                                                      | Role                                                                                                         |
 | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
 | `packages/api-schema/src/trash.ts`                                        | `TrashReason`, `TrashedDocument.reason`, `EMPTY_DOCUMENT_STALE_DAYS` / `_MS`                                 |
-| `apps/api/migrations/0056_document_trash_reason.sql`                      | `documents.trash_reason`                                                                                     |
+| `apps/api/migrations/0001_livedesign_baseline.sql`                        | `documents.trash_reason`                                                                                     |
 | `apps/api/src/db/empty-document-sweep.ts`                                 | `trashEmptyDocuments`: the set-based move, capped                                                            |
 | `apps/api/src/db/trash.ts`                                                | `listTrash` reads the reason; `restoreDocument` clears it and restarts stale                                 |
 | `apps/api/src/index.ts`                                                   | The 03:00 cron calls the sweep beside the purge                                                              |
@@ -91,7 +91,6 @@ UPDATE documents SET trashed_at = ?1, trash_reason = 'empty'
            AND CASE
                  WHEN NOT json_valid(t.data) THEN 1
                  WHEN COALESCE(json_array_length(t.data, '$.elements'), 0) > 0 THEN 1
-                 WHEN json_type(t.data, '$.form') = 'object' THEN 1
                  ELSE 0
                END = 1)
     ORDER BY d.saved_at ASC, d.id ASC
@@ -110,8 +109,7 @@ No new route, no new error.
 | `documents.trash_reason` | state | TEXT NULL; NULL or `'empty'`; meaningful only in the Trash |
 | `TrashedDocument.reason` | wire  | `'deleted' \| 'empty'`, derived                            |
 
-Migration 0056 adds the nullable column with no backfill: every row already in the Trash was deleted by a
-person, which NULL means (D141). No index: nothing filters on it. The sweep scans live rows; an index ordering them by `saved_at` would
+The baseline migration adds the nullable column: NULL means a person deleted it (D141). No index: nothing filters on it. The sweep scans live rows; an index ordering them by `saved_at` would
 cost every autosave a write to save a once-a-day scan (Performance). Account deletion and purges remove the row with the rest; guest-to-account
 migration moves `owner_id` only. Restore clears the column, so a live row's value is always NULL.
 
@@ -121,10 +119,8 @@ migration moves `owner_id` only. Restore clears the column, so a live row's valu
 - **X2** A tab shared with another document that has elements: neither document is empty.
 - **X3** A tab whose `data` lacks `elements`: `json_array_length` is NULL, coalesced to 0: empty.
 - **X4** Invalid JSON in a tab: content (C4).
-- **X5b** A tab holding a form (`$.form` an object) and no elements: content; a `form` that is not an object
-  is not. The checks are one `CASE`, evaluated in order and stopped at the first match (an `OR` chain SQLite may
-  evaluate whole), so a body that is not JSON never reaches `json_type` and a tab with elements is parsed at
-  most twice: 8.9 ms CPU over 5,000 tabs of 6.7 KiB, against 8.7 ms for the earlier three-check `OR`.
+- **X5b** The checks are one `CASE`, evaluated in order and stopped at the first match (an `OR` chain SQLite may
+  evaluate whole), so a body that is not JSON never reaches `json_array_length`.
 - **X5** Saved between the cron's start and the statement: kept (C2).
 - **X6** An editor open on the document when it is moved: its next save answers 410 `document_trashed` and
   the editor shows the deleted card (Trash I5); restorable from there.

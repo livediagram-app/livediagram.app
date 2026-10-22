@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createLiveStroke } from './live-stroke';
 
-// The stroke being drawn with a whiteboard pen (docs/specs/023-draw-mode/draw-mode.md "Pens";
+// The stroke being drawn with a whiteboard pen (docs/specs/023-draw-mode/drawing-tools.md "Markers";
 // blueprint whiteboard-round-one "Pen ink").
 
 describe('createLiveStroke', () => {
@@ -62,7 +62,7 @@ describe('createLiveStroke', () => {
   });
 });
 
-// docs/specs/023-draw-mode/draw-mode.md "Shape recognition": Shift while reshaping.
+// docs/specs/023-draw-mode/drawing-tools.md "Shape recognition": Shift while reshaping.
 describe('createLiveStroke, constrained', () => {
   const circle = {
     kind: 'circle' as const,
@@ -147,7 +147,7 @@ describe('createLiveStroke, constrained', () => {
   });
 });
 
-// docs/specs/023-draw-mode/draw-mode.md "Shape recognition": Alt (or the chip) breaks out.
+// docs/specs/023-draw-mode/drawing-tools.md "Shape recognition": Alt (or the chip) breaks out.
 describe('createLiveStroke, broken out of a shape', () => {
   const circle = {
     kind: 'circle' as const,
@@ -161,10 +161,8 @@ describe('createLiveStroke, broken out of a shape', () => {
     s.push(100, 60);
     s.snapTo(circle);
     s.push(120, 70);
-    expect(s.keepsInk()).toBe(false);
     expect(s.unsnap()).toBe(true);
     expect(s.shaped()).toBeNull();
-    expect(s.keepsInk()).toBe(true);
     expect(s.points).toEqual([
       { x: 0, y: 0 },
       { x: 100, y: 60 },
@@ -176,7 +174,6 @@ describe('createLiveStroke, broken out of a shape', () => {
     const s = createLiveStroke('mouse', 1);
     s.push(0, 0);
     expect(s.unsnap()).toBe(false);
-    expect(s.keepsInk()).toBe(false);
   });
 
   it('lands the shape again once it locks again', () => {
@@ -186,16 +183,6 @@ describe('createLiveStroke, broken out of a shape', () => {
     s.unsnap();
     s.push(110, 60);
     s.snapTo(circle);
-    expect(s.keepsInk()).toBe(false);
     expect(s.shaped()!.bbox).toEqual(circle.bbox);
-  });
-
-  it('says whether the ink is held (Alt down), so the dwell leaves it', () => {
-    const s = createLiveStroke('mouse', 1);
-    expect(s.inkHeld()).toBe(false);
-    s.holdInk(true);
-    expect(s.inkHeld()).toBe(true);
-    s.holdInk(false);
-    expect(s.inkHeld()).toBe(false);
   });
 });

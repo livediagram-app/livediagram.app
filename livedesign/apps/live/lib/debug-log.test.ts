@@ -31,11 +31,9 @@ describe('debugLogEnabled', () => {
   });
 
   it('follows the flag in production: everything, or the scopes it names', () => {
-    expect(debugLogEnabled('drive-mirror', 'production', flag('*'))).toBe(true);
-    expect(debugLogEnabled('drive-mirror', 'production', flag('import, drive-mirror'))).toBe(true);
-    expect(debugLogEnabled('photo-model', 'production', flag('board-scene,drive-mirror'))).toBe(
-      false,
-    );
+    expect(debugLogEnabled('room', 'production', flag('*'))).toBe(true);
+    expect(debugLogEnabled('room', 'production', flag('import, room'))).toBe(true);
+    expect(debugLogEnabled('photo-model', 'production', flag('import,room'))).toBe(false);
   });
 
   it('treats a storage that throws as no flag', () => {

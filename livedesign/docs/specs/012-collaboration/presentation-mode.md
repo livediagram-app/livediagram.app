@@ -1,7 +1,7 @@
 # Presentation mode
 
 > **Status: implemented.** The deck model and its pure helpers live in
-> `packages/document/src/slide-deck.ts`, persistence in migration 0041
+> `packages/document/src/slide-deck.ts`, persistence in the baseline migration
 > (`documents.presentation`), and the editor surface in `useSlideDeck.ts`,
 > `SlideDeckPanel.tsx`, `PresentationHost.tsx`, `PresentationOverlay.tsx`,
 > `PresentationHud.tsx` and `PresentationElementPopover.tsx`. The two open
@@ -22,53 +22,23 @@ A finished canvas shows everything at once, which is great for reference and bad
 - **An element can be on any number of slides.** Membership is a list, not a partition, so a title that belongs on every slide simply appears in every slide's list.
 - **Slide order is the deck's own order**, independent of tab order, element array order, and z-order. Reordering slides never restacks anything on the canvas.
 
-### Item slides
-
-A Plan card can be a slide of its own ([Plan board](../026-plan/plan-board.md)): **Add to Slides** in a card's
-right-click menu adds an **item slide**, the slide being that item rather than elements of the canvas.
-
-- It belongs to the tab the card was on (`tabId`), names the item (`itemId`), and holds no elements.
-- Presenting it shows the item **full screen as a card**, resolved live, so an edit to the item shows on the
-  slide: its type (glyph and colour) and key over its title, its status, assignee, priority, due date, estimate
-  and labels as a row of facts, then its description (with its formatting) and checklist. Fields the item has no
-  value in are left out. It wears the tab's dark or light look, never the canvas behind it.
-- Its thumbnail and its panel name are the item's title (the slide's own name, when it has one, wins).
-- An item that has been deleted shows "This card was deleted" on its slide; the slide stays, like a slide whose
-  elements are gone.
-- Adding one sends `UI · Added · ItemSlide`.
-
-### Board slides
-
-A whole Plan board can be a slide too: **Add to Slides** in the board's own **⋯** menu (in its header,
-[Plan board](../026-plan/plan-board.md)) adds a slide holding that board.
-
-- A board is an element, so a board slide is an ordinary slide: it belongs to the board's tab and names the board
-  in `elementIds`. Nothing new is stored, and it can be edited like any slide (add more elements to it, rename it).
-- Presenting it frames the board on the canvas like any slide, so it is the live board: its cards as they stand
-  now, in the tab's theme.
-- Its thumbnail draws the board's cards from the document's items, as an export does. The thumbnails redraw on an
-  item change only while a slide holds a board, so a deck without one costs nothing more.
-- The tile shows only where an item slide could be added (someone who may edit, with a deck), and adding one says
-  "Board added to the slides" to a screen reader, as a card does.
-- Adding one sends `UI · Added · BoardSlide`.
-
 ### The deck follows the pages
 
-On a Pages tab every **page is a slide**: a page is one finished visual, which is what a slide is,
+Every **page is a slide**: a page is one finished visual, which is what a slide is,
 so a tab's pages are its deck without anyone building it. Each page joins the deck on its own, in
 page order, and the deck keeps following the pages as they change.
 
-- **Every page is in the deck.** Every page of a Pages tab has a page slide, whoever made the
+- **Every page is in the deck.** Every page of a tab has a page slide, whoever made the
   page: a template, Add Page, a duplicate, an agent, a peer or an undo. A template opens ready to
   present. The pass is `deckFollowingPages` (`packages/document/src/slide-deck-pages.ts`), run
-  whenever a loaded Pages tab's pages change (`deckPagesKey`), never on an element edit, and only
+  whenever a loaded tab's pages change (`deckPagesKey`), never on an element edit, and only
   once the document and its stored deck have loaded, so it builds on the stored deck. An Editor's
   pass is saved; a Viewer or Participant sees the same deck without writing it. A page's own slide
   is named by its tab and page (`pageSlideIdFor`), so two editors adding it at once write the same
   slide.
 - **In page order.** A tab's page slides run in its page order: move a page and its slide moves
   with it. The slots those slides take in the deck keep their places among the other slides
-  (another tab's, an element slide, a card); only which page fills which slot follows the pages,
+  (another tab's, an element slide); only which page fills which slot follows the pages,
   and a new page's slide joins the tab's run (its last slot, or the deck's end for a tab with none
   yet). The other way round too: dragging a page's slide in the Slide Deck moves its page in the
   tab (`pageMoveForDeckOrder`): just after the page whose slide now comes before it, else before
@@ -121,9 +91,6 @@ type Slide = {
   // the canvas shows that page's sheet alone. See
   // "The deck follows the pages" above and docs/specs/007-editor/pages-mode.md "Slides".
   pageId?: string;
-  // An item slide: a Plan card, presented full screen and resolved live
-  // (elementIds empty). See Item slides above.
-  itemId?: string;
   // What you mean to SAY over this slide. The slide's own, not any
   // element's. See Presenter notes below.
   notes?: string;
@@ -152,7 +119,7 @@ type StoredPresentation = { decks: Deck[] };
 
 ### Persistence
 
-This is the one part of the feature that is not free. `diagrams.data` was dropped in migration 0006 and tab bodies live in their own table, so there is **no document-level JSON blob to extend** — unlike layers, which ride the opaque tab body and needed no api change at all.
+This is the one part of the feature that is not free. Tab bodies live in their own table, so there is **no document-level JSON blob to extend** — unlike layers, which ride the opaque tab body and needed no api change at all.
 
 - A new `presentation TEXT NULL` column on `documents` (the ninth such column; `source`, `share_password` and `team_id` are the pattern), holding the serialised `Deck`.
 - The api's document DTO in `@livedesign/api-schema` carries it through, and the read / save routes round-trip it.
@@ -160,7 +127,7 @@ This is the one part of the feature that is not free. `diagrams.data` was droppe
 
 ## Entry and the Slide Deck panel
 
-**Slide Deck is a canvas tool**, alongside Select, Hand, Eraser, Format, Laser, Spotlight, Avatar and Isometric. Picking it from the tool dropdown does **not** start presenting: it opens the **Slide Deck panel**, where you build and administer the deck. Starting is a deliberate second act.
+**Slide Deck is a canvas tool**, alongside Select, Hand, Format, Laser, Spotlight and Isometric. Picking it from the tool dropdown does **not** start presenting: it opens the **Slide Deck panel**, where you build and administer the deck. Starting is a deliberate second act.
 
 The tool and the panel are both called **Slide Deck** — the thing you are making — rather than "Presentation", which names the act of showing it. You spend far more time building a deck than running one, and the tool you pick is the workbench, not the performance. "Presentation mode" stays the name of what Start puts you into, and of this spec.
 
@@ -168,7 +135,7 @@ The tool and the panel are both called **Slide Deck** — the thing you are maki
 
 It joins `CanvasTool` only, **not** `SELECTION_MODES` — there is no Slide Deck Mode Button, because handing a collaborator's screen into a full-screen deck is not something one person should do to another.
 
-The **Slide Deck panel** is the seventh tool panel, on exactly the contract the other six share (`useCanvasToolPanels`): mounted only while its tool is active, joins the corner-docking stack. It is the **single home for everything about the deck** — build it, order it, check it, start it — so there is never a second place to look. Its header carries a **`?`** to the help article and a **settings gear** holding the full presenter settings (Settings > Presenting has them too), because discovering "Actual Size" or "Auto-Advance" mid-talk means changing it while a room watches: one state, in the person's preferences, several doors. It carries:
+The **Slide Deck panel** is a tool panel, on exactly the contract the others share (`useCanvasToolPanels`): mounted only while its tool is active, joins the corner-docking stack. It is the **single home for everything about the deck** — build it, order it, check it, start it — so there is never a second place to look. Its header carries a **`?`** to the help article and a **settings gear** holding the full presenter settings (Settings > Presenting has them too), because discovering "Actual Size" or "Auto-Advance" mid-talk means changing it while a room watches: one state, in the person's preferences, several doors. It carries:
 
 - **The slide list**, in deck order, each row with its position, name, tab, member count, and a **preview thumbnail** from the shared headless SVG renderer (`useSlideThumbnails`, the same renderer the Layers panel rows, the Map and the exports use). One difference from the layer previews and the reason it is its own hook: every layer preview shares ONE viewBox, the tab's content bounds, so each band shows where its elements sit. Slides cannot, because a deck spans tabs and two tabs share no coordinate space, so each slide is framed to its own bounds — which is also what the presentation does when it runs.
 - **New slide from selection** — the primary authoring path. Select elements on the canvas, press the button; the slide takes the active tab. Also **Add selection to slide** for growing one, which is offered only while you are on that slide's own tab (a slide holds one tab's elements, so adding from another tab is not a thing to disallow politely, it is a thing that cannot be expressed).
@@ -204,7 +171,7 @@ while that load runs the button reads **Starting** and is disabled. Its hover ca
 
 ### The Pages popover
 
-Over Pages mode's **Slides** button (in the bottom-right cluster, shown whenever the tab has
+Over the **Slides** button (in the bottom-right cluster, shown whenever the tab has
 pages, as every page is in the deck: [Pages](../007-editor/pages-mode.md) "Chrome in Pages mode")
 the panel is a roomy popover, 420 px wide, its list as tall as
 the screen allows:
@@ -219,12 +186,9 @@ the screen allows:
   Hovering a row shows **Present from Here** (a round play button; not on a hidden slide), which
   starts the presentation at that slide. A press on the row opens the slide; drag reorders; the
   `…` menu holds the rest, as before.
-- **Empty state**: a deck glyph in a disc, "Build your deck", and a line naming the ways in: on a Pages tab,
+- **Empty state**: a deck glyph in a disc, "Build your deck", and a line naming the ways in:
   "Pages join the deck on their own. To present one twice, pick it below and press **Add as slide**."
 - **Present**: a full-width accent button with the count of slides it will show.
-
-The corner panel in the other modes keeps its compact rows (small picture beside the number) and
-gains the headline names, the markers and the count badge.
 
 ### What the panel does not do
 
@@ -236,8 +200,8 @@ Reorder tabs. It was asked for while a slide belonged to a tab and the deck was 
 - **One slide at a time.** Only that slide's elements render. This is a deck, not a progressive reveal of a canvas: advancing does not accumulate.
 - **The backdrop is the slide's tab's** — its background colour, pattern and theme. Well-defined precisely because a slide belongs to one tab.
 - **Framing:** fit to the content bounds of the slide's elements (`contentBounds` + `computeFitToScreen`), with padding. **If a slide contains exactly one frame element, its bounds are used instead** — that gives precise, authored framing using an element the product already has, with nothing new to learn. A **page slide** frames to exactly its page with **no padding**, its surround blacked out, so the page fills the screen ([Pages](../007-editor/pages-mode.md) "Slides").
-- **Nothing on a slide can be CHANGED.** No editing, moving, resizing or deleting; and none of the session verbs either: no voting, no starting or pausing a timer, no ticking a Done check, no firing a reaction pad. You are on a projector in front of a room, and a stray click that alters the document is not a feature.
-  - Live DATA still displays. A timer somebody started before the presentation goes on counting down on the slide, and a poll shows the results it has. That is the slide reporting the document, not the audience changing it, and freezing a running clock mid-sentence would read as a bug.
+- **Nothing on a slide can be CHANGED.** No editing, moving, resizing or deleting, and no ticking a checklist. You are on a projector in front of a room, and a stray click that alters the document is not a feature.
+  - Live DATA still displays. A collaborator's edit made while you present shows on the slide. That is the slide reporting the document, not the audience changing it.
 - **Everything on a slide can be READ.** Clicking an element opens a **read-only popover** carrying what that element has to say: its **note** ([Document structure](../006-document/document-structure.md), rendered rich per [Rich-text notes](../009-elements/rich-text-notes.md)), its **comment thread** ([Canvas and palette](../008-canvas/canvas-and-palette.md)), and its **assigned actions** ([Assigned actions](assigned-actions.md)) with assignee and status. Nothing in the popover is editable, and there is no composer: you can show the room the objection somebody left on this box, and you cannot answer it from here.
   - This is the line the whole mode runs on, and it is worth stating as one sentence: **read anything, change nothing.** Inspecting is not editing, and a presenter being unable to show the note attached to the thing they are pointing at would be a strange kind of presentation.
   - The element popover is a different thing from the HUD's notes popover, and they do not overlap. The HUD's carries the SLIDE's presenter note, what you mean to say. This one carries the ELEMENT's, what the document records about that box.
@@ -296,11 +260,11 @@ Both parts are off by default and both are the presenter's, not the document's.
 
 **Per-slide budget** — when the current slide carries `minutes`, the HUD shows the time spent on it against that target and marks it once it is over. Budgets are authored per slide in the Slide Deck panel, beside the notes, because deciding a slide is worth four minutes is a thing you do while writing the talk, not while giving it.
 
-The deck **never advances itself** on a budget, and going over is marked rather than enforced. A slide that moved on because its four minutes were up would cut off the answer you were giving. The agenda element ([Agenda](agenda.md)) already models minutes-per-segment this way for a room, and it does not drive the clock either; this is the same idea pointed at the presenter instead of the audience.
+The deck **never advances itself** on a budget, and going over is marked rather than enforced. A slide that moved on because its four minutes were up would cut off the answer you were giving.
 
 ### Presenter settings
 
-The presenter settings live in **Settings > Presenting** (a sub-category under Editor, with the other modes'
+The presenter settings live in **Settings > Presenting** (a sub-category under Editor, with the Pages
 settings), set before the talk, and follow the person's account. The rule is that the HUD's cog opens ON a
 projector, in front of a room, so it keeps only what is changed there: **Transition** with its **Speed**, then
 **Pacing** (**Show Elapsed Time**, **Show Slide Budget**), and a line saying the rest is in Settings, under
@@ -375,7 +339,7 @@ The deck itself IS shared: a teammate opening the document sees your slides and 
 
 ## Implementation shape
 
-Per the no-god-files rule: `useSlideDeck.ts` (deck state, current index, keyboard, camera targets), `SlideDeckPanel.tsx` (the sixth tool panel, built like `EraserPanel` / `FormatPanel`), and `PresentationOverlay.tsx` (the full-screen surface Start puts you into: the slide surface and its transitions, the auto-hiding HUD, the notes, the end state). The element popover reuses the existing read surfaces rather than growing a third rendering of a comment thread: the same components the canvas popover and the Collaborate panel already draw, with their composers and action buttons not passed. `CommentPanelFace` already takes its handlers optionally for exactly this reason (a surface with no comment session renders the thread readable but inert), so presenting is a caller that omits them. Deck helpers stay pure and live in `packages/document` beside the element helpers: resolving a slide to its elements, pulling in implied arrows, and computing a slide's bounds are all `(Deck, Tab[]) -> ...` functions with no React in them, so they are testable and reusable by the api and MCP worker.
+Per the no-god-files rule: `useSlideDeck.ts` (deck state, current index, keyboard, camera targets), `SlideDeckPanel.tsx` (a tool panel, built like `FormatPanel`), and `PresentationOverlay.tsx` (the full-screen surface Start puts you into: the slide surface and its transitions, the auto-hiding HUD, the notes, the end state). The element popover reuses the existing read surfaces rather than growing a third rendering of a comment thread: the same components the canvas popover and the Collaborate panel already draw, with their composers and action buttons not passed. `CommentPanelFace` already takes its handlers optionally for exactly this reason (a surface with no comment session renders the thread readable but inert), so presenting is a caller that omits them. Deck helpers stay pure and live in `packages/document` beside the element helpers: resolving a slide to its elements, pulling in implied arrows, and computing a slide's bounds are all `(Deck, Tab[]) -> ...` functions with no React in them, so they are testable and reusable by the api and MCP worker.
 
 The additions above land on that same shape rather than growing the overlay. The jump popover and the pacing readout are HUD components fed by `useSlideDeck`; the wake lock and the elapsed clock are effects it owns, both released on exit beside the viewport restore that already happens there. The presenter settings gain two booleans in `lib/presentation-config.ts`, which keeps them in the person's preferences. Laser and Spotlight need nothing new at all — they are canvas tools the overlay stops suppressing. The deck export is a third value on the existing `exportScope` union plus a loop over slides in the export path, and the per-slide bounds it needs is the pure helper above, which is the reason it costs so little.
 

@@ -19,25 +19,25 @@ describe('serialiseLens', () => {
 
   it('writes one token per dimension, in dimension order, then the text words', () => {
     const { lens } = parseLens(
-      'plan space:team:T1 edited:7d Q3 opens-in:draw made-by:ai template:kanban',
+      'plan space:team:T1 edited:7d Q3 opens-in:pages made-by:ai people:others',
       aggregate,
     );
     expect(serialiseLens(lens)).toBe(
-      'opens-in:draw template:kanban made-by:ai edited:7d space:team:T1 plan Q3',
+      'opens-in:pages made-by:ai edited:7d people:others space:team:T1 plan Q3',
     );
   });
 
   it('writes several values as one comma list, whichever spelling was typed', () => {
-    const repeated = parseLens('template:kanban template:retrospective', aggregate).lens;
-    expect(serialiseLens(repeated)).toBe('template:retrospective,kanban');
+    const repeated = parseLens('people:others people:me', aggregate).lens;
+    expect(serialiseLens(repeated)).toBe('people:me,others');
     const listed = parseLens('edited:12m,TODAY,12m', aggregate).lens;
     expect(serialiseLens(listed)).toBe('edited:today,12m');
   });
 
   it('round-trips to the same canonical string', () => {
     const inputs = [
-      'Template:KANBAN  plan',
-      'colour:red template:kanban edited:this-year,7d',
+      'People:OTHERS  plan',
+      'colour:red people:me edited:this-year,7d',
       'people:others,me x',
     ];
     for (const input of inputs) {
@@ -47,21 +47,21 @@ describe('serialiseLens', () => {
   });
 
   it('keeps a rejected word as the text it is', () => {
-    expect(serialiseLens(parseLens('template:mindmap', aggregate).lens)).toBe('template:mindmap');
+    expect(serialiseLens(parseLens('edited:yesterday', aggregate).lens)).toBe('edited:yesterday');
   });
 });
 
 describe('tokenOf', () => {
   it('writes a token of one or several values', () => {
     expect(tokenOf('space', ['team:T1'])).toBe('space:team:T1');
-    expect(tokenOf('template', ['retrospective', 'kanban'])).toBe('template:retrospective,kanban');
+    expect(tokenOf('edited', ['today', '7d'])).toBe('edited:today,7d');
   });
 });
 
 describe('setDimension', () => {
   it('replaces the dimension token where it stands', () => {
-    expect(setDimension('plan template:kanban  Q3', 'template', ['retrospective'], aggregate)).toBe(
-      'plan template:retrospective Q3',
+    expect(setDimension('plan edited:7d  Q3', 'edited', ['30d'], aggregate)).toBe(
+      'plan edited:30d Q3',
     );
   });
 
@@ -70,8 +70,8 @@ describe('setDimension', () => {
   });
 
   it('adds a token after the last token', () => {
-    expect(setDimension('edited:7d plan', 'template', ['kanban'], aggregate)).toBe(
-      'edited:7d template:kanban plan',
+    expect(setDimension('edited:7d plan', 'people', ['me'], aggregate)).toBe(
+      'edited:7d people:me plan',
     );
   });
 
@@ -80,15 +80,11 @@ describe('setDimension', () => {
   });
 
   it('merges every token of the dimension into one, where the first stood', () => {
-    expect(
-      setDimension('template:kanban x template:retrospective', 'template', ['kanban'], aggregate),
-    ).toBe('template:kanban x');
+    expect(setDimension('edited:7d x edited:30d', 'edited', ['7d'], aggregate)).toBe('edited:7d x');
   });
 
   it('clears the dimension with no values', () => {
-    expect(
-      setDimension('template:kanban plan template:retrospective', 'template', [], aggregate),
-    ).toBe('plan');
+    expect(setDimension('edited:7d plan edited:30d', 'edited', [], aggregate)).toBe('plan');
   });
 
   it('removes an inert space token too', () => {
@@ -96,38 +92,38 @@ describe('setDimension', () => {
   });
 
   it('leaves a rejected word of the same key alone: it is text', () => {
-    expect(setDimension('template:mindmap', 'template', ['kanban'], aggregate)).toBe(
-      'template:kanban template:mindmap',
+    expect(setDimension('edited:yesterday', 'edited', ['today'], aggregate)).toBe(
+      'edited:today edited:yesterday',
     );
   });
 });
 
 describe('toggleDimensionValue', () => {
   it('adds a value to those the dimension already holds, across its tokens', () => {
-    expect(
-      toggleDimensionValue('template:kanban plan', 'template', 'retrospective', aggregate),
-    ).toBe('template:retrospective,kanban plan');
+    expect(toggleDimensionValue('people:others plan', 'people', 'me', aggregate)).toBe(
+      'people:me,others plan',
+    );
     expect(toggleDimensionValue('edited:7d x edited:30d', 'edited', 'today', aggregate)).toBe(
       'edited:today,7d,30d x',
     );
   });
 
   it('takes a value away, and the token with its last value', () => {
-    expect(
-      toggleDimensionValue('template:retrospective,kanban', 'template', 'kanban', aggregate),
-    ).toBe('template:retrospective');
+    expect(toggleDimensionValue('people:me,others', 'people', 'others', aggregate)).toBe(
+      'people:me',
+    );
     expect(toggleDimensionValue('plan made-by:ai', 'made-by', 'ai', aggregate)).toBe('plan');
   });
 });
 
 describe('removeTerm', () => {
   it('drops the span and collapses the whitespace around it', () => {
-    const input = 'plan template:kanban Q3';
+    const input = 'plan edited:7d Q3';
     const term = parseLens(input, aggregate).terms[1]!;
     expect(removeTerm(input, term)).toBe('plan Q3');
   });
 
   it('drops the last word cleanly', () => {
-    expect(removeTerm('plan template:kanban', { start: 5, end: 20 })).toBe('plan');
+    expect(removeTerm('plan edited:today', { start: 5, end: 17 })).toBe('plan');
   });
 });

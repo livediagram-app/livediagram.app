@@ -178,15 +178,7 @@ export type ChangesetBase = { rev: number; elements?: Record<string, string> };
 // The whole-tab body: exactly one source; `layout` for elements, `theme` and `name` for a tab it
 // creates (a `name` on an existing tab is ignored).
 export type ChangesetReplaceBody = {
-  graph?: unknown;
-  mermaid?: string;
   template?: string;
-  // A new Dashboard tab (docs/specs/026-plan/plan-agents.md "Making a dashboard").
-  dashboard?: Record<string, unknown>;
-  // A new Form tab's form (docs/specs/030-forms/forms.md "Agents").
-  form?: Record<string, unknown>;
-  // A new tab of elements made a Board or Sheet tab (a form's responses).
-  kind?: 'board' | 'sheet';
   elements?: unknown[];
   layout?: 'auto' | 'preserve';
   theme?: string;

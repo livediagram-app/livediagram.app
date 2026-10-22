@@ -26,7 +26,7 @@ import type { PathDraftView } from './PathDraftLayer';
 import type { PathEditView } from './PathEditLayer';
 import { debugLog } from '@/lib/debug-log';
 import { useToast } from '@/hooks/ui/useToast';
-import { boardShape } from '@/lib/whiteboard-tool';
+import { inkPath } from '@/lib/whiteboard-tool';
 
 // A press on a toolbar floating over the canvas (the selection toolbar, the edit toolbar) is a
 // button press, never a node.
@@ -155,7 +155,7 @@ export function usePathTool({
       original?.type === 'path'
         ? continuedPath(original, draft.anchors, false)
         : onDressPath<PathElement>(
-            boardShape({
+            inkPath({
               id: PATH_DRAFT_ID,
               type: 'path',
               ...pathGeometry(draft.anchors, false),

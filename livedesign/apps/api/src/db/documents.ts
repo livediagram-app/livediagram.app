@@ -2,14 +2,6 @@
 // timestamps) plus the copy operation. Tab content lives in tabs.ts;
 // the read DTO joins owner display info from participants.
 
-import {
-  itemIdsShownOnTab,
-  readItemTypeCatalogue,
-  type ItemTypeCatalogue,
-  type TabItemElement,
-} from '@livedesign/items';
-import { copyItemsStatements, listItems } from './items';
-import { copySheetsStatements } from './sheets';
 import { remapTabLinks, type Element } from '@livedesign/document';
 import { rowToTabSummary, type TabRow } from '../tab-row';
 import type { DocumentDTO, DocumentSummary, Env, TabSummaryDTO } from '../types';
@@ -19,7 +11,6 @@ import { collabIndexCopyStatements } from './collab-index';
 import { redactTabDataAuthors } from '../comments';
 import { imageGrantCopyStatements, imageGrantOwnerChangeStatement } from './image-grants';
 import { imageRefAddStatements } from './image-refs';
-import { sheetRefCopyStatement } from './sheet-refs';
 import { documentRemovalStatements } from './document-removal';
 import { purgeRooms } from '../room-purge-client';
 import { firstTabCountSql, isEmptyCount } from './tabs';
@@ -43,21 +34,17 @@ type DocumentRow = {
   source: string | null;
   // Slide deck (docs/specs/012-collaboration/presentation-mode.md): serialised StoredPresentation, or null for no deck.
   presentation: string | null;
-  // The type catalogue (docs/specs/026-plan/item-types.md), JSON, or null for the default types.
-  item_types: string | null;
-  item_types_rev?: number;
   saved_at: number;
   created_at: number;
   // Derived via subquery in the SELECT; first (oldest) share_links
-  // row for this document, or NULL when no share links exist. Replaces
-  // the legacy diagrams.share_code column dropped in migration 0008.
+  // row for this document, or NULL when no share links exist.
   share_code: string | null;
 } & RecordedIntentRow;
 
 export type SummaryRow = DocumentRow & { first_tab_count: number | null; doc_stats: string | null };
 
 async function listTabSummariesFor(env: Env, documentId: string): Promise<TabSummaryDTO[]> {
-  // Read through the document_tabs link table (migration 0011 /
+  // Read through the document_tabs link table (the baseline migration /
   // docs/specs/006-document/tab-document-many-to-many.md) — order_index now lives on the link, not on the tab,
   // so two documents that share a tab can order it independently.
   const result = await env.DB.prepare(
@@ -97,8 +84,6 @@ async function rowToDocument(env: Env, row: DocumentRow): Promise<DocumentDTO> {
     teamId: row.team_id ?? null,
     source: (row.source as DocumentDTO['source']) ?? null,
     presentation: row.presentation ?? null,
-    itemTypes: readItemTypeCatalogue(row.item_types ?? null),
-    itemTypesRev: row.item_types_rev ?? 0,
     savedAt: row.saved_at,
     createdAt: row.created_at,
     ownerName: ownerParticipant?.name ?? null,
@@ -113,9 +98,9 @@ async function rowToDocument(env: Env, row: DocumentRow): Promise<DocumentDTO> {
 // minted for the document.
 const SHARE_CODE_EXPR =
   '(SELECT code FROM share_links WHERE share_links.document_id = documents.id ORDER BY created_at ASC LIMIT 1) AS share_code';
-// `opens_in`, `tab_kind`, `template_family`: the recorded creation intent (migration 0062).
-const INTENT_COLS = 'opens_in, tab_kind, template_family';
-const DOCUMENT_COLS = `id, owner_id, name, shareable, folder_id, team_id, source, ${INTENT_COLS}, presentation, item_types, item_types_rev, saved_at, created_at, ${SHARE_CODE_EXPR}`;
+// `opens_in`, `tab_kind`: the recorded creation intent (the baseline migration).
+const INTENT_COLS = 'opens_in, tab_kind';
+const DOCUMENT_COLS = `id, owner_id, name, shareable, folder_id, team_id, source, ${INTENT_COLS}, presentation, saved_at, created_at, ${SHARE_CODE_EXPR}`;
 // The list projection deliberately omits `presentation`: listing 100 documents
 // has no use for 100 decks, and a deck is the one metadata field whose size
 // grows with the document.
@@ -184,19 +169,6 @@ export async function getDocumentThumbMeta(
         thumbRenderedAt: row.thumb_rendered_at ?? null,
       }
     : null;
-}
-
-// A document's card types alone, for a snapshot that draws its cards (a board, a Sheet's CARD formulas): the
-// thumbnail route's one read (getDocumentThumbMeta) leaves the catalogue out, as most previews are cache hits that
-// never draw. Null for a document with no catalogue, or none at all.
-export async function getDocumentItemTypes(
-  env: Env,
-  id: string,
-): Promise<ItemTypeCatalogue | null> {
-  const row = await env.DB.prepare('SELECT item_types FROM documents WHERE id = ?')
-    .bind(id)
-    .first<{ item_types: string | null }>();
-  return readItemTypeCatalogue(row?.item_types ?? null);
 }
 
 export async function getDocument(env: Env, id: string): Promise<DocumentDTO | null> {
@@ -271,17 +243,15 @@ export async function upsertDocumentMeta(
   // never rewritten by a later metadata upsert (rename / autosave / move).
   // `presentation` likewise: a create carries the deck an Offline Mode sync
   // built (docs/specs/006-document/offline-mode.md); after that only
-  // setDocumentPresentation writes it. `item_types` the same: a create carries the catalogue a copy
-  // or a sync brings (docs/specs/026-plan/item-types.md); after that only
-  // setDocumentItemTypes writes it.
+  // setDocumentPresentation writes it.
   // `folder_id` and `team_id` are the placement, written by the INSERT that creates the row
   // (docs/specs/013-workspace/folders.md "Placement on create") and never by the DO UPDATE: a
   // re-commit keeps its place, and moving is setDocumentFolder's job.
-  // `opens_in`, `tab_kind` and `template_family` are the recorded creation intent, written here once
+  // `opens_in` and `tab_kind` are the recorded creation intent, written here once
   // and never by the DO UPDATE, so nothing after the create re-derives or rewrites them.
   await env.DB.prepare(
-    `INSERT INTO documents (id, owner_id, name, shareable, folder_id, team_id, source, presentation, item_types, saved_at, created_at, opens_in, tab_kind, template_family)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `INSERT INTO documents (id, owner_id, name, shareable, folder_id, team_id, source, presentation, saved_at, created_at, opens_in, tab_kind)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(id) DO UPDATE SET
        owner_id = excluded.owner_id,
        name = excluded.name,
@@ -296,12 +266,10 @@ export async function upsertDocumentMeta(
       d.teamId ?? null,
       d.source ?? null,
       d.presentation ?? null,
-      d.itemTypes ? JSON.stringify(d.itemTypes) : null,
       d.savedAt,
       d.createdAt,
       d.opensIn ?? null,
       d.tabKind ?? null,
-      d.templateFamily ?? null,
     )
     .run();
 }
@@ -319,31 +287,6 @@ export async function setDocumentPresentation(
   await env.DB.prepare(`UPDATE documents SET presentation = ?, saved_at = ? WHERE id = ?`)
     .bind(presentation, Date.now(), id)
     .run();
-}
-
-// Type catalogue write (docs/specs/026-plan/item-types.md "Storage and sync"): its own statement, as
-// the deck's, so no meta save can rewrite it. `itemTypes` is already validated; null puts back the
-// default types. Raises the catalogue's revision; with `expectedRev` it lands only while the stored
-// revision is that one. Returns the new revision, or null when the stored one had moved on.
-export async function setDocumentItemTypes(
-  env: Env,
-  id: string,
-  itemTypes: ItemTypeCatalogue | null,
-  expectedRev?: number,
-): Promise<number | null> {
-  const row = await env.DB.prepare(
-    `UPDATE documents SET item_types = ?, item_types_rev = item_types_rev + 1, saved_at = ?
-      WHERE id = ? AND (? IS NULL OR item_types_rev = ?) RETURNING item_types_rev`,
-  )
-    .bind(
-      itemTypes ? JSON.stringify(itemTypes) : null,
-      Date.now(),
-      id,
-      expectedRev ?? null,
-      expectedRev ?? null,
-    )
-    .first<{ item_types_rev: number }>();
-  return row?.item_types_rev ?? null;
 }
 
 // Placement write (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-documents.md): folder and team scope move
@@ -527,8 +470,8 @@ export async function copyDocument(
   // The copy carries the source's recorded creation intent, read in the same statement, never
   // re-derived (docs/specs/013-workspace/default-folders.md "Recorded intent").
   await env.DB.prepare(
-    `INSERT INTO documents (id, owner_id, name, shareable, folder_id, saved_at, created_at, item_types, ${INTENT_COLS})
-     SELECT ?, ?, ?, 0, NULL, ?, ?, item_types, ${INTENT_COLS} FROM documents WHERE id = ?`,
+    `INSERT INTO documents (id, owner_id, name, shareable, folder_id, saved_at, created_at, ${INTENT_COLS})
+     SELECT ?, ?, ?, 0, NULL, ?, ?, ${INTENT_COLS} FROM documents WHERE id = ?`,
   )
     .bind(newId, newOwnerId, newName, now, now, sourceId)
     .run();
@@ -588,41 +531,10 @@ export async function copyDocument(
       ...imageRefAddStatements(env, freshTabId, imageRefIdsFromData(data)),
       // Placement grants (docs/specs/009-elements/images.md): the copy may serve what its source could.
       ...imageGrantCopyStatements(env, sourceId, newId, imageRefIdsFromData(data), now),
-      // The copy's Sheets reference the copied sheets, which keep their ids (sheet-refs.ts).
-      sheetRefCopyStatement(env, row.id, freshTabId),
     ];
   });
-  // The items go in the same batch as the tabs (two statements that copy nothing from a store without
-  // items), so a copy pays no extra round trip for them; a tab-scoped copy first works out which.
-  const itemCopies = copyItemsStatements(
-    env,
-    sourceId,
-    newId,
-    await copiedItemIds(env, sourceId, rows, onlyTabId),
-  );
-  // The sheets of the copied tabs, each under its tab's new id (docs/specs/029-sheets/sheet-store.md "Copies").
-  const sheetCopies = copySheetsStatements(env, sourceId, newId, tabIdMap, now);
-  await env.DB.batch([...inserts, ...itemCopies, ...sheetCopies]);
+  await env.DB.batch(inserts);
   return await getDocument(env, newId);
-}
-
-// The items a copy takes: all of them, or for a tab-scoped copy the items its one tab shows.
-async function copiedItemIds(
-  env: Env,
-  sourceId: string,
-  rows: { data: string }[],
-  onlyTabId: string | null,
-): Promise<string[] | null> {
-  if (onlyTabId === null) return null;
-  const elements = rows.flatMap((row) => {
-    try {
-      const parsed = JSON.parse(row.data) as { elements?: unknown };
-      return Array.isArray(parsed.elements) ? (parsed.elements as TabItemElement[]) : [];
-    } catch {
-      return [];
-    }
-  });
-  return [...itemIdsShownOnTab(elements, await listItems(env, sourceId))];
 }
 
 // Re-point the tab / element links inside one tab's stored `data` JSON at

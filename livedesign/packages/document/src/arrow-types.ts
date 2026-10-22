@@ -59,10 +59,7 @@ export const ALL_ANCHORS: readonly Anchor[] = [
 
 export type Endpoint =
   | { kind: 'free'; x: number; y: number }
-  // `field`: on an entity, the index of the field row the end lands on (docs/specs/009-elements/entity.md
-  // "Field to field"). The end meets the entity's left or right edge, the side its anchor is on, level
-  // with that row. Absent, out of range or on a top / bottom anchor: the plain anchor.
-  | { kind: 'pinned'; elementId: ElementId; anchor: Anchor; field?: number }
+  | { kind: 'pinned'; elementId: ElementId; anchor: Anchor }
   // Connected to a point ALONG another arrow's line (docs/specs/008-canvas/arrow-to-arrow.md) — `t` is the
   // parametric position (0 = the target arrow's `from`, 1 = its `to`). The
   // position resolves dynamically from the target arrow's centreline, so it
@@ -88,8 +85,8 @@ export type ArrowElement = {
   // default arrow slate when unset. There's no fill or text on an
   // arrow so this is the only colour field.
   strokeColor?: string;
-  // A whiteboard marker's named colour (docs/specs/023-draw-mode/draw-mode.md "The colour picker"):
-  // drawn in the version tuned for the viewer's board (penColourHex) when `strokeColor` is unset.
+  // A stock colour by name (docs/specs/008-canvas/canvas-and-palette.md "Colours"):
+  // drawn in the version tuned for the viewer's canvas (penColourHex) when `strokeColor` is unset.
   penColour?: PenColourName;
   // The quick-swatch slot the stroke was picked from (docs/specs/008-canvas/quick-style-panel.md), so a
   // theme change re-derives it rather than resetting it to the theme stroke.
@@ -216,8 +213,8 @@ export type ArrowElement = {
   // Label colour, independent of `strokeColor` (the line). Falls back to
   // the stroke colour when unset so the label matches the line by default.
   textColor?: string;
-  // A whiteboard stock colour for the label (docs/specs/023-draw-mode/draw-mode.md "Imported and
-  // pasted content"), drawn in its board's version when `textColor` is unset.
+  // A stock colour for the label (docs/specs/008-canvas/canvas-and-palette.md "Colours"), drawn in its
+  // canvas's version when `textColor` is unset.
   penTextColour?: PenColourName;
   // A plate behind the label (docs/specs/008-canvas/canvas-and-palette.md "Caption"). Absent = none, which is how
   // the label has always drawn: straight onto the canvas. A caption crossing

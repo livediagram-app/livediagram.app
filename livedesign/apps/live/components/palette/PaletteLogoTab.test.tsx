@@ -19,10 +19,9 @@ const pens = [
 ];
 const editor = (over: Record<string, unknown> = {}) => ({
   beginDraw: vi.fn(),
-  whiteboardDock: {
-    prefs: { pens, recognise: false },
+  markerPens: {
+    prefs: { pens },
     updatePen: vi.fn(),
-    colourMemory: { yours: [], forget: vi.fn(), remember: vi.fn() },
   },
   ...over,
 });
@@ -63,7 +62,6 @@ describe('PaletteLogoTab', () => {
       variant: 'whiteboard',
       colour: 'blue',
       width: 4,
-      recognise: false,
       penId: 'second',
       once: true,
     });
@@ -71,13 +69,12 @@ describe('PaletteLogoTab', () => {
 
   it('reads only the marker in hand as held, even beside one set alike', () => {
     const alike = editor();
-    (alike.whiteboardDock.prefs.pens as { colour: string | null }[])[2]!.colour = 'blue';
+    (alike.markerPens.prefs.pens as { colour: string | null }[])[2]!.colour = 'blue';
     show(alike, {
       type: 'freehand',
       variant: 'whiteboard',
       colour: 'blue',
       width: 4,
-      recognise: false,
       penId: 'third',
       once: true,
     });
@@ -87,7 +84,7 @@ describe('PaletteLogoTab', () => {
     expect(screen.getByRole('option', { name: 'Marker 2' }).getAttribute('aria-pressed')).toBe(
       'false',
     );
-    (alike.whiteboardDock.prefs.pens as { colour: string | null }[])[2]!.colour = 'red';
+    (alike.markerPens.prefs.pens as { colour: string | null }[])[2]!.colour = 'red';
   });
 
   it('opens a held marker’s colour and width on a second press', () => {
@@ -96,7 +93,6 @@ describe('PaletteLogoTab', () => {
       variant: 'whiteboard',
       colour: 'blue',
       width: 4,
-      recognise: false,
       once: true,
     });
     const row = screen.getByRole('option', { name: 'Marker 2' });

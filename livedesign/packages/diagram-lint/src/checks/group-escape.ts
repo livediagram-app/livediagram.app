@@ -26,7 +26,7 @@ export const groupEscape: Check = (ctx) =>
         code: 'group-escape' as const,
         refs: [ref, frameRef],
         message: `${ref} sticks out of ${frameRef}`,
-        fix: fixes.groupEscape(ctx.source, ref, frameRef),
+        fix: fixes.groupEscape(ref, frameRef),
         at: { x: box.x, y: box.y },
       },
     ];

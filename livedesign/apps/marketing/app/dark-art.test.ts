@@ -89,7 +89,7 @@ describe('mock-up palette, light half', () => {
     expectDefaultScheme(':root', 'light', DEFAULT_SCHEME_LIGHT);
   });
 
-  it('recolours the hero flowchart to Forest', () => {
+  it('recolours the hero scenes to Forest', () => {
     expectPick(':root', 'forest');
   });
 });
@@ -99,7 +99,7 @@ describe('mock-up palette, dark half', () => {
     expectDefaultScheme('.dark', 'dark', DEFAULT_SCHEME_DARK);
   });
 
-  it('recolours the hero flowchart to Pine', () => {
+  it('recolours the hero scenes to Pine', () => {
     expectPick('.dark', 'pine');
   });
 });

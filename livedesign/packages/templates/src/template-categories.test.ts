@@ -16,23 +16,8 @@ import { TEMPLATES, type TemplateKind } from './templates';
 describe('template categories', () => {
   const ids = TEMPLATE_CATEGORIES.map((c) => c.id);
 
-  it('are the fourteen job-based categories, alphabetical by label, Title Case, with even descriptions', () => {
-    expect(TEMPLATE_CATEGORIES.map((c) => c.label)).toEqual([
-      'Brainstorm',
-      'Design',
-      'Finance',
-      'Flowcharts',
-      'Forms',
-      'Org Charts',
-      'Planning',
-      'Presentations',
-      'Quizzes & Games',
-      'Spreadsheets',
-      'Strategy',
-      'Technical',
-      'Timelines',
-      'Workshops',
-    ]);
+  it('are the job-based categories Pages fills, alphabetical by label, Title Case, with even descriptions', () => {
+    expect(TEMPLATE_CATEGORIES.map((c) => c.label)).toEqual(['Design', 'Presentations']);
     const labels = TEMPLATE_CATEGORIES.map((c) => c.label);
     expect(labels).toEqual([...labels].sort((a, b) => a.localeCompare(b, 'en')));
     expect(new Set(ids).size).toBe(ids.length);
@@ -59,20 +44,8 @@ describe('template categories', () => {
   it('pins the primary counts', () => {
     const counts = ids.map((id) => TEMPLATES.filter((t) => templateCategory(t.kind) === id).length);
     expect(Object.fromEntries(ids.map((id, i) => [id, counts[i]]))).toEqual({
-      planning: 9,
-      finance: 6,
-      spreadsheets: 5,
-      forms: 6,
-      meetings: 17,
-      mindmaps: 8,
-      timelines: 7,
-      flowcharts: 5,
-      strategy: 14,
-      hierarchies: 7,
-      design: 12,
-      presentations: 2,
-      technical: 9,
-      games: 5,
+      design: 5,
+      presentations: 1,
     });
   });
 
@@ -85,27 +58,17 @@ describe('template categories', () => {
       expect(also, kind).not.toContain(templateCategory(kind as TemplateKind));
       expect(new Set(also).size, kind).toBe(also.length);
     }
-    expect(isInTemplateCategory('invoice', 'spreadsheets')).toBe(true);
-    expect(isInTemplateCategory('funnel', 'finance')).toBe(true);
-    expect(isInTemplateCategory('team-retro', 'planning')).toBe(true);
-    expect(isInTemplateCategory('doodle-warmup', 'games')).toBe(true);
-    expect(isInTemplateCategory('blank', 'flowcharts')).toBe(false);
+    expect(isInTemplateCategory('logo-design', 'presentations')).toBe(true);
+    expect(isInTemplateCategory('wireframe-mobile-app', 'design')).toBe(true);
+    expect(isInTemplateCategory('blank', 'presentations')).toBe(false);
   });
 
-  it('leaves no category empty in every mode, and hides one only where a mode has none', () => {
+  it('leaves no category empty, every template in it opening in Pages', () => {
     for (const id of ids) {
-      const modes = EDITOR_MODES.filter((m) =>
-        TEMPLATES.some((t) => isInTemplateCategory(t.kind, id) && templateEditorMode(t.kind) === m),
-      );
-      expect(modes.length, id).toBeGreaterThan(0);
+      const inIt = TEMPLATES.filter((t) => isInTemplateCategory(t.kind, id));
+      expect(inIt.length, id).toBeGreaterThan(0);
+      for (const t of inIt) expect(EDITOR_MODES, t.kind).toContain(templateEditorMode(t.kind));
     }
-    // Spreadsheets is a Plan shelf; under Diagram, Finance keeps its money diagrams.
-    const inMode = (id: (typeof ids)[number], mode: string) =>
-      TEMPLATES.filter(
-        (t) => isInTemplateCategory(t.kind, id) && templateEditorMode(t.kind) === mode,
-      ).map((t) => t.kind);
-    expect(inMode('spreadsheets', 'diagram')).toEqual([]);
-    expect(inMode('finance', 'diagram').sort()).toEqual(['funnel', 'sankey']);
   });
 });
 
@@ -122,48 +85,32 @@ describe('template search words', () => {
   it('finds templates by the words people use', () => {
     const find = (q: string) =>
       TEMPLATES.filter((t) => templateMatchesQuery(t, q)).map((t) => t.kind);
-    expect(find('sprint')).toContain('project-planner');
-    expect(find('standup')).toContain('project-planner');
-    expect(find('1:1')).toContain('meeting-agenda');
-    expect(find('mortgage')).toEqual(['loan-calculator']);
-    expect(find('invoice')).toContain('invoice');
-    expect(find('crm')).toEqual(expect.arrayContaining(['contact-list', 'sales-pipeline']));
-    expect(find('kpi')).toContain('okrs');
-    expect(find('retro')).toEqual(
-      expect.arrayContaining(['retrospective', 'team-retro', 'sailboat']),
-    );
-    expect(find('persona')).toContain('user-persona');
-    expect(find('erd')).toContain('er-diagram');
-    expect(find('org')).toContain('orgchart');
-    // A category label finds what is cross-listed in it; every word must match.
-    expect(find('finance funnel')).toContain('funnel');
-    expect(find('finance funnel')).not.toContain('swot');
-    expect(find('kanban zebra')).toEqual([]);
+    expect(find('brand')).toEqual(expect.arrayContaining(['logo-design', 'blank-logo']));
+    expect(find('iphone')).toEqual(expect.arrayContaining(['blank-wireframe-phone']));
+    expect(find('smartwatch')).toEqual(['blank-wireframe-watch', 'wireframe-watch-app']);
+    // A category label finds what is in it; every word must match.
+    expect(find('design dashboard')).toContain('wireframe-dashboard');
+    expect(find('design dashboard')).not.toContain('logo-design');
+    expect(find('logo zebra')).toEqual([]);
     expect(find('')).toHaveLength(TEMPLATES.length);
   });
 
   it('reads punctuation and hyphens as no part of a word, in the query and the templates alike', () => {
     const find = (q: string) =>
       TEMPLATES.filter((t) => templateMatchesQuery(t, q)).map((t) => t.kind);
-    expect(find('to-do')).toContain('task-tracker');
-    expect(find('todo')).toContain('task-tracker');
-    expect(find('1-on-1')).toContain('meeting-agenda');
-    expect(find('one-on-one')).toContain('meeting-agenda');
-    // Run together, a hyphenated name is found too ("er diagram" from the kind er-diagram).
-    expect(find('erdiagram')).toContain('er-diagram');
+    expect(find('mobile-app')).toContain('wireframe-mobile-app');
+    expect(find('mobileapp')).toContain('wireframe-mobile-app');
+    expect(find('web-app')).toContain('wireframe-dashboard');
+    // Run together, a hyphenated name is found too ("logo design" from the kind logo-design).
+    expect(find('logo design')).toContain('logo-design');
     // A query of punctuation alone is no query.
     expect(find(' - ')).toHaveLength(TEMPLATES.length);
-  });
-
-  it('shares a sheet template’s words with the Plan template made from it', () => {
-    expect(templateKeywords('guest-list')).toContain('wedding');
-    expect(templateKeywords('budget-planner')).toContain('household');
   });
 
   it('matches the whole catalogue in well under a frame (it runs on every keystroke)', () => {
     const t0 = performance.now();
     for (let i = 0; i < 100; i++)
-      TEMPLATES.filter((t) => templateMatchesQuery(t, 'plan board sheet'));
+      TEMPLATES.filter((t) => templateMatchesQuery(t, 'wireframe app page'));
     expect((performance.now() - t0) / 100).toBeLessThan(4);
   });
 });

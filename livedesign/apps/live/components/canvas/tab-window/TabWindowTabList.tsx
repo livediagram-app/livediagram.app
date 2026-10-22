@@ -1,13 +1,12 @@
 'use client';
 
 // The tabs a window may show (docs/specs/009-elements/tab-window.md "Choosing the tab"): every tab of the document but
-// the window's own, Plan tabs included, in tab-bar order, each its mode icon and name, the shown one marked. Shared by the
-// empty window's Choose a Tab and the menu's Tab Window section.
+// the window's own, in tab-bar order, each by name, the shown one marked. Shared by the empty window's Choose a Tab and
+// the menu's Tab Window section.
 import { tabWindowOffers, type Tab } from '@livedesign/document';
 import { CompactEmptyState, lucideGlyph } from '@livedesign/ui';
 import { lucideAppWindow } from '@livedesign/icons/lucide';
-import { OptionRows } from '@/components/plan/OptionRows';
-import { TabModeIcon } from '@/components/chrome/editor-mode/TabModeIcon';
+import { OptionRows } from '@/components/primitives/OptionRows';
 
 const WindowIcon = lucideGlyph(lucideAppWindow, 16);
 
@@ -41,7 +40,6 @@ export function TabWindowTabList({
       rows={offers.map((t) => ({
         id: t.id,
         label: t.name || 'Untitled tab',
-        icon: <TabModeIcon tab={t} />,
       }))}
       onPick={onPick}
     />

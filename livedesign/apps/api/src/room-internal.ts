@@ -8,14 +8,12 @@ import { parseAccessCloseMatch, type AccessCloseMatch } from './room-access';
 /** The room's surface the internal endpoints act on. */
 export type InternalRoom = {
   broadcastSystemOp: (op: unknown) => void;
-  broadcastOrderedSystemOp: (op: unknown) => void;
   closeSessionsOfChangedLink: (op: unknown) => void;
   closeAllIfTrashed: (op: unknown) => void;
   clearAgentsFor: (op: unknown) => Promise<void>;
   closeSessionsForAccessChange: (close: AccessCloseMatch) => void;
   purge: () => Promise<void>;
   handleAgentPresence: (request: Request, url: URL) => Promise<Response>;
-  handleQaWrite: (request: Request) => Promise<Response>;
   sequenceMutation: (from: string, op: unknown) => number;
   readSelections: (tabId: string, person: string) => Promise<unknown>;
   readLedger: (tabId: string) => Promise<unknown>;
@@ -44,11 +42,7 @@ export async function answerInternal(
     const body = await readBody(request);
     const op = body?.op;
     if (!op) return new Response('missing op', { status: 400 });
-    // `ordered` asks for a seq + a catch-up log slot: a system op that
-    // changes the document (a Q&A board write, docs/specs/012-collaboration/qa-board.md) must replay to a
-    // peer whose socket blipped, the same as a peer's own mutation would.
-    if (body.ordered === true) room.broadcastOrderedSystemOp(op);
-    else room.broadcastSystemOp(op);
+    room.broadcastSystemOp(op);
     room.closeSessionsOfChangedLink(op);
     room.closeAllIfTrashed(op);
     await room.clearAgentsFor(op);
@@ -71,9 +65,6 @@ export async function answerInternal(
   }
   if (url.pathname === '/presence' && (request.method === 'PUT' || request.method === 'DELETE')) {
     return room.handleAgentPresence(request, url);
-  }
-  if (request.method === 'POST' && url.pathname === '/qa') {
-    return room.handleQaWrite(request);
   }
   // Internal: a document change the WORKER made (docs/specs/012-collaboration/collab-race-hardening.md), relayed into the
   // ordered stream like a peer's mutation: sequenced, logged for catch-up,
@@ -118,9 +109,9 @@ export async function answerInternal(
   return null;
 }
 
-// The JSON body of an internal worker call (`{ op, ordered? }`), or null
+// The JSON body of an internal worker call (`{ op }`), or null
 // when it doesn't parse as an object.
-async function readBody(request: Request): Promise<{ op?: unknown; ordered?: unknown } | null> {
+async function readBody(request: Request): Promise<{ op?: unknown } | null> {
   try {
     const body: unknown = await request.json();
     return body && typeof body === 'object' ? body : null;

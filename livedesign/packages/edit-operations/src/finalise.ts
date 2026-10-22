@@ -1,18 +1,15 @@
 // The working state made into the next tab (docs/specs/024-agents/blueprints/edit-operations.md
-// "Finalise"): touched elements normalised and their shape kinds coerced, then checked, workshop
-// notes landed on lanes, arrows re-anchored around moved boxes, lanes behind what they hold, and the
-// whole tab validated. Untouched elements pass through as the same objects (I2).
+// "Finalise"): touched elements normalised and their shape kinds coerced, then checked, arrows
+// re-anchored around moved boxes, containers behind what they hold, and the whole tab validated. Untouched elements pass through as the same objects (I2).
 
 import type { EditRejection } from '@livedesign/api-schema';
 import {
   MAX_ELEMENTS_PER_TAB,
-  agendaFitHeight,
   coerceShapeKind,
   deriveContainers,
   isContainer,
   elementValidationIssue,
   isValidTab,
-  lanesToFront,
   normaliseElement,
   rebindArrowAnchorsAfterMove,
   type ArrowElement,
@@ -21,8 +18,6 @@ import {
   type ElementId,
   type Endpoint,
   type Tab,
-  settleDiagramKeys,
-  tagColoursOf,
 } from '@livedesign/document';
 import { kindOf } from './element-text';
 import { ROUTE_KEYS, rerouted } from './operations/connect';
@@ -83,18 +78,6 @@ function normaliseTouched(state: EditState, log: EditLog): void {
         });
         log('[edit-ops] coerced', { operation, field: 'shape' });
         normalised.shape = shape;
-      }
-      // An agenda given its segments grows down to draw every one, as a label grows its box, rather
-      // than the face leaving the last off (docs/specs/012-collaboration/agenda.md "The face").
-      if (
-        normalised.shape === 'agenda' &&
-        (!state.before.has(id) || written.includes('agendaItems'))
-      ) {
-        const height = agendaFitHeight(normalised as unknown as BoxedElement);
-        if (height !== normalised.height) {
-          normalised.height = height;
-          log('[edit-ops] agenda fitted', { operation, height });
-        }
       }
     }
     replaceElement(state, normalised as unknown as Element);
@@ -170,7 +153,6 @@ export function containersBehindMembers(elements: readonly Element[]): Element[]
   const members = new Map<BoxedElement, ElementId[]>();
   for (const [id, holder] of deriveContainers(elements)) {
     const container = holder ? byId.get(holder) : undefined;
-    // A mind node holds its children by link, not by drawing behind them.
     if (!container || container.type === 'arrow' || !isContainer(container)) continue;
     const held = members.get(container);
     if (held) held.push(id);
@@ -201,12 +183,7 @@ export function finalise(state: EditState, log: EditLog): Tab | EditRejection {
   const moved = movedBoxes(state.before, landed);
   const rebound = rerouteRebound(landed, rebindArrowAnchorsAfterMove(landed, moved), moved);
   // An element that ends as it began is the element it began as (E1, I2).
-  // A diagram key's rows follow the tab's lines and tags (docs/specs/009-elements/diagram-key.md), settled here as the
-  // editor settles them on commit: an agent's key otherwise drew its empty hint.
-  const settled = settleDiagramKeys(
-    containersBehindMembers(lanesToFront(rebound)),
-    tagColoursOf(state.tab),
-  );
+  const settled = containersBehindMembers(rebound);
   const elements = settled.map((el) => {
     const was = state.before.get(el.id);
     return was && was !== el && sameValue(was, el) ? was : el;

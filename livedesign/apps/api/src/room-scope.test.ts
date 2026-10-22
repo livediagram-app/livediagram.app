@@ -15,14 +15,14 @@ describe('opForScope (what a scoped session receives)', () => {
   });
 
   it('delivers ops on its own tab', () => {
-    for (const kind of ['el', 'tab', 'tab-meta', 'el-delta', 'vote', 'cursor', 'laser', 'qa']) {
+    for (const kind of ['el', 'tab', 'tab-meta', 'el-delta', 'vote', 'cursor', 'laser']) {
       const op = { kind, tabId: SCOPE };
       expect(opForScope(op, SCOPE), kind).toBe(op);
     }
   });
 
   it('drops ops on any other tab', () => {
-    for (const kind of ['el', 'tab', 'tab-meta', 'el-delta', 'vote', 'cursor', 'laser', 'qa']) {
+    for (const kind of ['el', 'tab', 'tab-meta', 'el-delta', 'vote', 'cursor', 'laser']) {
       expect(opForScope({ kind, tabId: 't1' }, SCOPE), kind).toBeNull();
     }
   });
@@ -56,38 +56,8 @@ describe('opForScope (what a scoped session receives)', () => {
     });
   });
 
-  it('delivers a sheet write only to sessions on its tab', () => {
-    const op = { kind: 'sheets', sheetId: 's1', tabId: SCOPE, rev: 3 };
-    expect(opForScope(op, SCOPE)).toBe(op);
-    expect(opForScope({ ...op, tabId: 'elsewhere' }, SCOPE)).toBeNull();
-    const presence = {
-      kind: 'sheet-presence',
-      tabId: 'elsewhere',
-      sheetId: 's1',
-      ranges: null,
-      editing: false,
-    };
-    expect(opForScope(presence, SCOPE)).toBeNull();
-  });
-
-  it('delivers item writes to a scoped session without their items', () => {
-    const op = { kind: 'items', upserts: [{ id: 'i1' }], removed: ['i2'], rev: 7 };
-    expect(opForScope(op, null)).toBe(op);
-    expect(opForScope(op, SCOPE)).toEqual({ kind: 'items', upserts: [], removed: [], rev: 7 });
-    const types = { kind: 'item-types', itemTypes: null };
-    expect(opForScope(types, SCOPE)).toBe(types);
-    expect(scopedSenderMayRelay(op, SCOPE)).toBe(false);
-  });
-
-  it('delivers the tab-less session ops', () => {
-    for (const kind of [
-      'poll-start',
-      'poll-answer',
-      'poll-end',
-      'share-revoked',
-      'share-rescoped',
-      'document-trashed',
-    ]) {
+  it('delivers the tab-less notices', () => {
+    for (const kind of ['share-revoked', 'share-rescoped', 'document-trashed']) {
       const op = { kind };
       expect(opForScope(op, SCOPE), kind).toBe(op);
     }
@@ -123,12 +93,6 @@ describe('scopedSenderMayRelay (what a scoped session may send)', () => {
 
   it('refuses document-meta outright: the structure is not theirs', () => {
     expect(scopedSenderMayRelay({ kind: 'document-meta', name: 'x', tabs: [] }, SCOPE)).toBe(false);
-  });
-
-  it('lets it take part in the session', () => {
-    for (const kind of ['poll-answer', 'poll-start', 'poll-end']) {
-      expect(scopedSenderMayRelay({ kind }, SCOPE), kind).toBe(true);
-    }
   });
 
   it('fails closed on anything else', () => {

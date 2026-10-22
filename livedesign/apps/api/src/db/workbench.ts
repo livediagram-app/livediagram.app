@@ -1,4 +1,4 @@
-// Workbench rows (migration 0077; docs/specs/013-workspace/blueprints/workbench-embeds.md "Data and
+// Workbench rows (the baseline migration; docs/specs/013-workspace/blueprints/workbench-embeds.md "Data and
 // persistence"): pairing requests, pairings, tickets and sessions. Hash-agnostic: callers hash secrets
 // before they reach here, so no secret ever touches a query.
 

@@ -5,7 +5,7 @@ A single cached SVG snapshot per document, used two ways:
 1. **Explorer thumbnails** — a small preview on each row of the Recent /
    folder lists so you can recognise a document without opening it.
 2. **Live image share** — an `<img>`-able URL ([Live image share link](../013-workspace/live-image-share.md)) that embeds the
-   diagram in a README / wiki / doc and stays up to date.
+   document in a README / wiki / doc and stays up to date.
 
 Both render the same artifact through the same DOM-free renderer; they
 differ only in how they're authorised and cached.
@@ -33,14 +33,10 @@ On a read of either delivery path:
 - **Fresh** (`thumb_rendered_at >= saved_at`): stream the stored R2
   bytes. No render, no element load.
 - **Stale** (or never rendered, or the object is missing): render the
-  first tab (a Form tab as its form, the picture respondents see on its
-  tab's look: `formArt` from `@livedesign/plan-art`, as the MCP preview
-  draws it, since a form is not an element) with `renderElementsToSvg` (`@livedesign/document`, the same
+  first tab with `renderElementsToSvg` (`@livedesign/document`, the same
   DOM-free renderer the MCP worker uses), write it to R2, stamp
   `thumb_rendered_at`, and return it. Icon elements render their real
-  glyph (line art + Technology brand tiles) via the
-  `@livedesign/icons/resolve` resolver the worker passes in — see
-  [Technology icons](../010-palette/technology-icons.md) "Rendering". Image elements render their real picture: the
+  glyph via the `@livedesign/icons/resolve` resolver the worker passes in. Image elements render their real picture: the
   worker reads each upload from R2 and inlines it as a base64 data URL
   through `embedTabImages` (`@livedesign/api-schema`, shared with the
   MCP preview, [MCP server](../015-api/mcp-server.md) §5), in document order under a 3 MB total budget
@@ -51,10 +47,7 @@ On a read of either delivery path:
 This is **render-on-read**, not render-on-save, on purpose:
 
 - **Covers every write path.** `saved_at` is bumped by every tab write
-  (editor, collaborators, MCP server, API token), and by every card write
-  and Sheet write that lands (a board draws its cards and a Sheet its
-  cells, which live in their own tables: in the statement each already
-  runs on the document row, never moving the time back), so the snapshot
+  (editor, collaborators, MCP server, API token), so the snapshot
   invalidates uniformly regardless of who edited — no client upload to
   keep in sync.
 - **No wasted renders.** A document is only rendered when it has been
@@ -130,20 +123,18 @@ document renders lazily.
   size.
 - **An empty document is never asked for.** Every document list carries
   `empty` per document (`DocumentSummary`, `SharedWithItem`): true when its
-  first tab has nothing to draw (no element and no form: `drawnCount` in
+  first tab has nothing to draw (no element: `drawnCount` in
   `@livedesign/document`), or it has no tab. Such a row shows the still,
   dashed sketch at once, captioned "Nothing drawn yet" where there is room,
   and makes no request, so an Explorer of new or blank documents fires no
   404s. The list knows without reading any tab body: each tab row keeps its
-  drawn count (`tabs.element_count`: its elements, plus one for a form), and a list reads the first tab's
+  drawn count (`tabs.element_count`: its elements), and a list reads the first tab's
   count (a tab-scoped share reads its own tab's). Every tab write binds the
   count in the same statement, from the tab the api already holds parsed;
   a copy carries its source's. A count not known (`null`) reads as not
   empty, so the row asks as before. The editor's own row follows its saves:
   after an autosave it says `empty` from the first tab when that tab is
-  loaded, and keeps what the list said when it is not. A Form tab stored
-  before its form counted keeps a count of 0 until its next write (any
-  builder edit), which stamps it afresh; no migration reads the bodies.
+  loaded, and keeps what the list said when it is not.
 - **The count is filled lazily, never by a bulk backfill.** The migration
   only adds the column. A tab stored before it starts unknown and gets its
   count from its next write, or from the thumbnail route: having parsed the
@@ -229,7 +220,7 @@ The browse views (Recent / My Documents / folders / Search results / This Browse
 have a **List / Card / Details** toggle in the header's actions, left of Help and
 Create, which always sit further right (device-local preference,
 `livedesign:explorer-view`). **Card is the default**:
-a diagram is a picture, and a wall of names in one typeface makes you read
+a document is pictures, and a wall of names in one typeface makes you read
 every line to find the one you would have recognised on sight. Somebody who
 prefers the density of rows knows where the toggle is; somebody opening the
 Explorer for the first time does not know there is anything to look for, so

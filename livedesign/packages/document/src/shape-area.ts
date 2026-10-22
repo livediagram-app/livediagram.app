@@ -20,10 +20,8 @@ import { boxFit } from './svg-shape-fit';
 // The CSS-drawn kinds whose area is their (rounded) box.
 const AREA_BOX_KINDS: ReadonlySet<ShapeKind> = new Set<ShapeKind>(['square', 'circle', 'stadium']);
 // The drawn kinds a mark can be made of: the table's silhouettes, less the ones that are scenes of
-// several pieces (devices, the actor) rather than one outline.
+// several pieces (devices) rather than one outline.
 const NOT_A_SILHOUETTE: ReadonlySet<ShapeKind> = new Set<ShapeKind>([
-  'actor',
-  'final-state',
   'monitor',
   'laptop',
   'phone',

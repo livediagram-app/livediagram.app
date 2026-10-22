@@ -7,8 +7,8 @@ import { useTemplateFlow } from './useTemplateFlow';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn(), titleCaseType: (s: string) => s }));
 
-// docs/specs/007-editor/templates-by-mode.md "The document's name": a template picked on the first tab names a
-// document still on a default name after itself; a name someone gave it, or a later tab's template, never does.
+// A template picked on the first tab names a document still on a default name after itself; a name someone
+// gave it, or a later tab's template, never does.
 
 async function pick(kind: TemplateKind, documentName: string, onTab = 't1') {
   let tabs: Tab[] = [
@@ -35,9 +35,6 @@ async function pick(kind: TemplateKind, documentName: string, onTab = 't1') {
       requestFit: vi.fn(),
       putToolDown: vi.fn(),
       markTabLoaded: vi.fn(),
-      bringCardTypes: vi.fn(),
-      seedCards: vi.fn(),
-      startForm: vi.fn(),
     }),
   );
   await act(async () => {
@@ -48,28 +45,24 @@ async function pick(kind: TemplateKind, documentName: string, onTab = 't1') {
 
 describe('chooseTemplate names the document', () => {
   it('after the template, while its name is still a default one', async () => {
-    expect(await pick('flowchart', 'Untitled document')).toHaveBeenCalledWith('Untitled Flowchart');
-    // A mode's blank made by /new ("Untitled Plan") is a default name too.
-    expect(await pick('sailboat', 'Untitled Plan')).toHaveBeenCalledWith(
-      'Untitled Sailboat Retrospective',
+    expect(await pick('logo-design', 'Untitled document')).toHaveBeenCalledWith(
+      'Untitled Logo Design',
     );
-  });
-
-  it('for a form template too', async () => {
-    expect(await pick('rsvp-form', 'Untitled Plan')).toHaveBeenCalledWith(
-      expect.stringMatching(/^Untitled .*Form$/),
+    // A design made by /new ("Untitled Mobile App Wireframe") is a default name too.
+    expect(await pick('wireframe-website', 'Untitled Mobile App Wireframe')).toHaveBeenCalledWith(
+      'Untitled Website Wireframe',
     );
   });
 
   it('keeps a name someone gave it', async () => {
-    expect(await pick('flowchart', 'Q3 roadmap')).not.toHaveBeenCalled();
+    expect(await pick('logo-design', 'Q3 roadmap')).not.toHaveBeenCalled();
   });
 
   it("leaves the document's name to its first tab", async () => {
-    expect(await pick('flowchart', 'Untitled document', 't2')).not.toHaveBeenCalled();
+    expect(await pick('logo-design', 'Untitled document', 't2')).not.toHaveBeenCalled();
   });
 
   it('does nothing when the name would not change', async () => {
-    expect(await pick('flowchart', 'Untitled Flowchart')).not.toHaveBeenCalled();
+    expect(await pick('logo-design', 'Untitled Logo Design')).not.toHaveBeenCalled();
   });
 });

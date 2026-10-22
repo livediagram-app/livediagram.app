@@ -11,11 +11,7 @@
 import dynamic from 'next/dynamic';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
-import { ITEM_TYPES } from '@livedesign/items';
 import { loadedPresentationOverlay, loadPresentationOverlay } from '@/lib/editor-deferred-code';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
-import { usePlan } from '@/components/plan/PlanContext';
-import { planPalette } from '@/components/plan/plan-palette';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { slideDurationMs } from '@/lib/presentation-config';
 import { useLatest } from '@/hooks/ui/useLatest';
@@ -29,13 +25,6 @@ import { slideTransitionType, whenScreenSettles } from './slide-transition';
 // before the code loaded.
 const LazyPresentationOverlay = dynamic(loadPresentationOverlay, { ssr: false });
 
-// Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a document without
-// Plan pays nothing for it.
-const ItemSlideView = dynamic(
-  () => import('@/components/plan/ItemSlideView').then((m) => m.ItemSlideView),
-  { ssr: false },
-);
-
 // Where focus lands after a deck when the Present that started it has gone (the header's remounts with the chrome):
 // a Present on screen, else the canvas.
 const presentOrCanvas = () =>
@@ -45,8 +34,6 @@ const presentOrCanvas = () =>
 
 export function PresentationHost() {
   const { slideDeck, canvasTool, setCanvasTool } = useEditorContext();
-  const plan = usePlan();
-  const surface = useCanvasSurface();
   const at = slideDeck?.presentingAt ?? null;
   const presenting = at !== null;
   // Leaving the deck hands focus back to the Present that started it (presentation-mode.md "Exiting"). Taken from the
@@ -133,7 +120,6 @@ export function PresentationHost() {
   if (!slideDeck || at === null || !config || !Overlay) return null;
   // An item slide is the card itself, drawn over the canvas (docs/specs/012-collaboration/presentation-mode.md
   // "Item slides").
-  const itemId = slideDeck.runnable[at]?.slide.itemId;
   // A move: a step (one slide either way) counts from the slide last asked for, a jump is taken as given; then it
   // runs as a transition typed by its direction, or plainly for None (startTypedTransition cuts under reduced motion).
   const go = (next: number) => {
@@ -147,26 +133,16 @@ export function PresentationHost() {
     else slideDeck.setPresentingAt(target);
   };
   return (
-    <>
-      {itemId ? (
-        <ItemSlideView
-          item={plan?.items.get(itemId)}
-          types={plan?.types ?? ITEM_TYPES}
-          statusNames={plan?.statusNames}
-          palette={planPalette(surface, {})}
-        />
-      ) : null}
-      <Overlay
-        canvasTool={canvasTool}
-        onSetCanvasTool={setCanvasTool}
-        steps={slideDeck.runnable}
-        at={at}
-        onGo={go}
-        onExit={slideDeck.exitPresentation}
-        direction={direction}
-        config={config}
-        onChangeConfig={slideDeck.updateConfig}
-      />
-    </>
+    <Overlay
+      canvasTool={canvasTool}
+      onSetCanvasTool={setCanvasTool}
+      steps={slideDeck.runnable}
+      at={at}
+      onGo={go}
+      onExit={slideDeck.exitPresentation}
+      direction={direction}
+      config={config}
+      onChangeConfig={slideDeck.updateConfig}
+    />
   );
 }

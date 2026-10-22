@@ -1,5 +1,4 @@
-// The Popular shelf (docs/specs/008-canvas/canvas-and-palette.md "Template categories", docs/specs/007-editor/
-// templates-by-mode.md "The mode filter"): where most people start, a short curated list per mode filter, each
+// The Popular shelf (docs/specs/008-canvas/canvas-and-palette.md "Template categories"): where most people start, a short curated list per mode filter, each
 // opening with its blank(s). Shared by the editor's template step and the marketing gallery, so the two shelves can
 // never disagree.
 import type { EditorMode } from '@livedesign/document';
@@ -8,38 +7,14 @@ import { TEMPLATES, type TemplateKind } from './templates';
 type PopularChoice = 'all' | EditorMode;
 
 export const POPULAR_BY_MODE: Readonly<Record<PopularChoice, readonly TemplateKind[]>> = {
-  // The five blanks lead, one per mode in mode order (EDITOR_MODES), so the picker needs no separate blank card.
+  // The blanks lead, so the picker needs no separate blank card.
+  // Pages is the only mode, so Everything and Pages share one shelf.
   all: [
-    'blank',
-    'whiteboard',
-    'blank-session',
     'blank-illustration',
-    'blank-plan',
-    'mindmap',
-    'flowchart',
-    'kanban',
-    'sailboat',
-    'budget-planner',
-    'orgchart',
-    'sketchnote',
     'logo-design',
-  ],
-  diagram: [
-    'blank',
-    'flowchart',
-    'mindmap',
-    'orgchart',
-    'gantt',
-    'timeline',
-    'system-architecture',
-  ],
-  draw: [
-    'whiteboard',
-    'sketchnote',
-    'journey-doodle',
-    'comic-strip',
-    'idea-garden',
-    'rich-picture',
+    'wireframe-mobile-app',
+    'wireframe-website',
+    'wireframe-dashboard',
   ],
   pages: [
     'blank-illustration',
@@ -47,24 +22,6 @@ export const POPULAR_BY_MODE: Readonly<Record<PopularChoice, readonly TemplateKi
     'wireframe-mobile-app',
     'wireframe-website',
     'wireframe-dashboard',
-  ],
-  plan: [
-    'blank-plan',
-    'project-planner',
-    'kanban',
-    'budget-planner',
-    'team-retro',
-    'bug-triage',
-    'invoice',
-  ],
-  workshop: [
-    'blank-session',
-    'sailboat',
-    'retrospective',
-    'town-hall',
-    'lean-coffee',
-    'crazy-eights',
-    'pub-quiz',
   ],
 };
 

@@ -58,17 +58,4 @@ describe('a remote selection and a face accent', () => {
     expect(painted(container, OWN)).toBe(true);
     expect(painted(container, PURPLE)).toBe(false);
   });
-
-  it("keeps a boundary's tab in its own accent while a collaborator has it selected", () => {
-    const boundary = {
-      ...createShape('boundary', 0, 0),
-      width: 300,
-      height: 200,
-      label: 'Region',
-      strokeColor: '#0284c7',
-    } as BoxedElement;
-    const { container } = draw(boundary, [selector]);
-    expect(painted(container, OWN)).toBe(true);
-    expect(painted(container, PURPLE)).toBe(false);
-  });
 });

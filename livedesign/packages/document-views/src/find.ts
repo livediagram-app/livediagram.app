@@ -25,16 +25,11 @@ function searchedTexts(el: Element): [FindField, string[]][] {
   const strings = (values: readonly unknown[]) =>
     values.filter((v): v is string => typeof v === 'string');
   const rows = arrayField(el, 'cells').flatMap(listOf);
-  const entityFields = arrayField(el, 'entityFields').filter(isObject);
   const thread = threadOf(el);
   return [
     ['label', strings([textField(el, 'label')])],
     ['note', strings([textField(el, 'note')])],
     ['cell', strings(rows)],
-    [
-      'field',
-      entityFields.flatMap((f) => strings([stringField(f, 'name'), stringField(f, 'type')])),
-    ],
     [
       'item',
       strings(
@@ -60,7 +55,7 @@ function searchedTexts(el: Element): [FindField, string[]][] {
   ];
 }
 
-/** Every text `find` searches on one element (its label, note, cells, fields, items, nodes, code
+/** Every text `find` searches on one element (its label, note, cells, items, nodes, code
  *  and comments), for a caller that searches by element without the view, such as Pages mode's
  *  Find a Page (docs/specs/007-editor/pages-mode.md "Contents"). */
 export function elementFindTexts(el: Element): string[] {

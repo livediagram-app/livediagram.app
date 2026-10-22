@@ -14,14 +14,13 @@ import { LOOK_MD_MAX_NODES } from './look-size';
 import { CODE_LANGUAGES } from './data-shapes';
 import { isCodeThemeId } from './code-themes';
 import { variantFitsKind } from './chart-types';
-import { entityHeight } from './entity-geometry';
 import { settleChips } from './attachment';
 import { createShape } from './shape-factory';
 import { createSticky, createTable, createText } from './factories';
 import { migrateStoredElementsUnsettled } from './stored-elements';
 import { normalizeTable } from './table';
 import { coerceShapeKind } from './validate';
-import type { Element as DocElement, TableElement, TextSize } from './index';
+import type { Element as DocElement, TableElement } from './index';
 import { isRecord } from './is-record';
 import {
   cleanSankeyName,
@@ -62,14 +61,6 @@ function normaliseCodeBlock(el: Raw): Raw {
     out.codeLanguage = 'plain';
   if (out.codeTheme !== undefined && !isCodeThemeId(out.codeTheme as string)) delete out.codeTheme;
   return out;
-}
-
-// An entity grows to show every row: the render stops drawing rows that run
-// past the box.
-function normaliseEntity(el: Raw): Raw {
-  const rows = Array.isArray(el.entityFields) ? el.entityFields.length : 0;
-  const needed = entityHeight(rows, el.textSize as TextSize | undefined);
-  return typeof el.height === 'number' && el.height < needed ? { ...el, height: needed } : el;
 }
 
 function normaliseChart(el: Raw): Raw {
@@ -202,10 +193,9 @@ function factoryOf(el: Raw): Raw | undefined {
 }
 
 // The presentation fields the factory sets that raw JSON usually leaves out.
-// Unset, text falls back to 'scale' (filling the box), so a lane or entity
-// title came out as one giant word across its contents, and a lane or entity
-// with no title alignment put its title in the wrong place; a box drawn in the
-// editor never arrives that way.
+// Unset, text falls back to 'scale' (filling the box), so a frame's title came
+// out as one giant word across its contents, and one with no title alignment
+// put its title in the wrong place; a box drawn in the editor never arrives that way.
 const FACTORY_DEFAULTS = ['textSize', 'textAlignX', 'textAlignY', 'padding'] as const;
 
 function withFactoryDefaults(el: Raw): Raw {
@@ -223,8 +213,6 @@ function normaliseContent(el: Raw): unknown {
   switch (el.shape) {
     case 'code-block':
       return normaliseCodeBlock(el);
-    case 'entity':
-      return normaliseEntity(el);
     case 'bar-chart':
     case 'pie-chart':
     case 'line-chart':
@@ -266,15 +254,6 @@ function railToTimeline(el: Raw): Raw {
   };
 }
 
-const isLane = (el: unknown) => isRecord(el) && el.type === 'shape' && el.shape === 'lane';
-
-// Lanes moved to the front (their order kept) so they paint behind what they
-// hold, and so each is the backmost box under its contents.
-export function lanesToFront<T>(elements: T[]): T[] {
-  if (!elements.some(isLane)) return elements;
-  return [...elements.filter(isLane), ...elements.filter((el) => !isLane(el))];
-}
-
 // A whole element list from the model made safe. Anything that is not an
 // array comes back as it was, for validation to reject.
 /**
@@ -295,9 +274,6 @@ export function mergeElementUpdate(prev: unknown, patch: unknown): Raw {
 // names mid-word.
 const PLAIN_BOX_EXCLUDED = new Set([
   'frame',
-  'lane',
-  'boundary',
-  'entity',
   'code-block',
   'bar-chart',
   'pie-chart',
@@ -349,7 +325,7 @@ export function normaliseElements<T>(
   const sized = withLookTextSize(elements, kept);
   // An agent's badges and step numbers land fitted, numbered and on their hosts' points, as the editor's commits
   // keep them (docs/specs/009-elements/badge.md "Agents").
-  const normalised = lanesToFront(sized.map(normaliseElement));
+  const normalised = sized.map(normaliseElement);
   // Only a list of element records is settled; anything else is left for validation to refuse. The records are not
   // validated yet (an agent's step with a label of 5), so one that settling (or bending) cannot read is left as it
   // came, for validation to refuse by name rather than the request failing whole.

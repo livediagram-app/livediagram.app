@@ -4,13 +4,13 @@ Status: shipped
 
 ## What
 
-The **canvas-tool** picker (Select / Hand / Eraser / Format / Laser /
-Spotlight / Isometric / Zen, plus Avatar while you are in it) and the **palette category** picker
-(Popular / Shapes / Tools / Components / Devices / Icons / Technology) lay
+The **canvas-tool** picker (Select / Hand / Format / Laser /
+Spotlight / Isometric / Zen) and the **palette category** picker
+(Popular / Shapes / Write / Concepts / Components / Devices / Icons / ...) lay
 their options out as an icon-over-label **tile grid** instead of one long
 vertical list.
 
-Nine tools in a single column is a lot of travel and a lot of reading for what
+Eight tools in a single column is a lot of travel and a lot of reading for what
 is a flat choice between equal-weight modes. The context menus already made
 this call — category contents there are `MenuTileGrid`, never a column of
 rows — so the two menu systems now read alike.
@@ -19,11 +19,6 @@ Measured on the canvas-tool picker: **182px tall against roughly 360px**, at
 208px wide.
 
 ## When a grid, and when not
-
-Plan mode is the exception: its option pickers (a board's Swimlanes, Card Types, Card Size and Fill Tab, Setup
-Board's steps, Add a Card, a card type's States, the Card Types panel) are never tile grids but one bordered list, a
-row per choice, icon left ([Plan board: Option lists](../026-plan/plan-board.md#option-lists)). The general canvas
-context-menu tiles for other elements are unchanged.
 
 `PaletteDropdown` gains a `grid` prop rather than switching wholesale, because
 a grid is not always the better shape:

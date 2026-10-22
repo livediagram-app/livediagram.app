@@ -2,7 +2,7 @@
 
 Follow the references below only as needed; never upfront.
 
-- ./domain-language.md - when naming or adding anything that distinguishes documents or tabs: mode (how a tab is worked on), kind (what a tab is: the general tab or a Plan tab) and template (what a document was made from); design decisions, never interchangeable; and This Browser, the one name for a document saved only in this browser
+- ./domain-language.md - when naming or adding anything that distinguishes documents or tabs: mode (Pages, the one mode), kind (the general tab) and template (what a document was made from), never interchangeable; and This Browser, the one name for a document saved only in this browser
 - ./testing.md - when working on Testing: Vitest across the monorepo; shared config; co-located unit tests plus jsdom hook and component tests; per-workspace coverage shape
 - ./source-layout.md - when working on Source layout: group `apps/live` components + hooks by domain: `apps/live` components + hooks grouped into domain subdirectories (canvas/dialogs/panels/…)
 - ./e2e-smoke.md - when working on End-to-end tests: the post-merge Chromium Playwright suite (one spec file per browser-risky feature) driving the real editor build + api worker, with the pageErrors / expectNoPageErrors fixture

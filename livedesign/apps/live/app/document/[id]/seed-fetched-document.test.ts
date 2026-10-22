@@ -30,7 +30,6 @@ const fetched = {
   ownerColor: null,
   opensIn: null,
   tabKind: null,
-  templateFamily: null,
 } satisfies LiveDoc;
 
 function seed(recordOpen: boolean, noteChangesetSeen = vi.fn()) {
@@ -46,7 +45,6 @@ function seed(recordOpen: boolean, noteChangesetSeen = vi.fn()) {
     setActiveId: noop,
     setDocumentName: noop,
     setDocumentPresentation: noop,
-    setDocumentItemTypes: noop,
     setDocumentOwnerColor: noop,
     setDocumentOwnerId: noop,
     setDocumentOwnerName: noop,

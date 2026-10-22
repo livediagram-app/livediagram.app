@@ -147,290 +147,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "ActivityCard": {
-    "additionalProperties": false,
-    "properties": {
-      "board": {
-        "anyOf": [
-          {
-            "additionalProperties": false,
-            "properties": {
-              "elementId": {
-                "type": "string"
-              },
-              "tabId": {
-                "type": "string"
-              },
-              "tabName": {
-                "type": "string"
-              },
-              "title": {
-                "type": "string"
-              }
-            },
-            "required": [
-              "tabId",
-              "tabName",
-              "elementId",
-              "title"
-            ],
-            "type": "object"
-          },
-          {
-            "type": "null"
-          }
-        ]
-      },
-      "documentId": {
-        "type": "string"
-      },
-      "documentName": {
-        "type": "string"
-      },
-      "id": {
-        "type": "string"
-      },
-      "key": {
-        "type": "number"
-      },
-      "shareCode": {
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "status": {
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "teamId": {
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "title": {
-        "type": "string"
-      },
-      "type": {
-        "type": "string"
-      },
-      "updatedAt": {
-        "type": "number"
-      },
-      "via": {
-        "enum": [
-          "own",
-          "team",
-          "shared"
-        ],
-        "type": "string"
-      }
-    },
-    "required": [
-      "documentId",
-      "documentName",
-      "teamId",
-      "via",
-      "shareCode",
-      "board",
-      "id",
-      "key",
-      "type",
-      "title",
-      "status",
-      "updatedAt"
-    ],
-    "type": "object"
-  },
-  "ActivityCardThread": {
-    "additionalProperties": false,
-    "properties": {
-      "board": {
-        "anyOf": [
-          {
-            "additionalProperties": false,
-            "properties": {
-              "elementId": {
-                "type": "string"
-              },
-              "tabId": {
-                "type": "string"
-              },
-              "tabName": {
-                "type": "string"
-              },
-              "title": {
-                "type": "string"
-              }
-            },
-            "required": [
-              "tabId",
-              "tabName",
-              "elementId",
-              "title"
-            ],
-            "type": "object"
-          },
-          {
-            "type": "null"
-          }
-        ]
-      },
-      "commentCount": {
-        "type": "number"
-      },
-      "documentId": {
-        "type": "string"
-      },
-      "documentName": {
-        "type": "string"
-      },
-      "firstAt": {
-        "type": "number"
-      },
-      "id": {
-        "type": "string"
-      },
-      "key": {
-        "type": "number"
-      },
-      "latest": {
-        "additionalProperties": false,
-        "properties": {
-          "at": {
-            "type": "number"
-          },
-          "authorColor": {
-            "type": "string"
-          },
-          "authorName": {
-            "type": "string"
-          },
-          "text": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "text",
-          "authorName",
-          "authorColor",
-          "at"
-        ],
-        "type": "object"
-      },
-      "mentionsYou": {
-        "type": "boolean"
-      },
-      "onYourDocument": {
-        "type": "boolean"
-      },
-      "shareCode": {
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "teamId": {
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "title": {
-        "type": "string"
-      },
-      "type": {
-        "type": "string"
-      },
-      "via": {
-        "enum": [
-          "own",
-          "team",
-          "shared"
-        ],
-        "type": "string"
-      },
-      "youCommented": {
-        "type": "boolean"
-      }
-    },
-    "required": [
-      "board",
-      "commentCount",
-      "documentId",
-      "documentName",
-      "firstAt",
-      "id",
-      "key",
-      "latest",
-      "mentionsYou",
-      "onYourDocument",
-      "shareCode",
-      "teamId",
-      "title",
-      "type",
-      "via",
-      "youCommented"
-    ],
-    "type": "object"
-  },
-  "ActivityFormResponses": {
-    "additionalProperties": false,
-    "properties": {
-      "boardTabId": {
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "documentId": {
-        "type": "string"
-      },
-      "documentName": {
-        "type": "string"
-      },
-      "heading": {
-        "type": "string"
-      },
-      "latestAt": {
-        "type": "number"
-      },
-      "tabId": {
-        "type": "string"
-      },
-      "teamId": {
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "unseen": {
-        "type": "number"
-      },
-      "via": {
-        "enum": [
-          "own",
-          "team"
-        ],
-        "type": "string"
-      }
-    },
-    "required": [
-      "documentId",
-      "documentName",
-      "teamId",
-      "via",
-      "tabId",
-      "heading",
-      "boardTabId",
-      "unseen",
-      "latestAt"
-    ],
-    "type": "object"
-  },
   "ActivityThread": {
     "additionalProperties": false,
     "properties": {
@@ -528,22 +244,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "teamId",
       "via",
       "youCommented"
-    ],
-    "type": "object"
-  },
-  "AgendaItem": {
-    "additionalProperties": false,
-    "properties": {
-      "label": {
-        "type": "string"
-      },
-      "minutes": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "label",
-      "minutes"
     ],
     "type": "object"
   },
@@ -787,53 +487,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "height"
     ],
     "type": "object"
-  },
-  "AnswerTarget": {
-    "anyOf": [
-      {
-        "additionalProperties": false,
-        "properties": {
-          "to": {
-            "const": "description",
-            "type": "string"
-          }
-        },
-        "required": [
-          "to"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "to": {
-            "const": "title",
-            "type": "string"
-          }
-        },
-        "required": [
-          "to"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "fieldId": {
-            "type": "string"
-          },
-          "to": {
-            "const": "field",
-            "type": "string"
-          }
-        },
-        "required": [
-          "to",
-          "fieldId"
-        ],
-        "type": "object"
-      }
-    ]
   },
   "ApiToken": {
     "additionalProperties": false,
@@ -1140,13 +793,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
-  "Axis": {
-    "enum": [
-      "r",
-      "c"
-    ],
-    "type": "string"
-  },
   "BackgroundPattern": {
     "enum": [
       "grid",
@@ -1176,50 +822,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
-  "BoardWidgetKind": {
-    "enum": [
-      "count",
-      "progress",
-      "filter",
-      "mine",
-      "people",
-      "unplaced",
-      "types",
-      "wip",
-      "due",
-      "points",
-      "priorities",
-      "unassigned",
-      "top-voted",
-      "stale"
-    ],
-    "type": "string"
-  },
-  "Border": {
-    "additionalProperties": false,
-    "properties": {
-      "c": {
-        "type": "string"
-      },
-      "s": {
-        "$ref": "#/components/schemas/BorderStyle"
-      },
-      "w": {
-        "enum": [
-          1,
-          2,
-          3
-        ],
-        "type": "number"
-      }
-    },
-    "required": [
-      "w",
-      "s",
-      "c"
-    ],
-    "type": "object"
-  },
   "BorderRadius": {
     "enum": [
       "none",
@@ -1244,15 +846,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "enum": [
       "solid",
       "dashed",
-      "dotted"
-    ],
-    "type": "string"
-  },
-  "BoundaryStyle": {
-    "enum": [
-      "tab",
-      "inset",
-      "c4"
+      "dotted",
+      "dash-dot",
+      "long-dash",
+      "dash-dot-dot"
     ],
     "type": "string"
   },
@@ -1329,334 +926,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "CardField": {
-    "anyOf": [
-      {
-        "const": "key",
-        "type": "string"
-      },
-      {
-        "const": "type",
-        "type": "string"
-      },
-      {
-        "const": "assignee",
-        "type": "string"
-      },
-      {
-        "const": "priority",
-        "type": "string"
-      },
-      {
-        "const": "labels",
-        "type": "string"
-      },
-      {
-        "const": "estimate",
-        "type": "string"
-      },
-      {
-        "const": "start",
-        "type": "string"
-      },
-      {
-        "const": "due",
-        "type": "string"
-      },
-      {
-        "const": "votes",
-        "type": "string"
-      },
-      {
-        "const": "checklist",
-        "type": "string"
-      },
-      {
-        "const": "comments",
-        "type": "string"
-      },
-      {
-        "const": "description",
-        "type": "string"
-      },
-      {
-        "$ref": "#/components/schemas/CustomCardField"
-      }
-    ]
-  },
   "CardMedia": {
     "enum": [
       "badge",
       "tile",
       "initial"
-    ],
-    "type": "string"
-  },
-  "CardSearchFilter": {
-    "additionalProperties": false,
-    "properties": {
-      "by": {
-        "$ref": "#/components/schemas/SwimlaneBy"
-      },
-      "field": {
-        "type": "string"
-      },
-      "key": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "by",
-      "key"
-    ],
-    "type": "object"
-  },
-  "CardSize": {
-    "enum": [
-      "minimal",
-      "compact",
-      "detailed"
-    ],
-    "type": "string"
-  },
-  "CardTable": {
-    "additionalProperties": false,
-    "properties": {
-      "cols": {
-        "items": {
-          "additionalProperties": false,
-          "properties": {
-            "c": {
-              "type": "string"
-            },
-            "field": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "c",
-            "field"
-          ],
-          "type": "object"
-        },
-        "type": "array"
-      },
-      "controls": {
-        "type": "string"
-      },
-      "drafts": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "head": {
-        "type": "string"
-      },
-      "id": {
-        "type": "string"
-      },
-      "rows": {
-        "additionalProperties": {
-          "type": "string"
-        },
-        "type": "object"
-      },
-      "type": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "id",
-      "head",
-      "cols",
-      "rows",
-      "type"
-    ],
-    "type": "object"
-  },
-  "CellChange": {
-    "additionalProperties": false,
-    "properties": {
-      "c": {
-        "type": "string"
-      },
-      "f": {
-        "anyOf": [
-          {
-            "$ref": "#/components/schemas/FormatPatch"
-          },
-          {
-            "type": "null"
-          }
-        ]
-      },
-      "i": {
-        "anyOf": [
-          {
-            "$ref": "#/components/schemas/CellInput"
-          },
-          {
-            "type": "null"
-          }
-        ]
-      },
-      "r": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "r",
-      "c"
-    ],
-    "type": "object"
-  },
-  "CellCommentThreads": {
-    "additionalProperties": {
-      "$ref": "#/components/schemas/CommentThread"
-    },
-    "type": "object"
-  },
-  "CellFormat": {
-    "additionalProperties": false,
-    "properties": {
-      "b": {
-        "const": true,
-        "type": "boolean"
-      },
-      "bb": {
-        "$ref": "#/components/schemas/Border"
-      },
-      "bg": {
-        "type": "string"
-      },
-      "bl": {
-        "$ref": "#/components/schemas/Border"
-      },
-      "br": {
-        "$ref": "#/components/schemas/Border"
-      },
-      "bt": {
-        "$ref": "#/components/schemas/Border"
-      },
-      "cur": {
-        "type": "string"
-      },
-      "dp": {
-        "type": "number"
-      },
-      "fc": {
-        "type": "string"
-      },
-      "ff": {
-        "type": "string"
-      },
-      "fs": {
-        "$ref": "#/components/schemas/FontSize"
-      },
-      "ha": {
-        "enum": [
-          "l",
-          "c",
-          "r"
-        ],
-        "type": "string"
-      },
-      "i": {
-        "const": true,
-        "type": "boolean"
-      },
-      "nc": {
-        "type": "string"
-      },
-      "nf": {
-        "$ref": "#/components/schemas/NumberFormatKind"
-      },
-      "st": {
-        "const": true,
-        "type": "boolean"
-      },
-      "u": {
-        "const": true,
-        "type": "boolean"
-      },
-      "va": {
-        "enum": [
-          "t",
-          "m",
-          "b"
-        ],
-        "type": "string"
-      },
-      "wr": {
-        "enum": [
-          "o",
-          "w",
-          "c"
-        ],
-        "type": "string"
-      }
-    },
-    "type": "object"
-  },
-  "CellInput": {
-    "anyOf": [
-      {
-        "additionalProperties": false,
-        "properties": {
-          "n": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "n"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "s": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "s"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "b": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "b"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "f": {
-            "$ref": "#/components/schemas/StoredFormula"
-          }
-        },
-        "required": [
-          "f"
-        ],
-        "type": "object"
-      }
-    ]
-  },
-  "ChairFacing": {
-    "enum": [
-      "n",
-      "e",
-      "s",
-      "w"
     ],
     "type": "string"
   },
@@ -1740,10 +1014,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "ChangesetReplaceBody": {
     "additionalProperties": false,
     "properties": {
-      "dashboard": {
-        "additionalProperties": {},
-        "type": "object"
-      },
       "elements": {
         "items": {},
         "type": "array"
@@ -1751,26 +1021,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "finish": {
         "$ref": "#/components/schemas/Finish"
       },
-      "form": {
-        "additionalProperties": {},
-        "type": "object"
-      },
-      "graph": {},
-      "kind": {
-        "enum": [
-          "board",
-          "sheet"
-        ],
-        "type": "string"
-      },
       "layout": {
         "enum": [
           "auto",
           "preserve"
         ],
-        "type": "string"
-      },
-      "mermaid": {
         "type": "string"
       },
       "name": {
@@ -1969,49 +1224,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
-  "ChartSource": {
-    "additionalProperties": false,
-    "properties": {
-      "cols": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "range": {
-        "additionalProperties": false,
-        "properties": {
-          "c1": {
-            "type": "string"
-          },
-          "c2": {
-            "type": "string"
-          },
-          "r1": {
-            "type": "string"
-          },
-          "r2": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "r1",
-          "c1",
-          "r2",
-          "c2"
-        ],
-        "type": "object"
-      },
-      "sheetId": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "sheetId",
-      "range"
-    ],
-    "type": "object"
-  },
   "ChartVariant": {
     "enum": [
       "horizontal",
@@ -2074,26 +1286,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "parchment"
     ],
     "type": "string"
-  },
-  "ColourBackground": {
-    "additionalProperties": false,
-    "properties": {
-      "fill": {
-        "$ref": "#/components/schemas/PageColourFill"
-      },
-      "pattern": {
-        "$ref": "#/components/schemas/PagePattern"
-      }
-    },
-    "type": "object"
-  },
-  "ColumnWidth": {
-    "enum": [
-      1,
-      2,
-      3
-    ],
-    "type": "number"
   },
   "Comment": {
     "additionalProperties": false,
@@ -2193,9 +1385,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "items": {
           "additionalProperties": false,
           "properties": {
-            "cell": {
-              "type": "string"
-            },
             "comments": {
               "items": {
                 "additionalProperties": false,
@@ -2277,28 +1466,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "ConditionOp": {
-    "enum": [
-      "empty",
-      "notEmpty",
-      "contains",
-      "notContains",
-      "startsWith",
-      "endsWith",
-      "exactly",
-      "dateBefore",
-      "dateAfter",
-      "dateOn",
-      "gt",
-      "gte",
-      "lt",
-      "lte",
-      "between",
-      "eq",
-      "neq"
-    ],
-    "type": "string"
-  },
   "CreationTabKind": {
     "const": "diagram",
     "type": "string"
@@ -2347,64 +1514,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "expiresAt"
     ],
     "type": "object"
-  },
-  "CustomCardField": {
-    "type": "string"
-  },
-  "CustomFieldDef": {
-    "additionalProperties": false,
-    "properties": {
-      "currency": {
-        "type": "string"
-      },
-      "id": {
-        "type": "string"
-      },
-      "kind": {
-        "$ref": "#/components/schemas/CustomFieldKind"
-      },
-      "label": {
-        "type": "string"
-      },
-      "linkType": {
-        "type": "string"
-      },
-      "onCard": {
-        "type": "boolean"
-      },
-      "options": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "scale": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "id",
-      "label",
-      "kind"
-    ],
-    "type": "object"
-  },
-  "CustomFieldKind": {
-    "enum": [
-      "text",
-      "longtext",
-      "number",
-      "currency",
-      "date",
-      "checkbox",
-      "link",
-      "email",
-      "choice",
-      "multichoice",
-      "rating",
-      "card"
-    ],
-    "type": "string"
   },
   "CustomTheme": {
     "additionalProperties": false,
@@ -2517,66 +1626,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "shapeColors": {
         "additionalProperties": false,
         "properties": {
-          "action-card": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "actor": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "agenda": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "avatar-pad": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
           "badge": {
             "additionalProperties": false,
             "properties": {
@@ -2622,36 +1671,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
-          "bookshelf": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "boundary": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
           "browser": {
             "additionalProperties": false,
             "properties": {
@@ -2683,21 +1702,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "object"
           },
           "card": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "chair": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -2787,36 +1791,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
-          "coffee-machine": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "comment-pin": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
           "cycle": {
             "additionalProperties": false,
             "properties": {
@@ -2847,51 +1821,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
-          "decision": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "desk": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "diagram-key": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
           "diamond": {
             "additionalProperties": false,
             "properties": {
@@ -2908,96 +1837,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "object"
           },
           "document": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "done-check": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "entity": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "estimate": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "fence": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "final-state": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "focus-button": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -3087,36 +1926,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
-          "idea-box": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "lane": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
           "laptop": {
             "additionalProperties": false,
             "properties": {
@@ -3163,51 +1972,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "object"
           },
           "line-chart": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "meeting-table": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "mind-node": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "mode-button": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -3297,21 +2061,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
-          "picker": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
           "pie-chart": {
             "additionalProperties": false,
             "properties": {
@@ -3327,97 +2076,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
-          "plan-board": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "plan-card": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "plan-sheet": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "plan-view": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "plant": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
           "pointer-note": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "portal": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -3492,36 +2151,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
-          "qa-board": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "quiz": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
           "rating": {
             "additionalProperties": false,
             "properties": {
@@ -3537,112 +2166,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
-          "reaction-pad": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "reveal": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "roll-call": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "room": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "rug": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
           "sankey": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "sequence": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "session-button": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -3673,21 +2197,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "object"
           },
           "smartwatch": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "sofa": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -3852,21 +2361,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
-          "temperature": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
           "timeline-rail": {
             "additionalProperties": false,
             "properties": {
@@ -3911,21 +2405,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
               }
             },
             "type": "object"
-          },
-          "water-cooler": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
           }
         },
         "type": "object"
@@ -3940,422 +2419,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "elementText"
     ],
     "type": "object"
-  },
-  "DashboardCardContent": {
-    "anyOf": [
-      {
-        "additionalProperties": false,
-        "properties": {
-          "at": {
-            "type": "number"
-          },
-          "state": {
-            "$ref": "#/components/schemas/DashboardStatus"
-          },
-          "style": {
-            "$ref": "#/components/schemas/DashboardCardStyle"
-          },
-          "text": {
-            "type": "string"
-          },
-          "type": {
-            "const": "status",
-            "type": "string"
-          }
-        },
-        "required": [
-          "type",
-          "state",
-          "text",
-          "at"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "items": {
-            "items": {
-              "$ref": "#/components/schemas/DashboardChecklistItem"
-            },
-            "type": "array"
-          },
-          "style": {
-            "$ref": "#/components/schemas/DashboardCardStyle"
-          },
-          "title": {
-            "type": "string"
-          },
-          "type": {
-            "const": "checklist",
-            "type": "string"
-          }
-        },
-        "required": [
-          "type",
-          "title",
-          "items"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "date": {
-            "type": "string"
-          },
-          "style": {
-            "$ref": "#/components/schemas/DashboardCardStyle"
-          },
-          "title": {
-            "type": "string"
-          },
-          "type": {
-            "const": "key-date",
-            "type": "string"
-          }
-        },
-        "required": [
-          "type",
-          "title",
-          "date"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "links": {
-            "items": {
-              "$ref": "#/components/schemas/DashboardLink"
-            },
-            "type": "array"
-          },
-          "style": {
-            "$ref": "#/components/schemas/DashboardCardStyle"
-          },
-          "title": {
-            "type": "string"
-          },
-          "type": {
-            "const": "links",
-            "type": "string"
-          }
-        },
-        "required": [
-          "type",
-          "title",
-          "links"
-        ],
-        "type": "object"
-      },
-      {
-        "$ref": "#/components/schemas/SheetMetricContent"
-      },
-      {
-        "$ref": "#/components/schemas/FormMetricContent"
-      }
-    ]
-  },
-  "DashboardCardStyle": {
-    "additionalProperties": false,
-    "properties": {
-      "borderStyle": {
-        "$ref": "#/components/schemas/BorderStyle"
-      },
-      "borderWidth": {
-        "$ref": "#/components/schemas/BorderStroke"
-      },
-      "fill": {
-        "type": "string"
-      },
-      "preset": {
-        "type": "string"
-      },
-      "shadow": {
-        "anyOf": [
-          {
-            "$ref": "#/components/schemas/ElementShadow"
-          },
-          {
-            "const": "none",
-            "type": "string"
-          }
-        ]
-      },
-      "stroke": {
-        "type": "string"
-      },
-      "text": {
-        "type": "string"
-      }
-    },
-    "type": "object"
-  },
-  "DashboardChecklistItem": {
-    "additionalProperties": false,
-    "properties": {
-      "done": {
-        "type": "boolean"
-      },
-      "id": {
-        "type": "string"
-      },
-      "text": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "id",
-      "text",
-      "done"
-    ],
-    "type": "object"
-  },
-  "DashboardContent": {
-    "anyOf": [
-      {
-        "additionalProperties": false,
-        "properties": {
-          "of": {
-            "$ref": "#/components/schemas/DashboardTabOf"
-          },
-          "tabId": {
-            "type": "string"
-          },
-          "type": {
-            "const": "tab",
-            "type": "string"
-          }
-        },
-        "required": [
-          "type",
-          "tabId"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "elementId": {
-            "type": "string"
-          },
-          "type": {
-            "const": "element",
-            "type": "string"
-          }
-        },
-        "required": [
-          "type",
-          "elementId"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "style": {
-            "$ref": "#/components/schemas/DashboardCardStyle"
-          },
-          "text": {
-            "type": "string"
-          },
-          "title": {
-            "type": "string"
-          },
-          "type": {
-            "const": "note",
-            "type": "string"
-          }
-        },
-        "required": [
-          "type",
-          "title",
-          "text"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "style": {
-            "$ref": "#/components/schemas/DashboardCardStyle"
-          },
-          "text": {
-            "type": "string"
-          },
-          "title": {
-            "type": "string"
-          },
-          "type": {
-            "const": "title",
-            "type": "string"
-          }
-        },
-        "required": [
-          "type",
-          "title",
-          "text"
-        ],
-        "type": "object"
-      },
-      {
-        "$ref": "#/components/schemas/DashboardCardContent"
-      }
-    ]
-  },
-  "DashboardLayout": {
-    "additionalProperties": false,
-    "properties": {
-      "background": {
-        "const": "tint",
-        "type": "string"
-      },
-      "rows": {
-        "items": {
-          "$ref": "#/components/schemas/DashboardRow"
-        },
-        "type": "array"
-      }
-    },
-    "required": [
-      "rows"
-    ],
-    "type": "object"
-  },
-  "DashboardLink": {
-    "anyOf": [
-      {
-        "additionalProperties": false,
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "label": {
-            "type": "string"
-          },
-          "tabId": {
-            "not": {}
-          },
-          "url": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "label",
-          "url"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "label": {
-            "type": "string"
-          },
-          "tabId": {
-            "type": "string"
-          },
-          "url": {
-            "not": {}
-          }
-        },
-        "required": [
-          "id",
-          "label",
-          "tabId"
-        ],
-        "type": "object"
-      }
-    ]
-  },
-  "DashboardRow": {
-    "additionalProperties": false,
-    "properties": {
-      "fill": {
-        "const": true,
-        "type": "boolean"
-      },
-      "height": {
-        "type": "number"
-      },
-      "id": {
-        "type": "string"
-      },
-      "slots": {
-        "items": {
-          "$ref": "#/components/schemas/DashboardSlot"
-        },
-        "type": "array"
-      }
-    },
-    "required": [
-      "id",
-      "height",
-      "slots"
-    ],
-    "type": "object"
-  },
-  "DashboardSlot": {
-    "additionalProperties": false,
-    "properties": {
-      "content": {
-        "$ref": "#/components/schemas/DashboardContent"
-      },
-      "id": {
-        "type": "string"
-      },
-      "span": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "id",
-      "span"
-    ],
-    "type": "object"
-  },
-  "DashboardStatus": {
-    "enum": [
-      "on-track",
-      "at-risk",
-      "off-track"
-    ],
-    "type": "string"
-  },
-  "DashboardTabOf": {
-    "enum": [
-      "board",
-      "sheet",
-      "diagram"
-    ],
-    "type": "string"
-  },
-  "DateOp": {
-    "enum": [
-      "valid",
-      "before",
-      "onOrBefore",
-      "after",
-      "onOrAfter",
-      "on",
-      "between",
-      "notBetween"
-    ],
-    "type": "string"
-  },
-  "DecisionStatus": {
-    "enum": [
-      "proposed",
-      "accepted",
-      "rejected",
-      "superseded"
-    ],
-    "type": "string"
   },
   "DiffView": {
     "additionalProperties": false,
@@ -4448,19 +2511,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "id": {
         "type": "string"
       },
-      "itemTypes": {
-        "anyOf": [
-          {
-            "$ref": "#/components/schemas/ItemTypeCatalogue"
-          },
-          {
-            "type": "null"
-          }
-        ]
-      },
-      "itemTypesRev": {
-        "type": "number"
-      },
       "name": {
         "type": "string"
       },
@@ -4538,16 +2588,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "string",
           "null"
         ]
-      },
-      "templateFamily": {
-        "anyOf": [
-          {
-            "$ref": "#/components/schemas/TemplateFamily"
-          },
-          {
-            "type": "null"
-          }
-        ]
       }
     },
     "required": [
@@ -4566,20 +2606,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "source",
       "tabKind",
       "tabs",
-      "teamId",
-      "templateFamily"
+      "teamId"
     ],
     "type": "object"
   },
   "DocumentCommentThread": {
     "additionalProperties": false,
     "properties": {
-      "cell": {
-        "type": "string"
-      },
-      "cellRef": {
-        "type": "string"
-      },
       "comments": {
         "items": {
           "additionalProperties": false,
@@ -4769,16 +2802,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "string",
           "null"
         ]
-      },
-      "templateFamily": {
-        "anyOf": [
-          {
-            "$ref": "#/components/schemas/TemplateFamily"
-          },
-          {
-            "type": "null"
-          }
-        ]
       }
     },
     "required": [
@@ -4795,8 +2818,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "source",
       "stats",
       "tabKind",
-      "teamId",
-      "templateFamily"
+      "teamId"
     ],
     "type": "object"
   },
@@ -4811,21 +2833,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "shimmer"
     ],
     "type": "string"
-  },
-  "DropdownOption": {
-    "additionalProperties": false,
-    "properties": {
-      "c": {
-        "type": "string"
-      },
-      "v": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "v"
-    ],
-    "type": "object"
   },
   "EditWarning": {
     "additionalProperties": false,
@@ -4858,13 +2865,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "type": "string"
   },
   "EditorMode": {
-    "enum": [
-      "diagram",
-      "draw",
-      "workshop",
-      "pages",
-      "plan"
-    ],
+    "const": "pages",
     "type": "string"
   },
   "Element": {
@@ -5218,9 +3219,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "elementId": {
             "$ref": "#/components/schemas/ElementId"
           },
-          "field": {
-            "type": "number"
-          },
           "kind": {
             "const": "pinned",
             "type": "string"
@@ -5256,41 +3254,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     ]
   },
-  "EntityField": {
-    "additionalProperties": false,
-    "properties": {
-      "key": {
-        "$ref": "#/components/schemas/EntityKey"
-      },
-      "name": {
-        "type": "string"
-      },
-      "type": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "name"
-    ],
-    "type": "object"
-  },
-  "EntityKey": {
-    "enum": [
-      "pk",
-      "fk",
-      "pk-fk",
-      "uk"
-    ],
-    "type": "string"
-  },
-  "EstimateScale": {
-    "enum": [
-      "fibonacci",
-      "tshirt",
-      "powers"
-    ],
-    "type": "string"
-  },
   "FieldChange": {
     "additionalProperties": false,
     "properties": {
@@ -5309,34 +3272,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "FilterCondition": {
-    "additionalProperties": false,
-    "properties": {
-      "a": {
-        "type": "string"
-      },
-      "b": {
-        "type": "string"
-      },
-      "op": {
-        "$ref": "#/components/schemas/ConditionOp"
-      },
-      "values": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      }
-    },
-    "type": "object"
-  },
   "FindField": {
     "enum": [
       "label",
       "note",
       "edge",
       "cell",
-      "field",
       "item",
       "node",
       "code",
@@ -5411,13 +3352,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
-  "FlowchartDirection": {
-    "enum": [
-      "down",
-      "right"
-    ],
-    "type": "string"
-  },
   "Folder": {
     "additionalProperties": false,
     "properties": {
@@ -5458,541 +3392,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "createdAt",
       "updatedAt"
     ],
-    "type": "object"
-  },
-  "FontSize": {
-    "type": "number"
-  },
-  "FormCanvas": {
-    "additionalProperties": false,
-    "description": "A canvas style as a form draws it: the pattern in each half's colour, at the tab's size, speed and strength.",
-    "properties": {
-      "color": {
-        "$ref": "#/components/schemas/FormHalves"
-      },
-      "opacity": {
-        "type": "number"
-      },
-      "pattern": {
-        "$ref": "#/components/schemas/BackgroundPattern"
-      },
-      "scale": {
-        "type": "number"
-      },
-      "speed": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "pattern",
-      "color"
-    ],
-    "type": "object"
-  },
-  "FormCover": {
-    "$ref": "#/components/schemas/ColourBackground"
-  },
-  "FormDefinition": {
-    "additionalProperties": false,
-    "properties": {
-      "closedMessage": {
-        "type": "string"
-      },
-      "closesAt": {
-        "type": "number"
-      },
-      "confirmation": {
-        "type": "string"
-      },
-      "cover": {
-        "$ref": "#/components/schemas/FormCover"
-      },
-      "description": {
-        "type": "string"
-      },
-      "destination": {
-        "$ref": "#/components/schemas/FormDestination"
-      },
-      "heading": {
-        "type": "string"
-      },
-      "limit": {
-        "type": "number"
-      },
-      "sections": {
-        "items": {
-          "$ref": "#/components/schemas/FormSection"
-        },
-        "type": "array"
-      },
-      "sheet": {
-        "$ref": "#/components/schemas/FormSheetDestination"
-      },
-      "starter": {
-        "$ref": "#/components/schemas/StarterId"
-      },
-      "v": {
-        "const": 1,
-        "type": "number"
-      }
-    },
-    "required": [
-      "v",
-      "heading",
-      "sections"
-    ],
-    "type": "object"
-  },
-  "FormDestination": {
-    "additionalProperties": false,
-    "properties": {
-      "status": {
-        "type": "string"
-      },
-      "tabId": {
-        "type": "string"
-      },
-      "typeId": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "tabId",
-      "typeId",
-      "status"
-    ],
-    "type": "object"
-  },
-  "FormHalves": {
-    "additionalProperties": false,
-    "description": "A colour for each half of the page.",
-    "properties": {
-      "dark": {
-        "type": "string"
-      },
-      "light": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "light",
-      "dark"
-    ],
-    "type": "object"
-  },
-  "FormLink": {
-    "additionalProperties": false,
-    "properties": {
-      "code": {
-        "type": "string"
-      },
-      "createdAt": {
-        "type": "number"
-      },
-      "open": {
-        "type": "boolean"
-      }
-    },
-    "required": [
-      "code",
-      "open",
-      "createdAt"
-    ],
-    "type": "object"
-  },
-  "FormLinkResponse": {
-    "additionalProperties": false,
-    "properties": {
-      "canPublish": {
-        "type": "boolean"
-      },
-      "link": {
-        "anyOf": [
-          {
-            "$ref": "#/components/schemas/FormLink"
-          },
-          {
-            "type": "null"
-          }
-        ]
-      },
-      "responses": {
-        "type": "number"
-      },
-      "suspendedAt": {
-        "type": [
-          "number",
-          "null"
-        ]
-      },
-      "unseen": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "link",
-      "responses",
-      "unseen",
-      "suspendedAt",
-      "canPublish"
-    ],
-    "type": "object"
-  },
-  "FormLook": {
-    "additionalProperties": false,
-    "properties": {
-      "accent": {
-        "$ref": "#/components/schemas/FormHalves"
-      },
-      "backdrop": {
-        "$ref": "#/components/schemas/FormHalves"
-      },
-      "canvas": {
-        "$ref": "#/components/schemas/FormCanvas"
-      },
-      "finish": {
-        "$ref": "#/components/schemas/Finish"
-      },
-      "font": {
-        "type": "string"
-      },
-      "onAccent": {
-        "$ref": "#/components/schemas/FormHalves"
-      }
-    },
-    "required": [
-      "backdrop",
-      "accent",
-      "onAccent",
-      "finish"
-    ],
-    "type": "object"
-  },
-  "FormMetricContent": {
-    "additionalProperties": false,
-    "properties": {
-      "formTabId": {
-        "type": "string"
-      },
-      "metric": {
-        "$ref": "#/components/schemas/FormMetricKind"
-      },
-      "type": {
-        "const": "form-metric",
-        "type": "string"
-      }
-    },
-    "required": [
-      "type",
-      "metric",
-      "formTabId"
-    ],
-    "type": "object"
-  },
-  "FormMetricKind": {
-    "enum": [
-      "responses",
-      "new",
-      "status",
-      "limit",
-      "closes",
-      "link"
-    ],
-    "type": "string"
-  },
-  "FormQuestion": {
-    "additionalProperties": false,
-    "properties": {
-      "dropdown": {
-        "const": true,
-        "type": "boolean"
-      },
-      "goesTo": {
-        "$ref": "#/components/schemas/AnswerTarget"
-      },
-      "help": {
-        "type": "string"
-      },
-      "highLabel": {
-        "type": "string"
-      },
-      "id": {
-        "type": "string"
-      },
-      "lowLabel": {
-        "type": "string"
-      },
-      "max": {
-        "type": "number"
-      },
-      "min": {
-        "type": "number"
-      },
-      "options": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "other": {
-        "const": true,
-        "type": "boolean"
-      },
-      "placeholder": {
-        "type": "string"
-      },
-      "prompt": {
-        "type": "string"
-      },
-      "required": {
-        "const": true,
-        "type": "boolean"
-      },
-      "scale": {
-        "type": "number"
-      },
-      "style": {
-        "enum": [
-          "stars",
-          "numbers"
-        ],
-        "type": "string"
-      },
-      "type": {
-        "$ref": "#/components/schemas/QuestionType"
-      },
-      "whole": {
-        "const": true,
-        "type": "boolean"
-      }
-    },
-    "required": [
-      "id",
-      "type",
-      "prompt"
-    ],
-    "type": "object"
-  },
-  "FormReportBody": {
-    "additionalProperties": false,
-    "properties": {
-      "note": {
-        "type": "string"
-      },
-      "reason": {
-        "$ref": "#/components/schemas/FormReportReason"
-      }
-    },
-    "required": [
-      "reason"
-    ],
-    "type": "object"
-  },
-  "FormReportReason": {
-    "enum": [
-      "spam",
-      "phishing",
-      "offensive",
-      "other"
-    ],
-    "type": "string"
-  },
-  "FormResponseAccepted": {
-    "additionalProperties": false,
-    "properties": {
-      "number": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "number"
-    ],
-    "type": "object"
-  },
-  "FormResponseBody": {
-    "additionalProperties": false,
-    "properties": {
-      "answers": {
-        "additionalProperties": {},
-        "type": "object"
-      },
-      "other": {
-        "additionalProperties": {},
-        "type": "object"
-      },
-      "website": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "answers"
-    ],
-    "type": "object"
-  },
-  "FormSection": {
-    "additionalProperties": false,
-    "properties": {
-      "description": {
-        "type": "string"
-      },
-      "id": {
-        "type": "string"
-      },
-      "questions": {
-        "items": {
-          "$ref": "#/components/schemas/FormQuestion"
-        },
-        "type": "array"
-      },
-      "showIf": {
-        "$ref": "#/components/schemas/SectionRule"
-      },
-      "title": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "id",
-      "title",
-      "questions"
-    ],
-    "type": "object"
-  },
-  "FormSheetDestination": {
-    "additionalProperties": false,
-    "properties": {
-      "sheetId": {
-        "type": "string"
-      },
-      "tabId": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "tabId",
-      "sheetId"
-    ],
-    "type": "object"
-  },
-  "FormatPatch": {
-    "additionalProperties": false,
-    "properties": {
-      "b": {},
-      "bb": {},
-      "bg": {},
-      "bl": {},
-      "br": {},
-      "bt": {},
-      "cur": {},
-      "dp": {},
-      "fc": {},
-      "ff": {},
-      "fs": {},
-      "ha": {},
-      "i": {},
-      "nc": {},
-      "nf": {},
-      "st": {},
-      "u": {},
-      "va": {},
-      "wr": {}
-    },
-    "type": "object"
-  },
-  "FormatRule": {
-    "additionalProperties": false,
-    "properties": {
-      "a": {
-        "type": "string"
-      },
-      "b": {
-        "type": "string"
-      },
-      "c1": {
-        "type": "string"
-      },
-      "c2": {
-        "type": "string"
-      },
-      "fx": {
-        "$ref": "#/components/schemas/StoredFormula"
-      },
-      "id": {
-        "type": "string"
-      },
-      "is": {
-        "enum": [
-          "when",
-          "scale"
-        ],
-        "type": "string"
-      },
-      "max": {
-        "$ref": "#/components/schemas/ScalePoint"
-      },
-      "mid": {
-        "$ref": "#/components/schemas/ScalePoint"
-      },
-      "min": {
-        "$ref": "#/components/schemas/ScalePoint"
-      },
-      "op": {
-        "anyOf": [
-          {
-            "$ref": "#/components/schemas/ConditionOp"
-          },
-          {
-            "const": "formula",
-            "type": "string"
-          }
-        ]
-      },
-      "r1": {
-        "type": "string"
-      },
-      "r2": {
-        "type": "string"
-      },
-      "style": {
-        "$ref": "#/components/schemas/FormatStyle"
-      }
-    },
-    "required": [
-      "c1",
-      "c2",
-      "id",
-      "is",
-      "r1",
-      "r2"
-    ],
-    "type": "object"
-  },
-  "FormatStyle": {
-    "additionalProperties": false,
-    "properties": {
-      "b": {
-        "const": true,
-        "type": "boolean"
-      },
-      "bg": {
-        "type": "string"
-      },
-      "fc": {
-        "type": "string"
-      },
-      "i": {
-        "const": true,
-        "type": "boolean"
-      },
-      "st": {
-        "const": true,
-        "type": "boolean"
-      },
-      "u": {
-        "const": true,
-        "type": "boolean"
-      }
-    },
     "type": "object"
   },
   "FreehandElement": {
@@ -6709,30 +4108,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
-  "IdRange": {
-    "additionalProperties": false,
-    "properties": {
-      "c1": {
-        "type": "string"
-      },
-      "c2": {
-        "type": "string"
-      },
-      "r1": {
-        "type": "string"
-      },
-      "r2": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "r1",
-      "c1",
-      "r2",
-      "c2"
-    ],
-    "type": "object"
-  },
   "ImageCredit": {
     "additionalProperties": false,
     "properties": {
@@ -6942,668 +4317,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "Item": {
-    "additionalProperties": false,
-    "properties": {
-      "createdAt": {
-        "type": "number"
-      },
-      "createdBy": {
-        "$ref": "#/components/schemas/ItemPerson"
-      },
-      "fields": {
-        "$ref": "#/components/schemas/ItemFields"
-      },
-      "id": {
-        "type": "string"
-      },
-      "key": {
-        "type": "number"
-      },
-      "rank": {
-        "type": "string"
-      },
-      "rev": {
-        "type": "number"
-      },
-      "type": {
-        "type": "string"
-      },
-      "updatedAt": {
-        "type": "number"
-      },
-      "updatedBy": {
-        "$ref": "#/components/schemas/ItemPerson"
-      }
-    },
-    "required": [
-      "id",
-      "type",
-      "key",
-      "rank",
-      "fields",
-      "rev",
-      "createdAt",
-      "updatedAt",
-      "createdBy",
-      "updatedBy"
-    ],
-    "type": "object"
-  },
-  "ItemCreate": {
-    "additionalProperties": false,
-    "properties": {
-      "comments": {
-        "$ref": "#/components/schemas/ItemFieldValue"
-      },
-      "fields": {
-        "$ref": "#/components/schemas/ItemFields"
-      },
-      "id": {
-        "type": "string"
-      },
-      "key": {
-        "type": "number"
-      },
-      "place": {
-        "$ref": "#/components/schemas/ItemPlace"
-      },
-      "type": {
-        "type": "string"
-      },
-      "votes": {
-        "additionalProperties": {
-          "type": "number"
-        },
-        "type": "object"
-      }
-    },
-    "required": [
-      "type",
-      "fields"
-    ],
-    "type": "object"
-  },
-  "ItemFieldValue": {
-    "anyOf": [
-      {
-        "type": "string"
-      },
-      {
-        "type": "number"
-      },
-      {
-        "type": "boolean"
-      },
-      {
-        "type": "null"
-      },
-      {
-        "items": {
-          "$ref": "#/components/schemas/ItemFieldValue"
-        },
-        "type": "array"
-      },
-      {
-        "additionalProperties": {
-          "$ref": "#/components/schemas/ItemFieldValue"
-        },
-        "type": "object"
-      }
-    ]
-  },
-  "ItemFields": {
-    "additionalProperties": {
-      "$ref": "#/components/schemas/ItemFieldValue"
-    },
-    "type": "object"
-  },
-  "ItemMoveRequest": {
-    "additionalProperties": false,
-    "properties": {
-      "after": {
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "before": {
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "clear": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "set": {
-        "$ref": "#/components/schemas/ItemFields"
-      },
-      "status": {
-        "type": "string"
-      },
-      "type": {
-        "type": "string"
-      },
-      "undo": {
-        "const": true,
-        "description": "Marks an undo or redo of an earlier change: lets it restore a status the card's type leaves out.",
-        "type": "boolean"
-      }
-    },
-    "type": "object"
-  },
-  "ItemPatchRequest": {
-    "additionalProperties": false,
-    "properties": {
-      "clear": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "set": {
-        "$ref": "#/components/schemas/ItemFields"
-      },
-      "type": {
-        "type": "string"
-      },
-      "undo": {
-        "const": true,
-        "description": "Marks an undo or redo of an earlier change: lets it restore a status the card's type leaves out.",
-        "type": "boolean"
-      }
-    },
-    "type": "object"
-  },
-  "ItemPerson": {
-    "additionalProperties": false,
-    "properties": {
-      "color": {
-        "type": "string"
-      },
-      "id": {
-        "type": "string"
-      },
-      "name": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "id",
-      "name",
-      "color"
-    ],
-    "type": "object"
-  },
-  "ItemPlace": {
-    "additionalProperties": false,
-    "properties": {
-      "after": {
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "before": {
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "status": {
-        "type": "string"
-      }
-    },
-    "type": "object"
-  },
-  "ItemResponse": {
-    "additionalProperties": false,
-    "properties": {
-      "item": {
-        "$ref": "#/components/schemas/Item"
-      },
-      "rev": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "item",
-      "rev"
-    ],
-    "type": "object"
-  },
-  "ItemTypeCatalogue": {
-    "additionalProperties": false,
-    "properties": {
-      "types": {
-        "items": {
-          "$ref": "#/components/schemas/ItemTypeDef"
-        },
-        "type": "array"
-      },
-      "version": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "version",
-      "types"
-    ],
-    "type": "object"
-  },
-  "ItemTypeDef": {
-    "additionalProperties": false,
-    "properties": {
-      "color": {
-        "type": "string"
-      },
-      "custom": {
-        "items": {
-          "$ref": "#/components/schemas/CustomFieldDef"
-        },
-        "type": "array"
-      },
-      "defaultStatus": {
-        "type": "string"
-      },
-      "detailsLabel": {
-        "type": "string"
-      },
-      "display": {
-        "additionalProperties": false,
-        "properties": {
-          "compact": {
-            "additionalProperties": false,
-            "properties": {
-              "body": {
-                "items": {
-                  "$ref": "#/components/schemas/CardField"
-                },
-                "type": "array"
-              },
-              "foot": {
-                "items": {
-                  "$ref": "#/components/schemas/CardField"
-                },
-                "type": "array"
-              },
-              "footEnd": {
-                "items": {
-                  "$ref": "#/components/schemas/CardField"
-                },
-                "type": "array"
-              },
-              "head": {
-                "items": {
-                  "$ref": "#/components/schemas/CardField"
-                },
-                "type": "array"
-              },
-              "headEnd": {
-                "items": {
-                  "$ref": "#/components/schemas/CardField"
-                },
-                "type": "array"
-              },
-              "lead": {
-                "items": {
-                  "$ref": "#/components/schemas/CardField"
-                },
-                "type": "array"
-              },
-              "row": {
-                "items": {
-                  "$ref": "#/components/schemas/CardField"
-                },
-                "type": "array"
-              },
-              "trail": {
-                "items": {
-                  "$ref": "#/components/schemas/CardField"
-                },
-                "type": "array"
-              }
-            },
-            "type": "object"
-          },
-          "detailed": {
-            "additionalProperties": false,
-            "properties": {
-              "body": {
-                "items": {
-                  "$ref": "#/components/schemas/CardField"
-                },
-                "type": "array"
-              },
-              "foot": {
-                "items": {
-                  "$ref": "#/components/schemas/CardField"
-                },
-                "type": "array"
-              },
-              "footEnd": {
-                "items": {
-                  "$ref": "#/components/schemas/CardField"
-                },
-                "type": "array"
-              },
-              "head": {
-                "items": {
-                  "$ref": "#/components/schemas/CardField"
-                },
-                "type": "array"
-              },
-              "headEnd": {
-                "items": {
-                  "$ref": "#/components/schemas/CardField"
-                },
-                "type": "array"
-              },
-              "lead": {
-                "items": {
-                  "$ref": "#/components/schemas/CardField"
-                },
-                "type": "array"
-              },
-              "row": {
-                "items": {
-                  "$ref": "#/components/schemas/CardField"
-                },
-                "type": "array"
-              },
-              "trail": {
-                "items": {
-                  "$ref": "#/components/schemas/CardField"
-                },
-                "type": "array"
-              }
-            },
-            "type": "object"
-          },
-          "minimal": {
-            "additionalProperties": false,
-            "properties": {
-              "body": {
-                "items": {
-                  "$ref": "#/components/schemas/CardField"
-                },
-                "type": "array"
-              },
-              "foot": {
-                "items": {
-                  "$ref": "#/components/schemas/CardField"
-                },
-                "type": "array"
-              },
-              "footEnd": {
-                "items": {
-                  "$ref": "#/components/schemas/CardField"
-                },
-                "type": "array"
-              },
-              "head": {
-                "items": {
-                  "$ref": "#/components/schemas/CardField"
-                },
-                "type": "array"
-              },
-              "headEnd": {
-                "items": {
-                  "$ref": "#/components/schemas/CardField"
-                },
-                "type": "array"
-              },
-              "lead": {
-                "items": {
-                  "$ref": "#/components/schemas/CardField"
-                },
-                "type": "array"
-              },
-              "row": {
-                "items": {
-                  "$ref": "#/components/schemas/CardField"
-                },
-                "type": "array"
-              },
-              "trail": {
-                "items": {
-                  "$ref": "#/components/schemas/CardField"
-                },
-                "type": "array"
-              }
-            },
-            "type": "object"
-          }
-        },
-        "type": "object"
-      },
-      "excludedStatuses": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "fields": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "glyph": {
-        "anyOf": [
-          {
-            "$ref": "#/components/schemas/PlanGlyphId"
-          },
-          {
-            "const": "item",
-            "type": "string"
-          }
-        ]
-      },
-      "id": {
-        "type": "string"
-      },
-      "label": {
-        "type": "string"
-      },
-      "newTitle": {
-        "type": "string"
-      },
-      "tabs": {
-        "items": {
-          "$ref": "#/components/schemas/ItemTypeTab"
-        },
-        "type": "array"
-      }
-    },
-    "required": [
-      "id",
-      "label",
-      "newTitle",
-      "glyph",
-      "color",
-      "fields"
-    ],
-    "type": "object"
-  },
-  "ItemTypeTab": {
-    "additionalProperties": false,
-    "properties": {
-      "fields": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "id": {
-        "type": "string"
-      },
-      "label": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "id",
-      "label",
-      "fields"
-    ],
-    "type": "object"
-  },
-  "ItemTypesRequest": {
-    "additionalProperties": false,
-    "properties": {
-      "expectedRev": {
-        "type": "number"
-      },
-      "itemTypes": {
-        "anyOf": [
-          {
-            "$ref": "#/components/schemas/ItemTypeCatalogue"
-          },
-          {
-            "type": "null"
-          }
-        ]
-      }
-    },
-    "required": [
-      "itemTypes"
-    ],
-    "type": "object"
-  },
-  "ItemTypesResponse": {
-    "additionalProperties": false,
-    "properties": {
-      "itemTypes": {
-        "anyOf": [
-          {
-            "$ref": "#/components/schemas/ItemTypeCatalogue"
-          },
-          {
-            "type": "null"
-          }
-        ]
-      },
-      "itemTypesRev": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "itemTypes",
-      "itemTypesRev"
-    ],
-    "type": "object"
-  },
-  "ItemsBulkRequest": {
-    "additionalProperties": false,
-    "properties": {
-      "items": {
-        "items": {
-          "$ref": "#/components/schemas/ItemCreate"
-        },
-        "type": "array"
-      }
-    },
-    "required": [
-      "items"
-    ],
-    "type": "object"
-  },
-  "ItemsPatchRequest": {
-    "additionalProperties": false,
-    "properties": {
-      "items": {
-        "items": {
-          "additionalProperties": false,
-          "properties": {
-            "clear": {
-              "items": {
-                "type": "string"
-              },
-              "type": "array"
-            },
-            "id": {
-              "type": "string"
-            },
-            "set": {
-              "$ref": "#/components/schemas/ItemFields"
-            },
-            "type": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "id"
-          ],
-          "type": "object"
-        },
-        "type": "array"
-      },
-      "undo": {
-        "const": true,
-        "description": "Marks an undo or redo of an earlier change: lets it restore a status the card's type leaves out.",
-        "type": "boolean"
-      }
-    },
-    "required": [
-      "items"
-    ],
-    "type": "object"
-  },
-  "ItemsResponse": {
-    "additionalProperties": false,
-    "properties": {
-      "items": {
-        "items": {
-          "$ref": "#/components/schemas/Item"
-        },
-        "type": "array"
-      },
-      "rev": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "items",
-      "rev"
-    ],
-    "type": "object"
-  },
-  "ItemsTallyRequest": {
-    "additionalProperties": false,
-    "properties": {
-      "items": {
-        "items": {
-          "additionalProperties": false,
-          "properties": {
-            "id": {
-              "type": "string"
-            },
-            "votes": {
-              "additionalProperties": {
-                "type": "number"
-              },
-              "type": "object"
-            }
-          },
-          "required": [
-            "id",
-            "votes"
-          ],
-          "type": "object"
-        },
-        "type": "array"
-      }
-    },
-    "required": [
-      "items"
-    ],
-    "type": "object"
-  },
   "JsonValue": {
     "anyOf": [
       {
@@ -7631,35 +4344,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "object"
       }
     ]
-  },
-  "KeyRow": {
-    "additionalProperties": false,
-    "properties": {
-      "color": {
-        "type": "string"
-      },
-      "id": {
-        "type": "string"
-      },
-      "kind": {
-        "enum": [
-          "line",
-          "tag"
-        ],
-        "type": "string"
-      },
-      "style": {
-        "type": "string"
-      },
-      "tag": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "id",
-      "kind"
-    ],
-    "type": "object"
   },
   "KnownTimelineEventType": {
     "enum": [
@@ -7727,469 +4411,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "name"
     ],
     "type": "object"
-  },
-  "LayoutChange": {
-    "anyOf": [
-      {
-        "additionalProperties": false,
-        "properties": {
-          "after": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "ids": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "k": {
-            "enum": [
-              "insertRows",
-              "insertCols"
-            ],
-            "type": "string"
-          }
-        },
-        "required": [
-          "k",
-          "after",
-          "ids"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "ids": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "k": {
-            "enum": [
-              "deleteRows",
-              "deleteCols"
-            ],
-            "type": "string"
-          }
-        },
-        "required": [
-          "k",
-          "ids"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "after": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "ids": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "k": {
-            "enum": [
-              "moveRows",
-              "moveCols"
-            ],
-            "type": "string"
-          }
-        },
-        "required": [
-          "k",
-          "ids",
-          "after"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "ids": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "k": {
-            "enum": [
-              "orderRows",
-              "orderCols"
-            ],
-            "type": "string"
-          }
-        },
-        "required": [
-          "k",
-          "ids"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "axis": {
-            "$ref": "#/components/schemas/Axis"
-          },
-          "ids": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "k": {
-            "const": "size",
-            "type": "string"
-          },
-          "px": {
-            "type": [
-              "number",
-              "null"
-            ]
-          }
-        },
-        "required": [
-          "k",
-          "axis",
-          "ids",
-          "px"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "axis": {
-            "$ref": "#/components/schemas/Axis"
-          },
-          "hidden": {
-            "type": "boolean"
-          },
-          "ids": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "k": {
-            "const": "hide",
-            "type": "string"
-          }
-        },
-        "required": [
-          "k",
-          "axis",
-          "ids",
-          "hidden"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "cols": {
-            "type": "number"
-          },
-          "k": {
-            "const": "freeze",
-            "type": "string"
-          },
-          "rows": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "k"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "k": {
-            "const": "merge",
-            "type": "string"
-          },
-          "range": {
-            "$ref": "#/components/schemas/IdRange"
-          }
-        },
-        "required": [
-          "k",
-          "range"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "k": {
-            "const": "unmerge",
-            "type": "string"
-          },
-          "range": {
-            "$ref": "#/components/schemas/IdRange"
-          }
-        },
-        "required": [
-          "k",
-          "range"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "k": {
-            "const": "merges",
-            "type": "string"
-          },
-          "merges": {
-            "items": {
-              "$ref": "#/components/schemas/IdRange"
-            },
-            "type": "array"
-          }
-        },
-        "required": [
-          "k",
-          "merges"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "filter": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/SheetFilter"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "k": {
-            "const": "filter",
-            "type": "string"
-          }
-        },
-        "required": [
-          "k",
-          "filter"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "col": {
-            "type": "string"
-          },
-          "cond": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/FilterCondition"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "k": {
-            "const": "filterCond",
-            "type": "string"
-          }
-        },
-        "required": [
-          "k",
-          "col",
-          "cond"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "colWidth": {
-            "type": [
-              "number",
-              "null"
-            ]
-          },
-          "k": {
-            "const": "options",
-            "type": "string"
-          },
-          "rowHeight": {
-            "type": [
-              "number",
-              "null"
-            ]
-          },
-          "setupPending": {
-            "type": "boolean"
-          },
-          "showGrid": {
-            "type": "boolean"
-          },
-          "showHeaders": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "k"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "k": {
-            "const": "cardTable",
-            "type": "string"
-          },
-          "table": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/CardTable"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        "required": [
-          "k",
-          "id",
-          "table"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "k": {
-            "const": "name",
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "range": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/IdRange"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        "required": [
-          "k",
-          "name",
-          "range"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "k": {
-            "const": "vrule",
-            "type": "string"
-          },
-          "rule": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/ValidationRule"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        "required": [
-          "k",
-          "id",
-          "rule"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "at": {
-            "type": "number"
-          },
-          "id": {
-            "type": "string"
-          },
-          "k": {
-            "const": "frule",
-            "type": "string"
-          },
-          "rule": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/FormatRule"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        "required": [
-          "k",
-          "id",
-          "rule"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "ids": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "k": {
-            "const": "fruleOrder",
-            "type": "string"
-          }
-        },
-        "required": [
-          "k",
-          "ids"
-        ],
-        "type": "object"
-      }
-    ]
   },
   "LayoutView": {
     "additionalProperties": false,
@@ -8509,10 +4730,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "LinkedRecordKind": {
-    "const": "actions",
-    "type": "string"
-  },
   "LintCode": {
     "enum": [
       "box-overlap",
@@ -8526,8 +4743,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "group-split-edges",
       "duplicate-label",
       "flow-backwards",
-      "aspect-extreme",
-      "colour-on-themed",
       "text-overflow"
     ],
     "type": "string"
@@ -8693,61 +4908,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
-  "MindFlow": {
-    "enum": [
-      "tree",
-      "leftward",
-      "balanced",
-      "downward",
-      "upward",
-      "bubble"
-    ],
-    "type": "string"
-  },
-  "MindLook": {
-    "const": "person",
-    "type": "string"
-  },
-  "MindSpacing": {
-    "description": "How far apart a map's nodes sit (docs/specs/009-elements/mind-node.md \"Spacing\").",
-    "enum": [
-      "tight",
-      "compact",
-      "comfortable",
-      "wide"
-    ],
-    "type": "string"
-  },
-  "NumOp": {
-    "enum": [
-      "between",
-      "notBetween",
-      "gt",
-      "gte",
-      "lt",
-      "lte",
-      "eq",
-      "neq"
-    ],
-    "type": "string"
-  },
-  "NumberFormatKind": {
-    "enum": [
-      "auto",
-      "number",
-      "percent",
-      "currency",
-      "accounting",
-      "scientific",
-      "date",
-      "time",
-      "datetime",
-      "duration",
-      "text",
-      "custom"
-    ],
-    "type": "string"
-  },
   "OutlineNode": {
     "additionalProperties": false,
     "properties": {
@@ -8888,15 +5048,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
               },
               "frames": {
                 "type": "number"
-              },
-              "lanes": {
-                "type": "number"
               }
             },
             "required": [
               "boxes",
               "frames",
-              "lanes",
               "arrows"
             ],
             "type": "object"
@@ -9677,9 +5833,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
-      "switched": {
-        "type": "boolean"
-      },
       "tab": {
         "additionalProperties": false,
         "properties": {
@@ -9699,7 +5852,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     },
     "required": [
       "tab",
-      "switched",
       "lines",
       "pages",
       "changesetId"
@@ -9905,26 +6057,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "color",
       "createdAt",
       "pictureUrl"
-    ],
-    "type": "object"
-  },
-  "ParticipantResponse": {
-    "additionalProperties": false,
-    "properties": {
-      "at": {
-        "type": "number"
-      },
-      "participantId": {
-        "type": "string"
-      },
-      "value": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "participantId",
-      "value",
-      "at"
     ],
     "type": "object"
   },
@@ -10145,13 +6277,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     ]
   },
-  "PickerSource": {
-    "enum": [
-      "participants",
-      "options"
-    ],
-    "type": "string"
-  },
   "PieAnim": {
     "enum": [
       "grow",
@@ -10180,501 +6305,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "PlanBoardKind": {
-    "enum": [
-      "board",
-      "all-cards",
-      "archive"
-    ],
-    "type": "string"
-  },
-  "PlanBoardOutline": {
-    "additionalProperties": false,
-    "properties": {
-      "columns": {
-        "items": {
-          "$ref": "#/components/schemas/PlanColumnOutline"
-        },
-        "type": "array"
-      },
-      "elementId": {
-        "type": "string"
-      },
-      "kind": {
-        "$ref": "#/components/schemas/PlanBoardKind"
-      },
-      "tabId": {
-        "type": "string"
-      },
-      "tabName": {
-        "type": "string"
-      },
-      "title": {
-        "type": "string"
-      },
-      "types": {
-        "anyOf": [
-          {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          {
-            "type": "null"
-          }
-        ]
-      }
-    },
-    "required": [
-      "tabId",
-      "tabName",
-      "elementId",
-      "title",
-      "kind",
-      "types",
-      "columns"
-    ],
-    "type": "object"
-  },
-  "PlanBoardSetup": {
-    "additionalProperties": false,
-    "properties": {
-      "addTypes": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "allCards": {
-        "type": "boolean"
-      },
-      "archive": {
-        "type": "boolean"
-      },
-      "cardFields": {
-        "items": {
-          "$ref": "#/components/schemas/CardField"
-        },
-        "type": "array"
-      },
-      "cardSize": {
-        "$ref": "#/components/schemas/CardSize"
-      },
-      "collects": {
-        "$ref": "#/components/schemas/LinkedRecordKind"
-      },
-      "columns": {
-        "items": {
-          "$ref": "#/components/schemas/PlanColumn"
-        },
-        "type": "array"
-      },
-      "doneColumnId": {
-        "type": "string"
-      },
-      "fillTab": {
-        "type": "boolean"
-      },
-      "hideWriting": {
-        "type": "boolean"
-      },
-      "swimlaneBy": {
-        "$ref": "#/components/schemas/SwimlaneBy"
-      },
-      "swimlaneField": {
-        "type": "string"
-      },
-      "title": {
-        "type": "string"
-      },
-      "widgets": {
-        "items": {
-          "$ref": "#/components/schemas/BoardWidgetKind"
-        },
-        "type": "array"
-      }
-    },
-    "required": [
-      "title",
-      "columns",
-      "swimlaneBy",
-      "cardFields",
-      "hideWriting"
-    ],
-    "type": "object"
-  },
-  "PlanCardRef": {
-    "additionalProperties": false,
-    "properties": {
-      "itemId": {
-        "type": "string"
-      },
-      "size": {
-        "enum": [
-          "minimal",
-          "compact",
-          "detailed"
-        ],
-        "type": "string"
-      }
-    },
-    "required": [
-      "itemId"
-    ],
-    "type": "object"
-  },
-  "PlanColumn": {
-    "additionalProperties": false,
-    "properties": {
-      "color": {
-        "type": "string"
-      },
-      "id": {
-        "type": "string"
-      },
-      "name": {
-        "type": "string"
-      },
-      "status": {
-        "type": "string"
-      },
-      "width": {
-        "$ref": "#/components/schemas/ColumnWidth"
-      },
-      "wipLimit": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "id",
-      "status",
-      "name"
-    ],
-    "type": "object"
-  },
-  "PlanColumnOutline": {
-    "additionalProperties": false,
-    "properties": {
-      "name": {
-        "type": "string"
-      },
-      "status": {
-        "type": "string"
-      },
-      "wipLimit": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "status",
-      "name"
-    ],
-    "type": "object"
-  },
-  "PlanGlyphId": {
-    "enum": [
-      "task",
-      "story",
-      "bug",
-      "project",
-      "action",
-      "epic",
-      "milestone",
-      "release",
-      "ticket",
-      "kanban",
-      "checklist",
-      "inbox",
-      "person",
-      "team",
-      "user-plus",
-      "user-check",
-      "contact",
-      "crown",
-      "chat",
-      "mail",
-      "phone",
-      "megaphone",
-      "bell",
-      "send",
-      "video",
-      "at",
-      "calendar",
-      "flag",
-      "clock",
-      "target",
-      "pin",
-      "hourglass",
-      "repeat",
-      "note",
-      "idea",
-      "bookmark",
-      "book",
-      "document",
-      "pencil",
-      "lightbulb",
-      "puzzle",
-      "quote",
-      "star",
-      "heart",
-      "risk",
-      "shield",
-      "lock",
-      "eye",
-      "fire",
-      "sparkle",
-      "info",
-      "question",
-      "ban",
-      "trophy",
-      "coin",
-      "chart",
-      "trend",
-      "briefcase",
-      "cart",
-      "building",
-      "percent",
-      "wallet",
-      "cube",
-      "gift",
-      "wrench",
-      "code",
-      "laptop",
-      "database",
-      "cloud",
-      "globe",
-      "home",
-      "key",
-      "leaf",
-      "link"
-    ],
-    "type": "string"
-  },
-  "PlanResponse": {
-    "additionalProperties": false,
-    "properties": {
-      "boards": {
-        "items": {
-          "$ref": "#/components/schemas/PlanBoardOutline"
-        },
-        "type": "array"
-      },
-      "itemTypesRev": {
-        "type": "number"
-      },
-      "statuses": {
-        "items": {
-          "$ref": "#/components/schemas/PlanStatusName"
-        },
-        "type": "array"
-      },
-      "tabs": {
-        "items": {
-          "$ref": "#/components/schemas/PlanTabOutline"
-        },
-        "type": "array"
-      },
-      "types": {
-        "items": {
-          "$ref": "#/components/schemas/ItemTypeDef"
-        },
-        "type": "array"
-      }
-    },
-    "required": [
-      "boards",
-      "statuses",
-      "types",
-      "itemTypesRev"
-    ],
-    "type": "object"
-  },
-  "PlanSheetRef": {
-    "additionalProperties": false,
-    "properties": {
-      "copyOf": {
-        "type": "string"
-      },
-      "fillTab": {
-        "const": true,
-        "type": "boolean"
-      },
-      "sheetId": {
-        "type": "string"
-      },
-      "start": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "sheetId"
-    ],
-    "type": "object"
-  },
-  "PlanStatusName": {
-    "additionalProperties": false,
-    "properties": {
-      "name": {
-        "type": "string"
-      },
-      "status": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "status",
-      "name"
-    ],
-    "type": "object"
-  },
-  "PlanTabOutline": {
-    "additionalProperties": false,
-    "properties": {
-      "id": {
-        "type": "string"
-      },
-      "kind": {
-        "type": "string"
-      },
-      "name": {
-        "type": "string"
-      },
-      "sheetIds": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "theme": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "id",
-      "name",
-      "kind"
-    ],
-    "type": "object"
-  },
-  "PlanViewId": {
-    "anyOf": [
-      {
-        "const": "metric:count",
-        "type": "string"
-      },
-      {
-        "const": "metric:progress",
-        "type": "string"
-      },
-      {
-        "const": "metric:people",
-        "type": "string"
-      },
-      {
-        "const": "metric:types",
-        "type": "string"
-      },
-      {
-        "const": "metric:priorities",
-        "type": "string"
-      },
-      {
-        "const": "metric:due",
-        "type": "string"
-      },
-      {
-        "const": "metric:unassigned",
-        "type": "string"
-      },
-      {
-        "const": "metric:points",
-        "type": "string"
-      },
-      {
-        "const": "metric:top-voted",
-        "type": "string"
-      },
-      {
-        "const": "metric:stale",
-        "type": "string"
-      },
-      {
-        "$ref": "#/components/schemas/PlanVisualisation"
-      }
-    ]
-  },
-  "PlanViewRef": {
-    "additionalProperties": false,
-    "properties": {
-      "filters": {
-        "items": {
-          "$ref": "#/components/schemas/CardSearchFilter"
-        },
-        "type": "array"
-      },
-      "namesWidth": {
-        "type": "number"
-      },
-      "rowOrder": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "statuses": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "swimlaneBy": {
-        "$ref": "#/components/schemas/SwimlaneBy"
-      },
-      "swimlaneField": {
-        "type": "string"
-      },
-      "title": {
-        "type": "string"
-      },
-      "types": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "view": {
-        "$ref": "#/components/schemas/PlanViewId"
-      }
-    },
-    "required": [
-      "view"
-    ],
-    "type": "object"
-  },
-  "PlanVisualisation": {
-    "enum": [
-      "gantt",
-      "calendar",
-      "start-calendar",
-      "workload",
-      "status-mix",
-      "priority-matrix",
-      "search"
-    ],
-    "type": "string"
-  },
-  "PollStyle": {
-    "enum": [
-      "yesNo",
-      "yesNoAbstain",
-      "choice",
-      "collaborators",
-      "rating",
-      "text"
-    ],
-    "type": "string"
-  },
   "ProgressAnim": {
     "enum": [
       "fill",
@@ -10683,260 +6313,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
-  "PublicForm": {
-    "additionalProperties": false,
-    "properties": {
-      "confirmation": {
-        "type": "string"
-      },
-      "cover": {
-        "$ref": "#/components/schemas/FormCover"
-      },
-      "description": {
-        "type": "string"
-      },
-      "heading": {
-        "type": "string"
-      },
-      "sections": {
-        "items": {
-          "$ref": "#/components/schemas/PublicSection"
-        },
-        "type": "array"
-      }
-    },
-    "required": [
-      "heading",
-      "sections",
-      "confirmation"
-    ],
-    "type": "object"
-  },
-  "PublicFormResponse": {
-    "anyOf": [
-      {
-        "additionalProperties": false,
-        "properties": {
-          "form": {
-            "$ref": "#/components/schemas/PublicForm"
-          },
-          "look": {
-            "$ref": "#/components/schemas/FormLook"
-          },
-          "state": {
-            "const": "open",
-            "type": "string"
-          }
-        },
-        "required": [
-          "state",
-          "form",
-          "look"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "heading": {
-            "type": "string"
-          },
-          "look": {
-            "$ref": "#/components/schemas/FormLook"
-          },
-          "message": {
-            "type": "string"
-          },
-          "state": {
-            "const": "closed",
-            "type": "string"
-          }
-        },
-        "required": [
-          "state",
-          "heading",
-          "message",
-          "look"
-        ],
-        "type": "object"
-      }
-    ]
-  },
-  "PublicQuestion": {
-    "additionalProperties": false,
-    "properties": {
-      "dropdown": {
-        "const": true,
-        "type": "boolean"
-      },
-      "help": {
-        "type": "string"
-      },
-      "highLabel": {
-        "type": "string"
-      },
-      "id": {
-        "type": "string"
-      },
-      "lowLabel": {
-        "type": "string"
-      },
-      "max": {
-        "type": "number"
-      },
-      "min": {
-        "type": "number"
-      },
-      "options": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "other": {
-        "const": true,
-        "type": "boolean"
-      },
-      "placeholder": {
-        "type": "string"
-      },
-      "prompt": {
-        "type": "string"
-      },
-      "required": {
-        "const": true,
-        "type": "boolean"
-      },
-      "scale": {
-        "type": "number"
-      },
-      "style": {
-        "enum": [
-          "stars",
-          "numbers"
-        ],
-        "type": "string"
-      },
-      "type": {
-        "$ref": "#/components/schemas/QuestionType"
-      },
-      "whole": {
-        "const": true,
-        "type": "boolean"
-      }
-    },
-    "required": [
-      "id",
-      "type",
-      "prompt"
-    ],
-    "type": "object"
-  },
-  "PublicSection": {
-    "additionalProperties": false,
-    "properties": {
-      "description": {
-        "type": "string"
-      },
-      "id": {
-        "type": "string"
-      },
-      "questions": {
-        "items": {
-          "$ref": "#/components/schemas/PublicQuestion"
-        },
-        "type": "array"
-      },
-      "showIf": {
-        "$ref": "#/components/schemas/SectionRule"
-      },
-      "title": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "id",
-      "questions",
-      "title"
-    ],
-    "type": "object"
-  },
   "PyramidVariant": {
     "enum": [
       "pyramid",
       "inverted",
       "funnel"
-    ],
-    "type": "string"
-  },
-  "QaNote": {
-    "additionalProperties": false,
-    "properties": {
-      "at": {
-        "type": "number"
-      },
-      "author": {
-        "additionalProperties": false,
-        "properties": {
-          "color": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "name",
-          "color"
-        ],
-        "type": "object"
-      },
-      "doneAt": {
-        "type": "number"
-      },
-      "id": {
-        "type": "string"
-      },
-      "state": {
-        "$ref": "#/components/schemas/QaNoteState"
-      },
-      "text": {
-        "type": "string"
-      },
-      "voters": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      }
-    },
-    "required": [
-      "id",
-      "text",
-      "at",
-      "voters"
-    ],
-    "type": "object"
-  },
-  "QaNoteState": {
-    "enum": [
-      "discussing",
-      "done"
-    ],
-    "type": "string"
-  },
-  "QuestionType": {
-    "enum": [
-      "short",
-      "paragraph",
-      "number",
-      "email",
-      "link",
-      "date",
-      "single",
-      "multi",
-      "rating",
-      "checkbox"
     ],
     "type": "string"
   },
@@ -10951,50 +6332,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "number"
   },
-  "RangeName": {
-    "additionalProperties": false,
-    "properties": {
-      "c1": {
-        "type": "string"
-      },
-      "c2": {
-        "type": "string"
-      },
-      "name": {
-        "type": "string"
-      },
-      "r1": {
-        "type": "string"
-      },
-      "r2": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "c1",
-      "c2",
-      "name",
-      "r1",
-      "r2"
-    ],
-    "type": "object"
-  },
   "RatingAnim": {
     "enum": [
       "pop",
       "twinkle",
       "pulse",
       "rock"
-    ],
-    "type": "string"
-  },
-  "Reaction": {
-    "enum": [
-      "confetti",
-      "sparkles",
-      "hearts",
-      "applause",
-      "fireworks"
     ],
     "type": "string"
   },
@@ -11349,36 +6692,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "RollCallEntry": {
-    "additionalProperties": false,
-    "properties": {
-      "at": {
-        "type": "number"
-      },
-      "color": {
-        "type": "string"
-      },
-      "name": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "name",
-      "color",
-      "at"
-    ],
-    "type": "object"
-  },
-  "RoomDoor": {
-    "enum": [
-      "n",
-      "e",
-      "s",
-      "w",
-      "none"
-    ],
-    "type": "string"
-  },
   "RowAt": {
     "additionalProperties": false,
     "properties": {
@@ -11498,154 +6811,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
-  "ScalePoint": {
-    "additionalProperties": false,
-    "properties": {
-      "at": {
-        "enum": [
-          "min",
-          "max",
-          "num",
-          "pct",
-          "pctile"
-        ],
-        "type": "string"
-      },
-      "c": {
-        "type": "string"
-      },
-      "v": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "c",
-      "at"
-    ],
-    "type": "object"
-  },
-  "SectionRule": {
-    "additionalProperties": false,
-    "properties": {
-      "anyOf": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "questionId": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "questionId",
-      "anyOf"
-    ],
-    "type": "object"
-  },
-  "SelectionMode": {
-    "enum": [
-      "select",
-      "pan",
-      "laser",
-      "spotlight",
-      "avatar",
-      "eraser",
-      "format",
-      "isometric"
-    ],
-    "type": "string"
-  },
-  "SequenceElementMessage": {
-    "additionalProperties": false,
-    "properties": {
-      "from": {
-        "type": "string"
-      },
-      "kind": {
-        "$ref": "#/components/schemas/SequenceMessageKindName"
-      },
-      "label": {
-        "type": "string"
-      },
-      "to": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "from",
-      "to",
-      "label",
-      "kind"
-    ],
-    "type": "object"
-  },
-  "SequenceElementParticipant": {
-    "additionalProperties": false,
-    "properties": {
-      "actor": {
-        "type": "boolean"
-      },
-      "id": {
-        "type": "string"
-      },
-      "label": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "id",
-      "label"
-    ],
-    "type": "object"
-  },
-  "SequenceMessageKindName": {
-    "enum": [
-      "call",
-      "async",
-      "reply"
-    ],
-    "type": "string"
-  },
-  "SessionButtonConfig": {
-    "additionalProperties": false,
-    "properties": {
-      "dots": {
-        "type": "number"
-      },
-      "minutes": {
-        "type": "number"
-      },
-      "options": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "question": {
-        "type": "string"
-      },
-      "style": {
-        "$ref": "#/components/schemas/PollStyle"
-      },
-      "tool": {
-        "$ref": "#/components/schemas/SessionTool"
-      }
-    },
-    "required": [
-      "tool"
-    ],
-    "type": "object"
-  },
-  "SessionTool": {
-    "enum": [
-      "timer",
-      "stopwatch",
-      "vote",
-      "poll"
-    ],
-    "type": "string"
-  },
   "ShapeAnimation": {
     "enum": [
       "pulse",
@@ -11684,18 +6849,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
-      "agendaCurrent": {
-        "type": "number"
-      },
-      "agendaItems": {
-        "items": {
-          "$ref": "#/components/schemas/AgendaItem"
-        },
-        "type": "array"
-      },
-      "agendaTimerStartedAt": {
-        "type": "number"
-      },
       "animation": {
         "$ref": "#/components/schemas/ElementAnimation"
       },
@@ -11717,20 +6870,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "borderRadius": {
         "$ref": "#/components/schemas/BorderRadius"
       },
-      "boundaryStyle": {
-        "$ref": "#/components/schemas/BoundaryStyle"
-      },
       "cardHeader": {
         "type": "boolean"
       },
       "cardMedia": {
         "$ref": "#/components/schemas/CardMedia"
-      },
-      "cellComments": {
-        "$ref": "#/components/schemas/CellCommentThreads"
-      },
-      "chairFacing": {
-        "$ref": "#/components/schemas/ChairFacing"
       },
       "chartAxis": {
         "type": "boolean"
@@ -11743,9 +6887,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "chartPalette": {
         "$ref": "#/components/schemas/ChartPaletteId"
-      },
-      "chartSource": {
-        "$ref": "#/components/schemas/ChartSource"
       },
       "chartValues": {
         "type": "boolean"
@@ -11774,9 +6915,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "codeWrap": {
         "type": "boolean"
       },
-      "collabRound": {
-        "type": "string"
-      },
       "colorPreset": {
         "type": "string"
       },
@@ -11798,27 +6936,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
-      "decisionDate": {
-        "type": "string"
-      },
-      "decisionDrivers": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "decisionStatus": {
-        "$ref": "#/components/schemas/DecisionStatus"
-      },
-      "entityFields": {
-        "items": {
-          "$ref": "#/components/schemas/EntityField"
-        },
-        "type": "array"
-      },
-      "estimateScale": {
-        "$ref": "#/components/schemas/EstimateScale"
-      },
       "fillColor": {
         "type": "string"
       },
@@ -11831,23 +6948,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "fixedSize": {
         "type": "boolean"
       },
-      "flowDirection": {
-        "$ref": "#/components/schemas/FlowchartDirection"
-      },
-      "flowLaneId": {
-        "$ref": "#/components/schemas/ElementId"
-      },
-      "flowchartId": {
-        "type": "string"
-      },
       "font": {
         "type": "string"
       },
       "headerFill": {
         "type": "string"
-      },
-      "headerSize": {
-        "type": "number"
       },
       "height": {
         "type": "number"
@@ -11878,33 +6983,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "id": {
         "$ref": "#/components/schemas/ElementId"
-      },
-      "ideaCardIds": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "ideaCards": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "ideasRevealed": {
-        "type": "boolean"
-      },
-      "keyMeanings": {
-        "additionalProperties": {
-          "type": "string"
-        },
-        "type": "object"
-      },
-      "keyRows": {
-        "items": {
-          "$ref": "#/components/schemas/KeyRow"
-        },
-        "type": "array"
       },
       "label": {
         "type": "string"
@@ -11942,21 +7020,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "markerSize": {
         "$ref": "#/components/schemas/TextSizePreset"
       },
-      "mindFlow": {
-        "$ref": "#/components/schemas/MindFlow"
-      },
-      "mindLook": {
-        "$ref": "#/components/schemas/MindLook"
-      },
-      "mindParentId": {
-        "$ref": "#/components/schemas/ElementId"
-      },
-      "mindSpacing": {
-        "$ref": "#/components/schemas/MindSpacing"
-      },
-      "mode": {
-        "$ref": "#/components/schemas/SelectionMode"
-      },
       "navLinks": {
         "items": {
           "type": "string"
@@ -11990,18 +7053,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "penTextColour": {
         "$ref": "#/components/schemas/PenColourName"
       },
-      "pickerOptions": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "pickerResult": {
-        "type": "string"
-      },
-      "pickerSource": {
-        "$ref": "#/components/schemas/PickerSource"
-      },
       "pieAnim": {
         "$ref": "#/components/schemas/PieAnim"
       },
@@ -12016,18 +7067,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "$ref": "#/components/schemas/PieSlice"
         },
         "type": "array"
-      },
-      "planBoard": {
-        "$ref": "#/components/schemas/PlanBoardSetup"
-      },
-      "planCard": {
-        "$ref": "#/components/schemas/PlanCardRef"
-      },
-      "planSheet": {
-        "$ref": "#/components/schemas/PlanSheetRef"
-      },
-      "planView": {
-        "$ref": "#/components/schemas/PlanViewRef"
       },
       "pointerTip": {
         "additionalProperties": false,
@@ -12044,9 +7083,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "y"
         ],
         "type": "object"
-      },
-      "portalTarget": {
-        "$ref": "#/components/schemas/ElementId"
       },
       "processSteps": {
         "items": {
@@ -12069,36 +7105,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "pyramidVariant": {
         "$ref": "#/components/schemas/PyramidVariant"
       },
-      "qaNotes": {
-        "items": {
-          "$ref": "#/components/schemas/QaNote"
-        },
-        "type": "array"
-      },
-      "qaRev": {
-        "type": "number"
-      },
-      "quizCorrect": {
-        "type": "number"
-      },
-      "quizLockedAt": {
-        "type": "number"
-      },
-      "quizOptions": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "quizRevealed": {
-        "type": "boolean"
-      },
-      "quizSeconds": {
-        "type": "number"
-      },
-      "quizStartedAt": {
-        "type": "number"
-      },
       "railCount": {
         "type": "number"
       },
@@ -12120,35 +7126,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "ratingAnimSpeed": {
         "$ref": "#/components/schemas/AnimationSpeed"
       },
-      "reaction": {
-        "$ref": "#/components/schemas/Reaction"
-      },
-      "responses": {
-        "items": {
-          "$ref": "#/components/schemas/ParticipantResponse"
-        },
-        "type": "array"
-      },
-      "responsesRevealed": {
-        "type": "boolean"
-      },
-      "revealed": {
-        "type": "boolean"
-      },
       "richText": {
         "items": {
           "$ref": "#/components/schemas/TextRun"
         },
         "type": "array"
-      },
-      "rollCall": {
-        "items": {
-          "$ref": "#/components/schemas/RollCallEntry"
-        },
-        "type": "array"
-      },
-      "roomDoor": {
-        "$ref": "#/components/schemas/RoomDoor"
       },
       "rotation": {
         "type": "number"
@@ -12192,42 +7174,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "sankeyValueLabel": {
         "$ref": "#/components/schemas/SankeyValueLabel"
       },
-      "sequenceAnim": {
-        "const": "play",
-        "type": "string"
-      },
-      "sequenceAnimRepeat": {
-        "type": "boolean"
-      },
-      "sequenceAnimSpeed": {
-        "$ref": "#/components/schemas/AnimationSpeed"
-      },
-      "sequenceMessages": {
-        "items": {
-          "$ref": "#/components/schemas/SequenceElementMessage"
-        },
-        "type": "array"
-      },
-      "sequenceNumbered": {
-        "type": "boolean"
-      },
-      "sequenceParticipants": {
-        "items": {
-          "$ref": "#/components/schemas/SequenceElementParticipant"
-        },
-        "type": "array"
-      },
-      "session": {
-        "$ref": "#/components/schemas/SessionButtonConfig"
-      },
       "shadow": {
         "$ref": "#/components/schemas/ElementShadow"
       },
       "shape": {
         "$ref": "#/components/schemas/ShapeKind"
-      },
-      "sheetAnchor": {
-        "$ref": "#/components/schemas/SheetAnchor"
       },
       "stackAlign": {
         "$ref": "#/components/schemas/StackAlign"
@@ -12310,10 +7261,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "themeLockFill": {
         "type": "boolean"
       },
-      "titleOrientation": {
-        "const": "upright",
-        "type": "string"
-      },
       "type": {
         "const": "shape",
         "type": "string"
@@ -12352,19 +7299,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "hexagon",
       "document",
       "page",
-      "mind-node",
-      "lane",
-      "entity",
       "banner",
       "callout",
       "card",
       "badge",
       "step",
       "pointer-note",
-      "diagram-key",
       "stack",
-      "sequence",
-      "boundary",
       "layer-stack",
       "pyramid",
       "cycle",
@@ -12374,39 +7315,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "stat-row",
       "process",
       "site-header",
-      "mode-button",
-      "portal",
       "tab-window",
-      "session-button",
-      "reveal",
-      "picker",
-      "reaction-pad",
-      "comment-pin",
-      "action-card",
-      "done-check",
-      "chair",
-      "fence",
-      "avatar-pad",
-      "desk",
-      "sofa",
-      "room",
-      "meeting-table",
-      "plant",
-      "bookshelf",
-      "water-cooler",
-      "coffee-machine",
-      "rug",
-      "estimate",
-      "temperature",
-      "idea-box",
-      "qa-board",
-      "agenda",
-      "decision",
-      "roll-call",
-      "quiz",
       "stadium",
-      "actor",
-      "final-state",
       "cloud",
       "triangle",
       "trapezoid",
@@ -12431,13 +7341,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "checklist",
       "legend",
       "sankey",
-      "focus-button",
       "icon",
-      "sticker",
-      "plan-board",
-      "plan-card",
-      "plan-view",
-      "plan-sheet"
+      "sticker"
     ],
     "type": "string"
   },
@@ -12571,491 +7476,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "ownerName",
       "ownerColor",
       "empty"
-    ],
-    "type": "object"
-  },
-  "SheetAnchor": {
-    "additionalProperties": false,
-    "properties": {
-      "x": {
-        "type": "number"
-      },
-      "y": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "x",
-      "y"
-    ],
-    "type": "object"
-  },
-  "SheetCellDto": {
-    "$ref": "#/components/schemas/SheetCellJson"
-  },
-  "SheetCellJson": {
-    "additionalProperties": false,
-    "properties": {
-      "c": {
-        "type": "string"
-      },
-      "f": {
-        "$ref": "#/components/schemas/CellFormat"
-      },
-      "i": {
-        "$ref": "#/components/schemas/CellInput"
-      },
-      "r": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "r",
-      "c"
-    ],
-    "type": "object"
-  },
-  "SheetCreateRequest": {
-    "additionalProperties": false,
-    "properties": {
-      "cells": {
-        "items": {
-          "$ref": "#/components/schemas/SheetCellDto"
-        },
-        "type": "array"
-      },
-      "copyOf": {
-        "type": "string"
-      },
-      "id": {
-        "type": "string"
-      },
-      "layout": {
-        "$ref": "#/components/schemas/SheetLayout"
-      },
-      "restore": {
-        "const": true,
-        "type": "boolean"
-      },
-      "tabId": {
-        "type": "string"
-      },
-      "title": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "tabId",
-      "title"
-    ],
-    "type": "object"
-  },
-  "SheetDto": {
-    "$ref": "#/components/schemas/SheetJson"
-  },
-  "SheetFilter": {
-    "additionalProperties": false,
-    "properties": {
-      "c1": {
-        "type": "string"
-      },
-      "c2": {
-        "type": "string"
-      },
-      "conds": {
-        "additionalProperties": {
-          "$ref": "#/components/schemas/FilterCondition"
-        },
-        "type": "object"
-      },
-      "r1": {
-        "type": "string"
-      },
-      "r2": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "c1",
-      "c2",
-      "conds",
-      "r1",
-      "r2"
-    ],
-    "type": "object"
-  },
-  "SheetJson": {
-    "additionalProperties": false,
-    "properties": {
-      "cells": {
-        "items": {
-          "$ref": "#/components/schemas/SheetCellJson"
-        },
-        "type": "array"
-      },
-      "createdAt": {
-        "type": "number"
-      },
-      "id": {
-        "type": "string"
-      },
-      "layout": {
-        "$ref": "#/components/schemas/SheetLayout"
-      },
-      "rev": {
-        "type": "number"
-      },
-      "tabId": {
-        "type": "string"
-      },
-      "title": {
-        "type": "string"
-      },
-      "updatedAt": {
-        "type": "number"
-      },
-      "updatedBy": {
-        "$ref": "#/components/schemas/SheetPerson"
-      }
-    },
-    "required": [
-      "id",
-      "tabId",
-      "title",
-      "layout",
-      "cells",
-      "rev",
-      "createdAt",
-      "updatedAt",
-      "updatedBy"
-    ],
-    "type": "object"
-  },
-  "SheetLayout": {
-    "additionalProperties": false,
-    "properties": {
-      "cardTables": {
-        "items": {
-          "$ref": "#/components/schemas/CardTable"
-        },
-        "type": "array"
-      },
-      "colSize": {
-        "additionalProperties": {
-          "type": "number"
-        },
-        "type": "object"
-      },
-      "colWidth": {
-        "type": "number"
-      },
-      "cols": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "filter": {
-        "$ref": "#/components/schemas/SheetFilter"
-      },
-      "formatRules": {
-        "items": {
-          "$ref": "#/components/schemas/FormatRule"
-        },
-        "type": "array"
-      },
-      "frozenCols": {
-        "type": "number"
-      },
-      "frozenRows": {
-        "type": "number"
-      },
-      "hiddenCols": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "hiddenRows": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "merges": {
-        "items": {
-          "$ref": "#/components/schemas/IdRange"
-        },
-        "type": "array"
-      },
-      "names": {
-        "items": {
-          "$ref": "#/components/schemas/RangeName"
-        },
-        "type": "array"
-      },
-      "rowHeight": {
-        "type": "number"
-      },
-      "rowSize": {
-        "additionalProperties": {
-          "type": "number"
-        },
-        "type": "object"
-      },
-      "rows": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "rules": {
-        "items": {
-          "$ref": "#/components/schemas/ValidationRule"
-        },
-        "type": "array"
-      },
-      "setupPending": {
-        "const": true,
-        "type": "boolean"
-      },
-      "showGrid": {
-        "const": false,
-        "type": "boolean"
-      },
-      "showHeaders": {
-        "const": false,
-        "type": "boolean"
-      }
-    },
-    "required": [
-      "rows",
-      "cols"
-    ],
-    "type": "object"
-  },
-  "SheetMetricCell": {
-    "additionalProperties": false,
-    "properties": {
-      "c": {
-        "type": "string"
-      },
-      "r": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "r",
-      "c"
-    ],
-    "type": "object"
-  },
-  "SheetMetricContent": {
-    "additionalProperties": false,
-    "properties": {
-      "cell": {
-        "$ref": "#/components/schemas/SheetMetricCell"
-      },
-      "col": {
-        "type": "string"
-      },
-      "metric": {
-        "$ref": "#/components/schemas/SheetMetricKind"
-      },
-      "sheetId": {
-        "type": "string"
-      },
-      "stat": {
-        "$ref": "#/components/schemas/SheetMetricStat"
-      },
-      "target": {
-        "$ref": "#/components/schemas/SheetMetricCell"
-      },
-      "type": {
-        "const": "sheet-metric",
-        "type": "string"
-      }
-    },
-    "required": [
-      "type",
-      "metric",
-      "sheetId"
-    ],
-    "type": "object"
-  },
-  "SheetMetricKind": {
-    "enum": [
-      "figure",
-      "summary",
-      "trend"
-    ],
-    "type": "string"
-  },
-  "SheetMetricStat": {
-    "enum": [
-      "sum",
-      "average",
-      "min",
-      "max",
-      "count"
-    ],
-    "type": "string"
-  },
-  "SheetPerson": {
-    "additionalProperties": false,
-    "properties": {
-      "color": {
-        "type": "string"
-      },
-      "id": {
-        "type": "string"
-      },
-      "name": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "id",
-      "name",
-      "color"
-    ],
-    "type": "object"
-  },
-  "SheetResponse": {
-    "additionalProperties": false,
-    "properties": {
-      "sheet": {
-        "$ref": "#/components/schemas/SheetDto"
-      }
-    },
-    "required": [
-      "sheet"
-    ],
-    "type": "object"
-  },
-  "SheetWrite": {
-    "anyOf": [
-      {
-        "additionalProperties": false,
-        "properties": {
-          "cells": {
-            "items": {
-              "$ref": "#/components/schemas/CellChange"
-            },
-            "type": "array"
-          },
-          "kind": {
-            "const": "cells",
-            "type": "string"
-          }
-        },
-        "required": [
-          "kind",
-          "cells"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "cells": {
-            "items": {
-              "$ref": "#/components/schemas/CellChange"
-            },
-            "type": "array"
-          },
-          "changes": {
-            "items": {
-              "$ref": "#/components/schemas/LayoutChange"
-            },
-            "type": "array"
-          },
-          "kind": {
-            "const": "layout",
-            "type": "string"
-          }
-        },
-        "required": [
-          "kind",
-          "changes"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "kind": {
-            "const": "title",
-            "type": "string"
-          },
-          "title": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "kind",
-          "title"
-        ],
-        "type": "object"
-      }
-    ]
-  },
-  "SheetWriteRequest": {
-    "additionalProperties": false,
-    "properties": {
-      "unchecked": {
-        "type": "boolean"
-      },
-      "undo": {
-        "type": "boolean"
-      },
-      "wid": {
-        "type": "string"
-      },
-      "write": {
-        "$ref": "#/components/schemas/SheetWrite"
-      }
-    },
-    "required": [
-      "write"
-    ],
-    "type": "object"
-  },
-  "SheetWriteResponse": {
-    "additionalProperties": false,
-    "properties": {
-      "applied": {
-        "$ref": "#/components/schemas/SheetWrite"
-      },
-      "cells": {
-        "items": {
-          "$ref": "#/components/schemas/SheetCellDto"
-        },
-        "type": "array"
-      },
-      "rev": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "applied",
-      "rev",
-      "cells"
-    ],
-    "type": "object"
-  },
-  "SheetsResponse": {
-    "additionalProperties": false,
-    "properties": {
-      "sheets": {
-        "items": {
-          "$ref": "#/components/schemas/SheetDto"
-        },
-        "type": "array"
-      }
-    },
-    "required": [
-      "sheets"
     ],
     "type": "object"
   },
@@ -13241,18 +7661,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
-  "StarterId": {
-    "enum": [
-      "blank",
-      "bug-report",
-      "feedback",
-      "feature-request",
-      "rsvp",
-      "job-application",
-      "contact"
-    ],
-    "type": "string"
-  },
   "StatItem": {
     "additionalProperties": false,
     "properties": {
@@ -13431,82 +7839,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "StoredFormula": {
-    "additionalProperties": false,
-    "properties": {
-      "r": {
-        "items": {
-          "$ref": "#/components/schemas/StoredRef"
-        },
-        "type": "array"
-      },
-      "t": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "t",
-      "r"
-    ],
-    "type": "object"
-  },
-  "StoredRef": {
-    "additionalProperties": false,
-    "properties": {
-      "a": {
-        "type": "number"
-      },
-      "c1": {
-        "type": "string"
-      },
-      "c2": {
-        "type": "string"
-      },
-      "open": {
-        "enum": [
-          "r",
-          "c"
-        ],
-        "type": "string"
-      },
-      "p": {
-        "items": {
-          "type": "number"
-        },
-        "maxItems": 4,
-        "minItems": 4,
-        "type": "array"
-      },
-      "r1": {
-        "type": "string"
-      },
-      "r2": {
-        "type": "string"
-      },
-      "s": {
-        "type": "string"
-      },
-      "spill": {
-        "const": true,
-        "type": "boolean"
-      },
-      "st": {
-        "type": "string"
-      }
-    },
-    "type": "object"
-  },
-  "SwimlaneBy": {
-    "enum": [
-      "none",
-      "assignee",
-      "type",
-      "priority",
-      "status",
-      "field"
-    ],
-    "type": "string"
-  },
   "Tab": {
     "additionalProperties": false,
     "properties": {
@@ -13531,9 +7863,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
-      "dashboard": {
-        "$ref": "#/components/schemas/DashboardLayout"
-      },
       "defaultTextSize": {
         "$ref": "#/components/schemas/TextSize"
       },
@@ -13551,9 +7880,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "font": {
         "type": "string"
-      },
-      "form": {
-        "$ref": "#/components/schemas/FormDefinition"
       },
       "id": {
         "$ref": "#/components/schemas/TabId"
@@ -13599,12 +7925,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "theme": {
         "type": "string"
-      },
-      "timer": {
-        "$ref": "#/components/schemas/TabTimer"
-      },
-      "vote": {
-        "$ref": "#/components/schemas/TabVote"
       }
     },
     "required": [
@@ -13618,13 +7938,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "type": "string"
   },
   "TabKind": {
-    "enum": [
-      "diagram",
-      "board",
-      "sheet",
-      "dashboard",
-      "form"
-    ],
+    "const": "diagram",
     "type": "string"
   },
   "TabRecord": {
@@ -13651,9 +7965,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
-      "dashboard": {
-        "$ref": "#/components/schemas/DashboardLayout"
-      },
       "defaultTextSize": {
         "$ref": "#/components/schemas/TextSize"
       },
@@ -13674,9 +7985,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "font": {
         "type": "string"
-      },
-      "form": {
-        "$ref": "#/components/schemas/FormDefinition"
       },
       "id": {
         "$ref": "#/components/schemas/TabId"
@@ -13729,14 +8037,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "theme": {
         "type": "string"
       },
-      "timer": {
-        "$ref": "#/components/schemas/TabTimer"
-      },
       "updatedAt": {
         "type": "number"
-      },
-      "vote": {
-        "$ref": "#/components/schemas/TabVote"
       }
     },
     "required": [
@@ -13782,85 +8084,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "name",
       "orderIndex",
       "updatedAt"
-    ],
-    "type": "object"
-  },
-  "TabTimer": {
-    "additionalProperties": false,
-    "properties": {
-      "anchorAt": {
-        "type": "number"
-      },
-      "durationMs": {
-        "type": "number"
-      },
-      "frozenMs": {
-        "type": "number"
-      },
-      "mode": {
-        "$ref": "#/components/schemas/TimerMode"
-      },
-      "running": {
-        "type": "boolean"
-      },
-      "startedAt": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "mode",
-      "running"
-    ],
-    "type": "object"
-  },
-  "TabVote": {
-    "additionalProperties": false,
-    "properties": {
-      "active": {
-        "type": "boolean"
-      },
-      "hideCounts": {
-        "type": "boolean"
-      },
-      "hideCursors": {
-        "type": "boolean"
-      },
-      "onePerElement": {
-        "type": "boolean"
-      },
-      "revealed": {
-        "type": "boolean"
-      },
-      "reviewIndex": {
-        "type": "number"
-      },
-      "round": {
-        "type": "string"
-      },
-      "startedBy": {
-        "type": "string"
-      },
-      "voteLayerId": {
-        "type": "string"
-      },
-      "votes": {
-        "additionalProperties": {
-          "items": {
-            "type": "string"
-          },
-          "type": "array"
-        },
-        "type": "object"
-      },
-      "votesPerPerson": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "active",
-      "revealed",
-      "votesPerPerson",
-      "votes"
     ],
     "type": "object"
   },
@@ -14383,8 +8606,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "SignedOut",
       "Started",
       "Ended",
-      "Revealed",
-      "Voted",
       "View",
       "Helpful",
       "Unhelpful",
@@ -14399,7 +8620,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Api",
       "Client",
       "Warning",
-      "Reported",
       "Measured"
     ],
     "type": "string"
@@ -14437,12 +8657,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Cta",
       "Trash",
       "Draw",
-      "Editor",
       "Explorer",
       "Agent",
-      "Plan",
-      "Sheet",
-      "Form",
       "Timing"
     ],
     "type": "string"
@@ -14677,13 +8893,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "TemplateFamily": {
-    "enum": [
-      "retrospective",
-      "kanban"
-    ],
-    "type": "string"
-  },
   "TextAlignX": {
     "enum": [
       "left",
@@ -14890,16 +9099,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "TextOp": {
-    "enum": [
-      "contains",
-      "notContains",
-      "exactly",
-      "email",
-      "url"
-    ],
-    "type": "string"
-  },
   "TextRun": {
     "additionalProperties": false,
     "properties": {
@@ -15041,13 +9240,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     ]
   },
-  "TimerMode": {
-    "enum": [
-      "countdown",
-      "stopwatch"
-    ],
-    "type": "string"
-  },
   "TrashReason": {
     "enum": [
       "deleted",
@@ -15121,94 +9313,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     },
     "required": [
       "url"
-    ],
-    "type": "object"
-  },
-  "ValidationKind": {
-    "enum": [
-      "list",
-      "range",
-      "check",
-      "num",
-      "date",
-      "text"
-    ],
-    "type": "string"
-  },
-  "ValidationRule": {
-    "additionalProperties": false,
-    "properties": {
-      "a": {
-        "type": [
-          "number",
-          "string"
-        ]
-      },
-      "b": {
-        "type": "number"
-      },
-      "c1": {
-        "type": "string"
-      },
-      "c2": {
-        "type": "string"
-      },
-      "help": {
-        "type": "string"
-      },
-      "id": {
-        "type": "string"
-      },
-      "is": {
-        "$ref": "#/components/schemas/ValidationKind"
-      },
-      "op": {
-        "anyOf": [
-          {
-            "$ref": "#/components/schemas/NumOp"
-          },
-          {
-            "$ref": "#/components/schemas/DateOp"
-          },
-          {
-            "$ref": "#/components/schemas/TextOp"
-          }
-        ]
-      },
-      "opts": {
-        "items": {
-          "$ref": "#/components/schemas/DropdownOption"
-        },
-        "type": "array"
-      },
-      "r1": {
-        "type": "string"
-      },
-      "r2": {
-        "type": "string"
-      },
-      "show": {
-        "enum": [
-          "arrow",
-          "plain"
-        ],
-        "type": "string"
-      },
-      "src": {
-        "$ref": "#/components/schemas/IdRange"
-      },
-      "warn": {
-        "const": true,
-        "type": "boolean"
-      }
-    },
-    "required": [
-      "c1",
-      "c2",
-      "id",
-      "is",
-      "r1",
-      "r2"
     ],
     "type": "object"
   },
@@ -15459,15 +9563,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           },
           "frames": {
             "type": "number"
-          },
-          "lanes": {
-            "type": "number"
           }
         },
         "required": [
           "boxes",
           "frames",
-          "lanes",
           "arrows"
         ],
         "type": "object"

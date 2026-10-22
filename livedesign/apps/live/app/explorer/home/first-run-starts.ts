@@ -4,23 +4,32 @@
 
 import {
   BLANK_TEMPLATE_FOR_MODE,
+  EXTRA_BLANK_TEMPLATES,
   POPULAR_TEMPLATE_KINDS,
   isBlankTemplate,
   templateCreateHref,
   type TemplateKind,
 } from '@livedesign/templates';
-import { EDITOR_MODES } from '@livedesign/document';
 
 /** How many Popular templates the welcome shows. */
 export const WELCOME_TEMPLATES_MAX = 8;
 
-/** The three previews fanned in the hero, the front one first. */
-export const WELCOME_FAN: readonly TemplateKind[] = ['flowchart', 'mindmap', 'kanban'];
+/** How many blanks Start Blank shows: one row of its grid. */
+export const WELCOME_BLANKS_MAX = 5;
 
-/** Start Blank: each mode's blank, in mode order. */
-export const WELCOME_BLANKS: readonly TemplateKind[] = EDITOR_MODES.map(
-  (mode) => BLANK_TEMPLATE_FOR_MODE[mode],
-);
+/** The three previews fanned in the hero, the front one first. */
+export const WELCOME_FAN: readonly TemplateKind[] = [
+  'logo-design',
+  'wireframe-mobile-app',
+  'wireframe-website',
+];
+
+/** Start Blank: Pages' blank, then the first blanks of a page kind (docs/specs/007-editor/start-diagramming.md
+ *  "Recommended and groups"), cut to WELCOME_BLANKS_MAX. */
+export const WELCOME_BLANKS: readonly TemplateKind[] = [
+  BLANK_TEMPLATE_FOR_MODE.pages,
+  ...EXTRA_BLANK_TEMPLATES,
+].slice(0, WELCOME_BLANKS_MAX);
 
 /** Popular Templates: the shared Popular list without its blanks, cut to WELCOME_TEMPLATES_MAX. */
 export const WELCOME_POPULAR: readonly TemplateKind[] = POPULAR_TEMPLATE_KINDS.filter(

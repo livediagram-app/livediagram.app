@@ -33,7 +33,7 @@ person's, and comments are how people and agents talk on the canvas when nobody 
   characters), `focus` (up to 20 element ids, shown with a ring in the owner's colour) and `ttl` (up to
   `AGENT_PRESENCE_MAX_TTL_MS`). `DELETE` on the same path clears it. The agent holds no socket.
 - The room keeps agent presence entries beside people's and expires them on their ttl. An agent's presence never
-  holds an element, and never counts in a session's head count, the Done check or a roll call.
+  holds an element, and never counts in a session's head count.
 
 ## Comments
 
@@ -43,10 +43,7 @@ person's, and comments are how people and agents talk on the canvas when nobody 
 - An editor that may comment but not edit resolves and reopens through these endpoints, as it adds; an editor that
   may edit keeps the room and its save.
 - `GET /api/documents/:id/comments?status=open|resolved|all` lists threads across tabs with their element's ref and
-  label, so an agent can read the conversation without reading the tab. A Sheet cell's thread
-  ([Cell comments](../029-sheets/sheet.md#cell-comments)) is listed on its own with its `cell` and, where the
-  sheet is stored, its A1 (`cellRef`); add takes a `cell` beside the element, and the thread verbs find a cell's
-  thread by its comment as they find an element's. It is not capped: it reads one tab at a
+  label, so an agent can read the conversation without reading the tab. It is not capped: it reads one tab at a
   time.
 - Agents cannot be mentioned. An agent that answers comments reads new ones as they arrive ([CLI](../015-api/cli.md)
   `wait --for comment`) or on its next read.
@@ -54,7 +51,7 @@ person's, and comments are how people and agents talk on the canvas when nobody 
 ## Token levels
 
 What an agent may do follows its token's [level](../013-workspace/share-roles.md#api-tokens), through the same gates
-as a share link: reading needs read access; comments, session answers and presence need the participation gate
+as a share link: reading needs read access; comments, taking part and presence need the participation gate
 (`gateParticipate`); changesets need the edit gate. A participate token comments, takes part and sets presence and
 submits no changesets; a view token reads and writes nothing, comments and presence included.
 

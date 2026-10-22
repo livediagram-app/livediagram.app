@@ -188,11 +188,6 @@ describe('applyEditOperations', () => {
       expect(lines(outcome)).toEqual(['~ n4  @40,300→@340,200', 'f2  -n4']);
     });
 
-    it('puts lanes behind everything else', () => {
-      const lane = { id: 'lane', type: 'shape', shape: 'lane', ...box, width: 800, height: 200 };
-      expect(applied(run([add(lane)])).tab.elements[0]!.id).toBe('lane');
-    });
-
     it('refuses a touched element the format does not allow, naming field and rule', () => {
       expect(refused(run([set('n3', { width: -5 })]))).toEqual({
         code: 'invalid_result',

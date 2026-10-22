@@ -18,9 +18,8 @@ import { clientRateKey } from '../client-ip';
 import { consumeWsTicket, createWsTicket, getDocumentMeta } from '../db';
 import { noteWorkbenchSessionRoom } from '../db/workbench';
 import { forbidden, json, notFound } from '../responses';
-import { gateGrant, missingDocument, ownsDocument, type RouteContext } from './context';
+import { gateGrant, missingDocument, type RouteContext } from './context';
 import { personTagFor } from '../person-tag';
-import { networkTagFor } from '../vote-integrity';
 
 // Returns null when the request isn't a room route.
 export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Response | null> {
@@ -75,9 +74,6 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
       personTag: personId === null ? null : await personTagFor(id, personId),
       workbenchPairing: workbench?.pairingId ?? null,
       adderKey,
-      // The owner bit rides the ticket (docs/specs/012-collaboration/facilitator.md): every editor joins through
-      // one, so this is the only place the room can learn that a session is the owner's.
-      owner: await ownsDocument(ctx, liveDoc),
     });
     // A workspace session joins many rooms; each is recorded so ending its access closes them all (WB55).
     if (workbench?.scope === 'workspace')
@@ -110,8 +106,6 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     let workbenchPairing: string | null = null;
     // Only a Participant's ticket carries an adder key; every other leg has none.
     let adderKey: string | null = null;
-    // Only a ticket minted for the owner, or the legacy bare-`o` owner leg, seats the owner.
-    let ownerSession = false;
     const claimedOwnerId = url.searchParams.get('o');
     // Gate-only projection — the upgrade uses only ownerId/teamId. A document
     // in the Trash (docs/specs/013-workspace/trash.md) reads as missing, so no
@@ -160,10 +154,8 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
       isPersonalOwner(claimedOwnerId, liveDoc.ownerId, liveDoc.teamId);
     if (admission) {
       ({ role, tabScope, shareCode, account, personTag, workbenchPairing, adderKey } = admission);
-      ownerSession = admission.owner;
     } else if (isOwnerUpgrade) {
       role = 'edit';
-      ownerSession = true;
       // The legacy legs put credentials in the URL (docs/specs/015-api/api.md "Realtime model"); every editor
       // now rides a ticket, so this counts what is left before they are retired.
       console.info('[room-upgrade] legacy leg admitted', { leg: 'owner', documentId: id });
@@ -201,22 +193,16 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     // another peer's presence (there's no real id to claim). Only the
     // server-resolved role is forwarded; it still gates edit vs view ops.
     const forwarded = new Request(request);
-    // Both trust headers are stamped UNCONDITIONALLY, because `new Request`
+    // Every trust header is stamped UNCONDITIONALLY, because `new Request`
     // copies the client's own headers and the DO believes whatever arrives
     // under these names. `set` on every path is what makes that belief true:
     // a `delete`-then-conditional-`set` would be equivalent, but the
-    // always-set form can't regress the way the owner bit did — it was only
-    // ever set on the owner path, so a non-browser client (websocat, curl:
-    // browsers can't put headers on an upgrade) could send
-    // `X-Verified-Owner: 1` itself and have the room seat it as the owner.
+    // always-set form can't regress the way a path-only header can, where a
+    // non-browser client (websocat, curl: browsers can't put headers on an
+    // upgrade) could send the header itself on every other path.
     forwarded.headers.set('X-Verified-Role', role);
-    // One more server-resolved bit, and only a bit (docs/specs/012-collaboration/facilitator.md): whether this
-    // upgrade is the document's OWNER. The facilitator baton needs it so the
-    // owner can always take the session back, and a boolean answers that
-    // without handing the room an identity it deliberately does not hold.
-    forwarded.headers.set('X-Verified-Owner', ownerSession ? '1' : '0');
     // The session's tab scope and admitting code, set on every path for the
-    // same reason as the two above: the room believes these names. Empty =
+    // same reason as the role: the room believes these names. Empty =
     // none (docs/specs/013-workspace/tab-scoped-share-links.md).
     forwarded.headers.set('X-Verified-Tab-Scope', tabScope ?? '');
     forwarded.headers.set('X-Verified-Share-Code', shareCode ?? '');
@@ -235,9 +221,6 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     // The document this room serves, so a Participant's write knows its row; the room is named after it, and the
     // header is set on every path for the same reason as the headers above.
     forwarded.headers.set('X-Verified-Document', id);
-    // The caller's network, hashed with the document id (docs/specs/012-collaboration/vote-integrity.md): what
-    // caps a poll's answers from one network. Set on every path for the same reason as the headers above.
-    forwarded.headers.set('X-Verified-Network', await networkTagFor(id, clientRateKey(request)));
     return stub.fetch(forwarded);
   }
 

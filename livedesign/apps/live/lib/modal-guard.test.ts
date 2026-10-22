@@ -11,7 +11,7 @@ import {
 } from './modal-guard';
 
 // The one "a modal dialog is open" signal: the window listeners read it, the tours subscribe to it
-// (docs/specs/007-editor/editor-tour.md "Dialogs come first").
+// (docs/specs/007-editor/pages-tour.md "Dialogs come first").
 
 afterEach(() => {
   while (anyModalOpen()) modalClosed();

@@ -4,7 +4,6 @@
 // See docs/specs/016-platform/router-app.md.
 
 import { applyCachePolicy } from './cache-policy';
-import { legacyEditorRedirect, legacyHelpRedirect } from './legacy-editor-route';
 import { LIVE_ROUTE_SEGMENTS } from '@livedesign/api-schema';
 
 export interface Env {
@@ -62,6 +61,7 @@ const HELP_CATEGORY_SEGMENTS = new Set([
   'contact',
   'developers',
   'getting-started',
+  'pages',
   'palette',
   'policies',
   'privacy-and-security',
@@ -199,15 +199,11 @@ async function route(request: Request, env: Env): Promise<Response> {
     // static app — same prefix-strip as the live app's assets.
     return forward(request, url, env.TELEMETRY, env.TELEMETRY_ORIGIN, TELEMETRY_PATH);
   }
-  const legacyHelp = legacyHelpRedirect(url);
-  if (legacyHelp) return legacyHelp;
   if (hasPrefix(url.pathname, HELP_PATH)) {
     // The help centre (docs/specs/018-help/help-app.md), a basePath:'/help' static app — same
     // prefix-strip as telemetry.
     return forward(request, url, env.HELP, env.HELP_ORIGIN, HELP_PATH);
   }
-  const legacyEditor = legacyEditorRedirect(url);
-  if (legacyEditor) return legacyEditor;
   // Clean live-app page routes (/document, /explorer, /new, ...) and
   // its root-served icon: forwarded AS-IS (no strip — the worker's
   // files are already `/live`-free).

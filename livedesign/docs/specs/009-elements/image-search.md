@@ -23,7 +23,7 @@ openly licensed media (Flickr, Wikimedia Commons, Rawpixel and others).
 
 Every search asks Openverse only for pictures whose licence permits **both commercial use and
 modification** (`license_type=commercial,modification`): CC0, Public Domain Mark, CC BY and
-CC BY-SA. A diagram may be used at work, and putting a picture on the canvas crops and resizes it,
+CC BY-SA. A page may be used at work, and putting a picture on the canvas crops and resizes it,
 so NonCommercial and NoDerivatives works are never offered. Mature results are excluded
 (Openverse's default, kept explicit).
 

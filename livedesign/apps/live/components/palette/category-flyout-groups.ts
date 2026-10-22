@@ -6,13 +6,8 @@ import type { PaletteTileDef } from './palette-tile-defs';
 
 import type { EditorMode } from '@livedesign/document';
 
-/** The modes whose strip is a category bar: Diagram, Workshop and Pages. Plan keeps the category picker and
- *  its tiles (its boards and cards are a different palette). */
-export const CATEGORY_BAR_MODES: ReadonlySet<EditorMode> = new Set([
-  'diagram',
-  'workshop',
-  'pages',
-]);
+/** The modes whose strip is a category bar: Pages. */
+export const CATEGORY_BAR_MODES: ReadonlySet<EditorMode> = new Set(['pages']);
 
 // The bar names every category in one word, so a name never wraps or crowds its neighbours: a layout's longer
 // name gives way to its short one here (the flyout's header uses the same, so the two never disagree).
@@ -58,33 +53,20 @@ const TAGLINES: Readonly<Record<string, string>> = {
   shapes: 'The basics, the flowchart vocabulary and more.',
   write: 'Words on the canvas: text, notes and comments.',
   draw: 'Sketch, outline and connect by hand.',
-  build: 'Structures that grow as you type.',
-  diagrams: 'Structures that grow as you type.',
-  layout: 'Lanes, frames and the parts that label a diagram.',
+  build: 'Frames, stacks and tables that hold other work.',
   concepts: 'Ideas laid out as one element that arranges itself.',
   icons: 'Single-colour glyphs for any idea.',
   technology: 'Cloud and infrastructure marks for architecture.',
   media: 'Pictures and people.',
   stickers: 'Colour emoji to react, mark status and celebrate.',
   data: 'Charts and meters that read at a glance.',
-  'collab-ask': 'Put a question to the room.',
-  'collab-tools': 'Run the session: timers, reveals and picks.',
-  'collab-record': 'Keep what happened: comments, actions, decisions.',
-  'collab-react': 'Celebrate on the canvas.',
-  'collab-mode': 'Buttons that switch how everyone points.',
-  'collab-navigate': 'Places to go, and things to sit at.',
   logo: 'The tools a logo is made with.',
   components: 'Ready-made blocks that follow the theme.',
   devices: 'Frames to set a screen design in.',
 };
 
-// Where a mode fills a category differently enough that its default line would mislead.
-const MODE_TAGLINES: Readonly<Partial<Record<EditorMode, Readonly<Record<string, string>>>>> = {
-  workshop: { write: 'Words, notes, tables and checklists.' },
-};
-
-export function flyoutTagline(categoryId: string, fallback: string, mode?: EditorMode): string {
-  return (mode && MODE_TAGLINES[mode]?.[categoryId]) ?? TAGLINES[categoryId] ?? fallback;
+export function flyoutTagline(categoryId: string, fallback: string, _mode?: EditorMode): string {
+  return TAGLINES[categoryId] ?? fallback;
 }
 
 // A group's name, by the tile that starts it: a category splits into groups where a tile ends one (`dividerAfter`,
@@ -104,10 +86,6 @@ const GROUP_NAMES: Readonly<Record<string, string>> = {
   'draw:marker-main': 'Markers',
   'tools:polygon': 'Outlines',
   'tools:arrow': 'Connectors',
-  'tools:mind-node': 'Diagrams',
-  'tools:lane': 'Containers',
-  'tools:diagram-key': 'Parts',
-  'collab:comment-pin': 'Comments',
   'tools:table': 'Tables',
   'tools:stack': 'Layout',
   'components:hero': 'Layout',

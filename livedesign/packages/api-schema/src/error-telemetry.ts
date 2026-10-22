@@ -112,8 +112,6 @@ export const API_ROUTE_RESOURCES: ReadonlySet<string> = new Set([
   'events',
   'telemetry',
   'share',
-  // A form link's public doors (docs/specs/030-forms/forms.md).
-  'forms',
   'shared',
   'images',
   'documents',
@@ -169,10 +167,6 @@ const API_ROUTE_WORDS: ReadonlySet<string> = new Set([
   'refresh',
   'invites',
   'restore',
-  'items',
-  'item-types',
-  'sheets',
-  'writes',
 ]);
 
 /**

@@ -24,8 +24,6 @@ import {
   isBoxed,
   isSelfDrawingShape,
   supportsRotation,
-  isSheetAnchoredChart,
-  takesAttachments,
 } from '@livedesign/document';
 import { ArrowLineControls, ArrowPointerControls } from '@/components/canvas/arrow-controls';
 import { ContextMenu, ContextMenuDivider } from '@/components/palette/ContextMenu';
@@ -54,7 +52,6 @@ import { OpacityRow } from '@/components/palette/context-menu-rows';
 import { MoveToLayerRow } from '@/components/palette/MoveToLayerRow';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import { useContextMenuScaffold } from './useContextMenuScaffold';
-import { useCoversCanvas } from '@/hooks/plan/plan-cover-store';
 import { ElementContentSections } from './ElementContentSections';
 import { ElementMenuQuickBar } from './ElementMenuQuickBar';
 import { ElementAppearanceSections } from './ElementAppearanceSections';
@@ -95,12 +92,6 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
     arrowheadColorHandlers,
     strokeColorHandlers,
   } = useContextMenuScaffold(props);
-  // A board, view or Sheet filling the canvas (maximised, or Fill Tab) is not placed on it while it does: no Layer,
-  // Size or Rotation (docs/specs/026-plan/plan-board.md "Maximised board").
-  const covering = useCoversCanvas(menu.mode === 'element' ? menu.elementId : null);
-  // Session-tool pickers (docs/specs/012-collaboration/session-tools.md): the chosen timer mode + countdown length
-  // and the votes-per-person budget, local until the facilitator hits Start
-  // (mirrors the old tab editor's Session accordion).
 
   if (menu.mode === 'multi') {
     return (
@@ -143,9 +134,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
       target.type === 'image' ||
       target.type === 'link-card' ||
       target.type === 'video';
-    // Collaborate and Resources: never on a Plan item (docs/specs/026-plan/plan-mode.md "Nothing attached to Plan
-    // items"), whoever opens the menu.
-    const showCollaborateGroup = boxed && takesAttachments(target);
+    const showCollaborateGroup = boxed;
     // A verb runs, then the menu gets out of the way (see the rows below).
     const runAndClose = (action: () => void) => () => {
       action();
@@ -171,49 +160,43 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             categories, which render conditionally and so would otherwise
             shuffle Layer's position around). Groups front/back + opacity +
             (for boxed elements) the aspect-ratio lock. */}
-        {covering ? null : (
-          <MenuAccordionSection title="Layer" icon={<LayersGlyph />} {...sectionProps('layer')}>
-            {/* Layer order tweaks keep the menu open so you can nudge
-              front/back a few times in a row. */}
-            <MenuTileGrid cols={2}>
-              <MenuTile
-                icon={<LayerUpIcon />}
-                label="Bring to Front"
-                onClick={props.onBringToFront}
-              />
-              <MenuTile
-                icon={<LayerDownIcon />}
-                label="Send to Back"
-                onClick={props.onSendToBack}
-              />
-            </MenuTileGrid>
-            {/* Move to a named layer (docs/specs/006-document/layers.md) — only once the tab has
-              more than one layer (the row renders nothing otherwise). */}
-            {props.onMoveSelectionToLayer ? (
-              <MoveToLayerRow
-                layers={props.layers}
-                elements={props.elements}
-                tabFont={props.tabFont}
-                currentLayerId={props.selectionLayerId}
-                onMove={props.onMoveSelectionToLayer}
-              />
-            ) : null}
-            <ContextMenuDivider />
-            {/* Opacity slider — a non-closing row (dragging stays inside the
-              menu, so the outside-click guard leaves it open). */}
-            <OpacityRow
-              value={(target as { opacity?: number }).opacity ?? 1}
-              onChange={props.onSetOpacity}
+        <MenuAccordionSection title="Layer" icon={<LayersGlyph />} {...sectionProps('layer')}>
+          {/* Layer order tweaks keep the menu open so you can nudge
+            front/back a few times in a row. */}
+          <MenuTileGrid cols={2}>
+            <MenuTile
+              icon={<LayerUpIcon />}
+              label="Bring to Front"
+              onClick={props.onBringToFront}
             />
-          </MenuAccordionSection>
-        )}
+            <MenuTile icon={<LayerDownIcon />} label="Send to Back" onClick={props.onSendToBack} />
+          </MenuTileGrid>
+          {/* Move to a named layer (docs/specs/006-document/layers.md) — only once the tab has
+            more than one layer (the row renders nothing otherwise). */}
+          {props.onMoveSelectionToLayer ? (
+            <MoveToLayerRow
+              layers={props.layers}
+              elements={props.elements}
+              tabFont={props.tabFont}
+              currentLayerId={props.selectionLayerId}
+              onMove={props.onMoveSelectionToLayer}
+            />
+          ) : null}
+          <ContextMenuDivider />
+          {/* Opacity slider — a non-closing row (dragging stays inside the
+            menu, so the outside-click guard leaves it open). */}
+          <OpacityRow
+            value={(target as { opacity?: number }).opacity ?? 1}
+            onChange={props.onSetOpacity}
+          />
+        </MenuAccordionSection>
         {/* Size — the exact box (docs/specs/008-canvas/element-size.md). Gathers the three controls that
             all answer "how big is this": the width / height boxes, the aspect
             lock (which lived in Layer) and the reset (which lived in Shape,
             so it only appeared for morphable kinds). */}
-        {/* Fixed-size elements (docs/specs/009-elements/mode-button.md buttons) have no size to edit — offering the boxes would advertise
+        {/* Fixed-size elements (a badge, docs/specs/009-elements/badge.md) have no size to edit — offering the boxes would advertise
             a resize the drag paths deliberately ignore. */}
-        {boxed && !isFixedSizeElement(target) && !covering ? (
+        {boxed && !isFixedSizeElement(target) ? (
           <MenuAccordionSection title="Size" icon={<SizeMenuIcon />} {...sectionProps('size')}>
             <SizeSection
               width={(target as { width: number }).width}
@@ -252,8 +235,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             (an upright marker rotated by the angle) so the effect is legible
             before clicking; 0° resets to upright. Not on an annotation marker
             (docs/specs/009-elements/blueprints/annotations.md [QD8]). */}
-        {/* Nor on a chart its Sheet draws: it sits square on the cells (docs/specs/029-sheets/sheet.md "Charts"). */}
-        {supportsRotation(target) && !covering && !isSheetAnchoredChart(target) ? (
+        {supportsRotation(target) ? (
           <MenuAccordionSection
             title="Rotation"
             icon={<RotationMenuIcon />}
@@ -299,7 +281,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             headerFillHandlers={headerFillHandlers}
             arrowheadColorHandlers={arrowheadColorHandlers}
             strokeColorHandlers={strokeColorHandlers}
-            afterGroup={!covering || !!props.onMirrorCopy}
+            afterGroup
           />
         }
         {showContentGroup ? <MenuGroupSeparator /> : null}

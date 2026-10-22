@@ -1,8 +1,7 @@
 'use client';
 
-// Whiteboard shape outlines drawn over the canvas before they land
-// (docs/specs/023-draw-mode/draw-mode.md "Shapes", "Shape recognition"): a dock shape being dragged
-// out, and the shape a held-still pen stroke is recognised as.
+// The shape a marker stroke is recognised as, drawn over the canvas before it lands
+// (docs/specs/023-draw-mode/drawing-tools.md "Shape recognition").
 
 import {
   BORDER_STROKE_PX,
@@ -12,11 +11,10 @@ import {
 } from '@livedesign/document';
 import { ShapeSvgOverlay } from '@/components/canvas/shape-svg-overlay';
 
-// A whiteboard shape while it is drawn: the outline the committed shape will
-// have, in the board's ink at the default weight, unfilled. SVG-rendered outlines keep a
+// A recognised shape's outline: the outline the committed shape will have, unfilled. SVG-rendered outlines keep a
 // screen-px stroke; CSS-bordered ones (rectangle, ellipse) scale with the zoom,
 // as the committed shapes do.
-export function PenShapePreview({
+function PenShapePreview({
   kind,
   colour,
   widthPx,

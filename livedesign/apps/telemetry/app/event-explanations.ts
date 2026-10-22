@@ -14,60 +14,16 @@
 // can send gets a real sentence, free of code names and jargon.
 
 export const EXACT: Readonly<Record<string, string>> = {
-  'Editor|Changed|LeavePagesConfirmed':
-    'Someone confirmed leaving Pages on a tab with pages, after the warning that its pages do not show in Diagram or Draw.',
-  'Editor|Changed|ModeDiagram':
-    'Someone switched a tab to Diagram mode, for shapes, arrows and the palette.',
-  'Editor|Changed|ModeDraw': 'Someone switched a tab to Draw mode, to draw freehand with pens.',
-  'Editor|Changed|ModePages':
-    'Someone switched a tab to Pages mode, to lay out a page of icons, stickers, components and media.',
-  'Editor|Changed|ModePlan':
-    'Someone switched a tab to Plan mode, to work on boards of items: drag cards through columns, add and open items.',
-  'Editor|Changed|ModeWorkshop':
-    'Someone switched a tab to Workshop mode, to run a session with their team: timers, votes, polls and reveals.',
-  'Draw|Created|Template':
-    'Someone started a new document as a whiteboard, a plain board drawn on with pens, from the New Document wizard.',
-  'Draw|Created|NewTab':
-    'Someone added a whiteboard tab, a plain board drawn on with pens, to a document from Quick Start.',
-  'Draw|Selected|Main':
-    "Someone picked up a whiteboard's main pen, which draws in the board's own ink colour: dark on the light board, light on the dark one.",
-  'Draw|Selected|Path':
-    "Someone picked up a whiteboard's Path tool, a vector pen: each click places a point and a drag pulls out a curve.",
-  'Draw|Selected|ShapeSearch':
-    "Someone picked a shape they searched for in a whiteboard's Shapes flyout, which finds any of the palette's shapes by name.",
-  'Draw|Selected|Second':
-    "Someone picked up a whiteboard's second pen (blue unless they changed it).",
-  'Draw|Selected|Third': "Someone picked up a whiteboard's third pen (red unless they changed it).",
-  'Draw|Changed|PenColour': "Someone gave a whiteboard's second or third pen a new colour.",
-  'Draw|Changed|PenWidth': "Someone changed the width of one of a whiteboard's pens.",
-  'Draw|Changed|CursorDot': "Someone chose the dot as a whiteboard's pen cursor.",
-  'Draw|Changed|CursorCrosshair':
-    "Someone chose the crosshair with a nib as a whiteboard's pen cursor.",
-  'Draw|Changed|PenReset':
-    "Someone reset one of a whiteboard's pens to its starting colour and width.",
-  'Draw|Changed|EraserStroke': "Someone set a whiteboard's eraser to remove whole strokes.",
-  'Draw|Changed|EraserPartial':
-    "Someone set a whiteboard's eraser to rub out only the part of a stroke under it.",
-  'Draw|Changed|ShapePinned':
-    'Someone pinned a shape to their whiteboard dock, so it stays there beside the shapes they use most.',
-  'Draw|Changed|ShapeUnpinned': 'Someone unpinned a shape from their whiteboard dock.',
-  'Draw|Changed|BackgroundPlain': 'Someone gave a whiteboard a plain background.',
-  'Draw|Changed|BackgroundDots': 'Someone gave a whiteboard a dotted background.',
-  'Draw|Changed|BackgroundGrid': 'Someone gave a whiteboard a grid background.',
-  'Draw|Changed|SnapColours':
-    "Someone snapped a whiteboard's custom colours to its stock colours, so they adapt to light and dark boards.",
-  'Draw|Toggled|RecognitionOn':
-    'Someone turned on shape recognition on a whiteboard, so a roughly drawn shape becomes a clean one.',
-  'Draw|Toggled|RecognitionOff':
-    'Someone turned off shape recognition on a whiteboard, so strokes stay as drawn.',
+  'Draw|Changed|PenColour': 'Someone gave the second or third marker a new colour.',
+  'Draw|Changed|PenWidth': 'Someone changed the width of one of the markers.',
   'Draw|Toggled|RecogniseOnceKey':
-    'Someone pressed Alt (Option) while drawing on a whiteboard to turn that one stroke into a clean shape at once.',
+    'Someone pressed Alt (Option) while drawing to turn that one stroke into a clean shape at once.',
   'Draw|Toggled|RecogniseOnceChip':
-    "Someone tapped a whiteboard's Make shape chip while drawing to turn that one stroke into a clean shape at once.",
+    'Someone tapped the Make shape chip while drawing to turn that one stroke into a clean shape at once.',
   'Draw|Toggled|BreakShapeKey':
-    'Someone pressed Alt (Option) while drawing on a whiteboard to turn a recognised shape back into the ink they drew.',
+    'Someone pressed Alt (Option) while drawing to turn a recognised shape back into the ink they drew.',
   'Draw|Toggled|BreakShapeChip':
-    "Someone tapped a whiteboard's Keep drawing chip while drawing to turn a recognised shape back into the ink they drew.",
+    'Someone tapped the Keep drawing chip while drawing to turn a recognised shape back into the ink they drew.',
   'AI|Toggled|AiOff': 'Someone turned off the AI Assistant panel, in Settings under AI Tools.',
   'AI|Toggled|AiOn': 'Someone turned on the AI Assistant panel, in Settings under AI Tools.',
   'AI|Toggled|AiSuggestedPromptsOff': 'Someone turned off Suggested Prompts for the AI Assistant.',
@@ -88,13 +44,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Action|Deleted|': 'Someone removed an assigned action from an element.',
   'Action|Moved|DocumentToTeam':
     "While assigning an action to someone, the document was moved into that person's team so they'd have access to it.",
-  'Action|Linked|Board':
-    "Someone added a document's first action, which made its Actions board: a board tab where every action in the document has a card, kept in step with the canvas.",
   'Action|Opened|': 'Someone opened the popover for an action already assigned to an element.',
-  'Action|Opened|Board':
-    "Someone went from an action on the canvas to the document's Actions board, from the action's popover or an Action panel's Board chip.",
-  'Action|Opened|Canvas':
-    "Someone went from a card on the Actions board to its action on the canvas, with the card's Show on Canvas.",
   'Action|Resolved|': 'Someone marked an assigned action as done.',
   'Action|Resolved|WontDo':
     "Someone closed an assigned action as Won't Do: decided against, closed without being done.",
@@ -102,35 +52,17 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Activity|Loaded|Retry':
     'Someone clicked "Try again" after the Explorer\'s Inbox failed to load, retrying the read.',
   'Activity|Opened|':
-    "Someone opened the Explorer's Inbox, which lists open actions and Plan cards assigned to them, actions they assigned to others, and comment threads they're in. Counted once per visit, not on every re-fetch.",
+    "Someone opened the Explorer's Inbox, which lists open actions assigned to them, actions they assigned to others, and comment threads they're in. Counted once per visit, not on every re-fetch.",
   'Activity|Selected|Action':
     "Someone clicked an action row in the Explorer's Inbox, jumping to the element it's assigned on.",
-  'Activity|Selected|Card':
-    "Someone clicked a Plan card row in the Explorer's Inbox, jumping to the card on its board.",
-  'Activity|Selected|FormResponses':
-    "Someone clicked a form's row in the Explorer's Inbox (its new responses), jumping to the board they land on.",
   'Activity|Selected|Thread':
     "Someone clicked a comment-thread row in the Explorer's Inbox, jumping to the element it's on.",
-  'Canvas|Used|WaterCooler':
-    'Someone walked their Avatar-mode character up to a water cooler and took a cup of water.',
-  'Canvas|Used|CoffeeMachine':
-    'Someone walked their Avatar-mode character up to a coffee machine and took a coffee.',
-  'Canvas|Used|AvatarMessage':
-    'Someone said something in Avatar mode, typing a message in the bubble above their character (Enter). Never the words.',
-  'Canvas|Used|AvatarMessagePanel':
-    "Someone said something in Avatar mode from the Avatar panel's Send a Message. Never the words.",
-  'Canvas|Used|AvatarPadArrival':
-    'Someone went into Avatar mode on a board with an Avatar Pad, so their character beamed in on the pad.',
-  'Canvas|Used|AvatarMode':
-    'Someone switched to Avatar mode, steering a small walking character around the canvas instead of the usual pointer.',
   'Canvas|Used|Eraser':
     "Someone picked up the Eraser tool, which deletes whatever it's dragged over.",
   'Canvas|Used|FollowMe':
     "Someone pinned their canvas to a peer's viewport, following their pan, zoom, and tab until they take it back.",
   'Canvas|Used|FormatPainter':
     "Someone picked up the Format tool, ready to copy one element's style onto others by tapping them.",
-  'Canvas|Used|Highlighter':
-    'Someone picked up the Highlighter mode, a see-through marker pen for annotating the canvas. No longer recorded: the Highlighter is a Draw tile now, counted when a stroke is added.',
   'Canvas|Used|Isometric':
     'Someone switched the canvas into Isometric view, which renders the canvas at an angle for a 3D-style look.',
   'Canvas|Used|Laser':
@@ -185,8 +117,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Document|Undone|': 'Someone hit Undo on a document edit.',
   'Document|Used|Multiplayer':
     'A document was open with at least one other person live in the room, counted once per document per visit. The one event that counts collaboration happening rather than being offered.',
-  'Element|Changed|Agenda':
-    'Someone pressed a segment on an Agenda element, starting its timer and marking it as the current item.',
   'Element|Changed|IconSwapped': 'Someone dropped an icon onto another icon, swapping its glyph.',
   'Element|Changed|Animation':
     'Someone gave a selected element a looping animation, or turned it off.',
@@ -205,8 +135,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone toggled whether a selected arrow routes behind the boxes it passes.',
   'Element|Changed|ArrowExactStart':
     'Someone set an arrow to start exactly at the anchor it is connected to, or back to fanning out.',
-  'Element|Changed|LaneUprightTitle':
-    'Someone turned a lane title upright in its side strip, or back to reading across.',
   'Element|Changed|ArrowStyle':
     "Someone changed a selected arrow's shape, such as straight, curved, or elbowed.",
   'Element|Changed|ArrowThickness': "Someone changed a selected arrow's line thickness.",
@@ -225,14 +153,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone changed how a badge or step number looks (solid, ink, outline, tinted or quiet).',
   'Element|Changed|ChipDetach':
     'Someone let a badge or step number go from the element it was attached to.',
-  'Element|Changed|BoundaryStyle':
-    "Someone changed where a boundary shows its title: in a tab on its edge, inside its corner, or C4's bottom-left.",
   'Element|Changed|TabWindowTab':
     'Someone chose which tab a Tab Window shows, so a slide or page shows that tab live.',
   'UI|Used|TabWindowOpen':
     'Someone opened the tab a Tab Window shows, from the window or its menu.',
-  'Element|Changed|BoundaryMeta':
-    "Someone added or removed the second line under a boundary's title, such as a network range.",
   'Element|Changed|ConceptRows':
     'Someone added, removed, reordered or renamed the layers, tiers or steps of a layer stack, pyramid or cycle.',
   'Element|Changed|PointerTip':
@@ -251,16 +175,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|StackPadding': 'Someone changed the space inside the edge of a stack.',
   'Element|Changed|StackAlign':
     'Someone changed whether the things in a stack line up at the start, the centre or the end.',
-  'Element|Changed|SequenceParticipants':
-    'Someone added, renamed, reordered or removed a participant in a sequence diagram.',
-  'Element|Changed|SequenceMessages':
-    'Someone added, edited, reordered or removed a message in a sequence diagram.',
-  'Element|Changed|SequenceText':
-    'Someone rewrote a sequence diagram as text in its dialog, one message per line.',
-  'Element|Changed|SequenceNumbered':
-    'Someone switched the message numbers of a sequence diagram on or off.',
-  'Element|Changed|SequenceAnim':
-    'Someone changed how a sequence diagram plays in, or its speed or repeat.',
   'Element|Changed|HubSpokes': 'Someone switched the spokes of a hub and spoke graphic on or off.',
   'Element|Changed|PyramidVariant':
     'Someone switched a pyramid between pointing up, pointing down and a funnel.',
@@ -274,12 +188,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|BorderStroke': "Someone changed a selected element's border weight.",
   'Element|Changed|BorderStyle':
     "Someone changed a selected element's border pattern: solid, dashed, or dotted.",
-  'Element|Changed|Chair':
-    'Someone changed which way a Chair element faces, on a meeting-room layout board.',
-  'Element|Changed|Room': "Someone moved a Room element's doorway to another wall, or closed it.",
-  'Element|Changed|Desk':
-    'Someone changed which way a Desk element faces, so whoever sits at it looks another way.',
-  'Element|Changed|Sofa': 'Someone changed which way a Sofa element faces.',
   'Element|Changed|ChartAnim':
     'Someone gave a selected chart a looping reveal animation, changed its speed, or turned it off.',
   'Element|Changed|ChartData': "Someone edited a chart element's underlying data.",
@@ -293,14 +201,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone edited a code block element's snippet or its programming language.",
   'Element|Changed|CodeTheme': 'Someone applied a colour scheme to a selected code block.',
   'Element|Changed|CodeWrap': 'Someone toggled long-line wrapping on a selected code block.',
-  'Element|Changed|Decision':
-    'Someone edited a Decision element: its status, its date, or the factors driving it.',
-  'Element|Changed|DoneCheck':
-    'Someone pressed a done-check element to mark it done, or cleared it.',
-  'Element|Changed|Entity':
-    "Someone edited an Entity element's fields, on an entity-relationship diagram.",
-  'Element|Changed|Estimate':
-    'Someone submitted, revealed, or cleared a response on an Estimate card during a planning-poker round.',
   'Element|Changed|FillColor': "Someone changed a selected element's fill colour.",
   'Element|Changed|FlowRepeat': "Someone turned a selected arrow's flow animation loop on or off.",
   'Element|Changed|FlowSpeed': "Someone changed how fast a selected arrow's flow animation plays.",
@@ -309,8 +209,7 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone used the format painter to copy a style from one element onto another.',
   'Element|Changed|Header':
     "Someone edited a Header web component's lines, such as adding, removing, or retitling one.",
-  'Element|Changed|HeaderFill':
-    "Someone changed a table's header row colour, or a lane's title band colour.",
+  'Element|Changed|HeaderFill': "Someone changed a table's header row colour.",
   'Element|Changed|Hero': "Someone turned a hero image's caption card on or off.",
   'Element|Changed|Icon': 'Someone placed or repositioned an inline icon on a selected element.',
   'Element|Changed|IconAnimation':
@@ -326,8 +225,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|TableAnimation':
     'Someone gave a selected table an animation, such as rows cascading in, or turned it off.',
   'Element|Changed|IconSize': "Someone changed a selected Technology icon's tile size.",
-  'Element|Changed|Idea-box':
-    'Someone added an idea to an Idea Box element, revealed its cards, or cleared it for the next round.',
   'Element|Changed|LabelFill': "Someone changed the background colour of an arrow's label.",
   'Element|Changed|Legend': "Someone edited a Legend element's items.",
   'Element|Changed|LineData': "Someone edited a line chart element's categories and series data.",
@@ -335,13 +232,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'A link-card element automatically fetched a preview (title, image, and favicon) after someone gave it a web address.',
   'Element|Changed|Marker': "Someone added or removed a status marker next to a shape's label.",
   'Element|Changed|MarkerSize': "Someone changed the size of a shape's status marker.",
-  'Element|Changed|MindFlow': "Someone changed a mind map's flow direction.",
-  'Element|Changed|MindOutline':
-    'Someone saved an edited outline onto a mind map, re-shaping the map from its text.',
-  'Element|Changed|MindSpacing':
-    "Someone changed how far apart a mind map's nodes sit (Tight, Compact, Comfortable or Wide).",
-  'Element|Changed|ModeButton':
-    "Someone changed which selection mode a Mode Button element switches everyone into when it's pressed.",
   'Element|Changed|Nudge':
     'Someone nudged a selected element with the arrow keys. Counted once per burst of presses, not once per key press.',
   'Element|Changed|Padding': "Someone changed a selected element's internal padding.",
@@ -349,10 +239,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone reshaped a path in its edit mode: moved, added, removed or smoothed a point, or bent a curve. Counted once per change.',
   'Element|Changed|PathJoin':
     'Someone closed an open path in its edit mode by joining its two ends.',
-  'Element|Changed|Picker':
-    'Someone rolled a Picker element, landing on a participant or option from its list, shared with everyone in the room.',
-  'Element|Changed|Portal':
-    'Someone linked a Portal element to another portal, on this tab or another, so stepping into one jumps to the other.',
   'Element|Changed|ProcessSteps':
     "Someone edited a Process web component's steps, such as adding, removing, or retitling one.",
   'Element|Changed|Progress': "Someone changed a progress-bar element's percentage.",
@@ -364,8 +250,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone pressed Clear Styles in the quick style panel, returning the selected shapes, arrows and text to the theme default and forgetting that style for the next ones drawn.',
   'Element|Changed|QuickIconAlign':
     'Someone moved the icon before, above, or after the label of the selected shapes from the quick style panel.',
-  'Element|Changed|QuickCorners':
-    'Someone changed the corners of the selected rectangles on a whiteboard from the quick style panel.',
   'Element|Changed|QuickStroke':
     'Someone picked a line colour for the selected shapes or arrows from the quick style panel beside the selection.',
   'Element|Changed|QuickStrokeStyle':
@@ -376,20 +260,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone picked a colour for the selected text elements from the quick style panel beside the selection.',
   'Element|Changed|QuickTextAlign':
     'Someone aligned the text of the selected shapes left, centre, or right from the quick style panel.',
-  'Element|Changed|Quiz':
-    'Someone ran a Quiz element: edited its question, started or locked a round, picked an answer, revealed the right one, or reset it.',
   'Element|Changed|Rating': "Someone changed a star-rating element's score.",
   'Element|Changed|RatingAnim':
     'Someone gave a star-rating element a looping animation, changed its speed, or turned it off.',
-  'Element|Changed|ReactionPad':
-    'Someone changed which reaction burst a Reaction Pad element throws.',
-  'Element|Changed|Reveal':
-    "Someone toggled a Reveal element's cover on or off for the whole room.",
-  'Element|Changed|Roll-call':
-    'Someone took a roll call on a Roll Call element, freezing the names of everyone currently in the room onto it.',
   'Element|Changed|Rotation': 'Someone rotated a selected element to a fixed angle.',
-  'Element|Changed|SessionButton':
-    'Someone configured what a Session Button element starts when pressed, such as a timer, a poll, or a vote.',
   'Element|Changed|Finish':
     "Someone set a selected element's own finish (Flexible, Professional, Sketch or Marker), or set it back to follow its tab.",
   'Element|Changed|SankeyAnim':
@@ -417,8 +291,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone styled one or more selected table cells, such as their fill colour, borders, or text alignment.',
   'Element|Changed|TablePreset':
     'Someone applied a one-click look to a table: its fill, borders, and row banding together.',
-  'Element|Changed|Temperature':
-    'Someone submitted, revealed, or cleared a response on a temperature-check element.',
   'Element|Changed|TextAlign': "Someone changed a selected element's text alignment.",
   'Element|Changed|TextColor': "Someone changed a selected element's text colour.",
   'Element|Changed|TextFormat':
@@ -466,11 +338,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|TextCase':
     'Someone set a text on a logo page in capitals, lower case or as typed.',
   'Element|Changed|TextArc': 'Someone bent a text on a logo page along an arc.',
-  'Element|Created|RelatedEntity':
-    "Someone added an entity from another entity's ring, already joined to it by a foreign key.",
-  'Element|Added|EntityField':
-    "Someone started a new field on an entity from its ring's Add Field.",
-  'Element|Changed|Cardinality': "Someone picked a relationship's cardinality from its toolbar.",
   'Element|Created|MirrorTwin':
     'Someone drew on a logo page with Mirror on, so it got a reflected twin.',
   'UI|Toggled|LogoGuidesOn': "Someone showed a logo page's construction guides.",
@@ -525,8 +392,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Linked|Tab': 'Someone linked an element to another tab.',
   'Element|Linked|Url': 'Someone linked an element to a web address.',
   'Element|Locked|': "An element's lock was turned on (no edits allowed).",
-  'Element|Removed|Vote':
-    'Someone retracted one of their dots from a dot vote. Counted only when a dot actually came off.',
   'Element|Reordered|Back': 'Someone sent an element to the back of the stack.',
   'Element|Reordered|Front': 'Someone sent an element to the front of the stack.',
   'Element|Reordered|TableColumn': 'Someone dragged a table column to a new position.',
@@ -535,8 +400,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone narrowed a multi-selection down to just one kind of element, from the right-click menu's Filter Selection.",
   'Element|Selected|Keyboard':
     'Someone moved the selection to the next element using the keyboard.',
-  'Element|Selected|MindBranch':
-    'Someone selected a mind map branch, or a whole map, from its menu.',
   'Element|Toggled|AspectLock':
     'Someone toggled a formatting option on an element or table: a text style (bold, italic, underline, or strikethrough), the aspect-ratio lock, or a table option (header row, header column, or zebra striping).',
   'Element|Toggled|Strikethrough':
@@ -551,17 +414,12 @@ export const EXACT: Readonly<Record<string, string>> = {
     'A group was disbanded back into individual elements (before groups were removed).',
   'Element|Unlinked|': 'Someone cleared the link off an element.',
   'Element|Unlocked|': "An element's lock was turned off (edits resume).",
-  'Element|Used|BringFocus':
-    "Someone asked everyone else in the room to jump to this element's spot on the canvas.",
-  'Element|Used|ReactionPad':
-    'Someone pressed a Reaction Pad element and played its burst for everyone.',
   'Element|Searched|Image':
     "Someone searched for openly licensed pictures in the image picker's Search tab.",
   'Element|Used|ImagePlaceholder':
     "Someone pressed Select Image on an empty image's placeholder to open the image picker.",
   'Element|Used|ImageSearch': 'Someone attached a picture found with image search to an image.',
   'Element|Used|Video': 'Someone pressed play on a video element.',
-  'Element|Voted|': 'Someone cast a dot in a dot vote.',
   'Email|Sent|DocumentJoined':
     "An email went out to a document's owner after someone opened it for the first time through a share link.",
   'Email|Sent|FirstShare': "An email went out marking someone's first time sharing a document.",
@@ -598,14 +456,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "The browser's local database did not open in time, so the load carried on without checking for Offline Mode documents.",
   'Error|Warning|SessionToken.TimedOut':
     "A signed-in browser's session did not hand out a token within 10 seconds, so the request gave up instead of waiting forever.",
-  'Facilitator|Changed|Granted':
-    'The facilitator of a live session handed the role to someone else.',
   'Facilitator|Changed|Unlocked':
-    'The facilitator freed an element a peer had locked by selecting it, so someone else could work on it.',
-  'Facilitator|Ended|Released':
-    'The facilitator of a live session stepped down, leaving nobody in charge of its shared tools.',
-  'Facilitator|Started|Claimed':
-    'Someone took the facilitator role in a live session, becoming the one in charge of its shared tools: the timer, votes, and polls.',
+    'Someone freed an element a peer had locked by selecting it, so someone else could work on it.',
   'Folder|Created|': 'A new folder was created in the document explorer.',
   'Folder|Created|Tab':
     'A new tab folder was created inside a document, by typing a name the document had not used before.',
@@ -723,129 +575,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'A returning guest (not signed in) reopened the app on a later day, counted once per day.',
   'Participant|Returned|Authenticated':
     'A returning signed-in user reopened the app on a later day, counted once per day.',
-  'Form|Created|Blank': 'Someone started a form from Start Planning: a blank one.',
-  'Form|Created|BugReport': 'Someone started a form from the Bug Report starter.',
-  'Form|Created|Feedback': 'Someone started a form from the Feedback starter.',
-  'Form|Created|FeatureRequest': 'Someone started a form from the Feature Request starter.',
-  'Form|Created|Rsvp': 'Someone started a form from the Event RSVP starter.',
-  'Form|Created|JobApplication': 'Someone started a form from the Job Application starter.',
-  'Form|Created|Contact': 'Someone started a form from the Contact starter.',
-  'Form|Added|ShortAnswer': 'Someone added a Short Answer question to a form.',
-  'Form|Added|Paragraph': 'Someone added a Paragraph question to a form.',
-  'Form|Added|Number': 'Someone added a Number question to a form.',
-  'Form|Added|Email': 'Someone added an Email question to a form.',
-  'Form|Added|Link': 'Someone added a Link question to a form.',
-  'Form|Added|Date': 'Someone added a Date question to a form.',
-  'Form|Added|SingleChoice': 'Someone added a Single Choice question to a form.',
-  'Form|Added|MultipleChoice': 'Someone added a Multiple Choice question to a form.',
-  'Form|Added|Rating': 'Someone added a Rating question to a form.',
-  'Form|Added|Checkbox': 'Someone added a Checkbox question to a form.',
-  'Form|Linked|ConnectNewBoard':
-    'Someone connected a form that sent its responses nowhere to a new board, from the box above its title.',
-  'Form|Linked|ConnectNewSheet':
-    'Someone connected a form that sent its responses nowhere to a new sheet, from the box above its title.',
-  'Form|Linked|ConnectChoose':
-    "Someone opened Responses Go To from the box above a form's title, to choose an existing board or sheet.",
-  'Form|Shared|Link':
-    'Someone published a form, making the public link anyone can fill it in from.',
-  'Form|Toggled|Open': 'Someone switched Accepting Responses on for a published form.',
-  'Form|Toggled|Closed':
-    'Someone switched Accepting Responses off: the link stays, showing the closed message.',
-  'Form|Opened|NotTakingSuspended':
-    "Someone pressed a form's Not Taking Responses warning: its link was suspended after reports.",
-  'Form|Opened|NotTakingPaused':
-    "Someone pressed a form's Not Taking Responses warning: its responses had nowhere to go.",
-  'Form|Opened|NotTakingSwitchedOff':
-    "Someone pressed a form's Not Taking Responses warning: Accepting Responses was off.",
-  'Form|Opened|NotTakingClosesAt':
-    "Someone pressed a form's Not Taking Responses warning: its Close On time had passed.",
-  'Form|Opened|NotTakingLimit':
-    "Someone pressed a form's Not Taking Responses warning: it had reached its Response Limit.",
-  'Form|Opened|NotTakingFull':
-    "Someone pressed a form's Not Taking Responses warning: its document held as many cards as it can.",
-  'Form|Moved|SyncedToShare':
-    'Someone synced a document in This Browser from Share Form, so its form could be published.',
-  'Form|Sent|Response':
-    'Someone filled in a form through its link, and the response became a card on its board.',
-  'Form|Sent|Dropped':
-    "A response that filled a form's hidden field was dropped: a bot, answered as if it were kept.",
-  'Form|Reported|Spam': 'Someone reported a form as spam.',
-  'Form|Reported|Phishing': 'Someone reported a form as phishing or asking for passwords.',
-  'Form|Reported|Offensive': 'Someone reported a form as offensive.',
-  'Form|Reported|Other': 'Someone reported a form for another reason.',
-  'Sheet|Opened|Find': 'Someone opened Find on a Sheet, to search its cells.',
-  'Sheet|Searched|Function':
-    'Someone searched the functions a Sheet formula can use, from the toolbar’s function picker.',
-  'Plan|Created|BoardTab':
-    'Someone started a Board tab from Start Planning: one board filling the tab.',
-  'Plan|Created|SheetTab':
-    'Someone started a Sheet tab from Start Planning: one Sheet filling the tab.',
-  'Plan|Created|DashboardTab':
-    'Someone started a Dashboard tab from Start Planning, from one of its layouts.',
-  'Plan|Created|VisualisationTab':
-    'Someone started a Visualisation tab from Start Planning: one chart of the cards filling the tab.',
-  'Plan|Created|SuggestedDashboard':
-    'Someone started a dashboard Start Planning suggested for their cards, under For You.',
-  'Plan|Changed|DashboardRow': 'Someone added, removed or resized a row on a Dashboard tab.',
-  'Plan|Changed|DashboardSlot':
-    'Someone added, removed, moved or resized a slot on a Dashboard tab.',
-  'Plan|Changed|DashboardContent': 'Someone put something in a Dashboard slot, or cleared one.',
-  'Plan|Changed|DashboardLook':
-    "Someone changed a Dashboard tab's background from its Dashboard Settings (plain or tinted).",
-  'Plan|Changed|DashboardCardStyle':
-    "Someone styled a card on a Dashboard tab (a Note, Title, Status, Checklist, Key Date or Links) from its Slot Options' Style: a preset, a colour, its border or its shadow.",
-  'Plan|Opened|DashboardSettings':
-    "Someone opened a Dashboard tab's settings from the cog at its top right.",
-  'Plan|Changed|CalendarDue':
-    "Someone moved a card's due date on a Due Calendar, by dragging it to another day or with Alt and the arrow keys.",
-  'Plan|Changed|CalendarStart':
-    "Someone moved a card's start date on a Start Calendar, by dragging it to another day or with Alt and the arrow keys.",
-  'Sheet|Opened|Hyperlink':
-    "Someone opened a HYPERLINK cell's link in a new tab, with Ctrl/⌘ and a click or the cell menu's Open Link.",
-  'Sheet|Opened|Settings':
-    "Someone opened a Sheet's settings cog (title, data, view, cell sizes, freeze and totals).",
-  'Sheet|Created|Blank': 'Someone set up a new Sheet from Setup Sheet as a blank grid.',
-  'Sheet|Created|Budget': 'Someone set up a new Sheet from the Budget template.',
-  'Sheet|Created|Tracker': 'Someone set up a new Sheet from the Tracker template.',
-  'Sheet|Created|Timesheet': 'Someone set up a new Sheet from the Timesheet template.',
-  'Sheet|Created|Contacts': 'Someone set up a new Sheet from the Contacts template.',
-  'Sheet|Created|Invoice': 'Someone set up a new Sheet from the Invoice template.',
-  'Sheet|Created|ExpenseReport': 'Someone set up a new Sheet from the Expense Report template.',
-  'Sheet|Created|SalesPipeline': 'Someone set up a new Sheet from the Sales Pipeline template.',
-  'Sheet|Created|Inventory': 'Someone set up a new Sheet from the Inventory template.',
-  'Sheet|Created|ThreatRegister': 'Someone set up a new Sheet from the Threat Register template.',
-  'Sheet|Created|DriverModel': 'Someone set up a new Sheet from the Driver Model template.',
-  'Sheet|Created|ValueStream': 'Someone set up a new Sheet from the Value Stream template.',
-  'Sheet|Created|GuestList': 'Someone set up a new Sheet from the Guest List template.',
-  'Sheet|Created|GradeBook': 'Someone set up a new Sheet from the Grade Book template.',
-  'Sheet|Created|HabitTracker': 'Someone set up a new Sheet from the Habit Tracker template.',
-  'Sheet|Created|LoanCalculator': 'Someone set up a new Sheet from the Loan Calculator template.',
-  'Sheet|Created|Cards': 'Someone set up a new Sheet with their Plan cards as rows.',
-  'Sheet|Created|Csv':
-    'Someone chose Import CSV in Setup Sheet (Imported · Csv counts the file actually read; the picker can be cancelled).',
-  'Sheet|Created|Chart':
-    "Someone made a chart from a Sheet's cells (a bar, line or pie chart, live from the range).",
-  'Sheet|Imported|Csv':
-    'Someone filled a Sheet from a CSV file: Import CSV, or a CSV file dropped on the canvas in Plan mode.',
-  'Plan|Imported|Csv':
-    "Someone read a CSV file into a board's cards from a Board tab's menu (each row a new card).",
-  'Plan|Exported|Csv': "Someone downloaded a board's cards as a CSV file from a Board tab's menu.",
-  'Plan|Changed|ViewStatuses':
-    'Someone chose which statuses a chart of their Plan cards counts (Cards by Field or Priority by Status), from its settings cog.',
-  'Sheet|Exported|Csv': "Someone downloaded a Sheet's cells as a CSV file.",
-  'Sheet|Deleted|Confirmed':
-    'Someone deleted a Sheet whose cells nothing else used, and confirmed deleting the cells with it.',
-  'Sheet|Deleted|Cancelled':
-    'Someone started deleting a Sheet whose cells nothing else used, then cancelled, keeping both.',
-  'Plan|Toggled|SheetFillTabOn':
-    'Someone set a Sheet to fill its tab for everyone, deleting the rest of that canvas (undo brings it back).',
-  'Plan|Toggled|SheetFillTabOff': 'Someone put a Sheet that filled its tab back on the canvas.',
-  'Plan|Toggled|SheetMaximised': 'Someone maximised a Sheet to fill the canvas.',
-  'Plan|Toggled|BoardFocused':
-    "Someone pressed a board's Focus, gliding the view to fit it (or out to the whole tab when already fitted).",
-  'Plan|Toggled|SheetFocused':
-    "Someone pressed a Sheet's Focus, gliding the view to fit it (or out to the whole tab when already fitted).",
-  'Plan|Toggled|SheetRestored': 'Someone put a maximised Sheet back in its place on the canvas.',
   'Search|Opened|': 'The global search panel was opened.',
   'Search|Searched|':
     'A query was typed into search. Counted once per session, not on every keystroke.',
@@ -867,10 +596,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Aligned|PageTidyUp':
     'Someone pressed Tidy on an infographic or wireframe page, lining up and spacing what is on it.',
   'Tab|Aligned|Tree': 'Someone tapped "Auto align" to snap a tab to the grid.',
-  'Tab|Changed|OpensInDiagram':
-    "Someone set a tab to open in Diagram mode for everyone, from the tab menu's former Opens in (retired: the tab menu's Mode now counts as a mode switch).",
-  'Tab|Changed|OpensInDraw':
-    "Someone set a tab to open in Draw mode for everyone, from the tab menu's former Opens in (retired: the tab menu's Mode now counts as a mode switch).",
   'Tab|Changed|PageAdded': 'Someone added an infographic page to a Pages tab.',
   'Tab|Changed|PageKindInfographic': "Someone chose Infographic for a new Pages tab's first page.",
   'Tab|Changed|PageRemoved': 'Someone deleted a page from a Pages tab.',
@@ -901,10 +626,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Changed|PageLayout': 'Someone put a ready-made layout onto a page.',
   'Tab|Changed|PageLayoutSurprise':
     "Someone pressed Surprise Me in a page's layout gallery, putting a random layout onto the page.",
-  'Tab|Changed|OpensInPages':
-    "Someone set a tab to open in Pages mode for everyone, from the tab menu's former Opens in (retired: the tab menu's Mode now counts as a mode switch).",
-  'Tab|Changed|OpensInPlan':
-    "Someone set a tab to open in Plan mode for everyone, from the tab menu's former Opens in (retired: the tab menu's Mode now counts as a mode switch).",
   'Tab|Changed|Look':
     "Someone picked a look in Tab Look & Feel, setting the tab's theme, finish, font and canvas pattern at once.",
   'Tab|Changed|SeasonalLook':
@@ -915,21 +636,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone changed a tab's default text size, used for new elements added to it.",
   'Tab|Changed|Font':
     "Someone changed a tab's default font, or applied the tab's font and size to every element on it.",
-  'Tab|Changed|TimerExtended':
-    "Someone gave a tab's running or paused countdown timer more time, from the timer element's menu.",
-  'Tab|Changed|TimerReset': "Someone reset a tab's timer back to its starting length.",
   'Tab|Cleared|': "A tab's content was wiped.",
-  'Tab|Cleared|Vote': "A tab's content was wiped.",
   'Tab|Created|': 'A new tab was added to a document.',
   'Tab|Deleted|': 'A tab was removed from a document.',
   'Tab|Duplicated|': 'A tab was duplicated.',
-  'Tab|Ended|CountdownTimer':
-    "Someone cleared a tab's countdown timer, whether it had run out or was dismissed early.",
-  'Tab|Ended|Poll': 'Someone ended a live poll on a tab.',
-  'Tab|Ended|StopwatchTimer': 'Someone cleared a running stopwatch on a tab.',
-  'Tab|Ended|Vote': 'Someone ended a dot vote on a tab.',
-  'Tab|Ended|VoteReview':
-    "Someone finished reviewing a dot vote's ranked results, closing out the vote for everyone.",
   'Tab|Linked|': 'A tab was linked into another document.',
   'Tab|Loaded|':
     "A tab's content was fetched for viewing (the first tab when a document opens, then each tab switched to).",
@@ -947,18 +657,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Selected|SideBySideHover':
     'Someone rested the pointer on the other side by side pane, and the editor followed it there.',
   'Tab|Closed|SideBySide': 'Someone closed the side by side pane, going back to one tab.',
-  'Tab|Revealed|Vote': "Someone revealed a dot vote's results to everyone in the room.",
-  'Tab|Started|CountdownTimer': 'Someone started a countdown timer on a tab.',
-  'Tab|Started|Poll': 'Someone started a live poll on a tab.',
-  'Tab|Started|PrivateVote':
-    'Someone started a dot vote with cursors or counts hidden from other participants.',
-  'Tab|Started|StopwatchTimer': 'Someone started a stopwatch on a tab.',
-  'Tab|Started|Vote': 'Someone started a dot vote on a tab.',
-  'Tab|Toggled|TimerPaused': 'Someone paused a running timer on a tab.',
-  'Tab|Toggled|TimerResumed': 'Someone resumed a paused timer on a tab.',
   'Tab|Unlocked|': 'A tab was unlocked (edits resume).',
-  'Tab|Voted|Poll':
-    'Someone answered a live poll. Counted once per person per poll, even if they change their answer.',
   'Team|Added|Document': "A document was added to a team's shared library.",
   'Team|Added|Member':
     'An admin invited someone to a team by email. This counts invitations sent, not accepted: that is Joined.',
@@ -1037,16 +736,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone added a tile to their Favourites in the shape palette. No longer recorded: the palette opens on Popular, a fixed pick.',
   'UI|Added|Slide':
     'Someone added a slide to the Slide Deck: either a fresh slide built from the current selection, or a duplicate of an existing one.',
-  'UI|Changed|AvatarClothing':
-    "Someone changed the Avatar-mode character's clothing, in the Avatar panel.",
-  'UI|Changed|AvatarGender':
-    "Someone changed the Avatar-mode character's gender, in the Avatar panel.",
-  'UI|Changed|AvatarHair': "Someone changed the Avatar-mode character's hair, in the Avatar panel.",
-  'UI|Changed|AvatarStatus':
-    'Someone set or cleared their status in Avatar mode (Available, Focusing, In a Meeting or Away). Never which.',
-  'UI|Changed|AvatarRandomised':
-    'Someone clicked the dice button in the Avatar panel to roll a new random character, keeping their chosen size.',
-  'UI|Changed|AvatarSize': "Someone changed the Avatar-mode character's size, in the Avatar panel.",
   'UI|Changed|EraserMode': "Someone changed the eraser's mode, in the Eraser panel.",
   'UI|Changed|EraserSize': "Someone changed the eraser's size, in the Eraser panel.",
   'UI|Changed|EraserTarget':
@@ -1112,7 +801,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Changed|SpotlightShape': "Someone changed the Spotlight's shape, in the Spotlight panel.",
   'UI|Changed|SpotlightSize': "Someone changed the Spotlight's size, in the Spotlight panel.",
   'UI|Changed|ToolbarCategory':
-    "Someone opened a category in the palette strip across the top of the canvas: a category on the category bar (Diagram, Workshop, Pages), or a switch in Plan's category picker.",
+    'Someone opened a category in the palette strip across the top of the canvas: a category on the category bar.',
   'UI|Changed|ContentsPlacementButton':
     "Someone minimised Pages mode's Contents sidebar to its button, from the sidebar or in Settings > Editor.",
   'UI|Changed|ContentsSideLeft':
@@ -1122,31 +811,21 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Changed|ContentsPlacementSidebar':
     "Someone docked Pages mode's Contents as a sidebar down the canvas's left, from its popover or in Settings > Editor.",
   'UI|Changed|WhiteboardDockPositionBottom':
-    'Someone put their whiteboard dock at the bottom of the canvas, in Settings > Editor.',
+    'Someone put their drawing dock at the bottom of the canvas, in Settings > Editor.',
   'UI|Changed|WhiteboardDockPositionTop':
-    'Someone put their whiteboard dock at the top of the canvas, in Settings > Editor.',
+    'Someone put their drawing dock at the top of the canvas, in Settings > Editor.',
   'UI|Opened|EmptyPageInvite':
     'Someone pressed Choose a Layout on an empty page too small on screen for its layout card (a phone, or zoomed out).',
   'UI|Closed|EmptyPageLayouts': 'Someone hid the Start From a Layout card on an empty page.',
   'UI|Closed|EmptyPageLayoutsBlank':
     'Someone chose Start From Scratch on an empty logo page, so its Start From a Layout card stays away on that page.',
-  'UI|Closed|NewDocument':
-    'Someone pressed Escape or the X in the New Document wizard and went back to where they came from, creating nothing.',
   'UI|Closed|Presentation': 'Someone exited presentation mode.',
   'UI|Closed|SignInBanner':
     'Someone dismissed the guest sign-in banner. An earlier version of this event, before it recorded which surface (the editor or the Explorer) showed the banner. No longer recorded.',
   'UI|Closed|SignInBannerEditor': 'Someone dismissed the guest sign-in banner shown in the editor.',
   'UI|Closed|SignInBannerExplorer':
     'Someone dismissed the guest sign-in banner shown in the Explorer.',
-  'UI|Closed|TourOffer':
-    "Someone dismissed the Diagram tour's offer card (the welcome tour's, until October 2026) without starting it.",
   'UI|Closed|PagesTourOffer': 'Someone turned the Pages tour down with No on its own card.',
-  'UI|Closed|AvatarTourOffer': 'Someone turned the Avatar tour down with No on its own card.',
-  'UI|Closed|DrawTourOffer': 'Someone turned the Draw tour down with No on its own card.',
-  'UI|Closed|WorkshopTourOffer':
-    'Someone turned the Workshop tour down with No thanks on its own card (until October 2026, also by finishing the welcome tour without pressing Show me Workshop).',
-  'UI|Closed|FormTourOffer': 'Someone turned the Forms tour down with No on its own card.',
-  'UI|Closed|PlanTourOffer': "Someone dismissed the Plan tour's offer card without starting it.",
   'UI|Closed|Welcome': 'Someone dismissed the first-run welcome modal.',
   'UI|Cleared|BrowserRepair':
     "Someone used Repair This Browser on a failed document load: livedesign's settings and caches in that browser were cleared and the page reloaded.",
@@ -1162,21 +841,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone copied a live-updating image URL from the Share dialog's Live Image menu.",
   'UI|Copied|ShareLink': 'Someone copied a share link to the clipboard.',
   'UI|Copied|TeamInviteLink': "Someone copied a team's shareable invite link to their clipboard.",
-  'UI|Ended|TourCompleted':
-    "Someone reached the end of the Diagram tour (the welcome tour until October 2026), or a step's target never appeared on screen and the tour finished early.",
-  'UI|Ended|TourDeclined':
-    'This exact combination is never actually sent: declining the welcome tour on its very first card is recorded as the tour offer closing, not as an ended tour.',
-  'UI|Ended|TourSkipped':
-    'Someone skipped out of the Diagram tour (the welcome tour until October 2026) after it had already started (not on the very first card), or it ended because the tab left Diagram mode.',
-  'UI|Ended|CardTypeTourCompleted':
-    "Someone reached the end of the card type editor's Show Me tour.",
-  'UI|Ended|CardTypeTourSkipped':
-    "Someone left the card type editor's Show Me tour before its end.",
   'UI|Ended|ShareTourCompleted': "Someone reached the end of the Share dialog's Show Me tour.",
   'UI|Ended|ShareTourSkipped': "Someone left the Share dialog's Show Me tour before its end.",
-  'UI|Ended|DashboardTourCompleted':
-    "Someone reached the end of the dashboard's tour: Dashboard Settings' Show Me, or the Dashboards tour it offers.",
-  'UI|Ended|DashboardTourSkipped': "Someone left Dashboard Settings' Show Me tour before its end.",
   'UI|Ended|LogoTourCompleted': "Someone reached the end of a logo page's Show Me tour.",
   'UI|Ended|LogoTourSkipped': "Someone left a logo page's Show Me tour before its end.",
   'UI|Ended|WireframeTourCompleted': "Someone reached the end of a wireframe page's Show Me tour.",
@@ -1217,22 +883,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone reached the end of the Chevrons tour, offered beside a selected chevron process.',
   'UI|Ended|ChevronsTourSkipped':
     'Someone left the Chevrons tour before its end, or the chevron process it was on went away.',
-  'UI|Ended|MindMapTourCompleted':
-    'Someone reached the end of the Mind Map tour, offered beside a selected mind map node.',
-  'UI|Ended|MindMapTourSkipped':
-    'Someone left the Mind Map tour before its end, or the mind map node it was on went away.',
-  'UI|Ended|FlowchartTourCompleted':
-    'Someone reached the end of the Flowchart tour, offered beside a selected flowchart step.',
-  'UI|Ended|FlowchartTourSkipped':
-    'Someone left the Flowchart tour before its end, or the flowchart step it was on went away.',
-  'UI|Ended|OrgChartTourCompleted':
-    'Someone reached the end of the Org Chart tour, offered beside a selected person in an org chart.',
-  'UI|Ended|OrgChartTourSkipped':
-    'Someone left the Org Chart tour before its end, or the person in an org chart it was on went away.',
-  'UI|Ended|SequenceTourCompleted':
-    'Someone reached the end of the Sequence tour, offered beside a selected sequence diagram.',
-  'UI|Ended|SequenceTourSkipped':
-    'Someone left the Sequence tour before its end, or the sequence diagram it was on went away.',
   'UI|Ended|ChartTourCompleted':
     'Someone reached the end of the Chart tour, offered beside a selected chart.',
   'UI|Ended|ChartTourSkipped':
@@ -1241,30 +891,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone reached the end of the Stack tour, offered beside a selected stack.',
   'UI|Ended|StackTourSkipped':
     'Someone left the Stack tour before its end, or the stack it was on went away.',
-  'UI|Ended|EntityTourCompleted':
-    'Someone reached the end of the Entity tour, offered beside a selected entity.',
-  'UI|Ended|EntityTourSkipped':
-    'Someone left the Entity tour before its end, or the entity it was on went away.',
   'UI|Ended|TabWindowTourCompleted':
     'Someone reached the end of the Tab Window tour, offered beside a selected tab window.',
   'UI|Ended|TabWindowTourSkipped':
     'Someone left the Tab Window tour before its end, or the tab window it was on went away.',
-  'UI|Ended|LaneTourCompleted':
-    'Someone reached the end of the Lane tour, offered beside a selected lane.',
-  'UI|Ended|LaneTourSkipped':
-    'Someone left the Lane tour before its end, or the lane it was on went away.',
-  'UI|Ended|BoundaryTourCompleted':
-    'Someone reached the end of the Boundary tour, offered beside a selected boundary.',
-  'UI|Ended|BoundaryTourSkipped':
-    'Someone left the Boundary tour before its end, or the boundary it was on went away.',
-  'UI|Ended|DiagramKeyTourCompleted':
-    'Someone reached the end of the Diagram Key tour, offered beside a selected diagram key.',
-  'UI|Ended|DiagramKeyTourSkipped':
-    'Someone left the Diagram Key tour before its end, or the diagram key it was on went away.',
-  'UI|Ended|PortalTourCompleted':
-    'Someone reached the end of the Portal tour, offered beside a selected portal.',
-  'UI|Ended|PortalTourSkipped':
-    'Someone left the Portal tour before its end, or the portal it was on went away.',
   'UI|Ended|SankeyTourCompleted':
     'Someone reached the end of the Sankey tour, offered beside a selected Sankey diagram.',
   'UI|Ended|SankeyTourSkipped':
@@ -1276,23 +906,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Ended|PagesTourCompleted':
     "Someone reached the end of the Pages tour, or a step's target never appeared and the tour finished early.",
   'UI|Ended|PagesTourSkipped': 'Someone closed the Pages tour before its end.',
-  'UI|Ended|AvatarTourCompleted':
-    "Someone reached the end of the Avatar tour, or a step's target never appeared and the tour finished early.",
-  'UI|Ended|AvatarTourSkipped': 'Someone closed the Avatar tour before its end.',
-  'UI|Ended|DrawTourCompleted':
-    "Someone reached the end of the Draw tour, or a step's target never appeared and the tour finished early.",
-  'UI|Ended|DrawTourSkipped': 'Someone closed the Draw tour before its end.',
-  'UI|Ended|FormTourCompleted':
-    "Someone reached the end of the Forms tour, or a step's target never appeared and the tour finished early.",
-  'UI|Ended|FormTourSkipped':
-    'Someone closed the Forms tour before its end, or left the form for a tab other than where its responses go.',
-  'UI|Ended|WorkshopTourCompleted':
-    "Someone reached the end of the Workshop tour, or a step's target never appeared and the tour finished early.",
-  'UI|Ended|WorkshopTourSkipped': 'Someone closed the Workshop tour before its end.',
-  'UI|Ended|PlanTourCompleted':
-    "Someone reached the end of the Plan tour, or a step's target never appeared and the tour finished early.",
-  'UI|Ended|PlanTourSkipped':
-    'Someone left the Plan tour after it had started, or it ended because they left Plan mode, the tab or their edit rights, or the board or sheet it was showing was deleted.',
   'UI|Moved|PanelDock':
     'Someone dragged a panel, such as the Map or the AI panel, to a different corner of the screen, or let it go free.',
   'UI|Moved|Slide':
@@ -1301,24 +914,11 @@ export const EXACT: Readonly<Record<string, string>> = {
     'A signed-out visitor opened the "Assign action" dialog and saw the sign-in nudge, since a guest can only assign work to themself. Counted once per dialog open.',
   'UI|Opened|Activity': 'Someone expanded the since-removed Activity panel.',
   'UI|Opened|Collaborate': 'Someone opened the Collaborate panel from its bottom-bar button.',
-  'UI|Opened|SessionTimer':
-    'Someone opened the Timer button in the bottom bar: the set-up while no timer runs, the live timer while one does. A timer shared by countdowns and stopwatches, so it appears under both.',
-  'UI|Opened|SessionVote':
-    'Someone opened the Vote button in the bottom bar: the vote set-up while none runs, the Vote panel while one does.',
-  'UI|Opened|SessionPoll':
-    'Someone opened the Poll button in the bottom bar: the poll composer while none runs, the answers while one does.',
-  'UI|Opened|TidyUp':
-    "Someone opened Diagram mode's Tidy Up button in the bottom bar, the panel of layout styles and Auto-align. What they then picked counts as a tab being auto-arranged.",
-  'UI|Opened|BehaviourGroup':
-    "Someone opened one of Session's groups (Tools, Record, React, Selection Mode or Navigate) on Workshop mode's palette strip. Earlier, a category inside the palette's Collaborate tab (formerly Behaviours), before Workshop offered those categories one by one and then gathered them into Session.",
   'UI|Opened|CanvasStyle':
     "Someone opened the tab's look-and-feel dialog on its Canvas tab, to change the background.",
-  'UI|Opened|CollabGroup':
-    "Someone opened a category inside the palette's old Collaborate tab (session tools like polls and votes). That tab was merged into Behaviours (since renamed Collaborate). No longer recorded.",
   'UI|Opened|Collaborators':
     "Someone opened the Collaborators dialog, either from a tab's presence stack or from a command.",
   'UI|Opened|IconGroup': "Someone opened a category inside the palette's Icons tab.",
-  'UI|Opened|MindOutline': "Someone opened a mind map's outline to edit it as text.",
   'UI|Opened|PresentationSettings':
     "Someone opened the settings popover on the presentation's on-screen controls, while presenting.",
   'UI|Opened|PresenterNotes': 'Someone opened the speaker-notes card while presenting.',
@@ -1368,8 +968,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'In the Toolbar panel layout, someone opened the Search at the far right of the palette strip to find an element by name.',
   'UI|Opened|ToolbarSearchOtherModes':
     "In the Toolbar strip's Search, someone expanded the elements that other editor modes offer.",
-  'UI|Opened|ToolbarSearchUnavailable':
-    "In the Toolbar strip's Search, someone expanded the elements bound to another mode's own tools, which this mode cannot add.",
   'UI|Opened|PowerUserOffer':
     'The one-time offer of power user mode appeared, after 20 editing days or 50 keyboard shortcuts on one device.',
   'UI|Used|PowerUserOffer': 'Someone accepted the power user mode offer, switching the mode on.',
@@ -1379,14 +977,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'An open editor learned the server now serves a newer document format and offered "A new version of livedesign is ready".',
   'UI|Used|NewVersionPrompt':
     'Someone pressed Reload on the new version prompt; the editor reloads once their changes are saved.',
-  'UI|Opened|TourOffer':
-    'The Diagram tour\'s offer card was shown on a Diagram tab, either automatically on a first document or replayed from Settings\' Tours › "Diagram Tour" ("Welcome", when it was the welcome tour, until October 2026).',
   'UI|Opened|PagesTourOffer':
     'The Pages tour was offered: as its own card the first time someone worked in Pages mode, or replayed from Settings\' Tours › "Pages Tour".',
-  'UI|Opened|AvatarTourOffer':
-    'The Avatar tour was offered: as its own card the first time someone walked as an avatar, or replayed from Settings\' Tours › "Avatar Tour".',
-  'UI|Opened|AvatarPanel':
-    'Someone opened the Avatar panel from its button beside Undo and Redo, in Avatar mode.',
   'UI|Opened|LayerStackTourOffer':
     'The Layer Stack tour was offered, as a small Tour toolbar beside a selected layer stack (counted once per visit).',
   'UI|Opened|PyramidTourOffer':
@@ -1403,40 +995,14 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Timeline tour was offered, as a small Tour toolbar beside a selected timeline (counted once per visit).',
   'UI|Opened|ChevronsTourOffer':
     'The Chevrons tour was offered, as a small Tour toolbar beside a selected chevron process (counted once per visit).',
-  'UI|Opened|MindMapTourOffer':
-    'The Mind Map tour was offered, as a small Tour toolbar beside a selected mind map node (counted once per visit).',
-  'UI|Opened|FlowchartTourOffer':
-    'The Flowchart tour was offered, as a small Tour toolbar beside a selected flowchart step (counted once per visit).',
-  'UI|Opened|OrgChartTourOffer':
-    'The Org Chart tour was offered, as a small Tour toolbar beside a selected person in an org chart (counted once per visit).',
-  'UI|Opened|SequenceTourOffer':
-    'The Sequence tour was offered, as a small Tour toolbar beside a selected sequence diagram (counted once per visit).',
   'UI|Opened|ChartTourOffer':
     'The Chart tour was offered, as a small Tour toolbar beside a selected chart (counted once per visit).',
   'UI|Opened|StackTourOffer':
     'The Stack tour was offered, as a small Tour toolbar beside a selected stack (counted once per visit).',
-  'UI|Opened|EntityTourOffer':
-    'The Entity tour was offered, as a small Tour toolbar beside a selected entity (counted once per visit).',
   'UI|Opened|TabWindowTourOffer':
     'The Tab Window tour was offered, as a small Tour toolbar beside a selected tab window (counted once per visit).',
-  'UI|Opened|LaneTourOffer':
-    'The Lane tour was offered, as a small Tour toolbar beside a selected lane (counted once per visit).',
-  'UI|Opened|BoundaryTourOffer':
-    'The Boundary tour was offered, as a small Tour toolbar beside a selected boundary (counted once per visit).',
-  'UI|Opened|DiagramKeyTourOffer':
-    'The Diagram Key tour was offered, as a small Tour toolbar beside a selected diagram key (counted once per visit).',
-  'UI|Opened|PortalTourOffer':
-    'The Portal tour was offered, as a small Tour toolbar beside a selected portal (counted once per visit).',
   'UI|Opened|SankeyTourOffer':
     'The Sankey tour was offered, as a small Tour toolbar beside a selected Sankey diagram (counted once per visit).',
-  'UI|Opened|DrawTourOffer':
-    'The Draw tour was offered: as its own card the first time someone worked in Draw mode, or replayed from Settings\' Tours › "Draw Tour".',
-  'UI|Opened|FormTourOffer':
-    'The Forms tour was offered: as its own card the first time an Editor opened a Form tab, or replayed from Show Me Around in the form cog or Settings\' Tours › "Forms Tour".',
-  'UI|Opened|WorkshopTourOffer':
-    'The Workshop tour was offered: as its own card the first time someone worked in Workshop mode, or replayed from Settings\' Tours › "Workshop Tour". Until October 2026 it was also offered on the welcome tour\'s closing card ("Show me Workshop").',
-  'UI|Opened|PlanTourOffer':
-    'The Plan tour\'s offer card was shown, the first time someone worked in Plan mode with a board or sheet open, or replayed from Settings\' Tours › "Plan Tour".',
   'UI|Opened|activity':
     "Someone opened the help article about the Explorer's Inbox, from a help link or a search result.",
   'UI|Opened|api-tokens':
@@ -1464,17 +1030,9 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Removed|PaletteFavourite':
     'Someone removed a tile from their Favourites in the shape palette. No longer recorded: Favourites is gone.',
   'UI|Removed|Slide': 'Someone deleted a slide from the Slide Deck.',
-  'UI|Searched|BehaviourSearch':
-    "Someone searched within Session on Workshop mode's palette strip, across its groups of session tools. Earlier, a search within the palette's Collaborate tab (formerly Behaviours).",
   'UI|Searched|IconSearch': "Someone searched within the palette's Icons tab.",
   'UI|Searched|PaletteSearch':
     'Someone searched within their Favourites in the palette. No longer recorded: Favourites is gone.',
-  'UI|Selected|WorkshopTourFromWelcome':
-    "Someone pressed Show me Workshop on the welcome tour's closing card, going straight into the Workshop tour. Retired in October 2026, when the welcome tour became the Diagram tour and stopped running in Workshop.",
-  'UI|Selected|PlanTourBoards':
-    "Someone picked Boards on the Plan tour's first card, on a tab with both a board and a sheet (until October 2026, on every offer, touring an example board).",
-  'UI|Selected|PlanTourSheets':
-    "Someone picked Spreadsheets on the Plan tour's first card, on a tab with both a board and a sheet (until October 2026, on every offer, touring an example sheet).",
   // The Inbox was once the Activity row (docs/specs/013-workspace/explorer-structure.md#telemetry).
   'UI|Selected|Sidebar.Activity':
     "Someone picked the Activity row in the Explorer's sidebar, the row since renamed Inbox. No longer recorded: the row now counts as Inbox.",
@@ -1489,12 +1047,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Selected|SignInBannerExplorer':
     'Someone clicked "Sign in" on the guest sign-in banner shown in the Explorer.',
   'UI|Started|Presentation': 'Someone started presenting: entering full-screen slideshow mode.',
-  'UI|Started|Tour':
-    "Someone clicked past the Diagram tour's first card (the welcome tour's, until October 2026), beginning the step-by-step walkthrough.",
-  'UI|Started|CardTypeTour':
-    'Someone pressed Show Me in the card type editor, starting its tour of making a card type.',
-  'UI|Started|DashboardTour':
-    'Someone pressed Show Me in Dashboard Settings, starting its tour of arranging and filling a dashboard.',
   'UI|Started|WireframeTour':
     "Someone pressed Show Me in a wireframe page's panel, starting its tour of layouts, backgrounds and device.",
   'UI|Started|LogoTour':
@@ -1517,30 +1069,12 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone pressed Play on the Tour toolbar beside a selected timeline, starting its tour.',
   'UI|Started|ChevronsTour':
     'Someone pressed Play on the Tour toolbar beside a selected chevron process, starting its tour.',
-  'UI|Started|MindMapTour':
-    'Someone pressed Play on the Tour toolbar beside a selected mind map node, starting its tour.',
-  'UI|Started|FlowchartTour':
-    'Someone pressed Play on the Tour toolbar beside a selected flowchart step, starting its tour.',
-  'UI|Started|OrgChartTour':
-    'Someone pressed Play on the Tour toolbar beside a selected person in an org chart, starting its tour.',
-  'UI|Started|SequenceTour':
-    'Someone pressed Play on the Tour toolbar beside a selected sequence diagram, starting its tour.',
   'UI|Started|ChartTour':
     'Someone pressed Play on the Tour toolbar beside a selected chart, starting its tour.',
   'UI|Started|StackTour':
     'Someone pressed Play on the Tour toolbar beside a selected stack, starting its tour.',
-  'UI|Started|EntityTour':
-    'Someone pressed Play on the Tour toolbar beside a selected entity, starting its tour.',
   'UI|Started|TabWindowTour':
     'Someone pressed Play on the Tour toolbar beside a selected tab window, starting its tour.',
-  'UI|Started|LaneTour':
-    'Someone pressed Play on the Tour toolbar beside a selected lane, starting its tour.',
-  'UI|Started|BoundaryTour':
-    'Someone pressed Play on the Tour toolbar beside a selected boundary, starting its tour.',
-  'UI|Started|DiagramKeyTour':
-    'Someone pressed Play on the Tour toolbar beside a selected diagram key, starting its tour.',
-  'UI|Started|PortalTour':
-    'Someone pressed Play on the Tour toolbar beside a selected portal, starting its tour.',
   'UI|Started|SankeyTour':
     'Someone pressed Play on the Tour toolbar beside a selected Sankey diagram, starting its tour.',
   'UI|Started|SankeyFlowsTour':
@@ -1549,16 +1083,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone pressed Show Me in the Share dialog, starting its tour of issuing and managing passes.',
   'UI|Started|PagesTour':
     "Someone pressed Yes on the Pages tour's first card, beginning its walkthrough of the pages.",
-  'UI|Started|AvatarTour':
-    "Someone pressed Yes on the Avatar tour's first card, beginning its walkthrough of Avatar mode.",
-  'UI|Started|DrawTour':
-    "Someone pressed Yes on the Draw tour's first card, beginning its walkthrough of the dock.",
-  'UI|Started|FormTour':
-    "Someone pressed Yes on the Forms tour's first card, beginning its walkthrough of the form builder.",
-  'UI|Started|WorkshopTour':
-    "Someone pressed Show me around on the Workshop tour's first card, beginning its walkthrough of the session kit.",
-  'UI|Started|PlanTour':
-    'Someone started the Plan tour from its first card, beginning its walkthrough of their own board or sheet (an example one until October 2026).',
   'UI|Toggled|ActivityRevertPreviewOff':
     'Someone turned off the hover preview that showed what a change would look like before reverting it, in the since-removed Activity panel settings.',
   'UI|Toggled|ActivityRevertPreviewOn':
@@ -1627,10 +1151,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone stopped showing their profile picture to collaborators, in Settings > Account.',
   'UI|Toggled|ShowProfilePictureOn':
     'Someone started showing their profile picture to collaborators again, in Settings > Account.',
-  'UI|Toggled|NotifyFormResponsesOff':
-    'Someone turned off the email they get when somebody fills in one of their forms.',
-  'UI|Toggled|NotifyFormResponsesOn':
-    'Someone turned back on the email they get when somebody fills in one of their forms.',
   'UI|Toggled|NotifyMentionsOff':
     'Someone turned off the email that arrives when a teammate @-mentions them in a comment, in Settings > Notifications.',
   'UI|Toggled|NotifyMentionsOn':
@@ -1704,10 +1224,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone opted out of sending anonymous usage events, in Settings > Privacy.',
   'UI|Toggled|TelemetryOn':
     'Someone opted in to sending anonymous usage events, in Settings > Privacy.',
-  'UI|Toggled|TourSeenOff':
-    'Someone switched on Tours › "Diagram Tour" ("Welcome" until October 2026) in Settings, marking the Diagram tour as not yet seen and relaunching it on a Diagram tab.',
-  'UI|Toggled|TourSeenOn':
-    'Someone switched off Tours › "Diagram Tour" ("Welcome" until October 2026) in Settings, or the tour resolved on its own, marking it as seen so it won\'t be offered again.',
   'UI|Toggled|PagesTourSeenOff':
     'Someone switched on Tours › "Pages Tours" in Settings (the switch over every kind of page; "Pages Tour" until October 2026), so every kind\'s Pages tour is offered again.',
   'UI|Toggled|PagesTourSeenOn':
@@ -1720,10 +1236,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone switched on Tours › "Logo Tour" in Settings, so the Pages tour\'s logo track is offered again.',
   'UI|Toggled|LogoTourSeenOn':
     'Someone switched off Tours › "Logo Tour" in Settings, marking the Pages tour\'s logo track as answered.',
-  'UI|Toggled|AvatarTourSeenOff':
-    'Someone switched on Tours › "Avatar Tour" in Settings, marking the Avatar tour as not yet seen.',
-  'UI|Toggled|AvatarTourSeenOn':
-    'Someone switched off Tours › "Avatar Tour" in Settings, marking the Avatar tour as seen.',
   'UI|Toggled|ElementToursSeenOff':
     'Someone switched on Tours › Element Tours in Settings, so every element tour is offered again.',
   'UI|Toggled|ElementToursSeenOn':
@@ -1760,22 +1272,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone switched on Tours › Element Tours › "Chevrons Tour" in Settings, so it is offered again.',
   'UI|Toggled|ChevronsTourSeenOn':
     'Someone switched off Tours › Element Tours › "Chevrons Tour" in Settings, so it is not offered.',
-  'UI|Toggled|MindMapTourSeenOff':
-    'Someone switched on Tours › Element Tours › "Mind Map Tour" in Settings, so it is offered again.',
-  'UI|Toggled|MindMapTourSeenOn':
-    'Someone switched off Tours › Element Tours › "Mind Map Tour" in Settings, so it is not offered.',
-  'UI|Toggled|FlowchartTourSeenOff':
-    'Someone switched on Tours › Element Tours › "Flowchart Tour" in Settings, so it is offered again.',
-  'UI|Toggled|FlowchartTourSeenOn':
-    'Someone switched off Tours › Element Tours › "Flowchart Tour" in Settings, so it is not offered.',
-  'UI|Toggled|OrgChartTourSeenOff':
-    'Someone switched on Tours › Element Tours › "Org Chart Tour" in Settings, so it is offered again.',
-  'UI|Toggled|OrgChartTourSeenOn':
-    'Someone switched off Tours › Element Tours › "Org Chart Tour" in Settings, so it is not offered.',
-  'UI|Toggled|SequenceTourSeenOff':
-    'Someone switched on Tours › Element Tours › "Sequence Tour" in Settings, so it is offered again.',
-  'UI|Toggled|SequenceTourSeenOn':
-    'Someone switched off Tours › Element Tours › "Sequence Tour" in Settings, so it is not offered.',
   'UI|Toggled|ChartTourSeenOff':
     'Someone switched on Tours › Element Tours › "Chart Tour" in Settings, so it is offered again.',
   'UI|Toggled|ChartTourSeenOn':
@@ -1784,65 +1280,14 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone switched on Tours › Element Tours › "Stack Tour" in Settings, so it is offered again.',
   'UI|Toggled|StackTourSeenOn':
     'Someone switched off Tours › Element Tours › "Stack Tour" in Settings, so it is not offered.',
-  'UI|Toggled|EntityTourSeenOff':
-    'Someone switched on Tours › Element Tours › "Entity Tour" in Settings, so it is offered again.',
-  'UI|Toggled|EntityTourSeenOn':
-    'Someone switched off Tours › Element Tours › "Entity Tour" in Settings, so it is not offered.',
   'UI|Toggled|TabWindowTourSeenOff':
     'Someone switched on Tours › Element Tours › "Tab Window Tour" in Settings, so it is offered again.',
   'UI|Toggled|TabWindowTourSeenOn':
     'Someone switched off Tours › Element Tours › "Tab Window Tour" in Settings, so it is not offered.',
-  'UI|Toggled|LaneTourSeenOff':
-    'Someone switched on Tours › Element Tours › "Lane Tour" in Settings, so it is offered again.',
-  'UI|Toggled|LaneTourSeenOn':
-    'Someone switched off Tours › Element Tours › "Lane Tour" in Settings, so it is not offered.',
-  'UI|Toggled|BoundaryTourSeenOff':
-    'Someone switched on Tours › Element Tours › "Boundary Tour" in Settings, so it is offered again.',
-  'UI|Toggled|BoundaryTourSeenOn':
-    'Someone switched off Tours › Element Tours › "Boundary Tour" in Settings, so it is not offered.',
-  'UI|Toggled|DiagramKeyTourSeenOff':
-    'Someone switched on Tours › Element Tours › "Diagram Key Tour" in Settings, so it is offered again.',
-  'UI|Toggled|DiagramKeyTourSeenOn':
-    'Someone switched off Tours › Element Tours › "Diagram Key Tour" in Settings, so it is not offered.',
-  'UI|Toggled|PortalTourSeenOff':
-    'Someone switched on Tours › Element Tours › "Portal Tour" in Settings, so it is offered again.',
-  'UI|Toggled|PortalTourSeenOn':
-    'Someone switched off Tours › Element Tours › "Portal Tour" in Settings, so it is not offered.',
   'UI|Toggled|SankeyTourSeenOff':
     'Someone switched on Tours › Element Tours › "Sankey Diagram Tour" in Settings, so it is offered again.',
   'UI|Toggled|SankeyTourSeenOn':
     'Someone switched off Tours › Element Tours › "Sankey Diagram Tour" in Settings, so it is not offered.',
-  'UI|Toggled|DrawTourSeenOff':
-    'Someone switched on Tours › "Draw Tour" in Settings, marking the Draw tour as not yet seen.',
-  'UI|Toggled|DrawTourSeenOn':
-    'Someone switched off Tours › "Draw Tour" in Settings, marking the Draw tour as seen.',
-  'UI|Toggled|FormTourSeenOff':
-    'Someone switched on Tours › "Forms Tour" in Settings, marking the Forms tour as not yet seen.',
-  'UI|Toggled|FormTourSeenOn':
-    'Someone switched off Tours › "Forms Tour" in Settings, marking the Forms tour as seen.',
-  'UI|Toggled|WorkshopTourSeenOff':
-    'Someone switched on Tours › "Workshop Tour" in Settings, marking the Workshop tour as not yet seen.',
-  'UI|Toggled|WorkshopTourSeenOn':
-    'Someone switched off Tours › "Workshop Tour" in Settings, marking the Workshop tour as seen.',
-  'UI|Toggled|PlanTourSeenOff':
-    'Someone switched on Tours › "Plan Tours" in Settings (the switch over Boards Tour, Sheets Tour and Dashboards Tour; "Plan Tour" until October 2026), so each is offered again.',
-  'UI|Toggled|PlanTourSeenOn':
-    'Someone switched off Tours › "Plan Tours" in Settings (the switch over Boards Tour, Sheets Tour and Dashboards Tour; "Plan Tour" until October 2026), answering each.',
-  'UI|Toggled|BoardsTourSeenOff':
-    'Someone switched on Tours › "Boards Tour" in Settings, so the Plan tour\'s boards track is offered again.',
-  'UI|Toggled|BoardsTourSeenOn':
-    'Someone switched off Tours › "Boards Tour" in Settings, marking the Plan tour\'s boards track as answered.',
-  'UI|Toggled|SheetsTourSeenOff':
-    'Someone switched on Tours › "Sheets Tour" in Settings, so the Plan tour\'s sheets track is offered again.',
-  'UI|Toggled|SheetsTourSeenOn':
-    'Someone switched off Tours › "Sheets Tour" in Settings, marking the Plan tour\'s sheets track as answered.',
-  'UI|Toggled|DashboardsTourSeenOff':
-    'Someone switched on Tours › "Dashboards Tour" in Settings, so the Dashboards tour is offered again on a dashboard.',
-  'UI|Toggled|DashboardsTourSeenOn':
-    'Someone switched off Tours › "Dashboards Tour" in Settings, marking the Dashboards tour as answered.',
-  'UI|Opened|DashboardTourOffer':
-    'The Dashboards tour offered itself, the first time an Editor had a dashboard open in Plan.',
-  'UI|Closed|DashboardTourOffer': 'Someone declined the Dashboards tour from its welcome card.',
   'UI|Toggled|LandscapeBarsOff':
     'Someone folded the header and the tab bar away again from the handle on a phone held sideways, giving the canvas the whole screen.',
   'UI|Toggled|LandscapeBarsOn':
@@ -1850,10 +1295,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|ZenModeOff': "Someone turned off zen mode, restoring the editor's chrome.",
   'UI|Toggled|ZenModeOn':
     "Someone turned on zen mode, hiding the editor's chrome for a distraction-free canvas.",
-  'UI|Used|JustDraw':
-    'Someone landed on the New Document page through a link that skips the wizard and goes straight into a blank document.',
-  'UI|Used|StartOtherMode':
-    "Someone searching an empty tab's start chose a template the search found in another mode, which switched the tab to that mode.",
   'UI|Used|TemplateLink':
     'Someone landed on the New Document page through a link that skips the wizard and goes straight into a specific template.',
   'UI|View|PagesTourStepPageName':
@@ -1890,17 +1331,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Pages tour\'s logo track reached its "Combine Shapes" step.',
   'UI|View|PagesTourStepLogoOutro':
     'The Pages tour\'s logo track reached its closing "That Is a Logo Page" card.',
-  'UI|View|AvatarTourStepAvatarButton':
-    'The Avatar tour reached its "Your Avatar" step, on the Avatar button.',
-  'UI|View|AvatarTourStepCharacter':
-    'The Avatar tour reached its "Make It Yours" step, on the character sheet.',
-  'UI|View|AvatarTourStepActions': 'The Avatar tour reached its "Behaviour and Reactions" step.',
-  'UI|View|AvatarTourStepMessage':
-    'The Avatar tour reached its "Say Something" step, on Send a Message.',
-  'UI|View|AvatarTourStepPush':
-    'The Avatar tour reached its "Give Someone a Push" step, on the person\'s own character.',
-  'UI|View|AvatarTourStepOutro':
-    'The Avatar tour reached its closing "You\'re Ready to Roam" card.',
   'UI|View|LayerStackTourStepLayers':
     'The Layer Stack tour reached its "One Element, Many Layers" step, on the whole stack.',
   'UI|View|LayerStackTourStepEdit':
@@ -2012,70 +1442,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Chevrons tour reached its "Run the Pipeline" step, playing the Pulse animation on the process.',
   'UI|View|ChevronsTourStepOutro':
     'The Chevrons tour reached its closing "That Is a Chevron Process" card.',
-  'UI|View|MindMapTourStepNode':
-    'The Mind Map tour reached its "A Node That Knows Its Parent" step, on the selected node.',
-  'UI|View|MindMapTourStepChild':
-    'The Mind Map tour reached its "Grow a Child" step, on the toolbar\'s Add Child.',
-  'UI|View|MindMapTourStepSibling':
-    'The Mind Map tour reached its "Add a Sibling" step, on the toolbar\'s Add Sibling.',
-  'UI|View|MindMapTourStepBranch':
-    'The Mind Map tour reached its branch-moving step, on the selected node.',
-  'UI|View|MindMapTourStepMenu':
-    'The Mind Map tour reached its "The Mind Map Menu" step, on the selection toolbar\'s More button.',
-  'UI|View|MindMapTourStepOutro':
-    'The Mind Map tour reached its closing "That Is a Mind Map" card.',
-  'UI|View|FlowchartTourStepStep':
-    'The Flowchart tour reached its "A Step in a Flowchart" step, on the selected step.',
-  'UI|View|FlowchartTourStepNext':
-    'The Flowchart tour reached its "The Next Step" step, on the toolbar\'s Add Step.',
-  'UI|View|FlowchartTourStepBranch':
-    'The Flowchart tour reached its "Add a Branch" step, on the toolbar\'s Add Branch.',
-  'UI|View|FlowchartTourStepType':
-    'The Flowchart tour reached its "Change Its Type" step, on the toolbar\'s Step Type.',
-  'UI|View|FlowchartTourStepLane':
-    'The Flowchart tour reached its "Its Lane" step, on the toolbar\'s Lane.',
-  'UI|View|FlowchartTourStepMenu':
-    'The Flowchart tour reached its "The Flowchart Menu" step, on the selection toolbar\'s More button.',
-  'UI|View|FlowchartTourStepOutro':
-    'The Flowchart tour reached its closing "That Is a Flowchart" card.',
-  'UI|View|OrgChartTourStepPerson':
-    'The Org Chart tour reached its "A Person in the Chart" step, on the selected person.',
-  'UI|View|OrgChartTourStepRole':
-    'The Org Chart tour reached its "Their Role" step, on the role line.',
-  'UI|View|OrgChartTourStepInitials':
-    'The Org Chart tour reached its "Initials, Made for You" step, on the initials disc.',
-  'UI|View|OrgChartTourStepReport':
-    'The Org Chart tour reached its "Add a Report" step, on the toolbar\'s Add Child.',
-  'UI|View|OrgChartTourStepPeer':
-    'The Org Chart tour reached its "Add a Peer" step, on the toolbar\'s Add Sibling.',
-  'UI|View|OrgChartTourStepTeam':
-    'The Org Chart tour reached its team-moving step, on the selected person.',
-  'UI|View|OrgChartTourStepMenu':
-    'The Org Chart tour reached its "The Mind Map Menu" step, on the selection toolbar\'s More button.',
-  'UI|View|OrgChartTourStepOutro':
-    'The Org Chart tour reached its closing "That Is an Org Chart" card.',
-  'UI|View|SequenceTourStepDiagram':
-    'The Sequence tour reached its "Who Calls Whom" step, on the whole diagram.',
-  'UI|View|SequenceTourStepMenu':
-    'The Sequence tour reached its "The Sequence Menu" step, on the selection toolbar\'s More button.',
-  'UI|View|SequenceTourStepWrite':
-    'The Sequence tour reached its "Write It as a List" step, on the whole diagram.',
-  'UI|View|SequenceTourStepParticipants':
-    'The Sequence tour reached its "The Participants" step, inside the Sequence dialog it opened.',
-  'UI|View|SequenceTourStepMessages':
-    'The Sequence tour reached its "A Row a Message" step, inside the Sequence dialog.',
-  'UI|View|SequenceTourStepKind':
-    'The Sequence tour reached its "Call, Async or Reply" step, on a message\'s kind.',
-  'UI|View|SequenceTourStepAdd':
-    'The Sequence tour reached its "Add a Message" step, inside the Sequence dialog.',
-  'UI|View|SequenceTourStepText':
-    'The Sequence tour reached its "Or Type It" step, on the Sequence dialog\'s Text tab.',
-  'UI|View|SequenceTourStepPreview':
-    'The Sequence tour reached its "Live Preview" step, inside the Sequence dialog.',
-  'UI|View|SequenceTourStepNumbered':
-    'The Sequence tour reached its "Number Them" step, on Numbered.',
-  'UI|View|SequenceTourStepOutro':
-    'The Sequence tour reached its closing "That Is a Sequence Diagram" card.',
   'UI|View|ChartTourStepChart':
     'The Chart tour reached its first step, how a chart is sized by value.',
   'UI|View|ChartTourStepReadout':
@@ -2099,14 +1465,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Stack tour reached its step on a stack carrying what it holds.',
   'UI|View|StackTourStepMenu': 'The Stack tour reached its step on the Stack menu.',
   'UI|View|StackTourStepOutro': 'The Stack tour reached its closing card.',
-  'UI|View|EntityTourStepEntity':
-    'The Entity tour reached its first step, a title over its fields.',
-  'UI|View|EntityTourStepTitle': 'The Entity tour reached its step on renaming it.',
-  'UI|View|EntityTourStepRows': 'The Entity tour reached its step on its name and type rows.',
-  'UI|View|EntityTourStepMenu': 'The Entity tour reached its step on the Fields menu.',
-  'UI|View|EntityTourStepRelate':
-    'The Entity tour reached its step on joining entities with ER ends.',
-  'UI|View|EntityTourStepOutro': 'The Entity tour reached its closing card.',
   'UI|View|TabWindowTourStepWindow':
     'The Tab Window tour reached its first step, another tab drawn live.',
   'UI|View|TabWindowTourStepOpen': 'The Tab Window tour reached its step on its Open button.',
@@ -2115,33 +1473,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|View|TabWindowTourStepMenu': 'The Tab Window tour reached its step on the Tab Window menu.',
   'UI|View|TabWindowTourStepSize': 'The Tab Window tour reached its step on resizing it.',
   'UI|View|TabWindowTourStepOutro': 'The Tab Window tour reached its closing card.',
-  'UI|View|LaneTourStepLane': 'The Lane tour reached its first step, a band for each role.',
-  'UI|View|LaneTourStepGutter': 'The Lane tour reached its step on its title gutter.',
-  'UI|View|LaneTourStepSeam': 'The Lane tour reached its step on dragging its seam.',
-  'UI|View|LaneTourStepCarry': 'The Lane tour reached its step on a lane carrying its steps.',
-  'UI|View|LaneTourStepMenu': 'The Lane tour reached its step on turning it into a column.',
-  'UI|View|LaneTourStepOutro': 'The Lane tour reached its closing card.',
-  'UI|View|BoundaryTourStepZone':
-    'The Boundary tour reached its first step, a zone that holds things.',
-  'UI|View|BoundaryTourStepTitle': 'The Boundary tour reached its step on its title and icon.',
-  'UI|View|BoundaryTourStepMeta': 'The Boundary tour reached its step on its meta line.',
-  'UI|View|BoundaryTourStepMenu': 'The Boundary tour reached its step on its three styles.',
-  'UI|View|BoundaryTourStepOutro': 'The Boundary tour reached its closing card.',
-  'UI|View|DiagramKeyTourStepKey':
-    'The Diagram Key tour reached its first step, a key that builds itself.',
-  'UI|View|DiagramKeyTourStepMeaning':
-    "The Diagram Key tour reached its step on writing a row's meaning.",
-  'UI|View|DiagramKeyTourStepEmpty':
-    'The Diagram Key tour reached its step on a key with nothing to list yet.',
-  'UI|View|DiagramKeyTourStepTitle': 'The Diagram Key tour reached its step on its title.',
-  'UI|View|DiagramKeyTourStepOutro': 'The Diagram Key tour reached its closing card.',
-  'UI|View|PortalTourStepPortal': 'The Portal tour reached its first step, a way through.',
-  'UI|View|PortalTourStepTravel': 'The Portal tour reached its step on stepping through it.',
-  'UI|View|PortalTourStepUnlinked': 'The Portal tour reached its step on an unlinked portal.',
-  'UI|View|PortalTourStepMenu': 'The Portal tour reached its step on linking it from its menu.',
-  'UI|View|PortalTourStepWalk':
-    'The Portal tour reached its step on walking an Avatar-mode character in.',
-  'UI|View|PortalTourStepOutro': 'The Portal tour reached its closing card.',
   'UI|View|SankeyTourStepBands':
     'The Sankey tour reached its "Bands Carry Amounts" step, lifting the widest band of the diagram.',
   'UI|View|SankeyTourStepLeftover':
@@ -2165,95 +1496,14 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|View|SankeyTourStepFlowsPreview':
     'The Sankey tour reached its "Live Preview" step, inside the Flows dialog.',
   'UI|View|SankeyTourStepOutro': 'The Sankey tour reached its closing "That Is a Sankey" card.',
-  'UI|View|DrawTourStepDrawingTools':
-    'The Draw tour reached its "Pens and Tools" step, on the dock\'s Drawing tools group.',
-  'UI|View|DrawTourStepQuickStyle':
-    'The Draw tour reached its "Quick Style" step, on the Quick style panel.',
-  'UI|View|DrawTourStepShapes':
-    'The Draw tour reached its "Shapes" step, on the dock\'s Shapes group.',
-  'UI|View|DrawTourStepSettings':
-    'The Draw tour reached its "Board Settings" step, on the dock\'s Settings cog.',
-  'UI|View|DrawTourStepOutro': 'The Draw tour reached its closing "You\'re ready to draw" card.',
-  'UI|View|WorkshopTourStepCollaborate':
-    'The Workshop tour reached its "Collaborate" step, ringing the Collaborate band of the palette\'s category picker.',
-  'UI|View|FormTourStepAdd':
-    'The Forms tour reached its "Add Questions" step, ringing the add bar.',
-  'UI|View|FormTourStepDestination':
-    'The Forms tour reached its "Responses Arrive Here" step, opening the board or sheet the form sends its responses to.',
-  'UI|View|FormTourStepForm':
-    'The Forms tour reached its "Build It Here" step, ringing the questions in the form builder.',
-  'UI|View|FormTourStepOutro': 'The Forms tour reached its closing "That Is a Form" card.',
-  'UI|View|FormTourStepSettings':
-    'The Forms tour reached its "Where Responses Go" step, ringing the form cog.',
-  'UI|View|FormTourStepShare':
-    'The Forms tour reached its "Share Form" step, ringing Share Form in the header.',
-  'UI|View|FormTourStepStatus':
-    'The Forms tour reached its "Responses and Preview" step, ringing the form status bar.',
-  'UI|View|WorkshopTourStepSessionStrip':
-    'The Workshop tour reached its "Run the Room" step, on the Session strip.',
-  'UI|View|WorkshopTourStepShare':
-    'The Workshop tour reached its "Bring People In" step, on Share.',
-  'UI|View|WorkshopTourStepOutro':
-    'The Workshop tour reached its closing "You\'re ready to run a workshop" card.',
-  'UI|View|PlanTourStepBoard':
-    'The Plan tour reached its "Your Board" step, highlighting the person\'s board (placing an example board until October 2026).',
-  'UI|View|PlanTourStepAddCards':
-    'The Plan tour reached its "Add Cards" step, pointing at a column\'s Add card (adding example cards until October 2026).',
-  'UI|View|PlanTourStepMoveCard':
-    'The Plan tour reached its "Move Work Along" step, pointing at a card on the board (moving an example card until October 2026).',
-  'UI|View|PlanTourStepCardPanel':
-    'The Plan tour reached its "The Card Panel" step, opening a card\'s panel.',
-  'UI|View|PlanTourStepBoardHeader': 'The Plan tour reached its "The Board Header" step.',
-  'UI|View|PlanTourStepCardTypes': 'The Plan tour reached its "Card Types" step.',
-  'UI|View|PlanTourStepPalette':
-    'The Plan tour reached its "The Plan palette" step, opening the palette\'s categories.',
-  'UI|View|PlanTourStepOutro': 'The Plan tour reached its closing "You\'re ready to plan" card.',
-  'UI|View|PlanTourStepSheet':
-    'The Plan tour\'s Spreadsheets track reached its "Your Sheet" step, highlighting the person\'s sheet (placing an example sheet until October 2026).',
-  'UI|View|PlanTourStepCells':
-    'The Plan tour\'s Spreadsheets track reached its "Type Into Cells" step.',
-  'UI|View|PlanTourStepFormulas':
-    'The Plan tour\'s Spreadsheets track reached its "Formulas" step, pointing at the formula bar (selecting an example sheet\'s total until October 2026).',
-  'UI|View|PlanTourStepSheetToolbar':
-    'The Plan tour\'s Spreadsheets track reached its "The Toolbar" step.',
-  'UI|View|PlanTourStepSheetSettings':
-    'The Plan tour\'s Spreadsheets track reached its "Sheet Settings" step.',
-  'UI|View|PlanTourStepSheetPalette':
-    'The Plan tour\'s Spreadsheets track reached its "The Plan palette" step, opening the palette\'s categories.',
-  'UI|View|TourStepCategories':
-    'The Diagram tour (the welcome tour until October 2026) reached its "Palette Categories" step, pointing out the palette\'s category tabs.',
-  'UI|View|TourStepContextMenu':
-    'The Diagram tour (the welcome tour until October 2026) reached its "The Element Menu" step, showing the right-click menu on an element.',
-  'UI|View|TourStepEditorMode':
-    'The Diagram tour (the welcome tour until October 2026) reached its "Tab Mode" step ("Change Tab Mode" before), pointing out the switch for the tab\'s editor mode (step removed October 2026).',
-  'UI|View|TourStepExplorer':
-    'The welcome tour reached its "The Explorer" step (retired in October 2026, when the welcome tour became the Diagram tour).',
-  'UI|View|TourStepOutro':
-    'The Diagram tour reached its closing "You\'re ready to diagram" card ("You\'re ready to go" when it was the welcome tour).',
-  'UI|View|TourStepPalette':
-    'The Diagram tour (the welcome tour until October 2026) reached its "The Palette" step.',
-  'UI|View|TourStepSearch':
-    'The welcome tour reached its "Search everything" step, showing the search panel.',
-  'UI|View|TourStepSelectionModes':
-    'The Diagram tour (the welcome tour until October 2026) reached its "Selection Modes" step, showing the pointer-tool dropdown.',
-  'UI|View|TourStepTabs':
-    'The Diagram tour (the welcome tour until October 2026) reached its "Tabs" step.',
-  'UI|View|TourStepThemeCanvas':
-    'The Diagram tour (the welcome tour until October 2026) reached its "Theme & Canvas" step, showing the paintbrush that restyles a tab.',
 };
 
 export const BY_ACTION: Readonly<Record<string, string>> = {
   'Timing|Measured':
     'A key moment was timed: a document opening, a tab switch, a save, the live room connecting, or a page loading. Only the range it fell in is recorded, never the exact time.',
-  'Editor|Changed': 'Someone switched a tab between Diagram mode and Draw mode.',
   'Element|Created': 'Someone made an element in a way other than placing it from the palette.',
-  'Draw|Created': 'Someone made a whiteboard tab, a plain board drawn on with pens.',
-  'Draw|Selected':
-    'Someone picked up one of the pens or the Path tool on a whiteboard, or a shape from its search.',
-  'Draw|Changed':
-    "Someone changed a whiteboard pen's colour or width, the eraser mode, the board background or its pinned shapes.",
-  'Draw|Toggled':
-    'Someone switched shape recognition on a whiteboard on or off, or flipped the stroke they were drawing between ink and a shape.',
+  'Draw|Changed': "Someone changed a marker's colour or width.",
+  'Draw|Toggled': 'Someone flipped the stroke they were drawing between ink and a shape.',
   'Cta|Opened':
     'Someone followed a call to action on a public page (the landing page, a feature or comparison page, the help centre) and reached the New Document page.',
   'Cta|Created':
@@ -2264,7 +1514,6 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Action|Changed': 'Someone changed something about an action assigned to an element.',
   'Action|Created': 'Someone assigned an action to a teammate, or to themselves, on an element.',
   'Action|Deleted': 'Someone removed an assigned action from an element.',
-  'Action|Linked': "Someone added a document's first action, which made its Actions board.",
   'Action|Moved': "A document was moved into a teammate's team while assigning them an action.",
   'Action|Opened': 'Someone opened the popover for an action already assigned to an element.',
   'Action|Resolved': 'Someone marked an assigned action as done.',
@@ -2272,17 +1521,6 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Activity|Loaded':
     "Something happened while loading the Explorer's Inbox (the list of outstanding actions and comment threads).",
   'Activity|Opened': "Someone opened or interacted with the Explorer's Inbox.",
-  'Form|Created': 'Someone started a form from Start Planning.',
-  'Form|Added': 'Someone added a question to a form.',
-  'Form|Linked':
-    'Someone connected a form to where its responses go, from the box above its title.',
-  'Form|Shared': 'Someone published a form, making its public link.',
-  'Form|Toggled': 'Someone switched Accepting Responses on or off for a published form.',
-  'Form|Opened': "Someone pressed a form's Not Taking Responses warning, to see why and fix it.",
-  'Form|Moved':
-    'Someone synced a document in This Browser from Share Form, so its form could be published.',
-  'Form|Sent': 'A response came in through a form link.',
-  'Form|Reported': 'Someone reported a form they were sent.',
   'Activity|Selected': "Someone clicked a row in the Explorer's Inbox, jumping to what it's about.",
   'Canvas|Used': 'Someone picked up one of the canvas tools or modes, or used a canvas feature.',
   'Canvas|Zoomed': 'Someone changed the zoom from the zoom controls.',
@@ -2320,8 +1558,6 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Element|Linked':
     'Someone linked an element to something: another element, a web address, a document or a tab.',
   'Element|Locked': "An element's lock was turned on (no edits allowed).",
-  'Element|Removed':
-    'Someone took something off an element, such as one of their dots in a dot vote.',
   'Element|Reordered':
     'Someone changed the order of something on the canvas, such as the stacking of elements or a table row or column.',
   'Element|Selected':
@@ -2333,9 +1569,8 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Element|Unlinked': 'Someone cleared the link off an element.',
   'Element|Unlocked': "An element's lock was turned off (edits resume).",
   'Element|Searched': 'Someone searched for something to put in an element, such as a picture.',
-  'Element|Used': 'Someone used an interactive element on the canvas, such as a Reaction Pad.',
+  'Element|Used': 'Someone used an element in place on the canvas, such as playing a video.',
   'Element|Added': 'Someone added an element to a canvas, or put something into a document.',
-  'Element|Voted': 'Someone cast a dot in a dot vote.',
   'Email|Sent':
     'An automatic email went out: a welcome message, an onboarding nudge, a team invite, or a notification about activity on a document. The type names which one; it never says who received it.',
   'Error|Api':
@@ -2344,10 +1579,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     "Something failed in a visitor's browser: a part of the editor or help centre crashed, or recovered on its own from a hiccup in live sync. The type says what happened and where; see the accompanying pattern for how to read it.",
   'Error|Warning':
     'A feature hit a soft limit and quietly fell back to a slower or more limited way of working, rather than failing outright.',
-  'Facilitator|Changed':
-    'Something changed about who is facilitating a live session, or an element lock the facilitator freed.',
-  'Facilitator|Ended': 'The facilitator role in a live session ended.',
-  'Facilitator|Started': 'Someone became the facilitator of a live session.',
+  'Facilitator|Changed': 'Someone freed an element a peer had locked by selecting it.',
   'Folder|Created': 'A new folder was created in the document explorer.',
   'Folder|Deleted': 'A folder was deleted (contained documents move to the top level).',
   'Folder|Moved': 'A folder was re-parented under another folder (or the root).',
@@ -2411,7 +1643,6 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Tab|Created': 'A new tab was added to a document.',
   'Tab|Deleted': 'A tab was removed from a document.',
   'Tab|Duplicated': 'A tab was duplicated.',
-  'Tab|Ended': 'Someone ended a live activity on a tab, such as a poll or a timer.',
   'Tab|Imported': 'Someone imported a tab from a file.',
   'Tab|Linked': 'A tab was linked into another document.',
   'Tab|Loaded':
@@ -2425,13 +1656,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Tab|Selected':
     'Someone moved the editor to the other side by side pane, by a click or by resting the pointer there.',
   'Tab|Closed': 'Someone closed the side by side pane.',
-  'Tab|Revealed':
-    "Someone revealed a tab's hidden results to everyone in the room, such as a dot vote's.",
-  'Tab|Started': 'Someone started a live activity on a tab, such as a poll or a timer.',
-  'Tab|Toggled':
-    'Someone switched something on a tab on or off, such as pausing or resuming its timer.',
   'Tab|Unlocked': 'A tab was unlocked (edits resume).',
-  'Tab|Voted': 'Someone answered a live vote or poll on a tab. Counted once per person per poll.',
   'Team|Added':
     'Something was added to a team: an invitation sent, or a document added to its shared library.',
   'Team|Changed': "Something about a team's settings, or a member's role, was changed.",
@@ -2456,9 +1681,9 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Timeline|Selected':
     "Someone changed a Timeline filter: turned a category chip (such as Comments, Renames, or Sharing) off, or switched between seeing everyone's activity and just their own.",
   'Folder|Changed':
-    'Someone chose a default folder: where new documents of one kind (diagrams, whiteboards, retrospectives or Kanban boards) land when they pick no place.',
+    'Someone chose a default folder: where new documents land when they pick no place.',
   'Folder|Cleared':
-    'Someone cleared a default folder, so new documents of that kind land in My Documents again.',
+    'Someone cleared a default folder, so new documents land in My Documents again.',
   'Trash|Opened': 'Someone opened the Trash, where deleted documents wait for 30 days.',
   'Explorer|Created': 'Someone made something in the Explorer (a tag).',
   'Explorer|Added': 'Someone put one of their tags on a document.',
@@ -2468,38 +1693,6 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Explorer|Deleted': 'Someone deleted one of their tags.',
   'Explorer|Selected':
     'Someone narrowed an Explorer list with a filter: a chip, a suggestion or a typed token. The type names which kind of filter, never what was picked.',
-  'Plan|Added':
-    'Someone made an item on a Plan board (its type is the value), or placed a Plan card (Card).',
-  'Plan|Moved':
-    'Someone moved a card on a Plan board to another column, row or place, or archived it (Archive).',
-  'Plan|Restored': 'Someone brought an archived card back onto the boards.',
-  'Plan|Removed': 'Someone took a filter off a Card Search view.',
-  'Plan|Toggled':
-    'Someone flagged a card for attention or took its flag off, or maximised a board, view or sheet or restored it (the value says which).',
-  'Sheet|Changed':
-    'Someone changed a Sheet (a spreadsheet tab on a Plan tab): the value says what kind of change (a cell, a formula, formatting, rows, a sort, a paste, ...), never what was typed.',
-  'Sheet|Opened': 'Someone opened a panel on a Sheet (the value says which: Find or Settings).',
-  'Sheet|Created':
-    'Someone set up a new Sheet (the value says how it started) or made a chart from its cells (Chart).',
-  'Sheet|Imported': 'Someone filled a Sheet from a file (the value says which kind: Csv).',
-  'Sheet|Exported':
-    "Someone downloaded a Sheet's cells as a file (the value says which kind: Csv).",
-  'Sheet|Deleted':
-    'Someone was asked before deleting a Sheet with its cells (the value says Confirmed or Cancelled).',
-  'Sheet|Used':
-    'Someone saved a Sheet formula using a function for the first time in that formula (the value is the function name, from the fixed list).',
-  'Plan|Created':
-    'Someone started a Plan tab from Start Planning (the value says which: a Board, Sheet, Dashboard or Visualisation tab, or a suggested dashboard).',
-  'Sheet|Searched': 'Someone searched a list on a Sheet (the value says which: the functions).',
-  'Plan|Imported': "Someone read a file into a board's cards (the value says which kind: Csv).",
-  'Plan|Exported': "Someone downloaded a board's cards as a file (the value says which kind: Csv).",
-  'Plan|Duplicated': 'Someone made a new card type by duplicating an existing one.',
-  'Plan|Opened':
-    'Someone opened an item in the item panel, or a Plan panel (Card Types, the Trash, Cards).',
-  'Plan|Deleted': 'Someone deleted an item (its type is the value).',
-  'Plan|Changed':
-    "Someone changed a Plan board's set-up, a card type, a project's colour or a timeline view: the value names the part (columns, WIP limits, rows, scope, card fields, voting, hide writing, or a timeline's dates, scale, rows or types).",
-  'Plan|Revealed': 'Someone pressed Reveal on a board hiding writing, turning every card face up.',
   'Trash|Cleared':
     'Someone emptied one group of their Trash (their own documents, a team, or this browser), deleting everything in it for good.',
   'Trash|Deleted': 'Someone deleted a document in the Trash for good, before its 30 days were up.',
@@ -2511,7 +1704,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Token|Removed': 'Someone revoked an API token.',
   'UI|Added': 'Someone added something in the editor, such as a slide.',
   'UI|Changed':
-    "Someone changed a setting or a control's value somewhere in the editor: a tool panel's option (Avatar, Eraser, Laser, Spotlight, Format Painter), a Settings dialog row, or a palette/toolbar choice.",
+    "Someone changed a setting or a control's value somewhere in the editor: a tool panel's option (Laser, Spotlight, Format Painter), a Settings dialog row, or a palette/toolbar choice.",
   'UI|Cleared':
     "Someone cleared livedesign's saved settings and caches in their browser (Repair This Browser); the value says where from.",
   'UI|Closed':
@@ -2524,7 +1717,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     "Someone opened a dialog, panel, popover, or menu somewhere in the editor. A lowercase, hyphenated type is a help-centre article's address: someone clicked a help link, or a Help result in search, to read it.",
   'UI|Removed': 'Someone removed something in the editor, such as a slide.',
   'UI|Searched':
-    'Someone typed into a search box inside a palette tab (Collaborate, Icons, or Technology), narrowing it to matching tiles. Counted once per tab visit, on the first keystroke.',
+    'Someone typed into a search box inside a palette tab (Icons, Technology or Stickers), narrowing it to matching tiles. Counted once per tab visit, on the first keystroke.',
   'UI|Selected':
     'Someone picked an option from a dropdown, or clicked through on a banner, somewhere in the editor.',
   'UI|Started': 'Someone started a presentation or the welcome tour.',

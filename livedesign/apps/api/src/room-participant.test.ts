@@ -13,7 +13,6 @@ describe('RoomParticipantWrites', () => {
       sequence: () => 1,
       sendTo,
       position: () => ({ epoch: 'e', seq: 0 }),
-      readLedger: async () => ({ elements: {} }),
     });
     const ws = {} as WebSocket;
     const sender = { ws, presenceId: 'P', documentId: 'd1', adderKey: 'k' };
@@ -36,7 +35,6 @@ describe('RoomParticipantWrites', () => {
       sequence: () => 1,
       sendTo,
       position: () => ({ epoch: 'e', seq: 0 }),
-      readLedger: async () => ({ elements: {} }),
     });
     const ws = {} as WebSocket;
     await writes.applyContentOp(

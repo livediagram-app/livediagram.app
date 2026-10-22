@@ -64,7 +64,7 @@ A progress ring that fills over a timer's window measures that timer. It is an a
 
 - **Chrome** durations are tokens, in chrome stylesheets and in component classes.
 - **Canvas** and **content** durations live only in their own stylesheets. In the editor that's
-  `canvas-motion.css` and `qa-board.css`. In marketing it's `hero-animations.css`,
+  `canvas-motion.css` and `collab-cards.css`. In marketing it's `hero-animations.css`,
   `feature-art/*.css` and `page-motion.css`. On the account and connect pages it's
   `auth-motion.css`. In telemetry
   it's `dataviz-motion.css`. In the template previews it's `preview-motion.css`. Any other
@@ -102,14 +102,14 @@ A state change that swaps a whole surface animates as a React View Transition
 
 ## Dialogs
 
-A modal arrives rather than appearing. Every dialog built on the shared `Dialog` shell (the Plan card
-panel, Settings, Share, confirms) enters the same way, and none waits on an exit animation to close,
+A modal arrives rather than appearing. Every dialog built on the shared `Dialog` shell (Settings,
+Share, confirms) enters the same way, and none waits on an exit animation to close,
 so focus returns at once.
 
 - **The dim** behind it fades in over `micro` (`fade-in`).
 - **A centred panel** settles into place over `long`: it fades up from 97% scale and 6px low, on the
   ease-out curve `cubic-bezier(0.16, 1, 0.3, 1)` (`dialog-in`). The gentle rise keeps a large panel
-  (the 60rem card panel) from jumping.
+  (the Settings dialog) from jumping.
 - **A phone sheet** rises its full height from the bottom edge over `long` (`sheet-up`).
 - **Under reduced motion** the panel only fades (no rise, no scale), and in the editor every entrance
   collapses to about instant as above.
@@ -130,9 +130,8 @@ time at the reference speed on the 1,000-element reference board. That alone kep
 board over its 3 s time-to-interactive budget ([Canvas performance](../008-canvas/canvas-performance.md)).
 Measured on the reference board, with the elements' arrival change in
 [Canvas and palette](../008-canvas/canvas-and-palette.md) "Motion and animations": the median open
-went from 2.9 s (whiteboard) and 3.0 s (diagram), with runs up to 5.0 s and 4.2 s, to 2.2 s and
-1.7 s, with no run over 2.4 s. The chrome's fades cost nothing measurable, so they stay. The panels, and the zoom cluster's button groups (history and undo / redo, layers, the
-brush, collaborate, zoom), used to scale in from nothing with an overshoot
+went from 2.9 s and 3.0 s on livediagram's two reference boards, with runs up to 5.0 s and 4.2 s, to 2.2 s and
+1.7 s, with no run over 2.4 s. The chrome's fades cost nothing measurable, so they stay. The panels, and the zoom cluster's button groups (history and undo / redo, layers, zoom), used to scale in from nothing with an overshoot
 (`pop-in`); a whole panel or toolbar popping read as abrupt, so they fade (`animate-fade-in`)
 instead. `pop-in` stays
 on small controls, where it reads as feedback.
