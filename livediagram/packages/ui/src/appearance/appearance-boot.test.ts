@@ -14,7 +14,7 @@ import {
 
 const read = (rel: string) => readFileSync(fileURLToPath(new URL(rel, import.meta.url)), 'utf8');
 
-const APPS = ['live', 'marketing', 'help', 'community'] as const;
+const APPS = ['editor', 'marketing', 'help', 'community'] as const;
 const layoutOf = (app: (typeof APPS)[number]) => read(`../../../../apps/${app}/app/layout.tsx`);
 
 describe('the inlined storage key', () => {

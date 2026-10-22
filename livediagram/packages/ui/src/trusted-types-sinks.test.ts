@@ -8,7 +8,7 @@ import { TRUSTED_TYPES_CSP } from './trusted-types';
 
 const repo = fileURLToPath(new URL('../../../', import.meta.url));
 const read = (path: string) => readFileSync(`${repo}${path}`, 'utf8');
-const APPS = ['live', 'marketing', 'help', 'community'] as const;
+const APPS = ['editor', 'marketing', 'help', 'community'] as const;
 
 function sources(dir: string, out: string[] = []): string[] {
   for (const name of readdirSync(dir)) {
@@ -130,7 +130,7 @@ describe.each(APPS)('apps/%s', (app) => {
   });
 
   it('sends the Trusted Types header on every page', () => {
-    if (app === 'live') {
+    if (app === 'editor') {
       const worker = read('apps/editor/src/worker.ts');
       expect(worker).toMatch(/'Content-Security-Policy':\s*TRUSTED_TYPES_CSP/);
     } else {
