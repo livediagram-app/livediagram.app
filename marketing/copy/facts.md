@@ -29,7 +29,7 @@ is the team, not the individual.
   laser-pointer broadcast, one Durable Object room per document.
 - Canvas: ten core shapes, sticky notes, text, images, arrows (straight /
   curved / angled with draggable handles, configurable thickness and arrowheads,
-  optional labels), freehand Pencil tool with optional shape recognition,
+  optional labels), a Polygon tool for outlines placed point by point,
   per-element links and locks.
 - Multi-select: marquee drag, shift-click, format painter, groups.
 - 17 templates (Blank, Mind map, Flowchart, Kanban, SWOT, Retrospective, Org

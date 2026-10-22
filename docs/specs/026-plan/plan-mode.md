@@ -179,7 +179,7 @@ Plan must cost nothing to a document that does not use it:
 
 - **Plan starts on the Hand tool**: a board's cards take the pointer themselves, so a drag on the canvas moves
   it. Select is one pick away, for moving or resizing a board.
-- **Eraser and Format are left out** of the tool picker and their shortcuts: they work on drawn content a Plan
+- **Format is left out** of the tool picker and its shortcuts: it works on drawn content a Plan
   tab does not hold.
 - **No Layers panel**, as below.
 

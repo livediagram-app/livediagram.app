@@ -70,7 +70,7 @@ proved the better introduction.
   the next time the person is on a Diagram tab. The welcome card is always step 1, on a rerun too. Finishing
   the rerun turns it off again.
 - **One tour at a time.** The [Plan tour](../026-plan/plan-tour.md), the
-  [Workshop tour](../012-collaboration/workshop-tour.md), the [Draw tour](../023-draw-mode/draw-tour.md) and
+  [Workshop tour](../012-collaboration/workshop-tour.md) and
   the [Pages tour](pages-tour.md) are this tour's siblings; while any is on screen the others wait.
   Each belongs to its own mode, so none is owed to another: the others never wait for this tour's offer, and
   this tour never carries theirs.
@@ -118,7 +118,7 @@ words too (`touchBody`), which a touch screen (a coarse pointer) reads instead: 
    offer buttons (`WELCOME_TOUR_COPY` in `TourPopover.tsx`).
 1. **The Palette**: the strip across the top: "Add whatever you need to your canvas to start drawing after the
    tour."
-2. **Selection Modes**: opens the canvas-tool dropdown (Select / Hand / Eraser / ...) and explains mode
+2. **Selection Modes**: opens the canvas-tool dropdown (Select / Hand / Format / ...) and explains mode
    switching. No "default" claim in the copy: desktop defaults to Select but mobile to Hand.
 3. **Palette Categories**: opens the first category on the palette's category bar (Shapes), its flyout highlighted
    with the bar ([Toolbar layout](toolbar-layout.md#the-category-bar)): "The palette's categories sit along the

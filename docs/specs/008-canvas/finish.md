@@ -113,7 +113,7 @@ element leaves unset, plus how a line is drawn (Sketch, Marker).
   keep theirs, drawn once into a still picture and redrawn only when the art changes. A face is not split: it draws
   as it does under Flexible, its lettering in the handwriting font, inside its hand-drawn outline and shading. Other
   browsers and every export are unchanged.
-- **Not affected:** pencil, pen and highlighter strokes (already hand-drawn) and images (photos, not drawings).
+- **Not affected:** freehand pen strokes and highlights (already hand-drawn) and images (photos, not drawings).
 - **Selection, hit testing, anchors and snapping** use the element's true geometry, never the wobble, so a
   sketched element is selected, connected and aligned exactly as a Flexible one.
 
@@ -162,7 +162,7 @@ Sketch is a pencil's wandering double line, Marker is one bold stroke per edge, 
     the frame size) keep their plain look, so the words in and around them stay easy to read.
   - The marker strokes are seeded by the element's id and the part's place in it, so a face looks the same on
     every screen and in every export.
-- **Not affected:** pencil, pen and highlighter strokes, images, photos inside a face, and a tab window's content (it keeps the
+- **Not affected:** freehand pen strokes and highlights, images, photos inside a face, and a tab window's content (it keeps the
   finish of the tab it shows).
 - **Selection, hit testing, anchors and snapping** use the element's true geometry, as under Sketch.
 
@@ -182,20 +182,18 @@ A sticker's emoji or word is art and is drawn as it is in every finish; its plat
 coloured pill) follows the finish like any frame: square and flat under Professional, outlined in marker with no
 shadow under Marker (a badge's pill coloured in), wobbled with its art under Sketch. Exports agree.
 
-### Polygons and paths
+### Polygons
 
-A Polygon-tool outline ([Polygon tool](polygon-tool.md)) and a Path-tool curve
-([Path tool](../023-draw-mode/path-tool.md)) are placed point by point, so they are drawings like a shape's outline,
-not a hand's stroke, and follow their tab's finish as a shape does:
+A Polygon-tool outline ([Polygon tool](polygon-tool.md)) is placed point by point, so it is a drawing like a shape's
+outline, not a hand's stroke, and follows its tab's finish as a shape does:
 
 - **Professional:** an unset line draws Thin (1 px).
 - **Sketch:** the line is drawn by hand (two wobbly strokes, seeded by the element's id); a closed one keeps its
   solid fill under pencil shading.
 - **Marker:** the line is one bold marker stroke, an unset or Thin one at the nib; a closed one is coloured in over
   its solid fill.
-- A path combined from several outlines keeps its holes: its fill is its own, and it is never shaded, since shading
-  across a hole would fill it.
-- Pencil, pen and highlighter strokes are already hand-drawn and stay as drawn in every finish.
+- Other freehand strokes (a template's or an import's pen strokes and highlights) are already hand-drawn and stay
+  as drawn in every finish.
 
 ### Flexible
 

@@ -26,7 +26,7 @@ theirs without adding a settings screen.
   then Escape did nothing in them, so a keyboard user in Find a Card's field could not leave it. **Zen mode** ([Zen mode](zen-mode.md)) still hides
   all chrome; while it is on the docking system is inert.
 - **Participating panels:** AI, Minimap, Poll, Vote, and the tool panels (Avatar, Laser,
-  Spotlight, Eraser, Format, Slide Deck), every corner panel built on the shared `MovablePanel`.
+  Spotlight, Format, Slide Deck), every corner panel built on the shared `MovablePanel`.
 - **Zoom controls stay fixed** bottom-right (they are not a `MovablePanel`; zen mode and
   the body-height measurement both rely on that pin). They are not dockable, and the
   **bottom-right corner zone is raised to sit above them** (`ZOOM_CLEARANCE_PX`) so a panel
@@ -56,12 +56,12 @@ When the user has never arranged panels, the corners match today's defaults:
 | `bottom-left`  | Minimap                                                       |
 | `bottom-right` | AI, tool panels, above the bottom cluster (zoom controls pin) |
 
-The AI panel and the tool panels (Laser, Spotlight, Eraser, Format, Slide Deck) open bottom-right, stacked
+The AI panel and the tool panels (Laser, Spotlight, Format, Slide Deck) open bottom-right, stacked
 upwards from just above the bottom cluster, where the controls they set sit within reach of the canvas they
 act on, not top-right under the palette strip, where they hid its end and opened over a template's title. A panel
 the user has docked or placed keeps its spot; only the home moves.
 A panel in a bottom corner grows upward only as far as the canvas's top edge, and stops below the palette strip
-or the Draw dock where it overlaps them across; past that its body scrolls. On a short window (a laptop zoomed to
+where it overlaps it across; past that its body scrolls. On a short window (a laptop zoomed to
 200%, 720×450) its header otherwise slid under the strip, out of reach.
 
 The Palette, the Explorer and Layers were corner panels in the retired Floating layout
@@ -125,13 +125,11 @@ type PanelCorner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 // cluster button that takes no corner. The Poll and Vote panels are not corner panels either: they
 // open over the Session strip's buttons (docs/specs/012-collaboration/session-tools.md), and a stored
 // layout naming them is read like any unknown id, and so is the Avatar panel, a popover over its own button
-// (docs/specs/008-canvas/avatar-mode.md). Four panels are NOT always available — they exist only while
+// (docs/specs/008-canvas/avatar-mode.md). Three panels are NOT always available — they exist only while
 // their mode is running, so they join and leave their
 // corner stack rather than sitting in it: 'laser' (docs/specs/008-canvas/laser-panel.md, the laser pen's settings), 'spotlight'
-// (docs/specs/008-canvas/spotlight-panel.md, the light's look), 'eraser' (docs/specs/008-canvas/eraser-panel.md, the brush),
-// and 'format' (docs/specs/008-canvas/format-panel.md, what the painter copies).
-type PanelId =
-  'collaborate' | 'ai' | 'minimap' | 'laser' | 'spotlight' | 'eraser' | 'format' | 'slide-deck';
+// (docs/specs/008-canvas/spotlight-panel.md, the light's look) and 'format' (docs/specs/008-canvas/format-panel.md, what the painter copies).
+type PanelId = 'collaborate' | 'ai' | 'minimap' | 'laser' | 'spotlight' | 'format' | 'slide-deck';
 
 type PanelLayout = {
   // Ordered stack per corner. Order is top→bottom (top corners) /

@@ -1,6 +1,6 @@
 # Multi-point line / polygon tool
 
-A click-to-place vertex tool that fills the geometry gap between the Pencil (freehand only) and the fixed shape kinds: clean irregular regions (zones on an architecture diagram, floor plans, highlighted areas) and straight multi-segment polylines.
+A click-to-place vertex tool that fills the geometry gap left by the fixed shape kinds: clean irregular regions (zones on an architecture diagram, floor plans, highlighted areas) and straight multi-segment polylines.
 
 ## Model
 
@@ -12,11 +12,11 @@ One rendering nuance: freehand paths are smoothed through `catmullRomToBezierPat
 straightEdges?: boolean; // true = render M/L segments, no Catmull-Rom smoothing
 ```
 
-Set by this tool at commit; absent on pencil/highlighter strokes. Both renderers branch on it: `straightEdges` draws `M/L` segments, anything else goes through the same `catmullRomToBezierPath` smoothing, so an export draws a pen stroke with the curve the canvas shows. (The headless renderer used to draw straight segments for every freehand, which made an exported pen stroke visibly more jagged than the canvas; it now matches.) A freehand of fewer than two points draws nothing on either. Wire validation accepts the optional boolean.
+Set by this tool at commit; absent on other freehand strokes (a template's or an import's pen strokes and highlights). Both renderers branch on it: `straightEdges` draws `M/L` segments, anything else goes through the same `catmullRomToBezierPath` smoothing, so an export draws a pen stroke with the curve the canvas shows. (The headless renderer used to draw straight segments for every freehand, which made an exported pen stroke visibly more jagged than the canvas; it now matches.) A freehand of fewer than two points draws nothing on either. Wire validation accepts the optional boolean.
 
 ## Gesture
 
-- New tile `tools:polygon` in the shared catalogue (Tools section, after the two pens). New `PendingDraw` intent `{ type: 'polygon' }`. No single-letter shortcut.
+- New tile `tools:polygon` in the shared catalogue (the Draw group, first). New `PendingDraw` intent `{ type: 'polygon' }`. No single-letter shortcut.
 - **Click** places a vertex. After the first vertex, a preview polyline follows the cursor (rubber-band segment from the last vertex, plus the placed segments).
 - **Click near the first vertex** (≤ 12px screen-space, with a visual snap ring on the start vertex when in range) closes the loop: commits a `closed: true` freehand, which takes the theme fill like any closed freehand.
 - **Double-click / Enter** commits the open polyline (`closed: false`, stroke only) ending at the last placed vertex.

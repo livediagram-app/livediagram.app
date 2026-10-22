@@ -58,7 +58,7 @@ Categories fall into two kinds. The **support** categories carry standalone arti
 The feature categories group the feature guides by area:
 
 - **Explorer** — the document library (explorer/15, teams/32+35): The Explorer overview, Home (the Timeline), Recent, Shared With Me, My Documents and folders, Team Spaces, Image Gallery, and Saved Themes, one guide per sidebar row.
-- **Palette** — the palette strip, in three sub-categories grouped on the index (see "Sub-category grouping" below): **Selection Modes** (one guide per tool-picker mode: Select, Hand, Eraser, Format Painter, Laser, Spotlight, Isometric), **Elements** (one guide per palette tab: Shapes (+ shape markers, style presets 48), Arrows (+ arrow styles, curve/elbow handles, arrow-to-arrow), Tools (+ drawing/shape-recognition, images, data elements 46+51+52+53), Components, Devices, Icons, Technology 41), and **Palette Settings** (one guide per palette setting: Auto-Attach Arrows, Alignment Guides, Panel Opacity, Quick-add on Hover, Toolbar Layout).
+- **Palette** — the palette strip, in three sub-categories grouped on the index (see "Sub-category grouping" below): **Selection Modes** (one guide per tool-picker mode: Select, Hand, Format Painter, Laser, Spotlight, Isometric), **Elements** (one guide per palette tab: Shapes (+ shape markers, style presets 48), Arrows (+ arrow styles, curve/elbow handles, arrow-to-arrow), Tools (+ drawing, images, data elements 46+51+52+53), Components, Devices, Icons, Technology 41), and **Palette Settings** (one guide per palette setting: Auto-Attach Arrows, Alignment Guides, Panel Opacity, Quick-add on Hover, Toolbar Layout).
 - **Canvas** — the infinite canvas (09), selecting many elements (multi-select), links and link cards (40), annotations (38), themes (29+42+44), templates, text and fonts (28), Undo and Redo.
 - **Tabs** — multiple canvases (13+17+30): Tabs, Tab Folders, Linking Across Tabs, Add a Tab to Another Document, Importing (27), Exporting, and Cleanup (47), one guide per tab-menu action.
 - **Collaboration** — comments, live presence (07: live cursors / selections / per-tab presence), teams (32+35), sharing and embeds (24+33+34), session tools (39).
@@ -204,7 +204,7 @@ Two mechanical checks earn their keep alongside the render, because both catch
 things the eye skims: every path must parse (a leading moveto, seven-parameter
 arcs, correct arity elsewhere), and every anchor point must sit far enough inside
 the 24-unit box that its stroke does not clip the edge. The second one found a
-sparkle on Shape Recognition sitting low enough to be shaved. Note that any such
+sparkle on one glyph sitting low enough to be shaved. Note that any such
 checker has to split ARC parameters properly — SVG allows the two flags to be
 glued to the following coordinate (`0 1 4.5` written `014.5`), and a naive number
 scan reads that as one value and then reports perfectly good glyphs as broken.
@@ -249,7 +249,7 @@ the same surface recurs rather than redrawn.
 
 ## Renamed articles
 
-Six articles about the container moved when it became a document ([Document](../006-document/document.md)), **Whiteboards** became **Draw mode** when whiteboarding became an editor mode ([Editor modes](../007-editor/editor-modes.md#naming-in-the-interface)), the **Highlighter** moved from Selection Modes to the palette's Tools when it became a Draw tile ([Highlighter](../008-canvas/highlighter.md)), the **Activity Panel** category went with the panel on 2026-10-03 (Undo and Redo moved to Canvas; its other articles and the category page land on Undo), **The Welcome Tour** became **The Diagram Tour** when the tour became Diagram mode's alone ([Diagram tour](../007-editor/editor-tour.md)), and **Infographics**, then **Illustrate Mode**, became **Pages Mode**, its section moving to `/help/canvas/pages-mode/` and **The Illustrate Tour** becoming **The Pages Tour** ([Editor modes](../007-editor/editor-modes.md#naming-in-the-interface)), and **Facilitate Mode** became **Workshop Mode**, its section moving to `/help/canvas/workshop-mode/` and **The Facilitate Tour** becoming **The Workshop Tour**; each old address answers a permanent `308` from the router ([Router app, Legacy editor route](../016-platform/router-app.md#legacy-editor-route)):
+Six articles about the container moved when it became a document ([Document](../006-document/document.md)), **Whiteboards** and **Draw mode** land on **Editor modes** ([Editor modes](../007-editor/editor-modes.md#naming-in-the-interface)), the Highlighter, Shape Recognition and Eraser guides on their categories, the **Activity Panel** category went with the panel on 2026-10-03 (Undo and Redo moved to Canvas; its other articles and the category page land on Undo), **The Welcome Tour** became **The Diagram Tour** when the tour became Diagram mode's alone ([Diagram tour](../007-editor/editor-tour.md)), and **Infographics**, then **Illustrate Mode**, became **Pages Mode**, its section moving to `/help/canvas/pages-mode/` and **The Illustrate Tour** becoming **The Pages Tour** ([Editor modes](../007-editor/editor-modes.md#naming-in-the-interface)), and **Facilitate Mode** became **Workshop Mode**, its section moving to `/help/canvas/workshop-mode/` and **The Facilitate Tour** becoming **The Workshop Tour**; each old address answers a permanent `308` from the router ([Router app, Legacy editor route](../016-platform/router-app.md#legacy-editor-route)):
 
 | Old address                                            | New address                                             |
 | ------------------------------------------------------ | ------------------------------------------------------- |
@@ -259,8 +259,13 @@ Six articles about the container moved when it became a document ([Document](../
 | `/help/search-panel/the-search-panel/search-diagrams/` | `/help/search-panel/the-search-panel/search-documents/` |
 | `/help/getting-started/sharing-your-diagram/`          | `/help/getting-started/sharing-your-document/`          |
 | `/help/developers/working-with-diagrams/`              | `/help/developers/working-with-documents/`              |
-| `/help/canvas/whiteboards/`                            | `/help/canvas/draw-mode/`                               |
-| `/help/selection-modes/highlighter/`                   | `/help/palette/tools/highlighter/`                      |
+| `/help/canvas/whiteboards/`                            | `/help/canvas/editor-modes/`                            |
+| `/help/canvas/draw-mode/`                              | `/help/canvas/editor-modes/`                            |
+| `/help/canvas/draw-mode/draw-tour/`                    | `/help/canvas/editor-modes/`                            |
+| `/help/selection-modes/highlighter/`                   | `/help/palette/tools/`                                  |
+| `/help/palette/tools/highlighter/`                     | `/help/palette/tools/`                                  |
+| `/help/palette/tools/drawing/shape-recognition/`       | `/help/palette/tools/drawing/`                          |
+| `/help/selection-modes/eraser/`                        | `/help/selection-modes/`                                |
 | `/help/activity-panel/`                                | `/help/canvas/undo/`                                    |
 | `/help/activity-panel/what-it-is/`                     | `/help/canvas/undo/`                                    |
 | `/help/activity-panel/how-it-works/`                   | `/help/canvas/undo/`                                    |

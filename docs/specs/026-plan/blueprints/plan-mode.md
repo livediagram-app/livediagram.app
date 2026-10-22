@@ -133,7 +133,6 @@ elements)` to the create (cloud and Offline Mode), so a template's document has 
   `usePlanSlice` sets `planInput: false`, so `PlanBoardView`, `PlanCardView` and the views draw read-only and the
   board is selected and moved as an element; items keep loading by content (`hasPlanContent`), not by mode.
 - `useModeDefaultTool` (`hooks/editor/useModeDefaultTool.ts`): `modeDefaultTool(mode, mobile)` is `pan` for Plan
-  or a phone, else `select`, picked when the mode changes (embeds keep `pan`); `PLAN_LEFT_OUT_TOOLS` (Eraser,
-  Format) fall back to `pan` in Plan, are refused by `pickCanvasTool`, and `buildCanvasToolOptions({ planMode })`
+  or a phone, else `select`, picked when the mode changes (embeds keep `pan`); `PLAN_LEFT_OUT_TOOLS` (Format) fall back to `pan` in Plan, are refused by `pickCanvasTool`, and `buildCanvasToolOptions({ planMode })`
   leaves them out of the picker.
 - `canvas-selection.ts`: no quick-connect pluses on `plan-board` or `plan-card`.

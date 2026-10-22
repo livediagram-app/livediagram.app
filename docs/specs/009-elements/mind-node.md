@@ -623,8 +623,7 @@ Undo brings the whole branch back.
 - A **locked** node in the branch (or one on a locked layer) stays, as do the
   nodes under it, and becomes a root, as any protected element survives a
   delete.
-- The **eraser** is a brush, not a delete: it removes only what it touches, and
-  a child whose parent was erased becomes a root.
+- A child whose parent is gone becomes a root.
 
 ## Discoverability
 

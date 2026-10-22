@@ -48,8 +48,7 @@ one category (Popular, a pick from across them, aside).
 - **Wireframe** (wireframe pages): **Components** and **Elements** first, in a band of their own
   (a divider after Elements), then the rest without **Concepts** and **Devices**
   ([Wireframe pages](wireframe-pages.md) "The Elements palette").
-- **Logo** (logo pages): **Draw** (Pens: the
-  Pen, the Pencil, the Shape Pen; Outlines: the Polygon; Markers: Draw mode's three), **Shapes**,
+- **Logo** (logo pages): **Popular**, **Draw** (the Polygon), **Shapes**,
   **Write** (Text for a wordmark, a sticky note for a comment), **Icons**, **Library** and **Media**
   (an Image to trace); no charts, blocks, frames, stickers or embeds, and no Logo category
   ([Logo pages](logo-pages.md) "The Logo palette").

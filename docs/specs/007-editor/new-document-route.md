@@ -397,8 +397,8 @@ the cards are not focused until the wizard mounts.
 The **empty-canvas hint** is a calm **card in the middle of the canvas** (`EmptyCanvasBanner`), shown while the
 active tab has no elements to someone who cannot edit it: an Editor gets the mode's start instead ([Template
 starts](start-diagramming.md)). A **Viewer** reads "Nothing here yet. The owner can build it out, and your view
-updates live."; a **Participant** is pointed at a sticky, text or an image. It shows in Diagram and Workshop; Draw
-(its dock is the hint, [Draw mode](../023-draw-mode/draw-mode.md)), Pages and Plan show none. It offers no action
+updates live."; a **Participant** is pointed at a sticky, text or an image. It shows in Diagram, Workshop and Draw;
+Pages and Plan show none. It offers no action
 of its own: an Editor's empty tab shows its start instead, and **Help** on a desktop. It goes once the
 canvas has content, and a **Close** (×) in its top right corner closes it for good on that tab for this person in
 this browser (a per-browser list of the last 200 closed keys, `liveplanner:v2:empty-card-dismissed` in localStorage,

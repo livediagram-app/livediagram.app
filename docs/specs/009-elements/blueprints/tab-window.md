@@ -150,16 +150,16 @@ pattern: false, images, resolveTabWindow: names, resolvePlanArt: plan.art, items
 
 ## Testing
 
-| Rule                                                                      | Test                                                                                              |
-| ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| May show, offers, ids prefixed, export frame and fill                     | `packages/document/src/tab-has-drawing.test.ts`                                                   |
-| States, Choose a Tab, Open, Retry, unavailable                            | `apps/live/components/canvas/tab-window/TabWindowFace.test.tsx`                                   |
-| Status, one fetch per tab, retry, choose, open, gate                      | `apps/live/components/canvas/tab-window/tab-window-context.test.tsx`                              |
-| Export targets, arts, nesting, drawing in the tab SVG; Pages, Form, Board | `apps/live/components/dialogs/useTabWindowExport.test.ts`                                         |
-| Pages as laid out, Form as its form, estimated writing, page elements     | `apps/live/lib/tab-drawing.test.ts`                                                               |
-| Something to draw                                                         | `packages/document/src/tab-window.test.ts`                                                        |
-| What plays in a window, its classes and style, stills elsewhere           | `apps/live/components/canvas/tab-window/tab-window-motion.test.ts`                                |
-| Palette tile in Pages mode's Media only, not a whiteboard shape           | `palette-tile-defs.test.tsx`, `toolbar-strip-tiles.test.ts`, `whiteboard-shape-catalogue.test.ts` |
+| Rule                                                                      | Test                                                                 |
+| ------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| May show, offers, ids prefixed, export frame and fill                     | `packages/document/src/tab-has-drawing.test.ts`                      |
+| States, Choose a Tab, Open, Retry, unavailable                            | `apps/live/components/canvas/tab-window/TabWindowFace.test.tsx`      |
+| Status, one fetch per tab, retry, choose, open, gate                      | `apps/live/components/canvas/tab-window/tab-window-context.test.tsx` |
+| Export targets, arts, nesting, drawing in the tab SVG; Pages, Form, Board | `apps/live/components/dialogs/useTabWindowExport.test.ts`            |
+| Pages as laid out, Form as its form, estimated writing, page elements     | `apps/live/lib/tab-drawing.test.ts`                                  |
+| Something to draw                                                         | `packages/document/src/tab-window.test.ts`                           |
+| What plays in a window, its classes and style, stills elsewhere           | `apps/live/components/canvas/tab-window/tab-window-motion.test.ts`   |
+| Palette tile in Pages mode's Media only                                   | `palette-tile-defs.test.tsx`, `toolbar-strip-tiles.test.ts`          |
 
 ## Constants and configuration
 

@@ -24,7 +24,7 @@ and one category's tiles:
   tab's mode is chosen on its start while it is empty ([The mode switch](editor-modes.md#the-mode-switch)).
   On a phone that card sits at the far left of the strip's row, the strip beside it (below).
 - **Left: the selection mode.** The canvas-tool picker (Select / Hand /
-  Eraser / Format / Laser / Spotlight / Isometric / Zen (Avatar only while in it), [Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md))
+  Format / Laser / Spotlight / Isometric / Zen (Avatar only while in it), [Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md))
   as a compact icon trigger, opening the banded tile grid.
 - **Then, in Diagram, Workshop and Pages, the category bar** ("The category bar").
 - **Then, in Plan, the category picker.** The same banded category grid ([Palette top-level categories and bands](../010-palette/palette-top-level-categories.md)),
@@ -36,7 +36,7 @@ and one category's tiles:
   rendered by the shared `PaletteTile`, so the strip and its popovers stay alike.
 - **Right: More (⋯ ▾)** (Plan), when the category has more than the strip shows.
 - **Far right: Search** (a magnifier), in every mode's strip but an event-storming board's (see
-  "Search: every element type"). Draw mode shows its dock instead of the strip, so it has none.
+  "Search: every element type").
 
 ## The category bar
 
@@ -193,14 +193,7 @@ A strip shows one category at a time, so finding an element means knowing which 
   the element types (an icon or a technology mark is an icon shape carrying its id, a sticker a shape
   carrying its sticker id). The catalogues load as a chunk of their own; the popover asks for it on
   opening and fills in when it lands. My shapes stays in its own category: it is the person's
-  libraries, not a catalogue of the product.
-  **Draw mode's markers** join them: Draw has no palette layout (its pens are the dock's), so its
-  Marker 1, 2 and 3 are built as tiles when the popover opens, from this browser's pens, each in
-  its colour and width (`palette-marker-tiles`). They are always another mode's, since the strip is
-  never shown in Draw. Picking one picks the pen up as the dock does, held until another tool,
-  Escape or a mode switch ([Draw mode](../023-draw-mode/draw-mode.md#pens)). The dock's other
-  tools are the palette's own already (Text, the shapes, the eraser), all but the Path tool, which
-  the search does not offer. A
+  libraries, not a catalogue of the product. A
   tile matches on its name, label, blurb, description and the same synonym line the global Search
   panel uses ("database" finds the cylinder, [Canvas and palette](../008-canvas/canvas-and-palette.md#search-panel)),
   ranked exact name, then name prefix, then name substring, then keyword only; ties keep palette
@@ -226,10 +219,10 @@ A strip shows one category at a time, so finding an element means knowing which 
   Listing the whole mode made a popover taller than the window. A tile and an element meet on a
   **signature**: the element type plus the creation-time choice the element records (a shape's
   kind and its session tool, reaction, selection mode, estimate scale or plan view; a sticky's
-  workshop kind; a pen; an embed's provider; a line's missing ends). Where the element does not
+  workshop kind; an embed's provider; a line's missing ends). Where the element does not
   record the choice (a board's preset, a card's type) the first tile in layout order stands for
   them all. Tiles that place no one element type (the icon, sticker and tech catalogue tiles, the
-  shape pen, a board's header widget, the hero and avatar composites) never list here. An empty
+  a board's header widget, the hero and avatar composites) never list here. An empty
   tab shows the shared empty state "No elements on this tab yet" ("Type to find any element."); one holding only
   other modes' types, "No Diagram elements on this tab yet" (the mode's name).
 - **Nothing matches:** the mode's section shows the shared empty state
@@ -302,7 +295,7 @@ which moved things under the pointer after every add; it is gone, its stored lis
   the rest (Cloud to Bubble).
 - **Write**: Page, Text | Note, Annotation; Diagram's adds Pointer note and Callout to the notes, then Comment,
   Action as a third group, **Comments**.
-- **Draw**: Freehand, Shape Pen | Polygon | Arrow, Line.
+- **Draw**: Polygon | Arrow, Line.
 - **Build**: Mind node, Table | Lane, Frame, Timeline.
 - **Diagrams** (Diagram): Mind node, Org chart, Flowchart, Sequence, Table | Entity.
 - **Layout** (Diagram): Lane, Frame, Stack, Boundary, Timeline | Diagram key, Card, Badge, Step number, headed
@@ -357,7 +350,7 @@ other panel (AI, the minimap, Poll, Vote and the tool panels) docks in its corne
 ([Panel docking](panel-docking.md)). Layers and Collaborate render outside
 the corner layer, since a popover positions against the canvas and a corner stack would move it.
 A popover opening up from a bottom-row button (Layers, the Vote, the Poll) grows no higher than 8 px under a
-toolbar across the canvas's top whose span meets its column, the strip or Draw's dock (`usePopoverTopClearance`), and
+toolbar across the canvas's top whose span meets its column, the strip (`usePopoverTopClearance`), and
 12 px from the canvas's top otherwise: on a phone the strip spans the width, and a tall panel ran up under it with its
 header hidden.
 
@@ -455,7 +448,7 @@ their bottom-row buttons. What changes to fit the width:
   - While a mode banner sits in the tray, the top-centre stack starts below the tray instead.
   - While one of the strip's popovers is open (a category's flyout, More, a catalogue group, Search) the tray steps aside, as it does
     for the Explorer: it would cover the popover's top.
-  - Without a strip (Draw mode's dock, zen, read-only, the welcome flow) the messages stay the
+  - Without a strip (zen, read-only, the welcome flow) the messages stay the
     top-centre pills they are elsewhere.
 - Event-storming boards ([Event storming](../021-event-storming/event-storming.md)) hide the strip's pickers, and the strip shows the notation's tiles, led by
   the board's **Add from Photo** (an icon button with a hover card) where the deployment offers
@@ -524,9 +517,7 @@ their bottom-row buttons. What changes to fit the width:
   resizes), the top corner stacks start below the strip, 68px down, exactly
   as they always do on a phone. Otherwise they keep their inset. Without it
   a docked panel (the Laser panel, say) sat under the strip's right end and
-  could not be reached. A whiteboard's dock at the top gets the same
-  treatment ([Where the dock sits](../023-draw-mode/draw-mode.md#where-the-dock-sits)),
-  its corners starting 76px down.
+  could not be reached.
 - **Undo / Redo stay where they are**, in the bottom-right dock.
 - **A phone's toolbar items keep their size** (`PHONE_TOOLBAR_ITEMS`): 36px, the bottom-right
   cluster's 44px, each with a 44px-tall tap area ([Touch targets](../004-interface-design/touch-targets.md)).

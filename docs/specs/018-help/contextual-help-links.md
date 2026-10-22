@@ -147,8 +147,7 @@ both the panel header and the popover band, and stops the pointer so
 pressing it opens the article rather than starting a panel drag.
 
 Wired: Palette, Explorer, Activity, Layers, Map, Collaborate, Poll, Vote, and
-the six tool panels (Avatar, Laser, Spotlight, Eraser, Format, Slide Deck)
-(a seventh, the Highlighter's, went when the Highlighter became a Draw tile). This closed the gap the feature was written for and had never
+the five tool panels (Avatar, Laser, Spotlight, Format, Slide Deck). This closed the gap the feature was written for and had never
 reached: 21 surfaces linked an article, and every one of them was a dialog, so
 a panel you were looking at could not tell you there was a page about it.
 

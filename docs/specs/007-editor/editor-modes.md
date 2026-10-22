@@ -13,7 +13,7 @@ where it is and changes only how the next mark is made.
 | **tab kind**      | What a tab **is** ([Document](../006-document/document.md)). Reserved for specific uses.                                                                                                                   |
 | **editor mode**   | How a general tab is **worked on** right now: `diagram`, `draw`, `pages`, `plan` or `workshop` (`EditorMode`).                                                                                             |
 | **Diagram mode**  | Structured drawing: the palette, shapes, arrows, icons, templates, snapping and guides.                                                                                                                    |
-| **Draw mode**     | Freehand whiteboarding: the dock, preset pens, eraser, shape recognition ([Draw mode](../023-draw-mode/draw-mode.md)).                                                                                     |
+| **Draw mode**     | A plain board: the person's own board pattern, text boxes that hug their text.                                                                                                                             |
 | **Pages mode**    | Pages on the canvas, of four kinds: infographic pages to lay out, article pages to write, slide pages to present and logo pages to design a logo on ([Pages](pages-mode.md), [Logo pages](logo-pages.md)). |
 | **Plan mode**     | Boards of items: Plan boards, cards, the item panel ([Plan mode](../026-plan/plan-mode.md)).                                                                                                               |
 | **Workshop mode** | Running a session with a team: the Collaborate elements, stickers and the Session strip ([Workshop mode](../012-collaboration/workshop-mode.md)).                                                          |
@@ -180,7 +180,7 @@ element in the same colour.
 
 - **Each mode's default canvas.** The canvas colour is the tab's in every mode; the pattern behind it suits the
   mode. Diagram shows the tab's pattern (the theme's dot grid until someone picks another). Draw shows the person's
-  own board pattern (graph paper until chosen, [Draw mode](../023-draw-mode/draw-mode.md#board-background)).
+  own board pattern (graph paper until chosen).
   Pages shows a **plain** surround, because its pages are the paper and a pattern behind them competes with
   the layout; Plan shows a **blank canvas** too, so boards, sheets and dashboards carry the page. Pages mode's
   and Plan's apply only while the tab keeps its theme's pattern: a pattern someone picked shows in every mode but
@@ -223,10 +223,7 @@ element in the same colour.
 - **Diagram mode** is the editor as described by
   [Canvas and palette](../008-canvas/canvas-and-palette.md),
   [Toolbar layout](toolbar-layout.md) and the canvas specs.
-- **Draw mode** is what the whiteboard was: the dock with its pens, shapes,
-  history and settings; the whiteboard's keyboard shortcuts; pen versus touch;
-  picking by the drawn line; strokes that stay open; nothing animating in; no guides for pens; shape recognition and the two
-  erasers ([Draw mode](../023-draw-mode/draw-mode.md)).
+- **Draw mode** is what the whiteboard was: a plain board on the person's own pattern.
 - **What a mode writes, stays.** A rule that shapes content is stored on the
   element when it is made, never read from the mode: a text box made in Draw
   mode **hugs its text** in both modes and for everyone; one made in Diagram
@@ -504,9 +501,8 @@ dashboard ([Telemetry](../017-telemetry/telemetry.md) "Retired features").
   orientation in Pages mode, `PageAdded` (an infographic page; `SlidePageAdded`,
   `ArticleAdded` and `LogoPageAdded` for the other kinds) by its add button, and `PageRemoved` by
   Delete Page.
-- Draw mode's own events are the **`Draw`** category (pens, shapes, eraser,
-  recognition, background, snap colours,
-  [Draw mode](../023-draw-mode/draw-mode.md#telemetry-telemetry--public-transparency-dashboard)).
+- Draw mode's own events are the **`Draw`** category (a whiteboard tab created,
+  [Telemetry](../017-telemetry/telemetry.md)).
   It was named `Whiteboard`; the stored history is rewritten to `Draw` so the
   dashboard's lines continue.
 - Pages mode's events were named for Infographic mode (`ModeInfographic`,
@@ -560,6 +556,6 @@ dashboard ([Telemetry](../017-telemetry/telemetry.md) "Retired features").
 
 ## References
 
-[Document](../006-document/document.md), [Draw mode](../023-draw-mode/draw-mode.md),
+[Document](../006-document/document.md),
 [Event storming](../021-event-storming/event-storming.md),
 [Toolbar layout](toolbar-layout.md), [Zen mode](zen-mode.md).

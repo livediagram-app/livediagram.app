@@ -40,5 +40,5 @@ Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md): 
 ## Out of scope
 
 - Persisting a pen per document or per team. It is a personal, per-device ergonomic choice.
-- A laser that leaves permanent marks. That is the Pencil ([Canvas and palette](canvas-and-palette.md)) — the laser's whole nature is that it fades.
+- A laser that leaves permanent marks: the laser's whole nature is that it fades.
 - Pointer sounds, click-to-ping, or a "laser cursor" for peers who aren't presenting.

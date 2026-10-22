@@ -62,7 +62,6 @@ presence, CSV, telemetry and help. The model and pure behaviour are the engine's
 label: 'Sheet', group: 5 (the band headed "Spreadsheets" in `PaletteTabBar.tsx`), description: 'A spreadsheet tab: cells, formulas, formatting, sort and filter,
 worked on like a board.', icon: <SheetArt size={18} /> }` after `plan-visualisations`.
 - `palette-layouts.ts`: the Plan layout's categories add `{ id: 'plan-sheets' }` after Visualisations.
-- `whiteboard-shape-catalogue.ts` `EXCLUDED_CATEGORIES` adds it.
 - `components/palette/palette-plan-sheet-tiles.tsx`: `PLAN_SHEET_TILES = [{ id: 'plan:sheet', section:
 'plan-sheets', label: 'Add Sheet', caption: 'Sheet', ..., action: { type: 'shape', kind: 'plan-sheet' }, icon: <SheetArt size={18} /> }]`,
   spread into `PLAN_TILES`. `SheetArt` (`components/sheets/sheet-art.tsx`, main bundle) is a small grid with a

@@ -92,7 +92,7 @@ The element holds one field, `mode`. Everything else is per-viewer and never per
 4. `pickCanvasTool` applies the palette's rules unchanged: entering `spotlight` or `avatar`
    clears the selection; `selectCanvasTool` records the prior tool and emits the palette picker's
    own event for that mode, none for Select and Hand [QF7]. The empty-canvas guard (refusing
-   `eraser`, `format`, `laser`, `spotlight`, `avatar`, `isometric` on an empty tab) is on the path
+   `format`, `laser`, `spotlight`, `avatar`, `isometric` on an empty tab) is on the path
    but never fires for a button pressed on the active tab, which the button itself makes
    non-empty.
 5. On entry to Avatar mode, `useAvatarWalk` consumes `avatarSpawnRef` once and places the feet
@@ -115,8 +115,8 @@ Invariants:
 ## Interfaces and contracts
 
 ```ts
-export const SELECTION_MODES = ['select', 'pan', 'laser', 'spotlight', 'avatar', 'eraser',
-  'format', 'isometric'] as const;
+export const SELECTION_MODES = ['select', 'pan', 'laser', 'spotlight', 'avatar', 'format',
+  'isometric'] as const;
 export type SelectionMode = (typeof SELECTION_MODES)[number];
 export const DEFAULT_BUTTON_MODE: SelectionMode = 'avatar';
 export function isSelectionMode(value: unknown): value is SelectionMode;
@@ -148,8 +148,7 @@ onPressModeButton?: (element: ShapeElement) => void; // Canvas.types, BoxedEleme
 
 - **Persisted:** `mode`, plus the ordinary shape fields. Absent means Avatar.
 - **Migration:** `migrateLegacyModeButtons` (`packages/document/src/legacy-mode-buttons.ts`, run by
-  `migrateStoredElements`) drops a retired `mode` (`'highlighter'`, a mode until the Highlighter
-  became a Draw tile, [Highlighter](../../008-canvas/highlighter.md)), so the button loads as an
+  `migrateStoredElements`) drops a retired `mode` (`'highlighter'` or `'eraser'`), so the button loads as an
   Avatar button rather than failing I4.
 - **Not persisted by default:** colours. A fresh button stores none; an author's pick or a themed
   tab's projection is stored and wins.
@@ -179,8 +178,6 @@ onPressModeButton?: (element: ShapeElement) => void; // Canvas.types, BoxedEleme
 
 - A press is local UI state; there is no wire message and no write.
 - `mode` arrives from any writer (guest, signed-in, API token, MCP); the validator is the gate.
-- Handing out the Eraser is allowed by design; the eraser's own edit gates still apply to the
-  presser.
 
 ## Presentation and UX
 
@@ -239,7 +236,7 @@ No log exists today. Proposed fingerprints (gap, see the report):
 | A stamped skin reads as unset; a pick is kept        | "treat the skin …", "keep a colour the author picked"     | `packages/document/src/behaviour-skin.test.ts`      |
 | Drag tolerance is 4 px, radial (D108)                | `isDragTravel` block                                      | `apps/live/lib/press-gestures.test.ts`              |
 | Unknown `mode` rejected, every mode accepted (I4)    | `mode button validation` block                            | `packages/document/src/validate.test.ts`            |
-| A stored Highlighter mode migrates to the default    | `migrateLegacyModeButtons` block                          | `packages/document/src/legacy-mode-buttons.test.ts` |
+| A stored retired mode migrates to the default        | `migrateLegacyModeButtons` block                          | `packages/document/src/legacy-mode-buttons.test.ts` |
 | Fixed size                                           | "names the controls that never take resize handles"       | `packages/document/src/selection-mode.test.ts`      |
 | No resize handles on fixed-size elements             | fixed-size block                                          | `apps/live/lib/canvas-selection.test.ts`            |
 | Shared settings `…` on the face                      | "gives the shared menu to a kind with settings behind it" | `packages/document/src/behaviour-shapes.test.ts`    |

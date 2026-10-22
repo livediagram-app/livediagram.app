@@ -3,9 +3,9 @@
 A short, optional guided tour of one [page kind](pages-mode.md#page-kinds) in Pages mode: a slide, an
 infographic, an article or a logo. Each kind has its own **track**, which shows how that kind of page is made by
 opening the real controls on the person's own page (a slide's Layout and Background popovers, its deck button,
-the Slide Deck and Present) rather than only pointing at them. It is the [Draw tour](../023-draw-mode/draw-tour.md)'s
+the Slide Deck and Present) rather than only pointing at them. It is the [Workshop tour](../012-collaboration/workshop-tour.md)'s
 sibling: the same welcome card, anchored step cards, glide, dimming ring, Skip, Back and outro card, driven by the
-same engine. Where this spec is silent, the Draw tour's rules hold.
+same engine. Where this spec is silent, the Workshop tour's rules hold.
 
 ## Domain language
 
@@ -52,8 +52,7 @@ same engine. Where this spec is silent, the Draw tour's rules hold.
 
 The tour opens popovers, the page's panel and the Slide Deck, and closes them again on leaving the step. Its
 controls stay live: a layout or background the person picks while its step is up is theirs, kept as any pick is (one
-edit, undoable). The Logo track alone places something: two shapes to combine (below), placed, united and taken away
-with no undo step (`useTourSquare`), so the page is left as it was and Undo never brings them back.
+edit, undoable).
 
 ## The steps
 
@@ -126,10 +125,7 @@ A **wireframe** page takes this track under its own offer (**Getting started wit
 
 The logo page's Show Me steps ([Logo pages](logo-pages.md#show-me)) behind the offer **Getting started with
 Logos?**: **Start From a Logo Layout** (the panel, opened on Layouts), **Draw on Guides** and **Mirror As You Draw**
-(each popover opened), then Combine shown for real (`logo-combine-demo.ts`): **Combine Shapes** places a square and
-a circle overlapping in the page's lower third and selects them, so Combine shows; **Four Ways to Combine** opens its
-menu; **One Shape** unites them, as Unite does, and highlights the result. Then **That Is a Logo Page**. The shapes and
-their union go when the tour ends.
+(each popover opened), then **That Is a Logo Page**.
 
 ### Filtering
 
@@ -146,7 +142,7 @@ Only someone who may edit the tab is offered the tour, or sees Show Me: an **Edi
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
-The Draw tour's funnel, with its own tokens; the track shows in the step tokens:
+The Workshop tour's funnel, with its own tokens; the track shows in the step tokens:
 
 - **Offer**: `UI` · `Opened` · `PagesTourOffer` when its welcome card shows; `UI` · `Closed` ·
   `PagesTourOffer` on No.
@@ -164,7 +160,7 @@ The Draw tour's funnel, with its own tokens; the track shows in the step tokens:
 ## Power user mode
 
 [Power user mode](power-user-mode.md) marks the Pages tour seen (`pagesTourSeen`, every kind while the mode
-is on) alongside the Diagram, Plan, Workshop and Draw tours.
+is on) alongside the Diagram, Plan and Workshop tours.
 
 ## Code
 

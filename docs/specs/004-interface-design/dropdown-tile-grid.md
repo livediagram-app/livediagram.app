@@ -4,7 +4,7 @@ Status: shipped
 
 ## What
 
-The **canvas-tool** picker (Select / Hand / Eraser / Format / Laser /
+The **canvas-tool** picker (Select / Hand / Format / Laser /
 Spotlight / Isometric / Zen, plus Avatar while you are in it) and the **palette category** picker
 (Popular / Shapes / Tools / Components / Devices / Icons / Technology) lay
 their options out as an icon-over-label **tile grid** instead of one long
