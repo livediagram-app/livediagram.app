@@ -1,5 +1,5 @@
 // "Something was just written to the api" — a module-level signal the
-// Timeline listens to so the feed reflects the reader's own actions
+// scoped feeds (History, Team Activity) listen to so they reflect the reader's own actions
 // without a browser refresh (docs/specs/013-workspace/timeline.md §2.4b).
 //
 // Every write goes out through `apiFetch` (core.ts), which raises this

@@ -23,7 +23,7 @@ The repository is public, so GitHub-hosted runners cost nothing; the price of th
 run's wall time, which runs beside CI's jobs and **stays within 5 minutes**, so the gate never
 holds back a merge for longer than CI itself does. The run needs no secret, no
 Cloudflare account and no deployed environment: the stack is local to the runner
-([The stack under test](#the-stack-under-test)), so a pull request from a fork runs it too.
+([The stack under test](#the-stack-under-test)), so every pull request runs it.
 
 The browser suite is its own workflow, `e2e.yml` (named **E2E Smoke**), triggered on:
 

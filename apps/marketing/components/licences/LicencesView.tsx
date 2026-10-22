@@ -23,12 +23,12 @@ export function LicencesView({ manifest }: { manifest: LicencesManifest }) {
   return (
     <>
       <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl dark:text-slate-100">
-        Open-source licences
+        Third-party licences
       </h1>
       <p className="mt-3 text-lg text-slate-600 dark:text-slate-300">
-        liveplanner is MIT licensed and built on the work of many open-source projects. These are
-        the ones our apps ship, generated from what each app actually bundles every time the site is
-        built.
+        liveplanner is built on the work of many third-party software projects, each under its own
+        licence. These are the ones our apps ship, generated from what each app actually bundles
+        every time the site is built.
       </p>
       {manifest.sections.map((section) => (
         <Section key={section.side} section={section} manifest={manifest} />

@@ -1,6 +1,7 @@
-// Timeline wire format (docs/specs/013-workspace/timeline.md) — the Explorer's landing feed.
+// Timeline wire format (docs/specs/013-workspace/timeline.md): the event record behind Home, a
+// document's History and a team's Activity.
 //
-// The api worker emits these; the live app's Timeline pane consumes
+// The api worker emits these; the live app's scoped feeds and Home consume
 // them. Kept in its own module rather than piled into index.ts: the
 // timeline has a scope model + an event vocabulary of its own, and
 // both want room to grow without the barrel becoming a catalogue.
@@ -143,12 +144,6 @@ export type TimelineReadResult = {
   // Opaque "<occurredAt>:<eventId>". Absent when the last page has
   // been served.
   nextCursor?: string;
-  // The unread watermark as it stood BEFORE this read: anything newer
-  // is new to this reader on this visit. The read then moves it
-  // forward, so a second load of the same page reports nothing new —
-  // which is the correct answer, and why the client must render from
-  // the value it was given rather than re-deriving one.
-  lastSeenAt?: number;
 };
 
 // The page a read serves by default, and the ceiling the endpoint will

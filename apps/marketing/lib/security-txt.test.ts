@@ -15,10 +15,8 @@ describe('securityTxt', () => {
       }),
   );
 
-  it('points Contact at the private GitHub advisory form', () => {
-    expect(fields.Contact).toBe(
-      'https://github.com/liveplanner-app/liveplanner.app/security/advisories/new',
-    );
+  it('points Contact at the private security inbox', () => {
+    expect(fields.Contact).toBe('mailto:security@liveplanner.app');
   });
 
   it('expires one year after the build, in RFC 3339 without milliseconds', () => {

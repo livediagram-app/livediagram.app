@@ -241,8 +241,7 @@ List and Details are not offered: they are for larger screens. The browse views 
 library always show cards, and the toggle is hidden so it takes no room in the header. The saved
 choice is left alone, so the same device shows it again once the window is wide enough.
 
-**The actions menu** (the ⋯ on a row or card, and on a Timeline document
-card, [Timeline](../013-workspace/timeline.md) §2.8) has one shape wherever it opens: a **header row**
+**The actions menu** (the ⋯ on a row or card) has one shape wherever it opens: a **header row**
 naming the document with its visibility badge, because a menu opens away
 from its trigger and on a grid of near-identical cards the menu itself
 has to say which one it belongs to; then **Open on its own, under a
@@ -299,7 +298,7 @@ document, so a per-card badge is noise — the team list omits it as well).
   library; the "Shared With Me" page keeps its fixed layout (it already
   shows the thumbnail).
 
-## Self-hosting
+## Without image storage
 
 The whole feature is gated on the optional `SNAPSHOTS` R2 binding (it caches
 nothing but snapshots and share cards): with no bucket, both endpoints 404 and

@@ -88,7 +88,7 @@ export { DocumentRoom };
 // when the caller is over the configured cap (wrangler.toml's
 // WRITE_RATE_LIMITER binding) so the endpoint can short-circuit
 // with a 429. Falls through to "allowed" when the binding is
-// absent so self-host deployments without the feature still serve.
+// absent so deployments without the feature still serve.
 async function isWriteRateLimited(env: Env, ownerId: string): Promise<boolean> {
   if (!env.WRITE_RATE_LIMITER) return false;
   const result = await env.WRITE_RATE_LIMITER.limit({ key: ownerId });
@@ -371,7 +371,7 @@ async function routeApiRequest(
   }
   // Token-authed READS (docs/specs/015-api/public-api-and-tokens.md §3.5): GETs under a token aren't covered by
   // the write limiter, so an external integration's reads get their own
-  // per-token throttle. Optional binding → allow when absent (self-host).
+  // per-token throttle. Optional binding → allow when absent (a deployment without it).
   if (tokenAuth && request.method === 'GET' && env.API_TOKEN_READ_RATE_LIMITER) {
     const ok = await env.API_TOKEN_READ_RATE_LIMITER.limit({ key: `token:${tokenAuth.tokenId}` });
     if (!ok.success) return rateLimited();
@@ -380,7 +380,7 @@ async function routeApiRequest(
   // Throttle blind share-code / password guessing on the share-resolve
   // read (GET /api/share/<code>), which carries the optional share
   // password and is otherwise an unauthenticated read exempt from the
-  // write limiter above. Per-IP. Absent binding → allow (self-host).
+  // write limiter above. Per-IP. Absent binding → allow (a deployment without it).
   // A link preview's two reads (docs/specs/013-workspace/share-link-previews.md) take their own bucket, so a room
   // of people opening one link together never spends the editor's share resolve on previews.
   if (request.method === 'GET' && segments[1] === 'share' && env.SHARE_RATE_LIMITER) {
@@ -588,7 +588,7 @@ const worker = {
       ctx.waitUntil(runTokenExpirySweep(env));
       // docs/specs/013-workspace/timeline.md §4.5: the same window, on the Timeline. Separate from
       // the email sweep above because that one no-ops without a Resend
-      // key, and a self-host with no email provider still needs to know
+      // key, and a deployment with no email provider still needs to know
       // its integration is about to break.
       ctx.waitUntil(
         runTimelineExpirySweep(env)

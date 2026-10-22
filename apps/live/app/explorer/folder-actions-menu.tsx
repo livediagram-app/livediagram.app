@@ -11,7 +11,6 @@
 // rename or delete a team folder) simply leaves it out rather than
 // showing a row that does nothing.
 
-import { CloseIcon } from '@liveplanner/ui';
 import {
   FolderOutlineIcon,
   OpenIcon,
@@ -37,7 +36,6 @@ export function FolderActionsMenu({
   onNewSubfolder,
   onMove,
   onDelete,
-  onRemoveFromTimeline,
   defaults,
 }: {
   folder: { id: string; name: string };
@@ -51,9 +49,6 @@ export function FolderActionsMenu({
   onNewSubfolder?: () => void;
   onMove?: () => void;
   onDelete?: () => void;
-  // Timeline only (docs/specs/013-workspace/timeline.md §2.9): take THIS card off the reader's feed.
-  // Says nothing about the folder, so it sits apart from Delete.
-  onRemoveFromTimeline?: () => void;
   // "Use as Default for" (docs/specs/013-workspace/default-folders.md): the reader's default
   // folders, checked for this folder (or for My Documents). Absent until the defaults load, and
   // on a folder the reader may not file into.
@@ -64,7 +59,7 @@ export function FolderActionsMenu({
     fn();
     onClose();
   };
-  const verbs = [onRename, onNewSubfolder, onMove, defaults, onRemoveFromTimeline].some(Boolean);
+  const verbs = [onRename, onNewSubfolder, onMove, defaults].some(Boolean);
   return (
     <PortalMenu anchor={anchor} placement="below" onClose={onClose}>
       <MenuHeader title={folder.name} />
@@ -104,14 +99,6 @@ export function FolderActionsMenu({
         />
       ) : null}
       {defaults ? <UseAsDefaultMenu menu={defaults} /> : null}
-      {onRemoveFromTimeline ? (
-        <MenuActionRow
-          plain
-          icon={<CloseIcon size={11} />}
-          label="Remove from Timeline"
-          onClick={then(onRemoveFromTimeline)}
-        />
-      ) : null}
       {onDelete ? (
         <>
           {verbs ? <MenuGroupSeparator /> : null}

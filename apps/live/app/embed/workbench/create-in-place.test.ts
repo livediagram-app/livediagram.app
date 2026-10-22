@@ -28,7 +28,7 @@ describe('createInPlaceOf', () => {
       createInPlaceOf('/new', ORIGIN, { kind: 'explorer', node: { kind: 'folder', id: 'f2' } }),
     ).toEqual({ folderId: 'f2', teamId: null, templateKind: null });
     expect(
-      createInPlaceOf('/new?blank=1', ORIGIN, {
+      createInPlaceOf('/new?template=blank', ORIGIN, {
         kind: 'explorer',
         node: { kind: 'team', id: 't2' },
       }),

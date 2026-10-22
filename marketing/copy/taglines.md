@@ -24,7 +24,7 @@ Classic "tagline" slot on most directories.
 - Plan the work together, in real time. [38]
 - Boards, sheets, dashboards and forms. [38]
 - Open a link, plan, share. Together. [36]
-- A free, open source planner for teams. [39]
+- A free planner for teams, no trackers. [39]
 - Plan with your team, no sign-up wall. [37]
 
 ## Medium, <= 60 characters
@@ -33,7 +33,7 @@ Listing headlines, Open Graph titles, search-result titles.
 
 - A real-time planner for teams that works without sign-up. [58]
 - Boards, sheets and forms that share one set of cards. [53]
-- Plan work together. Free, open source, no sign-up. [51]
+- Plan work together. Free, no trackers, no sign-up. [52]
 - Plan the work with your team in real time, sign-in optional. [60]
 
 ## Long, <= 80 characters
@@ -41,7 +41,7 @@ Listing headlines, Open Graph titles, search-result titles.
 Hero subheads, Twitter/X header copy, longer headline fields.
 
 - Plan the work together, live: boards, sheets, dashboards and forms in one place. [80]
-- Real-time boards, sheets and forms for teams. MIT-licensed and free forever. [76]
+- Real-time boards, sheets and forms for teams. Free, with no trackers. [70]
 - Plan together in the browser. No sign-up wall, no paid tier, no lock-in. [73]
 
 ## Long, <= 100 characters
@@ -49,7 +49,7 @@ Hero subheads, Twitter/X header copy, longer headline fields.
 Meta-description-adjacent fields, longer banner copy.
 
 - Boards of cards, spreadsheets, dashboards and forms, live for your whole team. No sign-up wall. [95]
-- Open a link and plan the work with your team. Real-time, MIT-licensed, free, self-hostable. [92]
+- Open a link and plan the work with your team. Real-time, free, no ads, no trackers. [85]
 
 ## Pick-list by use
 

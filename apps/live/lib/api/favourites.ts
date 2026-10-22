@@ -28,7 +28,7 @@ export async function apiListFavourites(ownerId: string): Promise<string[]> {
   try {
     return [...(await fetchCloudFavouriteIds(ownerId)), ...offline];
   } catch {
-    // Offline, or a pure-guest self-host with no /api configured. The local
+    // Offline, or a pure-guest deployment with no /api configured. The local
     // stars still stand; the cloud half degrades to "no favourites" rather
     // than breaking the Explorer.
     return offline;

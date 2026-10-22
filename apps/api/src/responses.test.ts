@@ -183,7 +183,7 @@ describe('CORS_HEADERS', () => {
   });
 
   it('allows the conversion header Take Offline and Sync Document send', () => {
-    // Missing, a cross-origin editor (dev on its own port, or a self-host
+    // Missing, a cross-origin editor (dev on its own port, or a deployment
     // with the api elsewhere) had both conversions fail at the preflight.
     expect(CORS_HEADERS['Access-Control-Allow-Headers']).toContain(DOCUMENT_CONVERSION_HEADER);
   });

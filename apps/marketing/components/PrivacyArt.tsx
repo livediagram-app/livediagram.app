@@ -275,40 +275,24 @@ export function PrivateByDefaultArt() {
   );
 }
 
-/* Open source: a code-bracket pair with the source rolling through. */
-export function OpenSourceArt() {
+/* No ads: a page with an ad slot that fades out, struck through, and the
+   page's own content lines left in its place. */
+export function NoAdsArt() {
   return (
     <PrivacyFrame>
       <svg viewBox="0 0 220 90" className="absolute inset-0 h-full w-full">
-        {/* Left bracket */}
-        <text x="35" y="62" fontSize="56" fontWeight="700" fill={SKY}>
-          {'<'}
-        </text>
-        {/* Right bracket */}
-        <text x="170" y="62" fontSize="56" fontWeight="700" fill={SKY}>
-          {'>'}
-        </text>
-        {/* Code lines in the middle, fading in row by row */}
-        {[0, 1, 2, 3].map((i) => (
-          <g key={i} className="fa-fade" style={{ animationDelay: `${i * 0.4}s` }}>
-            <rect x={70} y={20 + i * 13} width={6 + i * 3} height="2.5" rx="1" fill={SLATE} />
-            <rect
-              x={82 + i * 3}
-              y={20 + i * 13}
-              width={28 - i * 2}
-              height="2.5"
-              rx="1"
-              fill={SKY}
-            />
-            <rect x={114 + i} y={20 + i * 13} width={18} height="2.5" rx="1" fill={SLATE} />
-          </g>
+        {/* The page */}
+        <rect x="60" y="10" width="100" height="70" rx="4" fill={SURFACE} stroke={SLATE} />
+        {[0, 1, 2].map((i) => (
+          <rect key={i} x={70} y={20 + i * 9} width={80 - i * 14} height="3" rx="1" fill={SKY} />
         ))}
-        {/* MIT badge */}
-        <g>
-          <rect x="90" y="72" width="40" height="12" rx="3" fill={SKY} />
-          <text x="110" y="81" textAnchor="middle" fontSize="9" fontWeight="700" fill={ON_SKY}>
-            MIT
+        {/* The ad slot that is not there */}
+        <g className="fa-fade">
+          <rect x="70" y="50" width="80" height="22" rx="3" fill={ROSE_FAINT} stroke={ROSE} />
+          <text x="110" y="65" textAnchor="middle" fontSize="10" fontWeight="700" fill={ROSE}>
+            AD
           </text>
+          <path d="M72 70 L148 52" stroke={ROSE} strokeWidth="2.5" strokeLinecap="round" />
         </g>
       </svg>
     </PrivacyFrame>

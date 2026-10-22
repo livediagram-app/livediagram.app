@@ -1,6 +1,6 @@
 # Read-only embeds (`/embed`)
 
-Tracked as [issue #8](https://github.com/liveplanner-app/liveplanner.app/issues/8). [Purpose](../001-project-vision/purpose.md) says "diagrams may be embedded elsewhere"; this spec makes a shared document iframe-able in Notion, wikis, and docs. Every embedded document is a distribution channel for a free product whose growth model is distribution ([Open source + distribution](../002-project-scope/open-source-and-business-model.md)).
+Tracked as issue #8. [Purpose](../001-project-vision/purpose.md) says "diagrams may be embedded elsewhere"; this spec makes a shared document iframe-able in Notion, wikis, and docs. Every embedded document is a distribution channel for a free product whose growth model is distribution ([Business model + licence](../002-project-scope/business-model-and-licence.md)).
 
 ## URL shape
 
@@ -35,9 +35,9 @@ Each pass in the ShareDialog ([Live app → Share dialog](../007-editor/live-app
 - `track('Session', 'Opened', 'Embed')` once when the embed route hydrates.
 - `track('UI', 'Copied', 'EmbedCode')` when the snippet is copied (sibling of the existing `UI / Copied / ShareLink`).
 
-## Self-hosting
+## Other origins
 
-Works with zero external services: the embed page is part of the live app's static export, and the snippet builds its URL from the live origin at copy time, so self-hosted instances emit self-hosted embed URLs.
+Works with zero external services: the embed page is part of the live app's static export, and the snippet builds its URL from the live origin at copy time, so every deployment (staging, local development) emits embed URLs on its own origin.
 
 ## Out of scope
 

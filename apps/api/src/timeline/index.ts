@@ -9,6 +9,5 @@ export * from './team-events';
 export * from './account-events';
 export * from './tab-diff';
 export * from './tab-save';
-export * from './backfill';
 export * from './expiry-sweep';
 export * from './comment-retract';

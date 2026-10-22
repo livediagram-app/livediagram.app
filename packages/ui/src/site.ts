@@ -2,8 +2,8 @@ import type { Metadata, Viewport } from 'next';
 
 // The site-wide constants every public frontend shares. Before this each app
 // kept its own copy (marketing and help had a `lib/site.ts` apiece, telemetry
-// inlined the origin, the ShareRail and the editor's GitHub link hardcoded
-// theirs), so the origin and the repo URL lived in five places.
+// inlined the origin and the ShareRail hardcoded its own), so the origin
+// lived in several places.
 
 // The canonical origin. liveplanner.app is one origin: the router stitches
 // the apps together by path (docs/specs/016-platform/router-app.md), so every app's metadataBase, JSON-LD
@@ -25,11 +25,6 @@ export const SITE_DESCRIPTION =
 export const SITE_PITCH =
   'a real-time canvas for diagrams, whiteboards, illustrations and documents';
 export const sentencePitch = () => `${SITE_PITCH[0]!.toUpperCase()}${SITE_PITCH.slice(1)}.`;
-
-// The open-source repository (docs/specs/002-project-scope/open-source-and-business-model.md: the codebase is public + MIT), linked
-// from the footer, the FAQ, the status page, the help centre's contact page,
-// the editor's bottom bar and Explorer menu, and the `sameAs` JSON-LD.
-export const REPO_URL = 'https://github.com/liveplanner-app/liveplanner.app';
 
 // The public contact form (a liveplanner Form, docs/specs/030-forms/forms.md), the one way to reach the
 // team; no email address is published. Linked from the help centre's contact page, the FAQ, the status

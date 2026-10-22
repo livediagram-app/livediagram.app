@@ -1,7 +1,7 @@
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
-import { CONTACT_FORM_URL, pageMetadata, REPO_URL } from '@liveplanner/ui';
+import { CONTACT_FORM_URL, pageMetadata } from '@liveplanner/ui';
 
 const STATUS_TITLE = 'Status · liveplanner';
 const STATUS_DESCRIPTION =
@@ -140,15 +140,6 @@ export default function StatusPage() {
             className="underline hover:text-slate-800 dark:hover:text-slate-100"
           >
             contact form
-          </a>{' '}
-          or file an issue on{' '}
-          <a
-            href={`${REPO_URL}/issues`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline hover:text-slate-800 dark:hover:text-slate-100"
-          >
-            GitHub
           </a>
           .
         </p>

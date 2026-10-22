@@ -34,7 +34,7 @@ been removed.
 | `comments.png`            | A comment thread open on a card, with an @mention.                             |
 | `share.png`               | The Share dialog: editor, participant and view-only links, expiry.             |
 | `teams.png`               | A team and its shared folder of projects.                                      |
-| `recent_1.png`            | The Explorer's Home: recent projects and the Timeline.                         |
+| `recent_1.png`            | The Explorer's Home: recent projects and what happened.                        |
 | `recent_2_cards.png`      | The Explorer's project cards in a folder.                                      |
 | `search.png`              | Search across projects, tabs and cards.                                        |
 | `API_Tokens.png`          | The API tokens settings page used by MCP and the CLI.                          |

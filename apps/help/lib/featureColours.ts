@@ -218,7 +218,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'toolbar-layout': '#0ea5e9',
   // Explorer section guides
   'list-and-card-views': '#0ea5e9',
-  timeline: '#8b5cf6',
+  home: '#8b5cf6',
   activity: '#f43f5e',
   folders: '#f59e0b',
   'default-folders': '#f59e0b',

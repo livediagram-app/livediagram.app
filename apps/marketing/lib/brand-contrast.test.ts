@@ -73,7 +73,7 @@ describe('brand text contrast', () => {
     ['violet-300 (eyebrows)', '#c4b5fd'],
     ['emerald (Free)', '#34d399'],
     ['amber (No Account)', '#fbbf24'],
-    ['sky (Open Source)', '#38bdf8'],
+    ['sky (Your Work, Yours)', '#38bdf8'],
     ['rose (Private)', '#fb7185'],
     ['violet (Live)', '#a78bfa'],
   ] as const;

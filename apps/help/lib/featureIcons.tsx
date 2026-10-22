@@ -866,8 +866,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M11 6.5h9.5M11 12h9.5M11 17.5h6" />
     </Glyph>
   ),
-  // Horizontal, and posted: the rail is a run of evenly spaced points. The
-  // Explorer's `timeline` is a vertical feed, which is why this one lies flat.
+  // Horizontal, and posted: the rail is a run of evenly spaced points.
   'timeline-rail': (
     <Glyph>
       <Prims prims={lucideGitCommitHorizontal} />
@@ -1649,14 +1648,11 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <rect x="12.5" y="13" width="8.5" height="6" rx="1.5" />
     </Glyph>
   ),
-  // A day-by-day feed: the spine, and what landed against it.
-  timeline: (
+  // Home, the Explorer's landing page: a house.
+  home: (
     <Glyph>
-      <path d="M6 3.5v17" />
-      <circle cx="6" cy="7.5" r="1.6" />
-      <circle cx="6" cy="16.5" r="1.6" />
-      <path d="M9.5 7.5h9M9.5 16.5h6" />
-      <path d="M9.5 12h4" />
+      <path d="M4 11.5 12 4.5l8 7" />
+      <path d="M6 10v9.5h4.5v-5h3v5H18V10" />
     </Glyph>
   ),
   // An inbox tray with a tick above it: what is waiting on you, as opposed

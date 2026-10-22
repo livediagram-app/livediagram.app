@@ -1,16 +1,7 @@
 import { Glyph } from '@liveplanner/ui';
-// Inline SVG icons for the New Document wizard and its neighbours (folder-open, spinner, sparkle). Pure
-// presentational.
-export function FolderOpenIcon() {
-  return (
-    <Glyph size={14} units={16}>
-      <path d="M2 4.5A1.5 1.5 0 0 1 3.5 3h2.3l1.2 1.5h5.5A1.5 1.5 0 0 1 14 6" />
-      <path d="M2 6h11.2a1 1 0 0 1 .97 1.24l-1 4A1 1 0 0 1 12.2 12H3.3a1 1 0 0 1-.98-.8L1.3 6.2A1 1 0 0 1 2.28 5H2z" />
-    </Glyph>
-  );
-}
+// Inline SVG icons shared by the editor's prompts (spinner, sparkle). Pure presentational.
 
-// Inline spinner for the Create Document button while the host commits.
+// Inline spinner for a button while its host commits.
 export function Spinner() {
   return (
     <Glyph size={13} units={16} className="animate-spin" strokeLinejoin="miter">

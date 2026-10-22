@@ -197,8 +197,7 @@ Tests and each Editor unit tests job upload their `lcov` reports to
 [Codecov](https://app.codecov.io/gh/liveplanner-app/liveplanner.app), which merges the four uploads
 of a commit into one report (`codecov.yml`). It informs; it never gates: its statuses are
 informational, and the enforced bar stays the thresholds above. The upload authenticates with
-GitHub's OIDC token (`id-token: write`), so no Codecov secret exists; a pull request from a fork
-uploads tokenless. A failed upload logs its error and leaves the job green, so a Codecov outage never
+GitHub's OIDC token (`id-token: write`), so no Codecov secret exists. A failed upload logs its error and leaves the job green, so a Codecov outage never
 holds back a merge.
 
 The pull request's coverage report is ours, not Codecov's (`comment: false`): the organisation's
@@ -224,7 +223,7 @@ whose closing marker was edited away has everything from the opening marker repl
   better and `-` what got worse.
 
 It runs from `main`'s copy of the workflow and script and never checks out the pull request's code,
-so it writes to a pull request from a fork too. `workflow_dispatch` with a pull request number runs
+so it writes to every pull request. `workflow_dispatch` with a pull request number runs
 it by hand; `COVERAGE_REPORT_DRY_RUN=1` prints the report instead of writing it.
 
 ## Before a push

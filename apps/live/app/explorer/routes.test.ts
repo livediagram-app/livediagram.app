@@ -9,7 +9,6 @@ import { EXPLORER_LANDING_PATH } from '@/lib/explorer-landing';
 
 const STATIC_NODES: SelectedNode[] = [
   { kind: 'home' },
-  { kind: 'timeline' },
   { kind: 'inbox' },
   { kind: 'recent' },
   { kind: 'favourites' },
@@ -84,12 +83,14 @@ describe('explorer route mapping', () => {
     });
   });
 
-  it('keeps the Timeline on its route', () => {
-    expect(explorerPathFor({ kind: 'timeline' })).toBe('/explorer/timeline');
+  it('keeps Home on its route, and sends the removed Timeline route to Home', () => {
     expect(explorerPathFor({ kind: 'home' })).toBe('/explorer/home');
+    expect(selectedFromRoute('/explorer/timeline', new URLSearchParams())).toEqual({
+      kind: 'home',
+    });
   });
 
-  // The landing section is Home (docs/specs/013-workspace/timeline.md §8.1). Three places decide
+  // The landing section is Home (docs/specs/013-workspace/explorer-home.md "Route"). Three places decide
   // it (the live worker's 302, the /explorer client replace, and this default) and they have to
   // agree, or a mangled link lands somewhere the address bar doesn't.
   it('falls back to home for /explorer, id-less folder/team URLs, and junk', () => {

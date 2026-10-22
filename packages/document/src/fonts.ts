@@ -7,7 +7,7 @@
 //
 // Fonts are a progressive enhancement: the stack always ends in a system
 // fallback and the stylesheet loads with `display=swap`, so if Google
-// Fonts is blocked (or a self-host opts out) text still renders — just in
+// Fonts is blocked (or a deployment opts out) text still renders — just in
 // the fallback face. Browsers only fetch a family that's actually applied.
 
 type FontOption = {

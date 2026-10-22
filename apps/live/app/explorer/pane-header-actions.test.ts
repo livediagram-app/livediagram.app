@@ -7,21 +7,13 @@ describe('paneHeaderActions', () => {
     expect(paneHeaderActions('folder').newFolder).toBe(true);
     // Favourites is a computed view like Recent and Search results: a folder made there
     // would not show up there (docs/specs/013-workspace/favourites.md "The view").
-    for (const kind of ['favourites', 'recent', 'search', 'home', 'timeline'] as const) {
+    for (const kind of ['favourites', 'recent', 'search', 'home'] as const) {
       expect(paneHeaderActions(kind).newFolder, kind).toBe(false);
     }
   });
 
   it('offers New Document everywhere a new document lands, Home included', () => {
-    for (const kind of [
-      'home',
-      'recent',
-      'all',
-      'folder',
-      'favourites',
-      'search',
-      'timeline',
-    ] as const) {
+    for (const kind of ['home', 'recent', 'all', 'folder', 'favourites', 'search'] as const) {
       expect(paneHeaderActions(kind).newDocument, kind).toBe(true);
     }
     for (const kind of [

@@ -275,7 +275,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
       </main>
 
       {/* Bottom bar (docs/specs/007-editor/live-app.md): the same strip as the editor's tab bar, minus
-          the tabs — the shared right-hand control cluster (search / GitHub /
+          the tabs — the shared right-hand control cluster (search /
           settings / dark-mode). Sticky so it stays in view while the dashboard
           scrolls; the sign-in banner is nudged up to clear it. */}
       <div
@@ -287,7 +287,6 @@ function ShellChrome({ children }: { children: ReactNode }) {
           onOpenSearch={() => setSearchOpen(true)}
           onOpenSettings={surface.settings ? () => setSettingsOpen(true) : undefined}
           powerUser={isPowerUserMode(prefs)}
-          github={surface.appLinks}
           appearance={surface.appearance}
         />
         {/* A workspace frame's Open in liveplanner: this view in a full tab. */}

@@ -24,7 +24,7 @@ import { ChevronGlyph, VerbGlyph } from './home-icons';
 import { FOCUS_RING, MUTED, ROW } from './home-styles';
 import { SOLID_BRAND_DARK } from '@liveplanner/ui';
 
-/** Newer than the person's last look: the Timeline card's New pill, words not colour. */
+/** Newer than the person's last look: a New pill, words not colour. */
 function NewPill() {
   return (
     <span

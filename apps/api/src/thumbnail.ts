@@ -70,7 +70,7 @@ export type ThumbnailOptions = { defer?: (write: Promise<unknown>) => void };
 
 // Resolve a document's cached SVG snapshot, rendering + caching it first
 // if stale. Returns null — caller should 404 / fall back to an icon —
-// when there's nothing to show: no R2 binding (self-host without
+// when there's nothing to show: no R2 binding (a deployment without
 // storage), no tab, or an empty / unparseable first tab.
 export async function getDocumentThumbnailSvg(
   env: Env,

@@ -20,7 +20,7 @@ export function HeroCorner() {
   };
   return (
     <span className="inline-flex items-center gap-1.5">
-      <HelpArticleLink article="timeline" variant="button" />
+      <HelpArticleLink article="home" variant="button" />
       <Tooltip label={HERO_COPY.hideBanner}>
         <button
           type="button"

@@ -732,7 +732,7 @@ In `packages/api-schema/src/changesets.ts` (CS35):
 | `CHANGESET_SEEN_HEADER`          | `X-Changeset-Seen`     | Spec                                                 | fixed             |
 | `CLIENT_HEADER`                  | `X-Liveplanner-Client` | CS25                                                 | fixed             |
 
-No new binding or environment variable; self-hosting needs only the migration. Staging needs no `[env.staging]`
+No new binding or environment variable; a deployment needs only the migration. Staging needs no `[env.staging]`
 change.
 
 ## Defaults ledger

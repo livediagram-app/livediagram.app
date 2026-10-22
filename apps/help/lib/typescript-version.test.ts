@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { workspaceManifests } from '../../../scripts/ci-test-filters.mjs';
 
-// One TypeScript (docs/development/contributing.md#typescript): every workspace that type-checks
+// One TypeScript (docs/development/engineering-notes.md#typescript): every workspace that type-checks
 // lists the root manifest's `typescript`, TypeScript 7, and nothing aliases another TypeScript under
 // a second name. A workspace on its own version type-checks against a different compiler than CI
 // expects, and an alias brings back the classic compiler API the repo has moved off. It lives here

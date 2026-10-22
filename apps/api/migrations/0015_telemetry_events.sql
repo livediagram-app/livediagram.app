@@ -4,8 +4,8 @@
 -- rows are anonymous by construction, so the public /telemetry
 -- dashboard can never surface anything identifying.
 --
--- Lives in the existing DB (not a separate database) so self-hosters
--- who already provisioned it get telemetry + the dashboard with zero
+-- Lives in the existing DB (not a separate database) so a deployment
+-- that already provisioned it get telemetry + the dashboard with zero
 -- extra setup. The ts index serves the fixed-window aggregate queries
 -- (today / last 7 days / last 30 days).
 

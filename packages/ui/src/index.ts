@@ -87,7 +87,6 @@ export { IDENTITY_FILL, identityDeep, identityVars } from './identity-fill';
 export {
   SITE_URL,
   SITE_NAME,
-  REPO_URL,
   CONTACT_FORM_URL,
   SITE_DESCRIPTION,
   SITE_PITCH,

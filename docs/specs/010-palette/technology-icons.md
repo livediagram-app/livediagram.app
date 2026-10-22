@@ -83,7 +83,7 @@ type TechIconDef = {
   Cloudflare / Firebase / generic for a cohesive palette, using each service's **official brand /
   category colour**. It is authored in-repo as compact SVG, not the verbatim
   vendor asset packs — keeps the bundle small, renders crisply at icon size, and
-  sidesteps redistributing proprietary SVGs from a public MIT repo (see [Open source + distribution](../002-project-scope/open-source-and-business-model.md),
+  sidesteps redistributing vendors' proprietary SVGs (see [Business model + licence](../002-project-scope/business-model-and-licence.md),
   [Secrets policy](../002-project-scope/secrets-policy.md)).
 - Glyphs are generic: no vendor trademark mark (Vercel draws a rocket, a generic deploy
   glyph). Two services of one provider never share a glyph (Route 53 is a DNS

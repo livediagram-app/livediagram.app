@@ -291,11 +291,8 @@ export async function migrateOwnerId(
   const results = await env.DB.batch(keys.map((key) => statements[key]));
   const changes = (key: keyof typeof statements) => results[keys.indexOf(key)]?.meta.changes ?? 0;
   // timeline (docs/specs/013-workspace/timeline.md §9): a week of drawing as a guest is history
-  // worth keeping, so the feed, the authored events, and the
-  // scope-state row all follow the user to their new account. The
-  // scope-state row matters as much as the events: without it the
-  // backfill would run again against the Clerk id and re-seed what
-  // just migrated.
+  // worth keeping, so the memberships, the authored events, and the
+  // scope-state row (Home's unread mark) all follow the user to their new account.
   await migrateTimelineOwner(env, fromOwnerId, toOwnerId);
   // Activity (docs/specs/013-workspace/inbox.md §2.2): the ids INSIDE the tab blobs (comment
   // authors, self-assigned actions) are not rewritten, so the old

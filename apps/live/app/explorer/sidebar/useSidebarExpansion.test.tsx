@@ -10,7 +10,7 @@ import { useSidebarExpansion } from './useSidebarExpansion';
 
 describe('useSidebarExpansion', () => {
   it('starts with My Documents open and Library closed', () => {
-    const { result } = renderHook(() => useSidebarExpansion({ kind: 'timeline' }));
+    const { result } = renderHook(() => useSidebarExpansion({ kind: 'inbox' }));
     expect(result.current.expanded.has(MY_DOCUMENTS_EXPAND_KEY)).toBe(true);
     expect(result.current.expanded.has(LIBRARY_EXPAND_KEY)).toBe(false);
   });
@@ -18,7 +18,7 @@ describe('useSidebarExpansion', () => {
   it('opens Library when a Library page becomes current', () => {
     const { result, rerender } = renderHook(
       ({ selected }: { selected: SelectedNode }) => useSidebarExpansion(selected),
-      { initialProps: { selected: { kind: 'timeline' } as SelectedNode } },
+      { initialProps: { selected: { kind: 'inbox' } as SelectedNode } },
     );
     rerender({ selected: { kind: 'themes' } });
     expect(result.current.expanded.has(LIBRARY_EXPAND_KEY)).toBe(true);
@@ -31,7 +31,7 @@ describe('useSidebarExpansion', () => {
   });
 
   it('toggles any key, folder ids included', () => {
-    const { result } = renderHook(() => useSidebarExpansion({ kind: 'timeline' }));
+    const { result } = renderHook(() => useSidebarExpansion({ kind: 'inbox' }));
     act(() => result.current.toggleExpand('folder-1'));
     expect(result.current.expanded.has('folder-1')).toBe(true);
     act(() => result.current.toggleExpand('folder-1'));
@@ -39,7 +39,7 @@ describe('useSidebarExpansion', () => {
   });
 
   it('opens a row once, however often it is asked', () => {
-    const { result } = renderHook(() => useSidebarExpansion({ kind: 'timeline' }));
+    const { result } = renderHook(() => useSidebarExpansion({ kind: 'inbox' }));
     act(() => result.current.expand('folder-1'));
     act(() => result.current.expand('folder-1'));
     expect(result.current.expanded.has('folder-1')).toBe(true);

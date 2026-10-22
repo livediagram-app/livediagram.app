@@ -1,11 +1,9 @@
-import { REPO_URL } from '@liveplanner/ui';
-
 // The landing page's promises (docs/specs/019-marketing/marketing-site.md "Promises"): five things
 // that are true of liveplanner today, under the page's golden rule (no claim the product does not
 // keep). The site is international, so no value names a currency. Each has a short value set large, a title, one line, and, where there is more to read, a
 // link. The art and hues live with the component (components/PromiseCanvas.tsx).
 
-export type PromiseId = 'free' | 'no-account' | 'open-source' | 'private' | 'live';
+export type PromiseId = 'free' | 'no-account' | 'export' | 'private' | 'live';
 
 export type Promise = {
   id: PromiseId;
@@ -29,11 +27,11 @@ export const PROMISES: readonly Promise[] = [
     line: 'Open the editor and start. Sign in later, only if you want to sync.',
   },
   {
-    id: 'open-source',
-    value: 'MIT',
-    title: 'Open Source',
-    line: 'Read every line, host it yourself, make it yours.',
-    link: { href: REPO_URL, label: 'See the code', external: true },
+    id: 'export',
+    value: '0 lock-in',
+    title: 'Your Work, Yours',
+    line: 'Export boards and sheets as CSV, images, PDF or Markdown, whenever you like.',
+    link: { href: '/help/tabs/export-tabs/', label: 'How export works' },
   },
   {
     id: 'private',

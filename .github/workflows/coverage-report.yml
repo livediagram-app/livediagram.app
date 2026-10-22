@@ -3,8 +3,8 @@ name: Coverage report
 # The pull request's coverage report, in its description below a separator, where an edit notifies no
 # one (docs/specs/003-system-architecture/testing.md "Coverage report"): the coverage diff against its
 # base and a row per area, from Codecov's public API. It runs after CI, from main's copy of this
-# workflow and its script, so it can write to a pull request from a fork too, and it never checks out
-# or runs the pull request's code.
+# workflow and its script, and it never checks out or runs the pull request's
+# code.
 on:
   workflow_run:
     workflows: [CI]
@@ -47,7 +47,7 @@ jobs:
           node-version: 22
           package-manager-cache: false
 
-      # The run's head commit, and the open pull request it belongs to (a fork's included).
+      # The run's head commit, and the open pull request it belongs to.
       - name: Find the pull request
         id: pr
         env:

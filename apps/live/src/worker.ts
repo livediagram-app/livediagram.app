@@ -31,7 +31,7 @@ type Env = { ASSETS: AssetsBinding; API?: Fetcher };
 //     after the first visit; subsequent loads can't be downgraded
 //     to plain HTTP by a network-level attacker. Cloudflare's zone-
 //     level toggle covers the same ground but this code-side header
-//     is the source of truth so self-host deployments inherit it.
+//     is the source of truth so deployments inherit it.
 //
 //   - Content-Security-Policy: Trusted Types alone, enforced
 //     (docs/specs/016-platform/trusted-types.md). The rest of a CSP
@@ -72,7 +72,7 @@ export default {
     const frameable = url.pathname === '/embed' || url.pathname.startsWith('/embed/');
     // /explorer is an index with no content of its own (docs/specs/013-workspace/folders.md):
     // every section lives at /explorer/<section>, default Home
-    // (docs/specs/013-workspace/timeline.md §8.1). 302 here so the address bar lands on the real
+    // (docs/specs/013-workspace/explorer-home.md "Route"). 302 here so the address bar lands on the real
     // section before any HTML is served; the page's client-side
     // replace covers dev where this worker isn't in front. The
     // Location is a clean (`/live`-free) path — the router selects the

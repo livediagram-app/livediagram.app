@@ -34,14 +34,7 @@ vi.mock('../explorer-tree/PanelTreeContext', () => ({ usePanelTree: () => ({}) }
 import { HomeSection } from './PanelViews';
 
 const show = (current: string | null) =>
-  render(
-    <HomeSection
-      ownerId="me"
-      currentDocumentId={current}
-      onOpenDocument={() => {}}
-      onSeeTimeline={() => {}}
-    />,
-  );
+  render(<HomeSection ownerId="me" currentDocumentId={current} onOpenDocument={() => {}} />);
 
 // docs/specs/013-workspace/explorer-structure.md "Home": never the open document, and never "No documents yet"
 // to someone whose only document is the open one.

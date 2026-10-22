@@ -17,7 +17,7 @@ been reorganised into the buckets below.
 
 The blessed counter-example already in the tree is `apps/live/lib/api/*`,
 which is split by domain (`documents.ts`, `tabs.ts`, `share.ts`, …). A new
-contributor can find the persistence boundary instantly; finding "the
+engineer can find the persistence boundary instantly; finding "the
 canvas components" means scrolling 157 alphabetised entries. This is the
 flat-directory half of the consistency review (item #9); it complements
 the no-god-files rule in `AGENTS.md` (cohesion over line count).

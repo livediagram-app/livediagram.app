@@ -1,4 +1,4 @@
-// Working together: live sessions, sharing, discussion, the Timeline, teams and the facilitation tools (docs/specs/017-telemetry/telemetry.md).
+// Working together: live sessions, sharing, discussion, History and team Activity, teams and the facilitation tools (docs/specs/017-telemetry/telemetry.md).
 // Part of the metric catalogue: import from ../metric-catalogue.
 
 import type { Metric, MetricStack } from '../metric-series';
@@ -92,22 +92,22 @@ export const FEED_RETRIES = chart(
 export const TIMELINE_LOADS = chart(
   'Timeline',
   'Loaded',
-  'Timeline Loads',
-  'More of the Timeline loaded, or a failed load retried.',
+  'History Loads',
+  "More of a document's History or a team's Activity loaded, or a failed load retried.",
 );
 
 export const TIMELINE_VIEW_SWITCHED = chart(
   'Timeline',
   'Changed',
-  'Timeline View Switched',
-  'The Timeline switched between its list and calendar.',
+  'History View Switched',
+  "A document's History or a team's Activity switched between its list and calendar.",
 );
 
 export const TIMELINE_FILTERED = chart(
   'Timeline',
   'Selected',
-  'Timeline Filtered',
-  'The Timeline narrowed to everyone, others, or a kind of event.',
+  'History Filtered',
+  "A document's History or a team's Activity narrowed to everyone, others, or a kind of event.",
 );
 
 export const COMMENTS_DELETED = chart(
@@ -649,49 +649,14 @@ export const STOPWATCHES: MetricStack = {
   headline: STOPWATCHES_STARTED,
 };
 
-// The Explorer Timeline (docs/specs/013-workspace/timeline.md) and the Explorer's Inbox (docs/specs/013-workspace/inbox.md).
-// Timeline·Opened carries four things by type: two ways of arriving on the
-// feed (Landing, the Explorer's default page, and Nav, a deliberate visit),
-// which is how the landing-page change is measured, and two things done in it
-// (a card or stack menu opened, a stacked run expanded).
-export const TIMELINE_LANDINGS = chart(
-  'Timeline',
-  'Opened',
-  'Timeline Landings',
-  'A page load that started on the Timeline.',
-  { types: ['Landing'] },
-);
-
-export const TIMELINE_VISITS = chart(
-  'Timeline',
-  'Opened',
-  'Timeline Visits',
-  "The Timeline opened after starting elsewhere: its sidebar row, or Home's See Timeline.",
-  { types: ['Nav'] },
-);
-
-export const TIMELINE_MENUS = chart(
-  'Timeline',
-  'Opened',
-  'Timeline Card Menus',
-  'The menu on a Timeline card or stack opened, by its button or a right-click.',
-  { types: ['Menu'] },
-);
-
+// History and team Activity (docs/specs/013-workspace/timeline.md) and the Explorer's Inbox
+// (docs/specs/013-workspace/inbox.md).
 export const TIMELINE_STACKS_EXPANDED = chart(
   'Timeline',
   'Opened',
   'Stacks Expanded',
-  'A stacked run of changes on the Timeline opened up to show each one.',
+  "A stacked run of changes in a document's History or a team's Activity opened up to show each one.",
   { types: ['Stack'] },
-);
-
-export const TIMELINE_ENTRIES_REMOVED = chart(
-  'Timeline',
-  'Removed',
-  'Timeline Entries Removed',
-  'An entry or a whole stack removed from the feed.',
-  { rising: 'neutral' },
 );
 
 export const ACTIVITY_OPENED = chart(
@@ -753,9 +718,9 @@ export const HOME_LOADS = chart('Home', 'Loaded', 'Home Retries', 'A failed read
 
 export const TIMELINE_AND_ACTIVITY: MetricStack = {
   stack: true,
-  title: 'Timeline & Activity',
+  title: 'Home & Activity',
   blurb:
-    "Keeping up with what changed: Explorer Home, the Explorer Timeline and the Explorer's Inbox.",
+    "Keeping up with what changed: Explorer Home, the Explorer's Inbox, and a document's History or a team's Activity.",
   members: [
     HOME_LANDINGS,
     HOME_VISITS,
@@ -763,11 +728,7 @@ export const TIMELINE_AND_ACTIVITY: MetricStack = {
     HOME_DOCUMENTS_OPENED,
     HOME_GROUPS_EXPANDED,
     HOME_LOADS,
-    TIMELINE_LANDINGS,
-    TIMELINE_VISITS,
-    TIMELINE_MENUS,
     TIMELINE_STACKS_EXPANDED,
-    TIMELINE_ENTRIES_REMOVED,
     ACTIVITY_OPENED,
     ACTIVITY_THREADS,
     TIMELINE_LOADS,

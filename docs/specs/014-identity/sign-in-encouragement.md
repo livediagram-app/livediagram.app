@@ -25,7 +25,7 @@ hides it everywhere.
 Common gate (all must hold):
 
 - Clerk is configured for the deployment (`clerkEnabled`). A
-  self-hosted, Clerk-less install ([Open source + distribution](../002-project-scope/open-source-and-business-model.md) + [Auth + guest access](auth-and-guest-access.md)) has no working
+  deployment without Clerk ([Business model + licence](../002-project-scope/business-model-and-licence.md) + [Auth + guest access](auth-and-guest-access.md)) has no working
   sign-in, so the banner never renders there.
 - The visitor is **not** signed in (no `clerkUserId`; a guest owner id
   doesn't count).

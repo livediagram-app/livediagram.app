@@ -28,7 +28,7 @@ reason: the per-element blob model is right for the editor, and a
 listing across documents needs a table. This spec adds that table
 without moving the source of truth.
 
-The Timeline ([Timeline](timeline.md)) is not this. It records that an action _was
+The record of what happened ([Timeline events](timeline.md)) is not this. It records that an action _was
 assigned_ and a comment _was added_; it never says whether the action
 is still open, and it does not know who is still waiting on a thread.
 The Inbox answers the present-tense question: **what is
@@ -43,13 +43,13 @@ outstanding for me right now.**
   exist with their edit-access gates. A future version can add
   "Mark done" to a row; the index carries what it needs.
 - Done actions and resolved threads are not listed. The page is an
-  inbox of what is outstanding, not a history; the Timeline and the
+  inbox of what is outstanding, not a history; a document's History and the
   Collaborate Panel's Resolved side already cover the past.
 
 ## 1. What the user sees
 
 An **Inbox** row in the sidebar's **Overview** group ([Explorer structure](explorer-structure.md)), directly
-under Home and above the Timeline, with a badge counting the open actions and open Plan cards **assigned to
+under Home and above Shared With Me, with a badge counting the open actions and open Plan cards **assigned to
 the reader**. The badge always shows, **0** included, so an empty Inbox reads as done at a glance; it
 shows nothing only while the Inbox is loading or failed to load, so it never claims a false 0. The
 count only covers work waiting on the reader, not work they handed out.
@@ -142,8 +142,8 @@ States:
   the assigned-actions help article. No New Document CTA: a new document
   does not put anything on this page.
 - **Failed**: "Couldn't load your activity" with **Try again**. Distinct
-  from empty for the same reason the Timeline keeps them apart
-  ([Timeline](timeline.md) §2.4): "we couldn't ask" and "there is nothing" are
+  from empty for the same reason the History feed keeps them apart
+  ([Timeline events](timeline.md) §2.4): "we couldn't ask" and "there is nothing" are
   different answers.
 
 **rows in This Browser.** A row from a document saved only in this browser ([Offline Mode](../006-document/offline-mode.md))
@@ -154,7 +154,7 @@ else. Its rows are found in the browser (§2.6) and listed among the server's, i
 order; the badge counts them.
 
 Coming back to a tab that has been open a while re-reads the list
-(`useReturnToTab`, as the Timeline does), merging in place.
+(`useReturnToTab`, as the History and Team Activity feeds do), merging in place.
 
 ## 2. Data model: the collaboration index
 

@@ -2,6 +2,7 @@
   "name": "@liveplanner/tailwind-config",
   "version": "0.0.0",
   "private": true,
+  "license": "UNLICENSED",
   "type": "module",
   "main": "./theme.css",
   "exports": {

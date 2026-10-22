@@ -9,8 +9,8 @@ import {
   DataIsYoursArt,
   EncryptedArt,
   NoSaleArt,
+  NoAdsArt,
   NoTrackersArt,
-  OpenSourceArt,
   PrivateByDefaultArt,
 } from './PrivacyArt';
 
@@ -46,10 +46,10 @@ const PROMISES: { title: string; description: string; art: React.ReactNode }[] =
     art: <PrivateByDefaultArt />,
   },
   {
-    title: 'Open source, auditable',
+    title: 'No ads, anywhere',
     description:
-      'The whole stack (editor, API, this site) is on GitHub under the MIT license. Anything we claim here, you can read in the source. Run your own copy if you prefer, on your own Cloudflare account, in an afternoon.',
-    art: <OpenSourceArt />,
+      'liveplanner shows no adverts and runs no ad network, so nothing you plan is ever used to target you. The privacy policy sets out, in plain English, every service that touches your data and why.',
+    art: <NoAdsArt />,
   },
 ];
 

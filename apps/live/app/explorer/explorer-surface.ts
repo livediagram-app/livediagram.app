@@ -15,8 +15,6 @@ export type ExplorerSurfaceFlags = {
   settings: boolean;
   // The Appearance control: a workbench sets the scheme.
   appearance: boolean;
-  // The GitHub and licence links of the app's bottom bar.
-  appLinks: boolean;
   // The sign-in nudge and the move of this browser's documents after signing in.
   guestPrompts: boolean;
   // API tokens (the timeline's token cards' Revoke) and Teams administration (New team, Invites, team settings).
@@ -31,7 +29,6 @@ export function explorerSurfaceFlags(surface: ExplorerSurface): ExplorerSurfaceF
     appHeader: app,
     settings: app,
     appearance: app,
-    appLinks: app,
     guestPrompts: app,
     administration: app,
     publishPicture: app,

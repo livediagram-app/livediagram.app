@@ -2,6 +2,7 @@
   "name": "@liveplanner/next-config",
   "version": "0.0.0",
   "private": true,
+  "license": "UNLICENSED",
   "type": "module",
   "main": "index.js",
   "types": "index.d.ts",

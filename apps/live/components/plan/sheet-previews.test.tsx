@@ -5,7 +5,8 @@ import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { accentHead, SHEET_TEMPLATES } from '@liveplanner/sheets';
 import { planPalette } from './plan-palette';
-import { SHEET_TILES, SheetPreview } from './sheet-previews';
+import { SheetPreview } from './sheet-previews';
+import { SHEET_STARTS as SHEET_TILES } from './start/start-planning-items';
 
 const palette = planPalette('light');
 

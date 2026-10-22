@@ -173,15 +173,15 @@ already present somebody else's name.
 
 ## 7. States and fallbacks
 
-| State                                         | Avatar                                                               |
-| --------------------------------------------- | -------------------------------------------------------------------- |
-| Clerk disabled for the deployment (self-host) | Initials everywhere, exactly as before; no image request is made.    |
-| Guest                                         | Initials; a guest has no picture and never sees anybody else's.      |
-| Signed in, no picture resolved                | Initial on the disc, exactly as before.                              |
-| Picture loading                               | Initial on the disc; the picture has not painted yet.                |
-| Picture loaded                                | The picture, cropped to the disc.                                    |
-| Picture failed to load                        | Initial on the disc, for the rest of that URL's life on the page.    |
-| Picture URL changes                           | Starts again from "loading"; a previous failure does not carry over. |
+| State                             | Avatar                                                               |
+| --------------------------------- | -------------------------------------------------------------------- |
+| Clerk disabled for the deployment | Initials everywhere, exactly as before; no image request is made.    |
+| Guest                             | Initials; a guest has no picture and never sees anybody else's.      |
+| Signed in, no picture resolved    | Initial on the disc, exactly as before.                              |
+| Picture loading                   | Initial on the disc; the picture has not painted yet.                |
+| Picture loaded                    | The picture, cropped to the disc.                                    |
+| Picture failed to load            | Initial on the disc, for the rest of that URL's life on the page.    |
+| Picture URL changes               | Starts again from "loading"; a previous failure does not carry over. |
 
 **No layout shift.** Every disc has the same fixed size in every state
 ([Layout stability](../004-interface-design/layout-stability.md)): the
