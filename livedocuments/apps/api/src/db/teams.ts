@@ -283,7 +283,7 @@ export async function countTeamAdmins(env: Env, teamId: string): Promise<number>
   return row?.n ?? 0;
 }
 
-// The Clerk user ids of a team's joined admins (docs/specs/014-identity/profile-and-email-notifications.md): who gets told
+// The account ids of a team's joined admins (docs/specs/014-identity/profile-and-email-notifications.md): who gets told
 // when someone responds to an invite. Only `joined` rows with a connected
 // user_id qualify — a pending-admin invite has no identity to email yet,
 // and a member isn't an admin. The notification layer resolves each id to a
@@ -299,7 +299,7 @@ export async function listTeamAdminUserIds(env: Env, teamId: string): Promise<st
 }
 
 // Account deletion (docs/specs/014-identity/profile-and-email-notifications.md): detach a user from every team BEFORE
-// their rows are wiped. Without this the dead Clerk id lingered as a
+// their rows are wiped. Without this the dead account id lingered as a
 // ghost member — and when it was the only joined admin, the team
 // became permanently unmanageable (every admin-gated action counted
 // the dead row via countTeamAdmins), while the account wipe's

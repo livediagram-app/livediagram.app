@@ -25,7 +25,7 @@ import { useTeamFolderActions } from './useTeamFolderActions';
 function handlers() {
   const { result } = renderHook(() =>
     useTeamFolderActions({
-      clerkUserId: 'user_1',
+      accountUserId: 'user_1',
       viewerId: 'user_1',
       teamFolders: [{ id: 'f1', name: 'Specs' } as never],
       refreshTeamLibraries: () => {},

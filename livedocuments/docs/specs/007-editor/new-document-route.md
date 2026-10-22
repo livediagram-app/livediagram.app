@@ -320,9 +320,9 @@ place. The editor reads the id from `window.location.pathname` on mount, so
 it cannot tell the difference from a direct visit.
 
 - **Why:** a hard navigation paid for a second full page load: the editor's
-  document, a second Clerk settle, a second identity round trip, and a
+  document, a second sign-in settle, a second identity round trip, and a
   second, visually different loading screen after "Creating…". The in-place
-  swap keeps the one Clerk session, the one document, and one continuous
+  swap keeps the one signed-in session, the one document, and one continuous
   opening screen.
 - **The editor code is fetched ahead.** `/new` starts loading the editor's
   chunk as soon as it mounts (the create needs it within a second), so the chunk downloads in
@@ -374,8 +374,8 @@ document"**; everything else stays put.
 - **Reduced motion:** the page, infographic and slide sit finished; the
   cursor, caret, glows and bar are still.
 - `PageBuildAnimation` stays a bare illustration (no surface of its own),
-  so the sso-callback and OAuth consent cards keep composing it inside their
-  own card.
+  so a card can compose it inside its own (the Clerk-era sso-callback card
+  did).
 - The bar is the shared `LoadingSweep`.
 
 Every create from `/new` honours the URL placement context (the `?folder` /

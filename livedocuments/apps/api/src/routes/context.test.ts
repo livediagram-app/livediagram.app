@@ -35,9 +35,9 @@ function makeCtx(
     env: {} as Env,
     url,
     segments: url.pathname.replace(/^\//, '').split('/'),
-    clerkUserId: null,
+    accountUserId: null,
     verifiedUserId: null,
-    clerkEmail: null,
+    accountEmail: null,
     resolveOwner: () => owner,
   };
 }
@@ -99,7 +99,7 @@ describe('requireOwnedDocument', () => {
     expect(out).toBe(liveDoc);
   });
 
-  // A TEAM document's owner id is a Clerk id every teammate can read off
+  // A TEAM document's owner id is an account id every teammate can read off
   // `GET /api/teams/<id>` (`members[].userId`), so the hybrid X-Owner-Id path
   // must not prove ownership of one — otherwise a removed member who kept the
   // id reaches the owner-only surfaces this guard fronts: the share password

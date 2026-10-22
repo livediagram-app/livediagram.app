@@ -3,7 +3,7 @@ import { RefreshIcon, HoverCard, GlyphDisc, IDENTITY_FILL, identityVars } from '
 
 // The name prompt's identity row (IdentityPrompt, the join flow): the avatar
 // bubble, the display-name input (read-only when the name is dictated
-// by the visitor's Clerk account), and the shuffle-a-random-name
+// by the visitor's account), and the shuffle-a-random-name
 // button. The host keeps the name state (its follow-the-participant
 // effect writes it) and passes it through.
 export function IdentityNameRow({
@@ -45,7 +45,7 @@ export function IdentityNameRow({
           placeholder={participant.name}
           readOnly={nameLocked}
           aria-readonly={nameLocked}
-          // Locked: the value comes from Clerk; greying it out
+          // Locked: the value comes from the account; greying it out
           // + removing focus affordance makes it visually
           // obvious it isn't editable, but the input stays
           // present so the name is still visible.

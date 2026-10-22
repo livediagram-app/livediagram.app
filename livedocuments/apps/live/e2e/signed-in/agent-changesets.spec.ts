@@ -1,6 +1,6 @@
 import { expect, test } from '../fixtures';
 import { agentSubmits, arrange, CANVAS, open, storedIds, WEBBER } from './agent-session';
-import { freshUserId, installClerkStub } from './clerk-stub';
+import { freshUserId, installSession } from './session';
 
 // Agent changesets end to end (docs/specs/024-agents/agent-changesets.md; livedocuments #343): a
 // person has their own, unshared document open; their agent changes it with an API token. Before
@@ -36,7 +36,7 @@ test("an agent's changeset reaches the open editor, survives its save, and the t
 }) => {
   test.setTimeout(90_000);
   const userId = freshUserId('webber');
-  await installClerkStub(page, { ...WEBBER, id: userId });
+  await installSession(page, { ...WEBBER, id: userId });
   const s = await arrange(page, baseURL!, userId);
   await open(page, s);
 
@@ -88,7 +88,7 @@ test('an element the person has selected is held from the agent', async ({
 }) => {
   test.setTimeout(60_000);
   const userId = freshUserId('webber');
-  await installClerkStub(page, { ...WEBBER, id: userId });
+  await installSession(page, { ...WEBBER, id: userId });
   const s = await arrange(page, baseURL!, userId);
   // A second session of someone else would hold it; the owner's own selection never does, so the
   // person here opens the document as an edit-link visitor.

@@ -2,7 +2,7 @@
 //
 // The guest `X-Owner-Id` header is a bearer value that leaks to collaborators
 // (presence frames, comment authors), and the REST path trusted it with no
-// proof — so a harvested id (a guest UUID, OR a signed-up user's Clerk `sub`
+// proof — so a harvested id (a guest UUID, OR a signed-up user's account `sub`
 // presented via the header fallback) could be used to act as that owner. The
 // fix: on owner-scoped routes, a presented `X-Owner-Id` must carry a valid
 // HMAC signature (`X-Owner-Sig`, verified against `GUEST_ID_HMAC_SECRET` via
@@ -44,7 +44,7 @@ export function isLegacyGuestEra(
 // is on. Public / auth-bootstrap routes are deliberately excluded: `guest-id`
 // (mints the id), `share` (share-code gated), `migrate` (verifies its own
 // signature), `events` / `telemetry` / `capabilities` / `unfurl` (no owner),
-// and the Clerk-only `account` / `teams` / `tokens`.
+// and the signed-in only `account` / `teams` / `tokens`.
 export const OWNER_SCOPED_SEGMENTS = new Set([
   'documents',
   'folders',

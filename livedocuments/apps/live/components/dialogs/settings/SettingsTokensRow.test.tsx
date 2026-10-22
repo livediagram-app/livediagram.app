@@ -6,14 +6,14 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-li
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const auth = vi.hoisted(() => ({ signedIn: true }));
-vi.mock('@/hooks/persistence/useClerkApiBootstrap', () => ({
-  useClerkApiBootstrap: () => ({
+vi.mock('@/hooks/persistence/useAccountBootstrap', () => ({
+  useAccountBootstrap: () => ({
     authLoaded: true,
     isSignedIn: auth.signedIn,
-    clerkUserId: auth.signedIn ? 'user_1' : null,
+    accountUserId: auth.signedIn ? 'user_1' : null,
   }),
 }));
-vi.mock('@/lib/clerk-config', () => ({ clerkEnabled: true }));
+vi.mock('@/lib/auth-config', () => ({ signInEnabled: true }));
 vi.mock('@/components/chrome/auth-shared', () => ({
   useAuthHrefs: () => ({ signInHref: '/sign-in/?redirect_url=%2Fexplorer' }),
 }));

@@ -1,10 +1,10 @@
 // Troubleshooting-category illustrations (docs/specs/018-help/help-app.md): the concrete states a stuck
-// editor shows (a loading canvas, a sign-in error, a rendering glitch, a save
+// editor shows (a loading canvas, a rendering glitch, a save
 // that could not reach the server). Composed
 // only from the shared primitives so the house style holds.
 
 import { useId } from 'react';
-import { Scene, Shape, Panel, Button, Label } from './primitives';
+import { Scene, Shape, Button, Label } from './primitives';
 
 /** A document stuck mid-load, as DocumentLoading draws it: the diagram building itself, the title
  *  and detail line over the loading sweep, and, after 10 seconds, the "taking longer" line with
@@ -46,70 +46,6 @@ export function StuckCanvas() {
         This is taking longer than usual.
       </Label>
       <Button x={178} y={158} w={64} h={24} label="Refresh" />
-    </Scene>
-  );
-}
-
-/** The sign-in code step in an error state: the error above the form, the
- *  six code boxes, Verify, and the Resend code / Back row. */
-export function SignInError() {
-  const digits = ['1', '2', '4', '9', '0', '7'];
-  return (
-    <Scene w={420} h={250} bg="plain">
-      <Panel x={98} y={10} w={224} h={230}>
-        <Label x={210} y={32} anchor="middle" size={14} weight={700} tone="strong">
-          livedocuments
-        </Label>
-        {/* The error, above the form */}
-        <rect
-          x={114}
-          y={46}
-          width={192}
-          height={24}
-          rx={6}
-          className="fill-rose-50 stroke-rose-300"
-          strokeWidth={1.5}
-        />
-        <Label
-          x={210}
-          y={59}
-          anchor="middle"
-          size={10}
-          weight={600}
-          className="fill-rose-600 dark:fill-rose-300"
-        >
-          Incorrect code
-        </Label>
-        <Label x={210} y={86} anchor="middle" size={10} tone="muted">
-          We sent a verification code to
-        </Label>
-        <Label x={210} y={100} anchor="middle" size={10} weight={600} tone="body">
-          you@example.com. Enter it below.
-        </Label>
-        {digits.map((d, i) => (
-          <g key={i}>
-            <rect
-              x={120 + i * 31}
-              y={112}
-              width={25}
-              height={30}
-              rx={6}
-              className="fill-white stroke-slate-300"
-              strokeWidth={1.5}
-            />
-            <Label x={132.5 + i * 31} y={128} anchor="middle" size={12} weight={600} tone="strong">
-              {d}
-            </Label>
-          </g>
-        ))}
-        <Button x={114} y={156} w={192} h={28} label="Verify" variant="primary" />
-        <Label x={160} y={210} anchor="middle" size={10} weight={600} tone="muted">
-          Resend code
-        </Label>
-        <Label x={262} y={210} anchor="middle" size={10} weight={600} tone="muted">
-          Back
-        </Label>
-      </Panel>
     </Scene>
   );
 }

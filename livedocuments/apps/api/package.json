@@ -26,6 +26,7 @@
     "@livedocuments/icons": "workspace:*",
     "@livedocuments/render-png": "workspace:*",
     "@livedocuments/templates": "workspace:*",
+    "@liveworkspace/auth-client": "workspace:*",
     "jose": "^6.2.12"
   },
   "devDependencies": {

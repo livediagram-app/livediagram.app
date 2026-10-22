@@ -12,7 +12,7 @@ Two D1 tables, owned by the api worker (the baseline migration, `0001_livedocume
 
 - **`teams`**: `id`, `name`, `organisation` (free text, nullable), `created_at`, `updated_at`. No owner column: ownership is expressed through the Admin role in the link table, so a team survives its creator leaving.
 - **`team_members`** (the link table): `id`, `team_id`, `user_id` (nullable), `email` (nullable), `role` (`'admin' | 'member'`), `status` (`'invited' | 'joined'`), `created_at`, `updated_at`.
-  - `user_id` is a Clerk user id. Null on a pending invite that hasn't connected yet.
+  - `user_id` is an account user id (`user_…`). Null on a pending invite that hasn't connected yet.
   - `email` is the lowercased invite address. Unique per team. May be null only on the creator's row when the deployment's JWT carries no email claim.
   - One of `user_id` / `email` is always set.
   - **One row per person per team**: a unique index on `(team_id, user_id) WHERE user_id IS NOT NULL` refuses a second membership row for the same user.
@@ -22,18 +22,18 @@ Two D1 tables, owned by the api worker (the baseline migration, `0001_livedocume
 
 ## Identity: signed-in only
 
-Teams are keyed by Clerk user ids and invites are keyed by email, so the whole feature requires a verified Clerk session:
+Teams are keyed by account user ids and invites are keyed by email, so the whole feature requires a verified signed-in session:
 
-- Every `/api/teams*` endpoint requires a verified Clerk Bearer token. The guest `X-Owner-Id` path gets `401 sign_in_required`. This does NOT violate [Auth + guest access](../014-identity/auth-and-guest-access.md)'s no-sign-in-wall rule: the canvas and everything else stays guest-accessible; only the Teams surface asks for an account.
-- In the Explorer sidebar, guests see the sign-in nudge ("Sign in to access Teams") at the end of the Spaces group instead of team rows and New Team ([Explorer structure](explorer-structure.md)). Clerk-disabled self-host deployments ([Open source + distribution](../002-project-scope/open-source-and-business-model.md)) show neither.
+- Every `/api/teams*` endpoint requires a verified account access token (`Authorization: Bearer`). The guest `X-Owner-Id` path gets `401 sign_in_required`. This does NOT violate [Auth + guest access](../014-identity/auth-and-guest-access.md)'s no-sign-in-wall rule: the canvas and everything else stays guest-accessible; only the Teams surface asks for an account.
+- In the Explorer sidebar, guests see the sign-in nudge ("Sign in to access Teams") at the end of the Spaces group instead of team rows and New Team ([Explorer structure](explorer-structure.md)). Self-host deployments without sign-in ([Open source + distribution](../002-project-scope/open-source-and-business-model.md)) show neither.
 
 ### Email claim
 
-Connect-on-signup needs the user's email so a pending invite can be matched to the person. The worker trusts **exactly one source**: the verified `email` claim on the Clerk session token (`apps/api/src/auth/clerk.ts`), because it rides inside the JWKS-verified payload. The deployment wires it via Clerk dashboard → Sessions → Customize session token → `{"email": "{{user.primary_email_address}}"}`. It has to be the **session** token, not a named JWT template — the frontend authenticates with `getToken()` (no template), so a named template is never requested.
+Connect-on-signup needs the user's email so a pending invite can be matched to the person. The worker trusts **exactly one source**: the `email` claim on the account access token (`apps/api/src/auth/accounts.ts`), because it rides inside the JWKS-verified payload, and only when the token's `email_verified` claim is true (signing in by emailed code is what verifies it). The accounts Worker puts both claims on every access token it mints for livedocuments; there is nothing to configure per deployment.
 
-**Teams invite auto-connection requires this claim.** When the session token doesn't carry it, `clerkEmail` is null and the lazy connect step below is a no-op (the user still signs in and uses everything else; they just won't see invites auto-attach until the claim is configured). This is a deliberate fail-closed default.
+**Teams invite auto-connection requires this claim.** When the access token doesn't carry a verified one, `accountEmail` is null and the lazy connect step below is a no-op (the user still signs in and uses everything else; they just won't see invites auto-attach until their address is verified). This is a deliberate fail-closed default.
 
-A client-supplied `X-Owner-Email` header used to be a fallback, but it was **removed** (a signed-in caller could forge another address and claim that address's pending invites — join the team and read its private library). Email is never taken from a client header; only from the verified claim. A guest (no Clerk session) has no email either way, so invites are signed-in only.
+A client-supplied `X-Owner-Email` header used to be a fallback, but it was **removed** (a signed-in caller could forge another address and claim that address's pending invites — join the team and read its private library). Email is never taken from a client header; only from the verified claim. A guest (no signed-in session) has no email either way, so invites are signed-in only.
 
 ## Invites, connect-on-sign-in, and accept/decline
 
@@ -86,7 +86,7 @@ A second way in, alongside per-address invites: a **shareable link** an admin ac
 - **Data**: one regenerable token lives on the team itself (`teams.invite_link_token` + `teams.invite_link_expires_at`, both nullable). NULL token = the link is off. This is distinct from the per-member `team_members` rows; it's a team-level credential.
 - **Turn on / off (admin only)**: `POST /api/teams/:id/invite-link` mints a fresh token and sets the expiry to now + 7 days (regenerating while on rotates the token and resets the week); `DELETE /api/teams/:id/invite-link` turns it off. The team detail (`GET /api/teams/:id`) carries the current `inviteLink: { token, expiresAt } | null` **for admins in an interactive session only** (null for members, for every API token, and once expired): the token admits any account, so it is administration, which tokens never reach.
 - **Resolve (open)**: `GET /api/teams/invite-link/:token` returns `{ team, memberCount, alreadyMember }` when the token is on and unexpired, else `404`. This one endpoint sits **above** the sign-in gate — a token holder must see _what_ they're joining before they sign in, and the token is the credential, so naming the team to whoever holds it is fine. `alreadyMember` is computed against the caller's verified id when present, else false, and is true only for a **joined** membership: someone whose email invite is still pending is offered **Join**, which accepts it.
-- **Join (signed-in)**: `POST /api/teams/invite-link/:token/join` adds the caller as a **joined** member and returns `{ teamId, alreadyMember }`. Idempotent: an existing membership is a no-op, and a pending email invite for the caller is accepted in place rather than duplicated. Guests get `401` (teams are Clerk-only); an invalid/expired token `404`s.
+- **Join (signed-in)**: `POST /api/teams/invite-link/:token/join` adds the caller as a **joined** member and returns `{ teamId, alreadyMember }`. Idempotent: an existing membership is a no-op, and a pending email invite for the caller is accepted in place rather than duplicated. Guests get `401` (teams are for accounts only); an invalid/expired token `404`s.
 - **The landing page** is the top-level `/join?token=<token>` route (outside the Explorer chrome, see [Router app](../016-platform/router-app.md)), so the signed-out flow renders its own card instead of being bounced by the explorer's auth gate. It resolves the token, then shows: **Join / Decline** to a signed-in non-member (Join → the team page; Decline → back to their documents); "already a member" with an Open-team link; or, to a signed-out visitor, why an account is needed plus **Sign in** / **Create an account** links whose `redirect_url` carries the same `/join?token=…` URL, so auth returns them here to finish joining. An off / expired / unknown token shows an "invite link isn't valid" card.
 - **Explorer UI**: the team detail page header gains an **"Invite by Link"** button (admins only, to the left of the overflow menu) opening a modal (`TeamInviteLinkDialog`) that turns the link on, copies the URL, shows the expiry, and turns it off.
 
@@ -112,7 +112,7 @@ Share roles (Editor / Participant / Viewer) do not apply here: teams are managed
 
 ## API
 
-All under `/api/teams`, Clerk Bearer required, handled by `apps/api/src/routes/teams.ts`:
+All under `/api/teams`, account Bearer required, handled by `apps/api/src/routes/teams.ts`:
 
 - `GET /api/teams` — lazy-claims invites (above), then lists teams the caller has **joined**, each with `myRole` and `memberCount`.
 - `GET /api/teams/invites` — lazy-claims, then lists the caller's pending invites (member id + team summary + joined-member count). The Explorer's Invites badge is this list's length.
@@ -168,4 +168,4 @@ Declining and withdrawing are separate events because they are separate acts by 
 
 - Sharing documents with a team / team workspaces.
 - Team avatars, descriptions beyond the organisation line.
-- Looking up whether an invited email already has an account (needs the Clerk Management API).
+- Looking up whether an invited email already has an account (would need a user lookup on the accounts Worker).

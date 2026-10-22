@@ -7,7 +7,7 @@ import { ApiErrorPage } from '@/components/chrome/ApiErrorPage';
 import type { NewDocumentSettings } from './new-document-settings';
 import { DocumentLoading } from '@/components/chrome/DocumentLoading';
 import { OpeningScreen } from '@/components/chrome/OpeningScreen';
-import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
+import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useCtaAttribution } from './useCtaAttribution';
 import { apiCreateDocument, apiLoadSelf, apiSaveSelf } from '@/lib/api-client';
 import {
@@ -67,21 +67,21 @@ const PENDING_SELF: Participant = {
 export default function NewDocumentPage() {
   // Stable placeholder so the first paint matches the SSG render; the
   // real participant lands once the identity has resolved.
-  // Clerk wiring (token provider + guest to authed migration), the same
-  // hook as the editor route; see hooks/useClerkApiBootstrap.ts.
-  const { authLoaded, clerkUserId } = useClerkApiBootstrap();
+  // Sign-in wiring (token provider + guest to authed migration), the same
+  // hook as the editor route; see hooks/useAccountBootstrap.ts.
+  const { authLoaded, accountUserId } = useAccountBootstrap();
 
   // Who is creating (docs/specs/003-system-architecture/react-state-and-effects.md): derived during render.
-  // The base is the Clerk id once auth has settled, else the guest id read from its store, with a name and
+  // The base is the account id once auth has settled, else the guest id read from its store, with a name and
   // colour seeded once per visit. `selfOverride` holds what replaces it: the stored profile, or the commit's
   // fallback. Until auth settles it is the 'pending' placeholder.
   // A guest's id is the SIGNED one, resolved before any owner-scoped call
   // (docs/specs/014-identity/auth-and-guest-access.md "Signed guest ids"): until then `self` stays
   // 'pending', which gates every owner-scoped read below.
-  const guestId = useSignedGuestId(authLoaded, clerkUserId);
+  const guestId = useSignedGuestId(authLoaded, accountUserId);
   const [seed] = useState(() => ({ name: randomName(), color: randomColor() }));
   const [selfOverride, setSelf] = useState<Participant | null>(null);
-  const baseId = authLoaded ? (clerkUserId ?? guestId) : null;
+  const baseId = authLoaded ? (accountUserId ?? guestId) : null;
   const self: Participant =
     selfOverride && (baseId === null || selfOverride.id === baseId)
       ? selfOverride
@@ -113,7 +113,7 @@ export default function NewDocumentPage() {
 
   // Where a new document is stored: This Browser for a guest (docs/specs/006-document/save-locations.md), decided at
   // commit.
-  const { resolveSaveLocation } = useNewDocumentLocation({ authLoaded, clerkUserId });
+  const { resolveSaveLocation } = useNewDocumentLocation({ authLoaded, accountUserId });
 
   useEffect(() => {
     document.title = 'New Document | livedocuments';
@@ -142,14 +142,14 @@ export default function NewDocumentPage() {
   }, []);
 
   useLayoutEffect(() => {
-    // Wait for Clerk to settle so guest vs signed-in is known.
+    // Wait for auth to settle so guest vs signed-in is known.
     if (!authLoaded) return;
     // Daily-active-returns signal (docs/specs/017-telemetry/telemetry.md): once-per-browser-per-UTC-day,
     // gated inside the helper.
-    trackDailyReturn(!!clerkUserId);
-  }, [authLoaded, clerkUserId]);
-  // The stored profile, once the id is known: the Clerk one, or a guest's signed one.
-  const selfId = authLoaded ? (clerkUserId ?? guestId) : null;
+    trackDailyReturn(!!accountUserId);
+  }, [authLoaded, accountUserId]);
+  // The stored profile, once the id is known: the account's, or a guest's signed one.
+  const selfId = authLoaded ? (accountUserId ?? guestId) : null;
   useEffect(() => {
     if (!selfId) return;
     const local: Participant = { id: selfId, name: seed.name, color: seed.color, status: 'online' };
@@ -167,14 +167,14 @@ export default function NewDocumentPage() {
       cancelled = true;
     };
   }, [selfId, seed]);
-  // Identity for the commit path. Clerk's chunk loads deferred, so a fast
+  // Identity for the commit path. The session's chunk loads deferred, so a fast
   // click-through (or an e2e robot) can reach Create while `self` is still
   // the 'pending' placeholder — the identity bootstrap above hasn't run.
   // Creating then would file the document under the literal owner "pending":
   // a shared id every raced visitor collides on, and one the editor route
   // (fetching with the real id) 404s. So the commit resolves identity
   // itself: wait out the bootstrap (bounded — authLoaded flips by the
-  // 5 s Clerk timeout at the latest), then fall back to the guest id.
+  // 5 s auth timeout at the latest), then fall back to the guest id.
   const selfRef = useLatest(self);
   const resolveSelf = async (): Promise<Participant> => {
     const deadline = Date.now() + 8000;

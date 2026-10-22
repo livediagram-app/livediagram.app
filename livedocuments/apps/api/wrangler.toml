@@ -230,25 +230,31 @@ simple = { limit = 20, period = 60 }
 #   - APP_BASE_URL: optional [vars] public origin for links in emails.
 #     Defaults to "https://livedocuments.app".
 
-# CLERK_JWKS_URL is provisioned out-of-band so the value never lands
-# in the public repo (docs/specs/002-project-scope/secrets-policy.md):
+# Sign-in (docs/specs/014-identity/auth-and-guest-access.md) goes through the
+# liveworkspace accounts Worker. Four values, provisioned out-of-band so none
+# lands in the public repo (docs/specs/002-project-scope/secrets-policy.md):
 #
-#   - Local dev: drop `CLERK_JWKS_URL=https://...` into
-#     `apps/api/.dev.vars` (gitignored). Wrangler reads it on the
-#     next `wrangler dev`.
-#   - Production: stored as a Cloudflare Worker secret via
-#     `wrangler secret put CLERK_JWKS_URL`. The deploy workflow
-#     pulls it from the GitHub repo secret `CLERK_JWKS_URL` and
-#     pipes it into `wrangler secret put` on every deploy so the
-#     value can rotate by editing the GitHub secret. Secrets
-#     persist across deploys independently of this file.
+#   ACCOUNTS_URL            the accounts Worker's origin
+#                           (https://accounts.liveworkspace.app)
+#   API_RESOURCE            this API's registered resource, the access
+#                           token's audience (https://livedocuments.app/api)
+#   ACCOUNTS_CLIENT_ID      this app's OAuth client id
+#   ACCOUNTS_CLIENT_SECRET  its client secret (the only real secret)
 #
-# When the secret is unset the api worker stays in pure-guest mode
-# and trusts `X-Owner-Id` exclusively (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/015-api/api.md). Get the
-# URL from the Clerk dashboard → API Keys → "Show JWKS URL"; format
-# is `https://<your-instance>.clerk.accounts.dev/.well-known/jwks.json`
-# (test tenant) or `https://clerk.<your-domain>/.well-known/jwks.json`
-# (production tenant).
+#   - Local dev: put them in `apps/api/.dev.vars` (gitignored), plus
+#     AUTH_ORIGIN=http://localhost:3100 so the callback comes back
+#     through the router. Wrangler reads it on the next `wrangler dev`.
+#   - Production: Cloudflare Worker secrets. The deploy workflow pulls
+#     each from the GitHub repo secret of the same name and pipes it into
+#     `wrangler secret put` on every deploy, so a value rotates by
+#     editing the GitHub secret. Secrets persist across deploys
+#     independently of this file.
+#
+# With ACCOUNTS_URL or API_RESOURCE unset the api worker stays in
+# pure-guest mode and trusts `X-Owner-Id` exclusively
+# (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/015-api/api.md).
+# The client id and secret come from registering livedocuments with the
+# accounts Worker (liveworkspace/docs/integrating-an-app.md).
 #
 # GUEST_ID_HMAC_SECRET is provisioned the same way (`.dev.vars` locally,
 # `wrangler secret put GUEST_ID_HMAC_SECRET` + a matching GitHub repo
@@ -413,7 +419,8 @@ renamed_classes = [{ from = "DiagramRoom", to = "DocumentRoom" }]
 [env.staging.triggers]
 crons = ["0 3 * * *"]
 
-# CLERK_JWKS_URL, GUEST_ID_HMAC_SECRET and INTERNAL_EVENTS_KEY come from the
+# The four ACCOUNTS_* / API_RESOURCE values, GUEST_ID_HMAC_SECRET and
+# INTERNAL_EVENTS_KEY come from the
 # `_STAGING` GitHub secrets via the deploy workflow. RESEND_API_KEY is provisioned by
 # hand exactly as it is for production:
 #   cd apps/api && wrangler secret put RESEND_API_KEY --env staging

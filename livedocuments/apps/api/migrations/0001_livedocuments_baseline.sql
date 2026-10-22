@@ -27,17 +27,12 @@ CREATE TABLE owner_aliases (
 );
 CREATE INDEX owner_aliases_alias_idx ON owner_aliases (alias_id);
 
--- First sightings of a Clerk account and session: the sign-up and sign-in counts key on them.
+-- First sighting of an account: a sign-in from an account never seen before counts as a sign-up.
 CREATE TABLE auth_accounts (
   owner_id      TEXT    PRIMARY KEY NOT NULL,
   first_seen_at INTEGER NOT NULL
 );
 
-CREATE TABLE auth_sessions (
-  session_id    TEXT    PRIMARY KEY NOT NULL,
-  first_seen_at INTEGER NOT NULL
-);
-CREATE INDEX auth_sessions_seen_idx ON auth_sessions (first_seen_at);
 
 -- Settings that follow a person between browsers: one JSON blob each.
 CREATE TABLE user_preferences (

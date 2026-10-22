@@ -133,8 +133,8 @@ export function EditorCanvasHost() {
     canvasTool,
     confirmIdentity,
     cancelIdentity,
-    clerkDisplayName,
-    clerkUserId,
+    accountDisplayName,
+    accountUserId,
     actionRows,
     commentRows,
     commentsPanelPosition,
@@ -293,7 +293,7 @@ export function EditorCanvasHost() {
   // (docs/specs/013-workspace/team-shared-documents.md) - see useTeamFolderActions.
   const viewerId = selfParticipant?.id ?? null;
   const onTeamFolders = useTeamFolderActions({
-    clerkUserId,
+    accountUserId,
     viewerId,
     teamFolders,
     refreshTeamLibraries,
@@ -821,10 +821,10 @@ export function EditorCanvasHost() {
               showIdentityPrompt={identityOnlyScreenOpen}
               hydrated={hydrated}
               // Visitor on someone else's document + signed in → lock the
-              // identity input to their Clerk name. Owner branch never
+              // identity input to their account name. Owner branch never
               // shows the identity prompt so `lockedName` is moot there;
               // pure guests pass null and keep the editable name field.
-              identityLockedName={!isOwner && clerkUserId ? clerkDisplayName : null}
+              identityLockedName={!isOwner && accountUserId ? accountDisplayName : null}
               welcomeOpen={anyWelcomeOpen}
               selfParticipant={selfParticipant}
               onConfirmIdentity={confirmIdentity}

@@ -6,7 +6,7 @@ import { ConfigSources, GuestFallback } from '@/components/illustrations/self-ho
 export const metadata = helpMetadata({
   title: 'Configuration and Optional Auth',
   description:
-    'How a self-hosted livedocuments is configured: environment variables, optional Clerk sign-in, and the pure-guest fallback.',
+    'How a self-hosted livedocuments is configured: environment variables, optional sign-in, and the pure-guest fallback.',
   path: '/help/self-hosting/configuration/',
 });
 
@@ -30,11 +30,11 @@ Each app that needs configuration ships an example file documenting which variab
 
 ## Optional sign-in
 
-Authentication is provided by an optional integration with Clerk, and the app supports three modes depending on what you configure.
+Sign-in is optional. It goes through a liveworkspace accounts Worker, and the app supports three modes depending on what you configure.
 
-1. **Hybrid**, the production setup: both the publishable key (`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, on the live build; a repository secret when you deploy through GitHub Actions) and the API's verification URL (`CLERK_JWKS_URL`) are set, so guests and signed-in users coexist.
+1. **Hybrid**, the production setup: the live build has `NEXT_PUBLIC_SIGN_IN_ENABLED=true`, and the API has the accounts Worker's address and your client's details (`ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET`), so guests and signed-in users coexist.
 2. **Guest-only**, the typical self-host: leave the auth variables unset. The app runs without an account system, sign-in routes say sign-in isn't enabled and offer **Continue as guest**, and the editor is unchanged.
-3. A partial misconfiguration (frontend configured, API not) exists only for debugging and is not meant for production: people can sign in, but the API treats everyone as a guest.
+3. A partial misconfiguration (frontend configured, API not) exists only for debugging and is not meant for production: nobody can finish signing in, and the API treats everyone as a guest.
 
 With sign-in on, also set `GUEST_ID_HMAC_SECRET` so guest ids are signed and nobody can claim another guest's documents when they sign up. Accounts unlock the features that need one: [teams](/help/collaboration/teams/), [API tokens](/help/account-and-data/api-tokens/), and, if you set them up, email and the MCP server.
 
@@ -44,7 +44,7 @@ Guest-only is what lets a self-hoster run with zero outbound runtime traffic bey
 
 The API identifies the owner of a request in one of two equivalent ways: a verified sign-in token, or a per-browser guest id sent as a header. When sign-in is not configured, every request simply uses the guest path, and the editor stays fully usable, with persistence, sharing, and real-time collaboration all working.
 
-<Figure caption="Whether Clerk is configured or not, requests resolve to a working editor.">
+<Figure caption="Whether sign-in is configured or not, requests resolve to a working editor.">
   <GuestFallback />
 </Figure>
 
@@ -59,9 +59,8 @@ Every other optional feature follows the same pattern: unset means off, and the 
 | MCP server for AI tools   | Deploy the mcp Worker with its own KV namespace and hostname, then point `CONSENT_BASE_URL` (mcp Worker) at your editor's origin, and `NEXT_PUBLIC_MCP_ORIGIN` (live build) and `OAUTH_ISSUER` (api Worker) at your MCP host (needs sign-in). See [The MCP Server](/help/self-hosting/configuration/mcp-server/) |
 | Telemetry                 | `TELEMETRY_ENABLED` on the api Worker and `NEXT_PUBLIC_TELEMETRY_ENABLED` on every frontend build                                                                                                                                                                                                                |
 | Workbenches               | Nothing extra beyond sign-in, but set `APP_BASE_URL` on the api Worker to the origin that serves the app, or pairing and frame links point at livedocuments.app (needs sign-in)                                                                                                                                  |
-| Continue with Google      | `NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED` on the live build, with Google enabled in Clerk. The bundled deploy workflow already sets it, so enable Google in Clerk or remove that line                                                                                                                                   |
 
-The `NEXT_PUBLIC_*` values above are baked in at build time. When you deploy through the bundled GitHub Actions workflow, add them to the workflow's build step (or set `mcp_origin` in `deploy.yml`); apart from the Clerk publishable key, they are not read from repository secrets.
+The `NEXT_PUBLIC_*` values above are baked in at build time. When you deploy through the bundled GitHub Actions workflow, add them to the workflow's build step (or set `mcp_origin` in `deploy.yml`); apart from the sign-in flag, which the workflow turns on when the `ACCOUNTS_CLIENT_ID` repository secret is set, they are not read from repository secrets.
 
 <Tip>
   For every variable, where it lives and the steps around it (OAuth redirect URIs, KV namespaces),

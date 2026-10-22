@@ -82,7 +82,7 @@ describe('GET /api/documents/:id/shared-tabs', () => {
     });
     liveDoc(db.sql, 'A', 'user_alice', 'team');
 
-    const res = await get(db, { owner: 'user_bob', clerkUserId: 'user_bob' });
+    const res = await get(db, { owner: 'user_bob', accountUserId: 'user_bob' });
 
     expect(res?.status).toBe(200);
   });

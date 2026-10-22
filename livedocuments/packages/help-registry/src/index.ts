@@ -790,9 +790,9 @@ export const articles: Article[] = [
   {
     slug: 'configuration',
     title: 'Configuration and Optional Auth',
-    description: 'Environment variables, optional Clerk auth, and guest-only mode.',
+    description: 'Environment variables, optional sign-in, and guest-only mode.',
     keywords:
-      'env vars environment clerk setup secrets settings configure resend email mcp telemetry r2',
+      'env vars environment sign-in accounts setup secrets settings configure resend email mcp telemetry r2',
     category: 'Self-Hosting',
     categorySlug: 'self-hosting',
     parentSlug: 'self-hosting',

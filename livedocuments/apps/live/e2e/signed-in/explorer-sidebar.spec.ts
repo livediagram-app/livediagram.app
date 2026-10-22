@@ -1,9 +1,9 @@
 import type { Page } from '@playwright/test';
 import { test, expect, expectNoPageErrors } from '../fixtures';
-import { freshUserId, installClerkStub, type StubUser } from './clerk-stub';
+import { freshUserId, installSession, type StubUser } from './session';
 
 // The Explorer sidebar on a deployment with sign-in (docs/specs/013-workspace/explorer-structure.md),
-// against the Clerk-enabled export: a signed-in member sees each team as a root folder and New Team
+// against the signed-in export: a signed-in member sees each team as a root folder and New Team
 // last; a signed-out visitor sees the sign-in nudge in New Team's place.
 
 test.use({ colorScheme: 'dark', viewport: { width: 1280, height: 800 } });
@@ -21,9 +21,6 @@ function member(id: string): StubUser {
     firstName: 'Webber',
     lastName: 'Takken',
     email: `${id}@example.com`,
-    hasImage: false,
-    imageUrl: '',
-    externalAccounts: [],
   };
 }
 
@@ -50,7 +47,7 @@ test('a signed-in member sees teams as root folders and New Team last', async ({
     name: 'Roadmaps',
     teamId: team,
   });
-  await installClerkStub(page, member(userId));
+  await installSession(page, member(userId));
   await page.goto('/explorer/home');
   await expect(nav(page).getByRole('treeitem', { name: 'Design guild' })).toBeVisible({
     timeout: 30_000,
@@ -79,7 +76,7 @@ test('a signed-out visitor sees the sign-in nudge instead of New Team', async ({
   page,
   pageErrors,
 }) => {
-  await installClerkStub(page, null);
+  await installSession(page, null);
   await page.goto('/explorer/home');
   await expect(nav(page).getByRole('treeitem', { name: /^Home/ })).toBeVisible({
     timeout: 30_000,

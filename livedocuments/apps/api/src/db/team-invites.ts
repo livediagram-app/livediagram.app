@@ -1,6 +1,6 @@
 // Team invites (docs/specs/013-workspace/teams.md), split out of teams.ts: the email-invite rows
 // (a team_members row with status 'invited'), the lazy claim that
-// connects a verified email to its Clerk user, the accept flip, and the
+// connects a verified email to its account, the accept flip, and the
 // shareable one-week invite link with its token join. Core team /
 // member CRUD stays in teams.ts.
 
@@ -17,7 +17,7 @@ import {
 } from './teams';
 
 // The lazy invite claim (docs/specs/013-workspace/teams.md): connect every pending row for this
-// verified email to the caller's Clerk user id. Runs at the top of
+// verified email to the caller's account id. Runs at the top of
 // GET /api/teams so an invitee sees the team on their next Explorer
 // visit whether they signed up before or after the invite. Idempotent
 // and cheap when there's nothing pending (indexed on email).

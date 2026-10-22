@@ -31,8 +31,8 @@ import { explorerSurfaceFlags, useExplorerSurface } from '@/app/explorer/explore
 export function TeamPane({
   ownerId,
   teamId,
-  clerkUserId,
-  clerkDisplayName,
+  accountUserId,
+  accountDisplayName,
   onTeamsChanged,
   onLeftTeam,
   onLoadResult,
@@ -43,10 +43,10 @@ export function TeamPane({
 }: {
   ownerId: string;
   teamId: string;
-  clerkUserId: string | null;
+  accountUserId: string | null;
   // The signed-in user's display name, so their own row reads as a
   // person ("Thomas") rather than a placeholder ("You").
-  clerkDisplayName: string | null;
+  accountDisplayName: string | null;
   // The sidebar list needs a refetch (rename, member count change).
   onTeamsChanged: () => void;
   // The caller is no longer a member (left or deleted the team) —
@@ -183,7 +183,7 @@ export function TeamPane({
   // A workspace frame reaches no team administration (WB62): the team's documents only.
   const administration = explorerSurfaceFlags(surface).administration;
   const isAdmin = myRole === 'admin' && administration;
-  const selfRow = members.find((m) => m.userId !== null && m.userId === clerkUserId) ?? null;
+  const selfRow = members.find((m) => m.userId !== null && m.userId === accountUserId) ?? null;
   // The one rule the whole surface bends around: a team always keeps
   // at least one Admin (docs/specs/013-workspace/teams.md). When that's you, leaving, removing
   // your row, and demoting yourself all disappear as options. Only JOINED admins count, as on the
@@ -294,8 +294,8 @@ export function TeamPane({
             <TeamMemberRow
               key={m.id}
               m={m}
-              clerkUserId={clerkUserId}
-              clerkDisplayName={clerkDisplayName}
+              accountUserId={accountUserId}
+              accountDisplayName={accountDisplayName}
               isAdmin={isAdmin}
               pinnedAdmin={isLastAdmin(m)}
               onChangeRole={(member, role) => void changeRole(member, role)}

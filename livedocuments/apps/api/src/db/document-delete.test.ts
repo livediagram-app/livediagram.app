@@ -192,7 +192,7 @@ describe('DELETE /api/documents/:id?permanent=true with a shared tab', () => {
     });
     await sharedFromA(db, 'user_alice', 'team');
 
-    const res = await del(db, { owner: 'user_bob', clerkUserId: 'user_bob' });
+    const res = await del(db, { owner: 'user_bob', accountUserId: 'user_bob' });
 
     expect(res?.status).toBe(204);
     expect(tabFootprint(db.sql, 'shared')).toEqual({

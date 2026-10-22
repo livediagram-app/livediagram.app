@@ -6,7 +6,7 @@
 
 import {
   capWorkbenchRole,
-  isClerkIdShape,
+  isAccountIdShape,
   type AccessLevel,
   type RoomTicketResponse,
 } from '@livedocuments/api-schema';
@@ -35,7 +35,7 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
   // POST /api/documents/<id>/room-ticket — mint a one-time WS room ticket
   // (docs/specs/015-api/api.md). The WS upgrade can't carry the Bearer token, so identified
   // callers (team members above all: membership MUST be checked against
-  // the VERIFIED Clerk id, docs/specs/013-workspace/team-shared-documents.md) prove their access here over normal
+  // the VERIFIED account id, docs/specs/013-workspace/team-shared-documents.md) prove their access here over normal
   // authenticated REST and hand the resulting short-lived ticket to the
   // upgrade as `?t=`. gateGrant runs the exact same access policy
   // as every REST read/write, including the share-password gate.
@@ -49,14 +49,14 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     // granted it (docs/specs/013-workspace/tab-scoped-share-links.md); the ticket takes all three to the room.
     const grant = await gateGrant(ctx, id, liveDoc.ownerId, liveDoc.teamId);
     if (!grant) return notFound();
-    // A verified Clerk session (not an API token, not a guest header) marks the ticket as an
+    // A verified session (not an API token, not a guest header) marks the ticket as an
     // account session: the room lets it publish a profile picture and see others'
     // (docs/specs/014-identity/profile-picture.md §6).
     // A workbench session (docs/specs/013-workspace/workbench-embeds.md) joins as its owner: an account session
     // carrying the owner's person tag, so their agent's `selected` reads its selection, at most at its level, and
     // tagged with its pairing so unpairing closes exactly its sockets.
     const workbench = ctx.workbench ?? null;
-    const personId = ctx.clerkUserId ?? workbench?.ownerId ?? null;
+    const personId = ctx.accountUserId ?? workbench?.ownerId ?? null;
     const role = workbench ? capWorkbenchRole(grant.role, workbench.level) : grant.role;
     const ticket = await createWsTicket(env, id, {
       role,
@@ -114,7 +114,7 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     const ticketRole = admission?.role ?? null;
     // The bare-`o` owner match is PERSONAL documents only, mirroring the
     // REST access rule (auth/document-access.ts): a TEAM document's owner
-    // id is a Clerk id deliberately visible to every teammate, so a
+    // id is an account id deliberately visible to every teammate, so a
     // removed member could present it here — the exact hole the ticket
     // closed for the membership leg. Team owners come in via the ticket
     // (its mint admits them through the verified callerId === ownerId
@@ -123,7 +123,7 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     // (docs/specs/015-api/public-api-and-tokens.md §4.1): teammates can read it, so
     // it proves nothing. A signed-in owner of a personal document comes in through
     // the ticket like a team owner.
-    const accountIdClaimed = !!claimedOwnerId && isClerkIdShape(claimedOwnerId);
+    const accountIdClaimed = !!claimedOwnerId && isAccountIdShape(claimedOwnerId);
     if (accountIdClaimed)
       console.warn('[room-upgrade] account id refused as ?o=', { documentId: id });
     // The guest owner id is the same bearer value REST carries as X-Owner-Id,

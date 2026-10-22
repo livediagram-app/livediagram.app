@@ -155,7 +155,7 @@ describe('hosted-vars script', () => {
       bindings: [
         { type: 'plain_text', name: 'TELEMETRY_ENABLED', text: 'true' },
         { type: 'plain_text', name: 'IMAGE_MAX_PER_OWNER', text: '50' },
-        { type: 'secret_text', name: 'CLERK_JWKS_URL' },
+        { type: 'secret_text', name: 'ACCOUNTS_CLIENT_SECRET' },
         { type: 'd1', name: 'DB' },
       ],
     },

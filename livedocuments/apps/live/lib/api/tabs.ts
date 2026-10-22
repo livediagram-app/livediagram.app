@@ -170,7 +170,7 @@ async function savedRevOf(res: Response): Promise<number | null> {
 // writes for the unload moment.
 //
 // Why it can't reuse those async helpers: a `beforeunload` handler can't
-// await, and the Clerk token provider (apiHeaders) is async — so this
+// await, and the account token provider (apiHeaders) is async — so this
 // path builds headers synchronously and uses `keepalive: true` to let
 // each request outlive the teardown. Identity comes from the sync
 // sources: the Bearer token apiHeaders cached on its last fetch for

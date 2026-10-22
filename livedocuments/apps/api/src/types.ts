@@ -33,27 +33,28 @@ export type Env = {
   // NEXT_PUBLIC_BUILD_ID (docs/specs/016-platform/stale-builds.md). Unset (local dev, a self-host that
   // sets neither) leaves it off the server release signal.
   BUILD_ID?: string;
-  // Clerk JWKS URL: when set, the request handler verifies Bearer
-  // tokens against it via `src/auth/clerk.ts` and prefers the
-  // resulting userId over `X-Owner-Id`. When unset, the worker stays
-  // in pure-guest mode (X-Owner-Id only). See docs/specs/014-identity/auth-and-guest-access.md + docs/specs/015-api/api.md.
-  CLERK_JWKS_URL?: string;
+  // Signing in through the liveworkspace accounts Worker (docs/specs/014-identity/auth-and-guest-access.md,
+  // auth/accounts.ts + routes/auth.ts). ACCOUNTS_URL is its origin, e.g.
+  // `https://accounts.liveworkspace.app`; its issuer and key set sit under `/api/auth`. API_RESOURCE is
+  // what this API was registered as, e.g. `https://livedocuments.app/api`, and every access token must
+  // name it as its audience. With either unset the worker stays in pure-guest mode (X-Owner-Id only).
+  ACCOUNTS_URL?: string;
+  API_RESOURCE?: string;
+  // This app's OAuth client at the accounts Worker (its scripts/register-client.ts). Only the
+  // /api/auth routes read them; the secret is a `wrangler secret`.
+  ACCOUNTS_CLIENT_ID?: string;
+  ACCOUNTS_CLIENT_SECRET?: string;
+  // Local dev only: the origin the browser is on (the router, `http://localhost:3100`), which the
+  // sign-in redirect returns to. Unset in production, where the request's own origin is right.
+  AUTH_ORIGIN?: string;
   // The OAuth server the CLI signs in through (docs/specs/015-api/cli.md), an https origin.
   OAUTH_ISSUER?: string;
   // The oldest CLI the api accepts writes from, x.y.z; unset for no floor.
   CLI_MIN_VERSION?: string;
-  // Optional: when set, the Clerk JWT verifier also asserts the `iss`
-  // claim (docs/specs/014-identity/auth-and-guest-access.md) so a token from another instance sharing the JWKS
-  // host can't be replayed. Unset → issuer not asserted (back-compat).
-  CLERK_ISSUER?: string;
-  // Optional: when set, the Clerk JWT verifier also asserts the `aud`
-  // claim (docs/specs/014-identity/auth-and-guest-access.md) so a token minted for a different audience/app can't
-  // be replayed here. Unset → audience not asserted (back-compat).
-  CLERK_AUDIENCE?: string;
   // HMAC secret for signing guest owner-ids (docs/specs/014-identity/auth-and-guest-access.md + auth/
   // owner-signature.ts). When set, POST /api/guest-id mints a signed id
   // and /api/migrate requires a valid signature before reassigning a
-  // guest's data to a Clerk account — closing the "observe a guest id,
+  // guest's data to an account — closing the "observe a guest id,
   // claim its data" hole. Unset → migrate keeps its legacy unsigned
   // behaviour (OSS self-host that hasn't configured it).
   GUEST_ID_HMAC_SECRET?: string;

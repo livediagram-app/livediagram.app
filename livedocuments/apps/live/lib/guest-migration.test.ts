@@ -36,7 +36,7 @@ describe('guestMigrationPending', () => {
     expect(guestMigrationPending('user_abc')).toBe(false);
   });
 
-  it('is false when the guest id already is the Clerk id', () => {
+  it('is false when the guest id already is the account id', () => {
     setGuestIdentity('user_abc', null);
     expect(guestMigrationPending('user_abc')).toBe(false);
   });

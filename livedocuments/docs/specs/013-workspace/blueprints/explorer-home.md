@@ -17,8 +17,8 @@ Scope, by file:
 | `packages/api-schema/src/within-reach.ts`                                      | `withinReach`, `utcDay`; shared with the view and the Shapes flyout                            |
 | `packages/api-schema/src/creation-use.ts`                                      | `readMarkUsed`, `MARK_USED_INVALID`                                                            |
 | `packages/api-schema/src/error-telemetry.ts`                                   | `home` resource                                                                                |
-| `apps/api/migrations/0001_livedocuments_baseline.sql`                              | `document_opens`, its indexes, `timeline_events_actor_idx`                                     |
-| `apps/api/migrations/0001_livedocuments_baseline.sql`                              | Drops frecency: the rank index, `frecency_key`, `open_days`, `first_opened_at`, the seed stamp |
+| `apps/api/migrations/0001_livedocuments_baseline.sql`                          | `document_opens`, its indexes, `timeline_events_actor_idx`                                     |
+| `apps/api/migrations/0001_livedocuments_baseline.sql`                          | Drops frecency: the rank index, `frecency_key`, `open_days`, `first_opened_at`, the seed stamp |
 | `apps/api/src/home/local-day.ts`                                               | `parseTimeZone`, `localDay`                                                                    |
 | `apps/api/src/home/what-happened.ts`                                           | `verbOf`, `groupWhatHappened` (pure)                                                           |
 | `apps/api/src/home/record-open.ts`                                             | `recordDocumentOpen`: the dedupe, the write, the last open, the fingerprints                   |
@@ -303,7 +303,7 @@ The baseline migration, `0001_livedocuments_baseline.sql`, creates `document_ope
 
 ```sql
 CREATE TABLE document_opens (
-  owner_id       TEXT NOT NULL,   -- the person: guest id or Clerk id
+  owner_id       TEXT NOT NULL,   -- the person: guest id or account id
   document_id    TEXT NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
   last_opened_at INTEGER NOT NULL,
   last_open_day  TEXT NOT NULL,   -- 'YYYY-MM-DD', UTC
@@ -375,10 +375,10 @@ from` moves every row the account does not already hold; each leftover (opened u
 
 ## Security and trust
 
-- `home` is in `OWNER_SCOPED_SEGMENTS`: a Clerk-shaped `X-Owner-Id` is refused and, when armed, the guest signature
+- `home` is in `OWNER_SCOPED_SEGMENTS`: an account-shaped `X-Owner-Id` is refused and, when armed, the guest signature
   is required.
 - `visible` is the boundary: an event, an open or an entry about a document the person cannot open is never read.
-  Team membership is matched on the resolved owner id, as the Inbox does; teams are Clerk-only and a Clerk-shaped
+  Team membership is matched on the resolved owner id, as the Inbox does; teams are for accounts only and an account-shaped
   guest header never reaches a route.
 - Opens are private: the event is scoped to `user:<person>` only, left out of the feed, and not a What Happened
   verb. Nobody's open is in anybody else's response.
@@ -449,7 +449,7 @@ stay on their own lazy route.
 | A making counts once, an opted-out one does not, a sync or re-commit never              | `apps/api/src/routes/document-create-use.test.ts` (real SQLite)                           |
 | `readMarkUsed`                                                                          | `packages/api-schema/src/creation-use.test.ts`                                            |
 | `create_document` passes `markUsed` through only when given                             | `apps/mcp/src/create-document-placement.test.ts`                                          |
-| Signed in: an API create is in Jump Back In unopened; one with `markUsed: false` is not | `apps/live/e2e/clerk-stub/creation-use.spec.ts`                                           |
+| Signed in: an API create is in Jump Back In unopened; one with `markUsed: false` is not | `apps/live/e2e/signed-in/creation-use.spec.ts`                                            |
 | Reads: others only, opens private, rejections, rate limit, the unread mark, no timeline | `apps/api/src/routes/home.test.ts` (real SQLite)                                          |
 | The backfill marks its edit, never marks a real one                                     | `apps/api/src/home/real-edits.test.ts` (real SQLite)                                      |
 | The feed and the unread count leave opens out                                           | `apps/api/src/db/timeline-opens.test.ts` (real SQLite)                                    |

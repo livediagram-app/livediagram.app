@@ -135,7 +135,7 @@ describe('HomePane', () => {
       teamDocuments: [],
       offlineDocuments: [],
       failedReads: { documents: false, shared: false },
-      clerkUserId: null,
+      accountUserId: null,
     } as unknown as ExplorerStateValue;
     const { container } = render(
       <ExplorerProvider value={explorer}>

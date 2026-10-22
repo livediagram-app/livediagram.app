@@ -45,7 +45,7 @@ export async function deleteAccount(
   // admin when they were the last one), and delete teams they were the
   // last joined member of. MUST run before the documents DELETE below —
   // that wipe would otherwise destroy shared team work, and the dead
-  // Clerk id would linger as a ghost (or sole-admin-blocking) member.
+  // account id would linger as a ghost (or sole-admin-blocking) member.
   await detachUserFromTeams(env, ownerId);
   // R2 cleanup first. Enumerate the owner's image ids while the
   // index row still exists, then delete each from R2. If R2 is
@@ -162,31 +162,31 @@ export async function deleteAccount(
 // (docs/specs/015-api/api.md "Owner-keyed data") from `fromOwnerId` to
 // `toOwnerId`. Called
 // from POST /api/migrate when a guest signs up: their localStorage
-// participant id moves to their Clerk userId so the new account sees
+// participant id moves to their account id so the new account sees
 // the documents, folders, shared-with-them list, editor preferences,
 // AND uploaded images they built as a guest.
 //
 // shared_with's primary key is (owner_id, document_id), so a naive
 // UPDATE could PK-collide if the visitor accepted the same share
-// link both as a guest AND, later in the same session, as Clerk
+// link both as a guest AND, later in the same session, signed in
 // (recordSharedAccess upserts a row each time). INSERT OR IGNORE
 // then DELETE handles both cases in one shot: copy guest rows to
-// the Clerk userId, skip rows where (clerkId, documentId) already
-// exists, then drop every leftover guest row. The skipped Clerk
+// the account id, skip rows where (clerkId, documentId) already
+// exists, then drop every leftover guest row. The skipped account
 // rows keep the role + last_seen they already had (which is the
 // more recent of the two paths the user actually used).
 //
 // images has a UNIQUE (owner_id, sha256) index that drives the
 // dedupe. UPDATE OR IGNORE skips rows whose sha256 already exists
-// on the Clerk side (the user uploaded the same bytes under both
+// on the account side (the user uploaded the same bytes under both
 // identities). The skipped guest row stays at fromOwnerId, so a
-// formerly-guest document (now Clerk-owned) no longer serves it by
+// formerly-guest document (now account-owned) no longer serves it by
 // ownership. Before the documents move, every guest image those
 // documents place is granted to them, in the same batch
 // (docs/specs/009-elements/images.md "Placement grants"), so the
 // canvas keeps rendering the dedupe loser. Only the gallery list
 // filters by owner_id, so the dedupe loser stops showing up there,
-// which is the right outcome (the Clerk twin is identical bytes anyway).
+// which is the right outcome (the account twin is identical bytes anyway).
 //
 // Other tables (`share_links`, `tabs`) don't carry
 // their own owner_id, they link via `document_id` which is
@@ -233,7 +233,7 @@ export async function migrateOwnerId(
       toOwnerId,
     ),
     // user_preferences (docs/specs/007-editor/user-preferences.md): same INSERT OR IGNORE pattern as
-    // shared_with so a Clerk userId who somehow already had a row (an
+    // shared_with so an account id who somehow already had a row (an
     // earlier sign-in on a different device) keeps that authoritative
     // copy and the guest row gets dropped. Guest-only is the common
     // path; the existing-row case just stops the migration clobbering
@@ -276,8 +276,8 @@ export async function migrateOwnerId(
     ),
     placementDrop: move('DELETE FROM placement_defaults WHERE owner_id = ?', fromOwnerId),
     // participants: the guest's name and colour. The id IS the owner id, so an
-    // account that already has a row keeps it (a signed-in name comes from Clerk
-    // anyway). The copy is stamped NOW, never with the source's created_at: a row
+    // account that already has a row keeps it (a signed-in name comes from the
+    // account anyway). The copy is stamped NOW, never with the source's created_at: a row
     // older than GUEST_SIGNING_LIVE_AT marks a legacy id that may upgrade unsigned
     // (auth/guest-rest.ts isLegacyGuestEra), and the new id is a signed one, so
     // carrying the old date over would let anyone holding the new id move its data
@@ -326,7 +326,7 @@ export async function migrateOwnerId(
   // worth keeping, so the feed, the authored events, and the
   // scope-state row all follow the user to their new account. The
   // scope-state row matters as much as the events: without it the
-  // backfill would run again against the Clerk id and re-seed what
+  // backfill would run again against the account id and re-seed what
   // just migrated.
   await migrateTimelineOwner(env, fromOwnerId, toOwnerId);
   // Activity (docs/specs/013-workspace/inbox.md §2.2): the ids INSIDE the tab blobs (comment

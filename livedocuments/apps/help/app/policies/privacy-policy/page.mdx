@@ -10,7 +10,7 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Privacy Policy" description="What the hosted livedocuments service does, and does not do, with your data." categoryTitle="Policies" categorySlug="policies">
 
-_Last updated: 22 October 2026._
+_Last updated: 23 October 2026._
 
 livedocuments is built to need as little of your data as possible, and the whole codebase is public so you can check that for yourself. This policy explains what the hosted service at **livedocuments.app** does with your data. It sits alongside our [Terms of Service](/help/policies/terms/). If you self-host livedocuments, you are responsible for your own deployment and this policy does not apply to it.
 
@@ -20,8 +20,7 @@ livedocuments is built to need as little of your data as possible, and the whole
 - **Images you upload.** Images placed in a document are kept in Cloudflare object storage and served back through the same API. Before a JPEG is stored, identifying metadata such as GPS location and camera details is stripped from it, so it never reaches anyone you share the document with.
 - **A browser id.** If you use livedocuments without an account, we keep a random identifier in your browser's local storage to link documents to your browser. It is not tied to your name or email.
 - **Your display name and colour.** The name and cursor colour collaborators see are stored on our server against your browser id or account.
-- **Account details, if you sign in.** Sign-in is handled by our authentication provider, Clerk. If you create an account we receive your email address, and, if you choose Google sign-in, basic profile details from Google. We use these to identify your account and to send you the account and onboarding emails described under **Emails we send** below.
-- **Your profile picture's address, if you sign in.** Your profile picture is a picture you uploaded to your account, or your Google picture. We store only its web address (hosted by Clerk), never the image, so we can show it to the people you collaborate with who are signed in: on your presence avatar, your cursor, your comments and your team's member list. People who open your share links without signing in always see your initials. Turn it off in **Settings > Account > Show My Profile Picture**; it is removed when you delete your account.
+- **Account details, if you sign in.** Sign-in is handled by liveworkspace accounts (accounts.liveworkspace.app), the one sign-in shared by our apps, which emails you a code to confirm your address. If you create an account we receive your email address and the name on your account. We use these to identify your account and to send you the account and onboarding emails described under **Emails we send** below.
 - **API tokens, if you create them.** If you create an [API token](/help/account-and-data/api-tokens/) to call the API from your own scripts, we store a one-way hash of it (never the token itself), its name, and a last-used timestamp, so the token can be verified and you can see when it was last active. Tokens are a signed-in-only feature, expire after six months, and are deleted when you delete your account.
 - **Connecting an AI tool, if you do.** If you connect an AI tool via our [MCP server](/help/account-and-data/connect-ai-mcp/), we store the app's registration (its name and redirect address, kept for 30 days), short-lived authorization sessions and codes that expire within minutes, and, for an hour, a count of registrations from your IP address to stop abuse. The connection itself is an API token, covered above, and you can revoke it any time.
 - **Team invitations.** If a teammate invites you by email, we store that address with the team, send you the invitation (and up to three reminders while nobody has answered it, each with a link to decline it), and may send you action and mention emails at that address before you create an account.
@@ -48,7 +47,7 @@ We collect this ourselves, store it in our own database, and use no third-party 
 
 ## Cookies and local storage
 
-We use local storage to keep your browser id, and your preferences (also saved to our database so they follow you). Clerk's sign-in script loads in the editor for every visitor and sets cookies to remember whether you are signed in, and to keep you signed in. We do not use advertising or tracking cookies.
+We use local storage to keep your browser id, and your preferences (also saved to our database so they follow you). If you sign in, we set cookies to keep you signed in and to remember that you are; no sign-in script loads for visitors who don't sign in. We do not use advertising or tracking cookies.
 
 ## Emails we send
 
@@ -64,8 +63,7 @@ You can turn off every notification, tip and milestone email in **Settings**, un
 
 We rely on a small number of providers to run the service:
 
-- **Cloudflare**, for hosting, database storage, and image storage.
-- **Clerk**, for authentication (its script loads for every visitor; it holds account data only if you sign in).
+- **Cloudflare**, for hosting, database storage, image storage, and the sign-in codes we email you.
 - **Resend**, for delivering the emails described above (to account holders, and to addresses a teammate invites).
 
 These providers process data on our behalf so that we can run the service.
@@ -82,7 +80,7 @@ Anything you put in a document you share becomes visible to people who have the 
 
 You can delete any document you own at any time. A deleted document waits in the [Trash](/help/account-and-data/trash/) for 30 days, so you can restore it, and is then removed for good; you can also delete it permanently from the Trash sooner. Comments that passed through a live collaboration session are also kept in that session's own storage on Cloudflare, and that copy is removed with the document. A document left empty and untouched for 30 days moves to the Trash on its own.
 
-You can delete your account, and the data associated with it, yourself: open **Settings**, then **Account**, then **Delete Account**. This removes your documents (the Trash and their collaboration-session copies included), folders, images, themes, preferences and API tokens straight away, and deletes your account at Clerk. Documents in a team's shared library pass to another member of that team rather than being deleted. See [Deleting Your Data](/help/account-and-data/deleting-your-data/).
+You can delete your account, and the data associated with it, yourself: open **Settings**, then **Account**, then **Delete Account**. This removes your documents (the Trash and their collaboration-session copies included), folders, images, themes, preferences and API tokens straight away, and signs you out. Your liveworkspace sign-in itself stays, because it also signs you in to our other apps; you can close it on accounts.liveworkspace.app. Documents in a team's shared library pass to another member of that team rather than being deleted. See [Deleting Your Data](/help/account-and-data/deleting-your-data/).
 
 Other things are kept only as long as they are useful: anonymous product events for 60 days, Timeline activity for a year, changes made by connected AI tools for 30 days (so they can be undone), and an uploaded image that no document uses is removed once it is more than 30 days old. A guest's documents have no account to delete: remove them from the Explorer, or ask us.
 

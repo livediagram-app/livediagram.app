@@ -4,7 +4,7 @@ import { expect, expectNoPageErrors, mintSignedGuest, ownerHeaders, test } from 
 
 // The Explorer sidebar for a guest (docs/specs/013-workspace/explorer-structure.md), in dark
 // mode: the three groups as ARIA trees, the keyboard model, Minimal chrome's separators, and the
-// mobile drawer. The signed-in rows (teams, New Team, the nudge) are e2e/clerk-stub/explorer-sidebar.
+// mobile drawer. The signed-in rows (teams, New Team, the nudge) are e2e/signed-in/explorer-sidebar.
 
 const nav = (page: Page) => page.getByRole('navigation', { name: 'Explorer' }).first();
 const tree = (page: Page, name: string) => nav(page).getByRole('tree', { name });

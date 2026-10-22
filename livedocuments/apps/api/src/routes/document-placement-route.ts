@@ -68,7 +68,7 @@ export async function handleDocumentPlacement(ctx: RouteContext): Promise<Respon
       const folderId = rawFolderId ?? null;
       const teamId = rawTeamId !== undefined ? rawTeamId : existing.teamId;
       // `ownsDocument`, not a bare id compare: a TEAM document's owner id is a
-      // Clerk id every teammate can read, and `isOwner` below decides whether
+      // account id every teammate can read, and `isOwner` below decides whether
       // the caller may change the document's SCOPE — including moving it out of
       // the team into their own library, which transfers ownership.
       const isOwner = await ownsDocument(ctx, existing);

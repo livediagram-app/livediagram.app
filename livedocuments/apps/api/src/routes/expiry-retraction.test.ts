@@ -79,7 +79,7 @@ describe('token revoke retracts its expiry warning', () => {
   it('retracts token_expiring for the revoked token id', async () => {
     const { waitUntil, settle } = deferred();
     const ctx = makeTestRouteContext('DELETE', '/api/tokens/tok_1', {
-      clerkUserId: 'user_1',
+      accountUserId: 'user_1',
       owner: 'user_1',
       waitUntil,
     });
@@ -99,7 +99,7 @@ describe('token revoke retracts its expiry warning', () => {
     const { waitUntil, settle } = deferred();
     const res = await handleTokens(
       makeTestRouteContext('DELETE', '/api/tokens/tok_1', {
-        clerkUserId: 'user_1',
+        accountUserId: 'user_1',
         owner: 'user_1',
         waitUntil,
       }),
@@ -123,7 +123,7 @@ describe('share-link changes retract the document expiry warning', () => {
 
   const shareCtx = (method: string, path: string) =>
     makeTestRouteContext(method, path, {
-      clerkUserId: 'user_1',
+      accountUserId: 'user_1',
       owner: 'user_1',
       env: roomEnv,
     });

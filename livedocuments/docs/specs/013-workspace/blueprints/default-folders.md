@@ -430,20 +430,20 @@ dark:text-slate-400`, then `+N` at 10px semibold; after the count badge; in a tr
 
 ### Testing (surfaces)
 
-| Rule                                                         | Test                                                                                             |
-| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
-| Entries, nouns joined, marker words                          | `apps/live/lib/placement-defaults/default-key-entries.test.ts`                                   |
-| Load, set, clear, telemetry before the write, rollback       | `apps/live/lib/placement-defaults/placement-defaults-store.test.ts`                              |
-| Working default, resolution, destinations, dangling fallback | `apps/live/lib/placement-defaults/default-destination.test.ts`                                   |
-| Name memory per owner                                        | `apps/live/lib/placement-defaults/default-folder-names.test.ts`                                  |
-| Folder delete wording                                        | `apps/live/lib/folder-delete-confirmation.test.ts`                                               |
-| Menu checks for a folder and for My Work                     | `apps/live/hooks/persistence/useDefaultFolderMenus.test.tsx`                                     |
-| Submenu renders, toggles, ARIA                               | `apps/live/components/placement/UseAsDefaultMenu.test.tsx`                                       |
-| Marker icons, +N, words                                      | `apps/live/components/placement/DefaultFolderMarker.test.tsx`                                    |
-| The browser opens at the selected folder's level, then pins  | `apps/live/components/placement/placement-view.test.ts`, `PlacementBrowser.test.tsx`             |
-| Lists ready or failed                                        | `apps/live/hooks/persistence/usePlacementOptions.test.tsx`                                       |
-| Settings row states                                          | `apps/live/components/dialogs/settings/SettingsPlacementDefaultRow.test.tsx`                     |
-| End to end, guest and signed in, desktop and phone           | `apps/live/e2e/default-folders.spec.ts`, `apps/live/e2e/clerk-stub/default-folders-team.spec.ts` |
+| Rule                                                         | Test                                                                                            |
+| ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
+| Entries, nouns joined, marker words                          | `apps/live/lib/placement-defaults/default-key-entries.test.ts`                                  |
+| Load, set, clear, telemetry before the write, rollback       | `apps/live/lib/placement-defaults/placement-defaults-store.test.ts`                             |
+| Working default, resolution, destinations, dangling fallback | `apps/live/lib/placement-defaults/default-destination.test.ts`                                  |
+| Name memory per owner                                        | `apps/live/lib/placement-defaults/default-folder-names.test.ts`                                 |
+| Folder delete wording                                        | `apps/live/lib/folder-delete-confirmation.test.ts`                                              |
+| Menu checks for a folder and for My Work                     | `apps/live/hooks/persistence/useDefaultFolderMenus.test.tsx`                                    |
+| Submenu renders, toggles, ARIA                               | `apps/live/components/placement/UseAsDefaultMenu.test.tsx`                                      |
+| Marker icons, +N, words                                      | `apps/live/components/placement/DefaultFolderMarker.test.tsx`                                   |
+| The browser opens at the selected folder's level, then pins  | `apps/live/components/placement/placement-view.test.ts`, `PlacementBrowser.test.tsx`            |
+| Lists ready or failed                                        | `apps/live/hooks/persistence/usePlacementOptions.test.tsx`                                      |
+| Settings row states                                          | `apps/live/components/dialogs/settings/SettingsPlacementDefaultRow.test.tsx`                    |
+| End to end, guest and signed in, desktop and phone           | `apps/live/e2e/default-folders.spec.ts`, `apps/live/e2e/signed-in/default-folders-team.spec.ts` |
 
 ### Constants and configuration (surfaces)
 

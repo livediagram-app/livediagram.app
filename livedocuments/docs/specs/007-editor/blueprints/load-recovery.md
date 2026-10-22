@@ -25,17 +25,17 @@ design decision.
 
 ## Constants and configuration
 
-| Constant                        | Value                         | Where                          | Provenance                                       |
-| ------------------------------- | ----------------------------- | ------------------------------ | ------------------------------------------------ |
-| `LOAD_TIMEOUT_MS`               | `30_000`                      | `lib/load-progress.ts`         | Spec: 30 seconds                                 |
-| `AUTO_RELOAD_DELAY_MS`          | `1_500`                       | `lib/load-progress.ts`         | Default D63                                      |
-| `AUTO_RELOAD_WINDOW_MS`         | `600_000`                     | `lib/load-progress.ts`         | Spec: 10 minutes                                 |
+| Constant                        | Value                             | Where                          | Provenance                                       |
+| ------------------------------- | --------------------------------- | ------------------------------ | ------------------------------------------------ |
+| `LOAD_TIMEOUT_MS`               | `30_000`                          | `lib/load-progress.ts`         | Spec: 30 seconds                                 |
+| `AUTO_RELOAD_DELAY_MS`          | `1_500`                           | `lib/load-progress.ts`         | Default D63                                      |
+| `AUTO_RELOAD_WINDOW_MS`         | `600_000`                         | `lib/load-progress.ts`         | Spec: 10 minutes                                 |
 | `AUTO_RELOAD_KEY`               | `livedocuments:load-auto-reloads` | sessionStorage                 | Default D64                                      |
-| `OFFLINE_STORE_OPEN_TIMEOUT_MS` | `4_000`                       | `lib/offline/offline-store.ts` | Spec: 4 seconds; = `INDEXED_DB_PROBE_TIMEOUT_MS` |
-| `SESSION_TOKEN_TIMEOUT_MS`      | `10_000`                      | `lib/api/core.ts`              | Spec: 10 seconds per attempt                     |
-| `GUEST_ID_PREFIX_LENGTH`        | `8`                           | `packages/ui/.../identity.ts`  | Spec: first 8 characters                         |
-| `COPIED_FOR_MS`                 | `2_000`                       | `BrowserRepairPanel.tsx`       | Default D65                                      |
-| `SLOW_AFTER_MS`                 | `10_000`                      | `DocumentLoading.tsx`          | Unchanged                                        |
+| `OFFLINE_STORE_OPEN_TIMEOUT_MS` | `4_000`                           | `lib/offline/offline-store.ts` | Spec: 4 seconds; = `INDEXED_DB_PROBE_TIMEOUT_MS` |
+| `SESSION_TOKEN_TIMEOUT_MS`      | `10_000`                          | `lib/api/core.ts`              | Spec: 10 seconds per attempt                     |
+| `GUEST_ID_PREFIX_LENGTH`        | `8`                               | `packages/ui/.../identity.ts`  | Spec: first 8 characters                         |
+| `COPIED_FOR_MS`                 | `2_000`                           | `BrowserRepairPanel.tsx`       | Default D65                                      |
+| `SLOW_AFTER_MS`                 | `10_000`                          | `DocumentLoading.tsx`          | Unchanged                                        |
 
 ## Behaviour and state
 
@@ -55,7 +55,7 @@ design decision.
    failed load's diagnostics name its step). Before the timer: disarm, return false. After it: warn
    `DocumentLoad.Late`; a pending self-healing reload is cancelled (`healing: false`): the late load wins. Return
    true. The success tail calls `setLoadStep('done')`, then `if (watchdog.finish()) setLoadError(false)`.
-   Each bootstrap run takes a generation; a run superseded by a later one (auth settling twice: Clerk answering
+   Each bootstrap run takes a generation; a run superseded by a later one (auth settling twice: sign-in answering
    after the guest timeout, then a guest migration) has every setter and its seed turned into no-ops.
 5. The runner wraps `load()` in try/catch/finally: a throw → `Error·Client·DocumentLoad.<ErrorName>`,
    `setLoadError(true)`, `setLoadingDocument(false)`; `finally` → `finish()`.
@@ -126,8 +126,8 @@ Invariant: on every path the bootstrap leaves `loadingDocument` false or the wat
 - The report never carries a share code (`?s=` reduced to "share link: yes") or a full guest id
   (8-character prefix, cut inside `readBrowserIdentity` so no caller sees the whole id). A
   signed-in account id is not a credential on its own and is included by the editor only.
-- `__client_uat` is read as a hint (value > 0 means signed in; any `__client_uat_<suffix>`
-  counts); it is never sent anywhere but the copied report.
+- `lp_signed_in` is read as a hint (`1` means signed in, `0` signed out; `signedInHintOf` in
+  `packages/api-schema/src/signed-in-hint.ts`); it is never sent anywhere but the copied report.
 - The repair cannot sign anyone out or remove identity; the kept list is guarded by a test against
   `LOCAL_IDENTITY_KEYS`.
 - Telemetry types are fixed tokens; the step is a closed enum.

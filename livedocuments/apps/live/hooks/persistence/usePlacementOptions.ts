@@ -25,13 +25,13 @@ import { track } from '@/lib/telemetry';
 // block someone making a document — they land at the root of My Work and can move it later.
 export function usePlacementOptions({
   selfId,
-  clerkUserId,
+  accountUserId,
   skip,
 }: {
   /** The resolved owner id, or 'pending' while identity is still bootstrapping. */
   selfId: string;
-  /** Set once signed in. Teams are Clerk-only, so guests skip that fetch. */
-  clerkUserId: string | null | undefined;
+  /** Set once signed in. Teams are signed-in only, so guests skip that fetch. */
+  accountUserId: string | null | undefined;
   /**
    * Whether /new commits straight away (?blank=1, ?template=: the hero's launch, the gallery
    * links): no Settings step shows, so its placement options are never read, and the editor
@@ -42,7 +42,7 @@ export function usePlacementOptions({
   skip?: () => boolean;
 }) {
   // Personal folders + teams offered by the Settings step's placement picker
-  // (docs/specs/006-document/offline-mode.md). Folders work for guests; teams are Clerk-only, so we only fetch
+  // (docs/specs/006-document/offline-mode.md). Folders work for guests; teams are signed-in only, so we only fetch
   // them once signed in. Empty until the fetch settles / for signed-out users.
   const [folders, setFolders] = useState<PickerFolder[]>([]);
   const [teams, setTeams] = useState<{ id: string; name: string }[]>([]);
@@ -62,7 +62,7 @@ export function usePlacementOptions({
 
   // Load the placement options for the Settings step once identity resolves.
   // Personal folders only (a team's folders live under their own optgroup);
-  // teams are Clerk-only so they're skipped for guests.
+  // teams are signed-in only so they're skipped for guests.
   useEffect(() => {
     if (selfId === 'pending' || skip?.()) return;
     let cancelled = false;
@@ -83,7 +83,7 @@ export function usePlacementOptions({
         }));
       }
     })();
-    if (clerkUserId) {
+    if (accountUserId) {
       void (async () => {
         const fetchedTeams = await apiListTeams(selfId).catch(() => null);
         if (cancelled) return;
@@ -116,7 +116,7 @@ export function usePlacementOptions({
     return () => {
       cancelled = true;
     };
-  }, [selfId, clerkUserId, skip]);
+  }, [selfId, accountUserId, skip]);
 
   // Inline folder creation from the Settings step's placement browser
   // (docs/specs/006-document/offline-mode.md follow-up): create in the right scope (personal, or a team's
@@ -148,7 +148,7 @@ export function usePlacementOptions({
 
   // Inline team creation from the space overview (docs/specs/013-workspace/teams.md): the new team
   // joins the picker's lists with an empty library, and the browser enters
-  // it. Only offered once signed in (the caller gates on clerkUserId).
+  // it. Only offered once signed in (the caller gates on accountUserId).
   const createPickerTeam = async (name: string): Promise<{ id: string; name: string } | null> => {
     try {
       const team = await apiCreateTeam(selfId, { id: crypto.randomUUID(), name });
@@ -163,7 +163,7 @@ export function usePlacementOptions({
   };
 
   const ready =
-    loadedFor?.owner === selfId && loadedFor.folders && (loadedFor.teams || !clerkUserId);
+    loadedFor?.owner === selfId && loadedFor.folders && (loadedFor.teams || !accountUserId);
   const failed = failedFor === selfId;
   return { folders, teams, teamFolders, createPickerFolder, createPickerTeam, ready, failed };
 }
