@@ -100,7 +100,7 @@ export default function Home() {
                 One account. Every app. Always live.
               </h2>
               <p className="mx-auto mt-4 max-w-xl text-lg text-slate-300">
-                Make your liveworkspace account in a minute, and every app is ready when you are.
+                Or start your work as a guest without signing in at all.
               </p>
               <div className="mt-9 flex flex-wrap justify-center gap-3">
                 <a

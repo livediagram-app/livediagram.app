@@ -14,8 +14,6 @@ export type AppCopy = {
   highlights: [string, string, string];
   // Which drawing the card shows.
   art: AppArt;
-  // Where its privacy policy lives.
-  privacy: string;
   // The accent's deep shade (its brand-700), for filled buttons and text: white on it, and it on
   // white, pass WCAG AA, which the brand-500 accent does not.
   deep: string;
@@ -31,7 +29,6 @@ export const APP_COPY: Partial<Record<SiteId, AppCopy>> = {
     art: 'diagram',
     deep: '#0369a1',
     tagline: 'Think it through, together.',
-    privacy: 'https://livediagram.app/help/policies/privacy-policy/',
   },
   'liveplanner.app': {
     summary:
@@ -40,7 +37,6 @@ export const APP_COPY: Partial<Record<SiteId, AppCopy>> = {
     art: 'board',
     deep: '#6d28d9',
     tagline: 'Turn it into a plan.',
-    privacy: 'https://liveplanner.app/help/policies/privacy-policy/',
   },
 };
 
@@ -57,7 +53,7 @@ export function listedApps(): ListedApp[] {
 // The apps on their way (liveworkspace/docs/site.md "The front door"). The home page gives each a
 // section marked Coming soon, with no way in yet. They join `@liveworkspace/sites` (and with it every
 // logo's switcher, the footer and the open buttons) when they ship.
-export type UpcomingApp = Omit<AppCopy, 'privacy'> & {
+export type UpcomingApp = AppCopy & {
   // The wordmark, lower case like the logos.
   name: string;
   // Where it will live.

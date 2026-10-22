@@ -5,7 +5,7 @@ import { Wordmark } from './Wordmark';
 // Left out on a phone, where the wordmark, the Appearance toggle and the account control fill the
 // bar; the footer lists them all.
 const NAV: { href: string; label: string }[] = [
-  { href: '/#apps', label: 'Apps' },
+  { href: '/#apps', label: 'Our Apps' },
   { href: '/#how-it-fits', label: 'How it fits' },
   { href: '/telemetry', label: 'Telemetry' },
 ];

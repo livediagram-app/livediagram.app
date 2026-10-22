@@ -7,10 +7,6 @@ describe('the apps on liveworkspace.app', () => {
     for (const site of APP_SITES) expect(APP_COPY[site.id], site.id).toBeDefined();
     expect(listedApps().map((a) => a.id)).toEqual(APP_SITES.map((s) => s.id));
   });
-
-  it('links each app’s privacy policy on its own site', () => {
-    for (const app of listedApps()) expect(new URL(app.privacy).origin).toBe(app.url);
-  });
 });
 
 // WCAG relative luminance and contrast, for the deep shade's promise.

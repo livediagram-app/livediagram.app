@@ -69,8 +69,7 @@ moves between them, and the one account that joins them.
    (linking `/telemetry`), yours to keep (closing the account closes it everywhere), completely free (no paywalls or
    subscriptions).
 4. **Closing call to action**: "One account. Every app. Always live."
-5. **Footer**: every site again, the telemetry dashboard, and each app's privacy policy
-   (liveworkspace has no policy of its own yet: see "Not done yet").
+5. **Footer**: Our Apps (each live app's site) and Platform (the telemetry dashboard).
 
 The illustrations are drawn in the page (HTML and SVG with the apps' own logos), not images. Their
 ambient motion (the current along the lines, drifting cursors, the cards settling) is in
@@ -128,8 +127,9 @@ one origin, as it does in production. Run `corepack pnpm dev:site` for the pages
 
 ## Not done yet
 
-- **A liveworkspace privacy policy and terms.** Today the footer links to each app's own.
+- **A liveworkspace privacy policy and terms.** Each app has its own today, on its own site; the
+  footer links to none.
 - **livedocuments.app and livedesign.app** join properly when they ship: a row in
   `@liveworkspace/sites` (which puts them in every switcher and the footer), their entry moved from
-  `UPCOMING_APPS` to `APP_COPY` with a privacy policy, and their own logo package in place of the
+  `UPCOMING_APPS` to `APP_COPY`, and their own logo package in place of the
   tinted prism.
